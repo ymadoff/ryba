@@ -1,0 +1,25 @@
+{
+  "name": "hilti",
+  "version": "0.0.0",
+  "dependencies": {
+    "coffee-script": "latest",
+    "coffee-trace": "latest",
+    "glob": "latest",
+    "each": "latest",
+    "ini": "latest",
+    "jsdom": "latest",
+    "ldapjs": "latest",
+    "mecano": "latest",
+    "pad": "latest",
+    "parameters": "latest",
+    "regexp-quote": "latest",
+    "request": "latest",
+    "superexec": "latest",
+    "ssh2": "latest",
+    "xmlbuilder": "git+https://github.com/wdavidw/xmlbuilder-js.git#master"
+  },
+  "devDependencies": {
+    "mocha": "latest",
+    "should": "latest"
+  }
+}
