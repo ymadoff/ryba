@@ -198,7 +198,7 @@ module.exports.push (ctx, next) ->
 
 module.exports.push (ctx, next) ->
   @name "HDP # Directories"
-  @timeout 500000
+  @timeout -1
   { dfs_name_dir, dfs_data_dir, mapreduce_local_dir, 
     fs_checkpoint_edit_dir, fs_checkpoint_dir
     hdfs_user, mapred_user, hadoop_group,

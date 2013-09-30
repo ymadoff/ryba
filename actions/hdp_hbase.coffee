@@ -1,9 +1,9 @@
 
 hdp = require './hdp'
-module.exports = []
 hproperties = require './hadoop/lib/properties'
+module.exports = []
 
-module.exports.push (ctx) ->
+module.exports.push module.exports.configure = (ctx) ->
   hdp.configure ctx
   namenode = (ctx.config.servers.filter (s) -> s.hdp?.namenode)[0].host
   zookeeper_hosts = (ctx.config.servers.filter (s) -> s.hdp?.zookeeper).map( (s) -> s.host ).join ','
@@ -71,8 +71,6 @@ module.exports.push (ctx, next) ->
     properties: hbase_site
   , (err, configured) ->
     next err, if configured then ctx.OK else ctx.PASS
-
-
 
 
 

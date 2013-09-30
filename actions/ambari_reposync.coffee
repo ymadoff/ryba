@@ -24,6 +24,6 @@ module.exports.push (ctx, next) ->
     , (err, installed) ->
       return next err if err
       ctx.execute
-        cmd: '/usr/bin/ambari_reposync'
+        cmd: "/usr/bin/ambari_reposync"
       , (err, executed) ->
         next err, if executed then ctx.OK else ctx.PASS

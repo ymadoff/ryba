@@ -19,9 +19,11 @@ IMPORTANT : Kerberos clients require connectivity to the KDC's TCP ports 88 and 
 ###
 
 module.exports.push module.exports.configure = (ctx) ->
-  # krb.configure ctx
-  ctx.config.krb5_client ?= {}
-  throw new Error "Kerberos property realm is required" unless ctx.config.krb5_client.realm
+  {realm, kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5_client
+  throw new Error "Kerberos property kadmin_principal is required" unless kadmin_principal
+  throw new Error "Kerberos property kadmin_password is required" unless kadmin_password
+  throw new Error "Kerberos property admin_server is required" unless admin_server
+  throw new Error "Kerberos property realm is required" unless realm
   ctx.config.krb5_client.realm = ctx.config.krb5_client.realm.toUpperCase()
   unless ctx.config.krb5_client.etc_krb5_conf
     REALM = ctx.config.krb5_client.realm
@@ -63,6 +65,17 @@ module.exports.push module.exports.configure = (ctx) ->
     GSSAPIAuthentication: 'yes'
     GSSAPICleanupCredentials: 'yes'
   , ctx.config.krb5_client.sshd
+  ctx.mkprincipal = (options, callback) ->
+    options = [options] unless Array.isArray options
+    for opt in options
+      opt.ssh = ctx.ssh
+      opt.log = ctx.log
+      opt.stdout = ctx.log.out
+      opt.stderr = ctx.log.err
+      opt.kadmin_principal = kadmin_principal
+      opt.kadmin_password = kadmin_password
+      opt.admin_server = admin_server
+    mkprincipal parallel: false, options, callback
 
 module.exports.push (ctx, next) ->
   @name 'Kerberos client # Install'

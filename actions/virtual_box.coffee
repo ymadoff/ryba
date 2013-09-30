@@ -23,12 +23,12 @@ module.exports.push (ctx, next) ->
       code_skipped: 1
     , (err, executed, stdout) ->
       return next err if err
-      return next null, ctx.DISABLED unless executed
-      return next null, ctx.PASS if /\d+\.\d+\.\d+/.exec(stdout)[0] is version
+      console.log stdout
+      return next null, ctx.PASS if executed and /\d+\.\d+\.\d+/.exec(stdout)[0] is version
       ctx.log "Install latest Guest Additions #{version}"
       source = "http://download.virtualbox.org/virtualbox/#{version}/VBoxGuestAdditions_#{version}.iso"
       destination = "/tmp/VBoxGuestAdditions_#{version}.iso"
-      ctx.log.out.write """
+      cmd = """
         curl -L #{source} -o #{destination}
         mount #{destination} -o loop /mnt
         cd /mnt
@@ -38,18 +38,8 @@ module.exports.push (ctx, next) ->
         chkconfig --add vboxadd
         chkconfig vboxadd on
         """
-      ctx.execute
-        cmd: """
-        curl -L #{source} -o #{destination}
-        mount #{destination} -o loop /mnt
-        cd /mnt
-        sh VBoxLinuxAdditions.run --nox11
-        rm #{destination}
-        /etc/init.d/vboxadd setup
-        chkconfig --add vboxadd
-        chkconfig vboxadd on
-        """
-      , (err, executed) ->
+      ctx.log.out.write cmd
+      ctx.execute cmd, (err, executed) ->
         return next err if err
         ctx.reboot (err) ->
           next err, ctx.OK

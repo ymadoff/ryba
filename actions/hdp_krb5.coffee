@@ -42,7 +42,7 @@ module.exports.push (ctx) ->
 module.exports.push (ctx, next) ->
   @name 'HDP Kerberos # Service Principals'
   @timeout -1
-  server = ctx.servers(action: 'histi/actions/krb5_server')[0]
+  # server = ctx.servers(action: 'histi/actions/krb5_server')[0]
   {hdfs_user} = ctx.config.hdp
   {realm, kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5_client
   ctx.mkdir
@@ -58,9 +58,6 @@ module.exports.push (ctx, next) ->
         principal: "#{hdfs_user}@#{realm}"
         randkey: true
         keytab: "/etc/security/keytabs/hdfs.headless.keytab"
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        admin_server: admin_server
         uid: 'hdfs'
         gid: 'hadoop'
         mode: '600'
@@ -106,22 +103,6 @@ module.exports.push (ctx, next) ->
         uid: 'hdfs'
         gid: 'hadoop'
         not_if_exists: "/etc/security/keytabs/dn.service.keytab"
-    if ctx.config.hdp.hbase_master or ctx.config.hdp.hbase_regionserver
-      principals.push
-        principal: "hbase/#{ctx.config.host}@#{realm}"
-        randkey: true
-        keytab: "/etc/security/keytabs/hbase.service.keytab"
-        uid: 'hbase'
-        gid: 'hadoop'
-        not_if_exists: "/etc/security/keytabs/hbase.service.keytab"
-    if ctx.config.hdp.zookeeper
-      principals.push
-        principal: "zookeeper/#{ctx.config.host}@#{realm}"
-        randkey: true
-        keytab: "/etc/security/keytabs/zookeeper.service.keytab"
-        uid: 'zookeeper'
-        gid: 'hadoop'
-        not_if_exists: "/etc/security/keytabs/zookeeper.service.keytab"
     if ctx.config.hdp.hive_metastore
       principals.push
         principal: "hive/#{ctx.config.host}@#{realm}"
@@ -146,30 +127,32 @@ module.exports.push (ctx, next) ->
         uid: 'oozie'
         gid: 'hadoop'
         not_if_exists: "/etc/security/keytabs/oozie.service.keytab"
-    for principal in principals
-      principal.ssh = ctx.ssh
-      principal.log = ctx.log
-      principal.stdout = ctx.log.out
-      principal.stderr = ctx.log.err
-      principal.kadmin_principal = kadmin_principal
-      principal.kadmin_password = kadmin_password
-      principal.admin_server = admin_server
-    mkprincipal parallel: false, principals, (err, created) ->
+    # for principal in principals
+    #   principal.ssh = ctx.ssh
+    #   principal.log = ctx.log
+    #   principal.stdout = ctx.log.out
+    #   principal.stderr = ctx.log.err
+    #   principal.kadmin_principal = kadmin_principal
+    #   principal.kadmin_password = kadmin_password
+    #   principal.admin_server = admin_server
+    ctx.mkprincipal principals, (err, created) ->
       return next err if err
       next null, if created then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
   @name 'HDP Kerberos # Java JCE'
+  {jce_local_policy, jce_us_export_policy} = ctx.config.hdp
+  return next Error "JCE not configured" if not jce_local_policy or not jce_us_export_policy
   @timeout -1
   ctx.log "Download jce-6 Security JARs"
   {java_home} = ctx.config.hdp
   ctx.upload [
-    source: "#{__dirname}/../lib/jce_policy-6/local_policy.jar"
+    source: jce_local_policy
     destination: "#{java_home}/jre/lib/security/local_policy.jar"
     binary: true
     not_if_exists: true
   ,
-    source: "#{__dirname}/../lib/jce_policy-6/US_export_policy.jar"
+    source: jce_us_export_policy
     destination: "#{java_home}/jre/lib/security/US_export_policy.jar"
     binary: true
     not_if_exists: true

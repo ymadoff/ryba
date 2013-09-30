@@ -2,7 +2,7 @@
 hdp = require './hdp'
 module.exports = []
 
-module.exports.push (ctx) ->
+module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp_zookeeper ?= {}
   ctx.config.hdp_zookeeper.user ?= 'zookeeper'
   ctx.config.hdp_zookeeper.data_dir ?= '/var/zookeper/data/'
@@ -114,8 +114,6 @@ module.exports.push (ctx, next) ->
   do_end = ->
     next null, if modified then ctx.OK else ctx.PASS
   do_zoo_cfg()
-
-
 
 
 
