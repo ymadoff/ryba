@@ -6,7 +6,7 @@ module.exports = []
 
 module.exports.push (ctx) ->
   hdp.configure ctx
-  ctx.config.hdp.force_check ?= d
+  ctx.config.hdp.force_check ?= false
   krb5_client.configure ctx
 
 module.exports.push (ctx, next) ->
