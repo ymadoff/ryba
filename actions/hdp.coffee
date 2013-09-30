@@ -75,6 +75,10 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.hdfs['dfs.datanode.data.dir.perm'] ?= '750'
   ctx.config.hdp.mapred ?= {}
   ctx.config.hdp.mapred['mapreduce.job.counters.max'] ?= 120
+  # http://developer.yahoo.com/hadoop/tutorial/module7.html
+  # 1/2 * (cores/node) to 2 * (cores/node)
+  ctx.config.hdp.mapred['mapred.tasktracker.map.tasks.maximum'] ?= dfs_data_dir.length
+  ctx.config.hdp.mapred['mapred.tasktracker.reduce.tasks.maximum'] ?= Math.ceil(dfs_data_dir.length / 2)
   ctx.config.hdp.options ?= {}
   ctx.config.hdp.options['java.net.preferIPv4Stack'] ?= true
   ctx.hconfigure = (options, callback) ->
@@ -367,9 +371,9 @@ module.exports.push (ctx, next) ->
   do_mapred = ->
     ctx.log 'Configure mapred-site.xml'
     # JobTracker hostname
-    mapred['mapred.job.tracker'] ?= "hdfs://#{jobtraker}:8021"
+    mapred['mapred.job.tracker'] ?= "#{jobtraker}:8021"  # not sure, "./HDP-1.2.1/bk_reference/content/reference_chap2_2.html" say ipc 8021 while "./HDP-1.3.2/bk_installing_manually_book/content/rpm_chap3.html" say $jobtracker.full.hostname:50300
     # JobTracker hostname
-    mapred['mapred.job.tracker.http.address'] ?= "hdfs://#{jobtraker}:50030"
+    mapred['mapred.job.tracker.http.address'] ?= "#{jobtraker}:50030"
     # Comma separated list of paths. Use the list of directories from $MAPREDUCE_LOCAL_DIR
     mapred['mapred.local.dir'] ?= mapreduce_local_dir.join ','
     # Enter your group. Use the value of $HADOOP_GROUP
