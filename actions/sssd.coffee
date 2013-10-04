@@ -55,13 +55,13 @@ module.exports.push (ctx, next) ->
       # Note: we dont detect a change when executing authconfig
       # "--enablecachecreds --enablecache" require "nscd"
       cmd = """
-      authconfig \
-        --enableshadow --nostart  \
-        --enablesssd --enablesssdauth --enablelocauthorize \
-        --enableldap --enableldaptls --enableldapauth \
-        --ldapserver=#{ldap_uri} --ldapbasedn=dc=adaltas,dc=com\
-        --enablekrb5 \
-        --kickstart --enablemkhomedir \
+      authconfig \\
+        --enableshadow --nostart  \\
+        --enablesssd --enablesssdauth --enablelocauthorize \\
+        --enableldap --enableldaptls --enableldapauth \\
+        --ldapserver=#{ldap_uri} --ldapbasedn=dc=adaltas,dc=com\\
+        --enablekrb5 \\
+        --kickstart --enablemkhomedir \\
         --updateall
       """
       ctx.log "Run #{cmd}"
