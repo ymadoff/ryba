@@ -6,6 +6,7 @@ Virtual Box
 ###
 module.exports = []
 module.exports.push 'histi/actions/curl'
+module.exports.push 'histi/actions/proxy_check'
 
 module.exports.push (ctx, next) ->
   @name 'VirtualBox # Guest Additions'
@@ -23,20 +24,23 @@ module.exports.push (ctx, next) ->
       code_skipped: 1
     , (err, executed, stdout) ->
       return next err if err
-      console.log stdout
       return next null, ctx.PASS if executed and /\d+\.\d+\.\d+/.exec(stdout)[0] is version
       ctx.log "Install latest Guest Additions #{version}"
       source = "http://download.virtualbox.org/virtualbox/#{version}/VBoxGuestAdditions_#{version}.iso"
       destination = "/tmp/VBoxGuestAdditions_#{version}.iso"
       cmd = """
         curl -L #{source} -o #{destination}
+        echo curl
         mount #{destination} -o loop /mnt
+        echo mount
         cd /mnt
         sh VBoxLinuxAdditions.run --nox11
+        echo additions
         rm #{destination}
         /etc/init.d/vboxadd setup
         chkconfig --add vboxadd
         chkconfig vboxadd on
+        echo chkconfig
         """
       ctx.log.out.write cmd
       ctx.execute cmd, (err, executed) ->
