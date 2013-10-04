@@ -30,7 +30,8 @@ module.exports = (options, callback) ->
       do_read = ->
         options.log? "Read source properties from '#{options.source}'"
         properties.read options.ssh, options.source, (err, props) ->
-          return next err if err
+          return next err if err and err.code isnt 'ENOENT'
+          props = {} if err
           do_load_default props
       do_load_default = (props) ->
         return do_merge props unless options.default

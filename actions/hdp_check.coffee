@@ -1,8 +1,21 @@
 
 hdp = require './hdp'
+lifecycle = require './hdp/lifecycle'
 krb5_client = require './krb5_client'
 mkprincipal = require './krb5/lib/mkprincipal'
 module.exports = []
+
+mkcmdhdfs = (ctx, cmd) ->
+  kerberos = ctx.hasAction('histi/actions/hdp_krb5')
+  unless kerberos
+  then "su -l #{hdfs_user} -c \"#{cmd}\""
+  else "kinit -kt /etc/security/keytabs/hdfs.headless.keytab hdfs && {\n#{cmd}\n}"
+
+mkcmdtest = (ctx, cmd) ->
+  kerberos = ctx.hasAction('histi/actions/hdp_krb5')
+  unless kerberos
+  then "su -l #{test_user} -c \"#{cmd}\""
+  else "kinit -kt /etc/security/keytabs/test.headless.keytab test && {\n#{cmd}\n}"
 
 module.exports.push (ctx) ->
   hdp.configure ctx
@@ -13,7 +26,6 @@ module.exports.push (ctx, next) ->
   {dfs_name_dir, hdfs_user, format} = ctx.config.hdp
   return next() unless format
   @name 'HDP Check # Format'
-  # misc.file.exists ctx.ssh, '/data/1/nn/current/VERSION', (err, exists) ->
   ctx.log "Format HDFS if #{dfs_name_dir[0]} does not exist"
   ctx.execute
     cmd: "yes 'Y' | su -l #{hdfs_user} -c \"/usr/lib/hadoop/bin/hadoop namenode -format\""
@@ -22,69 +34,131 @@ module.exports.push (ctx, next) ->
   , (err, executed) ->
     return next err if err
     return next null, ctx.PASS unless executed
-    ctx.execute
-      cmd: "su -l #{hdfs_user} -c \"/usr/lib/hadoop/bin/hadoop-daemon.sh --config /etc/hadoop/conf start namenode\""
-    , (err) ->
+    lifecycle.nn_start ctx, (err, started) ->
       next err, ctx.OK
 
+module.exports.push (ctx, next) ->
+  @name 'HDP Check # Upgrade'
+  count = (callback) ->
+    ctx.execute
+      cmd: 'cat /var/log/hadoop/hdfs/hadoop-hdfs-namenode-hadoop1.hadoop.log | grep "upgrade to version" | wc -l'
+    , (err, executed, stdout) ->
+      callback err, parseInt stdout.trim(), 10
+  ctx.log 'Dont try to upgrade if namenode is running'
+  lifecycle.nn_running ctx, (err, running) ->
+    return next err if err
+    return next null, ctx.DISABLED if running
+    ctx.log 'Count how many upgrade msg in log'
+    count (err, c1) ->
+      return next err if err
+      ctx.log 'Start namenode'
+      lifecycle.nn_start ctx, (err, started) ->
+        return next err if err
+        return next null, ctx.PASS if started
+        ctx.log 'Count again'
+        count (err, c2) ->
+          return next err if err
+          return next null, ctx.PASS if c1 is c2
+          return next null, 'Upgrade manually'
 
-# # TODO: WE NEED TO HANDLE DIRECTORY LAYOUT
-# module.exports.push (ctx, next) ->
-#   {hdfs_user} = ctx.config.hdp
-#   @name 'HDP Check # TEST KRB5 TICKET'
-#   ctx.execute
-#     cmd: """
-#     kinit -kt /etc/security/keytabs/hdfs.headless.keytab hdfs && {
-#       hadoop fs -ls /mapred || {
-#         hadoop fs -mkdir /mapred && hadoop fs -chown -R mapred /mapred
-#       } 
-#     }
-#     """
-#   , (err, executed, stdout) ->
-#     console.log '----------------------'
-#     console.log stdout
-#     console.log '----------------------'
-#     next err, if executed then ctx.OK else ctx.PASS
-
-# PROBLEM: kerberos isn't active over ssh
-# TODO: Command to execute: https://github.com/apache/bigtop/blob/master/bigtop-packages/src/common/hadoop/init-hdfs.sh
-# ###
-# Create MapReduce directory layout.
-# http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap4.html
-# ###
-# module.exports.push (ctx, next) ->
-#   {hdfs_user} = ctx.config.hdp
-#   @name 'HDP Check # MapReduce layout'
-#   # todo; need to check if namenode and datanode are started
-#   kerberos = true
-#   cmd = 'if hadoop fs -ls /mapred; then exit 1; else hadoop fs -mkdir /mapred && hadoop fs -chown -R mapred /mapred; fi'
-#   unless kerberos
-#     ctx.execute
-#       cmd: "su -l #{hdfs_user} -c \"#{cmd}\""
-#     , (err, executed) ->
-#   else
-#     ctx.execute
-#       cmd: """
-#       kinit -kt /etc/security/keytabs/hdfs.headless.keytab hdfs
-#       #{cmd}
-#       """
-#       code_skipped: 1
-#     , (err, executed, stdout) ->
-#       next err, if executed then ctx.OK else ctx.PASS
-
-# module.exports.push (ctx, next) ->
-#   {hdfs_user} = ctx.config.hdp
-#   @name 'HDP Check # Smoke Test'
-#   return next null, ctx.TODO
-#   ctx.execute
-#     cmd: "su -l #{hdfs_user} -c \"/usr/lib/hadoop/bin/hadoop-daemon.sh --config /etc/hadoop/conf start namenode\""
-#   , (err, executed) ->
-#     return next err if err
-#     return next null, ctx.PASS unless executed
-#     ctx.execute
-#       cmd: ""
-#     , (err) ->
-#       next err, ctx.OK
+###
+Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
+###
+module.exports.push (ctx, next) ->
+  {hdfs_user, yarn} = ctx.config.hdp
+  @name 'HDP Check # HDFS layout'
+  ok = false
+  do_root = ->
+    ctx.execute
+      cmd: mkcmdhdfs ctx, """
+      hadoop fs -chmod 755 /
+      """
+    , (err, executed, stdout) ->
+      return next err if err
+      do_tmp()
+  do_tmp = ->
+    ctx.execute
+      cmd: mkcmdhdfs ctx, """
+      if hadoop fs -test -d /tmp; then exit 1; fi
+      hadoop fs -mkdir /tmp
+      hadoop fs -chown hdfs:hadoop /tmp
+      hadoop fs -chmod 777 /tmp
+      """
+      code_skipped: 1
+    , (err, executed, stdout) ->
+      return next err if err
+      ok = true if executed
+      do_user()
+  do_user = ->
+    ctx.execute
+      cmd: mkcmdhdfs ctx, """
+      if hadoop fs -test -d /user; then exit 1; fi
+      hadoop fs -mkdir /user
+      hadoop fs -chown hdfs:hadoop /user
+      hadoop fs -chmod 755 /user
+      """
+      code_skipped: 1
+    , (err, executed, stdout) ->
+      return next err if err
+      ok = true if executed
+      do_remove_app_log_dir()
+  do_remove_app_log_dir = ->
+    # Default value for "yarn.nodemanager.remote-app-log-dir" is "/tmp/logs"
+    remove_app_log_dir = yarn['yarn.nodemanager.remote-app-log-dir']
+    remove_app_log_dir ?= "/tmp/logs"
+    ctx.execute
+      cmd: mkcmdhdfs ctx, """
+      if hadoop fs -test -d #{remove_app_log_dir}; then exit 1; fi
+      hadoop fs -mkdir #{remove_app_log_dir}
+      hadoop fs -chown yarn:hadoop #{remove_app_log_dir}
+      hadoop fs -chmod 777 #{remove_app_log_dir}
+      """
+      code_skipped: 1
+    , (err, executed, stdout) ->
+      return next err if err
+      ok = true if executed
+      do_mapreduce_am_staging_dir()
+  do_mapreduce_am_staging_dir = ->
+    # Default value for "mapreduce.jobhistory.intermediate-done-dir" 
+    # is "${yarn.app.mapreduce.am.staging-dir}/history/done_intermediate"
+    # where "yarn.app.mapreduce.am.staging-dir"
+    # is "/tmp/hadoop-yarn/staging"
+    mapreduce_am_staging_dir = yarn['mapreduce.jobhistory.intermediate-done-dir']
+    mapreduce_am_staging_dir ?= "/tmp/hadoop-yarn/staging/history/done_intermediate"
+    ctx.execute
+      cmd: mkcmdhdfs ctx, """
+      if hadoop fs -test -d #{mapreduce_am_staging_dir}; then exit 1; fi
+      hadoop fs -mkdir #{mapreduce_am_staging_dir}
+      hadoop fs -chown mapred:hadoop #{mapreduce_am_staging_dir}
+      hadoop fs -chmod 777 #{mapreduce_am_staging_dir}
+      """
+      code_skipped: 1
+    , (err, executed, stdout) ->
+      return next err if err
+      ok = true if executed
+      do_end()
+  do_mapreduce_jobhistory_done_dir = ->
+    # Default value for "mapreduce.jobhistory.done-dir" 
+    # is "${yarn.app.mapreduce.am.staging-dir}/history/done"
+    # where "yarn.app.mapreduce.am.staging-dir"
+    # is "/tmp/hadoop-yarn/staging"
+    mapreduce_jobhistory_done_dir = yarn['mapreduce.jobhistory.done-dir']
+    mapreduce_jobhistory_done_dir ?= "/tmp/hadoop-yarn/staging/history/done"
+    ctx.execute
+      cmd: mkcmdhdfs ctx, """
+      if hadoop fs -test -d #{mapreduce_jobhistory_done_dir}; then exit 1; fi
+      hadoop fs -mkdir #{mapreduce_jobhistory_done_dir}
+      hadoop fs -chown mapred:hadoop #{mapreduce_jobhistory_done_dir}
+      hadoop fs -chmod 750 #{mapreduce_jobhistory_done_dir}
+      """
+      code_skipped: 1
+    , (err, executed, stdout) ->
+      return next err if err
+      ok = true if executed
+      do_end()
+  do_end = ->
+    next null, if ok then ctx.OK else ctx.PASS
+  do_root()
 
 module.exports.push (ctx, next) ->
   {hdfs_user} = ctx.config.hdp
@@ -92,32 +166,59 @@ module.exports.push (ctx, next) ->
   @name 'HDP Check # Create User "test"'
   @timeout -1
   modified = false
-  mkprincipal
-    principal: "test@#{realm}"
-    randkey: true
-    keytab: "/etc/security/keytabs/test.headless.keytab"
-    ssh: ctx.ssh
-    log: ctx.log
-    stdout: ctx.log.out
-    stderr: ctx.log.err
-    kadmin_principal: kadmin_principal
-    kadmin_password: kadmin_password
-    admin_server: admin_server
-  , (err, created) ->
-    return next err if err
-    modified = true if created
+  do_user = ->
+    unless ctx.hasAction('histi/actions/hdp_krb5')
+    then do_user_unix()
+    else do_user_krb5()
+  do_user_unix = ->
     ctx.execute
-      cmd: """
-      kinit -kt /etc/security/keytabs/hdfs.headless.keytab hdfs && {
-        if hadoop fs -ls /user/test 2>/dev/null; then exit 1; fi
-        hadoop fs -mkdir /user/test
-        hadoop fs -chown test /user/test
-      }
+      cmd: "useradd test -c \"Used by Hadoop to test\" -r -M -g #{hadoop_group}"
+      code: 0
+      code_skipped: 9
+    , (err, created) ->
+      return next err if err
+      modified = true if created
+      do_run()
+  do_user_krb5 = ->
+    mkprincipal
+      principal: "test@#{realm}"
+      randkey: true
+      keytab: "/etc/security/keytabs/test.headless.keytab"
+      ssh: ctx.ssh
+      log: ctx.log
+      stdout: ctx.log.out
+      stderr: ctx.log.err
+      kadmin_principal: kadmin_principal
+      kadmin_password: kadmin_password
+      admin_server: admin_server
+    , (err, created) ->
+      return next err if err
+      modified = true if created
+      do_run()
+  do_run = ->
+    ctx.execute
+      cmd: mkcmdhdfs ctx, """
+      if hadoop fs -ls /user/test 2>/dev/null; then exit 1; fi
+      hadoop fs -mkdir /user/test
+      hadoop fs -chown test /user/test
       """
       code_skipped: 1
     , (err, executed, stdout) ->
       modified = true if executed
       next err, if modified then ctx.OK else ctx.PASS
+  do_user()
+
+module.exports.push (ctx, next) ->
+  {hdfs_user} = ctx.config.hdp
+  @name 'HDP Check # Test HDFS'
+  ctx.execute
+    cmd: mkcmdtest ctx, """
+    if hadoop fs -test -d /user/test/hdfs; then exit 1; fi
+    hadoop fs -put /etc/passwd /user/test/hdfs
+    """
+    code_skipped: 1
+  , (err, executed, stdout) ->
+    next err, if executed then ctx.OK else ctx.PASS
 
 ###
 Test JobTracker
@@ -131,13 +232,11 @@ module.exports.push (ctx, next) ->
   @name 'HDP Check # Test JobTracker'
   @timeout -1
   ctx.execute
-    cmd: """
-    kinit -kt /etc/security/keytabs/test.headless.keytab test && {
-      if hadoop fs -test -d /user/test/10gsort; then exit 1; fi
-      hadoop fs -mkdir /user/test/10gsort
-      hadoop jar /usr/lib/hadoop/hadoop-examples.jar teragen 100000000 /user/test/10gsort/input
-      hadoop jar /usr/lib/hadoop/hadoop-examples.jar terasort /user/test/10gsort/input /user/test/10gsort/output
-    }
+    cmd: mkcmdtest ctx, """
+    if hadoop fs -test -d /user/test/10gsort; then exit 1; fi
+    hadoop fs -mkdir /user/test/10gsort
+    hadoop jar /usr/lib/hadoop/hadoop-examples.jar teragen 100000000 /user/test/10gsort/input
+    hadoop jar /usr/lib/hadoop/hadoop-examples.jar terasort /user/test/10gsort/input /user/test/10gsort/output
     """
     code_skipped: 1
   , (err, executed, stdout) ->
@@ -147,7 +246,7 @@ module.exports.push (ctx, next) ->
 Test WebHDFS
 ------------
 Test the Kerberos SPNEGO and the Hadoop delegation token. Will only be 
-executed if the file "/user/test/empty" generated by this action 
+executed if the file "/user/test/webhdfs" generated by this action 
 is not present on HDFS.
 
 Read [Delegation Tokens in Hadoop Security ](http://www.kodkast.com/blogs/hadoop/delegation-tokens-in-hadoop-security) 
@@ -160,12 +259,10 @@ module.exports.push (ctx, next) ->
   @timeout -1
   do_init = ->
     ctx.execute
-      cmd: """
-      kinit -kt /etc/security/keytabs/test.headless.keytab test && {
-        if hadoop fs -test -e /user/test/empty; then exit 1; fi
-        hadoop fs -touchz /user/test/empty
+      cmd: mkcmdtest ctx, """
+        if hadoop fs -test -e /user/test/webhdfs; then exit 1; fi
+        hadoop fs -touchz /user/test/webhdfs
         kdetroy
-      }
       """
       code_skipped: 1
     , (err, executed, stdout) ->
@@ -175,24 +272,20 @@ module.exports.push (ctx, next) ->
       do_spnego()
   do_spnego = ->
     ctx.execute
-      cmd: """
-      kinit -kt /etc/security/keytabs/test.headless.keytab test && {
-        curl -s --negotiate -u : "http://#{namenode}:#{namenode_port}/webhdfs/v1/user/test?op=LISTSTATUS"
-        kdestroy
-      }
+      cmd: mkcmdtest ctx, """
+      curl -s --negotiate -u : "http://#{namenode}:#{namenode_port}/webhdfs/v1/user/test?op=LISTSTATUS"
+      kdestroy
       """
     , (err, executed, stdout) ->
       return next err if err
-      count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is 'empty').length
+      count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is 'webhdfs').length
       return next null, ctx.FAILED unless count
       do_token()
   do_token = ->
     ctx.execute
-      cmd: """
-      kinit -kt /etc/security/keytabs/test.headless.keytab test && {
-        curl -s --negotiate -u : "http://#{namenode}:#{namenode_port}/webhdfs/v1/?op=GETDELEGATIONTOKEN"
-        kdestroy
-      }
+      cmd: mkcmdtest ctx, """
+      curl -s --negotiate -u : "http://#{namenode}:#{namenode_port}/webhdfs/v1/?op=GETDELEGATIONTOKEN"
+      kdestroy
       """
     , (err, executed, stdout) ->
       return next err if err
@@ -203,7 +296,7 @@ module.exports.push (ctx, next) ->
         """
       , (err, executed, stdout) ->
         return next err if err
-        count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is 'empty').length
+        count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is 'webhdfs').length
         return next null, ctx.FAILED unless count
         do_end()
   do_end = ->

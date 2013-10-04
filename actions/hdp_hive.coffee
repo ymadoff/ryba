@@ -30,11 +30,14 @@ Example of a minimal client configuration:
 
 module.exports.push (ctx) ->
   ctx.config.hdp_hive ?= {}
+  ctx.config.hdp.hive_conf_dir ?= '/etc/hive/conf'
+  ctx.config.hdp.hive_log_dir ?= '/var/log/hive'
+  ctx.config.hdp.hive_pid_dir ?= '/var/run/hive'
   ctx.config.hdp_hive.libs ?= []
   ctx.config.hdp_hive.log_dir ?= '/var/log/hive'
   ctx.config.hdp_hive.user ?= 'hive'
   ctx.config.hdp_hive.group ?= 'hadoop'
-  ctx.config.hdp_hive.user ?= 0o0755
+  ctx.config.hdp_hive.mode ?= 0o0755
   ctx.config.hdp_hive.hive_site ?= {}
   # Overwrite hdp properties with unworkable values
   # Note, next 3 lines cause failure when hdp_krb5 is run independently
@@ -127,17 +130,18 @@ module.exports.push (ctx, next) ->
 
 module.exports.push (ctx, next) ->
   {hdfs_user} = ctx.config.hdp
-  @name 'HDP Check # Layout'
+  {user} = ctx.config.hdp_hive
+  @name 'HDP Hive # Layout'
   kerberos = true
   modified = false
   do_warehouse = ->
     cmd = """
-    if hadoop fs -ls /user/hive/warehouse &>/dev/null; then 
+    if hadoop fs -ls /user/#{user}/warehouse &>/dev/null; then 
       exit 1;
     else
-      hadoop fs -mkdir /user/hive; 
-      hadoop fs -mkdir /user/hive/warehouse; 
-      hadoop fs -chown -R hive /user/hive; hadoop fs -chmod g+w /user/hive/warehouse;
+      hadoop fs -mkdir /user/#{user}; 
+      hadoop fs -mkdir /user/#{user}/warehouse; 
+      hadoop fs -chown -R #{user} /user/#{user}; hadoop fs -chmod g+w /user/#{user}/warehouse;
     fi'
     """
     unless kerberos

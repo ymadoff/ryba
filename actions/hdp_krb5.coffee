@@ -15,24 +15,35 @@ module.exports.push 'histi/actions/hdp_hive'
 
 ###
 
-Creating Service Principals and Keytab Files for Hadoop
-http://incubator.apache.org/ambari/1.2.5/installing-hadoop-using-ambari/content/ambari-kerb-1-4.html
-Ambari suggest to create three special principals (ambari-user, 
-hdfs, hbase) where we do not need the FQDN appended to the primary name.
+See official [Running Hadoop in Secure Mode](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode).
 
-Hadoop and Kerberos:
-http://hadoop.apache.org/docs/r1.2.0/HttpAuthentication.html
+dn.service.keytab
+  dn/full.qualified.domain.name@REALM.TLD
+  host/full.qualified.domain.name@REALM.TLD
+-rw------- 1 hbase     hadoop 3390 Sep 18 12:53 hbase.service.keytab
+-rw------- 1 hdfs      hadoop 6482 Sep 18 12:59 hdfs.headless.keytab
+nn.service.keytab
+  nn/full.qualified.domain.name@REALM.TLD
+  host/full.qualified.domain.name@REALM.TLD
+-rw-rw---- 1 hdfs      hadoop 2738 Sep 18 12:53 spnego.service.keytab
+-rw------- 1 mapred    hadoop 2074 Sep 18 12:53 tt.service.keytab
+-rw------- 1 zookeeper hadoop 2270 Sep 18 12:53 zookeeper.service.keytab
 
-Hortonworks Kerberos Principals And Keytab Files:
-http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.2/bk_gsInstaller/content/ch_gsInstaller-chp6_3.html
+sn.service.keytab
+  sn/full.qualified.domain.name@REALM.TLD
+  host/full.qualified.domain.name@REALM.TLD
+  
+rm.service.keytab
+  rm/full.qualified.domain.name@REALM.TLD
+  host/full.qualified.domain.name@REALM.TLD
 
-http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.1/bk_installing_manually_book/content/rpm-chap14-1-4.html
+nm.service.keytab
+  nm/full.qualified.domain.name@REALM.TLD
+  host/full.qualified.domain.name@REALM.TLD
 
-Error
-*   Message: kadmin: GSS-API (or Kerberos) error while initializing kadmin interface
-    Possible solution: synchronize date with NTP
-*   Message: ERROR org.apache.hadoop.hdfs.server.datanode.DataNode: java.lang.RuntimeException: Cannot start secure cluster without privileged resources.
-    Solution: you need to start the datanode as root
+jhs.service.keytab
+  jhs/full.qualified.domain.name@REALM.TLD
+  host/full.qualified.domain.name@REALM.TLD
 ###
 module.exports.push (ctx) ->
   hdp.configure ctx
@@ -179,10 +190,19 @@ module.exports.push (ctx, next) ->
     # Enable authorization for different protocols.
     core['hadoop.security.authorization'] ?= 'true'
     # The mapping from Kerberos principal names to local OS user names.
+    # core['hadoop.security.auth_to_local'] ?= """
+    #   RULE:[2:$1@$0]([jt]t@.*#{realm})s/.*/mapred/
+    #   RULE:[2:$1@$0]([nd]n@.*#{realm})s/.*/hdfs/
+    #   DEFAULT
+    #   """
     core['hadoop.security.auth_to_local'] ?= """
-      RULE:[2:$1@$0]([jt]t@.*#{realm})s/.*/mapred/
-      RULE:[2:$1@$0]([nd]n@.*#{realm})s/.*/hdfs/
-      DEFAULT
+    
+          RULE:[2:$1@$0]([rn]m@.*)s/.*/yarn/
+          RULE:[2:$1@$0](jhs@.*)s/.*/mapred/
+          RULE:[2:$1@$0]([nd]n@.*)s/.*/hdfs/
+          RULE:[2:$1@$0](hm@.*)s/.*/hbase/
+          RULE:[2:$1@$0](rs@.*)s/.*/hbase/
+          DEFAULT
       """
     # Allow the superuser hive to impersonate any members of the group users. Required only when installing Hive.
     core['hadoop.proxyuser.hive.groups'] ?= '*'

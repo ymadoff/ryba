@@ -55,8 +55,8 @@ module.exports.push (ctx, next) ->
     next err, if started then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  {jobtraker, mapred_user} = ctx.config.hdp
-  return next() unless jobtraker
+  {jobhistoryserver, mapred_user} = ctx.config.hdp
+  return next() unless jobhistoryserver
   @name "HDP # Start MapReduce HistoryServer"
   # Execute these commands on the JobTracker host machine
   ctx.execute

@@ -6,6 +6,11 @@ module.exports = []
 module.exports.push 'histi/actions/yum'
 module.exports.push 'histi/actions/krb5_client' #kadmin must be present
 
+###
+Note about upgrade from 1.3.x to 2.x, once we install 
+the new repo, yum update failed. We should first remove 
+some package, here's how: `yum remove hadoop-native hadoop-pipes hadoop-sbin`.
+###
 module.exports.push module.exports.configure = (ctx) ->
   proxy = require './proxy'
   proxy.configure ctx
@@ -20,9 +25,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.hadoop_opts = hadoop_opts
   # Repository
   ctx.config.hdp.proxy = ctx.config.proxy.http_proxy if typeof ctx.config.hdp is 'undefined'
-  # see [Meet Minimum System Requirements](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap1-2.html)
-  ctx.config.hdp.hdp_repo ?= 'http://public-repo-1.hortonworks.com/HDP/centos6/1.x/GA/hdp.repo'
-  ctx.config.hdp.ambari_repo ?= 'http://public-repo-1.hortonworks.com/ambari/centos6/1.x/updates/1.2.5.17/ambari.repo'
+  ctx.config.hdp.hdp_repo ?= 'http://public-repo-1.hortonworks.com/HDP/centos6/2.x/updates/2.0.5.0/hdp.repo'
   # Define the role
   ctx.config.hdp.namenode ?= false
   ctx.config.hdp.secondary_namenode ?= false
@@ -37,8 +40,8 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.webhcat ?= false
   # Define Users and Groups
   ctx.config.hdp.hdfs_user ?= 'hdfs'
+  ctx.config.hdp.yarn_user ?= 'yarn'
   ctx.config.hdp.mapred_user ?= 'mapred'
-  ctx.config.hdp.hive_user ?= 'hive'
   ctx.config.hdp.webhcat_user ?= 'webhcat'
   ctx.config.hdp.oozie_user ?= 'oozie'
   ctx.config.hdp.pig_user ?= 'pig'
@@ -46,39 +49,37 @@ module.exports.push module.exports.configure = (ctx) ->
   # Define Directories for Core Hadoop
   ctx.config.hdp.dfs_name_dir ?= ['/hadoop/hdfs/namenode']
   ctx.config.hdp.dfs_data_dir ?= ['/hadoop/hdfs/data']
-  ctx.config.hdp.fs_checkpoint_edit_dir ?= ['/hadoop/hdfs/snn'] # Default ${hadoop.tmp.dir}/dfs/namesecondary
+  # ctx.config.hdp.fs_checkpoint_edit_dir ?= ['/hadoop/hdfs/snn'] # Default ${hadoop.tmp.dir}/dfs/namesecondary
   ctx.config.hdp.fs_checkpoint_dir ?= ['/hadoop/hdfs/snn'] # Default ${fs.checkpoint.dir}
   ctx.config.hdp.hdfs_log_dir ?= '/var/log/hadoop/hdfs'
   ctx.config.hdp.hdfs_pid_dir ?= '/var/run/hadoop/hdfs'
-  ctx.config.hdp.hdfs_conf_dir ?= '/etc/hadoop/conf'
-  ctx.config.hdp.mapreduce_local_dir ?= ['/hadoop/mapred']
+  ctx.config.hdp.hadoop_conf_dir ?= '/etc/hadoop/conf'
+  ctx.config.hdp.yarn_local_dir ?= ['/hadoop/yarn']
+  ctx.config.hdp.yarn_log_dir ?= '/var/log/hadoop/yarn'
+  ctx.config.hdp.yarn_local_log_dir ?= ['/hadoop/yarn/logs']
+  ctx.config.hdp.yarn_pid_dir ?= '/var/run/hadoop/yarn'
+  # ctx.config.hdp.mapreduce_local_dir ?= ['/hadoop/mapred']
   ctx.config.hdp.mapred_log_dir ?= '/var/log/hadoop/mapred'
   ctx.config.hdp.mapred_pid_dir ?= '/var/run/hadoop/mapred'
   # Define Directories for Ecosystem Components
   ctx.config.hdp.pig_conf_dir ?= '/etc/pig/conf'
-  ctx.config.hdp.oozie_conf_dir ?= '/var/db/oozie'
-  ctx.config.hdp.oozie_data ?= '/var/log/oozie'
-  ctx.config.hdp.oozie_log_dir ?= '/var/log/oozie'
-  ctx.config.hdp.oozie_pid_dir ?= '/var/run/oozie'
-  ctx.config.hdp.oozie_tmp_dir ?= '/var/tmp/oozie'
-  ctx.config.hdp.hive_conf_dir ?= '/etc/hive/conf'
-  ctx.config.hdp.hive_log_dir ?= '/var/log/hive'
-  ctx.config.hdp.hive_pid_dir ?= '/var/run/hive'
   ctx.config.hdp.webhcat_conf_dir ?= '/etc/hcatalog/conf/webhcat'
   ctx.config.hdp.webhcat_log_dir ?= '/var/log/webhcat/webhcat'
   ctx.config.hdp.webhcat_pid_dir ?= '/var/run/webhcat'
   ctx.config.hdp.sqoop_conf_dir ?= '/etc/sqoop/conf'
   # Options and configuration
-  ctx.config.hdp.namenode_port ?= '50070'
+  ctx.config.hdp.nn_port ?= '50070'
+  ctx.config.hdp.snn_port ?= '50090'
   ctx.config.hdp.core ?= {}
   ctx.config.hdp.hdfs ?= {}
   ctx.config.hdp.hdfs['dfs.datanode.data.dir.perm'] ?= '750'
+  ctx.config.hdp.yarn ?= {}
   ctx.config.hdp.mapred ?= {}
   ctx.config.hdp.mapred['mapreduce.job.counters.max'] ?= 120
   # http://developer.yahoo.com/hadoop/tutorial/module7.html
   # 1/2 * (cores/node) to 2 * (cores/node)
-  ctx.config.hdp.mapred['mapred.tasktracker.map.tasks.maximum'] ?= dfs_data_dir.length
-  ctx.config.hdp.mapred['mapred.tasktracker.reduce.tasks.maximum'] ?= Math.ceil(dfs_data_dir.length / 2)
+  ctx.config.hdp.mapred['mapred.tasktracker.map.tasks.maximum'] ?= ctx.config.hdp.dfs_data_dir.length
+  ctx.config.hdp.mapred['mapred.tasktracker.reduce.tasks.maximum'] ?= Math.ceil(ctx.config.hdp.dfs_data_dir.length / 2)
   ctx.config.hdp.options ?= {}
   ctx.config.hdp.options['java.net.preferIPv4Stack'] ?= true
   ctx.hconfigure = (options, callback) ->
@@ -108,17 +109,6 @@ module.exports.push (ctx, next) ->
     , (err, downloaded) ->
       return next err if err
       modified = true if downloaded
-      do_ambari()
-  do_ambari = ->
-    ctx.log "Download #{ambari_repo} to /etc/yum.repos.d/ambari.repo"
-    u = url.parse ambari_repo
-    ctx[if u.protocol is 'http:' then 'download' else 'upload']
-      source: ambari_repo
-      proxy: proxy
-      destination: '/etc/yum.repos.d/ambari.repo'
-    , (err, downloaded) ->
-      return next err if err
-      modified = true if downloaded
       do_end()
   do_end = ->
       return next null, ctx.PASS unless modified
@@ -136,12 +126,13 @@ module.exports.push (ctx, next) ->
   cmds = []
   {hadoop_group} = ctx.config.hdp
   cmds.push "groupadd hadoop"
-  cmds.push "useradd hdfs -c \"Used by Hadoop HDFS service\" -r -g #{hadoop_group}" if ctx.config.hdp.namenode or ctx.config.hdp.secondary_namenode or ctx.config.hdp.datanode
-  cmds.push "useradd mapred -c \"Used by Hadoop MapReduce service\" -r -g #{hadoop_group}" if ctx.config.hdp.jobtraker or ctx.config.hdp.tasktraker
-  cmds.push "useradd hive -c \"Used by Hadoop Hive service\" -r -g #{hadoop_group}"
-  cmds.push "useradd pig -c \"Used by Hadoop Pig service\" -r -g #{hadoop_group}"
-  cmds.push "useradd hcat -c \"Used by Hadoop HCatalog/WebHCat service\" -r -g #{hadoop_group}" if ctx.config.hdp.hcatalog_server or ctx.config.hdp.webhcat
-  cmds.push "useradd oozie -c \"Used by Hadoop Oozie service\" -r -g #{hadoop_group}" if ctx.config.hdp.oozie
+  cmds.push "useradd hdfs -c \"Used by Hadoop HDFS service\" -r -M -g #{hadoop_group}" if ctx.config.hdp.namenode or ctx.config.hdp.secondary_namenode or ctx.config.hdp.datanode
+  cmds.push "useradd yarn -c \"Used by Hadoop YARN service\" -r -M -g #{hadoop_group}" if ctx.config.hdp.jobtraker or ctx.config.hdp.tasktraker
+  cmds.push "useradd mapred -c \"Used by Hadoop MapReduce service\" -r -M -g #{hadoop_group}" if ctx.config.hdp.jobtraker or ctx.config.hdp.tasktraker
+  cmds.push "useradd hive -c \"Used by Hadoop Hive service\" -r -M -g #{hadoop_group}"
+  cmds.push "useradd pig -c \"Used by Hadoop Pig service\" -r -M -g #{hadoop_group}"
+  cmds.push "useradd hcat -c \"Used by Hadoop HCatalog/WebHCat service\" -r -M -g #{hadoop_group}" if ctx.config.hdp.hcatalog_server or ctx.config.hdp.webhcat
+  cmds.push "useradd oozie -c \"Used by Hadoop Oozie service\" -r -M -g #{hadoop_group}" if ctx.config.hdp.oozie
   ctx.execute
     cmd: cmds.join '\n'
     code: 0
@@ -155,57 +146,27 @@ module.exports.push (ctx, next) ->
   ctx.service [
     name: 'hadoop'
   ,
+    name: 'hadoop-hdfs'
+  ,
     name: 'hadoop-libhdfs'
   ,
-    name: 'hadoop-native'
+    name: 'hadoop-yarn'
   ,
-    name: 'hadoop-pipes'
+    name: 'hadoop-mapreduce'
   ,
-    name: 'hadoop-sbin'
+    name: 'hadoop-client'
   ,
     name: 'openssl'
   ], (err, serviced) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name "HDP # Install Compression"
-  @timeout -1
-  modified = false
-  snappy = ->
-    ctx.service [
-      name: 'snappy'
-    ,
-      name: 'snappy-devel'
-    ], (err, serviced) ->
-      return next err if err
-      return lzo() unless serviced
-      ctx.execute
-        cmd: 'ln -sf /usr/lib64/libsnappy.so /usr/lib/hadoop/lib/native/Linux-amd64-64/.'
-      , (err, executed) ->
-        return next err if err
-        modified = true
-        lzo()
-  lzo = ->
-    ctx.service [
-      name: 'hadoop-lzo'
-    ,
-      name: 'lzo'
-    ,
-      name: 'lzo-devel'
-    ,
-      name: 'hadoop-lzo-native'
-    ], (err, serviced) ->
-      return next err if err
-      modified = true if serviced
-      next null, if modified then ctx.OK else ctx.PASS
-  snappy()
-
-module.exports.push (ctx, next) ->
   @name "HDP # Directories"
   @timeout -1
-  { dfs_name_dir, dfs_data_dir, mapreduce_local_dir, 
-    fs_checkpoint_edit_dir, fs_checkpoint_dir
-    hdfs_user, mapred_user, hadoop_group,
+  { dfs_name_dir, dfs_data_dir, yarn_local_dir, yarn_user, mapred_user, #mapreduce_local_dir, 
+    fs_checkpoint_dir, #fs_checkpoint_edit_dir, 
+    yarn_log_dir, yarn_local_log_dir, yarn_pid_dir,
+    hdfs_user, hadoop_group,
     hdfs_log_dir, mapred_log_dir, hdfs_pid_dir, mapred_pid_dir} = ctx.config.hdp
   modified = false
   do_namenode = ->
@@ -240,39 +201,61 @@ module.exports.push (ctx, next) ->
     , (err, created) ->
       return next err if err
       modified = true if created
-      do_mapred()
-  do_mapred = ->
-    ctx.log "Create mapred dir: #{mapreduce_local_dir}"
+      do_yarn()
+  do_yarn = ->
+    ctx.log "Create yarn dirs: #{yarn_local_dir}"
     ctx.mkdir
-      destination: mapreduce_local_dir
-      uid: mapred_user
+      destination: yarn_local_dir
+      uid: yarn_user
+      gid: hadoop_group
+      mode: '755'
+    , (err, created) ->
+      return next err if err
+      modified = true if created
+      do_yarn_local_log()
+  do_yarn_local_log = ->
+    ctx.log "Create yarn dirs: #{yarn_local_dir}"
+    ctx.mkdir
+      destination: yarn_local_log_dir
+      uid: yarn_user
       gid: hadoop_group
       mode: '755'
     , (err, created) ->
       return next err if err
       modified = true if created
       do_checkpoint()
+  # do_mapred = ->
+  #   ctx.log "Create mapred dir: #{mapreduce_local_dir}"
+  #   ctx.mkdir
+  #     destination: mapreduce_local_dir
+  #     uid: mapred_user
+  #     gid: hadoop_group
+  #     mode: '755'
+  #   , (err, created) ->
+  #     return next err if err
+  #     modified = true if created
+  #     do_checkpoint()
   do_checkpoint = ->
-    ctx.log "Create checkpoint dir: #{mapreduce_local_dir}"
-    ctx.mkdir [
-      destination: fs_checkpoint_edit_dir
-      uid: hdfs_user
-      gid: hadoop_group
-      mode: '755'
-    ,
+    ctx.log "Create checkpoint dir: #{fs_checkpoint_dir}" # #{fs_checkpoint_edit_dir} and
+    ctx.mkdir
       destination: fs_checkpoint_dir
       uid: hdfs_user
       gid: hadoop_group
       mode: '755'
-    ], (err, created) ->
+    , (err, created) ->
       return next err if err
       modified = true if created
       do_log()
   do_log = ->
-    ctx.log "Create hdfs and mapred log: #{hdfs_log_dir} and #{mapred_log_dir}"
+    ctx.log "Create hdfs and mapred log: #{hdfs_log_dir}, #{yarn_log_dir} and #{mapred_log_dir}"
     ctx.mkdir [
       destination: hdfs_log_dir
       uid: hdfs_user
+      gid: hadoop_group
+      mode: '755'
+    ,
+      destination: yarn_log_dir
+      uid: yarn_user
       gid: hadoop_group
       mode: '755'
     ,
@@ -285,10 +268,15 @@ module.exports.push (ctx, next) ->
       modified = true if created
       do_pid()
   do_pid = ->
-    ctx.log "Create hdfs and mapred pid: #{hdfs_pid_dir} and #{mapred_pid_dir}"
+    ctx.log "Create hdfs and mapred pid: #{hdfs_pid_dir}, #{yarn_pid_dir} and #{mapred_pid_dir}"
     ctx.mkdir [
       destination: hdfs_pid_dir
       uid: hdfs_user
+      gid: hadoop_group
+      mode: '755'
+    ,
+      destination: yarn_pid_dir
+      uid: mapred_user
       gid: hadoop_group
       mode: '755'
     ,
@@ -306,12 +294,37 @@ module.exports.push (ctx, next) ->
 
 module.exports.push (ctx, next) ->
   @name "HDP # Hadoop OPTS"
-  {hdfs_conf_dir} = ctx.config.hdp
+  {hadoop_conf_dir} = ctx.config.hdp
+  # For now, only "hadoop_opts" config property is used
+  # Todo: 
+  # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.5.0/bk_installing_manually_book/content/rpm_chap3.html
+  # Change the value of the -XX:MaxnewSize parameter to 1/8th the value of the maximum heap size (-Xmx) parameter.
   ctx.render
-    source: "#{__dirname}/hadoop/resources/hadoop-env.sh"
-    destination: "#{hdfs_conf_dir}/hadoop-env.sh"
+    source: "#{__dirname}/hdp/core_hadoop/hadoop-env.sh"
+    destination: "#{hadoop_conf_dir}/hadoop-env.sh"
     context: ctx
     local_source: true
+    uid: 'hdfs'
+    gid: 'hadoop'
+    mode: '755'
+  , (err, rendered) ->
+    next err, if rendered then ctx.OK else ctx.PASS
+
+module.exports.push (ctx, next) ->
+  @name "HDP # Yarn OPTS"
+  {hadoop_conf_dir} = ctx.config.hdp
+  # For now, only "hadoop_opts" config property is used
+  # Todo: 
+  # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.5.0/bk_installing_manually_book/content/rpm_chap3.html
+  # Change the value of the -XX:MaxnewSize parameter to 1/8th the value of the maximum heap size (-Xmx) parameter.
+  ctx.render
+    source: "#{__dirname}/hdp/core_hadoop/yarn-env.sh"
+    destination: "#{hadoop_conf_dir}/yarn-env.sh"
+    context: ctx
+    local_source: true
+    uid: 'yarn'
+    gid: 'hadoop'
+    mode: '755'
   , (err, rendered) ->
     next err, if rendered then ctx.OK else ctx.PASS
 
@@ -321,27 +334,34 @@ module.exports.push (ctx, next) ->
   ctx.log "Namenode: #{namenode}"
   secondary_namenode = (ctx.config.servers.filter (s) -> s.hdp?.secondary_namenode)[0].host
   ctx.log "Secondary namenode: #{secondary_namenode}"
+  resourcemanager = (ctx.config.servers.filter (s) -> s.hdp?.resourcemanager)[0].host
+  ctx.log "Resource manager: #{resourcemanager}"
+  jobhistoryserver = (ctx.config.servers.filter (s) -> s.hdp?.jobhistoryserver)[0].host
+  ctx.log "Job History Server: #{jobhistoryserver}"
   jobtraker = (ctx.config.servers.filter (s) -> s.hdp?.jobtraker)[0].host
   slaves = (ctx.config.servers.filter (s) -> s.hdp?.datanode).map (s) -> s.host
-  { core, hdfs, mapred, hdfs_conf_dir, 
-    fs_checkpoint_edit_dir, fs_checkpoint_dir, 
+  { core, hdfs, yarn, mapred,
+    hadoop_conf_dir, fs_checkpoint_dir, # fs_checkpoint_edit_dir,
     dfs_name_dir, dfs_data_dir, 
-    mapreduce_local_dir, namenode_port } = ctx.config.hdp
+    yarn_local_dir, nn_port, snn_port } = ctx.config.hdp #mapreduce_local_dir, 
   modified = false
   do_core = ->
     ctx.log 'Configure core-site.xml'
     # NameNode hostname
-    core['fs.default.name'] ?= "hdfs://#{namenode}:8020"
+    core['fs.defaultFS'] ?= "hdfs://#{namenode}:8020"
+    console.log core
     # Determines where on the local filesystem the DFS secondary
     # name node should store the temporary images to merge.
     # If this is a comma-delimited list of directories then the image is
     # replicated in all of the directories for redundancy.
-    core['fs.checkpoint.edits.dir'] ?= fs_checkpoint_edit_dir.join ','
+    # core['fs.checkpoint.edits.dir'] ?= fs_checkpoint_edit_dir.join ','
     # A comma separated list of paths. Use the list of directories from $FS_CHECKPOINT_DIR. 
     # For example, /grid/hadoop/hdfs/snn,sbr/grid1/hadoop/hdfs/snn,sbr/grid2/hadoop/hdfs/snn
-    core['fs.checkpoint.dir'] ?= fs_checkpoint_dir.join ','
+    # core['fs.checkpoint.dir'] ?= fs_checkpoint_dir.join ','
     ctx.hconfigure
-      destination: "#{hdfs_conf_dir}/core-site.xml"
+      destination: "#{hadoop_conf_dir}/core-site.xml"
+      default: "#{__dirname}/hdp/core_hadoop/core-site.xml"
+      local_default: true
       properties: core
     , (err, configured) ->
       return next err if err
@@ -351,37 +371,64 @@ module.exports.push (ctx, next) ->
     ctx.log 'Configure hdfs-site.xml'
     # Comma separated list of paths. Use the list of directories from $DFS_NAME_DIR.  
     # For example, /grid/hadoop/hdfs/nn,/grid1/hadoop/hdfs/nn.
-    hdfs['dfs.name.dir'] ?= dfs_name_dir.join ','
+    hdfs['dfs.namenode.name.dir'] ?= dfs_name_dir.join ','
     # Comma separated list of paths. Use the list of directories from $DFS_DATA_DIR.  
     # For example, /grid/hadoop/hdfs/dn,/grid1/hadoop/hdfs/dn.
-    hdfs['dfs.data.dir'] ?= dfs_data_dir.join ','
+    hdfs['dfs.datanode.data.dir'] ?= dfs_data_dir.join ','
     # NameNode hostname for http access.
-    hdfs['dfs.http.address'] ?= "hdfs://#{namenode}:#{namenode_port}"
+    hdfs['dfs.namenode.http-address'] ?= "hdfs://#{namenode}:#{nn_port}"
     # Secondary NameNode hostname
-    hdfs['dfs.secondary.http.address'] ?= "hdfs://#{secondary_namenode}:50090"
+    hdfs['dfs.namenode.secondary.http-address'] ?= "hdfs://#{secondary_namenode}:#{snn_port}"
     # NameNode hostname for https access
     hdfs['dfs.https.address'] ?= "hdfs://#{namenode}:50470"
+    hdfs['dfs.namenode.checkpoint.dir'] ?= fs_checkpoint_dir.join ','
     ctx.hconfigure
-      destination: "#{hdfs_conf_dir}/hdfs-site.xml"
+      destination: "#{hadoop_conf_dir}/hdfs-site.xml"
+      default: "#{__dirname}/hdp/core_hadoop/hdfs-site.xml"
+      local_default: true
       properties: hdfs
+    , (err, configured) ->
+      return next err if err
+      modified = true if configured
+      do_yarn()
+  do_yarn = ->
+    ctx.log 'Configure yarn-site.xml'
+    # Enter your ResourceManager hostname.
+    yarn['yarn.resourcemanager.resource-tracker.address'] ?= "#{resourcemanager}:8025"
+    yarn['yarn.resourcemanager.scheduler.address'] ?= "#{resourcemanager}:8030"
+    yarn['yarn.resourcemanager.address'] ?= "#{resourcemanager}:8050"
+    yarn['yarn.resourcemanager.admin.address'] ?= "#{resourcemanager}:8041"
+    # Comma separated list of paths. Use the list of directories from $YARN_LOCAL_DIR.  
+    # For example, /grid/hadoop/hdfs/yarn/local,/grid1/hadoop/hdfs/yarn/local.
+    yarn['yarn.nodemanager.local-dirs'] ?= "/grid/hadoop/hdfs/yarn/local,/grid1/hadoop/hdfs/yarn/local"
+    yarn['yarn.nodemanager.local-dirs'] = yarn['yarn.nodemanager.local-dirs'].join ',' if Array.isArray yarn['yarn.nodemanager.local-dirs']
+    # Use the list of directories from $YARN_LOCAL_LOG_DIR.  
+    # For example, /grid/hadoop/yarn/logs /grid1/hadoop/yarn/logs /grid2/hadoop/yarn/logs
+    yarn['yarn.nodemanager.log-dirs'] ?= "/grid/hadoop/hdfs/yarn/logs"
+    yarn['yarn.nodemanager.log-dirs'] = yarn['yarn.nodemanager.log-dirs'].join ',' if Array.isArray yarn['yarn.nodemanager.log-dirs']
+    # URL for job history server
+    yarn['yarn.log.server.url'] ?= "http://#{jobhistoryserver}:19888/jobhistory/logs/"
+    # URL for job history server
+    yarn['yarn.resourcemanager.webapp.address'] ?= "#{resourcemanager}:8088"
+    ctx.hconfigure
+      destination: "#{hadoop_conf_dir}/yarn-site.xml"
+      default: "#{__dirname}/hdp/core_hadoop/yarn-site.xml"
+      local_default: true
+      properties: yarn
     , (err, configured) ->
       return next err if err
       modified = true if configured
       do_mapred()
   do_mapred = ->
     ctx.log 'Configure mapred-site.xml'
-    # JobTracker hostname
-    mapred['mapred.job.tracker'] ?= "#{jobtraker}:8021"  # not sure, "./HDP-1.2.1/bk_reference/content/reference_chap2_2.html" say ipc 8021 while "./HDP-1.3.2/bk_installing_manually_book/content/rpm_chap3.html" say $jobtracker.full.hostname:50300
-    # JobTracker hostname
-    mapred['mapred.job.tracker.http.address'] ?= "#{jobtraker}:50030"
-    # Comma separated list of paths. Use the list of directories from $MAPREDUCE_LOCAL_DIR
-    mapred['mapred.local.dir'] ?= mapreduce_local_dir.join ','
-    # Enter your group. Use the value of $HADOOP_GROUP
-    mapred['mapreduce.tasktracker.group'] ?= 'hadoop'
-    # JobTracker hostname
-    mapred['mapreduce.history.server.http.address'] ?= "hdfs://#{jobtraker}:51111"
+    # Enter your JobHistoryServer hostname
+    mapred['mapreduce.jobhistory.address'] ?= "#{jobhistoryserver}:10020"
+    # Enter your JobHistoryServer hostname.
+    mapred['mapreduce.jobhistory.webapp.address'] ?= "#{jobhistoryserver}:19888"
     ctx.hconfigure
-      destination: "#{hdfs_conf_dir}/mapred-site.xml"
+      destination: "#{hadoop_conf_dir}/mapred-site.xml"
+      default: "#{__dirname}/hdp/core_hadoop/mapred-site.xml"
+      local_default: true
       properties: mapred
     , (err, configured) ->
       return next err if err
@@ -392,10 +439,11 @@ module.exports.push (ctx, next) ->
     # Note, HDP-1.3.1 official doc is awkward, the example show an xml file.
     # http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.1/bk_installing_manually_book/content/rpm_chap3.html
     ctx.ini
-      destination: "#{hdfs_conf_dir}/taskcontroller.cfg"
+      destination: "#{hadoop_conf_dir}/taskcontroller.cfg"
       merge: true
       content:
-        'mapred.local.dir': mapreduce_local_dir.join ','
+        # 'mapred.local.dir': mapreduce_local_dir.join ','
+        'mapred.local.dir': yarn_local_dir.join ','
       backup: true
     , (err, configured) ->
       return next err if err
@@ -412,7 +460,7 @@ module.exports.push (ctx, next) ->
     ctx.log 'Configure masters'
     ctx.write
       content: "#{secondary_namenode}"
-      destination: "#{hdfs_conf_dir}/masters"
+      destination: "#{hadoop_conf_dir}/masters"
     , (err, configured) ->
       return next err if err
       modified = true if configured
@@ -421,7 +469,7 @@ module.exports.push (ctx, next) ->
     ctx.log 'Configure slaves'
     ctx.write
       content: "#{slaves.join '\n'}"
-      destination: "#{hdfs_conf_dir}/slaves"
+      destination: "#{hadoop_conf_dir}/slaves"
     , (err, configured) ->
       return next err if err
       modified = true if configured
@@ -429,6 +477,65 @@ module.exports.push (ctx, next) ->
   do_end = ->
     next null, if modified then ctx.OK else ctx.PASS
   do_core()
+
+module.exports.push (ctx, next) ->
+  @name "HDP # Install Compression"
+  @timeout -1
+  modified = false
+  { hadoop_conf_dir } = ctx.config.hdp
+  do_snappy = ->
+    ctx.service [
+      name: 'snappy'
+    ,
+      name: 'snappy-devel'
+    ], (err, serviced) ->
+      return next err if err
+      return do_lzo() unless serviced
+      ctx.execute
+        cmd: 'ln -sf /usr/lib64/libsnappy.so /usr/lib/hadoop/lib/native/Linux-amd64-64/.'
+      , (err, executed) ->
+        return next err if err
+        modified = true
+        do_lzo()
+  do_lzo = ->
+    ctx.service [
+      name: 'lzo'
+    ,
+      name: 'lzo-devel'
+    ,
+      name: 'hadoop-lzo'
+    ,
+      name: 'hadoop-lzo-native'
+    ], (err, serviced) ->
+      return next err if err
+      modified = true if serviced
+      do_core()
+  do_core = ->
+    ctx.log 'Configure core-site.xml'
+    mapred = {}
+    mapred['io.compression.codecs'] ?= "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.SnappyCodec"
+    ctx.hconfigure
+      destination: "#{hadoop_conf_dir}/core-site.xml"
+      properties: mapred
+    , (err, configured) ->
+      return next err if err
+      modified = true if configured
+      do_mapred()
+  do_mapred = ->
+    ctx.log 'Configure mapred-site.xml'
+    mapred = {}
+    mapred['mapreduce.admin.map.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
+    mapred['mapreduce.admin.reduce.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
+    ctx.hconfigure
+      destination: "#{hadoop_conf_dir}/mapred-site.xml"
+      properties: mapred
+    , (err, configured) ->
+      return next err if err
+      modified = true if configured
+      do_end()
+  do_end = ->
+    next null, if modified then ctx.OK else ctx.PASS
+  do_snappy()
 
 module.exports.push (ctx, next) ->
   @name 'HDP # Environnmental Variables'
