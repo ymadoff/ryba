@@ -375,7 +375,7 @@ module.exports.push (ctx, next) ->
   createConfigPrincipals = ->
     each(principals)
     .on 'item', (principal, next) ->
-      ctx.log "Create principal host/#{ctx.config.host}@#{realm}"
+      ctx.log "Create principal {principal}"
       options = 
         ssh: ctx.ssh
         log: ctx.log
