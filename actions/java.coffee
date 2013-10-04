@@ -35,7 +35,7 @@ module.exports.push (ctx, next) ->
       unless semver.gt version, installed_version
         return next null, ctx.PASS
     action = if url.parse(location).protocol is 'http:' then 'download' else 'upload'
-    ctx.log "Java #{action} from #{location}"
+    ctx.log "Java #{action}"
     ctx[action]
       source: location
       proxy: proxy
