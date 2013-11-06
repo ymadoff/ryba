@@ -6,7 +6,6 @@ Virtual Box
 ###
 module.exports = []
 module.exports.push 'histi/actions/curl'
-module.exports.push 'histi/actions/proxy_check'
 
 module.exports.push (ctx, next) ->
   @name 'VirtualBox # Guest Additions'
@@ -30,20 +29,18 @@ module.exports.push (ctx, next) ->
       destination = "/tmp/VBoxGuestAdditions_#{version}.iso"
       cmd = """
         curl -L #{source} -o #{destination}
-        echo curl
         mount #{destination} -o loop /mnt
-        echo mount
         cd /mnt
         sh VBoxLinuxAdditions.run --nox11
-        echo additions
         rm #{destination}
         /etc/init.d/vboxadd setup
         chkconfig --add vboxadd
         chkconfig vboxadd on
-        echo chkconfig
         """
       ctx.log.out.write cmd
-      ctx.execute cmd, (err, executed) ->
+      ctx.execute cmd, (err, executed, stdout, stderr) ->
+        console.log stdout
+        console.log stderr
         return next err if err
         ctx.reboot (err) ->
           next err, ctx.OK

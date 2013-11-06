@@ -156,7 +156,7 @@ http://joshitech.blogspot.fr/2009/09/how-to-enabled-logging-in-openldap.html
 module.exports.push (ctx, next) ->
   @name 'OpenLDAP Server # Logging'
   @timeout -1
-  {log_level} = ctx.config.openldap_server
+  {config_dn, config_password, log_level} = ctx.config.openldap_server
   modified = false
   rsyslog = ->
     ctx.log 'Check rsyslog dependency'
@@ -184,7 +184,7 @@ module.exports.push (ctx, next) ->
     ctx.log 'Open connection'
     client = ldap.createClient url: "ldap://#{ctx.config.host}/"
     ctx.log 'Bind connection'
-    client.bind 'cn=admin,cn=config', 'test', (err) ->
+    client.bind "#{config_dn}", "#{config_password}", (err) ->
       return finish err if err
       ctx.log 'Search attribute olcLogLevel'
       client.search 'cn=config', 
@@ -204,7 +204,7 @@ module.exports.push (ctx, next) ->
           change = new ldap.Change
             operation: 'replace'
             modification: olcLogLevel: log_level
-          client.modify 'cn=Config', change, (err) ->
+          client.modify 'cn=config', change, (err) ->
             return unbind client, err if err
             modified = true
             unbind client
@@ -223,22 +223,22 @@ module.exports.push (ctx, next) ->
   # conf = '/tmp/sudo_schema/schema.conf'
   # ldif = '/tmp/sudo_schema/ldif'
   {config_dn, config_password} = ctx.config.openldap_server
-  install = ->
+  do_install = ->
     ctx.log 'Install Sudo schema'
     ctx.service
       name: 'sudo'
     , (err, serviced) ->
       return next err if err
-      locate()
-  locate = ->
+      do_locate()
+  do_locate = ->
     ctx.log 'Get schema location'
     ctx.execute
       cmd: 'rpm -ql sudo | grep -i schema.openldap'
     , (err, executed, schema) ->
       return next err if err
       return next Error 'Sudo schema not found' if schema is ''
-      register schema.trim()
-  register = (schema) ->
+      do_register schema.trim()
+  do_register = (schema) ->
     ctx.ldap_schema
       # ldap: ctx.ldap_config
       name: 'sudo'
@@ -249,10 +249,10 @@ module.exports.push (ctx, next) ->
       ssh: ctx.ssh
     , (err, registered) ->
       next err, if registered then ctx.OK else ctx.PASS
-  install()
+  do_install()
 
 module.exports.push (ctx, next) ->
-  {ldapdelete} = ctx.config.openldap_server
+  {root_dn, root_password, ldapdelete} = ctx.config.openldap_server
   return next() unless ldapdelete.length
   @name 'OpenLDAP Server # Delete ldif data'
   modified = 0
@@ -266,7 +266,7 @@ module.exports.push (ctx, next) ->
       return next err if err
       ctx.log "Delete #{destination}"
       ctx.execute
-        cmd: "ldapdelete -c -f #{destination} -D cn=Manager,dc=adaltas,dc=com -w test"
+        cmd: "ldapdelete -c -f #{destination} -D #{root_dn} -w #{root_password}"
         code_skipped: 32
       , (err, executed, stdout, stderr) ->
         return next err if err
@@ -279,7 +279,7 @@ module.exports.push (ctx, next) ->
     next err, if modified then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  {ldapadd} = ctx.config.openldap_server
+  {root_dn, root_password, ldapadd} = ctx.config.openldap_server
   return next() unless ldapadd.length
   @name 'OpenLDAP Server # Add ldif data'
   @timeout 100000
@@ -287,18 +287,21 @@ module.exports.push (ctx, next) ->
   each(ldapadd)
   .on 'item', (path, next) ->
     destination = "/tmp/histi_#{Date.now()}"
+    ctx.log "Create temp file: #{destination}"
     ctx.upload
       source: path
       destination: destination
     , (err, uploaded) ->
       return next err if err
-      ctx.log "Add #{destination}"
+      cmd = "ldapadd -c -D #{root_dn} -w #{root_password} -f #{destination}"
+      ctx.log "Cmd: #{cmd}"
       ctx.execute
-        cmd: "ldapadd -c -D cn=Manager,dc=adaltas,dc=com -w test -f #{destination}"
+        cmd: cmd
         code_skipped: 68
       , (err, executed, stdout, stderr) ->
         return next err if err
         modified += 1 if stdout.match(/Already exists/g)?.length isnt stdout.match(/adding new entry/g).length
+        ctx.log "Clean temp file: #{destination}"
         ctx.remove
           destination: destination
         , (err, removed) ->

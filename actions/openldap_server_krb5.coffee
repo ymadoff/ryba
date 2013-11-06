@@ -6,17 +6,12 @@ OpenLDAP Kerberos
 ###
 ldap = require 'ldapjs'
 misc = require 'mecano/lib/misc'
+oc = require './openldap_connection'
 module.exports = []
 
 ###
 Configuration
 -------------
-
-We rely on "histi/actions/openldap_server" to get "config_dn"
-and "config_password".
-
-We rely on "histi/actions/krb5_server" to get "ldap_kadmind_dn",
-"manager_dn" and "manager_password".
 
 We make sure to set "ctx.ldap_admin" which isn't present in
 force mode.
@@ -50,9 +45,7 @@ module.exports.push (ctx, next) ->
     gidNumber: '800'
     description: 'Kerberos administrator\'s group.'
   # Create LDAP admin connection if not already present
-  return next() if ctx.ldap_admin
-  openldap_connect = require './openldap_connection'
-  openldap_connect.connect ctx, next
+  oc.configure ctx, next
 
 ###
 Install schema
@@ -128,11 +121,12 @@ module.exports.push (ctx, next) ->
 module.exports.push (ctx, next) ->
   @name 'OpenLDAP Kerberos # User permissions for kerberos'
   {realms_dn, users_container_dn} = ctx.config.openldap_krb5
+  {suffix} = ctx.config.openldap_server
   ctx.ldap_acl [
     ldap: ctx.ldap_config
     log: ctx.log
     name: "olcDatabase={2}bdb,cn=config"
-    before: "dn.subtree=\"dc=adaltas,dc=com\""
+    before: "dn.subtree=\"#{suffix}\""
     to: "dn.subtree=\"#{realms_dn}\""
     by: [
       "dn.exact=\"#{users_container_dn}\" write"
@@ -143,15 +137,15 @@ module.exports.push (ctx, next) ->
     ldap: ctx.ldap_config
     log: ctx.log
     name: "olcDatabase={2}bdb,cn=config"
-    to: "dn.subtree=\"dc=adaltas,dc=com\""
+    to: "dn.subtree=\"#{suffix}\""
     by: [
       "dn.exact=\"#{users_container_dn}\" write"
     ]
   ], (err, modified) ->
     return next err if err
-    ctx.log 'Check it returns the entire ou=kerberos,ou=services,dc=company,dc=com subtree'
+    ctx.log 'Check it returns the entire #{realms_dn} subtree'
     ctx.execute
-      cmd: "ldapsearch -xLLLD #{users_container_dn} -w test -b ou=kerberos,ou=services,ou=lot1,dc=adaltas,dc=com"
+      cmd: "ldapsearch -xLLLD #{users_container_dn} -w test -b #{realms_dn}"
     , (err) ->
       # Nice but no garanty that a "nssproxy" user exists. I keep it
       # for now because it would be great to test permission

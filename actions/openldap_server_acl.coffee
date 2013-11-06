@@ -7,7 +7,7 @@ OpenLDAP ACL
 module.exports = []
 
 openldap_connection = require './openldap_connection'
-module.exports.push openldap_connection.connect
+module.exports.push openldap_connection.configure
 
 ###
 After this call, the follwing command should succeed:

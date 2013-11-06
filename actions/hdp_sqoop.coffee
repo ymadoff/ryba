@@ -16,7 +16,7 @@ Visit the [install the Sqoop RPMs](http://docs.hortonworks.com/HDPDocuments/HDP1
 page for instructions.
 ###
 module.exports.push (ctx, next) ->
-  @name 'Sqoop # Install'
+  @name 'HDP Sqoop # Install'
   @timeout -1
   ctx.service
     name: 'sqoop'
@@ -25,7 +25,7 @@ module.exports.push (ctx, next) ->
 
 
 module.exports.push (ctx, next) ->
-  @name 'Sqoop # Mysql Connector'
+  @name 'HDP Sqoop # Mysql Connector'
   ctx.copy
     source: '/usr/share/java/mysql-connector-java.jar'
     destination: '/usr/lib/sqoop/lib/'
@@ -42,7 +42,8 @@ page for instructions.
 module.exports.push (ctx, next) ->
   {libs} = ctx.config.hdp_sqoop
   return next() unless libs.length
-  @name 'Sqoop # Database Connector'
+  @timeout -1
+  @name 'HDP Sqoop # Database Connector'
   uploads = for lib in libs
     source: lib
     destination: "/usr/lib/sqoop/lib/#{path.basename lib}"

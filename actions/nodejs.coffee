@@ -19,6 +19,7 @@ ini = require 'ini'
 each = require 'each'
 mecano = require 'mecano'
 misc = require 'mecano/lib/misc'
+proxy = require './proxy'
 
 nodejs = module.exports = []
 
@@ -26,13 +27,15 @@ nodejs = module.exports = []
 Dependencies: users, proxy
 ###
 nodejs.push 'histi/actions/users'
-nodejs.push 'histi/actions/proxy'
+nodejs.push 'histi/actions/git'
+# nodejs.push 'histi/actions/proxy'
 
 ###
 Configuration
 -------------
 ###
 nodejs.push (ctx, next) ->
+  proxy.configure ctx
   ctx.config.nodejs ?= {}
   ctx.config.nodejs.version ?= 'stable'
   ctx.config.nodejs.merge ?= true
@@ -59,8 +62,8 @@ nodejs.push (ctx, next) ->
   ctx.execute
     env: env
     cmd: """
-    export http_proxy=#{http_proxy}
-    export https_proxy=#{http_proxy}
+    export http_proxy=#{http_proxy or ''}
+    export https_proxy=#{http_proxy or ''}
     cd /tmp
     git clone https://github.com/visionmedia/n.git
     cd n

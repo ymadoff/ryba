@@ -142,7 +142,6 @@ module.exports.push (ctx, next) ->
   return next() unless epel
   @name 'YUM # Epel'
   @timeout 100000
-  #
   ctx.execute
     cmd: "rpm -Uvh #{epel_url}"
     code_skipped: 1

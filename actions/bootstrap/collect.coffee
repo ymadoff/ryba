@@ -78,3 +78,5 @@ promptpass = (callback) ->
         process.stdout.write '*'
         value += char
         break
+
+

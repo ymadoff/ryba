@@ -45,8 +45,9 @@ module.exports.push (ctx, next) ->
     # Add log interface
     ctx.log = log = (msg) ->
       log.out.write "#{msg}\n"
-    log.out = fs.createWriteStream "./logs/#{ctx.config.host}_out.log"
-    log.err = fs.createWriteStream "./logs/#{ctx.config.host}_err.log"
+    host = ctx.config.host.split('.').reverse().join('.')
+    log.out = fs.createWriteStream "./logs/#{host}_out.log"
+    log.err = fs.createWriteStream "./logs/#{host}_err.log"
     pname = ctx.name
     close = ->
       setTimeout ->
@@ -74,6 +75,46 @@ module.exports.push (ctx, next) ->
       log.err.write err.stack
     next null, ctx.PASS
 
+module.exports.push (ctx) ->
+  @name 'Bootstrap # Utils'
+  ctx.reboot = (callback) ->
+    attempts = 0
+    wait = ->
+      ctx.log 'Wait for reboot'
+      return setTimeout ssh, 2000
+    ssh = ->
+      attempts++
+      ctx.log "SSH login attempt: #{attempts}"
+      config = merge {}, ctx.config.bootstrap,
+        username: 'root'
+        password: null
+      connect config, (err, connection) ->
+        if err and (err.code is 'ETIMEDOUT' or err.code is 'ECONNREFUSED')
+          return wait()
+        return callback err if err
+        ctx.ssh = connection
+        callback()
+    ctx.log "Reboot"
+    ctx.execute
+      cmd: 'reboot\n'
+    , (err, executed, stdout, stderr) ->
+      return callback err if err
+      wait()
+  ctx.connect = (config, callback) ->
+    ctx.connections ?= {}
+    config = (ctx.config.servers.filter (s) -> s.host is config)[0] if typeof config is 'string'
+    return callback null, ctx.connections[config.host] if ctx.connections[config.host]
+    config.username ?= 'root'
+    config.password ?= null
+    connect config, (err, connection) ->
+      return callback err if err
+      ctx.connections[config.host] = connection
+      close = -> connection.end()
+      ctx.on 'error', close
+      ctx.on 'end', close
+      callback null, connection
+
+
 ###
 Connection
 ----------
@@ -87,7 +128,7 @@ module.exports.push (ctx, next) ->
   ctx.on 'error', close
   ctx.on 'end', close
   attempts = 0
-  ssh = ->
+  do_ssh = ->
     attempts++
     ctx.log "SSH login #{attempts}"
     config = merge {}, ctx.config.bootstrap,
@@ -96,23 +137,24 @@ module.exports.push (ctx, next) ->
     connect config, (err, connection) ->
       if attempts isnt 0 and err and (err.code is 'ETIMEDOUT' or err.code is 'ECONNREFUSED')
         ctx.log 'Wait for reboot'
-        return setTimeout ssh, 1000
-      return coll() if err and attempts is 1
+        return setTimeout do_ssh, 1000
+      return do_collect() if err and attempts is 1
       return next err if err
+      ctx.log "SSH connected"
       ctx.ssh = connection
       next null, ctx.PASS
-  coll = ->
+  do_collect = ->
     ctx.log 'Collect login information'
     collect ctx.config.bootstrap, (err) ->
       return next err if err
-      boot()
-  boot = ->
+      do_boot()
+  do_boot = ->
     ctx.log 'Deploy ssh key'
     bootstrap ctx, (err) ->
       return next err if err
       ctx.log 'Reboot and login'
-      ssh()
-  ssh()
+      do_ssh()
+  do_ssh()
 
 ###
 Server Info
@@ -170,12 +212,17 @@ module.exports.push (ctx, next) ->
     options.installed = ctx.installed
     options.updates = ctx.updates
     options
-  ['copy', 'download', 'execute', 'extract', 'git', 
-   'ini', 'ldap_acl', 'ldap_index', 'ldap_schema', 
-   'link', 'mkdir', 'move', 'remove', 'render', 
-   'service', 'upload', 'write'
+  [ 'chmod', 'chown', 'copy', 'download', 'execute', 
+    'extract', 'git', 'ini', 'krb5_addprinc', 'krb5_delprinc', 
+    'ldap_acl', 'ldap_index', 'ldap_schema', 'link', 'mkdir', 
+    'move', 'remove', 'render', 'service', 'touch', 
+    'upload', 'write'
   ].forEach (action) ->
-    ctx[action] = (options, callback) ->
+    ctx[action] = (goptions, options, callback) ->
+      if arguments.length is 2
+        callback = options
+        options = goptions
+        goptions = {parallel: true}
       if action is 'mkdir' and typeof options is 'string'
         options = m action, destination: options
       if Array.isArray options
@@ -191,41 +238,8 @@ module.exports.push (ctx, next) ->
           callback.apply null, arguments
       else
         # Some mecano actions rely on `callback.length`
-        mecano[action].call null, options, callback
+        mecano[action].call null, goptions, options, callback
   next null, ctx.PASS
-
-module.exports.push (ctx) ->
-  @name 'Bootstrap # Utils'
-  ctx.reboot = (callback) ->
-    attempts = 0
-    reboot = ->
-      ctx.log "Reboot"
-      child = ctx.execute
-        cmd: 'reboot\n'
-      , (err, executed, stdout, stderr) ->
-        return callback err if err
-        # wait() if /going down/.test stdout
-        wait()
-      # child.stdout.on 'data', (data) ->
-      #   data = data.toString()
-      #   wait() if /going down/.test data
-    wait = ->
-      ctx.log 'Wait for reboot'
-      return setTimeout ssh, 2000
-    ssh = ->
-      attempts++
-      ctx.log "SSH login attempt: #{attempts}"
-      config = merge {}, ctx.config.bootstrap,
-        username: 'root'
-        password: null
-      connect config, (err, connection) ->
-        if err and (err.code is 'ETIMEDOUT' or err.code is 'ECONNREFUSED')
-          return wait()
-        return callback err if err
-        ctx.ssh = connection
-        callback()
-    reboot()
-
 
 
 

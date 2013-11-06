@@ -48,10 +48,6 @@ module.exports = (ctx, callback) ->
         cmd: "echo '#{public_key}' >> ~/.ssh/authorized_keys\n"
         callback: (data, callback) ->
           callback() if /\[.+@.+ .+\]/.test data
-      # steps.push
-      #   cmd: 'yum -y update\n'
-      #   callback: (data, callback) ->
-      #     callback() if /\[.+@.+ .+\]/.test data
       steps.push
         cmd: 'reboot\n'
         callback: (data, callback) ->

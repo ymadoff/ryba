@@ -13,6 +13,8 @@ each = require 'each'
 mecano = require 'mecano'
 misc = require 'mecano/lib/misc'
 ini = require 'ini'
+proxy = require './proxy'
+
 module.exports = []
 
 ###
@@ -20,7 +22,7 @@ Dependencies: users, proxy
 ###
 
 module.exports.push 'histi/actions/users'
-module.exports.push 'histi/actions/proxy'
+# module.exports.push 'histi/actions/proxy'
 
 ###
 Configuration
@@ -65,6 +67,7 @@ any settings from the proxy action.
 ```
 ###
 module.exports.push (ctx) ->
+  proxy.configure ctx
   {http_proxy} = ctx.config.proxy
   ctx.config.git ?= {}
   ctx.config.git.merge ?= true
@@ -107,9 +110,9 @@ module.exports.push (ctx, next) ->
         config = misc.merge {}, properties, config
         write()
     write = ->
-      ctx.write
+      ctx.ini
         destination: file
-        content: ini.stringify config
+        content: config
         uid: user.username
         gid: user.username
       , (err, written) ->

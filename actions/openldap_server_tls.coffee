@@ -3,6 +3,10 @@
 OpenLDAP TLS
 ============
 
+try:
+openldap-devel
+http://www.computerglitch.net/blog/blog/2013/04/04/centos-6-dot-3-ldap-with-tls-quick-and-dirty/
+
 For the client, add self-signed certificates inside "TLS_CACERT" defined in "/etc/openldap/ldap.conf".
 
 Whether the SSL connection works can be tested with: 
@@ -29,9 +33,9 @@ From "http://itdavid.blogspot.ca/2012/05/howto-centos-6.html":
     chmod 400 server.pem
     chown ldap:ldap server.pem
     # Rename the certificate for the openldap client
-    cp -rp server.pem `openssl x509 -in server.pem -hash`
+    # cp -rp server.pem `openssl x509 -noout -in server.pem -hash`
     # Place the files in their respective locations
-    mv privkey.pem /etc/pki/tls/certs/adaltas-privkey.pem
+    mv privkey.pem /etc/pki/tls/certs/adaltas-key.pem
     mv server.pem /etc/pki/tls/certs/adaltas-cert.pem
     # ldapmodify -D cn=admin,cn=config -w test <<-EOF
     # dn: cn=config
@@ -43,6 +47,22 @@ From "http://itdavid.blogspot.ca/2012/05/howto-centos-6.html":
     # EOF
     echo olcTLSCertificateFile: /etc/pki/tls/certs/adaltas-cert.pem >> /etc/openldap/slapd.d/cn=config.ldif
     echo olcTLSCertificateKeyFile: /etc/pki/tls/certs/adaltas-privkey.pem >> /etc/openldap/slapd.d/cn=config.ldif
+
+    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/pki/tls/certs/test02.key -out /etc/pki/tls/certs/test02.crt
+    olcTLSCertificateFile: /etc/pki/tls/certs/test02.crt
+    olcTLSCertificateKeyFile: /etc/pki/tls/certs/test02.key
+
+    service slapd restart
+    ldapsearch -x -ZZ -d3 -H ldaps://duzy01.adaltas.com -D cn=Manager,dc=adaltas,dc=com -w DuzY123  -b "dc=adaltas,dc=com"
+    ldapsearch -x -ZZ -d3 -H ldaps://openldap.hadoop -D cn=Manager,dc=adaltas,dc=com -w test  -b "dc=adaltas,dc=com"
+
+View certificate information
+
+    openssl x509 -in /etc/pki/tls/certs/adaltas-cert.pem -text -noout
+    openssl x509 -in /etc/pki/tls/certs/test02.crt -text -noout
+
+    openssl verify -CAfile /etc/pki/tls/certs/test02.crt /etc/pki/tls/certs/test02.key
+    openssl verify -CAfile /etc/pki/tls/certs/adaltas-cert.pem /etc/pki/tls/certs/adaltas-key.pem 
 
 ###
 path = require 'path'
@@ -59,12 +79,11 @@ module.exports.push (ctx) ->
 module.exports.push (ctx, next) ->
   @name 'OpenLDAP TLS # Deploy'
   @timeout -1
-  {
-    suffix, manager_dn, manager_password,
-    tls, tls_cert_file, tls_key_file
-  } = ctx.config.openldap_server
+  { tls, tls_cert_file, tls_key_file } = ctx.config.openldap_server
   tls_cert_filename = path.basename tls_cert_file
   tls_key_filename = path.basename tls_key_file
+  console.log tls_cert_file
+  console.log tls_key_file
   return next null, ctx.DISABLED unless tls
   modified = false
   ctx.log 'Write certificate files'
@@ -114,10 +133,15 @@ module.exports.push (ctx, next) ->
       , (err, restarted) ->
         return next err if err
         ctx.log 'Check secure connection'
-        ctx.execute
-          cmd: "ldapsearch -x -H ldaps://#{ctx.config.host} -b #{suffix} -D #{manager_dn} -w #{manager_password}"
-        , (err, executed) ->
-          next err, ctx.OK
+        next null, ctx.OK
+
+module.exports.push (ctx, next) ->
+  @name 'OpenLDAP TLS # Check'
+  { suffix, root_dn, root_password } = ctx.config.openldap_server
+  ctx.execute
+    cmd: "ldapsearch -x -H ldaps://#{ctx.config.host} -b #{suffix} -D #{root_dn} -w #{root_password}"
+  , (err, executed) ->
+    next err, ctx.PASS
 
 
 

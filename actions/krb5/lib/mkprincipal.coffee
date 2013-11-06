@@ -10,7 +10,7 @@ Options include
 *   password
 *   kadmin_principal
 *   kadmin_password
-*   admin_server        Optional, use "kadmin.local" if missing
+*   kadmin_server        Optional, use "kadmin.local" if missing
 *   randkey             Generate a random key
 *   keytab              file to which key entry are added
 *   ssh
@@ -34,7 +34,7 @@ module.exports = (goptions, options, callback) ->
       modified = false
       do_kadmin = ->
         cmds = []
-        if options.admin_server
+        if options.kadmin_server
           cmds.push (data, stream) ->
             if /^Password for/mg.test data
               stream.write "#{options.kadmin_password}\n"
@@ -86,8 +86,8 @@ module.exports = (goptions, options, callback) ->
               stream.write "ktadd #{keytab} #{options.principal}\n"
               true
         index = 0
-        cmd = if options.admin_server
-        then "kadmin -p #{options.kadmin_principal} -s #{options.admin_server}\n"
+        cmd = if options.kadmin_server
+        then "kadmin -p #{options.kadmin_principal} -s #{options.kadmin_server}\n"
         else "kadmin.local\n"
         options.log? "Run command: #{cmd}"
         options.ssh.shell (err, stream) ->

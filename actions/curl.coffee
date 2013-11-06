@@ -17,6 +17,7 @@ module.exports = []
 Dependencies: users, proxy
 ###
 module.exports.push 'histi/actions/users'
+# module.exports.push 'histi/actions/yum'
 module.exports.push 'histi/actions/proxy'
 
 ###
@@ -34,17 +35,18 @@ Configuration
     Create a config file for all users defined by the 
     user action, default is true
 ###
-module.exports.push (ctx, next) ->
+module.exports.push (ctx) ->
   ctx.config.curl ?= {}
-  ctx.config.curl.merge ?= true
-  ctx.config.curl.users = true
-  ctx.config.curl.proxy = true
-  ctx.config.curl.config ?= {}
+  {curl} = ctx.config
+  curl.merge ?= true
+  curl.users = true
+  curl.proxy = true
+  curl.config ?= {}
+  curl.check ?= 'http://www.apache.org'
+  curl.check_match ?= /Welcome to The Apache Software Foundation/
   # Satitize config
-  {config, proxy} = ctx.config.curl
-  config.noproxy = config.noproxy.join ',' if config.noproxy
-  config.proxy = ctx.config.proxy.http_proxy if proxy
-  next()
+  curl.config.noproxy = curl.config.noproxy.join ',' if curl.config.noproxy
+  curl.config.proxy = ctx.config.proxy.http_proxy if curl.proxy
 
 ###
 User Configuration
@@ -75,6 +77,26 @@ module.exports.push (ctx, next) ->
     work user, file, next
   .on 'both', (err) ->
     next err, if ok then ctx.OK else ctx.PASS
+
+# module.exports.push (ctx, next) ->
+#   # On centOS, curl is already here
+#   @timeout -1
+#   @name 'Curl # Install'
+#   ctx.service
+#     name: 'curl'
+#   , (err, installed) ->
+#     next err, if installed then ctx.OK else ctx.PASS
+
+module.exports.push (ctx, next) ->
+  {proxy, check, check_match} = ctx.config.curl
+  return next() unless check
+  @name 'Curl # Proxy Check'
+  ctx.execute
+    cmd: "curl #{check}"
+  , (err, executed, stdout) ->
+    return next err if err
+    return next new Error "Proxy not active" unless  check_match.test stdout
+    next null, ctx.PASS
 
 ###
 Examples

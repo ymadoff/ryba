@@ -27,21 +27,47 @@ actions.push (ctx) ->
 ###
 Package
 -------
-Install the Mysql database server.
+Install the Mysql database server. Secure the temporary directory.
 ###
 actions.push (ctx, next) ->
   @name 'Mysql Server # Package'
   @timeout -1
   {sql_on_install} = ctx.config.mysql_server
-  ctx.service
-    name: 'mysql-server'
-    chk_name: 'mysqld'
-    srv_name: 'mysqld'
-    startup: '235'
-    action: 'start'
-  , (err, serviced) ->
-    return next err if err
-    return next null, ctx.PASS unless serviced
+  do_install = ->
+    ctx.service
+      name: 'mysql-server'
+      chk_name: 'mysqld'
+      startup: '235'
+      # action: 'start'
+    , (err, serviced) ->
+      return next err if err
+      return next null, ctx.PASS unless serviced
+      do_tmp()
+  do_tmp = ->
+    ctx.mkdir
+      destination: '/tmp/mysql'
+      uid: 'mysql'
+      gid: 'mysql'
+      mode: '0744'
+    , (err, created) ->
+      return next err if err
+      ctx.ini
+        destination: '/etc/my.cnf'
+        content: mysqld: tmpdir: '/tmp/mysql'
+        merge: true
+        backup: true
+      , (err, updated) ->
+        return next err if err
+        do_start()
+  do_start = ->
+    ctx.service
+      name: 'mysql-server'
+      srv_name: 'mysqld'
+      action: 'start'
+    , (err, serviced) ->
+      return next err if err
+      do_sql()
+  do_sql = ->
     escape = (text) ->
       return text.replace(/[\\"]/g, "\\$&")
     each(sql_on_install)
@@ -52,6 +78,7 @@ actions.push (ctx, next) ->
         next err
     .on 'both', (err) ->
       next err, ctx.OK
+  do_install()
 
 ###
 Java Connector

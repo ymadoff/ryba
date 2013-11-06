@@ -22,7 +22,7 @@ Resources:
 mecano = require 'mecano'
 each = require 'each'
 misc = require 'mecano/lib/misc'
-mkprincipal = require './krb5/lib/mkprincipal'
+krb5_client = require './krb5_client'
 module.exports = []
 
 module.exports.push 'histi/actions/yum'
@@ -76,7 +76,7 @@ module.exports.push module.exports.configure = (ctx) ->
           'ldap_conns_per_server': 5
     etc_krb5_conf.realms["#{REALM}"] = 
       'kdc': ctx.config.krb5_server.kdc or realm
-      'admin_server': ctx.config.krb5_server.admin_server or realm
+      'admin_server': ctx.config.krb5_server.kadmin_server or realm
       'default_domain': ctx.config.krb5_server.default_domain or realm
       'database_module': 'openldap_ldapconf'
     etc_krb5_conf.domain_realm[".#{realm}"] = REALM
@@ -97,6 +97,7 @@ module.exports.push module.exports.configure = (ctx) ->
       'admin_keytab': '/var/kerberos/krb5kdc/kadm5.keytab'
       'supported_enctypes': 'aes256-cts:normal aes128-cts:normal des3-hmac-sha1:normal arcfour-hmac:normal des-hmac-sha1:normal des-cbc-md5:normal des-cbc-crc:normal'
     ctx.config.krb5_server.kdc_conf = kdc_conf
+  krb5_client.configure ctx
 
 module.exports.push (ctx, next) ->
   @name 'KRB5 Server (LDAP) # Install'
@@ -121,10 +122,8 @@ module.exports.push (ctx, next) ->
     ctx.log 'Run kdb5_ldap_util'
     # Without "-P", it prompts for the KDC database master key
     kdc_master_key = 'test'
-    cmd = "kdb5_ldap_util -D \"#{manager_dn}\" -w #{manager_password} create -subtrees \"#{realms_dn}\" -r #{realm} -s -P #{kdc_master_key}"
-    ctx.log "Execute: #{cmd}"
     ctx.execute
-      cmd: cmd
+      cmd: "kdb5_ldap_util -D \"#{manager_dn}\" -w #{manager_password} create -subtrees \"#{realms_dn}\" -r #{realm} -s -P #{kdc_master_key}"
       code_skipped: 1
     , (err, executed, stdout, stderr) ->
       # Warnig, exit code 1 for also for connect error
@@ -320,14 +319,10 @@ module.exports.push (ctx, next) ->
   @timeout -1
   {kadmin_principal, kadmin_password} = ctx.config.krb5_server
   ctx.log "Create principal #{kadmin_principal}"
-  mkprincipal
-    # We dont provide an "admin_server". Instead, we need
+  ctx.krb5_addprinc
+    # We dont provide an "kadmin_server". Instead, we need
     # to use "kadmin.local" because the principal used
     # to login with "kadmin" isnt created yet
-    ssh: ctx.ssh
-    log: ctx.log
-    stdout: ctx.log.out
-    stderr: ctx.log.err
     principal: kadmin_principal
     password: kadmin_password
   , (err, created) ->
@@ -354,20 +349,17 @@ Populate DB with machines and users principals.
 ###
 module.exports.push (ctx, next) ->
   @name 'KRB5 Server # Populate'
-  {realm, principals, kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5_server
+  {realm, principals, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_server
   modified = false
+  ctx.timeout -1
   createMachinePrincipal = ->
     ctx.log "Create principal host/#{ctx.config.host}@#{realm}"
-    mkprincipal
-      ssh: ctx.ssh
-      log: ctx.log
-      stdout: ctx.log.out
-      stderr: ctx.log.err
+    ctx.krb5_addprinc
       principal: "host/#{ctx.config.host}@#{realm}"
       randkey: true
       kadmin_principal: kadmin_principal
       kadmin_password: kadmin_password
-      admin_server: admin_server
+      kadmin_server: kadmin_server
     , (err, created) ->
       return next err if err
       modified = true if created
@@ -377,15 +369,11 @@ module.exports.push (ctx, next) ->
     .on 'item', (principal, next) ->
       ctx.log "Create principal {principal}"
       options = 
-        ssh: ctx.ssh
-        log: ctx.log
-        stdout: ctx.log.out
-        stderr: ctx.log.err
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
-        admin_server: admin_server
+        kadmin_server: kadmin_server
       for k, v of principal then options[k] = v
-      mkprincipal options, (err, created) ->
+      ctx.krb5_addprinc options, (err, created) ->
         return next err if err
         modified = true if created
         next()

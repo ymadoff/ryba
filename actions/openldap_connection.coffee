@@ -16,13 +16,17 @@ available under `ctx.ldap_config`. Both objects are ldapjs
 client instance.
 
 ###
-module.exports.push module.exports.connect = (ctx, next) ->
+module.exports.push module.exports.configure = (ctx, next) ->
+  return next() if ctx.ldap_admin and ctx.ldap_config
   ctx.name 'OpenLDAP Connection # Connect'
+  { root_dn, root_password,
+    config_dn, config_password } = ctx.config.openldap_server
   admin = ->
+    return config() if ctx.ldap_admin
     ctx.log 'Open admin connection'
     client = ldap.createClient url: "ldap://#{ctx.config.host}/"
     ctx.log 'Bind admin connection'
-    client.bind 'cn=Manager,dc=adaltas,dc=com', 'test', (err) ->
+    client.bind "#{root_dn}", "#{root_password}", (err) ->
       return done err if err
       ctx.ldap_admin = client
       close = -> client.unbind()
@@ -30,10 +34,11 @@ module.exports.push module.exports.connect = (ctx, next) ->
       ctx.on 'end', close
       config()
   config = ->
+    return done() if ctx.ldap_config
     ctx.log 'Open config connection'
     client = ldap.createClient url: "ldap://#{ctx.config.host}/"
     ctx.log 'Bind config connection'
-    client.bind 'cn=admin,cn=config', 'test', (err) ->
+    client.bind "#{config_dn}", "#{config_password}", (err) ->
       return done err if err
       ctx.ldap_config = client
       close = -> client.unbind()

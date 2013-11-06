@@ -1,6 +1,5 @@
 
 misc = require 'mecano/lib/misc'
-mkprincipal = require './krb5/lib/mkprincipal'
 # krb = require './krb'
 module.exports = []
 
@@ -19,10 +18,10 @@ IMPORTANT : Kerberos clients require connectivity to the KDC's TCP ports 88 and 
 ###
 
 module.exports.push module.exports.configure = (ctx) ->
-  {realm, kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5_client
+  {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   throw new Error "Kerberos property kadmin_principal is required" unless kadmin_principal
   throw new Error "Kerberos property kadmin_password is required" unless kadmin_password
-  throw new Error "Kerberos property admin_server is required" unless admin_server
+  throw new Error "Kerberos property kadmin_server is required" unless kadmin_server
   throw new Error "Kerberos property realm is required" unless realm
   ctx.config.krb5_client.realm = ctx.config.krb5_client.realm.toUpperCase()
   unless ctx.config.krb5_client.etc_krb5_conf
@@ -51,7 +50,7 @@ module.exports.push module.exports.configure = (ctx) ->
           'krb4_convert': false
     etc_krb5_conf.realms["#{REALM}"] = 
       'kdc': ctx.config.krb5_client.kdc or realm
-      'admin_server': ctx.config.krb5_client.admin_server or realm
+      'admin_server': ctx.config.krb5_client.kadmin_server or realm
       'default_domain': ctx.config.krb5_client.default_domain or realm
     etc_krb5_conf.domain_realm[".#{realm}"] = REALM
     etc_krb5_conf.domain_realm["#{realm}"] = REALM
@@ -65,17 +64,6 @@ module.exports.push module.exports.configure = (ctx) ->
     GSSAPIAuthentication: 'yes'
     GSSAPICleanupCredentials: 'yes'
   , ctx.config.krb5_client.sshd
-  ctx.mkprincipal = (options, callback) ->
-    options = [options] unless Array.isArray options
-    for opt in options
-      opt.ssh = ctx.ssh
-      opt.log = ctx.log
-      opt.stdout = ctx.log.out
-      opt.stderr = ctx.log.err
-      opt.kadmin_principal = kadmin_principal
-      opt.kadmin_password = kadmin_password
-      opt.admin_server = admin_server
-    mkprincipal parallel: false, options, callback
 
 module.exports.push (ctx, next) ->
   @name 'Kerberos client # Install'
@@ -107,19 +95,15 @@ Note, I have experienced random situations where next was called multiple times.
 module.exports.push (ctx, next) ->
   @name 'Kerberos client # Create host principal'
   @timeout 100000
-  {realm, kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5_client
+  {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   # quit = false
   ctx.log 'Create an admin user principal and assign a password to this new user'
-  mkprincipal
-    ssh: ctx.ssh
-    log: ctx.log
-    stdout: ctx.log.out
-    stderr: ctx.log.err
+  ctx.krb5_addprinc
     principal: "host/#{ctx.config.host}@#{realm}"
     randkey: true
     kadmin_principal: kadmin_principal
     kadmin_password: kadmin_password
-    admin_server: admin_server
+    kadmin_server: kadmin_server
   , (err, created) ->
     return next err if err
     modified = true if created

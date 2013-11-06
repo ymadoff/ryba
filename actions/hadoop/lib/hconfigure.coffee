@@ -57,6 +57,7 @@ module.exports = (options, callback) ->
           if typeof v is 'undefined' or v is null
             delete props[k]
           else if props[k] isnt v
+            options.log? "Property '#{k}' was '#{v}' and is now '#{props[k]}'"
             updated = true
             props[k] = v
         do_save props
