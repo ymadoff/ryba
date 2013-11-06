@@ -30,7 +30,7 @@ module.exports.push (ctx, next) ->
   {hadoop_group, zookeeper_user} = ctx.config.hdp
   @name 'HDP ZooKeeper # Users & Groups'
   ctx.execute
-    cmd: "useradd #{zookeeper_user} -c \"ZooKeeper\" -r -g #{hadoop_group} -d /var/run/#{zookeeper_user}"
+    cmd: "useradd #{zookeeper_user} -r -g #{hadoop_group} -d /var/run/#{zookeeper_user} -s /bin/nologin -c \"ZooKeeper\""
     code: 0
     code_skipped: 9
   , (err, executed) ->

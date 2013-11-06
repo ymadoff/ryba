@@ -75,8 +75,8 @@ module.exports.push (ctx, next) ->
     code_skipped: 9
   cmds = []
   cmds.push cmd "groupadd hadoop"
-  cmds.push cmd "useradd #{hive_user} -c \"Used by Hadoop Hive service\" -r -M -g #{hadoop_group}"
-  cmds.push cmd "useradd #{webhcat_user} -c \"Used by Hadoop HCatalog/WebHCat service\" -r -M -g #{hadoop_group}" if ctx.config.hdp.hcatalog_server or ctx.config.hdp.webhcat
+  cmds.push cmd "useradd #{hive_user} -r -M -g #{hadoop_group} -s /bin/nologin -c \"Used by Hadoop Hive service\""
+  cmds.push cmd "useradd #{webhcat_user} -r -M -g #{hadoop_group} -s /bin/nologin -c \"Used by Hadoop HCatalog/WebHCat service\"" if ctx.config.hdp.hcatalog_server or ctx.config.hdp.webhcat
   ctx.execute parallel: 1, cmds, (err, executed) ->
     next err, if executed then ctx.OK else ctx.PASS
 

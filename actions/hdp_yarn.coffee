@@ -52,7 +52,7 @@ module.exports.push (ctx, next) ->
   return next() unless ctx.config.hdp.resourcemanager or ctx.config.hdp.nodemanager
   {hadoop_group} = ctx.config.hdp
   ctx.execute
-    cmd: "useradd yarn -c \"Used by Hadoop YARN service\" -r -M -g #{hadoop_group}"
+    cmd: "useradd yarn -r -M -g #{hadoop_group} -s /bin/nologin -c \"Used by Hadoop YARN service\""
     code: 0
     code_skipped: 9
   , (err, executed) ->

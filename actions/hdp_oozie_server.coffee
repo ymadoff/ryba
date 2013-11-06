@@ -114,7 +114,7 @@ module.exports.push (ctx, next) ->
   {oozie_user, hadoop_group} = ctx.config.hdp
   @name 'HDP Oozie # Users & Groups'
   ctx.execute
-    cmd: "useradd oozie -c \"Used by Hadoop Oozie service\" -r -M -g #{hadoop_group}"
+    cmd: "useradd oozie -r -M -g #{hadoop_group} -s /bin/nologin -c \"Used by Hadoop Oozie service\""
     code: 0
     code_skipped: 9
   , (err, executed) ->

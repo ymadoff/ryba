@@ -48,7 +48,7 @@ module.exports.push (ctx, next) ->
   return next() unless ctx.config.hdp.namenode or ctx.config.hdp.secondary_namenode or ctx.config.hdp.datanode
   {hadoop_group} = ctx.config.hdp
   ctx.execute
-    cmd: "useradd hdfs -c \"Used by Hadoop HDFS service\" -r -M -g #{hadoop_group}"
+    cmd: "useradd hdfs -r -M -g #{hadoop_group} -s /bin/nologin -c \"Used by Hadoop HDFS service\""
     code: 0
     code_skipped: 9
   , (err, executed) ->

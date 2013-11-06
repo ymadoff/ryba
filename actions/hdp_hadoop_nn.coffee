@@ -56,7 +56,7 @@ module.exports.push (ctx, next) ->
     else do_user_unix()
   do_user_unix = ->
     ctx.execute
-      cmd: "useradd test -c \"Used by Hadoop to test\" -r -M -g #{hadoop_group}"
+      cmd: "useradd test -r -M -g #{hadoop_group} -s /bin/nologin -c \"Used by Hadoop to test\""
       code: 0
       code_skipped: 9
     , (err, created) ->

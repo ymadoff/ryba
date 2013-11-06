@@ -47,7 +47,7 @@ module.exports.push (ctx, next) ->
   return next() unless ctx.config.hdp.jobhistoryserver
   {hadoop_group} = ctx.config.hdp
   ctx.execute
-    cmd: "useradd mapred -c \"Used by Hadoop MapReduce service\" -r -M -g #{hadoop_group}"
+    cmd: "useradd mapred -r -M -g #{hadoop_group} -s /bin/nologin -c \"Used by Hadoop MapReduce service\""
     code: 0
     code_skipped: 9
   , (err, executed) ->
