@@ -8,7 +8,6 @@ module.exports.push 'histi/actions/yum'
 module.exports.push 'histi/actions/krb5_client' #kadmin must be present
 
 module.exports.push module.exports.configure = (ctx) ->
-  require('./hdp_core').configure ctx
   require('./hdp_hdfs').configure ctx
   require('./krb5_client').configure ctx
   jobhistoryserver = (ctx.config.servers.filter (s) -> s.hdp?.jobhistoryserver)[0].host
@@ -47,7 +46,7 @@ module.exports.push (ctx, next) ->
   return next() unless ctx.config.hdp.jobhistoryserver
   {hadoop_group} = ctx.config.hdp
   ctx.execute
-    cmd: "useradd mapred -r -M -g #{hadoop_group} -s /bin/nologin -c \"Used by Hadoop MapReduce service\""
+    cmd: "useradd mapred -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop MapReduce service\""
     code: 0
     code_skipped: 9
   , (err, executed) ->
@@ -153,30 +152,70 @@ module.exports.push (ctx, next) ->
     properties: mapred
   , (err, configured) ->
     next err, if configured then ctx.OK else ctx.PASS
-  # properties.read ctx.ssh, '/etc/hadoop/conf/mapred-site.xml', (err, kv) ->
-  #   return next err if err
-  #   mapred = {}
-  #   mapred['mapreduce.jobhistory.keytab'] ?= "/etc/security/keytabs/jhs.service.keytab"
-  #   mapred['mapreduce.jobhistory.principal'] ?= "jhs/_HOST@#{realm}"
-  #   # # Kerberos principal name for the JobTracker
-  #   # mapred['mapreduce.jobtracker.kerberos.principal'] ?= "jt/_HOST@#{realm}"
-  #   # # Kerberos principal name for the TaskTracker."_HOST" is replaced by the host name of the TaskTracker. 
-  #   # mapred['mapreduce.tasktracker.kerberos.principal'] ?= "tt/_HOST@#{realm}"
-  #   # # The keytab for the JobTracker principal.
-  #   # mapred['mapreduce.jobtracker.keytab.file'] ?= '/etc/security/keytabs/jt.service.keytab'
-  #   # # The filename of the keytab for the TaskTracker
-  #   # mapred['mapreduce.tasktracker.keytab.file'] ?= '/etc/security/keytabs/tt.service.keytab'
-  #   # # Kerberos principal name for JobHistory. This must map to the same user as the JobTracker user (mapred).
-  #   # mapred['mapreduce.jobhistory.kerberos.principal'] ?= "jt/_HOST@#{realm}"
-  #   # # The keytab for the JobHistory principal.
-  #   # mapred['mapreduce.jobhistory.keytab.file'] ?= '/etc/security/keytabs/jt.service.keytab'
-  #   modified = false
-  #   for k, v of mapred
-  #     modified = true if kv[k] isnt v
-  #     kv[k] = v
-  #   return next null, ctx.PASS unless modified
-  #   properties.write ctx.ssh, '/etc/hadoop/conf/mapred-site.xml', kv, (err) ->
-  #     next err, ctx.OK
+
+###
+Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
+###
+module.exports.push (ctx, next) ->
+  {hadoop_group, hdfs_user, yarn, yarn_user, mapred, mapred_user} = ctx.config.hdp
+  @name 'HDP MapRed # HDFS layout'
+  ok = false
+  do_mapreduce_jobtracker_system_dir = ->
+    mapreduce_jobtracker_system_dir = mapred['mapreduce.jobtracker.system.dir']
+    ctx.log "Create #{mapreduce_jobtracker_system_dir}"
+    ctx.execute
+      cmd: mkcmd.hdfs ctx, """
+      if hadoop fs -test -d #{mapreduce_jobtracker_system_dir}; then exit 1; fi
+      hadoop fs -mkdir -p #{mapreduce_jobtracker_system_dir}
+      hadoop fs -chown #{mapred_user}:#{hadoop_group} #{mapreduce_jobtracker_system_dir}
+      hadoop fs -chmod 755 #{mapreduce_jobtracker_system_dir}
+      """
+      code_skipped: 1
+    , (err, executed, stdout) ->
+      return next err if err
+      ok = true if executed
+      do_mapreduce_jobhistory_intermediate_done_dir()
+  do_mapreduce_jobhistory_intermediate_done_dir = ->
+    # Default value for "mapreduce.jobhistory.intermediate-done-dir" 
+    # is "${yarn.app.mapreduce.am.staging-dir}/history/done_intermediate"
+    # where "yarn.app.mapreduce.am.staging-dir"
+    # is "/tmp/hadoop-yarn/staging"
+    mapreduce_jobhistory_intermediate_done_dir = mapred['mapreduce.jobhistory.intermediate-done-dir']
+    ctx.log "Create #{mapreduce_jobhistory_intermediate_done_dir}"
+    ctx.execute
+      cmd: mkcmd.hdfs ctx, """
+      if hadoop fs -test -d #{mapreduce_jobhistory_intermediate_done_dir}; then exit 1; fi
+      hadoop fs -mkdir -p #{mapreduce_jobhistory_intermediate_done_dir}
+      hadoop fs -chown #{mapred_user}:#{hadoop_group} #{mapreduce_jobhistory_intermediate_done_dir}
+      hadoop fs -chmod 777 #{mapreduce_jobhistory_intermediate_done_dir}
+      """
+      code_skipped: 1
+    , (err, executed, stdout) ->
+      return next err if err
+      ok = true if executed
+      do_mapreduce_jobhistory_done_dir()
+  do_mapreduce_jobhistory_done_dir = ->
+    # Default value for "mapreduce.jobhistory.done-dir" 
+    # is "${yarn.app.mapreduce.am.staging-dir}/history/done"
+    # where "yarn.app.mapreduce.am.staging-dir"
+    # is "/tmp/hadoop-yarn/staging"
+    mapreduce_jobhistory_done_dir = mapred['mapreduce.jobhistory.done-dir']
+    ctx.log "Create #{mapreduce_jobhistory_done_dir}"
+    ctx.execute
+      cmd: mkcmd.hdfs ctx, """
+      if hadoop fs -test -d #{mapreduce_jobhistory_done_dir}; then exit 1; fi
+      hadoop fs -mkdir -p #{mapreduce_jobhistory_done_dir}
+      hadoop fs -chown #{mapred_user}:#{hadoop_group} #{mapreduce_jobhistory_done_dir}
+      hadoop fs -chmod 750 #{mapreduce_jobhistory_done_dir}
+      """
+      code_skipped: 1
+    , (err, executed, stdout) ->
+      return next err if err
+      ok = true if executed
+      do_end()
+  do_end = ->
+    next null, if ok then ctx.OK else ctx.PASS
+  do_mapreduce_jobtracker_system_dir()
 
 ###
 Test JobTracker
@@ -196,7 +235,7 @@ to re-execute the check.
 #     next err, ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Check # Test MapReduce'
+  @name 'HDP MapRed # Check'
   @timeout -1
   ctx.execute
     cmd: mkcmd.test ctx, """

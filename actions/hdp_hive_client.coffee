@@ -51,7 +51,7 @@ Install
 Instructions to [install the Hive and HCatalog RPMs](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3/bk_installing_manually_book/content/rpm-chap6-1.html)
 ###
 module.exports.push (ctx, next) ->
-  @name 'HDP Hive & HCatalog # Install'
+  @name 'HDP Hive & HCat client # Install'
   @timeout -1
   modified = false
   {hive_conf_dir} = ctx.config.hdp
@@ -85,7 +85,7 @@ Configure
 See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap6-3.html)
 ###
 module.exports.push (ctx, next) ->
-  @name 'HDP Hive & HCatalog # Configure'
+  @name 'HDP Hive & HCat client # Configure'
   {hive_site, hive_conf_dir} = ctx.config.hdp
   ctx.hconfigure
     destination: "#{hive_conf_dir}/hive-site.xml"
@@ -99,9 +99,11 @@ module.exports.push (ctx, next) ->
       return next err, ctx.OK
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hive & HCatalog # Driver'
+  @name 'HDP Hive & HCat client # Driver'
   ctx.link
     source: '/usr/share/java/mysql-connector-java.jar'
     destination: '/usr/lib/hive/lib/mysql-connector-java.jar'
   , (err, configured) ->
     return next err, if configured then ctx.OK else ctx.PASS
+
+

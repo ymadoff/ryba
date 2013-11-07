@@ -38,7 +38,7 @@ function push {
   repopath=/${repopath#*\/}
   print $reponame' Sync'
   mkdir -p $httppath$repopath
-  reposync -n -g -r $reponame -p $httppath$repopath
+  echo reposync -n -g -r $reponame -p $httppath$repopath
   cd $httppath$repopath
   createrepo .
   if [ -n "$3" ]; then
@@ -55,9 +55,6 @@ function push {
 
 print 'Move current repositories'
 mkdir -p /etc/yum.repos.d.temp
-# mv /etc/yum.repos.d/epel.repo /etc/yum.repos.d.temp 2>/dev/null
-# mv /etc/yum.repos.d/redhat.repo /etc/yum.repos.d.temp 2>/dev/null
-# mv /etc/yum.repos.d/rh0l6.repo /etc/yum.repos.d.temp 2>/dev/null
 mv /etc/yum.repos.d/* /etc/yum.repos.d.temp
 
 print 'Set proxy'
@@ -76,7 +73,8 @@ PRIORITIES
 # ############## REPO ##############
 
 repo 'HDP repository' \
-  'http://public-repo-1.hortonworks.com/HDP/centos6/2.x/updates/2.0.5.0/hdp.repo'
+  'http://public-repo-1.hortonworks.com/HDP/centos6/2.x/updates/2.0.6.0/hdp.repo'
+  # 'http://public-repo-1.hortonworks.com/HDP/centos6/2.x/updates/2.0.5.0/hdp.repo'
   # 'http://public-repo-1.hortonworks.com/HDP/centos6/1.x/GA/1.3.0.0/hdp.repo'
 
 # ############## CLEANUP ##############
@@ -99,8 +97,8 @@ push 'HDP-UTILS-1.1.0.16' \
   # 'http://public-repo-1.hortonworks.com/HDP-UTILS-1.1.0.16/repos/centos6' \
   # 'http://public-repo-1.hortonworks.com/HDP/centos5/RPM-GPG-KEY/RPM-GPG-KEY-Jenkins'
 
-push 'HDP-2.0.5.0' \
-  'http://public-repo-1.hortonworks.com/HDP/centos6/2.x/updates/2.0.5.0' \
+push 'HDP-2.0.6.0-76' \
+  'http://public-repo-1.hortonworks.com/HDP/centos6/2.x/updates/2.0.6.0' \
   'http://public-repo-1.hortonworks.com/HDP/centos6/RPM-GPG-KEY/RPM-GPG-KEY-Jenkins'
 
 # ############## CLEANUP ##############

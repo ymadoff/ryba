@@ -29,6 +29,9 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.mapred_log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
   ctx.config.hdp.hdfs_pid_dir ?= '/var/run/hadoop-hdfs'
   ctx.config.hdp.hdfs_user ?= 'hdfs'
+  throw new Error "Missing value for 'hdfs_password'" unless ctx.config.hdp.hdfs_password?
+  ctx.config.hdp.test_user ?= 'test'
+  throw new Error "Missing value for 'test_password'" unless ctx.config.hdp.test_password?
   ctx.config.hdp.fs_checkpoint_dir ?= ['/hadoop/hdfs/snn'] # Default ${fs.checkpoint.dir}
   # Options and configuration
   ctx.config.hdp.nn_port ?= '50070'
@@ -48,7 +51,7 @@ module.exports.push (ctx, next) ->
   return next() unless ctx.config.hdp.namenode or ctx.config.hdp.secondary_namenode or ctx.config.hdp.datanode
   {hadoop_group} = ctx.config.hdp
   ctx.execute
-    cmd: "useradd hdfs -r -M -g #{hadoop_group} -s /bin/nologin -c \"Used by Hadoop HDFS service\""
+    cmd: "useradd hdfs -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop HDFS service\""
     code: 0
     code_skipped: 9
   , (err, executed) ->

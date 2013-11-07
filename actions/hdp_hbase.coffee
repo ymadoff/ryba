@@ -53,7 +53,7 @@ module.exports.push (ctx, next) ->
   @name 'HDP HBase # Users & Groups'
   # User must be created for HBase master and regionserver
   ctx.execute
-    cmd: "useradd #{hbase_user} -r -g #{hadoop_group} -d /var/run/#{hbase_user} -s /bin/nologin -c \"HBase\""
+    cmd: "useradd #{hbase_user} -r -g #{hadoop_group} -d /var/run/#{hbase_user} -s /bin/bash -c \"HBase\""
     code: 0
     code_skipped: 9
   , (err, executed) ->

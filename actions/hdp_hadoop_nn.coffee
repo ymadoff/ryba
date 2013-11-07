@@ -6,9 +6,8 @@ module.exports = []
 module.exports.push 'histi/actions/hdp_hdfs'
 
 module.exports.push (ctx) ->
-  require('./hdp_core').configure ctx
-  require('./hdp_hdfs').configure ctx
   require('./krb5_client').configure ctx
+  require('./hdp_hdfs').configure ctx
 
 module.exports.push (ctx, next) ->
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
@@ -27,11 +26,11 @@ module.exports.push (ctx, next) ->
 
 module.exports.push (ctx, next) ->
   @name 'HDP Hadoop NN # HDFS User'
-  {hdfs_user} = ctx.config.hdp
+  {hdfs_user, hdfs_password} = ctx.config.hdp
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   ctx.krb5_addprinc
     principal: "#{hdfs_user}@#{realm}"
-    password: 'hdfs123'
+    password: hdfs_password
     # randkey: true
     # keytab: "/etc/security/keytabs/hdfs.headless.keytab"
     # uid: 'hdfs'
@@ -43,51 +42,6 @@ module.exports.push (ctx, next) ->
   , (err, created) ->
     return next err if err
     next null, if created then ctx.OK else ctx.PASS
-
-module.exports.push (ctx, next) ->
-  {hdfs_user, hadoop_group, security} = ctx.config.hdp
-  {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
-  @name 'HDP Hadoop NN # Test User'
-  @timeout -1
-  modified = false
-  do_user = ->
-    if security is 'kerberos'
-    then do_user_krb5()
-    else do_user_unix()
-  do_user_unix = ->
-    ctx.execute
-      cmd: "useradd test -r -M -g #{hadoop_group} -s /bin/nologin -c \"Used by Hadoop to test\""
-      code: 0
-      code_skipped: 9
-    , (err, created) ->
-      return next err if err
-      modified = true if created
-      do_run()
-  do_user_krb5 = ->
-    ctx.krb5_addprinc
-      principal: "test@#{realm}"
-      password: 'test123'
-      # randkey: true
-      # keytab: "/etc/security/keytabs/test.headless.keytab"
-      kadmin_principal: kadmin_principal
-      kadmin_password: kadmin_password
-      kadmin_server: kadmin_server
-    , (err, created) ->
-      return next err if err
-      modified = true if created
-      do_run()
-  do_run = ->
-    ctx.execute
-      cmd: mkcmd.hdfs ctx, """
-      if hadoop fs -ls /user/test 2>/dev/null; then exit 1; fi
-      hadoop fs -mkdir /user/test
-      hadoop fs -chown test /user/test
-      """
-      code_skipped: 1
-    , (err, executed, stdout) ->
-      modified = true if executed
-      next err, if modified then ctx.OK else ctx.PASS
-  do_user()
 
 module.exports.push (ctx, next) ->
   {dfs_name_dir, hdfs_user, format, cluster_name} = ctx.config.hdp
@@ -139,6 +93,51 @@ module.exports.push (ctx, next) ->
   @name "HDP Hadoop NN # Start"
   lifecycle.nn_start ctx, (err, started) ->
     next err, if started then ctx.OK else ctx.PASS
+
+module.exports.push (ctx, next) ->
+  {hdfs_user, test_user, test_password, hadoop_group, security} = ctx.config.hdp
+  {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
+  @name 'HDP Hadoop NN # Test User'
+  @timeout -1
+  modified = false
+  do_user = ->
+    if security is 'kerberos'
+    then do_user_krb5()
+    else do_user_unix()
+  do_user_unix = ->
+    ctx.execute
+      cmd: "useradd #{test_user} -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop to test\""
+      code: 0
+      code_skipped: 9
+    , (err, created) ->
+      return next err if err
+      modified = true if created
+      do_run()
+  do_user_krb5 = ->
+    ctx.krb5_addprinc
+      principal: "#{test_user}@#{realm}"
+      password: "#{test_password}"
+      # randkey: true
+      # keytab: "/etc/security/keytabs/test.headless.keytab"
+      kadmin_principal: kadmin_principal
+      kadmin_password: kadmin_password
+      kadmin_server: kadmin_server
+    , (err, created) ->
+      return next err if err
+      modified = true if created
+      do_run()
+  do_run = ->
+    ctx.execute
+      cmd: mkcmd.hdfs ctx, """
+      if hadoop fs -ls /user/test 2>/dev/null; then exit 1; fi
+      hadoop fs -mkdir /user/test
+      hadoop fs -chown test /user/test
+      """
+      code_skipped: 1
+    , (err, executed, stdout) ->
+      modified = true if executed
+      next err, if modified then ctx.OK else ctx.PASS
+  do_user()
 
 
 

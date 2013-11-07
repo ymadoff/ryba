@@ -20,7 +20,7 @@ module.exports.push (ctx, next) ->
   @name 'HDP Pig # Users'
   {hadoop_group} = ctx.config.hdp
   ctx.execute
-    cmd: "useradd pig -r -M -g #{hadoop_group} -s /bin/nologin -c \"Used by Hadoop Pig service\""
+    cmd: "useradd pig -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop Pig service\""
     code: 0
     code_skipped: 9
   , (err, executed) ->

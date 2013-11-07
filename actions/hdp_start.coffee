@@ -3,7 +3,6 @@ lifecycle = require './hdp/lifecycle'
 module.exports = []
 
 module.exports.push (ctx) ->
-  require('./hdp_core').configure ctx
   require('./hdp_hdfs').configure ctx
   require('./hdp_yarn').configure ctx
   require('./hdp_mapred').configure ctx

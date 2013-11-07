@@ -19,9 +19,11 @@ module.exports.push (ctx, next) ->
   , (err, rendered) ->
     next err if err
     ctx.log 'Install the "createrepo" package'
-    ctx.service
+    ctx.service [
       name: 'createrepo'
-    , (err, installed) ->
+    , 
+      name: 'yum-utils'
+    ], (err, installed) ->
       return next err if err
       ctx.execute
         cmd: "/usr/bin/ambari_reposync"

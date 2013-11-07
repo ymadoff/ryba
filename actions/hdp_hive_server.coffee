@@ -5,9 +5,9 @@ lifecycle = require './hdp/lifecycle'
 module.exports = []
 
 module.exports.push 'histi/actions/mysql_client'
+module.exports.push 'histi/actions/hdp_hive_client'
 
 module.exports.push (ctx) ->
-  require('./hdp_core').configure ctx
   require('./hdp_hive_client').configure ctx
   require('./krb5_client').configure ctx
   {realm} = ctx.config.krb5_client
@@ -75,8 +75,8 @@ module.exports.push (ctx, next) ->
     code_skipped: 9
   cmds = []
   cmds.push cmd "groupadd hadoop"
-  cmds.push cmd "useradd #{hive_user} -r -M -g #{hadoop_group} -s /bin/nologin -c \"Used by Hadoop Hive service\""
-  cmds.push cmd "useradd #{webhcat_user} -r -M -g #{hadoop_group} -s /bin/nologin -c \"Used by Hadoop HCatalog/WebHCat service\"" if ctx.config.hdp.hcatalog_server or ctx.config.hdp.webhcat
+  cmds.push cmd "useradd #{hive_user} -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop Hive service\""
+  cmds.push cmd "useradd #{webhcat_user} -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop HCatalog/WebHCat service\"" if ctx.config.hdp.hcatalog_server or ctx.config.hdp.webhcat
   ctx.execute parallel: 1, cmds, (err, executed) ->
     next err, if executed then ctx.OK else ctx.PASS
 
@@ -91,7 +91,7 @@ module.exports.push (ctx, next) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hive & HCatalog # Layout'
+  @name 'HDP Hive & HCat server # Layout'
   {hive_log_dir, hive_user, hadoop_group, mode} = ctx.config.hdp
   ctx.mkdir
     destination: hive_log_dir
@@ -102,7 +102,7 @@ module.exports.push (ctx, next) ->
     return next err, if modified then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hive & Kerberos Keytabs'
+  @name 'HDP Hive & HCat server & Kerberos Keytabs'
   {hive_user, hadoop_group} = ctx.config.hdp
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   ctx.krb5_addprinc
@@ -126,7 +126,7 @@ module.exports.push (ctx, next) ->
 
 module.exports.push (ctx, next) ->
   {hdfs_user, hive_user, hadoop_group} = ctx.config.hdp
-  @name 'HDP Hive # Layout'
+  @name 'HDP Hive & HCat server # Layout'
   namenode = (ctx.config.servers.filter (s) -> s.hdp?.namenode)[0].host
   ctx.connect namenode, (err, ssh) ->
     return next err if err
@@ -150,7 +150,7 @@ module.exports.push (ctx, next) ->
         ssh: ssh
         cmd: mkcmd.hdfs ctx, """
         if hadoop fs -ls /apps/#{hive_user}/warehouse &>/dev/null; then exit 3; fi
-        hadoop fs -mkdir /apps/#{hive_user};
+        hadoop fs -mkdir -p /apps/#{hive_user};
         hadoop fs -mkdir /apps/#{hive_user}/warehouse; 
         hadoop fs -chown -R #{hive_user}:#{hadoop_group} /apps/#{hive_user}
         hadoop fs -chmod -R 775 /apps/#{hive_user};
@@ -180,7 +180,7 @@ module.exports.push (ctx, next) ->
     do_warehouse()
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hive # Check'
+  @name 'HDP Hive & HCat server # Check'
   # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.3.0/CDH4-Security-Guide/cdh4sg_topic_9_1.html
   # !connect jdbc:hive2://big3.big:10000/default;principal=hive/big3.big@ADALTAS.COM 
   next null, ctx.TODO

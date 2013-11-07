@@ -5,7 +5,6 @@ module.exports = []
 module.exports.push 'histi/actions/hdp_yarn'
 
 module.exports.push (ctx) ->
-  require('./hdp_core').configure ctx
   require('./hdp_yarn').configure ctx
 
 module.exports.push (ctx, next) ->

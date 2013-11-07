@@ -1,6 +1,7 @@
 
 url = require 'url'
 misc = require 'mecano/lib/misc'
+mkcmd = require './hdp/mkcmd'
 
 module.exports = []
 
@@ -10,7 +11,7 @@ module.exports.push 'histi/actions/hdp_core'
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./krb5_client').configure ctx
-  require('./hdp_core').configure ctx
+  require('./hdp_hdfs').configure ctx
   # Grab the host(s) for each roles
   resourcemanager = (ctx.config.servers.filter (s) -> s.hdp?.resourcemanager)[0].host
   ctx.log "Resource manager: #{resourcemanager}"
@@ -52,14 +53,14 @@ module.exports.push (ctx, next) ->
   return next() unless ctx.config.hdp.resourcemanager or ctx.config.hdp.nodemanager
   {hadoop_group} = ctx.config.hdp
   ctx.execute
-    cmd: "useradd yarn -r -M -g #{hadoop_group} -s /bin/nologin -c \"Used by Hadoop YARN service\""
+    cmd: "useradd yarn -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop YARN service\""
     code: 0
     code_skipped: 9
   , (err, executed) ->
     next err, if executed then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name "HDP YARN # Install Common"
+  @name "HDP Hadoop YARN # Install Common"
   @timeout -1
   ctx.service [
     name: 'hadoop'
@@ -151,6 +152,7 @@ module.exports.push (ctx, next) ->
   container_executor['yarn.nodemanager.log-dirs'] = container_executor['yarn.nodemanager.log-dirs'].join ','
   do_stat = ->
     ce = '/usr/lib/hadoop-yarn/bin/container-executor';
+    ctx.log "change ownerships and permissions to '#{ce}'"
     ctx.chown
       destination: ce
       uid: user
@@ -166,6 +168,7 @@ module.exports.push (ctx, next) ->
         modified = true if chmoded
         do_conf()
   do_conf = ->
+    ctx.log "Write to '#{hadoop_conf_dir}/container-executor.cfg' as ini"
     ctx.ini
       destination: "#{hadoop_conf_dir}/container-executor.cfg"
       content: container_executor
@@ -294,6 +297,33 @@ module.exports.push (ctx, next) ->
   #   return next null, ctx.PASS unless modified
   #   properties.write ctx.ssh, '/etc/hadoop/conf/yarn-site.xml', kv, (err) ->
   #     next err, ctx.OK
+
+###
+Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
+###
+module.exports.push (ctx, next) ->
+  {hadoop_group, hdfs_user, yarn, yarn_user, mapred, mapred_user} = ctx.config.hdp
+  @name 'HDP Hadoop DN # HDFS layout'
+  ok = false
+  do_remote_app_log_dir = ->
+    # Default value for "yarn.nodemanager.remote-app-log-dir" is "/tmp/logs"
+    remote_app_log_dir = yarn['yarn.nodemanager.remote-app-log-dir']
+    ctx.log "Create #{remote_app_log_dir}"
+    ctx.execute
+      cmd: mkcmd.hdfs ctx, """
+      if hadoop fs -test -d #{remote_app_log_dir}; then exit 1; fi
+      hadoop fs -mkdir -p #{remote_app_log_dir}
+      hadoop fs -chown #{yarn_user}:#{hadoop_group} #{remote_app_log_dir}
+      hadoop fs -chmod 777 #{remote_app_log_dir}
+      """
+      code_skipped: 1
+    , (err, executed, stdout) ->
+      return next err if err
+      ok = true if executed
+      do_end()
+  do_end = ->
+    next null, if ok then ctx.OK else ctx.PASS
+  do_remote_app_log_dir()
 
 
 

@@ -1,19 +1,17 @@
 
 lifecycle = require './hdp/lifecycle'
-hdp = require './hdp_core'
-module.exports = []
 
+module.exports = []
 module.exports.push 'histi/actions/yum'
 
 module.exports.push module.exports.configure = (ctx) ->
-  ctx.config.hdp ?= {}
+  require('./hdp_core').configure ctx
   ctx.config.hdp.zookeeper_myid ?= null
   ctx.config.hdp.zookeeper_user ?= 'zookeeper'
   ctx.config.hdp.zookeeper_data_dir ?= '/var/zookeper/data/'
   ctx.config.hdp.zookeeper_conf_dir ?= '/etc/zookeeper/conf'
   ctx.config.hdp.zookeeper_log_dir ?= '/var/log/zookeeper'
   ctx.config.hdp.zookeeper_pid_dir ?= '/var/run/zookeeper'
-  hdp.configure ctx
 
 ###
 Install
@@ -30,7 +28,7 @@ module.exports.push (ctx, next) ->
   {hadoop_group, zookeeper_user} = ctx.config.hdp
   @name 'HDP ZooKeeper # Users & Groups'
   ctx.execute
-    cmd: "useradd #{zookeeper_user} -r -g #{hadoop_group} -d /var/run/#{zookeeper_user} -s /bin/nologin -c \"ZooKeeper\""
+    cmd: "useradd #{zookeeper_user} -r -g #{hadoop_group} -d /var/run/#{zookeeper_user} -s /bin/bash -c \"ZooKeeper\""
     code: 0
     code_skipped: 9
   , (err, executed) ->

@@ -8,7 +8,9 @@ module.exports.push 'histi/actions/hdp_core'
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./hdp_core').configure ctx
+  require('./krb5_client').configure ctx
   oozie_server = (ctx.config.servers.filter (s) -> s.hdp?.oozie_server)[0].host
+  {realm} = ctx.config.krb5_client
   ctx.config.hdp.oozie_user ?= 'oozie'
   ctx.config.hdp.oozie_conf_dir ?= '/etc/oozie/conf'
   ctx.config.hdp.oozie_data ?= '/var/db/oozie'
@@ -24,11 +26,11 @@ module.exports.push module.exports.configure = (ctx) ->
   # TODO: check if security is on
   ctx.config.hdp.oozie_site['oozie.service.AuthorizationService.security.enabled'] = 'true'
   ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.kerberos.enabled'] = 'true'
-  ctx.config.hdp.oozie_site['local.realm'] = 'ADALTAS.COM'
+  ctx.config.hdp.oozie_site['local.realm'] = "#{realm}"
   ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.keytab.file'] = '/etc/security/keytabs/oozie.service.keytab'
-  ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.kerberos.principal'] = "oozie/#{ctx.config.host}@ADALTAS.COM"
+  ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.kerberos.principal'] = "oozie/#{ctx.config.host}@#{realm}"
   ctx.config.hdp.oozie_site['oozie.authentication.type'] = 'kerberos'
-  ctx.config.hdp.oozie_site['oozie.authentication.kerberos.principal'] = "HTTP/#{ctx.config.host}@ADALTAS.COM"
+  ctx.config.hdp.oozie_site['oozie.authentication.kerberos.principal'] = "HTTP/#{ctx.config.host}@#{realm}"
   ctx.config.hdp.oozie_site['oozie.authentication.kerberos.keytab'] = '/etc/security/keytabs/spnego.service.keytab'
   ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.nameNode.whitelist'] = ''
   ctx.config.hdp.oozie_site['oozie.authentication.kerberos.name.rules'] = """
@@ -41,9 +43,9 @@ module.exports.push module.exports.configure = (ctx) ->
       DEFAULT
   """
   ctx.config.hdp.oozie_hadoop_config ?= {}
-  ctx.config.hdp.oozie_hadoop_config['mapreduce.jobtracker.kerberos.principal'] ?= "mapred/_HOST@ADALTAS.COM"
-  ctx.config.hdp.oozie_hadoop_config['yarn.resourcemanager.principal'] ?= "yarn/_HOST@ADALTAS.COM"
-  ctx.config.hdp.oozie_hadoop_config['dfs.namenode.kerberos.principal'] ?= "hdfs/_HOST@ADALTAS.COM"
+  ctx.config.hdp.oozie_hadoop_config['mapreduce.jobtracker.kerberos.principal'] ?= "mapred/_HOST@#{realm}"
+  ctx.config.hdp.oozie_hadoop_config['yarn.resourcemanager.principal'] ?= "yarn/_HOST@#{realm}"
+  ctx.config.hdp.oozie_hadoop_config['dfs.namenode.kerberos.principal'] ?= "hdfs/_HOST@#{realm}"
   ctx.config.hdp.oozie_hadoop_config['mapreduce.framework.name'] ?= "yarn"
   ctx.config.hdp.extjs ?= {}
   throw new Error "Missing extjs.source" unless ctx.config.hdp.extjs.source
@@ -114,7 +116,7 @@ module.exports.push (ctx, next) ->
   {oozie_user, hadoop_group} = ctx.config.hdp
   @name 'HDP Oozie # Users & Groups'
   ctx.execute
-    cmd: "useradd oozie -r -M -g #{hadoop_group} -s /bin/nologin -c \"Used by Hadoop Oozie service\""
+    cmd: "useradd oozie -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop Oozie service\""
     code: 0
     code_skipped: 9
   , (err, executed) ->
@@ -194,9 +196,9 @@ module.exports.push (ctx, next) ->
   do_oozie_site()
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hive & Kerberos Keytabs'
+  @name 'HDP Oozie # Kerberos'
   {oozie_user, hadoop_group, oozie_site} = ctx.config.hdp
-  {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
+  {kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   ctx.krb5_addprinc
     principal: oozie_site['oozie.service.HadoopAccessorService.kerberos.principal'].replace '_HOST', ctx.config.host
     randkey: true

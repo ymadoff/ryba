@@ -38,8 +38,7 @@ jhs.service.keytab
   host/full.qualified.domain.name@REALM.TLD
 ###
 module.exports.push module.exports.configure = (ctx) ->
-  proxy = require './proxy' # proxy will be overwritten later
-  proxy.configure ctx
+  require('./proxy').configure ctx
   ctx.config.hdp ?= {}
   ctx.config.hdp.format ?= false
   ctx.config.hdp.hadoop_conf_dir ?= '/etc/hadoop/conf'
@@ -73,9 +72,9 @@ Repository
 Declare the HDP repository.
 ###
 module.exports.push (ctx, next) ->
-  {proxy, hdp_repo, ambari_repo} = ctx.config.hdp
+  {proxy, hdp_repo} = ctx.config.hdp
   # Is there a repo to download and install
-  # return next() unless repo
+  return next() unless hdp_repo
   @name 'HDP Hadoop Core # Repository'
   modified = false
   @timeout -1
