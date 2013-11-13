@@ -2,6 +2,7 @@
 module.exports = []
 
 module.exports.push (ctx) ->
+  require('./hdp_core').configure ctx
   ctx.config.hdp.pig_user ?= 'pig'
   ctx.config.hdp.pig_conf_dir ?= '/etc/pig/conf'
 
@@ -34,13 +35,16 @@ module.exports.push (ctx, next) ->
   next null, ctx.PASS
 
 module.exports.push (ctx, next) ->
+  {hadoop_group, pig_conf_dir, pig_user} = ctx.config.hdp
   @name 'HDP Pig # Env'
-  ctx.ini
-    content:
-      'JAVA_HOME': '/usr/java/default'
-      'HADOOP_HOME': '${HADOOP_HOME:-/etc/hadoop/conf}'
-    backup: true
-    destination: '/etc/pig/conf/pig-env.sh'
-  , (err, written) ->
-    next err, if written then ctx.OK else ctx.PASS
+  ctx.render
+    source: "#{__dirname}/hdp/pig/pig-env.sh"
+    destination: "#{pig_conf_dir}/pig-env.sh"
+    context: ctx
+    local_source: true
+    uid: pig_user
+    gid: hadoop_group
+    mode: 0o755
+  , (err, rendered) ->
+    next err, if rendered then ctx.OK else ctx.PASS
 
