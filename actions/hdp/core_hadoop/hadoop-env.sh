@@ -24,9 +24,7 @@
 # remote nodes.
 
 # The java implementation to use.  Required.
-# wdavidw: define a more flexible java home
-# export JAVA_HOME=/usr/jdk/jdk1.6.0_31
-export JAVA_HOME=/usr/java/default
+export JAVA_HOME=/usr/java/default/
 export HADOOP_HOME_WARN_SUPPRESS=1
 
 # Hadoop Configuration Directory

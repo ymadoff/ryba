@@ -20,8 +20,6 @@ export HADOOP_YARN_HOME=/usr/lib/hadoop-yarn
 export YARN_LOG_DIR=/var/log/hadoop-yarn/$USER
 export YARN_PID_DIR=/var/run/hadoop-yarn/$USER
 export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec
-# wdavidw: define a more flexible java home
-# export JAVA_HOME=/usr/jdk/jdk1.6.0_31
 export JAVA_HOME=/usr/java/default
 
 # User for YARN daemons
