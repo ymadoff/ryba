@@ -75,16 +75,18 @@ module.exports.push (ctx, next) ->
     ctx.log 'Write zoo.cfg'
     ctx.write
       content: """
-      #The number of milliseconds of each tick 
-      tickTime=2000 
-      #The number of ticks that the initial synchronization phase can take 
-      initLimit=10 
-      #The number of ticks that can pass between sending a request and getting an acknowledgement
-      syncLimit=5 
-      #The directory where the snapshot is stored.
+      # The number of milliseconds of each tick
+      tickTime=2000
+      # The number of ticks that the initial
+      # synchronization phase can take
+      initLimit=10
+      # The number of ticks that can pass between
+      # sending a request and getting an acknowledgement
+      syncLimit=5
+      # the directory where the snapshot is stored.
       dataDir=#{zookeeper_data_dir}
-      #The port at which the clients will connect
-      clientPort=2182
+      # the port at which the clients will connect
+      clientPort=2181
       #{mapping}
       """
       destination: '/etc/zookeeper/conf/zoo.cfg'
