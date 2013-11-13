@@ -38,7 +38,7 @@ function push {
   repopath=/${repopath#*\/}
   print $reponame' Sync'
   mkdir -p $httppath$repopath
-  echo reposync -n -g -r $reponame -p $httppath$repopath
+  reposync -n -g -r $reponame -p $httppath$repopath
   cd $httppath$repopath
   createrepo .
   if [ -n "$3" ]; then
