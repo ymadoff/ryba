@@ -6,9 +6,9 @@ module.exports.push 'histi/actions/hdp_hdfs'
 module.exports.push 'histi/actions/hdp_zookeeper'
 module.exports.push 'histi/actions/hdp_hbase'
 
-module.exports.push (ctx) ->
-  require('./hdp_hdfs').configure ctx
-  require('./hdp_hbase').configure ctx
+# module.exports.push (ctx) ->
+#   require('./hdp_hdfs').configure ctx
+#   require('./hdp_hbase').configure ctx
 
 module.exports.push (ctx, next) ->
   @name 'HDP HBase RegionServer # Kerberos'

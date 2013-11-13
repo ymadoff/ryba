@@ -6,7 +6,6 @@ module.exports = []
 module.exports.push 'histi/actions/hdp_hdfs'
 
 module.exports.push (ctx) ->
-  require('./krb5_client').configure ctx
   require('./hdp_hdfs').configure ctx
   ctx.config.hdp.force_check ?= false
 
@@ -27,10 +26,6 @@ module.exports.push (ctx, next) ->
 
 module.exports.push (ctx, next) ->
   @name 'HDP Hadoop DN # Start'
-  # lifecycle.nn_start ctx, (err, started) ->
-  #   return next err if err
-  #   lifecycle.dn_start ctx, (err, started) ->
-  #     next err, ctx.OK
   lifecycle.dn_start ctx, (err, started) ->
     next err, ctx.OK
 

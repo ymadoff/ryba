@@ -1,11 +1,11 @@
 
-
 path = require 'path'
-module.exports = []
 
+module.exports = []
 module.exports.push 'histi/actions/mysql_client'
 
 module.exports.push (ctx) ->
+  require('./hdp_core').configure ctx
   ctx.config.hdp_sqoop ?= {}
   ctx.config.hdp_sqoop.libs ?= []
 

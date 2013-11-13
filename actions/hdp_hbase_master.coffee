@@ -7,10 +7,9 @@ module.exports.push 'histi/actions/hdp_hdfs'
 module.exports.push 'histi/actions/hdp_zookeeper'
 module.exports.push 'histi/actions/hdp_hbase'
 
-module.exports.push (ctx) ->
-  require('./hdp_hdfs').configure ctx
-  require('./hdp_hbase').configure ctx
-  require('./krb5_client').configure ctx
+# module.exports.push (ctx) ->
+#   require('./hdp_hdfs').configure ctx
+#   require('./hdp_hbase').configure ctx
 
 module.exports.push (ctx, next) ->
   {hbase_user} = ctx.config.hdp
@@ -46,3 +45,7 @@ module.exports.push (ctx, next) ->
   @name 'HDP HBase Master # Start'
   lifecycle.hbase_master_start ctx, (err, started) ->
     next err, if started then ctx.OK else ctx.PASS
+
+
+
+

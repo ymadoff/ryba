@@ -6,7 +6,6 @@ module.exports.push 'histi/actions/yum'
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./hdp_core').configure ctx
-  require('./krb5_client').configure ctx
   {realm} = ctx.config.krb5_client
   namenode = (ctx.config.servers.filter (s) -> s.hdp?.namenode)[0].host
   zookeeper_hosts = (ctx.config.servers.filter (s) -> s.hdp?.zookeeper).map( (s) -> s.host ).join ','

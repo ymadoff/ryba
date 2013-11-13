@@ -8,7 +8,6 @@ module.exports.push 'histi/actions/hdp_core'
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./hdp_core').configure ctx
-  require('./krb5_client').configure ctx
   oozie_server = (ctx.config.servers.filter (s) -> s.hdp?.oozie_server)[0].host
   {realm} = ctx.config.krb5_client
   ctx.config.hdp.oozie_user ?= 'oozie'
@@ -78,32 +77,6 @@ module.exports.push (ctx, next) ->
   , (err, copied) ->
     next err, if copied then ctx.OK else ctx.PASS
 
-# module.exports.push (ctx, next) ->
-#   @name 'HDP Oozie # ExtJS'
-#   @timeout 2*60*1000
-#   {proxy, extjs} = ctx.config.hdp
-#   ctx.log "Download extjs to /tmp/#{path.basename extjs.source}"
-#   u = url.parse extjs_url
-#   ctx[if u.protocol is 'http:' then 'download' else 'upload']
-#     source: extjs.source
-#     # local_source: true
-#     proxy: proxy
-#     destination: "/tmp/#{path.basename extjs.source}"
-#     not_if_exists: "#{destination}"
-#   , (err, downloaded) ->
-#     return next err, ctx.PASS if err or not downloaded
-#     ctx.log "Unzip /tmp/#{path.basename extjs.source}"
-#     ctx.execute
-#       cmd: "cd /tmp && unzip /tmp/#{path.basename extjs.source}"
-#     , (err, executed) ->
-#       return next err if err
-#       tempdestination = "/tmp/#{path.basename extjs.source, '.zip'}"
-#       ctx.log 'Move to final destination #{destination}'
-#       ctx.execute
-#         cmd: "rm -rf #{destination} && mv #{tempdestination} #{destination}"
-#       , (err, executed) ->
-#         next err, ctx.OK
-
 module.exports.push (ctx, next) ->
   @name 'HDP Oozie # LZO'
   ctx.execute
@@ -124,7 +97,7 @@ module.exports.push (ctx, next) ->
 
 module.exports.push (ctx, next) ->
   @name 'HDP Oozie # Directories'
-  {oozie_user, hadoop_group, oozie_data, oozie_log_dir, oozie_pid_dir, oozie_tmp_dir} = ctx.config.hdp
+  {oozie_user, hadoop_group, oozie_data, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_tmp_dir} = ctx.config.hdp
   ctx.mkdir [
     destination: oozie_data
     uid: oozie_user
@@ -146,7 +119,16 @@ module.exports.push (ctx, next) ->
     gid: hadoop_group
     mode: 0o0755
   ], (err, copied) ->
-    next err, if copied then ctx.OK else ctx.PASS
+    return next err if err
+    # Waiting for recursivity in ctx.mkdir
+    ctx.execute [
+      cmd: "chown -R #{oozie_user}:#{hadoop_group} #{oozie_data}"
+    ,
+      cmd: "chown -R #{oozie_user}:#{hadoop_group} #{oozie_conf_dir}/.."
+    ,
+      cmd: "chmod -R 755 #{oozie_conf_dir}/.."
+    ], (err, executed) ->
+      next err, if copied then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
   @name "HDP Oozie # Configuration"
@@ -235,6 +217,20 @@ module.exports.push (ctx, next) ->
     bin/ooziedb.sh create -sqlfile oozie.sql -run Validate DB Connection
     """
     not_if_exists: '/var/lib/oozie/oozie-server/webapps/oozie.war'
+  , (err, executed) ->
+    next err, if executed then ctx.OK else ctx.PASS
+
+module.exports.push (ctx, next) ->
+  {oozie_user, hadoop_group} = ctx.config.hdp
+  @name 'HDP Oozie # Share lib'
+  ctx.execute
+    cmd: """
+    hadoop fs -mkdir /user/#{oozie_user}
+    hadoop fs -copyFromLocal /usr/lib/oozie/share /user/#{oozie_user}
+    hadoop fs -chown #{oozie_user}:#{hadoop_group} /user/#{oozie_user}
+    hadoop fs -chmod -R 755 /user/#{oozie_user}
+    """
+    not_if_exists: '/usr/lib/oozie/share/'
   , (err, executed) ->
     next err, if executed then ctx.OK else ctx.PASS
 

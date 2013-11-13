@@ -5,12 +5,9 @@ mkcmd = require './hdp/mkcmd'
 
 module.exports = []
 
-module.exports.push 'histi/actions/yum'
-module.exports.push 'histi/actions/krb5_client' #kadmin must be present
 module.exports.push 'histi/actions/hdp_core'
 
 module.exports.push module.exports.configure = (ctx) ->
-  require('./krb5_client').configure ctx
   require('./hdp_hdfs').configure ctx
   # Grab the host(s) for each roles
   resourcemanager = (ctx.config.servers.filter (s) -> s.hdp?.resourcemanager)[0].host

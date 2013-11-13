@@ -3,7 +3,6 @@ url = require 'url'
 
 module.exports = []
 module.exports.push 'histi/actions/yum'
-module.exports.push 'histi/actions/krb5_client' #kadmin must be present
 module.exports.push 'histi/actions/hdp_core'
 
 ###
@@ -13,7 +12,6 @@ some package, here's how: `yum remove hadoop-native hadoop-pipes hadoop-sbin`.
 ###
 module.exports.push module.exports.configure = (ctx) ->
   require('./hdp_core').configure ctx
-  require('./krb5_client').configure ctx
   # hadoop env
   ctx.config.hdp.hadoop_opts ?= 'java.net.preferIPv4Stack': true
   hadoop_opts = "export HADOOP_OPTS=\""
@@ -358,60 +356,6 @@ module.exports.push (ctx, next) ->
     properties: hdfs
   , (err, configured) ->
     next err, if configured then ctx.OK else ctx.PASS
-  # properties.read ctx.ssh, '/etc/hadoop/conf/hdfs-site.xml', (err, kv) ->
-  #   return next err if err
-  #   namenode = ctx.config.servers.filter( (server) -> server.hdp?.namenode )[0].host
-  #   secondary_namenode = ctx.config.servers.filter( (server) -> server.hdp?.secondary_namenode )[0].host
-  #   hdfs = {}
-  #   # If "true", access tokens are used as capabilities
-  #   # for accessing datanodes. If "false", no access tokens are checked on
-  #   # accessing datanodes.
-  #   hdfs['dfs.block.access.token.enable'] ?= 'true'
-  #   # Kerberos principal name for the NameNode
-  #   hdfs['dfs.namenode.kerberos.principal'] ?= "nn/_HOST@#{realm}"
-  #   # Kerberos principal name for the secondary NameNode.
-  #   hdfs['dfs.secondary.namenode.kerberos.principal'] ?= "nn/_HOST@#{realm}"
-  #   # Address of secondary namenode web server
-  #   hdfs['dfs.secondary.http.address'] ?= "#{secondary_namenode}:50090"
-  #   # The https port where secondary-namenode binds
-  #   hdfs['dfs.secondary.https.port'] ?= '50490'
-  #   # The HTTP Kerberos principal used by Hadoop-Auth in the HTTP 
-  #   # endpoint. The HTTP Kerberos principal MUST start with 'HTTP/' 
-  #   # per Kerberos HTTP SPNEGO specification. 
-  #   hdfs['dfs.web.authentication.kerberos.principal'] ?= "HTTP/_HOST@#{realm}"
-  #   # The Kerberos keytab file with the credentials for the HTTP 
-  #   # Kerberos principal used by Hadoop-Auth in the HTTP endpoint.
-  #   hdfs['dfs.web.authentication.kerberos.keytab'] ?= '/etc/security/keytabs/spnego.service.keytab'
-  #   # The Kerberos principal that the DataNode runs as. "_HOST" is replaced by the real host name.  
-  #   hdfs['dfs.datanode.kerberos.principal'] ?= "dn/_HOST@#{realm}"
-  #   # Combined keytab file containing the NameNode service and host principals.
-  #   hdfs['dfs.namenode.keytab.file'] ?= '/etc/security/keytabs/nn.service.keytab'
-  #   # Combined keytab file containing the NameNode service and host principals.
-  #   hdfs['dfs.secondary.namenode.keytab.file'] ?= '/etc/security/keytabs/nn.service.keytab'
-  #   # The filename of the keytab file for the DataNode.
-  #   hdfs['dfs.datanode.keytab.file'] ?= '/etc/security/keytabs/dn.service.keytab'
-  #   # # Default to ${dfs.web.authentication.kerberos.principal}, but documented in hdp 1.3.2 manual install
-  #   hdfs['dfs.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/_HOST@#{realm}"
-  #   # # Default to ${dfs.web.authentication.kerberos.principal}, but documented in hdp 1.3.2 manual install
-  #   hdfs['dfs.secondary.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/_HOST@#{realm}"
-  #   hdfs['dfs.datanode.data.dir.perm'] ?= '700'
-  #   # The address, with a privileged port - any port number under 1023. Example: 0.0.0.0:1019
-  #   hdfs['dfs.datanode.address'] ?= '0.0.0.0:1019'
-  #   # The address, with a privileged port - any port number under 1023. Example: 0.0.0.0:1022
-  #   # update, [official doc propose port 2005 only for https, http is not even documented](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuration_in_Secure_Mode)
-  #   hdfs['dfs.datanode.http.address'] ?= '0.0.0.0:1022'
-  #   hdfs['dfs.datanode.https.address'] ?= '0.0.0.0:1023'
-  #   # Documented in http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
-  #   # Only seems to apply if "dfs.https.enable" is enabled
-  #   hdfs['dfs.namenode.kerberos.https.principal'] = "host/_HOST@#{realm}"
-  #   hdfs['dfs.secondary.namenode.kerberos.https.principal'] = "host/_HOST@#{realm}"
-  #   modified = false
-  #   for k, v of hdfs
-  #     modified = true if kv[k] isnt v
-  #     kv[k] = v
-  #   return next null, ctx.PASS unless modified
-  #   properties.write ctx.ssh, '/etc/hadoop/conf/hdfs-site.xml', kv, (err) ->
-  #     next err, ctx.OK
 
 
 

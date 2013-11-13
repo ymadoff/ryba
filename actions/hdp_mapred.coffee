@@ -5,11 +5,10 @@ mkcmd = require './hdp/mkcmd'
 module.exports = []
 
 module.exports.push 'histi/actions/yum'
-module.exports.push 'histi/actions/krb5_client' #kadmin must be present
+module.exports.push 'histi/actions/hdp_hdfs'
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./hdp_hdfs').configure ctx
-  require('./krb5_client').configure ctx
   jobhistoryserver = (ctx.config.servers.filter (s) -> s.hdp?.jobhistoryserver)[0].host
   # Define Users and Groups
   ctx.config.hdp.mapred_user ?= 'mapred'
@@ -135,18 +134,6 @@ module.exports.push (ctx, next) ->
   mapred = {}
   mapred['mapreduce.jobhistory.keytab'] ?= "/etc/security/keytabs/jhs.service.keytab"
   mapred['mapreduce.jobhistory.principal'] ?= "jhs/_HOST@#{realm}"
-  # # Kerberos principal name for the JobTracker
-  # mapred['mapreduce.jobtracker.kerberos.principal'] ?= "jt/_HOST@#{realm}"
-  # # Kerberos principal name for the TaskTracker."_HOST" is replaced by the host name of the TaskTracker. 
-  # mapred['mapreduce.tasktracker.kerberos.principal'] ?= "tt/_HOST@#{realm}"
-  # # The keytab for the JobTracker principal.
-  # mapred['mapreduce.jobtracker.keytab.file'] ?= '/etc/security/keytabs/jt.service.keytab'
-  # # The filename of the keytab for the TaskTracker
-  # mapred['mapreduce.tasktracker.keytab.file'] ?= '/etc/security/keytabs/tt.service.keytab'
-  # # Kerberos principal name for JobHistory. This must map to the same user as the JobTracker user (mapred).
-  # mapred['mapreduce.jobhistory.kerberos.principal'] ?= "jt/_HOST@#{realm}"
-  # # The keytab for the JobHistory principal.
-  # mapred['mapreduce.jobhistory.keytab.file'] ?= '/etc/security/keytabs/jt.service.keytab'
   ctx.hconfigure
     destination: "#{hadoop_conf_dir}/mapred-site.xml"
     properties: mapred

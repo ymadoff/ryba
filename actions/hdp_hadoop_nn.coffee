@@ -6,7 +6,6 @@ module.exports = []
 module.exports.push 'histi/actions/hdp_hdfs'
 
 module.exports.push (ctx) ->
-  require('./krb5_client').configure ctx
   require('./hdp_hdfs').configure ctx
 
 module.exports.push (ctx, next) ->
