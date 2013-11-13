@@ -9,9 +9,8 @@ module.exports.push 'histi/actions/hdp_hive_client'
 
 module.exports.push (ctx) ->
   require('./hdp_hive_client').configure ctx
-  require('./krb5_client').configure ctx
-  {realm} = ctx.config.krb5_client
   # Define Users and Groups
+  ctx.config.hdp.hive_user ?= 'hive'
   ctx.config.hdp.webhcat_user ?= 'webhcat'
   ctx.config.hdp.hive_log_dir ?= '/var/log/hive'
   ctx.config.hdp.hive_pid_dir ?= '/var/run/hive'
@@ -19,41 +18,9 @@ module.exports.push (ctx) ->
   ctx.config.hdp.webhcat_log_dir ?= '/var/log/webhcat/webhcat'
   ctx.config.hdp.webhcat_pid_dir ?= '/var/run/webhcat'
   ctx.config.hdp.hive_libs ?= []
-  ctx.config.hdp.hive_user ?= 'hive'
-  ctx.config.hdp.hive_site ?= {}
-  # ctx.config.hdp.hive_site['hive.metastore.uris'] ?= ''
-  # To prevent memory leak in unsecure mode, disable [file system caches](https://cwiki.apache.org/confluence/display/Hive/Setting+up+HiveServer2)
-  # , by setting following params to true
-  ctx.config.hdp.hive_site['fs.hdfs.impl.disable.cache'] ?= 'false'
-  ctx.config.hdp.hive_site['fs.file.impl.disable.cache'] ?= 'false'
-  # TODO: encryption is only with Kerberos, need to check first
-  # http://hortonworks.com/blog/encrypting-communication-between-hadoop-and-your-analytics-tools/?utm_source=feedburner&utm_medium=feed&utm_campaign=Feed%3A+hortonworks%2Ffeed+%28Hortonworks+on+Hadoop%29
-  ctx.config.hdp.hive_site['hive.server2.thrift.sasl.qop'] ?= 'auth-conf'
-  # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.6.0/bk_installing_manually_book/content/rpm-chap14-2-3.html#rmp-chap14-2-3-5
-  # If true, the metastore thrift interface will be secured with
-  # SASL. Clients must authenticate with Kerberos.
-  ctx.config.hdp.hive_site['hive.metastore.sasl.enabled'] ?= 'true'
-  # The path to the Kerberos Keytab file containing the metastore
-  # thrift server's service principal.
-  ctx.config.hdp.hive_site['hive.metastore.kerberos.keytab.file'] ?= '/etc/security/keytabs/hive.service.keytab'
-  # The service principal for the metastore thrift server. The
-  # special string _HOST will be replaced automatically with the correct  hostname.
-  ctx.config.hdp.hive_site['hive.metastore.kerberos.principal'] ?= "hive/_HOST@#{realm}"
-  ctx.config.hdp.hive_site['hive.metastore.cache.pinobjtypes'] ?= 'Table,Database,Type,FieldSchema,Order'
-  # https://cwiki.apache.org/confluence/display/Hive/Setting+up+HiveServer2
-  # Authentication type
-  ctx.config.hdp.hive_site['hive.server2.authentication'] ?= 'KERBEROS'
-  # The keytab for the HiveServer2 service principal
-  # 'hive.server2.authentication.kerberos.keytab': "/etc/security/keytabs/hcat.service.keytab"
-  ctx.config.hdp.hive_site['hive.server2.authentication.kerberos.keytab'] ?= '/etc/security/keytabs/hive.service.keytab'
-  # The service principal for the HiveServer2. If _HOST
-  # is used as the hostname portion, it will be replaced
-  # with the actual hostname of the running instance.
-  # 'hive.server2.authentication.kerberos.principal': "hcat/#{ctx.config.host}@#{realm}"
-  ctx.config.hdp.hive_site['hive.server2.authentication.kerberos.principal'] ?= "hive/_HOST@#{realm}"
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hive Server # Configure'
+  @name 'HDP Hive & HCat server # Configure'
   {realm} = ctx.config.krb5_client
   {hive_site} = ctx.config.hdp
   ctx.hconfigure
@@ -67,7 +34,7 @@ module.exports.push (ctx, next) ->
 #http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 #http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
 module.exports.push (ctx, next) ->
-  @name "HDP Hive # Users"
+  @name "HDP Hive & HCat server # Users"
   {hive_user, hadoop_group, webhcat_user} = ctx.config.hdp
   cmd = (cmd) ->
     cmd: cmd
@@ -83,7 +50,7 @@ module.exports.push (ctx, next) ->
 module.exports.push (ctx, next) ->
   {hive_libs} = ctx.config.hdp
   return next() unless hive_libs.length
-  @name 'HDP Hive & HCatalog # Libs'
+  @name 'HDP Hive & HCat server # Libs'
   uploads = for lib in hive_libs
     source: lib
     destination: "/usr/lib/hive/lib/#{path.basename lib}"
@@ -100,29 +67,6 @@ module.exports.push (ctx, next) ->
     mode: 0o0755
   , (err, modified) ->
     return next err, if modified then ctx.OK else ctx.PASS
-
-module.exports.push (ctx, next) ->
-  @name 'HDP Hive & HCat server & Kerberos Keytabs'
-  {hive_user, hadoop_group} = ctx.config.hdp
-  {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
-  ctx.krb5_addprinc
-    principal: "hive/#{ctx.config.host}@#{realm}"
-    randkey: true
-    keytab: "/etc/security/keytabs/hive.service.keytab"
-    uid: hive_user
-    gid: hadoop_group
-    kadmin_principal: kadmin_principal
-    kadmin_password: kadmin_password
-    kadmin_server: kadmin_server
-  # ,
-  #   principal: "hcat/#{ctx.config.host}@#{realm}"
-  #   randkey: true
-  #   keytab: "/etc/security/keytabs/hcat.service.keytab"
-  #   uid: 'hcat'
-  #   gid: 'hadoop'
-  , (err, created) ->
-    return next err if err
-    next null, if created then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
   {hdfs_user, hive_user, hadoop_group} = ctx.config.hdp
@@ -164,8 +108,8 @@ module.exports.push (ctx, next) ->
       ctx.execute
         ssh: ssh
         cmd: mkcmd.hdfs ctx, """
-        if hadoop fs -ls /tmp &> /dev/null; then exit 1; fi
-        hadoop fs -mkdir /tmp;
+        if hadoop fs -ls /tmp/scratch &> /dev/null; then exit 1; fi
+        hadoop fs -mkdir /tmp 2>/dev/null;
         hadoop fs -mkdir /tmp/scratch;
         hadoop fs -chown #{hive_user}:#{hadoop_group} /tmp/scratch;
         hadoop fs -chmod -R 777 /tmp/scratch;
@@ -178,6 +122,16 @@ module.exports.push (ctx, next) ->
     do_end = ->
       next null, if modified then ctx.OK else ctx.PASS
     do_warehouse()
+
+module.exports.push (ctx, next) ->
+  @name 'HDP Hive & HCat server # Start Metastore'
+  lifecycle.hive_metastore_start ctx, (err, started) ->
+    next err, if started then ctx.OK else ctx.PASS
+
+module.exports.push (ctx, next) ->
+  @name 'HDP Hive & HCat server # Start Server2'
+  lifecycle.hive_server2_start ctx, (err, started) ->
+    next err, if started then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
   @name 'HDP Hive & HCat server # Check'

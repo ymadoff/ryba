@@ -110,14 +110,46 @@ lifecyle = module.exports =
       code_skipped: 1
     , (err, started) ->
       callback err, started
-  hive_start: (ctx, callback) ->
-    callback()
-  hive_stop: (ctx, callback) ->
-    callback()
-  hive_restart: (ctx, callback) ->
-    lifecyle.hive_stop ctx, (err) ->
+  hive_metastore_start: (ctx, callback) ->
+    {hive_user, hive_log_dir, hive_pid_dir} = ctx.config.hdp
+    ctx.execute
+      # su -l hive -c 'nohup hive --service metastore>/var/log/hive/hive.out 2>/var/log/hive/hive.log & echo $! >/var/run/hive/metastore.pid'
+      cmd: "su -l #{hive_user} -c 'nohup hive --service metastore>#{hive_log_dir}/hive.out 2>#{hive_log_dir}/hive.log & echo $! > /var/run/hive/metastore.pid'"
+      code_skipped: 1
+    , (err, started) ->
+      callback err, started
+  hive_metastore_stop: (ctx, callback) ->
+    {hive_user, hive_pid_dir} = ctx.config.hdp
+    ctx.execute
+      # su -l hive -c "kill `cat /var/run/hive/metastore.pid"
+      cmd: "su -l #{hive_user} -c \"kill `cat #{hive_pid_dir}/metastore.pid\""
+      code_skipped: 1
+    , (err, started) ->
+      callback err, started
+  hive_metastore_restart: (ctx, callback) ->
+    lifecyle.hive_metastore_stop ctx, (err) ->
       return callback err if err
-      lifecyle.hive_start ctx, callback
+      lifecyle.hive_metastore_start ctx, callback
+  hive_server2_start: (ctx, callback) ->
+    {hive_user, hive_log_dir, hive_pid_dir} = ctx.config.hdp
+    ctx.execute
+      # su -l hive -c 'nohup /usr/lib/hive/bin/hiveserver2 >/var/log/hive/hiveserver2.out 2>/var/log/hive/hiveserver2.log & echo $! >/var/run/hive/server2.pid'
+      cmd: "su -l #{hive_user} -c 'nohup /usr/lib/hive/bin/hiveserver2 >#{hive_log_dir}/hiveserver2.out 2>#{hive_log_dir}/hiveserver2.log & echo $! > /var/run/hive/server2.pid'"
+      code_skipped: 1
+    , (err, started) ->
+      callback err, started
+  hive_server2_stop: (ctx, callback) ->
+    {hive_user, hive_pid_dir} = ctx.config.hdp
+    ctx.execute
+      # su -l hive -c "kill `cat /var/run/hive/server2.pid"
+      cmd: "su -l #{hive_user} -c \"kill `cat #{hive_pid_dir}/server2.pid\""
+      code_skipped: 1
+    , (err, started) ->
+      callback err, started
+  hive_server2_restart: (ctx, callback) ->
+    lifecyle.hive_server2_stop ctx, (err) ->
+      return callback err if err
+      lifecyle.hive_server2_start ctx, callback
   oozie_start: (ctx, callback) ->
     {oozie_user} = ctx.config.hdp
     ctx.execute
