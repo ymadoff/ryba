@@ -74,8 +74,3 @@ export HBASE_PID_DIR=/var/run/hbase
 
 # Tell HBase whether it should manage it's own instance of Zookeeper or not.
 export HBASE_MANAGES_ZK=false
-
-# Newer versions of glibc use an arena memory allocator that causes virtual
-# memory usage to explode. This interacts badly with the many threads that
-# we use in Hadoop. Tune the variable down to prevent vmem explosion.
-export MALLOC_ARENA_MAX=${MALLOC_ARENA_MAX:-4}
