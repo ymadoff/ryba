@@ -144,6 +144,7 @@ module.exports.push (ctx, next) ->
       uid: oozie_user
       guid: hadoop_group
       mode: 0o0755
+      merge: true
     , (err, configured) ->
       return next err if err
       modified = true if configured

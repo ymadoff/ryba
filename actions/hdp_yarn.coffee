@@ -18,6 +18,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.yarn_pid_dir ?= '/var/run/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#21
   # Define Users and Groups
   ctx.config.hdp.yarn_user ?= 'yarn'
+  ctx.config.hdp.yarn_group ?= 'yarn'
   # Configure yarn
   # Comma separated list of paths. Use the list of directories from $YARN_LOCAL_DIR, eg: /grid/hadoop/hdfs/yarn/local,/grid1/hadoop/hdfs/yarn/local.
   throw new Error 'Required property: hdp.yarn[yarn.nodemanager.local-dirs]' unless ctx.config.hdp.yarn['yarn.nodemanager.local-dirs']
@@ -140,10 +141,7 @@ module.exports.push (ctx, next) ->
 module.exports.push (ctx, next) ->
   @name "HDP Hadoop YARN # Container Executor"
   modified = false
-  mode = 0o6050
-  user = 'root'
-  group = 'yarn'
-  {yarn_user, container_executor, hadoop_conf_dir} = ctx.config.hdp
+  {yarn_user, yarn_group, container_executor, hadoop_conf_dir} = ctx.config.hdp
   container_executor = misc.merge {}, container_executor
   container_executor['yarn.nodemanager.local-dirs'] = container_executor['yarn.nodemanager.local-dirs'].join ','
   container_executor['yarn.nodemanager.log-dirs'] = container_executor['yarn.nodemanager.log-dirs'].join ','
@@ -152,14 +150,14 @@ module.exports.push (ctx, next) ->
     ctx.log "change ownerships and permissions to '#{ce}'"
     ctx.chown
       destination: ce
-      uid: user
-      gid: group
+      uid: 'root'
+      gid: yarn_group
     , (err, chowned) ->
       return next err if err
       modified = true if chowned
       ctx.chmod
         destination: ce
-        mode: mode
+        mode: 0o6050
       , (err, chmoded) ->
         return next err if err
         modified = true if chmoded
@@ -169,8 +167,8 @@ module.exports.push (ctx, next) ->
     ctx.ini
       destination: "#{hadoop_conf_dir}/container-executor.cfg"
       content: container_executor
-      uid: user
-      gid: group
+      uid: 'root'
+      gid: yarn_group
       mode: 0o0640
       separator: '='
       backup: true
@@ -194,6 +192,7 @@ module.exports.push (ctx, next) ->
       default: "#{__dirname}/hdp/core_hadoop/yarn-site.xml"
       local_default: true
       properties: config
+      merge: true
     , (err, configured) ->
       return next err if err
       modified = true if configured
@@ -205,6 +204,7 @@ module.exports.push (ctx, next) ->
       default: "#{__dirname}/hdp/core_hadoop/capacity-scheduler.xml"
       local_default: true
       properties: capacity_scheduler
+      merge: true
     , (err, configured) ->
       return next err if err
       modified = true if configured
@@ -275,25 +275,9 @@ module.exports.push (ctx, next) ->
   ctx.hconfigure
     destination: "#{hadoop_conf_dir}/yarn-site.xml"
     properties: yarn
+    merge: true
   , (err, configured) ->
     next err, if configured then ctx.OK else ctx.PASS
-  # properties.read ctx.ssh, '/etc/hadoop/conf/yarn-site.xml', (err, kv) ->
-  #   return next err if err
-  #   yarn = {}
-  #   # Todo: might need to configure WebAppProxy but I understood that it is run as part of rm if not configured separately
-  #   # yarn.web-proxy.address    WebAppProxy                                   host:port for proxy to AM web apps. host:port if this is the same as yarn.resourcemanager.webapp.address or it is not defined then the ResourceManager will run the proxy otherwise a standalone proxy server will need to be launched.
-  #   # yarn.web-proxy.keytab     /etc/security/keytabs/web-app.service.keytab  Kerberos keytab file for the WebAppProxy.
-  #   # yarn.web-proxy.principal  wap/_HOST@REALM.TLD                           Kerberos principal name for the WebAppProxy.
-  #   # Todo: need to deploy "container-executor.cfg"
-  #   # see http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
-  #   # Configurations the ResourceManager
-  #   modified = false
-  #   for k, v of yarn
-  #     modified = true if kv[k] isnt v
-  #     kv[k] = v
-  #   return next null, ctx.PASS unless modified
-  #   properties.write ctx.ssh, '/etc/hadoop/conf/yarn-site.xml', kv, (err) ->
-  #     next err, ctx.OK
 
 ###
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)

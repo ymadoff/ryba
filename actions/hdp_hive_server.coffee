@@ -2,6 +2,7 @@
 path = require 'path'
 mkcmd = require './hdp/mkcmd'
 lifecycle = require './hdp/lifecycle'
+mkcmd = require './hdp/mkcmd'
 module.exports = []
 
 module.exports.push 'histi/actions/mysql_client'
@@ -28,6 +29,7 @@ module.exports.push (ctx, next) ->
     default: "#{__dirname}/hdp/hive/hive-site.xml"
     local_default: true
     properties: hive_site
+    merge: true
   , (err, configured) ->
     next err, if configured then ctx.OK else ctx.PASS
 

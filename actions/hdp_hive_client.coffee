@@ -45,7 +45,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.hive_site['fs.file.impl.disable.cache'] ?= 'false'
   # TODO: encryption is only with Kerberos, need to check first
   # http://hortonworks.com/blog/encrypting-communication-between-hadoop-and-your-analytics-tools/?utm_source=feedburner&utm_medium=feed&utm_campaign=Feed%3A+hortonworks%2Ffeed+%28Hortonworks+on+Hadoop%29
-  ctx.config.hdp.hive_site['hive.server2.thrift.sasl.qop'] ?= 'auth-conf'
+  ctx.config.hdp.hive_site['hive.server2.thrift.sasl.qop'] ?= 'auth'
   # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.6.0/bk_installing_manually_book/content/rpm-chap14-2-3.html#rmp-chap14-2-3-5
   # If true, the metastore thrift interface will be secured with
   # SASL. Clients must authenticate with Kerberos.
@@ -116,6 +116,7 @@ module.exports.push (ctx, next) ->
     default: "#{__dirname}/hdp/hive/hive-site.xml"
     local_default: true
     properties: hive_site
+    merge: true
   , (err, configured) ->
     return next err if err
     ctx.execute
@@ -156,5 +157,18 @@ module.exports.push (ctx, next) ->
   , (err, created) ->
     return next err if err
     next null, if created then ctx.OK else ctx.PASS
+
+module.exports.push (ctx, next) ->
+  @name 'HDP Hive & HCat client # Logs'
+  ctx.write [
+    source: "#{__dirname}/hdp/hive/hive-exec-log4j.properties.template"
+    local_source: true
+    destination: '/etc/hive/conf/hive-exec-log4j.properties'
+  ,
+    source: "#{__dirname}/hdp/hive/hive-log4j.properties.template"
+    local_source: true
+    destination: '/etc/hive/conf/hive-log4j.properties'
+  ], (err, written) ->
+    return next err, if written then ctx.OK else ctx.PASS
 
 

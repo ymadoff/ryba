@@ -83,6 +83,7 @@ module.exports.push (ctx, next) ->
     default: "#{__dirname}/hdp/hbase/hbase-site.xml"
     local_default: true
     properties: hbase_site
+    merge: true
   , (err, configured) ->
     next err, if configured then ctx.OK else ctx.PASS
 

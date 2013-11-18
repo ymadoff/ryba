@@ -149,6 +149,7 @@ module.exports.push (ctx, next) ->
       default: "#{__dirname}/hdp/core_hadoop/core-site.xml"
       local_default: true
       properties: core
+      merge: true
     , (err, configured) ->
       return next err if err
       modified = true if configured
@@ -208,18 +209,7 @@ module.exports.push (ctx, next) ->
     ctx.hconfigure
       destination: "#{hadoop_conf_dir}/core-site.xml"
       properties: core
-    , (err, configured) ->
-      return next err if err
-      modified = true if configured
-      do_mapred()
-  do_mapred = ->
-    ctx.log 'Configure mapred-site.xml'
-    mapred = {}
-    mapred['mapreduce.admin.map.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
-    mapred['mapreduce.admin.reduce.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
-    ctx.hconfigure
-      destination: "#{hadoop_conf_dir}/mapred-site.xml"
-      properties: mapred
+      merge: true
     , (err, configured) ->
       return next err if err
       modified = true if configured
@@ -286,6 +276,7 @@ module.exports.push (ctx, next) ->
   ctx.hconfigure
     destination: "#{hadoop_conf_dir}/core-site.xml"
     properties: core
+    merge: true
   , (err, configured) ->
     next err, if configured then ctx.OK else ctx.PASS
   # properties.read ctx.ssh, '/etc/hadoop/conf/core-site.xml', (err, kv) ->
@@ -386,9 +377,10 @@ module.exports.push (ctx, next) ->
         'hadoop.http.authentication.signature.secret.file': '/etc/hadoop/hadoop-http-auth-signature-secret'
         'hadoop.http.authentication.cookie.domain': domain
         'hadoop.http.authentication.simple.anonymous.allowed': 'false'
-        # For some reason, _HOST isnt leverage
+        # For some reason, _HOST isnt leveraged
         'hadoop.http.authentication.kerberos.principal': "HTTP/#{ctx.config.host}@#{realm}"
         'hadoop.http.authentication.kerberos.keytab': '/etc/security/keytabs/spnego.service.keytab'
+      merge: true
     , (err, configured) ->
       next err, if configured then ctx.OK else ctx.PASS
 

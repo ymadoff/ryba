@@ -204,6 +204,7 @@ module.exports.push (ctx, next) ->
       default: "#{__dirname}/hdp/core_hadoop/hdfs-site.xml"
       local_default: true
       properties: hdfs
+      merge: true
     , (err, configured) ->
       return next err if err
       modified = true if configured
@@ -255,6 +256,7 @@ module.exports.push (ctx, next) ->
         'dfs.https.port': '50470'
         # The https address where namenode binds. Example: ip-10-111-59-170.ec2.internal:50470
         'dfs.https.address': "#{namenode}:50470"
+      merge: true
     , (err, configured) ->
       return next err if err
       modified = true if configured
@@ -266,6 +268,7 @@ module.exports.push (ctx, next) ->
       default: "#{__dirname}/hdp/core_hadoop/hadoop-policy.xml"
       local_default: true
       properties: hadoop_policy
+      merge: true
     , (err, configured) ->
       return next err if err
       modified = true if configured
@@ -354,6 +357,7 @@ module.exports.push (ctx, next) ->
   ctx.hconfigure
     destination: "#{hadoop_conf_dir}/hdfs-site.xml"
     properties: hdfs
+    merge: true
   , (err, configured) ->
     next err, if configured then ctx.OK else ctx.PASS
 
