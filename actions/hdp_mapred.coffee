@@ -24,32 +24,23 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.mapred_pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
   # [Configurations for MapReduce Applications](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuring_the_Hadoop_Daemons_in_Non-Secure_Mode)
   ctx.config.hdp.mapred['mapreduce.framework.name'] ?= 'yarn' # Execution framework set to Hadoop YARN.
-  ctx.config.hdp.mapred['mapreduce.map.memory.mb'] ?= '1536' # Larger resource limit for maps.
-  ctx.config.hdp.mapred['mapreduce.map.java.opts'] ?= '-Xmx1024M' # Larger heap-size for child jvms of maps.
+  ctx.config.hdp.mapred['mapreduce.map.memory.mb'] ?= '4000' # Larger resource limit for maps.
+  ctx.config.hdp.mapred['mapreduce.map.java.opts'] ?= '-Xmx2560M' # Larger heap-size for child jvms of maps.
   ctx.config.hdp.mapred['mapreduce.reduce.memory.mb'] ?= '3072' # Larger resource limit for reduces.
   ctx.config.hdp.mapred['mapreduce.reduce.java.opts'] ?= '-Xmx2560M' # Larger heap-size for child jvms of reduces.
-  ctx.config.hdp.mapred['mapreduce.task.io.sort.mb'] ?= '512' # Higher memory-limit while sorting data for efficiency.
+  ctx.config.hdp.mapred['mapreduce.task.io.sort.mb'] ?= '1024' # Higher memory-limit while sorting data for efficiency.
   ctx.config.hdp.mapred['mapreduce.task.io.sort.factor'] ?= '100' # More streams merged at once while sorting files.
   ctx.config.hdp.mapred['mapreduce.reduce.shuffle.parallelcopies'] ?= '50' #  Higher number of parallel copies run by reduces to fetch outputs from very large number of maps.
-
+  # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.6.0/bk_installing_manually_book/content/rpm_chap3.html
+  # Optional: Configure MapReduce to use Snappy Compression
+  # Complement core-site.xml configuration
+  ctx.config.hdp.mapred['mapreduce.admin.map.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
+  ctx.config.hdp.mapred['mapreduce.admin.reduce.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
   # [Configurations for MapReduce JobHistory Server](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuring_the_Hadoop_Daemons_in_Non-Secure_Mode)
   ctx.config.hdp.mapred['mapreduce.jobhistory.address'] ?= "#{jobhistoryserver}:10020" # MapReduce JobHistory Server host:port - Default port is 10020.
   ctx.config.hdp.mapred['mapreduce.jobhistory.webapp.address'] ?= "#{jobhistoryserver}:19888" # MapReduce JobHistory Server Web UI host:port - Default port is 19888.
   ctx.config.hdp.mapred['mapreduce.jobhistory.intermediate-done-dir'] ?= '/mr-history/tmp' # Directory where history files are written by MapReduce jobs.
   ctx.config.hdp.mapred['mapreduce.jobhistory.done-dir'] ?= '/mr-history/done' # Directory where history files are managed by the MR JobHistory Server.
-
-#http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
-#http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
-module.exports.push (ctx, next) ->
-  @name "HDP MapRed # Users & Groups"
-  return next() unless ctx.config.hdp.jobhistoryserver
-  {hadoop_group} = ctx.config.hdp
-  ctx.execute
-    cmd: "useradd mapred -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop MapReduce service\""
-    code: 0
-    code_skipped: 9
-  , (err, executed) ->
-    next err, if executed then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
   @name "HDP MapRed # Install Common"
@@ -62,6 +53,18 @@ module.exports.push (ctx, next) ->
     name: 'hadoop-client'
   ], (err, serviced) ->
     next err, if serviced then ctx.OK else ctx.PASS
+
+#http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
+#http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
+module.exports.push (ctx, next) ->
+  @name "HDP Hadoop JHS # Users & Groups"
+  {hadoop_group} = ctx.config.hdp
+  ctx.execute
+    cmd: "useradd mapred -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop MapReduce service\""
+    code: 0
+    code_skipped: 9
+  , (err, executed) ->
+    next err, if executed then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
   @name "HDP MapRed # System Directories"
@@ -105,6 +108,7 @@ module.exports.push (ctx, next) ->
       default: "#{__dirname}/hdp/core_hadoop/mapred-site.xml"
       local_default: true
       properties: mapred
+      merge: true
     , (err, configured) ->
       return next err if err
       modified = true if configured
@@ -119,6 +123,7 @@ module.exports.push (ctx, next) ->
       default: "#{__dirname}/hdp/core_hadoop/mapred-queue-acls.xml"
       local_default: true
       properties: mapred_queue_acls
+      merge: true
     , (err, configured) ->
       return next err if err
       modified = true if configured
@@ -137,6 +142,7 @@ module.exports.push (ctx, next) ->
   ctx.hconfigure
     destination: "#{hadoop_conf_dir}/mapred-site.xml"
     properties: mapred
+    merge: true
   , (err, configured) ->
     next err, if configured then ctx.OK else ctx.PASS
 
