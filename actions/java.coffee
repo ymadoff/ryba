@@ -2,11 +2,10 @@
 path = require 'path'
 semver = require 'semver'
 url = require 'url'
-proxy = require './proxy'
 module.exports = []
 
-module.exports.push (ctx) ->
-  proxy.configure ctx
+module.exports.push module.exports.configure = (ctx) ->
+  require('./proxy').configure ctx
   ctx.config.java ?= {}
   ctx.config.java.java_home ?= '/usr/java/default'
   ctx.config.java.proxy = ctx.config.proxy.http_proxy if typeof ctx.config.java is 'undefined'
