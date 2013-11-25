@@ -8,7 +8,7 @@ module.exports.push module.exports.configure = (ctx) ->
   require('./hdp_core').configure ctx
   {realm} = ctx.config.krb5_client
   namenode = (ctx.config.servers.filter (s) -> s.hdp?.namenode)[0].host
-  zookeeper_hosts = (ctx.config.servers.filter (s) -> s.hdp?.zookeeper).map( (s) -> s.host ).join ','
+  zookeeper_hosts = ctx.config.servers.filter((s) -> s.hdp?.zookeeper).map((s) -> s.host).join ','
   ctx.config.hdp ?= {}
   ctx.config.hdp.hbase_user ?= 'hbase'
   ctx.config.hdp.hbase_log_dir ?= '/var/log/hbase'
@@ -87,9 +87,38 @@ module.exports.push (ctx, next) ->
   , (err, configured) ->
     next err, if configured then ctx.OK else ctx.PASS
 
+# node, hbase_log_dir is in hbase-env.sh not in log4j
+# module.exports.push (ctx, next) ->
+#   @name 'HDP HBase # Log'
+#   {hbase_log_dir} = ctx.config.hdp
+#   ctx.log 'Write log4j.properties'
+#   ctx.upload
+#     source: "#{__dirname}/hdp/hbase/log4j.properties"
+#     destination: '/etc/hbase/conf/log4j.properties'
+#     write: [
+#       match: /^(hbase.log.dir=).*$/mg
+#       replace: "$1#{hbase_log_dir}"
+#     ]
+#   , (err, configured) ->
+#     next err, if configured then ctx.OK else ctx.PASS
+
+module.exports.push (ctx, next) ->
+  @name 'HDP HBase # Env'
+  {hbase_log_dir} = ctx.config.hdp
+  ctx.log 'Write hbase-env.sh'
+  ctx.upload
+    source: "#{__dirname}/hdp/hbase/hbase-env.sh"
+    destination: '/etc/hbase/conf/hbase-env.sh'
+    write: [
+      match: /^(export HBASE_LOG_DIR=).*$/mg
+      replace: "$1#{hbase_log_dir}"
+    ]
+  , (err, uploaded) ->
+    next err, if uploaded then ctx.OK else ctx.PASS
+
 module.exports.push (ctx, next) ->
   @name 'HDP HBase # RegionServer'
-  regionservers = (ctx.config.servers.filter (s) -> s.hdp?.hbase_regionserver).join('\n')
+  regionservers = ctx.config.servers.filter((s) -> s.hdp?.hbase_regionserver).map((s) -> s.host).join('\n')
   {hbase_user} = ctx.config.hdp
   ctx.write
     content: regionservers
