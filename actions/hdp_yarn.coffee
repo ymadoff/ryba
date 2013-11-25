@@ -178,7 +178,7 @@ module.exports.push (ctx, next) ->
   do_stat()
 
 module.exports.push (ctx, next) ->
-  @name "HDP Hadoop YARN # Hadoop Configuration"
+  @name "HDP Hadoop YARN # Configuration"
   { yarn, hadoop_conf_dir, capacity_scheduler } = ctx.config.hdp
   modified = false
   do_yarn = ->
@@ -212,6 +212,29 @@ module.exports.push (ctx, next) ->
   do_end = ->
     next null, if modified then ctx.OK else ctx.PASS
   do_yarn()
+
+###
+HDP Hadoop YARN # Tuning
+------------------------
+
+yarn.nodemanager.vmem-pmem-ratio property: Is defines ratio of virtual memory to available pysical memory, Here is 2.1 means virtual memory will be double the size of physical memory.
+
+yarn.app.mapreduce.am.command-opts: In yarn ApplicationMaster(AM) is responsible for securing necessary resources. So this property defines how much memory required to run AM itself. Don't confuse this with nodemanager, where job will be executed.
+
+yarn.app.mapreduce.am.resource.mb: This property specify criteria to select resource for particular job. Here is given 1536 Means any nodemanager which has equal or more memory available will get selected for executing job.
+
+Ressources:
+http://stackoverflow.com/questions/18692631/difference-between-3-memory-parameters-in-hadoop-2
+###
+module.exports.push (ctx, next) ->
+  @name "HDP Hadoop YARN # Tuning"
+  # yarn.nodemanager.resource.memory-mb
+  # yarn.nodemanager.vmem-pmem-ratio
+  # yarn.scheduler.maximum-allocation-mb
+  # yarn.scheduler.minimum-allocation-mb
+  # yarn.nodemanager.log.retain-seconds (cherif mettre la valeur à 10800 au lie de 604800)
+  # yarn.log-aggregation.retain-seconds (chefrif)
+  next null, "TODO"
 
 module.exports.push (ctx, next) ->
   @name 'HDP Hadoop YARN # Kerberos Principals'
