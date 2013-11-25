@@ -197,12 +197,14 @@ lifecyle = module.exports =
   hbase_regionserver_start: (ctx, callback) ->
     {hbase_user, hbase_conf_dir} = ctx.config.hdp
     ctx.execute
+      # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start regionserver"
       cmd: "su -l #{hbase_user} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} start regionserver\""
     , (err, stoped) ->
       callback err, stoped
   hbase_regionserver_stop: (ctx, callback) ->
     {hbase_user, hbase_conf_dir} = ctx.config.hdp
     ctx.execute
+      # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop regionserver"
       cmd: "su -l #{hbase_user} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} stop regionserver\""
     , (err, stoped) ->
       callback err, stoped
