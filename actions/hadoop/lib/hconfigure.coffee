@@ -35,7 +35,9 @@ module.exports = (options, callback) ->
         properties.read options.ssh, options.source, (err, props) ->
           return next err if err and err.code isnt 'ENOENT'
           org_props = if err then {} else props
-          fnl_props = org_props if options.merge
+          if options.merge
+            fnl_props = {}
+            for k, v in org_props then fnl_props[k] = v
           do_load_default()
       do_load_default = () ->
         return do_merge() unless options.default
@@ -73,7 +75,7 @@ module.exports = (options, callback) ->
           updated = true
         do_save()
       do_save = ->
-        return next() unless updated
+        #return next() unless updated
         options.log? "Save properties"
         configured++
         options.content = properties.stringify fnl_props
