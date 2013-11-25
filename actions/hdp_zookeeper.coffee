@@ -3,9 +3,11 @@ lifecycle = require './hdp/lifecycle'
 
 module.exports = []
 module.exports.push 'histi/actions/yum'
+module.exports.push 'histi/actions/java'
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./hdp_core').configure ctx
+  require('./java').configure ctx
   ctx.config.hdp.zookeeper_myid ?= null
   ctx.config.hdp.zookeeper_user ?= 'zookeeper'
   ctx.config.hdp.zookeeper_data_dir ?= '/var/zookeper/data/'
@@ -61,7 +63,8 @@ module.exports.push (ctx, next) ->
   @name 'HDP ZooKeeper # Configure'
   modified = false
   hosts = (ctx.config.servers.filter (s) -> s.hdp?.zookeeper).map (s) -> s.host
-  { java_home, hadoop_group,
+  {java_home} = ctx.config.java
+  { hadoop_group,
     zookeeper_user, zookeeper_data_dir, zookeeper_pid_dir, zookeeper_log_dir,
     zookeeper_myid
   } = ctx.config.hdp
