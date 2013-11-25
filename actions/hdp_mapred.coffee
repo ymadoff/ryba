@@ -98,7 +98,7 @@ module.exports.push (ctx, next) ->
   do_log()
 
 module.exports.push (ctx, next) ->
-  @name "HDP MapRed # Hadoop Configuration"
+  @name "HDP MapRed # Configuration"
   { mapred, hadoop_conf_dir, mapred_queue_acls } = ctx.config.hdp
   modified = false
   do_mapred = ->
@@ -210,14 +210,6 @@ module.exports.push (ctx, next) ->
     next null, if ok then ctx.OK else ctx.PASS
   do_mapreduce_jobtracker_system_dir()
 
-###
-Test JobTracker
----------------
-Run the "teragen" and "terasort" hadoop examples. Will only
-be executed if the directory "/user/test/10gsort" generated 
-by this action is not present on HDFS. Delete this directory 
-to re-execute the check.
-###
 # module.exports.push (ctx, next) ->
 #   @name 'HDP Check # Test ResourceManager UI'
 #   ctx.execute
@@ -227,6 +219,14 @@ to re-execute the check.
 #     console.log stdout
 #     next err, ctx.PASS
 
+###
+Test JobTracker
+---------------
+Run the "teragen" and "terasort" hadoop examples. Will only
+be executed if the directory "/user/test/10gsort" generated 
+by this action is not present on HDFS. Delete this directory 
+to re-execute the check.
+###
 module.exports.push (ctx, next) ->
   @name 'HDP MapRed # Check'
   @timeout -1
