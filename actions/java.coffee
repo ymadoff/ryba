@@ -13,6 +13,32 @@ module.exports.push module.exports.configure = (ctx) ->
   throw new Error "Configuration property 'java.version' is required." unless ctx.config.java.version
   # ctx.config.java.version ?= (/\w+-([\w\d]+)-/.exec path.basename ctx.config.java.location)[0]
 
+module.exports.push (ctx, next) ->
+  @name 'Java # Remove OpenJDK'
+  ctx.execute
+    cmd: 'yum list installed | grep openjdk'
+    code_skipped: 1
+  , (err, installed, stdout) ->
+    return next err, ctx.PASS if err or not installed
+    packages = for l in stdout.trim().split('\n') then /(.*?) *$/.exec(l)[1]
+    ctx.execute
+      cmd: "yum remove -y #{packages.join ' '}"
+    , (err) ->
+      next err, ctx.OK
+
+# module.exports.push (ctx, next) ->
+#   @name 'Java # Remove GCJ'
+#   ctx.execute
+#     cmd: 'yum list installed | grep gcj'
+#     code_skipped: 1
+#   , (err, installed, stdout) ->
+#     return next err, ctx.PASS if err or not installed
+#     packages = for l in stdout.trim().split('\n') then /(.*?) /.exec(l)[1]
+#     ctx.execute
+#       cmd: "yum remove -y #{packages.join ' '}"
+#     , (err) ->
+#       next err, ctx.OK
+
 ###
 Followed instruction from: http://www.if-not-true-then-false.com/2010/install-sun-oracle-java-jdk-jre-6-on-fedora-centos-red-hat-rhel/
 but we didn't use alternative yet
@@ -75,6 +101,18 @@ module.exports.push (ctx, next) ->
     # setTimeout ->
     #   next err, if downloaded then ctx.OK else ctx.PASS
     # , 10000
+
+module.exports.push (ctx, next) ->
+  @name 'Java # Env'
+  ctx.write
+    destination: '/etc/profile.d/java.sh'
+    mode: 644
+    content: """
+    export JAVA_HOME=/usr/java/default
+    export PATH=$PATH:/usr/java/default/bin
+    """
+  , (err, written) ->
+    next err, if written then ctx.OK else ctx.PASS
 
 
 
