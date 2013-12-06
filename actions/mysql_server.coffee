@@ -7,17 +7,21 @@ Mysql Server
 ###
 mecano = require 'mecano'
 each = require 'each'
-actions = module.exports = []
+module.exports = []
+
+# Install the mysql driver
+module.exports.push 'histi/actions/mysql_client'
 
 ###
 Configure
 ---------
 ###
-actions.push (ctx) ->
+module.exports.push module.exports.configure = (ctx) ->
   ctx.config.mysql_server ?= {}
   ctx.config.mysql_server.sql_on_install ?= []
   ctx.config.mysql_server.sql_on_install = [ctx.config.mysql_server.sql_on_install] if typeof ctx.config.mysql_server.sql_on_install is 'string'
   ctx.config.mysql_server.current_password ?= ''
+  ctx.config.mysql_server.username ?= 'root'
   ctx.config.mysql_server.password ?= ''
   ctx.config.mysql_server.remove_anonymous ?= true
   ctx.config.mysql_server.disallow_remote_root_login ?= false
@@ -29,10 +33,11 @@ Package
 -------
 Install the Mysql database server. Secure the temporary directory.
 ###
-actions.push (ctx, next) ->
+module.exports.push (ctx, next) ->
   @name 'Mysql Server # Package'
   @timeout -1
   {sql_on_install} = ctx.config.mysql_server
+  modified = false
   do_install = ->
     ctx.service
       name: 'mysql-server'
@@ -41,7 +46,8 @@ actions.push (ctx, next) ->
       # action: 'start'
     , (err, serviced) ->
       return next err if err
-      return next null, ctx.PASS unless serviced
+      # return next null, ctx.PASS unless serviced
+      modified = true if serviced
       do_tmp()
   do_tmp = ->
     ctx.mkdir
@@ -51,6 +57,7 @@ actions.push (ctx, next) ->
       mode: '0744'
     , (err, created) ->
       return next err if err
+      modified = true if created
       ctx.ini
         destination: '/etc/my.cnf'
         content: mysqld: tmpdir: '/tmp/mysql'
@@ -58,41 +65,48 @@ actions.push (ctx, next) ->
         backup: true
       , (err, updated) ->
         return next err if err
+        modified = true if updated
         do_start()
   do_start = ->
     ctx.service
       name: 'mysql-server'
       srv_name: 'mysqld'
       action: 'start'
-    , (err, serviced) ->
+    , (err, started) ->
       return next err if err
+      modified = true if started
       do_sql()
   do_sql = ->
-    escape = (text) ->
-      return text.replace(/[\\"]/g, "\\$&")
+    escape = (text) -> text.replace(/[\\"]/g, "\\$&")
     each(sql_on_install)
     .on 'item', (sql, next) ->
       cmd = "mysql -uroot -e \"#{escape sql}\""
       ctx.log "Execute: #{cmd}"
-      ctx.execute cmd: cmd, (err) ->
-        next err
+      ctx.execute
+        cmd: cmd
+        code_skipped: 1
+      , (err, executed) ->
+        return next err if err
+        modified = true if executed
+        next()
     .on 'both', (err) ->
       next err, ctx.OK
   do_install()
 
-###
-Java Connector
---------------
-Install the Mysql Java connector. The 
-jar is available at "/usr/share/java/mysql-connector-java.jar".
-###
-actions.push (ctx, next) ->
-  @name 'Mysql Server # Java Connector'
-  @timeout -1
-  ctx.service
-    name: 'mysql-connector-java'
-  , (err, serviced) ->
-    next err, if serviced then ctx.OK else ctx.PASS
+# Now installed by client dependency
+# ###
+# Java Connector
+# --------------
+# Install the Mysql Java connector. The 
+# jar is available at "/usr/share/java/mysql-connector-java.jar".
+# ###
+# module.exports.push (ctx, next) ->
+#   @name 'Mysql Server # Java Connector'
+#   @timeout -1
+#   ctx.service
+#     name: 'mysql-connector-java'
+#   , (err, serviced) ->
+#     next err, if serviced then ctx.OK else ctx.PASS
 
 ###
 Secure Installation
@@ -105,7 +119,7 @@ Secure Installation
   Disallow root login remotely? [Y/n] n
   Remove test database and access to it? [Y/n] y
 ###
-actions.push (ctx, next) ->
+module.exports.push (ctx, next) ->
   @name 'Mysql Server # Secure'
   {current_password, password, remove_anonymous, disallow_remote_root_login, remove_test_db, reload_privileges} = ctx.config.mysql_server
   test_password = true

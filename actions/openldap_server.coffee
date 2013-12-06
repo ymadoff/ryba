@@ -46,15 +46,28 @@ module.exports.push module.exports.configure = (ctx) ->
   # need a mechanism to store configuration properties before.
   ctx.config.openldap_server ?= {}
   throw new Error "Missing \"openldap_server.suffix\" property" unless ctx.config.openldap_server.suffix
-  throw new Error "Missing \"openldap_server.root_slappasswd\" property" unless ctx.config.openldap_server.suffix
-  throw new Error "Missing \"openldap_server.config_dn\" property" unless ctx.config.openldap_server.suffix
-  throw new Error "Missing \"openldap_server.config_password\" property" unless ctx.config.openldap_server.suffix
-  throw new Error "Missing \"openldap_server.config_slappasswd\" property" unless ctx.config.openldap_server.suffix
+  throw new Error "Missing \"openldap_server.root_password\" property" unless ctx.config.openldap_server.root_password
+  throw new Error "Missing \"openldap_server.root_slappasswd\" property" unless ctx.config.openldap_server.root_slappasswd
+  throw new Error "Missing \"openldap_server.config_dn\" property" unless ctx.config.openldap_server.config_dn
+  throw new Error "Missing \"openldap_server.config_password\" property" unless ctx.config.openldap_server.config_password
+  throw new Error "Missing \"openldap_server.config_slappasswd\" property" unless ctx.config.openldap_server.config_slappasswd
   ctx.config.openldap_server.root_dn ?= "cn=Manager,#{ctx.config.openldap_server.suffix}"
   ctx.config.openldap_server.log_level ?= 256
   ctx.config.openldap_server.ldapadd ?= []
   ctx.config.openldap_server.ldapdelete ?= []
   ctx.config.openldap_server.tls ?= false
+  # slappasswd = (secret, callback) ->
+  #   ctx.execute
+  #     cmd: "slappasswd -s #{secret}"
+  #   , (err, executed, stdout) ->
+  #     callback err, stdout.trim()
+  # slappasswd ctx.config.openldap_server.root_password, (err, secret) ->
+  #   return next err if err
+  #   ctx.config.openldap_server.root_slappasswd = secret
+  #   slappasswd ctx.config.openldap_server.config_password, (err, secret) ->
+  #     return next err if err
+  #     ctx.config.openldap_server.config_slappasswd = secret
+  #     next()
 
 module.exports.push (ctx, next) ->
   @name 'OpenLDAP Server # Install'

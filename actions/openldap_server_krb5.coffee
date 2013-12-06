@@ -6,7 +6,6 @@ OpenLDAP Kerberos
 ###
 ldap = require 'ldapjs'
 misc = require 'mecano/lib/misc'
-oc = require './openldap_connection'
 module.exports = []
 
 ###
@@ -45,7 +44,7 @@ module.exports.push (ctx, next) ->
     gidNumber: '800'
     description: 'Kerberos administrator\'s group.'
   # Create LDAP admin connection if not already present
-  oc.configure ctx, next
+  require('./openldap_connection').configure ctx, next
 
 ###
 Install schema
@@ -78,7 +77,6 @@ module.exports.push (ctx, next) ->
       register schema
   register = (schema) ->
     ctx.ldap_schema
-      # ldap: ctx.ldap_config
       name: 'kerberos'
       schema: schema
       binddn: config_dn
@@ -119,31 +117,41 @@ module.exports.push (ctx, next) ->
   kbsou()
 
 module.exports.push (ctx, next) ->
-  @name 'OpenLDAP Kerberos # User permissions for kerberos'
+  # We used: http://itdavid.blogspot.fr/2012/05/howto-centos-62-kerberos-kdc-with.html
+  # But this is also interesting: http://web.mit.edu/kerberos/krb5-current/doc/admin/conf_ldap.html
+  @name 'OpenLDAP Kerberos # User permissions'
   {realms_dn, users_container_dn} = ctx.config.openldap_krb5
   {suffix} = ctx.config.openldap_server
   ctx.ldap_acl [
     ldap: ctx.ldap_config
     log: ctx.log
     name: "olcDatabase={2}bdb,cn=config"
-    before: "dn.subtree=\"#{suffix}\""
-    to: "dn.subtree=\"#{realms_dn}\""
-    by: [
-      "dn.exact=\"#{users_container_dn}\" write"
-      "dn.base=\"gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth\" read"
-      "* none"
-    ]
-  ,
-    ldap: ctx.ldap_config
-    log: ctx.log
-    name: "olcDatabase={2}bdb,cn=config"
-    to: "dn.subtree=\"#{suffix}\""
-    by: [
-      "dn.exact=\"#{users_container_dn}\" write"
+    acls: [
+    #   before: "dn.subtree=\"#{realms_dn}\""
+    #   to: "attrs=userPassword,userPKCS12"
+    #   by: [
+    #     "dn.base=\"gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth\" manage "
+    #     "self write  "
+    #     "anonymous auth "
+    #     "* none"
+    #   ]
+    # ,
+      before: "dn.subtree=\"#{suffix}\""
+      to: "dn.subtree=\"#{realms_dn}\""
+      by: [
+        "dn.exact=\"#{users_container_dn}\" write"
+        "dn.base=\"gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth\" read"
+        "* none"
+      ]
+    ,
+      to: "dn.subtree=\"#{suffix}\""
+      by: [
+        "dn.exact=\"#{users_container_dn}\" write"
+      ]
     ]
   ], (err, modified) ->
     return next err if err
-    ctx.log 'Check it returns the entire #{realms_dn} subtree'
+    ctx.log "Check it returns the entire #{realms_dn} subtree"
     ctx.execute
       cmd: "ldapsearch -xLLLD #{users_container_dn} -w test -b #{realms_dn}"
     , (err) ->

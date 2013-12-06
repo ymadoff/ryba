@@ -123,6 +123,7 @@ module.exports.push (ctx, next) ->
     # Without "-P", it prompts for the KDC database master key
     kdc_master_key = 'test'
     ctx.execute
+      # kdb5_ldap_util -D "cn=Manager,dc=adaltas,dc=com" -w test create -subtrees "ou=kerberos,ou=services,ou=lot1,dc=adaltas,dc=com" -r ADALTAS.COM -s -P test
       cmd: "kdb5_ldap_util -D \"#{manager_dn}\" -w #{manager_password} create -subtrees \"#{realms_dn}\" -r #{realm} -s -P #{kdc_master_key}"
       code_skipped: 1
     , (err, executed, stdout, stderr) ->
