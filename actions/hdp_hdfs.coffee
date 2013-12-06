@@ -22,7 +22,9 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.hadoop_opts = hadoop_opts
   # Define Directories for Core Hadoop
   ctx.config.hdp.dfs_name_dir ?= ['/hadoop/hdfs/namenode']
+  ctx.config.hdp.dfs_name_dir = ctx.config.hdp.dfs_name_dir.split ',' if typeof ctx.config.hdp.dfs_name_dir is 'string'
   ctx.config.hdp.dfs_data_dir ?= ['/hadoop/hdfs/data']
+  ctx.config.hdp.dfs_data_dir = ctx.config.hdp.dfs_data_dir.split ',' if typeof ctx.config.hdp.dfs_data_dir is 'string'
   ctx.config.hdp.hdfs_log_dir ?= '/var/log/hadoop-hdfs'
   ctx.config.hdp.mapred_log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
   ctx.config.hdp.hdfs_pid_dir ?= '/var/run/hadoop-hdfs'

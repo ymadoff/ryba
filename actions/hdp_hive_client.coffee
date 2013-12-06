@@ -4,7 +4,6 @@ mkcmd = require './hdp/mkcmd'
 lifecycle = require './hdp/lifecycle'
 
 module.exports = []
-module.exports.push 'histi/actions/hdp_core'
 
 ###
 Example of a minimal client configuration:
@@ -30,44 +29,8 @@ Example of a minimal client configuration:
 ###
 
 module.exports.push module.exports.configure = (ctx) ->
-  require('./hdp_core').configure ctx
-  {realm} = ctx.config.krb5_client
-  ctx.config.hdp.hive_conf_dir ?= '/etc/hive/conf'
-  ctx.config.hdp.hive_site ?= {}
-  # Overwrite hdp properties with unworkable values
-  # Note, next 3 lines cause failure when hdp_krb5 is run independently
-  # ctx.config.hdp.hive_site['hive.metastore.kerberos.principal'] ?= ''
-  # ctx.config.hdp.hive_site['hive.server2.authentication.kerberos.principal'] ?= ''
-  # ctx.config.hdp.hive_site['hive.metastore.uris'] ?= ''
-  # To prevent memory leak in unsecure mode, disable [file system caches](https://cwiki.apache.org/confluence/display/Hive/Setting+up+HiveServer2)
-  # , by setting following params to true
-  ctx.config.hdp.hive_site['fs.hdfs.impl.disable.cache'] ?= 'false'
-  ctx.config.hdp.hive_site['fs.file.impl.disable.cache'] ?= 'false'
-  # TODO: encryption is only with Kerberos, need to check first
-  # http://hortonworks.com/blog/encrypting-communication-between-hadoop-and-your-analytics-tools/?utm_source=feedburner&utm_medium=feed&utm_campaign=Feed%3A+hortonworks%2Ffeed+%28Hortonworks+on+Hadoop%29
-  ctx.config.hdp.hive_site['hive.server2.thrift.sasl.qop'] ?= 'auth'
-  # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.6.0/bk_installing_manually_book/content/rpm-chap14-2-3.html#rmp-chap14-2-3-5
-  # If true, the metastore thrift interface will be secured with
-  # SASL. Clients must authenticate with Kerberos.
-  ctx.config.hdp.hive_site['hive.metastore.sasl.enabled'] ?= 'true'
-  # The path to the Kerberos Keytab file containing the metastore
-  # thrift server's service principal.
-  ctx.config.hdp.hive_site['hive.metastore.kerberos.keytab.file'] ?= '/etc/security/keytabs/hive.service.keytab'
-  # The service principal for the metastore thrift server. The
-  # special string _HOST will be replaced automatically with the correct  hostname.
-  ctx.config.hdp.hive_site['hive.metastore.kerberos.principal'] ?= "hive/_HOST@#{realm}"
-  ctx.config.hdp.hive_site['hive.metastore.cache.pinobjtypes'] ?= 'Table,Database,Type,FieldSchema,Order'
-  # https://cwiki.apache.org/confluence/display/Hive/Setting+up+HiveServer2
-  # Authentication type
-  ctx.config.hdp.hive_site['hive.server2.authentication'] ?= 'KERBEROS'
-  # The keytab for the HiveServer2 service principal
-  # 'hive.server2.authentication.kerberos.keytab': "/etc/security/keytabs/hcat.service.keytab"
-  ctx.config.hdp.hive_site['hive.server2.authentication.kerberos.keytab'] ?= '/etc/security/keytabs/hive.service.keytab'
-  # The service principal for the HiveServer2. If _HOST
-  # is used as the hostname portion, it will be replaced
-  # with the actual hostname of the running instance.
-  # 'hive.server2.authentication.kerberos.principal': "hcat/#{ctx.config.host}@#{realm}"
-  ctx.config.hdp.hive_site['hive.server2.authentication.kerberos.principal'] ?= "hive/_HOST@#{realm}"
+  require('./hdp_hdfs').configure ctx
+  require('./hdp_hive_').configure ctx
 
 ###
 Install
@@ -170,5 +133,25 @@ module.exports.push (ctx, next) ->
     destination: '/etc/hive/conf/hive-log4j.properties'
   ], (err, written) ->
     return next err, if written then ctx.OK else ctx.PASS
+
+module.exports.push (ctx, next) ->
+  @name 'HDP Hive & HCat client # Check'
+  ctx.execute
+    cmd: mkcmd.test ctx, """
+    if hadoop fs -test -f /user/test/hive_#{ctx.config.host}; then exit 2; fi
+    hive -e "
+      CREATE DATABASE check_hive_db  LOCATION '/user/test/hive_#{ctx.config.host}'; \\
+      USE check_hive_db; \\
+      CREATE TABLE check_hive_tb(col1 STRING, col2 INT);" || exit 1
+    echo "a,1\\nb,2\\nc,3" > /tmp/check_hive;
+    hadoop fs -put /tmp/check_hive /user/test/hive_#{ctx.config.host}/check_hive_tb/data || exit 1
+    hive -e "SELECT SUM(col2) FROM check_hive_db.check_hive_tb;" || exit 1
+    hive -e "DROP TABLE check_hive_db.check_hive_tb; DROP DATABASE check_hive_db;" || exit 1
+    rm -rf /tmp/check_hive
+    hadoop fs -touchz /user/test/hive_#{ctx.config.host}
+    """
+    code_skipped: 2
+  , (err, executed, stdout) ->
+    return next err, if executed then ctx.OK else ctx.PASS
 
 

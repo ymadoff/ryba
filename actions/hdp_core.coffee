@@ -273,6 +273,9 @@ module.exports.push (ctx, next) ->
   # Hostname from where superuser hcat can connect. This is 
   # required only when installing webhcat on the cluster.
   core['hadoop.proxyuser.hcat.hosts'] ?= '*'
+  core['hadoop.proxyuser.hue.groups'] ?= '*'
+  core['hadoop.proxyuser.hue.hosts'] ?= '*'
+
   ctx.hconfigure
     destination: "#{hadoop_conf_dir}/core-site.xml"
     properties: core

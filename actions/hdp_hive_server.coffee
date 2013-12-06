@@ -8,8 +8,8 @@ module.exports = []
 module.exports.push 'histi/actions/mysql_client'
 module.exports.push 'histi/actions/hdp_hive_client'
 
-module.exports.push (ctx) ->
-  require('./hdp_hive_client').configure ctx
+module.exports.push module.exports.configure = (ctx) ->
+  require('./hdp_hive_').configure ctx
   # Define Users and Groups
   ctx.config.hdp.hive_user ?= 'hive'
   ctx.config.hdp.webhcat_user ?= 'webhcat'
