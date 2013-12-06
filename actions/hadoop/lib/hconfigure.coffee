@@ -37,7 +37,7 @@ module.exports = (options, callback) ->
           org_props = if err then {} else props
           if options.merge
             fnl_props = {}
-            for k, v in org_props then fnl_props[k] = v
+            for k, v of org_props then fnl_props[k] = v
           do_load_default()
       do_load_default = () ->
         return do_merge() unless options.default
@@ -75,7 +75,7 @@ module.exports = (options, callback) ->
           updated = true
         do_save()
       do_save = ->
-        #return next() unless updated
+        return next() unless updated
         options.log? "Save properties"
         configured++
         options.content = properties.stringify fnl_props
