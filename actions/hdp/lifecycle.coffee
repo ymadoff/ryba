@@ -150,22 +150,38 @@ lifecyle = module.exports =
     lifecyle.hive_server2_stop ctx, (err) ->
       return callback err if err
       lifecyle.hive_server2_start ctx, callback
-  oozie_start: (ctx, callback) ->
-    {oozie_user} = ctx.config.hdp
+  oozie_status: (ctx, callback) ->
+    {oozie_pid_dir} = ctx.config.hdp
     ctx.execute
-      # su -l oozie -c "/usr/lib/oozie/bin/oozied.sh start"
-      cmd: "su -l #{oozie_user} -c \"/usr/lib/oozie/bin/oozied.sh start\""
+      cmd: """
+      if pid=`cat #{oozie_pid_dir}/oozie.pid`; then
+        if ps cax | grep -v grep | grep $pid; then exit 0; else
+          rm -f #{oozie_pid_dir}/oozie.pid
+      fi; fi; exit 1
+      """
       code_skipped: 1
     , (err, started) ->
       callback err, started
+  oozie_start: (ctx, callback) ->
+    {oozie_user} = ctx.config.hdp
+    lifecyle.oozie_status ctx, (err, running) ->
+      return callback err, false if err or running
+      ctx.execute
+        # su -l oozie -c "/usr/lib/oozie/bin/oozied.sh start"
+        cmd: "su -l #{oozie_user} -c \"/usr/lib/oozie/bin/oozied.sh start\""
+        code_skipped: 1
+      , (err, started) ->
+        callback err, started
   oozie_stop: (ctx, callback) ->
-    {oozie_user, oozie_pid_dir} = ctx.config.hdp
-    ctx.execute
-      # su -l oozie -c "/usr/lib/oozie/bin/oozied.sh stop"
-      cmd: "su -l #{oozie_user} -c \"/usr/lib/oozie/bin/oozied.sh stop\"; sleep 1; kill -0 `cat #{oozie_pid_dir}/oozie.pid`"
-      code_skipped: 1
-    , (err, stoped) ->
-      callback err, stoped
+    {oozie_user} = ctx.config.hdp
+    lifecyle.oozie_status ctx, (err, running) ->
+      return callback err, false if err or not running
+      ctx.execute
+        # su -l oozie -c "/usr/lib/oozie/bin/oozied.sh stop"
+        cmd: "su -l #{oozie_user} -c \"/usr/lib/oozie/bin/oozied.sh stop\""
+        code_skipped: 1
+      , (err, stoped) ->
+        callback err, stoped
   zookeeper_start: (ctx, callback) ->
     {zookeeper_user, zookeeper_conf_dir} = ctx.config.hdp
     ctx.execute
