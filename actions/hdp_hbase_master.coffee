@@ -17,9 +17,9 @@ module.exports.push (ctx, next) ->
   ctx.log "Create /apps/hbase"
   ctx.execute
     cmd: mkcmd.hdfs ctx, """
-    if hadoop fs -ls /apps/hbase &>/dev/null; then exit 3; fi
-    hadoop fs -mkdir -p /apps/hbase
-    hadoop fs -chown -R #{hbase_user} /apps/hbase
+    if hdfs dfs -ls /apps/hbase &>/dev/null; then exit 3; fi
+    hdfs dfs -mkdir -p /apps/hbase
+    hdfs dfs -chown -R #{hbase_user} /apps/hbase
     """
     code_skipped: 3
   , (err, executed, stdout) ->
