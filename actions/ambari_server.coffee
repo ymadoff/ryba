@@ -26,6 +26,24 @@ module.exports.push 'histi/actions/netcat'
 Configuration
 -------------
 
+Exemple:
+
+```json
+ambari:
+  name: 'big'
+  username: process.env['HADOOP_USERNAME']
+  password: process.env['HADOOP_PASSWORD']
+  config: 
+    'client.security': 'ldap'
+    'authentication.ldap.useSSL': false
+    'authentication.ldap.primaryUrl': 'pcy0qstar.pcy.edfgdf.fr:389'
+    'authentication.ldap.baseDn': 'ou=users,dc=edfgdf,dc=fr'
+    'authentication.ldap.bindAnonymously': false
+    'authentication.ldap.managerDn': 'cn=solaix,ou=systems,ou=lotc,dc=edfgdf,dc=fr'
+    'authentication.ldap.managerPassword': 'XXX'
+    'authentication.ldap.usernameAttribute': 'cn'
+```
+
 ###
 module.exports.push (ctx) ->
   ctx.config.ambari ?= {}
