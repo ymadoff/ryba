@@ -97,32 +97,33 @@ module.exports.push (ctx, next) ->
   # There is no proxy to configure
   return next() unless ctx.config.proxy.http_proxy
   @name 'Proxy # Profile'
-  {system, http_proxy, https_proxy} = ctx.config.proxy
-  modified = 0
-  write = (file, callback) ->
-    ctx.write [
-      match: /.*http_proxy.*/
-      replace: "#{if system and http_proxy then '' else '#'}export http_proxy=#{http_proxy}"
-      destination: file
-      append: true
-    ,
-      match: /.*https_proxy.*/
-      replace: "#{if system and https_proxy then '' else '#'}export https_proxy=#{https_proxy}"
-      destination: file
-      append: true
-    ], (err, written) ->
-      modified++ if written
-      callback()
-  # System wide
-  write ctx.config.proxy.system_file, (err) ->
-    return next err if err
-    each(ctx.config.users)
-    .on 'item', (user, next) ->
-      return next() unless user.home
-      file = path.resolve user.home, '.bash_profile'
-      write file, next
-    .on 'both', (err) ->
-      next err, if modified then ctx.OK else ctx.PASS
+  return next null, 'DISABLED'
+  # {system, http_proxy, https_proxy} = ctx.config.proxy
+  # modified = 0
+  # write = (file, callback) ->
+  #   ctx.write [
+  #     match: /.*http_proxy.*/
+  #     replace: "{if system and http_proxy then '' else '#'}export http_proxy=#{http_proxy}"
+  #     destination: file
+  #     append: true
+  #   ,
+  #     match: /.*https_proxy.*/
+  #     replace: "{if system and https_proxy then '' else '#'}export https_proxy=#{https_proxy}"
+  #     destination: file
+  #     append: true
+  #   ], (err, written) ->
+  #     modified++ if written
+  #     callback()
+  # # System wide
+  # write ctx.config.proxy.system_file, (err) ->
+  #   return next err if err
+  #   each(ctx.config.users)
+  #   .on 'item', (user, next) ->
+  #     return next() unless user.home
+  #     file = path.resolve user.home, '.bash_profile'
+  #     write file, next
+  #   .on 'both', (err) ->
+  #     next err, if modified then ctx.OK else ctx.PASS
 
 
 
