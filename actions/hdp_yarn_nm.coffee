@@ -20,4 +20,4 @@ module.exports.push (ctx, next) ->
     code: 0
     code_skipped: 9
   , (err, created) ->
-    next err, if created then ctx.OK else ctx.SKIPPED
+    next err, if created then ctx.OK else ctx.PASS
