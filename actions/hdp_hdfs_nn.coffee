@@ -128,9 +128,9 @@ module.exports.push (ctx, next) ->
   do_run = ->
     ctx.execute
       cmd: mkcmd.hdfs ctx, """
-      if hadoop fs -ls /user/test 2>/dev/null; then exit 1; fi
-      hadoop fs -mkdir /user/test
-      hadoop fs -chown test /user/test
+      if hdfs dfs -ls /user/test 2>/dev/null; then exit 1; fi
+      hdfs dfs -mkdir /user/test
+      hdfs dfs -chown test /user/test
       """
       code_skipped: 1
     , (err, executed, stdout) ->

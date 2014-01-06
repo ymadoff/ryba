@@ -39,7 +39,7 @@ module.exports.push (ctx, next) ->
   do_root = ->
     ctx.execute
       cmd: mkcmd.hdfs ctx, """
-      hadoop fs -chmod 755 /
+      hdfs dfs -chmod 755 /
       """
     , (err, executed, stdout) ->
       return next err if err
@@ -47,10 +47,10 @@ module.exports.push (ctx, next) ->
   do_tmp = ->
     ctx.execute
       cmd: mkcmd.hdfs ctx, """
-      if hadoop fs -test -d /tmp; then exit 1; fi
-      hadoop fs -mkdir /tmp
-      hadoop fs -chown #{hdfs_user}:#{hadoop_group} /tmp
-      hadoop fs -chmod 777 /tmp
+      if hdfs dfs -test -d /tmp; then exit 1; fi
+      hdfs dfs -mkdir /tmp
+      hdfs dfs -chown #{hdfs_user}:#{hadoop_group} /tmp
+      hdfs dfs -chmod 777 /tmp
       """
       code_skipped: 1
     , (err, executed, stdout) ->
@@ -60,10 +60,10 @@ module.exports.push (ctx, next) ->
   do_user = ->
     ctx.execute
       cmd: mkcmd.hdfs ctx, """
-      if hadoop fs -test -d /user; then exit 1; fi
-      hadoop fs -mkdir /user
-      hadoop fs -chown #{hdfs_user}:#{hadoop_group} /user
-      hadoop fs -chmod 755 /user
+      if hdfs dfs -test -d /user; then exit 1; fi
+      hdfs dfs -mkdir /user
+      hdfs dfs -chown #{hdfs_user}:#{hadoop_group} /user
+      hdfs dfs -chmod 755 /user
       """
       code_skipped: 1
     , (err, executed, stdout) ->
@@ -73,10 +73,10 @@ module.exports.push (ctx, next) ->
   do_apps = ->
     ctx.execute
       cmd: mkcmd.hdfs ctx, """
-      if hadoop fs -test -d /apps; then exit 1; fi
-      hadoop fs -mkdir /apps
-      hadoop fs -chown #{hdfs_user}:#{hadoop_group} /apps
-      hadoop fs -chmod 755 /apps
+      if hdfs dfs -test -d /apps; then exit 1; fi
+      hdfs dfs -mkdir /apps
+      hdfs dfs -chown #{hdfs_user}:#{hadoop_group} /apps
+      hdfs dfs -chmod 755 /apps
       """
       code_skipped: 1
     , (err, executed, stdout) ->
@@ -92,8 +92,8 @@ module.exports.push (ctx, next) ->
   @name 'HDP Hadoop DN # Test HDFS'
   ctx.execute
     cmd: mkcmd.test ctx, """
-    if hadoop fs -test -d /user/test/hdfs_#{ctx.config.host}; then exit 1; fi
-    hadoop fs -put /etc/passwd /user/test/hdfs_#{ctx.config.host}
+    if hdfs dfs -test -d /user/test/hdfs_#{ctx.config.host}; then exit 1; fi
+    hdfs dfs -put /etc/passwd /user/test/hdfs_#{ctx.config.host}
     """
     code_skipped: 1
   , (err, executed, stdout) ->
@@ -117,8 +117,8 @@ module.exports.push (ctx, next) ->
   do_init = ->
     ctx.execute
       cmd: mkcmd.test ctx, """
-        if hadoop fs -test -e /user/test/webhdfs; then exit 1; fi
-        hadoop fs -touchz /user/test/webhdfs
+        if hdfs dfs -test -e /user/test/webhdfs; then exit 1; fi
+        hdfs dfs -touchz /user/test/webhdfs
         kdestroy
       """
       code_skipped: 1

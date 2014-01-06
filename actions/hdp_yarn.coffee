@@ -315,10 +315,10 @@ module.exports.push (ctx, next) ->
     ctx.log "Create #{remote_app_log_dir}"
     ctx.execute
       cmd: mkcmd.hdfs ctx, """
-      if hadoop fs -test -d #{remote_app_log_dir}; then exit 1; fi
-      hadoop fs -mkdir -p #{remote_app_log_dir}
-      hadoop fs -chown #{yarn_user}:#{hadoop_group} #{remote_app_log_dir}
-      hadoop fs -chmod 777 #{remote_app_log_dir}
+      if hdfs dfs -test -d #{remote_app_log_dir}; then exit 1; fi
+      hdfs dfs -mkdir -p #{remote_app_log_dir}
+      hdfs dfs -chown #{yarn_user}:#{hadoop_group} #{remote_app_log_dir}
+      hdfs dfs -chmod 777 #{remote_app_log_dir}
       """
       code_skipped: 1
     , (err, executed, stdout) ->

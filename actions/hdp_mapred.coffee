@@ -158,10 +158,10 @@ module.exports.push (ctx, next) ->
     ctx.log "Create #{mapreduce_jobtracker_system_dir}"
     ctx.execute
       cmd: mkcmd.hdfs ctx, """
-      if hadoop fs -test -d #{mapreduce_jobtracker_system_dir}; then exit 1; fi
-      hadoop fs -mkdir -p #{mapreduce_jobtracker_system_dir}
-      hadoop fs -chown #{mapred_user}:#{hadoop_group} #{mapreduce_jobtracker_system_dir}
-      hadoop fs -chmod 755 #{mapreduce_jobtracker_system_dir}
+      if hdfs dfs -test -d #{mapreduce_jobtracker_system_dir}; then exit 1; fi
+      hdfs dfs -mkdir -p #{mapreduce_jobtracker_system_dir}
+      hdfs dfs -chown #{mapred_user}:#{hadoop_group} #{mapreduce_jobtracker_system_dir}
+      hdfs dfs -chmod 755 #{mapreduce_jobtracker_system_dir}
       """
       code_skipped: 1
     , (err, executed, stdout) ->
@@ -177,10 +177,10 @@ module.exports.push (ctx, next) ->
     ctx.log "Create #{mapreduce_jobhistory_intermediate_done_dir}"
     ctx.execute
       cmd: mkcmd.hdfs ctx, """
-      if hadoop fs -test -d #{mapreduce_jobhistory_intermediate_done_dir}; then exit 1; fi
-      hadoop fs -mkdir -p #{mapreduce_jobhistory_intermediate_done_dir}
-      hadoop fs -chown #{mapred_user}:#{hadoop_group} #{mapreduce_jobhistory_intermediate_done_dir}
-      hadoop fs -chmod 777 #{mapreduce_jobhistory_intermediate_done_dir}
+      if hdfs dfs -test -d #{mapreduce_jobhistory_intermediate_done_dir}; then exit 1; fi
+      hdfs dfs -mkdir -p #{mapreduce_jobhistory_intermediate_done_dir}
+      hdfs dfs -chown #{mapred_user}:#{hadoop_group} #{mapreduce_jobhistory_intermediate_done_dir}
+      hdfs dfs -chmod 777 #{mapreduce_jobhistory_intermediate_done_dir}
       """
       code_skipped: 1
     , (err, executed, stdout) ->
@@ -196,10 +196,10 @@ module.exports.push (ctx, next) ->
     ctx.log "Create #{mapreduce_jobhistory_done_dir}"
     ctx.execute
       cmd: mkcmd.hdfs ctx, """
-      if hadoop fs -test -d #{mapreduce_jobhistory_done_dir}; then exit 1; fi
-      hadoop fs -mkdir -p #{mapreduce_jobhistory_done_dir}
-      hadoop fs -chown #{mapred_user}:#{hadoop_group} #{mapreduce_jobhistory_done_dir}
-      hadoop fs -chmod 750 #{mapreduce_jobhistory_done_dir}
+      if hdfs dfs -test -d #{mapreduce_jobhistory_done_dir}; then exit 1; fi
+      hdfs dfs -mkdir -p #{mapreduce_jobhistory_done_dir}
+      hdfs dfs -chown #{mapred_user}:#{hadoop_group} #{mapreduce_jobhistory_done_dir}
+      hdfs dfs -chmod 750 #{mapreduce_jobhistory_done_dir}
       """
       code_skipped: 1
     , (err, executed, stdout) ->
@@ -232,8 +232,8 @@ module.exports.push (ctx, next) ->
   @timeout -1
   ctx.execute
     cmd: mkcmd.test ctx, """
-    if hadoop fs -test -d 10gsort; then exit 1; fi
-    hadoop fs -mkdir 10gsort
+    if hdfs dfs -test -d 10gsort; then exit 1; fi
+    hdfs dfs -mkdir 10gsort
     hadoop jar /usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples-2*.jar teragen 100 10gsort/input
     hadoop jar /usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples-2*.jar terasort 10gsort/input 10gsort/output
     """

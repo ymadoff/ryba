@@ -15,9 +15,6 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.webhcat_user ?= 'webhcat'
   ctx.config.hdp.hive_log_dir ?= '/var/log/hive'
   ctx.config.hdp.hive_pid_dir ?= '/var/run/hive'
-  ctx.config.hdp.webhcat_conf_dir ?= '/etc/hcatalog/conf/webhcat'
-  ctx.config.hdp.webhcat_log_dir ?= '/var/log/webhcat/webhcat'
-  ctx.config.hdp.webhcat_pid_dir ?= '/var/run/webhcat'
   ctx.config.hdp.hive_libs ?= []
 
 module.exports.push (ctx, next) ->
@@ -82,9 +79,9 @@ module.exports.push (ctx, next) ->
       ctx.execute
         ssh: ssh
         cmd: mkcmd.hdfs ctx, """
-        if hadoop fs -ls /user/#{hive_user}/warehouse &>/dev/null; then exit 1; fi
-        hadoop fs -mkdir -p /user/#{hive_user}; 
-        hadoop fs -chown -R #{hive_user}:#{hadoop_group} /user/#{hive_user}
+        if hdfs dfs -ls /user/#{hive_user}/warehouse &>/dev/null; then exit 1; fi
+        hdfs dfs -mkdir -p /user/#{hive_user}; 
+        hdfs dfs -chown -R #{hive_user}:#{hadoop_group} /user/#{hive_user}
         """
         code_skipped: 1
       , (err, executed, stdout) ->
@@ -95,11 +92,11 @@ module.exports.push (ctx, next) ->
       ctx.execute
         ssh: ssh
         cmd: mkcmd.hdfs ctx, """
-        if hadoop fs -ls /apps/#{hive_user}/warehouse &>/dev/null; then exit 3; fi
-        hadoop fs -mkdir -p /apps/#{hive_user};
-        hadoop fs -mkdir /apps/#{hive_user}/warehouse; 
-        hadoop fs -chown -R #{hive_user}:#{hadoop_group} /apps/#{hive_user}
-        hadoop fs -chmod -R 775 /apps/#{hive_user};
+        if hdfs dfs -ls /apps/#{hive_user}/warehouse &>/dev/null; then exit 3; fi
+        hdfs dfs -mkdir -p /apps/#{hive_user};
+        hdfs dfs -mkdir /apps/#{hive_user}/warehouse; 
+        hdfs dfs -chown -R #{hive_user}:#{hadoop_group} /apps/#{hive_user}
+        hdfs dfs -chmod -R 775 /apps/#{hive_user};
         """
         code_skipped: 3
       , (err, executed, stdout) ->
@@ -110,11 +107,11 @@ module.exports.push (ctx, next) ->
       ctx.execute
         ssh: ssh
         cmd: mkcmd.hdfs ctx, """
-        if hadoop fs -ls /tmp/scratch &> /dev/null; then exit 1; fi
-        hadoop fs -mkdir /tmp 2>/dev/null;
-        hadoop fs -mkdir /tmp/scratch;
-        hadoop fs -chown #{hive_user}:#{hadoop_group} /tmp/scratch;
-        hadoop fs -chmod -R 777 /tmp/scratch;
+        if hdfs dfs -ls /tmp/scratch &> /dev/null; then exit 1; fi
+        hdfs dfs -mkdir /tmp 2>/dev/null;
+        hdfs dfs -mkdir /tmp/scratch;
+        hdfs dfs -chown #{hive_user}:#{hadoop_group} /tmp/scratch;
+        hdfs dfs -chmod -R 777 /tmp/scratch;
         """
         code_skipped: 1
       , (err, executed, stdout) ->

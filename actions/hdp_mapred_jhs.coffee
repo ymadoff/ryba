@@ -18,15 +18,15 @@ module.exports.push (ctx, next) ->
   do_jobhistory_server = ->
     ctx.execute
       cmd: mkcmd.hdfs ctx, """
-      if hadoop fs -test -d /mr-history; then exit 1; fi
-      hadoop fs -mkdir -p /mr-history/tmp
-      hadoop fs -chmod -R 1777 /mr-history/tmp
-      hadoop fs -mkdir -p /mr-history/done
-      hadoop fs -chmod -R 1777 /mr-history/done
-      hadoop fs -chown -R #{mapred_user}:#{hadoop_group} /mr-history
-      hadoop fs -mkdir -p /app-logs
-      hadoop fs -chmod -R 1777 /app-logs 
-      hadoop fs -chown #{yarn_user} /app-logs 
+      if hdfs dfs -test -d /mr-history; then exit 1; fi
+      hdfs dfs -mkdir -p /mr-history/tmp
+      hdfs dfs -chmod -R 1777 /mr-history/tmp
+      hdfs dfs -mkdir -p /mr-history/done
+      hdfs dfs -chmod -R 1777 /mr-history/done
+      hdfs dfs -chown -R #{mapred_user}:#{hadoop_group} /mr-history
+      hdfs dfs -mkdir -p /app-logs
+      hdfs dfs -chmod -R 1777 /app-logs 
+      hdfs dfs -chown #{yarn_user} /app-logs 
       """
       code_skipped: 1
     , (err, executed, stdout) ->
