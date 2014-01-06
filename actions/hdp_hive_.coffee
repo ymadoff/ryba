@@ -11,11 +11,6 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.hive_conf_dir ?= '/etc/hive/conf'
   ctx.config.hdp.hive_site ?= {}
   ctx.config.hdp.hive_site['hive.metastore.uris'] ?= "thrift://#{srv2_host}:9083"
-  # Overwrite hdp properties with unworkable values
-  # Note, next 3 lines cause failure when hdp_krb5 is run independently
-  # ctx.config.hdp.hive_site['hive.metastore.kerberos.principal'] ?= ''
-  # ctx.config.hdp.hive_site['hive.server2.authentication.kerberos.principal'] ?= ''
-  # ctx.config.hdp.hive_site['hive.metastore.uris'] ?= ''
   # To prevent memory leak in unsecure mode, disable [file system caches](https://cwiki.apache.org/confluence/display/Hive/Setting+up+HiveServer2)
   # , by setting following params to true
   ctx.config.hdp.hive_site['fs.hdfs.impl.disable.cache'] ?= 'false'
