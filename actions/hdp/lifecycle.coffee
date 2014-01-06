@@ -152,16 +152,18 @@ lifecyle = module.exports =
       lifecyle.hive_server2_start ctx, callback
   oozie_status: (ctx, callback) ->
     {oozie_pid_dir} = ctx.config.hdp
-    ctx.execute
-      cmd: """
-      if pid=`cat #{oozie_pid_dir}/oozie.pid`; then
-        if ps cax | grep -v grep | grep $pid; then exit 0; else
-          rm -f #{oozie_pid_dir}/oozie.pid
-      fi; fi; exit 1
-      """
-      code_skipped: 1
-    , (err, started) ->
-      callback err, started
+    lifecyle.is_pidfile_running ctx, "#{oozie_pid_dir}/oozie.pid", (err, running) ->
+      callback err, running
+    # ctx.execute
+    #   cmd: """
+    #   if pid=`cat #{oozie_pid_dir}/oozie.pid`; then
+    #     if ps cax | grep -v grep | grep $pid; then exit 0; else
+    #       rm -f #{oozie_pid_dir}/oozie.pid
+    #   fi; fi; exit 1
+    #   """
+    #   code_skipped: 1
+    # , (err, started) ->
+    #   callback err, started
   oozie_start: (ctx, callback) ->
     {oozie_user} = ctx.config.hdp
     lifecyle.oozie_status ctx, (err, running) ->
@@ -215,8 +217,8 @@ lifecyle = module.exports =
     ctx.execute
       # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start regionserver"
       cmd: "su -l #{hbase_user} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} start regionserver\""
-    , (err, stoped) ->
-      callback err, stoped
+    , (err, started) ->
+      callback err, started
   hbase_regionserver_stop: (ctx, callback) ->
     {hbase_user, hbase_conf_dir} = ctx.config.hdp
     ctx.execute
@@ -224,6 +226,40 @@ lifecyle = module.exports =
       cmd: "su -l #{hbase_user} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} stop regionserver\""
     , (err, stoped) ->
       callback err, stoped
+  webhcat_status: (ctx, callback) ->
+    {webhcat_pid_dir} = ctx.config.hdp
+    lifecyle.is_pidfile_running ctx, "#{webhcat_pid_dir}/webhcat.pid", (err, running) ->
+      callback err, running
+  webhcat_start: (ctx, callback) ->
+    {webhcat_user, webhcat_conf_dir} = ctx.config.hdp
+    lifecyle.webhcat_status ctx, (err, running) ->
+      return callback err, false if err or running
+      ctx.execute
+        # su -l hcat -c "export WEBHCAT_CONF_DIR=/etc/hcatalog/conf/webhcat; /usr/lib/hcatalog/sbin/webhcat_server.sh start"
+        cmd: "su -l #{webhcat_user} -c \"export WEBHCAT_CONF_DIR=#{webhcat_conf_dir}; /usr/lib/hcatalog/sbin/webhcat_server.sh start\""
+      , (err, started) ->
+        callback err, true
+  webhcat_stop: (ctx, callback) ->
+    {webhcat_user} = ctx.config.hdp
+    lifecyle.webhcat_status ctx, (err, running) ->
+      return callback err, false if err or not running
+      ctx.execute
+        # su -l hcat -c "/usr/lib/hcatalog/sbin/webhcat_server.sh stop"
+        cmd: "su -l #{webhcat_user} -c \"/usr/lib/hcatalog/sbin/webhcat_server.sh stop\""
+      , (err, stoped) ->
+        callback err, stoped
+
+module.exports.is_pidfile_running = (ctx, path, callback) ->
+  ctx.execute
+    cmd: """
+    if pid=`cat #{path}`; then
+      if ps cax | grep -v grep | grep $pid; then exit 0; else
+        rm -f #{path}
+    fi; fi; exit 1
+    """
+    code_skipped: 1
+  , (err, started) ->
+    callback err, started
 
 
 
