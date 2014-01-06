@@ -25,6 +25,16 @@ module.exports.push (ctx, next) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
+  {oozie_user, hadoop_group} = ctx.config.hdp
+  @name 'HDP Oozie # Users & Groups'
+  ctx.execute
+    cmd: "useradd oozie -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop Oozie service\""
+    code: 0
+    code_skipped: 9
+  , (err, executed) ->
+    next err, if executed then ctx.OK else ctx.PASS
+
+module.exports.push (ctx, next) ->
   @name "HDP Oozie # Environment"
   {oozie_user, hadoop_group, oozie_conf_dir} = ctx.config.hdp
   ctx.render
@@ -37,3 +47,16 @@ module.exports.push (ctx, next) ->
     mode: 0o0755
   , (err, rendered) ->
     next err, if rendered then ctx.OK else ctx.PASS
+
+module.exports.push (ctx, next) ->
+  @name 'HDP Oozie # Profile'
+  {oozie_site} = ctx.config.hdp
+  ctx.write
+    destination: '/etc/profile.d/oozie.sh'
+    content: """
+    #!/bin/bash
+    export OOZIE_URL=#{oozie_site['oozie.base.url']}
+    """
+    mode: 0o0755
+  , (err, written) ->
+    next null, if written then ctx.OK else ctx.PASS

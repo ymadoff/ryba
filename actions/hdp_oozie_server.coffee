@@ -5,7 +5,6 @@ mkcmd = require './hdp/mkcmd'
 
 module.exports = []
 
-module.exports.push 'histi/actions/mysql_server'
 module.exports.push 'histi/actions/hdp_core'
 
 ###
@@ -42,6 +41,10 @@ module.exports.push module.exports.configure = (ctx) ->
       DEFAULT
   """
   ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.nameNode.whitelist'] ?= '' # Fix space value
+  ctx.config.hdp.oozie_site['oozie.service.ProxyUserService.proxyuser.hive.hosts'] ?= "*"
+  ctx.config.hdp.oozie_site['oozie.service.ProxyUserService.proxyuser.hive.groups'] ?= "*"
+  ctx.config.hdp.oozie_site['oozie.service.ProxyUserService.proxyuser.hue.hosts'] ?= "*"
+  ctx.config.hdp.oozie_site['oozie.service.ProxyUserService.proxyuser.hue.groups'] ?= "*"
   ctx.config.hdp.oozie_hadoop_config ?= {}
   ctx.config.hdp.oozie_hadoop_config['mapreduce.jobtracker.kerberos.principal'] ?= "mapred/_HOST@#{realm}"
   ctx.config.hdp.oozie_hadoop_config['yarn.resourcemanager.principal'] ?= "yarn/_HOST@#{realm}"
@@ -62,16 +65,6 @@ module.exports.push (ctx, next) ->
     name: 'extjs-2.2-1'
   ], (err, serviced) ->
     next err, if serviced then ctx.OK else ctx.PASS
-
-module.exports.push (ctx, next) ->
-  {oozie_user, hadoop_group} = ctx.config.hdp
-  @name 'HDP Oozie Server # Users & Groups'
-  ctx.execute
-    cmd: "useradd oozie -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop Oozie service\""
-    code: 0
-    code_skipped: 9
-  , (err, executed) ->
-    next err, if executed then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
   @name 'HDP Oozie Server # Directories'
@@ -249,14 +242,14 @@ module.exports.push (ctx, next) ->
   @name 'HDP Oozie Server # Share lib'
   ctx.execute 
     cmd: mkcmd.hdfs ctx, """
-    if hadoop fs -ls /user/#{oozie_user}/share &>/dev/null; then exit 2; fi
+    if hdfs dfs -ls /user/#{oozie_user}/share &>/dev/null; then exit 2; fi
     mkdir /tmp/ooziesharelib
     cd /tmp/ooziesharelib
     tar xzf /usr/lib/oozie/oozie-sharelib.tar.gz
-    hadoop fs -mkdir /user/#{oozie_user}
-    hadoop fs -put share /user/#{oozie_user}
-    hadoop fs -chown #{oozie_user}:#{hadoop_group} /user/#{oozie_user}
-    hadoop fs -chmod -R 755 /user/#{oozie_user}
+    hdfs dfs -mkdir /user/#{oozie_user}
+    hdfs dfs -put share /user/#{oozie_user}
+    hdfs dfs -chown #{oozie_user}:#{hadoop_group} /user/#{oozie_user}
+    hdfs dfs -chmod -R 755 /user/#{oozie_user}
     rm -rf /tmp/ooziesharelib
     """
     code_skipped: 2
