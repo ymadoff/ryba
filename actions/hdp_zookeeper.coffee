@@ -14,6 +14,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.zookeeper_conf_dir ?= '/etc/zookeeper/conf'
   ctx.config.hdp.zookeeper_log_dir ?= '/var/log/zookeeper'
   ctx.config.hdp.zookeeper_pid_dir ?= '/var/run/zookeeper'
+  ctx.config.hdp.zookeeper_port ?= 2181
 
 ###
 Install
@@ -66,7 +67,7 @@ module.exports.push (ctx, next) ->
   {java_home} = ctx.config.java
   { hadoop_group,
     zookeeper_user, zookeeper_data_dir, zookeeper_pid_dir, zookeeper_log_dir,
-    zookeeper_myid
+    zookeeper_myid, zookeeper_port
   } = ctx.config.hdp
   do_zoo_cfg = ->
     # hosts = for host, i in hosts
@@ -89,7 +90,7 @@ module.exports.push (ctx, next) ->
       # the directory where the snapshot is stored.
       dataDir=#{zookeeper_data_dir}
       # the port at which the clients will connect
-      clientPort=2181
+      clientPort=#{zookeeper_port}
       #{mapping}
       """
       destination: '/etc/zookeeper/conf/zoo.cfg'
