@@ -93,21 +93,6 @@ module.exports.push (ctx, next) ->
       next err, ctx.OK
   do_install()
 
-# Now installed by client dependency
-# ###
-# Java Connector
-# --------------
-# Install the Mysql Java connector. The 
-# jar is available at "/usr/share/java/mysql-connector-java.jar".
-# ###
-# module.exports.push (ctx, next) ->
-#   @name 'Mysql Server # Java Connector'
-#   @timeout -1
-#   ctx.service
-#     name: 'mysql-connector-java'
-#   , (err, serviced) ->
-#     next err, if serviced then ctx.OK else ctx.PASS
-
 ###
 Secure Installation
 -------------------
@@ -166,8 +151,16 @@ module.exports.push (ctx, next) ->
           error = new Error data
           stream.end()
     stream.on 'close', ->
-      next error, if modified then ctx.OK else ctx.PASS
+      return next error if error
+      return next null, if modified then ctx.OK else ctx.PASS if disallow_remote_root_login
+      ctx.execute
+        cmd: """
+        GRANT ALL PRIVILEGES ON *.* TO root@'%' IDENTIFIED BY "#{password}";
+        FLUSH PRIVILEGES;
+        """
+      , (err, executed) ->
+        next err, if modified then ctx.OK else ctx.PASS
 
-
+  
 
 
