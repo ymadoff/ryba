@@ -20,7 +20,7 @@ module.exports.push (ctx, next) ->
     code_skipped: 1
   , (err, installed, stdout) ->
     return next err, ctx.PASS if err or not installed
-    packages = for l in stdout.trim().split('\n') then /(.*?) *$/.exec(l)[1]
+    packages = for l in stdout.trim().split('\n') then /(.*?) .*$/.exec(l)[1]
     ctx.execute
       cmd: "yum remove -y #{packages.join ' '}"
     , (err) ->
