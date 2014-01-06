@@ -114,12 +114,16 @@ module.exports.push (ctx, next) ->
   @timeout -1
   {sshd} = ctx.config.krb5_client
   return next null, ctx.DISABLED unless sshd
-  write = []
-  for k, v of sshd
-    write.push
-      match: new RegExp "^#{k}.*$", 'mg'
-      replace: "#{k} #{v}"
-      append: true
+  # write = []
+  # for k, v of sshd
+  #   write.push
+  #     match: new RegExp "^#{k}.*$", 'mg'
+  #     replace: "#{k} #{v}"
+  #     append: true
+  write = for k, v of sshd
+    match: new RegExp "^#{k}.*$", 'mg'
+    replace: "#{k} #{v}"
+    append: true
   ctx.log 'Write /etc/ssh/sshd_config'
   ctx.write
     write: write
