@@ -99,7 +99,7 @@ module.exports.push (ctx, next) ->
     return next err, if configured then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hive & HCat client # Kerberos Keytabs'
+  @name 'HDP Hive & HCat client # Kerberos'
   {hive_user, hadoop_group} = ctx.config.hdp
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   ctx.krb5_addprinc
@@ -138,17 +138,18 @@ module.exports.push (ctx, next) ->
   @name 'HDP Hive & HCat client # Check'
   ctx.execute
     cmd: mkcmd.test ctx, """
-    if hadoop fs -test -f /user/test/hive_#{ctx.config.host}; then exit 2; fi
+    if hdfs dfs -test -d /user/test/hive_#{ctx.config.host}/check_hive_tb; then exit 2; fi
     hive -e "
-      CREATE DATABASE check_hive_db  LOCATION '/user/test/hive_#{ctx.config.host}'; \\
+      CREATE DATABASE IF NOT EXISTS check_hive_db  LOCATION '/user/test/hive_#{ctx.config.host}'; \\
       USE check_hive_db; \\
-      CREATE TABLE check_hive_tb(col1 STRING, col2 INT);" || exit 1
+      CREATE TABLE IF NOT EXISTS check_hive_tb(col1 STRING, col2 INT);" || exit 1
     echo "a,1\\nb,2\\nc,3" > /tmp/check_hive;
-    hadoop fs -put /tmp/check_hive /user/test/hive_#{ctx.config.host}/check_hive_tb/data || exit 1
+    hdfs dfs -mkdir -p /user/test/hive_#{ctx.config.host}/check_hive_tb
+    hdfs dfs -put /tmp/check_hive /user/test/hive_#{ctx.config.host}/check_hive_tb/data || exit 1
     hive -e "SELECT SUM(col2) FROM check_hive_db.check_hive_tb;" || exit 1
     hive -e "DROP TABLE check_hive_db.check_hive_tb; DROP DATABASE check_hive_db;" || exit 1
     rm -rf /tmp/check_hive
-    hadoop fs -touchz /user/test/hive_#{ctx.config.host}
+    hdfs dfs -touchz /user/test/hive_#{ctx.config.host}
     """
     code_skipped: 2
   , (err, executed, stdout) ->
