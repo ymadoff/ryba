@@ -11,7 +11,6 @@ module.exports.push 'histi/actions/hdp_hive_client'
 module.exports.push module.exports.configure = (ctx) ->
   require('./hdp_hive_').configure ctx
   # Define Users and Groups
-  ctx.config.hdp.hive_user ?= 'hive'
   ctx.config.hdp.webhcat_user ?= 'webhcat'
   ctx.config.hdp.hive_log_dir ?= '/var/log/hive'
   ctx.config.hdp.hive_pid_dir ?= '/var/run/hive'

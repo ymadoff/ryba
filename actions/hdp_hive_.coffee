@@ -10,6 +10,7 @@ module.exports.push module.exports.configure = (ctx) ->
   srv2_host = ctx.servers(action: 'histi/actions/hdp_hive_server')[0]
   ctx.config.hdp.hive_conf_dir ?= '/etc/hive/conf'
   ctx.config.hdp.hive_site ?= {}
+  ctx.config.hdp.hive_user ?= 'hive'
   ctx.config.hdp.hive_site['hive.metastore.uris'] ?= "thrift://#{srv2_host}:9083"
   # To prevent memory leak in unsecure mode, disable [file system caches](https://cwiki.apache.org/confluence/display/Hive/Setting+up+HiveServer2)
   # , by setting following params to true
