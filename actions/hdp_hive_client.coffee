@@ -29,41 +29,8 @@ Example of a minimal client configuration:
 ###
 
 module.exports.push module.exports.configure = (ctx) ->
-  require('./hdp_hdfs').configure ctx
-  require('./hdp_hive_').configure ctx
-
-###
-Install
--------
-Instructions to [install the Hive and HCatalog RPMs](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3/bk_installing_manually_book/content/rpm-chap6-1.html)
-###
-module.exports.push (ctx, next) ->
-  @name 'HDP Hive & HCat client # Install'
-  @timeout -1
-  modified = false
-  {hive_conf_dir} = ctx.config.hdp
-  do_hive = ->
-    ctx.log 'Install the hive package'
-    ctx.service name: 'hive', (err, serviced) ->
-      return next err if err
-      modified = true if serviced
-      ctx.log 'Copy hive-env.sh'
-      conf_files = "#{__dirname}/hdp/hive"
-      ctx.upload
-        source: "#{conf_files}/hive-env.sh"
-        destination: "#{hive_conf_dir}/hive-env.sh"
-      , (err, copied) ->
-        return next err if err
-        do_hcatalog()
-  do_hcatalog = ->
-    ctx.log 'Install the hcatalog package'
-    ctx.service name: 'hcatalog', (err, serviced) ->
-      return next err if err
-      modified = true if serviced
-      do_end()
-  do_end = ->
-    next null, if modified then ctx.OK else ctx.PASS
-  do_hive()
+  require('./hdp_hdfs').configure ctx unless ctx.config.hdp.hdp_hdfs_done
+  require('./hdp_hive_').configure ctx unless ctx.config.hdp.hdp_hive_done
 
 ###
 Configure
@@ -91,51 +58,8 @@ module.exports.push (ctx, next) ->
       next err, if configured then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hive & HCat client # Driver'
-  ctx.link
-    source: '/usr/share/java/mysql-connector-java.jar'
-    destination: '/usr/lib/hive/lib/mysql-connector-java.jar'
-  , (err, configured) ->
-    return next err, if configured then ctx.OK else ctx.PASS
-
-module.exports.push (ctx, next) ->
-  @name 'HDP Hive & HCat client # Kerberos'
-  {hive_user, hadoop_group} = ctx.config.hdp
-  {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
-  ctx.krb5_addprinc
-    principal: "hive/#{ctx.config.host}@#{realm}"
-    randkey: true
-    keytab: "/etc/security/keytabs/hive.service.keytab"
-    uid: hive_user
-    gid: hadoop_group
-    kadmin_principal: kadmin_principal
-    kadmin_password: kadmin_password
-    kadmin_server: kadmin_server
-  # ,
-  #   principal: "hcat/#{ctx.config.host}@#{realm}"
-  #   randkey: true
-  #   keytab: "/etc/security/keytabs/hcat.service.keytab"
-  #   uid: 'hcat'
-  #   gid: 'hadoop'
-  , (err, created) ->
-    return next err if err
-    next null, if created then ctx.OK else ctx.PASS
-
-module.exports.push (ctx, next) ->
-  @name 'HDP Hive & HCat client # Logs'
-  ctx.write [
-    source: "#{__dirname}/hdp/hive/hive-exec-log4j.properties.template"
-    local_source: true
-    destination: '/etc/hive/conf/hive-exec-log4j.properties'
-  ,
-    source: "#{__dirname}/hdp/hive/hive-log4j.properties.template"
-    local_source: true
-    destination: '/etc/hive/conf/hive-log4j.properties'
-  ], (err, written) ->
-    return next err, if written then ctx.OK else ctx.PASS
-
-module.exports.push (ctx, next) ->
   @name 'HDP Hive & HCat client # Check'
+  @timeout -1
   ctx.execute
     cmd: mkcmd.test ctx, """
     if hdfs dfs -test -d /user/test/hive_#{ctx.config.host}/check_hive_tb; then exit 2; fi

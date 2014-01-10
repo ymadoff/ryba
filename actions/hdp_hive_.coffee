@@ -41,4 +41,38 @@ module.exports.push module.exports.configure = (ctx) ->
   # with the actual hostname of the running instance.
   # 'hive.server2.authentication.kerberos.principal': "hcat/#{ctx.config.host}@#{realm}"
   ctx.config.hdp.hive_site['hive.server2.authentication.kerberos.principal'] ?= "hive/_HOST@#{realm}"
+  ctx.config.hdp.hdp_hive_done = true
+
+###
+Install
+-------
+Instructions to [install the Hive and HCatalog RPMs](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3/bk_installing_manually_book/content/rpm-chap6-1.html)
+###
+module.exports.push (ctx, next) ->
+  @name 'HDP Hive & HCat # Install'
+  @timeout -1
+  modified = false
+  {hive_conf_dir} = ctx.config.hdp
+  do_hive = ->
+    ctx.log 'Install the hive package'
+    ctx.service name: 'hive', (err, serviced) ->
+      return next err if err
+      modified = true if serviced
+      ctx.log 'Copy hive-env.sh'
+      conf_files = "#{__dirname}/hdp/hive"
+      ctx.upload
+        source: "#{conf_files}/hive-env.sh"
+        destination: "#{hive_conf_dir}/hive-env.sh"
+      , (err, copied) ->
+        return next err if err
+        do_hcatalog()
+  do_hcatalog = ->
+    ctx.log 'Install the hcatalog package'
+    ctx.service name: 'hcatalog', (err, serviced) ->
+      return next err if err
+      modified = true if serviced
+      do_end()
+  do_end = ->
+    next null, if modified then ctx.OK else ctx.PASS
+  do_hive()
  
