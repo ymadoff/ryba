@@ -5,6 +5,7 @@ mkcmd = require './hdp/mkcmd'
 
 module.exports = []
 
+module.exports.push 'histi/actions/mysql_client'
 module.exports.push 'histi/actions/hdp_core'
 
 ###
@@ -150,7 +151,7 @@ module.exports.push (ctx, next) ->
       local_default: true
       properties: oozie_site
       uid: oozie_user
-      guid: hadoop_group
+      gid: hadoop_group
       mode: 0o0755
       merge: true
     , (err, configured) ->
@@ -165,7 +166,7 @@ module.exports.push (ctx, next) ->
       local_default: true
       properties: oozie_hadoop_config
       uid: oozie_user
-      guid: hadoop_group
+      gid: hadoop_group
       mode: 0o0755
     , (err, configured) ->
       return next err if err
@@ -177,7 +178,7 @@ module.exports.push (ctx, next) ->
       source: "#{hadoop_conf_dir}"
       destination: "#{oozie_conf_dir}/hadoop-conf"
       uid: hadoop_user
-      guid: hadoop_group
+      gid: hadoop_group
     , (err, linked) ->
       return next err if err
       modified = true if linked
