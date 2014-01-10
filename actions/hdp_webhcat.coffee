@@ -83,7 +83,7 @@ module.exports.push (ctx, next) ->
     local_default: true
     properties: webhcat_site
     uid: webhcat_user
-    guid: hadoop_group
+    gid: hadoop_group
     mode: 0o0755
     merge: true
   , (err, configured) ->
@@ -98,7 +98,7 @@ module.exports.push (ctx, next) ->
     source: "#{__dirname}/hdp/webhcat/webhcat-env.sh"
     destination: "#{webhcat_conf_dir}/webhcat-env.sh"
     uid: webhcat_user
-    guid: hadoop_group
+    gid: hadoop_group
     mode: 0o0755
   , (err, uploaded) ->
     next err, if uploaded then ctx.OK else ctx.PASS
