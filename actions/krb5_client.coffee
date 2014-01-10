@@ -66,7 +66,7 @@ module.exports.push module.exports.configure = (ctx) ->
   , ctx.config.krb5_client.sshd
 
 module.exports.push (ctx, next) ->
-  @name 'Kerberos client # Install'
+  @name 'Krb5 client # Install'
   ctx.service [
     name: 'krb5-workstation'
   ], (err, serviced) ->
@@ -76,7 +76,7 @@ module.exports.push (ctx, next) ->
   # Kerberos config is also managed by the kerberos server action.
   ctx.log 'Check who manage /etc/krb5.conf'
   return next null if ctx.hasAction 'histi/actions/krb5_server'
-  @name 'Kerberos client # Configure'
+  @name 'Krb5 client # Configure'
   {etc_krb5_conf} = ctx.config.krb5_client
   ctx.log 'Update /etc/krb5.conf'
   ctx.ini
@@ -93,7 +93,7 @@ Create host principal
 Note, I have experienced random situations where next was called multiple times.
 ###
 module.exports.push (ctx, next) ->
-  @name 'Kerberos client # Create host principal'
+  @name 'Krb5 client # Create host principal'
   @timeout 100000
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   # quit = false
@@ -110,7 +110,7 @@ module.exports.push (ctx, next) ->
     next null, if modified then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name 'Kerberos client # Configure SSHD'
+  @name 'Krb5 client # Configure SSHD'
   @timeout -1
   {sshd} = ctx.config.krb5_client
   return next null, ctx.DISABLED unless sshd

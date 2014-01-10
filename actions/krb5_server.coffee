@@ -100,14 +100,14 @@ module.exports.push module.exports.configure = (ctx) ->
   krb5_client.configure ctx
 
 module.exports.push (ctx, next) ->
-  @name 'KRB5 Server (LDAP) # Install'
+  @name 'Krb5 Server # LDAP Install'
   ctx.service
     name: 'krb5-server-ldap'
   , (err, installed) ->
     next err, if installed then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name 'KRB5 Server (LDAP) # Insert entries'
+  @name 'Krb5 Server # LDAP Insert Entries'
   @timeout 100000
   {realm, etc_krb5_conf, kdc} = ctx.config.krb5_server
   {manager_dn, manager_password, realms_dn} = ctx.config.openldap_krb5
@@ -131,7 +131,7 @@ module.exports.push (ctx, next) ->
       next err, if executed then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name 'KRB5 Server (LDAP) # Stash password'
+  @name 'Krb5 Server # LDAP Stash password'
   keyfileContent = null
   read = ->
     ctx.log 'Read current keyfile if it exists'
@@ -175,7 +175,7 @@ module.exports.push (ctx, next) ->
   read()
 
 module.exports.push (ctx, next) ->
-  @name 'KRB5 Server # Install'
+  @name 'Krb5 Server # Install'
   @timeout -1
   ctx.log 'Install krb5kdc and kadmin services'
   ctx.service [
@@ -198,7 +198,7 @@ module.exports.push (ctx, next) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name 'KRB5 Server # Configure'
+  @name 'Krb5 Server # Configure'
   @timeout 100000
   {realm, etc_krb5_conf, kdc_conf} = ctx.config.krb5_server
   modified = false
@@ -259,7 +259,7 @@ module.exports.push (ctx, next) ->
   do_krb5()
 
 module.exports.push (ctx, next) ->
-  @name 'KRB5 Server # Log'
+  @name 'Krb5 Server # Log'
   @timeout 100000
   modified = false
   touch = ->
@@ -316,7 +316,7 @@ module.exports.push (ctx, next) ->
   touch()
 
 module.exports.push (ctx, next) ->
-  @name 'KRB5 Server # Admin principal'
+  @name 'Krb5 Server # Admin principal'
   @timeout -1
   {kadmin_principal, kadmin_password} = ctx.config.krb5_server
   ctx.log "Create principal #{kadmin_principal}"
@@ -330,7 +330,7 @@ module.exports.push (ctx, next) ->
     next err, if created then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name 'KRB5 Server # Start'
+  @name 'Krb5 Server # Start'
   @timeout 100000
   ctx.service [
     name: 'krb5-server-ldap'
@@ -349,7 +349,7 @@ Populate
 Populate DB with machines and users principals.
 ###
 module.exports.push (ctx, next) ->
-  @name 'KRB5 Server # Populate'
+  @name 'Krb5 Server # Populate'
   {realm, principals, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_server
   modified = false
   ctx.timeout -1
