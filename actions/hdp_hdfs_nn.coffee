@@ -10,7 +10,7 @@ module.exports.push (ctx) ->
 
 module.exports.push (ctx, next) ->
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
-  @name 'HDP Hadoop NN # Kerberos'
+  @name 'HDP HDFS NN # Kerberos'
   ctx.krb5_addprinc 
     principal: "nn/#{ctx.config.host}@#{realm}"
     randkey: true
@@ -24,7 +24,7 @@ module.exports.push (ctx, next) ->
     next err, if created then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hadoop NN # HDFS User'
+  @name 'HDP HDFS NN # HDFS User'
   {hdfs_user, hdfs_password} = ctx.config.hdp
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   ctx.krb5_addprinc
@@ -45,7 +45,7 @@ module.exports.push (ctx, next) ->
 module.exports.push (ctx, next) ->
   {dfs_name_dir, hdfs_user, format, cluster_name} = ctx.config.hdp
   return next() unless format
-  @name 'HDP Hadoop NN # Format'
+  @name 'HDP HDFS NN # Format'
   ctx.log "Format HDFS if #{dfs_name_dir[0]} does not exist"
   ctx.execute
     #  su -l hdfs -c "hdfs namenode -format duzy"
@@ -62,7 +62,7 @@ module.exports.push (ctx, next) ->
         next err, ctx.OK
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hadoop NN # Upgrade'
+  @name 'HDP HDFS NN # Upgrade'
   {hdfs_log_dir} = ctx.config.hdp
   count = (callback) ->
     ctx.execute
@@ -88,15 +88,14 @@ module.exports.push (ctx, next) ->
 
 module.exports.push (ctx, next) ->
   {namenode} = ctx.config.hdp
-  return next() unless namenode
-  @name "HDP Hadoop NN # Start"
+  @name "HDP HDFS NN # Start"
   lifecycle.nn_start ctx, (err, started) ->
     next err, if started then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
   {hdfs_user, test_user, test_password, hadoop_group, security} = ctx.config.hdp
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
-  @name 'HDP Hadoop NN # Test User'
+  @name 'HDP HDFS NN # Test User'
   @timeout -1
   modified = false
   do_user = ->

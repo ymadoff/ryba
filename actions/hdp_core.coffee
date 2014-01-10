@@ -56,6 +56,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.oozie ?= false
   ctx.config.hdp.webhcat ?= false
   # Define Users and Groups
+  ctx.config.hdp.hadoop_user ?= 'root'
   ctx.config.hdp.hadoop_group ?= 'hadoop'
   # Define Directories for Ecosystem Components
   ctx.config.hdp.sqoop_conf_dir ?= '/etc/sqoop/conf'
@@ -75,7 +76,7 @@ module.exports.push (ctx, next) ->
   {proxy, hdp_repo} = ctx.config.hdp
   # Is there a repo to download and install
   return next() unless hdp_repo
-  @name 'HDP Hadoop Core # Repository'
+  @name 'HDP Core # Repository'
   modified = false
   @timeout -1
   do_hdp = ->
@@ -101,7 +102,7 @@ module.exports.push (ctx, next) ->
 #http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 #http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
 module.exports.push (ctx, next) ->
-  @name "HDP Hadoop Core # Users & Groups"
+  @name "HDP Core # Users & Groups"
   cmds = []
   {hadoop_group} = ctx.config.hdp
   ctx.execute
@@ -112,17 +113,19 @@ module.exports.push (ctx, next) ->
     next err, if executed then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name "HDP Hadoop Core # Install"
+  @name "HDP Core # Install"
   @timeout -1
   ctx.service [
-    name: 'hadoop'
-  ,
+  # wdavidw:
+  # Installing the "hadoop" package as documented
+  # generates "No package hadoop available", 
+  # maybe because we cannot install directly this package
     name: 'hadoop-client'
   ], (err, serviced) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name "HDP Hadoop Core # Configuration"
+  @name "HDP Core # Configuration"
   namenode = (ctx.config.servers.filter (s) -> s.hdp?.namenode)[0].host
   ctx.log "Namenode: #{namenode}"
   secondary_namenode = (ctx.config.servers.filter (s) -> s.hdp?.secondary_namenode)[0].host
@@ -159,7 +162,7 @@ module.exports.push (ctx, next) ->
   do_core()
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hadoop Core # Environnment'
+  @name 'HDP Core # Environnment'
   ctx.write
     destination: '/etc/profile.d/hadoop.sh'
     content: """
@@ -171,7 +174,7 @@ module.exports.push (ctx, next) ->
     next null, if written then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name "HDP Hadoop Core # Compression"
+  @name "HDP Core # Compression"
   @timeout -1
   modified = false
   { hadoop_conf_dir } = ctx.config.hdp
@@ -219,7 +222,7 @@ module.exports.push (ctx, next) ->
   do_snappy()
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hadoop Core # Kerberos'
+  @name 'HDP Core # Kerberos'
   {realm} = ctx.config.krb5_client
   {hadoop_conf_dir} = ctx.config.hdp
   core = {}
@@ -363,7 +366,7 @@ This action follow the ["Authentication for Hadoop HTTP web-consoles"
 recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 ###
 module.exports.push (ctx, next) ->
-  @name 'HDP Hadoop Core # Kerberos Web UI'
+  @name 'HDP Core # Kerberos Web UI'
   {krb5_client, realm} = ctx.config.krb5_client
   domain = ctx.config.servers.filter( (server) -> server.hdp?.namenode )[0].host
   ctx.execute

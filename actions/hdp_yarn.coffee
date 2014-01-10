@@ -47,7 +47,7 @@ module.exports.push module.exports.configure = (ctx) ->
 #http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 #http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
 module.exports.push (ctx, next) ->
-  @name "HDP Hadoop YARN # Users & Groups"
+  @name "HDP YARN # Users & Groups"
   return next() unless ctx.config.hdp.resourcemanager or ctx.config.hdp.nodemanager
   {hadoop_group} = ctx.config.hdp
   ctx.execute
@@ -58,7 +58,7 @@ module.exports.push (ctx, next) ->
     next err, if executed then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name "HDP Hadoop YARN # Install Common"
+  @name "HDP YARN # Install Common"
   @timeout -1
   ctx.service [
     name: 'hadoop'
@@ -70,7 +70,7 @@ module.exports.push (ctx, next) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name "HDP Hadoop YARN # Directories"
+  @name "HDP YARN # Directories"
   @timeout -1
   { yarn_user,
     yarn, yarn_log_dir, yarn_pid_dir,
@@ -125,7 +125,7 @@ module.exports.push (ctx, next) ->
   do_yarn_log_dirs()
 
 module.exports.push (ctx, next) ->
-  @name "HDP Hadoop YARN # Yarn OPTS"
+  @name "HDP YARN # Yarn OPTS"
   {yarn_user, hadoop_group, hadoop_conf_dir} = ctx.config.hdp
   ctx.render
     source: "#{__dirname}/hdp/core_hadoop/yarn-env.sh"
@@ -139,7 +139,7 @@ module.exports.push (ctx, next) ->
     next err, if rendered then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name "HDP Hadoop YARN # Container Executor"
+  @name "HDP YARN # Container Executor"
   modified = false
   {yarn_user, yarn_group, container_executor, hadoop_conf_dir} = ctx.config.hdp
   container_executor = misc.merge {}, container_executor
@@ -178,7 +178,7 @@ module.exports.push (ctx, next) ->
   do_stat()
 
 module.exports.push (ctx, next) ->
-  @name "HDP Hadoop YARN # Configuration"
+  @name "HDP YARN # Configuration"
   { yarn, hadoop_conf_dir, capacity_scheduler } = ctx.config.hdp
   modified = false
   do_yarn = ->
@@ -214,7 +214,7 @@ module.exports.push (ctx, next) ->
   do_yarn()
 
 ###
-HDP Hadoop YARN # Tuning
+HDP YARN # Tuning
 ------------------------
 
 yarn.nodemanager.vmem-pmem-ratio property: Is defines ratio of virtual memory to available pysical memory, Here is 2.1 means virtual memory will be double the size of physical memory.
@@ -227,7 +227,7 @@ Ressources:
 http://stackoverflow.com/questions/18692631/difference-between-3-memory-parameters-in-hadoop-2
 ###
 module.exports.push (ctx, next) ->
-  @name "HDP Hadoop YARN # Tuning"
+  @name "HDP YARN # Tuning"
   # yarn.nodemanager.resource.memory-mb
   # yarn.nodemanager.vmem-pmem-ratio
   # yarn.scheduler.maximum-allocation-mb
@@ -237,7 +237,7 @@ module.exports.push (ctx, next) ->
   next null, "TODO"
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hadoop YARN # Kerberos Principals'
+  @name 'HDP YARN # Kerberos Principals'
   @timeout -1
   {hdfs_user} = ctx.config.hdp
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
@@ -279,7 +279,7 @@ module.exports.push (ctx, next) ->
       next null, if created then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hadoop YARN # Configure Kerberos'
+  @name 'HDP YARN # Configure Kerberos'
   {realm} = ctx.config.krb5_client
   {hadoop_conf_dir} = ctx.config.hdp
   yarn = {}
@@ -307,7 +307,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
 ###
 module.exports.push (ctx, next) ->
   {hadoop_group, hdfs_user, yarn, yarn_user, mapred, mapred_user} = ctx.config.hdp
-  @name 'HDP Hadoop DN # HDFS layout'
+  @name 'HDP YARN # HDFS layout'
   ok = false
   do_remote_app_log_dir = ->
     # Default value for "yarn.nodemanager.remote-app-log-dir" is "/tmp/logs"

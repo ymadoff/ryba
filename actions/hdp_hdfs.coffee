@@ -43,11 +43,12 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.options ?= {}
   ctx.config.hdp.options['java.net.preferIPv4Stack'] ?= true
   ctx.config.hdp.hadoop_policy ?= {}
+  ctx.config.hdp.hdp_hdfs_done = true
 
 #http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 #http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
 module.exports.push (ctx, next) ->
-  @name "HDP Hadoop HDFS # Users"
+  @name "HDP HDFS # Users"
   return next() unless ctx.config.hdp.namenode or ctx.config.hdp.secondary_namenode or ctx.config.hdp.datanode
   {hadoop_group} = ctx.config.hdp
   ctx.execute
@@ -58,7 +59,7 @@ module.exports.push (ctx, next) ->
     next err, if executed then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name "HDP Hadoop HDFS # Install"
+  @name "HDP HDFS # Install"
   @timeout -1
   ctx.service [
     name: 'hadoop'
@@ -74,7 +75,7 @@ module.exports.push (ctx, next) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name "HDP Hadoop HDFS # Directories"
+  @name "HDP HDFS # Directories"
   @timeout -1
   { dfs_name_dir, dfs_data_dir, yarn_user, mapred_user,
     fs_checkpoint_dir,
@@ -153,7 +154,7 @@ module.exports.push (ctx, next) ->
   do_namenode()
 
 module.exports.push (ctx, next) ->
-  @name "HDP Hadoop HDFS # Hadoop OPTS"
+  @name "HDP HDFS # Hadoop OPTS"
   {hadoop_conf_dir} = ctx.config.hdp
   # For now, only "hadoop_opts" config property is used
   # Todo: 
@@ -171,7 +172,7 @@ module.exports.push (ctx, next) ->
     next err, if rendered then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name "HDP Hadoop HDFS # Hadoop Configuration"
+  @name "HDP HDFS # Hadoop Configuration"
   namenode = (ctx.config.servers.filter (s) -> s.hdp?.namenode)[0].host
   ctx.log "Namenode: #{namenode}"
   secondary_namenode = (ctx.config.servers.filter (s) -> s.hdp?.secondary_namenode)[0].host
@@ -241,7 +242,7 @@ module.exports.push (ctx, next) ->
   do_hdfs()
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hadoop HDFS # Configure HTTPS'
+  @name 'HDP HDFS # Configure HTTPS'
   {hadoop_conf_dir, hadoop_policy} = ctx.config.hdp
   namenode = ctx.config.servers.filter( (server) -> server.hdp?.namenode )[0].host
   modified = false
@@ -280,7 +281,7 @@ module.exports.push (ctx, next) ->
   do_hdfs_site()
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hadoop HDFS # Kerberos Principals'
+  @name 'HDP HDFS # Kerberos Principals'
   @timeout -1
   {hdfs_user} = ctx.config.hdp
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
@@ -308,7 +309,7 @@ module.exports.push (ctx, next) ->
       next err, if created then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hadoop HDFS # Kerberos Configure'
+  @name 'HDP HDFS # Kerberos Configure'
   {realm} = ctx.config.krb5_client
   {hadoop_conf_dir} = ctx.config.hdp
   namenode = ctx.config.servers.filter( (server) -> server.hdp?.namenode )[0].host

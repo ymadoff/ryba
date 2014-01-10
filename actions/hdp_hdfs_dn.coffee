@@ -11,7 +11,7 @@ module.exports.push (ctx) ->
 
 module.exports.push (ctx, next) ->
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
-  @name 'HDP Hadoop DN # Kerberos'
+  @name 'HDP HDFS DN # Kerberos'
   ctx.krb5_addprinc 
     principal: "dn/#{ctx.config.host}@#{realm}"
     randkey: true
@@ -25,7 +25,7 @@ module.exports.push (ctx, next) ->
     next err, if created then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hadoop DN # Start'
+  @name 'HDP HDFS DN # Start'
   lifecycle.dn_start ctx, (err, started) ->
     next err, ctx.OK
 
@@ -33,8 +33,8 @@ module.exports.push (ctx, next) ->
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 ###
 module.exports.push (ctx, next) ->
-  {hadoop_group, hdfs_user, yarn, yarn_user, mapred, mapred_user} = ctx.config.hdp
-  @name 'HDP Hadoop DN # HDFS layout'
+  {hadoop_group, hdfs_user, test_user, yarn, yarn_user, mapred, mapred_user} = ctx.config.hdp
+  @name 'HDP HDFS DN # HDFS layout'
   ok = false
   do_root = ->
     ctx.execute
@@ -64,6 +64,12 @@ module.exports.push (ctx, next) ->
       hdfs dfs -mkdir /user
       hdfs dfs -chown #{hdfs_user}:#{hadoop_group} /user
       hdfs dfs -chmod 755 /user
+      hdfs dfs -mkdir /user/#{hdfs_user}
+      hdfs dfs -chown #{hdfs_user}:#{hadoop_group} /user/#{hdfs_user}
+      hdfs dfs -chmod 755 /user/#{hdfs_user}
+      hdfs dfs -mkdir /user/#{test_user}
+      hdfs dfs -chown #{test_user}:#{hadoop_group} /user/#{test_user}
+      hdfs dfs -chmod 755 /user/#{test_user}
       """
       code_skipped: 1
     , (err, executed, stdout) ->
@@ -89,13 +95,13 @@ module.exports.push (ctx, next) ->
 
 module.exports.push (ctx, next) ->
   {hdfs_user} = ctx.config.hdp
-  @name 'HDP Hadoop DN # Test HDFS'
+  @name 'HDP HDFS DN # Test HDFS'
   ctx.execute
     cmd: mkcmd.test ctx, """
-    if hdfs dfs -test -d /user/test/hdfs_#{ctx.config.host}; then exit 1; fi
+    if hdfs dfs -test -f /user/test/hdfs_#{ctx.config.host}; then exit 2; fi
     hdfs dfs -put /etc/passwd /user/test/hdfs_#{ctx.config.host}
     """
-    code_skipped: 1
+    code_skipped: 2
   , (err, executed, stdout) ->
     next err, if executed then ctx.OK else ctx.PASS
 
@@ -112,16 +118,16 @@ for more information.
 module.exports.push (ctx, next) ->
   namenode = (ctx.config.servers.filter (s) -> s.hdp?.namenode)[0].host
   {force_check} = ctx.config.hdp
-  @name 'HDP Hadoop DN # Test WebHDFS'
+  @name 'HDP HDFS DN # Test WebHDFS'
   @timeout -1
   do_init = ->
     ctx.execute
       cmd: mkcmd.test ctx, """
-        if hdfs dfs -test -e /user/test/webhdfs; then exit 1; fi
+        if hdfs dfs -test -f /user/test/webhdfs; then exit 2; fi
         hdfs dfs -touchz /user/test/webhdfs
         kdestroy
       """
-      code_skipped: 1
+      code_skipped: 2
     , (err, executed, stdout) ->
       return next err if err
       return do_spnego() if force_check

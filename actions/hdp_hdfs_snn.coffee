@@ -9,7 +9,7 @@ module.exports.push (ctx) ->
 
 module.exports.push (ctx, next) ->
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
-  @name 'HDP Hadoop SNN # Kerberos'
+  @name 'HDP HDFS SNN # Kerberos'
   ctx.krb5_addprinc 
     principal: "nn/#{ctx.config.host}@#{realm}"
     randkey: true
@@ -23,6 +23,6 @@ module.exports.push (ctx, next) ->
     next err, if created then ctx.OK else ctx.PASS
 
 module.exports.push (ctx, next) ->
-  @name 'HDP Hadoop SNN # Start'
+  @name 'HDP HDFS SNN # Start'
   lifecycle.snn_start ctx, (err, started) ->
     next err, if started then ctx.OK else ctx.PASS
