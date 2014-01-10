@@ -121,8 +121,8 @@ lifecyle = module.exports =
   hive_metastore_stop: (ctx, callback) ->
     {hive_user, hive_pid_dir} = ctx.config.hdp
     ctx.execute
-      # su -l hive -c "kill `cat /var/run/hive/metastore.pid"
-      cmd: "su -l #{hive_user} -c \"kill `cat #{hive_pid_dir}/metastore.pid\""
+      # su -l hive -c "kill `cat /var/run/hive/metastore.pid`"
+      cmd: "su -l #{hive_user} -c \"kill `cat #{hive_pid_dir}/metastore.pid`\""
       code_skipped: 1
     , (err, started) ->
       callback err, started
@@ -142,7 +142,7 @@ lifecyle = module.exports =
     {hive_user, hive_pid_dir} = ctx.config.hdp
     ctx.execute
       # su -l hive -c "kill `cat /var/run/hive/server2.pid"
-      cmd: "su -l #{hive_user} -c \"kill `cat #{hive_pid_dir}/server2.pid\""
+      cmd: "su -l #{hive_user} -c \"kill `cat #{hive_pid_dir}/server2.pid`\""
       code_skipped: 1
     , (err, started) ->
       callback err, started
