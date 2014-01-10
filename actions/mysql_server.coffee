@@ -8,6 +8,7 @@ Mysql Server
 mecano = require 'mecano'
 each = require 'each'
 module.exports = []
+escape = (text) -> text.replace(/[\\"]/g, "\\$&")
 
 # Install the mysql driver
 module.exports.push 'histi/actions/mysql_client'
@@ -77,7 +78,6 @@ module.exports.push (ctx, next) ->
       modified = true if started
       do_sql()
   do_sql = ->
-    escape = (text) -> text.replace(/[\\"]/g, "\\$&")
     each(sql_on_install)
     .on 'item', (sql, next) ->
       cmd = "mysql -uroot -e \"#{escape sql}\""
@@ -152,12 +152,14 @@ module.exports.push (ctx, next) ->
           stream.end()
     stream.on 'close', ->
       return next error if error
-      return next null, if modified then ctx.OK else ctx.PASS if disallow_remote_root_login
+      if disallow_remote_root_login then return next null, if modified then ctx.OK else ctx.PASS
+      sql = """
+      USE mysql;
+      GRANT ALL PRIVILEGES ON *.* TO root@'%' IDENTIFIED BY "#{password}";
+      FLUSH PRIVILEGES;
+      """
       ctx.execute
-        cmd: """
-        GRANT ALL PRIVILEGES ON *.* TO root@'%' IDENTIFIED BY "#{password}";
-        FLUSH PRIVILEGES;
-        """
+        cmd: "mysql -uroot -p#{password} -e \"#{escape sql}\""
       , (err, executed) ->
         next err, if modified then ctx.OK else ctx.PASS
 
