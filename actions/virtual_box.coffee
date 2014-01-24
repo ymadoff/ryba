@@ -7,9 +7,7 @@ Virtual Box
 module.exports = []
 module.exports.push 'histi/actions/curl'
 
-module.exports.push (ctx, next) ->
-  @name 'VirtualBox # Guest Additions'
-  @timeout -1
+module.exports.push name: 'VirtualBox # Guest Additions', timeout: -1, callback: (ctx, next) ->
   ctx.log 'Get VirtualBox version on host machine'
   ctx.execute
     ssh: false

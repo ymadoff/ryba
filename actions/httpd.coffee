@@ -22,9 +22,7 @@ Install
 -------
 Install the HTTPD service and declare it as a startup service.
 ###
-module.exports.push (ctx, next) ->
-  @name 'HTTPD # Install'
-  @timeout -1
+module.exports.push name: 'HTTPD # Install', timeout: -1, callback: (ctx, next) ->
   {startup, action} = ctx.config.httpd
   ctx.service
     name: 'httpd'

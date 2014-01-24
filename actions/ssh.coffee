@@ -46,8 +46,7 @@ Authorized Keys
 ---------------
 Deploy authorized keys to users.
 ###
-module.exports.push (ctx, next) ->
-  @name 'SSH # Authorized Keys'
+module.exports.push name: 'SSH # Authorized Keys', timeout: -1, callback: (ctx, next) ->
   ok = 0
   each(ctx.config.users)
   .on 'item', (user, next) ->
@@ -72,11 +71,9 @@ module.exports.push (ctx, next) ->
   .on 'both', (err) ->
     next err, if ok then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'SSH # Configure', timeout: -1, callback: (ctx, next) ->
   {sshd_config} = ctx.config.ssh
   return next() unless sshd_config
-  @name 'SSH # Configure'
-  @timeout -1
   write = []
   for k, v of sshd_config
     write.push
@@ -103,8 +100,7 @@ Private Keys
 ------------
 Deploy id_rsa keys to users.
 ###
-module.exports.push (ctx, next) ->
-  @name 'SSH # Private RSA Key'
+module.exports.push name: 'SSH # Private RSA Key', timeout: -1, callback: (ctx, next) ->
   ok = false
   each(ctx.config.users)
   .on 'item', (user, next) ->
@@ -134,11 +130,9 @@ module.exports.push (ctx, next) ->
   .on 'both', (err) ->
     next err, if ok then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'SSH # Banner', timeout: 100000, callback: (ctx, next) ->
   {banner} = ctx.config.ssh
   return next() unless banner
-  @name 'SSH # Banner'
-  @timeout 100000
   ctx.log 'Upload banner content'
   banner.content += '\n\n' if banner.content
   ctx.upload banner, (err, uploaded) ->

@@ -6,6 +6,7 @@ module.exports = []
 module.exports.push 'histi/actions/yum'
 module.exports.push 'histi/actions/ssh'
 module.exports.push 'histi/actions/ntp'
+module.exports.push 'histi/actions/openldap_client'
 
 ###
 Goals
@@ -65,18 +66,17 @@ module.exports.push module.exports.configure = (ctx) ->
     GSSAPICleanupCredentials: 'yes'
   , ctx.config.krb5_client.sshd
 
-module.exports.push (ctx, next) ->
-  @name 'Krb5 client # Install'
+module.exports.push name: 'Krb5 client # Install', timeout: -1, callback: (ctx, next) ->
   ctx.service [
     name: 'krb5-workstation'
   ], (err, serviced) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'Krb5 client # Configure', timeout: -1, callback: (ctx, next) ->
   # Kerberos config is also managed by the kerberos server action.
   ctx.log 'Check who manage /etc/krb5.conf'
-  return next null if ctx.hasAction 'histi/actions/krb5_server'
-  @name 'Krb5 client # Configure'
+  return next null, ctx.DISABLED if ctx.actions.some (action) -> action.name is 'histi/actions/krb5_server'
+  # return next null if ctx.hasAction 'histi/actions/krb5_server'
   {etc_krb5_conf} = ctx.config.krb5_client
   ctx.log 'Update /etc/krb5.conf'
   ctx.ini
@@ -92,9 +92,7 @@ Create host principal
 
 Note, I have experienced random situations where next was called multiple times.
 ###
-module.exports.push (ctx, next) ->
-  @name 'Krb5 client # Create host principal'
-  @timeout 100000
+module.exports.push name: 'Krb5 client # Create host principal', timeout: 100000, callback: (ctx, next) ->
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   # quit = false
   ctx.log 'Create an admin user principal and assign a password to this new user'
@@ -109,9 +107,7 @@ module.exports.push (ctx, next) ->
     modified = true if created
     next null, if modified then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'Krb5 client # Configure SSHD'
-  @timeout -1
+module.exports.push name: 'Krb5 client # Configure SSHD', timeout: -1, callback: (ctx, next) ->
   {sshd} = ctx.config.krb5_client
   return next null, ctx.DISABLED unless sshd
   # write = []

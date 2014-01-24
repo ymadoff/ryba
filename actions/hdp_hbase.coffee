@@ -6,9 +6,10 @@ module.exports.push 'histi/actions/yum'
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./hdp_core').configure ctx
+  module.exports.configured = true
   {realm} = ctx.config.krb5_client
-  namenode = (ctx.config.servers.filter (s) -> s.hdp?.namenode)[0].host
-  zookeeper_hosts = ctx.config.servers.filter((s) -> s.hdp?.zookeeper).map((s) -> s.host).join ','
+  namenode = ctx.hosts_with_module 'histi/actions/hdp_hdfs_nn', 1
+  zookeeper_hosts = ctx.hosts_with_module('histi/actions/hdp_zookeeper').join ','
   ctx.config.hdp ?= {}
   ctx.config.hdp.hbase_user ?= 'hbase'
   ctx.config.hdp.hbase_log_dir ?= '/var/log/hbase'
@@ -41,15 +42,12 @@ Install
 -------
 Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap9-1.html)
 ###
-module.exports.push (ctx, next) ->
-  @name 'HDP HBase # Install'
-  @timeout -1
+module.exports.push name: 'HDP HBase # Install', timeout: -1, callback: (ctx, next) ->
   ctx.service name: 'hbase', (err, serviced) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'HDP HBase # Users & Groups', timeout: -1, callback: (ctx, next) ->
   {hbase_user, hadoop_group} = ctx.config.hdp
-  @name 'HDP HBase # Users & Groups'
   # User must be created for HBase master and regionserver
   ctx.execute
     cmd: "useradd #{hbase_user} -r -g #{hadoop_group} -d /var/run/#{hbase_user} -s /bin/bash -c \"HBase\""
@@ -58,9 +56,8 @@ module.exports.push (ctx, next) ->
   , (err, executed) ->
     next err, if executed then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'HDP HBase # Layout', timeout: -1, callback: (ctx, next) ->
   {hadoop_group, hbase_user, hbase_pid_dir, hbase_log_dir} = ctx.config.hdp
-  @name 'HDP HBase # Layout'
   ctx.mkdir [
     destination: hbase_pid_dir
     uid: hbase_user
@@ -74,8 +71,7 @@ module.exports.push (ctx, next) ->
   ], (err, modified) ->
     next err, if modified then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP HBase # Configure'
+module.exports.push name: 'HDP HBase # Configure', callback: (ctx, next) ->
   {hbase_site} = ctx.config.hdp
   ctx.log 'Configure hbase-site.xml'
   ctx.hconfigure
@@ -102,8 +98,7 @@ module.exports.push (ctx, next) ->
 #   , (err, configured) ->
 #     next err, if configured then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP HBase # Env'
+module.exports.push name: 'HDP HBase # Env', callback: (ctx, next) ->
   {hbase_log_dir} = ctx.config.hdp
   ctx.log 'Write hbase-env.sh'
   ctx.upload
@@ -116,9 +111,8 @@ module.exports.push (ctx, next) ->
   , (err, uploaded) ->
     next err, if uploaded then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP HBase # RegionServer'
-  regionservers = ctx.config.servers.filter((s) -> s.hdp?.hbase_regionserver).map((s) -> s.host).join('\n')
+module.exports.push name: 'HDP HBase # RegionServer', callback: (ctx, next) ->
+  regionservers = ctx.hosts_with_module('hisi/actions/hdp_hbase_regionserver').join '\n'
   {hbase_user} = ctx.config.hdp
   ctx.write
     content: regionservers

@@ -54,9 +54,7 @@ Prepare and deploy the kerberos schema. Upon installation, it
 is possible to check if the schema is installed by calling
 the command `ldapsearch  -D cn=admin,cn=config -w test -b "cn=config"`.
 ###
-module.exports.push (ctx, next) ->
-  @name 'OpenLDAP Kerberos # Install schema'
-  @timeout -1
+module.exports.push name: 'OpenLDAP Kerberos # Install schema', timeout: -1, callback: (ctx, next) ->
   conf = '/tmp/kerberos_schema/schema.conf'
   ldif = '/tmp/kerberos_schema/ldif'
   {config_dn, config_password} = ctx.config.openldap_server
@@ -86,8 +84,7 @@ module.exports.push (ctx, next) ->
       next err, if registered then ctx.OK else ctx.PASS
   install()
 
-module.exports.push (ctx, next) ->
-  @name 'OpenLDAP Kerberos # Insert data'
+module.exports.push name: 'OpenLDAP Kerberos # Insert data', callback: (ctx, next) ->
   {realms_dn, groups_container_dn, admin_group, users_container_dn, admin_user} = ctx.config.openldap_krb5
   modified = false
   kbsou = ->
@@ -116,10 +113,9 @@ module.exports.push (ctx, next) ->
     next err, if modified then ctx.OK else ctx.PASS
   kbsou()
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'OpenLDAP Kerberos # User permissions', callback: (ctx, next) ->
   # We used: http://itdavid.blogspot.fr/2012/05/howto-centos-62-kerberos-kdc-with.html
   # But this is also interesting: http://web.mit.edu/kerberos/krb5-current/doc/admin/conf_ldap.html
-  @name 'OpenLDAP Kerberos # User permissions'
   {realms_dn, users_container_dn} = ctx.config.openldap_krb5
   {suffix} = ctx.config.openldap_server
   ctx.ldap_acl [
@@ -167,8 +163,7 @@ module.exports.push (ctx, next) ->
       #   next err, if modified then ctx.OK else ctx.PASS
       next err, if modified then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'OpenLDAP Kerberos # Index'
+module.exports.push name: 'OpenLDAP Kerberos # Index', callback: (ctx, next) ->
   ctx.ldap_index
     ldap: ctx.ldap_config
     name: "olcDatabase={2}bdb,cn=config"

@@ -11,6 +11,7 @@ module.exports = []
 escape = (text) -> text.replace(/[\\"]/g, "\\$&")
 
 # Install the mysql driver
+module.exports.push 'histi/actions/yum'
 module.exports.push 'histi/actions/mysql_client'
 
 ###
@@ -34,9 +35,7 @@ Package
 -------
 Install the Mysql database server. Secure the temporary directory.
 ###
-module.exports.push (ctx, next) ->
-  @name 'Mysql Server # Package'
-  @timeout -1
+module.exports.push name: 'Mysql Server # Package', timeout: -1, callback: (ctx, next) ->
   {sql_on_install} = ctx.config.mysql_server
   modified = false
   do_install = ->
@@ -104,8 +103,7 @@ Secure Installation
   Disallow root login remotely? [Y/n] n
   Remove test database and access to it? [Y/n] y
 ###
-module.exports.push (ctx, next) ->
-  @name 'Mysql Server # Secure'
+module.exports.push name: 'Mysql Server # Secure', callback: (ctx, next) ->
   {current_password, password, remove_anonymous, disallow_remote_root_login, remove_test_db, reload_privileges} = ctx.config.mysql_server
   test_password = true
   modified = false
@@ -153,9 +151,10 @@ module.exports.push (ctx, next) ->
     stream.on 'close', ->
       return next error if error
       if disallow_remote_root_login then return next null, if modified then ctx.OK else ctx.PASS
+      # Note, "WITH GRANT OPTION" is required for root
       sql = """
       USE mysql;
-      GRANT ALL PRIVILEGES ON *.* TO root@'%' IDENTIFIED BY "#{password}";
+      GRANT ALL PRIVILEGES ON *.* TO root@'%' IDENTIFIED BY "#{password}" WITH GRANT OPTION;
       FLUSH PRIVILEGES;
       """
       ctx.execute

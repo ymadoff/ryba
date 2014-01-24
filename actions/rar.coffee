@@ -11,9 +11,8 @@ module.exports.push (ctx) ->
   ctx.config.rar.rar_url ?= 'http://apt.sw.be/redhat/el6/en/x86_64/rpmforge/RPMS/rar-3.8.0-1.el6.rf.x86_64.rpm'
   ctx.config.rar.unrar_url ?= 'http://apt.sw.be/redhat/el6/en/x86_64/rpmforge/RPMS/unrar-4.0.7-1.el6.rf.x86_64.rpm'
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'Rar # install rar', callback: (ctx, next) ->
   {proxy, rar_url} = ctx.config.rar
-  @name 'Rar # install rar'
   ctx.execute
     cmd: "which rar"
     code_skipped: 1
@@ -35,9 +34,8 @@ module.exports.push (ctx, next) ->
         ctx.remove destination: '/tmp/rar.rpm', (err, removed) ->
           next null, ctx.OK
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'Rar # install unrar', callback: (ctx, next) ->
   {proxy, unrar_url} = ctx.config.rar
-  @name 'Rar # install unrar'
   ctx.execute
     cmd: "which unrar"
     code_skipped: 1

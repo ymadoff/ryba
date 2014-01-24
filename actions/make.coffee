@@ -17,9 +17,7 @@ Package
 -------
 Install the service.
 ###
-module.exports.push (ctx, next) ->
-  @name 'Make # Package'
-  @timeout 100000
+module.exports.push name: 'Make # Package', timeout: 100000, callback: (ctx, next) ->
   ctx.service
     name: 'make'
   , (err, serviced) ->

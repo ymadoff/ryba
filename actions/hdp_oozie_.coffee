@@ -3,8 +3,9 @@ module.exports = []
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./hdp_core').configure ctx
-  oozie_server = (ctx.config.servers.filter (s) -> s.hdp?.oozie_server)[0].host
+  oozie_server = ctx.hosts_with_module 'histi/actions/hdp_oozie_server', 1
   {realm} = ctx.config.krb5_client
+  ctx.config.hdp.oozie_port ?= 11000
   ctx.config.hdp.oozie_user ?= 'oozie'
   ctx.config.hdp.oozie_test_principal ?= "oozietest@#{realm}"
   ctx.config.hdp.oozie_test_password ?= "ooziepass"
@@ -16,17 +17,14 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.oozie_site ?= {}
   ctx.config.hdp.oozie_site['oozie.base.url'] = "http://#{oozie_server}:11000/oozie"
 
-module.exports.push (ctx, next) ->
-  @name 'HDP Oozie # Install'
-  @timeout -1
+module.exports.push name: 'HDP Oozie # Install', timeout: -1, callback: (ctx, next) ->
   ctx.service [
     name: 'oozie-client'
   ], (err, serviced) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'HDP Oozie # Users & Groups', callback: (ctx, next) ->
   {oozie_user, hadoop_group} = ctx.config.hdp
-  @name 'HDP Oozie # Users & Groups'
   ctx.execute
     cmd: "useradd oozie -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop Oozie service\""
     code: 0
@@ -34,8 +32,7 @@ module.exports.push (ctx, next) ->
   , (err, executed) ->
     next err, if executed then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name "HDP Oozie # Environment"
+module.exports.push name: 'HDP Oozie # Environment', callback: (ctx, next) ->
   {oozie_user, hadoop_group, oozie_conf_dir} = ctx.config.hdp
   ctx.render
     source: "#{__dirname}/hdp/oozie/oozie-env.sh"
@@ -48,8 +45,7 @@ module.exports.push (ctx, next) ->
   , (err, rendered) ->
     next err, if rendered then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP Oozie # Profile'
+module.exports.push name: 'HDP Oozie # Profile', callback: (ctx, next) ->
   {oozie_site} = ctx.config.hdp
   ctx.write
     destination: '/etc/profile.d/oozie.sh'

@@ -18,29 +18,31 @@ showing how to place the certificate inside "TLS_CACERTDIR":
     mv cert.pem /etc/openldap/cacerts/$hash.0
 
 ###
+url = require 'url'
+each = require 'each'
 {merge} = require 'mecano/lib/misc'
 module.exports = []
 
 module.exports.push 'histi/actions/yum'
+module.exports.push 'histi/actions/nc'
 
 module.exports.push (ctx) ->
+  require('./nc').configure ctx
   ctx.config.openldap_client ?= {}
   ctx.config.openldap_client.config ?= {}
   ctx.config.openldap_client.ca_cert ?= null
 
-module.exports.push (ctx, next) ->
-  @name 'OpenLDAP Client # Install'
-  @timeout -1
+module.exports.push name: 'OpenLDAP Client # Install', timeout: -1, callback: (ctx, next) ->
   ctx.service
     name: 'openldap-clients'
   , (err, installed) ->
     next err, if installed then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'OpenLDAP Client # Configure'
+module.exports.push name: 'OpenLDAP Client # Configure', timeout: -1, callback: (ctx, next) ->
   {config} = ctx.config.openldap_client
   write = []
   for k, v of config
+    v = v.join(' ') if k.toLowerCase() is 'uri'
     write.push
       match: new RegExp "^#{k}.*$", 'mg'
       replace: "#{k} #{v}"
@@ -51,12 +53,27 @@ module.exports.push (ctx, next) ->
   , (err, written) ->
     next err, if written then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'OpenLDAP Client # Upload certificate'
+module.exports.push name: 'OpenLDAP Client # Upload certificate', timeout: -1, callback: (ctx, next) ->
   {ca_cert} = ctx.config.openldap_client
   return next null, ctx.DISABLED unless ca_cert
   ctx.upload ca_cert, (err, uploaded) ->
     next err, if uploaded then ctx.OK else ctx.PASS
+
+module.exports.push name: 'OpenLDAP Client # Check URI', timeout: -1, callback: (ctx, next) ->
+  {config} = ctx.config.openldap_client
+  uris = []
+  for k, v of config
+    continue unless k.toLowerCase() is 'uri'
+    for uri in v then uris.push uri
+  each(uris)
+  .on 'item', (uri, next) ->
+    uri = url.parse uri
+    return next() if ['ldap:', 'ldaps:'].indexOf(uri.protocol) is -1
+    uri.port ?= 389 if uri.protocol is 'ldap:'
+    uri.port ?= 636 if uri.protocol is 'ldaps:'
+    ctx.waitForConnection uri.hostname, uri.port, next
+  .on 'both', (err) ->
+    next err, ctx.PASS
 
 
 

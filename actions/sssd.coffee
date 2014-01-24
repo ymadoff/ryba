@@ -12,9 +12,7 @@ module.exports.push (ctx) ->
   ctx.config.sssd.config ?= {}
   ctx.config.sssd.config_path ?= '/etc/sssd/sssd.conf'
 
-module.exports.push (ctx, next) ->
-  @name 'SSSD # Install'
-  @timeout -1
+module.exports.push name: 'SSSD # Install', timeout: -1, callback: (ctx, next) ->
   {tools} = ctx.config.sssd
   names = ['sssd', 'sssd-client', 'pam_krb5', 'pam_ldap']
   names.push 'sssd-tools' if tools
@@ -33,9 +31,7 @@ module.exports.push (ctx, next) ->
 #   ctx.write certs, (err, written) ->
 #     next err, if written then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'SSSD # Configure'
-  @timeout -1
+module.exports.push name: 'SSSD # Configure', timeout: -1, callback: (ctx, next) ->
   {ldap_uri, config, config_path} = ctx.config.sssd
   ctx.log "Place original sssd config file"
   ctx.execute

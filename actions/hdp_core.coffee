@@ -1,5 +1,8 @@
 
 url = require 'url'
+path = require 'path'
+misc = require 'mecano/lib/misc'
+each = require 'each'
 hconfigure = require './hadoop/lib/hconfigure'
 
 module.exports = []
@@ -44,7 +47,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.hadoop_conf_dir ?= '/etc/hadoop/conf'
   # Repository
   ctx.config.hdp.proxy = ctx.config.proxy.http_proxy if typeof ctx.config.hdp.http_proxy is 'undefined'
-  ctx.config.hdp.hdp_repo ?= 'http://public-repo-1.hortonworks.com/HDP/centos6/2.x/updates/2.0.5.0/hdp.repo'
+  ctx.config.hdp.hdp_repo ?= 'http://public-repo-1.hortonworks.com/HDP/centos6/2.x/updates/2.0.6.0/hdp.repo'
   # Define the role
   ctx.config.hdp.namenode ?= false
   ctx.config.hdp.secondary_namenode ?= false
@@ -72,14 +75,12 @@ Repository
 ----------
 Declare the HDP repository.
 ###
-module.exports.push (ctx, next) ->
+module.exports.push name: 'HDP Core # Repository', timeout: -1, callback: (ctx, next) ->
   {proxy, hdp_repo} = ctx.config.hdp
   # Is there a repo to download and install
   return next() unless hdp_repo
-  @name 'HDP Core # Repository'
   modified = false
-  @timeout -1
-  do_hdp = ->
+  do_repo = ->
     ctx.log "Download #{hdp_repo} to /etc/yum.repos.d/hdp.repo"
     u = url.parse hdp_repo
     ctx[if u.protocol is 'http:' then 'download' else 'upload']
@@ -88,21 +89,42 @@ module.exports.push (ctx, next) ->
       proxy: proxy
     , (err, downloaded) ->
       return next err if err
-      modified = true if downloaded
-      do_end()
-  do_end = ->
-      return next null, ctx.PASS unless modified
+      return next null, ctx.PASS unless downloaded
+      do_update()
+  do_update = ->
       ctx.log 'Clean up metadata and update'
       ctx.execute
         cmd: "yum clean metadata; yum update -y"
       , (err, executed) ->
+        # next err, ctx.OK
+        return next err if err
+        do_keys()
+  do_keys = ->
+    ctx.log 'Upload PGP keys'
+    misc.file.readFile ctx.ssh, "/etc/yum.repos.d/hdp.repo", (err, content) ->
+      return next err if err
+      keys = {}
+      reg = /^pgkey=(.*)/gm
+      while matches = reg.exec content
+        keys[matches[1]] = true
+      keys = Object.keys keys
+      return next() unless keys.length
+      each(keys)
+      .on 'item', (key, next) ->
+        ctx.execute
+          cmd: """
+          curl #{key} -o /etc/pki/rpm-gpg/#{path.basename key}
+          rpm --import  /etc/pki/rpm-gpg/#{path.basename key}
+          """
+        , (err, executed) ->
+          next err
+      .on 'both', (err) ->
         next err, ctx.OK
-  do_hdp()
+  do_repo()
 
 #http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 #http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
-module.exports.push (ctx, next) ->
-  @name "HDP Core # Users & Groups"
+module.exports.push name: 'HDP Core # Users & Groups', callback: (ctx, next) ->
   cmds = []
   {hadoop_group} = ctx.config.hdp
   ctx.execute
@@ -112,27 +134,27 @@ module.exports.push (ctx, next) ->
   , (err, executed) ->
     next err, if executed then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name "HDP Core # Install"
-  @timeout -1
+module.exports.push name: 'HDP Core # Install', timeout: -1, callback: (ctx, next) ->
   ctx.service [
   # wdavidw:
   # Installing the "hadoop" package as documented
   # generates "No package hadoop available", 
   # maybe because we cannot install directly this package
+    name: 'openssl'
+  ,
     name: 'hadoop-client'
   ], (err, serviced) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name "HDP Core # Configuration"
-  namenode = (ctx.config.servers.filter (s) -> s.hdp?.namenode)[0].host
+module.exports.push name: 'HDP Core # Configuration', callback: (ctx, next) ->
+  namenode = ctx.hosts_with_module 'histi/actions/hdp_hdfs_nn', 1
   ctx.log "Namenode: #{namenode}"
-  secondary_namenode = (ctx.config.servers.filter (s) -> s.hdp?.secondary_namenode)[0].host
-  ctx.log "Secondary namenode: #{secondary_namenode}"
-  jobhistoryserver = (ctx.config.servers.filter (s) -> s.hdp?.jobhistoryserver)[0].host
-  # jobtraker = (ctx.config.servers.filter (s) -> s.hdp?.jobtraker)[0].host
-  slaves = (ctx.config.servers.filter (s) -> s.hdp?.datanode).map (s) -> s.host
+  # secondary_namenode = ctx.hosts_with_module 'histi/actions/hdp_hdfs_snn', 1
+  # ctx.log "Secondary namenode: #{secondary_namenode}"
+  # jobhistoryserver = ctx.hosts_with_module 'histi/actions/hdp_mapred_jhs', 1
+  # ctx.log "Job History Server: #{jobhistoryserver}"
+  # datanodes = ctx.hosts_with_module 'histi/actions/hdp_hdfs_dn'
+  # ctx.log "Slaves: #{datanodes.join ' '}"
   { core, hadoop_conf_dir } = ctx.config.hdp
   modified = false
   do_core = ->
@@ -161,8 +183,7 @@ module.exports.push (ctx, next) ->
     next null, if modified then ctx.OK else ctx.PASS
   do_core()
 
-module.exports.push (ctx, next) ->
-  @name 'HDP Core # Environnment'
+module.exports.push name: 'HDP Core # Environnment', timeout: -1, callback: (ctx, next) ->
   ctx.write
     destination: '/etc/profile.d/hadoop.sh'
     content: """
@@ -173,9 +194,7 @@ module.exports.push (ctx, next) ->
   , (err, written) ->
     next null, if written then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name "HDP Core # Compression"
-  @timeout -1
+module.exports.push name: 'HDP Core # Compression', timeout: -1, callback: (ctx, next) ->
   modified = false
   { hadoop_conf_dir } = ctx.config.hdp
   do_snappy = ->
@@ -221,8 +240,7 @@ module.exports.push (ctx, next) ->
     next null, if modified then ctx.OK else ctx.PASS
   do_snappy()
 
-module.exports.push (ctx, next) ->
-  @name 'HDP Core # Kerberos'
+module.exports.push name: 'HDP Core # Kerberos', timeout: -1, callback: (ctx, next) ->
   {realm} = ctx.config.krb5_client
   {hadoop_conf_dir} = ctx.config.hdp
   core = {}
@@ -278,85 +296,12 @@ module.exports.push (ctx, next) ->
   core['hadoop.proxyuser.hcat.hosts'] ?= '*'
   core['hadoop.proxyuser.hue.groups'] ?= '*'
   core['hadoop.proxyuser.hue.hosts'] ?= '*'
-
   ctx.hconfigure
     destination: "#{hadoop_conf_dir}/core-site.xml"
     properties: core
     merge: true
   , (err, configured) ->
     next err, if configured then ctx.OK else ctx.PASS
-  # properties.read ctx.ssh, '/etc/hadoop/conf/core-site.xml', (err, kv) ->
-  #   return next err if err
-  #   hosts = ctx.config.servers.map( (server) -> server.host ).join(',')
-  #   core = {}
-  #   # Set the authentication for the cluster. Valid values are: simple or kerberos
-  #   core['hadoop.security.authentication'] ?= 'kerberos'
-  #   # This is an [OPTIONAL] setting. If not set, defaults to 
-  #   # authentication.authentication= authentication only; the client and server 
-  #   # mutually authenticate during connection setup.integrity = authentication 
-  #   # and integrity; guarantees the integrity of data exchanged between client 
-  #   # and server aswell as authentication.privacy = authentication, integrity, 
-  #   # and confidentiality; guarantees that data exchanged between client andserver 
-  #   # is encrypted and is not readable by a “man in the middle”.
-  #   core['hadoop.rpc.protection'] ?= 'authentication'
-  #   # Enable authorization for different protocols.
-  #   core['hadoop.security.authorization'] ?= 'true'
-  #   # The mapping from Kerberos principal names to local OS user names.
-  #   # core['hadoop.security.auth_to_local'] ?= """
-  #   #   RULE:[2:$1@$0]([jt]t@.*#{realm})s/.*/mapred/
-  #   #   RULE:[2:$1@$0]([nd]n@.*#{realm})s/.*/hdfs/
-  #   #   DEFAULT
-  #   #   """
-  #   # Forgot where I find this one, but referenced here: http://mail-archives.apache.org/mod_mbox/incubator-ambari-commits/201308.mbox/%3Cc82889130fc54e1e8aeabfeedf99dcb3@git.apache.org%3E
-  #   core['hadoop.security.auth_to_local'] ?= """
-    
-  #         RULE:[2:$1@$0]([rn]m@.*)s/.*/yarn/
-  #         RULE:[2:$1@$0](jhs@.*)s/.*/mapred/
-  #         RULE:[2:$1@$0]([nd]n@.*)s/.*/hdfs/
-  #         RULE:[2:$1@$0](hm@.*)s/.*/hbase/
-  #         RULE:[2:$1@$0](rs@.*)s/.*/hbase/
-  #         DEFAULT
-  #     """
-  #   # Allow the superuser hive to impersonate any members of the group users. Required only when installing Hive.
-  #   core['hadoop.proxyuser.hive.groups'] ?= '*'
-  #   # Hostname from where superuser hive can connect. Required 
-  #   # only when installing Hive.
-  #   # core['hadoop.proxyuser.hive.hosts'] ?= hosts
-  #   core['hadoop.proxyuser.hive.hosts'] ?= '*'
-  #   # Allow the superuser oozie to impersonate any members of 
-  #   # the group users. Required only when installing Oozie.
-  #   core['hadoop.proxyuser.oozie.groups'] ?= '*'
-  #   # Hostname from where superuser oozie can connect. Required 
-  #   # only when installing Oozie.
-  #   # core['hadoop.proxyuser.oozie.hosts'] ?= hosts
-  #   core['hadoop.proxyuser.oozie.hosts'] ?= '*'
-  #   # Hostname from where superuser hcat can connect. Required 
-  #   # only when installing WebHCat.
-  #   # core['hadoop.proxyuser.hcat.hosts'] ?= hosts
-  #   core['hadoop.proxyuser.hcat.hosts'] ?= '*'
-  #   # Hostname from where superuser HTTP can connect.
-  #   core['hadoop.proxyuser.HTTP.groups'] ?= '*'
-  #   # Allow the superuser hcat to impersonate any members of the 
-  #   # group users. Required only when installing WebHCat.
-  #   core['hadoop.proxyuser.hcat.groups'] ?= '*'
-  #   # Hostname from where superuser hcat can connect. This is 
-  #   # required only when installing webhcat on the cluster.
-  #   # core['hadoop.proxyuser.hcat.hosts'] ?= hosts
-  #   core['hadoop.proxyuser.hcat.hosts'] ?= '*'
-  #   modified = false
-  #   for k, v of core
-  #     modified = true if kv[k] isnt v
-  #     kv[k] = v
-  #   return next null, ctx.PASS unless modified
-  #   properties.write ctx.ssh, '/etc/hadoop/conf/core-site.xml', kv, (err) ->
-  #     next err, ctx.OK
-  #     # ctx.service
-  #     #   name: 
-  #     # On all secure DataNodes, you must set the user to run the DataNode as after dropping privileges.
-  #     # export HADOOP_SECURE_DN_USER=$HDFS_USER
-  #     # Optionally, you can allow that user to access the directories where PID and log files are stored. For example:
-  #     # export HADOOP_SECURE_DN_PID_DIR=/var/run/hadoop/$HADOOP_SECURE_DN_USER
-  #     # export HADOOP_SECURE_DN_LOG_DIR=/var/run/hadoop/$HADOOP_SECURE_DN_USER
 
 ###
 Configure Web
@@ -365,10 +310,9 @@ Configure Web
 This action follow the ["Authentication for Hadoop HTTP web-consoles" 
 recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 ###
-module.exports.push (ctx, next) ->
-  @name 'HDP Core # Kerberos Web UI'
+module.exports.push  name: 'HDP Core # Kerberos Web UI', callback:(ctx, next) ->
   {krb5_client, realm} = ctx.config.krb5_client
-  domain = ctx.config.servers.filter( (server) -> server.hdp?.namenode )[0].host
+  namenode = ctx.hosts_with_module 'histi/actions/hdp_hdfs_nn', 1
   ctx.execute
     cmd: 'dd if=/dev/urandom of=/etc/hadoop/hadoop-http-auth-signature-secret bs=1024 count=1'
     not_if_exists: '/etc/hadoop/hadoop-http-auth-signature-secret'
@@ -381,7 +325,7 @@ module.exports.push (ctx, next) ->
         'hadoop.http.authentication.type': 'kerberos'
         'hadoop.http.authentication.token.validity': 36000
         'hadoop.http.authentication.signature.secret.file': '/etc/hadoop/hadoop-http-auth-signature-secret'
-        'hadoop.http.authentication.cookie.domain': domain
+        'hadoop.http.authentication.cookie.domain': namenode
         'hadoop.http.authentication.simple.anonymous.allowed': 'false'
         # For some reason, _HOST isnt leveraged
         'hadoop.http.authentication.kerberos.principal': "HTTP/#{ctx.config.host}@#{realm}"

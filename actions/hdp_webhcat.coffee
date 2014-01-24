@@ -15,8 +15,9 @@ module.exports.push (ctx) ->
   require('./hdp_hdfs').configure ctx
   require('./hdp_zookeeper').configure ctx
   {realm} = ctx.config.krb5_client
-  hive_host = ctx.servers(actions: 'histi/actions/hdp_hive_server')[0]
-  zookeeper_hosts = ctx.servers actions: 'histi/actions/hdp_zookeeper_server'
+  hive_host = ctx.hosts_with_module 'histi/actions/hdp_hive_server', 1
+  # zookeeper_hosts = ctx.servers actions: 'histi/actions/hdp_zookeeper_server'
+  zookeeper_hosts = ctx.hosts_with_module 'histi/actions/hdp_zookeeper_server'
   for server in ctx.config.servers
     continue if (i = zookeeper_hosts.indexOf server.host) is -1
     zookeeper_hosts[i] = "#{zookeeper_hosts[i]}:#{ctx.config.hdp.zookeeper_port}"
@@ -34,9 +35,7 @@ module.exports.push (ctx) ->
   ctx.config.hdp.webhcat_site['webhcat.proxyuser.hue.groups'] ?= '*'
   ctx.config.hdp.webhcat_site['webhcat.proxyuser.hue.hosts'] ?= '*'
 
-module.exports.push (ctx, next) ->
-  @name 'HDP WebHCat # Install'
-  @timeout -1
+module.exports.push name: 'HDP WebHCat # Install', timeout: -1, callback: (ctx, next) ->
   ctx.service [
     name: 'hcatalog'
   ,
@@ -46,8 +45,7 @@ module.exports.push (ctx, next) ->
   ], (err, serviced) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP WebHCat # Directories'
+module.exports.push name: 'HDP WebHCat # Directories', callback: (ctx, next) ->
   {webhcat_log_dir, webhcat_pid_dir, webhcat_user, hadoop_group} = ctx.config.hdp
   modified = false
   do_log = ->
@@ -74,8 +72,7 @@ module.exports.push (ctx, next) ->
     next null, if modified then ctx.OK else ctx.PASS
   do_log()
 
-module.exports.push (ctx, next) ->
-  @name 'HDP WebHCat # Configuration'
+module.exports.push name: 'HDP WebHCat # Configuration', callback: (ctx, next) ->
   {webhcat_conf_dir, webhcat_user, hadoop_group, webhcat_site} = ctx.config.hdp
   ctx.hconfigure
     destination: "#{webhcat_conf_dir}/webhcat-site.xml"
@@ -90,8 +87,7 @@ module.exports.push (ctx, next) ->
     return next err if err
     next err, if configured then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP WebHCat # Env'
+module.exports.push name: 'HDP WebHCat # Env', callback: (ctx, next) ->
   {webhcat_conf_dir, webhcat_user, hadoop_group} = ctx.config.hdp
   ctx.log 'Write webhcat-env.sh'
   ctx.upload
@@ -103,8 +99,7 @@ module.exports.push (ctx, next) ->
   , (err, uploaded) ->
     next err, if uploaded then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP WebHCat # HDFS'
+module.exports.push name: 'HDP WebHCat # HDFS', callback: (ctx, next) ->
   {webhcat_user, hadoop_group} = ctx.config.hdp
   ctx.execute
     cmd: mkcmd.hdfs ctx, """
@@ -123,14 +118,12 @@ module.exports.push (ctx, next) ->
     return next err if err
     next err, if executed then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP WebHCat # Start'
+module.exports.push name: 'HDP WebHCat # Start', callback: (ctx, next) ->
   lifecycle.webhcat_start ctx, (err, started) ->
     next err, if started then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'HDP WebHCat # Check', callback: (ctx, next) ->
   {oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
-  @name "HDP WebHCat # Check"
   ctx.execute
     cmd: mkcmd.test ctx, """
     if hdfs dfs -test -f /user/test/check_webhcat; then exit 2; fi

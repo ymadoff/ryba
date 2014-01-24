@@ -65,7 +65,7 @@ lifecyle = module.exports =
   rm_start: (ctx, callback) ->
     {yarn_user, hadoop_conf_dir} = ctx.config.hdp
     ctx.execute
-      # # su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf start resourcemanager"
+      # su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf start resourcemanager"
       cmd: "su -l #{yarn_user} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} start resourcemanager\""
       code_skipped: 1
     , (err, started) ->

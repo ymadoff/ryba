@@ -6,8 +6,7 @@ ipRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][
 
 module.exports.push 'histi/actions/bind_client'
 
-module.exports.push (ctx, next) ->
-  @name 'DNS # Forward lookup'
+module.exports.push name: 'DNS # Forward lookup', callback: (ctx, next) ->
   ctx.execute
     cmd: "dig #{ctx.config.host}. +short"
     # cmd: "host #{ctx.config.host}"
@@ -21,8 +20,7 @@ module.exports.push (ctx, next) ->
     else
      next null, ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'DNS # Reverse lookup'
+module.exports.push name: 'DNS # Reverse lookup', callback: (ctx, next) ->
   ctx.execute
     # dig not installed by default on centos
     cmd: "dig -x `dig #{ctx.config.host}. +short` +short"

@@ -1,8 +1,7 @@
 
 mecano = require 'mecano'
 
-module.exports = (ctx, next) ->
-  @name 'Telnet'
+module.exports = name: 'Telnet', callback: (ctx, next) ->
   ctx.service
     name: 'telnet'
   , (err, serviced) ->

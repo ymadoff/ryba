@@ -18,7 +18,6 @@ client instance.
 ###
 module.exports.push module.exports.configure = (ctx, next) ->
   return next() if ctx.ldap_admin and ctx.ldap_config
-  ctx.name 'OpenLDAP Connection # Connect'
   { root_dn, root_password,
     config_dn, config_password } = ctx.config.openldap_server
   admin = ->

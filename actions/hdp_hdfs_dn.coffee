@@ -9,9 +9,8 @@ module.exports.push (ctx) ->
   require('./hdp_hdfs').configure ctx
   ctx.config.hdp.force_check ?= false
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'HDP HDFS DN # Kerberos', timeout: -1, callback: (ctx, next) ->
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
-  @name 'HDP HDFS DN # Kerberos'
   ctx.krb5_addprinc 
     principal: "dn/#{ctx.config.host}@#{realm}"
     randkey: true
@@ -24,17 +23,15 @@ module.exports.push (ctx, next) ->
   , (err, created) ->
     next err, if created then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP HDFS DN # Start'
+module.exports.push name: 'HDP HDFS DN # Start', timeout: -1, callback: (ctx, next) ->
   lifecycle.dn_start ctx, (err, started) ->
     next err, ctx.OK
 
 ###
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 ###
-module.exports.push (ctx, next) ->
+module.exports.push name: 'HDP HDFS DN # HDFS layout', callback: (ctx, next) ->
   {hadoop_group, hdfs_user, test_user, yarn, yarn_user, mapred, mapred_user} = ctx.config.hdp
-  @name 'HDP HDFS DN # HDFS layout'
   ok = false
   do_root = ->
     ctx.execute
@@ -93,9 +90,8 @@ module.exports.push (ctx, next) ->
     next null, if ok then ctx.OK else ctx.PASS
   do_root()
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'HDP HDFS DN # Test HDFS', timeout: -1, callback: (ctx, next) ->
   {hdfs_user} = ctx.config.hdp
-  @name 'HDP HDFS DN # Test HDFS'
   ctx.execute
     cmd: mkcmd.test ctx, """
     if hdfs dfs -test -f /user/test/hdfs_#{ctx.config.host}; then exit 2; fi
@@ -115,11 +111,9 @@ is not present on HDFS.
 Read [Delegation Tokens in Hadoop Security ](http://www.kodkast.com/blogs/hadoop/delegation-tokens-in-hadoop-security) 
 for more information.
 ###
-module.exports.push (ctx, next) ->
-  namenode = (ctx.config.servers.filter (s) -> s.hdp?.namenode)[0].host
+module.exports.push name: 'HDP HDFS DN # Test WebHDFS', timeout: -1, callback: (ctx, next) ->
+  namenode = ctx.hosts_with_module 'histi/actions/hdp_hdfs_nn', 1
   {force_check} = ctx.config.hdp
-  @name 'HDP HDFS DN # Test WebHDFS'
-  @timeout -1
   do_init = ->
     ctx.execute
       cmd: mkcmd.test ctx, """

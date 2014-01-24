@@ -22,9 +22,8 @@ Users creation
 --------------
 Internally, this use the `useradd` command.
 ###
-module.exports.push (ctx, next) ->
+module.exports.push name: 'Users', callback: (ctx, next) ->
   # TODO: deal with password
-  @name 'Users'
   cmds = []
   for user in ctx.config.users
     return next err 'Required property "username"' unless user.username

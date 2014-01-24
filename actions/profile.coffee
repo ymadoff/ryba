@@ -4,8 +4,7 @@ mecano = require 'mecano'
 
 module.exports = []
 
-module.exports.push (ctx, next) ->
-  @name 'Profile'
+module.exports.push name: 'Profile', callback: (ctx, next) ->
   ok = 0
   ctx.config.profile ?= {}
   each(ctx.config.profile)

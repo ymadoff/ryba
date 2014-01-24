@@ -7,6 +7,7 @@ throught the context object as `ctx.ssh`. The connection is
 initialized with the root user.
 ###
 
+leveldb = require 'level'
 tty = require 'tty'
 pad = require 'pad'
 readline = require 'readline'
@@ -31,38 +32,53 @@ module.exports.push (ctx) ->
     ctx.config.bootstrap.public_key = [ctx.config.bootstrap.public_key]
   ctx.config.bootstrap.cmd ?= 'su -'
 
+module.exports.push name: 'Bootstrap # Cache', callback: (ctx, next) ->
+  ctx.config.bootstrap.cache ?= {}
+  location = ctx.config.bootstrap.cache.location or './tmp'
+  mecano.mkdir
+    destination: location
+  , (err, created) ->
+    if ctx.shared.cache
+      ctx.cache = ctx.shared.cache
+      return next null, ctx.PASS
+    db = leveldb location
+    ctx.cache = ctx.shared.cache =
+      db: db
+      put: (key, value, callback) ->
+        db.put key, value, callback
+      get: (key, callback) ->
+        db.get key, callback
+    next null, ctx.PASS
+
 ###
 Log
 ----
 Gather system information
 ###
-module.exports.push (ctx, next) ->
-  @name 'Bootstrap # Log'
+module.exports.push name: 'Bootstrap # Log', callback: (ctx, next) ->
   mecano.mkdir
     destination: './logs'
   , (err, created) ->
     return next err if err
+    host = ctx.config.host.split('.').reverse().join('.')
     # Add log interface
     ctx.log = log = (msg) ->
       log.out.write "#{msg}\n"
-    host = ctx.config.host.split('.').reverse().join('.')
     log.out = fs.createWriteStream "./logs/#{host}_out.log"
     log.err = fs.createWriteStream "./logs/#{host}_err.log"
-    pname = ctx.name
     close = ->
+      console.log 'close'
       setTimeout ->
         log.out.close()
         log.err.close()
       , 100
-    ctx.on 'end', close
-    # Log action name
-    ctx.name = (name) ->
-      msg = "\n#{name}\n#{pad name.length, '', '-'}\n"
+    ctx.run.on 'end', close
+    ctx.run.on 'action', (ctx, status) ->
+      return unless status is ctx.STARTED
+      msg = "\n#{ctx.action.name}\n#{pad ctx.action.name.length, '', '-'}\n"
       log.out.write msg
       log.err.write msg
-      pname.apply @, arguments
-    # Catch error
-    ctx.on 'error', (err) ->
+    ctx.run.on 'error', (err) ->
       print = (err) ->
         log.err.write err.message
         log.err.write err.stack if err.stack
@@ -70,13 +86,9 @@ module.exports.push (ctx, next) ->
       if err.errors
         for error in err.errors then print error
       close()
-    # Log uncatch exception
-    process.on 'uncaughtException', (err) ->
-      log.err.write err.stack
     next null, ctx.PASS
 
-module.exports.push (ctx) ->
-  @name 'Bootstrap # Utils'
+module.exports.push name: 'Bootstrap # Utils', callback: (ctx) ->
   ctx.reboot = (callback) ->
     attempts = 0
     wait = ->
@@ -110,8 +122,8 @@ module.exports.push (ctx) ->
       return callback err if err
       ctx.connections[config.host] = connection
       close = -> connection.end()
-      ctx.on 'error', close
-      ctx.on 'end', close
+      ctx.run.on 'error', close
+      ctx.run.on 'end', close
       callback null, connection
 
 
@@ -121,12 +133,10 @@ Connection
 Prepare the system to receive password-less root login and 
 initialize an SSH connection.
 ###
-module.exports.push (ctx, next) ->
-  @name 'Bootstrap # Connection'
-  @timeout -1
+module.exports.push  name: 'Bootstrap # Connection', timeout: -1, callback: (ctx, next) ->
   close = -> ctx.ssh?.end()
-  ctx.on 'error', close
-  ctx.on 'end', close
+  ctx.run.on 'error', close
+  ctx.run.on 'end', close
   attempts = 0
   do_ssh = ->
     attempts++
@@ -161,8 +171,7 @@ Server Info
 ----
 Gather system information.
 ###
-module.exports.push (ctx, next) ->
-  @name 'Bootstrap # Server Info'
+module.exports.push  name: 'Bootstrap # Server Info', callback: (ctx, next) ->
   mecano.exec
     ssh: ctx.ssh
     cmd: 'uname -snrvmo'
@@ -201,8 +210,7 @@ Is similiar to:
   , (err, executed) ->
     ...
 ###
-module.exports.push (ctx, next) ->
-  @name 'Bootstrap # Mecano'
+module.exports.push name: 'Bootstrap # Mecano', timeout: -1, callback:  (ctx, next) ->
   m = (action, options) ->
     options.ssh ?= ctx.ssh
     options.log ?= ctx.log

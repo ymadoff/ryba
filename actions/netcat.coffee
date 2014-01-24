@@ -15,8 +15,7 @@ Installation
 Install the service using YUM. Note, Netcat is present
 by default on osx (with dev tools) and not on CentOs.
 ###
-actions.push (ctx, next) ->
-  ctx.name 'Netcat'
+actions.push name: 'Netcat', callback: (ctx, next) ->
   ctx.service
     name: 'nc'
   , (err, installed) ->

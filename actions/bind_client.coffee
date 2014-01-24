@@ -2,6 +2,11 @@
 mecano = require 'mecano'
 module.exports = []
 
+###
+Bind Client
+===========
+###
+
 module.exports.push 'histi/actions/yum'
 
 ###
@@ -10,9 +15,7 @@ collection of the client side programs that are included
 with BIND-9.9.3. The BIND package includes the client 
 side programs nslookup, dig and host.
 ###
-module.exports.push (ctx, next) ->
-  @name 'Bind Client # Install'
-  @timeout -1
+module.exports.push name: 'Bind Client # Install', timeout: -1, callback: (ctx, next) ->
   ctx.service
     name: 'bind-utils'
   , (err, serviced) ->

@@ -8,9 +8,7 @@ actions.push 'histi/actions/yum'
 actions.push (ctx) ->
   ctx.config.services ?= []
 
-actions.push (ctx, next) ->
-  @name 'Service # Install'
-  @timeout -1
+actions.push name: 'Service # Install', timeout: -1, callback: (ctx, next) ->
   serviced = 0
   {services} = ctx.config
   each(services)

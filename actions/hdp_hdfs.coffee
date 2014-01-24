@@ -12,6 +12,7 @@ some package, here's how: `yum remove hadoop-native hadoop-pipes hadoop-sbin`.
 ###
 module.exports.push module.exports.configure = (ctx) ->
   require('./hdp_core').configure ctx
+  module.exports.configured = true
   # hadoop env
   ctx.config.hdp.hadoop_opts ?= 'java.net.preferIPv4Stack': true
   hadoop_opts = "export HADOOP_OPTS=\""
@@ -47,9 +48,8 @@ module.exports.push module.exports.configure = (ctx) ->
 
 #http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 #http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
-module.exports.push (ctx, next) ->
-  @name "HDP HDFS # Users"
-  return next() unless ctx.config.hdp.namenode or ctx.config.hdp.secondary_namenode or ctx.config.hdp.datanode
+module.exports.push name: 'HDP HDFS # Users', callback: (ctx, next) ->
+  return next() unless ctx.has_any_modules('hisi/actions/hdp_hdfs_nn', 'hisi/actions/hdp_hdfs_snn', 'hisi/actions/hdp_hdfs_dn')
   {hadoop_group} = ctx.config.hdp
   ctx.execute
     cmd: "useradd hdfs -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop HDFS service\""
@@ -58,9 +58,7 @@ module.exports.push (ctx, next) ->
   , (err, executed) ->
     next err, if executed then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name "HDP HDFS # Install"
-  @timeout -1
+module.exports.push name: 'HDP HDFS # Install', timeout: -1, callback: (ctx, next) ->
   ctx.service [
     name: 'hadoop'
   ,
@@ -74,9 +72,7 @@ module.exports.push (ctx, next) ->
   ], (err, serviced) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name "HDP HDFS # Directories"
-  @timeout -1
+module.exports.push name: 'HDP HDFS # Directories', timeout: -1, callback: (ctx, next) ->
   { dfs_name_dir, dfs_data_dir, yarn_user, mapred_user,
     fs_checkpoint_dir,
     yarn, yarn_log_dir, yarn_pid_dir,
@@ -153,8 +149,7 @@ module.exports.push (ctx, next) ->
     next null, if modified then ctx.OK else ctx.PASS
   do_namenode()
 
-module.exports.push (ctx, next) ->
-  @name "HDP HDFS # Hadoop OPTS"
+module.exports.push name: 'HDP HDFS # Hadoop OPTS', timeout: -1, callback: (ctx, next) ->
   {hadoop_conf_dir} = ctx.config.hdp
   # For now, only "hadoop_opts" config property is used
   # Todo: 
@@ -171,15 +166,12 @@ module.exports.push (ctx, next) ->
   , (err, rendered) ->
     next err, if rendered then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name "HDP HDFS # Hadoop Configuration"
-  namenode = (ctx.config.servers.filter (s) -> s.hdp?.namenode)[0].host
+module.exports.push name: 'HDP HDFS # Hadoop Configuration', timeout: -1, callback: (ctx, next) ->
+  namenode = ctx.hosts_with_module 'histi/actions/hdp_hdfs_nn', 1
   ctx.log "Namenode: #{namenode}"
-  secondary_namenode = (ctx.config.servers.filter (s) -> s.hdp?.secondary_namenode)[0].host
+  secondary_namenode = ctx.hosts_with_module 'histi/actions/hdp_hdfs_snn', 1
   ctx.log "Secondary namenode: #{secondary_namenode}"
-  jobhistoryserver = (ctx.config.servers.filter (s) -> s.hdp?.jobhistoryserver)[0].host
-  # jobtraker = (ctx.config.servers.filter (s) -> s.hdp?.jobtraker)[0].host
-  slaves = (ctx.config.servers.filter (s) -> s.hdp?.datanode).map (s) -> s.host
+  datanodes = ctx.hosts_with_module 'histi/actions/hdp_hdfs_dn'
   { core, hdfs, yarn, mapred,
     hadoop_conf_dir, fs_checkpoint_dir, # fs_checkpoint_edit_dir,
     dfs_name_dir, dfs_data_dir, 
@@ -231,7 +223,7 @@ module.exports.push (ctx, next) ->
   do_slaves = ->
     ctx.log 'Configure slaves'
     ctx.write
-      content: "#{slaves.join '\n'}"
+      content: "#{datanodes.join '\n'}"
       destination: "#{hadoop_conf_dir}/slaves"
     , (err, configured) ->
       return next err if err
@@ -241,10 +233,9 @@ module.exports.push (ctx, next) ->
     next null, if modified then ctx.OK else ctx.PASS
   do_hdfs()
 
-module.exports.push (ctx, next) ->
-  @name 'HDP HDFS # Configure HTTPS'
+module.exports.push name: 'HDP HDFS # Configure HTTPS', callback: (ctx, next) ->
   {hadoop_conf_dir, hadoop_policy} = ctx.config.hdp
-  namenode = ctx.config.servers.filter( (server) -> server.hdp?.namenode )[0].host
+  namenode = ctx.hosts_with_module 'histi/actions/hdp_hdfs_nn', 1
   modified = false
   do_hdfs_site = ->
     ctx.hconfigure
@@ -280,9 +271,7 @@ module.exports.push (ctx, next) ->
     next null, if modified then ctx.OK else ctx.PASS
   do_hdfs_site()
 
-module.exports.push (ctx, next) ->
-  @name 'HDP HDFS # Kerberos Principals'
-  @timeout -1
+module.exports.push name: 'HDP HDFS # Kerberos Principals', callback: (ctx, next) ->
   {hdfs_user} = ctx.config.hdp
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   ctx.mkdir
@@ -308,12 +297,10 @@ module.exports.push (ctx, next) ->
     ctx.krb5_addprinc principals, (err, created) ->
       next err, if created then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP HDFS # Kerberos Configure'
+module.exports.push name: 'HDP HDFS # Kerberos Configure', callback: (ctx, next) ->
   {realm} = ctx.config.krb5_client
   {hadoop_conf_dir} = ctx.config.hdp
-  namenode = ctx.config.servers.filter( (server) -> server.hdp?.namenode )[0].host
-  secondary_namenode = ctx.config.servers.filter( (server) -> server.hdp?.secondary_namenode )[0].host
+  secondary_namenode = ctx.hosts_with_module 'histi/actions/hdp_hdfs_snn', 1
   hdfs = {}
   # If "true", access tokens are used as capabilities
   # for accessing datanodes. If "false", no access tokens are checked on
@@ -324,9 +311,9 @@ module.exports.push (ctx, next) ->
   # Kerberos principal name for the secondary NameNode.
   hdfs['dfs.secondary.namenode.kerberos.principal'] ?= "nn/_HOST@#{realm}"
   # Address of secondary namenode web server
-  hdfs['dfs.secondary.http.address'] ?= "#{secondary_namenode}:50090"
+  hdfs['dfs.secondary.http.address'] ?= "#{secondary_namenode}:50090" # todo, this has nothing to do here
   # The https port where secondary-namenode binds
-  hdfs['dfs.secondary.https.port'] ?= '50490'
+  hdfs['dfs.secondary.https.port'] ?= '50490' # todo, this has nothing to do here
   # The HTTP Kerberos principal used by Hadoop-Auth in the HTTP 
   # endpoint. The HTTP Kerberos principal MUST start with 'HTTP/' 
   # per Kerberos HTTP SPNEGO specification. 

@@ -145,10 +145,9 @@ We choose to regenerate all the metainfo.xml files base
 on internal configuration. This action may be skipped if the configuration
 property "ambari.local" is set to `false`.
 ###
-module.exports.push (ctx, next) ->
+module.exports.push name: 'Ambari Server # Local repo', callback: (ctx, next) ->
   {local} = ctx.config.ambari
   return next() unless local
-  @name 'Ambari Server # Local repo'
   writes = []
   for version of local
     markup = builder.create 'reposinfo', version: '1.0', encoding: 'UTF-8'
@@ -171,12 +170,10 @@ Repository
 ----------
 Declare the Ambari custom repository.
 ###
-module.exports.push (ctx, next) ->
+module.exports.push name: 'Ambari Server # Repo', timeout: -1, callback: (ctx, next) ->
   {proxy, repo} = ctx.config.ambari
   # Is there a repo to download and install
   return next() unless repo
-  @name 'Ambari Server # Repo'
-  @timeout -1
   ctx.log "Download #{repo} to /etc/yum.repos.d/ambari.repo"
   u = url.parse repo
   ctx[if u.protocol is 'http:' then 'download' else 'upload']
@@ -198,9 +195,7 @@ Package
 -------
 Install Ambari server package.
 ###
-module.exports.push (ctx, next) ->
-  @name 'Ambari Server # Package'
-  @timeout -1
+module.exports.push name: 'Ambari Server # Package', timeout: -1, callback: (ctx, next) ->
   ctx.service
     name: 'ambari-server'
     startup: true
@@ -213,9 +208,7 @@ Configuration
 Merge used defined configuration. This could be used to set up 
 LDAP or Active Directory Authentication.
 ###
-module.exports.push (ctx, next) ->
-  @name 'Ambari Server # Config'
-  @timeout -1
+module.exports.push name: 'Ambari Server # Config', timeout: -1 (ctx, next) ->
   {config, config_path} = ctx.config.ambari
   misc.file.readFile ctx.ssh, config_path, (err, properties) ->
     return next err if err
@@ -228,12 +221,10 @@ module.exports.push (ctx, next) ->
     , (err, written) ->
       next err, if written then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'Ambari Server # Java', timeout: -1, callback: (ctx, next) ->
   {proxy, java} = ctx.config.ambari
   # return next() if not proxy and not java
   return next() unless java
-  @name 'Ambari Server # Java'
-  @timeout -1
   action = if url.parse(java).protocol is 'http:' then 'download' else 'upload'
   ctx.log "Java #{action} from #{java}"
   ctx[action]
@@ -249,9 +240,7 @@ Install
 -------
 Install and configure the Ambari server.
 ###
-module.exports.push (ctx, next) ->
-  @name 'Ambari Server # Install'
-  @timeout -1
+module.exports.push name: 'Ambari Server # Install', timeout: -1, callback: (ctx, next) ->
   {username, password} = ctx.config.ambari
   username = (username or '') + '\n'
   password = (password or '') + '\n'
@@ -295,9 +284,7 @@ Start
 -----
 Start the Ambari server.
 ###
-module.exports.push (ctx, next) ->
-  @name 'Ambari Server # Start'
-  @timeout -1
+module.exports.push name: 'Ambari Server # Start', timeout: -1, callback: (ctx, next) ->
   ctx.execute
     cmd: 'ambari-server start'
   , (err, executed, stdout) ->

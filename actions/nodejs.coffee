@@ -51,9 +51,7 @@ N Installation
 --------------
 N is a Node.js binary management system, similar to nvm and nave.
 ###
-nodejs.push (ctx, next) ->
-  @name "Node.js # N"
-  @timeout 100000
+nodejs.push name: 'Node.js # N', timeout: 100000, callback: (ctx, next) ->
   # Accoring to current test, proxy env var arent used by ssh exec
   {http_proxy, https_proxy} = ctx.config.nodejs
   env = {}
@@ -78,9 +76,7 @@ Node.js Installation
 --------------------
 Multiple installation of Node.js may coexist.
 ###
-nodejs.push (ctx, next) ->
-  @name "Node.js # installation"
-  @timeout -1
+nodejs.push name: 'Node.js # installation', timeout: -1, callback: (ctx, next) ->
   ctx.execute
     cmd: "n #{ctx.config.nodejs.version}"
   , (err, executed) ->
@@ -90,9 +86,7 @@ nodejs.push (ctx, next) ->
 NPM configuration
 -----------------
 ###
-nodejs.push (ctx, next) ->
-  @name "Node.js # Npm Configuration"
-  @timeout 100000
+nodejs.push name: 'Node.js # Npm Configuration', timeout: 100000, callback: (ctx, next) ->
   written = 0
   each(ctx.config.users)
   .on 'item', (user, next) ->

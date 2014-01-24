@@ -54,8 +54,7 @@ User Configuration
 
 Deploy the "~/.curlrc" file to each users.
 ###
-module.exports.push (ctx, next) ->
-  @name 'Curl # User Configuration'
+module.exports.push name: 'Curl # User Configuration', callback: (ctx, next) ->
   ok = false
   {merge, proxy, users, config} = ctx.config.curl
   work = (user, file, next)->
@@ -78,22 +77,19 @@ module.exports.push (ctx, next) ->
   .on 'both', (err) ->
     next err, if ok then ctx.OK else ctx.PASS
 
-# module.exports.push (ctx, next) ->
-#   # On centOS, curl is already here
-#   @timeout -1
-#   @name 'Curl # Install'
-#   ctx.service
-#     name: 'curl'
-#   , (err, installed) ->
-#     next err, if installed then ctx.OK else ctx.PASS
+module.exports.push name: 'Curl # Install', timeout: -1, callback: (ctx, next) ->
+  # On centOS, curl is already here
+  ctx.service
+    name: 'curl'
+  , (err, installed) ->
+    next err, if installed then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'Curl # Proxy Check', callback: (ctx, next) ->
   {proxy, check, check_match} = ctx.config.curl
   return next() unless check
-  @name 'Curl # Proxy Check'
   ctx.execute
-    cmd: "curl #{check}"
-  , (err, executed, stdout) ->
+    cmd: "curl -s #{check}"
+  , (err, executed, stdout, stderr) ->
     return next err if err
     return next new Error "Proxy not active" unless  check_match.test stdout
     next null, ctx.PASS

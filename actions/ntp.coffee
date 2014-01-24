@@ -16,9 +16,7 @@ Installation
 Follow the procedure published on 
 "http://www.cyberciti.biz/faq/howto-install-ntp-to-synchronize-server-clock/".
 ###
-ntp.push (ctx, next) ->
-  @name 'NTP # Install'
-  @timeout -1 
+ntp.push name: 'NTP # Install', timeout: -1, callback: (ctx, next) -> 
   ctx.log 'Install the NTP service and turn on the service'
   ctx.service
     name: 'ntp'
@@ -41,8 +39,7 @@ ntp.push (ctx, next) ->
       , (err, serviced) ->
         next err, ctx.OK
 
-ntp.push (ctx, next) ->
-  @name 'NTP # Configure'
+ntp.push name: 'NTP # Configure', callback: (ctx, next) ->
   write = []
   write.push
     match: /^(server [\d]+.*$)/mg

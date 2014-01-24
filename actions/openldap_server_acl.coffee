@@ -16,8 +16,7 @@ After this call, the follwing command should succeed:
 
     ldapsearch -H ldap://hadoop1:389 -D cn=nssproxy,ou=users,dc=adaltas,dc=com -w test
 ###
-module.exports.push (ctx, next) ->
-  @name 'OpenLDAP ACL # Permissions for nssproxy'
+module.exports.push name: 'OpenLDAP ACL # Permissions for nssproxy', callback: (ctx, next) ->
   {suffix} = ctx.config.openldap_server
   ctx.ldap_acl
     ldap: ctx.ldap_config

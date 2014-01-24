@@ -7,11 +7,15 @@ module.exports.push 'histi/actions/hdp_core'
 module.exports.push module.exports.configure = (ctx) ->
   require('./hdp_core').configure ctx
   {realm} = ctx.config.krb5_client
-  srv2_host = ctx.servers(action: 'histi/actions/hdp_hive_server')[0]
+  server = ctx.hosts_with_module 'histi/actions/hdp_hive_server', 1
   ctx.config.hdp.hive_conf_dir ?= '/etc/hive/conf'
+  ctx.config.hdp.hive_metastore_host ?= server
+  ctx.config.hdp.hive_metastore_port ?= 9083
+  ctx.config.hdp.hive_srv2_host ?= server
+  ctx.config.hdp.hive_srv2_port ?= 10000
   ctx.config.hdp.hive_site ?= {}
   ctx.config.hdp.hive_user ?= 'hive'
-  ctx.config.hdp.hive_site['hive.metastore.uris'] ?= "thrift://#{srv2_host}:9083"
+  ctx.config.hdp.hive_site['hive.metastore.uris'] ?= "thrift://#{server}:9083"
   # To prevent memory leak in unsecure mode, disable [file system caches](https://cwiki.apache.org/confluence/display/Hive/Setting+up+HiveServer2)
   # , by setting following params to true
   ctx.config.hdp.hive_site['fs.hdfs.impl.disable.cache'] ?= 'false'
@@ -48,9 +52,7 @@ Install
 -------
 Instructions to [install the Hive and HCatalog RPMs](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3/bk_installing_manually_book/content/rpm-chap6-1.html)
 ###
-module.exports.push (ctx, next) ->
-  @name 'HDP Hive & HCat # Install'
-  @timeout -1
+module.exports.push name: 'HDP Hive & HCat # Install', timeout: -1, callback: (ctx, next) ->
   modified = false
   {hive_conf_dir} = ctx.config.hdp
   do_hive = ->

@@ -21,15 +21,12 @@ Install
 -------
 Instructions to [install the ZooKeeper RPMs](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap9-1.html)
 ###
-module.exports.push (ctx, next) ->
-  @name 'HDP ZooKeeper # Install'
-  @timeout -1
+module.exports.push name: 'HDP ZooKeeper # Install', timeout: -1, callback: (ctx, next) ->
   ctx.service name: 'zookeeper', (err, serviced) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'HDP ZooKeeper # Users & Groups', callback: (ctx, next) ->
   {hadoop_group, zookeeper_user} = ctx.config.hdp
-  @name 'HDP ZooKeeper # Users & Groups'
   ctx.execute
     cmd: "useradd #{zookeeper_user} -r -g #{hadoop_group} -d /var/run/#{zookeeper_user} -s /bin/bash -c \"ZooKeeper\""
     code: 0
@@ -37,11 +34,10 @@ module.exports.push (ctx, next) ->
   , (err, executed) ->
     next err, if executed then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'HDP ZooKeeper # Layout', callback: (ctx, next) ->
   { hadoop_group, zookeeper_user, 
     zookeeper_data_dir, zookeeper_pid_dir, zookeeper_log_dir
   } = ctx.config.hdp
-  @name 'HDP ZooKeeper # Layout'
   ctx.mkdir [
     destination: zookeeper_data_dir
     uid: zookeeper_user
@@ -60,10 +56,9 @@ module.exports.push (ctx, next) ->
   ], (err, modified) ->
     next err, if modified then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP ZooKeeper # Configure'
+module.exports.push name: 'HDP ZooKeeper # Configure', callback: (ctx, next) ->
   modified = false
-  hosts = (ctx.config.servers.filter (s) -> s.hdp?.zookeeper).map (s) -> s.host
+  hosts = ctx.hosts_with_module 'histi/actions/hdp_zookeeper'
   {java_home} = ctx.config.java
   { hadoop_group,
     zookeeper_user, zookeeper_data_dir, zookeeper_pid_dir, zookeeper_log_dir,
@@ -130,8 +125,7 @@ module.exports.push (ctx, next) ->
     next null, if modified then ctx.OK else ctx.PASS
   do_zoo_cfg()
 
-module.exports.push (ctx, next) ->
-  @name 'HDP ZooKeeper # Kerberos'
+module.exports.push name: 'HDP ZooKeeper # Kerberos', callback: (ctx, next) ->
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   ctx.krb5_addprinc
     principal: "zookeeper/#{ctx.config.host}@#{realm}"
@@ -146,8 +140,7 @@ module.exports.push (ctx, next) ->
   , (err, created) ->
     next err, if created then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name "HDP ZooKeeper # Start"
+module.exports.push name: 'HDP ZooKeeper # Start', callback: (ctx, next) ->
   lifecycle.zookeeper_start ctx, (err, started) ->
     next err, if started then ctx.OK else ctx.PASS
 

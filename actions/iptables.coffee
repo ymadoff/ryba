@@ -26,9 +26,7 @@ module.exports.push (ctx) ->
 ###
 Package
 ###
-module.exports.push (ctx, next) ->
-  @name 'Iptables # Package'
-  @timeout -1
+module.exports.push name: 'Iptables # Package', timeout: -1, callback: (ctx, next) ->
   {action, startup} = ctx.config.iptables
   ctx.service
     name: 'iptables'

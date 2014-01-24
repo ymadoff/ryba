@@ -6,9 +6,7 @@ Synchronization
 ---------------
 Upload the synchronization script and synchronize the Ambari repository locally
 ###
-module.exports.push (ctx, next) ->
-  @name 'Ambari Server # Synchronization'
-  @timeout -1
+module.exports.push name: 'Ambari Server # Synchronization', timeout: -1, callback: (ctx, next) ->
   ctx.log 'Deploy the "ambari_reposync" synchronization script'
   ctx.render
     source: "#{__dirname}/../lib/ambari_reposync"

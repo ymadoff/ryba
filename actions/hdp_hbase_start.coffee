@@ -1,4 +1,5 @@
 
+module.exports = []
 
 # ###
 # Start HBase Master

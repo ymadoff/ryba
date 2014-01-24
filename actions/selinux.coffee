@@ -16,7 +16,7 @@ which expect a boolean value to activate or disable selinux.
 ###
 module.exports.push (ctx, next) ->
   ctx.config.selinux ?= true
-  ctx.config.restart_msg ?= 'SELINUX changed, node restarting, re-execute this command later'
+  ctx.config.restart_msg ?= 'SELINUX changed, server restarting, re-execute this command later'
   next()
 
 ###
@@ -24,8 +24,7 @@ Configure
 ---------
 Update the configuration file present in "/etc/selinux/config".
 ###
-module.exports.push (ctx, next) ->
-  @name 'SELinux # Configure'
+module.exports.push name: 'SELinux # Configure', callback: (ctx, next) ->
   if ctx.config.selinux
     from = 'disabled'
     to = 'enforcing'

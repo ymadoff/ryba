@@ -25,9 +25,7 @@ https://www.digitalocean.com/community/articles/how-to-install-the-bind-dns-serv
 ## Forward configuration
 http://gleamynode.net/articles/2267/
 ###
-module.exports.push (ctx, next) ->
-  @name 'Bind Server # Install'
-  @timeout -1
+module.exports.push name: 'Bind Server # Install', timeout: -1, callback: (ctx, next) ->
   ctx.service
     name: 'bind'
     srv_name: 'named'
@@ -36,8 +34,7 @@ module.exports.push (ctx, next) ->
   , (err, serviced) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'Bind Server # Configure'
+module.exports.push name: 'Bind Server # Configure', callback: (ctx, next) ->
   ctx.write
     destination: '/etc/named.conf'
     write: [
@@ -59,8 +56,7 @@ module.exports.push (ctx, next) ->
     , (err, restarted) ->
       next err, ctx.OK
 
-module.exports.push (ctx, next) ->
-  @name 'Bind Server # Zones'
+module.exports.push name: 'Bind Server # Zones', callback: (ctx, next) ->
   modified = false
   # ctx.upload
   #   source: "#{__dirname}/../lib/bind/etc.named.conf"

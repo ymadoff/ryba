@@ -6,12 +6,11 @@ module.exports.push 'histi/actions/hdp_hdfs'
 module.exports.push 'histi/actions/hdp_zookeeper'
 module.exports.push 'histi/actions/hdp_hbase'
 
-# module.exports.push (ctx) ->
-#   require('./hdp_hdfs').configure ctx
-#   require('./hdp_hbase').configure ctx
+module.exports.push (ctx) ->
+  require('./hdp_hdfs').configure ctx unless require('./hdp_hdfs').configured
+  require('./hdp_hbase').configure ctx unless require('./hdp_hbase').configured
 
-module.exports.push (ctx, next) ->
-  @name 'HDP HBase RegionServer # Kerberos'
+module.exports.push name: 'HDP HBase RegionServer # Kerberos', timeout: -1, callback: (ctx, next) ->
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   {hadoop_group, hbase_user, hbase_site} = ctx.config.hdp
   ctx.krb5_addprinc
@@ -26,7 +25,6 @@ module.exports.push (ctx, next) ->
   , (err, created) ->
     next err, if created then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP HBase RegionServer # Start'
+module.exports.push name: 'HDP HBase RegionServer # Start', callback: (ctx, next) ->
   lifecycle.hbase_regionserver_start ctx, (err, started) ->
     next err, if started then ctx.OK else ctx.PASS

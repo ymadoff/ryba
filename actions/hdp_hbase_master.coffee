@@ -7,13 +7,12 @@ module.exports.push 'histi/actions/hdp_hdfs'
 module.exports.push 'histi/actions/hdp_zookeeper'
 module.exports.push 'histi/actions/hdp_hbase'
 
-# module.exports.push (ctx) ->
-#   require('./hdp_hdfs').configure ctx
-#   require('./hdp_hbase').configure ctx
+module.exports.push (ctx) ->
+  require('./hdp_hdfs').configure ctx
+  require('./hdp_hbase').configure ctx
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'HDP HBase Master # HDFS layout', callback: (ctx, next) ->
   {hbase_user} = ctx.config.hdp
-  @name 'HDP HBase Master # HDFS layout'
   ctx.log "Create /apps/hbase"
   ctx.execute
     cmd: mkcmd.hdfs ctx, """
@@ -25,8 +24,7 @@ module.exports.push (ctx, next) ->
   , (err, executed, stdout) ->
     next err, if executed then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP HBase Master # Kerberos'
+module.exports.push name: 'HDP HBase Master # Kerberos', callback: (ctx, next) ->
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   {hadoop_group, hbase_user, hbase_site} = ctx.config.hdp
   ctx.krb5_addprinc
@@ -41,8 +39,7 @@ module.exports.push (ctx, next) ->
   , (err, created) ->
     next err, if created then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP HBase Master # Start'
+module.exports.push name: 'HDP HBase Master # Start', callback: (ctx, next) ->
   lifecycle.hbase_master_start ctx, (err, started) ->
     next err, if started then ctx.OK else ctx.PASS
 

@@ -76,9 +76,7 @@ module.exports.push (ctx) ->
   ctx.config.openldap_server.tls_cert_file ?= null
   ctx.config.openldap_server.tls_key_file ?= null
 
-module.exports.push (ctx, next) ->
-  @name 'OpenLDAP TLS # Deploy'
-  @timeout -1
+module.exports.push name: 'OpenLDAP TLS # Deploy', timeout: -1, callback: (ctx, next) ->
   { tls, tls_cert_file, tls_key_file } = ctx.config.openldap_server
   tls_cert_filename = path.basename tls_cert_file
   tls_key_filename = path.basename tls_key_file
@@ -135,8 +133,7 @@ module.exports.push (ctx, next) ->
         ctx.log 'Check secure connection'
         next null, ctx.OK
 
-module.exports.push (ctx, next) ->
-  @name 'OpenLDAP TLS # Check'
+module.exports.push name: 'OpenLDAP TLS # Check', timeout: -1, callback: (ctx, next) ->
   { suffix, root_dn, root_password } = ctx.config.openldap_server
   ctx.execute
     cmd: "ldapsearch -x -H ldaps://#{ctx.config.host} -b #{suffix} -D #{root_dn} -w #{root_password}"

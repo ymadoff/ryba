@@ -19,17 +19,13 @@ module.exports.push (ctx) ->
   ctx.config.phpldapadmin.config_path ?= '/etc/phpldapadmin/config.php'
   ctx.config.phpldapadmin.config_httpd_path ?= '/etc/httpd/conf.d/phpldapadmin.conf'
 
-module.exports.push (ctx, next) ->
-  @name "phpLDAPadmin # Install"
-  @timeout -1
+module.exports.push name: 'phpLDAPadmin # Install', timeout: -1, callback: (ctx, next) ->
   ctx.service
     name: 'phpldapadmin'
   , (err, serviced) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name "phpLDAPadmin # Configure"
-  @timeout 100000
+module.exports.push name: 'phpLDAPadmin # Configure', timeout: 100000, callback: (ctx, next) ->
   ctx.write
     match: /^(\/\/)(.*'login','attr','dn'.*)$/m
     replace: '$2'
@@ -52,9 +48,7 @@ module.exports.push (ctx, next) ->
       , (err, serviced) ->
         next err, ctx.OK
 
-module.exports.push (ctx, next) ->
-  @name "phpLDAPadmin # HTTPD"
-  @timeout 100000
+module.exports.push name: 'phpLDAPadmin # HTTPD', timeout: 100000, callback: (ctx, next) ->
   ctx.write
     destination: ctx.config.phpldapadmin.config_httpd_path
     write: [

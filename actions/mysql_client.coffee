@@ -5,15 +5,16 @@ Mysql
 Install the MySQL command-line tool.
 ###
 mecano = require 'mecano'
-actions = module.exports = []
+module.exports = []
+
+module.exports.push 'histi/actions/yum'
 
 ###
 Package
 -------
 Install the Mysql client.
 ###
-actions.push (ctx, next) ->
-  @name 'Mysql # Package'
+module.exports.push name: 'Mysql # Package', callback: (ctx, next) ->
   ctx.service
     name: 'mysql'
   , (err, serviced) ->
@@ -24,11 +25,9 @@ Connector
 ---------
 Install the Mysql JDBC driver.
 ###
-actions.push (ctx, next) ->
+module.exports.push name: 'Mysql # Connector', timeout: -1, callback: (ctx, next) ->
   # todo: below doesnt declare the mysql jar inside the hive lib folder
   # /usr/share/java/mysql-connector-java.jar
-  @name 'Mysql # Connector'
-  @timeout -1
   ctx.service
     name: 'mysql-connector-java'
   , (err, serviced) ->

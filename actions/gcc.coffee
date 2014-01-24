@@ -4,9 +4,7 @@ module.exports = []
 
 module.exports.push 'histi/actions/yum'
 
-module.exports.push (ctx, next) ->
-  @name 'GCC'
-  @timeout -1
+module.exports.push name: 'GCC', timeout: -1, callback: (ctx, next) ->
   ctx.service
     name: 'gcc-c++'
   , (err, serviced) ->

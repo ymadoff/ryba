@@ -16,8 +16,8 @@ module.exports = []
 Dependencies: proxy
 ###
 module.exports.push 'histi/actions/proxy'
-module.exports.push 'histi/actions/curl'
 module.exports.push 'histi/actions/network'
+module.exports.push 'histi/actions/yum'
 
 ###
 Configuration
@@ -33,7 +33,7 @@ Configuration
 *   `update`
     Update packages on the system
 ###
-module.exports.push (ctx, next) ->
+module.exports.push module.exports.configure = (ctx) ->
   ctx.config.yum ?= {}
   ctx.config.yum.clean ?= false
   ctx.config.yum.copy ?= null
@@ -44,15 +44,14 @@ module.exports.push (ctx, next) ->
   ctx.config.yum.epel_url = 'http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm'
   ctx.config.yum.config ?= {}
   ctx.config.yum.config.main ?= {}
+  ctx.config.yum.config.main.keepcache ?= '1'
   {http_proxy_no_auth, username, password} = ctx.config.proxy
   if ctx.config.yum.proxy
     ctx.config.yum.config.main.proxy = http_proxy_no_auth
     ctx.config.yum.config.main.proxy_username = username
     ctx.config.yum.config.main.proxy_password = password
-  next()
 
-module.exports.push (ctx, next) ->
-  @name 'YUM # Check'
+module.exports.push name: 'YUM # Check', callback: (ctx, next) ->
   ctx.log 'Check if YUM is running'
   pidfile = '/var/run/yum.pid'
   opts = 
@@ -79,8 +78,7 @@ merge server configuration and write the content back.
 More information about configuring the proxy settings 
 is available on [the centos website](http://www.centos.org/docs/5/html/yum/sn-yum-proxy-server.html)
 ###
-module.exports.push (ctx, next) ->
-  @name 'YUM # Proxy'
+module.exports.push name: 'YUM # Proxy', callback: (ctx, next) ->
   {config} = ctx.config.yum
   ctx.log 'Update configuration'
   ctx.ini
@@ -98,11 +96,9 @@ Upload the YUM repository definitions files present in
 "ctx.config.yum.copy" to the yum repository directory 
 in "/etc/yum.repos.d"
 ###
-module.exports.push (ctx, next) ->
+module.exports.push name: 'YUM # Repositories', timeout: -1, callback: (ctx, next) ->
   {copy, clean} = ctx.config.yum
-  return next() unless copy
-  @name 'YUM # Repositories'
-  @timeout -1
+  return next null, ctx.DISABLED unless copy
   clean = ->
     return upload() unless clean
     ctx.log "Clean /etc/yum.repos.d/*"
@@ -137,20 +133,7 @@ module.exports.push (ctx, next) ->
       next err, ctx.OK
   clean()
 
-module.exports.push (ctx, next) ->
-  {epel, epel_url} = ctx.config.yum
-  return next() unless epel
-  @name 'YUM # Epel'
-  @timeout 100000
-  ctx.execute
-    cmd: "rpm -Uvh #{epel_url}"
-    code_skipped: 1
-  , (err, executed) ->
-    next err, if executed then ctx.OK else ctx.PASS
-
-module.exports.push (ctx, next) ->
-  @name 'YUM # Update'
-  @timeout -1
+module.exports.push name: 'YUM # Update', timeout: -1, callback: (ctx, next) ->
   {update} = ctx.config.yum
   return next null, ctx.DISABLED unless update
   ctx.execute

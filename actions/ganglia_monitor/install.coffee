@@ -16,8 +16,8 @@ module.exports = [
     fs.readFile "#{__dirname}/resources/gmond.conf", 'utf-8', (err, content) ->
       return next err if err
       ctx.config.ganglia_monitor ?= {}
-      ctx.config.ganglia_monitor.collectors ?= ctx.servers action: 'ganglia_collector'
-      ctx.config.ganglia_monitor.monitors ?= ctx.servers action: 'ganglia_monitor'
+      ctx.config.ganglia_monitor.collectors ?= ctx.hosts_with_module 'histi/actions/ganglia_collector'
+      ctx.config.ganglia_monitor.monitors ?= ctx.hosts_with_module 'histi/actions/ganglia_monitor'
       content = eco.render content, ctx.config
       ctx.ssh.sftp (err, sftp) ->
         misc.file.writeFile ctx.ssh, '/etc/ganglia/gmond.conf', content, (err) ->

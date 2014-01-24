@@ -93,11 +93,10 @@ Declare the http_proxy and "https_proxy" environment
 variables by declaring a shell script inside the 
 profile initialization directory.
 ###
-module.exports.push (ctx, next) ->
+module.exports.push name: 'Proxy # Profile', callback: (ctx, next) ->
   # There is no proxy to configure
   return next() unless ctx.config.proxy.http_proxy
-  @name 'Proxy # Profile'
-  return next null, 'DISABLED'
+  return next null, ctx.DISABLED
   # {system, http_proxy, https_proxy} = ctx.config.proxy
   # modified = 0
   # write = (file, callback) ->

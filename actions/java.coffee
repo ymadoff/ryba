@@ -13,8 +13,7 @@ module.exports.push module.exports.configure = (ctx) ->
   throw new Error "Configuration property 'java.version' is required." unless ctx.config.java.version
   # ctx.config.java.version ?= (/\w+-([\w\d]+)-/.exec path.basename ctx.config.java.location)[0]
 
-module.exports.push (ctx, next) ->
-  @name 'Java # Remove OpenJDK'
+module.exports.push name: 'Java # Remove OpenJDK', callback: (ctx, next) ->
   ctx.execute
     cmd: 'yum list installed | grep openjdk'
     code_skipped: 1
@@ -26,8 +25,7 @@ module.exports.push (ctx, next) ->
     , (err) ->
       next err, ctx.OK
 
-# module.exports.push (ctx, next) ->
-#   @name 'Java # Remove GCJ'
+# module.exports.push name: 'Java # Remove GCJ', callback: (ctx, next) ->
 #   ctx.execute
 #     cmd: 'yum list installed | grep gcj'
 #     code_skipped: 1
@@ -44,10 +42,8 @@ Followed instruction from: http://www.if-not-true-then-false.com/2010/install-su
 but we didn't use alternative yet
 As of sep 2013, jdk7 is supported by Cloudera but not by Hortonworks.
 ###
-module.exports.push (ctx, next) ->
+module.exports.push name: 'Java # Install', timeout: -1, callback: (ctx, next) ->
   {proxy, location, version} = ctx.config.java
-  @name 'Java # Install'
-  @timeout -1
   ctx.log "Check if java is here and which version it is"
   ctx.execute
     cmd: 'ls -d /usr/java/jdk*'
@@ -79,11 +75,9 @@ module.exports.push (ctx, next) ->
         , (err, executed) ->
           next err, ctx.OK
 
-module.exports.push (ctx, next) ->
-  @name 'Java # Java JCE'
+module.exports.push name: 'Java # Java JCE', timeout: -1, callback: (ctx, next) ->
   {java_home, jce_local_policy, jce_us_export_policy} = ctx.config.java
   return next Error "JCE not configured" unless jce_local_policy or jce_us_export_policy
-  @timeout -1
   ctx.log "Download jce-6 Security JARs"
   ctx.upload [
     source: jce_local_policy
@@ -102,8 +96,7 @@ module.exports.push (ctx, next) ->
     #   next err, if downloaded then ctx.OK else ctx.PASS
     # , 10000
 
-module.exports.push (ctx, next) ->
-  @name 'Java # Env'
+module.exports.push name: 'Java # Env', timeout: -1, callback: (ctx, next) ->
   ctx.write
     destination: '/etc/profile.d/java.sh'
     mode: 644

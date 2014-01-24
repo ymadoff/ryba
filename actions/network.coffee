@@ -21,8 +21,7 @@ Network # Hosts
 Write the hostname resolution present in the configuration
 under the "hosts" property into "/etc/hosts".
 ###
-network.push (ctx, next) ->
-  @name 'Network # Hosts'
+network.push name: 'Network # Hosts', callback: (ctx, next) ->
   {hosts, auto_hosts} = ctx.config.network
   content = ''
   if auto_hosts then for server in ctx.config.servers
@@ -43,8 +42,7 @@ Network # Hostname
 Declare the server hostname. On CentOs like system, the 
 updated file is "/etc/sysconfig/network".
 ###
-network.push (ctx, next) ->
-  @name 'Network # Hostname'
+network.push name: 'Network # Hostname', callback: (ctx, next) ->
   ctx.write
     match: /^HOSTNAME=.*/mg
     replace: "HOSTNAME=#{ctx.config.host}"
@@ -63,10 +61,9 @@ Network # DNS resolv
 Write the DNS configuration. On CentOs like system, the 
 updated file is "/etc/resolv".
 ###
-network.push (ctx, next) ->
+network.push name: 'Network # DNS resolv', callback: (ctx, next) ->
   {resolv} = ctx.config.network
   return next() unless resolv
-  @name 'Network # DNS resolv'
   ctx.write
     content: resolv
     destination: '/etc/resolv.conf'

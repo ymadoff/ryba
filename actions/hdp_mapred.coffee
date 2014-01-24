@@ -9,7 +9,8 @@ module.exports.push 'histi/actions/hdp_hdfs'
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./hdp_hdfs').configure ctx
-  jobhistoryserver = (ctx.config.servers.filter (s) -> s.hdp?.jobhistoryserver)[0].host
+  module.exports.configured = true
+  jobhistoryserver = ctx.hosts_with_module 'histi/actions/hdp_mapred_jhs', 1
   # Define Users and Groups
   ctx.config.hdp.mapred_user ?= 'mapred'
   # Options for mapred-site.xml
@@ -42,9 +43,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.mapred['mapreduce.jobhistory.intermediate-done-dir'] ?= '/mr-history/tmp' # Directory where history files are written by MapReduce jobs.
   ctx.config.hdp.mapred['mapreduce.jobhistory.done-dir'] ?= '/mr-history/done' # Directory where history files are managed by the MR JobHistory Server.
 
-module.exports.push (ctx, next) ->
-  @name "HDP MapRed # Install Common"
-  @timeout -1
+module.exports.push name: 'HDP MapRed # Install Common', timeout: -1, callback: (ctx, next) ->
   ctx.service [
     name: 'hadoop'
   ,
@@ -56,8 +55,7 @@ module.exports.push (ctx, next) ->
 
 #http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 #http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
-module.exports.push (ctx, next) ->
-  @name "HDP Hadoop JHS # Users & Groups"
+module.exports.push name: 'HDP Hadoop JHS # Users & Groups', callback: (ctx, next) ->
   {hadoop_group} = ctx.config.hdp
   ctx.execute
     cmd: "useradd mapred -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop MapReduce service\""
@@ -66,9 +64,7 @@ module.exports.push (ctx, next) ->
   , (err, executed) ->
     next err, if executed then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name "HDP MapRed # System Directories"
-  @timeout -1
+module.exports.push name: 'HDP MapRed # System Directories', timeout: -1, callback: (ctx, next) ->
   { mapred_user, hadoop_group, mapred_log_dir, mapred_pid_dir } = ctx.config.hdp
   modified = false
   do_log = ->
@@ -97,8 +93,7 @@ module.exports.push (ctx, next) ->
     next null, if modified then ctx.OK else ctx.PASS
   do_log()
 
-module.exports.push (ctx, next) ->
-  @name "HDP MapRed # Configuration"
+module.exports.push name: 'HDP MapRed # Configuration', callback: (ctx, next) ->
   { mapred, hadoop_conf_dir, mapred_queue_acls } = ctx.config.hdp
   modified = false
   do_mapred = ->
@@ -132,8 +127,7 @@ module.exports.push (ctx, next) ->
     next null, if modified then ctx.OK else ctx.PASS
   do_mapred()
 
-module.exports.push (ctx, next) ->
-  @name 'HDP MapRed # Kerberos'
+module.exports.push name: 'HDP MapRed # Kerberos', callback: (ctx, next) ->
   {hadoop_conf_dir} = ctx.config.hdp
   {realm} = ctx.config.krb5_client
   mapred = {}
@@ -149,9 +143,8 @@ module.exports.push (ctx, next) ->
 ###
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 ###
-module.exports.push (ctx, next) ->
+module.exports.push name: 'HDP MapRed # HDFS layout', callback: (ctx, next) ->
   {hadoop_group, hdfs_user, yarn, yarn_user, mapred, mapred_user} = ctx.config.hdp
-  @name 'HDP MapRed # HDFS layout'
   ok = false
   do_mapreduce_jobtracker_system_dir = ->
     mapreduce_jobtracker_system_dir = mapred['mapreduce.jobtracker.system.dir']
@@ -227,9 +220,7 @@ be executed if the directory "/user/test/10gsort" generated
 by this action is not present on HDFS. Delete this directory 
 to re-execute the check.
 ###
-module.exports.push (ctx, next) ->
-  @name 'HDP MapRed # Check'
-  @timeout -1
+module.exports.push name: 'HDP MapRed # Check', timeout: -1, callback: (ctx, next) ->
   ctx.execute
     cmd: mkcmd.test ctx, """
     if hdfs dfs -test -d 10gsort; then exit 1; fi

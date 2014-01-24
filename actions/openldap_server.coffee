@@ -69,9 +69,7 @@ module.exports.push module.exports.configure = (ctx) ->
   #     ctx.config.openldap_server.config_slappasswd = secret
   #     next()
 
-module.exports.push (ctx, next) ->
-  @name 'OpenLDAP Server # Install'
-  @timeout -1
+module.exports.push name: 'OpenLDAP Server # Install', timeout: -1, callback: (ctx, next) ->
   ctx.service [
     name: 'openldap-servers'
     chk_name: 'slapd'
@@ -90,9 +88,7 @@ Interesting posts also include
 http://itdavid.blogspot.ca/2012/05/howto-centos-6.html
 http://www.6tech.org/2013/01/ldap-server-and-centos-6-3/
 ###
-module.exports.push (ctx, next) ->
-  @name 'OpenLDAP Server # Configure'
-  @timeout -1
+module.exports.push name: 'OpenLDAP Server # Configure', timeout: -1, callback: (ctx, next) ->
   {root_dn, root_slappasswd, suffix} = ctx.config.openldap_server
   modified = 0
   bdb = ->
@@ -166,9 +162,7 @@ Logging
 
 http://joshitech.blogspot.fr/2009/09/how-to-enabled-logging-in-openldap.html
 ###
-module.exports.push (ctx, next) ->
-  @name 'OpenLDAP Server # Logging'
-  @timeout -1
+module.exports.push name: 'OpenLDAP Server # Logging', callback: (ctx, next) ->
   {config_dn, config_password, log_level} = ctx.config.openldap_server
   modified = false
   rsyslog = ->
@@ -230,9 +224,7 @@ module.exports.push (ctx, next) ->
     next err, if modified then ctx.OK else ctx.PASS
   rsyslog()
 
-module.exports.push (ctx, next) ->
-  @name 'OpenLDAP Server # SUDO schema'
-  @timeout -1
+module.exports.push name: 'OpenLDAP Server # SUDO schema', timeout: -1, callback: (ctx, next) ->
   # conf = '/tmp/sudo_schema/schema.conf'
   # ldif = '/tmp/sudo_schema/ldif'
   {config_dn, config_password} = ctx.config.openldap_server
@@ -264,10 +256,9 @@ module.exports.push (ctx, next) ->
       next err, if registered then ctx.OK else ctx.PASS
   do_install()
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'OpenLDAP Server # Delete ldif data', callback: (ctx, next) ->
   {root_dn, root_password, ldapdelete} = ctx.config.openldap_server
   return next() unless ldapdelete.length
-  @name 'OpenLDAP Server # Delete ldif data'
   modified = 0
   each(ldapdelete)
   .on 'item', (path, next) ->
@@ -291,11 +282,9 @@ module.exports.push (ctx, next) ->
   .on 'both', (err) ->
     next err, if modified then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'OpenLDAP Server # Add ldif data', timeout: 100000, callback: (ctx, next) ->
   {root_dn, root_password, ldapadd} = ctx.config.openldap_server
   return next() unless ldapadd.length
-  @name 'OpenLDAP Server # Add ldif data'
-  @timeout 100000
   modified = 0
   each(ldapadd)
   .on 'item', (path, next) ->

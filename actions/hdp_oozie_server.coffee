@@ -17,8 +17,9 @@ module.exports.push module.exports.configure = (ctx) ->
   {realm} = ctx.config.krb5_client
   ctx.config.hdp.oozie_db_username ?= ctx.config.mysql_server.username
   ctx.config.hdp.oozie_db_password ?= ctx.config.mysql_server.password
-  dbhost = ctx.config.hdp.oozie_db_host ?= ctx.servers(action: 'histi/actions/mysql_server')[0]
-  ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.url'] ?= 'jdbc:mysql://#{dbhost}:3306/oozie?createDatabaseIfNotExist=true'
+  # dbhost = ctx.config.hdp.oozie_db_host ?= ctx.servers(action: 'histi/actions/mysql_server')[0]
+  dbhost = ctx.config.hdp.oozie_db_host ?= ctx.hosts_with_module 'histi/actions/mysql_server', 1
+  ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{dbhost}:3306/oozie?createDatabaseIfNotExist=true"
   ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
   ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'
   ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
@@ -55,9 +56,7 @@ module.exports.push module.exports.configure = (ctx) ->
   throw new Error "Missing extjs.source" unless ctx.config.hdp.extjs.source
   throw new Error "Missing extjs.destination" unless ctx.config.hdp.extjs.destination
 
-module.exports.push (ctx, next) ->
-  @name 'HDP Oozie Server # Install'
-  @timeout -1
+module.exports.push name: 'HDP Oozie Server # Install', timeout: -1, callback: (ctx, next) ->
   ctx.service [
     name: 'oozie'
   ,
@@ -67,8 +66,7 @@ module.exports.push (ctx, next) ->
   ], (err, serviced) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP Oozie Server # Directories'
+module.exports.push name: 'HDP Oozie Server # Directories', callback: (ctx, next) ->
   {oozie_user, hadoop_group, oozie_data, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_tmp_dir} = ctx.config.hdp
   ctx.mkdir [
     destination: oozie_data
@@ -102,31 +100,27 @@ module.exports.push (ctx, next) ->
     ], (err, executed) ->
       next err, if copied then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP Oozie Server # Layout'
+module.exports.push name: 'HDP Oozie Server # Layout', callback: (ctx, next) ->
   ctx.mkdir
     destination: '/usr/lib/oozie/libext'
   , (err, created) ->
     next err, if created then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP Oozie Server # ExtJS'
+module.exports.push name: 'HDP Oozie Server # ExtJS', callback: (ctx, next) ->
   ctx.execute
     cmd: 'cp /usr/share/HDP-oozie/ext-2.2.zip /usr/lib/oozie/libext/'
     not_if_exists: '/usr/lib/oozie/libext/ext-2.2.zip'
   , (err, copied) ->
     next err, if copied then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP Oozie Server # LZO'
+module.exports.push name: 'HDP Oozie Server # LZO', callback: (ctx, next) ->
   ctx.execute
     cmd: 'cp /usr/lib/hadoop/lib/hadoop-lzo-0.5.0.jar /usr/lib/oozie/libext/'
     not_if_exists: '/usr/lib/oozie/libext/hadoop-lzo-0.5.0.jar'
   , (err, copied) ->
     next err, if copied then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP Oozie Server # Mysql Driver'
+module.exports.push name: 'HDP Oozie Server # Mysql Driver', callback: (ctx, next) ->
   ctx.link
     source: '/usr/share/java/mysql-connector-java.jar'
     destination: '/usr/lib/oozie/libext/mysql-connector-java.jar'
@@ -139,8 +133,7 @@ module.exports.push (ctx, next) ->
     , (err) ->
       return next err, ctx.OK
 
-module.exports.push (ctx, next) ->
-  @name "HDP Oozie Server # Configuration"
+module.exports.push name: 'HDP Oozie Server # Configuration', callback: (ctx, next) ->
   { oozie_user, hadoop_user, hadoop_group, oozie_site, oozie_conf_dir, oozie_hadoop_config, hadoop_conf_dir } = ctx.config.hdp
   modified = false
   do_oozie_site = ->
@@ -187,8 +180,7 @@ module.exports.push (ctx, next) ->
     next null, if modified then ctx.OK else ctx.PASS
   do_oozie_site()
 
-module.exports.push (ctx, next) ->
-  @name 'HDP Oozie Server # Kerberos'
+module.exports.push name: 'HDP Oozie Server # Kerberos', callback: (ctx, next) ->
   {oozie_user, hadoop_group, oozie_site} = ctx.config.hdp
   {kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   ctx.krb5_addprinc
@@ -204,27 +196,27 @@ module.exports.push (ctx, next) ->
     return next err if err
     next null, if created then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'HDP Oozie Server # MySQL', callback: (ctx, next) ->
   {oozie_db_username, oozie_db_password, oozie_db_host, oozie_site} = ctx.config.hdp
-  @name "HDP Oozie Server # MySQL"
   username = oozie_site['oozie.service.JPAService.jdbc.username']
   password = oozie_site['oozie.service.JPAService.jdbc.password']
   escape = (text) -> text.replace(/[\\"]/g, "\\$&")
+  cmd = "mysql -u#{oozie_db_username} -p#{oozie_db_password} -h#{oozie_db_host} -e "
   ctx.execute
     cmd: """
-    mysql -u#{oozie_db_username} -p#{oozie_db_password} -h#{oozie_db_host} -e "
+    if #{cmd} "use oozie"; then exit 2; fi
+    #{cmd} "
     create database oozie;
     grant all privileges on oozie.* to '#{username}'@'localhost' identified by '#{password}';
     grant all privileges on oozie.* to '#{username}'@'%' identified by '#{password}';
     flush privileges;
     "
     """
-    code_skipped: 1
+    code_skipped: 2
   , (err, created, stdout, stderr) ->
     return next err, if created then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name "HDP Oozie Server # War"
+module.exports.push name: 'HDP Oozie Server # War', callback: (ctx, next) ->
   # Note, as per Cloudera](https://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH5/latest/CDH5-Installation-Guide/cdh5ig_topic_17_6.html),
   # `ooziedb.sh` must be done as the oozie Unix user, otherwise Oozie may fail to start or work properly because of incorrect file permissions,
   # however it was working without
@@ -238,9 +230,8 @@ module.exports.push (ctx, next) ->
   , (err, executed) ->
     next err, if executed then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'HDP Oozie Server # Share lib', callback: (ctx, next) ->
   {oozie_user, hadoop_group} = ctx.config.hdp
-  @name 'HDP Oozie Server # Share lib'
   ctx.execute 
     cmd: mkcmd.hdfs ctx, """
     if hdfs dfs -ls /user/#{oozie_user}/share &>/dev/null; then exit 2; fi
@@ -257,13 +248,11 @@ module.exports.push (ctx, next) ->
   , (err, executed) ->
     next err, if executed then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name "HDP Oozie Server # Start"
+module.exports.push name: 'HDP Oozie Server # Start', callback: (ctx, next) ->
   lifecycle.oozie_start ctx, (err, started) ->
     next err, if started then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name "HDP Oozie Server # Test User"
+module.exports.push name: 'HDP Oozie Server # Test User', callback: (ctx, next) ->
   {oozie_user, hadoop_group, oozie_site
    oozie_test_principal, oozie_test_password} = ctx.config.hdp
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client

@@ -8,9 +8,8 @@ module.exports.push 'histi/actions/hdp_hdfs'
 module.exports.push (ctx) ->
   require('./hdp_hdfs').configure ctx
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'HDP HDFS NN # Kerberos', callback: (ctx, next) ->
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
-  @name 'HDP HDFS NN # Kerberos'
   ctx.krb5_addprinc 
     principal: "nn/#{ctx.config.host}@#{realm}"
     randkey: true
@@ -23,8 +22,7 @@ module.exports.push (ctx, next) ->
   , (err, created) ->
     next err, if created then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
-  @name 'HDP HDFS NN # HDFS User'
+module.exports.push name: 'HDP HDFS NN # HDFS User', callback: (ctx, next) ->
   {hdfs_user, hdfs_password} = ctx.config.hdp
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   ctx.krb5_addprinc
@@ -42,10 +40,9 @@ module.exports.push (ctx, next) ->
     return next err if err
     next null, if created then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'HDP HDFS NN # Format', callback: (ctx, next) ->
   {dfs_name_dir, hdfs_user, format, cluster_name} = ctx.config.hdp
   return next() unless format
-  @name 'HDP HDFS NN # Format'
   ctx.log "Format HDFS if #{dfs_name_dir[0]} does not exist"
   ctx.execute
     #  su -l hdfs -c "hdfs namenode -format duzy"
@@ -61,8 +58,7 @@ module.exports.push (ctx, next) ->
       lifecycle.dn_start ctx, (err, started) ->
         next err, ctx.OK
 
-module.exports.push (ctx, next) ->
-  @name 'HDP HDFS NN # Upgrade'
+module.exports.push name: 'HDP HDFS NN # Upgrade', timeout: -1, callback: (ctx, next) ->
   {hdfs_log_dir} = ctx.config.hdp
   count = (callback) ->
     ctx.execute
@@ -86,17 +82,14 @@ module.exports.push (ctx, next) ->
           return next null, ctx.PASS if c1 is c2
           return next new Error 'Upgrade manually'
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'HDP HDFS NN # Start', callback: (ctx, next) ->
   {namenode} = ctx.config.hdp
-  @name "HDP HDFS NN # Start"
   lifecycle.nn_start ctx, (err, started) ->
     next err, if started then ctx.OK else ctx.PASS
 
-module.exports.push (ctx, next) ->
+module.exports.push name: 'HDP HDFS NN # Test User', timeout: -1, callback: (ctx, next) ->
   {hdfs_user, test_user, test_password, hadoop_group, security} = ctx.config.hdp
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
-  @name 'HDP HDFS NN # Test User'
-  @timeout -1
   modified = false
   do_user = ->
     if security is 'kerberos'

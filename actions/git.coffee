@@ -22,7 +22,6 @@ Dependencies: users, proxy
 ###
 
 module.exports.push 'histi/actions/users'
-# module.exports.push 'histi/actions/proxy'
 
 ###
 Configuration
@@ -83,9 +82,7 @@ Package
 -------
 Install the git package.
 ###
-module.exports.push (ctx, next) ->
-  @name 'Git # Package'
-  @timeout -1
+module.exports.push name: 'Git # Package', timeout: -1, callback: (ctx, next) ->
   ctx.service
     name: 'git'
   , (err, serviced) ->
@@ -96,8 +93,7 @@ Config
 ------
 Deploy the git configuration.
 ###
-module.exports.push (ctx, next) ->
-  @name 'Git # Config'
+module.exports.push name: 'Git # Config', callback: (ctx, next) ->
   modified = 0
   {merge, properties, global} = ctx.config.git
   work = (user, file, config, next)->
