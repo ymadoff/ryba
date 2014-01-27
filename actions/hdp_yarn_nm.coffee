@@ -2,14 +2,19 @@
 lifecycle = require './hdp/lifecycle'
 module.exports = []
 
+module.exports.push 'histi/actions/nc'
 module.exports.push 'histi/actions/hdp_yarn'
 
 module.exports.push (ctx) ->
+  require('./nc').configure ctx
   require('./hdp_yarn').configure ctx
 
 module.exports.push name: 'HDP YARN NM # Start', callback: (ctx, next) ->
-  lifecycle.nm_start ctx, (err, started) ->
-    next err, if started then ctx.OK else ctx.PASS
+  resourcemanager = ctx.hosts_with_module 'histi/actions/hdp_yarn_rm', 1
+  ctx.waitForConnection resourcemanager, 8088, (err) ->
+    return next err if err
+    lifecycle.nm_start ctx, (err, started) ->
+      next err, if started then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP YARN NM # Test User', callback: (ctx, next) ->
   {test_user, hadoop_group} = ctx.config.hdp
