@@ -79,7 +79,7 @@ module.exports.push name: 'HDP Hive & HCat client # Check Metastore', timeout: -
       cmd: mkcmd.test ctx, """
       if hdfs dfs -test -d /user/test/hive_#{ctx.config.host}/check_metastore_tb; then exit 2; fi
       hdfs dfs -mkdir -p /user/test/hive_#{ctx.config.host}/check_metastore_tb
-      echo "a,1\\nb,2\\nc,3" | hdfs dfs -put - /user/test/hive_#{ctx.config.host}/check_metastore_tb/data
+      echo -e 'a|1\\\\nb|2\\\\nc|3' | hdfs dfs -put - /user/test/hive_#{ctx.config.host}/check_metastore_tb/data
       hive -e "
         CREATE DATABASE IF NOT EXISTS check_hive_db  LOCATION '/user/test/hive_#{ctx.config.host}'; \\
         USE check_hive_db; \\
@@ -87,7 +87,7 @@ module.exports.push name: 'HDP Hive & HCat client # Check Metastore', timeout: -
       "
       hive -e "SELECT SUM(col2) FROM check_hive_db.check_metastore_tb;"
       hive -e "DROP TABLE check_hive_db.check_metastore_tb; DROP DATABASE check_hive_db;"
-      hdfs dfs -mkdir -p /user/test/hive_#{ctx.config.host}/check_metastore_tb
+      #hdfs dfs -mkdir -p /user/test/hive_#{ctx.config.host}/check_metastore_tb
       """
       code_skipped: 2
     , (err, executed, stdout) ->
@@ -103,11 +103,11 @@ module.exports.push name: 'HDP Hive & HCat client # Check Server2', timeout: -1,
       cmd: mkcmd.test ctx, """
       if hdfs dfs -test -d /user/test/hive_#{ctx.config.host}/check_server2_tb; then exit 2; fi
       hdfs dfs -mkdir -p /user/test/hive_#{ctx.config.host}/check_server2_tb
-      echo "a,1\\nb,2\\nc,3" | hdfs dfs -put - /user/test/hive_#{ctx.config.host}/check_server2_tb/data
-      #{query "CREATE DATABASE IF NOT EXISTS check_hive_db  LOCATION '/user/test/hive_#{ctx.config.host}'"}
-      #{query 'CREATE TABLE IF NOT EXISTS check_hive_db.check_server2_tb(col1 STRING, col2 INT);'}
-      #{query 'SELECT SUM(col2) FROM check_hive_db.check_server2_tb;'}
-      #{query 'DROP TABLE check_hive_db.check_server2_tb; DROP DATABASE check_hive_db;'}
+      echo -e 'a|1\\\\nb|2\\\\nc|3' | hdfs dfs -put - /user/test/hive_#{ctx.config.host}/check_server2_tb/data
+      {query "CREATE DATABASE IF NOT EXISTS check_hive_db  LOCATION '/user/test/hive_#{ctx.config.host}'"}
+      {query 'CREATE TABLE IF NOT EXISTS check_hive_db.check_server2_tb(col1 STRING, col2 INT);'}
+      {query 'SELECT SUM(col2) FROM check_hive_db.check_server2_tb;'}
+      {query 'DROP TABLE check_hive_db.check_server2_tb; DROP DATABASE check_hive_db;'}
       hdfs dfs -mkdir -p /user/test/hive_#{ctx.config.host}/check_server2_tb
       """
       code_skipped: 2
