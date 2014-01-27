@@ -49,7 +49,8 @@ module.exports.push name: 'HDP Hive & HCat server # Users', callback: (ctx, next
   cmds.push cmd "groupadd #{hadoop_group}"
   # cmds.push cmd "usermod -a -G hadoop #{hive_user}"
   # cmds.push cmd "usermod -a -G hadoop #{webhcat_user}"
-  cmds.push cmd "useradd #{hive_user} -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop Hive service\""
+  # Create the hive user as system (-r) with a home directory (-m)
+  cmds.push cmd "useradd #{hive_user} -r -m -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop Hive service\""
   cmds.push cmd "useradd #{webhcat_user} -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop HCatalog/WebHCat service\"" if ctx.config.hdp.hcatalog_server or ctx.config.hdp.webhcat
   ctx.execute parallel: 1, cmds, (err, executed) ->
     next err, if executed then ctx.OK else ctx.PASS
@@ -202,6 +203,12 @@ module.exports.push name: 'HDP Hive & HCat server # Metastore Security', callbac
     merge: true
   , (err, configured) ->
     next err, if configured then ctx.OK else ctx.PASS
+
+# todo: Securing the Hive MetaStore 
+# http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-Security-Guide/cdh4sg_topic_9_1.html
+
+# todo: Implement lock for Hive Server2
+# http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-Installation-Guide/cdh4ig_topic_18_5.html
 
 module.exports.push name: 'HDP Hive & HCat server # Start Metastore', callback: (ctx, next) ->
   lifecycle.hive_metastore_start ctx, (err, started) ->

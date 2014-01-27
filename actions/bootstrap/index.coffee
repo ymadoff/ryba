@@ -67,7 +67,6 @@ module.exports.push name: 'Bootstrap # Log', callback: (ctx, next) ->
     log.out = fs.createWriteStream "./logs/#{host}_out.log"
     log.err = fs.createWriteStream "./logs/#{host}_err.log"
     close = ->
-      console.log 'close'
       setTimeout ->
         log.out.close()
         log.err.close()

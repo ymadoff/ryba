@@ -77,7 +77,7 @@ module.exports.push name: 'HDP HDFS # Directories', timeout: -1, callback: (ctx,
     fs_checkpoint_dir,
     yarn, yarn_log_dir, yarn_pid_dir,
     hdfs_user, hadoop_group,
-    hdfs_log_dir, mapred_log_dir, hdfs_pid_dir, mapred_pid_dir} = ctx.config.hdp
+    hdfs_log_dir, mapred_log_dir, hdfs_pid_dir} = ctx.config.hdp
   modified = false
   do_namenode = ->
     ctx.log "Create namenode dir: #{dfs_name_dir}"
@@ -135,7 +135,7 @@ module.exports.push name: 'HDP HDFS # Directories', timeout: -1, callback: (ctx,
       modified = true if created
       do_pid()
   do_pid = ->
-    ctx.log "Create hdfs and mapred pid: #{hdfs_pid_dir}, #{yarn_pid_dir} and #{mapred_pid_dir}"
+    ctx.log "Create hdfs and mapred pid: #{hdfs_pid_dir} with owner #{hdfs_user}:#{hadoop_group}"
     ctx.mkdir
       destination: "#{hdfs_pid_dir}/#{hdfs_user}"
       uid: hdfs_user
