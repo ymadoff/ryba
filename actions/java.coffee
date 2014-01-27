@@ -25,17 +25,17 @@ module.exports.push name: 'Java # Remove OpenJDK', callback: (ctx, next) ->
     , (err) ->
       next err, ctx.OK
 
-# module.exports.push name: 'Java # Remove GCJ', callback: (ctx, next) ->
-#   ctx.execute
-#     cmd: 'yum list installed | grep gcj'
-#     code_skipped: 1
-#   , (err, installed, stdout) ->
-#     return next err, ctx.PASS if err or not installed
-#     packages = for l in stdout.trim().split('\n') then /(.*?) /.exec(l)[1]
-#     ctx.execute
-#       cmd: "yum remove -y #{packages.join ' '}"
-#     , (err) ->
-#       next err, ctx.OK
+module.exports.push name: 'Java # Remove GCJ', callback: (ctx, next) ->
+  ctx.execute
+    cmd: 'yum list installed | grep java-.*-gcj'
+    code_skipped: 1
+  , (err, installed, stdout) ->
+    return next err, ctx.PASS if err or not installed
+    packages = for l in stdout.trim().split('\n') then /(.*?) /.exec(l)[1]
+    ctx.execute
+      cmd: "yum remove -y #{packages.join ' '}"
+    , (err) ->
+      next err, ctx.OK
 
 ###
 Followed instruction from: http://www.if-not-true-then-false.com/2010/install-sun-oracle-java-jdk-jre-6-on-fedora-centos-red-hat-rhel/
@@ -91,10 +91,6 @@ module.exports.push name: 'Java # Java JCE', timeout: -1, callback: (ctx, next) 
     sha1: '1b5eb80bd3699de9b668d5f7b1a1d89681a91190'
   ], (err, downloaded) ->
     next err, if downloaded then ctx.OK else ctx.PASS
-    # # seems like upload binary is buggy is call the callback to fast
-    # setTimeout ->
-    #   next err, if downloaded then ctx.OK else ctx.PASS
-    # , 10000
 
 module.exports.push name: 'Java # Env', timeout: -1, callback: (ctx, next) ->
   ctx.write
