@@ -9,7 +9,7 @@ module.exports = []
 module.exports.push (ctx) ->
   ctx.config.bootstrap ?= {}
   ctx.config.bootstrap.cache ?= {}
-  ctx.config.bootstrap.cache.location ?= "#{__dirname}/tmp"
+  ctx.config.bootstrap.cache.location ?= "#{process.cwd()}/tmp"
 
 module.exports.push name: 'Bootstrap # File Cache', callback: (ctx, next) ->
   ctx.config.bootstrap.cache ?= {}

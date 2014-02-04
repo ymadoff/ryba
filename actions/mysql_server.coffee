@@ -78,7 +78,12 @@ module.exports.push name: 'Mysql Server # Package', timeout: -1, callback: (ctx,
     , (err, updated) ->
       return next err if err
       modified = true if updated
-      do_start()
+      ctx.link
+        source: '/tmp/mysql/mysql.sock'
+        destination: '/var/lib/mysql/mysql.sock'
+      , (err, linked) ->
+        modified = true if linked
+        do_start()
   do_start = ->
     ctx.service
       name: 'mysql-server'
