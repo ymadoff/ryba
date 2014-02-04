@@ -17,7 +17,6 @@ Dependencies: proxy
 ###
 module.exports.push 'histi/actions/proxy'
 module.exports.push 'histi/actions/network'
-module.exports.push 'histi/actions/yum'
 
 ###
 Configuration
@@ -40,8 +39,6 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.yum.merge ?= true
   ctx.config.yum.update ?= true
   ctx.config.yum.proxy ?= true
-  ctx.config.yum.epel ?= true
-  ctx.config.yum.epel_url = 'http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm'
   ctx.config.yum.config ?= {}
   ctx.config.yum.config.main ?= {}
   ctx.config.yum.config.main.keepcache ?= '1'
@@ -54,9 +51,10 @@ module.exports.push module.exports.configure = (ctx) ->
 module.exports.push name: 'YUM # Check', callback: (ctx, next) ->
   ctx.log 'Check if YUM is running'
   pidfile = '/var/run/yum.pid'
-  opts = 
-    stdout: ctx.log.out
-    stderr: ctx.log.err
+  opts = {}
+  # opts = 
+  #   stdout: ctx.log.out
+  #   stderr: ctx.log.err
   misc.pidfileStatus ctx.ssh, pidfile, opts, (err, status) ->
     return next err if err
     if status is 0

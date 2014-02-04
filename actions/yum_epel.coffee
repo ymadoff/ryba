@@ -4,6 +4,8 @@ module.exports.push 'histi/actions/curl'
 
 module.exports.push (ctx) ->
   require('./yum').configure ctx
+  ctx.config.yum.epel ?= true
+  ctx.config.yum.epel_url = 'http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm'
 
 module.exports.push name: 'YUM # Epel', timeout: 100000, callback: (ctx, next) ->
   {epel, epel_url} = ctx.config.yum
