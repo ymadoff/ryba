@@ -36,6 +36,7 @@ Configuration
     user action, default is true
 ###
 module.exports.push (ctx) ->
+  require('./users').configure ctx
   ctx.config.curl ?= {}
   {curl} = ctx.config
   curl.merge ?= true
@@ -58,6 +59,7 @@ module.exports.push name: 'Curl # User Configuration', callback: (ctx, next) ->
   ok = false
   {merge, proxy, users, config} = ctx.config.curl
   work = (user, file, next)->
+    ctx.log "Write config into #{file}"
     ctx.ini
       content: config
       destination: file

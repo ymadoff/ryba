@@ -12,10 +12,12 @@ module.exports = []
 Configuration
 -------------
 ####
-module.exports.push (ctx) ->
+module.exports.push module.exports.configure = (ctx) ->
   ctx.config.users ?= []
   for user in ctx.config.users
     user.home ?= if user.username is 'root' then '/root' else unless user.system then "/home/#{user.username}"
+    user.home = "/home/#{user.username}" if user.home is true
+    user.shell = '/bin/bash' if user.shell is true
 
 ###
 Users creation
@@ -27,8 +29,6 @@ module.exports.push name: 'Users', callback: (ctx, next) ->
   cmds = []
   for user in ctx.config.users
     return next err 'Required property "username"' unless user.username
-    user.home = "/home/#{user.username}" if user.home is true
-    user.shell = '/bin/bash' if user.shell is true
     cmd = 'useradd'
     cmd += " #{user.username}"
     cmd += " -c #{user.comment}" if user.comment
