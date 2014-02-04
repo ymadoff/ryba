@@ -278,7 +278,7 @@ module.exports.push name: 'HDP HDFS # SPNEGO', callback: module.exports.spnego =
     destination: '/etc/security/keytabs'
     uid: 'root'
     gid: 'hadoop'
-    mode: 0o750
+    mode: 0o755
   , (err, created) ->
     ctx.log 'Creating HTTP Principals and SPNEGO keytab'
     #if ctx.config.hdp.namenode or ctx.config.hdp.datanode or ctx.config.hdp.secondary_namenode or ctx.config.hdp.oozie or ctx.config.hdp.webhcat
