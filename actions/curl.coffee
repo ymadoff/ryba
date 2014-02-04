@@ -17,7 +17,7 @@ module.exports = []
 Dependencies: users, proxy
 ###
 module.exports.push 'histi/actions/users'
-# module.exports.push 'histi/actions/yum'
+module.exports.push 'histi/actions/yum'
 module.exports.push 'histi/actions/proxy'
 
 ###
@@ -89,6 +89,7 @@ module.exports.push name: 'Curl # Proxy Check', callback: (ctx, next) ->
   return next() unless check
   ctx.execute
     cmd: "curl -s #{check}"
+    stdout: null
   , (err, executed, stdout, stderr) ->
     return next err if err
     return next new Error "Proxy not active" unless  check_match.test stdout
