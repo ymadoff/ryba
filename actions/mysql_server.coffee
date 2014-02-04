@@ -66,7 +66,19 @@ module.exports.push name: 'Mysql Server # Package', timeout: -1, callback: (ctx,
       , (err, updated) ->
         return next err if err
         modified = true if updated
-        do_start()
+        do_socket()
+  do_socket = ->
+    # Create the socket inside "/tmp" instead of default "/var/lib/mysql/mysql.sock". That
+    # way, on restart, there won't be any existing file preventing the mysql server to start
+    ctx.ini
+      destination: '/etc/my.cnf'
+      content: mysqld: socket: '/tmp/mysql/mysql.sock'
+      merge: true
+      backup: true
+    , (err, updated) ->
+      return next err if err
+      modified = true if updated
+      do_start()
   do_start = ->
     ctx.service
       name: 'mysql-server'
