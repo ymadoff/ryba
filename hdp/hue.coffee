@@ -12,15 +12,19 @@ Resources:
 ###
 module.exports = []
 
-module.exports.push 'histi/actions/mysql_server'
-module.exports.push 'histi/hdp/hdfs'
-module.exports.push 'histi/hdp/yarn'
+# Install the mysql connector
+module.exports.push 'histi/actions/mysql_client'
+# Install client to create new Hive principal
+module.exports.push 'histi/actions/krb5_client'
+
+# module.exports.push 'histi/hdp/hdfs'
+# module.exports.push 'histi/hdp/yarn'
 module.exports.push 'histi/hdp/oozie_client'
 module.exports.push 'histi/hdp/hive_client'
-module.exports.push 'histi/hdp/hbase'
+# module.exports.push 'histi/hdp/hbase'
 
 module.exports.push (ctx) ->
-  require './webhcat'
+  require('./webhcat').configure
   ctx.config.hdp.hue_conf_dir ?= '/etc/hue/conf'
   ctx.config.hdp.hue_ini ?= {}
   ctx.config.hdp.hue_ini['http_host'] ?= '0.0.0.0'
