@@ -29,12 +29,11 @@ module.exports.push name: 'Bootstrap # Mecano', timeout: -1, callback:  (ctx, ne
     m = (action, options) ->
       options.ssh ?= ctx.ssh
       options.log ?= ctx.log
-      options.stdout ?= ctx.log.out
-      options.stderr ?= ctx.log.err
+      options.stdout = ctx.log.out if typeof options.stdout is 'undefined'
+      options.stderr = ctx.log.err if typeof options.stderr is 'undefined'
       options.installed = cache['mecano:installed']
       options.updates = cache['mecano:updates']
       options
-
     [ 'chmod', 'chown', 'copy', 'download', 'execute', 
       'extract', 'git', 'ini', 'krb5_addprinc', 'krb5_delprinc', 
       'ldap_acl', 'ldap_index', 'ldap_schema', 'link', 'mkdir', 
