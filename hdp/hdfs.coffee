@@ -271,7 +271,7 @@ module.exports.push name: 'HDP HDFS # Configure HTTPS', callback: (ctx, next) ->
     next null, if modified then ctx.OK else ctx.PASS
   do_hdfs_site()
 
-module.exports.push name: 'HDP HDFS # Kerberos Principals', callback: (ctx, next) ->
+module.exports.push name: 'HDP HDFS # SPNEGO', callback: module.exports.spnego = (ctx, next) ->
   {hdfs_user} = ctx.config.hdp
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   ctx.mkdir
@@ -280,21 +280,19 @@ module.exports.push name: 'HDP HDFS # Kerberos Principals', callback: (ctx, next
     gid: 'hadoop'
     mode: 0o750
   , (err, created) ->
-    ctx.log 'Creating Service Principals'
-    principals = []
-    if ctx.config.hdp.namenode or ctx.config.hdp.datanode or ctx.config.hdp.secondary_namenode or ctx.config.hdp.oozie or ctx.config.hdp.webhcat
-      principals.push
-        principal: "HTTP/#{ctx.config.host}@#{realm}"
-        randkey: true
-        keytab: "/etc/security/keytabs/spnego.service.keytab"
-        uid: 'hdfs'
-        gid: 'hadoop'
-        mode: 0o660 # need rw access for hadoop and mapred users
-    for principal in principals
-        principal.kadmin_principal = kadmin_principal
-        principal.kadmin_password = kadmin_password
-        principal.kadmin_server = kadmin_server
-    ctx.krb5_addprinc principals, (err, created) ->
+    ctx.log 'Creating HTTP Principals and SPNEGO keytab'
+    #if ctx.config.hdp.namenode or ctx.config.hdp.datanode or ctx.config.hdp.secondary_namenode or ctx.config.hdp.oozie or ctx.config.hdp.webhcat
+    ctx.krb5_addprinc 
+      principal: "HTTP/#{ctx.config.host}@#{realm}"
+      randkey: true
+      keytab: '/etc/security/keytabs/spnego.service.keytab'
+      uid: 'hdfs'
+      gid: 'hadoop'
+      mode: 0o660 # need rw access for hadoop and mapred users
+      kadmin_principal: kadmin_principal
+      kadmin_password: kadmin_password
+      kadmin_server: kadmin_server
+    , (err, created) ->
       next err, if created then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP HDFS # Kerberos Configure', callback: (ctx, next) ->
