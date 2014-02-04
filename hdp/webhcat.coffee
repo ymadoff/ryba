@@ -10,7 +10,7 @@ ctx.config.hdp.hive_site['hive.security.metastore.authorization.manager'] ?= 'or
 ctx.config.hdp.hive_site['hive.security.metastore.authenticator.manager'] ?= 'org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator'
 ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener'
 ###
-module.exports.push (ctx) ->
+module.exports.push module.exports.configure = (ctx) ->
   require('./hive_server').configure ctx
   require('./hdfs').configure ctx
   require('./zookeeper').configure ctx
@@ -26,11 +26,12 @@ module.exports.push (ctx) ->
   ctx.config.hdp.webhcat_log_dir ?= '/var/log/webhcat'
   ctx.config.hdp.webhcat_pid_dir ?= '/var/run/webhcat'
   ctx.config.hdp.webhcat_user ?= 'hcat'
+  ctx.config.hdp.webhcat_group ?= 'hcat'
   ctx.config.hdp.webhcat_site ?= {}
   ctx.config.hdp.webhcat_site['templeton.hive.properties'] ?= "hive.metastore.local=false,hive.metastore.uris=thrift://#{hive_host}:9083,hive.metastore.sasl.enabled=yes,hive.metastore.execute.setugi=true,hive.metastore.warehouse.dir=/apps/hive/warehouse"
   ctx.config.hdp.webhcat_site['templeton.zookeeper.hosts'] ?= zookeeper_hosts.join ','
   ctx.config.hdp.webhcat_site['templeton.kerberos.principal'] ?= "HTTP/#{ctx.config.host}@#{realm}"
-  ctx.config.hdp.webhcat_site['templeton.kerberos.keytab'] ?= '/etc/security/keytabs/spnego.service.keytab'
+  ctx.config.hdp.webhcat_site['templeton.kerberos.keytab'] ?= '/etc/hcatalog/conf/webhcat/spnego.service.keytab'
   ctx.config.hdp.webhcat_site['templeton.kerberos.secret'] ?= 'secret'
   ctx.config.hdp.webhcat_site['webhcat.proxyuser.hue.groups'] ?= '*'
   ctx.config.hdp.webhcat_site['webhcat.proxyuser.hue.hosts'] ?= '*'
@@ -118,6 +119,20 @@ module.exports.push name: 'HDP WebHCat # HDFS', callback: (ctx, next) ->
     return next err if err
     next err, if executed then ctx.OK else ctx.PASS
 
+module.exports.push name: 'HDP WebHCat # SPNEGO', callback: (ctx, next) ->
+  {webhcat_site, webhcat_user, webhcat_group} = ctx.config.hdp
+  require('./hdfs').configure ctx
+  require('./hdfs').spnego ctx, (err, status) ->
+    return next err if err
+    ctx.copy
+      source: '/etc/security/keytabs/spnego.service.keytab'
+      destination: webhcat_site['templeton.kerberos.keytab']
+      uid: webhcat_user
+      gid: webhcat_group
+      mode: 0o660
+    , (err, copied) ->
+      return next err, if copied then ctx.OK else ctx.PASS
+
 module.exports.push name: 'HDP WebHCat # Start', callback: (ctx, next) ->
   lifecycle.webhcat_start ctx, (err, started) ->
     next err, if started then ctx.OK else ctx.PASS
@@ -130,6 +145,7 @@ module.exports.push name: 'HDP WebHCat # Check', callback: (ctx, next) ->
     curl -s --negotiate -u : http://#{ctx.config.host}:50111/templeton/v1/status
     hdfs dfs -touchz /user/test/check_webhcat
     """
+    code_skipped: 2
   , (err, executed, stdout) ->
     return next err if err
     return next new Error "WebHCat not started" if stdout.trim() isnt '{"status":"ok","version":"v1"}'
