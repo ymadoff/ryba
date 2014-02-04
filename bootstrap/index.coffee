@@ -9,6 +9,12 @@ initialized with the root user.
 
 module.exports = []
 
+# module.exports.push name: 'Bootstrap # WAIT', callback: (ctx, next) ->
+#   toto = 'yo'
+#   setInterval ->
+#     lulu = 'yu'
+#   , 10000
+
 # module.exports.push name: 'Bootstrap # Cache', callback: (ctx, next) ->
 #   ctx.config.bootstrap.cache ?= {}
 #   location = ctx.config.bootstrap.cache.location or './tmp'
@@ -27,7 +33,7 @@ module.exports = []
 #         db.get key, callback
 #     next null, ctx.PASS
 
-module.exports.push 'histi/bootstrap/cache_memory'
+module.exports.push 'histi/bootstrap/cache_file'
 
 module.exports.push 'histi/bootstrap/log'
 

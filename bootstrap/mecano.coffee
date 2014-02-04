@@ -31,9 +31,6 @@ module.exports.push name: 'Bootstrap # Mecano', timeout: -1, callback:  (ctx, ne
       options.log ?= ctx.log
       options.stdout ?= ctx.log.out
       options.stderr ?= ctx.log.err
-      # if action is 'service'
-      # options.installed = ctx.installed
-      # options.updates = ctx.updates
       options.installed = cache['mecano:installed']
       options.updates = cache['mecano:updates']
       options
