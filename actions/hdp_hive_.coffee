@@ -2,20 +2,23 @@
 
 module.exports = []
 
+module.exports.push 'histi/actions/java'
 module.exports.push 'histi/actions/hdp_core'
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./hdp_core').configure ctx
   {realm} = ctx.config.krb5_client
-  server = ctx.hosts_with_module 'histi/actions/hdp_hive_server', 1
   ctx.config.hdp.hive_conf_dir ?= '/etc/hive/conf'
-  ctx.config.hdp.hive_metastore_host ?= server
+  metastore_host = ctx.config.hdp.hive_metastore_host ?= ctx.hosts_with_module 'histi/actions/hdp_hive_server', 1
   ctx.config.hdp.hive_metastore_port ?= 9083
-  ctx.config.hdp.hive_srv2_host ?= server
-  ctx.config.hdp.hive_srv2_port ?= 10000
+  ctx.config.hdp.hive_metastore_timeout ?= 20000 # 20s
+  ctx.config.hdp.hive_server2_host ?= ctx.hosts_with_module 'histi/actions/hdp_hive_server', 1
+  ctx.config.hdp.hive_server2_port ?= 10000
+  ctx.config.hdp.hive_server2_timeout ?= 20000 # 20s
   ctx.config.hdp.hive_site ?= {}
   ctx.config.hdp.hive_user ?= 'hive'
-  ctx.config.hdp.hive_site['hive.metastore.uris'] ?= "thrift://#{server}:9083"
+  ctx.config.hdp.hive_group ?= 'hive'
+  ctx.config.hdp.hive_site['hive.metastore.uris'] ?= "thrift://#{metastore_host}:9083"
   # To prevent memory leak in unsecure mode, disable [file system caches](https://cwiki.apache.org/confluence/display/Hive/Setting+up+HiveServer2)
   # , by setting following params to true
   ctx.config.hdp.hive_site['fs.hdfs.impl.disable.cache'] ?= 'false'
@@ -41,7 +44,7 @@ module.exports.push module.exports.configure = (ctx) ->
   # 'hive.server2.authentication.kerberos.keytab': "/etc/security/keytabs/hcat.service.keytab"
   ctx.config.hdp.hive_site['hive.server2.authentication.kerberos.keytab'] ?= '/etc/security/keytabs/hive.service.keytab'
   # The service principal for the HiveServer2. If _HOST
-  # is used as the hostname portion, it will be replaced
+  # is used as the hostname portion, it will be replaced.
   # with the actual hostname of the running instance.
   # 'hive.server2.authentication.kerberos.principal': "hcat/#{ctx.config.host}@#{realm}"
   ctx.config.hdp.hive_site['hive.server2.authentication.kerberos.principal'] ?= "hive/_HOST@#{realm}"
