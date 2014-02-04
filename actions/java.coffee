@@ -25,17 +25,19 @@ module.exports.push name: 'Java # Remove OpenJDK', callback: (ctx, next) ->
     , (err) ->
       next err, ctx.OK
 
-module.exports.push name: 'Java # Remove GCJ', callback: (ctx, next) ->
-  ctx.execute
-    cmd: 'yum list installed | grep java-.*-gcj'
-    code_skipped: 1
-  , (err, installed, stdout) ->
-    return next err, ctx.PASS if err or not installed
-    packages = for l in stdout.trim().split('\n') then /(.*?) /.exec(l)[1]
-    ctx.execute
-      cmd: "yum remove -y #{packages.join ' '}"
-    , (err) ->
-      next err, ctx.OK
+# module.exports.push name: 'Java # Remove GCJ', callback: (ctx, next) ->
+#   don't re-activate this. It is installed with `yum install mysql-connector-java` but
+#   removing the dependency will also remove the mysql connector
+#   ctx.execute
+#     cmd: 'yum list installed | grep java-.*-gcj'
+#     code_skipped: 1
+#   , (err, installed, stdout) ->
+#     return next err, ctx.PASS if err or not installed
+#     packages = for l in stdout.trim().split('\n') then /(.*?) /.exec(l)[1]
+#     ctx.execute
+#       cmd: "yum remove -y #{packages.join ' '}"
+#     , (err) ->
+#       next err, ctx.OK
 
 ###
 Followed instruction from: http://www.if-not-true-then-false.com/2010/install-sun-oracle-java-jdk-jre-6-on-fedora-centos-red-hat-rhel/
