@@ -1,6 +1,6 @@
 
 lifecycle = require './lib/lifecycle'
-hdp_zookeeper = require './hdp/zookeeper'
+hdp_zookeeper = require './zookeeper'
 module.exports = []
 
 module.exports.push (ctx) ->
