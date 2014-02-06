@@ -42,6 +42,7 @@ jhs.service.keytab
 ###
 module.exports.push module.exports.configure = (ctx) ->
   require('../actions/proxy').configure ctx
+  namenode = ctx.hosts_with_module 'histi/hdp/hdfs_nn', 1
   ctx.config.hdp ?= {}
   ctx.config.hdp.format ?= false
   ctx.config.hdp.hadoop_conf_dir ?= '/etc/hadoop/conf'
@@ -64,7 +65,9 @@ module.exports.push module.exports.configure = (ctx) ->
   # Define Directories for Ecosystem Components
   ctx.config.hdp.sqoop_conf_dir ?= '/etc/sqoop/conf'
   # Options and configuration
-  ctx.config.hdp.core ?= {}
+  ctx.config.hdp.core_site ?= {}
+  # NameNode hostname
+  ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://#{namenode}:8020"
   ctx.hconfigure = (options, callback) ->
     options.ssh = ctx.ssh if typeof options.ssh is 'undefined'
     options.log ?= ctx.log
@@ -147,27 +150,23 @@ module.exports.push name: 'HDP Core # Install', timeout: -1, callback: (ctx, nex
     next err, if serviced then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP Core # Configuration', callback: (ctx, next) ->
-  namenode = ctx.hosts_with_module 'histi/hdp/hdfs_nn', 1
-  ctx.log "Namenode: #{namenode}"
-  { core, hadoop_conf_dir } = ctx.config.hdp
+  { core_site, hadoop_conf_dir } = ctx.config.hdp
   modified = false
   do_core = ->
     ctx.log 'Configure core-site.xml'
-    # NameNode hostname
-    core['fs.defaultFS'] ?= "hdfs://#{namenode}:8020"
     # Determines where on the local filesystem the DFS secondary
     # name node should store the temporary images to merge.
     # If this is a comma-delimited list of directories then the image is
     # replicated in all of the directories for redundancy.
-    # core['fs.checkpoint.edits.dir'] ?= fs_checkpoint_edit_dir.join ','
+    # core_site['fs.checkpoint.edits.dir'] ?= fs_checkpoint_edit_dir.join ','
     # A comma separated list of paths. Use the list of directories from $FS_CHECKPOINT_DIR. 
     # For example, /grid/hadoop/hdfs/snn,sbr/grid1/hadoop/hdfs/snn,sbr/grid2/hadoop/hdfs/snn
-    # core['fs.checkpoint.dir'] ?= fs_checkpoint_dir.join ','
+    # core_site['fs.checkpoint.dir'] ?= fs_checkpoint_dir.join ','
     ctx.hconfigure
       destination: "#{hadoop_conf_dir}/core-site.xml"
       default: "#{__dirname}/files/core_hadoop/core-site.xml"
       local_default: true
-      properties: core
+      properties: core_site
       merge: true
     , (err, configured) ->
       return next err if err
@@ -220,11 +219,11 @@ module.exports.push name: 'HDP Core # Compression', timeout: -1, callback: (ctx,
       do_core()
   do_core = ->
     ctx.log 'Configure core-site.xml'
-    core = {}
-    core['io.compression.codecs'] ?= "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.SnappyCodec"
+    core_site = {}
+    core_site['io.compression.codecs'] ?= "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.SnappyCodec"
     ctx.hconfigure
       destination: "#{hadoop_conf_dir}/core-site.xml"
-      properties: core
+      properties: core_site
       merge: true
     , (err, configured) ->
       return next err if err
@@ -237,9 +236,9 @@ module.exports.push name: 'HDP Core # Compression', timeout: -1, callback: (ctx,
 module.exports.push name: 'HDP Core # Kerberos', timeout: -1, callback: (ctx, next) ->
   {realm} = ctx.config.krb5_client
   {hadoop_conf_dir} = ctx.config.hdp
-  core = {}
+  core_site = {}
   # Set the authentication for the cluster. Valid values are: simple or kerberos
-  core['hadoop.security.authentication'] ?= 'kerberos'
+  core_site['hadoop.security.authentication'] ?= 'kerberos'
   # This is an [OPTIONAL] setting. If not set, defaults to 
   # authentication.authentication= authentication only; the client and server 
   # mutually authenticate during connection setup.integrity = authentication 
@@ -247,17 +246,17 @@ module.exports.push name: 'HDP Core # Kerberos', timeout: -1, callback: (ctx, ne
   # and server aswell as authentication.privacy = authentication, integrity, 
   # and confidentiality; guarantees that data exchanged between client andserver 
   # is encrypted and is not readable by a “man in the middle”.
-  core['hadoop.rpc.protection'] ?= 'authentication'
+  core_site['hadoop.rpc.protection'] ?= 'authentication'
   # Enable authorization for different protocols.
-  core['hadoop.security.authorization'] ?= 'true'
+  core_site['hadoop.security.authorization'] ?= 'true'
   # The mapping from Kerberos principal names to local OS user names.
-  # core['hadoop.security.auth_to_local'] ?= """
+  # core_site['hadoop.security.auth_to_local'] ?= """
   #   RULE:[2:$1@$0]([jt]t@.*#{realm})s/.*/mapred/
   #   RULE:[2:$1@$0]([nd]n@.*#{realm})s/.*/hdfs/
   #   DEFAULT
   #   """
   # Forgot where I find this one, but referenced here: http://mail-archives.apache.org/mod_mbox/incubator-ambari-commits/201308.mbox/%3Cc82889130fc54e1e8aeabfeedf99dcb3@git.apache.org%3E
-  core['hadoop.security.auth_to_local'] ?= """
+  core_site['hadoop.security.auth_to_local'] ?= """
   
         RULE:[2:$1@$0]([rn]m@.*)s/.*/yarn/
         RULE:[2:$1@$0](jhs@.*)s/.*/mapred/
@@ -267,32 +266,37 @@ module.exports.push name: 'HDP Core # Kerberos', timeout: -1, callback: (ctx, ne
         DEFAULT
     """
   # Allow the superuser hive to impersonate any members of the group users. Required only when installing Hive.
-  core['hadoop.proxyuser.hive.groups'] ?= '*'
+  core_site['hadoop.proxyuser.hive.groups'] ?= '*'
   # Hostname from where superuser hive can connect. Required 
   # only when installing Hive.
-  core['hadoop.proxyuser.hive.hosts'] ?= '*'
+  core_site['hadoop.proxyuser.hive.hosts'] ?= '*'
   # Allow the superuser oozie to impersonate any members of 
   # the group users. Required only when installing Oozie.
-  core['hadoop.proxyuser.oozie.groups'] ?= '*'
+  core_site['hadoop.proxyuser.oozie.groups'] ?= '*'
   # Hostname from where superuser oozie can connect. Required 
   # only when installing Oozie.
-  core['hadoop.proxyuser.oozie.hosts'] ?= '*'
+  core_site['hadoop.proxyuser.oozie.hosts'] ?= '*'
   # Hostname from where superuser hcat can connect. Required 
   # only when installing WebHCat.
-  core['hadoop.proxyuser.hcat.hosts'] ?= '*'
+  core_site['hadoop.proxyuser.hcat.hosts'] ?= '*'
   # Hostname from where superuser HTTP can connect.
-  core['hadoop.proxyuser.HTTP.groups'] ?= '*'
+  core_site['hadoop.proxyuser.HTTP.groups'] ?= '*'
   # Allow the superuser hcat to impersonate any members of the 
   # group users. Required only when installing WebHCat.
-  core['hadoop.proxyuser.hcat.groups'] ?= '*'
+  core_site['hadoop.proxyuser.hcat.groups'] ?= '*'
   # Hostname from where superuser hcat can connect. This is 
   # required only when installing webhcat on the cluster.
-  core['hadoop.proxyuser.hcat.hosts'] ?= '*'
-  core['hadoop.proxyuser.hue.groups'] ?= '*'
-  core['hadoop.proxyuser.hue.hosts'] ?= '*'
+  core_site['hadoop.proxyuser.hcat.hosts'] ?= '*'
+  core_site['hadoop.proxyuser.hue.groups'] ?= '*'
+  core_site['hadoop.proxyuser.hue.hosts'] ?= '*'
+
+  core_site['hue.kerberos.principal.shortname'] ?= 'hue'
+  core_site['hadoop.proxyuser.HTTP.hosts'] = '*'
+  core_site['hadoop.proxyuser.HTTP.groups'] ?= '*'
+
   ctx.hconfigure
     destination: "#{hadoop_conf_dir}/core-site.xml"
-    properties: core
+    properties: core_site
     merge: true
   , (err, configured) ->
     next err, if configured then ctx.OK else ctx.PASS

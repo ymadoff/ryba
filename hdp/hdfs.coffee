@@ -38,8 +38,8 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.nn_port ?= '50070'
   ctx.config.hdp.snn_port ?= '50090'
   # Options for hdfs-site.xml
-  ctx.config.hdp.hdfs ?= {}
-  ctx.config.hdp.hdfs['dfs.datanode.data.dir.perm'] ?= '750'
+  ctx.config.hdp.hdfs_site ?= {}
+  ctx.config.hdp.hdfs_site['dfs.datanode.data.dir.perm'] ?= '750'
   # Options for hadoop-env.sh
   ctx.config.hdp.options ?= {}
   ctx.config.hdp.options['java.net.preferIPv4Stack'] ?= true
@@ -172,7 +172,7 @@ module.exports.push name: 'HDP HDFS # Hadoop Configuration', timeout: -1, callba
   secondary_namenode = ctx.hosts_with_module 'histi/hdp/hdfs_snn', 1
   ctx.log "Secondary namenode: #{secondary_namenode}"
   datanodes = ctx.hosts_with_module 'histi/hdp/hdfs_dn'
-  { core, hdfs, yarn, mapred,
+  { core, hdfs_site, yarn, mapred,
     hadoop_conf_dir, fs_checkpoint_dir, # fs_checkpoint_edit_dir,
     dfs_name_dir, dfs_data_dir, 
     nn_port, snn_port } = ctx.config.hdp #mapreduce_local_dir, 
@@ -180,25 +180,25 @@ module.exports.push name: 'HDP HDFS # Hadoop Configuration', timeout: -1, callba
   do_hdfs = ->
     ctx.log 'Configure hdfs-site.xml'
     # Fix: the "dfs.cluster.administrators" value has a space inside
-    hdfs['dfs.cluster.administrators'] = 'hdfs'
+    hdfs_site['dfs.cluster.administrators'] = 'hdfs'
     # Comma separated list of paths. Use the list of directories from $DFS_NAME_DIR.  
     # For example, /grid/hadoop/hdfs/nn,/grid1/hadoop/hdfs/nn.
-    hdfs['dfs.namenode.name.dir'] ?= dfs_name_dir.join ','
+    hdfs_site['dfs.namenode.name.dir'] ?= dfs_name_dir.join ','
     # Comma separated list of paths. Use the list of directories from $DFS_DATA_DIR.  
     # For example, /grid/hadoop/hdfs/dn,/grid1/hadoop/hdfs/dn.
-    hdfs['dfs.datanode.data.dir'] ?= dfs_data_dir.join ','
+    hdfs_site['dfs.datanode.data.dir'] ?= dfs_data_dir.join ','
     # NameNode hostname for http access.
-    hdfs['dfs.namenode.http-address'] ?= "#{namenode}:#{nn_port}"
+    hdfs_site['dfs.namenode.http-address'] ?= "#{namenode}:#{nn_port}"
     # Secondary NameNode hostname
-    hdfs['dfs.namenode.secondary.http-address'] ?= "hdfs://#{secondary_namenode}:#{snn_port}"
+    hdfs_site['dfs.namenode.secondary.http-address'] ?= "hdfs://#{secondary_namenode}:#{snn_port}"
     # NameNode hostname for https access
-    hdfs['dfs.https.address'] ?= "hdfs://#{namenode}:50470"
-    hdfs['dfs.namenode.checkpoint.dir'] ?= fs_checkpoint_dir.join ','
+    hdfs_site['dfs.https.address'] ?= "hdfs://#{namenode}:50470"
+    hdfs_site['dfs.namenode.checkpoint.dir'] ?= fs_checkpoint_dir.join ','
     ctx.hconfigure
       destination: "#{hadoop_conf_dir}/hdfs-site.xml"
       default: "#{__dirname}/files/core_hadoop/hdfs-site.xml"
       local_default: true
-      properties: hdfs
+      properties: hdfs_site
       merge: true
     , (err, configured) ->
       return next err if err
@@ -299,52 +299,52 @@ module.exports.push name: 'HDP HDFS # Kerberos Configure', callback: (ctx, next)
   {realm} = ctx.config.krb5_client
   {hadoop_conf_dir} = ctx.config.hdp
   secondary_namenode = ctx.hosts_with_module 'histi/hdp/hdfs_snn', 1
-  hdfs = {}
+  hdfs_site = {}
   # If "true", access tokens are used as capabilities
   # for accessing datanodes. If "false", no access tokens are checked on
   # accessing datanodes.
-  hdfs['dfs.block.access.token.enable'] ?= 'true'
+  hdfs_site['dfs.block.access.token.enable'] ?= 'true'
   # Kerberos principal name for the NameNode
-  hdfs['dfs.namenode.kerberos.principal'] ?= "nn/_HOST@#{realm}"
+  hdfs_site['dfs.namenode.kerberos.principal'] ?= "nn/_HOST@#{realm}"
   # Kerberos principal name for the secondary NameNode.
-  hdfs['dfs.secondary.namenode.kerberos.principal'] ?= "nn/_HOST@#{realm}"
+  hdfs_site['dfs.secondary.namenode.kerberos.principal'] ?= "nn/_HOST@#{realm}"
   # Address of secondary namenode web server
-  hdfs['dfs.secondary.http.address'] ?= "#{secondary_namenode}:50090" # todo, this has nothing to do here
+  hdfs_site['dfs.secondary.http.address'] ?= "#{secondary_namenode}:50090" # todo, this has nothing to do here
   # The https port where secondary-namenode binds
-  hdfs['dfs.secondary.https.port'] ?= '50490' # todo, this has nothing to do here
+  hdfs_site['dfs.secondary.https.port'] ?= '50490' # todo, this has nothing to do here
   # The HTTP Kerberos principal used by Hadoop-Auth in the HTTP 
   # endpoint. The HTTP Kerberos principal MUST start with 'HTTP/' 
   # per Kerberos HTTP SPNEGO specification. 
-  hdfs['dfs.web.authentication.kerberos.principal'] ?= "HTTP/_HOST@#{realm}"
+  hdfs_site['dfs.web.authentication.kerberos.principal'] ?= "HTTP/_HOST@#{realm}"
   # The Kerberos keytab file with the credentials for the HTTP 
   # Kerberos principal used by Hadoop-Auth in the HTTP endpoint.
-  hdfs['dfs.web.authentication.kerberos.keytab'] ?= '/etc/security/keytabs/spnego.service.keytab'
+  hdfs_site['dfs.web.authentication.kerberos.keytab'] ?= '/etc/security/keytabs/spnego.service.keytab'
   # The Kerberos principal that the DataNode runs as. "_HOST" is replaced by the real host name.  
-  hdfs['dfs.datanode.kerberos.principal'] ?= "dn/_HOST@#{realm}"
+  hdfs_site['dfs.datanode.kerberos.principal'] ?= "dn/_HOST@#{realm}"
   # Combined keytab file containing the NameNode service and host principals.
-  hdfs['dfs.namenode.keytab.file'] ?= '/etc/security/keytabs/nn.service.keytab'
+  hdfs_site['dfs.namenode.keytab.file'] ?= '/etc/security/keytabs/nn.service.keytab'
   # Combined keytab file containing the NameNode service and host principals.
-  hdfs['dfs.secondary.namenode.keytab.file'] ?= '/etc/security/keytabs/nn.service.keytab'
+  hdfs_site['dfs.secondary.namenode.keytab.file'] ?= '/etc/security/keytabs/nn.service.keytab'
   # The filename of the keytab file for the DataNode.
-  hdfs['dfs.datanode.keytab.file'] ?= '/etc/security/keytabs/dn.service.keytab'
+  hdfs_site['dfs.datanode.keytab.file'] ?= '/etc/security/keytabs/dn.service.keytab'
   # # Default to ${dfs.web.authentication.kerberos.principal}, but documented in hdp 1.3.2 manual install
-  hdfs['dfs.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/_HOST@#{realm}"
+  hdfs_site['dfs.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/_HOST@#{realm}"
   # # Default to ${dfs.web.authentication.kerberos.principal}, but documented in hdp 1.3.2 manual install
-  hdfs['dfs.secondary.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/_HOST@#{realm}"
-  hdfs['dfs.datanode.data.dir.perm'] ?= '700'
+  hdfs_site['dfs.secondary.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/_HOST@#{realm}"
+  hdfs_site['dfs.datanode.data.dir.perm'] ?= '700'
   # The address, with a privileged port - any port number under 1023. Example: 0.0.0.0:1019
-  hdfs['dfs.datanode.address'] ?= '0.0.0.0:1019'
+  hdfs_site['dfs.datanode.address'] ?= '0.0.0.0:1019'
   # The address, with a privileged port - any port number under 1023. Example: 0.0.0.0:1022
   # update, [official doc propose port 2005 only for https, http is not even documented](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuration_in_Secure_Mode)
-  hdfs['dfs.datanode.http.address'] ?= '0.0.0.0:1022'
-  hdfs['dfs.datanode.https.address'] ?= '0.0.0.0:1023'
+  hdfs_site['dfs.datanode.http.address'] ?= '0.0.0.0:1022'
+  hdfs_site['dfs.datanode.https.address'] ?= '0.0.0.0:1023'
   # Documented in http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
   # Only seems to apply if "dfs.https.enable" is enabled
-  hdfs['dfs.namenode.kerberos.https.principal'] = "host/_HOST@#{realm}"
-  hdfs['dfs.secondary.namenode.kerberos.https.principal'] = "host/_HOST@#{realm}"
+  hdfs_site['dfs.namenode.kerberos.https.principal'] = "host/_HOST@#{realm}"
+  hdfs_site['dfs.secondary.namenode.kerberos.https.principal'] = "host/_HOST@#{realm}"
   ctx.hconfigure
     destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-    properties: hdfs
+    properties: hdfs_site
     merge: true
   , (err, configured) ->
     next err, if configured then ctx.OK else ctx.PASS
