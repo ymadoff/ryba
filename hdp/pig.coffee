@@ -1,8 +1,12 @@
 
+mkcmd = require './lib/mkcmd'
+
 module.exports = []
+module.exports.push 'histi/actions/nc'
 
 module.exports.push (ctx) ->
-  require('./core').configure ctx
+  require('./hdfs').configure ctx
+  require('../actions/nc').configure ctx
   ctx.config.hdp.pig_user ?= 'pig'
   ctx.config.hdp.pig_conf_dir ?= '/etc/pig/conf'
 
@@ -16,6 +20,7 @@ module.exports.push name: 'HDP Pig # Install', timeout: -1, callback: (ctx, next
     next err, if serviced then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP Pig # Users', callback: (ctx, next) ->
+  # 6th feb 2014: pig user isnt created by YUM, might change in a future HDP release
   {hadoop_group} = ctx.config.hdp
   ctx.execute
     cmd: "useradd pig -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop Pig service\""
@@ -42,4 +47,36 @@ module.exports.push name: 'HDP Pig # Env', callback: (ctx, next) ->
     mode: 0o755
   , (err, rendered) ->
     next err, if rendered then ctx.OK else ctx.PASS
+
+module.exports.push name: 'HDP PIG # Check', callback: (ctx, next) ->
+  rm = ctx.hosts_with_module 'histi/hdp/yarn_rm', 1
+  ctx.waitForConnection rm, 8050, (err) ->
+    return next err if err
+    ctx.execute
+      cmd: mkcmd.test ctx, """
+      if hdfs dfs -test -d /user/test/pig_#{ctx.config.host}/result; then exit 2; fi
+      hdfs dfs -rm -r /user/test/pig_#{ctx.config.host}
+      hdfs dfs -mkdir -p /user/test/pig_#{ctx.config.host}
+      echo -e 'a|1\\\\nb|2\\\\nc|3' | hdfs dfs -put - /user/test/pig_#{ctx.config.host}/data
+      """
+      code_skipped: 2
+    , (err, executed) ->
+      return next err, ctx.PASS if err or not executed
+      ctx.write
+        content: """
+        data = LOAD '/user/test/pig_#{ctx.config.host}/data' USING PigStorage(',') AS (text, number);
+        result = foreach data generate UPPER(text), number+2;
+        STORE result INTO '/user/test/pig_#{ctx.config.host}/result' USING PigStorage(); 
+        """
+        destination: '/home/test/test.pig'
+      , (err, written) ->
+        return next err if err
+        ctx.execute
+          cmd: mkcmd.test ctx, """
+          pig /home/test/test.pig
+          rm -rf /home/test/test.pig
+          hdfs dfs -test -d /user/test/pig_#{ctx.config.host}/result
+          """
+        , (err, executed) ->
+          next err, ctx.OK
 
