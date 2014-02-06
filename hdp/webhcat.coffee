@@ -35,6 +35,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.webhcat_site['templeton.kerberos.secret'] ?= 'secret'
   ctx.config.hdp.webhcat_site['webhcat.proxyuser.hue.groups'] ?= '*'
   ctx.config.hdp.webhcat_site['webhcat.proxyuser.hue.hosts'] ?= '*'
+  ctx.config.hdp.webhcat_site['templeton.port'] ?= 50111
 
 module.exports.push name: 'HDP WebHCat # Install', timeout: -1, callback: (ctx, next) ->
   ctx.service [
@@ -138,18 +139,20 @@ module.exports.push name: 'HDP WebHCat # Start', callback: (ctx, next) ->
     next err, if started then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP WebHCat # Check', callback: (ctx, next) ->
-  {oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
+  {webhcat_site} = ctx.config.hdp
+  port = webhcat_site['templeton.port']
   ctx.execute
     cmd: mkcmd.test ctx, """
     if hdfs dfs -test -f /user/test/check_webhcat; then exit 2; fi
-    curl -s --negotiate -u : http://#{ctx.config.host}:50111/templeton/v1/status
+    curl -s --negotiate -u : http://#{ctx.config.host}:#{port}/templeton/v1/status
     hdfs dfs -touchz /user/test/check_webhcat
     """
     code_skipped: 2
   , (err, executed, stdout) ->
     return next err if err
+    return next null, ctx.PASS unless executed
     return next new Error "WebHCat not started" if stdout.trim() isnt '{"status":"ok","version":"v1"}'
-    return next null, ctx.PASS
+    return next null, ctx.OK
 
 
 
