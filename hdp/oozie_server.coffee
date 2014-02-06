@@ -264,20 +264,24 @@ module.exports.push name: 'HDP Oozie Server # Start', callback: (ctx, next) ->
   lifecycle.oozie_start ctx, (err, started) ->
     next err, if started then ctx.OK else ctx.PASS
 
-module.exports.push name: 'HDP Oozie Server # Test User', callback: (ctx, next) ->
-  {oozie_user, hadoop_group, oozie_site
-   oozie_test_principal, oozie_test_password} = ctx.config.hdp
-  {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
-  ctx.krb5_addprinc
-    principal: oozie_test_principal
-    password: oozie_test_password
-    uid: oozie_user
-    gid: hadoop_group
-    kadmin_principal: kadmin_principal
-    kadmin_password: kadmin_password
-    kadmin_server: kadmin_server
-  , (err, created) ->
-    next err, if created then ctx.OK else ctx.PASS
+# module.exports.push name: 'HDP Oozie Server # Test User', callback: (ctx, next) ->
+#   {oozie_user, hadoop_group, oozie_site
+#    oozie_test_principal, oozie_test_password} = ctx.config.hdp
+#   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
+#   ctx.krb5_addprinc
+#     principal: oozie_test_principal
+#     password: oozie_test_password
+#     uid: oozie_user
+#     gid: hadoop_group
+#     kadmin_principal: kadmin_principal
+#     kadmin_password: kadmin_password
+#     kadmin_server: kadmin_server
+#   , (err, created) ->
+#     return next err if err
+#     ctx.execute
+#       cmd: ""
+#     , (err, executed) ->
+#       next err, if created then ctx.OK else ctx.PASS
 
 
   
