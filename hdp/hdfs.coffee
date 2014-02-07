@@ -124,16 +124,17 @@ module.exports.push name: 'HDP HDFS # Directories', timeout: -1, callback: (ctx,
       modified = true if created
       do_log()
   do_log = ->
-    ctx.log "Create hdfs and mapred log: #{hdfs_log_dir}"
-    ctx.mkdir
-      destination: "#{yarn_log_dir}/#{yarn_user}"
-      uid: yarn_user
-      gid: hadoop_group
-      mode: 0o755
-    , (err, created) ->
-      return next err if err
-      modified = true if created
-      do_pid()
+    do_pid()
+    # ctx.log "Create hdfs and mapred log: #{hdfs_log_dir}"
+    # ctx.mkdir
+    #   destination: "#{yarn_log_dir}/#{yarn_user}"
+    #   uid: yarn_user
+    #   gid: hadoop_group
+    #   mode: 0o755
+    # , (err, created) ->
+    #   return next err if err
+    #   modified = true if created
+    #   do_pid()
   do_pid = ->
     ctx.log "Create hdfs and mapred pid: #{hdfs_pid_dir} with owner #{hdfs_user}:#{hadoop_group}"
     ctx.mkdir
@@ -281,7 +282,6 @@ module.exports.push name: 'HDP HDFS # SPNEGO', callback: module.exports.spnego =
     mode: 0o755
   , (err, created) ->
     ctx.log 'Creating HTTP Principals and SPNEGO keytab'
-    #if ctx.config.hdp.namenode or ctx.config.hdp.datanode or ctx.config.hdp.secondary_namenode or ctx.config.hdp.oozie or ctx.config.hdp.webhcat
     ctx.krb5_addprinc 
       principal: "HTTP/#{ctx.config.host}@#{realm}"
       randkey: true
