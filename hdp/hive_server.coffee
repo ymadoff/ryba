@@ -49,25 +49,6 @@ module.exports.push name: 'HDP Hive & HCat client # Configure', callback: (ctx, 
     , (err) ->
       next err, if configured then ctx.OK else ctx.PASS
 
-# #http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
-# #http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
-# module.exports.push name: 'HDP Hive & HCat server # Users', callback: (ctx, next) ->
-#   {hive_user, hadoop_group, webhcat_user} = ctx.config.hdp
-#   cmd = (cmd) ->
-#     cmd: cmd
-#     code: 0
-#     code_skipped: 9
-#   cmds = []
-#   cmds.push cmd "groupadd #{hadoop_group}"
-#   # cmds.push cmd "usermod -a -G hadoop #{hive_user}"
-#   # cmds.push cmd "usermod -a -G hadoop #{webhcat_user}"
-#   # Create the hive user as system (-r) with a home directory (-m)
-#   cmds.push cmd "useradd #{hive_user} -r -m -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop Hive service\""
-#   cmds.push cmd "useradd #{webhcat_user} -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop HCatalog/WebHCat service\"" if ctx.config.hdp.hcatalog_server or ctx.config.hdp.webhcat
-#   ctx.execute parallel: 1, cmds, (err, executed) ->
-#     next err, if executed then ctx.OK else ctx.PASS
-
-
 module.exports.push name: 'HDP Hive & HCat server # Libs', callback: (ctx, next) ->
   {hive_libs} = ctx.config.hdp
   return next() unless hive_libs.length
