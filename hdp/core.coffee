@@ -56,9 +56,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.hbase_master ?= false
   # ctx.config.hdp.hbase_regionserver ?= false
   ctx.config.hdp.zookeeper ?= false
-  ctx.config.hdp.hcatalog_server ?= false
   ctx.config.hdp.oozie ?= false
-  ctx.config.hdp.webhcat ?= false
   # Define Users and Groups
   ctx.config.hdp.hadoop_user ?= 'root'
   ctx.config.hdp.hadoop_group ?= 'hadoop'

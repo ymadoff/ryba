@@ -66,7 +66,7 @@ module.exports.push name: 'HDP PIG # Check', callback: (ctx, next) ->
         content: """
         data = LOAD '/user/test/pig_#{ctx.config.host}/data' USING PigStorage(',') AS (text, number);
         result = foreach data generate UPPER(text), number+2;
-        STORE result INTO '/user/test/pig_#{ctx.config.host}/result' USING PigStorage(); 
+        STORE result INTO '/user/test/pig_#{ctx.config.host}/result' USING PigStorage();
         """
         destination: '/home/test/test.pig'
       , (err, written) ->
