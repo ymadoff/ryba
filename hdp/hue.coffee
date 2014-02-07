@@ -117,12 +117,9 @@ module.exports.push name: 'HDP Hue # Configure', callback: (ctx, next) ->
   hue_ini['hadoop']['yarn_clusters']['default']['proxy_api_url'] ?= "http://#{resourcemanager}:8088" # NOT very sure
   hue_ini['hadoop']['yarn_clusters']['default']['history_server_api_url'] ?= "http://#{resourcemanager}:19888"
   hue_ini['hadoop']['yarn_clusters']['default']['node_manager_api_url'] ?= "http://#{resourcemanager}:8042"
-  # Configure MR Cluster
-  hue_ini['hadoop']['mapred_clusters'] ?= {}
-  hue_ini['hadoop']['mapred_clusters']['default'] ?= {}
-  hue_ini['hadoop']['mapred_clusters']['default']['hadoop_mapred_home'] ?= "/usr/lib/hadoop-mapreduce"
-  hue_ini['hadoop']['mapred_clusters']['default']['hadoop_bin'] ?= "/usr/bin/hadoop"
-  hue_ini['hadoop']['mapred_clusters']['default']['hadoop_conf_dir'] ?= hadoop_conf_dir
+  hue_ini['hadoop']['yarn_clusters']['default']['hadoop_mapred_home'] ?= "/usr/lib/hadoop-mapreduce"
+  hue_ini['hadoop']['yarn_clusters']['default']['hadoop_bin'] ?= "/usr/bin/hadoop"
+  hue_ini['hadoop']['yarn_clusters']['default']['hadoop_conf_dir'] ?= hadoop_conf_dir
   # Configure components
   hue_ini['liboozie'] ?= {}
   hue_ini['liboozie']['oozie_url'] ?= "http://#{oozie_server}:11000/oozie"
