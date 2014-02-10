@@ -15,6 +15,7 @@
     "regexp-quote": "latest",
     "request": "latest",
     "superexec": "latest",
+    "semver": "latest",
     "ssh2": "latest",
     "xmlbuilder": "git+https://github.com/wdavidw/xmlbuilder-js.git#master"
   },
