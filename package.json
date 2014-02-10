@@ -16,9 +16,8 @@
     "request": "latest",
     "superexec": "latest",
     "semver": "latest",
-    "semver": "xmlbuilder",
     "ssh2": "latest",
-    "xmlbuilder": "git+https://github.com/wdavidw/xmlbuilder-js.git#master"
+    "xmlbuilder": "latest"
   },
   "devDependencies": {
     "mocha": "latest",
