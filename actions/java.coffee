@@ -54,8 +54,9 @@ module.exports.push name: 'Java # Install', timeout: -1, callback: (ctx, next) -
     stdout = '' if err
     installed_version = stdout.trim().split('\n').pop()
     if installed_version
-      installed_version = /jdk(.*)/.exec(installed_version)[1].replace('_', '') 
-      version = version.replace('_', '') 
+      installed_version = /jdk(.*)/.exec(installed_version)[1]
+      installed_version = installed_version.replace('_', '').replace('0', '')
+      version = version.replace('_', '').replace('0', '')
       unless semver.gt version, installed_version
         return next null, ctx.PASS
     action = if url.parse(location).protocol is 'http:' then 'download' else 'upload'
