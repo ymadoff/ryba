@@ -276,6 +276,29 @@ lifecyle = module.exports =
         cmd: "su -l #{webhcat_user} -c \"/usr/lib/hcatalog/sbin/webhcat_server.sh stop\""
       , (err, stoped) ->
         callback err, stoped
+  hue_status: (ctx, callback) ->
+    ctx.execute
+      cmd: "service hue status"
+      code_skipped: 1
+    , (err, running) ->
+      callback err, running
+  hue_start: (ctx, callback) ->
+    {hue_user} = ctx.config.hdp
+    lifecyle.hue_status ctx, (err, running) ->
+      return callback err, false if err or not running
+      ctx.execute
+        cmd: "service hue start"
+      , (err, stoped) ->
+        callback err, stoped
+  hue_stop: (ctx, callback) ->
+    {hue_user} = ctx.config.hdp
+    console.log 'ok'
+    lifecyle.webhcat_status ctx, (err, running) ->
+      return callback err, false if err or not running
+      ctx.execute
+        cmd: "service hue stop"
+      , (err, stoped) ->
+        callback err, stoped
 
 module.exports.is_pidfile_running = (ctx, path, callback) ->
   ctx.execute
