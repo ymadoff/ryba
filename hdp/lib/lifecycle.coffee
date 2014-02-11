@@ -3,6 +3,22 @@
 http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html
 ###
 lifecyle = module.exports =
+  jn_start: (ctx, callback) ->
+    {hdfs_user, hadoop_conf_dir} = ctx.config.hdp
+    ctx.execute
+      # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start journalnode"
+      cmd: "su -l #{hdfs_user} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start journalnode\""
+      code_skipped: 1
+    , (err, started) ->
+      callback err, started
+  jn_stop: (ctx, callback) ->
+    {hdfs_user, hadoop_conf_dir} = ctx.config.hdp
+    ctx.execute
+      # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start journalnode"
+      cmd: "su -l #{hdfs_user} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop journalnode\""
+      code_skipped: 1
+    , (err, started) ->
+      callback err, started
   nn_start: (ctx, callback) ->
     {hdfs_user, hadoop_conf_dir} = ctx.config.hdp
     # Version 1:
