@@ -1,4 +1,5 @@
 
+url = require 'url'
 path = require 'path'
 mkcmd = require './lib/mkcmd'
 lifecycle = require './lib/lifecycle'
@@ -29,6 +30,9 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.hive_log_dir ?= '/var/log/hive'
   ctx.config.hdp.hive_pid_dir ?= '/var/run/hive'
   ctx.config.hdp.hive_site['datanucleus.autoCreateTables'] ?= 'true'
+  [_, host, port] = /^.*?\/\/?(.*?)(?::(.*))?\/.*$/.exec ctx.config.hdp.hive_site['javax.jdo.option.ConnectionURL']
+  ctx.config.hdp.hive_jdo_host = host
+  ctx.config.hdp.hive_jdo_port = port
   ctx.config.hdp.hive_libs ?= []
 
 module.exports.push name: 'HDP Hive & HCat client # Configure', callback: (ctx, next) ->
@@ -117,10 +121,12 @@ module.exports.push name: 'HDP Hive & HCat server # Logs', callback: (ctx, next)
 #     return next err, if modified then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP Hive & HCat server # Layout', callback: (ctx, next) ->
+  # todo: this isnt pretty, ok that we need to execute hdfs command from an hadoop client
+  # enabled environment, but there must be a better way
   {hdfs_user, hive_user, hive_group} = ctx.config.hdp
-  namenode = ctx.hosts_with_module 'histi/hdp/hdfs_nn', 1
+  namenode = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
   ctx.log "SSH connection to #{namenode}"
-  ctx.connect namenode, (err, ssh) ->
+  ctx.connect namenode[0], (err, ssh) ->
     return next err if err
     # kerberos = true
     modified = false

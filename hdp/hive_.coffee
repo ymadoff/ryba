@@ -1,5 +1,4 @@
 
-
 module.exports = []
 
 module.exports.push 'histi/actions/java'
@@ -9,10 +8,10 @@ module.exports.push module.exports.configure = (ctx) ->
   require('./core').configure ctx
   {realm} = ctx.config.krb5_client
   ctx.config.hdp.hive_conf_dir ?= '/etc/hive/conf'
-  metastore_host = ctx.config.hdp.hive_metastore_host ?= ctx.hosts_with_module 'histi/hdp/hive_server', 1
+  metastore_host = ctx.config.hdp.hive_metastore_host ?= ctx.host_with_module 'histi/hdp/hive_server'
   ctx.config.hdp.hive_metastore_port ?= 9083
   ctx.config.hdp.hive_metastore_timeout ?= 20000 # 20s
-  ctx.config.hdp.hive_server2_host ?= ctx.hosts_with_module 'histi/hdp/hive_server', 1
+  ctx.config.hdp.hive_server2_host ?= ctx.host_with_module 'histi/hdp/hive_server'
   ctx.config.hdp.hive_server2_port ?= 10000
   ctx.config.hdp.hive_server2_timeout ?= 20000 # 20s
   ctx.config.hdp.hive_site ?= {}
