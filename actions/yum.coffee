@@ -68,7 +68,7 @@ module.exports.push name: 'YUM # Check', callback: (ctx, next) ->
       next null, ctx.OK
 
 ###
-YUM # proxy
+YUM # Configuration
 -----------
 Read the existing configuration in '/etc/yum.conf', 
 merge server configuration and write the content back.
@@ -76,7 +76,7 @@ merge server configuration and write the content back.
 More information about configuring the proxy settings 
 is available on [the centos website](http://www.centos.org/docs/5/html/yum/sn-yum-proxy-server.html)
 ###
-module.exports.push name: 'YUM # Proxy', callback: (ctx, next) ->
+module.exports.push name: 'YUM # Configuration', callback: (ctx, next) ->
   {config} = ctx.config.yum
   ctx.log 'Update configuration'
   ctx.ini
