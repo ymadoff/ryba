@@ -10,9 +10,9 @@ module.exports.push 'histi/hdp/core'
 module.exports.push module.exports.configure = (ctx) ->
   require('./hdfs').configure ctx
   # Grab the host(s) for each roles
-  resourcemanager = ctx.hosts_with_module 'histi/hdp/yarn_rm', 1
+  resourcemanager = ctx.host_with_module 'histi/hdp/yarn_rm'
   ctx.log "Resource manager: #{resourcemanager}"
-  jobhistoryserver = ctx.hosts_with_module 'histi/hdp/mapred_jhs', 1
+  jobhistoryserver = ctx.host_with_module 'histi/hdp/mapred_jhs'
   ctx.log "Job History Server: #{jobhistoryserver}"
   ctx.config.hdp.yarn_log_dir ?= '/var/log/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#20
   ctx.config.hdp.yarn_pid_dir ?= '/var/run/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#21

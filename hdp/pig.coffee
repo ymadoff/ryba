@@ -49,7 +49,7 @@ module.exports.push name: 'HDP Pig # Env', callback: (ctx, next) ->
     next err, if rendered then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP PIG # Check', callback: (ctx, next) ->
-  rm = ctx.hosts_with_module 'histi/hdp/yarn_rm', 1
+  rm = ctx.host_with_module 'histi/hdp/yarn_rm'
   ctx.waitForConnection rm, 8050, (err) ->
     return next err if err
     ctx.execute

@@ -10,7 +10,7 @@ module.exports.push (ctx) ->
   require('./yarn').configure ctx
 
 module.exports.push name: 'HDP YARN NM # Start', callback: (ctx, next) ->
-  resourcemanager = ctx.hosts_with_module 'histi/hdp/yarn_rm', 1
+  resourcemanager = ctx.host_with_module 'histi/hdp/yarn_rm'
   ctx.waitForConnection resourcemanager, 8088, (err) ->
     return next err if err
     lifecycle.nm_start ctx, (err, started) ->

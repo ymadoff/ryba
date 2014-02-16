@@ -10,7 +10,7 @@ module.exports.push 'histi/hdp/hdfs'
 module.exports.push module.exports.configure = (ctx) ->
   require('./hdfs').configure ctx
   module.exports.configured = true
-  jobhistoryserver = ctx.hosts_with_module 'histi/hdp/mapred_jhs', 1
+  jobhistoryserver = ctx.host_with_module 'histi/hdp/mapred_jhs'
   # Define Users and Groups
   ctx.config.hdp.mapred_user ?= 'mapred'
   # Options for mapred-site.xml
