@@ -10,7 +10,7 @@ module.exports.push (ctx) ->
 
 module.exports.push name: 'HDP Oozie Client # Check Client', timeout: -1, callback: (ctx, next) ->
   {oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
-  oozie_server = ctx.hosts_with_module 'histi/hdp/oozie_server', 1
+  oozie_server = ctx.host_with_module 'histi/hdp/oozie_server'
   ctx.waitForConnection oozie_server, oozie_port, (err) ->
     ctx.execute
       cmd: """
@@ -24,7 +24,7 @@ module.exports.push name: 'HDP Oozie Client # Check Client', timeout: -1, callba
 
 module.exports.push name: 'HDP Oozie Client # Check REST', timeout: -1, callback: (ctx, next) ->
   {oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
-  oozie_server = ctx.hosts_with_module 'histi/hdp/oozie_server', 1
+  oozie_server = ctx.host_with_module 'histi/hdp/oozie_server'
   ctx.waitForConnection oozie_server, oozie_port, (err) ->
     return next err if err
     ctx.execute
@@ -39,8 +39,8 @@ module.exports.push name: 'HDP Oozie Client # Check REST', timeout: -1, callback
 
 module.exports.push name: 'HDP Oozie Client # Workflow', timeout: -1, callback: (ctx, next) ->
   {oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
-  nn = ctx.hosts_with_module 'histi/hdp/hdfs_nn', 1
-  rm = ctx.hosts_with_module 'histi/hdp/hdfs_nn', 1
+  nn = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
+  rm = ctx.hosts_with_module 'histi/hdp/hdfs_rm', 1
   oozie_server = ctx.hosts_with_module 'histi/hdp/oozie_server', 1
   ctx.waitForConnection oozie_server, oozie_port, (err) ->
     return next err if err
@@ -54,7 +54,7 @@ module.exports.push name: 'HDP Oozie Client # Workflow', timeout: -1, callback: 
       return next err, ctx.PASS if err or not executed
       ctx.write [
         content: """
-        nameNode=hdfs://#{nn}:8020
+        nameNode=hdfs://#{nn[0]}:8020
         jobTracker=#{rm}:8050
         queueName=default
         basedir=${nameNode}/user/#{/^(.*?)[\/@]/.exec(oozie_test_principal)[1]}/test_oozie

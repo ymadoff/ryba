@@ -18,7 +18,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.oozie_db_username ?= ctx.config.mysql_server.username
   ctx.config.hdp.oozie_db_password ?= ctx.config.mysql_server.password
   # dbhost = ctx.config.hdp.oozie_db_host ?= ctx.servers(action: 'histi/actions/mysql_server')[0]
-  dbhost = ctx.config.hdp.oozie_db_host ?= ctx.hosts_with_module 'histi/actions/mysql_server', 1
+  dbhost = ctx.config.hdp.oozie_db_host ?= ctx.host_with_module 'histi/actions/mysql_server'
   ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{dbhost}:3306/oozie?createDatabaseIfNotExist=true"
   ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
   ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'

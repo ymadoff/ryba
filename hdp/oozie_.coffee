@@ -3,7 +3,7 @@ module.exports = []
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./core').configure ctx
-  oozie_server = ctx.hosts_with_module 'histi/hdp/oozie_server', 1
+  oozie_server = ctx.host_with_module 'histi/hdp/oozie_server'
   {realm} = ctx.config.krb5_client
   ctx.config.hdp.oozie_port ?= 11000
   ctx.config.hdp.oozie_user ?= 'oozie'
