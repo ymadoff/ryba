@@ -14,28 +14,30 @@ lifecyle = module.exports =
   jn_stop: (ctx, callback) ->
     {hdfs_user, hadoop_conf_dir} = ctx.config.hdp
     ctx.execute
-      # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start journalnode"
+      # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop journalnode"
       cmd: "su -l #{hdfs_user} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop journalnode\""
       code_skipped: 1
     , (err, started) ->
       callback err, started
-  nn_start: (ctx, callback) ->
-    {hdfs_user, hadoop_conf_dir} = ctx.config.hdp
-    # Version 1:
-    # # su -l hdfs -c "/usr/lib/hadoop/bin/hadoop-daemon.sh --config /etc/hadoop/conf start namenode"
-    # cmd: "su -l #{hdfs_user} -c \"/usr/lib/hadoop/bin/hadoop-daemon.sh --config #{hadoop_conf_dir} start namenode\""
-    ctx.execute
-      # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start namenode"
-      cmd: "su -l #{hdfs_user} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start namenode\""
-      code_skipped: 1
-    , (err, started) ->
-      callback err, started
-  nn_running: (ctx, callback) ->
+  nn_status: (ctx, callback) ->
     {hdfs_pid_dir} = ctx.config.hdp
-    ctx.execute
-      cmd: "kill -0 `cat #{hdfs_pid_dir}/hadoop-hdfs-namenode.pid`"
-      code_skipped: 1
-    , callback
+    lifecyle.is_pidfile_running ctx, "/var/run/hive/hadoop-hdfs-namenode.pid", (err, running) ->
+      callback err, running
+  nn_start: (ctx, callback) ->
+    {hdfs_user, hadoop_conf_dir, hdfs_namenode_ipc_port, hdfs_namenode_http_port, hdfs_namenode_timeout} = ctx.config.hdp
+    lifecyle.nn_status ctx, (err, running) ->
+      return callback err, false if err or running
+      ctx.execute
+        # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start namenode"
+        cmd: "su -l #{hdfs_user} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start namenode\""
+        code_skipped: 1
+      , (err, started) ->
+        return callback err if err
+        ctx.waitForConnection [
+          host: ctx.config.host, port: hdfs_namenode_ipc_port
+          host: ctx.config.host, port: hdfs_namenode_http_port
+        ], hdfs_namenode_timeout, (err) ->
+          callback err, started
   nn_stop: (ctx, callback) ->
     {hdfs_user, hadoop_conf_dir} = ctx.config.hdp
     ctx.execute
@@ -158,7 +160,6 @@ lifecyle = module.exports =
       return callback err if err
       lifecyle.hive_metastore_start ctx, callback
   hive_server2_status: (ctx, callback) ->
-    # {hive_server2_pid} = ctx.config.hdp
     lifecyle.is_pidfile_running ctx, "/var/run/hive/server2.pid", (err, running) ->
       callback err, running
   hive_server2_start: (ctx, callback) ->
