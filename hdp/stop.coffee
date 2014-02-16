@@ -22,7 +22,7 @@ module.exports.push name: 'HDP # Stop ResourceManager', callback: (ctx, next) ->
   lifecycle.rm_stop ctx, (err, stoped) ->
     next err, if stoped then ctx.OK else ctx.PASS
 
-module.exports.push name: 'HDP # Stop Datanode', callback: (ctx, next) ->
+module.exports.push name: 'HDP # Stop DataNode', callback: (ctx, next) ->
   return next() unless ctx.has_module 'histi/hdp/hdfs_dn'
   lifecycle.dn_stop ctx, (err, stoped) ->
     next err, if stoped then ctx.OK else ctx.PASS
@@ -32,7 +32,12 @@ module.exports.push name: 'HDP # Stop Secondary NameNode', callback: (ctx, next)
   lifecycle.snn_stop ctx, (err, stoped) ->
     next err, if stoped then ctx.OK else ctx.PASS
 
-module.exports.push name: 'HDP # Stop Namenode', callback: (ctx, next) ->
+module.exports.push name: 'HDP # Stop NameNode', callback: (ctx, next) ->
   return next() unless ctx.has_module 'histi/hdp/hdfs_nn'
   lifecycle.nn_stop ctx, (err, stoped) ->
+    next err, if stoped then ctx.OK else ctx.PASS
+
+module.exports.push name: 'HDP # Stop JournalNode', callback: (ctx, next) ->
+  return next() unless ctx.has_module 'histi/hdp/hdfs_jn'
+  lifecycle.jn_stop ctx, (err, stoped) ->
     next err, if stoped then ctx.OK else ctx.PASS
