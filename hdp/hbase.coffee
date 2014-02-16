@@ -8,7 +8,7 @@ module.exports.push module.exports.configure = (ctx) ->
   require('./core').configure ctx
   module.exports.configured = true
   {realm} = ctx.config.krb5_client
-  namenode = ctx.hosts_with_module 'histi/hdp/hdfs_nn', 1
+  namenode = ctx.host_with_module 'histi/hdp/hdfs_nn', true
   zookeeper_hosts = ctx.hosts_with_module('histi/hdp/zookeeper').join ','
   ctx.config.hdp ?= {}
   ctx.config.hdp.hbase_user ?= 'hbase'
