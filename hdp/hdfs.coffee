@@ -12,6 +12,7 @@ some package, here's how: `yum remove hadoop-native hadoop-pipes hadoop-sbin`.
 ###
 module.exports.push module.exports.configure = (ctx) ->
   require('./core').configure ctx
+  require('../actions/nc').configure ctx
   module.exports.configured = true
   # hadoop env
   ctx.config.hdp.hadoop_opts ?= 'java.net.preferIPv4Stack': true
@@ -35,11 +36,14 @@ module.exports.push module.exports.configure = (ctx) ->
   throw new Error "Missing value for 'test_password'" unless ctx.config.hdp.test_password?
   ctx.config.hdp.fs_checkpoint_dir ?= ['/hadoop/hdfs/snn'] # Default ${fs.checkpoint.dir}
   # Options and configuration
-  ctx.config.hdp.nn_port ?= '50070'
+  ctx.config.hdp.hdfs_namenode_ipc_port ?= '8020'
+  ctx.config.hdp.hdfs_namenode_http_port ?= '50070'
+  ctx.config.hdp.hdfs_namenode_timeout ?= 20000 # 20s
   ctx.config.hdp.snn_port ?= '50090'
   # Options for hdfs-site.xml
   ctx.config.hdp.hdfs_site ?= {}
   ctx.config.hdp.hdfs_site['dfs.datanode.data.dir.perm'] ?= '750'
+  ctx.config.hdp.hdfs_site['dfs.journalnode.edits.dir'] ?= '/var/run/hadoop-hdfs/journalnode_edit_dir'
   # Options for hadoop-env.sh
   ctx.config.hdp.options ?= {}
   ctx.config.hdp.options['java.net.preferIPv4Stack'] ?= true
@@ -168,15 +172,13 @@ module.exports.push name: 'HDP HDFS # Hadoop OPTS', timeout: -1, callback: (ctx,
     next err, if rendered then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP HDFS # Hadoop Configuration', timeout: -1, callback: (ctx, next) ->
-  namenode = ctx.hosts_with_module 'histi/hdp/hdfs_nn', 1
-  ctx.log "Namenode: #{namenode}"
-  secondary_namenode = ctx.hosts_with_module 'histi/hdp/hdfs_snn', 1
-  ctx.log "Secondary namenode: #{secondary_namenode}"
+  #namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
+  secondary_namenode = ctx.hosts_with_module 'histi/hdp/hdfs_snn', 1, true
   datanodes = ctx.hosts_with_module 'histi/hdp/hdfs_dn'
   { core, hdfs_site, yarn, mapred,
     hadoop_conf_dir, fs_checkpoint_dir, # fs_checkpoint_edit_dir,
     dfs_name_dir, dfs_data_dir, 
-    nn_port, snn_port } = ctx.config.hdp #mapreduce_local_dir, 
+    hdfs_namenode_http_port, snn_port } = ctx.config.hdp #mapreduce_local_dir, 
   modified = false
   do_hdfs = ->
     ctx.log 'Configure hdfs-site.xml'
@@ -189,11 +191,17 @@ module.exports.push name: 'HDP HDFS # Hadoop Configuration', timeout: -1, callba
     # For example, /grid/hadoop/hdfs/dn,/grid1/hadoop/hdfs/dn.
     hdfs_site['dfs.datanode.data.dir'] ?= dfs_data_dir.join ','
     # NameNode hostname for http access.
-    hdfs_site['dfs.namenode.http-address'] ?= "#{namenode}:#{nn_port}"
+    # todo: "dfs.namenode.http-address" is only when not in ha mode, need to detect if we run
+    # the cluster in ha or not
+    # hdfs_site['dfs.namenode.http-address'] ?= "#{namenode}:#{hdfs_namenode_http_port}"
+    hdfs_site['dfs.namenode.http-address'] = null
     # Secondary NameNode hostname
-    hdfs_site['dfs.namenode.secondary.http-address'] ?= "hdfs://#{secondary_namenode}:#{snn_port}"
+    # hdfs_site['dfs.namenode.secondary.http-address'] ?= "hdfs://#{secondary_namenode}:#{snn_port}"
     # NameNode hostname for https access
-    hdfs_site['dfs.https.address'] ?= "hdfs://#{namenode}:50470"
+    # latest source code
+    hdfs_site['dfs.namenode.https-address'] ?= "hdfs://0.0.0.0:50470"
+    # official doc
+    # hdfs_site['dfs.https.address'] ?= "hdfs://#{namenodes[0]}:50470"
     hdfs_site['dfs.namenode.checkpoint.dir'] ?= fs_checkpoint_dir.join ','
     ctx.hconfigure
       destination: "#{hadoop_conf_dir}/hdfs-site.xml"
@@ -348,9 +356,6 @@ module.exports.push name: 'HDP HDFS # Kerberos Configure', callback: (ctx, next)
     merge: true
   , (err, configured) ->
     next err, if configured then ctx.OK else ctx.PASS
-
-
-
 
 
 

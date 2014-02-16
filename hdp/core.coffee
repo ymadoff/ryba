@@ -42,7 +42,6 @@ jhs.service.keytab
 ###
 module.exports.push module.exports.configure = (ctx) ->
   require('../actions/proxy').configure ctx
-  namenode = ctx.hosts_with_module 'histi/hdp/hdfs_nn', 1
   ctx.config.hdp ?= {}
   ctx.config.hdp.format ?= false
   ctx.config.hdp.hadoop_conf_dir ?= '/etc/hadoop/conf'
@@ -65,7 +64,8 @@ module.exports.push module.exports.configure = (ctx) ->
   # Options and configuration
   ctx.config.hdp.core_site ?= {}
   # NameNode hostname
-  ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://#{namenode}:8020"
+  # ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://#{namenode}:8020"
+  ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://hadooper"
   ctx.hconfigure = (options, callback) ->
     options.ssh = ctx.ssh if typeof options.ssh is 'undefined'
     options.log ?= ctx.log
