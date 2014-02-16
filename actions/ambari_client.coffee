@@ -14,7 +14,7 @@ Wait
 ----
 ###
 module.exports.push name: 'Ambari Client # Wait', timeout: -1, callback: (ctx, next) ->
-    server = ctx.hosts_with_module 'histi/actions/ambari_server', 1
+    server = ctx.host_with_module 'histi/actions/ambari_server', true
     {name} = ctx.config.ambari
     ready = ->
       request
