@@ -54,16 +54,14 @@ module.exports.push name: 'Bootstrap # Mecano', timeout: -1, callback:  (ctx, ne
           options = m action, options
         if action is 'service'
           mecano[action].call null, options, (err) ->
-            unless err
-              # ctx.installed = arguments[2]
-              # ctx.updates = arguments[3]
-              cache['mecano:installed'] = arguments[2] 
-              cache['mecano:updates'] = arguments[3] 
-              ctx.cache.set
-                'mecano:installed': arguments[2] 
-                'mecano:updates': arguments[3]
-              , (err) ->
-                callback.apply null, arguments
+            return callback.apply null, arguments if err
+            cache['mecano:installed'] = arguments[2] 
+            cache['mecano:updates'] = arguments[3] 
+            ctx.cache.set
+              'mecano:installed': arguments[2] 
+              'mecano:updates': arguments[3]
+            , (err) ->
+              callback.apply null, arguments
         else
           mecano[action].call null, goptions, options, callback
     next null, ctx.PASS
