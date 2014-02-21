@@ -3,6 +3,8 @@ module.exports = []
 
 module.exports.push 'histi/hdp/oozie_'
 module.exports.push 'histi/actions/nc'
+module.exports.push 'histi/hdp/mapred_client'
+module.exports.push 'histi/hdp/yarn_client'
 
 module.exports.push (ctx) ->
   require('../actions/nc').configure ctx
@@ -52,9 +54,11 @@ module.exports.push name: 'HDP Oozie Client # Workflow', timeout: -1, callback: 
       code_skipped: 2
     , (err, executed, stdout) ->
       return next err, ctx.PASS if err or not executed
+      # NameNode adress in HA mode:
+      # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/latest/CDH4-High-Availability-Guide/cdh4hag_topic_2_6.html
       ctx.write [
         content: """
-        nameNode=hdfs://#{nn[0]}:8020
+        nameNode=hdfs://hadooper:8020
         jobTracker=#{rm}:8050
         queueName=default
         basedir=${nameNode}/user/#{/^(.*?)[\/@]/.exec(oozie_test_principal)[1]}/test_oozie
@@ -67,7 +71,7 @@ module.exports.push name: 'HDP Oozie Client # Workflow', timeout: -1, callback: 
           <start to="move"/>
           <action name="move">
             <fs>
-              <copy source='${basedir}/source' target='${basedir}/target'/>
+              <move source='${basedir}/source' target='${basedir}/target'/>
             </fs>
             <ok to="end"/>
             <error to="fail"/>
@@ -85,8 +89,8 @@ module.exports.push name: 'HDP Oozie Client # Workflow', timeout: -1, callback: 
           cmd: """
           hdfs dfs -mkdir -p test_oozie
           hdfs dfs -touchz test_oozie/source
-          hdfs dfs -put /tmp/oozie_job.properties test_oozie/job.properties
-          hdfs dfs -put /tmp/oozie_workflow.xml test_oozie/workflow.xml
+          hdfs dfs -put -f /tmp/oozie_job.properties test_oozie/job.properties
+          hdfs dfs -put -f /tmp/oozie_workflow.xml test_oozie/workflow.xml
           export OOZIE_URL=http://#{oozie_server}:#{oozie_port}/oozie
           oozie job -run -config /tmp/oozie_job.properties
           hdfs dfs -test -f test_oozie/target
