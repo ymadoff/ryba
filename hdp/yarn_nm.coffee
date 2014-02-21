@@ -9,7 +9,23 @@ module.exports.push (ctx) ->
   require('../actions/nc').configure ctx
   require('./yarn').configure ctx
 
-module.exports.push name: 'HDP YARN NM # Start', callback: (ctx, next) ->
+module.exports.push name: 'HDP YARN NM # Kerberos', callback: (ctx, next) ->
+  {yarn_user} = ctx.config.hdp
+  {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
+  ctx.krb5_addprinc 
+    principal: "nm/#{ctx.config.host}@#{realm}"
+    randkey: true
+    keytab: "/etc/security/keytabs/nm.service.keytab"
+    uid: yarn_user
+    gid: 'hadoop'
+    kadmin_principal: kadmin_principal
+    kadmin_password: kadmin_password
+    kadmin_server: kadmin_server
+  , (err, created) ->
+    return next err if err
+    next null, if created then ctx.OK else ctx.PASS
+
+module.exports.push name: 'HDP YARN NM # Start', timeout: -1, callback: (ctx, next) ->
   resourcemanager = ctx.host_with_module 'histi/hdp/yarn_rm'
   ctx.waitForConnection resourcemanager, 8088, (err) ->
     return next err if err

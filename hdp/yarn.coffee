@@ -8,7 +8,10 @@ module.exports = []
 module.exports.push 'histi/hdp/core'
 
 module.exports.push module.exports.configure = (ctx) ->
+  return if ctx.yarn_configured
+  ctx.yarn_configured = true
   require('./hdfs').configure ctx
+  {realm} = ctx.config.krb5_client
   # Grab the host(s) for each roles
   resourcemanager = ctx.host_with_module 'histi/hdp/yarn_rm'
   ctx.log "Resource manager: #{resourcemanager}"
@@ -33,6 +36,8 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.yarn['yarn.resourcemanager.webapp.address'] ?= "#{resourcemanager}:8088" # URL for job history server
   ctx.config.hdp.yarn['yarn.nodemanager.container-executor.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor'
   ctx.config.hdp.yarn['yarn.nodemanager.linux-container-executor.group'] ?= 'yarn'
+  # Required by yarn client
+  ctx.config.hdp.yarn['yarn.resourcemanager.principal'] ?= "rm/_HOST@#{realm}"
   # Configurations for History Server (Needs to be moved elsewhere):
   ctx.config.hdp.yarn['yarn.log-aggregation.retain-seconds'] ?= '-1' #  How long to keep aggregation logs before deleting them. -1 disables. Be careful, set this too small and you will spam the name node.
   ctx.config.hdp.yarn['yarn.log-aggregation.retain-check-interval-seconds'] ?= '-1' # Time between checks for aggregated log retention. If set to 0 or a negative value then the value is computed as one-tenth of the aggregated log retention time. Be careful, set this too small and you will spam the name node.
@@ -227,8 +232,8 @@ module.exports.push name: 'HDP YARN # Tuning', callback: (ctx, next) ->
   # yarn.log-aggregation.retain-seconds (chefrif)
   next null, "TODO"
 
-module.exports.push name: 'HDP YARN # Kerberos Principals', timeout: -1, callback: (ctx, next) ->
-  {hdfs_user} = ctx.config.hdp
+module.exports.push name: 'HDP YARN # Keytabs Directory', timeout: -1, callback: (ctx, next) ->
+  {hdfs_user, yarn_user} = ctx.config.hdp
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   ctx.mkdir
     destination: '/etc/security/keytabs'
@@ -236,36 +241,7 @@ module.exports.push name: 'HDP YARN # Kerberos Principals', timeout: -1, callbac
     gid: 'hadoop'
     mode: '0750'
   , (err, created) ->
-    ctx.log 'Creating Service Principals'
-    principals = []
-    if ctx.config.hdp.resourcemanager
-      principals.push
-        principal: "rm/#{ctx.config.host}@#{realm}"
-        randkey: true
-        keytab: "/etc/security/keytabs/rm.service.keytab"
-        uid: 'yarn'
-        gid: 'hadoop'
-    if ctx.config.hdp.nodemanager
-      principals.push
-        principal: "nm/#{ctx.config.host}@#{realm}"
-        randkey: true
-        keytab: "/etc/security/keytabs/nm.service.keytab"
-        uid: 'yarn'
-        gid: 'hadoop'
-    if ctx.config.hdp.jobhistoryserver
-      principals.push
-        principal: "jhs/#{ctx.config.host}@#{realm}"
-        randkey: true
-        keytab: "/etc/security/keytabs/jhs.service.keytab"
-        uid: 'mapred'
-        gid: 'hadoop'
-    for principal in principals
-        principal.kadmin_principal = kadmin_principal
-        principal.kadmin_password = kadmin_password
-        principal.kadmin_server = kadmin_server
-    ctx.krb5_addprinc principals, (err, created) ->
-      return next err if err
-      next null, if created then ctx.OK else ctx.PASS
+    next null, if created then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP YARN # Configure Kerberos', callback: (ctx, next) ->
   {realm} = ctx.config.krb5_client
@@ -279,7 +255,6 @@ module.exports.push name: 'HDP YARN # Configure Kerberos', callback: (ctx, next)
   # see http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
   # Configurations the ResourceManager
   yarn['yarn.resourcemanager.keytab'] ?= '/etc/security/keytabs/rm.service.keytab'
-  yarn['yarn.resourcemanager.principal'] ?= "rm/_HOST@#{realm}"
   # Configurations for NodeManager:
   yarn['yarn.nodemanager.keytab'] ?= '/etc/security/keytabs/nm.service.keytab'
   yarn['yarn.nodemanager.principal'] ?= "nm/_HOST@#{realm}"
@@ -294,7 +269,7 @@ module.exports.push name: 'HDP YARN # Configure Kerberos', callback: (ctx, next)
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 ###
 module.exports.push name: 'HDP YARN # HDFS layout', callback: (ctx, next) ->
-  {hadoop_group, hdfs_user, yarn, yarn_user, mapred, mapred_user} = ctx.config.hdp
+  {hadoop_group, hdfs_user, yarn, yarn_user} = ctx.config.hdp
   ok = false
   do_remote_app_log_dir = ->
     # Default value for "yarn.nodemanager.remote-app-log-dir" is "/tmp/logs"
