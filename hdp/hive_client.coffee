@@ -6,6 +6,8 @@ lifecycle = require './lib/lifecycle'
 module.exports = []
 module.exports.push 'histi/actions/nc'
 module.exports.push 'histi/hdp/hive_'
+module.exports.push 'histi/hdp/mapred_client'
+module.exports.push 'histi/hdp/yarn_client'
 
 ###
 Example of a minimal client configuration:
@@ -97,17 +99,17 @@ module.exports.push name: 'HDP Hive & HCat client # Check Server2', timeout: -1,
   {test_user, test_password, hive_server2_host, hive_server2_port} = ctx.config.hdp
   {realm} = ctx.config.krb5_client
   url = "jdbc:hive2://#{hive_server2_host}:#{hive_server2_port}/default;principal=hive/#{hive_server2_host}@#{realm}"
-  query = (query) -> " /usr/lib/hive/bin/beeline -u \"#{url}\" -n #{test_user} -p #{test_password} -e \"#{query}\" "
+  query = (query) -> "/usr/lib/hive/bin/beeline -u \"#{url}\" -n #{test_user} -p #{test_password} -e \"#{query}\" "
   ctx.waitForConnection hive_server2_host, hive_server2_port, (err) ->
     ctx.execute
       cmd: mkcmd.test ctx, """
       if hdfs dfs -test -d /user/test/hive_#{ctx.config.host}/check_server2_tb; then exit 2; fi
       hdfs dfs -mkdir -p /user/test/hive_#{ctx.config.host}/check_server2_tb
       echo -e 'a|1\\\\nb|2\\\\nc|3' | hdfs dfs -put - /user/test/hive_#{ctx.config.host}/check_server2_tb/data
-      {query "CREATE DATABASE IF NOT EXISTS check_hive_db  LOCATION '/user/test/hive_#{ctx.config.host}'"}
-      {query 'CREATE TABLE IF NOT EXISTS check_hive_db.check_server2_tb(col1 STRING, col2 INT);'}
-      {query 'SELECT SUM(col2) FROM check_hive_db.check_server2_tb;'}
-      {query 'DROP TABLE check_hive_db.check_server2_tb; DROP DATABASE check_hive_db;'}
+      #{query "CREATE DATABASE IF NOT EXISTS check_hive_db  LOCATION '/user/test/hive_#{ctx.config.host}'"}
+      #{query 'CREATE TABLE IF NOT EXISTS check_hive_db.check_server2_tb(col1 STRING, col2 INT);'}
+      #{query 'SELECT SUM(col2) FROM check_hive_db.check_server2_tb;'}
+      #{query 'DROP TABLE check_hive_db.check_server2_tb; DROP DATABASE check_hive_db;'}
       hdfs dfs -mkdir -p /user/test/hive_#{ctx.config.host}/check_server2_tb
       """
       code_skipped: 2
