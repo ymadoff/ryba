@@ -8,11 +8,11 @@ module.exports.push 'histi/actions/yum'
 module.exports.push 'histi/hdp/hdfs'
 
 module.exports.push module.exports.configure = (ctx) ->
+  return if ctx.mapred_configured
+  ctx.mapred_configured = true
   require('./hdfs').configure ctx
-  module.exports.configured = true
+  require('./mapred_').configure ctx
   jobhistoryserver = ctx.host_with_module 'histi/hdp/mapred_jhs'
-  # Define Users and Groups
-  ctx.config.hdp.mapred_user ?= 'mapred'
   # Options for mapred-site.xml
   ctx.config.hdp.mapred ?= {}
   ctx.config.hdp.mapred['mapreduce.job.counters.max'] ?= 120
@@ -94,7 +94,7 @@ module.exports.push name: 'HDP MapRed # System Directories', timeout: -1, callba
   do_log()
 
 module.exports.push name: 'HDP MapRed # Configuration', callback: (ctx, next) ->
-  { mapred, hadoop_conf_dir, mapred_queue_acls } = ctx.config.hdp
+  { mapred, hadoop_conf_dir, mapred_user, mapred_group, mapred_queue_acls } = ctx.config.hdp
   modified = false
   do_mapred = ->
     ctx.log 'Configure mapred-site.xml'
@@ -104,6 +104,8 @@ module.exports.push name: 'HDP MapRed # Configuration', callback: (ctx, next) ->
       local_default: true
       properties: mapred
       merge: true
+      uid: mapred_user
+      gid: mapred_group
     , (err, configured) ->
       return next err if err
       modified = true if configured
@@ -119,6 +121,8 @@ module.exports.push name: 'HDP MapRed # Configuration', callback: (ctx, next) ->
       local_default: true
       properties: mapred_queue_acls
       merge: true
+      uid: mapred_user
+      gid: mapred_group
     , (err, configured) ->
       return next err if err
       modified = true if configured
@@ -127,25 +131,25 @@ module.exports.push name: 'HDP MapRed # Configuration', callback: (ctx, next) ->
     next null, if modified then ctx.OK else ctx.PASS
   do_mapred()
 
-module.exports.push name: 'HDP MapRed # Kerberos', callback: (ctx, next) ->
-  {hadoop_conf_dir} = ctx.config.hdp
-  {realm} = ctx.config.krb5_client
-  mapred = {}
-  mapred['mapreduce.jobhistory.keytab'] ?= "/etc/security/keytabs/jhs.service.keytab"
-  mapred['mapreduce.jobhistory.principal'] ?= "jhs/_HOST@#{realm}"
-  ctx.hconfigure
-    destination: "#{hadoop_conf_dir}/mapred-site.xml"
-    properties: mapred
-    merge: true
-  , (err, configured) ->
-    next err, if configured then ctx.OK else ctx.PASS
-
 ###
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 ###
 module.exports.push name: 'HDP MapRed # HDFS layout', callback: (ctx, next) ->
-  {hadoop_group, hdfs_user, yarn, yarn_user, mapred, mapred_user} = ctx.config.hdp
-  ok = false
+  {hadoop_group, mapred, mapred_user} = ctx.config.hdp
+  modified = false
+  # Carefull, this is a duplicate of "HDP MapRed JHS # HDFS layout"
+  do_mapreduce_history = ->
+    ctx.execute
+      cmd: mkcmd.hdfs ctx, """
+      if hdfs dfs -test -d /mr-history; then exit 1; fi
+      hdfs dfs -mkdir -p /mr-history
+      hdfs dfs -chown #{mapred_user}:#{hadoop_group} /mr-history
+      """
+      code_skipped: 1
+    , (err, executed, stdout) ->
+      return next err if err
+      modified = true if executed
+      do_mapreduce_jobhistory_intermediate_done_dir()
   do_mapreduce_jobtracker_system_dir = ->
     mapreduce_jobtracker_system_dir = mapred['mapreduce.jobtracker.system.dir']
     ctx.log "Create #{mapreduce_jobtracker_system_dir}"
@@ -159,7 +163,7 @@ module.exports.push name: 'HDP MapRed # HDFS layout', callback: (ctx, next) ->
       code_skipped: 1
     , (err, executed, stdout) ->
       return next err if err
-      ok = true if executed
+      modified = true if executed
       do_mapreduce_jobhistory_intermediate_done_dir()
   do_mapreduce_jobhistory_intermediate_done_dir = ->
     # Default value for "mapreduce.jobhistory.intermediate-done-dir" 
@@ -178,7 +182,7 @@ module.exports.push name: 'HDP MapRed # HDFS layout', callback: (ctx, next) ->
       code_skipped: 1
     , (err, executed, stdout) ->
       return next err if err
-      ok = true if executed
+      modified = true if executed
       do_mapreduce_jobhistory_done_dir()
   do_mapreduce_jobhistory_done_dir = ->
     # Default value for "mapreduce.jobhistory.done-dir" 
@@ -197,40 +201,11 @@ module.exports.push name: 'HDP MapRed # HDFS layout', callback: (ctx, next) ->
       code_skipped: 1
     , (err, executed, stdout) ->
       return next err if err
-      ok = true if executed
+      modified = true if executed
       do_end()
   do_end = ->
-    next null, if ok then ctx.OK else ctx.PASS
-  do_mapreduce_jobtracker_system_dir()
-
-# module.exports.push (ctx, next) ->
-#   @name 'HDP Check # Test ResourceManager UI'
-#   ctx.execute
-#     cmd: 'curl http://#{}:8088'
-#   , (err, executed, stdout) ->
-#     return next err if err
-#     console.log stdout
-#     next err, ctx.PASS
-
-###
-Test JobTracker
----------------
-Run the "teragen" and "terasort" hadoop examples. Will only
-be executed if the directory "/user/test/10gsort" generated 
-by this action is not present on HDFS. Delete this directory 
-to re-execute the check.
-###
-module.exports.push name: 'HDP MapRed # Check', timeout: -1, callback: (ctx, next) ->
-  ctx.execute
-    cmd: mkcmd.test ctx, """
-    if hdfs dfs -test -d 10gsort; then exit 1; fi
-    hdfs dfs -mkdir 10gsort
-    hadoop jar /usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples-2*.jar teragen 100 10gsort/input
-    hadoop jar /usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples-2*.jar terasort 10gsort/input 10gsort/output
-    """
-    code_skipped: 1
-  , (err, executed, stdout) ->
-    next err, if executed then ctx.OK else ctx.PASS
+    next null, if modified then ctx.OK else ctx.PASS
+  do_mapreduce_history()
 
 
 
