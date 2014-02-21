@@ -7,8 +7,8 @@ module.exports.push 'histi/hdp/zookeeper'
 module.exports.push 'histi/hdp/hbase'
 
 module.exports.push (ctx) ->
-  require('./hdfs').configure ctx unless require('./hdfs').configured
-  require('./hbase').configure ctx unless require('./hbase').configured
+  require('./hdfs').configure
+  require('./hbase').configure
 
 module.exports.push name: 'HDP HBase RegionServer # Kerberos', timeout: -1, callback: (ctx, next) ->
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client

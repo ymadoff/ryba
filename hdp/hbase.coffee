@@ -5,10 +5,11 @@ module.exports = []
 module.exports.push 'histi/actions/yum'
 
 module.exports.push module.exports.configure = (ctx) ->
+  return if ctx.hbase_configured
+  ctx.hbase_configured = true
   require('./core').configure ctx
-  module.exports.configured = true
   {realm} = ctx.config.krb5_client
-  namenode = ctx.host_with_module 'histi/hdp/hdfs_nn', true
+  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
   zookeeper_hosts = ctx.hosts_with_module('histi/hdp/zookeeper').join ','
   ctx.config.hdp ?= {}
   ctx.config.hdp.hbase_user ?= 'hbase'
@@ -20,7 +21,9 @@ module.exports.push module.exports.configure = (ctx) ->
   # true: fully-distributed with unmanaged Zookeeper Quorum (see hbase-env.sh)
   ctx.config.hdp.hbase_site['hbase.cluster.distributed'] = 'true'
   # Enter the HBase NameNode server hostname
-  ctx.config.hdp.hbase_site['hbase.rootdir'] ?= "hdfs://#{namenode}:8020/apps/hbase/data"
+  # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/latest/CDH4-High-Availability-Guide/cdh4hag_topic_2_6.html
+  ctx.config.hdp.hbase_site['hbase.rootdir'] ?= "hdfs://hadooper:8020/apps/hbase/data"
+  # ctx.config.hdp.hbase_site['hbase.rootdir'] ?= "hdfs://#{namenodes[0]}:8020/apps/hbase/data"
   # The bind address for the HBase Master web UI, [Official doc](http://hbase.apache.org/configuration.html)
   # Enter the HBase Master server hostname, [HDP DOC](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.6.0/bk_installing_manually_book/content/rpm-chap9-3.html)
   ctx.config.hdp.hbase_site['hbase.master.info.bindAddress'] ?= '0.0.0.0'
