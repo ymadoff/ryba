@@ -3,6 +3,8 @@ mkcmd = require './lib/mkcmd'
 
 module.exports = []
 module.exports.push 'histi/actions/nc'
+module.exports.push 'histi/hdp/mapred_client'
+module.exports.push 'histi/hdp/yarn_client'
 
 module.exports.push (ctx) ->
   require('./hdfs').configure ctx
