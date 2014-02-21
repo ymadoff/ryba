@@ -11,9 +11,10 @@ the new repo, yum update failed. We should first remove
 some package, here's how: `yum remove hadoop-native hadoop-pipes hadoop-sbin`.
 ###
 module.exports.push module.exports.configure = (ctx) ->
+  return if ctx.hdfs_configured
+  ctx.hdfs_configured = true
   require('./core').configure ctx
   require('../actions/nc').configure ctx
-  module.exports.configured = true
   # hadoop env
   ctx.config.hdp.hadoop_opts ?= 'java.net.preferIPv4Stack': true
   hadoop_opts = "export HADOOP_OPTS=\""
@@ -44,6 +45,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.hdfs_site ?= {}
   ctx.config.hdp.hdfs_site['dfs.datanode.data.dir.perm'] ?= '750'
   ctx.config.hdp.hdfs_site['dfs.journalnode.edits.dir'] ?= '/var/run/hadoop-hdfs/journalnode_edit_dir'
+  ctx.config.hdp.hdfs_site['fs.permissions.umask-mode'] ?= '027' # 0750
   # Options for hadoop-env.sh
   ctx.config.hdp.options ?= {}
   ctx.config.hdp.options['java.net.preferIPv4Stack'] ?= true
@@ -77,11 +79,11 @@ module.exports.push name: 'HDP HDFS # Install', timeout: -1, callback: (ctx, nex
     next err, if serviced then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP HDFS # Directories', timeout: -1, callback: (ctx, next) ->
-  { dfs_name_dir, dfs_data_dir, yarn_user, mapred_user,
+  { dfs_name_dir, dfs_data_dir, yarn_user,
     fs_checkpoint_dir,
     yarn, yarn_log_dir, yarn_pid_dir,
     hdfs_user, hadoop_group,
-    hdfs_log_dir, mapred_log_dir, hdfs_pid_dir} = ctx.config.hdp
+    hdfs_log_dir, hdfs_pid_dir} = ctx.config.hdp
   modified = false
   do_namenode = ->
     ctx.log "Create namenode dir: #{dfs_name_dir}"
@@ -129,16 +131,6 @@ module.exports.push name: 'HDP HDFS # Directories', timeout: -1, callback: (ctx,
       do_log()
   do_log = ->
     do_pid()
-    # ctx.log "Create hdfs and mapred log: #{hdfs_log_dir}"
-    # ctx.mkdir
-    #   destination: "#{yarn_log_dir}/#{yarn_user}"
-    #   uid: yarn_user
-    #   gid: hadoop_group
-    #   mode: 0o755
-    # , (err, created) ->
-    #   return next err if err
-    #   modified = true if created
-    #   do_pid()
   do_pid = ->
     ctx.log "Create hdfs and mapred pid: #{hdfs_pid_dir} with owner #{hdfs_user}:#{hadoop_group}"
     ctx.mkdir
@@ -175,7 +167,7 @@ module.exports.push name: 'HDP HDFS # Hadoop Configuration', timeout: -1, callba
   #namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
   secondary_namenode = ctx.hosts_with_module 'histi/hdp/hdfs_snn', 1, true
   datanodes = ctx.hosts_with_module 'histi/hdp/hdfs_dn'
-  { core, hdfs_site, yarn, mapred,
+  { core, hdfs_site, yarn,
     hadoop_conf_dir, fs_checkpoint_dir, # fs_checkpoint_edit_dir,
     dfs_name_dir, dfs_data_dir, 
     hdfs_namenode_http_port, snn_port } = ctx.config.hdp #mapreduce_local_dir, 

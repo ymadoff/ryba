@@ -1,13 +1,23 @@
 
+hdfs_nn = require './hdfs_nn'
 lifecycle = require './lib/lifecycle'
 mkcmd = require './lib/mkcmd'
 module.exports = []
 
-module.exports.push 'histi/hdp/hdfs'
-
 module.exports.push (ctx) ->
   require('./hdfs').configure ctx
+  require('../actions/nc').configure ctx
   ctx.config.hdp.force_check ?= false
+
+module.exports.push name: 'HDP HDFS DN # HA', callback: (ctx, next) ->
+  {hadoop_conf_dir} = ctx.config.hdp
+  hdfs_site = hdfs_nn.ha_client_config ctx
+  ctx.hconfigure
+    destination: "#{hadoop_conf_dir}/hdfs-site.xml"
+    properties: hdfs_site
+    merge: true
+  , (err, configured) ->
+    next err, if configured then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP HDFS DN # Kerberos', timeout: -1, callback: (ctx, next) ->
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
@@ -24,14 +34,16 @@ module.exports.push name: 'HDP HDFS DN # Kerberos', timeout: -1, callback: (ctx,
     next err, if created then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP HDFS DN # Start', timeout: -1, callback: (ctx, next) ->
-  lifecycle.dn_start ctx, (err, started) ->
-    next err, ctx.OK
+  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
+  ctx.waitForConnection namenodes, 50070, (err) ->
+    lifecycle.dn_start ctx, (err, started) ->
+      next err, ctx.OK
 
 ###
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 ###
 module.exports.push name: 'HDP HDFS DN # HDFS layout', callback: (ctx, next) ->
-  {hadoop_group, hdfs_user, test_user, yarn, yarn_user, mapred, mapred_user} = ctx.config.hdp
+  {hadoop_group, hdfs_user, test_user, yarn, yarn_user} = ctx.config.hdp
   ok = false
   do_root = ->
     ctx.execute
@@ -47,7 +59,7 @@ module.exports.push name: 'HDP HDFS DN # HDFS layout', callback: (ctx, next) ->
       if hdfs dfs -test -d /tmp; then exit 1; fi
       hdfs dfs -mkdir /tmp
       hdfs dfs -chown #{hdfs_user}:#{hadoop_group} /tmp
-      hdfs dfs -chmod 777 /tmp
+      hdfs dfs -chmod 1777 /tmp
       """
       code_skipped: 1
     , (err, executed, stdout) ->
@@ -141,7 +153,7 @@ module.exports.push name: 'HDP HDFS DN # Test WebHDFS', timeout: -1, callback: (
   do_token = ->
     ctx.execute
       cmd: mkcmd.test ctx, """
-      curl -s --negotiate -u : "http://#{namenode[0]}:50070/webhdfs/v1/?op=GETDELEGATIONTOKEN"
+      curl -s --negotiate -u : "http://#{namenodes[0]}:50070/webhdfs/v1/?op=GETDELEGATIONTOKEN"
       kdestroy
       """
     , (err, executed, stdout) ->

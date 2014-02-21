@@ -5,7 +5,7 @@ module.exports = []
 
 module.exports.push 'histi/hdp/hdfs'
 
-module.exports.push (ctx) ->
+module.exports.push module.exports.configure = (ctx) ->
   require('./hdfs').configure ctx
 
 module.exports.push name: 'HDP HDFS JN # Layout', callback: (ctx, next) ->

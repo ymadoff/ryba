@@ -3,6 +3,7 @@ lifecycle = require './lib/lifecycle'
 mkcmd = require './lib/mkcmd'
 each = require 'each'
 exec = require 'superexec'
+mecano = require 'mecano'
 misc = require 'mecano/lib/misc'
 module.exports = []
 
@@ -44,15 +45,52 @@ module.exports.push name: 'HDP HDFS NN # HDFS User', callback: (ctx, next) ->
   , (err, created) ->
     next err, if created then ctx.OK else ctx.PASS
 
+module.exports.ha_client_config = ha_client_config = (ctx) ->
+  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
+  config = {}
+  nameservice = 'hadooper'
+  config['dfs.nameservices'] = nameservice
+  config["dfs.ha.namenodes.#{nameservice}"] = (for nn in namenodes then nn.split('.')[0]).join ','
+  for nn in namenodes
+    config["dfs.namenode.rpc-address.#{nameservice}.#{nn.split('.')[0]}"] = "#{nn}:8020"
+    config["dfs.namenode.http-address.#{nameservice}.#{nn.split('.')[0]}"] = "#{nn}:50070"
+  config["dfs.client.failover.proxy.provider.#{nameservice}"] = 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
+  config
+
+module.exports.push name: 'HDP HDFS NN # HA', callback: (ctx, next) ->
+  {hadoop_conf_dir} = ctx.config.hdp
+  modified = false
+  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
+  journalnodes = ctx.hosts_with_module 'histi/hdp/hdfs_jn'
+  hdfs_site = ha_client_config ctx
+  # nameservice = 'hadooper'
+  # hdfs_site = {}
+  # hdfs_site['dfs.nameservices'] = nameservice
+  # hdfs_site["dfs.ha.namenodes.#{hdfs_site['dfs.nameservices']}"] = (for nn in namenodes then nn.split('.')[0]).join ','
+  # for nn in namenodes
+  #   hdfs_site["dfs.namenode.rpc-address.#{hdfs_site['dfs.nameservices']}.#{nn.split('.')[0]}"] = "#{nn}:8020"
+  #   hdfs_site["dfs.namenode.http-address.#{hdfs_site['dfs.nameservices']}.#{nn.split('.')[0]}"] = "#{nn}:50070"
+  hdfs_site['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
+  hdfs_site['dfs.namenode.shared.edits.dir'] = "qjournal://#{hdfs_site['dfs.namenode.shared.edits.dir']}/#{hdfs_site['dfs.nameservices']}"
+  # hdfs_site["dfs.client.failover.proxy.provider.#{hdfs_site['dfs.nameservices']}"] = 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
+  hdfs_site['dfs.ha.fencing.methods'] = 'sshfence'
+  hdfs_site['dfs.ha.fencing.ssh.private-key-files'] = '/root/.ssh/id_rsa'
+  ctx.hconfigure
+    destination: "#{hadoop_conf_dir}/hdfs-site.xml"
+    properties: hdfs_site
+    merge: true
+  , (err, configured) ->
+    next err, if configured then ctx.OK else ctx.PASS
+
 module.exports.push name: 'HDP HDFS NN # Format', callback: (ctx, next) ->
   {dfs_name_dir, hdfs_user, format, cluster_name} = ctx.config.hdp
   return next() unless format
   # Shall only be executed on the leader namenode
   namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
   return next null, ctx.INAPPLICABLE if ctx.config.host isnt namenodes[0]
-  ctx.log "Format HDFS if #{dfs_name_dir[0]} does not exist"
+  ctx.log "Format HDFS if #{dfs_name_dir[0]}/current/VERSION does not exist"
   ctx.execute
-    #  su -l hdfs -c "hdfs namenode -format duzy"
+    #  su -l hdfs -c "hdfs namenode -format hadooper"
     # cmd: "yes 'Y' | su -l #{hdfs_user} -c \"/usr/lib/hadoop/bin/hadoop namenode -format\""
     cmd: "su -l #{hdfs_user} -c \"hdfs namenode -format #{cluster_name}\""
     # not_if_exists: "#{dfs_name_dir[0]}/current/fsimage"
@@ -61,9 +99,11 @@ module.exports.push name: 'HDP HDFS NN # Format', callback: (ctx, next) ->
     return next err if err
     return next null, if executed then ctx.OK else ctx.PASS
     lifecycle.nn_start ctx, (err, started) ->
-      return next err if err
-      lifecycle.dn_start ctx, (err, started) ->
-        next err, ctx.OK
+      return next err, ctx.OK
+    # lifecycle.nn_start ctx, (err, started) ->
+    #   return next err if err
+    #   lifecycle.dn_start ctx, (err, started) ->
+    #     next err, ctx.OK
 
 module.exports.push name: 'HDP HDFS NN # Upgrade', timeout: -1, callback: (ctx, next) ->
   # Shall only be executed on the leader namenode
@@ -92,36 +132,11 @@ module.exports.push name: 'HDP HDFS NN # Upgrade', timeout: -1, callback: (ctx, 
           return next null, ctx.PASS if c1 is c2
           return next new Error 'Upgrade manually'
 
-module.exports.push name: 'HDP HDFS NN # HA', callback: (ctx, next) ->
-  {hadoop_conf_dir} = ctx.config.hdp
-  modified = false
-  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
-  journalnodes = ctx.hosts_with_module 'histi/hdp/hdfs_jn'
-  nameservice = 'hadooper'
-  hdfs_site = {}
-  hdfs_site['dfs.nameservices'] = nameservice
-  hdfs_site["dfs.ha.namenodes.#{nameservice}"] = (for nn in namenodes then nn.split('.')[0]).join ','
-  for nn in namenodes
-    hdfs_site["dfs.namenode.rpc-address.#{nameservice}.#{nn.split('.')[0]}"] = "#{nn}:8020"
-    hdfs_site["dfs.namenode.http-address.#{nameservice}.#{nn.split('.')[0]}"] = "#{nn}:50070"
-  hdfs_site['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
-  hdfs_site['dfs.namenode.shared.edits.dir'] = "qjournal://#{hdfs_site['dfs.namenode.shared.edits.dir']}/#{nameservice}"
-  hdfs_site["dfs.client.failover.proxy.provider.#{nameservice}"] = 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
-  hdfs_site['dfs.ha.fencing.methods'] = 'sshfence'
-  hdfs_site['dfs.ha.fencing.ssh.private-key-files'] = '/root/.ssh/id_rsa'
-  ctx.hconfigure
-    destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-    properties: hdfs_site
-    merge: true
-  , (err, configured) ->
-    next err, if configured then ctx.OK else ctx.PASS
-
 module.exports.push name: 'HDP HDFS NN # HA Init JournalNodes', timeout: -1, callback: (ctx, next) ->
   # Shall only be executed on the main namenode
   namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
   journalnodes = ctx.hosts_with_module 'histi/hdp/hdfs_jn'
   return next null, ctx.INAPPLICABLE if ctx.config.host isnt namenodes[0]
-  # count_stop = 0
   do_wait = ->
     # all the JournalNodes shall be started
     options = ctx.config.servers
@@ -145,11 +160,10 @@ module.exports.push name: 'HDP HDFS NN # HA Init JournalNodes', timeout: -1, cal
     .on 'end', ->
       return next null, ctx.PASS if exists is journalnodes.length
       return next null, ctx.TODO if exists > 0 and exists < journalnodes.length
-      lifecycle.nn_stop ctx, (err, stoped) ->
+      lifecycle.nn_stop ctx, (err, stopped) ->
         return next err if err
         ctx.execute
           cmd: "su -l hdfs -c \"hdfs namenode -initializeSharedEdits -nonInteractive\""
-          # code_skipped: 1
         , (err, executed, stdout) ->
           return next err if err
           next null, ctx.OK
@@ -159,15 +173,14 @@ module.exports.push name: 'HDP HDFS NN # HA Init NameNodes', timeout: -1, callba
   # Shall only be executed on the main namenode
   namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
   return next null, ctx.INAPPLICABLE if ctx.config.host is namenodes[0]
-  again = true
   do_wait = ->
     ctx.waitForConnection namenodes[0], 8020, (err) ->
       return next err if err
       do_init()
   do_init = ->
     ctx.execute
+      # su -l hdfs -c "hdfs namenode -bootstrapStandby -nonInteractive"
       cmd: "su -l hdfs -c \"hdfs namenode -bootstrapStandby -nonInteractive\""
-      # code_skipped: if again then null else 1
       code_skipped: 5
     , (err, executed, stdout) ->
       return next err if err
@@ -186,6 +199,7 @@ module.exports.push name: 'HDP HDFS NN # HA Init NameNodes', timeout: -1, callba
 
 module.exports.push name: 'HDP HDFS NN # HA Auto Failover', timeout: -1, callback: (ctx, next) ->
   {hadoop_conf_dir} = ctx.config.hdp
+  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
   zookeepers = ctx.hosts_with_module 'histi/hdp/zookeeper'
   modified = false
   do_hdfs = ->
@@ -216,15 +230,42 @@ module.exports.push name: 'HDP HDFS NN # HA Auto Failover', timeout: -1, callbac
     ctx.log "Make sure all instances of zookeeper are available"
     ctx.waitForConnection zookeepers, 2181, (err) ->
       return next err if err
-      do_zkfc()
+      setTimeout ->
+        do_zkfc()
+      , 2000
   do_zkfc = ->
-    do_zkfc_active()
+    if ctx.config.host is namenodes[0]
+    then do_zkfc_active()
+    else do_zkfc_standby()
   do_zkfc_active = ->
-    ctx.log "Format zookeeper"
+    # About "formatZK"
+    # If no created, no configuration asked and exit code is 0
+    # If already exist, configuration is refused and exit code is 2
+    # About "transitionToActive"
+    # Seems like the first time, starting zkfc dont active the nn, so we force it
     ctx.execute
-      cmd: 'yes | hdfs zkfc -formatZK'
-    , (err, executed) ->
-      next null, if modified then ctx.OK else ctx.PASS
+      cmd: "yes n | hdfs zkfc -formatZK"
+      code_skipped: 2
+    , (err, formated) ->
+      return next err if err
+      ctx.execute
+        cmd: "yes | hdfs haadmin -transitionToActive -forcemanual hadoop1"
+        if: formated
+      , (err, activated) ->
+        return next err if err
+        # next null, if modified then ctx.OK else ctx.PASS
+        lifecycle.zkfc_start ctx, (err, started) ->
+          next null, if formated or started then ctx.OK else ctx.PASS
+  do_zkfc_standby = ->
+    ctx.log "Wait for active NameNode to take leadership"
+    ctx.waitForExecution
+      # hdfs haadmin -getServiceState hadoop1
+      cmd: mkcmd.hdfs ctx, "hdfs haadmin -getServiceState #{namenodes[0].split('.')[0]}"
+      code_skipped: 255
+    , (err, stdout) ->
+      return next err if err
+      lifecycle.zkfc_start ctx, (err, started) ->
+        next null, if started then ctx.OK else ctx.PASS
   do_hdfs()
 
 module.exports.push name: 'HDP HDFS NN # Start', timeout: -1, callback: (ctx, next) ->
@@ -279,6 +320,8 @@ module.exports.push name: 'HDP HDFS NN # Test User', timeout: -1, callback: (ctx
       modified = true if created
       do_run()
   do_run = ->
+    # Carefull, this is a dupplicate of
+    # "HDP HDFS DN # HDFS layout"
     ctx.execute
       cmd: mkcmd.hdfs ctx, """
       if hdfs dfs -ls /user/test 2>/dev/null; then exit 1; fi
