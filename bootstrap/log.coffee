@@ -26,16 +26,17 @@ module.exports.push name: 'Bootstrap # Log', callback: (ctx, next) ->
         log.out.close()
         log.err.close()
       , 100
-    ctx.run.on 'end', close
-    ctx.run.on 'action', (ctx, status) ->
+    ctx.on 'end', close
+    ctx.on 'action', (status) ->
       return unless status is ctx.STARTED
       date = (new Date).toISOString()
       msg = "\n#{date} #{ctx.action.name}\n#{pad date.length+ctx.action.name.length, '', '-'}\n"
       log.out.write msg
       log.err.write msg
-    ctx.run.on 'error', (err) ->
+    ctx.on 'error', (err) ->
       print = (err) ->
-        log.err.write err.message
+        # console.log err
+        log.err.write err.message + '\n'
         log.err.write err.stack if err.stack
       print err
       if err.errors
