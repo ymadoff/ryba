@@ -3,6 +3,7 @@ module.exports = []
 
 module.exports.push 'histi/actions/java'
 module.exports.push 'histi/hdp/core'
+module.exports.push 'histi/hdp/hdfs_client'
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./core').configure ctx
