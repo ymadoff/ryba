@@ -4,10 +4,12 @@ lifecycle = require './lib/lifecycle'
 module.exports = []
 module.exports.push 'histi/actions/yum'
 module.exports.push 'histi/actions/java'
+module.exports.push 'histi/hdp/core'
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./core').configure ctx
   require('../actions/java').configure ctx
+  require('../actions/nc').configure ctx
   ctx.config.hdp.zookeeper_myid ?= null
   ctx.config.hdp.zookeeper_user ?= 'zookeeper'
   ctx.config.hdp.zookeeper_data_dir ?= '/var/zookeper/data/'
@@ -140,7 +142,7 @@ module.exports.push name: 'HDP ZooKeeper # Kerberos', callback: (ctx, next) ->
   , (err, created) ->
     next err, if created then ctx.OK else ctx.PASS
 
-module.exports.push name: 'HDP ZooKeeper # Start', callback: (ctx, next) ->
+module.exports.push name: 'HDP ZooKeeper # Start', timeout: -1, callback: (ctx, next) ->
   lifecycle.zookeeper_start ctx, (err, started) ->
     next err, if started then ctx.OK else ctx.PASS
 

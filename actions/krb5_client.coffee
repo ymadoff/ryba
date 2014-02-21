@@ -13,10 +13,10 @@ Goals
     Enable sshd(8) Kerberos authentication.
     Enable PAM Kerberos authentication.
     SASL GSSAPI OpenLDAP authentication.
-    Use SAS:L GSSAPI Authentication with AutoFS.
+    Use SASL GSSAPI Authentication with AutoFS.
 IMPORTANT : Kerberos clients require connectivity to the KDC's TCP ports 88 and 749.
 
-You haven't renewable tickets, this is per default disallowed in the most linux distributions. This can be done per:
+renewable tickets is per default disallowed in the most linux distributions. This can be done per:
 kadmin.local: modprinc -maxrenewlife 7day krbtgt/YOUR_REALM
 kadmin.local: modprinc -maxrenewlife 7day +allow_renewable hue/FQRN
 

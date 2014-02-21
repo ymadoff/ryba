@@ -14,7 +14,7 @@ Package
 -------
 Install the Mysql client.
 ###
-module.exports.push name: 'Mysql # Package', callback: (ctx, next) ->
+module.exports.push name: 'Mysql Client # Package', callback: (ctx, next) ->
   ctx.service
     name: 'mysql'
   , (err, serviced) ->
@@ -25,7 +25,7 @@ Connector
 ---------
 Install the Mysql JDBC driver.
 ###
-module.exports.push name: 'Mysql # Connector', timeout: -1, callback: (ctx, next) ->
+module.exports.push name: 'Mysql Client # Connector', timeout: -1, callback: (ctx, next) ->
   # todo: below doesnt declare the mysql jar inside the hive lib folder
   # /usr/share/java/mysql-connector-java.jar
   ctx.service

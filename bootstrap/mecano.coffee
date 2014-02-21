@@ -27,8 +27,8 @@ Is similiar to:
 module.exports.push name: 'Bootstrap # Mecano', timeout: -1, callback:  (ctx, next) ->
   ctx.cache.get ['mecano:installed', 'mecano:updates'], (err, cache) ->
     m = (action, options) ->
-      options.ssh ?= ctx.ssh
-      options.log ?= ctx.log
+      options.ssh = ctx.ssh if typeof options.ssh is 'undefined'
+      options.log = ctx.log if typeof options.log is 'undefined'
       options.stdout = ctx.log.out if typeof options.stdout is 'undefined'
       options.stderr = ctx.log.err if typeof options.stderr is 'undefined'
       options.installed = cache['mecano:installed']
@@ -65,3 +65,8 @@ module.exports.push name: 'Bootstrap # Mecano', timeout: -1, callback:  (ctx, ne
         else
           mecano[action].call null, goptions, options, callback
     next null, ctx.PASS
+
+
+
+
+

@@ -19,7 +19,7 @@ function print {
 
 # Download a repository locally, back it up and replace HortonWorks fqdn with local fqdn
 # Arguments are
-# $1 Repo name for debuging
+# $1 Repo name (for debuging)
 # $2 URL of the repo
 function repo {
   print 'Download '$1

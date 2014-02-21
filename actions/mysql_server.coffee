@@ -45,7 +45,6 @@ module.exports.push name: 'Mysql Server # Package', timeout: -1, callback: (ctx,
       # action: 'start'
     , (err, serviced) ->
       return next err if err
-      # return next null, ctx.PASS unless serviced
       modified = true if serviced
       do_tmp()
   do_tmp = ->

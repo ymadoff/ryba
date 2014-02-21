@@ -11,8 +11,8 @@ Stop ZooKeeper
 ---------------
 Execute these commands on the ZooKeeper host machine(s).
 ###
-module.exports.push name: 'HDP # Stop ZooKeeper', callback: (ctx, next) ->
+module.exports.push name: 'HDP ZooKeeper # Stop', callback: (ctx, next) ->
   {zookeeper_user} = ctx.config.hdp
-  lifecycle.zookeeper_stop ctx, (err, stoped) ->
-    next err, if stoped then ctx.OK else ctx.PASS
+  lifecycle.zookeeper_stop ctx, (err, stopped) ->
+    next err, if stopped then ctx.OK else ctx.PASS
 
