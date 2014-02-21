@@ -7,5 +7,5 @@ module.exports.push (ctx) ->
   require('./webhcat').configure ctx
 
 module.exports.push name: 'HDP WebHCat # Stop', callback: (ctx, next) ->
-  lifecycle.webhcat_stop ctx, (err, stoped) ->
-    next err, if stoped then ctx.OK else ctx.PASS
+  lifecycle.webhcat_stop ctx, (err, stopped) ->
+    next err, if stopped then ctx.OK else ctx.PASS

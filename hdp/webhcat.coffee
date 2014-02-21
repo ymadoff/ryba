@@ -108,12 +108,12 @@ module.exports.push name: 'HDP WebHCat # HDFS', callback: (ctx, next) ->
     if hdfs dfs -test -d /user/#{webhcat_user}; then exit 1; fi
     hdfs dfs -mkdir /user/#{webhcat_user}
     hdfs dfs -chown #{webhcat_user}:#{hadoop_group} /user/#{webhcat_user}
-    hdfs dfs -mkdir /apps/#{webhcat_user}
+    hdfs dfs -mkdir /apps/webhcat
     hdfs dfs -copyFromLocal /usr/share/HDP-webhcat/pig.tar.gz /apps/webhcat/
     hdfs dfs -copyFromLocal /usr/share/HDP-webhcat/hive.tar.gz /apps/webhcat/
     hdfs dfs -copyFromLocal /usr/lib/hadoop-mapreduce/hadoop-streaming*.jar /apps/webhcat/
-    hdfs dfs -chown -R #{webhcat_user}:#{hadoop_group} /apps/#{webhcat_user}
-    hdfs dfs -chmod -R 755 /apps/#{webhcat_user}
+    hdfs dfs -chown -R #{webhcat_user}:#{hadoop_group} /apps/webhcat
+    hdfs dfs -chmod -R 755 /apps/webhcat
     """
     code_skipped: 1
   , (err, executed, stdout) ->
