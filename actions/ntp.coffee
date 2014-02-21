@@ -25,19 +25,24 @@ ntp.push name: 'NTP # Install', timeout: -1, callback: (ctx, next) ->
   , (err, serviced) ->
     return next err if err
     return next null, ctx.PASS unless serviced
+    # Here's good place to compare the date, maybe with the host maching:
+    # if gap is greather than threehold, stop ntpd, ntpdate, start ntpd
     ctx.log "Synchronize the system clock with #{ctx.config.ntp.servers[0]}"
     # NTPD must not be started for ntpdate to work
+    ctx.log "Sync clock on first install since ntpd isnt yet started"
     ctx.execute
       cmd: "ntpdate #{ctx.config.ntp.servers[0]}"
     , (err) ->
-      return next err if err
-      ctx.log "Start the NTP service"
-      ctx.service
-        name: 'ntp'
-        srv_name: 'ntpd'
-        action: 'start'
-      , (err, serviced) ->
-        next err, ctx.OK
+      next err, ctx.OK
+
+ntp.push name: 'NTP # Start', timeout: -1, callback: (ctx, next) -> 
+  ctx.log "Start the NTP service"
+  ctx.service
+    name: 'ntp'
+    srv_name: 'ntpd'
+    action: 'start'
+  , (err, serviced) ->
+    next err, if serviced then ctx.OK else ctx.PASS
 
 ntp.push name: 'NTP # Configure', callback: (ctx, next) ->
   write = []
