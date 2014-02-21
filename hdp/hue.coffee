@@ -1,7 +1,7 @@
 
 misc = require 'mecano/lib/misc'
 # path = require 'path'
-# lifecycle = require './lib/lifecycle'
+lifecycle = require './lib/lifecycle'
 # mkcmd = require './lib/mkcmd'
 
 ###
@@ -16,6 +16,8 @@ module.exports = []
 module.exports.push 'histi/actions/mysql_client'
 # Install client to create new Hive principal
 module.exports.push 'histi/actions/krb5_client'
+module.exports.push 'histi/hdp/mapred_client'
+module.exports.push 'histi/hdp/yarn_client'
 
 # module.exports.push 'histi/hdp/hdfs'
 # module.exports.push 'histi/hdp/yarn'
@@ -94,16 +96,19 @@ module.exports.push name: 'HDP Hue # Oozie', callback: (ctx, next) ->
 module.exports.push name: 'HDP Hue # Configure', callback: (ctx, next) ->
   {hadoop_conf_dir, hue_conf_dir, hue_ini, hue_smtp_host, webhcat_site} = ctx.config.hdp
   webhcat_port = webhcat_site['templeton.port']
-  oozie_server = ctx.hosts_with_module 'histi/hdp/oozie_server', 1
-  webhcat_server = ctx.hosts_with_module 'histi/hdp/webhcat', 1
-  namenode = ctx.hosts_with_module 'histi/hdp/hdfs_nn', 1
-  resourcemanager = ctx.hosts_with_module 'histi/hdp/yarn_rm', 1
+  oozie_server = ctx.host_with_module 'histi/hdp/oozie_server'
+  webhcat_server = ctx.host_with_module 'histi/hdp/webhcat'
+  # todo, this might not work as expected after ha migration
+  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
+  resourcemanager = ctx.host_with_module 'histi/hdp/yarn_rm'
   # Configure HDFS Cluster
   hue_ini['hadoop'] ?= {}
   hue_ini['hadoop']['hdfs_clusters'] ?= {}
   hue_ini['hadoop']['hdfs_clusters']['default'] ?= {}
-  hue_ini['hadoop']['hdfs_clusters']['default']['fs_defaultfs'] ?= "hdfs://#{namenode}:8020"
-  hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "http://#{namenode}:50070/webhdfs/v1"
+  # hue_ini['hadoop']['hdfs_clusters']['default']['fs_defaultfs'] ?= "hdfs://#{namenodes[0]}:8020"
+  hue_ini['hadoop']['hdfs_clusters']['default']['fs_defaultfs'] ?= "hdfs://hadooper:8020"
+  hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "http://hadooper:50070/webhdfs/v1"
+  # hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "http://#{namenode}:50070/webhdfs/v1"
   hue_ini['hadoop']['hdfs_clusters']['default']['hadoop_hdfs_home'] ?= '/usr/lib/hadoop'
   hue_ini['hadoop']['hdfs_clusters']['default']['hadoop_bin'] ?= '/usr/bin/hadoop'
   hue_ini['hadoop']['hdfs_clusters']['default']['hadoop_conf_dir'] ?= hadoop_conf_dir
@@ -124,7 +129,7 @@ module.exports.push name: 'HDP Hue # Configure', callback: (ctx, next) ->
   hue_ini['liboozie'] ?= {}
   hue_ini['liboozie']['oozie_url'] ?= "http://#{oozie_server}:11000/oozie"
   hue_ini['hcatalog'] ?= {}
-  hue_ini['hcatalog']['templeton_url'] ?= "http://#{webhcat_server}:#{webhcat_port}/oozie"
+  hue_ini['hcatalog']['templeton_url'] ?= "http://#{webhcat_server}:#{webhcat_port}/templeton/v1/"
   hue_ini['beeswax'] ?= {}
   hue_ini['beeswax']['beeswax_server_host'] ?= "#{ctx.config.host}"
   # Desktop
@@ -144,6 +149,52 @@ module.exports.push name: 'HDP Hue # Configure', callback: (ctx, next) ->
     comment: '#'
   , (err, written) ->
     next err, if written then ctx.OK else ctx.PASS
+
+# module.exports.push name: 'HDP Hue # Database', callback: (ctx, next) ->
+#   modified = false
+#   do_db = ->
+#     {oozie_db_username, oozie_db_password, oozie_db_host, oozie_site} = ctx.config.hdp
+#     username = oozie_site['oozie.service.JPAService.jdbc.username']
+#     password = oozie_site['oozie.service.JPAService.jdbc.password']
+#     escape = (text) -> text.replace(/[\\"]/g, "\\$&")
+#     cmd = "mysql -u#{oozie_db_username} -p#{oozie_db_password} -h#{oozie_db_host} -e "
+#     ctx.execute
+#       cmd: """
+#       if #{cmd} "use oozie"; then exit 2; fi
+#       #{cmd} "
+#       create database oozie;
+#       grant all privileges on oozie.* to '#{username}'@'localhost' identified by '#{password}';
+#       grant all privileges on oozie.* to '#{username}'@'%' identified by '#{password}';
+#       flush privileges;
+#       "
+#       """
+#       code_skipped: 2
+#     , (err, created, stdout, stderr) ->
+#       return next err, if created then ctx.OK else ctx.PASS
+#   do_config = ->
+#     hue_ini = {}
+#     hue_ini['desktop'] ?= {}
+#     hue_ini['desktop']['database'] ?= {}
+#     hue_ini['desktop']['database']['engine'] ?= 'mysql'
+#     hue_ini['desktop']['database']['host'] ?= ''
+#     hue_ini['desktop']['database']['port'] ?= ''
+#     hue_ini['desktop']['database']['user'] ?= ''
+#     hue_ini['desktop']['database']['password'] ?= ''
+#     hue_ini['desktop']['database']['name'] ?= ''
+#     ctx.ini
+#       destination: "#{hue_conf_dir}/hue.ini"
+#       content: hue_ini
+#       merge: true
+#       parse: misc.ini.parse_multi_brackets 
+#       stringify: misc.ini.stringify_multi_brackets
+#       separator: '='
+#       comment: '#'
+#     , (err, written) ->
+#       next err, if written then ctx.OK else ctx.PASS
+#   do_end = ->
+#     next err, if modified then ctx.OK else ctx.PASS
+
+
 
 ###
 TODO: install Hue over SSL
@@ -205,8 +256,6 @@ module.exports.push name: 'HDP Hue # Kerberos', callback: (ctx, next) ->
     hue_ini['liboozie']['security_enabled'] = 'true'
     hue_ini['hcatalog'] ?= {}
     hue_ini['hcatalog']['security_enabled'] = 'true'
-    console.log hue_ini
-    console.log "#{hue_conf_dir}/hue.ini"
     ctx.ini
       destination: "#{hue_conf_dir}/hue.ini"
       content: hue_ini
@@ -222,6 +271,10 @@ module.exports.push name: 'HDP Hue # Kerberos', callback: (ctx, next) ->
   do_end = ->
     next null, if modified then ctx.OK else ctx.PASS
   do_addprinc()
+
+module.exports.push name: 'HDP Hue # Start', callback: (ctx, next) ->
+  lifecycle.hue_start ctx, (err, started) ->
+    next err, if started then ctx.OK else ctx.PASS
 
 
 
