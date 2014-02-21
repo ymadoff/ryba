@@ -8,84 +8,109 @@ module.exports.push 'histi/actions/yum_epel'
 ###
 nc
 ===
-
-`waitForConnection(host, port, [timeout], callback)`
-`waitForConnection(hosts, port, [timeout], callback)`
-`waitForConnection(hosts_ports, [timeout], callback)`
-
 arbitrary TCP and UDP connections and listens.
 ###
 
 module.exports.push module.exports.configure = (ctx) ->
-  ctx.waitForConnection = (host, port, timeout, callback) ->
-    if typeof host is 'string'
-      options = [host: host, port: port]
-    else if Array.isArray(host) and typeof port is 'number'
-      options = for h in host then host: h, port: port
+  inc = 0
+  ctx.waitForExecution = () ->
+    if typeof arguments[0] is 'string'
+      ###
+      Argument "cmd" is a string:   
+      `waitForConnection(cmd, [options], callback)`
+      ###
+      cmd = arugments[0]
+      options = arguments[1]
+      callback = arguments[2]
+    else if typeof arguments[0] is 'object'
+      ###
+      Argument "cmd" is a string:   
+      `waitForConnection(options, callback)`
+      ###
+      options = arguments[0]
+      callback = arguments[1]
+      cmd = options.cmd
+    if typeof options is 'function'
+      callback = options
+      options = {}
+    options.interval = 2000
+    ctx.log "Wait for command to execute"
+    ctx.run.emit 'wait', ctx
+    running = false
+    run = ->
+      return if running
+      running = true
+      ctx.execute
+        cmd: cmd
+        code: options.code or 0
+        code_skipped: options.code_skipped
+      , (err, ready, stdout, stderr) ->
+        running = false
+        return if not err and not ready
+        clearInterval clear if clear
+        ctx.run.emit 'waited', ctx
+        callback err, stdout, stderr
+    clear = setInterval ->
+      run()
+    , options.interval
+    run()
+  ###
+  Options include:   
+  *   `timeout`
+  ###
+  ctx.waitForConnection = () ->
+    if typeof arguments[0] is 'string'
+      ###
+      Argument "host" is a string and argument "port" is a number:   
+      `waitForConnection(host, port, [options], callback)`
+      ###
+      servers = [host: arguments[0], port: arguments[1]]
+      options = arguments[2]
+      callback = arguments[3]
+    else if Array.isArray(arguments[0]) and typeof arguments[1] is 'number'
+      ###
+      Argument "hosts" is an array of string and argument "port" is a number:   
+      `waitForConnection(hosts, port, [options], callback)`
+      ###
+      servers = for h in arguments[0] then host: h, port: arguments[1]
+      options = arguments[2]
+      callback = arguments[3]
     else
-      options = host
-      callback = timeout
-      timeout = port
-    if typeof timeout is 'function'
-      callback = timeout
-      timeout = null
-
-    each(options)
+      ###
+      Argument "servers" is an array of object with the host and port properties:   
+      `waitForConnection(servers, [options], callback)`
+      ###
+      servers = arguments[0]
+      options = arguments[1]
+      callback = arguments[2]
+    if typeof options is 'function'
+      callback = options
+      options = {}
+    each(servers)
     .parallel(true)
-    .on 'item', (option, next) ->
-      if timeout
-        rand = Date.now()
+    .on 'item', (server, next) ->
+      if options.timeout
+        rand = Date.now() + inc++
         timedout = false
         clear = setTimeout ->
           timedout = true
           ctx.touch
             destination: "/tmp/#{rand}"
           , (err) -> # nothing to do
-        , timeout
-        cmd = "while [[ ! `nc -z -w5 #{option.host} #{option.port}` ]] && [[ ! -f /tmp/#{rand} ]]; do sleep 2; done;"
+        , options.timeout
+        cmd = "while [[ ! `nc -z -w5 #{server.host} #{server.port}` ]] && [[ ! -f /tmp/#{rand} ]]; do sleep 2; done;"
       else
-        cmd = "while ! nc -z -w5 #{option.host} #{option.port}; do sleep 2; done;"
-      ctx.log "Wait for #{option.host} #{option.port}"
-      ctx.run.emit 'wait', ctx, option.host, option.port
+        cmd = "while ! nc -z -w5 #{server.host} #{server.port}; do sleep 2; done;"
+      ctx.log "Wait for #{server.host} #{server.port}"
+      ctx.run.emit 'wait', ctx, server.host, server.port
       ctx.execute
         cmd: cmd
       , (err, executed) ->
         clearTimeout clear if clear
-        err = new Error "Reached timeout #{timeout}" if not err and timedout
-        next err, ->
-          ctx.run.emit 'waited', ctx, option.host, option.port
+        err = new Error "Reached timeout #{options.timeout}" if not err and timedout
+        ctx.run.emit 'waited', ctx, server.host, server.port
+        next err
     .on 'both', callback
-    # if timeout
-    #   each(options)
-    #   .parallel(true)
-    #   .on 'item', (option, next) ->
-    #     rand = Date.now()
-    #     timedout = false
-    #     clear = setTimeout ->
-    #       timedout = true
-    #       ctx.touch
-    #         destination: "/tmp/#{rand}"
-    #       , (err) -> # nothing to do
-    #     , timeout
-    #     ctx.log "Wait for #{option.host} #{option.port}"
-    #     ctx.execute
-    #       cmd: "while [[ ! `nc -z -w5 #{option.host} #{option.port}` ]] && [[ ! -f /tmp/#{rand} ]]; do sleep 2; done;"
-    #     , (err, executed) ->
-    #       clearTimeout clear
-    #       err = new Error "Reached timeout #{timeout}" if not err and timedout
-    #       next err
-    #   .on 'both', callback
-    # else
-    #   each(options)
-    #   .parallel(true)
-    #   .on 'item', (option, next) ->
-    #     ctx.log "Wait for #{option.host} #{option.port}"
-    #     ctx.execute
-    #       cmd: "while ! nc -z -w5 #{option.host} #{option.port}; do sleep 2; done;"
-    #     , (err, executed) ->
-    #       next err
-    #   .on 'both', (err) ->
-    #     callback err
 
 
 module.exports.push name: 'NC # Install', timeout: -1, callback: (ctx, next) ->
