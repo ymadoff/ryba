@@ -30,8 +30,9 @@ module.exports = (options, callback) ->
     .on 'item', (options, next) ->
       updated = 0
       options.source ?= options.destination
-      do_read = ->
+      do_read_source = ->
         options.log? "Read source properties from '#{options.source}'"
+        # Populate org_props and, if merge, fnl_props
         properties.read options.ssh, options.source, (err, props) ->
           return next err if err and err.code isnt 'ENOENT'
           org_props = if err then {} else props
@@ -43,6 +44,7 @@ module.exports = (options, callback) ->
         return do_merge() unless options.default
         return do_default() unless typeof options.default is 'string'
         options.log? "Read default properties from #{options.default}"
+        # Populate options.default
         ssh = if options.local_default then null else options.ssh
         properties.read ssh, options.default, (err, dft) ->
           return next err if err
@@ -52,9 +54,10 @@ module.exports = (options, callback) ->
         options.log? "Merge default properties"
         for k, v of options.default
           v = "#{v}" if typeof v is 'number'
-          if typeof v is 'undefined' or v is null
-          then delete fnl_props[k]
-          else fnl_props[k] = v
+          # if typeof v is 'undefined' or v is null
+          # then delete fnl_props[k]
+          # else fnl_props[k] = v
+          fnl_props[k] = v if typeof fnl_props[k] is 'undefined' or fnl_props[k] is null
         do_merge()
       do_merge = () ->
         options.log? "Merge user properties"
@@ -82,7 +85,7 @@ module.exports = (options, callback) ->
         options.source = null
         mecano.write options, (err, written) ->
           next err
-      conditions.all options, next, do_read
+      conditions.all options, next, do_read_source
     .on 'both', (err) ->
       finish err, configured
   result
