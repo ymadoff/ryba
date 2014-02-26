@@ -37,6 +37,7 @@ Configuration
 ###
 module.exports.push (ctx) ->
   require('./users').configure ctx
+  require('./proxy').configure ctx
   ctx.config.curl ?= {}
   {curl} = ctx.config
   curl.merge ?= true
@@ -57,7 +58,7 @@ Deploy the "~/.curlrc" file to each users.
 ###
 module.exports.push name: 'Curl # User Configuration', callback: (ctx, next) ->
   ok = false
-  {merge, proxy, users, config} = ctx.config.curl
+  {merge, users, config} = ctx.config.curl
   work = (user, file, next)->
     ctx.log "Write config into #{file}"
     ctx.ini
