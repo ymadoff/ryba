@@ -98,39 +98,55 @@ in "/etc/yum.repos.d"
 module.exports.push name: 'YUM # Repositories', timeout: -1, callback: (ctx, next) ->
   {copy, clean} = ctx.config.yum
   return next null, ctx.DISABLED unless copy
-  clean = ->
-    return upload() unless clean
-    ctx.log "Clean /etc/yum.repos.d/*"
-    ctx.ssh.exec 'rm -rf /etc/yum.repos.d/*', (err, stream) ->
-      return next err if err
-      stream.on 'exit', ->
-        upload()
-  upload = ->
-    ok = false
+  modified = false
+  basenames = []
+  do_upload = ->
     each()
     .files(copy)
     .parallel(10)
     .on 'item', (filename, next) ->
+      basename = path.basename filename
+      return next() if basename.indexOf('.') is 0
+      basenames.push basename
       ctx.log "Upload /etc/yum.repos.d/#{path.basename filename}"
       ctx.upload
         source: filename
         destination: "/etc/yum.repos.d/#{path.basename filename}"
       , (err, uploaded) ->
         return next err if err
-        ok = true if uploaded
+        modified = true if uploaded
         next()
     .on 'error', (err) ->
       next err
     .on 'end', ->
-      return next null, ctx.PASS unless ok
-      update()
-  update = ->
+      do_clean()
+  do_clean = ->
+    return do_update() unless clean
+    ctx.log "Clean /etc/yum.repos.d/*"
+    misc.file.readdir ctx.ssh, '/etc/yum.repos.d', (err, remote_basenames) ->
+      return next err if err
+      remove_basenames = []
+      for rfn in remote_basenames
+        continue if rfn.indexOf('.') is 0
+        # Add to the stack if remote filename isnt in source
+        remove_basenames.push rfn if basenames.indexOf(rfn) is -1
+      return do_update() if remove_basenames.length is 0
+      each(remove_basenames)
+      .on 'item', (filename, next) ->
+        misc.file.unlink ctx.ssh, "/etc/yum.repos.d/#{filename}", next
+      .on 'error', (err) ->
+        next err
+      .on 'end', ->
+        modified = true
+        do_update()
+  do_update = ->
+    return next null, ctx.PASS unless modified
     ctx.log 'Clean metadata and update'
     ctx.execute
       cmd: 'yum clean metadata; yum -y update'
     , (err, executed) ->
       next err, ctx.OK
-  clean()
+  do_upload()
 
 module.exports.push name: 'YUM # Update', timeout: -1, callback: (ctx, next) ->
   {update} = ctx.config.yum
