@@ -24,6 +24,8 @@ module.exports.push name: 'HDP HBase Master # HDFS layout', callback: (ctx, next
   , (err, executed, stdout) ->
     next err, if executed then ctx.OK else ctx.PASS
 
+# https://blogs.apache.org/hbase/entry/hbase_cell_security
+# https://hbase.apache.org/book/security.html
 module.exports.push name: 'HDP HBase Master # Kerberos', callback: (ctx, next) ->
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   {hadoop_group, hbase_user, hbase_site} = ctx.config.hdp

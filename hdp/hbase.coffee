@@ -9,10 +9,10 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.hbase_configured = true
   require('./core').configure ctx
   {realm} = ctx.config.krb5_client
-  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
   zookeeper_hosts = ctx.hosts_with_module('histi/hdp/zookeeper').join ','
   ctx.config.hdp ?= {}
   ctx.config.hdp.hbase_user ?= 'hbase'
+  ctx.config.hdp.hbase_conf_dir ?= '/etc/hbase/conf'
   ctx.config.hdp.hbase_log_dir ?= '/var/log/hbase'
   ctx.config.hdp.hbase_pid_dir ?= '/var/run/hbase'
   ctx.config.hdp.hbase_site ?= {}
@@ -22,8 +22,8 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.hbase_site['hbase.cluster.distributed'] = 'true'
   # Enter the HBase NameNode server hostname
   # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/latest/CDH4-High-Availability-Guide/cdh4hag_topic_2_6.html
-  ctx.config.hdp.hbase_site['hbase.rootdir'] ?= "hdfs://hadooper:8020/apps/hbase/data"
-  # ctx.config.hdp.hbase_site['hbase.rootdir'] ?= "hdfs://#{namenodes[0]}:8020/apps/hbase/data"
+  ctx.config.hdp.hbase_site['hbase.rootdir'] ?= "hdfs://#{ctx.config.hdp.nameservice}:8020/apps/hbase/data"
+  # ctx.config.hdp.hbase_site['hbase.rootdir'] ?= "hdfs://#{namenode}:8020/apps/hbase/data"
   # The bind address for the HBase Master web UI, [Official doc](http://hbase.apache.org/configuration.html)
   # Enter the HBase Master server hostname, [HDP DOC](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.6.0/bk_installing_manually_book/content/rpm-chap9-3.html)
   ctx.config.hdp.hbase_site['hbase.master.info.bindAddress'] ?= '0.0.0.0'
@@ -75,10 +75,10 @@ module.exports.push name: 'HDP HBase # Layout', timeout: -1, callback: (ctx, nex
     next err, if modified then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP HBase # Configure', callback: (ctx, next) ->
-  {hbase_site} = ctx.config.hdp
+  {hbase_conf_dir, hbase_site} = ctx.config.hdp
   ctx.log 'Configure hbase-site.xml'
   ctx.hconfigure
-    destination: '/etc/hbase/conf/hbase-site.xml'
+    destination: "#{hbase_conf_dir}/hbase-site.xml"
     default: "#{__dirname}/files/hbase/hbase-site.xml"
     local_default: true
     properties: hbase_site
@@ -93,7 +93,7 @@ module.exports.push name: 'HDP HBase # Configure', callback: (ctx, next) ->
 #   ctx.log 'Write log4j.properties'
 #   ctx.upload
 #     source: "#{__dirname}/files/hbase/log4j.properties"
-#     destination: '/etc/hbase/conf/log4j.properties'
+#     destination: "#{hbase_conf_dir}/log4j.properties"
 #     write: [
 #       match: /^(hbase.log.dir=).*$/mg
 #       replace: "$1#{hbase_log_dir}"
@@ -102,11 +102,11 @@ module.exports.push name: 'HDP HBase # Configure', callback: (ctx, next) ->
 #     next err, if configured then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP HBase # Env', callback: (ctx, next) ->
-  {hbase_log_dir} = ctx.config.hdp
+  {hbase_conf_dir, hbase_log_dir} = ctx.config.hdp
   ctx.log 'Write hbase-env.sh'
   ctx.upload
     source: "#{__dirname}/files/hbase/hbase-env.sh"
-    destination: '/etc/hbase/conf/hbase-env.sh'
+    destination: "#{hbase_conf_dir}/hbase-env.sh"
     write: [
       match: /^(export HBASE_LOG_DIR=).*$/mg
       replace: "$1#{hbase_log_dir}"
@@ -116,10 +116,10 @@ module.exports.push name: 'HDP HBase # Env', callback: (ctx, next) ->
 
 module.exports.push name: 'HDP HBase # RegionServer', callback: (ctx, next) ->
   regionservers = ctx.hosts_with_module('hisi/hdp/hbase_regionserver').join '\n'
-  {hbase_user} = ctx.config.hdp
+  {hbase_conf_dir, hbase_user} = ctx.config.hdp
   ctx.write
     content: regionservers
-    destination: '/etc/hbase/conf/regionservers'
+    destination: "#{hbase_conf_dir}/regionservers"
   , (err, written) ->
     next err, if written then ctx.OK else ctx.PASS
 
