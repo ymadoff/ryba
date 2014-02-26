@@ -12,6 +12,8 @@ arbitrary TCP and UDP connections and listens.
 ###
 
 module.exports.push module.exports.configure = (ctx) ->
+  return if ctx.nc_configured
+  ctx.nc_configured = true
   inc = 0
   ctx.waitForExecution = () ->
     if typeof arguments[0] is 'string'
