@@ -86,15 +86,17 @@ module.exports.push name: 'Curl # Install', timeout: -1, callback: (ctx, next) -
   , (err, installed) ->
     next err, if installed then ctx.OK else ctx.PASS
 
-module.exports.push name: 'Curl # Proxy Check', callback: (ctx, next) ->
-  {proxy, check, check_match} = ctx.config.curl
-  return next() unless check
+module.exports.push name: 'Curl # Connection Check', callback: (ctx, next) ->
+  {check, check_match, config} = ctx.config.curl
+  return next null, ctx.INAPPLICABLE unless check
   ctx.execute
     cmd: "curl -s #{check}"
     stdout: null
   , (err, executed, stdout, stderr) ->
     return next err if err
-    return next new Error "Proxy not active" unless  check_match.test stdout
+    unless check_match.test stdout
+      msg = "#{if config.proxy then 'Proxy' else 'Connection'} not active"
+      return next new Error msg
     next null, ctx.PASS
 
 ###
