@@ -20,6 +20,8 @@ module.exports.push 'histi/actions/dns'
 
 
 module.exports.push module.exports.configure = (ctx) ->
+  return if ctx.hive_server_configured
+  ctx.hive_server_configured = true
   require('../actions/mysql_server').configure ctx
   require('./hive_').configure ctx
   require('../actions/nc').configure ctx
@@ -123,10 +125,8 @@ module.exports.push name: 'HDP Hive & HCat server # Logs', callback: (ctx, next)
 module.exports.push name: 'HDP Hive & HCat server # Layout', callback: (ctx, next) ->
   # todo: this isnt pretty, ok that we need to execute hdfs command from an hadoop client
   # enabled environment, but there must be a better way
-  {hdfs_user, hive_user, hive_group} = ctx.config.hdp
-  namenode = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
-  ctx.log "SSH connection to #{namenode}"
-  ctx.connect namenode[0], (err, ssh) ->
+  {active_nn_host, hdfs_user, hive_user, hive_group} = ctx.config.hdp
+  ctx.connect active_nn_host, (err, ssh) ->
     return next err if err
     # kerberos = true
     modified = false

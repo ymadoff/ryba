@@ -6,6 +6,8 @@ module.exports.push 'histi/hdp/core'
 module.exports.push 'histi/hdp/hdfs_client'
 
 module.exports.push module.exports.configure = (ctx) ->
+  return if ctx.hive__configured
+  ctx.hive__configured = true
   require('./core').configure ctx
   {realm} = ctx.config.krb5_client
   ctx.config.hdp.hive_conf_dir ?= '/etc/hive/conf'
@@ -48,7 +50,6 @@ module.exports.push module.exports.configure = (ctx) ->
   # with the actual hostname of the running instance.
   # 'hive.server2.authentication.kerberos.principal': "hcat/#{ctx.config.host}@#{realm}"
   ctx.config.hdp.hive_site['hive.server2.authentication.kerberos.principal'] ?= "hive/_HOST@#{realm}"
-  ctx.config.hdp.hdp_hive_done = true
 
 ###
 Install

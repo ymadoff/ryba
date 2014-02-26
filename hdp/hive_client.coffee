@@ -34,8 +34,8 @@ Example of a minimal client configuration:
 
 module.exports.push module.exports.configure = (ctx) ->
   require('../actions/nc').configure ctx
-  require('./hdfs').configure ctx unless ctx.config.hdp.hdp_hdfs_done
-  require('./hive_').configure ctx unless ctx.config.hdp.hdp_hive_done
+  require('./hdfs').configure ctx
+  require('./hive_').configure ctx
 
 ###
 Configure

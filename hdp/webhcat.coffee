@@ -11,6 +11,8 @@ ctx.config.hdp.hive_site['hive.security.metastore.authenticator.manager'] ?= 'or
 ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener'
 ###
 module.exports.push module.exports.configure = (ctx) ->
+  return if ctx.webhcat_configured
+  ctx.webhcat_configured = true
   require('./hive_server').configure ctx
   require('./hdfs').configure ctx
   require('./zookeeper').configure ctx

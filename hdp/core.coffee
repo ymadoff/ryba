@@ -41,6 +41,8 @@ jhs.service.keytab
   host/full.qualified.domain.name@REALM.TLD
 ###
 module.exports.push module.exports.configure = (ctx) ->
+  return if ctx.core_configured
+  ctx.core_configured = true
   require('../actions/proxy').configure ctx
   ctx.config.hdp ?= {}
   ctx.config.hdp.format ?= false
