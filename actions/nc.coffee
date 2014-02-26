@@ -37,7 +37,7 @@ module.exports.push module.exports.configure = (ctx) ->
       options = {}
     options.interval = 2000
     ctx.log "Wait for command to execute"
-    ctx.run.emit 'wait', ctx
+    ctx.emit 'wait'
     running = false
     run = ->
       return if running
@@ -50,7 +50,7 @@ module.exports.push module.exports.configure = (ctx) ->
         running = false
         return if not err and not ready
         clearInterval clear if clear
-        ctx.run.emit 'waited', ctx
+        ctx.emit 'waited'
         callback err, stdout, stderr
     clear = setInterval ->
       run()
@@ -104,13 +104,13 @@ module.exports.push module.exports.configure = (ctx) ->
       else
         cmd = "while ! nc -z -w5 #{server.host} #{server.port}; do sleep 2; done;"
       ctx.log "Wait for #{server.host} #{server.port}"
-      ctx.run.emit 'wait', ctx, server.host, server.port
+      ctx.emit 'wait', server.host, server.port
       ctx.execute
         cmd: cmd
       , (err, executed) ->
         clearTimeout clear if clear
         err = new Error "Reached timeout #{options.timeout}" if not err and timedout
-        ctx.run.emit 'waited', ctx, server.host, server.port
+        ctx.emit 'waited', server.host, server.port
         next err
     .on 'both', callback
 
