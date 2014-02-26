@@ -8,6 +8,7 @@ ntp.push 'histi/actions/yum'
 ntp.push (ctx) ->
   ctx.config.ntp ?= {}
   ctx.config.ntp.servers ?= ['pool.ntp.org']
+  ctx.config.ntp.lag ?= 2000
 
 
 ###
@@ -43,6 +44,33 @@ ntp.push name: 'NTP # Start', timeout: -1, callback: (ctx, next) ->
     action: 'start'
   , (err, serviced) ->
     next err, if serviced then ctx.OK else ctx.PASS
+
+ntp.push name: 'NTP # Check', callback: (ctx, next) ->
+  {lag} = ctx.config.ntp
+  ctx.execute
+    cmd: "date +%s"
+  , (err, executed, stdout) ->
+    return next err if err
+    time = parseInt(stdout.trim(), 10) * 1000
+    current_lag = Math.abs(new Date() - new Date(time))
+    return next null, ctx.PASS if current_lag < lag
+    ctx.log "Lag greater than #{lag}ms: #{current_lag}"
+    ctx.service
+      name: 'ntp'
+      srv_name: 'ntpd'
+      action: 'stop'
+    , (err, serviced) ->
+      return next err if err
+      ctx.execute
+        cmd: "ntpdate #{ctx.config.ntp.servers[0]}"
+      , (err) ->
+        return next err if err
+        ctx.service
+          name: 'ntp'
+          srv_name: 'ntpd'
+          action: 'stop'
+        , (err, serviced) ->
+          next err, ctx.OK
 
 ntp.push name: 'NTP # Configure', callback: (ctx, next) ->
   write = []
