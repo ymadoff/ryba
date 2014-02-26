@@ -124,8 +124,7 @@ Read [Delegation Tokens in Hadoop Security ](http://www.kodkast.com/blogs/hadoop
 for more information.
 ###
 module.exports.push name: 'HDP HDFS DN # Test WebHDFS', timeout: -1, callback: (ctx, next) ->
-  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
-  {force_check} = ctx.config.hdp
+  {force_check, active_nn_host} = ctx.config.hdp
   do_init = ->
     ctx.execute
       cmd: mkcmd.test ctx, """
@@ -142,7 +141,7 @@ module.exports.push name: 'HDP HDFS DN # Test WebHDFS', timeout: -1, callback: (
   do_spnego = ->
     ctx.execute
       cmd: mkcmd.test ctx, """
-      curl -s --negotiate -u : "http://#{namenodes[0]}:50070/webhdfs/v1/user/test?op=LISTSTATUS"
+      curl -s --negotiate -u : "http://#{active_nn_host}:50070/webhdfs/v1/user/test?op=LISTSTATUS"
       kdestroy
       """
     , (err, executed, stdout) ->
@@ -153,7 +152,7 @@ module.exports.push name: 'HDP HDFS DN # Test WebHDFS', timeout: -1, callback: (
   do_token = ->
     ctx.execute
       cmd: mkcmd.test ctx, """
-      curl -s --negotiate -u : "http://#{namenodes[0]}:50070/webhdfs/v1/?op=GETDELEGATIONTOKEN"
+      curl -s --negotiate -u : "http://#{active_nn_host}:50070/webhdfs/v1/?op=GETDELEGATIONTOKEN"
       kdestroy
       """
     , (err, executed, stdout) ->
@@ -161,7 +160,7 @@ module.exports.push name: 'HDP HDFS DN # Test WebHDFS', timeout: -1, callback: (
       token = JSON.parse(stdout).Token.urlString
       ctx.execute
         cmd: """
-        curl -s "http://#{namenodes[0]}:50070/webhdfs/v1/user/test?delegation=#{token}&op=LISTSTATUS"
+        curl -s "http://#{active_nn_host}:50070/webhdfs/v1/user/test?delegation=#{token}&op=LISTSTATUS"
         """
       , (err, executed, stdout) ->
         return next err if err

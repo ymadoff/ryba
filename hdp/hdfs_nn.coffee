@@ -46,9 +46,9 @@ module.exports.push name: 'HDP HDFS NN # HDFS User', callback: (ctx, next) ->
     next err, if created then ctx.OK else ctx.PASS
 
 module.exports.ha_client_config = ha_client_config = (ctx) ->
+  {nameservice} = ctx.config.hdp
   namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
   config = {}
-  nameservice = 'hadooper'
   config['dfs.nameservices'] = nameservice
   config["dfs.ha.namenodes.#{nameservice}"] = (for nn in namenodes then nn.split('.')[0]).join ','
   for nn in namenodes
@@ -60,19 +60,10 @@ module.exports.ha_client_config = ha_client_config = (ctx) ->
 module.exports.push name: 'HDP HDFS NN # HA', callback: (ctx, next) ->
   {hadoop_conf_dir} = ctx.config.hdp
   modified = false
-  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
   journalnodes = ctx.hosts_with_module 'histi/hdp/hdfs_jn'
   hdfs_site = ha_client_config ctx
-  # nameservice = 'hadooper'
-  # hdfs_site = {}
-  # hdfs_site['dfs.nameservices'] = nameservice
-  # hdfs_site["dfs.ha.namenodes.#{hdfs_site['dfs.nameservices']}"] = (for nn in namenodes then nn.split('.')[0]).join ','
-  # for nn in namenodes
-  #   hdfs_site["dfs.namenode.rpc-address.#{hdfs_site['dfs.nameservices']}.#{nn.split('.')[0]}"] = "#{nn}:8020"
-  #   hdfs_site["dfs.namenode.http-address.#{hdfs_site['dfs.nameservices']}.#{nn.split('.')[0]}"] = "#{nn}:50070"
   hdfs_site['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
   hdfs_site['dfs.namenode.shared.edits.dir'] = "qjournal://#{hdfs_site['dfs.namenode.shared.edits.dir']}/#{hdfs_site['dfs.nameservices']}"
-  # hdfs_site["dfs.client.failover.proxy.provider.#{hdfs_site['dfs.nameservices']}"] = 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
   hdfs_site['dfs.ha.fencing.methods'] = 'sshfence'
   hdfs_site['dfs.ha.fencing.ssh.private-key-files'] = '/root/.ssh/id_rsa'
   ctx.hconfigure
@@ -83,60 +74,57 @@ module.exports.push name: 'HDP HDFS NN # HA', callback: (ctx, next) ->
     next err, if configured then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP HDFS NN # Format', callback: (ctx, next) ->
-  {dfs_name_dir, hdfs_user, format, cluster_name} = ctx.config.hdp
+  {active_nn, dfs_name_dir, hdfs_user, format, nameservice} = ctx.config.hdp
   return next() unless format
   # Shall only be executed on the leader namenode
-  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
-  return next null, ctx.INAPPLICABLE if ctx.config.host isnt namenodes[0]
+  return next null, ctx.INAPPLICABLE unless active_nn
   ctx.log "Format HDFS if #{dfs_name_dir[0]}/current/VERSION does not exist"
   ctx.execute
-    #  su -l hdfs -c "hdfs namenode -format hadooper"
+    # su -l hdfs -c "hdfs namenode -format -clusterId hadooper"
     # cmd: "yes 'Y' | su -l #{hdfs_user} -c \"/usr/lib/hadoop/bin/hadoop namenode -format\""
-    cmd: "su -l #{hdfs_user} -c \"hdfs namenode -format #{cluster_name}\""
+    cmd: "su -l #{hdfs_user} -c \"hdfs namenode -format -clusterId #{nameservice}\""
     # not_if_exists: "#{dfs_name_dir[0]}/current/fsimage"
+    # /hadoop/hdfs/namenode/current/VERSION
     not_if_exists: "#{dfs_name_dir[0]}/current/VERSION"
   , (err, executed) ->
     return next err if err
     return next null, if executed then ctx.OK else ctx.PASS
     lifecycle.nn_start ctx, (err, started) ->
       return next err, ctx.OK
-    # lifecycle.nn_start ctx, (err, started) ->
-    #   return next err if err
-    #   lifecycle.dn_start ctx, (err, started) ->
-    #     next err, ctx.OK
 
 module.exports.push name: 'HDP HDFS NN # Upgrade', timeout: -1, callback: (ctx, next) ->
-  # Shall only be executed on the leader namenode
-  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
-  return next null, ctx.INAPPLICABLE if ctx.config.host isnt namenodes[0]
-  {hdfs_log_dir} = ctx.config.hdp
-  count = (callback) ->
-    ctx.execute
-      cmd: "cat #{hdfs_log_dir}/*/*.log | grep 'upgrade to version' | wc -l"
-    , (err, executed, stdout) ->
-      callback err, parseInt(stdout.trim(), 10) or 0
-  ctx.log 'Dont try to upgrade if namenode is running'
-  lifecycle.nn_status ctx, (err, started) ->
-    return next err if err
-    return next null, ctx.DISABLED if started
-    ctx.log 'Count how many upgrade msg in log'
-    count (err, c1) ->
-      return next err if err
-      ctx.log 'Start namenode'
-      lifecycle.nn_start ctx, (err, started) ->
-        return next err if err
-        return next null, ctx.PASS if started
-        ctx.log 'Count again'
-        count (err, c2) ->
-          return next err if err
-          return next null, ctx.PASS if c1 is c2
-          return next new Error 'Upgrade manually'
+  # TODO, we have never tested migration in HA mode
+  return next null, ctx.INAPPLICABLE
+  # {active_nn, hdfs_log_dir} = ctx.config.hdp
+  # # Shall only be executed on the leader namenode
+  # return next null, ctx.INAPPLICABLE unless active_nn
+  # count = (callback) ->
+  #   ctx.execute
+  #     cmd: "cat #{hdfs_log_dir}/*/*.log | grep 'upgrade to version' | wc -l"
+  #   , (err, executed, stdout) ->
+  #     callback err, parseInt(stdout.trim(), 10) or 0
+  # ctx.log 'Dont try to upgrade if namenode is running'
+  # lifecycle.nn_status ctx, (err, started) ->
+  #   return next err if err
+  #   return next null, ctx.DISABLED if started
+  #   ctx.log 'Count how many upgrade msg in log'
+  #   count (err, c1) ->
+  #     return next err if err
+  #     ctx.log 'Start namenode'
+  #     lifecycle.nn_start ctx, (err, started) ->
+  #       return next err if err
+  #       return next null, ctx.PASS if started
+  #       ctx.log 'Count again'
+  #       count (err, c2) ->
+  #         return next err if err
+  #         return next null, ctx.PASS if c1 is c2
+  #         return next new Error 'Upgrade manually'
 
 module.exports.push name: 'HDP HDFS NN # HA Init JournalNodes', timeout: -1, callback: (ctx, next) ->
-  # Shall only be executed on the main namenode
-  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
+  {nameservice, active_nn} = ctx.config.hdp
+  # Shall only be executed on the leader namenode
   journalnodes = ctx.hosts_with_module 'histi/hdp/hdfs_jn'
-  return next null, ctx.INAPPLICABLE if ctx.config.host isnt namenodes[0]
+  return next null, ctx.INAPPLICABLE unless active_nn
   do_wait = ->
     # all the JournalNodes shall be started
     options = ctx.config.servers
@@ -151,7 +139,7 @@ module.exports.push name: 'HDP HDFS NN # HA Init JournalNodes', timeout: -1, cal
     .on 'item', (journalnode, next) ->
       ctx.connect journalnode, (err, ssh) ->
         return next err if err
-        dir = "#{ctx.config.hdp.hdfs_site['dfs.journalnode.edits.dir']}/hadooper"
+        dir = "#{ctx.config.hdp.hdfs_site['dfs.journalnode.edits.dir']}/#{nameservice}"
         misc.file.exists ssh, dir, (err, exist) ->
           exists++ if exist
           next()
@@ -169,12 +157,12 @@ module.exports.push name: 'HDP HDFS NN # HA Init JournalNodes', timeout: -1, cal
           next null, ctx.OK
   do_wait()
 
-module.exports.push name: 'HDP HDFS NN # HA Init NameNodes', timeout: -1, callback: (ctx, next) ->
-  # Shall only be executed on the main namenode
-  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
-  return next null, ctx.INAPPLICABLE if ctx.config.host is namenodes[0]
+module.exports.push name: 'HDP HDFS NN # HA Init Standby NameNodes', timeout: -1, callback: (ctx, next) ->
+  # Shall only be executed on the leader namenode
+  {active_nn, active_nn_host} = ctx.config.hdp
+  return next null, ctx.INAPPLICABLE if active_nn
   do_wait = ->
-    ctx.waitForConnection namenodes[0], 8020, (err) ->
+    ctx.waitForConnection active_nn_host, 8020, (err) ->
       return next err if err
       do_init()
   do_init = ->
@@ -187,19 +175,8 @@ module.exports.push name: 'HDP HDFS NN # HA Init NameNodes', timeout: -1, callba
       next null, if executed then ctx.OK else ctx.PASS
   do_wait()
 
-# module.exports.push name: 'HDP HDFS NN # HA Service State', timeout: -1, callback: (ctx, next) ->
-#   # Shall only be executed on the main namenode
-#   namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
-#   return next null, ctx.INAPPLICABLE if ctx.config.host isnt namenodes[0]
-#   ctx.execute
-#     cmd: "hdfs haadmin -failover --forcefence --forceactive hadooper #{ctx.config.host.split('.')[0]}"
-#   , (err, executed, stdout) ->
-#     return next err if err
-#     next null, if executed then ctx.OK else ctx.PASS
-
 module.exports.push name: 'HDP HDFS NN # HA Auto Failover', timeout: -1, callback: (ctx, next) ->
-  {hadoop_conf_dir} = ctx.config.hdp
-  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
+  {hadoop_conf_dir, active_nn, active_nn_host} = ctx.config.hdp
   zookeepers = ctx.hosts_with_module 'histi/hdp/zookeeper'
   modified = false
   do_hdfs = ->
@@ -234,7 +211,7 @@ module.exports.push name: 'HDP HDFS NN # HA Auto Failover', timeout: -1, callbac
         do_zkfc()
       , 2000
   do_zkfc = ->
-    if ctx.config.host is namenodes[0]
+    if active_nn
     then do_zkfc_active()
     else do_zkfc_standby()
   do_zkfc_active = ->
@@ -248,11 +225,14 @@ module.exports.push name: 'HDP HDFS NN # HA Auto Failover', timeout: -1, callbac
       code_skipped: 2
     , (err, formated) ->
       return next err if err
+      ctx.log "Is Zookeeper already formated: #{formated}"
       ctx.execute
-        cmd: "yes | hdfs haadmin -transitionToActive -forcemanual hadoop1"
+        # hdfs haadmin -transitionToActive -forcemanual hadoop2
+        cmd: "yes | hdfs haadmin -transitionToActive -forcemanual #{ctx.config.host}"
         if: formated
       , (err, activated) ->
         return next err if err
+        ctx.log "Was #{ctx.config.host} activated: #{activated}"
         # next null, if modified then ctx.OK else ctx.PASS
         lifecycle.zkfc_start ctx, (err, started) ->
           next null, if formated or started then ctx.OK else ctx.PASS
@@ -260,7 +240,7 @@ module.exports.push name: 'HDP HDFS NN # HA Auto Failover', timeout: -1, callbac
     ctx.log "Wait for active NameNode to take leadership"
     ctx.waitForExecution
       # hdfs haadmin -getServiceState hadoop1
-      cmd: mkcmd.hdfs ctx, "hdfs haadmin -getServiceState #{namenodes[0].split('.')[0]}"
+      cmd: mkcmd.hdfs ctx, "hdfs haadmin -getServiceState #{active_nn_host.split('.')[0]}"
       code_skipped: 255
     , (err, stdout) ->
       return next err if err

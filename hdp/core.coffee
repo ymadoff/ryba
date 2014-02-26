@@ -50,28 +50,40 @@ module.exports.push module.exports.configure = (ctx) ->
   # Repository
   ctx.config.hdp.proxy = ctx.config.proxy.http_proxy if typeof ctx.config.hdp.http_proxy is 'undefined'
   ctx.config.hdp.hdp_repo ?= 'http://public-repo-1.hortonworks.com/HDP/centos6/2.x/updates/2.0.6.0/hdp.repo'
-  # Define the role
-  ctx.config.hdp.namenode ?= false
-  ctx.config.hdp.secondary_namenode ?= false
-  ctx.config.hdp.datanode ?= false
-  ctx.config.hdp.hbase_master ?= false
-  # ctx.config.hdp.hbase_regionserver ?= false
-  ctx.config.hdp.zookeeper ?= false
-  ctx.config.hdp.oozie ?= false
+  # HA Configuration
+  ctx.config.hdp.nameservice ?= null
+  throw new Error "Invalid Service Name" unless ctx.config.hdp.nameservice
+  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
+  throw new Error "Need at least 2 namenodes" if namenodes.length < 2
+  ctx.config.hdp.active_nn ?= false
+  active_nn_hosts = ctx.config.servers.filter( (server) -> server.hdp?.active_nn ).map( (server) -> server.host )
+  # active_nn_hosts = [namenodes[0]] if active_nn_hosts.length is 0
+  throw new Error "Invalid Number of Active NameNodes: #{active_nn_hosts.length}" unless active_nn_hosts.length is 1
+  ctx.config.hdp.active_nn_host = active_nn_hosts[0]
   # Define Users and Groups
   ctx.config.hdp.hadoop_user ?= 'root'
   ctx.config.hdp.hadoop_group ?= 'hadoop'
   # Define Directories for Ecosystem Components
-  ctx.config.hdp.sqoop_conf_dir ?= '/etc/sqoop/conf'
+  ctx.config.hdp.hdfs_log_dir ?= '/var/log/hadoop-hdfs'
+  ctx.config.hdp.hdfs_pid_dir ?= '/var/run/hadoop-hdfs'
+  ctx.config.hdp.mapred_log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
+  # ctx.config.hdp.sqoop_conf_dir ?= '/etc/sqoop/conf'
   # Options and configuration
   ctx.config.hdp.core_site ?= {}
   # NameNode hostname
   # ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://#{namenode}:8020"
-  ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://hadooper"
+  ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.hdp.nameservice}"
   ctx.hconfigure = (options, callback) ->
     options.ssh = ctx.ssh if typeof options.ssh is 'undefined'
     options.log ?= ctx.log
     hconfigure options, callback
+  # hadoop env
+  ctx.config.hdp.hadoop_opts ?= 'java.net.preferIPv4Stack': true
+  hadoop_opts = "export HADOOP_OPTS=\""
+  for k, v of ctx.config.hdp.hadoop_opts
+    hadoop_opts += "-D#{k}=#{v} "
+  hadoop_opts += "${HADOOP_OPTS}\""
+  ctx.config.hdp.hadoop_opts = hadoop_opts
 
 ###
 Repository
@@ -81,7 +93,7 @@ Declare the HDP repository.
 module.exports.push name: 'HDP Core # Repository', timeout: -1, callback: (ctx, next) ->
   {proxy, hdp_repo} = ctx.config.hdp
   # Is there a repo to download and install
-  return next() unless hdp_repo
+  return next null, ctx.INAPPLICABLE unless hdp_repo
   modified = false
   do_repo = ->
     ctx.log "Download #{hdp_repo} to /etc/yum.repos.d/hdp.repo"
@@ -176,6 +188,28 @@ module.exports.push name: 'HDP Core # Configuration', callback: (ctx, next) ->
     next null, if modified then ctx.OK else ctx.PASS
   do_core()
 
+module.exports.push name: 'HDP HDFS # Hadoop OPTS', timeout: -1, callback: (ctx, next) ->
+  {hadoop_conf_dir, hadoop_opts, hdfs_log_dir, hdfs_pid_dir} = ctx.config.hdp
+  ctx.write
+    source: "#{__dirname}/files/core_hadoop/hadoop-env.sh"
+    destination: "#{hadoop_conf_dir}/hadoop-env.sh"
+    local_source: true
+    uid: 'hdfs'
+    gid: 'hadoop'
+    mode: 0o755
+    write: [
+      match: /^export HADOOP_OPTS.*$/mg
+      replace: hadoop_opts
+    ,
+      match: /\/var\/log\/hadoop/mg
+      replace: hdfs_log_dir
+    , 
+      match: /\/var\/run\/hadoop/mg
+      replace: hdfs_pid_dir
+    ]
+  , (err, written) ->
+    next err, if written then ctx.OK else ctx.PASS
+
 module.exports.push name: 'HDP Core # Environnment', timeout: -1, callback: (ctx, next) ->
   ctx.write
     destination: '/etc/profile.d/hadoop.sh'
@@ -188,8 +222,8 @@ module.exports.push name: 'HDP Core # Environnment', timeout: -1, callback: (ctx
     next null, if written then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP Core # Compression', timeout: -1, callback: (ctx, next) ->
-  modified = false
   { hadoop_conf_dir } = ctx.config.hdp
+  modified = false
   do_snappy = ->
     ctx.service [
       name: 'snappy'
@@ -289,11 +323,11 @@ module.exports.push name: 'HDP Core # Kerberos', timeout: -1, callback: (ctx, ne
   core_site['hadoop.proxyuser.hcat.hosts'] ?= '*'
   core_site['hadoop.proxyuser.hue.groups'] ?= '*'
   core_site['hadoop.proxyuser.hue.hosts'] ?= '*'
-
-  core_site['hue.kerberos.principal.shortname'] ?= 'hue'
   core_site['hadoop.proxyuser.HTTP.hosts'] = '*'
   core_site['hadoop.proxyuser.HTTP.groups'] ?= '*'
-
+  # Todo, find a better place for this one
+  # http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap14-2-3-hue.html
+  core_site['hue.kerberos.principal.shortname'] ?= 'hue'
   ctx.hconfigure
     destination: "#{hadoop_conf_dir}/core-site.xml"
     properties: core_site
@@ -309,8 +343,13 @@ This action follow the ["Authentication for Hadoop HTTP web-consoles"
 recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 ###
 module.exports.push  name: 'HDP Core # Kerberos Web UI', callback:(ctx, next) ->
+  {core_site} = ctx.config.hdp
   {krb5_client, realm} = ctx.config.krb5_client
-  namenode = ctx.hosts_with_module 'histi/hdp/hdfs_nn', 1
+  # Cluster domain
+  unless core_site['hadoop.http.authentication.cookie.domain']
+    domains = ctx.config.servers.map( (server) -> server.host.split('.').slice(1).join('.') ).filter( (el, pos, self) -> self.indexOf(el) is pos )
+    return next new Error "Multiple domains, set 'hadoop.http.authentication.cookie.domain' manually" if domains.length isnt 1
+    core_site['hadoop.http.authentication.cookie.domain'] = domains[0]
   ctx.execute
     cmd: 'dd if=/dev/urandom of=/etc/hadoop/hadoop-http-auth-signature-secret bs=1024 count=1'
     not_if_exists: '/etc/hadoop/hadoop-http-auth-signature-secret'
@@ -323,7 +362,7 @@ module.exports.push  name: 'HDP Core # Kerberos Web UI', callback:(ctx, next) ->
         'hadoop.http.authentication.type': 'kerberos'
         'hadoop.http.authentication.token.validity': 36000
         'hadoop.http.authentication.signature.secret.file': '/etc/hadoop/hadoop-http-auth-signature-secret'
-        'hadoop.http.authentication.cookie.domain': namenode
+        'hadoop.http.authentication.cookie.domain': core_site['hadoop.http.authentication.cookie.domain']
         'hadoop.http.authentication.simple.anonymous.allowed': 'false'
         # For some reason, _HOST isnt leveraged
         'hadoop.http.authentication.kerberos.principal': "HTTP/#{ctx.config.host}@#{realm}"
