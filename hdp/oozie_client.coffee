@@ -40,7 +40,7 @@ module.exports.push name: 'HDP Oozie Client # Check REST', timeout: -1, callback
       return next null, ctx.PASS
 
 module.exports.push name: 'HDP Oozie Client # Workflow', timeout: -1, callback: (ctx, next) ->
-  {oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
+  {nameservice, oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
   nn = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
   rm = ctx.hosts_with_module 'histi/hdp/hdfs_rm', 1
   oozie_server = ctx.hosts_with_module 'histi/hdp/oozie_server', 1
@@ -58,7 +58,7 @@ module.exports.push name: 'HDP Oozie Client # Workflow', timeout: -1, callback: 
       # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/latest/CDH4-High-Availability-Guide/cdh4hag_topic_2_6.html
       ctx.write [
         content: """
-        nameNode=hdfs://hadooper:8020
+        nameNode=hdfs://#{nameservice}:8020
         jobTracker=#{rm}:8050
         queueName=default
         basedir=${nameNode}/user/#{/^(.*?)[\/@]/.exec(oozie_test_principal)[1]}/test_oozie
