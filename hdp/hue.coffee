@@ -9,6 +9,8 @@ lifecycle = require './lib/lifecycle'
 Resources:   
 *   [Hortonworks instruction](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue.html)
 
+ant asciidoc cyrus-sasl-devel cyrus-sasl-gssapi gcc gcc-c++ krb5-devel libtidy libxml2-devel libxslt-devel mvn mysql mysql-devel openldap-devel python-devel python-simplejson sqlite-devel
+
 ###
 module.exports = []
 
@@ -16,6 +18,8 @@ module.exports = []
 module.exports.push 'histi/actions/mysql_client'
 # Install client to create new Hive principal
 module.exports.push 'histi/actions/krb5_client'
+# Set java_home in "hadoop-env.sh"
+module.exports.push 'histi/hdp/core'
 module.exports.push 'histi/hdp/mapred_client'
 module.exports.push 'histi/hdp/yarn_client'
 
@@ -26,12 +30,12 @@ module.exports.push 'histi/hdp/yarn_client'
 module.exports.push 'histi/hdp/pig'
 # module.exports.push 'histi/hdp/hbase'
 
-module.exports.push (ctx) ->
+module.exports.push module.exports.configure = (ctx) ->
+  return if ctx.hue_configured
+  ctx.hue_configured = true
   # Allow proxy user inside "webhcat-site.xml"
-  throw new Error 'WebHCat server must be installed on the Hue node' unless ctx.has_module 'histi/hdp/webhcat'
   require('./webhcat').configure ctx
   # Allow proxy user inside "oozie-site.xml"
-  throw new Error 'Oozie server must be installed on the Hue node' unless ctx.has_module 'histi/hdp/oozie_server'
   require('./oozie_').configure ctx
   # Allow proxy user inside "core-site.xml"
   require('./core').configure ctx
@@ -68,46 +72,64 @@ module.exports.push name: 'HDP Hue # Core', callback: (ctx, next) ->
 
 module.exports.push name: 'HDP Hue # WebHCat', callback: (ctx, next) ->
   {webhcat_conf_dir} = ctx.config.hdp
-  properties = 
-    'webhcat.proxyuser.hue.hosts': '*'
-    'webhcat.proxyuser.hue.groups': '*'
-  ctx.hconfigure
-    destination: "#{webhcat_conf_dir}/webhcat-site.xml"
-    properties: properties
-    merge: true
-  , (err, configured) ->
-    return next err if err
-    next err, if configured then ctx.OK else ctx.PASS
+  webhcat_server = ctx.host_with_module 'histi/hdp/webhcat'
+  hconfigure = (ssh) ->
+    properties = 
+      'webhcat.proxyuser.hue.hosts': '*'
+      'webhcat.proxyuser.hue.groups': '*'
+    ctx.hconfigure
+      destination: "#{webhcat_conf_dir}/webhcat-site.xml"
+      properties: properties
+      merge: true
+    , (err, configured) ->
+      return next err if err
+      next err, if configured then ctx.OK else ctx.PASS
+  if ctx.config.host is webhcat_server
+    hconfigure ctx.ssh
+  else
+    ctx.connect webhcat_server, (err, ssh) ->
+      return next err if err
+      hconfigure ssh
 
 module.exports.push name: 'HDP Hue # Oozie', callback: (ctx, next) ->
   {oozie_conf_dir} = ctx.config.hdp
-  properties = 
-    'oozie.service.ProxyUserService.proxyuser.hue.hosts': '*'
-    'oozie.service.ProxyUserService.proxyuser.hue.groups': '*'
-  ctx.hconfigure
-    destination: "#{oozie_conf_dir}/oozie-site.xml"
-    properties: properties
-    merge: true
-  , (err, configured) ->
-    return next err if err
-    next err, if configured then ctx.OK else ctx.PASS
+  oozie_server = ctx.host_with_module 'histi/hdp/oozie_server'
+  hconfigure = (ssh) ->
+    properties = 
+      'oozie.service.ProxyUserService.proxyuser.hue.hosts': '*'
+      'oozie.service.ProxyUserService.proxyuser.hue.groups': '*'
+    ctx.hconfigure
+      ssh: ssh
+      destination: "#{oozie_conf_dir}/oozie-site.xml"
+      properties: properties
+      merge: true
+    , (err, configured) ->
+      return next err if err
+      next err, if configured then ctx.OK else ctx.PASS
+  if ctx.config.host is oozie_server
+    hconfigure ctx.ssh
+  else
+    ctx.connect oozie_server, (err, ssh) ->
+      return next err if err
+      hconfigure ssh
 
 # # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue-5-2.html
 module.exports.push name: 'HDP Hue # Configure', callback: (ctx, next) ->
-  {hadoop_conf_dir, hue_conf_dir, hue_ini, hue_smtp_host, webhcat_site} = ctx.config.hdp
+  {nameservice, active_nn_host, hadoop_conf_dir, hue_conf_dir, hue_ini, hue_smtp_host, webhcat_site} = ctx.config.hdp
   webhcat_port = webhcat_site['templeton.port']
   oozie_server = ctx.host_with_module 'histi/hdp/oozie_server'
   webhcat_server = ctx.host_with_module 'histi/hdp/webhcat'
   # todo, this might not work as expected after ha migration
-  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
   resourcemanager = ctx.host_with_module 'histi/hdp/yarn_rm'
   # Configure HDFS Cluster
   hue_ini['hadoop'] ?= {}
   hue_ini['hadoop']['hdfs_clusters'] ?= {}
   hue_ini['hadoop']['hdfs_clusters']['default'] ?= {}
-  # hue_ini['hadoop']['hdfs_clusters']['default']['fs_defaultfs'] ?= "hdfs://#{namenodes[0]}:8020"
-  hue_ini['hadoop']['hdfs_clusters']['default']['fs_defaultfs'] ?= "hdfs://hadooper:8020"
-  hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "http://hadooper:50070/webhdfs/v1"
+  # Using nameservice doesnt yet seem to work
+  #hue_ini['hadoop']['hdfs_clusters']['default']['fs_defaultfs'] ?= "hdfs://#{nameservice}:8020"
+  #hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "http://#{nameservice}:50070/webhdfs/v1"
+  hue_ini['hadoop']['hdfs_clusters']['default']['fs_defaultfs'] ?= "hdfs://#{active_nn_host}:8020"
+  hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "http://#{active_nn_host}:50070/webhdfs/v1"
   # hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "http://#{namenode}:50070/webhdfs/v1"
   hue_ini['hadoop']['hdfs_clusters']['default']['hadoop_hdfs_home'] ?= '/usr/lib/hadoop'
   hue_ini['hadoop']['hdfs_clusters']['default']['hadoop_bin'] ?= '/usr/bin/hadoop'
