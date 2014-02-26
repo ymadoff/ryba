@@ -33,6 +33,7 @@ Configuration
     Update packages on the system
 ###
 module.exports.push module.exports.configure = (ctx) ->
+  require('./proxy').configure ctx
   ctx.config.yum ?= {}
   ctx.config.yum.clean ?= false
   ctx.config.yum.copy ?= null
