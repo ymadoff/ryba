@@ -10,7 +10,7 @@ Search from local:
     ldapsearch -LLLY EXTERNAL -H ldapi:/// -b cn=schema,cn=config dn
 
 Search from remote:
-    ldapsearch -x -LLL -H ldap://hadoop1.hadoop:389 -D cn=Manager,dc=adaltas,dc=com -w test -b "dc=adaltas,dc=com" "objectClass=*" 
+    ldapsearch -x -LLL -H ldap://openldap.hadoop:389 -D cn=Manager,dc=adaltas,dc=com -w test -b "dc=adaltas,dc=com" "objectClass=*" 
     ldapsearch -D cn=admin,cn=config -w test -d 1 -b "cn=config"
     ldapsearch -D cn=Manager,dc=adaltas,dc=com -w test -b "dc=adaltas,dc=com"
     ldapsearch -ZZ -d 5 -D cn=Manager,dc=adaltas,dc=com -w test -b "dc=adaltas,dc=com"

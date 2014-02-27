@@ -9,6 +9,19 @@ module.exports.push 'histi/actions/ntp'
 module.exports.push 'histi/actions/openldap_client'
 
 ###
+Kerberos KDC Client
+===================
+
+Usefull client commands:
+*   To list all the current principals in the realm: `getprincs`
+*   To login: `kadmin -p big/admin@EDF.FR -s big1.big`
+*   To print details on a principal: `getprinc host/hadoop1.hadoop@ADALTAS.COM`
+*   To examine the content of the /etc/krb5.keytab: `klist -etk /etc/krb5.keytab`
+*   To destroy our own tickets: `kdestroy`
+*   To get the test.user's ticket: `kinit -p wdavidw@ADALTAS.COM`
+*   To confirm that we do indeed have the new ticket: `klist`
+*   Check krb5kdc is listening: `netstat -nap | grep :750` and `netstat -nap | grep :88`
+
 Goals
     Enable sshd(8) Kerberos authentication.
     Enable PAM Kerberos authentication.

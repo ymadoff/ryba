@@ -3,19 +3,16 @@
 Kerberos KDC with OpenLDAP Back-End
 ===================================
 
-Usefull commands:
-*   To list all the current principals in the realm: `getprincs`
-*   To login: `kadmin -p big/admin@EDF.FR -s big1.big`
-*   To print details on a principal: `getprinc host/hadoop1.hadoop@ADALTAS.COM`
-*   To examine the content of the /etc/krb5.keytab: `klist -etk /etc/krb5.keytab`
-*   To destroy our own tickets: `kdestroy`
-*   To get the test.user's ticket: `kinit -p wdavidw@ADALTAS.COM`
-*   To confirm that we do indeed have the new ticket: `klist`
-*   Check krb5kdc is listening: `netstat -nap | grep :750\\b` and `netstat -nap | grep :88\\b`
+Usefull server commands:
+*   Backup the db: `kdb5_util dump /path/to/dumpfile`
+*   Initialize realm: `kdb5_ldap_util -D "cn=Manager,dc=adaltas,dc=com" -w test create -subtrees "ou=kerberos,ou=services,ou=lot1,dc=adaltas,dc=com" -r ADALTAS.COM -s -P test`
+*   Load the db: `kdb5_util load -update /path/to/dumpfile`
+*   Stash password: `kdb5_ldap_util -D "cn=Manager,dc=adaltas,dc=com" -w test stashsrvpw -f /etc/krb5.d/stash.keyfile cn=krbadmin,ou=users,dc=adaltas,dc=com`
 
 Resources:
 *   [Kerberos with LDAP backend on centos](http://itdavid.blogspot.fr/2012/05/howto-centos-62-kerberos-kdc-with.html)
 *   [Propagation](http://www-old.grantcohoe.com/guides/services/krb5-kdc)
+*   [Replication](http://tldp.org/HOWTO/Kerberos-Infrastructure-HOWTO/server-replication.html)
 *   [Kerberos with LDAP backend on ubuntu](http://labs.opinsys.com/blog/2010/02/05/setting-up-openldap-kerberos-on-ubuntu-10-04-lucid/)
 
 ###
@@ -120,7 +117,6 @@ module.exports.push name: 'Krb5 Server # LDAP Insert Entries', timeout: 100000, 
     # Without "-P", it prompts for the KDC database master key
     kdc_master_key = 'test'
     ctx.execute
-      # kdb5_ldap_util -D "cn=Manager,dc=adaltas,dc=com" -w test create -subtrees "ou=kerberos,ou=services,ou=lot1,dc=adaltas,dc=com" -r ADALTAS.COM -s -P test
       cmd: "kdb5_ldap_util -D \"#{manager_dn}\" -w #{manager_password} create -subtrees \"#{realms_dn}\" -r #{realm} -s -P #{kdc_master_key}"
       code_skipped: 1
     , (err, executed, stdout, stderr) ->
@@ -147,7 +143,6 @@ module.exports.push name: 'Krb5 Server # LDAP Stash password', callback: (ctx, n
     {manager_dn, manager_password} = ctx.config.openldap_krb5
     ctx.ssh.shell (err, stream) ->
       return next err if err
-      # kdb5_ldap_util -D "cn=Manager,dc=adaltas,dc=com" -w test stashsrvpw -f /etc/krb5.d/stash.keyfile cn=krbadmin,ou=users,dc=adaltas,dc=com
       cmd = "kdb5_ldap_util -D \"#{manager_dn}\" -w #{manager_password} stashsrvpw -f /etc/krb5.d/stash.keyfile #{ldap_kadmind_dn}"
       ctx.log "Run #{cmd}"
       stream.write "#{cmd}\n"
