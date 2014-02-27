@@ -32,7 +32,8 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.snn_port ?= '50090'
   # Options for "hdfs-site.xml"
   ctx.config.hdp.hdfs_site ?= {}
-  ctx.config.hdp.hdfs_site['dfs.datanode.data.dir.perm'] ?= '750'
+  # ctx.config.hdp.hdfs_site['dfs.datanode.data.dir.perm'] ?= '750'
+  ctx.config.hdp.hdfs_site['dfs.datanode.data.dir.perm'] ?= '700'
   ctx.config.hdp.hdfs_site['dfs.journalnode.edits.dir'] ?= '/var/run/hadoop-hdfs/journalnode_edit_dir'
   ctx.config.hdp.hdfs_site['fs.permissions.umask-mode'] ?= '027' # 0750
   # Options for "hadoop-policy.xml"
@@ -253,7 +254,7 @@ module.exports.push name: 'HDP HDFS # SPNEGO', callback: module.exports.spnego =
     destination: '/etc/security/keytabs'
     uid: 'root'
     gid: 'hadoop'
-    mode: 0o755
+    mode: 0o750
   , (err, created) ->
     ctx.log 'Creating HTTP Principals and SPNEGO keytab'
     ctx.krb5_addprinc 
@@ -305,7 +306,6 @@ module.exports.push name: 'HDP HDFS # Kerberos Configure', callback: (ctx, next)
   hdfs_site['dfs.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/_HOST@#{realm}"
   # # Default to ${dfs.web.authentication.kerberos.principal}, but documented in hdp 1.3.2 manual install
   hdfs_site['dfs.secondary.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/_HOST@#{realm}"
-  hdfs_site['dfs.datanode.data.dir.perm'] ?= '700'
   # The address, with a privileged port - any port number under 1023. Example: 0.0.0.0:1019
   hdfs_site['dfs.datanode.address'] ?= '0.0.0.0:1019'
   # The address, with a privileged port - any port number under 1023. Example: 0.0.0.0:1022
