@@ -239,7 +239,7 @@ module.exports.push name: 'HDP YARN # Keytabs Directory', timeout: -1, callback:
     destination: '/etc/security/keytabs'
     uid: 'root'
     gid: 'hadoop'
-    mode: '0750'
+    mode: 0o750
   , (err, created) ->
     next null, if created then ctx.OK else ctx.PASS
 
