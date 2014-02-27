@@ -72,33 +72,41 @@ module.exports.push name: 'HDP Hive & HCat server # Driver', callback: (ctx, nex
     return next err, if configured then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP Hive & HCat server # Kerberos', callback: (ctx, next) ->
-  {hive_user, hive_group} = ctx.config.hdp
+  {hive_user, hive_group, hive_site} = ctx.config.hdp
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
-  ctx.mkdir
-    destination: '/etc/security/keytabs'
-    uid: 'root'
-    gid: 'hadoop'
-    mode: 0o755
-  , (err, created) ->
-    return next err if err
+  modified = false
+  do_metastore = ->
     ctx.krb5_addprinc
-      principal: "hive/#{ctx.config.host}@#{realm}"
+      principal: hive_site['hive.metastore.kerberos.principal']
       randkey: true
-      keytab: "/etc/security/keytabs/hive.service.keytab"
+      keytab: hive_site['hive.metastore.kerberos.keytab.file']
       uid: hive_user
       gid: hive_group
       kadmin_principal: kadmin_principal
       kadmin_password: kadmin_password
       kadmin_server: kadmin_server
-    # ,
-    #   principal: "hcat/#{ctx.config.host}@#{realm}"
-    #   randkey: true
-    #   keytab: "/etc/security/keytabs/hcat.service.keytab"
-    #   uid: 'hcat'
-    #   gid: 'hadoop'
     , (err, created) ->
       return next err if err
-      next null, if created then ctx.OK else ctx.PASS
+      modified = true if created
+      do_server2()
+  do_server2 = ->
+    return do_end() if hive_site['hive.metastore.kerberos.principal'] is hive_site['hive.server2.authentication.kerberos.principal']
+    ctx.krb5_addprinc
+      principal: hive_site['hive.server2.authentication.kerberos.principal']
+      randkey: true
+      keytab: hive_site['hive.server2.authentication.kerberos.keytab']
+      uid: hive_user
+      gid: hive_group
+      kadmin_principal: kadmin_principal
+      kadmin_password: kadmin_password
+      kadmin_server: kadmin_server
+    , (err, created) ->
+      return next err if err
+      modified = true if created
+      do_end()
+  do_end = ->
+    next null, if modified then ctx.OK else ctx.PASS
+  do_metastore()
 
 module.exports.push name: 'HDP Hive & HCat server # Logs', callback: (ctx, next) ->
   ctx.write [

@@ -34,7 +34,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.hive_site['hive.metastore.sasl.enabled'] ?= 'true'
   # The path to the Kerberos Keytab file containing the metastore
   # thrift server's service principal.
-  ctx.config.hdp.hive_site['hive.metastore.kerberos.keytab.file'] ?= '/etc/security/keytabs/hive.service.keytab'
+  ctx.config.hdp.hive_site['hive.metastore.kerberos.keytab.file'] ?= '/etc/hive/conf/hive.service.keytab'
   # The service principal for the metastore thrift server. The
   # special string _HOST will be replaced automatically with the correct  hostname.
   ctx.config.hdp.hive_site['hive.metastore.kerberos.principal'] ?= "hive/_HOST@#{realm}"
@@ -44,7 +44,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.hive_site['hive.server2.authentication'] ?= 'KERBEROS'
   # The keytab for the HiveServer2 service principal
   # 'hive.server2.authentication.kerberos.keytab': "/etc/security/keytabs/hcat.service.keytab"
-  ctx.config.hdp.hive_site['hive.server2.authentication.kerberos.keytab'] ?= '/etc/security/keytabs/hive.service.keytab'
+  ctx.config.hdp.hive_site['hive.server2.authentication.kerberos.keytab'] ?= '/etc/hive/conf/hive.service.keytab'
   # The service principal for the HiveServer2. If _HOST
   # is used as the hostname portion, it will be replaced.
   # with the actual hostname of the running instance.
