@@ -26,9 +26,9 @@ nodejs = module.exports = []
 ###
 Dependencies: users, proxy
 ###
-nodejs.push 'histi/actions/users'
-nodejs.push 'histi/actions/git'
-# nodejs.push 'histi/actions/proxy'
+nodejs.push 'phyla/actions/users'
+nodejs.push 'phyla/actions/git'
+# nodejs.push 'phyla/actions/proxy'
 
 ###
 Configuration

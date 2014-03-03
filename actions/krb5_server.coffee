@@ -5,7 +5,7 @@ Kerberos KDC with OpenLDAP Back-End
 
 Usefull server commands:
 *   Backup the db: `kdb5_util dump /path/to/dumpfile`
-*   Initialize realm: `kdb5_ldap_util -D "cn=Manager,dc=adaltas,dc=com" -w test create -subtrees "ou=kerberos,ou=services,ou=lot1,dc=adaltas,dc=com" -r ADALTAS.COM -s -P test`
+*   Initialize realm: `kdb5_ldap_util -D "cn=Manager,dc=adaltas,dc=com" -w test create -subtrees "ou=kerberos,ou=services,dc=adaltas,dc=com" -r ADALTAS.COM -s -P test`
 *   Load the db: `kdb5_util load -update /path/to/dumpfile`
 *   Stash password: `kdb5_ldap_util -D "cn=Manager,dc=adaltas,dc=com" -w test stashsrvpw -f /etc/krb5.d/stash.keyfile cn=krbadmin,ou=users,dc=adaltas,dc=com`
 
@@ -21,8 +21,8 @@ each = require 'each'
 misc = require 'mecano/lib/misc'
 module.exports = []
 
-module.exports.push 'histi/actions/openldap_client'
-module.exports.push 'histi/actions/yum'
+module.exports.push 'phyla/actions/openldap_client'
+module.exports.push 'phyla/actions/yum'
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./krb5_client').configure ctx

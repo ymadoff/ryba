@@ -3,7 +3,7 @@ each = require 'each'
 mecano = require 'mecano'
 actions = module.exports = []
 
-actions.push 'histi/actions/yum'
+actions.push 'phyla/actions/yum'
 
 actions.push (ctx) ->
   ctx.config.services ?= []

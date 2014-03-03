@@ -6,8 +6,8 @@ each = require 'each'
 hconfigure = require './lib/hconfigure'
 
 module.exports = []
-module.exports.push 'histi/actions/yum'
-module.exports.push 'histi/actions/krb5_client' #kadmin must be present
+module.exports.push 'phyla/actions/yum'
+module.exports.push 'phyla/actions/krb5_client' #kadmin must be present
 
 ###
 
@@ -53,7 +53,7 @@ module.exports.push module.exports.configure = (ctx) ->
   # HA Configuration
   ctx.config.hdp.nameservice ?= null
   throw new Error "Invalid Service Name" unless ctx.config.hdp.nameservice
-  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
+  namenodes = ctx.hosts_with_module 'phyla/hdp/hdfs_nn'
   throw new Error "Need at least 2 namenodes" if namenodes.length < 2
   ctx.config.hdp.active_nn ?= false
   active_nn_hosts = ctx.config.servers.filter( (server) -> server.hdp?.active_nn ).map( (server) -> server.host )

@@ -3,8 +3,17 @@ quote = require 'regexp-quote'
 
 ntp = module.exports = []
 
-ntp.push 'histi/actions/yum'
+ntp.push 'phyla/actions/yum'
 
+###
+Command `ntpq -p` should print:   
+```
+     remote           refid      st t when poll reach   delay   offset  jitter
+==============================================================================
++ntp1.domain.com     192.168.0.170     5 u   15  256  377    0.400   -2.950   3.127
+*ntp2.domain.com     192.168.0.178     5 u  213  256  377    0.391   -2.409   2.785
+```
+###
 ntp.push (ctx) ->
   ctx.config.ntp ?= {}
   ctx.config.ntp.servers ?= ['pool.ntp.org']
@@ -33,6 +42,30 @@ ntp.push name: 'NTP # Install', timeout: -1, callback: (ctx, next) ->
     ctx.log "Sync clock on first install since ntpd isnt yet started"
     ctx.execute
       cmd: "ntpdate #{ctx.config.ntp.servers[0]}"
+    , (err) ->
+      next err, ctx.OK
+
+ntp.push name: 'NTP # Configure', callback: (ctx, next) ->
+  write = []
+  write.push
+    match: /^(server [\d]+.*$)/mg
+    replace: "#$1"
+  for server in ctx.config.ntp.servers
+    write.push
+      match: new RegExp "^server #{quote server}$", 'mg'
+      replace: "server #{server}"
+      append: 'Please consider joining'
+  ctx.write
+    destination: '/etc/ntp.conf'
+    write: write
+    backup: true
+  , (err, written) ->
+    return next err if err
+    return next null, ctx.PASS unless written
+    ctx.service
+      name: 'ntp'
+      srv_name: 'ntpd'
+      action: 'restart'
     , (err) ->
       next err, ctx.OK
 
@@ -71,30 +104,6 @@ ntp.push name: 'NTP # Check', callback: (ctx, next) ->
           action: 'stop'
         , (err, serviced) ->
           next err, ctx.OK
-
-ntp.push name: 'NTP # Configure', callback: (ctx, next) ->
-  write = []
-  write.push
-    match: /^(server [\d]+.*$)/mg
-    replace: "#$1"
-  for server in ctx.config.ntp.servers
-    write.push
-      match: new RegExp "^server #{quote server}$", 'mg'
-      replace: "server #{server}"
-      append: 'Please consider joining'
-  ctx.write
-    destination: '/etc/ntp.conf'
-    write: write
-    backup: true
-  , (err, written) ->
-    return next err if err
-    return next null, ctx.PASS unless written
-    ctx.service
-      name: 'ntp'
-      srv_name: 'ntpd'
-      action: 'restart'
-    , (err) ->
-      next err, ctx.OK
 
 
 

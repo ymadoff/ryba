@@ -4,15 +4,15 @@ mkcmd = require './lib/mkcmd'
 
 module.exports = []
 
-module.exports.push 'histi/actions/yum'
-module.exports.push 'histi/hdp/hdfs'
+module.exports.push 'phyla/actions/yum'
+module.exports.push 'phyla/hdp/hdfs'
 
 module.exports.push module.exports.configure = (ctx) ->
   return if ctx.mapred_configured
   ctx.mapred_configured = true
   require('./hdfs').configure ctx
   require('./mapred_').configure ctx
-  jobhistoryserver = ctx.host_with_module 'histi/hdp/mapred_jhs'
+  jobhistoryserver = ctx.host_with_module 'phyla/hdp/mapred_jhs'
   # Options for mapred-site.xml
   ctx.config.hdp.mapred ?= {}
   ctx.config.hdp.mapred['mapreduce.job.counters.max'] ?= 120

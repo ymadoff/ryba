@@ -7,7 +7,7 @@ Install the MySQL command-line tool.
 mecano = require 'mecano'
 module.exports = []
 
-module.exports.push 'histi/actions/yum'
+module.exports.push 'phyla/actions/yum'
 
 ###
 Package

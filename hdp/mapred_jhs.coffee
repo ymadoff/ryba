@@ -3,7 +3,7 @@ lifecycle = require './lib/lifecycle'
 mkcmd = require './lib/mkcmd'
 module.exports = []
 
-module.exports.push 'histi/hdp/mapred'
+module.exports.push 'phyla/hdp/mapred'
 
 module.exports.push (ctx) ->
   require('./mapred').configure ctx

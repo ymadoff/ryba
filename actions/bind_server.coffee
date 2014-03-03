@@ -5,8 +5,8 @@ quote = require 'regexp-quote'
 
 module.exports = []
 
-module.exports.push 'histi/actions/bind_client'
-module.exports.push 'histi/actions/yum'
+module.exports.push 'phyla/actions/bind_client'
+module.exports.push 'phyla/actions/yum'
 
 module.exports.push (ctx) ->
   ctx.config.bind_server ?= []
@@ -18,7 +18,7 @@ module.exports.push (ctx) ->
 Install
 -------
 Install and configure a "bind" server. Note, "bind utils" is installed
-by the dependency "histi/action/bind_client".
+by the dependency "phyla/action/bind_client".
 
 ## Centos installation
 https://www.digitalocean.com/community/articles/how-to-install-the-bind-dns-server-on-centos-6

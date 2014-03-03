@@ -7,7 +7,7 @@ Arbitrary TCP and UDP connections and listens.
 mecano = require 'mecano'
 actions = module.exports = []
 
-actions.push 'histi/actions/yum'
+actions.push 'phyla/actions/yum'
 
 ###
 Installation

@@ -22,7 +22,7 @@ module.exports.push (ctx, next) ->
   krb5_server.configure ctx
   # Configure openldap_krb5
   {groups_container_dn, admin_group, users_container_dn, admin_user} = ctx.config.openldap_krb5
-  ctx.config.openldap_krb5.admin_user = misc.merge {}, admin_user,
+  ctx.config.openldap_krb5.admin_user = misc.merge {},
     cn: /^cn=(.*?),/.exec(users_container_dn)[1]
     objectClass: [
       'top', 'inetOrgPerson', 'organizationalPerson',
@@ -38,11 +38,13 @@ module.exports.push (ctx, next) ->
     loginShell: '/bin/false'
     displayname: 'Kerberos Administrator'
     userPassword: '{SSHA}uQcSsw5CySTkBXjOY/N0hcduA6yFiI0k' #test
-  ctx.config.openldap_krb5.admin_group = misc.merge {}, admin_group,
+  , admin_user
+  ctx.config.openldap_krb5.admin_group = misc.merge {},
     cn: /^cn=(.*?),/.exec(groups_container_dn)[1]
     objectClass: [ 'top', 'posixGroup' ]
     gidNumber: '800'
     description: 'Kerberos administrator\'s group.'
+  , admin_group
   # Create LDAP admin connection if not already present
   require('./openldap_connection').configure ctx, next
 
@@ -155,9 +157,9 @@ module.exports.push name: 'OpenLDAP Kerberos # User permissions', callback: (ctx
       # for now because it would be great to test permission
       # return next err if err
       # ctx.log 'Check it return the « No such object (32) » error'
-      # ldapsearch -xLLLD cn=nssproxy,ou=users,dc=adaltas,dc=com -w test -bou=kerberos,ou=services,ou=lot1,dc=adaltas,dc=com dn
+      # ldapsearch -xLLLD cn=nssproxy,ou=users,dc=adaltas,dc=com -w test -bou=kerberos,ou=services,dc=adaltas,dc=com dn
       # ctx.execute
-      #   cmd: "ldapsearch -xLLLD cn=nssproxy,ou=users,dc=adaltas,dc=com -w test -bou=kerberos,ou=services,ou=lot1,dc=adaltas,dc=com dn"
+      #   cmd: "ldapsearch -xLLLD cn=nssproxy,ou=users,dc=adaltas,dc=com -w test -bou=kerberos,ou=services,dc=adaltas,dc=com dn"
       #   code: 32
       # , (err) ->
       #   next err, if modified then ctx.OK else ctx.PASS

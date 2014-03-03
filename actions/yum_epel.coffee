@@ -1,6 +1,6 @@
 
 module.exports = []
-module.exports.push 'histi/actions/curl'
+module.exports.push 'phyla/actions/curl'
 
 module.exports.push (ctx) ->
   require('./yum').configure ctx

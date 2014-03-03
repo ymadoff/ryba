@@ -2,7 +2,7 @@
 path = require 'path'
 
 module.exports = []
-module.exports.push 'histi/actions/mysql_client'
+module.exports.push 'phyla/actions/mysql_client'
 
 module.exports.push (ctx) ->
   require('./core').configure ctx

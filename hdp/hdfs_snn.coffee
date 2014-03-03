@@ -2,7 +2,7 @@
 lifecycle = require './lib/lifecycle'
 module.exports = []
 
-module.exports.push 'histi/hdp/hdfs'
+module.exports.push 'phyla/hdp/hdfs'
 
 module.exports.push (ctx) ->
   require('./hdfs').configure ctx

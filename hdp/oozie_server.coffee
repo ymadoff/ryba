@@ -5,8 +5,8 @@ mkcmd = require './lib/mkcmd'
 
 module.exports = []
 
-module.exports.push 'histi/actions/mysql_client'
-module.exports.push 'histi/hdp/core'
+module.exports.push 'phyla/actions/mysql_client'
+module.exports.push 'phyla/hdp/core'
 
 ###
 Oozie source code and examples are located in /usr/share/doc/oozie-4.0.0.2.0.6.0/
@@ -17,8 +17,8 @@ module.exports.push module.exports.configure = (ctx) ->
   {realm} = ctx.config.krb5_client
   ctx.config.hdp.oozie_db_username ?= ctx.config.mysql_server.username
   ctx.config.hdp.oozie_db_password ?= ctx.config.mysql_server.password
-  # dbhost = ctx.config.hdp.oozie_db_host ?= ctx.servers(action: 'histi/actions/mysql_server')[0]
-  dbhost = ctx.config.hdp.oozie_db_host ?= ctx.host_with_module 'histi/actions/mysql_server'
+  # dbhost = ctx.config.hdp.oozie_db_host ?= ctx.servers(action: 'phyla/actions/mysql_server')[0]
+  dbhost = ctx.config.hdp.oozie_db_host ?= ctx.host_with_module 'phyla/actions/mysql_server'
   ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{dbhost}:3306/oozie?createDatabaseIfNotExist=true"
   ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
   ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'

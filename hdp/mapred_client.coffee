@@ -2,7 +2,7 @@
 mkcmd = require './lib/mkcmd'
 
 module.exports = []
-module.exports.push 'histi/hdp/yarn_client'
+module.exports.push 'phyla/hdp/yarn_client'
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./hdfs').configure ctx

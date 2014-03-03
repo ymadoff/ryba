@@ -2,9 +2,9 @@
 lifecycle = require './lib/lifecycle'
 
 module.exports = []
-module.exports.push 'histi/actions/yum'
-module.exports.push 'histi/actions/java'
-module.exports.push 'histi/hdp/core'
+module.exports.push 'phyla/actions/yum'
+module.exports.push 'phyla/actions/java'
+module.exports.push 'phyla/hdp/core'
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./core').configure ctx
@@ -60,7 +60,7 @@ module.exports.push name: 'HDP ZooKeeper # Layout', callback: (ctx, next) ->
 
 module.exports.push name: 'HDP ZooKeeper # Configure', callback: (ctx, next) ->
   modified = false
-  hosts = ctx.hosts_with_module 'histi/hdp/zookeeper'
+  hosts = ctx.hosts_with_module 'phyla/hdp/zookeeper'
   {java_home} = ctx.config.java
   { hadoop_group,
     zookeeper_user, zookeeper_data_dir, zookeeper_pid_dir, zookeeper_log_dir,

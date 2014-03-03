@@ -1,10 +1,10 @@
 
 module.exports = []
 
-module.exports.push 'histi/hdp/oozie_'
-module.exports.push 'histi/actions/nc'
-module.exports.push 'histi/hdp/mapred_client'
-module.exports.push 'histi/hdp/yarn_client'
+module.exports.push 'phyla/hdp/oozie_'
+module.exports.push 'phyla/actions/nc'
+module.exports.push 'phyla/hdp/mapred_client'
+module.exports.push 'phyla/hdp/yarn_client'
 
 module.exports.push (ctx) ->
   require('../actions/nc').configure ctx
@@ -12,7 +12,7 @@ module.exports.push (ctx) ->
 
 module.exports.push name: 'HDP Oozie Client # Check Client', timeout: -1, callback: (ctx, next) ->
   {oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
-  oozie_server = ctx.host_with_module 'histi/hdp/oozie_server'
+  oozie_server = ctx.host_with_module 'phyla/hdp/oozie_server'
   ctx.waitForConnection oozie_server, oozie_port, (err) ->
     ctx.execute
       cmd: """
@@ -26,7 +26,7 @@ module.exports.push name: 'HDP Oozie Client # Check Client', timeout: -1, callba
 
 module.exports.push name: 'HDP Oozie Client # Check REST', timeout: -1, callback: (ctx, next) ->
   {oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
-  oozie_server = ctx.host_with_module 'histi/hdp/oozie_server'
+  oozie_server = ctx.host_with_module 'phyla/hdp/oozie_server'
   ctx.waitForConnection oozie_server, oozie_port, (err) ->
     return next err if err
     ctx.execute
@@ -41,9 +41,9 @@ module.exports.push name: 'HDP Oozie Client # Check REST', timeout: -1, callback
 
 module.exports.push name: 'HDP Oozie Client # Workflow', timeout: -1, callback: (ctx, next) ->
   {nameservice, oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
-  nn = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
-  rm = ctx.hosts_with_module 'histi/hdp/hdfs_rm', 1
-  oozie_server = ctx.hosts_with_module 'histi/hdp/oozie_server', 1
+  nn = ctx.hosts_with_module 'phyla/hdp/hdfs_nn'
+  rm = ctx.hosts_with_module 'phyla/hdp/hdfs_rm', 1
+  oozie_server = ctx.hosts_with_module 'phyla/hdp/oozie_server', 1
   ctx.waitForConnection oozie_server, oozie_port, (err) ->
     return next err if err
     ctx.execute

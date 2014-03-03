@@ -2,7 +2,7 @@
 lifecycle = require './lib/lifecycle'
 module.exports = []
 
-module.exports.push 'histi/hdp/yarn'
+module.exports.push 'phyla/hdp/yarn'
 
 module.exports.push (ctx) ->
   require('./yarn').configure ctx

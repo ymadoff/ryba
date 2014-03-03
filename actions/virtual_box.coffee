@@ -5,7 +5,7 @@ Virtual Box
 
 ###
 module.exports = []
-module.exports.push 'histi/actions/curl'
+module.exports.push 'phyla/actions/curl'
 
 module.exports.push name: 'VirtualBox # Guest Additions', timeout: -1, callback: (ctx, next) ->
   ctx.log 'Get VirtualBox version on host machine'

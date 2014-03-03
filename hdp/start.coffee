@@ -8,17 +8,17 @@ module.exports.push (ctx) ->
   require('./mapred').configure ctx
 
 module.exports.push name: 'HDP # Start ResourceManager', callback: (ctx, next) ->
-  return next() unless ctx.has_module 'histi/hdp/yarn_rm'
+  return next() unless ctx.has_module 'phyla/hdp/yarn_rm'
   lifecycle.rm_start ctx, (err, started) ->
     next err, if started then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP # Start NodeManager', callback: (ctx, next) ->
-  return next() unless ctx.has_module 'histi/hdp/yarn_nm'
+  return next() unless ctx.has_module 'phyla/hdp/yarn_nm'
   lifecycle.nm_start ctx, (err, started) ->
     next err, if started then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP # Start MapReduce HistoryServer', callback: (ctx, next) ->
-  return next() unless ctx.has_module 'histi/hdp/mapred_jhs'
+  return next() unless ctx.has_module 'phyla/hdp/mapred_jhs'
   lifecycle.jhs_start ctx, (err, started) ->
     next err, if started then ctx.OK else ctx.PASS
 

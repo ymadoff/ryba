@@ -17,10 +17,10 @@ See the documentation about [Software Requirements][sr].
 
 [sr]: http://incubator.apache.org/ambari/1.2.0/installing-hadoop-using-ambari/content/ambari-chap1-2.html#ambari-chap1-2-2
 ###
-module.exports.push 'histi/actions/proxy'
-module.exports.push 'histi/actions/httpd'
-module.exports.push 'histi/actions/yum'
-module.exports.push 'histi/actions/netcat'
+module.exports.push 'phyla/actions/proxy'
+module.exports.push 'phyla/actions/httpd'
+module.exports.push 'phyla/actions/yum'
+module.exports.push 'phyla/actions/netcat'
 
 ###
 Configuration

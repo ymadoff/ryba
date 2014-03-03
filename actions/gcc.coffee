@@ -2,7 +2,7 @@
 mecano = require 'mecano'
 module.exports = []
 
-module.exports.push 'histi/actions/yum'
+module.exports.push 'phyla/actions/yum'
 
 module.exports.push name: 'GCC', timeout: -1, callback: (ctx, next) ->
   ctx.service

@@ -2,14 +2,14 @@
 hproperties = require './lib/properties'
 module.exports = []
 
-module.exports.push 'histi/actions/yum'
+module.exports.push 'phyla/actions/yum'
 
 module.exports.push module.exports.configure = (ctx) ->
   return if ctx.hbase_configured
   ctx.hbase_configured = true
   require('./core').configure ctx
   {realm} = ctx.config.krb5_client
-  zookeeper_hosts = ctx.hosts_with_module('histi/hdp/zookeeper').join ','
+  zookeeper_hosts = ctx.hosts_with_module('phyla/hdp/zookeeper').join ','
   ctx.config.hdp ?= {}
   ctx.config.hdp.hbase_user ?= 'hbase'
   ctx.config.hdp.hbase_conf_dir ?= '/etc/hbase/conf'

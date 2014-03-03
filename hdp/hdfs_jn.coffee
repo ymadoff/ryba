@@ -3,7 +3,7 @@ lifecycle = require './lib/lifecycle'
 mkcmd = require './lib/mkcmd'
 module.exports = []
 
-module.exports.push 'histi/hdp/hdfs'
+module.exports.push 'phyla/hdp/hdfs'
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./hdfs').configure ctx

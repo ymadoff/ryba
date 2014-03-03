@@ -7,16 +7,16 @@ mkcmd = require './lib/mkcmd'
 module.exports = []
 
 # Install the mysql connector
-module.exports.push 'histi/actions/mysql_client'
+module.exports.push 'phyla/actions/mysql_client'
 # Deploy the HDP repository
 # Configure "core-site.xml" and "hadoop-env.sh"
-module.exports.push 'histi/hdp/core'
+module.exports.push 'phyla/hdp/core'
 # Install client to create new Hive principal
-module.exports.push 'histi/actions/krb5_client'
+module.exports.push 'phyla/actions/krb5_client'
 # Install the Hive and HCatalog service
-module.exports.push 'histi/hdp/hive_'
+module.exports.push 'phyla/hdp/hive_'
 # Validate DNS lookup
-module.exports.push 'histi/actions/dns'
+module.exports.push 'phyla/actions/dns'
 
 
 module.exports.push module.exports.configure = (ctx) ->

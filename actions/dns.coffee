@@ -4,7 +4,7 @@ module.exports = []
 
 ipRegex = /^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$/
 
-module.exports.push 'histi/actions/bind_client'
+module.exports.push 'phyla/actions/bind_client'
 
 module.exports.push name: 'DNS # Forward lookup', callback: (ctx, next) ->
   ctx.execute

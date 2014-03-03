@@ -16,9 +16,9 @@ module.exports = []
 ###
 Dependencies: users, proxy
 ###
-module.exports.push 'histi/actions/users'
-module.exports.push 'histi/actions/yum'
-module.exports.push 'histi/actions/proxy'
+module.exports.push 'phyla/actions/users'
+module.exports.push 'phyla/actions/yum'
+module.exports.push 'phyla/actions/proxy'
 
 ###
 Configuration

@@ -2,9 +2,9 @@
 mkcmd = require './lib/mkcmd'
 
 module.exports = []
-module.exports.push 'histi/actions/nc'
-module.exports.push 'histi/hdp/mapred_client'
-module.exports.push 'histi/hdp/yarn_client'
+module.exports.push 'phyla/actions/nc'
+module.exports.push 'phyla/hdp/mapred_client'
+module.exports.push 'phyla/hdp/yarn_client'
 
 module.exports.push (ctx) ->
   require('./hdfs').configure ctx
@@ -51,7 +51,7 @@ module.exports.push name: 'HDP Pig # Env', callback: (ctx, next) ->
     next err, if rendered then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP PIG # Check', callback: (ctx, next) ->
-  rm = ctx.host_with_module 'histi/hdp/yarn_rm'
+  rm = ctx.host_with_module 'phyla/hdp/yarn_rm'
   ctx.waitForConnection rm, 8050, (err) ->
     return next err if err
     ctx.execute

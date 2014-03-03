@@ -6,7 +6,7 @@ OpenLDAP ACL
 
 module.exports = []
 
-module.exports.push 'histi/actions/openldap_server'
+module.exports.push 'phyla/actions/openldap_server'
 
 module.exports.push (ctx, next) ->
   require('./openldap_connection').configure ctx, next

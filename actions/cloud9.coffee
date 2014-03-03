@@ -6,9 +6,9 @@ Cloud9
 mecano = require 'mecano'
 module.exports = []
 
-module.exports.push 'histi/actions/yum'
-module.exports.push 'histi/actions/git'
-module.exports.push 'histi/actions/nodejs'
+module.exports.push 'phyla/actions/yum'
+module.exports.push 'phyla/actions/git'
+module.exports.push 'phyla/actions/nodejs'
 
 module.exports.push (ctx) ->
   ctx.config.cloud9 ?= {}

@@ -15,8 +15,8 @@ module.exports = []
 ###
 Dependencies: proxy
 ###
-module.exports.push 'histi/actions/proxy'
-module.exports.push 'histi/actions/network'
+module.exports.push 'phyla/actions/proxy'
+module.exports.push 'phyla/actions/network'
 
 ###
 Configuration
@@ -80,6 +80,7 @@ is available on [the centos website](http://www.centos.org/docs/5/html/yum/sn-yu
 module.exports.push name: 'YUM # Configuration', callback: (ctx, next) ->
   {config} = ctx.config.yum
   ctx.log 'Update configuration'
+  console.log config
   ctx.ini
     content: config
     destination: '/etc/yum.conf'

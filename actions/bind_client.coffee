@@ -7,7 +7,7 @@ Bind Client
 ===========
 ###
 
-module.exports.push 'histi/actions/yum'
+module.exports.push 'phyla/actions/yum'
 
 ###
 BIND Utilities is not a separate package, it is a 

@@ -2,8 +2,8 @@
 lifecycle = require './lib/lifecycle'
 module.exports = []
 
-module.exports.push 'histi/actions/nc'
-module.exports.push 'histi/hdp/yarn'
+module.exports.push 'phyla/actions/nc'
+module.exports.push 'phyla/hdp/yarn'
 
 module.exports.push (ctx) ->
   require('../actions/nc').configure ctx
@@ -26,7 +26,7 @@ module.exports.push name: 'HDP YARN NM # Kerberos', callback: (ctx, next) ->
     next null, if created then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP YARN NM # Start', timeout: -1, callback: (ctx, next) ->
-  resourcemanager = ctx.host_with_module 'histi/hdp/yarn_rm'
+  resourcemanager = ctx.host_with_module 'phyla/hdp/yarn_rm'
   ctx.waitForConnection resourcemanager, 8088, (err) ->
     return next err if err
     lifecycle.nm_start ctx, (err, started) ->

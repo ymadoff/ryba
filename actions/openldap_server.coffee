@@ -3,9 +3,6 @@
 OpenLDAP
 ========
 
-Port, 389 and 636
-todo, add migrationtools
-
 Search from local:
     ldapsearch -LLLY EXTERNAL -H ldapi:/// -b cn=schema,cn=config dn
 
@@ -21,6 +18,17 @@ Check configuration with debug information:
 Change user password:
     ldappasswd -xZWD cn=Manager,dc=adaltas,dc=com -S cn=wdavidw,ou=users,dc=adaltas,dc=com
 
+The default ports used by OpenLdap server are 389 and 636.
+
+todo: add migrationtools
+
+Enable ldapi:// access to root on our ldap tree
+  vi /etc/openldap/slapd.d/cn=config/olcDatabase={2}bdb.ldif
+  # Add new olcAccess rule
+  > olcAccess: {0}to *  by dn.base="gidNumber=0+uidNumber=0,cn=peercred,cn=externa
+  > l,cn=auth" manage  by * none
+  ldapsearch -LLLY EXTERNAL -H ldapi:/// -b dc=adaltas,dc=com
+
 Resources:
 
   http://serverfault.com/questions/323497/how-do-i-configure-ldap-on-centos-6-for-user-authentication-in-the-most-secure-a
@@ -31,8 +39,8 @@ each = require 'each'
 ldap = require 'ldapjs'
 module.exports = []
 
-module.exports.push 'histi/actions/yum'
-module.exports.push 'histi/actions/iptables'
+module.exports.push 'phyla/actions/yum'
+module.exports.push 'phyla/actions/iptables'
 
 ###
 Configuration
@@ -51,8 +59,11 @@ module.exports.push module.exports.configure = (ctx) ->
   throw new Error "Missing \"openldap_server.config_dn\" property" unless ctx.config.openldap_server.config_dn
   throw new Error "Missing \"openldap_server.config_password\" property" unless ctx.config.openldap_server.config_password
   throw new Error "Missing \"openldap_server.config_slappasswd\" property" unless ctx.config.openldap_server.config_slappasswd
+  {suffix} = ctx.config.openldap_server
   ctx.config.openldap_server.root_dn ?= "cn=Manager,#{ctx.config.openldap_server.suffix}"
   ctx.config.openldap_server.log_level ?= 256
+  ctx.config.openldap_server.users_dn ?= "ou=users,#{suffix}"
+  ctx.config.openldap_server.groups_dn ?= "ou=groups,#{suffix}"
   ctx.config.openldap_server.ldapadd ?= []
   ctx.config.openldap_server.ldapdelete ?= []
   ctx.config.openldap_server.tls ?= false
@@ -105,14 +116,6 @@ module.exports.push name: 'OpenLDAP Server # Configure', timeout: -1, callback: 
         match: /^olcRootPW.*$/mg
         replace: "olcRootPW: #{root_slappasswd}"
         append: 'olcRootDN'
-      # ,
-      #   match: /^olcAccess.*to attrs=userPassword.*$/mg
-      #   replace: "olcAccess: {0}to attrs=userPassword by self write by dn.base=\"cn=Manager,dc=adaltas,dc=com\" write by anonymous auth by * none"
-      #   append: true
-      # ,
-      #   match: /^olcAccess.*to \*.*$/mg
-      #   replace: "olcAccess: {1}to * by dn.base=\"cn=Manager,dc=adaltas,dc=com\" write by self write by * read"
-      #   append: true
       ]
     , (err, written) ->
       return next err if err
@@ -224,6 +227,35 @@ module.exports.push name: 'OpenLDAP Server # Logging', callback: (ctx, next) ->
     next err, if modified then ctx.OK else ctx.PASS
   rsyslog()
 
+module.exports.push name: 'OpenLDAP Server # Users and Groups', timeout: -1, callback: (ctx, next) ->
+  {root_dn, root_password, suffix, users_dn, groups_dn} = ctx.config.openldap_server
+  {suffix_k, suffix_v} = /(\w+)=([^,]+)/.exec suffix
+  ctx.execute
+    cmd: """
+ldapadd -c -D #{root_dn} -w #{root_password} <<-EOF
+dn: #{suffix}
+#{suffix_k}: #{suffix_v}
+objectClass: top
+objectClass: domain
+
+dn: #{users_dn}
+ou: Users
+objectClass: top
+objectClass: organizationalUnit
+description: Central location for UNIX users
+
+dn: #{groups_dn}
+ou: Groups
+objectClass: top
+objectClass: organizationalUnit
+description: Central location for UNIX groups
+EOF
+    """
+    code_skipped: 68
+  , (err, executed) ->
+    return next err, if executed then ctx.OK else ctx.PASS
+
+
 module.exports.push name: 'OpenLDAP Server # SUDO schema', timeout: -1, callback: (ctx, next) ->
   # conf = '/tmp/sudo_schema/schema.conf'
   # ldif = '/tmp/sudo_schema/ldif'
@@ -245,7 +277,6 @@ module.exports.push name: 'OpenLDAP Server # SUDO schema', timeout: -1, callback
       do_register schema.trim()
   do_register = (schema) ->
     ctx.ldap_schema
-      # ldap: ctx.ldap_config
       name: 'sudo'
       schema: schema
       binddn: config_dn
@@ -262,7 +293,7 @@ module.exports.push name: 'OpenLDAP Server # Delete ldif data', callback: (ctx, 
   modified = 0
   each(ldapdelete)
   .on 'item', (path, next) ->
-    destination = "/tmp/histi_#{Date.now()}"
+    destination = "/tmp/phyla_#{Date.now()}"
     ctx.upload
       source: path
       destination: destination
@@ -288,17 +319,15 @@ module.exports.push name: 'OpenLDAP Server # Add ldif data', timeout: 100000, ca
   modified = 0
   each(ldapadd)
   .on 'item', (path, next) ->
-    destination = "/tmp/histi_#{Date.now()}"
+    destination = "/tmp/phyla_#{Date.now()}"
     ctx.log "Create temp file: #{destination}"
     ctx.upload
       source: path
       destination: destination
     , (err, uploaded) ->
       return next err if err
-      cmd = "ldapadd -c -D #{root_dn} -w #{root_password} -f #{destination}"
-      ctx.log "Cmd: #{cmd}"
       ctx.execute
-        cmd: cmd
+        cmd: "ldapadd -c -D #{root_dn} -w #{root_password} -f #{destination}"
         code_skipped: 68
       , (err, executed, stdout, stderr) ->
         return next err if err

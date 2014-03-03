@@ -2,8 +2,8 @@
 url = require 'url'
 
 module.exports = []
-module.exports.push 'histi/actions/yum'
-module.exports.push 'histi/hdp/core'
+module.exports.push 'phyla/actions/yum'
+module.exports.push 'phyla/hdp/core'
 
 ###
 Note about upgrade from 1.3.x to 2.x, once we install 
@@ -141,8 +141,8 @@ module.exports.push name: 'HDP HDFS # Hadoop Configuration', timeout: -1, callba
     hadoop_conf_dir, fs_checkpoint_dir, # fs_checkpoint_edit_dir,
     dfs_name_dir, dfs_data_dir, 
     hdfs_namenode_http_port, snn_port } = ctx.config.hdp #mapreduce_local_dir, 
-  datanodes = ctx.hosts_with_module 'histi/hdp/hdfs_dn'
-  secondary_namenode = ctx.hosts_with_module 'histi/hdp/hdfs_snn', 1
+  datanodes = ctx.hosts_with_module 'phyla/hdp/hdfs_dn'
+  secondary_namenode = ctx.hosts_with_module 'phyla/hdp/hdfs_snn', 1
   modified = false
   do_hdfs = ->
     ctx.log 'Configure hdfs-site.xml'
@@ -211,7 +211,7 @@ module.exports.push name: 'HDP HDFS # Hadoop Configuration', timeout: -1, callba
 
 module.exports.push name: 'HDP HDFS # Configure HTTPS', callback: (ctx, next) ->
   {hadoop_conf_dir, hadoop_policy} = ctx.config.hdp
-  namenode = ctx.hosts_with_module 'histi/hdp/hdfs_nn', 1
+  namenode = ctx.hosts_with_module 'phyla/hdp/hdfs_nn', 1
   modified = false
   do_hdfs_site = ->
     ctx.hconfigure
@@ -273,7 +273,7 @@ module.exports.push name: 'HDP HDFS # SPNEGO', callback: module.exports.spnego =
 module.exports.push name: 'HDP HDFS # Kerberos Configure', callback: (ctx, next) ->
   {realm} = ctx.config.krb5_client
   {hadoop_conf_dir} = ctx.config.hdp
-  secondary_namenode = ctx.hosts_with_module 'histi/hdp/hdfs_snn', 1
+  secondary_namenode = ctx.hosts_with_module 'phyla/hdp/hdfs_snn', 1
   hdfs_site = {}
   # If "true", access tokens are used as capabilities
   # for accessing datanodes. If "false", no access tokens are checked on

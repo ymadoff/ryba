@@ -11,8 +11,8 @@ http://localhost/ldap
 mecano = require 'mecano'
 module.exports = []
 
-module.exports.push 'histi/actions/yum'
-module.exports.push 'histi/actions/httpd'
+module.exports.push 'phyla/actions/yum'
+module.exports.push 'phyla/actions/httpd'
 
 module.exports.push (ctx) ->
   ctx.config.phpldapadmin ?= {}

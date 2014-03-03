@@ -15,20 +15,20 @@ ant asciidoc cyrus-sasl-devel cyrus-sasl-gssapi gcc gcc-c++ krb5-devel libtidy l
 module.exports = []
 
 # Install the mysql connector
-module.exports.push 'histi/actions/mysql_client'
+module.exports.push 'phyla/actions/mysql_client'
 # Install client to create new Hive principal
-module.exports.push 'histi/actions/krb5_client'
+module.exports.push 'phyla/actions/krb5_client'
 # Set java_home in "hadoop-env.sh"
-module.exports.push 'histi/hdp/core'
-module.exports.push 'histi/hdp/mapred_client'
-module.exports.push 'histi/hdp/yarn_client'
+module.exports.push 'phyla/hdp/core'
+module.exports.push 'phyla/hdp/mapred_client'
+module.exports.push 'phyla/hdp/yarn_client'
 
-# module.exports.push 'histi/hdp/hdfs'
-# module.exports.push 'histi/hdp/yarn'
-# module.exports.push 'histi/hdp/oozie_client'
-# module.exports.push 'histi/hdp/hive_client'
-module.exports.push 'histi/hdp/pig'
-# module.exports.push 'histi/hdp/hbase'
+# module.exports.push 'phyla/hdp/hdfs'
+# module.exports.push 'phyla/hdp/yarn'
+# module.exports.push 'phyla/hdp/oozie_client'
+# module.exports.push 'phyla/hdp/hive_client'
+module.exports.push 'phyla/hdp/pig'
+# module.exports.push 'phyla/hdp/hbase'
 
 module.exports.push module.exports.configure = (ctx) ->
   return if ctx.hue_configured
@@ -72,7 +72,7 @@ module.exports.push name: 'HDP Hue # Core', callback: (ctx, next) ->
 
 module.exports.push name: 'HDP Hue # WebHCat', callback: (ctx, next) ->
   {webhcat_conf_dir} = ctx.config.hdp
-  webhcat_server = ctx.host_with_module 'histi/hdp/webhcat'
+  webhcat_server = ctx.host_with_module 'phyla/hdp/webhcat'
   hconfigure = (ssh) ->
     properties = 
       'webhcat.proxyuser.hue.hosts': '*'
@@ -93,7 +93,7 @@ module.exports.push name: 'HDP Hue # WebHCat', callback: (ctx, next) ->
 
 module.exports.push name: 'HDP Hue # Oozie', callback: (ctx, next) ->
   {oozie_conf_dir} = ctx.config.hdp
-  oozie_server = ctx.host_with_module 'histi/hdp/oozie_server'
+  oozie_server = ctx.host_with_module 'phyla/hdp/oozie_server'
   hconfigure = (ssh) ->
     properties = 
       'oozie.service.ProxyUserService.proxyuser.hue.hosts': '*'
@@ -117,10 +117,10 @@ module.exports.push name: 'HDP Hue # Oozie', callback: (ctx, next) ->
 module.exports.push name: 'HDP Hue # Configure', callback: (ctx, next) ->
   {nameservice, active_nn_host, hadoop_conf_dir, hue_conf_dir, hue_ini, hue_smtp_host, webhcat_site} = ctx.config.hdp
   webhcat_port = webhcat_site['templeton.port']
-  oozie_server = ctx.host_with_module 'histi/hdp/oozie_server'
-  webhcat_server = ctx.host_with_module 'histi/hdp/webhcat'
+  oozie_server = ctx.host_with_module 'phyla/hdp/oozie_server'
+  webhcat_server = ctx.host_with_module 'phyla/hdp/webhcat'
   # todo, this might not work as expected after ha migration
-  resourcemanager = ctx.host_with_module 'histi/hdp/yarn_rm'
+  resourcemanager = ctx.host_with_module 'phyla/hdp/yarn_rm'
   # Configure HDFS Cluster
   hue_ini['hadoop'] ?= {}
   hue_ini['hadoop']['hdfs_clusters'] ?= {}

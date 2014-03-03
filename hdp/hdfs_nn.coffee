@@ -7,8 +7,8 @@ mecano = require 'mecano'
 misc = require 'mecano/lib/misc'
 module.exports = []
 
-module.exports.push 'histi/hdp/hdfs'
-module.exports.push 'histi/actions/nc'
+module.exports.push 'phyla/hdp/hdfs'
+module.exports.push 'phyla/actions/nc'
 
 module.exports.push (ctx) ->
   require('./hdfs').configure ctx
@@ -47,7 +47,7 @@ module.exports.push name: 'HDP HDFS NN # HDFS User', callback: (ctx, next) ->
 
 module.exports.ha_client_config = ha_client_config = (ctx) ->
   {nameservice} = ctx.config.hdp
-  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
+  namenodes = ctx.hosts_with_module 'phyla/hdp/hdfs_nn'
   config = {}
   config['dfs.nameservices'] = nameservice
   config["dfs.ha.namenodes.#{nameservice}"] = (for nn in namenodes then nn.split('.')[0]).join ','
@@ -60,7 +60,7 @@ module.exports.ha_client_config = ha_client_config = (ctx) ->
 module.exports.push name: 'HDP HDFS NN # HA', callback: (ctx, next) ->
   {hadoop_conf_dir} = ctx.config.hdp
   modified = false
-  journalnodes = ctx.hosts_with_module 'histi/hdp/hdfs_jn'
+  journalnodes = ctx.hosts_with_module 'phyla/hdp/hdfs_jn'
   hdfs_site = ha_client_config ctx
   hdfs_site['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
   hdfs_site['dfs.namenode.shared.edits.dir'] = "qjournal://#{hdfs_site['dfs.namenode.shared.edits.dir']}/#{hdfs_site['dfs.nameservices']}"
@@ -123,7 +123,7 @@ module.exports.push name: 'HDP HDFS NN # Upgrade', timeout: -1, callback: (ctx, 
 module.exports.push name: 'HDP HDFS NN # HA Init JournalNodes', timeout: -1, callback: (ctx, next) ->
   {nameservice, active_nn} = ctx.config.hdp
   # Shall only be executed on the leader namenode
-  journalnodes = ctx.hosts_with_module 'histi/hdp/hdfs_jn'
+  journalnodes = ctx.hosts_with_module 'phyla/hdp/hdfs_jn'
   return next null, ctx.INAPPLICABLE unless active_nn
   do_wait = ->
     # all the JournalNodes shall be started
@@ -177,7 +177,7 @@ module.exports.push name: 'HDP HDFS NN # HA Init Standby NameNodes', timeout: -1
 
 module.exports.push name: 'HDP HDFS NN # HA Auto Failover', timeout: -1, callback: (ctx, next) ->
   {hadoop_conf_dir, active_nn, active_nn_host} = ctx.config.hdp
-  zookeepers = ctx.hosts_with_module 'histi/hdp/zookeeper'
+  zookeepers = ctx.hosts_with_module 'phyla/hdp/zookeeper'
   modified = false
   do_hdfs = ->
     ctx.log "Enable automatic failover in hdfs-site"
@@ -250,7 +250,7 @@ module.exports.push name: 'HDP HDFS NN # HA Auto Failover', timeout: -1, callbac
 
 module.exports.push name: 'HDP HDFS NN # Start', timeout: -1, callback: (ctx, next) ->
   do_wait = ->
-    jns = ctx.hosts_with_module 'histi/hdp/hdfs_jn'
+    jns = ctx.hosts_with_module 'phyla/hdp/hdfs_jn'
     # Check if we are HA
     return do_start() if jns.length is 0
     # If so, at least one journalnode must be available

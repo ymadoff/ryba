@@ -4,7 +4,7 @@ module.exports = []
 
 module.exports.push (ctx) ->
   require('./hdfs').configure ctx
-  throw Error "Not a NameNode" unless ctx.has_module 'histi/hdp/hdfs_nn'
+  throw Error "Not a NameNode" unless ctx.has_module 'phyla/hdp/hdfs_nn'
 
 module.exports.push name: 'HDP NameNode # Start', callback: (ctx, next) ->
   lifecycle.nn_start ctx, (err, started) ->

@@ -14,7 +14,7 @@ each = require 'each'
 mecano = require 'mecano'
 module.exports = []
 
-module.exports.push 'histi/actions/users'
+module.exports.push 'phyla/actions/users'
 
 ###
 Configuration
@@ -29,7 +29,7 @@ contains the following properties:
 *   `system_file`
     The path where to place a shell script to export
     proxy environmental variables, default to 
-    "histi_proxy.sh". Unless absolute, the path will 
+    "phyla_proxy.sh". Unless absolute, the path will 
     be relative to "/etc/profile.d". If false, no
     file will be created.
 *   `host`
@@ -55,7 +55,7 @@ configuration will be enriched with the `http_proxy`, the
 module.exports.push module.exports.configure = (ctx) ->
   ctx.config.proxy ?= {}
   ctx.config.proxy.system ?= false
-  ctx.config.proxy.system_file ?= "histi_proxy.sh"
+  ctx.config.proxy.system_file ?= "phyla_proxy.sh"
   if ctx.config.proxy.system_file
     ctx.config.proxy.system_file = path.resolve '/etc/profile.d', ctx.config.proxy.system_file
   ctx.config.proxy.host ?= null

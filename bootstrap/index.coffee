@@ -33,17 +33,17 @@ module.exports = []
 #         db.get key, callback
 #     next null, ctx.PASS
 
-module.exports.push 'histi/bootstrap/cache_file'
+module.exports.push 'phyla/bootstrap/cache_file'
 
-module.exports.push 'histi/bootstrap/log'
+module.exports.push 'phyla/bootstrap/log'
 
-module.exports.push 'histi/bootstrap/utils'
+module.exports.push 'phyla/bootstrap/utils'
 
-module.exports.push 'histi/bootstrap/connection'
+module.exports.push 'phyla/bootstrap/connection'
 
-module.exports.push 'histi/bootstrap/info'
+module.exports.push 'phyla/bootstrap/info'
 
-module.exports.push 'histi/bootstrap/mecano'
+module.exports.push 'phyla/bootstrap/mecano'
 
 
 

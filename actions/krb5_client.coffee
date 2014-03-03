@@ -3,10 +3,10 @@ misc = require 'mecano/lib/misc'
 # krb = require './krb'
 module.exports = []
 
-module.exports.push 'histi/actions/yum'
-module.exports.push 'histi/actions/ssh'
-module.exports.push 'histi/actions/ntp'
-module.exports.push 'histi/actions/openldap_client'
+module.exports.push 'phyla/actions/yum'
+module.exports.push 'phyla/actions/ssh'
+module.exports.push 'phyla/actions/ntp'
+module.exports.push 'phyla/actions/openldap_client'
 
 ###
 Kerberos KDC Client
@@ -92,8 +92,8 @@ module.exports.push name: 'Krb5 client # Install', timeout: -1, callback: (ctx, 
 module.exports.push name: 'Krb5 client # Configure', timeout: -1, callback: (ctx, next) ->
   # Kerberos config is also managed by the kerberos server action.
   ctx.log 'Check who manage /etc/krb5.conf'
-  return next null, ctx.DISABLED if ctx.actions.some (action) -> action.name is 'histi/actions/krb5_server'
-  # return next null if ctx.hasAction 'histi/actions/krb5_server'
+  return next null, ctx.DISABLED if ctx.actions.some (action) -> action.name is 'phyla/actions/krb5_server'
+  # return next null if ctx.hasAction 'phyla/actions/krb5_server'
   {etc_krb5_conf} = ctx.config.krb5_client
   ctx.log 'Update /etc/krb5.conf'
   ctx.ini

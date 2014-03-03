@@ -4,10 +4,10 @@ mkcmd = require './lib/mkcmd'
 lifecycle = require './lib/lifecycle'
 
 module.exports = []
-module.exports.push 'histi/actions/nc'
-module.exports.push 'histi/hdp/hive_'
-module.exports.push 'histi/hdp/mapred_client'
-module.exports.push 'histi/hdp/yarn_client'
+module.exports.push 'phyla/actions/nc'
+module.exports.push 'phyla/hdp/hive_'
+module.exports.push 'phyla/hdp/mapred_client'
+module.exports.push 'phyla/hdp/yarn_client'
 
 ###
 Example of a minimal client configuration:

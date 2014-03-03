@@ -3,7 +3,7 @@ hdfs_nn = require './hdfs_nn'
 mkcmd = require './lib/mkcmd'
 
 module.exports = []
-module.exports.push 'histi/hdp/core'
+module.exports.push 'phyla/hdp/core'
 
 module.exports.push (ctx) ->
   require('./hdfs').configure ctx
@@ -34,7 +34,7 @@ module.exports.push name: 'HDP HDFS Client # HA', callback: (ctx, next) ->
 module.exports.push name: 'HDP HDFS Client # Check', timeout: -1, callback: (ctx, next) ->
   {hadoop_conf_dir, hdfs_site} = ctx.config.hdp
   port = hdfs_site['dfs.datanode.address']?.split('.')[1] or 1019
-  datanodes = ctx.hosts_with_module 'histi/hdp/hdfs_dn'
+  datanodes = ctx.hosts_with_module 'phyla/hdp/hdfs_dn'
   ctx.waitForConnection datanodes, port, (err) ->
     return next err if err
     ctx.execute

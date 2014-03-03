@@ -23,14 +23,26 @@ each = require 'each'
 {merge} = require 'mecano/lib/misc'
 module.exports = []
 
-module.exports.push 'histi/actions/yum'
-module.exports.push 'histi/actions/nc'
+module.exports.push 'phyla/actions/yum'
+module.exports.push 'phyla/actions/nc'
 
 module.exports.push (ctx) ->
   require('./nc').configure ctx
+  require('./openldap_server').configure ctx
+  openldap_server = ctx.hosts_with_module 'phyla/actions/openldap_server'
+  openldap_server_secured = ctx.hosts_with_module 'phyla/actions/openldap_server_tls'
   ctx.config.openldap_client ?= {}
   ctx.config.openldap_client.config ?= {}
+  ctx.config.openldap_client.config['BASE'] ?= ctx.config.openldap_server.suffix
+  ctx.config.openldap_client.config['URI'] ?= "ldaps://#{openldap_server_secured[0]}" if openldap_server_secured.length
+  ctx.config.openldap_client.config['URI'] ?= "ldap://#{openldap_server[0]}" if openldap_server.length
+  # ctx.config.openldap_client.config['TLS_CACERT'] = '/etc/pki/tls/certs/openldap.hadoop.cer'
+  ctx.config.openldap_client.config['TLS_REQCERT'] = 'allow'
+  ctx.config.openldap_client.config['TIMELIMIT'] = '15'
+  ctx.config.openldap_client.config['TIMEOUT'] = '20'
   ctx.config.openldap_client.ca_cert ?= null
+  if ctx.config.openldap_client.ca_cert
+    ctx.config.openldap_client.config['TLS_CACERT'] ?= ctx.config.openldap_client.ca_cert.destination
 
 module.exports.push name: 'OpenLDAP Client # Install', timeout: -1, callback: (ctx, next) ->
   ctx.service
@@ -42,7 +54,7 @@ module.exports.push name: 'OpenLDAP Client # Configure', timeout: -1, callback: 
   {config} = ctx.config.openldap_client
   write = []
   for k, v of config
-    v = v.join(' ') if k.toLowerCase() is 'uri'
+    v = v.join(' ') if Array.isArray v
     write.push
       match: new RegExp "^#{k}.*$", 'mg'
       replace: "#{k} #{v}"
@@ -73,6 +85,14 @@ module.exports.push name: 'OpenLDAP Client # Check URI', timeout: -1, callback: 
     uri.port ?= 636 if uri.protocol is 'ldaps:'
     ctx.waitForConnection uri.hostname, uri.port, next
   .on 'both', (err) ->
+    next err, ctx.PASS
+
+module.exports.push name: 'OpenLDAP Client # Check Search', callback: (ctx, next) ->
+  {suffix, root_dn, root_password} = ctx.config.openldap_server
+  return next null, ctx.INAPPLICABLE unless suffix
+  ctx.execute
+    cmd: "ldapsearch -x -D #{root_dn} -w #{root_password} -b '#{suffix}'"
+  , (err, executed) ->
     next err, ctx.PASS
 
 

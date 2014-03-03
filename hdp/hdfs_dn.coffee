@@ -34,7 +34,7 @@ module.exports.push name: 'HDP HDFS DN # Kerberos', timeout: -1, callback: (ctx,
     next err, if created then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP HDFS DN # Start', timeout: -1, callback: (ctx, next) ->
-  namenodes = ctx.hosts_with_module 'histi/hdp/hdfs_nn'
+  namenodes = ctx.hosts_with_module 'phyla/hdp/hdfs_nn'
   ctx.waitForConnection namenodes, 50070, (err) ->
     lifecycle.dn_start ctx, (err, started) ->
       next err, ctx.OK

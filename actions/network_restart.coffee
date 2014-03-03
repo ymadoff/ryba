@@ -1,7 +1,7 @@
 
 module.exports = []
 
-#module.exports.push 'histi/actions/yum'
+#module.exports.push 'phyla/actions/yum'
 
 module.exports.push name: 'Network # restart', callback: (ctx, next) ->
   ctx.execute

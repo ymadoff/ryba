@@ -3,7 +3,7 @@ each = require 'each'
 
 module.exports = []
 
-module.exports.push 'histi/actions/yum_epel'
+module.exports.push 'phyla/actions/yum_epel'
 
 ###
 nc

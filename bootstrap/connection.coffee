@@ -12,7 +12,7 @@ collect = require './lib/collect'
 bootstrap = require './lib/bootstrap'
 
 module.exports = []
-module.exports.push 'histi/bootstrap/log'
+module.exports.push 'phyla/bootstrap/log'
 
 module.exports.push (ctx) ->
   ctx.config.bootstrap ?= {}

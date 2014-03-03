@@ -5,7 +5,7 @@ mkcmd = require './lib/mkcmd'
 
 module.exports = []
 
-module.exports.push 'histi/hdp/core'
+module.exports.push 'phyla/hdp/core'
 
 module.exports.push module.exports.configure = (ctx) ->
   return if ctx.yarn_configured
@@ -13,9 +13,9 @@ module.exports.push module.exports.configure = (ctx) ->
   require('./hdfs').configure ctx
   {realm} = ctx.config.krb5_client
   # Grab the host(s) for each roles
-  resourcemanager = ctx.host_with_module 'histi/hdp/yarn_rm'
+  resourcemanager = ctx.host_with_module 'phyla/hdp/yarn_rm'
   ctx.log "Resource manager: #{resourcemanager}"
-  jobhistoryserver = ctx.host_with_module 'histi/hdp/mapred_jhs'
+  jobhistoryserver = ctx.host_with_module 'phyla/hdp/mapred_jhs'
   ctx.log "Job History Server: #{jobhistoryserver}"
   ctx.config.hdp.yarn_log_dir ?= '/var/log/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#20
   ctx.config.hdp.yarn_pid_dir ?= '/var/run/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#21

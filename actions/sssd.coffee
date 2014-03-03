@@ -1,8 +1,8 @@
 
 module.exports = []
 
-module.exports.push 'histi/actions/yum'
-module.exports.push 'histi/actions/openldap_client'
+module.exports.push 'phyla/actions/yum'
+module.exports.push 'phyla/actions/openldap_client'
 
 module.exports.push (ctx) ->
   ctx.config.sssd ?= {}
