@@ -67,18 +67,6 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.openldap_server.ldapadd ?= []
   ctx.config.openldap_server.ldapdelete ?= []
   ctx.config.openldap_server.tls ?= false
-  # slappasswd = (secret, callback) ->
-  #   ctx.execute
-  #     cmd: "slappasswd -s #{secret}"
-  #   , (err, executed, stdout) ->
-  #     callback err, stdout.trim()
-  # slappasswd ctx.config.openldap_server.root_password, (err, secret) ->
-  #   return next err if err
-  #   ctx.config.openldap_server.root_slappasswd = secret
-  #   slappasswd ctx.config.openldap_server.config_password, (err, secret) ->
-  #     return next err if err
-  #     ctx.config.openldap_server.config_slappasswd = secret
-  #     next()
 
 module.exports.push name: 'OpenLDAP Server # Install', timeout: -1, callback: (ctx, next) ->
   ctx.service [
@@ -229,7 +217,7 @@ module.exports.push name: 'OpenLDAP Server # Logging', callback: (ctx, next) ->
 
 module.exports.push name: 'OpenLDAP Server # Users and Groups', timeout: -1, callback: (ctx, next) ->
   {root_dn, root_password, suffix, users_dn, groups_dn} = ctx.config.openldap_server
-  {suffix_k, suffix_v} = /(\w+)=([^,]+)/.exec suffix
+  [_, suffix_k, suffix_v] = /(\w+)=([^,]+)/.exec suffix
   ctx.execute
     cmd: """
 ldapadd -c -D #{root_dn} -w #{root_password} <<-EOF
