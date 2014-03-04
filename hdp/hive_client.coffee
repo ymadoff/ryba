@@ -4,7 +4,7 @@ mkcmd = require './lib/mkcmd'
 lifecycle = require './lib/lifecycle'
 
 module.exports = []
-module.exports.push 'phyla/actions/nc'
+module.exports.push 'phyla/core/nc'
 module.exports.push 'phyla/hdp/hive_'
 module.exports.push 'phyla/hdp/mapred_client'
 module.exports.push 'phyla/hdp/yarn_client'
@@ -33,7 +33,7 @@ Example of a minimal client configuration:
 ###
 
 module.exports.push module.exports.configure = (ctx) ->
-  require('../actions/nc').configure ctx
+  require('../core/nc').configure ctx
   require('./hdfs').configure ctx
   require('./hive_').configure ctx
 

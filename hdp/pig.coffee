@@ -2,13 +2,13 @@
 mkcmd = require './lib/mkcmd'
 
 module.exports = []
-module.exports.push 'phyla/actions/nc'
+module.exports.push 'phyla/core/nc'
 module.exports.push 'phyla/hdp/mapred_client'
 module.exports.push 'phyla/hdp/yarn_client'
 
 module.exports.push (ctx) ->
   require('./hdfs').configure ctx
-  require('../actions/nc').configure ctx
+  require('../core/nc').configure ctx
   ctx.config.hdp.pig_user ?= 'pig'
   ctx.config.hdp.pig_conf_dir ?= '/etc/pig/conf'
 

@@ -15,9 +15,9 @@ ant asciidoc cyrus-sasl-devel cyrus-sasl-gssapi gcc gcc-c++ krb5-devel libtidy l
 module.exports = []
 
 # Install the mysql connector
-module.exports.push 'phyla/actions/mysql_client'
+module.exports.push 'phyla/tools/mysql_client'
 # Install client to create new Hive principal
-module.exports.push 'phyla/actions/krb5_client'
+module.exports.push 'phyla/core/krb5_client'
 # Set java_home in "hadoop-env.sh"
 module.exports.push 'phyla/hdp/core'
 module.exports.push 'phyla/hdp/mapred_client'

@@ -2,7 +2,7 @@
 hproperties = require './lib/properties'
 module.exports = []
 
-module.exports.push 'phyla/actions/yum'
+module.exports.push 'phyla/core/yum'
 
 module.exports.push module.exports.configure = (ctx) ->
   return if ctx.hbase_configured

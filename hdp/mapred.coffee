@@ -4,7 +4,7 @@ mkcmd = require './lib/mkcmd'
 
 module.exports = []
 
-module.exports.push 'phyla/actions/yum'
+module.exports.push 'phyla/core/yum'
 module.exports.push 'phyla/hdp/hdfs'
 
 module.exports.push module.exports.configure = (ctx) ->

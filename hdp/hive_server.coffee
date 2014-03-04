@@ -7,24 +7,24 @@ mkcmd = require './lib/mkcmd'
 module.exports = []
 
 # Install the mysql connector
-module.exports.push 'phyla/actions/mysql_client'
+module.exports.push 'phyla/tools/mysql_client'
 # Deploy the HDP repository
 # Configure "core-site.xml" and "hadoop-env.sh"
 module.exports.push 'phyla/hdp/core'
 # Install client to create new Hive principal
-module.exports.push 'phyla/actions/krb5_client'
+module.exports.push 'phyla/core/krb5_client'
 # Install the Hive and HCatalog service
 module.exports.push 'phyla/hdp/hive_'
 # Validate DNS lookup
-module.exports.push 'phyla/actions/dns'
+module.exports.push 'phyla/core/dns'
 
 
 module.exports.push module.exports.configure = (ctx) ->
   return if ctx.hive_server_configured
   ctx.hive_server_configured = true
-  require('../actions/mysql_server').configure ctx
+  require('../core/mysql_server').configure ctx
   require('./hive_').configure ctx
-  require('../actions/nc').configure ctx
+  require('../core/nc').configure ctx
   # Define Users and Groups
   # ctx.config.hdp.mysql_user ?= 'hive'
   # ctx.config.hdp.mysql_password ?= 'hive123'

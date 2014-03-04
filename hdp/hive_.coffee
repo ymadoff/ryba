@@ -1,7 +1,7 @@
 
 module.exports = []
 
-module.exports.push 'phyla/actions/java'
+module.exports.push 'phyla/tools/java'
 module.exports.push 'phyla/hdp/core'
 module.exports.push 'phyla/hdp/hdfs_client'
 

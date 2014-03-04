@@ -6,8 +6,8 @@ each = require 'each'
 hconfigure = require './lib/hconfigure'
 
 module.exports = []
-module.exports.push 'phyla/actions/yum'
-module.exports.push 'phyla/actions/krb5_client' #kadmin must be present
+module.exports.push 'phyla/core/yum'
+module.exports.push 'phyla/core/krb5_client' #kadmin must be present
 
 ###
 
@@ -43,7 +43,7 @@ jhs.service.keytab
 module.exports.push module.exports.configure = (ctx) ->
   return if ctx.core_configured
   ctx.core_configured = true
-  require('../actions/proxy').configure ctx
+  require('../core/proxy').configure ctx
   ctx.config.hdp ?= {}
   ctx.config.hdp.format ?= false
   ctx.config.hdp.hadoop_conf_dir ?= '/etc/hadoop/conf'

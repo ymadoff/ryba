@@ -2,7 +2,7 @@
 url = require 'url'
 
 module.exports = []
-module.exports.push 'phyla/actions/yum'
+module.exports.push 'phyla/core/yum'
 module.exports.push 'phyla/hdp/core'
 
 ###
@@ -14,7 +14,7 @@ module.exports.push module.exports.configure = (ctx) ->
   return if ctx.hdfs_configured
   ctx.hdfs_configured = true
   require('./core').configure ctx
-  require('../actions/nc').configure ctx
+  require('../core/nc').configure ctx
   # Define Directories for Core Hadoop
   ctx.config.hdp.dfs_name_dir ?= ['/hadoop/hdfs/namenode']
   ctx.config.hdp.dfs_name_dir = ctx.config.hdp.dfs_name_dir.split ',' if typeof ctx.config.hdp.dfs_name_dir is 'string'

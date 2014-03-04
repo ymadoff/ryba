@@ -6,7 +6,7 @@ module.exports = []
 
 module.exports.push (ctx) ->
   require('./hdfs').configure ctx
-  require('../actions/nc').configure ctx
+  require('../core/nc').configure ctx
   ctx.config.hdp.force_check ?= false
 
 module.exports.push name: 'HDP HDFS DN # HA', callback: (ctx, next) ->

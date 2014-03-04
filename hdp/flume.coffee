@@ -25,7 +25,7 @@ module.exports = []
 [Secure Impersonation]](https://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/latest/CDH4-Security-Guide/cdh4sg_topic_4_2.html)
 ###
 module.exports.push module.exports.configure = (ctx) ->
-  require('../actions/krb5_client').configure ctx
+  require('../core/krb5_client').configure ctx
   ctx.config.hdp ?= {}
   ctx.config.hdp.flume_user = 'flume'
   ctx.config.hdp.flume_group = 'flume'

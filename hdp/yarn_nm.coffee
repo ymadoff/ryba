@@ -2,11 +2,11 @@
 lifecycle = require './lib/lifecycle'
 module.exports = []
 
-module.exports.push 'phyla/actions/nc'
+module.exports.push 'phyla/core/nc'
 module.exports.push 'phyla/hdp/yarn'
 
 module.exports.push (ctx) ->
-  require('../actions/nc').configure ctx
+  require('../core/nc').configure ctx
   require('./yarn').configure ctx
 
 module.exports.push name: 'HDP YARN NM # Kerberos', callback: (ctx, next) ->

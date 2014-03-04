@@ -8,11 +8,11 @@ misc = require 'mecano/lib/misc'
 module.exports = []
 
 module.exports.push 'phyla/hdp/hdfs'
-module.exports.push 'phyla/actions/nc'
+module.exports.push 'phyla/core/nc'
 
 module.exports.push (ctx) ->
   require('./hdfs').configure ctx
-  require('../actions/nc').configure ctx
+  require('../core/nc').configure ctx
 
 module.exports.push name: 'HDP HDFS NN # Kerberos', callback: (ctx, next) ->
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client

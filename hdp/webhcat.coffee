@@ -18,7 +18,6 @@ module.exports.push module.exports.configure = (ctx) ->
   require('./zookeeper').configure ctx
   {realm} = ctx.config.krb5_client
   hive_host = ctx.host_with_module 'phyla/hdp/hive_server'
-  # zookeeper_hosts = ctx.servers actions: 'phyla/hdp/zookeeper_server'
   zookeeper_hosts = ctx.hosts_with_module 'phyla/hdp/zookeeper_server'
   for server in ctx.config.servers
     continue if (i = zookeeper_hosts.indexOf server.host) is -1
