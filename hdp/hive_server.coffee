@@ -22,7 +22,7 @@ module.exports.push 'phyla/core/dns'
 module.exports.push module.exports.configure = (ctx) ->
   return if ctx.hive_server_configured
   ctx.hive_server_configured = true
-  require('../core/mysql_server').configure ctx
+  require('../tools/mysql_server').configure ctx
   require('./hive_').configure ctx
   require('../core/nc').configure ctx
   # Define Users and Groups
@@ -77,7 +77,7 @@ module.exports.push name: 'HDP Hive & HCat server # Kerberos', callback: (ctx, n
   modified = false
   do_metastore = ->
     ctx.krb5_addprinc
-      principal: hive_site['hive.metastore.kerberos.principal']
+      principal: hive_site['hive.metastore.kerberos.principal'].replace '_HOST', ctx.config.host
       randkey: true
       keytab: hive_site['hive.metastore.kerberos.keytab.file']
       uid: hive_user
@@ -92,7 +92,7 @@ module.exports.push name: 'HDP Hive & HCat server # Kerberos', callback: (ctx, n
   do_server2 = ->
     return do_end() if hive_site['hive.metastore.kerberos.principal'] is hive_site['hive.server2.authentication.kerberos.principal']
     ctx.krb5_addprinc
-      principal: hive_site['hive.server2.authentication.kerberos.principal']
+      principal: hive_site['hive.server2.authentication.kerberos.principal'].replace '_HOST', ctx.config.host
       randkey: true
       keytab: hive_site['hive.server2.authentication.kerberos.keytab']
       uid: hive_user
