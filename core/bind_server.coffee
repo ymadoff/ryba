@@ -58,10 +58,6 @@ module.exports.push name: 'Bind Server # Configure', callback: (ctx, next) ->
 
 module.exports.push name: 'Bind Server # Zones', callback: (ctx, next) ->
   modified = false
-  # ctx.upload
-  #   source: "#{__dirname}/../lib/bind/etc.named.conf"
-  #   destination: '/etc/named.conf'
-  # , (err, uploaded) ->
   {zones} = ctx.config.bind_server
   writes = []
   for zone in zones
