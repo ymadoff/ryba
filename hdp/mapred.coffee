@@ -14,6 +14,7 @@ module.exports.push module.exports.configure = (ctx) ->
   require('./mapred_').configure ctx
   jobhistoryserver = ctx.host_with_module 'phyla/hdp/mapred_jhs'
   # Options for mapred-site.xml
+  ctx.config.hdp.mapred_user ?= "mapred"
   ctx.config.hdp.mapred ?= {}
   ctx.config.hdp.mapred['mapreduce.job.counters.max'] ?= 120
   # http://developer.yahoo.com/hadoop/tutorial/module7.html
@@ -21,7 +22,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.mapred['mapred.tasktracker.map.tasks.maximum'] ?= ctx.config.hdp.dfs_data_dir.length
   ctx.config.hdp.mapred['mapred.tasktracker.reduce.tasks.maximum'] ?= Math.ceil(ctx.config.hdp.dfs_data_dir.length / 2)
   ctx.config.hdp.mapred['mapreduce.jobtracker.system.dir'] ?= '/mapred/system'
-  ctx.config.hdp.mapred_log_dir ?= '/var/log/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#73
+  # ctx.config.hdp.mapred_log_dir ?= '/var/log/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#73
   ctx.config.hdp.mapred_pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
   # [Configurations for MapReduce Applications](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuring_the_Hadoop_Daemons_in_Non-Secure_Mode)
   ctx.config.hdp.mapred['mapreduce.framework.name'] ?= 'yarn' # Execution framework set to Hadoop YARN.
