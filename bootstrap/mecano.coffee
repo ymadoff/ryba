@@ -44,7 +44,7 @@ module.exports.push name: 'Bootstrap # Mecano', timeout: -1, callback:  (ctx, ne
         if arguments.length is 2
           callback = options
           options = goptions
-          goptions = {parallel: true}
+          goptions = {parallel: 1}
         if action is 'mkdir' and typeof options is 'string'
           options = m action, destination: options
         if Array.isArray options
