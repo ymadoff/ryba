@@ -123,7 +123,9 @@ module.exports.push name: 'HDP HBase # RegionServer', callback: (ctx, next) ->
   , (err, written) ->
     next err, if written then ctx.OK else ctx.PASS
 
-
+module.exports.push name: 'HDP HBase # Tuning', callback: (ctx, next) ->
+  # http://hadoop-hbase.blogspot.fr/2014/03/hbase-gc-tuning-observations.html
+  next null, ctx.TODO
 
 
 
