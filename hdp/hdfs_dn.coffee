@@ -19,6 +19,22 @@ module.exports.push name: 'HDP HDFS DN # HA', callback: (ctx, next) ->
   , (err, configured) ->
     next err, if configured then ctx.OK else ctx.PASS
 
+module.exports.push name: 'HDP HDFS DN # Layout', timeout: -1, callback: (ctx, next) ->
+  {dfs_data_dir, hdfs_user, hadoop_group, hdfs_pid_dir} = ctx.config.hdp
+  ctx.log "Create DN data and pid directories"
+  ctx.mkdir [
+    destination: dfs_data_dir
+    uid: hdfs_user
+    gid: hadoop_group
+    mode: 0o750
+  ,
+    destination: "#{hdfs_pid_dir}/#{hdfs_user}"
+    uid: hdfs_user
+    gid: hadoop_group
+    mode: 0o755
+  ], (err, created) ->
+    next err, if created then ctx.OK else ctx.PASS
+
 module.exports.push name: 'HDP HDFS DN # Kerberos', timeout: -1, callback: (ctx, next) ->
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   ctx.krb5_addprinc 
