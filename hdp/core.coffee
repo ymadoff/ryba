@@ -188,7 +188,7 @@ module.exports.push name: 'HDP Core # Configuration', callback: (ctx, next) ->
     next null, if modified then ctx.OK else ctx.PASS
   do_core()
 
-module.exports.push name: 'HDP HDFS # Hadoop OPTS', timeout: -1, callback: (ctx, next) ->
+module.exports.push name: 'HDP Core # Hadoop OPTS', timeout: -1, callback: (ctx, next) ->
   {hadoop_conf_dir, hadoop_opts, hdfs_log_dir, hdfs_pid_dir} = ctx.config.hdp
   ctx.write
     source: "#{__dirname}/files/core_hadoop/hadoop-env.sh"
@@ -201,11 +201,11 @@ module.exports.push name: 'HDP HDFS # Hadoop OPTS', timeout: -1, callback: (ctx,
       match: /^export HADOOP_OPTS.*$/mg
       replace: hadoop_opts
     ,
-      match: /\/var\/log\/hadoop/mg
-      replace: hdfs_log_dir
+      match: /\/var\/log\/hadoop\//mg
+      replace: "#{hdfs_log_dir}/"
     , 
-      match: /\/var\/run\/hadoop/mg
-      replace: hdfs_pid_dir
+      match: /\/var\/run\/hadoop\//mg
+      replace: "#{hdfs_pid_dir}/"
     ]
   , (err, written) ->
     next err, if written then ctx.OK else ctx.PASS

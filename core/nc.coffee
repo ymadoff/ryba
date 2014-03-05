@@ -21,7 +21,7 @@ module.exports.push module.exports.configure = (ctx) ->
       Argument "cmd" is a string:   
       `waitForConnection(cmd, [options], callback)`
       ###
-      cmd = arugments[0]
+      cmd = arguments[0]
       options = arguments[1]
       callback = arguments[2]
     else if typeof arguments[0] is 'object'
