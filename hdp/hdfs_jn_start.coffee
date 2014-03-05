@@ -1,5 +1,4 @@
 
-
 lifecycle = require './lib/lifecycle'
 module.exports = []
 

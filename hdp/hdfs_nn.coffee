@@ -14,6 +14,22 @@ module.exports.push (ctx) ->
   require('./hdfs').configure ctx
   require('../core/nc').configure ctx
 
+module.exports.push name: 'HDP HDFS NN # Layout', timeout: -1, callback: (ctx, next) ->
+  { dfs_name_dir, hdfs_pid_dir, hdfs_user, hadoop_group } = ctx.config.hdp
+  ctx.log "Create NN data and pid directories"
+  ctx.mkdir [
+    destination: dfs_name_dir
+    uid: hdfs_user
+    gid: hadoop_group
+    mode: 0o755
+  ,
+    destination: "#{hdfs_pid_dir}/#{hdfs_user}"
+    uid: hdfs_user
+    gid: hadoop_group
+    mode: 0o755
+  ], (err, created) ->
+    next err, if created then ctx.OK else ctx.PASS
+
 module.exports.push name: 'HDP HDFS NN # Kerberos', callback: (ctx, next) ->
   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   ctx.krb5_addprinc 
@@ -57,6 +73,9 @@ module.exports.ha_client_config = ha_client_config = (ctx) ->
   config["dfs.client.failover.proxy.provider.#{nameservice}"] = 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
   config
 
+###
+Update "hdfs-site.xml" with HA configuration
+###
 module.exports.push name: 'HDP HDFS NN # HA', callback: (ctx, next) ->
   {hadoop_conf_dir} = ctx.config.hdp
   modified = false
@@ -73,6 +92,9 @@ module.exports.push name: 'HDP HDFS NN # HA', callback: (ctx, next) ->
   , (err, configured) ->
     next err, if configured then ctx.OK else ctx.PASS
 
+###
+Format the active NameNode if "current/VERSION" does not yet exists
+###
 module.exports.push name: 'HDP HDFS NN # Format', callback: (ctx, next) ->
   {active_nn, dfs_name_dir, hdfs_user, format, nameservice} = ctx.config.hdp
   return next() unless format
@@ -120,43 +142,53 @@ module.exports.push name: 'HDP HDFS NN # Upgrade', timeout: -1, callback: (ctx, 
   #         return next null, ctx.PASS if c1 is c2
   #         return next new Error 'Upgrade manually'
 
-module.exports.push name: 'HDP HDFS NN # HA Init JournalNodes', timeout: -1, callback: (ctx, next) ->
-  {nameservice, active_nn} = ctx.config.hdp
-  # Shall only be executed on the leader namenode
-  journalnodes = ctx.hosts_with_module 'phyla/hdp/hdfs_jn'
-  return next null, ctx.INAPPLICABLE unless active_nn
-  do_wait = ->
-    # all the JournalNodes shall be started
-    options = ctx.config.servers
-      .filter( (server) -> journalnodes.indexOf(server.host) isnt -1 )
-      .map( (server) -> host: server.host, port: 8485 )
-    ctx.waitForConnection options, (err) ->
-      return next err if err
-      do_init()
-  do_init = ->
-    exists = 0
-    each(journalnodes)
-    .on 'item', (journalnode, next) ->
-      ctx.connect journalnode, (err, ssh) ->
-        return next err if err
-        dir = "#{ctx.config.hdp.hdfs_site['dfs.journalnode.edits.dir']}/#{nameservice}"
-        misc.file.exists ssh, dir, (err, exist) ->
-          exists++ if exist
-          next()
-    .on 'error', (err) ->
-      next err
-    .on 'end', ->
-      return next null, ctx.PASS if exists is journalnodes.length
-      return next null, ctx.TODO if exists > 0 and exists < journalnodes.length
-      lifecycle.nn_stop ctx, (err, stopped) ->
-        return next err if err
-        ctx.execute
-          cmd: "su -l hdfs -c \"hdfs namenode -initializeSharedEdits -nonInteractive\""
-        , (err, executed, stdout) ->
-          return next err if err
-          next null, ctx.OK
-  do_wait()
+###
+Initialize the JournalNodes with the edits data from the local NameNode edits directories
+This is executed from the active NameNode. It wait for 
+all the JouralNode servers to be started and is only executed if none of 
+the directory named after the nameservice is created on each JournalNode host.
+###
+# module.exports.push name: 'HDP HDFS NN # HA Init JournalNodes', timeout: -1, callback: (ctx, next) ->
+#   {nameservice, active_nn} = ctx.config.hdp
+#   # Shall only be executed on the leader namenode
+#   journalnodes = ctx.hosts_with_module 'phyla/hdp/hdfs_jn'
+#   return next null, ctx.INAPPLICABLE unless active_nn
+#   do_wait = ->
+#     # all the JournalNodes shall be started
+#     options = ctx.config.servers
+#       .filter( (server) -> journalnodes.indexOf(server.host) isnt -1 )
+#       .map( (server) -> host: server.host, port: 8485 )
+#     ctx.waitForConnection options, (err) ->
+#       return next err if err
+#       do_init()
+#   do_init = ->
+#     exists = 0
+#     each(journalnodes)
+#     .on 'item', (journalnode, next) ->
+#       ctx.connect journalnode, (err, ssh) ->
+#         return next err if err
+#         dir = "#{ctx.config.hdp.hdfs_site['dfs.journalnode.edits.dir']}/#{nameservice}"
+#         misc.file.exists ssh, dir, (err, exist) ->
+#           exists++ if exist
+#           next()
+#     .on 'error', (err) ->
+#       next err
+#     .on 'end', ->
+#       return next null, ctx.PASS if exists is journalnodes.length
+#       return next null, ctx.TODO if exists > 0 and exists < journalnodes.length
+#       lifecycle.nn_stop ctx, (err, stopped) ->
+#         return next err if err
+#         ctx.execute
+#           cmd: "su -l hdfs -c \"hdfs namenode -initializeSharedEdits -nonInteractive\""
+#         , (err, executed, stdout) ->
+#           return next err if err
+#           next null, ctx.OK
+#   do_wait()
 
+###
+Copy over the contents of your NameNode metadata directories to the other, 
+unformatted NameNode. The command "hdfs namenode -bootstrapStandby" is executed on the unformatted NameNode
+###
 module.exports.push name: 'HDP HDFS NN # HA Init Standby NameNodes', timeout: -1, callback: (ctx, next) ->
   # Shall only be executed on the leader namenode
   {active_nn, active_nn_host} = ctx.config.hdp
@@ -226,6 +258,9 @@ module.exports.push name: 'HDP HDFS NN # HA Auto Failover', timeout: -1, callbac
     , (err, formated) ->
       return next err if err
       ctx.log "Is Zookeeper already formated: #{formated}"
+      # TODO: There was a time when fencing wasnt ok the first time,
+      # this is probably no longer the case, but we need to test before
+      # removing the following command.
       ctx.execute
         # hdfs haadmin -transitionToActive -forcemanual hadoop2
         cmd: "yes | hdfs haadmin -transitionToActive -forcemanual #{ctx.config.host}"

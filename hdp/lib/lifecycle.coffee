@@ -58,13 +58,15 @@ lifecyle = module.exports =
           callback err, started
   nn_stop: (ctx, callback) ->
     {hdfs_user, hadoop_conf_dir} = ctx.config.hdp
-    ctx.log "NameNode stop"
-    ctx.execute
-      # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop namenode"
-      cmd: "su -l #{hdfs_user} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop namenode\""
-      code_skipped: 1
-    , (err, stopped) ->
-      callback err, stopped
+    lifecyle.nn_status ctx, (err, running) ->
+      return callback err, false if err or not running
+      ctx.log "NameNode stop"
+      ctx.execute
+        # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop namenode"
+        cmd: "su -l #{hdfs_user} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop namenode\""
+        code_skipped: 1
+      , (err, stopped) ->
+        callback err, stopped
   zkfc_status: (ctx, callback) ->
     {hdfs_user, hdfs_pid_dir} = ctx.config.hdp
     ctx.log "ZKFC status"
@@ -140,60 +142,90 @@ lifecyle = module.exports =
         code_skipped: 1
       , (err, stopped) ->
         callback err, stopped
+  rm_status: (ctx, callback) ->
+    {yarn_pid_dir, yarn_user} = ctx.config.hdp
+    ctx.log "ResourceManager status"
+    lifecyle.is_pidfile_running ctx, "#{yarn_pid_dir}/#{yarn_user}/yarn-#{yarn_user}-resourcemanager.pid", (err, running) ->
+      ctx.log "DataNode status: #{if running then 'RUNNING' else 'STOPED'}"
+      callback err, running
   rm_start: (ctx, callback) ->
     {yarn_user, hadoop_conf_dir} = ctx.config.hdp
-    ctx.log "ResourceManager start"
-    ctx.execute
-      # su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf start resourcemanager"
-      cmd: "su -l #{yarn_user} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} start resourcemanager\""
-      code_skipped: 1
-    , (err, started) ->
-      callback err, started
+    lifecyle.rm_status ctx, (err, running) ->
+      return callback err, false if err or running
+      ctx.log "ResourceManager start"
+      ctx.execute
+        # su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf start resourcemanager"
+        cmd: "su -l #{yarn_user} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} start resourcemanager\""
+        code_skipped: 1
+      , (err, started) ->
+        callback err, started
   rm_stop: (ctx, callback) ->
     {yarn_user, hadoop_conf_dir} = ctx.config.hdp
-    ctx.log "ResourceManager stop"
-    ctx.execute
-      # su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf stop resourcemanager"
-      cmd: "su -l #{yarn_user} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} stop resourcemanager\""
-      code_skipped: 1
-    , (err, stopped) ->
-      callback err, stopped
+    lifecyle.rm_status ctx, (err, running) ->
+      return callback err, false if err or not running
+      ctx.log "ResourceManager stop"
+      ctx.execute
+        # su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf stop resourcemanager"
+        cmd: "su -l #{yarn_user} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} stop resourcemanager\""
+        code_skipped: 1
+      , (err, stopped) ->
+        callback err, stopped
+  nm_status: (ctx, callback) ->
+    {yarn_pid_dir, yarn_user} = ctx.config.hdp
+    ctx.log "NodeManager status"
+    lifecyle.is_pidfile_running ctx, "#{yarn_pid_dir}/#{yarn_user}/yarn-#{yarn_user}-nodemanager.pid", (err, running) ->
+      ctx.log "DataNode status: #{if running then 'RUNNING' else 'STOPED'}"
+      callback err, running
   nm_start: (ctx, callback) ->
     {yarn_user, hadoop_conf_dir} = ctx.config.hdp
-    ctx.log "NodeManager start"
-    ctx.execute
-      # su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf start nodemanager"
-      cmd: "su -l #{yarn_user} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} start nodemanager\""
-      code_skipped: 1
-    , (err, started) ->
-      callback err, started
+    lifecyle.nm_status ctx, (err, running) ->
+      return callback err, false if err or running
+      ctx.log "NodeManager start"
+      ctx.execute
+        # su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf start nodemanager"
+        cmd: "su -l #{yarn_user} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} start nodemanager\""
+        code_skipped: 1
+      , (err, started) ->
+        callback err, started
   nm_stop: (ctx, callback) ->
     {yarn_user, hadoop_conf_dir} = ctx.config.hdp
-    ctx.log "NodeManager stop"
-    ctx.execute
-      # su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf stop nodemanager"
-      cmd: "su -l #{yarn_user} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} stop nodemanager\""
-      code_skipped: 1
-    , (err, stopped) ->
-      callback err, stopped
+    lifecyle.nm_status ctx, (err, running) ->
+      return callback err, false if err or not running
+      ctx.log "NodeManager stop"
+      ctx.execute
+        # su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf stop nodemanager"
+        cmd: "su -l #{yarn_user} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} stop nodemanager\""
+        code_skipped: 1
+      , (err, stopped) ->
+        callback err, stopped
+  jhs_status: (ctx, callback) ->
+    {mapred_pid_dir, mapred_user} = ctx.config.hdp
+    ctx.log "JobHistoryServer status"
+    lifecyle.is_pidfile_running ctx, "#{mapred_pid_dir}/#{mapred_user}/mapred-#{mapred_user}-historyserver.pid", (err, running) ->
+      ctx.log "JobHistoryServer status: #{if running then 'RUNNING' else 'STOPED'}"
+      callback err, running
   jhs_start: (ctx, callback) ->
     {mapred_user, hadoop_conf_dir} = ctx.config.hdp
-    ctx.log "JobHistoryServer start"
-    ctx.execute
-      # su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config /etc/hadoop/conf start historyserver"
-      cmd: "su -l #{mapred_user} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config #{hadoop_conf_dir} start historyserver\""
-      code_skipped: 1
-    , (err, started) ->
-      callback err, started
+    lifecyle.jhs_status ctx, (err, running) ->
+      return callback err, false if err or running
+      ctx.log "JobHistoryServer start"
+      ctx.execute
+        # su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config /etc/hadoop/conf start historyserver"
+        cmd: "su -l #{mapred_user} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config #{hadoop_conf_dir} start historyserver\""
+        code_skipped: 1
+      , (err, started) ->
+        callback err, started
   jhs_stop: (ctx, callback) ->
     {mapred_user, hadoop_conf_dir} = ctx.config.hdp
-    ctx.log "JobHistoryServer stop"
-    ctx.execute
-      # su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config /etc/hadoop/conf stop historyserver"
-      cmd: "su -l #{mapred_user} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config #{hadoop_conf_dir} stop historyserver\""
-      code_skipped: 1
-    , (err, started) ->
-      callback err, started
+    lifecyle.jhs_status ctx, (err, running) ->
+      return callback err, false if err or not running
+      ctx.log "JobHistoryServer stop"
+      ctx.execute
+        # su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config /etc/hadoop/conf stop historyserver"
+        cmd: "su -l #{mapred_user} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config #{hadoop_conf_dir} stop historyserver\""
+        code_skipped: 1
+      , (err, started) ->
+        callback err, started
   hive_metastore_status: (ctx, callback) ->
     # {hive_metastore_pid} = ctx.config.hdp
     ctx.log "Hive Metastore status"
@@ -393,7 +425,7 @@ lifecyle = module.exports =
       , (err, started) ->
         callback err, true
   webhcat_stop: (ctx, callback) ->
-    {webhcat_user} = ctx.config.hdp
+    {webhcat_user, webhcat_conf_dir} = ctx.config.hdp
     lifecyle.webhcat_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "WebHCat stop"
