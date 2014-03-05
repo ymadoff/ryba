@@ -39,13 +39,69 @@ module.exports.push module.exports.configure = (ctx) ->
   require('./oozie_').configure ctx
   # Allow proxy user inside "core-site.xml"
   require('./core').configure ctx
+  {nameservice, active_nn_host, hadoop_conf_dir, webhcat_site} = ctx.config.hdp
+  webhcat_port = webhcat_site['templeton.port']
+  oozie_server = ctx.host_with_module 'phyla/hdp/oozie_server'
+  webhcat_server = ctx.host_with_module 'phyla/hdp/webhcat'
+  # todo, this might not work as expected after ha migration
+  resourcemanager = ctx.host_with_module 'phyla/hdp/yarn_rm'
   # require('./hdfs').configure ctx
   # Webhdfs should be active on the NameNode, Secondary NameNode, and all the DataNodes
   # throw new Error 'WebHDFS not active' if ctx.config.hdp.hdfs_site['dfs.webhdfs.enabled'] isnt 'true'
   ctx.config.hdp.hue_conf_dir ?= '/etc/hue/conf'
-  ctx.config.hdp.hue_ini ?= {}
   ctx.config.hdp.hue_user ?= 'hue'
   ctx.config.hdp.hue_group ?= 'hue'
+  ctx.config.hdp.hue_db_admin_username ?= ctx.config.mysql_server.username
+  ctx.config.hdp.hue_db_admin_password ?= ctx.config.mysql_server.password
+  hue_ini = ctx.config.hdp.hue_ini ?= {}
+  # Configure HDFS Cluster
+  hue_ini['hadoop'] ?= {}
+  hue_ini['hadoop']['hdfs_clusters'] ?= {}
+  hue_ini['hadoop']['hdfs_clusters']['default'] ?= {}
+  # Using nameservice doesnt yet seem to work
+  #hue_ini['hadoop']['hdfs_clusters']['default']['fs_defaultfs'] ?= "hdfs://#{nameservice}:8020"
+  #hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "http://#{nameservice}:50070/webhdfs/v1"
+  hue_ini['hadoop']['hdfs_clusters']['default']['fs_defaultfs'] ?= "hdfs://#{active_nn_host}:8020"
+  hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "http://#{active_nn_host}:50070/webhdfs/v1"
+  # hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "http://#{namenode}:50070/webhdfs/v1"
+  hue_ini['hadoop']['hdfs_clusters']['default']['hadoop_hdfs_home'] ?= '/usr/lib/hadoop'
+  hue_ini['hadoop']['hdfs_clusters']['default']['hadoop_bin'] ?= '/usr/bin/hadoop'
+  hue_ini['hadoop']['hdfs_clusters']['default']['hadoop_conf_dir'] ?= hadoop_conf_dir
+  # Configure YARN (MR2) Cluster
+  hue_ini['hadoop']['yarn_clusters'] ?= {}
+  hue_ini['hadoop']['yarn_clusters']['default'] ?= {}
+  hue_ini['hadoop']['yarn_clusters']['default']['resourcemanager_host'] ?= "#{resourcemanager}"
+  hue_ini['hadoop']['yarn_clusters']['default']['resourcemanager_port'] ?= "8050"
+  hue_ini['hadoop']['yarn_clusters']['default']['submit_to'] ?= "true"
+  hue_ini['hadoop']['yarn_clusters']['default']['resourcemanager_api_url'] ?= "http://#{resourcemanager}:8088"
+  hue_ini['hadoop']['yarn_clusters']['default']['proxy_api_url'] ?= "http://#{resourcemanager}:8088" # NOT very sure
+  hue_ini['hadoop']['yarn_clusters']['default']['history_server_api_url'] ?= "http://#{resourcemanager}:19888"
+  hue_ini['hadoop']['yarn_clusters']['default']['node_manager_api_url'] ?= "http://#{resourcemanager}:8042"
+  hue_ini['hadoop']['yarn_clusters']['default']['hadoop_mapred_home'] ?= "/usr/lib/hadoop-mapreduce"
+  hue_ini['hadoop']['yarn_clusters']['default']['hadoop_bin'] ?= "/usr/bin/hadoop"
+  hue_ini['hadoop']['yarn_clusters']['default']['hadoop_conf_dir'] ?= hadoop_conf_dir
+  # Configure components
+  hue_ini['liboozie'] ?= {}
+  hue_ini['liboozie']['oozie_url'] ?= "http://#{oozie_server}:11000/oozie"
+  hue_ini['hcatalog'] ?= {}
+  hue_ini['hcatalog']['templeton_url'] ?= "http://#{webhcat_server}:#{webhcat_port}/templeton/v1/"
+  hue_ini['beeswax'] ?= {}
+  hue_ini['beeswax']['beeswax_server_host'] ?= "#{ctx.config.host}"
+  # Desktop
+  hue_ini['desktop'] ?= {}
+  hue_ini['desktop']['http_host'] ?= '0.0.0.0'
+  hue_ini['desktop']['http_port'] ?= '8000'
+  hue_ini['desktop']['secret_key'] ?= 'jFE93j;2[290-eiwMYSECRTEKEYy#e=+Iei*@Mn<qW5o'
+  hue_ini['desktop']['smtp'] ?= {}
+  ctx.log "WARING: property 'hdp.hue_ini.desktop.smtp.host' isnt set" unless hue_ini['desktop']['smtp']['host']
+  # Desktop database
+  hue_ini['desktop']['database'] ?= {}
+  hue_ini['desktop']['database']['engine'] ?= 'mysql'
+  hue_ini['desktop']['database']['host'] ?= ctx.host_with_module 'phyla/tools/mysql_server'
+  hue_ini['desktop']['database']['port'] ?= ctx.config.mysql_server.port
+  hue_ini['desktop']['database']['user'] ?= 'hue'
+  hue_ini['desktop']['database']['password'] ?= 'hue123'
+  hue_ini['desktop']['database']['name'] ?= 'hue'
 
 module.exports.push name: 'HDP Hue # Packages', timeout: -1, callback: (ctx, next) ->
   ctx.service [
@@ -115,52 +171,7 @@ module.exports.push name: 'HDP Hue # Oozie', callback: (ctx, next) ->
 
 # # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue-5-2.html
 module.exports.push name: 'HDP Hue # Configure', callback: (ctx, next) ->
-  {nameservice, active_nn_host, hadoop_conf_dir, hue_conf_dir, hue_ini, hue_smtp_host, webhcat_site} = ctx.config.hdp
-  webhcat_port = webhcat_site['templeton.port']
-  oozie_server = ctx.host_with_module 'phyla/hdp/oozie_server'
-  webhcat_server = ctx.host_with_module 'phyla/hdp/webhcat'
-  # todo, this might not work as expected after ha migration
-  resourcemanager = ctx.host_with_module 'phyla/hdp/yarn_rm'
-  # Configure HDFS Cluster
-  hue_ini['hadoop'] ?= {}
-  hue_ini['hadoop']['hdfs_clusters'] ?= {}
-  hue_ini['hadoop']['hdfs_clusters']['default'] ?= {}
-  # Using nameservice doesnt yet seem to work
-  #hue_ini['hadoop']['hdfs_clusters']['default']['fs_defaultfs'] ?= "hdfs://#{nameservice}:8020"
-  #hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "http://#{nameservice}:50070/webhdfs/v1"
-  hue_ini['hadoop']['hdfs_clusters']['default']['fs_defaultfs'] ?= "hdfs://#{active_nn_host}:8020"
-  hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "http://#{active_nn_host}:50070/webhdfs/v1"
-  # hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "http://#{namenode}:50070/webhdfs/v1"
-  hue_ini['hadoop']['hdfs_clusters']['default']['hadoop_hdfs_home'] ?= '/usr/lib/hadoop'
-  hue_ini['hadoop']['hdfs_clusters']['default']['hadoop_bin'] ?= '/usr/bin/hadoop'
-  hue_ini['hadoop']['hdfs_clusters']['default']['hadoop_conf_dir'] ?= hadoop_conf_dir
-  # Configure YARN (MR2) Cluster
-  hue_ini['hadoop']['yarn_clusters'] ?= {}
-  hue_ini['hadoop']['yarn_clusters']['default'] ?= {}
-  hue_ini['hadoop']['yarn_clusters']['default']['resourcemanager_host'] ?= "#{resourcemanager}"
-  hue_ini['hadoop']['yarn_clusters']['default']['resourcemanager_port'] ?= "8050"
-  hue_ini['hadoop']['yarn_clusters']['default']['submit_to'] ?= "true"
-  hue_ini['hadoop']['yarn_clusters']['default']['resourcemanager_api_url'] ?= "http://#{resourcemanager}:8088"
-  hue_ini['hadoop']['yarn_clusters']['default']['proxy_api_url'] ?= "http://#{resourcemanager}:8088" # NOT very sure
-  hue_ini['hadoop']['yarn_clusters']['default']['history_server_api_url'] ?= "http://#{resourcemanager}:19888"
-  hue_ini['hadoop']['yarn_clusters']['default']['node_manager_api_url'] ?= "http://#{resourcemanager}:8042"
-  hue_ini['hadoop']['yarn_clusters']['default']['hadoop_mapred_home'] ?= "/usr/lib/hadoop-mapreduce"
-  hue_ini['hadoop']['yarn_clusters']['default']['hadoop_bin'] ?= "/usr/bin/hadoop"
-  hue_ini['hadoop']['yarn_clusters']['default']['hadoop_conf_dir'] ?= hadoop_conf_dir
-  # Configure components
-  hue_ini['liboozie'] ?= {}
-  hue_ini['liboozie']['oozie_url'] ?= "http://#{oozie_server}:11000/oozie"
-  hue_ini['hcatalog'] ?= {}
-  hue_ini['hcatalog']['templeton_url'] ?= "http://#{webhcat_server}:#{webhcat_port}/templeton/v1/"
-  hue_ini['beeswax'] ?= {}
-  hue_ini['beeswax']['beeswax_server_host'] ?= "#{ctx.config.host}"
-  # Desktop
-  hue_ini['desktop'] ?= {}
-  hue_ini['desktop']['http_host'] ?= '0.0.0.0'
-  hue_ini['desktop']['http_port'] ?= '8000'
-  hue_ini['desktop']['secret_key'] ?= 'jFE93j;2[290-eiwMYSECRTEKEYy#e=+Iei*@Mn<qW5o'
-  hue_ini['desktop']['smtp'] ?= {}
-  hue_ini['desktop']['smtp']['host'] ?= hue_smtp_host if hue_smtp_host
+  {hue_conf_dir, hue_ini} = ctx.config.hdp
   ctx.ini
     destination: "#{hue_conf_dir}/hue.ini"
     content: hue_ini
@@ -172,51 +183,41 @@ module.exports.push name: 'HDP Hue # Configure', callback: (ctx, next) ->
   , (err, written) ->
     next err, if written then ctx.OK else ctx.PASS
 
-# module.exports.push name: 'HDP Hue # Database', callback: (ctx, next) ->
-#   modified = false
-#   do_db = ->
-#     {oozie_db_username, oozie_db_password, oozie_db_host, oozie_site} = ctx.config.hdp
-#     username = oozie_site['oozie.service.JPAService.jdbc.username']
-#     password = oozie_site['oozie.service.JPAService.jdbc.password']
-#     escape = (text) -> text.replace(/[\\"]/g, "\\$&")
-#     cmd = "mysql -u#{oozie_db_username} -p#{oozie_db_password} -h#{oozie_db_host} -e "
-#     ctx.execute
-#       cmd: """
-#       if #{cmd} "use oozie"; then exit 2; fi
-#       #{cmd} "
-#       create database oozie;
-#       grant all privileges on oozie.* to '#{username}'@'localhost' identified by '#{password}';
-#       grant all privileges on oozie.* to '#{username}'@'%' identified by '#{password}';
-#       flush privileges;
-#       "
-#       """
-#       code_skipped: 2
-#     , (err, created, stdout, stderr) ->
-#       return next err, if created then ctx.OK else ctx.PASS
-#   do_config = ->
-#     hue_ini = {}
-#     hue_ini['desktop'] ?= {}
-#     hue_ini['desktop']['database'] ?= {}
-#     hue_ini['desktop']['database']['engine'] ?= 'mysql'
-#     hue_ini['desktop']['database']['host'] ?= ''
-#     hue_ini['desktop']['database']['port'] ?= ''
-#     hue_ini['desktop']['database']['user'] ?= ''
-#     hue_ini['desktop']['database']['password'] ?= ''
-#     hue_ini['desktop']['database']['name'] ?= ''
-#     ctx.ini
-#       destination: "#{hue_conf_dir}/hue.ini"
-#       content: hue_ini
-#       merge: true
-#       parse: misc.ini.parse_multi_brackets 
-#       stringify: misc.ini.stringify_multi_brackets
-#       separator: '='
-#       comment: '#'
-#     , (err, written) ->
-#       next err, if written then ctx.OK else ctx.PASS
-#   do_end = ->
-#     next err, if modified then ctx.OK else ctx.PASS
-
-
+module.exports.push name: 'HDP Hue # Database', callback: (ctx, next) ->
+  {hue_db_admin_username, hue_db_admin_password, hue_ini} = ctx.config.hdp
+  modified = false
+  engines = 
+    mysql: ->
+      host = hue_ini['desktop']['database']['host']
+      port = hue_ini['desktop']['database']['port']
+      username = hue_ini['desktop']['database']['user'] ?= 'hue'
+      password = hue_ini['desktop']['database']['password'] ?= 'hue123'
+      escape = (text) -> text.replace(/[\\"]/g, "\\$&")
+      cmd = "mysql -u#{hue_db_admin_username} -p#{hue_db_admin_password} -h#{host} -P#{port} -e "
+      ctx.execute
+        cmd: """
+        if #{cmd} "use hue"; then exit 2; fi
+        #{cmd} "
+        create database hue;
+        grant all privileges on hue.* to '#{username}'@'localhost' identified by '#{password}';
+        grant all privileges on hue.* to '#{username}'@'%' identified by '#{password}';
+        flush privileges;
+        "
+        """
+        code_skipped: 2
+      , (err, created, stdout, stderr) ->
+        return next err, ctx.PASS if err or not created
+        ctx.execute
+          cmd: """
+          su -l hue -c "/usr/lib/hue/build/env/bin/hue syncdb --noinput"
+          """
+        , (err, executed) ->
+          next err, ctx.OK
+    sqlite: ->
+      next null, ctx.PASS
+  engine = hue_ini['desktop']['database']['engine']
+  return next new Error 'Hue database engine not supported' unless engines[engine]
+  engines[engine]()
 
 ###
 TODO: install Hue over SSL
