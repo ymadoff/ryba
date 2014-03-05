@@ -15,8 +15,8 @@ module.exports.push module.exports.configure = (ctx) ->
   require('../tools/mysql_server').configure ctx
   require('./oozie_').configure ctx
   {realm} = ctx.config.krb5_client
-  ctx.config.hdp.oozie_db_username ?= ctx.config.mysql_server.username
-  ctx.config.hdp.oozie_db_password ?= ctx.config.mysql_server.password
+  ctx.config.hdp.oozie_db_admin_username ?= ctx.config.mysql_server.username
+  ctx.config.hdp.oozie_db_admin_password ?= ctx.config.mysql_server.password
   # dbhost = ctx.config.hdp.oozie_db_host ?= ctx.servers(action: 'phyla/tools/mysql_server')[0]
   dbhost = ctx.config.hdp.oozie_db_host ?= ctx.host_with_module 'phyla/tools/mysql_server'
   ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{dbhost}:3306/oozie?createDatabaseIfNotExist=true"
@@ -209,11 +209,11 @@ module.exports.push name: 'HDP Oozie Server # SPNEGO', callback: (ctx, next) ->
     #   destination: '/etc/security/keytabs/oozie_spnego.keytab'
 
 module.exports.push name: 'HDP Oozie Server # MySQL', callback: (ctx, next) ->
-  {oozie_db_username, oozie_db_password, oozie_db_host, oozie_site} = ctx.config.hdp
+  {oozie_db_admin_username, oozie_db_admin_password, oozie_db_host, oozie_site} = ctx.config.hdp
   username = oozie_site['oozie.service.JPAService.jdbc.username']
   password = oozie_site['oozie.service.JPAService.jdbc.password']
   escape = (text) -> text.replace(/[\\"]/g, "\\$&")
-  cmd = "mysql -u#{oozie_db_username} -p#{oozie_db_password} -h#{oozie_db_host} -e "
+  cmd = "mysql -u#{oozie_db_admin_username} -p#{oozie_db_admin_password} -h#{oozie_db_host} -e "
   ctx.execute
     cmd: """
     if #{cmd} "use oozie"; then exit 2; fi
