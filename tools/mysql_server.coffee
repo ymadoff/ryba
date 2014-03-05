@@ -23,6 +23,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.mysql_server.sql_on_install ?= []
   ctx.config.mysql_server.sql_on_install = [ctx.config.mysql_server.sql_on_install] if typeof ctx.config.mysql_server.sql_on_install is 'string'
   ctx.config.mysql_server.current_password ?= ''
+  ctx.config.mysql_server.port ?= '3306'
   ctx.config.mysql_server.username ?= 'root'
   ctx.config.mysql_server.password ?= ''
   ctx.config.mysql_server.remove_anonymous ?= true
