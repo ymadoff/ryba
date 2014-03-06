@@ -13,24 +13,53 @@ Ganglia Monitor is the agent to be deployed on each of the hosts.
 module.exports.push module.exports.configure = (ctx) ->
   # nothing for now
 
+###
+Service
+-------
+
+This module install the package "ganglia-gmond-3.5.0-99".
+
+###
 module.exports.push name: 'Ganglia Monitor # Service', timeout: -1, callback: (ctx, next) ->
   ctx.service
     name: 'ganglia-gmond-3.5.0-99'
   , (err, serviced) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
+###
+Layout
+------
+
+We prepare the directory "/usr/libexec/hdp/ganglia" in which we later upload
+the objects files and generate the hosts configuration.
+
+###
 module.exports.push name: 'Ganglia Monitor # Layout', timeout: -1, callback: (ctx, next) ->
   ctx.mkdir
     destination: '/usr/libexec/hdp/ganglia'
   , (err, created) ->
     next err, if created then ctx.OK else ctx.PASS
 
+###
+Objects
+-------
+
+Copy the object files provided in the HDP companion files into the 
+"/usr/libexec/hdp/ganglia" folder. Permissions on those file are set to "0o744".
+
+###
 module.exports.push name: 'Ganglia Monitor # Objects', timeout: -1, callback: (ctx, next) ->
   glob "#{__dirname}/files/ganglia/objects/*.*", (err, files) ->
-    files = for file in files then source: file, destination: "/usr/libexec/hdp/ganglia/", mode: 0o744
+    files = for file in files then source: file, destination: "/usr/libexec/hdp/ganglia", mode: 0o744
     ctx.upload files, (err, uploaded) ->
       next err, if uploaded then ctx.OK else ctx.PASS
 
+###
+Init Script
+-----------
+
+Upload the "hdp-gmond" service file into "/etc/init.d".
+###
 module.exports.push name: 'Ganglia Monitor # Init Script', timeout: -1, callback: (ctx, next) ->
   ctx.upload
     source: "#{__dirname}/files/ganglia/scripts/hdp-gmond"
@@ -39,12 +68,15 @@ module.exports.push name: 'Ganglia Monitor # Init Script', timeout: -1, callback
   , (err, uploaded) ->
     next err, if uploaded then ctx.OK else ctx.PASS
 
+###
+Host
+----
+
+Setup the Ganglia hosts. Categories are "HDPNameNode", "HDPResourceManager", 
+"HDPSlaves" and "HDPHBaseMaster".
+###
 module.exports.push name: 'Ganglia Monitor # Host', timeout: -1, callback: (ctx, next) ->
   cmds = []
-  # If HBase is installed, on the HBase Master
-  # this seems to be an error, we moved it to the ganglia master collector
-  # if ctx.has_any_modules 'phyla/hdp/hbase_master'
-  #  cmds.push cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPHBaseMaster -m"
   # On the NameNode and SecondaryNameNode servers, to configure the gmond emitters
   if ctx.has_any_modules 'phyla/hdp/hdfs_nn', 'phyla/hdp/hdfs_snn'
     cmds.push cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPNameNode"
@@ -60,6 +92,12 @@ module.exports.push name: 'Ganglia Monitor # Host', timeout: -1, callback: (ctx,
   ctx.execute cmds, (err, executed) ->
     next err, if executed then ctx.OK else ctx.PASS
 
+###
+Configuration
+-------------
+
+Update the files generated in the "host" action with the host of the Ganglia Collector.
+###
 module.exports.push name: 'Ganglia Monitor # Configuration', timeout: -1, callback: (ctx, next) ->
   collector = ctx.host_with_module 'phyla/hdp/ganglia_collector'
   writes = []
@@ -89,6 +127,12 @@ module.exports.push name: 'Ganglia Monitor # Configuration', timeout: -1, callba
   ctx.write writes, (err, written) ->
     next err, if written then ctx.OK else ctx.PASS
 
+###
+Hadoop
+------
+
+Upload the "hadoop-metrics2.properties" to connect Hadoop with Ganglia.
+###
 module.exports.push name: 'Ganglia Monitor # Hadoop', callback: (ctx, next) ->
   collector = ctx.host_with_module 'phyla/hdp/ganglia_collector'
   ctx.write
