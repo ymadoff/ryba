@@ -5,7 +5,7 @@ quote = require 'regexp-quote'
 
 module.exports = []
 
-module.exports.push 'phyla/core/bind_client'
+# module.exports.push 'phyla/core/bind_client'
 module.exports.push 'phyla/core/yum'
 
 module.exports.push (ctx) ->
