@@ -39,12 +39,13 @@ module.exports.push name: 'Bootstrap # Log', callback: (ctx, next) ->
       log.out.write '\nFINISHED WITH SUCCESS\n'
       close()
     ctx.on 'error', (err) ->
+      log.out.write 'FINISHED WITH ERROR\n'
       print = (err) ->
-        log.out.write 'FINISHED WITH ERROR\n'
+        log.err.write err.stack or err.message + '\n'
+      unless err.errors
+        print err
+      else if err.errors
         log.err.write err.message + '\n'
-        log.err.write err.stack if err.stack
-      print err
-      if err.errors
         for error in err.errors then print error
       close()
     next null, ctx.PASS
