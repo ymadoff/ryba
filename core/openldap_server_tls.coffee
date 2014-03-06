@@ -433,6 +433,8 @@ module.exports.push name: 'OpenLDAP TLS # Activate LDAPS', callback: (ctx, next)
       return next err if err
       next null, ctx.OK
 
+module.exports.push 'phyla/core/openldap_client'
+
 module.exports.push name: 'OpenLDAP TLS # Check', timeout: -1, callback: (ctx, next) ->
   { suffix, root_dn, root_password } = ctx.config.openldap_server
   ctx.execute
