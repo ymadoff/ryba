@@ -39,7 +39,7 @@ module.exports.push name: 'HDP HDFS Client # Check', timeout: -1, callback: (ctx
   # ctx.waitForConnection datanodes, port, (err) ->
   #   return next err if err
   # User "test" should be created
-  ctx.waitForExecution "hdfs dfs -test -d /user/test", (err) ->
+  ctx.waitForExecution mkcmd.test(ctx, "hdfs dfs -test -d /user/test"), (err) ->
     return next err if err
     ctx.execute
       cmd: mkcmd.test ctx, """
