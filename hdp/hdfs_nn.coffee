@@ -1,4 +1,5 @@
 
+fs = require 'fs'
 lifecycle = require './lib/lifecycle'
 mkcmd = require './lib/mkcmd'
 each = require 'each'
@@ -10,6 +11,9 @@ module.exports = []
 module.exports.push 'phyla/hdp/hdfs'
 module.exports.push 'phyla/core/nc'
 
+###
+todo: [Securing access to ZooKeeper](http://hadoop.apache.org/docs/r2.2.0/hadoop-yarn/hadoop-yarn-site/HDFSHighAvailabilityWithNFS.html)
+###
 module.exports.push (ctx) ->
   require('./hdfs').configure ctx
   require('../core/nc').configure ctx
@@ -77,20 +81,68 @@ module.exports.ha_client_config = ha_client_config = (ctx) ->
 Update "hdfs-site.xml" with HA configuration
 ###
 module.exports.push name: 'HDP HDFS NN # HA', callback: (ctx, next) ->
-  {hadoop_conf_dir} = ctx.config.hdp
+  {hadoop_conf_dir, ssh_fencing, hdfs_user, hadoop_group} = ctx.config.hdp
+  hdfs_home = '/var/lib/hadoop-hdfs'
   modified = false
   journalnodes = ctx.hosts_with_module 'phyla/hdp/hdfs_jn'
   hdfs_site = ha_client_config ctx
   hdfs_site['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
   hdfs_site['dfs.namenode.shared.edits.dir'] = "qjournal://#{hdfs_site['dfs.namenode.shared.edits.dir']}/#{hdfs_site['dfs.nameservices']}"
-  hdfs_site['dfs.ha.fencing.methods'] = 'sshfence'
-  hdfs_site['dfs.ha.fencing.ssh.private-key-files'] = '/root/.ssh/id_rsa'
-  ctx.hconfigure
-    destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-    properties: hdfs_site
-    merge: true
-  , (err, configured) ->
-    next err, if configured then ctx.OK else ctx.PASS
+  hdfs_site['dfs.ha.fencing.methods'] = 'sshfence(hdfs)'
+  hdfs_site['dfs.ha.fencing.ssh.private-key-files'] = '#{hdfs_home}/.ssh/id_rsa'
+  modified = false
+  do_mkdir = ->
+    ctx.mkdir
+      destination: "#{hdfs_home}/.ssh"
+      uid: hdfs_user
+      gid: hadoop_group
+      mode: 0o700
+    , (err, created) ->
+      return next err if err
+      do_upload_keys()
+  do_upload_keys = ->
+    ctx.upload [
+      source: "#{ssh_fencing.private_key}"
+      destination: "#{hdfs_home}/.ssh"
+      uid: hdfs_user
+      gid: hadoop_group
+      mode: 0o600
+    ,
+      source: "#{ssh_fencing.public_key}"
+      destination: "#{hdfs_home}/.ssh"
+      uid: hdfs_user
+      gid: hadoop_group
+      mode: 0o655
+    ], (err, written) ->
+      return next err if err
+      modified = true if written
+      do_authorized()
+  do_authorized = ->
+    fs.readFile "#{ssh_fencing.public_key}", (err, content) ->
+      return next err if err
+      ctx.write
+        destination: "#{hdfs_home}/.ssh/authorized_keys"
+        content: content
+        append: true
+        uid: hdfs_user
+        gid: hadoop_group
+        mode: 0o600
+      , (err, written) ->
+        return next err if err
+        modified = true if written
+        do_configure()
+  do_configure = ->
+    ctx.hconfigure
+      destination: "#{hadoop_conf_dir}/hdfs-site.xml"
+      properties: hdfs_site
+      merge: true
+    , (err, configured) ->
+      return next err if err
+      modified = true if configured
+      do_end()
+  do_end = ->
+      next null, if modified then ctx.OK else ctx.PASS
+  do_mkdir()
 
 ###
 Format the active NameNode if "current/VERSION" does not yet exists
@@ -261,16 +313,18 @@ module.exports.push name: 'HDP HDFS NN # HA Auto Failover', timeout: -1, callbac
       # TODO: There was a time when fencing wasnt ok the first time,
       # this is probably no longer the case, but we need to test before
       # removing the following command.
-      ctx.execute
-        # hdfs haadmin -transitionToActive -forcemanual hadoop2
-        cmd: "yes | hdfs haadmin -transitionToActive -forcemanual #{ctx.config.host}"
-        if: formated
-      , (err, activated) ->
-        return next err if err
-        ctx.log "Was #{ctx.config.host} activated: #{activated}"
-        # next null, if modified then ctx.OK else ctx.PASS
-        lifecycle.zkfc_start ctx, (err, started) ->
-          next null, if formated or started then ctx.OK else ctx.PASS
+      # ctx.execute
+      #   # hdfs haadmin -transitionToActive -forcemanual hadoop2
+      #   cmd: "yes | hdfs haadmin -transitionToActive -forcemanual #{ctx.config.host}"
+      #   if: formated
+      # , (err, activated) ->
+      #   return next err if err
+      #   ctx.log "Was #{ctx.config.host} activated: #{activated}"
+      #   # next null, if modified then ctx.OK else ctx.PASS
+      #   lifecycle.zkfc_start ctx, (err, started) ->
+      #     next null, if formated or started then ctx.OK else ctx.PASS
+      lifecycle.zkfc_start ctx, (err, started) ->
+        next null, if formated or started then ctx.OK else ctx.PASS
   do_zkfc_standby = ->
     ctx.log "Wait for active NameNode to take leadership"
     ctx.waitForExecution
