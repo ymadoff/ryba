@@ -60,15 +60,28 @@ Network # DNS resolv
 --------------------
 Write the DNS configuration. On CentOs like system, the 
 updated file is "/etc/resolv".
+
+The [resolver](http://man7.org/linux/man-pages/man5/resolver.5.html) 
+is a set of routines in the C library that provide
+access to the Internet Domain Name System (DNS). The
+configuration file is considered a trusted source of DNS information
 ###
-network.push name: 'Network # DNS resolv', callback: (ctx, next) ->
+network.push name: 'Network # DNS Resolver', callback: (ctx, next) ->
   {resolv} = ctx.config.network
-  return next() unless resolv
-  ctx.write
-    content: resolv
-    destination: '/etc/resolv.conf'
-    backup: true
-  , (err, replaced) ->
-    return next err, if replaced then ctx.OK else ctx.PASS
+  return next null, ctx.INAPPLICABLE unless resolv
+  # nameservers = []
+  # re = /nameserver(.*)/g
+  # while (match = re.exec resolv) isnt null
+  #   nameservers.push match[1].trim()
+  nameservers = ctx.hosts_with_module 'bind_server'
+  # console.log nameservers, 53
+  ctx.waitIsOpen nameservers, 53, (err) ->
+    return next err if err
+    ctx.write
+      content: resolv
+      destination: '/etc/resolv.conf'
+      backup: true
+    , (err, replaced) ->
+      return next err, if replaced then ctx.OK else ctx.PASS
 
 
