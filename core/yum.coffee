@@ -6,7 +6,6 @@ YUM
 
 each = require 'each'
 path = require 'path'
-mecano = require 'mecano'
 misc = require 'mecano/lib/misc'
 ini = require 'ini'
 

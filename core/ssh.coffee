@@ -5,7 +5,6 @@ SSH
 
 ###
 each = require 'each'
-mecano = require 'mecano'
 module.exports = []
 
 ###

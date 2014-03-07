@@ -5,7 +5,6 @@ SELinux
 Security-Enhanced Linux (SELinux) is a mandatory access control (MAC) security mechanism implemented in the kernel.
 ###
 
-mecano = require 'mecano'
 module.exports = []
 
 ###

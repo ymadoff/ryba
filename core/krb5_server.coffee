@@ -16,7 +16,6 @@ Resources:
 *   [Kerberos with LDAP backend on ubuntu](http://labs.opinsys.com/blog/2010/02/05/setting-up-openldap-kerberos-on-ubuntu-10-04-lucid/)
 
 ###
-mecano = require 'mecano'
 each = require 'each'
 misc = require 'mecano/lib/misc'
 module.exports = []

@@ -3,9 +3,9 @@
 ###
 Users
 =====
-Create and manage users.
+
+A module to create and manage unix users.
 ###
-mecano = require 'mecano'
 module.exports = []
 
 ###

@@ -7,7 +7,6 @@ The recipe will configure curl for each users.
 ###
 
 each = require 'each'
-mecano = require 'mecano'
 misc = require 'mecano/lib/misc'
 ini = require 'ini'
 

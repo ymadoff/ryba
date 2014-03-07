@@ -7,7 +7,6 @@ Install the GNU make utility to maintain groups of programs.
 This action does not use any configuration.
 ###
 
-mecano = require 'mecano'
 module.exports = []
 
 module.exports.push 'phyla/core/yum'

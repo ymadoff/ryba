@@ -7,7 +7,6 @@ Modify the various network related configuration files.
 
 ###
 
-mecano = require 'mecano'
 misc = require 'mecano/lib/misc'
 network = module.exports = []
 

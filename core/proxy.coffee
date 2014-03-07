@@ -10,7 +10,6 @@ providing configuration properties which other modules may use.
 
 path = require 'path'
 each = require 'each'
-mecano = require 'mecano'
 module.exports = []
 
 module.exports.push 'phyla/core/users'

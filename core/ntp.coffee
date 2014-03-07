@@ -1,4 +1,4 @@
-mecano = require 'mecano'
+
 quote = require 'regexp-quote'
 
 ntp = module.exports = []
