@@ -72,8 +72,8 @@ module.exports.push name: 'Bootstrap # Utils', callback: (ctx) ->
         , options.timeout
         cmd = "while [[ ! `bash -c 'echo > /dev/tcp/#{server.host}/#{server.port}'` ]] && [[ ! -f /tmp/#{rand} ]]; do sleep 2; done;"
       else
-        # cmd = "while ! bash -c 'echo > /dev/tcp/#{server.host}/#{server.port}'; do sleep 2; done;"
-        cmd = "bash -c 'echo > /dev/tcp/#{server.host}/#{server.port}'"
+        cmd = "while ! bash -c 'echo > /dev/tcp/#{server.host}/#{server.port}'; do sleep 2; done;"
+        # cmd = "bash -c 'echo > /dev/tcp/#{server.host}/#{server.port}'"
       ctx.log "Wait for #{server.host} #{server.port}"
       ctx.emit 'wait', server.host, server.port
       ctx.execute
