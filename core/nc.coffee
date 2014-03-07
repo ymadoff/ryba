@@ -35,7 +35,8 @@ module.exports.push module.exports.configure = (ctx) ->
     if typeof options is 'function'
       callback = options
       options = {}
-    options.interval = 2000
+    options.interval ?= 2000
+    options.code_skipped ?= 1
     ctx.log "Wait for command to execute"
     ctx.emit 'wait'
     running = false
@@ -49,6 +50,7 @@ module.exports.push module.exports.configure = (ctx) ->
       , (err, ready, stdout, stderr) ->
         running = false
         return if not err and not ready
+        return callback err if err
         clearInterval clear if clear
         ctx.emit 'waited'
         callback err, stdout, stderr
