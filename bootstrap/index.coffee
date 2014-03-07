@@ -9,7 +9,8 @@ initialized with the root user.
 
 module.exports = []
 
-module.exports.push 'phyla/bootstrap/cache_file'
+# module.exports.push 'phyla/bootstrap/cache_file'
+module.exports.push 'phyla/bootstrap/cache_memory'
 
 module.exports.push 'phyla/bootstrap/log'
 
