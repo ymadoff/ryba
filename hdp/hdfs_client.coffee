@@ -1,7 +1,6 @@
 
 hdfs_nn = require './hdfs_nn'
 mkcmd = require './lib/mkcmd'
-
 module.exports = []
 module.exports.push 'phyla/hdp/core'
 
@@ -22,11 +21,10 @@ module.exports.push name: 'HDP HDFS Client # Configuration', callback: (ctx, nex
     next err, if configured then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP HDFS Client # HA', callback: (ctx, next) ->
-  {hadoop_conf_dir} = ctx.config.hdp
-  hdfs_site = hdfs_nn.ha_client_config ctx
+  {hadoop_conf_dir, ha_client_config} = ctx.config.hdp
   ctx.hconfigure
     destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-    properties: hdfs_site
+    properties: ha_client_config
     merge: true
   , (err, configured) ->
     next err, if configured then ctx.OK else ctx.PASS

@@ -5,9 +5,6 @@ module.exports = []
 
 module.exports.push 'phyla/hdp/hdfs'
 
-###
-
-###
 module.exports.push module.exports.configure = (ctx) ->
   require('./hdfs').configure ctx
 

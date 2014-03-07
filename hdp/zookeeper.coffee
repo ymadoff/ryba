@@ -146,7 +146,9 @@ module.exports.push name: 'HDP ZooKeeper # Start', timeout: -1, callback: (ctx, 
   lifecycle.zookeeper_start ctx, (err, started) ->
     next err, if started then ctx.OK else ctx.PASS
 
-
+###
+todo: [Securing access to ZooKeeper](http://hadoop.apache.org/docs/r2.2.0/hadoop-yarn/hadoop-yarn-site/HDFSHighAvailabilityWithNFS.html)
+###
 
 
 

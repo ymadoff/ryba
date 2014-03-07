@@ -15,6 +15,8 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.hdfs_configured = true
   require('./core').configure ctx
   require('../core/nc').configure ctx
+  {nameservice} = ctx.config.hdp
+  namenodes = ctx.hosts_with_module 'phyla/hdp/hdfs_nn'
   # Define Directories for Core Hadoop
   ctx.config.hdp.dfs_name_dir ?= ['/hadoop/hdfs/namenode']
   ctx.config.hdp.dfs_name_dir = ctx.config.hdp.dfs_name_dir.split ',' if typeof ctx.config.hdp.dfs_name_dir is 'string'
@@ -41,6 +43,14 @@ module.exports.push module.exports.configure = (ctx) ->
   # Options for "hadoop-env.sh"
   ctx.config.hdp.options ?= {}
   ctx.config.hdp.options['java.net.preferIPv4Stack'] ?= true
+  # HDFS HA configuration
+  ctx.config.hdp.ha_client_config = {}
+  ctx.config.hdp.ha_client_config['dfs.nameservices'] = nameservice
+  ctx.config.hdp.ha_client_config["dfs.ha.namenodes.#{nameservice}"] = (for nn in namenodes then nn.split('.')[0]).join ','
+  for nn in namenodes
+    ctx.config.hdp.ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{nn.split('.')[0]}"] = "#{nn}:8020"
+    ctx.config.hdp.ha_client_config["dfs.namenode.http-address.#{nameservice}.#{nn.split('.')[0]}"] = "#{nn}:50070"
+  ctx.config.hdp.ha_client_config["dfs.client.failover.proxy.provider.#{nameservice}"] = 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
 
 #http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 #http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
@@ -189,7 +199,7 @@ module.exports.push name: 'HDP HDFS # SPNEGO', callback: module.exports.spnego =
     mode: 0o750
   , (err, created) ->
     ctx.log 'Creating HTTP Principals and SPNEGO keytab'
-    ctx.krb5_addprinc 
+    ctx.krb5_addprinc
       principal: "HTTP/#{ctx.config.host}@#{realm}"
       randkey: true
       keytab: '/etc/security/keytabs/spnego.service.keytab'
