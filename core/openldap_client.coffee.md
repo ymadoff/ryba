@@ -21,8 +21,10 @@ using "TLS_CACERTDIR", the name of the file  must be the
 certicate hash with a numeric suffix. Here's an example 
 showing how to place the certificate inside "TLS_CACERTDIR":
 
+```bash
 hash=`openssl x509 -noout -hash -in cert.pem`
 mv cert.pem /etc/openldap/cacerts/$hash.0
+```
 
     module.exports.push (ctx) ->
       require('./nc').configure ctx

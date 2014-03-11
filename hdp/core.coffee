@@ -48,6 +48,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp ?= {}
   ctx.config.hdp.format ?= false
   ctx.config.hdp.hadoop_conf_dir ?= '/etc/hadoop/conf'
+  ctx.config.hdp.force_check ?= false
   # Repository
   ctx.config.hdp.proxy = ctx.config.proxy.http_proxy if typeof ctx.config.hdp.http_proxy is 'undefined'
   ctx.config.hdp.hdp_repo ?= 'http://public-repo-1.hortonworks.com/HDP/centos6/2.x/updates/2.0.6.0/hdp.repo'
@@ -62,7 +63,7 @@ module.exports.push module.exports.configure = (ctx) ->
   throw new Error "Invalid Number of Active NameNodes: #{active_nn_hosts.length}" unless active_nn_hosts.length is 1
   ctx.config.hdp.active_nn_host = active_nn_hosts[0]
   # Define Users and Groups
-  ctx.config.hdp.hadoop_user ?= 'root'
+  ctx.config.hdp.hdfs_user ?= 'hdfs'
   ctx.config.hdp.hadoop_group ?= 'hadoop'
   # Define Directories for Ecosystem Components
   ctx.config.hdp.hdfs_log_dir ?= '/var/log/hadoop-hdfs'

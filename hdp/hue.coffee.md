@@ -135,7 +135,7 @@ be deployed on all the master and worker nodes. This is currently achieved throu
 the configuration picked up by the "phyla/hdp/core" module.
 
     module.exports.push name: 'HDP Hue # Core', callback: (ctx, next) ->
-      {hadoop_conf_dir, hadoop_user, hadoop_group} = ctx.config.hdp
+      {hadoop_conf_dir, hadoop_group} = ctx.config.hdp
       properties = 
         'hadoop.proxyuser.hue.hosts': '*'
         'hadoop.proxyuser.hue.groups': '*'

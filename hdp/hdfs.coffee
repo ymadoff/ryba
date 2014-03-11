@@ -36,7 +36,6 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.hdfs_site ?= {}
   # ctx.config.hdp.hdfs_site['dfs.datanode.data.dir.perm'] ?= '750'
   ctx.config.hdp.hdfs_site['dfs.datanode.data.dir.perm'] ?= '700'
-  ctx.config.hdp.hdfs_site['dfs.journalnode.edits.dir'] ?= '/var/run/hadoop-hdfs/journalnode_edit_dir'
   ctx.config.hdp.hdfs_site['fs.permissions.umask-mode'] ?= '027' # 0750
   # Options for "hadoop-policy.xml"
   ctx.config.hdp.hadoop_policy ?= {}

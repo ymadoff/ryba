@@ -17,6 +17,9 @@ IDs. It tracks where across the cluster the file data is kept on the DataNodes. 
 does not store the data of these files itself. It’s important that this metadata 
 (and all changes to it) are safely persisted to stable storage for fault tolerance.
 
+This implementation configure an HA HDFS cluster, using the [Quorum Journal Manager (QJM)](qjm)
+feature  to share edit logs between the Active and Standby NameNodes.
+
 ## Configuration
 
 The NameNode doesn't define new configuration properties. However, it uses properties
@@ -455,6 +458,6 @@ afect HDFS metadata.
           next err, if modified then ctx.OK else ctx.PASS
       do_user()
 
-
+[qjm]: http://hadoop.apache.org/docs/r2.3.0/hadoop-yarn/hadoop-yarn-site/HDFSHighAvailabilityWithQJM.html
 
 

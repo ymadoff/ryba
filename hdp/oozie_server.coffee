@@ -134,7 +134,7 @@ module.exports.push name: 'HDP Oozie Server # Mysql Driver', callback: (ctx, nex
       return next err, ctx.OK
 
 module.exports.push name: 'HDP Oozie Server # Configuration', callback: (ctx, next) ->
-  { oozie_user, hadoop_user, hadoop_group, oozie_site, oozie_conf_dir, oozie_hadoop_config, hadoop_conf_dir } = ctx.config.hdp
+  { oozie_user, hadoop_group, oozie_site, oozie_conf_dir, oozie_hadoop_config, hadoop_conf_dir } = ctx.config.hdp
   modified = false
   do_oozie_site = ->
     ctx.log 'Configure oozie-site.xml'
@@ -170,7 +170,7 @@ module.exports.push name: 'HDP Oozie Server # Configuration', callback: (ctx, ne
     ctx.link
       source: "#{hadoop_conf_dir}"
       destination: "#{oozie_conf_dir}/hadoop-conf"
-      uid: hadoop_user
+      uid: oozie_user
       gid: hadoop_group
     , (err, linked) ->
       return next err if err
