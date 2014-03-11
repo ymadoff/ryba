@@ -88,7 +88,7 @@ and permissions set to "0600".
 
 Load the module "phyla/hdp/hdfs\_dn\_start" to start the DataNode.
 
-    module.export 'phyla/hdp/hdfs_dn_start'
+    module.exports.push 'phyla/hdp/hdfs_dn_start'
 
     # module.exports.push name: 'HDP HDFS DN # Start', timeout: -1, callback: (ctx, next) ->
     #   namenodes = ctx.hosts_with_module 'phyla/hdp/hdfs_nn'

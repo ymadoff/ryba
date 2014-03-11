@@ -76,6 +76,14 @@ Update the "hdfs-site.xml" file with the "dfs.journalnode.edits.dir" property.
         return next err if err
          next null, if configured then ctx.OK else ctx.PASS
 
+## Kerberos
+
+Register the SPNEGO service principal in the form of "HTTP/{host}@{realm}" into 
+the "hdfs-site.xml" file. The impacted properties are "dfs.journalnode.kerberos.internal.spnego.principal", 
+"dfs.journalnode.kerberos.principal" and "dfs.journalnode.keytab.file". The SPNEGO 
+tocken is stored inside the "/etc/security/keytabs/spnego.service.keytab" keytab, 
+also used by the NameNodes, DataNodes, ResourceManagers and NodeManagers.
+
     module.exports.push name: 'HDP HDFS JN # Kerberos', callback: (ctx, next) ->
       {hadoop_conf_dir} = ctx.config.hdp
       {realm} = ctx.config.krb5_client
@@ -83,7 +91,7 @@ Update the "hdfs-site.xml" file with the "dfs.journalnode.edits.dir" property.
       # hdfs_site['dfs.journalnode.http-address'] = '0.0.0.0:8480'
       hdfs_site['dfs.journalnode.kerberos.internal.spnego.principal'] = "HTTP/_HOST@#{realm}"
       hdfs_site['dfs.journalnode.kerberos.principal'] = "HTTP/_HOST@#{realm}"
-      hdfs_site['dfs.journalnode.keytab.file '] = '/etc/security/keytabs/spnego.service.keytab'
+      hdfs_site['dfs.journalnode.keytab.file'] = '/etc/security/keytabs/spnego.service.keytab'
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: hdfs_site
