@@ -1,9 +1,4 @@
 
-    hdfs_nn = require './hdfs_nn'
-    lifecycle = require './lib/lifecycle'
-    mkcmd = require './lib/mkcmd'
-    module.exports = []
-
 # HDFS DataNode
 
 A DataNode manages the storage attached to the node it run on. There 
@@ -18,6 +13,11 @@ failover, it is necessary that the Standby node have up-to-date
 information regarding the location of blocks in the cluster. In order 
 to achieve this, the DataNodes are configured with the location of both 
 NameNodes, and send block location information and heartbeats to both.
+
+    hdfs_nn = require './hdfs_nn'
+    lifecycle = require './lib/lifecycle'
+    mkcmd = require './lib/mkcmd'
+    module.exports = []
 
 ## Configuration
 

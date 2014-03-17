@@ -1,14 +1,4 @@
 
-    fs = require 'fs'
-    lifecycle = require './lib/lifecycle'
-    mkcmd = require './lib/mkcmd'
-    each = require 'each'
-    exec = require 'superexec'
-    misc = require 'mecano/lib/misc'
-    module.exports = []
-    module.exports.push 'phyla/hdp/hdfs'
-    module.exports.push 'phyla/core/nc'
-
 # HDP HDFS NameNode
 
 NameNode’s primary responsibility is storing the HDFS namespace. This means things 
@@ -19,6 +9,16 @@ does not store the data of these files itself. It’s important that this metada
 
 This implementation configure an HA HDFS cluster, using the [Quorum Journal Manager (QJM)](qjm)
 feature  to share edit logs between the Active and Standby NameNodes.
+
+    fs = require 'fs'
+    lifecycle = require './lib/lifecycle'
+    mkcmd = require './lib/mkcmd'
+    each = require 'each'
+    exec = require 'superexec'
+    misc = require 'mecano/lib/misc'
+    module.exports = []
+    module.exports.push 'phyla/hdp/hdfs'
+    module.exports.push 'phyla/core/nc'
 
 ## Configuration
 
@@ -179,7 +179,7 @@ this NameNode isn't yet formated by detecting if the "current/VERSION" exists. T
 is only exected once all the JournalNodes are started. The NameNode is finally restarted
 if the NameNode was formated.
 
-    module.exports.push name: 'HDP HDFS NN # Format', callback: (ctx, next) ->
+    module.exports.push name: 'HDP HDFS NN # Format', timeout: -1, callback: (ctx, next) ->
       {active_nn, dfs_name_dir, hdfs_user, format, nameservice} = ctx.config.hdp
       return next() unless format
       # Shall only be executed on the leader namenode
@@ -198,82 +198,6 @@ if the NameNode was formated.
           return next null, if executed then ctx.OK else ctx.PASS
           lifecycle.nn_start ctx, (err, started) ->
             return next err, ctx.OK
-
-    # module.exports.push name: 'HDP HDFS NN # Upgrade', timeout: -1, callback: (ctx, next) ->
-    #   # TODO, we have never tested migration in HA mode
-    #   return next null, ctx.INAPPLICABLE
-    #   {active_nn, hdfs_log_dir} = ctx.config.hdp
-    #   # Shall only be executed on the leader namenode
-    #   return next null, ctx.INAPPLICABLE unless active_nn
-    #   count = (callback) ->
-    #     ctx.execute
-    #       cmd: "cat #{hdfs_log_dir}/*/*.log | grep 'upgrade to version' | wc -l"
-    #     , (err, executed, stdout) ->
-    #       callback err, parseInt(stdout.trim(), 10) or 0
-    #   ctx.log 'Dont try to upgrade if namenode is running'
-    #   lifecycle.nn_status ctx, (err, started) ->
-    #     return next err if err
-    #     return next null, ctx.DISABLED if started
-    #     ctx.log 'Count how many upgrade msg in log'
-    #     count (err, c1) ->
-    #       return next err if err
-    #       ctx.log 'Start namenode'
-    #       lifecycle.nn_start ctx, (err, started) ->
-    #         return next err if err
-    #         return next null, ctx.PASS if started
-    #         ctx.log 'Count again'
-    #         count (err, c2) ->
-    #           return next err if err
-    #           return next null, ctx.PASS if c1 is c2
-    #           return next new Error 'Upgrade manually'
-
-
-## HA Init JournalNodes
-
-This action is disabled, it is only usefull when transitionning from a non HA environment. We
-kept it here in case we wish to implement HA (de)activation.
-
-Initialize the JournalNodes with the edits data from the local NameNode edits directories
-This is executed from the active NameNode. It wait for 
-all the JouralNode servers to be started and is only executed if none of 
-the directory named after the nameservice is created on each JournalNode host.
-
-    # module.exports.push name: 'HDP HDFS NN # HA Init JournalNodes', timeout: -1, callback: (ctx, next) ->
-    #   {nameservice, active_nn} = ctx.config.hdp
-    #   # Shall only be executed on the leader namenode
-    #   journalnodes = ctx.hosts_with_module 'phyla/hdp/hdfs_jn'
-    #   return next null, ctx.INAPPLICABLE unless active_nn
-    #   do_wait = ->
-    #     # all the JournalNodes shall be started
-    #     options = ctx.config.servers
-    #       .filter( (server) -> journalnodes.indexOf(server.host) isnt -1 )
-    #       .map( (server) -> host: server.host, port: 8485 )
-    #     ctx.waitForConnection options, (err) ->
-    #       return next err if err
-    #       do_init()
-    #   do_init = ->
-    #     exists = 0
-    #     each(journalnodes)
-    #     .on 'item', (journalnode, next) ->
-    #       ctx.connect journalnode, (err, ssh) ->
-    #         return next err if err
-    #         dir = "#{ctx.config.hdp.hdfs_site['dfs.journalnode.edits.dir']}/#{nameservice}"
-    #         misc.file.exists ssh, dir, (err, exist) ->
-    #           exists++ if exist
-    #           next()
-    #     .on 'error', (err) ->
-    #       next err
-    #     .on 'end', ->
-    #       return next null, ctx.PASS if exists is journalnodes.length
-    #       return next null, ctx.TODO if exists > 0 and exists < journalnodes.length
-    #       lifecycle.nn_stop ctx, (err, stopped) ->
-    #         return next err if err
-    #         ctx.execute
-    #           cmd: "su -l hdfs -c \"hdfs namenode -initializeSharedEdits -nonInteractive\""
-    #         , (err, executed, stdout) ->
-    #           return next err if err
-    #           next null, ctx.OK
-    #   do_wait()
 
 ## HA Init Standby NameNodes
 

@@ -1,4 +1,9 @@
 
+# Hue
+
+Hue features a File Browser for HDFS, a Job Browser for MapReduce/YARN, an HBase Browser, query editors for Hive, Pig, Cloudera Impala and Sqoop2.
+It also ships with an Oozie Application for creating and monitoring workflows, a Zookeeper Browser and a SDK. 
+
     misc = require 'mecano/lib/misc'
     lifecycle = require './lib/lifecycle'
     module.exports = []
@@ -11,11 +16,6 @@
     module.exports.push 'phyla/hdp/mapred_client'
     module.exports.push 'phyla/hdp/yarn_client'
     module.exports.push 'phyla/hdp/pig'
-
-# Hue
-
-Hue features a File Browser for HDFS, a Job Browser for MapReduce/YARN, an HBase Browser, query editors for Hive, Pig, Cloudera Impala and Sqoop2.
-It also ships with an Oozie Application for creating and monitoring workflows, a Zookeeper Browser and a SDK. 
 
 ## Configure
 

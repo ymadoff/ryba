@@ -1,11 +1,11 @@
 
-    lifecycle = require './lib/lifecycle'
-    module.exports = []
-
 # HDFS DataNode Stop
 
 Stop the DataNode service. It is recommended to stop a DataNode before its 
 associated the NameNodes.
+
+    lifecycle = require './lib/lifecycle'
+    module.exports = []
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx

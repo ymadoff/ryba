@@ -1,6 +1,4 @@
 
-    module.exports = []
-
 # Flume
 
 Flume is a distributed, reliable, and available service for efficiently collecting, 
@@ -8,12 +6,24 @@ aggregating, and moving large amounts of log data. It has a simple and flexible
 architecture based on streaming data flows. It is robust and fault tolerant with 
 tunable reliability mechanisms and many failover and recovery mechanisms.
 
+    module.exports = []
+
 ## Configure
 
 *   `flume_user` (string)   
     The unix flume user, default to "flume"   
 
-Exemple
+Exemple:
+
+```json
+{
+    "hdp": {
+        flume_user: "flume"
+        flume_group: "flume"
+        flume_conf_dir: "/etc/flume/conf"
+    }
+}
+```
 
     module.exports.push module.exports.configure = (ctx) ->
       require('../core/krb5_client').configure ctx
@@ -33,7 +43,7 @@ The package "flume" is installed.
 ## Kerberos
 
 The flume principal isn't used yet and is created to be at our disposal for later 
-usage. It is place inside the flume configuration directory, by default 
+usage. It is placed inside the flume configuration directory, by default 
 "/etc/flume/conf/flume.service.keytab" with restrictive permissions set to "0600".
 
     module.exports.push name: 'HDP Flume # Kerberos', callback: (ctx, next) ->

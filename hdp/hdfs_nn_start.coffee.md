@@ -1,13 +1,13 @@
 
-    lifecycle = require './lib/lifecycle'
-    mkcmd = require './lib/mkcmd'
-    module.exports = []
-
 # HDP NameNode Start
 
 Start the NameNode service as well as its ZKFC daemon. To ensure that the 
 leadership is assigned to the desired active NameNode, the ZKFC daemons on
 the standy NameNodes wait for the one on the active NameNode to start first.
+
+    lifecycle = require './lib/lifecycle'
+    mkcmd = require './lib/mkcmd'
+    module.exports = []
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx

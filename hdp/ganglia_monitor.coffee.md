@@ -1,10 +1,10 @@
 
-    glob = require 'glob'
-    module.exports = []
-
 # Ganglia Monitor
 
 Ganglia Monitor is the agent to be deployed on each of the hosts.
+
+    glob = require 'glob'
+    module.exports = []
 
 ## Dependencies
 

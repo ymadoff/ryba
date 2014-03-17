@@ -1,11 +1,10 @@
 
-
-    lifecycle = require './lib/lifecycle'
-    module.exports = []
-
 # HDFS DataNode Status
 
 Display the status of the NameNode as "STARTED" or "STOPPED".
+
+    lifecycle = require './lib/lifecycle'
+    module.exports = []
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx
