@@ -130,7 +130,7 @@ module.exports.push name: 'HDP Hive & HCat server # Logs', callback: (ctx, next)
 #   , (err, modified) ->
 #     return next err, if modified then ctx.OK else ctx.PASS
 
-module.exports.push name: 'HDP Hive & HCat server # Layout', callback: (ctx, next) ->
+module.exports.push name: 'HDP Hive & HCat server # Layout', timeout: -1, callback: (ctx, next) ->
   # todo: this isnt pretty, ok that we need to execute hdfs command from an hadoop client
   # enabled environment, but there must be a better way
   {active_nn_host, hdfs_user, hive_user, hive_group} = ctx.config.hdp
