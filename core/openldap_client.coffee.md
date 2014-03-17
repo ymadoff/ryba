@@ -16,10 +16,10 @@ object property. The property "openldap\_client.ca\_cert" define the
 certificate upload if not null.
 
 SSL certifcate could be defined in "/etc/ldap.conf" by 
-the "TLS_CACERT" or the "TLS_CACERTDIR" properties. When 
+the "TLS\_CACERT" or the "TLS\_CACERTDIR" properties. When 
 using "TLS_CACERTDIR", the name of the file  must be the 
 certicate hash with a numeric suffix. Here's an example 
-showing how to place the certificate inside "TLS_CACERTDIR":
+showing how to place the certificate inside "TLS\_CACERTDIR":
 
 ```bash
 hash=`openssl x509 -noout -hash -in cert.pem`
@@ -76,7 +76,7 @@ mv cert.pem /etc/openldap/cacerts/$hash.0
       uris = []
       for k, v of config
         continue unless k.toLowerCase() is 'uri'
-        for uri in v then uris.push uri
+        for uri in v.split(' ') then uris.push uri
       each(uris)
       .on 'item', (uri, next) ->
         uri = url.parse uri
