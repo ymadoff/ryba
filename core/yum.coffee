@@ -14,6 +14,7 @@ module.exports = []
 ###
 Dependencies: proxy
 ###
+module.exports.push 'phyla/core/profile' # In case yum make use of environmental variables
 module.exports.push 'phyla/core/proxy'
 module.exports.push 'phyla/core/network'
 
@@ -102,7 +103,7 @@ module.exports.push name: 'YUM # Repositories', timeout: -1, callback: (ctx, nex
   do_upload = ->
     each()
     .files(copy)
-    .parallel(10)
+    .parallel(1)
     .on 'item', (filename, next) ->
       basename = path.basename filename
       return next() if basename.indexOf('.') is 0
