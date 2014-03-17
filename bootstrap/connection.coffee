@@ -33,11 +33,12 @@ module.exports.push name: 'Bootstrap # Connection', timeout: -1, callback: (ctx,
   modified = true
   do_private_key = ->
     return do_ssh() unless private_key
+    ctx.log "Place SSH private key inside \"~/.ssh\""
     process.nextTick ->
       exec """
       mkdir -p ~/.ssh
       chmod 700 ~/.ssh
-      echo '#{private_key}' >> ~/.ssh/id_rsa
+      echo '#{private_key}' > ~/.ssh/id_rsa
       chmod 600 ~/.ssh/id_rsa
       """, (err, stdout, stderr) ->
         return next err if err
@@ -47,6 +48,7 @@ module.exports.push name: 'Bootstrap # Connection', timeout: -1, callback: (ctx,
     ctx.log "SSH login #{attempts}"
     config = merge {}, ctx.config.bootstrap,
       host: ctx.config.ip or ctx.config.host
+      private_key: null # make sure "bootstap.private_key" isnt used by ssh2
       username: 'root'
       password: null
     connect config, (err, connection) ->
