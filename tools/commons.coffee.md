@@ -18,4 +18,4 @@
     module.exports.push 'phyla/tools/git'
     module.exports.push 'phyla/tools/telnet'
     module.exports.push 'phyla/tools/tree'
-    module.exports.push 'phyla/tools/rar'
+    # module.exports.push 'phyla/tools/rar' # require internet
