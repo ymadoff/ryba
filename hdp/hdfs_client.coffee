@@ -30,19 +30,19 @@ module.exports.push name: 'HDP HDFS Client # HA', callback: (ctx, next) ->
     next err, if configured then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP HDFS Client # Check', timeout: -1, callback: (ctx, next) ->
-  {hadoop_conf_dir, hdfs_site} = ctx.config.hdp
+  {hadoop_conf_dir, hdfs_site, test_user} = ctx.config.hdp
   port = hdfs_site['dfs.datanode.address']?.split('.')[1] or 1019
   # # DataNodes must all be started
   # datanodes = ctx.hosts_with_module 'phyla/hdp/hdfs_dn'
   # ctx.waitForConnection datanodes, port, (err) ->
   #   return next err if err
   # User "test" should be created
-  ctx.waitForExecution mkcmd.test(ctx, "hdfs dfs -test -d /user/test"), (err) ->
+  ctx.waitForExecution mkcmd.test(ctx, "hdfs dfs -test -d /user/#{test_user}"), (err) ->
     return next err if err
     ctx.execute
       cmd: mkcmd.test ctx, """
-      if hdfs dfs -test -f /user/test/hdfs_#{ctx.config.host}; then exit 2; fi
-      hdfs dfs -touchz /user/test/hdfs_#{ctx.config.host}
+      if hdfs dfs -test -f /user/#{test_user}/hdfs_#{ctx.config.host}; then exit 2; fi
+      hdfs dfs -touchz /user/#{test_user}/hdfs_#{ctx.config.host}
       """
       code_skipped: 2
     , (err, executed, stdout) ->
