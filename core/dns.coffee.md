@@ -10,6 +10,10 @@ require a working DNS environment to work properly. A common solution to solve a
 DNS environment is to install your own DNS server. Investigate the "phyla/core/bind_server"
 module for additional information.
 
+TODO: in case we are running a local bind server inside the cluster and if this server isnt
+the one currently being installed, we could wait for the server to be started before checking 
+the forward and reverse dns of the server.
+
 ## Forward lookup
 
     module.exports.push name: 'DNS # Forward lookup', callback: (ctx, next) ->
