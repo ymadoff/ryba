@@ -30,6 +30,10 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.mysql_server.disallow_remote_root_login ?= false
   ctx.config.mysql_server.remove_test_db ?= true
   ctx.config.mysql_server.reload_privileges ?= true
+  # /etc/my.cnf
+  ctx.config.mysql_server.my_cnf ?= {}
+  ctx.config.mysql_server.my_cnf['mysqld'] ?= {}
+  ctx.config.mysql_server.my_cnf['mysqld']['tmpdir'] ?= '/tmp/mysql'
 
 ###
 Package
@@ -37,6 +41,7 @@ Package
 Install the Mysql database server. Secure the temporary directory.
 ###
 module.exports.push name: 'Mysql Server # Package', timeout: -1, callback: (ctx, next) ->
+  {my_cnf} = ctx.config.mysql_server
   modified = false
   do_install = ->
     ctx.service
@@ -59,7 +64,7 @@ module.exports.push name: 'Mysql Server # Package', timeout: -1, callback: (ctx,
       modified = true if created
       ctx.ini
         destination: '/etc/my.cnf'
-        content: mysqld: tmpdir: '/tmp/mysql'
+        content: my_cnf
         merge: true
         backup: true
       , (err, updated) ->
