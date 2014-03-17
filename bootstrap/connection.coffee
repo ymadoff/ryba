@@ -6,6 +6,7 @@ Prepare the system to receive password-less root login and
 initialize an SSH connection.
 ###
 
+{exec} = require 'child_process'
 {merge} = require 'mecano/lib/misc'
 connect = require 'superexec/lib/connect'
 collect = require './lib/collect'
@@ -24,14 +25,28 @@ module.exports.push (ctx) ->
   ctx.config.bootstrap.cmd ?= 'su -'
   
 module.exports.push name: 'Bootstrap # Connection', timeout: -1, callback: (ctx, next) ->
+  {private_key} = ctx.config.bootstrap
   close = -> ctx.ssh?.end()
   ctx.run.on 'error', close
   ctx.run.on 'end', close
   attempts = 0
+  modified = true
+  do_private_key = ->
+    return do_ssh() unless private_key
+    process.nextTick ->
+      exec """
+      mkdir -p ~/.ssh
+      chmod 700 ~/.ssh
+      echo '#{private_key}' >> ~/.ssh/id_rsa
+      chmod 600 ~/.ssh/id_rsa
+      """, (err, stdout, stderr) ->
+        return next err if err
+        do_ssh()
   do_ssh = ->
     attempts++
     ctx.log "SSH login #{attempts}"
     config = merge {}, ctx.config.bootstrap,
+      host: ctx.config.ip or ctx.config.host
       username: 'root'
       password: null
     connect config, (err, connection) ->
@@ -42,8 +57,9 @@ module.exports.push name: 'Bootstrap # Connection', timeout: -1, callback: (ctx,
       return next err if err
       ctx.log "SSH connected"
       ctx.ssh = connection
-      next null, ctx.PASS
+      next null, if modified then ctx.OK else ctx.PASS
   do_collect = ->
+    modified = true
     ctx.log 'Collect login information'
     collect ctx.config.bootstrap, (err) ->
       return next err if err
@@ -54,6 +70,6 @@ module.exports.push name: 'Bootstrap # Connection', timeout: -1, callback: (ctx,
       return next err if err
       ctx.log 'Reboot and login'
       do_ssh()
-  do_ssh()
+  do_private_key()
 
 
