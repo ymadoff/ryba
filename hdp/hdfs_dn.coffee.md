@@ -111,9 +111,9 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
 drwxr-xr-x   - test   hadoop      /user/test
 ```
 
-    module.exports.push name: 'HDP HDFS DN # HDFS layout', callback: (ctx, next) ->
+    module.exports.push name: 'HDP HDFS DN # HDFS layout', timeout: -1, callback: (ctx, next) ->
       {hadoop_group, hdfs_user, test_user, yarn, yarn_user} = ctx.config.hdp
-      ok = false
+      modified = false
       do_root = ->
         ctx.execute
           cmd: mkcmd.hdfs ctx, """
@@ -133,7 +133,7 @@ drwxr-xr-x   - test   hadoop      /user/test
           code_skipped: 1
         , (err, executed, stdout) ->
           return next err if err
-          ok = true if executed
+          ctx.log 'Directory "/tmp" prepared' and modified = true if executed
           do_user()
       do_user = ->
         ctx.execute
@@ -152,7 +152,7 @@ drwxr-xr-x   - test   hadoop      /user/test
           code_skipped: 1
         , (err, executed, stdout) ->
           return next err if err
-          ok = true if executed
+          ctx.log 'Directory "/user" prepared' and modified = true if executed
           do_apps()
       do_apps = ->
         ctx.execute
@@ -165,10 +165,10 @@ drwxr-xr-x   - test   hadoop      /user/test
           code_skipped: 1
         , (err, executed, stdout) ->
           return next err if err
-          ok = true if executed
+          ctx.log 'Directory "/apps" prepared' and modified = true if executed
           do_end()
       do_end = ->
-        next null, if ok then ctx.OK else ctx.PASS
+        next null, if modified then ctx.OK else ctx.PASS
       do_root()
 
 ## Test HDFS
@@ -180,11 +180,12 @@ Attemp to put a file into HDFS. the file "/etc/passwd" will be placed at
       {test_user} = ctx.config.hdp
       ctx.execute
         cmd: mkcmd.test ctx, """
-        if hdfs dfs -test -f /user/test/#{ctx.config.host}_dn; then exit 2; fi
+        if hdfs dfs -test -f /user/#{test_user}/#{ctx.config.host}_dn; then exit 2; fi
+        echo 'Upload file to HDFS'
         hdfs dfs -put /etc/passwd /user/#{test_user}/#{ctx.config.host}_dn
         """
         code_skipped: 2
-      , (err, executed, stdout) ->
+      , (err, executed, stdout, stderr) ->
         next err, if executed then ctx.OK else ctx.PASS
 
 ## Test WebHDFS
