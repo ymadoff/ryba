@@ -1,9 +1,4 @@
 
-    lifecycle = require './lib/lifecycle'
-    mkcmd = require './lib/mkcmd'
-    module.exports = []
-    module.exports.push 'phyla/hdp/hdfs'
-
 # HDFS JournalNode
 
 In order for the Standby node to keep its state synchronized with the Active 
@@ -21,6 +16,11 @@ There must be at least 3 JournalNode daemons, since edit log modifications must
 be written to a majority of JNs. To increase the number of failures a system
 can tolerate, deploy an odd number of JNs because the system can tolerate at 
 most (N - 1) / 2 failures to continue to function normally.
+
+    lifecycle = require './lib/lifecycle'
+    mkcmd = require './lib/mkcmd'
+    module.exports = []
+    module.exports.push 'phyla/hdp/hdfs'
 
 ## Configuration
 
@@ -74,7 +74,7 @@ Update the "hdfs-site.xml" file with the "dfs.journalnode.edits.dir" property.
         merge: true
       , (err, configured) ->
         return next err if err
-         next null, if configured then ctx.OK else ctx.PASS
+        next null, if configured then ctx.OK else ctx.PASS
 
 ## Kerberos
 
@@ -99,6 +99,12 @@ also used by the NameNodes, DataNodes, ResourceManagers and NodeManagers.
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP HDFS JN # Start', callback: (ctx, next) ->
-      lifecycle.jn_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+## Start
+
+Load the module "phyla/hdp/hdfs\_jn\_start" to start the JournalNode.
+
+    module.exports.push 'phyla/hdp/hdfs_jn_start'
+
+
+
+
