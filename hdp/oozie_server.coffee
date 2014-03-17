@@ -10,6 +10,16 @@ module.exports.push 'phyla/hdp/core'
 
 ###
 Oozie source code and examples are located in /usr/share/doc/oozie-4.0.0.2.0.6.0/
+
+Note: to backup the oozie database in oozie, we must add the "hex-blob" option or 
+we get an error while importing data. The mysqldump command does not escape all
+charactere and the xml stored inside the database create syntax issues. Here's
+an example:
+
+```bash
+mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
+```
+
 ###
 module.exports.push module.exports.configure = (ctx) ->
   require('../tools/mysql_server').configure ctx
