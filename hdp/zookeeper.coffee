@@ -135,7 +135,6 @@ module.exports.push name: 'HDP ZooKeeper # Kerberos', callback: (ctx, next) ->
     keytab: "/etc/security/keytabs/zookeeper.service.keytab"
     uid: 'zookeeper'
     gid: 'hadoop'
-    #not_if_exists: "/etc/security/keytabs/zookeeper.service.keytab"
     kadmin_principal: kadmin_principal
     kadmin_password: kadmin_password
     kadmin_server: kadmin_server
