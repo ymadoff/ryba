@@ -4,9 +4,11 @@ OpenLDAP TLS
 ============
 
 Note, by default, openldap comes with ldaps support. The default value are:   
+
 *   olcTLSCACertificatePath: /etc/openldap/certs   
 *   olcTLSCertificateFile: "OpenLDAP Server"   
 *   olcTLSCertificateKeyFile: /etc/openldap/certs/password   
+
 To test if TLS is configured, run `ldapsearch -LLLY EXTERNAL -H ldapi:/// -b cn=config -s base | grep -i tls`
 
 Create a self-signed certificate
@@ -17,9 +19,10 @@ and [David Robillard](http://itdavid.blogspot.ca/2012/05/howto-centos-6.html)
 for their great articles. This installation procedure wasn't as smooth as I 
 would expect so here's a recap.
 
-This is using the [OpenSSL](https://www.openssl.org/) library. Although not tested, 
-[Brad Chen](http://www.bradchen.com/blog/2012/08/openldap-tls-issue) wrote 
-a comprehensive tutorial on using the [Mozilla NSS](https://developer.mozilla.org/en/docs/NSS) tools.
+This is using the [OpenSSL](https://www.openssl.org/) library. Although not 
+tested, [Brad Chen](http://www.bradchen.com/blog/2012/08/openldap-tls-issue) 
+wrote a comprehensive tutorial on using the 
+[Mozilla NSS](https://developer.mozilla.org/en/docs/NSS) tools.
 
 We start by positioning ourself inside a new directory.
 
@@ -29,9 +32,11 @@ cd /tmp/openldap
 umask 066
 ```
 
-Generate a privkey.pem file (base64 encoded RSA private key) as well as 
-a openldap.hadoop.ca.cer file containing the self-signed Certificate Authority (CA) public key with a 3650 day validity 
-period. Both will be referenced in our CA configuration. You may leave the challenge password blank.    
+Generate a privkey.pem file (base64 encoded RSA private key) as well as a 
+openldap.hadoop.ca.cer file containing the self-signed Certificate Authority 
+(CA) public key with a 3650 day validity 
+period. Both will be referenced in our CA configuration. You may leave the 
+challenge password blank.    
 
 ```bash
 openssl req -newkey rsa:2048 -days 3650 -x509 -nodes -out openldap.hadoop.ca.cer
@@ -61,7 +66,8 @@ Common Name (e.g. server FQDN or YOUR name) []:openldap.hadoop
 Email Address []:david@adaltas.com
 ```
 
-Now prepare a configuration file "myca.conf" and substitute the properties "certificate", "database", "private_key", "serial" with their correct values.
+Now prepare a configuration file "myca.conf" and substitute the properties 
+"certificate", "database", "private_key", "serial" with their correct values.
 
 ```
 [ ca ]
@@ -145,7 +151,7 @@ An optional company name []:
 We can now issue the certificate:
 
 ```bash
-openssl ca -batch -config /tmp/openldap/myca.conf -notext -in openldap.hadoop.csr -out openldap.hadoop.cer
+openssl ca -batch -config ./myca.conf -notext -in openldap.hadoop.csr -out openldap.hadoop.cer
 ```
 
 Here's the output:
