@@ -11,10 +11,15 @@ Modify the various network related configuration files such as
 
 The module accept the following properties:
 
-*   `network.auto_hosts` (boolean)   
-    Enrich the "/etc/hosts" file with the server hostname present on the cluster, default to false   
+*   `hosts_disabled` (boolean)   
+    Do not update the "/etc/hosts" file, disable the effect of the 
+    "network.hosts_auto" and "network.hosts" properties, default to "false".   
+*   `network.hosts_auto` (boolean)   
+    Enrich the "/etc/hosts" file with the server hostname present on 
+    the cluster, default to false   
 *   `network.hosts` (object)   
-    Enrich the "/etc/hosts" file with custom adresses, the keys represent the IPs and the value the hostnames, optional.   
+    Enrich the "/etc/hosts" file with custom adresses, the keys represent the 
+    IPs and the value the hostnames, optional.   
 *   `network.resolv` (string)   
     Content of the '/etc/resolv.conf' file, optional.
 
@@ -22,7 +27,7 @@ Example:
 
 ```json
 {
-  "auto_hosts": true,
+  "hosts_auto": true,
   "hosts": {
     "10.10.10.15": "myserver.hadoop"
   },
@@ -32,19 +37,22 @@ Example:
 
     network.push (ctx) ->
       ctx.config.network ?= {}
-      ctx.config.network.auto_hosts ?= false
+      ctx.config.network.hosts_disabled ?= false
+      ctx.config.network.hosts_auto ?= false
 
 ## Network # Hosts
 
 Ovewrite the "/etc/hosts" file with the hostname resolution defined 
 by the property "network.hosts". This configuration may be automatically
-enriched with the cluster hostname if the property "network.auto_hosts" is
-set.
+enriched with the cluster hostname if the property "network.hosts_auto" is
+set. Set the "network.hosts_disabled" to "true" if you dont wish to overwrite
+this file.
 
     network.push name: 'Network # Hosts', callback: (ctx, next) ->
-      {hosts, auto_hosts} = ctx.config.network
+      {hosts, hosts_auto, hosts_disabled} = ctx.config.network
+      return next() if hosts_disabled
       content = ''
-      if auto_hosts then for server in ctx.config.servers
+      if hosts_auto then for server in ctx.config.servers
         content += "#{server.ip} #{server.host}\n"
       for ip, hostnames of hosts
         content += "#{ip} #{hostnames}\n"
