@@ -12,34 +12,12 @@ module.exports.push 'phyla/tools/java'
 
 ###
 
-Kerberos
---------
+## Configuration
 
-See official [Running Hadoop in Secure Mode](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode).
+*   `hdp.static_host` (boolean)   
+    Write the host name of the server instead of the Hadoop "_HOST" 
+    placeholder accross all the configuration files, default to false.   
 
-dn.service.keytab
-  dn/full.qualified.domain.name@REALM.TLD
-  host/full.qualified.domain.name@REALM.TLD
-
-nn.service.keytab
-  nn/full.qualified.domain.name@REALM.TLD
-  host/full.qualified.domain.name@REALM.TLD
-
-sn.service.keytab
-  sn/full.qualified.domain.name@REALM.TLD
-  host/full.qualified.domain.name@REALM.TLD
-  
-rm.service.keytab
-  rm/full.qualified.domain.name@REALM.TLD
-  host/full.qualified.domain.name@REALM.TLD
-
-nm.service.keytab
-  nm/full.qualified.domain.name@REALM.TLD
-  host/full.qualified.domain.name@REALM.TLD
-
-jhs.service.keytab
-  jhs/full.qualified.domain.name@REALM.TLD
-  host/full.qualified.domain.name@REALM.TLD
 ###
 module.exports.push module.exports.configure = (ctx) ->
   return if ctx.core_configured
@@ -62,6 +40,10 @@ module.exports.push module.exports.configure = (ctx) ->
   # active_nn_hosts = [namenodes[0]] if active_nn_hosts.length is 0
   throw new Error "Invalid Number of Active NameNodes: #{active_nn_hosts.length}" unless active_nn_hosts.length is 1
   ctx.config.hdp.active_nn_host = active_nn_hosts[0]
+  ctx.config.hdp.static_host = 
+    if ctx.config.hdp.static_host and ctx.config.hdp.static_host isnt '_HOST'
+    then ctx.config.host
+    else '_HOST'
   # Define Users and Groups
   ctx.config.hdp.hdfs_user ?= 'hdfs'
   ctx.config.hdp.hadoop_group ?= 'hadoop'

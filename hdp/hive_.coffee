@@ -10,6 +10,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.hive__configured = true
   require('./core').configure ctx
   {realm} = ctx.config.krb5_client
+  {static_host} = ctx.config.hdp
   ctx.config.hdp.hive_conf_dir ?= '/etc/hive/conf'
   metastore_host = ctx.config.hdp.hive_metastore_host ?= ctx.host_with_module 'phyla/hdp/hive_server'
   ctx.config.hdp.hive_metastore_port ?= 9083
@@ -37,7 +38,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.hive_site['hive.metastore.kerberos.keytab.file'] ?= '/etc/hive/conf/hive.service.keytab'
   # The service principal for the metastore thrift server. The
   # special string _HOST will be replaced automatically with the correct  hostname.
-  ctx.config.hdp.hive_site['hive.metastore.kerberos.principal'] ?= "hive/_HOST@#{realm}"
+  ctx.config.hdp.hive_site['hive.metastore.kerberos.principal'] ?= "hive/#{static_host}@#{realm}"
   ctx.config.hdp.hive_site['hive.metastore.cache.pinobjtypes'] ?= 'Table,Database,Type,FieldSchema,Order'
   # https://cwiki.apache.org/confluence/display/Hive/Setting+up+HiveServer2
   # Authentication type
@@ -49,7 +50,7 @@ module.exports.push module.exports.configure = (ctx) ->
   # is used as the hostname portion, it will be replaced.
   # with the actual hostname of the running instance.
   # 'hive.server2.authentication.kerberos.principal': "hcat/#{ctx.config.host}@#{realm}"
-  ctx.config.hdp.hive_site['hive.server2.authentication.kerberos.principal'] ?= "hive/_HOST@#{realm}"
+  ctx.config.hdp.hive_site['hive.server2.authentication.kerberos.principal'] ?= "hive/#{static_host}@#{realm}"
 
 ###
 Install

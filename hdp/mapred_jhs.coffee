@@ -9,11 +9,11 @@ module.exports.push (ctx) ->
   require('./mapred').configure ctx
 
 module.exports.push name: 'HDP MapRed JHS # Kerberos', callback: (ctx, next) ->
-  {hadoop_conf_dir} = ctx.config.hdp
+  {hadoop_conf_dir, static_host} = ctx.config.hdp
   {realm} = ctx.config.krb5_client
   mapred = {}
   mapred['mapreduce.jobhistory.keytab'] ?= "/etc/security/keytabs/jhs.service.keytab"
-  mapred['mapreduce.jobhistory.principal'] ?= "jhs/_HOST@#{realm}"
+  mapred['mapreduce.jobhistory.principal'] ?= "jhs/#{static_host}@#{realm}"
   ctx.hconfigure
     destination: "#{hadoop_conf_dir}/mapred-site.xml"
     properties: mapred

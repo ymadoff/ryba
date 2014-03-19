@@ -85,12 +85,12 @@ tocken is stored inside the "/etc/security/keytabs/spnego.service.keytab" keytab
 also used by the NameNodes, DataNodes, ResourceManagers and NodeManagers.
 
     module.exports.push name: 'HDP HDFS JN # Kerberos', callback: (ctx, next) ->
-      {hadoop_conf_dir} = ctx.config.hdp
+      {hadoop_conf_dir, static_host} = ctx.config.hdp
       {realm} = ctx.config.krb5_client
       hdfs_site = {}
       # hdfs_site['dfs.journalnode.http-address'] = '0.0.0.0:8480'
-      hdfs_site['dfs.journalnode.kerberos.internal.spnego.principal'] = "HTTP/_HOST@#{realm}"
-      hdfs_site['dfs.journalnode.kerberos.principal'] = "HTTP/_HOST@#{realm}"
+      hdfs_site['dfs.journalnode.kerberos.internal.spnego.principal'] = "HTTP/#{static_host}@#{realm}"
+      hdfs_site['dfs.journalnode.kerberos.principal'] = "HTTP/#{static_host}@#{realm}"
       hdfs_site['dfs.journalnode.keytab.file'] = '/etc/security/keytabs/spnego.service.keytab'
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"

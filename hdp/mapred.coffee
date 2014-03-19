@@ -135,7 +135,7 @@ module.exports.push name: 'HDP MapRed # Configuration', callback: (ctx, next) ->
 ###
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 ###
-module.exports.push name: 'HDP MapRed # HDFS layout', callback: (ctx, next) ->
+module.exports.push name: 'HDP MapRed # HDFS layout', timeout: -1, callback: (ctx, next) ->
   {hadoop_group, mapred, mapred_user} = ctx.config.hdp
   modified = false
   # Carefull, this is a duplicate of "HDP MapRed JHS # HDFS layout"

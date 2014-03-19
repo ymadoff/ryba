@@ -1,9 +1,14 @@
 
 # HDFS
 
-This module is not intended to be used directory. It is require by other modules to 
+This module is not intended to be used directly. It is required by other modules to 
 setup a base installation. Such modules include "phyla/hdp/hdfs_client",
 "phyla/hdp/hdfs_dn" and "phyla/hdp/hdfs_nn".
+
+In its current state, we are only supporting the installation of a 
+[secure cluster with Kerberos][secure].
+
+[secure]: http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
 
     url = require 'url'
     module.exports = []
@@ -12,22 +17,34 @@ setup a base installation. Such modules include "phyla/hdp/hdfs_client",
 
 ## Configure
 
-*   `dfs_name_dir`   
-*   `dfs_data_dir`   
-*   `fs_checkpoint_dir`   
-*   `ha_client_config`   
-*   `hadoop_policy`   
-*   `hdfs_namenode_http_port`   
-*   `hdfs_namenode_ipc_port`   
-*   `hdfs_password`   
-*   `hdfs_namenode_timeout`   
-*   `hdfs_site`   
-*   `hdfs_user`   
-*   `nameservice`   
-*   `options`   
-*   `test_password`   
-*   `test_user`   
-*   `snn_port`   
+TODO: The properties "hdfs.dfs\_name\_dir" and "hdfs.dfs\_data\_dir" should 
+disappear and be replaced by "hdp.hdfs_site['dfs.namenode.name.dir']" and
+"hdp.hdfs_site['dfs.datanode.data.dir']".
+
+*   `hdfs.dfs_name_dir`   
+*   `hdfs.dfs_data_dir`   
+*   `hdfs.fs_checkpoint_dir` (array, string)   
+    List of directories where SecondaryNameNode should store the checkpoint image. This
+    is no longer used but we kept it in case we want to re-introduced the SecondaryNameNode
+    choice over High Availability.   
+*   `hdfs.ha_client_config` (object)   
+    Properities added to the "hdfs-site.xml" file specific to the High Availability mode. There
+    are defined in a seperate configuration key then "hdp.hdfs_site" to hide them from being 
+    visible on a client setup.   
+*   `hdfs.hadoop_policy`   
+*   `hdfs.hdfs_namenode_http_port`   
+*   `hdfs.hdfs_namenode_ipc_port`   
+*   `hdfs.hdfs_user` (string)   
+*   `hdfs.hdfs_password` (string)   
+*   `hdfs.hdfs_namenode_timeout`   
+*   `hdfs.hdfs_site` (object)   
+    Properities added to the "hdfs-site.xml" file.
+*   `hdfs.hdfs_user`   
+*   `hdfs.nameservice`   
+*   `hdfs.options`   
+*   `hdfs.test_password`   
+*   `hdfs.test_user`   
+*   `hdfs.snn_port`   
 
 
 Example:
@@ -83,9 +100,13 @@ Example:
         ctx.config.hdp.ha_client_config["dfs.namenode.http-address.#{nameservice}.#{nn.split('.')[0]}"] = "#{nn}:50070"
       ctx.config.hdp.ha_client_config["dfs.client.failover.proxy.provider.#{nameservice}"] = 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
 
-# todo: check if this is still necessary. Users are now created on some package since the latest releases.
-# http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
-# http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
+## Users
+
+TODO: check if this is still necessary. In version [HDP-2.0.9.1], this step is 
+now marked as optional and the users and groups are now created on package installation.
+
+[HDP-2.0.9.1]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap1-users-groups.html
+
     module.exports.push name: 'HDP HDFS # Users', callback: (ctx, next) ->
       return next() unless ctx.has_any_modules('hisi/hdp/hdfs_nn', 'hisi/hdp/hdfs_snn', 'hisi/hdp/hdfs_dn')
       {hadoop_group} = ctx.config.hdp
@@ -185,6 +206,9 @@ Example:
 
 ## Configure HTTPS
 
+Important, this is not implemented yet, we tried to set it up, it didn't work and
+we didn't had time to look further.
+
     module.exports.push name: 'HDP HDFS # Configure HTTPS', callback: (ctx, next) ->
       {hadoop_conf_dir, hadoop_policy} = ctx.config.hdp
       namenode = ctx.hosts_with_module 'phyla/hdp/hdfs_nn', 1
@@ -260,7 +284,7 @@ with Kerberos specific properties.
 
     module.exports.push name: 'HDP HDFS # Kerberos Configure', callback: (ctx, next) ->
       {realm} = ctx.config.krb5_client
-      {hadoop_conf_dir} = ctx.config.hdp
+      {hadoop_conf_dir, static_host} = ctx.config.hdp
       secondary_namenode = ctx.hosts_with_module 'phyla/hdp/hdfs_snn', 1
       hdfs_site = {}
       # If "true", access tokens are used as capabilities
@@ -268,9 +292,9 @@ with Kerberos specific properties.
       # accessing datanodes.
       hdfs_site['dfs.block.access.token.enable'] ?= 'true'
       # Kerberos principal name for the NameNode
-      hdfs_site['dfs.namenode.kerberos.principal'] ?= "nn/_HOST@#{realm}"
+      hdfs_site['dfs.namenode.kerberos.principal'] ?= "nn/#{static_host}@#{realm}"
       # Kerberos principal name for the secondary NameNode.
-      hdfs_site['dfs.secondary.namenode.kerberos.principal'] ?= "nn/_HOST@#{realm}"
+      hdfs_site['dfs.secondary.namenode.kerberos.principal'] ?= "nn/#{static_host}@#{realm}"
       # Address of secondary namenode web server
       hdfs_site['dfs.secondary.http.address'] ?= "#{secondary_namenode}:50090" if secondary_namenode # todo, this has nothing to do here
       # The https port where secondary-namenode binds
@@ -278,12 +302,12 @@ with Kerberos specific properties.
       # The HTTP Kerberos principal used by Hadoop-Auth in the HTTP 
       # endpoint. The HTTP Kerberos principal MUST start with 'HTTP/' 
       # per Kerberos HTTP SPNEGO specification. 
-      hdfs_site['dfs.web.authentication.kerberos.principal'] ?= "HTTP/_HOST@#{realm}"
+      hdfs_site['dfs.web.authentication.kerberos.principal'] ?= "HTTP/#{static_host}@#{realm}"
       # The Kerberos keytab file with the credentials for the HTTP 
       # Kerberos principal used by Hadoop-Auth in the HTTP endpoint.
       hdfs_site['dfs.web.authentication.kerberos.keytab'] ?= '/etc/security/keytabs/spnego.service.keytab'
       # The Kerberos principal that the DataNode runs as. "_HOST" is replaced by the real host name.  
-      hdfs_site['dfs.datanode.kerberos.principal'] ?= "dn/_HOST@#{realm}"
+      hdfs_site['dfs.datanode.kerberos.principal'] ?= "dn/#{static_host}@#{realm}"
       # Combined keytab file containing the NameNode service and host principals.
       hdfs_site['dfs.namenode.keytab.file'] ?= '/etc/security/keytabs/nn.service.keytab'
       # Combined keytab file containing the NameNode service and host principals.
@@ -291,9 +315,9 @@ with Kerberos specific properties.
       # The filename of the keytab file for the DataNode.
       hdfs_site['dfs.datanode.keytab.file'] ?= '/etc/security/keytabs/dn.service.keytab'
       # # Default to ${dfs.web.authentication.kerberos.principal}, but documented in hdp 1.3.2 manual install
-      hdfs_site['dfs.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/_HOST@#{realm}"
+      hdfs_site['dfs.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/#{static_host}@#{realm}"
       # # Default to ${dfs.web.authentication.kerberos.principal}, but documented in hdp 1.3.2 manual install
-      hdfs_site['dfs.secondary.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/_HOST@#{realm}"
+      hdfs_site['dfs.secondary.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/#{static_host}@#{realm}"
       # The address, with a privileged port - any port number under 1023. Example: 0.0.0.0:1019
       hdfs_site['dfs.datanode.address'] ?= '0.0.0.0:1019'
       # The address, with a privileged port - any port number under 1023. Example: 0.0.0.0:1022
@@ -302,8 +326,8 @@ with Kerberos specific properties.
       hdfs_site['dfs.datanode.https.address'] ?= '0.0.0.0:1023'
       # Documented in http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
       # Only seems to apply if "dfs.https.enable" is enabled
-      hdfs_site['dfs.namenode.kerberos.https.principal'] = "host/_HOST@#{realm}"
-      hdfs_site['dfs.secondary.namenode.kerberos.https.principal'] = "host/_HOST@#{realm}"
+      hdfs_site['dfs.namenode.kerberos.https.principal'] = "host/#{static_host}@#{realm}"
+      hdfs_site['dfs.secondary.namenode.kerberos.https.principal'] = "host/#{static_host}@#{realm}"
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: hdfs_site

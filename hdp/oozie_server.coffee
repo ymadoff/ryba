@@ -25,6 +25,7 @@ module.exports.push module.exports.configure = (ctx) ->
   require('../tools/mysql_server').configure ctx
   require('./oozie_').configure ctx
   {realm} = ctx.config.krb5_client
+  {static_host} = ctx.config.hdp
   ctx.config.hdp.oozie_db_admin_username ?= ctx.config.mysql_server.username
   ctx.config.hdp.oozie_db_admin_password ?= ctx.config.mysql_server.password
   # dbhost = ctx.config.hdp.oozie_db_host ?= ctx.servers(action: 'phyla/tools/mysql_server')[0]
@@ -58,9 +59,9 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.oozie_site['oozie.service.ProxyUserService.proxyuser.hue.hosts'] ?= "*"
   ctx.config.hdp.oozie_site['oozie.service.ProxyUserService.proxyuser.hue.groups'] ?= "*"
   ctx.config.hdp.oozie_hadoop_config ?= {}
-  ctx.config.hdp.oozie_hadoop_config['mapreduce.jobtracker.kerberos.principal'] ?= "mapred/_HOST@#{realm}"
-  ctx.config.hdp.oozie_hadoop_config['yarn.resourcemanager.principal'] ?= "yarn/_HOST@#{realm}"
-  ctx.config.hdp.oozie_hadoop_config['dfs.namenode.kerberos.principal'] ?= "hdfs/_HOST@#{realm}"
+  ctx.config.hdp.oozie_hadoop_config['mapreduce.jobtracker.kerberos.principal'] ?= "mapred/#{static_host}@#{realm}"
+  ctx.config.hdp.oozie_hadoop_config['yarn.resourcemanager.principal'] ?= "yarn/#{static_host}@#{realm}"
+  ctx.config.hdp.oozie_hadoop_config['dfs.namenode.kerberos.principal'] ?= "hdfs/#{static_host}@#{realm}"
   ctx.config.hdp.oozie_hadoop_config['mapreduce.framework.name'] ?= "yarn"
   ctx.config.hdp.extjs ?= {}
   throw new Error "Missing extjs.source" unless ctx.config.hdp.extjs.source

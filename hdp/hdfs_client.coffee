@@ -7,9 +7,10 @@ module.exports.push 'phyla/hdp/core'
 module.exports.push (ctx) ->
   require('./hdfs').configure ctx
   {realm} = ctx.config.krb5_client
+  {static_host} = ctx.config.hdp
   # Required
   ctx.config.hdp.hdfs_site['dfs.domain.socket.path'] ?= '/var/lib/hadoop-hdfs/dn_socket'
-  ctx.config.hdp.hdfs_site['dfs.namenode.kerberos.principal'] ?= "nn/_HOST@#{realm}"
+  ctx.config.hdp.hdfs_site['dfs.namenode.kerberos.principal'] ?= "nn/#{static_host}@#{realm}"
 
 module.exports.push name: 'HDP HDFS Client # Configuration', callback: (ctx, next) ->
   {hadoop_conf_dir, hdfs_site} = ctx.config.hdp

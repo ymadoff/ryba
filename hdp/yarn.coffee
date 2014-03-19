@@ -12,6 +12,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.yarn_configured = true
   require('./hdfs').configure ctx
   {realm} = ctx.config.krb5_client
+  {static_host} = ctx.config.hdp
   # Grab the host(s) for each roles
   resourcemanager = ctx.host_with_module 'phyla/hdp/yarn_rm'
   ctx.log "Resource manager: #{resourcemanager}"
@@ -37,7 +38,7 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.hdp.yarn['yarn.nodemanager.container-executor.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor'
   ctx.config.hdp.yarn['yarn.nodemanager.linux-container-executor.group'] ?= 'yarn'
   # Required by yarn client
-  ctx.config.hdp.yarn['yarn.resourcemanager.principal'] ?= "rm/_HOST@#{realm}"
+  ctx.config.hdp.yarn['yarn.resourcemanager.principal'] ?= "rm/#{static_host}@#{realm}"
   # Configurations for History Server (Needs to be moved elsewhere):
   ctx.config.hdp.yarn['yarn.log-aggregation.retain-seconds'] ?= '-1' #  How long to keep aggregation logs before deleting them. -1 disables. Be careful, set this too small and you will spam the name node.
   ctx.config.hdp.yarn['yarn.log-aggregation.retain-check-interval-seconds'] ?= '-1' # Time between checks for aggregated log retention. If set to 0 or a negative value then the value is computed as one-tenth of the aggregated log retention time. Be careful, set this too small and you will spam the name node.
@@ -245,7 +246,7 @@ module.exports.push name: 'HDP YARN # Keytabs Directory', timeout: -1, callback:
 
 module.exports.push name: 'HDP YARN # Configure Kerberos', callback: (ctx, next) ->
   {realm} = ctx.config.krb5_client
-  {hadoop_conf_dir} = ctx.config.hdp
+  {hadoop_conf_dir, static_host} = ctx.config.hdp
   yarn = {}
   # Todo: might need to configure WebAppProxy but I understood that it is run as part of rm if not configured separately
   # yarn.web-proxy.address    WebAppProxy                                   host:port for proxy to AM web apps. host:port if this is the same as yarn.resourcemanager.webapp.address or it is not defined then the ResourceManager will run the proxy otherwise a standalone proxy server will need to be launched.
@@ -257,7 +258,7 @@ module.exports.push name: 'HDP YARN # Configure Kerberos', callback: (ctx, next)
   yarn['yarn.resourcemanager.keytab'] ?= '/etc/security/keytabs/rm.service.keytab'
   # Configurations for NodeManager:
   yarn['yarn.nodemanager.keytab'] ?= '/etc/security/keytabs/nm.service.keytab'
-  yarn['yarn.nodemanager.principal'] ?= "nm/_HOST@#{realm}"
+  yarn['yarn.nodemanager.principal'] ?= "nm/#{static_host}@#{realm}"
   ctx.hconfigure
     destination: "#{hadoop_conf_dir}/yarn-site.xml"
     properties: yarn

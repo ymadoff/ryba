@@ -9,8 +9,8 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.hbase_configured = true
   require('./core').configure ctx
   {realm} = ctx.config.krb5_client
+  {static_host} = ctx.config.hdp
   zookeeper_hosts = ctx.hosts_with_module('phyla/hdp/zookeeper').join ','
-  ctx.config.hdp ?= {}
   ctx.config.hdp.hbase_user ?= 'hbase'
   ctx.config.hdp.hbase_conf_dir ?= '/etc/hbase/conf'
   ctx.config.hdp.hbase_log_dir ?= '/var/log/hbase'
@@ -31,9 +31,9 @@ module.exports.push module.exports.configure = (ctx) ->
   # what is specified in zoo.cfg but without portnumbers)
   ctx.config.hdp.hbase_site['hbase.zookeeper.quorum'] ?= "#{zookeeper_hosts}"
   ctx.config.hdp.hbase_site['hbase.master.keytab.file'] ?= '/etc/security/keytabs/hm.service.keytab'
-  ctx.config.hdp.hbase_site['hbase.master.kerberos.principal'] ?= "hm/_HOST@#{realm}"
+  ctx.config.hdp.hbase_site['hbase.master.kerberos.principal'] ?= "hm/#{static_host}@#{realm}"
   ctx.config.hdp.hbase_site['hbase.regionserver.keytab.file'] ?= '/etc/security/keytabs/rs.service.keytab'
-  ctx.config.hdp.hbase_site['hbase.regionserver.kerberos.principal'] ?= "rs/_HOST@#{realm}"
+  ctx.config.hdp.hbase_site['hbase.regionserver.kerberos.principal'] ?= "rs/#{static_host}@#{realm}"
   ctx.config.hdp.hbase_site['hbase.superuser'] ?= 'hbase'
   ctx.config.hdp.hbase_site['hbase.coprocessor.region.classes'] ?= ''
   ctx.config.hdp.hbase_site['hbase.coprocessor.master.classes'] ?= ''
