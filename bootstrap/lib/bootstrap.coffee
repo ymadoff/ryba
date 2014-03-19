@@ -13,6 +13,8 @@ Exemple calling prepare with options
       password: 'password'
       public_key: 'ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEAuYziVgwFAXvExxIj5HgAywFeSfu9zxoLc5bCdeJhS/gh4EtpMN0McHd21M4btuopMAL/sctT4+SiBqwOIERw0rGWrat4WE2qBReEc+6hvdoiUx+7WglDCYePbV91N+x421UYzHhNPUg62jXIfg+o5zG/tdEDbpBAq2EX3vRsncenlhB+p/LsSkY+2+tBJLW172BN1ncKjImFglMwW+7OxGP2U9LoMMFyUs1zS65p8WgHHi/+6ZNsP0wIhKPPl8BiFJ6dLiNjlRuXLX9fGcQDJGrlYbad5Thb5wpQe1EZCF9qBloUkdj7aTIu+dainTP/I87Eo2Y47KsSydvopjqceQ== david@adaltas.com'
 
+Note: we should use `echo password | sudo -S su -` as a more resilient approach.
+
 ###
 module.exports = (ctx, callback) ->
   {username, password, cmd, public_key} = ctx.config.bootstrap
@@ -25,7 +27,7 @@ module.exports = (ctx, callback) ->
       if username isnt 'root' then steps.push
         cmd: "#{cmd}\n"
         callback: (data, callback) ->
-          if /Mot de passe/.test(data) or /Password/.test(data)
+          if /mot de passe/.test(data.toLowerCase()) or /password/.test(data.toLowerCase())
             stream.write password
             stream.write '\n'
             callback()
@@ -56,6 +58,7 @@ module.exports = (ctx, callback) ->
       current_callback = current_next = null
       stream.on 'data', (data) ->
         return unless current_callback
+        ctx.log data.toString().split('\n').map((line) -> "<< #{line}").join('\n')
         current_callback data.toString(), ->
           current_next()
       process.stdin.resume()
@@ -64,6 +67,7 @@ module.exports = (ctx, callback) ->
       .on 'item', (step, next) ->
         current_callback = step.callback
         current_next = next
+        ctx.log ">> #{step.cmd}"
         stream.write step.cmd
       .on 'both', (err) ->
         process.stdin.pause()
