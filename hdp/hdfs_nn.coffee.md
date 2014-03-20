@@ -8,7 +8,10 @@ does not store the data of these files itself. It’s important that this metada
 (and all changes to it) are safely persisted to stable storage for fault tolerance.
 
 This implementation configure an HA HDFS cluster, using the [Quorum Journal Manager (QJM)](qjm)
-feature  to share edit logs between the Active and Standby NameNodes.
+feature  to share edit logs between the Active and Standby NameNodes. Hortonworks
+provides [instructions to rollback a HA installation][rollback] that apply to Ambari.
+
+[rollback]: http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.3/bk_Monitoring_Hadoop_Book/content/monitor-ha-undoing_2x.html
 
     fs = require 'fs'
     lifecycle = require './lib/lifecycle'
@@ -372,11 +375,12 @@ afect HDFS metadata.
         # "HDP HDFS DN # HDFS layout"
         ctx.execute
           cmd: mkcmd.hdfs ctx, """
-          if hdfs dfs -ls /user/test 2>/dev/null; then exit 1; fi
-          hdfs dfs -mkdir /user/test
-          hdfs dfs -chown test /user/test
+          if hdfs dfs -ls /user/test 2>/dev/null; then exit 2; fi
+          hdfs dfs -mkdir /user/#{test_user}
+          hdfs dfs -chown #{test_user}:#{hadoop_group} /user/#{test_user}
+          hdfs dfs -chmod 755 /user/#{test_user}
           """
-          code_skipped: 1
+          code_skipped: 2
         , (err, executed, stdout) ->
           modified = true if executed
           next err, if modified then ctx.OK else ctx.PASS
