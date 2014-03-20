@@ -18,6 +18,7 @@ NameNodes, and send block location information and heartbeats to both.
     lifecycle = require './lib/lifecycle'
     mkcmd = require './lib/mkcmd'
     module.exports = []
+    module.exports.push 'phyla/hdp/hdfs'
 
 ## Configuration
 
@@ -114,6 +115,10 @@ drwxr-xr-x   - test   hadoop      /user/test
     module.exports.push name: 'HDP HDFS DN # HDFS layout', timeout: -1, callback: (ctx, next) ->
       {hadoop_group, hdfs_user, test_user, yarn, yarn_user} = ctx.config.hdp
       modified = false
+      do_wait = ->
+        ctx.waitForExecution mkcmd.test(ctx, "hdfs dfs -test -d /"), (err) ->
+          return next err if err
+          do_root()
       do_root = ->
         ctx.execute
           cmd: mkcmd.hdfs ctx, """
@@ -169,7 +174,7 @@ drwxr-xr-x   - test   hadoop      /user/test
           do_end()
       do_end = ->
         next null, if modified then ctx.OK else ctx.PASS
-      do_root()
+      do_wait()
 
 ## Test HDFS
 
