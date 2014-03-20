@@ -1,6 +1,10 @@
 
 # HDFS JournalNode
 
+This module configure the JournalNode following the 
+[HDFS High Availability Using the Quorum Journal Manager][qjm] official 
+recommandations. It apply to a secured HDFS installation with Kerberos.
+
 In order for the Standby node to keep its state synchronized with the Active 
 node, both nodes communicate with a group of separate daemons called 
 "JournalNodes" (JNs). When any namespace modification is performed by the Active 
@@ -16,6 +20,8 @@ There must be at least 3 JournalNode daemons, since edit log modifications must
 be written to a majority of JNs. To increase the number of failures a system
 can tolerate, deploy an odd number of JNs because the system can tolerate at 
 most (N - 1) / 2 failures to continue to function normally.
+
+[qjm]: http://hadoop.apache.org/docs/r2.3.0/hadoop-yarn/hadoop-yarn-site/HDFSHighAvailabilityWithQJM.html#Architecture
 
     lifecycle = require './lib/lifecycle'
     mkcmd = require './lib/mkcmd'
@@ -49,8 +55,8 @@ Example:
 
 ## Layout
 
-The layout consisit of the directory define by the "dfs.journalnode.edits.dir"
-property.
+The JournalNOde data are stored inside the directory defined by the 
+"dfs.journalnode.edits.dir" property.
 
     module.exports.push name: 'HDP HDFS JN # Layout', callback: (ctx, next) ->
       {hdfs_site, hadoop_conf_dir} = ctx.config.hdp
