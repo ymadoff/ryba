@@ -18,6 +18,13 @@ module.exports.push 'phyla/tools/java'
     Write the host name of the server instead of the Hadoop "_HOST" 
     placeholder accross all the configuration files, default to false.   
 
+The Hadoop distribution used is the Hortonwork distribution named HDP. The
+installation is leveraging the Yum repositories. [Individual tarballs][tar] 
+are also available as an alternative with the benefit of including the source 
+code.
+
+[tar]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap13.html
+
 ###
 module.exports.push module.exports.configure = (ctx) ->
   return if ctx.core_configured
@@ -173,13 +180,13 @@ module.exports.push name: 'HDP Core # Configuration', callback: (ctx, next) ->
   do_core()
 
 module.exports.push name: 'HDP Core # Hadoop OPTS', timeout: -1, callback: (ctx, next) ->
-  {hadoop_conf_dir, hadoop_opts, hdfs_log_dir, hdfs_pid_dir} = ctx.config.hdp
+  {hadoop_conf_dir, hdfs_user, hadoop_group, hadoop_opts, hdfs_log_dir, hdfs_pid_dir} = ctx.config.hdp
   ctx.write
     source: "#{__dirname}/files/core_hadoop/hadoop-env.sh"
     destination: "#{hadoop_conf_dir}/hadoop-env.sh"
     local_source: true
-    uid: 'hdfs'
-    gid: 'hadoop'
+    uid: hdfs_user
+    gid: hadoop_group
     mode: 0o755
     write: [
       match: /^export HADOOP_OPTS.*$/mg
