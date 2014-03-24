@@ -19,6 +19,7 @@ Note: we should use `echo password | sudo -S su -` as a more resilient approach.
 module.exports = (ctx, callback) ->
   {username, password, cmd, public_key} = ctx.config.bootstrap
   public_key = public_key.join '\n'
+  ctx.log "SSH login to #{username}@#{ctx.config.host}"
   connect ctx.config.bootstrap, (err, c) ->
     return callback err if err
     c.shell (err, stream) ->

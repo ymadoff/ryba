@@ -45,7 +45,7 @@ module.exports.push name: 'Bootstrap # Connection', timeout: -1, callback: (ctx,
         do_ssh()
   do_ssh = ->
     attempts++
-    ctx.log "SSH login #{attempts}"
+    ctx.log "SSH login #{attempts} to root@#{ctx.config.host}"
     config = merge {}, ctx.config.bootstrap,
       host: ctx.config.ip or ctx.config.host
       private_key: null # make sure "bootstap.private_key" isnt used by ssh2
