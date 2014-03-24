@@ -4,6 +4,7 @@
     quote = require 'regexp-quote'
     module.exports = []
     module.exports.push 'phyla/core/yum'
+    module.exports.push 'phyla/core/iptables'
 
 # Bind server
 
@@ -26,14 +27,13 @@ See the the "resources section" for additional information.
 
 ## Install
 
-The packages "bind" is installed as a startup item.
+The packages "bind" is installed as a startup item and not yet installed.
 
     module.exports.push name: 'Bind Server # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service
         name: 'bind'
         srv_name: 'named'
         startup: true
-        action: 'start'
       , (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
 
@@ -114,6 +114,18 @@ Upload the zones definition files provided in the configuration file.
               action: 'restart'
             , (err, restarted) ->
               next err, ctx.OK
+
+## Start
+
+Now the service being configured, the "named" service is started.
+
+    module.exports.push name: 'Bind Server # Start', callback: (ctx, next) ->
+      ctx.service
+        name: 'bind'
+        srv_name: 'named'
+        action: 'start'
+      , (err, serviced) ->
+        next err, if serviced then ctx.OK else ctx.PASS
 
 ## resources
 
