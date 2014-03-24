@@ -12,38 +12,40 @@ module.exports.push (ctx) ->
   ctx.config.bootstrap.cache.location ?= "#{process.cwd()}/tmp"
 
 module.exports.push name: 'Bootstrap # File Cache', callback: (ctx, next) ->
-  ctx.config.bootstrap.cache ?= {}
-  {location} = ctx.config.bootstrap.cache
-  location = "#{location}/#{ctx.config.host}"
-  ctx._cache ?= {}
-  mecano.mkdir
-    destination: location
-  , (err, created) ->
-    db = {}
-    ctx.cache =
-      cached: (key) -> false
-      set: (key, value, callback) -> # nothing
-        set = (key, value, callback) ->
+  db = {}
+  ctx.cache =
+    # Whether a key has been previously loaded
+    cached: (key) ->
+      db[key] isnt 'undefined'
+    ###
+    Put one or multiple keys into the cache.
+    
+    ```coffee
+    cache.set 'a_key', 'a value', (err) ->
+      console.log 'succeed' unless err
+    ```
+
+    ```coffee
+    cache.set 'key_1': 'value 1', 'key 2': 'value 2', (err) ->
+      console.log 'succeed' unless err
+    ```
+    ###
+    set: (key, value, callback) ->
+      if arguments.length is 2
+        [values, callback] = arguments
+        for key, value of values
           db[key] = value
-          callback()
-        if arguments.length is 2
-          [values, calback] = arguments
-          # for key, value of values
-          #   db[key] = value
-          each(Object.keys(values))
-          .on 'item', (key, next) ->
-            set key, values[key], next
-          .on 'both', (err) ->
-            calback err
-        else
-          callback()
-      get: (keys, callback) ->
-        s = Array.isArray keys
-        keys = [keys] unless s
-        data = {}
-        for k in keys
-          data[k] = db[k] if db[k]?
-        if s
-        then callback null, data
-        else callback null, data[keys[0]]
-    next null, ctx.PASS
+        callback()
+      else
+        db[key] = value
+        callback()
+    get: (keys, callback) ->
+      s = Array.isArray keys
+      keys = [keys] unless s
+      data = {}
+      for k in keys
+        data[k] = db[k] if db[k]?
+      if s
+      then callback null, data
+      else callback null, data[keys[0]]
+  next null, ctx.PASS
