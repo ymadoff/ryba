@@ -11,6 +11,6 @@ to be started on the active NameNode before it check if it must be formated.
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx
 
-    module.exports.push name: 'HDP JournalNode # Start', callback: (ctx, next) ->
+    module.exports.push name: 'HDP HDFS JN # Start', callback: (ctx, next) ->
       lifecycle.jn_start ctx, (err, started) ->
         next err, if started then ctx.OK else ctx.PASS

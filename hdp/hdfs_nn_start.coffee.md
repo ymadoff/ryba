@@ -13,11 +13,11 @@ the standy NameNodes wait for the one on the active NameNode to start first.
       require('./hdfs').configure ctx
       throw Error "Not a NameNode" unless ctx.has_module 'phyla/hdp/hdfs_nn'
 
-    module.exports.push name: 'HDP NameNode # Start', callback: (ctx, next) ->
+    module.exports.push name: 'HDP HDFS NN # Start NameNode', callback: (ctx, next) ->
       lifecycle.nn_start ctx, (err, started) ->
         next err, if started then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP NameNode # Start ZKFC', callback: (ctx, next) ->
+    module.exports.push name: 'HDP HDFS NN # Start ZKFC', callback: (ctx, next) ->
       # ZKFC should start first on active NameNode
       {active_nn, active_nn_host} = ctx.config.hdp
       do_wait = ->

@@ -192,7 +192,7 @@ if the NameNode was formated.
       ctx.waitForConnection journalnodes, 8485, (err) ->
         return next err if err
         ctx.execute
-          # yes 'Y' | su -l hdfs -c "hdfs namenode -format -clusterId hadooper"
+          # yes 'Y' | su -l hdfs -c "hdfs namenode -format -clusterId torval"
           cmd: "su -l #{hdfs_user} -c \"hdfs namenode -format -clusterId #{nameservice}\""
           # /hadoop/hdfs/namenode/current/VERSION
           not_if_exists: "#{dfs_name_dir[0]}/current/VERSION"
@@ -342,49 +342,49 @@ Create a Unix and Kerberos test user, by default "test" and execute simple HDFS 
 the NameNode is properly working. Note, those commands are NameNode specific, meaning they only
 afect HDFS metadata.
 
-    module.exports.push name: 'HDP HDFS NN # Test User', timeout: -1, callback: (ctx, next) ->
-      {hdfs_user, test_user, test_password, hadoop_group, security} = ctx.config.hdp
-      {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
-      modified = false
-      do_user = ->
-        if security is 'kerberos'
-        then do_user_krb5()
-        else do_user_unix()
-      do_user_unix = ->
-        ctx.execute
-          cmd: "useradd #{test_user} -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop to test\""
-          code: 0
-          code_skipped: 9
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_run()
-      do_user_krb5 = ->
-        ctx.krb5_addprinc
-          principal: "#{test_user}@#{realm}"
-          password: "#{test_password}"
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: kadmin_server
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_run()
-      do_run = ->
-        # Carefull, this is a dupplicate of
-        # "HDP HDFS DN # HDFS layout"
-        ctx.execute
-          cmd: mkcmd.hdfs ctx, """
-          if hdfs dfs -ls /user/test 2>/dev/null; then exit 2; fi
-          hdfs dfs -mkdir /user/#{test_user}
-          hdfs dfs -chown #{test_user}:#{hadoop_group} /user/#{test_user}
-          hdfs dfs -chmod 755 /user/#{test_user}
-          """
-          code_skipped: 2
-        , (err, executed, stdout) ->
-          modified = true if executed
-          next err, if modified then ctx.OK else ctx.PASS
-      do_user()
+    # module.exports.push name: 'HDP HDFS NN # Test User', timeout: -1, callback: (ctx, next) ->
+    #   {hdfs_user, test_user, test_password, hadoop_group, security} = ctx.config.hdp
+    #   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
+    #   modified = false
+    #   do_user = ->
+    #     if security is 'kerberos'
+    #     then do_user_krb5()
+    #     else do_user_unix()
+    #   do_user_unix = ->
+    #     ctx.execute
+    #       cmd: "useradd #{test_user} -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop to test\""
+    #       code: 0
+    #       code_skipped: 9
+    #     , (err, created) ->
+    #       return next err if err
+    #       modified = true if created
+    #       do_run()
+    #   do_user_krb5 = ->
+    #     ctx.krb5_addprinc
+    #       principal: "#{test_user}@#{realm}"
+    #       password: "#{test_password}"
+    #       kadmin_principal: kadmin_principal
+    #       kadmin_password: kadmin_password
+    #       kadmin_server: kadmin_server
+    #     , (err, created) ->
+    #       return next err if err
+    #       modified = true if created
+    #       do_run()
+    #   do_run = ->
+    #     # Carefull, this is a dupplicate of
+    #     # "HDP HDFS DN # HDFS layout"
+    #     ctx.execute
+    #       cmd: mkcmd.hdfs ctx, """
+    #       if hdfs dfs -ls /user/test 2>/dev/null; then exit 2; fi
+    #       hdfs dfs -mkdir /user/#{test_user}
+    #       hdfs dfs -chown #{test_user}:#{hadoop_group} /user/#{test_user}
+    #       hdfs dfs -chmod 755 /user/#{test_user}
+    #       """
+    #       code_skipped: 2
+    #     , (err, executed, stdout) ->
+    #       modified = true if executed
+    #       next err, if modified then ctx.OK else ctx.PASS
+    #   do_user()
 
 [qjm]: http://hadoop.apache.org/docs/r2.3.0/hadoop-yarn/hadoop-yarn-site/HDFSHighAvailabilityWithQJM.html
 

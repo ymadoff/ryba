@@ -105,6 +105,18 @@ also used by the NameNodes, DataNodes, ResourceManagers and NodeManagers.
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
+    module.exports.push name: 'HDP HDFS NN # Configure HA', callback: (ctx, next) ->
+      {hadoop_conf_dir, ha_client_config} = ctx.config.hdp
+      journalnodes = ctx.hosts_with_module 'phyla/hdp/hdfs_jn'
+      ha_client_config['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
+      ha_client_config['dfs.namenode.shared.edits.dir'] = "qjournal://#{ha_client_config['dfs.namenode.shared.edits.dir']}/#{ha_client_config['dfs.nameservices']}"
+      ctx.hconfigure
+        destination: "#{hadoop_conf_dir}/hdfs-site.xml"
+        properties: ha_client_config
+        merge: true
+      , (err, configured) ->
+        return next err, if configured then ctx.OK else ctx.PASS
+
 ## Start
 
 Load the module "phyla/hdp/hdfs\_jn\_start" to start the JournalNode.
