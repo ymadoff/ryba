@@ -123,9 +123,12 @@ which create a Kerberos file with complementary information.
 
 Create a user principal for this host. The principal is named like "host/{hostname}@{realm}".
 
+Note, I need to check if this isnt too Hadoop specific, in which case it should 
+be moved to "phyla/hdp/core".
+
     module.exports.push name: 'Krb5 client # Host Principal', timeout: -1, callback: (ctx, next) ->
       {realm, etc_krb5_conf, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
-      krb5_admin_servers = for realm, config of etc_krb5_conf.realms then  config.admin_server
+      # krb5_admin_servers = for realm, config of etc_krb5_conf.realms then  config.admin_server
       # ctx.waitIsOpen krb5_admin_servers, 88, (err) ->
       ctx.waitForExecution "kadmin -p #{kadmin_principal} -s #{kadmin_server} -w #{kadmin_password} -q 'listprincs'", (err) ->
         return next err if err
