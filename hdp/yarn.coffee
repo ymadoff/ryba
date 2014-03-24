@@ -127,11 +127,20 @@ module.exports.push name: 'HDP YARN # Directories', timeout: -1, callback: (ctx,
 
 module.exports.push name: 'HDP YARN # Yarn OPTS', callback: (ctx, next) ->
   {yarn_user, hadoop_group, hadoop_conf_dir} = ctx.config.hdp
+  yarn_opts = ""
+  for k, v of ctx.config.hdp.yarn_opts
+    yarn_opts += "-D#{k}=#{v} "
+  yarn_opts = "YARN_OPTS=\"$YARN_OPTS #{yarn_opts}\" # Phyla"
+  ctx.config.hdp.yarn_opts = yarn_opts
   ctx.render
     source: "#{__dirname}/files/core_hadoop/yarn-env.sh"
     destination: "#{hadoop_conf_dir}/yarn-env.sh"
-    context: ctx
     local_source: true
+    write: [
+      match: /^.*Phyla$/mg
+      replace: yarn_opts
+      append: 'yarn.policy.file'
+    ]
     uid: yarn_user
     gid: hadoop_group
     mode: 0o0755
