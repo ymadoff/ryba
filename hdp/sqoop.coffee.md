@@ -81,7 +81,9 @@ Make sure the sqoop client is available on this server, using the [HDP validatio
 command][validate].
 
     module.exports.push name: 'HDP Sqoop # Check', callback: (ctx, next) ->
-      ctx.execute "sqoop version | grep 'Sqoop [0-9].*'", (err) ->
+      ctx.execute
+        cmd: "sqoop version | grep 'Sqoop [0-9].*'"
+      , (err) ->
         next err, ctx.PASS
 
 [install]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap10-1.html
