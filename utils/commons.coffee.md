@@ -12,10 +12,10 @@
     module.exports.push 'phyla/core/make'
     module.exports.push 'phyla/core/yum'
     module.exports.push #'phyla/core/yum_epel'
-    module.exports.push 'phyla/tools/services'
+    module.exports.push 'phyla/utils/services'
     module.exports.push 'phyla/core/iptables'
     module.exports.push 'phyla/core/curl'
-    module.exports.push 'phyla/tools/git'
-    module.exports.push 'phyla/tools/telnet'
-    module.exports.push 'phyla/tools/tree'
-    # module.exports.push 'phyla/tools/rar' # require internet
+    module.exports.push 'phyla/utils/git'
+    module.exports.push 'phyla/utils/telnet'
+    module.exports.push 'phyla/utils/tree'
+    # module.exports.push 'phyla/utils/rar' # require internet

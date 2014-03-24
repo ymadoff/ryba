@@ -8,7 +8,7 @@ It also ships with an Oozie Application for creating and monitoring workflows, a
     lifecycle = require './lib/lifecycle'
     module.exports = []
     # Install the mysql connector
-    module.exports.push 'phyla/tools/mysql_client'
+    module.exports.push 'phyla/utils/mysql_client'
     # Install client to create new Hive principal
     module.exports.push 'phyla/core/krb5_client'
     # Set java_home in "hadoop-env.sh"
@@ -53,7 +53,7 @@ Example:
       {nameservice, active_nn_host, hadoop_conf_dir, webhcat_site} = ctx.config.hdp
       # Prepare database configuration
       engine = ctx.config.hdp.hue_ini?['desktop']?['database']?['engine']
-      mysql_hosts = ctx.hosts_with_module 'phyla/tools/mysql_server'
+      mysql_hosts = ctx.hosts_with_module 'phyla/utils/mysql_server'
       if (not engine and mysql_hosts.indexOf(ctx.config.host) isnt -1) or engine is 'mysql'
         db = {port, username, password} = ctx.config.mysql_server
         db.host = ctx.config.host

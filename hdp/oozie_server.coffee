@@ -5,7 +5,7 @@ mkcmd = require './lib/mkcmd'
 
 module.exports = []
 
-module.exports.push 'phyla/tools/mysql_client'
+module.exports.push 'phyla/utils/mysql_client'
 module.exports.push 'phyla/hdp/core'
 
 ###
@@ -22,14 +22,14 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
 
 ###
 module.exports.push module.exports.configure = (ctx) ->
-  require('../tools/mysql_server').configure ctx
+  require('../utils/mysql_server').configure ctx
   require('./oozie_').configure ctx
   {realm} = ctx.config.krb5_client
   {static_host} = ctx.config.hdp
   ctx.config.hdp.oozie_db_admin_username ?= ctx.config.mysql_server.username
   ctx.config.hdp.oozie_db_admin_password ?= ctx.config.mysql_server.password
-  # dbhost = ctx.config.hdp.oozie_db_host ?= ctx.servers(action: 'phyla/tools/mysql_server')[0]
-  dbhost = ctx.config.hdp.oozie_db_host ?= ctx.host_with_module 'phyla/tools/mysql_server'
+  # dbhost = ctx.config.hdp.oozie_db_host ?= ctx.servers(action: 'phyla/utils/mysql_server')[0]
+  dbhost = ctx.config.hdp.oozie_db_host ?= ctx.host_with_module 'phyla/utils/mysql_server'
   ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{dbhost}:3306/oozie?createDatabaseIfNotExist=true"
   ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
   ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'

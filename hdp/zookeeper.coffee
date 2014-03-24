@@ -3,12 +3,12 @@ lifecycle = require './lib/lifecycle'
 
 module.exports = []
 module.exports.push 'phyla/core/yum'
-module.exports.push 'phyla/tools/java'
+module.exports.push 'phyla/utils/java'
 module.exports.push 'phyla/hdp/core'
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./core').configure ctx
-  require('../tools/java').configure ctx
+  require('../utils/java').configure ctx
   require('../core/nc').configure ctx
   ctx.config.hdp.zookeeper_myid ?= null
   ctx.config.hdp.zookeeper_user ?= 'zookeeper'

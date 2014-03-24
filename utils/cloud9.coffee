@@ -7,8 +7,8 @@ mecano = require 'mecano'
 module.exports = []
 
 module.exports.push 'phyla/core/yum'
-module.exports.push 'phyla/tools/git'
-module.exports.push 'phyla/tools/nodejs'
+module.exports.push 'phyla/utils/git'
+module.exports.push 'phyla/utils/nodejs'
 
 module.exports.push (ctx) ->
   ctx.config.cloud9 ?= {}

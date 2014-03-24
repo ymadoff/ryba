@@ -7,7 +7,7 @@ mkcmd = require './lib/mkcmd'
 module.exports = []
 
 # Install the mysql connector
-module.exports.push 'phyla/tools/mysql_client'
+module.exports.push 'phyla/utils/mysql_client'
 # Deploy the HDP repository
 # Configure "core-site.xml" and "hadoop-env.sh"
 module.exports.push 'phyla/hdp/core'
@@ -22,7 +22,7 @@ module.exports.push 'phyla/core/dns'
 module.exports.push module.exports.configure = (ctx) ->
   return if ctx.hive_server_configured
   ctx.hive_server_configured = true
-  require('../tools/mysql_server').configure ctx
+  require('../utils/mysql_server').configure ctx
   require('./hive_').configure ctx
   require('../core/nc').configure ctx
   # Define Users and Groups

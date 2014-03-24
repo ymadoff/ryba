@@ -12,7 +12,7 @@ escape = (text) -> text.replace(/[\\"]/g, "\\$&")
 
 # Install the mysql driver
 module.exports.push 'phyla/core/yum'
-module.exports.push 'phyla/tools/mysql_client'
+module.exports.push 'phyla/utils/mysql_client'
 
 ###
 Configure

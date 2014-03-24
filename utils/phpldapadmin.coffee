@@ -12,7 +12,7 @@ mecano = require 'mecano'
 module.exports = []
 
 module.exports.push 'phyla/core/yum'
-module.exports.push 'phyla/tools/httpd'
+module.exports.push 'phyla/utils/httpd'
 
 module.exports.push (ctx) ->
   ctx.config.phpldapadmin ?= {}
