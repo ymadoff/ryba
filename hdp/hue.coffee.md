@@ -1,7 +1,7 @@
 
 # Hue
 
-Hue features a File Browser for HDFS, a Job Browser for MapReduce/YARN, an HBase Browser, query editors for Hive, Pig, Cloudera Impala and Sqoop2.
+[Hue][home] features a File Browser for HDFS, a Job Browser for MapReduce/YARN, an HBase Browser, query editors for Hive, Pig, Cloudera Impala and Sqoop2.
 It also ships with an Oozie Application for creating and monitoring workflows, a Zookeeper Browser and a SDK. 
 
     misc = require 'mecano/lib/misc'
@@ -51,6 +51,21 @@ Example:
       # Allow proxy user inside "core-site.xml"
       require('./core').configure ctx
       {nameservice, active_nn_host, hadoop_conf_dir, webhcat_site} = ctx.config.hdp
+      # Prepare database configuration
+      engine = ctx.config.hdp.hue_ini?['desktop']?['database']?['engine']
+      mysql_hosts = ctx.hosts_with_module 'phyla/tools/mysql_server'
+      if (not engine and mysql_hosts.indexOf(ctx.config.host) isnt -1) or engine is 'mysql'
+        db = {port, username, password} = ctx.config.mysql_server
+        db.host = ctx.config.host
+        db.engine = 'mysql'
+      else if not engine
+        db = engine: 'sqlite3'
+      else
+        throw new Error 'Mysql not configured or not installed on this server'
+      ctx.config.hdp.hue_db_admin_username ?= db.username
+      ctx.config.hdp.hue_db_admin_password ?= db.password
+      if db.engine isnt 'sqlite3'
+        throw new Exception "Missing database admin username" unless ctx.config.hdp.hue_db_admin_username
       webhcat_port = webhcat_site['templeton.port']
       oozie_server = ctx.host_with_module 'phyla/hdp/oozie_server'
       webhcat_server = ctx.host_with_module 'phyla/hdp/webhcat'
@@ -61,8 +76,6 @@ Example:
       ctx.config.hdp.hue_conf_dir ?= '/etc/hue/conf'
       ctx.config.hdp.hue_user ?= 'hue'
       ctx.config.hdp.hue_group ?= 'hue'
-      ctx.config.hdp.hue_db_admin_username ?= ctx.config.mysql_server.username
-      ctx.config.hdp.hue_db_admin_password ?= ctx.config.mysql_server.password
       hue_ini = ctx.config.hdp.hue_ini ?= {}
       # Configure HDFS Cluster
       hue_ini['hadoop'] ?= {}
@@ -106,9 +119,9 @@ Example:
       ctx.log "WARING: property 'hdp.hue_ini.desktop.smtp.host' isnt set" unless hue_ini['desktop']['smtp']['host']
       # Desktop database
       hue_ini['desktop']['database'] ?= {}
-      hue_ini['desktop']['database']['engine'] ?= 'mysql'
-      hue_ini['desktop']['database']['host'] ?= ctx.host_with_module 'phyla/tools/mysql_server'
-      hue_ini['desktop']['database']['port'] ?= ctx.config.mysql_server.port
+      hue_ini['desktop']['database']['engine'] ?= db.engine
+      hue_ini['desktop']['database']['host'] ?= db.host
+      hue_ini['desktop']['database']['port'] ?= db.port
       hue_ini['desktop']['database']['user'] ?= 'hue'
       hue_ini['desktop']['database']['password'] ?= 'hue123'
       hue_ini['desktop']['database']['name'] ?= 'hue'
@@ -265,19 +278,6 @@ the default database while mysql is the recommanded choice.
       return next new Error 'Hue database engine not supported' unless engines[engine]
       engines[engine]()
 
-## SSL
-
-TODO: [Install Hue over SSL](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue-5-1.html)
-
-    # module.exports.push name: 'HDP Hue # SSL', (ctx, next) ->
-    #   {hue_conf_dir, hue_ini} = ctx.config.hdp
-    #   ctx.execute
-    #     destination: "#{hue_conf_dir}/build/env/bin/easy_install"
-    #     write: write
-    #     backup: true
-    #   , (err, written) ->
-    #     next err, if written then ctx.OK else ctx.PASS
-
 ## Kerberos
 
 The principal for the Hue service is created and named after "hue/{host}@{realm}". inside
@@ -346,11 +346,61 @@ the "security_enabled" property set to "true".
         next null, if modified then ctx.OK else ctx.PASS
       do_addprinc()
 
+## Start
+
+Use the "phyla/hdp/hue_start" module to start the Hue server.
+
     module.exports.push "phyla/hdp/hue_start"
 
-    # module.exports.push name: 'HDP Hue # Start', callback: (ctx, next) ->
-    #   lifecycle.hue_start ctx, (err, started) ->
-    #     next err, if started then ctx.OK else ctx.PASS
+## SSL
+
+Upload and register the SSL certificate and private key respectively defined
+by the "hdp.hue\_ssl\_certificate" and "hdp.hue\_ssl\_private_key" 
+configuration properties. It follows the [official Hue Web Server 
+Configuration][web]. The "hue" service is restarted if there was any 
+changes.
+
+    module.exports.push name: 'HDP Hue # SSL', callback: (ctx, next) ->
+      {hue_user, hue_group, hue_conf_dir, hue_ssl_certificate, hue_ssl_private_key} = ctx.config.hdp
+      modified = true
+      do_upload = ->
+        ctx.upload [
+          source: hue_ssl_certificate
+          destination: "#{hue_conf_dir}/hue.cet"
+          uid: hue_user
+          gid: hue_group
+        ,
+          source: hue_ssl_private_key
+          destination: "#{hue_conf_dir}/hue.key"
+          uid: hue_user
+          gid: hue_group
+        ], (err, uploaded) ->
+          return next err if err
+          modified = true if uploaded
+          do_ini()
+      do_ini = ->
+        ctx.ini
+          destination: "#{hue_conf_dir}/hue.ini"
+          content: desktop:
+              ssl_certificate: "#{hue_conf_dir}/hue.cet"
+              ssl_private_key: "#{hue_conf_dir}/hue.key"
+          merge: true
+          parse: misc.ini.parse_multi_brackets 
+          stringify: misc.ini.stringify_multi_brackets
+          separator: '='
+          comment: '#'
+        , (err, written) ->
+          return next err if err
+          modified = true if written
+          do_end()
+      do_end = ->
+        return next null, ctx.PASS unless modified
+        ctx.service
+          name: 'hue'
+          action: 'restart'
+        , (err) ->
+          next err, ctx.OK
+      do_upload()
 
 ## Resources:   
 
@@ -360,6 +410,9 @@ the "security_enabled" property set to "true".
 ## Notes
 
 Compilation requirements: ant asciidoc cyrus-sasl-devel cyrus-sasl-gssapi gcc gcc-c++ krb5-devel libtidy libxml2-devel libxslt-devel mvn mysql mysql-devel openldap-devel python-devel python-simplejson sqlite-devel
+
+[home]: http://gethue.com
+[web]: http://gethue.com/docs-3.5.0/manual.html#_web_server_configuration
 
 
 
