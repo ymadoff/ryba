@@ -179,6 +179,15 @@ module.exports.push name: 'OpenLDAP Server # Logging', callback: (ctx, next) ->
           modified = true
           slapdconf()
   slapdconf = ->
+    # TODO, seems like there is an error if we run this against an 
+    # already installed openldap but stop at the time. A possible
+    # solution would be to make sure the service is started:
+    #
+    #     ctx.service 
+    #       name: 'openldap-servers'
+    #       srv_name: 'slapd'
+    #       action: 'start'
+    #
     ctx.log 'Open connection'
     client = ldap.createClient url: "ldap://#{ctx.config.host}/"
     ctx.log 'Bind connection'
@@ -220,7 +229,7 @@ module.exports.push name: 'OpenLDAP Server # Users and Groups', timeout: -1, cal
   [_, suffix_k, suffix_v] = /(\w+)=([^,]+)/.exec suffix
   ctx.execute
     cmd: """
-ldapadd -c -D #{root_dn} -w #{root_password} <<-EOF
+ldapadd -c -H ldapi:/// -D #{root_dn} -w #{root_password} <<-EOF
 dn: #{suffix}
 #{suffix_k}: #{suffix_v}
 objectClass: top
@@ -242,7 +251,6 @@ EOF
     code_skipped: 68
   , (err, executed) ->
     return next err, if executed then ctx.OK else ctx.PASS
-
 
 module.exports.push name: 'OpenLDAP Server # SUDO schema', timeout: -1, callback: (ctx, next) ->
   # conf = '/tmp/sudo_schema/schema.conf'
@@ -269,6 +277,7 @@ module.exports.push name: 'OpenLDAP Server # SUDO schema', timeout: -1, callback
       schema: schema
       binddn: config_dn
       passwd: config_password
+      uri: true
       log: ctx.log
       ssh: ctx.ssh
     , (err, registered) ->
@@ -289,7 +298,7 @@ module.exports.push name: 'OpenLDAP Server # Delete ldif data', callback: (ctx, 
       return next err if err
       ctx.log "Delete #{destination}"
       ctx.execute
-        cmd: "ldapdelete -c -f #{destination} -D #{root_dn} -w #{root_password}"
+        cmd: "ldapdelete -c -H ldapi:/// -f #{destination} -D #{root_dn} -w #{root_password}"
         code_skipped: 32
       , (err, executed, stdout, stderr) ->
         return next err if err
@@ -315,7 +324,7 @@ module.exports.push name: 'OpenLDAP Server # Add ldif data', timeout: 100000, ca
     , (err, uploaded) ->
       return next err if err
       ctx.execute
-        cmd: "ldapadd -c -D #{root_dn} -w #{root_password} -f #{destination}"
+        cmd: "ldapadd -c -H ldapi:/// -D #{root_dn} -w #{root_password} -f #{destination}"
         code_skipped: 68
       , (err, executed, stdout, stderr) ->
         return next err if err
