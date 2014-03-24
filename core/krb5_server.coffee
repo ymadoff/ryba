@@ -331,7 +331,12 @@ Populate DB with machines and users principals.
 module.exports.push name: 'Krb5 Server # Populate', timeout: -1, callback: (ctx, next) ->
   {realm, principals, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_server
   modified = false
-  createMachinePrincipal = ->
+  do_wait = ->
+    # It takes time after Kerberos is started and before `kadmin` is really ready
+    ctx.waitForExecution "kadmin -p #{kadmin_principal} -w #{kadmin_password} -s #{kadmin_server} -q ?", (err) ->
+      return next err if err
+      do_createMachinePrincipal()
+  do_createMachinePrincipal = ->
     ctx.log "Create principal host/#{ctx.config.host}@#{realm}"
     ctx.krb5_addprinc
       principal: "host/#{ctx.config.host}@#{realm}"
@@ -342,8 +347,8 @@ module.exports.push name: 'Krb5 Server # Populate', timeout: -1, callback: (ctx,
     , (err, created) ->
       return next err if err
       modified = true if created
-      createConfigPrincipals()
-  createConfigPrincipals = ->
+      do_createConfigPrincipals()
+  do_createConfigPrincipals = ->
     each(principals)
     .on 'item', (principal, next) ->
       ctx.log "Create principal {principal}"
@@ -357,10 +362,10 @@ module.exports.push name: 'Krb5 Server # Populate', timeout: -1, callback: (ctx,
         modified = true if created
         next()
     .on 'both', (err) ->
-      done err
-  done = (err) ->
+      do_end err
+  do_end = (err) ->
     next err, if modified then ctx.OK else ctx.PASS
-  createMachinePrincipal()
+  do_wait()
 
 
 
