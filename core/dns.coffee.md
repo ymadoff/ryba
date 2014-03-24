@@ -21,14 +21,17 @@ Dig isn't available by default on CentOS and is installed by the
 
 ## Forward Lookup
 
-    module.exports.push name: 'DNS # "dig" Forward Lookup', callback: (ctx, next) ->
+    module.exports.push name: 'DNS # `dig` Forward Lookup', callback: (ctx, next) ->
+      # I didnt find how to restrict dig to return only A records like it
+      # does for CNAME records if you append "cname" at the end of the command.
+      # I assume the A record to always be printed on the last line.
       ctx.execute
         cmd: "dig #{ctx.config.host}. +short"
         code_skipped: 1
       , (err, executed, stdout, stderr) ->
         if err
           next err
-        else unless ipRegex.test stdout.trim()
+        else unless ipRegex.test stdout.split(/\s+/).shift()
           ctx.log "Invalid IP #{stdout.trim()}"
           next null, ctx.WARN
         else
@@ -36,16 +39,16 @@ Dig isn't available by default on CentOS and is installed by the
 
 ## Reverse Lookup
 
-    module.exports.push name: 'DNS # "dig" Reverse Lookup', callback: (ctx, next) ->
+    module.exports.push name: 'DNS # `dig` Reverse Lookup', callback: (ctx, next) ->
       ctx.execute
-        cmd: "dig -x `dig #{ctx.config.host}. +short` +short"
+        cmd: "dig -x #{ctx.config.ip} +short"
         code_skipped: 1
       , (err, executed, stdout) ->
         next err, if "#{ctx.config.host}." is stdout.trim() then ctx.PASS else ctx.WARN
 
 ## Forward Lookup with getent
 
-    module.exports.push name: 'DNS # "getent" Forward Lookup', callback: (ctx, next) ->
+    module.exports.push name: 'DNS # `getent` Forward Lookup', callback: (ctx, next) ->
       ctx.execute
         cmd: "getent hosts #{ctx.config.host}"
         code_skipped: 2
@@ -57,7 +60,7 @@ Dig isn't available by default on CentOS and is installed by the
 
 ## Reverse Lookup with getent
 
-    module.exports.push name: 'DNS # "getent" Reverse Lookup', callback: (ctx, next) ->
+    module.exports.push name: 'DNS # `getent` Reverse Lookup', callback: (ctx, next) ->
       ctx.execute
         cmd: "getent hosts #{ctx.config.ip}"
         code_skipped: 2
@@ -66,4 +69,15 @@ Dig isn't available by default on CentOS and is installed by the
         return next null, ctx.WARN if not valid
         [ip, fqdn] = stdout.split(/\s+/).filter( (entry) -> entry)
         next null, if ip is ctx.config.ip and fqdn is ctx.config.host then ctx.PASS else ctx.WARN
+
+## Hostname
+
+    module.exports.push name: 'DNS # Hostname', callback: (ctx, next) ->
+      ctx.execute
+        cmd: "hostname"
+      , (err, _, stdout) ->
+        return next err if err
+        next null, if stdout.trim() is ctx.config.host then ctx.PASS else ctx.WARN
+
+
 
