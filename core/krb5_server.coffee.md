@@ -65,21 +65,18 @@ Example:
 }
 ```
 
-    module.exports.push module.exports.configure = (ctx, next) ->
+    module.exports.push module.exports.configure = (ctx) ->
       require('./krb5_client').configure ctx
       ctx.config.krb5_server ?= {}
       etc_krb5_conf = misc.merge {}, module.exports.etc_krb5_conf, ctx.config.krb5_server.etc_krb5_conf
       ctx.config.krb5_server.etc_krb5_conf = etc_krb5_conf
-      # etc_krb5_conf.realms ?= {}
-      # etc_krb5_conf.dbmodules ?= {}
-      # etc_krb5_conf.libdefaults ?= {}
       kdc_conf = ctx.config.krb5_server.kdc_conf ?= {}
       # Generate dynamic "krb5_server.dbmodules" object
       openldap_hosts = ctx.hosts_with_module 'phyla/core/openldap_server_krb5'
       throw new Error "Expect at least one server with action \"phyla/core/openldap_server_krb5\" or a configured dbmodule" if openldap_hosts.length is 0 and Object.keys(ctx.config.dbmodules).length is 0
       for host in openldap_hosts
         # ldap_manager_dn, ldap_manager_password, 
-        {kerberos_container_dn, users_container_dn} = ctx.hosts[host].config.openldap_krb5
+        {kerberos_container_dn, users_container_dn, manager_dn, manager_password} = ctx.hosts[host].config.openldap_krb5
         name = "openldap_#{host.split('.')[0]}"
         scheme = if ctx.hosts[host].has_module 'phyla/core/openldap_server_tls' then "ldap://" else "ldaps://"
         ldap_server =  "#{scheme}#{host}"
@@ -96,6 +93,8 @@ Example:
           # 'ldap_servers': 'ldapi:///'
           'ldap_servers': ldap_server
           'ldap_conns_per_server': 5
+          'manager_dn': manager_dn
+          'manager_password': manager_password
         , etc_krb5_conf.dbmodules[name]
       # Generate dynamic "krb5_server.realms" object
       for realm, config of etc_krb5_conf.realms
@@ -103,7 +102,7 @@ Example:
         # Check if realm point to a database_module
         if config.database_module
           # Make sure this db module is registered
-          throw new Error "Property database_module \"#{config.database_module}\" not in list: \"#{Ojbect.keys(etc_krb5_conf.dbmodules).join ','}\"" unless etc_krb5_conf.dbmodules[config.db_module]?
+          throw new Error "Property database_module \"#{config.database_module}\" not in list: \"#{Object.keys(etc_krb5_conf.dbmodules).join ','}\"" unless etc_krb5_conf.dbmodules[config.database_module]?
         # Privileged a local OpenLDAP installation
         else if ctx.has_module 'phyla/core/openldap_server_krb5'
           config.database_module = "openldap_#{ctx.config.host.split('.')[0]}"
@@ -138,27 +137,13 @@ Example:
         etc_krb5_conf.domain_realm[".#{realm.toLowerCase()}"] = realm
         etc_krb5_conf.domain_realm["#{realm.toLowerCase()}"] = realm
 
-
-      # if ctx.hosts_with_module('phyla/core/openldap_krb5').length is 1
-      #   {manager_dn, manager_password, realms_dn} = ctx.config.openldap_server_krb5
-      #   config.ldap_manager_dn ?= ctx.config.openldap_krb5.manager_dn
-      #   config.ldap_manager_password ?= ctx.config.openldap_krb5.manager_password
-      #   config.ldap_realms_dn ?= ctx.config.openldap_krb5.realms_dn
-      #   throw new Error "Kerberos property `krb5_server.{realm}.ldap_manager_dn` is required"
-      #   throw new Error "Kerberos property `krb5_server.{realm}.ldap_manager_password` is required"
-      #   throw new Error "Kerberos property `krb5_server.{realm}.ldap_realms_dn` is required"
-      #   {realm, ldap_kerberos_container_dn, ldap_kdc_dn, ldap_kadmind_dn, ldap_servers} = config
-      #   ldap_servers = ldap_servers.split /[\s,]+/ if typeof ldap_servers is 'string'
-      #   REALM = realm
-      #   realm = REALM.toLowerCase()
-
-      kdc_conf = misc.merge 
+      misc.merge kdc_conf,
         'kdcdefaults':
           'kdc_ports': 88
           'kdc_tcp_ports': 88
         'realms': {}
         'logging':
-            'kdc': 'FILE:/tmp/kdc.log'
+            'kdc': 'FILE:/var/log/kdc.log'
       , kdc_conf
       # Add realm present in etc_krb5_conf
       for realm of etc_krb5_conf.realms
@@ -179,76 +164,97 @@ Example:
       , (err, installed) ->
         next err, if installed then ctx.OK else ctx.PASS
 
+    safe_etc_krb5_conf = (etc_krb5_conf) ->
+      etc_krb5_conf = misc.merge {}, etc_krb5_conf
+      for realm, config of etc_krb5_conf.realms
+        delete config.principals
+      for name, config of etc_krb5_conf.dbmodules
+        delete config.kdc_master_key
+        delete config.manager_dn
+        delete config.manager_password
+      etc_krb5_conf
+
     module.exports.push name: 'Krb5 Server # LDAP Insert Entries', timeout: 100000, callback: (ctx, next) ->
-      modified = true
-      each(ctx.config.krb5_server)
-      .on 'item', (realm, config, next) ->
-        {realm, etc_krb5_conf, kdc, kdc_master_key, ldap_manager_dn, ldap_manager_password, ldap_realms_dn} = config
-        # Note, kdb5_ldap_util is using /etc/krb5.conf (server version)
+      {etc_krb5_conf, kdc_conf} = ctx.config.krb5_server
+      modified = false
+      do_ini = ->
         ctx.log 'Update /etc/krb5.conf'
         ctx.ini
-          content: etc_krb5_conf
+          content: safe_etc_krb5_conf etc_krb5_conf
           destination: '/etc/krb5.conf'
           stringify: misc.ini.stringify_square_then_curly
           backup: true
         , (err, written) ->
+          return next err if err
+          modified = true if written
+          do_subtrees()
+      do_subtrees = ->
+        each(etc_krb5_conf.realms)
+        .on 'item', (realm, config, next) ->
+          {kdc_master_key, ldap_kerberos_container_dn, manager_dn, manager_password} = etc_krb5_conf.dbmodules[config.database_module]
+          # Note, kdb5_ldap_util is using /etc/krb5.conf (server version)
           ctx.log 'Run kdb5_ldap_util'
-          # Without "-P", it prompts for the KDC database master key
           ctx.execute
-            cmd: "kdb5_ldap_util -D \"#{manager_dn}\" -w #{manager_password} create -subtrees \"#{realms_dn}\" -r #{realm} -s -P #{kdc_master_key}"
+            cmd: "kdb5_ldap_util -D \"#{manager_dn}\" -w #{manager_password} create -subtrees \"#{ldap_kerberos_container_dn}\" -r #{realm} -s -P #{kdc_master_key}"
             code_skipped: 1
           , (err, executed, stdout, stderr) ->
             # Warnig, exit code 1 for also for connect error
             # TODO: Test if the realm LDAP entry already exists
-            next err if err
+            return next err if err
             modified = true if executed
-      .on 'both', (err) ->
-        next err, if modified then ctx.OK else ctx.PASS
+            next()
+        .on 'both', (err) ->
+          next err, if modified then ctx.OK else ctx.PASS
+      do_ini()
 
     module.exports.push name: 'Krb5 Server # LDAP Stash password', callback: (ctx, next) ->
-      each(ctx.config.krb5_server)
-      .on 'item', (realm, config, next) ->
-        {etc_krb5_conf, kdc_master_key} = config
-        ctx.log "Stash key file is: #{etc_krb5_conf.dbmodules.ldap_service_password_file}"
+      {etc_krb5_conf} = ctx.config.krb5_server
+      modified = false
+      each(etc_krb5_conf.dbmodules)
+      .on 'item', (name, dbmodule, next) ->
+        {kdc_master_key, manager_dn, manager_password, ldap_service_password_file, ldap_kadmind_dn} = dbmodule
+        ctx.log "Stash key file is: #{dbmodule.ldap_service_password_file}"
         keyfileContent = null
         do_read = ->
           ctx.log 'Read current keyfile if it exists'
-          misc.file.readFile ctx.ssh, "#{etc_krb5_conf.dbmodules.ldap_service_password_file}", 'utf8', (err, content) ->
+          misc.file.readFile ctx.ssh, "#{ldap_service_password_file}", 'utf8', (err, content) ->
             return do_mkdir() if err and err.code is 'ENOENT'
             return next err if err
             keyfileContent = content
             do_stash()
-        mkdir = ->
+        do_mkdir = ->
           ctx.log 'Create directory "/etc/krb5.d"'
           ctx.mkdir '/etc/krb5.d', (err, created) ->
             return next err if err
             do_stash()
         do_stash = ->
           ctx.log 'Stash password into local file'
-          {ldap_kadmind_dn} = ctx.config.krb5_server
-          {manager_dn, manager_password} = ctx.config.openldap_krb5
           ctx.ssh.shell (err, stream) ->
             return next err if err
-            cmd = "kdb5_ldap_util -D \"#{manager_dn}\" -w #{manager_password} stashsrvpw -f #{etc_krb5_conf.dbmodules.ldap_service_password_file} #{ldap_kadmind_dn}"
+            cmd = "kdb5_ldap_util -D \"#{manager_dn}\" -w #{manager_password} stashsrvpw -f #{ldap_service_password_file} #{ldap_kadmind_dn}"
             ctx.log "Run #{cmd}"
+            reentered = false
             stream.write "#{cmd}\n"
-            stream.on 'data', (data) ->
-              ctx.log.out.write data
+            stream.on 'data', (data, stderr) ->
+              ctx.log[if stderr then 'err' else 'out'].write data
               data = data.toString()
-              reentered = false
               if /Password for/.test data
                 stream.write "#{kdc_master_key}\n"
-              if /Re-enter password for/.test data
-                stream.write "#{kdc_master_key}\n"
+              else if /Re-enter password for/.test data
+                stream.write "#{kdc_master_key}\n\n"
                 reentered = true
-              if reentered and /\r\n/.test data
-                return next null, ctx.OK unless keyfileContent
+              else if reentered
                 stream.end()
             stream.on 'close', ->
               do_compare()
         do_compare = ->
-          misc.file.readFile ctx.ssh, "#{etc_krb5_conf.dbmodules.ldap_service_password_file}", 'utf8', (err, content) ->
-            next err, if keyfileContent is content then ctx.PASS else ctx.OK
+          unless keyfileContent
+            modified = true
+            next()
+          misc.file.readFile ctx.ssh, "#{ldap_service_password_file}", 'utf8', (err, content) ->
+            return next err if err
+            modified = if keyfileContent is content then false else true
+            next()
         do_read()
       .on 'both', (err) ->
         next err, if modified then ctx.OK else ctx.PASS
@@ -285,13 +291,8 @@ Example:
         ctx.log 'Update /etc/krb5.conf'
         # Clone etc_krb5_conf
         etc_krb5_conf = misc.merge {}, etc_krb5_conf
-        # Remove internal properties
-        for realm, config of etc_krb5_conf.realms
-          delete config.principals
-        for name, config of etc_krb5_conf.dbmodules
-          delete config.kdc_master_key
         ctx.ini
-          content: etc_krb5_conf
+          content: safe_etc_krb5_conf etc_krb5_conf
           destination: '/etc/krb5.conf'
           stringify: misc.ini.stringify_square_then_curly
           backup: true
@@ -301,9 +302,10 @@ Example:
           do_kadm5()
       do_kadm5 = ->
         ctx.log 'Update /var/kerberos/krb5kdc/kadm5.acl'
+        lines = for realm of etc_krb5_conf.realms then "*/admin@#{realm}     *"
         ctx.write
           match: /^\*\/\w+@[\w\.]+\s+\*/mg
-          replace: "*/admin@#{realm}     *"
+          replace: lines.join '\n'
           destination: '/var/kerberos/krb5kdc/kadm5.acl'
           backup: true
         , (err, written) ->
@@ -396,16 +398,24 @@ Example:
       touch()
 
     module.exports.push name: 'Krb5 Server # Admin principal', timeout: -1, callback: (ctx, next) ->
-      {kadmin_principal, kadmin_password} = ctx.config.krb5_server
-      ctx.log "Create principal #{kadmin_principal}"
-      ctx.krb5_addprinc
-        # We dont provide an "kadmin_server". Instead, we need
-        # to use "kadmin.local" because the principal used
-        # to login with "kadmin" isnt created yet
-        principal: kadmin_principal
-        password: kadmin_password
-      , (err, created) ->
-        next err, if created then ctx.OK else ctx.PASS
+      {etc_krb5_conf} = ctx.config.krb5_server
+      modified = false
+      each(etc_krb5_conf.realms)
+      .on 'item', (realm, config, next) ->
+        {kadmin_principal, kadmin_password} = config
+        ctx.log "Create principal #{kadmin_principal}"
+        ctx.krb5_addprinc
+          # We dont provide an "kadmin_server". Instead, we need
+          # to use "kadmin.local" because the principal used
+          # to login with "kadmin" isnt created yet
+          principal: kadmin_principal
+          password: kadmin_password
+        , (err, created) ->
+          return next err if err
+          modified = true if created
+          next()
+      .on 'both', (err) ->
+        next err, if modified then ctx.OK else ctx.PASS
 
     module.exports.push name: 'Krb5 Server # Start', timeout: 100000, callback: (ctx, next) ->
       ctx.service [
@@ -420,48 +430,48 @@ Example:
         next err, if serviced then ctx.OK else ctx.PASS
 
 
-## Populate
+# ## Populate
 
-Populate DB with machines and users principals.
+# Populate DB with machines and users principals.
 
-    module.exports.push name: 'Krb5 Server # Populate', timeout: -1, callback: (ctx, next) ->
-      {realm, principals, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_server
-      modified = false
-      do_wait = ->
-        # It takes time after Kerberos is started and before `kadmin` is really ready
-        ctx.waitForExecution "kadmin -p #{kadmin_principal} -w #{kadmin_password} -s #{kadmin_server} -q ?", (err) ->
-          return next err if err
-          do_createMachinePrincipal()
-      do_createMachinePrincipal = ->
-        ctx.log "Create principal host/#{ctx.config.host}@#{realm}"
-        ctx.krb5_addprinc
-          principal: "host/#{ctx.config.host}@#{realm}"
-          randkey: true
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: kadmin_server
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_createConfigPrincipals()
-      do_createConfigPrincipals = ->
-        each(principals)
-        .on 'item', (principal, next) ->
-          ctx.log "Create principal {principal}"
-          options = 
-            kadmin_principal: kadmin_principal
-            kadmin_password: kadmin_password
-            kadmin_server: kadmin_server
-          for k, v of principal then options[k] = v
-          ctx.krb5_addprinc options, (err, created) ->
-            return next err if err
-            modified = true if created
-            next()
-        .on 'both', (err) ->
-          do_end err
-      do_end = (err) ->
-        next err, if modified then ctx.OK else ctx.PASS
-      do_wait()
+#     module.exports.push name: 'Krb5 Server # Populate', timeout: -1, callback: (ctx, next) ->
+#       {realm, principals, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_server
+#       modified = false
+#       do_wait = ->
+#         # It takes time after Kerberos is started and before `kadmin` is really ready
+#         ctx.waitForExecution "kadmin -p #{kadmin_principal} -w #{kadmin_password} -s #{kadmin_server} -q ?", (err) ->
+#           return next err if err
+#           do_createMachinePrincipal()
+#       do_createMachinePrincipal = ->
+#         ctx.log "Create principal host/#{ctx.config.host}@#{realm}"
+#         ctx.krb5_addprinc
+#           principal: "host/#{ctx.config.host}@#{realm}"
+#           randkey: true
+#           kadmin_principal: kadmin_principal
+#           kadmin_password: kadmin_password
+#           kadmin_server: kadmin_server
+#         , (err, created) ->
+#           return next err if err
+#           modified = true if created
+#           do_createConfigPrincipals()
+#       do_createConfigPrincipals = ->
+#         each(principals)
+#         .on 'item', (principal, next) ->
+#           ctx.log "Create principal {principal}"
+#           options = 
+#             kadmin_principal: kadmin_principal
+#             kadmin_password: kadmin_password
+#             kadmin_server: kadmin_server
+#           for k, v of principal then options[k] = v
+#           ctx.krb5_addprinc options, (err, created) ->
+#             return next err if err
+#             modified = true if created
+#             next()
+#         .on 'both', (err) ->
+#           do_end err
+#       do_end = (err) ->
+#         next err, if modified then ctx.OK else ctx.PASS
+#       do_wait()
 
 
     module.exports.etc_krb5_conf =
