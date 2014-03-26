@@ -30,7 +30,7 @@ module.exports.push name: 'Bootstrap # Connection', timeout: -1, callback: (ctx,
   ctx.run.on 'error', close
   ctx.run.on 'end', close
   attempts = 0
-  modified = true
+  modified = false
   do_private_key = ->
     return do_ssh() unless private_key
     ctx.log "Place SSH private key inside \"~/.ssh\""
