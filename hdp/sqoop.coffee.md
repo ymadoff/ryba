@@ -36,7 +36,7 @@ Example:
       require('./core').configure ctx
       ctx.config.hdp.sqoop ?= {}
       ctx.config.hdp.sqoop.libs ?= []
-      ctx.config.hdp.sqoop.libs = ctx.config.hdp.sqoop.libs.split /,\s/ if typeof ctx.config.hdp.sqoop.libs is 'string'
+      ctx.config.hdp.sqoop.libs = ctx.config.hdp.sqoop.libs.split /[\s,]+/ if typeof ctx.config.hdp.sqoop.libs is 'string'
 
 ## Install
 
