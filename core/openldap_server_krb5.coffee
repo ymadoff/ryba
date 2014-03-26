@@ -87,12 +87,12 @@ module.exports.push name: 'OpenLDAP Kerberos # Install schema', timeout: -1, cal
   install()
 
 module.exports.push name: 'OpenLDAP Kerberos # Insert data', callback: (ctx, next) ->
-  {realms_dn, groups_container_dn, admin_group, users_container_dn, admin_user} = ctx.config.openldap_krb5
+  {kerberos_container_dn, groups_container_dn, admin_group, users_container_dn, admin_user} = ctx.config.openldap_krb5
   modified = false
   kbsou = ->
     ctx.log 'Create the kerberos organisational unit'
-    ctx.ldap_admin.add realms_dn, 
-      ou: /^ou=(.*?),/.exec(realms_dn)[1]
+    ctx.ldap_admin.add kerberos_container_dn, 
+      ou: /^ou=(.*?),/.exec(kerberos_container_dn)[1]
       objectClass: [ 'top', 'organizationalUnit' ]
       description: 'Kerberos OU to store Kerberos principals.'
     , (err, search) ->
@@ -118,14 +118,14 @@ module.exports.push name: 'OpenLDAP Kerberos # Insert data', callback: (ctx, nex
 module.exports.push name: 'OpenLDAP Kerberos # User permissions', callback: (ctx, next) ->
   # We used: http://itdavid.blogspot.fr/2012/05/howto-centos-62-kerberos-kdc-with.html
   # But this is also interesting: http://web.mit.edu/kerberos/krb5-current/doc/admin/conf_ldap.html
-  {realms_dn, users_container_dn} = ctx.config.openldap_krb5
+  {kerberos_container_dn, users_container_dn} = ctx.config.openldap_krb5
   {suffix} = ctx.config.openldap_server
   ctx.ldap_acl [
     ldap: ctx.ldap_config
     log: ctx.log
     name: "olcDatabase={2}bdb,cn=config"
     acls: [
-    #   before: "dn.subtree=\"#{realms_dn}\""
+    #   before: "dn.subtree=\"#{kerberos_container_dn}\""
     #   to: "attrs=userPassword,userPKCS12"
     #   by: [
     #     "dn.base=\"gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth\" manage "
@@ -135,7 +135,7 @@ module.exports.push name: 'OpenLDAP Kerberos # User permissions', callback: (ctx
     #   ]
     # ,
       before: "dn.subtree=\"#{suffix}\""
-      to: "dn.subtree=\"#{realms_dn}\""
+      to: "dn.subtree=\"#{kerberos_container_dn}\""
       by: [
         "dn.exact=\"#{users_container_dn}\" write"
         "dn.base=\"gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth\" read"
@@ -149,9 +149,9 @@ module.exports.push name: 'OpenLDAP Kerberos # User permissions', callback: (ctx
     ]
   ], (err, modified) ->
     return next err if err
-    ctx.log "Check it returns the entire #{realms_dn} subtree"
+    ctx.log "Check it returns the entire #{kerberos_container_dn} subtree"
     ctx.execute
-      cmd: "ldapsearch -xLLLD #{users_container_dn} -w test -b #{realms_dn}"
+      cmd: "ldapsearch -xLLLD #{users_container_dn} -w test -b #{kerberos_container_dn}"
     , (err) ->
       # Nice but no garanty that a "nssproxy" user exists. I keep it
       # for now because it would be great to test permission

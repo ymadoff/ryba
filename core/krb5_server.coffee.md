@@ -44,7 +44,7 @@ Example:
 
 ```json
 {
-  "krb5_server": {
+  "krb5": {
     "ADALTAS.COM": {
       "kdc": "master3.hadoop",
       "kadmin_server": "master3.hadoop",
@@ -65,13 +65,48 @@ Example:
 }
 ```
 
+    safe_etc_krb5_conf = module.exports.safe_etc_krb5_conf = (etc_krb5_conf) ->
+      etc_krb5_conf = misc.merge {}, etc_krb5_conf
+      for realm, config of etc_krb5_conf.realms
+        delete config.kadmin_principal
+        delete config.kadmin_password
+        delete config.principals
+      for name, config of etc_krb5_conf.dbmodules
+        delete config.kdc_master_key
+        delete config.manager_dn
+        delete config.manager_password
+      etc_krb5_conf
+
+    module.exports.etc_krb5_conf =
+      'logging':
+        'default': 'SYSLOG:INFO:LOCAL1'
+        'kdc': 'SYSLOG:NOTICE:LOCAL1'
+        'admin_server': 'SYSLOG:WARNING:LOCAL1'
+      'libdefaults': 
+        # 'default_realm': "#{REALM}"
+        'dns_lookup_realm': false
+        'dns_lookup_kdc': false
+        'ticket_lifetime': '24h'
+        'renew_lifetime': '7d'
+        'forwardable': true
+      'realms': {}
+      'domain_realm': {}
+      'appdefaults':
+        'pam':
+          'debug': false
+          'ticket_lifetime': 36000
+          'renew_lifetime': 36000
+          'forwardable': true
+          'krb4_convert': false
+      'dbmodules': {}
+
     module.exports.push module.exports.configure = (ctx) ->
-      require('./krb5_client').configure ctx
-      ctx.config.krb5_server ?= {}
-      etc_krb5_conf = misc.merge {}, module.exports.etc_krb5_conf, ctx.config.krb5_server.etc_krb5_conf
-      ctx.config.krb5_server.etc_krb5_conf = etc_krb5_conf
-      kdc_conf = ctx.config.krb5_server.kdc_conf ?= {}
-      # Generate dynamic "krb5_server.dbmodules" object
+      # require('./krb5_client').configure ctx
+      ctx.config.krb5 ?= {}
+      etc_krb5_conf = misc.merge {}, module.exports.etc_krb5_conf, ctx.config.krb5.etc_krb5_conf
+      ctx.config.krb5.etc_krb5_conf = etc_krb5_conf
+      kdc_conf = ctx.config.krb5.kdc_conf ?= {}
+      # Generate dynamic "krb5.dbmodules" object
       openldap_hosts = ctx.hosts_with_module 'phyla/core/openldap_server_krb5'
       throw new Error "Expect at least one server with action \"phyla/core/openldap_server_krb5\" or a configured dbmodule" if openldap_hosts.length is 0 and Object.keys(ctx.config.dbmodules).length is 0
       for host in openldap_hosts
@@ -96,7 +131,7 @@ Example:
           'manager_dn': manager_dn
           'manager_password': manager_password
         , etc_krb5_conf.dbmodules[name]
-      # Generate dynamic "krb5_server.realms" object
+      # Generate dynamic "krb5.realms" object
       for realm, config of etc_krb5_conf.realms
         throw new Error "Realm must be uppercase" if realm isnt realm.toUpperCase()
         # Check if realm point to a database_module
@@ -128,15 +163,15 @@ Example:
           delete etc_krb5_conf.dbmodules[name]
           continue
         # Validate
-        throw new Error "Kerberos property `krb5_server.dbmodules.#{name}.kdc_master_key` is required" unless config.kdc_master_key
-        throw new Error "Kerberos property `krb5_server.dbmodules.#{name}.ldap_kerberos_container_dn` is required" unless config.ldap_kerberos_container_dn
-        throw new Error "Kerberos property `krb5_server.dbmodules.#{name}.ldap_kdc_dn` is required" unless config.ldap_kdc_dn
-        throw new Error "Kerberos property `krb5_server.dbmodules.#{name}.ldap_kadmind_dn` is required" unless config.ldap_kadmind_dn
+        throw new Error "Kerberos property `krb5.dbmodules.#{name}.kdc_master_key` is required" unless config.kdc_master_key
+        throw new Error "Kerberos property `krb5.dbmodules.#{name}.ldap_kerberos_container_dn` is required" unless config.ldap_kerberos_container_dn
+        throw new Error "Kerberos property `krb5.dbmodules.#{name}.ldap_kdc_dn` is required" unless config.ldap_kdc_dn
+        throw new Error "Kerberos property `krb5.dbmodules.#{name}.ldap_kadmind_dn` is required" unless config.ldap_kadmind_dn
       # Generate the "domain_realm" property
       for realm of etc_krb5_conf.realms
         etc_krb5_conf.domain_realm[".#{realm.toLowerCase()}"] = realm
         etc_krb5_conf.domain_realm["#{realm.toLowerCase()}"] = realm
-
+      # Prepare configuration for "kdc.conf"
       misc.merge kdc_conf,
         'kdcdefaults':
           'kdc_ports': 88
@@ -164,18 +199,8 @@ Example:
       , (err, installed) ->
         next err, if installed then ctx.OK else ctx.PASS
 
-    safe_etc_krb5_conf = (etc_krb5_conf) ->
-      etc_krb5_conf = misc.merge {}, etc_krb5_conf
-      for realm, config of etc_krb5_conf.realms
-        delete config.principals
-      for name, config of etc_krb5_conf.dbmodules
-        delete config.kdc_master_key
-        delete config.manager_dn
-        delete config.manager_password
-      etc_krb5_conf
-
     module.exports.push name: 'Krb5 Server # LDAP Insert Entries', timeout: 100000, callback: (ctx, next) ->
-      {etc_krb5_conf, kdc_conf} = ctx.config.krb5_server
+      {etc_krb5_conf, kdc_conf} = ctx.config.krb5
       modified = false
       do_ini = ->
         ctx.log 'Update /etc/krb5.conf'
@@ -208,7 +233,7 @@ Example:
       do_ini()
 
     module.exports.push name: 'Krb5 Server # LDAP Stash password', callback: (ctx, next) ->
-      {etc_krb5_conf} = ctx.config.krb5_server
+      {etc_krb5_conf} = ctx.config.krb5
       modified = false
       each(etc_krb5_conf.dbmodules)
       .on 'item', (name, dbmodule, next) ->
@@ -281,7 +306,7 @@ Example:
         next err, if serviced then ctx.OK else ctx.PASS
 
     module.exports.push name: 'Krb5 Server # Configure', timeout: 100000, callback: (ctx, next) ->
-      {realm, etc_krb5_conf, kdc_conf} = ctx.config.krb5_server
+      {realm, etc_krb5_conf, kdc_conf} = ctx.config.krb5
       modified = false
       exists = false
       chkexists = ->
@@ -302,10 +327,12 @@ Example:
           do_kadm5()
       do_kadm5 = ->
         ctx.log 'Update /var/kerberos/krb5kdc/kadm5.acl'
-        lines = for realm of etc_krb5_conf.realms then "*/admin@#{realm}     *"
-        ctx.write
-          match: /^\*\/\w+@[\w\.]+\s+\*/mg
-          replace: lines.join '\n'
+        writes = for realm of etc_krb5_conf.realms
+          match: ///^\*/\w+@#{misc.regexp.escape realm}\s+\*///mg
+          replace: "*/admin@#{realm}     *"
+          append: true
+        ctx.write 
+          write: writes
           destination: '/var/kerberos/krb5kdc/kadm5.acl'
           backup: true
         , (err, written) ->
@@ -398,7 +425,7 @@ Example:
       touch()
 
     module.exports.push name: 'Krb5 Server # Admin principal', timeout: -1, callback: (ctx, next) ->
-      {etc_krb5_conf} = ctx.config.krb5_server
+      {etc_krb5_conf} = ctx.config.krb5
       modified = false
       each(etc_krb5_conf.realms)
       .on 'item', (realm, config, next) ->
@@ -435,7 +462,7 @@ Example:
 # Populate DB with machines and users principals.
 
 #     module.exports.push name: 'Krb5 Server # Populate', timeout: -1, callback: (ctx, next) ->
-#       {realm, principals, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_server
+#       {realm, principals, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5
 #       modified = false
 #       do_wait = ->
 #         # It takes time after Kerberos is started and before `kadmin` is really ready
@@ -474,29 +501,15 @@ Example:
 #       do_wait()
 
 
-    module.exports.etc_krb5_conf =
-      'logging':
-        'default': 'SYSLOG:INFO:LOCAL1'
-        'kdc': 'SYSLOG:NOTICE:LOCAL1'
-        'admin_server': 'SYSLOG:WARNING:LOCAL1'
-      'libdefaults': 
-        # 'default_realm': "#{REALM}"
-        'dns_lookup_realm': false
-        'dns_lookup_kdc': false
-        'ticket_lifetime': '24h'
-        'renew_lifetime': '7d'
-        'forwardable': true
-      'realms': {}
-      'domain_realm': {}
-      'appdefaults':
-        'pam':
-          'debug': false
-          'ticket_lifetime': 36000
-          'renew_lifetime': 36000
-          'forwardable': true
-          'krb4_convert': false
-      'dbmodules': {}
 
+## Notes
+
+Renewable tickets is per default disallowed in the most linux distributions. This can be done per:
+
+```bash
+kadmin.local: modprinc -maxrenewlife 7day krbtgt/YOUR_REALM
+kadmin.local: modprinc -maxrenewlife 7day +allow_renewable hue/FQRN
+```
 
 
 
