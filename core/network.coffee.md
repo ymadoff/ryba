@@ -59,7 +59,6 @@ this file.
       ctx.write
         destination: '/etc/hosts'
         content: content
-        mode: 0o666
         backup: true
       , (err, written) ->
         return next err, if written then ctx.OK else ctx.PASS
