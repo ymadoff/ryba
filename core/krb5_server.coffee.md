@@ -17,6 +17,7 @@ Resources:
     misc = require 'mecano/lib/misc'
     module.exports = []
 
+    module.exports.push 'phyla/bootstrap'
     module.exports.push 'phyla/core/openldap_client'
     module.exports.push 'phyla/core/yum'
 
@@ -101,14 +102,13 @@ Example:
       'dbmodules': {}
 
     module.exports.push module.exports.configure = (ctx) ->
-      # require('./krb5_client').configure ctx
       ctx.config.krb5 ?= {}
       etc_krb5_conf = misc.merge {}, module.exports.etc_krb5_conf, ctx.config.krb5.etc_krb5_conf
       ctx.config.krb5.etc_krb5_conf = etc_krb5_conf
       kdc_conf = ctx.config.krb5.kdc_conf ?= {}
       # Generate dynamic "krb5.dbmodules" object
       openldap_hosts = ctx.hosts_with_module 'phyla/core/openldap_server_krb5'
-      throw new Error "Expect at least one server with action \"phyla/core/openldap_server_krb5\" or a configured dbmodule" if openldap_hosts.length is 0 and Object.keys(ctx.config.dbmodules).length is 0
+      throw new Error "Expect at least one server with action \"phyla/core/openldap_server_krb5\"" if openldap_hosts.length is 0
       for host in openldap_hosts
         # ldap_manager_dn, ldap_manager_password, 
         {kerberos_container_dn, users_container_dn, manager_dn, manager_password} = ctx.hosts[host].config.openldap_krb5
@@ -131,29 +131,33 @@ Example:
           'manager_dn': manager_dn
           'manager_password': manager_password
         , etc_krb5_conf.dbmodules[name]
-      # Generate dynamic "krb5.realms" object
+
+      # Merge global with server-based configuration
+      krb5_server_hosts = ctx.hosts_with_module "phyla/core/krb5_server"
+      for krb5_server_host in krb5_server_hosts
+        {realms} = ctx.hosts[krb5_server_host].config.krb5.etc_krb5_conf
+        for realm, config of realms
+          realms[realm].kdc ?= krb5_server_host
+          realms[realm].admin_server ?= krb5_server_host
+          realms[realm].default_domain ?= realm.toLowerCase()
+        misc.merge etc_krb5_conf.realms, realms
+
       for realm, config of etc_krb5_conf.realms
-        throw new Error "Realm must be uppercase" if realm isnt realm.toUpperCase()
         # Check if realm point to a database_module
         if config.database_module
           # Make sure this db module is registered
-          throw new Error "Property database_module \"#{config.database_module}\" not in list: \"#{Object.keys(etc_krb5_conf.dbmodules).join ','}\"" unless etc_krb5_conf.dbmodules[config.database_module]?
-        # Privileged a local OpenLDAP installation
-        else if ctx.has_module 'phyla/core/openldap_server_krb5'
-          config.database_module = "openldap_#{ctx.config.host.split('.')[0]}"
-          config.kdc ?= ctx.config.host
-          config.admin_server ?= ctx.config.host
-          config.default_domain ?= realm.toLowerCase()
-          etc_krb5_conf.libdefaults.default_realm ?= realm
-        # Choose the OpenLDAP on the cluster if there is only one
-        # TODO: handle multiple instances of OpenLDAP with replication
-        else if openldap_hosts.length is 1
-          host = openldap_hosts[0]
-          config.database_module ?= "openldap_#{host.split('.')[0]}"
-          config.kdc ?= ctx.hosts[host].config.host
-          config.admin_server ?= ctx.hosts[host].config.host
-          config.default_domain ?= realm.toLowerCase()
-          etc_krb5_conf.libdefaults.default_realm ?= realm
+          dbmodules = Object.keys(etc_krb5_conf.dbmodules).join ','
+          valid = etc_krb5_conf.dbmodules[config.database_module]?
+          throw new Error "Property database_module \"#{config.database_module}\" not in list: \"#{dbmodules}\"" unless valid
+        # Set a database module if we manage the realm locally
+        if config.admin_server is ctx.config.host
+          # Valid if
+          # *   only one OpenLDAP server accross the cluster or
+          # *   an OpenLDAP server in this host
+          openldap_index = openldap_hosts.indexOf ctx.config.host
+          openldap_host = if openldap_hosts.length is 1 then openldap_hosts[0] else if openldap_index isnt -1 then openldap_index
+          throw new Error "Could not find a suitable OpenLDAP server" unless openldap_host
+          config.database_module = "openldap_#{openldap_host.split('.')[0]}"
       # Now that we have db_modules and realms, filter and validate the used db_modules
       database_modules = for realm, config of etc_krb5_conf.realms
         config.database_module
@@ -187,6 +191,7 @@ Example:
       for realm, config of kdc_conf.realms
         kdc_conf.realms[realm] = misc.merge
           '#master_key_type': 'aes256-cts'
+          'default_principal_flags': 'preauth'
           'acl_file': '/var/kerberos/krb5kdc/kadm5.acl'
           'dict_file': '/usr/share/dict/words'
           'admin_keytab': '/var/kerberos/krb5kdc/kadm5.keytab'
@@ -216,6 +221,7 @@ Example:
       do_subtrees = ->
         each(etc_krb5_conf.realms)
         .on 'item', (realm, config, next) ->
+          return next() unless config.database_module
           {kdc_master_key, ldap_kerberos_container_dn, manager_dn, manager_password} = etc_krb5_conf.dbmodules[config.database_module]
           # Note, kdb5_ldap_util is using /etc/krb5.conf (server version)
           ctx.log 'Run kdb5_ldap_util'
@@ -275,7 +281,7 @@ Example:
         do_compare = ->
           unless keyfileContent
             modified = true
-            next()
+            return next()
           misc.file.readFile ctx.ssh, "#{ldap_service_password_file}", 'utf8', (err, content) ->
             return next err if err
             modified = if keyfileContent is content then false else true
@@ -429,7 +435,8 @@ Example:
       modified = false
       each(etc_krb5_conf.realms)
       .on 'item', (realm, config, next) ->
-        {kadmin_principal, kadmin_password} = config
+        {database_module, kadmin_principal, kadmin_password} = config
+        return next() unless database_module
         ctx.log "Create principal #{kadmin_principal}"
         ctx.krb5_addprinc
           # We dont provide an "kadmin_server". Instead, we need
@@ -456,6 +463,12 @@ Example:
       ], (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
 
+## Krb5 Client
+
+Call the "phyla/core/krb5_client" dependency which will register this host to
+each Kerberos servers.
+
+    module.exports.push '!phyla/core/krb5_client'
 
 # ## Populate
 
