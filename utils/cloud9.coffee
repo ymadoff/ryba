@@ -5,7 +5,7 @@ Cloud9
 ###
 mecano = require 'mecano'
 module.exports = []
-
+module.exports.push 'phyla/bootstrap'
 module.exports.push 'phyla/core/yum'
 module.exports.push 'phyla/utils/git'
 module.exports.push 'phyla/utils/nodejs'

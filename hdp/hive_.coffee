@@ -1,6 +1,6 @@
 
 module.exports = []
-
+module.exports.push 'phyla/bootstrap'
 module.exports.push 'phyla/utils/java'
 module.exports.push 'phyla/hdp/core'
 module.exports.push 'phyla/hdp/hdfs_client'

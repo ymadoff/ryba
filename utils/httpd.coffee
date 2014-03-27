@@ -6,6 +6,7 @@ HTTPD web server
 mecano = require 'mecano'
 misc = require 'mecano/lib/misc'
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 
 ###
 Configuration

@@ -8,11 +8,11 @@ Mysql Server
 mecano = require 'mecano'
 each = require 'each'
 module.exports = []
+module.exports.push 'phyla/bootstrap'
+module.exports.push 'phyla/utils/mysql_client' # Install the mysql driver
+
 escape = (text) -> text.replace(/[\\"]/g, "\\$&")
 
-# Install the mysql driver
-module.exports.push 'phyla/core/yum'
-module.exports.push 'phyla/utils/mysql_client'
 
 ###
 Configure

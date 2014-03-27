@@ -10,6 +10,7 @@ misc = require 'mecano/lib/misc'
 ini = require 'ini'
 
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 
 ###
 Dependencies: proxy

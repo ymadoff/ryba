@@ -2,6 +2,7 @@
 each = require 'each'
 
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 
 module.exports.push name: 'Profile', callback: (ctx, next) ->
   ok = 0

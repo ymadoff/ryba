@@ -20,6 +20,7 @@ provides [instructions to rollback a HA installation][rollback] that apply to Am
     exec = require 'superexec'
     misc = require 'mecano/lib/misc'
     module.exports = []
+    module.exports.push 'phyla/bootstrap'
     module.exports.push 'phyla/hdp/hdfs'
     module.exports.push 'phyla/core/nc'
 

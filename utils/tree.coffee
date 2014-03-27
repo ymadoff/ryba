@@ -1,5 +1,9 @@
 
-module.exports = name: 'Tree', timeout: -1, callback: (ctx, next) ->
+
+module.exports = []
+module.exports.push 'phyla/bootstrap'
+
+module.exports.push name: 'Tree', timeout: -1, callback: (ctx, next) ->
   ctx.service
     name: 'tree'
   , (err, serviced) ->

@@ -7,6 +7,7 @@ It also ships with an Oozie Application for creating and monitoring workflows, a
     misc = require 'mecano/lib/misc'
     lifecycle = require './lib/lifecycle'
     module.exports = []
+    module.exports.push 'phyla/bootstrap'
     # Install the mysql connector
     module.exports.push 'phyla/utils/mysql_client'
     # Install client to create new Hive principal

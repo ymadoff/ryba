@@ -5,6 +5,7 @@ Virtual Box
 
 ###
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 module.exports.push 'phyla/core/curl'
 
 module.exports.push name: 'VirtualBox # Guest Additions', timeout: -1, callback: (ctx, next) ->

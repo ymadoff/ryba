@@ -15,6 +15,7 @@ home of each users.
     mecano = require 'mecano'
     misc = require 'mecano/lib/misc'
     module.exports = []
+    module.exports.push 'phyla/bootstrap'
     module.exports.push 'phyla/utils/git'
     module.exports.push 'phyla/core/users'
 

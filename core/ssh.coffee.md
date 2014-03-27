@@ -4,6 +4,7 @@
     misc = require 'mecano/lib/misc'
     each = require 'each'
     module.exports = []
+    module.exports.push 'phyla/bootstrap'
     module.exports.push 'phyla/core/users'
     module.exports.push 'phyla/core/yum'
 

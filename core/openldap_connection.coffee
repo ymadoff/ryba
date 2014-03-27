@@ -4,6 +4,7 @@ ldap = require 'ldapjs'
 ldap_client = require 'ldapjs/lib/client/client'
 
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 
 ###
 Connect

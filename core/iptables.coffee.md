@@ -1,9 +1,10 @@
 
-    module.exports = []
-
 # Iptables
 
 Administration tool for IPv4 packet filtering and NAT.
+
+    module.exports = []
+    module.exports.push 'phyla/bootstrap'
 
 ## Configuration
 

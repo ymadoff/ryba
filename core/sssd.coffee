@@ -1,6 +1,6 @@
 
 module.exports = []
-
+module.exports.push 'phyla/bootstrap'
 module.exports.push 'phyla/core/yum'
 module.exports.push 'phyla/core/openldap_client'
 

@@ -3,6 +3,7 @@
     semver = require 'semver'
     url = require 'url'
     module.exports = []
+    module.exports.push 'phyla/bootstrap'
 
 # Java
 

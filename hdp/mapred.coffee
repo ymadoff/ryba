@@ -3,7 +3,7 @@ url = require 'url'
 mkcmd = require './lib/mkcmd'
 
 module.exports = []
-
+module.exports.push 'phyla/bootstrap'
 module.exports.push 'phyla/core/yum'
 module.exports.push 'phyla/hdp/hdfs'
 

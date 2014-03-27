@@ -1,6 +1,7 @@
 
 lifecycle = require './lib/lifecycle'
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 
 module.exports.push (ctx) ->
   require('./mapred').configure ctx

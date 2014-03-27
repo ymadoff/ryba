@@ -1,10 +1,11 @@
 
-    module.exports = []
-    module.exports.push 'phyla/core/yum'
-
 # GCC
 
 GNU project C and C++ compiler.
+
+    module.exports = []
+    module.exports.push 'phyla/bootstrap'
+    module.exports.push 'phyla/core/yum'
 
 ## Install
 

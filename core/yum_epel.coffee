@@ -1,5 +1,6 @@
 
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 module.exports.push 'phyla/core/curl'
 
 module.exports.push (ctx) ->

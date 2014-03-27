@@ -7,6 +7,7 @@ OpenLDAP Kerberos
 ldap = require 'ldapjs'
 misc = require 'mecano/lib/misc'
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 
 ###
 Configuration

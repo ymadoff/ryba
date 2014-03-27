@@ -5,7 +5,8 @@ Modify the various network related configuration files such as
 "/etc/hosts" and "/etc/resolv.conf".
 
     misc = require 'mecano/lib/misc'
-    network = module.exports = []
+    module.exports = []
+    module.exports.push 'phyla/bootstrap'
 
 # Configuration
 
@@ -35,7 +36,7 @@ Example:
 }
 ```
 
-    network.push (ctx) ->
+    module.exports.push (ctx) ->
       ctx.config.network ?= {}
       ctx.config.network.hosts_disabled ?= false
       ctx.config.network.hosts_auto ?= false
@@ -48,7 +49,7 @@ enriched with the cluster hostname if the property "network.hosts_auto" is
 set. Set the "network.hosts_disabled" to "true" if you dont wish to overwrite
 this file.
 
-    network.push name: 'Network # Hosts', callback: (ctx, next) ->
+    module.exports.push name: 'Network # Hosts', callback: (ctx, next) ->
       {hosts, hosts_auto, hosts_disabled} = ctx.config.network
       return next() if hosts_disabled
       content = ''
@@ -68,7 +69,7 @@ this file.
 Declare the server hostname. On CentOs like system, the 
 relevant file is "/etc/sysconfig/network".
 
-    network.push name: 'Network # Hostname', callback: (ctx, next) ->
+    module.exports.push name: 'Network # Hostname', callback: (ctx, next) ->
       ctx.write
         match: /^HOSTNAME=.*/mg
         replace: "HOSTNAME=#{ctx.config.host}"
@@ -91,7 +92,7 @@ is a set of routines in the C library that provide
 access to the Internet Domain Name System (DNS). The
 configuration file is considered a trusted source of DNS information
 
-    network.push name: 'Network # DNS Resolver', callback: (ctx, next) ->
+    module.exports.push name: 'Network # DNS Resolver', callback: (ctx, next) ->
       {resolv} = ctx.config.network
       return next null, ctx.INAPPLICABLE unless resolv
       # nameservers = []

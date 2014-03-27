@@ -4,6 +4,7 @@ mkcmd = require './lib/mkcmd'
 lifecycle = require './lib/lifecycle'
 
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 module.exports.push 'phyla/core/nc'
 module.exports.push 'phyla/hdp/hive_'
 module.exports.push 'phyla/hdp/mapred_client'
@@ -19,7 +20,7 @@ Example of a minimal client configuration:
   </property>
   <property>
     <name>hive.metastore.kerberos.principal</name>
-    <value>hive/_HOST@EDF.FR</value>
+    <value>hive/_HOST@ADALTAS.COM</value>
   </property>
   <property>
     <name>hive.metastore.sasl.enabled</name>

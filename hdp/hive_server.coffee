@@ -5,7 +5,7 @@ mkcmd = require './lib/mkcmd'
 lifecycle = require './lib/lifecycle'
 mkcmd = require './lib/mkcmd'
 module.exports = []
-
+module.exports.push 'phyla/bootstrap'
 # Install the mysql connector
 module.exports.push 'phyla/utils/mysql_client'
 # Deploy the HDP repository

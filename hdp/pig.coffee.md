@@ -9,6 +9,7 @@ which in turns enables them to handle very large data sets.
 
     mkcmd = require './lib/mkcmd'
     module.exports = []
+    module.exports.push 'phyla/bootstrap'
     module.exports.push 'phyla/core/nc'
     module.exports.push 'phyla/hdp/mapred_client'
     module.exports.push 'phyla/hdp/yarn_client'

@@ -6,8 +6,8 @@ Install the MySQL command-line tool.
 ###
 mecano = require 'mecano'
 module.exports = []
-
 module.exports.push 'phyla/core/yum'
+module.exports.push 'phyla/bootstrap'
 
 ###
 Package

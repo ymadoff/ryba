@@ -4,7 +4,7 @@ lifecycle = require './lib/lifecycle'
 mkcmd = require './lib/mkcmd'
 
 module.exports = []
-
+module.exports.push 'phyla/bootstrap'
 module.exports.push 'phyla/utils/mysql_client'
 module.exports.push 'phyla/hdp/core'
 

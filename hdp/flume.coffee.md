@@ -7,6 +7,7 @@ architecture based on streaming data flows. It is robust and fault tolerant with
 tunable reliability mechanisms and many failover and recovery mechanisms.
 
     module.exports = []
+    module.exports.push 'phyla/bootstrap'
 
 ## Configure
 

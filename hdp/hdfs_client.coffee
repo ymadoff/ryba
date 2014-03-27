@@ -2,6 +2,7 @@
 hdfs_nn = require './hdfs_nn'
 mkcmd = require './lib/mkcmd'
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 module.exports.push 'phyla/hdp/core'
 
 module.exports.push (ctx) ->

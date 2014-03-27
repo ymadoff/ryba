@@ -6,6 +6,7 @@ each = require 'each'
 hconfigure = require './lib/hconfigure'
 
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 module.exports.push 'phyla/core/yum'
 module.exports.push 'phyla/core/krb5_client' #kadmin must be present
 module.exports.push 'phyla/utils/java'

@@ -359,6 +359,7 @@ ldapsearch -Y EXTERNAL -H ldapi:/// -b dc=adaltas,dc=com
 ###
 path = require 'path'
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 
 module.exports.push 'phyla/core/openldap_server'
 # We cant require openldap_client here, since it will deploy 

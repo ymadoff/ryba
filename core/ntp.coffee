@@ -1,9 +1,9 @@
 
 quote = require 'regexp-quote'
 
-ntp = module.exports = []
-
-ntp.push 'phyla/core/yum'
+module.exports = []
+module.exports.push 'phyla/bootstrap'
+module.exports.push 'phyla/core/yum'
 
 ###
 Command `ntpq -p` should print:   
@@ -14,7 +14,7 @@ Command `ntpq -p` should print:
 *ntp2.domain.com     192.168.0.178     5 u  213  256  377    0.391   -2.409   2.785
 ```
 ###
-ntp.push (ctx) ->
+module.exports.push (ctx) ->
   ctx.config.ntp ?= {}
   ctx.config.ntp.servers ?= ['pool.ntp.org']
   ctx.config.ntp.lag ?= 2000
@@ -26,7 +26,7 @@ Installation
 Follow the procedure published on 
 "http://www.cyberciti.biz/faq/howto-install-ntp-to-synchronize-server-clock/".
 ###
-ntp.push name: 'NTP # Install', timeout: -1, callback: (ctx, next) -> 
+module.exports.push name: 'NTP # Install', timeout: -1, callback: (ctx, next) -> 
   ctx.log 'Install the NTP service and turn on the service'
   ctx.service
     name: 'ntp'
@@ -45,7 +45,7 @@ ntp.push name: 'NTP # Install', timeout: -1, callback: (ctx, next) ->
     , (err) ->
       next err, ctx.OK
 
-ntp.push name: 'NTP # Configure', callback: (ctx, next) ->
+module.exports.push name: 'NTP # Configure', callback: (ctx, next) ->
   write = []
   write.push
     match: /^(server [\d]+.*$)/mg
@@ -69,7 +69,7 @@ ntp.push name: 'NTP # Configure', callback: (ctx, next) ->
     , (err) ->
       next err, ctx.OK
 
-ntp.push name: 'NTP # Start', timeout: -1, callback: (ctx, next) -> 
+module.exports.push name: 'NTP # Start', timeout: -1, callback: (ctx, next) -> 
   ctx.log "Start the NTP service"
   ctx.service
     name: 'ntp'
@@ -78,7 +78,7 @@ ntp.push name: 'NTP # Start', timeout: -1, callback: (ctx, next) ->
   , (err, serviced) ->
     next err, if serviced then ctx.OK else ctx.PASS
 
-ntp.push name: 'NTP # Check', callback: (ctx, next) ->
+module.exports.push name: 'NTP # Check', callback: (ctx, next) ->
   {lag} = ctx.config.ntp
   ctx.execute
     cmd: "date +%s"

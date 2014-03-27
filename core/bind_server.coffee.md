@@ -3,6 +3,7 @@
     each = require 'each'
     quote = require 'regexp-quote'
     module.exports = []
+    module.exports.push 'phyla/bootstrap'
     module.exports.push 'phyla/core/yum'
     module.exports.push 'phyla/core/iptables'
 

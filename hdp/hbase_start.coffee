@@ -1,5 +1,6 @@
 
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 
 # ###
 # Start HBase Master

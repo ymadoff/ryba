@@ -1,5 +1,6 @@
 
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 
 module.exports.push 'phyla/hdp/oozie_'
 module.exports.push 'phyla/core/nc'

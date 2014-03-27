@@ -1,7 +1,7 @@
 
 lifecycle = require './lib/lifecycle'
 module.exports = []
-
+module.exports.push 'phyla/bootstrap'
 module.exports.push 'phyla/hdp/yarn'
 
 module.exports.push (ctx) ->

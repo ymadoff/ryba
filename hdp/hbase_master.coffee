@@ -2,7 +2,7 @@
 lifecycle = require './lib/lifecycle'
 mkcmd = require './lib/mkcmd'
 module.exports = []
-
+module.exports.push 'phyla/bootstrap'
 module.exports.push 'phyla/hdp/hdfs'
 module.exports.push 'phyla/hdp/zookeeper'
 module.exports.push 'phyla/hdp/hbase'

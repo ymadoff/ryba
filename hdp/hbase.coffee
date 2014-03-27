@@ -1,7 +1,7 @@
 
 hproperties = require './lib/properties'
 module.exports = []
-
+module.exports.push 'phyla/bootstrap'
 module.exports.push 'phyla/core/yum'
 
 module.exports.push module.exports.configure = (ctx) ->

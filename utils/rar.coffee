@@ -2,6 +2,7 @@
 url = require 'url'
 
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 
 module.exports.push (ctx) ->
   require('../core/proxy').configure ctx

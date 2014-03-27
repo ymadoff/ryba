@@ -5,6 +5,7 @@ Ganglia Collector is the server which recieve data collected on each
 host by the Ganglia Monitor agents.
 
     module.exports = []
+    module.exports.push 'phyla/bootstrap'
     module.exports.push 'phyla/core/yum'
 
 ## Configuration

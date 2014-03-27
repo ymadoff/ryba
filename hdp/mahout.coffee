@@ -1,5 +1,6 @@
 
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 
 ###
 http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.1/bk_installing_manually_book/content/rpm-chap5-1.html

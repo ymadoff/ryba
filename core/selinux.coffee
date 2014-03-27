@@ -6,6 +6,7 @@ Security-Enhanced Linux (SELinux) is a mandatory access control (MAC) security m
 ###
 
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 
 ###
 Configuration

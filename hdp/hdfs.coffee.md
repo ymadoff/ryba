@@ -12,6 +12,7 @@ In its current state, we are only supporting the installation of a
 
     url = require 'url'
     module.exports = []
+    module.exports.push 'phyla/bootstrap'
     module.exports.push 'phyla/core/yum'
     module.exports.push 'phyla/hdp/core'
 

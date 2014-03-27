@@ -7,6 +7,7 @@ Users
 A module to create and manage unix users.
 ###
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 
 ###
 Configuration

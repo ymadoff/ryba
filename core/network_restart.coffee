@@ -1,5 +1,6 @@
 
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 
 module.exports.push name: 'Network # restart', callback: (ctx, next) ->
   ctx.execute

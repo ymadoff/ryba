@@ -2,6 +2,7 @@
 {merge} = require 'mecano/lib/misc'
 properties = require './lib/properties'
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 
 module.exports.push module.exports.configure = (ctx) ->
   require('./yarn').configure ctx

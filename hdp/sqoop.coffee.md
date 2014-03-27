@@ -12,6 +12,7 @@ driver used by Sqoop.
 
     path = require 'path'
     module.exports = []
+    module.exports.push 'phyla/bootstrap'
     module.exports.push 'phyla/utils/mysql_client'
 
 ## Configuration

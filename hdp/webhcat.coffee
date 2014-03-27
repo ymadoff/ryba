@@ -3,6 +3,7 @@ lifecycle = require './lib/lifecycle'
 mkcmd = require './lib/mkcmd'
 
 module.exports = []
+module.exports.push 'phyla/bootstrap'
 
 ###
 https://cwiki.apache.org/confluence/display/Hive/WebHCat+InstallWebHCat

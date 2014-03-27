@@ -1,7 +1,10 @@
 
 mecano = require 'mecano'
 
-module.exports = name: 'Telnet', callback: (ctx, next) ->
+module.exports = []
+module.exports.push 'phyla/bootstrap'
+
+module.exports.push name: 'Telnet', callback: (ctx, next) ->
   ctx.service
     name: 'telnet'
   , (err, serviced) ->

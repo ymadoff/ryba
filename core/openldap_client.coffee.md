@@ -3,7 +3,7 @@
     each = require 'each'
     {merge} = require 'mecano/lib/misc'
     module.exports = []
-
+    module.exports.push 'phyla/bootstrap'
     module.exports.push 'phyla/core/yum'
     module.exports.push 'phyla/core/nc'
 

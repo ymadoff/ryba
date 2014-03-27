@@ -5,7 +5,7 @@ OpenLDAP ACL
 ###
 
 module.exports = []
-
+module.exports.push 'phyla/bootstrap'
 module.exports.push 'phyla/core/openldap_server'
 
 module.exports.push (ctx, next) ->

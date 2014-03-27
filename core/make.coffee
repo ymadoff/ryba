@@ -8,7 +8,7 @@ This action does not use any configuration.
 ###
 
 module.exports = []
-
+module.exports.push 'phyla/bootstrap'
 module.exports.push 'phyla/core/yum'
 
 ###
