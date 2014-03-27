@@ -24,7 +24,7 @@ Is similiar to:
   , (err, executed) ->
     ...
 ###
-module.exports.push name: 'Bootstrap # Mecano', timeout: -1, callback:  (ctx, next) ->
+module.exports.push name: 'Bootstrap # Mecano', required: true, timeout: -1, callback:  (ctx, next) ->
   ctx.cache.get ['mecano:installed', 'mecano:updates'], (err, cache) ->
     m = (action, options) ->
       options.ssh = ctx.ssh if typeof options.ssh is 'undefined'

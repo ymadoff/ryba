@@ -5,7 +5,7 @@ connect = require 'superexec/lib/connect'
 
 module.exports = []
 
-module.exports.push name: 'Bootstrap # Utils', callback: (ctx) ->
+module.exports.push name: 'Bootstrap # Utils', required: true, callback: (ctx) ->
   ctx.reboot = (callback) ->
     attempts = 0
     wait = ->

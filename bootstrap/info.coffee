@@ -8,7 +8,7 @@ Server Info
 ----
 Gather system information.
 ###
-module.exports.push name: 'Bootstrap # Server Info', callback: (ctx, next) ->
+module.exports.push name: 'Bootstrap # Server Info', required: true, callback: (ctx, next) ->
   mecano.exec
     ssh: ctx.ssh
     cmd: 'uname -snrvmo'

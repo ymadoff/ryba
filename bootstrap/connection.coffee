@@ -24,7 +24,7 @@ module.exports.push (ctx) ->
     ctx.config.bootstrap.public_key = [ctx.config.bootstrap.public_key]
   ctx.config.bootstrap.cmd ?= 'su -'
   
-module.exports.push name: 'Bootstrap # Connection', timeout: -1, callback: (ctx, next) ->
+module.exports.push name: 'Bootstrap # Connection', required: true, timeout: -1, callback: (ctx, next) ->
   {private_key} = ctx.config.bootstrap
   close = -> ctx.ssh?.end()
   ctx.run.on 'error', close
@@ -51,6 +51,7 @@ module.exports.push name: 'Bootstrap # Connection', timeout: -1, callback: (ctx,
       private_key: null # make sure "bootstap.private_key" isnt used by ssh2
       username: 'root'
       password: null
+      readyTimeout: 120 * 1000 # default to 10s, now 2mn
     connect config, (err, connection) ->
       if attempts isnt 0 and err and (err.code is 'ETIMEDOUT' or err.code is 'ECONNREFUSED')
         ctx.log 'Wait for reboot'

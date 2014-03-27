@@ -10,7 +10,7 @@ Log
 ----
 Gather system information
 ###
-module.exports.push name: 'Bootstrap # Log', callback: (ctx, next) ->
+module.exports.push name: 'Bootstrap # Log', required: true, callback: (ctx, next) ->
   mecano.mkdir
     destination: './logs'
   , (err, created) ->

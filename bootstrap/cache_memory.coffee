@@ -11,7 +11,7 @@ module.exports.push (ctx) ->
   ctx.config.bootstrap.cache ?= {}
   ctx.config.bootstrap.cache.location ?= "#{process.cwd()}/tmp"
 
-module.exports.push name: 'Bootstrap # File Cache', callback: (ctx, next) ->
+module.exports.push name: 'Bootstrap # File Cache', required: true, callback: (ctx, next) ->
   db = {}
   ctx.cache =
     # Whether a key has been previously loaded
