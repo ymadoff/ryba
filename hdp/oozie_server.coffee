@@ -191,8 +191,8 @@ module.exports.push name: 'HDP Oozie Server # Configuration', callback: (ctx, ne
   do_oozie_site()
 
 module.exports.push name: 'HDP Oozie Server # Kerberos', callback: (ctx, next) ->
-  {oozie_user, hadoop_group, oozie_site} = ctx.config.hdp
-  {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5_client
+  {oozie_user, hadoop_group, oozie_site, realm} = ctx.config.hdp
+  {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
   ctx.krb5_addprinc
     principal: oozie_site['oozie.service.HadoopAccessorService.kerberos.principal'].replace '_HOST', ctx.config.host
     randkey: true
