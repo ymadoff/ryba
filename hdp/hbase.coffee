@@ -8,8 +8,7 @@ module.exports.push module.exports.configure = (ctx) ->
   return if ctx.hbase_configured
   ctx.hbase_configured = true
   require('./core').configure ctx
-  {realm} = ctx.config.krb5_client
-  {static_host} = ctx.config.hdp
+  {static_host, realm} = ctx.config.hdp
   zookeeper_hosts = ctx.hosts_with_module('phyla/hdp/zookeeper').join ','
   ctx.config.hdp.hbase_user ?= 'hbase'
   ctx.config.hdp.hbase_conf_dir ?= '/etc/hbase/conf'

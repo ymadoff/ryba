@@ -27,8 +27,8 @@ module.exports.push name: 'HDP HBase Master # HDFS layout', callback: (ctx, next
 # https://blogs.apache.org/hbase/entry/hbase_cell_security
 # https://hbase.apache.org/book/security.html
 module.exports.push name: 'HDP HBase Master # Kerberos', callback: (ctx, next) ->
-  {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
-  {hadoop_group, hbase_user, hbase_site} = ctx.config.hdp
+  {hadoop_group, hbase_user, hbase_site, realm} = ctx.config.hdp
+  {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
   ctx.krb5_addprinc
     principal: hbase_site['hbase.master.kerberos.principal'].replace '_HOST', ctx.config.host
     randkey: true
@@ -37,7 +37,7 @@ module.exports.push name: 'HDP HBase Master # Kerberos', callback: (ctx, next) -
     gid: hadoop_group
     kadmin_principal: kadmin_principal
     kadmin_password: kadmin_password
-    kadmin_server: kadmin_server
+    kadmin_server: admin_server
   , (err, created) ->
     next err, if created then ctx.OK else ctx.PASS
 

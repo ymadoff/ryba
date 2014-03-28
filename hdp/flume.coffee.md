@@ -48,8 +48,8 @@ usage. It is placed inside the flume configuration directory, by default
 "/etc/flume/conf/flume.service.keytab" with restrictive permissions set to "0600".
 
     module.exports.push name: 'HDP Flume # Kerberos', callback: (ctx, next) ->
-      {flume_user, flume_group, flume_conf_dir} = ctx.config.hdp
-      {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
+      {flume_user, flume_group, flume_conf_dir, realm} = ctx.config.hdp
+      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
         principal: "hue/#{ctx.config.host}@#{realm}"
         randkey: true
@@ -59,7 +59,7 @@ usage. It is placed inside the flume configuration directory, by default
         mode: 0o600
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
-        kadmin_server: kadmin_server
+        kadmin_server: admin_server
       , (err, created) ->
         next err, if created then ctx.OK else ctx.PASS
 

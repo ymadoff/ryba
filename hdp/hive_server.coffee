@@ -72,8 +72,8 @@ module.exports.push name: 'HDP Hive & HCat server # Driver', callback: (ctx, nex
     return next err, if configured then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP Hive & HCat server # Kerberos', callback: (ctx, next) ->
-  {hive_user, hive_group, hive_site} = ctx.config.hdp
-  {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
+  {hive_user, hive_group, hive_site, realm} = ctx.config.hdp
+  {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
   modified = false
   do_metastore = ->
     ctx.krb5_addprinc
@@ -84,7 +84,7 @@ module.exports.push name: 'HDP Hive & HCat server # Kerberos', callback: (ctx, n
       gid: hive_group
       kadmin_principal: kadmin_principal
       kadmin_password: kadmin_password
-      kadmin_server: kadmin_server
+      kadmin_server: admin_server
     , (err, created) ->
       return next err if err
       modified = true if created
@@ -99,7 +99,7 @@ module.exports.push name: 'HDP Hive & HCat server # Kerberos', callback: (ctx, n
       gid: hive_group
       kadmin_principal: kadmin_principal
       kadmin_password: kadmin_password
-      kadmin_server: kadmin_server
+      kadmin_server: admin_server
     , (err, created) ->
       return next err if err
       modified = true if created

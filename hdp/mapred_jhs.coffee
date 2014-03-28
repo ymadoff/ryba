@@ -9,8 +9,7 @@ module.exports.push (ctx) ->
   require('./mapred').configure ctx
 
 module.exports.push name: 'HDP MapRed JHS # Kerberos', callback: (ctx, next) ->
-  {hadoop_conf_dir, static_host} = ctx.config.hdp
-  {realm} = ctx.config.krb5_client
+  {hadoop_conf_dir, static_host, realm} = ctx.config.hdp
   mapred = {}
   mapred['mapreduce.jobhistory.keytab'] ?= "/etc/security/keytabs/jhs.service.keytab"
   mapred['mapreduce.jobhistory.principal'] ?= "jhs/#{static_host}@#{realm}"
@@ -51,8 +50,8 @@ module.exports.push name: 'HDP MapRed JHS # HDFS layout', callback: (ctx, next) 
   do_jobhistory_server()
 
 module.exports.push name: 'HDP MapRed JHS # Kerberos', callback: (ctx, next) ->
-  {mapred_user} = ctx.config.hdp
-  {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
+  {mapred_user, realm} = ctx.config.hdp
+  {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
   ctx.krb5_addprinc 
     principal: "jhs/#{ctx.config.host}@#{realm}"
     randkey: true
@@ -61,7 +60,7 @@ module.exports.push name: 'HDP MapRed JHS # Kerberos', callback: (ctx, next) ->
     gid: 'hadoop'
     kadmin_principal: kadmin_principal
     kadmin_password: kadmin_password
-    kadmin_server: kadmin_server
+    kadmin_server: admin_server
   , (err, created) ->
     return next err if err
     next null, if created then ctx.OK else ctx.PASS

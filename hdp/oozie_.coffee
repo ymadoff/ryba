@@ -7,11 +7,9 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.oozie__configured = true
   require('./core').configure ctx
   oozie_server = ctx.host_with_module 'phyla/hdp/oozie_server'
-  {realm} = ctx.config.krb5_client
+  {realm} = ctx.config.hdp
   ctx.config.hdp.oozie_port ?= 11000
   ctx.config.hdp.oozie_user ?= 'oozie'
-  # ctx.config.hdp.oozie_test_principal ?= "oozietest@#{realm}"
-  # ctx.config.hdp.oozie_test_password ?= "ooziepass"
   ctx.config.hdp.oozie_test_principal ?= "test@#{realm}"
   ctx.config.hdp.oozie_test_password ?= "test123"
   ctx.config.hdp.oozie_conf_dir ?= '/etc/oozie/conf'

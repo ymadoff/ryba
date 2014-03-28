@@ -10,8 +10,8 @@ module.exports.push (ctx) ->
   require('./yarn').configure ctx
 
 module.exports.push name: 'HDP YARN NM # Kerberos', callback: (ctx, next) ->
-  {yarn_user} = ctx.config.hdp
-  {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
+  {yarn_user, realm} = ctx.config.hdp
+  {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
   ctx.krb5_addprinc 
     principal: "nm/#{ctx.config.host}@#{realm}"
     randkey: true
@@ -20,7 +20,7 @@ module.exports.push name: 'HDP YARN NM # Kerberos', callback: (ctx, next) ->
     gid: 'hadoop'
     kadmin_principal: kadmin_principal
     kadmin_password: kadmin_password
-    kadmin_server: kadmin_server
+    kadmin_server: admin_server
   , (err, created) ->
     return next err if err
     next null, if created then ctx.OK else ctx.PASS

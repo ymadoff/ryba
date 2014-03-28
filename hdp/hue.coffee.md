@@ -286,8 +286,8 @@ the "/etc/hue/conf/hue.ini" configuration file, all the composants myst be tagge
 the "security_enabled" property set to "true".
 
     module.exports.push name: 'HDP Hue # Kerberos', callback: (ctx, next) ->
-      {hue_user, hue_group, hue_conf_dir} = ctx.config.hdp
-      {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
+      {hue_user, hue_group, hue_conf_dir, realm} = ctx.config.hdp
+      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       principal = "hue/#{ctx.config.host}@#{realm}"
       modified = false
       do_addprinc = ->
@@ -299,7 +299,7 @@ the "security_enabled" property set to "true".
           gid: hue_group
           kadmin_principal: kadmin_principal
           kadmin_password: kadmin_password
-          kadmin_server: kadmin_server
+          kadmin_server: admin_server
         , (err, created) ->
           return next err if err
           modified = true if created

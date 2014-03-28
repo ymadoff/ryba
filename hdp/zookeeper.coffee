@@ -129,7 +129,8 @@ module.exports.push name: 'HDP ZooKeeper # Configure', callback: (ctx, next) ->
   do_zoo_cfg()
 
 module.exports.push name: 'HDP ZooKeeper # Kerberos', callback: (ctx, next) ->
-  {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
+  {realm} = ctx.config.hdp
+  {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
   ctx.krb5_addprinc
     principal: "zookeeper/#{ctx.config.host}@#{realm}"
     randkey: true
@@ -138,7 +139,7 @@ module.exports.push name: 'HDP ZooKeeper # Kerberos', callback: (ctx, next) ->
     gid: 'hadoop'
     kadmin_principal: kadmin_principal
     kadmin_password: kadmin_password
-    kadmin_server: kadmin_server
+    kadmin_server: admin_server
   , (err, created) ->
     next err, if created then ctx.OK else ctx.PASS
 

@@ -54,58 +54,6 @@ Example:
     module.exports.push module.exports.configure = (ctx) ->
       require('./krb5_server').configure ctx
       require('./nc').configure ctx
-      {etc_krb5_conf} = ctx.config.krb5
-      # # Generate a client krb5 realm in case a krb5 server is defined
-      # # inside a server configuration
-      # krb5_servers = ctx.hosts_with_module "phyla/core/krb5_server"
-      # for krb5_server in krb5_servers
-      #   require('./krb5_server').configure ctx.hosts[krb5_server]
-      #   {realms} = ctx.hosts[krb5_server].config.krb5.etc_krb5_conf
-      #   for realm, config of realms
-      #     etc_krb5_conf.realms[realm] ?= {}
-      #     etc_krb5_conf.realms[realm].kdc ?= config.kdc
-      #     etc_krb5_conf.realms[realm].admin_server ?= config.admin_server
-      #     etc_krb5_conf.realms[realm].default_domain ?= config.default_domain
-
-
-
-      # {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5
-      # throw new Error "Kerberos property kadmin_principal is required" unless kadmin_principal
-      # throw new Error "Kerberos property kadmin_password is required" unless kadmin_password
-      # throw new Error "Kerberos property kadmin_server is required" unless kadmin_server
-      # throw new Error "Kerberos property realm is required" unless realm
-      # ctx.config.krb5.realm = ctx.config.krb5.realm.toUpperCase()
-      # unless ctx.config.krb5.etc_krb5_conf
-      #   REALM = ctx.config.krb5.realm
-      #   realm = REALM.toLowerCase()
-      #   etc_krb5_conf =
-      #     'logging':
-      #       'default': 'SYSLOG:INFO:LOCAL1'
-      #       'kdc': 'SYSLOG:NOTICE:LOCAL1'
-      #       'admin_server': 'SYSLOG:WARNING:LOCAL1'
-      #     'libdefaults': 
-      #       'default_realm': REALM
-      #       'dns_lookup_realm': false
-      #       'dns_lookup_kdc': false
-      #       'ticket_lifetime': '24h'
-      #       'renew_lifetime': '7d'
-      #       'forwardable': true
-      #     'realms': {}
-      #     'domain_realm': {}
-      #     'appdefaults':
-      #       'pam':
-      #         'debug': false
-      #         'ticket_lifetime': 36000
-      #         'renew_lifetime': 36000
-      #         'forwardable': true
-      #         'krb4_convert': false
-      #   etc_krb5_conf.realms["#{REALM}"] = 
-      #     'kdc': ctx.config.krb5.kdc or realm
-      #     'admin_server': ctx.config.krb5.kadmin_server or realm
-      #     'default_domain': ctx.config.krb5.default_domain or realm
-      #   etc_krb5_conf.domain_realm[".#{realm}"] = REALM
-      #   etc_krb5_conf.domain_realm["#{realm}"] = REALM
-      #   ctx.config.krb5.etc_krb5_conf = etc_krb5_conf
       ctx.config.krb5.sshd ?= {}
       ctx.config.krb5.sshd = misc.merge
         ChallengeResponseAuthentication: 'yes'

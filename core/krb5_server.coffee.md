@@ -131,17 +131,16 @@ Example:
           'manager_dn': manager_dn
           'manager_password': manager_password
         , etc_krb5_conf.dbmodules[name]
-
       # Merge global with server-based configuration
       krb5_server_hosts = ctx.hosts_with_module "phyla/core/krb5_server"
       for krb5_server_host in krb5_server_hosts
-        {realms} = ctx.hosts[krb5_server_host].config.krb5.etc_krb5_conf
+        {realms} = misc.merge {}, ctx.hosts[krb5_server_host].config.krb5.etc_krb5_conf
         for realm, config of realms
+          delete config.database_module
           realms[realm].kdc ?= krb5_server_host
           realms[realm].admin_server ?= krb5_server_host
           realms[realm].default_domain ?= realm.toLowerCase()
         misc.merge etc_krb5_conf.realms, realms
-
       for realm, config of etc_krb5_conf.realms
         # Check if realm point to a database_module
         if config.database_module
@@ -191,12 +190,17 @@ Example:
       for realm, config of kdc_conf.realms
         kdc_conf.realms[realm] = misc.merge
           '#master_key_type': 'aes256-cts'
-          'default_principal_flags': 'preauth'
+          'default_principal_flags': '+preauth'
           'acl_file': '/var/kerberos/krb5kdc/kadm5.acl'
           'dict_file': '/usr/share/dict/words'
           'admin_keytab': '/var/kerberos/krb5kdc/kadm5.keytab'
           'supported_enctypes': 'aes256-cts:normal aes128-cts:normal des3-hmac-sha1:normal arcfour-hmac:normal des-hmac-sha1:normal des-cbc-md5:normal des-cbc-crc:normal'
         , config
+      # console.log etc_krb5_conf
+      # console.log ''
+      # console.log ''
+      # console.log ''
+      # console.log ''
 
     module.exports.push name: 'Krb5 Server # LDAP Install', timeout: -1, callback: (ctx, next) ->
       ctx.service

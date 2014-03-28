@@ -11,8 +11,8 @@ module.exports.push (ctx) ->
   require('./hbase').configure
 
 module.exports.push name: 'HDP HBase RegionServer # Kerberos', timeout: -1, callback: (ctx, next) ->
-  {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
-  {hadoop_group, hbase_user, hbase_site} = ctx.config.hdp
+  {hadoop_group, hbase_user, hbase_site, realm} = ctx.config.hdp
+  {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
   ctx.krb5_addprinc
     principal: hbase_site['hbase.regionserver.kerberos.principal'].replace '_HOST', ctx.config.host
     randkey: true
@@ -21,7 +21,7 @@ module.exports.push name: 'HDP HBase RegionServer # Kerberos', timeout: -1, call
     gid: hadoop_group
     kadmin_principal: kadmin_principal
     kadmin_password: kadmin_password
-    kadmin_server: kadmin_server
+    kadmin_server: admin_server
   , (err, created) ->
     next err, if created then ctx.OK else ctx.PASS
 

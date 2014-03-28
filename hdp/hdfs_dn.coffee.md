@@ -71,8 +71,8 @@ keytab inside "/etc/security/keytabs/dn.service.keytab" with ownerships set to "
 and permissions set to "0600".
 
     module.exports.push name: 'HDP HDFS DN # Kerberos', timeout: -1, callback: (ctx, next) ->
-      {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
-      {hdfs_user, hdfs_group} = ctx.config.hdp
+      {hdfs_user, hdfs_group, realm} = ctx.config.hdp
+      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
         principal: "dn/#{ctx.config.host}@#{realm}"
         randkey: true
@@ -82,7 +82,7 @@ and permissions set to "0600".
         mode: 0o0600
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
-        kadmin_server: kadmin_server
+        kadmin_server: admin_server
       , (err, created) ->
         next err, if created then ctx.OK else ctx.PASS
 

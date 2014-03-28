@@ -60,7 +60,8 @@ Create a service principal for this NameNode. The principal is named after
 "nn/#{ctx.config.host}@#{realm}".
 
     module.exports.push name: 'HDP HDFS NN # Kerberos', callback: (ctx, next) ->
-      {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
+      {realm} = ctx.config.hdp
+      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
         principal: "nn/#{ctx.config.host}@#{realm}"
         randkey: true
@@ -69,7 +70,7 @@ Create a service principal for this NameNode. The principal is named after
         gid: 'hadoop'
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
-        kadmin_server: kadmin_server
+        kadmin_server: admin_server
       , (err, created) ->
         next err, if created then ctx.OK else ctx.PASS
 
@@ -80,14 +81,14 @@ filesystem. Note, we do not create a principal with a keytab to allow HDFS login
 from multiple sessions with braking an active session.
 
     module.exports.push name: 'HDP HDFS NN # HDFS User', callback: (ctx, next) ->
-      {hdfs_user, hdfs_password} = ctx.config.hdp
-      {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
+      {hdfs_user, hdfs_password, realm} = ctx.config.hdp
+      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
         principal: "#{hdfs_user}@#{realm}"
         password: hdfs_password
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
-        kadmin_server: kadmin_server
+        kadmin_server: admin_server
       , (err, created) ->
         next err, if created then ctx.OK else ctx.PASS
 
@@ -345,7 +346,7 @@ afect HDFS metadata.
 
     # module.exports.push name: 'HDP HDFS NN # Test User', timeout: -1, callback: (ctx, next) ->
     #   {hdfs_user, test_user, test_password, hadoop_group, security} = ctx.config.hdp
-    #   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
+    #   {realm, kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5_client
     #   modified = false
     #   do_user = ->
     #     if security is 'kerberos'
@@ -366,7 +367,7 @@ afect HDFS metadata.
     #       password: "#{test_password}"
     #       kadmin_principal: kadmin_principal
     #       kadmin_password: kadmin_password
-    #       kadmin_server: kadmin_server
+    #       kadmin_server: admin_server
     #     , (err, created) ->
     #       return next err if err
     #       modified = true if created

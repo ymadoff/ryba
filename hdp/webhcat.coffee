@@ -17,7 +17,7 @@ module.exports.push module.exports.configure = (ctx) ->
   require('./hive_server').configure ctx
   require('./hdfs').configure ctx
   require('./zookeeper').configure ctx
-  {realm} = ctx.config.krb5_client
+  {realm} = ctx.config.hdp
   hive_host = ctx.host_with_module 'phyla/hdp/hive_server'
   zookeeper_hosts = ctx.hosts_with_module 'phyla/hdp/zookeeper_server'
   for server in ctx.config.servers

@@ -85,8 +85,7 @@ module.exports.push name: 'HDP Hive & HCat client # Check Metastore', timeout: -
       return next err, if executed then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP Hive & HCat client # Check Server2', timeout: -1, callback: (ctx, next) ->
-  {test_user, test_password, hive_server2_host, hive_server2_port} = ctx.config.hdp
-  {realm} = ctx.config.krb5_client
+  {realm, test_user, test_password, hive_server2_host, hive_server2_port} = ctx.config.hdp
   url = "jdbc:hive2://#{hive_server2_host}:#{hive_server2_port}/default;principal=hive/#{hive_server2_host}@#{realm}"
   query = (query) -> "/usr/lib/hive/bin/beeline -u \"#{url}\" -n #{test_user} -p #{test_password} -e \"#{query}\" "
   ctx.waitForConnection hive_server2_host, hive_server2_port, (err) ->

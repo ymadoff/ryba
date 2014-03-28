@@ -11,8 +11,7 @@ module.exports.push module.exports.configure = (ctx) ->
   return if ctx.yarn_configured
   ctx.yarn_configured = true
   require('./hdfs').configure ctx
-  {realm} = ctx.config.krb5_client
-  {static_host} = ctx.config.hdp
+  {static_host, realm} = ctx.config.hdp
   # Grab the host(s) for each roles
   resourcemanager = ctx.host_with_module 'phyla/hdp/yarn_rm'
   ctx.log "Resource manager: #{resourcemanager}"
@@ -243,8 +242,6 @@ module.exports.push name: 'HDP YARN # Tuning', callback: (ctx, next) ->
   next null, "TODO"
 
 module.exports.push name: 'HDP YARN # Keytabs Directory', timeout: -1, callback: (ctx, next) ->
-  {hdfs_user, yarn_user} = ctx.config.hdp
-  {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
   ctx.mkdir
     destination: '/etc/security/keytabs'
     uid: 'root'
@@ -254,8 +251,7 @@ module.exports.push name: 'HDP YARN # Keytabs Directory', timeout: -1, callback:
     next null, if created then ctx.OK else ctx.PASS
 
 module.exports.push name: 'HDP YARN # Configure Kerberos', callback: (ctx, next) ->
-  {realm} = ctx.config.krb5_client
-  {hadoop_conf_dir, static_host} = ctx.config.hdp
+  {hadoop_conf_dir, static_host, realm} = ctx.config.hdp
   yarn = {}
   # Todo: might need to configure WebAppProxy but I understood that it is run as part of rm if not configured separately
   # yarn.web-proxy.address    WebAppProxy                                   host:port for proxy to AM web apps. host:port if this is the same as yarn.resourcemanager.webapp.address or it is not defined then the ResourceManager will run the proxy otherwise a standalone proxy server will need to be launched.

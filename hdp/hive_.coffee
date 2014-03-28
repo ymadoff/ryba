@@ -9,8 +9,7 @@ module.exports.push module.exports.configure = (ctx) ->
   return if ctx.hive__configured
   ctx.hive__configured = true
   require('./core').configure ctx
-  {realm} = ctx.config.krb5_client
-  {static_host} = ctx.config.hdp
+  {static_host, realm} = ctx.config.hdp
   ctx.config.hdp.hive_conf_dir ?= '/etc/hive/conf'
   metastore_host = ctx.config.hdp.hive_metastore_host ?= ctx.host_with_module 'phyla/hdp/hive_server'
   ctx.config.hdp.hive_metastore_port ?= 9083

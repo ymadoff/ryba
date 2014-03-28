@@ -26,6 +26,8 @@ code.
 
 [tar]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap13.html
 
+hadoop org.apache.hadoop.security.HadoopKerberosName HTTP/master1.hadoop@HADOOP.ADALTAS.COM
+
 ###
 module.exports.push module.exports.configure = (ctx) ->
   return if ctx.core_configured
@@ -260,8 +262,7 @@ module.exports.push name: 'HDP Core # Compression', timeout: -1, callback: (ctx,
   do_snappy()
 
 module.exports.push name: 'HDP Core # Kerberos', timeout: -1, callback: (ctx, next) ->
-  {realm} = ctx.config.krb5_client
-  {hadoop_conf_dir} = ctx.config.hdp
+  {hadoop_conf_dir, realm} = ctx.config.hdp
   core_site = {}
   # Set the authentication for the cluster. Valid values are: simple or kerberos
   core_site['hadoop.security.authentication'] ?= 'kerberos'
@@ -335,8 +336,7 @@ This action follow the ["Authentication for Hadoop HTTP web-consoles"
 recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 ###
 module.exports.push  name: 'HDP Core # Kerberos Web UI', callback:(ctx, next) ->
-  {core_site} = ctx.config.hdp
-  {krb5_client, realm} = ctx.config.krb5_client
+  {core_site, realm} = ctx.config.hdp
   # Cluster domain
   unless core_site['hadoop.http.authentication.cookie.domain']
     domains = ctx.config.servers.map( (server) -> server.host.split('.').slice(1).join('.') ).filter( (el, pos, self) -> self.indexOf(el) is pos )

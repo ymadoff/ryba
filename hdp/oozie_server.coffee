@@ -24,8 +24,7 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
 module.exports.push module.exports.configure = (ctx) ->
   require('../utils/mysql_server').configure ctx
   require('./oozie_').configure ctx
-  {realm} = ctx.config.krb5_client
-  {static_host} = ctx.config.hdp
+  {static_host, realm} = ctx.config.hdp
   ctx.config.hdp.oozie_db_admin_username ?= ctx.config.mysql_server.username
   ctx.config.hdp.oozie_db_admin_password ?= ctx.config.mysql_server.password
   # dbhost = ctx.config.hdp.oozie_db_host ?= ctx.servers(action: 'phyla/utils/mysql_server')[0]
@@ -193,7 +192,7 @@ module.exports.push name: 'HDP Oozie Server # Configuration', callback: (ctx, ne
 
 module.exports.push name: 'HDP Oozie Server # Kerberos', callback: (ctx, next) ->
   {oozie_user, hadoop_group, oozie_site} = ctx.config.hdp
-  {kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
+  {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5_client
   ctx.krb5_addprinc
     principal: oozie_site['oozie.service.HadoopAccessorService.kerberos.principal'].replace '_HOST', ctx.config.host
     randkey: true
@@ -202,7 +201,7 @@ module.exports.push name: 'HDP Oozie Server # Kerberos', callback: (ctx, next) -
     gid: hadoop_group
     kadmin_principal: kadmin_principal
     kadmin_password: kadmin_password
-    kadmin_server: kadmin_server
+    kadmin_server: admin_server
   , (err, created) ->
     return next err if err
     next null, if created then ctx.OK else ctx.PASS
@@ -278,7 +277,7 @@ module.exports.push name: 'HDP Oozie Server # Start', callback: (ctx, next) ->
 # module.exports.push name: 'HDP Oozie Server # Test User', callback: (ctx, next) ->
 #   {oozie_user, hadoop_group, oozie_site
 #    oozie_test_principal, oozie_test_password} = ctx.config.hdp
-#   {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
+#   {realm, kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5_client
 #   ctx.krb5_addprinc
 #     principal: oozie_test_principal
 #     password: oozie_test_password
@@ -286,7 +285,7 @@ module.exports.push name: 'HDP Oozie Server # Start', callback: (ctx, next) ->
 #     gid: hadoop_group
 #     kadmin_principal: kadmin_principal
 #     kadmin_password: kadmin_password
-#     kadmin_server: kadmin_server
+#     kadmin_server: admin_server
 #   , (err, created) ->
 #     return next err if err
 #     ctx.execute

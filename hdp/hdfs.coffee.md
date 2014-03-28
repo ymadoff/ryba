@@ -256,8 +256,8 @@ and permissions set to "0660". We had to give read/write permission to the group
 same keytab file is for now shared between hdfs and yarn services.
 
     module.exports.push name: 'HDP HDFS # SPNEGO', callback: module.exports.spnego = (ctx, next) ->
-      {hdfs_user} = ctx.config.hdp
-      {realm, kadmin_principal, kadmin_password, kadmin_server} = ctx.config.krb5_client
+      {hdfs_user, realm} = ctx.config.hdp
+      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.mkdir
         destination: '/etc/security/keytabs'
         uid: 'root'
@@ -274,7 +274,7 @@ same keytab file is for now shared between hdfs and yarn services.
           mode: 0o660 # need rw access for hadoop and mapred users
           kadmin_principal: kadmin_principal
           kadmin_password: kadmin_password
-          kadmin_server: kadmin_server
+          kadmin_server: admin_server
         , (err, created) ->
           next err, if created then ctx.OK else ctx.PASS
 
@@ -284,8 +284,7 @@ Update the HDFS configuration stored inside the "/etc/hadoop/hdfs-site.xml" file
 with Kerberos specific properties.
 
     module.exports.push name: 'HDP HDFS # Kerberos Configure', callback: (ctx, next) ->
-      {realm} = ctx.config.krb5_client
-      {hadoop_conf_dir, static_host} = ctx.config.hdp
+      {hadoop_conf_dir, static_host, realm} = ctx.config.hdp
       secondary_namenode = ctx.hosts_with_module 'phyla/hdp/hdfs_snn', 1
       hdfs_site = {}
       # If "true", access tokens are used as capabilities
