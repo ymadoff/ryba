@@ -110,14 +110,14 @@ drwxr-xr-x   - hdfs   hadoop      /apps
 drwxrwxrwt   - hdfs   hadoop      /tmp
 drwxr-xr-x   - hdfs   hadoop      /user
 drwxr-xr-x   - hdfs   hadoop      /user/hdfs
-drwxr-xr-x   - test   hadoop      /user/test
 ```
 
     module.exports.push name: 'HDP HDFS DN # HDFS layout', timeout: -1, callback: (ctx, next) ->
-      {hadoop_group, hdfs_user, test_user, yarn, yarn_user} = ctx.config.hdp
+      {hadoop_group, hdfs_user, yarn, yarn_user} = ctx.config.hdp
+      # test_user, 
       modified = false
       do_wait = ->
-        ctx.waitForExecution mkcmd.test(ctx, "hdfs dfs -test -d /"), (err) ->
+        ctx.waitForExecution mkcmd.hdfs(ctx, "hdfs dfs -test -d /"), (err) ->
           return next err if err
           do_root()
       do_root = ->
@@ -151,10 +151,10 @@ drwxr-xr-x   - test   hadoop      /user/test
           hdfs dfs -mkdir /user/#{hdfs_user}
           hdfs dfs -chown #{hdfs_user}:#{hadoop_group} /user/#{hdfs_user}
           hdfs dfs -chmod 755 /user/#{hdfs_user}
-          hdfs dfs -mkdir /user/#{test_user}
-          hdfs dfs -chown #{test_user}:#{hadoop_group} /user/#{test_user}
-          hdfs dfs -chmod 755 /user/#{test_user}
           """
+          # hdfs dfs -mkdir /user/#{test_user}
+          # hdfs dfs -chown #{test_user}:#{hadoop_group} /user/#{test_user}
+          # hdfs dfs -chmod 755 /user/#{test_user}
           code_skipped: 1
         , (err, executed, stdout) ->
           return next err if err
@@ -176,6 +176,56 @@ drwxr-xr-x   - test   hadoop      /user/test
       do_end = ->
         next null, if modified then ctx.OK else ctx.PASS
       do_wait()
+
+## Test User
+
+Create a Unix and Kerberos test user, by default "test" and execute simple HDFS commands to ensure
+the NameNode is properly working. Note, those commands are NameNode specific, meaning they only
+afect HDFS metadata.
+
+    module.exports.push name: 'HDP HDFS NN # Test User', timeout: -1, callback: (ctx, next) ->
+      {hdfs_user, test_user, test_password, hadoop_group, security, realm} = ctx.config.hdp
+      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
+      modified = false
+      do_user = ->
+        if security is 'kerberos'
+        then do_user_krb5()
+        else do_user_unix()
+      do_user_unix = ->
+        ctx.execute
+          cmd: "useradd #{test_user} -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop to test\""
+          code: 0
+          code_skipped: 9
+        , (err, created) ->
+          return next err if err
+          modified = true if created
+          do_run()
+      do_user_krb5 = ->
+        ctx.krb5_addprinc
+          principal: "#{test_user}@#{realm}"
+          password: "#{test_password}"
+          kadmin_principal: kadmin_principal
+          kadmin_password: kadmin_password
+          kadmin_server: admin_server
+        , (err, created) ->
+          return next err if err
+          modified = true if created
+          do_run()
+      do_run = ->
+        # Carefull, this is a dupplicate of
+        # "HDP HDFS DN # HDFS layout"
+        ctx.execute
+          cmd: mkcmd.hdfs ctx, """
+          if hdfs dfs -test -d /user/#{test_user}; then exit 2; fi
+          hdfs dfs -mkdir /user/#{test_user}
+          hdfs dfs -chown #{test_user}:#{hadoop_group} /user/#{test_user}
+          hdfs dfs -chmod 755 /user/#{test_user}
+          """
+          code_skipped: 2
+        , (err, executed, stdout) ->
+          modified = true if executed
+          next err, if modified then ctx.OK else ctx.PASS
+      do_user()
 
 ## Test HDFS
 
