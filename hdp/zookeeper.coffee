@@ -149,6 +149,11 @@ module.exports.push name: 'HDP ZooKeeper # Start', timeout: -1, callback: (ctx, 
 
 ###
 todo: [Securing access to ZooKeeper](http://hadoop.apache.org/docs/r2.2.0/hadoop-yarn/hadoop-yarn-site/HDFSHighAvailabilityWithNFS.html)
+
+Resources:
+
+*   [ZooKeeper Resilience](http://blog.cloudera.com/blog/2014/03/zookeeper-resilience-at-pinterest/)
+
 ###
 
 
