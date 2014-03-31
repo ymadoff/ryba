@@ -1,3 +1,8 @@
+---
+title: NTP
+module: phyla/core/ntp
+layout: page
+---
 
 # NTP
 
