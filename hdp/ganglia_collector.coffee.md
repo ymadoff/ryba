@@ -1,3 +1,7 @@
+---
+title: Ganglia Collector
+layout: page
+---
 
 # Ganglia Collector
 

@@ -1,3 +1,8 @@
+---
+title: Iptables
+module: phyla/core/iptables
+layout: page
+---
 
 # Iptables
 

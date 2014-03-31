@@ -1,3 +1,7 @@
+---
+title: Sqoop
+layout: page
+---
 
 # Sqoop
 

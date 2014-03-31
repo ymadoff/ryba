@@ -1,3 +1,8 @@
+---
+title: Network
+module: phyla/core/network
+layout: page
+---
 
 # Network
 

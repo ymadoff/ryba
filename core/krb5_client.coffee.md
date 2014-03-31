@@ -1,4 +1,8 @@
-
+---
+title: Kerberos Client
+module: phyla/core/krb5_client
+layout: page
+---
 
 # Kerberos Client
 

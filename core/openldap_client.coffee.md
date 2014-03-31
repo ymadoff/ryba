@@ -1,3 +1,8 @@
+---
+title: OpenLDAP Client
+module: phyla/core/openldap_client
+layout: page
+---
 
     url = require 'url'
     each = require 'each'
@@ -92,6 +97,28 @@ mv cert.pem /etc/openldap/cacerts/$hash.0
       return next null, ctx.INAPPLICABLE unless suffix
       ctx.execute
         cmd: "ldapsearch -x -D #{root_dn} -w #{root_password} -b '#{suffix}'"
+      , (err, executed) ->
+        next err, ctx.PASS
+
+    module.exports.push name: 'OpenLDAP Client # PAM Services', callback: (ctx, next) ->
+      {suffix, root_dn, root_password} = ctx.config.openldap_server
+      return next null, ctx.INAPPLICABLE unless suffix
+      ctx.service [
+        name: 'nss-pam-ldapd'
+      ,
+        name: 'pam_ldap'
+      ]
+      , (err, executed) ->
+        next err, ctx.PASS
+
+    module.exports.push name: 'OpenLDAP Client # PAM Configuration', callback: (ctx, next) ->
+      {suffix, root_dn, root_password} = ctx.config.openldap_server
+      return next null, ctx.INAPPLICABLE unless suffix
+      ctx.service [
+        name: 'nss-pam-ldapd'
+      ,
+        name: 'pam_ldap'
+      ]
       , (err, executed) ->
         next err, ctx.PASS
 

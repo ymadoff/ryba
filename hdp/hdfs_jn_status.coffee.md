@@ -1,3 +1,7 @@
+---
+title: HDFS JournalNode Status
+layout: page
+---
 
 # HDFS JournalNode Status
 

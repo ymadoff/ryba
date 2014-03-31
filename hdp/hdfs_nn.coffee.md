@@ -1,3 +1,7 @@
+---
+title: HDP HDFS NameNode
+layout: page
+---
 
 # HDP HDFS NameNode
 

@@ -1,5 +1,10 @@
+---
+title: Kerberos with OpenLDAP Back-End
+module: phyla/core/krb5_server
+layout: page
+---
 
-## Kerberos KDC with OpenLDAP Back-End
+## Kerberos with OpenLDAP Back-End
 
 Usefull server commands:
 *   Backup the db: `kdb5_util dump /path/to/dumpfile`

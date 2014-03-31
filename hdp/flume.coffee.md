@@ -1,3 +1,7 @@
+---
+title: Flume
+layout: page
+---
 
 # Flume
 

@@ -1,3 +1,7 @@
+---
+title: HDFS DataNode Stop
+layout: page
+---
 
 # HDFS DataNode Stop
 

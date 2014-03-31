@@ -1,3 +1,8 @@
+---
+title: Bind server
+module: phyla/core/bind_server
+layout: page
+---
 
     path = require 'path'
     each = require 'each'

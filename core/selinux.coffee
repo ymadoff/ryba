@@ -1,12 +1,12 @@
 
+module.exports = []
+module.exports.push 'phyla/bootstrap'
+
 ###
 SELinux
 =======
 Security-Enhanced Linux (SELinux) is a mandatory access control (MAC) security mechanism implemented in the kernel.
 ###
-
-module.exports = []
-module.exports.push 'phyla/bootstrap'
 
 ###
 Configuration

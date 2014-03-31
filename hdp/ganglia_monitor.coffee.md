@@ -1,3 +1,7 @@
+---
+title: Ganglia Monitor
+layout: page
+---
 
 # Ganglia Monitor
 

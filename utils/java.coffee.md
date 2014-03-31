@@ -1,3 +1,7 @@
+---
+title: Java
+layout: page
+---
 
     path = require 'path'
     semver = require 'semver'

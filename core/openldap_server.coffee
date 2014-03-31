@@ -1,4 +1,11 @@
 
+each = require 'each'
+ldap = require 'ldapjs'
+module.exports = []
+module.exports.push 'phyla/bootstrap'
+module.exports.push 'phyla/core/yum'
+module.exports.push 'phyla/core/iptables'
+
 ###
 OpenLDAP
 ========
@@ -35,12 +42,6 @@ Resources:
   ... provide a script with just about everything
 
 ###
-each = require 'each'
-ldap = require 'ldapjs'
-module.exports = []
-module.exports.push 'phyla/bootstrap'
-module.exports.push 'phyla/core/yum'
-module.exports.push 'phyla/core/iptables'
 
 ###
 Configuration
@@ -67,6 +68,24 @@ module.exports.push module.exports.configure = (ctx) ->
   ctx.config.openldap_server.ldapadd ?= []
   ctx.config.openldap_server.ldapdelete ?= []
   ctx.config.openldap_server.tls ?= false
+  ctx.ldap_add = (ctx, content, callback) ->
+    {root_dn, root_password} = ctx.config.openldap_server
+    tmp = "/tmp/ldapadd_#{Date.now()}_#{Math.round(Math.random()*1000)/1000}"
+    ctx.write
+      content: content
+      destination: tmp
+    , (err, uploaded) ->
+      return callback err if err
+      ctx.execute
+        cmd: "ldapadd -c -H ldapi:/// -D #{root_dn} -w #{root_password} -f #{tmp}"
+        code_skipped: 68
+      , (err, executed, stdout, stderr) ->
+        return callback err if err
+        modified = true if stdout.match(/Already exists/g)?.length isnt stdout.match(/adding new entry/g).length
+        ctx.remove
+          destination: tmp
+        , (err, removed) ->
+          callback err, modified
 
 module.exports.push name: 'OpenLDAP Server # Install', timeout: -1, callback: (ctx, next) ->
   ctx.service [

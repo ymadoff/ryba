@@ -1,3 +1,7 @@
+---
+title: HDFS
+layout: page
+---
 
 # HDFS
 

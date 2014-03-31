@@ -1,3 +1,8 @@
+---
+title: SSH
+module: phyla/core/ssh
+layout: page
+---
 
 # SSH
 

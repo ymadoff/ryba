@@ -1,3 +1,7 @@
+---
+title: HDFS DataNode Status
+layout: page
+---
 
 # HDFS DataNode Status
 

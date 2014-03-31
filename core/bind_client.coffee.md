@@ -1,3 +1,8 @@
+---
+title: Bind Client
+module: phyla/core/bind_client
+layout: page
+---
 
     module.exports = []
     module.exports.push 'phyla/bootstrap'

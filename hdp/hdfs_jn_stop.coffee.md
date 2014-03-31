@@ -1,3 +1,7 @@
+---
+title: HDFS JournalNode Stop
+layout: page
+---
 
 # HDFS JournalNode Stop
 

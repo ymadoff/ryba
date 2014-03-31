@@ -1,4 +1,10 @@
 
+path = require 'path'
+each = require 'each'
+module.exports = []
+module.exports.push 'phyla/bootstrap'
+module.exports.push 'phyla/core/users'
+
 ###
 Proxy
 =====
@@ -7,12 +13,6 @@ Declare proxy related environment variables as well as
 providing configuration properties which other modules may use.
 
 ###
-
-path = require 'path'
-each = require 'each'
-module.exports = []
-module.exports.push 'phyla/bootstrap'
-module.exports.push 'phyla/core/users'
 
 ###
 Configuration

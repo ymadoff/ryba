@@ -1,3 +1,7 @@
+---
+title: Commons
+layout: page
+---
 
     module.exports = []
     module.exports.push 'phyla/core/network'

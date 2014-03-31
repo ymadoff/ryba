@@ -1,3 +1,8 @@
+---
+title: GCC
+module: phyla/core/gcc
+layout: page
+---
 
 # GCC
 

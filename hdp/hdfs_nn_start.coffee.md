@@ -1,3 +1,7 @@
+---
+title: HDP NameNode Start
+layout: page
+---
 
 # HDP NameNode Start
 

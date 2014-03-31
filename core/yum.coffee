@@ -1,13 +1,13 @@
 
-###
-YUM
-===
-###
-
 each = require 'each'
 path = require 'path'
 misc = require 'mecano/lib/misc'
 ini = require 'ini'
+
+###
+YUM
+===
+###
 
 module.exports = []
 module.exports.push 'phyla/bootstrap'

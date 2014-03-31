@@ -1,4 +1,8 @@
-
+---
+title: DNS
+module: phyla/core/dns
+layout: page
+---
 
 # DNS
 

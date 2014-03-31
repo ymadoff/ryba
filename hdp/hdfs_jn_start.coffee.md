@@ -1,3 +1,7 @@
+---
+title: HDFS JournalNode Start
+layout: page
+---
 
 # HDFS JournalNode Start
 

@@ -1,3 +1,7 @@
+---
+title: HDFS DataNode Start
+layout: page
+---
 
 # HDFS DataNode Start
 

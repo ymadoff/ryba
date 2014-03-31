@@ -1,5 +1,6 @@
 ---
 title: Make
+module: phyla/core/make
 layout: page
 ---
 

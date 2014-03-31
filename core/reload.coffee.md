@@ -1,3 +1,8 @@
+---
+title: Reload
+module: phyla/core/reload
+layout: page
+---
 
     module.exports = []
     module.exports.push 'phyla/core/network_restart'
