@@ -29,7 +29,49 @@ module.exports.push name: 'Bootstrap # Utils', required: true, callback: (ctx) -
     , (err, executed, stdout, stderr) ->
       return callback err if err
       wait()
-
+  ctx.waitForExecution = () ->
+    if typeof arguments[0] is 'string'
+      ###
+      Argument "cmd" is a string:   
+      `waitForConnection(cmd, [options], callback)`
+      ###
+      cmd = arguments[0]
+      options = arguments[1]
+      callback = arguments[2]
+    else if typeof arguments[0] is 'object'
+      ###
+      Argument "cmd" is a string:   
+      `waitForConnection(options, callback)`
+      ###
+      options = arguments[0]
+      callback = arguments[1]
+      cmd = options.cmd
+    if typeof options is 'function'
+      callback = options
+      options = {}
+    options.interval ?= 2000
+    options.code_skipped ?= 1
+    ctx.log "Wait for command to execute"
+    ctx.emit 'wait'
+    running = false
+    run = ->
+      return if running
+      running = true
+      ctx.execute
+        cmd: cmd
+        code: options.code or 0
+        code_skipped: options.code_skipped
+      , (err, ready, stdout, stderr) ->
+        running = false
+        return if not err and not ready
+        return callback err if err
+        clearInterval clear if clear
+        ctx.emit 'waited'
+        callback err, stdout, stderr
+    clear = setInterval ->
+      run()
+    , options.interval
+    run()
   ctx.waitIsOpen = ->
     if typeof arguments[0] is 'string'
       ###
