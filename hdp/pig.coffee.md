@@ -1,3 +1,8 @@
+---
+title: Pig
+module: phyla/hdp/pig
+layout: module
+---
 
 # Pig
 
@@ -10,7 +15,7 @@ which in turns enables them to handle very large data sets.
     mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'phyla/bootstrap'
-    module.exports.push 'phyla/core/nc'
+    module.exports.push 'phyla/bootstrap/utils'
     module.exports.push 'phyla/hdp/mapred_client'
     module.exports.push 'phyla/hdp/yarn_client'
 
@@ -39,7 +44,6 @@ Example:
 
     module.exports.push module.exports.configure = (ctx) ->
       require('./hdfs').configure ctx
-      require('../core/nc').configure ctx
       ctx.config.hdp.pig_user ?= 'pig'
       ctx.config.hdp.pig_conf_dir ?= '/etc/pig/conf'
 
@@ -93,7 +97,7 @@ unless the "hdp.check" configuration property is set to "true".
     module.exports.push name: 'HDP Pig # Check', callback: (ctx, next) ->
       {check} = ctx.config.hdp
       rm = ctx.host_with_module 'phyla/hdp/yarn_rm'
-      ctx.waitForConnection rm, 8050, (err) ->
+      ctx.waitIsOpen rm, 8050, (err) ->
         return next err if err
         console.log 'check', check
         ctx.execute

@@ -1,6 +1,7 @@
 ---
 title: HDFS DataNode
-layout: page
+module: phyla/hdp/hdfs_dn
+layout: module
 ---
 
 # HDFS DataNode
@@ -23,6 +24,7 @@ NameNodes, and send block location information and heartbeats to both.
     mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'phyla/bootstrap'
+    module.exports.push 'phyla/bootstrap/utils'
     module.exports.push 'phyla/hdp/hdfs'
 
 ## Configuration
@@ -32,7 +34,6 @@ The module doesn't require any configuration but instread rely on the
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx
-      require('../core/nc').configure ctx
 ## HA
 
 Update the "hdfs_site.xml" configuration file with the High Availabity properties
@@ -98,7 +99,7 @@ Load the module "phyla/hdp/hdfs\_dn\_start" to start the DataNode.
 
     # module.exports.push name: 'HDP HDFS DN # Start', timeout: -1, callback: (ctx, next) ->
     #   namenodes = ctx.hosts_with_module 'phyla/hdp/hdfs_nn'
-    #   ctx.waitForConnection namenodes, 50070, (err) ->
+    #   ctx.waitIsOpen namenodes, 50070, (err) ->
     #     lifecycle.dn_start ctx, (err, started) ->
     #       next err, ctx.OK
 

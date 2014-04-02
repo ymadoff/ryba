@@ -1,6 +1,7 @@
 ---
 title: HDFS JournalNode Start
-layout: page
+module: phyla/hdp/hdfs_jn_start
+layout: module
 ---
 
 # HDFS JournalNode Start

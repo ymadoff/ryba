@@ -1,9 +1,10 @@
 ---
 title: HDP HDFS NameNode
-layout: page
+module: phyla/hdp/hdfs_nn
+layout: module
 ---
 
-# HDP HDFS NameNode
+# HDFS NameNode
 
 NameNode’s primary responsibility is storing the HDFS namespace. This means things 
 like the directory tree, file permissions, and the mapping of files to block 
@@ -25,8 +26,8 @@ provides [instructions to rollback a HA installation][rollback] that apply to Am
     misc = require 'mecano/lib/misc'
     module.exports = []
     module.exports.push 'phyla/bootstrap'
+    module.exports.push 'phyla/bootstrap/utils'
     module.exports.push 'phyla/hdp/hdfs'
-    module.exports.push 'phyla/core/nc'
 
 ## Configuration
 
@@ -35,7 +36,6 @@ define inside the "phyla/hdp/hdfs" and "phyla/core/nc" modules.
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx
-      require('../core/nc').configure ctx
 
 ## Layout
 
@@ -195,7 +195,7 @@ if the NameNode was formated.
       return next null, ctx.INAPPLICABLE unless active_nn
       journalnodes = ctx.hosts_with_module 'phyla/hdp/hdfs_jn'
       # all the JournalNodes shall be started
-      ctx.waitForConnection journalnodes, 8485, (err) ->
+      ctx.waitIsOpen journalnodes, 8485, (err) ->
         return next err if err
         ctx.execute
           # yes 'Y' | su -l hdfs -c "hdfs namenode -format -clusterId torval"
@@ -219,7 +219,7 @@ is only executed on a non active NameNode.
       {active_nn, active_nn_host} = ctx.config.hdp
       return next null, ctx.INAPPLICABLE if active_nn
       do_wait = ->
-        ctx.waitForConnection active_nn_host, 8020, (err) ->
+        ctx.waitIsOpen active_nn_host, 8020, (err) ->
           return next err if err
           do_init()
       do_init = ->
@@ -268,7 +268,7 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
           modified = true if configured
           do_wait()
       do_wait = ->
-        ctx.waitForConnection zookeepers, 2181, (err) ->
+        ctx.waitIsOpen zookeepers, 2181, (err) ->
           return next err if err
           setTimeout ->
             do_zkfc()
@@ -331,7 +331,7 @@ during the HDFS format phase.
         e = each(jns)
         .parallel(true)
         .on 'item', (jn, next) ->
-          ctx.waitForConnection jn, 8485, (err) ->
+          ctx.waitIsOpen jn, 8485, (err) ->
             return if done
             done = true
             e.close() # No item will be emitted after this call

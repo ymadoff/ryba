@@ -1,6 +1,7 @@
 ---
 title: HDFS JournalNode Status
-layout: page
+module: phyla/hdp/hdfs_jn_status
+layout: module
 ---
 
 # HDFS JournalNode Status

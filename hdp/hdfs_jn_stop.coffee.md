@@ -1,6 +1,7 @@
 ---
 title: HDFS JournalNode Stop
-layout: page
+module: phyla/hdp/hdfs_jn_stop
+layout: module
 ---
 
 # HDFS JournalNode Stop

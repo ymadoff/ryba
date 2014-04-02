@@ -1,3 +1,8 @@
+---
+title: HDFS JournalNode
+module: phyla/hdp/hdfs_jn
+layout: module
+---
 
 # HDFS JournalNode
 
@@ -56,7 +61,7 @@ Example:
 
 ## Layout
 
-The JournalNOde data are stored inside the directory defined by the 
+The JournalNode data are stored inside the directory defined by the 
 "dfs.journalnode.edits.dir" property.
 
     module.exports.push name: 'HDP HDFS JN # Layout', callback: (ctx, next) ->
@@ -104,6 +109,11 @@ also used by the NameNodes, DataNodes, ResourceManagers and NodeManagers.
         merge: true
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
+
+## Configure HA
+
+Add High Availability specific properties to the "hdfs-site.xml" file. Those
+properties include "dfs.namenode.shared.edits.dir".
 
     module.exports.push name: 'HDP HDFS NN # Configure HA', callback: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config} = ctx.config.hdp

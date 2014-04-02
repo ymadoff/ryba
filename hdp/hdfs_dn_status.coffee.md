@@ -1,6 +1,7 @@
 ---
 title: HDFS DataNode Status
-layout: page
+module: phyla/hdp/hdfs_dn_status
+layout: module
 ---
 
 # HDFS DataNode Status

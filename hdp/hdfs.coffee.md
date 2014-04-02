@@ -1,6 +1,7 @@
 ---
 title: HDFS
-layout: page
+module: phyla/hdp/hdfs
+layout: module
 ---
 
 # HDFS
@@ -17,6 +18,7 @@ In its current state, we are only supporting the installation of a
     url = require 'url'
     module.exports = []
     module.exports.push 'phyla/bootstrap'
+    module.exports.push 'phyla/bootstrap/utils'
     module.exports.push 'phyla/core/yum'
     module.exports.push 'phyla/hdp/core'
 
@@ -68,7 +70,6 @@ Example:
       return if ctx.hdfs_configured
       ctx.hdfs_configured = true
       require('./core').configure ctx
-      require('../core/nc').configure ctx
       {nameservice} = ctx.config.hdp
       namenodes = ctx.hosts_with_module 'phyla/hdp/hdfs_nn'
       # Define Directories for Core Hadoop

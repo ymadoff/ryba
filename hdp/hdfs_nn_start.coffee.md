@@ -1,9 +1,10 @@
 ---
 title: HDP NameNode Start
-layout: page
+module: phyla/hdp/hdfs_nn_start
+layout: module
 ---
 
-# HDP NameNode Start
+# HDFS NameNode Start
 
 Start the NameNode service as well as its ZKFC daemon. To ensure that the 
 leadership is assigned to the desired active NameNode, the ZKFC daemons on

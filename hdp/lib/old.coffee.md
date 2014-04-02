@@ -55,7 +55,7 @@ the directory named after the nameservice is created on each JournalNode host.
         options = ctx.config.servers
           .filter( (server) -> journalnodes.indexOf(server.host) isnt -1 )
           .map( (server) -> host: server.host, port: 8485 )
-        ctx.waitForConnection options, (err) ->
+        ctx.waitIsOpen options, (err) ->
           return next err if err
           do_init()
       do_init = ->

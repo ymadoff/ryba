@@ -1,6 +1,7 @@
 ---
 title: Ganglia Monitor
-layout: page
+module: phyla/hdp/ganglia_monitor
+layout: module
 ---
 
 # Ganglia Monitor

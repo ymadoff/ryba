@@ -1,6 +1,7 @@
 ---
 title: Ganglia Collector
-layout: page
+module: phyla/hdp/ganglia_collector
+layout: module
 ---
 
 # Ganglia Collector

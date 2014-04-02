@@ -20,7 +20,7 @@ lifecyle = module.exports =
         code_skipped: 1
       , (err, started) ->
         return callback err if err
-        ctx.waitForConnection ctx.config.host, 8485, timeout: 20000, (err) ->
+        ctx.waitIsOpen ctx.config.host, 8485, timeout: 20000, (err) ->
           callback err, started
   jn_stop: (ctx, callback) ->
     {hdfs_user, hadoop_conf_dir} = ctx.config.hdp
@@ -50,7 +50,7 @@ lifecyle = module.exports =
         code_skipped: 1
       , (err, started) ->
         return callback err if err
-        ctx.waitForConnection [
+        ctx.waitIsOpen [
           host: ctx.config.host, port: hdfs_namenode_ipc_port
         ,
           host: ctx.config.host, port: hdfs_namenode_http_port
@@ -244,7 +244,7 @@ lifecyle = module.exports =
         code_skipped: 1
       , (err, started) ->
         return callback err if err
-        ctx.waitForConnection hive_metastore_host, hive_metastore_port, timeout: hive_metastore_timeout, (err) ->
+        ctx.waitIsOpen hive_metastore_host, hive_metastore_port, timeout: hive_metastore_timeout, (err) ->
           callback err, started
   hive_metastore_stop: (ctx, callback) ->
     {hive_user, hive_pid_dir} = ctx.config.hdp
@@ -279,7 +279,7 @@ lifecyle = module.exports =
         code_skipped: 1
       , (err, started) ->
         return callback err if err
-        ctx.waitForConnection hive_server2_host, hive_server2_port, timeout: hive_server2_timeout, (err) ->
+        ctx.waitIsOpen hive_server2_host, hive_server2_port, timeout: hive_server2_timeout, (err) ->
           callback err, started
   hive_server2_stop: (ctx, callback) ->
     {hive_user, hive_pid_dir} = ctx.config.hdp
@@ -342,7 +342,7 @@ lifecyle = module.exports =
         cmd: "su -l #{zookeeper_user} -c \"/usr/lib/zookeeper/bin/zkServer.sh start #{zookeeper_conf_dir}/zoo.cfg\""
       , (err, started) ->
         return callback err if err
-        ctx.waitForConnection ctx.config.host, zookeeper_port, timeout: 20000, (err) ->
+        ctx.waitIsOpen ctx.config.host, zookeeper_port, timeout: 20000, (err) ->
           callback err, started
   zookeeper_stop: (ctx, callback) ->
     {zookeeper_user, zookeeper_conf_dir} = ctx.config.hdp

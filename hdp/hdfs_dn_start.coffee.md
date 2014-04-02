@@ -1,6 +1,7 @@
 ---
 title: HDFS DataNode Start
-layout: page
+module: phyla/hdp/hdfs_dn_start
+layout: module
 ---
 
 # HDFS DataNode Start

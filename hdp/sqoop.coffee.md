@@ -1,6 +1,7 @@
 ---
 title: Sqoop
-layout: page
+module: phyla/hdp/sqoop
+layout: module
 ---
 
 # Sqoop

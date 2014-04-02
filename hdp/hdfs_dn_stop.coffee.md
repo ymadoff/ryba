@@ -1,6 +1,7 @@
 ---
 title: HDFS DataNode Stop
-layout: page
+module: phyla/hdp/hdfs_dn_stop
+layout: module
 ---
 
 # HDFS DataNode Stop

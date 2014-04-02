@@ -1,6 +1,7 @@
 ---
 title: Flume
-layout: page
+module: phyla/hdp/flume
+layout: module
 ---
 
 # Flume
