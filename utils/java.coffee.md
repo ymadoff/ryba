@@ -1,15 +1,16 @@
 ---
 title: Java
-layout: page
+module: phyla/utils/java
+layout: module
 ---
+
+# Java
 
     path = require 'path'
     semver = require 'semver'
     url = require 'url'
     module.exports = []
     module.exports.push 'phyla/bootstrap'
-
-# Java
 
 Install the Oracle Java JRE and JDK. The Java Runtime Environment is the code 
 execution component of the Java platform. The Java Development Kit (JDK) is 

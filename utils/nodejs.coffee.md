@@ -1,6 +1,7 @@
 ---
 title: NodeJs
-layout: page
+module: phyla/hdp/nodejs
+layout: module
 ---
 
 # NodeJs

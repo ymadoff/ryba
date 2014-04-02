@@ -1,7 +1,10 @@
 ---
 title: Commons
-layout: page
+module: phyla/utils/commons
+layout: module
 ---
+
+# Commons
 
     module.exports = []
     module.exports.push 'phyla/core/network'
@@ -22,4 +25,4 @@ layout: page
     module.exports.push 'phyla/utils/git'
     module.exports.push 'phyla/utils/telnet'
     module.exports.push 'phyla/utils/tree'
-    # module.exports.push 'phyla/utils/rar' # require internet
+    # module.exports.push 'phyla/utils/rar'
