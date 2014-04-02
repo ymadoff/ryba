@@ -1,7 +1,7 @@
 ---
 title: DNS
 module: phyla/core/dns
-layout: page
+layout: module
 ---
 
 # DNS

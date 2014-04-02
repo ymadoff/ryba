@@ -1,7 +1,7 @@
 ---
 title: SSH
 module: phyla/core/ssh
-layout: page
+layout: module
 ---
 
 # SSH

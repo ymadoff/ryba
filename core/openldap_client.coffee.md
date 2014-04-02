@@ -1,19 +1,17 @@
 ---
-title: OpenLDAP Client
-module: phyla/core/openldap_client
-layout: page
+title: 
+layout: module
 ---
+
+# OpenLDAP Client
 
     url = require 'url'
     each = require 'each'
     {merge} = require 'mecano/lib/misc'
     module.exports = []
     module.exports.push 'phyla/bootstrap'
+    module.exports.push 'phyla/bootstrap/utils'
     module.exports.push 'phyla/core/yum'
-    module.exports.push 'phyla/core/nc'
-
-OpenLDAP Client
-===============
 
 Install and configure the OpenLDAP client utilities. The
 file "/etc/openldap/ldap.conf" is configured by the "openldap_client.config"
@@ -32,7 +30,6 @@ mv cert.pem /etc/openldap/cacerts/$hash.0
 ```
 
     module.exports.push (ctx) ->
-      require('./nc').configure ctx
       require('./openldap_server').configure ctx
       openldap_server = ctx.hosts_with_module 'phyla/core/openldap_server'
       openldap_server_secured = ctx.hosts_with_module 'phyla/core/openldap_server_tls'
@@ -88,7 +85,7 @@ mv cert.pem /etc/openldap/cacerts/$hash.0
         return next() if ['ldap:', 'ldaps:'].indexOf(uri.protocol) is -1
         uri.port ?= 389 if uri.protocol is 'ldap:'
         uri.port ?= 636 if uri.protocol is 'ldaps:'
-        ctx.waitForConnection uri.hostname, uri.port, next
+        ctx.waitIsOpen uri.hostname, uri.port, next
       .on 'both', (err) ->
         next err, ctx.PASS
 

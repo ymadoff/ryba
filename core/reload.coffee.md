@@ -1,7 +1,7 @@
 ---
 title: Reload
 module: phyla/core/reload
-layout: page
+layout: module
 ---
 
     module.exports = []

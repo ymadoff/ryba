@@ -1,7 +1,7 @@
 ---
 title: GCC
 module: phyla/core/gcc
-layout: page
+layout: module
 ---
 
 # GCC

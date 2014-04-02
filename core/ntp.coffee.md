@@ -1,7 +1,7 @@
 ---
 title: NTP
 module: phyla/core/ntp
-layout: page
+layout: module
 ---
 
 # NTP

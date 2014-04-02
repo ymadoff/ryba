@@ -1,7 +1,7 @@
 ---
 title: Network
 module: phyla/core/network
-layout: page
+layout: module
 ---
 
 # Network
@@ -95,7 +95,7 @@ by the "/etc/resolv" file.
 The [resolver](http://man7.org/linux/man-pages/man5/resolver.5.html) 
 is a set of routines in the C library that provide
 access to the Internet Domain Name System (DNS). The
-configuration file is considered a trusted source of DNS information
+configuration file is considered a trusted source of DNS information.
 
     module.exports.push name: 'Network # DNS Resolver', callback: (ctx, next) ->
       {resolv} = ctx.config.network

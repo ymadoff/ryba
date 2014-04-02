@@ -1,16 +1,18 @@
+---
+title: 
+layout: module
+---
 
-path = require 'path'
-module.exports = []
-module.exports.push 'phyla/bootstrap'
+    path = require 'path'
+    module.exports = []
+    module.exports.push 'phyla/bootstrap'
 
-module.exports.push 'phyla/core/openldap_server'
-# We cant require openldap_client here, since it will deploy 
-# and test a secure connection on a server not yet configured
-# module.exports.push 'phyla/core/openldap_client'
+    module.exports.push 'phyla/core/openldap_server'
+    # We cant require openldap_client here, since it will deploy 
+    # and test a secure connection on a server not yet configured
+    # module.exports.push 'phyla/core/openldap_client'
 
-###
-OpenLDAP TLS
-============
+# OpenLDAP TLS
 
 Note, by default, openldap comes with ldaps support. The default value are:   
 
@@ -367,99 +369,99 @@ ldapsearch -Y EXTERNAL -H ldapi:/// -b dc=adaltas,dc=com
 
 ###
 
-module.exports.push (ctx) ->
-  ctx.config.openldap_server ?= {}
-  # ctx.config.openldap_server.tls_cert_file ?= null
-  # ctx.config.openldap_server.tls_key_file ?= null
+    module.exports.push (ctx) ->
+      ctx.config.openldap_server ?= {}
+      # ctx.config.openldap_server.tls_cert_file ?= null
+      # ctx.config.openldap_server.tls_key_file ?= null
 
-module.exports.push name: 'OpenLDAP TLS # Deploy', callback: (ctx, next) ->
-  { tls, tls_ca_cert_file, tls_cert_file, tls_key_file } = ctx.config.openldap_server
-  return next null, ctx.DISABLED unless tls
-  tls_ca_cert_filename = path.basename tls_ca_cert_file
-  tls_cert_filename = path.basename tls_cert_file
-  tls_key_filename = path.basename tls_key_file
-  modified = false
-  do_upload = ->
-    ctx.log 'Write certificate files'
-    ctx.upload [
-      source: tls_ca_cert_file
-      local_source: true
-      destination: "/etc/pki/tls/certs/#{tls_ca_cert_filename}"
-      uid: 'ldap'
-      gid: 'ldap'
-      mode: '400'
-    ,
-      source: tls_cert_file
-      local_source: true
-      destination: "/etc/pki/tls/certs/#{tls_cert_filename}"
-      uid: 'ldap'
-      gid: 'ldap'
-      mode: '400'
-    ,
-      source: tls_key_file
-      local_source: true
-      destination: "/etc/pki/tls/certs/#{tls_key_filename}"
-      uid: 'ldap'
-      gid: 'ldap'
-      mode: '400'
-    ], (err, written) ->
-      return next err if err
-      modified = true if written
-      do_config()
-  do_config = ->
-    ctx.log 'Write certificate configuration'
-    ctx.write
-      destination: '/etc/openldap/slapd.d/cn=config.ldif'
-      write: [
-        match: /^olcTLSCACertificatePath.*$/mg
-        replace: "olcTLSCACertificatePath: /etc/pki/tls/certs/#{tls_ca_cert_filename}"
-        # append: 'olcRootPW'
-      ,
-        match: /^olcTLSCertificateFile.*$/mg
-        replace: "olcTLSCertificateFile: /etc/pki/tls/certs/#{tls_cert_filename}"
-        # append: 'olcRootPW'
-      ,
-        match: /^olcTLSCertificateKeyFile.*$/mg
-        replace: "olcTLSCertificateKeyFile: /etc/pki/tls/certs/#{tls_key_filename}"
-        # append: 'olcTLSCertificateFile'
-      ]
-    , (err, written) ->
-      return next err if err
-      modified = true if written
-      do_end()
-  do_end = ->
-    return next null, ctx.PASS unless modified
-    ctx.service
-      name: 'openldap-servers'
-      srv_name: 'slapd'
-      action: 'restart'
-    , (err, restarted) ->
-      next err, ctx.OK
-  do_upload()
+    module.exports.push name: 'OpenLDAP TLS # Deploy', callback: (ctx, next) ->
+      { tls, tls_ca_cert_file, tls_cert_file, tls_key_file } = ctx.config.openldap_server
+      return next null, ctx.DISABLED unless tls
+      tls_ca_cert_filename = path.basename tls_ca_cert_file
+      tls_cert_filename = path.basename tls_cert_file
+      tls_key_filename = path.basename tls_key_file
+      modified = false
+      do_upload = ->
+        ctx.log 'Write certificate files'
+        ctx.upload [
+          source: tls_ca_cert_file
+          local_source: true
+          destination: "/etc/pki/tls/certs/#{tls_ca_cert_filename}"
+          uid: 'ldap'
+          gid: 'ldap'
+          mode: '400'
+        ,
+          source: tls_cert_file
+          local_source: true
+          destination: "/etc/pki/tls/certs/#{tls_cert_filename}"
+          uid: 'ldap'
+          gid: 'ldap'
+          mode: '400'
+        ,
+          source: tls_key_file
+          local_source: true
+          destination: "/etc/pki/tls/certs/#{tls_key_filename}"
+          uid: 'ldap'
+          gid: 'ldap'
+          mode: '400'
+        ], (err, written) ->
+          return next err if err
+          modified = true if written
+          do_config()
+      do_config = ->
+        ctx.log 'Write certificate configuration'
+        ctx.write
+          destination: '/etc/openldap/slapd.d/cn=config.ldif'
+          write: [
+            match: /^olcTLSCACertificatePath.*$/mg
+            replace: "olcTLSCACertificatePath: /etc/pki/tls/certs/#{tls_ca_cert_filename}"
+            # append: 'olcRootPW'
+          ,
+            match: /^olcTLSCertificateFile.*$/mg
+            replace: "olcTLSCertificateFile: /etc/pki/tls/certs/#{tls_cert_filename}"
+            # append: 'olcRootPW'
+          ,
+            match: /^olcTLSCertificateKeyFile.*$/mg
+            replace: "olcTLSCertificateKeyFile: /etc/pki/tls/certs/#{tls_key_filename}"
+            # append: 'olcTLSCertificateFile'
+          ]
+        , (err, written) ->
+          return next err if err
+          modified = true if written
+          do_end()
+      do_end = ->
+        return next null, ctx.PASS unless modified
+        ctx.service
+          name: 'openldap-servers'
+          srv_name: 'slapd'
+          action: 'restart'
+        , (err, restarted) ->
+          next err, ctx.OK
+      do_upload()
 
-module.exports.push name: 'OpenLDAP TLS # Activate LDAPS', callback: (ctx, next) ->
-  ctx.write
-    match: /^SLAPD_LDAPS.*/mg
-    replace: 'SLAPD_LDAPS=yes'
-    destination: '/etc/sysconfig/ldap'
-  , (err, written) ->
-    return next err, ctx.PASS  if err or not written
-    ctx.service
-      name: 'openldap-servers'
-      srv_name: 'slapd'
-      action: 'restart'
-    , (err, restarted) ->
-      return next err if err
-      next null, ctx.OK
+    module.exports.push name: 'OpenLDAP TLS # Activate LDAPS', callback: (ctx, next) ->
+      ctx.write
+        match: /^SLAPD_LDAPS.*/mg
+        replace: 'SLAPD_LDAPS=yes'
+        destination: '/etc/sysconfig/ldap'
+      , (err, written) ->
+        return next err, ctx.PASS  if err or not written
+        ctx.service
+          name: 'openldap-servers'
+          srv_name: 'slapd'
+          action: 'restart'
+        , (err, restarted) ->
+          return next err if err
+          next null, ctx.OK
 
-module.exports.push 'phyla/core/openldap_client'
+    module.exports.push 'phyla/core/openldap_client'
 
-module.exports.push name: 'OpenLDAP TLS # Check', timeout: -1, callback: (ctx, next) ->
-  { suffix, root_dn, root_password } = ctx.config.openldap_server
-  ctx.execute
-    cmd: "ldapsearch -x -H ldaps://#{ctx.config.host} -b #{suffix} -D #{root_dn} -w #{root_password}"
-  , (err, executed) ->
-    next err, ctx.PASS
+    module.exports.push name: 'OpenLDAP TLS # Check', timeout: -1, callback: (ctx, next) ->
+      { suffix, root_dn, root_password } = ctx.config.openldap_server
+      ctx.execute
+        cmd: "ldapsearch -x -H ldaps://#{ctx.config.host} -b #{suffix} -D #{root_dn} -w #{root_password}"
+      , (err, executed) ->
+        next err, ctx.PASS
 
 
 

@@ -1,7 +1,7 @@
 ---
 title: Bind server
 module: phyla/core/bind_server
-layout: page
+layout: module
 ---
 
     path = require 'path'

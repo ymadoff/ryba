@@ -1,7 +1,7 @@
 ---
 title: Kerberos with OpenLDAP Back-End
 module: phyla/core/krb5_server
-layout: page
+layout: module
 ---
 
 ## Kerberos with OpenLDAP Back-End

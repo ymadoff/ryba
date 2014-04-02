@@ -1,7 +1,7 @@
 ---
 title: Kerberos Client
 module: phyla/core/krb5_client
-layout: page
+layout: module
 ---
 
 # Kerberos Client
@@ -18,6 +18,7 @@ Institute of Technology](http://web.mit.edu).
     krb5_server = require './krb5_server'
     module.exports = []
     module.exports.push 'phyla/bootstrap'
+    module.exports.push 'phyla/bootstrap/utils'
     module.exports.push 'phyla/core/yum'
     module.exports.push 'phyla/core/ssh'
     module.exports.push 'phyla/core/ntp'
@@ -57,7 +58,6 @@ Example:
 
     module.exports.push module.exports.configure = (ctx) ->
       require('./krb5_server').configure ctx
-      require('./nc').configure ctx
       ctx.config.krb5.sshd ?= {}
       ctx.config.krb5.sshd = misc.merge
         ChallengeResponseAuthentication: 'yes'
