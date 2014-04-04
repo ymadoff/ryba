@@ -1,6 +1,6 @@
 ---
 title: NodeJs
-module: phyla/hdp/nodejs
+module: phyla/hadoop/nodejs
 layout: module
 ---
 
