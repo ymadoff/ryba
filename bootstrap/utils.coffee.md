@@ -7,7 +7,7 @@ layout: module
 
     each = require 'each'
     {merge} = require 'mecano/lib/misc'
-    connect = require 'superexec/lib/connect'
+    connect = require 'ssh2-exec/lib/connect'
 
     module.exports = []
 

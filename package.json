@@ -14,7 +14,7 @@
     "parameters": "latest",
     "regexp-quote": "latest",
     "request": "latest",
-    "superexec": "latest",
+    "ssh2-exec": "latest",
     "semver": "latest",
     "superexec": "latest",
     "ssh2": "latest",

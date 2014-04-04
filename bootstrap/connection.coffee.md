@@ -10,7 +10,7 @@ initialize an SSH connection.
 
     {exec} = require 'child_process'
     {merge} = require 'mecano/lib/misc'
-    connect = require 'superexec/lib/connect'
+    connect = require 'ssh2-exec/lib/connect'
     collect = require './lib/collect'
     bootstrap = require './lib/bootstrap'
 
