@@ -11,6 +11,7 @@ Gather system information
     pad = require 'pad'
     mecano = require 'mecano'
     module.exports = []
+    module.exports.push 'phyla/bootstrap/mecano'
 
     module.exports.push name: 'Bootstrap # Log', required: true, callback: (ctx, next) ->
       mecano.mkdir
