@@ -21,7 +21,6 @@ The `utils` module enriches the bootstraping process with commonly used function
 Reboot the current server and call the user provided callback when the startup
 process is finished.
 
-
       ctx.reboot = (callback) ->
         attempts = 0
         wait = ->
