@@ -3,11 +3,11 @@ title:
 layout: module
 ---
 
-# bootstrap
+# Bootstrap
 
 This module is provided for convenience. It doesnt do anything on its own but
-instead declare all the bootstrap modules as dependencies. See the documentation
-of each module for additionnal information.
+instead declare all the commonly required bootstrap modules as dependencies. 
+See the documentation of each modules for additionnal information.
 
     module.exports = []
 
