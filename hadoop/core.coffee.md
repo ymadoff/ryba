@@ -12,10 +12,10 @@ layout: module
     hconfigure = require './lib/hconfigure'
 
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
-    module.exports.push 'phyla/core/yum'
-    module.exports.push 'phyla/core/krb5_client' #kadmin must be present
-    module.exports.push 'phyla/utils/java'
+    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/core/yum'
+    module.exports.push 'masson/core/krb5_client' #kadmin must be present
+    module.exports.push 'masson/commons/java'
 
 ## Configuration
 
@@ -35,7 +35,7 @@ hadoop org.apache.hadoop.security.HadoopKerberosName HTTP/master1.hadoop@HADOOP.
     module.exports.push module.exports.configure = (ctx) ->
       return if ctx.core_configured
       ctx.core_configured = true
-      require('../core/proxy').configure ctx
+      require('masson/core/proxy').configure ctx
       ctx.config.hdp ?= {}
       ctx.config.hdp.format ?= false
       ctx.config.hdp.hadoop_conf_dir ?= '/etc/hadoop/conf'
@@ -71,9 +71,9 @@ hadoop org.apache.hadoop.security.HadoopKerberosName HTTP/master1.hadoop@HADOOP.
       # ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://#{namenode}:8020"
       ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.hdp.nameservice}"
       ctx.hconfigure = (options, callback) ->
-        options.ssh = ctx.ssh if typeof options.ssh is 'undefined'
-        options.log ?= ctx.log
-        hconfigure options, callback
+        # options.ssh = ctx.ssh if typeof options.ssh is 'undefined'
+        # options.log ?= ctx.log
+        hconfigure ctx, options, callback
       # hadoop env
       ctx.config.hdp.hadoop_opts ?= 'java.net.preferIPv4Stack': true
       hadoop_opts = "export HADOOP_OPTS=\""
@@ -160,30 +160,23 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
 
     module.exports.push name: 'HDP Core # Configuration', callback: (ctx, next) ->
       { core_site, hadoop_conf_dir } = ctx.config.hdp
-      modified = false
-      do_core = ->
-        ctx.log 'Configure core-site.xml'
-        # Determines where on the local filesystem the DFS secondary
-        # name node should store the temporary images to merge.
-        # If this is a comma-delimited list of directories then the image is
-        # replicated in all of the directories for redundancy.
-        # core_site['fs.checkpoint.edits.dir'] ?= fs_checkpoint_edit_dir.join ','
-        # A comma separated list of paths. Use the list of directories from $FS_CHECKPOINT_DIR. 
-        # For example, /grid/hadoop/hdfs/snn,sbr/grid1/hadoop/hdfs/snn,sbr/grid2/hadoop/hdfs/snn
-        # core_site['fs.checkpoint.dir'] ?= fs_checkpoint_dir.join ','
-        ctx.hconfigure
-          destination: "#{hadoop_conf_dir}/core-site.xml"
-          default: "#{__dirname}/files/core_hadoop/core-site.xml"
-          local_default: true
-          properties: core_site
-          merge: true
-        , (err, configured) ->
-          return next err if err
-          modified = true if configured
-          do_end()
-      do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
-      do_core()
+      ctx.log 'Configure core-site.xml'
+      # Determines where on the local filesystem the DFS secondary
+      # name node should store the temporary images to merge.
+      # If this is a comma-delimited list of directories then the image is
+      # replicated in all of the directories for redundancy.
+      # core_site['fs.checkpoint.edits.dir'] ?= fs_checkpoint_edit_dir.join ','
+      # A comma separated list of paths. Use the list of directories from $FS_CHECKPOINT_DIR. 
+      # For example, /grid/hadoop/hdfs/snn,sbr/grid1/hadoop/hdfs/snn,sbr/grid2/hadoop/hdfs/snn
+      # core_site['fs.checkpoint.dir'] ?= fs_checkpoint_dir.join ','
+      ctx.hconfigure
+        destination: "#{hadoop_conf_dir}/core-site.xml"
+        default: "#{__dirname}/files/core_hadoop/core-site.xml"
+        local_default: true
+        properties: core_site
+        merge: true
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Core # Hadoop OPTS', timeout: -1, callback: (ctx, next) ->
       {hadoop_conf_dir, hdfs_user, hadoop_group, hadoop_opts, hdfs_log_dir, hdfs_pid_dir} = ctx.config.hdp

@@ -12,7 +12,7 @@ architecture based on streaming data flows. It is robust and fault tolerant with
 tunable reliability mechanisms and many failover and recovery mechanisms.
 
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
+    module.exports.push 'masson/bootstrap/'
 
 ## Configure
 
@@ -32,7 +32,7 @@ Exemple:
 ```
 
     module.exports.push module.exports.configure = (ctx) ->
-      require('../core/krb5_client').configure ctx
+      require('masson/core/krb5_client').configure ctx
       ctx.config.hdp ?= {}
       ctx.config.hdp.flume_user = 'flume'
       ctx.config.hdp.flume_group = 'flume'

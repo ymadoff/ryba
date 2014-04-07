@@ -13,7 +13,7 @@ the standy NameNodes wait for the one on the active NameNode to start first.
     lifecycle = require './lib/lifecycle'
     mkcmd = require './lib/mkcmd'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
+    module.exports.push 'masson/bootstrap/'
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx

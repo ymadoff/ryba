@@ -9,7 +9,7 @@ layout: module
     misc = require 'mecano/lib/misc'
     mkcmd = require './lib/mkcmd'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
+    module.exports.push 'masson/bootstrap/'
     module.exports.push 'phyla/hadoop/core'
 
     module.exports.push module.exports.configure = (ctx) ->

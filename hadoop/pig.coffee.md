@@ -14,8 +14,8 @@ which in turns enables them to handle very large data sets.
 
     mkcmd = require './lib/mkcmd'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
-    module.exports.push 'phyla/bootstrap/utils'
+    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'phyla/hadoop/mapred_client'
     module.exports.push 'phyla/hadoop/yarn_client'
 
@@ -23,7 +23,7 @@ which in turns enables them to handle very large data sets.
 
 Pig uses the "hdfs" configuration. It also declare 2 optional properties:
 
-*   `hdp.check` (string)   
+*   `hdp.force_check` (string)   
     Force the execution of the check action on each run, otherwise it will
     run only on the first install. The property is shared by multiple
     modules and default to false.   
@@ -37,7 +37,7 @@ Example:
 ```json
 {
   "hdp": {
-    check: true
+    force_check: true
   }
 }
 ```
@@ -92,23 +92,22 @@ companion file define no properties while the YUM package does.
 
 Run a Pig script to test the installation once the ResourceManager is 
 installed. The script will only be executed the first time it is deployed 
-unless the "hdp.check" configuration property is set to "true".
+unless the "hdp.force_check" configuration property is set to "true".
 
     module.exports.push name: 'HDP Pig # Check', callback: (ctx, next) ->
-      {check} = ctx.config.hdp
+      {force_check} = ctx.config.hdp
       rm = ctx.host_with_module 'phyla/hadoop/yarn_rm'
       ctx.waitIsOpen rm, 8050, (err) ->
         return next err if err
-        console.log 'check', check
         ctx.execute
           cmd: mkcmd.test ctx, """
-          if hdfs dfs -test -d /user/test/pig_#{ctx.config.host}/result; then exit; fi
-          exit 1
+          if hdfs dfs -test -d /user/test/pig_#{ctx.config.host}; then exit 1; fi
+          exit 0
           """
-          code_skipped: 1
-          not_if: check
+          code: 1
+          code_skipped: 0
+          not_if: force_check
         , (err, skip) ->
-          console.log 'skip', skip
           return next err, ctx.PASS if err or skip
           ctx.execute
             cmd: mkcmd.test ctx, """

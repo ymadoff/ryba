@@ -8,7 +8,7 @@ layout: module
     hdfs_nn = require './hdfs_nn'
     mkcmd = require './lib/mkcmd'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
+    module.exports.push 'masson/bootstrap/'
     module.exports.push 'phyla/hadoop/core'
 
     module.exports.push (ctx) ->

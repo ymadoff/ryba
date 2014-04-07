@@ -8,7 +8,7 @@ layout: module
     lifecycle = require './lib/lifecycle'
     mkcmd = require './lib/mkcmd'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
+    module.exports.push 'masson/bootstrap/'
     module.exports.push 'phyla/hadoop/hdfs'
     module.exports.push 'phyla/hadoop/zookeeper'
     module.exports.push 'phyla/hadoop/hbase'

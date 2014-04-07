@@ -8,7 +8,7 @@ layout: module
     lifecycle = require './lib/lifecycle'
     mkcmd = require './lib/mkcmd'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
+    module.exports.push 'masson/bootstrap/'
 
 https://cwiki.apache.org/confluence/display/Hive/WebHCat+InstallWebHCat
 ctx.config.hdp.hive_site['hive.security.metastore.authorization.manager'] ?= 'org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider'

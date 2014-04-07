@@ -11,25 +11,25 @@ layout: module
     lifecycle = require './lib/lifecycle'
     mkcmd = require './lib/mkcmd'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
-    module.exports.push 'phyla/bootstrap/utils'
+    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap/utils'
     # Install the mysql connector
-    module.exports.push 'phyla/utils/mysql_client'
+    module.exports.push 'masson/commons/mysql_client'
     # Deploy the HDP repository
     # Configure "core-site.xml" and "hadoop-env.sh"
     module.exports.push 'phyla/hadoop/core'
     # Install client to create new Hive principal
-    module.exports.push 'phyla/core/krb5_client'
+    module.exports.push 'masson/core/krb5_client'
     # Install the Hive and HCatalog service
     module.exports.push 'phyla/hadoop/hive_'
     # Validate DNS lookup
-    module.exports.push 'phyla/core/dns'
+    module.exports.push 'masson/core/dns'
 
 
     module.exports.push module.exports.configure = (ctx) ->
       return if ctx.hive_server_configured
       ctx.hive_server_configured = true
-      require('../utils/mysql_server').configure ctx
+      require('masson/commons/mysql_server').configure ctx
       require('./hive_').configure ctx
       # Define Users and Groups
       # ctx.config.hdp.mysql_user ?= 'hive'

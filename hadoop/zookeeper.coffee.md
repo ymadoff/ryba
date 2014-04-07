@@ -7,15 +7,15 @@ layout: module
 
     lifecycle = require './lib/lifecycle'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
-    module.exports.push 'phyla/bootstrap/utils'
-    module.exports.push 'phyla/core/yum'
-    module.exports.push 'phyla/utils/java'
+    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap/utils'
+    module.exports.push 'masson/core/yum'
+    module.exports.push 'masson/commons/java'
     module.exports.push 'phyla/hadoop/core'
 
     module.exports.push module.exports.configure = (ctx) ->
       require('./core').configure ctx
-      require('../utils/java').configure ctx
+      require('masson/commons/java').configure ctx
       ctx.config.hdp.zookeeper_myid ?= null
       ctx.config.hdp.zookeeper_user ?= 'zookeeper'
       ctx.config.hdp.zookeeper_data_dir ?= '/var/zookeper/data/'

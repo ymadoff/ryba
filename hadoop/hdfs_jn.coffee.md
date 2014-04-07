@@ -31,7 +31,7 @@ most (N - 1) / 2 failures to continue to function normally.
     lifecycle = require './lib/lifecycle'
     mkcmd = require './lib/mkcmd'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
+    module.exports.push 'masson/bootstrap/'
     module.exports.push 'phyla/hadoop/hdfs'
 
 ## Configuration

@@ -23,14 +23,14 @@ provides [instructions to rollback a HA installation][rollback] that apply to Am
     mkcmd = require './lib/mkcmd'
     each = require 'each'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
-    module.exports.push 'phyla/bootstrap/utils'
+    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'phyla/hadoop/hdfs'
 
 ## Configuration
 
 The NameNode doesn't define new configuration properties. However, it uses properties
-define inside the "phyla/hadoop/hdfs" and "phyla/core/nc" modules.
+define inside the "phyla/hadoop/hdfs" and "masson/core/nc" modules.
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx

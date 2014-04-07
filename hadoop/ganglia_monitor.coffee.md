@@ -10,11 +10,11 @@ Ganglia Monitor is the agent to be deployed on each of the hosts.
 
     glob = require 'glob'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
+    module.exports.push 'masson/bootstrap/'
 
 ## Dependencies
 
-    module.exports.push 'phyla/core/yum'
+    module.exports.push 'masson/core/yum'
 
 ## Configuration
 

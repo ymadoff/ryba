@@ -17,8 +17,8 @@ driver used by Sqoop.
 
     path = require 'path'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
-    module.exports.push 'phyla/utils/mysql_client'
+    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/commons/mysql_client'
 
 ## Configuration
 
@@ -57,7 +57,7 @@ Install the Sqoop package following the [HDP instructions][install].
 ## Mysql Connector
 
 MySQL is by default usable by Sqoop. The driver installed after running the 
-"phyla/utils/mysql_client" is copied into the Sqoop library folder.
+"masson/commons/mysql_client" is copied into the Sqoop library folder.
 
     module.exports.push name: 'HDP Sqoop # MySQL Connector', callback: (ctx, next) ->
       ctx.copy

@@ -12,7 +12,7 @@ to be started on the active NameNode before it check if it must be formated.
 
     lifecycle = require './lib/lifecycle'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
+    module.exports.push 'masson/bootstrap/'
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx

@@ -6,8 +6,8 @@ layout: module
 # Hive
 
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
-    module.exports.push 'phyla/utils/java'
+    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/commons/java'
     module.exports.push 'phyla/hadoop/core'
     module.exports.push 'phyla/hadoop/hdfs_client'
 

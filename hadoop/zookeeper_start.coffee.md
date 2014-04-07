@@ -10,7 +10,7 @@ layout: module
     lifecycle = require './lib/lifecycle'
     hdp_zookeeper = require './zookeeper'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
+    module.exports.push 'masson/bootstrap/'
 
     module.exports.push (ctx) ->
       require('./zookeeper').configure ctx

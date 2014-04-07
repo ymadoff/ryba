@@ -11,11 +11,11 @@ It also ships with an Oozie Application for creating and monitoring workflows, a
     misc = require 'mecano/lib/misc'
     lifecycle = require './lib/lifecycle'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
+    module.exports.push 'masson/bootstrap/'
     # Install the mysql connector
-    module.exports.push 'phyla/utils/mysql_client'
+    module.exports.push 'masson/commons/mysql_client'
     # Install client to create new Hive principal
-    module.exports.push 'phyla/core/krb5_client'
+    module.exports.push 'masson/core/krb5_client'
     # Set java_home in "hadoop-env.sh"
     module.exports.push 'phyla/hadoop/core'
     module.exports.push 'phyla/hadoop/mapred_client'
@@ -58,7 +58,7 @@ Example:
       {nameservice, active_nn_host, hadoop_conf_dir, webhcat_site} = ctx.config.hdp
       # Prepare database configuration
       engine = ctx.config.hdp.hue_ini?['desktop']?['database']?['engine']
-      mysql_hosts = ctx.hosts_with_module 'phyla/utils/mysql_server'
+      mysql_hosts = ctx.hosts_with_module 'masson/commons/mysql_server'
       if (not engine and mysql_hosts.indexOf(ctx.config.host) isnt -1) or engine is 'mysql'
         db = {port, username, password} = ctx.config.mysql_server
         db.host = ctx.config.host

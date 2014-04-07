@@ -7,8 +7,8 @@ layout: module
 
     hproperties = require './lib/properties'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
-    module.exports.push 'phyla/core/yum'
+    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/core/yum'
 
     module.exports.push module.exports.configure = (ctx) ->
       return if ctx.hbase_configured

@@ -11,7 +11,7 @@ associated the NameNodes.
 
     lifecycle = require './lib/lifecycle'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
+    module.exports.push 'masson/bootstrap/'
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx

@@ -6,7 +6,7 @@ layout: module
 # HBase Start
 
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
+    module.exports.push 'masson/bootstrap/'
 
 ## Start HBase Master
 

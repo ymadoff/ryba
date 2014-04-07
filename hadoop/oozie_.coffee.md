@@ -6,7 +6,7 @@ layout: module
 # Oozie
 
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
+    module.exports.push 'masson/bootstrap/'
 
     module.exports.push module.exports.configure = (ctx) ->
       return if ctx.oozie__configured

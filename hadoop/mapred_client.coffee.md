@@ -8,7 +8,7 @@ layout: module
     mkcmd = require './lib/mkcmd'
 
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
+    module.exports.push 'masson/bootstrap/'
     module.exports.push 'phyla/hadoop/yarn_client'
 
     module.exports.push module.exports.configure = (ctx) ->

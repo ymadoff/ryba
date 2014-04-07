@@ -9,8 +9,8 @@ layout: module
     mkcmd = require './lib/mkcmd'
     lifecycle = require './lib/lifecycle'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
-    module.exports.push 'phyla/bootstrap/utils'
+    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'phyla/hadoop/hive_'
     module.exports.push 'phyla/hadoop/mapred_client'
     module.exports.push 'phyla/hadoop/yarn_client'

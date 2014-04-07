@@ -2,11 +2,11 @@
 each = require 'each'
 {EventEmitter} = require 'events'
 
+mecano = require 'mecano'
 conditions = require 'mecano/lib/conditions'
 misc = require 'mecano/lib/misc'
 child = require 'mecano/lib/child'
 properties = require './properties'
-mecano = require 'mecano'
 
 ###
 sept 2nd, 2013: need the [patched version](https://github.com/wdavidw/xmlbuilder-js/)
@@ -16,7 +16,7 @@ Options includes:
 *   `default`: Path to a file or object of properties used as default values.   
 *   `local_default`: Read the default file from the local filesystem (only apply if `default` is a string).   
 ###
-module.exports = (options, callback) ->
+module.exports = (ctx, options, callback) ->
   result = child mecano
   finish = (err, configured) ->
     callback err, configured if callback
@@ -31,9 +31,9 @@ module.exports = (options, callback) ->
       updated = 0
       options.source ?= options.destination
       do_read_source = ->
-        options.log? "Read source properties from '#{options.source}'"
+        ctx.log? "Read source properties from '#{options.source}'"
         # Populate org_props and, if merge, fnl_props
-        properties.read options.ssh, options.source, (err, props) ->
+        properties.read ctx.ssh, options.source, (err, props) ->
           return next err if err and err.code isnt 'ENOENT'
           org_props = if err then {} else props
           if options.merge
@@ -43,15 +43,15 @@ module.exports = (options, callback) ->
       do_load_default = () ->
         return do_merge() unless options.default
         return do_default() unless typeof options.default is 'string'
-        options.log? "Read default properties from #{options.default}"
+        ctx.log? "Read default properties from #{options.default}"
         # Populate options.default
-        ssh = if options.local_default then null else options.ssh
+        ssh = if options.local_default then null else ctx.ssh
         properties.read ssh, options.default, (err, dft) ->
           return next err if err
           options.default = dft
           do_default()
       do_default = () ->
-        options.log? "Merge default properties"
+        ctx.log? "Merge default properties"
         for k, v of options.default
           v = "#{v}" if typeof v is 'number'
           # if typeof v is 'undefined' or v is null
@@ -60,7 +60,7 @@ module.exports = (options, callback) ->
           fnl_props[k] = v if typeof fnl_props[k] is 'undefined' or fnl_props[k] is null
         do_merge()
       do_merge = () ->
-        options.log? "Merge user properties"
+        ctx.log? "Merge user properties"
         for k, v of options.properties
           v = "#{v}" if typeof v is 'number'
           if typeof v is 'undefined' or v is null
@@ -74,16 +74,16 @@ module.exports = (options, callback) ->
         keys = Object.keys keys
         for k in keys
           continue unless org_props[k] isnt fnl_props[k]
-          options.log? "Property '#{k}' was '#{org_props[k]}' and is now '#{fnl_props[k]}'"
+          ctx.log? "Property '#{k}' was '#{org_props[k]}' and is now '#{fnl_props[k]}'"
           updated = true
         do_save()
       do_save = ->
         return next() unless updated
-        options.log? "Save properties"
+        ctx.log? "Save properties"
         configured++
         options.content = properties.stringify fnl_props
         options.source = null
-        mecano.write options, (err, written) ->
+        ctx.write options, (err, written) ->
           next err
       conditions.all options, next, do_read_source
     .on 'both', (err) ->

@@ -9,8 +9,8 @@ layout: module
     lifecycle = require './lib/lifecycle'
     mkcmd = require './lib/mkcmd'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
-    module.exports.push 'phyla/utils/mysql_client'
+    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/commons/mysql_client'
     module.exports.push 'phyla/hadoop/core'
 
 Oozie source code and examples are located in /usr/share/doc/oozie-4.0.0.2.0.6.0/
@@ -25,13 +25,13 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
 ```
 
     module.exports.push module.exports.configure = (ctx) ->
-      require('../utils/mysql_server').configure ctx
+      require('masson/commons/mysql_server').configure ctx
       require('./oozie_').configure ctx
       {static_host, realm} = ctx.config.hdp
       ctx.config.hdp.oozie_db_admin_username ?= ctx.config.mysql_server.username
       ctx.config.hdp.oozie_db_admin_password ?= ctx.config.mysql_server.password
-      # dbhost = ctx.config.hdp.oozie_db_host ?= ctx.servers(action: 'phyla/utils/mysql_server')[0]
-      dbhost = ctx.config.hdp.oozie_db_host ?= ctx.host_with_module 'phyla/utils/mysql_server'
+      # dbhost = ctx.config.hdp.oozie_db_host ?= ctx.servers(action: 'masson/commons/mysql_server')[0]
+      dbhost = ctx.config.hdp.oozie_db_host ?= ctx.host_with_module 'masson/commons/mysql_server'
       ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{dbhost}:3306/oozie?createDatabaseIfNotExist=true"
       ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
       ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'

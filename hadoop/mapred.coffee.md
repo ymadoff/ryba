@@ -8,8 +8,8 @@ layout: module
     url = require 'url'
     mkcmd = require './lib/mkcmd'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
-    module.exports.push 'phyla/core/yum'
+    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/core/yum'
     module.exports.push 'phyla/hadoop/hdfs'
 
     module.exports.push module.exports.configure = (ctx) ->

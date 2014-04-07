@@ -6,4 +6,4 @@ layout: module
 # HBase Stop
 
 module.exports = []
-module.exports.push 'phyla/bootstrap'
+module.exports.push 'masson/bootstrap/'

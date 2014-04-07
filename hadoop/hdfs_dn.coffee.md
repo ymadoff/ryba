@@ -23,8 +23,8 @@ NameNodes, and send block location information and heartbeats to both.
     lifecycle = require './lib/lifecycle'
     mkcmd = require './lib/mkcmd'
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
-    module.exports.push 'phyla/bootstrap/utils'
+    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'phyla/hadoop/hdfs'
 
 ## Configuration

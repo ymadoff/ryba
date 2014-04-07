@@ -6,7 +6,7 @@ layout: module
 # MapRed
 
     module.exports = []
-    module.exports.push 'phyla/bootstrap'
+    module.exports.push 'masson/bootstrap/'
 
     module.exports.push module.exports.configure = (ctx) ->
       # Define Users and Groups
