@@ -16,7 +16,6 @@
     "regexp-quote": "latest",
     "request": "latest",
     "semver": "latest",
-    "tilde-expansion": "latest",
     "xmlbuilder": "latest"
   },
   "devDependencies": {
