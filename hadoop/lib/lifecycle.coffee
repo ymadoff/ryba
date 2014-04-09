@@ -436,9 +436,14 @@ lifecyle = module.exports =
         callback err, stopped
   hue_status: (ctx, callback) ->
     ctx.log "Hue status"
+    # We are not here to check if service is installed, for example this is
+    # called when stoping the service and we dont expect an error to be thrown
+    # if service isnt yet installed.
+    # exit code 1: not installed
+    # exit code 3: not started
     ctx.execute
       cmd: "service hue status"
-      code_skipped: 3
+      code_skipped: [1, 3]
     , (err, running) ->
       ctx.log "Hue status: #{if running then 'RUNNING' else 'STOPED'}"
       callback err, running
