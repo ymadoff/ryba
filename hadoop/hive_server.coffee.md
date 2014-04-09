@@ -25,23 +25,82 @@ layout: module
     # Validate DNS lookup
     module.exports.push 'masson/core/dns'
 
-
     module.exports.push module.exports.configure = (ctx) ->
       return if ctx.hive_server_configured
       ctx.hive_server_configured = true
       require('masson/commons/mysql_server').configure ctx
       require('./hive_').configure ctx
+      {hive_site} = ctx.config.hdp
       # Define Users and Groups
       # ctx.config.hdp.mysql_user ?= 'hive'
       # ctx.config.hdp.mysql_password ?= 'hive123'
       # ctx.config.hdp.webhcat_user ?= 'webhcat'
       ctx.config.hdp.hive_log_dir ?= '/var/log/hive'
       ctx.config.hdp.hive_pid_dir ?= '/var/run/hive'
-      ctx.config.hdp.hive_site['datanucleus.autoCreateTables'] ?= 'true'
-      [_, host, port] = /^.*?\/\/?(.*?)(?::(.*))?\/.*$/.exec ctx.config.hdp.hive_site['javax.jdo.option.ConnectionURL']
+      hive_site['datanucleus.autoCreateTables'] ?= 'true'
+      [_, host, port] = /^.*?\/\/?(.*?)(?::(.*))?\/.*$/.exec hive_site['javax.jdo.option.ConnectionURL']
       ctx.config.hdp.hive_jdo_host = host
       ctx.config.hdp.hive_jdo_port = port
       ctx.config.hdp.hive_libs ?= []
+      # Prepare database configuration
+      hive_admin = ctx.config.hdp.hive_admin ?= {}
+      if hive_site['javax.jdo.option.ConnectionURL']
+        jdbc = hive_site['javax.jdo.option.ConnectionURL']
+        jdbc = jdbc.substr(5) if jdbc.substr(0, 5) is 'jdbc:'
+        u = url.parse jdbc
+        hive_admin.engine ?= 'mysql' if u.protocol is 'mysql:'
+        hive_admin.host ?= u.hostname
+        hive_admin.port ?= u.port or '3306'
+        hive_admin.db ?= /(\w+)/.exec(u.pathname)[1]
+        hive_admin.username ?= 'root'
+        if ctx.hosts[hive_admin.host]
+          server_conf = ctx.hosts[hive_admin.host].config.mysql_server
+          hive_admin.password ?= server_conf['password']
+      else 
+        mysql_hosts = ctx.hosts_with_module 'masson/commons/mysql_server'
+        throw new Error "Expect at least one server with action \"masson/commons/mysql_server\"" if mysql_hosts.length is 0
+        mysql_host = if mysql_hosts.length is 1 then mysql_hosts[0] else
+          i = mysql_hosts.indexOf(ctx.config.host)
+          if i isnt -1 then mysql_hosts[i] else throw new Error "Failed to find a Mysql Server"
+        server_conf = ctx.hosts[mysql_host].mysql_server
+        console.log server_conf
+        hive_admin.engine ?= 'mysql'
+        hive_admin.host ?= "#{mysql_host}"
+        hive_admin.port ?= '3306'
+        hive_admin.db ?= 'hive'
+        hive_admin.username ?= 'root'
+        hive_admin.password ?= server_conf['password']
+        hive_site['javax.jdo.option.ConnectionURL'] ?= "jdbc:mysql://#{mysql_host}:#{hive_admin.port}/#{hive_admin.db}?createDatabaseIfNotExist=true"
+      throw new Error "Hive admin database username is required" unless hive_admin.username
+      throw new Error "Hive admin database password is required" unless hive_admin.password
+      throw new Error "Hive database username is required" unless hive_site['javax.jdo.option.ConnectionUserName']
+      throw new Error "Hive database password is required" unless hive_site['javax.jdo.option.ConnectionPassword']
+
+    module.exports.push name: 'HDP Hive & HCat client # Database', callback: (ctx, next) ->
+      {hive_site, hive_admin} = ctx.config.hdp
+      {engine, host, port, db, username, password} = hive_admin
+      ConnectionUserName = hive_site['javax.jdo.option.ConnectionUserName']
+      ConnectionPassword = hive_site['javax.jdo.option.ConnectionPassword']
+      modified = false
+      engines = 
+        mysql: ->
+          escape = (text) -> text.replace(/[\\"]/g, "\\$&")
+          cmd = "mysql -u#{username} -p#{password} -h#{host} -P#{port} -e "
+          ctx.execute
+            cmd: """
+            if #{cmd} "use #{db}"; then exit 2; fi
+            #{cmd} "
+            create database if not exists #{db};
+            grant all privileges on #{db}.* to '#{ConnectionUserName}'@'localhost' identified by '#{ConnectionPassword}';
+            grant all privileges on #{db}.* to '#{ConnectionUserName}'@'%' identified by '#{ConnectionPassword}';
+            flush privileges;
+            "
+            """
+            code_skipped: 2
+          , (err, created, stdout, stderr) ->
+            return next err, if created then ctx.OK else ctx.PASS
+      return next new Error 'Hive database engine not supported' unless engines[engine]
+      engines[engine]()
 
     module.exports.push name: 'HDP Hive & HCat client # Configure', callback: (ctx, next) ->
       {hive_site, hive_user, hive_group, hive_conf_dir} = ctx.config.hdp
