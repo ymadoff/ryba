@@ -70,17 +70,17 @@ See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments
         host = ctx.config.host.split('.')[0]
         ctx.execute
           cmd: mkcmd.test ctx, """
-          if hdfs dfs -test -d /user/test/hive_#{ctx.config.host}/check_metastore_tb; then exit 2; fi
-          hdfs dfs -mkdir -p /user/test/hive_#{ctx.config.host}/check_metastore_tb
-          echo -e 'a|1\\\\nb|2\\\\nc|3' | hdfs dfs -put - /user/test/hive_#{ctx.config.host}/check_metastore_tb/data
+          if hdfs dfs -test -d /user/test/#{ctx.config.host}-hive/check_metastore_tb; then exit 2; fi
+          hdfs dfs -mkdir -p /user/test/#{ctx.config.host}-hive/check_metastore_tb
+          echo -e 'a|1\\\\nb|2\\\\nc|3' | hdfs dfs -put - /user/test/#{ctx.config.host}-hive/check_metastore_tb/data
           hive -e "
-            CREATE DATABASE IF NOT EXISTS check_#{host}_db  LOCATION '/user/test/hive_#{ctx.config.host}'; \\
+            CREATE DATABASE IF NOT EXISTS check_#{host}_db  LOCATION '/user/test/#{ctx.config.host}-hive'; \\
             USE check_#{host}_db; \\
             CREATE TABLE IF NOT EXISTS check_metastore_tb(col1 STRING, col2 INT); \\
           "
           hive -e "SELECT SUM(col2) FROM check_#{host}_db.check_metastore_tb;"
           hive -e "DROP TABLE check_#{host}_db.check_metastore_tb; DROP DATABASE check_#{host}_db;"
-          #hdfs dfs -mkdir -p /user/test/hive_#{ctx.config.host}/check_metastore_tb
+          #hdfs dfs -mkdir -p /user/test/#{ctx.config.host}-hive/check_metastore_tb
           """
           code_skipped: 2
         , (err, executed, stdout) ->
@@ -94,14 +94,14 @@ See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments
         host = ctx.config.host.split('.')[0]
         ctx.execute
           cmd: mkcmd.test ctx, """
-          if hdfs dfs -test -d /user/test/hive_#{ctx.config.host}/check_server2_tb; then exit 2; fi
-          hdfs dfs -mkdir -p /user/test/hive_#{ctx.config.host}/check_server2_tb
-          echo -e 'a|1\\\\nb|2\\\\nc|3' | hdfs dfs -put - /user/test/hive_#{ctx.config.host}/check_server2_tb/data
-          #{query "CREATE DATABASE IF NOT EXISTS check_#{host}_db  LOCATION '/user/test/hive_#{ctx.config.host}'"}
+          if hdfs dfs -test -d /user/test/#{ctx.config.host}-hive/check_server2_tb; then exit 2; fi
+          hdfs dfs -mkdir -p /user/test/#{ctx.config.host}-hive/check_server2_tb
+          echo -e 'a|1\\\\nb|2\\\\nc|3' | hdfs dfs -put - /user/test/#{ctx.config.host}-hive/check_server2_tb/data
+          #{query "CREATE DATABASE IF NOT EXISTS check_#{host}_db  LOCATION '/user/test/#{ctx.config.host}-hive'"}
           #{query 'CREATE TABLE IF NOT EXISTS check_#{host}_db.check_server2_tb(col1 STRING, col2 INT);'}
           #{query 'SELECT SUM(col2) FROM check_#{host}_db.check_server2_tb;'}
           #{query 'DROP TABLE check_#{host}_db.check_server2_tb; DROP DATABASE check_#{host}_db;'}
-          hdfs dfs -mkdir -p /user/test/hive_#{ctx.config.host}/check_server2_tb
+          hdfs dfs -mkdir -p /user/test/#{ctx.config.host}-hive/check_server2_tb
           """
           code_skipped: 2
         , (err, executed, stdout) ->

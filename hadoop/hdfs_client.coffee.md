@@ -48,8 +48,8 @@ layout: module
         return next err if err
         ctx.execute
           cmd: mkcmd.test ctx, """
-          if hdfs dfs -test -f /user/#{test_user}/hdfs_#{ctx.config.host}; then exit 2; fi
-          hdfs dfs -touchz /user/#{test_user}/hdfs_#{ctx.config.host}
+          if hdfs dfs -test -f /user/#{test_user}/#{ctx.config.host}-hdfs; then exit 2; fi
+          hdfs dfs -touchz /user/#{test_user}/#{ctx.config.host}-hdfs
           """
           code_skipped: 2
         , (err, executed, stdout) ->

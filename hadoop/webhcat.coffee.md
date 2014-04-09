@@ -149,9 +149,9 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
       port = webhcat_site['templeton.port']
       ctx.execute
         cmd: mkcmd.test ctx, """
-        if hdfs dfs -test -f /user/test/check_webhcat; then exit 2; fi
+        if hdfs dfs -test -f /user/test/#{ctx.config.host}-webhcat; then exit 2; fi
         curl -s --negotiate -u : http://#{ctx.config.host}:#{port}/templeton/v1/status
-        hdfs dfs -touchz /user/test/check_webhcat
+        hdfs dfs -touchz /user/test/#{ctx.config.host}-webhcat
         """
         code_skipped: 2
       , (err, executed, stdout) ->

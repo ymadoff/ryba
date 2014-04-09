@@ -54,7 +54,7 @@ layout: module
         ctx.execute
           cmd: """
           if ! echo #{oozie_test_password} | kinit #{oozie_test_principal} >/dev/null; then exit 1; fi
-          if hdfs dfs -test -f test_oozie/target; then exit 2; fi
+          if hdfs dfs -test -f #{ctx.config.host}-oozie-workflow/target; then exit 2; fi
           """
           code_skipped: 2
         , (err, executed, stdout) ->
@@ -66,7 +66,7 @@ layout: module
             nameNode=hdfs://#{nameservice}:8020
             jobTracker=#{rm}:8050
             queueName=default
-            basedir=${nameNode}/user/#{/^(.*?)[\/@]/.exec(oozie_test_principal)[1]}/test_oozie
+            basedir=${nameNode}/user/#{/^(.*?)[\/@]/.exec(oozie_test_principal)[1]}/#{ctx.config.host}-oozie-workflow
             oozie.wf.application.path=${basedir}
             """
             destination: '/tmp/oozie_job.properties'
@@ -92,13 +92,13 @@ layout: module
             return next err if err
             ctx.execute
               cmd: """
-              hdfs dfs -mkdir -p test_oozie
-              hdfs dfs -touchz test_oozie/source
-              hdfs dfs -put -f /tmp/oozie_job.properties test_oozie/job.properties
-              hdfs dfs -put -f /tmp/oozie_workflow.xml test_oozie/workflow.xml
+              hdfs dfs -mkdir -p #{ctx.config.host}-oozie-workflow
+              hdfs dfs -touchz #{ctx.config.host}-oozie-workflow/source
+              hdfs dfs -put -f /tmp/oozie_job.properties #{ctx.config.host}-oozie-workflow/job.properties
+              hdfs dfs -put -f /tmp/oozie_workflow.xml #{ctx.config.host}-oozie-workflow/workflow.xml
               export OOZIE_URL=http://#{oozie_server}:#{oozie_port}/oozie
               oozie job -run -config /tmp/oozie_job.properties
-              hdfs dfs -test -f test_oozie/target
+              hdfs dfs -test -f #{ctx.config.host}-oozie-workflow/target
               """
               code_skipped: 2
             , (err, executed, stdout) ->

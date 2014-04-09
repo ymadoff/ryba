@@ -39,7 +39,7 @@ to re-execute the check.
         if hdfs dfs -test -d #{ctx.config.host}-mapred; then exit 1; fi
         hdfs dfs -mkdir #{ctx.config.host}-mapred
         hadoop jar /usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples-2*.jar teragen 100 #{ctx.config.host}-mapred/input
-        hadoop jar /usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples-2*.jar terasort #{ctx.config.host}-mapred/input 10gsort/output
+        hadoop jar /usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples-2*.jar terasort #{ctx.config.host}-mapred/input #{ctx.config.host}-mapred/10gsort
         """
         code_skipped: 1
       , (err, executed, stdout) ->

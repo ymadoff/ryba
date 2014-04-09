@@ -101,7 +101,7 @@ unless the "hdp.force_check" configuration property is set to "true".
         return next err if err
         ctx.execute
           cmd: mkcmd.test ctx, """
-          if hdfs dfs -test -d /user/test/pig_#{ctx.config.host}; then exit 1; fi
+          if hdfs dfs -test -d /user/test/#{ctx.config.host}-pig; then exit 1; fi
           exit 0
           """
           code: 1
@@ -111,17 +111,17 @@ unless the "hdp.force_check" configuration property is set to "true".
           return next err, ctx.PASS if err or skip
           ctx.execute
             cmd: mkcmd.test ctx, """
-            hdfs dfs -rm -r /user/test/pig_#{ctx.config.host}
-            hdfs dfs -mkdir -p /user/test/pig_#{ctx.config.host}
-            echo -e 'a|1\\\\nb|2\\\\nc|3' | hdfs dfs -put - /user/test/pig_#{ctx.config.host}/data
+            hdfs dfs -rm -r /user/test/#{ctx.config.host}-pig
+            hdfs dfs -mkdir -p /user/test/#{ctx.config.host}-pig
+            echo -e 'a|1\\\\nb|2\\\\nc|3' | hdfs dfs -put - /user/test/#{ctx.config.host}-pig/data
             """
           , (err, executed) ->
             return next err if err
             ctx.write
               content: """
-              data = LOAD '/user/test/pig_#{ctx.config.host}/data' USING PigStorage(',') AS (text, number);
+              data = LOAD '/user/test/#{ctx.config.host}-pig/data' USING PigStorage(',') AS (text, number);
               result = foreach data generate UPPER(text), number+2;
-              STORE result INTO '/user/test/pig_#{ctx.config.host}/result' USING PigStorage();
+              STORE result INTO '/user/test/#{ctx.config.host}-pig/result' USING PigStorage();
               """
               destination: '/home/test/test.pig'
             , (err, written) ->
@@ -130,7 +130,7 @@ unless the "hdp.force_check" configuration property is set to "true".
                 cmd: mkcmd.test ctx, """
                 pig /home/test/test.pig
                 rm -rf /home/test/test.pig
-                hdfs dfs -test -d /user/test/pig_#{ctx.config.host}/result
+                hdfs dfs -test -d /user/test/#{ctx.config.host}-pig/result
                 """
               , (err, executed) ->
                 next err, ctx.OK

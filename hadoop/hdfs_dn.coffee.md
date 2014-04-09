@@ -241,9 +241,9 @@ Attemp to put a file into HDFS. the file "/etc/passwd" will be placed at
       {test_user} = ctx.config.hdp
       ctx.execute
         cmd: mkcmd.test ctx, """
-        if hdfs dfs -test -f /user/#{test_user}/#{ctx.config.host}_dn; then exit 2; fi
+        if hdfs dfs -test -f /user/#{test_user}/#{ctx.config.host}-dn; then exit 2; fi
         echo 'Upload file to HDFS'
-        hdfs dfs -put /etc/passwd /user/#{test_user}/#{ctx.config.host}_dn
+        hdfs dfs -put /etc/passwd /user/#{test_user}/#{ctx.config.host}-dn
         """
         code_skipped: 2
       , (err, executed, stdout, stderr) ->
@@ -263,8 +263,8 @@ for more information.
       do_init = ->
         ctx.execute
           cmd: mkcmd.test ctx, """
-          if hdfs dfs -test -f /user/#{test_user}/#{ctx.config.host}_webhdfs; then exit 2; fi
-          hdfs dfs -touchz /user/#{test_user}/#{ctx.config.host}_webhdfs
+          if hdfs dfs -test -f /user/#{test_user}/#{ctx.config.host}-webhdfs; then exit 2; fi
+          hdfs dfs -touchz /user/#{test_user}/#{ctx.config.host}-webhdfs
           kdestroy
           """
           code_skipped: 2
@@ -281,7 +281,8 @@ for more information.
           """
         , (err, executed, stdout) ->
           return next err if err
-          count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "#{ctx.config.host}_webhdfs").length
+          console.log JSON.parse(stdout)
+          count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "#{ctx.config.host}-webhdfs").length
           return next null, ctx.FAILED unless count
           do_token()
       do_token = ->
@@ -299,7 +300,8 @@ for more information.
             """
           , (err, executed, stdout) ->
             return next err if err
-            count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "#{ctx.config.host}_webhdfs").length
+            console.log JSON.parse(stdout)
+            count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "#{ctx.config.host}-webhdfs").length
             return next null, ctx.FAILED unless count
             do_end()
       do_end = ->
