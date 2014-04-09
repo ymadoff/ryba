@@ -57,7 +57,7 @@ Example:
 
     module.exports.push module.exports.configure = (ctx) ->
       require('./hdfs').configure ctx
-      ctx.config.hdp.hdfs_site['dfs.journalnode.edits.dir'] ?= '/var/run/hadoop-hdfs/journalnode_edit_dir'
+      ctx.config.hdp.hdfs_site['dfs.journalnode.edits.dir'] ?= '/hadoop/journalnode'
 
 ## Layout
 
