@@ -55,9 +55,10 @@ Example:
       require('./oozie_').configure ctx
       # Allow proxy user inside "core-site.xml"
       require('./core').configure ctx
-      {nameservice, active_nn_host, hadoop_conf_dir, webhcat_site} = ctx.config.hdp
+      {nameservice, active_nn_host, hadoop_conf_dir, webhcat_site, hue_ini} = ctx.config.hdp
+      hue_ini ?= ctx.config.hdp.hue_ini = {}
       # Prepare database configuration
-      engine = ctx.config.hdp.hue_ini?['desktop']?['database']?['engine']
+      engine = hue_ini?['desktop']?['database']?['engine']
       mysql_hosts = ctx.hosts_with_module 'masson/commons/mysql_server'
       if (not engine and mysql_hosts.indexOf(ctx.config.host) isnt -1) or engine is 'mysql'
         db = {port, username, password} = ctx.config.mysql_server
@@ -81,7 +82,6 @@ Example:
       ctx.config.hdp.hue_conf_dir ?= '/etc/hue/conf'
       ctx.config.hdp.hue_user ?= 'hue'
       ctx.config.hdp.hue_group ?= 'hue'
-      hue_ini = ctx.config.hdp.hue_ini ?= {}
       # Configure HDFS Cluster
       hue_ini['hadoop'] ?= {}
       hue_ini['hadoop']['hdfs_clusters'] ?= {}
@@ -254,8 +254,6 @@ the default database while mysql is the recommanded choice.
         mysql: ->
           host = hue_ini['desktop']['database']['host']
           port = hue_ini['desktop']['database']['port']
-          username = hue_ini['desktop']['database']['user'] ?= 'hue'
-          password = hue_ini['desktop']['database']['password'] ?= 'hue123'
           escape = (text) -> text.replace(/[\\"]/g, "\\$&")
           cmd = "mysql -u#{hue_db_admin_username} -p#{hue_db_admin_password} -h#{host} -P#{port} -e "
           ctx.execute
