@@ -1,6 +1,6 @@
 {
   "name": "phyla",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Hadoop deployment made easy: HA and Kerberos secured cluster in 1 command",
   "dependencies": {
     "coffee-script": "latest",
