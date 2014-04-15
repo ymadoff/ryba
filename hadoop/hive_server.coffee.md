@@ -63,7 +63,6 @@ layout: module
           i = mysql_hosts.indexOf(ctx.config.host)
           if i isnt -1 then mysql_hosts[i] else throw new Error "Failed to find a Mysql Server"
         server_conf = ctx.hosts[mysql_host].mysql_server
-        console.log server_conf
         hive_admin.engine ?= 'mysql'
         hive_admin.host ?= "#{mysql_host}"
         hive_admin.port ?= '3306'

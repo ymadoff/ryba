@@ -71,9 +71,11 @@ hadoop org.apache.hadoop.security.HadoopKerberosName HTTP/master1.hadoop@HADOOP.
       # ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://#{namenode}:8020"
       ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.hdp.nameservice}"
       ctx.hconfigure = (options, callback) ->
-        # options.ssh = ctx.ssh if typeof options.ssh is 'undefined'
-        # options.log ?= ctx.log
-        hconfigure ctx, options, callback
+        options.ssh = ctx.ssh if typeof options.ssh is 'undefined'
+        options.log ?= ctx.log
+        options.stdout ?= ctx.stdout
+        options.stderr ?= ctx.stderr
+        hconfigure options, callback
       # hadoop env
       ctx.config.hdp.hadoop_opts ?= 'java.net.preferIPv4Stack': true
       hadoop_opts = "export HADOOP_OPTS=\""
@@ -112,7 +114,7 @@ Declare the HDP repository.
             do_keys()
       do_keys = ->
         ctx.log 'Upload PGP keys'
-        misc.file.readFile ctx.ssh, "/etc/yum.repos.d/hdp.repo", (err, content) ->
+        ctx.fs.readFile "/etc/yum.repos.d/hdp.repo", (err, content) ->
           return next err if err
           keys = {}
           reg = /^pgkey=(.*)/gm

@@ -16,7 +16,8 @@
     "regexp-quote": "latest",
     "request": "latest",
     "semver": "latest",
-    "xmlbuilder": "latest"
+    "xmlbuilder": "latest",
+    "ssh2-fs": "latest"
   },
   "devDependencies": {
     "mocha": "latest",

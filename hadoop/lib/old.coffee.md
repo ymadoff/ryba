@@ -65,7 +65,7 @@ the directory named after the nameservice is created on each JournalNode host.
           ctx.connect journalnode, (err, ssh) ->
             return next err if err
             dir = "#{ctx.config.hdp.hdfs_site['dfs.journalnode.edits.dir']}/#{nameservice}"
-            misc.file.exists ssh, dir, (err, exist) ->
+            ctx.fs.exists dir, (err, exist) ->
               exists++ if exist
               next()
         .on 'error', (err) ->

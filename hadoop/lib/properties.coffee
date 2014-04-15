@@ -1,5 +1,5 @@
 
-fs = require 'fs'
+fs = require 'ssh2-fs'
 jsdom = require 'jsdom'
 builder = require 'xmlbuilder'
 misc = require 'mecano/lib/misc'
@@ -85,7 +85,7 @@ self = module.exports =
     if args.length is 2
       callback = property
       property = null
-    misc.file.readFile ssh, path, 'utf8', (err, markup) ->
+    fs.readFile ssh, path, 'utf8', (err, markup) ->
       return callback err if err
       callback null, self.parse markup, property
   ###
@@ -104,7 +104,7 @@ self = module.exports =
     properties = args[1]
     callback = args[2]
     markup = self.stringify properties
-    misc.file.writeFile ssh, path, markup, (err) ->
+    fs.writeFile ssh, path, markup, (err) ->
       return callback err if err
       callback null, markup
 

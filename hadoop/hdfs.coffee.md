@@ -53,7 +53,6 @@ disappear and be replaced by "hdp.hdfs_site['dfs.namenode.name.dir']" and
 *   `hdfs.test_user`   
 *   `hdfs.snn_port`   
 
-
 Example:
 
 ```json

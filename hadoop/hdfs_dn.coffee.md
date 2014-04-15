@@ -281,7 +281,6 @@ for more information.
           """
         , (err, executed, stdout) ->
           return next err if err
-          console.log JSON.parse(stdout)
           count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "#{ctx.config.host}-webhdfs").length
           return next null, ctx.FAILED unless count
           do_token()
@@ -300,7 +299,6 @@ for more information.
             """
           , (err, executed, stdout) ->
             return next err if err
-            console.log JSON.parse(stdout)
             count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "#{ctx.config.host}-webhdfs").length
             return next null, ctx.FAILED unless count
             do_end()
