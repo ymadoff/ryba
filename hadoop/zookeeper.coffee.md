@@ -49,17 +49,17 @@ Instructions to [install the ZooKeeper RPMs](http://docs.hortonworks.com/HDPDocu
         destination: zookeeper_data_dir
         uid: zookeeper_user
         gid: hadoop_group
-        mode: '755'
+        mode: 0o755
       ,
         destination: zookeeper_pid_dir
         uid: zookeeper_user
         gid: hadoop_group
-        mode: '755'
+        mode: 0o755
       ,
         destination: zookeeper_log_dir
         uid: zookeeper_user
         gid: hadoop_group
-        mode: '755'
+        mode: 0o755
       ], (err, modified) ->
         next err, if modified then ctx.OK else ctx.PASS
 
