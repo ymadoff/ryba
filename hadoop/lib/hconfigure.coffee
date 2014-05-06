@@ -64,7 +64,9 @@ module.exports = (options, callback) ->
         for k, v of options.properties
           v = "#{v}" if typeof v is 'number'
           if typeof v is 'undefined' or v is null
-          then delete fnl_props[k]
+            delete fnl_props[k]
+          else if typeof v isnt 'string'
+            return next Error "Invalid value type '#{typeof v}' for property '#{k}'"
           else fnl_props[k] = v
         do_compare()
       do_compare = ->
