@@ -70,9 +70,11 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         return next err if err
         next null, if created then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP MapRed JHS # Start', callback: (ctx, next) ->
-      lifecycle.jhs_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+    module.exports.push 'phyla/hadoop/mapred_jhs_start'
+
+    # module.exports.push name: 'HDP MapRed JHS # Start', callback: (ctx, next) ->
+    #   lifecycle.jhs_start ctx, (err, started) ->
+    #     next err, if started then ctx.OK else ctx.PASS
 
 
 
