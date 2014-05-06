@@ -18,8 +18,7 @@
 #
 
 #Set JAVA HOME
-# export JAVA_HOME=/usr/jdk/jdk1.6.0_31
-export JAVA_HOME=/usr/java/default
+export JAVA_HOME=/usr/jdk/jdk1.6.0_31
 
 # Set Oozie specific environment variables here.
 
@@ -34,17 +33,14 @@ export JAVA_HOME=/usr/java/default
 
 # Oozie logs directory
 #
-#export OOZIE_LOG=/var/log/oozie
-export OOZIE_LOG=<%- @config.hdp.oozie_log_dir %>
+export OOZIE_LOG=/var/log/oozie
 
 # Oozie pid directory
 #
-# export CATALINA_PID=/var/run/oozie/oozie.pid
-export CATALINA_PID=<%- @config.hdp.oozie_pid_dir %>/oozie.pid
+export CATALINA_PID=/var/run/oozie/oozie.pid
 
 #Location of the data for oozie
-# export OOZIE_DATA=/hadoop/oozie/data/
-export OOZIE_DATA=<%- @config.hdp.oozie_data %>
+export OOZIE_DATA=/hadoop/oozie/data/
 
 # Oozie Log4J configuration file to load from Oozie configuration directory
 #

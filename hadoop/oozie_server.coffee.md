@@ -197,7 +197,7 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
       {oozie_user, hadoop_group, oozie_site, realm} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
-        principal: oozie_site['oozie.service.HadoopAccessorService.kerberos.principal'].replace '_HOST', ctx.config.host
+        principal: oozie_site['oozie.service.HadoopAccessorService.kerberos.principal'] #.replace '_HOST', ctx.config.host
         randkey: true
         keytab: oozie_site['oozie.service.HadoopAccessorService.keytab.file']
         uid: oozie_user

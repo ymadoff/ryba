@@ -96,6 +96,9 @@ export HADOOP_IDENT_STRING=$USER
 
 # export HADOOP_NICENESS=10
 
+# Add native libraries to Java path
+export JAVA_LIBRARY_PATH=${JAVA_LIBRARY_PATH}:/usr/lib/hadoop/lib/native/Linux-amd64-64
+
 # Use libraries from standard classpath
 JAVA_JDBC_LIBS=""
 #Add libraries required by mysql connector

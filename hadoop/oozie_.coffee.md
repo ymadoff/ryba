@@ -42,12 +42,28 @@ layout: module
         next err, if executed then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Oozie # Environment', callback: (ctx, next) ->
-      {oozie_user, hadoop_group, oozie_conf_dir} = ctx.config.hdp
-      ctx.render
+      {oozie_user, hadoop_group, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_data} = ctx.config.hdp
+      ctx.write
         source: "#{__dirname}/files/oozie/oozie-env.sh"
         destination: "#{oozie_conf_dir}/oozie-env.sh"
-        context: ctx
         local_source: true
+        write: [
+          match: /^export JAVA_HOME=.*$/mg
+          replace: "export JAVA_HOME=/usr/java/default" # TODO, discover value from masson/commons/java
+          append: true
+        ,
+          match: /^export OOZIE_LOG=.*$/mg
+          replace: "export OOZIE_LOG=#{oozie_log_dir}"
+          append: true
+        ,
+          match: /^export CATALINA_PID=.*$/mg
+          replace: "export CATALINA_PID=#{oozie_pid_dir}"
+          append: true
+        ,
+          match: /^export OOZIE_DATA=.*$/mg
+          replace: "export OOZIE_DATA=#{OOZIE_DATA}"
+          append: true
+        ]
         uid: oozie_user
         gid: hadoop_group
         mode: 0o0755
