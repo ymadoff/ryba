@@ -60,9 +60,14 @@ Example:
       # Prepare database configuration
       engine = hue_ini?['desktop']?['database']?['engine']
       mysql_hosts = ctx.hosts_with_module 'masson/commons/mysql_server'
-      if (not engine and mysql_hosts.indexOf(ctx.config.host) isnt -1) or engine is 'mysql'
-        db = {port, username, password} = ctx.config.mysql_server
-        db.host = ctx.config.host
+      if mysql_hosts.length isnt 1
+        mysql_hosts = mysql_hosts.filter (host) -> host is ctx.config.host
+      mysql_host = if mysql_hosts.length is 1 then mysql_hosts[0] else null
+      if (not engine and mysql_host) or engine is 'mysql'
+        ctx_mysql_server = ctx.hosts[mysql_host]
+        require('masson/commons/mysql_server').configure ctx_mysql_server
+        db = {port, username, password} = ctx_mysql_server.config.mysql_server
+        db.host = mysql_host
         db.engine = 'mysql'
       else if not engine
         db = engine: 'sqlite3'
