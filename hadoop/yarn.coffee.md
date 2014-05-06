@@ -225,25 +225,66 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         next null, if modified then ctx.OK else ctx.PASS
       do_yarn()
 
-HDP YARN # Tuning
+HDP YARN # Memory Allocation
 
-yarn.nodemanager.vmem-pmem-ratio property: Is defines ratio of virtual memory to available pysical memory, Here is 2.1 means virtual memory will be double the size of physical memory.
+yarn.nodemanager.vmem-pmem-ratio property: Is defines ratio of virtual memory to
+available pysical memory, Here is 2.1 means virtual memory will be double the 
+size of physical memory.
 
-yarn.app.mapreduce.am.command-opts: In yarn ApplicationMaster(AM) is responsible for securing necessary resources. So this property defines how much memory required to run AM itself. Don't confuse this with nodemanager, where job will be executed.
+yarn.app.mapreduce.am.command-opts: In yarn ApplicationMaster(AM) is responsible
+for securing necessary resources. So this property defines how much memory 
+required to run AM itself. Don't confuse this with nodemanager, where job will 
+be executed.
 
-yarn.app.mapreduce.am.resource.mb: This property specify criteria to select resource for particular job. Here is given 1536 Means any nodemanager which has equal or more memory available will get selected for executing job.
+yarn.app.mapreduce.am.resource.mb: This property specify criteria to select 
+resource for particular job. Here is given 1536 Means any nodemanager which has 
+equal or more memory available will get selected for executing job.
 
 Ressources:
 http://stackoverflow.com/questions/18692631/difference-between-3-memory-parameters-in-hadoop-2
+blog.cloudera.com/blog/2014/04/apache-hadoop-yarn-avoiding-6-time-consuming-gotchas/
 
-    module.exports.push name: 'HDP YARN # Tuning', callback: (ctx, next) ->
-      # yarn.nodemanager.resource.memory-mb
-      # yarn.nodemanager.vmem-pmem-ratio
+# todo, got to [HortonWorks article and make properties dynamic or improve example](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
+
+Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Containers to be allocated to each node
+
+    module.exports.push name: 'HDP YARN # Memory Allocation', callback: module.exports.tuning = (ctx, next) ->
+      {yarn, hadoop_conf_dir} = ctx.config.hdp
+      yarn_site = yarn
       # yarn.scheduler.maximum-allocation-mb
-      # yarn.scheduler.minimum-allocation-mb
       # yarn.nodemanager.log.retain-seconds (cherif mettre la valeur à 10800 au lie de 604800)
       # yarn.log-aggregation.retain-seconds (chefrif)
-      next null, "TODO"
+
+      # Follow [Hortonworks example](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
+      # As a general recommendation, Hortonworks found that allowing for 1-2 
+      # Containers per disk and per core gives the best balance for cluster utilization.
+      # Each machine in our cluster has 96 GB of RAM. Some of this RAM should be 
+      # reserved for Operating System usage. On each node, we’ll reserve 10% 
+      # with a maximum of 8 GB for the Operating System.
+      memTotalMb = Math.round ctx.meminfo.MemTotal / 1000 / 1000
+      reserved = memTotalMb * 0.1
+      max_reserved = 8*1024
+      reserved = max_reserved if reserved > max_reserved
+      memory = yarn_site['yarn.nodemanager.resource.memory-mb'] ?= "#{memTotalMb-reserved}"
+      # We provide YARN guidance on how to break up the total resources 
+      # available into Containers by specifying the minimum unit of RAM to 
+      # allocate for a Container. . We have 12 disk, experience suggest that a 
+      # ratio between 1 and 2 container per disk, so we want to allow for a 
+      # maximum of 20 Containers, and thus need (40 GB total RAM) / (20 # of 
+      # Containers) = 2 GB minimum per container
+      containers = Math.round(yarn_site['yarn.nodemanager.local-dirs'].length * 1.6)
+      memory_minimum = yarn_site['yarn.scheduler.minimum-allocation-mb'] ?= Math.round(memory / containers)
+      # Note, we dont configure "yarn.scheduler.maximum-allocation-mb", not sure if we need it
+      ratio = yarn_site['yarn.nodemanager.vmem-pmem-ratio'] ?= "2.1" # also defined by phyla/hadoop/mapred
+      ctx.hconfigure
+        destination: "#{hadoop_conf_dir}/yarn-site.xml"
+        properties:
+          'yarn.nodemanager.vmem-pmem-ratio': ratio
+          'yarn.nodemanager.resource.memory-mb': memory
+          'yarn.scheduler.minimum-allocation-mb': memory_minimum
+        merge: true
+      , (err, configured) ->
+        return next err, if configured then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP YARN # Keytabs Directory', timeout: -1, callback: (ctx, next) ->
       ctx.mkdir

@@ -22,19 +22,29 @@ layout: module
       ctx.config.hdp.mapred_user ?= "mapred"
       ctx.config.hdp.mapred ?= {}
       ctx.config.hdp.mapred['mapreduce.job.counters.max'] ?= 120
+      # http://blog.cloudera.com/blog/2013/11/migrating-to-mapreduce-2-on-yarn-for-operators/
+      # In MR1, the mapred.tasktracker.map.tasks.maximum and mapred.tasktracker.
+      # reduce.tasks.maximum properties dictated how many map and reduce slots each 
+      # TaskTracker had. These properties no longer exist in YARN. Instead, YARN uses 
+      # yarn.nodemanager.resource.memory-mb and yarn.nodemanager.resource.cpu-vcores, 
+      # which control the amount of memory and CPU on each node, both available to both 
+      # maps and reduces.
       # http://developer.yahoo.com/hadoop/tutorial/module7.html
       # 1/2 * (cores/node) to 2 * (cores/node)
-      ctx.config.hdp.mapred['mapred.tasktracker.map.tasks.maximum'] ?= ctx.config.hdp.dfs_data_dir.length
-      ctx.config.hdp.mapred['mapred.tasktracker.reduce.tasks.maximum'] ?= Math.ceil(ctx.config.hdp.dfs_data_dir.length / 2)
+      # ctx.config.hdp.mapred['mapred.tasktracker.map.tasks.maximum'] ?= ctx.config.hdp.dfs_data_dir.length
+      # ctx.config.hdp.mapred['mapred.tasktracker.reduce.tasks.maximum'] ?= Math.ceil(ctx.config.hdp.dfs_data_dir.length / 2)
       ctx.config.hdp.mapred['mapreduce.jobtracker.system.dir'] ?= '/mapred/system'
       # ctx.config.hdp.mapred_log_dir ?= '/var/log/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#73
       ctx.config.hdp.mapred_pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
       # [Configurations for MapReduce Applications](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuring_the_Hadoop_Daemons_in_Non-Secure_Mode)
+      # The values for "mapreduce.map.memory.mb", "mapreduce.reduce.memory.mb",
+      # "mapreduce.map.java.opts", "mapreduce.reduce.java.opts" are inspired by 
+      # [HortonWorks recommandations](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
       ctx.config.hdp.mapred['mapreduce.framework.name'] ?= 'yarn' # Execution framework set to Hadoop YARN.
-      ctx.config.hdp.mapred['mapreduce.map.memory.mb'] ?= '4000' # Larger resource limit for maps.
-      ctx.config.hdp.mapred['mapreduce.map.java.opts'] ?= '-Xmx2560M' # Larger heap-size for child jvms of maps.
-      ctx.config.hdp.mapred['mapreduce.reduce.memory.mb'] ?= '3072' # Larger resource limit for reduces.
-      ctx.config.hdp.mapred['mapreduce.reduce.java.opts'] ?= '-Xmx2560M' # Larger heap-size for child jvms of reduces.
+      # ctx.config.hdp.mapred['mapreduce.map.memory.mb'] ?= '4096' # Larger resource limit for maps.
+      # ctx.config.hdp.mapred['mapreduce.map.java.opts'] ?= '-Xmx3072m' # Larger heap-size for child jvms of maps.
+      # ctx.config.hdp.mapred['mapreduce.reduce.memory.mb'] ?= '8192' # Larger resource limit for reduces.
+      # ctx.config.hdp.mapred['mapreduce.reduce.java.opts'] ?= '-Xmx6144m' # Larger heap-size for child jvms of reduces.
       ctx.config.hdp.mapred['mapreduce.task.io.sort.mb'] ?= '1024' # Higher memory-limit while sorting data for efficiency.
       ctx.config.hdp.mapred['mapreduce.task.io.sort.factor'] ?= '100' # More streams merged at once while sorting files.
       ctx.config.hdp.mapred['mapreduce.reduce.shuffle.parallelcopies'] ?= '50' #  Higher number of parallel copies run by reduces to fetch outputs from very large number of maps.
@@ -62,7 +72,7 @@ layout: module
 http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
 
-    module.exports.push name: 'HDP Hadoop JHS # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'HDP MapRed # Users & Groups', callback: (ctx, next) ->
       {hadoop_group} = ctx.config.hdp
       ctx.execute
         cmd: "useradd mapred -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop MapReduce service\""
@@ -138,6 +148,80 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         next null, if modified then ctx.OK else ctx.PASS
       do_mapred()
 
+## HDP MapRed # Tuning
+
+There are three aspects to consider:
+
+*   Physical RAM limit for each Map And Reduce task
+*   The JVM heap size limit for each task
+*   The amount of virtual memory each task will get
+
+The maximum memory each Map and Reduce task should be at least equal to or more 
+than the YARN minimum Container allocation.
+
+The JVM heap size should be set to lower than the Map and Reduce memory defined 
+above, so that they are within the bounds of the Container memory allocated by 
+YARN. There set by default to 3/4 of the YARN minimum Container allocation.
+
+The virtual memory (physical + paged memory) upper limit for each Map and 
+Reduce task is determined by the virtual memory ratio each YARN Container is 
+allowed. 
+
+    module.exports.push name: 'HDP MapRed # Tuning', callback: (ctx, next) ->
+      require('./yarn').configure ctx
+      require('./yarn').tuning ctx, (err) ->
+        return next err if err
+        {yarn, mapred, hadoop_conf_dir} = ctx.config.hdp
+        # Follow [Hortonworks example](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
+        # Validate map and reduce task >= YARN minimum Container allocation
+        minimum = yarn['yarn.scheduler.minimum-allocation-mb']
+        map_memory = mapred['mapreduce.map.memory.mb'] = minimum
+        reduce_memory = mapred['mapreduce.reduce.memory.mb'] = minimum * 2
+        # 3/4 of the map/reduce task
+        map_heap = mapred['mapreduce.map.java.opts'] = "-Xmx#{map_memory*4/3}m"
+        reduce_heap = mapred['mapreduce.reduce.java.opts'] = "-Xmx#{reduce_memory*4/3}m"
+        # Virtual memory ratio
+        ratio = yarn['yarn.nodemanager.vmem-pmem-ratio'] ?= '2.1' # also defined by phyla/hadoop/yarn
+        # Log result
+        ctx.log "Map total physical RAM allocated = #{map_memory}"
+        ctx.log "Map JVM heap space upper limit within the Map task Container = #{map_heap}"
+        ctx.log "Map total physical RAM allocated = #{map_memory * ratio}"
+        ctx.log "Reduce total physical RAM allocated = #{reduce_memory}"
+        ctx.log "Reduce JVM heap space upper limit within the Map task Container = #{reduce_heap}"
+        ctx.log "Reduce total physical RAM allocated = #{reduce_memory * ratio}"
+        # ctx.hconfigure [
+        #   destination: "#{hadoop_conf_dir}/yarn-site.xml"
+        #   properties:
+        #     'yarn.nodemanager.vmem-pmem-ratio': ratio
+        #   merge: true
+        # ,
+        #   destination: "#{hadoop_conf_dir}/mapred-site.xml"
+        #   properties:
+        #     'mapreduce.map.memory.mb': map_memory
+        #     'mapreduce.reduce.memory.mb': reduce_memory
+        #     'mapreduce.map.java.opts': map_heap
+        #     'mapreduce.reduce.java.opts': reduce_heap
+        #   merge: true
+        # ], (err, configured) ->
+        #   next err, if configured then ctx.OK else ctx.PASS
+        ctx.hconfigure
+          destination: "#{hadoop_conf_dir}/yarn-site.xml"
+          properties:
+            'yarn.nodemanager.vmem-pmem-ratio': ratio
+          merge: true
+        , (err, yarned) ->
+          next err if err
+          ctx.hconfigure
+            destination: "#{hadoop_conf_dir}/mapred-site.xml"
+            properties:
+              'mapreduce.map.memory.mb': map_memory
+              'mapreduce.reduce.memory.mb': reduce_memory
+              'mapreduce.map.java.opts': map_heap
+              'mapreduce.reduce.java.opts': reduce_heap
+            merge: true
+          , (err, mapreded) ->
+            next err, if yarned or mapreded then ctx.OK else ctx.PASS
+
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
     module.exports.push name: 'HDP MapRed # HDFS layout', timeout: -1, callback: (ctx, next) ->
@@ -145,11 +229,14 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
       modified = false
       # Carefull, this is a duplicate of "HDP MapRed JHS # HDFS layout"
       do_mapreduce_history = ->
+        # "/mr-history" need 0755 permission for subfolder to be accessible
+        # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap4-4.html
         ctx.execute
           cmd: mkcmd.hdfs ctx, """
           if hdfs dfs -test -d /mr-history; then exit 1; fi
           hdfs dfs -mkdir -p /mr-history
-          hdfs dfs -chown #{mapred_user}:#{hadoop_group} /mr-history
+          hdfs dfs -chmod 0755 /mr-history
+          # hdfs dfs -chown #{mapred_user}:#{hadoop_group} /mr-history
           """
           code_skipped: 1
         , (err, executed, stdout) ->
