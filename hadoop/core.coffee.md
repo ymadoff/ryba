@@ -150,10 +150,6 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
 
     module.exports.push name: 'HDP Core # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
-      # wdavidw:
-      # Installing the "hadoop" package as documented
-      # generates "No package hadoop available", 
-      # maybe because we cannot install directly this package
         name: 'openssl'
       ,
         name: 'hadoop-client'
@@ -260,8 +256,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       do_snappy()
 
     module.exports.push name: 'HDP Core # Kerberos', timeout: -1, callback: (ctx, next) ->
-      {hadoop_conf_dir, realm} = ctx.config.hdp
-      core_site = {}
+      {hadoop_conf_dir, core_site, realm} = ctx.config.hdp
       # Set the authentication for the cluster. Valid values are: simple or kerberos
       core_site['hadoop.security.authentication'] ?= 'kerberos'
       # This is an [OPTIONAL] setting. If not set, defaults to 
@@ -275,12 +270,21 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       # Enable authorization for different protocols.
       core_site['hadoop.security.authorization'] ?= 'true'
       # The mapping from Kerberos principal names to local OS user names.
-      # core_site['hadoop.security.auth_to_local'] ?= """
-      #   RULE:[2:$1@$0]([jt]t@.*#{realm})s/.*/mapred/
-      #   RULE:[2:$1@$0]([nd]n@.*#{realm})s/.*/hdfs/
-      #   DEFAULT
-      #   """
-      # Forgot where I find this one, but referenced here: http://mail-archives.apache.org/mod_mbox/incubator-ambari-commits/201308.mbox/%3Cc82889130fc54e1e8aeabfeedf99dcb3@git.apache.org%3E
+      # Default mapping is referenced here: http://mail-archives.apache.org/mod_mbox/incubator-ambari-commits/201308.mbox/%3Cc82889130fc54e1e8aeabfeedf99dcb3@git.apache.org%3E
+      # Here's an example enabling cross-realm:
+      # 'hadoop.security.auth_to_local': """
+      # 
+      #       RULE:[1:$1@$0](^.*@REALM\\.DOMAIN\\.COM$)s/^(.*)@REALM\\.DOMAIN\\.COM$/$1/g
+      #       RULE:[2:$1@$0](^.*@REALM\\.DOMAIN\\.COM$)s/^(.*)@REALM\\.DOMAIN\\.COM$/$1/g
+      #       RULE:[2:$1@$0]([rn]m@.*)s/.*/yarn/
+      #       RULE:[2:$1@$0](jhs@.*)s/.*/mapred/
+      #       RULE:[2:$1@$0]([nd]n@.*)s/.*/hdfs/
+      #       RULE:[2:$1@$0](hm@.*)s/.*/hbase/
+      #       RULE:[2:$1@$0](rs@.*)s/.*/hbase/
+      #       DEFAULT
+      # 
+      # """
+      # TODO, discover and generate cross-realm settings
       core_site['hadoop.security.auth_to_local'] ?= """
       
             RULE:[2:$1@$0]([rn]m@.*)s/.*/yarn/
@@ -289,6 +293,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
             RULE:[2:$1@$0](hm@.*)s/.*/hbase/
             RULE:[2:$1@$0](rs@.*)s/.*/hbase/
             DEFAULT
+
         """
       # Allow the superuser hive to impersonate any members of the group users. Required only when installing Hive.
       core_site['hadoop.proxyuser.hive.groups'] ?= '*'
