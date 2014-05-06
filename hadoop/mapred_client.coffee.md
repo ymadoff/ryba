@@ -34,6 +34,8 @@ by this action is not present on HDFS. Delete this directory
 to re-execute the check.
 
     module.exports.push name: 'HDP MapRed # Check', timeout: -1, callback: (ctx, next) ->
+      # 100 records = 1Ko
+      # 10 000 000 000 = 100 Go
       ctx.execute
         cmd: mkcmd.test ctx, """
         if hdfs dfs -test -d #{ctx.config.host}-mapred; then exit 1; fi
