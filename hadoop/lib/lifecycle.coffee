@@ -470,7 +470,7 @@ module.exports.is_pidfile_running = (ctx, path, callback) ->
   ctx.execute
     cmd: """
     if pid=`cat #{path}`; then
-      if ps cax | grep -v grep | grep $pid; then exit 0;
+      if ps -e -o pid | grep -v grep | grep -w $pid; then exit 0;
     fi; fi; exit 1
     """
     # cmd: """
