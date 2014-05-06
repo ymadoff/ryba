@@ -123,13 +123,13 @@ unless the "hdp.force_check" configuration property is set to "true".
               result = foreach data generate UPPER(text), number+2;
               STORE result INTO '/user/test/#{ctx.config.host}-pig/result' USING PigStorage();
               """
-              destination: '/home/test/test.pig'
+              destination: '/tmp/test.pig'
             , (err, written) ->
               return next err if err
               ctx.execute
                 cmd: mkcmd.test ctx, """
-                pig /home/test/test.pig
-                rm -rf /home/test/test.pig
+                pig /tmp/test.pig
+                rm -rf /tmp/test.pig
                 hdfs dfs -test -d /user/test/#{ctx.config.host}-pig/result
                 """
               , (err, executed) ->
