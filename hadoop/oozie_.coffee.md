@@ -61,7 +61,7 @@ layout: module
           append: true
         ,
           match: /^export OOZIE_DATA=.*$/mg
-          replace: "export OOZIE_DATA=#{OOZIE_DATA}"
+          replace: "export OOZIE_DATA=#{oozie_data}"
           append: true
         ]
         uid: oozie_user
