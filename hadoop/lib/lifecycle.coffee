@@ -430,7 +430,7 @@ lifecyle = module.exports =
       return callback err, false if err or not running
       ctx.log "WebHCat stop"
       ctx.execute
-        # su -l hcat -c "export WEBHCAT_CONF_DIR=/etc/hcatalog/conf/webhcat; /usr/lib/hcatalog/sbin/webhcat_server.sh start"
+        # su -l hcat -c "export WEBHCAT_CONF_DIR=/etc/hcatalog/conf/webhcat; /usr/lib/hcatalog/sbin/webhcat_server.sh stop"
         cmd: "su -l #{webhcat_user} -c \"export WEBHCAT_CONF_DIR=#{webhcat_conf_dir}; /usr/lib/hcatalog/sbin/webhcat_server.sh stop\""
       , (err, stopped) ->
         callback err, stopped
