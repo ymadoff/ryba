@@ -339,9 +339,76 @@ with Kerberos specific properties.
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
+## Ulimit
 
+Increase ulimit following [Kate Ting's recommandations][kate]. This is a cause 
+of error if you receive the message: 'Exception in thread "main" java.lang.OutOfMemoryError: unable to create new native thread'.
 
+The HDP package create the following files:
 
+```bash
+cat /etc/security/limits.d/hdfs.conf
+hdfs   - nofile 32768
+hdfs   - nproc  65536
+cat /etc/security/limits.d/mapreduce.conf
+mapred    - nofile 32768
+mapred    - nproc  65536
+cat /etc/security/limits.d/yarn.conf
+yarn   - nofile 32768
+yarn   - nproc  65536
+```
+
+Refer to the "masson/core/security" module for instructions on how to add custom
+limit rules.
+
+Also worth of interest are the [Pivotal recommandations][hawq] as well as the
+[Greenplum recommandation from Nixus Technologies][greenplum]
+
+Note, a user must re-login for those changes to be taken into account.
+
+    module.exports.push name: 'HDP HDFS # Ulimit', callback: (ctx, next) ->
+      ctx.write [
+        destination: '/etc/security/limits.d/hdfs.conf'
+        write: [
+          match: /^hdfs.+nofile.+$/mg
+          replace: "hdfs    -    nofile   32768"
+          append: true
+        ,
+          match: /^hdfs.+nproc.+$/mg
+          replace: "hdfs    -    nproc    65536"
+          append: true
+        ]
+        backup: true
+      ,
+        destination: '/etc/security/limits.d/mapreduce.conf'
+        write: [
+          match: /^mapred.+nofile.+$/mg
+          replace: "mapred  -    nofile   32768"
+          append: true
+        ,
+          match: /^mapred.+nproc.+$/mg
+          replace: "mapred  -    nproc    65536"
+          append: true
+        ]
+        backup: true
+      ,
+        destination: '/etc/security/limits.d/yarn.conf'
+        write: [
+          match: /^yarn.+nofile.+$/mg
+          replace: "yarn    -    nofile   32768"
+          append: true
+        ,
+          match: /^yarn.+nproc.+$/mg
+          replace: "yarn    -    nproc    65536"
+          append: true
+        ]
+        backup: true
+      ], (err, written) ->
+        next err, if written then ctx.OK else ctx.PASS
+
+[hawq]: http://docs.gopivotal.com/pivotalhd/InstallingHAWQ.html
+[greenplum]: http://nixustechnologies.com/2014/03/31/install-greenplum-community-edition/
+[kate]: http://fr.slideshare.net/cloudera/hadoop-troubleshooting-101-kate-ting-cloudera
 
 
 
