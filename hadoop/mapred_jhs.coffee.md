@@ -72,9 +72,26 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
 
     module.exports.push 'phyla/hadoop/mapred_jhs_start'
 
-    # module.exports.push name: 'HDP MapRed JHS # Start', callback: (ctx, next) ->
-    #   lifecycle.jhs_start ctx, (err, started) ->
-    #     next err, if started then ctx.OK else ctx.PASS
+    module.exports.push name: 'HDP MapRed JHS # Check', callback: (ctx, next) ->
+      {mapred} = ctx.config.hdp
+      # console.log mapred, 
+      [host, port] = mapred['mapreduce.jobhistory.webapp.address'].split ':'
+      ctx.execute
+        cmd: mkcmd.test ctx, """
+        if hdfs dfs -test -f /user/test/#{ctx.config.host}-jhs; then exit 2; fi
+        curl -s --negotiate -u : http://#{host}:#{port}/ws/v1/history/info
+        hdfs dfs -touchz /user/test/#{ctx.config.host}-jhs
+        """
+        code_skipped: 2
+      , (err, checked, stdout) ->
+        return next err if err
+        return next null, ctx.PASS unless checked
+        try
+          JSON.parse(stdout).historyInfo.hadoopVersion
+          return next null, ctx.OK
+        catch err then next err
+
+
 
 
 
