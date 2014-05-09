@@ -178,8 +178,8 @@ allowed.
         map_memory = mapred['mapreduce.map.memory.mb'] = minimum
         reduce_memory = mapred['mapreduce.reduce.memory.mb'] = minimum * 2
         # 3/4 of the map/reduce task
-        map_heap = mapred['mapreduce.map.java.opts'] = "-Xmx#{map_memory*4/3}m"
-        reduce_heap = mapred['mapreduce.reduce.java.opts'] = "-Xmx#{reduce_memory*4/3}m"
+        map_heap = mapred['mapreduce.map.java.opts'] = "-Xmx#{Math.round(map_memory*4/3)}m"
+        reduce_heap = mapred['mapreduce.reduce.java.opts'] = "-Xmx#{Math.round(reduce_memory*4/3)}m"
         # Virtual memory ratio
         ratio = yarn['yarn.nodemanager.vmem-pmem-ratio'] ?= '2.1' # also defined by phyla/hadoop/yarn
         # Log result
