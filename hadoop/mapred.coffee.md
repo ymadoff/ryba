@@ -17,6 +17,7 @@ layout: module
       ctx.mapred_configured = true
       require('./hdfs').configure ctx
       require('./mapred_').configure ctx
+      {static_host, realm} = ctx.config.hdp
       jobhistoryserver = ctx.host_with_module 'phyla/hadoop/mapred_jhs'
       # Options for mapred-site.xml
       ctx.config.hdp.mapred_user ?= "mapred"
@@ -58,6 +59,10 @@ layout: module
       ctx.config.hdp.mapred['mapreduce.jobhistory.webapp.address'] ?= "#{jobhistoryserver}:19888" # MapReduce JobHistory Server Web UI host:port - Default port is 19888.
       ctx.config.hdp.mapred['mapreduce.jobhistory.intermediate-done-dir'] ?= '/mr-history/tmp' # Directory where history files are written by MapReduce jobs.
       ctx.config.hdp.mapred['mapreduce.jobhistory.done-dir'] ?= '/mr-history/done' # Directory where history files are managed by the MR JobHistory Server.
+      # Important, JHS principal must be deployed on all mapreduce workers
+      jhs_host = ctx.host_with_module 'phyla/hadoop/mapred_jhs'
+      ctx.config.hdp.mapred['mapreduce.jobhistory.principal'] ?= "jhs/#{jhs_host}@#{realm}"
+      #ctx.config.hdp.mapred['mapreduce.jobhistory.principal'] ?= "jhs/#{static_host}@#{realm}"
 
     module.exports.push name: 'HDP MapRed # Install Common', timeout: -1, callback: (ctx, next) ->
       ctx.service [
@@ -178,32 +183,17 @@ allowed.
         map_memory = mapred['mapreduce.map.memory.mb'] = minimum
         reduce_memory = mapred['mapreduce.reduce.memory.mb'] = minimum * 2
         # 3/4 of the map/reduce task
-        map_heap = mapred['mapreduce.map.java.opts'] = "-Xmx#{Math.round(map_memory*4/3)}m"
-        reduce_heap = mapred['mapreduce.reduce.java.opts'] = "-Xmx#{Math.round(reduce_memory*4/3)}m"
+        map_heap = mapred['mapreduce.map.java.opts'] = "-Xmx#{Math.round(map_memory*3/4)}m"
+        reduce_heap = mapred['mapreduce.reduce.java.opts'] = "-Xmx#{Math.round(reduce_memory*3/4)}m"
         # Virtual memory ratio
         ratio = yarn['yarn.nodemanager.vmem-pmem-ratio'] ?= '2.1' # also defined by phyla/hadoop/yarn
         # Log result
-        ctx.log "Map total physical RAM allocated = #{map_memory}"
-        ctx.log "Map JVM heap space upper limit within the Map task Container = #{map_heap}"
-        ctx.log "Map total physical RAM allocated = #{map_memory * ratio}"
-        ctx.log "Reduce total physical RAM allocated = #{reduce_memory}"
-        ctx.log "Reduce JVM heap space upper limit within the Map task Container = #{reduce_heap}"
-        ctx.log "Reduce total physical RAM allocated = #{reduce_memory * ratio}"
-        # ctx.hconfigure [
-        #   destination: "#{hadoop_conf_dir}/yarn-site.xml"
-        #   properties:
-        #     'yarn.nodemanager.vmem-pmem-ratio': ratio
-        #   merge: true
-        # ,
-        #   destination: "#{hadoop_conf_dir}/mapred-site.xml"
-        #   properties:
-        #     'mapreduce.map.memory.mb': map_memory
-        #     'mapreduce.reduce.memory.mb': reduce_memory
-        #     'mapreduce.map.java.opts': map_heap
-        #     'mapreduce.reduce.java.opts': reduce_heap
-        #   merge: true
-        # ], (err, configured) ->
-        #   next err, if configured then ctx.OK else ctx.PASS
+        ctx.log "Map total physical RAM allocated: #{map_memory} (mapreduce.map.memory.mb)"
+        ctx.log "Map JVM heap space upper limit within the Map task Container: #{map_heap} (mapreduce.map.java.opts)"
+        ctx.log "Map total physical RAM allocated: #{map_memory * ratio}"
+        ctx.log "Reduce total physical RAM allocated 'reduce.reduce.memory.mb': #{reduce_memory} (mapreduce.reduce.memory.mb)"
+        ctx.log "Reduce JVM heap space upper limit within the Reduce task Container: #{reduce_heap} (mapreduce.reduce.java.opts)"
+        ctx.log "Reduce total physical RAM allocated: #{reduce_memory * ratio}"
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/yarn-site.xml"
           properties:
