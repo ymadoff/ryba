@@ -53,6 +53,10 @@ layout: module
       ctx.config.hdp.container_executor['yarn.nodemanager.log-dirs'] = ctx.config.hdp.yarn['yarn.nodemanager.log-dirs']
       ctx.config.hdp.container_executor['banned.users'] ?= 'hfds,yarn,mapred,bin'
       ctx.config.hdp.container_executor['min.user.id'] ?= '0'
+      # Cloudera recommand setting [vmem-check to false on Centos/RHEL 6 due to its aggressive allocation of virtual memory](http://blog.cloudera.com/blog/2014/04/apache-hadoop-yarn-avoiding-6-time-consuming-gotchas/)
+      # yarn.nodemanager.vmem-check-enabled (found in hdfs-default.xml)
+      # yarn.nodemanager.vmem-check.enabled
+
 
 http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
