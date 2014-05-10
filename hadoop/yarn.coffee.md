@@ -278,14 +278,23 @@ Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Co
       # Containers) = 2 GB minimum per container
       containers = Math.round(yarn_site['yarn.nodemanager.local-dirs'].length * 1.6)
       memory_minimum = yarn_site['yarn.scheduler.minimum-allocation-mb'] ?= Math.round(memory / containers)
-      # Note, we dont configure "yarn.scheduler.maximum-allocation-mb", not sure if we need it
+      # Note, "yarn.scheduler.maximum-allocation-mb" default to 8192 in yarn-site.xml and to 6144 in HDP companion files
+      memory_maximum = yarn_site['yarn.scheduler.maximum-allocation-mb'] ?= memory_minimum * 3
+      # yarn_site['yarn.scheduler.maximum-allocation-mb'] = 6144
       ratio = yarn_site['yarn.nodemanager.vmem-pmem-ratio'] ?= "2.1" # also defined by phyla/hadoop/mapred
+      # Log result
+      ctx.log "Server memory: #{memTotalMb} mb"
+      ctx.log "Yarn available memory: #{memory} mb (yarn.nodemanager.resource.memory-mb)"
+      ctx.log "Number of containers: #{containers}"
+      ctx.log "Minimum memory allocation: #{memory_minimum} mb (yarn.scheduler.minimum-allocation-mb)"
+      ctx.log "Maximum memory allocation: #{memory_maximum} mb (yarn.scheduler.maximum-allocation-mb)"
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
         properties:
           'yarn.nodemanager.vmem-pmem-ratio': ratio
           'yarn.nodemanager.resource.memory-mb': memory
           'yarn.scheduler.minimum-allocation-mb': memory_minimum
+          'yarn.scheduler.maximum-allocation-mb': memory_maximum
         merge: true
       , (err, configured) ->
         return next err, if configured then ctx.OK else ctx.PASS
