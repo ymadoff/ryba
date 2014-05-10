@@ -170,6 +170,8 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
         next err, if started then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP WebHCat # Check', callback: (ctx, next) ->
+      # TODO, maybe we could test hive:
+      # curl --negotiate -u : -d execute="show+databases;" http://front1.hadoop:50111/templeton/v1/hive
       {webhcat_site} = ctx.config.hdp
       port = webhcat_site['templeton.port']
       ctx.execute
