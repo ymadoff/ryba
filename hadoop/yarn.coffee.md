@@ -225,7 +225,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         next null, if modified then ctx.OK else ctx.PASS
       do_yarn()
 
-HDP YARN # Memory Allocation
+## HDP YARN # Memory Allocation
 
 yarn.nodemanager.vmem-pmem-ratio property: Is defines ratio of virtual memory to
 available pysical memory, Here is 2.1 means virtual memory will be double the 
@@ -244,7 +244,7 @@ Ressources:
 http://stackoverflow.com/questions/18692631/difference-between-3-memory-parameters-in-hadoop-2
 blog.cloudera.com/blog/2014/04/apache-hadoop-yarn-avoiding-6-time-consuming-gotchas/
 
-# todo, got to [HortonWorks article and make properties dynamic or improve example](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
+TODO, got to [HortonWorks article and make properties dynamic or improve example](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
 
 Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Containers to be allocated to each node
 
