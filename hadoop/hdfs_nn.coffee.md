@@ -42,9 +42,9 @@ Create the NameNode data and pid directories. The NameNode data is by defined in
 file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
 
     module.exports.push name: 'HDP HDFS NN # Layout', timeout: -1, callback: (ctx, next) ->
-      { dfs_name_dir, hdfs_pid_dir, hdfs_user, hadoop_group } = ctx.config.hdp
+      {hdfs_site, hdfs_pid_dir, hdfs_user, hadoop_group} = ctx.config.hdp
       ctx.mkdir [
-        destination: dfs_name_dir
+        destination: hdfs_site['dfs.namenode.name.dir'].split ','
         uid: hdfs_user
         gid: hadoop_group
         mode: 0o755
@@ -187,11 +187,12 @@ is only exected once all the JournalNodes are started. The NameNode is finally r
 if the NameNode was formated.
 
     module.exports.push name: 'HDP HDFS NN # Format', timeout: -1, callback: (ctx, next) ->
-      {active_nn, dfs_name_dir, hdfs_user, format, nameservice} = ctx.config.hdp
+      {active_nn, hdfs_site, hdfs_user, format, nameservice} = ctx.config.hdp
       return next() unless format
       # Shall only be executed on the leader namenode
       return next null, ctx.INAPPLICABLE unless active_nn
       journalnodes = ctx.hosts_with_module 'phyla/hadoop/hdfs_jn'
+      any_dfs_name_dir = hdfs_site['dfs.namenode.name.dir'][0]
       # all the JournalNodes shall be started
       ctx.waitIsOpen journalnodes, 8485, (err) ->
         return next err if err
@@ -199,7 +200,7 @@ if the NameNode was formated.
           # yes 'Y' | su -l hdfs -c "hdfs namenode -format -clusterId torval"
           cmd: "su -l #{hdfs_user} -c \"hdfs namenode -format -clusterId #{nameservice}\""
           # /hadoop/hdfs/namenode/current/VERSION
-          not_if_exists: "#{dfs_name_dir[0]}/current/VERSION"
+          not_if_exists: "#{any_dfs_name_dir}/current/VERSION"
         , (err, executed) ->
           return next err if err
           return next null, if executed then ctx.OK else ctx.PASS

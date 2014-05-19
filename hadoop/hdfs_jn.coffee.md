@@ -57,7 +57,9 @@ Example:
 
     module.exports.push module.exports.configure = (ctx) ->
       require('./hdfs').configure ctx
-      ctx.config.hdp.hdfs_site['dfs.journalnode.edits.dir'] ?= '/hadoop/journalnode'
+      {hdfs_site} = ctx.config.hdp
+      # ctx.config.hdp.hdfs_site['dfs.journalnode.edits.dir'] ?= '/hadoop/journalnode'
+      throw new Error 'Required property: hdfs_site[dfs.journalnode.edits.dir]' unless hdfs_site['dfs.namenode.name.dir']
 
 ## Layout
 

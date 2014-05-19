@@ -14,10 +14,10 @@ layout: module
       require('./hdfs').configure ctx
 
     module.exports.push name: 'HDP HDFS SNN # Directories', timeout: -1, callback: (ctx, next) ->
-      {dfs_name_dir, fs_checkpoint_dir, hdfs_user, hadoop_group, hdfs_pid_dir} = ctx.config.hdp
+      {hdfs_site, fs_checkpoint_dir, hdfs_user, hadoop_group, hdfs_pid_dir} = ctx.config.hdp
       ctx.log "Create SNN data, checkpind and pid directories"
       ctx.mkdir [
-        destination: dfs_name_dir
+        destination: hdfs_site['dfs.namenode.name.dir']
         uid: hdfs_user
         gid: hadoop_group
         mode: 0o755
