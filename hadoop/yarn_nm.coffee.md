@@ -5,6 +5,9 @@ layout: module
 
 # YARN NodeManager
 
+ResourceManager is the central authority that manages resources and schedules
+applications running atop of YARN.
+
     lifecycle = require './lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
