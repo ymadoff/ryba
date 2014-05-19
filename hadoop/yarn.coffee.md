@@ -82,57 +82,19 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         next err, if serviced then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP YARN # Directories', timeout: -1, callback: (ctx, next) ->
-      { yarn_user,
-        yarn, yarn_log_dir, yarn_pid_dir,
-        hadoop_group } = ctx.config.hdp
-      modified = false
-      do_yarn_log_dirs = -> # not the tranditionnal log dir
-        ctx.log "Create yarn dirs: #{yarn['yarn.nodemanager.log-dirs'].join ','}"
-        ctx.mkdir
-          destination: yarn['yarn.nodemanager.log-dirs']
-          uid: yarn_user
-          gid: hadoop_group
-          mode: 0o0755
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_yarn_local_log()
-      do_yarn_local_log = ->
-        ctx.log "Create yarn dirs: #{yarn['yarn.nodemanager.local-dirs'].join ','}"
-        ctx.mkdir
-          destination: yarn['yarn.nodemanager.local-dirs']
-          uid: yarn_user
-          gid: hadoop_group
-          mode: 0o0755
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_log()
-      do_log = ->
-        ctx.log "Create hdfs and mapred log: #{yarn_log_dir}"
-        ctx.mkdir
-          destination: "#{yarn_log_dir}/#{yarn_user}"
-          uid: yarn_user
-          gid: hadoop_group
-          mode: 0o0755
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_pid()
-      do_pid = ->
-        ctx.log "Create pid: #{yarn_pid_dir}"
-        ctx.mkdir
-          destination: "#{yarn_pid_dir}/#{yarn_user}"
-          uid: yarn_user
-          gid: hadoop_group
-          mode: 0o0755
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_end()
-      do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
-      do_yarn_log_dirs()
+      {yarn_user, hadoop_group, yarn_log_dir, yarn_pid_dir} = ctx.config.hdp
+      ctx.mkdir
+        destination: "#{yarn_log_dir}/#{yarn_user}"
+        uid: yarn_user
+        gid: hadoop_group
+        mode: 0o0755
+      ,
+        destination: "#{yarn_pid_dir}/#{yarn_user}"
+        uid: yarn_user
+        gid: hadoop_group
+        mode: 0o0755
+      , (err, created) ->
+        next null, if created then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP YARN # Yarn OPTS', callback: (ctx, next) ->
       {yarn_user, hadoop_group, hadoop_conf_dir} = ctx.config.hdp

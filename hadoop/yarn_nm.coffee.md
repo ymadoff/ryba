@@ -16,6 +16,27 @@ applications running atop of YARN.
     module.exports.push (ctx) ->
       require('./yarn').configure ctx
 
+    module.exports.push name: 'HDP YARN # Directories', timeout: -1, callback: (ctx, next) ->
+      {yarn_user, yarn, hadoop_group} = ctx.config.hdp
+      # no need to restrict parent directory and yarn will complain if not accessible by everyone
+      ctx.mkdir [
+        destination: yarn['yarn.nodemanager.log-dirs']
+        uid: yarn_user
+        gid: hadoop_group
+        mode: 0o0755
+      ,
+        destination: yarn['yarn.nodemanager.local-dirs']
+        uid: yarn_user
+        gid: hadoop_group
+        mode: 0o0755
+      ], (err, created) ->
+        return next err if err
+        cmds = []
+        for dir in yarn['yarn.nodemanager.log-dirs'] then cmds.push cmd: "su -l test -c 'ls -l #{dir}'"
+        for dir in yarn['yarn.nodemanager.local-dirs'] then cmds.push cmd: "su -l test -c 'ls -l #{dir}'"
+        ctx.execute cmds, (err) ->
+          next err, if created then ctx.OK else ctx.PASS
+
     module.exports.push name: 'HDP YARN NM # Kerberos', callback: (ctx, next) ->
       {yarn_user, realm} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
