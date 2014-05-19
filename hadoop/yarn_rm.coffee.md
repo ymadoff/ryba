@@ -29,6 +29,15 @@ layout: module
         return next err if err
         next null, if created then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP YARN RM # Start', callback: (ctx, next) ->
-      lifecycle.rm_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+## Start RM
+
+Execute the "phyla/hadoop/yarn_rm_start" module to start the Resource Manager.
+
+    module.exports.push 'phyla/hadoop/yarn_rm_start'
+
+    # module.exports.push name: 'HDP YARN RM # Start', callback: (ctx, next) ->
+    #   lifecycle.rm_start ctx, (err, started) ->
+    #     next err, if started then ctx.OK else ctx.PASS
+
+
+
