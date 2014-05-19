@@ -259,6 +259,8 @@ the default database while mysql is the recommanded choice.
         mysql: ->
           host = hue_ini['desktop']['database']['host']
           port = hue_ini['desktop']['database']['port']
+          user = hue_ini['desktop']['database']['user']
+          password = hue_ini['desktop']['database']['password']
           escape = (text) -> text.replace(/[\\"]/g, "\\$&")
           cmd = "mysql -u#{hue_db_admin_username} -p#{hue_db_admin_password} -h#{host} -P#{port} -e "
           ctx.execute
@@ -266,8 +268,8 @@ the default database while mysql is the recommanded choice.
             if #{cmd} "use hue"; then exit 2; fi
             #{cmd} "
             create database hue;
-            grant all privileges on hue.* to '#{username}'@'localhost' identified by '#{password}';
-            grant all privileges on hue.* to '#{username}'@'%' identified by '#{password}';
+            grant all privileges on hue.* to '#{user}'@'localhost' identified by '#{password}';
+            grant all privileges on hue.* to '#{user}'@'%' identified by '#{password}';
             flush privileges;
             "
             """
