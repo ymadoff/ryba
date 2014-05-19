@@ -15,6 +15,12 @@ layout: module
     module.exports.push (ctx) ->
       require('./oozie_').configure ctx
 
+    module.exports.push name: 'HDP Oozie Client # Install', timeout: -1, callback: (ctx, next) ->
+      ctx.service
+        name: 'oozie-client'
+      , (err, installed) ->
+        next err, if installed then ctx.OK else ctx.PASS
+
     module.exports.push name: 'HDP Oozie Client # Check Client', timeout: -1, callback: (ctx, next) ->
       {oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
       oozie_server = ctx.host_with_module 'phyla/hadoop/oozie_server'
@@ -26,7 +32,7 @@ layout: module
           """
         , (err, executed, stdout) ->
           return next err if err
-          return next new Error "Oozie not started" if stdout.trim() isnt 'System mode: NORMAL'
+          return next new Error "Oozie not started, got: #{JSON.stringify stdout}" if stdout.trim() isnt 'System mode: NORMAL'
           return next null, ctx.PASS
 
     module.exports.push name: 'HDP Oozie Client # Check REST', timeout: -1, callback: (ctx, next) ->
@@ -46,8 +52,7 @@ layout: module
 
     module.exports.push name: 'HDP Oozie Client # Workflow', timeout: -1, callback: (ctx, next) ->
       {nameservice, oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
-      nn = ctx.hosts_with_module 'phyla/hadoop/hdfs_nn'
-      rm = ctx.hosts_with_module 'phyla/hadoop/hdfs_rm', 1
+      rm = ctx.host_with_module 'phyla/hadoop/yarn_rm'
       oozie_server = ctx.hosts_with_module 'phyla/hadoop/oozie_server', 1
       ctx.waitIsOpen oozie_server, oozie_port, (err) ->
         return next err if err
