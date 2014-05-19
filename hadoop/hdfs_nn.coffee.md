@@ -192,7 +192,7 @@ if the NameNode was formated.
       # Shall only be executed on the leader namenode
       return next null, ctx.INAPPLICABLE unless active_nn
       journalnodes = ctx.hosts_with_module 'phyla/hadoop/hdfs_jn'
-      any_dfs_name_dir = hdfs_site['dfs.namenode.name.dir'][0]
+      any_dfs_name_dir = hdfs_site['dfs.namenode.name.dir'].split(',')[0]
       # all the JournalNodes shall be started
       ctx.waitIsOpen journalnodes, 8485, (err) ->
         return next err if err
