@@ -75,7 +75,16 @@ layout: module
       throw new Error "Hive database username is required" unless hive_site['javax.jdo.option.ConnectionUserName']
       throw new Error "Hive database password is required" unless hive_site['javax.jdo.option.ConnectionPassword']
 
-    module.exports.push name: 'HDP Hive & HCat client # Database', callback: (ctx, next) ->
+    module.exports.push name: 'HDP Hive & HCat server # Users & Groups', callback: (ctx, next) ->
+      {hive_user, hive_group} = ctx.config.hdp
+      ctx.user
+        username: hive_user
+        group: hive_group
+        shell: '/bin/bash'
+      , (err, modified) ->
+        next err, if modified then ctx.OK else ctx.PASS
+
+    module.exports.push name: 'HDP Hive & HCat server # Database', callback: (ctx, next) ->
       {hive_site, hive_admin} = ctx.config.hdp
       {engine, host, port, db, username, password} = hive_admin
       ConnectionUserName = hive_site['javax.jdo.option.ConnectionUserName']
@@ -101,7 +110,7 @@ layout: module
       return next new Error 'Hive database engine not supported' unless engines[engine]
       engines[engine]()
 
-    module.exports.push name: 'HDP Hive & HCat client # Configure', callback: (ctx, next) ->
+    module.exports.push name: 'HDP Hive & HCat server # Configure', callback: (ctx, next) ->
       {hive_site, hive_user, hive_group, hive_conf_dir} = ctx.config.hdp
       ctx.hconfigure
         destination: "#{hive_conf_dir}/hive-site.xml"
@@ -118,6 +127,15 @@ layout: module
           """
         , (err) ->
           next err, if configured then ctx.OK else ctx.PASS
+
+    module.exports.push name: 'HDP Hive & HCat server # Fix', callback: (ctx, next) ->
+      {hive_conf_dir} = ctx.config.hdp
+      ctx.write
+        destination: "#{hive_conf_dir}/hive-env.sh"
+        match: /^export HIVE_AUX_JARS_PATH=.*$/mg
+        replace: 'export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-/usr/lib/hive-hcatalog/share/hcatalog/hive-hcatalog-core.jar}'
+      , (err, written) ->
+        next err, if written then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Hive & HCat server # Libs', callback: (ctx, next) ->
       {hive_libs} = ctx.config.hdp

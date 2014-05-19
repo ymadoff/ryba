@@ -44,13 +44,29 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
       ctx.config.hdp.webhcat_site['webhcat.proxyuser.hue.hosts'] ?= '*'
       ctx.config.hdp.webhcat_site['templeton.port'] ?= 50111
 
+    module.exports.push name: 'HDP WebHCat # Users & Groups', callback: (ctx, next) ->
+      {webhcat_user, webhcat_group} = ctx.config.hdp
+      ctx.user
+        username: webhcat_user
+        group: webhcat_group
+        shell: '/bin/bash'
+      , (err, modified) ->
+        next err, if modified then ctx.OK else ctx.PASS
+
     module.exports.push name: 'HDP WebHCat # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
-        name: 'hcatalog'
+        name: 'hive-hcatalog'
+      ,
+        name: 'hive-webhcat'
       ,
         name: 'webhcat-tar-hive'
       ,
         name: 'webhcat-tar-pig'
+      #   name: 'hcatalog'
+      # ,
+      #   name: 'webhcat-tar-hive'
+      # ,
+      #   name: 'webhcat-tar-pig'
       ], (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
 

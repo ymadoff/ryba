@@ -12,6 +12,7 @@ layout: module
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/commons/mysql_client'
     module.exports.push 'phyla/hadoop/core'
+    module.exports.push 'phyla/hadoop/hdfs' # SPNEGO need access to the principal HTTP/$HOST@$REALM's keytab
 
 Oozie source code and examples are located in /usr/share/doc/oozie-4.0.0.2.0.6.0/
 
@@ -26,6 +27,7 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
 
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/commons/mysql_server').configure ctx
+      # require('./yarn_client').configure ctx
       require('./oozie_').configure ctx
       {static_host, realm} = ctx.config.hdp
       ctx.config.hdp.oozie_db_admin_username ?= ctx.config.mysql_server.username
@@ -37,14 +39,14 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
       ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'
       ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
       # TODO: check if security is on
-      ctx.config.hdp.oozie_site['oozie.service.AuthorizationService.security.enabled'] = 'false'
+      ctx.config.hdp.oozie_site['oozie.service.AuthorizationService.security.enabled'] = 'true' # Todo, now deprecated should be set to null in favor of oozie.service.AuthorizationService.authorization.enabled (see oozie "oozie.log" file)
       ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.kerberos.enabled'] = 'true'
       ctx.config.hdp.oozie_site['local.realm'] = "#{realm}"
-      ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.keytab.file'] = '/etc/security/keytabs/oozie.service.keytab'
+      ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.keytab.file'] = '/etc/oozie/conf/oozie.service.keytab'
       ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.kerberos.principal'] = "oozie/#{ctx.config.host}@#{realm}"
       ctx.config.hdp.oozie_site['oozie.authentication.type'] = 'kerberos'
       ctx.config.hdp.oozie_site['oozie.authentication.kerberos.principal'] = "HTTP/#{ctx.config.host}@#{realm}"
-      ctx.config.hdp.oozie_site['oozie.authentication.kerberos.keytab'] = '/etc/security/keytabs/spnego.service.keytab'
+      ctx.config.hdp.oozie_site['oozie.authentication.kerberos.keytab'] = '/etc/oozie/conf/spnego.service.keytab'
       # ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.nameNode.whitelist'] = ''
       ctx.config.hdp.oozie_site['oozie.authentication.kerberos.name.rules'] = """
       
@@ -71,67 +73,72 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
 
     module.exports.push name: 'HDP Oozie Server # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
-        name: 'oozie'
+        name: 'oozie' # Also install oozie-client and bigtop-tomcat
       ,
-        name: 'oozie-client'
+        name: 'unzip' # Required by the "prepare-war" command
       ,
         name: 'extjs-2.2-1'
       ], (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Oozie Server # Directories', callback: (ctx, next) ->
-      {oozie_user, hadoop_group, oozie_data, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_tmp_dir} = ctx.config.hdp
+      {oozie_user, oozie_group, oozie_data, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_tmp_dir} = ctx.config.hdp
       ctx.mkdir [
         destination: oozie_data
         uid: oozie_user
-        gid: hadoop_group
+        gid: oozie_group
         mode: 0o0755
       ,
         destination: oozie_log_dir
         uid: oozie_user
-        gid: hadoop_group
+        gid: oozie_group
         mode: 0o0755
       ,
         destination: oozie_pid_dir
         uid: oozie_user
-        gid: hadoop_group
+        gid: oozie_group
         mode: 0o0755
       ,
         destination: oozie_tmp_dir
         uid: oozie_user
-        gid: hadoop_group
+        gid: oozie_group
         mode: 0o0755
       ], (err, copied) ->
         return next err if err
         # Waiting for recursivity in ctx.mkdir
-        ctx.execute [
-          cmd: "chown -R #{oozie_user}:#{hadoop_group} #{oozie_data}"
-        ,
-          cmd: "chown -R #{oozie_user}:#{hadoop_group} #{oozie_conf_dir}/.."
-        ,
-          cmd: "chmod -R 755 #{oozie_conf_dir}/.."
-        ], (err, executed) ->
+        ctx.execute
+          cmd: """
+          chown -R #{oozie_user}:#{oozie_group} /usr/lib/oozie
+          chown -R #{oozie_user}:#{oozie_group} #{oozie_data}
+          chown -R #{oozie_user}:#{oozie_group} #{oozie_conf_dir}/..
+          chmod -R 755 #{oozie_conf_dir}/..
+          """
+        , (err, executed) ->
           next err, if copied then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Oozie Server # Layout', callback: (ctx, next) ->
-      ctx.mkdir
-        destination: '/usr/lib/oozie/libext'
-      , (err, created) ->
-        next err, if created then ctx.OK else ctx.PASS
-
     module.exports.push name: 'HDP Oozie Server # ExtJS', callback: (ctx, next) ->
-      ctx.execute
-        cmd: 'cp /usr/share/HDP-oozie/ext-2.2.zip /usr/lib/oozie/libext/'
-        not_if_exists: '/usr/lib/oozie/libext/ext-2.2.zip'
+      ctx.copy
+        source: '/usr/share/HDP-oozie/ext-2.2.zip'
+        destination: '/usr/lib/oozie/libext/'
       , (err, copied) ->
         next err, if copied then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Oozie Server # LZO', callback: (ctx, next) ->
       ctx.execute
-        cmd: 'cp /usr/lib/hadoop/lib/hadoop-lzo-0.5.0.jar /usr/lib/oozie/libext/'
-        not_if_exists: '/usr/lib/oozie/libext/hadoop-lzo-0.5.0.jar'
-      , (err, copied) ->
-        next err, if copied then ctx.OK else ctx.PASS
+        cmd: 'ls /usr/lib/hadoop/lib/hadoop-lzo-*.jar'
+      , (err, _, stdout) ->
+        return next err if err
+        lzo_jar = stdout.trim()
+        ctx.execute
+          cmd: """
+          # Remove any previously installed version
+          rm /usr/lib/oozie/libext/hadoop-lzo-*.jar
+          # Copy lzo
+          cp #{lzo_jar} /usr/lib/oozie/libext/
+          """
+          not_if_exists: "/usr/lib/oozie/libext/#{path.basename lzo_jar}"
+        , (err, copied) ->
+          next err, if copied then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Oozie Server # Mysql Driver', callback: (ctx, next) ->
       ctx.link
@@ -139,15 +146,16 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
         destination: '/usr/lib/oozie/libext/mysql-connector-java.jar'
       , (err, linked) ->
         return next err, ctx.PASS if err or not linked
-        # Fore "HDP Oozie Server # War" callback to execute
+        # For "HDP Oozie Server # War" callback to execute
         ctx.remove
-          destination: '/var/lib/oozie/oozie-server/webapps/oozie.war'
+          destination: '/var/lib/oozie/tomcat-deployment/webapps/oozie.war'
           if_exists: true
         , (err) ->
           return next err, ctx.OK
 
     module.exports.push name: 'HDP Oozie Server # Configuration', callback: (ctx, next) ->
-      { oozie_user, hadoop_group, oozie_site, oozie_conf_dir, oozie_hadoop_config, hadoop_conf_dir } = ctx.config.hdp
+      { hadoop_conf_dir, yarn, oozie_group, oozie_user, 
+        oozie_site, oozie_conf_dir, oozie_hadoop_config } = ctx.config.hdp
       modified = false
       do_oozie_site = ->
         ctx.log 'Configure oozie-site.xml'
@@ -157,9 +165,10 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
           local_default: true
           properties: oozie_site
           uid: oozie_user
-          gid: hadoop_group
+          gid: oozie_group
           mode: 0o0755
           merge: true
+          backup: true
         , (err, configured) ->
           return next err if err
           modified = true if configured
@@ -167,41 +176,30 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
       do_hadoop_config = ->
         ctx.log 'Configure hadoop-config.xml'
         ctx.hconfigure
-          destination: "#{oozie_conf_dir}/hadoop-config.xml"
-          default: "#{__dirname}/files/oozie/hadoop-config.xml"
+          destination: "#{oozie_conf_dir}/hadoop-conf/core-site.xml"
           local_default: true
           properties: oozie_hadoop_config
           uid: oozie_user
-          gid: hadoop_group
+          gid: oozie_group
           mode: 0o0755
+          backup: true
         , (err, configured) ->
           return next err if err
           modified = true if configured
-          do_hadoop_link()
-      do_hadoop_link = ->
-        ctx.log 'Configure hadoop_conf link'
-        ctx.link
-          source: "#{hadoop_conf_dir}"
-          destination: "#{oozie_conf_dir}/hadoop-conf"
-          uid: oozie_user
-          gid: hadoop_group
-        , (err, linked) ->
-          return next err if err
-          modified = true if linked
           do_end()
       do_end = ->
         next null, if modified then ctx.OK else ctx.PASS
       do_oozie_site()
 
     module.exports.push name: 'HDP Oozie Server # Kerberos', callback: (ctx, next) ->
-      {oozie_user, hadoop_group, oozie_site, realm} = ctx.config.hdp
+      {oozie_user, oozie_group, oozie_site, realm} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
         principal: oozie_site['oozie.service.HadoopAccessorService.kerberos.principal'].replace '_HOST', ctx.config.host
         randkey: true
         keytab: oozie_site['oozie.service.HadoopAccessorService.keytab.file']
         uid: oozie_user
-        gid: hadoop_group
+        gid: oozie_group
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
@@ -210,16 +208,21 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
         next null, if created then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Oozie Server # SPNEGO', callback: (ctx, next) ->
-      require('./hdfs').configure ctx
-      require('./hdfs').spnego ctx, (err, status) ->
-        # the group for the user oozie is hadoop,
-        # so we can use the keytab generated by hdfs.spnego
-        # and no copy it with different permissions
-        return next err, status
-        # return next err if err
-        # ctx.copy
-        #   source: '/etc/security/keytabs/spnego.service.keytab'
-        #   destination: '/etc/security/keytabs/oozie_spnego.keytab'
+      {oozie_site, oozie_user, oozie_group} = ctx.config.hdp
+      # require('./hdfs').configure ctx
+      # require('./hdfs').spnego ctx, (err, status) ->
+      #   # the group for the user oozie is hadoop,
+      #   # so we can use the keytab generated by hdfs.spnego
+      #   # and no copy it with different permissions
+      #   return next err, status
+      ctx.copy
+        source: '/etc/security/keytabs/spnego.service.keytab'
+        destination: "#{oozie_site['oozie.authentication.kerberos.keytab']}"
+        uid: oozie_user
+        gid: oozie_group
+        mode: 0o0600
+      , (err, copied) ->
+        return next err, if copied then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Oozie Server # MySQL', callback: (ctx, next) ->
       {oozie_db_admin_username, oozie_db_admin_password, oozie_db_host, oozie_site} = ctx.config.hdp
@@ -242,21 +245,23 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
         return next err, if created then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Oozie Server # War', callback: (ctx, next) ->
-      # Note, as per Cloudera](https://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH5/latest/CDH5-Installation-Guide/cdh5ig_topic_17_6.html),
-      # `ooziedb.sh` must be done as the oozie Unix user, otherwise Oozie may fail to start or work properly because of incorrect file permissions,
-      # however it was working without
+      # The script `ooziedb.sh` must be done as the oozie Unix user, otherwise 
+      # Oozie may fail to start or work properly because of incorrect file permissions.
+      # There is already a "oozie.war" file inside /var/lib/oozie/oozie-server/webapps/
+      # but it is empty.
+      # The "prepare-war" command generate a file inside "/var/lib/oozie/tomcat-deployment/webapps/oozie.war".
       ctx.execute
         cmd: """
         cd /usr/lib/oozie/
         sudo -u oozie bin/oozie-setup.sh prepare-war
-        bin/ooziedb.sh create -sqlfile oozie.sql -run Validate DB Connection
+        ./bin/ooziedb.sh create -sqlfile oozie.sql -run Validate DB Connection
         """
-        not_if_exists: '/var/lib/oozie/oozie-server/webapps/oozie.war'
+        not_if_exists: '/var/lib/oozie/tomcat-deployment/webapps/oozie.war'
       , (err, executed) ->
         next err, if executed then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Oozie Server # Share lib', callback: (ctx, next) ->
-      {oozie_user, hadoop_group} = ctx.config.hdp
+      {oozie_user, oozie_group} = ctx.config.hdp
       ctx.execute 
         cmd: mkcmd.hdfs ctx, """
         if hdfs dfs -ls /user/#{oozie_user}/share &>/dev/null; then exit 2; fi
@@ -265,7 +270,7 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
         tar xzf /usr/lib/oozie/oozie-sharelib.tar.gz
         hdfs dfs -mkdir /user/#{oozie_user}
         hdfs dfs -put share /user/#{oozie_user}
-        hdfs dfs -chown #{oozie_user}:#{hadoop_group} /user/#{oozie_user}
+        hdfs dfs -chown #{oozie_user}:#{oozie_group} /user/#{oozie_user}
         hdfs dfs -chmod -R 755 /user/#{oozie_user}
         rm -rf /tmp/ooziesharelib
         """
@@ -273,19 +278,23 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
       , (err, executed) ->
         next err, if executed then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Oozie Server # Start', callback: (ctx, next) ->
-      lifecycle.oozie_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+    module.exports.push 'phyla/hadoop/oozie_server_start'
+
+    module.exports.push 'phyla/hadoop/oozie_client'
+
+    # module.exports.push name: 'HDP Oozie Server # Start', callback: (ctx, next) ->
+    #   lifecycle.oozie_start ctx, (err, started) ->
+    #     next err, if started then ctx.OK else ctx.PASS
 
     # module.exports.push name: 'HDP Oozie Server # Test User', callback: (ctx, next) ->
-    #   {oozie_user, hadoop_group, oozie_site
+    #   {oozie_user, oozie_group, oozie_site
     #    oozie_test_principal, oozie_test_password} = ctx.config.hdp
     #   {realm, kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5_client
     #   ctx.krb5_addprinc
     #     principal: oozie_test_principal
     #     password: oozie_test_password
     #     uid: oozie_user
-    #     gid: hadoop_group
+    #     gid: oozie_group
     #     kadmin_principal: kadmin_principal
     #     kadmin_password: kadmin_password
     #     kadmin_server: admin_server

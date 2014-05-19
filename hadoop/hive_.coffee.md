@@ -79,7 +79,7 @@ Instructions to [install the Hive and HCatalog RPMs](http://docs.hortonworks.com
             do_hcatalog()
       do_hcatalog = ->
         ctx.log 'Install the hcatalog package'
-        ctx.service name: 'hcatalog', (err, serviced) ->
+        ctx.service name: 'hive-hcatalog', (err, serviced) ->
           return next err if err
           modified = true if serviced
           do_end()

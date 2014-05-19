@@ -133,6 +133,8 @@ now marked as optional and the users and groups are now created on package insta
         name: 'hadoop-client'
       ,
         name: 'openssl'
+      # ,
+      #   name: 'bigtop-jsvc'
       ], (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
 
@@ -362,7 +364,8 @@ Refer to the "masson/core/security" module for instructions on how to add custom
 limit rules.
 
 Also worth of interest are the [Pivotal recommandations][hawq] as well as the
-[Greenplum recommandation from Nixus Technologies][greenplum]
+[Greenplum recommandation from Nixus Technologies][greenplum] and the 
+[MapR documentation][mapr].
 
 Note, a user must re-login for those changes to be taken into account.
 
@@ -408,6 +411,7 @@ Note, a user must re-login for those changes to be taken into account.
 
 [hawq]: http://docs.gopivotal.com/pivotalhd/InstallingHAWQ.html
 [greenplum]: http://nixustechnologies.com/2014/03/31/install-greenplum-community-edition/
+[mapr]: http://doc.mapr.com/display/MapR/Preparing+Each+Node
 [kate]: http://fr.slideshare.net/cloudera/hadoop-troubleshooting-101-kate-ting-cloudera
 
 

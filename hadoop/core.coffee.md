@@ -42,7 +42,7 @@ hadoop org.apache.hadoop.security.HadoopKerberosName HTTP/master1.hadoop@HADOOP.
       ctx.config.hdp.force_check ?= false
       # Repository
       ctx.config.hdp.proxy = ctx.config.proxy.http_proxy if typeof ctx.config.hdp.http_proxy is 'undefined'
-      ctx.config.hdp.hdp_repo ?= 'http://public-repo-1.hortonworks.com/HDP/centos6/2.x/updates/2.0.6.0/hdp.repo'
+      ctx.config.hdp.hdp_repo ?= 'http://public-repo-1.hortonworks.com/HDP/centos5/2.x/GA/2.1-latest/hdp.repo'
       # HA Configuration
       ctx.config.hdp.nameservice ?= null
       throw new Error "Invalid Service Name" unless ctx.config.hdp.nameservice
@@ -194,6 +194,9 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         , 
           match: /\/var\/run\/hadoop\//mg
           replace: "#{hdfs_pid_dir}/"
+        ,
+          match: /^export JSVC_HOME=.*/mg
+          replace: "export JSVC_HOME=/usr/lib/bigtop-utils"
         ]
       , (err, written) ->
         next err, if written then ctx.OK else ctx.PASS
