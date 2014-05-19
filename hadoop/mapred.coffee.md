@@ -18,34 +18,14 @@ layout: module
       require('./hdfs').configure ctx
       require('./mapred_').configure ctx
       {static_host, realm} = ctx.config.hdp
-      jobhistoryserver = ctx.host_with_module 'phyla/hadoop/mapred_jhs'
+      jhs_host = ctx.host_with_module 'phyla/hadoop/mapred_jhs'
       # Options for mapred-site.xml
-      ctx.config.hdp.mapred_user ?= "mapred"
-      ctx.config.hdp.mapred ?= {}
       ctx.config.hdp.mapred['mapreduce.job.counters.max'] ?= 120
-      # http://blog.cloudera.com/blog/2013/11/migrating-to-mapreduce-2-on-yarn-for-operators/
-      # In MR1, the mapred.tasktracker.map.tasks.maximum and mapred.tasktracker.
-      # reduce.tasks.maximum properties dictated how many map and reduce slots each 
-      # TaskTracker had. These properties no longer exist in YARN. Instead, YARN uses 
-      # yarn.nodemanager.resource.memory-mb and yarn.nodemanager.resource.cpu-vcores, 
-      # which control the amount of memory and CPU on each node, both available to both 
-      # maps and reduces.
-      # http://developer.yahoo.com/hadoop/tutorial/module7.html
-      # 1/2 * (cores/node) to 2 * (cores/node)
-      # ctx.config.hdp.mapred['mapred.tasktracker.map.tasks.maximum'] ?= ctx.config.hdp.dfs_data_dir.length
-      # ctx.config.hdp.mapred['mapred.tasktracker.reduce.tasks.maximum'] ?= Math.ceil(ctx.config.hdp.dfs_data_dir.length / 2)
+      # Not sure if we need this, at this time, the directory isnt created
       ctx.config.hdp.mapred['mapreduce.jobtracker.system.dir'] ?= '/mapred/system'
       # ctx.config.hdp.mapred_log_dir ?= '/var/log/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#73
       ctx.config.hdp.mapred_pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
       # [Configurations for MapReduce Applications](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuring_the_Hadoop_Daemons_in_Non-Secure_Mode)
-      # The values for "mapreduce.map.memory.mb", "mapreduce.reduce.memory.mb",
-      # "mapreduce.map.java.opts", "mapreduce.reduce.java.opts" are inspired by 
-      # [HortonWorks recommandations](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
-      ctx.config.hdp.mapred['mapreduce.framework.name'] ?= 'yarn' # Execution framework set to Hadoop YARN.
-      # ctx.config.hdp.mapred['mapreduce.map.memory.mb'] ?= '4096' # Larger resource limit for maps.
-      # ctx.config.hdp.mapred['mapreduce.map.java.opts'] ?= '-Xmx3072m' # Larger heap-size for child jvms of maps.
-      # ctx.config.hdp.mapred['mapreduce.reduce.memory.mb'] ?= '8192' # Larger resource limit for reduces.
-      # ctx.config.hdp.mapred['mapreduce.reduce.java.opts'] ?= '-Xmx6144m' # Larger heap-size for child jvms of reduces.
       ctx.config.hdp.mapred['mapreduce.task.io.sort.mb'] ?= '1024' # Higher memory-limit while sorting data for efficiency.
       ctx.config.hdp.mapred['mapreduce.task.io.sort.factor'] ?= '100' # More streams merged at once while sorting files.
       ctx.config.hdp.mapred['mapreduce.reduce.shuffle.parallelcopies'] ?= '50' #  Higher number of parallel copies run by reduces to fetch outputs from very large number of maps.
@@ -55,12 +35,11 @@ layout: module
       ctx.config.hdp.mapred['mapreduce.admin.map.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
       ctx.config.hdp.mapred['mapreduce.admin.reduce.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
       # [Configurations for MapReduce JobHistory Server](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuring_the_Hadoop_Daemons_in_Non-Secure_Mode)
-      ctx.config.hdp.mapred['mapreduce.jobhistory.address'] ?= "#{jobhistoryserver}:10020" # MapReduce JobHistory Server host:port - Default port is 10020.
-      ctx.config.hdp.mapred['mapreduce.jobhistory.webapp.address'] ?= "#{jobhistoryserver}:19888" # MapReduce JobHistory Server Web UI host:port - Default port is 19888.
-      ctx.config.hdp.mapred['mapreduce.jobhistory.intermediate-done-dir'] ?= '/mr-history/tmp' # Directory where history files are written by MapReduce jobs.
+      ctx.config.hdp.mapred['mapreduce.jobhistory.address'] ?= "#{jhs_host}:10020" # MapReduce JobHistory Server host:port - Default port is 10020.
+      ctx.config.hdp.mapred['mapreduce.jobhistory.webapp.address'] ?= "#{jhs_host}:19888" # MapReduce JobHistory Server Web UI host:port - Default port is 19888.
       ctx.config.hdp.mapred['mapreduce.jobhistory.done-dir'] ?= '/mr-history/done' # Directory where history files are managed by the MR JobHistory Server.
+      ctx.config.hdp.mapred['mapreduce.jobhistory.intermediate-done-dir'] ?= '/mr-history/tmp' # Directory where history files are written by MapReduce jobs.
       # Important, JHS principal must be deployed on all mapreduce workers
-      jhs_host = ctx.host_with_module 'phyla/hadoop/mapred_jhs'
       ctx.config.hdp.mapred['mapreduce.jobhistory.principal'] ?= "jhs/#{jhs_host}@#{realm}"
       #ctx.config.hdp.mapred['mapreduce.jobhistory.principal'] ?= "jhs/#{static_host}@#{realm}"
 
@@ -177,23 +156,32 @@ allowed.
       require('./yarn').tuning ctx, (err) ->
         return next err if err
         {yarn, mapred, hadoop_conf_dir} = ctx.config.hdp
+        # Yarn available memory
+        yarn_memory = yarn['yarn.nodemanager.resource.memory-mb']
+        # mapred.cluster.map.memory.mb still seems to be used,
+        # It default to 1536 in HDP companion files
+        # and we make sure it isn't above yarn total available memory
+        mapred['mapred.cluster.map.memory.mb'] ?= Math.min 1536, yarn_memory
         # Follow [Hortonworks example](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
         # Validate map and reduce task >= YARN minimum Container allocation
         minimum = yarn['yarn.scheduler.minimum-allocation-mb']
-        map_memory = mapred['mapreduce.map.memory.mb'] = minimum
-        reduce_memory = mapred['mapreduce.reduce.memory.mb'] = minimum * 2
+        map_memory = mapred['mapreduce.map.memory.mb'] ?= Math.floor yarn_memory, minimum
+        reduce_memory = mapred['mapreduce.reduce.memory.mb'] ?= Math.floor yarn_memory, minimum * 2
         # 3/4 of the map/reduce task
-        map_heap = mapred['mapreduce.map.java.opts'] = "-Xmx#{Math.round(map_memory*3/4)}m"
-        reduce_heap = mapred['mapreduce.reduce.java.opts'] = "-Xmx#{Math.round(reduce_memory*3/4)}m"
+        map_heap_mb = Math.floor yarn_memory, Math.floor(map_memory*3/4)
+        map_heap = mapred['mapreduce.map.java.opts'] ?= "-Xmx#{map_heap_mb}m"
+        reduce_heap_mb = Math.floor yarn_memory, Math.floor(reduce_memory*3/4)
+        reduce_heap = mapred['mapreduce.reduce.java.opts'] ?= "-Xmx#{reduce_heap_mb}m"
         # Virtual memory ratio
         ratio = yarn['yarn.nodemanager.vmem-pmem-ratio'] ?= '2.1' # also defined by phyla/hadoop/yarn
         # Log result
+        ctx.log "mapred.cluster.map.memory.mb: #{mapred['mapred.cluster.map.memory.mb']} (mapred.cluster.map.memory.mb)"
         ctx.log "Map total physical RAM allocated: #{map_memory} (mapreduce.map.memory.mb)"
         ctx.log "Map JVM heap space upper limit within the Map task Container: #{map_heap} (mapreduce.map.java.opts)"
-        ctx.log "Map total physical RAM allocated: #{map_memory * ratio}"
-        ctx.log "Reduce total physical RAM allocated 'reduce.reduce.memory.mb': #{reduce_memory} (mapreduce.reduce.memory.mb)"
+        ctx.log "Map virtual memory upper limit: #{map_memory * ratio}"
+        ctx.log "Reduce total physical RAM allocated 'mapreduce.reduce.memory.mb': #{reduce_memory} (mapreduce.reduce.memory.mb)"
         ctx.log "Reduce JVM heap space upper limit within the Reduce task Container: #{reduce_heap} (mapreduce.reduce.java.opts)"
-        ctx.log "Reduce total physical RAM allocated: #{reduce_memory * ratio}"
+        ctx.log "Reduce virtual memory upper limit: #{reduce_memory * ratio}"
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/yarn-site.xml"
           properties:
@@ -204,6 +192,7 @@ allowed.
           ctx.hconfigure
             destination: "#{hadoop_conf_dir}/mapred-site.xml"
             properties:
+              'mapred.cluster.map.memory.mb': mapred['mapred.cluster.map.memory.mb']
               'mapreduce.map.memory.mb': map_memory
               'mapreduce.reduce.memory.mb': reduce_memory
               'mapreduce.map.java.opts': map_heap

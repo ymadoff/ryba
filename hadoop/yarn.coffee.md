@@ -159,6 +159,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
     module.exports.push name: 'HDP YARN # Container Executor', callback: (ctx, next) ->
       modified = false
       {yarn_user, yarn_group, container_executor, hadoop_conf_dir} = ctx.config.hdp
+      ce_group = container_executor['yarn.nodemanager.linux-container-executor.group']
       container_executor = misc.merge {}, container_executor
       container_executor['yarn.nodemanager.local-dirs'] = container_executor['yarn.nodemanager.local-dirs'].join ','
       container_executor['yarn.nodemanager.log-dirs'] = container_executor['yarn.nodemanager.log-dirs'].join ','
@@ -168,7 +169,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         ctx.chown
           destination: ce
           uid: 'root'
-          gid: yarn_group
+          gid: ce_group
         , (err, chowned) ->
           return next err if err
           modified = true if chowned
@@ -185,7 +186,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
           destination: "#{hadoop_conf_dir}/container-executor.cfg"
           content: container_executor
           uid: 'root'
-          gid: yarn_group
+          gid: ce_group
           mode: 0o0640
           separator: '='
           backup: true
@@ -229,7 +230,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         next null, if modified then ctx.OK else ctx.PASS
       do_yarn()
 
-HDP YARN # Memory Allocation
+## HDP YARN # Memory Allocation
 
 yarn.nodemanager.vmem-pmem-ratio property: Is defines ratio of virtual memory to
 available pysical memory, Here is 2.1 means virtual memory will be double the 
@@ -248,9 +249,15 @@ Ressources:
 http://stackoverflow.com/questions/18692631/difference-between-3-memory-parameters-in-hadoop-2
 blog.cloudera.com/blog/2014/04/apache-hadoop-yarn-avoiding-6-time-consuming-gotchas/
 
-# todo, got to [HortonWorks article and make properties dynamic or improve example](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
+TODO, got to [HortonWorks article and make properties dynamic or improve example](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
 
 Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Containers to be allocated to each node
+
+    getMinContainerSize = module.exports.getMinContainerSize = (memory_mb) ->
+      if memory_mb <= 4*1024 then 256
+      else if memory_mb <= 8*1024 then 512
+      else if memory_mb <= 24*1024 then 1024
+      else 2048
 
     module.exports.push name: 'HDP YARN # Memory Allocation', callback: module.exports.tuning = (ctx, next) ->
       {yarn, hadoop_conf_dir} = ctx.config.hdp
@@ -265,8 +272,9 @@ Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Co
       # Each machine in our cluster has 96 GB of RAM. Some of this RAM should be 
       # reserved for Operating System usage. On each node, we’ll reserve 10% 
       # with a maximum of 8 GB for the Operating System.
-      memTotalMb = Math.round ctx.meminfo.MemTotal / 1000 / 1000
-      reserved = memTotalMb * 0.1
+      numberOfCores = Math.floor ctx.cpuinfo.length
+      memTotalMb = Math.floor ctx.meminfo.MemTotal / 1000 / 1000
+      reserved = Math.round(memTotalMb * 0.1)
       max_reserved = 8*1024
       reserved = max_reserved if reserved > max_reserved
       memory = yarn_site['yarn.nodemanager.resource.memory-mb'] ?= "#{memTotalMb-reserved}"
@@ -276,12 +284,17 @@ Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Co
       # ratio between 1 and 2 container per disk, so we want to allow for a 
       # maximum of 20 Containers, and thus need (40 GB total RAM) / (20 # of 
       # Containers) = 2 GB minimum per container
-      containers = Math.round(yarn_site['yarn.nodemanager.local-dirs'].length * 1.6)
-      memory_minimum = yarn_site['yarn.scheduler.minimum-allocation-mb'] ?= Math.round(memory / containers)
+      # minimum of (2*CORES, 1.8*DISKS, (Total available RAM) / MIN_CONTAINER_SIZE) (http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap1-11.html)
+      containers = Math.floor Math.min numberOfCores*2, yarn_site['yarn.nodemanager.local-dirs'].length * 1.8, (memory / getMinContainerSize memory)
+      memory_minimum = yarn_site['yarn.scheduler.minimum-allocation-mb'] ?= Math.floor(memory / containers)
       # Note, "yarn.scheduler.maximum-allocation-mb" default to 8192 in yarn-site.xml and to 6144 in HDP companion files
-      memory_maximum = yarn_site['yarn.scheduler.maximum-allocation-mb'] ?= memory_minimum * 3
+      # Maximum memory estimation is 3 times the minimum memory, while not exceding the total memory and with a minimum of 6144
+      memory_maximum = yarn_site['yarn.scheduler.maximum-allocation-mb'] ?= Math.min memory, Math.max 6144, memory_minimum * 3
       # yarn_site['yarn.scheduler.maximum-allocation-mb'] = 6144
       ratio = yarn_site['yarn.nodemanager.vmem-pmem-ratio'] ?= "2.1" # also defined by phyla/hadoop/mapred
+      # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap1-11.html
+      yarn_site['yarn.app.mapreduce.am.resource.mb'] ?= Math.min memory, Math.floor 2 * memory_minimum # 2 * RAM-per-Container
+      yarn_site['yarn.app.mapreduce.am.command-opts'] ?= Math.min memory, Math.floor 0.8 * 2 * memory_minimum # = 0.8 * 2 * RAM-per-Container 
       # Log result
       ctx.log "Server memory: #{memTotalMb} mb"
       ctx.log "Yarn available memory: #{memory} mb (yarn.nodemanager.resource.memory-mb)"
