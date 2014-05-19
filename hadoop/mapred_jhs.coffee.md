@@ -24,33 +24,44 @@ layout: module
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
+## HDFS Layout
+
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
-    module.exports.push name: 'HDP MapRed JHS # HDFS layout', callback: (ctx, next) ->
+    module.exports.push name: 'HDP MapRed JHS # HDFS Layout', timeout: -1, callback: (ctx, next) ->
       {hadoop_group, yarn_user, mapred_user} = ctx.config.hdp
-      # Carefull, this is a duplicate of "HDP MapRed # HDFS layout"
-      ok = false
-      do_jobhistory_server = ->
-        ctx.execute
-          cmd: mkcmd.hdfs ctx, """
-          if hdfs dfs -test -d /mr-history; then exit 1; fi
+      ctx.execute
+        cmd: mkcmd.hdfs ctx, """
+        if ! hdfs dfs -test -d /mr-history; then
+          hdfs dfs -mkdir -p /mr-history
+          hdfs dfs -chmod 0751 /mr-history
+          hdfs dfs -chown #{mapred_user}:#{hadoop_group} /mr-history
+          modified=1
+        fi
+        if ! hdfs dfs -test -d /mr-history/tmp; then
           hdfs dfs -mkdir -p /mr-history/tmp
-          hdfs dfs -chmod -R 1777 /mr-history/tmp
+          hdfs dfs -chmod 1777 /mr-history/tmp
+          hdfs dfs -chown #{mapred_user}:#{hadoop_group} /mr-history/tmp
+          modified=1
+        fi
+        if ! hdfs dfs -test -d /mr-history/done; then
           hdfs dfs -mkdir -p /mr-history/done
-          hdfs dfs -chmod -R 1777 /mr-history/done
-          hdfs dfs -chown -R #{mapred_user}:#{hadoop_group} /mr-history
+          hdfs dfs -chmod 1777 /mr-history/done
+          hdfs dfs -chown #{mapred_user}:#{hadoop_group} /mr-history/done
+          modified=1
+        fi
+        if ! hdfs dfs -test -d /app-logs; then
           hdfs dfs -mkdir -p /app-logs
-          hdfs dfs -chmod -R 1777 /app-logs 
-          hdfs dfs -chown #{yarn_user} /app-logs 
-          """
-          code_skipped: 1
-        , (err, executed, stdout) ->
-          return next err if err
-          ok = true if executed
-          do_end()
-      do_end = ->
-        next null, if ok then ctx.OK else ctx.PASS
-      do_jobhistory_server()
+          hdfs dfs -chmod 1777 /app-logs
+          hdfs dfs -chown #{yarn_user} /app-logs
+          modified=1
+        fi
+        if [ $modified != "1" ]; then exit 2; fi
+        """
+        code_skipped: 2
+      , (err, executed, stdout) ->
+        return next err if err
+        next null, if executed then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP MapRed JHS # Kerberos', callback: (ctx, next) ->
       {mapred_user, realm} = ctx.config.hdp
