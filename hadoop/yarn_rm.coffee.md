@@ -29,6 +29,18 @@ layout: module
         return next err if err
         next null, if created then ctx.OK else ctx.PASS
 
+## Wait JHS
+
+Yarn use the the MapReduce Job History Server (JHS) to send logs. The address of
+the server is defined by the propery "yarn.log.server.url" in "yarn-site.xml".
+The default port is "19888".
+
+    # url = require 'url'
+    # module.exports.push name: 'HDP YARN RM # Wait JHS', timeout: -1, callback: (ctx, next) ->
+    #   {hostname, port} = url.parse ctx.config.hdp.yarn['yarn.log.server.url']
+    #   ctx.waitIsOpen hostname, port, (err) ->
+    #     return next err if err
+
 ## Start RM
 
 Execute the "phyla/hadoop/yarn_rm_start" module to start the Resource Manager.
