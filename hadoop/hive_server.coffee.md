@@ -18,7 +18,7 @@ layout: module
     # Deploy the HDP repository
     # Configure "core-site.xml" and "hadoop-env.sh"
     module.exports.push 'phyla/hadoop/core'
-    # Install client to create new Hive principal
+    # Install kerberos to create and test new Hive principal
     module.exports.push 'masson/core/krb5_client'
     # Install the Hive and HCatalog service
     module.exports.push 'phyla/hadoop/hive_'
