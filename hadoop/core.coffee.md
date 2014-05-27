@@ -14,7 +14,8 @@ layout: module
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/yum'
-    module.exports.push 'masson/core/krb5_client' #kadmin must be present
+    # Install kerberos clients to create/test new HDFS and Yarn principals
+    module.exports.push 'masson/core/krb5_client'
     module.exports.push 'masson/commons/java'
 
 ## Configuration
@@ -68,7 +69,6 @@ hadoop org.apache.hadoop.security.HadoopKerberosName HTTP/master1.hadoop@HADOOP.
       # Options and configuration
       ctx.config.hdp.core_site ?= {}
       # NameNode hostname
-      # ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://#{namenode}:8020"
       ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.hdp.nameservice}"
       ctx.hconfigure = (options, callback) ->
         options.ssh = ctx.ssh if typeof options.ssh is 'undefined'
