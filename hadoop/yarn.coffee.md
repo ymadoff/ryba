@@ -251,7 +251,8 @@ Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Co
       memory_minimum = yarn_site['yarn.scheduler.minimum-allocation-mb'] ?= Math.floor(memory / containers)
       # Note, "yarn.scheduler.maximum-allocation-mb" default to 8192 in yarn-site.xml and to 6144 in HDP companion files
       # Maximum memory estimation is 3 times the minimum memory, while not exceding the total memory and with a minimum of 6144
-      memory_maximum = yarn_site['yarn.scheduler.maximum-allocation-mb'] ?= Math.min memory, Math.max 6144, memory_minimum * 3
+      # memory_maximum = yarn_site['yarn.scheduler.maximum-allocation-mb'] ?= Math.min memory, Math.max 6144, memory_minimum * 3
+      memory_maximum = yarn_site['yarn.scheduler.maximum-allocation-mb'] ?= memory
       # yarn_site['yarn.scheduler.maximum-allocation-mb'] = 6144
       ratio = yarn_site['yarn.nodemanager.vmem-pmem-ratio'] ?= "2.1" # also defined by phyla/hadoop/mapred
       # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap1-11.html
