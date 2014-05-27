@@ -176,30 +176,44 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
+## Hadoop OPTS
+
+Update the "/etc/hadoop/conf/hadoop-env.sh" file.
+
+The location for JSVC depends on the platform. The Hortonworks documentation
+mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
+correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
+
     module.exports.push name: 'HDP Core # Hadoop OPTS', timeout: -1, callback: (ctx, next) ->
       {hadoop_conf_dir, hdfs_user, hadoop_group, hadoop_opts, hdfs_log_dir, hdfs_pid_dir} = ctx.config.hdp
-      ctx.write
-        source: "#{__dirname}/files/core_hadoop/hadoop-env.sh"
-        destination: "#{hadoop_conf_dir}/hadoop-env.sh"
-        local_source: true
-        uid: hdfs_user
-        gid: hadoop_group
-        mode: 0o755
-        write: [
-          match: /^export HADOOP_OPTS.*$/mg
-          replace: hadoop_opts
-        ,
-          match: /\/var\/log\/hadoop\//mg
-          replace: "#{hdfs_log_dir}/"
-        , 
-          match: /\/var\/run\/hadoop\//mg
-          replace: "#{hdfs_pid_dir}/"
-        ,
-          match: /^export JSVC_HOME=.*/mg
-          replace: "export JSVC_HOME=/usr/lib/bigtop-utils"
-        ]
-      , (err, written) ->
-        next err, if written then ctx.OK else ctx.PASS
+      ctx.fs.exists '/usr/libexec/bigtop-utils', (err, exists) ->
+        return next err if err
+        jsvc = if exists then '/usr/libexec/bigtop-utils' else '/usr/lib/bigtop-utils'
+        ctx.write
+          source: "#{__dirname}/files/core_hadoop/hadoop-env.sh"
+          destination: "#{hadoop_conf_dir}/hadoop-env.sh"
+          local_source: true
+          uid: hdfs_user
+          gid: hadoop_group
+          mode: 0o755
+          write: [
+            match: /^export HADOOP_OPTS.*$/mg
+            replace: hadoop_opts
+          ,
+            match: /\/var\/log\/hadoop\//mg
+            replace: "#{hdfs_log_dir}/"
+          , 
+            match: /\/var\/run\/hadoop\//mg
+            replace: "#{hdfs_pid_dir}/"
+          # ,
+          #   match: /^export JSVC_HOME=.*$/mg
+          #   replace: "export JSVC_HOME=/usr/libexec/bigtop-utils"
+          ,
+            match: /^export JSVC_HOME=.*$/mg
+            replace: "export JSVC_HOME=#{jsvc}"
+          ]
+        , (err, written) ->
+          next err, if written then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Core # Environnment', timeout: -1, callback: (ctx, next) ->
       ctx.write
