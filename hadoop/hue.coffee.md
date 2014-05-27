@@ -14,7 +14,7 @@ It also ships with an Oozie Application for creating and monitoring workflows, a
     module.exports.push 'masson/bootstrap/'
     # Install the mysql connector
     module.exports.push 'masson/commons/mysql_client'
-    # Install client to create new Hive principal
+    # Install kerberos clients to create/test new Hive principal
     module.exports.push 'masson/core/krb5_client'
     # Set java_home in "hadoop-env.sh"
     module.exports.push 'phyla/hadoop/core'
@@ -392,8 +392,8 @@ changes.
         ctx.ini
           destination: "#{hue_conf_dir}/hue.ini"
           content: desktop:
-              ssl_certificate: "#{hue_conf_dir}/hue.cet"
-              ssl_private_key: "#{hue_conf_dir}/hue.key"
+            ssl_certificate: "#{hue_conf_dir}/hue.cet"
+            ssl_private_key: "#{hue_conf_dir}/hue.key"
           merge: true
           parse: misc.ini.parse_multi_brackets 
           stringify: misc.ini.stringify_multi_brackets
