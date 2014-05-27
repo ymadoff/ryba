@@ -87,7 +87,7 @@ layout: module
                 <error to="fail"/>
               </action>
               <kill name="fail">
-                  <message>Map/Reduce failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+                  <message>Error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
               </kill>
               <end name="end"/>
             </workflow-app>
