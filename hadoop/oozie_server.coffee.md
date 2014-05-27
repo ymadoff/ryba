@@ -28,35 +28,38 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/commons/mysql_server').configure ctx
       # require('./yarn_client').configure ctx
-      require('./oozie_').configure ctx
-      {static_host, realm} = ctx.config.hdp
+      require('./oozie_').configure ctx # load "masson/hadoop/core"
+      {static_host, realm, core_site} = ctx.config.hdp
       ctx.config.hdp.oozie_db_admin_username ?= ctx.config.mysql_server.username
       ctx.config.hdp.oozie_db_admin_password ?= ctx.config.mysql_server.password
       # dbhost = ctx.config.hdp.oozie_db_host ?= ctx.servers(action: 'masson/commons/mysql_server')[0]
       dbhost = ctx.config.hdp.oozie_db_host ?= ctx.host_with_module 'masson/commons/mysql_server'
+      ctx.config.hdp.force_war ?= false
       ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{dbhost}:3306/oozie?createDatabaseIfNotExist=true"
       ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
       ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'
       ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
       # TODO: check if security is on
-      ctx.config.hdp.oozie_site['oozie.service.AuthorizationService.security.enabled'] = 'true' # Todo, now deprecated should be set to null in favor of oozie.service.AuthorizationService.authorization.enabled (see oozie "oozie.log" file)
-      ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.kerberos.enabled'] = 'true'
-      ctx.config.hdp.oozie_site['local.realm'] = "#{realm}"
-      ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.keytab.file'] = '/etc/oozie/conf/oozie.service.keytab'
-      ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.kerberos.principal'] = "oozie/#{ctx.config.host}@#{realm}"
-      ctx.config.hdp.oozie_site['oozie.authentication.type'] = 'kerberos'
-      ctx.config.hdp.oozie_site['oozie.authentication.kerberos.principal'] = "HTTP/#{ctx.config.host}@#{realm}"
-      ctx.config.hdp.oozie_site['oozie.authentication.kerberos.keytab'] = '/etc/oozie/conf/spnego.service.keytab'
+      ctx.config.hdp.oozie_site['oozie.service.AuthorizationService.security.enabled'] ?= 'true' # Todo, now deprecated should be set to null in favor of oozie.service.AuthorizationService.authorization.enabled (see oozie "oozie.log" file)
+      ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.kerberos.enabled'] ?= 'true'
+      ctx.config.hdp.oozie_site['local.realm'] ?= "#{realm}"
+      ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.keytab.file'] ?= '/etc/oozie/conf/oozie.service.keytab'
+      ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.kerberos.principal'] ?= "oozie/#{ctx.config.host}@#{realm}"
+      ctx.config.hdp.oozie_site['oozie.authentication.type'] ?= 'kerberos'
+      ctx.config.hdp.oozie_site['oozie.authentication.kerberos.principal'] ?= "HTTP/#{ctx.config.host}@#{realm}"
+      ctx.config.hdp.oozie_site['oozie.authentication.kerberos.keytab'] ?= '/etc/oozie/conf/spnego.service.keytab'
       # ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.nameNode.whitelist'] = ''
-      ctx.config.hdp.oozie_site['oozie.authentication.kerberos.name.rules'] = """
+      # ctx.config.hdp.oozie_site['oozie.authentication.kerberos.name.rules'] = """
       
-          RULE:[2:$1@$0]([rn]m@.*)s/.*/yarn/
-          RULE:[2:$1@$0](jhs@.*)s/.*/mapred/
-          RULE:[2:$1@$0]([nd]n@.*)s/.*/hdfs/
-          RULE:[2:$1@$0](hm@.*)s/.*/hbase/
-          RULE:[2:$1@$0](rs@.*)s/.*/hbase/
-          DEFAULT
-      """
+      #     RULE:[2:$1@$0]([rn]m@.*)s/.*/yarn/
+      #     RULE:[2:$1@$0](jhs@.*)s/.*/mapred/
+      #     RULE:[2:$1@$0]([nd]n@.*)s/.*/hdfs/
+      #     RULE:[2:$1@$0](hm@.*)s/.*/hbase/
+      #     RULE:[2:$1@$0](rs@.*)s/.*/hbase/
+      #     DEFAULT
+
+      # """
+      ctx.config.hdp.oozie_site['oozie.authentication.kerberos.name.rules'] ?= core_site['hadoop.security.auth_to_local']
       ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.nameNode.whitelist'] ?= '' # Fix space value
       ctx.config.hdp.oozie_site['oozie.service.ProxyUserService.proxyuser.hive.hosts'] ?= "*"
       ctx.config.hdp.oozie_site['oozie.service.ProxyUserService.proxyuser.hive.groups'] ?= "*"
@@ -79,6 +82,7 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
       ,
         name: 'extjs-2.2-1'
       ], (err, serviced) ->
+        ctx.config.hdp.force_war = true if serviced
         next err, if serviced then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Oozie Server # Directories', callback: (ctx, next) ->
@@ -121,7 +125,8 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
         source: '/usr/share/HDP-oozie/ext-2.2.zip'
         destination: '/usr/lib/oozie/libext/'
       , (err, copied) ->
-        next err, if copied then ctx.OK else ctx.PASS
+        ctx.config.hdp.force_war = true if copied
+        return next err, if copied then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Oozie Server # LZO', callback: (ctx, next) ->
       ctx.execute
@@ -145,13 +150,8 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/lib/oozie/libext/mysql-connector-java.jar'
       , (err, linked) ->
+        ctx.config.hdp.force_war = true if linked
         return next err, ctx.PASS if err or not linked
-        # For "HDP Oozie Server # War" callback to execute
-        ctx.remove
-          destination: '/var/lib/oozie/tomcat-deployment/webapps/oozie.war'
-          if_exists: true
-        , (err) ->
-          return next err, ctx.OK
 
     module.exports.push name: 'HDP Oozie Server # Configuration', callback: (ctx, next) ->
       { hadoop_conf_dir, yarn, oozie_group, oozie_user, 
@@ -190,6 +190,19 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
       do_end = ->
         next null, if modified then ctx.OK else ctx.PASS
       do_oozie_site()
+
+    module.exports.push name: 'HDP Oozie Server # War', callback: (ctx, next) ->
+      # The script `ooziedb.sh` must be done as the oozie Unix user, otherwise 
+      # Oozie may fail to start or work properly because of incorrect file permissions.
+      # There is already a "oozie.war" file inside /var/lib/oozie/oozie-server/webapps/.
+      # The "prepare-war" command generate the file "/var/lib/oozie/oozie-server/webapps/oozie.war".
+      # The directory being servered by the web server is "/usr/lib/oozie/webapps/oozie".
+      ctx.execute
+        cmd: "sudo -u oozie bin/oozie-setup.sh prepare-war"
+        cwd: '/usr/lib/oozie/'
+        not_if: not ctx.config.hdp.force_war
+      , (err, executed) ->
+        next err, if executed then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Oozie Server # Kerberos', callback: (ctx, next) ->
       {oozie_user, oozie_group, oozie_site, realm} = ctx.config.hdp
@@ -237,21 +250,6 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
         code_skipped: 2
       , (err, created, stdout, stderr) ->
         return next err, if created then ctx.OK else ctx.PASS
-
-    module.exports.push name: 'HDP Oozie Server # War', callback: (ctx, next) ->
-      # The script `ooziedb.sh` must be done as the oozie Unix user, otherwise 
-      # Oozie may fail to start or work properly because of incorrect file permissions.
-      # There is already a "oozie.war" file inside /var/lib/oozie/oozie-server/webapps/
-      # but it is empty.
-      # The "prepare-war" command generate a file inside "/var/lib/oozie/oozie-server/webapps/oozie.war".
-      ctx.execute
-        cmd: """
-        cd /usr/lib/oozie/
-        sudo -u oozie bin/oozie-setup.sh prepare-war
-        """
-        not_if_exists: '/var/lib/oozie/oozie-server/webapps/oozie.war'
-      , (err, executed) ->
-        next err, if executed then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Oozie Server # Database', callback: (ctx, next) ->
       ctx.execute
