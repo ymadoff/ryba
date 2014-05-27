@@ -25,6 +25,7 @@ provides [instructions to rollback a HA installation][rollback] that apply to Am
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
+    # module.exports.push 'masson/core/iptables'
     module.exports.push 'phyla/hadoop/hdfs'
 
 ## Configuration
@@ -34,6 +35,32 @@ define inside the "phyla/hadoop/hdfs" and "masson/core/nc" modules.
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx
+      # require('masson/core/iptables').configure ctx
+
+# ## IPTables
+
+# | Service                    | Port   | Protocol | Parameter         |
+# |----------------------------|--------|--------|-------------------- |
+# | NameNode WebUI             | 50070  | http   | `dfs.http.address`  |
+# |                            | 50470  | https  | `dfs.https.address` |
+# | NameNode metadata service  | 8020   | ipc    | `fs.default.name`   |
+
+# IPTables rules are only inserted if the parameter "iptables.action" is set to 
+# "start" (default value).
+
+#     module.exports.push name: 'SSH # IPTables', callback: (ctx, next) ->
+#       {hadoop_conf_dir, mapred} = ctx.config.hdp
+#       ctx.iptables
+#         rules: [
+#           chain: 'INPUT', target: 'ACCEPT', dport: 22, protocol: 'tcp', state: 'NEW', comment: "HDFS Namenode WebUI"
+#         ,
+#           chain: 'INPUT', target: 'ACCEPT', dport: 22, protocol: 'tcp', state: 'NEW', comment: "HFDS Namenode WebUI Secured"
+#         ,
+#           chain: 'INPUT', target: 'ACCEPT', dport: 22, protocol: 'tcp', state: 'NEW', comment: "HFDS Namenode metadata service"
+#         ]
+#         if: ctx.config.iptables.action is 'start'
+#       , (err, configured) ->
+#         next err, if configured then ctx.OK else ctx.PASS
 
 ## Layout
 
