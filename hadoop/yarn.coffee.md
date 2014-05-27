@@ -35,7 +35,7 @@ layout: module
       ctx.config.hdp.yarn['yarn.resourcemanager.resource-tracker.address'] ?= "#{resourcemanager}:8025" # Enter your ResourceManager hostname.
       ctx.config.hdp.yarn['yarn.resourcemanager.scheduler.address'] ?= "#{resourcemanager}:8030" # Enter your ResourceManager hostname.
       ctx.config.hdp.yarn['yarn.resourcemanager.address'] ?= "#{resourcemanager}:8050" # Enter your ResourceManager hostname.
-      ctx.config.hdp.yarn['yarn.resourcemanager.admin.address'] ?= "#{resourcemanager}:8041" # Enter your ResourceManager hostname.
+      ctx.config.hdp.yarn['yarn.resourcemanager.admin.address'] ?= "#{resourcemanager}:8141" # Enter your ResourceManager hostname.
       ctx.config.hdp.yarn['yarn.nodemanager.remote-app-log-dir'] ?= "/logs"
       ctx.config.hdp.yarn['yarn.log.server.url'] ?= "http://#{jobhistoryserver}:19888/jobhistory/logs/" # URL for job history server
       ctx.config.hdp.yarn['yarn.resourcemanager.webapp.address'] ?= "#{resourcemanager}:8088" # URL for job history server
@@ -53,6 +53,10 @@ layout: module
       ctx.config.hdp.container_executor['yarn.nodemanager.log-dirs'] = ctx.config.hdp.yarn['yarn.nodemanager.log-dirs']
       ctx.config.hdp.container_executor['banned.users'] ?= 'hfds,yarn,mapred,bin'
       ctx.config.hdp.container_executor['min.user.id'] ?= '0'
+      # Cloudera recommand setting [vmem-check to false on Centos/RHEL 6 due to its aggressive allocation of virtual memory](http://blog.cloudera.com/blog/2014/04/apache-hadoop-yarn-avoiding-6-time-consuming-gotchas/)
+      # yarn.nodemanager.vmem-check-enabled (found in hdfs-default.xml)
+      # yarn.nodemanager.vmem-check.enabled
+
 
 http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
@@ -78,57 +82,19 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         next err, if serviced then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP YARN # Directories', timeout: -1, callback: (ctx, next) ->
-      { yarn_user,
-        yarn, yarn_log_dir, yarn_pid_dir,
-        hadoop_group } = ctx.config.hdp
-      modified = false
-      do_yarn_log_dirs = -> # not the tranditionnal log dir
-        ctx.log "Create yarn dirs: #{yarn['yarn.nodemanager.log-dirs'].join ','}"
-        ctx.mkdir
-          destination: yarn['yarn.nodemanager.log-dirs']
-          uid: yarn_user
-          gid: hadoop_group
-          mode: 0o0755
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_yarn_local_log()
-      do_yarn_local_log = ->
-        ctx.log "Create yarn dirs: #{yarn['yarn.nodemanager.local-dirs'].join ','}"
-        ctx.mkdir
-          destination: yarn['yarn.nodemanager.local-dirs']
-          uid: yarn_user
-          gid: hadoop_group
-          mode: 0o0755
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_log()
-      do_log = ->
-        ctx.log "Create hdfs and mapred log: #{yarn_log_dir}"
-        ctx.mkdir
-          destination: "#{yarn_log_dir}/#{yarn_user}"
-          uid: yarn_user
-          gid: hadoop_group
-          mode: 0o0755
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_pid()
-      do_pid = ->
-        ctx.log "Create pid: #{yarn_pid_dir}"
-        ctx.mkdir
-          destination: "#{yarn_pid_dir}/#{yarn_user}"
-          uid: yarn_user
-          gid: hadoop_group
-          mode: 0o0755
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_end()
-      do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
-      do_yarn_log_dirs()
+      {yarn_user, hadoop_group, yarn_log_dir, yarn_pid_dir} = ctx.config.hdp
+      ctx.mkdir
+        destination: "#{yarn_log_dir}/#{yarn_user}"
+        uid: yarn_user
+        gid: hadoop_group
+        mode: 0o0755
+      ,
+        destination: "#{yarn_pid_dir}/#{yarn_user}"
+        uid: yarn_user
+        gid: hadoop_group
+        mode: 0o0755
+      , (err, created) ->
+        next null, if created then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP YARN # Yarn OPTS', callback: (ctx, next) ->
       {yarn_user, hadoop_group, hadoop_conf_dir} = ctx.config.hdp
@@ -155,6 +121,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
     module.exports.push name: 'HDP YARN # Container Executor', callback: (ctx, next) ->
       modified = false
       {yarn_user, yarn_group, container_executor, hadoop_conf_dir} = ctx.config.hdp
+      ce_group = container_executor['yarn.nodemanager.linux-container-executor.group']
       container_executor = misc.merge {}, container_executor
       container_executor['yarn.nodemanager.local-dirs'] = container_executor['yarn.nodemanager.local-dirs'].join ','
       container_executor['yarn.nodemanager.log-dirs'] = container_executor['yarn.nodemanager.log-dirs'].join ','
@@ -164,7 +131,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         ctx.chown
           destination: ce
           uid: 'root'
-          gid: yarn_group
+          gid: ce_group
         , (err, chowned) ->
           return next err if err
           modified = true if chowned
@@ -181,7 +148,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
           destination: "#{hadoop_conf_dir}/container-executor.cfg"
           content: container_executor
           uid: 'root'
-          gid: yarn_group
+          gid: ce_group
           mode: 0o0640
           separator: '='
           backup: true
@@ -225,7 +192,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         next null, if modified then ctx.OK else ctx.PASS
       do_yarn()
 
-HDP YARN # Memory Allocation
+## HDP YARN # Memory Allocation
 
 yarn.nodemanager.vmem-pmem-ratio property: Is defines ratio of virtual memory to
 available pysical memory, Here is 2.1 means virtual memory will be double the 
@@ -244,9 +211,15 @@ Ressources:
 http://stackoverflow.com/questions/18692631/difference-between-3-memory-parameters-in-hadoop-2
 blog.cloudera.com/blog/2014/04/apache-hadoop-yarn-avoiding-6-time-consuming-gotchas/
 
-# todo, got to [HortonWorks article and make properties dynamic or improve example](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
+TODO, got to [HortonWorks article and make properties dynamic or improve example](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
 
 Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Containers to be allocated to each node
+
+    getMinContainerSize = module.exports.getMinContainerSize = (memory_mb) ->
+      if memory_mb <= 4*1024 then 256
+      else if memory_mb <= 8*1024 then 512
+      else if memory_mb <= 24*1024 then 1024
+      else 2048
 
     module.exports.push name: 'HDP YARN # Memory Allocation', callback: module.exports.tuning = (ctx, next) ->
       {yarn, hadoop_conf_dir} = ctx.config.hdp
@@ -261,8 +234,9 @@ Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Co
       # Each machine in our cluster has 96 GB of RAM. Some of this RAM should be 
       # reserved for Operating System usage. On each node, we’ll reserve 10% 
       # with a maximum of 8 GB for the Operating System.
-      memTotalMb = Math.round ctx.meminfo.MemTotal / 1000 / 1000
-      reserved = memTotalMb * 0.1
+      numberOfCores = Math.floor ctx.cpuinfo.length
+      memTotalMb = Math.floor ctx.meminfo.MemTotal / 1000 / 1000
+      reserved = Math.round(memTotalMb * 0.1)
       max_reserved = 8*1024
       reserved = max_reserved if reserved > max_reserved
       memory = yarn_site['yarn.nodemanager.resource.memory-mb'] ?= "#{memTotalMb-reserved}"
@@ -272,16 +246,31 @@ Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Co
       # ratio between 1 and 2 container per disk, so we want to allow for a 
       # maximum of 20 Containers, and thus need (40 GB total RAM) / (20 # of 
       # Containers) = 2 GB minimum per container
-      containers = Math.round(yarn_site['yarn.nodemanager.local-dirs'].length * 1.6)
-      memory_minimum = yarn_site['yarn.scheduler.minimum-allocation-mb'] ?= Math.round(memory / containers)
-      # Note, we dont configure "yarn.scheduler.maximum-allocation-mb", not sure if we need it
+      # minimum of (2*CORES, 1.8*DISKS, (Total available RAM) / MIN_CONTAINER_SIZE) (http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap1-11.html)
+      containers = Math.floor Math.min numberOfCores*2, yarn_site['yarn.nodemanager.local-dirs'].length * 1.8, (memory / getMinContainerSize memory)
+      memory_minimum = yarn_site['yarn.scheduler.minimum-allocation-mb'] ?= Math.floor(memory / containers)
+      # Note, "yarn.scheduler.maximum-allocation-mb" default to 8192 in yarn-site.xml and to 6144 in HDP companion files
+      # Maximum memory estimation is 3 times the minimum memory, while not exceding the total memory and with a minimum of 6144
+      # memory_maximum = yarn_site['yarn.scheduler.maximum-allocation-mb'] ?= Math.min memory, Math.max 6144, memory_minimum * 3
+      memory_maximum = yarn_site['yarn.scheduler.maximum-allocation-mb'] ?= memory
+      # yarn_site['yarn.scheduler.maximum-allocation-mb'] = 6144
       ratio = yarn_site['yarn.nodemanager.vmem-pmem-ratio'] ?= "2.1" # also defined by phyla/hadoop/mapred
+      # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap1-11.html
+      yarn_site['yarn.app.mapreduce.am.resource.mb'] ?= Math.min memory, Math.floor 2 * memory_minimum # 2 * RAM-per-Container
+      yarn_site['yarn.app.mapreduce.am.command-opts'] ?= Math.min memory, Math.floor 0.8 * 2 * memory_minimum # = 0.8 * 2 * RAM-per-Container 
+      # Log result
+      ctx.log "Server memory: #{memTotalMb} mb"
+      ctx.log "Yarn available memory: #{memory} mb (yarn.nodemanager.resource.memory-mb)"
+      ctx.log "Number of containers: #{containers}"
+      ctx.log "Minimum memory allocation: #{memory_minimum} mb (yarn.scheduler.minimum-allocation-mb)"
+      ctx.log "Maximum memory allocation: #{memory_maximum} mb (yarn.scheduler.maximum-allocation-mb)"
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
         properties:
           'yarn.nodemanager.vmem-pmem-ratio': ratio
           'yarn.nodemanager.resource.memory-mb': memory
           'yarn.scheduler.minimum-allocation-mb': memory_minimum
+          'yarn.scheduler.maximum-allocation-mb': memory_maximum
         merge: true
       , (err, configured) ->
         return next err, if configured then ctx.OK else ctx.PASS

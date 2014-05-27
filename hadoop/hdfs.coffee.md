@@ -24,12 +24,9 @@ In its current state, we are only supporting the installation of a
 
 ## Configure
 
-TODO: The properties "hdfs.dfs\_name\_dir" and "hdfs.dfs\_data\_dir" should 
-disappear and be replaced by "hdp.hdfs_site['dfs.namenode.name.dir']" and
-"hdp.hdfs_site['dfs.datanode.data.dir']".
-
-*   `hdfs.dfs_name_dir`   
-*   `hdfs.dfs_data_dir`   
+The properties "hdp.hdfs_site['dfs.namenode.name.dir']" and
+"hdp.hdfs_site['dfs.datanode.data.dir']" are required.
+ 
 *   `hdfs.fs_checkpoint_dir` (array, string)   
     List of directories where SecondaryNameNode should store the checkpoint image. This
     is no longer used but we kept it in case we want to re-introduced the SecondaryNameNode
@@ -71,11 +68,6 @@ Example:
       require('./core').configure ctx
       {nameservice} = ctx.config.hdp
       namenodes = ctx.hosts_with_module 'phyla/hadoop/hdfs_nn'
-      # Define Directories for Core Hadoop
-      ctx.config.hdp.dfs_name_dir ?= ['/hadoop/hdfs/namenode']
-      ctx.config.hdp.dfs_name_dir = ctx.config.hdp.dfs_name_dir.split ',' if typeof ctx.config.hdp.dfs_name_dir is 'string'
-      ctx.config.hdp.dfs_data_dir ?= ['/hadoop/hdfs/data']
-      ctx.config.hdp.dfs_data_dir = ctx.config.hdp.dfs_data_dir.split ',' if typeof ctx.config.hdp.dfs_data_dir is 'string'
       ctx.config.hdp.hdfs_user ?= 'hdfs'
       throw new Error "Missing value for 'hdfs_password'" unless ctx.config.hdp.hdfs_password?
       ctx.config.hdp.test_user ?= 'test'
@@ -87,22 +79,34 @@ Example:
       ctx.config.hdp.hdfs_namenode_timeout ?= 20000 # 20s
       ctx.config.hdp.snn_port ?= '50090'
       # Options for "hdfs-site.xml"
-      ctx.config.hdp.hdfs_site ?= {}
+      hdfs_site = ctx.config.hdp.hdfs_site ?= {}
+      # Comma separated list of paths. Use the list of directories from $DFS_NAME_DIR.  
+      # For example, /grid/hadoop/hdfs/nn,/grid1/hadoop/hdfs/nn.
+      throw new Error 'Required property: hdfs_site[dfs.namenode.name.dir]' unless hdfs_site['dfs.namenode.name.dir']
+      hdfs_site['dfs.namenode.name.dir'] = hdfs_site['dfs.namenode.name.dir'].join ',' if Array.isArray hdfs_site['dfs.namenode.name.dir']
+      # Comma separated list of paths. Use the list of directories from $DFS_DATA_DIR.  
+      # For example, /grid/hadoop/hdfs/dn,/grid1/hadoop/hdfs/dn.
+      throw new Error 'Required property: hdfs_site[dfs.datanode.data.dir]' unless hdfs_site['dfs.datanode.data.dir']
+      hdfs_site['dfs.datanode.data.dir'] = hdfs_site['dfs.datanode.data.dir'].join ',' if Array.isArray hdfs_site['dfs.datanode.data.dir']
       # ctx.config.hdp.hdfs_site['dfs.datanode.data.dir.perm'] ?= '750'
-      ctx.config.hdp.hdfs_site['dfs.datanode.data.dir.perm'] ?= '700'
-      ctx.config.hdp.hdfs_site['fs.permissions.umask-mode'] ?= '027' # 0750
+      hdfs_site['dfs.datanode.data.dir.perm'] ?= '700'
+      hdfs_site['fs.permissions.umask-mode'] ?= '027' # 0750
       # Options for "hadoop-policy.xml"
       ctx.config.hdp.hadoop_policy ?= {}
       # Options for "hadoop-env.sh"
       ctx.config.hdp.options ?= {}
       ctx.config.hdp.options['java.net.preferIPv4Stack'] ?= true
       # HDFS HA configuration
+      ctx.config.hdp.shortname ?= ctx.config.shortname
       ctx.config.hdp.ha_client_config = {}
       ctx.config.hdp.ha_client_config['dfs.nameservices'] = nameservice
       ctx.config.hdp.ha_client_config["dfs.ha.namenodes.#{nameservice}"] = (for nn in namenodes then nn.split('.')[0]).join ','
       for nn in namenodes
-        ctx.config.hdp.ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{nn.split('.')[0]}"] = "#{nn}:8020"
-        ctx.config.hdp.ha_client_config["dfs.namenode.http-address.#{nameservice}.#{nn.split('.')[0]}"] = "#{nn}:50070"
+        hconfig = ctx.hosts[nn].config
+        shortname = hconfig.hdp.shortname ?= hconfig.shortname or nn.split('.')[0]
+        ctx.config.hdp.ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{shortname}"] = "#{nn}:8020"
+        ctx.config.hdp.ha_client_config["dfs.namenode.http-address.#{nameservice}.#{shortname}"] = "#{nn}:50070"
+        ctx.config.hdp.ha_client_config["dfs.namenode.https-address.#{nameservice}.#{shortname}"] = "#{nn}:50470"
       ctx.config.hdp.ha_client_config["dfs.client.failover.proxy.provider.#{nameservice}"] = 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
 
 ## Users
@@ -133,13 +137,14 @@ now marked as optional and the users and groups are now created on package insta
         name: 'hadoop-client'
       ,
         name: 'openssl'
+      # ,
+      #   name: 'bigtop-jsvc'
       ], (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP HDFS # Hadoop Configuration', timeout: -1, callback: (ctx, next) ->
       { core, hdfs_site, yarn,
         hadoop_conf_dir, fs_checkpoint_dir, # fs_checkpoint_edit_dir,
-        dfs_name_dir, dfs_data_dir, 
         hdfs_namenode_http_port, snn_port } = ctx.config.hdp #mapreduce_local_dir, 
       datanodes = ctx.hosts_with_module 'phyla/hadoop/hdfs_dn'
       secondary_namenode = ctx.hosts_with_module 'phyla/hadoop/hdfs_snn', 1
@@ -148,12 +153,6 @@ now marked as optional and the users and groups are now created on package insta
         ctx.log 'Configure hdfs-site.xml'
         # Fix: the "dfs.cluster.administrators" value has a space inside
         hdfs_site['dfs.cluster.administrators'] = 'hdfs'
-        # Comma separated list of paths. Use the list of directories from $DFS_NAME_DIR.  
-        # For example, /grid/hadoop/hdfs/nn,/grid1/hadoop/hdfs/nn.
-        hdfs_site['dfs.namenode.name.dir'] ?= dfs_name_dir.join ','
-        # Comma separated list of paths. Use the list of directories from $DFS_DATA_DIR.  
-        # For example, /grid/hadoop/hdfs/dn,/grid1/hadoop/hdfs/dn.
-        hdfs_site['dfs.datanode.data.dir'] ?= dfs_data_dir.join ','
         # NameNode hostname for http access.
         # todo: "dfs.namenode.http-address" is only when not in ha mode, need to detect if we run
         # the cluster in ha or not
@@ -163,7 +162,7 @@ now marked as optional and the users and groups are now created on package insta
         hdfs_site['dfs.namenode.secondary.http-address'] ?= "hdfs://#{secondary_namenode}:#{snn_port}" if secondary_namenode
         # NameNode hostname for https access
         # latest source code
-        hdfs_site['dfs.namenode.https-address'] ?= "hdfs://0.0.0.0:50470"
+        # hdfs_site['dfs.namenode.https-address'] ?= "hdfs://0.0.0.0:50470"
         # official doc
         # hdfs_site['dfs.https.address'] ?= "hdfs://#{namenodes[0]}:50470"
         hdfs_site['dfs.namenode.checkpoint.dir'] ?= fs_checkpoint_dir.join ','
@@ -339,9 +338,78 @@ with Kerberos specific properties.
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
+## Ulimit
 
+Increase ulimit following [Kate Ting's recommandations][kate]. This is a cause 
+of error if you receive the message: 'Exception in thread "main" java.lang.OutOfMemoryError: unable to create new native thread'.
 
+The HDP package create the following files:
 
+```bash
+cat /etc/security/limits.d/hdfs.conf
+hdfs   - nofile 32768
+hdfs   - nproc  65536
+cat /etc/security/limits.d/mapreduce.conf
+mapred    - nofile 32768
+mapred    - nproc  65536
+cat /etc/security/limits.d/yarn.conf
+yarn   - nofile 32768
+yarn   - nproc  65536
+```
+
+Refer to the "masson/core/security" module for instructions on how to add custom
+limit rules.
+
+Also worth of interest are the [Pivotal recommandations][hawq] as well as the
+[Greenplum recommandation from Nixus Technologies][greenplum] and the 
+[MapR documentation][mapr].
+
+Note, a user must re-login for those changes to be taken into account.
+
+    module.exports.push name: 'HDP HDFS # Ulimit', callback: (ctx, next) ->
+      ctx.write [
+        destination: '/etc/security/limits.d/hdfs.conf'
+        write: [
+          match: /^hdfs.+nofile.+$/mg
+          replace: "hdfs    -    nofile   32768"
+          append: true
+        ,
+          match: /^hdfs.+nproc.+$/mg
+          replace: "hdfs    -    nproc    65536"
+          append: true
+        ]
+        backup: true
+      ,
+        destination: '/etc/security/limits.d/mapreduce.conf'
+        write: [
+          match: /^mapred.+nofile.+$/mg
+          replace: "mapred  -    nofile   32768"
+          append: true
+        ,
+          match: /^mapred.+nproc.+$/mg
+          replace: "mapred  -    nproc    65536"
+          append: true
+        ]
+        backup: true
+      ,
+        destination: '/etc/security/limits.d/yarn.conf'
+        write: [
+          match: /^yarn.+nofile.+$/mg
+          replace: "yarn    -    nofile   32768"
+          append: true
+        ,
+          match: /^yarn.+nproc.+$/mg
+          replace: "yarn    -    nproc    65536"
+          append: true
+        ]
+        backup: true
+      ], (err, written) ->
+        next err, if written then ctx.OK else ctx.PASS
+
+[hawq]: http://docs.gopivotal.com/pivotalhd/InstallingHAWQ.html
+[greenplum]: http://nixustechnologies.com/2014/03/31/install-greenplum-community-edition/
+[mapr]: http://doc.mapr.com/display/MapR/Preparing+Each+Node
+[kate]: http://fr.slideshare.net/cloudera/hadoop-troubleshooting-101-kate-ting-cloudera
 
 
 

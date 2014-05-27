@@ -5,6 +5,9 @@ layout: module
 
 # YARN NodeManager
 
+ResourceManager is the central authority that manages resources and schedules
+applications running atop of YARN.
+
     lifecycle = require './lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
@@ -12,6 +15,27 @@ layout: module
 
     module.exports.push (ctx) ->
       require('./yarn').configure ctx
+
+    module.exports.push name: 'HDP YARN # Directories', timeout: -1, callback: (ctx, next) ->
+      {yarn_user, yarn, hadoop_group} = ctx.config.hdp
+      # no need to restrict parent directory and yarn will complain if not accessible by everyone
+      ctx.mkdir [
+        destination: yarn['yarn.nodemanager.log-dirs']
+        uid: yarn_user
+        gid: hadoop_group
+        mode: 0o0755
+      ,
+        destination: yarn['yarn.nodemanager.local-dirs']
+        uid: yarn_user
+        gid: hadoop_group
+        mode: 0o0755
+      ], (err, created) ->
+        return next err if err
+        cmds = []
+        for dir in yarn['yarn.nodemanager.log-dirs'] then cmds.push cmd: "su -l test -c 'ls -l #{dir}'"
+        for dir in yarn['yarn.nodemanager.local-dirs'] then cmds.push cmd: "su -l test -c 'ls -l #{dir}'"
+        ctx.execute cmds, (err) ->
+          next err, if created then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP YARN NM # Kerberos', callback: (ctx, next) ->
       {yarn_user, realm} = ctx.config.hdp
@@ -36,11 +60,11 @@ layout: module
         lifecycle.nm_start ctx, (err, started) ->
           next err, if started then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP YARN NM # Test User', callback: (ctx, next) ->
-      {test_user, hadoop_group} = ctx.config.hdp
-      ctx.execute
-        cmd: "useradd #{test_user} -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop to test\""
-        code: 0
-        code_skipped: 9
-      , (err, created) ->
-        next err, if created then ctx.OK else ctx.PASS
+    # module.exports.push name: 'HDP YARN NM # Test User', callback: (ctx, next) ->
+    #   {test_user, hadoop_group} = ctx.config.hdp
+    #   ctx.execute
+    #     cmd: "useradd #{test_user} -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop to test\""
+    #     code: 0
+    #     code_skipped: 9
+    #   , (err, created) ->
+    #     next err, if created then ctx.OK else ctx.PASS

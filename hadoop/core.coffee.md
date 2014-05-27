@@ -14,7 +14,8 @@ layout: module
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/yum'
-    module.exports.push 'masson/core/krb5_client' #kadmin must be present
+    # Install kerberos clients to create/test new HDFS and Yarn principals
+    module.exports.push 'masson/core/krb5_client'
     module.exports.push 'masson/commons/java'
 
 ## Configuration
@@ -42,7 +43,7 @@ hadoop org.apache.hadoop.security.HadoopKerberosName HTTP/master1.hadoop@HADOOP.
       ctx.config.hdp.force_check ?= false
       # Repository
       ctx.config.hdp.proxy = ctx.config.proxy.http_proxy if typeof ctx.config.hdp.http_proxy is 'undefined'
-      ctx.config.hdp.hdp_repo ?= 'http://public-repo-1.hortonworks.com/HDP/centos6/2.x/updates/2.0.6.0/hdp.repo'
+      ctx.config.hdp.hdp_repo ?= 'http://public-repo-1.hortonworks.com/HDP/centos5/2.x/GA/2.1-latest/hdp.repo'
       # HA Configuration
       ctx.config.hdp.nameservice ?= null
       throw new Error "Invalid Service Name" unless ctx.config.hdp.nameservice
@@ -68,7 +69,6 @@ hadoop org.apache.hadoop.security.HadoopKerberosName HTTP/master1.hadoop@HADOOP.
       # Options and configuration
       ctx.config.hdp.core_site ?= {}
       # NameNode hostname
-      # ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://#{namenode}:8020"
       ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.hdp.nameservice}"
       ctx.hconfigure = (options, callback) ->
         options.ssh = ctx.ssh if typeof options.ssh is 'undefined'
@@ -176,27 +176,44 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
+## Hadoop OPTS
+
+Update the "/etc/hadoop/conf/hadoop-env.sh" file.
+
+The location for JSVC depends on the platform. The Hortonworks documentation
+mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
+correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
+
     module.exports.push name: 'HDP Core # Hadoop OPTS', timeout: -1, callback: (ctx, next) ->
       {hadoop_conf_dir, hdfs_user, hadoop_group, hadoop_opts, hdfs_log_dir, hdfs_pid_dir} = ctx.config.hdp
-      ctx.write
-        source: "#{__dirname}/files/core_hadoop/hadoop-env.sh"
-        destination: "#{hadoop_conf_dir}/hadoop-env.sh"
-        local_source: true
-        uid: hdfs_user
-        gid: hadoop_group
-        mode: 0o755
-        write: [
-          match: /^export HADOOP_OPTS.*$/mg
-          replace: hadoop_opts
-        ,
-          match: /\/var\/log\/hadoop\//mg
-          replace: "#{hdfs_log_dir}/"
-        , 
-          match: /\/var\/run\/hadoop\//mg
-          replace: "#{hdfs_pid_dir}/"
-        ]
-      , (err, written) ->
-        next err, if written then ctx.OK else ctx.PASS
+      ctx.fs.exists '/usr/libexec/bigtop-utils', (err, exists) ->
+        return next err if err
+        jsvc = if exists then '/usr/libexec/bigtop-utils' else '/usr/lib/bigtop-utils'
+        ctx.write
+          source: "#{__dirname}/files/core_hadoop/hadoop-env.sh"
+          destination: "#{hadoop_conf_dir}/hadoop-env.sh"
+          local_source: true
+          uid: hdfs_user
+          gid: hadoop_group
+          mode: 0o755
+          write: [
+            match: /^export HADOOP_OPTS.*$/mg
+            replace: hadoop_opts
+          ,
+            match: /\/var\/log\/hadoop\//mg
+            replace: "#{hdfs_log_dir}/"
+          , 
+            match: /\/var\/run\/hadoop\//mg
+            replace: "#{hdfs_pid_dir}/"
+          # ,
+          #   match: /^export JSVC_HOME=.*$/mg
+          #   replace: "export JSVC_HOME=/usr/libexec/bigtop-utils"
+          ,
+            match: /^export JSVC_HOME=.*$/mg
+            replace: "export JSVC_HOME=#{jsvc}"
+          ]
+        , (err, written) ->
+          next err, if written then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Core # Environnment', timeout: -1, callback: (ctx, next) ->
       ctx.write

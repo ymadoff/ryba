@@ -287,7 +287,7 @@ lifecyle = module.exports =
       return callback err, false if err or not running
       ctx.log "Hive Server2 stop"
       ctx.execute
-        # su -l hive -c "kill `cat /var/run/hive/server2.pid"
+        # su -l hive -c "kill `cat /var/run/hive/server2.pid`"
         cmd: "su -l #{hive_user} -c \"kill `cat #{hive_pid_dir}/server2.pid`\""
         code_skipped: 1
       , (err, started) ->
@@ -420,8 +420,8 @@ lifecyle = module.exports =
       return callback err, false if err or running
       ctx.log "WebHCat start"
       ctx.execute
-        # su -l hcat -c "export WEBHCAT_CONF_DIR=/etc/hcatalog/conf/webhcat; /usr/lib/hcatalog/sbin/webhcat_server.sh start"
-        cmd: "su -l #{webhcat_user} -c \"export WEBHCAT_CONF_DIR=#{webhcat_conf_dir}; /usr/lib/hcatalog/sbin/webhcat_server.sh start\""
+        # su -l hcat -c "export WEBHCAT_CONF_DIR=/etc/hcatalog/conf/webhcat; /usr/lib/hive-hcatalog/sbin/webhcat_server.sh start"
+        cmd: "su -l #{webhcat_user} -c \"export WEBHCAT_CONF_DIR=#{webhcat_conf_dir}; /usr/lib/hive-hcatalog/sbin/webhcat_server.sh start\""
       , (err, started) ->
         callback err, true
   webhcat_stop: (ctx, callback) ->
@@ -430,8 +430,8 @@ lifecyle = module.exports =
       return callback err, false if err or not running
       ctx.log "WebHCat stop"
       ctx.execute
-        # su -l hcat -c "export WEBHCAT_CONF_DIR=/etc/hcatalog/conf/webhcat; /usr/lib/hcatalog/sbin/webhcat_server.sh start"
-        cmd: "su -l #{webhcat_user} -c \"export WEBHCAT_CONF_DIR=#{webhcat_conf_dir}; /usr/lib/hcatalog/sbin/webhcat_server.sh stop\""
+        # su -l hcat -c "export WEBHCAT_CONF_DIR=/etc/hcatalog/conf/webhcat; /usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop"
+        cmd: "su -l #{webhcat_user} -c \"export WEBHCAT_CONF_DIR=#{webhcat_conf_dir}; /usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop\""
       , (err, stopped) ->
         callback err, stopped
   hue_status: (ctx, callback) ->

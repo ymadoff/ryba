@@ -16,6 +16,7 @@ layout: module
       {realm} = ctx.config.hdp
       ctx.config.hdp.oozie_port ?= 11000
       ctx.config.hdp.oozie_user ?= 'oozie'
+      ctx.config.hdp.oozie_group ?= 'oozie'
       ctx.config.hdp.oozie_test_principal ?= "test@#{realm}"
       ctx.config.hdp.oozie_test_password ?= "test123"
       ctx.config.hdp.oozie_conf_dir ?= '/etc/oozie/conf'
@@ -52,14 +53,34 @@ layout: module
           replace: "export JAVA_HOME=/usr/java/default" # TODO, discover value from masson/commons/java
           append: true
         ,
-          match: /^export OOZIE_LOG=.*$/mg
-          replace: "export OOZIE_LOG=#{oozie_log_dir}"
+          match: /^export JRE_HOME=.*$/mg
+          replace: "export JRE_HOME=${JAVA_HOME}" # Not in HDP 2.0.6 but mentioned in [HDP 2.1 doc](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.1-latest/bk_installing_manually_book/content/rpm-chap8-3.html)
           append: true
         ,
-          match: /^export CATALINA_PID=.*$/mg
-          replace: "export CATALINA_PID=#{oozie_pid_dir}"
+          match: /^export OOZIE_CONFIG=.*$/mg
+          replace: "export OOZIE_CONFIG=${OOZIE_CONFIG:-/etc/oozie/conf}"
           append: true
         ,
+          match: /^export CATALINA_BASE=.*$/mg
+          replace: "export CATALINA_BASE=${CATALINA_BASE:-/var/lib/oozie/tomcat-deployment}"
+          append: true
+        ,
+          match: /^export CATALINA_TMPDIR=.*$/mg
+          replace: "export CATALINA_TMPDIR=${CATALINA_TMPDIR:-/var/tmp/oozie}"
+          append: true
+        ,
+          match: /^export OOZIE_CATALINA_HOME=.*$/mg
+          replace: "export OOZIE_CATALINA_HOME=/usr/lib/bigtop-tomcat"
+          append: true
+        ,
+        #   match: /^export OOZIE_LOG=.*$/mg
+        #   replace: "export OOZIE_LOG=#{oozie_log_dir}"
+        #   append: true
+        # ,
+        #   match: /^export CATALINA_PID=.*$/mg
+        #   replace: "export CATALINA_PID=#{oozie_pid_dir}"
+        #   append: true
+        # ,
           match: /^export OOZIE_DATA=.*$/mg
           replace: "export OOZIE_DATA=#{oozie_data}"
           append: true

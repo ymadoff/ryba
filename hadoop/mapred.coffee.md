@@ -17,34 +17,15 @@ layout: module
       ctx.mapred_configured = true
       require('./hdfs').configure ctx
       require('./mapred_').configure ctx
-      jobhistoryserver = ctx.host_with_module 'phyla/hadoop/mapred_jhs'
+      {static_host, realm} = ctx.config.hdp
+      jhs_host = ctx.host_with_module 'phyla/hadoop/mapred_jhs'
       # Options for mapred-site.xml
-      ctx.config.hdp.mapred_user ?= "mapred"
-      ctx.config.hdp.mapred ?= {}
       ctx.config.hdp.mapred['mapreduce.job.counters.max'] ?= 120
-      # http://blog.cloudera.com/blog/2013/11/migrating-to-mapreduce-2-on-yarn-for-operators/
-      # In MR1, the mapred.tasktracker.map.tasks.maximum and mapred.tasktracker.
-      # reduce.tasks.maximum properties dictated how many map and reduce slots each 
-      # TaskTracker had. These properties no longer exist in YARN. Instead, YARN uses 
-      # yarn.nodemanager.resource.memory-mb and yarn.nodemanager.resource.cpu-vcores, 
-      # which control the amount of memory and CPU on each node, both available to both 
-      # maps and reduces.
-      # http://developer.yahoo.com/hadoop/tutorial/module7.html
-      # 1/2 * (cores/node) to 2 * (cores/node)
-      # ctx.config.hdp.mapred['mapred.tasktracker.map.tasks.maximum'] ?= ctx.config.hdp.dfs_data_dir.length
-      # ctx.config.hdp.mapred['mapred.tasktracker.reduce.tasks.maximum'] ?= Math.ceil(ctx.config.hdp.dfs_data_dir.length / 2)
+      # Not sure if we need this, at this time, the directory isnt created
       ctx.config.hdp.mapred['mapreduce.jobtracker.system.dir'] ?= '/mapred/system'
       # ctx.config.hdp.mapred_log_dir ?= '/var/log/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#73
       ctx.config.hdp.mapred_pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
       # [Configurations for MapReduce Applications](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuring_the_Hadoop_Daemons_in_Non-Secure_Mode)
-      # The values for "mapreduce.map.memory.mb", "mapreduce.reduce.memory.mb",
-      # "mapreduce.map.java.opts", "mapreduce.reduce.java.opts" are inspired by 
-      # [HortonWorks recommandations](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
-      ctx.config.hdp.mapred['mapreduce.framework.name'] ?= 'yarn' # Execution framework set to Hadoop YARN.
-      # ctx.config.hdp.mapred['mapreduce.map.memory.mb'] ?= '4096' # Larger resource limit for maps.
-      # ctx.config.hdp.mapred['mapreduce.map.java.opts'] ?= '-Xmx3072m' # Larger heap-size for child jvms of maps.
-      # ctx.config.hdp.mapred['mapreduce.reduce.memory.mb'] ?= '8192' # Larger resource limit for reduces.
-      # ctx.config.hdp.mapred['mapreduce.reduce.java.opts'] ?= '-Xmx6144m' # Larger heap-size for child jvms of reduces.
       ctx.config.hdp.mapred['mapreduce.task.io.sort.mb'] ?= '1024' # Higher memory-limit while sorting data for efficiency.
       ctx.config.hdp.mapred['mapreduce.task.io.sort.factor'] ?= '100' # More streams merged at once while sorting files.
       ctx.config.hdp.mapred['mapreduce.reduce.shuffle.parallelcopies'] ?= '50' #  Higher number of parallel copies run by reduces to fetch outputs from very large number of maps.
@@ -54,10 +35,13 @@ layout: module
       ctx.config.hdp.mapred['mapreduce.admin.map.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
       ctx.config.hdp.mapred['mapreduce.admin.reduce.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
       # [Configurations for MapReduce JobHistory Server](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuring_the_Hadoop_Daemons_in_Non-Secure_Mode)
-      ctx.config.hdp.mapred['mapreduce.jobhistory.address'] ?= "#{jobhistoryserver}:10020" # MapReduce JobHistory Server host:port - Default port is 10020.
-      ctx.config.hdp.mapred['mapreduce.jobhistory.webapp.address'] ?= "#{jobhistoryserver}:19888" # MapReduce JobHistory Server Web UI host:port - Default port is 19888.
-      ctx.config.hdp.mapred['mapreduce.jobhistory.intermediate-done-dir'] ?= '/mr-history/tmp' # Directory where history files are written by MapReduce jobs.
+      ctx.config.hdp.mapred['mapreduce.jobhistory.address'] ?= "#{jhs_host}:10020" # MapReduce JobHistory Server host:port - Default port is 10020.
+      ctx.config.hdp.mapred['mapreduce.jobhistory.webapp.address'] ?= "#{jhs_host}:19888" # MapReduce JobHistory Server Web UI host:port - Default port is 19888.
       ctx.config.hdp.mapred['mapreduce.jobhistory.done-dir'] ?= '/mr-history/done' # Directory where history files are managed by the MR JobHistory Server.
+      ctx.config.hdp.mapred['mapreduce.jobhistory.intermediate-done-dir'] ?= '/mr-history/tmp' # Directory where history files are written by MapReduce jobs.
+      # Important, JHS principal must be deployed on all mapreduce workers
+      ctx.config.hdp.mapred['mapreduce.jobhistory.principal'] ?= "jhs/#{jhs_host}@#{realm}"
+      #ctx.config.hdp.mapred['mapreduce.jobhistory.principal'] ?= "jhs/#{static_host}@#{realm}"
 
     module.exports.push name: 'HDP MapRed # Install Common', timeout: -1, callback: (ctx, next) ->
       ctx.service [
@@ -172,38 +156,32 @@ allowed.
       require('./yarn').tuning ctx, (err) ->
         return next err if err
         {yarn, mapred, hadoop_conf_dir} = ctx.config.hdp
+        # Yarn available memory
+        yarn_memory = yarn['yarn.nodemanager.resource.memory-mb']
+        # mapred.cluster.map.memory.mb still seems to be used,
+        # It default to 1536 in HDP companion files
+        # and we make sure it isn't above yarn total available memory
+        mapred['mapred.cluster.map.memory.mb'] ?= Math.min 1536, yarn_memory
         # Follow [Hortonworks example](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
         # Validate map and reduce task >= YARN minimum Container allocation
         minimum = yarn['yarn.scheduler.minimum-allocation-mb']
-        map_memory = mapred['mapreduce.map.memory.mb'] = minimum
-        reduce_memory = mapred['mapreduce.reduce.memory.mb'] = minimum * 2
+        map_memory = mapred['mapreduce.map.memory.mb'] ?= Math.floor yarn_memory, minimum
+        reduce_memory = mapred['mapreduce.reduce.memory.mb'] ?= Math.floor yarn_memory, minimum * 2
         # 3/4 of the map/reduce task
-        map_heap = mapred['mapreduce.map.java.opts'] = "-Xmx#{map_memory*4/3}m"
-        reduce_heap = mapred['mapreduce.reduce.java.opts'] = "-Xmx#{reduce_memory*4/3}m"
+        map_heap_mb = Math.floor yarn_memory, Math.floor(map_memory*3/4)
+        map_heap = mapred['mapreduce.map.java.opts'] ?= "-Xmx#{map_heap_mb}m"
+        reduce_heap_mb = Math.floor yarn_memory, Math.floor(reduce_memory*3/4)
+        reduce_heap = mapred['mapreduce.reduce.java.opts'] ?= "-Xmx#{reduce_heap_mb}m"
         # Virtual memory ratio
         ratio = yarn['yarn.nodemanager.vmem-pmem-ratio'] ?= '2.1' # also defined by phyla/hadoop/yarn
         # Log result
-        ctx.log "Map total physical RAM allocated = #{map_memory}"
-        ctx.log "Map JVM heap space upper limit within the Map task Container = #{map_heap}"
-        ctx.log "Map total physical RAM allocated = #{map_memory * ratio}"
-        ctx.log "Reduce total physical RAM allocated = #{reduce_memory}"
-        ctx.log "Reduce JVM heap space upper limit within the Map task Container = #{reduce_heap}"
-        ctx.log "Reduce total physical RAM allocated = #{reduce_memory * ratio}"
-        # ctx.hconfigure [
-        #   destination: "#{hadoop_conf_dir}/yarn-site.xml"
-        #   properties:
-        #     'yarn.nodemanager.vmem-pmem-ratio': ratio
-        #   merge: true
-        # ,
-        #   destination: "#{hadoop_conf_dir}/mapred-site.xml"
-        #   properties:
-        #     'mapreduce.map.memory.mb': map_memory
-        #     'mapreduce.reduce.memory.mb': reduce_memory
-        #     'mapreduce.map.java.opts': map_heap
-        #     'mapreduce.reduce.java.opts': reduce_heap
-        #   merge: true
-        # ], (err, configured) ->
-        #   next err, if configured then ctx.OK else ctx.PASS
+        ctx.log "mapred.cluster.map.memory.mb: #{mapred['mapred.cluster.map.memory.mb']} (mapred.cluster.map.memory.mb)"
+        ctx.log "Map total physical RAM allocated: #{map_memory} (mapreduce.map.memory.mb)"
+        ctx.log "Map JVM heap space upper limit within the Map task Container: #{map_heap} (mapreduce.map.java.opts)"
+        ctx.log "Map virtual memory upper limit: #{map_memory * ratio}"
+        ctx.log "Reduce total physical RAM allocated 'mapreduce.reduce.memory.mb': #{reduce_memory} (mapreduce.reduce.memory.mb)"
+        ctx.log "Reduce JVM heap space upper limit within the Reduce task Container: #{reduce_heap} (mapreduce.reduce.java.opts)"
+        ctx.log "Reduce virtual memory upper limit: #{reduce_memory * ratio}"
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/yarn-site.xml"
           properties:
@@ -214,6 +192,7 @@ allowed.
           ctx.hconfigure
             destination: "#{hadoop_conf_dir}/mapred-site.xml"
             properties:
+              'mapred.cluster.map.memory.mb': mapred['mapred.cluster.map.memory.mb']
               'mapreduce.map.memory.mb': map_memory
               'mapreduce.reduce.memory.mb': reduce_memory
               'mapreduce.map.java.opts': map_heap
@@ -224,81 +203,112 @@ allowed.
 
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
-    module.exports.push name: 'HDP MapRed # HDFS layout', timeout: -1, callback: (ctx, next) ->
-      {hadoop_group, mapred, mapred_user} = ctx.config.hdp
-      modified = false
-      # Carefull, this is a duplicate of "HDP MapRed JHS # HDFS layout"
-      do_mapreduce_history = ->
-        # "/mr-history" need 0755 permission for subfolder to be accessible
-        # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap4-4.html
-        ctx.execute
-          cmd: mkcmd.hdfs ctx, """
-          if hdfs dfs -test -d /mr-history; then exit 1; fi
-          hdfs dfs -mkdir -p /mr-history
-          hdfs dfs -chmod 0755 /mr-history
-          # hdfs dfs -chown #{mapred_user}:#{hadoop_group} /mr-history
-          """
-          code_skipped: 1
-        , (err, executed, stdout) ->
-          return next err if err
-          modified = true if executed
-          do_mapreduce_jobhistory_intermediate_done_dir()
-      do_mapreduce_jobtracker_system_dir = ->
-        mapreduce_jobtracker_system_dir = mapred['mapreduce.jobtracker.system.dir']
-        ctx.log "Create #{mapreduce_jobtracker_system_dir}"
-        ctx.execute
-          cmd: mkcmd.hdfs ctx, """
-          if hdfs dfs -test -d #{mapreduce_jobtracker_system_dir}; then exit 1; fi
-          hdfs dfs -mkdir -p #{mapreduce_jobtracker_system_dir}
-          hdfs dfs -chown #{mapred_user}:#{hadoop_group} #{mapreduce_jobtracker_system_dir}
-          hdfs dfs -chmod 755 #{mapreduce_jobtracker_system_dir}
-          """
-          code_skipped: 1
-        , (err, executed, stdout) ->
-          return next err if err
-          modified = true if executed
-          do_mapreduce_jobhistory_intermediate_done_dir()
-      do_mapreduce_jobhistory_intermediate_done_dir = ->
-        # Default value for "mapreduce.jobhistory.intermediate-done-dir" 
-        # is "${yarn.app.mapreduce.am.staging-dir}/history/done_intermediate"
-        # where "yarn.app.mapreduce.am.staging-dir"
-        # is "/tmp/hadoop-yarn/staging"
-        mapreduce_jobhistory_intermediate_done_dir = mapred['mapreduce.jobhistory.intermediate-done-dir']
-        ctx.log "Create #{mapreduce_jobhistory_intermediate_done_dir}"
-        ctx.execute
-          cmd: mkcmd.hdfs ctx, """
-          if hdfs dfs -test -d #{mapreduce_jobhistory_intermediate_done_dir}; then exit 1; fi
-          hdfs dfs -mkdir -p #{mapreduce_jobhistory_intermediate_done_dir}
-          hdfs dfs -chown #{mapred_user}:#{hadoop_group} #{mapreduce_jobhistory_intermediate_done_dir}
-          hdfs dfs -chmod 777 #{mapreduce_jobhistory_intermediate_done_dir}
-          """
-          code_skipped: 1
-        , (err, executed, stdout) ->
-          return next err if err
-          modified = true if executed
-          do_mapreduce_jobhistory_done_dir()
-      do_mapreduce_jobhistory_done_dir = ->
-        # Default value for "mapreduce.jobhistory.done-dir" 
-        # is "${yarn.app.mapreduce.am.staging-dir}/history/done"
-        # where "yarn.app.mapreduce.am.staging-dir"
-        # is "/tmp/hadoop-yarn/staging"
-        mapreduce_jobhistory_done_dir = mapred['mapreduce.jobhistory.done-dir']
-        ctx.log "Create #{mapreduce_jobhistory_done_dir}"
-        ctx.execute
-          cmd: mkcmd.hdfs ctx, """
-          if hdfs dfs -test -d #{mapreduce_jobhistory_done_dir}; then exit 1; fi
-          hdfs dfs -mkdir -p #{mapreduce_jobhistory_done_dir}
-          hdfs dfs -chown #{mapred_user}:#{hadoop_group} #{mapreduce_jobhistory_done_dir}
-          hdfs dfs -chmod 750 #{mapreduce_jobhistory_done_dir}
-          """
-          code_skipped: 1
-        , (err, executed, stdout) ->
-          return next err if err
-          modified = true if executed
-          do_end()
-      do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
-      do_mapreduce_history()
+    # module.exports.push name: 'HDP MapRed JHS # HDFS layout', callback: (ctx, next) ->
+    #   {hadoop_group, yarn_user, mapred_user} = ctx.config.hdp
+    #   # Carefull, this is a duplicate of "HDP JHS # HDFS layout"
+    #   # Note, we dont create dir for mapred['mapreduce.jobtracker.system.dir']
+    #   ctx.execute
+    #     cmd: mkcmd.hdfs ctx, """
+    #     if ! hdfs dfs -test -d /mr-history/tmp; then
+    #       hdfs dfs -mkdir -p /mr-history/tmp
+    #       hdfs dfs -chmod -R 1777 /mr-history/tmp
+    #       modified=1
+    #     fi
+    #     if ! hdfs dfs -test -d /mr-history/done; then
+    #       hdfs dfs -mkdir -p /mr-history/done
+    #       hdfs dfs -chmod -R 1777 /mr-history/done
+    #       modified=1
+    #     fi
+    #     hdfs dfs -chmod 0751 /mr-history
+    #     hdfs dfs -chown -R #{mapred_user}:#{hadoop_group} /mr-history
+    #     if ! hdfs dfs -test -d /app-logs; then
+    #       hdfs dfs -mkdir -p /app-logs
+    #       hdfs dfs -chmod -R 1777 /app-logs
+    #       hdfs dfs -chown #{yarn_user} /app-logs
+    #       modified=1
+    #     fi
+    #     if [ $modified != "1" ]; then exit 2; fi
+    #     """
+    #     code_skipped: 2
+    #   , (err, executed, stdout) ->
+    #     return next err if err
+    #     next null, if executed then ctx.OK else ctx.PASS
+
+    # module.exports.push name: 'HDP MapRed # HDFS layout', timeout: -1, callback: (ctx, next) ->
+    #   {hadoop_group, mapred, mapred_user} = ctx.config.hdp
+    #   modified = false
+    #   # Carefull, this is a duplicate of "HDP MapRed JHS # HDFS layout"
+    #   do_mapreduce_history = ->
+    #     # "/mr-history" need 0755 permission for subfolder to be accessible
+    #     # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap4-4.html
+    #     ctx.execute
+    #       cmd: mkcmd.hdfs ctx, """
+    #       if hdfs dfs -test -d /mr-history; then exit 1; fi
+    #       hdfs dfs -mkdir -p /mr-history
+    #       hdfs dfs -chmod 0755 /mr-history
+    #       # hdfs dfs -chown #{mapred_user}:#{hadoop_group} /mr-history
+    #       """
+    #       code_skipped: 1
+    #     , (err, executed, stdout) ->
+    #       return next err if err
+    #       modified = true if executed
+    #       do_mapreduce_jobhistory_intermediate_done_dir()
+    #   do_mapreduce_jobtracker_system_dir = ->
+    #     mapreduce_jobtracker_system_dir = mapred['mapreduce.jobtracker.system.dir']
+    #     ctx.log "Create #{mapreduce_jobtracker_system_dir}"
+    #     ctx.execute
+    #       cmd: mkcmd.hdfs ctx, """
+    #       if hdfs dfs -test -d #{mapreduce_jobtracker_system_dir}; then exit 1; fi
+    #       hdfs dfs -mkdir -p #{mapreduce_jobtracker_system_dir}
+    #       hdfs dfs -chown #{mapred_user}:#{hadoop_group} #{mapreduce_jobtracker_system_dir}
+    #       hdfs dfs -chmod 755 #{mapreduce_jobtracker_system_dir}
+    #       """
+    #       code_skipped: 1
+    #     , (err, executed, stdout) ->
+    #       return next err if err
+    #       modified = true if executed
+    #       do_mapreduce_jobhistory_intermediate_done_dir()
+    #   do_mapreduce_jobhistory_intermediate_done_dir = ->
+    #     # Default value for "mapreduce.jobhistory.intermediate-done-dir" 
+    #     # is "${yarn.app.mapreduce.am.staging-dir}/history/done_intermediate"
+    #     # where "yarn.app.mapreduce.am.staging-dir"
+    #     # is "/tmp/hadoop-yarn/staging"
+    #     mapreduce_jobhistory_intermediate_done_dir = mapred['mapreduce.jobhistory.intermediate-done-dir']
+    #     ctx.log "Create #{mapreduce_jobhistory_intermediate_done_dir}"
+    #     ctx.execute
+    #       cmd: mkcmd.hdfs ctx, """
+    #       if hdfs dfs -test -d #{mapreduce_jobhistory_intermediate_done_dir}; then exit 1; fi
+    #       hdfs dfs -mkdir -p #{mapreduce_jobhistory_intermediate_done_dir}
+    #       hdfs dfs -chown #{mapred_user}:#{hadoop_group} #{mapreduce_jobhistory_intermediate_done_dir}
+    #       hdfs dfs -chmod 1777 #{mapreduce_jobhistory_intermediate_done_dir}
+    #       """
+    #       code_skipped: 1
+    #     , (err, executed, stdout) ->
+    #       return next err if err
+    #       modified = true if executed
+    #       do_mapreduce_jobhistory_done_dir()
+    #   do_mapreduce_jobhistory_done_dir = ->
+    #     # Default value for "mapreduce.jobhistory.done-dir" 
+    #     # is "${yarn.app.mapreduce.am.staging-dir}/history/done"
+    #     # where "yarn.app.mapreduce.am.staging-dir"
+    #     # is "/tmp/hadoop-yarn/staging"
+    #     mapreduce_jobhistory_done_dir = mapred['mapreduce.jobhistory.done-dir']
+    #     ctx.log "Create #{mapreduce_jobhistory_done_dir}"
+    #     ctx.execute
+    #       cmd: mkcmd.hdfs ctx, """
+    #       if hdfs dfs -test -d #{mapreduce_jobhistory_done_dir}; then exit 1; fi
+    #       hdfs dfs -mkdir -p #{mapreduce_jobhistory_done_dir}
+    #       hdfs dfs -chown #{mapred_user}:#{hadoop_group} #{mapreduce_jobhistory_done_dir}
+    #       hdfs dfs -chmod 1777 #{mapreduce_jobhistory_done_dir}
+    #       """
+    #       code_skipped: 1
+    #     , (err, executed, stdout) ->
+    #       return next err if err
+    #       modified = true if executed
+    #       do_end()
+    #   do_end = ->
+    #     next null, if modified then ctx.OK else ctx.PASS
+    #   do_mapreduce_history()
 
 
 

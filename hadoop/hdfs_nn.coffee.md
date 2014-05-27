@@ -6,10 +6,10 @@ layout: module
 
 # HDFS NameNode
 
-NameNode’s primary responsibility is storing the HDFS namespace. This means things 
-like the directory tree, file permissions, and the mapping of files to block 
-IDs. It tracks where across the cluster the file data is kept on the DataNodes. It 
-does not store the data of these files itself. It’s important that this metadata 
+NameNode’s primary responsibility is storing the HDFS namespace. This means things
+like the directory tree, file permissions, and the mapping of files to block
+IDs. It tracks where across the cluster the file data is kept on the DataNodes. It
+does not store the data of these files itself. It’s important that this metadata
 (and all changes to it) are safely persisted to stable storage for fault tolerance.
 
 This implementation configure an HA HDFS cluster, using the [Quorum Journal Manager (QJM)](qjm)
@@ -25,6 +25,7 @@ provides [instructions to rollback a HA installation][rollback] that apply to Am
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
+    # module.exports.push 'masson/core/iptables'
     module.exports.push 'phyla/hadoop/hdfs'
 
 ## Configuration
@@ -34,6 +35,32 @@ define inside the "phyla/hadoop/hdfs" and "masson/core/nc" modules.
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx
+      # require('masson/core/iptables').configure ctx
+
+# ## IPTables
+
+# | Service                    | Port   | Protocol | Parameter         |
+# |----------------------------|--------|--------|-------------------- |
+# | NameNode WebUI             | 50070  | http   | `dfs.http.address`  |
+# |                            | 50470  | https  | `dfs.https.address` |
+# | NameNode metadata service  | 8020   | ipc    | `fs.default.name`   |
+
+# IPTables rules are only inserted if the parameter "iptables.action" is set to 
+# "start" (default value).
+
+#     module.exports.push name: 'SSH # IPTables', callback: (ctx, next) ->
+#       {hadoop_conf_dir, mapred} = ctx.config.hdp
+#       ctx.iptables
+#         rules: [
+#           chain: 'INPUT', target: 'ACCEPT', dport: 22, protocol: 'tcp', state: 'NEW', comment: "HDFS Namenode WebUI"
+#         ,
+#           chain: 'INPUT', target: 'ACCEPT', dport: 22, protocol: 'tcp', state: 'NEW', comment: "HFDS Namenode WebUI Secured"
+#         ,
+#           chain: 'INPUT', target: 'ACCEPT', dport: 22, protocol: 'tcp', state: 'NEW', comment: "HFDS Namenode metadata service"
+#         ]
+#         if: ctx.config.iptables.action is 'start'
+#       , (err, configured) ->
+#         next err, if configured then ctx.OK else ctx.PASS
 
 ## Layout
 
@@ -42,9 +69,9 @@ Create the NameNode data and pid directories. The NameNode data is by defined in
 file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
 
     module.exports.push name: 'HDP HDFS NN # Layout', timeout: -1, callback: (ctx, next) ->
-      { dfs_name_dir, hdfs_pid_dir, hdfs_user, hadoop_group } = ctx.config.hdp
+      {hdfs_site, hdfs_pid_dir, hdfs_user, hadoop_group} = ctx.config.hdp
       ctx.mkdir [
-        destination: dfs_name_dir
+        destination: hdfs_site['dfs.namenode.name.dir'].split ','
         uid: hdfs_user
         gid: hadoop_group
         mode: 0o755
@@ -58,13 +85,13 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
 
 ## Kerberos
 
-Create a service principal for this NameNode. The principal is named after 
+Create a service principal for this NameNode. The principal is named after
 "nn/#{ctx.config.host}@#{realm}".
 
     module.exports.push name: 'HDP HDFS NN # Kerberos', callback: (ctx, next) ->
       {realm} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc 
+      ctx.krb5_addprinc
         principal: "nn/#{ctx.config.host}@#{realm}"
         randkey: true
         keytab: "/etc/security/keytabs/nn.service.keytab"
@@ -98,7 +125,7 @@ from multiple sessions with braking an active session.
 
 Update "hdfs-site.xml" with HA configuration. The inserted properties are
 similar than the ones for a client or slave configuration with the addtionnal
-"dfs.namenode.shared.edits.dir" and "dfs.namenode.shared.edits.dir" properties. 
+"dfs.namenode.shared.edits.dir" and "dfs.namenode.shared.edits.dir" properties.
 
     module.exports.push name: 'HDP HDFS NN # Configure HA', callback: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config} = ctx.config.hdp
@@ -117,7 +144,7 @@ similar than the ones for a client or slave configuration with the addtionnal
 Implement the SSH fencing strategy on each NameNode. To achieve this, we update the "hdfs-site.xml" file
 with the "dfs.ha.fencing.methods" and "dfs.ha.fencing.ssh.private-key-files" properties. For SSH fencing
 to work, the HDFS usermust be able to log for each NameNode into any other NameNode. Thus, we deploy the
-public and private SSH keys for the HDFS user inside his "~/.ssh" folder and update the 
+public and private SSH keys for the HDFS user inside his "~/.ssh" folder and update the
 "~/.ssh/authorized_keys" file accordingly.
 
     module.exports.push name: 'HDP HDFS NN # SSH Fencing', callback: (ctx, next) ->
@@ -181,17 +208,18 @@ public and private SSH keys for the HDFS user inside his "~/.ssh" folder and upd
 
 ## Format
 
-Format the HDFS filesystem. This command is only run from the active NameNode and if 
-this NameNode isn't yet formated by detecting if the "current/VERSION" exists. The action 
+Format the HDFS filesystem. This command is only run from the active NameNode and if
+this NameNode isn't yet formated by detecting if the "current/VERSION" exists. The action
 is only exected once all the JournalNodes are started. The NameNode is finally restarted
 if the NameNode was formated.
 
     module.exports.push name: 'HDP HDFS NN # Format', timeout: -1, callback: (ctx, next) ->
-      {active_nn, dfs_name_dir, hdfs_user, format, nameservice} = ctx.config.hdp
+      {active_nn, hdfs_site, hdfs_user, format, nameservice} = ctx.config.hdp
       return next() unless format
       # Shall only be executed on the leader namenode
       return next null, ctx.INAPPLICABLE unless active_nn
       journalnodes = ctx.hosts_with_module 'phyla/hadoop/hdfs_jn'
+      any_dfs_name_dir = hdfs_site['dfs.namenode.name.dir'].split(',')[0]
       # all the JournalNodes shall be started
       ctx.waitIsOpen journalnodes, 8485, (err) ->
         return next err if err
@@ -199,7 +227,7 @@ if the NameNode was formated.
           # yes 'Y' | su -l hdfs -c "hdfs namenode -format -clusterId torval"
           cmd: "su -l #{hdfs_user} -c \"hdfs namenode -format -clusterId #{nameservice}\""
           # /hadoop/hdfs/namenode/current/VERSION
-          not_if_exists: "#{dfs_name_dir[0]}/current/VERSION"
+          not_if_exists: "#{any_dfs_name_dir}/current/VERSION"
         , (err, executed) ->
           return next err if err
           return next null, if executed then ctx.OK else ctx.PASS
@@ -208,8 +236,8 @@ if the NameNode was formated.
 
 ## HA Init Standby NameNodes
 
-Copy over the contents of the active NameNode metadata directories to an other, 
-unformatted NameNode. The command "hdfs namenode -bootstrapStandby" used for the transfer 
+Copy over the contents of the active NameNode metadata directories to an other,
+unformatted NameNode. The command "hdfs namenode -bootstrapStandby" used for the transfer
 is only executed on a non active NameNode.
 
     module.exports.push name: 'HDP HDFS NN # HA Init Standby NameNodes', timeout: -1, callback: (ctx, next) ->
@@ -232,11 +260,11 @@ is only executed on a non active NameNode.
 
 ## HA Auto Failover
 
-The action start by enabling automatic failover in "hdfs-site.xml" and configuring HA zookeeper quorum in 
+The action start by enabling automatic failover in "hdfs-site.xml" and configuring HA zookeeper quorum in
 "core-site.xml". The impacted properties are "dfs.ha.automatic-failover.enabled" and
 "ha.zookeeper.quorum". Then, we wait for all ZooKeeper to be started. Note, this is a requirement.
 
-If this is an active NameNode, we format ZooKeeper and start the ZKFC daemon. If this is a standby 
+If this is an active NameNode, we format ZooKeeper and start the ZKFC daemon. If this is a standby
 NameNode, we wait for the active NameNode to take leadership and start the ZKFC daemon.
 
     module.exports.push name: 'HDP HDFS NN # HA Auto Failover', timeout: -1, callback: (ctx, next) ->
@@ -391,5 +419,3 @@ afect HDFS metadata.
     #   do_user()
 
 [qjm]: http://hadoop.apache.org/docs/r2.3.0/hadoop-yarn/hadoop-yarn-site/HDFSHighAvailabilityWithQJM.html
-
-

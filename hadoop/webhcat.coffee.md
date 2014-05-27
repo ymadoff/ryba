@@ -5,6 +5,7 @@ layout: module
 
 # WebHCat
 
+    each = require 'each'
     lifecycle = require './lib/lifecycle'
     mkcmd = require './lib/mkcmd'
     module.exports = []
@@ -43,13 +44,29 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
       ctx.config.hdp.webhcat_site['webhcat.proxyuser.hue.hosts'] ?= '*'
       ctx.config.hdp.webhcat_site['templeton.port'] ?= 50111
 
+    module.exports.push name: 'HDP WebHCat # Users & Groups', callback: (ctx, next) ->
+      {webhcat_user, webhcat_group} = ctx.config.hdp
+      ctx.user
+        username: webhcat_user
+        group: webhcat_group
+        shell: '/bin/bash'
+      , (err, modified) ->
+        next err, if modified then ctx.OK else ctx.PASS
+
     module.exports.push name: 'HDP WebHCat # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
-        name: 'hcatalog'
+        name: 'hive-hcatalog'
+      ,
+        name: 'hive-webhcat'
       ,
         name: 'webhcat-tar-hive'
       ,
         name: 'webhcat-tar-pig'
+      #   name: 'hcatalog'
+      # ,
+      #   name: 'webhcat-tar-hive'
+      # ,
+      #   name: 'webhcat-tar-pig'
       ], (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
 
@@ -109,22 +126,46 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
 
     module.exports.push name: 'HDP WebHCat # HDFS', callback: (ctx, next) ->
       {webhcat_user, hadoop_group} = ctx.config.hdp
-      ctx.execute
+      modified = false
+      ctx.execute [
         cmd: mkcmd.hdfs ctx, """
         if hdfs dfs -test -d /user/#{webhcat_user}; then exit 1; fi
-        hdfs dfs -mkdir /user/#{webhcat_user}
+        hdfs dfs -mkdir -p /user/#{webhcat_user}
         hdfs dfs -chown #{webhcat_user}:#{hadoop_group} /user/#{webhcat_user}
-        hdfs dfs -mkdir /apps/webhcat
-        hdfs dfs -copyFromLocal /usr/share/HDP-webhcat/pig.tar.gz /apps/webhcat/
-        hdfs dfs -copyFromLocal /usr/share/HDP-webhcat/hive.tar.gz /apps/webhcat/
-        hdfs dfs -copyFromLocal /usr/lib/hadoop-mapreduce/hadoop-streaming*.jar /apps/webhcat/
-        hdfs dfs -chown -R #{webhcat_user}:#{hadoop_group} /apps/webhcat
-        hdfs dfs -chmod -R 755 /apps/webhcat
         """
         code_skipped: 1
-      , (err, executed, stdout) ->
+      ,
+        cmd: mkcmd.hdfs ctx, """
+        if hdfs dfs -test -d /apps/webhcat; then exit 1; fi
+        hdfs dfs -mkdir -p /apps/webhcat
+        """
+        code_skipped: 1
+      ], (err, created, stdout) ->
         return next err if err
-        next err, if executed then ctx.OK else ctx.PASS
+        modified = true if created
+        each([
+          '/usr/share/HDP-webhcat/pig.tar.gz'
+          '/usr/share/HDP-webhcat/hive.tar.gz'
+          '/usr/lib/hadoop-mapreduce/hadoop-streaming*.jar'
+        ])
+        .on 'item', (item, next) ->
+          ctx.execute
+            cmd: mkcmd.hdfs ctx, "hdfs dfs -copyFromLocal #{item} /apps/webhcat/"
+            code_skipped: 1
+          , (err, copied) ->
+            return next err if err
+            modified = true if copied
+            next()
+        .on 'both', (err) ->
+          return next err if err
+          ctx.execute
+            cmd: mkcmd.hdfs ctx, """
+            hdfs dfs -chown -R #{webhcat_user}:#{hadoop_group} /apps/webhcat
+            hdfs dfs -chmod -R 755 /apps/webhcat
+            """
+          , (err, executed, stdout) ->
+            next err, if modified then ctx.OK else ctx.PASS
+
 
     module.exports.push name: 'HDP WebHCat # SPNEGO', callback: (ctx, next) ->
       {webhcat_site, webhcat_user, webhcat_group} = ctx.config.hdp
@@ -145,6 +186,8 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
         next err, if started then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP WebHCat # Check', callback: (ctx, next) ->
+      # TODO, maybe we could test hive:
+      # curl --negotiate -u : -d execute="show+databases;" http://front1.hadoop:50111/templeton/v1/hive
       {webhcat_site} = ctx.config.hdp
       port = webhcat_site['templeton.port']
       ctx.execute

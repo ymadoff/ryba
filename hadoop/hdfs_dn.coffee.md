@@ -19,6 +19,7 @@ information regarding the location of blocks in the cluster. In order
 to achieve this, the DataNodes are configured with the location of both 
 NameNodes, and send block location information and heartbeats to both.
 
+    path = require 'path'
     hdfs_nn = require './hdfs_nn'
     lifecycle = require './lib/lifecycle'
     mkcmd = require './lib/mkcmd'
@@ -55,9 +56,10 @@ Create the DataNode data and pid directories. The data directory is set by the
 pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdfs"
 
     module.exports.push name: 'HDP HDFS DN # Layout', timeout: -1, callback: (ctx, next) ->
-      {dfs_data_dir, hdfs_user, hadoop_group, hdfs_pid_dir} = ctx.config.hdp
+      {hdfs_site, hdfs_user, hadoop_group, hdfs_pid_dir} = ctx.config.hdp
+      # no need to restrict parent directory and yarn will complain if not accessible by everyone
       ctx.mkdir [
-        destination: dfs_data_dir
+        destination: hdfs_site['dfs.datanode.data.dir'].split ','
         uid: hdfs_user
         gid: hadoop_group
         mode: 0o0750

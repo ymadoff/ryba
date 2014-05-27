@@ -14,7 +14,7 @@ It also ships with an Oozie Application for creating and monitoring workflows, a
     module.exports.push 'masson/bootstrap/'
     # Install the mysql connector
     module.exports.push 'masson/commons/mysql_client'
-    # Install client to create new Hive principal
+    # Install kerberos clients to create/test new Hive principal
     module.exports.push 'masson/core/krb5_client'
     # Set java_home in "hadoop-env.sh"
     module.exports.push 'phyla/hadoop/core'
@@ -259,6 +259,8 @@ the default database while mysql is the recommanded choice.
         mysql: ->
           host = hue_ini['desktop']['database']['host']
           port = hue_ini['desktop']['database']['port']
+          user = hue_ini['desktop']['database']['user']
+          password = hue_ini['desktop']['database']['password']
           escape = (text) -> text.replace(/[\\"]/g, "\\$&")
           cmd = "mysql -u#{hue_db_admin_username} -p#{hue_db_admin_password} -h#{host} -P#{port} -e "
           ctx.execute
@@ -266,8 +268,8 @@ the default database while mysql is the recommanded choice.
             if #{cmd} "use hue"; then exit 2; fi
             #{cmd} "
             create database hue;
-            grant all privileges on hue.* to '#{username}'@'localhost' identified by '#{password}';
-            grant all privileges on hue.* to '#{username}'@'%' identified by '#{password}';
+            grant all privileges on hue.* to '#{user}'@'localhost' identified by '#{password}';
+            grant all privileges on hue.* to '#{user}'@'%' identified by '#{password}';
             flush privileges;
             "
             """
@@ -390,8 +392,8 @@ changes.
         ctx.ini
           destination: "#{hue_conf_dir}/hue.ini"
           content: desktop:
-              ssl_certificate: "#{hue_conf_dir}/hue.cet"
-              ssl_private_key: "#{hue_conf_dir}/hue.key"
+            ssl_certificate: "#{hue_conf_dir}/hue.cet"
+            ssl_private_key: "#{hue_conf_dir}/hue.key"
           merge: true
           parse: misc.ini.parse_multi_brackets 
           stringify: misc.ini.stringify_multi_brackets

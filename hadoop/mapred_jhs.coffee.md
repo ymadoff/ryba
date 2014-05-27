@@ -13,12 +13,10 @@ layout: module
 
     module.exports.push (ctx) ->
       require('./mapred').configure ctx
+      ctx.config.hdp.mapred['mapreduce.jobhistory.keytab'] ?= "/etc/security/keytabs/jhs.service.keytab"
 
     module.exports.push name: 'HDP MapRed JHS # Kerberos', callback: (ctx, next) ->
-      {hadoop_conf_dir, static_host, realm} = ctx.config.hdp
-      mapred = {}
-      mapred['mapreduce.jobhistory.keytab'] ?= "/etc/security/keytabs/jhs.service.keytab"
-      mapred['mapreduce.jobhistory.principal'] ?= "jhs/#{static_host}@#{realm}"
+      {hadoop_conf_dir, mapred} = ctx.config.hdp
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
         properties: mapred
@@ -26,33 +24,44 @@ layout: module
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
+## HDFS Layout
+
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
-    module.exports.push name: 'HDP MapRed JHS # HDFS layout', callback: (ctx, next) ->
+    module.exports.push name: 'HDP MapRed JHS # HDFS Layout', timeout: -1, callback: (ctx, next) ->
       {hadoop_group, yarn_user, mapred_user} = ctx.config.hdp
-      # Carefull, this is a duplicate of "HDP MapRed # HDFS layout"
-      ok = false
-      do_jobhistory_server = ->
-        ctx.execute
-          cmd: mkcmd.hdfs ctx, """
-          if hdfs dfs -test -d /mr-history; then exit 1; fi
+      ctx.execute
+        cmd: mkcmd.hdfs ctx, """
+        if ! hdfs dfs -test -d /mr-history; then
+          hdfs dfs -mkdir -p /mr-history
+          hdfs dfs -chmod 0751 /mr-history
+          hdfs dfs -chown #{mapred_user}:#{hadoop_group} /mr-history
+          modified=1
+        fi
+        if ! hdfs dfs -test -d /mr-history/tmp; then
           hdfs dfs -mkdir -p /mr-history/tmp
-          hdfs dfs -chmod -R 1777 /mr-history/tmp
+          hdfs dfs -chmod 1777 /mr-history/tmp
+          hdfs dfs -chown #{mapred_user}:#{hadoop_group} /mr-history/tmp
+          modified=1
+        fi
+        if ! hdfs dfs -test -d /mr-history/done; then
           hdfs dfs -mkdir -p /mr-history/done
-          hdfs dfs -chmod -R 1777 /mr-history/done
-          hdfs dfs -chown -R #{mapred_user}:#{hadoop_group} /mr-history
+          hdfs dfs -chmod 1777 /mr-history/done
+          hdfs dfs -chown #{mapred_user}:#{hadoop_group} /mr-history/done
+          modified=1
+        fi
+        if ! hdfs dfs -test -d /app-logs; then
           hdfs dfs -mkdir -p /app-logs
-          hdfs dfs -chmod -R 1777 /app-logs 
-          hdfs dfs -chown #{yarn_user} /app-logs 
-          """
-          code_skipped: 1
-        , (err, executed, stdout) ->
-          return next err if err
-          ok = true if executed
-          do_end()
-      do_end = ->
-        next null, if ok then ctx.OK else ctx.PASS
-      do_jobhistory_server()
+          hdfs dfs -chmod 1777 /app-logs
+          hdfs dfs -chown #{yarn_user} /app-logs
+          modified=1
+        fi
+        if [ $modified != "1" ]; then exit 2; fi
+        """
+        code_skipped: 2
+      , (err, executed, stdout) ->
+        return next err if err
+        next null, if executed then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP MapRed JHS # Kerberos', callback: (ctx, next) ->
       {mapred_user, realm} = ctx.config.hdp
@@ -72,9 +81,61 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
 
     module.exports.push 'phyla/hadoop/mapred_jhs_start'
 
-    # module.exports.push name: 'HDP MapRed JHS # Start', callback: (ctx, next) ->
-    #   lifecycle.jhs_start ctx, (err, started) ->
-    #     next err, if started then ctx.OK else ctx.PASS
+    module.exports.push name: 'HDP MapRed JHS # Check', retry: 5, callback: (ctx, next) ->
+      {mapred} = ctx.config.hdp
+      [host, port] = mapred['mapreduce.jobhistory.webapp.address'].split ':'
+      ctx.execute
+        cmd: mkcmd.test ctx, """
+        if hdfs dfs -test -f /user/test/#{ctx.config.host}-jhs; then exit 2; fi
+        curl -s --negotiate -u : http://#{host}:#{port}/ws/v1/history/info
+        if [ $? != "0" ]; then exit 9; fi
+        hdfs dfs -touchz /user/test/#{ctx.config.host}-jhs
+        """
+        code_skipped: 2
+      , (err, checked, stdout) ->
+        return next err if err
+        return next null, ctx.PASS unless checked
+        ctx.log stdout
+        try
+          JSON.parse(stdout).historyInfo.hadoopVersion
+          return next null, ctx.OK
+        catch err then next err
+
+    # module.exports.push name: 'HDP MapRed JHS # Check', callback: (ctx, next) ->
+    #   {mapred} = ctx.config.hdp
+    #   [host, port] = mapred['mapreduce.jobhistory.webapp.address'].split ':'
+    #   count = 0
+    #   do_prepare = ->
+    #     ctx.execute
+    #       cmd: mkcmd.test ctx, """
+    #       if ! hdfs dfs -test -f /user/test/#{ctx.config.host}-jhs; then exit 2; fi
+    #       """
+    #       code_skipped: 2
+    #     , (err, exists) ->
+    #       return next err, ctx.PASS if err or exists
+    #       do_execute()
+    #   do_execute = ->
+    #     ctx.execute
+    #       cmd: mkcmd.test ctx, """
+    #       curl -s --negotiate -u : http://#{host}:#{port}/ws/v1/history/info
+    #       """
+    #       code_skipped: 7
+    #     , (err, executed, stdout) ->
+    #       return next err if err
+    #       return next new Error "JHS failed to start" if not executed and count++ > 5
+    #       return do_execute() if not executed
+    #       try
+    #         JSON.parse(stdout).historyInfo.hadoopVersion
+    #         do_finish()
+    #       catch err then next err
+    #   do_finish = ->
+    #     ctx.execute
+    #       cmd: mkcmd.test ctx, "hdfs dfs -touchz /user/test/#{ctx.config.host}-jhs"
+    #     , (err) ->
+    #       next err, ctx.OK
+    #   do_prepare()
+
+
 
 
 
