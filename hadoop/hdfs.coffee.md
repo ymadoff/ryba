@@ -97,12 +97,16 @@ Example:
       ctx.config.hdp.options ?= {}
       ctx.config.hdp.options['java.net.preferIPv4Stack'] ?= true
       # HDFS HA configuration
+      ctx.config.hdp.shortname ?= ctx.config.shortname
       ctx.config.hdp.ha_client_config = {}
       ctx.config.hdp.ha_client_config['dfs.nameservices'] = nameservice
       ctx.config.hdp.ha_client_config["dfs.ha.namenodes.#{nameservice}"] = (for nn in namenodes then nn.split('.')[0]).join ','
       for nn in namenodes
-        ctx.config.hdp.ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{nn.split('.')[0]}"] = "#{nn}:8020"
-        ctx.config.hdp.ha_client_config["dfs.namenode.http-address.#{nameservice}.#{nn.split('.')[0]}"] = "#{nn}:50070"
+        hconfig = ctx.hosts[nn].config
+        shortname = hconfig.hdp.shortname ?= hconfig.shortname or nn.split('.')[0]
+        ctx.config.hdp.ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{shortname}"] = "#{nn}:8020"
+        ctx.config.hdp.ha_client_config["dfs.namenode.http-address.#{nameservice}.#{shortname}"] = "#{nn}:50070"
+        ctx.config.hdp.ha_client_config["dfs.namenode.https-address.#{nameservice}.#{shortname}"] = "#{nn}:50470"
       ctx.config.hdp.ha_client_config["dfs.client.failover.proxy.provider.#{nameservice}"] = 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
 
 ## Users
@@ -158,7 +162,7 @@ now marked as optional and the users and groups are now created on package insta
         hdfs_site['dfs.namenode.secondary.http-address'] ?= "hdfs://#{secondary_namenode}:#{snn_port}" if secondary_namenode
         # NameNode hostname for https access
         # latest source code
-        hdfs_site['dfs.namenode.https-address'] ?= "hdfs://0.0.0.0:50470"
+        # hdfs_site['dfs.namenode.https-address'] ?= "hdfs://0.0.0.0:50470"
         # official doc
         # hdfs_site['dfs.https.address'] ?= "hdfs://#{namenodes[0]}:50470"
         hdfs_site['dfs.namenode.checkpoint.dir'] ?= fs_checkpoint_dir.join ','
