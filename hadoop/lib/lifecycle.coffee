@@ -446,7 +446,6 @@ lifecyle = module.exports =
       ctx.log "Hue status: #{if running then 'RUNNING' else 'STOPED'}"
       callback err, running
   hue_start: (ctx, callback) ->
-    {hue_user} = ctx.config.hdp
     lifecyle.hue_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "Hue start"
@@ -455,7 +454,6 @@ lifecyle = module.exports =
       , (err, stopped) ->
         callback err, stopped
   hue_stop: (ctx, callback) ->
-    {hue_user} = ctx.config.hdp
     lifecyle.hue_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "Hue stop"

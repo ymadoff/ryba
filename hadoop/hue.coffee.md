@@ -85,8 +85,18 @@ Example:
       # Webhdfs should be active on the NameNode, Secondary NameNode, and all the DataNodes
       # throw new Error 'WebHDFS not active' if ctx.config.hdp.hdfs_site['dfs.webhdfs.enabled'] isnt 'true'
       ctx.config.hdp.hue_conf_dir ?= '/etc/hue/conf'
-      ctx.config.hdp.hue_user ?= 'hue'
-      ctx.config.hdp.hue_group ?= 'hue'
+      # Hive user
+      ctx.config.hdp.hue_user = name: ctx.config.hdp.hue_user if typeof ctx.config.hdp.hue_user is 'string'
+      ctx.config.hdp.hue_user ?= {}
+      ctx.config.hdp.hue_user.name ?= 'hue'
+      ctx.config.hdp.hue_user.system ?= true
+      ctx.config.hdp.hue_user.comment ?= 'Hue'
+      # Hive group
+      ctx.config.hdp.hue_group = name: ctx.config.hdp.hue_group if typeof ctx.config.hdp.hue_group is 'string'
+      ctx.config.hdp.hue_group ?= {}
+      ctx.config.hdp.hue_group.name ?= 'hue'
+      ctx.config.hdp.hue_group.system ?= true
+      # Hive configuration
       # Configure HDFS Cluster
       hue_ini['hadoop'] ?= {}
       hue_ini['hadoop']['hdfs_clusters'] ?= {}
@@ -135,6 +145,25 @@ Example:
       hue_ini['desktop']['database']['user'] ?= 'hue'
       hue_ini['desktop']['database']['password'] ?= 'hue123'
       hue_ini['desktop']['database']['name'] ?= 'hue'
+
+## Users & Groups
+
+By default, there is not user for WebHCat. This module create the following
+entries:
+
+```bash
+cat /etc/passwd | grep hcat
+hcat:x:494:494:HCat:/var/lib/hcat:/sbin/nologin
+cat /etc/group | grep hcat
+hcat:x:494:
+```
+
+    module.exports.push name: 'HDP WebHCat # Users & Groups', callback: (ctx, next) ->
+      {hue_group, hue_user} = ctx.config.hdp
+      ctx.group hue_group, (err, gmodified) ->
+        return next err if err
+        ctx.user hue_user, (err, umodified) ->
+          next err, if gmodified or umodified then ctx.OK else ctx.PASS
 
 ## Packages
 
@@ -304,8 +333,8 @@ the "security_enabled" property set to "true".
           principal: principal
           randkey: true
           keytab: "/etc/hue/conf/hue.service.keytab"
-          uid: hue_user
-          gid: hue_group
+          uid: hue_user.name
+          gid: hue_group.name
           kadmin_principal: kadmin_principal
           kadmin_password: kadmin_password
           kadmin_server: admin_server
@@ -377,13 +406,13 @@ changes.
         ctx.upload [
           source: hue_ssl_certificate
           destination: "#{hue_conf_dir}/hue.cet"
-          uid: hue_user
-          gid: hue_group
+          uid: hue_user.name
+          gid: hue_group.name
         ,
           source: hue_ssl_private_key
           destination: "#{hue_conf_dir}/hue.key"
-          uid: hue_user
-          gid: hue_group
+          uid: hue_user.name
+          gid: hue_group.name
         ], (err, uploaded) ->
           return next err if err
           modified = true if uploaded
