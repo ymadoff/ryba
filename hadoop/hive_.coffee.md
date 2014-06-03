@@ -66,6 +66,12 @@ layout: module
       # with the actual hostname of the running instance.
       # 'hive.server2.authentication.kerberos.principal': "hcat/#{ctx.config.host}@#{realm}"
       ctx.config.hdp.hive_site['hive.server2.authentication.kerberos.principal'] ?= "hive/#{static_host}@#{realm}"
+      ctx.config.hdp.hive_site['hive.security.authorization.manager'] ?= 'org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider'
+      ctx.config.hdp.hive_site['hive.security.metastore.authorization.manager'] ?= 'org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider'
+      ctx.config.hdp.hive_site['hive.security.authenticator.manager'] ?= 'org.apache.hadoop.hive.ql.security.ProxyUserAuthenticator'
+      # see https://cwiki.apache.org/confluence/display/Hive/WebHCat+InstallWebHCat
+      ctx.config.hdp.hive_site['hive.security.metastore.authenticator.manager'] ?= 'org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator'
+      ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener'
 
 ## Users & Groups
 
