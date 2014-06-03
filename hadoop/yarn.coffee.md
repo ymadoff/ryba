@@ -37,7 +37,7 @@ layout: module
       ctx.config.hdp.yarn['yarn.resourcemanager.scheduler.address'] ?= "#{resourcemanager}:8030" # Enter your ResourceManager hostname.
       ctx.config.hdp.yarn['yarn.resourcemanager.address'] ?= "#{resourcemanager}:8050" # Enter your ResourceManager hostname.
       ctx.config.hdp.yarn['yarn.resourcemanager.admin.address'] ?= "#{resourcemanager}:8141" # Enter your ResourceManager hostname.
-      ctx.config.hdp.yarn['yarn.nodemanager.remote-app-log-dir'] ?= "/logs"
+      ctx.config.hdp.yarn['yarn.nodemanager.remote-app-log-dir'] ?= "/app-logs"
       ctx.config.hdp.yarn['yarn.log.server.url'] ?= "http://#{jobhistoryserver}:19888/jobhistory/logs/" # URL for job history server
       ctx.config.hdp.yarn['yarn.resourcemanager.webapp.address'] ?= "#{resourcemanager}:8088" # URL for job history server
       ctx.config.hdp.yarn['yarn.nodemanager.container-executor.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor'
@@ -318,21 +318,30 @@ Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Co
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
+### HDFS Layout
+
+Create the YARN log directory defined by the property 
+"yarn.nodemanager.remote-app-log-dir". The default value in the HDP companion
+files is "/app-logs". The command `hdfs dfs -ls /` should print:
+
+```
+drwxrwxrwt   - yarn   hdfs            0 2014-05-26 11:01 /app-logs
+```
+
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
     module.exports.push name: 'HDP YARN # HDFS layout', callback: (ctx, next) ->
       {hadoop_group, hdfs_user, yarn, yarn_user} = ctx.config.hdp
       ok = false
       do_remote_app_log_dir = ->
-        # Default value for "yarn.nodemanager.remote-app-log-dir" is "/tmp/logs"
         remote_app_log_dir = yarn['yarn.nodemanager.remote-app-log-dir']
         ctx.log "Create #{remote_app_log_dir}"
         ctx.execute
           cmd: mkcmd.hdfs ctx, """
           if hdfs dfs -test -d #{remote_app_log_dir}; then exit 1; fi
           hdfs dfs -mkdir -p #{remote_app_log_dir}
-          hdfs dfs -chown #{yarn_user}:#{hadoop_group} #{remote_app_log_dir}
-          hdfs dfs -chmod 777 #{remote_app_log_dir}
+          hdfs dfs -chown #{yarn_user} #{remote_app_log_dir}
+          hdfs dfs -chmod 1777 #{remote_app_log_dir}
           """
           code_skipped: 1
         , (err, executed, stdout) ->
