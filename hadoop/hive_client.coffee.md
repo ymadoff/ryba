@@ -58,7 +58,7 @@ See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments
         return next err if err
         ctx.execute
           cmd: """
-          chown -R #{hive_user}:#{hadoop_group} #{hive_conf_dir}
+          chown -R #{hive_user.name}:#{hadoop_group} #{hive_conf_dir}
           chmod -R 755 #{hive_conf_dir}
           """
         , (err) ->

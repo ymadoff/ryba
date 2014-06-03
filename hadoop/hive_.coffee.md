@@ -23,9 +23,19 @@ layout: module
       ctx.config.hdp.hive_server2_host ?= ctx.host_with_module 'phyla/hadoop/hive_server'
       ctx.config.hdp.hive_server2_port ?= 10000
       ctx.config.hdp.hive_server2_timeout ?= 20000 # 20s
+      # Hive user
+      ctx.config.hdp.hive_user = name: ctx.config.hdp.hive_user if typeof ctx.config.hdp.hive_user is 'string'
+      ctx.config.hdp.hive_user ?= {}
+      ctx.config.hdp.hive_user.name ?= 'hive'
+      ctx.config.hdp.hive_user.system ?= true
+      ctx.config.hdp.hive_user.comment ?= 'Hive'
+      # Hive group
+      ctx.config.hdp.hive_group = name: ctx.config.hdp.hive_group if typeof ctx.config.hdp.hive_group is 'string'
+      ctx.config.hdp.hive_group ?= {}
+      ctx.config.hdp.hive_group.name ?= 'hive'
+      ctx.config.hdp.hive_group.system ?= true
+      # Hive configuration
       ctx.config.hdp.hive_site ?= {}
-      ctx.config.hdp.hive_user ?= 'hive'
-      ctx.config.hdp.hive_group ?= 'hive'
       ctx.config.hdp.hive_site['hive.metastore.uris'] ?= "thrift://#{metastore_host}:9083"
       # To prevent memory leak in unsecure mode, disable [file system caches](https://cwiki.apache.org/confluence/display/Hive/Setting+up+HiveServer2)
       # , by setting following params to true
@@ -56,6 +66,25 @@ layout: module
       # with the actual hostname of the running instance.
       # 'hive.server2.authentication.kerberos.principal': "hcat/#{ctx.config.host}@#{realm}"
       ctx.config.hdp.hive_site['hive.server2.authentication.kerberos.principal'] ?= "hive/#{static_host}@#{realm}"
+
+## Users & Groups
+
+By default, the "hive" and "hive-hcatalog" packages create the following
+entries:
+
+```bash
+cat /etc/passwd | grep hive
+hive:x:493:493:Hive:/var/lib/hive:/sbin/nologin
+cat /etc/group | grep hive
+hive:x:493:
+```
+
+    module.exports.push name: 'HDP Hive & HCat server # Users & Groups', callback: (ctx, next) ->
+      {hive_group, hive_user} = ctx.config.hdp
+      ctx.group hive_group, (err, gmodified) ->
+        return next err if err
+        ctx.user hive_user, (err, umodified) ->
+          next err, if gmodified or umodified then ctx.OK else ctx.PASS
 
 ## Install
 

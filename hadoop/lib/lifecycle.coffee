@@ -240,7 +240,7 @@ lifecyle = module.exports =
       ctx.execute
         # su -l hive -c 'nohup hive --service metastore >/var/log/hive/hive.out 2>/var/log/hive/hive.log & echo $! >/var/run/hive/metastore.pid'
         # su -l hive -c 'hive --service metastore'
-        cmd: "su -l #{hive_user} -c 'nohup hive --service metastore >#{hive_log_dir}/hive.out 2>#{hive_log_dir}/hive.log & echo $! > /var/run/hive/metastore.pid'"
+        cmd: "su -l #{hive_user.name} -c 'nohup hive --service metastore >#{hive_log_dir}/hive.out 2>#{hive_log_dir}/hive.log & echo $! > /var/run/hive/metastore.pid'"
         code_skipped: 1
       , (err, started) ->
         return callback err if err
@@ -253,7 +253,7 @@ lifecyle = module.exports =
       ctx.log "Hive Metastore stop"
       ctx.execute
         # su -l hive -c "kill `cat /var/run/hive/metastore.pid`"
-        cmd: "su -l #{hive_user} -c \"kill `cat #{hive_pid_dir}/metastore.pid`\""
+        cmd: "su -l #{hive_user.name} -c \"kill `cat #{hive_pid_dir}/metastore.pid`\""
         code_skipped: 1
       , (err, stopped) ->
         callback err, stopped
@@ -274,8 +274,7 @@ lifecyle = module.exports =
       ctx.log "Hive Server2 start"
       ctx.execute
         # su -l hive -c 'nohup /usr/lib/hive/bin/hiveserver2 >/var/log/hive/hiveserver2.out 2>/var/log/hive/hiveserver2.log & echo $! >/var/run/hive/server2.pid'
-        # su -l hive -c '/usr/lib/hive/bin/hiveserver2'
-        cmd: "su -l #{hive_user} -c 'nohup /usr/lib/hive/bin/hiveserver2 >#{hive_log_dir}/hiveserver2.out 2>#{hive_log_dir}/hiveserver2.log & echo $! > /var/run/hive/server2.pid'"
+        cmd: "su -l #{hive_user.name} -c 'nohup /usr/lib/hive/bin/hiveserver2 >#{hive_log_dir}/hiveserver2.out 2>#{hive_log_dir}/hiveserver2.log & echo $! > /var/run/hive/server2.pid'"
         code_skipped: 1
       , (err, started) ->
         return callback err if err
@@ -288,7 +287,7 @@ lifecyle = module.exports =
       ctx.log "Hive Server2 stop"
       ctx.execute
         # su -l hive -c "kill `cat /var/run/hive/server2.pid`"
-        cmd: "su -l #{hive_user} -c \"kill `cat #{hive_pid_dir}/server2.pid`\""
+        cmd: "su -l #{hive_user.name} -c \"kill `cat #{hive_pid_dir}/server2.pid`\""
         code_skipped: 1
       , (err, started) ->
         callback err, started

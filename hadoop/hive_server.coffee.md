@@ -75,15 +75,6 @@ layout: module
       throw new Error "Hive database username is required" unless hive_site['javax.jdo.option.ConnectionUserName']
       throw new Error "Hive database password is required" unless hive_site['javax.jdo.option.ConnectionPassword']
 
-    module.exports.push name: 'HDP Hive & HCat server # Users & Groups', callback: (ctx, next) ->
-      {hive_user, hive_group} = ctx.config.hdp
-      ctx.user
-        username: hive_user
-        group: hive_group
-        shell: '/bin/bash'
-      , (err, modified) ->
-        next err, if modified then ctx.OK else ctx.PASS
-
     module.exports.push name: 'HDP Hive & HCat server # Database', callback: (ctx, next) ->
       {hive_site, hive_admin} = ctx.config.hdp
       {engine, host, port, db, username, password} = hive_admin
@@ -122,7 +113,7 @@ layout: module
         return next err if err
         ctx.execute
           cmd: """
-          chown -R #{hive_user}:#{hive_group} #{hive_conf_dir}/
+          chown -R #{hive_user.name}:#{hive_group.name} #{hive_conf_dir}/
           chmod -R 755 #{hive_conf_dir}
           """
         , (err) ->
@@ -162,8 +153,8 @@ layout: module
           principal: hive_site['hive.metastore.kerberos.principal'].replace '_HOST', ctx.config.host
           randkey: true
           keytab: hive_site['hive.metastore.kerberos.keytab.file']
-          uid: hive_user
-          gid: hive_group
+          uid: hive_user.name
+          gid: hive_group.name
           kadmin_principal: kadmin_principal
           kadmin_password: kadmin_password
           kadmin_server: admin_server
@@ -177,8 +168,8 @@ layout: module
           principal: hive_site['hive.server2.authentication.kerberos.principal'].replace '_HOST', ctx.config.host
           randkey: true
           keytab: hive_site['hive.server2.authentication.kerberos.keytab']
-          uid: hive_user
-          gid: hive_group
+          uid: hive_user.name
+          gid: hive_group.name
           kadmin_principal: kadmin_principal
           kadmin_password: kadmin_password
           kadmin_server: admin_server
@@ -206,6 +197,8 @@ layout: module
       # todo: this isnt pretty, ok that we need to execute hdfs command from an hadoop client
       # enabled environment, but there must be a better way
       {active_nn_host, hdfs_user, hive_user, hive_group} = ctx.config.hdp
+      hive_user = hive_user.name
+      hive_group = hive_group.name
       ctx.connect active_nn_host, (err, ssh) ->
         return next err if err
         # kerberos = true
