@@ -7,6 +7,7 @@ layout: module
 
     url = require 'url'
     mkcmd = require './lib/mkcmd'
+    memory = require './lib/memory'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/yum'
@@ -16,6 +17,7 @@ layout: module
       return if ctx.mapred_configured
       ctx.mapred_configured = true
       require('./hdfs').configure ctx
+      require('./yarn').configure ctx
       require('./mapred_').configure ctx
       {static_host, realm} = ctx.config.hdp
       jhs_host = ctx.host_with_module 'phyla/hadoop/mapred_jhs'
@@ -149,57 +151,68 @@ YARN. There set by default to 3/4 of the YARN minimum Container allocation.
 
 The virtual memory (physical + paged memory) upper limit for each Map and 
 Reduce task is determined by the virtual memory ratio each YARN Container is 
-allowed. 
+allowed.
 
     module.exports.push name: 'HDP MapRed # Tuning', callback: (ctx, next) ->
-      require('./yarn').configure ctx
-      require('./yarn').tuning ctx, (err) ->
-        return next err if err
-        {yarn, mapred, hadoop_conf_dir} = ctx.config.hdp
-        # Yarn available memory
-        yarn_memory = yarn['yarn.nodemanager.resource.memory-mb']
-        # mapred.cluster.map.memory.mb still seems to be used,
-        # It default to 1536 in HDP companion files
-        # and we make sure it isn't above yarn total available memory
-        mapred['mapred.cluster.map.memory.mb'] ?= Math.min 1536, yarn_memory
-        # Follow [Hortonworks example](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
-        # Validate map and reduce task >= YARN minimum Container allocation
-        minimum = yarn['yarn.scheduler.minimum-allocation-mb']
-        map_memory = mapred['mapreduce.map.memory.mb'] ?= Math.floor yarn_memory, minimum
-        reduce_memory = mapred['mapreduce.reduce.memory.mb'] ?= Math.floor yarn_memory, minimum * 2
-        # 3/4 of the map/reduce task
-        map_heap_mb = Math.floor yarn_memory, Math.floor(map_memory*3/4)
-        map_heap = mapred['mapreduce.map.java.opts'] ?= "-Xmx#{map_heap_mb}m"
-        reduce_heap_mb = Math.floor yarn_memory, Math.floor(reduce_memory*3/4)
-        reduce_heap = mapred['mapreduce.reduce.java.opts'] ?= "-Xmx#{reduce_heap_mb}m"
-        # Virtual memory ratio
-        ratio = yarn['yarn.nodemanager.vmem-pmem-ratio'] ?= '2.1' # also defined by phyla/hadoop/yarn
-        # Log result
-        ctx.log "mapred.cluster.map.memory.mb: #{mapred['mapred.cluster.map.memory.mb']} (mapred.cluster.map.memory.mb)"
-        ctx.log "Map total physical RAM allocated: #{map_memory} (mapreduce.map.memory.mb)"
-        ctx.log "Map JVM heap space upper limit within the Map task Container: #{map_heap} (mapreduce.map.java.opts)"
-        ctx.log "Map virtual memory upper limit: #{map_memory * ratio}"
-        ctx.log "Reduce total physical RAM allocated 'mapreduce.reduce.memory.mb': #{reduce_memory} (mapreduce.reduce.memory.mb)"
-        ctx.log "Reduce JVM heap space upper limit within the Reduce task Container: #{reduce_heap} (mapreduce.reduce.java.opts)"
-        ctx.log "Reduce virtual memory upper limit: #{reduce_memory * ratio}"
-        ctx.hconfigure
-          destination: "#{hadoop_conf_dir}/yarn-site.xml"
-          properties:
-            'yarn.nodemanager.vmem-pmem-ratio': ratio
-          merge: true
-        , (err, yarned) ->
-          next err if err
-          ctx.hconfigure
-            destination: "#{hadoop_conf_dir}/mapred-site.xml"
-            properties:
-              'mapred.cluster.map.memory.mb': mapred['mapred.cluster.map.memory.mb']
-              'mapreduce.map.memory.mb': map_memory
-              'mapreduce.reduce.memory.mb': reduce_memory
-              'mapreduce.map.java.opts': map_heap
-              'mapreduce.reduce.java.opts': reduce_heap
-            merge: true
-          , (err, mapreded) ->
-            next err, if yarned or mapreded then ctx.OK else ctx.PASS
+      {hadoop_conf_dir} = ctx.config.hdp
+      {info, mapred_site} = memory ctx
+      console.log mapred_site
+      ctx.hconfigure
+        destination: "#{hadoop_conf_dir}/mapred-site.xml"
+        properties: mapred_site
+        merge: true
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
+
+    # module.exports.push name: 'HDP MapRed # Tuning', callback: (ctx, next) ->
+    #   require('./yarn').configure ctx
+    #   require('./yarn').tuning ctx, (err) ->
+    #     return next err if err
+    #     {yarn, mapred, hadoop_conf_dir} = ctx.config.hdp
+    #     # Yarn available memory
+    #     yarn_memory = yarn['yarn.nodemanager.resource.memory-mb']
+    #     # mapred.cluster.map.memory.mb still seems to be used,
+    #     # It default to 1536 in HDP companion files
+    #     # and we make sure it isn't above yarn total available memory
+    #     mapred['mapred.cluster.map.memory.mb'] ?= Math.min 1536, yarn_memory
+    #     # Follow [Hortonworks example](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
+    #     # Validate map and reduce task >= YARN minimum Container allocation
+    #     minimum = yarn['yarn.scheduler.minimum-allocation-mb']
+    #     map_memory = mapred['mapreduce.map.memory.mb'] ?= Math.floor yarn_memory, minimum
+    #     reduce_memory = mapred['mapreduce.reduce.memory.mb'] ?= Math.floor yarn_memory, minimum * 2
+    #     # 3/4 of the map/reduce task
+    #     map_heap_mb = Math.floor yarn_memory, Math.floor(map_memory*3/4)
+    #     map_heap = mapred['mapreduce.map.java.opts'] ?= "-Xmx#{map_heap_mb}m"
+    #     reduce_heap_mb = Math.floor yarn_memory, Math.floor(reduce_memory*3/4)
+    #     reduce_heap = mapred['mapreduce.reduce.java.opts'] ?= "-Xmx#{reduce_heap_mb}m"
+    #     # Virtual memory ratio
+    #     ratio = yarn['yarn.nodemanager.vmem-pmem-ratio'] ?= '2.1' # also defined by phyla/hadoop/yarn
+    #     # Log result
+    #     ctx.log "mapred.cluster.map.memory.mb: #{mapred['mapred.cluster.map.memory.mb']} (mapred.cluster.map.memory.mb)"
+    #     ctx.log "Map total physical RAM allocated: #{map_memory} (mapreduce.map.memory.mb)"
+    #     ctx.log "Map JVM heap space upper limit within the Map task Container: #{map_heap} (mapreduce.map.java.opts)"
+    #     ctx.log "Map virtual memory upper limit: #{map_memory * ratio}"
+    #     ctx.log "Reduce total physical RAM allocated 'mapreduce.reduce.memory.mb': #{reduce_memory} (mapreduce.reduce.memory.mb)"
+    #     ctx.log "Reduce JVM heap space upper limit within the Reduce task Container: #{reduce_heap} (mapreduce.reduce.java.opts)"
+    #     ctx.log "Reduce virtual memory upper limit: #{reduce_memory * ratio}"
+    #     ctx.hconfigure
+    #       destination: "#{hadoop_conf_dir}/yarn-site.xml"
+    #       properties:
+    #         'yarn.nodemanager.vmem-pmem-ratio': ratio
+    #       merge: true
+    #     , (err, yarned) ->
+    #       next err if err
+    #       ctx.hconfigure
+    #         destination: "#{hadoop_conf_dir}/mapred-site.xml"
+    #         properties:
+    #           'mapred.cluster.map.memory.mb': mapred['mapred.cluster.map.memory.mb']
+    #           'mapreduce.map.memory.mb': map_memory
+    #           'mapreduce.reduce.memory.mb': reduce_memory
+    #           'mapreduce.map.java.opts': map_heap
+    #           'mapreduce.reduce.java.opts': reduce_heap
+    #         merge: true
+    #       , (err, mapreded) ->
+    #         next err, if yarned or mapreded then ctx.OK else ctx.PASS
 
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
