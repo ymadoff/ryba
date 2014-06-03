@@ -225,13 +225,11 @@ Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Co
       ctx.log "Number of containers: #{info.maxNumberOfcontainers}"
       ctx.log "Minimum memory allocation: #{yarn_site['yarn.scheduler.minimum-allocation-mb']} mb (yarn.scheduler.minimum-allocation-mb)"
       ctx.log "Maximum memory allocation: #{yarn_site['yarn.scheduler.maximum-allocation-mb']} mb (yarn.scheduler.maximum-allocation-mb)"
-      console.log yarn_site
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
         properties: yarn_site
         merge: true
       , (err, configured) ->
-        console.log err
         return next err, if configured then ctx.OK else ctx.PASS
 
     # module.exports.push name: 'HDP YARN # Memory Allocation', callback: module.exports.tuning = (ctx, next) ->
