@@ -239,7 +239,6 @@ lifecyle = module.exports =
       ctx.log "Hive Metastore start"
       ctx.execute
         # su -l hive -c 'nohup hive --service metastore >/var/log/hive/hive.out 2>/var/log/hive/hive.log & echo $! >/var/run/hive/metastore.pid'
-        # su -l hive -c 'hive --service metastore'
         cmd: "su -l #{hive_user.name} -c 'nohup hive --service metastore >#{hive_log_dir}/hive.out 2>#{hive_log_dir}/hive.log & echo $! > /var/run/hive/metastore.pid'"
         code_skipped: 1
       , (err, started) ->
@@ -420,7 +419,7 @@ lifecyle = module.exports =
       ctx.log "WebHCat start"
       ctx.execute
         # su -l hcat -c "export WEBHCAT_CONF_DIR=/etc/hcatalog/conf/webhcat; /usr/lib/hive-hcatalog/sbin/webhcat_server.sh start"
-        cmd: "su -l #{webhcat_user} -c \"export WEBHCAT_CONF_DIR=#{webhcat_conf_dir}; /usr/lib/hive-hcatalog/sbin/webhcat_server.sh start\""
+        cmd: "su -l #{webhcat_user.name} -c \"export WEBHCAT_CONF_DIR=#{webhcat_conf_dir}; /usr/lib/hive-hcatalog/sbin/webhcat_server.sh start\""
       , (err, started) ->
         callback err, true
   webhcat_stop: (ctx, callback) ->
@@ -430,7 +429,7 @@ lifecyle = module.exports =
       ctx.log "WebHCat stop"
       ctx.execute
         # su -l hcat -c "export WEBHCAT_CONF_DIR=/etc/hcatalog/conf/webhcat; /usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop"
-        cmd: "su -l #{webhcat_user} -c \"export WEBHCAT_CONF_DIR=#{webhcat_conf_dir}; /usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop\""
+        cmd: "su -l #{webhcat_user.name} -c \"export WEBHCAT_CONF_DIR=#{webhcat_conf_dir}; /usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop\""
       , (err, stopped) ->
         callback err, stopped
   hue_status: (ctx, callback) ->

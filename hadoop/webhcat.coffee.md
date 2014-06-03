@@ -10,6 +10,8 @@ layout: module
     mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    # Install SPNEGO keytab
+    module.exports.push 'phyla/hadoop/hdfs'
 
 https://cwiki.apache.org/confluence/display/Hive/WebHCat+InstallWebHCat
 ctx.config.hdp.hive_site['hive.security.metastore.authorization.manager'] ?= 'org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider'
@@ -24,7 +26,7 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
       require('./zookeeper').configure ctx
       {realm} = ctx.config.hdp
       hive_host = ctx.host_with_module 'phyla/hadoop/hive_server'
-      zookeeper_hosts = ctx.hosts_with_module 'phyla/hadoop/zookeeper_server'
+      zookeeper_hosts = ctx.hosts_with_module 'phyla/hadoop/zookeeper'
       for server in ctx.config.servers
         continue if (i = zookeeper_hosts.indexOf server.host) is -1
         zookeeper_hosts[i] = "#{zookeeper_hosts[i]}:#{ctx.config.hdp.zookeeper_port}"
@@ -32,8 +34,18 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
       ctx.config.hdp.webhcat_conf_dir ?= '/etc/hcatalog/conf/webhcat'
       ctx.config.hdp.webhcat_log_dir ?= '/var/log/webhcat'
       ctx.config.hdp.webhcat_pid_dir ?= '/var/run/webhcat'
-      ctx.config.hdp.webhcat_user ?= 'hcat'
-      ctx.config.hdp.webhcat_group ?= 'hcat'
+      # WebHCat user
+      ctx.config.hdp.webhcat_user = name: ctx.config.hdp.webhcat_user if typeof ctx.config.hdp.webhcat_user is 'string'
+      ctx.config.hdp.webhcat_user ?= {}
+      ctx.config.hdp.webhcat_user.name ?= 'hcat'
+      ctx.config.hdp.webhcat_user.system ?= true
+      ctx.config.hdp.webhcat_user.comment ?= 'Hive'
+      # WebHCat group
+      ctx.config.hdp.webhcat_group = name: ctx.config.hdp.webhcat_group if typeof ctx.config.hdp.webhcat_group is 'string'
+      ctx.config.hdp.webhcat_group ?= {}
+      ctx.config.hdp.webhcat_group.name ?= 'hcat'
+      ctx.config.hdp.webhcat_group.system ?= true
+      # WebHCat configuration
       ctx.config.hdp.webhcat_site ?= {}
       ctx.config.hdp.webhcat_site['templeton.hive.properties'] ?= "hive.metastore.local=false,hive.metastore.uris=thrift://#{hive_host}:9083,hive.metastore.sasl.enabled=yes,hive.metastore.execute.setugi=true,hive.metastore.warehouse.dir=/apps/hive/warehouse"
       ctx.config.hdp.webhcat_site['templeton.zookeeper.hosts'] ?= zookeeper_hosts.join ','
@@ -43,15 +55,26 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
       ctx.config.hdp.webhcat_site['webhcat.proxyuser.hue.groups'] ?= '*'
       ctx.config.hdp.webhcat_site['webhcat.proxyuser.hue.hosts'] ?= '*'
       ctx.config.hdp.webhcat_site['templeton.port'] ?= 50111
+      ctx.config.hdp.webhcat_site['templeton.controller.map.mem'] = 1600 # Total virtual memory available to map tasks.
+
+## Users & Groups
+
+By default, there is not user for WebHCat. This module create the following
+entries:
+
+```bash
+cat /etc/passwd | grep hcat
+hcat:x:494:494:HCat:/var/lib/hcat:/sbin/nologin
+cat /etc/group | grep hcat
+hcat:x:494:
+```
 
     module.exports.push name: 'HDP WebHCat # Users & Groups', callback: (ctx, next) ->
-      {webhcat_user, webhcat_group} = ctx.config.hdp
-      ctx.user
-        username: webhcat_user
-        group: webhcat_group
-        shell: '/bin/bash'
-      , (err, modified) ->
-        next err, if modified then ctx.OK else ctx.PASS
+      {webhcat_group, webhcat_user} = ctx.config.hdp
+      ctx.group webhcat_group, (err, gmodified) ->
+        return next err if err
+        ctx.user webhcat_user, (err, umodified) ->
+          next err, if gmodified or umodified then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP WebHCat # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
@@ -62,11 +85,6 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
         name: 'webhcat-tar-hive'
       ,
         name: 'webhcat-tar-pig'
-      #   name: 'hcatalog'
-      # ,
-      #   name: 'webhcat-tar-hive'
-      # ,
-      #   name: 'webhcat-tar-pig'
       ], (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
 
@@ -76,7 +94,7 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
       do_log = ->
         ctx.mkdir
           destination: webhcat_log_dir
-          uid: webhcat_user
+          uid: webhcat_user.name
           gid: hadoop_group
           mode: 0o755
         , (err, created) ->
@@ -86,7 +104,7 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
       do_pid = ->
         ctx.mkdir
           destination: webhcat_pid_dir
-          uid: webhcat_user
+          uid: webhcat_user.name
           gid: hadoop_group
           mode: 0o755
         , (err, created) ->
@@ -104,7 +122,7 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
         default: "#{__dirname}/files/webhcat/webhcat-site.xml"
         local_default: true
         properties: webhcat_site
-        uid: webhcat_user
+        uid: webhcat_user.name
         gid: hadoop_group
         mode: 0o0755
         merge: true
@@ -118,20 +136,21 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
       ctx.upload
         source: "#{__dirname}/files/webhcat/webhcat-env.sh"
         destination: "#{webhcat_conf_dir}/webhcat-env.sh"
-        uid: webhcat_user
+        uid: webhcat_user.name
         gid: hadoop_group
         mode: 0o0755
       , (err, uploaded) ->
         next err, if uploaded then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP WebHCat # HDFS', callback: (ctx, next) ->
-      {webhcat_user, hadoop_group} = ctx.config.hdp
+      {webhcat_user, webhcat_group} = ctx.config.hdp
+      webhcat_user = webhcat_user.name
       modified = false
       ctx.execute [
         cmd: mkcmd.hdfs ctx, """
         if hdfs dfs -test -d /user/#{webhcat_user}; then exit 1; fi
         hdfs dfs -mkdir -p /user/#{webhcat_user}
-        hdfs dfs -chown #{webhcat_user}:#{hadoop_group} /user/#{webhcat_user}
+        hdfs dfs -chown #{webhcat_user}:#{webhcat_group} /user/#{webhcat_user}
         """
         code_skipped: 1
       ,
@@ -146,7 +165,7 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
         each([
           '/usr/share/HDP-webhcat/pig.tar.gz'
           '/usr/share/HDP-webhcat/hive.tar.gz'
-          '/usr/lib/hadoop-mapreduce/hadoop-streaming*.jar'
+          '/usr/lib/hadoop-mapreduce/hadoop-streaming.jar'
         ])
         .on 'item', (item, next) ->
           ctx.execute
@@ -160,7 +179,7 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
           return next err if err
           ctx.execute
             cmd: mkcmd.hdfs ctx, """
-            hdfs dfs -chown -R #{webhcat_user}:#{hadoop_group} /apps/webhcat
+            hdfs dfs -chown -R #{webhcat_user}:users /apps/webhcat
             hdfs dfs -chmod -R 755 /apps/webhcat
             """
           , (err, executed, stdout) ->
@@ -169,17 +188,14 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
 
     module.exports.push name: 'HDP WebHCat # SPNEGO', callback: (ctx, next) ->
       {webhcat_site, webhcat_user, webhcat_group} = ctx.config.hdp
-      require('./hdfs').configure ctx
-      require('./hdfs').spnego ctx, (err, status) ->
-        return next err if err
-        ctx.copy
-          source: '/etc/security/keytabs/spnego.service.keytab'
-          destination: webhcat_site['templeton.kerberos.keytab']
-          uid: webhcat_user
-          gid: webhcat_group
-          mode: 0o660
-        , (err, copied) ->
-          return next err, if copied then ctx.OK else ctx.PASS
+      ctx.copy
+        source: '/etc/security/keytabs/spnego.service.keytab'
+        destination: webhcat_site['templeton.kerberos.keytab']
+        uid: webhcat_user.name
+        gid: webhcat_group.name
+        mode: 0o660
+      , (err, copied) ->
+        return next err, if copied then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP WebHCat # Start', callback: (ctx, next) ->
       lifecycle.webhcat_start ctx, (err, started) ->
