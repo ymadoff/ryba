@@ -207,9 +207,10 @@ layout: module
           ctx.execute
             ssh: ssh
             cmd: mkcmd.hdfs ctx, """
-            if hdfs dfs -ls /user/#{hive_user}/warehouse &>/dev/null; then exit 1; fi
-            hdfs dfs -mkdir -p /user/#{hive_user}; 
-            hdfs dfs -chown -R #{hive_user}:#{hive_group} /user/#{hive_user}
+            if hdfs dfs -ls /user/#{hive_user} &>/dev/null; then exit 1; fi
+            hdfs dfs -mkdir -p /user/#{hive_user}
+            hdfs dfs -chown -R #{hive_user}:#{hdfs_user} /user/#{hive_user}
+            hdfs dfs -chmod -R 775 /apps/#{hive_user}
             """
             code_skipped: 1
             log: ctx.log
@@ -224,10 +225,9 @@ layout: module
             ssh: ssh
             cmd: mkcmd.hdfs ctx, """
             if hdfs dfs -ls /apps/#{hive_user}/warehouse &>/dev/null; then exit 3; fi
-            hdfs dfs -mkdir -p /apps/#{hive_user};
-            hdfs dfs -mkdir /apps/#{hive_user}/warehouse; 
-            hdfs dfs -chown -R #{hive_user}:#{hive_group} /apps/#{hive_user}
-            hdfs dfs -chmod -R 775 /apps/#{hive_user};
+            hdfs dfs -mkdir /apps/#{hive_user}/warehouse
+            hdfs dfs -chown -R #{hive_user}:#{hdfs_user} /apps/#{hive_user}/warehouse
+            hdfs dfs -chmod -R 775 /apps/#{hive_user}/warehouse
             """
             code_skipped: 3
             log: ctx.log
@@ -244,7 +244,7 @@ layout: module
             if hdfs dfs -ls /tmp/scratch &> /dev/null; then exit 1; fi
             hdfs dfs -mkdir /tmp 2>/dev/null;
             hdfs dfs -mkdir /tmp/scratch;
-            hdfs dfs -chown #{hive_user}:#{hive_group} /tmp/scratch;
+            hdfs dfs -chown #{hive_user}:#{hdfs_user} /tmp/scratch;
             hdfs dfs -chmod -R 777 /tmp/scratch;
             """
             code_skipped: 1
