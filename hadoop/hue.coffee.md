@@ -91,6 +91,7 @@ Example:
       ctx.config.hdp.hue_user.name ?= 'hue'
       ctx.config.hdp.hue_user.system ?= true
       ctx.config.hdp.hue_user.comment ?= 'Hue'
+      ctx.config.hdp.hue_user.home = '/usr/lib/hue'
       # Hive group
       ctx.config.hdp.hue_group = name: ctx.config.hdp.hue_group if typeof ctx.config.hdp.hue_group is 'string'
       ctx.config.hdp.hue_group ?= {}
@@ -152,9 +153,9 @@ By default, there is not user for WebHCat. This module create the following
 entries:
 
 ```bash
-cat /etc/passwd | grep hcat
-hcat:x:494:494:HCat:/var/lib/hcat:/sbin/nologin
-cat /etc/group | grep hcat
+cat /etc/passwd | grep hue
+hue:x:494:494:Hue:/var/lib/hue:/sbin/nologin
+cat /etc/group | grep hue
 hcat:x:494:
 ```
 
