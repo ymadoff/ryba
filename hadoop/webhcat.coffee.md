@@ -31,7 +31,8 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
         continue if (i = zookeeper_hosts.indexOf server.host) is -1
         zookeeper_hosts[i] = "#{zookeeper_hosts[i]}:#{ctx.config.hdp.zookeeper_port}"
       ctx.config.hdp ?= {}
-      ctx.config.hdp.webhcat_conf_dir ?= '/etc/hcatalog/conf/webhcat'
+      # ctx.config.hdp.webhcat_conf_dir ?= '/etc/hcatalog/conf/webhcat'
+      ctx.config.hdp.webhcat_conf_dir ?= '/etc/hive-webhcat/conf'
       ctx.config.hdp.webhcat_log_dir ?= '/var/log/webhcat'
       ctx.config.hdp.webhcat_pid_dir ?= '/var/run/webhcat'
       # WebHCat user
@@ -48,10 +49,12 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
       ctx.config.hdp.webhcat_group.system ?= true
       # WebHCat configuration
       ctx.config.hdp.webhcat_site ?= {}
+      ctx.config.hdp.webhcat_site['templeton.storage.class'] ?= 'org.apache.hive.hcatalog.templeton.tool.ZooKeeperStorage' # Fix default value distributed in companion files
+      ctx.config.hdp.webhcat_site['templeton.jar'] ?+ '/usr/lib/hive-hcatalog/share/webhcat/svr/lib/hive-webhcat-0.13.0.2.1.2.0-402.jar' # Fix default value distributed in companion files
       ctx.config.hdp.webhcat_site['templeton.hive.properties'] ?= "hive.metastore.local=false,hive.metastore.uris=thrift://#{hive_host}:9083,hive.metastore.sasl.enabled=yes,hive.metastore.execute.setugi=true,hive.metastore.warehouse.dir=/apps/hive/warehouse"
       ctx.config.hdp.webhcat_site['templeton.zookeeper.hosts'] ?= zookeeper_hosts.join ','
       ctx.config.hdp.webhcat_site['templeton.kerberos.principal'] ?= "HTTP/#{ctx.config.host}@#{realm}"
-      ctx.config.hdp.webhcat_site['templeton.kerberos.keytab'] ?= '/etc/hcatalog/conf/webhcat/spnego.service.keytab'
+      ctx.config.hdp.webhcat_site['templeton.kerberos.keytab'] ?= "#{ctx.config.hdp.webhcat_conf_dir}/spnego.service.keytab"
       ctx.config.hdp.webhcat_site['templeton.kerberos.secret'] ?= 'secret'
       ctx.config.hdp.webhcat_site['webhcat.proxyuser.hue.groups'] ?= '*'
       ctx.config.hdp.webhcat_site['webhcat.proxyuser.hue.hosts'] ?= '*'
@@ -166,7 +169,7 @@ hcat:x:494:
         each([
           '/usr/share/HDP-webhcat/pig.tar.gz'
           '/usr/share/HDP-webhcat/hive.tar.gz'
-          '/usr/lib/hadoop-mapreduce/hadoop-streaming.jar'
+          '/usr/lib/hadoop-mapreduce/hadoop-streaming*.jar'
         ])
         .on 'item', (item, next) ->
           ctx.execute
@@ -204,7 +207,7 @@ hcat:x:494:
 
     module.exports.push name: 'HDP WebHCat # Check', callback: (ctx, next) ->
       # TODO, maybe we could test hive:
-      # curl --negotiate -u : -d execute="show+databases;" http://front1.hadoop:50111/templeton/v1/hive
+      # curl --negotiate -u : -d execute="show+databases;" -d statusdir="test_webhcat" http://front1.hadoop:50111/templeton/v1/hive
       {webhcat_site} = ctx.config.hdp
       port = webhcat_site['templeton.port']
       ctx.execute
