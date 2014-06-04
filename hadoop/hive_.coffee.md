@@ -29,6 +29,7 @@ layout: module
       ctx.config.hdp.hive_user.name ?= 'hive'
       ctx.config.hdp.hive_user.system ?= true
       ctx.config.hdp.hive_user.comment ?= 'Hive'
+      ctx.config.hdp.hive_user.home ?= '/var/lib/hive'
       # Hive group
       ctx.config.hdp.hive_group = name: ctx.config.hdp.hive_group if typeof ctx.config.hdp.hive_group is 'string'
       ctx.config.hdp.hive_group ?= {}
