@@ -39,7 +39,8 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
       ctx.config.hdp.webhcat_user ?= {}
       ctx.config.hdp.webhcat_user.name ?= 'hcat'
       ctx.config.hdp.webhcat_user.system ?= true
-      ctx.config.hdp.webhcat_user.comment ?= 'Hive'
+      ctx.config.hdp.webhcat_user.comment ?= 'HCat'
+      ctx.config.hdp.webhcat_user.home ?= '/home/hcat'
       # WebHCat group
       ctx.config.hdp.webhcat_group = name: ctx.config.hdp.webhcat_group if typeof ctx.config.hdp.webhcat_group is 'string'
       ctx.config.hdp.webhcat_group ?= {}
