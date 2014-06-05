@@ -20,8 +20,6 @@ memory = (ctx) ->
   mininumContainerSize = memory.getMininumContainerSize memoryAvailableMb
   # Maximum number of containers allowed per node:
   # min (2*CORES, 1.8*DISKS, (Total available RAM) / MIN_CONTAINER_SIZE)
-  console.log yarn_site['yarn.nodemanager.local-dirs']
-  console.log 'maxNumberOfcontainers', coreNumber*2, diskNumber * 1.8, (memoryAvailableMb / mininumContainerSize)
   maxNumberOfcontainers = Math.floor Math.min coreNumber*2, diskNumber * 1.8, (memoryAvailableMb / mininumContainerSize)
   # Amount of RAM per container
   # max(MIN_CONTAINER_SIZE, (Total Available RAM) / containers))

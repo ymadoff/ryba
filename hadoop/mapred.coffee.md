@@ -156,7 +156,6 @@ allowed.
     module.exports.push name: 'HDP MapRed # Tuning', callback: (ctx, next) ->
       {hadoop_conf_dir} = ctx.config.hdp
       {info, mapred_site} = memory ctx
-      console.log mapred_site
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
         properties: mapred_site
