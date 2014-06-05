@@ -23,19 +23,19 @@ layout: module
       ctx.config.hdp.hive_server2_host ?= ctx.host_with_module 'phyla/hadoop/hive_server'
       ctx.config.hdp.hive_server2_port ?= 10000
       ctx.config.hdp.hive_server2_timeout ?= 20000 # 20s
-      # Hive user
+      # User
       ctx.config.hdp.hive_user = name: ctx.config.hdp.hive_user if typeof ctx.config.hdp.hive_user is 'string'
       ctx.config.hdp.hive_user ?= {}
       ctx.config.hdp.hive_user.name ?= 'hive'
       ctx.config.hdp.hive_user.system ?= true
-      ctx.config.hdp.hive_user.comment ?= 'Hive'
+      ctx.config.hdp.hive_user.comment ?= 'Hive User'
       ctx.config.hdp.hive_user.home ?= '/var/lib/hive'
-      # Hive group
+      # Group
       ctx.config.hdp.hive_group = name: ctx.config.hdp.hive_group if typeof ctx.config.hdp.hive_group is 'string'
       ctx.config.hdp.hive_group ?= {}
       ctx.config.hdp.hive_group.name ?= 'hive'
       ctx.config.hdp.hive_group.system ?= true
-      # Hive configuration
+      # Configuration
       ctx.config.hdp.hive_site ?= {}
       ctx.config.hdp.hive_site['hive.metastore.uris'] ?= "thrift://#{metastore_host}:9083"
       # To prevent memory leak in unsecure mode, disable [file system caches](https://cwiki.apache.org/confluence/display/Hive/Setting+up+HiveServer2)

@@ -52,7 +52,7 @@ Example:
       # Allow proxy user inside "webhcat-site.xml"
       require('./webhcat').configure ctx
       # Allow proxy user inside "oozie-site.xml"
-      require('./oozie_').configure ctx
+      require('./oozie_client').configure ctx
       # Allow proxy user inside "core-site.xml"
       require('./core').configure ctx
       {nameservice, active_nn_host, hadoop_conf_dir, webhcat_site, hue_ini} = ctx.config.hdp
@@ -78,21 +78,20 @@ Example:
       if db.engine isnt 'sqlite3'
         throw new Exception "Missing database admin username" unless ctx.config.hdp.hue_db_admin_username
       webhcat_port = webhcat_site['templeton.port']
-      oozie_server = ctx.host_with_module 'phyla/hadoop/oozie_server'
       webhcat_server = ctx.host_with_module 'phyla/hadoop/webhcat'
       # todo, this might not work as expected after ha migration
       resourcemanager = ctx.host_with_module 'phyla/hadoop/yarn_rm'
       # Webhdfs should be active on the NameNode, Secondary NameNode, and all the DataNodes
       # throw new Error 'WebHDFS not active' if ctx.config.hdp.hdfs_site['dfs.webhdfs.enabled'] isnt 'true'
       ctx.config.hdp.hue_conf_dir ?= '/etc/hue/conf'
-      # Hive user
+      # User
       ctx.config.hdp.hue_user = name: ctx.config.hdp.hue_user if typeof ctx.config.hdp.hue_user is 'string'
       ctx.config.hdp.hue_user ?= {}
       ctx.config.hdp.hue_user.name ?= 'hue'
       ctx.config.hdp.hue_user.system ?= true
-      ctx.config.hdp.hue_user.comment ?= 'Hue'
+      ctx.config.hdp.hue_user.comment ?= 'Hue User'
       ctx.config.hdp.hue_user.home = '/usr/lib/hue'
-      # Hive group
+      # Group
       ctx.config.hdp.hue_group = name: ctx.config.hdp.hue_group if typeof ctx.config.hdp.hue_group is 'string'
       ctx.config.hdp.hue_group ?= {}
       ctx.config.hdp.hue_group.name ?= 'hue'
@@ -126,7 +125,7 @@ Example:
       hue_ini['hadoop']['yarn_clusters']['default']['hadoop_conf_dir'] ?= hadoop_conf_dir
       # Configure components
       hue_ini['liboozie'] ?= {}
-      hue_ini['liboozie']['oozie_url'] ?= "http://#{oozie_server}:11000/oozie"
+      hue_ini['liboozie']['oozie_url'] ?= ctx.config.hdp.oozie_site['oozie.base.url']
       hue_ini['hcatalog'] ?= {}
       hue_ini['hcatalog']['templeton_url'] ?= "http://#{webhcat_server}:#{webhcat_port}/templeton/v1/"
       hue_ini['beeswax'] ?= {}
@@ -149,8 +148,7 @@ Example:
 
 ## Users & Groups
 
-By default, there is not user for WebHCat. This module create the following
-entries:
+By default, the "hue" package create the following entries:
 
 ```bash
 cat /etc/passwd | grep hue

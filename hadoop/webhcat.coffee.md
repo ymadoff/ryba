@@ -35,14 +35,14 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
       ctx.config.hdp.webhcat_conf_dir ?= '/etc/hive-webhcat/conf'
       ctx.config.hdp.webhcat_log_dir ?= '/var/log/webhcat'
       ctx.config.hdp.webhcat_pid_dir ?= '/var/run/webhcat'
-      # WebHCat user
+      # User
       ctx.config.hdp.webhcat_user = name: ctx.config.hdp.webhcat_user if typeof ctx.config.hdp.webhcat_user is 'string'
       ctx.config.hdp.webhcat_user ?= {}
       ctx.config.hdp.webhcat_user.name ?= 'hcat'
       ctx.config.hdp.webhcat_user.system ?= true
-      ctx.config.hdp.webhcat_user.comment ?= 'HCat'
+      ctx.config.hdp.webhcat_user.comment ?= 'HCat User'
       ctx.config.hdp.webhcat_user.home ?= '/home/hcat'
-      # WebHCat group
+      # Group
       ctx.config.hdp.webhcat_group = name: ctx.config.hdp.webhcat_group if typeof ctx.config.hdp.webhcat_group is 'string'
       ctx.config.hdp.webhcat_group ?= {}
       ctx.config.hdp.webhcat_group.name ?= 'hcat'

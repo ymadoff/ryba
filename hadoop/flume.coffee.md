@@ -34,9 +34,40 @@ Exemple:
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/core/krb5_client').configure ctx
       ctx.config.hdp ?= {}
-      ctx.config.hdp.flume_user = 'flume'
-      ctx.config.hdp.flume_group = 'flume'
+      # User
+      ctx.config.hdp.flume_user = name: ctx.config.hdp.flume_user if typeof ctx.config.hdp.flume_user is 'string'
+      ctx.config.hdp.flume_user ?= {}
+      ctx.config.hdp.flume_user.name ?= 'flume'
+      ctx.config.hdp.flume_user.system ?= true
+      ctx.config.hdp.flume_user.comment ?= 'Flume User'
+      ctx.config.hdp.flume_user.home ?= '/var/lib/flume'
+      # Group
+      ctx.config.hdp.flume_group = name: ctx.config.hdp.flume_group if typeof ctx.config.hdp.flume_group is 'string'
+      ctx.config.hdp.flume_group ?= {}
+      ctx.config.hdp.flume_group.name ?= 'flume'
+      ctx.config.hdp.flume_group.system ?= true
       ctx.config.hdp.flume_conf_dir = '/etc/flume/conf'
+
+## Users & Groups
+
+By default, the "oozie" package create the following entries:
+
+```bash
+cat /etc/passwd | grep flume
+flume:x:495:496:Flume:/var/lib/flume:/sbin/nologin
+cat /etc/group | grep flume
+flume:x:496:
+```
+
+Note, the "oozie" package rely on the "zookeeper" and "hadoop-hdfs" dependencies
+creating the "zookeeper" and "hdfs" users and the "hadoop" and "hdfs" group.
+
+    module.exports.push name: 'HDP Flume # Users & Groups', callback: (ctx, next) ->
+      {flume_group, flume_user} = ctx.config.hdp
+      ctx.group flume_group, (err, gmodified) ->
+        return next err if err
+        ctx.user flume_user, (err, umodified) ->
+          next err, if gmodified or umodified then ctx.OK else ctx.PASS
 
 ## Install
 
@@ -59,8 +90,8 @@ usage. It is placed inside the flume configuration directory, by default
         principal: "hue/#{ctx.config.host}@#{realm}"
         randkey: true
         keytab: "#{flume_conf_dir}/flume.service.keytab"
-        uid: flume_user
-        gid: flume_group
+        uid: flume_user.name
+        gid: flume_group.name
         mode: 0o600
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
