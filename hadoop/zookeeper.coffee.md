@@ -16,30 +16,48 @@ layout: module
     module.exports.push module.exports.configure = (ctx) ->
       require('./core').configure ctx
       require('masson/commons/java').configure ctx
-      ctx.config.hdp.zookeeper_myid ?= null
-      ctx.config.hdp.zookeeper_user ?= 'zookeeper'
+      # User
+      ctx.config.hdp.zookeeper_user = name: ctx.config.hdp.zookeeper_user if typeof ctx.config.hdp.zookeeper_user is 'string'
+      ctx.config.hdp.zookeeper_user ?= {}
+      ctx.config.hdp.zookeeper_user.name ?= 'zookeeper'
+      ctx.config.hdp.zookeeper_user.system ?= true
+      ctx.config.hdp.zookeeper_user.comment ?= 'Zookeeper User'
+      ctx.config.hdp.zookeeper_user.home ?= '/var/lib/zookeeper'
+      # Layout
       ctx.config.hdp.zookeeper_data_dir ?= '/var/zookeper/data/'
       ctx.config.hdp.zookeeper_conf_dir ?= '/etc/zookeeper/conf'
       ctx.config.hdp.zookeeper_log_dir ?= '/var/log/zookeeper'
       ctx.config.hdp.zookeeper_pid_dir ?= '/var/run/zookeeper'
       ctx.config.hdp.zookeeper_port ?= 2181
+      # Internal
+      ctx.config.hdp.zookeeper_myid ?= null
+
+## Users & Groups
+
+By default, the "zookeeper" package create the following entries:
+
+```bash
+cat /etc/passwd | grep zookeeper
+zookeeper:x:497:498:ZooKeeper:/var/run/zookeeper:/bin/bash
+cat /etc/group | grep hadoop
+hadoop:x:498:hdfs
+```
+
+    module.exports.push name: 'HDP ZooKeeper # Users & Groups', callback: (ctx, next) ->
+      {hadoop_group, flume_user} = ctx.config.hdp
+      ctx.group hadoop_group, (err, gmodified) ->
+        return next err if err
+        ctx.user zookeeper_user, (err, umodified) ->
+          next err, if gmodified or umodified then ctx.OK else ctx.PASS
 
 ## Install
 
-Instructions to [install the ZooKeeper RPMs](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap9-1.html)
+Follow the [HDP recommandations][install] to install the "zookeeper" package
+which has no dependency.
 
     module.exports.push name: 'HDP ZooKeeper # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service name: 'zookeeper', (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
-
-    module.exports.push name: 'HDP ZooKeeper # Users & Groups', callback: (ctx, next) ->
-      {hadoop_group, zookeeper_user} = ctx.config.hdp
-      ctx.execute
-        cmd: "useradd #{zookeeper_user} -r -g #{hadoop_group} -d /var/run/#{zookeeper_user} -s /bin/bash -c \"ZooKeeper\""
-        code: 0
-        code_skipped: 9
-      , (err, executed) ->
-        next err, if executed then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP ZooKeeper # Layout', callback: (ctx, next) ->
       { hadoop_group, zookeeper_user, 
@@ -159,7 +177,7 @@ Instructions to [install the ZooKeeper RPMs](http://docs.hortonworks.com/HDPDocu
 
 *   [ZooKeeper Resilience](http://blog.cloudera.com/blog/2014/03/zookeeper-resilience-at-pinterest/)
 
-
+[install]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.1-latest/bk_installing_manually_book/content/rpm-zookeeper-1.html
 
 
 

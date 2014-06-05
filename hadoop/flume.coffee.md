@@ -46,11 +46,12 @@ Exemple:
       ctx.config.hdp.flume_group ?= {}
       ctx.config.hdp.flume_group.name ?= 'flume'
       ctx.config.hdp.flume_group.system ?= true
+      # Layout
       ctx.config.hdp.flume_conf_dir = '/etc/flume/conf'
 
 ## Users & Groups
 
-By default, the "oozie" package create the following entries:
+By default, the "flume" package create the following entries:
 
 ```bash
 cat /etc/passwd | grep flume
@@ -59,7 +60,7 @@ cat /etc/group | grep flume
 flume:x:496:
 ```
 
-Note, the "oozie" package rely on the "zookeeper" and "hadoop-hdfs" dependencies
+Note, the "flume" package rely on the "zookeeper" and "hadoop-hdfs" dependencies
 creating the "zookeeper" and "hdfs" users and the "hadoop" and "hdfs" group.
 
     module.exports.push name: 'HDP Flume # Users & Groups', callback: (ctx, next) ->
