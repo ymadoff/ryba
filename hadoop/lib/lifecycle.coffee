@@ -308,7 +308,7 @@ lifecyle = module.exports =
       ctx.log "Oozie start"
       ctx.execute
         # su -l oozie -c "/usr/lib/oozie/bin/oozied.sh start"
-        cmd: "su -l #{oozie_user} -c \"/usr/lib/oozie/bin/oozied.sh start\""
+        cmd: "su -l #{oozie_user.name} -c \"/usr/lib/oozie/bin/oozied.sh start\""
         code_skipped: 1
       , (err, started) ->
         callback err, started
@@ -319,7 +319,7 @@ lifecyle = module.exports =
       ctx.log "Oozie stop"
       ctx.execute
         # su -l oozie -c "/usr/lib/oozie/bin/oozied.sh stop"
-        cmd: "su -l #{oozie_user} -c \"/usr/lib/oozie/bin/oozied.sh stop\""
+        cmd: "su -l #{oozie_user.name} -c \"/usr/lib/oozie/bin/oozied.sh stop\""
         code_skipped: 1
       , (err, stopped) ->
         callback err, stopped

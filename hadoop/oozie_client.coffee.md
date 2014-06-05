@@ -5,21 +5,43 @@ layout: module
 
 # Oozie Client
 
+    url = require 'url'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
-    module.exports.push 'phyla/hadoop/oozie_'
     module.exports.push 'phyla/hadoop/mapred_client'
     module.exports.push 'phyla/hadoop/yarn_client'
 
-    module.exports.push (ctx) ->
-      require('./oozie_').configure ctx
+    module.exports.push module.exports.configure = (ctx) ->
+      oozie_server = ctx.host_with_module 'phyla/hadoop/oozie_server'
+      # Oozie configuration
+      ctx.config.hdp.oozie_site ?= {}
+      ctx.config.hdp.oozie_site['oozie.base.url'] = "http://#{oozie_server}:11000/oozie"
+      # Internal properties
+      oozieurl = url.parse ctx.config.hdp.oozie_site['oozie.base.url']
+      ctx.config.hdp.oozie_port ?= oozieurl.port
 
-    module.exports.push name: 'HDP Oozie Client # Install', timeout: -1, callback: (ctx, next) ->
-      ctx.service
+# Install
+
+Install the oozie client package. This package doesn't create any user and group.
+
+    module.exports.push name: 'HDP Oozie # Install', timeout: -1, callback: (ctx, next) ->
+      ctx.service [
         name: 'oozie-client'
-      , (err, installed) ->
-        next err, if installed then ctx.OK else ctx.PASS
+      ], (err, serviced) ->
+        next err, if serviced then ctx.OK else ctx.PASS
+
+    module.exports.push name: 'HDP Oozie # Profile', callback: (ctx, next) ->
+      {oozie_site} = ctx.config.hdp
+      ctx.write
+        destination: '/etc/profile.d/oozie.sh'
+        content: """
+        #!/bin/bash
+        export OOZIE_URL=#{oozie_site['oozie.base.url']}
+        """
+        mode: 0o0755
+      , (err, written) ->
+        next null, if written then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Oozie Client # Check Client', timeout: -1, callback: (ctx, next) ->
       {oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
@@ -68,11 +90,11 @@ layout: module
           # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/latest/CDH4-High-Availability-Guide/cdh4hag_topic_2_6.html
           ctx.write [
             content: """
-            nameNode=hdfs://#{nameservice}:8020
-            jobTracker=#{rm}:8050
-            queueName=default
-            basedir=${nameNode}/user/#{/^(.*?)[\/@]/.exec(oozie_test_principal)[1]}/#{ctx.config.host}-oozie-workflow
-            oozie.wf.application.path=${basedir}
+              nameNode=hdfs://#{nameservice}:8020
+              jobTracker=#{rm}:8050
+              queueName=default
+              basedir=${nameNode}/user/#{/^(.*?)[\/@]/.exec(oozie_test_principal)[1]}/#{ctx.config.host}-oozie-workflow
+              oozie.wf.application.path=${basedir}
             """
             destination: '/tmp/oozie_job.properties'
           ,

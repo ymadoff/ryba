@@ -27,19 +27,43 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
 
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/commons/mysql_server').configure ctx
-      # require('./yarn_client').configure ctx
-      require('./oozie_').configure ctx # load "masson/hadoop/core"
+      require('./core').configure ctx
       {static_host, realm, core_site} = ctx.config.hdp
+      {realm} = ctx.config.hdp
+      # Internal properties
+      ctx.config.hdp.force_war ?= false
+      # User
+      ctx.config.hdp.oozie_user = name: ctx.config.hdp.oozie_user if typeof ctx.config.hdp.oozie_user is 'string'
+      ctx.config.hdp.oozie_user ?= {}
+      ctx.config.hdp.oozie_user.name ?= 'oozie'
+      ctx.config.hdp.oozie_user.system ?= true
+      ctx.config.hdp.oozie_user.comment ?= 'Oozie User'
+      ctx.config.hdp.oozie_user.home ?= '/var/lib/oozie'
+      # Group
+      ctx.config.hdp.oozie_group = name: ctx.config.hdp.oozie_group if typeof ctx.config.hdp.oozie_group is 'string'
+      ctx.config.hdp.oozie_group ?= {}
+      ctx.config.hdp.oozie_group.name ?= 'oozie'
+      ctx.config.hdp.oozie_group.system ?= true
+      # Login
+      ctx.config.hdp.oozie_test_principal ?= "test@#{realm}"
+      ctx.config.hdp.oozie_test_password ?= "test123"
+      ctx.config.hdp.oozie_conf_dir ?= '/etc/oozie/conf'
+      # Layout
+      ctx.config.hdp.oozie_data ?= '/var/db/oozie'
+      ctx.config.hdp.oozie_log_dir ?= '/var/log/oozie'
+      ctx.config.hdp.oozie_pid_dir ?= '/var/run/oozie'
+      ctx.config.hdp.oozie_tmp_dir ?= '/var/tmp/oozie'
+      # Database
+      dbhost = ctx.config.hdp.oozie_db_host ?= ctx.host_with_module 'masson/commons/mysql_server'
       ctx.config.hdp.oozie_db_admin_username ?= ctx.config.mysql_server.username
       ctx.config.hdp.oozie_db_admin_password ?= ctx.config.mysql_server.password
-      # dbhost = ctx.config.hdp.oozie_db_host ?= ctx.servers(action: 'masson/commons/mysql_server')[0]
-      dbhost = ctx.config.hdp.oozie_db_host ?= ctx.host_with_module 'masson/commons/mysql_server'
-      ctx.config.hdp.force_war ?= false
+      # Oozie configuration
+      ctx.config.hdp.oozie_site ?= {}
+      ctx.config.hdp.oozie_site['oozie.base.url'] = "http://#{ctx.config.host}:11000/oozie"
       ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{dbhost}:3306/oozie?createDatabaseIfNotExist=true"
       ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
       ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'
       ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
-      # TODO: check if security is on
       ctx.config.hdp.oozie_site['oozie.service.AuthorizationService.security.enabled'] ?= 'true' # Todo, now deprecated should be set to null in favor of oozie.service.AuthorizationService.authorization.enabled (see oozie "oozie.log" file)
       ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.kerberos.enabled'] ?= 'true'
       ctx.config.hdp.oozie_site['local.realm'] ?= "#{realm}"
@@ -49,16 +73,6 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
       ctx.config.hdp.oozie_site['oozie.authentication.kerberos.principal'] ?= "HTTP/#{ctx.config.host}@#{realm}"
       ctx.config.hdp.oozie_site['oozie.authentication.kerberos.keytab'] ?= '/etc/oozie/conf/spnego.service.keytab'
       # ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.nameNode.whitelist'] = ''
-      # ctx.config.hdp.oozie_site['oozie.authentication.kerberos.name.rules'] = """
-      
-      #     RULE:[2:$1@$0]([rn]m@.*)s/.*/yarn/
-      #     RULE:[2:$1@$0](jhs@.*)s/.*/mapred/
-      #     RULE:[2:$1@$0]([nd]n@.*)s/.*/hdfs/
-      #     RULE:[2:$1@$0](hm@.*)s/.*/hbase/
-      #     RULE:[2:$1@$0](rs@.*)s/.*/hbase/
-      #     DEFAULT
-
-      # """
       ctx.config.hdp.oozie_site['oozie.authentication.kerberos.name.rules'] ?= core_site['hadoop.security.auth_to_local']
       ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.nameNode.whitelist'] ?= '' # Fix space value
       ctx.config.hdp.oozie_site['oozie.service.ProxyUserService.proxyuser.hive.hosts'] ?= "*"
@@ -74,6 +88,24 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
       throw new Error "Missing extjs.source" unless ctx.config.hdp.extjs.source
       throw new Error "Missing extjs.destination" unless ctx.config.hdp.extjs.destination
 
+## Users & Groups
+
+By default, the "oozie" package create the following entries:
+
+```bash
+cat /etc/passwd | grep oozie
+oozie:x:493:493:Oozie User:/var/lib/oozie:/bin/bash
+cat /etc/group | grep oozie
+oozie:x:493:
+```
+
+    module.exports.push name: 'HDP Oozie Server # Users & Groups', callback: (ctx, next) ->
+      {oozie_group, oozie_user} = ctx.config.hdp
+      ctx.group oozie_group, (err, gmodified) ->
+        return next err if err
+        ctx.user oozie_user, (err, umodified) ->
+          next err, if gmodified or umodified then ctx.OK else ctx.PASS
+
     module.exports.push name: 'HDP Oozie Server # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
         name: 'oozie' # Also install oozie-client and bigtop-tomcat
@@ -85,8 +117,51 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
         ctx.config.hdp.force_war = true if serviced
         next err, if serviced then ctx.OK else ctx.PASS
 
+    module.exports.push name: 'HDP Oozie # Environment', callback: (ctx, next) ->
+      {oozie_user, hadoop_group, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_data} = ctx.config.hdp
+      ctx.write
+        source: "#{__dirname}/files/oozie/oozie-env.sh"
+        destination: "#{oozie_conf_dir}/oozie-env.sh"
+        local_source: true
+        write: [
+          match: /^export JAVA_HOME=.*$/mg
+          replace: "export JAVA_HOME=/usr/java/default" # TODO, discover value from masson/commons/java
+          append: true
+        ,
+          match: /^export JRE_HOME=.*$/mg
+          replace: "export JRE_HOME=${JAVA_HOME}" # Not in HDP 2.0.6 but mentioned in [HDP 2.1 doc](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.1-latest/bk_installing_manually_book/content/rpm-chap8-3.html)
+          append: true
+        ,
+          match: /^export OOZIE_CONFIG=.*$/mg
+          replace: "export OOZIE_CONFIG=${OOZIE_CONFIG:-/etc/oozie/conf}"
+          append: true
+        ,
+          match: /^export CATALINA_BASE=.*$/mg
+          replace: "export CATALINA_BASE=${CATALINA_BASE:-/var/lib/oozie/tomcat-deployment}"
+          append: true
+        ,
+          match: /^export CATALINA_TMPDIR=.*$/mg
+          replace: "export CATALINA_TMPDIR=${CATALINA_TMPDIR:-/var/tmp/oozie}"
+          append: true
+        ,
+          match: /^export OOZIE_CATALINA_HOME=.*$/mg
+          replace: "export OOZIE_CATALINA_HOME=/usr/lib/bigtop-tomcat"
+          append: true
+        ,
+          match: /^export OOZIE_DATA=.*$/mg
+          replace: "export OOZIE_DATA=#{oozie_data}"
+          append: true
+        ]
+        uid: oozie_user.name
+        gid: hadoop_group
+        mode: 0o0755
+      , (err, rendered) ->
+        next err, if rendered then ctx.OK else ctx.PASS
+
     module.exports.push name: 'HDP Oozie Server # Directories', callback: (ctx, next) ->
       {oozie_user, oozie_group, oozie_data, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_tmp_dir} = ctx.config.hdp
+      oozie_user = oozie_user.name
+      oozie_group = oozie_group.name
       ctx.mkdir [
         destination: oozie_data
         uid: oozie_user
@@ -164,8 +239,8 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
           default: "#{__dirname}/files/oozie/oozie-site.xml"
           local_default: true
           properties: oozie_site
-          uid: oozie_user
-          gid: oozie_group
+          uid: oozie_user.name
+          gid: oozie_group.name
           mode: 0o0755
           merge: true
           backup: true
@@ -179,8 +254,8 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
           destination: "#{oozie_conf_dir}/hadoop-conf/core-site.xml"
           local_default: true
           properties: oozie_hadoop_config
-          uid: oozie_user
-          gid: oozie_group
+          uid: oozie_user.name
+          gid: oozie_group.name
           mode: 0o0755
           backup: true
         , (err, configured) ->
@@ -211,8 +286,8 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
         principal: oozie_site['oozie.service.HadoopAccessorService.kerberos.principal'] #.replace '_HOST', ctx.config.host
         randkey: true
         keytab: oozie_site['oozie.service.HadoopAccessorService.keytab.file']
-        uid: oozie_user
-        gid: oozie_group
+        uid: oozie_user.name
+        gid: oozie_group.name
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
@@ -225,8 +300,8 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
       ctx.copy
         source: '/etc/security/keytabs/spnego.service.keytab'
         destination: "#{oozie_site['oozie.authentication.kerberos.keytab']}"
-        uid: oozie_user
-        gid: oozie_group
+        uid: oozie_user.name
+        gid: oozie_group.name
         mode: 0o0600
       , (err, copied) ->
         return next err, if copied then ctx.OK else ctx.PASS
@@ -262,6 +337,8 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
 
     module.exports.push name: 'HDP Oozie Server # Share lib', callback: (ctx, next) ->
       {oozie_user, oozie_group} = ctx.config.hdp
+      oozie_user = oozie_user.name
+      oozie_group = oozie_group.name
       ctx.execute 
         cmd: mkcmd.hdfs ctx, """
         if hdfs dfs -ls /user/#{oozie_user}/share &>/dev/null; then exit 2; fi
@@ -281,29 +358,6 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
     module.exports.push 'phyla/hadoop/oozie_server_start'
 
     module.exports.push 'phyla/hadoop/oozie_client'
-
-    # module.exports.push name: 'HDP Oozie Server # Start', callback: (ctx, next) ->
-    #   lifecycle.oozie_start ctx, (err, started) ->
-    #     next err, if started then ctx.OK else ctx.PASS
-
-    # module.exports.push name: 'HDP Oozie Server # Test User', callback: (ctx, next) ->
-    #   {oozie_user, oozie_group, oozie_site
-    #    oozie_test_principal, oozie_test_password} = ctx.config.hdp
-    #   {realm, kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5_client
-    #   ctx.krb5_addprinc
-    #     principal: oozie_test_principal
-    #     password: oozie_test_password
-    #     uid: oozie_user
-    #     gid: oozie_group
-    #     kadmin_principal: kadmin_principal
-    #     kadmin_password: kadmin_password
-    #     kadmin_server: admin_server
-    #   , (err, created) ->
-    #     return next err if err
-    #     ctx.execute
-    #       cmd: ""
-    #     , (err, executed) ->
-    #       next err, if created then ctx.OK else ctx.PASS
 
 
   
