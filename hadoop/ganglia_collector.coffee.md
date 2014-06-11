@@ -13,12 +13,62 @@ host by the Ganglia Monitor agents.
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/yum'
 
-## Configuration
+## Configure
 
-The module doesnt accept any configuration.
+*   `rrdcached_user` (object|string)   
+    The Unix RRDtool login name or a user object (see Mecano User documentation).   
+*   `rrdcached_group` (object|string)   
+    The Unix Hue group name or a group object (see Mecano Group documentation).   
+
+Example:
+
+```json
+{
+  "ganglia": {
+    "rrdcached_user": {
+      "name": "rrdcached", "system": true, "gid": "rrdcached", "shell": false
+      "comment": "RRDtool User", "home": "/usr/lib/rrdcached"
+    }
+    "rrdcached_group": {
+      "name": "Hue", "system": true
+    }
+  }
+}
+```
 
     module.exports.push module.exports.configure = (ctx) ->
-      # nothing for now
+      ctx.config.hdp ?= {}
+      ctx.config.hdp.rrdcached_user = name: ctx.config.hdp.rrdcached_user if typeof ctx.config.hdp.rrdcached_user is 'string'
+      ctx.config.hdp.rrdcached_user ?= {}
+      ctx.config.hdp.rrdcached_user.name ?= 'rrdcached'
+      ctx.config.hdp.rrdcached_user.system ?= true
+      ctx.config.hdp.rrdcached_user.gid = 'rrdcached'
+      ctx.config.hdp.rrdcached_user.shell = false
+      ctx.config.hdp.rrdcached_user.comment ?= 'RRDtool User'
+      ctx.config.hdp.rrdcached_user.home = '/var/rrdtool/rrdcached'
+      # Group
+      ctx.config.hdp.rrdcached_group = name: ctx.config.hdp.rrdcached_group if typeof ctx.config.hdp.rrdcached_group is 'string'
+      ctx.config.hdp.rrdcached_group ?= {}
+      ctx.config.hdp.rrdcached_group.name ?= 'rrdcached'
+      ctx.config.hdp.rrdcached_group.system ?= true
+
+## Users & Groups
+
+By default, the "rrdcached" package create the following entries:
+
+```bash
+cat /etc/passwd | grep rrdcached
+rrdcached:x:493:493:rrdcached:/var/rrdtool/rrdcached:/sbin/nologin
+cat /etc/group | grep rrdcached
+rrdcached:x:493:
+```
+
+    module.exports.push name: 'Ganglia Collector # Users & Groups', callback: (ctx, next) ->
+      {rrdcached_group, rrdcached_user} = ctx.config.hdp
+      ctx.group rrdcached_group, (err, gmodified) ->
+        return next err if err
+        ctx.user rrdcached_user, (err, umodified) ->
+          next err, if gmodified or umodified then ctx.OK else ctx.PASS
 
 ## Service
 
