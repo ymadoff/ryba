@@ -16,8 +16,8 @@ applications running atop of YARN.
     module.exports.push (ctx) ->
       require('./yarn').configure ctx
 
-    module.exports.push name: 'HDP YARN # Directories', timeout: -1, callback: (ctx, next) ->
-      {yarn_user, yarn, hadoop_group} = ctx.config.hdp
+    module.exports.push name: 'HDP YARN NM # Directories', timeout: -1, callback: (ctx, next) ->
+      {yarn_user, yarn, test_user, hadoop_group} = ctx.config.hdp
       # no need to restrict parent directory and yarn will complain if not accessible by everyone
       ctx.mkdir [
         destination: yarn['yarn.nodemanager.log-dirs']
@@ -32,8 +32,8 @@ applications running atop of YARN.
       ], (err, created) ->
         return next err if err
         cmds = []
-        for dir in yarn['yarn.nodemanager.log-dirs'] then cmds.push cmd: "su -l test -c 'ls -l #{dir}'"
-        for dir in yarn['yarn.nodemanager.local-dirs'] then cmds.push cmd: "su -l test -c 'ls -l #{dir}'"
+        for dir in yarn['yarn.nodemanager.log-dirs'] then cmds.push cmd: "su -l #{test_user.name} -c 'ls -l #{dir}'"
+        for dir in yarn['yarn.nodemanager.local-dirs'] then cmds.push cmd: "su -l #{test_user.name} -c 'ls -l #{dir}'"
         ctx.execute cmds, (err) ->
           next err, if created then ctx.OK else ctx.PASS
 
@@ -60,11 +60,3 @@ applications running atop of YARN.
         lifecycle.nm_start ctx, (err, started) ->
           next err, if started then ctx.OK else ctx.PASS
 
-    # module.exports.push name: 'HDP YARN NM # Test User', callback: (ctx, next) ->
-    #   {test_user, hadoop_group} = ctx.config.hdp
-    #   ctx.execute
-    #     cmd: "useradd #{test_user} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop to test\""
-    #     code: 0
-    #     code_skipped: 9
-    #   , (err, created) ->
-    #     next err, if created then ctx.OK else ctx.PASS

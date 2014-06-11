@@ -47,7 +47,7 @@ Example
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/commons/mysql_server').configure ctx
       require('./core').configure ctx
-      {static_host, realm, core_site} = ctx.config.hdp
+      {static_host, realm, core_site, test_user, test_password} = ctx.config.hdp
       {realm} = ctx.config.hdp
       # Internal properties
       ctx.config.hdp.force_war ?= false
@@ -65,8 +65,8 @@ Example
       ctx.config.hdp.oozie_group.name ?= 'oozie'
       ctx.config.hdp.oozie_group.system ?= true
       # Login
-      ctx.config.hdp.oozie_test_principal ?= "test@#{realm}"
-      ctx.config.hdp.oozie_test_password ?= "test123"
+      ctx.config.hdp.oozie_test_principal ?= "#{test_user.name}@#{realm}"
+      ctx.config.hdp.oozie_test_password ?= "#{test_password}"
       ctx.config.hdp.oozie_conf_dir ?= '/etc/oozie/conf'
       # Layout
       ctx.config.hdp.oozie_data ?= '/var/db/oozie'

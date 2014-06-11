@@ -65,7 +65,7 @@ See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments
           next err, if configured then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Hive & HCat client # Check Metastore', timeout: -1, callback: (ctx, next) ->
-      {hive_metastore_host, hive_metastore_port} = ctx.config.hdp
+      {test_user, hive_metastore_host, hive_metastore_port} = ctx.config.hdp
       ctx.waitIsOpen hive_metastore_host, hive_metastore_port, (err) ->
         host = ctx.config.host.split('.')[0]
         ctx.execute
@@ -74,22 +74,23 @@ See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments
           hdfs dfs -mkdir -p #{ctx.config.host}-hive/check_metastore_tb
           echo -e 'a\0011\\nb\0012\\nc\0013' | hdfs dfs -put - #{ctx.config.host}-hive/check_metastore_tb/data
           hive -e "
-            CREATE DATABASE IF NOT EXISTS check_#{host}_db LOCATION '/user/test/#{ctx.config.host}-hive'; \\
+            CREATE DATABASE IF NOT EXISTS check_#{host}_db LOCATION '/user/#{test_user.name}/#{ctx.config.host}-hive'; \\
             USE check_#{host}_db; \\
             CREATE TABLE IF NOT EXISTS check_metastore_tb(col1 STRING, col2 INT); \\
           "
           hive -S -e "SELECT SUM(col2) FROM check_#{host}_db.check_metastore_tb;" | hdfs dfs -put - #{ctx.config.host}-hive_metastore
-          if [ $? != "0" ]; then exit 1; fi
           hive -e "DROP TABLE check_#{host}_db.check_metastore_tb; DROP DATABASE check_#{host}_db;"
           """
           code_skipped: 2
+          trap_on_error: true
         , (err, executed, stdout) ->
           return next err, if executed then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Hive & HCat client # Check Server2', timeout: -1, callback: (ctx, next) ->
       {realm, test_user, test_password, hive_server2_host, hive_server2_port} = ctx.config.hdp
       url = "jdbc:hive2://#{hive_server2_host}:#{hive_server2_port}/default;principal=hive/#{hive_server2_host}@#{realm}"
-      query = (query) -> "/usr/lib/hive/bin/beeline -u \"#{url}\" -n #{test_user} -p #{test_password} --silent=true -e \"#{query}\" "
+      # beeline argument s"-n #{test_user.name} -p #{test_password}" arent used with Kerberos
+      query = (query) -> "/usr/lib/hive/bin/beeline -u \"#{url}\" --silent=true -e \"#{query}\" "
       ctx.waitIsOpen hive_server2_host, hive_server2_port, (err) ->
         host = ctx.config.host.split('.')[0]
         ctx.execute
@@ -97,17 +98,14 @@ See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments
           if hdfs dfs -test -f #{ctx.config.host}-hive_server2; then exit 2; fi
           hdfs dfs -mkdir -p #{ctx.config.host}-hive/check_server2_tb
           echo -e 'a\0011\\nb\0012\\nc\0013' | hdfs dfs -put - #{ctx.config.host}-hive/check_server2_tb/data
-          #{query "CREATE DATABASE IF NOT EXISTS check_#{host}_db LOCATION '/user/test/#{ctx.config.host}-hive'"}
-          if [ $? != "0" ]; then exit 1; fi
+          #{query "CREATE DATABASE IF NOT EXISTS check_#{host}_db LOCATION '/user/#{test_user.name}/#{ctx.config.host}-hive'"}
           #{query "CREATE TABLE IF NOT EXISTS check_#{host}_db.check_server2_tb(col1 STRING, col2 INT) ;"}
-          if [ $? != "0" ]; then exit 1; fi
           #{query "SELECT SUM(col2) FROM check_#{host}_db.check_server2_tb;"} | hdfs dfs -put - #{ctx.config.host}-hive_server2
-          if [ $? != "0" ]; then exit 1; fi
           #{query "DROP TABLE check_#{host}_db.check_server2_tb;"}
           #{query "DROP DATABASE check_#{host}_db;"}
-          if [ $? != "0" ]; then exit 1; fi
           """
           code_skipped: 2
+          trap_on_error: true
         , (err, executed, stdout) ->
           next err, if executed then ctx.OK else ctx.PASS
 

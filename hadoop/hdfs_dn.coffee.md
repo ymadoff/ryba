@@ -35,6 +35,7 @@ The module doesn't require any configuration but instread rely on the
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx
+
 ## HA
 
 Update the "hdfs_site.xml" configuration file with the High Availabity properties
@@ -121,7 +122,6 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
 
     module.exports.push name: 'HDP HDFS DN # HDFS layout', timeout: -1, callback: (ctx, next) ->
       {hadoop_group, hdfs_user} = ctx.config.hdp
-      # test_user, 
       modified = false
       do_wait = ->
         ctx.waitForExecution mkcmd.hdfs(ctx, "hdfs dfs -test -d /"), (err) ->
@@ -191,25 +191,20 @@ the NameNode is properly working. Note, those commands are NameNode specific, me
 afect HDFS metadata.
 
     module.exports.push name: 'HDP HDFS NN # Test User', timeout: -1, callback: (ctx, next) ->
-      {test_user, test_password, hadoop_group, security, realm} = ctx.config.hdp
+      {test_group, test_user, test_password, security, realm} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
-      do_user = ->
-        if security is 'kerberos'
-        then do_user_krb5()
-        else do_user_unix()
       do_user_unix = ->
-        ctx.execute
-          cmd: "useradd #{test_user} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop to test\""
-          code: 0
-          code_skipped: 9
-        , (err, created) ->
+        # Phyla group and user may already exist in "/etc/passwd" or in any sssd backend
+        ctx.group test_group, (err, gmodified) ->
           return next err if err
-          modified = true if created
-          do_run()
+          ctx.user test_user, (err, umodified) ->
+            return next err if err
+            modified = true if gmodified or umodified
+            do_user_krb5()
       do_user_krb5 = ->
         ctx.krb5_addprinc
-          principal: "#{test_user}@#{realm}"
+          principal: "#{test_user.name}@#{realm}"
           password: "#{test_password}"
           kadmin_principal: kadmin_principal
           kadmin_password: kadmin_password
@@ -217,22 +212,22 @@ afect HDFS metadata.
         , (err, created) ->
           return next err if err
           modified = true if created
-          do_run()
-      do_run = ->
+          do_hdfs()
+      do_hdfs = ->
         # Carefull, this is a dupplicate of
         # "HDP HDFS DN # HDFS layout"
         ctx.execute
           cmd: mkcmd.hdfs ctx, """
-          if hdfs dfs -test -d /user/#{test_user}; then exit 2; fi
-          hdfs dfs -mkdir /user/#{test_user}
-          hdfs dfs -chown #{test_user}:#{hadoop_group.name} /user/#{test_user}
-          hdfs dfs -chmod 755 /user/#{test_user}
+          if hdfs dfs -test -d /user/#{test_user.name}; then exit 2; fi
+          hdfs dfs -mkdir /user/#{test_user.name}
+          hdfs dfs -chown #{test_user.name}:#{test_group.name} /user/#{test_user.name}
+          hdfs dfs -chmod 750 /user/#{test_user.name}
           """
           code_skipped: 2
         , (err, executed, stdout) ->
           modified = true if executed
           next err, if modified then ctx.OK else ctx.PASS
-      do_user()
+      do_user_unix()
 
 ## Test HDFS
 
@@ -243,9 +238,9 @@ Attemp to put a file into HDFS. the file "/etc/passwd" will be placed at
       {test_user} = ctx.config.hdp
       ctx.execute
         cmd: mkcmd.test ctx, """
-        if hdfs dfs -test -f /user/#{test_user}/#{ctx.config.host}-dn; then exit 2; fi
+        if hdfs dfs -test -f /user/#{test_user.name}/#{ctx.config.host}-dn; then exit 2; fi
         echo 'Upload file to HDFS'
-        hdfs dfs -put /etc/passwd /user/#{test_user}/#{ctx.config.host}-dn
+        hdfs dfs -put /etc/passwd /user/#{test_user.name}/#{ctx.config.host}-dn
         """
         code_skipped: 2
       , (err, executed, stdout, stderr) ->
@@ -265,8 +260,8 @@ for more information.
       do_init = ->
         ctx.execute
           cmd: mkcmd.test ctx, """
-          if hdfs dfs -test -f /user/#{test_user}/#{ctx.config.host}-webhdfs; then exit 2; fi
-          hdfs dfs -touchz /user/#{test_user}/#{ctx.config.host}-webhdfs
+          if hdfs dfs -test -f /user/#{test_user.name}/#{ctx.config.host}-webhdfs; then exit 2; fi
+          hdfs dfs -touchz /user/#{test_user.name}/#{ctx.config.host}-webhdfs
           kdestroy
           """
           code_skipped: 2
@@ -278,7 +273,7 @@ for more information.
       do_spnego = ->
         ctx.execute
           cmd: mkcmd.test ctx, """
-          curl -s --negotiate -u : "http://#{active_nn_host}:50070/webhdfs/v1/user/#{test_user}?op=LISTSTATUS"
+          curl -s --negotiate -u : "http://#{active_nn_host}:50070/webhdfs/v1/user/#{test_user.name}?op=LISTSTATUS"
           kdestroy
           """
         , (err, executed, stdout) ->
@@ -297,7 +292,7 @@ for more information.
           token = JSON.parse(stdout).Token.urlString
           ctx.execute
             cmd: """
-            curl -s "http://#{active_nn_host}:50070/webhdfs/v1/user/#{test_user}?delegation=#{token}&op=LISTSTATUS"
+            curl -s "http://#{active_nn_host}:50070/webhdfs/v1/user/#{test_user.name}?delegation=#{token}&op=LISTSTATUS"
             """
           , (err, executed, stdout) ->
             return next err if err

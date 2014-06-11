@@ -10,5 +10,5 @@ exports.test = (ctx, cmd) ->
   {security, test_user, test_password, realm} = ctx.config.hdp
   if security is 'kerberos'
   # then "kinit -kt /etc/security/keytabs/test.headless.keytab test && {\n#{cmd}\n}"
-  then "echo #{test_password} | kinit #{test_user}@#{realm} >/dev/null && {\n#{cmd}\n}"
-  else "su -l #{test_user} -c \"#{cmd}\""
+  then "echo #{test_password} | kinit #{test_user.name}@#{realm} >/dev/null && {\n#{cmd}\n}"
+  else "su -l #{test_user.name} -c \"#{cmd}\""

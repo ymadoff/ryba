@@ -36,6 +36,8 @@ code.
     The Unix YARN login name or a user object (see Mecano User documentation).   
 *   `mapred_user` (object|string)   
     The Unix MapReduce login name or a user object (see Mecano User documentation).   
+*   `test_user` (object|string)   
+    The Unix Test user name or a user object (see Mecano User documentation).   
 *   `hadoop_group` (object|string)   
     The Unix Hadoop group name or a group object (see Mecano Group documentation).   
 *   `hdfs_group` (object|string)   
@@ -44,6 +46,10 @@ code.
     The Unix YARN group name or a group object (see Mecano Group documentation).   
 *   `mapred_group` (object|string)   
     The Unix MapReduce group name or a group object (see Mecano Group documentation).   
+*   `test_group` (object|string)   
+    The Unix Test group name or a group object (see Mecano Group documentation).   
+
+Default configuration:
 
 ```json
 {
@@ -51,26 +57,33 @@ code.
     "hdfs_user": {
       "name": "hdfs", "system": true, "gid": "hdfs",
       "comment": "HDFS User", "home": "/var/lib/hadoop-hdfs"
-    }
+    },
     "yarn_user": {
       "name": "yarn", "system": true, "gid": "yarn",
       "comment": "YARN User", "home": "/var/lib/hadoop-yarn"
-    }
+    },
     "mapred_user": {
       "name": "mapred", "system": true, "gid": "mapred",
       "comment": "MapReduce User", "home": "/var/lib/hadoop-mapreduce"
-    }
+    },
+    "test_user": {
+      "name": "phyla", "system": true, "gid": "phyla",
+      "comment": "Phyla User", "home": "/home/phyla"
+    },
     "hadoop_group": {
       "name": "hadoop", "system": true
-    }
+    },
     "hdfs_group": {
       "name": "hdfs", "system": true
-    }
+    },
     "yarn_group": {
       "name": "yarn", "system": true
-    }
+    },
     "mapred_group": {
       "name": "mapred", "system": true
+    },
+    "test_group": {
+      "name": "phyla", "system": true
     }
   }
 }
@@ -108,6 +121,13 @@ code.
       ctx.config.hdp.mapred_user.groups ?= 'hadoop'
       ctx.config.hdp.mapred_user.comment ?= 'Hadoop MapReduce User'
       ctx.config.hdp.mapred_user.home ?= '/var/lib/hadoop-mapreduce'
+      ctx.config.hdp.test_user = name: ctx.config.hdp.test_user if typeof ctx.config.hdp.test_user is 'string'
+      ctx.config.hdp.test_user ?= {}
+      ctx.config.hdp.test_user.name ?= 'phyla'
+      ctx.config.hdp.test_user.system ?= true
+      ctx.config.hdp.test_user.gid ?= 'phyla'
+      ctx.config.hdp.test_user.comment ?= 'Phyla User'
+      ctx.config.hdp.test_user.home ?= '/home/phyla'
       # Groups
       ctx.config.hdp.hadoop_group = name: ctx.config.hdp.hadoop_group if typeof ctx.config.hdp.hadoop_group is 'string'
       ctx.config.hdp.hadoop_group ?= {}
@@ -125,6 +145,10 @@ code.
       ctx.config.hdp.mapred_group ?= {}
       ctx.config.hdp.mapred_group.name ?= 'mapred'
       ctx.config.hdp.mapred_group.system ?= true
+      ctx.config.hdp.test_group = name: ctx.config.hdp.test_group if typeof ctx.config.hdp.test_group is 'string'
+      ctx.config.hdp.test_group ?= {}
+      ctx.config.hdp.test_group.name ?= 'phyla'
+      ctx.config.hdp.test_group.system ?= true
       # Layout
       ctx.config.hdp.hadoop_conf_dir ?= '/etc/hadoop/conf'
       ctx.config.hdp.hdfs_log_dir ?= '/var/log/hadoop-hdfs'

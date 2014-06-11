@@ -88,14 +88,14 @@ started, the server take some time before it can correctly answer HTTP request.
 For this reason, the "retry" property is set to the high value of "10".
 
     module.exports.push name: 'HDP MapRed JHS # Check', retry: 10, callback: (ctx, next) ->
-      {mapred} = ctx.config.hdp
+      {test_user, mapred} = ctx.config.hdp
       [host, port] = mapred['mapreduce.jobhistory.webapp.address'].split ':'
       ctx.execute
         cmd: mkcmd.test ctx, """
-        if hdfs dfs -test -f /user/test/#{ctx.config.host}-jhs; then exit 2; fi
+        if hdfs dfs -test -f /user/#{test_user.name}/#{ctx.config.host}-jhs; then exit 2; fi
         curl -s --negotiate -u : http://#{host}:#{port}/ws/v1/history/info
         if [ $? != "0" ]; then exit 9; fi
-        hdfs dfs -touchz /user/test/#{ctx.config.host}-jhs
+        hdfs dfs -touchz /user/#{test_user.name}/#{ctx.config.host}-jhs
         """
         code_skipped: 2
       , (err, checked, stdout) ->
@@ -107,13 +107,13 @@ For this reason, the "retry" property is set to the high value of "10".
         catch err then next err
 
     # module.exports.push name: 'HDP MapRed JHS # Check', callback: (ctx, next) ->
-    #   {mapred} = ctx.config.hdp
+    #   {test_user, mapred} = ctx.config.hdp
     #   [host, port] = mapred['mapreduce.jobhistory.webapp.address'].split ':'
     #   count = 0
     #   do_prepare = ->
     #     ctx.execute
     #       cmd: mkcmd.test ctx, """
-    #       if ! hdfs dfs -test -f /user/test/#{ctx.config.host}-jhs; then exit 2; fi
+    #       if ! hdfs dfs -test -f /user/#{test_user.name}/#{ctx.config.host}-jhs; then exit 2; fi
     #       """
     #       code_skipped: 2
     #     , (err, exists) ->
@@ -135,7 +135,7 @@ For this reason, the "retry" property is set to the high value of "10".
     #       catch err then next err
     #   do_finish = ->
     #     ctx.execute
-    #       cmd: mkcmd.test ctx, "hdfs dfs -touchz /user/test/#{ctx.config.host}-jhs"
+    #       cmd: mkcmd.test ctx, "hdfs dfs -touchz /user/#{test_user.name}/#{ctx.config.host}-jhs"
     #     , (err) ->
     #       next err, ctx.OK
     #   do_prepare()

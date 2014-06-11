@@ -44,12 +44,12 @@ layout: module
       # ctx.waitIsOpen datanodes, port, (err) ->
       #   return next err if err
       # User "test" should be created
-      ctx.waitForExecution mkcmd.test(ctx, "hdfs dfs -test -d /user/#{test_user}"), (err) ->
+      ctx.waitForExecution mkcmd.test(ctx, "hdfs dfs -test -d /user/#{test_user.name}"), (err) ->
         return next err if err
         ctx.execute
           cmd: mkcmd.test ctx, """
-          if hdfs dfs -test -f /user/#{test_user}/#{ctx.config.host}-hdfs; then exit 2; fi
-          hdfs dfs -touchz /user/#{test_user}/#{ctx.config.host}-hdfs
+          if hdfs dfs -test -f /user/#{test_user.name}/#{ctx.config.host}-hdfs; then exit 2; fi
+          hdfs dfs -touchz /user/#{test_user.name}/#{ctx.config.host}-hdfs
           """
           code_skipped: 2
         , (err, executed, stdout) ->

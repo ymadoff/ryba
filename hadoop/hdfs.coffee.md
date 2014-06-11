@@ -16,7 +16,6 @@ In its current state, we are only supporting the installation of a
 [secure]: http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
 
     url = require 'url'
-    mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
@@ -38,16 +37,12 @@ The properties "hdp.hdfs_site['dfs.namenode.name.dir']" and
     visible on a client setup.   
 *   `hdfs.hadoop_policy`   
 *   `hdfs.hdfs_namenode_http_port`   
-*   `hdfs.hdfs_namenode_ipc_port`   
-*   `hdfs.hdfs_user` (string)   
-*   `hdfs.hdfs_password` (string)   
+*   `hdfs.hdfs_namenode_ipc_port`    
 *   `hdfs.hdfs_namenode_timeout`   
 *   `hdfs.hdfs_site` (object)   
     Properities added to the "hdfs-site.xml" file.
-*   `hdfs.hdfs_user`   
 *   `hdfs.nameservice`   
-*   `hdfs.test_password`   
-*   `hdfs.test_user`   
+    The Unix MapReduce group name or a group object (see Mecano Group documentation). 
 *   `hdfs.snn_port`   
 
 Example:
@@ -69,8 +64,8 @@ Example:
       {nameservice} = ctx.config.hdp
       namenodes = ctx.hosts_with_module 'phyla/hadoop/hdfs_nn'
       throw new Error "Missing value for 'hdfs_password'" unless ctx.config.hdp.hdfs_password?
-      ctx.config.hdp.test_user ?= 'test'
       throw new Error "Missing value for 'test_password'" unless ctx.config.hdp.test_password?
+      # Layout
       ctx.config.hdp.fs_checkpoint_dir ?= ['/hadoop/hdfs/snn'] # Default ${fs.checkpoint.dir}
       # Options and configuration
       ctx.config.hdp.hdfs_namenode_ipc_port ?= '8020'

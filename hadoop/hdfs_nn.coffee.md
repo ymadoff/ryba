@@ -384,7 +384,7 @@ afect HDFS metadata.
     #     else do_user_unix()
     #   do_user_unix = ->
     #     ctx.execute
-    #       cmd: "useradd #{test_user} -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop to test\""
+    #       cmd: "useradd #{test_user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop to test\""
     #       code: 0
     #       code_skipped: 9
     #     , (err, created) ->
@@ -393,7 +393,7 @@ afect HDFS metadata.
     #       do_run()
     #   do_user_krb5 = ->
     #     ctx.krb5_addprinc
-    #       principal: "#{test_user}@#{realm}"
+    #       principal: "#{test_user.name}@#{realm}"
     #       password: "#{test_password}"
     #       kadmin_principal: kadmin_principal
     #       kadmin_password: kadmin_password
@@ -408,9 +408,9 @@ afect HDFS metadata.
     #     ctx.execute
     #       cmd: mkcmd.hdfs ctx, """
     #       if hdfs dfs -ls /user/test 2>/dev/null; then exit 2; fi
-    #       hdfs dfs -mkdir /user/#{test_user}
-    #       hdfs dfs -chown #{test_user}:#{hadoop_group} /user/#{test_user}
-    #       hdfs dfs -chmod 755 /user/#{test_user}
+    #       hdfs dfs -mkdir /user/#{test_user.name}
+    #       hdfs dfs -chown #{test_user.name}:#{hadoop_group.name} /user/#{test_user.name}
+    #       hdfs dfs -chmod 755 /user/#{test_user.name}
     #       """
     #       code_skipped: 2
     #     , (err, executed, stdout) ->

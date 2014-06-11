@@ -132,7 +132,7 @@ unless the "hdp.force_check" configuration property is set to "true".
         return next err if err
         ctx.execute
           cmd: mkcmd.test ctx, """
-          if hdfs dfs -test -d /user/test/#{ctx.config.host}-pig; then exit 1; fi
+          if hdfs dfs -test -d #{ctx.config.host}-pig; then exit 1; fi
           exit 0
           """
           code: 1
@@ -142,17 +142,17 @@ unless the "hdp.force_check" configuration property is set to "true".
           return next err, ctx.PASS if err or skip
           ctx.execute
             cmd: mkcmd.test ctx, """
-            hdfs dfs -rm -r /user/test/#{ctx.config.host}-pig
-            hdfs dfs -mkdir -p /user/test/#{ctx.config.host}-pig
-            echo -e 'a|1\\\\nb|2\\\\nc|3' | hdfs dfs -put - /user/test/#{ctx.config.host}-pig/data
+            hdfs dfs -rm -r #{ctx.config.host}-pig
+            hdfs dfs -mkdir -p #{ctx.config.host}-pig
+            echo -e 'a|1\\\\nb|2\\\\nc|3' | hdfs dfs -put - #{ctx.config.host}-pig/data
             """
           , (err, executed) ->
             return next err if err
             ctx.write
               content: """
-              data = LOAD '/user/test/#{ctx.config.host}-pig/data' USING PigStorage(',') AS (text, number);
+              data = LOAD '/user/#{test_user.name}/#{ctx.config.host}-pig/data' USING PigStorage(',') AS (text, number);
               result = foreach data generate UPPER(text), number+2;
-              STORE result INTO '/user/test/#{ctx.config.host}-pig/result' USING PigStorage();
+              STORE result INTO '/user/#{test_user.name}/#{ctx.config.host}-pig/result' USING PigStorage();
               """
               destination: '/tmp/test.pig'
             , (err, written) ->
@@ -181,7 +181,7 @@ unless the "hdp.force_check" configuration property is set to "true".
         next err, if written then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Pig # Check HCat', callback: (ctx, next) ->
-      {force_check} = ctx.config.hdp
+      {test_user, force_check} = ctx.config.hdp
       rm = ctx.host_with_module 'phyla/hadoop/yarn_rm'
       host = ctx.config.host.split('.')[0]
       query = (query) -> "hcat -e \"#{query}\" "
@@ -203,7 +203,7 @@ unless the "hdp.force_check" configuration property is set to "true".
             data = LOAD '#{db}.check_tb' USING org.apache.hive.hcatalog.pig.HCatLoader();
             agroup = GROUP data ALL;
             asum = foreach agroup GENERATE SUM(data.col2);
-            STORE asum INTO '/user/test/#{host}-pig_hcat/result' USING PigStorage();
+            STORE asum INTO '/user/#{test_user.name}/#{host}-pig_hcat/result' USING PigStorage();
             """
             destination: "/tmp/#{ctx.config.host}-pig_hcat.pig"
             eof: true
@@ -215,7 +215,7 @@ unless the "hdp.force_check" configuration property is set to "true".
               hdfs dfs -mkdir -p #{host}-pig_hcat/db/check_tb
               echo -e 'a\\x011\\nb\x012\\nc\\x013' | hdfs dfs -put - #{host}-pig_hcat/db/check_tb/data
               if [ $? != "0" ]; then exit 1; fi
-              #{query "CREATE DATABASE IF NOT EXISTS check_#{host}_pig_hcat LOCATION '/user/test/#{host}-pig_hcat/db';"}
+              #{query "CREATE DATABASE IF NOT EXISTS check_#{host}_pig_hcat LOCATION '/user/#{test_user.name}/#{host}-pig_hcat/db';"}
               if [ $? != "0" ]; then exit 1; fi
               #{query "CREATE TABLE IF NOT EXISTS #{db}.check_tb(col1 STRING, col2 INT);"}
               if [ $? != "0" ]; then exit 1; fi

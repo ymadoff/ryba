@@ -96,7 +96,7 @@ usage. It is placed inside the flume configuration directory, by default
       {flume_user, flume_group, flume_conf_dir, realm} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
-        principal: "hue/#{ctx.config.host}@#{realm}"
+        principal: "#{flume_user.name}/#{ctx.config.host}@#{realm}"
         randkey: true
         keytab: "#{flume_conf_dir}/flume.service.keytab"
         uid: flume_user.name
