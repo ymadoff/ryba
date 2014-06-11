@@ -11,6 +11,29 @@ layout: module
     module.exports.push 'phyla/hadoop/core'
     module.exports.push 'phyla/hadoop/hdfs_client'
 
+## Configure
+
+*   `hive_user` (object|string)   
+    The Unix Hive login name or a user object (see Mecano User documentation).   
+*   `hive_group` (object|string)   
+    The Unix Hive group name or a group object (see Mecano Group documentation).   
+
+Example:
+
+```json
+{
+  "hdp": {
+    "hive_user": {
+      "name": "hive", "system": true, "gid": "hive",
+      "comment": "Hive User", "home": "/home/hive"
+    }
+    "hive_group": {
+      "name": "hive", "system": true
+    }
+  }
+}
+```
+
     module.exports.push module.exports.configure = (ctx) ->
       return if ctx.hive__configured
       ctx.hive__configured = true
@@ -28,6 +51,7 @@ layout: module
       ctx.config.hdp.hive_user ?= {}
       ctx.config.hdp.hive_user.name ?= 'hive'
       ctx.config.hdp.hive_user.system ?= true
+      ctx.config.hdp.hive_user.gid ?= 'hive'
       ctx.config.hdp.hive_user.comment ?= 'Hive User'
       ctx.config.hdp.hive_user.home ?= '/var/lib/hive'
       # Group
