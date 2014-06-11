@@ -7,7 +7,6 @@
     "each": "latest",
     "glob": "latest",
     "ini": "latest",
-    "jsdom": "latest",
     "ldapjs": "latest",
     "masson": "latest",
     "mecano": "latest",
@@ -16,8 +15,9 @@
     "regexp-quote": "latest",
     "request": "latest",
     "semver": "latest",
+    "ssh2-fs": "latest",
     "xmlbuilder": "latest",
-    "ssh2-fs": "latest"
+    "xmldom": "latest"
   },
   "devDependencies": {
     "mocha": "latest",
