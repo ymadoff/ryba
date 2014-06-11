@@ -16,18 +16,25 @@ tunable reliability mechanisms and many failover and recovery mechanisms.
 
 ## Configure
 
-*   `flume_user` (string)   
-    The unix flume user, default to "flume"   
+*   `flume_user` (object|string)   
+    The Unix Flume login name or a user object (see Mecano User documentation).   
+*   `flume_group` (object|string)   
+    The Unix Flume group name or a group object (see Mecano Group documentation).   
 
-Exemple:
+Example:
 
 ```json
 {
-    "hdp": {
-        flume_user: "flume"
-        flume_group: "flume"
-        flume_conf_dir: "/etc/flume/conf"
+  "hdp": {
+    "flume_user": {
+      "name": "flume", "system": true, "gid": "flume"
+      "comment": "Flume User", "home": "/var/lib/flume"
     }
+    "flume_group": {
+      "name": "flume", "system": true
+    },
+    "flume_conf_dir": "/etc/flume/conf"
+  }
 }
 ```
 
@@ -39,6 +46,7 @@ Exemple:
       ctx.config.hdp.flume_user ?= {}
       ctx.config.hdp.flume_user.name ?= 'flume'
       ctx.config.hdp.flume_user.system ?= true
+      ctx.config.hdp.flume_user.gid ?= 'flume'
       ctx.config.hdp.flume_user.comment ?= 'Flume User'
       ctx.config.hdp.flume_user.home ?= '/var/lib/flume'
       # Group
