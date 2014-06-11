@@ -13,10 +13,28 @@ layout: module
     # Install SPNEGO keytab
     module.exports.push 'phyla/hadoop/hdfs'
 
-https://cwiki.apache.org/confluence/display/Hive/WebHCat+InstallWebHCat
-ctx.config.hdp.hive_site['hive.security.metastore.authorization.manager'] ?= 'org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider'
-ctx.config.hdp.hive_site['hive.security.metastore.authenticator.manager'] ?= 'org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator'
-ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener'
+# Configure
+
+*   `webhcat_user` (object|string)   
+    The Unix WebHCat login name or a user object (see Mecano User documentation).   
+*   `webhcat_group` (object|string)   
+    The Unix WebHCat group name or a group object (see Mecano Group documentation).   
+
+Example:
+
+```json
+{
+  "hdp": {
+    "webhcat_user": {
+      "name": "webhcat", "system": true, "gid": "hcat",
+      "comment": "WebHCat User", "home": "/home/hcat"
+    }
+    "webhcat_group": {
+      "name": "webhcat", "system": true
+    }
+  }
+}
+```
 
     module.exports.push module.exports.configure = (ctx) ->
       return if ctx.webhcat_configured
@@ -40,6 +58,7 @@ ctx.config.hdp.hive_site['hive.metastore.pre.event.listeners'] ?= 'org.apache.ha
       ctx.config.hdp.webhcat_user ?= {}
       ctx.config.hdp.webhcat_user.name ?= 'hcat'
       ctx.config.hdp.webhcat_user.system ?= true
+      ctx.config.hdp.webhcat_user.gid ?= 'hcat'
       ctx.config.hdp.webhcat_user.comment ?= 'HCat User'
       ctx.config.hdp.webhcat_user.home ?= '/home/hcat'
       # Group
@@ -99,7 +118,7 @@ hcat:x:494:
         ctx.mkdir
           destination: webhcat_log_dir
           uid: webhcat_user.name
-          gid: hadoop_group
+          gid: hadoop_group.name
           mode: 0o755
         , (err, created) ->
           return next err if err
@@ -109,7 +128,7 @@ hcat:x:494:
         ctx.mkdir
           destination: webhcat_pid_dir
           uid: webhcat_user.name
-          gid: hadoop_group
+          gid: hadoop_group.name
           mode: 0o755
         , (err, created) ->
           return next err if err
@@ -127,7 +146,7 @@ hcat:x:494:
         local_default: true
         properties: webhcat_site
         uid: webhcat_user.name
-        gid: hadoop_group
+        gid: hadoop_group.name
         mode: 0o0755
         merge: true
       , (err, configured) ->
@@ -141,7 +160,7 @@ hcat:x:494:
         source: "#{__dirname}/files/webhcat/webhcat-env.sh"
         destination: "#{webhcat_conf_dir}/webhcat-env.sh"
         uid: webhcat_user.name
-        gid: hadoop_group
+        gid: hadoop_group.name
         mode: 0o0755
       , (err, uploaded) ->
         next err, if uploaded then ctx.OK else ctx.PASS
