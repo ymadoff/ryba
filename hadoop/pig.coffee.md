@@ -12,6 +12,7 @@ infrastructure for evaluating these programs. The salient property of Pig
 programs is that their structure is amenable to substantial parallelization, 
 which in turns enables them to handle very large data sets. 
 
+    quote = require 'regexp-quote'
     mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
@@ -27,8 +28,8 @@ Pig uses the "hdfs" configuration. It also declare 2 optional properties:
     Force the execution of the check action on each run, otherwise it will
     run only on the first install. The property is shared by multiple
     modules and default to false.   
-*   `hdp.pig_user` (string)   
-    The Pig user, dont overwrite, default to "pig".   
+*   `pig_user` (object|string)   
+    The Unix Pig login name or a user object (see Mecano User documentation).   
 *   `hdp.pig_conf_dir` (string)   
     The Pig configuration directory, dont overwrite, default to "/etc/pig/conf".   
 
@@ -37,6 +38,10 @@ Example:
 ```json
 {
   "hdp": {
+    "pig_user": {
+      "name": "pig", "system": true, "gid": "hadoop",
+      "comment": "Pig User", "home": "/var/lib/sqoop"
+    },
     force_check: true
   }
 }
@@ -44,8 +49,34 @@ Example:
 
     module.exports.push module.exports.configure = (ctx) ->
       require('./hdfs').configure ctx
-      ctx.config.hdp.pig_user ?= 'pig'
+      # User
+      ctx.config.hdp.pig_user = name: ctx.config.hdp.pig_user if typeof ctx.config.hdp.pig_user is 'string'
+      ctx.config.hdp.pig_user ?= {}
+      ctx.config.hdp.pig_user.name ?= 'pig'
+      ctx.config.hdp.pig_user.system ?= true
+      ctx.config.hdp.pig_user.comment ?= 'Pig User'
+      ctx.config.hdp.pig_user.gid ?= 'hadoop'
+      ctx.config.hdp.pig_user.home ?= '/home/pig'
+      # Layout
       ctx.config.hdp.pig_conf_dir ?= '/etc/pig/conf'
+
+## Users & Groups
+
+By default, the "pig" package create the following entries:
+
+```bash
+cat /etc/passwd | grep pig
+pig:x:490:502:Used by Hadoop Pig service:/home/pig:/bin/bash
+cat /etc/group | grep hadoop
+hadoop:x:502:yarn,mapred,hdfs,hue
+```
+
+    module.exports.push name: 'HDP Pig # Users & Groups', callback: (ctx, next) ->
+      {hadoop_group, pig_user} = ctx.config.hdp
+      ctx.group hadoop_group, (err, gmodified) ->
+        return next err if err
+        ctx.user pig_user, (err, umodified) ->
+          next err, if gmodified or umodified then ctx.OK else ctx.PASS
 
 ## Install
 
@@ -61,7 +92,7 @@ The pig package is install.
       # 6th feb 2014: pig user isnt created by YUM, might change in a future HDP release
       {hadoop_group} = ctx.config.hdp
       ctx.execute
-        cmd: "useradd pig -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop Pig service\""
+        cmd: "useradd pig -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop Pig service\""
         code: 0
         code_skipped: 9
       , (err, executed) ->
@@ -81,8 +112,8 @@ companion file define no properties while the YUM package does.
         source: "#{__dirname}/files/pig/pig-env.sh"
         destination: "#{pig_conf_dir}/pig-env.sh"
         local_source: true
-        uid: pig_user
-        gid: hadoop_group
+        uid: pig_user.name
+        gid: hadoop_group.name
         mode: 0o755
         backup: true
       , (err, rendered) ->
