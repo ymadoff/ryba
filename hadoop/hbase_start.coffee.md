@@ -5,37 +5,25 @@ layout: module
 
 # HBase Start
 
+    lifecycle = require './lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push require('./hbase').configure
 
 ## Start HBase Master
 
 Execute these commands on the HBase Master host machine.
 
-```coffee
-module.exports.push (ctx, next) ->
-  {hbase_master, hbase_user} = ctx.config.hdp
-  @name "HDP # Start HBase Master"
-  return next() unless hbase_master
-  ctx.execute
-    # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start master"
-    cmd: "su -l #{hbase_user} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start master\""
-  , (err, executed) ->
-    next err, if executed then ctx.OK else ctx.PASS
-```
+    module.exports.push name: 'HDP HBase Master # Start', callback: (ctx, next) ->
+      return next() unless ctx.has_module 'phyla/hadoop/hbase_master'
+      lifecycle.hbase_master_start ctx, (err, started) ->
+        next err, if started then ctx.OK else ctx.PASS
 
 ## Start HBase Region Server
 
 Execute these commands on all RegionServers
 
-```coffee
-module.exports.push (ctx, next) ->
-  {hbase_regionserver, hbase_user} = ctx.config.hdp
-  return next() unless hbase_regionserver
-  @name "HDP # Start HBase Region Server"
-  ctx.execute
-    # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start regionserver"
-    cmd: "su -l #{hbase_user} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start regionserver\""
-  , (err, executed) ->
-    next err, if executed then ctx.OK else ctx.PASS
-```
+    module.exports.push name: 'HDP HBase RegionServer # Start', callback: (ctx, next) ->
+      return next() unless ctx.has_module 'phyla/hadoop/hbase_regionserver'
+      lifecycle.hbase_regionserver_start ctx, (err, started) ->
+        next err, if started then ctx.OK else ctx.PASS
