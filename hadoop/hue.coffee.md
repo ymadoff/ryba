@@ -29,12 +29,24 @@ It also ships with an Oozie Application for creating and monitoring workflows, a
 *   `hdp.hue_db_admin_password` (string)   
     Database admin password used to create the Hue database user.   
 *   `hue.hue_ini`
-    Configuration merged with default values and written to "/etc/hue/conf/hue.ini" file.
+    Configuration merged with default values and written to "/etc/hue/conf/hue.ini" file.   
+*   `hue_user` (object|string)   
+    The Unix Hue login name or a user object (see Mecano User documentation).   
+*   `hue_group` (object|string)   
+    The Unix Hue group name or a group object (see Mecano Group documentation).   
 
 Example:
+
 ```json
 {
   "hue": {
+    "hue_user": {
+      "name": "hue", "system": true, "gid": "hue",
+      "comment": "Hue User", "home": "/usr/lib/hue"
+    }
+    "hue_group": {
+      "name": "Hue", "system": true
+    }
     "hue_ini": {
       "desktop": {
         "database":
@@ -52,7 +64,7 @@ Example:
       # Allow proxy user inside "webhcat-site.xml"
       require('./webhcat').configure ctx
       # Allow proxy user inside "oozie-site.xml"
-      require('./oozie_client').configure ctx
+      require('./oozie_server').configure ctx
       # Allow proxy user inside "core-site.xml"
       require('./core').configure ctx
       {nameservice, active_nn_host, hadoop_conf_dir, webhcat_site, hue_ini} = ctx.config.hdp
@@ -89,6 +101,7 @@ Example:
       ctx.config.hdp.hue_user ?= {}
       ctx.config.hdp.hue_user.name ?= 'hue'
       ctx.config.hdp.hue_user.system ?= true
+      ctx.config.hdp.hue_user.gid = 'hue'
       ctx.config.hdp.hue_user.comment ?= 'Hue User'
       ctx.config.hdp.hue_user.home = '/usr/lib/hue'
       # Group
@@ -96,7 +109,6 @@ Example:
       ctx.config.hdp.hue_group ?= {}
       ctx.config.hdp.hue_group.name ?= 'hue'
       ctx.config.hdp.hue_group.system ?= true
-      # Hive configuration
       # Configure HDFS Cluster
       hue_ini['hadoop'] ?= {}
       hue_ini['hadoop']['hdfs_clusters'] ?= {}
@@ -154,10 +166,10 @@ By default, the "hue" package create the following entries:
 cat /etc/passwd | grep hue
 hue:x:494:494:Hue:/var/lib/hue:/sbin/nologin
 cat /etc/group | grep hue
-hcat:x:494:
+hue:x:494:
 ```
 
-    module.exports.push name: 'HDP WebHCat # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'HDP Hue # Users & Groups', callback: (ctx, next) ->
       {hue_group, hue_user} = ctx.config.hdp
       ctx.group hue_group, (err, gmodified) ->
         return next err if err
@@ -186,7 +198,7 @@ be deployed on all the master and worker nodes. This is currently achieved throu
 the configuration picked up by the "phyla/hadoop/core" module.
 
     module.exports.push name: 'HDP Hue # Core', callback: (ctx, next) ->
-      {hadoop_conf_dir, hadoop_group} = ctx.config.hdp
+      {hadoop_conf_dir} = ctx.config.hdp
       properties = 
         'hadoop.proxyuser.hue.hosts': '*'
         'hadoop.proxyuser.hue.groups': '*'
