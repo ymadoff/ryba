@@ -11,7 +11,24 @@ layout: module
     module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'masson/core/yum'
     module.exports.push 'masson/commons/java'
-    module.exports.push 'phyla/hadoop/core'
+    # module.exports.push 'phyla/hadoop/core'
+
+## Configure
+
+*   `zookeeper_user` (object|string)   
+    The Unix Zookeeper login name or a user object (see Mecano User documentation).   
+
+```json
+{
+  "hdp": {
+    "zookeeper_user": {
+      "name": "zookeeper", "system": true, "gid": "hadoop",
+      "comment": "Zookeeper User", "home": "/var/lib/zookeeper"
+    }
+  }
+}
+
+Example :
 
     module.exports.push module.exports.configure = (ctx) ->
       require('./core').configure ctx
@@ -21,6 +38,7 @@ layout: module
       ctx.config.hdp.zookeeper_user ?= {}
       ctx.config.hdp.zookeeper_user.name ?= 'zookeeper'
       ctx.config.hdp.zookeeper_user.system ?= true
+      ctx.config.hdp.zookeeper_user.gid ?= 'hadoop'
       ctx.config.hdp.zookeeper_user.comment ?= 'Zookeeper User'
       ctx.config.hdp.zookeeper_user.home ?= '/var/lib/zookeeper'
       # Layout
@@ -44,7 +62,7 @@ hadoop:x:498:hdfs
 ```
 
     module.exports.push name: 'HDP ZooKeeper # Users & Groups', callback: (ctx, next) ->
-      {hadoop_group, flume_user} = ctx.config.hdp
+      {hadoop_group, zookeeper_user} = ctx.config.hdp
       ctx.group hadoop_group, (err, gmodified) ->
         return next err if err
         ctx.user zookeeper_user, (err, umodified) ->
@@ -65,18 +83,18 @@ which has no dependency.
       } = ctx.config.hdp
       ctx.mkdir [
         destination: zookeeper_data_dir
-        uid: zookeeper_user
-        gid: hadoop_group
+        uid: zookeeper_user.name
+        gid: hadoop_group.name
         mode: 0o755
       ,
         destination: zookeeper_pid_dir
-        uid: zookeeper_user
-        gid: hadoop_group
+        uid: zookeeper_user.name
+        gid: hadoop_group.name
         mode: 0o755
       ,
         destination: zookeeper_log_dir
-        uid: zookeeper_user
-        gid: hadoop_group
+        uid: zookeeper_user.name
+        gid: hadoop_group.name
         mode: 0o755
       ], (err, modified) ->
         next err, if modified then ctx.OK else ctx.PASS
@@ -126,8 +144,8 @@ which has no dependency.
         ctx.write
           content: zookeeper_myid
           destination: "#{zookeeper_data_dir}/myid"
-          uid: zookeeper_user
-          gid: hadoop_group
+          uid: zookeeper_user.name
+          gid: hadoop_group.name
         , (err, written) ->
           return next err if err
           modified = true if written

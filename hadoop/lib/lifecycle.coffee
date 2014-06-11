@@ -337,7 +337,7 @@ lifecyle = module.exports =
       ctx.log "Zookeeper start"
       ctx.execute
         # su -l zookeeper -c "/usr/lib/zookeeper/bin/zkServer.sh start /etc/zookeeper/conf/zoo.cfg"
-        cmd: "su -l #{zookeeper_user} -c \"/usr/lib/zookeeper/bin/zkServer.sh start #{zookeeper_conf_dir}/zoo.cfg\""
+        cmd: "su -l #{zookeeper_user.name} -c \"/usr/lib/zookeeper/bin/zkServer.sh start #{zookeeper_conf_dir}/zoo.cfg\""
       , (err, started) ->
         return callback err if err
         ctx.waitIsOpen ctx.config.host, zookeeper_port, timeout: 2000000, (err) ->
@@ -349,14 +349,14 @@ lifecyle = module.exports =
       ctx.log "Zookeeper stop"
       ctx.execute
         # su -l zookeeper -c "/usr/lib/zookeeper/bin/zkServer.sh stop /etc/zookeeper/conf/zoo.cfg"
-        cmd: "su -l #{zookeeper_user} -c \"/usr/lib/zookeeper/bin/zkServer.sh stop #{zookeeper_conf_dir}/zoo.cfg\""
+        cmd: "su -l #{zookeeper_user.name} -c \"/usr/lib/zookeeper/bin/zkServer.sh stop #{zookeeper_conf_dir}/zoo.cfg\""
       , (err, stopped) ->
         callback err, stopped
   hbase_master_status: (ctx, callback) ->
     {hbase_pid_dir, hbase_user} = ctx.config.hdp
     ctx.log "HBase Master status"
     {oozie_pid_dir} = ctx.config.hdp
-    lifecyle.is_pidfile_running ctx, "#{hbase_pid_dir}/hbase-#{hbase_user}-master.pid", (err, running) ->
+    lifecyle.is_pidfile_running ctx, "#{hbase_pid_dir}/hbase-#{hbase_user.name}-master.pid", (err, running) ->
       ctx.log "HBase Master status: #{if running then 'RUNNING' else 'STOPED'}"
       callback err, running
   hbase_master_start: (ctx, callback) ->
