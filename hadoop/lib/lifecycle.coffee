@@ -366,7 +366,7 @@ lifecyle = module.exports =
       ctx.log "HBase Master start"
       ctx.execute
         # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start master"
-        cmd: "su -l #{hbase_user} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} start master\""
+        cmd: "su -l #{hbase_user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} start master\""
       , (err, stopped) ->
         callback err, stopped
   hbase_master_stop: (ctx, callback) ->
@@ -376,14 +376,14 @@ lifecyle = module.exports =
       ctx.log "HBase Master stop"
       ctx.execute
         # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop master"
-        cmd: "su -l #{hbase_user} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} stop master\""
+        cmd: "su -l #{hbase_user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} stop master\""
       , (err, stopped) ->
         callback err, stopped
   hbase_regionserver_status: (ctx, callback) ->
     {hbase_pid_dir, hbase_user} = ctx.config.hdp
     ctx.log "HBase RegionServer status"
     {oozie_pid_dir} = ctx.config.hdp
-    lifecyle.is_pidfile_running ctx, "#{hbase_pid_dir}/hbase-#{hbase_user}-regionserver.pid", (err, running) ->
+    lifecyle.is_pidfile_running ctx, "#{hbase_pid_dir}/hbase-#{hbase_user.name}-regionserver.pid", (err, running) ->
       ctx.log "HBase RegionServer status: #{if running then 'RUNNING' else 'STOPED'}"
       callback err, running
   hbase_regionserver_start: (ctx, callback) ->
@@ -393,7 +393,7 @@ lifecyle = module.exports =
       ctx.log "HBase RegionServer start"
       ctx.execute
         # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start regionserver"
-        cmd: "su -l #{hbase_user} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} start regionserver\""
+        cmd: "su -l #{hbase_user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} start regionserver\""
       , (err, started) ->
         callback err, started
   hbase_regionserver_stop: (ctx, callback) ->
@@ -403,7 +403,7 @@ lifecyle = module.exports =
       ctx.log "HBase RegionServer stop"
       ctx.execute
         # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop regionserver"
-        cmd: "su -l #{hbase_user} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} stop regionserver\""
+        cmd: "su -l #{hbase_user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} stop regionserver\""
       , (err, stopped) ->
         callback err, stopped
   webhcat_status: (ctx, callback) ->

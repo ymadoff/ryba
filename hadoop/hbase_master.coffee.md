@@ -10,7 +10,7 @@ layout: module
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'phyla/hadoop/hdfs'
-    module.exports.push 'phyla/hadoop/zookeeper'
+    # module.exports.push 'phyla/hadoop/zookeeper'
     module.exports.push 'phyla/hadoop/hbase'
 
     module.exports.push (ctx) ->
@@ -24,7 +24,7 @@ layout: module
         cmd: mkcmd.hdfs ctx, """
         if hdfs dfs -ls /apps/hbase &>/dev/null; then exit 3; fi
         hdfs dfs -mkdir -p /apps/hbase
-        hdfs dfs -chown -R #{hbase_user} /apps/hbase
+        hdfs dfs -chown -R #{hbase_user.name} /apps/hbase
         """
         code_skipped: 3
       , (err, executed, stdout) ->
@@ -40,8 +40,8 @@ https://hbase.apache.org/book/security.html
         principal: hbase_site['hbase.master.kerberos.principal'].replace '_HOST', ctx.config.host
         randkey: true
         keytab: hbase_site['hbase.master.keytab.file']
-        uid: hbase_user
-        gid: hadoop_group
+        uid: hbase_user.name
+        gid: hadoop_group.name
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
