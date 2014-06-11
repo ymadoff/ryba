@@ -16,6 +16,7 @@ In its current state, we are only supporting the installation of a
 [secure]: http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
 
     url = require 'url'
+    mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
@@ -45,7 +46,6 @@ The properties "hdp.hdfs_site['dfs.namenode.name.dir']" and
     Properities added to the "hdfs-site.xml" file.
 *   `hdfs.hdfs_user`   
 *   `hdfs.nameservice`   
-*   `hdfs.options`   
 *   `hdfs.test_password`   
 *   `hdfs.test_user`   
 *   `hdfs.snn_port`   
@@ -68,7 +68,6 @@ Example:
       require('./core').configure ctx
       {nameservice} = ctx.config.hdp
       namenodes = ctx.hosts_with_module 'phyla/hadoop/hdfs_nn'
-      ctx.config.hdp.hdfs_user ?= 'hdfs'
       throw new Error "Missing value for 'hdfs_password'" unless ctx.config.hdp.hdfs_password?
       ctx.config.hdp.test_user ?= 'test'
       throw new Error "Missing value for 'test_password'" unless ctx.config.hdp.test_password?
@@ -93,9 +92,6 @@ Example:
       hdfs_site['fs.permissions.umask-mode'] ?= '027' # 0750
       # Options for "hadoop-policy.xml"
       ctx.config.hdp.hadoop_policy ?= {}
-      # Options for "hadoop-env.sh"
-      ctx.config.hdp.options ?= {}
-      ctx.config.hdp.options['java.net.preferIPv4Stack'] ?= true
       # HDFS HA configuration
       ctx.config.hdp.shortname ?= ctx.config.shortname
       ctx.config.hdp.ha_client_config = {}
@@ -120,7 +116,7 @@ now marked as optional and the users and groups are now created on package insta
       return next() unless ctx.has_any_modules('hisi/hdp/hdfs_nn', 'hisi/hdp/hdfs_snn', 'hisi/hdp/hdfs_dn')
       {hadoop_group} = ctx.config.hdp
       ctx.execute
-        cmd: "useradd hdfs -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop HDFS service\""
+        cmd: "useradd hdfs -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop HDFS service\""
         code: 0
         code_skipped: 9
       , (err, executed) ->
@@ -259,12 +255,12 @@ and permissions set to "0660". We had to give read/write permission to the group
 same keytab file is for now shared between hdfs and yarn services.
 
     module.exports.push name: 'HDP HDFS # SPNEGO', callback: module.exports.spnego = (ctx, next) ->
-      {hdfs_user, realm} = ctx.config.hdp
+      {hadoop_group, hdfs_user, realm} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.mkdir
         destination: '/etc/security/keytabs'
         uid: 'root'
-        gid: 'hadoop'
+        gid: hadoop_group.name
         mode: 0o750
       , (err, created) ->
         ctx.log 'Creating HTTP Principals and SPNEGO keytab'
@@ -279,7 +275,13 @@ same keytab file is for now shared between hdfs and yarn services.
           kadmin_password: kadmin_password
           kadmin_server: admin_server
         , (err, created) ->
-          next err, if created then ctx.OK else ctx.PASS
+          return next err if err
+          # Validate keytab access by the hdfs user
+          ctx.execute
+            cmd: "su -l #{hdfs_user.name} -c \"klist -kt /etc/security/keytabs/spnego.service.keytab\""
+          , (err) ->
+            next err, if created then ctx.OK else ctx.PASS
+
 
 ## Kerberos Configure
 

@@ -25,9 +25,6 @@ layout: module
       ctx.log "Job History Server: #{jobhistoryserver}"
       ctx.config.hdp.yarn_log_dir ?= '/var/log/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#20
       ctx.config.hdp.yarn_pid_dir ?= '/var/run/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#21
-      # Define Users and Groups
-      ctx.config.hdp.yarn_user ?= 'yarn'
-      ctx.config.hdp.yarn_group ?= 'yarn'
       # Configure yarn
       # Comma separated list of paths. Use the list of directories from $YARN_LOCAL_DIR, eg: /grid/hadoop/hdfs/yarn/local,/grid1/hadoop/hdfs/yarn/local.
       throw new Error 'Required property: hdp.yarn[yarn.nodemanager.local-dirs]' unless ctx.config.hdp.yarn['yarn.nodemanager.local-dirs']
@@ -66,7 +63,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       return next() unless ctx.config.hdp.resourcemanager or ctx.config.hdp.nodemanager
       {hadoop_group} = ctx.config.hdp
       ctx.execute
-        cmd: "useradd yarn -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop YARN service\""
+        cmd: "useradd yarn -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop YARN service\""
         code: 0
         code_skipped: 9
       , (err, executed) ->
@@ -85,14 +82,14 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
     module.exports.push name: 'HDP YARN # Directories', timeout: -1, callback: (ctx, next) ->
       {yarn_user, hadoop_group, yarn_log_dir, yarn_pid_dir} = ctx.config.hdp
       ctx.mkdir
-        destination: "#{yarn_log_dir}/#{yarn_user}"
-        uid: yarn_user
-        gid: hadoop_group
+        destination: "#{yarn_log_dir}/#{yarn_user.name}"
+        uid: yarn_user.name
+        gid: hadoop_group.name
         mode: 0o0755
       ,
-        destination: "#{yarn_pid_dir}/#{yarn_user}"
-        uid: yarn_user
-        gid: hadoop_group
+        destination: "#{yarn_pid_dir}/#{yarn_user.name}"
+        uid: yarn_user.name
+        gid: hadoop_group.name
         mode: 0o0755
       , (err, created) ->
         next null, if created then ctx.OK else ctx.PASS
@@ -113,15 +110,15 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
           replace: yarn_opts
           append: 'yarn.policy.file'
         ]
-        uid: yarn_user
-        gid: hadoop_group
+        uid: yarn_user.name
+        gid: hadoop_group.name
         mode: 0o0755
       , (err, rendered) ->
         next err, if rendered then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP YARN # Container Executor', callback: (ctx, next) ->
       modified = false
-      {yarn_user, yarn_group, container_executor, hadoop_conf_dir} = ctx.config.hdp
+      {container_executor, hadoop_conf_dir} = ctx.config.hdp
       ce_group = container_executor['yarn.nodemanager.linux-container-executor.group']
       container_executor = misc.merge {}, container_executor
       container_executor['yarn.nodemanager.local-dirs'] = container_executor['yarn.nodemanager.local-dirs'].join ','
@@ -329,7 +326,7 @@ drwxrwxrwt   - yarn   hdfs            0 2014-05-26 11:01 /app-logs
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
     module.exports.push name: 'HDP YARN # HDFS layout', callback: (ctx, next) ->
-      {hadoop_group, hdfs_user, yarn, yarn_user} = ctx.config.hdp
+      {yarn, yarn_user} = ctx.config.hdp
       ok = false
       do_remote_app_log_dir = ->
         remote_app_log_dir = yarn['yarn.nodemanager.remote-app-log-dir']
@@ -338,7 +335,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
           cmd: mkcmd.hdfs ctx, """
           if hdfs dfs -test -d #{remote_app_log_dir}; then exit 1; fi
           hdfs dfs -mkdir -p #{remote_app_log_dir}
-          hdfs dfs -chown #{yarn_user} #{remote_app_log_dir}
+          hdfs dfs -chown #{yarn_user.name} #{remote_app_log_dir}
           hdfs dfs -chmod 1777 #{remote_app_log_dir}
           """
           code_skipped: 1

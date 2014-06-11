@@ -5,15 +5,6 @@ layout: module
 
 # Oozie Server
 
-    path = require 'path'
-    lifecycle = require './lib/lifecycle'
-    mkcmd = require './lib/mkcmd'
-    module.exports = []
-    module.exports.push 'masson/bootstrap/'
-    module.exports.push 'masson/commons/mysql_client'
-    module.exports.push 'phyla/hadoop/core'
-    module.exports.push 'phyla/hadoop/hdfs' # SPNEGO need access to the principal HTTP/$HOST@$REALM's keytab
-
 Oozie source code and examples are located in /usr/share/doc/oozie-4.0.0.2.0.6.0/
 
 Note: to backup the oozie database in oozie, we must add the "hex-blob" option or 
@@ -23,6 +14,34 @@ an example:
 
 ```bash
 mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
+```
+
+    path = require 'path'
+    lifecycle = require './lib/lifecycle'
+    mkcmd = require './lib/mkcmd'
+    module.exports = []
+    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/commons/mysql_client'
+    module.exports.push 'phyla/hadoop/core'
+    module.exports.push 'phyla/hadoop/hdfs' # SPNEGO need access to the principal HTTP/$HOST@$REALM's keytab
+
+## Configure
+
+*   `oozie_user` (object|string)   
+    The Unix Oozie login name or a user object (see Mecano User documentation).   
+*   `oozie_group` (object|string)   
+    The Unix Oozie group name or a group object (see Mecano Group documentation).   
+
+Example
+
+```json
+    "oozie_user": {
+      "name": "oozie", "system": true, "gid": "oozie",
+      "comment": "Oozie User", "home": "/var/lib/oozie"
+    }
+    "oozie_group": {
+      "name": "Oozie", "system": true
+    }
 ```
 
     module.exports.push module.exports.configure = (ctx) ->
@@ -37,6 +56,7 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
       ctx.config.hdp.oozie_user ?= {}
       ctx.config.hdp.oozie_user.name ?= 'oozie'
       ctx.config.hdp.oozie_user.system ?= true
+      ctx.config.hdp.oozie_user.gid ?= 'oozie'
       ctx.config.hdp.oozie_user.comment ?= 'Oozie User'
       ctx.config.hdp.oozie_user.home ?= '/var/lib/oozie'
       # Group
@@ -153,7 +173,7 @@ oozie:x:493:
           append: true
         ]
         uid: oozie_user.name
-        gid: hadoop_group
+        gid: hadoop_group.name
         mode: 0o0755
       , (err, rendered) ->
         next err, if rendered then ctx.OK else ctx.PASS
@@ -267,14 +287,14 @@ oozie:x:493:
       do_oozie_site()
 
     module.exports.push name: 'HDP Oozie Server # War', callback: (ctx, next) ->
+      {oozie_user} = ctx.config.hdp
       # The script `ooziedb.sh` must be done as the oozie Unix user, otherwise 
       # Oozie may fail to start or work properly because of incorrect file permissions.
       # There is already a "oozie.war" file inside /var/lib/oozie/oozie-server/webapps/.
       # The "prepare-war" command generate the file "/var/lib/oozie/oozie-server/webapps/oozie.war".
       # The directory being servered by the web server is "/usr/lib/oozie/webapps/oozie".
       ctx.execute
-        cmd: "sudo -u oozie bin/oozie-setup.sh prepare-war"
-        cwd: '/usr/lib/oozie/'
+        cmd: "su -l #{oozie_user.name} -c '/usr/lib/oozie/bin/oozie-setup.sh prepare-war'"
         not_if: not ctx.config.hdp.force_war
       , (err, executed) ->
         next err, if executed then ctx.OK else ctx.PASS

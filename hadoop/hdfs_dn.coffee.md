@@ -52,7 +52,7 @@ present inside the "hdp.ha\_client\_config" object.
 ## Layout
 
 Create the DataNode data and pid directories. The data directory is set by the 
-"hdp.hdfs_site['dfs.datanode.data.dir']" and default to "/hadoop/hdfs/data". The 
+"hdp.hdfs_site['dfs.datanode.data.dir']" and default to "/var/hdfs/data". The 
 pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdfs"
 
     module.exports.push name: 'HDP HDFS DN # Layout', timeout: -1, callback: (ctx, next) ->
@@ -60,13 +60,13 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
       # no need to restrict parent directory and yarn will complain if not accessible by everyone
       ctx.mkdir [
         destination: hdfs_site['dfs.datanode.data.dir'].split ','
-        uid: hdfs_user
-        gid: hadoop_group
+        uid: hdfs_user.name
+        gid: hadoop_group.name
         mode: 0o0750
       ,
         destination: "#{hdfs_pid_dir}/#{hdfs_user}"
-        uid: hdfs_user
-        gid: hadoop_group
+        uid: hdfs_user.name
+        gid: hadoop_group.name
         mode: 0o0755
       ], (err, created) ->
         next err, if created then ctx.OK else ctx.PASS
@@ -84,8 +84,8 @@ and permissions set to "0600".
         principal: "dn/#{ctx.config.host}@#{realm}"
         randkey: true
         keytab: "/etc/security/keytabs/dn.service.keytab"
-        uid: hdfs_user
-        gid: hdfs_group
+        uid: hdfs_user.name
+        gid: hdfs_group.name
         mode: 0o0600
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
@@ -120,7 +120,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
 ```
 
     module.exports.push name: 'HDP HDFS DN # HDFS layout', timeout: -1, callback: (ctx, next) ->
-      {hadoop_group, hdfs_user, yarn, yarn_user} = ctx.config.hdp
+      {hadoop_group, hdfs_user} = ctx.config.hdp
       # test_user, 
       modified = false
       do_wait = ->
@@ -140,7 +140,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
           cmd: mkcmd.hdfs ctx, """
           if hdfs dfs -test -d /tmp; then exit 1; fi
           hdfs dfs -mkdir /tmp
-          hdfs dfs -chown #{hdfs_user}:#{hadoop_group} /tmp
+          hdfs dfs -chown #{hdfs_user.name}:#{hadoop_group.name} /tmp
           hdfs dfs -chmod 1777 /tmp
           """
           code_skipped: 1
@@ -153,15 +153,15 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
           cmd: mkcmd.hdfs ctx, """
           if hdfs dfs -test -d /user; then exit 1; fi
           hdfs dfs -mkdir /user
-          hdfs dfs -chown #{hdfs_user}:#{hadoop_group} /user
+          hdfs dfs -chown #{hdfs_user.name}:#{hadoop_group.name} /user
           hdfs dfs -chmod 755 /user
-          hdfs dfs -mkdir /user/#{hdfs_user}
-          hdfs dfs -chown #{hdfs_user}:#{hadoop_group} /user/#{hdfs_user}
-          hdfs dfs -chmod 755 /user/#{hdfs_user}
+          hdfs dfs -mkdir /user/#{hdfs_user.name}
+          hdfs dfs -chown #{hdfs_user.name}:#{hadoop_group.name} /user/#{hdfs_user.name}
+          hdfs dfs -chmod 755 /user/#{hdfs_user.name}
           """
-          # hdfs dfs -mkdir /user/#{test_user}
-          # hdfs dfs -chown #{test_user}:#{hadoop_group} /user/#{test_user}
-          # hdfs dfs -chmod 755 /user/#{test_user}
+          # hdfs dfs -mkdir /user/#{test_user.name}
+          # hdfs dfs -chown #{test_user.name}:#{hadoop_group.name} /user/#{test_user.name}
+          # hdfs dfs -chmod 755 /user/#{test_user.name}
           code_skipped: 1
         , (err, executed, stdout) ->
           return next err if err
@@ -172,7 +172,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
           cmd: mkcmd.hdfs ctx, """
           if hdfs dfs -test -d /apps; then exit 1; fi
           hdfs dfs -mkdir /apps
-          hdfs dfs -chown #{hdfs_user}:#{hadoop_group} /apps
+          hdfs dfs -chown #{hdfs_user.name}:#{hadoop_group.name} /apps
           hdfs dfs -chmod 755 /apps
           """
           code_skipped: 1
@@ -191,7 +191,7 @@ the NameNode is properly working. Note, those commands are NameNode specific, me
 afect HDFS metadata.
 
     module.exports.push name: 'HDP HDFS NN # Test User', timeout: -1, callback: (ctx, next) ->
-      {hdfs_user, test_user, test_password, hadoop_group, security, realm} = ctx.config.hdp
+      {test_user, test_password, hadoop_group, security, realm} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
       do_user = ->
@@ -200,7 +200,7 @@ afect HDFS metadata.
         else do_user_unix()
       do_user_unix = ->
         ctx.execute
-          cmd: "useradd #{test_user} -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop to test\""
+          cmd: "useradd #{test_user} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop to test\""
           code: 0
           code_skipped: 9
         , (err, created) ->
@@ -225,7 +225,7 @@ afect HDFS metadata.
           cmd: mkcmd.hdfs ctx, """
           if hdfs dfs -test -d /user/#{test_user}; then exit 2; fi
           hdfs dfs -mkdir /user/#{test_user}
-          hdfs dfs -chown #{test_user}:#{hadoop_group} /user/#{test_user}
+          hdfs dfs -chown #{test_user}:#{hadoop_group.name} /user/#{test_user}
           hdfs dfs -chmod 755 /user/#{test_user}
           """
           code_skipped: 2

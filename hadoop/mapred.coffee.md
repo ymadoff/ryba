@@ -61,7 +61,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
     module.exports.push name: 'HDP MapRed # Users & Groups', callback: (ctx, next) ->
       {hadoop_group} = ctx.config.hdp
       ctx.execute
-        cmd: "useradd mapred -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop MapReduce service\""
+        cmd: "useradd mapred -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop MapReduce service\""
         code: 0
         code_skipped: 9
       , (err, executed) ->
@@ -73,9 +73,9 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       do_log = ->
         ctx.log "Create hdfs and mapred log: #{mapred_log_dir}"
         ctx.mkdir
-          destination: "#{mapred_log_dir}/#{mapred_user}"
-          uid: mapred_user
-          gid: hadoop_group
+          destination: "#{mapred_log_dir}/#{mapred_user.name}"
+          uid: mapred_user.name
+          gid: hadoop_group.name
           mode: 0o0755
         , (err, created) ->
           return next err if err
@@ -84,9 +84,9 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       do_pid = ->
         ctx.log "Create hdfs and mapred pid: #{mapred_pid_dir}"
         ctx.mkdir
-          destination: "#{mapred_pid_dir}/#{mapred_user}"
-          uid: mapred_user
-          gid: hadoop_group
+          destination: "#{mapred_pid_dir}/#{mapred_user.name}"
+          uid: mapred_user.name
+          gid: hadoop_group.name
           mode: 0o0755
         , (err, created) ->
           return next err if err
@@ -107,8 +107,8 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
           local_default: true
           properties: mapred
           merge: true
-          uid: mapred_user
-          gid: mapred_group
+          uid: mapred_user.name
+          gid: mapred_group.name
         , (err, configured) ->
           return next err if err
           modified = true if configured
@@ -124,8 +124,8 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
           local_default: true
           properties: mapred_queue_acls
           merge: true
-          uid: mapred_user
-          gid: mapred_group
+          uid: mapred_user.name
+          gid: mapred_group.name
         , (err, configured) ->
           return next err if err
           modified = true if configured
@@ -163,56 +163,6 @@ allowed.
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
-    # module.exports.push name: 'HDP MapRed # Tuning', callback: (ctx, next) ->
-    #   require('./yarn').configure ctx
-    #   require('./yarn').tuning ctx, (err) ->
-    #     return next err if err
-    #     {yarn, mapred, hadoop_conf_dir} = ctx.config.hdp
-    #     # Yarn available memory
-    #     yarn_memory = yarn['yarn.nodemanager.resource.memory-mb']
-    #     # mapred.cluster.map.memory.mb still seems to be used,
-    #     # It default to 1536 in HDP companion files
-    #     # and we make sure it isn't above yarn total available memory
-    #     mapred['mapred.cluster.map.memory.mb'] ?= Math.min 1536, yarn_memory
-    #     # Follow [Hortonworks example](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
-    #     # Validate map and reduce task >= YARN minimum Container allocation
-    #     minimum = yarn['yarn.scheduler.minimum-allocation-mb']
-    #     map_memory = mapred['mapreduce.map.memory.mb'] ?= Math.floor yarn_memory, minimum
-    #     reduce_memory = mapred['mapreduce.reduce.memory.mb'] ?= Math.floor yarn_memory, minimum * 2
-    #     # 3/4 of the map/reduce task
-    #     map_heap_mb = Math.floor yarn_memory, Math.floor(map_memory*3/4)
-    #     map_heap = mapred['mapreduce.map.java.opts'] ?= "-Xmx#{map_heap_mb}m"
-    #     reduce_heap_mb = Math.floor yarn_memory, Math.floor(reduce_memory*3/4)
-    #     reduce_heap = mapred['mapreduce.reduce.java.opts'] ?= "-Xmx#{reduce_heap_mb}m"
-    #     # Virtual memory ratio
-    #     ratio = yarn['yarn.nodemanager.vmem-pmem-ratio'] ?= '2.1' # also defined by phyla/hadoop/yarn
-    #     # Log result
-    #     ctx.log "mapred.cluster.map.memory.mb: #{mapred['mapred.cluster.map.memory.mb']} (mapred.cluster.map.memory.mb)"
-    #     ctx.log "Map total physical RAM allocated: #{map_memory} (mapreduce.map.memory.mb)"
-    #     ctx.log "Map JVM heap space upper limit within the Map task Container: #{map_heap} (mapreduce.map.java.opts)"
-    #     ctx.log "Map virtual memory upper limit: #{map_memory * ratio}"
-    #     ctx.log "Reduce total physical RAM allocated 'mapreduce.reduce.memory.mb': #{reduce_memory} (mapreduce.reduce.memory.mb)"
-    #     ctx.log "Reduce JVM heap space upper limit within the Reduce task Container: #{reduce_heap} (mapreduce.reduce.java.opts)"
-    #     ctx.log "Reduce virtual memory upper limit: #{reduce_memory * ratio}"
-    #     ctx.hconfigure
-    #       destination: "#{hadoop_conf_dir}/yarn-site.xml"
-    #       properties:
-    #         'yarn.nodemanager.vmem-pmem-ratio': ratio
-    #       merge: true
-    #     , (err, yarned) ->
-    #       next err if err
-    #       ctx.hconfigure
-    #         destination: "#{hadoop_conf_dir}/mapred-site.xml"
-    #         properties:
-    #           'mapred.cluster.map.memory.mb': mapred['mapred.cluster.map.memory.mb']
-    #           'mapreduce.map.memory.mb': map_memory
-    #           'mapreduce.reduce.memory.mb': reduce_memory
-    #           'mapreduce.map.java.opts': map_heap
-    #           'mapreduce.reduce.java.opts': reduce_heap
-    #         merge: true
-    #       , (err, mapreded) ->
-    #         next err, if yarned or mapreded then ctx.OK else ctx.PASS
-
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
     # module.exports.push name: 'HDP MapRed JHS # HDFS layout', callback: (ctx, next) ->
@@ -232,11 +182,11 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
     #       modified=1
     #     fi
     #     hdfs dfs -chmod 0751 /mr-history
-    #     hdfs dfs -chown -R #{mapred_user}:#{hadoop_group} /mr-history
+    #     hdfs dfs -chown -R #{mapred_user.name}:#{hadoop_group.name} /mr-history
     #     if ! hdfs dfs -test -d /app-logs; then
     #       hdfs dfs -mkdir -p /app-logs
     #       hdfs dfs -chmod -R 1777 /app-logs
-    #       hdfs dfs -chown #{yarn_user} /app-logs
+    #       hdfs dfs -chown #{yarn_user.name} /app-logs
     #       modified=1
     #     fi
     #     if [ $modified != "1" ]; then exit 2; fi
@@ -258,7 +208,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
     #       if hdfs dfs -test -d /mr-history; then exit 1; fi
     #       hdfs dfs -mkdir -p /mr-history
     #       hdfs dfs -chmod 0755 /mr-history
-    #       # hdfs dfs -chown #{mapred_user}:#{hadoop_group} /mr-history
+    #       # hdfs dfs -chown #{mapred_user.name}:#{hadoop_group.name} /mr-history
     #       """
     #       code_skipped: 1
     #     , (err, executed, stdout) ->
@@ -272,7 +222,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
     #       cmd: mkcmd.hdfs ctx, """
     #       if hdfs dfs -test -d #{mapreduce_jobtracker_system_dir}; then exit 1; fi
     #       hdfs dfs -mkdir -p #{mapreduce_jobtracker_system_dir}
-    #       hdfs dfs -chown #{mapred_user}:#{hadoop_group} #{mapreduce_jobtracker_system_dir}
+    #       hdfs dfs -chown #{mapred_user.name}:#{hadoop_group.name} #{mapreduce_jobtracker_system_dir}
     #       hdfs dfs -chmod 755 #{mapreduce_jobtracker_system_dir}
     #       """
     #       code_skipped: 1
@@ -291,7 +241,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
     #       cmd: mkcmd.hdfs ctx, """
     #       if hdfs dfs -test -d #{mapreduce_jobhistory_intermediate_done_dir}; then exit 1; fi
     #       hdfs dfs -mkdir -p #{mapreduce_jobhistory_intermediate_done_dir}
-    #       hdfs dfs -chown #{mapred_user}:#{hadoop_group} #{mapreduce_jobhistory_intermediate_done_dir}
+    #       hdfs dfs -chown #{mapred_user.name}:#{hadoop_group.name} #{mapreduce_jobhistory_intermediate_done_dir}
     #       hdfs dfs -chmod 1777 #{mapreduce_jobhistory_intermediate_done_dir}
     #       """
     #       code_skipped: 1
@@ -310,7 +260,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
     #       cmd: mkcmd.hdfs ctx, """
     #       if hdfs dfs -test -d #{mapreduce_jobhistory_done_dir}; then exit 1; fi
     #       hdfs dfs -mkdir -p #{mapreduce_jobhistory_done_dir}
-    #       hdfs dfs -chown #{mapred_user}:#{hadoop_group} #{mapreduce_jobhistory_done_dir}
+    #       hdfs dfs -chown #{mapred_user.name}:#{hadoop_group.name} #{mapreduce_jobhistory_done_dir}
     #       hdfs dfs -chmod 1777 #{mapreduce_jobhistory_done_dir}
     #       """
     #       code_skipped: 1

@@ -35,25 +35,25 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         if ! hdfs dfs -test -d /mr-history; then
           hdfs dfs -mkdir -p /mr-history
           hdfs dfs -chmod 0751 /mr-history
-          hdfs dfs -chown #{mapred_user}:#{hadoop_group} /mr-history
+          hdfs dfs -chown #{mapred_user.name}:#{hadoop_group.name} /mr-history
           modified=1
         fi
         if ! hdfs dfs -test -d /mr-history/tmp; then
           hdfs dfs -mkdir -p /mr-history/tmp
           hdfs dfs -chmod 1777 /mr-history/tmp
-          hdfs dfs -chown #{mapred_user}:#{hadoop_group} /mr-history/tmp
+          hdfs dfs -chown #{mapred_user.name}:#{hadoop_group.name} /mr-history/tmp
           modified=1
         fi
         if ! hdfs dfs -test -d /mr-history/done; then
           hdfs dfs -mkdir -p /mr-history/done
           hdfs dfs -chmod 1777 /mr-history/done
-          hdfs dfs -chown #{mapred_user}:#{hadoop_group} /mr-history/done
+          hdfs dfs -chown #{mapred_user.name}:#{hadoop_group.name} /mr-history/done
           modified=1
         fi
         if ! hdfs dfs -test -d /app-logs; then
           hdfs dfs -mkdir -p /app-logs
           hdfs dfs -chmod 1777 /app-logs
-          hdfs dfs -chown #{yarn_user} /app-logs
+          hdfs dfs -chown #{yarn_user.name} /app-logs
           modified=1
         fi
         if [ $modified != "1" ]; then exit 2; fi
@@ -64,14 +64,14 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         next null, if executed then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP MapRed JHS # Kerberos', callback: (ctx, next) ->
-      {mapred_user, realm} = ctx.config.hdp
+      {mapred_user, hadoop_group, realm} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
         principal: "jhs/#{ctx.config.host}@#{realm}"
         randkey: true
         keytab: "/etc/security/keytabs/jhs.service.keytab"
-        uid: mapred_user
-        gid: 'hadoop'
+        uid: mapred_user.name
+        gid: hadoop_group.name
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
@@ -81,7 +81,13 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
 
     module.exports.push 'phyla/hadoop/mapred_jhs_start'
 
-    module.exports.push name: 'HDP MapRed JHS # Check', retry: 5, callback: (ctx, next) ->
+# HDP MapRed JHS # Check
+
+Check if the JobHistoryServer is started with an HTTP REST command. Once 
+started, the server take some time before it can correctly answer HTTP request.
+For this reason, the "retry" property is set to the high value of "10".
+
+    module.exports.push name: 'HDP MapRed JHS # Check', retry: 10, callback: (ctx, next) ->
       {mapred} = ctx.config.hdp
       [host, port] = mapred['mapreduce.jobhistory.webapp.address'].split ':'
       ctx.execute
@@ -95,7 +101,6 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
       , (err, checked, stdout) ->
         return next err if err
         return next null, ctx.PASS unless checked
-        ctx.log stdout
         try
           JSON.parse(stdout).historyInfo.hadoopVersion
           return next null, ctx.OK

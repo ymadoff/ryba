@@ -25,8 +25,8 @@ layout: module
           destination: "#{hadoop_conf_dir}/yarn-site.xml"
           properties: config
           merge: true
-          uid: yarn_user
-          gid: yarn_group
+          uid: yarn_user.name
+          gid: yarn_group.name
         , (err, configured) ->
           return next err, if configured then ctx.OK else ctx.PASS
 

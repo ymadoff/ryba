@@ -72,13 +72,13 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
       {hdfs_site, hdfs_pid_dir, hdfs_user, hadoop_group} = ctx.config.hdp
       ctx.mkdir [
         destination: hdfs_site['dfs.namenode.name.dir'].split ','
-        uid: hdfs_user
-        gid: hadoop_group
+        uid: hdfs_user.name
+        gid: hadoop_group.name
         mode: 0o755
       ,
-        destination: "#{hdfs_pid_dir}/#{hdfs_user}"
-        uid: hdfs_user
-        gid: hadoop_group
+        destination: "#{hdfs_pid_dir}/#{hdfs_user.name}"
+        uid: hdfs_user.name
+        gid: hadoop_group.name
         mode: 0o755
       ], (err, created) ->
         next err, if created then ctx.OK else ctx.PASS
@@ -113,7 +113,7 @@ from multiple sessions with braking an active session.
       {hdfs_user, hdfs_password, realm} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
-        principal: "#{hdfs_user}@#{realm}"
+        principal: "#{hdfs_user.name}@#{realm}"
         password: hdfs_password
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
@@ -156,8 +156,8 @@ public and private SSH keys for the HDFS user inside his "~/.ssh" folder and upd
       do_mkdir = ->
         ctx.mkdir
           destination: "#{hdfs_home}/.ssh"
-          uid: hdfs_user
-          gid: hadoop_group
+          uid: hdfs_user.name
+          gid: hadoop_group.name
           mode: 0o700
         , (err, created) ->
           return next err if err
@@ -166,14 +166,14 @@ public and private SSH keys for the HDFS user inside his "~/.ssh" folder and upd
         ctx.upload [
           source: "#{ssh_fencing.private_key}"
           destination: "#{hdfs_home}/.ssh"
-          uid: hdfs_user
-          gid: hadoop_group
+          uid: hdfs_user.name
+          gid: hadoop_group.name
           mode: 0o600
         ,
           source: "#{ssh_fencing.public_key}"
           destination: "#{hdfs_home}/.ssh"
-          uid: hdfs_user
-          gid: hadoop_group
+          uid: hdfs_user.name
+          gid: hadoop_group.name
           mode: 0o655
         ], (err, written) ->
           return next err if err
@@ -186,8 +186,8 @@ public and private SSH keys for the HDFS user inside his "~/.ssh" folder and upd
             destination: "#{hdfs_home}/.ssh/authorized_keys"
             content: content
             append: true
-            uid: hdfs_user
-            gid: hadoop_group
+            uid: hdfs_user.name
+            gid: hadoop_group.name
             mode: 0o600
           , (err, written) ->
             return next err if err
@@ -225,7 +225,7 @@ if the NameNode was formated.
         return next err if err
         ctx.execute
           # yes 'Y' | su -l hdfs -c "hdfs namenode -format -clusterId torval"
-          cmd: "su -l #{hdfs_user} -c \"hdfs namenode -format -clusterId #{nameservice}\""
+          cmd: "su -l #{hdfs_user.name} -c \"hdfs namenode -format -clusterId #{nameservice}\""
           # /hadoop/hdfs/namenode/current/VERSION
           not_if_exists: "#{any_dfs_name_dir}/current/VERSION"
         , (err, executed) ->
@@ -375,7 +375,7 @@ the NameNode is properly working. Note, those commands are NameNode specific, me
 afect HDFS metadata.
 
     # module.exports.push name: 'HDP HDFS NN # Test User', timeout: -1, callback: (ctx, next) ->
-    #   {hdfs_user, test_user, test_password, hadoop_group, security} = ctx.config.hdp
+    #   {test_user, test_password, hadoop_group, security} = ctx.config.hdp
     #   {realm, kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5_client
     #   modified = false
     #   do_user = ->

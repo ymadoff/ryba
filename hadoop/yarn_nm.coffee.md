@@ -21,13 +21,13 @@ applications running atop of YARN.
       # no need to restrict parent directory and yarn will complain if not accessible by everyone
       ctx.mkdir [
         destination: yarn['yarn.nodemanager.log-dirs']
-        uid: yarn_user
-        gid: hadoop_group
+        uid: yarn_user.name
+        gid: hadoop_group.name
         mode: 0o0755
       ,
         destination: yarn['yarn.nodemanager.local-dirs']
-        uid: yarn_user
-        gid: hadoop_group
+        uid: yarn_user.name
+        gid: hadoop_group.name
         mode: 0o0755
       ], (err, created) ->
         return next err if err
@@ -44,7 +44,7 @@ applications running atop of YARN.
         principal: "nm/#{ctx.config.host}@#{realm}"
         randkey: true
         keytab: "/etc/security/keytabs/nm.service.keytab"
-        uid: yarn_user
+        uid: yarn_user.name
         gid: 'hadoop'
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
@@ -63,7 +63,7 @@ applications running atop of YARN.
     # module.exports.push name: 'HDP YARN NM # Test User', callback: (ctx, next) ->
     #   {test_user, hadoop_group} = ctx.config.hdp
     #   ctx.execute
-    #     cmd: "useradd #{test_user} -r -M -g #{hadoop_group} -s /bin/bash -c \"Used by Hadoop to test\""
+    #     cmd: "useradd #{test_user} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop to test\""
     #     code: 0
     #     code_skipped: 9
     #   , (err, created) ->

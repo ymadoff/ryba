@@ -3,7 +3,7 @@ exports.hdfs = (ctx, cmd) ->
   {security, hdfs_user, hdfs_password, realm} = ctx.config.hdp
   if security is 'kerberos'
   then "echo #{hdfs_password} | kinit hdfs@#{realm} >/dev/null && {\n#{cmd}\n}"
-  else "su -l #{hdfs_user} -c \"#{cmd}\""
+  else "su -l #{hdfs_user.name} -c \"#{cmd}\""
   # else "kinit -kt /etc/security/keytabs/hdfs.headless.keytab hdfs && {\n#{cmd}\n}"
 
 exports.test = (ctx, cmd) ->

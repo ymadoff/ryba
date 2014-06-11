@@ -18,18 +18,18 @@ layout: module
       ctx.log "Create SNN data, checkpind and pid directories"
       ctx.mkdir [
         destination: hdfs_site['dfs.namenode.name.dir']
-        uid: hdfs_user
-        gid: hadoop_group
+        uid: hdfs_user.name
+        gid: hadoop_group.name
         mode: 0o755
       ,
         destination: fs_checkpoint_dir
-        uid: hdfs_user
-        gid: hadoop_group
+        uid: hdfs_user.name
+        gid: hadoop_group.name
         mode: 0o755
       ,
-        destination: "#{hdfs_pid_dir}/#{hdfs_user}"
-        uid: hdfs_user
-        gid: hadoop_group
+        destination: "#{hdfs_pid_dir}/#{hdfs_user.name}"
+        uid: hdfs_user.name
+        gid: hadoop_group.name
         mode: 0o755
       ], (err, created) ->
         next err, if created then ctx.OK else ctx.PASS

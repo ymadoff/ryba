@@ -14,14 +14,14 @@ layout: module
       require('./yarn').configure ctx
 
     module.exports.push name: 'HDP YARN RM # Kerberos', callback: (ctx, next) ->
-      {yarn_user, realm} = ctx.config.hdp
+      {yarn_user, hadoop_group, realm} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
         principal: "rm/#{ctx.config.host}@#{realm}"
         randkey: true
         keytab: "/etc/security/keytabs/rm.service.keytab"
-        uid: yarn_user
-        gid: 'hadoop'
+        uid: yarn_user.name
+        gid: hadoop_group.name
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server

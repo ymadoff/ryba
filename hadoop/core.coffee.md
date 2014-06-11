@@ -5,6 +5,13 @@ layout: module
 
 # Core
 
+The Hadoop distribution used is the Hortonwork distribution named HDP. The
+installation is leveraging the Yum repositories. [Individual tarballs][tar] 
+are also available as an alternative with the benefit of including the source 
+code.
+
+[tar]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap13.html
+
     url = require 'url'
     path = require 'path'
     misc = require 'mecano/lib/misc'
@@ -23,15 +30,51 @@ layout: module
 *   `hdp.static_host` (boolean)   
     Write the host name of the server instead of the Hadoop "_HOST" 
     placeholder accross all the configuration files, default to false.   
+*   `hdfs_user` (object|string)   
+    The Unix HDFS login name or a user object (see Mecano User documentation).   
+*   `yarn_user` (object|string)   
+    The Unix YARN login name or a user object (see Mecano User documentation).   
+*   `mapred_user` (object|string)   
+    The Unix MapReduce login name or a user object (see Mecano User documentation).   
+*   `hadoop_group` (object|string)   
+    The Unix Hadoop group name or a group object (see Mecano Group documentation).   
+*   `hdfs_group` (object|string)   
+    The Unix HDFS group name or a group object (see Mecano Group documentation).   
+*   `yarn_group` (object|string)   
+    The Unix YARN group name or a group object (see Mecano Group documentation).   
+*   `mapred_group` (object|string)   
+    The Unix MapReduce group name or a group object (see Mecano Group documentation).   
 
-The Hadoop distribution used is the Hortonwork distribution named HDP. The
-installation is leveraging the Yum repositories. [Individual tarballs][tar] 
-are also available as an alternative with the benefit of including the source 
-code.
-
-[tar]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap13.html
-
-hadoop org.apache.hadoop.security.HadoopKerberosName HTTP/master1.hadoop@HADOOP.ADALTAS.COM
+```json
+{
+  "hdp": {
+    "hdfs_user": {
+      "name": "hdfs", "system": true, "gid": "hdfs",
+      "comment": "HDFS User", "home": "/var/lib/hadoop-hdfs"
+    }
+    "yarn_user": {
+      "name": "yarn", "system": true, "gid": "yarn",
+      "comment": "YARN User", "home": "/var/lib/hadoop-yarn"
+    }
+    "mapred_user": {
+      "name": "mapred", "system": true, "gid": "mapred",
+      "comment": "MapReduce User", "home": "/var/lib/hadoop-mapreduce"
+    }
+    "hadoop_group": {
+      "name": "hadoop", "system": true
+    }
+    "hdfs_group": {
+      "name": "hdfs", "system": true
+    }
+    "yarn_group": {
+      "name": "yarn", "system": true
+    }
+    "mapred_group": {
+      "name": "mapred", "system": true
+    }
+  }
+}
+```
 
     module.exports.push module.exports.configure = (ctx) ->
       return if ctx.core_configured
@@ -39,8 +82,54 @@ hadoop org.apache.hadoop.security.HadoopKerberosName HTTP/master1.hadoop@HADOOP.
       require('masson/core/proxy').configure ctx
       ctx.config.hdp ?= {}
       ctx.config.hdp.format ?= false
-      ctx.config.hdp.hadoop_conf_dir ?= '/etc/hadoop/conf'
       ctx.config.hdp.force_check ?= false
+      # User
+      ctx.config.hdp.hdfs_user = name: ctx.config.hdp.hdfs_user if typeof ctx.config.hdp.hdfs_user is 'string'
+      ctx.config.hdp.hdfs_user ?= {}
+      ctx.config.hdp.hdfs_user.name ?= 'hdfs'
+      ctx.config.hdp.hdfs_user.system ?= true
+      ctx.config.hdp.hdfs_user.gid ?= 'hdfs'
+      ctx.config.hdp.hdfs_user.groups ?= 'hadoop'
+      ctx.config.hdp.hdfs_user.comment ?= 'Hadoop HDFS User'
+      ctx.config.hdp.hdfs_user.home ?= '/var/lib/hadoop-hdfs'
+      ctx.config.hdp.yarn_user = name: ctx.config.hdp.yarn_user if typeof ctx.config.hdp.yarn_user is 'string'
+      ctx.config.hdp.yarn_user ?= {}
+      ctx.config.hdp.yarn_user.name ?= 'yarn'
+      ctx.config.hdp.yarn_user.system ?= true
+      ctx.config.hdp.yarn_user.gid ?= 'yarn'
+      ctx.config.hdp.yarn_user.groups ?= 'hadoop'
+      ctx.config.hdp.yarn_user.comment ?= 'Hadoop YARN User'
+      ctx.config.hdp.yarn_user.home ?= '/var/lib/hadoop-yarn'
+      ctx.config.hdp.mapred_user = name: ctx.config.hdp.mapred_user if typeof ctx.config.hdp.mapred_user is 'string'
+      ctx.config.hdp.mapred_user ?= {}
+      ctx.config.hdp.mapred_user.name ?= 'mapred'
+      ctx.config.hdp.mapred_user.system ?= true
+      ctx.config.hdp.mapred_user.gid ?= 'mapred'
+      ctx.config.hdp.mapred_user.groups ?= 'hadoop'
+      ctx.config.hdp.mapred_user.comment ?= 'Hadoop MapReduce User'
+      ctx.config.hdp.mapred_user.home ?= '/var/lib/hadoop-mapreduce'
+      # Groups
+      ctx.config.hdp.hadoop_group = name: ctx.config.hdp.hadoop_group if typeof ctx.config.hdp.hadoop_group is 'string'
+      ctx.config.hdp.hadoop_group ?= {}
+      ctx.config.hdp.hadoop_group.name ?= 'hadoop'
+      ctx.config.hdp.hadoop_group.system ?= true
+      ctx.config.hdp.hdfs_group = name: ctx.config.hdp.hdfs_group if typeof ctx.config.hdp.hdfs_group is 'string'
+      ctx.config.hdp.hdfs_group ?= {}
+      ctx.config.hdp.hdfs_group.name ?= 'hdfs'
+      ctx.config.hdp.hdfs_group.system ?= true
+      ctx.config.hdp.yarn_group = name: ctx.config.hdp.yarn_group if typeof ctx.config.hdp.yarn_group is 'string'
+      ctx.config.hdp.yarn_group ?= {}
+      ctx.config.hdp.yarn_group.name ?= 'yarn'
+      ctx.config.hdp.yarn_group.system ?= true
+      ctx.config.hdp.mapred_group = name: ctx.config.hdp.mapred_group if typeof ctx.config.hdp.mapred_group is 'string'
+      ctx.config.hdp.mapred_group ?= {}
+      ctx.config.hdp.mapred_group.name ?= 'mapred'
+      ctx.config.hdp.mapred_group.system ?= true
+      # Layout
+      ctx.config.hdp.hadoop_conf_dir ?= '/etc/hadoop/conf'
+      ctx.config.hdp.hdfs_log_dir ?= '/var/log/hadoop-hdfs'
+      ctx.config.hdp.hdfs_pid_dir ?= '/var/run/hadoop-hdfs'
+      ctx.config.hdp.mapred_log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
       # Repository
       ctx.config.hdp.proxy = ctx.config.proxy.http_proxy if typeof ctx.config.hdp.http_proxy is 'undefined'
       ctx.config.hdp.hdp_repo ?= 'http://public-repo-1.hortonworks.com/HDP/centos5/2.x/GA/2.1-latest/hdp.repo'
@@ -51,32 +140,23 @@ hadoop org.apache.hadoop.security.HadoopKerberosName HTTP/master1.hadoop@HADOOP.
       throw new Error "Need at least 2 namenodes" if namenodes.length < 2
       ctx.config.hdp.active_nn ?= false
       active_nn_hosts = ctx.config.servers.filter( (server) -> server.hdp?.active_nn ).map( (server) -> server.host )
-      # active_nn_hosts = [namenodes[0]] if active_nn_hosts.length is 0
       throw new Error "Invalid Number of Active NameNodes: #{active_nn_hosts.length}" unless active_nn_hosts.length is 1
       ctx.config.hdp.active_nn_host = active_nn_hosts[0]
       ctx.config.hdp.static_host = 
         if ctx.config.hdp.static_host and ctx.config.hdp.static_host isnt '_HOST'
         then ctx.config.host
         else '_HOST'
-      # Define Users and Groups
-      ctx.config.hdp.hdfs_user ?= 'hdfs'
-      ctx.config.hdp.hadoop_group ?= 'hadoop'
-      # Define Directories for Ecosystem Components
-      ctx.config.hdp.hdfs_log_dir ?= '/var/log/hadoop-hdfs'
-      ctx.config.hdp.hdfs_pid_dir ?= '/var/run/hadoop-hdfs'
-      ctx.config.hdp.mapred_log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
-      # ctx.config.hdp.sqoop_conf_dir ?= '/etc/sqoop/conf'
-      # Options and configuration
+      # Configuration
       ctx.config.hdp.core_site ?= {}
-      # NameNode hostname
       ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.hdp.nameservice}"
+      # Context
       ctx.hconfigure = (options, callback) ->
         options.ssh = ctx.ssh if typeof options.ssh is 'undefined'
         options.log ?= ctx.log
         options.stdout ?= ctx.stdout
         options.stderr ?= ctx.stderr
         hconfigure options, callback
-      # hadoop env
+      # Environment
       ctx.config.hdp.hadoop_opts ?= 'java.net.preferIPv4Stack': true
       hadoop_opts = "export HADOOP_OPTS=\""
       for k, v of ctx.config.hdp.hadoop_opts
@@ -135,18 +215,34 @@ Declare the HDP repository.
             next err, ctx.OK
       do_repo()
 
-http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
-http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
+## Users & Groups
+
+By default, the "hadoop-client" package rely on the "hadoop", "hadoop-hdfs",
+"hadoop-mapreduce" and "hadoop-yarn" dependencies and create the following
+entries:
+
+```bash
+cat /etc/passwd | grep hadoop
+hdfs:x:496:497:Hadoop HDFS:/var/lib/hadoop-hdfs:/bin/bash
+yarn:x:495:495:Hadoop Yarn:/var/lib/hadoop-yarn:/bin/bash
+mapred:x:494:494:Hadoop MapReduce:/var/lib/hadoop-mapreduce:/bin/bash
+cat /etc/group | egrep "hdfs|yarn|mapred"
+hadoop:x:498:hdfs,yarn,mapred
+hdfs:x:497:
+yarn:x:495:
+mapred:x:494:
+```
+
+Note, the package "hadoop" will also install the "dbus" user and group which are
+not handled here.
 
     module.exports.push name: 'HDP Core # Users & Groups', callback: (ctx, next) ->
-      cmds = []
-      {hadoop_group} = ctx.config.hdp
-      ctx.execute
-        cmd: "groupadd hadoop"
-        code: 0
-        code_skipped: 9
-      , (err, executed) ->
-        next err, if executed then ctx.OK else ctx.PASS
+      {hadoop_group, hdfs_group, yarn_group, mapred_group,
+       hdfs_user, yarn_user, mapred_user} = ctx.config.hdp
+      ctx.group [hadoop_group, hdfs_group, yarn_group, mapred_group], (err, gmodified) ->
+        return next err if err
+        ctx.user [hdfs_user, yarn_user, mapred_user], (err, umodified) ->
+          next err, if gmodified or umodified then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Core # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
@@ -193,8 +289,8 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
           source: "#{__dirname}/files/core_hadoop/hadoop-env.sh"
           destination: "#{hadoop_conf_dir}/hadoop-env.sh"
           local_source: true
-          uid: hdfs_user
-          gid: hadoop_group
+          uid: hdfs_user.name
+          gid: hadoop_group.name
           mode: 0o755
           write: [
             match: /^export HADOOP_OPTS.*$/mg
