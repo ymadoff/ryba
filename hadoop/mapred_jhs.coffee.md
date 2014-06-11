@@ -9,7 +9,7 @@ layout: module
     mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'phyla/hadoop/mapred'
+    module.exports.push 'riba/hadoop/mapred'
 
     module.exports.push (ctx) ->
       require('./mapred').configure ctx
@@ -79,7 +79,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         return next err if err
         next null, if created then ctx.OK else ctx.PASS
 
-    module.exports.push 'phyla/hadoop/mapred_jhs_start'
+    module.exports.push 'riba/hadoop/mapred_jhs_start'
 
 # HDP MapRed JHS # Check
 

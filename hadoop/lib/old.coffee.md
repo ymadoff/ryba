@@ -5,7 +5,7 @@ Do not import this module. It is a sink for old code.
 
 ## HDP HDFS NN # Upgrade
 
-Extracted from "phyla/hadoop/hdfs_nn"
+Extracted from "riba/hadoop/hdfs_nn"
 
     module.exports.push name: 'HDP HDFS NN # Upgrade', timeout: -1, callback: (ctx, next) ->
       # TODO, we have never tested migration in HA mode
@@ -48,7 +48,7 @@ the directory named after the nameservice is created on each JournalNode host.
     module.exports.push name: 'HDP HDFS NN # HA Init JournalNodes', timeout: -1, callback: (ctx, next) ->
       {nameservice, active_nn} = ctx.config.hdp
       # Shall only be executed on the leader namenode
-      journalnodes = ctx.hosts_with_module 'phyla/hadoop/hdfs_jn'
+      journalnodes = ctx.hosts_with_module 'riba/hadoop/hdfs_jn'
       return next null, ctx.INAPPLICABLE unless active_nn
       do_wait = ->
         # all the JournalNodes shall be started

@@ -11,7 +11,7 @@ applications running atop of YARN.
     lifecycle = require './lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'phyla/hadoop/yarn'
+    module.exports.push 'riba/hadoop/yarn'
 
     module.exports.push (ctx) ->
       require('./yarn').configure ctx
@@ -54,7 +54,7 @@ applications running atop of YARN.
         next null, if created then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP YARN NM # Start', timeout: -1, callback: (ctx, next) ->
-      resourcemanager = ctx.host_with_module 'phyla/hadoop/yarn_rm'
+      resourcemanager = ctx.host_with_module 'riba/hadoop/yarn_rm'
       ctx.waitIsOpen resourcemanager, 8088, (err) ->
         return next err if err
         lifecycle.nm_start ctx, (err, started) ->

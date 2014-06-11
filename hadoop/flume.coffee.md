@@ -1,6 +1,6 @@
 ---
 title: Flume
-module: phyla/hadoop/flume
+module: riba/hadoop/flume
 layout: module
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: HDP NameNode Start
-module: phyla/hadoop/hdfs_nn_start
+module: riba/hadoop/hdfs_nn_start
 layout: module
 ---
 
@@ -17,7 +17,7 @@ the standy NameNodes wait for the one on the active NameNode to start first.
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx
-      throw Error "Not a NameNode" unless ctx.has_module 'phyla/hadoop/hdfs_nn'
+      throw Error "Not a NameNode" unless ctx.has_module 'riba/hadoop/hdfs_nn'
 
     module.exports.push name: 'HDP HDFS NN # Start NameNode', callback: (ctx, next) ->
       lifecycle.nn_start ctx, (err, started) ->

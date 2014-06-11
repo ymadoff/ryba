@@ -1,6 +1,6 @@
 ---
 title: HDFS DataNode Stop
-module: phyla/hadoop/hdfs_dn_stop
+module: riba/hadoop/hdfs_dn_stop
 layout: module
 ---
 
@@ -17,6 +17,6 @@ associated the NameNodes.
       require('./hdfs').configure ctx
 
     module.exports.push name: 'HDP HDFS DN # Stop', callback: (ctx, next) ->
-      return next new Error "Not an DataNode" unless ctx.has_module 'phyla/hadoop/hdfs_dn'
+      return next new Error "Not an DataNode" unless ctx.has_module 'riba/hadoop/hdfs_dn'
       lifecycle.dn_stop ctx, (err, stopped) ->
         next err, if stopped then ctx.OK else ctx.PASS

@@ -11,7 +11,7 @@ layout: module
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     # Install SPNEGO keytab
-    module.exports.push 'phyla/hadoop/hdfs'
+    module.exports.push 'riba/hadoop/hdfs'
 
 # Configure
 
@@ -43,8 +43,8 @@ Example:
       require('./hdfs').configure ctx
       require('./zookeeper').configure ctx
       {realm} = ctx.config.hdp
-      hive_host = ctx.host_with_module 'phyla/hadoop/hive_server'
-      zookeeper_hosts = ctx.hosts_with_module 'phyla/hadoop/zookeeper'
+      hive_host = ctx.host_with_module 'riba/hadoop/hive_server'
+      zookeeper_hosts = ctx.hosts_with_module 'riba/hadoop/zookeeper'
       for server in ctx.config.servers
         continue if (i = zookeeper_hosts.indexOf server.host) is -1
         zookeeper_hosts[i] = "#{zookeeper_hosts[i]}:#{ctx.config.hdp.zookeeper_port}"

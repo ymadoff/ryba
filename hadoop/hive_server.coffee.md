@@ -17,11 +17,11 @@ layout: module
     module.exports.push 'masson/commons/mysql_client'
     # Deploy the HDP repository
     # Configure "core-site.xml" and "hadoop-env.sh"
-    module.exports.push 'phyla/hadoop/core'
+    module.exports.push 'riba/hadoop/core'
     # Install kerberos to create and test new Hive principal
     module.exports.push 'masson/core/krb5_client'
     # Install the Hive and HCatalog service
-    module.exports.push 'phyla/hadoop/hive_'
+    module.exports.push 'riba/hadoop/hive_'
     # Validate DNS lookup
     module.exports.push 'masson/core/dns'
 
@@ -259,30 +259,30 @@ layout: module
           next null, if modified then ctx.OK else ctx.PASS
         do_warehouse()
 
-https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Authorization#LanguageManualAuthorization-MetastoreServerSecurity
+# https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Authorization#LanguageManualAuthorization-MetastoreServerSecurity
 
-    module.exports.push name: 'HDP Hive & HCat server # Metastore Security', callback: (ctx, next) ->
-      {hive_conf_dir} = ctx.config.hdp
-      hive_site =
-        # authorization manager class name to be used in the metastore for authorization.
-        # The user defined authorization class should implement interface
-        # org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider.
-        'hive.security.metastore.authorization.manager': 'org.apache.hadoop.hive.ql.security.authorization.DefaultHiveMetastoreAuthorizationProvider'
-        # authenticator manager class name to be used in the metastore for authentication.
-        # The user defined authenticator should implement interface 
-        # org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider.
-        'hive.security.metastore.authenticator.manager': 'org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator'
-        # pre-event listener classes to be loaded on the metastore side to run code
-        # whenever databases, tables, and partitions are created, altered, or dropped.
-        # Set to org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener
-        # if metastore-side authorization is desired.
-        'hive.metastore.pre.event.listeners': ''
-      ctx.hconfigure
-        destination: "#{hive_conf_dir}/hive-site.xml"
-        properties: hive_site
-        merge: true
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+#     module.exports.push name: 'HDP Hive & HCat server # Metastore Security', callback: (ctx, next) ->
+#       {hive_conf_dir} = ctx.config.hdp
+#       hive_site =
+#         # authorization manager class name to be used in the metastore for authorization.
+#         # The user defined authorization class should implement interface
+#         # org.apache.hadoop.hive.ql.security.authorization.HiveMetastoreAuthorizationProvider.
+#         'hive.security.metastore.authorization.manager': 'org.apache.hadoop.hive.ql.security.authorization.DefaultHiveMetastoreAuthorizationProvider'
+#         # authenticator manager class name to be used in the metastore for authentication.
+#         # The user defined authenticator should implement interface 
+#         # org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider.
+#         'hive.security.metastore.authenticator.manager': 'org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator'
+#         # pre-event listener classes to be loaded on the metastore side to run code
+#         # whenever databases, tables, and partitions are created, altered, or dropped.
+#         # Set to org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener
+#         # if metastore-side authorization is desired.
+#         'hive.metastore.pre.event.listeners': ''
+#       ctx.hconfigure
+#         destination: "#{hive_conf_dir}/hive-site.xml"
+#         properties: hive_site
+#         merge: true
+#       , (err, configured) ->
+#         next err, if configured then ctx.OK else ctx.PASS
 
 todo: Securing the Hive MetaStore 
 http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-Security-Guide/cdh4sg_topic_9_1.html

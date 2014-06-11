@@ -15,7 +15,7 @@ layout: module
 Execute these commands on the HBase Master host machine.
 
     module.exports.push name: 'HDP HBase Master # Start', callback: (ctx, next) ->
-      return next() unless ctx.has_module 'phyla/hadoop/hbase_master'
+      return next() unless ctx.has_module 'riba/hadoop/hbase_master'
       lifecycle.hbase_master_start ctx, (err, started) ->
         next err, if started then ctx.OK else ctx.PASS
 
@@ -24,6 +24,6 @@ Execute these commands on the HBase Master host machine.
 Execute these commands on all RegionServers
 
     module.exports.push name: 'HDP HBase RegionServer # Start', callback: (ctx, next) ->
-      return next() unless ctx.has_module 'phyla/hadoop/hbase_regionserver'
+      return next() unless ctx.has_module 'riba/hadoop/hbase_regionserver'
       lifecycle.hbase_regionserver_start ctx, (err, started) ->
         next err, if started then ctx.OK else ctx.PASS

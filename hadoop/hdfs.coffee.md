@@ -1,14 +1,14 @@
 ---
 title: HDFS
-module: phyla/hadoop/hdfs
+module: riba/hadoop/hdfs
 layout: module
 ---
 
 # HDFS
 
 This module is not intended to be used directly. It is required by other modules to 
-setup a base installation. Such modules include "phyla/hadoop/hdfs_client",
-"phyla/hadoop/hdfs_dn" and "phyla/hadoop/hdfs_nn".
+setup a base installation. Such modules include "riba/hadoop/hdfs_client",
+"riba/hadoop/hdfs_dn" and "riba/hadoop/hdfs_nn".
 
 In its current state, we are only supporting the installation of a 
 [secure cluster with Kerberos][secure].
@@ -20,7 +20,7 @@ In its current state, we are only supporting the installation of a
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'masson/core/yum'
-    module.exports.push 'phyla/hadoop/core'
+    module.exports.push 'riba/hadoop/core'
 
 ## Configure
 
@@ -62,7 +62,7 @@ Example:
       ctx.hdfs_configured = true
       require('./core').configure ctx
       {nameservice} = ctx.config.hdp
-      namenodes = ctx.hosts_with_module 'phyla/hadoop/hdfs_nn'
+      namenodes = ctx.hosts_with_module 'riba/hadoop/hdfs_nn'
       throw new Error "Missing value for 'hdfs_password'" unless ctx.config.hdp.hdfs_password?
       throw new Error "Missing value for 'test_password'" unless ctx.config.hdp.test_password?
       # Layout
@@ -137,8 +137,8 @@ now marked as optional and the users and groups are now created on package insta
       { core, hdfs_site, yarn,
         hadoop_conf_dir, fs_checkpoint_dir, # fs_checkpoint_edit_dir,
         hdfs_namenode_http_port, snn_port } = ctx.config.hdp #mapreduce_local_dir, 
-      datanodes = ctx.hosts_with_module 'phyla/hadoop/hdfs_dn'
-      secondary_namenode = ctx.hosts_with_module 'phyla/hadoop/hdfs_snn', 1
+      datanodes = ctx.hosts_with_module 'riba/hadoop/hdfs_dn'
+      secondary_namenode = ctx.hosts_with_module 'riba/hadoop/hdfs_snn', 1
       modified = false
       do_hdfs = ->
         ctx.log 'Configure hdfs-site.xml'
@@ -206,7 +206,7 @@ we didn't had time to look further.
 
     module.exports.push name: 'HDP HDFS # Configure HTTPS', callback: (ctx, next) ->
       {hadoop_conf_dir, hadoop_policy} = ctx.config.hdp
-      namenode = ctx.hosts_with_module 'phyla/hadoop/hdfs_nn', 1
+      namenode = ctx.hosts_with_module 'riba/hadoop/hdfs_nn', 1
       modified = false
       do_hdfs_site = ->
         ctx.hconfigure
@@ -285,7 +285,7 @@ with Kerberos specific properties.
 
     module.exports.push name: 'HDP HDFS # Kerberos Configure', callback: (ctx, next) ->
       {hadoop_conf_dir, static_host, realm} = ctx.config.hdp
-      secondary_namenode = ctx.hosts_with_module 'phyla/hadoop/hdfs_snn', 1
+      secondary_namenode = ctx.hosts_with_module 'riba/hadoop/hdfs_snn', 1
       hdfs_site = {}
       # If "true", access tokens are used as capabilities
       # for accessing datanodes. If "false", no access tokens are checked on

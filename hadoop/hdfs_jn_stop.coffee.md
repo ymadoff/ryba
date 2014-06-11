@@ -1,6 +1,6 @@
 ---
 title: HDFS JournalNode Stop
-module: phyla/hadoop/hdfs_jn_stop
+module: riba/hadoop/hdfs_jn_stop
 layout: module
 ---
 

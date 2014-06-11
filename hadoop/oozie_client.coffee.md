@@ -9,11 +9,11 @@ layout: module
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
-    module.exports.push 'phyla/hadoop/mapred_client'
-    module.exports.push 'phyla/hadoop/yarn_client'
+    module.exports.push 'riba/hadoop/mapred_client'
+    module.exports.push 'riba/hadoop/yarn_client'
 
     module.exports.push module.exports.configure = (ctx) ->
-      oozie_server = ctx.host_with_module 'phyla/hadoop/oozie_server'
+      oozie_server = ctx.host_with_module 'riba/hadoop/oozie_server'
       # Oozie configuration
       ctx.config.hdp.oozie_site ?= {}
       ctx.config.hdp.oozie_site['oozie.base.url'] = "http://#{oozie_server}:11000/oozie"
@@ -45,7 +45,7 @@ Install the oozie client package. This package doesn't create any user and group
 
     module.exports.push name: 'HDP Oozie Client # Check Client', timeout: -1, callback: (ctx, next) ->
       {oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
-      oozie_server = ctx.host_with_module 'phyla/hadoop/oozie_server'
+      oozie_server = ctx.host_with_module 'riba/hadoop/oozie_server'
       ctx.waitIsOpen oozie_server, oozie_port, (err) ->
         ctx.execute
           cmd: """
@@ -59,7 +59,7 @@ Install the oozie client package. This package doesn't create any user and group
 
     module.exports.push name: 'HDP Oozie Client # Check REST', timeout: -1, callback: (ctx, next) ->
       {oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
-      oozie_server = ctx.host_with_module 'phyla/hadoop/oozie_server'
+      oozie_server = ctx.host_with_module 'riba/hadoop/oozie_server'
       ctx.waitIsOpen oozie_server, oozie_port, (err) ->
         return next err if err
         ctx.execute
@@ -74,8 +74,8 @@ Install the oozie client package. This package doesn't create any user and group
 
     module.exports.push name: 'HDP Oozie Client # Workflow', timeout: -1, callback: (ctx, next) ->
       {nameservice, oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
-      rm = ctx.host_with_module 'phyla/hadoop/yarn_rm'
-      oozie_server = ctx.hosts_with_module 'phyla/hadoop/oozie_server', 1
+      rm = ctx.host_with_module 'riba/hadoop/yarn_rm'
+      oozie_server = ctx.hosts_with_module 'riba/hadoop/oozie_server', 1
       ctx.waitIsOpen oozie_server, oozie_port, (err) ->
         return next err if err
         ctx.execute

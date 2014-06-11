@@ -11,7 +11,7 @@ layout: module
     module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'masson/core/yum'
     module.exports.push 'masson/commons/java'
-    # module.exports.push 'phyla/hadoop/core'
+    # module.exports.push 'riba/hadoop/core'
 
 ## Configure
 
@@ -101,7 +101,7 @@ which has no dependency.
 
     module.exports.push name: 'HDP ZooKeeper # Configure', callback: (ctx, next) ->
       modified = false
-      hosts = ctx.hosts_with_module 'phyla/hadoop/zookeeper'
+      hosts = ctx.hosts_with_module 'riba/hadoop/zookeeper'
       {java_home} = ctx.config.java
       { hadoop_group,
         zookeeper_user, zookeeper_data_dir, zookeeper_pid_dir, zookeeper_log_dir,

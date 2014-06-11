@@ -9,13 +9,13 @@ layout: module
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'phyla/hadoop/yarn_client'
+    module.exports.push 'riba/hadoop/yarn_client'
 
     module.exports.push module.exports.configure = (ctx) ->
       require('./hdfs').configure ctx
       require('./mapred_').configure ctx
 
-    module.exports.push 'phyla/hadoop/mapred'
+    module.exports.push 'riba/hadoop/mapred'
 
     # module.exports.push name: 'HDP MapRed # Configuration', callback: (ctx, next) ->
     #   { hadoop_conf_dir, mapred_user, mapred_group, mapred } = ctx.config.hdp

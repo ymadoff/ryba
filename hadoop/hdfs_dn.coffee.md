@@ -1,6 +1,6 @@
 ---
 title: HDFS DataNode
-module: phyla/hadoop/hdfs_dn
+module: riba/hadoop/hdfs_dn
 layout: module
 ---
 
@@ -26,12 +26,12 @@ NameNodes, and send block location information and heartbeats to both.
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
-    module.exports.push 'phyla/hadoop/hdfs'
+    module.exports.push 'riba/hadoop/hdfs'
 
 ## Configuration
 
 The module doesn't require any configuration but instread rely on the 
-"phyla/hadoop/hdfs" configuration settings.
+"riba/hadoop/hdfs" configuration settings.
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx
@@ -96,12 +96,12 @@ and permissions set to "0600".
 
 ## DataNode Start
 
-Load the module "phyla/hadoop/hdfs\_dn\_start" to start the DataNode.
+Load the module "riba/hadoop/hdfs\_dn\_start" to start the DataNode.
 
-    module.exports.push 'phyla/hadoop/hdfs_dn_start'
+    module.exports.push 'riba/hadoop/hdfs_dn_start'
 
     # module.exports.push name: 'HDP HDFS DN # Start', timeout: -1, callback: (ctx, next) ->
-    #   namenodes = ctx.hosts_with_module 'phyla/hadoop/hdfs_nn'
+    #   namenodes = ctx.hosts_with_module 'riba/hadoop/hdfs_nn'
     #   ctx.waitIsOpen namenodes, 50070, (err) ->
     #     lifecycle.dn_start ctx, (err, started) ->
     #       next err, ctx.OK
@@ -195,7 +195,7 @@ afect HDFS metadata.
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
       do_user_unix = ->
-        # Phyla group and user may already exist in "/etc/passwd" or in any sssd backend
+        # riba group and user may already exist in "/etc/passwd" or in any sssd backend
         ctx.group test_group, (err, gmodified) ->
           return next err if err
           ctx.user test_user, (err, umodified) ->

@@ -11,7 +11,7 @@ layout: module
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/yum'
-    module.exports.push 'phyla/hadoop/hdfs'
+    module.exports.push 'riba/hadoop/hdfs'
 
     module.exports.push module.exports.configure = (ctx) ->
       return if ctx.mapred_configured
@@ -20,7 +20,7 @@ layout: module
       require('./yarn').configure ctx
       require('./mapred_').configure ctx
       {static_host, realm} = ctx.config.hdp
-      jhs_host = ctx.host_with_module 'phyla/hadoop/mapred_jhs'
+      jhs_host = ctx.host_with_module 'riba/hadoop/mapred_jhs'
       # Options for mapred-site.xml
       ctx.config.hdp.mapred['mapreduce.job.counters.max'] ?= 120
       # Not sure if we need this, at this time, the directory isnt created

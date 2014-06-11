@@ -8,7 +8,8 @@ layout: module
 Execute these commands on the Ganglia server host machine.
 
     module.exports = []
-    module.exports.push 'masson/bootstrap'
+    module.exports.push 'masson/bootstrap/connection'
+    module.exports.push 'masson/bootstrap/mecano'
 
     module.exports.push name: 'Ganglia Collector # Stop', callback: (ctx, next) ->
       # ctx.execute

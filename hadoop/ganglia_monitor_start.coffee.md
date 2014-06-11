@@ -16,14 +16,11 @@ Execute this command on all the nodes in your Hadoop cluster.
       #   cmd: "/etc/init.d/hdp-gmond start"
       # , (err, executed) ->
       #   next err, if executed then ctx.OK else ctx.PASS
-      ctx.service [
-        name: 'httpd'
-        action: 'start'
-      ,
+      ctx.service
         name: 'ganglia-gmond-3.5.0-99'
         srv_name: 'hdp-gmond'
         action: 'start'
-      ], (err, stoped) ->
+      , (err, stoped) ->
         next err, if stoped then ctx.OK else ctx.PASS
 
 

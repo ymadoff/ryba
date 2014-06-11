@@ -1,6 +1,6 @@
 ---
 title: HDFS DataNode Start
-module: phyla/hadoop/hdfs_dn_start
+module: riba/hadoop/hdfs_dn_start
 layout: module
 ---
 
@@ -19,6 +19,6 @@ and some may be inactive.
       require('./hdfs').configure ctx
 
     module.exports.push name: 'HDP HDFS DN # Start', callback: (ctx, next) ->
-      return next new Error "Not an DataNode" unless ctx.has_module 'phyla/hadoop/hdfs_dn'
+      return next new Error "Not an DataNode" unless ctx.has_module 'riba/hadoop/hdfs_dn'
       lifecycle.dn_start ctx, (err, started) ->
         next err, if started then ctx.OK else ctx.PASS

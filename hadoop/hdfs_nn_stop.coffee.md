@@ -13,7 +13,7 @@ layout: module
       require('./hdfs').configure ctx
       require('./yarn').configure ctx
       require('./mapred').configure ctx
-      throw Error "Not a NameNode" unless ctx.has_module 'phyla/hadoop/hdfs_nn'
+      throw Error "Not a NameNode" unless ctx.has_module 'riba/hadoop/hdfs_nn'
 
     module.exports.push name: 'HDP HDFS NN # Stop ZKFC', callback: (ctx, next) ->
       lifecycle.zkfc_stop ctx, (err, stopped) ->

@@ -1,6 +1,6 @@
 ---
 title: Pig
-module: phyla/hadoop/pig
+module: riba/hadoop/pig
 layout: module
 ---
 
@@ -17,8 +17,8 @@ which in turns enables them to handle very large data sets.
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
-    module.exports.push 'phyla/hadoop/mapred_client'
-    module.exports.push 'phyla/hadoop/yarn_client'
+    module.exports.push 'riba/hadoop/mapred_client'
+    module.exports.push 'riba/hadoop/yarn_client'
 
 ## Configuration
 
@@ -126,8 +126,8 @@ installed. The script will only be executed the first time it is deployed
 unless the "hdp.force_check" configuration property is set to "true".
 
     module.exports.push name: 'HDP Pig # Check', callback: (ctx, next) ->
-      {force_check} = ctx.config.hdp
-      rm = ctx.host_with_module 'phyla/hadoop/yarn_rm'
+      {force_check, test_user} = ctx.config.hdp
+      rm = ctx.host_with_module 'riba/hadoop/yarn_rm'
       ctx.waitIsOpen rm, 8050, (err) ->
         return next err if err
         ctx.execute
@@ -182,7 +182,7 @@ unless the "hdp.force_check" configuration property is set to "true".
 
     module.exports.push name: 'HDP Pig # Check HCat', callback: (ctx, next) ->
       {test_user, force_check} = ctx.config.hdp
-      rm = ctx.host_with_module 'phyla/hadoop/yarn_rm'
+      rm = ctx.host_with_module 'riba/hadoop/yarn_rm'
       host = ctx.config.host.split('.')[0]
       query = (query) -> "hcat -e \"#{query}\" "
       db = "check_#{host}_pig_hcat"

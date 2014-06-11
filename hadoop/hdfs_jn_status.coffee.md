@@ -1,6 +1,6 @@
 ---
 title: HDFS JournalNode Status
-module: phyla/hadoop/hdfs_jn_status
+module: riba/hadoop/hdfs_jn_status
 layout: module
 ---
 
