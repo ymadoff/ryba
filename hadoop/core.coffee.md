@@ -67,8 +67,8 @@ Default configuration:
       "comment": "MapReduce User", "home": "/var/lib/hadoop-mapreduce"
     },
     "test_user": {
-      "name": "riba", "system": true, "gid": "riba",
-      "comment": "riba User", "home": "/home/riba"
+      "name": "ryba", "system": true, "gid": "ryba",
+      "comment": "ryba User", "home": "/home/ryba"
     },
     "hadoop_group": {
       "name": "hadoop", "system": true
@@ -83,7 +83,7 @@ Default configuration:
       "name": "mapred", "system": true
     },
     "test_group": {
-      "name": "riba", "system": true
+      "name": "ryba", "system": true
     }
   }
 }
@@ -123,11 +123,11 @@ Default configuration:
       ctx.config.hdp.mapred_user.home ?= '/var/lib/hadoop-mapreduce'
       ctx.config.hdp.test_user = name: ctx.config.hdp.test_user if typeof ctx.config.hdp.test_user is 'string'
       ctx.config.hdp.test_user ?= {}
-      ctx.config.hdp.test_user.name ?= 'riba'
+      ctx.config.hdp.test_user.name ?= 'ryba'
       ctx.config.hdp.test_user.system ?= true
-      ctx.config.hdp.test_user.gid ?= 'riba'
-      ctx.config.hdp.test_user.comment ?= 'riba User'
-      ctx.config.hdp.test_user.home ?= '/home/riba'
+      ctx.config.hdp.test_user.gid ?= 'ryba'
+      ctx.config.hdp.test_user.comment ?= 'ryba User'
+      ctx.config.hdp.test_user.home ?= '/home/ryba'
       # Groups
       ctx.config.hdp.hadoop_group = name: ctx.config.hdp.hadoop_group if typeof ctx.config.hdp.hadoop_group is 'string'
       ctx.config.hdp.hadoop_group ?= {}
@@ -147,7 +147,7 @@ Default configuration:
       ctx.config.hdp.mapred_group.system ?= true
       ctx.config.hdp.test_group = name: ctx.config.hdp.test_group if typeof ctx.config.hdp.test_group is 'string'
       ctx.config.hdp.test_group ?= {}
-      ctx.config.hdp.test_group.name ?= 'riba'
+      ctx.config.hdp.test_group.name ?= 'ryba'
       ctx.config.hdp.test_group.system ?= true
       # Layout
       ctx.config.hdp.hadoop_conf_dir ?= '/etc/hadoop/conf'
@@ -160,7 +160,7 @@ Default configuration:
       # HA Configuration
       ctx.config.hdp.nameservice ?= null
       throw new Error "Invalid Service Name" unless ctx.config.hdp.nameservice
-      namenodes = ctx.hosts_with_module 'riba/hadoop/hdfs_nn'
+      namenodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       throw new Error "Need at least 2 namenodes" if namenodes.length < 2
       ctx.config.hdp.active_nn ?= false
       active_nn_hosts = ctx.config.servers.filter( (server) -> server.hdp?.active_nn ).map( (server) -> server.host )

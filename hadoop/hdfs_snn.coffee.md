@@ -8,7 +8,7 @@ layout: module
     lifecycle = require './lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'riba/hadoop/hdfs'
+    module.exports.push 'ryba/hadoop/hdfs'
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx

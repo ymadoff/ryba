@@ -9,9 +9,9 @@ layout: module
     mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'riba/hadoop/hdfs'
-    # module.exports.push 'riba/hadoop/zookeeper'
-    module.exports.push 'riba/hadoop/hbase'
+    module.exports.push 'ryba/hadoop/hdfs'
+    # module.exports.push 'ryba/hadoop/zookeeper'
+    module.exports.push 'ryba/hadoop/hbase'
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx

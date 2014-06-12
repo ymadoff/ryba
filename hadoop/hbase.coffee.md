@@ -34,7 +34,7 @@ Example
       ctx.hbase_configured = true
       require('./core').configure ctx
       {static_host, realm} = ctx.config.hdp
-      zookeeper_hosts = ctx.hosts_with_module('riba/hadoop/zookeeper').join ','
+      zookeeper_hosts = ctx.hosts_with_module('ryba/hadoop/zookeeper').join ','
       # User
       ctx.config.hdp.hbase_user = name: ctx.config.hdp.hbase_user if typeof ctx.config.hdp.hbase_user is 'string'
       ctx.config.hdp.hbase_user ?= {}
@@ -145,7 +145,7 @@ Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocument
 
     module.exports.push name: 'HDP HBase # RegionServers', callback: (ctx, next) ->
       {hbase_conf_dir, hbase_user, hadoop_group} = ctx.config.hdp
-      regionservers = ctx.hosts_with_module('riba/hadoop/hbase_regionserver').join '\n'
+      regionservers = ctx.hosts_with_module('ryba/hadoop/hbase_regionserver').join '\n'
       ctx.write
         content: regionservers
         destination: "#{hbase_conf_dir}/regionservers"

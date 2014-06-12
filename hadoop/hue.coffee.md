@@ -17,10 +17,10 @@ It also ships with an Oozie Application for creating and monitoring workflows, a
     # Install kerberos clients to create/test new Hive principal
     module.exports.push 'masson/core/krb5_client'
     # Set java_home in "hadoop-env.sh"
-    module.exports.push 'riba/hadoop/core'
-    module.exports.push 'riba/hadoop/mapred_client'
-    module.exports.push 'riba/hadoop/yarn_client'
-    module.exports.push 'riba/hadoop/pig'
+    module.exports.push 'ryba/hadoop/core'
+    module.exports.push 'ryba/hadoop/mapred_client'
+    module.exports.push 'ryba/hadoop/yarn_client'
+    module.exports.push 'ryba/hadoop/pig'
 
 ## Configure
 
@@ -90,9 +90,9 @@ Example:
       if db.engine isnt 'sqlite3'
         throw new Exception "Missing database admin username" unless ctx.config.hdp.hue_db_admin_username
       webhcat_port = webhcat_site['templeton.port']
-      webhcat_server = ctx.host_with_module 'riba/hadoop/webhcat'
+      webhcat_server = ctx.host_with_module 'ryba/hadoop/webhcat'
       # todo, this might not work as expected after ha migration
-      resourcemanager = ctx.host_with_module 'riba/hadoop/yarn_rm'
+      resourcemanager = ctx.host_with_module 'ryba/hadoop/yarn_rm'
       # Webhdfs should be active on the NameNode, Secondary NameNode, and all the DataNodes
       # throw new Error 'WebHDFS not active' if ctx.config.hdp.hdfs_site['dfs.webhdfs.enabled'] isnt 'true'
       ctx.config.hdp.hue_conf_dir ?= '/etc/hue/conf'
@@ -195,7 +195,7 @@ users.
 
 Todo: We are currently only modifying the "core-site.xml" locally while it should 
 be deployed on all the master and worker nodes. This is currently achieved through
-the configuration picked up by the "riba/hadoop/core" module.
+the configuration picked up by the "ryba/hadoop/core" module.
 
     module.exports.push name: 'HDP Hue # Core', callback: (ctx, next) ->
       {hadoop_conf_dir} = ctx.config.hdp
@@ -221,7 +221,7 @@ to allow impersonnation through the "hue" user.
 
     module.exports.push name: 'HDP Hue # WebHCat', callback: (ctx, next) ->
       {webhcat_conf_dir} = ctx.config.hdp
-      webhcat_server = ctx.host_with_module 'riba/hadoop/webhcat'
+      webhcat_server = ctx.host_with_module 'ryba/hadoop/webhcat'
       hconfigure = (ssh) ->
         properties = 
           'webhcat.proxyuser.hue.hosts': '*'
@@ -248,7 +248,7 @@ to allow impersonnation through the "hue" user.
 
     module.exports.push name: 'HDP Hue # Oozie', callback: (ctx, next) ->
       {oozie_conf_dir} = ctx.config.hdp
-      oozie_server = ctx.host_with_module 'riba/hadoop/oozie_server'
+      oozie_server = ctx.host_with_module 'ryba/hadoop/oozie_server'
       hconfigure = (ssh) ->
         properties = 
           'oozie.service.ProxyUserService.proxyuser.hue.hosts': '*'
@@ -398,9 +398,9 @@ the "security_enabled" property set to "true".
 
 ## Start
 
-Use the "riba/hadoop/hue_start" module to start the Hue server.
+Use the "ryba/hadoop/hue_start" module to start the Hue server.
 
-    module.exports.push "riba/hadoop/hue_start"
+    module.exports.push "ryba/hadoop/hue_start"
 
 ## SSL
 

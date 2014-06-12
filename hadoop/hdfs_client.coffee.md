@@ -9,7 +9,7 @@ layout: module
     mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'riba/hadoop/core'
+    module.exports.push 'ryba/hadoop/core'
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx
@@ -40,7 +40,7 @@ layout: module
       {hadoop_conf_dir, hdfs_site, test_user} = ctx.config.hdp
       port = hdfs_site['dfs.datanode.address']?.split('.')[1] or 1019
       # # DataNodes must all be started
-      # datanodes = ctx.hosts_with_module 'riba/hadoop/hdfs_dn'
+      # datanodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_dn'
       # ctx.waitIsOpen datanodes, port, (err) ->
       #   return next err if err
       # User "test" should be created

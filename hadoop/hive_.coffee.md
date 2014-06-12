@@ -8,8 +8,8 @@ layout: module
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/commons/java'
-    module.exports.push 'riba/hadoop/core'
-    module.exports.push 'riba/hadoop/hdfs_client'
+    module.exports.push 'ryba/hadoop/core'
+    module.exports.push 'ryba/hadoop/hdfs_client'
 
 ## Configure
 
@@ -40,10 +40,10 @@ Example:
       require('./core').configure ctx
       {static_host, realm} = ctx.config.hdp
       ctx.config.hdp.hive_conf_dir ?= '/etc/hive/conf'
-      metastore_host = ctx.config.hdp.hive_metastore_host ?= ctx.host_with_module 'riba/hadoop/hive_server'
+      metastore_host = ctx.config.hdp.hive_metastore_host ?= ctx.host_with_module 'ryba/hadoop/hive_server'
       ctx.config.hdp.hive_metastore_port ?= 9083
       ctx.config.hdp.hive_metastore_timeout ?= 20000 # 20s
-      ctx.config.hdp.hive_server2_host ?= ctx.host_with_module 'riba/hadoop/hive_server'
+      ctx.config.hdp.hive_server2_host ?= ctx.host_with_module 'ryba/hadoop/hive_server'
       ctx.config.hdp.hive_server2_port ?= 10000
       ctx.config.hdp.hive_server2_timeout ?= 20000 # 20s
       # User

@@ -1,6 +1,6 @@
 ---
 title: HDFS DataNode Status
-module: riba/hadoop/hdfs_dn_status
+module: ryba/hadoop/hdfs_dn_status
 layout: module
 ---
 

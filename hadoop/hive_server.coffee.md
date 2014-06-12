@@ -17,11 +17,11 @@ layout: module
     module.exports.push 'masson/commons/mysql_client'
     # Deploy the HDP repository
     # Configure "core-site.xml" and "hadoop-env.sh"
-    module.exports.push 'riba/hadoop/core'
+    module.exports.push 'ryba/hadoop/core'
     # Install kerberos to create and test new Hive principal
     module.exports.push 'masson/core/krb5_client'
     # Install the Hive and HCatalog service
-    module.exports.push 'riba/hadoop/hive_'
+    module.exports.push 'ryba/hadoop/hive_'
     # Validate DNS lookup
     module.exports.push 'masson/core/dns'
 

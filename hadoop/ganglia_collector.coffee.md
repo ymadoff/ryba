@@ -1,6 +1,6 @@
 ---
 title: Ganglia Collector
-module: riba/hadoop/ganglia_collector
+module: ryba/hadoop/ganglia_collector
 layout: module
 ---
 

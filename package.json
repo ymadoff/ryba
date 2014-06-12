@@ -1,5 +1,5 @@
 {
-  "name": "riba",
+  "name": "ryba",
   "version": "0.0.1",
   "description": "Hadoop deployment made easy: HA and Kerberos secured cluster in 1 command",
   "dependencies": {

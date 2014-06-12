@@ -22,8 +22,8 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/commons/mysql_client'
-    module.exports.push 'riba/hadoop/core'
-    module.exports.push 'riba/hadoop/hdfs' # SPNEGO need access to the principal HTTP/$HOST@$REALM's keytab
+    module.exports.push 'ryba/hadoop/core'
+    module.exports.push 'ryba/hadoop/hdfs' # SPNEGO need access to the principal HTTP/$HOST@$REALM's keytab
 
 ## Configure
 
@@ -375,9 +375,9 @@ oozie:x:493:
       , (err, executed) ->
         next err, if executed then ctx.OK else ctx.PASS
 
-    module.exports.push 'riba/hadoop/oozie_server_start'
+    module.exports.push 'ryba/hadoop/oozie_server_start'
 
-    module.exports.push 'riba/hadoop/oozie_client'
+    module.exports.push 'ryba/hadoop/oozie_client'
 
 
   

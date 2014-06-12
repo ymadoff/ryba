@@ -13,6 +13,6 @@ layout: module
       require('./hdfs').configure ctx
 
     module.exports.push name: 'HDP HDFS SNN # Start', callback: (ctx, next) ->
-      return next new Error "Not an Secondary NameNode" unless ctx.has_module 'riba/hadoop/hdfs_snn'
+      return next new Error "Not an Secondary NameNode" unless ctx.has_module 'ryba/hadoop/hdfs_snn'
       lifecycle.snn_start ctx, (err, started) ->
         next err, if started then ctx.OK else ctx.PASS

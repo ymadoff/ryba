@@ -1,6 +1,6 @@
 ---
 title: HDFS JournalNode
-module: riba/hadoop/hdfs_jn
+module: ryba/hadoop/hdfs_jn
 layout: module
 ---
 
@@ -32,11 +32,11 @@ most (N - 1) / 2 failures to continue to function normally.
     mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'riba/hadoop/hdfs'
+    module.exports.push 'ryba/hadoop/hdfs'
 
 ## Configuration
 
-The JournalNode uses properties define inside the "riba/hadoop/hdfs" module. It
+The JournalNode uses properties define inside the "ryba/hadoop/hdfs" module. It
 also declare a new property "dfs.journalnode.edits.dir".
 
 *   `hdp.hdfs_site['dfs.journalnode.edits.dir']` (string)   
@@ -119,7 +119,7 @@ properties include "dfs.namenode.shared.edits.dir".
 
     module.exports.push name: 'HDP HDFS NN # Configure HA', callback: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config} = ctx.config.hdp
-      journalnodes = ctx.hosts_with_module 'riba/hadoop/hdfs_jn'
+      journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
       ha_client_config['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
       ha_client_config['dfs.namenode.shared.edits.dir'] = "qjournal://#{ha_client_config['dfs.namenode.shared.edits.dir']}/#{ha_client_config['dfs.nameservices']}"
       ctx.hconfigure
@@ -131,9 +131,9 @@ properties include "dfs.namenode.shared.edits.dir".
 
 ## Start
 
-Load the module "riba/hadoop/hdfs\_jn\_start" to start the JournalNode.
+Load the module "ryba/hadoop/hdfs\_jn\_start" to start the JournalNode.
 
-    module.exports.push 'riba/hadoop/hdfs_jn_start'
+    module.exports.push 'ryba/hadoop/hdfs_jn_start'
 
 
 

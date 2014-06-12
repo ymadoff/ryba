@@ -8,7 +8,7 @@ layout: module
     lifecycle = require './lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'riba/hadoop/yarn'
+    module.exports.push 'ryba/hadoop/yarn'
 
     module.exports.push (ctx) ->
       require('./yarn').configure ctx
@@ -43,9 +43,9 @@ The default port is "19888".
 
 ## Start RM
 
-Execute the "riba/hadoop/yarn_rm_start" module to start the Resource Manager.
+Execute the "ryba/hadoop/yarn_rm_start" module to start the Resource Manager.
 
-    module.exports.push 'riba/hadoop/yarn_rm_start'
+    module.exports.push 'ryba/hadoop/yarn_rm_start'
 
     # module.exports.push name: 'HDP YARN RM # Start', callback: (ctx, next) ->
     #   lifecycle.rm_start ctx, (err, started) ->

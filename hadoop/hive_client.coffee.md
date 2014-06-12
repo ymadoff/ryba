@@ -11,9 +11,9 @@ layout: module
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
-    module.exports.push 'riba/hadoop/hive_'
-    module.exports.push 'riba/hadoop/mapred_client'
-    module.exports.push 'riba/hadoop/yarn_client'
+    module.exports.push 'ryba/hadoop/hive_'
+    module.exports.push 'ryba/hadoop/mapred_client'
+    module.exports.push 'ryba/hadoop/yarn_client'
 
 Example of a minimal client configuration:
 ```xml

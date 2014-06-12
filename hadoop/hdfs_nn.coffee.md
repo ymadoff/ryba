@@ -1,6 +1,6 @@
 ---
 title: HDP HDFS NameNode
-module: riba/hadoop/hdfs_nn
+module: ryba/hadoop/hdfs_nn
 layout: module
 ---
 
@@ -26,12 +26,12 @@ provides [instructions to rollback a HA installation][rollback] that apply to Am
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
     # module.exports.push 'masson/core/iptables'
-    module.exports.push 'riba/hadoop/hdfs'
+    module.exports.push 'ryba/hadoop/hdfs'
 
 ## Configuration
 
 The NameNode doesn't define new configuration properties. However, it uses properties
-define inside the "riba/hadoop/hdfs" and "masson/core/nc" modules.
+define inside the "ryba/hadoop/hdfs" and "masson/core/nc" modules.
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx
@@ -129,7 +129,7 @@ similar than the ones for a client or slave configuration with the addtionnal
 
     module.exports.push name: 'HDP HDFS NN # Configure HA', callback: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config} = ctx.config.hdp
-      journalnodes = ctx.hosts_with_module 'riba/hadoop/hdfs_jn'
+      journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
       ha_client_config['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
       ha_client_config['dfs.namenode.shared.edits.dir'] = "qjournal://#{ha_client_config['dfs.namenode.shared.edits.dir']}/#{ha_client_config['dfs.nameservices']}"
       ctx.hconfigure
@@ -218,7 +218,7 @@ if the NameNode was formated.
       return next() unless format
       # Shall only be executed on the leader namenode
       return next null, ctx.INAPPLICABLE unless active_nn
-      journalnodes = ctx.hosts_with_module 'riba/hadoop/hdfs_jn'
+      journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
       any_dfs_name_dir = hdfs_site['dfs.namenode.name.dir'].split(',')[0]
       # all the JournalNodes shall be started
       ctx.waitIsOpen journalnodes, 8485, (err) ->
@@ -269,7 +269,7 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
 
     module.exports.push name: 'HDP HDFS NN # HA Auto Failover', timeout: -1, callback: (ctx, next) ->
       {hadoop_conf_dir, active_nn, active_nn_host} = ctx.config.hdp
-      zookeepers = ctx.hosts_with_module 'riba/hadoop/zookeeper'
+      zookeepers = ctx.hosts_with_module 'ryba/hadoop/zookeeper'
       modified = false
       do_hdfs = ->
         ctx.hconfigure
@@ -349,7 +349,7 @@ during the HDFS format phase.
 
     module.exports.push name: 'HDP HDFS NN # Start', timeout: -1, callback: (ctx, next) ->
       do_wait = ->
-        jns = ctx.hosts_with_module 'riba/hadoop/hdfs_jn'
+        jns = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
         # Check if we are HA
         return do_start() if jns.length is 0
         # If so, at least one journalnode must be available

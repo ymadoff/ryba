@@ -1,6 +1,6 @@
 ---
 title: Ganglia Monitor
-module: riba/hadoop/ganglia_monitor
+module: ryba/hadoop/ganglia_monitor
 layout: module
 ---
 
@@ -75,16 +75,16 @@ Setup the Ganglia hosts. Categories are "HDPNameNode", "HDPResourceManager",
     module.exports.push name: 'Ganglia Monitor # Host', timeout: -1, callback: (ctx, next) ->
       cmds = []
       # On the NameNode and SecondaryNameNode servers, to configure the gmond emitters
-      if ctx.has_any_modules 'riba/hadoop/hdfs_nn', 'riba/hadoop/hdfs_snn'
+      if ctx.has_any_modules 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_snn'
         cmds.push cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPNameNode"
       # On the ResourceManager server, to configure the gmond emitters
-      if ctx.has_any_modules 'riba/hadoop/yarn_rm'
+      if ctx.has_any_modules 'ryba/hadoop/yarn_rm'
         cmds.push cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPResourceManager"
       # On all hosts, to configure the gmond emitters
-      if ctx.has_any_modules 'riba/hadoop/hdfs_dn', 'riba/hadoop/yarn_nm'
+      if ctx.has_any_modules 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm'
         cmds.push cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPSlaves"
       # If HBase is installed, on the HBase Master, to configure the gmond emitter
-      if ctx.has_any_modules 'riba/hadoop/hbase_master'
+      if ctx.has_any_modules 'ryba/hadoop/hbase_master'
         cmds.push cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPHBaseMaster"
       ctx.execute cmds, (err, executed) ->
         next err, if executed then ctx.OK else ctx.PASS
@@ -94,27 +94,27 @@ Setup the Ganglia hosts. Categories are "HDPNameNode", "HDPResourceManager",
 Update the files generated in the "host" action with the host of the Ganglia Collector.
 
     module.exports.push name: 'Ganglia Monitor # Configuration', timeout: -1, callback: (ctx, next) ->
-      collector = ctx.host_with_module 'riba/hadoop/ganglia_collector'
+      collector = ctx.host_with_module 'ryba/hadoop/ganglia_collector'
       writes = []
-      if ctx.has_any_modules 'riba/hadoop/hdfs_nn', 'riba/hadoop/hdfs_snn'
+      if ctx.has_any_modules 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_snn'
         writes.push
           destination: "/etc/ganglia/hdp/HDPNameNode/conf.d/gmond.slave.conf"
           match: /^(.*)host = (.*)$/mg
           replace: "$1host = #{collector}"
       # On the ResourceManager server, to configure the gmond emitters
-      if ctx.has_any_modules 'riba/hadoop/yarn_rm'
+      if ctx.has_any_modules 'ryba/hadoop/yarn_rm'
         writes.push
           destination: "/etc/ganglia/hdp/HDPResourceManager/conf.d/gmond.slave.conf"
           match: /^(.*)host = (.*)$/mg
           replace: "$1host = #{collector}"
       # On all hosts, to configure the gmond emitters
-      if ctx.has_any_modules 'riba/hadoop/hdfs_dn', 'riba/hadoop/yarn_nm'
+      if ctx.has_any_modules 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm'
         writes.push
           destination: "/etc/ganglia/hdp/HDPSlaves/conf.d/gmond.slave.conf"
           match: /^(.*)host = (.*)$/mg
           replace: "$1host = #{collector}"
       # If HBase is installed, on the HBase Master, to configure the gmond emitter
-      if ctx.has_any_modules 'riba/hadoop/hbase_master'
+      if ctx.has_any_modules 'ryba/hadoop/hbase_master'
         writes.push
           destination: "/etc/ganglia/hdp/HDPHBaseMaster/conf.d/gmond.slave.conf"
           match: /^(.*)host = (.*)$/mg
@@ -127,7 +127,7 @@ Update the files generated in the "host" action with the host of the Ganglia Col
 Upload the "hadoop-metrics2.properties" to connect Hadoop with Ganglia.
 
     module.exports.push name: 'Ganglia Monitor # Hadoop', callback: (ctx, next) ->
-      collector = ctx.host_with_module 'riba/hadoop/ganglia_collector'
+      collector = ctx.host_with_module 'ryba/hadoop/ganglia_collector'
       ctx.write
         source: "#{__dirname}/files/core_hadoop/hadoop-metrics2.properties-GANGLIA"
         local_source: true

@@ -1,6 +1,6 @@
 ---
 title: Sqoop
-module: riba/hadoop/sqoop
+module: ryba/hadoop/sqoop
 layout: module
 ---
 
@@ -22,7 +22,7 @@ driver used by Sqoop.
 
 ## Configuration
 
-The module extends the "riba/hadoop/core" module configuration.
+The module extends the "ryba/hadoop/core" module configuration.
 
 *   `hdp.sqoop.libs`, (array, string)   
     List jar files (usually JDBC drivers) to upload into the Sqoop lib path. 

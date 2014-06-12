@@ -11,7 +11,7 @@ layout: module
     memory = require './lib/memory'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'riba/hadoop/core'
+    module.exports.push 'ryba/hadoop/core'
 
     module.exports.push module.exports.configure = (ctx) ->
       return if ctx.yarn_configured
@@ -19,9 +19,9 @@ layout: module
       require('./hdfs').configure ctx
       {static_host, realm} = ctx.config.hdp
       # Grab the host(s) for each roles
-      resourcemanager = ctx.host_with_module 'riba/hadoop/yarn_rm'
+      resourcemanager = ctx.host_with_module 'ryba/hadoop/yarn_rm'
       ctx.log "Resource manager: #{resourcemanager}"
-      jobhistoryserver = ctx.host_with_module 'riba/hadoop/mapred_jhs'
+      jobhistoryserver = ctx.host_with_module 'ryba/hadoop/mapred_jhs'
       ctx.log "Job History Server: #{jobhistoryserver}"
       ctx.config.hdp.yarn_log_dir ?= '/var/log/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#20
       ctx.config.hdp.yarn_pid_dir ?= '/var/run/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#21
@@ -99,14 +99,14 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       yarn_opts = ""
       for k, v of ctx.config.hdp.yarn_opts
         yarn_opts += "-D#{k}=#{v} "
-      yarn_opts = "YARN_OPTS=\"$YARN_OPTS #{yarn_opts}\" # riba"
+      yarn_opts = "YARN_OPTS=\"$YARN_OPTS #{yarn_opts}\" # ryba"
       ctx.config.hdp.yarn_opts = yarn_opts
       ctx.render
         source: "#{__dirname}/files/core_hadoop/yarn-env.sh"
         destination: "#{hadoop_conf_dir}/yarn-env.sh"
         local_source: true
         write: [
-          match: /^.*riba$/mg
+          match: /^.*ryba$/mg
           replace: yarn_opts
           append: 'yarn.policy.file'
         ]
@@ -262,7 +262,7 @@ Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Co
     #   # memory_maximum = yarn_site['yarn.scheduler.maximum-allocation-mb'] ?= Math.min memory, Math.max 6144, memory_minimum * 3
     #   memory_maximum = yarn_site['yarn.scheduler.maximum-allocation-mb'] ?= memory
     #   # yarn_site['yarn.scheduler.maximum-allocation-mb'] = 6144
-    #   ratio = yarn_site['yarn.nodemanager.vmem-pmem-ratio'] ?= "2.1" # also defined by riba/hadoop/mapred
+    #   ratio = yarn_site['yarn.nodemanager.vmem-pmem-ratio'] ?= "2.1" # also defined by ryba/hadoop/mapred
     #   # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap1-11.html
     #   yarn_site['yarn.app.mapreduce.am.resource.mb'] ?= Math.min memory, Math.floor 2 * memory_minimum # 2 * RAM-per-Container
     #   yarn_site['yarn.app.mapreduce.am.command-opts'] ?= Math.min memory, Math.floor 0.8 * 2 * memory_minimum # = 0.8 * 2 * RAM-per-Container 
