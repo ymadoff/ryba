@@ -32,6 +32,7 @@ Example
     module.exports.push module.exports.configure = (ctx) ->
       return if ctx.hbase_configured
       ctx.hbase_configured = true
+      require('masson/commons/java').configure ctx
       require('./core').configure ctx
       {static_host, realm} = ctx.config.hdp
       zookeeper_hosts = ctx.hosts_with_module('ryba/hadoop/zookeeper').join ','
@@ -131,12 +132,16 @@ Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocument
         next err, if configured then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP HBase # Env', callback: (ctx, next) ->
+      {java_home} = ctx.config.java
       {hbase_conf_dir, hbase_log_dir} = ctx.config.hdp
       ctx.log 'Write hbase-env.sh'
       ctx.upload
         source: "#{__dirname}/files/hbase/hbase-env.sh"
         destination: "#{hbase_conf_dir}/hbase-env.sh"
         write: [
+          match: /^export JAVA_HOME=.*$/mg
+          replace: "export JAVA_HOME=#{java_home}"
+        ,
           match: /^(export HBASE_LOG_DIR=).*$/mg
           replace: "$1#{hbase_log_dir}"
         ]

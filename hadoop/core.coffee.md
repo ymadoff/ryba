@@ -93,6 +93,7 @@ Default configuration:
       return if ctx.core_configured
       ctx.core_configured = true
       require('masson/core/proxy').configure ctx
+      require('masson/commons/java').configure ctx
       ctx.config.hdp ?= {}
       ctx.config.hdp.format ?= false
       ctx.config.hdp.force_check ?= false
@@ -188,6 +189,7 @@ Default configuration:
       hadoop_opts += "${HADOOP_OPTS}\""
       ctx.config.hdp.hadoop_opts = hadoop_opts
       # Database administration
+      # todo: `require('masson/commons/mysql_server').configure ctx` and use returned values as default values
       ctx.config.hdp.db_admin ?= {}
       ctx.config.hdp.db_admin.engine ?= 'mysql'
       switch ctx.config.hdp.db_admin.engine
@@ -322,6 +324,7 @@ mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
 correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
     module.exports.push name: 'HDP Core # Hadoop OPTS', timeout: -1, callback: (ctx, next) ->
+      {java_home} = ctx.config.java
       {hadoop_conf_dir, hdfs_user, hadoop_group, hadoop_opts, hdfs_log_dir, hdfs_pid_dir} = ctx.config.hdp
       ctx.fs.exists '/usr/libexec/bigtop-utils', (err, exists) ->
         return next err if err
@@ -334,7 +337,10 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
           gid: hadoop_group.name
           mode: 0o755
           write: [
-            match: /^export HADOOP_OPTS.*$/mg
+            match: /^export JAVA_HOME=.*$/mg
+            replace: "export JAVA_HOME=#{java_home}"
+          ,
+            match: /^export HADOOP_OPTS=.*$/mg
             replace: hadoop_opts
           ,
             match: /\/var\/log\/hadoop\//mg
@@ -342,9 +348,6 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
           , 
             match: /\/var\/run\/hadoop\//mg
             replace: "#{hdfs_pid_dir}/"
-          # ,
-          #   match: /^export JSVC_HOME=.*$/mg
-          #   replace: "export JSVC_HOME=/usr/libexec/bigtop-utils"
           ,
             match: /^export JSVC_HOME=.*$/mg
             replace: "export JSVC_HOME=#{jsvc}"

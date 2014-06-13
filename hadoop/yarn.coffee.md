@@ -16,6 +16,7 @@ layout: module
     module.exports.push module.exports.configure = (ctx) ->
       return if ctx.yarn_configured
       ctx.yarn_configured = true
+      require('masson/commons/java').configure ctx
       require('./hdfs').configure ctx
       {static_host, realm} = ctx.config.hdp
       # Grab the host(s) for each roles
@@ -95,6 +96,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         next null, if created then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP YARN # Yarn OPTS', callback: (ctx, next) ->
+      {java_home} = ctx.config.java
       {yarn_user, hadoop_group, hadoop_conf_dir} = ctx.config.hdp
       yarn_opts = ""
       for k, v of ctx.config.hdp.yarn_opts
@@ -106,6 +108,9 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         destination: "#{hadoop_conf_dir}/yarn-env.sh"
         local_source: true
         write: [
+          match: /^export JAVA_HOME=.*$/mg
+          replace: "export JAVA_HOME=#{java_home}"
+        ,
           match: /^.*ryba$/mg
           replace: yarn_opts
           append: 'yarn.policy.file'

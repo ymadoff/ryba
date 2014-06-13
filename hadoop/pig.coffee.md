@@ -48,6 +48,7 @@ Example:
 ```
 
     module.exports.push module.exports.configure = (ctx) ->
+      require('masson/commons/java').configure ctx
       require('./hdfs').configure ctx
       # User
       ctx.config.hdp.pig_user = name: ctx.config.hdp.pig_user if typeof ctx.config.hdp.pig_user is 'string'
@@ -107,11 +108,16 @@ companion file define no properties while the YUM package does.
       next null, ctx.PASS
 
     module.exports.push name: 'HDP Pig # Env', callback: (ctx, next) ->
+      {java_home} = ctx.config.java
       {hadoop_group, pig_conf_dir, pig_user} = ctx.config.hdp
       ctx.write
         source: "#{__dirname}/files/pig/pig-env.sh"
         destination: "#{pig_conf_dir}/pig-env.sh"
         local_source: true
+        write: [
+          match: /^JAVA_HOME=.*$/mg
+          replace: java_home
+        ]
         uid: pig_user.name
         gid: hadoop_group.name
         mode: 0o755

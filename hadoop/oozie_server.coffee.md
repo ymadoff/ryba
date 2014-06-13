@@ -46,7 +46,7 @@ Example
 ```
 
     module.exports.push module.exports.configure = (ctx) ->
-      require('masson/commons/mysql_server').configure ctx
+      require('masson/commons/java').configure ctx
       require('./core').configure ctx
       {static_host, realm, core_site, test_user, test_password, db_admin} = ctx.config.hdp
       # Internal properties
@@ -135,6 +135,7 @@ oozie:x:493:
         next err, if serviced then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Oozie # Environment', callback: (ctx, next) ->
+      {java_home} = ctx.config.java
       {oozie_user, hadoop_group, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_data} = ctx.config.hdp
       ctx.write
         source: "#{__dirname}/files/oozie/oozie-env.sh"
@@ -142,7 +143,7 @@ oozie:x:493:
         local_source: true
         write: [
           match: /^export JAVA_HOME=.*$/mg
-          replace: "export JAVA_HOME=/usr/java/default" # TODO, discover value from masson/commons/java
+          replace: "export JAVA_HOME=#{java_home}"
           append: true
         ,
           match: /^export JRE_HOME=.*$/mg

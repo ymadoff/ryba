@@ -37,6 +37,7 @@ Example:
     module.exports.push module.exports.configure = (ctx) ->
       return if ctx.hive__configured
       ctx.hive__configured = true
+      require('masson/commons/java').configure ctx
       require('./core').configure ctx
       {static_host, realm} = ctx.config.hdp
       ctx.config.hdp.hive_conf_dir ?= '/etc/hive/conf'
@@ -123,6 +124,7 @@ Instructions to [install the Hive and HCatalog RPMs](http://docs.hortonworks.com
 
     module.exports.push name: 'HDP Hive & HCat # Install', timeout: -1, callback: (ctx, next) ->
       modified = false
+      {java_home} = ctx.config.java
       {hive_conf_dir} = ctx.config.hdp
       do_hive = ->
         ctx.log 'Install the hive package'
@@ -130,10 +132,14 @@ Instructions to [install the Hive and HCatalog RPMs](http://docs.hortonworks.com
           return next err if err
           modified = true if serviced
           ctx.log 'Copy hive-env.sh'
-          conf_files = "#{__dirname}/files/hive"
-          ctx.upload
-            source: "#{conf_files}/hive-env.sh"
+          ctx.write
+            source: "#{__dirname}/files/hive/hive-env.sh"
             destination: "#{hive_conf_dir}/hive-env.sh"
+            local_source: true
+            write: [
+              match: /^export JAVA_HOME=.*$/mg
+              replace: "export JAVA_HOME=#{java_home}"
+            ]
           , (err, copied) ->
             return next err if err
             do_hcatalog()
