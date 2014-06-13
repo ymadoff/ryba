@@ -19,6 +19,7 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
     path = require 'path'
     lifecycle = require './lib/lifecycle'
     mkcmd = require './lib/mkcmd'
+    parse_jdbc = require './lib/parse_jdbc'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/commons/mysql_client'
@@ -47,8 +48,7 @@ Example
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/commons/mysql_server').configure ctx
       require('./core').configure ctx
-      {static_host, realm, core_site, test_user, test_password} = ctx.config.hdp
-      {realm} = ctx.config.hdp
+      {static_host, realm, core_site, test_user, test_password, db_admin} = ctx.config.hdp
       # Internal properties
       ctx.config.hdp.force_war ?= false
       # User
@@ -73,14 +73,11 @@ Example
       ctx.config.hdp.oozie_log_dir ?= '/var/log/oozie'
       ctx.config.hdp.oozie_pid_dir ?= '/var/run/oozie'
       ctx.config.hdp.oozie_tmp_dir ?= '/var/tmp/oozie'
-      # Database
-      dbhost = ctx.config.hdp.oozie_db_host ?= ctx.host_with_module 'masson/commons/mysql_server'
-      ctx.config.hdp.oozie_db_admin_username ?= ctx.config.mysql_server.username
-      ctx.config.hdp.oozie_db_admin_password ?= ctx.config.mysql_server.password
-      # Oozie configuration
+      # Configuration
       ctx.config.hdp.oozie_site ?= {}
       ctx.config.hdp.oozie_site['oozie.base.url'] = "http://#{ctx.config.host}:11000/oozie"
-      ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{dbhost}:3306/oozie?createDatabaseIfNotExist=true"
+      # Configuration Database
+      ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{db_admin.host}:#{db_admin.port}/oozie?createDatabaseIfNotExist=true"
       ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
       ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'
       ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
@@ -327,24 +324,29 @@ oozie:x:493:
         return next err, if copied then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Oozie Server # MySQL', callback: (ctx, next) ->
-      {oozie_db_admin_username, oozie_db_admin_password, oozie_db_host, oozie_site} = ctx.config.hdp
+      {db_admin, oozie_db_host, oozie_site} = ctx.config.hdp
       username = oozie_site['oozie.service.JPAService.jdbc.username']
       password = oozie_site['oozie.service.JPAService.jdbc.password']
-      escape = (text) -> text.replace(/[\\"]/g, "\\$&")
-      cmd = "mysql -u#{oozie_db_admin_username} -p#{oozie_db_admin_password} -h#{oozie_db_host} -e "
-      ctx.execute
-        cmd: """
-        if #{cmd} "use oozie"; then exit 2; fi
-        #{cmd} "
-        create database oozie;
-        grant all privileges on oozie.* to '#{username}'@'localhost' identified by '#{password}';
-        grant all privileges on oozie.* to '#{username}'@'%' identified by '#{password}';
-        flush privileges;
-        "
-        """
-        code_skipped: 2
-      , (err, created, stdout, stderr) ->
-        return next err, if created then ctx.OK else ctx.PASS
+      {engine, db} = parse_jdbc oozie_site['oozie.service.JPAService.jdbc.url']
+      engines = 
+        mysql: ->
+          escape = (text) -> text.replace(/[\\"]/g, "\\$&")
+          cmd = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
+          ctx.execute
+            cmd: """
+            if #{cmd} "use #{db}"; then exit 2; fi
+            #{cmd} "
+            create database #{db};
+            grant all privileges on #{db}.* to '#{username}'@'localhost' identified by '#{password}';
+            grant all privileges on #{db}.* to '#{username}'@'%' identified by '#{password}';
+            flush privileges;
+            "
+            """
+            code_skipped: 2
+          , (err, created, stdout, stderr) ->
+            return next err, if created then ctx.OK else ctx.PASS
+      return next new Error 'Database engine not supported' unless engines[engine]
+      engines[engine]()
 
     module.exports.push name: 'HDP Oozie Server # Database', callback: (ctx, next) ->
       ctx.execute

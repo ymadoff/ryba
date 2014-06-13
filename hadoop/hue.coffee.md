@@ -67,28 +67,8 @@ Example:
       require('./oozie_server').configure ctx
       # Allow proxy user inside "core-site.xml"
       require('./core').configure ctx
-      {nameservice, active_nn_host, hadoop_conf_dir, webhcat_site, hue_ini} = ctx.config.hdp
+      {nameservice, active_nn_host, hadoop_conf_dir, webhcat_site, hue_ini, db_admin} = ctx.config.hdp
       hue_ini ?= ctx.config.hdp.hue_ini = {}
-      # Prepare database configuration
-      engine = hue_ini?['desktop']?['database']?['engine']
-      mysql_hosts = ctx.hosts_with_module 'masson/commons/mysql_server'
-      if mysql_hosts.length isnt 1
-        mysql_hosts = mysql_hosts.filter (host) -> host is ctx.config.host
-      mysql_host = if mysql_hosts.length is 1 then mysql_hosts[0] else null
-      if (not engine and mysql_host) or engine is 'mysql'
-        ctx_mysql_server = ctx.hosts[mysql_host]
-        require('masson/commons/mysql_server').configure ctx_mysql_server
-        db = {port, username, password} = ctx_mysql_server.config.mysql_server
-        db.host = mysql_host
-        db.engine = 'mysql'
-      else if not engine
-        db = engine: 'sqlite3'
-      else
-        throw new Error 'Mysql not configured or not installed on this server'
-      ctx.config.hdp.hue_db_admin_username ?= db.username
-      ctx.config.hdp.hue_db_admin_password ?= db.password
-      if db.engine isnt 'sqlite3'
-        throw new Exception "Missing database admin username" unless ctx.config.hdp.hue_db_admin_username
       webhcat_port = webhcat_site['templeton.port']
       webhcat_server = ctx.host_with_module 'ryba/hadoop/webhcat'
       # todo, this might not work as expected after ha migration
@@ -151,9 +131,9 @@ Example:
       ctx.log "WARING: property 'hdp.hue_ini.desktop.smtp.host' isnt set" unless hue_ini['desktop']['smtp']['host']
       # Desktop database
       hue_ini['desktop']['database'] ?= {}
-      hue_ini['desktop']['database']['engine'] ?= db.engine
-      hue_ini['desktop']['database']['host'] ?= db.host
-      hue_ini['desktop']['database']['port'] ?= db.port
+      hue_ini['desktop']['database']['engine'] ?= db_admin.engine
+      hue_ini['desktop']['database']['host'] ?= db_admin.host
+      hue_ini['desktop']['database']['port'] ?= db_admin.port
       hue_ini['desktop']['database']['user'] ?= 'hue'
       hue_ini['desktop']['database']['password'] ?= 'hue123'
       hue_ini['desktop']['database']['name'] ?= 'hue'
@@ -293,23 +273,19 @@ implemented but Hue supports MySQL, PostgreSQL, and Oracle. Note, sqlite is
 the default database while mysql is the recommanded choice.
 
     module.exports.push name: 'HDP Hue # Database', callback: (ctx, next) ->
-      {hue_db_admin_username, hue_db_admin_password, hue_ini} = ctx.config.hdp
-      modified = false
+      {hue_ini, hue_user, db_admin} = ctx.config.hdp
       engines = 
         mysql: ->
-          host = hue_ini['desktop']['database']['host']
-          port = hue_ini['desktop']['database']['port']
-          user = hue_ini['desktop']['database']['user']
-          password = hue_ini['desktop']['database']['password']
+          {host, port, user, password, name} = hue_ini['desktop']['database']
           escape = (text) -> text.replace(/[\\"]/g, "\\$&")
-          cmd = "mysql -u#{hue_db_admin_username} -p#{hue_db_admin_password} -h#{host} -P#{port} -e "
+          cmd = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
           ctx.execute
             cmd: """
-            if #{cmd} "use hue"; then exit 2; fi
+            if #{cmd} "use #{name}"; then exit 2; fi
             #{cmd} "
-            create database hue;
-            grant all privileges on hue.* to '#{user}'@'localhost' identified by '#{password}';
-            grant all privileges on hue.* to '#{user}'@'%' identified by '#{password}';
+            create database #{name};
+            grant all privileges on #{name}.* to '#{user}'@'localhost' identified by '#{password}';
+            grant all privileges on #{name}.* to '#{user}'@'%' identified by '#{password}';
             flush privileges;
             "
             """
@@ -318,7 +294,7 @@ the default database while mysql is the recommanded choice.
             return next err, ctx.PASS if err or not created
             ctx.execute
               cmd: """
-              su -l hue -c "/usr/lib/hue/build/env/bin/hue syncdb --noinput"
+              su -l #{hue_user.name} -c "/usr/lib/hue/build/env/bin/hue syncdb --noinput"
               """
             , (err, executed) ->
               next err, ctx.OK
