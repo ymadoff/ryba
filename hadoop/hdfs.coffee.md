@@ -100,23 +100,6 @@ Example:
         ctx.config.hdp.ha_client_config["dfs.namenode.https-address.#{nameservice}.#{shortname}"] = "#{nn}:50470"
       ctx.config.hdp.ha_client_config["dfs.client.failover.proxy.provider.#{nameservice}"] = 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
 
-## Users
-
-TODO: check if this is still necessary. In version [HDP-2.0.9.1], this step is 
-now marked as optional and the users and groups are now created on package installation.
-
-[HDP-2.0.9.1]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap1-users-groups.html
-
-    module.exports.push name: 'HDP HDFS # Users', callback: (ctx, next) ->
-      return next() unless ctx.has_any_modules('hisi/hdp/hdfs_nn', 'hisi/hdp/hdfs_snn', 'hisi/hdp/hdfs_dn')
-      {hadoop_group} = ctx.config.hdp
-      ctx.execute
-        cmd: "useradd hdfs -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop HDFS service\""
-        code: 0
-        code_skipped: 9
-      , (err, executed) ->
-        next err, if executed then ctx.OK else ctx.PASS
-
     module.exports.push name: 'HDP HDFS # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
         name: 'hadoop'

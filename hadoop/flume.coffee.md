@@ -13,6 +13,7 @@ tunable reliability mechanisms and many failover and recovery mechanisms.
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push 'ryba/hadoop/hdfs' # Users and groups created by "zookeeper" and "hadoop-hdfs" dependencies
 
 ## Configure
 
