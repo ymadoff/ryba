@@ -109,6 +109,18 @@ thus Ganglia) from starting. The variable "RRDCACHED_BASE_DIR" should point to
       , (err, written) ->
         next err, if written then ctx.OK else ctx.PASS
 
+# ## Fix permission
+
+# The message "error collecting ganglia data (127.0.0.1:8652): fsockopen error"
+# appeared on one cluster. Another cluster installed at the same time seems
+# correct.
+
+#     module.exports.push name: 'Ganglia Collector # Fix permission', callback: (ctx, next) ->
+#       ctx.execute
+#         cmd: 'chown -R nobody:root /var/lib/ganglia/rrds'
+#       , (err, written) ->
+#         next err, ctx.PASS
+
 ## Fix User
 
 RRDtool is by default runing as "nobody". In order to work, nobody need a login shell

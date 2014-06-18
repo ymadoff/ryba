@@ -80,6 +80,9 @@ Setup the Ganglia hosts. Categories are "HDPNameNode", "HDPResourceManager",
       # On the ResourceManager server, to configure the gmond emitters
       if ctx.has_any_modules 'ryba/hadoop/yarn_rm'
         cmds.push cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPResourceManager"
+      # On the JobHistoryServer, to configure the gmond emitters
+      if ctx.has_any_modules 'ryba/hadoop/mapred_jhs'
+        cmds.push cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPHistoryServer"
       # On all hosts, to configure the gmond emitters
       if ctx.has_any_modules 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm'
         cmds.push cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPSlaves"
@@ -105,6 +108,12 @@ Update the files generated in the "host" action with the host of the Ganglia Col
       if ctx.has_any_modules 'ryba/hadoop/yarn_rm'
         writes.push
           destination: "/etc/ganglia/hdp/HDPResourceManager/conf.d/gmond.slave.conf"
+          match: /^(.*)host = (.*)$/mg
+          replace: "$1host = #{collector}"
+      # On the JobHistoryServer, to configure the gmond emitters
+      if ctx.has_any_modules 'ryba/hadoop/mapred_jhs'
+        writes.push
+          destination: "/etc/ganglia/hdp/HDPHistoryServer/conf.d/gmond.slave.conf"
           match: /^(.*)host = (.*)$/mg
           replace: "$1host = #{collector}"
       # On all hosts, to configure the gmond emitters
