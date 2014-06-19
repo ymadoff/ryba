@@ -117,7 +117,7 @@ also used by the NameNodes, DataNodes, ResourceManagers and NodeManagers.
 Add High Availability specific properties to the "hdfs-site.xml" file. Those
 properties include "dfs.namenode.shared.edits.dir".
 
-    module.exports.push name: 'HDP HDFS NN # Configure HA', callback: (ctx, next) ->
+    module.exports.push name: 'HDP HDFS JN # Configure HA', callback: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config} = ctx.config.hdp
       journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
       ha_client_config['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
