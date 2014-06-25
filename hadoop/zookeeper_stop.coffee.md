@@ -6,7 +6,6 @@ layout: module
 # Zookeeper Stop
 
     lifecycle = require './lib/lifecycle'
-    hdp_zookeeper = require './zookeeper'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 
