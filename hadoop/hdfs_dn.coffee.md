@@ -25,7 +25,7 @@ NameNodes, and send block location information and heartbeats to both.
     mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'masson/bootstrap/utils'
+    module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
 
 ## Configuration
@@ -34,7 +34,35 @@ The module doesn't require any configuration but instread rely on the
 "ryba/hadoop/hdfs" configuration settings.
 
     module.exports.push (ctx) ->
+      require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
+
+## IPTables
+
+| Service    | Port | Proto     | Parameter                  |
+|------------|------|-----------|----------------------------|
+| datanode  | 50075 | tcp/http  | dfs.datanode.http.address  |
+| datanode  | 50475 | tcp/https | dfs.datanode.https.address |
+| datanode  | 1019  | tcp       | dfs.datanode.address       |
+| datanode  | 8010  | tcp       | dfs.datanode.ipc.address   |
+
+The "dfs.datanode.address" default to "50010" in non-secured mode. In non-secured
+mode, it must be set to a value below "1024" and default to "1019"
+
+IPTables rules are only inserted if the parameter "iptables.action" is set to 
+"start" (default value).
+
+    module.exports.push name: 'HDP HDFS DN # IPTables', callback: (ctx, next) ->
+      ctx.iptables
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 50075, protocol: 'tcp', state: 'NEW', comment: "HDFS DN HTTP" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 50475, protocol: 'tcp', state: 'NEW', comment: "HDFS DN HTTPS" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 1019, protocol: 'tcp', state: 'NEW', comment: "HDFS DN Data" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 8010, protocol: 'tcp', state: 'NEW', comment: "HDFS DN Meta" }
+        ]
+        if: ctx.config.iptables.action is 'start'
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
 
 ## HA
 
