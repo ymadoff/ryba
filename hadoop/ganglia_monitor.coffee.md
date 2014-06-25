@@ -55,6 +55,21 @@ Copy the object files provided in the HDP companion files into the
         ctx.upload files, (err, uploaded) ->
           next err, if uploaded then ctx.OK else ctx.PASS
 
+## Fix RRD
+
+There is a first bug in the HDP companion files preventing RRDtool (thus
+Ganglia) from starting. The variable "RRDCACHED_BASE_DIR" should point to 
+"/var/lib/ganglia/rrds".
+
+    module.exports.push name: 'Ganglia Monitor # Fix RRD', callback: (ctx, next) ->
+      ctx.write
+        destination: '/usr/libexec/hdp/ganglia/gangliaLib.sh'
+        match: /^RRDCACHED_BASE_DIR=.*$/mg
+        replace: 'RRDCACHED_BASE_DIR=/var/lib/ganglia/rrds;'
+        append: 'GANGLIA_RUNTIME_DIR'
+      , (err, written) ->
+        next err, if written then ctx.OK else ctx.PASS
+
 ## Init Script
 
 Upload the "hdp-gmond" service file into "/etc/init.d".
@@ -146,10 +161,15 @@ Upload the "hadoop-metrics2.properties" to connect Hadoop with Ganglia.
       , (err, written) ->
         next err, if written then ctx.OK else ctx.PASS
 
+## Start
 
+    module.exports.push 'ryba/hadoop/ganglia_monitor_start'
 
+## Resources
 
-
+Message "Failed to start /usr/sbin/gmond for cluster HDPSlaves" may indicate the
+presence of the file "/var/run/ganglia/hdp/HDPSlaves/gmond.pid"
+(see "/var/log/messages").
 
 
 
