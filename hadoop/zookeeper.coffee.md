@@ -10,6 +10,7 @@ layout: module
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'masson/core/yum'
+    module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/commons/java'
     # module.exports.push 'ryba/hadoop/core'
 
@@ -31,7 +32,9 @@ layout: module
 Example :
 
     module.exports.push module.exports.configure = (ctx) ->
-      require('./core').configure ctx
+      # require('./core').configure ctx
+      require('masson/core/iptables').configure ctx
+      require('masson/core/krb5_client').configure ctx
       require('masson/commons/java').configure ctx
       # User
       ctx.config.hdp.zookeeper_user = name: ctx.config.hdp.zookeeper_user if typeof ctx.config.hdp.zookeeper_user is 'string'
@@ -41,6 +44,11 @@ Example :
       ctx.config.hdp.zookeeper_user.gid ?= 'hadoop'
       ctx.config.hdp.zookeeper_user.comment ?= 'Zookeeper User'
       ctx.config.hdp.zookeeper_user.home ?= '/var/lib/zookeeper'
+      # Group (also defined in ryba/hadoop/core)
+      ctx.config.hdp.hadoop_group = name: ctx.config.hdp.hadoop_group if typeof ctx.config.hdp.hadoop_group is 'string'
+      ctx.config.hdp.hadoop_group ?= {}
+      ctx.config.hdp.hadoop_group.name ?= 'hadoop'
+      ctx.config.hdp.hadoop_group.system ?= true
       # Layout
       ctx.config.hdp.zookeeper_data_dir ?= '/var/zookeper/data/'
       ctx.config.hdp.zookeeper_conf_dir ?= '/etc/zookeeper/conf'
@@ -67,6 +75,29 @@ hadoop:x:498:hdfs
         return next err if err
         ctx.user zookeeper_user, (err, umodified) ->
           next err, if gmodified or umodified then ctx.OK else ctx.PASS
+
+## IPTables
+
+| Service    | Port | Proto  | Parameter          |
+|------------|------|--------|--------------------|
+| zookeeper  | 2181 | tcp    | hdp.zookeeper_port |
+| zookeeper  | 2888 | tcp    | -                  |
+| zookeeper  | 3888 | tcp    | -                  |
+
+IPTables rules are only inserted if the parameter "iptables.action" is set to 
+"start" (default value).
+
+    module.exports.push name: 'HDP ZooKeeper # IPTables', callback: (ctx, next) ->
+      {zookeeper_port} = ctx.config.hdp
+      ctx.iptables
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: zookeeper_port, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Client" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 2888, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Peer" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 3888, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Leader" }
+        ]
+        if: ctx.config.iptables.action is 'start'
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
 
 ## Install
 
@@ -186,6 +217,8 @@ which has no dependency.
     module.exports.push name: 'HDP ZooKeeper # Start', timeout: -1, callback: (ctx, next) ->
       lifecycle.zookeeper_start ctx, (err, started) ->
         next err, if started then ctx.OK else ctx.PASS
+
+    module.exports.push 'ryba/hadoop/zookeeper_check'
 
 ## TODO
 
