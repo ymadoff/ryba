@@ -5,25 +5,14 @@ layout: module
 
 # Hive Server
 
-    parse_jdbc = require './lib/parse_jdbc'
-    path = require 'path'
-    mkcmd = require './lib/mkcmd'
-    lifecycle = require './lib/lifecycle'
-    mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
-    # Install the mysql connector
-    module.exports.push 'masson/commons/mysql_client'
-    # Deploy the HDP repository
-    # Configure "core-site.xml" and "hadoop-env.sh"
-    module.exports.push 'ryba/hadoop/core'
-    # Install kerberos to create and test new Hive principal
     module.exports.push 'masson/core/krb5_client'
-    # Install the Hive and HCatalog service
-    module.exports.push 'ryba/hadoop/hive_'
-    # Validate DNS lookup
-    module.exports.push 'masson/core/dns'
+    module.exports.push 'masson/core/iptables'
+    module.exports.push 'masson/commons/mysql_client' # Install the mysql connector
+    module.exports.push 'ryba/hadoop/core' # Configure "core-site.xml" and "hadoop-env.sh"
+    module.exports.push 'ryba/hadoop/hive_' # Install the Hive and HCatalog service
 
     module.exports.push module.exports.configure = (ctx) ->
       return if ctx.hive_server_configured
@@ -294,20 +283,27 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-S
 todo: Implement lock for Hive Server2
 http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-Installation-Guide/cdh4ig_topic_18_5.html
 
-    module.exports.push name: 'HDP Hive & HCat server # Start Metastore', callback: (ctx, next) ->
-      lifecycle.hive_metastore_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+    # module.exports.push name: 'HDP Hive & HCat Server # Start Metastore', callback: (ctx, next) ->
+    #   lifecycle.hive_metastore_start ctx, (err, started) ->
+    #     next err, if started then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Hive & HCat server # Start Server2', timeout: -1, callback: (ctx, next) ->
-      lifecycle.hive_server2_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+    # module.exports.push name: 'HDP Hive & HCat Server # Start Server2', timeout: -1, callback: (ctx, next) ->
+    #   lifecycle.hive_server2_start ctx, (err, started) ->
+    #     next err, if started then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Hive & HCat server # Check', timeout: -1, callback: (ctx, next) ->
+    module.exports.push 'ryba/hadoop/hive_server_start'
+
+    module.exports.push name: 'HDP Hive & HCat Server # Check', timeout: -1, callback: (ctx, next) ->
       # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.3.0/CDH4-Security-Guide/cdh4sg_topic_9_1.html
       # !connect jdbc:hive2://big3.big:10000/default;principal=hive/big3.big@ADALTAS.COM 
       next null, ctx.TODO
 
+# Module Dependencies
 
+    parse_jdbc = require './lib/parse_jdbc'
+    path = require 'path'
+    mkcmd = require './lib/mkcmd'
+    lifecycle = require './lib/lifecycle'
 
 
 
