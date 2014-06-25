@@ -12,6 +12,7 @@ host by the Ganglia Monitor agents.
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/yum'
+    module.exports.push 'masson/commons/httpd'
 
 ## Configure
 
@@ -96,8 +97,8 @@ Upload the "hdp-gmetad" service file into "/etc/init.d".
 
 ## Fix RRD
 
-There is a first bug in the HDP companion files preventing RRDtool (and 
-thus Ganglia) from starting. The variable "RRDCACHED_BASE_DIR" should point to 
+There is a first bug in the HDP companion files preventing RRDtool (thus
+Ganglia) from starting. The variable "RRDCACHED_BASE_DIR" should point to 
 "/var/lib/ganglia/rrds".
 
     module.exports.push name: 'Ganglia Collector # Fix RRD', callback: (ctx, next) ->
@@ -194,7 +195,29 @@ pointing to the Ganglia master hostname.
       ], (err, written) ->
         next err, if written then ctx.OK else ctx.PASS
 
+## HTTPD Restart
 
+    module.exports.push name: 'Ganglia Collector # HTTPD Restart', callback: (ctx, next) ->
+      ctx.service
+        srv_name: 'httpd'
+        action: 'restart'
+        not_if: (callback) ->
+          request "http://#{ctx.config.host}/ganglia", (err, _, body) ->
+            callback err, /Ganglia Web Frontend/.test body
+      , (err, restarted) ->
+        next err, if restarted then ctx.OK else ctx.PASS
+
+## Start
+
+    module.exports.push 'ryba/hadoop/ganglia_collector_start'
+
+## Check
+
+    module.exports.push 'ryba/hadoop/ganglia_collector_check'
+
+## Package dependencies    
+
+    request = require 'request'
 
 
 
