@@ -31,19 +31,17 @@ layout: module
       require('masson/commons/mysql_server').configure ctx
       require('./hive_').configure ctx
       {hive_site, db_admin} = ctx.config.hdp
-      # Define Users and Groups
-      # ctx.config.hdp.mysql_user ?= 'hive'
-      # ctx.config.hdp.mysql_password ?= 'hive123'
-      # ctx.config.hdp.webhcat_user ?= 'webhcat'
+      # Layout
       ctx.config.hdp.hive_log_dir ?= '/var/log/hive'
       ctx.config.hdp.hive_pid_dir ?= '/var/run/hive'
+      # Configuration
       hive_site['datanucleus.autoCreateTables'] ?= 'true'
-      [_, host, port] = /^.*?\/\/?(.*?)(?::(.*))?\/.*$/.exec hive_site['javax.jdo.option.ConnectionURL']
-      ctx.config.hdp.hive_jdo_host = host
-      ctx.config.hdp.hive_jdo_port = port
+      hive_site['hive.security.authorization.enabled'] ?= 'true'
+      hive_site['hive.security.authorization.manager'] ?= 'org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider'
+      hive_site['hive.security.metastore.authorization.manager'] ?= 'org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider'
+      hive_site['hive.security.authenticator.manager'] ?= 'org.apache.hadoop.hive.ql.security.ProxyUserAuthenticator'
       ctx.config.hdp.hive_libs ?= []
-      # Prepare database configuration
-      hive_admin = ctx.config.hdp.hive_admin ?= {}
+      # Database
       if hive_site['javax.jdo.option.ConnectionURL']
         # Ensure the url host is the same as the one configured in config.hdp.db_admin
         {engine, hostname, port} = parse_jdbc hive_site['javax.jdo.option.ConnectionURL']
@@ -59,9 +57,31 @@ layout: module
       throw new Error "Hive database username is required" unless hive_site['javax.jdo.option.ConnectionUserName']
       throw new Error "Hive database password is required" unless hive_site['javax.jdo.option.ConnectionPassword']
 
-    module.exports.push name: 'HDP Hive & HCat server # Database', callback: (ctx, next) ->
+## IPTables
+
+| Service        | Port  | Proto | Parameter            |
+|----------------|-------|-------|----------------------|
+| Hive Metastore | 9933  | http  | hive.metastore.uris  |
+| Hive Web UI    | 9999  | http  | hive.hwi.listen.port |
+| Hive Server    | 10000 | tcp   | env[HIVE_PORT]       |
+
+
+IPTables rules are only inserted if the parameter "iptables.action" is set to 
+"start" (default value).
+
+    module.exports.push name: 'HDP Hive & HCat Server # IPTables', callback: (ctx, next) ->
+      ctx.iptables
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 9933, protocol: 'tcp', state: 'NEW', comment: "Hive Metastore" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 9999, protocol: 'tcp', state: 'NEW', comment: "Hive Web UI" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 10000, protocol: 'tcp', state: 'NEW', comment: "Hive Server" }
+        ]
+        if: ctx.config.iptables.action is 'start'
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
+
+    module.exports.push name: 'HDP Hive & HCat Server # Database', callback: (ctx, next) ->
       {hive_site, db_admin} = ctx.config.hdp
-      # {engine, host, port, db, username, password} = hive_admin
       username = hive_site['javax.jdo.option.ConnectionUserName']
       password = hive_site['javax.jdo.option.ConnectionPassword']
       {engine, db} = parse_jdbc hive_site['javax.jdo.option.ConnectionURL']
@@ -85,7 +105,7 @@ layout: module
       return next new Error 'Database engine not supported' unless engines[engine]
       engines[engine]()
 
-    module.exports.push name: 'HDP Hive & HCat server # Configure', callback: (ctx, next) ->
+    module.exports.push name: 'HDP Hive & HCat Server # Configure', callback: (ctx, next) ->
       {hive_site, hive_user, hive_group, hive_conf_dir} = ctx.config.hdp
       ctx.hconfigure
         destination: "#{hive_conf_dir}/hive-site.xml"
@@ -103,7 +123,7 @@ layout: module
         , (err) ->
           next err, if configured then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Hive & HCat server # Fix', callback: (ctx, next) ->
+    module.exports.push name: 'HDP Hive & HCat Server # Fix', callback: (ctx, next) ->
       {hive_conf_dir} = ctx.config.hdp
       ctx.write
         destination: "#{hive_conf_dir}/hive-env.sh"
@@ -112,7 +132,7 @@ layout: module
       , (err, written) ->
         next err, if written then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Hive & HCat server # Libs', callback: (ctx, next) ->
+    module.exports.push name: 'HDP Hive & HCat Server # Libs', callback: (ctx, next) ->
       {hive_libs} = ctx.config.hdp
       return next() unless hive_libs.length
       uploads = for lib in hive_libs
@@ -121,14 +141,14 @@ layout: module
       ctx.upload uploads, (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Hive & HCat server # Driver', callback: (ctx, next) ->
+    module.exports.push name: 'HDP Hive & HCat Server # Driver', callback: (ctx, next) ->
       ctx.link
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/lib/hive/lib/mysql-connector-java.jar'
       , (err, configured) ->
         return next err, if configured then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Hive & HCat server # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'HDP Hive & HCat Server # Kerberos', callback: (ctx, next) ->
       {hive_user, hive_group, hive_site, realm} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
@@ -165,7 +185,7 @@ layout: module
         next null, if modified then ctx.OK else ctx.PASS
       do_metastore()
 
-    module.exports.push name: 'HDP Hive & HCat server # Logs', callback: (ctx, next) ->
+    module.exports.push name: 'HDP Hive & HCat Server # Logs', callback: (ctx, next) ->
       ctx.write [
         source: "#{__dirname}/files/hive/hive-exec-log4j.properties.template"
         local_source: true
@@ -177,7 +197,7 @@ layout: module
       ], (err, written) ->
         return next err, if written then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Hive & HCat server # Layout', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HDP Hive & HCat Server # Layout', timeout: -1, callback: (ctx, next) ->
       # todo: this isnt pretty, ok that we need to execute hdfs command from an hadoop client
       # enabled environment, but there must be a better way
       {active_nn_host, hdfs_user, hive_user, hive_group} = ctx.config.hdp
@@ -245,7 +265,7 @@ layout: module
 
 # https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Authorization#LanguageManualAuthorization-MetastoreServerSecurity
 
-#     module.exports.push name: 'HDP Hive & HCat server # Metastore Security', callback: (ctx, next) ->
+#     module.exports.push name: 'HDP Hive & HCat Server # Metastore Security', callback: (ctx, next) ->
 #       {hive_conf_dir} = ctx.config.hdp
 #       hive_site =
 #         # authorization manager class name to be used in the metastore for authorization.
