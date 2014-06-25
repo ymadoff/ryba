@@ -337,6 +337,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
           uid: hdfs_user.name
           gid: hadoop_group.name
           mode: 0o755
+          backup: true
           write: [
             match: /^export JAVA_HOME=.*$/mg
             replace: "export JAVA_HOME=#{java_home}"
