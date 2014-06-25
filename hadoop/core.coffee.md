@@ -282,10 +282,10 @@ not handled here.
 
     module.exports.push name: 'HDP Core # Users & Groups', callback: (ctx, next) ->
       {hadoop_group, hdfs_group, yarn_group, mapred_group,
-       hdfs_user, yarn_user, mapred_user, zookeeper_user} = ctx.config.hdp
+       hdfs_user, yarn_user, mapred_user} = ctx.config.hdp
       ctx.group [hadoop_group, hdfs_group, yarn_group, mapred_group], (err, gmodified) ->
         return next err if err
-        ctx.user [hdfs_user, yarn_user, mapred_user, zookeeper_user], (err, umodified) ->
+        ctx.user [hdfs_user, yarn_user, mapred_user], (err, umodified) ->
           next err, if gmodified or umodified then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Core # Install', timeout: -1, callback: (ctx, next) ->
