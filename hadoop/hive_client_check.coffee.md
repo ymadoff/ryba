@@ -7,6 +7,10 @@ layout: module
 
     mkcmd = require './lib/mkcmd'
     module.exports = []
+    module.exports.push 'masson/bootstrap/'
+
+    module.exports.push (ctx) ->
+      require('./hive_client').configure ctx
 
 ## Check Metastore
 
