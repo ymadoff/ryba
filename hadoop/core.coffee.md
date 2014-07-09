@@ -161,13 +161,18 @@ Default configuration:
       ctx.config.hdp.hdp_repo ?= 'http://public-repo-1.hortonworks.com/HDP/centos5/2.x/GA/2.1-latest/hdp.repo'
       # HA Configuration
       ctx.config.hdp.nameservice ?= null
+      ctx.config.hdp.active_nn ?= false
       throw new Error "Invalid Service Name" unless ctx.config.hdp.nameservice
       namenodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       throw new Error "Need at least 2 namenodes" if namenodes.length < 2
-      ctx.config.hdp.active_nn ?= false
-      active_nn_hosts = ctx.config.servers.filter( (server) -> server.hdp?.active_nn ).map( (server) -> server.host )
+      # active_nn_hosts = ctx.config.servers.filter( (server) -> server.hdp?.active_nn ).map( (server) -> server.host )
+      active_nn_hosts = namenodes.filter( (server) -> ctx.config.servers[server].hdp?.active_nn )
       throw new Error "Invalid Number of Active NameNodes: #{active_nn_hosts.length}" unless active_nn_hosts.length is 1
       ctx.config.hdp.active_nn_host = active_nn_hosts[0]
+      # standby_nn_hosts = ctx.config.servers.filter( (server) -> ! server.hdp?.active_nn ).map( (server) -> server.host )
+      standby_nn_hosts = namenodes.filter( (server) -> ! ctx.config.servers[server].hdp?.active_nn )
+      throw new Error "Invalid Number of Passive NameNodes: #{standby_nn_hosts.length}" unless standby_nn_hosts.length is 1
+      ctx.config.hdp.standby_nn_host = standby_nn_hosts[0]
       ctx.config.hdp.static_host = 
         if ctx.config.hdp.static_host and ctx.config.hdp.static_host isnt '_HOST'
         then ctx.config.host
@@ -202,10 +207,10 @@ Default configuration:
               i = mysql_hosts.indexOf(ctx.config.host)
               if i isnt -1 then mysql_hosts[i] else throw new Error "Failed to find a Mysql Server"
             mysql_conf = ctx.hosts[mysql_host].config.mysql_server
-          ctx.config.hdp.db_admin.password ?= mysql_conf.password
           ctx.config.hdp.db_admin.path ?= 'mysql'
           ctx.config.hdp.db_admin.port ?= '3306'
           ctx.config.hdp.db_admin.username ?= 'root'
+          ctx.config.hdp.db_admin.password ?= mysql_conf.password
         else throw new Error "Database engine not supported: #{ctx.config.hdp.engine}"
 
 Repository
