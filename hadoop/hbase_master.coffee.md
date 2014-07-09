@@ -17,18 +17,20 @@ layout: module
       require('./hdfs').configure ctx
       require('./hbase').configure ctx
 
-    module.exports.push name: 'HDP HBase Master # HDFS layout', callback: (ctx, next) ->
+    module.exports.push name: 'HDP HBase Master # HDFS layout', timeout: -1, callback: (ctx, next) ->
       {hbase_user} = ctx.config.hdp
-      ctx.log "Create /apps/hbase"
-      ctx.execute
-        cmd: mkcmd.hdfs ctx, """
-        if hdfs dfs -ls /apps/hbase &>/dev/null; then exit 3; fi
-        hdfs dfs -mkdir -p /apps/hbase
-        hdfs dfs -chown -R #{hbase_user.name} /apps/hbase
-        """
-        code_skipped: 3
-      , (err, executed, stdout) ->
-        next err, if executed then ctx.OK else ctx.PASS
+      ctx.waitForExecution mkcmd.hdfs(ctx, "hdfs dfs -test -d /apps"), code_skipped: 1, (err) ->
+        return next err if err
+        ctx.log "Create /apps/hbase"
+        ctx.execute
+          cmd: mkcmd.hdfs ctx, """
+          if hdfs dfs -ls /apps/hbase &>/dev/null; then exit 3; fi
+          hdfs dfs -mkdir /apps/hbase
+          hdfs dfs -chown #{hbase_user.name} /apps/hbase
+          """
+          code_skipped: 3
+        , (err, executed, stdout) ->
+          next err, if executed then ctx.OK else ctx.PASS
 
 https://blogs.apache.org/hbase/entry/hbase_cell_security
 https://hbase.apache.org/book/security.html
