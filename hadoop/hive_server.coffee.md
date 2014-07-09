@@ -50,7 +50,7 @@ layout: module
 
 | Service        | Port  | Proto | Parameter            |
 |----------------|-------|-------|----------------------|
-| Hive Metastore | 9933  | http  | hive.metastore.uris  |
+| Hive Metastore | 9083  | http  | hive.metastore.uris  |
 | Hive Web UI    | 9999  | http  | hive.hwi.listen.port |
 | Hive Server    | 10000 | tcp   | env[HIVE_PORT]       |
 
@@ -61,7 +61,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
     module.exports.push name: 'HDP Hive & HCat Server # IPTables', callback: (ctx, next) ->
       ctx.iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 9933, protocol: 'tcp', state: 'NEW', comment: "Hive Metastore" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 9083, protocol: 'tcp', state: 'NEW', comment: "Hive Metastore" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: 9999, protocol: 'tcp', state: 'NEW', comment: "Hive Web UI" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: 10000, protocol: 'tcp', state: 'NEW', comment: "Hive Server" }
         ]
