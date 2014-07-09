@@ -106,41 +106,7 @@ For this reason, the "retry" property is set to the high value of "10".
           return next null, ctx.OK
         catch err then next err
 
-    # module.exports.push name: 'HDP MapRed JHS # Check', callback: (ctx, next) ->
-    #   {test_user, mapred} = ctx.config.hdp
-    #   [host, port] = mapred['mapreduce.jobhistory.webapp.address'].split ':'
-    #   count = 0
-    #   do_prepare = ->
-    #     ctx.execute
-    #       cmd: mkcmd.test ctx, """
-    #       if ! hdfs dfs -test -f /user/#{test_user.name}/#{ctx.config.host}-jhs; then exit 2; fi
-    #       """
-    #       code_skipped: 2
-    #     , (err, exists) ->
-    #       return next err, ctx.PASS if err or exists
-    #       do_execute()
-    #   do_execute = ->
-    #     ctx.execute
-    #       cmd: mkcmd.test ctx, """
-    #       curl -s --negotiate -u : http://#{host}:#{port}/ws/v1/history/info
-    #       """
-    #       code_skipped: 7
-    #     , (err, executed, stdout) ->
-    #       return next err if err
-    #       return next new Error "JHS failed to start" if not executed and count++ > 5
-    #       return do_execute() if not executed
-    #       try
-    #         JSON.parse(stdout).historyInfo.hadoopVersion
-    #         do_finish()
-    #       catch err then next err
-    #   do_finish = ->
-    #     ctx.execute
-    #       cmd: mkcmd.test ctx, "hdfs dfs -touchz /user/#{test_user.name}/#{ctx.config.host}-jhs"
-    #     , (err) ->
-    #       next err, ctx.OK
-    #   do_prepare()
-
-
+[keys]: https://github.com/apache/hadoop-common/blob/trunk/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSConfigKeys.java
 
 
 
