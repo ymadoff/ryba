@@ -15,7 +15,6 @@ In its current state, we are only supporting the installation of a
 
 [secure]: http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
 
-    url = require 'url'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
@@ -385,6 +384,11 @@ Note, a user must re-login for those changes to be taken into account.
         backup: true
       ], (err, written) ->
         next err, if written then ctx.OK else ctx.PASS
+
+## Module dependencies
+
+    url = require 'url'
+
 
 [hawq]: http://docs.gopivotal.com/pivotalhd/InstallingHAWQ.html
 [greenplum]: http://nixustechnologies.com/2014/03/31/install-greenplum-community-edition/

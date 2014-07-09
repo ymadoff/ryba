@@ -5,8 +5,6 @@ layout: module
 
 # HDFS Client
 
-    hdfs_nn = require './hdfs_nn'
-    mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'ryba/hadoop/core'
@@ -54,5 +52,10 @@ layout: module
           code_skipped: 2
         , (err, executed, stdout) ->
           next err, if executed then ctx.OK else ctx.PASS
+
+## Module dependencies
+
+    hdfs_nn = require './hdfs_nn'
+    mkcmd = require './lib/mkcmd'
 
 

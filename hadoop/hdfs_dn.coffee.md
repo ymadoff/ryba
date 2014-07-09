@@ -19,10 +19,6 @@ information regarding the location of blocks in the cluster. In order
 to achieve this, the DataNodes are configured with the location of both 
 NameNodes, and send block location information and heartbeats to both.
 
-    path = require 'path'
-    hdfs_nn = require './hdfs_nn'
-    lifecycle = require './lib/lifecycle'
-    mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/iptables'
@@ -166,12 +162,12 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
       do_tmp = ->
         ctx.execute
           cmd: mkcmd.hdfs ctx, """
-          if hdfs dfs -test -d /tmp; then exit 1; fi
+          if hdfs dfs -test -d /tmp; then exit 2; fi
           hdfs dfs -mkdir /tmp
           hdfs dfs -chown #{hdfs_user.name}:#{hadoop_group.name} /tmp
           hdfs dfs -chmod 1777 /tmp
           """
-          code_skipped: 1
+          code_skipped: 2
         , (err, executed, stdout) ->
           return next err if err
           ctx.log 'Directory "/tmp" prepared' and modified = true if executed
@@ -179,7 +175,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
       do_user = ->
         ctx.execute
           cmd: mkcmd.hdfs ctx, """
-          if hdfs dfs -test -d /user; then exit 1; fi
+          if hdfs dfs -test -d /user; then exit 2; fi
           hdfs dfs -mkdir /user
           hdfs dfs -chown #{hdfs_user.name}:#{hadoop_group.name} /user
           hdfs dfs -chmod 755 /user
@@ -190,7 +186,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
           # hdfs dfs -mkdir /user/#{test_user.name}
           # hdfs dfs -chown #{test_user.name}:#{hadoop_group.name} /user/#{test_user.name}
           # hdfs dfs -chmod 755 /user/#{test_user.name}
-          code_skipped: 1
+          code_skipped: 2
         , (err, executed, stdout) ->
           return next err if err
           ctx.log 'Directory "/user" prepared' and modified = true if executed
@@ -198,12 +194,12 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
       do_apps = ->
         ctx.execute
           cmd: mkcmd.hdfs ctx, """
-          if hdfs dfs -test -d /apps; then exit 1; fi
+          if hdfs dfs -test -d /apps; then exit 2; fi
           hdfs dfs -mkdir /apps
           hdfs dfs -chown #{hdfs_user.name}:#{hadoop_group.name} /apps
           hdfs dfs -chmod 755 /apps
           """
-          code_skipped: 1
+          code_skipped: 2
         , (err, executed, stdout) ->
           return next err if err
           ctx.log 'Directory "/apps" prepared' and modified = true if executed
@@ -218,7 +214,7 @@ Create a Unix and Kerberos test user, by default "test" and execute simple HDFS 
 the NameNode is properly working. Note, those commands are NameNode specific, meaning they only
 afect HDFS metadata.
 
-    module.exports.push name: 'HDP HDFS NN # Test User', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HDP HDFS DN # Test User', timeout: -1, callback: (ctx, next) ->
       {test_group, test_user, test_password, security, realm} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
@@ -259,8 +255,12 @@ afect HDFS metadata.
 
     module.exports.push 'ryba/hadoop/hdfs_dn_check'
 
+## Module dependencies
 
-
+    path = require 'path'
+    hdfs_nn = require './hdfs_nn'
+    lifecycle = require './lib/lifecycle'
+    mkcmd = require './lib/mkcmd'
 
 
 
