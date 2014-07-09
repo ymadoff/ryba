@@ -17,9 +17,9 @@ Execute these commands on the Ganglia server host machine.
       # , (err, executed) ->
       #   next err, if executed then ctx.OK else ctx.PASS
       ctx.service [
-        name: 'httpd'
-        action: 'start'
-      ,
+      #   name: 'httpd'
+      #   action: 'start'
+      # ,
         name: 'ganglia-gmetad-3.5.0-99'
         srv_name: 'hdp-gmetad'
         action: 'start'
