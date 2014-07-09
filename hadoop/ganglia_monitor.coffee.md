@@ -8,7 +8,6 @@ layout: module
 
 Ganglia Monitor is the agent to be deployed on each of the hosts.
 
-    glob = require 'glob'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 
@@ -55,6 +54,18 @@ Copy the object files provided in the HDP companion files into the
         ctx.upload files, (err, uploaded) ->
           next err, if uploaded then ctx.OK else ctx.PASS
 
+## Init Script
+
+Upload the "hdp-gmond" service file into "/etc/init.d".
+
+    module.exports.push name: 'Ganglia Monitor # Init Script', timeout: -1, callback: (ctx, next) ->
+      ctx.upload
+        source: "#{__dirname}/files/ganglia/scripts/hdp-gmond"
+        destination: '/etc/init.d'
+        mode: 0o755
+      , (err, uploaded) ->
+        next err, if uploaded then ctx.OK else ctx.PASS
+
 ## Fix RRD
 
 There is a first bug in the HDP companion files preventing RRDtool (thus
@@ -69,18 +80,6 @@ Ganglia) from starting. The variable "RRDCACHED_BASE_DIR" should point to
         append: 'GANGLIA_RUNTIME_DIR'
       , (err, written) ->
         next err, if written then ctx.OK else ctx.PASS
-
-## Init Script
-
-Upload the "hdp-gmond" service file into "/etc/init.d".
-
-    module.exports.push name: 'Ganglia Monitor # Init Script', timeout: -1, callback: (ctx, next) ->
-      ctx.upload
-        source: "#{__dirname}/files/ganglia/scripts/hdp-gmond"
-        destination: '/etc/init.d'
-        mode: 0o755
-      , (err, uploaded) ->
-        next err, if uploaded then ctx.OK else ctx.PASS
 
 ## Host
 
@@ -164,6 +163,10 @@ Upload the "hadoop-metrics2.properties" to connect Hadoop with Ganglia.
 ## Start
 
     module.exports.push 'ryba/hadoop/ganglia_monitor_start'
+
+## Module dependencies
+
+    glob = require 'glob'
 
 ## Resources
 
