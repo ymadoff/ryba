@@ -115,7 +115,8 @@ also used by the NameNodes, DataNodes, ResourceManagers and NodeManagers.
 ## Configure HA
 
 Add High Availability specific properties to the "hdfs-site.xml" file. Those
-properties include "dfs.namenode.shared.edits.dir".
+properties include "dfs.namenode.shared.edits.dir". Note, this might not be
+read on JN side (see [DFSConfigKeys.java][keys]).
 
     module.exports.push name: 'HDP HDFS JN # Configure HA', callback: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config} = ctx.config.hdp
@@ -135,6 +136,7 @@ Load the module "ryba/hadoop/hdfs\_jn\_start" to start the JournalNode.
 
     module.exports.push 'ryba/hadoop/hdfs_jn_start'
 
+[keys]: https://github.com/apache/hadoop-common/blob/trunk/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSConfigKeys.java
 
 
 
