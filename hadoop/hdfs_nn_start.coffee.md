@@ -19,6 +19,11 @@ the standy NameNodes wait for the one on the active NameNode to start first.
       require('./hdfs').configure ctx
       throw Error "Not a NameNode" unless ctx.has_module 'ryba/hadoop/hdfs_nn'
 
+## Start
+
+# Wait for all JournalNodes to be started before starting this NameNode if it wasn't yet started
+# during the HDFS format phase.
+
     module.exports.push name: 'HDP HDFS NN # Start NameNode', callback: (ctx, next) ->
       lifecycle.nn_start ctx, (err, started) ->
         next err, if started then ctx.OK else ctx.PASS

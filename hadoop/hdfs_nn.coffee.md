@@ -315,19 +315,6 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
         , (err, formated) ->
           return next err if err
           ctx.log "Is Zookeeper already formated: #{formated}"
-          # TODO: There was a time when fencing wasnt ok the first time,
-          # this is probably no longer the case, but we need to test before
-          # removing the following command.
-          # ctx.execute
-          #   # hdfs haadmin -transitionToActive -forcemanual hadoop2
-          #   cmd: "yes | hdfs haadmin -transitionToActive -forcemanual #{ctx.config.host}"
-          #   if: formated
-          # , (err, activated) ->
-          #   return next err if err
-          #   ctx.log "Was #{ctx.config.host} activated: #{activated}"
-          #   # next null, if modified then ctx.OK else ctx.PASS
-          #   lifecycle.zkfc_start ctx, (err, started) ->
-          #     next null, if formated or started then ctx.OK else ctx.PASS
           lifecycle.zkfc_start ctx, (err, started) ->
             next null, if formated or started then ctx.OK else ctx.PASS
       do_zkfc_standby = ->
@@ -344,29 +331,7 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
 
 ## Start
 
-Wait for all JournalNodes to be started before starting this NameNode if it wasn't yet started
-during the HDFS format phase.
-
-    module.exports.push name: 'HDP HDFS NN # Start', timeout: -1, callback: (ctx, next) ->
-      do_wait = ->
-        jns = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
-        # Check if we are HA
-        return do_start() if jns.length is 0
-        # If so, at least one journalnode must be available
-        done = false
-        e = each(jns)
-        .parallel(true)
-        .on 'item', (jn, next) ->
-          ctx.waitIsOpen jn, 8485, (err) ->
-            return if done
-            done = true
-            e.close() # No item will be emitted after this call
-            do_start()
-        .on 'error', next
-      do_start = ->
-        lifecycle.nn_start ctx, (err, started) ->
-          next err, if started then ctx.OK else ctx.PASS
-      do_wait()
+    module.exports.push 'ryba/hadoop/hdfs_nn_start'
 
 ## Test User
 
