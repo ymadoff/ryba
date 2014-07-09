@@ -40,7 +40,8 @@ lifecyle = module.exports =
       ctx.log "NameNode status: #{if running then 'RUNNING' else 'STOPED'}"
       callback err, running
   nn_start: (ctx, callback) ->
-    {hdfs_user, hadoop_conf_dir, hdfs_namenode_ipc_port, hdfs_namenode_http_port, hdfs_namenode_timeout} = ctx.config.hdp
+    { hdfs_user, hadoop_conf_dir, hdfs_namenode_ipc_port, hdfs_namenode_http_port, hdfs_namenode_timeout
+      active_nn, active_nn_host, standby_nn_host } = ctx.config.hdp
     lifecyle.nn_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "NameNode start"
@@ -50,12 +51,17 @@ lifecyle = module.exports =
         code_skipped: 1
       , (err, started) ->
         return callback err if err
-        ctx.waitIsOpen [
-          host: ctx.config.host, port: hdfs_namenode_ipc_port
-        ,
-          host: ctx.config.host, port: hdfs_namenode_http_port
-        ], timeout: hdfs_namenode_timeout, (err) ->
-          callback err, started
+        return callback null, false unless started
+        ports = [hdfs_namenode_ipc_port, hdfs_namenode_http_port]
+        ctx.waitIsOpen ctx.config.host, ports, timeout: hdfs_namenode_timeout, (err) ->
+          return callback err if err
+          return callback null, true unless active_nn
+          active_nn_host = active_nn_host.split('.')[0]
+          standby_nn_host = standby_nn_host.split('.')[0]
+          ctx.execute
+            cmd: "if hdfs haadmin -getServiceState #{active_nn_host} | grep standby; then hdfs haadmin -failover #{standby_nn_host} #{active_nn_host}; fi"
+          , (err) ->
+            callback err, true
   nn_stop: (ctx, callback) ->
     {hdfs_user, hadoop_conf_dir} = ctx.config.hdp
     lifecyle.nn_status ctx, (err, running) ->
@@ -67,6 +73,11 @@ lifecyle = module.exports =
         code_skipped: 1
       , (err, stopped) ->
         callback err, stopped
+  nn_restart: (ctx, callback) ->
+    ctx.log "NameNode restart"
+    lifecyle.nn_stop ctx, (err) ->
+      return callback err if err
+      lifecyle.nn_start ctx, callback
   zkfc_status: (ctx, callback) ->
     {hdfs_user, hdfs_pid_dir} = ctx.config.hdp
     ctx.log "ZKFC status"
@@ -323,35 +334,6 @@ lifecyle = module.exports =
         code_skipped: 1
       , (err, stopped) ->
         callback err, stopped
-  zookeeper_status: (ctx, callback) ->
-    {zookeeper_pid_dir} = ctx.config.hdp
-    ctx.log "Zookeeper status"
-    {oozie_pid_dir} = ctx.config.hdp
-    lifecyle.is_pidfile_running ctx, "#{zookeeper_pid_dir}/zookeeper_server.pid", (err, running) ->
-      ctx.log "Zookeeper status: #{if running then 'RUNNING' else 'STOPED'}"
-      callback err, running
-  zookeeper_start: (ctx, callback) ->
-    {zookeeper_user, zookeeper_conf_dir, zookeeper_port} = ctx.config.hdp
-    lifecyle.zookeeper_status ctx, (err, running) ->
-      return callback err, false if err or running
-      ctx.log "Zookeeper start"
-      ctx.execute
-        # su -l zookeeper -c "/usr/lib/zookeeper/bin/zkServer.sh start /etc/zookeeper/conf/zoo.cfg"
-        cmd: "su -l #{zookeeper_user.name} -c \"/usr/lib/zookeeper/bin/zkServer.sh start #{zookeeper_conf_dir}/zoo.cfg\""
-      , (err, started) ->
-        return callback err if err
-        ctx.waitIsOpen ctx.config.host, zookeeper_port, timeout: 2000000, (err) ->
-          callback err, started
-  zookeeper_stop: (ctx, callback) ->
-    {zookeeper_user, zookeeper_conf_dir} = ctx.config.hdp
-    lifecyle.zookeeper_status ctx, (err, running) ->
-      return callback err, false if err or not running
-      ctx.log "Zookeeper stop"
-      ctx.execute
-        # su -l zookeeper -c "/usr/lib/zookeeper/bin/zkServer.sh stop /etc/zookeeper/conf/zoo.cfg"
-        cmd: "su -l #{zookeeper_user.name} -c \"/usr/lib/zookeeper/bin/zkServer.sh stop #{zookeeper_conf_dir}/zoo.cfg\""
-      , (err, stopped) ->
-        callback err, stopped
   hbase_master_status: (ctx, callback) ->
     {hbase_pid_dir, hbase_user} = ctx.config.hdp
     ctx.log "HBase Master status"
@@ -463,6 +445,35 @@ lifecyle = module.exports =
       ctx.log "Hue stop"
       ctx.execute
         cmd: "service hue stop"
+      , (err, stopped) ->
+        callback err, stopped
+  zookeeper_status: (ctx, callback) ->
+    {zookeeper_pid_dir} = ctx.config.hdp
+    ctx.log "Zookeeper status"
+    {oozie_pid_dir} = ctx.config.hdp
+    lifecyle.is_pidfile_running ctx, "#{zookeeper_pid_dir}/zookeeper_server.pid", (err, running) ->
+      ctx.log "Zookeeper status: #{if running then 'RUNNING' else 'STOPED'}"
+      callback err, running
+  zookeeper_start: (ctx, callback) ->
+    {zookeeper_user, zookeeper_conf_dir, zookeeper_port} = ctx.config.hdp
+    lifecyle.zookeeper_status ctx, (err, running) ->
+      return callback err, false if err or running
+      ctx.log "Zookeeper start"
+      ctx.execute
+        # su -l zookeeper -c "/usr/lib/zookeeper/bin/zkServer.sh start /etc/zookeeper/conf/zoo.cfg"
+        cmd: "su -l #{zookeeper_user.name} -c \"/usr/lib/zookeeper/bin/zkServer.sh start #{zookeeper_conf_dir}/zoo.cfg\""
+      , (err, started) ->
+        return callback err if err
+        ctx.waitIsOpen ctx.config.host, zookeeper_port, timeout: 2000000, (err) ->
+          callback err, started
+  zookeeper_stop: (ctx, callback) ->
+    {zookeeper_user, zookeeper_conf_dir} = ctx.config.hdp
+    lifecyle.zookeeper_status ctx, (err, running) ->
+      return callback err, false if err or not running
+      ctx.log "Zookeeper stop"
+      ctx.execute
+        # su -l zookeeper -c "/usr/lib/zookeeper/bin/zkServer.sh stop /etc/zookeeper/conf/zoo.cfg"
+        cmd: "su -l #{zookeeper_user.name} -c \"/usr/lib/zookeeper/bin/zkServer.sh stop #{zookeeper_conf_dir}/zoo.cfg\""
       , (err, stopped) ->
         callback err, stopped
 
