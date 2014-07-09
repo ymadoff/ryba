@@ -192,58 +192,49 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       {active_nn_host, hdfs_user, hive_user, hive_group} = ctx.config.hdp
       hive_user = hive_user.name
       hive_group = hive_group.name
-      ctx.connect active_nn_host, (err, ssh) ->
-        return next err if err
+      # ctx.connect active_nn_host, (err, ssh) ->
+      #   return next err if err
         # kerberos = true
+      cmd = mkcmd.hdfs ctx, "hdfs dfs -test -d /user && hdfs dfs -test -d /apps && hdfs dfs -test -d /tmp"
+      ctx.waitForExecution cmd, code_skipped: 1, (err) ->
         modified = false
         do_user = ->
           ctx.execute
-            ssh: ssh
             cmd: mkcmd.hdfs ctx, """
             if hdfs dfs -ls /user/#{hive_user} &>/dev/null; then exit 1; fi
-            hdfs dfs -mkdir -p /user/#{hive_user}
-            hdfs dfs -chown -R #{hive_user}:#{hdfs_user.name} /user/#{hive_user}
-            hdfs dfs -chmod -R 775 /apps/#{hive_user}
+            hdfs dfs -mkdir /user/#{hive_user}
+            hdfs dfs -chown #{hive_user}:#{hdfs_user.name} /user/#{hive_user}
             """
             code_skipped: 1
-            log: ctx.log
-            stdout: ctx.log.stdout
-            sterr: ctx.log.sterr
           , (err, executed, stdout) ->
             return next err if err
             modified = true if executed
             do_warehouse()
         do_warehouse = ->
           ctx.execute
-            ssh: ssh
             cmd: mkcmd.hdfs ctx, """
             if hdfs dfs -ls /apps/#{hive_user}/warehouse &>/dev/null; then exit 3; fi
-            hdfs dfs -mkdir -p /apps/#{hive_user}/warehouse
+            hdfs dfs -mkdir /apps/#{hive_user}
+            hdfs dfs -mkdir /apps/#{hive_user}/warehouse
             hdfs dfs -chown -R #{hive_user}:#{hdfs_user.name} /apps/#{hive_user}
-            hdfs dfs -chmod -R 775 /apps/#{hive_user}
+            hdfs dfs -chmod 755 /apps/#{hive_user}
+            hdfs dfs -chmod 1777 /apps/#{hive_user}/warehouse
             """
             code_skipped: 3
-            log: ctx.log
-            stdout: ctx.log.stdout
-            sterr: ctx.log.sterr
           , (err, executed, stdout) ->
             return next err if err
             modified = true if executed
             do_scratch()
         do_scratch = ->
           ctx.execute
-            ssh: ssh
             cmd: mkcmd.hdfs ctx, """
             if hdfs dfs -ls /tmp/scratch &> /dev/null; then exit 1; fi
-            hdfs dfs -mkdir /tmp 2>/dev/null;
-            hdfs dfs -mkdir /tmp/scratch;
-            hdfs dfs -chown #{hive_user}:#{hdfs_user.name} /tmp/scratch;
-            hdfs dfs -chmod -R 777 /tmp/scratch;
+            hdfs dfs -mkdir /tmp 2>/dev/null
+            hdfs dfs -mkdir /tmp/scratch
+            hdfs dfs -chown #{hive_user}:#{hdfs_user.name} /tmp/scratch
+            hdfs dfs -chmod -R 1777 /tmp/scratch
             """
             code_skipped: 1
-            log: ctx.log
-            stdout: ctx.log.stdout
-            sterr: ctx.log.sterr
           , (err, executed, stdout) ->
             return next err if err
             modified = true if executed
