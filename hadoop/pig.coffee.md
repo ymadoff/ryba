@@ -116,7 +116,7 @@ companion file define no properties while the YUM package does.
         local_source: true
         write: [
           match: /^JAVA_HOME=.*$/mg
-          replace: java_home
+          replace: "JAVA_HOME=#{java_home}"
         ]
         uid: pig_user.name
         gid: hadoop_group.name
@@ -124,6 +124,20 @@ companion file define no properties while the YUM package does.
         backup: true
       , (err, rendered) ->
         next err, if rendered then ctx.OK else ctx.PASS
+
+    module.exports.push name: 'HDP Pig # Fix Pig', callback: (ctx, next) ->
+      ctx.write
+        write: [
+          match: /^(\s)*slfJarVersion=.*/mg
+          replace: "$1slfJarVersion=''"
+        ,
+          match: new RegExp quote('/usr/lib/hcatalog'), 'g'
+          replace: '/usr/lib/hive-hcatalog'
+        ]
+        destination: '/usr/lib/pig/bin/pig'
+        backup: true
+      , (err, written) ->
+        next err, if written then ctx.OK else ctx.PASS
 
 ## Check
 
@@ -138,11 +152,9 @@ unless the "hdp.force_check" configuration property is set to "true".
         return next err if err
         ctx.execute
           cmd: mkcmd.test ctx, """
-          if hdfs dfs -test -d #{ctx.config.host}-pig; then exit 1; fi
-          exit 0
+          hdfs dfs -test -d #{ctx.config.host}-pig
           """
-          code: 1
-          code_skipped: 0
+          code_skipped: 1
           not_if: force_check
         , (err, skip) ->
           return next err, ctx.PASS if err or skip
@@ -172,20 +184,6 @@ unless the "hdp.force_check" configuration property is set to "true".
               , (err, executed) ->
                 next err, ctx.OK
 
-    module.exports.push name: 'HDP Pig # Fix Pig', callback: (ctx, next) ->
-      ctx.write
-        write: [
-          match: /^(\s)*slfJarVersion=.*/mg
-          replace: "$1slfJarVersion=''"
-        ,
-          match: new RegExp quote('/usr/lib/hcatalog'), 'g'
-          replace: '/usr/lib/hive-hcatalog'
-        ]
-        destination: '/usr/lib/pig/bin/pig'
-        backup: true
-      , (err, written) ->
-        next err, if written then ctx.OK else ctx.PASS
-
     module.exports.push name: 'HDP Pig # Check HCat', callback: (ctx, next) ->
       {test_user, force_check} = ctx.config.hdp
       rm = ctx.host_with_module 'ryba/hadoop/yarn_rm'
@@ -196,11 +194,10 @@ unless the "hdp.force_check" configuration property is set to "true".
         return next err if err
         ctx.execute
           cmd: mkcmd.test ctx, """
-          if hdfs dfs -test -d #{ctx.config.host}-pig_hcat; then exit 1; fi
-          exit 0
+          hdfs dfs -rm -r front1-pig_hcat # Clean
+          hdfs dfs -test -d #{host}-pig_hcat_result # Skip
           """
-          code: 1
-          code_skipped: 0
+          code_skipped: 1
           not_if: force_check
         , (err, skip) ->
           return next err, ctx.PASS if err or skip
@@ -209,29 +206,26 @@ unless the "hdp.force_check" configuration property is set to "true".
             data = LOAD '#{db}.check_tb' USING org.apache.hive.hcatalog.pig.HCatLoader();
             agroup = GROUP data ALL;
             asum = foreach agroup GENERATE SUM(data.col2);
-            STORE asum INTO '/user/#{test_user.name}/#{host}-pig_hcat/result' USING PigStorage();
+            STORE asum INTO '/user/#{test_user.name}/#{host}-pig_hcat_result' USING PigStorage();
             """
-            destination: "/tmp/#{ctx.config.host}-pig_hcat.pig"
+            destination: "/tmp/#{host}-pig_hcat.pig"
             eof: true
           , (err) ->
             return next err if err
             ctx.execute
               cmd: mkcmd.test ctx, """
-              hdfs dfs -rm -r #{host}-pig_hcat
               hdfs dfs -mkdir -p #{host}-pig_hcat/db/check_tb
               echo -e 'a\\x011\\nb\x012\\nc\\x013' | hdfs dfs -put - #{host}-pig_hcat/db/check_tb/data
-              if [ $? != "0" ]; then exit 1; fi
               #{query "CREATE DATABASE IF NOT EXISTS check_#{host}_pig_hcat LOCATION '/user/#{test_user.name}/#{host}-pig_hcat/db';"}
-              if [ $? != "0" ]; then exit 1; fi
               #{query "CREATE TABLE IF NOT EXISTS #{db}.check_tb(col1 STRING, col2 INT);"}
-              if [ $? != "0" ]; then exit 1; fi
-              pig -useHCatalog /tmp/#{ctx.config.host}-pig_hcat.pig
-              if [ $? != "0" ]; then exit 1; fi
+              pig -useHCatalog /tmp/#{host}-pig_hcat.pig
               #{query "DROP TABLE #{db}.check_tb;"}
               #{query "DROP DATABASE #{db};"}
-              if [ $? != "0" ]; then exit 1; fi
-              hdfs dfs -test -d #{host}-pig_hcat/result;
+              hdfs dfs -rm -r #{host}-pig_hcat
+              hdfs dfs -test -d #{host}-pig_hcat_result
+              hdfs dfs -rm -r front1-pig_hcat
               """
+              trap_on_error: true
             , (err, executed) ->
               next err, ctx.OK
 
