@@ -14,6 +14,9 @@ interface.
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 
+    module.exports.push (ctx) ->
+      require('./core').configure ctx
+
 ## Test HDFS
 
 Attemp to place a file inside HDFS. the file "/etc/passwd" will be placed at 
@@ -42,6 +45,7 @@ for more information.
 
     module.exports.push name: 'HDP HDFS DN # Test WebHDFS', timeout: -1, callback: (ctx, next) ->
       {test_user, force_check, active_nn_host} = ctx.config.hdp
+      force_check = true
       do_init = ->
         ctx.execute
           cmd: mkcmd.test ctx, """
@@ -63,7 +67,9 @@ for more information.
           """
         , (err, executed, stdout) ->
           return next err if err
-          count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "#{ctx.config.host}-webhdfs").length
+          try
+            count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "#{ctx.config.host}-webhdfs").length
+          catch e then return next Error e
           return next null, ctx.FAILED unless count
           do_token()
       do_token = ->
@@ -80,10 +86,17 @@ for more information.
             curl -s "http://#{active_nn_host}:50070/webhdfs/v1/user/#{test_user.name}?delegation=#{token}&op=LISTSTATUS"
             """
           , (err, executed, stdout) ->
+            return setTimeout do_tocken, 3000 if err?.exception is 'RetriableException'
             return next err if err
-            count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "#{ctx.config.host}-webhdfs").length
+            try
+              count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "#{ctx.config.host}-webhdfs").length
+            catch e then return next Error e
             return next null, ctx.FAILED unless count
             do_end()
       do_end = ->
         next null, ctx.OK
       do_init()
+
+
+
+
