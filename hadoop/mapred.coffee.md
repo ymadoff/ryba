@@ -19,31 +19,55 @@ layout: module
       require('./hdfs').configure ctx
       require('./yarn').configure ctx
       require('./mapred_').configure ctx
-      {static_host, realm} = ctx.config.hdp
+      {static_host, realm, mapred} = ctx.config.hdp
       jhs_host = ctx.host_with_module 'ryba/hadoop/mapred_jhs'
-      # Options for mapred-site.xml
-      ctx.config.hdp.mapred['mapreduce.job.counters.max'] ?= 120
-      # Not sure if we need this, at this time, the directory isnt created
-      ctx.config.hdp.mapred['mapreduce.jobtracker.system.dir'] ?= '/mapred/system'
-      # ctx.config.hdp.mapred_log_dir ?= '/var/log/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#73
+      # Layout
       ctx.config.hdp.mapred_pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
+      # Configuration
+      mapred['mapreduce.job.counters.max'] ?= 120
+      # Not sure if we need this, at this time, the directory isnt created
+      mapred['mapreduce.jobtracker.system.dir'] ?= '/mapred/system'
       # [Configurations for MapReduce Applications](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuring_the_Hadoop_Daemons_in_Non-Secure_Mode)
-      ctx.config.hdp.mapred['mapreduce.task.io.sort.mb'] ?= '1024' # Higher memory-limit while sorting data for efficiency.
-      ctx.config.hdp.mapred['mapreduce.task.io.sort.factor'] ?= '100' # More streams merged at once while sorting files.
-      ctx.config.hdp.mapred['mapreduce.reduce.shuffle.parallelcopies'] ?= '50' #  Higher number of parallel copies run by reduces to fetch outputs from very large number of maps.
+      mapred['mapreduce.task.io.sort.mb'] ?= '1024' # Higher memory-limit while sorting data for efficiency.
+      mapred['mapreduce.task.io.sort.factor'] ?= '100' # More streams merged at once while sorting files.
+      mapred['mapreduce.reduce.shuffle.parallelcopies'] ?= '50' #  Higher number of parallel copies run by reduces to fetch outputs from very large number of maps.
       # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.6.0/bk_installing_manually_book/content/rpm_chap3.html
       # Optional: Configure MapReduce to use Snappy Compression
       # Complement core-site.xml configuration
-      ctx.config.hdp.mapred['mapreduce.admin.map.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
-      ctx.config.hdp.mapred['mapreduce.admin.reduce.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
+      mapred['mapreduce.admin.map.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
+      mapred['mapreduce.admin.reduce.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
       # [Configurations for MapReduce JobHistory Server](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuring_the_Hadoop_Daemons_in_Non-Secure_Mode)
-      ctx.config.hdp.mapred['mapreduce.jobhistory.address'] ?= "#{jhs_host}:10020" # MapReduce JobHistory Server host:port - Default port is 10020.
-      ctx.config.hdp.mapred['mapreduce.jobhistory.webapp.address'] ?= "#{jhs_host}:19888" # MapReduce JobHistory Server Web UI host:port - Default port is 19888.
-      ctx.config.hdp.mapred['mapreduce.jobhistory.done-dir'] ?= '/mr-history/done' # Directory where history files are managed by the MR JobHistory Server.
-      ctx.config.hdp.mapred['mapreduce.jobhistory.intermediate-done-dir'] ?= '/mr-history/tmp' # Directory where history files are written by MapReduce jobs.
+      mapred['mapreduce.jobhistory.address'] ?= "#{jhs_host}:10020" # MapReduce JobHistory Server host:port - Default port is 10020.
+      mapred['mapreduce.jobhistory.webapp.address'] ?= "#{jhs_host}:19888" # MapReduce JobHistory Server Web UI host:port - Default port is 19888.
+      mapred['mapreduce.jobhistory.done-dir'] ?= '/mr-history/done' # Directory where history files are managed by the MR JobHistory Server.
+      mapred['mapreduce.jobhistory.intermediate-done-dir'] ?= '/mr-history/tmp' # Directory where history files are written by MapReduce jobs.
       # Important, JHS principal must be deployed on all mapreduce workers
-      ctx.config.hdp.mapred['mapreduce.jobhistory.principal'] ?= "jhs/#{jhs_host}@#{realm}"
-      #ctx.config.hdp.mapred['mapreduce.jobhistory.principal'] ?= "jhs/#{static_host}@#{realm}"
+      mapred['mapreduce.jobhistory.principal'] ?= "jhs/#{jhs_host}@#{realm}"
+      #mapred['mapreduce.jobhistory.principal'] ?= "jhs/#{static_host}@#{realm}"
+
+## IPTables
+
+| Service          | Port  | Proto | Parameter                           |
+|------------------|-------|-------|-------------------------------------|
+| jobhistory | 10020 | http  | mapreduce.jobhistory.address        |
+| jobhistory | 19888 | tcp   | mapreduce.jobhistory.webapp.address |
+| jobhistory | 13562 | tcp   | mapreduce.shuffle.port              |
+
+
+IPTables rules are only inserted if the parameter "iptables.action" is set to 
+"start" (default value).
+
+    module.exports.push name: 'HDP MapRed # IPTables', callback: (ctx, next) ->
+      {mapred} = ctx.config.hdp
+      jobclient = mapred['yarn.app.mapreduce.am.job.client.port-range']
+      jobclient = jobclient.replace '-', ':'
+      ctx.iptables
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: jobclient, protocol: 'tcp', state: 'NEW', comment: "MapRed Client Range" }
+        ]
+        if: ctx.config.iptables.action is 'start'
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP MapRed # Install Common', timeout: -1, callback: (ctx, next) ->
       ctx.service [

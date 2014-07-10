@@ -25,7 +25,7 @@ provides [instructions to rollback a HA installation][rollback] that apply to Am
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
-    # module.exports.push 'masson/core/iptables'
+    module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
 
 ## Configuration
@@ -34,33 +34,34 @@ The NameNode doesn't define new configuration properties. However, it uses prope
 define inside the "ryba/hadoop/hdfs" and "masson/core/nc" modules.
 
     module.exports.push (ctx) ->
+      require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
       # require('masson/core/iptables').configure ctx
 
-# ## IPTables
+## IPTables
 
-# | Service                    | Port   | Protocol | Parameter         |
-# |----------------------------|--------|--------|-------------------- |
-# | NameNode WebUI             | 50070  | http   | `dfs.http.address`  |
-# |                            | 50470  | https  | `dfs.https.address` |
-# | NameNode metadata service  | 8020   | ipc    | `fs.default.name`   |
+| Service    | Port | Proto  | Parameter                  |
+|------------|------|--------|----------------------------|
+| namenode  | 50070 | tcp    | dfs.namdnode.http-address  |
+| namenode  | 50470 | tcp    | dfs.namenode.https-address |
+| namenode  | 8020  | tcp    | fs.defaultFS               |
+| namenode  | 8019  | tcp    | dfs.ha.zkfc.port           |
 
-# IPTables rules are only inserted if the parameter "iptables.action" is set to 
-# "start" (default value).
+IPTables rules are only inserted if the parameter "iptables.action" is set to 
+"start" (default value).
 
-#     module.exports.push name: 'SSH # IPTables', callback: (ctx, next) ->
-#       {hadoop_conf_dir, mapred} = ctx.config.hdp
-#       ctx.iptables
-#         rules: [
-#           chain: 'INPUT', target: 'ACCEPT', dport: 22, protocol: 'tcp', state: 'NEW', comment: "HDFS Namenode WebUI"
-#         ,
-#           chain: 'INPUT', target: 'ACCEPT', dport: 22, protocol: 'tcp', state: 'NEW', comment: "HFDS Namenode WebUI Secured"
-#         ,
-#           chain: 'INPUT', target: 'ACCEPT', dport: 22, protocol: 'tcp', state: 'NEW', comment: "HFDS Namenode metadata service"
-#         ]
-#         if: ctx.config.iptables.action is 'start'
-#       , (err, configured) ->
-#         next err, if configured then ctx.OK else ctx.PASS
+    module.exports.push name: 'HDP HDFS NN # IPTables', callback: (ctx, next) ->
+      ctx.iptables
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 50070, protocol: 'tcp', state: 'NEW', comment: "HDFS NN HTTP" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 50470, protocol: 'tcp', state: 'NEW', comment: "HDFS NN HTTPS" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 8020, protocol: 'tcp', state: 'NEW', comment: "HDFS NN IPC" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 8019, protocol: 'tcp', state: 'NEW', comment: "HDFS NN IPC" }
+          # { chain: 'INPUT', jump: 'ACCEPT', dport: 9000, protocol: 'tcp', state: 'NEW', comment: "HDFS NN IPC" }
+        ]
+        if: ctx.config.iptables.action is 'start'
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
 
 ## Layout
 

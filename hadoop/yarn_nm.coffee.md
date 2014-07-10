@@ -11,10 +11,34 @@ applications running atop of YARN.
     lifecycle = require './lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/yarn'
 
     module.exports.push (ctx) ->
+      require('masson/core/iptables').configure ctx
       require('./yarn').configure ctx
+
+## IPTables
+
+| Service    | Port | Proto  | Parameter                          |
+|------------|------|--------|------------------------------------|
+| nodemanager | 45454 | tcp  | yarn.nodemanager.address           | x
+| nodemanager | 8042  | tcp  | yarn.nodemanager.webapp.address    |
+| nodemanager | 8040  | tcp  | yarn.nodemanager.localizer.address |
+
+IPTables rules are only inserted if the parameter "iptables.action" is set to 
+"start" (default value).
+
+    module.exports.push name: 'HDP YARN NM # IPTables', callback: (ctx, next) ->
+      ctx.iptables
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 45454, protocol: 'tcp', state: 'NEW', comment: "YARN NM Container" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 8042, protocol: 'tcp', state: 'NEW', comment: "YARN NM WebApp" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 8040, protocol: 'tcp', state: 'NEW', comment: "YARN NM WebApp" }
+        ]
+        if: ctx.config.iptables.action is 'start'
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP YARN NM # Directories', timeout: -1, callback: (ctx, next) ->
       {yarn_user, yarn, test_user, hadoop_group} = ctx.config.hdp

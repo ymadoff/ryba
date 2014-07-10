@@ -32,6 +32,7 @@ most (N - 1) / 2 failures to continue to function normally.
     mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
 
 ## Configuration
@@ -56,10 +57,35 @@ Example:
 ```
 
     module.exports.push module.exports.configure = (ctx) ->
+      require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
       {hdfs_site} = ctx.config.hdp
       # ctx.config.hdp.hdfs_site['dfs.journalnode.edits.dir'] ?= '/hadoop/journalnode'
       throw new Error 'Required property: hdfs_site[dfs.journalnode.edits.dir]' unless hdfs_site['dfs.namenode.name.dir']
+
+## IPTables
+
+| Service     | Port | Proto  | Parameter                                      |
+|-------------|------|--------|------------------------------------------------|
+| journalnode | 8485 | tcp    | hdp.hdfs_site['dfs.journalnode.rpc-address'] |
+| journalnode | 8480 | tcp    | hdp.hdfs_site['dfs.journalnode.http-address']  |
+| journalnode | 8481 | tcp    | hdp.hdfs_site['dfs.journalnode.https-address'] |
+
+Note, "dfs.journalnode.rpc-address" is used by "dfs.namenode.shared.edits.dir".
+
+IPTables rules are only inserted if the parameter "iptables.action" is set to 
+"start" (default value).
+
+    module.exports.push name: 'HDP HDFS JN # IPTables', callback: (ctx, next) ->
+      ctx.iptables
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 8485, protocol: 'tcp', state: 'NEW', comment: "HDFS JournalNode" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 8480, protocol: 'tcp', state: 'NEW', comment: "HDFS JournalNode" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 8481, protocol: 'tcp', state: 'NEW', comment: "HDFS JournalNode" }
+        ]
+        if: ctx.config.iptables.action is 'start'
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
 
 ## Layout
 

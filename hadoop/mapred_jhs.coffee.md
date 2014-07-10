@@ -9,11 +9,42 @@ layout: module
     mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/mapred'
 
     module.exports.push (ctx) ->
+      require('masson/core/iptables').configure ctx
       require('./mapred').configure ctx
       ctx.config.hdp.mapred['mapreduce.jobhistory.keytab'] ?= "/etc/security/keytabs/jhs.service.keytab"
+      # Fix: src in "[DFSConfigKeys.java][keys]" and [HDP port list] mention 13562
+      # while companion files mentions 8081
+      ctx.config.hdp.mapred['mapreduce.shuffle.port'] ?= '13562'
+
+## IPTables
+
+| Service          | Port  | Proto | Parameter                     |
+|------------------|-------|-------|-------------------------------|
+| jobhistory | 10020 | http  | mapreduce.jobhistory.address        | x
+| jobhistory | 19888 | tcp   | mapreduce.jobhistory.webapp.address | x
+| jobhistory | 13562 | tcp   | mapreduce.shuffle.port              | x
+| jobhistory | 10033 | tcp   | mapreduce.jobhistory.admin.address  |
+
+IPTables rules are only inserted if the parameter "iptables.action" is set to 
+"start" (default value).
+
+    module.exports.push name: 'HDP MapRed JHS # IPTables', callback: (ctx, next) ->
+      {mapred} = ctx.config.hdp
+      shuffle = mapred['mapreduce.shuffle.port']
+      ctx.iptables
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 10020, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS Server" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 19888, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS WebApp" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: shuffle, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS Shuffle" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 10033, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS Admin Server" }
+        ]
+        if: ctx.config.iptables.action is 'start'
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP MapRed JHS # Kerberos', callback: (ctx, next) ->
       {hadoop_conf_dir, mapred} = ctx.config.hdp
@@ -53,7 +84,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         if ! hdfs dfs -test -d /app-logs; then
           hdfs dfs -mkdir -p /app-logs
           hdfs dfs -chmod 1777 /app-logs
-          hdfs dfs -chown #{yarn_user.name} /app-logs
+          hdfs dfs -chown #{yarn_user.name}:#{hadoop_group.name} /app-logs
           modified=1
         fi
         if [ $modified != "1" ]; then exit 2; fi
