@@ -80,13 +80,14 @@ for more information.
           """
         , (err, executed, stdout) ->
           return next err if err
-          token = JSON.parse(stdout).Token.urlString
+          json = JSON.parse(stdout)
+          return setTimeout do_tocken, 3000 if json.exception is 'RetriableException'
+          token = json.Token.urlString
           ctx.execute
             cmd: """
             curl -s "http://#{active_nn_host}:50070/webhdfs/v1/user/#{test_user.name}?delegation=#{token}&op=LISTSTATUS"
             """
           , (err, executed, stdout) ->
-            return setTimeout do_tocken, 3000 if err?.exception is 'RetriableException'
             return next err if err
             try
               count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "#{ctx.config.host}-webhdfs").length
