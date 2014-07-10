@@ -335,30 +335,27 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
       ctx.fs.exists '/usr/libexec/bigtop-utils', (err, exists) ->
         return next err if err
         jsvc = if exists then '/usr/libexec/bigtop-utils' else '/usr/lib/bigtop-utils'
+        write = [
+          { match: /^export JAVA_HOME=.*$/mg, replace: "export JAVA_HOME=#{java_home}" }
+          { match: /^export HADOOP_OPTS=.*$/mg, replace: hadoop_opts }
+          { match: /\/var\/log\/hadoop\//mg, replace: "#{hdfs_log_dir}/" }
+          { match: /\/var\/run\/hadoop\//mg, replace: "#{hdfs_pid_dir}/" }
+          { match: /^export JSVC_HOME=.*$/mg, replace: "export JSVC_HOME=#{jsvc}" }
+        ]
+        if ctx.has_module 'ryba/xasecure/hdfs'
+          write.push
+            replace: '. /etc/hadoop/conf/xasecure-hadoop-env.sh'
+            append: true
         ctx.write
           source: "#{__dirname}/files/core_hadoop/hadoop-env.sh"
           destination: "#{hadoop_conf_dir}/hadoop-env.sh"
           local_source: true
+          write: write
           uid: hdfs_user.name
           gid: hadoop_group.name
           mode: 0o755
           backup: true
-          write: [
-            match: /^export JAVA_HOME=.*$/mg
-            replace: "export JAVA_HOME=#{java_home}"
-          ,
-            match: /^export HADOOP_OPTS=.*$/mg
-            replace: hadoop_opts
-          ,
-            match: /\/var\/log\/hadoop\//mg
-            replace: "#{hdfs_log_dir}/"
-          , 
-            match: /\/var\/run\/hadoop\//mg
-            replace: "#{hdfs_pid_dir}/"
-          ,
-            match: /^export JSVC_HOME=.*$/mg
-            replace: "export JSVC_HOME=#{jsvc}"
-          ]
+          eof: true
         , (err, written) ->
           next err, if written then ctx.OK else ctx.PASS
 
@@ -483,6 +480,8 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
       core_site['hadoop.proxyuser.hcat.hosts'] ?= '*'
       core_site['hadoop.proxyuser.hue.groups'] ?= '*'
       core_site['hadoop.proxyuser.hue.hosts'] ?= '*'
+      core_site['hadoop.proxyuser.hbase.groups'] ?= '*'
+      core_site['hadoop.proxyuser.hbase.hosts'] ?= '*'
       core_site['hadoop.proxyuser.HTTP.hosts'] = '*'
       core_site['hadoop.proxyuser.HTTP.groups'] ?= '*'
       # Todo, find a better place for this one
