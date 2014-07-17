@@ -12,8 +12,6 @@ infrastructure for evaluating these programs. The salient property of Pig
 programs is that their structure is amenable to substantial parallelization, 
 which in turns enables them to handle very large data sets. 
 
-    quote = require 'regexp-quote'
-    mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
@@ -141,92 +139,11 @@ companion file define no properties while the YUM package does.
 
 ## Check
 
-Run a Pig script to test the installation once the ResourceManager is 
-installed. The script will only be executed the first time it is deployed 
-unless the "hdp.force_check" configuration property is set to "true".
+    module.exports.push 'ryba/hadoop/pig_check'
 
-    module.exports.push name: 'HDP Pig # Check', callback: (ctx, next) ->
-      {force_check, test_user} = ctx.config.hdp
-      rm = ctx.host_with_module 'ryba/hadoop/yarn_rm'
-      ctx.waitIsOpen rm, 8050, (err) ->
-        return next err if err
-        ctx.execute
-          cmd: mkcmd.test ctx, """
-          hdfs dfs -test -d #{ctx.config.host}-pig
-          """
-          code_skipped: 1
-          not_if: force_check
-        , (err, skip) ->
-          return next err, ctx.PASS if err or skip
-          ctx.execute
-            cmd: mkcmd.test ctx, """
-            hdfs dfs -rm -r #{ctx.config.host}-pig
-            hdfs dfs -mkdir -p #{ctx.config.host}-pig
-            echo -e 'a|1\\\\nb|2\\\\nc|3' | hdfs dfs -put - #{ctx.config.host}-pig/data
-            """
-          , (err, executed) ->
-            return next err if err
-            ctx.write
-              content: """
-              data = LOAD '/user/#{test_user.name}/#{ctx.config.host}-pig/data' USING PigStorage(',') AS (text, number);
-              result = foreach data generate UPPER(text), number+2;
-              STORE result INTO '/user/#{test_user.name}/#{ctx.config.host}-pig/result' USING PigStorage();
-              """
-              destination: '/tmp/test.pig'
-            , (err, written) ->
-              return next err if err
-              ctx.execute
-                cmd: mkcmd.test ctx, """
-                pig /tmp/test.pig
-                rm -rf /tmp/test.pig
-                hdfs dfs -test -d /user/test/#{ctx.config.host}-pig/result
-                """
-              , (err, executed) ->
-                next err, ctx.OK
+## Module Dependencies
 
-    module.exports.push name: 'HDP Pig # Check HCat', callback: (ctx, next) ->
-      {test_user, force_check} = ctx.config.hdp
-      rm = ctx.host_with_module 'ryba/hadoop/yarn_rm'
-      host = ctx.config.host.split('.')[0]
-      query = (query) -> "hcat -e \"#{query}\" "
-      db = "check_#{host}_pig_hcat"
-      ctx.waitIsOpen rm, 8050, (err) ->
-        return next err if err
-        ctx.execute
-          cmd: mkcmd.test ctx, """
-          hdfs dfs -rm -r front1-pig_hcat # Clean
-          hdfs dfs -test -d #{host}-pig_hcat_result # Skip
-          """
-          code_skipped: 1
-          not_if: force_check
-        , (err, skip) ->
-          return next err, ctx.PASS if err or skip
-          ctx.write
-            content: """
-            data = LOAD '#{db}.check_tb' USING org.apache.hive.hcatalog.pig.HCatLoader();
-            agroup = GROUP data ALL;
-            asum = foreach agroup GENERATE SUM(data.col2);
-            STORE asum INTO '/user/#{test_user.name}/#{host}-pig_hcat_result' USING PigStorage();
-            """
-            destination: "/tmp/#{host}-pig_hcat.pig"
-            eof: true
-          , (err) ->
-            return next err if err
-            ctx.execute
-              cmd: mkcmd.test ctx, """
-              hdfs dfs -mkdir -p #{host}-pig_hcat/db/check_tb
-              echo -e 'a\\x011\\nb\x012\\nc\\x013' | hdfs dfs -put - #{host}-pig_hcat/db/check_tb/data
-              #{query "CREATE DATABASE IF NOT EXISTS check_#{host}_pig_hcat LOCATION '/user/#{test_user.name}/#{host}-pig_hcat/db';"}
-              #{query "CREATE TABLE IF NOT EXISTS #{db}.check_tb(col1 STRING, col2 INT);"}
-              pig -useHCatalog /tmp/#{host}-pig_hcat.pig
-              #{query "DROP TABLE #{db}.check_tb;"}
-              #{query "DROP DATABASE #{db};"}
-              hdfs dfs -rm -r #{host}-pig_hcat
-              hdfs dfs -test -d #{host}-pig_hcat_result
-              hdfs dfs -rm -r front1-pig_hcat
-              """
-              trap_on_error: true
-            , (err, executed) ->
-              next err, ctx.OK
+    quote = require 'regexp-quote'
+
 
 
