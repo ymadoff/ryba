@@ -4,7 +4,7 @@ memory = (ctx) ->
   yarn_site = yarn
   # yarn.scheduler.maximum-allocation-mb
   # yarn.nodemanager.log.retain-seconds (cherif mettre la valeur à 10800 au lie de 604800)
-  # yarn.log-aggregation.retain-seconds (chefrif)
+  # yarn.log-aggregation.retain-seconds (cherif)
 
   # Follow [Hortonworks example](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
   # As a general recommendation, Hortonworks found that allowing for 1-2 
@@ -46,8 +46,9 @@ memory = (ctx) ->
     'mapred_site':
       'mapreduce.map.memory.mb': "#{memoryPerContainer}" # RAM-per-container
       'mapreduce.reduce.memory.mb': "#{2 * memoryPerContainer}" # 2 * RAM-per-container
-      'mapreduce.map.java.opts': "-Xmx#{Math.floor(.8 * memoryPerContainer)}m" # 0.8 * RAM-per-container
-      'mapreduce.reduce.java.opts': "-Xmx#{Math.floor(.8 * 2 * memoryPerContainer)}m" # 0.8 * 2 * RAM-per-container
+      'mapreduce.map.java.opts': "-Xmx#{Math.floor .8 * memoryPerContainer}m" # 0.8 * RAM-per-container
+      'mapreduce.reduce.java.opts': "-Xmx#{Math.floor .8 * 2 * memoryPerContainer}m" # 0.8 * 2 * RAM-per-container
+      'mapreduce.task.io.sort.mb': "#{Math.floor .4 * memoryPerContainer}"
   # REDUCE capability required is more than the supported max container capability in the cluster. Killing the Job. reduceResourceReqt: 3844 maxContainerCapability:1922
   result.mapred_site['mapreduce.reduce.memory.mb'] = Math.min result.yarn_site['yarn.scheduler.maximum-allocation-mb'], result.mapred_site['mapreduce.reduce.memory.mb']
   result

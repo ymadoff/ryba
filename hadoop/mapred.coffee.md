@@ -27,9 +27,6 @@ layout: module
       mapred['mapreduce.job.counters.max'] ?= 120
       # Not sure if we need this, at this time, the directory isnt created
       mapred['mapreduce.jobtracker.system.dir'] ?= '/mapred/system'
-      # [Configurations for MapReduce Applications](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuring_the_Hadoop_Daemons_in_Non-Secure_Mode)
-      mapred['mapreduce.task.io.sort.mb'] ?= '1024' # Higher memory-limit while sorting data for efficiency.
-      mapred['mapreduce.task.io.sort.factor'] ?= '100' # More streams merged at once while sorting files.
       mapred['mapreduce.reduce.shuffle.parallelcopies'] ?= '50' #  Higher number of parallel copies run by reduces to fetch outputs from very large number of maps.
       # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.6.0/bk_installing_manually_book/content/rpm_chap3.html
       # Optional: Configure MapReduce to use Snappy Compression
@@ -183,118 +180,11 @@ allowed.
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
         properties: mapred_site
+        backup: true
         merge: true
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
-Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
-
-    # module.exports.push name: 'HDP MapRed JHS # HDFS layout', callback: (ctx, next) ->
-    #   {hadoop_group, yarn_user, mapred_user} = ctx.config.hdp
-    #   # Carefull, this is a duplicate of "HDP JHS # HDFS layout"
-    #   # Note, we dont create dir for mapred['mapreduce.jobtracker.system.dir']
-    #   ctx.execute
-    #     cmd: mkcmd.hdfs ctx, """
-    #     if ! hdfs dfs -test -d /mr-history/tmp; then
-    #       hdfs dfs -mkdir -p /mr-history/tmp
-    #       hdfs dfs -chmod -R 1777 /mr-history/tmp
-    #       modified=1
-    #     fi
-    #     if ! hdfs dfs -test -d /mr-history/done; then
-    #       hdfs dfs -mkdir -p /mr-history/done
-    #       hdfs dfs -chmod -R 1777 /mr-history/done
-    #       modified=1
-    #     fi
-    #     hdfs dfs -chmod 0751 /mr-history
-    #     hdfs dfs -chown -R #{mapred_user.name}:#{hadoop_group.name} /mr-history
-    #     if ! hdfs dfs -test -d /app-logs; then
-    #       hdfs dfs -mkdir -p /app-logs
-    #       hdfs dfs -chmod -R 1777 /app-logs
-    #       hdfs dfs -chown #{yarn_user.name} /app-logs
-    #       modified=1
-    #     fi
-    #     if [ $modified != "1" ]; then exit 2; fi
-    #     """
-    #     code_skipped: 2
-    #   , (err, executed, stdout) ->
-    #     return next err if err
-    #     next null, if executed then ctx.OK else ctx.PASS
-
-    # module.exports.push name: 'HDP MapRed # HDFS layout', timeout: -1, callback: (ctx, next) ->
-    #   {hadoop_group, mapred, mapred_user} = ctx.config.hdp
-    #   modified = false
-    #   # Carefull, this is a duplicate of "HDP MapRed JHS # HDFS layout"
-    #   do_mapreduce_history = ->
-    #     # "/mr-history" need 0755 permission for subfolder to be accessible
-    #     # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap4-4.html
-    #     ctx.execute
-    #       cmd: mkcmd.hdfs ctx, """
-    #       if hdfs dfs -test -d /mr-history; then exit 1; fi
-    #       hdfs dfs -mkdir -p /mr-history
-    #       hdfs dfs -chmod 0755 /mr-history
-    #       # hdfs dfs -chown #{mapred_user.name}:#{hadoop_group.name} /mr-history
-    #       """
-    #       code_skipped: 1
-    #     , (err, executed, stdout) ->
-    #       return next err if err
-    #       modified = true if executed
-    #       do_mapreduce_jobhistory_intermediate_done_dir()
-    #   do_mapreduce_jobtracker_system_dir = ->
-    #     mapreduce_jobtracker_system_dir = mapred['mapreduce.jobtracker.system.dir']
-    #     ctx.log "Create #{mapreduce_jobtracker_system_dir}"
-    #     ctx.execute
-    #       cmd: mkcmd.hdfs ctx, """
-    #       if hdfs dfs -test -d #{mapreduce_jobtracker_system_dir}; then exit 1; fi
-    #       hdfs dfs -mkdir -p #{mapreduce_jobtracker_system_dir}
-    #       hdfs dfs -chown #{mapred_user.name}:#{hadoop_group.name} #{mapreduce_jobtracker_system_dir}
-    #       hdfs dfs -chmod 755 #{mapreduce_jobtracker_system_dir}
-    #       """
-    #       code_skipped: 1
-    #     , (err, executed, stdout) ->
-    #       return next err if err
-    #       modified = true if executed
-    #       do_mapreduce_jobhistory_intermediate_done_dir()
-    #   do_mapreduce_jobhistory_intermediate_done_dir = ->
-    #     # Default value for "mapreduce.jobhistory.intermediate-done-dir" 
-    #     # is "${yarn.app.mapreduce.am.staging-dir}/history/done_intermediate"
-    #     # where "yarn.app.mapreduce.am.staging-dir"
-    #     # is "/tmp/hadoop-yarn/staging"
-    #     mapreduce_jobhistory_intermediate_done_dir = mapred['mapreduce.jobhistory.intermediate-done-dir']
-    #     ctx.log "Create #{mapreduce_jobhistory_intermediate_done_dir}"
-    #     ctx.execute
-    #       cmd: mkcmd.hdfs ctx, """
-    #       if hdfs dfs -test -d #{mapreduce_jobhistory_intermediate_done_dir}; then exit 1; fi
-    #       hdfs dfs -mkdir -p #{mapreduce_jobhistory_intermediate_done_dir}
-    #       hdfs dfs -chown #{mapred_user.name}:#{hadoop_group.name} #{mapreduce_jobhistory_intermediate_done_dir}
-    #       hdfs dfs -chmod 1777 #{mapreduce_jobhistory_intermediate_done_dir}
-    #       """
-    #       code_skipped: 1
-    #     , (err, executed, stdout) ->
-    #       return next err if err
-    #       modified = true if executed
-    #       do_mapreduce_jobhistory_done_dir()
-    #   do_mapreduce_jobhistory_done_dir = ->
-    #     # Default value for "mapreduce.jobhistory.done-dir" 
-    #     # is "${yarn.app.mapreduce.am.staging-dir}/history/done"
-    #     # where "yarn.app.mapreduce.am.staging-dir"
-    #     # is "/tmp/hadoop-yarn/staging"
-    #     mapreduce_jobhistory_done_dir = mapred['mapreduce.jobhistory.done-dir']
-    #     ctx.log "Create #{mapreduce_jobhistory_done_dir}"
-    #     ctx.execute
-    #       cmd: mkcmd.hdfs ctx, """
-    #       if hdfs dfs -test -d #{mapreduce_jobhistory_done_dir}; then exit 1; fi
-    #       hdfs dfs -mkdir -p #{mapreduce_jobhistory_done_dir}
-    #       hdfs dfs -chown #{mapred_user.name}:#{hadoop_group.name} #{mapreduce_jobhistory_done_dir}
-    #       hdfs dfs -chmod 1777 #{mapreduce_jobhistory_done_dir}
-    #       """
-    #       code_skipped: 1
-    #     , (err, executed, stdout) ->
-    #       return next err if err
-    #       modified = true if executed
-    #       do_end()
-    #   do_end = ->
-    #     next null, if modified then ctx.OK else ctx.PASS
-    #   do_mapreduce_history()
 
 
 
