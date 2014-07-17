@@ -67,7 +67,7 @@ Example:
 
 | Service     | Port | Proto  | Parameter                                      |
 |-------------|------|--------|------------------------------------------------|
-| journalnode | 8485 | tcp    | hdp.hdfs_site['dfs.journalnode.rpc-address'] |
+| journalnode | 8485 | tcp    | hdp.hdfs_site['dfs.journalnode.rpc-address']   |
 | journalnode | 8480 | tcp    | hdp.hdfs_site['dfs.journalnode.http-address']  |
 | journalnode | 8481 | tcp    | hdp.hdfs_site['dfs.journalnode.https-address'] |
 
@@ -161,6 +161,12 @@ read on JN side (see [DFSConfigKeys.java][keys]).
 Load the module "ryba/hadoop/hdfs\_jn\_start" to start the JournalNode.
 
     module.exports.push 'ryba/hadoop/hdfs_jn_start'
+
+## Check
+
+Load the module "ryba/hadoop/hdfs\_jn\_check" to check the JournalNode.
+
+    module.exports.push 'ryba/hadoop/hdfs_jn_check'
 
 [keys]: https://github.com/apache/hadoop-common/blob/trunk/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSConfigKeys.java
 
