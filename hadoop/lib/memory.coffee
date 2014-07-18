@@ -1,4 +1,6 @@
 
+{merge} = require 'mecano/lib/misc'
+
 memory = (ctx) ->
   {yarn, hadoop_conf_dir} = ctx.config.hdp
   yarn_site = yarn
@@ -26,8 +28,17 @@ memory = (ctx) ->
   memoryPerContainer = Math.floor Math.max mininumContainerSize, memoryAvailableMb / maxNumberOfcontainers
   # Virtual memory (physical + paged memory) upper limit for each Map and Reduce task
   virtualMemoryRatio = 2.1
+  # Compute
+  yarnSchedulerMaximumAllocationMb = maxNumberOfcontainers * memoryPerContainer # containers * RAM-per-container
+  yarnAppMapreduceAmResourceMb = 2 * memoryPerContainer # 2 * RAM-per-container
+  yarnAppMapreduceAmCommmandOpts = Math.floor(.8 * 2 * memoryPerContainer) # 0.8 * 2 * RAM-per-container
+  mapreduceReduceMemoryMb = 2 * memoryPerContainer # 2 * RAM-per-container
+  # Constrain
+  yarnAppMapreduceAmResourceMb = Math.min yarnAppMapreduceAmResourceMb, maxNumberOfcontainers * memoryPerContainer
+  yarnAppMapreduceAmCommmandOpts = Math.min yarnAppMapreduceAmCommmandOpts, maxNumberOfcontainers * memoryPerContainer
+  mapreduceReduceMemoryMb = Math.min yarnSchedulerMaximumAllocationMb, mapreduceReduceMemoryMb # REDUCE capability required is more than the supported max container capability in the cluster. Killing the Job. reduceResourceReqt: 3844 maxContainerCapability:1922
   result =
-    'info':
+    info:
       'coreNumber': coreNumber
       'diskNumber': diskNumber
       'memoryTotalMb': memoryTotalMb
@@ -36,21 +47,25 @@ memory = (ctx) ->
       'maxNumberOfcontainers': maxNumberOfcontainers
       'memoryPerContainer': memoryPerContainer
       'virtualMemoryRatio': virtualMemoryRatio
-    'yarn_site':
+    yarn_site:
       'yarn.nodemanager.resource.memory-mb': "#{maxNumberOfcontainers * memoryPerContainer}" # containers * RAM-per-container
       'yarn.scheduler.minimum-allocation-mb': "#{memoryPerContainer}" # RAM-per-container
-      'yarn.scheduler.maximum-allocation-mb': "#{maxNumberOfcontainers * memoryPerContainer}" # containers * RAM-per-container
-      'yarn.app.mapreduce.am.resource.mb': "#{2 * memoryPerContainer}" # 2 * RAM-per-container
-      'yarn.app.mapreduce.am.command-opts': "-Xmx#{Math.floor(.8 * 2 * memoryPerContainer)}m" # 0.8 * 2 * RAM-per-container
+      'yarn.scheduler.maximum-allocation-mb': "#{yarnSchedulerMaximumAllocationMb}"
+      'yarn.app.mapreduce.am.resource.mb': "#{yarnAppMapreduceAmResourceMb}"
+      'yarn.app.mapreduce.am.command-opts': "-Xmx#{yarnAppMapreduceAmCommmandOpts}m"
       'yarn.nodemanager.vmem-pmem-ratio': "#{virtualMemoryRatio}"
-    'mapred_site':
+    mapred_site:
       'mapreduce.map.memory.mb': "#{memoryPerContainer}" # RAM-per-container
-      'mapreduce.reduce.memory.mb': "#{2 * memoryPerContainer}" # 2 * RAM-per-container
+      'mapreduce.reduce.memory.mb': "#{mapreduceReduceMemoryMb}"
       'mapreduce.map.java.opts': "-Xmx#{Math.floor .8 * memoryPerContainer}m" # 0.8 * RAM-per-container
       'mapreduce.reduce.java.opts': "-Xmx#{Math.floor .8 * 2 * memoryPerContainer}m" # 0.8 * 2 * RAM-per-container
       'mapreduce.task.io.sort.mb': "#{Math.floor .4 * memoryPerContainer}"
-  # REDUCE capability required is more than the supported max container capability in the cluster. Killing the Job. reduceResourceReqt: 3844 maxContainerCapability:1922
-  result.mapred_site['mapreduce.reduce.memory.mb'] = Math.min result.yarn_site['yarn.scheduler.maximum-allocation-mb'], result.mapred_site['mapreduce.reduce.memory.mb']
+  # merge result.yarn_site, ctx.config.hdp.yarn
+  for k, v of result.yarn_site
+    result.yarn_site[k] = ctx.config.hdp.yarn[k] if ctx.config.hdp.yarn[k]?
+  # merge result.mapred_site, ctx.config.hdp.mapred
+  for k, v of result.mapred_site
+    result.mapred_site[k] = ctx.config.hdp.mapred[k] if ctx.config.hdp.mapred[k]?
   result
 
 memory.reservedStack = 4:1, 8:2, 16:2, 24:4, 48:6, 64:8, 72:8, 96:12, 128:24, 256:32, 512:64
