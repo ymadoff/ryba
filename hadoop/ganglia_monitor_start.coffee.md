@@ -21,7 +21,7 @@ Execute this command on all the nodes in your Hadoop cluster.
       # ports.push 8664 if ctx.has_any_modules 'ryba/hadoop/yarn_rm'
       # ports.push 8666 if ctx.has_any_modules 'ryba/hadoop/mapred_jhs'
       # ports.push 8660 if ctx.has_any_modules 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm'
-      # ports.push 8663 if ctx.has_any_modules 'ryba/hadoop/hbase_master'
+      # ports.push 8663 if ctx.has_any_modules 'ryba/hbase/master'
       # ctx.waitIsOpen collector, ports, (err) ->
       #   return next err
       ctx.service

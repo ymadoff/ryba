@@ -101,7 +101,7 @@ Setup the Ganglia hosts. Categories are "HDPNameNode", "HDPResourceManager",
       if ctx.has_any_modules 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm'
         cmds.push cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPSlaves"
       # If HBase is installed, on the HBase Master, to configure the gmond emitter
-      if ctx.has_any_modules 'ryba/hadoop/hbase_master'
+      if ctx.has_any_modules 'ryba/hbase/master'
         cmds.push cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPHBaseMaster"
       ctx.execute cmds, (err, executed) ->
         next err, if executed then ctx.OK else ctx.PASS
@@ -137,7 +137,7 @@ Update the files generated in the "host" action with the host of the Ganglia Col
           match: /^(.*)host = (.*)$/mg
           replace: "$1host = #{collector}"
       # If HBase is installed, on the HBase Master, to configure the gmond emitter
-      if ctx.has_any_modules 'ryba/hadoop/hbase_master'
+      if ctx.has_any_modules 'ryba/hbase/master'
         writes.push
           destination: "/etc/ganglia/hdp/HDPHBaseMaster/conf.d/gmond.slave.conf"
           match: /^(.*)host = (.*)$/mg
