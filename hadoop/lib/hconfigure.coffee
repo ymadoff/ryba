@@ -3,7 +3,7 @@ each = require 'each'
 {EventEmitter} = require 'events'
 
 mecano = require 'mecano'
-conditions = require 'mecano/lib/conditions'
+conditions = require 'mecano/lib/misc/conditions'
 misc = require 'mecano/lib/misc'
 child = require 'mecano/lib/child'
 properties = require './properties'
