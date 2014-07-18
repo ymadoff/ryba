@@ -43,3 +43,14 @@ the standy NameNodes wait for the one on the active NameNode to start first.
         lifecycle.zkfc_start ctx, (err, started) ->
           next err, if started then ctx.OK else ctx.PASS
       if active_nn then do_start() else do_wait()
+
+    module.exports.push name: 'HDFS HDFS NN Start # Activate', callback: (ctx, next) ->
+      {active_nn, active_nn_host, standby_nn_host} = ctx.config.hdp
+      return next() unless active_nn
+      active_nn_host = active_nn_host.split('.')[0]
+      standby_nn_host = standby_nn_host.split('.')[0]
+      ctx.execute
+        cmd: "if hdfs haadmin -getServiceState #{active_nn_host} | grep standby; then hdfs haadmin -failover #{standby_nn_host} #{active_nn_host}; else exit 2; fi"
+        code_skipped: 2
+      , (err, activated) ->
+        next err, if activated then ctx.OK else ctx.PASS
