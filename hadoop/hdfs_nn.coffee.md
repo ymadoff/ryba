@@ -36,6 +36,7 @@ define inside the "ryba/hadoop/hdfs" and "masson/core/nc" modules.
     module.exports.push (ctx) ->
       require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
+      throw Error "Missing \"hdp.zkfc_password\" property" unless ctx.config.hdp.zkfc_password
       # require('masson/core/iptables').configure ctx
 
 ## IPTables
@@ -98,24 +99,6 @@ Create a service principal for this NameNode. The principal is named after
         keytab: "/etc/security/keytabs/nn.service.keytab"
         uid: 'hdfs'
         gid: 'hadoop'
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
-      , (err, created) ->
-        next err, if created then ctx.OK else ctx.PASS
-
-## HDFS User
-
-Create the HDFS user principal. This will be the super administrator for the HDFS
-filesystem. Note, we do not create a principal with a keytab to allow HDFS login
-from multiple sessions with braking an active session.
-
-    module.exports.push name: 'HDP HDFS NN # HDFS User', callback: (ctx, next) ->
-      {hdfs_user, hdfs_password, realm} = ctx.config.hdp
-      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc
-        principal: "#{hdfs_user.name}@#{realm}"
-        password: hdfs_password
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
@@ -258,6 +241,61 @@ is only executed on a non active NameNode.
           return next err if err
           next null, if executed then ctx.OK else ctx.PASS
       do_wait()
+
+## Zookeeper JAAS
+
+Secure the Zookeeper connection with JAAS.
+
+    module.exports.push name: 'HDP HDFS NN # Zookeeper JAAS', timeout: -1, callback: (ctx, next) ->
+      {hadoop_conf_dir, hdfs_user, hadoop_group, zkfc_password} = ctx.config.hdp
+      modified = false
+      do_core = ->
+        ctx.hconfigure
+          destination: "#{hadoop_conf_dir}/core-site.xml"
+          properties:
+            'ha.zookeeper.auth': "@#{hadoop_conf_dir}/zk-auth.txt"
+            'ha.zookeeper.acl': "@#{hadoop_conf_dir}/zk-acl.txt"
+          merge: true
+        , (err, configured) ->
+          return next err if err
+          modified = true if configured
+          do_content()
+      do_content = ->
+        ctx.write [
+          destination: "#{hadoop_conf_dir}/zk-auth.txt"
+          content: "digest:hdfs-zkfcs:#{zkfc_password}"
+          uid: hdfs_user.name
+          gid: hadoop_group.name
+          mode: 0o700
+        ,
+          destination: "#{hadoop_conf_dir}/zk-auth.txt"
+          content: "digest:hdfs-zkfcs:#{zkfc_password}"
+          uid: hdfs_user.name
+          gid: hadoop_group.name
+          mode: 0o700
+        ], (err, written) ->
+          return next err if err
+          modified = true if written
+          do_generate()
+      do_generate = ->
+          ctx.execute
+            cmd: """
+            export ZK_HOME=/usr/lib/zookeeper/
+            java -cp $ZK_HOME/lib/*:$ZK_HOME/zookeeper.jar org.apache.zookeeper.server.auth.DigestAuthenticationProvider hdfs-zkfcs:#{zkfc_password}
+            """
+          , (err, _, stdout) ->
+            digest = match[1] if match = /\->(.*)/.exec(stdout)
+            return next Error "Failed to get digest" unless digest
+            ctx.write
+              destination: '/etc/hadoop/conf/zk-acl.txt'
+              content: "digest:#{digest}:rwcda"
+            , (err, written) ->
+              return next err if err
+              modified = true if written
+              do_end()
+      do_end = ->
+        next null, if modified then ctx.OK else ctx.PASS
+      do_core()
 
 ## HA Auto Failover
 

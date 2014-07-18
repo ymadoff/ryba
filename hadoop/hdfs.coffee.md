@@ -224,6 +224,24 @@ we didn't had time to look further.
         next null, if modified then ctx.OK else ctx.PASS
       do_hdfs_site()
 
+## Kerberos User
+
+Create the HDFS user principal. This will be the super administrator for the HDFS
+filesystem. Note, we do not create a principal with a keytab to allow HDFS login
+from multiple sessions with braking an active session.
+
+    module.exports.push name: 'HDP HDFS # Kerberos User', callback: (ctx, next) ->
+      {hdfs_user, hdfs_password, realm} = ctx.config.hdp
+      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
+      ctx.krb5_addprinc
+        principal: "#{hdfs_user.name}@#{realm}"
+        password: hdfs_password
+        kadmin_principal: kadmin_principal
+        kadmin_password: kadmin_password
+        kadmin_server: admin_server
+      , (err, created) ->
+        next err, if created then ctx.OK else ctx.PASS
+
 ## SPNEGO
 
 Create the SPNEGO service principal in the form of "HTTP/{host}@{realm}" and place its
@@ -232,32 +250,25 @@ and permissions set to "0660". We had to give read/write permission to the group
 same keytab file is for now shared between hdfs and yarn services.
 
     module.exports.push name: 'HDP HDFS # SPNEGO', callback: module.exports.spnego = (ctx, next) ->
-      {hadoop_group, hdfs_user, realm} = ctx.config.hdp
+      {hdfs_user, realm} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.mkdir
-        destination: '/etc/security/keytabs'
-        uid: 'root'
-        gid: hadoop_group.name
-        mode: 0o750
+      ctx.krb5_addprinc
+        principal: "HTTP/#{ctx.config.host}@#{realm}"
+        randkey: true
+        keytab: '/etc/security/keytabs/spnego.service.keytab'
+        uid: 'hdfs'
+        gid: 'hadoop'
+        mode: 0o660 # need rw access for hadoop and mapred users
+        kadmin_principal: kadmin_principal
+        kadmin_password: kadmin_password
+        kadmin_server: admin_server
       , (err, created) ->
-        ctx.log 'Creating HTTP Principals and SPNEGO keytab'
-        ctx.krb5_addprinc
-          principal: "HTTP/#{ctx.config.host}@#{realm}"
-          randkey: true
-          keytab: '/etc/security/keytabs/spnego.service.keytab'
-          uid: 'hdfs'
-          gid: 'hadoop'
-          mode: 0o660 # need rw access for hadoop and mapred users
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
-        , (err, created) ->
-          return next err if err
-          # Validate keytab access by the hdfs user
-          ctx.execute
-            cmd: "su -l #{hdfs_user.name} -c \"klist -kt /etc/security/keytabs/spnego.service.keytab\""
-          , (err) ->
-            next err, if created then ctx.OK else ctx.PASS
+        return next err if err
+        # Validate keytab access by the hdfs user
+        ctx.execute
+          cmd: "su -l #{hdfs_user.name} -c \"klist -kt /etc/security/keytabs/spnego.service.keytab\""
+        , (err) ->
+          next err, if created then ctx.OK else ctx.PASS
 
 
 ## Kerberos Configure
