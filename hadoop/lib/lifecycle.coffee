@@ -42,8 +42,20 @@ lifecyle = module.exports =
   nn_start: (ctx, callback) ->
     { hdfs_user, hadoop_conf_dir, hdfs_namenode_ipc_port, hdfs_namenode_http_port, hdfs_namenode_timeout
       active_nn, active_nn_host, standby_nn_host } = ctx.config.hdp
+    state = (started) ->
+      callback null, started
+      # return callback null, started unless active_nn
+      # active_nn_host = active_nn_host.split('.')[0]
+      # standby_nn_host = standby_nn_host.split('.')[0]
+      # ctx.execute
+      #   cmd: "if hdfs haadmin -getServiceState #{active_nn_host} | grep standby; then hdfs haadmin -failover #{standby_nn_host} #{active_nn_host}; else exit 2; fi"
+      #   code_skipped: 2
+      # , (err, activated) ->
+      #   callback err, started or activated
     lifecyle.nn_status ctx, (err, running) ->
-      return callback err, false if err or running
+      # return callback err, false if err or running
+      return callback err if err 
+      return state false if running
       ctx.log "NameNode start"
       ctx.execute
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start namenode"
@@ -55,13 +67,14 @@ lifecyle = module.exports =
         ports = [hdfs_namenode_ipc_port, hdfs_namenode_http_port]
         ctx.waitIsOpen ctx.config.host, ports, timeout: hdfs_namenode_timeout, (err) ->
           return callback err if err
-          return callback null, true unless active_nn
-          active_nn_host = active_nn_host.split('.')[0]
-          standby_nn_host = standby_nn_host.split('.')[0]
-          ctx.execute
-            cmd: "if hdfs haadmin -getServiceState #{active_nn_host} | grep standby; then hdfs haadmin -failover #{standby_nn_host} #{active_nn_host}; fi"
-          , (err) ->
-            callback err, true
+          state true
+          # return callback null, true unless active_nn
+          # active_nn_host = active_nn_host.split('.')[0]
+          # standby_nn_host = standby_nn_host.split('.')[0]
+          # ctx.execute
+          #   cmd: "if hdfs haadmin -getServiceState #{active_nn_host} | grep standby; then hdfs haadmin -failover #{standby_nn_host} #{active_nn_host}; fi"
+          # , (err) ->
+          #   callback err, true
   nn_stop: (ctx, callback) ->
     {hdfs_user, hadoop_conf_dir} = ctx.config.hdp
     lifecyle.nn_status ctx, (err, running) ->
