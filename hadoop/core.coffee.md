@@ -370,6 +370,16 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
       , (err, written) ->
         next null, if written then ctx.OK else ctx.PASS
 
+    module.exports.push name: 'HDP Core # Keytabs', timeout: -1, callback: (ctx, next) ->
+      {hadoop_group} = ctx.config.hdp
+      ctx.mkdir
+        destination: '/etc/security/keytabs'
+        uid: 'root'
+        gid: hadoop_group.name
+        mode: 0o755
+      , (err, created) ->
+        next null, if created then ctx.OK else ctx.PASS
+
     module.exports.push name: 'HDP Core # Compression', timeout: -1, callback: (ctx, next) ->
       { hadoop_conf_dir } = ctx.config.hdp
       modified = false
