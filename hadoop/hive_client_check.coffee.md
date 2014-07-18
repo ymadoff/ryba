@@ -17,23 +17,23 @@ layout: module
 Use the [Hive CLI][hivecli] client to execute SQL queries.
 
     module.exports.push name: 'HDP Hive & HCat Client Check # Metastore', timeout: -1, callback: (ctx, next) ->
-      {test_user, hive_metastore_host, hive_metastore_port} = ctx.config.hdp
+      {force_check, test_user, hive_metastore_host, hive_metastore_port} = ctx.config.hdp
       ctx.waitIsOpen hive_metastore_host, hive_metastore_port, (err) ->
         host = ctx.config.host.split('.')[0]
         ctx.execute
           cmd: mkcmd.test ctx, """
-          if hdfs dfs -test -f #{ctx.config.host}-hive_metastore; then exit 2; fi
-          hdfs dfs -mkdir -p #{ctx.config.host}-hive/check_metastore_tb
-          echo -e 'a\0011\\nb\0012\\nc\0013' | hdfs dfs -put - #{ctx.config.host}-hive/check_metastore_tb/data
+          hdfs dfs -rm -r check-#{host}-hive_metastore || true
+          hdfs dfs -mkdir -p check-#{host}-hive_metastore/my_db/my_table
+          echo -e 'a\0011\\nb\0012\\nc\0013' | hdfs dfs -put - check-#{host}-hive_metastore/my_db/my_table/data
           hive -e "
-            CREATE DATABASE IF NOT EXISTS check_#{host}_db LOCATION '/user/#{test_user.name}/#{ctx.config.host}-hive'; \\
-            USE check_#{host}_db; \\
-            CREATE TABLE IF NOT EXISTS check_metastore_tb(col1 STRING, col2 INT); \\
+            DROP TABLE IF EXISTS check_#{host}_metastore.my_table; DROP DATABASE IF EXISTS check_#{host}_metastore;
+            CREATE DATABASE check_#{host}_metastore LOCATION '/user/#{test_user.name}/check-#{host}-hive_metastore/my_db/'; \\
+            USE check_#{host}_metastore; \\
+            CREATE TABLE my_table(col1 STRING, col2 INT); \\
           "
-          hive -S -e "SELECT SUM(col2) FROM check_#{host}_db.check_metastore_tb;" | hdfs dfs -put - #{ctx.config.host}-hive_metastore
-          hive -e "DROP TABLE check_#{host}_db.check_metastore_tb; DROP DATABASE check_#{host}_db;"
+          hive -S -e "SELECT SUM(col2) FROM check_#{host}_metastore.my_table;" | hdfs dfs -put - check-#{host}-hive_metastore/result
           """
-          code_skipped: 2
+          not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{host}-hive_metastore/result"
           trap_on_error: true
         , (err, executed, stdout) ->
           return next err, if executed then ctx.OK else ctx.PASS
