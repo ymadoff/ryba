@@ -1,6 +1,8 @@
 
 {merge} = require 'mecano/lib/misc'
 
+# https://github.com/hortonworks/hdp-configuration-utils/blob/master/2.1/hdp-configuration-utils.py
+
 memory = (ctx) ->
   {yarn, hadoop_conf_dir} = ctx.config.hdp
   yarn_site = yarn
