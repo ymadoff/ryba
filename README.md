@@ -1,8 +1,9 @@
 
 
-Ryba boostraps and manages a full secured Hadoop cluster with one command. This is
-an OSS project released under the [new BSD license][license] developed for one
-of the largest utility company and now operationnal.
+Ryba boostraps and manages a full secured Hadoop cluster with one command. This
+is an [Open-source software (OSS) project][oss] released under the
+[new BSD license][license] developed for one of the World largest utility
+company and now operationnal.
 
 Ryba is our answer to DevOps integration need for product delivery and quality
 testing. It provides the flexibilty to answer the demand of your internal 
@@ -11,11 +12,11 @@ CoffeeScript to facilitate and accelerate feature development and maintenance
 releases. The language encourages self-documented code, look by yourself the
 source code deploying two [HA namenodes][hdfs_nn].
 
-Install Ryba locally or on a remote server and you are ready to go. It uses SSH to
-connect to each server of your cluster and will fully install all the components
-you wish. You don't need to prepare your cluster nodes as long as a minimal 
-installation of RHEL or CentOS is installed with a root user or a user with sudo
-access.
+Install Ryba locally or on a remote server and you are ready to go. It uses SSH
+to connect to each server of your cluster and will fully install all the
+components you wish. You don't need to prepare your cluster nodes as long as a
+minimal installation of RHEL or CentOS is installed with a root user or a user
+with sudo access.
 
 ## Ryba motivations
 
@@ -47,7 +48,10 @@ Installation
 
 ### Node.js
 
-First download Node.js. You might need to adjust the name of the Node.js archive depending on the version you choose to install. Also, replace the path "/usr/local/node" to another location (eg "~/node") if you don't have the permission to write inside "/usr/local".
+First download Node.js. You might need to adjust the name of the Node.js archive
+depending on the version you choose to install. Also, replace the path
+"/usr/local/node" to another location (eg "~/node") if you don't have the
+permission to write inside "/usr/local".
 
 ```bash
 # Extract the Node.js package
@@ -81,6 +85,7 @@ Contributors
 
 *   David Worms: <https://github.com/wdavidw>
 
+[oss]: http://en.wikipedia.org/wiki/Open-source_software
 [npm]: https://www.npmjs.org/
 [masson]: https://github.com/wdavidw/node-masson
 [license]: https://github.com/wdavidw/ryba/blob/master/LICENSE.md
