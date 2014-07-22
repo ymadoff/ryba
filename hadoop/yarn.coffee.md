@@ -331,7 +331,7 @@ drwxrwxrwt   - yarn   hdfs            0 2014-05-26 11:01 /app-logs
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
     module.exports.push name: 'HDP YARN # HDFS layout', callback: (ctx, next) ->
-      {yarn, yarn_user} = ctx.config.hdp
+      {yarn, yarn_user, hadoop_group} = ctx.config.hdp
       ok = false
       do_remote_app_log_dir = ->
         remote_app_log_dir = yarn['yarn.nodemanager.remote-app-log-dir']
@@ -340,7 +340,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
           cmd: mkcmd.hdfs ctx, """
           if hdfs dfs -test -d #{remote_app_log_dir}; then exit 1; fi
           hdfs dfs -mkdir -p #{remote_app_log_dir}
-          hdfs dfs -chown #{yarn_user.name} #{remote_app_log_dir}
+          hdfs dfs -chown #{yarn_user.name}:#{hadoop_group.name} #{remote_app_log_dir}
           hdfs dfs -chmod 1777 #{remote_app_log_dir}
           """
           code_skipped: 1
