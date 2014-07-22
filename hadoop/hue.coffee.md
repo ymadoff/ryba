@@ -59,8 +59,6 @@ Example:
 ```
 
     module.exports.push module.exports.configure = (ctx) ->
-      return if ctx.hue_configured
-      ctx.hue_configured = true
       # Allow proxy user inside "webhcat-site.xml"
       require('./webhcat').configure ctx
       # Allow proxy user inside "oozie-site.xml"
@@ -73,7 +71,7 @@ Example:
       webhcat_server = ctx.host_with_module 'ryba/hadoop/webhcat'
       # todo, this might not work as expected after ha migration
       resourcemanager = ctx.host_with_module 'ryba/hadoop/yarn_rm'
-      nodemanagers = ctx.host_with_module 'ryba/hadoop/yarn_nm'
+      nodemanagers = ctx.hosts_with_module 'ryba/hadoop/yarn_nm'
       # Webhdfs should be active on the NameNode, Secondary NameNode, and all the DataNodes
       # throw new Error 'WebHDFS not active' if ctx.config.hdp.hdfs_site['dfs.webhdfs.enabled'] isnt 'true'
       ctx.config.hdp.hue_conf_dir ?= '/etc/hue/conf'
