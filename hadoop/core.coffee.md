@@ -10,6 +10,12 @@ installation is leveraging the Yum repositories. [Individual tarballs][tar]
 are also available as an alternative with the benefit of including the source 
 code.
 
+    
+TODO: topologie
+
+*   http://bigdataprocessing.wordpress.com/2013/07/30/hadoop-rack-awareness-and-configuration/
+*   http://ofirm.wordpress.com/2014/01/09/exploring-the-hadoop-network-topology/
+
 [tar]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap13.html
 
     url = require 'url'
@@ -510,7 +516,7 @@ Configure Web
 This action follow the ["Authentication for Hadoop HTTP web-consoles" 
 recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 
-    module.exports.push  name: 'HDP Core # Kerberos Web UI', callback:(ctx, next) ->
+    module.exports.push name: 'HDP Core # Kerberos Web UI', callback: (ctx, next) ->
       {core_site, realm} = ctx.config.hdp
       # Cluster domain
       unless core_site['hadoop.http.authentication.cookie.domain']
@@ -539,7 +545,13 @@ recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
           next err, if configured then ctx.OK else ctx.PASS
 
 
-    
+    module.exports.push name: 'HDP Core # Check auth_to_local', callback: (ctx, next) ->
+      {test_user, realm} = ctx.config.hdp
+      ctx.execute
+        cmd: "hadoop org.apache.hadoop.security.HadoopKerberosName #{test_user.name}@#{realm}"
+      , (err, _, stdout) ->
+        err = Error "Invalid mapping" if not err and stdout.indexOf("#{test_user.name}@#{realm} to #{test_user.name}") is -1
+        next err, ctx.PASS
 
 
 
