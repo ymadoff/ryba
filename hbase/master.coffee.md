@@ -13,6 +13,10 @@ layout: module
     module.exports.push module.exports.configure = (ctx) ->
       require('../hadoop/hdfs').configure ctx
       require('./_').configure ctx
+      {realm, hbase_site} = ctx.config.hdp
+      ctx.config.hdp.hbase_admin ?= {}
+      ctx.config.hdp.hbase_admin.principal ?= "#{hbase_site['hbase.superuser']}@#{realm}"
+      ctx.config.hdp.hbase_admin.password ?= "hbase123"
 
     module.exports.push name: 'HBase Master # Service', timeout: -1, callback: (ctx, next) ->
       ctx.service
@@ -162,6 +166,18 @@ Enable stats collection in Ganglia.
         next err, if uploaded then ctx.OK else ctx.PASS
 
     module.exports.push 'ryba/hbase/master_start'
+
+    module.exports.push name: 'HBASE Master # Admin', callback: (ctx, next) ->
+      {hbase_admin, realm} = ctx.config.hdp
+      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
+      ctx.krb5_addprinc
+        principal: hbase_admin.principal
+        password: hbase_admin.password
+        kadmin_principal: kadmin_principal
+        kadmin_password: kadmin_password
+        kadmin_server: admin_server
+      , (err, created) ->
+        next err, if created then ctx.OK else ctx.PASS
 
 ## Check
 

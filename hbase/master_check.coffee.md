@@ -14,7 +14,7 @@ namespace is used by other modules as a testing environment.
 
 Namespace and permissions are implemented and illustrated in [HBASE-8409].
 
-    module.exports.push name: 'HBASE Master Check # Shell', callback: (ctx, next) ->
+    module.exports.push name: 'HBASE Master Check # Shell', timeout:-1, callback: (ctx, next) ->
       {hbase_site} = ctx.config.hdp
       keytab = hbase_site['hbase.master.keytab.file']
       principal = hbase_site['hbase.master.kerberos.principal'].replace '_HOST', ctx.config.host
