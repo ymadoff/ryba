@@ -1,8 +1,15 @@
 
 # HBase Client Check
 
+Check the HBase client installation by creating a table, inserting a cell and
+scanning the table.
+
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+
+## Configure
+
+Retrieve the client configuration.
 
     module.exports.push (ctx) ->
       require('./client').configure ctx
@@ -28,7 +35,7 @@
           isRowCreated = RegExp("column=#{shortname}:my_column, timestamp=\\d+, value=10").test stdout
           return next Error 'Invalid command output' if executed and not isRowCreated
           next err, if executed then ctx.OK else ctx.PASS
-      # Note: inspiration this when namespace are functional
+      # Note: inspiration for when namespace are functional
       # cmd = mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"list_namespace_tables 'ryba'\" | egrep '[0-9]+ row'"
       # ctx.waitForExecution cmd, (err) ->
       #   return next err if err

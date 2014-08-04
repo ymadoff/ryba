@@ -1,6 +1,8 @@
 
 # HBase Client
 
+Install the HBase client package and configure it with secured access.
+
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'ryba/hbase/_'
@@ -29,6 +31,8 @@ RegionServer, and HBase client host machines.
         return next err, if written then ctx.OK else ctx.PASS
 
 ## Check
+
+Require the "ryba/hbase/client_check" module.
 
     module.exports.push 'ryba/hbase/client_check'
 
