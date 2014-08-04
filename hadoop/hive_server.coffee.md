@@ -14,6 +14,33 @@ layout: module
     module.exports.push 'ryba/hadoop/core' # Configure "core-site.xml" and "hadoop-env.sh"
     module.exports.push 'ryba/hadoop/hive_' # Install the Hive and HCatalog service
 
+## Configure
+
+Note, the following properties are required by knox in secured mode:
+
+*   hive.server2.enable.doAs
+*   hive.server2.allow.user.substitution
+*   hive.server2.transport.mode
+*   hive.server2.thrift.http.port
+*   hive.server2.thrift.http.path
+
+Example:
+
+```
+{
+  "json": {
+    "hdp": {
+      "hive_site": {
+        "javax.jdo.option.ConnectionURL": "jdbc:mysql://front1.hadoop:3306/hive?createDatabaseIfNotExist=true"
+        "javax.jdo.option.ConnectionDriverName": "com.mysql.jdbc.Driver"
+        "javax.jdo.option.ConnectionUserName": "hive"
+        "javax.jdo.option.ConnectionPassword": "hive123"
+      }
+    }
+  }
+}
+```
+
     module.exports.push module.exports.configure = (ctx) ->
       return if ctx.hive_server_configured
       ctx.hive_server_configured = true
@@ -29,6 +56,12 @@ layout: module
       hive_site['hive.security.authorization.manager'] ?= 'org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider'
       hive_site['hive.security.metastore.authorization.manager'] ?= 'org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider'
       hive_site['hive.security.authenticator.manager'] ?= 'org.apache.hadoop.hive.ql.security.ProxyUserAuthenticator'
+      hive_site['hive.server2.enable.doAs'] ?= 'true'
+      hive_site['hive.server2.allow.user.substitution'] ?= 'true'
+      hive_site['hive.server2.transport.mode'] ?= 'binary'
+      hive_site['hive.server2.thrift.http.port'] ?= '10001'
+      hive_site['hive.server2.thrift.port'] ?= '10001'
+      hive_site['hive.server2.thrift.http.path'] ?= 'cliservice'
       ctx.config.hdp.hive_libs ?= []
       # Database
       if hive_site['javax.jdo.option.ConnectionURL']
@@ -52,7 +85,7 @@ layout: module
 |----------------|-------|-------|----------------------|
 | Hive Metastore | 9083  | http  | hive.metastore.uris  |
 | Hive Web UI    | 9999  | http  | hive.hwi.listen.port |
-| Hive Server    | 10000 | tcp   | env[HIVE_PORT]       |
+| Hive Server    | 10001 | tcp   | env[HIVE_PORT]       |
 
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
@@ -63,11 +96,21 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 9083, protocol: 'tcp', state: 'NEW', comment: "Hive Metastore" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: 9999, protocol: 'tcp', state: 'NEW', comment: "Hive Web UI" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 10000, protocol: 'tcp', state: 'NEW', comment: "Hive Server" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 10001, protocol: 'tcp', state: 'NEW', comment: "Hive Server" }
         ]
         if: ctx.config.iptables.action is 'start'
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
+
+    module.exports.push name: 'HDP Hive & HCat Server # Service', callback: (ctx, next) ->
+      ctx.service [
+        name: 'hive-hcatalog-server'
+        startup: true
+      ,
+        name: 'hive-server2'
+        startup: true
+      ], (err, serviced) ->
+        next err, if serviced then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Hive & HCat Server # Database', callback: (ctx, next) ->
       {hive_site, db_admin} = ctx.config.hdp
@@ -187,6 +230,16 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         return next err, if written then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Hive & HCat Server # Layout', timeout: -1, callback: (ctx, next) ->
+      {hive_user, hive_group} = ctx.config.hdp
+      # Required by service "hive-hcatalog-server"
+      ctx.mkdir
+        destination: '/var/log/hive-hcatalog'
+        uid: hive_user.name
+        gid: hive_group.name
+      , (err, created) ->
+        next err, if created then ctx.OK else ctx.PASS
+
+    module.exports.push name: 'HDP Hive & HCat Server # HDFS Layout', timeout: -1, callback: (ctx, next) ->
       # todo: this isnt pretty, ok that we need to execute hdfs command from an hadoop client
       # enabled environment, but there must be a better way
       {active_nn_host, hdfs_user, hive_user, hive_group} = ctx.config.hdp
@@ -250,7 +303,7 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
 
     module.exports.push name: 'HDP Hive & HCat Server # Check', timeout: -1, callback: (ctx, next) ->
       # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.3.0/CDH4-Security-Guide/cdh4sg_topic_9_1.html
-      # !connect jdbc:hive2://big3.big:10000/default;principal=hive/big3.big@ADALTAS.COM 
+      # !connect jdbc:hive2://big3.big:10001/default;principal=hive/big3.big@ADALTAS.COM 
       next null, ctx.TODO
 
 # Module Dependencies
