@@ -185,7 +185,7 @@ Default configuration:
         else '_HOST'
       # Configuration
       ctx.config.hdp.core_site ?= {}
-      ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.hdp.nameservice}"
+      ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.hdp.nameservice}:8020"
       # Context
       ctx.hconfigure = (options, callback) ->
         options.ssh = ctx.ssh if typeof options.ssh is 'undefined'
