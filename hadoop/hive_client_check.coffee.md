@@ -52,9 +52,9 @@ Use the [Beeline][beeline] JDBC client to execute SQL queries.
           cmd: mkcmd.test ctx, """
           if hdfs dfs -test -f #{ctx.config.host}-hive_server2; then exit 2; fi
           hdfs dfs -mkdir -p #{ctx.config.host}-hive/check_server2_tb
-          echo -e 'a\0011\\nb\0012\\nc\0013' | hdfs dfs -put - #{ctx.config.host}-hive/check_server2_tb/data
+          echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - #{ctx.config.host}-hive/check_server2_tb/data
           #{query "CREATE DATABASE IF NOT EXISTS check_#{host}_db LOCATION '/user/#{test_user.name}/#{ctx.config.host}-hive'"}
-          #{query "CREATE TABLE IF NOT EXISTS check_#{host}_db.check_server2_tb(col1 STRING, col2 INT) ;"}
+          #{query "CREATE TABLE IF NOT EXISTS check_#{host}_db.check_server2_tb(col1 STRING, col2 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';"}
           #{query "SELECT SUM(col2) FROM check_#{host}_db.check_server2_tb;"} | hdfs dfs -put - #{ctx.config.host}-hive_server2
           #{query "DROP TABLE check_#{host}_db.check_server2_tb;"}
           #{query "DROP DATABASE check_#{host}_db;"}
