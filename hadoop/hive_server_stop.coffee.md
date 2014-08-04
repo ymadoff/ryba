@@ -19,7 +19,7 @@ Execute these commands on the Hive Server2 host machine.
 
     module.exports.push name: 'HDP # Stop Hive Server2', callback: (ctx, next) ->
       lifecycle.hive_server2_stop ctx, (err, stopped) ->
-        next err, ctx.OK
+        next err, if stopped then ctx.OK else ctx.PASS
 
 ## Stop Hive Metastore
 
@@ -27,5 +27,5 @@ Execute these commands on the Hive Metastore host machine.
 
     module.exports.push name: 'HDP # Stop Hive Metastore', callback: (ctx, next) ->
       lifecycle.hive_metastore_stop ctx, (err, stopped) ->
-        next err, ctx.OK
+        next err, if stopped then ctx.OK else ctx.PASS
 
