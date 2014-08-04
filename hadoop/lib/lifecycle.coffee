@@ -251,32 +251,31 @@ lifecyle = module.exports =
       , (err, started) ->
         callback err, started
   hive_metastore_status: (ctx, callback) ->
-    # {hive_metastore_pid} = ctx.config.hdp
-    ctx.log "Hive Metastore status"
-    lifecyle.is_pidfile_running ctx, "/var/run/hive/metastore.pid", (err, running) ->
-      ctx.log "Hive Metastore status: #{if running then 'RUNNING' else 'STOPED'}"
-      callback err, running
+    ctx.execute
+      cmd: "service hive-hcatalog-server status"
+      code_skipped: 3
+    , (err, stopped) ->
+      callback err, stopped
   hive_metastore_start: (ctx, callback) ->
-    {hive_user, hive_log_dir, hive_pid_dir, hive_metastore_host, hive_metastore_port, hive_metastore_timeout} = ctx.config.hdp
+    {hive_metastore_host, hive_metastore_port, hive_metastore_timeout} = ctx.config.hdp
     lifecyle.hive_metastore_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "Hive Metastore start"
       ctx.execute
         # su -l hive -c 'nohup hive --service metastore >/var/log/hive/hive.out 2>/var/log/hive/hive.log & echo $! >/var/run/hive/metastore.pid'
-        cmd: "su -l #{hive_user.name} -c 'nohup hive --service metastore >#{hive_log_dir}/hive.out 2>#{hive_log_dir}/hive.log & echo $! > /var/run/hive/metastore.pid'"
+        cmd: "service hive-hcatalog-server start"
         code_skipped: 1
       , (err, started) ->
         return callback err if err
         ctx.waitIsOpen hive_metastore_host, hive_metastore_port, timeout: hive_metastore_timeout, (err) ->
           callback err, started
   hive_metastore_stop: (ctx, callback) ->
-    {hive_user, hive_pid_dir} = ctx.config.hdp
     lifecyle.hive_metastore_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "Hive Metastore stop"
       ctx.execute
         # su -l hive -c "kill `cat /var/run/hive/metastore.pid`"
-        cmd: "su -l #{hive_user.name} -c \"kill `cat #{hive_pid_dir}/metastore.pid`\""
+        cmd: "service hive-hcatalog-server stop"
         code_skipped: 1
       , (err, stopped) ->
         callback err, stopped
@@ -286,31 +285,31 @@ lifecyle = module.exports =
       return callback err if err
       lifecyle.hive_metastore_start ctx, callback
   hive_server2_status: (ctx, callback) ->
-    ctx.log "Hive Server2 status"
-    lifecyle.is_pidfile_running ctx, "/var/run/hive/server2.pid", (err, running) ->
-      ctx.log "Hive Server2 status: #{if running then 'RUNNING' else 'STOPED'}"
-      callback err, running
+    ctx.execute
+      cmd: "service hive-server2 status"
+      code_skipped: 3
+    , (err, stopped) ->
+      callback err, stopped
   hive_server2_start: (ctx, callback) ->
-    {hive_user, hive_log_dir, hive_pid_dir, hive_server2_host, hive_server2_port, hive_server2_timeout} = ctx.config.hdp
+    {hive_server2_host, hive_server2_port, hive_server2_timeout} = ctx.config.hdp
     lifecyle.hive_server2_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "Hive Server2 start"
       ctx.execute
         # su -l hive -c 'nohup /usr/lib/hive/bin/hiveserver2 >/var/log/hive/hiveserver2.out 2>/var/log/hive/hiveserver2.log & echo $! >/var/run/hive/server2.pid'
-        cmd: "su -l #{hive_user.name} -c 'nohup /usr/lib/hive/bin/hiveserver2 >#{hive_log_dir}/hiveserver2.out 2>#{hive_log_dir}/hiveserver2.log & echo $! > /var/run/hive/server2.pid'"
+        cmd: 'service hive-server2 start'
         code_skipped: 1
       , (err, started) ->
         return callback err if err
         ctx.waitIsOpen hive_server2_host, hive_server2_port, timeout: hive_server2_timeout, (err) ->
           callback err, started
   hive_server2_stop: (ctx, callback) ->
-    {hive_user, hive_pid_dir} = ctx.config.hdp
     lifecyle.hive_server2_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "Hive Server2 stop"
       ctx.execute
         # su -l hive -c "kill `cat /var/run/hive/server2.pid`"
-        cmd: "su -l #{hive_user.name} -c \"kill `cat #{hive_pid_dir}/server2.pid`\""
+        cmd: 'service hive-server2 stop'
         code_skipped: 1
       , (err, started) ->
         callback err, started
@@ -403,32 +402,30 @@ lifecyle = module.exports =
         callback err, stopped
   webhcat_status: (ctx, callback) ->
     {webhcat_pid_dir} = ctx.config.hdp
-    ctx.log "WebHCat status"
     lifecyle.is_pidfile_running ctx, "#{webhcat_pid_dir}/webhcat.pid", (err, running) ->
       ctx.log "WebHCat status: #{if running then 'RUNNING' else 'STOPED'}"
       callback err, running
+    # ctx.execute
+    #   cmd: "service hive-webhcat-server status"
+    #   code_skipped: 3
+    # , (err, stopped) ->
+    #   callback err, stopped
   webhcat_start: (ctx, callback) ->
-    {webhcat_user, webhcat_conf_dir} = ctx.config.hdp
     lifecyle.webhcat_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "WebHCat start"
       ctx.execute
-        # # su -l hcat -c "export WEBHCAT_CONF_DIR=/etc/hcatalog/conf/webhcat; /usr/lib/hive-hcatalog/sbin/webhcat_server.sh start"
-        # cmd: "su -l #{webhcat_user.name} -c \"export WEBHCAT_CONF_DIR=#{webhcat_conf_dir}; /usr/lib/hive-hcatalog/sbin/webhcat_server.sh start\""
         # su -l hcat -c "/usr/lib/hive-hcatalog/sbin/webhcat_server.sh start"
-        cmd: "su -l #{webhcat_user.name} -c \"/usr/lib/hive-hcatalog/sbin/webhcat_server.sh start\""
+        cmd: "service hive-webhcat-server start"
       , (err, started) ->
         callback err, true
   webhcat_stop: (ctx, callback) ->
-    {webhcat_user, webhcat_conf_dir} = ctx.config.hdp
     lifecyle.webhcat_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "WebHCat stop"
       ctx.execute
-        # # su -l hcat -c "export WEBHCAT_CONF_DIR=/etc/hcatalog/conf/webhcat; /usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop"
-        # cmd: "su -l #{webhcat_user.name} -c \"export WEBHCAT_CONF_DIR=#{webhcat_conf_dir}; /usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop\""
         # su -l hcat -c "/usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop"
-        cmd: "su -l #{webhcat_user.name} -c \"/usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop\""
+        cmd: "service hive-webhcat-server stop"
       , (err, stopped) ->
         callback err, stopped
   hue_status: (ctx, callback) ->
