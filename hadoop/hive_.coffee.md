@@ -46,7 +46,7 @@ Example:
       ctx.config.hdp.hive_metastore_port ?= 9083
       ctx.config.hdp.hive_metastore_timeout ?= 20000 # 20s
       ctx.config.hdp.hive_server2_host ?= ctx.host_with_module 'ryba/hadoop/hive_server'
-      ctx.config.hdp.hive_server2_port ?= 10000
+      ctx.config.hdp.hive_server2_port ?= 10001
       ctx.config.hdp.hive_server2_timeout ?= 20000 # 20s
       # User
       ctx.config.hdp.hive_user = name: ctx.config.hdp.hive_user if typeof ctx.config.hdp.hive_user is 'string'
@@ -63,6 +63,7 @@ Example:
       ctx.config.hdp.hive_group.system ?= true
       # Configuration
       ctx.config.hdp.hive_site ?= {}
+      ctx.config.hdp.hive_site['hive.metastore.local'] = null
       ctx.config.hdp.hive_site['hive.metastore.uris'] ?= "thrift://#{metastore_host}:9083"
       # To prevent memory leak in unsecure mode, disable [file system caches](https://cwiki.apache.org/confluence/display/Hive/Setting+up+HiveServer2)
       # , by setting following params to true
@@ -153,4 +154,7 @@ Instructions to [install the Hive and HCatalog RPMs](http://docs.hortonworks.com
       do_end = ->
         next null, if modified then ctx.OK else ctx.PASS
       do_hive()
-     
+
+
+
+
