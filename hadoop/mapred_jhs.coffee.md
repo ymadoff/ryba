@@ -46,6 +46,37 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
+## Startup
+
+Install and configure the startup script in 
+"/etc/init.d/hadoop-mapreduce-historyserver".
+
+    module.exports.push name: 'HDP HDFS JN # Startup', callback: (ctx, next) ->
+      {mapred_pid_dir} = ctx.config.hdp
+      modified = false
+      do_install = ->
+        ctx.service
+          name: 'hadoop-mapreduce-historyserver'
+          startup: true
+        , (err, serviced) ->
+          return next err if err
+          modified = true if serviced
+          do_fix()
+      do_fix = ->
+        ctx.write
+          destination: '/etc/init.d/hadoop-mapreduce-historyserver'
+          write: [
+            match: /^PIDFILE=".*"$/m
+            replace: "PIDFILE=\"#{mapred_pid_dir}/$SVC_USER/mapred-mapred-historyserver.pid\""
+          ]
+        , (err, written) ->
+          return next err if err
+          modified = true if written
+          do_end()
+      do_end = ->
+        next null, if modified then ctx.OK else ctx.PASS
+      do_install()
+
     module.exports.push name: 'HDP MapRed JHS # Kerberos', callback: (ctx, next) ->
       {hadoop_conf_dir, mapred} = ctx.config.hdp
       ctx.hconfigure

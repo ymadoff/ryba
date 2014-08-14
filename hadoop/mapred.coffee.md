@@ -18,7 +18,6 @@ layout: module
       ctx.mapred_configured = true
       require('./hdfs').configure ctx
       require('./yarn').configure ctx
-      require('./mapred_').configure ctx
       {static_host, realm, mapred} = ctx.config.hdp
       jhs_host = ctx.host_with_module 'ryba/hadoop/mapred_jhs'
       # Layout
@@ -41,14 +40,15 @@ layout: module
       # Important, JHS principal must be deployed on all mapreduce workers
       mapred['mapreduce.jobhistory.principal'] ?= "jhs/#{jhs_host}@#{realm}"
       #mapred['mapreduce.jobhistory.principal'] ?= "jhs/#{static_host}@#{realm}"
+      # The value is set by the client app and the iptables are enforced on the worker nodes
+      mapred['yarn.app.mapreduce.am.job.client.port-range'] ?= '59100-59200'
+      mapred['mapreduce.framework.name'] ?= 'yarn' # Execution framework set to Hadoop YARN.
 
 ## IPTables
 
-| Service          | Port  | Proto | Parameter                           |
-|------------------|-------|-------|-------------------------------------|
-| jobhistory | 10020 | http  | mapreduce.jobhistory.address        |
-| jobhistory | 19888 | tcp   | mapreduce.jobhistory.webapp.address |
-| jobhistory | 13562 | tcp   | mapreduce.shuffle.port              |
+| Service    | Port        | Proto | Parameter                                   |
+|------------|-------------|-------|---------------------------------------------|
+| mapreduce  | 59100-59200 | http  | yarn.app.mapreduce.am.job.client.port-range |
 
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
@@ -176,7 +176,7 @@ allowed.
 
     module.exports.push name: 'HDP MapRed # Tuning', callback: (ctx, next) ->
       {hadoop_conf_dir} = ctx.config.hdp
-      {info, mapred_site} = memory ctx
+      {info, yarn_site, mapred_site} = memory ctx
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
         properties: mapred_site
