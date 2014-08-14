@@ -12,6 +12,7 @@ host by the Ganglia Monitor agents.
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/yum'
+    module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/commons/httpd'
 
 ## Configure
@@ -38,6 +39,7 @@ Example:
 ```
 
     module.exports.push module.exports.configure = (ctx) ->
+      require('masson/core/iptables').configure ctx
       ctx.config.hdp ?= {}
       ctx.config.hdp.rrdcached_user = name: ctx.config.hdp.rrdcached_user if typeof ctx.config.hdp.rrdcached_user is 'string'
       ctx.config.hdp.rrdcached_user ?= {}
@@ -70,6 +72,34 @@ rrdcached:x:493:
         return next err if err
         ctx.user rrdcached_user, (err, umodified) ->
           next err, if gmodified or umodified then ctx.OK else ctx.PASS
+
+## IPTables
+
+| Service          | Port  | Proto | Info                     |
+|------------------|-------|-------|--------------------------|
+| ganglia-gmetad   | 8649 | http   | Ganglia Collector server |
+| hdp-gmetad   | 8660 |   | Ganglia Collector HDPSlaves |
+| hdp-gmetad   | 8661 |   | Ganglia Collector HDPNameNode |
+| hdp-gmetad   | 8663 |   | Ganglia Collector HDPHBaseMaster |
+| hdp-gmetad   | 8664 |   | Ganglia Collector HDPResourceManager |
+| hdp-gmetad   | 8666 |   | Ganglia Collector HDPHistoryServer |
+
+IPTables rules are only inserted if the parameter "iptables.action" is set to 
+"start" (default value).
+
+    module.exports.push name: 'Ganglia Collector # IPTables', callback: (ctx, next) ->
+      ctx.iptables
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 8649, protocol: 'tcp', state: 'NEW', comment: "Ganglia Collector Server" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 8660, protocol: 'tcp', state: 'NEW', comment: "Ganglia Collector HDPSlaves" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 8661, protocol: 'tcp', state: 'NEW', comment: "Ganglia Collector HDPNameNode" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 8663, protocol: 'tcp', state: 'NEW', comment: "Ganglia Collector HDPHBaseMaster" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 8664, protocol: 'tcp', state: 'NEW', comment: "Ganglia Collector HDPResourceManager" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 8666, protocol: 'tcp', state: 'NEW', comment: "Ganglia Collector HDPHistoryServer" }
+        ]
+        if: ctx.config.iptables.action is 'start'
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
 
 ## Service
 
