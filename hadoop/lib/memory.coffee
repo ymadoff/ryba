@@ -6,7 +6,6 @@
 memory = (ctx) ->
   {yarn, hadoop_conf_dir} = ctx.config.hdp
   yarn_site = yarn
-  # yarn.scheduler.maximum-allocation-mb
   # yarn.nodemanager.log.retain-seconds (cherif mettre la valeur à 10800 au lie de 604800)
   # yarn.log-aggregation.retain-seconds (cherif)
 
@@ -28,17 +27,27 @@ memory = (ctx) ->
   # Amount of RAM per container
   # max(MIN_CONTAINER_SIZE, (Total Available RAM) / containers))
   memoryPerContainer = Math.floor Math.max mininumContainerSize, memoryAvailableMb / maxNumberOfcontainers
-  # Virtual memory (physical + paged memory) upper limit for each Map and Reduce task
-  virtualMemoryRatio = 2.1
+  # Get default
+  yarnNodeManagerResourceMemoryMb = ['yarn.nodemanager.resource.memory-mb']
+  YarnNodemanagerVirtualMemoryRatio = yarn_site['yarn.nodemanager.vmem-pmem-ratio']
+  yarnSchedulerMinimumAllocationMb = yarn_site['yarn.scheduler.minimum-allocation-mb']
+  yarnSchedulerMaximumAllocationMb = yarn_site['yarn.scheduler.maximum-allocation-mb']
+  yarnAppMapreduceAmResourceMb = yarn_site['yarn.app.mapreduce.am.resource.mb']
+  yarnAppMapreduceAmCommandOpts = /-Xmx(.*)m/.exec(yarn_site['yarn.app.mapreduce.am.command-opts'])?[1]
   # Compute
-  yarnSchedulerMaximumAllocationMb = maxNumberOfcontainers * memoryPerContainer # containers * RAM-per-container
-  yarnAppMapreduceAmResourceMb = 2 * memoryPerContainer # 2 * RAM-per-container
-  yarnAppMapreduceAmCommmandOpts = Math.floor(.8 * 2 * memoryPerContainer) # 0.8 * 2 * RAM-per-container
+  yarnNodeManagerResourceMemoryMb ?= maxNumberOfcontainers * memoryPerContainer
+  yarnSchedulerMinimumAllocationMb ?= memoryPerContainer
+  yarnSchedulerMaximumAllocationMb ?= maxNumberOfcontainers * memoryPerContainer # containers * RAM-per-container
+  yarnAppMapreduceAmResourceMb ?= 2 * memoryPerContainer # 2 * RAM-per-container
+  yarnAppMapreduceAmCommandOpts ?= Math.floor(.8 * 2 * memoryPerContainer) # 0.8 * 2 * RAM-per-container
+  YarnNodemanagerVirtualMemoryRatio ?= 2.1 # Virtual memory (physical + paged memory) upper limit for each Map and Reduce task
+  mapreduceMapMemoryMb = memoryPerContainer
   mapreduceReduceMemoryMb = 2 * memoryPerContainer # 2 * RAM-per-container
   # Constrain
-  yarnAppMapreduceAmResourceMb = Math.min yarnAppMapreduceAmResourceMb, maxNumberOfcontainers * memoryPerContainer
-  yarnAppMapreduceAmCommmandOpts = Math.min yarnAppMapreduceAmCommmandOpts, maxNumberOfcontainers * memoryPerContainer
-  mapreduceReduceMemoryMb = Math.min yarnSchedulerMaximumAllocationMb, mapreduceReduceMemoryMb # REDUCE capability required is more than the supported max container capability in the cluster. Killing the Job. reduceResourceReqt: 3844 maxContainerCapability:1922
+  yarnAppMapreduceAmResourceMb = Math.min yarnAppMapreduceAmResourceMb, yarnSchedulerMaximumAllocationMb
+  yarnAppMapreduceAmCommandOpts = Math.min yarnAppMapreduceAmCommandOpts, yarnSchedulerMaximumAllocationMb
+  mapreduceMapMemoryMb = Math.min mapreduceMapMemoryMb, yarnSchedulerMaximumAllocationMb # RAM-per-container cannot exceed YARN maximum allocation, example: "Invalid resource request, requested memory < 0, or requested memory > max configured, requestedMemory=1922, maxMemory=1800"
+  mapreduceReduceMemoryMb = Math.min mapreduceReduceMemoryMb, yarnSchedulerMaximumAllocationMb # RAM per reduce task cannot exceed YARN minimum allocation, example: "REDUCE capability required is more than the supported max container capability in the cluster. Killing the Job. reduceResourceReqt: 3844 maxContainerCapability:1922"
   result =
     info:
       'coreNumber': coreNumber
@@ -48,16 +57,15 @@ memory = (ctx) ->
       'mininumContainerSize': mininumContainerSize
       'maxNumberOfcontainers': maxNumberOfcontainers
       'memoryPerContainer': memoryPerContainer
-      'virtualMemoryRatio': virtualMemoryRatio
     yarn_site:
-      'yarn.nodemanager.resource.memory-mb': "#{maxNumberOfcontainers * memoryPerContainer}" # containers * RAM-per-container
-      'yarn.scheduler.minimum-allocation-mb': "#{memoryPerContainer}" # RAM-per-container
+      'yarn.nodemanager.resource.memory-mb': "#{yarnNodeManagerResourceMemoryMb}" # containers * RAM-per-container
+      'yarn.nodemanager.vmem-pmem-ratio': "#{YarnNodemanagerVirtualMemoryRatio}"
+      'yarn.scheduler.minimum-allocation-mb': "#{yarnSchedulerMinimumAllocationMb}" # RAM-per-container
       'yarn.scheduler.maximum-allocation-mb': "#{yarnSchedulerMaximumAllocationMb}"
       'yarn.app.mapreduce.am.resource.mb': "#{yarnAppMapreduceAmResourceMb}"
-      'yarn.app.mapreduce.am.command-opts': "-Xmx#{yarnAppMapreduceAmCommmandOpts}m"
-      'yarn.nodemanager.vmem-pmem-ratio': "#{virtualMemoryRatio}"
+      'yarn.app.mapreduce.am.command-opts': "-Xmx#{yarnAppMapreduceAmCommandOpts}m"
     mapred_site:
-      'mapreduce.map.memory.mb': "#{memoryPerContainer}" # RAM-per-container
+      'mapreduce.map.memory.mb': "#{mapreduceMapMemoryMb}"
       'mapreduce.reduce.memory.mb': "#{mapreduceReduceMemoryMb}"
       'mapreduce.map.java.opts': "-Xmx#{Math.floor .8 * memoryPerContainer}m" # 0.8 * RAM-per-container
       'mapreduce.reduce.java.opts': "-Xmx#{Math.floor .8 * 2 * memoryPerContainer}m" # 0.8 * 2 * RAM-per-container
