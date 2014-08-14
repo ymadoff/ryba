@@ -64,6 +64,52 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
+## Startup
+
+Install and configure the startup script in "/etc/init.d/hadoop-hdfs-namenode".
+
+    module.exports.push name: 'HDP HDFS NN # Startup', callback: (ctx, next) ->
+      {hdfs_pid_dir} = ctx.config.hdp
+      modified = false
+      do_install = ->
+        ctx.service [
+          name: 'hadoop-hdfs-namenode'
+          startup: true
+        ,
+          name: 'hadoop-hdfs-zkfc'
+          startup: true
+        ], (err, serviced) ->
+          return next err if err
+          modified = true if serviced
+          do_fix()
+      do_fix = ->
+        ctx.write [
+          destination: '/etc/init.d/hadoop-hdfs-namenode'
+          write: [
+            match: /^PIDFILE=".*"$/m
+            replace: "PIDFILE=\"#{hdfs_pid_dir}/$SVC_USER/hadoop-hdfs-namenode.pid\""
+          ,
+            match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m
+            replace: "$1 -u $SVC_USER $2"
+          ]
+        ,
+          destination: '/etc/init.d/hadoop-hdfs-zkfc'
+          write: [
+            match: /^PIDFILE=".*"$/m
+            replace: "PIDFILE=\"#{hdfs_pid_dir}/$SVC_USER/hadoop-hdfs-zkfc.pid\""
+          ,
+            match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m
+            replace: "$1 -u $SVC_USER $2"
+          ]
+        ]
+        , (err, written) ->
+          return next err if err
+          modified = true if written
+          do_end()
+      do_end = ->
+        next null, if modified then ctx.OK else ctx.PASS
+      do_install()
+
 ## Layout
 
 Create the NameNode data and pid directories. The NameNode data is by defined in the

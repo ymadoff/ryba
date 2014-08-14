@@ -10,14 +10,10 @@ Start the NameNode service as well as its ZKFC daemon. To ensure that the
 leadership is assigned to the desired active NameNode, the ZKFC daemons on
 the standy NameNodes wait for the one on the active NameNode to start first.
 
-    lifecycle = require './lib/lifecycle'
-    mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 
-    module.exports.push (ctx) ->
-      require('./hdfs').configure ctx
-      throw Error "Not a NameNode" unless ctx.has_module 'ryba/hadoop/hdfs_nn'
+    module.exports.push require('./hdfs').configure
 
 ## Start
 
@@ -49,8 +45,17 @@ the standy NameNodes wait for the one on the active NameNode to start first.
       return next() unless active_nn
       active_nn_host = active_nn_host.split('.')[0]
       standby_nn_host = standby_nn_host.split('.')[0]
+      # This command seems to crash the standby namenode when it is made active and
+      # when the active_nn is restarting and still in safemode
       ctx.execute
-        cmd: "if hdfs haadmin -getServiceState #{active_nn_host} | grep standby; then hdfs haadmin -failover #{standby_nn_host} #{active_nn_host}; else exit 2; fi"
+        cmd: mkcmd.hdfs ctx, "if hdfs haadmin -getServiceState #{active_nn_host} | grep standby; then hdfs haadmin -failover #{standby_nn_host} #{active_nn_host}; else exit 2; fi"
         code_skipped: 2
       , (err, activated) ->
         next err, if activated then ctx.OK else ctx.PASS
+
+## Module Dependencies
+
+    url = require 'url'
+    lifecycle = require './lib/lifecycle'
+    mkcmd = require './lib/mkcmd'
+
