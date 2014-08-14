@@ -25,13 +25,13 @@ layout: module
 
 Install the oozie client package. This package doesn't create any user and group.
 
-    module.exports.push name: 'HDP Oozie # Install', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HDP Oozie Client # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
         name: 'oozie-client'
       ], (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Oozie # Profile', callback: (ctx, next) ->
+    module.exports.push name: 'HDP Oozie Client # Profile', callback: (ctx, next) ->
       {oozie_site} = ctx.config.hdp
       ctx.write
         destination: '/etc/profile.d/oozie.sh'

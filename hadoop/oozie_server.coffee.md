@@ -16,12 +16,9 @@ an example:
 mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
 ```
 
-    path = require 'path'
-    lifecycle = require './lib/lifecycle'
-    mkcmd = require './lib/mkcmd'
-    parse_jdbc = require './lib/parse_jdbc'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/commons/mysql_client'
     module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/hadoop/hdfs' # SPNEGO need access to the principal HTTP/$HOST@$REALM's keytab
@@ -46,6 +43,7 @@ Example
 ```
 
     module.exports.push module.exports.configure = (ctx) ->
+      require('masson/core/iptables').configure ctx
       require('masson/commons/java').configure ctx
       require('./core').configure ctx
       {static_host, realm, core_site, test_user, test_password, db_admin} = ctx.config.hdp
@@ -122,6 +120,26 @@ oozie:x:493:
         return next err if err
         ctx.user oozie_user, (err, umodified) ->
           next err, if gmodified or umodified then ctx.OK else ctx.PASS
+
+## IPTables
+
+| Service | Port  | Proto | Info              |
+|---------|-------|-------|-------------------|
+| oozie   | 11000 | http  | Oozie HTTP server |
+
+IPTables rules are only inserted if the parameter "iptables.action" is set to 
+"start" (default value).
+
+    module.exports.push name: 'HDP Oozie Server # IPTables', callback: (ctx, next) ->
+      {oozie_site} = ctx.config.hdp
+      port = url.parse(oozie_site['oozie.base.url']).port
+      ctx.iptables
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "Oozie HTTP Server" }
+        ]
+        if: ctx.config.iptables.action is 'start'
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Oozie Server # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
@@ -382,7 +400,13 @@ oozie:x:493:
 
     module.exports.push 'ryba/hadoop/oozie_client'
 
+## Module Dependencies
 
+    url = require 'url'
+    path = require 'path'
+    lifecycle = require './lib/lifecycle'
+    mkcmd = require './lib/mkcmd'
+    parse_jdbc = require './lib/parse_jdbc'
   
 
 
