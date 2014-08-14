@@ -46,6 +46,12 @@ for more information.
     module.exports.push name: 'HDP HDFS DN # Test WebHDFS', timeout: -1, callback: (ctx, next) ->
       {test_user, force_check, active_nn_host} = ctx.config.hdp
       force_check = true
+      do_wait = ->
+        ctx.waitForExecution
+          cmd: 'hdfs dfsadmin -safemode get | grep OFF'
+        , (err) ->
+          return next err if err
+          do_init()
       do_init = ->
         ctx.execute
           cmd: mkcmd.test ctx, """
@@ -96,7 +102,7 @@ for more information.
             do_end()
       do_end = ->
         next null, ctx.OK
-      do_init()
+      do_wait()
 
 
 

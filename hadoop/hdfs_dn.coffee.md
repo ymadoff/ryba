@@ -32,33 +32,75 @@ The module doesn't require any configuration but instread rely on the
     module.exports.push (ctx) ->
       require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
+      ctx.config.hdp.hdfs_site['dfs.datanode.ipc.address'] ?= '0.0.0.0:50020'
 
 ## IPTables
 
-| Service    | Port | Proto     | Parameter                  |
-|------------|------|-----------|----------------------------|
-| datanode  | 50075 | tcp/http  | dfs.datanode.http.address  |
-| datanode  | 50475 | tcp/https | dfs.datanode.https.address |
-| datanode  | 1019  | tcp       | dfs.datanode.address       |
-| datanode  | 8010  | tcp       | dfs.datanode.ipc.address   |
+| Service   | Port       | Proto     | Parameter                  |
+|-----------|------------|-----------|----------------------------|
+| datanode  | 50010/1004 | tcp/http  | dfs.datanode.address       |
+| datanode  | 50075/1006 | tcp/http  | dfs.datanode.http.address  |
+| datanode  | 50475      | tcp/https | dfs.datanode.https.address |
+| datanode  | 50020      | tcp       | dfs.datanode.ipc.address   |
 
 The "dfs.datanode.address" default to "50010" in non-secured mode. In non-secured
-mode, it must be set to a value below "1024" and default to "1019"
+mode, it must be set to a value below "1024" and default to "1004".
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
     module.exports.push name: 'HDP HDFS DN # IPTables', callback: (ctx, next) ->
+      {hdfs_site} = ctx.config.hdp
+      [_, dn_address] = hdfs_site['dfs.datanode.address'].split ':'
+      [_, dn_http_address] = hdfs_site['dfs.datanode.http.address'].split ':'
+      [_, dn_https_address] = hdfs_site['dfs.datanode.https.address'].split ':'
+      [_, dn_ipc_address] = hdfs_site['dfs.datanode.ipc.address'].split ':'
       ctx.iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 50075, protocol: 'tcp', state: 'NEW', comment: "HDFS DN HTTP" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 50475, protocol: 'tcp', state: 'NEW', comment: "HDFS DN HTTPS" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 1019, protocol: 'tcp', state: 'NEW', comment: "HDFS DN Data" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 8010, protocol: 'tcp', state: 'NEW', comment: "HDFS DN Meta" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: dn_address, protocol: 'tcp', state: 'NEW', comment: "HDFS DN Data" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: dn_http_address, protocol: 'tcp', state: 'NEW', comment: "HDFS DN HTTP" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: dn_https_address, protocol: 'tcp', state: 'NEW', comment: "HDFS DN HTTPS" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: dn_ipc_address, protocol: 'tcp', state: 'NEW', comment: "HDFS DN Meta" }
         ]
         if: ctx.config.iptables.action is 'start'
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
+
+## Startup
+
+Install and configure the startup script in 
+"/etc/init.d/hadoop-yarn-nodemanager".
+
+    module.exports.push name: 'HDP HDFS DN # Startup', callback: (ctx, next) ->
+      {hdfs_pid_dir, core_site} = ctx.config.hdp
+      modified = false
+      do_install = ->
+        ctx.service
+          name: 'hadoop-hdfs-datanode'
+          startup: true
+        , (err, serviced) ->
+          return next err if err
+          modified = true if serviced
+          do_fix()
+      do_fix = ->
+        user = if core_site['hadoop.security.authentication'] is 'kerberos' then 'hdfs' else ''
+        ctx.write
+          destination: '/etc/init.d/hadoop-hdfs-datanode'
+          write: [
+            match: /^PIDFILE=".*"$/m
+            replace: "PIDFILE=\"#{hdfs_pid_dir}/$SVC_USER/hadoop-hdfs-datanode.pid\""
+          ,
+            match: /^HADOOP_SECURE_DN_USER=".*"$/m
+            replace: "HADOOP_SECURE_DN_USER=\"#{user}\""
+            append: /^WORKING_DIR=.*$/m
+          ]
+        , (err, written) ->
+          return next err if err
+          modified = true if written
+          do_end()
+      do_end = ->
+        next null, if modified then ctx.OK else ctx.PASS
+      do_install()
 
 ## HA
 
@@ -123,12 +165,6 @@ and permissions set to "0600".
 Load the module "ryba/hadoop/hdfs\_dn\_start" to start the DataNode.
 
     module.exports.push 'ryba/hadoop/hdfs_dn_start'
-
-    # module.exports.push name: 'HDP HDFS DN # Start', timeout: -1, callback: (ctx, next) ->
-    #   namenodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
-    #   ctx.waitIsOpen namenodes, 50070, (err) ->
-    #     lifecycle.dn_start ctx, (err, started) ->
-    #       next err, ctx.OK
 
 ## HDFS layout
 
