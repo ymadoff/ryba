@@ -40,6 +40,37 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
+## Startup
+
+Install and configure the startup script in 
+"/etc/init.d/hadoop-yarn-nodemanager".
+
+    module.exports.push name: 'HDP YARN NM # Startup', callback: (ctx, next) ->
+      {yarn_pid_dir} = ctx.config.hdp
+      modified = false
+      do_install = ->
+        ctx.service
+          name: 'hadoop-yarn-nodemanager'
+          startup: true
+        , (err, serviced) ->
+          return next err if err
+          modified = true if serviced
+          do_fix()
+      do_fix = ->
+        ctx.write
+          destination: '/etc/init.d/hadoop-yarn-nodemanager'
+          write: [
+            match: /^PIDFILE=".*"$/m
+            replace: "PIDFILE=\"#{yarn_pid_dir}/$SVC_USER/yarn-yarn-nodemanager.pid\""
+          ]
+        , (err, written) ->
+          return next err if err
+          modified = true if written
+          do_end()
+      do_end = ->
+        next null, if modified then ctx.OK else ctx.PASS
+      do_install()
+
     module.exports.push name: 'HDP YARN NM # Directories', timeout: -1, callback: (ctx, next) ->
       {yarn_user, yarn, test_user, hadoop_group} = ctx.config.hdp
       # no need to restrict parent directory and yarn will complain if not accessible by everyone
