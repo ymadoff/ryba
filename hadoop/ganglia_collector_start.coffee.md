@@ -12,15 +12,11 @@ Execute these commands on the Ganglia server host machine.
     module.exports.push 'masson/bootstrap/mecano'
 
     module.exports.push name: 'Ganglia Collector # Start', callback: (ctx, next) ->
-      # ctx.execute
-      #   cmd: "/etc/init.d/hdp-gmetad start"
-      # , (err, executed) ->
-      #   next err, if executed then ctx.OK else ctx.PASS
       ctx.service [
       #   name: 'httpd'
       #   action: 'start'
       # ,
-        name: 'ganglia-gmetad-3.5.0-99'
+        # name: 'ganglia-gmetad-3.5.0-99'
         srv_name: 'hdp-gmetad'
         action: 'start'
       ], (err, stoped) ->

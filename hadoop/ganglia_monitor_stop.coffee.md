@@ -17,7 +17,7 @@ Execute this command on all the nodes in your Hadoop cluster.
       # , (err, executed) ->
       #   next err, if executed then ctx.OK else ctx.PASS
       ctx.service
-        name: 'ganglia-gmond-3.5.0-99'
+        # name: 'ganglia-gmond-3.5.0-99'
         srv_name: 'hdp-gmond'
         action: 'stop'
       , (err, stoped) ->

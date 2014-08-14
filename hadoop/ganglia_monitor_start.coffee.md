@@ -25,7 +25,7 @@ Execute this command on all the nodes in your Hadoop cluster.
       # ctx.waitIsOpen collector, ports, (err) ->
       #   return next err
       ctx.service
-        name: 'ganglia-gmond-3.5.0-99'
+        # name: 'ganglia-gmond-3.5.0-99'
         srv_name: 'hdp-gmond'
         action: 'start'
       , (err, stoped) ->
