@@ -10,6 +10,7 @@ layout: module
     mkcmd = require './lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/core/iptables'
     # Install SPNEGO keytab
     module.exports.push 'ryba/hadoop/hdfs'
 
@@ -37,6 +38,7 @@ Example:
 ```
 
     module.exports.push module.exports.configure = (ctx) ->
+      require('masson/core/iptables').configure ctx
       return if ctx.webhcat_configured
       ctx.webhcat_configured = true
       require('./hive_server').configure ctx
@@ -56,20 +58,20 @@ Example:
       # User
       ctx.config.hdp.webhcat_user = name: ctx.config.hdp.webhcat_user if typeof ctx.config.hdp.webhcat_user is 'string'
       ctx.config.hdp.webhcat_user ?= {}
-      ctx.config.hdp.webhcat_user.name ?= 'hcat'
+      ctx.config.hdp.webhcat_user.name ?= 'hive'
       ctx.config.hdp.webhcat_user.system ?= true
-      ctx.config.hdp.webhcat_user.gid ?= 'hcat'
-      ctx.config.hdp.webhcat_user.comment ?= 'HCat User'
-      ctx.config.hdp.webhcat_user.home ?= '/home/hcat'
+      ctx.config.hdp.webhcat_user.gid ?= 'hive'
+      ctx.config.hdp.webhcat_user.comment ?= 'Hive User'
+      ctx.config.hdp.webhcat_user.home ?= '/var/lib/hive'
       # Group
       ctx.config.hdp.webhcat_group = name: ctx.config.hdp.webhcat_group if typeof ctx.config.hdp.webhcat_group is 'string'
       ctx.config.hdp.webhcat_group ?= {}
-      ctx.config.hdp.webhcat_group.name ?= 'hcat'
+      ctx.config.hdp.webhcat_group.name ?= 'hive'
       ctx.config.hdp.webhcat_group.system ?= true
       # WebHCat configuration
       ctx.config.hdp.webhcat_site ?= {}
       ctx.config.hdp.webhcat_site['templeton.storage.class'] ?= 'org.apache.hive.hcatalog.templeton.tool.ZooKeeperStorage' # Fix default value distributed in companion files
-      ctx.config.hdp.webhcat_site['templeton.jar'] ?+ '/usr/lib/hive-hcatalog/share/webhcat/svr/lib/hive-webhcat-0.13.0.2.1.2.0-402.jar' # Fix default value distributed in companion files
+      ctx.config.hdp.webhcat_site['templeton.jar'] ?= '/usr/lib/hive-hcatalog/share/webhcat/svr/lib/hive-webhcat-0.13.0.2.1.2.0-402.jar' # Fix default value distributed in companion files
       ctx.config.hdp.webhcat_site['templeton.hive.properties'] ?= "hive.metastore.local=false,hive.metastore.uris=thrift://#{hive_host}:9083,hive.metastore.sasl.enabled=yes,hive.metastore.execute.setugi=true,hive.metastore.warehouse.dir=/apps/hive/warehouse"
       ctx.config.hdp.webhcat_site['templeton.zookeeper.hosts'] ?= zookeeper_hosts.join ','
       ctx.config.hdp.webhcat_site['templeton.kerberos.principal'] ?= "HTTP/#{ctx.config.host}@#{realm}"
@@ -99,6 +101,26 @@ hcat:x:494:
         ctx.user webhcat_user, (err, umodified) ->
           next err, if gmodified or umodified then ctx.OK else ctx.PASS
 
+## IPTables
+
+| Service | Port  | Proto | Info                |
+|---------|-------|-------|---------------------|
+| webhcat | 50111 | http  | WebHCat HTTP server |
+
+IPTables rules are only inserted if the parameter "iptables.action" is set to 
+"start" (default value).
+
+    module.exports.push name: 'HDP WebHCat # IPTables', callback: (ctx, next) ->
+      {webhcat_site} = ctx.config.hdp
+      port = webhcat_site['templeton.port']
+      ctx.iptables
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "WebHCat HTTP Server" }
+        ]
+        if: ctx.config.iptables.action is 'start'
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
+
     module.exports.push name: 'HDP WebHCat # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
         name: 'hive-hcatalog'
@@ -110,6 +132,41 @@ hcat:x:494:
         name: 'webhcat-tar-pig'
       ], (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
+
+## Startup
+
+Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
+
+    module.exports.push name: 'HDP WebHCat # Startup', callback: (ctx, next) ->
+      {webhcat_pid_dir} = ctx.config.hdp
+      modified = false
+      do_install = ->
+        ctx.service
+          name: 'hive-webhcat-server'
+          startup: true
+        , (err, serviced) ->
+          return next err if err
+          modified = true if serviced
+          do_write()
+      do_write = ->
+        ctx.write [
+          destination: '/etc/init.d/hive-webhcat-server'
+          match: /^PIDFILE=".*"$/m
+          replace: "PIDFILE=\"#{webhcat_pid_dir}/webhcat.pid\""
+        ,
+          destination: '/etc/init.d/hive-webhcat-server'
+          match: /^.*# Ryba: clean pidfile if pid not running$/m
+          replace: """
+          if pid=`cat $PIDFILE`; then if ! ps -e -o pid | grep -v grep | grep -w $pid; then rm $PIDFILE; fi; fi; \# Ryba: clean pidfile if pid not running
+          """
+          append: /^PIDFILE=.*$/m
+        ], (err, written) ->
+          return next err if err
+          modified = true if written
+          do_end()
+      do_end = ->
+        next null, if modified then ctx.OK else ctx.PASS
+      do_install()
 
     module.exports.push name: 'HDP WebHCat # Directories', callback: (ctx, next) ->
       {webhcat_log_dir, webhcat_pid_dir, webhcat_user, hadoop_group} = ctx.config.hdp
@@ -167,13 +224,12 @@ hcat:x:494:
 
     module.exports.push name: 'HDP WebHCat # HDFS', callback: (ctx, next) ->
       {webhcat_user, webhcat_group} = ctx.config.hdp
-      webhcat_user = webhcat_user.name
       modified = false
       ctx.execute [
         cmd: mkcmd.hdfs ctx, """
-        if hdfs dfs -test -d /user/#{webhcat_user}; then exit 1; fi
-        hdfs dfs -mkdir -p /user/#{webhcat_user}
-        hdfs dfs -chown #{webhcat_user}:#{webhcat_group} /user/#{webhcat_user}
+        if hdfs dfs -test -d /user/#{webhcat_user.name}; then exit 1; fi
+        hdfs dfs -mkdir -p /user/#{webhcat_user.name}
+        hdfs dfs -chown #{webhcat_user.name}:#{webhcat_group.name} /user/#{webhcat_user.name}
         """
         code_skipped: 1
       ,
@@ -202,12 +258,27 @@ hcat:x:494:
           return next err if err
           ctx.execute
             cmd: mkcmd.hdfs ctx, """
-            hdfs dfs -chown -R #{webhcat_user}:users /apps/webhcat
+            hdfs dfs -chown -R #{webhcat_user.name}:users /apps/webhcat
             hdfs dfs -chmod -R 755 /apps/webhcat
             """
           , (err, executed, stdout) ->
             next err, if modified then ctx.OK else ctx.PASS
 
+    module.exports.push name: 'HDP WebHCat # Fix HDFS tmp', callback: (ctx, next) ->
+      # Avoid HTTP response
+      # Permission denied: user=ryba, access=EXECUTE, inode=\"/tmp/hadoop-hcat\":HTTP:hadoop:drwxr-x---
+      {webhcat_user, webhcat_group} = ctx.config.hdp
+      modified = false
+      ctx.execute [
+        cmd: mkcmd.hdfs ctx, """
+        if hdfs dfs -test -d /tmp/hadoop-hcat; then exit 2; fi
+        hdfs dfs -mkdir -p /tmp/hadoop-hcat
+        hdfs dfs -chown HTTP:hadoop /tmp/hadoop-hcat
+        hdfs dfs -chmod -R 1777 /tmp/hadoop-hcat
+        """
+        code_skipped: 2
+      ], (err, created, stdout) ->
+        return next err, if created then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP WebHCat # SPNEGO', callback: (ctx, next) ->
       {webhcat_site, webhcat_user, webhcat_group} = ctx.config.hdp
@@ -224,24 +295,17 @@ hcat:x:494:
       lifecycle.webhcat_start ctx, (err, started) ->
         next err, if started then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP WebHCat # Check', callback: (ctx, next) ->
-      # TODO, maybe we could test hive:
-      # curl --negotiate -u : -d execute="show+databases;" -d statusdir="test_webhcat" http://front1.hadoop:50111/templeton/v1/hive
-      {webhcat_site} = ctx.config.hdp
-      port = webhcat_site['templeton.port']
-      ctx.execute
-        cmd: mkcmd.test ctx, """
-        if hdfs dfs -test -f #{ctx.config.host}-webhcat; then exit 2; fi
-        curl -s --negotiate -u : http://#{ctx.config.host}:#{port}/templeton/v1/status
-        hdfs dfs -touchz #{ctx.config.host}-webhcat
-        """
-        code_skipped: 2
-      , (err, executed, stdout) ->
-        return next err if err
-        return next null, ctx.PASS unless executed
-        return next new Error "WebHCat not started" if stdout.trim() isnt '{"status":"ok","version":"v1"}'
-        return next null, ctx.OK
 
+# TODO: Check Hive
+
+hdfs dfs -mkdir -p front1-webhcat/mytable
+echo -e 'a,1\nb,2\nc,3' | hdfs dfs -put - front1-webhcat/mytable/data
+hive
+  create database testhcat location '/user/ryba/front1-webhcat';
+  create table testhcat.mytable(col1 STRING, col2 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+curl --negotiate -u : -d execute="use+testhcat;select+*+from+mytable;" -d statusdir="testhcat1" http://front1.hadoop:50111/templeton/v1/hive
+hdfs dfs -cat testhcat1/stderr
+hdfs dfs -cat testhcat1/stdout
 
 
 
