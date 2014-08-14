@@ -8,18 +8,64 @@ layout: module
     lifecycle = require '../hadoop/lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push 'ryba/hbase/_'
 
     module.exports.push module.exports.configure = (ctx) ->
+      require('masson/core/iptables').configure ctx
       require('../hadoop/hdfs').configure ctx
       require('./_').configure ctx
 
-    module.exports.push name: 'HBase RegionServer # Service', timeout: -1, callback: (ctx, next) ->
-      ctx.service 
-        name: 'hbase-regionserver'
-      , (err, installed) ->
-        next err, if installed then ctx.OK else ctx.PASS
+## IPTables
+
+| Service                      | Port  | Proto | Info                         |
+|------------------------------|-------|-------|------------------------------|
+| HBase Region Server          | 60020 | http  | hbase.regionserver.port      |
+| HMaster Region Server Web UI | 60030 | http  | hbase.regionserver.info.port |
+
+IPTables rules are only inserted if the parameter "iptables.action" is set to 
+"start" (default value).
+
+    module.exports.push name: 'HDP RegionServer # IPTables', callback: (ctx, next) ->
+      {hbase_site} = ctx.config.hdp
+      port = 
+      ctx.iptables
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.regionserver.port'] or 60020, protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.regionserver.info.port'] or 60030, protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
+        ]
+        if: ctx.config.iptables.action is 'start'
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
+
+## Service
+
+Install and configure the startup script in 
+"/etc/init.d/hbase-regionserver".
+
+    module.exports.push name: 'HBase RegionServer # Startup', timeout: -1, callback: (ctx, next) ->
+      modified = false
+      do_install = ->
+        ctx.service 
+          name: 'hbase-regionserver'
+        , (err, serviced) ->
+          return next err if err
+          modified = true if serviced
+          do_write()
+      do_write = ->
+        ctx.write
+          destination: '/etc/init.d/hbase-regionserver'
+          match: /^\s+exit 3 # Ryba: Fix invalid exit code*$/m
+          replace: '            exit 3 # Ryba: Fix invalid exit code'
+          append: /^\s+echo "not running."$/m
+        , (err, written) ->
+          return next err if err
+          modified = true if written
+          do_end()
+      do_end = ->
+        next null, if modified then ctx.OK else ctx.PASS
+      do_install()
 
 ## Zookeeper JAAS
 

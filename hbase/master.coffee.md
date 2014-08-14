@@ -7,16 +7,52 @@ layout: module
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push 'ryba/hbase/_'
 
     module.exports.push module.exports.configure = (ctx) ->
+      require('masson/core/iptables').configure ctx
       require('../hadoop/hdfs').configure ctx
       require('./_').configure ctx
       {realm, hbase_site} = ctx.config.hdp
       ctx.config.hdp.hbase_admin ?= {}
       ctx.config.hdp.hbase_admin.principal ?= "#{hbase_site['hbase.superuser']}@#{realm}"
       ctx.config.hdp.hbase_admin.password ?= "hbase123"
+
+## IPTables
+
+| Service             | Port  | Proto | Info                   |
+|---------------------|-------|-------|------------------------|
+| HBase Master        | 60000 | http  | hbase.master.port      |
+| HMaster Info Web UI | 60010 | http  | hbase.master.info.port |
+
+TODO:
+
+| Service                    | Port | Proto | Info                   |
+|----------------------------|------|-------|------------------------|
+| HBase Thrift Server        | 9090 | http  | hbase.thrift.port      |
+| HBase Thrift Server Web UI | 9095 | http  | hbase.thrift.info.port |
+
+IPTables rules are only inserted if the parameter "iptables.action" is set to 
+"start" (default value).
+
+    module.exports.push name: 'HDP Oozie Server # IPTables', callback: (ctx, next) ->
+      {hbase_site} = ctx.config.hdp
+      port = 
+      ctx.iptables
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.master.port'] or 60000, protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.master.info.port'] or 60010, protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
+        ]
+        if: ctx.config.iptables.action is 'start'
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
+
+## Service
+
+Install and configure the startup script in 
+"/etc/init.d/hbase-master".
 
     module.exports.push name: 'HBase Master # Service', timeout: -1, callback: (ctx, next) ->
       ctx.service
