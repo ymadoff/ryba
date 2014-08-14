@@ -32,7 +32,6 @@ self = module.exports =
           name = child.childNodes[0].nodeValue
         if child.tagName?.toUpperCase() is 'VALUE'
           value = child.childNodes[0]?.nodeValue or ''
-          console.log '>>>', name, '<<<', markup if child.childNodes.length > 1
       return value if property and name is property and value?
       properties[name] = value if name and value?
     return properties
