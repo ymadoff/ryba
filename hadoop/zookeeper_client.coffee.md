@@ -22,10 +22,16 @@ layout: module
       ctx.config.hdp.zookeeper_user ?= {}
       ctx.config.hdp.zookeeper_user.name ?= 'zookeeper'
       ctx.config.hdp.zookeeper_user.system ?= true
-      ctx.config.hdp.zookeeper_user.gid ?= 'hadoop'
+      ctx.config.hdp.zookeeper_user.gid ?= 'zookeeper'
+      ctx.config.hdp.zookeeper_user.groups ?= 'hadoop'
       ctx.config.hdp.zookeeper_user.comment ?= 'Zookeeper User'
       ctx.config.hdp.zookeeper_user.home ?= '/var/lib/zookeeper'
-      # Group (also defined in ryba/hadoop/core)
+      # Groups
+      ctx.config.hdp.zookeeper_group = name: ctx.config.hdp.zookeeper_group if typeof ctx.config.hdp.zookeeper_group is 'string'
+      ctx.config.hdp.zookeeper_group ?= {}
+      ctx.config.hdp.zookeeper_group.name ?= 'zookeeper'
+      ctx.config.hdp.zookeeper_group.system ?= true
+      # Hadoop Group is also defined in ryba/hadoop/core
       ctx.config.hdp.hadoop_group = name: ctx.config.hdp.hadoop_group if typeof ctx.config.hdp.hadoop_group is 'string'
       ctx.config.hdp.hadoop_group ?= {}
       ctx.config.hdp.hadoop_group.name ?= 'hadoop'

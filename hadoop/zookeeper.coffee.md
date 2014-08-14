@@ -60,8 +60,8 @@ hadoop:x:498:hdfs
 ```
 
     module.exports.push name: 'HDP ZooKeeper # Users & Groups', callback: (ctx, next) ->
-      {hadoop_group, zookeeper_user} = ctx.config.hdp
-      ctx.group hadoop_group, (err, gmodified) ->
+      {zookeeper_group, hadoop_group, zookeeper_user} = ctx.config.hdp
+      ctx.group [zookeeper_group, hadoop_group], (err, gmodified) ->
         return next err if err
         ctx.user zookeeper_user, (err, umodified) ->
           next err, if gmodified or umodified then ctx.OK else ctx.PASS
@@ -98,20 +98,34 @@ which has no dependency.
       ctx.service name: 'zookeeper', (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
 
-    # module.exports.push name: 'HDP ZooKeeper # Kerberos', callback: (ctx, next) ->
-    #   {realm} = ctx.config.hdp
-    #   {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-    #   ctx.krb5_addprinc
-    #     principal: "zookeeper/#{ctx.config.host}@#{realm}"
-    #     randkey: true
-    #     keytab: "/etc/security/keytabs/zookeeper.service.keytab"
-    #     uid: 'zookeeper'
-    #     gid: 'hadoop'
-    #     kadmin_principal: kadmin_principal
-    #     kadmin_password: kadmin_password
-    #     kadmin_server: admin_server
-    #   , (err, created) ->
-    #     next err, if created then ctx.OK else ctx.PASS
+## Startup
+
+Install and configure the startup script in 
+"/etc/init.d/zookeeper-server".
+
+    module.exports.push name: 'HDP HDFS Zookeeper # Startup', callback: (ctx, next) ->
+      {hdfs_pid_dir} = ctx.config.hdp
+      modified = false
+      do_install = ->
+        ctx.service
+          name: 'zookeeper-server'
+          startup: true
+        , (err, serviced) ->
+          return next err if err
+          modified = true if serviced
+          do_fix()
+      do_fix = ->
+        ctx.write
+          destination: '/etc/init.d/zookeeper-server'
+          match: /^(\. .*\/bigtop-detect-javahome)$/m
+          replace: "#$1"
+        , (err, written) ->
+          return next err if err
+          modified = true if written
+          do_end()
+      do_end = ->
+        next null, if modified then ctx.OK else ctx.PASS
+      do_install()
 
     module.exports.push name: 'HDP ZooKeeper # Kerberos', timeout: -1, callback: (ctx, next) ->
       {zookeeper_user, hadoop_group, realm, zookeeper_conf_dir} = ctx.config.hdp
