@@ -184,8 +184,21 @@ Default configuration:
         then ctx.config.host
         else '_HOST'
       # Configuration
-      ctx.config.hdp.core_site ?= {}
-      ctx.config.hdp.core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.hdp.nameservice}:8020"
+      core_site = ctx.config.hdp.core_site ?= {}
+      core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.hdp.nameservice}:8020"
+      # Set the authentication for the cluster. Valid values are: simple or kerberos
+      core_site['hadoop.security.authentication'] ?= 'kerberos'
+      # This is an [OPTIONAL] setting. If not set, defaults to 
+      # authentication.authentication= authentication only; the client and server 
+      # mutually authenticate during connection setup.integrity = authentication 
+      # and integrity; guarantees the integrity of data exchanged between client 
+      # and server aswell as authentication.privacy = authentication, integrity, 
+      # and confidentiality; guarantees that data exchanged between client andserver 
+      # is encrypted and is not readable by a “man in the middle”.
+      core_site['hadoop.rpc.protection'] ?= 'authentication'
+      # Enable authorization for different protocols.
+      core_site['hadoop.security.authorization'] ?= 'true'
+
       # Context
       ctx.hconfigure = (options, callback) ->
         options.ssh = ctx.ssh if typeof options.ssh is 'undefined'
@@ -308,16 +321,7 @@ not handled here.
         next err, if serviced then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Core # Configuration', callback: (ctx, next) ->
-      { core_site, hadoop_conf_dir } = ctx.config.hdp
-      ctx.log 'Configure core-site.xml'
-      # Determines where on the local filesystem the DFS secondary
-      # name node should store the temporary images to merge.
-      # If this is a comma-delimited list of directories then the image is
-      # replicated in all of the directories for redundancy.
-      # core_site['fs.checkpoint.edits.dir'] ?= fs_checkpoint_edit_dir.join ','
-      # A comma separated list of paths. Use the list of directories from $FS_CHECKPOINT_DIR. 
-      # For example, /grid/hadoop/hdfs/snn,sbr/grid1/hadoop/hdfs/snn,sbr/grid2/hadoop/hdfs/snn
-      # core_site['fs.checkpoint.dir'] ?= fs_checkpoint_dir.join ','
+      {core_site, hadoop_conf_dir} = ctx.config.hdp
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/core-site.xml"
         default: "#{__dirname}/files/core_hadoop/core-site.xml"
@@ -382,7 +386,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
         destination: '/etc/security/keytabs'
         uid: 'root'
         gid: hadoop_group.name
-        mode: 0o755
+        mode: 0o750
       , (err, created) ->
         next null, if created then ctx.OK else ctx.PASS
 
@@ -434,33 +438,6 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
     module.exports.push name: 'HDP Core # Kerberos', timeout: -1, callback: (ctx, next) ->
       {hadoop_conf_dir, core_site, realm} = ctx.config.hdp
-      # Set the authentication for the cluster. Valid values are: simple or kerberos
-      core_site['hadoop.security.authentication'] ?= 'kerberos'
-      # This is an [OPTIONAL] setting. If not set, defaults to 
-      # authentication.authentication= authentication only; the client and server 
-      # mutually authenticate during connection setup.integrity = authentication 
-      # and integrity; guarantees the integrity of data exchanged between client 
-      # and server aswell as authentication.privacy = authentication, integrity, 
-      # and confidentiality; guarantees that data exchanged between client andserver 
-      # is encrypted and is not readable by a “man in the middle”.
-      core_site['hadoop.rpc.protection'] ?= 'authentication'
-      # Enable authorization for different protocols.
-      core_site['hadoop.security.authorization'] ?= 'true'
-      # The mapping from Kerberos principal names to local OS user names.
-      # Default mapping is referenced here: http://mail-archives.apache.org/mod_mbox/incubator-ambari-commits/201308.mbox/%3Cc82889130fc54e1e8aeabfeedf99dcb3@git.apache.org%3E
-      # Here's an example enabling cross-realm:
-      # 'hadoop.security.auth_to_local': """
-      # 
-      #       RULE:[1:$1@$0](^.*@REALM\\.DOMAIN\\.COM$)s/^(.*)@REALM\\.DOMAIN\\.COM$/$1/g
-      #       RULE:[2:$1@$0](^.*@REALM\\.DOMAIN\\.COM$)s/^(.*)@REALM\\.DOMAIN\\.COM$/$1/g
-      #       RULE:[2:$1@$0]([rn]m@.*)s/.*/yarn/
-      #       RULE:[2:$1@$0](jhs@.*)s/.*/mapred/
-      #       RULE:[2:$1@$0]([nd]n@.*)s/.*/hdfs/
-      #       RULE:[2:$1@$0](hm@.*)s/.*/hbase/
-      #       RULE:[2:$1@$0](rs@.*)s/.*/hbase/
-      #       DEFAULT
-      # 
-      # """
       # TODO, discover and generate cross-realm settings
       core_site['hadoop.security.auth_to_local'] ?= """
       
