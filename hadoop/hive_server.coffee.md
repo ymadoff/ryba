@@ -102,7 +102,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Hive & HCat Server # Service', callback: (ctx, next) ->
+## Startup
+
+Install and configure the startup script in "/etc/init.d/hive-hcatalog-server"
+and "/etc/init.d/hive-server2".
+
+    module.exports.push name: 'HDP Hive & HCat Server # Startup', callback: (ctx, next) ->
       ctx.service [
         name: 'hive-hcatalog-server'
         startup: true
@@ -111,6 +116,24 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         startup: true
       ], (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
+
+    module.exports.push name: 'HDP Hive & HCat Server # Fix Startup', callback: (ctx, next) ->
+      ctx.write [
+        destination: '/etc/init.d/hive-hcatalog-server'
+        match: /^.*# Ryba: clean pidfile if pid not running$/m
+        replace: """
+        if pid=`cat $PIDFILE`; then if ! ps -e -o pid | grep -v grep | grep -w $pid; then rm $PIDFILE; fi; fi; \# Ryba: clean pidfile if pid not running
+        """
+        append: /^PIDFILE=.*$/m
+      ,
+        destination: '/etc/init.d/hive-server2'
+        match: /^.*# Ryba: clean pidfile if pid not running$/m
+        replace: """
+        if pid=`cat $PIDFILE`; then if ! ps -e -o pid | grep -v grep | grep -w $pid; then rm $PIDFILE; fi; fi; \# Ryba: clean pidfile if pid not running
+        """
+        append: /^PIDFILE=.*$/m
+      ], (err, written) ->
+        next err, if written then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Hive & HCat Server # Database', callback: (ctx, next) ->
       {hive_site, db_admin} = ctx.config.hdp
@@ -125,7 +148,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             cmd: """
             if #{cmd} "use #{db}"; then exit 2; fi
             #{cmd} "
-            create database #{db};
+            create database if not exists #{db};
             grant all privileges on #{db}.* to '#{username}'@'localhost' identified by '#{password}';
             grant all privileges on #{db}.* to '#{username}'@'%' identified by '#{password}';
             flush privileges;
@@ -300,6 +323,8 @@ TODO: Implement lock for Hive Server2
 http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-Installation-Guide/cdh4ig_topic_18_5.html
 
     module.exports.push 'ryba/hadoop/hive_server_start'
+
+    module.exports.push 'ryba/hadoop/hive_server_check'
 
     module.exports.push name: 'HDP Hive & HCat Server # Check', timeout: -1, callback: (ctx, next) ->
       # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.3.0/CDH4-Security-Guide/cdh4sg_topic_9_1.html
