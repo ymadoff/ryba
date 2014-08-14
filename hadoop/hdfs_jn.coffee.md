@@ -102,6 +102,40 @@ The JournalNode data are stored inside the directory defined by the
         return next err if err
         next null, if created then ctx.OK else ctx.PASS
 
+## Startup
+
+Install and configure the startup script in 
+"/etc/init.d/hadoop-hdfs-journalnode".
+
+    module.exports.push name: 'HDP HDFS JN # Startup', callback: (ctx, next) ->
+      {hdfs_pid_dir} = ctx.config.hdp
+      modified = false
+      do_install = ->
+        ctx.service
+          name: 'hadoop-hdfs-journalnode'
+          startup: true
+        , (err, serviced) ->
+          return next err if err
+          modified = true if serviced
+          do_fix()
+      do_fix = ->
+        ctx.write
+          destination: '/etc/init.d/hadoop-hdfs-journalnode'
+          write: [
+            match: /^PIDFILE=".*"$/m
+            replace: "PIDFILE=\"#{hdfs_pid_dir}/$SVC_USER/hadoop-hdfs-journalnode.pid\""
+          ,
+            match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m
+            replace: "$1 -u $SVC_USER $2"
+          ]
+        , (err, written) ->
+          return next err if err
+          modified = true if written
+          do_end()
+      do_end = ->
+        next null, if modified then ctx.OK else ctx.PASS
+      do_install()
+
 ## Configure
 
 Update the "hdfs-site.xml" file with the "dfs.journalnode.edits.dir" property.
