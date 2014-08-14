@@ -234,73 +234,20 @@ Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Co
       , (err, configured) ->
         return next err, if configured then ctx.OK else ctx.PASS
 
-    # module.exports.push name: 'HDP YARN # Memory Allocation', callback: module.exports.tuning = (ctx, next) ->
-    #   {yarn, hadoop_conf_dir} = ctx.config.hdp
-    #   yarn_site = yarn
-    #   # yarn.scheduler.maximum-allocation-mb
-    #   # yarn.nodemanager.log.retain-seconds (cherif mettre la valeur à 10800 au lie de 604800)
-    #   # yarn.log-aggregation.retain-seconds (chefrif)
-
-    #   # Follow [Hortonworks example](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
-    #   # As a general recommendation, Hortonworks found that allowing for 1-2 
-    #   # Containers per disk and per core gives the best balance for cluster utilization.
-    #   # Each machine in our cluster has 96 GB of RAM. Some of this RAM should be 
-    #   # reserved for Operating System usage. On each node, we’ll reserve 10% 
-    #   # with a maximum of 8 GB for the Operating System.
-    #   numberOfCores = Math.floor ctx.cpuinfo.length
-    #   memTotalMb = Math.floor ctx.meminfo.MemTotal / 1000 / 1000
-    #   reserved = Math.round(memTotalMb * 0.1)
-    #   max_reserved = 8*1024
-    #   reserved = max_reserved if reserved > max_reserved
-    #   memory = yarn_site['yarn.nodemanager.resource.memory-mb'] ?= "#{memTotalMb-reserved}"
-    #   # We provide YARN guidance on how to break up the total resources 
-    #   # available into Containers by specifying the minimum unit of RAM to 
-    #   # allocate for a Container. . We have 12 disk, experience suggest that a 
-    #   # ratio between 1 and 2 container per disk, so we want to allow for a 
-    #   # maximum of 20 Containers, and thus need (40 GB total RAM) / (20 # of 
-    #   # Containers) = 2 GB minimum per container
-    #   # minimum of (2*CORES, 1.8*DISKS, (Total available RAM) / MIN_CONTAINER_SIZE) (http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap1-11.html)
-    #   containers = Math.floor Math.min numberOfCores*2, yarn_site['yarn.nodemanager.local-dirs'].length * 1.8, (memory / getMininumContainerSize memory)
-    #   memory_minimum = yarn_site['yarn.scheduler.minimum-allocation-mb'] ?= Math.floor(memory / containers)
-    #   # Note, "yarn.scheduler.maximum-allocation-mb" default to 8192 in yarn-site.xml and to 6144 in HDP companion files
-    #   # Maximum memory estimation is 3 times the minimum memory, while not exceding the total memory and with a minimum of 6144
-    #   # memory_maximum = yarn_site['yarn.scheduler.maximum-allocation-mb'] ?= Math.min memory, Math.max 6144, memory_minimum * 3
-    #   memory_maximum = yarn_site['yarn.scheduler.maximum-allocation-mb'] ?= memory
-    #   # yarn_site['yarn.scheduler.maximum-allocation-mb'] = 6144
-    #   ratio = yarn_site['yarn.nodemanager.vmem-pmem-ratio'] ?= "2.1" # also defined by ryba/hadoop/mapred
-    #   # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap1-11.html
-    #   yarn_site['yarn.app.mapreduce.am.resource.mb'] ?= Math.min memory, Math.floor 2 * memory_minimum # 2 * RAM-per-Container
-    #   yarn_site['yarn.app.mapreduce.am.command-opts'] ?= Math.min memory, Math.floor 0.8 * 2 * memory_minimum # = 0.8 * 2 * RAM-per-Container 
-    #   # Log result
-    #   ctx.log "Server memory: #{memTotalMb} mb"
-    #   ctx.log "Yarn available memory: #{memory} mb (yarn.nodemanager.resource.memory-mb)"
-    #   ctx.log "Number of containers: #{containers}"
-    #   ctx.log "Minimum memory allocation: #{memory_minimum} mb (yarn.scheduler.minimum-allocation-mb)"
-    #   ctx.log "Maximum memory allocation: #{memory_maximum} mb (yarn.scheduler.maximum-allocation-mb)"
-    #   ctx.hconfigure
-    #     destination: "#{hadoop_conf_dir}/yarn-site.xml"
-    #     properties:
-    #       'yarn.nodemanager.vmem-pmem-ratio': ratio
-    #       'yarn.nodemanager.resource.memory-mb': memory
-    #       'yarn.scheduler.minimum-allocation-mb': memory_minimum
-    #       'yarn.scheduler.maximum-allocation-mb': memory_maximum
-    #     merge: true
-    #   , (err, configured) ->
-    #     return next err, if configured then ctx.OK else ctx.PASS
-
-    module.exports.push name: 'HDP YARN # Keytabs Directory', timeout: -1, callback: (ctx, next) ->
-      ctx.mkdir
-        destination: '/etc/security/keytabs'
-        uid: 'root'
-        gid: 'hadoop'
-        mode: 0o750
-      , (err, created) ->
-        next null, if created then ctx.OK else ctx.PASS
+    # Duplicate of ryba/hadoop/core
+    # module.exports.push name: 'HDP YARN # Keytabs Directory', timeout: -1, callback: (ctx, next) ->
+    #   ctx.mkdir
+    #     destination: '/etc/security/keytabs'
+    #     uid: 'root'
+    #     gid: 'hadoop'
+    #     mode: 0o750
+    #   , (err, created) ->
+    #     next null, if created then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP YARN # Configure Kerberos', callback: (ctx, next) ->
       {hadoop_conf_dir, static_host, realm} = ctx.config.hdp
       yarn = {}
-      # Todo: might need to configure WebAppProxy but I understood that it is run as part of rm if not configured separately
+      # Todo: might need to configure WebAppProxy but I seems like it is run as part of rm if not configured separately
       # yarn.web-proxy.address    WebAppProxy                                   host:port for proxy to AM web apps. host:port if this is the same as yarn.resourcemanager.webapp.address or it is not defined then the ResourceManager will run the proxy otherwise a standalone proxy server will need to be launched.
       # yarn.web-proxy.keytab     /etc/security/keytabs/web-app.service.keytab  Kerberos keytab file for the WebAppProxy.
       # yarn.web-proxy.principal  wap/_HOST@REALM.TLD                           Kerberos principal name for the WebAppProxy.
