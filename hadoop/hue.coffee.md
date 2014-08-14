@@ -12,6 +12,7 @@ It also ships with an Oozie Application for creating and monitoring workflows, a
     lifecycle = require './lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/core/iptables'
     # Install the mysql connector
     module.exports.push 'masson/commons/mysql_client'
     # Install kerberos clients to create/test new Hive principal
@@ -59,6 +60,7 @@ Example:
 ```
 
     module.exports.push module.exports.configure = (ctx) ->
+      require('masson/core/iptables').configure ctx
       # Allow proxy user inside "webhcat-site.xml"
       require('./webhcat').configure ctx
       # Allow proxy user inside "oozie-site.xml"
@@ -124,7 +126,7 @@ Example:
       # Desktop
       hue_ini['desktop'] ?= {}
       hue_ini['desktop']['http_host'] ?= '0.0.0.0'
-      hue_ini['desktop']['http_port'] ?= '8000'
+      hue_ini['desktop']['http_port'] ?= '8888'
       hue_ini['desktop']['secret_key'] ?= 'jFE93j;2[290-eiwMYSECRTEKEYy#e=+Iei*@Mn<qW5o'
       hue_ini['desktop']['smtp'] ?= {}
       ctx.log "WARING: property 'hdp.hue_ini.desktop.smtp.host' isnt set" unless hue_ini['desktop']['smtp']['host']
@@ -154,6 +156,25 @@ hue:x:494:
         return next err if err
         ctx.user hue_user, (err, umodified) ->
           next err, if gmodified or umodified then ctx.OK else ctx.PASS
+
+## IPTables
+
+| Service    | Port  | Proto | Parameter          |
+|------------|-------|-------|--------------------|
+| Hue Web UI | 8888  | http  | desktop.http_port  |
+
+IPTables rules are only inserted if the parameter "iptables.action" is set to 
+"start" (default value).
+
+    module.exports.push name: 'HDP Hue # IPTables', callback: (ctx, next) ->
+      {hue_ini} = ctx.config.hdp
+      ctx.iptables
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hue_ini['desktop']['http_port'], protocol: 'tcp', state: 'NEW', comment: "Hue Web UI" }
+        ]
+        if: ctx.config.iptables.action is 'start'
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
 
 ## Packages
 
