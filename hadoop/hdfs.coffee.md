@@ -13,7 +13,7 @@ setup a base installation. Such modules include "ryba/hadoop/hdfs_client",
 In its current state, we are only supporting the installation of a 
 [secure cluster with Kerberos][secure].
 
-[secure]: http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
+[secure]: http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/SecureMode.html
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
@@ -34,9 +34,7 @@ The properties "hdp.hdfs_site['dfs.namenode.name.dir']" and
     Properities added to the "hdfs-site.xml" file specific to the High Availability mode. There
     are defined in a seperate configuration key then "hdp.hdfs_site" to hide them from being 
     visible on a client setup.   
-*   `hdfs.hadoop_policy`   
-*   `hdfs.hdfs_namenode_http_port`   
-*   `hdfs.hdfs_namenode_ipc_port`    
+*   `hdfs.hadoop_policy`    
 *   `hdfs.hdfs_namenode_timeout`   
 *   `hdfs.hdfs_site` (object)   
     Properities added to the "hdfs-site.xml" file.
@@ -67,10 +65,8 @@ Example:
       # Layout
       ctx.config.hdp.fs_checkpoint_dir ?= ['/hadoop/hdfs/snn'] # Default ${fs.checkpoint.dir}
       # Options and configuration
-      ctx.config.hdp.hdfs_namenode_ipc_port ?= '8020'
-      ctx.config.hdp.hdfs_namenode_http_port ?= '50070'
       ctx.config.hdp.hdfs_namenode_timeout ?= 20000 # 20s
-      ctx.config.hdp.snn_port ?= '50090'
+      # ctx.config.hdp.snn_port ?= '50090'
       # Options for "hdfs-site.xml"
       hdfs_site = ctx.config.hdp.hdfs_site ?= {}
       # Comma separated list of paths. Use the list of directories from $DFS_NAME_DIR.  
@@ -84,6 +80,11 @@ Example:
       # ctx.config.hdp.hdfs_site['dfs.datanode.data.dir.perm'] ?= '750'
       hdfs_site['dfs.datanode.data.dir.perm'] ?= '700'
       hdfs_site['fs.permissions.umask-mode'] ?= '027' # 0750
+      hdfs_site['dfs.https.enable'] = 'false'
+      # Default values are retrieve from [the "SecureMode" HDFS page](http://hadoop.apache.org/docs/r2.4.1/hadoop-project-dist/hadoop-common/SecureMode.html#DataNode)
+      hdfs_site['dfs.datanode.address'] ?= '0.0.0.0:1004'
+      hdfs_site['dfs.datanode.http.address'] ?= '0.0.0.0:1006' 
+      hdfs_site['dfs.datanode.https.address'] ?= '0.0.0.0:50470'
       # Options for "hadoop-policy.xml"
       ctx.config.hdp.hadoop_policy ?= {}
       # HDFS HA configuration
@@ -118,7 +119,7 @@ Example:
     module.exports.push name: 'HDP HDFS # Hadoop Configuration', timeout: -1, callback: (ctx, next) ->
       { core, hdfs_site, yarn,
         hadoop_conf_dir, fs_checkpoint_dir, # fs_checkpoint_edit_dir,
-        hdfs_namenode_http_port, snn_port } = ctx.config.hdp #mapreduce_local_dir, 
+        snn_port } = ctx.config.hdp #mapreduce_local_dir, 
       datanodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_dn'
       secondary_namenode = ctx.hosts_with_module 'ryba/hadoop/hdfs_snn', 1
       modified = false
@@ -129,7 +130,6 @@ Example:
         # NameNode hostname for http access.
         # todo: "dfs.namenode.http-address" is only when not in ha mode, need to detect if we run
         # the cluster in ha or not
-        # hdfs_site['dfs.namenode.http-address'] ?= "#{namenode}:#{hdfs_namenode_http_port}"
         hdfs_site['dfs.namenode.http-address'] = null
         # Secondary NameNode hostname
         hdfs_site['dfs.namenode.secondary.http-address'] ?= "hdfs://#{secondary_namenode}:#{snn_port}" if secondary_namenode
@@ -187,42 +187,42 @@ Important, this is not implemented yet, we tried to set it up, it didn't work an
 we didn't had time to look further.
 
     module.exports.push name: 'HDP HDFS # Configure HTTPS', callback: (ctx, next) ->
-      {hadoop_conf_dir, hadoop_policy} = ctx.config.hdp
+      {hadoop_conf_dir, hdfs_site} = ctx.config.hdp
       namenode = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn', 1
-      modified = false
-      do_hdfs_site = ->
-        ctx.hconfigure
-          destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-          properties:
-            # Decide if HTTPS(SSL) is supported on HDFS
-            # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.5.0/bk_reference/content/ch_wire1.html
-            # For now (oct 7th, 2013), we disable it because nn and dn doesnt start
-            'dfs.https.enable': 'false'
-            'dfs.https.namenode.https-address': "#{namenode}:50470"
-            # The https port where NameNode binds
-            'dfs.https.port': '50470'
-            # The https address where namenode binds. Example: ip-10-111-59-170.ec2.internal:50470
-            'dfs.https.address': "#{namenode}:50470"
-          merge: true
-        , (err, configured) ->
-          return next err if err
-          modified = true if configured
-          do_hadoop_policy()
-      do_hadoop_policy = ->
-        ctx.log 'Configure hadoop-policy.xml'
-        ctx.hconfigure
-          destination: "#{hadoop_conf_dir}/hadoop-policy.xml"
-          default: "#{__dirname}/files/core_hadoop/hadoop-policy.xml"
-          local_default: true
-          properties: hadoop_policy
-          merge: true
-        , (err, configured) ->
-          return next err if err
-          modified = true if configured
-          do_end()
-      do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
-      do_hdfs_site()
+      ctx.hconfigure
+        destination: "#{hadoop_conf_dir}/hdfs-site.xml"
+        properties:
+          # Decide if HTTPS(SSL) is supported on HDFS
+          # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.5.0/bk_reference/content/ch_wire1.html
+          # For now (oct 7th, 2013), we disable it because nn and dn doesnt start
+          'dfs.https.enable': hdfs_site['dfs.https.enable']
+          'dfs.https.namenode.https-address': "#{namenode}:50470"
+          # The https port where NameNode binds
+          'dfs.https.port': '50470'
+          # The https address where namenode binds. Example: ip-10-111-59-170.ec2.internal:50470
+          'dfs.https.address': "#{namenode}:50470"
+        merge: true
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
+
+## Policy
+
+By default the service-level authorization is disabled in hadoop, to enable that
+we need to set/configure the hadoop.security.authorization to true in
+${HADOOP_CONF_DIR}/core-site.xml
+
+    module.exports.push name: 'HDP HDFS # Policy', callback: (ctx, next) ->
+      {core_site, hadoop_conf_dir, hadoop_policy} = ctx.config.hdp
+      return next() unless core_site['hadoop.security.authorization'] is 'true'
+      ctx.hconfigure
+        destination: "#{hadoop_conf_dir}/hadoop-policy.xml"
+        default: "#{__dirname}/files/core_hadoop/hadoop-policy.xml"
+        local_default: true
+        properties: hadoop_policy
+        merge: true
+        backup: true
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
 
 ## Kerberos User
 
@@ -311,12 +311,6 @@ with Kerberos specific properties.
       hdfs_site['dfs.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/#{static_host}@#{realm}"
       # # Default to ${dfs.web.authentication.kerberos.principal}, but documented in hdp 1.3.2 manual install
       hdfs_site['dfs.secondary.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/#{static_host}@#{realm}"
-      # The address, with a privileged port - any port number under 1023. Example: 0.0.0.0:1019
-      hdfs_site['dfs.datanode.address'] ?= '0.0.0.0:1019'
-      # The address, with a privileged port - any port number under 1023. Example: 0.0.0.0:1022
-      # update, [official doc propose port 2005 only for https, http is not even documented](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuration_in_Secure_Mode)
-      hdfs_site['dfs.datanode.http.address'] ?= '0.0.0.0:1022'
-      hdfs_site['dfs.datanode.https.address'] ?= '0.0.0.0:1023'
       # Documented in http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
       # Only seems to apply if "dfs.https.enable" is enabled
       hdfs_site['dfs.namenode.kerberos.https.principal'] = "host/#{static_host}@#{realm}"
