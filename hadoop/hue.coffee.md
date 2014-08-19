@@ -70,7 +70,7 @@ Example:
       {nameservice, active_nn_host, hadoop_conf_dir, webhcat_site, hue_ini, db_admin} = ctx.config.hdp
       hue_ini ?= ctx.config.hdp.hue_ini = {}
       webhcat_port = webhcat_site['templeton.port']
-      webhcat_server = ctx.host_with_module 'ryba/hadoop/webhcat'
+      webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
       # todo, this might not work as expected after ha migration
       resourcemanager = ctx.host_with_module 'ryba/hadoop/yarn_rm'
       nodemanagers = ctx.hosts_with_module 'ryba/hadoop/yarn_nm'
@@ -221,7 +221,7 @@ to allow impersonnation through the "hue" user.
 
     module.exports.push name: 'HDP Hue # WebHCat', callback: (ctx, next) ->
       {webhcat_conf_dir} = ctx.config.hdp
-      webhcat_server = ctx.host_with_module 'ryba/hadoop/webhcat'
+      webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
       hconfigure = (ssh) ->
         properties = 
           'webhcat.proxyuser.hue.hosts': '*'

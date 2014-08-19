@@ -43,10 +43,10 @@ Example:
       ctx.webhcat_configured = true
       require('./server').configure ctx
       require('../hadoop/hdfs').configure ctx
-      require('../hadoop/zookeeper').configure ctx
+      require('../hadoop/zookeeper/server').configure ctx
       {realm} = ctx.config.hdp
-      hive_host = ctx.host_with_module 'ryba/hadoop/hive_server'
-      zookeeper_hosts = ctx.hosts_with_module 'ryba/hadoop/zookeeper'
+      hive_host = ctx.host_with_module 'ryba/hive/server'
+      zookeeper_hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
       for server in ctx.config.servers
         continue if (i = zookeeper_hosts.indexOf server.host) is -1
         zookeeper_hosts[i] = "#{zookeeper_hosts[i]}:#{ctx.config.hdp.zookeeper_port}"
