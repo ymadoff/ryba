@@ -68,9 +68,9 @@ unless the "hdp.force_check" configuration property is set to "true".
             hdfs dfs -rm -r #{host}-pig_hcat_tmp || true
             hdfs dfs -rm -r #{host}-pig_hcat || true
             hdfs dfs -mkdir -p #{host}-pig_hcat_tmp/db/check_tb
-            echo -e 'a\\x011\\nb\x012\\nc\\x013' | hdfs dfs -put - #{host}-pig_hcat_tmp/db/check_tb/data
+            echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - #{host}-pig_hcat_tmp/db/check_tb/data
             #{query "CREATE DATABASE IF NOT EXISTS #{db} LOCATION '/user/#{test_user.name}/#{host}-pig_hcat_tmp/db';"}
-            #{query "CREATE TABLE IF NOT EXISTS #{db}.check_tb(col1 STRING, col2 INT);"}
+            #{query "CREATE TABLE IF NOT EXISTS #{db}.check_tb(col1 STRING, col2 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';"}
             pig -useHCatalog /tmp/ryba-pig_hcat.pig
             #{query "DROP TABLE #{db}.check_tb;"}
             #{query "DROP DATABASE #{db};"}
