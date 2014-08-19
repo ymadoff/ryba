@@ -354,7 +354,7 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
 
     module.exports.push name: 'HDP HDFS NN # HA Auto Failover', timeout: -1, callback: (ctx, next) ->
       {hadoop_conf_dir, active_nn, active_nn_host} = ctx.config.hdp
-      zookeepers = ctx.hosts_with_module 'ryba/hadoop/zookeeper'
+      zookeepers = ctx.hosts_with_module 'ryba/zookeeper/server'
       modified = false
       do_hdfs = ->
         ctx.hconfigure
