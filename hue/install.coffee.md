@@ -9,7 +9,7 @@ layout: module
 It also ships with an Oozie Application for creating and monitoring workflows, a Zookeeper Browser and a SDK. 
 
     misc = require 'mecano/lib/misc'
-    lifecycle = require './lib/lifecycle'
+    lifecycle = require '../hadoop/lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/iptables'
@@ -62,11 +62,11 @@ Example:
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       # Allow proxy user inside "webhcat-site.xml"
-      require('./webhcat').configure ctx
+      require('../hive/webhcat').configure ctx
       # Allow proxy user inside "oozie-site.xml"
-      require('./oozie_server').configure ctx
+      require('./oozie/server').configure ctx
       # Allow proxy user inside "core-site.xml"
-      require('./core').configure ctx
+      require('../hadoop/core').configure ctx
       {nameservice, active_nn_host, hadoop_conf_dir, webhcat_site, hue_ini, db_admin} = ctx.config.hdp
       hue_ini ?= ctx.config.hdp.hue_ini = {}
       webhcat_port = webhcat_site['templeton.port']
@@ -248,7 +248,7 @@ to allow impersonnation through the "hue" user.
 
     module.exports.push name: 'HDP Hue # Oozie', callback: (ctx, next) ->
       {oozie_conf_dir} = ctx.config.hdp
-      oozie_server = ctx.host_with_module 'ryba/hadoop/oozie_server'
+      oozie_server = ctx.host_with_module 'ryba/oozie/server'
       hconfigure = (ssh) ->
         properties = 
           'oozie.service.ProxyUserService.proxyuser.hue.hosts': '*'
@@ -394,9 +394,9 @@ the "security_enabled" property set to "true".
 
 ## Start
 
-Use the "ryba/hadoop/hue_start" module to start the Hue server.
+Use the "ryba/hue/start" module to start the Hue server.
 
-    module.exports.push "ryba/hadoop/hue_start"
+    module.exports.push "ryba/hue/start"
 
 ## SSL
 
