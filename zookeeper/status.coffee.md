@@ -5,12 +5,12 @@ layout: module
 
 # Zookeeper Status
 
-    lifecycle = require './lib/lifecycle'
+    lifecycle = require '../hadoop/lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 
     module.exports.push (ctx) ->
-      require('./zookeeper').configure ctx
+      require('./server').configure ctx
 
     module.exports.push name: 'HDP ZooKeeper # Status', callback: (ctx, next) ->
       lifecycle.zookeeper_status ctx, (err, running) ->

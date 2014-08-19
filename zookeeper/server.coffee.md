@@ -5,7 +5,7 @@ layout: module
 
 # Zookeeper
 
-    lifecycle = require './lib/lifecycle'
+    lifecycle = require '../hadoop/lib/lifecycle'
     quote = require 'regexp-quote'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
@@ -35,7 +35,7 @@ Example :
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       require('masson/commons/java').configure ctx
-      require('./zookeeper_client').configure ctx
+      require('./client').configure ctx
       {java_home} = ctx.config.java
       # Environnment
       {zookeeper_conf_dir, zookeeper_log_dir, zookeeper_pid_dir} = ctx.config.hdp
@@ -217,7 +217,7 @@ Install and configure the startup script in
 
     module.exports.push name: 'HDP ZooKeeper # Configure', callback: (ctx, next) ->
       modified = false
-      hosts = ctx.hosts_with_module 'ryba/hadoop/zookeeper'
+      hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
       { hadoop_group, zookeeper_user,
         zookeeper_conf_dir, zookeeper_data_dir,
         zookeeper_myid, zookeeper_port
@@ -273,7 +273,7 @@ Install and configure the startup script in
       lifecycle.zookeeper_start ctx, (err, started) ->
         next err, if started then ctx.OK else ctx.PASS
 
-    module.exports.push 'ryba/hadoop/zookeeper_check'
+    module.exports.push 'ryba/zookeeper/server_check'
 
 ## Resources
 

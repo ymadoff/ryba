@@ -5,7 +5,7 @@ layout: module
 
 # Zookeeper
 
-    lifecycle = require './lib/lifecycle'
+    lifecycle = require '../hadoop/lib/lifecycle'
     quote = require 'regexp-quote'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
