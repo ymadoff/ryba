@@ -12,7 +12,7 @@ layout: module
     module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/commons/mysql_client' # Install the mysql connector
     module.exports.push 'ryba/hadoop/core' # Configure "core-site.xml" and "hadoop-env.sh"
-    module.exports.push 'ryba/hadoop/hive_' # Install the Hive and HCatalog service
+    module.exports.push 'ryba/hive/_' # Install the Hive and HCatalog service
 
 ## Configure
 
@@ -45,7 +45,7 @@ Example:
       return if ctx.hive_server_configured
       ctx.hive_server_configured = true
       require('masson/commons/mysql_server').configure ctx
-      require('./hive_').configure ctx
+      require('./_').configure ctx
       {hive_site, db_admin} = ctx.config.hdp
       # Layout
       ctx.config.hdp.hive_log_dir ?= '/var/log/hive'
@@ -322,9 +322,9 @@ and "/etc/init.d/hive-server2".
 TODO: Implement lock for Hive Server2
 http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-Installation-Guide/cdh4ig_topic_18_5.html
 
-    module.exports.push 'ryba/hadoop/hive_server_start'
+    module.exports.push 'ryba/hive/server_start'
 
-    module.exports.push 'ryba/hadoop/hive_server_check'
+    module.exports.push 'ryba/hive/server_check'
 
     module.exports.push name: 'HDP Hive & HCat Server # Check', timeout: -1, callback: (ctx, next) ->
       # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.3.0/CDH4-Security-Guide/cdh4sg_topic_9_1.html
@@ -333,10 +333,10 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
 
 # Module Dependencies
 
-    parse_jdbc = require './lib/parse_jdbc'
     path = require 'path'
-    mkcmd = require './lib/mkcmd'
-    lifecycle = require './lib/lifecycle'
+    parse_jdbc = require '../hadoop/lib/parse_jdbc'
+    mkcmd = require '../hadoop/lib/mkcmd'
+    lifecycle = require '../hadoop/lib/lifecycle'
 
 
 

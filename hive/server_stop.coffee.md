@@ -11,7 +11,7 @@ layout: module
 
     module.exports.push (ctx) ->
       require('./core').configure ctx
-      require('./hive_server').configure ctx
+      require('./server').configure ctx
 
 ## Stop Server2
 

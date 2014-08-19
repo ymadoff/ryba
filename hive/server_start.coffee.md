@@ -5,13 +5,13 @@ layout: module
 
 # Hive Start
 
-    lifecycle = require './lib/lifecycle'
+    lifecycle = require '../hadoop/lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 
     module.exports.push (ctx) ->
       require('./core').configure ctx
-      require('./hive_server').configure ctx
+      require('./server').configure ctx
 
 ## Start Hive Metastore
 

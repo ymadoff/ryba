@@ -5,12 +5,12 @@ layout: module
 
 # HDP Hive & HCat Client Check
 
-    mkcmd = require './lib/mkcmd'
+    mkcmd = require '../hadoop/lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 
     module.exports.push (ctx) ->
-      require('./hive_client').configure ctx
+      require('./client').configure ctx
 
 ## Check Metastore
 

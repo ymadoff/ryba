@@ -7,7 +7,7 @@ layout: module
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'ryba/hadoop/hive_'
+    module.exports.push 'ryba/hive/_'
     module.exports.push 'ryba/hadoop/mapred_client'
     module.exports.push 'ryba/hadoop/yarn_client'
 
@@ -35,8 +35,8 @@ Example of a minimal client configuration:
 ```
 
     module.exports.push module.exports.configure = (ctx) ->
-      require('./hdfs').configure ctx
-      require('./hive_').configure ctx
+      require('../hadoop/hdfs').configure ctx
+      require('./_').configure ctx
 
 ## Configure
 
@@ -62,9 +62,9 @@ See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments
 
 ## Check
 
-Execute the "ryba/hadoop/hive_client_check" module.
+Execute the "ryba/hive/client_check" module.
 
-    module.exports.push 'ryba/hadoop/hive_client_check'
+    module.exports.push 'ryba/hive/client_check'
 
 
       
