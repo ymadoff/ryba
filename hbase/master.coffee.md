@@ -56,7 +56,7 @@ Install and configure the startup script in
 
     module.exports.push name: 'HBase Master # Service', timeout: -1, callback: (ctx, next) ->
       ctx.service
-        cmd: 'hbase-master'
+        name: 'hbase-master'
       , (err, installed) ->
         next err, if installed then ctx.OK else ctx.PASS
 
