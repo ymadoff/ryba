@@ -1,6 +1,6 @@
 ---
 title: Ganglia Monitor
-module: ryba/hadoop/ganglia_monitor
+module: ryba/ganglia/monitor
 layout: module
 ---
 
@@ -14,13 +14,6 @@ Ganglia Monitor is the agent to be deployed on each of the hosts.
 ## Dependencies
 
     module.exports.push 'masson/core/yum'
-
-## Configuration
-
-The module doesnt accept any configuration.
-
-    module.exports.push module.exports.configure = (ctx) ->
-      # nothing for now
 
 ## Service
 
@@ -49,7 +42,7 @@ Copy the object files provided in the HDP companion files into the
 "/usr/libexec/hdp/ganglia" folder. Permissions on those file are set to "0o744".
 
     module.exports.push name: 'Ganglia Monitor # Objects', timeout: -1, callback: (ctx, next) ->
-      glob "#{__dirname}/files/ganglia/objects/*.*", (err, files) ->
+      glob "#{__dirname}/../hadoop/files/ganglia/objects/*.*", (err, files) ->
         files = for file in files then source: file, destination: "/usr/libexec/hdp/ganglia", mode: 0o744
         ctx.upload files, (err, uploaded) ->
           next err, if uploaded then ctx.OK else ctx.PASS
@@ -60,7 +53,7 @@ Upload the "hdp-gmond" service file into "/etc/init.d".
 
     module.exports.push name: 'Ganglia Monitor # Init Script', timeout: -1, callback: (ctx, next) ->
       ctx.upload
-        source: "#{__dirname}/files/ganglia/scripts/hdp-gmond"
+        source: "#{__dirname}/../hadoop/files/ganglia/scripts/hdp-gmond"
         destination: '/etc/init.d'
         mode: 0o755
       , (err, uploaded) ->
@@ -111,7 +104,7 @@ Setup the Ganglia hosts. Categories are "HDPNameNode", "HDPResourceManager",
 Update the files generated in the "host" action with the host of the Ganglia Collector.
 
     module.exports.push name: 'Ganglia Monitor # Configuration', timeout: -1, callback: (ctx, next) ->
-      collector = ctx.host_with_module 'ryba/hadoop/ganglia_collector'
+      collector = ctx.host_with_module 'ryba/ganglia/collector'
       writes = []
       if ctx.has_any_modules 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_snn'
         writes.push
@@ -150,9 +143,9 @@ Update the files generated in the "host" action with the host of the Ganglia Col
 Upload the "hadoop-metrics2.properties" to connect Hadoop with Ganglia.
 
     module.exports.push name: 'Ganglia Monitor # Hadoop', callback: (ctx, next) ->
-      collector = ctx.host_with_module 'ryba/hadoop/ganglia_collector'
+      collector = ctx.host_with_module 'ryba/ganglia/collector'
       ctx.write
-        source: "#{__dirname}/files/core_hadoop/hadoop-metrics2.properties-GANGLIA"
+        source: "#{__dirname}/../hadoop/files/core_hadoop/hadoop-metrics2.properties-GANGLIA"
         local_source: true
         destination: "/etc/hadoop/conf/hadoop-metrics2.properties"
         match: "TODO-GANGLIA-SERVER"
@@ -162,7 +155,7 @@ Upload the "hadoop-metrics2.properties" to connect Hadoop with Ganglia.
 
 ## Start
 
-    module.exports.push 'ryba/hadoop/ganglia_monitor_start'
+    module.exports.push 'ryba/ganglia/monitor_start'
 
 ## Module dependencies
 

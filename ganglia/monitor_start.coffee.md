@@ -15,7 +15,7 @@ Execute this command on all the nodes in your Hadoop cluster.
       # Doesnt work for 3 reasons
       # waitIsOpen doesnt use udp
       # waitIsOpen use bash instead of nc which doesnt work for udp (always exit 0)
-      # collector = ctx.host_with_module 'ryba/hadoop/ganglia_collector'
+      # collector = ctx.host_with_module 'ryba/ganglia/collector'
       # ports = []
       # ports.push 8661 if ctx.has_any_modules 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_snn'
       # ports.push 8664 if ctx.has_any_modules 'ryba/hadoop/yarn_rm'

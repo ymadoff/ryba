@@ -1,6 +1,6 @@
 ---
 title: Ganglia Collector
-module: ryba/hadoop/ganglia_collector
+module: ryba/ganglia/collector
 layout: module
 ---
 
@@ -132,7 +132,7 @@ Copy the object files provided in the HDP companion files into the
 "/usr/libexec/hdp/ganglia" folder. Permissions on those file are set to "0o744".
 
     module.exports.push name: 'Ganglia Collector # Objects', timeout: -1, callback: (ctx, next) ->
-      glob "#{__dirname}/files/ganglia/objects/*.*", (err, files) ->
+      glob "#{__dirname}/../hadoop/files/ganglia/objects/*.*", (err, files) ->
         files = for file in files then source: file, destination: "/usr/libexec/hdp/ganglia", mode: 0o744
         ctx.upload files, (err, uploaded) ->
           next err, if uploaded then ctx.OK else ctx.PASS
@@ -143,7 +143,7 @@ Upload the "hdp-gmetad" service file into "/etc/init.d".
 
     module.exports.push name: 'Ganglia Collector # Init Script', timeout: -1, callback: (ctx, next) ->
       ctx.upload [
-        source: "#{__dirname}/files/ganglia/scripts/hdp-gmetad"
+        source: "#{__dirname}/../hadoop/files/ganglia/scripts/hdp-gmetad"
         destination: '/etc/init.d'
         mode: 0o755
       ], (err, uploaded) ->
@@ -263,11 +263,11 @@ pointing to the Ganglia master hostname.
 
 ## Start
 
-    module.exports.push 'ryba/hadoop/ganglia_collector_start'
+    module.exports.push 'ryba/ganglia/collector_start'
 
 ## Check
 
-    module.exports.push 'ryba/hadoop/ganglia_collector_check'
+    module.exports.push 'ryba/ganglia/collector_check'
 
 ## Module dependencies
 
