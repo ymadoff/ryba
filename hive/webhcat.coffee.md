@@ -6,8 +6,8 @@ layout: module
 # WebHCat
 
     each = require 'each'
-    lifecycle = require './lib/lifecycle'
-    mkcmd = require './lib/mkcmd'
+    lifecycle = require '../hadoop/lib/lifecycle'
+    mkcmd = require '../hadoop/lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/iptables'
@@ -41,9 +41,9 @@ Example:
       require('masson/core/iptables').configure ctx
       return if ctx.webhcat_configured
       ctx.webhcat_configured = true
-      require('./hive_server').configure ctx
-      require('./hdfs').configure ctx
-      require('./zookeeper').configure ctx
+      require('./server').configure ctx
+      require('../hadoop/hdfs').configure ctx
+      require('../hadoop/zookeeper').configure ctx
       {realm} = ctx.config.hdp
       hive_host = ctx.host_with_module 'ryba/hadoop/hive_server'
       zookeeper_hosts = ctx.hosts_with_module 'ryba/hadoop/zookeeper'
@@ -291,9 +291,9 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
       , (err, copied) ->
         return next err, if copied then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP WebHCat # Start', callback: (ctx, next) ->
-      lifecycle.webhcat_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+    module.exports.push 'ryba/hive/webhcat_start'
+
+    module.exports.push 'ryba/hive/webhcat_check'
 
 
 # TODO: Check Hive

@@ -5,7 +5,7 @@ layout: module
 
 # WebHCat Start
 
-    lifecycle = require './lib/lifecycle'
+    lifecycle = require '../hadoop/lib/lifecycle'
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
