@@ -45,7 +45,7 @@ Example
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       require('masson/commons/java').configure ctx
-      require('./core').configure ctx
+      require('../hadoop/core').configure ctx
       {static_host, realm, core_site, test_user, test_password, db_admin} = ctx.config.hdp
       # Internal properties
       ctx.config.hdp.force_war ?= false
@@ -396,17 +396,17 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       , (err, executed) ->
         next err, if executed then ctx.OK else ctx.PASS
 
-    module.exports.push 'ryba/hadoop/oozie_server_start'
+    module.exports.push 'ryba/oozie/server_start'
 
-    module.exports.push 'ryba/hadoop/oozie_client'
+    module.exports.push 'ryba/oozie/client'
 
 ## Module Dependencies
 
     url = require 'url'
     path = require 'path'
-    lifecycle = require './lib/lifecycle'
-    mkcmd = require './lib/mkcmd'
-    parse_jdbc = require './lib/parse_jdbc'
+    lifecycle = require '../hadoop/lib/lifecycle'
+    mkcmd = require '../hadoop/lib/mkcmd'
+    parse_jdbc = require '../hadoop/lib/parse_jdbc'
   
 
 

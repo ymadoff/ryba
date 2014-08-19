@@ -13,7 +13,7 @@ layout: module
     module.exports.push 'ryba/hadoop/yarn_client'
 
     module.exports.push module.exports.configure = (ctx) ->
-      oozie_server = ctx.host_with_module 'ryba/hadoop/oozie_server'
+      oozie_server = ctx.host_with_module 'ryba/oozie/server'
       # Oozie configuration
       ctx.config.hdp.oozie_site ?= {}
       ctx.config.hdp.oozie_site['oozie.base.url'] = "http://#{oozie_server}:11000/oozie"
@@ -45,7 +45,7 @@ Install the oozie client package. This package doesn't create any user and group
 
     module.exports.push name: 'HDP Oozie Client # Check Client', timeout: -1, callback: (ctx, next) ->
       {oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
-      oozie_server = ctx.host_with_module 'ryba/hadoop/oozie_server'
+      oozie_server = ctx.host_with_module 'ryba/oozie/server'
       ctx.waitIsOpen oozie_server, oozie_port, (err) ->
         ctx.execute
           cmd: """
@@ -59,7 +59,7 @@ Install the oozie client package. This package doesn't create any user and group
 
     module.exports.push name: 'HDP Oozie Client # Check REST', timeout: -1, callback: (ctx, next) ->
       {oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
-      oozie_server = ctx.host_with_module 'ryba/hadoop/oozie_server'
+      oozie_server = ctx.host_with_module 'ryba/oozie/server'
       ctx.waitIsOpen oozie_server, oozie_port, (err) ->
         return next err if err
         ctx.execute
@@ -75,7 +75,7 @@ Install the oozie client package. This package doesn't create any user and group
     module.exports.push name: 'HDP Oozie Client # Workflow', timeout: -1, callback: (ctx, next) ->
       {nameservice, oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
       rm = ctx.host_with_module 'ryba/hadoop/yarn_rm'
-      oozie_server = ctx.hosts_with_module 'ryba/hadoop/oozie_server', 1
+      oozie_server = ctx.hosts_with_module 'ryba/oozie/server', 1
       ctx.waitIsOpen oozie_server, oozie_port, (err) ->
         return next err if err
         ctx.execute
