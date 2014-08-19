@@ -58,7 +58,7 @@ Example:
       hive_site['hive.security.authenticator.manager'] ?= 'org.apache.hadoop.hive.ql.security.ProxyUserAuthenticator'
       hive_site['hive.server2.enable.doAs'] ?= 'true'
       hive_site['hive.server2.allow.user.substitution'] ?= 'true'
-      hive_site['hive.server2.transport.mode'] ?= 'binary'
+      hive_site['hive.server2.transport.mode'] ?= 'binary' # Kerberos not working with "http", see https://issues.apache.org/jira/browse/HIVE-6697
       hive_site['hive.server2.thrift.http.port'] ?= '10001'
       hive_site['hive.server2.thrift.port'] ?= '10001'
       hive_site['hive.server2.thrift.http.path'] ?= 'cliservice'
