@@ -28,7 +28,7 @@ memory = (ctx) ->
   # max(MIN_CONTAINER_SIZE, (Total Available RAM) / containers))
   memoryPerContainer = Math.floor Math.max mininumContainerSize, memoryAvailableMb / maxNumberOfcontainers
   # Get default
-  yarnNodeManagerResourceMemoryMb = ['yarn.nodemanager.resource.memory-mb']
+  yarnNodeManagerResourceMemoryMb = yarn_site['yarn.nodemanager.resource.memory-mb']
   YarnNodemanagerVirtualMemoryRatio = yarn_site['yarn.nodemanager.vmem-pmem-ratio']
   yarnSchedulerMinimumAllocationMb = yarn_site['yarn.scheduler.minimum-allocation-mb']
   yarnSchedulerMaximumAllocationMb = yarn_site['yarn.scheduler.maximum-allocation-mb']
