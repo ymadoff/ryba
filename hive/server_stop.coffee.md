@@ -10,7 +10,7 @@ layout: module
     module.exports.push 'masson/bootstrap/'
 
     module.exports.push (ctx) ->
-      require('./core').configure ctx
+      require('../hadoop/core').configure ctx
       require('./server').configure ctx
 
 ## Stop Server2

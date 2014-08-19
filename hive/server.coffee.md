@@ -42,8 +42,6 @@ Example:
 ```
 
     module.exports.push module.exports.configure = (ctx) ->
-      return if ctx.hive_server_configured
-      ctx.hive_server_configured = true
       require('masson/commons/mysql_server').configure ctx
       require('./_').configure ctx
       {hive_site, db_admin} = ctx.config.hdp
@@ -164,7 +162,7 @@ and "/etc/init.d/hive-server2".
       {hive_site, hive_user, hive_group, hive_conf_dir} = ctx.config.hdp
       ctx.hconfigure
         destination: "#{hive_conf_dir}/hive-site.xml"
-        default: "#{__dirname}/files/hive/hive-site.xml"
+        default: "#{__dirname}/../hadoop/files/hive/hive-site.xml"
         local_default: true
         properties: hive_site
         merge: true
@@ -242,11 +240,11 @@ and "/etc/init.d/hive-server2".
 
     module.exports.push name: 'HDP Hive & HCat Server # Logs', callback: (ctx, next) ->
       ctx.write [
-        source: "#{__dirname}/files/hive/hive-exec-log4j.properties.template"
+        source: "#{__dirname}/../hadoop/files/hive/hive-exec-log4j.properties.template"
         local_source: true
         destination: '/etc/hive/conf/hive-exec-log4j.properties'
       ,
-        source: "#{__dirname}/files/hive/hive-log4j.properties.template"
+        source: "#{__dirname}/../hadoop/files/hive/hive-log4j.properties.template"
         local_source: true
         destination: '/etc/hive/conf/hive-log4j.properties'
       ], (err, written) ->

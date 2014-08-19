@@ -46,7 +46,7 @@ See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments
       {hive_site, hive_user, hadoop_group, hive_conf_dir} = ctx.config.hdp
       ctx.hconfigure
         destination: "#{hive_conf_dir}/hive-site.xml"
-        default: "#{__dirname}/files/hive/hive-site.xml"
+        default: "#{__dirname}/../hadoop/files/hive/hive-site.xml"
         local_default: true
         properties: hive_site
         merge: true

@@ -39,11 +39,9 @@ Example:
 
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
-      return if ctx.webhcat_configured
-      ctx.webhcat_configured = true
       require('./server').configure ctx
       require('../hadoop/hdfs').configure ctx
-      require('../hadoop/zookeeper/server').configure ctx
+      require('../zookeeper/server').configure ctx
       {realm} = ctx.config.hdp
       hive_host = ctx.host_with_module 'ryba/hive/server'
       zookeeper_hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
@@ -199,7 +197,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
       {webhcat_conf_dir, webhcat_user, hadoop_group, webhcat_site} = ctx.config.hdp
       ctx.hconfigure
         destination: "#{webhcat_conf_dir}/webhcat-site.xml"
-        default: "#{__dirname}/files/webhcat/webhcat-site.xml"
+        default: "#{__dirname}/../hadoop/files/webhcat/webhcat-site.xml"
         local_default: true
         properties: webhcat_site
         uid: webhcat_user.name
@@ -214,7 +212,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
       {webhcat_conf_dir, webhcat_user, hadoop_group} = ctx.config.hdp
       ctx.log 'Write webhcat-env.sh'
       ctx.upload
-        source: "#{__dirname}/files/webhcat/webhcat-env.sh"
+        source: "#{__dirname}/../hadoop/files/webhcat/webhcat-env.sh"
         destination: "#{webhcat_conf_dir}/webhcat-env.sh"
         uid: webhcat_user.name
         gid: hadoop_group.name
