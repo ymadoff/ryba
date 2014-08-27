@@ -31,13 +31,13 @@ Check if Hive can authenticate and run a basic query to the database.
     module.exports.push name: 'HDP Hive Server # Open Port', callback: (ctx, next) ->
       {host} = ctx.config
       {hive_metastore_port, hive_server2_port} = ctx.config.hdp
-      ctx.execute
-        cmd: """
-        echo > /dev/tcp/#{host}/#{hive_metastore_port}
-        echo > /dev/tcp/#{host}/#{hive_server2_port}
-        """
+      ctx.execute [
+        cmd: "echo > /dev/tcp/#{host}/#{hive_metastore_port}"
         trap_on_error: true
-      , (err) ->
+      ,
+        cmd: "echo > /dev/tcp/#{host}/#{hive_server2_port}"
+        trap_on_error: true
+      ], (err) ->
         return next err, ctx.PASS
 
 # Module Dependencies
