@@ -64,7 +64,7 @@ Example:
       # Allow proxy user inside "webhcat-site.xml"
       require('../hive/webhcat').configure ctx
       # Allow proxy user inside "oozie-site.xml"
-      require('./oozie/server').configure ctx
+      require('../oozie/server').configure ctx
       # Allow proxy user inside "core-site.xml"
       require('../hadoop/core').configure ctx
       {nameservice, active_nn_host, hadoop_conf_dir, webhcat_site, hue_ini, db_admin} = ctx.config.hdp
@@ -412,12 +412,12 @@ changes.
       do_upload = ->
         ctx.upload [
           source: hue_ssl_certificate
-          destination: "#{hue_conf_dir}/hue.cet"
+          destination: "#{hue_conf_dir}/cert.pem"
           uid: hue_user.name
           gid: hue_group.name
         ,
           source: hue_ssl_private_key
-          destination: "#{hue_conf_dir}/hue.key"
+          destination: "#{hue_conf_dir}/key.pem"
           uid: hue_user.name
           gid: hue_group.name
         ], (err, uploaded) ->
@@ -428,8 +428,8 @@ changes.
         ctx.ini
           destination: "#{hue_conf_dir}/hue.ini"
           content: desktop:
-            ssl_certificate: "#{hue_conf_dir}/hue.cet"
-            ssl_private_key: "#{hue_conf_dir}/hue.key"
+            ssl_certificate: "#{hue_conf_dir}/cert.pem"
+            ssl_private_key: "#{hue_conf_dir}/key.pem"
           merge: true
           parse: misc.ini.parse_multi_brackets 
           stringify: misc.ini.stringify_multi_brackets
