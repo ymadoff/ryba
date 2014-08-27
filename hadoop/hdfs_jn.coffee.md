@@ -60,6 +60,9 @@ Example:
       require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
       {hdfs_site} = ctx.config.hdp
+      hdfs_site['dfs.journalnode.rpc-address'] ?= '0.0.0.0:8485'
+      hdfs_site['dfs.journalnode.http-address'] ?= '0.0.0.0:8480'
+      hdfs_site['dfs.journalnode.https-address'] ?= '0.0.0.0:8481'
       # ctx.config.hdp.hdfs_site['dfs.journalnode.edits.dir'] ?= '/hadoop/journalnode'
       throw new Error 'Required property: hdfs_site[dfs.journalnode.edits.dir]' unless hdfs_site['dfs.namenode.name.dir']
 
@@ -77,11 +80,15 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HDP HDFS JN # IPTables', callback: (ctx, next) ->
+      {hdfs_site} = ctx.config.hdp
+      rpc = hdfs_site['dfs.journalnode.rpc-address'].split(':')[1]
+      http = hdfs_site['dfs.journalnode.http-address'].split(':')[1]
+      https = hdfs_site['dfs.journalnode.https-address'].split(':')[1]
       ctx.iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 8485, protocol: 'tcp', state: 'NEW', comment: "HDFS JournalNode" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 8480, protocol: 'tcp', state: 'NEW', comment: "HDFS JournalNode" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 8481, protocol: 'tcp', state: 'NEW', comment: "HDFS JournalNode" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: rpc, protocol: 'tcp', state: 'NEW', comment: "HDFS JournalNode" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: http, protocol: 'tcp', state: 'NEW', comment: "HDFS JournalNode" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: https, protocol: 'tcp', state: 'NEW', comment: "HDFS JournalNode" }
         ]
         if: ctx.config.iptables.action is 'start'
       , (err, configured) ->

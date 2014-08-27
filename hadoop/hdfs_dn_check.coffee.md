@@ -16,6 +16,8 @@ interface.
 
     module.exports.push (ctx) ->
       require('./core').configure ctx
+      require('./core_ssl').configure ctx
+      require('./hdfs').configure ctx
 
 ## Test HDFS
 
@@ -44,11 +46,14 @@ Read [Delegation Tokens in Hadoop Security](http://www.kodkast.com/blogs/hadoop/
 for more information.
 
     module.exports.push name: 'HDP HDFS DN # Test WebHDFS', timeout: -1, callback: (ctx, next) ->
-      {test_user, force_check, active_nn_host} = ctx.config.hdp
+      {hdfs_site, nameservice, test_user, force_check, active_nn_host} = ctx.config.hdp
+      protocol = if hdfs_site['dfs.http.policy'] is 'HTTPS_ONLY' then 'https' else 'http'
+      shortname = ctx.hosts[active_nn_host].config.shortname
+      active_nn_port = ctx.config.hdp.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
       force_check = true
       do_wait = ->
         ctx.waitForExecution
-          cmd: 'hdfs dfsadmin -safemode get | grep OFF'
+          cmd: mkcmd.hdfs ctx, 'hdfs dfsadmin -safemode get | grep OFF'
         , (err) ->
           return next err if err
           do_init()
@@ -68,7 +73,7 @@ for more information.
       do_spnego = ->
         ctx.execute
           cmd: mkcmd.test ctx, """
-          curl -s --negotiate -u : "http://#{active_nn_host}:50070/webhdfs/v1/user/#{test_user.name}?op=LISTSTATUS"
+          curl -s --negotiate --insecure -u : "#{protocol}://#{active_nn_host}:#{active_nn_port}/webhdfs/v1/user/#{test_user.name}?op=LISTSTATUS"
           kdestroy
           """
         , (err, executed, stdout) ->
@@ -81,7 +86,7 @@ for more information.
       do_token = ->
         ctx.execute
           cmd: mkcmd.test ctx, """
-          curl -s --negotiate -u : "http://#{active_nn_host}:50070/webhdfs/v1/?op=GETDELEGATIONTOKEN"
+          curl -s --negotiate --insecure -u : "#{protocol}://#{active_nn_host}:#{active_nn_port}/webhdfs/v1/?op=GETDELEGATIONTOKEN"
           kdestroy
           """
         , (err, executed, stdout) ->
@@ -91,7 +96,7 @@ for more information.
           token = json.Token.urlString
           ctx.execute
             cmd: """
-            curl -s "http://#{active_nn_host}:50070/webhdfs/v1/user/#{test_user.name}?delegation=#{token}&op=LISTSTATUS"
+            curl -s --insecure "#{protocol}://#{active_nn_host}:#{active_nn_port}/webhdfs/v1/user/#{test_user.name}?delegation=#{token}&op=LISTSTATUS"
             """
           , (err, executed, stdout) ->
             return next err if err

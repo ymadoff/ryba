@@ -55,9 +55,10 @@ Example:
 ```
 
     module.exports.push module.exports.configure = (ctx) ->
-      return if ctx.hdfs_configured
-      ctx.hdfs_configured = true
+      # return if ctx.hdfs_configured
+      # ctx.hdfs_configured = true
       require('./core').configure ctx
+      # require('./core_ssl').configure ctx
       {nameservice} = ctx.config.hdp
       namenodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       throw new Error "Missing value for 'hdfs_password'" unless ctx.config.hdp.hdfs_password?
@@ -80,7 +81,6 @@ Example:
       # ctx.config.hdp.hdfs_site['dfs.datanode.data.dir.perm'] ?= '750'
       hdfs_site['dfs.datanode.data.dir.perm'] ?= '700'
       hdfs_site['fs.permissions.umask-mode'] ?= '027' # 0750
-      hdfs_site['dfs.https.enable'] = 'false'
       # Default values are retrieve from [the "SecureMode" HDFS page](http://hadoop.apache.org/docs/r2.4.1/hadoop-project-dist/hadoop-common/SecureMode.html#DataNode)
       hdfs_site['dfs.datanode.address'] ?= '0.0.0.0:1004'
       hdfs_site['dfs.datanode.http.address'] ?= '0.0.0.0:1006' 
@@ -133,11 +133,6 @@ Example:
         hdfs_site['dfs.namenode.http-address'] = null
         # Secondary NameNode hostname
         hdfs_site['dfs.namenode.secondary.http-address'] ?= "hdfs://#{secondary_namenode}:#{snn_port}" if secondary_namenode
-        # NameNode hostname for https access
-        # latest source code
-        # hdfs_site['dfs.namenode.https-address'] ?= "hdfs://0.0.0.0:50470"
-        # official doc
-        # hdfs_site['dfs.https.address'] ?= "hdfs://#{namenodes[0]}:50470"
         hdfs_site['dfs.namenode.checkpoint.dir'] ?= fs_checkpoint_dir.join ','
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/hdfs-site.xml"
@@ -186,24 +181,24 @@ Example:
 Important, this is not implemented yet, we tried to set it up, it didn't work and
 we didn't had time to look further.
 
-    module.exports.push name: 'HDP HDFS # Configure HTTPS', callback: (ctx, next) ->
-      {hadoop_conf_dir, hdfs_site} = ctx.config.hdp
-      namenode = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn', 1
-      ctx.hconfigure
-        destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-        properties:
-          # Decide if HTTPS(SSL) is supported on HDFS
-          # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.5.0/bk_reference/content/ch_wire1.html
-          # For now (oct 7th, 2013), we disable it because nn and dn doesnt start
-          'dfs.https.enable': hdfs_site['dfs.https.enable']
-          'dfs.https.namenode.https-address': "#{namenode}:50470"
-          # The https port where NameNode binds
-          'dfs.https.port': '50470'
-          # The https address where namenode binds. Example: ip-10-111-59-170.ec2.internal:50470
-          'dfs.https.address': "#{namenode}:50470"
-        merge: true
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+    # module.exports.push name: 'HDP HDFS # Configure HTTPS', callback: (ctx, next) ->
+    #   {hadoop_conf_dir, hdfs_site} = ctx.config.hdp
+    #   namenode = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn', 1
+    #   ctx.hconfigure
+    #     destination: "#{hadoop_conf_dir}/hdfs-site.xml"
+    #     properties:
+    #       # Decide if HTTPS(SSL) is supported on HDFS
+    #       # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.5.0/bk_reference/content/ch_wire1.html
+    #       # For now (oct 7th, 2013), we disable it because nn and dn doesnt start
+    #       'dfs.https.enable': hdfs_site['dfs.https.enable']
+    #       'dfs.https.namenode.https-address': "#{namenode}:50470"
+    #       # The https port where NameNode binds
+    #       'dfs.https.port': '50470'
+    #       # The https address where namenode binds. Example: ip-10-111-59-170.ec2.internal:50470
+    #       'dfs.https.address': "#{namenode}:50470"
+    #     merge: true
+    #   , (err, configured) ->
+    #     next err, if configured then ctx.OK else ctx.PASS
 
 ## Policy
 

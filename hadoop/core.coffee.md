@@ -95,12 +95,13 @@ Default configuration:
 }
 ```
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.push retry: 0, callback: module.exports.configure = (ctx) ->
       return if ctx.core_configured
       ctx.core_configured = true
       require('masson/core/proxy').configure ctx
       require('masson/commons/java').configure ctx
-      require('./zookeeper').configure ctx
+      require('../zookeeper/server').configure ctx
+      # require('./core_ssl').configure ctx
       ctx.config.hdp ?= {}
       ctx.config.hdp.format ?= false
       ctx.config.hdp.force_check ?= false
@@ -188,23 +189,24 @@ Default configuration:
       core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.hdp.nameservice}:8020"
       # Set the authentication for the cluster. Valid values are: simple or kerberos
       core_site['hadoop.security.authentication'] ?= 'kerberos'
-      # This is an [OPTIONAL] setting. If not set, defaults to 
-      # authentication.authentication= authentication only; the client and server 
-      # mutually authenticate during connection setup.integrity = authentication 
-      # and integrity; guarantees the integrity of data exchanged between client 
-      # and server aswell as authentication.privacy = authentication, integrity, 
-      # and confidentiality; guarantees that data exchanged between client andserver 
-      # is encrypted and is not readable by a “man in the middle”.
-      core_site['hadoop.rpc.protection'] ?= 'authentication'
       # Enable authorization for different protocols.
       core_site['hadoop.security.authorization'] ?= 'true'
-
+      # A comma-separated list of protection values for secured sasl 
+      # connections. Possible values are authentication, integrity and privacy.
+      # authentication means authentication only and no integrity or privacy; 
+      # integrity implies authentication and integrity are enabled; and privacy 
+      # implies all of authentication, integrity and privacy are enabled.
+      # hadoop.security.saslproperties.resolver.class can be used to override
+      # the hadoop.rpc.protection for a connection at the server side.
+      core_site['hadoop.rpc.protection'] ?= 'authentication'
       # Context
       ctx.hconfigure = (options, callback) ->
-        options.ssh = ctx.ssh if typeof options.ssh is 'undefined'
-        options.log ?= ctx.log
-        options.stdout ?= ctx.stdout
-        options.stderr ?= ctx.stderr
+        options = [options] unless Array.isArray options
+        for opt in options
+          opt.ssh = ctx.ssh if typeof opt.ssh is 'undefined'
+          opt.log ?= ctx.log
+          opt.stdout ?= ctx.stdout
+          opt.stderr ?= ctx.stderr
         hconfigure options, callback
       # Environment
       ctx.config.hdp.hadoop_opts ?= 'java.net.preferIPv4Stack': true
@@ -521,6 +523,7 @@ recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
         , (err, configured) ->
           next err, if configured then ctx.OK else ctx.PASS
 
+    module.exports.push 'ryba/hadoop/core_ssl'
 
     module.exports.push name: 'HDP Core # Check auth_to_local', callback: (ctx, next) ->
       {test_user, realm} = ctx.config.hdp
