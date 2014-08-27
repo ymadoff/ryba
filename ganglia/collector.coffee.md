@@ -108,7 +108,8 @@ The packages "ganglia-gmetad-3.5.0-99" and "ganglia-web-3.5.7-99" are installed.
     module.exports.push name: 'Ganglia Collector # Service', timeout: -1, callback: (ctx, next) ->
       ctx.service [
         name: 'ganglia-gmetad-3.5.0-99'
-        chk_name: 'gmetad'
+        srv_name: 'gmetad'
+        action: 'stop'
         startup: false
       ,
         name: 'ganglia-web-3.5.7-99'
