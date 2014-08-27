@@ -13,7 +13,7 @@ layout: module
 
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
-      require('../hadoop/hdfs').configure ctx
+      # require('../hadoop/hdfs').configure ctx
       require('./_').configure ctx
       {realm, hbase_site} = ctx.config.hdp
       ctx.config.hdp.hbase_admin ?= {}
@@ -156,7 +156,6 @@ is added membership to the group hadoop to gain read access.
 
     module.exports.push name: 'HBase Master # FIX SPNEGO', callback: (ctx, next) ->
       {hbase_site, hbase_user, hbase_group, hadoop_group} = ctx.config.hdp
-      {hdfs_site} = ctx.config.hdp
       ctx.execute
         cmd: """
           if groups #{hbase_user.name} | grep #{hadoop_group.name}; then exit 2; fi
@@ -169,21 +168,6 @@ is added membership to the group hadoop to gain read access.
           cmd: "su -l #{hbase_user.name} -c 'test -r /etc/security/keytabs/spnego.service.keytab'"
         , (err) ->
           next err, if modified then ctx.OK else ctx.PASS
-      # ctx.copy [
-      #   source: '/etc/security/keytabs/spnego.service.keytab'
-      #   destination: hbase_site['hbase.thrift.keytab.file']
-      #   uid: hbase_user.name
-      #   gid: hbase_group.name
-      #   mode: 0o660
-      # ,
-      #   source: '/etc/security/keytabs/spnego.service.keytab'
-      #   destination: hbase_site['hbase.rest.authentication.kerberos.keytab']
-      #   uid: hbase_user.name
-      #   gid: hbase_group.name
-      #   mode: 0o660
-      
-      # ], (err, copied) ->
-      #   return next err, if copied then ctx.OK else ctx.PASS
 
 ## Metrics
 
