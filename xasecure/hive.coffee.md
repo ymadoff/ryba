@@ -13,7 +13,7 @@ layout: module
 
     module.exports.push (ctx) ->
       require('masson/commons/java').configure ctx
-      require('../hadoop/hive_server').configure ctx
+      require('../hive/server').configure ctx
       require('./policymgr').configure ctx
       policymgr = ctx.host_with_module 'ryba/xasecure/policymgr'
       xasecure = ctx.config.xasecure ?= {}
