@@ -37,7 +37,9 @@ define inside the "ryba/hadoop/hdfs" and "masson/core/nc" modules.
       require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
       throw Error "Missing \"hdp.zkfc_password\" property" unless ctx.config.hdp.zkfc_password
-      # require('masson/core/iptables').configure ctx
+      {hdfs_site} = ctx.config.hdp
+      # Activate ACLs
+      hdfs_site['dfs.namenode.acls.enabled'] ?= 'true'
 
 ## IPTables
 
@@ -73,11 +75,8 @@ Install and configure the startup script in "/etc/init.d/hadoop-hdfs-namenode".
       modified = false
       do_install = ->
         ctx.service [
-          name: 'hadoop-hdfs-namenode'
-          startup: true
-        ,
-          name: 'hadoop-hdfs-zkfc'
-          startup: true
+          {name: 'hadoop-hdfs-namenode', startup: true}
+          {name: 'hadoop-hdfs-zkfc', startup: true}
         ], (err, serviced) ->
           return next err if err
           modified = true if serviced
@@ -86,23 +85,14 @@ Install and configure the startup script in "/etc/init.d/hadoop-hdfs-namenode".
         ctx.write [
           destination: '/etc/init.d/hadoop-hdfs-namenode'
           write: [
-            match: /^PIDFILE=".*"$/m
-            replace: "PIDFILE=\"#{hdfs_pid_dir}/$SVC_USER/hadoop-hdfs-namenode.pid\""
-          ,
-            match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m
-            replace: "$1 -u $SVC_USER $2"
-          ]
+            {match: /^PIDFILE=".*"$/m, replace: "PIDFILE=\"#{hdfs_pid_dir}/$SVC_USER/hadoop-hdfs-namenode.pid\""}
+            {match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m, replace: "$1 -u $SVC_USER $2"}]
         ,
           destination: '/etc/init.d/hadoop-hdfs-zkfc'
           write: [
-            match: /^PIDFILE=".*"$/m
-            replace: "PIDFILE=\"#{hdfs_pid_dir}/$SVC_USER/hadoop-hdfs-zkfc.pid\""
-          ,
-            match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m
-            replace: "$1 -u $SVC_USER $2"
-          ]
-        ]
-        , (err, written) ->
+            {match: /^PIDFILE=".*"$/m, replace: "PIDFILE=\"#{hdfs_pid_dir}/$SVC_USER/hadoop-hdfs-zkfc.pid\""}
+            {match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m, replace: "$1 -u $SVC_USER $2"}]
+        ], (err, written) ->
           return next err if err
           modified = true if written
           do_end()
@@ -150,6 +140,19 @@ Create a service principal for this NameNode. The principal is named after
         kadmin_server: admin_server
       , (err, created) ->
         next err, if created then ctx.OK else ctx.PASS
+
+# Configure
+
+    module.exports.push name: 'HDP HDFS NN # Configure', callback: (ctx, next) ->
+      {hadoop_conf_dir, hdfs_user, hadoop_group, hdfs_site} = ctx.config.hdp
+      ctx.hconfigure
+        destination: "#{hadoop_conf_dir}/hdfs-site.xml"
+        properties: hdfs_site
+        uid: hdfs_user
+        gid: hadoop_group
+        merge: true
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
 
 # Configure HA
 
