@@ -5,6 +5,8 @@ layout: module
 
 # XASecure Policy Manager
 
+Upon installation, the Policy Manager is by default available on port "6080".
+
     module.exports = []
     module.exports.push 'masson/commons/mysql_client'
     module.exports.push 'masson/commons/java'

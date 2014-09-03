@@ -103,7 +103,7 @@ layout: module
         "userName":"hdfs@HADOOP.ADALTAS.COM"
         "passwordKeytabfile":"hdfs123"
         "driverClassName":"org.apache.hive.jdbc.HiveDriver"
-        "url":"jdbc:hive2://front1.hadoop:10000/default;principal=hive/front1.hadoop@HADOOP.ADALTAS.COM"
+        "url":"jdbc:hive2://front1.hadoop:10001/default;principal=hive/front1.hadoop@HADOOP.ADALTAS.COM"
         "commonnameforcertificate":""
         "_vPassword":""
         "fsDefaultName":""

@@ -94,7 +94,7 @@ layout: module
       # POST http://front1.hadoop:6080/service/assets/assets
       body = 
         assetType: '1'
-        name: 'vagrant'
+        name: 'vagrant_hdfs'
         description: 'Vagrant VM Cluster'
         activeStatus: '1'
         config: '{"username":"hdfs@HADOOP.ADALTAS.COM","password":"hdfs123","fs.default.name":"hdfs://master1.hadoop:8020","hadoop.security.authorization":"true","hadoop.security.authentication":"kerberos","hadoop.security.auth_to_local":"RULE:[2:$1@$0]([rn]m@.*)s/.*/yarn/       RULE:[2:$1@$0](jhs@.*)s/.*/mapred/       RULE:[2:$1@$0]([nd]n@.*)s/.*/hdfs/       RULE:[2:$1@$0](hm@.*)s/.*/hbase/       RULE:[2:$1@$0](rs@.*)s/.*/hbase/       DEFAULT","dfs.datanode.kerberos.principal":"dn/worker1.hadoop@HADOOP.ADALTAS.COM","dfs.namenode.kerberos.principal":"nn/master1.hadoop@HADOOP.ADALTAS.COM","dfs.secondary.namenode.kerberos.principal":"","commonNameForCertificate":""}'
