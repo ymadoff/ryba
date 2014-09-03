@@ -25,13 +25,13 @@ layout: module
 
 Install the oozie client package. This package doesn't create any user and group.
 
-    module.exports.push name: 'HDP Oozie Client # Install', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
         name: 'oozie-client'
       ], (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Oozie Client # Profile', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Profile', callback: (ctx, next) ->
       {oozie_site} = ctx.config.hdp
       ctx.write
         destination: '/etc/profile.d/oozie.sh'
@@ -43,7 +43,7 @@ Install the oozie client package. This package doesn't create any user and group
       , (err, written) ->
         next null, if written then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Oozie Client # Check Client', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Check Client', timeout: -1, callback: (ctx, next) ->
       {oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
       oozie_server = ctx.host_with_module 'ryba/oozie/server'
       ctx.waitIsOpen oozie_server, oozie_port, (err) ->
@@ -57,7 +57,7 @@ Install the oozie client package. This package doesn't create any user and group
           return next new Error "Oozie not started, got: #{JSON.stringify stdout}" if stdout.trim() isnt 'System mode: NORMAL'
           return next null, ctx.PASS
 
-    module.exports.push name: 'HDP Oozie Client # Check REST', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Check REST', timeout: -1, callback: (ctx, next) ->
       {oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
       oozie_server = ctx.host_with_module 'ryba/oozie/server'
       ctx.waitIsOpen oozie_server, oozie_port, (err) ->
@@ -72,7 +72,7 @@ Install the oozie client package. This package doesn't create any user and group
           return next new Error "Oozie not started" if stdout.trim() isnt '{"systemMode":"NORMAL"}'
           return next null, ctx.PASS
 
-    module.exports.push name: 'HDP Oozie Client # Workflow', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Workflow', timeout: -1, callback: (ctx, next) ->
       {nameservice, oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
       rm = ctx.host_with_module 'ryba/hadoop/yarn_rm'
       oozie_server = ctx.hosts_with_module 'ryba/oozie/server', 1

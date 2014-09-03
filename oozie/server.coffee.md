@@ -114,7 +114,7 @@ cat /etc/group | grep oozie
 oozie:x:493:
 ```
 
-    module.exports.push name: 'HDP Oozie Server # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Users & Groups', callback: (ctx, next) ->
       {oozie_group, oozie_user} = ctx.config.hdp
       ctx.group oozie_group, (err, gmodified) ->
         return next err if err
@@ -130,7 +130,7 @@ oozie:x:493:
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HDP Oozie Server # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # IPTables', callback: (ctx, next) ->
       {oozie_site} = ctx.config.hdp
       port = url.parse(oozie_site['oozie.base.url']).port
       ctx.iptables
@@ -141,7 +141,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Oozie Server # Install', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
         name: 'oozie' # Also install oozie-client and bigtop-tomcat
       ,
@@ -152,7 +152,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ctx.config.hdp.force_war = true if serviced
         next err, if serviced then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Oozie # Environment', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Environment', callback: (ctx, next) ->
       {java_home} = ctx.config.java
       {oozie_user, hadoop_group, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_data} = ctx.config.hdp
       ctx.write
@@ -194,7 +194,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       , (err, rendered) ->
         next err, if rendered then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Oozie Server # Directories', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Directories', callback: (ctx, next) ->
       {oozie_user, oozie_group, oozie_data, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_tmp_dir} = ctx.config.hdp
       oozie_user = oozie_user.name
       oozie_group = oozie_group.name
@@ -231,7 +231,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         , (err, executed) ->
           next err, if copied then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Oozie Server # ExtJS', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # ExtJS', callback: (ctx, next) ->
       ctx.copy
         source: '/usr/share/HDP-oozie/ext-2.2.zip'
         destination: '/usr/lib/oozie/libext/'
@@ -239,7 +239,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ctx.config.hdp.force_war = true if copied
         return next err, if copied then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Oozie Server # LZO', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # LZO', callback: (ctx, next) ->
       ctx.execute
         cmd: 'ls /usr/lib/hadoop/lib/hadoop-lzo-*.jar'
       , (err, _, stdout) ->
@@ -256,7 +256,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         , (err, copied) ->
           next err, if copied then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Oozie Server # Mysql Driver', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Mysql Driver', callback: (ctx, next) ->
       ctx.link
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/lib/oozie/libext/mysql-connector-java.jar'
@@ -264,7 +264,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ctx.config.hdp.force_war = true if linked
         return next err, ctx.PASS if err or not linked
 
-    module.exports.push name: 'HDP Oozie Server # Configuration', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Configuration', callback: (ctx, next) ->
       { hadoop_conf_dir, yarn, oozie_group, oozie_user, 
         oozie_site, oozie_conf_dir, oozie_hadoop_config } = ctx.config.hdp
       modified = false
@@ -302,7 +302,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         next null, if modified then ctx.OK else ctx.PASS
       do_oozie_site()
 
-    module.exports.push name: 'HDP Oozie Server # War', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # War', callback: (ctx, next) ->
       {oozie_user} = ctx.config.hdp
       # The script `ooziedb.sh` must be done as the oozie Unix user, otherwise 
       # Oozie may fail to start or work properly because of incorrect file permissions.
@@ -315,7 +315,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       , (err, executed) ->
         next err, if executed then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Oozie Server # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Kerberos', callback: (ctx, next) ->
       {oozie_user, oozie_group, oozie_site, realm} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
@@ -331,7 +331,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         return next err if err
         next null, if created then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Oozie Server # SPNEGO', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # SPNEGO', callback: (ctx, next) ->
       {oozie_site, oozie_user, oozie_group} = ctx.config.hdp
       ctx.copy
         source: '/etc/security/keytabs/spnego.service.keytab'
@@ -342,7 +342,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       , (err, copied) ->
         return next err, if copied then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Oozie Server # MySQL', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # MySQL', callback: (ctx, next) ->
       {db_admin, oozie_db_host, oozie_site} = ctx.config.hdp
       username = oozie_site['oozie.service.JPAService.jdbc.username']
       password = oozie_site['oozie.service.JPAService.jdbc.password']
@@ -367,7 +367,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       return next new Error 'Database engine not supported' unless engines[engine]
       engines[engine]()
 
-    module.exports.push name: 'HDP Oozie Server # Database', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Database', callback: (ctx, next) ->
       ctx.execute
         cmd: """
         /usr/lib/oozie/bin/ooziedb.sh create -sqlfile oozie.sql -run Validate DB Connection
@@ -376,7 +376,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         err = null if err and /DB schema exists/.test stderr
         next err, if executed then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Oozie Server # Share lib', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Share lib', callback: (ctx, next) ->
       {oozie_user, oozie_group} = ctx.config.hdp
       oozie_user = oozie_user.name
       oozie_group = oozie_group.name

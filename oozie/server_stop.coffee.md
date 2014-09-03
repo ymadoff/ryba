@@ -16,7 +16,7 @@ layout: module
 
 Execute these commands on the Oozie server host machine
 
-    module.exports.push name: 'HDP Oozie Server # Stop', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Stop', timeout: -1, callback: (ctx, next) ->
       # return next() unless ctx.has_module 'ryba/oozie/server'
       lifecycle.oozie_stop ctx, (err, stopped) ->
         next err, if stopped then ctx.OK else ctx.PASS
