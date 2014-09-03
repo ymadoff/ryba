@@ -45,13 +45,13 @@ keytool -list -v -keystore keystore -alias hadoop
     module.exports.push module.exports.configure = (ctx) ->
       require('./core').configure ctx
       require('./hdfs').configure ctx
-      {core_site, hdfs_site, hadoop_conf_dir} = ctx.config.hdp
-      ctx.config.hdp.ssl ?= {}
-      ssl_client = ctx.config.hdp.ssl_client ?= {}
-      ssl_server = ctx.config.hdp.ssl_server ?= {}
-      throw new Error 'Required property "hdp.ssl.cacert"' unless ctx.config.hdp.ssl.cacert
-      throw new Error 'Required property "hdp.ssl.cert"' unless ctx.config.hdp.ssl.cert
-      throw new Error 'Required property "hdp.ssl.key"' unless ctx.config.hdp.ssl.key
+      {core_site, hdfs_site, hadoop_conf_dir} = ctx.config.ryba
+      ctx.config.ryba.ssl ?= {}
+      ssl_client = ctx.config.ryba.ssl_client ?= {}
+      ssl_server = ctx.config.ryba.ssl_server ?= {}
+      throw new Error 'Required property "hdp.ssl.cacert"' unless ctx.config.ryba.ssl.cacert
+      throw new Error 'Required property "hdp.ssl.cert"' unless ctx.config.ryba.ssl.cert
+      throw new Error 'Required property "hdp.ssl.key"' unless ctx.config.ryba.ssl.key
       # SSL for HTTPS connection and RPC Encryption
       core_site['hadoop.ssl.require.client.cert'] ?= 'false'
       core_site['hadoop.ssl.hostname.verifier'] ?= 'DEFAULT'
@@ -73,7 +73,7 @@ keytool -list -v -keystore keystore -alias hadoop
       ssl_server['ssl.server.keystore.keypassword'] ?= 'ryba123'
 
     module.exports.push name: 'HDP Core SSL # Configure', retry: 0, callback: (ctx, next) ->
-      {core_site, hdfs_site, ssl_server, ssl_client, hadoop_conf_dir} = ctx.config.hdp
+      {core_site, hdfs_site, ssl_server, ssl_client, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure [
         destination: "#{hadoop_conf_dir}/core-site.xml"
         properties: core_site
@@ -94,7 +94,7 @@ keytool -list -v -keystore keystore -alias hadoop
         return next err, if configured then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Core SSL # JKS stores', retry: 0, callback: (ctx, next) ->
-      {ssl, ssl_server, ssl_client, hadoop_conf_dir} = ctx.config.hdp
+      {ssl, ssl_server, ssl_client, hadoop_conf_dir} = ctx.config.ryba
       tmp_location = "/tmp/ryba_hdp_ssl_#{Date.now()}"
       modified = false
       do_upload = ->

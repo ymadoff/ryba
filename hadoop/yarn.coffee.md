@@ -18,40 +18,40 @@ layout: module
       ctx.yarn_configured = true
       require('masson/commons/java').configure ctx
       require('./hdfs').configure ctx
-      {static_host, realm} = ctx.config.hdp
+      {static_host, realm} = ctx.config.ryba
       # Grab the host(s) for each roles
       resourcemanager = ctx.host_with_module 'ryba/hadoop/yarn_rm'
       ctx.log "Resource manager: #{resourcemanager}"
       jobhistoryserver = ctx.host_with_module 'ryba/hadoop/mapred_jhs'
       ctx.log "Job History Server: #{jobhistoryserver}"
-      ctx.config.hdp.yarn_log_dir ?= '/var/log/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#20
-      ctx.config.hdp.yarn_pid_dir ?= '/var/run/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#21
+      ctx.config.ryba.yarn_log_dir ?= '/var/log/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#20
+      ctx.config.ryba.yarn_pid_dir ?= '/var/run/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#21
       # Configure yarn
       # Comma separated list of paths. Use the list of directories from $YARN_LOCAL_DIR, eg: /grid/hadoop/hdfs/yarn/local,/grid1/hadoop/hdfs/yarn/local.
-      throw new Error 'Required property: hdp.yarn[yarn.nodemanager.local-dirs]' unless ctx.config.hdp.yarn['yarn.nodemanager.local-dirs']
+      throw new Error 'Required property: hdp.yarn_site[yarn.nodemanager.local-dirs]' unless ctx.config.ryba.yarn_site['yarn.nodemanager.local-dirs']
       # Use the list of directories from $YARN_LOCAL_LOG_DIR, eg: /grid/hadoop/yarn/logs /grid1/hadoop/yarn/logs /grid2/hadoop/yarn/logs
-      throw new Error 'Required property: hdp.yarn[yarn.nodemanager.log-dirs]' unless ctx.config.hdp.yarn['yarn.nodemanager.log-dirs']
-      ctx.config.hdp.yarn['yarn.resourcemanager.resource-tracker.address'] ?= "#{resourcemanager}:8025" # Enter your ResourceManager hostname.
-      ctx.config.hdp.yarn['yarn.resourcemanager.scheduler.address'] ?= "#{resourcemanager}:8030" # Enter your ResourceManager hostname.
-      ctx.config.hdp.yarn['yarn.resourcemanager.address'] ?= "#{resourcemanager}:8050" # Enter your ResourceManager hostname.
-      ctx.config.hdp.yarn['yarn.resourcemanager.admin.address'] ?= "#{resourcemanager}:8141" # Enter your ResourceManager hostname.
-      ctx.config.hdp.yarn['yarn.nodemanager.remote-app-log-dir'] ?= "/app-logs"
-      ctx.config.hdp.yarn['yarn.log.server.url'] ?= "http://#{jobhistoryserver}:19888/jobhistory/logs/" # URL for job history server
-      ctx.config.hdp.yarn['yarn.resourcemanager.webapp.address'] ?= "#{resourcemanager}:8088" # URL for job history server
-      ctx.config.hdp.yarn['yarn.nodemanager.container-executor.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor'
-      ctx.config.hdp.yarn['yarn.nodemanager.linux-container-executor.group'] ?= 'yarn'
+      throw new Error 'Required property: hdp.yarn_site[yarn.nodemanager.log-dirs]' unless ctx.config.ryba.yarn_site['yarn.nodemanager.log-dirs']
+      ctx.config.ryba.yarn_site['yarn.resourcemanager.resource-tracker.address'] ?= "#{resourcemanager}:8025" # Enter your ResourceManager hostname.
+      ctx.config.ryba.yarn_site['yarn.resourcemanager.scheduler.address'] ?= "#{resourcemanager}:8030" # Enter your ResourceManager hostname.
+      ctx.config.ryba.yarn_site['yarn.resourcemanager.address'] ?= "#{resourcemanager}:8050" # Enter your ResourceManager hostname.
+      ctx.config.ryba.yarn_site['yarn.resourcemanager.admin.address'] ?= "#{resourcemanager}:8141" # Enter your ResourceManager hostname.
+      ctx.config.ryba.yarn_site['yarn.nodemanager.remote-app-log-dir'] ?= "/app-logs"
+      ctx.config.ryba.yarn_site['yarn.log.server.url'] ?= "http://#{jobhistoryserver}:19888/jobhistory/logs/" # URL for job history server
+      ctx.config.ryba.yarn_site['yarn.resourcemanager.webapp.address'] ?= "#{resourcemanager}:8088" # URL for job history server
+      ctx.config.ryba.yarn_site['yarn.nodemanager.container-executor.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor'
+      ctx.config.ryba.yarn_site['yarn.nodemanager.linux-container-executor.group'] ?= 'yarn'
       # Required by yarn client
-      ctx.config.hdp.yarn['yarn.resourcemanager.principal'] ?= "rm/#{static_host}@#{realm}"
+      ctx.config.ryba.yarn_site['yarn.resourcemanager.principal'] ?= "rm/#{static_host}@#{realm}"
       # Configurations for History Server (Needs to be moved elsewhere):
-      ctx.config.hdp.yarn['yarn.log-aggregation.retain-seconds'] ?= '-1' #  How long to keep aggregation logs before deleting them. -1 disables. Be careful, set this too small and you will spam the name node.
-      ctx.config.hdp.yarn['yarn.log-aggregation.retain-check-interval-seconds'] ?= '-1' # Time between checks for aggregated log retention. If set to 0 or a negative value then the value is computed as one-tenth of the aggregated log retention time. Be careful, set this too small and you will spam the name node.
+      ctx.config.ryba.yarn_site['yarn.log-aggregation.retain-seconds'] ?= '-1' #  How long to keep aggregation logs before deleting them. -1 disables. Be careful, set this too small and you will spam the name node.
+      ctx.config.ryba.yarn_site['yarn.log-aggregation.retain-check-interval-seconds'] ?= '-1' # Time between checks for aggregated log retention. If set to 0 or a negative value then the value is computed as one-tenth of the aggregated log retention time. Be careful, set this too small and you will spam the name node.
       # [Container Executor](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuration_in_Secure_Mode)
-      ctx.config.hdp.container_executor ?= {}
-      ctx.config.hdp.container_executor['yarn.nodemanager.local-dirs'] ?= ctx.config.hdp.yarn['yarn.nodemanager.local-dirs']
-      ctx.config.hdp.container_executor['yarn.nodemanager.linux-container-executor.group'] ?= ctx.config.hdp.yarn['yarn.nodemanager.linux-container-executor.group']
-      ctx.config.hdp.container_executor['yarn.nodemanager.log-dirs'] = ctx.config.hdp.yarn['yarn.nodemanager.log-dirs']
-      ctx.config.hdp.container_executor['banned.users'] ?= 'hfds,yarn,mapred,bin'
-      ctx.config.hdp.container_executor['min.user.id'] ?= '0'
+      ctx.config.ryba.container_executor ?= {}
+      ctx.config.ryba.container_executor['yarn.nodemanager.local-dirs'] ?= ctx.config.ryba.yarn_site['yarn.nodemanager.local-dirs']
+      ctx.config.ryba.container_executor['yarn.nodemanager.linux-container-executor.group'] ?= ctx.config.ryba.yarn_site['yarn.nodemanager.linux-container-executor.group']
+      ctx.config.ryba.container_executor['yarn.nodemanager.log-dirs'] = ctx.config.ryba.yarn_site['yarn.nodemanager.log-dirs']
+      ctx.config.ryba.container_executor['banned.users'] ?= 'hfds,yarn,mapred,bin'
+      ctx.config.ryba.container_executor['min.user.id'] ?= '0'
       # Cloudera recommand setting [vmem-check to false on Centos/RHEL 6 due to its aggressive allocation of virtual memory](http://blog.cloudera.com/blog/2014/04/apache-hadoop-yarn-avoiding-6-time-consuming-gotchas/)
       # yarn.nodemanager.vmem-check-enabled (found in hdfs-default.xml)
       # yarn.nodemanager.vmem-check.enabled
@@ -61,10 +61,10 @@ http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually
 http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
 
     module.exports.push name: 'HDP YARN # Users & Groups', callback: (ctx, next) ->
-      return next() unless ctx.config.hdp.resourcemanager or ctx.config.hdp.nodemanager
-      {hadoop_group} = ctx.config.hdp
+      return next() unless ctx.config.ryba.resourcemanager or ctx.config.ryba.nodemanager
+      {yarn_user, hadoop_group} = ctx.config.ryba
       ctx.execute
-        cmd: "useradd yarn -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop YARN service\""
+        cmd: "useradd #{yarn_user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop YARN service\""
         code: 0
         code_skipped: 9
       , (err, executed) ->
@@ -81,7 +81,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         next err, if serviced then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP YARN # Directories', timeout: -1, callback: (ctx, next) ->
-      {yarn_user, hadoop_group, yarn_log_dir, yarn_pid_dir} = ctx.config.hdp
+      {yarn_user, hadoop_group, yarn_log_dir, yarn_pid_dir} = ctx.config.ryba
       ctx.mkdir
         destination: "#{yarn_log_dir}/#{yarn_user.name}"
         uid: yarn_user.name
@@ -97,12 +97,12 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
 
     module.exports.push name: 'HDP YARN # Yarn OPTS', callback: (ctx, next) ->
       {java_home} = ctx.config.java
-      {yarn_user, hadoop_group, hadoop_conf_dir} = ctx.config.hdp
+      {yarn_user, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
       yarn_opts = ""
-      for k, v of ctx.config.hdp.yarn_opts
+      for k, v of ctx.config.ryba.yarn_opts
         yarn_opts += "-D#{k}=#{v} "
       yarn_opts = "YARN_OPTS=\"$YARN_OPTS #{yarn_opts}\" # ryba"
-      ctx.config.hdp.yarn_opts = yarn_opts
+      ctx.config.ryba.yarn_opts = yarn_opts
       ctx.render
         source: "#{__dirname}/files/core_hadoop/yarn-env.sh"
         destination: "#{hadoop_conf_dir}/yarn-env.sh"
@@ -123,7 +123,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
 
     module.exports.push name: 'HDP YARN # Container Executor', callback: (ctx, next) ->
       modified = false
-      {container_executor, hadoop_conf_dir} = ctx.config.hdp
+      {container_executor, hadoop_conf_dir} = ctx.config.ryba
       ce_group = container_executor['yarn.nodemanager.linux-container-executor.group']
       container_executor = misc.merge {}, container_executor
       container_executor['yarn.nodemanager.local-dirs'] = container_executor['yarn.nodemanager.local-dirs'].join ','
@@ -161,14 +161,14 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       do_stat()
 
     module.exports.push name: 'HDP YARN # Configuration', callback: (ctx, next) ->
-      { yarn, hadoop_conf_dir, capacity_scheduler } = ctx.config.hdp
+      { yarn_site, hadoop_conf_dir, capacity_scheduler } = ctx.config.ryba
       modified = false
       do_yarn = ->
         ctx.log 'Configure yarn-site.xml'
         config = {}
-        for k,v of yarn then config[k] = v 
-        config['yarn.nodemanager.local-dirs'] = config['yarn.nodemanager.local-dirs'].join ',' if Array.isArray yarn['yarn.nodemanager.local-dirs']
-        config['yarn.nodemanager.log-dirs'] = config['yarn.nodemanager.log-dirs'].join ',' if Array.isArray yarn['yarn.nodemanager.log-dirs']
+        for k,v of yarn_site then config[k] = v 
+        config['yarn.nodemanager.local-dirs'] = config['yarn.nodemanager.local-dirs'].join ',' if Array.isArray yarn_site['yarn.nodemanager.local-dirs']
+        config['yarn.nodemanager.log-dirs'] = config['yarn.nodemanager.log-dirs'].join ',' if Array.isArray yarn_site['yarn.nodemanager.log-dirs']
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/yarn-site.xml"
           default: "#{__dirname}/files/core_hadoop/yarn-site.xml"
@@ -219,7 +219,7 @@ TODO, got to [HortonWorks article and make properties dynamic or improve example
 Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Containers to be allocated to each node
 
     module.exports.push name: 'HDP YARN # Memory Allocation', callback: module.exports.tuning = (ctx, next) ->
-      {hadoop_conf_dir} = ctx.config.hdp
+      {hadoop_conf_dir} = ctx.config.ryba
       {info, yarn_site} = memory ctx
       ctx.log "Server memory: #{info.memoryTotalMb} mb"
       ctx.log "Available memory: #{info.memoryAvailableMb} mb"
@@ -234,19 +234,9 @@ Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Co
       , (err, configured) ->
         return next err, if configured then ctx.OK else ctx.PASS
 
-    # Duplicate of ryba/hadoop/core
-    # module.exports.push name: 'HDP YARN # Keytabs Directory', timeout: -1, callback: (ctx, next) ->
-    #   ctx.mkdir
-    #     destination: '/etc/security/keytabs'
-    #     uid: 'root'
-    #     gid: 'hadoop'
-    #     mode: 0o750
-    #   , (err, created) ->
-    #     next null, if created then ctx.OK else ctx.PASS
-
     module.exports.push name: 'HDP YARN # Configure Kerberos', callback: (ctx, next) ->
-      {hadoop_conf_dir, static_host, realm} = ctx.config.hdp
-      yarn = {}
+      {hadoop_conf_dir, static_host, realm} = ctx.config.ryba
+      yarn_site = {}
       # Todo: might need to configure WebAppProxy but I seems like it is run as part of rm if not configured separately
       # yarn.web-proxy.address    WebAppProxy                                   host:port for proxy to AM web apps. host:port if this is the same as yarn.resourcemanager.webapp.address or it is not defined then the ResourceManager will run the proxy otherwise a standalone proxy server will need to be launched.
       # yarn.web-proxy.keytab     /etc/security/keytabs/web-app.service.keytab  Kerberos keytab file for the WebAppProxy.
@@ -254,13 +244,13 @@ Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Co
       # Todo: need to deploy "container-executor.cfg"
       # see http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
       # Configurations the ResourceManager
-      yarn['yarn.resourcemanager.keytab'] ?= '/etc/security/keytabs/rm.service.keytab'
+      yarn_site['yarn.resourcemanager.keytab'] ?= '/etc/security/keytabs/rm.service.keytab'
       # Configurations for NodeManager:
-      yarn['yarn.nodemanager.keytab'] ?= '/etc/security/keytabs/nm.service.keytab'
-      yarn['yarn.nodemanager.principal'] ?= "nm/#{static_host}@#{realm}"
+      yarn_site['yarn.nodemanager.keytab'] ?= '/etc/security/keytabs/nm.service.keytab'
+      yarn_site['yarn.nodemanager.principal'] ?= "nm/#{static_host}@#{realm}"
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
-        properties: yarn
+        properties: yarn_site
         merge: true
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
@@ -278,10 +268,10 @@ drwxrwxrwt   - yarn   hdfs            0 2014-05-26 11:01 /app-logs
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
     module.exports.push name: 'HDP YARN # HDFS layout', callback: (ctx, next) ->
-      {yarn, yarn_user, hadoop_group} = ctx.config.hdp
+      {yarn_site, yarn_user, hadoop_group} = ctx.config.ryba
       ok = false
       do_remote_app_log_dir = ->
-        remote_app_log_dir = yarn['yarn.nodemanager.remote-app-log-dir']
+        remote_app_log_dir = yarn_site['yarn.nodemanager.remote-app-log-dir']
         ctx.log "Create #{remote_app_log_dir}"
         ctx.execute
           cmd: mkcmd.hdfs ctx, """

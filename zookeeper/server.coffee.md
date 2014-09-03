@@ -38,15 +38,15 @@ Example :
       require('./client').configure ctx
       {java_home} = ctx.config.java
       # Environnment
-      {zookeeper_conf_dir, zookeeper_log_dir, zookeeper_pid_dir} = ctx.config.hdp
-      ctx.config.hdp.zookeeper_env ?= {}
-      ctx.config.hdp.zookeeper_env['JAVA_HOME'] ?= "#{java_home}"
-      ctx.config.hdp.zookeeper_env['ZOO_LOG_DIR'] ?= "#{zookeeper_log_dir}"
-      ctx.config.hdp.zookeeper_env['ZOOPIDFILE'] ?= "#{zookeeper_pid_dir}/zookeeper_server.pid"
-      ctx.config.hdp.zookeeper_env['SERVER_JVMFLAGS'] ?= "-Djava.security.auth.login.config=#{zookeeper_conf_dir}/zookeeper-server.jaas"
-      ctx.config.hdp.zookeeper_env['CLIENT_JVMFLAGS'] ?= "-Djava.security.auth.login.config=#{zookeeper_conf_dir}/zookeeper-client.jaas"
+      {zookeeper_conf_dir, zookeeper_log_dir, zookeeper_pid_dir} = ctx.config.ryba
+      ctx.config.ryba.zookeeper_env ?= {}
+      ctx.config.ryba.zookeeper_env['JAVA_HOME'] ?= "#{java_home}"
+      ctx.config.ryba.zookeeper_env['ZOO_LOG_DIR'] ?= "#{zookeeper_log_dir}"
+      ctx.config.ryba.zookeeper_env['ZOOPIDFILE'] ?= "#{zookeeper_pid_dir}/zookeeper_server.pid"
+      ctx.config.ryba.zookeeper_env['SERVER_JVMFLAGS'] ?= "-Djava.security.auth.login.config=#{zookeeper_conf_dir}/zookeeper-server.jaas"
+      ctx.config.ryba.zookeeper_env['CLIENT_JVMFLAGS'] ?= "-Djava.security.auth.login.config=#{zookeeper_conf_dir}/zookeeper-client.jaas"
       # Internal
-      ctx.config.hdp.zookeeper_myid ?= null
+      ctx.config.ryba.zookeeper_myid ?= null
 
 ## Users & Groups
 
@@ -60,7 +60,7 @@ hadoop:x:498:hdfs
 ```
 
     module.exports.push name: 'ZooKeeper Server # Users & Groups', callback: (ctx, next) ->
-      {zookeeper_group, hadoop_group, zookeeper_user} = ctx.config.hdp
+      {zookeeper_group, hadoop_group, zookeeper_user} = ctx.config.ryba
       ctx.group [zookeeper_group, hadoop_group], (err, gmodified) ->
         return next err if err
         ctx.user zookeeper_user, (err, umodified) ->
@@ -78,7 +78,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'ZooKeeper Server # IPTables', callback: (ctx, next) ->
-      {zookeeper_port} = ctx.config.hdp
+      {zookeeper_port} = ctx.config.ryba
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: zookeeper_port, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Client" }
@@ -104,7 +104,7 @@ Install and configure the startup script in
 "/etc/init.d/zookeeper-server".
 
     module.exports.push name: 'ZooKeeper Server # Startup', callback: (ctx, next) ->
-      {hdfs_pid_dir} = ctx.config.hdp
+      {hdfs_pid_dir} = ctx.config.ryba
       modified = false
       do_install = ->
         ctx.service
@@ -128,7 +128,7 @@ Install and configure the startup script in
       do_install()
 
     module.exports.push name: 'ZooKeeper Server # Kerberos', timeout: -1, callback: (ctx, next) ->
-      {zookeeper_user, hadoop_group, realm, zookeeper_conf_dir} = ctx.config.hdp
+      {zookeeper_user, hadoop_group, realm, zookeeper_conf_dir} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
       do_principal = ->
@@ -183,7 +183,7 @@ Install and configure the startup script in
     module.exports.push name: 'ZooKeeper Server # Layout', callback: (ctx, next) ->
       { hadoop_group, zookeeper_user, 
         zookeeper_data_dir, zookeeper_pid_dir, zookeeper_log_dir
-      } = ctx.config.hdp
+      } = ctx.config.ryba
       ctx.mkdir [
         destination: zookeeper_data_dir
         uid: zookeeper_user.name
@@ -203,7 +203,7 @@ Install and configure the startup script in
         next err, if modified then ctx.OK else ctx.PASS
 
     module.exports.push name: 'ZooKeeper Server # Environment', callback: (ctx, next) ->
-      {zookeeper_conf_dir, zookeeper_env} = ctx.config.hdp
+      {zookeeper_conf_dir, zookeeper_env} = ctx.config.ryba
       write = for k, v of zookeeper_env
         match: RegExp "^export\\s+(#{quote k})=(.*)$", 'mg'
         replace: "export #{k}=#{v}"
@@ -221,7 +221,7 @@ Install and configure the startup script in
       { hadoop_group, zookeeper_user,
         zookeeper_conf_dir, zookeeper_data_dir,
         zookeeper_myid, zookeeper_port
-      } = ctx.config.hdp
+      } = ctx.config.ryba
       do_zoo_cfg = ->
         mapping = (for host, i in hosts
           "server.#{i+1}=#{host}:2888:3888").join '\n'

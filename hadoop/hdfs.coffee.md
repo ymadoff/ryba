@@ -59,17 +59,17 @@ Example:
       # ctx.hdfs_configured = true
       require('./core').configure ctx
       # require('./core_ssl').configure ctx
-      {nameservice} = ctx.config.hdp
+      {nameservice} = ctx.config.ryba
       namenodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
-      throw new Error "Missing value for 'hdfs_password'" unless ctx.config.hdp.hdfs_password?
-      throw new Error "Missing value for 'test_password'" unless ctx.config.hdp.test_password?
+      throw new Error "Missing value for 'hdfs_password'" unless ctx.config.ryba.hdfs_password?
+      throw new Error "Missing value for 'test_password'" unless ctx.config.ryba.test_password?
       # Layout
-      ctx.config.hdp.fs_checkpoint_dir ?= ['/hadoop/hdfs/snn'] # Default ${fs.checkpoint.dir}
+      ctx.config.ryba.fs_checkpoint_dir ?= ['/hadoop/hdfs/snn'] # Default ${fs.checkpoint.dir}
       # Options and configuration
-      ctx.config.hdp.hdfs_namenode_timeout ?= 20000 # 20s
-      # ctx.config.hdp.snn_port ?= '50090'
+      ctx.config.ryba.hdfs_namenode_timeout ?= 20000 # 20s
+      # ctx.config.ryba.snn_port ?= '50090'
       # Options for "hdfs-site.xml"
-      hdfs_site = ctx.config.hdp.hdfs_site ?= {}
+      hdfs_site = ctx.config.ryba.hdfs_site ?= {}
       # Comma separated list of paths. Use the list of directories from $DFS_NAME_DIR.  
       # For example, /grid/hadoop/hdfs/nn,/grid1/hadoop/hdfs/nn.
       throw new Error 'Required property: hdfs_site[dfs.namenode.name.dir]' unless hdfs_site['dfs.namenode.name.dir']
@@ -78,7 +78,7 @@ Example:
       # For example, /grid/hadoop/hdfs/dn,/grid1/hadoop/hdfs/dn.
       throw new Error 'Required property: hdfs_site[dfs.datanode.data.dir]' unless hdfs_site['dfs.datanode.data.dir']
       hdfs_site['dfs.datanode.data.dir'] = hdfs_site['dfs.datanode.data.dir'].join ',' if Array.isArray hdfs_site['dfs.datanode.data.dir']
-      # ctx.config.hdp.hdfs_site['dfs.datanode.data.dir.perm'] ?= '750'
+      # ctx.config.ryba.hdfs_site['dfs.datanode.data.dir.perm'] ?= '750'
       hdfs_site['dfs.datanode.data.dir.perm'] ?= '700'
       hdfs_site['fs.permissions.umask-mode'] ?= '027' # 0750
       # Default values are retrieve from [the "SecureMode" HDFS page](http://hadoop.apache.org/docs/r2.4.1/hadoop-project-dist/hadoop-common/SecureMode.html#DataNode)
@@ -86,19 +86,19 @@ Example:
       hdfs_site['dfs.datanode.http.address'] ?= '0.0.0.0:1006' 
       hdfs_site['dfs.datanode.https.address'] ?= '0.0.0.0:50470'
       # Options for "hadoop-policy.xml"
-      ctx.config.hdp.hadoop_policy ?= {}
+      ctx.config.ryba.hadoop_policy ?= {}
       # HDFS HA configuration
-      ctx.config.hdp.shortname ?= ctx.config.shortname
-      ctx.config.hdp.ha_client_config = {}
-      ctx.config.hdp.ha_client_config['dfs.nameservices'] = nameservice
-      ctx.config.hdp.ha_client_config["dfs.ha.namenodes.#{nameservice}"] = (for nn in namenodes then nn.split('.')[0]).join ','
+      ctx.config.ryba.shortname ?= ctx.config.shortname
+      ctx.config.ryba.ha_client_config = {}
+      ctx.config.ryba.ha_client_config['dfs.nameservices'] = nameservice
+      ctx.config.ryba.ha_client_config["dfs.ha.namenodes.#{nameservice}"] = (for nn in namenodes then nn.split('.')[0]).join ','
       for nn in namenodes
         hconfig = ctx.hosts[nn].config
-        shortname = hconfig.hdp.shortname ?= hconfig.shortname or nn.split('.')[0]
-        ctx.config.hdp.ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{shortname}"] = "#{nn}:8020"
-        ctx.config.hdp.ha_client_config["dfs.namenode.http-address.#{nameservice}.#{shortname}"] = "#{nn}:50070"
-        ctx.config.hdp.ha_client_config["dfs.namenode.https-address.#{nameservice}.#{shortname}"] = "#{nn}:50470"
-      ctx.config.hdp.ha_client_config["dfs.client.failover.proxy.provider.#{nameservice}"] = 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
+        shortname = hconfig.ryba.shortname ?= hconfig.shortname or nn.split('.')[0]
+        ctx.config.ryba.ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{shortname}"] = "#{nn}:8020"
+        ctx.config.ryba.ha_client_config["dfs.namenode.http-address.#{nameservice}.#{shortname}"] = "#{nn}:50070"
+        ctx.config.ryba.ha_client_config["dfs.namenode.https-address.#{nameservice}.#{shortname}"] = "#{nn}:50470"
+      ctx.config.ryba.ha_client_config["dfs.client.failover.proxy.provider.#{nameservice}"] = 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
 
     module.exports.push name: 'HDP HDFS # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
@@ -117,9 +117,9 @@ Example:
         next err, if serviced then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP HDFS # Hadoop Configuration', timeout: -1, callback: (ctx, next) ->
-      { core, hdfs_site, yarn,
+      { core, hdfs_site,
         hadoop_conf_dir, fs_checkpoint_dir, # fs_checkpoint_edit_dir,
-        snn_port } = ctx.config.hdp #mapreduce_local_dir, 
+        snn_port } = ctx.config.ryba #mapreduce_local_dir, 
       datanodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_dn'
       secondary_namenode = ctx.hosts_with_module 'ryba/hadoop/hdfs_snn', 1
       modified = false
@@ -182,7 +182,7 @@ Important, this is not implemented yet, we tried to set it up, it didn't work an
 we didn't had time to look further.
 
     # module.exports.push name: 'HDP HDFS # Configure HTTPS', callback: (ctx, next) ->
-    #   {hadoop_conf_dir, hdfs_site} = ctx.config.hdp
+    #   {hadoop_conf_dir, hdfs_site} = ctx.config.ryba
     #   namenode = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn', 1
     #   ctx.hconfigure
     #     destination: "#{hadoop_conf_dir}/hdfs-site.xml"
@@ -207,7 +207,7 @@ we need to set/configure the hadoop.security.authorization to true in
 ${HADOOP_CONF_DIR}/core-site.xml
 
     module.exports.push name: 'HDP HDFS # Policy', callback: (ctx, next) ->
-      {core_site, hadoop_conf_dir, hadoop_policy} = ctx.config.hdp
+      {core_site, hadoop_conf_dir, hadoop_policy} = ctx.config.ryba
       return next() unless core_site['hadoop.security.authorization'] is 'true'
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hadoop-policy.xml"
@@ -226,7 +226,7 @@ filesystem. Note, we do not create a principal with a keytab to allow HDFS login
 from multiple sessions with braking an active session.
 
     module.exports.push name: 'HDP HDFS # Kerberos User', callback: (ctx, next) ->
-      {hdfs_user, hdfs_password, realm} = ctx.config.hdp
+      {hdfs_user, hdfs_password, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
         principal: "#{hdfs_user.name}@#{realm}"
@@ -245,7 +245,7 @@ and permissions set to "0660". We had to give read/write permission to the group
 same keytab file is for now shared between hdfs and yarn services.
 
     module.exports.push name: 'HDP HDFS # SPNEGO', callback: module.exports.spnego = (ctx, next) ->
-      {hdfs_user, realm} = ctx.config.hdp
+      {hdfs_user, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
         principal: "HTTP/#{ctx.config.host}@#{realm}"
@@ -272,7 +272,7 @@ Update the HDFS configuration stored inside the "/etc/hadoop/hdfs-site.xml" file
 with Kerberos specific properties.
 
     module.exports.push name: 'HDP HDFS # Kerberos Configure', callback: (ctx, next) ->
-      {hadoop_conf_dir, static_host, realm} = ctx.config.hdp
+      {hadoop_conf_dir, static_host, realm} = ctx.config.ryba
       secondary_namenode = ctx.hosts_with_module 'ryba/hadoop/hdfs_snn', 1
       hdfs_site = {}
       # If "true", access tokens are used as capabilities

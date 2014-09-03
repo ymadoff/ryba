@@ -12,7 +12,7 @@ lifecyle = module.exports =
     , (err, stopped) ->
       callback err, stopped
   jn_start: (ctx, callback) ->
-    {hdfs_user, hadoop_conf_dir} = ctx.config.hdp
+    {hdfs_user, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.jn_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "JournalNode start"
@@ -26,7 +26,7 @@ lifecyle = module.exports =
         ctx.waitIsOpen ctx.config.host, 8485, timeout: 20000, (err) ->
           callback err, started
   jn_stop: (ctx, callback) ->
-    {hdfs_user, hadoop_conf_dir} = ctx.config.hdp
+    {hdfs_user, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.jn_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "JournalNode stop"
@@ -44,7 +44,7 @@ lifecyle = module.exports =
     , (err, stopped) ->
       callback err, stopped
   nn_start: (ctx, callback) ->
-    {hdfs_user, hadoop_conf_dir, hdfs_site, nameservice, ha_client_config, hdfs_namenode_timeout} = ctx.config.hdp
+    {hdfs_user, hadoop_conf_dir, hdfs_site, nameservice, ha_client_config, hdfs_namenode_timeout} = ctx.config.ryba
     state = (started) ->
       callback null, started
     lifecyle.nn_status ctx, (err, running) ->
@@ -68,7 +68,7 @@ lifecyle = module.exports =
           return callback err if err
           state true
   nn_stop: (ctx, callback) ->
-    {hdfs_user, hadoop_conf_dir} = ctx.config.hdp
+    {hdfs_user, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.nn_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "NameNode stop"
@@ -91,7 +91,7 @@ lifecyle = module.exports =
     , (err, stopped) ->
       callback err, stopped
   zkfc_start: (ctx, callback) ->
-    {hdfs_user} = ctx.config.hdp
+    {hdfs_user} = ctx.config.ryba
     lifecyle.zkfc_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "ZKFC start"
@@ -104,7 +104,7 @@ lifecyle = module.exports =
         return callback err if err
         callback err, started
   zkfc_stop: (ctx, callback) ->
-    {hdfs_user} = ctx.config.hdp
+    {hdfs_user} = ctx.config.ryba
     lifecyle.zkfc_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "ZKFC stop"
@@ -116,7 +116,7 @@ lifecyle = module.exports =
       , (err, stopped) ->
         callback err, stopped
   snn_start: (ctx, callback) ->
-    {hdfs_user, hadoop_conf_dir} = ctx.config.hdp
+    {hdfs_user, hadoop_conf_dir} = ctx.config.ryba
     ctx.log "SNN start"
     ctx.execute
       # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf start secondarynamenode"
@@ -125,7 +125,7 @@ lifecyle = module.exports =
     , (err, started) ->
       callback err, started
   snn_stop: (ctx, callback) ->
-    {hdfs_user, hadoop_conf_dir} = ctx.config.hdp
+    {hdfs_user, hadoop_conf_dir} = ctx.config.ryba
     ctx.log "SNN stop"
     ctx.execute
       # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf stop secondarynamenode"
@@ -140,7 +140,7 @@ lifecyle = module.exports =
     , (err, stopped) ->
       callback err, stopped
   dn_start: (ctx, callback) ->
-    {hadoop_conf_dir} = ctx.config.hdp
+    {hadoop_conf_dir} = ctx.config.ryba
     lifecyle.dn_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "DataNode start"
@@ -152,7 +152,7 @@ lifecyle = module.exports =
       , (err, started) ->
         callback err, started
   dn_stop: (ctx, callback) ->
-    {hadoop_conf_dir} = ctx.config.hdp
+    {hadoop_conf_dir} = ctx.config.ryba
     lifecyle.dn_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "DataNode stop"
@@ -164,7 +164,7 @@ lifecyle = module.exports =
       , (err, stopped) ->
         callback err, stopped
   rm_status: (ctx, callback) ->
-    # {yarn_pid_dir, yarn_user} = ctx.config.hdp
+    # {yarn_pid_dir, yarn_user} = ctx.config.ryba
     # ctx.log "ResourceManager status"
     # lifecyle.is_pidfile_running ctx, "#{yarn_pid_dir}/#{yarn_user.name}/yarn-#{yarn_user.name}-resourcemanager.pid", (err, running) ->
     #   ctx.log "DataNode status: #{if running then 'RUNNING' else 'STOPED'}"
@@ -175,7 +175,7 @@ lifecyle = module.exports =
     , (err, stopped) ->
       callback err, stopped
   rm_start: (ctx, callback) ->
-    {yarn_user, hadoop_conf_dir} = ctx.config.hdp
+    {yarn_user, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.rm_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "ResourceManager start"
@@ -187,7 +187,7 @@ lifecyle = module.exports =
       , (err, started) ->
         callback err, started
   rm_stop: (ctx, callback) ->
-    {yarn_user, hadoop_conf_dir} = ctx.config.hdp
+    {yarn_user, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.rm_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "ResourceManager stop"
@@ -199,7 +199,7 @@ lifecyle = module.exports =
       , (err, stopped) ->
         callback err, stopped
   nm_status: (ctx, callback) ->
-    # {yarn_pid_dir, yarn_user} = ctx.config.hdp
+    # {yarn_pid_dir, yarn_user} = ctx.config.ryba
     # ctx.log "NodeManager status"
     # lifecyle.is_pidfile_running ctx, "#{yarn_pid_dir}/#{yarn_user.name}/yarn-#{yarn_user.name}-nodemanager.pid", (err, running) ->
     #   ctx.log "DataNode status: #{if running then 'RUNNING' else 'STOPED'}"
@@ -210,7 +210,7 @@ lifecyle = module.exports =
     , (err, stopped) ->
       callback err, stopped
   nm_start: (ctx, callback) ->
-    {yarn_user, hadoop_conf_dir} = ctx.config.hdp
+    {yarn_user, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.nm_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "NodeManager start"
@@ -222,7 +222,7 @@ lifecyle = module.exports =
       , (err, started) ->
         callback err, started
   nm_stop: (ctx, callback) ->
-    {yarn_user, hadoop_conf_dir} = ctx.config.hdp
+    {yarn_user, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.nm_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "NodeManager stop"
@@ -234,7 +234,7 @@ lifecyle = module.exports =
       , (err, stopped) ->
         callback err, stopped
   jhs_status: (ctx, callback) ->
-    # {mapred_pid_dir, mapred_user} = ctx.config.hdp
+    # {mapred_pid_dir, mapred_user} = ctx.config.ryba
     # ctx.log "JobHistoryServer status"
     # lifecyle.is_pidfile_running ctx, "#{mapred_pid_dir}/#{mapred_user.name}/mapred-#{mapred_user.name}-historyserver.pid", (err, running) ->
     #   ctx.log "JobHistoryServer status: #{if running then 'RUNNING' else 'STOPED'}"
@@ -245,7 +245,7 @@ lifecyle = module.exports =
     , (err, stopped) ->
       callback err, stopped
   jhs_start: (ctx, callback) ->
-    {mapred_user, hadoop_conf_dir} = ctx.config.hdp
+    {mapred_user, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.jhs_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "JobHistoryServer start"
@@ -257,7 +257,7 @@ lifecyle = module.exports =
       , (err, started) ->
         callback err, started
   jhs_stop: (ctx, callback) ->
-    {mapred_user, hadoop_conf_dir} = ctx.config.hdp
+    {mapred_user, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.jhs_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "JobHistoryServer stop"
@@ -275,7 +275,7 @@ lifecyle = module.exports =
     , (err, stopped) ->
       callback err, stopped
   hive_metastore_start: (ctx, callback) ->
-    {hive_metastore_host, hive_metastore_port, hive_metastore_timeout} = ctx.config.hdp
+    {hive_metastore_host, hive_metastore_port, hive_metastore_timeout} = ctx.config.ryba
     lifecyle.hive_metastore_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "Hive Metastore start"
@@ -309,7 +309,7 @@ lifecyle = module.exports =
     , (err, stopped) ->
       callback err, stopped
   hive_server2_start: (ctx, callback) ->
-    {hive_server2_host, hive_server2_port, hive_server2_timeout} = ctx.config.hdp
+    {hive_server2_host, hive_server2_port, hive_server2_timeout} = ctx.config.ryba
     lifecyle.hive_server2_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "Hive Server2 start"
@@ -338,12 +338,12 @@ lifecyle = module.exports =
       lifecyle.hive_server2_start ctx, callback
   oozie_status: (ctx, callback) ->
     ctx.log "Oozie status"
-    {oozie_pid_dir} = ctx.config.hdp
+    {oozie_pid_dir} = ctx.config.ryba
     lifecyle.is_pidfile_running ctx, "#{oozie_pid_dir}/oozie.pid", (err, running) ->
       ctx.log "Oozie status: #{if running then 'RUNNING' else 'STOPED'}"
       callback err, running
   oozie_start: (ctx, callback) ->
-    {oozie_user} = ctx.config.hdp
+    {oozie_user} = ctx.config.ryba
     lifecyle.oozie_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "Oozie start"
@@ -354,7 +354,7 @@ lifecyle = module.exports =
       , (err, started) ->
         callback err, started
   oozie_stop: (ctx, callback) ->
-    {oozie_user} = ctx.config.hdp
+    {oozie_user} = ctx.config.ryba
     lifecyle.oozie_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "Oozie stop"
@@ -365,7 +365,7 @@ lifecyle = module.exports =
       , (err, stopped) ->
         callback err, stopped
   hbase_master_status: (ctx, callback) ->
-    # {hbase_pid_dir, hbase_user} = ctx.config.hdp
+    # {hbase_pid_dir, hbase_user} = ctx.config.ryba
     ctx.log "HBase Master status"
     # lifecyle.is_pidfile_running ctx, "#{hbase_pid_dir}/hbase-#{hbase_user.name}-master.pid", (err, running) ->
     #   ctx.log "HBase Master status: #{if running then 'RUNNING' else 'STOPED'}"
@@ -376,7 +376,7 @@ lifecyle = module.exports =
     , (err, stopped) ->
       callback err, stopped
   hbase_master_start: (ctx, callback) ->
-    {hbase_user, hbase_conf_dir} = ctx.config.hdp
+    {hbase_user, hbase_conf_dir} = ctx.config.ryba
     lifecyle.hbase_master_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "HBase Master start"
@@ -388,7 +388,7 @@ lifecyle = module.exports =
       , (err, stopped) ->
         callback err, stopped
   hbase_master_stop: (ctx, callback) ->
-    {hbase_user, hbase_conf_dir} = ctx.config.hdp
+    {hbase_user, hbase_conf_dir} = ctx.config.ryba
     lifecyle.hbase_master_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "HBase Master stop"
@@ -400,7 +400,7 @@ lifecyle = module.exports =
       , (err, stopped) ->
         callback err, stopped
   hbase_regionserver_status: (ctx, callback) ->
-    # {hbase_pid_dir, hbase_user} = ctx.config.hdp
+    # {hbase_pid_dir, hbase_user} = ctx.config.ryba
     ctx.log "HBase RegionServer status"
     # lifecyle.is_pidfile_running ctx, "#{hbase_pid_dir}/hbase-#{hbase_user.name}-regionserver.pid", (err, running) ->
     #   ctx.log "HBase RegionServer status: #{if running then 'RUNNING' else 'STOPED'}"
@@ -411,7 +411,7 @@ lifecyle = module.exports =
     , (err, stopped) ->
       callback err, stopped
   hbase_regionserver_start: (ctx, callback) ->
-    {hbase_user, hbase_conf_dir} = ctx.config.hdp
+    {hbase_user, hbase_conf_dir} = ctx.config.ryba
     lifecyle.hbase_regionserver_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "HBase RegionServer start"
@@ -422,7 +422,7 @@ lifecyle = module.exports =
       , (err, started) ->
         callback err, started
   hbase_regionserver_stop: (ctx, callback) ->
-    {hbase_user, hbase_conf_dir} = ctx.config.hdp
+    {hbase_user, hbase_conf_dir} = ctx.config.ryba
     lifecyle.hbase_regionserver_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "HBase RegionServer stop"
@@ -433,7 +433,7 @@ lifecyle = module.exports =
       , (err, stopped) ->
         callback err, stopped
   webhcat_status: (ctx, callback) ->
-    {webhcat_pid_dir} = ctx.config.hdp
+    {webhcat_pid_dir} = ctx.config.ryba
     # lifecyle.is_pidfile_running ctx, "#{webhcat_pid_dir}/webhcat.pid", (err, running) ->
     #   ctx.log "WebHCat status: #{if running then 'RUNNING' else 'STOPED'}"
     #   callback err, running
@@ -490,7 +490,7 @@ lifecyle = module.exports =
       , (err, stopped) ->
         callback err, stopped
   zookeeper_status: (ctx, callback) ->
-    # {zookeeper_pid_dir} = ctx.config.hdp
+    # {zookeeper_pid_dir} = ctx.config.ryba
     ctx.log "Zookeeper status"
     # lifecyle.is_pidfile_running ctx, "#{zookeeper_pid_dir}/zookeeper_server.pid", (err, running) ->
     #   ctx.log "Zookeeper status: #{if running then 'RUNNING' else 'STOPED'}"
@@ -501,7 +501,7 @@ lifecyle = module.exports =
     , (err, stopped) ->
       callback err, stopped
   zookeeper_start: (ctx, callback) ->
-    {zookeeper_user, zookeeper_conf_dir, zookeeper_port} = ctx.config.hdp
+    {zookeeper_user, zookeeper_conf_dir, zookeeper_port} = ctx.config.ryba
     lifecyle.zookeeper_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "Zookeeper start"
@@ -514,7 +514,7 @@ lifecyle = module.exports =
         ctx.waitIsOpen ctx.config.host, zookeeper_port, timeout: 2000000, (err) ->
           callback err, started
   zookeeper_stop: (ctx, callback) ->
-    {zookeeper_user, zookeeper_conf_dir} = ctx.config.hdp
+    {zookeeper_user, zookeeper_conf_dir} = ctx.config.ryba
     lifecyle.zookeeper_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "Zookeeper stop"

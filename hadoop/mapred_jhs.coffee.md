@@ -15,10 +15,10 @@ layout: module
     module.exports.push (ctx) ->
       require('masson/core/iptables').configure ctx
       require('./mapred').configure ctx
-      ctx.config.hdp.mapred['mapreduce.jobhistory.keytab'] ?= "/etc/security/keytabs/jhs.service.keytab"
+      ctx.config.ryba.mapred_site['mapreduce.jobhistory.keytab'] ?= "/etc/security/keytabs/jhs.service.keytab"
       # Fix: src in "[DFSConfigKeys.java][keys]" and [HDP port list] mention 13562
       # while companion files mentions 8081
-      ctx.config.hdp.mapred['mapreduce.shuffle.port'] ?= '13562'
+      ctx.config.ryba.mapred_site['mapreduce.shuffle.port'] ?= '13562'
 
 ## IPTables
 
@@ -33,8 +33,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HDP MapRed JHS # IPTables', callback: (ctx, next) ->
-      {mapred} = ctx.config.hdp
-      shuffle = mapred['mapreduce.shuffle.port']
+      {mapred_site} = ctx.config.ryba
+      shuffle = mapred_site['mapreduce.shuffle.port']
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 10020, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS Server" }
@@ -52,7 +52,7 @@ Install and configure the startup script in
 "/etc/init.d/hadoop-mapreduce-historyserver".
 
     module.exports.push name: 'HDP HDFS JN # Startup', callback: (ctx, next) ->
-      {mapred_pid_dir} = ctx.config.hdp
+      {mapred_pid_dir} = ctx.config.ryba
       modified = false
       do_install = ->
         ctx.service
@@ -81,10 +81,10 @@ Install and configure the startup script in
       do_install()
 
     module.exports.push name: 'HDP MapRed JHS # Kerberos', callback: (ctx, next) ->
-      {hadoop_conf_dir, mapred} = ctx.config.hdp
+      {hadoop_conf_dir, mapred_site} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
-        properties: mapred
+        properties: mapred_site
         merge: true
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
@@ -94,7 +94,7 @@ Install and configure the startup script in
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
     module.exports.push name: 'HDP MapRed JHS # HDFS Layout', timeout: -1, callback: (ctx, next) ->
-      {hadoop_group, yarn_user, mapred_user} = ctx.config.hdp
+      {hadoop_group, yarn_user, mapred_user} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.hdfs ctx, """
         if ! hdfs dfs -test -d /mr-history; then
@@ -129,7 +129,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         next null, if executed then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP MapRed JHS # Kerberos', callback: (ctx, next) ->
-      {mapred_user, hadoop_group, realm} = ctx.config.hdp
+      {mapred_user, hadoop_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
         principal: "jhs/#{ctx.config.host}@#{realm}"
@@ -153,8 +153,8 @@ started, the server take some time before it can correctly answer HTTP request.
 For this reason, the "retry" property is set to the high value of "10".
 
     module.exports.push name: 'HDP MapRed JHS # Check', retry: 10, callback: (ctx, next) ->
-      {test_user, mapred} = ctx.config.hdp
-      [host, port] = mapred['mapreduce.jobhistory.webapp.address'].split ':'
+      {test_user, mapred_site} = ctx.config.ryba
+      [host, port] = mapred_site['mapreduce.jobhistory.webapp.address'].split ':'
       ctx.execute
         cmd: mkcmd.test ctx, """
         if hdfs dfs -test -f /user/#{test_user.name}/#{ctx.config.host}-jhs; then exit 2; fi

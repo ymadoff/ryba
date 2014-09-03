@@ -4,8 +4,7 @@
 # https://github.com/hortonworks/hdp-configuration-utils/blob/master/2.1/hdp-configuration-utils.py
 
 memory = (ctx) ->
-  {yarn, hadoop_conf_dir} = ctx.config.hdp
-  yarn_site = yarn
+  {yarn_site, hadoop_conf_dir} = ctx.config.ryba
   # yarn.nodemanager.log.retain-seconds (cherif mettre la valeur à 10800 au lie de 604800)
   # yarn.log-aggregation.retain-seconds (cherif)
 
@@ -70,12 +69,12 @@ memory = (ctx) ->
       'mapreduce.map.java.opts': "-Xmx#{Math.floor .8 * memoryPerContainer}m" # 0.8 * RAM-per-container
       'mapreduce.reduce.java.opts': "-Xmx#{Math.floor .8 * 2 * memoryPerContainer}m" # 0.8 * 2 * RAM-per-container
       'mapreduce.task.io.sort.mb': "#{Math.floor .4 * memoryPerContainer}"
-  # merge result.yarn_site, ctx.config.hdp.yarn
+  # merge result.yarn_site, ctx.config.ryba.yarn_site
   for k, v of result.yarn_site
-    result.yarn_site[k] = ctx.config.hdp.yarn[k] if ctx.config.hdp.yarn[k]?
-  # merge result.mapred_site, ctx.config.hdp.mapred
+    result.yarn_site[k] = ctx.config.ryba.yarn_site[k] if ctx.config.ryba.yarn_site[k]?
+  # merge result.mapred_site, ctx.config.ryba.mapred_site
   for k, v of result.mapred_site
-    result.mapred_site[k] = ctx.config.hdp.mapred[k] if ctx.config.hdp.mapred[k]?
+    result.mapred_site[k] = ctx.config.ryba.mapred_site[k] if ctx.config.ryba.mapred_site[k]?
   result
 
 memory.reservedStack = 4:1, 8:2, 16:2, 24:4, 48:6, 64:8, 72:8, 96:12, 128:24, 256:32, 512:64

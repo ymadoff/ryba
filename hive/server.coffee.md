@@ -44,10 +44,10 @@ Example:
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/commons/mysql_server').configure ctx
       require('./_').configure ctx
-      {hive_site, db_admin} = ctx.config.hdp
+      {hive_site, db_admin} = ctx.config.ryba
       # Layout
-      ctx.config.hdp.hive_log_dir ?= '/var/log/hive'
-      ctx.config.hdp.hive_pid_dir ?= '/var/run/hive'
+      ctx.config.ryba.hive_log_dir ?= '/var/log/hive'
+      ctx.config.ryba.hive_pid_dir ?= '/var/run/hive'
       # Configuration
       hive_site['datanucleus.autoCreateTables'] ?= 'true'
       hive_site['hive.security.authorization.enabled'] ?= 'true'
@@ -60,10 +60,10 @@ Example:
       hive_site['hive.server2.thrift.http.port'] ?= '10001'
       hive_site['hive.server2.thrift.port'] ?= '10001'
       hive_site['hive.server2.thrift.http.path'] ?= 'cliservice'
-      ctx.config.hdp.hive_libs ?= []
+      ctx.config.ryba.hive_libs ?= []
       # Database
       if hive_site['javax.jdo.option.ConnectionURL']
-        # Ensure the url host is the same as the one configured in config.hdp.db_admin
+        # Ensure the url host is the same as the one configured in config.ryba.db_admin
         {engine, hostname, port} = parse_jdbc hive_site['javax.jdo.option.ConnectionURL']
         switch engine
           when 'mysql'
@@ -134,7 +134,7 @@ and "/etc/init.d/hive-server2".
         next err, if written then ctx.OK else ctx.PASS
 
     module.exports.push name: 'Hive & HCat Server # Database', callback: (ctx, next) ->
-      {hive_site, db_admin} = ctx.config.hdp
+      {hive_site, db_admin} = ctx.config.ryba
       username = hive_site['javax.jdo.option.ConnectionUserName']
       password = hive_site['javax.jdo.option.ConnectionPassword']
       {engine, db} = parse_jdbc hive_site['javax.jdo.option.ConnectionURL']
@@ -159,7 +159,7 @@ and "/etc/init.d/hive-server2".
       engines[engine]()
 
     module.exports.push name: 'Hive & HCat Server # Configure', callback: (ctx, next) ->
-      {hive_site, hive_user, hive_group, hive_conf_dir} = ctx.config.hdp
+      {hive_site, hive_user, hive_group, hive_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hive_conf_dir}/hive-site.xml"
         default: "#{__dirname}/../hadoop/files/hive/hive-site.xml"
@@ -177,7 +177,7 @@ and "/etc/init.d/hive-server2".
           next err, if configured then ctx.OK else ctx.PASS
 
     module.exports.push name: 'Hive & HCat Server # Fix', callback: (ctx, next) ->
-      {hive_conf_dir} = ctx.config.hdp
+      {hive_conf_dir} = ctx.config.ryba
       ctx.write
         destination: "#{hive_conf_dir}/hive-env.sh"
         match: /^export HIVE_AUX_JARS_PATH=.*$/mg
@@ -186,7 +186,7 @@ and "/etc/init.d/hive-server2".
         next err, if written then ctx.OK else ctx.PASS
 
     module.exports.push name: 'Hive & HCat Server # Libs', callback: (ctx, next) ->
-      {hive_libs} = ctx.config.hdp
+      {hive_libs} = ctx.config.ryba
       return next() unless hive_libs.length
       uploads = for lib in hive_libs
         source: lib
@@ -202,7 +202,7 @@ and "/etc/init.d/hive-server2".
         return next err, if configured then ctx.OK else ctx.PASS
 
     module.exports.push name: 'Hive & HCat Server # Kerberos', callback: (ctx, next) ->
-      {hive_user, hive_group, hive_site, realm} = ctx.config.hdp
+      {hive_user, hive_group, hive_site, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
       do_metastore = ->
@@ -251,7 +251,7 @@ and "/etc/init.d/hive-server2".
         return next err, if written then ctx.OK else ctx.PASS
 
     module.exports.push name: 'Hive & HCat Server # Layout', timeout: -1, callback: (ctx, next) ->
-      {hive_user, hive_group} = ctx.config.hdp
+      {hive_user, hive_group} = ctx.config.ryba
       # Required by service "hive-hcatalog-server"
       ctx.mkdir
         destination: '/var/log/hive-hcatalog'
@@ -263,7 +263,7 @@ and "/etc/init.d/hive-server2".
     module.exports.push name: 'Hive & HCat Server # HDFS Layout', timeout: -1, callback: (ctx, next) ->
       # todo: this isnt pretty, ok that we need to execute hdfs command from an hadoop client
       # enabled environment, but there must be a better way
-      {active_nn_host, hdfs_user, hive_user, hive_group} = ctx.config.hdp
+      {active_nn_host, hdfs_user, hive_user, hive_group} = ctx.config.ryba
       hive_user = hive_user.name
       hive_group = hive_group.name
       # ctx.connect active_nn_host, (err, ssh) ->

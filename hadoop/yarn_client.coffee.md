@@ -14,9 +14,9 @@ layout: module
       require('./yarn').configure ctx
 
     module.exports.push name: 'HDP YARN # Configuration', callback: (ctx, next) ->
-      { hadoop_conf_dir, yarn_user, yarn_group, yarn } = ctx.config.hdp
+      { hadoop_conf_dir, yarn_user, yarn_group, yarn_site } = ctx.config.ryba
       properties.read "#{__dirname}/files/core_hadoop/yarn-site.xml", (err, yarn_default) ->
-        yarn_site = merge {}, yarn_default, yarn
+        yarn_site = merge {}, yarn_default, yarn_site
         config = {}
         for k, v of yarn_site
           continue if k isnt 'yarn.application.classpath' and k.indexOf('yarn.resourcemanager') is -1

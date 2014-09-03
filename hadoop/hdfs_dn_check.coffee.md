@@ -25,7 +25,7 @@ Attemp to place a file inside HDFS. the file "/etc/passwd" will be placed at
 "/user/{test\_user}/#{ctx.config.host}\_dn".
 
     module.exports.push name: 'HDP HDFS DN # Test HDFS', timeout: -1, callback: (ctx, next) ->
-      {test_user} = ctx.config.hdp
+      {test_user} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.test ctx, """
         if hdfs dfs -test -f /user/#{test_user.name}/#{ctx.config.host}-dn; then exit 2; fi
@@ -46,10 +46,10 @@ Read [Delegation Tokens in Hadoop Security](http://www.kodkast.com/blogs/hadoop/
 for more information.
 
     module.exports.push name: 'HDP HDFS DN # Test WebHDFS', timeout: -1, callback: (ctx, next) ->
-      {hdfs_site, nameservice, test_user, force_check, active_nn_host} = ctx.config.hdp
+      {hdfs_site, nameservice, test_user, force_check, active_nn_host} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTPS_ONLY' then 'https' else 'http'
       shortname = ctx.hosts[active_nn_host].config.shortname
-      active_nn_port = ctx.config.hdp.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
+      active_nn_port = ctx.config.ryba.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
       force_check = true
       do_wait = ->
         ctx.waitForExecution

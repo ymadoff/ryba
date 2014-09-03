@@ -17,7 +17,7 @@ layout: module
 Use the [Hive CLI][hivecli] client to execute SQL queries.
 
     module.exports.push name: 'Hive & HCat Client # Check Metastore', timeout: -1, callback: (ctx, next) ->
-      {force_check, test_user, hive_metastore_host, hive_metastore_port} = ctx.config.hdp
+      {force_check, test_user, hive_metastore_host, hive_metastore_port} = ctx.config.ryba
       ctx.waitIsOpen hive_metastore_host, hive_metastore_port, (err) ->
         host = ctx.config.shortname
         ctx.execute
@@ -43,7 +43,7 @@ Use the [Hive CLI][hivecli] client to execute SQL queries.
 Use the [Beeline][beeline] JDBC client to execute SQL queries.
 
     module.exports.push name: 'Hive & HCat Client # Check Server2', timeout: -1, callback: (ctx, next) ->
-      {force_check, realm, test_user, hive_server2_host, hive_server2_port} = ctx.config.hdp
+      {force_check, realm, test_user, hive_server2_host, hive_server2_port} = ctx.config.ryba
       url = "jdbc:hive2://#{hive_server2_host}:#{hive_server2_port}/default;principal=hive/#{hive_server2_host}@#{realm}"
       query = (query) -> "/usr/lib/hive/bin/beeline -u \"#{url}\" --silent=true -e \"#{query}\" "
       ctx.waitIsOpen hive_server2_host, hive_server2_port, (err) ->

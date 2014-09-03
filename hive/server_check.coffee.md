@@ -9,7 +9,7 @@
 Check if Hive can authenticate and run a basic query to the database.
 
     module.exports.push name: 'Hive & HCat Server # Check Database', callback: (ctx, next) ->
-      {hive_site, db_admin} = ctx.config.hdp
+      {hive_site, db_admin} = ctx.config.ryba
       username = hive_site['javax.jdo.option.ConnectionUserName']
       password = hive_site['javax.jdo.option.ConnectionPassword']
       {engine, db} = parse_jdbc hive_site['javax.jdo.option.ConnectionURL']
@@ -30,7 +30,7 @@ Check if Hive can authenticate and run a basic query to the database.
 
     module.exports.push name: 'Hive & HCat Server # Check Open Port', callback: (ctx, next) ->
       {host} = ctx.config
-      {hive_metastore_port, hive_server2_port} = ctx.config.hdp
+      {hive_metastore_port, hive_server2_port} = ctx.config.ryba
       ctx.execute [
         cmd: "echo > /dev/tcp/#{host}/#{hive_metastore_port}"
         trap_on_error: true

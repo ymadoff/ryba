@@ -47,7 +47,7 @@ layout: module
       do_upload()
 
     module.exports.push name: 'XASecure Hive # Install', timeout: -1, callback: (ctx, next) ->
-      {hive_conf_dir} = ctx.config.hdp
+      {hive_conf_dir} = ctx.config.ryba
       {hive, hive_url} = ctx.config.xasecure
       modified = false
       do_configure = ->

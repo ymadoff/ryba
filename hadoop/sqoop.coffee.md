@@ -48,22 +48,22 @@ Example:
 
     module.exports.push (ctx) ->
       require('./core').configure ctx
-      ctx.config.hdp.sqoop ?= {}
+      ctx.config.ryba.sqoop ?= {}
       # User
-      ctx.config.hdp.sqoop_user = name: ctx.config.hdp.sqoop_user if typeof ctx.config.hdp.sqoop_user is 'string'
-      ctx.config.hdp.sqoop_user ?= {}
-      ctx.config.hdp.sqoop_user.name ?= 'sqoop'
-      ctx.config.hdp.sqoop_user.system ?= true
-      ctx.config.hdp.sqoop_user.comment ?= 'Sqoop User'
-      ctx.config.hdp.sqoop_user.gid ?= 'hadoop'
-      ctx.config.hdp.sqoop_user.home ?= '/var/lib/sqoop'
+      ctx.config.ryba.sqoop_user = name: ctx.config.ryba.sqoop_user if typeof ctx.config.ryba.sqoop_user is 'string'
+      ctx.config.ryba.sqoop_user ?= {}
+      ctx.config.ryba.sqoop_user.name ?= 'sqoop'
+      ctx.config.ryba.sqoop_user.system ?= true
+      ctx.config.ryba.sqoop_user.comment ?= 'Sqoop User'
+      ctx.config.ryba.sqoop_user.gid ?= 'hadoop'
+      ctx.config.ryba.sqoop_user.home ?= '/var/lib/sqoop'
       # Layout
-      ctx.config.hdp.sqoop_conf_dir ?= '/etc/sqoop/conf'
+      ctx.config.ryba.sqoop_conf_dir ?= '/etc/sqoop/conf'
       # Configuration
-      ctx.config.hdp.sqoop_site ?= {}
+      ctx.config.ryba.sqoop_site ?= {}
       # Libs
-      ctx.config.hdp.sqoop.libs ?= []
-      ctx.config.hdp.sqoop.libs = ctx.config.hdp.sqoop.libs.split /[\s,]+/ if typeof ctx.config.hdp.sqoop.libs is 'string'
+      ctx.config.ryba.sqoop.libs ?= []
+      ctx.config.ryba.sqoop.libs = ctx.config.ryba.sqoop.libs.split /[\s,]+/ if typeof ctx.config.ryba.sqoop.libs is 'string'
 
 ## Users & Groups
 
@@ -77,7 +77,7 @@ hadoop:x:502:yarn,mapred,hdfs,hue
 ```
 
     module.exports.push name: 'HDP Sqoop # Users & Groups', callback: (ctx, next) ->
-      {hadoop_group, sqoop_user} = ctx.config.hdp
+      {hadoop_group, sqoop_user} = ctx.config.ryba
       ctx.group hadoop_group, (err, gmodified) ->
         return next err if err
         ctx.user sqoop_user, (err, umodified) ->
@@ -88,7 +88,7 @@ hadoop:x:502:yarn,mapred,hdfs,hue
 Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
 
     module.exports.push name: 'HDP Sqoop # Environment', timeout: -1, callback: (ctx, next) ->
-      {sqoop_conf_dir, sqoop_user, hadoop_group} = ctx.config.hdp
+      {sqoop_conf_dir, sqoop_user, hadoop_group} = ctx.config.ryba
       ctx.write
         source: "#{__dirname}/files/sqoop/sqoop-env.sh"
         destination: "#{sqoop_conf_dir}/sqoop-env.sh"
@@ -104,7 +104,7 @@ Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
 Upload the "sqoop-site.xml" files into the "/etc/sqoop/conf" folder.
 
     module.exports.push name: 'HDP Sqoop # Configuration', timeout: -1, callback: (ctx, next) ->
-      {sqoop_conf_dir, sqoop_user, hadoop_group, sqoop_site} = ctx.config.hdp
+      {sqoop_conf_dir, sqoop_user, hadoop_group, sqoop_site} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{sqoop_conf_dir}/sqoop-site.xml"
         default: "#{__dirname}/files/sqoop/sqoop-site.xml"
@@ -145,7 +145,7 @@ Upload all the drivers present in the `hdp.sqoop.libs"` configuration property i
 the Sqoop library folder.
 
     module.exports.push name: 'HDP Sqoop # Database Connector', callback: (ctx, next) ->
-      {libs} = ctx.config.hdp.sqoop
+      {libs} = ctx.config.ryba.sqoop
       return next() unless libs.length
       uploads = for lib in libs
         source: lib

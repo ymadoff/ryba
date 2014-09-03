@@ -41,22 +41,22 @@ Example:
 
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/core/krb5_client').configure ctx
-      ctx.config.hdp ?= {}
+      ctx.config.ryba ?= {}
       # User
-      ctx.config.hdp.flume_user = name: ctx.config.hdp.flume_user if typeof ctx.config.hdp.flume_user is 'string'
-      ctx.config.hdp.flume_user ?= {}
-      ctx.config.hdp.flume_user.name ?= 'flume'
-      ctx.config.hdp.flume_user.system ?= true
-      ctx.config.hdp.flume_user.gid ?= 'flume'
-      ctx.config.hdp.flume_user.comment ?= 'Flume User'
-      ctx.config.hdp.flume_user.home ?= '/var/lib/flume'
+      ctx.config.ryba.flume_user = name: ctx.config.ryba.flume_user if typeof ctx.config.ryba.flume_user is 'string'
+      ctx.config.ryba.flume_user ?= {}
+      ctx.config.ryba.flume_user.name ?= 'flume'
+      ctx.config.ryba.flume_user.system ?= true
+      ctx.config.ryba.flume_user.gid ?= 'flume'
+      ctx.config.ryba.flume_user.comment ?= 'Flume User'
+      ctx.config.ryba.flume_user.home ?= '/var/lib/flume'
       # Group
-      ctx.config.hdp.flume_group = name: ctx.config.hdp.flume_group if typeof ctx.config.hdp.flume_group is 'string'
-      ctx.config.hdp.flume_group ?= {}
-      ctx.config.hdp.flume_group.name ?= 'flume'
-      ctx.config.hdp.flume_group.system ?= true
+      ctx.config.ryba.flume_group = name: ctx.config.ryba.flume_group if typeof ctx.config.ryba.flume_group is 'string'
+      ctx.config.ryba.flume_group ?= {}
+      ctx.config.ryba.flume_group.name ?= 'flume'
+      ctx.config.ryba.flume_group.system ?= true
       # Layout
-      ctx.config.hdp.flume_conf_dir = '/etc/flume/conf'
+      ctx.config.ryba.flume_conf_dir = '/etc/flume/conf'
 
 ## Users & Groups
 
@@ -73,7 +73,7 @@ Note, the "flume" package rely on the "zookeeper" and "hadoop-hdfs" dependencies
 creating the "zookeeper" and "hdfs" users and the "hadoop" and "hdfs" group.
 
     module.exports.push name: 'HDP Flume # Users & Groups', callback: (ctx, next) ->
-      {flume_group, flume_user} = ctx.config.hdp
+      {flume_group, flume_user} = ctx.config.ryba
       ctx.group flume_group, (err, gmodified) ->
         return next err if err
         ctx.user flume_user, (err, umodified) ->
@@ -94,7 +94,7 @@ usage. It is placed inside the flume configuration directory, by default
 "/etc/flume/conf/flume.service.keytab" with restrictive permissions set to "0600".
 
     module.exports.push name: 'HDP Flume # Kerberos', callback: (ctx, next) ->
-      {flume_user, flume_group, flume_conf_dir, realm} = ctx.config.hdp
+      {flume_user, flume_group, flume_conf_dir, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
         principal: "#{flume_user.name}/#{ctx.config.host}@#{realm}"

@@ -43,7 +43,7 @@ Example of a minimal client configuration:
 See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap6-3.html)
 
     module.exports.push name: 'Hive & HCat Client # Configure', callback: (ctx, next) ->
-      {hive_site, hive_user, hadoop_group, hive_conf_dir} = ctx.config.hdp
+      {hive_site, hive_user, hadoop_group, hive_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hive_conf_dir}/hive-site.xml"
         default: "#{__dirname}/../hadoop/files/hive/hive-site.xml"

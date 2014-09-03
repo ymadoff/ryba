@@ -32,7 +32,7 @@ The module doesn't require any configuration but instread rely on the
     module.exports.push (ctx) ->
       require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
-      ctx.config.hdp.hdfs_site['dfs.datanode.ipc.address'] ?= '0.0.0.0:50020'
+      ctx.config.ryba.hdfs_site['dfs.datanode.ipc.address'] ?= '0.0.0.0:50020'
 
 ## IPTables
 
@@ -50,7 +50,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HDP HDFS DN # IPTables', callback: (ctx, next) ->
-      {hdfs_site} = ctx.config.hdp
+      {hdfs_site} = ctx.config.ryba
       [_, dn_address] = hdfs_site['dfs.datanode.address'].split ':'
       [_, dn_http_address] = hdfs_site['dfs.datanode.http.address'].split ':'
       [_, dn_https_address] = hdfs_site['dfs.datanode.https.address'].split ':'
@@ -72,7 +72,7 @@ Install and configure the startup script in
 "/etc/init.d/hadoop-yarn-nodemanager".
 
     module.exports.push name: 'HDP HDFS DN # Startup', callback: (ctx, next) ->
-      {hdfs_pid_dir, core_site} = ctx.config.hdp
+      {hdfs_pid_dir, core_site} = ctx.config.ryba
       modified = false
       do_install = ->
         ctx.service
@@ -108,7 +108,7 @@ Update the "hdfs_site.xml" configuration file with the High Availabity propertie
 present inside the "hdp.ha\_client\_config" object.
 
     module.exports.push name: 'HDP HDFS DN # HA', callback: (ctx, next) ->
-      {hadoop_conf_dir, ha_client_config} = ctx.config.hdp
+      {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: ha_client_config
@@ -123,7 +123,7 @@ Create the DataNode data and pid directories. The data directory is set by the
 pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdfs"
 
     module.exports.push name: 'HDP HDFS DN # Layout', timeout: -1, callback: (ctx, next) ->
-      {hdfs_site, hdfs_user, hadoop_group, hdfs_pid_dir} = ctx.config.hdp
+      {hdfs_site, hdfs_user, hadoop_group, hdfs_pid_dir} = ctx.config.ryba
       # no need to restrict parent directory and yarn will complain if not accessible by everyone
       ctx.mkdir [
         destination: hdfs_site['dfs.datanode.data.dir'].split ','
@@ -145,7 +145,7 @@ keytab inside "/etc/security/keytabs/dn.service.keytab" with ownerships set to "
 and permissions set to "0600".
 
     module.exports.push name: 'HDP HDFS DN # Kerberos', timeout: -1, callback: (ctx, next) ->
-      {hdfs_user, hdfs_group, realm} = ctx.config.hdp
+      {hdfs_user, hdfs_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
         principal: "dn/#{ctx.config.host}@#{realm}"
@@ -181,7 +181,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
 ```
 
     module.exports.push name: 'HDP HDFS DN # HDFS layout', timeout: -1, callback: (ctx, next) ->
-      {hadoop_group, hdfs_user} = ctx.config.hdp
+      {hadoop_group, hdfs_user} = ctx.config.ryba
       modified = false
       do_wait = ->
         ctx.waitForExecution mkcmd.hdfs(ctx, "hdfs dfs -test -d /"), (err) ->
@@ -251,7 +251,7 @@ the NameNode is properly working. Note, those commands are NameNode specific, me
 afect HDFS metadata.
 
     module.exports.push name: 'HDP HDFS DN # Test User', timeout: -1, callback: (ctx, next) ->
-      {test_group, test_user, test_password, security, realm} = ctx.config.hdp
+      {test_group, test_user, test_password, security, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
       do_user_unix = ->

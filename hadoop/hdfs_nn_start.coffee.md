@@ -26,7 +26,7 @@ the standy NameNodes wait for the one on the active NameNode to start first.
 
     module.exports.push name: 'HDP HDFS NN # Start ZKFC', callback: (ctx, next) ->
       # ZKFC should start first on active NameNode
-      {active_nn, active_nn_host} = ctx.config.hdp
+      {active_nn, active_nn_host} = ctx.config.ryba
       do_wait = ->
         ctx.waitForExecution
           # hdfs haadmin -getServiceState hadoop1
@@ -41,7 +41,7 @@ the standy NameNodes wait for the one on the active NameNode to start first.
       if active_nn then do_start() else do_wait()
 
     module.exports.push name: 'HDFS HDFS NN Start # Activate', callback: (ctx, next) ->
-      {active_nn, active_nn_host, standby_nn_host} = ctx.config.hdp
+      {active_nn, active_nn_host, standby_nn_host} = ctx.config.ryba
       return next() unless active_nn
       active_nn_host = active_nn_host.split('.')[0]
       standby_nn_host = standby_nn_host.split('.')[0]

@@ -59,11 +59,11 @@ Example:
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
-      {hdfs_site} = ctx.config.hdp
+      {hdfs_site} = ctx.config.ryba
       hdfs_site['dfs.journalnode.rpc-address'] ?= '0.0.0.0:8485'
       hdfs_site['dfs.journalnode.http-address'] ?= '0.0.0.0:8480'
       hdfs_site['dfs.journalnode.https-address'] ?= '0.0.0.0:8481'
-      # ctx.config.hdp.hdfs_site['dfs.journalnode.edits.dir'] ?= '/hadoop/journalnode'
+      # ctx.config.ryba.hdfs_site['dfs.journalnode.edits.dir'] ?= '/hadoop/journalnode'
       throw new Error 'Required property: hdfs_site[dfs.journalnode.edits.dir]' unless hdfs_site['dfs.namenode.name.dir']
 
 ## IPTables
@@ -80,7 +80,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HDP HDFS JN # IPTables', callback: (ctx, next) ->
-      {hdfs_site} = ctx.config.hdp
+      {hdfs_site} = ctx.config.ryba
       rpc = hdfs_site['dfs.journalnode.rpc-address'].split(':')[1]
       http = hdfs_site['dfs.journalnode.http-address'].split(':')[1]
       https = hdfs_site['dfs.journalnode.https-address'].split(':')[1]
@@ -100,7 +100,7 @@ The JournalNode data are stored inside the directory defined by the
 "dfs.journalnode.edits.dir" property.
 
     module.exports.push name: 'HDP HDFS JN # Layout', callback: (ctx, next) ->
-      {hdfs_site, hadoop_conf_dir} = ctx.config.hdp
+      {hdfs_site, hadoop_conf_dir} = ctx.config.ryba
       ctx.mkdir
         destination: hdfs_site['dfs.journalnode.edits.dir']
         uid: 'hdfs'
@@ -115,7 +115,7 @@ Install and configure the startup script in
 "/etc/init.d/hadoop-hdfs-journalnode".
 
     module.exports.push name: 'HDP HDFS JN # Startup', callback: (ctx, next) ->
-      {hdfs_pid_dir} = ctx.config.hdp
+      {hdfs_pid_dir} = ctx.config.ryba
       modified = false
       do_install = ->
         ctx.service
@@ -148,7 +148,7 @@ Install and configure the startup script in
 Update the "hdfs-site.xml" file with the "dfs.journalnode.edits.dir" property.
 
     module.exports.push name: 'HDP HDFS JN # Configure', callback: (ctx, next) ->
-      {hdfs_site, hadoop_conf_dir} = ctx.config.hdp
+      {hdfs_site, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: hdfs_site
@@ -166,7 +166,7 @@ tocken is stored inside the "/etc/security/keytabs/spnego.service.keytab" keytab
 also used by the NameNodes, DataNodes, ResourceManagers and NodeManagers.
 
     module.exports.push name: 'HDP HDFS JN # Kerberos', callback: (ctx, next) ->
-      {hadoop_conf_dir, static_host, realm} = ctx.config.hdp
+      {hadoop_conf_dir, static_host, realm} = ctx.config.ryba
       hdfs_site = {}
       # hdfs_site['dfs.journalnode.http-address'] = '0.0.0.0:8480'
       hdfs_site['dfs.journalnode.kerberos.internal.spnego.principal'] = "HTTP/#{static_host}@#{realm}"
@@ -186,7 +186,7 @@ properties include "dfs.namenode.shared.edits.dir". Note, this might not be
 read on JN side (see [DFSConfigKeys.java][keys]).
 
     module.exports.push name: 'HDP HDFS JN # Configure HA', callback: (ctx, next) ->
-      {hadoop_conf_dir, ha_client_config} = ctx.config.hdp
+      {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
       journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
       ha_client_config['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
       ha_client_config['dfs.namenode.shared.edits.dir'] = "qjournal://#{ha_client_config['dfs.namenode.shared.edits.dir']}/#{ha_client_config['dfs.nameservices']}"

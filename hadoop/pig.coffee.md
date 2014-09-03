@@ -49,15 +49,15 @@ Example:
       require('masson/commons/java').configure ctx
       require('./hdfs').configure ctx
       # User
-      ctx.config.hdp.pig_user = name: ctx.config.hdp.pig_user if typeof ctx.config.hdp.pig_user is 'string'
-      ctx.config.hdp.pig_user ?= {}
-      ctx.config.hdp.pig_user.name ?= 'pig'
-      ctx.config.hdp.pig_user.system ?= true
-      ctx.config.hdp.pig_user.comment ?= 'Pig User'
-      ctx.config.hdp.pig_user.gid ?= 'hadoop'
-      ctx.config.hdp.pig_user.home ?= '/home/pig'
+      ctx.config.ryba.pig_user = name: ctx.config.ryba.pig_user if typeof ctx.config.ryba.pig_user is 'string'
+      ctx.config.ryba.pig_user ?= {}
+      ctx.config.ryba.pig_user.name ?= 'pig'
+      ctx.config.ryba.pig_user.system ?= true
+      ctx.config.ryba.pig_user.comment ?= 'Pig User'
+      ctx.config.ryba.pig_user.gid ?= 'hadoop'
+      ctx.config.ryba.pig_user.home ?= '/home/pig'
       # Layout
-      ctx.config.hdp.pig_conf_dir ?= '/etc/pig/conf'
+      ctx.config.ryba.pig_conf_dir ?= '/etc/pig/conf'
 
 ## Users & Groups
 
@@ -71,7 +71,7 @@ hadoop:x:502:yarn,mapred,hdfs,hue
 ```
 
     module.exports.push name: 'HDP Pig # Users & Groups', callback: (ctx, next) ->
-      {hadoop_group, pig_user} = ctx.config.hdp
+      {hadoop_group, pig_user} = ctx.config.ryba
       ctx.group hadoop_group, (err, gmodified) ->
         return next err if err
         ctx.user pig_user, (err, umodified) ->
@@ -89,7 +89,7 @@ The pig package is install.
 
     module.exports.push name: 'HDP Pig # Users', callback: (ctx, next) ->
       # 6th feb 2014: pig user isnt created by YUM, might change in a future HDP release
-      {hadoop_group} = ctx.config.hdp
+      {hadoop_group} = ctx.config.ryba
       ctx.execute
         cmd: "useradd pig -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop Pig service\""
         code: 0
@@ -107,7 +107,7 @@ companion file define no properties while the YUM package does.
 
     module.exports.push name: 'HDP Pig # Env', callback: (ctx, next) ->
       {java_home} = ctx.config.java
-      {hadoop_group, pig_conf_dir, pig_user} = ctx.config.hdp
+      {hadoop_group, pig_conf_dir, pig_user} = ctx.config.ryba
       ctx.write
         source: "#{__dirname}/files/pig/pig-env.sh"
         destination: "#{pig_conf_dir}/pig-env.sh"

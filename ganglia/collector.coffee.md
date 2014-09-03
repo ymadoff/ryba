@@ -40,20 +40,20 @@ Example:
 
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
-      ctx.config.hdp ?= {}
-      ctx.config.hdp.rrdcached_user = name: ctx.config.hdp.rrdcached_user if typeof ctx.config.hdp.rrdcached_user is 'string'
-      ctx.config.hdp.rrdcached_user ?= {}
-      ctx.config.hdp.rrdcached_user.name ?= 'rrdcached'
-      ctx.config.hdp.rrdcached_user.system ?= true
-      ctx.config.hdp.rrdcached_user.gid = 'rrdcached'
-      ctx.config.hdp.rrdcached_user.shell = false
-      ctx.config.hdp.rrdcached_user.comment ?= 'RRDtool User'
-      ctx.config.hdp.rrdcached_user.home = '/var/rrdtool/rrdcached'
+      ctx.config.ryba ?= {}
+      ctx.config.ryba.rrdcached_user = name: ctx.config.ryba.rrdcached_user if typeof ctx.config.ryba.rrdcached_user is 'string'
+      ctx.config.ryba.rrdcached_user ?= {}
+      ctx.config.ryba.rrdcached_user.name ?= 'rrdcached'
+      ctx.config.ryba.rrdcached_user.system ?= true
+      ctx.config.ryba.rrdcached_user.gid = 'rrdcached'
+      ctx.config.ryba.rrdcached_user.shell = false
+      ctx.config.ryba.rrdcached_user.comment ?= 'RRDtool User'
+      ctx.config.ryba.rrdcached_user.home = '/var/rrdtool/rrdcached'
       # Group
-      ctx.config.hdp.rrdcached_group = name: ctx.config.hdp.rrdcached_group if typeof ctx.config.hdp.rrdcached_group is 'string'
-      ctx.config.hdp.rrdcached_group ?= {}
-      ctx.config.hdp.rrdcached_group.name ?= 'rrdcached'
-      ctx.config.hdp.rrdcached_group.system ?= true
+      ctx.config.ryba.rrdcached_group = name: ctx.config.ryba.rrdcached_group if typeof ctx.config.ryba.rrdcached_group is 'string'
+      ctx.config.ryba.rrdcached_group ?= {}
+      ctx.config.ryba.rrdcached_group.name ?= 'rrdcached'
+      ctx.config.ryba.rrdcached_group.system ?= true
 
 ## Users & Groups
 
@@ -67,7 +67,7 @@ rrdcached:x:493:
 ```
 
     module.exports.push name: 'Ganglia Collector # Users & Groups', callback: (ctx, next) ->
-      {rrdcached_group, rrdcached_user} = ctx.config.hdp
+      {rrdcached_group, rrdcached_user} = ctx.config.ryba
       ctx.group rrdcached_group, (err, gmodified) ->
         return next err if err
         ctx.user rrdcached_user, (err, umodified) ->

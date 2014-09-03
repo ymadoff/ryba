@@ -16,7 +16,7 @@ layout: module
 Execute these commands on the ZooKeeper host machine(s).
 
     module.exports.push name: 'ZooKeeper Server # Check Registration', callback: (ctx, next) ->
-      {zookeeper_port} = ctx.config.hdp
+      {zookeeper_port} = ctx.config.ryba
       hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
       ctx.waitIsOpen hosts, zookeeper_port, (err) ->
         return next err if err

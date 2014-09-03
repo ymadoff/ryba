@@ -14,7 +14,7 @@ layout: module
       require('./hdfs').configure ctx
 
     module.exports.push name: 'HDP HDFS SNN # Directories', timeout: -1, callback: (ctx, next) ->
-      {hdfs_site, fs_checkpoint_dir, hdfs_user, hadoop_group, hdfs_pid_dir} = ctx.config.hdp
+      {hdfs_site, fs_checkpoint_dir, hdfs_user, hadoop_group, hdfs_pid_dir} = ctx.config.ryba
       ctx.log "Create SNN data, checkpind and pid directories"
       ctx.mkdir [
         destination: hdfs_site['dfs.namenode.name.dir']
@@ -35,7 +35,7 @@ layout: module
         next err, if created then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP HDFS SNN # Kerberos', callback: (ctx, next) ->
-      {realm} = ctx.config.hdp
+      {realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
         principal: "nn/#{ctx.config.host}@#{realm}"

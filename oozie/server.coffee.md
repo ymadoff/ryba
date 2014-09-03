@@ -46,62 +46,62 @@ Example
       require('masson/core/iptables').configure ctx
       require('masson/commons/java').configure ctx
       require('../hadoop/core').configure ctx
-      {static_host, realm, core_site, test_user, test_password, db_admin} = ctx.config.hdp
+      {static_host, realm, core_site, test_user, test_password, db_admin} = ctx.config.ryba
       # Internal properties
-      ctx.config.hdp.force_war ?= false
+      ctx.config.ryba.force_war ?= false
       # User
-      ctx.config.hdp.oozie_user = name: ctx.config.hdp.oozie_user if typeof ctx.config.hdp.oozie_user is 'string'
-      ctx.config.hdp.oozie_user ?= {}
-      ctx.config.hdp.oozie_user.name ?= 'oozie'
-      ctx.config.hdp.oozie_user.system ?= true
-      ctx.config.hdp.oozie_user.gid ?= 'oozie'
-      ctx.config.hdp.oozie_user.comment ?= 'Oozie User'
-      ctx.config.hdp.oozie_user.home ?= '/var/lib/oozie'
+      ctx.config.ryba.oozie_user = name: ctx.config.ryba.oozie_user if typeof ctx.config.ryba.oozie_user is 'string'
+      ctx.config.ryba.oozie_user ?= {}
+      ctx.config.ryba.oozie_user.name ?= 'oozie'
+      ctx.config.ryba.oozie_user.system ?= true
+      ctx.config.ryba.oozie_user.gid ?= 'oozie'
+      ctx.config.ryba.oozie_user.comment ?= 'Oozie User'
+      ctx.config.ryba.oozie_user.home ?= '/var/lib/oozie'
       # Group
-      ctx.config.hdp.oozie_group = name: ctx.config.hdp.oozie_group if typeof ctx.config.hdp.oozie_group is 'string'
-      ctx.config.hdp.oozie_group ?= {}
-      ctx.config.hdp.oozie_group.name ?= 'oozie'
-      ctx.config.hdp.oozie_group.system ?= true
+      ctx.config.ryba.oozie_group = name: ctx.config.ryba.oozie_group if typeof ctx.config.ryba.oozie_group is 'string'
+      ctx.config.ryba.oozie_group ?= {}
+      ctx.config.ryba.oozie_group.name ?= 'oozie'
+      ctx.config.ryba.oozie_group.system ?= true
       # Login
-      ctx.config.hdp.oozie_test_principal ?= "#{test_user.name}@#{realm}"
-      ctx.config.hdp.oozie_test_password ?= "#{test_password}"
-      ctx.config.hdp.oozie_conf_dir ?= '/etc/oozie/conf'
+      ctx.config.ryba.oozie_test_principal ?= "#{test_user.name}@#{realm}"
+      ctx.config.ryba.oozie_test_password ?= "#{test_password}"
+      ctx.config.ryba.oozie_conf_dir ?= '/etc/oozie/conf'
       # Layout
-      ctx.config.hdp.oozie_data ?= '/var/db/oozie'
-      ctx.config.hdp.oozie_log_dir ?= '/var/log/oozie'
-      ctx.config.hdp.oozie_pid_dir ?= '/var/run/oozie'
-      ctx.config.hdp.oozie_tmp_dir ?= '/var/tmp/oozie'
+      ctx.config.ryba.oozie_data ?= '/var/db/oozie'
+      ctx.config.ryba.oozie_log_dir ?= '/var/log/oozie'
+      ctx.config.ryba.oozie_pid_dir ?= '/var/run/oozie'
+      ctx.config.ryba.oozie_tmp_dir ?= '/var/tmp/oozie'
       # Configuration
-      ctx.config.hdp.oozie_site ?= {}
-      ctx.config.hdp.oozie_site['oozie.base.url'] = "http://#{ctx.config.host}:11000/oozie"
+      ctx.config.ryba.oozie_site ?= {}
+      ctx.config.ryba.oozie_site['oozie.base.url'] = "http://#{ctx.config.host}:11000/oozie"
       # Configuration Database
-      ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{db_admin.host}:#{db_admin.port}/oozie?createDatabaseIfNotExist=true"
-      ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
-      ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'
-      ctx.config.hdp.oozie_site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
-      ctx.config.hdp.oozie_site['oozie.service.AuthorizationService.security.enabled'] ?= 'true' # Todo, now deprecated should be set to null in favor of oozie.service.AuthorizationService.authorization.enabled (see oozie "oozie.log" file)
-      ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.kerberos.enabled'] ?= 'true'
-      ctx.config.hdp.oozie_site['local.realm'] ?= "#{realm}"
-      ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.keytab.file'] ?= '/etc/oozie/conf/oozie.service.keytab'
-      ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.kerberos.principal'] ?= "oozie/#{ctx.config.host}@#{realm}"
-      ctx.config.hdp.oozie_site['oozie.authentication.type'] ?= 'kerberos'
-      ctx.config.hdp.oozie_site['oozie.authentication.kerberos.principal'] ?= "HTTP/#{ctx.config.host}@#{realm}"
-      ctx.config.hdp.oozie_site['oozie.authentication.kerberos.keytab'] ?= '/etc/oozie/conf/spnego.service.keytab'
-      # ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.nameNode.whitelist'] = ''
-      ctx.config.hdp.oozie_site['oozie.authentication.kerberos.name.rules'] ?= core_site['hadoop.security.auth_to_local']
-      ctx.config.hdp.oozie_site['oozie.service.HadoopAccessorService.nameNode.whitelist'] ?= '' # Fix space value
-      ctx.config.hdp.oozie_site['oozie.service.ProxyUserService.proxyuser.hive.hosts'] ?= "*"
-      ctx.config.hdp.oozie_site['oozie.service.ProxyUserService.proxyuser.hive.groups'] ?= "*"
-      ctx.config.hdp.oozie_site['oozie.service.ProxyUserService.proxyuser.hue.hosts'] ?= "*"
-      ctx.config.hdp.oozie_site['oozie.service.ProxyUserService.proxyuser.hue.groups'] ?= "*"
-      ctx.config.hdp.oozie_hadoop_config ?= {}
-      ctx.config.hdp.oozie_hadoop_config['mapreduce.jobtracker.kerberos.principal'] ?= "mapred/#{static_host}@#{realm}"
-      ctx.config.hdp.oozie_hadoop_config['yarn.resourcemanager.principal'] ?= "yarn/#{static_host}@#{realm}"
-      ctx.config.hdp.oozie_hadoop_config['dfs.namenode.kerberos.principal'] ?= "hdfs/#{static_host}@#{realm}"
-      ctx.config.hdp.oozie_hadoop_config['mapreduce.framework.name'] ?= "yarn"
-      ctx.config.hdp.extjs ?= {}
-      throw new Error "Missing extjs.source" unless ctx.config.hdp.extjs.source
-      throw new Error "Missing extjs.destination" unless ctx.config.hdp.extjs.destination
+      ctx.config.ryba.oozie_site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{db_admin.host}:#{db_admin.port}/oozie?createDatabaseIfNotExist=true"
+      ctx.config.ryba.oozie_site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
+      ctx.config.ryba.oozie_site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'
+      ctx.config.ryba.oozie_site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
+      ctx.config.ryba.oozie_site['oozie.service.AuthorizationService.security.enabled'] ?= 'true' # Todo, now deprecated should be set to null in favor of oozie.service.AuthorizationService.authorization.enabled (see oozie "oozie.log" file)
+      ctx.config.ryba.oozie_site['oozie.service.HadoopAccessorService.kerberos.enabled'] ?= 'true'
+      ctx.config.ryba.oozie_site['local.realm'] ?= "#{realm}"
+      ctx.config.ryba.oozie_site['oozie.service.HadoopAccessorService.keytab.file'] ?= '/etc/oozie/conf/oozie.service.keytab'
+      ctx.config.ryba.oozie_site['oozie.service.HadoopAccessorService.kerberos.principal'] ?= "oozie/#{ctx.config.host}@#{realm}"
+      ctx.config.ryba.oozie_site['oozie.authentication.type'] ?= 'kerberos'
+      ctx.config.ryba.oozie_site['oozie.authentication.kerberos.principal'] ?= "HTTP/#{ctx.config.host}@#{realm}"
+      ctx.config.ryba.oozie_site['oozie.authentication.kerberos.keytab'] ?= '/etc/oozie/conf/spnego.service.keytab'
+      # ctx.config.ryba.oozie_site['oozie.service.HadoopAccessorService.nameNode.whitelist'] = ''
+      ctx.config.ryba.oozie_site['oozie.authentication.kerberos.name.rules'] ?= core_site['hadoop.security.auth_to_local']
+      ctx.config.ryba.oozie_site['oozie.service.HadoopAccessorService.nameNode.whitelist'] ?= '' # Fix space value
+      ctx.config.ryba.oozie_site['oozie.service.ProxyUserService.proxyuser.hive.hosts'] ?= "*"
+      ctx.config.ryba.oozie_site['oozie.service.ProxyUserService.proxyuser.hive.groups'] ?= "*"
+      ctx.config.ryba.oozie_site['oozie.service.ProxyUserService.proxyuser.hue.hosts'] ?= "*"
+      ctx.config.ryba.oozie_site['oozie.service.ProxyUserService.proxyuser.hue.groups'] ?= "*"
+      ctx.config.ryba.oozie_hadoop_config ?= {}
+      ctx.config.ryba.oozie_hadoop_config['mapreduce.jobtracker.kerberos.principal'] ?= "mapred/#{static_host}@#{realm}"
+      ctx.config.ryba.oozie_hadoop_config['yarn.resourcemanager.principal'] ?= "yarn/#{static_host}@#{realm}"
+      ctx.config.ryba.oozie_hadoop_config['dfs.namenode.kerberos.principal'] ?= "hdfs/#{static_host}@#{realm}"
+      ctx.config.ryba.oozie_hadoop_config['mapreduce.framework.name'] ?= "yarn"
+      ctx.config.ryba.extjs ?= {}
+      throw new Error "Missing extjs.source" unless ctx.config.ryba.extjs.source
+      throw new Error "Missing extjs.destination" unless ctx.config.ryba.extjs.destination
 
 ## Users & Groups
 
@@ -115,7 +115,7 @@ oozie:x:493:
 ```
 
     module.exports.push name: 'Oozie Server # Users & Groups', callback: (ctx, next) ->
-      {oozie_group, oozie_user} = ctx.config.hdp
+      {oozie_group, oozie_user} = ctx.config.ryba
       ctx.group oozie_group, (err, gmodified) ->
         return next err if err
         ctx.user oozie_user, (err, umodified) ->
@@ -131,7 +131,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'Oozie Server # IPTables', callback: (ctx, next) ->
-      {oozie_site} = ctx.config.hdp
+      {oozie_site} = ctx.config.ryba
       port = url.parse(oozie_site['oozie.base.url']).port
       ctx.iptables
         rules: [
@@ -149,12 +149,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       ,
         name: 'extjs-2.2-1'
       ], (err, serviced) ->
-        ctx.config.hdp.force_war = true if serviced
+        ctx.config.ryba.force_war = true if serviced
         next err, if serviced then ctx.OK else ctx.PASS
 
     module.exports.push name: 'Oozie Server # Environment', callback: (ctx, next) ->
       {java_home} = ctx.config.java
-      {oozie_user, hadoop_group, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_data} = ctx.config.hdp
+      {oozie_user, hadoop_group, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_data} = ctx.config.ryba
       ctx.write
         source: "#{__dirname}/../hadoop/files/oozie/oozie-env.sh"
         destination: "#{oozie_conf_dir}/oozie-env.sh"
@@ -195,7 +195,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         next err, if rendered then ctx.OK else ctx.PASS
 
     module.exports.push name: 'Oozie Server # Directories', callback: (ctx, next) ->
-      {oozie_user, oozie_group, oozie_data, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_tmp_dir} = ctx.config.hdp
+      {oozie_user, oozie_group, oozie_data, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_tmp_dir} = ctx.config.ryba
       oozie_user = oozie_user.name
       oozie_group = oozie_group.name
       ctx.mkdir [
@@ -236,7 +236,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         source: '/usr/share/HDP-oozie/ext-2.2.zip'
         destination: '/usr/lib/oozie/libext/'
       , (err, copied) ->
-        ctx.config.hdp.force_war = true if copied
+        ctx.config.ryba.force_war = true if copied
         return next err, if copied then ctx.OK else ctx.PASS
 
     module.exports.push name: 'Oozie Server # LZO', callback: (ctx, next) ->
@@ -261,12 +261,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/lib/oozie/libext/mysql-connector-java.jar'
       , (err, linked) ->
-        ctx.config.hdp.force_war = true if linked
+        ctx.config.ryba.force_war = true if linked
         return next err, ctx.PASS if err or not linked
 
     module.exports.push name: 'Oozie Server # Configuration', callback: (ctx, next) ->
-      { hadoop_conf_dir, yarn, oozie_group, oozie_user, 
-        oozie_site, oozie_conf_dir, oozie_hadoop_config } = ctx.config.hdp
+      { hadoop_conf_dir, yarn_site, oozie_group, oozie_user, 
+        oozie_site, oozie_conf_dir, oozie_hadoop_config } = ctx.config.ryba
       modified = false
       do_oozie_site = ->
         ctx.log 'Configure oozie-site.xml'
@@ -303,7 +303,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       do_oozie_site()
 
     module.exports.push name: 'Oozie Server # War', callback: (ctx, next) ->
-      {oozie_user} = ctx.config.hdp
+      {oozie_user} = ctx.config.ryba
       # The script `ooziedb.sh` must be done as the oozie Unix user, otherwise 
       # Oozie may fail to start or work properly because of incorrect file permissions.
       # There is already a "oozie.war" file inside /var/lib/oozie/oozie-server/webapps/.
@@ -311,12 +311,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       # The directory being servered by the web server is "/usr/lib/oozie/webapps/oozie".
       ctx.execute
         cmd: "su -l #{oozie_user.name} -c '/usr/lib/oozie/bin/oozie-setup.sh prepare-war'"
-        not_if: not ctx.config.hdp.force_war
+        not_if: not ctx.config.ryba.force_war
       , (err, executed) ->
         next err, if executed then ctx.OK else ctx.PASS
 
     module.exports.push name: 'Oozie Server # Kerberos', callback: (ctx, next) ->
-      {oozie_user, oozie_group, oozie_site, realm} = ctx.config.hdp
+      {oozie_user, oozie_group, oozie_site, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
         principal: oozie_site['oozie.service.HadoopAccessorService.kerberos.principal'] #.replace '_HOST', ctx.config.host
@@ -332,7 +332,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         next null, if created then ctx.OK else ctx.PASS
 
     module.exports.push name: 'Oozie Server # SPNEGO', callback: (ctx, next) ->
-      {oozie_site, oozie_user, oozie_group} = ctx.config.hdp
+      {oozie_site, oozie_user, oozie_group} = ctx.config.ryba
       ctx.copy
         source: '/etc/security/keytabs/spnego.service.keytab'
         destination: "#{oozie_site['oozie.authentication.kerberos.keytab']}"
@@ -343,7 +343,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         return next err, if copied then ctx.OK else ctx.PASS
 
     module.exports.push name: 'Oozie Server # MySQL', callback: (ctx, next) ->
-      {db_admin, oozie_db_host, oozie_site} = ctx.config.hdp
+      {db_admin, oozie_db_host, oozie_site} = ctx.config.ryba
       username = oozie_site['oozie.service.JPAService.jdbc.username']
       password = oozie_site['oozie.service.JPAService.jdbc.password']
       {engine, db} = parse_jdbc oozie_site['oozie.service.JPAService.jdbc.url']
@@ -377,7 +377,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         next err, if executed then ctx.OK else ctx.PASS
 
     module.exports.push name: 'Oozie Server # Share lib', callback: (ctx, next) ->
-      {oozie_user, oozie_group} = ctx.config.hdp
+      {oozie_user, oozie_group} = ctx.config.ryba
       oozie_user = oozie_user.name
       oozie_group = oozie_group.name
       ctx.execute 

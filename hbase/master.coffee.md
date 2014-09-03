@@ -15,10 +15,10 @@ layout: module
       require('masson/core/iptables').configure ctx
       # require('../hadoop/hdfs').configure ctx
       require('./_').configure ctx
-      {realm, hbase_site} = ctx.config.hdp
-      ctx.config.hdp.hbase_admin ?= {}
-      ctx.config.hdp.hbase_admin.principal ?= "#{hbase_site['hbase.superuser']}@#{realm}"
-      ctx.config.hdp.hbase_admin.password ?= "hbase123"
+      {realm, hbase_site} = ctx.config.ryba
+      ctx.config.ryba.hbase_admin ?= {}
+      ctx.config.ryba.hbase_admin.principal ?= "#{hbase_site['hbase.superuser']}@#{realm}"
+      ctx.config.ryba.hbase_admin.password ?= "hbase123"
 
 ## IPTables
 
@@ -38,7 +38,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HDP Oozie Server # IPTables', callback: (ctx, next) ->
-      {hbase_site} = ctx.config.hdp
+      {hbase_site} = ctx.config.ryba
       port = 
       ctx.iptables
         rules: [
@@ -61,7 +61,7 @@ Install and configure the startup script in
         next err, if installed then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HBase Master # HDFS layout', timeout: -1, callback: (ctx, next) ->
-      {hbase_user, hbase_site} = ctx.config.hdp
+      {hbase_user, hbase_site} = ctx.config.ryba
       ctx.waitForExecution mkcmd.hdfs(ctx, "hdfs dfs -test -d /apps"), code_skipped: 1, (err) ->
         return next err if err
         dirs = hbase_site['hbase.bulkload.staging.dir'].split '/'
@@ -94,7 +94,7 @@ RegionServer, and HBase client host machines.
 Environment file is enriched by "ryba/hbase/_ # HBase # Env".
 
     module.exports.push name: 'HBase Client # Zookeeper JAAS', timeout: -1, callback: (ctx, next) ->
-      {jaas_server, hbase_conf_dir, hbase_user, hbase_group} = ctx.config.hdp
+      {jaas_server, hbase_conf_dir, hbase_user, hbase_group} = ctx.config.ryba
       ctx.write
         destination: "#{hbase_conf_dir}/hbase-master.jaas"
         content: jaas_server
@@ -105,7 +105,7 @@ Environment file is enriched by "ryba/hbase/_ # HBase # Env".
         return next err, if written then ctx.OK else ctx.PASS
 
     # module.exports.push name: 'HBase Master # Environment', timeout: -1, callback: (ctx, next) ->
-    #   {jaas_client, hbase_conf_dir, hbase_user, hbase_group} = ctx.config.hdp
+    #   {jaas_client, hbase_conf_dir, hbase_user, hbase_group} = ctx.config.ryba
     #   ctx.fs.readFile "#{hbase_conf_dir}/hbase-env.sh", 'ascii', (err, content) ->
         
     #     console.log err, content
@@ -114,7 +114,7 @@ https://blogs.apache.org/hbase/entry/hbase_cell_security
 https://hbase.apache.org/book/security.html
 
     module.exports.push name: 'HBase Master # Kerberos', callback: (ctx, next) ->
-      {hadoop_group, hbase_user, hbase_site, realm} = ctx.config.hdp
+      {hadoop_group, hbase_user, hbase_site, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc [
         principal: hbase_site['hbase.master.kerberos.principal'].replace '_HOST', ctx.config.host
@@ -155,7 +155,7 @@ using the hadoop conf directory to retrieve the SPNEGO keytab. The user "hbase"
 is added membership to the group hadoop to gain read access.
 
     module.exports.push name: 'HBase Master # FIX SPNEGO', callback: (ctx, next) ->
-      {hbase_site, hbase_user, hbase_group, hadoop_group} = ctx.config.hdp
+      {hbase_site, hbase_user, hbase_group, hadoop_group} = ctx.config.ryba
       ctx.execute
         cmd: """
           if groups #{hbase_user.name} | grep #{hadoop_group.name}; then exit 2; fi
@@ -174,7 +174,7 @@ is added membership to the group hadoop to gain read access.
 Enable stats collection in Ganglia.
 
     module.exports.push name: 'HBase Master # Metrics', callback: (ctx, next) ->
-      {hbase_conf_dir} = ctx.config.hdp
+      {hbase_conf_dir} = ctx.config.ryba
       collector = ctx.host_with_module 'ryba/hadoop/ganglia_collector'
       return next() unless collector
       ctx.upload
@@ -188,7 +188,7 @@ Enable stats collection in Ganglia.
     module.exports.push 'ryba/hbase/master_start'
 
     module.exports.push name: 'HBase Master # Admin', callback: (ctx, next) ->
-      {hbase_admin, realm} = ctx.config.hdp
+      {hbase_admin, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
         principal: hbase_admin.principal

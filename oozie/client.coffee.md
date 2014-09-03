@@ -15,11 +15,11 @@ layout: module
     module.exports.push module.exports.configure = (ctx) ->
       oozie_server = ctx.host_with_module 'ryba/oozie/server'
       # Oozie configuration
-      ctx.config.hdp.oozie_site ?= {}
-      ctx.config.hdp.oozie_site['oozie.base.url'] = "http://#{oozie_server}:11000/oozie"
+      ctx.config.ryba.oozie_site ?= {}
+      ctx.config.ryba.oozie_site['oozie.base.url'] = "http://#{oozie_server}:11000/oozie"
       # Internal properties
-      oozieurl = url.parse ctx.config.hdp.oozie_site['oozie.base.url']
-      ctx.config.hdp.oozie_port ?= oozieurl.port
+      oozieurl = url.parse ctx.config.ryba.oozie_site['oozie.base.url']
+      ctx.config.ryba.oozie_port ?= oozieurl.port
 
 # Install
 
@@ -32,7 +32,7 @@ Install the oozie client package. This package doesn't create any user and group
         next err, if serviced then ctx.OK else ctx.PASS
 
     module.exports.push name: 'Oozie Client # Profile', callback: (ctx, next) ->
-      {oozie_site} = ctx.config.hdp
+      {oozie_site} = ctx.config.ryba
       ctx.write
         destination: '/etc/profile.d/oozie.sh'
         content: """
@@ -44,7 +44,7 @@ Install the oozie client package. This package doesn't create any user and group
         next null, if written then ctx.OK else ctx.PASS
 
     module.exports.push name: 'Oozie Client # Check Client', timeout: -1, callback: (ctx, next) ->
-      {oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
+      {oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.ryba
       oozie_server = ctx.host_with_module 'ryba/oozie/server'
       ctx.waitIsOpen oozie_server, oozie_port, (err) ->
         ctx.execute
@@ -58,7 +58,7 @@ Install the oozie client package. This package doesn't create any user and group
           return next null, ctx.PASS
 
     module.exports.push name: 'Oozie Client # Check REST', timeout: -1, callback: (ctx, next) ->
-      {oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
+      {oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.ryba
       oozie_server = ctx.host_with_module 'ryba/oozie/server'
       ctx.waitIsOpen oozie_server, oozie_port, (err) ->
         return next err if err
@@ -73,7 +73,7 @@ Install the oozie client package. This package doesn't create any user and group
           return next null, ctx.PASS
 
     module.exports.push name: 'Oozie Client # Workflow', timeout: -1, callback: (ctx, next) ->
-      {nameservice, oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.hdp
+      {nameservice, oozie_port, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.ryba
       rm = ctx.host_with_module 'ryba/hadoop/yarn_rm'
       oozie_server = ctx.hosts_with_module 'ryba/oozie/server', 1
       ctx.waitIsOpen oozie_server, oozie_port, (err) ->

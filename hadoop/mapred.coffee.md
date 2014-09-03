@@ -18,31 +18,31 @@ layout: module
       ctx.mapred_configured = true
       require('./hdfs').configure ctx
       require('./yarn').configure ctx
-      {static_host, realm, mapred} = ctx.config.hdp
+      {static_host, realm, mapred_site} = ctx.config.ryba
       jhs_host = ctx.host_with_module 'ryba/hadoop/mapred_jhs'
       # Layout
-      ctx.config.hdp.mapred_pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
+      ctx.config.ryba.mapred_pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
       # Configuration
-      mapred['mapreduce.job.counters.max'] ?= 120
+      mapred_site['mapreduce.job.counters.max'] ?= 120
       # Not sure if we need this, at this time, the directory isnt created
-      mapred['mapreduce.jobtracker.system.dir'] ?= '/mapred/system'
-      mapred['mapreduce.reduce.shuffle.parallelcopies'] ?= '50' #  Higher number of parallel copies run by reduces to fetch outputs from very large number of maps.
+      mapred_site['mapreduce.jobtracker.system.dir'] ?= '/mapred/system'
+      mapred_site['mapreduce.reduce.shuffle.parallelcopies'] ?= '50' #  Higher number of parallel copies run by reduces to fetch outputs from very large number of maps.
       # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.6.0/bk_installing_manually_book/content/rpm_chap3.html
       # Optional: Configure MapReduce to use Snappy Compression
       # Complement core-site.xml configuration
-      mapred['mapreduce.admin.map.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
-      mapred['mapreduce.admin.reduce.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
+      mapred_site['mapreduce.admin.map.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
+      mapred_site['mapreduce.admin.reduce.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
       # [Configurations for MapReduce JobHistory Server](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuring_the_Hadoop_Daemons_in_Non-Secure_Mode)
-      mapred['mapreduce.jobhistory.address'] ?= "#{jhs_host}:10020" # MapReduce JobHistory Server host:port - Default port is 10020.
-      mapred['mapreduce.jobhistory.webapp.address'] ?= "#{jhs_host}:19888" # MapReduce JobHistory Server Web UI host:port - Default port is 19888.
-      mapred['mapreduce.jobhistory.done-dir'] ?= '/mr-history/done' # Directory where history files are managed by the MR JobHistory Server.
-      mapred['mapreduce.jobhistory.intermediate-done-dir'] ?= '/mr-history/tmp' # Directory where history files are written by MapReduce jobs.
+      mapred_site['mapreduce.jobhistory.address'] ?= "#{jhs_host}:10020" # MapReduce JobHistory Server host:port - Default port is 10020.
+      mapred_site['mapreduce.jobhistory.webapp.address'] ?= "#{jhs_host}:19888" # MapReduce JobHistory Server Web UI host:port - Default port is 19888.
+      mapred_site['mapreduce.jobhistory.done-dir'] ?= '/mr-history/done' # Directory where history files are managed by the MR JobHistory Server.
+      mapred_site['mapreduce.jobhistory.intermediate-done-dir'] ?= '/mr-history/tmp' # Directory where history files are written by MapReduce jobs.
       # Important, JHS principal must be deployed on all mapreduce workers
-      mapred['mapreduce.jobhistory.principal'] ?= "jhs/#{jhs_host}@#{realm}"
-      #mapred['mapreduce.jobhistory.principal'] ?= "jhs/#{static_host}@#{realm}"
+      mapred_site['mapreduce.jobhistory.principal'] ?= "jhs/#{jhs_host}@#{realm}"
+      #mapred_site['mapreduce.jobhistory.principal'] ?= "jhs/#{static_host}@#{realm}"
       # The value is set by the client app and the iptables are enforced on the worker nodes
-      mapred['yarn.app.mapreduce.am.job.client.port-range'] ?= '59100-59200'
-      mapred['mapreduce.framework.name'] ?= 'yarn' # Execution framework set to Hadoop YARN.
+      mapred_site['yarn.app.mapreduce.am.job.client.port-range'] ?= '59100-59200'
+      mapred_site['mapreduce.framework.name'] ?= 'yarn' # Execution framework set to Hadoop YARN.
 
 ## IPTables
 
@@ -55,8 +55,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HDP MapRed # IPTables', callback: (ctx, next) ->
-      {mapred} = ctx.config.hdp
-      jobclient = mapred['yarn.app.mapreduce.am.job.client.port-range']
+      {mapred_site} = ctx.config.ryba
+      jobclient = mapred_site['yarn.app.mapreduce.am.job.client.port-range']
       jobclient = jobclient.replace '-', ':'
       ctx.iptables
         rules: [
@@ -80,16 +80,16 @@ http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually
 http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
 
     module.exports.push name: 'HDP MapRed # Users & Groups', callback: (ctx, next) ->
-      {hadoop_group} = ctx.config.hdp
+      {mapred_user, hadoop_group} = ctx.config.ryba
       ctx.execute
-        cmd: "useradd mapred -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop MapReduce service\""
+        cmd: "useradd {mapred_user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop MapReduce service\""
         code: 0
         code_skipped: 9
       , (err, executed) ->
         next err, if executed then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP MapRed # System Directories', timeout: -1, callback: (ctx, next) ->
-      { mapred_user, hadoop_group, mapred_log_dir, mapred_pid_dir } = ctx.config.hdp
+      { mapred_user, hadoop_group, mapred_log_dir, mapred_pid_dir } = ctx.config.ryba
       modified = false
       do_log = ->
         ctx.log "Create hdfs and mapred log: #{mapred_log_dir}"
@@ -118,7 +118,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       do_log()
 
     module.exports.push name: 'HDP MapRed # Configuration', callback: (ctx, next) ->
-      { mapred, hadoop_conf_dir, mapred_user, mapred_group, mapred_queue_acls } = ctx.config.hdp
+      { mapred_site, hadoop_conf_dir, mapred_user, mapred_group, mapred_queue_acls } = ctx.config.ryba
       modified = false
       do_mapred = ->
         ctx.log 'Configure mapred-site.xml'
@@ -126,7 +126,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
           destination: "#{hadoop_conf_dir}/mapred-site.xml"
           default: "#{__dirname}/files/core_hadoop/mapred-site.xml"
           local_default: true
-          properties: mapred
+          properties: mapred_site
           merge: true
           uid: mapred_user.name
           gid: mapred_group.name
@@ -175,8 +175,8 @@ Reduce task is determined by the virtual memory ratio each YARN Container is
 allowed.
 
     module.exports.push name: 'HDP MapRed # Tuning', callback: (ctx, next) ->
-      {hadoop_conf_dir} = ctx.config.hdp
-      {info, yarn_site, mapred_site} = memory ctx
+      {hadoop_conf_dir} = ctx.config.ryba
+      {info, mapred_site} = memory ctx
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
         properties: mapred_site

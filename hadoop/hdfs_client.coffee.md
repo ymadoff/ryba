@@ -11,13 +11,13 @@ layout: module
 
     module.exports.push module.exports.configure = (ctx) ->
       require('./hdfs').configure ctx
-      {static_host, realm} = ctx.config.hdp
+      {static_host, realm} = ctx.config.ryba
       # Required
-      ctx.config.hdp.hdfs_site['dfs.domain.socket.path'] ?= '/var/lib/hadoop-hdfs/dn_socket'
-      ctx.config.hdp.hdfs_site['dfs.namenode.kerberos.principal'] ?= "nn/#{static_host}@#{realm}"
+      ctx.config.ryba.hdfs_site['dfs.domain.socket.path'] ?= '/var/lib/hadoop-hdfs/dn_socket'
+      ctx.config.ryba.hdfs_site['dfs.namenode.kerberos.principal'] ?= "nn/#{static_host}@#{realm}"
 
     module.exports.push name: 'HDP HDFS Client # Configuration', callback: (ctx, next) ->
-      {hadoop_conf_dir, hdfs_site} = ctx.config.hdp
+      {hadoop_conf_dir, hdfs_site} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: hdfs_site
@@ -26,7 +26,7 @@ layout: module
         next err, if configured then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP HDFS Client # HA', callback: (ctx, next) ->
-      {hadoop_conf_dir, ha_client_config} = ctx.config.hdp
+      {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: ha_client_config

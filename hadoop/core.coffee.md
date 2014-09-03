@@ -102,91 +102,91 @@ Default configuration:
       require('masson/commons/java').configure ctx
       require('../zookeeper/server').configure ctx
       # require('./core_ssl').configure ctx
-      ctx.config.hdp ?= {}
-      ctx.config.hdp.format ?= false
-      ctx.config.hdp.force_check ?= false
+      ctx.config.ryba ?= {}
+      ctx.config.ryba.format ?= false
+      ctx.config.ryba.force_check ?= false
       # User
-      ctx.config.hdp.hdfs_user = name: ctx.config.hdp.hdfs_user if typeof ctx.config.hdp.hdfs_user is 'string'
-      ctx.config.hdp.hdfs_user ?= {}
-      ctx.config.hdp.hdfs_user.name ?= 'hdfs'
-      ctx.config.hdp.hdfs_user.system ?= true
-      ctx.config.hdp.hdfs_user.gid ?= 'hdfs'
-      ctx.config.hdp.hdfs_user.groups ?= 'hadoop'
-      ctx.config.hdp.hdfs_user.comment ?= 'Hadoop HDFS User'
-      ctx.config.hdp.hdfs_user.home ?= '/var/lib/hadoop-hdfs'
-      ctx.config.hdp.yarn_user = name: ctx.config.hdp.yarn_user if typeof ctx.config.hdp.yarn_user is 'string'
-      ctx.config.hdp.yarn_user ?= {}
-      ctx.config.hdp.yarn_user.name ?= 'yarn'
-      ctx.config.hdp.yarn_user.system ?= true
-      ctx.config.hdp.yarn_user.gid ?= 'yarn'
-      ctx.config.hdp.yarn_user.groups ?= 'hadoop'
-      ctx.config.hdp.yarn_user.comment ?= 'Hadoop YARN User'
-      ctx.config.hdp.yarn_user.home ?= '/var/lib/hadoop-yarn'
-      ctx.config.hdp.mapred_user = name: ctx.config.hdp.mapred_user if typeof ctx.config.hdp.mapred_user is 'string'
-      ctx.config.hdp.mapred_user ?= {}
-      ctx.config.hdp.mapred_user.name ?= 'mapred'
-      ctx.config.hdp.mapred_user.system ?= true
-      ctx.config.hdp.mapred_user.gid ?= 'mapred'
-      ctx.config.hdp.mapred_user.groups ?= 'hadoop'
-      ctx.config.hdp.mapred_user.comment ?= 'Hadoop MapReduce User'
-      ctx.config.hdp.mapred_user.home ?= '/var/lib/hadoop-mapreduce'
-      ctx.config.hdp.test_user = name: ctx.config.hdp.test_user if typeof ctx.config.hdp.test_user is 'string'
-      ctx.config.hdp.test_user ?= {}
-      ctx.config.hdp.test_user.name ?= 'ryba'
-      ctx.config.hdp.test_user.system ?= true
-      ctx.config.hdp.test_user.gid ?= 'ryba'
-      ctx.config.hdp.test_user.comment ?= 'ryba User'
-      ctx.config.hdp.test_user.home ?= '/home/ryba'
+      ctx.config.ryba.hdfs_user = name: ctx.config.ryba.hdfs_user if typeof ctx.config.ryba.hdfs_user is 'string'
+      ctx.config.ryba.hdfs_user ?= {}
+      ctx.config.ryba.hdfs_user.name ?= 'hdfs'
+      ctx.config.ryba.hdfs_user.system ?= true
+      ctx.config.ryba.hdfs_user.gid ?= 'hdfs'
+      ctx.config.ryba.hdfs_user.groups ?= 'hadoop'
+      ctx.config.ryba.hdfs_user.comment ?= 'Hadoop HDFS User'
+      ctx.config.ryba.hdfs_user.home ?= '/var/lib/hadoop-hdfs'
+      ctx.config.ryba.yarn_user = name: ctx.config.ryba.yarn_user if typeof ctx.config.ryba.yarn_user is 'string'
+      ctx.config.ryba.yarn_user ?= {}
+      ctx.config.ryba.yarn_user.name ?= 'yarn'
+      ctx.config.ryba.yarn_user.system ?= true
+      ctx.config.ryba.yarn_user.gid ?= 'yarn'
+      ctx.config.ryba.yarn_user.groups ?= 'hadoop'
+      ctx.config.ryba.yarn_user.comment ?= 'Hadoop YARN User'
+      ctx.config.ryba.yarn_user.home ?= '/var/lib/hadoop-yarn'
+      ctx.config.ryba.mapred_user = name: ctx.config.ryba.mapred_user if typeof ctx.config.ryba.mapred_user is 'string'
+      ctx.config.ryba.mapred_user ?= {}
+      ctx.config.ryba.mapred_user.name ?= 'mapred'
+      ctx.config.ryba.mapred_user.system ?= true
+      ctx.config.ryba.mapred_user.gid ?= 'mapred'
+      ctx.config.ryba.mapred_user.groups ?= 'hadoop'
+      ctx.config.ryba.mapred_user.comment ?= 'Hadoop MapReduce User'
+      ctx.config.ryba.mapred_user.home ?= '/var/lib/hadoop-mapreduce'
+      ctx.config.ryba.test_user = name: ctx.config.ryba.test_user if typeof ctx.config.ryba.test_user is 'string'
+      ctx.config.ryba.test_user ?= {}
+      ctx.config.ryba.test_user.name ?= 'ryba'
+      ctx.config.ryba.test_user.system ?= true
+      ctx.config.ryba.test_user.gid ?= 'ryba'
+      ctx.config.ryba.test_user.comment ?= 'ryba User'
+      ctx.config.ryba.test_user.home ?= '/home/ryba'
       # Groups
-      ctx.config.hdp.hadoop_group = name: ctx.config.hdp.hadoop_group if typeof ctx.config.hdp.hadoop_group is 'string'
-      ctx.config.hdp.hadoop_group ?= {}
-      ctx.config.hdp.hadoop_group.name ?= 'hadoop'
-      ctx.config.hdp.hadoop_group.system ?= true
-      ctx.config.hdp.hdfs_group = name: ctx.config.hdp.hdfs_group if typeof ctx.config.hdp.hdfs_group is 'string'
-      ctx.config.hdp.hdfs_group ?= {}
-      ctx.config.hdp.hdfs_group.name ?= 'hdfs'
-      ctx.config.hdp.hdfs_group.system ?= true
-      ctx.config.hdp.yarn_group = name: ctx.config.hdp.yarn_group if typeof ctx.config.hdp.yarn_group is 'string'
-      ctx.config.hdp.yarn_group ?= {}
-      ctx.config.hdp.yarn_group.name ?= 'yarn'
-      ctx.config.hdp.yarn_group.system ?= true
-      ctx.config.hdp.mapred_group = name: ctx.config.hdp.mapred_group if typeof ctx.config.hdp.mapred_group is 'string'
-      ctx.config.hdp.mapred_group ?= {}
-      ctx.config.hdp.mapred_group.name ?= 'mapred'
-      ctx.config.hdp.mapred_group.system ?= true
-      ctx.config.hdp.test_group = name: ctx.config.hdp.test_group if typeof ctx.config.hdp.test_group is 'string'
-      ctx.config.hdp.test_group ?= {}
-      ctx.config.hdp.test_group.name ?= 'ryba'
-      ctx.config.hdp.test_group.system ?= true
+      ctx.config.ryba.hadoop_group = name: ctx.config.ryba.hadoop_group if typeof ctx.config.ryba.hadoop_group is 'string'
+      ctx.config.ryba.hadoop_group ?= {}
+      ctx.config.ryba.hadoop_group.name ?= 'hadoop'
+      ctx.config.ryba.hadoop_group.system ?= true
+      ctx.config.ryba.hdfs_group = name: ctx.config.ryba.hdfs_group if typeof ctx.config.ryba.hdfs_group is 'string'
+      ctx.config.ryba.hdfs_group ?= {}
+      ctx.config.ryba.hdfs_group.name ?= 'hdfs'
+      ctx.config.ryba.hdfs_group.system ?= true
+      ctx.config.ryba.yarn_group = name: ctx.config.ryba.yarn_group if typeof ctx.config.ryba.yarn_group is 'string'
+      ctx.config.ryba.yarn_group ?= {}
+      ctx.config.ryba.yarn_group.name ?= 'yarn'
+      ctx.config.ryba.yarn_group.system ?= true
+      ctx.config.ryba.mapred_group = name: ctx.config.ryba.mapred_group if typeof ctx.config.ryba.mapred_group is 'string'
+      ctx.config.ryba.mapred_group ?= {}
+      ctx.config.ryba.mapred_group.name ?= 'mapred'
+      ctx.config.ryba.mapred_group.system ?= true
+      ctx.config.ryba.test_group = name: ctx.config.ryba.test_group if typeof ctx.config.ryba.test_group is 'string'
+      ctx.config.ryba.test_group ?= {}
+      ctx.config.ryba.test_group.name ?= 'ryba'
+      ctx.config.ryba.test_group.system ?= true
       # Layout
-      hadoop_conf_dir = ctx.config.hdp.hadoop_conf_dir ?= '/etc/hadoop/conf'
-      ctx.config.hdp.hdfs_log_dir ?= '/var/log/hadoop-hdfs'
-      ctx.config.hdp.hdfs_pid_dir ?= '/var/run/hadoop-hdfs'
-      ctx.config.hdp.mapred_log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
+      hadoop_conf_dir = ctx.config.ryba.hadoop_conf_dir ?= '/etc/hadoop/conf'
+      ctx.config.ryba.hdfs_log_dir ?= '/var/log/hadoop-hdfs'
+      ctx.config.ryba.hdfs_pid_dir ?= '/var/run/hadoop-hdfs'
+      ctx.config.ryba.mapred_log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
       # Repository
-      ctx.config.hdp.proxy = ctx.config.proxy.http_proxy if typeof ctx.config.hdp.http_proxy is 'undefined'
-      ctx.config.hdp.hdp_repo ?= 'http://public-repo-1.hortonworks.com/HDP/centos5/2.x/GA/2.1-latest/hdp.repo'
+      ctx.config.ryba.proxy = ctx.config.proxy.http_proxy if typeof ctx.config.ryba.http_proxy is 'undefined'
+      ctx.config.ryba.hdp_repo ?= 'http://public-repo-1.hortonworks.com/HDP/centos5/2.x/GA/2.1-latest/hdp.repo'
       # HA Configuration
-      ctx.config.hdp.nameservice ?= null
-      ctx.config.hdp.active_nn ?= false
-      throw new Error "Invalid Service Name" unless ctx.config.hdp.nameservice
+      ctx.config.ryba.nameservice ?= null
+      ctx.config.ryba.active_nn ?= false
+      throw new Error "Invalid Service Name" unless ctx.config.ryba.nameservice
       namenodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       throw new Error "Need at least 2 namenodes" if namenodes.length < 2
       # active_nn_hosts = ctx.config.servers.filter( (server) -> server.hdp?.active_nn ).map( (server) -> server.host )
       active_nn_hosts = namenodes.filter( (server) -> ctx.config.servers[server].hdp?.active_nn )
       throw new Error "Invalid Number of Active NameNodes: #{active_nn_hosts.length}" unless active_nn_hosts.length is 1
-      ctx.config.hdp.active_nn_host = active_nn_hosts[0]
+      ctx.config.ryba.active_nn_host = active_nn_hosts[0]
       # standby_nn_hosts = ctx.config.servers.filter( (server) -> ! server.hdp?.active_nn ).map( (server) -> server.host )
       standby_nn_hosts = namenodes.filter( (server) -> ! ctx.config.servers[server].hdp?.active_nn )
       throw new Error "Invalid Number of Passive NameNodes: #{standby_nn_hosts.length}" unless standby_nn_hosts.length is 1
-      ctx.config.hdp.standby_nn_host = standby_nn_hosts[0]
-      ctx.config.hdp.static_host = 
-        if ctx.config.hdp.static_host and ctx.config.hdp.static_host isnt '_HOST'
+      ctx.config.ryba.standby_nn_host = standby_nn_hosts[0]
+      ctx.config.ryba.static_host = 
+        if ctx.config.ryba.static_host and ctx.config.ryba.static_host isnt '_HOST'
         then ctx.config.host
         else '_HOST'
       # Configuration
-      core_site = ctx.config.hdp.core_site ?= {}
-      core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.hdp.nameservice}:8020"
+      core_site = ctx.config.ryba.core_site ?= {}
+      core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.ryba.nameservice}:8020"
       core_site['net.topology.script.file.name'] ?= "#{hadoop_conf_dir}/rack_topology.sh"
       # Set the authentication for the cluster. Valid values are: simple or kerberos
       core_site['hadoop.security.authentication'] ?= 'kerberos'
@@ -210,39 +210,39 @@ Default configuration:
           opt.stderr ?= ctx.stderr
         hconfigure options, callback
       # Environment
-      ctx.config.hdp.hadoop_opts ?= 'java.net.preferIPv4Stack': 'true'
+      ctx.config.ryba.hadoop_opts ?= 'java.net.preferIPv4Stack': 'true'
       hadoop_opts = "export HADOOP_OPTS=\""
-      for k, v of ctx.config.hdp.hadoop_opts
+      for k, v of ctx.config.ryba.hadoop_opts
         hadoop_opts += "-D#{k}=#{v} "
       hadoop_opts += "${HADOOP_OPTS}\""
-      ctx.config.hdp.hadoop_opts = hadoop_opts
-      hadoop_client_opts = ctx.config.hdp.hadoop_client_opts ?= '-Xmx2048m'
-      ctx.config.hdp.hadoop_client_opts = "export HADOOP_CLIENT_OPTS=\"#{hadoop_client_opts} $HADOOP_CLIENT_OPTS\""
+      ctx.config.ryba.hadoop_opts = hadoop_opts
+      hadoop_client_opts = ctx.config.ryba.hadoop_client_opts ?= '-Xmx2048m'
+      ctx.config.ryba.hadoop_client_opts = "export HADOOP_CLIENT_OPTS=\"#{hadoop_client_opts} $HADOOP_CLIENT_OPTS\""
       # Database administration
       # todo: `require('masson/commons/mysql_server').configure ctx` and use returned values as default values
-      ctx.config.hdp.db_admin ?= {}
-      ctx.config.hdp.db_admin.engine ?= 'mysql'
-      switch ctx.config.hdp.db_admin.engine
+      ctx.config.ryba.db_admin ?= {}
+      ctx.config.ryba.db_admin.engine ?= 'mysql'
+      switch ctx.config.ryba.db_admin.engine
         when 'mysql'
-          unless ctx.config.hdp.db_admin.host
+          unless ctx.config.ryba.db_admin.host
             mysql_hosts = ctx.hosts_with_module 'masson/commons/mysql_server'
             throw new Error "Expect at least one server with action \"masson/commons/mysql_server\"" if mysql_hosts.length is 0
-            mysql_host = ctx.config.hdp.db_admin.host = if mysql_hosts.length is 1 then mysql_hosts[0] else
+            mysql_host = ctx.config.ryba.db_admin.host = if mysql_hosts.length is 1 then mysql_hosts[0] else
               i = mysql_hosts.indexOf(ctx.config.host)
               if i isnt -1 then mysql_hosts[i] else throw new Error "Failed to find a Mysql Server"
             mysql_conf = ctx.hosts[mysql_host].config.mysql_server
-          ctx.config.hdp.db_admin.path ?= 'mysql'
-          ctx.config.hdp.db_admin.port ?= '3306'
-          ctx.config.hdp.db_admin.username ?= 'root'
-          ctx.config.hdp.db_admin.password ?= mysql_conf.password
-        else throw new Error "Database engine not supported: #{ctx.config.hdp.engine}"
+          ctx.config.ryba.db_admin.path ?= 'mysql'
+          ctx.config.ryba.db_admin.port ?= '3306'
+          ctx.config.ryba.db_admin.username ?= 'root'
+          ctx.config.ryba.db_admin.password ?= mysql_conf.password
+        else throw new Error "Database engine not supported: #{ctx.config.ryba.engine}"
 
 Repository
 ----------
 Declare the HDP repository.
 
     module.exports.push name: 'HDP Core # Repository', timeout: -1, callback: (ctx, next) ->
-      {proxy, hdp_repo} = ctx.config.hdp
+      {proxy, hdp_repo} = ctx.config.ryba
       # Is there a repo to download and install
       return next null, ctx.INAPPLICABLE unless hdp_repo
       modified = false
@@ -311,7 +311,7 @@ not handled here.
 
     module.exports.push name: 'HDP Core # Users & Groups', callback: (ctx, next) ->
       {hadoop_group, hdfs_group, yarn_group, mapred_group,
-       hdfs_user, yarn_user, mapred_user} = ctx.config.hdp
+       hdfs_user, yarn_user, mapred_user} = ctx.config.ryba
       ctx.group [hadoop_group, hdfs_group, yarn_group, mapred_group], (err, gmodified) ->
         return next err if err
         ctx.user [hdfs_user, yarn_user, mapred_user], (err, umodified) ->
@@ -326,7 +326,7 @@ not handled here.
         next err, if serviced then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Core # Configuration', callback: (ctx, next) ->
-      {core_site, hadoop_conf_dir} = ctx.config.hdp
+      {core_site, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/core-site.xml"
         default: "#{__dirname}/files/core_hadoop/core-site.xml"
@@ -338,7 +338,7 @@ not handled here.
         next err, if configured then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Core # Topology', callback: (ctx, next) ->
-      {hdfs_user, hadoop_group, hadoop_conf_dir} = ctx.config.hdp
+      {hdfs_user, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
       # return next() unless ctx.has_any_modules 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm'
       ctx.upload
         destination: "#{hadoop_conf_dir}/rack_topology.sh"
@@ -353,7 +353,7 @@ not handled here.
         content = []
         for host in hosts
           {config} = ctx.hosts[host]
-          rack = if config.hdp?.rack? then config.hdp.rack else ''
+          rack = if config.ryba?.rack? then config.ryba.rack else ''
           content.push "#{host}  #{rack}"
           content.push "#{config.ip}  #{rack}"
         ctx.write
@@ -377,7 +377,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
     module.exports.push name: 'HDP Core # Hadoop OPTS', timeout: -1, callback: (ctx, next) ->
       {java_home} = ctx.config.java
-      {hadoop_conf_dir, hdfs_user, hadoop_group, hadoop_opts, hadoop_client_opts, hdfs_log_dir, hdfs_pid_dir} = ctx.config.hdp
+      {hadoop_conf_dir, hdfs_user, hadoop_group, hadoop_opts, hadoop_client_opts, hdfs_log_dir, hdfs_pid_dir} = ctx.config.ryba
       ctx.fs.exists '/usr/libexec/bigtop-utils', (err, exists) ->
         return next err if err
         jsvc = if exists then '/usr/libexec/bigtop-utils' else '/usr/lib/bigtop-utils'
@@ -418,7 +418,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
         next null, if written then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Core # Keytabs', timeout: -1, callback: (ctx, next) ->
-      {hadoop_group} = ctx.config.hdp
+      {hadoop_group} = ctx.config.ryba
       ctx.mkdir
         destination: '/etc/security/keytabs'
         uid: 'root'
@@ -428,7 +428,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
         next null, if created then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP Core # Compression', timeout: -1, callback: (ctx, next) ->
-      { hadoop_conf_dir } = ctx.config.hdp
+      { hadoop_conf_dir } = ctx.config.ryba
       modified = false
       do_snappy = ->
         ctx.service [
@@ -474,7 +474,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
       do_snappy()
 
     module.exports.push name: 'HDP Core # Kerberos', timeout: -1, callback: (ctx, next) ->
-      {hadoop_conf_dir, core_site, realm} = ctx.config.hdp
+      {hadoop_conf_dir, core_site, realm} = ctx.config.ryba
       # TODO, discover and generate cross-realm settings
       core_site['hadoop.security.auth_to_local'] ?= """
       
@@ -531,7 +531,7 @@ This action follow the ["Authentication for Hadoop HTTP web-consoles"
 recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 
     module.exports.push name: 'HDP Core # Kerberos Web UI', callback: (ctx, next) ->
-      {core_site, realm} = ctx.config.hdp
+      {core_site, realm} = ctx.config.ryba
       # Cluster domain
       unless core_site['hadoop.http.authentication.cookie.domain']
         domains = ctx.config.servers.map( (server) -> server.host.split('.').slice(1).join('.') ).filter( (el, pos, self) -> self.indexOf(el) is pos )
@@ -561,7 +561,7 @@ recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
     module.exports.push 'ryba/hadoop/core_ssl'
 
     module.exports.push name: 'HDP Core # Check auth_to_local', callback: (ctx, next) ->
-      {test_user, realm} = ctx.config.hdp
+      {test_user, realm} = ctx.config.ryba
       ctx.execute
         cmd: "hadoop org.apache.hadoop.security.HadoopKerberosName #{test_user.name}@#{realm}"
       , (err, _, stdout) ->

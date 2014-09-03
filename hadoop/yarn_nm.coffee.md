@@ -46,7 +46,7 @@ Install and configure the startup script in
 "/etc/init.d/hadoop-yarn-nodemanager".
 
     module.exports.push name: 'HDP YARN NM # Startup', callback: (ctx, next) ->
-      {yarn_pid_dir} = ctx.config.hdp
+      {yarn_pid_dir} = ctx.config.ryba
       modified = false
       do_install = ->
         ctx.service
@@ -72,28 +72,28 @@ Install and configure the startup script in
       do_install()
 
     module.exports.push name: 'HDP YARN NM # Directories', timeout: -1, callback: (ctx, next) ->
-      {yarn_user, yarn, test_user, hadoop_group} = ctx.config.hdp
+      {yarn_user, yarn_site, test_user, hadoop_group} = ctx.config.ryba
       # no need to restrict parent directory and yarn will complain if not accessible by everyone
       ctx.mkdir [
-        destination: yarn['yarn.nodemanager.log-dirs']
+        destination: yarn_site['yarn.nodemanager.log-dirs']
         uid: yarn_user.name
         gid: hadoop_group.name
         mode: 0o0755
       ,
-        destination: yarn['yarn.nodemanager.local-dirs']
+        destination: yarn_site['yarn.nodemanager.local-dirs']
         uid: yarn_user.name
         gid: hadoop_group.name
         mode: 0o0755
       ], (err, created) ->
         return next err if err
         cmds = []
-        for dir in yarn['yarn.nodemanager.log-dirs'] then cmds.push cmd: "su -l #{test_user.name} -c 'ls -l #{dir}'"
-        for dir in yarn['yarn.nodemanager.local-dirs'] then cmds.push cmd: "su -l #{test_user.name} -c 'ls -l #{dir}'"
+        for dir in yarn_site['yarn.nodemanager.log-dirs'] then cmds.push cmd: "su -l #{test_user.name} -c 'ls -l #{dir}'"
+        for dir in yarn_site['yarn.nodemanager.local-dirs'] then cmds.push cmd: "su -l #{test_user.name} -c 'ls -l #{dir}'"
         ctx.execute cmds, (err) ->
           next err, if created then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP YARN NM # Kerberos', callback: (ctx, next) ->
-      {yarn_user, realm} = ctx.config.hdp
+      {yarn_user, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
         principal: "nm/#{ctx.config.host}@#{realm}"

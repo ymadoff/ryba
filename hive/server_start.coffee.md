@@ -18,7 +18,7 @@ layout: module
 Execute these commands on the Hive Metastore host machine.
 
     module.exports.push name: 'Hive & HCat # Start Metastore', timeout: -1, callback: (ctx, next) ->
-      {hive_site} = ctx.config.hdp
+      {hive_site} = ctx.config.ryba
       [_, host, port] = /^.*?\/\/?(.*?)(?::(.*))?\/.*$/.exec hive_site['javax.jdo.option.ConnectionURL']
       ctx.waitIsOpen host, port, (err) ->
         return next err if err

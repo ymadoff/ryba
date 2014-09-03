@@ -68,34 +68,34 @@ Example:
       # Allow proxy user inside "core-site.xml"
       require('../hadoop/core').configure ctx
       require('../hadoop/core_ssl').configure ctx
-      {nameservice, active_nn_host, hadoop_conf_dir, webhcat_site, hue_ini, db_admin} = ctx.config.hdp
-      hue_ini ?= ctx.config.hdp.hue_ini = {}
+      {nameservice, active_nn_host, hadoop_conf_dir, webhcat_site, hue_ini, db_admin} = ctx.config.ryba
+      hue_ini ?= ctx.config.ryba.hue_ini = {}
       webhcat_port = webhcat_site['templeton.port']
       webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
       # todo, this might not work as expected after ha migration
       resourcemanager = ctx.host_with_module 'ryba/hadoop/yarn_rm'
       nodemanagers = ctx.hosts_with_module 'ryba/hadoop/yarn_nm'
       # Webhdfs should be active on the NameNode, Secondary NameNode, and all the DataNodes
-      # throw new Error 'WebHDFS not active' if ctx.config.hdp.hdfs_site['dfs.webhdfs.enabled'] isnt 'true'
-      ctx.config.hdp.hue_conf_dir ?= '/etc/hue/conf'
+      # throw new Error 'WebHDFS not active' if ctx.config.ryba.hdfs_site['dfs.webhdfs.enabled'] isnt 'true'
+      ctx.config.ryba.hue_conf_dir ?= '/etc/hue/conf'
       # User
-      ctx.config.hdp.hue_user = name: ctx.config.hdp.hue_user if typeof ctx.config.hdp.hue_user is 'string'
-      ctx.config.hdp.hue_user ?= {}
-      ctx.config.hdp.hue_user.name ?= 'hue'
-      ctx.config.hdp.hue_user.system ?= true
-      ctx.config.hdp.hue_user.gid = 'hue'
-      ctx.config.hdp.hue_user.comment ?= 'Hue User'
-      ctx.config.hdp.hue_user.home = '/usr/lib/hue'
+      ctx.config.ryba.hue_user = name: ctx.config.ryba.hue_user if typeof ctx.config.ryba.hue_user is 'string'
+      ctx.config.ryba.hue_user ?= {}
+      ctx.config.ryba.hue_user.name ?= 'hue'
+      ctx.config.ryba.hue_user.system ?= true
+      ctx.config.ryba.hue_user.gid = 'hue'
+      ctx.config.ryba.hue_user.comment ?= 'Hue User'
+      ctx.config.ryba.hue_user.home = '/usr/lib/hue'
       # Group
-      ctx.config.hdp.hue_group = name: ctx.config.hdp.hue_group if typeof ctx.config.hdp.hue_group is 'string'
-      ctx.config.hdp.hue_group ?= {}
-      ctx.config.hdp.hue_group.name ?= 'hue'
-      ctx.config.hdp.hue_group.system ?= true
+      ctx.config.ryba.hue_group = name: ctx.config.ryba.hue_group if typeof ctx.config.ryba.hue_group is 'string'
+      ctx.config.ryba.hue_group ?= {}
+      ctx.config.ryba.hue_group.name ?= 'hue'
+      ctx.config.ryba.hue_group.system ?= true
       # HDFS url
-      {hdfs_site, nameservice, active_nn_host} = ctx.config.hdp
+      {hdfs_site, nameservice, active_nn_host} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTPS_ONLY' then 'https' else 'http'
       shortname = ctx.hosts[active_nn_host].config.shortname
-      active_nn_port = ctx.config.hdp.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
+      active_nn_port = ctx.config.ryba.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
       webhdfs_url = "#{protocol}://#{active_nn_host}:#{active_nn_port}/webhdfs/v1"
       # Configure HDFS Cluster
       hue_ini['hadoop'] ?= {}
@@ -125,7 +125,7 @@ Example:
       hue_ini['hadoop']['yarn_clusters']['default']['hadoop_conf_dir'] ?= hadoop_conf_dir
       # Configure components
       hue_ini['liboozie'] ?= {}
-      hue_ini['liboozie']['oozie_url'] ?= ctx.config.hdp.oozie_site['oozie.base.url']
+      hue_ini['liboozie']['oozie_url'] ?= ctx.config.ryba.oozie_site['oozie.base.url']
       hue_ini['hcatalog'] ?= {}
       hue_ini['hcatalog']['templeton_url'] ?= "http://#{webhcat_server}:#{webhcat_port}/templeton/v1/"
       hue_ini['beeswax'] ?= {}
@@ -158,7 +158,7 @@ hue:x:494:
 ```
 
     module.exports.push name: 'Hue # Users & Groups', callback: (ctx, next) ->
-      {hue_group, hue_user} = ctx.config.hdp
+      {hue_group, hue_user} = ctx.config.ryba
       ctx.group hue_group, (err, gmodified) ->
         return next err if err
         ctx.user hue_user, (err, umodified) ->
@@ -174,7 +174,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'Hue # IPTables', callback: (ctx, next) ->
-      {hue_ini} = ctx.config.hdp
+      {hue_ini} = ctx.config.ryba
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: hue_ini['desktop']['http_port'], protocol: 'tcp', state: 'NEW', comment: "Hue Web UI" }
@@ -205,7 +205,7 @@ be deployed on all the master and worker nodes. This is currently achieved throu
 the configuration picked up by the "ryba/hadoop/core" module.
 
     module.exports.push name: 'Hue # Core', callback: (ctx, next) ->
-      {hadoop_conf_dir} = ctx.config.hdp
+      {hadoop_conf_dir} = ctx.config.ryba
       properties = 
         'hadoop.proxyuser.hue.hosts': '*'
         'hadoop.proxyuser.hue.groups': '*'
@@ -227,7 +227,7 @@ to allow impersonnation through the "hue" user.
 
 
     module.exports.push name: 'Hue # WebHCat', callback: (ctx, next) ->
-      {webhcat_conf_dir} = ctx.config.hdp
+      {webhcat_conf_dir} = ctx.config.ryba
       webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
       hconfigure = (ssh) ->
         properties = 
@@ -254,7 +254,7 @@ Update the "oozie-site.xml" on the server running the "oozie" service
 to allow impersonnation through the "hue" user.
 
     module.exports.push name: 'Hue # Oozie', callback: (ctx, next) ->
-      {oozie_conf_dir} = ctx.config.hdp
+      {oozie_conf_dir} = ctx.config.ryba
       oozie_server = ctx.host_with_module 'ryba/oozie/server'
       hconfigure = (ssh) ->
         properties = 
@@ -281,7 +281,7 @@ Configure the "/etc/hue/conf" file following the [HortonWorks](http://docs.horto
 recommandations. Merge the configuration object from "hdp.hue_ini" with the properties of the destination file. 
 
     module.exports.push name: 'Hue # Configure', callback: (ctx, next) ->
-      {hue_conf_dir, hue_ini} = ctx.config.hdp
+      {hue_conf_dir, hue_ini} = ctx.config.ryba
       ctx.ini
         destination: "#{hue_conf_dir}/hue.ini"
         content: hue_ini
@@ -300,7 +300,7 @@ implemented but Hue supports MySQL, PostgreSQL, and Oracle. Note, sqlite is
 the default database while mysql is the recommanded choice.
 
     module.exports.push name: 'Hue # Database', callback: (ctx, next) ->
-      {hue_ini, hue_user, db_admin} = ctx.config.hdp
+      {hue_ini, hue_user, db_admin} = ctx.config.ryba
       engines = 
         mysql: ->
           {host, port, user, password, name} = hue_ini['desktop']['database']
@@ -338,7 +338,7 @@ the "/etc/hue/conf/hue.ini" configuration file, all the composants myst be tagge
 the "security_enabled" property set to "true".
 
     module.exports.push name: 'Hue # Kerberos', callback: (ctx, next) ->
-      {hue_user, hue_group, hue_conf_dir, realm} = ctx.config.hdp
+      {hue_user, hue_group, hue_conf_dir, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       principal = "hue/#{ctx.config.host}@#{realm}"
       modified = false
@@ -414,7 +414,7 @@ Configuration][web]. The "hue" service is restarted if there was any
 changes.
 
     module.exports.push name: 'Hue # SSL', callback: (ctx, next) ->
-      {hue_user, hue_group, hue_conf_dir, hue_ssl_certificate, hue_ssl_private_key} = ctx.config.hdp
+      {hue_user, hue_group, hue_conf_dir, hue_ssl_certificate, hue_ssl_private_key} = ctx.config.ryba
       modified = true
       do_upload = ->
         ctx.upload [

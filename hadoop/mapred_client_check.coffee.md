@@ -20,7 +20,7 @@ by this action is not present on HDFS. Delete this directory
 to re-execute the check.
 
     module.exports.push name: 'HDP MapRed Client # Check', timeout: -1, callback: (ctx, next) ->
-      {force_check} = ctx.config.hdp
+      {force_check} = ctx.config.ryba
       host = ctx.config.host.split('.')[0]
       # 100 records = 1Ko
       # 10 000 000 000 = 100 Go

@@ -17,7 +17,7 @@ Upon installation, the Policy Manager is by default available on port "6080".
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/commons/java').configure ctx
       require('../hadoop/core').configure ctx
-      {db_admin} = ctx.config.hdp
+      {db_admin} = ctx.config.ryba
       {java_home} = ctx.config.java
       xasecure = ctx.config.xasecure ?= {}
       throw new Error "Required property \"xasecure.policymgr_url\"" unless xasecure.policymgr_url?
@@ -101,7 +101,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         next err, if configured then ctx.OK else ctx.PASS
 
     module.exports.push name: 'XASecure PolicyMgr # Install', timeout: -1, callback: (ctx, next) ->
-      {db_admin} = ctx.config.hdp
+      {db_admin} = ctx.config.ryba
       {policymgr} = ctx.config.xasecure
       modified = false
       source = ctx.config.xasecure.policymgr_url

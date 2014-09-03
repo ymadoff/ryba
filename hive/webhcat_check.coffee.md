@@ -14,7 +14,7 @@ layout: module
     module.exports.push name: 'WebHCat # Check Status', callback: (ctx, next) ->
       # TODO, maybe we could test hive:
       # curl --negotiate -u : -d execute="show+databases;" -d statusdir="test_webhcat" http://front1.hadoop:50111/templeton/v1/hive
-      {webhcat_site} = ctx.config.hdp
+      {webhcat_site} = ctx.config.ryba
       port = webhcat_site['templeton.port']
       ctx.execute
         cmd: mkcmd.test ctx, """

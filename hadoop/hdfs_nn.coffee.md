@@ -36,8 +36,8 @@ define inside the "ryba/hadoop/hdfs" and "masson/core/nc" modules.
     module.exports.push (ctx) ->
       require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
-      throw Error "Missing \"hdp.zkfc_password\" property" unless ctx.config.hdp.zkfc_password
-      {hdfs_site} = ctx.config.hdp
+      throw Error "Missing \"hdp.zkfc_password\" property" unless ctx.config.ryba.zkfc_password
+      {hdfs_site} = ctx.config.ryba
       # Activate ACLs
       hdfs_site['dfs.namenode.acls.enabled'] ?= 'true'
 
@@ -71,7 +71,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install and configure the startup script in "/etc/init.d/hadoop-hdfs-namenode".
 
     module.exports.push name: 'HDP HDFS NN # Startup', callback: (ctx, next) ->
-      {hdfs_pid_dir} = ctx.config.hdp
+      {hdfs_pid_dir} = ctx.config.ryba
       modified = false
       do_install = ->
         ctx.service [
@@ -107,7 +107,7 @@ Create the NameNode data and pid directories. The NameNode data is by defined in
 file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
 
     module.exports.push name: 'HDP HDFS NN # Layout', timeout: -1, callback: (ctx, next) ->
-      {hdfs_site, hdfs_pid_dir, hdfs_user, hadoop_group} = ctx.config.hdp
+      {hdfs_site, hdfs_pid_dir, hdfs_user, hadoop_group} = ctx.config.ryba
       ctx.mkdir [
         destination: hdfs_site['dfs.namenode.name.dir'].split ','
         uid: hdfs_user.name
@@ -127,7 +127,7 @@ Create a service principal for this NameNode. The principal is named after
 "nn/#{ctx.config.host}@#{realm}".
 
     module.exports.push name: 'HDP HDFS NN # Kerberos', callback: (ctx, next) ->
-      {realm} = ctx.config.hdp
+      {realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
         principal: "nn/#{ctx.config.host}@#{realm}"
@@ -144,7 +144,7 @@ Create a service principal for this NameNode. The principal is named after
 # Configure
 
     module.exports.push name: 'HDP HDFS NN # Configure', callback: (ctx, next) ->
-      {hadoop_conf_dir, hdfs_user, hadoop_group, hdfs_site} = ctx.config.hdp
+      {hadoop_conf_dir, hdfs_user, hadoop_group, hdfs_site} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: hdfs_site
@@ -161,7 +161,7 @@ similar than the ones for a client or slave configuration with the addtionnal
 "dfs.namenode.shared.edits.dir" and "dfs.namenode.shared.edits.dir" properties.
 
     module.exports.push name: 'HDP HDFS NN # Configure HA', callback: (ctx, next) ->
-      {hadoop_conf_dir, ha_client_config} = ctx.config.hdp
+      {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
       journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
       ha_client_config['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
       ha_client_config['dfs.namenode.shared.edits.dir'] = "qjournal://#{ha_client_config['dfs.namenode.shared.edits.dir']}/#{ha_client_config['dfs.nameservices']}"
@@ -181,7 +181,7 @@ public and private SSH keys for the HDFS user inside his "~/.ssh" folder and upd
 "~/.ssh/authorized_keys" file accordingly.
 
     module.exports.push name: 'HDP HDFS NN # SSH Fencing', callback: (ctx, next) ->
-      {hadoop_conf_dir, ha_client_config, ssh_fencing, hdfs_user, hadoop_group} = ctx.config.hdp
+      {hadoop_conf_dir, ha_client_config, ssh_fencing, hdfs_user, hadoop_group} = ctx.config.ryba
       hdfs_home = '/var/lib/hadoop-hdfs'
       modified = false
       ha_client_config['dfs.ha.fencing.methods'] = 'sshfence(hdfs)'
@@ -247,7 +247,7 @@ is only exected once all the JournalNodes are started. The NameNode is finally r
 if the NameNode was formated.
 
     module.exports.push name: 'HDP HDFS NN # Format', timeout: -1, callback: (ctx, next) ->
-      {active_nn, hdfs_site, hdfs_user, format, nameservice} = ctx.config.hdp
+      {active_nn, hdfs_site, hdfs_user, format, nameservice} = ctx.config.ryba
       return next() unless format
       # Shall only be executed on the leader namenode
       return next null, ctx.INAPPLICABLE unless active_nn
@@ -275,7 +275,7 @@ is only executed on a non active NameNode.
 
     module.exports.push name: 'HDP HDFS NN # HA Init Standby NameNodes', timeout: -1, callback: (ctx, next) ->
       # Shall only be executed on the leader namenode
-      {active_nn, active_nn_host} = ctx.config.hdp
+      {active_nn, active_nn_host} = ctx.config.ryba
       return next null, ctx.INAPPLICABLE if active_nn
       do_wait = ->
         ctx.waitIsOpen active_nn_host, 8020, (err) ->
@@ -296,7 +296,7 @@ is only executed on a non active NameNode.
 Secure the Zookeeper connection with JAAS.
 
     module.exports.push name: 'HDP HDFS NN # Zookeeper JAAS', timeout: -1, callback: (ctx, next) ->
-      {hadoop_conf_dir, hdfs_user, hadoop_group, zkfc_password} = ctx.config.hdp
+      {hadoop_conf_dir, hdfs_user, hadoop_group, zkfc_password} = ctx.config.ryba
       modified = false
       do_core = ->
         ctx.hconfigure
@@ -356,7 +356,7 @@ If this is an active NameNode, we format ZooKeeper and start the ZKFC daemon. If
 NameNode, we wait for the active NameNode to take leadership and start the ZKFC daemon.
 
     module.exports.push name: 'HDP HDFS NN # HA Auto Failover', timeout: -1, callback: (ctx, next) ->
-      {hadoop_conf_dir, active_nn, active_nn_host} = ctx.config.hdp
+      {hadoop_conf_dir, active_nn, active_nn_host} = ctx.config.ryba
       zookeepers = ctx.hosts_with_module 'ryba/zookeeper/server'
       modified = false
       do_hdfs = ->
@@ -428,7 +428,7 @@ the NameNode is properly working. Note, those commands are NameNode specific, me
 afect HDFS metadata.
 
     # module.exports.push name: 'HDP HDFS NN # Test User', timeout: -1, callback: (ctx, next) ->
-    #   {test_user, test_password, hadoop_group, security} = ctx.config.hdp
+    #   {test_user, test_password, hadoop_group, security} = ctx.config.ryba
     #   {realm, kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5_client
     #   modified = false
     #   do_user = ->

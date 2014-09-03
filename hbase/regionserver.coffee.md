@@ -28,7 +28,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HDP RegionServer # IPTables', callback: (ctx, next) ->
-      {hbase_site} = ctx.config.hdp
+      {hbase_site} = ctx.config.ryba
       port = 
       ctx.iptables
         rules: [
@@ -73,7 +73,7 @@ JAAS configuration files for zookeeper to be deployed on the HBase Master,
 RegionServer, and HBase client host machines.
 
     module.exports.push name: 'HBase RegionServer # Zookeeper JAAS', timeout: -1, callback: (ctx, next) ->
-      {jaas_server, hbase_conf_dir, hbase_user, hbase_group} = ctx.config.hdp
+      {jaas_server, hbase_conf_dir, hbase_user, hbase_group} = ctx.config.ryba
       ctx.write
         destination: "#{hbase_conf_dir}/hbase-regionserver.jaas"
         content: jaas_server
@@ -84,7 +84,7 @@ RegionServer, and HBase client host machines.
         return next err, if written then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HBase RegionServer # Kerberos', timeout: -1, callback: (ctx, next) ->
-      {hadoop_group, hbase_user, hbase_site, realm} = ctx.config.hdp
+      {hadoop_group, hbase_user, hbase_site, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
         principal: hbase_site['hbase.regionserver.kerberos.principal'].replace '_HOST', ctx.config.host
@@ -107,8 +107,8 @@ using the hadoop conf directory to retrieve the SPNEGO keytab. The user "hbase"
 is added membership to the group hadoop to gain read access.
 
     module.exports.push name: 'HBase RegionServer # FIX SPNEGO', callback: (ctx, next) ->
-      {hbase_site, hbase_user, hbase_group, hadoop_group} = ctx.config.hdp
-      {hdfs_site} = ctx.config.hdp
+      {hbase_site, hbase_user, hbase_group, hadoop_group} = ctx.config.ryba
+      {hdfs_site} = ctx.config.ryba
       ctx.execute
         cmd: """
           if groups #{hbase_user.name} | grep #{hadoop_group.name}; then exit 2; fi
@@ -142,7 +142,7 @@ is added membership to the group hadoop to gain read access.
 Enable stats collection in Ganglia.
 
     module.exports.push name: 'HBase RegionServer # Metrics', callback: (ctx, next) ->
-      {hbase_conf_dir} = ctx.config.hdp
+      {hbase_conf_dir} = ctx.config.ryba
       collector = ctx.host_with_module 'ryba/hadoop/ganglia_collector'
       return next() unless collector
       ctx.upload

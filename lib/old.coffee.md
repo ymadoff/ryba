@@ -10,7 +10,7 @@ Extracted from "ryba/hadoop/hdfs_nn"
     module.exports.push name: 'HDP HDFS NN # Upgrade', timeout: -1, callback: (ctx, next) ->
       # TODO, we have never tested migration in HA mode
       return next null, ctx.INAPPLICABLE
-      {active_nn, hdfs_log_dir} = ctx.config.hdp
+      {active_nn, hdfs_log_dir} = ctx.config.ryba
       # Shall only be executed on the leader namenode
       return next null, ctx.INAPPLICABLE unless active_nn
       count = (callback) ->
@@ -46,7 +46,7 @@ all the JouralNode servers to be started and is only executed if none of
 the directory named after the nameservice is created on each JournalNode host.
 
     module.exports.push name: 'HDP HDFS NN # HA Init JournalNodes', timeout: -1, callback: (ctx, next) ->
-      {nameservice, active_nn} = ctx.config.hdp
+      {nameservice, active_nn} = ctx.config.ryba
       # Shall only be executed on the leader namenode
       journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
       return next null, ctx.INAPPLICABLE unless active_nn
@@ -64,7 +64,7 @@ the directory named after the nameservice is created on each JournalNode host.
         .on 'item', (journalnode, next) ->
           ctx.connect journalnode, (err, ssh) ->
             return next err if err
-            dir = "#{ctx.config.hdp.hdfs_site['dfs.journalnode.edits.dir']}/#{nameservice}"
+            dir = "#{ctx.config.ryba.hdfs_site['dfs.journalnode.edits.dir']}/#{nameservice}"
             ctx.fs.exists dir, (err, exist) ->
               exists++ if exist
               next()
