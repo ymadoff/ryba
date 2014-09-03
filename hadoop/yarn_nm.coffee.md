@@ -8,7 +8,7 @@ layout: module
 ResourceManager is the central authority that manages resources and schedules
 applications running atop of YARN.
 
-    lifecycle = require './lib/lifecycle'
+    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/iptables'

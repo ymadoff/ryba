@@ -5,7 +5,7 @@ layout: module
 
 # Zookeeper
 
-    lifecycle = require '../hadoop/lib/lifecycle'
+    lifecycle = require '../lib/lifecycle'
     quote = require 'regexp-quote'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
@@ -59,7 +59,7 @@ cat /etc/group | grep hadoop
 hadoop:x:498:hdfs
 ```
 
-    module.exports.push name: 'HDP ZooKeeper # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Users & Groups', callback: (ctx, next) ->
       {zookeeper_group, hadoop_group, zookeeper_user} = ctx.config.hdp
       ctx.group [zookeeper_group, hadoop_group], (err, gmodified) ->
         return next err if err
@@ -77,7 +77,7 @@ hadoop:x:498:hdfs
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HDP ZooKeeper # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # IPTables', callback: (ctx, next) ->
       {zookeeper_port} = ctx.config.hdp
       ctx.iptables
         rules: [
@@ -94,7 +94,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Follow the [HDP recommandations][install] to install the "zookeeper" package
 which has no dependency.
 
-    module.exports.push name: 'HDP ZooKeeper # Install', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service name: 'zookeeper', (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
 
@@ -103,7 +103,7 @@ which has no dependency.
 Install and configure the startup script in 
 "/etc/init.d/zookeeper-server".
 
-    module.exports.push name: 'HDP HDFS Zookeeper # Startup', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Startup', callback: (ctx, next) ->
       {hdfs_pid_dir} = ctx.config.hdp
       modified = false
       do_install = ->
@@ -127,7 +127,7 @@ Install and configure the startup script in
         next null, if modified then ctx.OK else ctx.PASS
       do_install()
 
-    module.exports.push name: 'HDP ZooKeeper # Kerberos', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Kerberos', timeout: -1, callback: (ctx, next) ->
       {zookeeper_user, hadoop_group, realm, zookeeper_conf_dir} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
@@ -180,7 +180,7 @@ Install and configure the startup script in
         next null, if modified then ctx.OK else ctx.PASS
       do_principal()
 
-    module.exports.push name: 'HDP ZooKeeper # Layout', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Layout', callback: (ctx, next) ->
       { hadoop_group, zookeeper_user, 
         zookeeper_data_dir, zookeeper_pid_dir, zookeeper_log_dir
       } = ctx.config.hdp
@@ -202,7 +202,7 @@ Install and configure the startup script in
       ], (err, modified) ->
         next err, if modified then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP ZooKeeper # Environment', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Environment', callback: (ctx, next) ->
       {zookeeper_conf_dir, zookeeper_env} = ctx.config.hdp
       write = for k, v of zookeeper_env
         match: RegExp "^export\\s+(#{quote k})=(.*)$", 'mg'
@@ -215,7 +215,7 @@ Install and configure the startup script in
       , (err, written) ->
         return next err, if written then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP ZooKeeper # Configure', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Configure', callback: (ctx, next) ->
       modified = false
       hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
       { hadoop_group, zookeeper_user,
@@ -269,7 +269,7 @@ Install and configure the startup script in
         next null, if modified then ctx.OK else ctx.PASS
       do_zoo_cfg()
 
-    module.exports.push name: 'HDP ZooKeeper # Start', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Start', timeout: -1, callback: (ctx, next) ->
       lifecycle.zookeeper_start ctx, (err, started) ->
         next err, if started then ctx.OK else ctx.PASS
 

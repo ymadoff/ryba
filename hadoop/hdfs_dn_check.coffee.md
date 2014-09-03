@@ -9,8 +9,8 @@ layout: module
 Check the datanode by upload a file using the HDFS client and the HTTP REST
 interface.
 
-    lifecycle = require './lib/lifecycle'
-    mkcmd = require './lib/mkcmd'
+    lifecycle = require '../lib/lifecycle'
+    mkcmd = require '../lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 

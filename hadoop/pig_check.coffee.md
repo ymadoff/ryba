@@ -84,7 +84,7 @@ unless the "hdp.force_check" configuration property is set to "true".
 
 ## Module Dependencies
 
-    mkcmd = require './lib/mkcmd'
+    mkcmd = require '../lib/mkcmd'
 
 
 

@@ -130,6 +130,6 @@ layout: module
     path = require 'path'
     each = require 'each'
     quote = require 'regexp-quote'
-    lifecycle = require '../hadoop/lib/lifecycle'
+    lifecycle = require '../lib/lifecycle'
 
 

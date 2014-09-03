@@ -5,7 +5,7 @@ layout: module
 
 # WebHCat Check
 
-    mkcmd = require '../hadoop/lib/mkcmd'
+    mkcmd = require '../lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 

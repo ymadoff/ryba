@@ -44,6 +44,7 @@ keytool -list -v -keystore keystore -alias hadoop
 
     module.exports.push module.exports.configure = (ctx) ->
       require('./core').configure ctx
+      require('./hdfs').configure ctx
       {core_site, hdfs_site, hadoop_conf_dir} = ctx.config.hdp
       ctx.config.hdp.ssl ?= {}
       ssl_client = ctx.config.hdp.ssl_client ?= {}

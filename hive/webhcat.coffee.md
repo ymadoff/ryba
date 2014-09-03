@@ -6,8 +6,8 @@ layout: module
 # WebHCat
 
     each = require 'each'
-    lifecycle = require '../hadoop/lib/lifecycle'
-    mkcmd = require '../hadoop/lib/mkcmd'
+    lifecycle = require '../lib/lifecycle'
+    mkcmd = require '../lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/iptables'

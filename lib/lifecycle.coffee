@@ -31,7 +31,7 @@ lifecyle = module.exports =
       return callback err, false if err or not running
       ctx.log "JournalNode stop"
       ctx.execute
-        # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop journalnode" 
+        # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop journalnode"
         # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop journalnode\""
         cmd: 'service hadoop-hdfs-journalnode stop'
         code_skipped: 1
@@ -447,7 +447,7 @@ lifecyle = module.exports =
       return callback err, false if err or running
       ctx.log "WebHCat start"
       ctx.execute
-        # su -l hcat -c "/usr/lib/hive-hcatalog/sbin/webhcat_server.sh start"
+        # su -l hive -c "/usr/lib/hive-hcatalog/sbin/webhcat_server.sh start"
         cmd: "service hive-webhcat-server start"
       , (err, started) ->
         callback err, true
@@ -456,7 +456,7 @@ lifecyle = module.exports =
       return callback err, false if err or not running
       ctx.log "WebHCat stop"
       ctx.execute
-        # su -l hcat -c "/usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop"
+        # su -l hive -c "/usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop"
         cmd: "service hive-webhcat-server stop"
       , (err, stopped) ->
         callback err, stopped

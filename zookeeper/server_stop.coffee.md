@@ -5,7 +5,7 @@ layout: module
 
 # Zookeeper Stop
 
-    lifecycle = require '../hadoop/lib/lifecycle'
+    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 
@@ -16,7 +16,7 @@ layout: module
 
 Execute these commands on the ZooKeeper host machine(s).
 
-    module.exports.push name: 'HDP ZooKeeper # Stop', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Stop', callback: (ctx, next) ->
       lifecycle.zookeeper_stop ctx, (err, stopped) ->
         next err, if stopped then ctx.OK else ctx.PASS
 

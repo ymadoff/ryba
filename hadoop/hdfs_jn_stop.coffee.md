@@ -9,7 +9,7 @@ layout: module
 Stop the JournalNode service. It is recommended to stop a JournalNode after its 
 associated NameNodes.
 
-    lifecycle = require './lib/lifecycle'
+    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 

@@ -56,4 +56,4 @@ Retrieve the client configuration.
 
 ## Module Dependencies
 
-    mkcmd = require '../hadoop/lib/mkcmd'
+    mkcmd = require '../lib/mkcmd'

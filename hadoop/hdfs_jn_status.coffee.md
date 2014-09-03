@@ -8,7 +8,7 @@ layout: module
 
 Display the status of the JournalNode as "STARTED" or "STOPPED".
 
-    lifecycle = require './lib/lifecycle'
+    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 

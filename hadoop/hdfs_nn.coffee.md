@@ -19,8 +19,8 @@ provides [instructions to rollback a HA installation][rollback] that apply to Am
 [rollback]: http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.3/bk_Monitoring_Hadoop_Book/content/monitor-ha-undoing_2x.html
 
     fs = require 'fs'
-    lifecycle = require './lib/lifecycle'
-    mkcmd = require './lib/mkcmd'
+    lifecycle = require '../lib/lifecycle'
+    mkcmd = require '../lib/mkcmd'
     each = require 'each'
     module.exports = []
     module.exports.push 'masson/bootstrap/'

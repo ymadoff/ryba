@@ -332,9 +332,9 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
 # Module Dependencies
 
     path = require 'path'
-    parse_jdbc = require '../hadoop/lib/parse_jdbc'
-    mkcmd = require '../hadoop/lib/mkcmd'
-    lifecycle = require '../hadoop/lib/lifecycle'
+    parse_jdbc = require '../lib/parse_jdbc'
+    mkcmd = require '../lib/mkcmd'
+    lifecycle = require '../lib/lifecycle'
 
 
 

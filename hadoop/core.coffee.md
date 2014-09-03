@@ -22,7 +22,7 @@ TODO: topologie
     path = require 'path'
     misc = require 'mecano/lib/misc'
     each = require 'each'
-    hconfigure = require './lib/hconfigure'
+    hconfigure = require '../lib/hconfigure'
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
@@ -159,7 +159,7 @@ Default configuration:
       ctx.config.hdp.test_group.name ?= 'ryba'
       ctx.config.hdp.test_group.system ?= true
       # Layout
-      ctx.config.hdp.hadoop_conf_dir ?= '/etc/hadoop/conf'
+      hadoop_conf_dir = ctx.config.hdp.hadoop_conf_dir ?= '/etc/hadoop/conf'
       ctx.config.hdp.hdfs_log_dir ?= '/var/log/hadoop-hdfs'
       ctx.config.hdp.hdfs_pid_dir ?= '/var/run/hadoop-hdfs'
       ctx.config.hdp.mapred_log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
@@ -187,6 +187,7 @@ Default configuration:
       # Configuration
       core_site = ctx.config.hdp.core_site ?= {}
       core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.hdp.nameservice}:8020"
+      core_site['net.topology.script.file.name'] ?= "#{hadoop_conf_dir}/rack_topology.sh"
       # Set the authentication for the cluster. Valid values are: simple or kerberos
       core_site['hadoop.security.authentication'] ?= 'kerberos'
       # Enable authorization for different protocols.
@@ -209,12 +210,14 @@ Default configuration:
           opt.stderr ?= ctx.stderr
         hconfigure options, callback
       # Environment
-      ctx.config.hdp.hadoop_opts ?= 'java.net.preferIPv4Stack': true
+      ctx.config.hdp.hadoop_opts ?= 'java.net.preferIPv4Stack': 'true'
       hadoop_opts = "export HADOOP_OPTS=\""
       for k, v of ctx.config.hdp.hadoop_opts
         hadoop_opts += "-D#{k}=#{v} "
       hadoop_opts += "${HADOOP_OPTS}\""
       ctx.config.hdp.hadoop_opts = hadoop_opts
+      hadoop_client_opts = ctx.config.hdp.hadoop_client_opts ?= '-Xmx2048m'
+      ctx.config.hdp.hadoop_client_opts = "export HADOOP_CLIENT_OPTS=\"#{hadoop_client_opts} $HADOOP_CLIENT_OPTS\""
       # Database administration
       # todo: `require('masson/commons/mysql_server').configure ctx` and use returned values as default values
       ctx.config.hdp.db_admin ?= {}
@@ -330,8 +333,39 @@ not handled here.
         local_default: true
         properties: core_site
         merge: true
+        backup: true
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
+
+    module.exports.push name: 'HDP Core # Topology', callback: (ctx, next) ->
+      {hdfs_user, hadoop_group, hadoop_conf_dir} = ctx.config.hdp
+      # return next() unless ctx.has_any_modules 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm'
+      ctx.upload
+        destination: "#{hadoop_conf_dir}/rack_topology.sh"
+        source: "#{__dirname}/files/rack_topology.sh"
+        uid: hdfs_user.name
+        gid: hadoop_group.name
+        mode: 0o755
+        backup: true
+      , (err, uploaded) ->
+        return next err if err
+        hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm'
+        content = []
+        for host in hosts
+          {config} = ctx.hosts[host]
+          rack = if config.hdp?.rack? then config.hdp.rack else ''
+          content.push "#{host}  #{rack}"
+          content.push "#{config.ip}  #{rack}"
+        ctx.write
+          destination: "#{hadoop_conf_dir}/rack_topology.data"
+          content: content.join("\n")
+          uid: hdfs_user.name
+          gid: hadoop_group.name
+          mode: 0o755
+          backup: true
+          eof: true
+        , (err, written) ->
+          next err, if uploaded or written then ctx.OK else ctx.PASS
 
 ## Hadoop OPTS
 
@@ -343,7 +377,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
     module.exports.push name: 'HDP Core # Hadoop OPTS', timeout: -1, callback: (ctx, next) ->
       {java_home} = ctx.config.java
-      {hadoop_conf_dir, hdfs_user, hadoop_group, hadoop_opts, hdfs_log_dir, hdfs_pid_dir} = ctx.config.hdp
+      {hadoop_conf_dir, hdfs_user, hadoop_group, hadoop_opts, hadoop_client_opts, hdfs_log_dir, hdfs_pid_dir} = ctx.config.hdp
       ctx.fs.exists '/usr/libexec/bigtop-utils', (err, exists) ->
         return next err if err
         jsvc = if exists then '/usr/libexec/bigtop-utils' else '/usr/lib/bigtop-utils'
@@ -353,6 +387,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
           { match: /\/var\/log\/hadoop\//mg, replace: "#{hdfs_log_dir}/" }
           { match: /\/var\/run\/hadoop\//mg, replace: "#{hdfs_pid_dir}/" }
           { match: /^export JSVC_HOME=.*$/mg, replace: "export JSVC_HOME=#{jsvc}" }
+          { match: /^export HADOOP_CLIENT_OPTS=.*$/mg, replace: hadoop_client_opts}
         ]
         if ctx.has_module 'ryba/xasecure/hdfs'
           write.push

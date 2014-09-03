@@ -9,7 +9,7 @@ layout: module
 Stop the DataNode service. It is recommended to stop a DataNode before its 
 associated the NameNodes.
 
-    lifecycle = require './lib/lifecycle'
+    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 

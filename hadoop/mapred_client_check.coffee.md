@@ -38,7 +38,7 @@ to re-execute the check.
 
 ## Module Dependencies
 
-    mkcmd = require './lib/mkcmd'
+    mkcmd = require '../lib/mkcmd'
 
 
 

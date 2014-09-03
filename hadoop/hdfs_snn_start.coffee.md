@@ -5,7 +5,7 @@ layout: module
 
 # HDFS SecondaryNameNode Start
 
-    lifecycle = require './lib/lifecycle'
+    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 

@@ -5,7 +5,7 @@ layout: module
 
 # HBase Start
 
-    lifecycle = require '../hadoop/lib/lifecycle'
+    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push require('./_').configure

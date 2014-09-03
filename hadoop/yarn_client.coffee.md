@@ -6,7 +6,7 @@ layout: module
 # YARN Client
 
     {merge} = require 'mecano/lib/misc'
-    properties = require './lib/properties'
+    properties = require '../lib/properties'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 

@@ -404,9 +404,9 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     url = require 'url'
     path = require 'path'
-    lifecycle = require '../hadoop/lib/lifecycle'
-    mkcmd = require '../hadoop/lib/mkcmd'
-    parse_jdbc = require '../hadoop/lib/parse_jdbc'
+    lifecycle = require '../lib/lifecycle'
+    mkcmd = require '../lib/mkcmd'
+    parse_jdbc = require '../lib/parse_jdbc'
   
 
 

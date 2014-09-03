@@ -10,7 +10,7 @@ Start the JournalNode service. It is recommended to start a JournalNode before t
 NameNodes. The "ryba/hadoop/hdfs_nn" module will wait for all the JournalNodes
 to be started on the active NameNode before it check if it must be formated.
 
-    lifecycle = require './lib/lifecycle'
+    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 

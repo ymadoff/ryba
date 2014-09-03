@@ -28,8 +28,8 @@ most (N - 1) / 2 failures to continue to function normally.
 
 [qjm]: http://hadoop.apache.org/docs/r2.3.0/hadoop-yarn/hadoop-yarn-site/HDFSHighAvailabilityWithQJM.html#Architecture
 
-    lifecycle = require './lib/lifecycle'
-    mkcmd = require './lib/mkcmd'
+    lifecycle = require '../lib/lifecycle'
+    mkcmd = require '../lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/iptables'

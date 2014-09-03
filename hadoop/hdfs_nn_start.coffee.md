@@ -56,6 +56,6 @@ the standy NameNodes wait for the one on the active NameNode to start first.
 ## Module Dependencies
 
     url = require 'url'
-    lifecycle = require './lib/lifecycle'
-    mkcmd = require './lib/mkcmd'
+    lifecycle = require '../lib/lifecycle'
+    mkcmd = require '../lib/mkcmd'
 

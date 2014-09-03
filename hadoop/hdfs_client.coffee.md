@@ -39,6 +39,6 @@ layout: module
 ## Module dependencies
 
     hdfs_nn = require './hdfs_nn'
-    mkcmd = require './lib/mkcmd'
+    mkcmd = require '../lib/mkcmd'
 
 

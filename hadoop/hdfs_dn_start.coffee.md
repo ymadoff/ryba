@@ -11,7 +11,7 @@ NameNodes. The DataNode doesn't wait for any NameNode to be started. Inside a
 federated cluster, the DataNode may be dependant of multiple NameNode clusters 
 and some may be inactive.
 
-    lifecycle = require './lib/lifecycle'
+    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 

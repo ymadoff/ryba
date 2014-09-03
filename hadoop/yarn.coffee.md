@@ -7,8 +7,8 @@ layout: module
 
     url = require 'url'
     misc = require 'mecano/lib/misc'
-    mkcmd = require './lib/mkcmd'
-    memory = require './lib/memory'
+    mkcmd = require '../lib/mkcmd'
+    memory = require '../lib/memory'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'ryba/hadoop/core'

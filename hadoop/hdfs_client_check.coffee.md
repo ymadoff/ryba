@@ -3,7 +3,7 @@
 
 Check the access to the HDFS cluster.
 
-    mkcmd = require './lib/mkcmd'
+    mkcmd = require '../lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 

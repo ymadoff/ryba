@@ -295,8 +295,8 @@ afect HDFS metadata.
 
     path = require 'path'
     hdfs_nn = require './hdfs_nn'
-    lifecycle = require './lib/lifecycle'
-    mkcmd = require './lib/mkcmd'
+    lifecycle = require '../lib/lifecycle'
+    mkcmd = require '../lib/mkcmd'
 
 
 

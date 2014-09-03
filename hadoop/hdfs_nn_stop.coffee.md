@@ -5,7 +5,7 @@ layout: module
 
 # HDFS NameNode Stop
 
-    lifecycle = require './lib/lifecycle'
+    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 

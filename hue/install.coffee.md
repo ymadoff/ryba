@@ -9,7 +9,7 @@ layout: module
 It also ships with an Oozie Application for creating and monitoring workflows, a Zookeeper Browser and a SDK. 
 
     misc = require 'mecano/lib/misc'
-    lifecycle = require '../hadoop/lib/lifecycle'
+    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/iptables'
@@ -67,6 +67,7 @@ Example:
       require('../oozie/server').configure ctx
       # Allow proxy user inside "core-site.xml"
       require('../hadoop/core').configure ctx
+      require('../hadoop/core_ssl').configure ctx
       {nameservice, active_nn_host, hadoop_conf_dir, webhcat_site, hue_ini, db_admin} = ctx.config.hdp
       hue_ini ?= ctx.config.hdp.hue_ini = {}
       webhcat_port = webhcat_site['templeton.port']
@@ -90,6 +91,12 @@ Example:
       ctx.config.hdp.hue_group ?= {}
       ctx.config.hdp.hue_group.name ?= 'hue'
       ctx.config.hdp.hue_group.system ?= true
+      # HDFS url
+      {hdfs_site, nameservice, active_nn_host} = ctx.config.hdp
+      protocol = if hdfs_site['dfs.http.policy'] is 'HTTPS_ONLY' then 'https' else 'http'
+      shortname = ctx.hosts[active_nn_host].config.shortname
+      active_nn_port = ctx.config.hdp.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
+      webhdfs_url = "#{protocol}://#{active_nn_host}:#{active_nn_port}/webhdfs/v1"
       # Configure HDFS Cluster
       hue_ini['hadoop'] ?= {}
       hue_ini['hadoop']['hdfs_clusters'] ?= {}
@@ -98,7 +105,7 @@ Example:
       #hue_ini['hadoop']['hdfs_clusters']['default']['fs_defaultfs'] ?= "hdfs://#{nameservice}:8020"
       #hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "http://#{nameservice}:50070/webhdfs/v1"
       hue_ini['hadoop']['hdfs_clusters']['default']['fs_defaultfs'] ?= "hdfs://#{active_nn_host}:8020"
-      hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "http://#{active_nn_host}:50070/webhdfs/v1"
+      hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= webhdfs_url
       # hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "http://#{namenode}:50070/webhdfs/v1"
       hue_ini['hadoop']['hdfs_clusters']['default']['hadoop_hdfs_home'] ?= '/usr/lib/hadoop'
       hue_ini['hadoop']['hdfs_clusters']['default']['hadoop_bin'] ?= '/usr/bin/hadoop'

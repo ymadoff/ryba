@@ -5,7 +5,7 @@ layout: module
 
 # YARN NodeManager Start
 
-    lifecycle = require './lib/lifecycle'
+    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push (ctx) ->

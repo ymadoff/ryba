@@ -8,7 +8,7 @@ layout: module
 
 Check if the JournalNode is running as expected.
 
-    mkcmd = require './lib/mkcmd'
+    mkcmd = require '../lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap'
 

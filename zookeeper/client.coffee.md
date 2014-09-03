@@ -5,7 +5,7 @@ layout: module
 
 # Zookeeper
 
-    lifecycle = require '../hadoop/lib/lifecycle'
+    lifecycle = require '../lib/lifecycle'
     quote = require 'regexp-quote'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
@@ -49,7 +49,7 @@ layout: module
       ctx.config.hdp.zookeeper_env['JAVA_HOME'] ?= "#{java_home}"
       ctx.config.hdp.zookeeper_env['CLIENT_JVMFLAGS'] ?= '-Djava.security.auth.login.config=/etc/zookeeper/conf/zookeeper-client.jaas'
 
-    module.exports.push name: 'HDP ZooKeeper Client # Kerberos', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Client # Kerberos', timeout: -1, callback: (ctx, next) ->
       {zookeeper_user, hadoop_group, realm, zookeeper_conf_dir} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
@@ -85,7 +85,7 @@ layout: module
         next null, if modified then ctx.OK else ctx.PASS
       do_principal()
 
-    module.exports.push name: 'HDP ZooKeeper Client # Environment', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Client # Environment', callback: (ctx, next) ->
       {zookeeper_conf_dir, zookeeper_env} = ctx.config.hdp
       write = for k, v of zookeeper_env
         match: RegExp "^export\\s+(#{quote k})=(.*)$", 'mg'

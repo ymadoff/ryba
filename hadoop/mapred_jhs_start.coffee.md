@@ -5,7 +5,7 @@ layout: module
 
 # MapRed JobHistoryServer Start
 
-    lifecycle = require './lib/lifecycle'
+    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 

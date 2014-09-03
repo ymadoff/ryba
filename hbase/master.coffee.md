@@ -187,7 +187,7 @@ Enable stats collection in Ganglia.
 
     module.exports.push 'ryba/hbase/master_start'
 
-    module.exports.push name: 'HBASE Master # Admin', callback: (ctx, next) ->
+    module.exports.push name: 'HBase Master # Admin', callback: (ctx, next) ->
       {hbase_admin, realm} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
@@ -207,8 +207,8 @@ Enable stats collection in Ganglia.
 
     each = require 'each'
     path = require 'path'
-    lifecycle = require '../hadoop/lib/lifecycle'
-    mkcmd = require '../hadoop/lib/mkcmd'
+    lifecycle = require '../lib/lifecycle'
+    mkcmd = require '../lib/mkcmd'
 
 [HBASE-8409]: https://issues.apache.org/jira/browse/HBASE-8409
 
