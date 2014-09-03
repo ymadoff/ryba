@@ -27,36 +27,35 @@ layout: module
       xasecure.hive['XAAUDIT.DB.USER_NAME'] ?= xasecure.policymgr['audit_db_user']
       xasecure.hive['XAAUDIT.DB.PASSWORD'] ?= xasecure.policymgr['audit_db_password']
 
-    module.exports.push name: 'XASecure Hive # Install', timeout: -1, callback: (ctx, next) ->
-      {hive_conf_dir} = ctx.config.hdp
-      {hive} = ctx.config.xasecure
-      modified = false
-      source = ctx.config.xasecure.hive_url
+    module.exports.push name: 'XASecure HDFS # Upload', timeout: -1, callback: (ctx, next) ->
+      {hive_url} = ctx.config.xasecure
       do_upload = ->
-        u = url.parse source
-        ctx[if u.protocol is 'http:' then 'download' else 'upload']
-          source: source
-          destination: '/tmp'
+        ctx[if url.parse(hive_url).protocol is 'http:' then 'download' else 'upload']
+          source: hive_url
+          destination: '/var/tmp'
           binary: true
+          not_if_exists: "/var/tmp/#{path.basename hive_url, '.tar'}"
         , (err, uploaded) ->
-          return next err if err
+          return next err, ctx.PASS if err or not uploaded
+          modified = true
           do_extract()
       do_extract = ->
-        source = "/tmp/#{path.basename source}"
         ctx.extract
-          source: source
-          # destination: 
+          source: "/var/tmp/#{path.basename hive_url}"
         , (err) ->
-          return next err if err
-          do_configure()
+          return next err, ctx.OK
+      do_upload()
+
+    module.exports.push name: 'XASecure Hive # Install', timeout: -1, callback: (ctx, next) ->
+      {hive_conf_dir} = ctx.config.hdp
+      {hive, hive_url} = ctx.config.xasecure
+      modified = false
       do_configure = ->
-        # ldapsearch -x -LLL -H ldaps://noev201i.noe.edf.fr -D cn=noeyy5j8,ou=systems,dc=edfgdf,dc=fr -w d.IPQUnI -b "dc=edfgdf,dc=fr" "objectClass=*" 
-        source = "#{path.dirname source}/#{path.basename source, '.tar'}"
         write = for k, v of hive
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
         ctx.write
-          destination: "#{source}/install.properties"
+          destination: "/var/tmp/#{path.basename hive_url, '.tar'}/install.properties"
           write: write
           eof: true
         , (err, written) ->
@@ -64,8 +63,7 @@ layout: module
           do_install()
       do_install = ->
         ctx.execute
-          cmd: "cd #{source} && ./install.sh"
-          # cwd: "#{source}"
+          cmd: "cd /var/tmp/#{path.basename hive_url, '.tar'} && ./install.sh"
         , (err, executed) ->
           return next err if err
           do_conf()
@@ -91,7 +89,7 @@ layout: module
           lifecycle.hive_server2_restart ctx, (err) ->
             return next err if err
             next null, ctx.PASS
-      do_upload()
+      do_configure()
 
     module.exports.push name: 'XASecure Hive # Register', timeout: -1, callback: (ctx, next) ->
       # POST http://front1.hadoop:6080/service/assets/assets
