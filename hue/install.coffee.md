@@ -157,7 +157,7 @@ cat /etc/group | grep hue
 hue:x:494:
 ```
 
-    module.exports.push name: 'HDP Hue # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Users & Groups', callback: (ctx, next) ->
       {hue_group, hue_user} = ctx.config.hdp
       ctx.group hue_group, (err, gmodified) ->
         return next err if err
@@ -173,7 +173,7 @@ hue:x:494:
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HDP Hue # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # IPTables', callback: (ctx, next) ->
       {hue_ini} = ctx.config.hdp
       ctx.iptables
         rules: [
@@ -187,7 +187,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 The packages "extjs-2.2-1" and "hue" are installed.
 
-    module.exports.push name: 'HDP Hue # Packages', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Packages', timeout: -1, callback: (ctx, next) ->
       ctx.service [
         name: 'extjs-2.2-1'
       ,
@@ -204,7 +204,7 @@ Todo: We are currently only modifying the "core-site.xml" locally while it shoul
 be deployed on all the master and worker nodes. This is currently achieved through
 the configuration picked up by the "ryba/hadoop/core" module.
 
-    module.exports.push name: 'HDP Hue # Core', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Core', callback: (ctx, next) ->
       {hadoop_conf_dir} = ctx.config.hdp
       properties = 
         'hadoop.proxyuser.hue.hosts': '*'
@@ -226,7 +226,7 @@ Update the "webhcat-site.xml" on the server running the "webhcat" service
 to allow impersonnation through the "hue" user.
 
 
-    module.exports.push name: 'HDP Hue # WebHCat', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # WebHCat', callback: (ctx, next) ->
       {webhcat_conf_dir} = ctx.config.hdp
       webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
       hconfigure = (ssh) ->
@@ -253,7 +253,7 @@ to allow impersonnation through the "hue" user.
 Update the "oozie-site.xml" on the server running the "oozie" service 
 to allow impersonnation through the "hue" user.
 
-    module.exports.push name: 'HDP Hue # Oozie', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Oozie', callback: (ctx, next) ->
       {oozie_conf_dir} = ctx.config.hdp
       oozie_server = ctx.host_with_module 'ryba/oozie/server'
       hconfigure = (ssh) ->
@@ -280,7 +280,7 @@ to allow impersonnation through the "hue" user.
 Configure the "/etc/hue/conf" file following the [HortonWorks](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue-5-2.html) 
 recommandations. Merge the configuration object from "hdp.hue_ini" with the properties of the destination file. 
 
-    module.exports.push name: 'HDP Hue # Configure', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Configure', callback: (ctx, next) ->
       {hue_conf_dir, hue_ini} = ctx.config.hdp
       ctx.ini
         destination: "#{hue_conf_dir}/hue.ini"
@@ -299,7 +299,7 @@ Setup the database hosting the Hue data. Currently two database providers are
 implemented but Hue supports MySQL, PostgreSQL, and Oracle. Note, sqlite is 
 the default database while mysql is the recommanded choice.
 
-    module.exports.push name: 'HDP Hue # Database', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Database', callback: (ctx, next) ->
       {hue_ini, hue_user, db_admin} = ctx.config.hdp
       engines = 
         mysql: ->
@@ -337,7 +337,7 @@ The principal for the Hue service is created and named after "hue/{host}@{realm}
 the "/etc/hue/conf/hue.ini" configuration file, all the composants myst be tagged with
 the "security_enabled" property set to "true".
 
-    module.exports.push name: 'HDP Hue # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Kerberos', callback: (ctx, next) ->
       {hue_user, hue_group, hue_conf_dir, realm} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       principal = "hue/#{ctx.config.host}@#{realm}"
@@ -413,7 +413,7 @@ configuration properties. It follows the [official Hue Web Server
 Configuration][web]. The "hue" service is restarted if there was any 
 changes.
 
-    module.exports.push name: 'HDP Hue # SSL', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # SSL', callback: (ctx, next) ->
       {hue_user, hue_group, hue_conf_dir, hue_ssl_certificate, hue_ssl_private_key} = ctx.config.hdp
       modified = true
       do_upload = ->

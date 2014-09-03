@@ -12,7 +12,7 @@ layout: module
     module.exports.push (ctx) ->
       require('./install').configure ctx
 
-    module.exports.push name: 'HDP Hue # Stop', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Stop', callback: (ctx, next) ->
       lifecycle.hue_stop ctx, (err, stopped) ->
         next err, if stopped then ctx.OK else ctx.PASS
 

@@ -13,7 +13,7 @@ layout: module
     module.exports.push (ctx) ->
       require('./install').configure ctx
 
-    module.exports.push name: 'HDP Hue # Status', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Status', callback: (ctx, next) ->
       lifecycle.hue_status ctx, (err, running) ->
         next err, if running then 'STARTED' else 'STOPPED'
 
