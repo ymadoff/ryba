@@ -17,7 +17,7 @@ layout: module
 
 Execute these commands on the Hive Metastore host machine.
 
-    module.exports.push name: 'HDP Hive # Start Metastore', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat # Start Metastore', timeout: -1, callback: (ctx, next) ->
       {hive_site} = ctx.config.hdp
       [_, host, port] = /^.*?\/\/?(.*?)(?::(.*))?\/.*$/.exec hive_site['javax.jdo.option.ConnectionURL']
       ctx.waitIsOpen host, port, (err) ->
@@ -29,7 +29,7 @@ Execute these commands on the Hive Metastore host machine.
 
 Execute these commands on the Hive Server2 host machine.
 
-    module.exports.push name: 'HDP Hive # Start Server2', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat # Start Server2', timeout: -1, callback: (ctx, next) ->
       lifecycle.hive_server2_start ctx, (err, started) ->
         next err, if started then ctx.OK else ctx.PASS
 

@@ -8,7 +8,7 @@
 
 Check if Hive can authenticate and run a basic query to the database.
 
-    module.exports.push name: 'HDP Hive Server # Database', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Check Database', callback: (ctx, next) ->
       {hive_site, db_admin} = ctx.config.hdp
       username = hive_site['javax.jdo.option.ConnectionUserName']
       password = hive_site['javax.jdo.option.ConnectionPassword']
@@ -28,7 +28,7 @@ Check if Hive can authenticate and run a basic query to the database.
 
 ## Open Ports
 
-    module.exports.push name: 'HDP Hive Server # Open Port', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Check Open Port', callback: (ctx, next) ->
       {host} = ctx.config
       {hive_metastore_port, hive_server2_port} = ctx.config.hdp
       ctx.execute [

@@ -13,6 +13,6 @@ layout: module
     module.exports.push (ctx) ->
       require('./webhcat').configure ctx
 
-    module.exports.push name: 'HDP WebHCat # Stop', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Stop', callback: (ctx, next) ->
       lifecycle.webhcat_stop ctx, (err, stopped) ->
         next err, if stopped then ctx.OK else ctx.PASS

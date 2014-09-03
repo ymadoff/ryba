@@ -92,7 +92,7 @@ cat /etc/group | grep hcat
 hcat:x:494:
 ```
 
-    module.exports.push name: 'HDP WebHCat # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Users & Groups', callback: (ctx, next) ->
       {webhcat_group, webhcat_user} = ctx.config.hdp
       ctx.group webhcat_group, (err, gmodified) ->
         return next err if err
@@ -108,7 +108,7 @@ hcat:x:494:
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HDP WebHCat # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # IPTables', callback: (ctx, next) ->
       {webhcat_site} = ctx.config.hdp
       port = webhcat_site['templeton.port']
       ctx.iptables
@@ -119,7 +119,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP WebHCat # Install', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
         name: 'hive-hcatalog'
       ,
@@ -135,7 +135,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
 
-    module.exports.push name: 'HDP WebHCat # Startup', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Startup', callback: (ctx, next) ->
       {webhcat_pid_dir} = ctx.config.hdp
       modified = false
       do_install = ->
@@ -166,7 +166,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
         next null, if modified then ctx.OK else ctx.PASS
       do_install()
 
-    module.exports.push name: 'HDP WebHCat # Directories', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Directories', callback: (ctx, next) ->
       {webhcat_log_dir, webhcat_pid_dir, webhcat_user, hadoop_group} = ctx.config.hdp
       modified = false
       do_log = ->
@@ -193,7 +193,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
         next null, if modified then ctx.OK else ctx.PASS
       do_log()
 
-    module.exports.push name: 'HDP WebHCat # Configuration', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Configuration', callback: (ctx, next) ->
       {webhcat_conf_dir, webhcat_user, hadoop_group, webhcat_site} = ctx.config.hdp
       ctx.hconfigure
         destination: "#{webhcat_conf_dir}/webhcat-site.xml"
@@ -208,7 +208,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
         return next err if err
         next err, if configured then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP WebHCat # Env', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Env', callback: (ctx, next) ->
       {webhcat_conf_dir, webhcat_user, hadoop_group} = ctx.config.hdp
       ctx.log 'Write webhcat-env.sh'
       ctx.upload
@@ -220,7 +220,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
       , (err, uploaded) ->
         next err, if uploaded then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP WebHCat # HDFS', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # HDFS', callback: (ctx, next) ->
       {webhcat_user, webhcat_group} = ctx.config.hdp
       modified = false
       ctx.execute [
@@ -262,7 +262,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
           , (err, executed, stdout) ->
             next err, if modified then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP WebHCat # Fix HDFS tmp', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Fix HDFS tmp', callback: (ctx, next) ->
       # Avoid HTTP response
       # Permission denied: user=ryba, access=EXECUTE, inode=\"/tmp/hadoop-hcat\":HTTP:hadoop:drwxr-x---
       {webhcat_user, webhcat_group} = ctx.config.hdp
@@ -278,7 +278,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
       ], (err, created, stdout) ->
         return next err, if created then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP WebHCat # SPNEGO', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # SPNEGO', callback: (ctx, next) ->
       {webhcat_site, webhcat_user, webhcat_group} = ctx.config.hdp
       ctx.copy
         source: '/etc/security/keytabs/spnego.service.keytab'

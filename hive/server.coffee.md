@@ -89,7 +89,7 @@ Example:
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HDP Hive & HCat Server # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # IPTables', callback: (ctx, next) ->
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 9083, protocol: 'tcp', state: 'NEW', comment: "Hive Metastore" }
@@ -105,7 +105,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install and configure the startup script in "/etc/init.d/hive-hcatalog-server"
 and "/etc/init.d/hive-server2".
 
-    module.exports.push name: 'HDP Hive & HCat Server # Startup', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Startup', callback: (ctx, next) ->
       ctx.service [
         name: 'hive-hcatalog-server'
         startup: true
@@ -115,7 +115,7 @@ and "/etc/init.d/hive-server2".
       ], (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Hive & HCat Server # Fix Startup', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Fix Startup', callback: (ctx, next) ->
       ctx.write [
         destination: '/etc/init.d/hive-hcatalog-server'
         match: /^.*# Ryba: clean pidfile if pid not running$/m
@@ -133,7 +133,7 @@ and "/etc/init.d/hive-server2".
       ], (err, written) ->
         next err, if written then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Hive & HCat Server # Database', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Database', callback: (ctx, next) ->
       {hive_site, db_admin} = ctx.config.hdp
       username = hive_site['javax.jdo.option.ConnectionUserName']
       password = hive_site['javax.jdo.option.ConnectionPassword']
@@ -158,7 +158,7 @@ and "/etc/init.d/hive-server2".
       return next new Error 'Database engine not supported' unless engines[engine]
       engines[engine]()
 
-    module.exports.push name: 'HDP Hive & HCat Server # Configure', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Configure', callback: (ctx, next) ->
       {hive_site, hive_user, hive_group, hive_conf_dir} = ctx.config.hdp
       ctx.hconfigure
         destination: "#{hive_conf_dir}/hive-site.xml"
@@ -176,7 +176,7 @@ and "/etc/init.d/hive-server2".
         , (err) ->
           next err, if configured then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Hive & HCat Server # Fix', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Fix', callback: (ctx, next) ->
       {hive_conf_dir} = ctx.config.hdp
       ctx.write
         destination: "#{hive_conf_dir}/hive-env.sh"
@@ -185,7 +185,7 @@ and "/etc/init.d/hive-server2".
       , (err, written) ->
         next err, if written then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Hive & HCat Server # Libs', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Libs', callback: (ctx, next) ->
       {hive_libs} = ctx.config.hdp
       return next() unless hive_libs.length
       uploads = for lib in hive_libs
@@ -194,14 +194,14 @@ and "/etc/init.d/hive-server2".
       ctx.upload uploads, (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Hive & HCat Server # Driver', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Driver', callback: (ctx, next) ->
       ctx.link
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/lib/hive/lib/mysql-connector-java.jar'
       , (err, configured) ->
         return next err, if configured then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Hive & HCat Server # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Kerberos', callback: (ctx, next) ->
       {hive_user, hive_group, hive_site, realm} = ctx.config.hdp
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
@@ -238,7 +238,7 @@ and "/etc/init.d/hive-server2".
         next null, if modified then ctx.OK else ctx.PASS
       do_metastore()
 
-    module.exports.push name: 'HDP Hive & HCat Server # Logs', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Logs', callback: (ctx, next) ->
       ctx.write [
         source: "#{__dirname}/../hadoop/files/hive/hive-exec-log4j.properties.template"
         local_source: true
@@ -250,7 +250,7 @@ and "/etc/init.d/hive-server2".
       ], (err, written) ->
         return next err, if written then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Hive & HCat Server # Layout', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Layout', timeout: -1, callback: (ctx, next) ->
       {hive_user, hive_group} = ctx.config.hdp
       # Required by service "hive-hcatalog-server"
       ctx.mkdir
@@ -260,7 +260,7 @@ and "/etc/init.d/hive-server2".
       , (err, created) ->
         next err, if created then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP Hive & HCat Server # HDFS Layout', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # HDFS Layout', timeout: -1, callback: (ctx, next) ->
       # todo: this isnt pretty, ok that we need to execute hdfs command from an hadoop client
       # enabled environment, but there must be a better way
       {active_nn_host, hdfs_user, hive_user, hive_group} = ctx.config.hdp
@@ -324,7 +324,7 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
 
     module.exports.push 'ryba/hive/server_check'
 
-    module.exports.push name: 'HDP Hive & HCat Server # Check', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Check', timeout: -1, callback: (ctx, next) ->
       # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.3.0/CDH4-Security-Guide/cdh4sg_topic_9_1.html
       # !connect jdbc:hive2://big3.big:10001/default;principal=hive/big3.big@ADALTAS.COM 
       next null, ctx.TODO

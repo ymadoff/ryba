@@ -3,7 +3,7 @@ title:
 layout: module
 ---
 
-# HDP Hive & HCat Client Check
+# Hive & HCat Client Check
 
     mkcmd = require '../lib/mkcmd'
     module.exports = []
@@ -16,7 +16,7 @@ layout: module
 
 Use the [Hive CLI][hivecli] client to execute SQL queries.
 
-    module.exports.push name: 'HDP Hive & HCat Client Check # Metastore', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Client # Check Metastore', timeout: -1, callback: (ctx, next) ->
       {force_check, test_user, hive_metastore_host, hive_metastore_port} = ctx.config.hdp
       ctx.waitIsOpen hive_metastore_host, hive_metastore_port, (err) ->
         host = ctx.config.shortname
@@ -42,7 +42,7 @@ Use the [Hive CLI][hivecli] client to execute SQL queries.
 
 Use the [Beeline][beeline] JDBC client to execute SQL queries.
 
-    module.exports.push name: 'HDP Hive & HCat Client Check # Server2', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Client # Check Server2', timeout: -1, callback: (ctx, next) ->
       {force_check, realm, test_user, hive_server2_host, hive_server2_port} = ctx.config.hdp
       url = "jdbc:hive2://#{hive_server2_host}:#{hive_server2_port}/default;principal=hive/#{hive_server2_host}@#{realm}"
       query = (query) -> "/usr/lib/hive/bin/beeline -u \"#{url}\" --silent=true -e \"#{query}\" "
