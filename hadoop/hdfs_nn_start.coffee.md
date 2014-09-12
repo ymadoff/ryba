@@ -15,6 +15,8 @@ the standy NameNodes wait for the one on the active NameNode to start first.
 
     module.exports.push require('./hdfs').configure
 
+    module.exports.push 'ryba/xasecure/policymgr_wait'
+
 ## Start
 
 # Wait for all JournalNodes to be started before starting this NameNode if it wasn't yet started
