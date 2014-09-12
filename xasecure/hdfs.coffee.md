@@ -6,12 +6,13 @@ layout: module
 # XASecure
 
     module.exports = []
+    module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/commons/java'
     module.exports.push 'masson/commons/mysql_client'
 
 ## Configuration
 
-    module.exports.push (ctx) ->
+    module.exports.push module.exports.configure = (ctx) ->
       require('masson/commons/java').configure ctx
       require('../hadoop/hdfs').configure ctx # Check if still required
       require('./policymgr').configure ctx
@@ -77,19 +78,26 @@ layout: module
           eof: true
         , (err, written) ->
           return next err if err
-          do_fix()
-      do_fix = ->
-          ctx.remove
-            destination: '/usr/lib/hadoop/lib/jersey-bundle-1.17.1.jar'
-          , (err, removed) ->
-            return next err if err
-            do_restart()
+          do_restart()
+      #     do_fix()
+      # do_fix = ->
+      #     ctx.remove
+      #       destination: '/usr/lib/hadoop/lib/jersey-bundle-1.17.1.jar'
+      #     , (err, removed) ->
+      #       return next err if err
+      #       do_restart()
       do_restart = ->
         lifecycle.nn_restart ctx, (err) ->
           return next err if err
           next err, ctx.OK
       do_configure()
 
+    module.exports.push name: 'XASecure HDFS # Fix', callback: (ctx, next) ->
+      ctx.remove
+        destination: '/usr/lib/hadoop/lib/jersey-bundle-1.17.1.jar'
+      , (err, removed) ->
+        return next err, if removed then ctx.OK else ctx.PASS
+    
     module.exports.push name: 'XASecure HDFS # Register', timeout: -1, callback: (ctx, next) ->
       # POST http://front1.hadoop:6080/service/assets/assets
       body = 

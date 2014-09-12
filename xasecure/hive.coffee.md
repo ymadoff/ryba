@@ -6,6 +6,7 @@ layout: module
 # XASecure
 
     module.exports = []
+    module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/commons/java'
     module.exports.push 'masson/commons/mysql_client'
 
@@ -59,7 +60,7 @@ layout: module
           write: write
           eof: true
         , (err, written) ->
-          return next err if err
+          return next err, ctx.PASS if err or not written
           do_install()
       do_install = ->
         ctx.execute
