@@ -20,7 +20,7 @@ lifecyle = module.exports =
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start journalnode"
         # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start journalnode\""
         cmd: 'service hadoop-hdfs-journalnode start'
-        code_skipped: 1
+        # code_skipped: 1
       , (err, started) ->
         return callback err if err
         ctx.waitIsOpen ctx.config.host, 8485, timeout: 20000, (err) ->
@@ -34,7 +34,7 @@ lifecyle = module.exports =
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop journalnode"
         # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop journalnode\""
         cmd: 'service hadoop-hdfs-journalnode stop'
-        code_skipped: 1
+        # code_skipped: 1
       , (err, stopped) ->
         callback err, stopped
   nn_status: (ctx, callback) ->
@@ -56,7 +56,7 @@ lifecyle = module.exports =
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start namenode"
         # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start namenode\""
         cmd: 'service hadoop-hdfs-namenode start'
-        code_skipped: 1
+        # code_skipped: 1
       , (err, started) ->
         return callback err if err
         return callback null, false unless started
@@ -76,7 +76,7 @@ lifecyle = module.exports =
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop namenode"
         # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop namenode\""
         cmd: 'service hadoop-hdfs-namenode stop'
-        code_skipped: 1
+        # code_skipped: 1
       , (err, stopped) ->
         callback err, stopped
   nn_restart: (ctx, callback) ->
@@ -99,7 +99,7 @@ lifecyle = module.exports =
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh start zkfc"
         # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh start zkfc\""
         cmd: 'service hadoop-hdfs-zkfc start'
-        code_skipped: 1
+        # code_skipped: 1
       , (err, started) ->
         return callback err if err
         callback err, started
@@ -112,7 +112,7 @@ lifecyle = module.exports =
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh stop zkfc"
         # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh stop zkfc\""
         cmd: 'service hadoop-hdfs-zkfc stop'
-        code_skipped: 1
+        # code_skipped: 1
       , (err, stopped) ->
         callback err, stopped
   snn_start: (ctx, callback) ->
@@ -121,7 +121,7 @@ lifecyle = module.exports =
     ctx.execute
       # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf start secondarynamenode"
       cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} start secondarynamenode\""
-      code_skipped: 1
+      # code_skipped: 1
     , (err, started) ->
       callback err, started
   snn_stop: (ctx, callback) ->
@@ -130,7 +130,7 @@ lifecyle = module.exports =
     ctx.execute
       # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf stop secondarynamenode"
       cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} stop secondarynamenode\""
-      code_skipped: 1
+      # code_skipped: 1
     , (err, stopped) ->
       callback err, stopped
   dn_status: (ctx, callback) ->
@@ -148,7 +148,7 @@ lifecyle = module.exports =
         # HADOOP_SECURE_DN_USER=hdfs /usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start datanode
         # cmd: "HADOOP_SECURE_DN_USER=hdfs /usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start datanode"
         cmd: "service hadoop-hdfs-datanode start"
-        code_skipped: 1
+        # code_skipped: 1
       , (err, started) ->
         callback err, started
   dn_stop: (ctx, callback) ->
@@ -160,7 +160,7 @@ lifecyle = module.exports =
         # /usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf stop datanode
         # cmd: "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} stop datanode"
         cmd: "service hadoop-hdfs-datanode stop"
-        code_skipped: 1
+        # code_skipped: 1
       , (err, stopped) ->
         callback err, stopped
   rm_status: (ctx, callback) ->
@@ -183,7 +183,7 @@ lifecyle = module.exports =
         # su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf start resourcemanager"
         # cmd: "su -l #{yarn_user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} start resourcemanager\""
         cmd: "service hadoop-yarn-resourcemanager start"
-        code_skipped: 1
+        # code_skipped: 1
       , (err, started) ->
         callback err, started
   rm_stop: (ctx, callback) ->
@@ -195,7 +195,7 @@ lifecyle = module.exports =
         # su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf stop resourcemanager"
         # cmd: "su -l #{yarn_user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} stop resourcemanager\""
         cmd: "service hadoop-yarn-resourcemanager stop"
-        code_skipped: 1
+        # code_skipped: 1
       , (err, stopped) ->
         callback err, stopped
   nm_status: (ctx, callback) ->
@@ -218,7 +218,7 @@ lifecyle = module.exports =
         # su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf start nodemanager"
         # cmd: "su -l #{yarn_user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} start nodemanager\""
         cmd: "service hadoop-yarn-nodemanager start"
-        code_skipped: 1
+        # code_skipped: 1
       , (err, started) ->
         callback err, started
   nm_stop: (ctx, callback) ->
@@ -230,7 +230,7 @@ lifecyle = module.exports =
         # su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf stop nodemanager"
         # cmd: "su -l #{yarn_user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} stop nodemanager\""
         cmd: "service hadoop-yarn-nodemanager stop"
-        code_skipped: 1
+        # code_skipped: 1
       , (err, stopped) ->
         callback err, stopped
   jhs_status: (ctx, callback) ->
@@ -253,7 +253,7 @@ lifecyle = module.exports =
         # su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config /etc/hadoop/conf start historyserver"
         # cmd: "su -l #{mapred_user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config #{hadoop_conf_dir} start historyserver\""
         cmd: 'service hadoop-mapreduce-historyserver start'
-        code_skipped: 1
+        # code_skipped: 1
       , (err, started) ->
         callback err, started
   jhs_stop: (ctx, callback) ->
@@ -265,7 +265,7 @@ lifecyle = module.exports =
         # su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config /etc/hadoop/conf stop historyserver"
         # cmd: "su -l #{mapred_user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config #{hadoop_conf_dir} stop historyserver\""
         cmd: 'service hadoop-mapreduce-historyserver stop'
-        code_skipped: 1
+        # code_skipped: 1
       , (err, started) ->
         callback err, started
   hive_metastore_status: (ctx, callback) ->
@@ -282,7 +282,7 @@ lifecyle = module.exports =
       ctx.execute
         # su -l hive -c 'nohup hive --service metastore >/var/log/hive/hive.out 2>/var/log/hive/hive.log & echo $! >/var/run/hive/metastore.pid'
         cmd: "service hive-hcatalog-server start"
-        code_skipped: 1
+        # code_skipped: 1
       , (err, started) ->
         return callback err if err
         ctx.waitIsOpen hive_metastore_host, hive_metastore_port, timeout: hive_metastore_timeout, (err) ->
@@ -294,7 +294,7 @@ lifecyle = module.exports =
       ctx.execute
         # su -l hive -c "kill `cat /var/run/hive/metastore.pid`"
         cmd: "service hive-hcatalog-server stop"
-        code_skipped: 1
+        # code_skipped: 1
       , (err, stopped) ->
         callback err, stopped
   hive_metastore_restart: (ctx, callback) ->
@@ -316,7 +316,7 @@ lifecyle = module.exports =
       ctx.execute
         # su -l hive -c 'nohup /usr/lib/hive/bin/hiveserver2 >/var/log/hive/hiveserver2.out 2>/var/log/hive/hiveserver2.log & echo $! >/var/run/hive/server2.pid'
         cmd: 'service hive-server2 start'
-        code_skipped: 1
+        # code_skipped: 1
       , (err, started) ->
         return callback err if err
         ctx.waitIsOpen hive_server2_host, hive_server2_port, timeout: hive_server2_timeout, (err) ->
@@ -328,7 +328,7 @@ lifecyle = module.exports =
       ctx.execute
         # su -l hive -c "kill `cat /var/run/hive/server2.pid`"
         cmd: 'service hive-server2 stop'
-        code_skipped: 1
+        # code_skipped: 1
       , (err, started) ->
         callback err, started
   hive_server2_restart: (ctx, callback) ->
@@ -350,7 +350,7 @@ lifecyle = module.exports =
       ctx.execute
         # su -l oozie -c "/usr/lib/oozie/bin/oozied.sh start"
         cmd: "su -l #{oozie_user.name} -c \"/usr/lib/oozie/bin/oozied.sh start\""
-        code_skipped: 1
+        # code_skipped: 1
       , (err, started) ->
         callback err, started
   oozie_stop: (ctx, callback) ->
@@ -361,7 +361,7 @@ lifecyle = module.exports =
       ctx.execute
         # su -l oozie -c "/usr/lib/oozie/bin/oozied.sh stop"
         cmd: "su -l #{oozie_user.name} -c \"/usr/lib/oozie/bin/oozied.sh stop\""
-        code_skipped: 1
+        # code_skipped: 1
       , (err, stopped) ->
         callback err, stopped
   hbase_master_status: (ctx, callback) ->
@@ -383,7 +383,6 @@ lifecyle = module.exports =
       ctx.execute
         # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start master"
         # cmd: "su -l #{hbase_user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} start master\""
-        cmd: "su -l #{hbase_user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} start master\""
         cmd: "service hbase-master start"
       , (err, stopped) ->
         callback err, stopped
@@ -395,7 +394,6 @@ lifecyle = module.exports =
       ctx.execute
         # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop master"
         # cmd: "su -l #{hbase_user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} stop master\""
-        cmd: "su -l #{hbase_user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} stop master\""
         cmd: "service hbase-master stop"
       , (err, stopped) ->
         callback err, stopped
@@ -532,12 +530,6 @@ module.exports.is_pidfile_running = (ctx, path, callback) ->
       if ps -e -o pid | grep -v grep | grep -w $pid; then exit 0;
     fi; fi; exit 1
     """
-    # cmd: """
-    # if pid=`cat #{path}`; then
-    #   if ps cax | grep -v grep | grep $pid; then exit 0; else
-    #     rm -f #{path}
-    # fi; fi; exit 1
-    # """
     code_skipped: 1
   , (err, started) ->
     callback err, started
