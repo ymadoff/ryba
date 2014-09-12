@@ -10,9 +10,6 @@ installation is leveraging the Yum repositories. [Individual tarballs][tar]
 are also available as an alternative with the benefit of including the source 
 code.
 
-    
-TODO: topologie
-
 *   http://bigdataprocessing.wordpress.com/2013/07/30/hadoop-rack-awareness-and-configuration/
 *   http://ofirm.wordpress.com/2014/01/09/exploring-the-hadoop-network-topology/
 
