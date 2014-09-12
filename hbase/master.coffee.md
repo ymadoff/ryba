@@ -104,12 +104,6 @@ Environment file is enriched by "ryba/hbase/_ # HBase # Env".
       , (err, written) ->
         return next err, if written then ctx.OK else ctx.PASS
 
-    # module.exports.push name: 'HBase Master # Environment', timeout: -1, callback: (ctx, next) ->
-    #   {jaas_client, hbase_conf_dir, hbase_user, hbase_group} = ctx.config.ryba
-    #   ctx.fs.readFile "#{hbase_conf_dir}/hbase-env.sh", 'ascii', (err, content) ->
-        
-    #     console.log err, content
-
 https://blogs.apache.org/hbase/entry/hbase_cell_security
 https://hbase.apache.org/book/security.html
 
