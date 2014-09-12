@@ -18,7 +18,7 @@ Check if the JournalNode is running as expected.
 
     module.exports.push name: 'HDP HDFS JN Check # SPNEGO', callback: (ctx, next) ->
       {hdfs_site} = ctx.config.ryba
-      protocol = if hdfs_site['dfs.http.policy'] is 'HTTPS_ONLY' then 'https' else 'http'
+      protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       port = hdfs_site["dfs.journalnode.#{protocol}-address"].split(':')[1]
       ctx.execute
         cmd: mkcmd.hdfs ctx, "curl --negotiate -k -u : #{protocol}://#{ctx.config.host}:#{port}/"

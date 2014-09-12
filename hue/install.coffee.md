@@ -93,7 +93,7 @@ Example:
       ctx.config.ryba.hue_group.system ?= true
       # HDFS url
       {hdfs_site, nameservice, active_nn_host} = ctx.config.ryba
-      protocol = if hdfs_site['dfs.http.policy'] is 'HTTPS_ONLY' then 'https' else 'http'
+      protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       shortname = ctx.hosts[active_nn_host].config.shortname
       active_nn_port = ctx.config.ryba.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
       webhdfs_url = "#{protocol}://#{active_nn_host}:#{active_nn_port}/webhdfs/v1"

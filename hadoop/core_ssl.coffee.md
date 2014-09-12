@@ -59,7 +59,7 @@ keytool -list -v -keystore keystore -alias hadoop
       core_site['hadoop.ssl.server.conf'] ?= 'ssl-server.xml'
       core_site['hadoop.ssl.client.conf'] ?= 'ssl-client.xml'
       hdfs_site['dfs.https.enable'] ?= 'true' # Depracated in favor of 'dfs.http.policy'
-      hdfs_site['dfs.http.policy'] ?= 'HTTPS_ONLY' # HTTP_ONLY or HTTPS_ONLY or HTTP_AND_HTTPS
+      hdfs_site['dfs.http.policy'] ?= 'HTTP_AND_HTTPS' # HTTP_ONLY or HTTPS_ONLY or HTTP_AND_HTTPS
       hdfs_site['dfs.https.port'] ?= '50470' # The https port where NameNode binds
       ssl_client['ssl.client.truststore.location'] ?= "#{hadoop_conf_dir}/truststore"
       ssl_client['ssl.client.truststore.password'] ?= 'ryba123'
