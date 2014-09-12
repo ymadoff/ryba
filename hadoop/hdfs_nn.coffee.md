@@ -184,8 +184,8 @@ public and private SSH keys for the HDFS user inside his "~/.ssh" folder and upd
       {hadoop_conf_dir, ha_client_config, ssh_fencing, hdfs_user, hadoop_group} = ctx.config.ryba
       hdfs_home = '/var/lib/hadoop-hdfs'
       modified = false
-      ha_client_config['dfs.ha.fencing.methods'] = 'sshfence(hdfs)'
-      ha_client_config['dfs.ha.fencing.ssh.private-key-files'] = '#{hdfs_home}/.ssh/id_rsa'
+      ha_client_config['dfs.ha.fencing.methods'] ?= "sshfence(#{hdfs_user.name})"
+      ha_client_config['dfs.ha.fencing.ssh.private-key-files'] ?= "#{hdfs_home}/.ssh/id_rsa"
       do_mkdir = ->
         ctx.mkdir
           destination: "#{hdfs_home}/.ssh"
