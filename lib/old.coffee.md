@@ -52,7 +52,7 @@ the directory named after the nameservice is created on each JournalNode host.
       return next null, ctx.INAPPLICABLE unless active_nn
       do_wait = ->
         # all the JournalNodes shall be started
-        options = ctx.config.servers
+        options = Object.keys(ctx.config.servers)
           .filter( (server) -> journalnodes.indexOf(server.host) isnt -1 )
           .map( (server) -> host: server.host, port: 8485 )
         ctx.waitIsOpen options, (err) ->

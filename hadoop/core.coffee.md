@@ -33,7 +33,7 @@ TODO: topologie
 
 ## Configuration
 
-*   `hdp.static_host` (boolean)   
+*   `ryba.static_host` (boolean)   
     Write the host name of the server instead of the Hadoop "_HOST" 
     placeholder accross all the configuration files, default to false.   
 *   `hdfs_user` (object|string)   
@@ -59,7 +59,7 @@ Default configuration:
 
 ```json
 {
-  "hdp": {
+  "ryba": {
     "hdfs_user": {
       "name": "hdfs", "system": true, "gid": "hdfs",
       "comment": "HDFS User", "home": "/var/lib/hadoop-hdfs"
@@ -172,12 +172,12 @@ Default configuration:
       throw new Error "Invalid Service Name" unless ctx.config.ryba.nameservice
       namenodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       throw new Error "Need at least 2 namenodes" if namenodes.length < 2
-      # active_nn_hosts = ctx.config.servers.filter( (server) -> server.hdp?.active_nn ).map( (server) -> server.host )
-      active_nn_hosts = namenodes.filter( (server) -> ctx.config.servers[server].hdp?.active_nn )
+      # active_nn_hosts = ctx.config.servers.filter( (server) -> server.ryba?.active_nn ).map( (server) -> server.host )
+      active_nn_hosts = namenodes.filter( (server) -> ctx.config.servers[server].ryba?.active_nn )
       throw new Error "Invalid Number of Active NameNodes: #{active_nn_hosts.length}" unless active_nn_hosts.length is 1
       ctx.config.ryba.active_nn_host = active_nn_hosts[0]
-      # standby_nn_hosts = ctx.config.servers.filter( (server) -> ! server.hdp?.active_nn ).map( (server) -> server.host )
-      standby_nn_hosts = namenodes.filter( (server) -> ! ctx.config.servers[server].hdp?.active_nn )
+      # standby_nn_hosts = ctx.config.servers.filter( (server) -> ! server.ryba?.active_nn ).map( (server) -> server.host )
+      standby_nn_hosts = namenodes.filter( (server) -> ! ctx.config.servers[server].ryba?.active_nn )
       throw new Error "Invalid Number of Passive NameNodes: #{standby_nn_hosts.length}" unless standby_nn_hosts.length is 1
       ctx.config.ryba.standby_nn_host = standby_nn_hosts[0]
       ctx.config.ryba.static_host = 
@@ -534,7 +534,7 @@ recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
       {core_site, realm} = ctx.config.ryba
       # Cluster domain
       unless core_site['hadoop.http.authentication.cookie.domain']
-        domains = ctx.config.servers.map( (server) -> server.host.split('.').slice(1).join('.') ).filter( (el, pos, self) -> self.indexOf(el) is pos )
+        domains = Object.keys(ctx.config.servers).map( (host) -> host.split('.').slice(1).join('.') ).filter( (el, pos, self) -> self.indexOf(el) is pos )
         return next new Error "Multiple domains, set 'hadoop.http.authentication.cookie.domain' manually" if domains.length isnt 1
         core_site['hadoop.http.authentication.cookie.domain'] = domains[0]
       ctx.execute

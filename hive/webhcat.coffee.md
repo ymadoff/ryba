@@ -45,7 +45,7 @@ Example:
       {realm} = ctx.config.ryba
       hive_host = ctx.host_with_module 'ryba/hive/server'
       zookeeper_hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
-      for server in ctx.config.servers
+      for server of ctx.config.servers
         continue if (i = zookeeper_hosts.indexOf server.host) is -1
         zookeeper_hosts[i] = "#{zookeeper_hosts[i]}:#{ctx.config.ryba.zookeeper_port}"
       ctx.config.ryba ?= {}

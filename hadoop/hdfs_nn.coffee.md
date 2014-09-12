@@ -276,7 +276,7 @@ is only executed on a non active NameNode.
     module.exports.push name: 'HDP HDFS NN # HA Init Standby NameNodes', timeout: -1, callback: (ctx, next) ->
       # Shall only be executed on the leader namenode
       {active_nn, active_nn_host} = ctx.config.ryba
-      return next null, ctx.INAPPLICABLE if active_nn
+      return next() if active_nn
       do_wait = ->
         ctx.waitIsOpen active_nn_host, 8020, (err) ->
           return next err if err
@@ -369,10 +369,11 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
           modified = true if configured
           do_core()
       do_core = ->
-        quorum = ctx.config.servers
-          .filter( (server) -> zookeepers.indexOf(server.host) isnt -1 )
-          .map( (server) -> "#{server.host}:2181" )
-          .join ','
+        # quorum = Object.keys(ctx.config.servers)
+        #   .filter( (host) -> zookeepers.indexOf(host) isnt -1 )
+        #   .map( (host) -> "#{host}:2181" )
+        #   .join ','
+        quorum = zookeepers.map( (host) -> "#{host}:2181" ).join ','
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/core-site.xml"
           properties: 'ha.zookeeper.quorum': quorum
