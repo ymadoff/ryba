@@ -41,19 +41,28 @@ Example:
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       ctx.config.ryba ?= {}
-      ctx.config.ryba.rrdcached_user = name: ctx.config.ryba.rrdcached_user if typeof ctx.config.ryba.rrdcached_user is 'string'
-      ctx.config.ryba.rrdcached_user ?= {}
-      ctx.config.ryba.rrdcached_user.name ?= 'rrdcached'
-      ctx.config.ryba.rrdcached_user.system ?= true
-      ctx.config.ryba.rrdcached_user.gid = 'rrdcached'
-      ctx.config.ryba.rrdcached_user.shell = false
-      ctx.config.ryba.rrdcached_user.comment ?= 'RRDtool User'
-      ctx.config.ryba.rrdcached_user.home = '/var/rrdtool/rrdcached'
+      ctx.config.ryba.ganglia ?= {}
+      ctx.config.ryba.ganglia.rrdcached_user = name: ctx.config.ryba.rrdcached_user if typeof ctx.config.ryba.rrdcached_user is 'string'
+      ctx.config.ryba.ganglia.rrdcached_user ?= {}
+      ctx.config.ryba.ganglia.rrdcached_user.name ?= 'rrdcached'
+      ctx.config.ryba.ganglia.rrdcached_user.system ?= true
+      ctx.config.ryba.ganglia.rrdcached_user.gid = 'rrdcached'
+      ctx.config.ryba.ganglia.rrdcached_user.shell = false
+      ctx.config.ryba.ganglia.rrdcached_user.comment ?= 'RRDtool User'
+      ctx.config.ryba.ganglia.rrdcached_user.home = '/var/rrdtool/rrdcached'
       # Group
-      ctx.config.ryba.rrdcached_group = name: ctx.config.ryba.rrdcached_group if typeof ctx.config.ryba.rrdcached_group is 'string'
-      ctx.config.ryba.rrdcached_group ?= {}
-      ctx.config.ryba.rrdcached_group.name ?= 'rrdcached'
-      ctx.config.ryba.rrdcached_group.system ?= true
+      ctx.config.ryba.ganglia.rrdcached_group = name: ctx.config.ryba.rrdcached_group if typeof ctx.config.ryba.rrdcached_group is 'string'
+      ctx.config.ryba.ganglia.rrdcached_group ?= {}
+      ctx.config.ryba.ganglia.rrdcached_group.name ?= 'rrdcached'
+      ctx.config.ryba.ganglia.rrdcached_group.system ?= true
+      # Ports
+      ctx.config.ryba.ganglia.collector_port ?= 8649
+      ctx.config.ryba.ganglia.slaves_port ?= 8649
+      ctx.config.ryba.ganglia.nn_port ?= 8660
+      ctx.config.ryba.ganglia.nn_port ?= 8661
+      ctx.config.ryba.ganglia.hm_port ?= 8663
+      ctx.config.ryba.ganglia.rm_port ?= 8664
+      ctx.config.ryba.ganglia.jhs_port ?= 8666
 
 ## Users & Groups
 
@@ -67,7 +76,7 @@ rrdcached:x:493:
 ```
 
     module.exports.push name: 'Ganglia Collector # Users & Groups', callback: (ctx, next) ->
-      {rrdcached_group, rrdcached_user} = ctx.config.ryba
+      {rrdcached_group, rrdcached_user} = ctx.config.ryba.ganglia
       ctx.group rrdcached_group, (err, gmodified) ->
         return next err if err
         ctx.user rrdcached_user, (err, umodified) ->
