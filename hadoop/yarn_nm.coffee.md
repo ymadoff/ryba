@@ -62,6 +62,9 @@ Install and configure the startup script in
           write: [
             match: /^PIDFILE=".*"$/m
             replace: "PIDFILE=\"#{yarn_pid_dir}/$SVC_USER/yarn-yarn-nodemanager.pid\""
+          ,
+            match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m
+            replace: "$1 -u $SVC_USER $2"
           ]
         , (err, written) ->
           return next err if err
