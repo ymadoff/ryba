@@ -82,7 +82,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
     module.exports.push name: 'HDP MapRed # Users & Groups', callback: (ctx, next) ->
       {mapred_user, hadoop_group} = ctx.config.ryba
       ctx.execute
-        cmd: "useradd {mapred_user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop MapReduce service\""
+        cmd: "useradd #{mapred_user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop MapReduce service\""
         code: 0
         code_skipped: 9
       , (err, executed) ->
