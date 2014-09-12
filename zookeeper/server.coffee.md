@@ -269,9 +269,7 @@ Install and configure the startup script in
         next null, if modified then ctx.OK else ctx.PASS
       do_zoo_cfg()
 
-    module.exports.push name: 'ZooKeeper Server # Start', timeout: -1, callback: (ctx, next) ->
-      lifecycle.zookeeper_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+    module.exports.push 'ryba/zookeeper/server_start'
 
     module.exports.push 'ryba/zookeeper/server_check'
 
