@@ -12,6 +12,17 @@ layout: module
 
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx
+      {hdfs_site} = ctx.config.ryba
+      # Kerberos principal name for the secondary NameNode.
+      hdfs_site['dfs.secondary.namenode.kerberos.principal'] ?= "nn/#{static_host}@#{realm}"
+      # Address of secondary namenode web server
+      hdfs_site['dfs.secondary.http.address'] ?= "#{secondary_namenode}:50090"
+      # The https port where secondary-namenode binds
+      hdfs_site['dfs.secondary.https.port'] ?= '50490' # todo, this has nothing to do here
+      # Combined keytab file containing the NameNode service and host principals.
+      hdfs_site['dfs.secondary.namenode.keytab.file'] ?= '/etc/security/keytabs/nn.service.keytab'
+      hdfs_site['dfs.secondary.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/#{static_host}@#{realm}"
+      hdfs_site['dfs.secondary.namenode.kerberos.https.principal'] = "host/#{static_host}@#{realm}"
 
     module.exports.push name: 'HDP HDFS SNN # Directories', timeout: -1, callback: (ctx, next) ->
       {hdfs_site, fs_checkpoint_dir, hdfs_user, hadoop_group, hdfs_pid_dir} = ctx.config.ryba
@@ -52,3 +63,7 @@ layout: module
     module.exports.push name: 'HDP HDFS SNN # Start', callback: (ctx, next) ->
       lifecycle.snn_start ctx, (err, started) ->
         next err, if started then ctx.OK else ctx.PASS
+
+
+
+
