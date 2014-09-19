@@ -19,16 +19,28 @@
 # under the License.
 #
 #
-MAPRED_LOCAL_DIRS=$1
-CRITICAL=`echo $2 | cut -d % -f 1`
-IFS=","
-for mapred_dir in $MAPRED_LOCAL_DIRS
-do
-  percent=`df -hl $mapred_dir | awk '{percent=$5;} END{print percent}' | cut -d % -f 1`
-  if [ $percent -ge $CRITICAL ]; then
-    echo "CRITICAL: MapReduce local dir is full."
-    exit 2
+# out='{"status":"ok","version":"v1"}<status_code:200>'
+HOST=$1
+PORT=$2
+VERSION=$3
+SEC_ENABLED=$4
+if [[ "$SEC_ENABLED" == "true" ]]; then 
+  NAGIOS_KEYTAB=$5
+  NAGIOS_USER=$6
+  KINIT_PATH=$7
+  out1=`${KINIT_PATH} -kt ${NAGIOS_KEYTAB} ${NAGIOS_USER} 2>&1`
+  if [[ "$?" -ne 0 ]]; then
+    echo "CRITICAL: Error doing kinit for nagios [$out1]";
+    exit 2;
   fi
-done
-echo "OK: MapReduce local dir space is available."
-exit 0
+fi
+regex="^.*\"status\":\"ok\".*<status_code:200>$"
+export no_proxy=$HOST
+out=`curl --negotiate -u : -s -w '<status_code:%{http_code}>' http://$HOST:$PORT/templeton/$VERSION/status 2>&1`
+if [[ $out =~ $regex ]]; then
+  out=`echo "$out" | sed -e 's/{/[/g' | sed -e 's/}/]/g'` 
+  echo "OK: WebHCat Server status [$out]";
+  exit 0;
+fi
+echo "CRITICAL: Error accessing WebHCat Server, status [$out]";
+exit 2;
