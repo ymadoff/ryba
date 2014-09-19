@@ -46,7 +46,8 @@ Example
       require('masson/core/iptables').configure ctx
       require('masson/commons/java').configure ctx
       require('../hadoop/core').configure ctx
-      {static_host, realm, core_site, test_user, test_password, db_admin} = ctx.config.ryba
+      require('./client').configure ctx
+      {static_host, realm, core_site, db_admin} = ctx.config.ryba
       # Internal properties
       ctx.config.ryba.force_war ?= false
       # User
@@ -62,11 +63,8 @@ Example
       ctx.config.ryba.oozie_group ?= {}
       ctx.config.ryba.oozie_group.name ?= 'oozie'
       ctx.config.ryba.oozie_group.system ?= true
-      # Login
-      ctx.config.ryba.oozie_test_principal ?= "#{test_user.name}@#{realm}"
-      ctx.config.ryba.oozie_test_password ?= "#{test_password}"
-      ctx.config.ryba.oozie_conf_dir ?= '/etc/oozie/conf'
       # Layout
+      ctx.config.ryba.oozie_conf_dir ?= '/etc/oozie/conf'
       ctx.config.ryba.oozie_data ?= '/var/db/oozie'
       ctx.config.ryba.oozie_log_dir ?= '/var/log/oozie'
       ctx.config.ryba.oozie_pid_dir ?= '/var/run/oozie'
