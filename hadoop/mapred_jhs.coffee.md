@@ -12,13 +12,19 @@ layout: module
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/mapred'
 
-    module.exports.push (ctx) ->
+    module.exports.push module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       require('./mapred').configure ctx
-      ctx.config.ryba.mapred_site['mapreduce.jobhistory.keytab'] ?= "/etc/security/keytabs/jhs.service.keytab"
-      # Fix: src in "[DFSConfigKeys.java][keys]" and [HDP port list] mention 13562
-      # while companion files mentions 8081
-      ctx.config.ryba.mapred_site['mapreduce.shuffle.port'] ?= '13562'
+      mapred_site = ctx.config.ryba.mapred_site
+      mapred_site['mapreduce.jobhistory.keytab'] ?= "/etc/security/keytabs/jhs.service.keytab"
+      # Fix: src in "[DFSConfigKeys.java][keys]" and [HDP port list] mention 13562 while companion files mentions 8081
+      mapred_site['mapreduce.shuffle.port'] ?= '13562'
+      mapred_site['mapreduce.jobhistory.address'] ?= "#{ctx.config.host}:10020"
+      mapred_site['mapreduce.jobhistory.webapp.address'] ?= "#{ctx.config.host}:19888"
+      mapred_site['mapreduce.jobhistory.admin.address'] ?= "#{ctx.config.host}:10033"
+      # See './hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-common/src/main/java/org/apache/hadoop/mapreduce/v2/jobhistory/JHAdminConfig.java#158'
+      # yarn_site['mapreduce.jobhistory.webapp.spnego-principal']
+      # yarn_site['mapreduce.jobhistory.webapp.spnego-keytab-file']
 
 ## IPTables
 
@@ -34,13 +40,16 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'HDP MapRed JHS # IPTables', callback: (ctx, next) ->
       {mapred_site} = ctx.config.ryba
-      shuffle = mapred_site['mapreduce.shuffle.port']
+      jhs_shuffle_port = mapred_site['mapreduce.shuffle.port']
+      jhs_port = mapred_site['mapreduce.jobhistory.address'].split(':')[1]
+      jhs_webapp_port = mapred_site['mapreduce.jobhistory.webapp.address'].split(':')[1]
+      jhs_admin_port = mapred_site['mapreduce.jobhistory.admin.address'].split(':')[1]
       ctx.iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 10020, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS Server" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 19888, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS WebApp" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: shuffle, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS Shuffle" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 10033, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS Admin Server" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: jhs_port, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS Server" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: jhs_webapp_port, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS WebApp" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: jhs_shuffle_port, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS Shuffle" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: jhs_admin_port, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS Admin Server" }
         ]
         if: ctx.config.iptables.action is 'start'
       , (err, configured) ->

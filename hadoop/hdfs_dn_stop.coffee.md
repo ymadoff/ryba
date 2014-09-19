@@ -17,6 +17,16 @@ associated the NameNodes.
       require('./hdfs').configure ctx
 
     module.exports.push name: 'HDP HDFS DN # Stop', callback: (ctx, next) ->
-      return next new Error "Not an DataNode" unless ctx.has_module 'ryba/hadoop/hdfs_dn'
-      lifecycle.dn_stop ctx, (err, stopped) ->
+      ctx.execute
+        cmd: "service hadoop-hdfs-datanode stop"
+        code_skipped: 3
+      , (err, stopped) ->
         next err, if stopped then ctx.OK else ctx.PASS
+
+    module.exports.push name: 'HDP HDFS DN # Stop Clean Logs', callback: (ctx, next) ->
+      return next() unless ctx.config.ryba.clean_logs
+      ctx.execute
+        cmd: 'rm /var/log/hadoop-hdfs/*/hadoop-hdfs-datanode-*'
+        code_skipped: 1
+      , (err, removed) ->
+        next err, if removed then ctx.OK else ctx.PASS

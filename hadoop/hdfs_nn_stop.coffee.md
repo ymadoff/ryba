@@ -22,3 +22,14 @@ layout: module
     module.exports.push name: 'HDP HDFS NN # Stop NameNode', callback: (ctx, next) ->
       lifecycle.nn_stop ctx, (err, stopped) ->
         next err, if stopped then ctx.OK else ctx.PASS
+
+    module.exports.push name: 'HDP HDFS NN # Stop Clean Logs', callback: (ctx, next) ->
+      return next() unless ctx.config.ryba.clean_logs
+      ctx.execute [
+        cmd: 'rm /var/log/hadoop-hdfs/*/hadoop-hdfs-namenode-*'
+        code_skipped: 1
+      ,
+        cmd: 'rm /var/log/hadoop-hdfs/*/hadoop-hdfs-zkfc-*'
+        code_skipped: 1
+      ], (err, removed) ->
+        next err, if removed then ctx.OK else ctx.PASS
