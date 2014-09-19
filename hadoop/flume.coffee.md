@@ -6,10 +6,11 @@ layout: module
 
 # Flume
 
-Flume is a distributed, reliable, and available service for efficiently collecting, 
-aggregating, and moving large amounts of log data. It has a simple and flexible 
-architecture based on streaming data flows. It is robust and fault tolerant with 
-tunable reliability mechanisms and many failover and recovery mechanisms.
+Flume is a distributed, reliable, and available service for efficiently
+collecting, aggregating, and moving large amounts of log data. It has a simple
+and flexible architecture based on streaming data flows. It is robust and fault
+tolerant with tunable reliability mechanisms and many failover and recovery
+mechanisms.
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
@@ -18,9 +19,11 @@ tunable reliability mechanisms and many failover and recovery mechanisms.
 ## Configure
 
 *   `flume_user` (object|string)   
-    The Unix Flume login name or a user object (see Mecano User documentation).   
+    The Unix Flume login name or a user object (see Mecano User
+    documentation).   
 *   `flume_group` (object|string)   
-    The Unix Flume group name or a group object (see Mecano Group documentation).   
+    The Unix Flume group name or a group object (see Mecano Group
+    documentation).   
 
 Example:
 
@@ -89,9 +92,10 @@ The package "flume" is installed.
 
 ## Kerberos
 
-The flume principal isn't used yet and is created to be at our disposal for later 
-usage. It is placed inside the flume configuration directory, by default 
-"/etc/flume/conf/flume.service.keytab" with restrictive permissions set to "0600".
+The flume principal isn't used yet and is created to be at our disposal for
+later usage. It is placed inside the flume configuration directory, by default
+"/etc/flume/conf/flume.service.keytab" with restrictive permissions set to
+"0600".
 
     module.exports.push name: 'HDP Flume # Kerberos', callback: (ctx, next) ->
       {flume_user, flume_group, flume_conf_dir, realm} = ctx.config.ryba
@@ -111,7 +115,8 @@ usage. It is placed inside the flume configuration directory, by default
 
 ## Check
 
-We didnt yet activated any check. There could be two type, one using a kerberos user and one using interpolation.
+We didnt yet activated any check. There could be two types, one using a kerberos
+user and one using interpolation.
 
     # module.exports.push name: 'HDP Flume # Check', timeout: -1, callback: (ctx, next) ->
     #   ctx.write
