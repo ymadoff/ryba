@@ -67,7 +67,8 @@ Example:
       require('../oozie/server').configure ctx
       # Allow proxy user inside "core-site.xml"
       require('../hadoop/core').configure ctx
-      require('../hadoop/core_ssl').configure ctx
+      require('../hadoop/hdfs').configure ctx
+      require('../hadoop/yarn').configure ctx
       {nameservice, active_nn_host, hadoop_conf_dir, webhcat_site, hue_ini, db_admin} = ctx.config.ryba
       hue_ini ?= ctx.config.ryba.hue_ini = {}
       webhcat_port = webhcat_site['templeton.port']
@@ -75,6 +76,7 @@ Example:
       # todo, this might not work as expected after ha migration
       resourcemanager = ctx.host_with_module 'ryba/hadoop/yarn_rm'
       nodemanagers = ctx.hosts_with_module 'ryba/hadoop/yarn_nm'
+      jobhistoryserver = ctx.host_with_module 'ryba/hadoop/mapred_jhs'
       # Webhdfs should be active on the NameNode, Secondary NameNode, and all the DataNodes
       # throw new Error 'WebHDFS not active' if ctx.config.ryba.hdfs_site['dfs.webhdfs.enabled'] isnt 'true'
       ctx.config.ryba.hue_conf_dir ?= '/etc/hue/conf'
@@ -91,12 +93,15 @@ Example:
       ctx.config.ryba.hue_group ?= {}
       ctx.config.ryba.hue_group.name ?= 'hue'
       ctx.config.ryba.hue_group.system ?= true
-      # HDFS url
-      {hdfs_site, nameservice, active_nn_host} = ctx.config.ryba
+      # HDFS & YARN url
+      {hdfs_site, nameservice, active_nn_host, yarn_site} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       shortname = ctx.hosts[active_nn_host].config.shortname
       active_nn_port = ctx.config.ryba.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
       webhdfs_url = "#{protocol}://#{active_nn_host}:#{active_nn_port}/webhdfs/v1"
+      yarn_api_url = if yarn_site['yarn.http.policy'] is 'HTTP_ONLY'
+      then "http://#{yarn_site['yarn.resourcemanager.webapp.address']}"
+      else "https://#{yarn_site['yarn.resourcemanager.webapp.https.address']}"
       # Configure HDFS Cluster
       hue_ini['hadoop'] ?= {}
       hue_ini['hadoop']['hdfs_clusters'] ?= {}
@@ -116,13 +121,13 @@ Example:
       hue_ini['hadoop']['yarn_clusters']['default']['resourcemanager_host'] ?= "#{resourcemanager}"
       hue_ini['hadoop']['yarn_clusters']['default']['resourcemanager_port'] ?= "8050"
       hue_ini['hadoop']['yarn_clusters']['default']['submit_to'] ?= "true"
-      hue_ini['hadoop']['yarn_clusters']['default']['resourcemanager_api_url'] ?= "http://#{resourcemanager}:8088"
-      hue_ini['hadoop']['yarn_clusters']['default']['proxy_api_url'] ?= "http://#{resourcemanager}:8088" # NOT very sure
-      hue_ini['hadoop']['yarn_clusters']['default']['history_server_api_url'] ?= "http://#{resourcemanager}:19888"
-      hue_ini['hadoop']['yarn_clusters']['default']['node_manager_api_url'] ?= "http://#{nodemanagers[0]}:8042"
-      hue_ini['hadoop']['yarn_clusters']['default']['hadoop_mapred_home'] ?= "/usr/lib/hadoop-mapreduce"
-      hue_ini['hadoop']['yarn_clusters']['default']['hadoop_bin'] ?= "/usr/bin/hadoop"
+      hue_ini['hadoop']['yarn_clusters']['default']['hadoop_mapred_home'] ?= '/usr/lib/hadoop-mapreduce'
+      hue_ini['hadoop']['yarn_clusters']['default']['hadoop_bin'] ?= '/usr/bin/hadoop'
       hue_ini['hadoop']['yarn_clusters']['default']['hadoop_conf_dir'] ?= hadoop_conf_dir
+      hue_ini['hadoop']['yarn_clusters']['default']['resourcemanager_api_url'] ?= yarn_api_url
+      hue_ini['hadoop']['yarn_clusters']['default']['proxy_api_url'] ?= yarn_api_url
+      hue_ini['hadoop']['yarn_clusters']['default']['history_server_api_url'] ?= "http://#{jobhistoryserver}:19888"
+      hue_ini['hadoop']['yarn_clusters']['default']['node_manager_api_url'] ?= "http://#{nodemanagers[0]}:8042"
       # Configure components
       hue_ini['liboozie'] ?= {}
       hue_ini['liboozie']['oozie_url'] ?= ctx.config.ryba.oozie_site['oozie.base.url']

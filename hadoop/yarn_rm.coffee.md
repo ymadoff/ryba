@@ -10,7 +10,7 @@ layout: module
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'ryba/hadoop/yarn'
 
-    module.exports.push (ctx) ->
+    module.exports.push module.exports.configure = (ctx) ->
       require('./yarn').configure ctx
 
 ## IPTables
@@ -34,13 +34,16 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HDP YARN RM # IPTables', callback: (ctx, next) ->
+      {yarn_site} = ctx.config.ryba
+      http = yarn_site['yarn.resourcemanager.webapp.address'].split(':')[1]
+      https = yarn_site['yarn.resourcemanager.webapp.https.address'].split(':')[1]
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 8025, protocol: 'tcp', state: 'NEW', comment: "YARN RM Application Submissions" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: 8050, protocol: 'tcp', state: 'NEW', comment: "YARN RM Application Submissions" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: 8030, protocol: 'tcp', state: 'NEW', comment: "YARN Scheduler" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 8088, protocol: 'tcp', state: 'NEW', comment: "YARN RM Web UI" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 8090, protocol: 'tcp', state: 'NEW', comment: "YARN RM Web Secured UI" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: http, protocol: 'tcp', state: 'NEW', comment: "YARN RM Web UI" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: https, protocol: 'tcp', state: 'NEW', comment: "YARN RM Web Secured UI" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: 8141, protocol: 'tcp', state: 'NEW', comment: "YARN RM Scheduler" }
         ]
         if: ctx.config.iptables.action is 'start'

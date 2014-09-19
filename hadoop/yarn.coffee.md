@@ -18,40 +18,43 @@ layout: module
       ctx.yarn_configured = true
       require('masson/commons/java').configure ctx
       require('./hdfs').configure ctx
-      {static_host, realm} = ctx.config.ryba
+      {ryba} = ctx.config
+      {static_host, realm} = ryba
       # Grab the host(s) for each roles
       resourcemanager = ctx.host_with_module 'ryba/hadoop/yarn_rm'
-      ctx.log "Resource manager: #{resourcemanager}"
       jobhistoryserver = ctx.host_with_module 'ryba/hadoop/mapred_jhs'
-      ctx.log "Job History Server: #{jobhistoryserver}"
-      ctx.config.ryba.yarn_log_dir ?= '/var/log/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#20
-      ctx.config.ryba.yarn_pid_dir ?= '/var/run/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#21
+      ryba.yarn_log_dir ?= '/var/log/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#20
+      ryba.yarn_pid_dir ?= '/var/run/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#21
       # Configure yarn
       # Comma separated list of paths. Use the list of directories from $YARN_LOCAL_DIR, eg: /grid/hadoop/hdfs/yarn/local,/grid1/hadoop/hdfs/yarn/local.
-      throw new Error 'Required property: hdp.yarn_site[yarn.nodemanager.local-dirs]' unless ctx.config.ryba.yarn_site['yarn.nodemanager.local-dirs']
+      throw new Error 'Required property: hdp.yarn_site[yarn.nodemanager.local-dirs]' unless ryba.yarn_site['yarn.nodemanager.local-dirs']
       # Use the list of directories from $YARN_LOCAL_LOG_DIR, eg: /grid/hadoop/yarn/logs /grid1/hadoop/yarn/logs /grid2/hadoop/yarn/logs
-      throw new Error 'Required property: hdp.yarn_site[yarn.nodemanager.log-dirs]' unless ctx.config.ryba.yarn_site['yarn.nodemanager.log-dirs']
-      ctx.config.ryba.yarn_site['yarn.resourcemanager.resource-tracker.address'] ?= "#{resourcemanager}:8025" # Enter your ResourceManager hostname.
-      ctx.config.ryba.yarn_site['yarn.resourcemanager.scheduler.address'] ?= "#{resourcemanager}:8030" # Enter your ResourceManager hostname.
-      ctx.config.ryba.yarn_site['yarn.resourcemanager.address'] ?= "#{resourcemanager}:8050" # Enter your ResourceManager hostname.
-      ctx.config.ryba.yarn_site['yarn.resourcemanager.admin.address'] ?= "#{resourcemanager}:8141" # Enter your ResourceManager hostname.
-      ctx.config.ryba.yarn_site['yarn.nodemanager.remote-app-log-dir'] ?= "/app-logs"
-      ctx.config.ryba.yarn_site['yarn.log.server.url'] ?= "http://#{jobhistoryserver}:19888/jobhistory/logs/" # URL for job history server
-      ctx.config.ryba.yarn_site['yarn.resourcemanager.webapp.address'] ?= "#{resourcemanager}:8088" # URL for job history server
-      ctx.config.ryba.yarn_site['yarn.nodemanager.container-executor.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor'
-      ctx.config.ryba.yarn_site['yarn.nodemanager.linux-container-executor.group'] ?= 'yarn'
+      throw new Error 'Required property: hdp.yarn_site[yarn.nodemanager.log-dirs]' unless ryba.yarn_site['yarn.nodemanager.log-dirs']
+      ryba.yarn_site['yarn.nodemanager.local-dirs'] = ryba.yarn_site['yarn.nodemanager.local-dirs'].join ',' if Array.isArray ryba.yarn_site['yarn.nodemanager.local-dirs']
+      ryba.yarn_site['yarn.nodemanager.log-dirs'] = ryba.yarn_site['yarn.nodemanager.log-dirs'].join ',' if Array.isArray ryba.yarn_site['yarn.nodemanager.log-dirs']
+      ryba.yarn_site['yarn.http.policy'] ?= 'HTTPS_ONLY'
+      ryba.yarn_site['yarn.resourcemanager.resource-tracker.address'] ?= "#{resourcemanager}:8025" # Enter your ResourceManager hostname.
+      ryba.yarn_site['yarn.resourcemanager.scheduler.address'] ?= "#{resourcemanager}:8030" # Enter your ResourceManager hostname.
+      ryba.yarn_site['yarn.resourcemanager.address'] ?= "#{resourcemanager}:8050" # Enter your ResourceManager hostname.
+      ryba.yarn_site['yarn.resourcemanager.admin.address'] ?= "#{resourcemanager}:8141" # Enter your ResourceManager hostname.
+      ryba.yarn_site['yarn.nodemanager.remote-app-log-dir'] ?= "/app-logs"
+      ryba.yarn_site['yarn.log.server.url'] ?= "http://#{jobhistoryserver}:19888/jobhistory/logs/" # URL for job history server
+      ryba.yarn_site['yarn.resourcemanager.webapp.address'] ?= "#{resourcemanager}:8088" # URL for job history server
+      ryba.yarn_site['yarn.resourcemanager.webapp.https.address'] ?= "#{resourcemanager}:8090"
+      ryba.yarn_site['yarn.nodemanager.container-executor.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor'
+      ryba.yarn_site['yarn.nodemanager.linux-container-executor.group'] ?= 'yarn'
       # Required by yarn client
-      ctx.config.ryba.yarn_site['yarn.resourcemanager.principal'] ?= "rm/#{static_host}@#{realm}"
+      ryba.yarn_site['yarn.resourcemanager.principal'] ?= "rm/#{static_host}@#{realm}"
       # Configurations for History Server (Needs to be moved elsewhere):
-      ctx.config.ryba.yarn_site['yarn.log-aggregation.retain-seconds'] ?= '-1' #  How long to keep aggregation logs before deleting them. -1 disables. Be careful, set this too small and you will spam the name node.
-      ctx.config.ryba.yarn_site['yarn.log-aggregation.retain-check-interval-seconds'] ?= '-1' # Time between checks for aggregated log retention. If set to 0 or a negative value then the value is computed as one-tenth of the aggregated log retention time. Be careful, set this too small and you will spam the name node.
+      ryba.yarn_site['yarn.log-aggregation.retain-seconds'] ?= '-1' #  How long to keep aggregation logs before deleting them. -1 disables. Be careful, set this too small and you will spam the name node.
+      ryba.yarn_site['yarn.log-aggregation.retain-check-interval-seconds'] ?= '-1' # Time between checks for aggregated log retention. If set to 0 or a negative value then the value is computed as one-tenth of the aggregated log retention time. Be careful, set this too small and you will spam the name node.
       # [Container Executor](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuration_in_Secure_Mode)
-      ctx.config.ryba.container_executor ?= {}
-      ctx.config.ryba.container_executor['yarn.nodemanager.local-dirs'] ?= ctx.config.ryba.yarn_site['yarn.nodemanager.local-dirs']
-      ctx.config.ryba.container_executor['yarn.nodemanager.linux-container-executor.group'] ?= ctx.config.ryba.yarn_site['yarn.nodemanager.linux-container-executor.group']
-      ctx.config.ryba.container_executor['yarn.nodemanager.log-dirs'] = ctx.config.ryba.yarn_site['yarn.nodemanager.log-dirs']
-      ctx.config.ryba.container_executor['banned.users'] ?= 'hfds,yarn,mapred,bin'
-      ctx.config.ryba.container_executor['min.user.id'] ?= '0'
+      ryba.container_executor ?= {}
+      ryba.container_executor['yarn.nodemanager.local-dirs'] ?= ryba.yarn_site['yarn.nodemanager.local-dirs']
+      ryba.container_executor['yarn.nodemanager.linux-container-executor.group'] ?= ryba.yarn_site['yarn.nodemanager.linux-container-executor.group']
+      ryba.container_executor['yarn.nodemanager.log-dirs'] = ryba.yarn_site['yarn.nodemanager.log-dirs']
+      ryba.container_executor['banned.users'] ?= 'hfds,yarn,mapred,bin'
+      ryba.container_executor['min.user.id'] ?= '0'
       # Cloudera recommand setting [vmem-check to false on Centos/RHEL 6 due to its aggressive allocation of virtual memory](http://blog.cloudera.com/blog/2014/04/apache-hadoop-yarn-avoiding-6-time-consuming-gotchas/)
       # yarn.nodemanager.vmem-check-enabled (found in hdfs-default.xml)
       # yarn.nodemanager.vmem-check.enabled
@@ -126,8 +129,8 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       {container_executor, hadoop_conf_dir} = ctx.config.ryba
       ce_group = container_executor['yarn.nodemanager.linux-container-executor.group']
       container_executor = misc.merge {}, container_executor
-      container_executor['yarn.nodemanager.local-dirs'] = container_executor['yarn.nodemanager.local-dirs'].join ','
-      container_executor['yarn.nodemanager.log-dirs'] = container_executor['yarn.nodemanager.log-dirs'].join ','
+      # container_executor['yarn.nodemanager.local-dirs'] = container_executor['yarn.nodemanager.local-dirs'].join ','
+      # container_executor['yarn.nodemanager.log-dirs'] = container_executor['yarn.nodemanager.log-dirs'].join ','
       do_stat = ->
         ce = '/usr/lib/hadoop-yarn/bin/container-executor';
         ctx.log "change ownerships and permissions to '#{ce}'"
@@ -165,15 +168,15 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       modified = false
       do_yarn = ->
         ctx.log 'Configure yarn-site.xml'
-        config = {}
-        for k,v of yarn_site then config[k] = v 
-        config['yarn.nodemanager.local-dirs'] = config['yarn.nodemanager.local-dirs'].join ',' if Array.isArray yarn_site['yarn.nodemanager.local-dirs']
-        config['yarn.nodemanager.log-dirs'] = config['yarn.nodemanager.log-dirs'].join ',' if Array.isArray yarn_site['yarn.nodemanager.log-dirs']
+        # config = {}
+        # for k,v of yarn_site then config[k] = v 
+        # config['yarn.nodemanager.local-dirs'] = config['yarn.nodemanager.local-dirs'].join ',' if Array.isArray yarn_site['yarn.nodemanager.local-dirs']
+        # config['yarn.nodemanager.log-dirs'] = config['yarn.nodemanager.log-dirs'].join ',' if Array.isArray yarn_site['yarn.nodemanager.log-dirs']
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/yarn-site.xml"
           default: "#{__dirname}/files/core_hadoop/yarn-site.xml"
           local_default: true
-          properties: config
+          properties: yarn_site
           merge: true
         , (err, configured) ->
           return next err if err

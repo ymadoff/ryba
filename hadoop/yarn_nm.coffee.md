@@ -14,27 +14,43 @@ applications running atop of YARN.
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/yarn'
 
-    module.exports.push (ctx) ->
+    module.exports.push module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       require('./yarn').configure ctx
+      {host, ryba} = ctx.config
+      {yarn_site} = ryba
+      yarn_site['yarn.nodemanager.address'] ?= "#{host}:45454"
+      yarn_site['yarn.nodemanager.localizer.address'] ?= "#{host}:8040"
+      yarn_site['yarn.nodemanager.webapp.address'] ?= "#{host}:8042"
+      yarn_site['yarn.nodemanager.webapp.https.address'] ?= "#{host}:8044"
+      # See '~/www/src/hadoop/hadoop-common/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-api/src/main/java/org/apache/hadoop/yarn/conf/YarnConfiguration.java#263'
+      # yarn_site['yarn.nodemanager.webapp.spnego-principal']
+      # yarn_site['yarn.nodemanager.webapp.spnego-keytab-file']
 
 ## IPTables
 
 | Service    | Port | Proto  | Parameter                          |
 |------------|------|--------|------------------------------------|
 | nodemanager | 45454 | tcp  | yarn.nodemanager.address           | x
-| nodemanager | 8042  | tcp  | yarn.nodemanager.webapp.address    |
 | nodemanager | 8040  | tcp  | yarn.nodemanager.localizer.address |
+| nodemanager | 8042  | tcp  | yarn.nodemanager.webapp.address    |
+| nodemanager | 8044  | tcp  | yarn.nodemanager.webapp.https.address    |
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
     module.exports.push name: 'HDP YARN NM # IPTables', callback: (ctx, next) ->
+      {yarn_site} = ctx.config.ryba
+      nm_port = yarn_site['yarn.nodemanager.address'].split(':')[1]
+      nm_localizer_port = yarn_site['yarn.nodemanager.localizer.address'].split(':')[1]
+      nm_webapp_port = yarn_site['yarn.nodemanager.webapp.address'].split(':')[1]
+      nm_webapp_https_port = yarn_site['yarn.nodemanager.webapp.https.address'].split(':')[1]
       ctx.iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 45454, protocol: 'tcp', state: 'NEW', comment: "YARN NM Container" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 8042, protocol: 'tcp', state: 'NEW', comment: "YARN NM WebApp" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 8040, protocol: 'tcp', state: 'NEW', comment: "YARN NM WebApp" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: nm_port, protocol: 'tcp', state: 'NEW', comment: "YARN NM Container" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: nm_localizer_port, protocol: 'tcp', state: 'NEW', comment: "YARN NM Localizer" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: nm_webapp_port, protocol: 'tcp', state: 'NEW', comment: "YARN NM Web UI" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: nm_webapp_https_port, protocol: 'tcp', state: 'NEW', comment: "YARN NM Web Secured UI" }
         ]
         if: ctx.config.iptables.action is 'start'
       , (err, configured) ->
@@ -77,23 +93,36 @@ Install and configure the startup script in
     module.exports.push name: 'HDP YARN NM # Directories', timeout: -1, callback: (ctx, next) ->
       {yarn_user, yarn_site, test_user, hadoop_group} = ctx.config.ryba
       # no need to restrict parent directory and yarn will complain if not accessible by everyone
+      log_dirs = yarn_site['yarn.nodemanager.log-dirs'].split ','
+      local_dirs = yarn_site['yarn.nodemanager.local-dirs'].split ','
       ctx.mkdir [
-        destination: yarn_site['yarn.nodemanager.log-dirs']
+        destination: log_dirs
         uid: yarn_user.name
         gid: hadoop_group.name
         mode: 0o0755
       ,
-        destination: yarn_site['yarn.nodemanager.local-dirs']
+        destination: local_dirs
         uid: yarn_user.name
         gid: hadoop_group.name
         mode: 0o0755
       ], (err, created) ->
         return next err if err
         cmds = []
-        for dir in yarn_site['yarn.nodemanager.log-dirs'] then cmds.push cmd: "su -l #{test_user.name} -c 'ls -l #{dir}'"
-        for dir in yarn_site['yarn.nodemanager.local-dirs'] then cmds.push cmd: "su -l #{test_user.name} -c 'ls -l #{dir}'"
+        for dir in log_dirs then cmds.push cmd: "su -l #{test_user.name} -c 'ls -l #{dir}'"
+        for dir in local_dirs then cmds.push cmd: "su -l #{test_user.name} -c 'ls -l #{dir}'"
         ctx.execute cmds, (err) ->
           next err, if created then ctx.OK else ctx.PASS
+
+    module.exports.push name: 'HDP YARN NM # Configure', callback: (ctx, next) ->
+      {yarn_site, hadoop_conf_dir} = ctx.config.ryba
+      ctx.hconfigure
+        destination: "#{hadoop_conf_dir}/yarn-site.xml"
+        default: "#{__dirname}/files/core_hadoop/yarn-site.xml"
+        local_default: true
+        properties: yarn_site
+        merge: true
+      , (err, configured) ->
+        next err, if configured then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP YARN NM # Kerberos', callback: (ctx, next) ->
       {yarn_user, realm} = ctx.config.ryba
@@ -111,10 +140,12 @@ Install and configure the startup script in
         return next err if err
         next null, if created then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'HDP YARN NM # Start', timeout: -1, callback: (ctx, next) ->
-      resourcemanager = ctx.host_with_module 'ryba/hadoop/yarn_rm'
-      ctx.waitIsOpen resourcemanager, 8088, (err) ->
-        return next err if err
-        lifecycle.nm_start ctx, (err, started) ->
-          next err, if started then ctx.OK else ctx.PASS
+    module.exports.push 'ryba/hadoop/yarn_nm_start'
+
+    # module.exports.push name: 'HDP YARN NM # Start', timeout: -1, callback: (ctx, next) ->
+    #   resourcemanager = ctx.host_with_module 'ryba/hadoop/yarn_rm'
+    #   ctx.waitIsOpen resourcemanager, 8088, (err) ->
+    #     return next err if err
+    #     lifecycle.nm_start ctx, (err, started) ->
+    #       next err, if started then ctx.OK else ctx.PASS
 
