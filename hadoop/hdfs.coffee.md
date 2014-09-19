@@ -40,7 +40,6 @@ The properties "hdp.hdfs_site['dfs.namenode.name.dir']" and
     Properities added to the "hdfs-site.xml" file.
 *   `hdfs.nameservice`   
     The Unix MapReduce group name or a group object (see Mecano Group documentation). 
-*   `hdfs.snn_port`   
 
 Example:
 
@@ -67,9 +66,10 @@ Example:
       ctx.config.ryba.fs_checkpoint_dir ?= ['/hadoop/hdfs/snn'] # Default ${fs.checkpoint.dir}
       # Options and configuration
       ctx.config.ryba.hdfs_namenode_timeout ?= 20000 # 20s
-      # ctx.config.ryba.snn_port ?= '50090'
       # Options for "hdfs-site.xml"
       hdfs_site = ctx.config.ryba.hdfs_site ?= {}
+      hdfs_site['dfs.http.policy'] ?= 'HTTPS_ONLY' # HTTP_ONLY or HTTPS_ONLY or HTTP_AND_HTTPS
+      hdfs_site['dfs.https.port'] ?= '50470' # The https port where NameNode binds
       # Comma separated list of paths. Use the list of directories from $DFS_NAME_DIR.  
       # For example, /grid/hadoop/hdfs/nn,/grid1/hadoop/hdfs/nn.
       throw new Error 'Required property: hdfs_site[dfs.namenode.name.dir]' unless hdfs_site['dfs.namenode.name.dir']
@@ -87,6 +87,9 @@ Example:
       hdfs_site['dfs.datanode.https.address'] ?= '0.0.0.0:50470'
       # Options for "hadoop-policy.xml"
       ctx.config.ryba.hadoop_policy ?= {}
+      # HDFS SNN
+      if secondary_namenode = ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+        hdfs_site['dfs.namenode.secondary.http-address'] ?= "#{secondary_namenode}:50090"
       # HDFS HA configuration
       ctx.config.ryba.shortname ?= ctx.config.shortname
       ctx.config.ryba.ha_client_config = {}
@@ -117,9 +120,7 @@ Example:
         next err, if serviced then ctx.OK else ctx.PASS
 
     module.exports.push name: 'HDP HDFS # Hadoop Configuration', timeout: -1, callback: (ctx, next) ->
-      { core, hdfs_site,
-        hadoop_conf_dir, fs_checkpoint_dir, # fs_checkpoint_edit_dir,
-        snn_port } = ctx.config.ryba #mapreduce_local_dir, 
+      {core, hdfs_site, hadoop_conf_dir, fs_checkpoint_dir} = ctx.config.ryba
       datanodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_dn'
       secondary_namenode = ctx.hosts_with_module 'ryba/hadoop/hdfs_snn', 1
       modified = false
@@ -132,7 +133,7 @@ Example:
         # the cluster in ha or not
         hdfs_site['dfs.namenode.http-address'] = null
         # Secondary NameNode hostname
-        hdfs_site['dfs.namenode.secondary.http-address'] ?= "hdfs://#{secondary_namenode}:#{snn_port}" if secondary_namenode
+        
         hdfs_site['dfs.namenode.checkpoint.dir'] ?= fs_checkpoint_dir.join ','
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/hdfs-site.xml"
@@ -153,6 +154,7 @@ Example:
         # the hostname of the JobTracker/NameNode machine; 
         # Also some [interesting info about snn](http://blog.cloudera.com/blog/2009/02/multi-host-secondarynamenode-configuration/)
         ctx.log 'Configure masters'
+        secondary_namenode = ctx.host_with_module 'ryba/hadoop/hdfs_snn'
         return do_slaves() unless secondary_namenode
         ctx.write
           content: "#{secondary_namenode}"
@@ -273,7 +275,6 @@ with Kerberos specific properties.
 
     module.exports.push name: 'HDP HDFS # Kerberos Configure', callback: (ctx, next) ->
       {hadoop_conf_dir, static_host, realm} = ctx.config.ryba
-      secondary_namenode = ctx.hosts_with_module 'ryba/hadoop/hdfs_snn', 1
       hdfs_site = {}
       # If "true", access tokens are used as capabilities
       # for accessing datanodes. If "false", no access tokens are checked on
@@ -281,12 +282,6 @@ with Kerberos specific properties.
       hdfs_site['dfs.block.access.token.enable'] ?= 'true'
       # Kerberos principal name for the NameNode
       hdfs_site['dfs.namenode.kerberos.principal'] ?= "nn/#{static_host}@#{realm}"
-      # Kerberos principal name for the secondary NameNode.
-      hdfs_site['dfs.secondary.namenode.kerberos.principal'] ?= "nn/#{static_host}@#{realm}"
-      # Address of secondary namenode web server
-      hdfs_site['dfs.secondary.http.address'] ?= "#{secondary_namenode}:50090" if secondary_namenode # todo, this has nothing to do here
-      # The https port where secondary-namenode binds
-      hdfs_site['dfs.secondary.https.port'] ?= '50490' # todo, this has nothing to do here
       # The HTTP Kerberos principal used by Hadoop-Auth in the HTTP 
       # endpoint. The HTTP Kerberos principal MUST start with 'HTTP/' 
       # per Kerberos HTTP SPNEGO specification. 
@@ -298,18 +293,14 @@ with Kerberos specific properties.
       hdfs_site['dfs.datanode.kerberos.principal'] ?= "dn/#{static_host}@#{realm}"
       # Combined keytab file containing the NameNode service and host principals.
       hdfs_site['dfs.namenode.keytab.file'] ?= '/etc/security/keytabs/nn.service.keytab'
-      # Combined keytab file containing the NameNode service and host principals.
-      hdfs_site['dfs.secondary.namenode.keytab.file'] ?= '/etc/security/keytabs/nn.service.keytab'
       # The filename of the keytab file for the DataNode.
       hdfs_site['dfs.datanode.keytab.file'] ?= '/etc/security/keytabs/dn.service.keytab'
       # # Default to ${dfs.web.authentication.kerberos.principal}, but documented in hdp 1.3.2 manual install
       hdfs_site['dfs.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/#{static_host}@#{realm}"
       # # Default to ${dfs.web.authentication.kerberos.principal}, but documented in hdp 1.3.2 manual install
-      hdfs_site['dfs.secondary.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/#{static_host}@#{realm}"
       # Documented in http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
       # Only seems to apply if "dfs.https.enable" is enabled
       hdfs_site['dfs.namenode.kerberos.https.principal'] = "host/#{static_host}@#{realm}"
-      hdfs_site['dfs.secondary.namenode.kerberos.https.principal'] = "host/#{static_host}@#{realm}"
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: hdfs_site

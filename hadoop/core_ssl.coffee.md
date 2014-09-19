@@ -44,8 +44,8 @@ keytool -list -v -keystore keystore -alias hadoop
 
     module.exports.push module.exports.configure = (ctx) ->
       require('./core').configure ctx
-      require('./hdfs').configure ctx
-      {core_site, hdfs_site, hadoop_conf_dir} = ctx.config.ryba
+      require('./yarn').configure ctx
+      {core_site, yarn_site, hadoop_conf_dir} = ctx.config.ryba
       ctx.config.ryba.ssl ?= {}
       ssl_client = ctx.config.ryba.ssl_client ?= {}
       ssl_server = ctx.config.ryba.ssl_server ?= {}
@@ -58,9 +58,6 @@ keytool -list -v -keystore keystore -alias hadoop
       core_site['hadoop.ssl.keystores.factory.class'] ?= 'org.apache.hadoop.security.ssl.FileBasedKeyStoresFactory'
       core_site['hadoop.ssl.server.conf'] ?= 'ssl-server.xml'
       core_site['hadoop.ssl.client.conf'] ?= 'ssl-client.xml'
-      hdfs_site['dfs.https.enable'] ?= 'true' # Depracated in favor of 'dfs.http.policy'
-      hdfs_site['dfs.http.policy'] ?= 'HTTP_AND_HTTPS' # HTTP_ONLY or HTTPS_ONLY or HTTP_AND_HTTPS
-      hdfs_site['dfs.https.port'] ?= '50470' # The https port where NameNode binds
       ssl_client['ssl.client.truststore.location'] ?= "#{hadoop_conf_dir}/truststore"
       ssl_client['ssl.client.truststore.password'] ?= 'ryba123'
       ssl_client['ssl.client.truststore.type'] ?= 'jks'
@@ -73,14 +70,10 @@ keytool -list -v -keystore keystore -alias hadoop
       ssl_server['ssl.server.keystore.keypassword'] ?= 'ryba123'
 
     module.exports.push name: 'HDP Core SSL # Configure', retry: 0, callback: (ctx, next) ->
-      {core_site, hdfs_site, ssl_server, ssl_client, hadoop_conf_dir} = ctx.config.ryba
+      {core_site, ssl_server, ssl_client, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure [
         destination: "#{hadoop_conf_dir}/core-site.xml"
         properties: core_site
-        merge: true
-      ,
-        destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-        properties: hdfs_site
         merge: true
       ,
         destination: "#{hadoop_conf_dir}/ssl-server.xml"
@@ -133,7 +126,11 @@ keytool -list -v -keystore keystore -alias hadoop
           modified = true if executed
           return do_server()
       do_server = ->
-        return do_cleanup() unless ctx.has_module('ryba/hadoop/hdfs_jn') or ctx.has_module('ryba/hadoop/hdfs_nn') or ctx.has_module('ryba/hadoop/hdfs_dn')
+        return do_cleanup() unless ctx.has_any_modules [
+          'ryba/hadoop/hdfs_jn', 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn'
+          'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
+        ]
+        # return do_cleanup() unless ctx.has_module('ryba/hadoop/hdfs_jn') or ctx.has_module('ryba/hadoop/hdfs_nn') or ctx.has_module('ryba/hadoop/hdfs_dn')
         shortname = ctx.config.shortname
         fqdn = ctx.config.host
         ctx.execute [

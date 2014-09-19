@@ -420,7 +420,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
         destination: '/etc/security/keytabs'
         uid: 'root'
         gid: hadoop_group.name
-        mode: 0o750
+        mode: 0o0755
       , (err, created) ->
         next null, if created then ctx.OK else ctx.PASS
 
