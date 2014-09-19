@@ -90,11 +90,15 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'Hive & HCat Server # IPTables', callback: (ctx, next) ->
+      {hive_site} = ctx.config.ryba
+      hive_server_port = if hive_site['hive.server2.transport.mode'] is 'binary'
+      then hive_site['hive.server2.thrift.port']
+      else hive_site['hive.server2.thrift.http.port']
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 9083, protocol: 'tcp', state: 'NEW', comment: "Hive Metastore" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: 9999, protocol: 'tcp', state: 'NEW', comment: "Hive Web UI" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 10001, protocol: 'tcp', state: 'NEW', comment: "Hive Server" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hive_server_port, protocol: 'tcp', state: 'NEW', comment: "Hive Server" }
         ]
         if: ctx.config.iptables.action is 'start'
       , (err, configured) ->
