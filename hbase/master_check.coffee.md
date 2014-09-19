@@ -33,7 +33,7 @@ Namespace and permissions are implemented and illustrated in [HBASE-8409].
         hasGrantedAccess = /grant 'ryba', 'RWC', 'ryba'\n0 row/.test stdout
         return next Error 'Invalid command output' if executed and ( not hasCreatedTable or not hasGrantedAccess)
         next err, if executed then ctx.OK else ctx.PASS
-      # Note: inspiration this when namespace are functional
+      # Note: apply this when namespace are functional
       # ctx.execute
       #   cmd: """
       #   kinit -kt #{keytab} #{principal}

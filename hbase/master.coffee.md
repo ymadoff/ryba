@@ -19,6 +19,8 @@ layout: module
       ctx.config.ryba.hbase_admin ?= {}
       ctx.config.ryba.hbase_admin.principal ?= "#{hbase_site['hbase.superuser']}@#{realm}"
       ctx.config.ryba.hbase_admin.password ?= "hbase123"
+      hbase_site['hbase.master.port'] ?= '60000'
+      hbase_site['hbase.master.info.port'] ?= '60010'
 
 ## IPTables
 
@@ -37,13 +39,12 @@ TODO:
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HDP Oozie Server # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'HBase master # IPTables', callback: (ctx, next) ->
       {hbase_site} = ctx.config.ryba
-      port = 
       ctx.iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.master.port'] or 60000, protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.master.info.port'] or 60010, protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.master.port'], protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.master.info.port'], protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
       , (err, configured) ->
@@ -93,7 +94,7 @@ RegionServer, and HBase client host machines.
 
 Environment file is enriched by "ryba/hbase/_ # HBase # Env".
 
-    module.exports.push name: 'HBase Client # Zookeeper JAAS', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HBase master # Zookeeper JAAS', timeout: -1, callback: (ctx, next) ->
       {jaas_server, hbase_conf_dir, hbase_user, hbase_group} = ctx.config.ryba
       ctx.write
         destination: "#{hbase_conf_dir}/hbase-master.jaas"

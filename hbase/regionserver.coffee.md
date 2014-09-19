@@ -16,6 +16,9 @@ layout: module
       require('masson/core/iptables').configure ctx
       require('../hadoop/hdfs').configure ctx
       require('./_').configure ctx
+      {hbase_site} = ctx.config.ryba
+      hbase_site['hbase.regionserver.port'] ?= '60020'
+      hbase_site['hbase.regionserver.info.port'] ?= '60030'
 
 ## IPTables
 
@@ -29,11 +32,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'HDP RegionServer # IPTables', callback: (ctx, next) ->
       {hbase_site} = ctx.config.ryba
-      port = 
       ctx.iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.regionserver.port'] or 60020, protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.regionserver.info.port'] or 60030, protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.regionserver.port'], protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.regionserver.info.port'], protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
       , (err, configured) ->
