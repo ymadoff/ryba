@@ -57,8 +57,7 @@ Example:
       ctx.config.ryba.ganglia.rrdcached_group.system ?= true
       # Ports
       ctx.config.ryba.ganglia.collector_port ?= 8649
-      ctx.config.ryba.ganglia.slaves_port ?= 8649
-      ctx.config.ryba.ganglia.nn_port ?= 8660
+      ctx.config.ryba.ganglia.slaves_port ?= 8660
       ctx.config.ryba.ganglia.nn_port ?= 8661
       ctx.config.ryba.ganglia.hm_port ?= 8663
       ctx.config.ryba.ganglia.rm_port ?= 8664
