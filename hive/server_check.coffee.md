@@ -33,10 +33,8 @@ Check if Hive can authenticate and run a basic query to the database.
       {hive_metastore_port, hive_server2_port} = ctx.config.ryba
       ctx.execute [
         cmd: "echo > /dev/tcp/#{host}/#{hive_metastore_port}"
-        trap_on_error: true
       ,
         cmd: "echo > /dev/tcp/#{host}/#{hive_server2_port}"
-        trap_on_error: true
       ], (err) ->
         return next err, ctx.PASS
 
