@@ -50,33 +50,34 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'XASecure Sync # Install', timeout: -1, callback: (ctx, next) ->
-      {uxugsync} = ctx.config.xasecure
-      modified = false
-      source = ctx.config.xasecure.uxugsync_url
+    module.exports.push name: 'XASecure Sync # Upload', timeout: -1, callback: (ctx, next) ->
+      {uxugsync_url} = ctx.config.xasecure
       do_upload = ->
-        u = url.parse source
-        ctx[if u.protocol is 'http:' then 'download' else 'upload']
-          source: source
-          destination: '/tmp'
+        ctx[if url.parse(uxugsync_url).protocol is 'http:' then 'download' else 'upload']
+          source: uxugsync_url
+          destination: '/var/tmp'
           binary: true
+          not_if_exists: "/var/tmp/#{path.basename uxugsync_url, '.tar'}"
         , (err, uploaded) ->
-          return next err if err
+          return next err, ctx.PASS if err or not uploaded
+          modified = true
           do_extract()
       do_extract = ->
-        source = "/tmp/#{path.basename source}"
         ctx.extract
-          source: source
+          source: "/var/tmp/#{path.basename uxugsync_url}"
         , (err) ->
-          return next err if err
-          do_configure()
+          return next err, ctx.OK
+      do_upload()
+
+    module.exports.push name: 'XASecure Sync # Install', timeout: -1, callback: (ctx, next) ->
+      {uxugsync, uxugsync_url} = ctx.config.xasecure
+      modified = false
       do_configure = ->
-        source = "#{path.dirname source}/#{path.basename source, '.tar'}"
         write = for k, v of uxugsync
           match: RegExp "^#{k} = .*$", 'mg'
           replace: "#{k} = #{v}"
         ctx.write
-          destination: "#{source}/install.properties"
+          destination: "/var/tmp/#{path.basename uxugsync_url, '.tar'}/install.properties"
           write: write
           eof: true
         , (err, written) ->
@@ -84,12 +85,11 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           do_install()
       do_install = ->
         ctx.execute
-          cmd: "cd #{source} && ./install.sh"
-          # cwd: "#{source}"
+          cmd: "cd /var/tmp/#{path.basename uxugsync_url, '.tar'} && ./install.sh"
         , (err, executed) ->
           return next err if err
           next null, ctx.OK
-      do_upload()
+      do_configure()
 
 ## Module Dependencies
 
