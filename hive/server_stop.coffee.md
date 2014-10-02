@@ -29,3 +29,16 @@ Execute these commands on the Hive Metastore host machine.
       lifecycle.hive_metastore_stop ctx, (err, stopped) ->
         next err, if stopped then ctx.OK else ctx.PASS
 
+## Stop Clean Logs
+
+    module.exports.push name: 'HDP HDFS DN # Stop Clean Logs', callback: (ctx, next) ->
+      return next() unless ctx.config.ryba.clean_logs
+      ctx.execute [
+        cmd: 'rm /var/log/hive-hcat/*'
+        code_skipped: 1
+      ,
+        cmd: 'rm /var/log/hive/*'
+        code_skipped: 1
+      ], (err, removed) ->
+        next err, if removed then ctx.OK else ctx.PASS
+
