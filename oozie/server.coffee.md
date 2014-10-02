@@ -360,7 +360,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             "
             """
             code_skipped: 2
-          , (err, created, stdout, stderr) ->
+          , (err, created) ->
             return next err, if created then ctx.OK else ctx.PASS
       return next new Error 'Database engine not supported' unless engines[engine]
       engines[engine]()
