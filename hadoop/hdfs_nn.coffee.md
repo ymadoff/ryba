@@ -16,6 +16,11 @@ This implementation configure an HA HDFS cluster, using the [Quorum Journal Mana
 feature  to share edit logs between the Active and Standby NameNodes. Hortonworks
 provides [instructions to rollback a HA installation][rollback] that apply to Ambari.
 
+Worth to investigate:
+
+*   [RPC Congestion Control with FairCallQueue](https://issues.apache.org/jira/browse/HADOOP-9640)
+*   [RPC fair share](https://issues.apache.org/jira/browse/HADOOP-10598)
+
 [rollback]: http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.3/bk_Monitoring_Hadoop_Book/content/monitor-ha-undoing_2x.html
 
     fs = require 'fs'
