@@ -241,7 +241,7 @@ Declare the HDP repository.
     module.exports.push name: 'HDP Core # Repository', timeout: -1, callback: (ctx, next) ->
       {proxy, hdp_repo} = ctx.config.ryba
       # Is there a repo to download and install
-      return next null, ctx.INAPPLICABLE unless hdp_repo
+      return next() unless hdp_repo
       modified = false
       do_repo = ->
         ctx.log "Download #{hdp_repo} to /etc/yum.repos.d/hdp.repo"
@@ -549,6 +549,7 @@ recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
             'hadoop.http.authentication.cookie.domain': core_site['hadoop.http.authentication.cookie.domain']
             'hadoop.http.authentication.simple.anonymous.allowed': 'false'
             # For some reason, _HOST isnt leveraged
+            # TODO, this is now fix in HDP-1.3.9
             'hadoop.http.authentication.kerberos.principal': "HTTP/#{ctx.config.host}@#{realm}"
             'hadoop.http.authentication.kerberos.keytab': '/etc/security/keytabs/spnego.service.keytab'
           merge: true

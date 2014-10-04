@@ -81,7 +81,8 @@ for more information.
           try
             count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "#{ctx.config.host}-webhdfs").length
           catch e then return next Error e
-          return next null, ctx.FAILED unless count
+          err = Error "Invalid result" unless count
+          return next err, ctx.PASS
           do_token()
       do_token = ->
         ctx.execute
@@ -103,7 +104,8 @@ for more information.
             try
               count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "#{ctx.config.host}-webhdfs").length
             catch e then return next Error e
-            return next null, ctx.FAILED unless count
+            err = Error "Invalid result" unless count
+            return next err, ctx.PASS
             do_end()
       do_end = ->
         next null, ctx.OK

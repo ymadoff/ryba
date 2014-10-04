@@ -331,7 +331,7 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
     module.exports.push name: 'Hive & HCat Server # Check', timeout: -1, callback: (ctx, next) ->
       # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.3.0/CDH4-Security-Guide/cdh4sg_topic_9_1.html
       # !connect jdbc:hive2://big3.big:10001/default;principal=hive/big3.big@ADALTAS.COM 
-      next null, ctx.TODO
+      next null, 'TODO'
 
 # Module Dependencies
 

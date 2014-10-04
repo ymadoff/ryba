@@ -250,7 +250,7 @@ if the NameNode was formated.
       {active_nn, hdfs_site, hdfs_user, format, nameservice} = ctx.config.ryba
       return next() unless format
       # Shall only be executed on the leader namenode
-      return next null, ctx.INAPPLICABLE unless active_nn
+      return next() unless active_nn
       journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
       any_dfs_name_dir = hdfs_site['dfs.namenode.name.dir'].split(',')[0]
       # all the JournalNodes shall be started

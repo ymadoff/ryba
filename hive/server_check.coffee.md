@@ -41,3 +41,5 @@ Check if Hive can authenticate and run a basic query to the database.
 # Module Dependencies
 
     parse_jdbc = require '../lib/parse_jdbc'
+
+
