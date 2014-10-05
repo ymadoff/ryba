@@ -58,7 +58,7 @@ See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments
           chmod -R 755 #{hive_conf_dir}
           """
         , (err) ->
-          next err, if configured then ctx.OK else ctx.PASS
+          next err, configured
 
 ## Check
 

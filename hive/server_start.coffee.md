@@ -22,14 +22,12 @@ Execute these commands on the Hive Metastore host machine.
       [_, host, port] = /^.*?\/\/?(.*?)(?::(.*))?\/.*$/.exec hive_site['javax.jdo.option.ConnectionURL']
       ctx.waitIsOpen host, port, (err) ->
         return next err if err
-        lifecycle.hive_metastore_start ctx, (err, started) ->
-          next err, if started then ctx.OK else ctx.PASS
+        lifecycle.hive_metastore_start ctx, next
 
 ## Start Server2
 
 Execute these commands on the Hive Server2 host machine.
 
     module.exports.push name: 'Hive & HCat # Start Server2', timeout: -1, callback: (ctx, next) ->
-      lifecycle.hive_server2_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+      lifecycle.hive_server2_start ctx, next
 

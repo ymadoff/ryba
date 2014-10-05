@@ -35,8 +35,7 @@ Use the [Hive CLI][hivecli] client to execute SQL queries.
           """
           not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{host}-hive_metastore/result"
           trap_on_error: true
-        , (err, executed, stdout) ->
-          return next err, if executed then ctx.OK else ctx.PASS
+        , next
 
 ## Check Server2
 
@@ -62,8 +61,7 @@ Use the [Beeline][beeline] JDBC client to execute SQL queries.
           """
           not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{host}-hive_server2/result"
           trap_on_error: true
-        , (err, executed, stdout) ->
-          next err, if executed then ctx.OK else ctx.PASS
+        , next
 
 [hivecli]: https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Cli
 [beeline]: https://cwiki.apache.org/confluence/display/Hive/HiveServer2+Clients#HiveServer2Clients-Beeline%E2%80%93NewCommandLineShell

@@ -18,16 +18,14 @@ layout: module
 Execute these commands on the Hive Server2 host machine.
 
     module.exports.push name: 'Hive & HCat # Stop Hive Server2', callback: (ctx, next) ->
-      lifecycle.hive_server2_stop ctx, (err, stopped) ->
-        next err, if stopped then ctx.OK else ctx.PASS
+      lifecycle.hive_server2_stop ctx, next
 
 ## Stop Hive Metastore
 
 Execute these commands on the Hive Metastore host machine.
 
     module.exports.push name: 'Hive & HCat # Stop Hive Metastore', callback: (ctx, next) ->
-      lifecycle.hive_metastore_stop ctx, (err, stopped) ->
-        next err, if stopped then ctx.OK else ctx.PASS
+      lifecycle.hive_metastore_stop ctx, next
 
 ## Stop Clean Logs
 
@@ -39,6 +37,5 @@ Execute these commands on the Hive Metastore host machine.
       ,
         cmd: 'rm /var/log/hive/*'
         code_skipped: 1
-      ], (err, removed) ->
-        next err, if removed then ctx.OK else ctx.PASS
+      ], next
 

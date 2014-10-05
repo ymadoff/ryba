@@ -101,8 +101,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: hive_server_port, protocol: 'tcp', state: 'NEW', comment: "Hive Server" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## Startup
 
@@ -116,8 +115,7 @@ and "/etc/init.d/hive-server2".
       ,
         name: 'hive-server2'
         startup: true
-      ], (err, serviced) ->
-        next err, if serviced then ctx.OK else ctx.PASS
+      ], next
 
     module.exports.push name: 'Hive & HCat Server # Fix Startup', callback: (ctx, next) ->
       ctx.write [
@@ -134,8 +132,7 @@ and "/etc/init.d/hive-server2".
         if pid=`cat $PIDFILE`; then if ! ps -e -o pid | grep -v grep | grep -w $pid; then rm $PIDFILE; fi; fi; \# Ryba: clean pidfile if pid not running
         """
         append: /^PIDFILE=.*$/m
-      ], (err, written) ->
-        next err, if written then ctx.OK else ctx.PASS
+      ], next
 
     module.exports.push name: 'Hive & HCat Server # Database', callback: (ctx, next) ->
       {hive_site, db_admin} = ctx.config.ryba
@@ -157,8 +154,7 @@ and "/etc/init.d/hive-server2".
             "
             """
             code_skipped: 2
-          , (err, created, stdout, stderr) ->
-            return next err, if created then ctx.OK else ctx.PASS
+          , next
       return next new Error 'Database engine not supported' unless engines[engine]
       engines[engine]()
 
@@ -178,7 +174,7 @@ and "/etc/init.d/hive-server2".
           chmod -R 755 #{hive_conf_dir}
           """
         , (err) ->
-          next err, if configured then ctx.OK else ctx.PASS
+          next err, configured
 
     module.exports.push name: 'Hive & HCat Server # Fix', callback: (ctx, next) ->
       {hive_conf_dir} = ctx.config.ryba
@@ -186,8 +182,7 @@ and "/etc/init.d/hive-server2".
         destination: "#{hive_conf_dir}/hive-env.sh"
         match: /^export HIVE_AUX_JARS_PATH=.*$/mg
         replace: 'export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-/usr/lib/hive-hcatalog/share/hcatalog/hive-hcatalog-core.jar}'
-      , (err, written) ->
-        next err, if written then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'Hive & HCat Server # Libs', callback: (ctx, next) ->
       {hive_libs} = ctx.config.ryba
@@ -195,15 +190,13 @@ and "/etc/init.d/hive-server2".
       uploads = for lib in hive_libs
         source: lib
         destination: "/usr/lib/hive/lib/#{path.basename lib}"
-      ctx.upload uploads, (err, serviced) ->
-        next err, if serviced then ctx.OK else ctx.PASS
+      ctx.upload uploads, next
 
     module.exports.push name: 'Hive & HCat Server # Driver', callback: (ctx, next) ->
       ctx.link
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/lib/hive/lib/mysql-connector-java.jar'
-      , (err, configured) ->
-        return next err, if configured then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'Hive & HCat Server # Kerberos', callback: (ctx, next) ->
       {hive_user, hive_group, hive_site, realm} = ctx.config.ryba
@@ -239,7 +232,7 @@ and "/etc/init.d/hive-server2".
           modified = true if created
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_metastore()
 
     module.exports.push name: 'Hive & HCat Server # Logs', callback: (ctx, next) ->
@@ -251,8 +244,7 @@ and "/etc/init.d/hive-server2".
         source: "#{__dirname}/../hadoop/files/hive/hive-log4j.properties.template"
         local_source: true
         destination: '/etc/hive/conf/hive-log4j.properties'
-      ], (err, written) ->
-        return next err, if written then ctx.OK else ctx.PASS
+      ], next
 
     module.exports.push name: 'Hive & HCat Server # Layout', timeout: -1, callback: (ctx, next) ->
       {hive_user, hive_group} = ctx.config.ryba
@@ -261,8 +253,7 @@ and "/etc/init.d/hive-server2".
         destination: '/var/log/hive-hcatalog'
         uid: hive_user.name
         gid: hive_group.name
-      , (err, created) ->
-        next err, if created then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'Hive & HCat Server # HDFS Layout', timeout: -1, callback: (ctx, next) ->
       # todo: this isnt pretty, ok that we need to execute hdfs command from an hadoop client
@@ -318,7 +309,7 @@ and "/etc/init.d/hive-server2".
             modified = true if executed
             do_end()
         do_end = ->
-          next null, if modified then ctx.OK else ctx.PASS
+          next null, modified
         do_warehouse()
 
 TODO: Implement lock for Hive Server2

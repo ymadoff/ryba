@@ -25,6 +25,6 @@ layout: module
         code_skipped: 2
       , (err, executed, stdout) ->
         return next err if err
-        return next null, ctx.PASS unless executed
+        return next null, false unless executed
         return next new Error "WebHCat not started" if stdout.trim() isnt '{"status":"ok","version":"v1"}'
-        return next null, ctx.OK
+        return next null, true

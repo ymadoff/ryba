@@ -14,5 +14,4 @@ layout: module
       require('./webhcat').configure ctx
 
     module.exports.push name: 'WebHCat # Start', callback: (ctx, next) ->
-      lifecycle.webhcat_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+      lifecycle.webhcat_start ctx, next

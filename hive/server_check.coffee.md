@@ -21,8 +21,7 @@ Check if Hive can authenticate and run a basic query to the database.
             cmd: """
             #{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "USE #{db}; SHOW TABLES"
             """
-          , (err) ->
-            return next err, ctx.PASS
+          , next
       return next new Error 'Database engine not supported' unless engines[engine]
       engines[engine]()
 
@@ -32,11 +31,9 @@ Check if Hive can authenticate and run a basic query to the database.
       {host} = ctx.config
       {hive_metastore_port, hive_server2_port} = ctx.config.ryba
       ctx.execute [
-        cmd: "echo > /dev/tcp/#{host}/#{hive_metastore_port}"
-      ,
-        cmd: "echo > /dev/tcp/#{host}/#{hive_server2_port}"
-      ], (err) ->
-        return next err, ctx.PASS
+        {cmd: "echo > /dev/tcp/#{host}/#{hive_metastore_port}"}
+        {cmd: "echo > /dev/tcp/#{host}/#{hive_server2_port}"}
+      ], next
 
 # Module Dependencies
 

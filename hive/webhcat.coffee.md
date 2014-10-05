@@ -64,8 +64,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "WebHCat HTTP Server" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'WebHCat # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
@@ -76,8 +75,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         name: 'webhcat-tar-hive'
       ,
         name: 'webhcat-tar-pig'
-      ], (err, serviced) ->
-        next err, if serviced then ctx.OK else ctx.PASS
+      ], next
 
 ## Startup
 
@@ -111,7 +109,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
           modified = true if written
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_install()
 
     module.exports.push name: 'WebHCat # Directories', callback: (ctx, next) ->
@@ -138,7 +136,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
           modified = true if created
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_log()
 
     module.exports.push name: 'WebHCat # Configuration', callback: (ctx, next) ->
@@ -152,9 +150,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
         gid: hadoop_group.name
         mode: 0o0755
         merge: true
-      , (err, configured) ->
-        return next err if err
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'WebHCat # Env', callback: (ctx, next) ->
       {webhcat_conf_dir, hive_user, hadoop_group} = ctx.config.ryba
@@ -165,8 +161,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
         uid: hive_user.name
         gid: hadoop_group.name
         mode: 0o0755
-      , (err, uploaded) ->
-        next err, if uploaded then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'WebHCat # HDFS', callback: (ctx, next) ->
       {hive_user, hive_group} = ctx.config.ryba
@@ -208,7 +203,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
             hdfs dfs -chmod -R 755 /apps/webhcat
             """
           , (err, executed, stdout) ->
-            next err, if modified then ctx.OK else ctx.PASS
+            next err, modified
 
     module.exports.push name: 'WebHCat # Fix HDFS tmp', callback: (ctx, next) ->
       # Avoid HTTP response
@@ -223,8 +218,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
         hdfs dfs -chmod -R 1777 /tmp/hadoop-hcat
         """
         code_skipped: 2
-      ], (err, created, stdout) ->
-        return next err, if created then ctx.OK else ctx.PASS
+      ], next
 
     module.exports.push name: 'WebHCat # SPNEGO', callback: (ctx, next) ->
       {webhcat_site, hive_user, webhcat_group} = ctx.config.ryba
@@ -234,8 +228,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
         uid: hive_user.name
         gid: webhcat_group.name
         mode: 0o660
-      , (err, copied) ->
-        return next err, if copied then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push 'ryba/hive/webhcat_start'
 
