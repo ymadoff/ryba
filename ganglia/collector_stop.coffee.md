@@ -19,5 +19,4 @@ Execute these commands on the Ganglia server host machine.
         # name: 'ganglia-gmetad-3.5.0-99'
         srv_name: 'hdp-gmetad'
         action: 'stop'
-      ], (err, stoped) ->
-        next err, if stoped then ctx.OK else ctx.PASS
+      ], next

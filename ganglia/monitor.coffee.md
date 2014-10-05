@@ -22,8 +22,7 @@ The package "ganglia-gmond-3.5.0-99" is installed.
     module.exports.push name: 'Ganglia Monitor # Service', timeout: -1, callback: (ctx, next) ->
       ctx.service
         name: 'ganglia-gmond-3.5.0-99'
-      , (err, serviced) ->
-        next err, if serviced then ctx.OK else ctx.PASS
+      , next
 
 ## Layout
 
@@ -33,8 +32,7 @@ the objects files and generate the hosts configuration.
     module.exports.push name: 'Ganglia Monitor # Layout', timeout: -1, callback: (ctx, next) ->
       ctx.mkdir
         destination: '/usr/libexec/hdp/ganglia'
-      , (err, created) ->
-        next err, if created then ctx.OK else ctx.PASS
+      , next
 
 ## Objects
 
@@ -44,8 +42,7 @@ Copy the object files provided in the HDP companion files into the
     module.exports.push name: 'Ganglia Monitor # Objects', timeout: -1, callback: (ctx, next) ->
       glob "#{__dirname}/../hadoop/files/ganglia/objects/*.*", (err, files) ->
         files = for file in files then source: file, destination: "/usr/libexec/hdp/ganglia", mode: 0o744
-        ctx.upload files, (err, uploaded) ->
-          next err, if uploaded then ctx.OK else ctx.PASS
+        ctx.upload files, next
 
 ## Init Script
 
@@ -56,8 +53,7 @@ Upload the "hdp-gmond" service file into "/etc/init.d".
         source: "#{__dirname}/../hadoop/files/ganglia/scripts/hdp-gmond"
         destination: '/etc/init.d'
         mode: 0o755
-      , (err, uploaded) ->
-        next err, if uploaded then ctx.OK else ctx.PASS
+      , next
 
 ## Fix RRD
 
@@ -71,8 +67,7 @@ Ganglia) from starting. The variable "RRDCACHED_BASE_DIR" should point to
         match: /^RRDCACHED_BASE_DIR=.*$/mg
         replace: 'RRDCACHED_BASE_DIR=/var/lib/ganglia/rrds;'
         append: 'GANGLIA_RUNTIME_DIR'
-      , (err, written) ->
-        next err, if written then ctx.OK else ctx.PASS
+      , next
 
 ## Host
 
@@ -96,8 +91,7 @@ Setup the Ganglia hosts. Categories are "HDPNameNode", "HDPResourceManager",
       # If HBase is installed, on the HBase Master, to configure the gmond emitter
       if ctx.has_any_modules 'ryba/hbase/master'
         cmds.push cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPHBaseMaster"
-      ctx.execute cmds, (err, executed) ->
-        next err, if executed then ctx.OK else ctx.PASS
+      ctx.execute cmds, next
 
 ## Configuration
 
@@ -135,8 +129,7 @@ Update the files generated in the "host" action with the host of the Ganglia Col
           destination: "/etc/ganglia/hdp/HDPHBaseMaster/conf.d/gmond.slave.conf"
           match: /^(.*)host = (.*)$/mg
           replace: "$1host = #{collector}"
-      ctx.write writes, (err, written) ->
-        next err, if written then ctx.OK else ctx.PASS
+      ctx.write writes, next
 
 ## Hadoop
 
@@ -150,8 +143,7 @@ Upload the "hadoop-metrics2.properties" to connect Hadoop with Ganglia.
         destination: "/etc/hadoop/conf/hadoop-metrics2.properties"
         match: "TODO-GANGLIA-SERVER"
         replace: collector
-      , (err, written) ->
-        next err, if written then ctx.OK else ctx.PASS
+      , next
 
 ## Start
 

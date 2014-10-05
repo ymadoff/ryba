@@ -79,7 +79,7 @@ rrdcached:x:493:
       ctx.group rrdcached_group, (err, gmodified) ->
         return next err if err
         ctx.user rrdcached_user, (err, umodified) ->
-          next err, if gmodified or umodified then ctx.OK else ctx.PASS
+          next err, gmodified or umodified
 
 ## IPTables
 
@@ -106,8 +106,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: 8666, protocol: 'tcp', state: 'NEW', comment: "Ganglia Collector HDPHistoryServer" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## Service
 
@@ -121,8 +120,7 @@ The packages "ganglia-gmetad-3.5.0-99" and "ganglia-web-3.5.7-99" are installed.
         startup: false
       ,
         name: 'ganglia-web-3.5.7-99'
-      ], (err, serviced) ->
-        next err, if serviced then ctx.OK else ctx.PASS
+      ], next
 
 ## Layout
 
@@ -132,8 +130,7 @@ the objects files and generate the hosts configuration.
     module.exports.push name: 'Ganglia Collector # Layout', timeout: -1, callback: (ctx, next) ->
       ctx.mkdir
         destination: '/usr/libexec/hdp/ganglia'
-      , (err, created) ->
-        next err, if created then ctx.OK else ctx.PASS
+      , next
 
 ## Objects
 
@@ -143,8 +140,7 @@ Copy the object files provided in the HDP companion files into the
     module.exports.push name: 'Ganglia Collector # Objects', timeout: -1, callback: (ctx, next) ->
       glob "#{__dirname}/../hadoop/files/ganglia/objects/*.*", (err, files) ->
         files = for file in files then source: file, destination: "/usr/libexec/hdp/ganglia", mode: 0o744
-        ctx.upload files, (err, uploaded) ->
-          next err, if uploaded then ctx.OK else ctx.PASS
+        ctx.upload files, next
 
 ## Init Script
 
@@ -155,8 +151,7 @@ Upload the "hdp-gmetad" service file into "/etc/init.d".
         source: "#{__dirname}/../hadoop/files/ganglia/scripts/hdp-gmetad"
         destination: '/etc/init.d'
         mode: 0o755
-      ], (err, uploaded) ->
-        next err, if uploaded then ctx.OK else ctx.PASS
+      ], next
 
 ## Fix RRD
 
@@ -170,8 +165,7 @@ Ganglia) from starting. The variable "RRDCACHED_BASE_DIR" should point to
         match: /^RRDCACHED_BASE_DIR=.*$/mg
         replace: 'RRDCACHED_BASE_DIR=/var/lib/ganglia/rrds;'
         append: 'GANGLIA_RUNTIME_DIR'
-      , (err, written) ->
-        next err, if written then ctx.OK else ctx.PASS
+      , next
 
 # ## Fix permission
 
@@ -194,7 +188,7 @@ in its user account definition.
       ctx.execute
         cmd: 'usermod -s /bin/bash nobody'
       , (err, executed, stdout, stderr) ->
-        next err, if /no changes/.test(stdout) then ctx.PASS else ctx.OK
+        next err, not /no changes/.test(stdout)
 
 ## Clusters
 
@@ -222,8 +216,7 @@ The cluster generation follow Hortonworks guideline and generate the clusters
       cmds.push
         cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -t"
         not_if_exists: '/etc/ganglia/hdp/gmetad.conf'
-      ctx.execute cmds, (err, executed) ->
-        next err, if executed then ctx.OK else ctx.PASS
+      ctx.execute cmds, next
 
 ## Configuration
 
@@ -255,8 +248,7 @@ pointing to the Ganglia master hostname.
         destination: "/etc/ganglia/hdp/gmetad.conf"
         match: /^(data_source.* )(.*):(\d+)$/mg
         replace: "$1#{ctx.config.host}:$3"
-      ], (err, written) ->
-        next err, if written then ctx.OK else ctx.PASS
+      ], next
 
 ## HTTPD Restart
 
@@ -267,8 +259,7 @@ pointing to the Ganglia master hostname.
         not_if: (callback) ->
           request "http://#{ctx.config.host}/ganglia", (err, _, body) ->
             callback err, /Ganglia Web Frontend/.test body
-      , (err, restarted) ->
-        next err, if restarted then ctx.OK else ctx.PASS
+      , next
 
 ## Start
 

@@ -17,6 +17,5 @@ Call the "checkGmetad.sh" deployed by the Ganglia HDP package and check if the
     module.exports.push name: 'Ganglia Collector # Check Services', callback: (ctx, next) ->
       ctx.execute
         cmd: "/usr/libexec/hdp/ganglia/checkGmetad.sh"
-      , (err, running) ->
-        next err, ctx.STABLE
+      , next
 
