@@ -167,7 +167,7 @@ hue:x:494:
       ctx.group hue_group, (err, gmodified) ->
         return next err if err
         ctx.user hue_user, (err, umodified) ->
-          next err, if gmodified or umodified then ctx.OK else ctx.PASS
+          next err, gmodified or umodified
 
 ## IPTables
 
@@ -185,8 +185,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: hue_ini['desktop']['http_port'], protocol: 'tcp', state: 'NEW', comment: "Hue Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## Packages
 
@@ -197,8 +196,7 @@ The packages "extjs-2.2-1" and "hue" are installed.
         name: 'extjs-2.2-1'
       ,
         name: 'hue'
-      ], (err, serviced) ->
-        next err, if serviced then ctx.OK else ctx.PASS
+      ], next
 
 ## Core
 
@@ -220,9 +218,7 @@ the configuration picked up by the "ryba/hadoop/core" module.
         destination: "#{hadoop_conf_dir}/core-site.xml"
         properties: properties
         merge: true
-      , (err, configured) ->
-        return next err if err
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## WebHCat
 
@@ -242,9 +238,7 @@ to allow impersonnation through the "hue" user.
           destination: "#{webhcat_conf_dir}/webhcat-site.xml"
           properties: properties
           merge: true
-        , (err, configured) ->
-          return next err if err
-          next err, if configured then ctx.OK else ctx.PASS
+        , next
       if ctx.config.host is webhcat_server
         hconfigure ctx.ssh
       else
@@ -270,9 +264,7 @@ to allow impersonnation through the "hue" user.
           destination: "#{oozie_conf_dir}/oozie-site.xml"
           properties: properties
           merge: true
-        , (err, configured) ->
-          return next err if err
-          next err, if configured then ctx.OK else ctx.PASS
+        , next
       if ctx.config.host is oozie_server
         hconfigure ctx.ssh
       else
@@ -295,8 +287,7 @@ recommandations. Merge the configuration object from "hdp.hue_ini" with the prop
         stringify: misc.ini.stringify_multi_brackets
         separator: '='
         comment: '#'
-      , (err, written) ->
-        next err, if written then ctx.OK else ctx.PASS
+      , next
 
 ## Database
 
@@ -323,15 +314,15 @@ the default database while mysql is the recommanded choice.
             """
             code_skipped: 2
           , (err, created, stdout, stderr) ->
-            return next err, ctx.PASS if err or not created
+            return next err, false if err or not created
             ctx.execute
               cmd: """
               su -l #{hue_user.name} -c "/usr/lib/hue/build/env/bin/hue syncdb --noinput"
               """
             , (err, executed) ->
-              next err, ctx.OK
+              next err, true
         sqlite: ->
-          next null, ctx.PASS
+          next null, false
       engine = hue_ini['desktop']['database']['engine']
       return next new Error 'Hue database engine not supported' unless engines[engine]
       engines[engine]()
@@ -401,7 +392,7 @@ the "security_enabled" property set to "true".
           modified = true if written
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_addprinc()
 
 ## Start
@@ -452,12 +443,12 @@ changes.
           modified = true if written
           do_end()
       do_end = ->
-        return next null, ctx.PASS unless modified
+        return next null, false unless modified
         ctx.service
           name: 'hue'
           action: 'restart'
         , (err) ->
-          next err, ctx.OK
+          next err, true
       do_upload()
 
 ## Resources:   

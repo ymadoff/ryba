@@ -13,7 +13,6 @@ layout: module
       require('./install').configure ctx
 
     module.exports.push name: 'Hue # Start', callback: (ctx, next) ->
-      lifecycle.hue_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+      lifecycle.hue_start ctx, next
 
 

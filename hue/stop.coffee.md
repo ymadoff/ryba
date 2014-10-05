@@ -13,7 +13,6 @@ layout: module
       require('./install').configure ctx
 
     module.exports.push name: 'Hue # Stop', callback: (ctx, next) ->
-      lifecycle.hue_stop ctx, (err, stopped) ->
-        next err, if stopped then ctx.OK else ctx.PASS
+      lifecycle.hue_stop ctx, next
 
 
