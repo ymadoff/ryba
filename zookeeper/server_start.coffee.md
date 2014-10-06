@@ -21,6 +21,5 @@ layout: module
 Execute these commands on the ZooKeeper host machine(s).
 
     module.exports.push name: 'ZooKeeper Server # Start', callback: (ctx, next) ->
-      lifecycle.zookeeper_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+      lifecycle.zookeeper_start ctx, next
 

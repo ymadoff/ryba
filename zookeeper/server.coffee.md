@@ -64,7 +64,7 @@ hadoop:x:498:hdfs
       ctx.group [zookeeper_group, hadoop_group], (err, gmodified) ->
         return next err if err
         ctx.user zookeeper_user, (err, umodified) ->
-          next err, if gmodified or umodified then ctx.OK else ctx.PASS
+          next err, gmodified or umodified
 
 ## IPTables
 
@@ -86,8 +86,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: 3888, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Leader" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## Install
 
@@ -95,8 +94,7 @@ Follow the [HDP recommandations][install] to install the "zookeeper" package
 which has no dependency.
 
     module.exports.push name: 'ZooKeeper Server # Install', timeout: -1, callback: (ctx, next) ->
-      ctx.service name: 'zookeeper', (err, serviced) ->
-        next err, if serviced then ctx.OK else ctx.PASS
+      ctx.service name: 'zookeeper', next
 
 ## Startup
 
@@ -124,7 +122,7 @@ Install and configure the startup script in
           modified = true if written
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_install()
 
     module.exports.push name: 'ZooKeeper Server # Kerberos', timeout: -1, callback: (ctx, next) ->
@@ -177,7 +175,7 @@ Install and configure the startup script in
           modified = true if written
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_principal()
 
     module.exports.push name: 'ZooKeeper Server # Layout', callback: (ctx, next) ->
@@ -199,8 +197,7 @@ Install and configure the startup script in
         uid: zookeeper_user.name
         gid: hadoop_group.name
         mode: 0o755
-      ], (err, modified) ->
-        next err, if modified then ctx.OK else ctx.PASS
+      ], next
 
     module.exports.push name: 'ZooKeeper Server # Environment', callback: (ctx, next) ->
       {zookeeper_conf_dir, zookeeper_env} = ctx.config.ryba
@@ -212,8 +209,7 @@ Install and configure the startup script in
         destination: "#{zookeeper_conf_dir}/zookeeper-env.sh"
         write: write
         backup: true
-      , (err, written) ->
-        return next err, if written then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'ZooKeeper Server # Configure', callback: (ctx, next) ->
       modified = false
@@ -266,7 +262,7 @@ Install and configure the startup script in
           modified = true if written
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_zoo_cfg()
 
     module.exports.push 'ryba/zookeeper/server_start'

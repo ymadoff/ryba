@@ -17,6 +17,5 @@ layout: module
 Execute these commands on the ZooKeeper host machine(s).
 
     module.exports.push name: 'ZooKeeper Server # Stop', callback: (ctx, next) ->
-      lifecycle.zookeeper_stop ctx, (err, stopped) ->
-        next err, if stopped then ctx.OK else ctx.PASS
+      lifecycle.zookeeper_stop ctx, next
 

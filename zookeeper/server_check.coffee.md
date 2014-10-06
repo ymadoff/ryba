@@ -27,5 +27,5 @@ Execute these commands on the ZooKeeper host machine(s).
         , (err, _, stdout) ->
           unless stdout.trim().split('\n').sort().join(',') is [1..cmds.length].join(',')
             err = new Error "Servers are not properly registered" 
-          next err, ctx.STABLE
+          next err, true
 

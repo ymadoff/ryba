@@ -82,7 +82,7 @@ layout: module
           modified = true if written
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_principal()
 
     module.exports.push name: 'ZooKeeper Client # Environment', callback: (ctx, next) ->
@@ -95,8 +95,7 @@ layout: module
         destination: "#{zookeeper_conf_dir}/zookeeper-env.sh"
         write: write
         backup: true
-      , (err, written) ->
-        return next err, if written then ctx.OK else ctx.PASS
+      , next
 
 
 
