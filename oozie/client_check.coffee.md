@@ -19,7 +19,7 @@
       , (err, executed, stdout) ->
         return next err if err
         return next new Error "Oozie not ready, got: #{JSON.stringify stdout}" if stdout.trim() isnt 'System mode: NORMAL'
-        return next null, ctx.PASS
+        return next null, true
 
     module.exports.push name: 'Oozie Client # Check REST', timeout: -1, callback: (ctx, next) ->
       {oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.ryba
@@ -31,7 +31,7 @@
       , (err, executed, stdout) ->
         return next err if err
         return next new Error "Oozie not ready" if stdout.trim() isnt '{"systemMode":"NORMAL"}'
-        return next null, ctx.PASS
+        return next null, true
 
     module.exports.push name: 'Oozie Client # Workflow', timeout: -1, callback: (ctx, next) ->
       {nameservice, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.ryba
@@ -88,7 +88,7 @@
             code_skipped: 2
           , (err, executed, stdout) ->
             return next err if err
-            return next null, ctx.OK
+            return next null, true
 
 # Module Dependencies
 

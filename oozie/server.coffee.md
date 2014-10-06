@@ -117,7 +117,7 @@ oozie:x:493:
       ctx.group oozie_group, (err, gmodified) ->
         return next err if err
         ctx.user oozie_user, (err, umodified) ->
-          next err, if gmodified or umodified then ctx.OK else ctx.PASS
+          next err, gmodified or umodified
 
 ## IPTables
 
@@ -136,8 +136,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "Oozie HTTP Server" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'Oozie Server # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
@@ -148,7 +147,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         name: 'extjs-2.2-1'
       ], (err, serviced) ->
         ctx.config.ryba.force_war = true if serviced
-        next err, if serviced then ctx.OK else ctx.PASS
+        next err, serviced
 
     module.exports.push name: 'Oozie Server # Environment', callback: (ctx, next) ->
       {java_home} = ctx.config.java
@@ -189,8 +188,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         uid: oozie_user.name
         gid: hadoop_group.name
         mode: 0o0755
-      , (err, rendered) ->
-        next err, if rendered then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'Oozie Server # Directories', callback: (ctx, next) ->
       {oozie_user, oozie_group, oozie_data, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_tmp_dir} = ctx.config.ryba
@@ -227,7 +225,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           chmod -R 755 #{oozie_conf_dir}/..
           """
         , (err, executed) ->
-          next err, if copied then ctx.OK else ctx.PASS
+          next err, copied
 
     module.exports.push name: 'Oozie Server # ExtJS', callback: (ctx, next) ->
       ctx.copy
@@ -235,7 +233,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         destination: '/usr/lib/oozie/libext/'
       , (err, copied) ->
         ctx.config.ryba.force_war = true if copied
-        return next err, if copied then ctx.OK else ctx.PASS
+        return next err, copied
 
     module.exports.push name: 'Oozie Server # LZO', callback: (ctx, next) ->
       ctx.execute
@@ -251,8 +249,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           cp #{lzo_jar} /usr/lib/oozie/libext/
           """
           not_if_exists: "/usr/lib/oozie/libext/#{path.basename lzo_jar}"
-        , (err, copied) ->
-          next err, if copied then ctx.OK else ctx.PASS
+        , next
 
     module.exports.push name: 'Oozie Server # Mysql Driver', callback: (ctx, next) ->
       ctx.link
@@ -260,7 +257,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         destination: '/usr/lib/oozie/libext/mysql-connector-java.jar'
       , (err, linked) ->
         ctx.config.ryba.force_war = true if linked
-        return next err, ctx.PASS if err or not linked
+        return next err, linked
 
     module.exports.push name: 'Oozie Server # Configuration', callback: (ctx, next) ->
       { hadoop_conf_dir, yarn_site, oozie_group, oozie_user, 
@@ -297,7 +294,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           modified = true if configured
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_oozie_site()
 
     module.exports.push name: 'Oozie Server # War', callback: (ctx, next) ->
@@ -310,8 +307,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       ctx.execute
         cmd: "su -l #{oozie_user.name} -c '/usr/lib/oozie/bin/oozie-setup.sh prepare-war'"
         not_if: not ctx.config.ryba.force_war
-      , (err, executed) ->
-        next err, if executed then ctx.OK else ctx.PASS
+      , linked
 
     module.exports.push name: 'Oozie Server # Kerberos', callback: (ctx, next) ->
       {oozie_user, oozie_group, oozie_site, realm} = ctx.config.ryba
@@ -325,9 +321,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , (err, created) ->
-        return next err if err
-        next null, if created then ctx.OK else ctx.PASS
+      , linked
 
     module.exports.push name: 'Oozie Server # SPNEGO', callback: (ctx, next) ->
       {oozie_site, oozie_user, oozie_group} = ctx.config.ryba
@@ -337,8 +331,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         uid: oozie_user.name
         gid: oozie_group.name
         mode: 0o0600
-      , (err, copied) ->
-        return next err, if copied then ctx.OK else ctx.PASS
+      , linked
 
     module.exports.push name: 'Oozie Server # MySQL', callback: (ctx, next) ->
       {db_admin, oozie_db_host, oozie_site} = ctx.config.ryba
@@ -360,8 +353,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             "
             """
             code_skipped: 2
-          , (err, created) ->
-            return next err, if created then ctx.OK else ctx.PASS
+          , linked
       return next new Error 'Database engine not supported' unless engines[engine]
       engines[engine]()
 
@@ -372,7 +364,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         """
       , (err, executed, stdout, stderr) ->
         err = null if err and /DB schema exists/.test stderr
-        next err, if executed then ctx.OK else ctx.PASS
+        next err, executed
 
     module.exports.push name: 'Oozie Server # Share lib', callback: (ctx, next) ->
       {oozie_user, oozie_group} = ctx.config.ryba
@@ -391,8 +383,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         rm -rf /tmp/ooziesharelib
         """
         code_skipped: 2
-      , (err, executed) ->
-        next err, if executed then ctx.OK else ctx.PASS
+      , linked
 
     module.exports.push 'ryba/oozie/server_start'
 

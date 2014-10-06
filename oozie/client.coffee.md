@@ -30,8 +30,7 @@ Install the oozie client package. This package doesn't create any user and group
     module.exports.push name: 'Oozie Client # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
         name: 'oozie-client'
-      ], (err, serviced) ->
-        next err, if serviced then ctx.OK else ctx.PASS
+      ], next
 
     module.exports.push name: 'Oozie Client # Profile', callback: (ctx, next) ->
       {oozie_site} = ctx.config.ryba
@@ -42,8 +41,7 @@ Install the oozie client package. This package doesn't create any user and group
         export OOZIE_URL=#{oozie_site['oozie.base.url']}
         """
         mode: 0o0755
-      , (err, written) ->
-        next null, if written then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push 'ryba/oozie/client_check'
 
