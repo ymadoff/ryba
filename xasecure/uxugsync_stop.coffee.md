@@ -9,7 +9,6 @@
       ctx.service
         srv_name: 'uxugsync'
         action: 'stop'
-      , (err, stoped) ->
-        next err, if stoped then ctx.OK else ctx.PASS
+      , next
       
 

@@ -37,14 +37,14 @@ layout: module
           binary: true
           not_if_exists: "/var/tmp/#{path.basename hive_url, '.tar'}"
         , (err, uploaded) ->
-          return next err, ctx.PASS if err or not uploaded
+          return next err, false if err or not uploaded
           modified = true
           do_extract()
       do_extract = ->
         ctx.extract
           source: "/var/tmp/#{path.basename hive_url}"
         , (err) ->
-          return next err, ctx.OK
+          return next err, true
       do_upload()
 
     module.exports.push name: 'XASecure Hive # Install', timeout: -1, callback: (ctx, next) ->
@@ -60,7 +60,7 @@ layout: module
           write: write
           eof: true
         , (err, written) ->
-          return next err, ctx.PASS if err or not written
+          return next err, false if err or not written
           do_install()
       do_install = ->
         ctx.execute
@@ -89,7 +89,7 @@ layout: module
           return next err if err
           lifecycle.hive_server2_restart ctx, (err) ->
             return next err if err
-            next null, ctx.PASS
+            next null, false
       do_configure()
 
     module.exports.push name: 'XASecure Hive # Register', timeout: -1, callback: (ctx, next) ->

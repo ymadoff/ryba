@@ -8,7 +8,7 @@
       return next() unless managers.length
       ctx.log "Wait for 'ryba/xasecure/policymgr'"
       ctx.waitIsOpen managers, 6080, (err) ->
-        next err, ctx.PASS
+        next err, false
 
 
 

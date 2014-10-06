@@ -47,8 +47,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: 5151, protocol: 'tcp', state: 'NEW', comment: "XASecure Admin" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'XASecure Sync # Upload', timeout: -1, callback: (ctx, next) ->
       {uxugsync_url} = ctx.config.xasecure
@@ -59,14 +58,14 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           binary: true
           not_if_exists: "/var/tmp/#{path.basename uxugsync_url, '.tar'}"
         , (err, uploaded) ->
-          return next err, ctx.PASS if err or not uploaded
+          return next err, false if err or not uploaded
           modified = true
           do_extract()
       do_extract = ->
         ctx.extract
           source: "/var/tmp/#{path.basename uxugsync_url}"
         , (err) ->
-          return next err, ctx.OK
+          return next err, true
       do_upload()
 
     module.exports.push name: 'XASecure Sync # Install', timeout: -1, callback: (ctx, next) ->
@@ -81,14 +80,14 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           write: write
           eof: true
         , (err, written) ->
-          return next err if err
+          return next err, false if err or not written
           do_install()
       do_install = ->
         ctx.execute
           cmd: "cd /var/tmp/#{path.basename uxugsync_url, '.tar'} && ./install.sh"
         , (err, executed) ->
           return next err if err
-          next null, ctx.OK
+          next null, true
       do_configure()
 
 ## Module Dependencies

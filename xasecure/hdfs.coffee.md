@@ -38,14 +38,14 @@ layout: module
           binary: true
           not_if_exists: "/var/tmp/#{path.basename hdfs_url, '.tar'}"
         , (err, uploaded) ->
-          return next err, ctx.PASS if err or not uploaded
+          return next err, false if err or not uploaded
           modified = true
           do_extract()
       do_extract = ->
         ctx.extract
           source: "/var/tmp/#{path.basename hdfs_url}"
         , (err) ->
-          return next err, ctx.OK
+          return next err, true
       do_upload()
 
     module.exports.push name: 'XASecure HDFS # Configure', timeout: -1, callback: (ctx, next) ->
@@ -59,7 +59,7 @@ layout: module
           write: write
           eof: true
         , (err, written) ->
-          return next err, ctx.PASS if err or not written
+          return next err, false if err or not written
           do_install()
       do_install = ->
         ctx.execute
@@ -89,14 +89,13 @@ layout: module
       do_restart = ->
         lifecycle.nn_restart ctx, (err) ->
           return next err if err
-          next err, ctx.OK
+          next err, true
       do_configure()
 
     module.exports.push name: 'XASecure HDFS # Fix', callback: (ctx, next) ->
       ctx.remove
         destination: '/usr/lib/hadoop/lib/jersey-bundle-1.17.1.jar'
-      , (err, removed) ->
-        return next err, if removed then ctx.OK else ctx.PASS
+      , next
     
     module.exports.push name: 'XASecure HDFS # Register', timeout: -1, callback: (ctx, next) ->
       # POST http://front1.hadoop:6080/service/assets/assets
