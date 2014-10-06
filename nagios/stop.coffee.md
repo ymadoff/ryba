@@ -9,5 +9,4 @@
       ctx.service
         srv_name: 'nagios'
         action: 'stop'
-      , (err, stoped) ->
-        next err, if stoped then ctx.OK else ctx.PASS
+      , next
