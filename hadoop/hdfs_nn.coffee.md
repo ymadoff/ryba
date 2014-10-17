@@ -45,6 +45,7 @@ define inside the "ryba/hadoop/hdfs" and "masson/core/nc" modules.
       {hdfs_site} = ctx.config.ryba
       # Activate ACLs
       hdfs_site['dfs.namenode.acls.enabled'] ?= 'true'
+      hdfs_site['dfs.namenode.accesstime.precision'] ?= null
 
 ## IPTables
 
@@ -68,8 +69,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           # { chain: 'INPUT', jump: 'ACCEPT', dport: 9000, protocol: 'tcp', state: 'NEW', comment: "HDFS NN IPC" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## Startup
 
@@ -231,6 +231,30 @@ public and private SSH keys for the HDFS user inside his "~/.ssh" folder and upd
             return next err if err
             modified = true if written
             do_configure()
+      do_access = ->
+        console.log 'TODO: do_access'
+        do_configure()
+        # ctx.readFile "/etc/security/access.log", (err, content) ->
+        #   return next err if err
+        #   lines = []
+        #   regexp = RegExp '^\-\s?:\s?(ALL|#{hdfs_user.name})\s?:\s?(.*)\s*$'
+        #   for line in content.split /\r\n|[\n\r\u0085\u2028\u2029]/g
+        #     [_, users, origin] = regexp.match line
+        #     console.log users, origin
+        #     # found = true if matches = .match line
+        #     # insert = true if /^\-\s?:\s?(ALL|#{hdfs_user.name})\s?:\s?.*$/.test line
+        #     # lines.push line
+        #   ctx.write
+        #     destination: "#{hdfs_home}/.ssh/authorized_keys"
+        #     content: content
+        #     append: true
+        #     uid: hdfs_user.name
+        #     gid: hadoop_group.name
+        #     mode: 0o600
+        #   , (err, written) ->
+        #     return next err if err
+        #     modified = true if written
+        #     do_configure()
       do_configure = ->
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/hdfs-site.xml"
