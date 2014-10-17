@@ -10,6 +10,27 @@ earliest snapshot.
     module.exports = []
     module.exports.push require('./server').configure
 
+## Compress the data directory
+
+ZooKeeper stores its data in a data directory and its transaction log in a
+transaction log directory. By default these two directories are the same.
+
+TODO: Add the backup facility
+
+    module.exports.push name: "ZooKeeper Server # Purge Transaction Logs", callback: (ctx, next) ->
+      {zookeeper_conf} = ctx.config.ryba
+      now = Math.floor Date.now() / 1000
+      ctx.execute [
+        cmd: """
+        tar czf /var/tmp/ryba-zookeeper-data-#{now}.tgz -C #{zookeeper_conf.dataDir} .
+        """
+      ,
+        cmd: """
+        tar czf /var/tmp/ryba-zookeeper-log-#{now}.tgz -C #{zookeeper_conf.dataLogDir} .
+        """
+        if: zookeeper_conf.dataLogDir
+      ], next
+
 ## Purge Transaction Logs
 
 A ZooKeeper server will not remove old snapshots and log files when using the
@@ -31,26 +52,7 @@ parameters autopurge.snapRetainCount and autopurge.purgeInterval.
           org.apache.zookeeper.server.PurgeTxnLog \
           #{zookeeper_conf.dataLogDir or ''} #{zookeeper_conf.dataDir} -n #{zookeeper_retention}
         """
-
-## Compress the data directory
-
-ZooKeeper stores its data in a data directory and its transaction log in a
-transaction log directory. By default these two directories are the same.
-
-TODO: Add the backup facility
-
-    module.exports.push name: "ZooKeeper Server # Purge Transaction Logs", callback: (ctx, next) ->
-      {zookeeper_conf} = ctx.config.ryba
-      ctx.execute [
-        cmd: """
-        tar czf /tmp/ryba-zookeeper-data-#{Date.now()}.tgz -C #{zookeeper_conf.dataDir} .
-        """
-      ,
-        cmd: """
-        tar czf /tmp/ryba-zookeeper-log-#{Date.now()}.tgz -C #{zookeeper_conf.dataLogDir} .
-        """
-        if: zookeeper_conf.dataLogDir
-      ], next
+      , next
 
 ## Resources
 
