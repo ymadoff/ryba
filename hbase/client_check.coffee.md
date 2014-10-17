@@ -11,12 +11,11 @@ scanning the table.
 
 Retrieve the client configuration.
 
-    module.exports.push (ctx) ->
-      require('./client').configure ctx
+    module.exports.push require('./client').configure
 
-## Shell
+## Check Shell
 
-    module.exports.push name: 'HBase Client Check # Shell', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HBase Client # Check Shell', timeout: -1, callback: (ctx, next) ->
       {jaas_client, hbase_conf_dir, hbase_user, hbase_group, shortname} = ctx.config.ryba
       cmd = mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"exists 'ryba'\" | grep 'Table ryba does exist'"
       ctx.waitForExecution cmd, (err) ->
