@@ -25,7 +25,12 @@ Execute these commands on the ZooKeeper host machine(s).
         ctx.execute
           cmd: cmds.join ';'
         , (err, _, stdout) ->
-          unless stdout.trim().split('\n').sort().join(',') is [1..cmds.length].join(',')
-            err = new Error "Servers are not properly registered" 
+          return next err if err
+          if hosts.length is 1 # Standalone mode
+            unless stdout.trim().split('\n').sort().join(',') is '0'
+              err = new Error "Servers are not properly registered"
+          else # Replicated mode
+            unless stdout.trim().split('\n').sort().join(',') is [1..cmds.length].join(',')
+              err = new Error "Servers are not properly registered"
           next err, true
 

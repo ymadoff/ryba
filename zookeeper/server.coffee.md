@@ -5,8 +5,6 @@ layout: module
 
 # Zookeeper
 
-    lifecycle = require '../lib/lifecycle'
-    quote = require 'regexp-quote'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
@@ -38,15 +36,38 @@ Example :
       require('./client').configure ctx
       {java_home} = ctx.config.java
       # Environnment
-      {zookeeper_conf_dir, zookeeper_log_dir, zookeeper_pid_dir} = ctx.config.ryba
+      {zookeeper_conf_dir, zookeeper_data_dir, zookeeper_log_dir, zookeeper_pid_dir, zookeeper_port} = ctx.config.ryba
       ctx.config.ryba.zookeeper_env ?= {}
       ctx.config.ryba.zookeeper_env['JAVA_HOME'] ?= "#{java_home}"
       ctx.config.ryba.zookeeper_env['ZOO_LOG_DIR'] ?= "#{zookeeper_log_dir}"
       ctx.config.ryba.zookeeper_env['ZOOPIDFILE'] ?= "#{zookeeper_pid_dir}/zookeeper_server.pid"
       ctx.config.ryba.zookeeper_env['SERVER_JVMFLAGS'] ?= "-Djava.security.auth.login.config=#{zookeeper_conf_dir}/zookeeper-server.jaas"
       ctx.config.ryba.zookeeper_env['CLIENT_JVMFLAGS'] ?= "-Djava.security.auth.login.config=#{zookeeper_conf_dir}/zookeeper-client.jaas"
+      # Configuration
+      hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
+      conf = ctx.config.ryba.zookeeper_conf ?= {}
+      # The number of milliseconds of each tick
+      conf['tickTime'] ?= "2000"
+      # The number of ticks that the initial
+      # synchronization phase can take
+      conf['initLimit'] ?= "10"
+      conf['tickTime'] ?= "2000"
+      # The number of ticks that can pass between
+      # sending a request and getting an acknowledgement
+      conf['syncLimit'] ?= "5"
+      # the directory where the snapshot is stored.
+      conf['dataDir'] ?= "#{zookeeper_data_dir}"
+      # the port at which the clients will connect
+      conf['clientPort'] ?= "#{zookeeper_port}"
+      if hosts.length > 1 then for host, i in hosts then conf["server.#{i+1}"] = "#{host}:2888:3888"
+      # SASL
+      conf['authProvider.1'] ?= 'org.apache.zookeeper.server.auth.SASLAuthenticationProvider'
+      conf['jaasLoginRenew'] ?= '3600000'
+      conf['kerberos.removeHostFromPrincipal'] ?= 'true'
+      conf['kerberos.removeRealmFromPrincipal'] ?= 'true'
       # Internal
       ctx.config.ryba.zookeeper_myid ?= null
+      ctx.config.ryba.zookeeper_retention ?= '3' # Used to clean data dir
 
 ## Users & Groups
 
@@ -94,7 +115,10 @@ Follow the [HDP recommandations][install] to install the "zookeeper" package
 which has no dependency.
 
     module.exports.push name: 'ZooKeeper Server # Install', timeout: -1, callback: (ctx, next) ->
-      ctx.service name: 'zookeeper', next
+      ctx.service [
+        {name: 'zookeeper'}
+        {name: 'telnet'} # Used by check
+      ], next
 
 ## Startup
 
@@ -214,56 +238,30 @@ Install and configure the startup script in
     module.exports.push name: 'ZooKeeper Server # Configure', callback: (ctx, next) ->
       modified = false
       hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
-      { hadoop_group, zookeeper_user,
-        zookeeper_conf_dir, zookeeper_data_dir,
-        zookeeper_myid, zookeeper_port
-      } = ctx.config.ryba
-      do_zoo_cfg = ->
-        mapping = (for host, i in hosts
-          "server.#{i+1}=#{host}:2888:3888").join '\n'
-        ctx.write
-          content: """
-          # The number of milliseconds of each tick
-          tickTime=2000
-          # The number of ticks that the initial
-          # synchronization phase can take
-          initLimit=10
-          # The number of ticks that can pass between
-          # sending a request and getting an acknowledgement
-          syncLimit=5
-          # the directory where the snapshot is stored.
-          dataDir=#{zookeeper_data_dir}
-          # the port at which the clients will connect
-          clientPort=#{zookeeper_port}
-          #{mapping}
-          # SASL
-          authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
-          jaasLoginRenew=3600000
-          kerberos.removeHostFromPrincipal=true
-          kerberos.removeRealmFromPrincipal=true 
-          """
-          destination: "#{zookeeper_conf_dir}/zoo.cfg"
-        , (err, written) ->
-          return next err if err
-          modified = true if written
-          do_myid()
-      do_myid = ->
-        unless zookeeper_myid
-          for host, i in hosts
-            zookeeper_myid = i+1 if host is ctx.config.host
-        ctx.log 'Write myid'
-        ctx.write
-          content: zookeeper_myid
-          destination: "#{zookeeper_data_dir}/myid"
-          uid: zookeeper_user.name
-          gid: hadoop_group.name
-        , (err, written) ->
-          return next err if err
-          modified = true if written
-          do_end()
-      do_end = ->
-        next null, modified
-      do_zoo_cfg()
+      {zookeeper_conf_dir, zookeeper_conf} = ctx.config.ryba
+      write = for k, v of zookeeper_conf
+        match: RegExp "^#{quote k}=.*$", 'mg'
+        replace: "#{k}=#{v}"
+      ctx.write
+        destination: "#{zookeeper_conf_dir}/zoo.cfg"
+        write: write
+        backup: true
+      , next
+
+    module.exports.push name: 'ZooKeeper Server # Write myid', callback: (ctx, next) ->
+      { hadoop_group, zookeeper_user, zookeeper_myid, zookeeper_conf} = ctx.config.ryba
+      hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
+      return next() if hosts.length is 1
+      unless zookeeper_myid
+        for host, i in hosts
+          console.log "?", host, ctx.config.host
+          zookeeper_myid = i+1 if host is ctx.config.host
+      ctx.write
+        content: zookeeper_myid
+        destination: "#{zookeeper_conf['dataDir']}/myid"
+        uid: zookeeper_user.name
+        gid: hadoop_group.name
+      , next
 
     module.exports.push 'ryba/zookeeper/server_start'
 
@@ -275,6 +273,9 @@ Install and configure the startup script in
 
 [install]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.1-latest/bk_installing_manually_book/content/rpm-zookeeper-1.html
 
+## Module Dependencies
+
+    quote = require 'regexp-quote'
 
 
 
