@@ -337,44 +337,46 @@ Also worth of interest are the [Pivotal recommandations][hawq] as well as the
 Note, a user must re-login for those changes to be taken into account.
 
     module.exports.push name: 'HDP HDFS # Ulimit', callback: (ctx, next) ->
-      ctx.write [
-        destination: '/etc/security/limits.d/hdfs.conf'
-        write: [
-          match: /^hdfs.+nofile.+$/mg
-          replace: "hdfs    -    nofile   32768"
-          append: true
+      ctx.execute cmd: 'ulimit -Hn', (err, _, stdout) ->
+        return next err if err
+        max_nofile = stdout.trim()
+        ctx.write [
+          destination: '/etc/security/limits.d/hdfs.conf'
+          write: [
+            match: /^hdfs.+nofile.+$/mg
+            replace: "hdfs    -    nofile   #{max_nofile}"
+            append: true
+          ,
+            match: /^hdfs.+nproc.+$/mg
+            replace: "hdfs    -    nproc    65536"
+            append: true
+          ]
+          backup: true
         ,
-          match: /^hdfs.+nproc.+$/mg
-          replace: "hdfs    -    nproc    65536"
-          append: true
-        ]
-        backup: true
-      ,
-        destination: '/etc/security/limits.d/mapreduce.conf'
-        write: [
-          match: /^mapred.+nofile.+$/mg
-          replace: "mapred  -    nofile   32768"
-          append: true
+          destination: '/etc/security/limits.d/mapreduce.conf'
+          write: [
+            match: /^mapred.+nofile.+$/mg
+            replace: "mapred  -    nofile   #{max_nofile}"
+            append: true
+          ,
+            match: /^mapred.+nproc.+$/mg
+            replace: "mapred  -    nproc    65536"
+            append: true
+          ]
+          backup: true
         ,
-          match: /^mapred.+nproc.+$/mg
-          replace: "mapred  -    nproc    65536"
-          append: true
-        ]
-        backup: true
-      ,
-        destination: '/etc/security/limits.d/yarn.conf'
-        write: [
-          match: /^yarn.+nofile.+$/mg
-          replace: "yarn    -    nofile   32768"
-          append: true
-        ,
-          match: /^yarn.+nproc.+$/mg
-          replace: "yarn    -    nproc    65536"
-          append: true
-        ]
-        backup: true
-      ], (err, written) ->
-        next err, if written then ctx.OK else ctx.PASS
+          destination: '/etc/security/limits.d/yarn.conf'
+          write: [
+            match: /^yarn.+nofile.+$/mg
+            replace: "yarn    -    nofile   #{max_nofile}"
+            append: true
+          ,
+            match: /^yarn.+nproc.+$/mg
+            replace: "yarn    -    nproc    65536"
+            append: true
+          ]
+          backup: true
+        ], next
 
 ## Module dependencies
 
