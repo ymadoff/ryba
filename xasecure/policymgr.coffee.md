@@ -98,7 +98,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: 6080, protocol: 'tcp', state: 'NEW', comment: "XASecure Admin" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , linked
+      , next
 
     module.exports.push name: 'XASecure PolicyMgr # Upload', timeout: -1, callback: (ctx, next) ->
       {policymgr_url} = ctx.config.xasecure
