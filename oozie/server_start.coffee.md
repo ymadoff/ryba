@@ -17,5 +17,5 @@ layout: module
 Execute these commands on the Oozie server host machine
 
     module.exports.push name: 'Oozie Server # Start', timeout: -1, callback: (ctx, next) ->
-      lifecycle.oozie_start ctx, linked
+      lifecycle.oozie_start ctx, next
 

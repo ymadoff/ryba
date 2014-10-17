@@ -307,7 +307,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       ctx.execute
         cmd: "su -l #{oozie_user.name} -c '/usr/lib/oozie/bin/oozie-setup.sh prepare-war'"
         not_if: not ctx.config.ryba.force_war
-      , linked
+      , next
 
     module.exports.push name: 'Oozie Server # Kerberos', callback: (ctx, next) ->
       {oozie_user, oozie_group, oozie_site, realm} = ctx.config.ryba
@@ -321,7 +321,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , linked
+      , next
 
     module.exports.push name: 'Oozie Server # SPNEGO', callback: (ctx, next) ->
       {oozie_site, oozie_user, oozie_group} = ctx.config.ryba
@@ -331,7 +331,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         uid: oozie_user.name
         gid: oozie_group.name
         mode: 0o0600
-      , linked
+      , next
 
     module.exports.push name: 'Oozie Server # MySQL', callback: (ctx, next) ->
       {db_admin, oozie_db_host, oozie_site} = ctx.config.ryba
@@ -353,7 +353,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             "
             """
             code_skipped: 2
-          , linked
+          , next
       return next new Error 'Database engine not supported' unless engines[engine]
       engines[engine]()
 
@@ -383,7 +383,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         rm -rf /tmp/ooziesharelib
         """
         code_skipped: 2
-      , linked
+      , next
 
     module.exports.push 'ryba/oozie/server_start'
 
