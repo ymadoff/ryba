@@ -53,8 +53,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: nm_webapp_https_port, protocol: 'tcp', state: 'NEW', comment: "YARN NM Web Secured UI" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## Startup
 
@@ -87,7 +86,7 @@ Install and configure the startup script in
           modified = true if written
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_install()
 
     module.exports.push name: 'HDP YARN NM # Directories', timeout: -1, callback: (ctx, next) ->
@@ -111,7 +110,7 @@ Install and configure the startup script in
         for dir in log_dirs then cmds.push cmd: "su -l #{test_user.name} -c 'ls -l #{dir}'"
         for dir in local_dirs then cmds.push cmd: "su -l #{test_user.name} -c 'ls -l #{dir}'"
         ctx.execute cmds, (err) ->
-          next err, if created then ctx.OK else ctx.PASS
+          next err, created
 
     module.exports.push name: 'HDP YARN NM # Configure', callback: (ctx, next) ->
       {yarn_site, hadoop_conf_dir} = ctx.config.ryba
@@ -121,8 +120,7 @@ Install and configure the startup script in
         local_default: true
         properties: yarn_site
         merge: true
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'HDP YARN NM # Kerberos', callback: (ctx, next) ->
       {yarn_user, realm} = ctx.config.ryba
@@ -136,16 +134,8 @@ Install and configure the startup script in
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , (err, created) ->
-        return next err if err
-        next null, if created then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push 'ryba/hadoop/yarn_nm_start'
 
-    # module.exports.push name: 'HDP YARN NM # Start', timeout: -1, callback: (ctx, next) ->
-    #   resourcemanager = ctx.host_with_module 'ryba/hadoop/yarn_rm'
-    #   ctx.waitIsOpen resourcemanager, 8088, (err) ->
-    #     return next err if err
-    #     lifecycle.nm_start ctx, (err, started) ->
-    #       next err, if started then ctx.OK else ctx.PASS
 

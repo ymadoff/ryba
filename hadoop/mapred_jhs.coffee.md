@@ -52,15 +52,14 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: jhs_admin_port, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS Admin Server" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## Startup
 
 Install and configure the startup script in 
 "/etc/init.d/hadoop-mapreduce-historyserver".
 
-    module.exports.push name: 'HDP HDFS JN # Startup', callback: (ctx, next) ->
+    module.exports.push name: 'HDP MapRed JHS # Startup', callback: (ctx, next) ->
       {mapred_pid_dir} = ctx.config.ryba
       modified = false
       do_install = ->
@@ -86,7 +85,7 @@ Install and configure the startup script in
           modified = true if written
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_install()
 
     module.exports.push name: 'HDP MapRed JHS # Kerberos', callback: (ctx, next) ->
@@ -95,8 +94,7 @@ Install and configure the startup script in
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
         properties: mapred_site
         merge: true
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## HDFS Layout
 
@@ -133,9 +131,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         if [ $modified != "1" ]; then exit 2; fi
         """
         code_skipped: 2
-      , (err, executed, stdout) ->
-        return next err if err
-        next null, if executed then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'HDP MapRed JHS # Kerberos', callback: (ctx, next) ->
       {mapred_user, hadoop_group, realm} = ctx.config.ryba
@@ -149,9 +145,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , (err, created) ->
-        return next err if err
-        next null, if created then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push 'ryba/hadoop/mapred_jhs_start'
 
@@ -174,10 +168,10 @@ For this reason, the "retry" property is set to the high value of "10".
         code_skipped: 2
       , (err, checked, stdout) ->
         return next err if err
-        return next null, ctx.PASS unless checked
+        return next null, false unless checked
         try
           JSON.parse(stdout).historyInfo.hadoopVersion
-          return next null, ctx.OK
+          return next null, true
         catch err then next err
 
 [keys]: https://github.com/apache/hadoop-common/blob/trunk/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSConfigKeys.java

@@ -20,5 +20,4 @@ layout: module
         next err
 
     module.exports.push name: 'HDP NodeManager # Start Server', callback: (ctx, next) ->
-      lifecycle.nm_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+      lifecycle.nm_start ctx, next

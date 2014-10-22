@@ -83,7 +83,7 @@ hadoop:x:502:yarn,mapred,hdfs,hue
       ctx.group hadoop_group, (err, gmodified) ->
         return next err if err
         ctx.user sqoop_user, (err, umodified) ->
-          next err, if gmodified or umodified then ctx.OK else ctx.PASS
+          next err, gmodified or umodified
 
 ## Environment
 
@@ -98,8 +98,7 @@ Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
         uid: sqoop_user.name
         gid: hadoop_group.name
         mode: 0o755
-      , (err, written) ->
-        next err, if written then ctx.OK else ctx.PASS
+      , next
 
 ## Configuration
 
@@ -116,8 +115,7 @@ Upload the "sqoop-site.xml" files into the "/etc/sqoop/conf" folder.
         gid: hadoop_group.name
         mode: 0o755
         merge: true
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## Install
 
@@ -126,8 +124,7 @@ Install the Sqoop package following the [HDP instructions][install].
     module.exports.push name: 'HDP Sqoop # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service
         name: 'sqoop'
-      , (err, serviced) ->
-        next err, if serviced then ctx.OK else ctx.PASS
+      , next
 
 ## Mysql Connector
 
@@ -138,8 +135,7 @@ MySQL is by default usable by Sqoop. The driver installed after running the
       ctx.copy
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/lib/sqoop/lib/'
-      , (err, copied) ->
-        return next err, if copied then ctx.OK else ctx.PASS
+      , next
 
 ## Libs
 
@@ -153,8 +149,7 @@ the Sqoop library folder.
         source: lib
         destination: "/usr/lib/sqoop/lib/#{path.basename lib}"
         binary: true
-      ctx.upload uploads, (err, uploaded) ->
-        next err, if uploaded then ctx.OK else ctx.PASS
+      ctx.upload uploads, next
 
 ## Check
 
@@ -165,7 +160,7 @@ command][validate].
       ctx.execute
         cmd: "sqoop version | grep 'Sqoop [0-9].*'"
       , (err) ->
-        next err, ctx.PASS
+        next err, true
 
 [install]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap10-1.html
 [validate]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap10-4.html

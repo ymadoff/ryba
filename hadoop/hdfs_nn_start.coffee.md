@@ -23,8 +23,7 @@ the standy NameNodes wait for the one on the active NameNode to start first.
 # during the HDFS format phase.
 
     module.exports.push name: 'HDP HDFS NN # Start NameNode', callback: (ctx, next) ->
-      lifecycle.nn_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+      lifecycle.nn_start ctx, next
 
     module.exports.push name: 'HDP HDFS NN # Start ZKFC', callback: (ctx, next) ->
       # ZKFC should start first on active NameNode
@@ -39,10 +38,11 @@ the standy NameNodes wait for the one on the active NameNode to start first.
           do_start()
       do_start = ->
         lifecycle.zkfc_start ctx, (err, started) ->
-          next err, if started then ctx.OK else ctx.PASS
+          next err, started
       if active_nn then do_start() else do_wait()
 
     module.exports.push name: 'HDFS HDFS NN Start # Activate', callback: (ctx, next) ->
+      return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
       {active_nn, active_nn_host, standby_nn_host} = ctx.config.ryba
       return next() unless active_nn
       active_nn_host = active_nn_host.split('.')[0]
@@ -52,8 +52,7 @@ the standy NameNodes wait for the one on the active NameNode to start first.
       ctx.execute
         cmd: mkcmd.hdfs ctx, "if hdfs haadmin -getServiceState #{active_nn_host} | grep standby; then hdfs haadmin -failover #{standby_nn_host} #{active_nn_host}; else exit 2; fi"
         code_skipped: 2
-      , (err, activated) ->
-        next err, if activated then ctx.OK else ctx.PASS
+      , next
 
 ## Module Dependencies
 

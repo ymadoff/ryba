@@ -63,8 +63,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: dn_ipc_address, protocol: 'tcp', state: 'NEW', comment: "HDFS DN Meta" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## Startup
 
@@ -99,7 +98,7 @@ Install and configure the startup script in
           modified = true if written
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_install()
 
 ## HA
@@ -113,8 +112,7 @@ present inside the "hdp.ha\_client\_config" object.
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: ha_client_config
         merge: true
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## Layout
 
@@ -135,8 +133,7 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
         uid: hdfs_user.name
         gid: hadoop_group.name
         mode: 0o0755
-      ], (err, created) ->
-        next err, if created then ctx.OK else ctx.PASS
+      ], next
 
 ## Kerberos
 
@@ -157,8 +154,7 @@ and permissions set to "0600".
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , (err, created) ->
-        next err, if created then ctx.OK else ctx.PASS
+      , next
 
 ## DataNode Start
 
@@ -241,7 +237,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
           ctx.log 'Directory "/apps" prepared' and modified = true if executed
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_wait()
 
 ## Test User
@@ -286,7 +282,7 @@ afect HDFS metadata.
           code_skipped: 2
         , (err, executed, stdout) ->
           modified = true if executed
-          next err, if modified then ctx.OK else ctx.PASS
+          next err, modified
       do_user_unix()
 
     module.exports.push 'ryba/hadoop/hdfs_dn_check'

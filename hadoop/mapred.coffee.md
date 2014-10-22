@@ -63,8 +63,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: jobclient, protocol: 'tcp', state: 'NEW', comment: "MapRed Client Range" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'HDP MapRed # Install Common', timeout: -1, callback: (ctx, next) ->
       ctx.service [
@@ -73,8 +72,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         name: 'hadoop-mapreduce'
       ,
         name: 'hadoop-client'
-      ], (err, serviced) ->
-        next err, if serviced then ctx.OK else ctx.PASS
+      ], next
 
 http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
@@ -85,8 +83,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         cmd: "useradd #{mapred_user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop MapReduce service\""
         code: 0
         code_skipped: 9
-      , (err, executed) ->
-        next err, if executed then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'HDP MapRed # System Directories', timeout: -1, callback: (ctx, next) ->
       { mapred_user, hadoop_group, mapred_log_dir, mapred_pid_dir } = ctx.config.ryba
@@ -114,7 +111,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
           modified = true if created
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_log()
 
     module.exports.push name: 'HDP MapRed # Configuration', callback: (ctx, next) ->
@@ -152,7 +149,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
           modified = true if configured
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_mapred()
 
 ## HDP MapRed # Tuning
@@ -182,8 +179,7 @@ allowed.
         properties: mapred_site
         backup: true
         merge: true
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 
 

@@ -47,8 +47,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: 8141, protocol: 'tcp', state: 'NEW', comment: "YARN RM Scheduler" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'HDP YARN RM # Kerberos', callback: (ctx, next) ->
       {yarn_user, hadoop_group, realm} = ctx.config.ryba
@@ -62,9 +61,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , (err, created) ->
-        return next err if err
-        next null, if created then ctx.OK else ctx.PASS
+      , next
 
 ## Startup
 
@@ -97,7 +94,7 @@ Install and configure the startup script in
           modified = true if written
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_install()
 
 ## Wait JHS

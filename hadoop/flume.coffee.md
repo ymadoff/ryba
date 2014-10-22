@@ -80,15 +80,14 @@ creating the "zookeeper" and "hdfs" users and the "hadoop" and "hdfs" group.
       ctx.group flume_group, (err, gmodified) ->
         return next err if err
         ctx.user flume_user, (err, umodified) ->
-          next err, if gmodified or umodified then ctx.OK else ctx.PASS
+          next err, gmodified or umodified
 
 ## Install
 
 The package "flume" is installed.
 
     module.exports.push name: 'HDP Flume # Install', timeout: -1, callback: (ctx, next) ->
-      ctx.service name: 'flume', (err, serviced) ->
-        next err, if serviced then ctx.OK else ctx.PASS
+      ctx.service name: 'flume', next
 
 ## Kerberos
 
@@ -110,8 +109,7 @@ later usage. It is placed inside the flume configuration directory, by default
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , (err, created) ->
-        next err, if created then ctx.OK else ctx.PASS
+      , next
 
 ## Check
 

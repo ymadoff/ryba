@@ -22,8 +22,7 @@ layout: module
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: hdfs_site
         merge: true
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'HDP HDFS Client # HA', callback: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
@@ -31,8 +30,7 @@ layout: module
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: ha_client_config
         merge: true
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push 'ryba/hadoop/hdfs_client_check'
 

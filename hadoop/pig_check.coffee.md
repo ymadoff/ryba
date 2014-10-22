@@ -38,9 +38,7 @@ unless the "hdp.force_check" configuration property is set to "true".
             hdfs dfs -test -d /user/#{test_user.name}/#{host}-pig
             """
             not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -d #{host}-pig"
-          , (err, executed) ->
-            return next err if err
-            next err, if executed then ctx.OK else ctx.PASS
+          , next
 
 ## HCat
 
@@ -79,8 +77,7 @@ unless the "hdp.force_check" configuration property is set to "true".
             """
             not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -d #{host}-pig_hcat"
             trap_on_error: true
-          , (err, executed) ->
-            next err, if executed then ctx.OK else ctx.PASS
+          , next
 
 ## Module Dependencies
 

@@ -13,8 +13,7 @@ layout: module
       require('./yarn').configure ctx
 
     module.exports.push name: 'HDP ResourceManager # Stop Server', callback: (ctx, next) ->
-      lifecycle.rm_stop ctx, (err, stopped) ->
-        next err, if stopped then ctx.OK else ctx.PASS
+      lifecycle.rm_stop ctx, next
 
     module.exports.push name: 'HDP ResourceManager # Stop Clean Logs', callback: (ctx, next) ->
       {clean_logs, yarn_log_dir} = ctx.config.ryba
@@ -22,5 +21,4 @@ layout: module
       ctx.execute
         cmd: 'rm #{yarn_log_dir}/*/*-resourcemanager-*'
         code_skipped: 1
-      , (err, removed) ->
-        next err, if removed then ctx.OK else ctx.PASS
+      , next

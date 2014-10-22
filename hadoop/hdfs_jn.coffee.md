@@ -105,9 +105,7 @@ The JournalNode data are stored inside the directory defined by the
         destination: hdfs_site['dfs.journalnode.edits.dir']
         uid: 'hdfs'
         gid: 'hadoop'
-      , (err, created) ->
-        return next err if err
-        next null, if created then ctx.OK else ctx.PASS
+      , next
 
 ## Startup
 
@@ -140,12 +138,20 @@ Install and configure the startup script in
           modified = true if written
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_install()
 
 ## Configure
 
 Update the "hdfs-site.xml" file with the "dfs.journalnode.edits.dir" property.
+
+Register the SPNEGO service principal in the form of "HTTP/{host}@{realm}" into 
+the "hdfs-site.xml" file. The impacted properties are
+"dfs.journalnode.kerberos.internal.spnego.principal", 
+"dfs.journalnode.kerberos.principal" and "dfs.journalnode.keytab.file". The
+SPNEGO tocken is stored inside the "/etc/security/keytabs/spnego.service.keytab"
+keytab, also used by the NameNodes, DataNodes, ResourceManagers and
+NodeManagers.
 
     module.exports.push name: 'HDP HDFS JN # Configure', callback: (ctx, next) ->
       {hdfs_site, hadoop_conf_dir} = ctx.config.ryba
@@ -153,31 +159,7 @@ Update the "hdfs-site.xml" file with the "dfs.journalnode.edits.dir" property.
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: hdfs_site
         merge: true
-      , (err, configured) ->
-        return next err if err
-        next null, if configured then ctx.OK else ctx.PASS
-
-## Kerberos
-
-Register the SPNEGO service principal in the form of "HTTP/{host}@{realm}" into 
-the "hdfs-site.xml" file. The impacted properties are "dfs.journalnode.kerberos.internal.spnego.principal", 
-"dfs.journalnode.kerberos.principal" and "dfs.journalnode.keytab.file". The SPNEGO 
-tocken is stored inside the "/etc/security/keytabs/spnego.service.keytab" keytab, 
-also used by the NameNodes, DataNodes, ResourceManagers and NodeManagers.
-
-    module.exports.push name: 'HDP HDFS JN # Kerberos', callback: (ctx, next) ->
-      {hadoop_conf_dir, static_host, realm} = ctx.config.ryba
-      hdfs_site = {}
-      # hdfs_site['dfs.journalnode.http-address'] = '0.0.0.0:8480'
-      hdfs_site['dfs.journalnode.kerberos.internal.spnego.principal'] = "HTTP/#{static_host}@#{realm}"
-      hdfs_site['dfs.journalnode.kerberos.principal'] = "HTTP/#{static_host}@#{realm}"
-      hdfs_site['dfs.journalnode.keytab.file'] = '/etc/security/keytabs/spnego.service.keytab'
-      ctx.hconfigure
-        destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-        properties: hdfs_site
-        merge: true
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## Configure HA
 
@@ -194,8 +176,7 @@ read on JN side (see [DFSConfigKeys.java][keys]).
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: ha_client_config
         merge: true
-      , (err, configured) ->
-        return next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## Start
 

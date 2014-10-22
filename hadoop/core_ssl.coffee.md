@@ -83,8 +83,7 @@ keytool -list -v -keystore keystore -alias hadoop
         destination: "#{hadoop_conf_dir}/ssl-client.xml"
         properties: ssl_client
         merge: true
-      ], (err, configured) ->
-        return next err, if configured then ctx.OK else ctx.PASS
+      ], next
 
     module.exports.push name: 'HDP Core SSL # JKS stores', retry: 0, callback: (ctx, next) ->
       {ssl, ssl_server, ssl_client, hadoop_conf_dir} = ctx.config.ryba
@@ -188,7 +187,7 @@ keytool -list -v -keystore keystore -alias hadoop
           return next err if err
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_upload()
 
 

@@ -102,7 +102,7 @@ Install and configure the startup script in "/etc/init.d/hadoop-hdfs-namenode".
           modified = true if written
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_install()
 
 ## Layout
@@ -123,8 +123,7 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
         uid: hdfs_user.name
         gid: hadoop_group.name
         mode: 0o755
-      ], (err, created) ->
-        next err, if created then ctx.OK else ctx.PASS
+      ], next
 
 ## Kerberos
 
@@ -143,8 +142,7 @@ Create a service principal for this NameNode. The principal is named after
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , (err, created) ->
-        next err, if created then ctx.OK else ctx.PASS
+      , next
 
 # Configure
 
@@ -156,8 +154,7 @@ Create a service principal for this NameNode. The principal is named after
         uid: hdfs_user
         gid: hadoop_group
         merge: true
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 # Configure HA
 
@@ -174,8 +171,7 @@ similar than the ones for a client or slave configuration with the addtionnal
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: ha_client_config
         merge: true
-      , (err, configured) ->
-        return next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 # SSH Fencing
 
@@ -265,7 +261,7 @@ public and private SSH keys for the HDFS user inside his "~/.ssh" folder and upd
           modified = true if configured
           do_end()
       do_end = ->
-          next null, if modified then ctx.OK else ctx.PASS
+          next null, modified
       do_mkdir()
 
 ## Format
@@ -315,9 +311,7 @@ is only executed on a non active NameNode.
           # su -l hdfs -c "hdfs namenode -bootstrapStandby -nonInteractive"
           cmd: "su -l hdfs -c \"hdfs namenode -bootstrapStandby -nonInteractive\""
           code_skipped: 5
-        , (err, executed, stdout) ->
-          return next err if err
-          next null, if executed then ctx.OK else ctx.PASS
+        , next
       do_wait()
 
 ## Zookeeper JAAS
@@ -372,7 +366,7 @@ Secure the Zookeeper connection with JAAS.
               modified = true if written
               do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_core()
 
 ## HA Auto Failover
@@ -443,8 +437,7 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
           code_skipped: 255
         , (err, stdout) ->
           return next err if err
-          lifecycle.zkfc_start ctx, (err, started) ->
-            next null, if started then ctx.OK else ctx.PASS
+          lifecycle.zkfc_start ctx, next
       do_hdfs()
 
 ## Start

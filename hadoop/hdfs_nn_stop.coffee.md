@@ -16,12 +16,10 @@ layout: module
       throw Error "Not a NameNode" unless ctx.has_module 'ryba/hadoop/hdfs_nn'
 
     module.exports.push name: 'HDP HDFS NN # Stop ZKFC', callback: (ctx, next) ->
-      lifecycle.zkfc_stop ctx, (err, stopped) ->
-        next err, if stopped then ctx.OK else ctx.PASS
+      lifecycle.zkfc_stop ctx, next
 
     module.exports.push name: 'HDP HDFS NN # Stop NameNode', callback: (ctx, next) ->
-      lifecycle.nn_stop ctx, (err, stopped) ->
-        next err, if stopped then ctx.OK else ctx.PASS
+      lifecycle.nn_stop ctx, next
 
     module.exports.push name: 'HDP HDFS NN # Stop Clean Logs', callback: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
@@ -31,5 +29,4 @@ layout: module
       ,
         cmd: 'rm /var/log/hadoop-hdfs/*/hadoop-hdfs-zkfc-*'
         code_skipped: 1
-      ], (err, removed) ->
-        next err, if removed then ctx.OK else ctx.PASS
+      ], next

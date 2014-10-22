@@ -70,8 +70,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         cmd: "useradd #{yarn_user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop YARN service\""
         code: 0
         code_skipped: 9
-      , (err, executed) ->
-        next err, if executed then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'HDP YARN # Install Common', timeout: -1, callback: (ctx, next) ->
       ctx.service [
@@ -80,8 +79,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         name: 'hadoop-yarn'
       ,
         name: 'hadoop-client'
-      ], (err, serviced) ->
-        next err, if serviced then ctx.OK else ctx.PASS
+      ], next
 
     module.exports.push name: 'HDP YARN # Directories', timeout: -1, callback: (ctx, next) ->
       {yarn_user, hadoop_group, yarn_log_dir, yarn_pid_dir} = ctx.config.ryba
@@ -95,8 +93,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         uid: yarn_user.name
         gid: hadoop_group.name
         mode: 0o0755
-      , (err, created) ->
-        next null, if created then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'HDP YARN # Yarn OPTS', callback: (ctx, next) ->
       {java_home} = ctx.config.java
@@ -121,19 +118,15 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         uid: yarn_user.name
         gid: hadoop_group.name
         mode: 0o0755
-      , (err, rendered) ->
-        next err, if rendered then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'HDP YARN # Container Executor', callback: (ctx, next) ->
-      modified = false
       {container_executor, hadoop_conf_dir} = ctx.config.ryba
       ce_group = container_executor['yarn.nodemanager.linux-container-executor.group']
-      container_executor = misc.merge {}, container_executor
-      # container_executor['yarn.nodemanager.local-dirs'] = container_executor['yarn.nodemanager.local-dirs'].join ','
-      # container_executor['yarn.nodemanager.log-dirs'] = container_executor['yarn.nodemanager.log-dirs'].join ','
+      # container_executor = misc.merge {}, container_executor
+      modified = false
       do_stat = ->
         ce = '/usr/lib/hadoop-yarn/bin/container-executor';
-        ctx.log "change ownerships and permissions to '#{ce}'"
         ctx.chown
           destination: ce
           uid: 'root'
@@ -160,7 +153,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
           backup: true
         , (err, inied) ->
           modified = true if inied
-          next err, if modified then ctx.OK else ctx.PASS
+          next err, modified
       do_stat()
 
     module.exports.push name: 'HDP YARN # Configuration', callback: (ctx, next) ->
@@ -195,7 +188,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
           modified = true if configured
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_yarn()
 
 ## HDP YARN # Memory Allocation
@@ -234,8 +227,7 @@ Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Co
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
         properties: yarn_site
         merge: true
-      , (err, configured) ->
-        return next err, if configured then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'HDP YARN # Configure Kerberos', callback: (ctx, next) ->
       {hadoop_conf_dir, static_host, realm} = ctx.config.ryba
@@ -255,8 +247,7 @@ Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Co
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
         properties: yarn_site
         merge: true
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ### HDFS Layout
 

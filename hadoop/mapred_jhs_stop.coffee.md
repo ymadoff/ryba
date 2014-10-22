@@ -13,5 +13,4 @@ layout: module
       require('./mapred').configure ctx
 
     module.exports.push name: 'HDP JobHistoryServer # Stop', callback: (ctx, next) ->
-      lifecycle.jhs_stop ctx, (err, stopped) ->
-        next err, if stopped then ctx.OK else ctx.PASS
+      lifecycle.jhs_stop ctx, next

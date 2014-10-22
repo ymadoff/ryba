@@ -116,11 +116,10 @@ Example:
         name: 'openssl'
       # ,
       #   name: 'bigtop-jsvc'
-      ], (err, serviced) ->
-        next err, if serviced then ctx.OK else ctx.PASS
+      ], next
 
     module.exports.push name: 'HDP HDFS # Hadoop Configuration', timeout: -1, callback: (ctx, next) ->
-      {core, hdfs_site, hadoop_conf_dir, fs_checkpoint_dir} = ctx.config.ryba
+      {core, hdfs_site, hadoop_conf_dir} = ctx.config.ryba
       datanodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_dn'
       secondary_namenode = ctx.hosts_with_module 'ryba/hadoop/hdfs_snn', 1
       modified = false
@@ -175,7 +174,7 @@ Example:
           modified = true if configured
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_hdfs()
 
 ## Configure HTTPS
@@ -218,8 +217,7 @@ ${HADOOP_CONF_DIR}/core-site.xml
         properties: hadoop_policy
         merge: true
         backup: true
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## Kerberos User
 
@@ -236,8 +234,7 @@ from multiple sessions with braking an active session.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , (err, created) ->
-        next err, if created then ctx.OK else ctx.PASS
+      , next
 
 ## SPNEGO
 
@@ -265,7 +262,7 @@ same keytab file is for now shared between hdfs and yarn services.
         ctx.execute
           cmd: "su -l #{hdfs_user.name} -c \"klist -kt /etc/security/keytabs/spnego.service.keytab\""
         , (err) ->
-          next err, if created then ctx.OK else ctx.PASS
+          next err, created
 
 
 ## Kerberos Configure
@@ -305,8 +302,7 @@ with Kerberos specific properties.
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: hdfs_site
         merge: true
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## Ulimit
 

@@ -33,8 +33,7 @@ Attemp to place a file inside HDFS. the file "/etc/passwd" will be placed at
         hdfs dfs -put /etc/passwd /user/#{test_user.name}/#{ctx.config.host}-dn
         """
         code_skipped: 2
-      , (err, executed, stdout, stderr) ->
-        next err, if executed then ctx.OK else ctx.PASS
+      , next
 
 ## Test WebHDFS
 
@@ -68,12 +67,12 @@ for more information.
         , (err, executed, stdout) ->
           return next err if err
           return do_spnego() if force_check
-          return next null, ctx.PASS unless executed
+          return next null, false unless executed
           do_spnego()
       do_spnego = ->
         ctx.execute
           cmd: mkcmd.test ctx, """
-          curl -s --negotiate --insecure -u : "#{protocol}://#{active_nn_host}:#{active_nn_port}/webhdfs/v1/user/#{test_user.name}?op=LISTSTATUS"
+          curl -s --negotiate --insecure -u : "#{protocol}://#{nn_host}:#{nn_port}/webhdfs/v1/user/#{test_user.name}?op=LISTSTATUS"
           kdestroy
           """
         , (err, executed, stdout) ->
@@ -82,12 +81,12 @@ for more information.
             count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "#{ctx.config.host}-webhdfs").length
           catch e then return next Error e
           err = Error "Invalid result" unless count
-          return next err, ctx.PASS
+          return next err, false
           do_token()
       do_token = ->
         ctx.execute
           cmd: mkcmd.test ctx, """
-          curl -s --negotiate --insecure -u : "#{protocol}://#{active_nn_host}:#{active_nn_port}/webhdfs/v1/?op=GETDELEGATIONTOKEN"
+          curl -s --negotiate --insecure -u : "#{protocol}://#{nn_host}:#{nn_port}/webhdfs/v1/?op=GETDELEGATIONTOKEN"
           kdestroy
           """
         , (err, executed, stdout) ->
@@ -105,10 +104,10 @@ for more information.
               count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "#{ctx.config.host}-webhdfs").length
             catch e then return next Error e
             err = Error "Invalid result" unless count
-            return next err, ctx.PASS
+            return next err, false
             do_end()
       do_end = ->
-        next null, ctx.OK
+        next null, true
       do_wait()
 
 

@@ -42,27 +42,35 @@ layout: module
         uid: hdfs_user.name
         gid: hadoop_group.name
         mode: 0o755
-      ], (err, created) ->
-        next err, if created then ctx.OK else ctx.PASS
+      ], next
 
     module.exports.push name: 'HDP HDFS SNN # Kerberos', callback: (ctx, next) ->
-      {realm} = ctx.config.ryba
+      {realm, hdfs_site} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
         principal: "nn/#{ctx.config.host}@#{realm}"
         randkey: true
-        keytab: "/etc/security/keytabs/nn.service.keytab"
+        keytab: hdfs_site['dfs.secondary.namenode.keytab.file']
         uid: 'hdfs'
         gid: 'hadoop'
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , (err, created) ->
-        next err, if created then ctx.OK else ctx.PASS
+      , next
 
-    module.exports.push name: 'HDP HDFS SNN # Start', callback: (ctx, next) ->
-      lifecycle.snn_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+# Configure
+
+    module.exports.push name: 'HDP HDFS SNN # Configure', callback: (ctx, next) ->
+      {hadoop_conf_dir, hdfs_user, hadoop_group, hdfs_site} = ctx.config.ryba
+      ctx.hconfigure
+        destination: "#{hadoop_conf_dir}/hdfs-site.xml"
+        properties: hdfs_site
+        uid: hdfs_user
+        gid: hadoop_group
+        merge: true
+      , next
+
+    module.exports.push 'ryba/hadoop/hdfs_snn'
 
 
 

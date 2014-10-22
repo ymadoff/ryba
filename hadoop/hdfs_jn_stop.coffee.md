@@ -25,5 +25,4 @@ associated NameNodes.
       ctx.execute
         cmd: 'rm /var/log/hadoop-hdfs/*/hadoop-hdfs-journalnode-*'
         code_skipped: 1
-      , (err, removed) ->
-        next err, if removed then ctx.OK else ctx.PASS
+      , next

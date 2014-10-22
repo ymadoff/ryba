@@ -259,7 +259,6 @@ Declare the HDP repository.
           ctx.execute
             cmd: "yum clean metadata; yum update -y"
           , (err, executed) ->
-            # next err, ctx.OK
             return next err if err
             do_keys()
       do_keys = ->
@@ -271,9 +270,10 @@ Declare the HDP repository.
           while matches = reg.exec content
             keys[matches[1]] = true
           keys = Object.keys keys
-          return next() unless keys.length
+          return next null, true unless keys.length
           each(keys)
           .on 'item', (key, next) ->
+            # TODO, should use `ctx.download`
             ctx.execute
               cmd: """
               curl #{key} -o /etc/pki/rpm-gpg/#{path.basename key}
@@ -282,7 +282,7 @@ Declare the HDP repository.
             , (err, executed) ->
               next err
           .on 'both', (err) ->
-            next err, ctx.OK
+            next err, true
       do_repo()
 
 ## Users & Groups
@@ -312,15 +312,14 @@ not handled here.
       ctx.group [hadoop_group, hdfs_group, yarn_group, mapred_group], (err, gmodified) ->
         return next err if err
         ctx.user [hdfs_user, yarn_user, mapred_user], (err, umodified) ->
-          next err, if gmodified or umodified then ctx.OK else ctx.PASS
+          next err, gmodified or umodified
 
     module.exports.push name: 'HDP Core # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
         name: 'openssl'
       ,
         name: 'hadoop-client'
-      ], (err, serviced) ->
-        next err, if serviced then ctx.OK else ctx.PASS
+      ], next
 
     module.exports.push name: 'HDP Core # Configuration', callback: (ctx, next) ->
       {core_site, hadoop_conf_dir} = ctx.config.ryba
@@ -331,12 +330,10 @@ not handled here.
         properties: core_site
         merge: true
         backup: true
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'HDP Core # Topology', callback: (ctx, next) ->
       {hdfs_user, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
-      # return next() unless ctx.has_any_modules 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm'
       ctx.upload
         destination: "#{hadoop_conf_dir}/rack_topology.sh"
         source: "#{__dirname}/files/rack_topology.sh"
@@ -362,7 +359,7 @@ not handled here.
           backup: true
           eof: true
         , (err, written) ->
-          next err, if uploaded or written then ctx.OK else ctx.PASS
+          next err, uploaded or written
 
 ## Hadoop OPTS
 
@@ -400,8 +397,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
           mode: 0o755
           backup: true
           eof: true
-        , (err, written) ->
-          next err, if written then ctx.OK else ctx.PASS
+        , next
 
     module.exports.push name: 'HDP Core # Environnment', timeout: -1, callback: (ctx, next) ->
       ctx.write
@@ -411,8 +407,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
         export HADOOP_HOME=/usr/lib/hadoop
         """
         mode: '644'
-      , (err, written) ->
-        next null, if written then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'HDP Core # Keytabs', timeout: -1, callback: (ctx, next) ->
       {hadoop_group} = ctx.config.ryba
@@ -421,8 +416,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
         uid: 'root'
         gid: hadoop_group.name
         mode: 0o0755
-      , (err, created) ->
-        next null, if created then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'HDP Core # Compression', timeout: -1, callback: (ctx, next) ->
       { hadoop_conf_dir } = ctx.config.ryba
@@ -467,7 +461,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
           modified = true if configured
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_snappy()
 
     module.exports.push name: 'HDP Core # Kerberos', timeout: -1, callback: (ctx, next) ->
@@ -518,8 +512,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
         destination: "#{hadoop_conf_dir}/core-site.xml"
         properties: core_site
         merge: true
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 Configure Web
 -------------
@@ -553,8 +546,7 @@ recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
             'hadoop.http.authentication.kerberos.principal': "HTTP/#{ctx.config.host}@#{realm}"
             'hadoop.http.authentication.kerberos.keytab': '/etc/security/keytabs/spnego.service.keytab'
           merge: true
-        , (err, configured) ->
-          next err, if configured then ctx.OK else ctx.PASS
+        , next
 
     module.exports.push 'ryba/hadoop/core_ssl'
 
@@ -564,7 +556,7 @@ recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
         cmd: "hadoop org.apache.hadoop.security.HadoopKerberosName #{test_user.name}@#{realm}"
       , (err, _, stdout) ->
         err = Error "Invalid mapping" if not err and stdout.indexOf("#{test_user.name}@#{realm} to #{test_user.name}") is -1
-        next err, ctx.PASS
+        next err, true
 
 
 

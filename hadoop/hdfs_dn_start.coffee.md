@@ -20,5 +20,4 @@ and some may be inactive.
 
     module.exports.push name: 'HDP HDFS DN # Start', callback: (ctx, next) ->
       return next new Error "Not an DataNode" unless ctx.has_module 'ryba/hadoop/hdfs_dn'
-      lifecycle.dn_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+      lifecycle.dn_start ctx, next

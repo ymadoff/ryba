@@ -13,5 +13,4 @@ layout: module
       require('./yarn').configure ctx
 
     module.exports.push name: 'HDP ResourceManager # Start Server', callback: (ctx, next) ->
-      lifecycle.rm_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+      lifecycle.rm_start ctx, next

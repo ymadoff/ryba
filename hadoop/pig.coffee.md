@@ -75,7 +75,7 @@ hadoop:x:502:yarn,mapred,hdfs,hue
       ctx.group hadoop_group, (err, gmodified) ->
         return next err if err
         ctx.user pig_user, (err, umodified) ->
-          next err, if gmodified or umodified then ctx.OK else ctx.PASS
+          next err, gmodified or umodified
 
 ## Install
 
@@ -84,8 +84,7 @@ The pig package is install.
     module.exports.push name: 'HDP Pig # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service
         name: 'pig'
-      , (err, serviced) ->
-        next err, if serviced then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'HDP Pig # Users', callback: (ctx, next) ->
       # 6th feb 2014: pig user isnt created by YUM, might change in a future HDP release
@@ -94,8 +93,7 @@ The pig package is install.
         cmd: "useradd pig -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop Pig service\""
         code: 0
         code_skipped: 9
-      , (err, executed) ->
-        next err, if executed then ctx.OK else ctx.PASS
+      , next
 
 ## Configure
 
@@ -120,8 +118,7 @@ companion file define no properties while the YUM package does.
         gid: hadoop_group.name
         mode: 0o755
         backup: true
-      , (err, rendered) ->
-        next err, if rendered then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'HDP Pig # Fix Pig', callback: (ctx, next) ->
       ctx.write
@@ -134,8 +131,7 @@ companion file define no properties while the YUM package does.
         ]
         destination: '/usr/lib/pig/bin/pig'
         backup: true
-      , (err, written) ->
-        next err, if written then ctx.OK else ctx.PASS
+      , next
 
 ## Check
 

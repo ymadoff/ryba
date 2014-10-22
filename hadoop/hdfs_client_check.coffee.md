@@ -20,5 +20,4 @@ Check the access to the HDFS cluster.
           hdfs dfs -touchz /user/#{test_user.name}/#{ctx.config.host}-hdfs
           """
           code_skipped: 2
-        , (err, executed, stdout) ->
-          next err, if executed then ctx.OK else ctx.PASS
+        , next

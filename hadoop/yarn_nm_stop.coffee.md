@@ -21,5 +21,4 @@ layout: module
       ctx.execute
         cmd: 'rm #{yarn_log_dir}/*/*-nodemanager-*'
         code_skipped: 1
-      , (err, removed) ->
-        next err, if removed then ctx.OK else ctx.PASS
+      , next
