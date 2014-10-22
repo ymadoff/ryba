@@ -47,8 +47,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.master.info.port'], protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## Service
 
@@ -58,8 +57,7 @@ Install and configure the startup script in
     module.exports.push name: 'HBase Master # Service', timeout: -1, callback: (ctx, next) ->
       ctx.service
         name: 'hbase-master'
-      , (err, installed) ->
-        next err, if installed then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'HBase Master # HDFS layout', timeout: -1, callback: (ctx, next) ->
       {hbase_user, hbase_site} = ctx.config.ryba
@@ -85,7 +83,7 @@ Install and configure the startup script in
             modified = true if executed
             next err
         .on 'both', (err) ->
-          next err, if modified then ctx.OK else ctx.PASS
+          next err, modified
 
 ## Zookeeper JAAS
 
@@ -102,8 +100,7 @@ Environment file is enriched by "ryba/hbase/_ # HBase # Env".
         uid: hbase_user.name
         gid: hbase_group.name
         mode: 0o700
-      , (err, written) ->
-        return next err, if written then ctx.OK else ctx.PASS
+      , next
 
 https://blogs.apache.org/hbase/entry/hbase_cell_security
 https://hbase.apache.org/book/security.html
@@ -138,8 +135,7 @@ https://hbase.apache.org/book/security.html
       #   kadmin_principal: kadmin_principal
       #   kadmin_password: kadmin_password
       #   kadmin_server: admin_server
-      ], (err, created) ->
-        next err, if created then ctx.OK else ctx.PASS
+      ], next
 
 ## SPNEGO
 
@@ -162,7 +158,7 @@ is added membership to the group hadoop to gain read access.
         ctx.execute
           cmd: "su -l #{hbase_user.name} -c 'test -r /etc/security/keytabs/spnego.service.keytab'"
         , (err) ->
-          next err, if modified then ctx.OK else ctx.PASS
+          next err, modified
 
 ## Metrics
 
@@ -177,8 +173,7 @@ Enable stats collection in Ganglia.
         destination: "#{hbase_conf_dir}/hadoop-metrics.properties"
         match: 'TODO-GANGLIA-SERVER'
         replace: collector
-      , (err, uploaded) ->
-        next err, if uploaded then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push 'ryba/hbase/master_start'
 
@@ -191,8 +186,7 @@ Enable stats collection in Ganglia.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , (err, created) ->
-        next err, if created then ctx.OK else ctx.PASS
+      , next
 
 ## Check
 

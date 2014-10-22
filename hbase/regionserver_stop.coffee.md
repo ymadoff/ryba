@@ -15,8 +15,7 @@ layout: module
 Execute these commands on all RegionServers.
 
     module.exports.push name: 'HBase RegionServer # Stop Server', callback: (ctx, next) ->
-      lifecycle.hbase_regionserver_stop ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+      lifecycle.hbase_regionserver_stop ctx, next
 
 ## Stop Clean Logs
 
@@ -25,5 +24,4 @@ Execute these commands on all RegionServers.
       ctx.execute
         cmd: 'rm /var/log/hbase/*-regionserver-*'
         code_skipped: 1
-      , (err, removed) ->
-        next err, if removed then ctx.OK else ctx.PASS
+      , next

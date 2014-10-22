@@ -33,7 +33,7 @@ Retrieve the client configuration.
         , (err, executed, stdout) ->
           isRowCreated = RegExp("column=#{shortname}:my_column, timestamp=\\d+, value=10").test stdout
           return next Error 'Invalid command output' if executed and not isRowCreated
-          next err, if executed then ctx.OK else ctx.PASS
+          next err, executed
       # Note: inspiration for when namespace are functional
       # cmd = mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"list_namespace_tables 'ryba'\" | egrep '[0-9]+ row'"
       # ctx.waitForExecution cmd, (err) ->

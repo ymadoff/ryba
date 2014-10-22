@@ -30,7 +30,7 @@ layout: module
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HDP RegionServer # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'HBase RegionServer # IPTables', callback: (ctx, next) ->
       {hbase_site} = ctx.config.ryba
       ctx.iptables
         rules: [
@@ -38,8 +38,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.regionserver.info.port'], protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## Service
 
@@ -82,23 +81,30 @@ RegionServer, and HBase client host machines.
         uid: hbase_user.name
         gid: hbase_group.name
         mode: 0o700
-      , (err, written) ->
-        return next err, if written then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'HBase RegionServer # Kerberos', timeout: -1, callback: (ctx, next) ->
       {hadoop_group, hbase_user, hbase_site, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc
-        principal: hbase_site['hbase.regionserver.kerberos.principal'].replace '_HOST', ctx.config.host
-        randkey: true
-        keytab: hbase_site['hbase.regionserver.keytab.file']
-        uid: hbase_user.name
-        gid: hadoop_group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
-      , (err, created) ->
-        next err, if created then ctx.OK else ctx.PASS
+      if ctx.has_module 'ryba/hbase/master'
+        if hbase_site['hbase.master.kerberos.principal'] isnt hbase_site['hbase.regionserver.kerberos.principal']
+          return next Error "HBase principals must match in single node"
+        require('./master').configure(ctx)
+        ctx.copy
+          source: hbase_site['hbase.master.keytab.file']
+          destination: hbase_site['hbase.regionserver.keytab.file']
+        , next
+      else
+        ctx.krb5_addprinc
+          principal: hbase_site['hbase.regionserver.kerberos.principal'].replace '_HOST', ctx.config.host
+          randkey: true
+          keytab: hbase_site['hbase.regionserver.keytab.file']
+          uid: hbase_user.name
+          gid: hadoop_group.name
+          kadmin_principal: kadmin_principal
+          kadmin_password: kadmin_password
+          kadmin_server: admin_server
+        , next
 
 ## SPNEGO
 

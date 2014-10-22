@@ -15,8 +15,7 @@ layout: module
 Execute these commands on the HBase Master host machine.
 
     module.exports.push name: 'HBase Master # Stop Server', callback: (ctx, next) ->
-      lifecycle.hbase_master_stop ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+      lifecycle.hbase_master_stop ctx, next
 
 ## Stop Clean Logs
 
@@ -25,5 +24,4 @@ Execute these commands on the HBase Master host machine.
       ctx.execute
         cmd: 'rm /var/log/hbase/*-master-*'
         code_skipped: 1
-      , (err, removed) ->
-        next err, if removed then ctx.OK else ctx.PASS
+      , next

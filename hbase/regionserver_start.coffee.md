@@ -15,5 +15,4 @@ layout: module
 Execute these commands on all RegionServers.
 
     module.exports.push name: 'HBase RegionServer # Start', callback: (ctx, next) ->
-      lifecycle.hbase_regionserver_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+      lifecycle.hbase_regionserver_start ctx, next

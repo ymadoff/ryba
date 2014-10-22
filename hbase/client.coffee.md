@@ -27,8 +27,7 @@ RegionServer, and HBase client host machines.
         uid: hbase_user.name
         gid: hbase_group.name
         mode: 0o700
-      , (err, written) ->
-        return next err, if written then ctx.OK else ctx.PASS
+      , next
 
 ## Check
 

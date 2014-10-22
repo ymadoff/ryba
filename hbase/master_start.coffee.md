@@ -15,5 +15,4 @@ layout: module
 Execute these commands on the HBase Master host machine.
 
     module.exports.push name: 'HBase Master # Start', callback: (ctx, next) ->
-      lifecycle.hbase_master_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+      lifecycle.hbase_master_start ctx, next
