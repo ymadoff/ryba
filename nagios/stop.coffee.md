@@ -5,7 +5,7 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./install').configure
 
-    module.exports.push name: 'Nagios # Start', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Stop', callback: (ctx, next) ->
       ctx.service
         srv_name: 'nagios'
         action: 'stop'
