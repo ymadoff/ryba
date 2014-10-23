@@ -214,6 +214,11 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         uid: oozie_user
         gid: oozie_group
         mode: 0o0755
+      ,
+        destination: "#{oozie_conf_dir}/action-conf"
+        uid: oozie_user
+        gid: oozie_group
+        mode: 0o0755
       ], (err, copied) ->
         return next err if err
         # Waiting for recursivity in ctx.mkdir
