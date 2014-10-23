@@ -65,6 +65,8 @@ module.exports = (options, callback) ->
           v = "#{v}" if typeof v is 'number'
           if typeof v is 'undefined' or v is null
             delete fnl_props[k]
+          else if Array.isArray v
+            fnl_props[k] = v.join ','
           else if typeof v isnt 'string'
             return next Error "Invalid value type '#{typeof v}' for property '#{k}'"
           else fnl_props[k] = v
