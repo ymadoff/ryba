@@ -10,7 +10,9 @@ Apache Pig is a platform for analyzing large data sets that consists of a
 high-level language for expressing data analysis programs, coupled with 
 infrastructure for evaluating these programs. The salient property of Pig 
 programs is that their structure is amenable to substantial parallelization, 
-which in turns enables them to handle very large data sets. 
+which in turns enables them to handle very large data sets.
+
+Learn more about Pig optimization by reading ["Making Pig Fly"][fly].
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
@@ -35,7 +37,11 @@ Example:
 
 ```json
 {
-  "hdp": {
+  "ryba": {
+    "pig_conf": {
+      "pig.cachedbag.memusage": "0.1",
+      "pig.skewedjoin.reduce.memusage", "0.3"
+    }
     "pig_user": {
       "name": "pig", "system": true, "gid": "hadoop",
       "comment": "Pig User", "home": "/var/lib/sqoop"
@@ -48,16 +54,18 @@ Example:
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/commons/java').configure ctx
       require('./hdfs').configure ctx
+      {ryba} = ctx.config
+      ryba.pig_conf ?= {}
       # User
-      ctx.config.ryba.pig_user = name: ctx.config.ryba.pig_user if typeof ctx.config.ryba.pig_user is 'string'
-      ctx.config.ryba.pig_user ?= {}
-      ctx.config.ryba.pig_user.name ?= 'pig'
-      ctx.config.ryba.pig_user.system ?= true
-      ctx.config.ryba.pig_user.comment ?= 'Pig User'
-      ctx.config.ryba.pig_user.gid ?= 'hadoop'
-      ctx.config.ryba.pig_user.home ?= '/home/pig'
+      ryba.pig_user = name: ctx.config.ryba.pig_user if typeof ctx.config.ryba.pig_user is 'string'
+      ryba.pig_user ?= {}
+      ryba.pig_user.name ?= 'pig'
+      ryba.pig_user.system ?= true
+      ryba.pig_user.comment ?= 'Pig User'
+      ryba.pig_user.gid ?= 'hadoop'
+      ryba.pig_user.home ?= '/home/pig'
       # Layout
-      ctx.config.ryba.pig_conf_dir ?= '/etc/pig/conf'
+      ryba.pig_conf_dir ?= '/etc/pig/conf'
 
 ## Users & Groups
 
@@ -101,7 +109,14 @@ TODO: Generate the "pig.properties" file dynamically, be carefull, the HDP
 companion file define no properties while the YUM package does.
 
     module.exports.push name: 'HDP Pig # Configure', callback: (ctx, next) ->
-      next null, ctx.PASS
+      {pig_conf_dir, pig_conf} = ctx.config.ryba
+      ctx.ini
+        destination: "#{pig_conf_dir}/pig.properties"
+        content: pig_conf
+        separator: '='
+        merge: true
+        backup: true
+      , next
 
     module.exports.push name: 'HDP Pig # Env', callback: (ctx, next) ->
       {java_home} = ctx.config.java
@@ -141,5 +156,6 @@ companion file define no properties while the YUM package does.
 
     quote = require 'regexp-quote'
 
+[fly]: http://chimera.labs.oreilly.com/books/1234000001811/ch08.html
 
 
