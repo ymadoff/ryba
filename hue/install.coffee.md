@@ -69,7 +69,8 @@ Example:
       require('../hadoop/core').configure ctx
       require('../hadoop/hdfs').configure ctx
       require('../hadoop/yarn').configure ctx
-      {nameservice, active_nn_host, hadoop_conf_dir, webhcat_site, hue_ini, db_admin} = ctx.config.ryba
+      {nameservice, hadoop_conf_dir, webhcat_site, hue_ini, db_admin, core_site
+        hdfs_site, yarn_site} = ctx.config.ryba
       hue_ini ?= ctx.config.ryba.hue_ini = {}
       webhcat_port = webhcat_site['templeton.port']
       webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
@@ -94,11 +95,14 @@ Example:
       ctx.config.ryba.hue_group.name ?= 'hue'
       ctx.config.ryba.hue_group.system ?= true
       # HDFS & YARN url
-      {hdfs_site, nameservice, active_nn_host, yarn_site} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      shortname = ctx.hosts[active_nn_host].config.shortname
-      active_nn_port = ctx.config.ryba.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
-      webhdfs_url = "#{protocol}://#{active_nn_host}:#{active_nn_port}/webhdfs/v1"
+      if secondary_namenode = ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+        nn_host = ctx.host_with_module 'ryba/hadoop/hdfs_nn'
+        nn_http_port = hdfs_site["dfs.namenode.#{protocol}-address"].split(':')[1]
+      else
+        nn_host = ctx.config.ryba.active_nn_host
+        shortname = ctx.hosts[nn_host].config.shortname
+        nn_http_port = ctx.config.ryba.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
       yarn_api_url = if yarn_site['yarn.http.policy'] is 'HTTP_ONLY'
       then "http://#{yarn_site['yarn.resourcemanager.webapp.address']}"
       else "https://#{yarn_site['yarn.resourcemanager.webapp.https.address']}"
@@ -109,8 +113,8 @@ Example:
       # Using nameservice doesnt yet seem to work
       #hue_ini['hadoop']['hdfs_clusters']['default']['fs_defaultfs'] ?= "hdfs://#{nameservice}:8020"
       #hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "http://#{nameservice}:50070/webhdfs/v1"
-      hue_ini['hadoop']['hdfs_clusters']['default']['fs_defaultfs'] ?= "hdfs://#{active_nn_host}:8020"
-      hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= webhdfs_url
+      hue_ini['hadoop']['hdfs_clusters']['default']['fs_defaultfs'] ?= core_site['fs.defaultFS']
+      hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "#{protocol}://#{nn_host}:#{nn_http_port}/webhdfs/v1"
       # hue_ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "http://#{namenode}:50070/webhdfs/v1"
       hue_ini['hadoop']['hdfs_clusters']['default']['hadoop_hdfs_home'] ?= '/usr/lib/hadoop'
       hue_ini['hadoop']['hdfs_clusters']['default']['hadoop_bin'] ?= '/usr/bin/hadoop'
@@ -301,26 +305,24 @@ the default database while mysql is the recommanded choice.
         mysql: ->
           {host, port, user, password, name} = hue_ini['desktop']['database']
           escape = (text) -> text.replace(/[\\"]/g, "\\$&")
-          cmd = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
-          ctx.execute
+          mysql_exec = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
+          ctx.execute [
             cmd: """
-            if #{cmd} "use #{name}"; then exit 2; fi
-            #{cmd} "
+            #{mysql_exec} "
             create database #{name};
             grant all privileges on #{name}.* to '#{user}'@'localhost' identified by '#{password}';
             grant all privileges on #{name}.* to '#{user}'@'%' identified by '#{password}';
             flush privileges;
             "
             """
-            code_skipped: 2
-          , (err, created, stdout, stderr) ->
-            return next err, false if err or not created
-            ctx.execute
-              cmd: """
-              su -l #{hue_user.name} -c "/usr/lib/hue/build/env/bin/hue syncdb --noinput"
-              """
-            , (err, executed) ->
-              next err, true
+            not_if_exec: "#{mysql_exec} 'use #{name}'"
+          ,
+            cmd: """
+            su -l #{hue_user.name} -c "/usr/lib/hue/build/env/bin/hue syncdb --noinput"
+            """
+            not_if_exec: "#{mysql_exec} 'show tables from #{name};' | grep auth"
+          ], (err, executed) ->
+              next err, executed
         sqlite: ->
           next null, false
       engine = hue_ini['desktop']['database']['engine']

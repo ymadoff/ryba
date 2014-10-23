@@ -124,8 +124,7 @@ nagiocmd:x:2419:apache
         {name: 'nagios'}
         {name: 'nagios-plugins'}
         {name: 'nagios-www'}
-      ], (err, serviced) ->
-        next err, if serviced then ctx.OK else ctx.PASS
+      ], next
 
     module.exports.push name: 'Nagios # Layout', callback: (ctx, next) ->
       {user, group, groupcmd} = ctx.config.ryba.nagios
@@ -295,15 +294,22 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       , next
 
     module.exports.push name: 'Nagios # Services', callback: (ctx, next) ->
-      {nagios, nameservice, force_check, active_nn_host, hdfs_site, zookeeper_port, 
+      {nagios, nameservice, force_check, active_nn_host, core_site, hdfs_site, zookeeper_port, 
         yarn_site, hive_site, hbase_site, oozie_site, webhcat_site, ganglia, hue_ini} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
-      nn_hosts_map = {}
-      for nn_host in nn_hosts
-        shortname = ctx.hosts[nn_host].config.shortname
-        nn_host = ctx.config.ryba.ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{shortname}"].split(':')
-        nn_hosts_map[nn_host[0]] = nn_host[1]
+      nn_hosts_map = {} # fqdn to port
+      active_nn_port = null
+      if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+        u = url.parse core_site['fs.defaultFS']
+        nn_hosts_map[u.hostname] = u.port
+        active_nn_port = u.port
+      else
+        for nn_host in nn_hosts
+          shortname = ctx.hosts[nn_host].config.shortname
+          nn_host = ctx.config.ryba.ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{shortname}"].split(':')
+          nn_hosts_map[nn_host[0]] = nn_host[1]
+          active_nn_port = nn_host[1] if nn_host is active_nn_host
       rm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
       rm_webapp_port = if yarn_site['yarn.http.policy'] is 'HTTP_ONLY'
       then yarn_site['yarn.resourcemanager.webapp.address'].split(':')[1]
@@ -331,8 +337,8 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       then hive_site['hive.server2.thrift.port']
       else hive_site['hive.server2.thrift.http.port']
       # protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      shortname = ctx.hosts[active_nn_host].config.shortname
-      active_nn_port = ctx.config.ryba.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
+      # shortname = ctx.hosts[active_nn_host].config.shortname
+      # active_nn_port = ctx.config.ryba.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
       hostgroup_defs = {}
       for group, hosts of nagios.hostgroups
         hostgroup_defs[group] = if hosts.length then hosts else null
@@ -345,7 +351,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           all_hosts: [] # Ambari agents
           nagios_lookup_daemon_str: '/usr/sbin/nagios'
           namenode_port: active_nn_port
-          dfs_ha_enabled: true
+          dfs_ha_enabled: not ctx.host_with_module 'ryba/hadoop/hdfs_snn'
           all_ping_ports: null # Ambari agent ports
           ganglia_port: ganglia.collector_port
           ganglia_collector_namenode_port: ganglia.nn_port
@@ -403,7 +409,6 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       , next
 
     module.exports.push 'ryba/nagios/check'
-
 
 ## Module Dependencies
 

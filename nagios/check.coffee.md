@@ -60,19 +60,29 @@ php /usr/lib64/nagios/plugins/check_rpcq_latency_ha.php \
       {kinit} = ctx.config.krb5
       {active_nn_host, nameservice, core_site, hdfs_site, realm} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      shortname = ctx.hosts[active_nn_host].config.shortname
-      active_nn_port = ctx.config.ryba.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
+      if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+        nn_host = ctx.host_with_module 'ryba/hadoop/hdfs_nn'
+        nn_port = hdfs_site['dfs.namenode.https-address'].split(':')[1]
+      else
+        nn_host = active_nn_host
+        shortname = ctx.hosts[active_nn_host].config.shortname
+        nn_port = ctx.config.ryba.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
       cmd = "php /usr/lib64/nagios/plugins/check_hdfs_capacity.php"
-      cmd += " -h #{active_nn_host}"
-      cmd += " -p #{active_nn_port}"
+      cmd += " -h #{nn_host}"
+      cmd += " -p #{nn_port}"
       cmd += " -w 80%"
       cmd += " -c 90%"
       cmd += " -k /etc/security/keytabs/nn.service.keytab"
-      cmd += " -r nn/#{active_nn_host}@#{realm}"
+      cmd += " -r nn/#{nn_host}@#{realm}"
       cmd += " -t #{kinit}"
       cmd += " -e #{if core_site['hadoop.security.authentication'] is 'kerberos' then 'true' else 'false'}"
       cmd += " -s #{if protocol is 'https' then 'true' else 'false'}"
       ctx.execute
         cmd: cmd
       , next
+
+## Module Dependencies
+
+    url = require 'url'
+
 

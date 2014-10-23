@@ -25,11 +25,7 @@ In its current state, we are only supporting the installation of a
 
 The properties "hdp.hdfs_site['dfs.namenode.name.dir']" and
 "hdp.hdfs_site['dfs.datanode.data.dir']" are required.
- 
-*   `hdfs.fs_checkpoint_dir` (array, string)   
-    List of directories where SecondaryNameNode should store the checkpoint image. This
-    is no longer used but we kept it in case we want to re-introduced the SecondaryNameNode
-    choice over High Availability.   
+  
 *   `hdfs.ha_client_config` (object)   
     Properities added to the "hdfs-site.xml" file specific to the High Availability mode. There
     are defined in a seperate configuration key then "hdp.hdfs_site" to hide them from being 
@@ -58,50 +54,67 @@ Example:
       # ctx.hdfs_configured = true
       require('./core').configure ctx
       # require('./core_ssl').configure ctx
-      {nameservice} = ctx.config.ryba
+      {nameservice, core_site} = ctx.config.ryba
       namenodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       throw new Error "Missing value for 'hdfs_password'" unless ctx.config.ryba.hdfs_password?
       throw new Error "Missing value for 'test_password'" unless ctx.config.ryba.test_password?
-      # Layout
-      ctx.config.ryba.fs_checkpoint_dir ?= ['/hadoop/hdfs/snn'] # Default ${fs.checkpoint.dir}
       # Options and configuration
       ctx.config.ryba.hdfs_namenode_timeout ?= 20000 # 20s
       # Options for "hdfs-site.xml"
       hdfs_site = ctx.config.ryba.hdfs_site ?= {}
       hdfs_site['dfs.http.policy'] ?= 'HTTPS_ONLY' # HTTP_ONLY or HTTPS_ONLY or HTTP_AND_HTTPS
-      hdfs_site['dfs.https.port'] ?= '50470' # The https port where NameNode binds
-      # Comma separated list of paths. Use the list of directories from $DFS_NAME_DIR.  
+      # REPLACED by "dfs.namenode.https-address": hdfs_site['dfs.https.port'] ?= '50470' # The https port where NameNode binds
+      # Comma separated list of paths. Use the list of directories from $DFS_NAME_DIR.
       # For example, /grid/hadoop/hdfs/nn,/grid1/hadoop/hdfs/nn.
-      throw new Error 'Required property: hdfs_site[dfs.namenode.name.dir]' unless hdfs_site['dfs.namenode.name.dir']
+      hdfs_site['dfs.namenode.name.dir'] ?= ['/var/hdfs/name']
       hdfs_site['dfs.namenode.name.dir'] = hdfs_site['dfs.namenode.name.dir'].join ',' if Array.isArray hdfs_site['dfs.namenode.name.dir']
       # Comma separated list of paths. Use the list of directories from $DFS_DATA_DIR.  
       # For example, /grid/hadoop/hdfs/dn,/grid1/hadoop/hdfs/dn.
-      throw new Error 'Required property: hdfs_site[dfs.datanode.data.dir]' unless hdfs_site['dfs.datanode.data.dir']
+      hdfs_site['dfs.datanode.data.dir'] ?= ['/var/hdfs/data']
       hdfs_site['dfs.datanode.data.dir'] = hdfs_site['dfs.datanode.data.dir'].join ',' if Array.isArray hdfs_site['dfs.datanode.data.dir']
       # ctx.config.ryba.hdfs_site['dfs.datanode.data.dir.perm'] ?= '750'
       hdfs_site['dfs.datanode.data.dir.perm'] ?= '700'
       hdfs_site['fs.permissions.umask-mode'] ?= '027' # 0750
-      # Default values are retrieve from [the "SecureMode" HDFS page](http://hadoop.apache.org/docs/r2.4.1/hadoop-project-dist/hadoop-common/SecureMode.html#DataNode)
-      hdfs_site['dfs.datanode.address'] ?= '0.0.0.0:1004'
-      hdfs_site['dfs.datanode.http.address'] ?= '0.0.0.0:1006' 
-      hdfs_site['dfs.datanode.https.address'] ?= '0.0.0.0:50470'
+      if core_site['hadoop.security.authentication'] is 'kerberos'
+        # Default values are retrieved from the official HDFS page called
+        # ["SecureMode"][hdfs_secure].
+        # Ports must be below 1024, because this provides part of the security
+        # mechanism to make it impossible for a user to run a map task which
+        # impersonates a DataNode
+        # TODO: Move this to 'ryba/hadoop/hdfs_dn'
+        hdfs_site['dfs.datanode.address'] ?= '0.0.0.0:1004'
+        hdfs_site['dfs.datanode.ipc.address'] ?= '0.0.0.0:50020'
+        hdfs_site['dfs.datanode.http.address'] ?= '0.0.0.0:1006' 
+        hdfs_site['dfs.datanode.https.address'] ?= '0.0.0.0:50475'
+      else
+        hdfs_site['dfs.datanode.address'] ?= '0.0.0.0:50010'
+        hdfs_site['dfs.datanode.ipc.address'] ?= '0.0.0.0:50020'
+        hdfs_site['dfs.datanode.http.address'] ?= '0.0.0.0:50075' 
+        hdfs_site['dfs.datanode.https.address'] ?= '0.0.0.0:50475'
       # Options for "hadoop-policy.xml"
       ctx.config.ryba.hadoop_policy ?= {}
       # HDFS SNN
       if secondary_namenode = ctx.host_with_module 'ryba/hadoop/hdfs_snn'
         hdfs_site['dfs.namenode.secondary.http-address'] ?= "#{secondary_namenode}:50090"
-      # HDFS HA configuration
-      ctx.config.ryba.shortname ?= ctx.config.shortname
-      ctx.config.ryba.ha_client_config = {}
-      ctx.config.ryba.ha_client_config['dfs.nameservices'] = nameservice
-      ctx.config.ryba.ha_client_config["dfs.ha.namenodes.#{nameservice}"] = (for nn in namenodes then nn.split('.')[0]).join ','
-      for nn in namenodes
-        hconfig = ctx.hosts[nn].config
-        shortname = hconfig.ryba.shortname ?= hconfig.shortname or nn.split('.')[0]
-        ctx.config.ryba.ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{shortname}"] = "#{nn}:8020"
-        ctx.config.ryba.ha_client_config["dfs.namenode.http-address.#{nameservice}.#{shortname}"] = "#{nn}:50070"
-        ctx.config.ryba.ha_client_config["dfs.namenode.https-address.#{nameservice}.#{shortname}"] = "#{nn}:50470"
-      ctx.config.ryba.ha_client_config["dfs.client.failover.proxy.provider.#{nameservice}"] = 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
+        hdfs_site['dfs.namenode.http-address'] ?= '0.0.0.0:50070'
+        hdfs_site['dfs.namenode.https-address'] ?= '0.0.0.0:50470'
+      else
+        # HDFS HA configuration
+        ctx.config.ryba.shortname ?= ctx.config.shortname
+        ctx.config.ryba.ha_client_config = {}
+        ctx.config.ryba.ha_client_config['dfs.nameservices'] = nameservice
+        ctx.config.ryba.ha_client_config["dfs.ha.namenodes.#{nameservice}"] = (for nn in namenodes then nn.split('.')[0]).join ','
+        for nn in namenodes
+          hdfs_site['dfs.namenode.http-address'] = null
+          hdfs_site['dfs.namenode.https-address'] = null
+          hconfig = ctx.hosts[nn].config
+          shortname = hconfig.ryba.shortname ?= hconfig.shortname or nn.split('.')[0]
+          ctx.config.ryba.ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{shortname}"] ?= "#{nn}:8020"
+          ctx.config.ryba.ha_client_config["dfs.namenode.http-address.#{nameservice}.#{shortname}"] ?= "#{nn}:50070"
+          ctx.config.ryba.ha_client_config["dfs.namenode.https-address.#{nameservice}.#{shortname}"] ?= "#{nn}:50470"
+        ctx.config.ryba.ha_client_config["dfs.client.failover.proxy.provider.#{nameservice}"] ?= 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
+      # Fix HDP Companion File bug
+      hdfs_site['dfs.https.namenode.https-address'] = null
 
     module.exports.push name: 'HDP HDFS # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
@@ -128,12 +141,6 @@ Example:
         # Fix: the "dfs.cluster.administrators" value has a space inside
         hdfs_site['dfs.cluster.administrators'] = 'hdfs'
         # NameNode hostname for http access.
-        # todo: "dfs.namenode.http-address" is only when not in ha mode, need to detect if we run
-        # the cluster in ha or not
-        hdfs_site['dfs.namenode.http-address'] = null
-        # Secondary NameNode hostname
-        
-        hdfs_site['dfs.namenode.checkpoint.dir'] ?= fs_checkpoint_dir.join ','
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/hdfs-site.xml"
           default: "#{__dirname}/files/core_hadoop/hdfs-site.xml"
@@ -378,7 +385,7 @@ Note, a user must re-login for those changes to be taken into account.
 
     url = require 'url'
 
-
+[hdfs_secure]: http://hadoop.apache.org/docs/r2.4.1/hadoop-project-dist/hadoop-common/SecureMode.html#DataNode
 [hawq]: http://docs.gopivotal.com/pivotalhd/InstallingHAWQ.html
 [greenplum]: http://nixustechnologies.com/2014/03/31/install-greenplum-community-edition/
 [mapr]: http://doc.mapr.com/display/MapR/Preparing+Each+Node

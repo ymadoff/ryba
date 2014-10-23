@@ -32,7 +32,6 @@ The module doesn't require any configuration but instread rely on the
     module.exports.push (ctx) ->
       require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
-      ctx.config.ryba.hdfs_site['dfs.datanode.ipc.address'] ?= '0.0.0.0:50020'
 
 ## IPTables
 
@@ -107,6 +106,7 @@ Update the "hdfs_site.xml" configuration file with the High Availabity propertie
 present inside the "hdp.ha\_client\_config" object.
 
     module.exports.push name: 'HDP HDFS DN # HA', callback: (ctx, next) ->
+      return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
       {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"

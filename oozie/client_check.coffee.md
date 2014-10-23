@@ -33,8 +33,8 @@
         return next new Error "Oozie not ready" if stdout.trim() isnt '{"systemMode":"NORMAL"}'
         return next null, true
 
-    module.exports.push name: 'Oozie Client # Workflow', timeout: -1, callback: (ctx, next) ->
-      {nameservice, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.ryba
+    module.exports.push name: 'Oozie Client # Check Workflow', timeout: -1, callback: (ctx, next) ->
+      {core_site, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.ryba
       rm = ctx.host_with_module 'ryba/hadoop/yarn_rm'
       ctx.execute
         cmd: """
@@ -43,12 +43,12 @@
         """
         code_skipped: 2
       , (err, executed, stdout) ->
-        return next err, ctx.PASS if err or not executed
+        return next err, false if err or not executed
         # NameNode adress in HA mode:
         # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/latest/CDH4-High-Availability-Guide/cdh4hag_topic_2_6.html
         ctx.write [
           content: """
-            nameNode=hdfs://#{nameservice}:8020
+            nameNode=#{core_site['fs.defaultFS']}
             jobTracker=#{rm}:8050
             queueName=default
             basedir=${nameNode}/user/#{/^(.*?)[\/@]/.exec(oozie_test_principal)[1]}/#{ctx.config.host}-oozie-workflow
@@ -87,8 +87,7 @@
             """
             code_skipped: 2
           , (err, executed, stdout) ->
-            return next err if err
-            return next null, true
+            return next err, true
 
 # Module Dependencies
 

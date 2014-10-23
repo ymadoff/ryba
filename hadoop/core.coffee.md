@@ -168,14 +168,11 @@ Default configuration:
       ctx.config.ryba.active_nn ?= false
       throw new Error "Invalid Service Name" unless ctx.config.ryba.nameservice
       namenodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
-      throw new Error "Need at least 2 namenodes" if namenodes.length < 2
+      # throw new Error "Need at least 2 namenodes" if namenodes.length < 2
       # active_nn_hosts = ctx.config.servers.filter( (server) -> server.ryba?.active_nn ).map( (server) -> server.host )
-      active_nn_hosts = namenodes.filter( (server) -> ctx.config.servers[server].ryba?.active_nn )
-      throw new Error "Invalid Number of Active NameNodes: #{active_nn_hosts.length}" unless active_nn_hosts.length is 1
-      ctx.config.ryba.active_nn_host = active_nn_hosts[0]
       # standby_nn_hosts = ctx.config.servers.filter( (server) -> ! server.ryba?.active_nn ).map( (server) -> server.host )
       standby_nn_hosts = namenodes.filter( (server) -> ! ctx.config.servers[server].ryba?.active_nn )
-      throw new Error "Invalid Number of Passive NameNodes: #{standby_nn_hosts.length}" unless standby_nn_hosts.length is 1
+      # throw new Error "Invalid Number of Passive NameNodes: #{standby_nn_hosts.length}" unless standby_nn_hosts.length is 1
       ctx.config.ryba.standby_nn_host = standby_nn_hosts[0]
       ctx.config.ryba.static_host = 
         if ctx.config.ryba.static_host and ctx.config.ryba.static_host isnt '_HOST'
@@ -183,7 +180,13 @@ Default configuration:
         else '_HOST'
       # Configuration
       core_site = ctx.config.ryba.core_site ?= {}
-      core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.ryba.nameservice}:8020"
+      if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+        core_site['fs.defaultFS'] ?= "hdfs://#{namenodes[0]}:8020"
+      else
+        core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.ryba.nameservice}:8020"
+        active_nn_hosts = namenodes.filter( (server) -> ctx.config.servers[server].ryba?.active_nn )
+        throw new Error "Invalid Number of Active NameNodes: #{active_nn_hosts.length}" unless active_nn_hosts.length is 1
+        ctx.config.ryba.active_nn_host = active_nn_hosts[0]
       core_site['net.topology.script.file.name'] ?= "#{hadoop_conf_dir}/rack_topology.sh"
       # Set the authentication for the cluster. Valid values are: simple or kerberos
       core_site['hadoop.security.authentication'] ?= 'kerberos'
@@ -242,7 +245,6 @@ Declare the HDP repository.
       {proxy, hdp_repo} = ctx.config.ryba
       # Is there a repo to download and install
       return next() unless hdp_repo
-      modified = false
       do_repo = ->
         ctx.log "Download #{hdp_repo} to /etc/yum.repos.d/hdp.repo"
         u = url.parse hdp_repo
@@ -524,7 +526,7 @@ recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
       {core_site, realm} = ctx.config.ryba
       # Cluster domain
       unless core_site['hadoop.http.authentication.cookie.domain']
-        domains = Object.keys(ctx.config.servers).map( (host) -> host.split('.').slice(1).join('.') ).filter( (el, pos, self) -> self.indexOf(el) is pos )
+        domains = ctx.hosts_with_module('ryba/hadoop/core').map( (host) -> host.split('.').slice(1).join('.') ).filter( (el, pos, self) -> self.indexOf(el) is pos )
         return next new Error "Multiple domains, set 'hadoop.http.authentication.cookie.domain' manually" if domains.length isnt 1
         core_site['hadoop.http.authentication.cookie.domain'] = domains[0]
       ctx.execute

@@ -63,8 +63,12 @@ Example:
       hdfs_site['dfs.journalnode.rpc-address'] ?= '0.0.0.0:8485'
       hdfs_site['dfs.journalnode.http-address'] ?= '0.0.0.0:8480'
       hdfs_site['dfs.journalnode.https-address'] ?= '0.0.0.0:8481'
-      # ctx.config.ryba.hdfs_site['dfs.journalnode.edits.dir'] ?= '/hadoop/journalnode'
-      throw new Error 'Required property: hdfs_site[dfs.journalnode.edits.dir]' unless hdfs_site['dfs.namenode.name.dir']
+      # Kerberos
+      hdfs_site['dfs.journalnode.kerberos.internal.spnego.principal'] = "HTTP/#{static_host}@#{realm}"
+      hdfs_site['dfs.journalnode.kerberos.principal'] = "HTTP/#{static_host}@#{realm}"
+      hdfs_site['dfs.journalnode.keytab.file'] = '/etc/security/keytabs/spnego.service.keytab'
+      hdfs_site['dfs.journalnode.edits.dir'] ?= ['/var/hdfs/edits']
+      hdfs_site['dfs.journalnode.edits.dir'] = hdfs_site['dfs.journalnode.edits.dir'].join ',' if Array.isArray hdfs_site['dfs.journalnode.edits.dir']
 
 ## IPTables
 
@@ -102,7 +106,7 @@ The JournalNode data are stored inside the directory defined by the
     module.exports.push name: 'HDP HDFS JN # Layout', callback: (ctx, next) ->
       {hdfs_site, hadoop_conf_dir} = ctx.config.ryba
       ctx.mkdir
-        destination: hdfs_site['dfs.journalnode.edits.dir']
+        destination: hdfs_site['dfs.journalnode.edits.dir'].split ','
         uid: 'hdfs'
         gid: 'hadoop'
       , next

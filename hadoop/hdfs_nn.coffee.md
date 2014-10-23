@@ -46,6 +46,7 @@ define inside the "ryba/hadoop/hdfs" and "masson/core/nc" modules.
       # Activate ACLs
       hdfs_site['dfs.namenode.acls.enabled'] ?= 'true'
       hdfs_site['dfs.namenode.accesstime.precision'] ?= null
+      hdfs_site['dfs.ha.automatic-failover.enabled'] ?= 'true'
 
 ## IPTables
 
@@ -164,6 +165,7 @@ similar than the ones for a client or slave configuration with the addtionnal
 
     module.exports.push name: 'HDP HDFS NN # Configure HA', callback: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
+      return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
       journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
       ha_client_config['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
       ha_client_config['dfs.namenode.shared.edits.dir'] = "qjournal://#{ha_client_config['dfs.namenode.shared.edits.dir']}/#{ha_client_config['dfs.nameservices']}"
@@ -183,6 +185,7 @@ public and private SSH keys for the HDFS user inside his "~/.ssh" folder and upd
 
     module.exports.push name: 'HDP HDFS NN # SSH Fencing', callback: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config, ssh_fencing, hdfs_user, hadoop_group} = ctx.config.ryba
+      return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
       hdfs_home = '/var/lib/hadoop-hdfs'
       modified = false
       ha_client_config['dfs.ha.fencing.methods'] ?= "sshfence(#{hdfs_user.name})"
@@ -275,22 +278,23 @@ if the NameNode was formated.
       {active_nn, hdfs_site, hdfs_user, format, nameservice} = ctx.config.ryba
       return next() unless format
       # Shall only be executed on the leader namenode
-      return next() unless active_nn
-      journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
       any_dfs_name_dir = hdfs_site['dfs.namenode.name.dir'].split(',')[0]
-      # all the JournalNodes shall be started
-      ctx.waitIsOpen journalnodes, 8485, (err) ->
-        return next err if err
+      if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
         ctx.execute
-          # yes 'Y' | su -l hdfs -c "hdfs namenode -format -clusterId torval"
-          cmd: "su -l #{hdfs_user.name} -c \"hdfs namenode -format -clusterId #{nameservice}\""
-          # /hadoop/hdfs/namenode/current/VERSION
+          cmd: "su -l #{hdfs_user.name} -c \"hdfs namenode -format\""
           not_if_exists: "#{any_dfs_name_dir}/current/VERSION"
-        , (err, executed) ->
+        , next
+      else
+        journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
+        # all the JournalNodes shall be started
+        ctx.waitIsOpen journalnodes, 8485, (err) ->
           return next err if err
-          return next null, if executed then ctx.OK else ctx.PASS
-          lifecycle.nn_start ctx, (err, started) ->
-            return next err, ctx.OK
+          ctx.execute
+            # yes 'Y' | su -l hdfs -c "hdfs namenode -format -clusterId torval"
+            cmd: "su -l #{hdfs_user.name} -c \"hdfs namenode -format -clusterId #{nameservice}\""
+            # /hadoop/hdfs/namenode/current/VERSION
+            not_if_exists: "#{any_dfs_name_dir}/current/VERSION"
+          , next
 
 ## HA Init Standby NameNodes
 
@@ -301,6 +305,7 @@ is only executed on a non active NameNode.
     module.exports.push name: 'HDP HDFS NN # HA Init Standby NameNodes', timeout: -1, callback: (ctx, next) ->
       # Shall only be executed on the leader namenode
       {active_nn, active_nn_host} = ctx.config.ryba
+      return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
       return next() if active_nn
       do_wait = ->
         ctx.waitIsOpen active_nn_host, 8020, (err) ->
@@ -380,6 +385,7 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
 
     module.exports.push name: 'HDP HDFS NN # HA Auto Failover', timeout: -1, callback: (ctx, next) ->
       {hadoop_conf_dir, active_nn, active_nn_host} = ctx.config.ryba
+      return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
       zookeepers = ctx.hosts_with_module 'ryba/zookeeper/server'
       modified = false
       do_hdfs = ->

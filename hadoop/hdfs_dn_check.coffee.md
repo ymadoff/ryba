@@ -47,8 +47,13 @@ for more information.
     module.exports.push name: 'HDP HDFS DN # Test WebHDFS', timeout: -1, callback: (ctx, next) ->
       {hdfs_site, nameservice, test_user, force_check, active_nn_host} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      shortname = ctx.hosts[active_nn_host].config.shortname
-      active_nn_port = ctx.config.ryba.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
+      if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+        nn_host = ctx.host_with_module 'ryba/hadoop/hdfs_nn'
+        nn_port = hdfs_site["dfs.namenode.#{protocol}-address"].split(':')[1]
+      else
+        nn_host = active_nn_host
+        shortname = ctx.hosts[active_nn_host].config.shortname
+        nn_port = ctx.config.ryba.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
       force_check = true
       do_wait = ->
         ctx.waitForExecution
@@ -96,7 +101,7 @@ for more information.
           token = json.Token.urlString
           ctx.execute
             cmd: """
-            curl -s --insecure "#{protocol}://#{active_nn_host}:#{active_nn_port}/webhdfs/v1/user/#{test_user.name}?delegation=#{token}&op=LISTSTATUS"
+            curl -s --insecure "#{protocol}://#{nn_host}:#{nn_port}/webhdfs/v1/user/#{test_user.name}?delegation=#{token}&op=LISTSTATUS"
             """
           , (err, executed, stdout) ->
             return next err if err
