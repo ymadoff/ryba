@@ -37,7 +37,6 @@ layout: module
       ctx.config.ryba.hadoop_group.name ?= 'hadoop'
       ctx.config.ryba.hadoop_group.system ?= true
       # Layout
-      ctx.config.ryba.zookeeper_data_dir ?= '/var/zookeper/data/'
       ctx.config.ryba.zookeeper_conf_dir ?= '/etc/zookeeper/conf'
       ctx.config.ryba.zookeeper_log_dir ?= '/var/log/zookeeper'
       ctx.config.ryba.zookeeper_pid_dir ?= '/var/run/zookeeper'

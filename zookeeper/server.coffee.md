@@ -36,7 +36,7 @@ Example :
       require('./client').configure ctx
       {java_home} = ctx.config.java
       # Environnment
-      {zookeeper_conf_dir, zookeeper_data_dir, zookeeper_log_dir, zookeeper_pid_dir, zookeeper_port} = ctx.config.ryba
+      {zookeeper_conf_dir, zookeeper_log_dir, zookeeper_pid_dir, zookeeper_port} = ctx.config.ryba
       ctx.config.ryba.zookeeper_env ?= {}
       ctx.config.ryba.zookeeper_env['JAVA_HOME'] ?= "#{java_home}"
       ctx.config.ryba.zookeeper_env['ZOO_LOG_DIR'] ?= "#{zookeeper_log_dir}"
@@ -56,7 +56,7 @@ Example :
       # sending a request and getting an acknowledgement
       conf['syncLimit'] ?= "5"
       # the directory where the snapshot is stored.
-      conf['dataDir'] ?= "#{zookeeper_data_dir}"
+      conf['dataDir'] ?= '/var/zookeper/data/'
       # the port at which the clients will connect
       conf['clientPort'] ?= "#{zookeeper_port}"
       if hosts.length > 1 then for host, i in hosts then conf["server.#{i+1}"] = "#{host}:2888:3888"
@@ -204,10 +204,10 @@ Install and configure the startup script in
 
     module.exports.push name: 'ZooKeeper Server # Layout', callback: (ctx, next) ->
       { hadoop_group, zookeeper_user, 
-        zookeeper_data_dir, zookeeper_pid_dir, zookeeper_log_dir
+        zookeeper_conf, zookeeper_pid_dir, zookeeper_log_dir
       } = ctx.config.ryba
       ctx.mkdir [
-        destination: zookeeper_data_dir
+        destination: zookeeper_conf['dataDir']
         uid: zookeeper_user.name
         gid: hadoop_group.name
         mode: 0o755
