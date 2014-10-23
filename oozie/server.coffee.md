@@ -363,9 +363,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       engines[engine]()
 
     module.exports.push name: 'Oozie Server # Database', callback: (ctx, next) ->
+      {oozie_user} = ctx.config.ryba
       ctx.execute
         cmd: """
-        /usr/lib/oozie/bin/ooziedb.sh create -sqlfile oozie.sql -run Validate DB Connection
+        su -l #{oozie_user.name} -c '/usr/lib/oozie/bin/ooziedb.sh create -sqlfile oozie.sql -run Validate DB Connection'
         """
       , (err, executed, stdout, stderr) ->
         err = null if err and /DB schema exists/.test stderr
