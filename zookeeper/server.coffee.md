@@ -20,7 +20,7 @@ layout: module
 
 ```json
 {
-  "hdp": {
+  "ryba": {
     "zookeeper_user": {
       "name": "zookeeper", "system": true, "gid": "hadoop",
       "comment": "Zookeeper User", "home": "/var/lib/zookeeper"

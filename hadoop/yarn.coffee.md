@@ -63,7 +63,7 @@ layout: module
 http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
 
-    module.exports.push name: 'HDP YARN # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN # Users & Groups', callback: (ctx, next) ->
       return next() unless ctx.config.ryba.resourcemanager or ctx.config.ryba.nodemanager
       {yarn_user, hadoop_group} = ctx.config.ryba
       ctx.execute
@@ -72,7 +72,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         code_skipped: 9
       , next
 
-    module.exports.push name: 'HDP YARN # Install Common', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN # Install Common', timeout: -1, callback: (ctx, next) ->
       ctx.service [
         name: 'hadoop'
       ,
@@ -81,7 +81,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         name: 'hadoop-client'
       ], next
 
-    module.exports.push name: 'HDP YARN # Directories', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN # Directories', timeout: -1, callback: (ctx, next) ->
       {yarn_user, hadoop_group, yarn_log_dir, yarn_pid_dir} = ctx.config.ryba
       ctx.mkdir
         destination: "#{yarn_log_dir}/#{yarn_user.name}"
@@ -95,7 +95,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         mode: 0o0755
       , next
 
-    module.exports.push name: 'HDP YARN # Yarn OPTS', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN # Yarn OPTS', callback: (ctx, next) ->
       {java_home} = ctx.config.java
       {yarn_user, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
       yarn_opts = ""
@@ -120,7 +120,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         mode: 0o0755
       , next
 
-    module.exports.push name: 'HDP YARN # Container Executor', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN # Container Executor', callback: (ctx, next) ->
       {container_executor, hadoop_conf_dir} = ctx.config.ryba
       ce_group = container_executor['yarn.nodemanager.linux-container-executor.group']
       # container_executor = misc.merge {}, container_executor
@@ -155,7 +155,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
           next err, modified
       do_stat()
 
-    module.exports.push name: 'HDP YARN # Configuration', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN # Configuration', callback: (ctx, next) ->
       { yarn_site, hadoop_conf_dir, capacity_scheduler } = ctx.config.ryba
       modified = false
       do_yarn = ->
@@ -208,7 +208,7 @@ TODO, got to [HortonWorks article and make properties dynamic or improve example
 
 Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Containers to be allocated to each node
 
-    module.exports.push name: 'HDP YARN # Memory Allocation', callback: module.exports.tuning = (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN # Memory Allocation', callback: module.exports.tuning = (ctx, next) ->
       {hadoop_conf_dir} = ctx.config.ryba
       {info, yarn_site} = memory ctx
       ctx.log "Server memory: #{info.memoryTotalMb} mb"
@@ -223,7 +223,7 @@ Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Co
         merge: true
       , next
 
-    module.exports.push name: 'HDP YARN # Configure Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN # Configure Kerberos', callback: (ctx, next) ->
       {hadoop_conf_dir, static_host, realm} = ctx.config.ryba
       yarn_site = {}
       # Todo: might need to configure WebAppProxy but I seems like it is run as part of rm if not configured separately
@@ -255,7 +255,7 @@ drwxrwxrwt   - yarn   hdfs            0 2014-05-26 11:01 /app-logs
 
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
-    module.exports.push name: 'HDP YARN # HDFS layout', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN # HDFS layout', callback: (ctx, next) ->
       {yarn_site, yarn_user, hadoop_group} = ctx.config.ryba
       remote_app_log_dir = yarn_site['yarn.nodemanager.remote-app-log-dir']
       ctx.execute

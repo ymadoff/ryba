@@ -16,7 +16,7 @@ layout: module
       ctx.config.ryba.hdfs_site['dfs.domain.socket.path'] ?= '/var/lib/hadoop-hdfs/dn_socket'
       ctx.config.ryba.hdfs_site['dfs.namenode.kerberos.principal'] ?= "nn/#{static_host}@#{realm}"
 
-    module.exports.push name: 'HDP HDFS Client # Configuration', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS Client # Configuration', callback: (ctx, next) ->
       {hadoop_conf_dir, hdfs_site} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
@@ -24,7 +24,7 @@ layout: module
         merge: true
       , next
 
-    module.exports.push name: 'HDP HDFS Client # HA', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS Client # HA', callback: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"

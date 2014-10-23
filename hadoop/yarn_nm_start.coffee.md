@@ -10,7 +10,7 @@ layout: module
     module.exports.push 'masson/bootstrap/'
     module.exports.push require('./yarn').configure
 
-    module.exports.push name: 'HDP NodeManager # Wait RM', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop NodeManager # Wait RM', timeout: -1, callback: (ctx, next) ->
       {yarn_site} = ctx.config.ryba
       port = if yarn_site['yarn.http.policy'] is 'HTTPS_ONLY'
       then yarn_site['yarn.resourcemanager.webapp.address'].split(':')[1]
@@ -19,5 +19,5 @@ layout: module
       ctx.waitIsOpen resourcemanagers, port, (err) ->
         next err
 
-    module.exports.push name: 'HDP NodeManager # Start Server', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop NodeManager # Start Server', callback: (ctx, next) ->
       lifecycle.nm_start ctx, next

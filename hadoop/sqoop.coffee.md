@@ -38,7 +38,7 @@ Example:
 
 ```json
 {
-  "hdp": {
+  "ryba": {
     "sqoop_user": {
       "name": "sqoop", "system": true, "gid": "hadoop"
       "comment": "Sqoop User", "home": "/var/lib/sqoop"
@@ -78,7 +78,7 @@ cat /etc/group | grep hadoop
 hadoop:x:502:yarn,mapred,hdfs,hue
 ```
 
-    module.exports.push name: 'HDP Sqoop # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Sqoop # Users & Groups', callback: (ctx, next) ->
       {hadoop_group, sqoop_user} = ctx.config.ryba
       ctx.group hadoop_group, (err, gmodified) ->
         return next err if err
@@ -89,7 +89,7 @@ hadoop:x:502:yarn,mapred,hdfs,hue
 
 Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
 
-    module.exports.push name: 'HDP Sqoop # Environment', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Sqoop # Environment', timeout: -1, callback: (ctx, next) ->
       {sqoop_conf_dir, sqoop_user, hadoop_group} = ctx.config.ryba
       ctx.write
         source: "#{__dirname}/files/sqoop/sqoop-env.sh"
@@ -104,7 +104,7 @@ Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
 
 Upload the "sqoop-site.xml" files into the "/etc/sqoop/conf" folder.
 
-    module.exports.push name: 'HDP Sqoop # Configuration', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Sqoop # Configuration', timeout: -1, callback: (ctx, next) ->
       {sqoop_conf_dir, sqoop_user, hadoop_group, sqoop_site} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{sqoop_conf_dir}/sqoop-site.xml"
@@ -121,7 +121,7 @@ Upload the "sqoop-site.xml" files into the "/etc/sqoop/conf" folder.
 
 Install the Sqoop package following the [HDP instructions][install].
 
-    module.exports.push name: 'HDP Sqoop # Install', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Sqoop # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service
         name: 'sqoop'
       , next
@@ -131,7 +131,7 @@ Install the Sqoop package following the [HDP instructions][install].
 MySQL is by default usable by Sqoop. The driver installed after running the 
 "masson/commons/mysql_client" is copied into the Sqoop library folder.
 
-    module.exports.push name: 'HDP Sqoop # MySQL Connector', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Sqoop # MySQL Connector', callback: (ctx, next) ->
       ctx.copy
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/lib/sqoop/lib/'
@@ -142,7 +142,7 @@ MySQL is by default usable by Sqoop. The driver installed after running the
 Upload all the drivers present in the `hdp.sqoop.libs"` configuration property into
 the Sqoop library folder.
 
-    module.exports.push name: 'HDP Sqoop # Database Connector', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Sqoop # Database Connector', callback: (ctx, next) ->
       {libs} = ctx.config.ryba.sqoop
       return next() unless libs.length
       uploads = for lib in libs
@@ -156,7 +156,7 @@ the Sqoop library folder.
 Make sure the sqoop client is available on this server, using the [HDP validation
 command][validate].
 
-    module.exports.push name: 'HDP Sqoop # Check', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Sqoop # Check', callback: (ctx, next) ->
       ctx.execute
         cmd: "sqoop version | grep 'Sqoop [0-9].*'"
       , (err) ->

@@ -12,5 +12,5 @@ layout: module
     module.exports.push (ctx) ->
       require('./mapred').configure ctx
 
-    module.exports.push name: 'HDP JobHistoryServer # Stop', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop JobHistoryServer # Stop', callback: (ctx, next) ->
       lifecycle.jhs_stop ctx, next

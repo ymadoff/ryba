@@ -29,7 +29,7 @@ Execute these commands on the Hive Metastore host machine.
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'HDP HDFS DN # Stop Clean Logs', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat # Stop Clean Logs', callback: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute [
         cmd: 'rm /var/log/hive-hcat/*'

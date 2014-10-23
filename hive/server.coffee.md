@@ -26,16 +26,14 @@ Note, the following properties are required by knox in secured mode:
 
 Example:
 
-```
+```json
 {
-  "json": {
-    "hdp": {
-      "hive_site": {
-        "javax.jdo.option.ConnectionURL": "jdbc:mysql://front1.hadoop:3306/hive?createDatabaseIfNotExist=true"
-        "javax.jdo.option.ConnectionDriverName": "com.mysql.jdbc.Driver"
-        "javax.jdo.option.ConnectionUserName": "hive"
-        "javax.jdo.option.ConnectionPassword": "hive123"
-      }
+  "ryba": {
+    "hive_site": {
+      "javax.jdo.option.ConnectionURL": "jdbc:mysql://front1.hadoop:3306/hive?createDatabaseIfNotExist=true"
+      "javax.jdo.option.ConnectionDriverName": "com.mysql.jdbc.Driver"
+      "javax.jdo.option.ConnectionUserName": "hive"
+      "javax.jdo.option.ConnectionPassword": "hive123"
     }
   }
 }

@@ -10,7 +10,7 @@ Check the access to the HDFS cluster.
     module.exports.push (ctx) ->
       require('./hdfs_client').configure ctx
 
-    module.exports.push name: 'HDP HDFS Client # Check', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS Client # Check', timeout: -1, callback: (ctx, next) ->
       {hadoop_conf_dir, hdfs_site, test_user} = ctx.config.ryba
       ctx.waitForExecution mkcmd.test(ctx, "hdfs dfs -test -d /user/#{test_user.name}"), (err) ->
         return next err if err

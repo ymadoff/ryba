@@ -48,7 +48,7 @@ mode, it must be set to a value below "1024" and default to "1004".
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HDP HDFS DN # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS DN # IPTables', callback: (ctx, next) ->
       {hdfs_site} = ctx.config.ryba
       [_, dn_address] = hdfs_site['dfs.datanode.address'].split ':'
       [_, dn_http_address] = hdfs_site['dfs.datanode.http.address'].split ':'
@@ -69,7 +69,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install and configure the startup script in 
 "/etc/init.d/hadoop-yarn-nodemanager".
 
-    module.exports.push name: 'HDP HDFS DN # Startup', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS DN # Startup', callback: (ctx, next) ->
       {hdfs_pid_dir, core_site} = ctx.config.ryba
       modified = false
       do_install = ->
@@ -105,7 +105,7 @@ Install and configure the startup script in
 Update the "hdfs_site.xml" configuration file with the High Availabity properties
 present inside the "hdp.ha\_client\_config" object.
 
-    module.exports.push name: 'HDP HDFS DN # HA', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS DN # HA', callback: (ctx, next) ->
       return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
       {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
       ctx.hconfigure
@@ -120,7 +120,7 @@ Create the DataNode data and pid directories. The data directory is set by the
 "hdp.hdfs_site['dfs.datanode.data.dir']" and default to "/var/hdfs/data". The 
 pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdfs"
 
-    module.exports.push name: 'HDP HDFS DN # Layout', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS DN # Layout', timeout: -1, callback: (ctx, next) ->
       {hdfs_site, hdfs_user, hadoop_group, hdfs_pid_dir} = ctx.config.ryba
       # no need to restrict parent directory and yarn will complain if not accessible by everyone
       ctx.mkdir [
@@ -141,7 +141,7 @@ Create the DataNode service principal in the form of "dn/{host}@{realm}" and pla
 keytab inside "/etc/security/keytabs/dn.service.keytab" with ownerships set to "hdfs:hadoop"
 and permissions set to "0600".
 
-    module.exports.push name: 'HDP HDFS DN # Kerberos', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS DN # Kerberos', timeout: -1, callback: (ctx, next) ->
       {hdfs_user, hdfs_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
@@ -176,7 +176,7 @@ drwxr-xr-x   - hdfs   hadoop      /user
 drwxr-xr-x   - hdfs   hadoop      /user/hdfs
 ```
 
-    module.exports.push name: 'HDP HDFS DN # HDFS layout', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS DN # HDFS layout', timeout: -1, callback: (ctx, next) ->
       {hadoop_group, hdfs_user} = ctx.config.ryba
       modified = false
       do_wait = ->
@@ -246,7 +246,7 @@ Create a Unix and Kerberos test user, by default "test" and execute simple HDFS 
 the NameNode is properly working. Note, those commands are NameNode specific, meaning they only
 afect HDFS metadata.
 
-    module.exports.push name: 'HDP HDFS DN # Test User', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS DN # Test User', timeout: -1, callback: (ctx, next) ->
       {test_group, test_user, test_password, security, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false

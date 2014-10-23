@@ -12,7 +12,7 @@ layout: module
 
     module.exports.push require('./yarn').configure
 
-    module.exports.push name: 'HDP YARN # Configuration', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN # Configuration', callback: (ctx, next) ->
       {hadoop_conf_dir, yarn_user, yarn_group, yarn_site} = ctx.config.ryba
       yarn_site = merge {}, yarn_default, yarn_site
       config = {}

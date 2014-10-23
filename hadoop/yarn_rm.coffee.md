@@ -33,7 +33,7 @@ layout: module
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HDP YARN RM # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN RM # IPTables', callback: (ctx, next) ->
       {yarn_site} = ctx.config.ryba
       http = yarn_site['yarn.resourcemanager.webapp.address'].split(':')[1]
       https = yarn_site['yarn.resourcemanager.webapp.https.address'].split(':')[1]
@@ -49,7 +49,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: ctx.config.iptables.action is 'start'
       , next
 
-    module.exports.push name: 'HDP YARN RM # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN RM # Kerberos', callback: (ctx, next) ->
       {yarn_user, hadoop_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
@@ -68,7 +68,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install and configure the startup script in 
 "/etc/init.d/hadoop-yarn-resourcemanager".
 
-    module.exports.push name: 'HDP YARN RM # Startup', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN RM # Startup', callback: (ctx, next) ->
       {yarn_pid_dir} = ctx.config.ryba
       modified = false
       do_install = ->
@@ -104,7 +104,7 @@ the server is defined by the propery "yarn.log.server.url" in "yarn-site.xml".
 The default port is "19888".
 
     # url = require 'url'
-    # module.exports.push name: 'HDP YARN RM # Wait JHS', timeout: -1, callback: (ctx, next) ->
+    # module.exports.push name: 'Hadoop YARN RM # Wait JHS', timeout: -1, callback: (ctx, next) ->
     #   {hostname, port} = url.parse ctx.config.ryba.yarn_site['yarn.log.server.url']
     #   ctx.waitIsOpen hostname, port, (err) ->
     #     return next err if err

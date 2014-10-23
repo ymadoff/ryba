@@ -241,7 +241,7 @@ Repository
 ----------
 Declare the HDP repository.
 
-    module.exports.push name: 'HDP Core # Repository', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Core # Repository', timeout: -1, callback: (ctx, next) ->
       {proxy, hdp_repo} = ctx.config.ryba
       # Is there a repo to download and install
       return next() unless hdp_repo
@@ -308,7 +308,7 @@ mapred:x:494:
 Note, the package "hadoop" will also install the "dbus" user and group which are
 not handled here.
 
-    module.exports.push name: 'HDP Core # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Core # Users & Groups', callback: (ctx, next) ->
       {hadoop_group, hdfs_group, yarn_group, mapred_group,
        hdfs_user, yarn_user, mapred_user} = ctx.config.ryba
       ctx.group [hadoop_group, hdfs_group, yarn_group, mapred_group], (err, gmodified) ->
@@ -316,14 +316,14 @@ not handled here.
         ctx.user [hdfs_user, yarn_user, mapred_user], (err, umodified) ->
           next err, gmodified or umodified
 
-    module.exports.push name: 'HDP Core # Install', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Core # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
         name: 'openssl'
       ,
         name: 'hadoop-client'
       ], next
 
-    module.exports.push name: 'HDP Core # Configuration', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Core # Configuration', callback: (ctx, next) ->
       {core_site, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/core-site.xml"
@@ -334,7 +334,7 @@ not handled here.
         backup: true
       , next
 
-    module.exports.push name: 'HDP Core # Topology', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Core # Topology', callback: (ctx, next) ->
       {hdfs_user, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
       ctx.upload
         destination: "#{hadoop_conf_dir}/rack_topology.sh"
@@ -371,7 +371,7 @@ The location for JSVC depends on the platform. The Hortonworks documentation
 mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
 correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
-    module.exports.push name: 'HDP Core # Hadoop OPTS', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Core # Hadoop OPTS', timeout: -1, callback: (ctx, next) ->
       {java_home} = ctx.config.java
       {hadoop_conf_dir, hdfs_user, hadoop_group, hadoop_opts, hadoop_client_opts, hdfs_log_dir, hdfs_pid_dir} = ctx.config.ryba
       ctx.fs.exists '/usr/libexec/bigtop-utils', (err, exists) ->
@@ -401,7 +401,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
           eof: true
         , next
 
-    module.exports.push name: 'HDP Core # Environnment', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Core # Environnment', timeout: -1, callback: (ctx, next) ->
       ctx.write
         destination: '/etc/profile.d/hadoop.sh'
         content: """
@@ -411,7 +411,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
         mode: '644'
       , next
 
-    module.exports.push name: 'HDP Core # Keytabs', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Core # Keytabs', timeout: -1, callback: (ctx, next) ->
       {hadoop_group} = ctx.config.ryba
       ctx.mkdir
         destination: '/etc/security/keytabs'
@@ -420,7 +420,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
         mode: 0o0755
       , next
 
-    module.exports.push name: 'HDP Core # Compression', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Core # Compression', timeout: -1, callback: (ctx, next) ->
       { hadoop_conf_dir } = ctx.config.ryba
       modified = false
       do_snappy = ->
@@ -466,7 +466,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
         next null, modified
       do_snappy()
 
-    module.exports.push name: 'HDP Core # Kerberos', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Core # Kerberos', timeout: -1, callback: (ctx, next) ->
       {hadoop_conf_dir, core_site, realm} = ctx.config.ryba
       # TODO, discover and generate cross-realm settings
       core_site['hadoop.security.auth_to_local'] ?= """
@@ -522,7 +522,7 @@ Configure Web
 This action follow the ["Authentication for Hadoop HTTP web-consoles" 
 recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 
-    module.exports.push name: 'HDP Core # Kerberos Web UI', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Core # Kerberos Web UI', callback: (ctx, next) ->
       {core_site, realm} = ctx.config.ryba
       # Cluster domain
       unless core_site['hadoop.http.authentication.cookie.domain']
@@ -552,7 +552,7 @@ recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 
     module.exports.push 'ryba/hadoop/core_ssl'
 
-    module.exports.push name: 'HDP Core # Check auth_to_local', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Core # Check auth_to_local', callback: (ctx, next) ->
       {test_user, realm} = ctx.config.ryba
       ctx.execute
         cmd: "hadoop org.apache.hadoop.security.HadoopKerberosName #{test_user.name}@#{realm}"

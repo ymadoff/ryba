@@ -18,6 +18,6 @@ and some may be inactive.
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx
 
-    module.exports.push name: 'HDP HDFS DN # Start', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS DN # Start', callback: (ctx, next) ->
       return next new Error "Not an DataNode" unless ctx.has_module 'ryba/hadoop/hdfs_dn'
       lifecycle.dn_start ctx, next

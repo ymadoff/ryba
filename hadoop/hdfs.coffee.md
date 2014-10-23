@@ -41,7 +41,7 @@ Example:
 
 ```json
 {
-  "hdp": {
+  "ryba": {
     "hdfs_site": {
       "dfs.journalnode.edits.dir": "/var/run/hadoop-hdfs/journalnode\_edit\_dir"
     }
@@ -116,7 +116,7 @@ Example:
       # Fix HDP Companion File bug
       hdfs_site['dfs.https.namenode.https-address'] = null
 
-    module.exports.push name: 'HDP HDFS # Install', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
         name: 'hadoop'
       ,
@@ -131,7 +131,7 @@ Example:
       #   name: 'bigtop-jsvc'
       ], next
 
-    module.exports.push name: 'HDP HDFS # Hadoop Configuration', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS # Hadoop Configuration', timeout: -1, callback: (ctx, next) ->
       {core, hdfs_site, hadoop_conf_dir} = ctx.config.ryba
       datanodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_dn'
       secondary_namenode = ctx.hosts_with_module 'ryba/hadoop/hdfs_snn', 1
@@ -189,7 +189,7 @@ Example:
 Important, this is not implemented yet, we tried to set it up, it didn't work and
 we didn't had time to look further.
 
-    # module.exports.push name: 'HDP HDFS # Configure HTTPS', callback: (ctx, next) ->
+    # module.exports.push name: 'Hadoop HDFS # Configure HTTPS', callback: (ctx, next) ->
     #   {hadoop_conf_dir, hdfs_site} = ctx.config.ryba
     #   namenode = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn', 1
     #   ctx.hconfigure
@@ -214,7 +214,7 @@ By default the service-level authorization is disabled in hadoop, to enable that
 we need to set/configure the hadoop.security.authorization to true in
 ${HADOOP_CONF_DIR}/core-site.xml
 
-    module.exports.push name: 'HDP HDFS # Policy', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS # Policy', callback: (ctx, next) ->
       {core_site, hadoop_conf_dir, hadoop_policy} = ctx.config.ryba
       return next() unless core_site['hadoop.security.authorization'] is 'true'
       ctx.hconfigure
@@ -232,7 +232,7 @@ Create the HDFS user principal. This will be the super administrator for the HDF
 filesystem. Note, we do not create a principal with a keytab to allow HDFS login
 from multiple sessions with braking an active session.
 
-    module.exports.push name: 'HDP HDFS # Kerberos User', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS # Kerberos User', callback: (ctx, next) ->
       {hdfs_user, hdfs_password, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
@@ -250,7 +250,7 @@ keytab inside "/etc/security/keytabs/spnego.service.keytab" with ownerships set 
 and permissions set to "0660". We had to give read/write permission to the group because the 
 same keytab file is for now shared between hdfs and yarn services.
 
-    module.exports.push name: 'HDP HDFS # SPNEGO', callback: module.exports.spnego = (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS # SPNEGO', callback: module.exports.spnego = (ctx, next) ->
       {hdfs_user, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
@@ -277,7 +277,7 @@ same keytab file is for now shared between hdfs and yarn services.
 Update the HDFS configuration stored inside the "/etc/hadoop/hdfs-site.xml" file
 with Kerberos specific properties.
 
-    module.exports.push name: 'HDP HDFS # Kerberos Configure', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS # Kerberos Configure', callback: (ctx, next) ->
       {hadoop_conf_dir, static_host, realm} = ctx.config.ryba
       hdfs_site = {}
       # If "true", access tokens are used as capabilities
@@ -339,7 +339,7 @@ Also worth of interest are the [Pivotal recommandations][hawq] as well as the
 
 Note, a user must re-login for those changes to be taken into account.
 
-    module.exports.push name: 'HDP HDFS # Ulimit', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS # Ulimit', callback: (ctx, next) ->
       ctx.execute cmd: 'ulimit -Hn', (err, _, stdout) ->
         return next err if err
         max_nofile = stdout.trim()

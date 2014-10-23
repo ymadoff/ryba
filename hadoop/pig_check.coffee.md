@@ -13,7 +13,7 @@ Run a Pig script to test the installation once the ResourceManager is
 installed. The script will only be executed the first time it is deployed 
 unless the "hdp.force_check" configuration property is set to "true".
 
-    module.exports.push name: 'HDP Pig Check # Client', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Pig Check # Client', timeout: -1, callback: (ctx, next) ->
       {force_check, test_user} = ctx.config.ryba
       host = ctx.config.host.split('.')[0]
       rm = ctx.host_with_module 'ryba/hadoop/yarn_rm'
@@ -42,7 +42,7 @@ unless the "hdp.force_check" configuration property is set to "true".
 
 ## HCat
 
-    module.exports.push name: 'HDP Pig Check # HCat', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Pig Check # HCat', timeout: -1, callback: (ctx, next) ->
       {test_user, force_check} = ctx.config.ryba
       rm = ctx.host_with_module 'ryba/hadoop/yarn_rm'
       host = ctx.config.host.split('.')[0]

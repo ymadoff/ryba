@@ -54,7 +54,7 @@ layout: module
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HDP MapRed # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop MapRed # IPTables', callback: (ctx, next) ->
       {mapred_site} = ctx.config.ryba
       jobclient = mapred_site['yarn.app.mapreduce.am.job.client.port-range']
       jobclient = jobclient.replace '-', ':'
@@ -65,7 +65,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: ctx.config.iptables.action is 'start'
       , next
 
-    module.exports.push name: 'HDP MapRed # Install Common', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop MapRed # Install Common', timeout: -1, callback: (ctx, next) ->
       ctx.service [
         name: 'hadoop'
       ,
@@ -77,7 +77,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
 
-    module.exports.push name: 'HDP MapRed # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop MapRed # Users & Groups', callback: (ctx, next) ->
       {mapred_user, hadoop_group} = ctx.config.ryba
       ctx.execute
         cmd: "useradd #{mapred_user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop MapReduce service\""
@@ -85,7 +85,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         code_skipped: 9
       , next
 
-    module.exports.push name: 'HDP MapRed # System Directories', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop MapRed # System Directories', timeout: -1, callback: (ctx, next) ->
       { mapred_user, hadoop_group, mapred_log_dir, mapred_pid_dir } = ctx.config.ryba
       modified = false
       do_log = ->
@@ -114,7 +114,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         next null, modified
       do_log()
 
-    module.exports.push name: 'HDP MapRed # Configuration', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop MapRed # Configuration', callback: (ctx, next) ->
       { mapred_site, hadoop_conf_dir, mapred_user, mapred_group, mapred_queue_acls } = ctx.config.ryba
       modified = false
       do_mapred = ->
@@ -171,7 +171,7 @@ The virtual memory (physical + paged memory) upper limit for each Map and
 Reduce task is determined by the virtual memory ratio each YARN Container is 
 allowed.
 
-    module.exports.push name: 'HDP MapRed # Tuning', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop MapRed # Tuning', callback: (ctx, next) ->
       {hadoop_conf_dir} = ctx.config.ryba
       {info, mapred_site} = memory ctx
       ctx.hconfigure

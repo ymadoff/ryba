@@ -12,6 +12,6 @@ layout: module
     module.exports.push (ctx) ->
       require('./mapred').configure ctx
 
-    module.exports.push name: 'HDP JobHistoryServer # Status', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop JobHistoryServer # Status', callback: (ctx, next) ->
       lifecycle.jhs_status ctx, (err, running) ->
         next err, if running then 'STARTED' else 'STOPPED'

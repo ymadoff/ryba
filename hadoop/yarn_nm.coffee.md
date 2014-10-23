@@ -39,7 +39,7 @@ applications running atop of YARN.
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HDP YARN NM # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN NM # IPTables', callback: (ctx, next) ->
       {yarn_site} = ctx.config.ryba
       nm_port = yarn_site['yarn.nodemanager.address'].split(':')[1]
       nm_localizer_port = yarn_site['yarn.nodemanager.localizer.address'].split(':')[1]
@@ -60,7 +60,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install and configure the startup script in 
 "/etc/init.d/hadoop-yarn-nodemanager".
 
-    module.exports.push name: 'HDP YARN NM # Startup', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN NM # Startup', callback: (ctx, next) ->
       {yarn_pid_dir} = ctx.config.ryba
       modified = false
       do_install = ->
@@ -89,7 +89,7 @@ Install and configure the startup script in
         next null, modified
       do_install()
 
-    module.exports.push name: 'HDP YARN NM # Directories', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN NM # Directories', timeout: -1, callback: (ctx, next) ->
       {yarn_user, yarn_site, test_user, hadoop_group} = ctx.config.ryba
       # no need to restrict parent directory and yarn will complain if not accessible by everyone
       log_dirs = yarn_site['yarn.nodemanager.log-dirs'].split ','
@@ -112,7 +112,7 @@ Install and configure the startup script in
         ctx.execute cmds, (err) ->
           next err, created
 
-    module.exports.push name: 'HDP YARN NM # Configure', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN NM # Configure', callback: (ctx, next) ->
       {yarn_site, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
@@ -122,7 +122,7 @@ Install and configure the startup script in
         merge: true
       , next
 
-    module.exports.push name: 'HDP YARN NM # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN NM # Kerberos', callback: (ctx, next) ->
       {yarn_user, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 

@@ -60,7 +60,7 @@ define inside the "ryba/hadoop/hdfs" and "masson/core/nc" modules.
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HDP HDFS NN # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # IPTables', callback: (ctx, next) ->
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 50070, protocol: 'tcp', state: 'NEW', comment: "HDFS NN HTTP" }
@@ -76,7 +76,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 Install and configure the startup script in "/etc/init.d/hadoop-hdfs-namenode".
 
-    module.exports.push name: 'HDP HDFS NN # Startup', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # Startup', callback: (ctx, next) ->
       {hdfs_pid_dir} = ctx.config.ryba
       modified = false
       do_install = ->
@@ -112,7 +112,7 @@ Create the NameNode data and pid directories. The NameNode data is by defined in
 "/etc/hadoop/conf/hdfs-site.xml" file by the "dfs.namenode.name.dir" property. The pid
 file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
 
-    module.exports.push name: 'HDP HDFS NN # Layout', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # Layout', timeout: -1, callback: (ctx, next) ->
       {hdfs_site, hdfs_pid_dir, hdfs_user, hadoop_group} = ctx.config.ryba
       ctx.mkdir [
         destination: hdfs_site['dfs.namenode.name.dir'].split ','
@@ -131,7 +131,7 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
 Create a service principal for this NameNode. The principal is named after
 "nn/#{ctx.config.host}@#{realm}".
 
-    module.exports.push name: 'HDP HDFS NN # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # Kerberos', callback: (ctx, next) ->
       {realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
@@ -147,7 +147,7 @@ Create a service principal for this NameNode. The principal is named after
 
 # Configure
 
-    module.exports.push name: 'HDP HDFS NN # Configure', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # Configure', callback: (ctx, next) ->
       {hadoop_conf_dir, hdfs_user, hadoop_group, hdfs_site} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
@@ -163,7 +163,7 @@ Update "hdfs-site.xml" with HA configuration. The inserted properties are
 similar than the ones for a client or slave configuration with the addtionnal
 "dfs.namenode.shared.edits.dir" and "dfs.namenode.shared.edits.dir" properties.
 
-    module.exports.push name: 'HDP HDFS NN # Configure HA', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # Configure HA', callback: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
       return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
       journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
@@ -183,7 +183,7 @@ to work, the HDFS usermust be able to log for each NameNode into any other NameN
 public and private SSH keys for the HDFS user inside his "~/.ssh" folder and update the
 "~/.ssh/authorized_keys" file accordingly.
 
-    module.exports.push name: 'HDP HDFS NN # SSH Fencing', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # SSH Fencing', callback: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config, ssh_fencing, hdfs_user, hadoop_group} = ctx.config.ryba
       return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
       hdfs_home = '/var/lib/hadoop-hdfs'
@@ -274,7 +274,7 @@ this NameNode isn't yet formated by detecting if the "current/VERSION" exists. T
 is only exected once all the JournalNodes are started. The NameNode is finally restarted
 if the NameNode was formated.
 
-    module.exports.push name: 'HDP HDFS NN # Format', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # Format', timeout: -1, callback: (ctx, next) ->
       {active_nn, hdfs_site, hdfs_user, format, nameservice} = ctx.config.ryba
       return next() unless format
       # Shall only be executed on the leader namenode
@@ -302,7 +302,7 @@ Copy over the contents of the active NameNode metadata directories to an other,
 unformatted NameNode. The command "hdfs namenode -bootstrapStandby" used for the transfer
 is only executed on a non active NameNode.
 
-    module.exports.push name: 'HDP HDFS NN # HA Init Standby NameNodes', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # HA Init Standby NameNodes', timeout: -1, callback: (ctx, next) ->
       # Shall only be executed on the leader namenode
       {active_nn, active_nn_host} = ctx.config.ryba
       return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
@@ -323,7 +323,7 @@ is only executed on a non active NameNode.
 
 Secure the Zookeeper connection with JAAS.
 
-    module.exports.push name: 'HDP HDFS NN # Zookeeper JAAS', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # Zookeeper JAAS', timeout: -1, callback: (ctx, next) ->
       {hadoop_conf_dir, hdfs_user, hadoop_group, zkfc_password} = ctx.config.ryba
       modified = false
       do_core = ->
@@ -383,7 +383,7 @@ The action start by enabling automatic failover in "hdfs-site.xml" and configuri
 If this is an active NameNode, we format ZooKeeper and start the ZKFC daemon. If this is a standby
 NameNode, we wait for the active NameNode to take leadership and start the ZKFC daemon.
 
-    module.exports.push name: 'HDP HDFS NN # HA Auto Failover', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # HA Auto Failover', timeout: -1, callback: (ctx, next) ->
       {hadoop_conf_dir, active_nn, active_nn_host} = ctx.config.ryba
       return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
       zookeepers = ctx.hosts_with_module 'ryba/zookeeper/server'
@@ -456,7 +456,7 @@ Create a Unix and Kerberos test user, by default "test" and execute simple HDFS 
 the NameNode is properly working. Note, those commands are NameNode specific, meaning they only
 afect HDFS metadata.
 
-    # module.exports.push name: 'HDP HDFS NN # Test User', timeout: -1, callback: (ctx, next) ->
+    # module.exports.push name: 'Hadoop HDFS NN # Test User', timeout: -1, callback: (ctx, next) ->
     #   {test_user, test_password, hadoop_group, security} = ctx.config.ryba
     #   {realm, kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5_client
     #   modified = false

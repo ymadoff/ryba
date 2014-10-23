@@ -78,7 +78,7 @@ cat /etc/group | grep hadoop
 hadoop:x:502:yarn,mapred,hdfs,hue
 ```
 
-    module.exports.push name: 'HDP Pig # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Pig # Users & Groups', callback: (ctx, next) ->
       {hadoop_group, pig_user} = ctx.config.ryba
       ctx.group hadoop_group, (err, gmodified) ->
         return next err if err
@@ -89,12 +89,12 @@ hadoop:x:502:yarn,mapred,hdfs,hue
 
 The pig package is install.
 
-    module.exports.push name: 'HDP Pig # Install', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Pig # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service
         name: 'pig'
       , next
 
-    module.exports.push name: 'HDP Pig # Users', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Pig # Users', callback: (ctx, next) ->
       # 6th feb 2014: pig user isnt created by YUM, might change in a future HDP release
       {hadoop_group} = ctx.config.ryba
       ctx.execute
@@ -108,7 +108,7 @@ The pig package is install.
 TODO: Generate the "pig.properties" file dynamically, be carefull, the HDP
 companion file define no properties while the YUM package does.
 
-    module.exports.push name: 'HDP Pig # Configure', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Pig # Configure', callback: (ctx, next) ->
       {pig_conf_dir, pig_conf} = ctx.config.ryba
       ctx.ini
         destination: "#{pig_conf_dir}/pig.properties"
@@ -118,7 +118,7 @@ companion file define no properties while the YUM package does.
         backup: true
       , next
 
-    module.exports.push name: 'HDP Pig # Env', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Pig # Env', callback: (ctx, next) ->
       {java_home} = ctx.config.java
       {hadoop_group, pig_conf_dir, pig_user} = ctx.config.ryba
       ctx.write
@@ -135,7 +135,7 @@ companion file define no properties while the YUM package does.
         backup: true
       , next
 
-    module.exports.push name: 'HDP Pig # Fix Pig', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Pig # Fix Pig', callback: (ctx, next) ->
       ctx.write
         write: [
           match: /^(\s)*slfJarVersion=.*/mg

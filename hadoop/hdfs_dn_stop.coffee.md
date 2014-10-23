@@ -16,13 +16,13 @@ associated the NameNodes.
     module.exports.push (ctx) ->
       require('./hdfs').configure ctx
 
-    module.exports.push name: 'HDP HDFS DN # Stop', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS DN # Stop', callback: (ctx, next) ->
       ctx.execute
         cmd: "service hadoop-hdfs-datanode stop"
         code_skipped: 3
       , next
 
-    module.exports.push name: 'HDP HDFS DN # Stop Clean Logs', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS DN # Stop Clean Logs', callback: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute
         cmd: 'rm /var/log/hadoop-hdfs/*/hadoop-hdfs-datanode-*'
