@@ -15,7 +15,7 @@ layout: module
     module.exports.push module.exports.configure = (ctx) ->
       require('../hadoop/core').configure ctx
       {realm, test_user, test_password} = ctx.config.ryba
-      oozie_server = ctx.host_with_module 'ryba/oozie/server'
+      oozie_server = ctx.host_with_module 'ryba/oozie/server', true
       # Configuration
       ctx.config.ryba.oozie_site ?= {}
       ctx.config.ryba.oozie_site['oozie.base.url'] = "http://#{oozie_server}:11000/oozie"
