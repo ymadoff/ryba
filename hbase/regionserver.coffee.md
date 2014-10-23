@@ -154,7 +154,7 @@ Enable stats collection in Ganglia.
       collector = ctx.host_with_module 'ryba/hadoop/ganglia_collector'
       return next() unless collector
       ctx.upload
-        source: "#{__dirname}/../hadoop/files/hbase/hadoop-metrics.properties.regionservers-GANGLIA"
+        source: "#{__dirname}/../resources/hbase/hadoop-metrics.properties.regionservers-GANGLIA"
         destination: "#{hbase_conf_dir}/hadoop-metrics.properties"
         match: 'TODO-GANGLIA-SERVER'
         replace: collector

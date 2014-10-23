@@ -143,7 +143,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
       {webhcat_conf_dir, hive_user, hadoop_group, webhcat_site} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{webhcat_conf_dir}/webhcat-site.xml"
-        default: "#{__dirname}/../hadoop/files/webhcat/webhcat-site.xml"
+        default: "#{__dirname}/../resources/webhcat/webhcat-site.xml"
         local_default: true
         properties: webhcat_site
         uid: hive_user.name
@@ -156,7 +156,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
       {webhcat_conf_dir, hive_user, hadoop_group} = ctx.config.ryba
       ctx.log 'Write webhcat-env.sh'
       ctx.upload
-        source: "#{__dirname}/../hadoop/files/webhcat/webhcat-env.sh"
+        source: "#{__dirname}/../resources/webhcat/webhcat-env.sh"
         destination: "#{webhcat_conf_dir}/webhcat-env.sh"
         uid: hive_user.name
         gid: hadoop_group.name

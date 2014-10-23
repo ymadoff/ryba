@@ -153,7 +153,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       {java_home} = ctx.config.java
       {oozie_user, hadoop_group, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_data} = ctx.config.ryba
       ctx.write
-        source: "#{__dirname}/../hadoop/files/oozie/oozie-env.sh"
+        source: "#{__dirname}/../resources/oozie/oozie-env.sh"
         destination: "#{oozie_conf_dir}/oozie-env.sh"
         local_source: true
         write: [
@@ -272,7 +272,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ctx.log 'Configure oozie-site.xml'
         ctx.hconfigure
           destination: "#{oozie_conf_dir}/oozie-site.xml"
-          default: "#{__dirname}/../hadoop/files/oozie/oozie-site.xml"
+          default: "#{__dirname}/../resources/oozie/oozie-site.xml"
           local_default: true
           properties: oozie_site
           uid: oozie_user.name

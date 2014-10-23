@@ -116,7 +116,7 @@ Install and configure the startup script in
       {yarn_site, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
-        default: "#{__dirname}/files/core_hadoop/yarn-site.xml"
+        default: "#{__dirname}/../resources/core_hadoop/yarn-site.xml"
         local_default: true
         properties: yarn_site
         merge: true

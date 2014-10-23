@@ -154,7 +154,7 @@ nagiocmd:x:2419:apache
         source = if object is 'nagios'
         then 'nagios.cfg-centos'
         else "#{object}.cfg"
-        source: "#{__dirname}/../hadoop/files/nagios/objects/#{source}"
+        source: "#{__dirname}/../resources/nagios/objects/#{source}"
         destination: "/etc/nagios/objects/#{object}.cfg"
         uid: user.name
         gid: group.name
@@ -166,11 +166,11 @@ nagiocmd:x:2419:apache
 
     module.exports.push name: 'Nagios # Plugins', callback: (ctx, next) ->
       {user, group, plugin_dir} = ctx.config.ryba.nagios
-      glob "#{__dirname}/../hadoop/files/nagios/plugins/*", (err, plugins) ->
+      glob "#{__dirname}/../resources/nagios/plugins/*", (err, plugins) ->
         return next err if err
         plugins = for plugin in plugins
           plugin = path.basename plugin
-          source: "#{__dirname}/../hadoop/files/nagios/plugins/#{plugin}"
+          source: "#{__dirname}/../resources/nagios/plugins/#{plugin}"
           destination: "#{plugin_dir}/#{plugin}"
           uid: user.name
           gid: group.name
@@ -272,7 +272,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       for group, hosts of nagios.hostgroups
         hostgroup_defs[group] = if hosts.length then hosts else null
       ctx.render
-        source: "#{__dirname}/../hadoop/files/nagios/templates/hadoop-hostgroups.cfg.j2"
+        source: "#{__dirname}/../resources/nagios/templates/hadoop-hostgroups.cfg.j2"
         local_source: true
         destination: '/etc/nagios/objects/hadoop-hostgroups.cfg'
         context:
@@ -286,7 +286,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       for group, hosts of nagios.hostgroups
         hostgroup_defs[group] = if hosts.length then hosts else null
       ctx.render
-        source: "#{__dirname}/../hadoop/files/nagios/templates/hadoop-servicegroups.cfg.j2"
+        source: "#{__dirname}/../resources/nagios/templates/hadoop-servicegroups.cfg.j2"
         local_source: true
         destination: '/etc/nagios/objects/hadoop-servicegroups.cfg'
         context:
@@ -343,7 +343,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       for group, hosts of nagios.hostgroups
         hostgroup_defs[group] = if hosts.length then hosts else null
       ctx.render
-        source: "#{__dirname}/../hadoop/files/nagios/templates/hadoop-services.cfg.j2"
+        source: "#{__dirname}/../resources/nagios/templates/hadoop-services.cfg.j2"
         local_source: true
         destination: '/etc/nagios/objects/hadoop-services.cfg'
         context:
@@ -399,7 +399,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
 
     module.exports.push name: 'Nagios # Commands', callback: (ctx, next) ->
       ctx.write
-        source: "#{__dirname}/../hadoop/files/nagios/objects/hadoop-commands.cfg"
+        source: "#{__dirname}/../resources/nagios/objects/hadoop-commands.cfg"
         local_source: true
         destination: '/etc/nagios/objects/hadoop-commands.cfg'
         write: [

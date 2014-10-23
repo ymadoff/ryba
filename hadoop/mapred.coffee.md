@@ -121,7 +121,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         ctx.log 'Configure mapred-site.xml'
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/mapred-site.xml"
-          default: "#{__dirname}/files/core_hadoop/mapred-site.xml"
+          default: "#{__dirname}/../resources/core_hadoop/mapred-site.xml"
           local_default: true
           properties: mapred_site
           merge: true
@@ -138,7 +138,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         # The file is present inside HDP-2.0
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/mapred-queue-acls.xml"
-          default: "#{__dirname}/files/core_hadoop/mapred-queue-acls.xml"
+          default: "#{__dirname}/../resources/core_hadoop/mapred-queue-acls.xml"
           local_default: true
           properties: mapred_queue_acls
           merge: true

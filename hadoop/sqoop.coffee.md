@@ -92,7 +92,7 @@ Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
     module.exports.push name: 'Hadoop Sqoop # Environment', timeout: -1, callback: (ctx, next) ->
       {sqoop_conf_dir, sqoop_user, hadoop_group} = ctx.config.ryba
       ctx.write
-        source: "#{__dirname}/files/sqoop/sqoop-env.sh"
+        source: "#{__dirname}/../resources/sqoop/sqoop-env.sh"
         destination: "#{sqoop_conf_dir}/sqoop-env.sh"
         local_source: true
         uid: sqoop_user.name
@@ -108,7 +108,7 @@ Upload the "sqoop-site.xml" files into the "/etc/sqoop/conf" folder.
       {sqoop_conf_dir, sqoop_user, hadoop_group, sqoop_site} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{sqoop_conf_dir}/sqoop-site.xml"
-        default: "#{__dirname}/files/sqoop/sqoop-site.xml"
+        default: "#{__dirname}/../resources/sqoop/sqoop-site.xml"
         local_default: true
         properties: sqoop_site
         uid: sqoop_user.name

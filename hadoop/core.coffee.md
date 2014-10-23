@@ -327,7 +327,7 @@ not handled here.
       {core_site, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/core-site.xml"
-        default: "#{__dirname}/files/core_hadoop/core-site.xml"
+        default: "#{__dirname}/../resources/core_hadoop/core-site.xml"
         local_default: true
         properties: core_site
         merge: true
@@ -338,7 +338,7 @@ not handled here.
       {hdfs_user, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
       ctx.upload
         destination: "#{hadoop_conf_dir}/rack_topology.sh"
-        source: "#{__dirname}/files/rack_topology.sh"
+        source: "#{__dirname}/../resources/rack_topology.sh"
         uid: hdfs_user.name
         gid: hadoop_group.name
         mode: 0o755
@@ -390,7 +390,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
             replace: '. /etc/hadoop/conf/xasecure-hadoop-env.sh'
             append: true
         ctx.write
-          source: "#{__dirname}/files/core_hadoop/hadoop-env.sh"
+          source: "#{__dirname}/../resources/core_hadoop/hadoop-env.sh"
           destination: "#{hadoop_conf_dir}/hadoop-env.sh"
           local_source: true
           write: write

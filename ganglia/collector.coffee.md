@@ -138,7 +138,7 @@ Copy the object files provided in the HDP companion files into the
 "/usr/libexec/hdp/ganglia" folder. Permissions on those file are set to "0o744".
 
     module.exports.push name: 'Ganglia Collector # Objects', timeout: -1, callback: (ctx, next) ->
-      glob "#{__dirname}/../hadoop/files/ganglia/objects/*.*", (err, files) ->
+      glob "#{__dirname}/../resources/ganglia/objects/*.*", (err, files) ->
         files = for file in files then source: file, destination: "/usr/libexec/hdp/ganglia", mode: 0o744
         ctx.upload files, next
 
@@ -148,7 +148,7 @@ Upload the "hdp-gmetad" service file into "/etc/init.d".
 
     module.exports.push name: 'Ganglia Collector # Init Script', timeout: -1, callback: (ctx, next) ->
       ctx.upload [
-        source: "#{__dirname}/../hadoop/files/ganglia/scripts/hdp-gmetad"
+        source: "#{__dirname}/../resources/ganglia/scripts/hdp-gmetad"
         destination: '/etc/init.d'
         mode: 0o755
       ], next

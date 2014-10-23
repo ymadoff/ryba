@@ -160,7 +160,7 @@ and "/etc/init.d/hive-server2".
       {hive_site, hive_user, hive_group, hive_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hive_conf_dir}/hive-site.xml"
-        default: "#{__dirname}/../hadoop/files/hive/hive-site.xml"
+        default: "#{__dirname}/../resources/hive/hive-site.xml"
         local_default: true
         properties: hive_site
         merge: true
@@ -235,11 +235,11 @@ and "/etc/init.d/hive-server2".
 
     module.exports.push name: 'Hive & HCat Server # Logs', callback: (ctx, next) ->
       ctx.write [
-        source: "#{__dirname}/../hadoop/files/hive/hive-exec-log4j.properties.template"
+        source: "#{__dirname}/../resources/hive/hive-exec-log4j.properties.template"
         local_source: true
         destination: '/etc/hive/conf/hive-exec-log4j.properties'
       ,
-        source: "#{__dirname}/../hadoop/files/hive/hive-log4j.properties.template"
+        source: "#{__dirname}/../resources/hive/hive-log4j.properties.template"
         local_source: true
         destination: '/etc/hive/conf/hive-log4j.properties'
       ], next

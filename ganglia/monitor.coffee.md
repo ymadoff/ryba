@@ -40,7 +40,7 @@ Copy the object files provided in the HDP companion files into the
 "/usr/libexec/hdp/ganglia" folder. Permissions on those file are set to "0o744".
 
     module.exports.push name: 'Ganglia Monitor # Objects', timeout: -1, callback: (ctx, next) ->
-      glob "#{__dirname}/../hadoop/files/ganglia/objects/*.*", (err, files) ->
+      glob "#{__dirname}/../resources/ganglia/objects/*.*", (err, files) ->
         files = for file in files then source: file, destination: "/usr/libexec/hdp/ganglia", mode: 0o744
         ctx.upload files, next
 
@@ -50,7 +50,7 @@ Upload the "hdp-gmond" service file into "/etc/init.d".
 
     module.exports.push name: 'Ganglia Monitor # Init Script', timeout: -1, callback: (ctx, next) ->
       ctx.upload
-        source: "#{__dirname}/../hadoop/files/ganglia/scripts/hdp-gmond"
+        source: "#{__dirname}/../resources/ganglia/scripts/hdp-gmond"
         destination: '/etc/init.d'
         mode: 0o755
       , next
@@ -138,7 +138,7 @@ Upload the "hadoop-metrics2.properties" to connect Hadoop with Ganglia.
     module.exports.push name: 'Ganglia Monitor # Hadoop', callback: (ctx, next) ->
       collector = ctx.host_with_module 'ryba/ganglia/collector'
       ctx.write
-        source: "#{__dirname}/../hadoop/files/core_hadoop/hadoop-metrics2.properties-GANGLIA"
+        source: "#{__dirname}/../resources/core_hadoop/hadoop-metrics2.properties-GANGLIA"
         local_source: true
         destination: "/etc/hadoop/conf/hadoop-metrics2.properties"
         match: "TODO-GANGLIA-SERVER"

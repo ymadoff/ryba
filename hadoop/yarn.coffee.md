@@ -104,7 +104,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       yarn_opts = "YARN_OPTS=\"$YARN_OPTS #{yarn_opts}\" # ryba"
       ctx.config.ryba.yarn_opts = yarn_opts
       ctx.render
-        source: "#{__dirname}/files/core_hadoop/yarn-env.sh"
+        source: "#{__dirname}/../resources/core_hadoop/yarn-env.sh"
         destination: "#{hadoop_conf_dir}/yarn-env.sh"
         local_source: true
         write: [
@@ -161,7 +161,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       do_yarn = ->
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/yarn-site.xml"
-          default: "#{__dirname}/files/core_hadoop/yarn-site.xml"
+          default: "#{__dirname}/../resources/core_hadoop/yarn-site.xml"
           local_default: true
           properties: yarn_site
           merge: true
@@ -173,7 +173,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         ctx.log 'Configure capacity-scheduler.xml'
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/capacity-scheduler.xml"
-          default: "#{__dirname}/files/core_hadoop/capacity-scheduler.xml"
+          default: "#{__dirname}/../resources/core_hadoop/capacity-scheduler.xml"
           local_default: true
           properties: capacity_scheduler
           merge: true

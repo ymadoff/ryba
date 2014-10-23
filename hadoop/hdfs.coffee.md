@@ -143,7 +143,7 @@ Example:
         # NameNode hostname for http access.
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-          default: "#{__dirname}/files/core_hadoop/hdfs-site.xml"
+          default: "#{__dirname}/../resources/core_hadoop/hdfs-site.xml"
           local_default: true
           properties: hdfs_site
           merge: true
@@ -219,7 +219,7 @@ ${HADOOP_CONF_DIR}/core-site.xml
       return next() unless core_site['hadoop.security.authorization'] is 'true'
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hadoop-policy.xml"
-        default: "#{__dirname}/files/core_hadoop/hadoop-policy.xml"
+        default: "#{__dirname}/../resources/core_hadoop/hadoop-policy.xml"
         local_default: true
         properties: hadoop_policy
         merge: true

@@ -20,7 +20,7 @@ layout: module
         config[k] = v
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
-        default: "#{__dirname}/files/core_hadoop/yarn-site.xml"
+        default: "#{__dirname}/../resources/core_hadoop/yarn-site.xml"
         local_default: true
         properties: config
         merge: true
