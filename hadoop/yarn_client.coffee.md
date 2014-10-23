@@ -14,7 +14,6 @@ layout: module
 
     module.exports.push name: 'Hadoop YARN # Configuration', callback: (ctx, next) ->
       {hadoop_conf_dir, yarn_user, yarn_group, yarn_site} = ctx.config.ryba
-      yarn_site = merge {}, yarn_default, yarn_site
       config = {}
       for k, v of yarn_site
         continue if k isnt 'yarn.application.classpath' and k.indexOf('yarn.resourcemanager') is -1
