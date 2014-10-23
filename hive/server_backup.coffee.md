@@ -38,10 +38,24 @@ directory.
       ctx.execute
         cmd: """
         ts=`date +%s`
-        mkdir /tmp/ryba-hive-$ts
-        cp -rp /var/log/hive/hive-server2.log.* /tmp/ryba-hive-$ts
-        tar czf /tmp/ryba-hive-log-#{now}.tgz -C /tmp/ryba-hive-$ts .
-        rm -rf /var/tmp/ryba-hive-$ts
+        mkdir /tmp/ryba-hive-conf-$ts
+        cp -rp /var/log/hive/hive-server2.log.* /tmp/ryba-hive-conf-$ts
+        tar czf /var/tmp/ryba-hive-log-$ts.tgz -C /tmp/ryba-hive-conf-$ts .
+        rm -rf /tmp/ryba-hive-conf-$ts
+        """
+      , next
+
+## Configuration
+
+Backup the active Hive configuration.
+
+    module.exports.push name: "Hive Server # Configuration", callback: (ctx, next) ->
+      ctx.execute
+        cmd: """
+        ts=`date +%s`
+        cp -rp /etc/hive/conf /tmp/ryba-hive-conf-$ts
+        tar czf /var/tmp/ryba-hive-conf-#{now}.tgz -C /tmp/ryba-hive-conf-$ts .
+        rm -rf /tmp/ryba-hive-conf-$ts
         """
       , next
 
