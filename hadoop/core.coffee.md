@@ -162,7 +162,7 @@ Default configuration:
       ctx.config.ryba.mapred_log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
       # Repository
       ctx.config.ryba.proxy = ctx.config.proxy.http_proxy if typeof ctx.config.ryba.http_proxy is 'undefined'
-      ctx.config.ryba.hdp_repo ?= 'http://public-repo-1.hortonworks.com/HDP/centos5/2.x/GA/2.1-latest/hdp.repo'
+      ctx.config.ryba.hdp_repo ?= 'http://s3.amazonaws.com/public-repo-1.hortonworks.com/HDP/centos6/2.x/2.1-latest/hdp.repo'
       # HA Configuration
       ctx.config.ryba.nameservice ?= null
       ctx.config.ryba.active_nn ?= false
