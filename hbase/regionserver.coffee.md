@@ -128,7 +128,7 @@ is added membership to the group hadoop to gain read access.
         ctx.execute
           cmd: "su -l #{hbase_user.name} -c 'test -r /etc/security/keytabs/spnego.service.keytab'"
         , (err) ->
-          next err, if modified then ctx.OK else ctx.PASS
+          next err, modified
       # ctx.copy [
       #   source: '/etc/security/keytabs/spnego.service.keytab'
       #   destination: hbase_site['hbase.thrift.keytab.file']
@@ -158,12 +158,20 @@ Enable stats collection in Ganglia.
         destination: "#{hbase_conf_dir}/hadoop-metrics.properties"
         match: 'TODO-GANGLIA-SERVER'
         replace: collector
-      , (err, uploaded) ->
-        next err, if uploaded then ctx.OK else ctx.PASS
+      , next
 
-    module.exports.push name: 'HBase RegionServer # Start', callback: (ctx, next) ->
-      lifecycle.hbase_regionserver_start ctx, (err, started) ->
-        next err, if started then ctx.OK else ctx.PASS
+## Start
+
+Execute the "ryba/hbase/regionserver_start" module to start the RegionServer.
+
+    module.exports.push 'ryba/hbase/regionserver_start'
+
+## Check
+
+Check this installation.
+
+    module.exports.push 'ryba/hbase/regionserver_check'
+
 
 
 
