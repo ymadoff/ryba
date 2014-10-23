@@ -142,7 +142,6 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
             modified = true if chmoded
             do_conf()
       do_conf = ->
-        ctx.log "Write to '#{hadoop_conf_dir}/container-executor.cfg' as ini"
         ctx.ini
           destination: "#{hadoop_conf_dir}/container-executor.cfg"
           content: container_executor
@@ -160,11 +159,6 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       { yarn_site, hadoop_conf_dir, capacity_scheduler } = ctx.config.ryba
       modified = false
       do_yarn = ->
-        ctx.log 'Configure yarn-site.xml'
-        # config = {}
-        # for k,v of yarn_site then config[k] = v 
-        # config['yarn.nodemanager.local-dirs'] = config['yarn.nodemanager.local-dirs'].join ',' if Array.isArray yarn_site['yarn.nodemanager.local-dirs']
-        # config['yarn.nodemanager.log-dirs'] = config['yarn.nodemanager.log-dirs'].join ',' if Array.isArray yarn_site['yarn.nodemanager.log-dirs']
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/yarn-site.xml"
           default: "#{__dirname}/files/core_hadoop/yarn-site.xml"
@@ -263,25 +257,16 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
 
     module.exports.push name: 'HDP YARN # HDFS layout', callback: (ctx, next) ->
       {yarn_site, yarn_user, hadoop_group} = ctx.config.ryba
-      ok = false
-      do_remote_app_log_dir = ->
-        remote_app_log_dir = yarn_site['yarn.nodemanager.remote-app-log-dir']
-        ctx.log "Create #{remote_app_log_dir}"
-        ctx.execute
-          cmd: mkcmd.hdfs ctx, """
-          if hdfs dfs -test -d #{remote_app_log_dir}; then exit 1; fi
-          hdfs dfs -mkdir -p #{remote_app_log_dir}
-          hdfs dfs -chown #{yarn_user.name}:#{hadoop_group.name} #{remote_app_log_dir}
-          hdfs dfs -chmod 1777 #{remote_app_log_dir}
-          """
-          code_skipped: 1
-        , (err, executed, stdout) ->
-          return next err if err
-          ok = true if executed
-          do_end()
-      do_end = ->
-        next null, if ok then ctx.OK else ctx.PASS
-      do_remote_app_log_dir()
+      remote_app_log_dir = yarn_site['yarn.nodemanager.remote-app-log-dir']
+      ctx.execute
+        cmd: mkcmd.hdfs ctx, """
+        if hdfs dfs -test -d #{remote_app_log_dir}; then exit 2; fi
+        hdfs dfs -mkdir -p #{remote_app_log_dir}
+        hdfs dfs -chown #{yarn_user.name}:#{hadoop_group.name} #{remote_app_log_dir}
+        hdfs dfs -chmod 1777 #{remote_app_log_dir}
+        """
+        code_skipped: 2
+      , next
 
 
 
