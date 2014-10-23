@@ -21,6 +21,7 @@ layout: module
       mapred_site['mapreduce.shuffle.port'] ?= '13562'
       mapred_site['mapreduce.jobhistory.address'] ?= "#{ctx.config.host}:10020"
       mapred_site['mapreduce.jobhistory.webapp.address'] ?= "#{ctx.config.host}:19888"
+      mapred_site['mapreduce.jobhistory.webapp.https.address'] ?= "#{ctx.config.host}:19888"
       mapred_site['mapreduce.jobhistory.admin.address'] ?= "#{ctx.config.host}:10033"
       # See './hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-common/src/main/java/org/apache/hadoop/mapreduce/v2/jobhistory/JHAdminConfig.java#158'
       # yarn_site['mapreduce.jobhistory.webapp.spnego-principal']
@@ -156,12 +157,15 @@ started, the server take some time before it can correctly answer HTTP request.
 For this reason, the "retry" property is set to the high value of "10".
 
     module.exports.push name: 'HDP MapRed JHS # Check', retry: 10, callback: (ctx, next) ->
-      {test_user, mapred_site} = ctx.config.ryba
-      [host, port] = mapred_site['mapreduce.jobhistory.webapp.address'].split ':'
+      {test_user, yarn_site, mapred_site} = ctx.config.ryba
+      protocol = if yarn_site['yarn.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      [host, port] = if protocol is 'http'
+      then mapred_site['mapreduce.jobhistory.webapp.address'].split ':'
+      else mapred_site['mapreduce.jobhistory.webapp.https.address'].split ':'
       ctx.execute
         cmd: mkcmd.test ctx, """
         if hdfs dfs -test -f /user/#{test_user.name}/#{ctx.config.host}-jhs; then exit 2; fi
-        curl -s --negotiate -u : http://#{host}:#{port}/ws/v1/history/info
+        curl -s --insecure --negotiate -u : #{protocol}://#{host}:#{port}/ws/v1/history/info
         if [ $? != "0" ]; then exit 9; fi
         hdfs dfs -touchz /user/#{test_user.name}/#{ctx.config.host}-jhs
         """
