@@ -408,7 +408,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
         #!/bin/bash
         export HADOOP_HOME=/usr/lib/hadoop
         """
-        mode: '644'
+        mode: 0o0644
       , next
 
     module.exports.push name: 'Hadoop Core # Keytabs', timeout: -1, callback: (ctx, next) ->
@@ -451,7 +451,6 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
           modified = true if serviced
           do_core()
       do_core = ->
-        ctx.log 'Configure core-site.xml'
         core_site = {}
         core_site['io.compression.codecs'] ?= "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.SnappyCodec"
         ctx.hconfigure
