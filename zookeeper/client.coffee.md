@@ -3,7 +3,7 @@ title:
 layout: module
 ---
 
-# Zookeeper
+# Zookeeper Client
 
     lifecycle = require '../lib/lifecycle'
     quote = require 'regexp-quote'

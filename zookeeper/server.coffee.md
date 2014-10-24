@@ -3,7 +3,14 @@ title:
 layout: module
 ---
 
-# Zookeeper
+# Zookeeper Server
+
+Setting up a ZooKeeper server in standalone mode or in replicated mode.
+
+A replicated group of servers in the same application is called a quorum, and in
+replicated mode, all servers in the quorum have copies of the same configuration
+file. The file is similar to the one used in standalone mode, but with a few
+differences.
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
@@ -18,6 +25,8 @@ layout: module
 *   `zookeeper_user` (object|string)   
     The Unix Zookeeper login name or a user object (see Mecano User documentation).   
 
+Example : 
+
 ```json
 {
   "ryba": {
@@ -27,8 +36,6 @@ layout: module
     }
   }
 }
-
-Example :
 
     module.exports.push module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
