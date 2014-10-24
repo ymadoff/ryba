@@ -2,6 +2,7 @@
 # Hive Server Check
 
     module.exports = []
+    module.exports.push 'masson/bootstrap/'
     module.exports.push require('./server').configure
 
 ## Database
