@@ -5,249 +5,48 @@ layout: module
 
 # WebHCat
 
-    each = require 'each'
-    lifecycle = require '../lib/lifecycle'
-    mkcmd = require '../lib/mkcmd'
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
-    module.exports.push 'masson/core/iptables'
-    # Install SPNEGO keytab
-    module.exports.push 'ryba/hadoop/hdfs'
 
 # Configure
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       require('./server').configure ctx
       require('../hadoop/hdfs').configure ctx
       require('../zookeeper/server').configure ctx
       require('../hive/server').configure ctx
-      {realm} = ctx.config.ryba
+      {ryba} = ctx.config
       hive_host = ctx.host_with_module 'ryba/hive/server'
       zookeeper_hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
       for server of ctx.config.servers
         continue if (i = zookeeper_hosts.indexOf server.host) is -1
-        zookeeper_hosts[i] = "#{zookeeper_hosts[i]}:#{ctx.config.ryba.zookeeper_port}"
-      ctx.config.ryba ?= {}
-      # ctx.config.ryba.webhcat_conf_dir ?= '/etc/hcatalog/conf/webhcat'
-      ctx.config.ryba.webhcat_conf_dir ?= '/etc/hive-webhcat/conf'
-      ctx.config.ryba.webhcat_log_dir ?= '/var/log/webhcat'
-      ctx.config.ryba.webhcat_pid_dir ?= '/var/run/webhcat'
+        zookeeper_hosts[i] = "#{zookeeper_hosts[i]}:#{ryba.zookeeper_port}"
+      # ryba.webhcat_conf_dir ?= '/etc/hcatalog/conf/webhcat'
+      ryba.webhcat_conf_dir ?= '/etc/hive-webhcat/conf'
+      ryba.webhcat_log_dir ?= '/var/log/webhcat'
+      ryba.webhcat_pid_dir ?= '/var/run/webhcat'
       # WebHCat configuration
-      ctx.config.ryba.webhcat_site ?= {}
-      ctx.config.ryba.webhcat_site['templeton.storage.class'] ?= 'org.apache.hive.hcatalog.templeton.tool.ZooKeeperStorage' # Fix default value distributed in companion files
-      ctx.config.ryba.webhcat_site['templeton.jar'] ?= '/usr/lib/hive-hcatalog/share/webhcat/svr/lib/hive-webhcat-0.13.0.2.1.2.0-402.jar' # Fix default value distributed in companion files
-      ctx.config.ryba.webhcat_site['templeton.hive.properties'] ?= "hive.metastore.local=false,hive.metastore.uris=thrift://#{hive_host}:9083,hive.metastore.sasl.enabled=yes,hive.metastore.execute.setugi=true,hive.metastore.warehouse.dir=/apps/hive/warehouse"
-      ctx.config.ryba.webhcat_site['templeton.zookeeper.hosts'] ?= zookeeper_hosts.join ','
-      ctx.config.ryba.webhcat_site['templeton.kerberos.principal'] ?= "HTTP/#{ctx.config.host}@#{realm}"
-      ctx.config.ryba.webhcat_site['templeton.kerberos.keytab'] ?= "#{ctx.config.ryba.webhcat_conf_dir}/spnego.service.keytab"
-      ctx.config.ryba.webhcat_site['templeton.kerberos.secret'] ?= 'secret'
-      ctx.config.ryba.webhcat_site['webhcat.proxyuser.hue.groups'] ?= '*'
-      ctx.config.ryba.webhcat_site['webhcat.proxyuser.hue.hosts'] ?= '*'
-      ctx.config.ryba.webhcat_site['templeton.port'] ?= 50111
-      ctx.config.ryba.webhcat_site['templeton.controller.map.mem'] = 1600 # Total virtual memory available to map tasks.
+      ryba.webhcat_site ?= {}
+      ryba.webhcat_site['templeton.storage.class'] ?= 'org.apache.hive.hcatalog.templeton.tool.ZooKeeperStorage' # Fix default value distributed in companion files
+      ryba.webhcat_site['templeton.jar'] ?= '/usr/lib/hive-hcatalog/share/webhcat/svr/lib/hive-webhcat-0.13.0.2.1.2.0-402.jar' # Fix default value distributed in companion files
+      ryba.webhcat_site['templeton.hive.properties'] ?= "hive.metastore.local=false,hive.metastore.uris=thrift://#{hive_host}:9083,hive.metastore.sasl.enabled=yes,hive.metastore.execute.setugi=true,hive.metastore.warehouse.dir=/apps/hive/warehouse"
+      ryba.webhcat_site['templeton.zookeeper.hosts'] ?= zookeeper_hosts.join ','
+      ryba.webhcat_site['templeton.kerberos.principal'] ?= "HTTP/#{ctx.config.host}@#{ryba.realm}"
+      ryba.webhcat_site['templeton.kerberos.keytab'] ?= "#{ryba.webhcat_conf_dir}/spnego.service.keytab"
+      ryba.webhcat_site['templeton.kerberos.secret'] ?= 'secret'
+      ryba.webhcat_site['webhcat.proxyuser.hue.groups'] ?= '*'
+      ryba.webhcat_site['webhcat.proxyuser.hue.hosts'] ?= '*'
+      ryba.webhcat_site['templeton.port'] ?= 50111
+      ryba.webhcat_site['templeton.controller.map.mem'] = 1600 # Total virtual memory available to map tasks.
 
-## IPTables
+    # module.exports.push command: 'backup', modules: 'ryba/hive/webhcat_backup'
 
-| Service | Port  | Proto | Info                |
-|---------|-------|-------|---------------------|
-| webhcat | 50111 | http  | WebHCat HTTP server |
+    module.exports.push command: 'check', modules: 'ryba/hive/webhcat_check'
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
-"start" (default value).
+    module.exports.push command: 'install', modules: 'ryba/hive/webhcat_install'
 
-    module.exports.push name: 'WebHCat # IPTables', callback: (ctx, next) ->
-      {webhcat_site} = ctx.config.ryba
-      port = webhcat_site['templeton.port']
-      ctx.iptables
-        rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "WebHCat HTTP Server" }
-        ]
-        if: ctx.config.iptables.action is 'start'
-      , next
+    module.exports.push command: 'start', modules: 'ryba/hive/webhcat_start'
 
-    module.exports.push name: 'WebHCat # Install', timeout: -1, callback: (ctx, next) ->
-      ctx.service [
-        name: 'hive-hcatalog'
-      ,
-        name: 'hive-webhcat'
-      ,
-        name: 'webhcat-tar-hive'
-      ,
-        name: 'webhcat-tar-pig'
-      ], next
+    module.exports.push command: 'status', modules: 'ryba/hive/webhcat_status'
 
-## Startup
-
-Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
-
-    module.exports.push name: 'WebHCat # Startup', callback: (ctx, next) ->
-      {webhcat_pid_dir} = ctx.config.ryba
-      modified = false
-      do_install = ->
-        ctx.service
-          name: 'hive-webhcat-server'
-          startup: true
-        , (err, serviced) ->
-          return next err if err
-          modified = true if serviced
-          do_write()
-      do_write = ->
-        ctx.write [
-          destination: '/etc/init.d/hive-webhcat-server'
-          match: /^PIDFILE=".*"$/m
-          replace: "PIDFILE=\"#{webhcat_pid_dir}/webhcat.pid\""
-        ,
-          destination: '/etc/init.d/hive-webhcat-server'
-          match: /^.*# Ryba: clean pidfile if pid not running$/m
-          replace: """
-          if pid=`cat $PIDFILE`; then if ! ps -e -o pid | grep -v grep | grep -w $pid; then rm $PIDFILE; fi; fi; \# Ryba: clean pidfile if pid not running
-          """
-          append: /^PIDFILE=.*$/m
-        ], (err, written) ->
-          return next err if err
-          modified = true if written
-          do_end()
-      do_end = ->
-        next null, modified
-      do_install()
-
-    module.exports.push name: 'WebHCat # Directories', callback: (ctx, next) ->
-      {webhcat_log_dir, webhcat_pid_dir, hive_user, hadoop_group} = ctx.config.ryba
-      modified = false
-      do_log = ->
-        ctx.mkdir
-          destination: webhcat_log_dir
-          uid: hive_user.name
-          gid: hadoop_group.name
-          mode: 0o755
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_pid()
-      do_pid = ->
-        ctx.mkdir
-          destination: webhcat_pid_dir
-          uid: hive_user.name
-          gid: hadoop_group.name
-          mode: 0o755
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_end()
-      do_end = ->
-        next null, modified
-      do_log()
-
-    module.exports.push name: 'WebHCat # Configuration', callback: (ctx, next) ->
-      {webhcat_conf_dir, hive_user, hadoop_group, webhcat_site} = ctx.config.ryba
-      ctx.hconfigure
-        destination: "#{webhcat_conf_dir}/webhcat-site.xml"
-        default: "#{__dirname}/../resources/webhcat/webhcat-site.xml"
-        local_default: true
-        properties: webhcat_site
-        uid: hive_user.name
-        gid: hadoop_group.name
-        mode: 0o0755
-        merge: true
-      , next
-
-    module.exports.push name: 'WebHCat # Env', callback: (ctx, next) ->
-      {webhcat_conf_dir, hive_user, hadoop_group} = ctx.config.ryba
-      ctx.log 'Write webhcat-env.sh'
-      ctx.upload
-        source: "#{__dirname}/../resources/webhcat/webhcat-env.sh"
-        destination: "#{webhcat_conf_dir}/webhcat-env.sh"
-        uid: hive_user.name
-        gid: hadoop_group.name
-        mode: 0o0755
-      , next
-
-    module.exports.push name: 'WebHCat # HDFS', callback: (ctx, next) ->
-      {hive_user, hive_group} = ctx.config.ryba
-      modified = false
-      ctx.execute [
-        cmd: mkcmd.hdfs ctx, """
-        if hdfs dfs -test -d /user/#{hive_user.name}; then exit 1; fi
-        hdfs dfs -mkdir -p /user/#{hive_user.name}
-        hdfs dfs -chown #{hive_user.name}:#{hive_group.name} /user/#{hive_user.name}
-        """
-        code_skipped: 1
-      ,
-        cmd: mkcmd.hdfs ctx, """
-        if hdfs dfs -test -d /apps/webhcat; then exit 1; fi
-        hdfs dfs -mkdir -p /apps/webhcat
-        """
-        code_skipped: 1
-      ], (err, created, stdout) ->
-        return next err if err
-        modified = true if created
-        each([
-          '/usr/share/HDP-webhcat/pig.tar.gz'
-          '/usr/share/HDP-webhcat/hive.tar.gz'
-          '/usr/lib/hadoop-mapreduce/hadoop-streaming*.jar'
-        ])
-        .on 'item', (item, next) ->
-          ctx.execute
-            cmd: mkcmd.hdfs ctx, "hdfs dfs -copyFromLocal #{item} /apps/webhcat/"
-            code_skipped: 1
-          , (err, copied) ->
-            return next err if err
-            modified = true if copied
-            next()
-        .on 'both', (err) ->
-          return next err if err
-          ctx.execute
-            cmd: mkcmd.hdfs ctx, """
-            hdfs dfs -chown -R #{hive_user.name}:users /apps/webhcat
-            hdfs dfs -chmod -R 755 /apps/webhcat
-            """
-          , (err, executed, stdout) ->
-            next err, modified
-
-    module.exports.push name: 'WebHCat # Fix HDFS tmp', callback: (ctx, next) ->
-      # Avoid HTTP response
-      # Permission denied: user=ryba, access=EXECUTE, inode=\"/tmp/hadoop-hcat\":HTTP:hadoop:drwxr-x---
-      {hive_user, webhcat_group} = ctx.config.ryba
-      modified = false
-      ctx.execute [
-        cmd: mkcmd.hdfs ctx, """
-        if hdfs dfs -test -d /tmp/hadoop-hcat; then exit 2; fi
-        hdfs dfs -mkdir -p /tmp/hadoop-hcat
-        hdfs dfs -chown HTTP:hadoop /tmp/hadoop-hcat
-        hdfs dfs -chmod -R 1777 /tmp/hadoop-hcat
-        """
-        code_skipped: 2
-      ], next
-
-    module.exports.push name: 'WebHCat # SPNEGO', callback: (ctx, next) ->
-      {webhcat_site, hive_user, webhcat_group} = ctx.config.ryba
-      ctx.copy
-        source: '/etc/security/keytabs/spnego.service.keytab'
-        destination: webhcat_site['templeton.kerberos.keytab']
-        uid: hive_user.name
-        gid: webhcat_group.name
-        mode: 0o660
-      , next
-
-    module.exports.push 'ryba/hive/webhcat_start'
-
-    module.exports.push 'ryba/hive/webhcat_check'
-
-
-# TODO: Check Hive
-
-hdfs dfs -mkdir -p front1-webhcat/mytable
-echo -e 'a,1\nb,2\nc,3' | hdfs dfs -put - front1-webhcat/mytable/data
-hive
-  create database testhcat location '/user/ryba/front1-webhcat';
-  create table testhcat.mytable(col1 STRING, col2 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
-curl --negotiate -u : -d execute="use+testhcat;select+*+from+mytable;" -d statusdir="testhcat1" http://front1.hadoop:50111/templeton/v1/hive
-hdfs dfs -cat testhcat1/stderr
-hdfs dfs -cat testhcat1/stdout
-
-
-
-
-
-
+    module.exports.push command: 'stop', modules: 'ryba/hive/webhcat_stop'
