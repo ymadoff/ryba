@@ -397,12 +397,6 @@ the "security_enabled" property set to "true".
         next null, modified
       do_addprinc()
 
-## Start
-
-Use the "ryba/hue/start" module to start the Hue server.
-
-    module.exports.push "ryba/hue/start"
-
 ## SSL
 
 Upload and register the SSL certificate and private key respectively defined
@@ -452,6 +446,12 @@ changes.
         , (err) ->
           next err, true
       do_upload()
+
+## Start
+
+Use the "ryba/hue/start" module to start the Hue server.
+
+    module.exports.push "ryba/hue/start"
 
 ## Resources:   
 
