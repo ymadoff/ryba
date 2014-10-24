@@ -97,7 +97,8 @@ Default configuration:
       ctx.core_configured = true
       require('masson/core/proxy').configure ctx
       require('masson/commons/java').configure ctx
-      require('../zookeeper/server').configure ctx
+      require('masson/core/krb5_client').configure ctx
+      # require('../zookeeper/server').configure ctx
       # require('./core_ssl').configure ctx
       ctx.config.ryba ?= {}
       ctx.config.ryba.format ?= false
