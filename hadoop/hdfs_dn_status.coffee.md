@@ -11,9 +11,7 @@ Display the status of the NameNode as "STARTED" or "STOPPED".
     lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-
-    module.exports.push (ctx) ->
-      require('./hdfs').configure ctx
+    module.exports.push require('./hdfs_dn').configure
 
     module.exports.push name: 'Hadoop HDFS DN # Status', callback: (ctx, next) ->
       lifecycle.dn_status ctx, (err, running) ->

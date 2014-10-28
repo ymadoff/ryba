@@ -12,8 +12,7 @@ the standy NameNodes wait for the one on the active NameNode to start first.
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-
-    module.exports.push require('./hdfs').configure
+    module.exports.push require('./hdfs_nn').configure
 
     module.exports.push 'ryba/xasecure/policymgr_wait'
 

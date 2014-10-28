@@ -92,7 +92,7 @@ Default configuration:
 }
 ```
 
-    module.exports.push retry: 0, callback: module.exports.configure = (ctx) ->
+    module.exports.push module.exports.configure = (ctx) ->
       return if ctx.core_configured
       ctx.core_configured = true
       require('masson/core/proxy').configure ctx

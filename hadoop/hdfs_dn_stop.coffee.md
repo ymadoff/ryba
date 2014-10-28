@@ -12,9 +12,7 @@ associated the NameNodes.
     lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-
-    module.exports.push (ctx) ->
-      require('./hdfs').configure ctx
+    module.exports.push require('./hdfs_dn').configure
 
     module.exports.push name: 'Hadoop HDFS DN # Stop', callback: (ctx, next) ->
       ctx.execute

@@ -14,9 +14,7 @@ and some may be inactive.
     lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-
-    module.exports.push (ctx) ->
-      require('./hdfs').configure ctx
+    module.exports.push require('./hdfs_dn').configure
 
     module.exports.push name: 'Hadoop HDFS DN # Start', callback: (ctx, next) ->
       return next new Error "Not an DataNode" unless ctx.has_module 'ryba/hadoop/hdfs_dn'

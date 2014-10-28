@@ -5,137 +5,56 @@ layout: module
 
 # YARN NodeManager
 
-ResourceManager is the central authority that manages resources and schedules
-applications running atop of YARN.
+The NodeManager (NM) is YARN’s per-node agent, and takes care of the individual
+compute nodes in a Hadoop cluster. This includes keeping up-to date with the
+ResourceManager (RM), overseeing containers’ life-cycle management; monitoring
+resource usage (memory, CPU) of individual containers, tracking node-health,
+log’s management and auxiliary services which may be exploited by different YARN
+applications.
 
-    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'masson/core/iptables'
-    module.exports.push 'ryba/hadoop/yarn'
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       require('./yarn').configure ctx
       {host, ryba} = ctx.config
-      {yarn_site} = ryba
-      yarn_site['yarn.nodemanager.address'] ?= "#{host}:45454"
-      yarn_site['yarn.nodemanager.localizer.address'] ?= "#{host}:8040"
-      yarn_site['yarn.nodemanager.webapp.address'] ?= "#{host}:8042"
-      yarn_site['yarn.nodemanager.webapp.https.address'] ?= "#{host}:8044"
+      ryba.yarn_site['yarn.nodemanager.address'] ?= "#{host}:45454"
+      ryba.yarn_site['yarn.nodemanager.localizer.address'] ?= "#{host}:8040"
+      ryba.yarn_site['yarn.nodemanager.webapp.address'] ?= "#{host}:8042"
+      ryba.yarn_site['yarn.nodemanager.webapp.https.address'] ?= "#{host}:8044"
+      ryba.yarn_site['yarn.nodemanager.container-executor.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor'
+      ryba.yarn_site['yarn.nodemanager.linux-container-executor.group'] ?= 'yarn'
+      ryba.yarn_site['yarn.nodemanager.remote-app-log-dir'] ?= "/app-logs"
+      ryba.yarn_site['yarn.nodemanager.local-dirs'] = ryba.yarn_site['yarn.nodemanager.local-dirs'].join ',' if Array.isArray ryba.yarn_site['yarn.nodemanager.local-dirs']
+      ryba.yarn_site['yarn.nodemanager.log-dirs'] = ryba.yarn_site['yarn.nodemanager.log-dirs'].join ',' if Array.isArray ryba.yarn_site['yarn.nodemanager.log-dirs']
+      ryba.yarn_site['yarn.nodemanager.keytab'] ?= '/etc/security/keytabs/nm.service.keytab'
+      ryba.yarn_site['yarn.nodemanager.principal'] ?= "nm/#{ryba.static_host}@#{ryba.realm}"
       # See '~/www/src/hadoop/hadoop-common/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-api/src/main/java/org/apache/hadoop/yarn/conf/YarnConfiguration.java#263'
-      # yarn_site['yarn.nodemanager.webapp.spnego-principal']
-      # yarn_site['yarn.nodemanager.webapp.spnego-keytab-file']
+      # ryba.yarn_site['yarn.nodemanager.webapp.spnego-principal']
+      # ryba.yarn_site['yarn.nodemanager.webapp.spnego-keytab-file']
+      # Cloudera recommand setting [vmem-check to false on Centos/RHEL 6 due to its aggressive allocation of virtual memory](http://blog.cloudera.com/blog/2014/04/apache-hadoop-yarn-avoiding-6-time-consuming-gotchas/)
+      # yarn.nodemanager.vmem-check-enabled (found in hdfs-default.xml)
+      # yarn.nodemanager.vmem-check.enabled
+      # [Container Executor](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuration_in_Secure_Mode)
+      ryba.container_executor ?= {}
+      ryba.container_executor['yarn.nodemanager.local-dirs'] ?= ryba.yarn_site['yarn.nodemanager.local-dirs']
+      ryba.container_executor['yarn.nodemanager.linux-container-executor.group'] ?= ryba.yarn_site['yarn.nodemanager.linux-container-executor.group']
+      ryba.container_executor['yarn.nodemanager.log-dirs'] = ryba.yarn_site['yarn.nodemanager.log-dirs']
+      ryba.container_executor['banned.users'] ?= 'hfds,yarn,mapred,bin'
+      ryba.container_executor['min.user.id'] ?= '0'
 
-## IPTables
+    # module.exports.push commands: 'backup', modules: 'ryba/hadoop/yarn_nm_backup'
 
-| Service    | Port | Proto  | Parameter                          |
-|------------|------|--------|------------------------------------|
-| nodemanager | 45454 | tcp  | yarn.nodemanager.address           | x
-| nodemanager | 8040  | tcp  | yarn.nodemanager.localizer.address |
-| nodemanager | 8042  | tcp  | yarn.nodemanager.webapp.address    |
-| nodemanager | 8044  | tcp  | yarn.nodemanager.webapp.https.address    |
+    # module.exports.push commands: 'check', modules: 'ryba/hadoop/yarn_nm_check'
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
-"start" (default value).
+    module.exports.push commands: 'install', modules: 'ryba/hadoop/yarn_nm_install'
 
-    module.exports.push name: 'Hadoop YARN NM # IPTables', callback: (ctx, next) ->
-      {yarn_site} = ctx.config.ryba
-      nm_port = yarn_site['yarn.nodemanager.address'].split(':')[1]
-      nm_localizer_port = yarn_site['yarn.nodemanager.localizer.address'].split(':')[1]
-      nm_webapp_port = yarn_site['yarn.nodemanager.webapp.address'].split(':')[1]
-      nm_webapp_https_port = yarn_site['yarn.nodemanager.webapp.https.address'].split(':')[1]
-      ctx.iptables
-        rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: nm_port, protocol: 'tcp', state: 'NEW', comment: "YARN NM Container" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: nm_localizer_port, protocol: 'tcp', state: 'NEW', comment: "YARN NM Localizer" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: nm_webapp_port, protocol: 'tcp', state: 'NEW', comment: "YARN NM Web UI" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: nm_webapp_https_port, protocol: 'tcp', state: 'NEW', comment: "YARN NM Web Secured UI" }
-        ]
-        if: ctx.config.iptables.action is 'start'
-      , next
+    module.exports.push commands: 'start', modules: 'ryba/hadoop/yarn_nm_start'
 
-## Startup
+    module.exports.push commands: 'status', modules: 'ryba/hadoop/yarn_nm_status'
 
-Install and configure the startup script in 
-"/etc/init.d/hadoop-yarn-nodemanager".
+    module.exports.push commands: 'stop', modules: 'ryba/hadoop/yarn_nm_stop'
 
-    module.exports.push name: 'Hadoop YARN NM # Startup', callback: (ctx, next) ->
-      {yarn_pid_dir} = ctx.config.ryba
-      modified = false
-      do_install = ->
-        ctx.service
-          name: 'hadoop-yarn-nodemanager'
-          startup: true
-        , (err, serviced) ->
-          return next err if err
-          modified = true if serviced
-          do_fix()
-      do_fix = ->
-        ctx.write
-          destination: '/etc/init.d/hadoop-yarn-nodemanager'
-          write: [
-            match: /^PIDFILE=".*"$/m
-            replace: "PIDFILE=\"#{yarn_pid_dir}/$SVC_USER/yarn-yarn-nodemanager.pid\""
-          ,
-            match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m
-            replace: "$1 -u $SVC_USER $2"
-          ]
-        , (err, written) ->
-          return next err if err
-          modified = true if written
-          do_end()
-      do_end = ->
-        next null, modified
-      do_install()
-
-    module.exports.push name: 'Hadoop YARN NM # Directories', timeout: -1, callback: (ctx, next) ->
-      {yarn_user, yarn_site, test_user, hadoop_group} = ctx.config.ryba
-      # no need to restrict parent directory and yarn will complain if not accessible by everyone
-      log_dirs = yarn_site['yarn.nodemanager.log-dirs'].split ','
-      local_dirs = yarn_site['yarn.nodemanager.local-dirs'].split ','
-      ctx.mkdir [
-        destination: log_dirs
-        uid: yarn_user.name
-        gid: hadoop_group.name
-        mode: 0o0755
-      ,
-        destination: local_dirs
-        uid: yarn_user.name
-        gid: hadoop_group.name
-        mode: 0o0755
-      ], (err, created) ->
-        return next err if err
-        cmds = []
-        for dir in log_dirs then cmds.push cmd: "su -l #{test_user.name} -c 'ls -l #{dir}'"
-        for dir in local_dirs then cmds.push cmd: "su -l #{test_user.name} -c 'ls -l #{dir}'"
-        ctx.execute cmds, (err) ->
-          next err, created
-
-    module.exports.push name: 'Hadoop YARN NM # Configure', callback: (ctx, next) ->
-      {yarn_site, hadoop_conf_dir} = ctx.config.ryba
-      ctx.hconfigure
-        destination: "#{hadoop_conf_dir}/yarn-site.xml"
-        default: "#{__dirname}/../resources/core_hadoop/yarn-site.xml"
-        local_default: true
-        properties: yarn_site
-        merge: true
-      , next
-
-    module.exports.push name: 'Hadoop YARN NM # Kerberos', callback: (ctx, next) ->
-      {yarn_user, realm} = ctx.config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc 
-        principal: "nm/#{ctx.config.host}@#{realm}"
-        randkey: true
-        keytab: "/etc/security/keytabs/nm.service.keytab"
-        uid: yarn_user.name
-        gid: 'hadoop'
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
-      , next
-
-    module.exports.push 'ryba/hadoop/yarn_nm_start'
 
 

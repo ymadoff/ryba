@@ -8,9 +8,7 @@ layout: module
     lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-
-    module.exports.push (ctx) ->
-      require('./yarn').configure ctx
+    module.exports.push require('./yarn_rm').configure
 
     module.exports.push name: 'Hadoop ResourceManager # Stop Server', callback: (ctx, next) ->
       lifecycle.rm_stop ctx, next
