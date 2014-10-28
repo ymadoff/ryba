@@ -5,52 +5,22 @@ layout: module
 
 # Oozie Client
 
-    url = require 'url'
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
-    module.exports.push 'masson/bootstrap/utils'
-    module.exports.push 'ryba/hadoop/mapred_client'
-    module.exports.push 'ryba/hadoop/yarn_client'
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       require('../hadoop/core').configure ctx
-      {realm, test_user, test_password} = ctx.config.ryba
+      {ryba} = ctx.config
       oozie_server = ctx.host_with_module 'ryba/oozie/server', true
       # Configuration
-      ctx.config.ryba.oozie_site ?= {}
-      ctx.config.ryba.oozie_site['oozie.base.url'] = "http://#{oozie_server}:11000/oozie"
+      ryba.oozie_site ?= {}
+      ryba.oozie_site['oozie.base.url'] = "http://#{oozie_server}:11000/oozie"
       # Test user
-      ctx.config.ryba.oozie_test_principal ?= "#{test_user.name}@#{realm}"
-      ctx.config.ryba.oozie_test_password ?= "#{test_password}"
+      ryba.oozie_test_principal ?= "#{ryba.test_user.name}@#{ryba.realm}"
+      ryba.oozie_test_password ?= "#{ryba.test_password}"
 
-# Install
+    module.exports.push commands: 'install', modules: 'ryba/oozie/client_install'
 
-Install the oozie client package. This package doesn't create any user and group.
-
-    module.exports.push name: 'Oozie Client # Install', timeout: -1, callback: (ctx, next) ->
-      ctx.service [
-        name: 'oozie-client'
-      ], next
-
-    module.exports.push name: 'Oozie Client # Profile', callback: (ctx, next) ->
-      {oozie_site} = ctx.config.ryba
-      ctx.write
-        destination: '/etc/profile.d/oozie.sh'
-        content: """
-        #!/bin/bash
-        export OOZIE_URL=#{oozie_site['oozie.base.url']}
-        """
-        mode: 0o0755
-      , next
-
-    module.exports.push 'ryba/oozie/client_check'
-
-
-
-
-
-
-
+    module.exports.push commands: 'check', modules: 'ryba/oozie/client_check'
 
 
 
