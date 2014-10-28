@@ -5,7 +5,7 @@ each = require 'each'
 mecano = require 'mecano'
 conditions = require 'mecano/lib/misc/conditions'
 misc = require 'mecano/lib/misc'
-child = require 'mecano/lib/child'
+child = require 'mecano/lib/misc/child'
 properties = require './properties'
 
 ###
