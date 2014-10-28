@@ -68,17 +68,17 @@ Example:
       throw new Error "Hive database username is required" unless hive_site['javax.jdo.option.ConnectionUserName']
       throw new Error "Hive database password is required" unless hive_site['javax.jdo.option.ConnectionPassword']
 
-    module.exports.push command: 'backup', modules: 'ryba/hive/server_backup'
+    module.exports.push commands: 'backup', modules: 'ryba/hive/server_backup'
 
-    module.exports.push command: 'check', modules: 'ryba/hive/server_check'
+    module.exports.push commands: 'check', modules: 'ryba/hive/server_check'
 
-    module.exports.push command: 'install', modules: 'ryba/hive/server_install'
+    module.exports.push commands: 'install', modules: 'ryba/hive/server_install'
 
-    module.exports.push command: 'start', modules: 'ryba/hive/server_start'
+    module.exports.push commands: 'start', modules: 'ryba/hive/server_start'
 
-    # module.exports.push command: 'status', modules: 'ryba/hive/server_status'
+    # module.exports.push commands: 'status', modules: 'ryba/hive/server_status'
 
-    module.exports.push command: 'stop', modules: 'ryba/hive/server_stop'
+    module.exports.push commands: 'stop', modules: 'ryba/hive/server_stop'
 
 # Module Dependencies
 

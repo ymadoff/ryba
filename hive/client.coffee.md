@@ -7,9 +7,9 @@ layout: module
 
     module.exports = []
 
-    module.exports.push command: 'install', modules: 'ryba/hive/client_install'
+    module.exports.push commands: 'install', modules: 'ryba/hive/client_install'
 
-    module.exports.push command: 'check', modules: 'ryba/hive/client_check'
+    module.exports.push commands: 'check', modules: 'ryba/hive/client_check'
 
 
 
