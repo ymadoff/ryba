@@ -6,11 +6,6 @@ scanning the table.
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-
-## Configure
-
-Retrieve the client configuration.
-
     module.exports.push require('./client').configure
 
 ## Check Shell
