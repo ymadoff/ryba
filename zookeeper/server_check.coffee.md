@@ -3,15 +3,13 @@ title:
 layout: module
 ---
 
-# Zookeeper Start
+# Zookeeper Check
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push require('./server').configure
 
-    module.exports.push (ctx) ->
-      require('./server').configure ctx
-
-## Start ZooKeeper
+## Check Registration
 
 Execute these commands on the ZooKeeper host machine(s).
 

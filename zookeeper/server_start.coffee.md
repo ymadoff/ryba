@@ -8,9 +8,7 @@ layout: module
     lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-
-    module.exports.push (ctx) ->
-      require('./server').configure ctx
+    module.exports.push require('./server').configure
 
 ## Wait Kerberos
 

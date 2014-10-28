@@ -70,16 +70,16 @@ Example :
       ryba.zookeeper_myid ?= null
       ryba.zookeeper_retention ?= '3' # Used to clean data dir
 
-    # module.exports.push command: 'backup', modules: 'ryba/zookeeper/server_backup'
+    # module.exports.push commands: 'backup', modules: 'ryba/zookeeper/server_backup'
 
-    module.exports.push command: 'check', modules: 'ryba/zookeeper/server_check'
+    module.exports.push commands: 'check', modules: 'ryba/zookeeper/server_check'
 
-    module.exports.push command: 'install', modules: 'ryba/zookeeper/server_install'
+    module.exports.push commands: 'install', modules: 'ryba/zookeeper/server_install'
 
-    module.exports.push command: 'start', modules: 'ryba/zookeeper/server_start'
+    module.exports.push commands: 'start', modules: 'ryba/zookeeper/server_start'
 
-    module.exports.push command: 'status', modules: 'ryba/zookeeper/server_status'
+    module.exports.push commands: 'status', modules: 'ryba/zookeeper/server_status'
 
-    module.exports.push command: 'stop', modules: 'ryba/zookeeper/server_stop'
+    module.exports.push commands: 'stop', modules: 'ryba/zookeeper/server_stop'
 
 
