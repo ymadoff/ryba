@@ -187,6 +187,7 @@ Install and configure the startup script in
       write = for k, v of zookeeper_conf
         match: RegExp "^#{quote k}=.*$", 'mg'
         replace: "#{k}=#{v}"
+        append: true
       ctx.write
         destination: "#{zookeeper_conf_dir}/zoo.cfg"
         write: write
@@ -199,7 +200,6 @@ Install and configure the startup script in
       return next() if hosts.length is 1
       unless zookeeper_myid
         for host, i in hosts
-          console.log "?", host, ctx.config.host
           zookeeper_myid = i+1 if host is ctx.config.host
       ctx.write
         content: zookeeper_myid
