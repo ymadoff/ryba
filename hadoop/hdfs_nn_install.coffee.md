@@ -259,7 +259,6 @@ if the NameNode was formated.
     module.exports.push name: 'Hadoop HDFS NN # Format', timeout: -1, callback: (ctx, next) ->
       {active_nn, hdfs_site, hdfs_user, format, nameservice} = ctx.config.ryba
       return next() unless format
-      # Shall only be executed on the leader namenode
       any_dfs_name_dir = hdfs_site['dfs.namenode.name.dir'].split(',')[0]
       if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
         ctx.execute
@@ -267,6 +266,8 @@ if the NameNode was formated.
           not_if_exists: "#{any_dfs_name_dir}/current/VERSION"
         , next
       else
+        # Shall only be executed on the leader namenode
+        return next() unless active_nn
         journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
         # all the JournalNodes shall be started
         ctx.waitIsOpen journalnodes, 8485, (err) ->
