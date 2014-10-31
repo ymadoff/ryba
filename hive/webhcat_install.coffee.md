@@ -175,25 +175,25 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
     module.exports.push name: 'WebHCat # Fix HDFS tmp', callback: (ctx, next) ->
       # Avoid HTTP response
       # Permission denied: user=ryba, access=EXECUTE, inode=\"/tmp/hadoop-hcat\":HTTP:hadoop:drwxr-x---
-      {hive_user, webhcat_group} = ctx.config.ryba
+      {hive_user, hadoop_group} = ctx.config.ryba
       modified = false
       ctx.execute [
         cmd: mkcmd.hdfs ctx, """
         if hdfs dfs -test -d /tmp/hadoop-hcat; then exit 2; fi
         hdfs dfs -mkdir -p /tmp/hadoop-hcat
-        hdfs dfs -chown HTTP:hadoop /tmp/hadoop-hcat
+        hdfs dfs -chown HTTP:#{hadoop_group.name} /tmp/hadoop-hcat
         hdfs dfs -chmod -R 1777 /tmp/hadoop-hcat
         """
         code_skipped: 2
       ], next
 
     module.exports.push name: 'WebHCat # SPNEGO', callback: (ctx, next) ->
-      {webhcat_site, hive_user, webhcat_group} = ctx.config.ryba
+      {webhcat_site, hive_user, hadoop_group} = ctx.config.ryba
       ctx.copy
         source: '/etc/security/keytabs/spnego.service.keytab'
         destination: webhcat_site['templeton.kerberos.keytab']
         uid: hive_user.name
-        gid: webhcat_group.name
+        gid: hadoop_group.name
         mode: 0o660
       , next
 
