@@ -132,36 +132,6 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         kadmin_server: admin_server
       , next
 
-    module.exports.push 'ryba/hadoop/mapred_jhs_start'
-
-# HDP MapRed JHS # Check
-
-Check if the JobHistoryServer is started with an HTTP REST command. Once 
-started, the server take some time before it can correctly answer HTTP request.
-For this reason, the "retry" property is set to the high value of "10".
-
-    module.exports.push name: 'Hadoop MapRed JHS # Check', retry: 10, callback: (ctx, next) ->
-      {test_user, yarn_site, mapred_site} = ctx.config.ryba
-      protocol = if yarn_site['yarn.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      [host, port] = if protocol is 'http'
-      then mapred_site['mapreduce.jobhistory.webapp.address'].split ':'
-      else mapred_site['mapreduce.jobhistory.webapp.https.address'].split ':'
-      ctx.execute
-        cmd: mkcmd.test ctx, """
-        if hdfs dfs -test -f /user/#{test_user.name}/#{ctx.config.host}-jhs; then exit 2; fi
-        curl -s --insecure --negotiate -u : #{protocol}://#{host}:#{port}/ws/v1/history/info
-        if [ $? != "0" ]; then exit 9; fi
-        hdfs dfs -touchz /user/#{test_user.name}/#{ctx.config.host}-jhs
-        """
-        code_skipped: 2
-      , (err, checked, stdout) ->
-        return next err if err
-        return next null, false unless checked
-        try
-          JSON.parse(stdout).historyInfo.hadoopVersion
-          return next null, true
-        catch err then next err
-
 ## Module dependencies
 
     lifecycle = require '../lib/lifecycle'

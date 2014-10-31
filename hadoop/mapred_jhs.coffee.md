@@ -28,7 +28,11 @@ layout: module
 
     # module.exports.push commands: 'check', modules: 'ryba/hadoop/mapred_jhs_check'
 
-    module.exports.push commands: 'install', modules: 'ryba/hadoop/mapred_jhs_install'
+    module.exports.push commands: 'install', modules: [
+      'ryba/hadoop/mapred_jhs_install'
+      'ryba/hadoop/mapred_jhs_start'
+      'ryba/hadoop/mapred_jhs_check'
+    ]
 
     module.exports.push commands: 'start', modules: 'ryba/hadoop/mapred_jhs_start'
 
