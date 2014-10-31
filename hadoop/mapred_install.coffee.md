@@ -151,10 +151,6 @@ allowed.
         merge: true
       , next
 
-## Check
-
-    module.exports.push 'ryba/hadoop/mapred_check'
-
 
 
 
