@@ -49,9 +49,9 @@ keytool -list -v -keystore keystore -alias hadoop
       ctx.config.ryba.ssl ?= {}
       ssl_client = ctx.config.ryba.ssl_client ?= {}
       ssl_server = ctx.config.ryba.ssl_server ?= {}
-      throw new Error 'Required property "hdp.ssl.cacert"' unless ctx.config.ryba.ssl.cacert
-      throw new Error 'Required property "hdp.ssl.cert"' unless ctx.config.ryba.ssl.cert
-      throw new Error 'Required property "hdp.ssl.key"' unless ctx.config.ryba.ssl.key
+      throw new Error 'Required property "ryba.ssl.cacert"' unless ctx.config.ryba.ssl.cacert
+      throw new Error 'Required property "ryba.ssl.cert"' unless ctx.config.ryba.ssl.cert
+      throw new Error 'Required property "ryba.ssl.key"' unless ctx.config.ryba.ssl.key
       # SSL for HTTPS connection and RPC Encryption
       core_site['hadoop.ssl.require.client.cert'] ?= 'false'
       core_site['hadoop.ssl.hostname.verifier'] ?= 'DEFAULT'
