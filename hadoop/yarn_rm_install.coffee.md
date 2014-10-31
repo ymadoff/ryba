@@ -95,6 +95,19 @@ Install and configure the startup script in
         next null, modified
       do_install()
 
+## Configuration
+
+
+    module.exports.push name: 'Hadoop YARN # Configuration', callback: (ctx, next) ->
+      {yarn_site, hadoop_conf_dir} = ctx.config.ryba
+      ctx.hconfigure
+        destination: "#{hadoop_conf_dir}/yarn-site.xml"
+        default: "#{__dirname}/../resources/core_hadoop/yarn-site.xml"
+        local_default: true
+        properties: yarn_site
+        merge: true
+      , next
+
 ## Capacity Scheduler
 
 the [CapacityScheduler][capacity], a pluggable scheduler for Hadoop which allows for
