@@ -13,7 +13,6 @@ the standy NameNodes wait for the one on the active NameNode to start first.
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push require('./hdfs_nn').configure
-
     module.exports.push 'ryba/xasecure/policymgr_wait'
 
 ## Start
@@ -29,9 +28,9 @@ the standy NameNodes wait for the one on the active NameNode to start first.
         next()
       else
         {hdfs_site, nameservice, ha_client_config, hdfs_namenode_timeout} = ctx.config.ryba
-        ipc_port = url.parse(ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{ctx.config.shortname}"]).port or 8020
+        ipc_port = ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{ctx.config.shortname}"].split(':')[1] or 8020
         protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-        http_port = url.parse(ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{ctx.config.shortname}"]).port
+        http_port = ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{ctx.config.shortname}"].split(':')[1]
         ctx.waitIsOpen ctx.config.host, [ipc_port, http_port], timeout: hdfs_namenode_timeout, (err) ->
           next err, false
 
