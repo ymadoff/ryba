@@ -43,16 +43,16 @@ Example:
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
-      {hdfs_site} = ctx.config.ryba
-      hdfs_site['dfs.journalnode.rpc-address'] ?= '0.0.0.0:8485'
-      hdfs_site['dfs.journalnode.http-address'] ?= '0.0.0.0:8480'
-      hdfs_site['dfs.journalnode.https-address'] ?= '0.0.0.0:8481'
+      {ryba} = ctx.config
+      ryba.hdfs_site['dfs.journalnode.rpc-address'] ?= '0.0.0.0:8485'
+      ryba.hdfs_site['dfs.journalnode.http-address'] ?= '0.0.0.0:8480'
+      ryba.hdfs_site['dfs.journalnode.https-address'] ?= '0.0.0.0:8481'
       # Kerberos
-      hdfs_site['dfs.journalnode.kerberos.internal.spnego.principal'] = "HTTP/#{static_host}@#{realm}"
-      hdfs_site['dfs.journalnode.kerberos.principal'] = "HTTP/#{static_host}@#{realm}"
-      hdfs_site['dfs.journalnode.keytab.file'] = '/etc/security/keytabs/spnego.service.keytab'
-      hdfs_site['dfs.journalnode.edits.dir'] ?= ['/var/hdfs/edits']
-      hdfs_site['dfs.journalnode.edits.dir'] = hdfs_site['dfs.journalnode.edits.dir'].join ',' if Array.isArray hdfs_site['dfs.journalnode.edits.dir']
+      ryba.hdfs_site['dfs.journalnode.kerberos.internal.spnego.principal'] = "HTTP/#{ryba.static_host}@#{ryba.realm}"
+      ryba.hdfs_site['dfs.journalnode.kerberos.principal'] = "HTTP/#{ryba.static_host}@#{ryba.realm}"
+      ryba.hdfs_site['dfs.journalnode.keytab.file'] = '/etc/security/keytabs/spnego.service.keytab'
+      ryba.hdfs_site['dfs.journalnode.edits.dir'] ?= ['/var/hdfs/edits']
+      ryba.hdfs_site['dfs.journalnode.edits.dir'] = ryba.hdfs_site['dfs.journalnode.edits.dir'].join ',' if Array.isArray ryba.hdfs_site['dfs.journalnode.edits.dir']
 
     # module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_jn_backup'
 
