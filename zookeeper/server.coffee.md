@@ -60,7 +60,8 @@ Example :
       ryba.zookeeper_conf['dataDir'] ?= '/var/zookeper/data/'
       # the port at which the clients will connect
       ryba.zookeeper_conf['clientPort'] ?= "#{zookeeper_port}"
-      if hosts.length > 1 then for host, i in hosts then ryba.zookeeper_conf["server.#{i+1}"] = "#{host}:2888:3888"
+      if hosts.length > 1 then for host, i in hosts
+        ryba.zookeeper_conf["server.#{i+1}"] = "#{host}:2888:3888"
       # SASL
       ryba.zookeeper_conf['authProvider.1'] ?= 'org.apache.zookeeper.server.auth.SASLAuthenticationProvider'
       ryba.zookeeper_conf['jaasLoginRenew'] ?= '3600000'

@@ -8,9 +8,7 @@ layout: module
     mkcmd = require '../lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-
-    module.exports.push (ctx) ->
-      require('./client').configure ctx
+    module.exports.push require('./client').configure
 
 ## Check Metastore
 

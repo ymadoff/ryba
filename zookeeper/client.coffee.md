@@ -6,7 +6,6 @@ layout: module
 # Zookeeper Client
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
 
 ## Configure
 

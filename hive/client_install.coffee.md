@@ -10,6 +10,7 @@ layout: module
     module.exports.push 'ryba/hive/_'
     module.exports.push 'ryba/hadoop/mapred'
     module.exports.push 'ryba/hadoop/yarn_client'
+    module.exports.push require('./client').configure
 
 Example of a minimal client configuration:
 ```xml
@@ -33,10 +34,6 @@ Example of a minimal client configuration:
   </property>
 </configuration>
 ```
-
-    module.exports.push (ctx) ->
-      require('../hadoop/hdfs').configure ctx
-      require('./_').configure ctx
 
 ## Configure
 

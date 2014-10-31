@@ -26,7 +26,7 @@ Execute these commands on the ZooKeeper host machine(s).
           return next err if err
           if hosts.length is 1 # Standalone mode
             unless stdout.trim().split('\n').sort().join(',') is '0'
-              err = new Error "Servers are not properly registered"
+              err = new Error "Server is not properly registered"
           else # Replicated mode
             unless stdout.trim().split('\n').sort().join(',') is [1..cmds.length].join(',')
               err = new Error "Servers are not properly registered"

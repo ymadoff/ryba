@@ -81,9 +81,9 @@ Example
       ryba.oozie_hadoop_config['yarn.resourcemanager.principal'] ?= "yarn/#{ryba.static_host}@#{ryba.realm}"
       ryba.oozie_hadoop_config['dfs.namenode.kerberos.principal'] ?= "hdfs/#{ryba.static_host}@#{ryba.realm}"
       ryba.oozie_hadoop_config['mapreduce.framework.name'] ?= "yarn"
-      ryba.extjs ?= {}
-      throw new Error "Missing extjs.source" unless ryba.extjs.source
-      throw new Error "Missing extjs.destination" unless ryba.extjs.destination
+      # ryba.extjs ?= {}
+      # throw new Error "Missing extjs.source" unless ryba.extjs.source
+      # throw new Error "Missing extjs.destination" unless ryba.extjs.destination
 
     # module.exports.push commands: 'backup', modules: 'ryba/oozie/server_backup'
 
