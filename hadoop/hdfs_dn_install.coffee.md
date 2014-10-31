@@ -207,9 +207,6 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
           hdfs dfs -chown #{hdfs_user.name}:#{hadoop_group.name} /user/#{hdfs_user.name}
           hdfs dfs -chmod 755 /user/#{hdfs_user.name}
           """
-          # hdfs dfs -mkdir /user/#{test_user.name}
-          # hdfs dfs -chown #{test_user.name}:#{hadoop_group.name} /user/#{test_user.name}
-          # hdfs dfs -chmod 755 /user/#{test_user.name}
           code_skipped: 2
         , (err, executed, stdout) ->
           return next err if err
@@ -238,44 +235,17 @@ Create a Unix and Kerberos test user, by default "test" and execute simple HDFS 
 the NameNode is properly working. Note, those commands are NameNode specific, meaning they only
 afect HDFS metadata.
 
-    module.exports.push name: 'Hadoop HDFS DN # Test User', timeout: -1, callback: (ctx, next) ->
-      {test_group, test_user, test_password, security, realm} = ctx.config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      modified = false
-      do_user_unix = ->
-        # ryba group and user may already exist in "/etc/passwd" or in any sssd backend
-        ctx.group test_group, (err, gmodified) ->
-          return next err if err
-          ctx.user test_user, (err, umodified) ->
-            return next err if err
-            modified = true if gmodified or umodified
-            do_user_krb5()
-      do_user_krb5 = ->
-        ctx.krb5_addprinc
-          principal: "#{test_user.name}@#{realm}"
-          password: "#{test_password}"
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_hdfs()
-      do_hdfs = ->
-        # Carefull, this is a dupplicate of
-        # "HDP HDFS DN # HDFS layout"
-        ctx.execute
-          cmd: mkcmd.hdfs ctx, """
-          if hdfs dfs -test -d /user/#{test_user.name}; then exit 2; fi
-          hdfs dfs -mkdir /user/#{test_user.name}
-          hdfs dfs -chown #{test_user.name}:#{test_group.name} /user/#{test_user.name}
-          hdfs dfs -chmod 750 /user/#{test_user.name}
-          """
-          code_skipped: 2
-        , (err, executed, stdout) ->
-          modified = true if executed
-          next err, modified
-      do_user_unix()
+    module.exports.push name: 'Hadoop HDFS DN # HDFS Layout User Test', timeout: -1, callback: (ctx, next) ->
+      {test_group, test_user} = ctx.config.ryba
+      ctx.execute
+        cmd: mkcmd.hdfs ctx, """
+        if hdfs dfs -test -d /user/#{test_user.name}; then exit 2; fi
+        hdfs dfs -mkdir /user/#{test_user.name}
+        hdfs dfs -chown #{test_user.name}:#{test_group.name} /user/#{test_user.name}
+        hdfs dfs -chmod 750 /user/#{test_user.name}
+        """
+        code_skipped: 2
+      , next
 
     module.exports.push 'ryba/hadoop/hdfs_dn_check'
 

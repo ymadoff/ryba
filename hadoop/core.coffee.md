@@ -317,6 +317,29 @@ not handled here.
         ctx.user [hdfs_user, yarn_user, mapred_user], (err, umodified) ->
           next err, gmodified or umodified
 
+## Test User
+
+Create a Unix and Kerberos test user, by default "ryba". Its HDFS home directory
+will be created by one of the datanode.
+
+    module.exports.push name: 'Hadoop HDFS DN # HDFS Layout User Test', timeout: -1, callback: (ctx, next) ->
+      {test_group, test_user, test_password, security, realm} = ctx.config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
+      modified = false
+      # ryba group and user may already exist in "/etc/passwd" or in any sssd backend
+      ctx.group test_group, (err, gmodified) ->
+        return next err if err
+        ctx.user test_user, (err, umodified) ->
+          return next err if err
+          ctx.krb5_addprinc
+            principal: "#{test_user.name}@#{realm}"
+            password: "#{test_password}"
+            kadmin_principal: kadmin_principal
+            kadmin_password: kadmin_password
+            kadmin_server: admin_server
+          , (err, pmodified) ->
+            next err, gmodified or umodified or pmodified
+
     module.exports.push name: 'Hadoop Core # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
         name: 'openssl'
