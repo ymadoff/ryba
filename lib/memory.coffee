@@ -2,6 +2,7 @@
 {merge} = require 'mecano/lib/misc'
 
 # https://github.com/hortonworks/hdp-configuration-utils/blob/master/2.1/hdp-configuration-utils.py
+# https://support.pivotal.io/hc/en-us/articles/201462036-Mapreduce-YARN-Memory-Parameters
 
 memory = (ctx) ->
   {yarn_site, hadoop_conf_dir} = ctx.config.ryba
