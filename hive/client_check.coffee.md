@@ -22,12 +22,12 @@ Use the [Hive CLI][hivecli] client to execute SQL queries.
           cmd: mkcmd.test ctx, """
           hdfs dfs -rm -r check-#{host}-hive_metastore || true
           hdfs dfs -mkdir -p check-#{host}-hive_metastore/my_db/my_table
-          echo -e 'a\0011\\nb\0012\\nc\0013' | hdfs dfs -put - check-#{host}-hive_metastore/my_db/my_table/data
+          echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{host}-hive_metastore/my_db/my_table/data
           hive -e "
             DROP TABLE IF EXISTS check_#{host}_metastore.my_table; DROP DATABASE IF EXISTS check_#{host}_metastore;
             CREATE DATABASE check_#{host}_metastore LOCATION '/user/#{test_user.name}/check-#{host}-hive_metastore/my_db/'; \\
             USE check_#{host}_metastore; \\
-            CREATE TABLE my_table(col1 STRING, col2 INT); \\
+            CREATE TABLE my_table(col1 STRING, col2 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','; \\
           "
           hive -S -e "SELECT SUM(col2) FROM check_#{host}_metastore.my_table;" | hdfs dfs -put - check-#{host}-hive_metastore/result
           """
