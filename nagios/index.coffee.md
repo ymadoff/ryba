@@ -78,7 +78,11 @@
 
     module.exports.push commands: 'check', modules: 'ryba/nagios/check'
 
-    module.exports.push commands: 'install', modules: 'ryba/nagios/install'
+    module.exports.push commands: 'install', modules: [
+      'ryba/nagios/install'
+      'ryba/nagios/start'
+      'ryba/nagios/check'
+    ]
 
     module.exports.push commands: 'start', modules: 'ryba/nagios/start'
 
