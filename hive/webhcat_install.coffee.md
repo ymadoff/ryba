@@ -194,7 +194,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
         destination: webhcat_site['templeton.kerberos.keytab']
         uid: hive_user.name
         gid: hadoop_group.name
-        mode: 0o660
+        mode: 0o0660
       , next
 
     module.exports.push 'ryba/hive/webhcat_start'
