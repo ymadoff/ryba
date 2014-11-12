@@ -106,6 +106,7 @@ Install and configure the startup script in
         local_default: true
         properties: yarn_site
         merge: true
+        backup: true
       , next
 
 ## Capacity Scheduler
