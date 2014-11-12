@@ -62,56 +62,21 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       , next
 
     module.exports.push name: 'Oozie Server # Install', timeout: -1, callback: (ctx, next) ->
-      ctx.service [
-        name: 'oozie' # Also install oozie-client and bigtop-tomcat
-      ,
-        name: 'unzip' # Required by the "prepare-war" command
-      ,
-        name: 'extjs-2.2-1'
-      ], (err, serviced) ->
-        ctx.config.ryba.force_war = true if serviced
-        next err, serviced
-
-    module.exports.push name: 'Oozie Server # Environment', callback: (ctx, next) ->
-      {java_home} = ctx.config.java
-      {oozie_user, hadoop_group, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_data} = ctx.config.ryba
-      ctx.write
-        source: "#{__dirname}/../resources/oozie/oozie-env.sh"
-        destination: "#{oozie_conf_dir}/oozie-env.sh"
-        local_source: true
-        write: [
-          match: /^export JAVA_HOME=.*$/mg
-          replace: "export JAVA_HOME=#{java_home}"
-          append: true
+      # Upgrading oozie failed, tested versions are hdp 2.1.2 -> 2.1.5 -> 2.1.7
+      ctx.execute
+        cmd: "rm -rf /usr/lib/oozie && yum remove -y oozie oozie-client"
+        if: ctx.retry > 0
+      , (err) ->
+        return next err if err
+        ctx.service [
+          name: 'oozie' # Also install oozie-client and bigtop-tomcat
         ,
-          match: /^export JRE_HOME=.*$/mg
-          replace: "export JRE_HOME=${JAVA_HOME}" # Not in HDP 2.0.6 but mentioned in [HDP 2.1 doc](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.1-latest/bk_installing_manually_book/content/rpm-chap8-3.html)
-          append: true
+          name: 'unzip' # Required by the "prepare-war" command
         ,
-          match: /^export OOZIE_CONFIG=.*$/mg
-          replace: "export OOZIE_CONFIG=${OOZIE_CONFIG:-/etc/oozie/conf}"
-          append: true
-        ,
-          match: /^export CATALINA_BASE=.*$/mg
-          replace: "export CATALINA_BASE=${CATALINA_BASE:-/var/lib/oozie/tomcat-deployment}"
-          append: true
-        ,
-          match: /^export CATALINA_TMPDIR=.*$/mg
-          replace: "export CATALINA_TMPDIR=${CATALINA_TMPDIR:-/var/tmp/oozie}"
-          append: true
-        ,
-          match: /^export OOZIE_CATALINA_HOME=.*$/mg
-          replace: "export OOZIE_CATALINA_HOME=/usr/lib/bigtop-tomcat"
-          append: true
-        ,
-          match: /^export OOZIE_DATA=.*$/mg
-          replace: "export OOZIE_DATA=#{oozie_data}"
-          append: true
-        ]
-        uid: oozie_user.name
-        gid: hadoop_group.name
-        mode: 0o0755
-      , next
+          name: 'extjs-2.2-1'
+        ], (err, serviced) ->
+          ctx.config.ryba.force_war = true if serviced
+          next err, serviced
 
     module.exports.push name: 'Oozie Server # Directories', callback: (ctx, next) ->
       {oozie_user, oozie_group, oozie_data, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_tmp_dir} = ctx.config.ryba
@@ -154,6 +119,47 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           """
         , (err, executed) ->
           next err, copied
+
+    module.exports.push name: 'Oozie Server # Environment', callback: (ctx, next) ->
+      {java_home} = ctx.config.java
+      {oozie_user, oozie_group, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_data} = ctx.config.ryba
+      ctx.write
+        source: "#{__dirname}/../resources/oozie/oozie-env.sh"
+        destination: "#{oozie_conf_dir}/oozie-env.sh"
+        local_source: true
+        write: [
+          match: /^export JAVA_HOME=.*$/mg
+          replace: "export JAVA_HOME=#{java_home}"
+          append: true
+        ,
+          match: /^export JRE_HOME=.*$/mg
+          replace: "export JRE_HOME=${JAVA_HOME}" # Not in HDP 2.0.6 but mentioned in [HDP 2.1 doc](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.1-latest/bk_installing_manually_book/content/rpm-chap8-3.html)
+          append: true
+        ,
+          match: /^export OOZIE_CONFIG=.*$/mg
+          replace: "export OOZIE_CONFIG=${OOZIE_CONFIG:-/etc/oozie/conf}"
+          append: true
+        ,
+          match: /^export CATALINA_BASE=.*$/mg
+          replace: "export CATALINA_BASE=${CATALINA_BASE:-/var/lib/oozie/tomcat-deployment}"
+          append: true
+        ,
+          match: /^export CATALINA_TMPDIR=.*$/mg
+          replace: "export CATALINA_TMPDIR=${CATALINA_TMPDIR:-/var/tmp/oozie}"
+          append: true
+        ,
+          match: /^export OOZIE_CATALINA_HOME=.*$/mg
+          replace: "export OOZIE_CATALINA_HOME=/usr/lib/bigtop-tomcat"
+          append: true
+        ,
+          match: /^export OOZIE_DATA=.*$/mg
+          replace: "export OOZIE_DATA=#{oozie_data}"
+          append: true
+        ]
+        uid: oozie_user.name
+        gid: oozie_group.name
+        mode: 0o0755
+      , next
 
     module.exports.push name: 'Oozie Server # ExtJS', callback: (ctx, next) ->
       ctx.copy
@@ -231,10 +237,11 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       # Oozie may fail to start or work properly because of incorrect file permissions.
       # There is already a "oozie.war" file inside /var/lib/oozie/oozie-server/webapps/.
       # The "prepare-war" command generate the file "/var/lib/oozie/oozie-server/webapps/oozie.war".
-      # The directory being servered by the web server is "/usr/lib/oozie/webapps/oozie".
+      # The directory being served by the web server is "prepare-war".
       ctx.execute
         cmd: "su -l #{oozie_user.name} -c '/usr/lib/oozie/bin/oozie-setup.sh prepare-war'"
-        not_if: not ctx.config.ryba.force_war
+        # not_if: not ctx.config.ryba.force_war
+        code_skipped: 255 # Oozie already started, war is expected to be installed
       , next
 
     module.exports.push name: 'Oozie Server # Kerberos', callback: (ctx, next) ->
@@ -327,7 +334,20 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
     parse_jdbc = require '../lib/parse_jdbc'
   
 
+## Upgrade error
 
+Run `yum remove -y oozie oozie-client` before `ryba install` if you see this
+error:
+
+```
+Running Transaction
+  Updating   : oozie-4.0.0.2.1.5.0-695.el6.noarch                                                                                                                                                   1/2 
+Error unpacking rpm package oozie-4.0.0.2.1.5.0-695.el6.noarch
+error: unpacking of archive failed on file /usr/lib/oozie/webapps/oozie/WEB-INF: cpio: rename
+  Verifying  : oozie-4.0.0.2.1.5.0-695.el6.noarch                                                                                                                                                   1/2 
+oozie-4.0.0.2.1.2.0-402.el6.noarch was supposed to be removed but is not!
+  Verifying  : oozie-4.0.0.2.1.2.0-402.el6.noarch
+```
 
 
 
