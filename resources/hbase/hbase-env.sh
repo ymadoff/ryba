@@ -1,3 +1,4 @@
+
 #
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements. See the NOTICE file
@@ -18,14 +19,14 @@
 
 # Set environment variables here.
 
-# The java implementation to use. Java 1.6 required.
-export JAVA_HOME=/usr/java/default
+# The java implementation to use. Java 1.7 required.
+export JAVA_HOME=/usr/jdk64/jdk1.7.0_45
 
 # HBase Configuration directory
 export HBASE_CONF_DIR=${HBASE_CONF_DIR:-/etc/hbase/conf}
 
 # Extra Java CLASSPATH elements. Optional.
-export HBASE_CLASSPATH=${HBASE_CLASSPATH}:/etc/hadoop/conf
+export HBASE_CLASSPATH=${HBASE_CLASSPATH}
 
 # The maximum amount of heap to use, in MB. Default is 1000.
 # export HBASE_HEAPSIZE=1000
@@ -34,8 +35,8 @@ export HBASE_CLASSPATH=${HBASE_CLASSPATH}:/etc/hadoop/conf
 # Below are what we set by default. May only work with SUN JVM.
 # For more on why as well as other possible settings,
 # see http://wiki.apache.org/hadoop/PerformanceTuning
-export HBASE_OPTS="-ea -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode"
-
+export HBASE_OPTS="-XX:+UseConcMarkSweepGC -XX:ErrorFile=/var/log/hbase/hs_err_pid%p.log"
+export SERVER_GC_OPTS="-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:/var/log/hbase/gc.log-`date +'%Y%m%d%H%M'`"
 # Uncomment below to enable java garbage collection logging.
 # export HBASE_OPTS="$HBASE_OPTS -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:$HBASE_HOME/logs/gc-hbase.log"
 
@@ -45,7 +46,7 @@ export HBASE_OPTS="-ea -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode"
 #
 # export HBASE_JMX_BASE="-Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
 export HBASE_MASTER_OPTS="-Xmx1024m"
-export HBASE_REGIONSERVER_OPTS="-Xmx1024m"
+export HBASE_REGIONSERVER_OPTS="-Xmn200m -XX:CMSInitiatingOccupancyFraction=70  -Xms1024m -Xmx1024m"
 # export HBASE_THRIFT_OPTS="$HBASE_JMX_BASE -Dcom.sun.management.jmxremote.port=10103"
 # export HBASE_ZOOKEEPER_OPTS="$HBASE_JMX_BASE -Dcom.sun.management.jmxremote.port=10104"
 
@@ -74,3 +75,8 @@ export HBASE_PID_DIR=/var/run/hbase
 
 # Tell HBase whether it should manage it's own instance of Zookeeper or not.
 export HBASE_MANAGES_ZK=false
+
+# Use these settings only for Kerberized clusters.
+#export HBASE_OPTS="$HBASE_OPTS -Djava.security.auth.login.config=${HBASE_CONF_DIR}/hbase_client_jaas.conf"
+#export HBASE_MASTER_OPTS="$HBASE_MASTER_OPTS -Djava.security.auth.login.config=${HBASE_CONF_DIR}/hbase_master_jaas.conf"
+#export HBASE_REGIONSERVER_OPTS="$HBASE_REGIONSERVER_OPTS -Djava.security.auth.login.config=${HBASE_CONF_DIR}/hbase_regionserver_jaas.conf"

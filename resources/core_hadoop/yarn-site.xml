@@ -1,131 +1,378 @@
-<!--Thu Aug 15 20:46:53 2013-->
-  <configuration>
+<configuration>
     <property>
-    <name>yarn.nodemanager.address</name>
-    <value>0.0.0.0:45454</value>
-  </property>
+      <name>yarn.acl.enable</name>
+      <value>true</value>
+    </property> 
+
     <property>
-    <name>yarn.nodemanager.local-dirs</name>
-    <value>TODO-YARN-LOCAL-DIR</value>
-  </property>
+      <name>yarn.admin.acl</name>
+      <value/>
+    </property> 
+
     <property>
-    <name>yarn.nodemanager.container-monitor.interval-ms</name>
-    <value>3000</value>
-  </property>
+      <name>yarn.application.classpath</name>
+      <value>/etc/hadoop/conf,/usr/lib/hadoop/*,/usr/lib/hadoop/lib/*,/usr/lib/hadoop-hdfs/*,/usr/lib/hadoop-hdfs/lib/*,/usr/lib/hadoop-yarn/*,/usr/lib/hadoop-yarn/lib/*,/usr/lib/hadoop-mapreduce/*,/usr/lib/hadoop-mapreduce/lib/*</value>
+    </property> 
+
     <property>
-    <name>yarn.resourcemanager.am.max-attempts</name>
-    <value>2</value>
-  </property>
+      <name>yarn.log-aggregation-enable</name>
+      <value>true</value>
+    </property> 
+
     <property>
-    <name>yarn.nodemanager.health-checker.script.timeout-ms</name>
-    <value>60000</value>
-  </property>
+      <name>yarn.log-aggregation.retain-seconds</name>
+      <value>2592000</value>
+    </property> 
+
     <property>
-    <name>yarn.nodemanager.remote-app-log-dir</name>
-    <value>/app-logs</value>
-  </property>
+      <name>yarn.log.server.url</name>
+      <value>https://TODO-RESOURCEMANAGERNODE-HOSTNAME:19889/jobhistory/logs</value>
+    </property> 
+
     <property>
-    <name>yarn.log.server.url</name>
-    <value>TODO-RMNODE-HOSTNAME:19888/jobhistory/logs</value>
-  </property>
+      <name>yarn.nodemanager.address</name>
+      <value>0.0.0.0:45454</value>
+    </property> 
+
     <property>
-    <name>yarn.resourcemanager.admin.address</name>
-    <value>TODO-RMNODE-HOSTNAME:8141</value>
-  </property>
+      <name>yarn.nodemanager.admin-env</name>
+      <value>MALLOC_ARENA_MAX=$MALLOC_ARENA_MAX</value>
+    </property> 
+
     <property>
-    <name>yarn.scheduler.maximum-allocation-mb</name>
-    <value>6144</value>
-  </property>
+      <name>yarn.nodemanager.aux-services</name>
+      <value>mapreduce_shuffle</value>
+    </property> 
+
     <property>
-    <name>yarn.nodemanager.vmem-pmem-ratio</name>
-    <value>2.1</value>
-  </property>
+      <name>yarn.nodemanager.aux-services.mapreduce_shuffle.class</name>
+      <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+    </property>  
+
     <property>
-    <name>yarn.nodemanager.delete.debug-delay-sec</name>
-    <value>0</value>
-  </property>
+      <name>yarn.nodemanager.container-monitor.interval-ms</name>
+      <value>3000</value>
+    </property> 
+
     <property>
-    <name>yarn.nodemanager.health-checker.interval-ms</name>
-    <value>135000</value>
-  </property>
+      <name>yarn.nodemanager.delete.debug-delay-sec</name>
+      <value>0</value>
+    </property> 
+
     <property>
-    <name>yarn.nodemanager.resource.memory-mb</name>
-    <value>10240</value>
-  </property>
+      <name>yarn.nodemanager.disk-health-checker.min-healthy-disks</name>
+      <value>0.25</value>
+    </property> 
+
     <property>
-    <name>yarn.nodemanager.log-dirs</name>
-    <value>TODO-YARN-LOCAL-LOG-DIR</value>
-  </property>
+      <name>yarn.nodemanager.health-checker.interval-ms</name>
+      <value>135000</value>
+    </property> 
+
     <property>
-    <name>yarn.nodemanager.log.retain-second</name>
-    <value>604800</value>
-  </property>
+      <name>yarn.nodemanager.health-checker.script.timeout-ms</name>
+      <value>60000</value>
+    </property>
+
     <property>
-    <name>yarn.resourcemanager.scheduler.class</name>
-    <value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler</value>
-  </property>
+      <name>yarn.nodemanager.local-dirs</name>
+      <value>/hadoop/yarn/local</value>
+    </property> 
+
     <property>
-    <name>yarn.resourcemanager.resource-tracker.address</name>
-    <value>TODO-RMNODE-HOSTNAME:8025</value>
-  </property>
+      <name>yarn.nodemanager.log-aggregation.compression-type</name>
+      <value>gz</value>
+    </property> 
+
     <property>
-    <name>yarn.application.classpath</name>
-    <value>/etc/hadoop/conf,/usr/lib/hadoop/*,/usr/lib/hadoop/lib/*,/usr/lib/hadoop-hdfs/*,/usr/lib/hadoop-hdfs/lib/*,/usr/lib/hadoop-yarn/*,/usr/lib/hadoop-yarn/lib/*,/usr/lib/hadoop-mapreduce/*,/usr/lib/hadoop-mapreduce/lib/*</value>
-  </property>
+      <name>yarn.nodemanager.log-dirs</name>
+      <value>/hadoop/yarn/log</value>
+    </property> 
+
     <property>
-    <name>yarn.scheduler.minimum-allocation-mb</name>
-    <value>512</value>
-  </property>
+      <name>yarn.nodemanager.log.retain-second</name>
+      <value>604800</value>
+    </property> 
+
     <property>
-    <name>yarn.nodemanager.aux-services</name>
-    <value>mapreduce_shuffle</value>
-  </property>
+      <name>yarn.nodemanager.remote-app-log-dir</name>
+      <value>/app-logs</value>
+    </property> 
+
     <property>
-    <name>yarn.nodemanager.log-aggregation.compression-type</name>
-    <value>gz</value>
-  </property>
+      <name>yarn.nodemanager.remote-app-log-dir-suffix</name>
+      <value>logs</value>
+    </property> 
+
     <property>
-    <name>yarn.nodemanager.health-checker.script.path</name>
-    <value>/etc/hadoop/conf/health_check</value>
-  </property>
+      <name>yarn.nodemanager.resource.memory-mb</name>
+      <value>2048</value>
+    </property> 
+
     <property>
-    <name>yarn.nodemanager.container-executor.class</name>
-    <value>org.apache.hadoop.yarn.server.nodemanager.DefaultContainerExecutor</value>
-  </property>
+      <name>yarn.nodemanager.vmem-check-enabled</name>
+      <value>false</value>
+    </property> 
+
     <property>
-    <name>yarn.log-aggregation.retain-seconds</name>
-    <value>2592000</value>
-  </property>
+      <name>yarn.nodemanager.vmem-pmem-ratio</name>
+      <value>2.1</value>
+    </property> 
+
     <property>
-    <name>yarn.nodemanager.remote-app-log-dir-suffix</name>
-    <value>logs</value>
-  </property>
+      <name>yarn.resourcemanager.address</name>
+      <value>TODO-RESOURCEMANAGERNODE-HOSTNAME:8050</value>
+    </property> 
+
     <property>
-    <name>yarn.resourcemanager.webapp.address</name>
-    <value>TODO-RMNODE-HOSTNAME:8088</value>
-  </property>
+      <name>yarn.resourcemanager.admin.address</name>
+      <value>TODO-RESOURCEMANAGERNODE-HOSTNAME:8141</value>
+    </property> 
+
     <property>
-    <name>yarn.nodemanager.aux-services.mapreduce_shuffle.class</name>
-    <value>org.apache.hadoop.mapred.ShuffleHandler</value>
-  </property>
+      <name>yarn.resourcemanager.am.max-attempts</name>
+      <value>2</value>
+    </property> 
+
     <property>
-    <name>yarn.resourcemanager.address</name>
-    <value>TODO-RMNODE-HOSTNAME:8050</value>
-  </property>
+      <name>yarn.resourcemanager.hostname</name>
+      <value>TODO-RESOURCEMANAGERNODE-HOSTNAME</value>
+    </property> 
+
     <property>
-    <name>yarn.nodemanager.admin-env</name>
-    <value>MALLOC_ARENA_MAX=$MALLOC_ARENA_MAX</value>
-  </property>
+      <name>yarn.resourcemanager.nodes.exclude-path</name>
+      <value>/etc/hadoop/conf/yarn.exclude</value>
+    </property> 
+
     <property>
-    <name>yarn.nodemanager.disk-health-checker.min-healthy-disks</name>
-    <value>0.25</value>
-  </property>
+      <name>yarn.resourcemanager.resource-tracker.address</name>
+      <value>TODO-RESOURCEMANAGERNODE-HOSTNAME:8025</value>
+    </property> 
+
     <property>
-    <name>yarn.log-aggregation-enable</name>
-    <value>true</value>
-  </property>
+      <name>yarn.resourcemanager.scheduler.address</name>
+      <value>TODO-RESOURCEMANAGERNODE-HOSTNAME:8030</value>
+    </property> 
+
     <property>
-    <name>yarn.resourcemanager.scheduler.address</name>
-    <value>TODO-RMNODE-HOSTNAME:8030</value>
-  </property>
-  </configuration>
+      <name>yarn.resourcemanager.scheduler.class</name>
+      <value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler</value>
+    </property> 
+
+    <property>
+      <name>yarn.resourcemanager.webapp.address</name>
+      <value>TODO-RESOURCEMANAGERNODE-HOSTNAME:8088</value>
+    </property>
+
+    <property>
+      <name>yarn.scheduler.maximum-allocation-mb</name>
+      <value>2048</value>
+    </property> 
+
+    <property>
+      <name>yarn.scheduler.minimum-allocation-mb</name>
+      <value>682</value>
+    </property> 
+
+		<!-- 
+			This sets the container framework that will launch and manage YARN
+			containers.
+			
+			For Secure deployments, this should be set to:
+			org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor
+			-->
+		<property>
+      <name>yarn.nodemanager.container-executor.class</name>
+      <value>org.apache.hadoop.yarn.server.nodemanager.DefaultContainerExecutor</value>
+    </property>
+
+		<!--
+				This enables or disables wire encryption for YARN. 
+
+				The possible values for this are:
+				* HTTP_ONLY
+				* HTTPS_ONLY
+		-->
+    <property>
+      <name>yarn.http.policy</name>
+      <value>HTTP_ONLY</value>
+    </property> 
+
+    <!-- ResourceManager HA settings
+
+    <property> 
+      <name>yarn.resourcemanager.ha.enabled</name> 
+      <value>true</value>
+    </property>
+
+    <property> 
+    <name>yarn.resourcemanager.ha.rm-ids</name> 
+    <value>rm1,rm2</value> 
+   </property>
+   
+   <property> 
+      <name>yarn.resourcemanager.hostname.rm1</name> 
+      <value>TODO-RESOURCEMANAGERNODE1-HOSTNAME</value> 
+   </property> 
+   
+   <property> 
+      <name>yarn.resourcemanager.hostname.rm2</name> 
+      <value>TODO-RESOURCEMANAGERNODE2-HOSTNAME</value> 
+   </property> 
+   
+   <property> 
+      <name>yarn.resourcemanager.webapp.address.rm1</name> 
+      <value>TODO-RESOURCEMANAGERNODE1-HOSTNAME:8088</value> 
+      <description>We can set rm1_web_address separately. If not, it will use 
+      ${yarn.resourcemanager.hostname.rm1}:DEFAULT_RM_WEBAPP_PORT</description> 
+   </property> 
+   
+   <property> 
+      <name>yarn.resourcemanager.webapp.address.rm2</name> 
+      <value>TODO-RESOURCEMANAGERNODE2-HOSTNAME:8088</value> 
+   </property> 
+   
+   <property> 
+      <name>yarn.resourcemanager.recovery.enabled</name> 
+      <value>true</value> 
+   </property> 
+   
+   <property> 
+      <name>yarn.resourcemanager.store.class</name> 
+      <value>org.apache.hadoop.yarn.server.resourcemanager.recovery.ZKRMStateStore</value> 
+   </property> 
+   
+   <property> 
+      <name>yarn.resourcemanager.zk-address</name>
+    <value>TODO-ZK1-HOSTNAME,TODO-ZK2-HOSTNAME,TODO-ZK3-HOSTNAME</value> 
+   </property>
+   
+   <property> 
+     <name>yarn.client.failover-proxy-provider</name> 
+     <value>org.apache.hadoop.yarn.client.ConfiguredRMFailoverProxyProvider</value> 
+   </property>
+
+    -->
+
+
+<!-- Tech Preview: Application Timeline Server
+
+			Note: If enabling Kerberos, disable the Application Timeline Server.
+		
+    <property>
+      <name>yarn.timeline-service.enabled</name>
+      <value>true</value>
+    </property> 
+		
+    <property>
+      <name>yarn.timeline-service.address</name>
+      <value>TODO-TIMELINESERVER-HOSTNAME:10200</value>
+    </property> 
+
+    <property>
+      <name>yarn.timeline-service.generic-application-history.store-class</name>
+      <value>org.apache.hadoop.yarn.server.applicationhistoryservice.NullApplicationHistoryStore</value>
+    </property> 
+
+    <property>
+      <name>yarn.timeline-service.leveldb-timeline-store.path</name>
+      <value>/hadoop/yarn/timeline</value>
+    </property> 
+
+    <property>
+      <name>yarn.timeline-service.leveldb-timeline-store.ttl-interval-ms</name>
+      <value>300000</value>
+    </property> 
+
+    <property>
+      <name>yarn.timeline-service.store-class</name>
+      <value>org.apache.hadoop.yarn.server.timeline.LeveldbTimelineStore</value>
+    </property> 
+
+    <property>
+      <name>yarn.timeline-service.ttl-enable</name>
+      <value>true</value>
+    </property> 
+
+    <property>
+      <name>yarn.timeline-service.ttl-ms</name>
+      <value>2678400000</value>
+    </property> 
+
+    <property>
+      <name>yarn.timeline-service.webapp.address</name>
+      <value>TODO-TIMELINESERVER-HOSTNAME:8188</value>
+    </property> 
+
+-->
+
+    
+<!-- Secure cluster configurations section start
+
+		- If LinuxContainerExecutor is being used, this configuration is
+		- needed
+    <property>
+      <name>yarn.nodemanager.linux-container-executor.group</name>
+      <value>hadoop</value>
+    </property> 
+
+    <property>
+      <name>yarn.nodemanager.keytab</name>
+      <value>/etc/security/keytabs/nm.service.keytab</value>
+    </property> 
+
+    <property>
+      <name>yarn.nodemanager.principal</name>
+      <value>nm/_HOST@TODO-KERBEROS-DOMAIN</value>
+    </property> 
+
+    <property>
+      <name>yarn.nodemanager.webapp.spnego-keytab-file</name>
+      <value>/etc/security/keytabs/spnego.service.keytab</value>
+    </property> 
+
+    <property>
+      <name>yarn.nodemanager.webapp.spnego-principal</name>
+      <value>HTTP/_HOST@TODO-KERBEROS-DOMAIN</value>
+    </property> 
+
+    <property>
+      <name>yarn.resourcemanager.keytab</name>
+      <value>/etc/security/keytabs/rm.service.keytab</value>
+    </property> 
+
+    <property>
+      <name>yarn.resourcemanager.principal</name>
+      <value>rm/_HOST@TODO-KERBEROS-DOMAIN</value>
+    </property> 
+
+		<property>
+      <name>yarn.resourcemanager.webapp.spnego-keytab-file</name>
+      <value>/etc/security/keytabs/spnego.service.keytab</value>
+    </property> 
+
+    <property>
+      <name>yarn.resourcemanager.webapp.spnego-principal</name>
+      <value>HTTP/_HOST@TODO-KERBEROS-DOMAIN</value>
+    </property>
+
+    <property>
+      <name>mapreduce.jobhistory.webapp.spnego-principal</name>
+      <value>HTTP/_HOST@EXAMPLE.COM</value>
+    </property>
+
+    <property>
+      <name>mapreduce.jobhistory.webapp.spnego-keytab-file</name>
+      <value>/etc/security/keytabs/spnego.service.keytab</value>
+    </property>
+		
+		- Timeline Server HTTPs configuration
+    <property>
+      <name>yarn.timeline-service.webapp.https.address</name>
+      <value>TODO-TIMELINESERVER-HOSTNAME:8190</value>
+    </property>
+
+		--- Secure cluster configurations section end -->
+    
+
+</configuration>
