@@ -8,6 +8,7 @@ layout: module
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push require('./server').configure
+    module.exports.push 'ryba/zookeeper/server_wait'
 
 ## Check Registration
 
