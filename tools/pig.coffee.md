@@ -47,7 +47,7 @@ Example:
 
     module.exports.configure = (ctx) ->
       require('masson/commons/java').configure ctx
-      require('./hdfs').configure ctx
+      require('../hadoop/hdfs').configure ctx
       {ryba} = ctx.config
       ryba.pig_conf ?= {}
       # User
