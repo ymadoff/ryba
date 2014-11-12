@@ -7,7 +7,7 @@
 
     module.exports.push name: 'Oozie Client # Wait Server', timeout: -1, callback: (ctx, next) ->
       {hostname, port} = url.parse ctx.config.ryba.oozie_site['oozie.base.url'] 
-      ctx.waitIsOpen hostname, port, next
+      ctx.waitIsOpen hostname, port, (err) -> next err
 
     module.exports.push name: 'Oozie Client # Check Client', timeout: -1, callback: (ctx, next) ->
       {oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.ryba
