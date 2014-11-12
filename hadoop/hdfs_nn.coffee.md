@@ -22,12 +22,12 @@ define inside the "ryba/hadoop/hdfs" and "masson/core/nc" modules.
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
-      throw Error "Missing \"hdp.zkfc_password\" property" unless ctx.config.ryba.zkfc_password
-      {hdfs_site} = ctx.config.ryba
+      {ryba} = ctx.config
+      throw Error "Missing \"ryba.zkfc_password\" property" unless ryba.zkfc_password
       # Activate ACLs
-      hdfs_site['dfs.namenode.acls.enabled'] ?= 'true'
-      hdfs_site['dfs.namenode.accesstime.precision'] ?= null
-      hdfs_site['dfs.ha.automatic-failover.enabled'] ?= 'true'
+      ryba.hdfs_site['dfs.namenode.acls.enabled'] ?= 'true'
+      ryba.hdfs_site['dfs.namenode.accesstime.precision'] ?= null
+      ryba.hdfs_site['dfs.ha.automatic-failover.enabled'] ?= 'true'
 
     # module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_nn_backup'
 
