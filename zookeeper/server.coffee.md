@@ -49,8 +49,7 @@ Example :
       ryba.zookeeper_conf ?= {}
       # The number of milliseconds of each tick
       ryba.zookeeper_conf['tickTime'] ?= "2000"
-      # The number of ticks that the initial
-      # synchronization phase can take
+      # The number of ticks that the initial synchronization phase can take
       ryba.zookeeper_conf['initLimit'] ?= "10"
       ryba.zookeeper_conf['tickTime'] ?= "2000"
       # The number of ticks that can pass between

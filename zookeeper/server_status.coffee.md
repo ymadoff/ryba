@@ -3,7 +3,7 @@ title:
 layout: module
 ---
 
-# Zookeeper Status
+# Zookeeper Server Status
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'

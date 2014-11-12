@@ -3,7 +3,7 @@ title:
 layout: module
 ---
 
-# Zookeeper Stop
+# Zookeeper Server Stop
 
     lifecycle = require '../lib/lifecycle'
     module.exports = []
