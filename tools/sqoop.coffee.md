@@ -38,7 +38,7 @@ Example:
 ```
 
     module.exports.configure = (ctx) ->
-      require('./core').configure ctx
+      require('../hadoop/core').configure ctx
       ctx.config.ryba.sqoop ?= {}
       # User
       ctx.config.ryba.sqoop_user = name: ctx.config.ryba.sqoop_user if typeof ctx.config.ryba.sqoop_user is 'string'
