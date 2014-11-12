@@ -97,7 +97,7 @@ nagiocmd:x:2419:apache
 
 # Plugins
 
-    module.exports.push name: 'Nagios # Plugins', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Plugins', timeout: -1, callback: (ctx, next) ->
       {user, group, plugin_dir} = ctx.config.ryba.nagios
       glob "#{__dirname}/../resources/nagios/plugins/*", (err, plugins) ->
         return next err if err
@@ -227,7 +227,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       , next
 
     module.exports.push name: 'Nagios # Services', callback: (ctx, next) ->
-      {nagios, nameservice, force_check, active_nn_host, core_site, hdfs_site, zookeeper_port, 
+      {nagios, force_check, active_nn_host, core_site, hdfs_site, zookeeper_port, 
         yarn_site, hive_site, hbase_site, oozie_site, webhcat_site, ganglia, hue_ini} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
@@ -239,10 +239,14 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
         active_nn_port = u.port
       else
         for nn_host in nn_hosts
-          shortname = ctx.hosts[nn_host].config.shortname
-          nn_host = ctx.config.ryba.ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{shortname}"].split(':')
+          nn_ctx = ctx.hosts[nn_host]
+          require('../hadoop/hdfs_nn').configure nn_ctx
+          protocol = if nn_ctx.config.ryba.hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+          shortname = nn_ctx.config.shortname
+          nameservice = nn_ctx.config.ryba.nameservice
+          nn_host = ctx.config.ryba.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')
           nn_hosts_map[nn_host[0]] = nn_host[1]
-          active_nn_port = nn_host[1] if nn_host is active_nn_host
+          active_nn_port = nn_host[1] if nn_ctx.config.host is active_nn_host
       rm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
       rm_webapp_port = if yarn_site['yarn.http.policy'] is 'HTTP_ONLY'
       then yarn_site['yarn.resourcemanager.webapp.address'].split(':')[1]
@@ -250,19 +254,19 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       nm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_nm'
       if nm_hosts.length
         nm_ctx = ctx.hosts[nm_hosts[0]]
-        require('../hadoop/yarn_nm').configure(nm_ctx)
+        require('../hadoop/yarn_nm').configure nm_ctx
         nm_webapp_port = if yarn_site['yarn.http.policy'] is 'HTTP_ONLY'
         then nm_ctx.config.ryba.yarn_site['yarn.nodemanager.webapp.address'].split(':')[1]
         else nm_ctx.config.ryba.yarn_site['yarn.nodemanager.webapp.https.address'].split(':')[1]
       jhs_hosts = ctx.hosts_with_module 'ryba/hadoop/mapred_jhs'
       if jhs_hosts.length
         jhs_ctx = ctx.hosts[jhs_hosts[0]]
-        require('../hadoop/mapred_jhs').configure(jhs_ctx)
+        require('../hadoop/mapred_jhs').configure jhs_ctx
         hs_webapp_port = jhs_ctx.config.ryba.mapred_site['mapreduce.jobhistory.webapp.address'].split(':')[1]
       jn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
       if jn_hosts.length
         jn_ctx = ctx.hosts[jn_hosts[0]]
-        require('../hadoop/hdfs_jn').configure(jn_ctx)
+        require('../hadoop/hdfs_jn').configure jn_ctx
         journalnode_port = jn_ctx.config.ryba.hdfs_site["dfs.journalnode.#{protocol}-address"].split(':')[1]
       datanode_port = hdfs_site["dfs.datanode.#{protocol}.address"].split(':')[1]
       hm_hosts = ctx.hosts_with_module 'ryba/hbase/master'
@@ -340,8 +344,6 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           replace: '/var/nagios/status.dat'
         ]
       , next
-
-    module.exports.push 'ryba/nagios/check'
 
 ## Module Dependencies
 
