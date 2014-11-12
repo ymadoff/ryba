@@ -5,6 +5,8 @@ layout: module
 
 # Hue Install
 
+Here's how to uninstall Hue: `rpm -qa | grep hue | xargs sudo rpm -e`
+
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/iptables'
@@ -61,9 +63,15 @@ The packages "extjs-2.2-1" and "hue" are installed.
 
     module.exports.push name: 'Hue # Packages', timeout: -1, callback: (ctx, next) ->
       ctx.service [
-        name: 'extjs-2.2-1'
-      ,
-        name: 'hue'
+        {name: 'extjs-2.2-1'}
+        {name: 'hue'}
+        {name: 'hue-hcatalog'}
+        {name: 'hue-oozie'}
+        {name: 'hue-pig'}
+        {name: 'hue-plugins'}
+        {name: 'hue-server'}
+        {name: 'hue-common'}
+        {name: 'hue-shell'}
       ], next
 
 ## Core
@@ -261,7 +269,24 @@ the "security_enabled" property set to "true".
         next null, modified
       do_addprinc()
 
-## SSL
+## SSL Client
+
+    module.exports.push name: 'Hue # SSL Client', callback: (ctx, next) ->
+      {hue_ini, hue_ca_bundle, hue_ssl_client_ca} = ctx.config.ryba
+      hue_ca_bundle = '' unless hue_ssl_client_ca
+      ctx.write [
+        destination: "#{hue_ca_bundle}"
+        source: "#{hue_ssl_client_ca}"
+        local_source: true
+        if: !!hue_ssl_client_ca
+      ,
+        destination: '/etc/init.d/hue'
+        match: /^DAEMON="export REQUESTS_CA_BUNDLE='.*';\$DAEMON"$/m
+        replace: "DAEMON=\"export REQUESTS_CA_BUNDLE='#{hue_ca_bundle}';$DAEMON\""
+        append: /^DAEMON=.*$/m
+      ], next
+
+## SSL Server
 
 Upload and register the SSL certificate and private key respectively defined
 by the "hdp.hue\_ssl\_certificate" and "hdp.hue\_ssl\_private_key" 
@@ -269,7 +294,7 @@ configuration properties. It follows the [official Hue Web Server
 Configuration][web]. The "hue" service is restarted if there was any 
 changes.
 
-    module.exports.push name: 'Hue # SSL', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # SSL Server', callback: (ctx, next) ->
       {hue_user, hue_group, hue_conf_dir, hue_ssl_certificate, hue_ssl_private_key} = ctx.config.ryba
       modified = true
       do_upload = ->
