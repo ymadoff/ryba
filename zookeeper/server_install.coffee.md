@@ -11,7 +11,8 @@ layout: module
     module.exports.push 'masson/core/yum'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/commons/java'
-    module.exports.push 'ryba/hadoop/core'
+    # module.exports.push 'ryba/hadoop/core'
+    module.exports.push 'ryba/lib/base'
     module.exports.push require('./server').configure
 
 ## Users & Groups
