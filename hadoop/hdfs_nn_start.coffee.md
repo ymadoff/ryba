@@ -23,7 +23,7 @@ the standy NameNodes wait for the one on the active NameNode to start first.
     module.exports.push name: 'Hadoop HDFS NN # Start NameNode', callback: (ctx, next) ->
       lifecycle.nn_start ctx, next
 
-    module.exports.push name: 'Hadoop HDFS NN # Wait NameNode', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # Wait NameNode', timeout: -1, callback: (ctx, next) ->
       if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
         next()
       else
@@ -31,8 +31,7 @@ the standy NameNodes wait for the one on the active NameNode to start first.
         ipc_port = ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{ctx.config.shortname}"].split(':')[1] or 8020
         protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
         http_port = ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{ctx.config.shortname}"].split(':')[1]
-        ctx.waitIsOpen ctx.config.host, [ipc_port, http_port], timeout: hdfs_namenode_timeout, (err) ->
-          next err, false
+        ctx.waitIsOpen ctx.config.host, [ipc_port, http_port], timeout: hdfs_namenode_timeout, (err) -> next err
 
     module.exports.push name: 'Hadoop HDFS NN # Start ZKFC', callback: (ctx, next) ->
       return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
