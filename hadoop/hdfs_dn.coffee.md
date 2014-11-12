@@ -26,9 +26,19 @@ information and heartbeats to both.
 The module doesn't require any configuration but instread rely on the 
 "ryba/hadoop/hdfs" configuration settings.
 
+Unless specified otherwise, the number of tolerated failed volumes is set to "1"
+if at least 4 disks are used for storage.
+
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
+      {hdfs_site} = ctx.config.ryba
+      # Tuning
+      if hdfs_site['dfs.datanode.data.dir'].length > 3
+        hdfs_site['dfs.datanode.failed.volumes.tolerated'] ?= 1
+      # Validation
+      if hdfs_site['dfs.datanode.failed.volumes.tolerated'] >= hdfs_site['dfs.datanode.data.dir'].length
+        throw Error 'Number of failed volumes must be less than total volumes'
 
     # module.exports.push command: 'backup', modules: 'ryba/hadoop/hdfs_dn_backup'
 
