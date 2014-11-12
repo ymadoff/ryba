@@ -11,7 +11,7 @@ layout: module
       require('./yarn').configure ctx
       {ryba} = ctx.config
       ryba.yarn_site['yarn.resourcemanager.keytab'] ?= '/etc/security/keytabs/rm.service.keytab'
-      ryba.yarn_site['yarn.resourcemanager.principal'] ?= "rm/#{static_host}@#{realm}"
+      ryba.yarn_site['yarn.resourcemanager.principal'] ?= "rm/#{ryba.static_host}@#{ryba.realm}"
       ryba.yarn_site['yarn.resourcemanager.scheduler.class'] ?= 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
 
     # module.exports.push commands: 'backup', modules: 'ryba/hadoop/yarn_rm_backup'
