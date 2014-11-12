@@ -116,6 +116,7 @@ NodeManagers.
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: hdfs_site
         merge: true
+        backup: true
       , next
 
 ## Configure HA
@@ -133,6 +134,7 @@ read on JN side (see [DFSConfigKeys.java][keys]).
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: ha_client_config
         merge: true
+        backup: true
       , next
 
 ## Start

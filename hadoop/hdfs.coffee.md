@@ -55,7 +55,6 @@ Example:
       require('./core').configure ctx
       # require('./core_ssl').configure ctx
       {nameservice, core_site} = ctx.config.ryba
-      namenodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       throw new Error "Missing value for 'hdfs_password'" unless ctx.config.ryba.hdfs_password?
       throw new Error "Missing value for 'test_password'" unless ctx.config.ryba.test_password?
       # Options and configuration
@@ -100,6 +99,7 @@ Example:
         hdfs_site['dfs.namenode.https-address'] ?= '0.0.0.0:50470'
       else
         # HDFS HA configuration
+        namenodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
         ctx.config.ryba.shortname ?= ctx.config.shortname
         ctx.config.ryba.ha_client_config = {}
         ctx.config.ryba.ha_client_config['dfs.nameservices'] = nameservice
@@ -147,6 +147,7 @@ Example:
           local_default: true
           properties: hdfs_site
           merge: true
+          backup: true
         , (err, configured) ->
           return next err if err
           modified = true if configured
@@ -176,6 +177,7 @@ Example:
         ctx.write
           content: "#{datanodes.join '\n'}"
           destination: "#{hadoop_conf_dir}/slaves"
+          eof: true
         , (err, configured) ->
           return next err if err
           modified = true if configured

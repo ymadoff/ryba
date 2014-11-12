@@ -137,6 +137,7 @@ Create a service principal for this NameNode. The principal is named after
         uid: hdfs_user
         gid: hadoop_group
         merge: true
+        backup: true
       , next
 
 # Configure HA
@@ -155,6 +156,7 @@ similar than the ones for a client or slave configuration with the addtionnal
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: ha_client_config
         merge: true
+        backup: true
       , next
 
 # SSH Fencing
@@ -241,6 +243,7 @@ public and private SSH keys for the HDFS user inside his "~/.ssh" folder and upd
           destination: "#{hadoop_conf_dir}/hdfs-site.xml"
           properties: ha_client_config
           merge: true
+          backup: true
         , (err, configured) ->
           return next err if err
           modified = true if configured
@@ -257,8 +260,7 @@ is only exected once all the JournalNodes are started. The NameNode is finally r
 if the NameNode was formated.
 
     module.exports.push name: 'Hadoop HDFS NN # Format', timeout: -1, callback: (ctx, next) ->
-      {active_nn, hdfs_site, hdfs_user, format, nameservice} = ctx.config.ryba
-      return next() unless format
+      {active_nn, hdfs_site, hdfs_user, nameservice} = ctx.config.ryba
       any_dfs_name_dir = hdfs_site['dfs.namenode.name.dir'].split(',')[0]
       if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
         ctx.execute
@@ -316,6 +318,7 @@ Secure the Zookeeper connection with JAAS.
             'ha.zookeeper.auth': "@#{hadoop_conf_dir}/zk-auth.txt"
             'ha.zookeeper.acl': "@#{hadoop_conf_dir}/zk-acl.txt"
           merge: true
+          backup: true
         , (err, configured) ->
           return next err if err
           modified = true if configured
@@ -376,6 +379,7 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
           destination: "#{hadoop_conf_dir}/hdfs-site.xml"
           properties: 'dfs.ha.automatic-failover.enabled': 'true'
           merge: true
+          backup: true
         , (err, configured) ->
           return next err if err
           modified = true if configured
@@ -390,6 +394,7 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
           destination: "#{hadoop_conf_dir}/core-site.xml"
           properties: 'ha.zookeeper.quorum': quorum
           merge: true
+          backup: true
         , (err, configured) ->
           return next err if err
           modified = true if configured

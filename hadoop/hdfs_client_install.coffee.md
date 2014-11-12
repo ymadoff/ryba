@@ -17,6 +17,7 @@ layout: module
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: hdfs_site
         merge: true
+        backup: true
       , next
 
     module.exports.push name: 'Hadoop HDFS Client # HA', callback: (ctx, next) ->
@@ -25,6 +26,7 @@ layout: module
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: ha_client_config
         merge: true
+        backup: true
       , next
 
     module.exports.push 'ryba/hadoop/hdfs_client_check'

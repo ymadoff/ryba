@@ -104,6 +104,7 @@ present inside the "hdp.ha\_client\_config" object.
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: ha_client_config
         merge: true
+        backup: true
       , next
 
 ## Layout
