@@ -95,6 +95,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
           local_default: true
           properties: mapred_site
           merge: true
+          backup: true
           uid: mapred_user.name
           gid: mapred_group.name
         , (err, configured) ->
