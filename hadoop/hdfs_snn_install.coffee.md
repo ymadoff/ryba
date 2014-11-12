@@ -7,7 +7,7 @@ layout: module
 
     lifecycle = require '../lib/lifecycle'
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push require('./hdfs_snn').configure
 
@@ -89,6 +89,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         uid: hdfs_user
         gid: hadoop_group
         merge: true
+        backup: true
       , next
 
     module.exports.push 'ryba/hadoop/hdfs_snn'

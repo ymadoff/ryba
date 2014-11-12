@@ -6,7 +6,7 @@ layout: module
 # YARN Client
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
 
     module.exports.configure = (ctx) ->
       require('./yarn').configure

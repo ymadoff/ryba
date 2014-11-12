@@ -6,7 +6,7 @@ layout: module
 # MapRed JobHistoryServer Install
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/mapred_install'
     module.exports.push require('./mapred_jhs').configure
@@ -79,6 +79,7 @@ Install and configure the startup script in
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
         properties: mapred_site
         merge: true
+        backup: true
       , next
 
 ## HDFS Layout

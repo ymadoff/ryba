@@ -2,7 +2,7 @@
 # Yarn Client Check
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push require('./yarn_client').configure
     module.exports.push 'ryba/hadoop/yarn_rm_wait'
 

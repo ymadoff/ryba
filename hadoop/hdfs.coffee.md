@@ -16,7 +16,7 @@ In its current state, we are only supporting the installation of a
 [secure]: http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/SecureMode.html
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'masson/core/yum'
     module.exports.push 'ryba/hadoop/core'

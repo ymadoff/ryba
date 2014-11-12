@@ -6,7 +6,7 @@ layout: module
 # HDFS Client Install
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/core'
 
     module.exports.push require('./hdfs_client').configure

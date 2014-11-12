@@ -12,7 +12,7 @@ interface.
     lifecycle = require '../lib/lifecycle'
     mkcmd = require '../lib/mkcmd'
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
 
     module.exports.push (ctx) ->
       require('./core').configure ctx

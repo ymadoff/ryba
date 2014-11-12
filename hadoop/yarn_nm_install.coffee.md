@@ -6,7 +6,7 @@ layout: module
 # YARN NodeManager Install
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/yarn'
     module.exports.push require('./yarn_nm').configure

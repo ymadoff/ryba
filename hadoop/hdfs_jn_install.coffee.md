@@ -18,7 +18,7 @@ can tolerate, deploy an odd number of JNs because the system can tolerate at
 most (N - 1) / 2 failures to continue to function normally.
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push require('./hdfs_jn').configure

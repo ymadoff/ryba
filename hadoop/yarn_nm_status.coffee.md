@@ -7,7 +7,7 @@ layout: module
 
     lifecycle = require '../lib/lifecycle'
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push (ctx) ->
       require('./yarn').configure ctx
 

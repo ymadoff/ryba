@@ -13,7 +13,7 @@ and some may be inactive.
 
     lifecycle = require '../lib/lifecycle'
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push require('./hdfs_dn').configure
 
     module.exports.push name: 'Hadoop HDFS DN # Start', callback: (ctx, next) ->

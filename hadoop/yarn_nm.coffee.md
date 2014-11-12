@@ -13,7 +13,7 @@ log’s management and auxiliary services which may be exploited by different YA
 applications.
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
 
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx

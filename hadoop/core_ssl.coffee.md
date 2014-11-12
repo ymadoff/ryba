@@ -40,7 +40,7 @@ keytool -list -v -keystore keystore -alias hadoop
 ```
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
 
     module.exports.push module.exports.configure = (ctx) ->
       require('./core').configure ctx

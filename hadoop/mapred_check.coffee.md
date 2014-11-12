@@ -6,7 +6,7 @@ layout: module
 # MapRed Client
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
 
     module.exports.push require('./mapred').configure
 

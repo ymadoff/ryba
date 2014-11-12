@@ -22,7 +22,7 @@ code.
     hconfigure = require '../lib/hconfigure'
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/yum'
     # Install kerberos clients to create/test new HDFS and Yarn principals
     module.exports.push 'masson/core/krb5_client'

@@ -20,7 +20,7 @@ to achieve this, the DataNodes are configured with the location of both
 NameNodes, and send block location information and heartbeats to both.
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push require('./hdfs_dn').configure

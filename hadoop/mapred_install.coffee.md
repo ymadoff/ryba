@@ -9,7 +9,7 @@ layout: module
     mkcmd = require '../lib/mkcmd'
     memory = require '../lib/memory'
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/yum'
     module.exports.push 'ryba/hadoop/hdfs'
 

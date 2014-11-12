@@ -7,7 +7,7 @@ layout: module
 
     lifecycle = require '../lib/lifecycle'
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push require('./hdfs_nn').configure
 
     module.exports.push name: 'Hadoop HDFS NN # Status NameNode', callback: (ctx, next) ->

@@ -5,7 +5,7 @@ Check the access to the HDFS cluster.
 
     mkcmd = require '../lib/mkcmd'
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push require('./hdfs_client').configure
 
     module.exports.push name: 'Hadoop HDFS Client # Check', timeout: -1, callback: (ctx, next) ->

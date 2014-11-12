@@ -18,7 +18,7 @@ Worth to investigate:
 [rollback]: http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.3/bk_Monitoring_Hadoop_Book/content/monitor-ha-undoing_2x.html
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'

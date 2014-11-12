@@ -6,7 +6,7 @@ layout: module
 # YARN
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/core'
 
     module.exports.push module.exports.configure = (ctx) ->
