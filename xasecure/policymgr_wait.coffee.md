@@ -1,7 +1,6 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push require('./policymgr').configure
 
     module.exports.push timeout: -1, callback: (ctx, next) ->
       managers = ctx.hosts_with_module('ryba/xasecure/policymgr')
