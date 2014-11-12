@@ -22,10 +22,6 @@ layout: module
       ryba.yarn_log_dir ?= '/var/log/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#20
       ryba.yarn_pid_dir ?= '/var/run/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#21
       # Configure yarn
-      # Comma separated list of paths. Use the list of directories from $YARN_LOCAL_DIR, eg: /grid/hadoop/hdfs/yarn/local,/grid1/hadoop/hdfs/yarn/local.
-      throw new Error 'Required property: hdp.yarn_site[yarn.nodemanager.local-dirs]' unless ryba.yarn_site['yarn.nodemanager.local-dirs']
-      # Use the list of directories from $YARN_LOCAL_LOG_DIR, eg: /grid/hadoop/yarn/logs /grid1/hadoop/yarn/logs /grid2/hadoop/yarn/logs
-      throw new Error 'Required property: hdp.yarn_site[yarn.nodemanager.log-dirs]' unless ryba.yarn_site['yarn.nodemanager.log-dirs']
       ryba.yarn_site['yarn.http.policy'] ?= 'HTTPS_ONLY'
       ryba.yarn_site['yarn.resourcemanager.resource-tracker.address'] ?= "#{resourcemanager}:8025" # Enter your ResourceManager hostname.
       ryba.yarn_site['yarn.resourcemanager.scheduler.address'] ?= "#{resourcemanager}:8030" # Enter your ResourceManager hostname.
@@ -34,6 +30,11 @@ layout: module
       ryba.yarn_site['yarn.log.server.url'] ?= "http://#{jobhistoryserver}:19888/jobhistory/logs/" # URL for job history server
       ryba.yarn_site['yarn.resourcemanager.webapp.address'] ?= "#{resourcemanager}:8088" # URL for job history server
       ryba.yarn_site['yarn.resourcemanager.webapp.https.address'] ?= "#{resourcemanager}:8090"
+      # NodeManager Memory (should move to yarn_nm but we need to implement memory differently)
+      ryba.yarn_site['yarn.nodemanager.local-dirs'] ?= ['/var/yarn/local']
+      ryba.yarn_site['yarn.nodemanager.local-dirs'] = ryba.yarn_site['yarn.nodemanager.local-dirs'].join ',' if Array.isArray ryba.yarn_site['yarn.nodemanager.local-dirs']
+      ryba.yarn_site['yarn.nodemanager.log-dirs'] ?= ['/var/yarn/logs']
+      ryba.yarn_site['yarn.nodemanager.log-dirs'] = ryba.yarn_site['yarn.nodemanager.log-dirs'].join ',' if Array.isArray ryba.yarn_site['yarn.nodemanager.log-dirs']
       # Required by yarn client
       ryba.yarn_site['yarn.resourcemanager.principal'] ?= "rm/#{static_host}@#{realm}"
       # Configurations for History Server (Needs to be moved elsewhere):
@@ -108,6 +109,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         local_default: true
         properties: yarn_site
         merge: true
+        backup: true
       , next
 
 ## HDP YARN # Memory Allocation

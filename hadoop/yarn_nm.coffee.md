@@ -26,8 +26,6 @@ applications.
       ryba.yarn_site['yarn.nodemanager.container-executor.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor'
       ryba.yarn_site['yarn.nodemanager.linux-container-executor.group'] ?= 'yarn'
       ryba.yarn_site['yarn.nodemanager.remote-app-log-dir'] ?= "/app-logs"
-      ryba.yarn_site['yarn.nodemanager.local-dirs'] = ryba.yarn_site['yarn.nodemanager.local-dirs'].join ',' if Array.isArray ryba.yarn_site['yarn.nodemanager.local-dirs']
-      ryba.yarn_site['yarn.nodemanager.log-dirs'] = ryba.yarn_site['yarn.nodemanager.log-dirs'].join ',' if Array.isArray ryba.yarn_site['yarn.nodemanager.log-dirs']
       ryba.yarn_site['yarn.nodemanager.keytab'] ?= '/etc/security/keytabs/nm.service.keytab'
       ryba.yarn_site['yarn.nodemanager.principal'] ?= "nm/#{ryba.static_host}@#{ryba.realm}"
       # See '~/www/src/hadoop/hadoop-common/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-api/src/main/java/org/apache/hadoop/yarn/conf/YarnConfiguration.java#263'
