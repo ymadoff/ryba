@@ -127,19 +127,20 @@ Upload the "hdp-gmetad" service file into "/etc/init.d".
         mode: 0o755
       ], next
 
-## Fix RRD
+# Note: latest companion files seems to fix this
+# ## Fix RRD
 
-There is a first bug in the HDP companion files preventing RRDtool (thus
-Ganglia) from starting. The variable "RRDCACHED_BASE_DIR" should point to 
-"/var/lib/ganglia/rrds".
+# There is a first bug in the HDP companion files preventing RRDtool (thus
+# Ganglia) from starting. The variable "RRDCACHED_BASE_DIR" should point to 
+# "/var/lib/ganglia/rrds".
 
-    module.exports.push name: 'Ganglia Collector # Fix RRD', callback: (ctx, next) ->
-      ctx.write
-        destination: '/usr/libexec/hdp/ganglia/gangliaLib.sh'
-        match: /^RRDCACHED_BASE_DIR=.*$/mg
-        replace: 'RRDCACHED_BASE_DIR=/var/lib/ganglia/rrds;'
-        append: 'GANGLIA_RUNTIME_DIR'
-      , next
+#     module.exports.push name: 'Ganglia Collector # Fix RRD', callback: (ctx, next) ->
+#       ctx.write
+#         destination: '/usr/libexec/hdp/ganglia/gangliaLib.sh'
+#         match: /^RRDCACHED_BASE_DIR=.*$/mg
+#         replace: 'RRDCACHED_BASE_DIR=/var/lib/ganglia/rrds;'
+#         append: 'GANGLIA_RUNTIME_DIR'
+#       , next
 
 # ## Fix permission
 
