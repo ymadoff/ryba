@@ -89,6 +89,10 @@ keytool -list -v -keystore keystore -alias hadoop
       {ssl, ssl_server, ssl_client, hadoop_conf_dir} = ctx.config.ryba
       tmp_location = "/tmp/ryba_hdp_ssl_#{Date.now()}"
       modified = false
+      has_modules = ctx.has_any_modules [
+        'ryba/hadoop/hdfs_jn', 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn'
+        'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
+      ]
       do_upload = ->
         ctx.upload [
           source: ssl.cacert
@@ -104,9 +108,9 @@ keytool -list -v -keystore keystore -alias hadoop
           do_client()
       do_client = ->
         # openssl x509  -noout -in cacert.pem -md5 -fingerprint | sed 's/\(.*\)=\(.*\)/\2/' | sed 's/\://g' | cat
-        cmd_cacert_md5 = "openssl x509  -noout -in cacert.pem -md5 -fingerprint | sed 's/\\(.*\\)=\\(.*\\)/\\2/' | sed 's/\\://g' | cat"
+        # cmd_cacert_md5 = "openssl x509  -noout -in cacert.pem -md5 -fingerprint | sed 's/\\(.*\\)=\\(.*\\)/\\2/' | sed 's/\\://g' | cat"
         # keytool -list -v -keystore truststore -alias hadoop -storepass ryba123 | grep MD5: | sed 's/\s*MD5\:\s*\(.*\)/\1/'
-        cmd_trustore_md5 = "keytool -list -v -keystore keystore -alias hadoop -storepass ryba123 | grep MD5: | sed 's/\\s*MD5\\:\\s*\\(.*\\)/\\1/'"
+        # cmd_trustore_md5 = "keytool -list -v -keystore keystore -alias hadoop -storepass ryba123 | grep MD5: | sed 's/\\s*MD5\\:\\s*\\(.*\\)/\\1/'"
         ctx.execute
           cmd: """
           user=`openssl x509  -noout -in "#{tmp_location}_cacert" -md5 -fingerprint | sed 's/\\(.*\\)=\\(.*\\)/\\2/' | cat`
@@ -125,11 +129,7 @@ keytool -list -v -keystore keystore -alias hadoop
           modified = true if executed
           return do_server()
       do_server = ->
-        return do_cleanup() unless ctx.has_any_modules [
-          'ryba/hadoop/hdfs_jn', 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn'
-          'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
-        ]
-        # return do_cleanup() unless ctx.has_module('ryba/hadoop/hdfs_jn') or ctx.has_module('ryba/hadoop/hdfs_nn') or ctx.has_module('ryba/hadoop/hdfs_dn')
+        return do_cleanup() unless has_modules
         shortname = ctx.config.shortname
         fqdn = ctx.config.host
         ctx.execute [
@@ -147,7 +147,7 @@ keytool -list -v -keystore keystore -alias hadoop
             -CAfile "#{tmp_location}_cacert" -caname hadoop_root_ca \
             -password pass:#{ssl_server['ssl.server.keystore.keypassword']}
           # Import PKCS12 into keystore
-          keytool -importkeystore \
+          yes | keytool -importkeystore \
             -deststorepass #{ssl_server['ssl.server.keystore.password']} \
             -destkeypass #{ssl_server['ssl.server.keystore.keypassword']} \
             -destkeystore #{ssl_server['ssl.server.keystore.location']} \
@@ -187,7 +187,18 @@ keytool -list -v -keystore keystore -alias hadoop
           return next err if err
           do_end()
       do_end = ->
-        next null, modified
+        has_modules_map =
+          'ryba/hadoop/hdfs_jn': 'hadoop-hdfs-journalnode'
+          'ryba/hadoop/hdfs_nn': 'hadoop-hdfs-namenode'
+          'ryba/hadoop/hdfs_dn': 'hadoop-hdfs-datanode'
+          'ryba/hadoop/yarn_rm': 'hadoop-yarn-resourcemanager'
+          'ryba/hadoop/yarn_nm': 'hadoop-yarn-namemanode'
+        args = for m in has_modules
+          srv_name: has_modules_map[m]
+          action: 'restart'
+          if: modified
+        ctx.service args, (err) ->
+          next err, modified
       do_upload()
 
 
