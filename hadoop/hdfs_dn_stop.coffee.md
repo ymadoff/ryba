@@ -23,6 +23,6 @@ associated the NameNodes.
     module.exports.push name: 'Hadoop HDFS DN # Stop Clean Logs', callback: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute
-        cmd: 'rm /var/log/hadoop-hdfs/*/hadoop-hdfs-datanode-*'
+        cmd: 'rm /var/log/hadoop-hdfs/*/*-datanode-*'
         code_skipped: 1
       , next

@@ -21,6 +21,6 @@ associated NameNodes.
     module.exports.push name: 'Hadoop HDFS JN # Stop Clean Logs', callback: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute
-        cmd: 'rm /var/log/hadoop-hdfs/*/hadoop-hdfs-journalnode-*'
+        cmd: 'rm /var/log/hadoop-hdfs/*/*-journalnode-*'
         code_skipped: 1
       , next

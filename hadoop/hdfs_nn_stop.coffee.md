@@ -19,9 +19,9 @@ layout: module
     module.exports.push name: 'Hadoop HDFS NN # Stop Clean Logs', callback: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute [
-        cmd: 'rm /var/log/hadoop-hdfs/*/hadoop-hdfs-namenode-*'
+        cmd: 'rm /var/log/hadoop-hdfs/*/*-namenode-*'
         code_skipped: 1
       ,
-        cmd: 'rm /var/log/hadoop-hdfs/*/hadoop-hdfs-zkfc-*'
+        cmd: 'rm /var/log/hadoop-hdfs/*/*-zkfc-*'
         code_skipped: 1
       ], next
