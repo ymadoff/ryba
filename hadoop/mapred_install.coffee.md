@@ -11,7 +11,8 @@ layout: module
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/yum'
-    module.exports.push 'ryba/hadoop/hdfs'
+    module.exports.push 'ryba/hadoop/hdfs_client'
+    module.exports.push 'ryba/hadoop/yarn_client'
 
     module.exports.push require('./mapred').configure
 
