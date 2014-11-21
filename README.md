@@ -21,7 +21,7 @@ with sudo access.
 ## Ryba motivations
 
 -   Use secured comminication with SSH
--   No database used, full distributing across multiple servers relying on GIT
+-   No database used, full distribution across multiple servers relying on GIT
 -   No agent or pre-installation required on your cluster nodes
 -   Version control all your configuration and modifications (using GIT by default)
 -   Command-based to integrate with your [Business Continuity Plan (BCP)][bcp] and existing scripts
