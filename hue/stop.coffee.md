@@ -13,4 +13,13 @@ layout: module
     module.exports.push name: 'Hue # Stop', callback: (ctx, next) ->
       lifecycle.hue_stop ctx, next
 
+## Stop Clean Logs
+
+    module.exports.push name: 'Hue # Stop Clean Logs', callback: (ctx, next) ->
+      return next() unless ctx.config.ryba.clean_logs
+      ctx.execute
+        cmd: 'rm /var/log/hue/*'
+        code_skipped: 1
+      , next
+
 
