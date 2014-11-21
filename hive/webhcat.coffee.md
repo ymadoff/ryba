@@ -50,3 +50,7 @@ layout: module
     module.exports.push commands: 'status', modules: 'ryba/hive/webhcat_status'
 
     module.exports.push commands: 'stop', modules: 'ryba/hive/webhcat_stop'
+
+
+
+

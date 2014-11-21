@@ -5,6 +5,9 @@ layout: module
 
 # Hive Server Install
 
+TODO: Implement lock for Hive Server2
+http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-Installation-Guide/cdh4ig_topic_18_5.html
+
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
@@ -250,18 +253,6 @@ and "/etc/init.d/hive-server2".
         do_end = ->
           next null, modified
         do_warehouse()
-
-TODO: Implement lock for Hive Server2
-http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-Installation-Guide/cdh4ig_topic_18_5.html
-
-    module.exports.push 'ryba/hive/server_start'
-
-    module.exports.push 'ryba/hive/server_check'
-
-    module.exports.push name: 'Hive & HCat Server # Check', timeout: -1, callback: (ctx, next) ->
-      # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.3.0/CDH4-Security-Guide/cdh4sg_topic_9_1.html
-      # !connect jdbc:hive2://big3.big:10001/default;principal=hive/big3.big@ADALTAS.COM 
-      next null, 'TODO'
 
 # Module Dependencies
 

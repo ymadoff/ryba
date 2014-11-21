@@ -36,6 +36,11 @@ Check if Hive can authenticate and run a basic query to the database.
         {cmd: "echo > /dev/tcp/#{host}/#{hive_server2_port}"}
       ], next
 
+    module.exports.push name: 'Hive & HCat Server # Check', timeout: -1, callback: (ctx, next) ->
+      # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.3.0/CDH4-Security-Guide/cdh4sg_topic_9_1.html
+      # !connect jdbc:hive2://big3.big:10001/default;principal=hive/big3.big@ADALTAS.COM 
+      next null, 'TODO'
+
 # Module Dependencies
 
     parse_jdbc = require '../lib/parse_jdbc'

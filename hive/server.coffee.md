@@ -72,9 +72,16 @@ Example:
 
     module.exports.push commands: 'check', modules: 'ryba/hive/server_check'
 
-    module.exports.push commands: 'install', modules: 'ryba/hive/server_install'
+    module.exports.push commands: 'install', modules: [
+      'ryba/hive/server_install'
+      'ryba/hive/server_start'
+      'ryba/hive/server_wait'
+    ]
 
-    module.exports.push commands: 'start', modules: 'ryba/hive/server_start'
+    module.exports.push commands: 'start', modules: [
+      'ryba/hive/server_start'
+      'ryba/hive/server_wait'
+    ]
 
     # module.exports.push commands: 'status', modules: 'ryba/hive/server_status'
 

@@ -8,6 +8,7 @@ layout: module
     mkcmd = require '../lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push 'ryba/hive/server_wait'
     module.exports.push require('./client').configure
 
 ## Check Metastore
