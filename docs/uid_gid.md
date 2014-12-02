@@ -5,6 +5,21 @@ List the system user and group created by the various services. For those using
 the "vagrant" example, the information below list the reserved uid and gid
 defined in the configuration.
 
+## UID or GID modification
+
+It is recommanded to configure the correct UID and GID before the first
+deployment. In case those values are defined after the initial creation
+of the user or group or they are modified, you must manually update the
+ownership of all the files owned by the previous UID or GID.
+
+Here is a Unix command to migrate all the affected files:
+
+```
+find / -uid $old_uid -exec chown $new_uid {} \; 2>/dev/null
+```
+
+To modify a group, replace the "-uid" option by "-gid".
+
 ## Users
 
 | Service            | name        | uid  | gid  | groups  |
