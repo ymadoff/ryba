@@ -45,9 +45,13 @@ Example:
 
     # module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_nn_backup'
 
-    # module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_nn_check'
+    module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_nn_check'
 
-    module.exports.push commands: 'install', modules: 'ryba/hadoop/hdfs_nn_install'
+    module.exports.push commands: 'install', modules: [
+      'ryba/hadoop/hdfs_nn_install'
+      'ryba/hadoop/hdfs_nn_start'
+      'ryba/hadoop/hdfs_nn_check'
+    ]
 
     module.exports.push commands: 'start', modules: 'ryba/hadoop/hdfs_nn_start'
 

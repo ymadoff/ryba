@@ -449,60 +449,6 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
           lifecycle.zkfc_start ctx, next
       do_hdfs()
 
-## Start
-
-    module.exports.push 'ryba/hadoop/hdfs_nn_start'
-
-## Test User
-
-Create a Unix and Kerberos test user, by default "test" and execute simple HDFS commands to ensure
-the NameNode is properly working. Note, those commands are NameNode specific, meaning they only
-afect HDFS metadata.
-
-    # module.exports.push name: 'Hadoop HDFS NN # Test User', timeout: -1, callback: (ctx, next) ->
-    #   {test_user, test_password, hadoop_group, security} = ctx.config.ryba
-    #   {realm, kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5_client
-    #   modified = false
-    #   do_user = ->
-    #     if security is 'kerberos'
-    #     then do_user_krb5()
-    #     else do_user_unix()
-    #   do_user_unix = ->
-    #     ctx.execute
-    #       cmd: "useradd #{test_user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop to test\""
-    #       code: 0
-    #       code_skipped: 9
-    #     , (err, created) ->
-    #       return next err if err
-    #       modified = true if created
-    #       do_run()
-    #   do_user_krb5 = ->
-    #     ctx.krb5_addprinc
-    #       principal: "#{test_user.name}@#{realm}"
-    #       password: "#{test_password}"
-    #       kadmin_principal: kadmin_principal
-    #       kadmin_password: kadmin_password
-    #       kadmin_server: admin_server
-    #     , (err, created) ->
-    #       return next err if err
-    #       modified = true if created
-    #       do_run()
-    #   do_run = ->
-    #     # Carefull, this is a dupplicate of
-    #     # "HDP HDFS DN # HDFS layout"
-    #     ctx.execute
-    #       cmd: mkcmd.hdfs ctx, """
-    #       if hdfs dfs -ls /user/test 2>/dev/null; then exit 2; fi
-    #       hdfs dfs -mkdir /user/#{test_user.name}
-    #       hdfs dfs -chown #{test_user.name}:#{hadoop_group.name} /user/#{test_user.name}
-    #       hdfs dfs -chmod 755 /user/#{test_user.name}
-    #       """
-    #       code_skipped: 2
-    #     , (err, executed, stdout) ->
-    #       modified = true if executed
-    #       next err, if modified then ctx.OK else ctx.PASS
-    #   do_user()
-
 ## Module Dependencies
 
     fs = require 'fs'

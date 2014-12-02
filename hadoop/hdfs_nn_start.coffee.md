@@ -23,7 +23,7 @@ the standy NameNodes wait for the one on the active NameNode to start first.
     module.exports.push name: 'Hadoop HDFS NN # Start NameNode', callback: (ctx, next) ->
       lifecycle.nn_start ctx, next
 
-    module.exports.push name: 'Hadoop HDFS NN # Wait NameNode', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # Start Wait NameNode', timeout: -1, callback: (ctx, next) ->
       if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
         next()
       else
