@@ -24,6 +24,7 @@ To modify a group, replace the "-uid" option by "-gid".
 
 | Service            | name        | uid  | gid  | groups  |
 |--------------------|-------------|------|------|---------|
+| Bind               | named       | 802  | 802  |         |
 | HDFS               | hdfs        | 2401 | 2401 | 2400    |
 | Zookeeper          | zookeeper   | 2402 | 2402 | 2400    |
 | Yarn               | yarn        | 2403 | 2403 | 2400    |
@@ -46,6 +47,7 @@ To modify a group, replace the "-uid" option by "-gid".
 
 | Service            | name         | gid  |
 |--------------------|--------------|------|
+| Bind               | named        | 802  |
 | Hadoop             | hadoop       | 2400 |
 | HDFS               | hdfs         | 2401 |
 | Zookeeper          | zookeeper    | 2402 |
