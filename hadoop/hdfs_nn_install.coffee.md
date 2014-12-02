@@ -176,22 +176,28 @@ similar than the ones for a client or slave configuration with the addtionnal
 
 # SSH Fencing
 
-Implement the SSH fencing strategy on each NameNode. To achieve this, we update the "hdfs-site.xml" file
-with the "dfs.ha.fencing.methods" and "dfs.ha.fencing.ssh.private-key-files" properties. For SSH fencing
-to work, the HDFS usermust be able to log for each NameNode into any other NameNode. Thus, we deploy the
-public and private SSH keys for the HDFS user inside his "~/.ssh" folder and update the
-"~/.ssh/authorized_keys" file accordingly.
+Implement the SSH fencing strategy on each NameNode. To achieve this, the
+"hdfs-site.xml" file is updated with the "dfs.ha.fencing.methods" and
+"dfs.ha.fencing.ssh.private-key-files" properties.
+
+For SSH fencing to work, the HDFS user must be able to log for each NameNode
+into any other NameNode. Thus, the public and private SSH keys of the
+HDFS user are deployed inside his "~/.ssh" folder and the
+"~/.ssh/authorized_keys" file is updated accordingly.
+
+We also make sure SSH access is not blocked by a rule defined
+inside "/etc/security/access.conf". A specific rule for the HDFS user is
+inserted if ALL users or the HDFS user access is denied.
 
     module.exports.push name: 'Hadoop HDFS NN # SSH Fencing', callback: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config, ssh_fencing, hdfs_user, hadoop_group} = ctx.config.ryba
       return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
-      hdfs_home = '/var/lib/hadoop-hdfs'
       modified = false
       ha_client_config['dfs.ha.fencing.methods'] ?= "sshfence(#{hdfs_user.name})"
-      ha_client_config['dfs.ha.fencing.ssh.private-key-files'] ?= "#{hdfs_home}/.ssh/id_rsa"
+      ha_client_config['dfs.ha.fencing.ssh.private-key-files'] ?= "#{hdfs_user.home}/.ssh/id_rsa"
       do_mkdir = ->
         ctx.mkdir
-          destination: "#{hdfs_home}/.ssh"
+          destination: "#{hdfs_user.home}/.ssh"
           uid: hdfs_user.name
           gid: hadoop_group.name
           mode: 0o700
@@ -201,13 +207,13 @@ public and private SSH keys for the HDFS user inside his "~/.ssh" folder and upd
       do_upload_keys = ->
         ctx.upload [
           source: "#{ssh_fencing.private_key}"
-          destination: "#{hdfs_home}/.ssh"
+          destination: "#{hdfs_user.home}/.ssh"
           uid: hdfs_user.name
           gid: hadoop_group.name
           mode: 0o600
         ,
           source: "#{ssh_fencing.public_key}"
-          destination: "#{hdfs_home}/.ssh"
+          destination: "#{hdfs_user.home}/.ssh"
           uid: hdfs_user.name
           gid: hadoop_group.name
           mode: 0o655
@@ -219,7 +225,7 @@ public and private SSH keys for the HDFS user inside his "~/.ssh" folder and upd
         fs.readFile "#{ssh_fencing.public_key}", (err, content) ->
           return next err if err
           ctx.write
-            destination: "#{hdfs_home}/.ssh/authorized_keys"
+            destination: "#{hdfs_user.home}/.ssh/authorized_keys"
             content: content
             append: true
             uid: hdfs_user.name
@@ -228,31 +234,29 @@ public and private SSH keys for the HDFS user inside his "~/.ssh" folder and upd
           , (err, written) ->
             return next err if err
             modified = true if written
-            do_configure()
+            do_access()
       do_access = ->
-        console.log 'TODO: do_access'
-        do_configure()
-        # ctx.readFile "/etc/security/access.log", (err, content) ->
-        #   return next err if err
-        #   lines = []
-        #   regexp = RegExp '^\-\s?:\s?(ALL|#{hdfs_user.name})\s?:\s?(.*)\s*$'
-        #   for line in content.split /\r\n|[\n\r\u0085\u2028\u2029]/g
-        #     [_, users, origin] = regexp.match line
-        #     console.log users, origin
-        #     # found = true if matches = .match line
-        #     # insert = true if /^\-\s?:\s?(ALL|#{hdfs_user.name})\s?:\s?.*$/.test line
-        #     # lines.push line
-        #   ctx.write
-        #     destination: "#{hdfs_home}/.ssh/authorized_keys"
-        #     content: content
-        #     append: true
-        #     uid: hdfs_user.name
-        #     gid: hadoop_group.name
-        #     mode: 0o600
-        #   , (err, written) ->
-        #     return next err if err
-        #     modified = true if written
-        #     do_configure()
+        ctx.fs.readFile '/etc/security/access.conf', (err, source) ->
+          return next err if err
+          content = []
+          exclude = ///^\-\s?:\s?(ALL|#{hdfs_user.name})\s?:\s?(.*?)\s*?(#.*)?$///
+          include = ///^\+\s?:\s?(#{hdfs_user.name})\s?:\s?(.*?)\s*?(#.*)?$///
+          included = false
+          for line, i in source = source.split /\r\n|[\n\r\u0085\u2028\u2029]/g
+            if match = include.exec line
+              included = true # we shall also check if the ip/fqdn match in origin
+            if not included and match = exclude.exec line
+              nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
+              content.push "+ : #{hdfs_user.name} : #{nn_hosts.join ','}"
+            content.push line
+          return do_configure() if content.length is source.length
+          ctx.write
+            destination: '/etc/security/access.conf'
+            content: content.join '\n'
+          , (err, written) ->
+            return next err if err
+            modified = true if written
+            do_configure()
       do_configure = ->
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/hdfs-site.xml"
