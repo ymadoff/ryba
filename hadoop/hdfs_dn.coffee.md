@@ -34,10 +34,13 @@ if at least 4 disks are used for storage.
       require('./hdfs').configure ctx
       {hdfs_site} = ctx.config.ryba
       # Tuning
-      if hdfs_site['dfs.datanode.data.dir'].length > 3
-        hdfs_site['dfs.datanode.failed.volumes.tolerated'] ?= 1
+      dataDirs = hdfs_site['dfs.datanode.data.dir'].split(',')
+      if dataDirs.length > 3
+        hdfs_site['dfs.datanode.failed.volumes.tolerated'] ?= '1'
+      else
+        hdfs_site['dfs.datanode.failed.volumes.tolerated'] ?= '0'
       # Validation
-      if hdfs_site['dfs.datanode.failed.volumes.tolerated'] >= hdfs_site['dfs.datanode.data.dir'].length
+      if hdfs_site['dfs.datanode.failed.volumes.tolerated'] >= dataDirs.length
         throw Error 'Number of failed volumes must be less than total volumes'
 
     # module.exports.push command: 'backup', modules: 'ryba/hadoop/hdfs_dn_backup'

@@ -6,7 +6,7 @@ layout: module
 
 # HDFS DataNode Stop
 
-Stop the DataNode service. It is recommended to stop a DataNode before its 
+Stop the DataNode service. It is recommended to stop a DataNode before its
 associated the NameNodes.
 
     lifecycle = require '../lib/lifecycle'
