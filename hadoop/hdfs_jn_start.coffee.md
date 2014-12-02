@@ -13,9 +13,8 @@ to be started on the active NameNode before it check if it must be formated.
     lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap'
+    module.exports.push 'masson/core/krb5_client/wait'
     module.exports.push require('./hdfs_jn').configure
-
-    module.exports.push 'masson/core/krb5_client_wait'
 
     module.exports.push name: 'Hadoop HDFS JN # Start', timeout: -1, callback: (ctx, next) ->
       lifecycle.jn_start ctx, next
