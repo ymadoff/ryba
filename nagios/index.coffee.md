@@ -80,8 +80,8 @@
 
     module.exports.push commands: 'install', modules: [
       'ryba/nagios/install'
+      'ryba/nagios/check' # Must be executed before start
       'ryba/nagios/start'
-      'ryba/nagios/check'
     ]
 
     module.exports.push commands: 'start', modules: 'ryba/nagios/start'
