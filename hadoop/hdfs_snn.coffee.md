@@ -26,7 +26,7 @@ layout: module
       hdfs_site['dfs.namenode.secondary.http-address'] ?= "#{ctx.config.host}:50090" # HDS > 2.5.1
       hdfs_site['dfs.namenode.secondary.https-address'] ?= "#{ctx.config.host}:50490" # HDS > 2.5.1
       hdfs_site['dfs.secondary.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/#{static_host}@#{realm}"
-      hdfs_site['dfs.secondary.namenode.kerberos.https.principal'] = "host/#{static_host}@#{realm}"
+      hdfs_site['dfs.secondary.namenode.kerberos.https.principal'] = "HTTP/#{static_host}@#{realm}"
 
     # module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_snn_backup'
 
