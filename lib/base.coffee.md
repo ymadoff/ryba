@@ -97,8 +97,8 @@ Declare the HDP repository.
 
 ## Module Dependencies
 
+    url = require 'url'
     hconfigure = require '../lib/hconfigure'
-
 
 
 
