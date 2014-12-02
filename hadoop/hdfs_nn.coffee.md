@@ -19,6 +19,19 @@ does not store the data of these files itself. It’s important that this metada
 The NameNode doesn't define new configuration properties. However, it uses properties
 define inside the "ryba/hadoop/hdfs" and "masson/core/nc" modules.
 
+*   `namenode_opts` (string)   
+    NameNode options.   
+
+Example:   
+
+```json
+{
+  "ryba": {
+    "namenode_opts": "-Xms1024m -Xmx1024m"
+  }
+}
+```
+
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
@@ -28,6 +41,7 @@ define inside the "ryba/hadoop/hdfs" and "masson/core/nc" modules.
       ryba.hdfs_site['dfs.namenode.acls.enabled'] ?= 'true'
       ryba.hdfs_site['dfs.namenode.accesstime.precision'] ?= null
       ryba.hdfs_site['dfs.ha.automatic-failover.enabled'] ?= 'true'
+      ryba.namenode_opts ?= null
 
     # module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_nn_backup'
 
