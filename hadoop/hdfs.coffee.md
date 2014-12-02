@@ -306,7 +306,7 @@ with Kerberos specific properties.
       # # Default to ${dfs.web.authentication.kerberos.principal}, but documented in hdp 1.3.2 manual install
       # Documented in http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
       # Only seems to apply if "dfs.https.enable" is enabled
-      hdfs_site['dfs.namenode.kerberos.https.principal'] = "host/#{static_host}@#{realm}"
+      hdfs_site['dfs.namenode.kerberos.https.principal'] = "HTTP/#{static_host}@#{realm}"
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         properties: hdfs_site
