@@ -4,6 +4,7 @@
     module.exports = []
 
     module.exports.push module.exports.configure = (ctx) ->
+      require('masson/core/proxy').configure ctx
       ryba = ctx.config.ryba ?= {}
       # Repository
       ryba.proxy = ctx.config.proxy.http_proxy if typeof ryba.http_proxy is 'undefined'
