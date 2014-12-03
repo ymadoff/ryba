@@ -7,9 +7,7 @@ layout: module
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-
-    module.exports.configure = (ctx) ->
-      require('./yarn').configure
+    module.exports.configure = require('./yarn').configure
 
     module.exports.push commands: 'check', modules: 'ryba/hadoop/yarn_client_check'
 
