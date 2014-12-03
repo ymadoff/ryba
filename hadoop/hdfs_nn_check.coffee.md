@@ -41,8 +41,9 @@ is a comma-separated list of SSH private key files.
       for host in nn_hosts
         source = host if host is ctx.config.host
         target = host if host isnt ctx.config.host
+      # Disabling key checking shall be considered acceptable between 2 NNs
       ctx.execute
-        cmd: "su -l #{hdfs_user.name} -c \"ssh -q #{hdfs_user.name}@#{target} hostname\""
+        cmd: "su -l #{hdfs_user.name} -c \"ssh -q -o StrictHostKeyChecking=no #{hdfs_user.name}@#{target} hostname\""
       , (err) ->
         next err, true
 
