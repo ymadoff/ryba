@@ -348,13 +348,7 @@ Secure the Zookeeper connection with JAAS.
           content: "digest:hdfs-zkfcs:#{zkfc_password}"
           uid: hdfs_user.name
           gid: hadoop_group.name
-          mode: 0o700
-        ,
-          destination: "#{hadoop_conf_dir}/zk-auth.txt"
-          content: "digest:hdfs-zkfcs:#{zkfc_password}"
-          uid: hdfs_user.name
-          gid: hadoop_group.name
-          mode: 0o700
+          mode: 0o0700
         ], (err, written) ->
           return next err if err
           modified = true if written
