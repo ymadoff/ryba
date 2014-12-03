@@ -17,19 +17,12 @@ layout: module
       {ryba} = ctx.config
       {static_host, realm} = ryba
       # Grab the host(s) for each roles
-      resourcemanager = ctx.host_with_module 'ryba/hadoop/yarn_rm'
+      # resourcemanager = ctx.host_with_module 'ryba/hadoop/yarn_rm'
       jobhistoryserver = ctx.host_with_module 'ryba/hadoop/mapred_jhs'
       ryba.yarn_log_dir ?= '/var/log/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#20
       ryba.yarn_pid_dir ?= '/var/run/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#21
       # Configure yarn
-      ryba.yarn_site['yarn.http.policy'] ?= 'HTTPS_ONLY'
-      ryba.yarn_site['yarn.resourcemanager.resource-tracker.address'] ?= "#{resourcemanager}:8025" # Enter your ResourceManager hostname.
-      ryba.yarn_site['yarn.resourcemanager.scheduler.address'] ?= "#{resourcemanager}:8030" # Enter your ResourceManager hostname.
-      ryba.yarn_site['yarn.resourcemanager.address'] ?= "#{resourcemanager}:8050" # Enter your ResourceManager hostname.
-      ryba.yarn_site['yarn.resourcemanager.admin.address'] ?= "#{resourcemanager}:8141" # Enter your ResourceManager hostname.
-      ryba.yarn_site['yarn.log.server.url'] ?= "http://#{jobhistoryserver}:19888/jobhistory/logs/" # URL for job history server
-      ryba.yarn_site['yarn.resourcemanager.webapp.address'] ?= "#{resourcemanager}:8088" # URL for job history server
-      ryba.yarn_site['yarn.resourcemanager.webapp.https.address'] ?= "#{resourcemanager}:8090"
+      ryba.yarn_site['yarn.http.policy'] ?= 'HTTPS_ONLY' # HTTP_ONLY or HTTPS_ONLY or HTTP_AND_HTTPS
       # NodeManager Memory (should move to yarn_nm but we need to implement memory differently)
       ryba.yarn_site['yarn.nodemanager.local-dirs'] ?= ['/var/yarn/local']
       ryba.yarn_site['yarn.nodemanager.local-dirs'] = ryba.yarn_site['yarn.nodemanager.local-dirs'].join ',' if Array.isArray ryba.yarn_site['yarn.nodemanager.local-dirs']
@@ -40,6 +33,67 @@ layout: module
       # Configurations for History Server (Needs to be moved elsewhere):
       ryba.yarn_site['yarn.log-aggregation.retain-seconds'] ?= '-1' #  How long to keep aggregation logs before deleting them. -1 disables. Be careful, set this too small and you will spam the name node.
       ryba.yarn_site['yarn.log-aggregation.retain-check-interval-seconds'] ?= '-1' # Time between checks for aggregated log retention. If set to 0 or a negative value then the value is computed as one-tenth of the aggregated log retention time. Be careful, set this too small and you will spam the name node.
+      ryba.yarn_site['yarn.log.server.url'] ?= "http://#{jobhistoryserver}:19888/jobhistory/logs/" # URL for job history server
+
+## Configuration for High Availability
+
+Cloudera [High Availability Guide][cloudera_ha] provides a nice documentation
+about each configuration and where they should apply.
+
+Unless specified otherwise, the active ResourceManager is the first one defined
+inside the configuration.
+
+      rm_ctxs = ctx.contexts modules: 'ryba/hadoop/yarn_rm'
+      rm_shortnames = for rm_ctx in rm_ctxs then rm_ctx.config.shortname
+      is_ha = rm_ctxs.length > 1
+      ryba.active_rm_host ?= if is_ha then rm_ctxs[0].config.host else null
+      if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm', 'ryba/hadoop/yarn_client'
+        ryba.yarn_site['yarn.resourcemanager.ha.enabled'] ?= if is_ha then 'true' else 'false'
+        ryba.yarn_site['yarn.resourcemanager.ha.rm-ids'] ?= rm_shortnames.join ',' if is_ha
+      if ctx.has_module 'ryba/hadoop/yarn_rm'
+        ryba.yarn_site['yarn.resourcemanager.ha.id'] ?= ctx.config.shortname if is_ha
+      for rm_ctx in rm_ctxs
+        shortname = if is_ha then ".#{rm_ctx.config.shortname}" else ''
+        if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_client'
+          ryba.yarn_site["yarn.resourcemanager.address#{shortname}"] ?= "#{rm_ctx.config.host}:8050"
+          ryba.yarn_site["yarn.resourcemanager.scheduler.address#{shortname}"] ?= "#{rm_ctx.config.host}:8030"
+          ryba.yarn_site["yarn.resourcemanager.admin.address#{shortname}"] ?= "#{rm_ctx.config.host}:8141"
+          ryba.yarn_site["yarn.resourcemanager.webapp.address#{shortname}"] ?= "#{rm_ctx.config.host}:8088"
+          ryba.yarn_site["yarn.resourcemanager.webapp.https.address#{shortname}"] ?= "#{rm_ctx.config.host}:8090"
+        if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
+          ryba.yarn_site["yarn.resourcemanager.resource-tracker.address#{shortname}"] ?= "#{rm_ctx.config.host}:8025"
+
+
+      # yarn_rm_hosts = for ctx in rm_ctxs then ctx.config.host
+      # yarn_rm_shortnames = for ctx in rm_ctxs then ctx.config.shortname
+      # if yarn_rm_hosts.length > 1
+      #   ryba.active_rm_host ?= yarn_rm_hosts[0]
+      #   if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm', 'ryba/hadoop/yarn_client'
+      #     ryba.yarn_site['yarn.resourcemanager.ha.enabled'] ?= 'true'
+      #     ryba.yarn_site['yarn.resourcemanager.ha.rm-ids'] ?= yarn_rm_shortnames.join ','
+      #   if ctx.has_module 'ryba/hadoop/yarn_rm'
+      #     ryba.yarn_site['yarn.resourcemanager.ha.id'] ?= ctx.config.shortname
+      #   for rm_ctx in rm_ctxs
+      #     shortname = rm_ctx.config.shortname
+      #     if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_client'
+      #       ryba.yarn_site["yarn.resourcemanager.address.#{shortname}"] ?= "#{rm_ctx.config.host}:8050"
+      #       ryba.yarn_site["yarn.resourcemanager.scheduler.address.#{shortname}"] ?= "#{rm_ctx.config.host}:8030"
+      #       ryba.yarn_site["yarn.resourcemanager.admin.address.#{shortname}"] ?= "#{rm_ctx.config.host}:8141"
+      #       ryba.yarn_site["yarn.resourcemanager.webapp.address.#{shortname}"] ?= "#{rm_ctx.config.host}:8088"
+      #       ryba.yarn_site["yarn.resourcemanager.webapp.https.address.#{shortname}"] ?= "#{rm_ctx.config.host}:8090"
+      #     if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
+      #       ryba.yarn_site["yarn.resourcemanager.resource-tracker.address.#{shortname}"] ?= "#{rm_ctx.config.host}:8025"
+      # else
+      #   if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm', 'ryba/hadoop/yarn_client'
+      #     ryba.yarn_site['yarn.resourcemanager.ha.enabled'] ?= 'false'
+      #   if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_client'
+      #     ryba.yarn_site['yarn.resourcemanager.address'] ?= "#{yarn_rm_hosts[0]}:8050"
+      #     ryba.yarn_site['yarn.resourcemanager.scheduler.address'] ?= "#{yarn_rm_hosts[0]}:8030"
+      #     ryba.yarn_site['yarn.resourcemanager.admin.address'] ?= "#{yarn_rm_hosts[0]}:8141"
+      #     ryba.yarn_site['yarn.resourcemanager.webapp.address'] ?= "#{yarn_rm_hosts[0]}:8088" # URL for job history server
+      #     ryba.yarn_site['yarn.resourcemanager.webapp.https.address'] ?= "#{yarn_rm_hosts[0]}:8090"
+      #   if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
+      #     ryba.yarn_site['yarn.resourcemanager.resource-tracker.address'] ?= "#{yarn_rm_hosts[0]}:8025"
 
 http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
@@ -166,7 +220,7 @@ Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Co
 
     memory = require '../lib/memory'
 
-
+[cloudera_ha]: http://www.cloudera.com/content/cloudera/en/documentation/cdh5/v5-1-x/CDH5-High-Availability-Guide/cdh5hag_rm_ha_config.html
 
 
 

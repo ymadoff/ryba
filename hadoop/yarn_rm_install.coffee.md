@@ -8,7 +8,6 @@ layout: module
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/yarn'
-
     module.exports.push require('./yarn_rm').configure
 
 ## IPTables
@@ -33,17 +32,30 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Hadoop YARN RM # IPTables', callback: (ctx, next) ->
       {yarn_site} = ctx.config.ryba
-      http = yarn_site['yarn.resourcemanager.webapp.address'].split(':')[1]
-      https = yarn_site['yarn.resourcemanager.webapp.https.address'].split(':')[1]
+      shortname = if ctx.hosts_with_module('ryba/hadoop/yarn_rm').length is 1 then '' else ".#{ctx.config.shortname}"
+      rules = []
+      # Application
+      rpc_port = yarn_site["yarn.resourcemanager.address#{shortname}"].split(':')[1]
+      rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: rpc_port, protocol: 'tcp', state: 'NEW', comment: "YARN RM Application Submissions" }
+      # Scheduler
+      s_port = yarn_site["yarn.resourcemanager.scheduler.address#{shortname}"].split(':')[1]
+      rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: s_port, protocol: 'tcp', state: 'NEW', comment: "YARN Scheduler" }
+      # RM Scheduler
+      admin_port = yarn_site["yarn.resourcemanager.admin.address#{shortname}"].split(':')[1]
+      rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: admin_port, protocol: 'tcp', state: 'NEW', comment: "YARN RM Scheduler" }
+      # HTTP
+      if yarn_site['yarn.http.policy'] in ['HTTP_ONLY', 'HTTP_AND_HTTPS']
+        http_port = yarn_site["yarn.resourcemanager.webapp.address#{shortname}"].split(':')[1]
+        rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: http_port, protocol: 'tcp', state: 'NEW', comment: "YARN RM Web UI" }
+      # HTTPS
+      if yarn_site['yarn.http.policy'] in ['HTTPS_ONLY', 'HTTP_AND_HTTPS']
+        https_port = yarn_site["yarn.resourcemanager.webapp.https.address#{shortname}"].split(':')[1]
+        rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: https_port, protocol: 'tcp', state: 'NEW', comment: "YARN RM Web UI" }
+      # Resource Tracker
+      rt_port = yarn_site["yarn.resourcemanager.resource-tracker.address#{shortname}"].split(':')[1]
+      rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: rt_port, protocol: 'tcp', state: 'NEW', comment: "YARN RM Application Submissions" }
       ctx.iptables
-        rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 8025, protocol: 'tcp', state: 'NEW', comment: "YARN RM Application Submissions" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 8050, protocol: 'tcp', state: 'NEW', comment: "YARN RM Application Submissions" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 8030, protocol: 'tcp', state: 'NEW', comment: "YARN Scheduler" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: http, protocol: 'tcp', state: 'NEW', comment: "YARN RM Web UI" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: https, protocol: 'tcp', state: 'NEW', comment: "YARN RM Web Secured UI" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 8141, protocol: 'tcp', state: 'NEW', comment: "YARN RM Scheduler" }
-        ]
+        rules: rules
         if: ctx.config.iptables.action is 'start'
       , next
 
@@ -97,8 +109,7 @@ Install and configure the startup script in
 
 ## Configuration
 
-
-    module.exports.push name: 'Hadoop YARN # Configuration', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN RM # Configuration', callback: (ctx, next) ->
       {yarn_site, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
@@ -107,7 +118,12 @@ Install and configure the startup script in
         properties: yarn_site
         merge: true
         backup: true
-      , next
+      , (err, configured) ->
+        return next err if err
+        ctx.touch
+          destination: "#{hadoop_conf_dir}/yarn.exclude"
+        , (err, touched) ->
+          next err, configured or touched
 
 ## Capacity Scheduler
 
