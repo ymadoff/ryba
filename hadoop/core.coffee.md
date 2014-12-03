@@ -95,7 +95,6 @@ Default configuration:
     module.exports.push module.exports.configure = (ctx) ->
       return if ctx.core_configured
       ctx.core_configured = true
-      require('masson/core/proxy').configure ctx
       require('masson/commons/java').configure ctx
       require('masson/core/krb5_client').configure ctx
       require('../lib/base').configure ctx
