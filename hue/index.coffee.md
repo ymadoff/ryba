@@ -57,7 +57,7 @@ Example:
       {ryba} = ctx.config
       {nameservice, hadoop_conf_dir, webhcat_site, hue_ini, db_admin, core_site
         hdfs_site, yarn_site} = ryba
-      is_nn_ha = ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+      is_nn_ha = ctx.host_with_module('ryba/hadoop/hdfs_nn').length > 1
       hue_ini ?= ryba.hue_ini = {}
       webhcat_port = webhcat_site['templeton.port']
       webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'

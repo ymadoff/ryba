@@ -98,7 +98,7 @@ Update the "hdfs_site.xml" configuration file with the High Availabity propertie
 present inside the "hdp.ha\_client\_config" object.
 
     module.exports.push name: 'Hadoop HDFS DN # HA', callback: (ctx, next) ->
-      return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+      return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"

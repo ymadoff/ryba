@@ -166,7 +166,7 @@ Default configuration:
         else '_HOST'
       # Configuration
       core_site = ctx.config.ryba.core_site ?= {}
-      if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+      unless ctx.hosts_with_module('ryba/hadoop/hdfs_snn').length > 1
         core_site['fs.defaultFS'] ?= "hdfs://#{namenodes[0]}:8020"
       else
         core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.ryba.nameservice}:8020"

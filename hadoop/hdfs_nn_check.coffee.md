@@ -20,10 +20,9 @@ are running as expected. This command will return 0 if the NameNode is healthy,
 non-zero otherwise. One might use this command for monitoring purposes.
 
     module.exports.push name: 'Hadoop HDFS NN # Check HA Health', callback: (ctx, next) ->
-      return next() if ctx.has_module 'ryba/hadoop/hdfs_snn'
-      {shortname} = ctx.config
+      return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       ctx.execute
-        cmd: mkcmd.hdfs ctx, "hdfs haadmin -checkHealth #{shortname}"
+        cmd: mkcmd.hdfs ctx, "hdfs haadmin -checkHealth #{ctx.config.shortname}"
       , next
 
 ## Test SSH Fencing
@@ -35,7 +34,7 @@ one must also configure the dfs.ha.fencing.ssh.private-key-files option, which
 is a comma-separated list of SSH private key files.
 
     module.exports.push name: 'Hadoop HDFS NN # Check SSH Fencing', callback: (ctx, next) ->
-      return next() if ctx.has_module 'ryba/hadoop/hdfs_snn'
+      return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       {hdfs_user} = ctx.config.ryba
       nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       for host in nn_hosts

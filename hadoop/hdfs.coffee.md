@@ -95,6 +95,7 @@ Example:
       # HDFS SNN
       if secondary_namenode = ctx.host_with_module 'ryba/hadoop/hdfs_snn'
         hdfs_site['dfs.namenode.secondary.http-address'] ?= "#{secondary_namenode}:50090"
+      unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
         hdfs_site['dfs.namenode.http-address'] ?= '0.0.0.0:50070'
         hdfs_site['dfs.namenode.https-address'] ?= '0.0.0.0:50470'
       else
@@ -134,7 +135,6 @@ Example:
     module.exports.push name: 'Hadoop HDFS # Hadoop Configuration', timeout: -1, callback: (ctx, next) ->
       {core, hdfs_site, hadoop_conf_dir} = ctx.config.ryba
       datanodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_dn'
-      secondary_namenode = ctx.hosts_with_module 'ryba/hadoop/hdfs_snn', 1
       modified = false
       do_hdfs = ->
         ctx.log 'Configure hdfs-site.xml'

@@ -163,8 +163,9 @@ similar than the ones for a client or slave configuration with the addtionnal
 
     module.exports.push name: 'Hadoop HDFS NN # Configure HA', callback: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
-      return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+      return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
+      console.log 'journalnodes', journalnodes
       ha_client_config['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
       ha_client_config['dfs.namenode.shared.edits.dir'] = "qjournal://#{ha_client_config['dfs.namenode.shared.edits.dir']}/#{ha_client_config['dfs.nameservices']}"
       ctx.hconfigure
@@ -191,7 +192,7 @@ inserted if ALL users or the HDFS user access is denied.
 
     module.exports.push name: 'Hadoop HDFS NN # SSH Fencing', callback: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config, ssh_fencing, hdfs_user, hadoop_group} = ctx.config.ryba
-      return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+      return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       modified = false
       ha_client_config['dfs.ha.fencing.methods'] ?= "sshfence(#{hdfs_user.name})"
       ha_client_config['dfs.ha.fencing.ssh.private-key-files'] ?= "#{hdfs_user.home}/.ssh/id_rsa"
@@ -281,7 +282,7 @@ if the NameNode was formated.
     module.exports.push name: 'Hadoop HDFS NN # Format', timeout: -1, callback: (ctx, next) ->
       {active_nn, hdfs_site, hdfs_user, nameservice} = ctx.config.ryba
       any_dfs_name_dir = hdfs_site['dfs.namenode.name.dir'].split(',')[0]
-      if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+      unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
         ctx.execute
           cmd: "su -l #{hdfs_user.name} -c \"hdfs namenode -format\""
           not_if_exists: "#{any_dfs_name_dir}/current/VERSION"
@@ -309,7 +310,7 @@ is only executed on a non active NameNode.
     module.exports.push name: 'Hadoop HDFS NN # HA Init Standby NameNodes', timeout: -1, callback: (ctx, next) ->
       # Shall only be executed on the leader namenode
       {active_nn, active_nn_host} = ctx.config.ryba
-      return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+      return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       return next() if active_nn
       do_wait = ->
         ctx.waitIsOpen active_nn_host, 8020, (err) ->
@@ -384,7 +385,7 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
 
     module.exports.push name: 'Hadoop HDFS NN # HA Auto Failover', timeout: -1, callback: (ctx, next) ->
       {hadoop_conf_dir, active_nn, active_nn_host} = ctx.config.ryba
-      return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+      return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       zookeepers = ctx.hosts_with_module 'ryba/zookeeper/server'
       modified = false
       do_hdfs = ->

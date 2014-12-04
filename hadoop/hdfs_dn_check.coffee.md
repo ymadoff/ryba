@@ -48,7 +48,7 @@ for more information.
     module.exports.push name: 'Hadoop HDFS DN # Test WebHDFS', timeout: -1, callback: (ctx, next) ->
       {hdfs_site, nameservice, test_user, force_check, active_nn_host} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+      unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
         nn_host = ctx.host_with_module 'ryba/hadoop/hdfs_nn'
         nn_port = hdfs_site["dfs.namenode.#{protocol}-address"].split(':')[1]
       else

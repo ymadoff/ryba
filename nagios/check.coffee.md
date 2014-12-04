@@ -60,7 +60,7 @@ php /usr/lib64/nagios/plugins/check_rpcq_latency_ha.php \
       {kinit} = ctx.config.krb5
       {active_nn_host, nameservice, core_site, hdfs_site, realm} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+      unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
         nn_host = ctx.host_with_module 'ryba/hadoop/hdfs_nn'
         nn_port = hdfs_site['dfs.namenode.https-address'].split(':')[1]
       else

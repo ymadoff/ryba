@@ -233,7 +233,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       nn_hosts_map = {} # fqdn to port
       active_nn_port = null
-      if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+      unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
         u = url.parse core_site['fs.defaultFS']
         nn_hosts_map[u.hostname] = u.port
         active_nn_port = u.port

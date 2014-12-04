@@ -12,8 +12,8 @@ the standy NameNodes wait for the one on the active NameNode to start first.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./hdfs_nn').configure
     module.exports.push 'ryba/xasecure/policymgr_wait'
+    module.exports.push require('./hdfs_nn').configure
 
 ## Start
 
@@ -24,17 +24,17 @@ the standy NameNodes wait for the one on the active NameNode to start first.
       lifecycle.nn_start ctx, next
 
     module.exports.push name: 'Hadoop HDFS NN # Start Wait NameNode', timeout: -1, callback: (ctx, next) ->
-      if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
-        next()
-      else
+      if ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
         {hdfs_site, nameservice, ha_client_config, hdfs_namenode_timeout} = ctx.config.ryba
         ipc_port = ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{ctx.config.shortname}"].split(':')[1] or 8020
         protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
         http_port = ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{ctx.config.shortname}"].split(':')[1]
         ctx.waitIsOpen ctx.config.host, [ipc_port, http_port], timeout: hdfs_namenode_timeout, (err) -> next err
+      else
+        # TODO
 
     module.exports.push name: 'Hadoop HDFS NN # Start ZKFC', callback: (ctx, next) ->
-      return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+      return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       # ZKFC should start first on active NameNode
       {active_nn, active_nn_host} = ctx.config.ryba
       do_wait = ->
@@ -51,7 +51,7 @@ the standy NameNodes wait for the one on the active NameNode to start first.
       if active_nn then do_start() else do_wait()
 
     module.exports.push name: 'HDFS HDFS NN Start # Activate', callback: (ctx, next) ->
-      return next() if ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+      return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       {active_nn, active_nn_host, standby_nn_host} = ctx.config.ryba
       return next() unless active_nn
       active_nn_host = active_nn_host.split('.')[0]
