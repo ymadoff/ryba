@@ -167,12 +167,6 @@ The default port is "19888".
     #   ctx.waitIsOpen hostname, port, (err) ->
     #     return next err if err
 
-## Start RM
-
-Execute the "ryba/hadoop/yarn_rm_start" module to start the Resource Manager.
-
-    module.exports.push 'ryba/hadoop/yarn_rm_start'
-
 ## Module Dependencies
 
     mkcmd = require '../lib/mkcmd'

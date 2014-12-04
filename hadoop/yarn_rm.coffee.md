@@ -55,7 +55,6 @@ RM2: yarncluster:shared-password:rwa,rm2:secret-password:cd
       ryba.yarn_site['yarn.resourcemanager.ha.automatic-failover.enabled'] ?= 'true'
       ryba.yarn_site['yarn.resourcemanager.ha.automatic-failover.embedded'] ?= 'true'
       ryba.yarn_site['yarn.resourcemanager.cluster-id'] ?= 'yarn_cluster_01'
-      
 
 ## Configuration for Restart Recovering
 
@@ -72,9 +71,13 @@ the root znode where the ResourceManager state is stored is inside "/rmstore".
 
     # module.exports.push commands: 'backup', modules: 'ryba/hadoop/yarn_rm_backup'
 
-    # module.exports.push commands: 'check', modules: 'ryba/hadoop/yarn_rm_check'
+    module.exports.push commands: 'check', modules: 'ryba/hadoop/yarn_rm_check'
 
-    module.exports.push commands: 'install', modules: 'ryba/hadoop/yarn_rm_install'
+    module.exports.push commands: 'install', modules: [
+      'ryba/hadoop/yarn_rm_install'
+      'ryba/hadoop/yarn_rm_start'
+      'ryba/hadoop/yarn_rm_check'
+    ]
 
     module.exports.push commands: 'start', modules: 'ryba/hadoop/yarn_rm_start'
 
