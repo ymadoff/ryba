@@ -69,6 +69,8 @@ Example :
       # Internal
       ryba.zookeeper_myid ?= null
       ryba.zookeeper_retention ?= '3' # Used to clean data dir
+      # Superuser
+      ryba.zookeeper_superuser_password ?= 'ryba123'
 
     # module.exports.push commands: 'backup', modules: 'ryba/zookeeper/server_backup'
 
