@@ -57,12 +57,11 @@ Example:
       {ryba} = ctx.config
       {nameservice, hadoop_conf_dir, webhcat_site, hue_ini, db_admin, core_site
         hdfs_site, yarn_site} = ryba
-      is_nn_ha = ctx.host_with_module('ryba/hadoop/hdfs_nn').length > 1
+      hdfs_nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       hue_ini ?= ryba.hue_ini = {}
       webhcat_port = webhcat_site['templeton.port']
       webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
       # todo, this might not work as expected after ha migration
-      resourcemanager = ctx.host_with_module 'ryba/hadoop/yarn_rm'
       nodemanagers = ctx.hosts_with_module 'ryba/hadoop/yarn_nm'
       jobhistoryserver = ctx.host_with_module 'ryba/hadoop/mapred_jhs'
       # Webhdfs should be active on the NameNode, Secondary NameNode, and all the DataNodes
@@ -70,7 +69,7 @@ Example:
       ryba.hue_conf_dir ?= '/etc/hue/conf'
       ryba.hue_ca_bundle ?= '/etc/hue/conf/trust.pem'
       ryba.hue_ssl_client_ca ?= null
-      throw Error "Property 'hue_ssl_client_ca' required in HA with HTTPS" if is_nn_ha and hdfs_site['dfs.http.policy'] is 'HTTPS_ONLY' and not ryba.hue_ssl_client_ca
+      throw Error "Property 'hue_ssl_client_ca' required in HA with HTTPS" if hdfs_nn_hosts.length > 1 and hdfs_site['dfs.http.policy'] is 'HTTPS_ONLY' and not ryba.hue_ssl_client_ca
       # User
       ryba.hue_user = name: ryba.hue_user if typeof ryba.hue_user is 'string'
       ryba.hue_user ?= {}
@@ -92,16 +91,31 @@ Example:
       # see http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cm_sg_ssl_hue.html
       nn_protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       nn_protocol = 'http' if hdfs_site['dfs.http.policy'] is 'HTTP_AND_HTTPS' and not ryba.hue_ssl_client_ca
-      if is_nn_ha
-        nn_host = ctx.host_with_module 'ryba/hadoop/hdfs_nn'
-        nn_http_port = hdfs_site["dfs.namenode.#{nn_protocol}-address"].split(':')[1]
-      else
+      if hdfs_nn_hosts.length > 1
         nn_host = ryba.active_nn_host
         shortname = ctx.hosts[nn_host].config.shortname
         nn_http_port = ryba.ha_client_config["dfs.namenode.#{nn_protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
-      yarn_api_url = if yarn_site['yarn.http.policy'] is 'HTTP_ONLY'
-      then "http://#{yarn_site['yarn.resourcemanager.webapp.address']}"
-      else "https://#{yarn_site['yarn.resourcemanager.webapp.https.address']}"
+      else
+        nn_host = hdfs_nn_hosts[0]
+        nn_http_port = hdfs_site["dfs.namenode.#{nn_protocol}-address"].split(':')[1]
+      # Support for RM HA was added in Hue 3.7
+      rm_protocol = if yarn_site['yarn.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      rm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
+      if rm_hosts.length > 1
+        rm_host = ryba.active_rm_host
+        rm_ctx = ctx.context rm_host, require('../hadoop/yarn').configure
+        rm_port = rm_ctx.config.ryba.yarn_site["yarn.resourcemanager.address.#{rm_ctx.config.shortname}"].split(':')[1]
+        yarn_api_url = if yarn_site['yarn.http.policy'] is 'HTTP_ONLY'
+        then "http://#{yarn_site['yarn.resourcemanager.webapp.address.#{rm_ctx.config.shortname}']}"
+        else "https://#{yarn_site['yarn.resourcemanager.webapp.https.address.#{rm_ctx.config.shortname}']}"
+      else
+        rm_host = rm_hosts[0]
+        rm_ctx = ctx.context rm_host, require('../hadoop/yarn').configure
+        rm_port = rm_ctx.config.ryba.yarn_site['yarn.resourcemanager.address'].split(':')[1]
+        yarn_api_url = if yarn_site['yarn.http.policy'] is 'HTTP_ONLY'
+        then "http://#{yarn_site['yarn.resourcemanager.webapp.address']}"
+        else "https://#{yarn_site['yarn.resourcemanager.webapp.https.address']}"
+
       # Configure HDFS Cluster
       hue_ini['hadoop'] ?= {}
       hue_ini['hadoop']['hdfs_clusters'] ?= {}
@@ -115,8 +129,8 @@ Example:
       # Configure YARN (MR2) Cluster
       hue_ini['hadoop']['yarn_clusters'] ?= {}
       hue_ini['hadoop']['yarn_clusters']['default'] ?= {}
-      hue_ini['hadoop']['yarn_clusters']['default']['resourcemanager_host'] ?= "#{resourcemanager}"
-      hue_ini['hadoop']['yarn_clusters']['default']['resourcemanager_port'] ?= "8050"
+      hue_ini['hadoop']['yarn_clusters']['default']['resourcemanager_host'] ?= "#{rm_host}"
+      hue_ini['hadoop']['yarn_clusters']['default']['resourcemanager_port'] ?= "#{rm_port}"
       hue_ini['hadoop']['yarn_clusters']['default']['submit_to'] ?= "true"
       hue_ini['hadoop']['yarn_clusters']['default']['hadoop_mapred_home'] ?= '/usr/lib/hadoop-mapreduce'
       hue_ini['hadoop']['yarn_clusters']['default']['hadoop_bin'] ?= '/usr/bin/hadoop'

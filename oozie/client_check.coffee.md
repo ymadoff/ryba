@@ -35,7 +35,8 @@
 
     module.exports.push name: 'Oozie Client # Check Workflow', timeout: -1, callback: (ctx, next) ->
       {core_site, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.ryba
-      rm = ctx.host_with_module 'ryba/hadoop/yarn_rm'
+      # rm = ctx.host_with_module 'ryba/hadoop/yarn_rm'
+      rm = ctx.config.ryba.active_rm_host
       ctx.execute
         cmd: """
         if ! echo #{oozie_test_password} | kinit #{oozie_test_principal} >/dev/null; then exit 1; fi
