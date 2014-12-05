@@ -95,6 +95,8 @@ Install and configure the startup script in
         next null, modified
       do_install()
 
+## Kerberos
+
     module.exports.push name: 'ZooKeeper Server # Kerberos', timeout: -1, callback: (ctx, next) ->
       {zookeeper_user, hadoop_group, realm, zookeeper_conf_dir} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
@@ -148,6 +150,11 @@ Install and configure the startup script in
         next null, modified
       do_principal()
 
+## Layout
+
+Create the data, pid and log directories with the correct permissions and
+ownerships.
+
     module.exports.push name: 'ZooKeeper Server # Layout', callback: (ctx, next) ->
       { hadoop_group, zookeeper_user, 
         zookeeper_conf, zookeeper_pid_dir, zookeeper_log_dir
@@ -179,6 +186,7 @@ Install and configure the startup script in
         destination: "#{zookeeper_conf_dir}/zookeeper-env.sh"
         write: write
         backup: true
+        eof: true
       , next
 
     module.exports.push name: 'ZooKeeper Server # Configure', callback: (ctx, next) ->
@@ -193,10 +201,46 @@ Install and configure the startup script in
         destination: "#{zookeeper_conf_dir}/zoo.cfg"
         write: write
         backup: true
+        eof: true
       , next
 
+## Super User
+
+Enables a ZooKeeper ensemble administrator to access the znode hierarchy as a
+"super" user.
+
+This functionnality is disactivated by default. Enable it by setting the
+configuration property "ryba.zookeeper_superuser_password". The digest auth
+passes the authdata in plaintext to the server. Use this authentication method
+only on localhost (not over the network) or over an encrypted connection.
+
+Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx` 
+
+    module.exports.push name: 'ZooKeeper Server # Super User', callback: (ctx, next) ->
+      {zookeeper_conf_dir, zookeeper_superuser_password} = ctx.config.ryba
+      return next() unless zookeeper_superuser_password
+      ctx.execute
+        cmd: """
+        export ZK_HOME=/usr/lib/zookeeper/
+        java -cp $ZK_HOME/lib/*:$ZK_HOME/zookeeper.jar org.apache.zookeeper.server.auth.DigestAuthenticationProvider super:#{zookeeper_superuser_password}
+        """
+      , (err, _, stdout) ->
+        digest = match[1] if match = /\->(.*)/.exec(stdout)
+        return next Error "Failed to get digest" unless digest
+        console.log 'digest', digest
+        ctx.write
+          destination: "#{zookeeper_conf_dir}/zookeeper-env.sh"
+          # match: RegExp "^export CLIENT_JVMFLAGS=\"-D#{quote 'zookeeper.DigestAuthenticationProvider.superDigest'}=.* #{quote '${CLIENT_JVMFLAGS}'}$", 'mg'
+          # replace: "export CLIENT_JVMFLAGS=\"-Dzookeeper.DigestAuthenticationProvider.superDigest=#{digest} ${CLIENT_JVMFLAGS}\""
+          match: RegExp "^export SERVER_JVMFLAGS=\"-D#{quote 'zookeeper.DigestAuthenticationProvider.superDigest'}=.* #{quote '${SERVER_JVMFLAGS}'}$", 'mg'
+          replace: "export SERVER_JVMFLAGS=\"-Dzookeeper.DigestAuthenticationProvider.superDigest=#{digest} ${SERVER_JVMFLAGS}\""
+          append: true
+          backup: true
+          eof: true
+        , next
+
     module.exports.push name: 'ZooKeeper Server # Write myid', callback: (ctx, next) ->
-      { hadoop_group, zookeeper_user, zookeeper_myid, zookeeper_conf} = ctx.config.ryba
+      {hadoop_group, zookeeper_user, zookeeper_myid, zookeeper_conf} = ctx.config.ryba
       hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
       return next() if hosts.length is 1
       unless zookeeper_myid
