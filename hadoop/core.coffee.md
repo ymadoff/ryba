@@ -271,7 +271,7 @@ made available in the same directory after any modification.
       ,
         name: 'hadoop-client'
       ], (err, serviced) ->
-        return next err, serviced if err or serviced
+        return next err, serviced if err or not serviced
         ctx.upload
           source: "#{__dirname}/../resources/core_hadoop/hadoop-env.sh"
           destination: "#{hadoop_conf_dir}/hadoop-env.sh"
