@@ -16,6 +16,7 @@ Here is a Unix command to migrate all the affected files:
 
 ```
 find / -uid $old_uid -exec chown $new_uid {} \; 2>/dev/null
+find / -gid $old_gid -exec chgrp $new_gid {} \; 2>/dev/null
 ```
 
 To modify a group, replace the "-uid" option by "-gid".
@@ -41,8 +42,13 @@ To modify a group, replace the "-uid" option by "-gid".
 | Apache HTTP Server | apache      | 2416 | 2416 | 2419    |
 | XASecure           | xasecure    | 2417 | 2417 |         |
 | Nagios             | nagios      | 2418 | 2418 |         |
+| Ganglia            | rrdcached   | ???? | ???? |         |
 | Knox               | knox        | 2420 | 2420 |         |
+| Flacon             | falcon      | 2423 | 2423 |         |
 
+    falcon:
+      group: gid: 2421
+      user: uid: 2421, gid: 2421
 ## Groups
 
 | Service            | name         | gid  |
@@ -66,5 +72,7 @@ To modify a group, replace the "-uid" option by "-gid".
 | XASecure           | xasecure     | 2417 |
 | Nagios             | nagios       | 2418 |
 | Nagios             | groupcmd     | 2419 |
+| Ganglia            | rrdcached    | ???? |
 | Knox               | knox         | 2420 |
+| Flacon             | falcon       | 2423 |
 
