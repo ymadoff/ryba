@@ -54,7 +54,7 @@ Example:
       # ctx.hdfs_configured = true
       require('./core').configure ctx
       # require('./core_ssl').configure ctx
-      {nameservice, core_site} = ctx.config.ryba
+      {nameservice, core_site, static_host, realm} = ctx.config.ryba
       throw new Error "Missing value for 'hdfs_password'" unless ctx.config.ryba.hdfs_password?
       throw new Error "Missing value for 'test_password'" unless ctx.config.ryba.test_password?
       # Options and configuration
@@ -114,8 +114,42 @@ Example:
           ctx.config.ryba.ha_client_config["dfs.namenode.http-address.#{nameservice}.#{shortname}"] ?= "#{nn}:50070"
           ctx.config.ryba.ha_client_config["dfs.namenode.https-address.#{nameservice}.#{shortname}"] ?= "#{nn}:50470"
         ctx.config.ryba.ha_client_config["dfs.client.failover.proxy.provider.#{nameservice}"] ?= 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
+        # Temp fix, ha_client_config should disapear
+        for k, v of ctx.config.ryba.ha_client_config
+          hdfs_site[k] = v
       # Fix HDP Companion File bug
       hdfs_site['dfs.https.namenode.https-address'] = null
+
+## Configurion for Kerberos
+
+Update the HDFS configuration stored inside the "/etc/hadoop/hdfs-site.xml" file
+with Kerberos specific properties.
+
+      # If "true", access tokens are used as capabilities
+      # for accessing datanodes. If "false", no access tokens are checked on
+      # accessing datanodes.
+      hdfs_site['dfs.block.access.token.enable'] ?= 'true'
+      # Kerberos principal name for the NameNode
+      hdfs_site['dfs.namenode.kerberos.principal'] ?= "nn/#{static_host}@#{realm}"
+      # The HTTP Kerberos principal used by Hadoop-Auth in the HTTP 
+      # endpoint. The HTTP Kerberos principal MUST start with 'HTTP/' 
+      # per Kerberos HTTP SPNEGO specification. 
+      hdfs_site['dfs.web.authentication.kerberos.principal'] ?= "HTTP/#{static_host}@#{realm}"
+      # The Kerberos keytab file with the credentials for the HTTP 
+      # Kerberos principal used by Hadoop-Auth in the HTTP endpoint.
+      hdfs_site['dfs.web.authentication.kerberos.keytab'] ?= '/etc/security/keytabs/spnego.service.keytab'
+      # The Kerberos principal that the DataNode runs as. "_HOST" is replaced by the real host name.  
+      hdfs_site['dfs.datanode.kerberos.principal'] ?= "dn/#{static_host}@#{realm}"
+      # Combined keytab file containing the NameNode service and host principals.
+      hdfs_site['dfs.namenode.keytab.file'] ?= '/etc/security/keytabs/nn.service.keytab'
+      # The filename of the keytab file for the DataNode.
+      hdfs_site['dfs.datanode.keytab.file'] ?= '/etc/security/keytabs/dn.service.keytab'
+      # # Default to ${dfs.web.authentication.kerberos.principal}, but documented in hdp 1.3.2 manual install
+      hdfs_site['dfs.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/#{static_host}@#{realm}"
+      # # Default to ${dfs.web.authentication.kerberos.principal}, but documented in hdp 1.3.2 manual install
+      # Documented in http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
+      # Only seems to apply if "dfs.https.enable" is enabled
+      hdfs_site['dfs.namenode.kerberos.https.principal'] = "HTTP/#{static_host}@#{realm}"
 
     module.exports.push name: 'Hadoop HDFS # Install', timeout: -1, callback: (ctx, next) ->
       ctx.service [
@@ -272,46 +306,6 @@ same keytab file is for now shared between hdfs and yarn services.
           cmd: "su -l #{hdfs_user.name} -c \"klist -kt /etc/security/keytabs/spnego.service.keytab\""
         , (err) ->
           next err, created
-
-
-## Kerberos Configure
-
-Update the HDFS configuration stored inside the "/etc/hadoop/hdfs-site.xml" file
-with Kerberos specific properties.
-
-    module.exports.push name: 'Hadoop HDFS # Kerberos Configure', callback: (ctx, next) ->
-      {hadoop_conf_dir, static_host, realm} = ctx.config.ryba
-      hdfs_site = {}
-      # If "true", access tokens are used as capabilities
-      # for accessing datanodes. If "false", no access tokens are checked on
-      # accessing datanodes.
-      hdfs_site['dfs.block.access.token.enable'] ?= 'true'
-      # Kerberos principal name for the NameNode
-      hdfs_site['dfs.namenode.kerberos.principal'] ?= "nn/#{static_host}@#{realm}"
-      # The HTTP Kerberos principal used by Hadoop-Auth in the HTTP 
-      # endpoint. The HTTP Kerberos principal MUST start with 'HTTP/' 
-      # per Kerberos HTTP SPNEGO specification. 
-      hdfs_site['dfs.web.authentication.kerberos.principal'] ?= "HTTP/#{static_host}@#{realm}"
-      # The Kerberos keytab file with the credentials for the HTTP 
-      # Kerberos principal used by Hadoop-Auth in the HTTP endpoint.
-      hdfs_site['dfs.web.authentication.kerberos.keytab'] ?= '/etc/security/keytabs/spnego.service.keytab'
-      # The Kerberos principal that the DataNode runs as. "_HOST" is replaced by the real host name.  
-      hdfs_site['dfs.datanode.kerberos.principal'] ?= "dn/#{static_host}@#{realm}"
-      # Combined keytab file containing the NameNode service and host principals.
-      hdfs_site['dfs.namenode.keytab.file'] ?= '/etc/security/keytabs/nn.service.keytab'
-      # The filename of the keytab file for the DataNode.
-      hdfs_site['dfs.datanode.keytab.file'] ?= '/etc/security/keytabs/dn.service.keytab'
-      # # Default to ${dfs.web.authentication.kerberos.principal}, but documented in hdp 1.3.2 manual install
-      hdfs_site['dfs.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/#{static_host}@#{realm}"
-      # # Default to ${dfs.web.authentication.kerberos.principal}, but documented in hdp 1.3.2 manual install
-      # Documented in http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
-      # Only seems to apply if "dfs.https.enable" is enabled
-      hdfs_site['dfs.namenode.kerberos.https.principal'] = "HTTP/#{static_host}@#{realm}"
-      ctx.hconfigure
-        destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-        properties: hdfs_site
-        merge: true
-      , next
 
 ## Ulimit
 
