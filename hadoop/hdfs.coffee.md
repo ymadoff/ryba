@@ -220,30 +220,6 @@ with Kerberos specific properties.
         next null, modified
       do_hdfs()
 
-## Configure HTTPS
-
-Important, this is not implemented yet, we tried to set it up, it didn't work and
-we didn't had time to look further.
-
-    # module.exports.push name: 'Hadoop HDFS # Configure HTTPS', callback: (ctx, next) ->
-    #   {hadoop_conf_dir, hdfs_site} = ctx.config.ryba
-    #   namenode = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn', 1
-    #   ctx.hconfigure
-    #     destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-    #     properties:
-    #       # Decide if HTTPS(SSL) is supported on HDFS
-    #       # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.5.0/bk_reference/content/ch_wire1.html
-    #       # For now (oct 7th, 2013), we disable it because nn and dn doesnt start
-    #       'dfs.https.enable': hdfs_site['dfs.https.enable']
-    #       'dfs.https.namenode.https-address': "#{namenode}:50470"
-    #       # The https port where NameNode binds
-    #       'dfs.https.port': '50470'
-    #       # The https address where namenode binds. Example: ip-10-111-59-170.ec2.internal:50470
-    #       'dfs.https.address': "#{namenode}:50470"
-    #     merge: true
-    #   , (err, configured) ->
-    #     next err, if configured then ctx.OK else ctx.PASS
-
 ## Policy
 
 By default the service-level authorization is disabled in hadoop, to enable that
