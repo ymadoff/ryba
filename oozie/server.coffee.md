@@ -72,18 +72,77 @@ Example
       # ryba.oozie_site['oozie.service.HadoopAccessorService.nameNode.whitelist'] = ''
       ryba.oozie_site['oozie.authentication.kerberos.name.rules'] ?= ryba.core_site['hadoop.security.auth_to_local']
       ryba.oozie_site['oozie.service.HadoopAccessorService.nameNode.whitelist'] ?= '' # Fix space value
+      # ryba.extjs ?= {}
+      # throw new Error "Missing extjs.source" unless ryba.extjs.source
+      # throw new Error "Missing extjs.destination" unless ryba.extjs.destination
+
+## Configuration for Proxy Users
+
       ryba.oozie_site['oozie.service.ProxyUserService.proxyuser.hive.hosts'] ?= "*"
       ryba.oozie_site['oozie.service.ProxyUserService.proxyuser.hive.groups'] ?= "*"
       ryba.oozie_site['oozie.service.ProxyUserService.proxyuser.hue.hosts'] ?= "*"
       ryba.oozie_site['oozie.service.ProxyUserService.proxyuser.hue.groups'] ?= "*"
+      falcon_cts = ctx.contexts 'ryba/falcon', require('../falcon').configure
+      if falcon_cts.length
+        {user} = falcon_cts[0].config.ryba.falcon
+        ryba.oozie_site["oozie.service.ProxyUserService.proxyuser.#{user.name}.hosts"] ?= "*"
+        ryba.oozie_site["oozie.service.ProxyUserService.proxyuser.#{user.name}.groups"] ?= "*"
+        ryba.oozie_site['oozie.service.ELService.ext.functions.coord-job-submit-instances'] = """
+          now=org.apache.oozie.extensions.OozieELExtensions#ph1_now_echo,
+          today=org.apache.oozie.extensions.OozieELExtensions#ph1_today_echo,
+          yesterday=org.apache.oozie.extensions.OozieELExtensions#ph1_yesterday_echo,
+          currentMonth=org.apache.oozie.extensions.OozieELExtensions#ph1_currentMonth_echo,
+          lastMonth=org.apache.oozie.extensions.OozieELExtensions#ph1_lastMonth_echo, currentYear=org.apache.oozie.extensions.OozieELExtensions#ph1_currentYear_echo,
+          lastYear=org.apache.oozie.extensions.OozieELExtensions#ph1_lastYear_echo,
+          formatTime=org.apache.oozie.coord.CoordELFunctions#ph1_coord_formatTime_echo,
+          latest=org.apache.oozie.coord.CoordELFunctions#ph2_coord_latest_echo,
+          future=org.apache.oozie.coord.CoordELFunctions#ph2_coord_future_echo
+          """
+        ryba.oozie_site['oozie.service.ELService.ext.functions.coord-action-create-inst'] = """
+          now=org.apache.oozie.extensions.OozieELExtensions#ph2_now_inst,
+          today=org.apache.oozie.extensions.OozieELExtensions#ph2_today_inst,
+          yesterday=org.apache.oozie.extensions.OozieELExtensions#ph2_yesterday_inst,
+          currentMonth=org.apache.oozie.extensions.OozieELExtensions#ph2_currentMonth_inst,
+          lastMonth=org.apache.oozie.extensions.OozieELExtensions#ph2_lastMonth_inst,
+          currentYear=org.apache.oozie.extensions.OozieELExtensions#ph2_currentYear_inst,
+          lastYear=org.apache.oozie.extensions.OozieELExtensions#ph2_lastYear_inst,
+          latest=org.apache.oozie.coord.CoordELFunctions#ph2_coord_latest_echo,
+          future=org.apache.oozie.coord.CoordELFunctions#ph2_coord_future_echo,
+          formatTime=org.apache.oozie.coord.CoordELFunctions#ph2_coord_formatTime,
+          user=org.apache.oozie.coord.CoordELFunctions#coord_user
+          """
+        ryba.oozie_site['oozie.service.ELService.ext.functions.coord-action-start'] = """
+          now=org.apache.oozie.extensions.OozieELExtensions#ph2_now,
+          today=org.apache.oozie.extensions.OozieELExtensions#ph2_today,
+          yesterday=org.apache.oozie.extensions.OozieELExtensions#ph2_yesterday,
+          currentMonth=org.apache.oozie.extensions.OozieELExtensions#ph2_currentMonth,
+          lastMonth=org.apache.oozie.extensions.OozieELExtensions#ph2_lastMonth,
+          currentYear=org.apache.oozie.extensions.OozieELExtensions#ph2_currentYear,
+          lastYear=org.apache.oozie.extensions.OozieELExtensions#ph2_lastYear,
+          latest=org.apache.oozie.coord.CoordELFunctions#ph3_coord_latest,
+          future=org.apache.oozie.coord.CoordELFunctions#ph3_coord_future,
+          dataIn=org.apache.oozie.extensions.OozieELExtensions#ph3_dataIn,
+          instanceTime=org.apache.oozie.coord.CoordELFunctions#ph3_coord_nominalTime,
+          dateOffset=org.apache.oozie.coord.CoordELFunctions#ph3_coord_dateOffset,
+          formatTime=org.apache.oozie.coord.CoordELFunctions#ph3_coord_formatTime,
+          user=org.apache.oozie.coord.CoordELFunctions#coord_user
+          """
+        ryba.oozie_site['oozie.service.ELService.ext.functions.coord-sla-submit'] = """
+          instanceTime=org.apache.oozie.coord.CoordELFunctions#ph1_coord_nominalTime_echo_fixed,
+          user=org.apache.oozie.coord.CoordELFunctions#coord_user
+          """
+        ryba.oozie_site['oozie.service.ELService.ext.functions.coord-sla-create'] = """
+          instanceTime=org.apache.oozie.coord.CoordELFunctions#ph2_coord_nominalTime,
+          user=org.apache.oozie.coord.CoordELFunctions#coord_user
+          """
+
+## Configuration for Hadoop
+
       ryba.oozie_hadoop_config ?= {}
       ryba.oozie_hadoop_config['mapreduce.jobtracker.kerberos.principal'] ?= "mapred/#{ryba.static_host}@#{ryba.realm}"
       ryba.oozie_hadoop_config['yarn.resourcemanager.principal'] ?= "yarn/#{ryba.static_host}@#{ryba.realm}"
       ryba.oozie_hadoop_config['dfs.namenode.kerberos.principal'] ?= "hdfs/#{ryba.static_host}@#{ryba.realm}"
       ryba.oozie_hadoop_config['mapreduce.framework.name'] ?= "yarn"
-      # ryba.extjs ?= {}
-      # throw new Error "Missing extjs.source" unless ryba.extjs.source
-      # throw new Error "Missing extjs.destination" unless ryba.extjs.destination
 
     # module.exports.push commands: 'backup', modules: 'ryba/oozie/server_backup'
 

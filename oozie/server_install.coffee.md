@@ -233,16 +233,53 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Oozie Server # War', callback: (ctx, next) ->
       {oozie_user} = ctx.config.ryba
-      # The script `ooziedb.sh` must be done as the oozie Unix user, otherwise 
-      # Oozie may fail to start or work properly because of incorrect file permissions.
-      # There is already a "oozie.war" file inside /var/lib/oozie/oozie-server/webapps/.
-      # The "prepare-war" command generate the file "/var/lib/oozie/oozie-server/webapps/oozie.war".
-      # The directory being served by the web server is "prepare-war".
-      ctx.execute
-        cmd: "su -l #{oozie_user.name} -c '/usr/lib/oozie/bin/oozie-setup.sh prepare-war'"
-        # not_if: not ctx.config.ryba.force_war
-        code_skipped: 255 # Oozie already started, war is expected to be installed
-      , next
+      falcon_cts = ctx.contexts 'ryba/falcon', require('../falcon').configure
+      do_falcon = ->
+        return do_prepare_war() unless falcon_cts.length
+        ctx.service
+          name: 'falcon'
+        , (err, serviced) ->
+          return next err if err
+          # return do_prepare_war() unless serviced
+          ctx.mkdir
+            destination: '/tmp/falcon-oozie-jars'
+          , (err, created) ->
+            return next err if err
+            # Note, the documentation mentions using "-d" option but it doesnt
+            # seem to work. Instead, we deploy the jar where "-d" default.
+            ctx.execute
+              # cmd: """
+              # rm -rf /tmp/falcon-oozie-jars/*
+              # cp  /usr/lib/falcon/oozie/ext/falcon-oozie-el-extension-*.jar \
+              #   /tmp/falcon-oozie-jars
+              # """, (err) ->
+              cmd: """
+              rm -rf /tmp/falcon-oozie-jars/*
+              cp  /usr/lib/falcon/oozie/ext/falcon-oozie-el-extension-*.jar \
+                /usr/lib/oozie/libext
+              """, (err) ->
+                return next err if err
+                ctx.service
+                  srv_name: 'oozie'
+                  action: 'stop'
+                , (err) ->
+                  return next err if err
+                  do_prepare_war()
+      do_prepare_war = ->
+        # The script `ooziedb.sh` must be done as the oozie Unix user, otherwise 
+        # Oozie may fail to start or work properly because of incorrect file permissions.
+        # There is already a "oozie.war" file inside /var/lib/oozie/oozie-server/webapps/.
+        # The "prepare-war" command generate the file "/var/lib/oozie/oozie-server/webapps/oozie.war".
+        # The directory being served by the web server is "prepare-war".
+        # See note 20 lines above about "-d" option
+        # falcon_opts = if falcon_cts.length then " –d /tmp/falcon-oozie-jars" else ''
+        falcon_opts = ''
+        ctx.execute
+          cmd: "su -l #{oozie_user.name} -c '/usr/lib/oozie/bin/oozie-setup.sh prepare-war #{falcon_opts}'"
+          # not_if: not ctx.config.ryba.force_war
+          code_skipped: 255 # Oozie already started, war is expected to be installed
+        , next
+      do_falcon()
 
     module.exports.push name: 'Oozie Server # Kerberos', callback: (ctx, next) ->
       {oozie_user, oozie_group, oozie_site, realm} = ctx.config.ryba
