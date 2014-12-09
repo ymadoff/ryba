@@ -165,7 +165,6 @@ similar than the ones for a client or slave configuration with the addtionnal
       {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
-      console.log 'journalnodes', journalnodes
       ha_client_config['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
       ha_client_config['dfs.namenode.shared.edits.dir'] = "qjournal://#{ha_client_config['dfs.namenode.shared.edits.dir']}/#{ha_client_config['dfs.nameservices']}"
       ctx.hconfigure

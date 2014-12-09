@@ -166,7 +166,7 @@ Default configuration:
         else '_HOST'
       # Configuration
       core_site = ctx.config.ryba.core_site ?= {}
-      unless ctx.hosts_with_module('ryba/hadoop/hdfs_snn').length > 1
+      unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
         core_site['fs.defaultFS'] ?= "hdfs://#{namenodes[0]}:8020"
       else
         core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.ryba.nameservice}:8020"
@@ -186,6 +186,12 @@ Default configuration:
       # hadoop.security.saslproperties.resolver.class can be used to override
       # the hadoop.rpc.protection for a connection at the server side.
       core_site['hadoop.rpc.protection'] ?= 'authentication'
+      # Proxy users
+      falcon_cts = ctx.contexts 'ryba/falcon', require('../falcon').configure
+      if falcon_cts.length
+        {user} = falcon_cts[0].config.ryba.falcon
+        core_site["hadoop.proxyuser.#{user.name}.groups"] = '*'
+        core_site["hadoop.proxyuser.#{user.name}.hosts"] = '*'
       # Environment
       ctx.config.ryba.hadoop_opts ?= 'java.net.preferIPv4Stack': 'true'
       hadoop_opts = "export HADOOP_OPTS=\""

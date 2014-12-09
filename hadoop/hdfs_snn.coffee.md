@@ -32,7 +32,10 @@ layout: module
 
     # module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_snn_check'
 
-    module.exports.push commands: 'install', modules: 'ryba/hadoop/hdfs_snn_install'
+    module.exports.push commands: 'install', modules: [
+      'ryba/hadoop/hdfs_snn_install'
+      'ryba/hadoop/hdfs_snn_start'
+    ]
 
     module.exports.push commands: 'start', modules: 'ryba/hadoop/hdfs_snn_start'
 

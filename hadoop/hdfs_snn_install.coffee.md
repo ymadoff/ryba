@@ -92,7 +92,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         backup: true
       , next
 
-    module.exports.push 'ryba/hadoop/hdfs_snn'
 
 
 
