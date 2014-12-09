@@ -227,7 +227,6 @@ Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
       , (err, _, stdout) ->
         digest = match[1] if match = /\->(.*)/.exec(stdout)
         return next Error "Failed to get digest" unless digest
-        console.log 'digest', digest
         ctx.write
           destination: "#{zookeeper_conf_dir}/zookeeper-env.sh"
           # match: RegExp "^export CLIENT_JVMFLAGS=\"-D#{quote 'zookeeper.DigestAuthenticationProvider.superDigest'}=.* #{quote '${CLIENT_JVMFLAGS}'}$", 'mg'

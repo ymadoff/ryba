@@ -138,6 +138,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ctx.write
           destination: "/var/tmp/#{path.basename policymgr_url, '.tar'}/install.properties"
           write: write
+          backup: true
           eof: true
         , (err, written) ->
           return next err, false if err or not written
