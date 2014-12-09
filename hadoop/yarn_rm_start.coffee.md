@@ -18,7 +18,9 @@ layout: module
       rm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
       return next() unless rm_hosts.length > 1 
       {active_rm_host} = ctx.config.ryba
-      if active_rm_host is ctx.config.host
+      # if active_rm_host is ctx.config.host
+      #   # todo
+      next()
 
       
 
