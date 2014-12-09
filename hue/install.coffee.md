@@ -350,7 +350,7 @@ Use the "ryba/hue/start" module to start the Hue server.
 ## Resources:   
 
 *   [Official Hue website](http://gethue.com)
-*   [Hortonworks instruction](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue.html)
+*   [Hortonworks instructions](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue.html)
 
 ## Notes
 
