@@ -19,7 +19,7 @@ performing some diagnostics on itself, including checking if internal services
 are running as expected. This command will return 0 if the NameNode is healthy,
 non-zero otherwise. One might use this command for monitoring purposes.
 
-    module.exports.push name: 'Hadoop HDFS NN # Check HA Health', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # Check HA Health', label_true: 'CHECKED', callback: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       ctx.execute
         cmd: mkcmd.hdfs ctx, "hdfs haadmin -checkHealth #{ctx.config.shortname}"
@@ -33,7 +33,7 @@ it must be able to SSH to the target node without providing a passphrase. Thus,
 one must also configure the dfs.ha.fencing.ssh.private-key-files option, which
 is a comma-separated list of SSH private key files.
 
-    module.exports.push name: 'Hadoop HDFS NN # Check SSH Fencing', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # Check SSH Fencing', label_true: 'CHECKED', callback: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       {hdfs_user} = ctx.config.ryba
       nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
@@ -52,7 +52,7 @@ Create a Unix and Kerberos test user, by default "test" and execute simple HDFS 
 the NameNode is properly working. Note, those commands are NameNode specific, meaning they only
 afect HDFS metadata.
 
-    # module.exports.push name: 'Hadoop HDFS NN # Test User', timeout: -1, callback: (ctx, next) ->
+    # module.exports.push name: 'Hadoop HDFS NN # Test User', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
     #   {test_user, test_password, hadoop_group, security} = ctx.config.ryba
     #   {realm, kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5_client
     #   modified = false

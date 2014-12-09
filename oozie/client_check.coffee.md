@@ -5,7 +5,7 @@
     module.exports.push 'masson/bootstrap/'
     module.exports.push require('./client').configure
 
-    module.exports.push name: 'Oozie Client # Wait Server', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Wait Server', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
       {hostname, port} = url.parse ctx.config.ryba.oozie_site['oozie.base.url'] 
       ctx.waitIsOpen hostname, port, (err) -> next err
 
@@ -21,7 +21,7 @@
         return next new Error "Oozie not ready, got: #{JSON.stringify stdout}" if stdout.trim() isnt 'System mode: NORMAL'
         return next null, true
 
-    module.exports.push name: 'Oozie Client # Check REST', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Check REST', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
       {oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.ryba
       ctx.execute
         cmd: """
@@ -33,7 +33,7 @@
         return next new Error "Oozie not ready" if stdout.trim() isnt '{"systemMode":"NORMAL"}'
         return next null, true
 
-    module.exports.push name: 'Oozie Client # Check Workflow', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Check Workflow', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
       {core_site, oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.ryba
       # rm = ctx.host_with_module 'ryba/hadoop/yarn_rm'
       rm = ctx.config.ryba.active_rm_host

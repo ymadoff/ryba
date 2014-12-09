@@ -514,7 +514,7 @@ recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 
     module.exports.push 'ryba/hadoop/core_ssl'
 
-    module.exports.push name: 'Hadoop Core # Check auth_to_local', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Core # Check auth_to_local', label_true: 'CHECKED', callback: (ctx, next) ->
       {test_user, realm} = ctx.config.ryba
       ctx.execute
         cmd: "hadoop org.apache.hadoop.security.HadoopKerberosName #{test_user.name}@#{realm}"

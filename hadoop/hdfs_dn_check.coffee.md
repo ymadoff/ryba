@@ -25,7 +25,7 @@ interface.
 Attemp to place a file inside HDFS. the file "/etc/passwd" will be placed at 
 "/user/{test\_user}/#{ctx.config.host}\_dn".
 
-    module.exports.push name: 'Hadoop HDFS DN # Test HDFS', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS DN # Test HDFS', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
       {test_user} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.test ctx, """
@@ -45,7 +45,7 @@ is not present on HDFS.
 Read [Delegation Tokens in Hadoop Security](http://www.kodkast.com/blogs/hadoop/delegation-tokens-in-hadoop-security) 
 for more information.
 
-    module.exports.push name: 'Hadoop HDFS DN # Test WebHDFS', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS DN # Test WebHDFS', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
       {hdfs_site, nameservice, test_user, force_check, active_nn_host} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1

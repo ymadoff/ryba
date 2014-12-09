@@ -12,7 +12,7 @@ layout: module
 
 ## Wait JHS
 
-    module.exports.push name: 'Hadoop MapRed # Wait JHS', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop MapRed # Wait JHS', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
       {mapred_site} = ctx.config.ryba
       [hostname, port] = mapred_site['mapreduce.jobhistory.address'].split ':'
       ctx.waitIsOpen hostname, port, (err) ->
@@ -25,7 +25,7 @@ be executed if the directory "/user/test/10gsort" generated
 by this action is not present on HDFS. Delete this directory 
 to re-execute the check.
 
-    module.exports.push name: 'Hadoop MapRed Client # Check', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop MapRed Client # Check', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
       {force_check} = ctx.config.ryba
       host = ctx.config.host.split('.')[0]
       # 100 records = 1Ko

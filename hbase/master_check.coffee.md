@@ -17,7 +17,7 @@
 
 # Namespace and permissions are implemented and illustrated in [HBASE-8409].
 
-#     module.exports.push name: 'HBase Master Check # Shell', timeout:-1, callback: (ctx, next) ->
+#     module.exports.push name: 'HBase Master Check # Shell', timeout:-1, label_true: 'CHECKED', callback: (ctx, next) ->
 #       {hbase_site} = ctx.config.ryba
 #       keytab = hbase_site['hbase.master.keytab.file']
 #       principal = hbase_site['hbase.master.kerberos.principal'].replace '_HOST', ctx.config.host

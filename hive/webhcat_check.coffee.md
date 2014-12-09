@@ -11,7 +11,7 @@ layout: module
 
     module.exports.push require('./webhcat').configure
 
-    module.exports.push name: 'WebHCat # Check Status', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Check Status', label_true: 'CHECKED', callback: (ctx, next) ->
       # TODO, maybe we could test hive:
       # curl --negotiate -u : -d execute="show+databases;" -d statusdir="test_webhcat" http://front1.hadoop:50111/templeton/v1/hive
       {webhcat_site} = ctx.config.ryba

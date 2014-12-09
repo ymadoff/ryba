@@ -8,7 +8,7 @@
 
 ## Check CLI
 
-    module.exports.push name: 'Hadoop Yarn Client # Check CLI', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop Yarn Client # Check CLI', label_true: 'CHECKED', callback: (ctx, next) ->
       ctx.execute
         cmd: mkcmd.test ctx, 'yarn application -list'
       , next
