@@ -336,6 +336,31 @@ changes.
           next err, true
       do_upload()
 
+## Fix Banner
+
+In the current version "2.5.1", the HTML of the banner is escaped.
+
+    module.exports.push name: 'Hue # Fix Banner', callback: (ctx, next) ->
+      {hue_banner_style} = ctx.config.ryba
+      ctx.write [
+        destination: '/usr/lib/hue/desktop/core/src/desktop/templates/login.mako'
+        match: '${conf.CUSTOM.BANNER_TOP_HTML.get()}'
+        replace: '${ conf.CUSTOM.BANNER_TOP_HTML.get() | n,unicode }'
+        bck: true
+      ,
+        destination: '/usr/lib/hue/desktop/core/src/desktop/templates/common_header.mako'
+        write: [
+          match: '${conf.CUSTOM.BANNER_TOP_HTML.get()}'
+          replace: '${ conf.CUSTOM.BANNER_TOP_HTML.get() | n,unicode }'
+          bck: true
+          ,
+          match: /\.banner \{([\s\S]*?)\}/
+          replace: ".banner {#{hue_banner_style}}"
+          bck: true
+          if: hue_banner_style
+        ]
+      ], next
+
 ## Start
 
 Use the "ryba/hue/start" module to start the Hue server.

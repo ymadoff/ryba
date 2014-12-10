@@ -25,21 +25,25 @@ Example:
 
 ```json
 {
-  "hue": {
+  "ryba": {
     "hue_user": {
       "name": "hue", "system": true, "gid": "hue",
       "comment": "Hue User", "home": "/usr/lib/hue"
-    }
+    },
     "hue_group": {
       "name": "Hue", "system": true
-    }
+    },
     "hue_ini": {
       "desktop": {
         "database":
           "engine": "mysql"
           "password": "hue123"
+        "custom": {
+          banner_top_html: "HADOOP : PROD"
+        }
       }
-    }
+    },
+    hue_banner_style: 'color:white;text-align:center;background-color:red;'
   }
 }
 ```
