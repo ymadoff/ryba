@@ -306,7 +306,7 @@ Copy over the contents of the active NameNode metadata directories to an other,
 unformatted NameNode. The command "hdfs namenode -bootstrapStandby" used for the transfer
 is only executed on a non active NameNode.
 
-    module.exports.push name: 'Hadoop HDFS NN # HA Init Standby NameNodes', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # HA Init Standby', timeout: -1, callback: (ctx, next) ->
       # Shall only be executed on the leader namenode
       {active_nn, active_nn_host} = ctx.config.ryba
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
