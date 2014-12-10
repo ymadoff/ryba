@@ -54,7 +54,7 @@ nagiocmd:x:2419:apache
         {name: 'net-snmp-perl'}
         {name: 'perl-Net-SNMP'}
         {name: 'fping'}
-        {name: 'nagios'}
+        {name: 'nagios', startup: true}
         {name: 'nagios-plugins'}
         {name: 'nagios-www'}
       ], next
