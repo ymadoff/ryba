@@ -121,11 +121,20 @@ Copy the object files provided in the HDP companion files into the
 Upload the "hdp-gmetad" service file into "/etc/init.d".
 
     module.exports.push name: 'Ganglia Collector # Init Script', timeout: -1, callback: (ctx, next) ->
-      ctx.upload [
+      ctx.write
+        destination: '/etc/init.d/hdp-gmetad'
         source: "#{__dirname}/../resources/ganglia/scripts/hdp-gmetad"
-        destination: '/etc/init.d'
+        local_source: true
+        match: /# chkconfig: .*/mg
+        replace: '# chkconfig: 2345 20 80'
+        append: '#!/bin/sh'
         mode: 0o755
-      ], next
+      , (err, written) ->
+        return next err, false unless written
+        ctx.execute
+          cmd: "service gmetad stop; chkconfig --del gmetad; chkconfig --add hdp-gmetad"
+        , (err) ->
+          next err, true
 
 # Note: latest companion files seems to fix this
 # ## Fix RRD

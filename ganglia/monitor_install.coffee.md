@@ -47,11 +47,20 @@ Copy the object files provided in the HDP companion files into the
 Upload the "hdp-gmond" service file into "/etc/init.d".
 
     module.exports.push name: 'Ganglia Monitor # Init Script', timeout: -1, callback: (ctx, next) ->
-      ctx.upload
+      ctx.write
+        destination: '/etc/init.d/hdp-gmond'
         source: "#{__dirname}/../resources/ganglia/scripts/hdp-gmond"
-        destination: '/etc/init.d'
+        local_source: true
+        match: /# chkconfig: .*/mg
+        replace: '# chkconfig: 2345 70 40'
+        append: '#!/bin/sh'
         mode: 0o755
-      , next
+      , (err, written) ->
+        return next err, false unless written
+        ctx.execute
+          cmd: "service gmond stop; chkconfig --del gmond; chkconfig --add hdp-gmond"
+        , (err) ->
+          next err, true
 
 ## Fix RRD
 
