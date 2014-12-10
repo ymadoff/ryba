@@ -45,7 +45,7 @@ php /usr/lib64/nagios/plugins/check_rpcq_latency_ha.php \
     module.exports.push 'masson/bootstrap/'
     module.exports.push require('./index').configure
 
-    module.exports.push name: 'Nagios # Check Config', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Check Config', label_true: 'CHECKED', callback: (ctx, next) ->
       ctx.execute
         cmd: "nagios -v /etc/nagios/nagios.cfg"
         code_skipped: 254
@@ -56,7 +56,7 @@ php /usr/lib64/nagios/plugins/check_rpcq_latency_ha.php \
         return next Error "Nagios Errors: #{errors}" unless errors is '0'
         next null, true
 
-    module.exports.push name: 'Nagios # Check Command', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Check Command', label_true: 'CHECKED', callback: (ctx, next) ->
       {kinit} = ctx.config.krb5
       {active_nn_host, nameservice, core_site, hdfs_site, realm} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
