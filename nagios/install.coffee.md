@@ -152,6 +152,7 @@ nagiocmd:x:2419:apache
         'status_file': '/var/nagios/status.dat'
         'command_file': '/var/nagios/rw/nagios.cmd'
         'temp_file': '/var/nagios/nagios.tmp'
+        'date_format': 'iso8601'
       for k, v of cfgs
         write.push 
           match: ///^#{k}=.*$///mg
