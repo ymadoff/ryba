@@ -98,7 +98,103 @@
         , (err, executed, stdout) ->
           return next err, true
 
+    module.exports.push name: 'Oozie Client # Check Pig Workflow', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
+      {force_check, test_user, core_site, active_rm_host, oozie_site} = ctx.config.ryba
+      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn').configure
+      if rm_ctxs.length > 1
+        rm_ctx = ctx.context active_rm_host, require('../hadoop/yarn').configure
+        shortname = ".#{rm_ctx.config.shortname}"
+      else
+        rm_ctx = rm_ctxs[0]
+        shortname = ''
+      rm_address = rm_ctx.config.ryba.yarn_site["yarn.resourcemanager.address#{shortname}"]
+      # Get the name of the user running the Oozie Server
+      os_ctxs = ctx.contexts 'ryba/oozie/server', require('./server').configure
+      {oozie_user} = os_ctxs[0].config.ryba
+      ctx.write [
+        content: """
+          nameNode=#{core_site['fs.defaultFS']}
+          jobTracker=#{rm_address}
+          oozie.libpath=/user/#{oozie_user.name}/share/lib
+          queueName=default
+          basedir=${nameNode}/user/#{test_user.name}/check-#{ctx.config.shortname}-oozie-pig
+          oozie.wf.application.path=${basedir}
+          oozie.use.system.libpath=true
+        """
+        destination: "#{test_user.home}/check_oozie_pig/job.properties"
+        uid: test_user.name
+        gid: test_user.group
+        eof: true
+      ,
+        content: """
+        <workflow-app xmlns='uri:oozie:workflow:0.1' name='check-#{ctx.config.shortname}-oozie-pig'>
+          <start to='test-pig' />
+          <action name='test-pig'>
+            <pig>
+              <job-tracker>${jobTracker}</job-tracker>
+              <name-node>${nameNode}</name-node>
+              <configuration>
+                <property>
+                  <name>mapred.compress.map.output</name>
+                  <value>true</value>
+                </property>
+                <property>
+                  <name>mapred.job.queue.name</name>
+                  <value>${queueName}</value>
+                </property>
+              </configuration>
+              <script>wordcount.pig</script>
+              <param>INPUT=/user/${wf:user()}/check-#{ctx.config.shortname}-oozie-pig/input</param>
+              <param>OUTPUT=/user/${wf:user()}/check-#{ctx.config.shortname}-oozie-pig/output</param>
+            </pig>
+            <ok to="end" />
+            <error to="fail" />
+          </action>
+          <kill name="fail">
+            <message>Pig failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+          </kill>
+          <end name='end' />
+        </workflow-app>
+        """
+        destination: "#{test_user.home}/check_oozie_pig/workflow.xml"
+        uid: test_user.name
+        gid: test_user.group
+        eof: true
+      ,
+        content: """
+        A = load '$INPUT';
+        B = foreach A generate flatten(TOKENIZE((chararray)$0)) as word;
+        C = group B by word;
+        D = foreach C generate COUNT(B), group;
+        store D into '$OUTPUT' USING PigStorage();
+        """
+        destination: "#{test_user.home}/check_oozie_pig/wordcount.pig"
+        uid: test_user.name
+        gid: test_user.group
+        eof: true
+      ], (err, written) ->
+        return next err if err
+        ctx.execute
+          cmd: mkcmd.test ctx, """
+          hdfs dfs -rm -r -skipTrash check-#{ctx.config.shortname}-oozie-pig 2>/dev/null
+          hdfs dfs -mkdir -p check-#{ctx.config.shortname}-oozie-pig/input
+          hdfs dfs -put -f #{test_user.home}/check_oozie_pig/workflow.xml check-#{ctx.config.shortname}-oozie-pig
+          hdfs dfs -put -f #{test_user.home}/check_oozie_pig/wordcount.pig check-#{ctx.config.shortname}-oozie-pig
+          export OOZIE_URL=#{oozie_site['oozie.base.url']}
+          oozie job -dryrun -config #{test_user.home}/check_oozie_pig/job.properties
+          jobid=`oozie job -run -config #{test_user.home}/check_oozie_pig/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
+          i=0
+          while [[ $i -lt 1000 ]] && [[ `oozie job -info $jobid | grep -e '^Status' | sed 's/^Status\\s\\+:\\s\\+\\(.*\\)$/\\1/'` == 'RUNNING' ]]
+          do ((i++)); sleep 1; done
+          oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
+          """
+          trap_on_error: false # or while loop will exit on first run
+          not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -d check-#{ctx.config.shortname}-oozie-pig/output"
+        , (err, executed, stdout) ->
+          return next err, true
+
 # Module Dependencies
 
     url = require 'url'
+    mkcmd = require '../lib/mkcmd'
 
