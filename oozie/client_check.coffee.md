@@ -5,15 +5,14 @@
     module.exports.push 'masson/bootstrap/'
     module.exports.push require('./client').configure
 
-    module.exports.push name: 'Oozie Client # Wait Server', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Wait Server', timeout: -1, callback: (ctx, next) ->
       {hostname, port} = url.parse ctx.config.ryba.oozie_site['oozie.base.url'] 
       ctx.waitIsOpen hostname, port, (err) -> next err
 
-    module.exports.push name: 'Oozie Client # Check Client', timeout: -1, callback: (ctx, next) ->
-      {oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.ryba
+    module.exports.push name: 'Oozie Client # Check Client', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
+      {realm, test_user, oozie_site} = ctx.config.ryba
       ctx.execute
-        cmd: """
-        if ! echo #{oozie_test_password} | kinit #{oozie_test_principal} >/dev/null; then exit 1; fi
+        cmd: mkcmd.test ctx, """
         oozie admin -oozie #{oozie_site['oozie.base.url']} -status
         """
       , (err, executed, stdout) ->
@@ -22,10 +21,9 @@
         return next null, true
 
     module.exports.push name: 'Oozie Client # Check REST', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
-      {oozie_test_principal, oozie_test_password, oozie_site} = ctx.config.ryba
+      {realm, test_user, oozie_site} = ctx.config.ryba
       ctx.execute
-        cmd: """
-        if ! echo #{oozie_test_password} | kinit #{oozie_test_principal} >/dev/null; then exit 1; fi
+        cmd: mkcmd.test ctx, """
         curl -s -k --negotiate -u : #{oozie_site['oozie.base.url']}/v1/admin/status
         """
       , (err, executed, stdout) ->
@@ -33,7 +31,7 @@
         return next new Error "Oozie not ready" if stdout.trim() isnt '{"systemMode":"NORMAL"}'
         return next null, true
 
-    module.exports.push name: 'Oozie Client # Check HDFS Workflow', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Check HDFS Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
       {force_check, test_user, core_site, oozie_site} = ctx.config.ryba
       rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn').configure
       if rm_ctxs.length > 1
@@ -94,11 +92,10 @@
           oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
           """
           code_skipped: 2
-          not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -d check-#{ctx.config.shortname}-oozie-pig/target"
-        , (err, executed, stdout) ->
-          return next err, true
+          not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{ctx.config.shortname}-oozie-fs/target"
+        , next
 
-    module.exports.push name: 'Oozie Client # Check Pig Workflow', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Check Pig Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
       {force_check, test_user, core_site, active_rm_host, oozie_site} = ctx.config.ryba
       rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn').configure
       if rm_ctxs.length > 1
@@ -190,8 +187,7 @@
           """
           trap_on_error: false # or while loop will exit on first run
           not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -d check-#{ctx.config.shortname}-oozie-pig/output"
-        , (err, executed, stdout) ->
-          return next err, true
+        , next
 
 # Module Dependencies
 
