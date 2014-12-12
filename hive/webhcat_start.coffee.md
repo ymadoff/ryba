@@ -13,5 +13,5 @@ layout: module
     module.exports.push (ctx) ->
       require('./webhcat').configure ctx
 
-    module.exports.push name: 'WebHCat # Start', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Start', label_true: 'STARTED', callback: (ctx, next) ->
       lifecycle.webhcat_start ctx, next

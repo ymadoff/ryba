@@ -14,12 +14,12 @@ layout: module
 
 Execute these commands on the HBase Master host machine.
 
-    module.exports.push name: 'HBase Master # Stop Server', callback: (ctx, next) ->
+    module.exports.push name: 'HBase Master # Stop Server', label_true: 'STOPED', callback: (ctx, next) ->
       lifecycle.hbase_master_stop ctx, next
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'HBase Master # Stop Clean Logs', callback: (ctx, next) ->
+    module.exports.push name: 'HBase Master # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute
         cmd: 'rm /var/log/hbase/*-master-*'

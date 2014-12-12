@@ -10,7 +10,7 @@ layout: module
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./hdfs_snn').configure
 
-    module.exports.push name: 'Hadoop HDFS SNN # Start', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS SNN # Start', label_true: 'STARTED', callback: (ctx, next) ->
       lifecycle.snn_start ctx, next
 
     # module.exports.push name: 'Hadoop HDFS SNN # Wait', callback: (ctx, next) ->

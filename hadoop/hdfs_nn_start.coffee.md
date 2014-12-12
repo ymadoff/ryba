@@ -20,7 +20,7 @@ the standy NameNodes wait for the one on the active NameNode to start first.
 # Wait for all JournalNodes to be started before starting this NameNode if it wasn't yet started
 # during the HDFS format phase.
 
-    module.exports.push name: 'Hadoop HDFS NN # Start NameNode', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # Start NameNode', label_true: 'STARTED', callback: (ctx, next) ->
       lifecycle.nn_start ctx, next
 
     module.exports.push name: 'Hadoop HDFS NN # Start Wait NameNode', timeout: -1, callback: (ctx, next) ->
@@ -31,7 +31,7 @@ the standy NameNodes wait for the one on the active NameNode to start first.
       http_port = ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{ctx.config.shortname}"].split(':')[1]
       ctx.waitIsOpen ctx.config.host, [ipc_port, http_port], timeout: hdfs_namenode_timeout, (err) -> next err
 
-    module.exports.push name: 'Hadoop HDFS NN # Start ZKFC', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # Start ZKFC', label_true: 'STARTED', callback: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       # ZKFC should start first on active NameNode
       {active_nn, active_nn_host} = ctx.config.ryba

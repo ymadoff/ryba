@@ -15,12 +15,12 @@ layout: module
 Stop the Zookeeper service. Execute these commands on all the ZooKeeper host
 machines.
 
-    module.exports.push name: 'ZooKeeper Server # Stop', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Stop', label_true: 'STOPED', callback: (ctx, next) ->
       lifecycle.zookeeper_stop ctx, next
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'Oozie Server # Stop Clean Logs', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute
         cmd: 'rm /var/log/zookeeper/*'

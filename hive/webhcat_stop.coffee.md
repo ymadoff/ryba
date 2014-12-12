@@ -13,12 +13,12 @@ layout: module
     module.exports.push (ctx) ->
       require('./webhcat').configure ctx
 
-    module.exports.push name: 'WebHCat # Stop', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Stop', label_true: 'STOPED', callback: (ctx, next) ->
       lifecycle.webhcat_stop ctx, next
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'WebHCat # Stop Clean Logs', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute [
         cmd: 'rm /var/log/webhcat/webhcat-console*'

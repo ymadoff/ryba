@@ -11,16 +11,16 @@ layout: module
     module.exports.push 'ryba/hadoop/hdfs_nn_wait'
     module.exports.push require('./yarn_rm').configure
 
-    module.exports.push name: 'Hadoop ResourceManager # Start Server', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop ResourceManager # Start Server', label_true: 'STARTED', callback: (ctx, next) ->
       lifecycle.rm_start ctx, next
 
-    module.exports.push name: 'Hadoop ResourceManager # Ensure Active/Standby', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop ResourceManager # Ensure Active/Standby', label_true: 'TODO', callback: (ctx, next) ->
       rm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
       return next() unless rm_hosts.length > 1 
       {active_rm_host} = ctx.config.ryba
       # if active_rm_host is ctx.config.host
       #   # todo
-      next()
+      next null, true
 
       
 

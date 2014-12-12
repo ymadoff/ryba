@@ -16,12 +16,12 @@ layout: module
 
 Stop the Oozie service. Execute these commands on the Oozie server host machine.
 
-    module.exports.push name: 'Oozie Server # Stop', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Stop', label_true: 'STOPED', timeout: -1, callback: (ctx, next) ->
       lifecycle.oozie_stop ctx, next
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'Oozie Server # Stop Clean Logs', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute
         cmd: 'rm /var/log/oozie/*'

@@ -14,13 +14,17 @@ associated the NameNodes.
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./hdfs_dn').configure
 
-    module.exports.push name: 'Hadoop HDFS DN # Stop', callback: (ctx, next) ->
+## Stop Service
+
+    module.exports.push name: 'Hadoop HDFS DN # Stop Service', label_true: 'STOPED', callback: (ctx, next) ->
       ctx.execute
         cmd: "service hadoop-hdfs-datanode stop"
         code_skipped: 3
       , next
 
-    module.exports.push name: 'Hadoop HDFS DN # Stop Clean Logs', callback: (ctx, next) ->
+## Stop Clean Logs
+
+    module.exports.push name: 'Hadoop HDFS DN # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute
         cmd: 'rm /var/log/hadoop-hdfs/*/*-datanode-*'

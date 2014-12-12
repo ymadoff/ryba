@@ -9,7 +9,7 @@
 
 Stop the nagios service.
 
-    module.exports.push name: 'Nagios # Stop', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Stop', label_true: 'STOPED', callback: (ctx, next) ->
       ctx.service
         srv_name: 'nagios'
         action: 'stop'
@@ -17,7 +17,7 @@ Stop the nagios service.
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'Nagios # Stop Clean Logs', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute
         cmd: 'rm /var/log/nagios/*'
