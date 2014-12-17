@@ -13,7 +13,6 @@ layout: module
       require('./hdfs').configure ctx
       require('./yarn').configure ctx
       {static_host, realm, mapred_site} = ctx.config.ryba
-      jhs_host = ctx.host_with_module 'ryba/hadoop/mapred_jhs'
       # Layout
       ctx.config.ryba.mapred_pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
       # Configuration
@@ -25,25 +24,27 @@ layout: module
       mapred_site['mapreduce.admin.map.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
       mapred_site['mapreduce.admin.reduce.child.java.opts'] ?= "-server -XX:NewRatio=8 -Djava.library.path=/usr/lib/hadoop/lib/native/ -Djava.net.preferIPv4Stack=true"
       # [Configurations for MapReduce JobHistory Server](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuring_the_Hadoop_Daemons_in_Non-Secure_Mode)
-      mapred_site['mapreduce.jobhistory.address'] ?= "#{jhs_host}:10020" # MapReduce JobHistory Server host:port - Default port is 10020.
-      mapred_site['mapreduce.jobhistory.webapp.address'] ?= "#{jhs_host}:19888" # MapReduce JobHistory Server Web UI host:port - Default port is 19888.
-      mapred_site['mapreduce.jobhistory.done-dir'] ?= '/mr-history/done' # Directory where history files are managed by the MR JobHistory Server.
-      mapred_site['mapreduce.jobhistory.intermediate-done-dir'] ?= '/mr-history/tmp' # Directory where history files are written by MapReduce jobs.
-      # Important, JHS principal must be deployed on all mapreduce workers
-      mapred_site['mapreduce.jobhistory.principal'] ?= "jhs/#{jhs_host}@#{realm}"
-      #mapred_site['mapreduce.jobhistory.principal'] ?= "jhs/#{static_host}@#{realm}"
+      [jhs_context] = ctx.contexts 'ryba/hadoop/mapred_jhs', require('./mapred_jhs').configure
+      if jhs_context
+        mapred_site['mapreduce.jobhistory.address'] ?= jhs_context.config.ryba.mapred_site['mapreduce.jobhistory.address']
+        mapred_site['mapreduce.jobhistory.webapp.address'] ?= jhs_context.config.ryba.mapred_site['mapreduce.jobhistory.webapp.address']
+        mapred_site['mapreduce.jobhistory.webapp.https.address'] ?= jhs_context.config.ryba.mapred_site['mapreduce.jobhistory.webapp.https.address']
+        mapred_site['mapreduce.jobhistory.done-dir'] ?= jhs_context.config.ryba.mapred_site['mapreduce.jobhistory.done-dir']
+        mapred_site['mapreduce.jobhistory.intermediate-done-dir'] ?= jhs_context.config.ryba.mapred_site['mapreduce.jobhistory.intermediate-done-dir']
+        # Important, JHS principal must be deployed on all mapreduce workers
+        mapred_site['mapreduce.jobhistory.principal'] ?= "jhs/#{jhs_context.config.host}@#{realm}"
       # The value is set by the client app and the iptables are enforced on the worker nodes
       mapred_site['yarn.app.mapreduce.am.job.client.port-range'] ?= '59100-59200'
       mapred_site['mapreduce.framework.name'] ?= 'yarn' # Execution framework set to Hadoop YARN.
-      # Deprecated
+      # Deprecated properties
       mapred_site['mapreduce.cluster.local.dir'] = null # Now "yarn.nodemanager.local-dirs"
       mapred_site['mapreduce.jobtracker.system.dir'] = null # JobTracker no longer used
 
-    module.exports.push commands: 'check', modules: 'ryba/hadoop/mapred_check'
+    module.exports.push commands: 'check', modules: 'ryba/hadoop/mapred_client_check'
 
     module.exports.push commands: 'install', modules: [
-      'ryba/hadoop/mapred_install'
-      'ryba/hadoop/mapred_check'
+      'ryba/hadoop/mapred_client_install'
+      'ryba/hadoop/mapred_client_check'
     ]
 
 

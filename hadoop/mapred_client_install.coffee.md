@@ -14,7 +14,7 @@ layout: module
     module.exports.push 'ryba/hadoop/hdfs_client'
     module.exports.push 'ryba/hadoop/yarn_client'
 
-    module.exports.push require('./mapred').configure
+    module.exports.push require('./mapred_client').configure
 
 ## IPTables
 

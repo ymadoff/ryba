@@ -16,7 +16,7 @@ Here's how to uninstall Hue: `rpm -qa | grep hue | xargs sudo rpm -e`
     module.exports.push 'masson/core/krb5_client'
     # Set java_home in "hadoop-env.sh"
     module.exports.push 'ryba/hadoop/core'
-    module.exports.push 'ryba/hadoop/mapred'
+    module.exports.push 'ryba/hadoop/mapred_client'
     module.exports.push 'ryba/hadoop/yarn_client'
     module.exports.push 'ryba/tools/pig'
     module.exports.push require('./index').configure

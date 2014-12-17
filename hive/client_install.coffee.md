@@ -8,7 +8,7 @@ layout: module
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'ryba/hive/_'
-    module.exports.push 'ryba/hadoop/mapred'
+    module.exports.push 'ryba/hadoop/mapred_client'
     module.exports.push 'ryba/hadoop/yarn_client'
     module.exports.push require('./client').configure
 

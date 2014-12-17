@@ -8,7 +8,7 @@ layout: module
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
-    module.exports.push 'ryba/hadoop/mapred_install'
+    # module.exports.push 'ryba/hadoop/mapred_client_install'
     module.exports.push require('./mapred_jhs').configure
 
 ## IPTables
