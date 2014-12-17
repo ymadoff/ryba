@@ -17,6 +17,7 @@ layout: module
 |------------------|-------|-------|-------------------------------|
 | jobhistory | 10020 | http  | mapreduce.jobhistory.address        | x
 | jobhistory | 19888 | tcp   | mapreduce.jobhistory.webapp.address | x
+| jobhistory | 19889 | tcp   | mapreduce.jobhistory.webapp.https.address | x
 | jobhistory | 13562 | tcp   | mapreduce.shuffle.port              | x
 | jobhistory | 10033 | tcp   | mapreduce.jobhistory.admin.address  |
 
@@ -28,11 +29,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       jhs_shuffle_port = mapred_site['mapreduce.shuffle.port']
       jhs_port = mapred_site['mapreduce.jobhistory.address'].split(':')[1]
       jhs_webapp_port = mapred_site['mapreduce.jobhistory.webapp.address'].split(':')[1]
+      jhs_webapp_https_port = mapred_site['mapreduce.jobhistory.webapp.https.address'].split(':')[1]
       jhs_admin_port = mapred_site['mapreduce.jobhistory.admin.address'].split(':')[1]
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: jhs_port, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS Server" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: jhs_webapp_port, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS WebApp" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: jhs_webapp_https_port, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS WebApp" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: jhs_shuffle_port, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS Shuffle" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: jhs_admin_port, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS Admin Server" }
         ]

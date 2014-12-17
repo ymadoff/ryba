@@ -33,7 +33,13 @@ layout: module
       # Configurations for History Server (Needs to be moved elsewhere):
       ryba.yarn_site['yarn.log-aggregation.retain-seconds'] ?= '-1' #  How long to keep aggregation logs before deleting them. -1 disables. Be careful, set this too small and you will spam the name node.
       ryba.yarn_site['yarn.log-aggregation.retain-check-interval-seconds'] ?= '-1' # Time between checks for aggregated log retention. If set to 0 or a negative value then the value is computed as one-tenth of the aggregated log retention time. Be careful, set this too small and you will spam the name node.
-      ryba.yarn_site['yarn.log.server.url'] ?= "http://#{jobhistoryserver}:19888/jobhistory/logs/" # URL for job history server
+      [jhs_context] = ctx.contexts 'ryba/hadoop/mapred_jhs', require('./mapred_jhs').configure
+      if jhs_context
+        # TODO: detect https and port, see "./mapred_jhs_check"
+        jhs_protocol = if jhs_context.config.ryba.mapred_site['mapreduce.jobhistory.address'] is 'HTTP_ONLY' then 'http' else 'https'
+        jhs_protocol_key = if jhs_protocol is 'http' then '' else '.https'
+        jhs_address = jhs_context.config.ryba.mapred_site["mapreduce.jobhistory.webapp#{jhs_protocol_key}.address"]
+        ryba.yarn_site['yarn.log.server.url'] ?= "#{jhs_protocol}://#{jhs_address}/jobhistory/logs/"
 
 ## Configuration for High Availability
 
@@ -62,7 +68,6 @@ inside the configuration.
           ryba.yarn_site["yarn.resourcemanager.webapp.https.address#{shortname}"] ?= "#{rm_ctx.config.host}:8090"
         if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
           ryba.yarn_site["yarn.resourcemanager.resource-tracker.address#{shortname}"] ?= "#{rm_ctx.config.host}:8025"
-
 
       # yarn_rm_hosts = for ctx in rm_ctxs then ctx.config.host
       # yarn_rm_shortnames = for ctx in rm_ctxs then ctx.config.shortname
