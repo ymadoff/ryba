@@ -254,6 +254,29 @@ and "/etc/init.d/hive-server2".
           next null, modified
         do_warehouse()
 
+    module.exports.push name: 'Hive & HCat Server # Tez Package', timeout: -1, callback: (ctx, next) ->
+      return next() unless ctx.hosts_with_module 'ryba/tez'
+      ctx.service
+        name: 'tez'
+      , next
+
+    module.exports.push name: 'Hive & HCat Server # Tez Layout', timeout: -1, callback: (ctx, next) ->
+      return next() unless ctx.hosts_with_module 'ryba/tez'
+      {hive_user, hadoop_group} = ctx.config.ryba
+      version_local = 'ls /usr/lib/hive/lib | grep hive-exec- | sed \'s/^hive-exec-\\(.*\\)\\.jar$/\\1/g\''
+      version_remote = 'hdfs dfs -ls /apps/hive/install/hive-exec- | sed \'s/.*\\/hive-exec-\\(.*\\)$/\\1/g\''
+      ctx.execute
+        cmd: mkcmd.hdfs ctx, """
+        if hdfs dfs -ls /apps/hive/install &> /dev/null; then exit 1; fi
+        hdfs dfs -mkdir /apps/hive/install 2>/dev/null
+        hdfs dfs -chown #{hive_user}:#{hadoop_group.name} /apps/hive/install
+        hdfs dfs -chmod -R 1777 /apps/hive/install
+        hdfs dfs -copyFromLocal /usr/lib/hive/lib/hive-exec-* /apps/hive/install/hive-exec-0.13.0.jar
+        """
+        code_skipped: 1
+        not_if_exec: "[[ `#{version_local}` == `#{version_remote}` ]]"
+      , next
+
 # Module Dependencies
 
     path = require 'path'
