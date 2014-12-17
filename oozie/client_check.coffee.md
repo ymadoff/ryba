@@ -9,6 +9,8 @@
       {hostname, port} = url.parse ctx.config.ryba.oozie_site['oozie.base.url'] 
       ctx.waitIsOpen hostname, port, (err) -> next err
 
+## Check Client
+
     module.exports.push name: 'Oozie Client # Check Client', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
       {realm, test_user, oozie_site} = ctx.config.ryba
       ctx.execute
@@ -20,6 +22,8 @@
         return next new Error "Oozie not ready, got: #{JSON.stringify stdout}" if stdout.trim() isnt 'System mode: NORMAL'
         return next null, true
 
+## Check REST
+
     module.exports.push name: 'Oozie Client # Check REST', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
       {realm, test_user, oozie_site} = ctx.config.ryba
       ctx.execute
@@ -30,6 +34,8 @@
         return next err if err
         return next new Error "Oozie not ready" if stdout.trim() isnt '{"systemMode":"NORMAL"}'
         return next null, true
+
+## Check HDFS Workflow
 
     module.exports.push name: 'Oozie Client # Check HDFS Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
       {force_check, test_user, core_site, oozie_site} = ctx.config.ryba
@@ -94,6 +100,8 @@
           code_skipped: 2
           not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{ctx.config.shortname}-oozie-fs/target"
         , next
+
+## Check Pig Workflow
 
     module.exports.push name: 'Oozie Client # Check Pig Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
       {force_check, test_user, core_site, active_rm_host, oozie_site} = ctx.config.ryba
