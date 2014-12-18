@@ -77,12 +77,12 @@ Use the [Hive CLI][hivecli] client to execute SQL queries using the Tez engine.
           hdfs dfs -mkdir -p check-#{host}-hive_tez/my_db/my_table
           echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{host}-hive_tez/my_db/my_table/data
           hive -e "
-            DROP TABLE IF EXISTS ryba_tests.test_#{host}_tez;
-            CREATE DATABASE ryba_tests LOCATION '/user/#{test_user.name}/check-#{host}-hive_tez/my_db/'; \\
-            USE ryba_tests; \\
+            DROP TABLE IF EXISTS check_#{host}_tez.test_#{host}_tez;
+            CREATE DATABASE check_#{host}_tez LOCATION '/user/#{test_user.name}/check-#{host}-hive_tez/my_db/'; \\
+            USE check_#{host}_tez; \\
             CREATE TABLE test_#{host}_tez(col1 STRING, col2 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ','; \\
           "
-          hive -S -e "set hive.execution.engine=tez; SELECT SUM(col2) FROM ryba_tests.test_#{host}_tez;" | hdfs dfs -put - check-#{host}-hive_tez/result
+          hive -S -e "set hive.execution.engine=tez; SELECT SUM(col2) FROM check_#{host}_tez.test_#{host}_tez;" | hdfs dfs -put - check-#{host}-hive_tez/result
           """
           not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{host}-hive_tez/result"
           trap_on_error: true
