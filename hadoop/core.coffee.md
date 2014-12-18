@@ -265,13 +265,23 @@ original file will be overwritten with and user modifications. A copy will be
 made available in the same directory after any modification.
 
     module.exports.push name: 'Hadoop Core # Install', timeout: -1, callback: (ctx, next) ->
-      {hadoop_conf_dir, hdfs_user, hadoop_group} = ctx.config.ryba
       ctx.service [
         name: 'openssl'
       ,
         name: 'hadoop-client'
-      ], (err, serviced) ->
-        return next err, serviced if err or not serviced
+      ], next
+
+## Env
+
+Upload the "hadoop-env.sh" file present in the HDP companion File.
+
+Note, this is wrong. Problem is that multiple module modify this file. We shall
+instead enrich the original file installed by the package.
+
+    module.exports.push name: 'Hadoop Core # Env', timeout: -1, callback: (ctx, next) ->
+      {hadoop_conf_dir, hdfs_user, hadoop_group} = ctx.config.ryba
+      ctx.fs.readFile "#{hadoop_conf_dir}/hadoop-env.sh", 'ascii', (err, content) ->
+        return next null, false if /HDP/.test content
         ctx.upload
           source: "#{__dirname}/../resources/core_hadoop/hadoop-env.sh"
           destination: "#{hadoop_conf_dir}/hadoop-env.sh"
