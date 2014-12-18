@@ -58,7 +58,7 @@ Upload the "hdp-gmond" service file into "/etc/init.d".
       , (err, written) ->
         return next err, false unless written
         ctx.execute
-          cmd: "service gmond stop; chkconfig --del gmond; chkconfig --add hdp-gmond"
+          cmd: "service gmond start; chkconfig --add gmond; chkconfig --add hdp-gmond"
         , (err) ->
           next err, true
 
