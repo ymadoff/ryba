@@ -1,20 +1,7 @@
----
-title: 
-layout: module
----
 
 # Oozie Server Install
 
-Oozie source code and examples are located in /usr/share/doc/oozie-4.0.0.2.0.6.0/
-
-Note: to backup the oozie database in oozie, we must add the "hex-blob" option or 
-we get an error while importing data. The mysqldump command does not escape all
-charactere and the xml stored inside the database create syntax issues. Here's
-an example:
-
-```bash
-mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
-```
+Oozie source code and examples are located in "/usr/share/doc/oozie-$version".
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
@@ -22,6 +9,7 @@ mysqldump -uroot -ptest123 --hex-blob oozie > /data/1/oozie.sql
     module.exports.push 'masson/commons/mysql_client'
     module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/hadoop/hdfs' # SPNEGO need access to the principal HTTP/$HOST@$REALM's keytab
+    module.exports.push 'ryba/hadoop/hdfs_nn_wait' # Create directories inside HDFS
     module.exports.push require('./server').configure
 
 ## Users & Groups
@@ -339,23 +327,24 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         err = null if err and /DB schema exists/.test stderr
         next err, executed
 
-    module.exports.push name: 'Oozie Server # Share lib', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Share lib', timeout: 600000, callback: (ctx, next) ->
       {oozie_user, oozie_group} = ctx.config.ryba
-      oozie_user = oozie_user.name
-      oozie_group = oozie_group.name
+      version_local = 'ls /usr/lib/oozie/lib | grep oozie-client | sed \'s/^oozie-client-\\(.*\\)\\.jar$/\\1/g\''
+      version_remote = 'hdfs dfs -cat /user/oozie/share/lib/sharelib.properties | grep build.version | sed \'s/^build.version=\\(.*\\)$/\\1/g\''
       ctx.execute 
         cmd: mkcmd.hdfs ctx, """
-        if hdfs dfs -ls /user/#{oozie_user}/share &>/dev/null; then exit 2; fi
         mkdir /tmp/ooziesharelib
         cd /tmp/ooziesharelib
         tar xzf /usr/lib/oozie/oozie-sharelib.tar.gz
-        hdfs dfs -mkdir /user/#{oozie_user}
-        hdfs dfs -put share /user/#{oozie_user}
-        hdfs dfs -chown #{oozie_user}:#{oozie_group} /user/#{oozie_user}
-        hdfs dfs -chmod -R 755 /user/#{oozie_user}
+        hdfs dfs -rm -r /user/#{oozie_user.name}/share || true
+        hdfs dfs -mkdir /user/#{oozie_user.name}
+        hdfs dfs -put share /user/#{oozie_user.name}
+        hdfs dfs -chown #{oozie_user.name}:#{oozie_group.name} /user/#{oozie_user.name}
+        hdfs dfs -chmod -R 755 /user/#{oozie_user.name}
         rm -rf /tmp/ooziesharelib
         """
-        code_skipped: 2
+        trap_on_error: true
+        not_if_exec: mkcmd.hdfs ctx, "[[ `#{version_local}` == `#{version_remote}` ]]"
       , next
 
     module.exports.push 'ryba/oozie/server_start'
