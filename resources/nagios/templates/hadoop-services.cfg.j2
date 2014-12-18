@@ -425,7 +425,7 @@ define service {
 {% if hostgroup_defs['resourcemanager'] %}
 # YARN::RESOURCEMANAGER Checks 
 define service {
-        hostgroup_name          nagios-server
+        hostgroup_name          resourcemanager
         use                     hadoop-service
         service_description     RESOURCEMANAGER::ResourceManager Web UI
         servicegroups           YARN
@@ -437,7 +437,7 @@ define service {
 
 {% if check_cpu_on %}
 define service {
-        hostgroup_name          nagios-server
+        hostgroup_name          resourcemanager
         use                     hadoop-service
         service_description     RESOURCEMANAGER::ResourceManager CPU utilization
         servicegroups           YARN
@@ -450,7 +450,7 @@ define service {
 {% endif %}
 
 define service {
-        hostgroup_name          nagios-server
+        hostgroup_name          resourcemanager
         use                     hadoop-service
         service_description     RESOURCEMANAGER::ResourceManager RPC latency
         servicegroups           YARN
