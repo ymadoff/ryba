@@ -60,7 +60,7 @@ git clone https://github.com/ryba-io/ryba ryba
 cd ryba
 npm install
 npm link mecano
-npm link ryba
+npm link masson
 npm link
 ```
 

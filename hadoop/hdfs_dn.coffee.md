@@ -23,25 +23,38 @@ information and heartbeats to both.
 
 ## Configuration
 
-The module doesn't require any configuration but instread rely on the 
-"ryba/hadoop/hdfs" configuration settings.
+The module extends the various settings set by the "ryba/hadoop/hdfs" module.
 
 Unless specified otherwise, the number of tolerated failed volumes is set to "1"
 if at least 4 disks are used for storage.
 
+*   `datanode_opts` (string)   
+    NameNode options.   
+
+Example:   
+
+```json
+{
+  "ryba": {
+    "datanode_opts": "-Xmx1024m"
+  }
+}
+```
+
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
-      {hdfs_site} = ctx.config.ryba
+      {ryba} = ctx.config
       # Tuning
-      dataDirs = hdfs_site['dfs.datanode.data.dir'].split(',')
+      dataDirs = ryba.hdfs_site['dfs.datanode.data.dir'].split(',')
       if dataDirs.length > 3
-        hdfs_site['dfs.datanode.failed.volumes.tolerated'] ?= '1'
+        ryba.hdfs_site['dfs.datanode.failed.volumes.tolerated'] ?= '1'
       else
-        hdfs_site['dfs.datanode.failed.volumes.tolerated'] ?= '0'
+        ryba.hdfs_site['dfs.datanode.failed.volumes.tolerated'] ?= '0'
       # Validation
-      if hdfs_site['dfs.datanode.failed.volumes.tolerated'] >= dataDirs.length
+      if ryba.hdfs_site['dfs.datanode.failed.volumes.tolerated'] >= dataDirs.length
         throw Error 'Number of failed volumes must be less than total volumes'
+      ryba.datanode_opts ?= null
 
     # module.exports.push command: 'backup', modules: 'ryba/hadoop/hdfs_dn_backup'
 
