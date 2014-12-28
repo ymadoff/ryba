@@ -53,7 +53,7 @@ Check for various inconsistencies on the overall filesystem. Use the command
 
     module.exports.push name: 'Hadoop HDFS NN # Check FSCK', label_true: 'CHECKED', timeout: -1, callback: (ctx, next) ->
       ctx.execute
-        cmd: mkcmd.hdfs ctx, "hdfs fsck / | tail -1 | grep SUCCESS"
+        cmd: mkcmd.hdfs ctx, "hdfs fsck / | tail -1 | grep HEALTHY"
       , next
 
 ## Test User
