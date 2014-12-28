@@ -28,7 +28,7 @@ built atop Apache Hadoop YARN.
       ryba.tez.env['TEZ_CONF_DIR'] ?= '/etc/tez/conf'
       ryba.tez.env['TEZ_JARS'] ?= '/usr/lib/tez/*:/usr/lib/tez/lib/*'
 
-    # module.exports.push commands: 'check', modules: 'ryba/falcon/check'
+    module.exports.push commands: 'check', modules: 'ryba/tez/check'
 
     module.exports.push commands: 'install', modules: [
       'ryba/tez/install'
