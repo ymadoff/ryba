@@ -19,6 +19,7 @@ layout: module
       # TODO
       ryba.mapred_site['mapreduce.jobhistory.http.policy'] = 'HTTPS_ONLY' # 'HTTP_ONLY' or 'HTTPS_ONLY'
       ryba.mapred_site['mapreduce.jobhistory.keytab'] ?= "/etc/security/keytabs/jhs.service.keytab"
+      ryba.mapred_site['mapreduce.jobhistory.principal'] ?= "jhs/#{jhs_context.config.host}@#{realm}"
       # Fix: src in "[DFSConfigKeys.java][keys]" and [HDP port list] mention 13562 while companion files mentions 8081
       ryba.mapred_site['mapreduce.shuffle.port'] ?= '13562'
       ryba.mapred_site['mapreduce.jobhistory.address'] ?= "#{ctx.config.host}:10020"
