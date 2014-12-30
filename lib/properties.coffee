@@ -5,7 +5,7 @@ xmldom = require 'xmldom'
 builder = require 'xmlbuilder'
 misc = require 'mecano/lib/misc'
 
-self = module.exports = 
+module.exports = exports =
   ###
   `parse(xml, [property])`
   ----------------------------------
@@ -100,7 +100,7 @@ self = module.exports =
       property = null
     fs.readFile ssh, path, 'utf8', (err, markup) ->
       return callback err if err
-      callback null, self.parse markup, property
+      callback null, exports.parse markup, property
   ###
   `write([ssh], path, properties, callback)`
   ------------------------------------------
@@ -116,7 +116,7 @@ self = module.exports =
     path = args[0]
     properties = args[1]
     callback = args[2]
-    markup = self.stringify properties
+    markup = exports.stringify properties
     fs.writeFile ssh, path, markup, (err) ->
       return callback err if err
       callback null, markup
