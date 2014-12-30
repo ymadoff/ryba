@@ -320,7 +320,6 @@ lifecyle = module.exports =
       ctx.execute
         # su -l oozie -c "/usr/lib/oozie/bin/oozied.sh start"
         cmd: "su -l #{oozie_user.name} -c \"/usr/lib/oozie/bin/oozied.sh start\""
-        # code_skipped: 1
       , callback
   oozie_stop: (ctx, callback) ->
     {oozie_user} = ctx.config.ryba
@@ -330,14 +329,9 @@ lifecyle = module.exports =
       ctx.execute
         # su -l oozie -c "/usr/lib/oozie/bin/oozied.sh stop"
         cmd: "su -l #{oozie_user.name} -c \"/usr/lib/oozie/bin/oozied.sh stop\""
-        # code_skipped: 1
       , callback
   hbase_master_status: (ctx, callback) ->
-    # {hbase_pid_dir, hbase_user} = ctx.config.ryba
     ctx.log "HBase Master status"
-    # lifecyle.is_pidfile_running ctx, "#{hbase_pid_dir}/hbase-#{hbase_user.name}-master.pid", (err, running) ->
-    #   ctx.log "HBase Master status: #{if running then 'RUNNING' else 'STOPED'}"
-    #   callback err, running
     ctx.execute
       cmd: "service hbase-master status"
       code_skipped: [1, 3]
