@@ -17,8 +17,6 @@ layout: module
       {ryba} = ctx.config
       {static_host, realm} = ryba
       # Grab the host(s) for each roles
-      # resourcemanager = ctx.host_with_module 'ryba/hadoop/yarn_rm'
-      jobhistoryserver = ctx.host_with_module 'ryba/hadoop/mapred_jhs'
       ryba.yarn_log_dir ?= '/var/log/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#20
       ryba.yarn_pid_dir ?= '/var/run/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh#21
       # Configure yarn
