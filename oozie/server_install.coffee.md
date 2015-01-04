@@ -9,7 +9,7 @@ Oozie source code and examples are located in "/usr/share/doc/oozie-$version".
     module.exports.push 'masson/commons/mysql_client'
     module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/hadoop/hdfs' # SPNEGO need access to the principal HTTP/$HOST@$REALM's keytab
-    module.exports.push 'ryba/hadoop/hdfs_nn_wait' # Create directories inside HDFS
+    module.exports.push 'ryba/hadoop/hdfs_dn_wait' # Create directories inside HDFS
     module.exports.push require('./server').configure
 
 ## Users & Groups
@@ -60,6 +60,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           name: 'oozie' # Also install oozie-client and bigtop-tomcat
         ,
           name: 'unzip' # Required by the "prepare-war" command
+        ,
+          name: 'zip' # Required by the "prepare-war" command
         ,
           name: 'extjs-2.2-1'
         ], (err, serviced) ->

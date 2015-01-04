@@ -32,7 +32,7 @@ Example
       require('masson/core/iptables').configure ctx
       require('masson/commons/java').configure ctx
       require('../hadoop/core').configure ctx
-      require('./client').configure ctx
+      # require('./client').configure ctx
       {ryba} = ctx.config
       # Internal properties
       ryba.force_war ?= false
@@ -63,7 +63,8 @@ Example
       ryba.oozie_site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
       ryba.oozie_site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'
       ryba.oozie_site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
-      ryba.oozie_site['oozie.service.AuthorizationService.security.enabled'] ?= 'true' # Todo, now deprecated should be set to null in favor of oozie.service.AuthorizationService.authorization.enabled (see oozie "oozie.log" file)
+      ryba.oozie_site['oozie.service.AuthorizationService.security.enabled'] ?= null # Now deprecated in favor of oozie.service.AuthorizationService.authorization.enabled (see oozie "oozie.log" file)
+      ryba.oozie_site['oozie.service.AuthorizationService.authorization.enabled'] ?= 'true'
       ryba.oozie_site['oozie.service.HadoopAccessorService.kerberos.enabled'] ?= 'true'
       ryba.oozie_site['local.realm'] ?= "#{ryba.realm}"
       ryba.oozie_site['oozie.service.HadoopAccessorService.keytab.file'] ?= '/etc/oozie/conf/oozie.service.keytab'
@@ -77,6 +78,12 @@ Example
       # ryba.extjs ?= {}
       # throw new Error "Missing extjs.source" unless ryba.extjs.source
       # throw new Error "Missing extjs.destination" unless ryba.extjs.destination
+      # Note, we might also enrich "oozie.credentials.credentialclasses"
+      # For example
+      # ryba.oozie_site['oozie.credentials.credentialclasses'] = """
+      # hcat=org.apache.oozie.action.hadoop.HCatCredentials,
+      # hbase=org.apache.oozie.action.hadoop.HbaseCredentials
+      # """
 
 ## Configuration for Proxy Users
 
