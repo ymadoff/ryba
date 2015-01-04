@@ -5,10 +5,15 @@ layout: module
 
 # MapRed JobHistoryServer Install
 
+Install and configure the MapReduce Job History Server (JHS).
+
+Run the command `./bin/ryba install -m ryba/hadoop/mapred_jhs` to install the
+Job History Server.
+
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
-    # module.exports.push 'ryba/hadoop/mapred_client_install'
+    # module.exports.push 'ryba/hadoop/yarn_client_install'
     module.exports.push require('./mapred_jhs').configure
 
 ## IPTables
@@ -77,13 +82,18 @@ Install and configure the startup script in
       do_install()
 
     module.exports.push name: 'Hadoop MapRed JHS # Kerberos', callback: (ctx, next) ->
-      {hadoop_conf_dir, mapred_site} = ctx.config.ryba
-      ctx.hconfigure
+      {hadoop_conf_dir, mapred_site, yarn_site} = ctx.config.ryba
+      ctx.hconfigure [
+        destination: "#{hadoop_conf_dir}/yarn-site.xml"
+        properties: yarn_site
+        merge: true
+        backup: true
+      ,
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
         properties: mapred_site
         merge: true
         backup: true
-      , next
+      ], next
 
 ## HDFS Layout
 
