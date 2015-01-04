@@ -25,8 +25,8 @@ unless the "hdp.force_check" configuration property is set to "true".
         return next err if err
         ctx.execute
           cmd: mkcmd.test ctx, """
-          hdfs dfs -rm -r #{ctx.config.shortname}-pig_tmp || true
-          hdfs dfs -rm -r #{ctx.config.shortname}-pig || true
+          hdfs dfs -rm -r -skipTrash #{ctx.config.shortname}-pig_tmp || true
+          hdfs dfs -rm -r -skipTrash #{ctx.config.shortname}-pig || true
           hdfs dfs -mkdir -p #{ctx.config.shortname}-pig_tmp
           echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - #{ctx.config.shortname}-pig_tmp/data
           pig /tmp/ryba-test.pig
