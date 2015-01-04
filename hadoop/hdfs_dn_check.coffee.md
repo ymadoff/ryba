@@ -61,6 +61,16 @@ Attemp to place a file inside HDFS. the file "/etc/passwd" will be placed at
         code_skipped: 2
       , next
 
+## Test FSCK
+
+Check for various inconsistencies on the overall filesystem. Use the command
+`hdfs fsck -list-corruptfileblocks` to list the corrupted blocks.
+
+    module.exports.push name: 'Hadoop HDFS DN # Check FSCK', label_true: 'CHECKED', timeout: -1, callback: (ctx, next) ->
+      ctx.execute
+        cmd: mkcmd.hdfs ctx, "hdfs fsck / | tail -1 | grep HEALTHY"
+      , next
+
 ## Check WebHDFS
 
 Check the Kerberos SPNEGO and the Hadoop delegation token. Will only be 

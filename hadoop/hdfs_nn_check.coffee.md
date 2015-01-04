@@ -69,16 +69,6 @@ is a comma-separated list of SSH private key files.
       , (err) ->
         next err, true
 
-## Test FSCK
-
-Check for various inconsistencies on the overall filesystem. Use the command
-`hdfs fsck -list-corruptfileblocks` to list the corrupted blocks.
-
-    module.exports.push name: 'Hadoop HDFS NN # Check FSCK', label_true: 'CHECKED', timeout: -1, callback: (ctx, next) ->
-      ctx.execute
-        cmd: mkcmd.hdfs ctx, "hdfs fsck / | tail -1 | grep HEALTHY"
-      , next
-
 ## Test User
 
 Create a Unix and Kerberos test user, by default "test" and execute simple HDFS commands to ensure
