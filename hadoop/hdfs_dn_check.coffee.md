@@ -6,17 +6,16 @@ layout: module
 
 # HDFS DataNode Check
 
-Check the datanode by upload a file using the HDFS client and the HTTP REST
+Check the DataNode by uploading a file using the HDFS client and the HTTP REST
 interface.
 
-Run this command `./bin/ryba check -m ryba/hadoop/hdfs_dn_check` to check the
-datanode.
+Run the command `./bin/ryba check -m ryba/hadoop/hdfs_dn` to check all the DataNodes.
 
     lifecycle = require '../lib/lifecycle'
     mkcmd = require '../lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/hdfs_nn_wait'
+    module.exports.push 'ryba/hadoop/hdfs_dn_wait'
 
     module.exports.push (ctx) ->
       require('./core').configure ctx
@@ -25,7 +24,7 @@ datanode.
 
 ## Check Disk Capacity
 
-    module.exports.push name: 'Hadoop HDFS DN # Check Disk Capacity', timeout: 1000, label_true: 'CHECKED', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS DN # Check Disk Capacity', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
       {hdfs_site} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       port = hdfs_site["dfs.datanode.#{protocol}.address"].split(':')[1]
@@ -35,7 +34,7 @@ datanode.
         return next err if err
         try
           data = JSON.parse stdout
-          throw Error "Invalid Response" unless /^Hadoop:service=DataNode,name=FSDatasetState-.*/.test data?.beans[0]?.name
+          return next Error "Invalid Response" unless /^Hadoop:service=DataNode,name=FSDatasetState-.*/.test data?.beans[0]?.name
           remaining = data.beans[0].Remaining
           total = data.beans[0].Capacity
           ctx.log "Disk remaining: #{Math.round remaining}"
