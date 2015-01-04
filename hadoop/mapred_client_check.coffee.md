@@ -1,13 +1,8 @@
----
-title: 
-layout: module
----
 
-# MapRed Client
+# MapRed Client Check
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-
     module.exports.push require('./mapred_client').configure
 
 ## Wait JHS
@@ -37,7 +32,7 @@ to re-execute the check.
         hadoop jar /usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples-2*.jar teragen 100 check-#{host}-mapred/input
         hadoop jar /usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples-2*.jar terasort check-#{host}-mapred/input check-#{host}-mapred/output
         """
-        not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -d check-#{host}-mapred"
+        not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -d check-#{host}-mapred/output"
         trap_on_error: true
       , next
 
