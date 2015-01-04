@@ -207,18 +207,6 @@ Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Co
         merge: true
       , next
 
-    module.exports.push name: 'Hadoop YARN # Configure Kerberos', callback: (ctx, next) ->
-      {hadoop_conf_dir, static_host, realm} = ctx.config.ryba
-      yarn_site = {}
-      # Todo: need to deploy "container-executor.cfg"
-      # see http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
-      # Configurations the ResourceManager
-      ctx.hconfigure
-        destination: "#{hadoop_conf_dir}/yarn-site.xml"
-        properties: yarn_site
-        merge: true
-      , next
-
 ## Module Dependencies
 
     memory = require '../lib/memory'
