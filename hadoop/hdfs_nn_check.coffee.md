@@ -12,6 +12,29 @@ through SSH over another one where the public key isn't yet deployed.
     module.exports.push 'ryba/hadoop/hdfs_nn_wait'
     module.exports.push require('./hdfs').configure
 
+## Check HTTP
+
+    module.exports.push name: 'Hadoop HDFS NN # Check HTTP', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
+      {hdfs_site, active_nn_host} = ctx.config.ryba
+      is_ha = ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+      state = if not is_ha or active_nn_host is ctx.config.host then 'active' else 'standby'
+      protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      nameservice = if is_ha then ".#{ctx.config.ryba.hdfs_site['dfs.nameservices']}" else ''
+      shortname = if is_ha then ".#{ctx.config.shortname}" else ''
+      address = hdfs_site["dfs.namenode.#{protocol}-address#{nameservice}#{shortname}"]
+      securityEnabled = protocol is 'https'
+      ctx.execute
+        cmd: mkcmd.hdfs ctx, "curl --negotiate -k -u : #{protocol}://#{address}/jmx?qry=Hadoop:service=NameNode,name=NameNodeStatus"
+      , (err, executed, stdout) ->
+        return next err if err
+        try
+          data = JSON.parse stdout
+          return next Error "Invalid Response" unless /^Hadoop:service=NameNode,name=NameNodeStatus$/.test data?.beans[0]?.name
+          return next Error "WARNING: Invalid security (#{data.beans[0].SecurityEnabled}, instead of #{securityEnabled}" unless data.beans[0].SecurityEnabled is securityEnabled
+          return next null, "WARNING: Invalid state (#{data.beans[0].State} instead of #{state})" unless data.beans[0].State is state
+          next null, true
+        catch err then return next err
+
 ## Check Health
 
 Connect to the provided NameNode to check its health. The NameNode is capable of
