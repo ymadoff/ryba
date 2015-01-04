@@ -12,6 +12,7 @@
       # su -l falcon -c '/usr/lib/falcon/bin/falcon-stop'
       ctx.execute
         cmd: "su -l #{user.name} -c '/usr/lib/falcon/bin/falcon-stop'"
+        if_exists: '/usr/lib/falcon/bin/falcon-stop'
       , next
 
 ## Stop Clean Logs

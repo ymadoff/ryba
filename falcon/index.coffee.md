@@ -74,7 +74,7 @@ associated processing and management tasks on Hadoop clusters.
 
     # module.exports.push commands: 'backup', modules: 'ryba/falcon/backup'
 
-    # module.exports.push commands: 'check', modules: 'ryba/falcon/check'
+    module.exports.push commands: 'check', modules: 'ryba/falcon/check'
 
     module.exports.push commands: 'install', modules: [
       'ryba/falcon/install'
@@ -82,10 +82,10 @@ associated processing and management tasks on Hadoop clusters.
       'ryba/falcon/check'
     ]
 
-    # module.exports.push commands: 'start', modules: 'ryba/falcon/start'
+    module.exports.push commands: 'start', modules: 'ryba/falcon/start'
 
     # module.exports.push commands: 'status', modules: 'ryba/falcon/status'
 
-    # module.exports.push commands: 'stop', modules: 'ryba/falcon/stop'
+    module.exports.push commands: 'stop', modules: 'ryba/falcon/stop'
 
 [falcon]: http://falcon.incubator.apache.org/

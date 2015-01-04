@@ -12,9 +12,8 @@
       # su -l falcon -c '/usr/lib/falcon/bin/falcon-start'
       ctx.execute
         cmd: """
-        su -l #{user.name} -c '/usr/lib/falcon/bin/falcon-start'
-        code=$?
-        if [ $code -eq 254 ]; then exit 3; fi
+        su -l #{user.name} -c '/usr/lib/falcon/bin/falcon-status'
+        if [ $? -eq 254 ]; then exit 3; fi
         su -l #{user.name} -c '/usr/lib/falcon/bin/falcon-start'
         """
         code_skipped: 3
