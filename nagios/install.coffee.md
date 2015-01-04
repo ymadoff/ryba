@@ -63,7 +63,7 @@ nagiocmd:x:2419:apache
       {user, group, groupcmd} = ctx.config.ryba.nagios
       ctx.mkdir [
         destination: [
-          '/var/nagios', '/var/nagios/rw', '/var/log/nagios',
+          '/var/nagios', '/var/log/nagios',
           '/var/log/nagios/spool/checkresults', '/var/run/nagios'
         ]
         uid: user.name
