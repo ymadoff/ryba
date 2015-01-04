@@ -3,12 +3,12 @@
 Ryba boostraps and manages a full secured Hadoop cluster with one command. This
 is an [Open-source software (OSS) project][oss] released under the
 [new BSD license][license] developed for one of the World largest utility
-company and now operationnal.
+company. It is now operationnal.
 
 Ryba is our answer to DevOps integration need for product delivery and quality
 testing. It provides the flexibilty to answer the demand of your internal 
 information technology (IT) operations team. It is written in JavaScript and
-CoffeeScript to facilitate and accelerate feature development and maintenance 
+CoffeeScript to facilitate and accelerate feature developments and maintenance 
 releases. The language encourages self-documented code, look by yourself the
 source code deploying two [HA namenodes][hdfs_nn].
 
