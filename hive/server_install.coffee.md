@@ -16,7 +16,6 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
     module.exports.push 'masson/commons/mysql_client' # Install the mysql connector
     module.exports.push 'ryba/hadoop/core' # Configure "core-site.xml" and "hadoop-env.sh"
     module.exports.push 'ryba/hive/_' # Install the Hive and HCatalog service
-
     module.exports.push require('./server').configure
 
 ## IPTables

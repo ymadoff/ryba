@@ -76,6 +76,7 @@ Example:
       'ryba/hive/server_install'
       'ryba/hive/server_start'
       'ryba/hive/server_wait'
+      'ryba/hive/server_check'
     ]
 
     module.exports.push commands: 'start', modules: [

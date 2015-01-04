@@ -26,15 +26,27 @@ Check if Hive can authenticate and run a basic query to the database.
       return next new Error 'Database engine not supported' unless engines[engine]
       engines[engine]()
 
-## Open Ports
+## Open Port HCatalog
 
-    module.exports.push name: 'Hive & HCat Server # Check Open Port', label_true: 'CHECKED', callback: (ctx, next) ->
+Check if the Hive HCatalog (Metastore) server is listening.
+
+    module.exports.push name: 'Hive & HCat Server # Check Port HCatalog', label_true: 'CHECKED', callback: (ctx, next) ->
       {host} = ctx.config
       {hive_metastore_port, hive_server2_port} = ctx.config.ryba
-      ctx.execute [
-        {cmd: "echo > /dev/tcp/#{host}/#{hive_metastore_port}"}
-        {cmd: "echo > /dev/tcp/#{host}/#{hive_server2_port}"}
-      ], next
+      ctx.execute
+        cmd: "echo > /dev/tcp/#{host}/#{hive_metastore_port}"
+      , next
+
+## Open Port Server2
+
+Check if the Hive Server2 server is listening.
+
+    module.exports.push name: 'Hive & HCat Server # Check Port Server2', label_true: 'CHECKED', callback: (ctx, next) ->
+      {host} = ctx.config
+      {hive_metastore_port, hive_server2_port} = ctx.config.ryba
+      ctx.execute
+        cmd: "echo > /dev/tcp/#{host}/#{hive_server2_port}"
+      , next
 
     module.exports.push name: 'Hive & HCat Server # Check', timeout: -1, callback: (ctx, next) ->
       # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.3.0/CDH4-Security-Guide/cdh4sg_topic_9_1.html
