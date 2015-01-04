@@ -15,6 +15,7 @@ and some may be inactive.
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/krb5_client/wait'
+    module.exports.push 'ryba/hadoop/hdfs_nn_wait'
     module.exports.push require('./hdfs_dn').configure
 
     module.exports.push name: 'Hadoop HDFS DN # Start', label_true: 'STARTED', callback: (ctx, next) ->
