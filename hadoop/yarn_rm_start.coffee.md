@@ -8,7 +8,7 @@ layout: module
     lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/hdfs_nn_wait'
+    module.exports.push 'ryba/hadoop/hdfs_dn_wait'
     module.exports.push require('./yarn_rm').configure
 
     module.exports.push name: 'Hadoop ResourceManager # Start Server', label_true: 'STARTED', callback: (ctx, next) ->
@@ -22,5 +22,9 @@ layout: module
       #   # todo
       next null, true
 
-      
+## Errors
+
+*   Message "yarn is trying to renew a token with wrong password"  on startup
+    Cause: an application fail to recover
+    Solution: remove the zookeeper entry `rmr /rmstore`
 

@@ -6,7 +6,7 @@ Wait for the ResourceManager RPC and HTTP ports. It supports HTTPS and HA.
     module.exports = []
     module.exports.push 'masson/bootstrap'
 
-    module.exports.push name: 'Hadoop NodeManager # Wait RM', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop ResourceManager # Wait RM', timeout: -1, callback: (ctx, next) ->
       rm_ctxs = ctx.contexts modules: 'ryba/hadoop/yarn_rm', require('./yarn').configure
       servers = for rm_ctx in rm_ctxs
         {yarn_site} = rm_ctx.config.ryba

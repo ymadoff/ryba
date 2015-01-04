@@ -9,6 +9,7 @@ layout: module
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/yarn'
+    module.exports.push 'ryba/hadoop/hdfs_dn_wait'
     module.exports.push require('./yarn_nm').configure
 
 ## IPTables
