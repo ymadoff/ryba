@@ -103,7 +103,7 @@
 
 ## Check Pig Workflow
 
-    module.exports.push name: 'Oozie Client # Check Pig Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Check Pig Workflow', skip: true, timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
       {force_check, test_user, core_site, active_rm_host, oozie_site} = ctx.config.ryba
       rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn').configure
       if rm_ctxs.length > 1
