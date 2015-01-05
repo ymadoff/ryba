@@ -229,7 +229,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
 
     module.exports.push name: 'Nagios # Services', callback: (ctx, next) ->
       {nagios, force_check, active_nn_host, core_site, hdfs_site, zookeeper_port, 
-        yarn_site, hive_site, hbase_site, oozie_site, webhcat_site, ganglia, hue_ini} = ctx.config.ryba
+        yarn_site, hive_site, hbase_site, oozie_site, webhcat_site, ganglia, hue} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       nn_hosts_map = {} # fqdn to port
@@ -332,7 +332,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           templeton_port: webhcat_site['templeton.port']
           falcon_port: 0 # TODO
           ahs_port: 0 # TODO
-          hue_port: hue_ini['desktop']['http_port']
+          hue_port: hue.ini.desktop.http.port
       , next
 
     module.exports.push name: 'Nagios # Commands', callback: (ctx, next) ->

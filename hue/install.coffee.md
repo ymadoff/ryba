@@ -33,10 +33,10 @@ hue:x:494:
 ```
 
     module.exports.push name: 'Hue # Users & Groups', callback: (ctx, next) ->
-      {hue_group, hue_user} = ctx.config.ryba
-      ctx.group hue_group, (err, gmodified) ->
+      {hue} = ctx.config.ryba
+      ctx.group hue.group, (err, gmodified) ->
         return next err if err
-        ctx.user hue_user, (err, umodified) ->
+        ctx.user hue.user, (err, umodified) ->
           next err, gmodified or umodified
 
 ## IPTables
@@ -49,10 +49,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'Hue # IPTables', callback: (ctx, next) ->
-      {hue_ini} = ctx.config.ryba
+      {hue} = ctx.config.ryba
       ctx.iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hue_ini['desktop']['http_port'], protocol: 'tcp', state: 'NEW', comment: "Hue Web UI" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hue.ini.desktop.http['port'], protocol: 'tcp', state: 'NEW', comment: "Hue Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
       , next
@@ -151,13 +151,13 @@ to allow impersonnation through the "hue" user.
 ## Configure
 
 Configure the "/etc/hue/conf" file following the [HortonWorks](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue-5-2.html) 
-recommandations. Merge the configuration object from "hdp.hue_ini" with the properties of the destination file. 
+recommandations. Merge the configuration object from "hdp.hue.ini" with the properties of the destination file. 
 
     module.exports.push name: 'Hue # Configure', callback: (ctx, next) ->
-      {hue_conf_dir, hue_ini} = ctx.config.ryba
+      {hue} = ctx.config.ryba
       ctx.ini
-        destination: "#{hue_conf_dir}/hue.ini"
-        content: hue_ini
+        destination: "#{hue.conf_dir}/hue.ini"
+        content: hue.ini
         merge: true
         parse: misc.ini.parse_multi_brackets 
         stringify: misc.ini.stringify_multi_brackets
@@ -172,10 +172,10 @@ implemented but Hue supports MySQL, PostgreSQL, and Oracle. Note, sqlite is
 the default database while mysql is the recommanded choice.
 
     module.exports.push name: 'Hue # Database', callback: (ctx, next) ->
-      {hue_ini, hue_user, db_admin} = ctx.config.ryba
+      {hue, db_admin} = ctx.config.ryba
       engines = 
         mysql: ->
-          {host, port, user, password, name} = hue_ini['desktop']['database']
+          {host, port, user, password, name} = hue.ini.desktop.database
           escape = (text) -> text.replace(/[\\"]/g, "\\$&")
           mysql_exec = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
           ctx.execute [
@@ -190,14 +190,14 @@ the default database while mysql is the recommanded choice.
             not_if_exec: "#{mysql_exec} 'use #{name}'"
           ,
             cmd: """
-            su -l #{hue_user.name} -c "/usr/lib/hue/build/env/bin/hue syncdb --noinput"
+            su -l #{hue.user.name} -c "/usr/lib/hue/build/env/bin/hue syncdb --noinput"
             """
             not_if_exec: "#{mysql_exec} 'show tables from #{name};' | grep auth"
           ], (err, executed) ->
               next err, executed
         sqlite: ->
           next null, false
-      engine = hue_ini['desktop']['database']['engine']
+      engine = hue.ini.desktop.database.engine
       return next new Error 'Hue database engine not supported' unless engines[engine]
       engines[engine]()
 
@@ -208,7 +208,7 @@ the "/etc/hue/conf/hue.ini" configuration file, all the composants myst be tagge
 the "security_enabled" property set to "true".
 
     module.exports.push name: 'Hue # Kerberos', callback: (ctx, next) ->
-      {hue_user, hue_group, hue_conf_dir, realm} = ctx.config.ryba
+      {hue, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       principal = "hue/#{ctx.config.host}@#{realm}"
       modified = false
@@ -217,8 +217,8 @@ the "security_enabled" property set to "true".
           principal: principal
           randkey: true
           keytab: "/etc/hue/conf/hue.service.keytab"
-          uid: hue_user.name
-          gid: hue_group.name
+          uid: hue.user.name
+          gid: hue.group.name
           kadmin_principal: kadmin_principal
           kadmin_password: kadmin_password
           kadmin_server: admin_server
@@ -227,35 +227,38 @@ the "security_enabled" property set to "true".
           modified = true if created
           do_config()
       do_config = ->
-        hue_ini = {}
-        hue_ini['desktop'] ?= {}
-        hue_ini['desktop']['kerberos'] ?= {}
-        hue_ini['desktop']['kerberos']['hue_keytab'] ?= '/etc/hue/conf/hue.service.keytab'
-        hue_ini['desktop']['kerberos']['hue_principal'] ?= principal
+        hue.ini = {}
+        hue.ini.desktop ?= {}
+        hue.ini.desktop.kerberos ?= {}
+        hue.ini.desktop.kerberos.keytab ?= '/etc/hue/conf/hue.service.keytab'
+        hue.ini.desktop.kerberos.principal ?= principal
         # Path to kinit
         # For RHEL/CentOS 5.x, kinit_path is /usr/kerberos/bin/kinit
         # For RHEL/CentOS 6.x, kinit_path is /usr/bin/kinit 
-        hue_ini['desktop']['kerberos']['kinit_path'] ?= '/usr/bin/kinit'
+        hue.ini['desktop']['kerberos']['kinit_path'] ?= '/usr/bin/kinit'
         # Uncomment all security_enabled settings and set them to true
-        hue_ini['hadoop'] ?= {}
-        hue_ini['hadoop']['hdfs_clusters'] ?= {}
-        hue_ini['hadoop']['hdfs_clusters']['default'] ?= {}
-        hue_ini['hadoop']['hdfs_clusters']['default']['security_enabled'] = 'true'
-        hue_ini['hadoop'] ?= {}
-        hue_ini['hadoop']['mapred_clusters'] ?= {}
-        hue_ini['hadoop']['mapred_clusters']['default'] ?= {}
-        hue_ini['hadoop']['mapred_clusters']['default']['security_enabled'] = 'true'
-        hue_ini['hadoop'] ?= {}
-        hue_ini['hadoop']['yarn_clusters'] ?= {}
-        hue_ini['hadoop']['yarn_clusters']['default'] ?= {}
-        hue_ini['hadoop']['yarn_clusters']['default']['security_enabled'] = 'true'
-        hue_ini['liboozie'] ?= {}
-        hue_ini['liboozie']['security_enabled'] = 'true'
-        hue_ini['hcatalog'] ?= {}
-        hue_ini['hcatalog']['security_enabled'] = 'true'
+        hue.ini.hadoop ?= {}
+        hue.ini.hadoop.hdfs_clusters ?= {}
+        hue.ini.hadoop.hdfs_clusters.default ?= {}
+        hue.ini.hadoop.hdfs_clusters.default.security_enabled = 'true'
+        
+        hue.ini.hadoop.mapred_clusters ?= {}
+        hue.ini.hadoop.mapred_clusters.default ?= {}
+        hue.ini.hadoop.mapred_clusters.default.security_enabled = 'true'
+        
+        hue.ini.hadoop.yarn_clusters ?= {}
+        hue.ini.hadoop.yarn_clusters.default ?= {}
+        hue.ini.hadoop.yarn_clusters.default.security_enabled = 'true'
+        
+        hue.ini.liboozie ?= {}
+        hue.ini.liboozie.security_enabled = 'true'
+        
+        hue.ini.hcatalog ?= {}
+        hue.ini.hcatalog.security_enabled = 'true'
+        
         ctx.ini
-          destination: "#{hue_conf_dir}/hue.ini"
-          content: hue_ini
+          destination: "#{hue.conf_dir}/hue.ini"
+          content: hue.ini
           merge: true
           parse: misc.ini.parse_multi_brackets 
           stringify: misc.ini.stringify_multi_brackets
@@ -272,52 +275,53 @@ the "security_enabled" property set to "true".
 ## SSL Client
 
     module.exports.push name: 'Hue # SSL Client', callback: (ctx, next) ->
-      {hue_ini, hue_ca_bundle, hue_ssl_client_ca} = ctx.config.ryba
-      hue_ca_bundle = '' unless hue_ssl_client_ca
+      {hue} = ctx.config.ryba
+      hue.ca_bundle = '' unless hue.ssl.client_ca
       ctx.write [
-        destination: "#{hue_ca_bundle}"
-        source: "#{hue_ssl_client_ca}"
+        destination: "#{hue.ca_bundle}"
+        source: "#{hue.ssl.client_ca}"
         local_source: true
-        if: !!hue_ssl_client_ca
+        if: !!hue.ssl.client_ca
       ,
         destination: '/etc/init.d/hue'
         match: /^DAEMON="export REQUESTS_CA_BUNDLE='.*';\$DAEMON"$/m
-        replace: "DAEMON=\"export REQUESTS_CA_BUNDLE='#{hue_ca_bundle}';$DAEMON\""
+        replace: "DAEMON=\"export REQUESTS_CA_BUNDLE='#{hue.ca_bundle}';$DAEMON\""
         append: /^DAEMON=.*$/m
       ], next
 
 ## SSL Server
 
 Upload and register the SSL certificate and private key respectively defined
-by the "hdp.hue\_ssl\_certificate" and "hdp.hue\_ssl\_private_key" 
+by the "hdp.hue.ssl.certificate" and "hdp.hue.ssl.private_key" 
 configuration properties. It follows the [official Hue Web Server 
 Configuration][web]. The "hue" service is restarted if there was any 
 changes.
 
     module.exports.push name: 'Hue # SSL Server', callback: (ctx, next) ->
-      {hue_user, hue_group, hue_conf_dir, hue_ssl_certificate, hue_ssl_private_key} = ctx.config.ryba
+      {hue} = ctx.config.ryba
       modified = true
       do_upload = ->
         ctx.upload [
-          source: hue_ssl_certificate
-          destination: "#{hue_conf_dir}/cert.pem"
-          uid: hue_user.name
-          gid: hue_group.name
+          source: hue.ssl.certificate
+          destination: "#{hue.conf_dir}/cert.pem"
+          uid: hue.user.name
+          gid: hue.group.name
         ,
-          source: hue_ssl_private_key
-          destination: "#{hue_conf_dir}/key.pem"
-          uid: hue_user.name
-          gid: hue_group.name
+          source: hue.ssl.private_key
+          destination: "#{hue.conf_dir}/key.pem"
+          uid: hue.user.name
+          gid: hue.group.name
         ], (err, uploaded) ->
           return next err if err
           modified = true if uploaded
           do_ini()
       do_ini = ->
         ctx.ini
-          destination: "#{hue_conf_dir}/hue.ini"
+          destination: "#{hue.conf_dir}/hue.ini"
           content: desktop:
-            ssl_certificate: "#{hue_conf_dir}/cert.pem"
-            ssl_private_key: "#{hue_conf_dir}/key.pem"
+            ssl:
+              certificate: "#{hue.conf_dir}/cert.pem"
+              private_key: "#{hue.conf_dir}/key.pem"
           merge: true
           parse: misc.ini.parse_multi_brackets 
           stringify: misc.ini.stringify_multi_brackets
@@ -341,7 +345,7 @@ changes.
 In the current version "2.5.1", the HTML of the banner is escaped.
 
     module.exports.push name: 'Hue # Fix Banner', callback: (ctx, next) ->
-      {hue_banner_style} = ctx.config.ryba
+      {hue} = ctx.config.ryba
       ctx.write [
         destination: '/usr/lib/hue/desktop/core/src/desktop/templates/login.mako'
         match: '${conf.CUSTOM.BANNER_TOP_HTML.get()}'
@@ -355,9 +359,9 @@ In the current version "2.5.1", the HTML of the banner is escaped.
           bck: true
           ,
           match: /\.banner \{([\s\S]*?)\}/
-          replace: ".banner {#{hue_banner_style}}"
+          replace: ".banner {#{hue.banner_style}}"
           bck: true
-          if: hue_banner_style
+          if: hue.banner_style
         ]
       ], next
 
@@ -382,11 +386,3 @@ Use the "ryba/hue/start" module to start the Hue server.
 Compilation requirements: ant asciidoc cyrus-sasl-devel cyrus-sasl-gssapi gcc gcc-c++ krb5-devel libtidy libxml2-devel libxslt-devel mvn mysql mysql-devel openldap-devel python-devel python-simplejson sqlite-devel
 
 [web]: http://gethue.com/docs-3.5.0/manual.html#_web_server_configuration
-
-
-
-
-
-
-
-
