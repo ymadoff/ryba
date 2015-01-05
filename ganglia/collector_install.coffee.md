@@ -241,7 +241,7 @@ pointing to the Ganglia master hostname.
         srv_name: 'httpd'
         action: 'restart'
         not_if: (callback) ->
-          request "http://#{ctx.config.host}/ganglia", (err, _, body) ->
+          request "http://#{ctx.config.host}/ganglia/", (err, _, body) ->
             callback err, /Ganglia Web Frontend/.test body
       , next
 
