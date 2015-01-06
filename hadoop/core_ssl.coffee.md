@@ -45,7 +45,7 @@ keytool -list -v -keystore keystore -alias hadoop
     module.exports.push module.exports.configure = (ctx) ->
       require('./core').configure ctx
       require('./yarn').configure ctx
-      {core_site, yarn_site, hadoop_conf_dir} = ctx.config.ryba
+      {core_site, hadoop_conf_dir} = ctx.config.ryba
       ctx.config.ryba.ssl ?= {}
       ssl_client = ctx.config.ryba.ssl_client ?= {}
       ssl_server = ctx.config.ryba.ssl_server ?= {}

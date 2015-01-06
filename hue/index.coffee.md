@@ -61,7 +61,7 @@ Example:
       require('../hadoop/hdfs').configure ctx
       require('../hadoop/yarn').configure ctx
       {ryba} = ctx.config
-      {nameservice, hadoop_conf_dir, webhcat_site, hue, db_admin, core_site, hdfs_site, yarn_site} = ryba
+      {nameservice, hadoop_conf_dir, webhcat_site, hue, db_admin, core_site, hdfs_site, yarn} = ryba
       hdfs_nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       hue ?= {}
       hue.ini ?= {}
@@ -106,22 +106,22 @@ Example:
         nn_host = hdfs_nn_hosts[0]
         nn_http_port = hdfs_site["dfs.namenode.#{nn_protocol}-address"].split(':')[1]
       # Support for RM HA was added in Hue 3.7
-      rm_protocol = if yarn_site['yarn.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      rm_protocol = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       rm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
       if rm_hosts.length > 1
         rm_host = ryba.active_rm_host
         rm_ctx = ctx.context rm_host, require('../hadoop/yarn').configure
-        rm_port = rm_ctx.config.ryba.yarn_site["yarn.resourcemanager.address.#{rm_ctx.config.shortname}"].split(':')[1]
-        yarn_api_url = if yarn_site['yarn.http.policy'] is 'HTTP_ONLY'
-        then "http://#{yarn_site['yarn.resourcemanager.webapp.address.#{rm_ctx.config.shortname}']}"
-        else "https://#{yarn_site['yarn.resourcemanager.webapp.https.address.#{rm_ctx.config.shortname}']}"
+        rm_port = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address.#{rm_ctx.config.shortname}"].split(':')[1]
+        yarn_api_url = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
+        then "http://#{yarn.site['yarn.resourcemanager.webapp.address.#{rm_ctx.config.shortname}']}"
+        else "https://#{yarn.site['yarn.resourcemanager.webapp.https.address.#{rm_ctx.config.shortname}']}"
       else
         rm_host = rm_hosts[0]
         rm_ctx = ctx.context rm_host, require('../hadoop/yarn').configure
-        rm_port = rm_ctx.config.ryba.yarn_site['yarn.resourcemanager.address'].split(':')[1]
-        yarn_api_url = if yarn_site['yarn.http.policy'] is 'HTTP_ONLY'
-        then "http://#{yarn_site['yarn.resourcemanager.webapp.address']}"
-        else "https://#{yarn_site['yarn.resourcemanager.webapp.https.address']}"
+        rm_port = rm_ctx.config.ryba.yarn.site['yarn.resourcemanager.address'].split(':')[1]
+        yarn_api_url = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
+        then "http://#{yarn.site['yarn.resourcemanager.webapp.address']}"
+        else "https://#{yarn.site['yarn.resourcemanager.webapp.https.address']}"
 
       # Configure HDFS Cluster
       hue.ini['hadoop'] ?= {}

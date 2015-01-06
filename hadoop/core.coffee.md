@@ -35,7 +35,7 @@ code.
     placeholder accross all the configuration files, default to false.   
 *   `hdfs_user` (object|string)   
     The Unix HDFS login name or a user object (see Mecano User documentation).   
-*   `yarn_user` (object|string)   
+*   `yarn:user` (object|string)   
     The Unix YARN login name or a user object (see Mecano User documentation).   
 *   `mapred_user` (object|string)   
     The Unix MapReduce login name or a user object (see Mecano User documentation).   
@@ -45,7 +45,7 @@ code.
     The Unix Hadoop group name or a group object (see Mecano Group documentation).   
 *   `hdfs_group` (object|string)   
     The Unix HDFS group name or a group object (see Mecano Group documentation).   
-*   `yarn_group` (object|string)   
+*   `yarn:group` (object|string)   
     The Unix YARN group name or a group object (see Mecano Group documentation).   
 *   `mapred_group` (object|string)   
     The Unix MapReduce group name or a group object (see Mecano Group documentation).   
@@ -61,9 +61,14 @@ Default configuration:
       "name": "hdfs", "system": true, "gid": "hdfs",
       "comment": "HDFS User", "home": "/var/lib/hadoop-hdfs"
     },
-    "yarn_user": {
-      "name": "yarn", "system": true, "gid": "yarn",
-      "comment": "YARN User", "home": "/var/lib/hadoop-yarn"
+    "yarn: {
+      user": {
+        "name": "yarn", "system": true, "gid": "yarn",
+        "comment": "YARN User", "home": "/var/lib/hadoop-yarn"
+      },
+      group": {
+        "name": "yarn", "system": true
+      }
     },
     "mapred_user": {
       "name": "mapred", "system": true, "gid": "mapred",
@@ -78,9 +83,6 @@ Default configuration:
     },
     "hdfs_group": {
       "name": "hdfs", "system": true
-    },
-    "yarn_group": {
-      "name": "yarn", "system": true
     },
     "mapred_group": {
       "name": "mapred", "system": true
@@ -107,14 +109,15 @@ Default configuration:
       ctx.config.ryba.hdfs_user.groups ?= 'hadoop'
       ctx.config.ryba.hdfs_user.comment ?= 'Hadoop HDFS User'
       ctx.config.ryba.hdfs_user.home ?= '/var/lib/hadoop-hdfs'
-      ctx.config.ryba.yarn_user = name: ctx.config.ryba.yarn_user if typeof ctx.config.ryba.yarn_user is 'string'
-      ctx.config.ryba.yarn_user ?= {}
-      ctx.config.ryba.yarn_user.name ?= 'yarn'
-      ctx.config.ryba.yarn_user.system ?= true
-      ctx.config.ryba.yarn_user.gid ?= 'yarn'
-      ctx.config.ryba.yarn_user.groups ?= 'hadoop'
-      ctx.config.ryba.yarn_user.comment ?= 'Hadoop YARN User'
-      ctx.config.ryba.yarn_user.home ?= '/var/lib/hadoop-yarn'
+      ctx.config.ryba.yarn ?= {}
+      ctx.config.ryba.yarn.user ?= {}
+      ctx.config.ryba.yarn.user = name: ctx.config.ryba.yarn.user if typeof ctx.config.ryba.yarn.user is 'string'
+      ctx.config.ryba.yarn.user.name ?= 'yarn'
+      ctx.config.ryba.yarn.user.system ?= true
+      ctx.config.ryba.yarn.user.gid ?= 'yarn'
+      ctx.config.ryba.yarn.user.groups ?= 'hadoop'
+      ctx.config.ryba.yarn.user.comment ?= 'Hadoop YARN User'
+      ctx.config.ryba.yarn.user.home ?= '/var/lib/hadoop-yarn'
       ctx.config.ryba.mapred_user = name: ctx.config.ryba.mapred_user if typeof ctx.config.ryba.mapred_user is 'string'
       ctx.config.ryba.mapred_user ?= {}
       ctx.config.ryba.mapred_user.name ?= 'mapred'
@@ -132,10 +135,10 @@ Default configuration:
       ctx.config.ryba.hdfs_group ?= {}
       ctx.config.ryba.hdfs_group.name ?= 'hdfs'
       ctx.config.ryba.hdfs_group.system ?= true
-      ctx.config.ryba.yarn_group = name: ctx.config.ryba.yarn_group if typeof ctx.config.ryba.yarn_group is 'string'
-      ctx.config.ryba.yarn_group ?= {}
-      ctx.config.ryba.yarn_group.name ?= 'yarn'
-      ctx.config.ryba.yarn_group.system ?= true
+      ctx.config.ryba.yarn.group ?= {}
+      ctx.config.ryba.yarn.group = name: ctx.config.ryba.yarn.group if typeof ctx.config.ryba.yarn.group is 'string'
+      ctx.config.ryba.yarn.group.name ?= 'yarn'
+      ctx.config.ryba.yarn.group.system ?= true
       ctx.config.ryba.mapred_group = name: ctx.config.ryba.mapred_group if typeof ctx.config.ryba.mapred_group is 'string'
       ctx.config.ryba.mapred_group ?= {}
       ctx.config.ryba.mapred_group.name ?= 'mapred'
@@ -224,11 +227,11 @@ Note, the package "hadoop" will also install the "dbus" user and group which are
 not handled here.
 
     module.exports.push name: 'Hadoop Core # Users & Groups', callback: (ctx, next) ->
-      {hadoop_group, hdfs_group, yarn_group, mapred_group,
-       hdfs_user, yarn_user, mapred_user} = ctx.config.ryba
-      ctx.group [hadoop_group, hdfs_group, yarn_group, mapred_group], (err, gmodified) ->
+      {hadoop_group, hdfs_group, yarn, mapred_group,
+       hdfs_user, mapred_user} = ctx.config.ryba
+      ctx.group [hadoop_group, hdfs_group, yarn.group, mapred_group], (err, gmodified) ->
         return next err if err
-        ctx.user [hdfs_user, yarn_user, mapred_user], (err, umodified) ->
+        ctx.user [hdfs_user, yarn.user, mapred_user], (err, umodified) ->
           next err, gmodified or umodified
 
 ## Test User

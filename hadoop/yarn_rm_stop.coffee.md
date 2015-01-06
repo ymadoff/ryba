@@ -14,9 +14,9 @@ layout: module
       lifecycle.rm_stop ctx, next
 
     module.exports.push name: 'Hadoop ResourceManager # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->
-      {clean_logs, yarn_log_dir} = ctx.config.ryba
+      {clean_logs, yarn} = ctx.config.ryba
       return next() unless clean_logs
       ctx.execute
-        cmd: 'rm #{yarn_log_dir}/*/*-resourcemanager-*'
+        cmd: 'rm #{yarn.log_dir}/*/*-resourcemanager-*'
         code_skipped: 1
       , next

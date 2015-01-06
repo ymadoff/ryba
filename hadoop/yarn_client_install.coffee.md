@@ -10,9 +10,9 @@ layout: module
     module.exports.push require('./yarn_client').configure
 
     module.exports.push name: 'Hadoop YARN # Configuration', callback: (ctx, next) ->
-      {hadoop_conf_dir, yarn_user, yarn_group, yarn_site} = ctx.config.ryba
+      {hadoop_conf_dir, yarn} = ctx.config.ryba
       config = {}
-      for k, v of yarn_site
+      for k, v of yarn.site
         continue if k isnt 'yarn.application.classpath' and k.indexOf('yarn.resourcemanager') is -1
         config[k] = v
       ctx.hconfigure
@@ -21,7 +21,7 @@ layout: module
         local_default: true
         properties: config
         merge: true
-        uid: yarn_user.name
-        gid: yarn_group.name
+        uid: yarn.user.name
+        gid: yarn.group.name
       , next
 

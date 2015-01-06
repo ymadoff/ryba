@@ -5,7 +5,7 @@
 # https://support.pivotal.io/hc/en-us/articles/201462036-Mapreduce-YARN-Memory-Parameters
 
 memory = (ctx) ->
-  {yarn_site, hadoop_conf_dir} = ctx.config.ryba
+  {yarn, hadoop_conf_dir} = ctx.config.ryba
   # yarn.nodemanager.log.retain-seconds (cherif mettre la valeur à 10800 au lie de 604800)
   # yarn.log-aggregation.retain-seconds (cherif)
 
@@ -16,7 +16,7 @@ memory = (ctx) ->
   # reserved for Operating System usage. On each node, we’ll reserve 10% 
   # with a maximum of 8 GB for the Operating System.
   coreNumber = ctx.cpuinfo.length
-  diskNumber = yarn_site['yarn.nodemanager.local-dirs'].length
+  diskNumber = yarn.site['yarn.nodemanager.local-dirs'].length
   memoryTotalMb = Math.floor ctx.meminfo.MemTotal / 1000 / 1000
   memoryAvailableMb = memoryTotalMb - memory.getReservedMemory(memoryTotalMb, false)
   # minimum container size (in RAM)
@@ -28,12 +28,12 @@ memory = (ctx) ->
   # max(MIN_CONTAINER_SIZE, (Total Available RAM) / containers))
   memoryPerContainer = Math.floor Math.max mininumContainerSize, memoryAvailableMb / maxNumberOfcontainers
   # Get default
-  yarnNodeManagerResourceMemoryMb = yarn_site['yarn.nodemanager.resource.memory-mb']
-  YarnNodemanagerVirtualMemoryRatio = yarn_site['yarn.nodemanager.vmem-pmem-ratio']
-  yarnSchedulerMinimumAllocationMb = yarn_site['yarn.scheduler.minimum-allocation-mb']
-  yarnSchedulerMaximumAllocationMb = yarn_site['yarn.scheduler.maximum-allocation-mb']
-  yarnAppMapreduceAmResourceMb = yarn_site['yarn.app.mapreduce.am.resource.mb']
-  yarnAppMapreduceAmCommandOpts = /-Xmx(.*)m/.exec(yarn_site['yarn.app.mapreduce.am.command-opts'])?[1]
+  yarnNodeManagerResourceMemoryMb = yarn.site['yarn.nodemanager.resource.memory-mb']
+  YarnNodemanagerVirtualMemoryRatio = yarn.site['yarn.nodemanager.vmem-pmem-ratio']
+  yarnSchedulerMinimumAllocationMb = yarn.site['yarn.scheduler.minimum-allocation-mb']
+  yarnSchedulerMaximumAllocationMb = yarn.site['yarn.scheduler.maximum-allocation-mb']
+  yarnAppMapreduceAmResourceMb = yarn.site['yarn.app.mapreduce.am.resource.mb']
+  yarnAppMapreduceAmCommandOpts = /-Xmx(.*)m/.exec(yarn.site['yarn.app.mapreduce.am.command-opts'])?[1]
   # Compute
   yarnNodeManagerResourceMemoryMb ?= maxNumberOfcontainers * memoryPerContainer
   yarnSchedulerMinimumAllocationMb ?= memoryPerContainer
@@ -57,22 +57,23 @@ memory = (ctx) ->
       'mininumContainerSize': mininumContainerSize
       'maxNumberOfcontainers': maxNumberOfcontainers
       'memoryPerContainer': memoryPerContainer
-    yarn_site:
-      'yarn.nodemanager.resource.memory-mb': "#{yarnNodeManagerResourceMemoryMb}" # containers * RAM-per-container
-      'yarn.nodemanager.vmem-pmem-ratio': "#{YarnNodemanagerVirtualMemoryRatio}"
-      'yarn.scheduler.minimum-allocation-mb': "#{yarnSchedulerMinimumAllocationMb}" # RAM-per-container
-      'yarn.scheduler.maximum-allocation-mb': "#{yarnSchedulerMaximumAllocationMb}"
-      'yarn.app.mapreduce.am.resource.mb': "#{yarnAppMapreduceAmResourceMb}"
-      'yarn.app.mapreduce.am.command-opts': "-Xmx#{yarnAppMapreduceAmCommandOpts}m"
+    yarn:
+      site:
+        'yarn.nodemanager.resource.memory-mb': "#{yarnNodeManagerResourceMemoryMb}" # containers * RAM-per-container
+        'yarn.nodemanager.vmem-pmem-ratio': "#{YarnNodemanagerVirtualMemoryRatio}"
+        'yarn.scheduler.minimum-allocation-mb': "#{yarnSchedulerMinimumAllocationMb}" # RAM-per-container
+        'yarn.scheduler.maximum-allocation-mb': "#{yarnSchedulerMaximumAllocationMb}"
+        'yarn.app.mapreduce.am.resource.mb': "#{yarnAppMapreduceAmResourceMb}"
+        'yarn.app.mapreduce.am.command-opts': "-Xmx#{yarnAppMapreduceAmCommandOpts}m"
     mapred_site:
       'mapreduce.map.memory.mb': "#{mapreduceMapMemoryMb}"
       'mapreduce.reduce.memory.mb': "#{mapreduceReduceMemoryMb}"
       'mapreduce.map.java.opts': "-Xmx#{Math.floor .8 * memoryPerContainer}m" # 0.8 * RAM-per-container
       'mapreduce.reduce.java.opts': "-Xmx#{Math.floor .8 * 2 * memoryPerContainer}m" # 0.8 * 2 * RAM-per-container
       'mapreduce.task.io.sort.mb': "#{Math.floor .4 * memoryPerContainer}"
-  # merge result.yarn_site, ctx.config.ryba.yarn_site
-  for k, v of result.yarn_site
-    result.yarn_site[k] = ctx.config.ryba.yarn_site[k] if ctx.config.ryba.yarn_site[k]?
+  # merge result.yarn.site, ctx.config.ryba.yarn.site
+  for k, v of result.yarn.site
+    result.yarn.site[k] = ctx.config.ryba.yarn.site[k] if ctx.config.ryba.yarn.site[k]?
   # merge result.mapred_site, ctx.config.ryba.mapred_site
   for k, v of result.mapred_site
     result.mapred_site[k] = ctx.config.ryba.mapred_site[k] if ctx.config.ryba.mapred_site[k]?

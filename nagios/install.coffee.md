@@ -229,7 +229,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
 
     module.exports.push name: 'Nagios # Services', callback: (ctx, next) ->
       {nagios, force_check, active_nn_host, core_site, hdfs_site, zookeeper_port, 
-        yarn_site, hive_site, hbase_site, oozie_site, webhcat_site, ganglia, hue} = ctx.config.ryba
+        yarn, hive_site, hbase_site, oozie_site, webhcat_site, ganglia, hue} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       nn_hosts_map = {} # fqdn to port
@@ -249,16 +249,16 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           nn_hosts_map[nn_host[0]] = nn_host[1]
           active_nn_port = nn_host[1] if nn_ctx.config.host is active_nn_host
       rm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
-      rm_webapp_port = if yarn_site['yarn.http.policy'] is 'HTTP_ONLY'
-      then yarn_site['yarn.resourcemanager.webapp.address'].split(':')[1]
-      else yarn_site['yarn.resourcemanager.webapp.https.address'].split(':')[1]
+      rm_webapp_port = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
+      then yarn.site['yarn.resourcemanager.webapp.address'].split(':')[1]
+      else yarn.site['yarn.resourcemanager.webapp.https.address'].split(':')[1]
       nm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_nm'
       if nm_hosts.length
         nm_ctx = ctx.hosts[nm_hosts[0]]
         require('../hadoop/yarn_nm').configure nm_ctx
-        nm_webapp_port = if yarn_site['yarn.http.policy'] is 'HTTP_ONLY'
-        then nm_ctx.config.ryba.yarn_site['yarn.nodemanager.webapp.address'].split(':')[1]
-        else nm_ctx.config.ryba.yarn_site['yarn.nodemanager.webapp.https.address'].split(':')[1]
+        nm_webapp_port = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
+        then nm_ctx.config.ryba.yarn.site['yarn.nodemanager.webapp.address'].split(':')[1]
+        else nm_ctx.config.ryba.yarn.site['yarn.nodemanager.webapp.https.address'].split(':')[1]
       jhs_hosts = ctx.hosts_with_module 'ryba/hadoop/mapred_jhs'
       if jhs_hosts.length
         jhs_ctx = ctx.hosts[jhs_hosts[0]]

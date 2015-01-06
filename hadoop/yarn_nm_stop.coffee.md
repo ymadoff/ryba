@@ -16,9 +16,9 @@ layout: module
         next err, if stopped then ctx.OK else ctx.PASS
 
     module.exports.push name: 'Hadoop NodeManager # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->
-      {clean_logs, yarn_log_dir} = ctx.config.ryba
+      {clean_logs, yarn} = ctx.config.ryba
       return next() unless clean_logs
       ctx.execute
-        cmd: 'rm #{yarn_log_dir}/*/*-nodemanager-*'
+        cmd: 'rm #{yarn.log_dir}/*/*-nodemanager-*'
         code_skipped: 1
       , next

@@ -184,7 +184,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         return next err, linked
 
     module.exports.push name: 'Oozie Server # Configuration', callback: (ctx, next) ->
-      { hadoop_conf_dir, yarn_site, oozie_group, oozie_user, 
+      { hadoop_conf_dir, yarn, oozie_group, oozie_user, 
         oozie_site, oozie_conf_dir, oozie_hadoop_config } = ctx.config.ryba
       modified = false
       do_oozie_site = ->

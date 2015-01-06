@@ -46,7 +46,7 @@
       else
         rm_ctx = rm_ctxs[0]
         shortname = ''
-      rm_address = rm_ctx.config.ryba.yarn_site["yarn.resourcemanager.address#{shortname}"]
+      rm_address = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{shortname}"]
       ctx.write [
         content: """
           nameNode=#{core_site['fs.defaultFS']}
@@ -112,7 +112,7 @@
       else
         rm_ctx = rm_ctxs[0]
         shortname = ''
-      rm_address = rm_ctx.config.ryba.yarn_site["yarn.resourcemanager.address#{shortname}"]
+      rm_address = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{shortname}"]
       # Get the name of the user running the Oozie Server
       os_ctxs = ctx.contexts 'ryba/oozie/server', require('./server').configure
       {oozie_user} = os_ctxs[0].config.ryba
