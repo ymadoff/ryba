@@ -386,31 +386,31 @@ lifecyle = module.exports =
         # cmd: "su -l #{hbase_user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} stop regionserver\""
         cmd: 'service hbase-regionserver stop'
       , callback
-  webhcat_status: (ctx, callback) ->
-    {webhcat_pid_dir} = ctx.config.ryba
-    # lifecyle.is_pidfile_running ctx, "#{webhcat_pid_dir}/webhcat.pid", (err, running) ->
-    #   ctx.log "WebHCat status: #{if running then 'RUNNING' else 'STOPED'}"
-    #   callback err, running
-    ctx.execute
-      cmd: "service hive-webhcat-server status"
-      code_skipped: [1, 3]
-    , callback
-  webhcat_start: (ctx, callback) ->
-    lifecyle.webhcat_status ctx, (err, running) ->
-      return callback err, false if err or running
-      ctx.log "WebHCat start"
-      ctx.execute
-        # su -l hive -c "/usr/lib/hive-hcatalog/sbin/webhcat_server.sh start"
-        cmd: "service hive-webhcat-server start"
-      , callback
-  webhcat_stop: (ctx, callback) ->
-    lifecyle.webhcat_status ctx, (err, running) ->
-      return callback err, false if err or not running
-      ctx.log "WebHCat stop"
-      ctx.execute
-        # su -l hive -c "/usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop"
-        cmd: "service hive-webhcat-server stop"
-      , callback
+  # webhcat_status: (ctx, callback) ->
+  #   {webhcat_pid_dir} = ctx.config.ryba
+  #   # lifecyle.is_pidfile_running ctx, "#{webhcat_pid_dir}/webhcat.pid", (err, running) ->
+  #   #   ctx.log "WebHCat status: #{if running then 'RUNNING' else 'STOPED'}"
+  #   #   callback err, running
+  #   ctx.execute
+  #     cmd: "service hive-webhcat-server status"
+  #     code_skipped: [1, 3]
+  #   , callback
+  # webhcat_start: (ctx, callback) ->
+  #   lifecyle.webhcat_status ctx, (err, running) ->
+  #     return callback err, false if err or running
+  #     ctx.log "WebHCat start"
+  #     ctx.execute
+  #       # su -l hive -c "/usr/lib/hive-hcatalog/sbin/webhcat_server.sh start"
+  #       cmd: "service hive-webhcat-server start"
+  #     , callback
+  # webhcat_stop: (ctx, callback) ->
+  #   lifecyle.webhcat_status ctx, (err, running) ->
+  #     return callback err, false if err or not running
+  #     ctx.log "WebHCat stop"
+  #     ctx.execute
+  #       # su -l hive -c "/usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop"
+  #       cmd: "service hive-webhcat-server stop"
+  #     , callback
   hue_status: (ctx, callback) ->
     ctx.log "Hue status"
     # We are not here to check if service is installed, for example this is

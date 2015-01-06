@@ -1,20 +1,30 @@
----
-title: 
-layout: module
----
 
 # WebHCat Stop
 
-    lifecycle = require '../lib/lifecycle'
+Run the command `./bin/ryba stop -m ryba/hive/webhcat` to stop the WebHCat
+server using Ryba.
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push require('./webhcat').configure
 
-    module.exports.push (ctx) ->
-      require('./webhcat').configure ctx
+# Stop Server
+
+Stop the WebHCat server. You can also stop the server manually with one of the
+following two commands:
+
+```
+su -l hive -c "/usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop"
+service hive-webhcat-server stop
+```
 
     module.exports.push name: 'WebHCat # Stop', label_true: 'STOPED', callback: (ctx, next) ->
-      lifecycle.webhcat_stop ctx, next
+      ctx.service
+        srv_name: 'hive-webhcat-server'
+        action: 'stop'
+        if_exists: '/etc/init.d/hive-webhcat-server'
+      , next
+
 
 ## Stop Clean Logs
 
