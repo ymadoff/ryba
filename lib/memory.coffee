@@ -62,8 +62,8 @@ memory = (ctx) ->
       'yarn.nodemanager.vmem-pmem-ratio': "#{YarnNodemanagerVirtualMemoryRatio}"
       'yarn.scheduler.minimum-allocation-mb': "#{yarnSchedulerMinimumAllocationMb}" # RAM-per-container
       'yarn.scheduler.maximum-allocation-mb': "#{yarnSchedulerMaximumAllocationMb}"
-      'yarn.app.mapreduce.am.resource.mb': "#{yarnAppMapreduceAmResourceMb}"
-      'yarn.app.mapreduce.am.command-opts': "-Xmx#{yarnAppMapreduceAmCommandOpts}m"
+      'yarn.app.mapreduce.am.resource.mb': "#{yarnAppMapreduceAmResourceMb}" # Default to "682"
+      'yarn.app.mapreduce.am.command-opts': "-Xmx#{yarnAppMapreduceAmCommandOpts}m" # Default to "-Xmx546m"
     mapred_site:
       'mapreduce.map.memory.mb': "#{mapreduceMapMemoryMb}"
       'mapreduce.reduce.memory.mb': "#{mapreduceReduceMemoryMb}"
