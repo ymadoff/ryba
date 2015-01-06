@@ -161,7 +161,7 @@ Example
 
     module.exports.push commands: 'start', modules: 'ryba/oozie/server_start'
 
-    # module.exports.push commands: 'status', modules: 'ryba/oozie/server_status'
+    module.exports.push commands: 'status', modules: 'ryba/oozie/server_status'
 
     module.exports.push commands: 'stop', modules: 'ryba/oozie/server_stop'
 
