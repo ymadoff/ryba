@@ -20,7 +20,7 @@ following command:
 su -l oozie -c "/usr/lib/oozie/bin/oozied.sh start"
 ```
 
-Note, there is no need to clean a zoobie pid file before starting the server.
+Note, there is no need to clean a zombie pid file before starting the server.
 
     module.exports.push name: 'Oozie Server # Start', label_true: 'STARTED', timeout: -1, callback: (ctx, next) ->
       {oozie_user, oozie_pid_dir} = ctx.config.ryba
