@@ -111,16 +111,16 @@ nagiocmd:x:2419:apache
         ctx.upload plugins, next
 
     module.exports.push name: 'Nagios # Admin Password', callback: (ctx, next) ->
-      {user, group, admin_username, admin_password} = ctx.config.ryba.nagios
+      {user, group, admin} = ctx.config.ryba.nagios
       ctx.execute
         cmd: """
-        hash=`cat /etc/nagios/htpasswd.users 2>/dev/null | grep #{admin_username}: | sed 's/.*:\\(.*\\)/\\1/'`
+        hash=`cat /etc/nagios/htpasswd.users 2>/dev/null | grep #{admin.name}: | sed 's/.*:\\(.*\\)/\\1/'`
         salt=`echo $hash | sed 's/\\(.\\{2\\}\\).*/\\1/'`
         if [ $salt != "" ]; then
-          expect=`openssl passwd -crypt -salt $salt #{admin_password} 2>/dev/null`
+          expect=`openssl passwd -crypt -salt $salt #{admin.password} 2>/dev/null`
           if [ "$hash" == "$expect" ]; then exit 3; fi
         fi
-        htpasswd -c -b  /etc/nagios/htpasswd.users #{admin_username} #{admin_password}
+        htpasswd -c -b  /etc/nagios/htpasswd.users #{admin.name} #{admin.password}
         """
         code_skipped: 3
       , next
