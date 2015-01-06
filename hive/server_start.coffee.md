@@ -1,9 +1,5 @@
----
-title: 
-layout: module
----
 
-# Hive Start
+# Hive Server Start
 
 The Hive HCatalog require the database server to be started. The Hive Server2
 require the HFDS Namenode to be started. Both of them will need to functionnal

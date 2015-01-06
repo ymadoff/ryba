@@ -1,9 +1,5 @@
----
-title: 
-layout: module
----
 
-# Hive Stop
+# Hive Server Stop
 
     lifecycle = require '../lib/lifecycle'
     module.exports = []
