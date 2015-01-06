@@ -1,7 +1,3 @@
----
-title: 
-layout: module
----
 
 # YARN ResourceManager Install
 
@@ -30,7 +26,7 @@ layout: module
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'Hadoop YARN RM # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'YARN RM # IPTables', callback: (ctx, next) ->
       {yarn_site} = ctx.config.ryba
       shortname = if ctx.hosts_with_module('ryba/hadoop/yarn_rm').length is 1 then '' else ".#{ctx.config.shortname}"
       rules = []

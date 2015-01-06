@@ -1,7 +1,3 @@
----
-title: 
-layout: module
----
 
 # YARN ResourceManager Stop
 
@@ -10,10 +6,10 @@ layout: module
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./yarn_rm').configure
 
-    module.exports.push name: 'Hadoop ResourceManager # Stop Server', label_true: 'STOPED', callback: (ctx, next) ->
+    module.exports.push name: 'Yarn RM # Stop Server', label_true: 'STOPED', callback: (ctx, next) ->
       lifecycle.rm_stop ctx, next
 
-    module.exports.push name: 'Hadoop ResourceManager # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->
+    module.exports.push name: 'Yarn RM # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->
       {clean_logs, yarn_log_dir} = ctx.config.ryba
       return next() unless clean_logs
       ctx.execute
