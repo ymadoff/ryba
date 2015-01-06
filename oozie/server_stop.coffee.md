@@ -17,7 +17,7 @@ following command:
 su -l oozie -c "/usr/lib/oozie/bin/oozied.sh stop"
 ```
 
-    module.exports.push name: 'Oozie Server # Stop', label_true: 'STOPED', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Stop', label_true: 'STOPPED', timeout: -1, callback: (ctx, next) ->
       {oozie_user, oozie_pid_dir} = ctx.config.ryba
       ctx.execute
         cmd: """

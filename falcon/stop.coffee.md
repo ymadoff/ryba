@@ -7,7 +7,7 @@
 
 ## Stop Service
 
-    module.exports.push name: 'Falcon # Stop Service', timeout: -1, label_true: 'STOPED', callback: (ctx, next) ->
+    module.exports.push name: 'Falcon # Stop Service', timeout: -1, label_true: 'STOPPED', callback: (ctx, next) ->
       {user} = ctx.config.ryba.falcon
       # su -l falcon -c '/usr/lib/falcon/bin/falcon-stop'
       ctx.execute

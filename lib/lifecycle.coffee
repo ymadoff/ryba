@@ -50,29 +50,6 @@ lifecyle = module.exports =
         cmd: "service hadoop-hdfs-namenode start"
         code_skipped: [1, 3]
       , callback
-    # {hdfs_user, hadoop_conf_dir, hdfs_site, nameservice, ha_client_config, hdfs_namenode_timeout} = ctx.config.ryba
-    # state = (started) ->
-    #   callback null, started
-    # lifecyle.nn_status ctx, (err, running) ->
-    #   # return callback err, false if err or running
-    #   return callback err if err 
-    #   return state false if running
-    #   ctx.log "NameNode start"
-    #   ctx.execute
-    #     # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start namenode"
-    #     # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start namenode\""
-    #     cmd: 'service hadoop-hdfs-namenode start'
-    #     # code_skipped: 1
-    #   , (err, started) ->
-    #     return callback err if err
-    #     return callback null, false unless started
-    #     ipc_port = url.parse(ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{ctx.config.shortname}"]).port or 8020
-    #     http_port = if hdfs_site['dfs.https.enable'] is 'false'
-    #     then url.parse(ha_client_config["dfs.namenode.http-address.#{nameservice}.#{ctx.config.shortname}"]).port or 50070
-    #     else url.parse(ha_client_config["dfs.namenode.https-address.#{nameservice}.#{ctx.config.shortname}"]).port or 50470
-    #     ctx.waitIsOpen ctx.config.host, [ipc_port, http_port], timeout: hdfs_namenode_timeout, (err) ->
-    #       return callback err if err
-    #       state true
   nn_stop: (ctx, callback) ->
     {hdfs_user, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.nn_status ctx, (err, running) ->
@@ -188,7 +165,7 @@ lifecyle = module.exports =
     # {yarn_pid_dir, yarn_user} = ctx.config.ryba
     # ctx.log "NodeManager status"
     # lifecyle.is_pidfile_running ctx, "#{yarn_pid_dir}/#{yarn_user.name}/yarn-#{yarn_user.name}-nodemanager.pid", (err, running) ->
-    #   ctx.log "DataNode status: #{if running then 'RUNNING' else 'STOPED'}"
+    #   ctx.log "DataNode status: #{if running then 'RUNNING' else 'STOPPED'}"
     #   callback err, running
     ctx.execute
       cmd: "service hadoop-yarn-nodemanager status"
@@ -310,7 +287,7 @@ lifecyle = module.exports =
   #   ctx.log "Oozie status"
   #   {oozie_pid_dir} = ctx.config.ryba
   #   lifecyle.is_pidfile_running ctx, "#{oozie_pid_dir}/oozie.pid", (err, running) ->
-  #     ctx.log "Oozie status: #{if running then 'RUNNING' else 'STOPED'}"
+  #     ctx.log "Oozie status: #{if running then 'RUNNING' else 'STOPPED'}"
   #     callback err, running
   # oozie_start: (ctx, callback) ->
   #   {oozie_user} = ctx.config.ryba
@@ -360,7 +337,7 @@ lifecyle = module.exports =
     # {hbase_pid_dir, hbase_user} = ctx.config.ryba
     ctx.log "HBase RegionServer status"
     # lifecyle.is_pidfile_running ctx, "#{hbase_pid_dir}/hbase-#{hbase_user.name}-regionserver.pid", (err, running) ->
-    #   ctx.log "HBase RegionServer status: #{if running then 'RUNNING' else 'STOPED'}"
+    #   ctx.log "HBase RegionServer status: #{if running then 'RUNNING' else 'STOPPED'}"
     #   callback err, running
     ctx.execute
       cmd: "service hbase-regionserver status"
@@ -389,7 +366,7 @@ lifecyle = module.exports =
   # webhcat_status: (ctx, callback) ->
   #   {webhcat_pid_dir} = ctx.config.ryba
   #   # lifecyle.is_pidfile_running ctx, "#{webhcat_pid_dir}/webhcat.pid", (err, running) ->
-  #   #   ctx.log "WebHCat status: #{if running then 'RUNNING' else 'STOPED'}"
+  #   #   ctx.log "WebHCat status: #{if running then 'RUNNING' else 'STOPPED'}"
   #   #   callback err, running
   #   ctx.execute
   #     cmd: "service hive-webhcat-server status"
@@ -440,7 +417,7 @@ lifecyle = module.exports =
     # {zookeeper_pid_dir} = ctx.config.ryba
     ctx.log "Zookeeper status"
     # lifecyle.is_pidfile_running ctx, "#{zookeeper_pid_dir}/zookeeper_server.pid", (err, running) ->
-    #   ctx.log "Zookeeper status: #{if running then 'RUNNING' else 'STOPED'}"
+    #   ctx.log "Zookeeper status: #{if running then 'RUNNING' else 'STOPPED'}"
     #   callback err, running
     ctx.execute
       cmd: "service zookeeper-server status"

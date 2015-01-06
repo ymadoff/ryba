@@ -14,7 +14,7 @@ layout: module
 
 Execute these commands on the HBase Master host machine.
 
-    module.exports.push name: 'HBase Master # Stop Server', label_true: 'STOPED', callback: (ctx, next) ->
+    module.exports.push name: 'HBase Master # Stop Server', label_true: 'STOPPED', callback: (ctx, next) ->
       lifecycle.hbase_master_stop ctx, next
 
 ## Stop Clean Logs

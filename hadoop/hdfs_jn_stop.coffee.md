@@ -14,7 +14,7 @@ associated NameNodes.
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./hdfs_jn').configure
 
-    module.exports.push name: 'Hadoop HDFS JN # Stop', label_true: 'STOPED', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS JN # Stop', label_true: 'STOPPED', callback: (ctx, next) ->
       lifecycle.jn_stop ctx, (err, stopped) ->
         next err, if stopped then ctx.OK else ctx.PASS
 

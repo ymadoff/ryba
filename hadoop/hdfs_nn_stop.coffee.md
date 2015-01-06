@@ -13,7 +13,7 @@ layout: module
     module.exports.push name: 'Hadoop HDFS NN # Stop ZKFC', callback: (ctx, next) ->
       lifecycle.zkfc_stop ctx, next
 
-    module.exports.push name: 'Hadoop HDFS NN # Stop NameNode', label_true: 'STOPED', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS NN # Stop NameNode', label_true: 'STOPPED', callback: (ctx, next) ->
       lifecycle.nn_stop ctx, next
 
     module.exports.push name: 'Hadoop HDFS NN # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->

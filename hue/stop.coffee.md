@@ -10,7 +10,7 @@ layout: module
     module.exports.push 'masson/bootstrap/'
     module.exports.push require('./index').configure
 
-    module.exports.push name: 'Hue # Stop', label_true: 'STOPED', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Stop', label_true: 'STOPPED', callback: (ctx, next) ->
       lifecycle.hue_stop ctx, next
 
 ## Stop Clean Logs

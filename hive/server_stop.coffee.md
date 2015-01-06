@@ -10,14 +10,14 @@
 
 Execute these commands on the Hive Server2 host machine.
 
-    module.exports.push name: 'Hive & HCat # Stop Hive Server2', label_true: 'STOPED', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat # Stop Hive Server2', label_true: 'STOPPED', callback: (ctx, next) ->
       lifecycle.hive_server2_stop ctx, next
 
 ## Stop Hive Metastore
 
 Execute these commands on the Hive Metastore host machine.
 
-    module.exports.push name: 'Hive & HCat # Stop Hive Metastore', label_true: 'STOPED', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat # Stop Hive Metastore', label_true: 'STOPPED', callback: (ctx, next) ->
       lifecycle.hive_metastore_stop ctx, next
 
 ## Stop Clean Logs

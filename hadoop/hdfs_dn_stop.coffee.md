@@ -16,7 +16,7 @@ associated the NameNodes.
 
 ## Stop Service
 
-    module.exports.push name: 'Hadoop HDFS DN # Stop Service', label_true: 'STOPED', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop HDFS DN # Stop Service', label_true: 'STOPPED', callback: (ctx, next) ->
       ctx.execute
         cmd: "service hadoop-hdfs-datanode stop"
         code_skipped: 3

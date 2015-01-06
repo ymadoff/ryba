@@ -6,7 +6,7 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./yarn_rm').configure
 
-    module.exports.push name: 'Yarn RM # Stop Server', label_true: 'STOPED', callback: (ctx, next) ->
+    module.exports.push name: 'Yarn RM # Stop Server', label_true: 'STOPPED', callback: (ctx, next) ->
       lifecycle.rm_stop ctx, next
 
     module.exports.push name: 'Yarn RM # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->

@@ -11,7 +11,7 @@ layout: module
     module.exports.push (ctx) ->
       require('./yarn').configure ctx
 
-    module.exports.push name: 'Hadoop NodeManager # Stop Server', label_true: 'STOPED', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop NodeManager # Stop Server', label_true: 'STOPPED', callback: (ctx, next) ->
       lifecycle.nm_stop ctx, (err, stopped) ->
         next err, if stopped then ctx.OK else ctx.PASS
 

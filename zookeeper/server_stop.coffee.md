@@ -15,7 +15,7 @@ layout: module
 Stop the Zookeeper service. Execute these commands on all the ZooKeeper host
 machines.
 
-    module.exports.push name: 'ZooKeeper Server # Stop', label_true: 'STOPED', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Stop', label_true: 'STOPPED', callback: (ctx, next) ->
       lifecycle.zookeeper_stop ctx, next
 
 ## Stop Clean Logs

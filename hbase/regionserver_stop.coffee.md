@@ -14,7 +14,7 @@ layout: module
 
 Execute these commands on all RegionServers.
 
-    module.exports.push name: 'HBase RegionServer # Stop Server', label_true: 'STOPED', callback: (ctx, next) ->
+    module.exports.push name: 'HBase RegionServer # Stop Server', label_true: 'STOPPED', callback: (ctx, next) ->
       lifecycle.hbase_regionserver_stop ctx, next
 
 ## Stop Clean Logs

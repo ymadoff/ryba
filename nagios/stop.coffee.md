@@ -9,7 +9,7 @@
 
 Stop the nagios service.
 
-    module.exports.push name: 'Nagios # Stop', label_true: 'STOPED', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Stop', label_true: 'STOPPED', callback: (ctx, next) ->
       ctx.service
         srv_name: 'nagios'
         action: 'stop'
