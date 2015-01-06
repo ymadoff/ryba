@@ -23,12 +23,12 @@ Install the oozie client package. This package doesn't create any user and group
       ], next
 
     module.exports.push name: 'Oozie Client # Profile', callback: (ctx, next) ->
-      {oozie_site} = ctx.config.ryba
+      {oozie} = ctx.config.ryba
       ctx.write
         destination: '/etc/profile.d/oozie.sh'
         content: """
         #!/bin/bash
-        export OOZIE_URL=#{oozie_site['oozie.base.url']}
+        export OOZIE_URL=#{oozie.site['oozie.base.url']}
         """
         mode: 0o0755
       , next

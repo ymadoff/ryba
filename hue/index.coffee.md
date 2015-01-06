@@ -148,7 +148,7 @@ Example:
       hue.ini['hadoop']['yarn_clusters']['default']['node_manager_api_url'] ?= "http://#{nodemanagers[0]}:8042"
       # Configure components
       hue.ini['liboozie'] ?= {}
-      hue.ini['liboozie']['oozie_url'] ?= ryba.oozie_site['oozie.base.url']
+      hue.ini['liboozie']['oozie_url'] ?= ryba.oozie.site['oozie.base.url']
       hue.ini['hcatalog'] ?= {}
       hue.ini['hcatalog']['templeton_url'] ?= "http://#{webhcat_server}:#{webhcat_port}/templeton/v1/"
       hue.ini['beeswax'] ?= {}

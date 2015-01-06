@@ -229,7 +229,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
 
     module.exports.push name: 'Nagios # Services', callback: (ctx, next) ->
       {nagios, force_check, active_nn_host, core_site, hdfs_site, zookeeper_port, 
-        yarn, hive_site, hbase_site, oozie_site, webhcat_site, ganglia, hue} = ctx.config.ryba
+        yarn, hive_site, hbase_site, oozie, webhcat_site, ganglia, hue} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       nn_hosts_map = {} # fqdn to port
@@ -327,7 +327,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           hbase_master_rpc_port: hbase_site['hbase.master.port']
           hive_metastore_port: url.parse(hive_site['hive.metastore.uris']).port
           hive_server_port: hive_server_port
-          oozie_server_port: url.parse(oozie_site['oozie.base.url']).port
+          oozie_server_port: url.parse(oozie.site['oozie.base.url']).port
           java64_home: ctx.config.java.java_home # Used by check_oozie_status.sh
           templeton_port: webhcat_site['templeton.port']
           falcon_port: 0 # TODO

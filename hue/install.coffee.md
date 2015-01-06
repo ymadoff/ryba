@@ -129,7 +129,7 @@ Update the "oozie-site.xml" on the server running the "oozie" service
 to allow impersonnation through the "hue" user.
 
     module.exports.push name: 'Hue # Oozie', callback: (ctx, next) ->
-      {oozie_conf_dir} = ctx.config.ryba
+      {oozie} = ctx.config.ryba
       oozie_server = ctx.host_with_module 'ryba/oozie/server'
       hconfigure = (ssh) ->
         properties = 
@@ -137,7 +137,7 @@ to allow impersonnation through the "hue" user.
           'oozie.service.ProxyUserService.proxyuser.hue.groups': '*'
         ctx.hconfigure
           ssh: ssh
-          destination: "#{oozie_conf_dir}/oozie-site.xml"
+          destination: "#{oozie.conf_dir}/oozie-site.xml"
           properties: properties
           merge: true
         , next
