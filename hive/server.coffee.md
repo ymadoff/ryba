@@ -1,7 +1,3 @@
----
-title: 
-layout: module
----
 
 # Hive Server
 
@@ -71,6 +67,8 @@ Example:
     module.exports.push commands: 'backup', modules: 'ryba/hive/server_backup'
 
     module.exports.push commands: 'check', modules: 'ryba/hive/server_check'
+
+    module.exports.push commands: 'info', modules: 'ryba/hive/server_info'
 
     module.exports.push commands: 'install', modules: [
       'ryba/hive/server_install'
