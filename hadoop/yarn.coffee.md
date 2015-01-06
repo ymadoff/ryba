@@ -175,15 +175,6 @@ yarn.nodemanager.vmem-pmem-ratio property: Is defines ratio of virtual memory to
 available pysical memory, Here is 2.1 means virtual memory will be double the 
 size of physical memory.
 
-yarn.app.mapreduce.am.command-opts: In yarn ApplicationMaster(AM) is responsible
-for securing necessary resources. So this property defines how much memory 
-required to run AM itself. Don't confuse this with nodemanager, where job will 
-be executed.
-
-yarn.app.mapreduce.am.resource.mb: This property specify criteria to select 
-resource for particular job. Here is given 1536 Means any nodemanager which has 
-equal or more memory available will get selected for executing job.
-
 Ressources:
 http://stackoverflow.com/questions/18692631/difference-between-3-memory-parameters-in-hadoop-2
 blog.cloudera.com/blog/2014/04/apache-hadoop-yarn-avoiding-6-time-consuming-gotchas/
