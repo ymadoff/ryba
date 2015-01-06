@@ -306,30 +306,30 @@ lifecyle = module.exports =
     lifecyle.hive_server2_stop ctx, (err) ->
       return callback err if err
       lifecyle.hive_server2_start ctx, callback
-  oozie_status: (ctx, callback) ->
-    ctx.log "Oozie status"
-    {oozie_pid_dir} = ctx.config.ryba
-    lifecyle.is_pidfile_running ctx, "#{oozie_pid_dir}/oozie.pid", (err, running) ->
-      ctx.log "Oozie status: #{if running then 'RUNNING' else 'STOPED'}"
-      callback err, running
-  oozie_start: (ctx, callback) ->
-    {oozie_user} = ctx.config.ryba
-    lifecyle.oozie_status ctx, (err, running) ->
-      return callback err, false if err or running
-      ctx.log "Oozie start"
-      ctx.execute
-        # su -l oozie -c "/usr/lib/oozie/bin/oozied.sh start"
-        cmd: "su -l #{oozie_user.name} -c \"/usr/lib/oozie/bin/oozied.sh start\""
-      , callback
-  oozie_stop: (ctx, callback) ->
-    {oozie_user} = ctx.config.ryba
-    lifecyle.oozie_status ctx, (err, running) ->
-      return callback err, false if err or not running
-      ctx.log "Oozie stop"
-      ctx.execute
-        # su -l oozie -c "/usr/lib/oozie/bin/oozied.sh stop"
-        cmd: "su -l #{oozie_user.name} -c \"/usr/lib/oozie/bin/oozied.sh stop\""
-      , callback
+  # oozie_status: (ctx, callback) ->
+  #   ctx.log "Oozie status"
+  #   {oozie_pid_dir} = ctx.config.ryba
+  #   lifecyle.is_pidfile_running ctx, "#{oozie_pid_dir}/oozie.pid", (err, running) ->
+  #     ctx.log "Oozie status: #{if running then 'RUNNING' else 'STOPED'}"
+  #     callback err, running
+  # oozie_start: (ctx, callback) ->
+  #   {oozie_user} = ctx.config.ryba
+  #   lifecyle.oozie_status ctx, (err, running) ->
+  #     return callback err, false if err or running
+  #     ctx.log "Oozie start"
+  #     ctx.execute
+  #       # su -l oozie -c "/usr/lib/oozie/bin/oozied.sh start"
+  #       cmd: "su -l #{oozie_user.name} -c \"/usr/lib/oozie/bin/oozied.sh start\""
+  #     , callback
+  # oozie_stop: (ctx, callback) ->
+  #   {oozie_user} = ctx.config.ryba
+  #   lifecyle.oozie_status ctx, (err, running) ->
+  #     return callback err, false if err or not running
+  #     ctx.log "Oozie stop"
+  #     ctx.execute
+  #       # su -l oozie -c "/usr/lib/oozie/bin/oozied.sh stop"
+  #       cmd: "su -l #{oozie_user.name} -c \"/usr/lib/oozie/bin/oozied.sh stop\""
+  #     , callback
   hbase_master_status: (ctx, callback) ->
     ctx.log "HBase Master status"
     ctx.execute

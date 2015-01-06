@@ -1,23 +1,32 @@
----
-title: 
-layout: module
----
 
 # Oozie Server Stop
 
-    lifecycle = require '../lib/lifecycle'
+Run the command `./bin/ryba stop -m ryba/oozie/server` to stop the Oozie
+server using Ryba.
+
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-
-    module.exports.push (ctx) ->
-      require('./server').configure ctx
+    module.exports.push require('./server').configure
 
 ## Stop
 
-Stop the Oozie service. Execute these commands on the Oozie server host machine.
+Stop the Oozie service. You can also stop the server manually with the
+following command:
+
+```
+su -l oozie -c "/usr/lib/oozie/bin/oozied.sh stop"
+```
 
     module.exports.push name: 'Oozie Server # Stop', label_true: 'STOPED', timeout: -1, callback: (ctx, next) ->
-      lifecycle.oozie_stop ctx, next
+      {oozie_user, oozie_pid_dir} = ctx.config.ryba
+      ctx.execute
+        cmd: """
+        if [ ! -f #{oozie_pid_dir}/oozie.pid ]; then exit 3; fi
+        if ! kill -0 >/dev/null 2>&1 `cat #{oozie_pid_dir}/oozie.pid`; then exit 3; fi
+        su -l #{oozie_user.name} -c "/usr/lib/oozie/bin/oozied.sh stop 20 -force"
+        """
+        code_skipped: 3
+      , next
 
 ## Stop Clean Logs
 
