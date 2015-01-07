@@ -1,5 +1,5 @@
 
-# YARN ResourceManager Stop
+# Hadoop YARN ResourceManager Stop
 
     lifecycle = require '../lib/lifecycle'
     module.exports = []

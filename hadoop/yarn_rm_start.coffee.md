@@ -1,5 +1,5 @@
 
-# YARN ResourceManager Start
+# Hadoop YARN ResourceManager Start
 
     lifecycle = require '../lib/lifecycle'
     module.exports = []

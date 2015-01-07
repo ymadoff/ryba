@@ -1,5 +1,5 @@
 
-# MapRed Client Check
+# Hadoop MapRed Client Check
 
     module.exports = []
     module.exports.push 'masson/bootstrap'

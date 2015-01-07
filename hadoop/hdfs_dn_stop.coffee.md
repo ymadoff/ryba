@@ -1,10 +1,5 @@
----
-title: HDFS DataNode Stop
-module: ryba/hadoop/hdfs_dn_stop
-layout: module
----
 
-# HDFS DataNode Stop
+# Hadoop HDFS DataNode Stop
 
 Stop the DataNode service. It is recommended to stop a DataNode before its
 associated the NameNodes.
@@ -16,7 +11,7 @@ associated the NameNodes.
 
 ## Stop Service
 
-    module.exports.push name: 'Hadoop HDFS DN # Stop Service', label_true: 'STOPPED', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Stop Service', label_true: 'STOPPED', callback: (ctx, next) ->
       ctx.execute
         cmd: "service hadoop-hdfs-datanode stop"
         code_skipped: 3
@@ -24,7 +19,7 @@ associated the NameNodes.
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'Hadoop HDFS DN # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute
         cmd: 'rm /var/log/hadoop-hdfs/*/*-datanode-*'

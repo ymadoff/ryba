@@ -1,10 +1,5 @@
----
-title: HDFS JournalNode Check
-module: ryba/hadoop/hdfs_jn_check
-layout: module
----
 
-# HDFS JournalNode Check
+# Hadoop HDFS JournalNode Check
 
 Check if the JournalNode is running as expected.
 
@@ -16,7 +11,7 @@ Check if the JournalNode is running as expected.
       require('./core_ssl').configure ctx
       require('./hdfs_jn').configure ctx
 
-    module.exports.push name: 'Hadoop HDFS JN Check # SPNEGO', label_true: 'CHECKED', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS JN Check # SPNEGO', label_true: 'CHECKED', callback: (ctx, next) ->
       {hdfs_site} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       port = hdfs_site["dfs.journalnode.#{protocol}-address"].split(':')[1]

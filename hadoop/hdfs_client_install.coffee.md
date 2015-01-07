@@ -1,9 +1,5 @@
----
-title: 
-layout: module
----
 
-# HDFS Client Install
+# Hadoop HDFS Client Install
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
@@ -11,7 +7,7 @@ layout: module
 
     module.exports.push require('./hdfs_client').configure
 
-    module.exports.push name: 'Hadoop HDFS Client # Configuration', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS Client # Configuration', callback: (ctx, next) ->
       {hadoop_conf_dir, hdfs_site} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
@@ -20,7 +16,7 @@ layout: module
         backup: true
       , next
 
-    module.exports.push name: 'Hadoop HDFS Client # HA', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS Client # HA', callback: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"

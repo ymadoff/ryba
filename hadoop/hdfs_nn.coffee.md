@@ -1,10 +1,5 @@
----
-title: HDP HDFS NameNode
-module: ryba/hadoop/hdfs_nn
-layout: module
----
 
-# HDFS NameNode
+# Hadoop HDFS NameNode
 
 NameNode’s primary responsibility is storing the HDFS namespace. This means things
 like the directory tree, file permissions, and the mapping of files to block

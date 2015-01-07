@@ -1,9 +1,5 @@
----
-title: 
-layout: module
----
 
-# Core
+# Hadoop Core
 
 The Hadoop distribution used is the Hortonwork distribution named HDP. The
 installation is leveraging the Yum repositories. [Individual tarballs][tar] 

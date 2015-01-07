@@ -1,5 +1,5 @@
 
-# YARN ResourceManager Install
+# Hadoop YARN ResourceManager Install
 
     module.exports = []
     module.exports.push 'masson/bootstrap'

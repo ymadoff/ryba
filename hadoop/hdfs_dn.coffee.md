@@ -1,10 +1,5 @@
----
-title: HDFS DataNode
-module: ryba/hadoop/hdfs_dn
-layout: module
----
 
-# HDFS DataNode
+# Hadoop HDFS DataNode
 
 A DataNode manages the storage attached to the node it run on. There are usually
 one DataNode per node in the cluster. HDFS exposes a file system namespace and

@@ -1,5 +1,5 @@
 
-# HDFS NameNode Backup
+# Hadoop HDFS NameNode Backup
 
 comprendre les proprietes de sauvegarde des 2 fsimages et trouver la proprietes du laps de temps entre 2 creations.
 

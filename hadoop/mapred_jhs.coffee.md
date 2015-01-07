@@ -1,9 +1,5 @@
----
-title: 
-layout: module
----
 
-# MapRed JobHistoryServer
+# Hadoop MapRed JobHistoryServer(JHS)
 
     module.exports = []
 

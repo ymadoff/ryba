@@ -1,9 +1,5 @@
----
-title: 
-layout: module
----
 
-# MapRed
+# Hadoop MapRed Client
 
     module.exports = []
 

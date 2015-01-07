@@ -1,9 +1,5 @@
----
-title: 
-layout: module
----
 
-# MapRed JobHistoryServer Install
+# Hadoop MapRed JobHistoryServer Install
 
 Install and configure the MapReduce Job History Server (JHS).
 
@@ -29,7 +25,7 @@ Job History Server.
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'Hadoop MapRed JHS # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'MapRed JHS # IPTables', callback: (ctx, next) ->
       {mapred_site} = ctx.config.ryba
       jhs_shuffle_port = mapred_site['mapreduce.shuffle.port']
       jhs_port = mapred_site['mapreduce.jobhistory.address'].split(':')[1]
@@ -52,7 +48,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install and configure the startup script in 
 "/etc/init.d/hadoop-mapreduce-historyserver".
 
-    module.exports.push name: 'Hadoop MapRed JHS # Startup', callback: (ctx, next) ->
+    module.exports.push name: 'MapRed JHS # Startup', callback: (ctx, next) ->
       {mapred_pid_dir} = ctx.config.ryba
       modified = false
       do_install = ->
@@ -81,7 +77,7 @@ Install and configure the startup script in
         next null, modified
       do_install()
 
-    module.exports.push name: 'Hadoop MapRed JHS # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'MapRed JHS # Kerberos', callback: (ctx, next) ->
       {hadoop_conf_dir, mapred_site, yarn_site} = ctx.config.ryba
       ctx.hconfigure [
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
@@ -99,7 +95,7 @@ Install and configure the startup script in
 
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
-    module.exports.push name: 'Hadoop MapRed JHS # HDFS Layout', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'MapRed JHS # HDFS Layout', timeout: -1, callback: (ctx, next) ->
       {hadoop_group, yarn_user, mapred_user} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.hdfs ctx, """
@@ -132,7 +128,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         code_skipped: 2
       , next
 
-    module.exports.push name: 'Hadoop MapRed JHS # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'MapRed JHS # Kerberos', callback: (ctx, next) ->
       {mapred_user, hadoop_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 

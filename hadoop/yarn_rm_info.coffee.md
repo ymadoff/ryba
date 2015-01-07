@@ -1,5 +1,5 @@
 
-# Yarn ResourceManager Info
+# Hadoop Yarn ResourceManager Info
 
     module.exports = []
     module.exports.push 'masson/bootstrap'

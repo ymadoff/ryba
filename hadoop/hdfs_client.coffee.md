@@ -1,9 +1,5 @@
----
-title: 
-layout: module
----
 
-# HDFS Client
+# Hadoop HDFS Client
 
     module.exports = []
 

@@ -1,9 +1,5 @@
----
-title: 
-layout: module
----
 
-# Core SSL
+# Hadoop Core SSL
 
 Hortonworks mentions 2 strategies to [configure SSL][hdp_ssl], the first one
 involves Self-Signed Certificate while the second one use a Certificate

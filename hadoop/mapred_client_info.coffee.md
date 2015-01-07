@@ -1,5 +1,5 @@
 
-# MapRed Client Info
+# Hadoop MapRed Client Info
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
@@ -8,7 +8,7 @@
 
 ## Info Memory
 
-    module.exports.push name: 'Hadoop MapRed Client # Info Memory', timeout: -1, label_true: 'INFO', callback: (ctx, next) ->
+    module.exports.push name: 'MapRed Client # Info Memory', timeout: -1, label_true: 'INFO', callback: (ctx, next) ->
       {hadoop_conf_dir} = ctx.config.ryba
       properties.read ctx.ssh, "#{hadoop_conf_dir}/mapred-site.xml", (err, config) ->
         return next err if err

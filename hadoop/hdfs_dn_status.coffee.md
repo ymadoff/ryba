@@ -1,10 +1,5 @@
----
-title: HDFS DataNode Status
-module: ryba/hadoop/hdfs_dn_status
-layout: module
----
 
-# HDFS DataNode Status
+# Hadoop HDFS DataNode Status
 
 Display the status of the NameNode as "STARTED" or "STOPPED".
 
@@ -13,6 +8,6 @@ Display the status of the NameNode as "STARTED" or "STOPPED".
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./hdfs_dn').configure
 
-    module.exports.push name: 'Hadoop HDFS DN # Status', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Status', callback: (ctx, next) ->
       lifecycle.dn_status ctx, (err, running) ->
         next err, if running then 'STARTED' else 'STOPPED'

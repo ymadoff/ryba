@@ -1,10 +1,5 @@
----
-title: HDFS JournalNode
-module: ryba/hadoop/hdfs_jn
-layout: module
----
 
-# HDFS JournalNode Install
+# Hadoop HDFS JournalNode Install
 
 It apply to a secured HDFS installation with Kerberos.
 
@@ -36,7 +31,7 @@ Note, "dfs.journalnode.rpc-address" is used by "dfs.namenode.shared.edits.dir".
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'Hadoop HDFS JN # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS JN # IPTables', callback: (ctx, next) ->
       {hdfs_site} = ctx.config.ryba
       rpc = hdfs_site['dfs.journalnode.rpc-address'].split(':')[1]
       http = hdfs_site['dfs.journalnode.http-address'].split(':')[1]
@@ -56,7 +51,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 The JournalNode data are stored inside the directory defined by the 
 "dfs.journalnode.edits.dir" property.
 
-    module.exports.push name: 'Hadoop HDFS JN # Layout', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS JN # Layout', callback: (ctx, next) ->
       {hdfs_site, hadoop_conf_dir} = ctx.config.ryba
       ctx.mkdir
         destination: hdfs_site['dfs.journalnode.edits.dir'].split ','
@@ -69,7 +64,7 @@ The JournalNode data are stored inside the directory defined by the
 Install and configure the startup script in 
 "/etc/init.d/hadoop-hdfs-journalnode".
 
-    module.exports.push name: 'Hadoop HDFS JN # Startup', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS JN # Startup', callback: (ctx, next) ->
       {hdfs_pid_dir} = ctx.config.ryba
       modified = false
       do_install = ->
@@ -110,7 +105,7 @@ SPNEGO tocken is stored inside the "/etc/security/keytabs/spnego.service.keytab"
 keytab, also used by the NameNodes, DataNodes, ResourceManagers and
 NodeManagers.
 
-    module.exports.push name: 'Hadoop HDFS JN # Configure', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS JN # Configure', callback: (ctx, next) ->
       {hdfs_site, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
@@ -125,7 +120,7 @@ Add High Availability specific properties to the "hdfs-site.xml" file. Those
 properties include "dfs.namenode.shared.edits.dir". Note, this might not be
 read on JN side (see [DFSConfigKeys.java][keys]).
 
-    module.exports.push name: 'Hadoop HDFS JN # Configure HA', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS JN # Configure HA', callback: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
       journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
       ha_client_config['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'

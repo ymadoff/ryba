@@ -1,15 +1,11 @@
----
-title: HDFS DataNode Check
-module: ryba/hadoop/hdfs_dn_check
-layout: module
----
 
-# HDFS DataNode Check
+# Hadoop HDFS DataNode Check
 
 Check the DataNode by uploading a file using the HDFS client and the HTTP REST
 interface.
 
-Run the command `./bin/ryba check -m ryba/hadoop/hdfs_dn` to check all the DataNodes.
+Run the command `./bin/ryba check -m ryba/hadoop/hdfs_dn` to check all the
+DataNodes.
 
     lifecycle = require '../lib/lifecycle'
     mkcmd = require '../lib/mkcmd'
@@ -24,7 +20,7 @@ Run the command `./bin/ryba check -m ryba/hadoop/hdfs_dn` to check all the DataN
 
 ## Check Disk Capacity
 
-    module.exports.push name: 'Hadoop HDFS DN # Check Disk Capacity', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Check Disk Capacity', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
       {hdfs_site} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       port = hdfs_site["dfs.datanode.#{protocol}.address"].split(':')[1]
@@ -49,7 +45,7 @@ Run the command `./bin/ryba check -m ryba/hadoop/hdfs_dn` to check all the DataN
 Attemp to place a file inside HDFS. the file "/etc/passwd" will be placed at 
 "/user/{test\_user}/#{ctx.config.host}\_dn".
 
-    module.exports.push name: 'Hadoop HDFS DN # Check HDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Check HDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
       {test_user} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.test ctx, """
@@ -65,7 +61,7 @@ Attemp to place a file inside HDFS. the file "/etc/passwd" will be placed at
 Check for various inconsistencies on the overall filesystem. Use the command
 `hdfs fsck -list-corruptfileblocks` to list the corrupted blocks.
 
-    module.exports.push name: 'Hadoop HDFS DN # Check FSCK', label_true: 'CHECKED', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Check FSCK', label_true: 'CHECKED', timeout: -1, callback: (ctx, next) ->
       ctx.execute
         cmd: mkcmd.hdfs ctx, "hdfs fsck / | tail -1 | grep HEALTHY"
       , next
@@ -79,7 +75,7 @@ is not present on HDFS.
 Read [Delegation Tokens in Hadoop Security](http://www.kodkast.com/blogs/hadoop/delegation-tokens-in-hadoop-security) 
 for more information.
 
-    module.exports.push name: 'Hadoop HDFS DN # Check WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Check WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
       {hdfs_site, nameservice, test_user, force_check, active_nn_host} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1

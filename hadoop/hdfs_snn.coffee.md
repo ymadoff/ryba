@@ -1,9 +1,5 @@
----
-title: 
-layout: module
----
 
-# HDFS SecondaryNameNode 
+# Hadoop HDFS SecondaryNameNode 
 
     module.exports = []
 

@@ -1,10 +1,5 @@
----
-title: HDFS JournalNode
-module: ryba/hadoop/hdfs_jn
-layout: module
----
 
-# HDFS JournalNode
+# Hadoop HDFS JournalNode
 
 This module configure the JournalNode following the 
 [HDFS High Availability Using the Quorum Journal Manager][qjm] official 
