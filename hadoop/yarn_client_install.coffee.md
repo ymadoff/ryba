@@ -23,7 +23,7 @@ the job.
 
     module.exports.push name: 'Hadoop YARN # Configuration', callback: (ctx, next) ->
       {hadoop_conf_dir, yarn} = ctx.config.ryba
-      config = {}
+      properties = {}
       for k, v of yarn.site
         continue if k isnt 'yarn.application.classpath' and k.indexOf('yarn.resourcemanager') is -1
         properties[k] = v
