@@ -26,11 +26,11 @@ isn't honored. Instead, the property "yarn.http.policy" is used.
 
       # ryba.mapred_site['mapreduce.jobhistory.http.policy'] ?= 'HTTPS_ONLY' # 'HTTP_ONLY' or 'HTTPS_ONLY'
       rm_contexts = ctx.contexts modules: 'ryba/hadoop/yarn_rm', require('./yarn_rm').configure
-      ryba.yarn_site['yarn.http.policy'] ?= rm_contexts[0].config.ryba.yarn_site['yarn.http.policy']
-      ryba.mapred_site['mapreduce.jobhistory.http.policy'] ?= rm_contexts[0].config.ryba.yarn_site['yarn.http.policy']
+      ryba.yarn.site['yarn.http.policy'] ?= rm_contexts[0].config.ryba.yarn.site['yarn.http.policy']
+      ryba.mapred_site['mapreduce.jobhistory.http.policy'] ?= rm_contexts[0].config.ryba.yarn.site['yarn.http.policy']
       # See './hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-common/src/main/java/org/apache/hadoop/mapreduce/v2/jobhistory/JHAdminConfig.java#158'
-      # yarn_site['mapreduce.jobhistory.webapp.spnego-principal']
-      # yarn_site['mapreduce.jobhistory.webapp.spnego-keytab-file']
+      # yarn.site['mapreduce.jobhistory.webapp.spnego-principal']
+      # yarn.site['mapreduce.jobhistory.webapp.spnego-keytab-file']
 
 ## Configuration for Staging Directories
 

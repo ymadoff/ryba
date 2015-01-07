@@ -19,26 +19,26 @@ applications.
       require('masson/core/iptables').configure ctx
       require('./yarn').configure ctx
       {host, ryba} = ctx.config
-      ryba.yarn_site['yarn.nodemanager.address'] ?= "#{host}:45454"
-      ryba.yarn_site['yarn.nodemanager.localizer.address'] ?= "#{host}:8040"
-      ryba.yarn_site['yarn.nodemanager.webapp.address'] ?= "#{host}:8042"
-      ryba.yarn_site['yarn.nodemanager.webapp.https.address'] ?= "#{host}:8044"
-      ryba.yarn_site['yarn.nodemanager.container-executor.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor'
-      ryba.yarn_site['yarn.nodemanager.linux-container-executor.group'] ?= 'yarn'
-      ryba.yarn_site['yarn.nodemanager.remote-app-log-dir'] ?= "/app-logs"
-      ryba.yarn_site['yarn.nodemanager.keytab'] ?= '/etc/security/keytabs/nm.service.keytab'
-      ryba.yarn_site['yarn.nodemanager.principal'] ?= "nm/#{ryba.static_host}@#{ryba.realm}"
+      ryba.yarn.site['yarn.nodemanager.address'] ?= "#{host}:45454"
+      ryba.yarn.site['yarn.nodemanager.localizer.address'] ?= "#{host}:8040"
+      ryba.yarn.site['yarn.nodemanager.webapp.address'] ?= "#{host}:8042"
+      ryba.yarn.site['yarn.nodemanager.webapp.https.address'] ?= "#{host}:8044"
+      ryba.yarn.site['yarn.nodemanager.container-executor.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor'
+      ryba.yarn.site['yarn.nodemanager.linux-container-executor.group'] ?= 'yarn'
+      ryba.yarn.site['yarn.nodemanager.remote-app-log-dir'] ?= "/app-logs"
+      ryba.yarn.site['yarn.nodemanager.keytab'] ?= '/etc/security/keytabs/nm.service.keytab'
+      ryba.yarn.site['yarn.nodemanager.principal'] ?= "nm/#{ryba.static_host}@#{ryba.realm}"
       # See '~/www/src/hadoop/hadoop-common/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-api/src/main/java/org/apache/hadoop/yarn/conf/YarnConfiguration.java#263'
-      # ryba.yarn_site['yarn.nodemanager.webapp.spnego-principal']
-      # ryba.yarn_site['yarn.nodemanager.webapp.spnego-keytab-file']
+      # ryba.yarn.site['yarn.nodemanager.webapp.spnego-principal']
+      # ryba.yarn.site['yarn.nodemanager.webapp.spnego-keytab-file']
       # Cloudera recommand setting [vmem-check to false on Centos/RHEL 6 due to its aggressive allocation of virtual memory](http://blog.cloudera.com/blog/2014/04/apache-hadoop-yarn-avoiding-6-time-consuming-gotchas/)
       # yarn.nodemanager.vmem-check-enabled (found in hdfs-default.xml)
       # yarn.nodemanager.vmem-check.enabled
       # [Container Executor](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuration_in_Secure_Mode)
       ryba.container_executor ?= {}
-      ryba.container_executor['yarn.nodemanager.local-dirs'] ?= ryba.yarn_site['yarn.nodemanager.local-dirs']
-      ryba.container_executor['yarn.nodemanager.linux-container-executor.group'] ?= ryba.yarn_site['yarn.nodemanager.linux-container-executor.group']
-      ryba.container_executor['yarn.nodemanager.log-dirs'] = ryba.yarn_site['yarn.nodemanager.log-dirs']
+      ryba.container_executor['yarn.nodemanager.local-dirs'] ?= ryba.yarn.site['yarn.nodemanager.local-dirs']
+      ryba.container_executor['yarn.nodemanager.linux-container-executor.group'] ?= ryba.yarn.site['yarn.nodemanager.linux-container-executor.group']
+      ryba.container_executor['yarn.nodemanager.log-dirs'] = ryba.yarn.site['yarn.nodemanager.log-dirs']
       ryba.container_executor['banned.users'] ?= 'hfds,yarn,mapred,bin'
       ryba.container_executor['min.user.id'] ?= '0'
 

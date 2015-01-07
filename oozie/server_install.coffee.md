@@ -24,10 +24,10 @@ oozie:x:493:
 ```
 
     module.exports.push name: 'Oozie Server # Users & Groups', callback: (ctx, next) ->
-      {oozie_group, oozie_user} = ctx.config.ryba
-      ctx.group oozie_group, (err, gmodified) ->
+      {oozie} = ctx.config.ryba
+      ctx.group oozie.group, (err, gmodified) ->
         return next err if err
-        ctx.user oozie_user, (err, umodified) ->
+        ctx.user oozie.user, (err, umodified) ->
           next err, gmodified or umodified
 
 ## IPTables
@@ -40,8 +40,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'Oozie Server # IPTables', callback: (ctx, next) ->
-      {oozie_site} = ctx.config.ryba
-      port = url.parse(oozie_site['oozie.base.url']).port
+      {oozie} = ctx.config.ryba
+      port = url.parse(oozie.site['oozie.base.url']).port
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "Oozie HTTP Server" }
@@ -69,53 +69,51 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           next err, serviced
 
     module.exports.push name: 'Oozie Server # Directories', callback: (ctx, next) ->
-      {oozie_user, oozie_group, oozie_data, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_tmp_dir} = ctx.config.ryba
-      oozie_user = oozie_user.name
-      oozie_group = oozie_group.name
+      {oozie} = ctx.config.ryba
       ctx.mkdir [
-        destination: oozie_data
-        uid: oozie_user
-        gid: oozie_group
+        destination: oozie.data
+        uid: oozie.user.name
+        gid: oozie.group.name
         mode: 0o0755
       ,
-        destination: oozie_log_dir
-        uid: oozie_user
-        gid: oozie_group
+        destination: oozie.log_dir
+        uid: oozie.user.name
+        gid: oozie.group.name
         mode: 0o0755
       ,
-        destination: oozie_pid_dir
-        uid: oozie_user
-        gid: oozie_group
+        destination: oozie.pid_dir
+        uid: oozie.user.name
+        gid: oozie.group.name
         mode: 0o0755
       ,
-        destination: oozie_tmp_dir
-        uid: oozie_user
-        gid: oozie_group
+        destination: oozie.tmp_dir
+        uid: oozie.user.name
+        gid: oozie.group.name
         mode: 0o0755
       ,
-        destination: "#{oozie_conf_dir}/action-conf"
-        uid: oozie_user
-        gid: oozie_group
+        destination: "#{oozie.conf_dir}/action-conf"
+        uid: oozie.user.name
+        gid: oozie.group.name
         mode: 0o0755
       ], (err, copied) ->
         return next err if err
         # Waiting for recursivity in ctx.mkdir
         ctx.execute
           cmd: """
-          chown -R #{oozie_user}:#{oozie_group} /usr/lib/oozie
-          chown -R #{oozie_user}:#{oozie_group} #{oozie_data}
-          chown -R #{oozie_user}:#{oozie_group} #{oozie_conf_dir}/..
-          chmod -R 755 #{oozie_conf_dir}/..
+          chown -R #{oozie.user.name}:#{oozie.group.name} /usr/lib/oozie
+          chown -R #{oozie.user.name}:#{oozie.group.name} #{oozie.data}
+          chown -R #{oozie.user.name}:#{oozie.group.name} #{oozie.conf_dir}/..
+          chmod -R 755 #{oozie.conf_dir}/..
           """
         , (err, executed) ->
           next err, copied
 
     module.exports.push name: 'Oozie Server # Environment', callback: (ctx, next) ->
       {java_home} = ctx.config.java
-      {oozie_user, oozie_group, oozie_conf_dir, oozie_log_dir, oozie_pid_dir, oozie_data} = ctx.config.ryba
+      {oozie} = ctx.config.ryba
       ctx.write
         source: "#{__dirname}/../resources/oozie/oozie-env.sh"
-        destination: "#{oozie_conf_dir}/oozie-env.sh"
+        destination: "#{oozie.conf_dir}/oozie-env.sh"
         local_source: true
         write: [
           match: /^export JAVA_HOME=.*$/mg
@@ -143,11 +141,11 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           append: true
         ,
           match: /^export OOZIE_DATA=.*$/mg
-          replace: "export OOZIE_DATA=#{oozie_data}"
+          replace: "export OOZIE_DATA=#{oozie.data}"
           append: true
         ]
-        uid: oozie_user.name
-        gid: oozie_group.name
+        uid: oozie.user.name
+        gid: oozie.group.name
         mode: 0o0755
       , next
 
@@ -184,18 +182,17 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         return next err, linked
 
     module.exports.push name: 'Oozie Server # Configuration', callback: (ctx, next) ->
-      { hadoop_conf_dir, yarn_site, oozie_group, oozie_user, 
-        oozie_site, oozie_conf_dir, oozie_hadoop_config } = ctx.config.ryba
+      { hadoop_conf_dir, yarn, oozie } = ctx.config.ryba
       modified = false
       do_oozie_site = ->
         ctx.log 'Configure oozie-site.xml'
         ctx.hconfigure
-          destination: "#{oozie_conf_dir}/oozie-site.xml"
+          destination: "#{oozie.conf_dir}/oozie-site.xml"
           default: "#{__dirname}/../resources/oozie/oozie-site.xml"
           local_default: true
-          properties: oozie_site
-          uid: oozie_user.name
-          gid: oozie_group.name
+          properties: oozie.site
+          uid: oozie.user.name
+          gid: oozie.group.name
           mode: 0o0755
           merge: true
           backup: true
@@ -206,11 +203,11 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       do_hadoop_config = ->
         ctx.log 'Configure hadoop-config.xml'
         ctx.hconfigure
-          destination: "#{oozie_conf_dir}/hadoop-conf/core-site.xml"
+          destination: "#{oozie.conf_dir}/hadoop-conf/core-site.xml"
           local_default: true
-          properties: oozie_hadoop_config
-          uid: oozie_user.name
-          gid: oozie_group.name
+          properties: oozie.hadoop_config
+          uid: oozie.user.name
+          gid: oozie.group.name
           mode: 0o0755
           backup: true
         , (err, configured) ->
@@ -222,7 +219,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       do_oozie_site()
 
     module.exports.push name: 'Oozie Server # War', callback: (ctx, next) ->
-      {oozie_user} = ctx.config.ryba
+      {oozie} = ctx.config.ryba
       falcon_cts = ctx.contexts 'ryba/falcon', require('../falcon').configure
       do_falcon = ->
         return do_prepare_war() unless falcon_cts.length
@@ -265,41 +262,41 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         # falcon_opts = if falcon_cts.length then " –d /tmp/falcon-oozie-jars" else ''
         falcon_opts = ''
         ctx.execute
-          cmd: "su -l #{oozie_user.name} -c '/usr/lib/oozie/bin/oozie-setup.sh prepare-war #{falcon_opts}'"
+          cmd: "su -l #{oozie.user.name} -c '/usr/lib/oozie/bin/oozie-setup.sh prepare-war #{falcon_opts}'"
           # not_if: not ctx.config.ryba.force_war
           code_skipped: 255 # Oozie already started, war is expected to be installed
         , next
       do_falcon()
 
     module.exports.push name: 'Oozie Server # Kerberos', callback: (ctx, next) ->
-      {oozie_user, oozie_group, oozie_site, realm} = ctx.config.ryba
+      {oozie, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
-        principal: oozie_site['oozie.service.HadoopAccessorService.kerberos.principal'] #.replace '_HOST', ctx.config.host
+        principal: oozie.site['oozie.service.HadoopAccessorService.kerberos.principal'] #.replace '_HOST', ctx.config.host
         randkey: true
-        keytab: oozie_site['oozie.service.HadoopAccessorService.keytab.file']
-        uid: oozie_user.name
-        gid: oozie_group.name
+        keytab: oozie.site['oozie.service.HadoopAccessorService.keytab.file']
+        uid: oozie.user.name
+        gid: oozie.group.name
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
       , next
 
     module.exports.push name: 'Oozie Server # SPNEGO', callback: (ctx, next) ->
-      {oozie_site, oozie_user, oozie_group} = ctx.config.ryba
+      {oozie} = ctx.config.ryba
       ctx.copy
         source: '/etc/security/keytabs/spnego.service.keytab'
-        destination: "#{oozie_site['oozie.authentication.kerberos.keytab']}"
-        uid: oozie_user.name
-        gid: oozie_group.name
+        destination: "#{oozie.site['oozie.authentication.kerberos.keytab']}"
+        uid: oozie.user.name
+        gid: oozie.group.name
         mode: 0o0600
       , next
 
     module.exports.push name: 'Oozie Server # MySQL', callback: (ctx, next) ->
-      {db_admin, oozie_db_host, oozie_site} = ctx.config.ryba
-      username = oozie_site['oozie.service.JPAService.jdbc.username']
-      password = oozie_site['oozie.service.JPAService.jdbc.password']
-      {engine, db} = parse_jdbc oozie_site['oozie.service.JPAService.jdbc.url']
+      {db_admin, oozie} = ctx.config.ryba
+      username = oozie.site['oozie.service.JPAService.jdbc.username']
+      password = oozie.site['oozie.service.JPAService.jdbc.password']
+      {engine, db} = parse_jdbc oozie.site['oozie.service.JPAService.jdbc.url']
       engines = 
         mysql: ->
           escape = (text) -> text.replace(/[\\"]/g, "\\$&")
@@ -320,17 +317,17 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       engines[engine]()
 
     module.exports.push name: 'Oozie Server # Database', callback: (ctx, next) ->
-      {oozie_user} = ctx.config.ryba
+      {oozie} = ctx.config.ryba
       ctx.execute
         cmd: """
-        su -l #{oozie_user.name} -c '/usr/lib/oozie/bin/ooziedb.sh create -sqlfile oozie.sql -run Validate DB Connection'
+        su -l #{oozie.user.name} -c '/usr/lib/oozie/bin/ooziedb.sh create -sqlfile oozie.sql -run Validate DB Connection'
         """
       , (err, executed, stdout, stderr) ->
         err = null if err and /DB schema exists/.test stderr
         next err, executed
 
     module.exports.push name: 'Oozie Server # Share lib', timeout: 600000, callback: (ctx, next) ->
-      {oozie_user, oozie_group} = ctx.config.ryba
+      {oozie} = ctx.config.ryba
       version_local = 'ls /usr/lib/oozie/lib | grep oozie-client | sed \'s/^oozie-client-\\(.*\\)\\.jar$/\\1/g\''
       version_remote = 'hdfs dfs -cat /user/oozie/share/lib/sharelib.properties | grep build.version | sed \'s/^build.version=\\(.*\\)$/\\1/g\''
       ctx.execute 
@@ -338,11 +335,11 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         mkdir /tmp/ooziesharelib
         cd /tmp/ooziesharelib
         tar xzf /usr/lib/oozie/oozie-sharelib.tar.gz
-        hdfs dfs -rm -r /user/#{oozie_user.name}/share || true
-        hdfs dfs -mkdir /user/#{oozie_user.name}
-        hdfs dfs -put share /user/#{oozie_user.name}
-        hdfs dfs -chown #{oozie_user.name}:#{oozie_group.name} /user/#{oozie_user.name}
-        hdfs dfs -chmod -R 755 /user/#{oozie_user.name}
+        hdfs dfs -rm -r /user/#{oozie.user.name}/share || true
+        hdfs dfs -mkdir /user/#{oozie.user.name}
+        hdfs dfs -put share /user/#{oozie.user.name}
+        hdfs dfs -chown #{oozie.user.name}:#{oozie.group.name} /user/#{oozie.user.name}
+        hdfs dfs -chmod -R 755 /user/#{oozie.user.name}
         rm -rf /tmp/ooziesharelib
         """
         trap_on_error: true

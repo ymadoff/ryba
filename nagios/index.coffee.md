@@ -38,9 +38,10 @@
       nagios.groupcmd.name ?= 'nagiocmd'
       nagios.groupcmd.system ?= true
       # Admin
-      nagios.admin_username ?= 'nagiosadmin'
-      nagios.admin_password ?= 'nagios123'
-      nagios.admin_email ?= ''
+      nagios.admin ?= {}
+      nagios.admin.name ?= 'nagiosadmin'
+      nagios.admin.password ?= 'nagios123'
+      nagios.admin.email ?= ''
       # Kerberos
       nagios.keytab ?= '/etc/security/keytabs/nagios.service.keytab'
       nagios.principal ?= "nagios/#{ctx.config.host}@#{ctx.config.ryba.realm}"

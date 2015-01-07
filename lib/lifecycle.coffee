@@ -140,29 +140,29 @@ lifecyle = module.exports =
       code_skipped: [1, 3]
     , callback
   rm_start: (ctx, callback) ->
-    {yarn_user, hadoop_conf_dir} = ctx.config.ryba
+    {yarn, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.rm_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "ResourceManager start"
       ctx.execute
         # su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf start resourcemanager"
-        # cmd: "su -l #{yarn_user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} start resourcemanager\""
+        # cmd: "su -l #{yarn.user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} start resourcemanager\""
         cmd: "service hadoop-yarn-resourcemanager start"
         # code_skipped: 1
       , callback
   rm_stop: (ctx, callback) ->
-    {yarn_user, hadoop_conf_dir} = ctx.config.ryba
+    {yarn, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.rm_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "ResourceManager stop"
       ctx.execute
         # su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf stop resourcemanager"
-        # cmd: "su -l #{yarn_user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} stop resourcemanager\""
+        # cmd: "su -l #{yarn.user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} stop resourcemanager\""
         cmd: "service hadoop-yarn-resourcemanager stop"
         # code_skipped: 1
       , callback
   nm_status: (ctx, callback) ->
-    # {yarn_pid_dir, yarn_user} = ctx.config.ryba
+    # {yarn_pid_dir, yarn} = ctx.config.ryba
     # ctx.log "NodeManager status"
     # lifecyle.is_pidfile_running ctx, "#{yarn_pid_dir}/#{yarn_user.name}/yarn-#{yarn_user.name}-nodemanager.pid", (err, running) ->
     #   ctx.log "DataNode status: #{if running then 'RUNNING' else 'STOPPED'}"
@@ -172,24 +172,24 @@ lifecyle = module.exports =
       code_skipped: [1, 3]
     , callback
   nm_start: (ctx, callback) ->
-    {yarn_user, hadoop_conf_dir} = ctx.config.ryba
+    {yarn, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.nm_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "NodeManager start"
       ctx.execute
         # su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf start nodemanager"
-        # cmd: "su -l #{yarn_user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} start nodemanager\""
+        # cmd: "su -l #{yarn.user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} start nodemanager\""
         cmd: "service hadoop-yarn-nodemanager start"
         # code_skipped: 1
       , callback
   nm_stop: (ctx, callback) ->
-    {yarn_user, hadoop_conf_dir} = ctx.config.ryba
+    {yarn, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.nm_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "NodeManager stop"
       ctx.execute
         # su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf stop nodemanager"
-        # cmd: "su -l #{yarn_user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} stop nodemanager\""
+        # cmd: "su -l #{yarn.user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} stop nodemanager\""
         cmd: "service hadoop-yarn-nodemanager stop"
         # code_skipped: 1
       , callback
@@ -285,27 +285,27 @@ lifecyle = module.exports =
       lifecyle.hive_server2_start ctx, callback
   # oozie_status: (ctx, callback) ->
   #   ctx.log "Oozie status"
-  #   {oozie_pid_dir} = ctx.config.ryba
-  #   lifecyle.is_pidfile_running ctx, "#{oozie_pid_dir}/oozie.pid", (err, running) ->
+  #   {oozie} = ctx.config.ryba
+  #   lifecyle.is_pidfile_running ctx, "#{oozie.pid_dir}/oozie.pid", (err, running) ->
   #     ctx.log "Oozie status: #{if running then 'RUNNING' else 'STOPPED'}"
   #     callback err, running
   # oozie_start: (ctx, callback) ->
-  #   {oozie_user} = ctx.config.ryba
+  #   {oozie} = ctx.config.ryba
   #   lifecyle.oozie_status ctx, (err, running) ->
   #     return callback err, false if err or running
   #     ctx.log "Oozie start"
   #     ctx.execute
   #       # su -l oozie -c "/usr/lib/oozie/bin/oozied.sh start"
-  #       cmd: "su -l #{oozie_user.name} -c \"/usr/lib/oozie/bin/oozied.sh start\""
+  #       cmd: "su -l #{oozie.user.name} -c \"/usr/lib/oozie/bin/oozied.sh start\""
   #     , callback
   # oozie_stop: (ctx, callback) ->
-  #   {oozie_user} = ctx.config.ryba
+  #   {oozie} = ctx.config.ryba
   #   lifecyle.oozie_status ctx, (err, running) ->
   #     return callback err, false if err or not running
   #     ctx.log "Oozie stop"
   #     ctx.execute
   #       # su -l oozie -c "/usr/lib/oozie/bin/oozied.sh stop"
-  #       cmd: "su -l #{oozie_user.name} -c \"/usr/lib/oozie/bin/oozied.sh stop\""
+  #       cmd: "su -l #{oozie.user.name} -c \"/usr/lib/oozie/bin/oozied.sh stop\""
   #     , callback
   hbase_master_status: (ctx, callback) ->
     ctx.log "HBase Master status"

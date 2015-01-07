@@ -111,16 +111,16 @@ nagiocmd:x:2419:apache
         ctx.upload plugins, next
 
     module.exports.push name: 'Nagios # Admin Password', callback: (ctx, next) ->
-      {user, group, admin_username, admin_password} = ctx.config.ryba.nagios
+      {user, group, admin} = ctx.config.ryba.nagios
       ctx.execute
         cmd: """
-        hash=`cat /etc/nagios/htpasswd.users 2>/dev/null | grep #{admin_username}: | sed 's/.*:\\(.*\\)/\\1/'`
+        hash=`cat /etc/nagios/htpasswd.users 2>/dev/null | grep #{admin.name}: | sed 's/.*:\\(.*\\)/\\1/'`
         salt=`echo $hash | sed 's/\\(.\\{2\\}\\).*/\\1/'`
         if [ $salt != "" ]; then
-          expect=`openssl passwd -crypt -salt $salt #{admin_password} 2>/dev/null`
+          expect=`openssl passwd -crypt -salt $salt #{admin.password} 2>/dev/null`
           if [ "$hash" == "$expect" ]; then exit 3; fi
         fi
-        htpasswd -c -b  /etc/nagios/htpasswd.users #{admin_username} #{admin_password}
+        htpasswd -c -b  /etc/nagios/htpasswd.users #{admin.name} #{admin.password}
         """
         code_skipped: 3
       , next
@@ -229,7 +229,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
 
     module.exports.push name: 'Nagios # Services', callback: (ctx, next) ->
       {nagios, force_check, active_nn_host, core_site, hdfs_site, zookeeper_port, 
-        yarn_site, hive_site, hbase_site, oozie_site, webhcat_site, ganglia, hue_ini} = ctx.config.ryba
+        yarn, hive_site, hbase_site, oozie, webhcat_site, ganglia, hue} = ctx.config.ryba
       protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       nn_hosts_map = {} # fqdn to port
@@ -249,16 +249,16 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           nn_hosts_map[nn_host[0]] = nn_host[1]
           active_nn_port = nn_host[1] if nn_ctx.config.host is active_nn_host
       rm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
-      rm_webapp_port = if yarn_site['yarn.http.policy'] is 'HTTP_ONLY'
-      then yarn_site['yarn.resourcemanager.webapp.address'].split(':')[1]
-      else yarn_site['yarn.resourcemanager.webapp.https.address'].split(':')[1]
+      rm_webapp_port = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
+      then yarn.site['yarn.resourcemanager.webapp.address'].split(':')[1]
+      else yarn.site['yarn.resourcemanager.webapp.https.address'].split(':')[1]
       nm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_nm'
       if nm_hosts.length
         nm_ctx = ctx.hosts[nm_hosts[0]]
         require('../hadoop/yarn_nm').configure nm_ctx
-        nm_webapp_port = if yarn_site['yarn.http.policy'] is 'HTTP_ONLY'
-        then nm_ctx.config.ryba.yarn_site['yarn.nodemanager.webapp.address'].split(':')[1]
-        else nm_ctx.config.ryba.yarn_site['yarn.nodemanager.webapp.https.address'].split(':')[1]
+        nm_webapp_port = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
+        then nm_ctx.config.ryba.yarn.site['yarn.nodemanager.webapp.address'].split(':')[1]
+        else nm_ctx.config.ryba.yarn.site['yarn.nodemanager.webapp.https.address'].split(':')[1]
       jhs_hosts = ctx.hosts_with_module 'ryba/hadoop/mapred_jhs'
       if jhs_hosts.length
         jhs_ctx = ctx.hosts[jhs_hosts[0]]
@@ -327,12 +327,12 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           hbase_master_rpc_port: hbase_site['hbase.master.port']
           hive_metastore_port: url.parse(hive_site['hive.metastore.uris']).port
           hive_server_port: hive_server_port
-          oozie_server_port: url.parse(oozie_site['oozie.base.url']).port
+          oozie_server_port: url.parse(oozie.site['oozie.base.url']).port
           java64_home: ctx.config.java.java_home # Used by check_oozie_status.sh
           templeton_port: webhcat_site['templeton.port']
           falcon_port: 0 # TODO
           ahs_port: 0 # TODO
-          hue_port: hue_ini['desktop']['http_port']
+          hue_port: hue.ini.desktop.http.port
       , next
 
     module.exports.push name: 'Nagios # Commands', callback: (ctx, next) ->

@@ -11,20 +11,22 @@
 
 ## Configure
 
-*   `oozie_user` (object|string)   
+*   `oozie.user` (object|string)   
     The Unix Oozie login name or a user object (see Mecano User documentation).   
-*   `oozie_group` (object|string)   
+*   `oozie.group` (object|string)   
     The Unix Oozie group name or a group object (see Mecano Group documentation).   
 
 Example
 
 ```json
-    "oozie_user": {
-      "name": "oozie", "system": true, "gid": "oozie",
-      "comment": "Oozie User", "home": "/var/lib/oozie"
-    }
-    "oozie_group": {
-      "name": "Oozie", "system": true
+    "oozie": {
+      "user": {
+        "name": "oozie", "system": true, "gid": "oozie",
+        "comment": "Oozie User", "home": "/var/lib/oozie"
+      },
+      "group": {
+        "name": "Oozie", "system": true
+      }
     }
 ```
 
@@ -37,66 +39,67 @@ Example
       # Internal properties
       ryba.force_war ?= false
       # User
-      ryba.oozie_user = name: ryba.oozie_user if typeof ryba.oozie_user is 'string'
-      ryba.oozie_user ?= {}
-      ryba.oozie_user.name ?= 'oozie'
-      ryba.oozie_user.system ?= true
-      ryba.oozie_user.gid ?= 'oozie'
-      ryba.oozie_user.comment ?= 'Oozie User'
-      ryba.oozie_user.home ?= '/var/lib/oozie'
+      ryba.oozie ?= {}
+      ryba.oozie.user ?= {}
+      ryba.oozie.user = name: ryba.oozie.user if typeof ryba.oozie.user is 'string'
+      ryba.oozie.user.name ?= 'oozie'
+      ryba.oozie.user.system ?= true
+      ryba.oozie.user.gid ?= 'oozie'
+      ryba.oozie.user.comment ?= 'Oozie User'
+      ryba.oozie.user.home ?= '/var/lib/oozie'
       # Group
-      ryba.oozie_group = name: ryba.oozie_group if typeof ryba.oozie_group is 'string'
-      ryba.oozie_group ?= {}
-      ryba.oozie_group.name ?= 'oozie'
-      ryba.oozie_group.system ?= true
+      ryba.oozie.group ?= {}
+      ryba.oozie.group = name: ryba.oozie.group if typeof ryba.oozie.group is 'string'
+      ryba.oozie.group.name ?= 'oozie'
+      ryba.oozie.group.system ?= true
       # Layout
-      ryba.oozie_conf_dir ?= '/etc/oozie/conf'
-      ryba.oozie_data ?= '/var/db/oozie'
-      ryba.oozie_log_dir ?= '/var/log/oozie'
-      ryba.oozie_pid_dir ?= '/var/run/oozie'
-      ryba.oozie_tmp_dir ?= '/var/tmp/oozie'
+      ryba.oozie.conf_dir ?= '/etc/oozie/conf'
+      ryba.oozie.data ?= '/var/db/oozie'
+      ryba.oozie.log_dir ?= '/var/log/oozie'
+      ryba.oozie.pid_dir ?= '/var/run/oozie'
+      ryba.oozie.tmp_dir ?= '/var/tmp/oozie'
       # Configuration
-      ryba.oozie_site ?= {}
-      ryba.oozie_site['oozie.base.url'] = "http://#{ctx.config.host}:11000/oozie"
+      ryba.oozie.site ?= {}
+      ryba.oozie.site['oozie.base.url'] = "http://#{ctx.config.host}:11000/oozie"
       # Configuration Database
-      ryba.oozie_site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{ryba.db_admin.host}:#{ryba.db_admin.port}/oozie?createDatabaseIfNotExist=true"
-      ryba.oozie_site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
-      ryba.oozie_site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'
-      ryba.oozie_site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
-      ryba.oozie_site['oozie.service.AuthorizationService.security.enabled'] ?= null # Now deprecated in favor of oozie.service.AuthorizationService.authorization.enabled (see oozie "oozie.log" file)
-      ryba.oozie_site['oozie.service.AuthorizationService.authorization.enabled'] ?= 'true'
-      ryba.oozie_site['oozie.service.HadoopAccessorService.kerberos.enabled'] ?= 'true'
-      ryba.oozie_site['local.realm'] ?= "#{ryba.realm}"
-      ryba.oozie_site['oozie.service.HadoopAccessorService.keytab.file'] ?= '/etc/oozie/conf/oozie.service.keytab'
-      ryba.oozie_site['oozie.service.HadoopAccessorService.kerberos.principal'] ?= "oozie/#{ctx.config.host}@#{ryba.realm}"
-      ryba.oozie_site['oozie.authentication.type'] ?= 'kerberos'
-      ryba.oozie_site['oozie.authentication.kerberos.principal'] ?= "HTTP/#{ctx.config.host}@#{ryba.realm}"
-      ryba.oozie_site['oozie.authentication.kerberos.keytab'] ?= '/etc/oozie/conf/spnego.service.keytab'
-      # ryba.oozie_site['oozie.service.HadoopAccessorService.nameNode.whitelist'] = ''
-      ryba.oozie_site['oozie.authentication.kerberos.name.rules'] ?= ryba.core_site['hadoop.security.auth_to_local']
-      ryba.oozie_site['oozie.service.HadoopAccessorService.nameNode.whitelist'] ?= '' # Fix space value
+      ryba.oozie.site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{ryba.db_admin.host}:#{ryba.db_admin.port}/oozie?createDatabaseIfNotExist=true"
+      ryba.oozie.site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
+      ryba.oozie.site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'
+      ryba.oozie.site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
+      ryba.oozie.site['oozie.service.AuthorizationService.security.enabled'] ?= null # Now deprecated in favor of oozie.service.AuthorizationService.authorization.enabled (see oozie "oozie.log" file)
+      ryba.oozie.site['oozie.service.AuthorizationService.authorization.enabled'] ?= 'true'
+      ryba.oozie.site['oozie.service.HadoopAccessorService.kerberos.enabled'] ?= 'true'
+      ryba.oozie.site['local.realm'] ?= "#{ryba.realm}"
+      ryba.oozie.site['oozie.service.HadoopAccessorService.keytab.file'] ?= '/etc/oozie/conf/oozie.service.keytab'
+      ryba.oozie.site['oozie.service.HadoopAccessorService.kerberos.principal'] ?= "oozie/#{ctx.config.host}@#{ryba.realm}"
+      ryba.oozie.site['oozie.authentication.type'] ?= 'kerberos'
+      ryba.oozie.site['oozie.authentication.kerberos.principal'] ?= "HTTP/#{ctx.config.host}@#{ryba.realm}"
+      ryba.oozie.site['oozie.authentication.kerberos.keytab'] ?= '/etc/oozie/conf/spnego.service.keytab'
+      # ryba.oozie.site['oozie.service.HadoopAccessorService.nameNode.whitelist'] = ''
+      ryba.oozie.site['oozie.authentication.kerberos.name.rules'] ?= ryba.core_site['hadoop.security.auth_to_local']
+      ryba.oozie.site['oozie.service.HadoopAccessorService.nameNode.whitelist'] ?= '' # Fix space value
       # ryba.extjs ?= {}
       # throw new Error "Missing extjs.source" unless ryba.extjs.source
       # throw new Error "Missing extjs.destination" unless ryba.extjs.destination
       # Note, we might also enrich "oozie.credentials.credentialclasses"
       # For example
-      # ryba.oozie_site['oozie.credentials.credentialclasses'] = """
+      # ryba.oozie.site['oozie.credentials.credentialclasses'] = """
       # hcat=org.apache.oozie.action.hadoop.HCatCredentials,
       # hbase=org.apache.oozie.action.hadoop.HbaseCredentials
       # """
 
 ## Configuration for Proxy Users
 
-      ryba.oozie_site['oozie.service.ProxyUserService.proxyuser.hive.hosts'] ?= "*"
-      ryba.oozie_site['oozie.service.ProxyUserService.proxyuser.hive.groups'] ?= "*"
-      ryba.oozie_site['oozie.service.ProxyUserService.proxyuser.hue.hosts'] ?= "*"
-      ryba.oozie_site['oozie.service.ProxyUserService.proxyuser.hue.groups'] ?= "*"
+      ryba.oozie.site['oozie.service.ProxyUserService.proxyuser.hive.hosts'] ?= "*"
+      ryba.oozie.site['oozie.service.ProxyUserService.proxyuser.hive.groups'] ?= "*"
+      ryba.oozie.site['oozie.service.ProxyUserService.proxyuser.hue.hosts'] ?= "*"
+      ryba.oozie.site['oozie.service.ProxyUserService.proxyuser.hue.groups'] ?= "*"
       falcon_cts = ctx.contexts 'ryba/falcon', require('../falcon').configure
       if falcon_cts.length
         {user} = falcon_cts[0].config.ryba.falcon
-        ryba.oozie_site["oozie.service.ProxyUserService.proxyuser.#{user.name}.hosts"] ?= "*"
-        ryba.oozie_site["oozie.service.ProxyUserService.proxyuser.#{user.name}.groups"] ?= "*"
-        ryba.oozie_site['oozie.service.ELService.ext.functions.coord-job-submit-instances'] = """
+        ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{user.name}.hosts"] ?= "*"
+        ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{user.name}.groups"] ?= "*"
+        ryba.oozie.site['oozie.service.ELService.ext.functions.coord-job-submit-instances'] = """
           now=org.apache.oozie.extensions.OozieELExtensions#ph1_now_echo,
           today=org.apache.oozie.extensions.OozieELExtensions#ph1_today_echo,
           yesterday=org.apache.oozie.extensions.OozieELExtensions#ph1_yesterday_echo,
@@ -107,7 +110,7 @@ Example
           latest=org.apache.oozie.coord.CoordELFunctions#ph2_coord_latest_echo,
           future=org.apache.oozie.coord.CoordELFunctions#ph2_coord_future_echo
           """
-        ryba.oozie_site['oozie.service.ELService.ext.functions.coord-action-create-inst'] = """
+        ryba.oozie.site['oozie.service.ELService.ext.functions.coord-action-create-inst'] = """
           now=org.apache.oozie.extensions.OozieELExtensions#ph2_now_inst,
           today=org.apache.oozie.extensions.OozieELExtensions#ph2_today_inst,
           yesterday=org.apache.oozie.extensions.OozieELExtensions#ph2_yesterday_inst,
@@ -120,7 +123,7 @@ Example
           formatTime=org.apache.oozie.coord.CoordELFunctions#ph2_coord_formatTime,
           user=org.apache.oozie.coord.CoordELFunctions#coord_user
           """
-        ryba.oozie_site['oozie.service.ELService.ext.functions.coord-action-start'] = """
+        ryba.oozie.site['oozie.service.ELService.ext.functions.coord-action-start'] = """
           now=org.apache.oozie.extensions.OozieELExtensions#ph2_now,
           today=org.apache.oozie.extensions.OozieELExtensions#ph2_today,
           yesterday=org.apache.oozie.extensions.OozieELExtensions#ph2_yesterday,
@@ -136,22 +139,22 @@ Example
           formatTime=org.apache.oozie.coord.CoordELFunctions#ph3_coord_formatTime,
           user=org.apache.oozie.coord.CoordELFunctions#coord_user
           """
-        ryba.oozie_site['oozie.service.ELService.ext.functions.coord-sla-submit'] = """
+        ryba.oozie.site['oozie.service.ELService.ext.functions.coord-sla-submit'] = """
           instanceTime=org.apache.oozie.coord.CoordELFunctions#ph1_coord_nominalTime_echo_fixed,
           user=org.apache.oozie.coord.CoordELFunctions#coord_user
           """
-        ryba.oozie_site['oozie.service.ELService.ext.functions.coord-sla-create'] = """
+        ryba.oozie.site['oozie.service.ELService.ext.functions.coord-sla-create'] = """
           instanceTime=org.apache.oozie.coord.CoordELFunctions#ph2_coord_nominalTime,
           user=org.apache.oozie.coord.CoordELFunctions#coord_user
           """
 
 ## Configuration for Hadoop
 
-      ryba.oozie_hadoop_config ?= {}
-      ryba.oozie_hadoop_config['mapreduce.jobtracker.kerberos.principal'] ?= "mapred/#{ryba.static_host}@#{ryba.realm}"
-      ryba.oozie_hadoop_config['yarn.resourcemanager.principal'] ?= "yarn/#{ryba.static_host}@#{ryba.realm}"
-      ryba.oozie_hadoop_config['dfs.namenode.kerberos.principal'] ?= "hdfs/#{ryba.static_host}@#{ryba.realm}"
-      ryba.oozie_hadoop_config['mapreduce.framework.name'] ?= "yarn"
+      ryba.oozie.hadoop_config ?= {}
+      ryba.oozie.hadoop_config['mapreduce.jobtracker.kerberos.principal'] ?= "mapred/#{ryba.static_host}@#{ryba.realm}"
+      ryba.oozie.hadoop_config['yarn.resourcemanager.principal'] ?= "yarn/#{ryba.static_host}@#{ryba.realm}"
+      ryba.oozie.hadoop_config['dfs.namenode.kerberos.principal'] ?= "hdfs/#{ryba.static_host}@#{ryba.realm}"
+      ryba.oozie.hadoop_config['mapreduce.framework.name'] ?= "yarn"
 
     # module.exports.push commands: 'backup', modules: 'ryba/oozie/server_backup'
 

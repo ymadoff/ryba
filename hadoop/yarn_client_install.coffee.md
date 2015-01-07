@@ -22,9 +22,9 @@ available than the one defined by this property will get selected for executing
 the job.
 
     module.exports.push name: 'Hadoop YARN # Configuration', callback: (ctx, next) ->
-      {hadoop_conf_dir, yarn_user, yarn_group, yarn_site} = ctx.config.ryba
-      properties = {}
-      for k, v of yarn_site
+      {hadoop_conf_dir, yarn} = ctx.config.ryba
+      config = {}
+      for k, v of yarn.site
         continue if k isnt 'yarn.application.classpath' and k.indexOf('yarn.resourcemanager') is -1
         properties[k] = v
       yarn_site_memory = memory(ctx).yarn_site
@@ -36,8 +36,8 @@ the job.
         local_default: true
         properties: properties
         merge: true
-        uid: yarn_user.name
-        gid: yarn_group.name
+        uid: yarn.user.name
+        gid: yarn.group.name
       , next
 
 

@@ -78,10 +78,10 @@ Install and configure the startup script in
       do_install()
 
     module.exports.push name: 'MapRed JHS # Kerberos', callback: (ctx, next) ->
-      {hadoop_conf_dir, mapred_site, yarn_site} = ctx.config.ryba
+      {hadoop_conf_dir, mapred_site, yarn} = ctx.config.ryba
       ctx.hconfigure [
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
-        properties: yarn_site
+        properties: yarn.site
         merge: true
         backup: true
       ,
@@ -96,7 +96,7 @@ Install and configure the startup script in
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
     module.exports.push name: 'MapRed JHS # HDFS Layout', timeout: -1, callback: (ctx, next) ->
-      {hadoop_group, yarn_user, mapred_user} = ctx.config.ryba
+      {hadoop_group, yarn, mapred_user} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.hdfs ctx, """
         if ! hdfs dfs -test -d /mr-history; then
@@ -120,7 +120,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         if ! hdfs dfs -test -d /app-logs; then
           hdfs dfs -mkdir -p /app-logs
           hdfs dfs -chmod 1777 /app-logs
-          hdfs dfs -chown #{yarn_user.name}:#{hadoop_group.name} /app-logs
+          hdfs dfs -chown #{yarn.user.name}:#{hadoop_group.name} /app-logs
           modified=1
         fi
         if [ $modified != "1" ]; then exit 2; fi
