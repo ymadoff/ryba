@@ -27,7 +27,7 @@ the job.
       for k, v of yarn.site
         continue if k isnt 'yarn.application.classpath' and k.indexOf('yarn.resourcemanager') is -1
         properties[k] = v
-      yarn_site_memory = memory(ctx).yarn_site
+      yarn_site_memory = memory(ctx).yarn.site
       properties['yarn.app.mapreduce.am.resource.mb'] ?= yarn_site_memory['yarn.app.mapreduce.am.resource.mb']
       properties['yarn.app.mapreduce.am.command-opts'] ?= yarn_site_memory['yarn.app.mapreduce.am.command-opts']
       ctx.hconfigure
