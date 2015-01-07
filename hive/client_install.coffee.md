@@ -12,29 +12,6 @@ layout: module
     module.exports.push 'ryba/hadoop/yarn_client'
     module.exports.push require('./client').configure
 
-Example of a minimal client configuration:
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-  <property>
-    <name>hive.metastore.kerberos.keytab.file</name>
-    <value>/etc/security/keytabs/hive.service.keytab</value>
-  </property>
-  <property>
-    <name>hive.metastore.kerberos.principal</name>
-    <value>hive/_HOST@ADALTAS.COM</value>
-  </property>
-  <property>
-    <name>hive.metastore.sasl.enabled</name>
-    <value>true</value>
-  </property>
-  <property>
-    <name>hive.metastore.uris</name>
-    <value>thrift://big3.big:9083</value>
-  </property>
-</configuration>
-```
-
 ## Configure
 
 See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap6-3.html)
@@ -56,12 +33,6 @@ See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments
           """
         , (err) ->
           next err, configured
-
-## Check
-
-Execute the "ryba/hive/client_check" module.
-
-    module.exports.push 'ryba/hive/client_check'
 
 
       
