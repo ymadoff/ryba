@@ -3,15 +3,8 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
+    module.exports.push 'ryba/hadoop/mapred_jhs_wait'
     module.exports.push require('./mapred_client').configure
-
-## Wait JHS
-
-    module.exports.push name: 'Hadoop MapRed Client # Wait JHS', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
-      {mapred_site} = ctx.config.ryba
-      [hostname, port] = mapred_site['mapreduce.jobhistory.address'].split ':'
-      ctx.waitIsOpen hostname, port, (err) ->
-        next err, ctx.PASS
 
 ## Check
 
