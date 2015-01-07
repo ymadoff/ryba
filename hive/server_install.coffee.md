@@ -1,7 +1,3 @@
----
-title: 
-layout: module
----
 
 # Hive Server Install
 
@@ -15,7 +11,8 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
     module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/commons/mysql_client' # Install the mysql connector
     module.exports.push 'ryba/hadoop/core' # Configure "core-site.xml" and "hadoop-env.sh"
-    module.exports.push 'ryba/hive/_' # Install the Hive and HCatalog service
+    module.exports.push 'ryba/hive/client_install' # Install the Hive and HCatalog service
+    module.exports.push 'ryba/hadoop/hdfs_dn_wait'
     module.exports.push require('./server').configure
 
 ## IPTables
@@ -202,9 +199,6 @@ and "/etc/init.d/hive-server2".
       {active_nn_host, hdfs_user, hive_user, hive_group} = ctx.config.ryba
       hive_user = hive_user.name
       hive_group = hive_group.name
-      # ctx.connect active_nn_host, (err, ssh) ->
-      #   return next err if err
-        # kerberos = true
       cmd = mkcmd.hdfs ctx, "hdfs dfs -test -d /user && hdfs dfs -test -d /apps && hdfs dfs -test -d /tmp"
       ctx.waitForExecution cmd, code_skipped: 1, (err) ->
         modified = false
