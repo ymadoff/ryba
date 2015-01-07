@@ -67,7 +67,6 @@ Example:
       webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
       # todo, this might not work as expected after ha migration
       nodemanagers = ctx.hosts_with_module 'ryba/hadoop/yarn_nm'
-      jobhistoryserver = ctx.host_with_module 'ryba/hadoop/mapred_jhs'
       # Webhdfs should be active on the NameNode, Secondary NameNode, and all the DataNodes
       # throw new Error 'WebHDFS not active' if ryba.hdfs_site['dfs.webhdfs.enabled'] isnt 'true'
       ryba.hue_conf_dir ?= '/etc/hue/conf'
@@ -141,7 +140,13 @@ Example:
       hue_ini['hadoop']['yarn_clusters']['default']['hadoop_conf_dir'] ?= hadoop_conf_dir
       hue_ini['hadoop']['yarn_clusters']['default']['resourcemanager_api_url'] ?= yarn_api_url
       hue_ini['hadoop']['yarn_clusters']['default']['proxy_api_url'] ?= yarn_api_url
-      hue_ini['hadoop']['yarn_clusters']['default']['history_server_api_url'] ?= "http://#{jobhistoryserver}:19888"
+      # JHS
+      jhs_ctx = ctx.contexts('ryba/hadoop/mapred_jhs')[0]
+      jhs_protocol = if jhs_ctx.config.ryba.mapred_site['mapreduce.jobhistory.http.policy'] is 'HTTP' then 'http' else 'https'
+      jhs_port = if jhs_protocol is 'http'
+      then jhs_ctx.config.ryba.mapred_site['mapreduce.jobhistory.webapp.address'].split(':')[1]
+      else jhs_ctx.config.ryba.mapred_site['mapreduce.jobhistory.webapp.https.address'].split(':')[1]
+      hue_ini['hadoop']['yarn_clusters']['default']['history_server_api_url'] ?= "#{jhs_protocol}://#{jhs_ctx.config.host}:#{jhs_port}"
       hue_ini['hadoop']['yarn_clusters']['default']['node_manager_api_url'] ?= "http://#{nodemanagers[0]}:8042"
       # Configure components
       hue_ini['liboozie'] ?= {}
