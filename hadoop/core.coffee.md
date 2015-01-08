@@ -109,6 +109,10 @@ Default configuration:
       ctx.config.ryba.hdfs.user.groups ?= 'hadoop'
       ctx.config.ryba.hdfs.user.comment ?= 'Hadoop HDFS User'
       ctx.config.ryba.hdfs.user.home ?= '/var/lib/hadoop-hdfs'
+      
+      ctx.config.ryba.hdfs.krb5_user ?= {}
+      ctx.config.ryba.hdfs.krb5_user.name ?= ctx.config.ryba.hdfs.user.name
+      ctx.config.ryba.hdfs.krb5_user.password ?= 'hdfs123'
       ctx.config.ryba.yarn ?= {}
       ctx.config.ryba.yarn.user ?= {}
       ctx.config.ryba.yarn.user = name: ctx.config.ryba.yarn.user if typeof ctx.config.ryba.yarn.user is 'string'

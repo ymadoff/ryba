@@ -52,7 +52,7 @@ Example:
       require('./core').configure ctx
       # require('./core_ssl').configure ctx
       {nameservice, core_site, static_host, realm} = ctx.config.ryba
-      throw new Error "Missing value for 'hdfs.user.krb5_password'" unless ctx.config.ryba.hdfs.user.krb5_password?
+      throw new Error "Missing value for 'hdfs.krb5_user.password'" unless ctx.config.ryba.hdfs.krb5_user.password?
       throw new Error "Missing value for 'test_password'" unless ctx.config.ryba.test_password?
       # Options and configuration
       hdfs = ctx.config.ryba.hdfs ?= {}
@@ -247,7 +247,7 @@ from multiple sessions with braking an active session.
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
         principal: "#{hdfs.user.name}@#{realm}"
-        password: hdfs.user.krb5_password
+        password: hdfs.krb5_user.password
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
