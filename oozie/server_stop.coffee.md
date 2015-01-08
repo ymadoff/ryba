@@ -18,12 +18,12 @@ su -l oozie -c "/usr/lib/oozie/bin/oozied.sh stop"
 ```
 
     module.exports.push name: 'Oozie Server # Stop', label_true: 'STOPPED', timeout: -1, callback: (ctx, next) ->
-      {oozie_user, oozie_pid_dir} = ctx.config.ryba
+      {oozie} = ctx.config.ryba
       ctx.execute
         cmd: """
-        if [ ! -f #{oozie_pid_dir}/oozie.pid ]; then exit 3; fi
-        if ! kill -0 >/dev/null 2>&1 `cat #{oozie_pid_dir}/oozie.pid`; then exit 3; fi
-        su -l #{oozie_user.name} -c "/usr/lib/oozie/bin/oozied.sh stop 20 -force"
+        if [ ! -f #{oozie.pid_dir}/oozie.pid ]; then exit 3; fi
+        if ! kill -0 >/dev/null 2>&1 `cat #{oozie.pid_dir}/oozie.pid`; then exit 3; fi
+        su -l #{oozie.user.name} -c "/usr/lib/oozie/bin/oozied.sh stop 20 -force"
         """
         code_skipped: 3
       , next
