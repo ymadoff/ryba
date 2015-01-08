@@ -229,7 +229,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
 
     module.exports.push name: 'Nagios # Services', callback: (ctx, next) ->
       {nagios, force_check, active_nn_host, core_site, hdfs, zookeeper_port, 
-        yarn, hive, hbase_site, oozie, webhcat_site, ganglia, hue} = ctx.config.ryba
+        yarn, hive, hbase, oozie, webhcat_site, ganglia, hue} = ctx.config.ryba
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       nn_hosts_map = {} # fqdn to port
@@ -320,11 +320,11 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           journalnode_port: journalnode_port
           datanode_port: datanode_port
           clientPort: zookeeper_port
-          hbase_rs_port: hbase_site['hbase.regionserver.info.port']
-          hbase_master_port: hbase_site['hbase.master.info.port']
+          hbase_rs_port: hbase.site['hbase.regionserver.info.port']
+          hbase_master_port: hbase.site['hbase.master.info.port']
           hbase_master_hosts_in_str: hm_hosts.join ','
           hbase_master_hosts: hm_hosts
-          hbase_master_rpc_port: hbase_site['hbase.master.port']
+          hbase_master_rpc_port: hbase.site['hbase.master.port']
           hive_metastore_port: url.parse(hive.site['hive.metastore.uris']).port
           hive_server_port: hive_server_port
           oozie_server_port: url.parse(oozie.site['oozie.base.url']).port

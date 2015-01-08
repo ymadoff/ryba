@@ -33,11 +33,11 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HBase master # IPTables', callback: (ctx, next) ->
-      {hbase_site} = ctx.config.ryba
+      {hbase} = ctx.config.ryba
       ctx.iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.master.port'], protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.master.info.port'], protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.master.port'], protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.master.info.port'], protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
       , next
@@ -53,10 +53,10 @@ Install and configure the startup script in
       , next
 
     module.exports.push name: 'HBase Master # HDFS layout', timeout: -1, callback: (ctx, next) ->
-      {hbase_user, hbase_site} = ctx.config.ryba
+      {hbase} = ctx.config.ryba
       ctx.waitForExecution mkcmd.hdfs(ctx, "hdfs dfs -test -d /apps"), code_skipped: 1, (err) ->
         return next err if err
-        dirs = hbase_site['hbase.bulkload.staging.dir'].split '/'
+        dirs = hbase.site['hbase.bulkload.staging.dir'].split '/'
         return next err "Invalid property \"hbase.bulkload.staging.dir\"" unless dirs.length > 2 and path.join('/', dirs[0], '/', dirs[1]) is '/apps'
         ctx.log "Create /apps/hbase"
         modified = false
@@ -66,7 +66,7 @@ Install and configure the startup script in
           cmd = """
           if hdfs dfs -ls #{dir} &>/dev/null; then exit 2; fi
           hdfs dfs -mkdir #{dir}
-          hdfs dfs -chown #{hbase_user.name} #{dir}
+          hdfs dfs -chown #{hbase.user.name} #{dir}
           """
           cmd += "\nhdfs dfs -chmod 711 #{dir}"  if 3 + index is dirs.length
           ctx.execute
@@ -86,12 +86,12 @@ RegionServer, and HBase client host machines.
 Environment file is enriched by "ryba/hbase/_ # HBase # Env".
 
     module.exports.push name: 'HBase master # Zookeeper JAAS', timeout: -1, callback: (ctx, next) ->
-      {jaas_server, hbase_conf_dir, hbase_user, hbase_group} = ctx.config.ryba
+      {jaas_server, hbase} = ctx.config.ryba
       ctx.write
-        destination: "#{hbase_conf_dir}/hbase-master.jaas"
+        destination: "#{hbase.conf_dir}/hbase-master.jaas"
         content: jaas_server
-        uid: hbase_user.name
-        gid: hbase_group.name
+        uid: hbase.user.name
+        gid: hbase.group.name
         mode: 0o700
       , next
 
@@ -99,31 +99,31 @@ https://blogs.apache.org/hbase/entry/hbase_cell_security
 https://hbase.apache.org/book/security.html
 
     module.exports.push name: 'HBase Master # Kerberos', callback: (ctx, next) ->
-      {hadoop_group, hbase_user, hbase_site, realm} = ctx.config.ryba
+      {hadoop_group, hbase, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc [
-        principal: hbase_site['hbase.master.kerberos.principal'].replace '_HOST', ctx.config.host
+        principal: hbase.site['hbase.master.kerberos.principal'].replace '_HOST', ctx.config.host
         randkey: true
-        keytab: hbase_site['hbase.master.keytab.file']
-        uid: hbase_user.name
+        keytab: hbase.site['hbase.master.keytab.file']
+        uid: hbase.user.name
         gid: hadoop_group.name
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
       # ,
-      #   principal: hbase_site['hbase.thrift.kerberos.principal'].replace '_HOST', ctx.config.host
+      #   principal: hbase.site['hbase.thrift.kerberos.principal'].replace '_HOST', ctx.config.host
       #   randkey: true
-      #   keytab: hbase_site['hbase.thrift.keytab.file']
-      #   uid: hbase_user.name
+      #   keytab: hbase.site['hbase.thrift.keytab.file']
+      #   uid: hbase.user.name
       #   gid: hadoop_group.name
       #   kadmin_principal: kadmin_principal
       #   kadmin_password: kadmin_password
       #   kadmin_server: admin_server
       # ,
-      #   principal: hbase_site['hbase.rest.kerberos.principal'].replace '_HOST', ctx.config.host
+      #   principal: hbase.site['hbase.rest.kerberos.principal'].replace '_HOST', ctx.config.host
       #   randkey: true
-      #   keytab: hbase_site['hbase.rest.keytab.file']
-      #   uid: hbase_user.name
+      #   keytab: hbase.site['hbase.rest.keytab.file']
+      #   uid: hbase.user.name
       #   gid: hadoop_group.name
       #   kadmin_principal: kadmin_principal
       #   kadmin_password: kadmin_password
@@ -139,17 +139,17 @@ using the hadoop conf directory to retrieve the SPNEGO keytab. The user "hbase"
 is added membership to the group hadoop to gain read access.
 
     module.exports.push name: 'HBase Master # FIX SPNEGO', callback: (ctx, next) ->
-      {hbase_site, hbase_user, hbase_group, hadoop_group} = ctx.config.ryba
+      {hbase, hadoop_group} = ctx.config.ryba
       ctx.execute
         cmd: """
-          if groups #{hbase_user.name} | grep #{hadoop_group.name}; then exit 2; fi
-          usermod -G #{hadoop_group.name} #{hbase_user.name}
+          if groups #{hbase.user.name} | grep #{hadoop_group.name}; then exit 2; fi
+          usermod -G #{hadoop_group.name} #{hbase.user.name}
         """
         code_skipped: 2
       , (err, modified) ->
         return next err if err
         ctx.execute
-          cmd: "su -l #{hbase_user.name} -c 'test -r /etc/security/keytabs/spnego.service.keytab'"
+          cmd: "su -l #{hbase.user.name} -c 'test -r /etc/security/keytabs/spnego.service.keytab'"
         , (err) ->
           next err, modified
 
@@ -158,12 +158,12 @@ is added membership to the group hadoop to gain read access.
 Enable stats collection in Ganglia.
 
     module.exports.push name: 'HBase Master # Metrics', callback: (ctx, next) ->
-      {hbase_conf_dir} = ctx.config.ryba
+      {hbase} = ctx.config.ryba
       collector = ctx.host_with_module 'ryba/hadoop/ganglia_collector'
       return next() unless collector
       ctx.upload
         source: "#{__dirname}/../resources/hbase/hadoop-metrics.properties.master-GANGLIA"
-        destination: "#{hbase_conf_dir}/hadoop-metrics.properties"
+        destination: "#{hbase.conf_dir}/hadoop-metrics.properties"
         match: 'TODO-GANGLIA-SERVER'
         replace: collector
       , next
@@ -171,11 +171,11 @@ Enable stats collection in Ganglia.
     module.exports.push 'ryba/hbase/master_start'
 
     module.exports.push name: 'HBase Master # Admin', callback: (ctx, next) ->
-      {hbase_admin, realm} = ctx.config.ryba
+      {hbase, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
-        principal: hbase_admin.principal
-        password: hbase_admin.password
+        principal: hbase.admin.principal
+        password: hbase.admin.password
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
@@ -193,4 +193,3 @@ Enable stats collection in Ganglia.
     mkcmd = require '../lib/mkcmd'
 
 [HBASE-8409]: https://issues.apache.org/jira/browse/HBASE-8409
-

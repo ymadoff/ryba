@@ -314,27 +314,27 @@ lifecyle = module.exports =
       code_skipped: [1, 3]
     , callback
   hbase_master_start: (ctx, callback) ->
-    {hbase_user, hbase_conf_dir} = ctx.config.ryba
+    {hbase} = ctx.config.ryba
     lifecyle.hbase_master_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "HBase Master start"
       ctx.execute
         # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start master"
-        # cmd: "su -l #{hbase_user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} start master\""
+        # cmd: "su -l #{hbase.user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase.conf_dir} start master\""
         cmd: "service hbase-master start"
       , callback
   hbase_master_stop: (ctx, callback) ->
-    {hbase_user, hbase_conf_dir} = ctx.config.ryba
+    {hbase} = ctx.config.ryba
     lifecyle.hbase_master_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "HBase Master stop"
       ctx.execute
         # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop master"
-        # cmd: "su -l #{hbase_user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} stop master\""
+        # cmd: "su -l #{hbase.user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase.conf_dir} stop master\""
         cmd: "service hbase-master stop"
       , callback
   hbase_regionserver_status: (ctx, callback) ->
-    # {hbase_pid_dir, hbase_user} = ctx.config.ryba
+    # {hbase} = ctx.config.ryba
     ctx.log "HBase RegionServer status"
     # lifecyle.is_pidfile_running ctx, "#{hbase_pid_dir}/hbase-#{hbase_user.name}-regionserver.pid", (err, running) ->
     #   ctx.log "HBase RegionServer status: #{if running then 'RUNNING' else 'STOPPED'}"
@@ -344,7 +344,7 @@ lifecyle = module.exports =
       code_skipped: [1, 3]
     , callback
   hbase_regionserver_start: (ctx, callback) ->
-    {hbase_user, hbase_conf_dir} = ctx.config.ryba
+    {hbase} = ctx.config.ryba
     lifecyle.hbase_regionserver_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "HBase RegionServer start"
@@ -354,7 +354,7 @@ lifecyle = module.exports =
         cmd: 'service hbase-regionserver start'
       , callback
   hbase_regionserver_stop: (ctx, callback) ->
-    {hbase_user, hbase_conf_dir} = ctx.config.ryba
+    {hbase} = ctx.config.ryba
     lifecyle.hbase_regionserver_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "HBase RegionServer stop"
@@ -457,12 +457,3 @@ module.exports.is_pidfile_running = (ctx, path, callback) ->
     code_skipped: 1
   , (err, started) ->
     callback err, started
-
-
-
-
-
-
-
-
-
