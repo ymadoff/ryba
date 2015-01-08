@@ -47,8 +47,8 @@ Example:
 ```
 
     module.exports.push module.exports.configure = (ctx) ->
-      # return if ctx.hdfs.configured
-      # ctx.hdfs.configured = true
+      # return if ctx.hdfs_configured
+      # ctx.hdfs_configured = true
       require('./core').configure ctx
       # require('./core_ssl').configure ctx
       {nameservice, core_site, static_host, realm} = ctx.config.ryba

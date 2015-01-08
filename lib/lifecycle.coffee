@@ -204,7 +204,7 @@ lifecyle = module.exports =
       ctx.log "JobHistoryServer start"
       ctx.execute
         # su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config /etc/hadoop/conf start historyserver"
-        # cmd: "su -l #{mapred_user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config #{hadoop_conf_dir} start historyserver\""
+        # cmd: "su -l #{mapred.user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config #{hadoop_conf_dir} start historyserver\""
         cmd: 'service hadoop-mapreduce-historyserver start'
         # code_skipped: 1
       , callback
@@ -214,7 +214,7 @@ lifecyle = module.exports =
       ctx.log "JobHistoryServer stop"
       ctx.execute
         # su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config /etc/hadoop/conf stop historyserver"
-        # cmd: "su -l #{mapred_user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config #{hadoop_conf_dir} stop historyserver\""
+        # cmd: "su -l #{mapred.user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config #{hadoop_conf_dir} stop historyserver\""
         cmd: 'service hadoop-mapreduce-historyserver stop'
         # code_skipped: 1
       , callback

@@ -26,12 +26,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'MapRed JHS # IPTables', callback: (ctx, next) ->
-      {mapred_site} = ctx.config.ryba
-      jhs_shuffle_port = mapred_site['mapreduce.shuffle.port']
-      jhs_port = mapred_site['mapreduce.jobhistory.address'].split(':')[1]
-      jhs_webapp_port = mapred_site['mapreduce.jobhistory.webapp.address'].split(':')[1]
-      jhs_webapp_https_port = mapred_site['mapreduce.jobhistory.webapp.https.address'].split(':')[1]
-      jhs_admin_port = mapred_site['mapreduce.jobhistory.admin.address'].split(':')[1]
+      {mapred} = ctx.config.ryba
+      jhs_shuffle_port = mapred.site['mapreduce.shuffle.port']
+      jhs_port = mapred.site['mapreduce.jobhistory.address'].split(':')[1]
+      jhs_webapp_port = mapred.site['mapreduce.jobhistory.webapp.address'].split(':')[1]
+      jhs_webapp_https_port = mapred.site['mapreduce.jobhistory.webapp.https.address'].split(':')[1]
+      jhs_admin_port = mapred.site['mapreduce.jobhistory.admin.address'].split(':')[1]
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: jhs_port, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS Server" }
@@ -49,7 +49,7 @@ Install and configure the startup script in
 "/etc/init.d/hadoop-mapreduce-historyserver".
 
     module.exports.push name: 'MapRed JHS # Startup', callback: (ctx, next) ->
-      {mapred_pid_dir} = ctx.config.ryba
+      {mapred} = ctx.config.ryba
       modified = false
       do_install = ->
         ctx.service
@@ -64,7 +64,7 @@ Install and configure the startup script in
           destination: '/etc/init.d/hadoop-mapreduce-historyserver'
           write: [
             match: /^PIDFILE=".*"$/m
-            replace: "PIDFILE=\"#{mapred_pid_dir}/$SVC_USER/mapred-mapred-historyserver.pid\""
+            replace: "PIDFILE=\"#{mapred.pid_dir}/$SVC_USER/mapred-mapred-historyserver.pid\""
           ,
             match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m
             replace: "$1 -u $SVC_USER $2"
@@ -78,7 +78,7 @@ Install and configure the startup script in
       do_install()
 
     module.exports.push name: 'MapRed JHS # Kerberos', callback: (ctx, next) ->
-      {hadoop_conf_dir, mapred_site, yarn} = ctx.config.ryba
+      {hadoop_conf_dir, mapred, yarn} = ctx.config.ryba
       ctx.hconfigure [
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
         properties: yarn.site
@@ -86,7 +86,7 @@ Install and configure the startup script in
         backup: true
       ,
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
-        properties: mapred_site
+        properties: mapred.site
         merge: true
         backup: true
       ], next
@@ -96,25 +96,25 @@ Install and configure the startup script in
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
     module.exports.push name: 'MapRed JHS # HDFS Layout', timeout: -1, callback: (ctx, next) ->
-      {hadoop_group, yarn, mapred_user} = ctx.config.ryba
+      {hadoop_group, yarn, mapred} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.hdfs ctx, """
         if ! hdfs dfs -test -d /mr-history; then
           hdfs dfs -mkdir -p /mr-history
           hdfs dfs -chmod 0751 /mr-history
-          hdfs dfs -chown #{mapred_user.name}:#{hadoop_group.name} /mr-history
+          hdfs dfs -chown #{mapred.user.name}:#{hadoop_group.name} /mr-history
           modified=1
         fi
         if ! hdfs dfs -test -d /mr-history/tmp; then
           hdfs dfs -mkdir -p /mr-history/tmp
           hdfs dfs -chmod 1777 /mr-history/tmp
-          hdfs dfs -chown #{mapred_user.name}:#{hadoop_group.name} /mr-history/tmp
+          hdfs dfs -chown #{mapred.user.name}:#{hadoop_group.name} /mr-history/tmp
           modified=1
         fi
         if ! hdfs dfs -test -d /mr-history/done; then
           hdfs dfs -mkdir -p /mr-history/done
           hdfs dfs -chmod 1777 /mr-history/done
-          hdfs dfs -chown #{mapred_user.name}:#{hadoop_group.name} /mr-history/done
+          hdfs dfs -chown #{mapred.user.name}:#{hadoop_group.name} /mr-history/done
           modified=1
         fi
         if ! hdfs dfs -test -d /app-logs; then
@@ -129,13 +129,13 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
       , next
 
     module.exports.push name: 'MapRed JHS # Kerberos', callback: (ctx, next) ->
-      {mapred_user, hadoop_group, realm} = ctx.config.ryba
+      {mapred, hadoop_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
         principal: "jhs/#{ctx.config.host}@#{realm}"
         randkey: true
         keytab: "/etc/security/keytabs/jhs.service.keytab"
-        uid: mapred_user.name
+        uid: mapred.user.name
         gid: hadoop_group.name
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password

@@ -10,24 +10,25 @@
       require('./yarn').configure ctx
       # require('./mapred').configure ctx
       {ryba} = ctx.config
-      ryba.mapred_pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
-      ryba.mapred_site = ryba.mapred_site ?= {}
-      ryba.mapred_site['mapreduce.jobhistory.keytab'] ?= "/etc/security/keytabs/jhs.service.keytab"
-      ryba.mapred_site['mapreduce.jobhistory.principal'] ?= "jhs/#{ctx.config.host}@#{ryba.realm}"
+      ryba.mapred ?= {}
+      ryba.mapred.pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
+      ryba.mapred.site ?= {}
+      ryba.mapred.site['mapreduce.jobhistory.keytab'] ?= "/etc/security/keytabs/jhs.service.keytab"
+      ryba.mapred.site['mapreduce.jobhistory.principal'] ?= "jhs/#{ctx.config.host}@#{ryba.realm}"
       # Fix: src in "[DFSConfigKeys.java][keys]" and [HDP port list] mention 13562 while companion files mentions 8081
-      ryba.mapred_site['mapreduce.shuffle.port'] ?= '13562'
-      ryba.mapred_site['mapreduce.jobhistory.address'] ?= "#{ctx.config.host}:10020"
-      ryba.mapred_site['mapreduce.jobhistory.webapp.address'] ?= "#{ctx.config.host}:19888"
-      ryba.mapred_site['mapreduce.jobhistory.webapp.https.address'] ?= "#{ctx.config.host}:19889"
-      ryba.mapred_site['mapreduce.jobhistory.admin.address'] ?= "#{ctx.config.host}:10033"
+      ryba.mapred.site['mapreduce.shuffle.port'] ?= '13562'
+      ryba.mapred.site['mapreduce.jobhistory.address'] ?= "#{ctx.config.host}:10020"
+      ryba.mapred.site['mapreduce.jobhistory.webapp.address'] ?= "#{ctx.config.host}:19888"
+      ryba.mapred.site['mapreduce.jobhistory.webapp.https.address'] ?= "#{ctx.config.host}:19889"
+      ryba.mapred.site['mapreduce.jobhistory.admin.address'] ?= "#{ctx.config.host}:10033"
 
 Note: As of version "2.4.0", the property "mapreduce.jobhistory.http.policy"
 isn't honored. Instead, the property "yarn.http.policy" is used.
 
-      # ryba.mapred_site['mapreduce.jobhistory.http.policy'] ?= 'HTTPS_ONLY' # 'HTTP_ONLY' or 'HTTPS_ONLY'
+      # ryba.mapred.site['mapreduce.jobhistory.http.policy'] ?= 'HTTPS_ONLY' # 'HTTP_ONLY' or 'HTTPS_ONLY'
       rm_contexts = ctx.contexts modules: 'ryba/hadoop/yarn_rm', require('./yarn_rm').configure
       ryba.yarn.site['yarn.http.policy'] ?= rm_contexts[0].config.ryba.yarn.site['yarn.http.policy']
-      ryba.mapred_site['mapreduce.jobhistory.http.policy'] ?= rm_contexts[0].config.ryba.yarn.site['yarn.http.policy']
+      ryba.mapred.site['mapreduce.jobhistory.http.policy'] ?= rm_contexts[0].config.ryba.yarn.site['yarn.http.policy']
       # See './hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-common/src/main/java/org/apache/hadoop/mapreduce/v2/jobhistory/JHAdminConfig.java#158'
       # yarn.site['mapreduce.jobhistory.webapp.spnego-principal']
       # yarn.site['mapreduce.jobhistory.webapp.spnego-keytab-file']
@@ -37,9 +38,9 @@ isn't honored. Instead, the property "yarn.http.policy" is used.
 The property "yarn.app.mapreduce.am.staging-dir" is an alternative to "done-dir"
 and "intermediate-done-dir".
 
-      ryba.mapred_site['yarn.app.mapreduce.am.staging-dir'] = null
-      ryba.mapred_site['mapreduce.jobhistory.done-dir'] ?= '/mr-history/done' # Directory where history files are managed by the MR JobHistory Server.
-      ryba.mapred_site['mapreduce.jobhistory.intermediate-done-dir'] ?= '/mr-history/tmp' # Directory where history files are written by MapReduce jobs.
+      ryba.mapred.site['yarn.app.mapreduce.am.staging-dir'] = null
+      ryba.mapred.site['mapreduce.jobhistory.done-dir'] ?= '/mr-history/done' # Directory where history files are managed by the MR JobHistory Server.
+      ryba.mapred.site['mapreduce.jobhistory.intermediate-done-dir'] ?= '/mr-history/tmp' # Directory where history files are written by MapReduce jobs.
 
 
     # module.exports.push commands: 'backup', modules: 'ryba/hadoop/mapred_jhs_backup'

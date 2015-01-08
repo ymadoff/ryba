@@ -146,10 +146,10 @@ Example:
       hue.ini['hadoop']['yarn_clusters']['default']['node_manager_api_url'] ?= "http://#{nodemanagers[0]}:8042"
       # JHS
       jhs_ctx = ctx.contexts('ryba/hadoop/mapred_jhs')[0]
-      jhs_protocol = if jhs_ctx.config.ryba.mapred_site['mapreduce.jobhistory.http.policy'] is 'HTTP' then 'http' else 'https'
+      jhs_protocol = if jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.http.policy'] is 'HTTP' then 'http' else 'https'
       jhs_port = if jhs_protocol is 'http'
-      then jhs_ctx.config.ryba.mapred_site['mapreduce.jobhistory.webapp.address'].split(':')[1]
-      else jhs_ctx.config.ryba.mapred_site['mapreduce.jobhistory.webapp.https.address'].split(':')[1]
+      then jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.webapp.address'].split(':')[1]
+      else jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.webapp.https.address'].split(':')[1]
       hue.ini['hadoop']['yarn_clusters']['default']['history_server_api_url'] ?= "#{jhs_protocol}://#{jhs_ctx.config.host}:#{jhs_port}"
       # Configure components
       hue.ini['liboozie'] ?= {}

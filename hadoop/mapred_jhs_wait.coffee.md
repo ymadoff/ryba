@@ -8,5 +8,5 @@
     module.exports.push name: 'Hadoop MapRed JHS # Wait', label_true: 'READY', callback: (ctx, next) ->
       jhs_ctxs = ctx.contexts 'ryba/hadoop/mapred_jhs', require('./mapred_jhs').configure
       if jhs_ctxs.length is 0 then return next() else jhs_ctx = jhs_ctxs[0]
-      [_, port] = jhs_ctx.config.ryba.mapred_site['mapreduce.jobhistory.address'].split ':'
+      [_, port] = jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.address'].split ':'
       ctx.waitIsOpen jhs_ctx.config.host, port, next

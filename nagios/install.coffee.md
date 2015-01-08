@@ -263,7 +263,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       if jhs_hosts.length
         jhs_ctx = ctx.hosts[jhs_hosts[0]]
         require('../hadoop/mapred_jhs').configure jhs_ctx
-        hs_webapp_port = jhs_ctx.config.ryba.mapred_site['mapreduce.jobhistory.webapp.address'].split(':')[1]
+        hs_webapp_port = jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.webapp.address'].split(':')[1]
       jn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
       if jn_hosts.length
         jn_ctx = ctx.hosts[jn_hosts[0]]

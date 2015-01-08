@@ -20,8 +20,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'MapRed Client # IPTables', callback: (ctx, next) ->
-      {mapred_site} = ctx.config.ryba
-      jobclient = mapred_site['yarn.app.mapreduce.am.job.client.port-range']
+      {mapred} = ctx.config.ryba
+      jobclient = mapred.site['yarn.app.mapreduce.am.job.client.port-range']
       jobclient = jobclient.replace '-', ':'
       ctx.iptables
         rules: [
@@ -43,21 +43,21 @@ http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually
 http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
 
     module.exports.push name: 'MapRed Client # Users & Groups', callback: (ctx, next) ->
-      {mapred_user, hadoop_group} = ctx.config.ryba
+      {mapred, hadoop_group} = ctx.config.ryba
       ctx.execute
-        cmd: "useradd #{mapred_user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop MapReduce service\""
+        cmd: "useradd #{mapred.user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop MapReduce service\""
         code: 0
         code_skipped: 9
       , next
 
     module.exports.push name: 'MapRed Client # System Directories', timeout: -1, callback: (ctx, next) ->
-      { mapred_user, hadoop_group, mapred_log_dir, mapred_pid_dir } = ctx.config.ryba
+      {mapred, hadoop_group} = ctx.config.ryba
       modified = false
       do_log = ->
-        ctx.log "Create hdfs and mapred log: #{mapred_log_dir}"
+        ctx.log "Create hdfs and mapred log: #{mapred.log_dir}"
         ctx.mkdir
-          destination: "#{mapred_log_dir}/#{mapred_user.name}"
-          uid: mapred_user.name
+          destination: "#{mapred.log_dir}/#{mapred.user.name}"
+          uid: mapred.user.name
           gid: hadoop_group.name
           mode: 0o0755
         , (err, created) ->
@@ -65,10 +65,10 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
           modified = true if created
           do_pid()
       do_pid = ->
-        ctx.log "Create hdfs and mapred pid: #{mapred_pid_dir}"
+        ctx.log "Create hdfs and mapred pid: #{mapred.pid_dir}"
         ctx.mkdir
-          destination: "#{mapred_pid_dir}/#{mapred_user.name}"
-          uid: mapred_user.name
+          destination: "#{mapred.pid_dir}/#{mapred.user.name}"
+          uid: mapred.user.name
           gid: hadoop_group.name
           mode: 0o0755
         , (err, created) ->
@@ -80,18 +80,18 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       do_log()
 
     module.exports.push name: 'MapRed Client # Configuration', callback: (ctx, next) ->
-      { mapred_site, hadoop_conf_dir, mapred_user, mapred_group, mapred_queue_acls } = ctx.config.ryba
+      {mapred, hadoop_conf_dir} = ctx.config.ryba
       modified = false
       do_mapred = ->
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/mapred-site.xml"
           default: "#{__dirname}/../resources/core_hadoop/mapred-site.xml"
           local_default: true
-          properties: mapred_site
+          properties: mapred.site
           merge: true
           backup: true
-          uid: mapred_user.name
-          gid: mapred_group.name
+          uid: mapred.user.name
+          gid: mapred.group.name
         , (err, configured) ->
           return next err if err
           modified = true if configured
@@ -105,10 +105,10 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
           destination: "#{hadoop_conf_dir}/mapred-queue-acls.xml"
           default: "#{__dirname}/../resources/core_hadoop/mapred-queue-acls.xml"
           local_default: true
-          properties: mapred_queue_acls
+          properties: mapred.queue_acls
           merge: true
-          uid: mapred_user.name
-          gid: mapred_group.name
+          uid: mapred.user.name
+          gid: mapred.group.name
         , (err, configured) ->
           return next err if err
           modified = true if configured
@@ -138,10 +138,10 @@ allowed.
 
     module.exports.push name: 'MapRed Client # Tuning', callback: (ctx, next) ->
       {hadoop_conf_dir} = ctx.config.ryba
-      {info, mapred_site} = memory ctx
+      {info, mapred} = memory ctx
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
-        properties: mapred_site
+        properties: mapred.site
         backup: true
         merge: true
       , next
