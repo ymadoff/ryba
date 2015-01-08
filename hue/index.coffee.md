@@ -61,11 +61,11 @@ Example:
       require('../hadoop/hdfs').configure ctx
       require('../hadoop/yarn').configure ctx
       {ryba} = ctx.config
-      {nameservice, hadoop_conf_dir, webhcat_site, hue, db_admin, core_site, hdfs, yarn} = ryba
+      {nameservice, hadoop_conf_dir, webhcat, hue, db_admin, core_site, hdfs, yarn} = ryba
       hdfs_nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       hue ?= {}
       hue.ini ?= {}
-      webhcat_port = webhcat_site['templeton.port']
+      webhcat_port = webhcat.site['templeton.port']
       webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
       # todo, this might not work as expected after ha migration
       nodemanagers = ctx.hosts_with_module 'ryba/hadoop/yarn_nm'

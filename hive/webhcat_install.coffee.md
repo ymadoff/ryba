@@ -24,8 +24,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'WebHCat # IPTables', callback: (ctx, next) ->
-      {webhcat_site} = ctx.config.ryba
-      port = webhcat_site['templeton.port']
+      {webhcat} = ctx.config.ryba
+      port = webhcat.site['templeton.port']
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "WebHCat HTTP Server" }
@@ -49,7 +49,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
 
     module.exports.push name: 'WebHCat # Startup', callback: (ctx, next) ->
-      {webhcat_pid_dir} = ctx.config.ryba
+      {webhcat} = ctx.config.ryba
       modified = false
       do_install = ->
         ctx.service
@@ -63,7 +63,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
         ctx.write [
           destination: '/etc/init.d/hive-webhcat-server'
           match: /^PIDFILE=".*"$/m
-          replace: "PIDFILE=\"#{webhcat_pid_dir}/webhcat.pid\""
+          replace: "PIDFILE=\"#{webhcat.pid_dir}/webhcat.pid\""
         ,
           destination: '/etc/init.d/hive-webhcat-server'
           match: /^.*# Ryba: clean pidfile if pid not running$/m
@@ -80,11 +80,11 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
       do_install()
 
     module.exports.push name: 'WebHCat # Directories', callback: (ctx, next) ->
-      {webhcat_log_dir, webhcat_pid_dir, hive, hadoop_group} = ctx.config.ryba
+      {webhcat, hive, hadoop_group} = ctx.config.ryba
       modified = false
       do_log = ->
         ctx.mkdir
-          destination: webhcat_log_dir
+          destination: webhcat.log_dir
           uid: hive.user.name
           gid: hadoop_group.name
           mode: 0o755
@@ -94,7 +94,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
           do_pid()
       do_pid = ->
         ctx.mkdir
-          destination: webhcat_pid_dir
+          destination: webhcat.pid_dir
           uid: hive.user.name
           gid: hadoop_group.name
           mode: 0o755
@@ -107,12 +107,12 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
       do_log()
 
     module.exports.push name: 'WebHCat # Configuration', callback: (ctx, next) ->
-      {webhcat_conf_dir, hive, hadoop_group, webhcat_site} = ctx.config.ryba
+      {webhcat, hive, hadoop_group} = ctx.config.ryba
       ctx.hconfigure
-        destination: "#{webhcat_conf_dir}/webhcat-site.xml"
+        destination: "#{webhcat.conf_dir}/webhcat-site.xml"
         default: "#{__dirname}/../resources/webhcat/webhcat-site.xml"
         local_default: true
-        properties: webhcat_site
+        properties: webhcat.site
         uid: hive.user.name
         gid: hadoop_group.name
         mode: 0o0755
@@ -120,11 +120,11 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
       , next
 
     module.exports.push name: 'WebHCat # Env', callback: (ctx, next) ->
-      {webhcat_conf_dir, hive, hadoop_group} = ctx.config.ryba
+      {webhcat, hive, hadoop_group} = ctx.config.ryba
       ctx.log 'Write webhcat-env.sh'
       ctx.upload
         source: "#{__dirname}/../resources/webhcat/webhcat-env.sh"
-        destination: "#{webhcat_conf_dir}/webhcat-env.sh"
+        destination: "#{webhcat.conf_dir}/webhcat-env.sh"
         uid: hive.user.name
         gid: hadoop_group.name
         mode: 0o0755
@@ -188,10 +188,10 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
       ], next
 
     module.exports.push name: 'WebHCat # SPNEGO', callback: (ctx, next) ->
-      {webhcat_site, hive, hadoop_group} = ctx.config.ryba
+      {webhcat, hive, hadoop_group} = ctx.config.ryba
       ctx.copy
         source: '/etc/security/keytabs/spnego.service.keytab'
-        destination: webhcat_site['templeton.kerberos.keytab']
+        destination: webhcat.site['templeton.kerberos.keytab']
         uid: hive.user.name
         gid: hadoop_group.name
         mode: 0o0660

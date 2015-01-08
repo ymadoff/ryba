@@ -364,8 +364,8 @@ lifecyle = module.exports =
         cmd: 'service hbase-regionserver stop'
       , callback
   # webhcat_status: (ctx, callback) ->
-  #   {webhcat_pid_dir} = ctx.config.ryba
-  #   # lifecyle.is_pidfile_running ctx, "#{webhcat_pid_dir}/webhcat.pid", (err, running) ->
+  #   {webhcat.pid_dir} = ctx.config.ryba
+  #   # lifecyle.is_pidfile_running ctx, "#{webhcat.pid_dir}/webhcat.pid", (err, running) ->
   #   #   ctx.log "WebHCat status: #{if running then 'RUNNING' else 'STOPPED'}"
   #   #   callback err, running
   #   ctx.execute
