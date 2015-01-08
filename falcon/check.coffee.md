@@ -32,8 +32,8 @@ Follow the [Hortonworks Data Pipelines example][dpe].
       oozie_contexts = ctx.contexts 'ryba/oozie/server', require('../oozie/server').configure
       oozie_url = oozie_contexts[0].config.ryba.oozie_site['oozie.base.url']
       hive_contexts = ctx.contexts 'ryba/hive/server', require('../hive/_.coffee.md').configure
-      hive_url = hive_contexts[0].config.ryba.hive_site['hive.metastore.uris']
-      hive_principal = hive_contexts[0].config.ryba.hive_site['hive.metastore.kerberos.principal'].replace '_HOST', hive_contexts[0].config.host
+      hive_url = hive_contexts[0].config.ryba.hive.site['hive.metastore.uris']
+      hive_principal = hive_contexts[0].config.ryba.hive.site['hive.metastore.kerberos.principal'].replace '_HOST', hive_contexts[0].config.host
       ctx.write [
         content: """
         <?xml version="1.0"?>

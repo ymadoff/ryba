@@ -224,7 +224,7 @@ lifecyle = module.exports =
       code_skipped: [1, 3]
     , callback
   hive_metastore_start: (ctx, callback) ->
-    {hive_metastore_host, hive_metastore_port, hive_metastore_timeout} = ctx.config.ryba
+    {metastore} = ctx.config.ryba.hive
     lifecyle.hive_metastore_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "Hive Metastore start"
@@ -234,7 +234,7 @@ lifecyle = module.exports =
         # code_skipped: 1
       , (err, started) ->
         return callback err if err
-        ctx.waitIsOpen hive_metastore_host, hive_metastore_port, timeout: hive_metastore_timeout, (err) ->
+        ctx.waitIsOpen metastore.host, metastore.port, timeout: metastore.timeout, (err) ->
           callback err, started
   hive_metastore_stop: (ctx, callback) ->
     lifecyle.hive_metastore_status ctx, (err, running) ->
@@ -257,7 +257,7 @@ lifecyle = module.exports =
       code_skipped: [1, 3]
     , callback
   hive_server2_start: (ctx, callback) ->
-    {hive_server2_host, hive_server2_port, hive_server2_timeout} = ctx.config.ryba
+    {hive_server2} = ctx.config.ryba.hive
     lifecyle.hive_server2_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "Hive Server2 start"
@@ -267,7 +267,7 @@ lifecyle = module.exports =
         # code_skipped: 1
       , (err, started) ->
         return callback err if err
-        ctx.waitIsOpen hive_server2_host, hive_server2_port, timeout: hive_server2_timeout, (err) ->
+        ctx.waitIsOpen hive_server2.host, hive_server2.port, timeout: hive_server2.timeout, (err) ->
           callback err, started
   hive_server2_stop: (ctx, callback) ->
     lifecyle.hive_server2_status ctx, (err, running) ->

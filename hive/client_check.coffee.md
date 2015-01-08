@@ -16,10 +16,10 @@ layout: module
 Use the [Beeline][beeline] JDBC client to execute SQL queries.
 
     module.exports.push name: 'Hive & HCat Client # Check Server2', label_true: 'CHECKED', timeout: -1, callback: (ctx, next) ->
-      {force_check, realm, test_user, hive_server2_host, hive_server2_port} = ctx.config.ryba
-      url = "jdbc:hive2://#{hive_server2_host}:#{hive_server2_port}/default;principal=hive/#{hive_server2_host}@#{realm}"
+      {force_check, realm, test_user, hive} = ctx.config.ryba
+      url = "jdbc:hive2://#{hive.hive_server2.host}:#{hive.hive_server2.port}/default;principal=hive/#{hive.hive_server2.host}@#{realm}"
       query = (query) -> "/usr/lib/hive/bin/beeline -u \"#{url}\" --silent=true -e \"#{query}\" "
-      ctx.waitIsOpen hive_server2_host, hive_server2_port, (err) ->
+      ctx.waitIsOpen hive.hive_server2.host, hive.hive_server2.port, (err) ->
         host = ctx.config.shortname
         ctx.execute
           cmd: mkcmd.test ctx, """
@@ -43,8 +43,8 @@ Use the [Hive CLI][hivecli] client to execute SQL queries using the MapReduce
 engine.
 
     module.exports.push name: 'Hive & HCat Client # Check MapReduce', label_true: 'CHECKED', timeout: -1, callback: (ctx, next) ->
-      {force_check, test_user, hive_metastore_host, hive_metastore_port} = ctx.config.ryba
-      ctx.waitIsOpen hive_metastore_host, hive_metastore_port, (err) ->
+      {force_check, test_user, hive} = ctx.config.ryba
+      ctx.waitIsOpen hive.metastore.host, hive.metastore.port, (err) ->
         host = ctx.config.shortname
         ctx.execute
           cmd: mkcmd.test ctx, """
@@ -68,8 +68,8 @@ engine.
 Use the [Hive CLI][hivecli] client to execute SQL queries using the Tez engine.
 
     module.exports.push name: 'Hive & HCat Client # Check Tez', label_true: 'CHECKED', timeout: -1, callback: (ctx, next) ->
-      {force_check, test_user, hive_metastore_host, hive_metastore_port} = ctx.config.ryba
-      ctx.waitIsOpen hive_metastore_host, hive_metastore_port, (err) ->
+      {force_check, test_user, hive} = ctx.config.ryba
+      ctx.waitIsOpen hive.metastore.host, hive.metastore.port, (err) ->
         host = ctx.config.shortname
         ctx.execute
           cmd: mkcmd.test ctx, """

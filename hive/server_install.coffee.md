@@ -28,10 +28,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'Hive & HCat Server # IPTables', callback: (ctx, next) ->
-      {hive_site} = ctx.config.ryba
-      hive_server_port = if hive_site['hive.server2.transport.mode'] is 'binary'
-      then hive_site['hive.server2.thrift.port']
-      else hive_site['hive.server2.thrift.http.port']
+      {hive} = ctx.config.ryba
+      hive_server_port = if hive.site['hive.server2.transport.mode'] is 'binary'
+      then hive.site['hive.server2.thrift.port']
+      else hive.site['hive.server2.thrift.http.port']
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 9083, protocol: 'tcp', state: 'NEW', comment: "Hive Metastore" }
@@ -73,10 +73,10 @@ and "/etc/init.d/hive-server2".
       ], next
 
     module.exports.push name: 'Hive & HCat Server # Database', callback: (ctx, next) ->
-      {hive_site, db_admin} = ctx.config.ryba
-      username = hive_site['javax.jdo.option.ConnectionUserName']
-      password = hive_site['javax.jdo.option.ConnectionPassword']
-      {engine, db} = parse_jdbc hive_site['javax.jdo.option.ConnectionURL']
+      {hive, db_admin} = ctx.config.ryba
+      username = hive.site['javax.jdo.option.ConnectionUserName']
+      password = hive.site['javax.jdo.option.ConnectionPassword']
+      {engine, db} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
       engines = 
         mysql: ->
           escape = (text) -> text.replace(/[\\"]/g, "\\$&")
@@ -97,35 +97,35 @@ and "/etc/init.d/hive-server2".
       engines[engine]()
 
     module.exports.push name: 'Hive & HCat Server # Configure', callback: (ctx, next) ->
-      {hive_site, hive_user, hive_group, hive_conf_dir} = ctx.config.ryba
+      {hive} = ctx.config.ryba
       ctx.hconfigure
-        destination: "#{hive_conf_dir}/hive-site.xml"
+        destination: "#{hive.conf_dir}/hive-site.xml"
         default: "#{__dirname}/../resources/hive/hive-site.xml"
         local_default: true
-        properties: hive_site
+        properties: hive.site
         merge: true
       , (err, configured) ->
         return next err if err
         ctx.execute
           cmd: """
-          chown -R #{hive_user.name}:#{hive_group.name} #{hive_conf_dir}/
-          chmod -R 755 #{hive_conf_dir}
+          chown -R #{hive.user.name}:#{hive.group.name} #{hive.conf_dir}/
+          chmod -R 755 #{hive.conf_dir}
           """
         , (err) ->
           next err, configured
 
     module.exports.push name: 'Hive & HCat Server # Fix', callback: (ctx, next) ->
-      {hive_conf_dir} = ctx.config.ryba
+      {hive} = ctx.config.ryba
       ctx.write
-        destination: "#{hive_conf_dir}/hive-env.sh"
+        destination: "#{hive.conf_dir}/hive-env.sh"
         match: /^export HIVE_AUX_JARS_PATH=.*$/mg
         replace: 'export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-/usr/lib/hive-hcatalog/share/hcatalog/hive-hcatalog-core.jar}'
       , next
 
     module.exports.push name: 'Hive & HCat Server # Libs', callback: (ctx, next) ->
-      {hive_libs} = ctx.config.ryba
-      return next() unless hive_libs.length
-      uploads = for lib in hive_libs
+      {hive} = ctx.config.ryba
+      return next() unless hive.libs.length
+      uploads = for lib in hive.libs
         source: lib
         destination: "/usr/lib/hive/lib/#{path.basename lib}"
       ctx.upload uploads, next
@@ -137,16 +137,16 @@ and "/etc/init.d/hive-server2".
       , next
 
     module.exports.push name: 'Hive & HCat Server # Kerberos', callback: (ctx, next) ->
-      {hive_user, hive_group, hive_site, realm} = ctx.config.ryba
+      {hive, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
       do_metastore = ->
         ctx.krb5_addprinc
-          principal: hive_site['hive.metastore.kerberos.principal'].replace '_HOST', ctx.config.host
+          principal: hive.site['hive.metastore.kerberos.principal'].replace '_HOST', ctx.config.host
           randkey: true
-          keytab: hive_site['hive.metastore.kerberos.keytab.file']
-          uid: hive_user.name
-          gid: hive_group.name
+          keytab: hive.site['hive.metastore.kerberos.keytab.file']
+          uid: hive.user.name
+          gid: hive.group.name
           kadmin_principal: kadmin_principal
           kadmin_password: kadmin_password
           kadmin_server: admin_server
@@ -155,13 +155,13 @@ and "/etc/init.d/hive-server2".
           modified = true if created
           do_server2()
       do_server2 = ->
-        return do_end() if hive_site['hive.metastore.kerberos.principal'] is hive_site['hive.server2.authentication.kerberos.principal']
+        return do_end() if hive.site['hive.metastore.kerberos.principal'] is hive.site['hive.server2.authentication.kerberos.principal']
         ctx.krb5_addprinc
-          principal: hive_site['hive.server2.authentication.kerberos.principal'].replace '_HOST', ctx.config.host
+          principal: hive.site['hive.server2.authentication.kerberos.principal'].replace '_HOST', ctx.config.host
           randkey: true
-          keytab: hive_site['hive.server2.authentication.kerberos.keytab']
-          uid: hive_user.name
-          gid: hive_group.name
+          keytab: hive.site['hive.server2.authentication.kerberos.keytab']
+          uid: hive.user.name
+          gid: hive.group.name
           kadmin_principal: kadmin_principal
           kadmin_password: kadmin_password
           kadmin_server: admin_server
@@ -185,20 +185,20 @@ and "/etc/init.d/hive-server2".
       ], next
 
     module.exports.push name: 'Hive & HCat Server # Layout', timeout: -1, callback: (ctx, next) ->
-      {hive_user, hive_group} = ctx.config.ryba
+      {hive} = ctx.config.ryba
       # Required by service "hive-hcatalog-server"
       ctx.mkdir
         destination: '/var/log/hive-hcatalog'
-        uid: hive_user.name
-        gid: hive_group.name
+        uid: hive.user.name
+        gid: hive.group.name
       , next
 
     module.exports.push name: 'Hive & HCat Server # HDFS Layout', timeout: -1, callback: (ctx, next) ->
       # todo: this isnt pretty, ok that we need to execute hdfs command from an hadoop client
       # enabled environment, but there must be a better way
-      {active_nn_host, hdfs, hive_user, hive_group} = ctx.config.ryba
-      hive_user = hive_user.name
-      hive_group = hive_group.name
+      {active_nn_host, hdfs, hive} = ctx.config.ryba
+      hive_user = hive.user.name
+      hive_group = hive.group.name
       cmd = mkcmd.hdfs ctx, "hdfs dfs -test -d /user && hdfs dfs -test -d /apps && hdfs dfs -test -d /tmp"
       ctx.waitForExecution cmd, code_skipped: 1, (err) ->
         modified = false
@@ -255,14 +255,14 @@ and "/etc/init.d/hive-server2".
 
     module.exports.push name: 'Hive & HCat Server # Tez Layout', timeout: -1, callback: (ctx, next) ->
       return next() unless ctx.hosts_with_module 'ryba/tez'
-      {hive_user, hadoop_group} = ctx.config.ryba
+      {hive, hadoop_group} = ctx.config.ryba
       version_local = 'ls /usr/lib/hive/lib | grep hive-exec- | sed \'s/^hive-exec-\\(.*\\)\\.jar$/\\1/g\''
       version_remote = 'hdfs dfs -ls /apps/hive/install/hive-exec- | sed \'s/.*\\/hive-exec-\\(.*\\)$/\\1/g\''
       ctx.execute
         cmd: mkcmd.hdfs ctx, """
         if hdfs dfs -ls /apps/hive/install &> /dev/null; then exit 1; fi
         hdfs dfs -mkdir /apps/hive/install 2>/dev/null
-        hdfs dfs -chown #{hive_user}:#{hadoop_group.name} /apps/hive/install
+        hdfs dfs -chown #{hive.user.name}:#{hadoop_group.name} /apps/hive/install
         hdfs dfs -chmod -R 1777 /apps/hive/install
         hdfs dfs -copyFromLocal /usr/lib/hive/lib/hive-exec-* /apps/hive/install/hive-exec-0.13.0.jar
         """
@@ -275,7 +275,3 @@ and "/etc/init.d/hive-server2".
     path = require 'path'
     parse_jdbc = require '../lib/parse_jdbc'
     mkcmd = require '../lib/mkcmd'
-
-
-
-
