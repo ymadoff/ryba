@@ -21,9 +21,9 @@ DataNodes.
 ## Check Disk Capacity
 
     module.exports.push name: 'HDFS DN # Check Disk Capacity', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
-      {hdfs_site} = ctx.config.ryba
-      protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      port = hdfs_site["dfs.datanode.#{protocol}.address"].split(':')[1]
+      {hdfs} = ctx.config.ryba
+      protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      port = hdfs.site["dfs.datanode.#{protocol}.address"].split(':')[1]
       ctx.execute
         cmd: mkcmd.hdfs ctx, "curl --negotiate -k -u : #{protocol}://#{ctx.config.host}:#{port}/jmx?qry=Hadoop:service=DataNode,name=FSDatasetState-*"
       , (err, executed, stdout) ->
@@ -76,11 +76,11 @@ Read [Delegation Tokens in Hadoop Security](http://www.kodkast.com/blogs/hadoop/
 for more information.
 
     module.exports.push name: 'HDFS DN # Check WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
-      {hdfs_site, nameservice, test_user, force_check, active_nn_host} = ctx.config.ryba
-      protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      {hdfs, nameservice, test_user, force_check, active_nn_host} = ctx.config.ryba
+      protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
         nn_host = ctx.host_with_module 'ryba/hadoop/hdfs_nn'
-        nn_port = hdfs_site["dfs.namenode.#{protocol}-address"].split(':')[1]
+        nn_port = hdfs.site["dfs.namenode.#{protocol}-address"].split(':')[1]
       else
         nn_host = active_nn_host
         shortname = ctx.hosts[active_nn_host].config.shortname

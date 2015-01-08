@@ -109,7 +109,7 @@ is added membership to the group hadoop to gain read access.
 
     module.exports.push name: 'HBase RegionServer # FIX SPNEGO', callback: (ctx, next) ->
       {hbase_site, hbase_user, hbase_group, hadoop_group} = ctx.config.ryba
-      {hdfs_site} = ctx.config.ryba
+      {hdfs} = ctx.config.ryba
       ctx.execute
         cmd: """
           if groups #{hbase_user.name} | grep #{hadoop_group.name}; then exit 2; fi

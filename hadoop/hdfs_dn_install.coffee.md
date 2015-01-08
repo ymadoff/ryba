@@ -36,11 +36,11 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HDFS DN # IPTables', callback: (ctx, next) ->
-      {hdfs_site} = ctx.config.ryba
-      [_, dn_address] = hdfs_site['dfs.datanode.address'].split ':'
-      [_, dn_http_address] = hdfs_site['dfs.datanode.http.address'].split ':'
-      [_, dn_https_address] = hdfs_site['dfs.datanode.https.address'].split ':'
-      [_, dn_ipc_address] = hdfs_site['dfs.datanode.ipc.address'].split ':'
+      {hdfs} = ctx.config.ryba
+      [_, dn_address] = hdfs.site['dfs.datanode.address'].split ':'
+      [_, dn_http_address] = hdfs.site['dfs.datanode.http.address'].split ':'
+      [_, dn_https_address] = hdfs.site['dfs.datanode.https.address'].split ':'
+      [_, dn_ipc_address] = hdfs.site['dfs.datanode.ipc.address'].split ':'
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: dn_address, protocol: 'tcp', state: 'NEW', comment: "HDFS DN Data" }
@@ -57,7 +57,7 @@ Install and configure the startup script in
 "/etc/init.d/hadoop-yarn-nodemanager".
 
     module.exports.push name: 'HDFS DN # Startup', callback: (ctx, next) ->
-      {hdfs_pid_dir, core_site} = ctx.config.ryba
+      {hdfs, core_site} = ctx.config.ryba
       modified = false
       do_install = ->
         ctx.service
@@ -73,7 +73,7 @@ Install and configure the startup script in
           destination: '/etc/init.d/hadoop-hdfs-datanode'
           write: [
             match: /^PIDFILE=".*"$/m
-            replace: "PIDFILE=\"#{hdfs_pid_dir}/$SVC_USER/hadoop-hdfs-datanode.pid\""
+            replace: "PIDFILE=\"#{hdfs.pid_dir}/$SVC_USER/hadoop-hdfs-datanode.pid\""
           ,
             match: /^HADOOP_SECURE_DN_USER=".*"$/m
             replace: "HADOOP_SECURE_DN_USER=\"#{user}\""
@@ -89,7 +89,7 @@ Install and configure the startup script in
 
 ## HA
 
-Update the "hdfs_site.xml" configuration file with the High Availabity properties
+Update the "hdfs.site.xml" configuration file with the High Availabity properties
 present inside the "hdp.ha\_client\_config" object.
 
     module.exports.push name: 'HDFS DN # HA', callback: (ctx, next) ->
@@ -105,20 +105,20 @@ present inside the "hdp.ha\_client\_config" object.
 ## Layout
 
 Create the DataNode data and pid directories. The data directory is set by the 
-"hdp.hdfs_site['dfs.datanode.data.dir']" and default to "/var/hdfs/data". The 
+"hdp.hdfs.site['dfs.datanode.data.dir']" and default to "/var/hdfs/data". The 
 pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdfs"
 
     module.exports.push name: 'HDFS DN # Layout', timeout: -1, callback: (ctx, next) ->
-      {hdfs_site, hdfs_user, hadoop_group, hdfs_pid_dir} = ctx.config.ryba
+      {hdfs, hadoop_group} = ctx.config.ryba
       # no need to restrict parent directory and yarn will complain if not accessible by everyone
       ctx.mkdir [
-        destination: hdfs_site['dfs.datanode.data.dir'].split ','
-        uid: hdfs_user.name
+        destination: hdfs.site['dfs.datanode.data.dir'].split ','
+        uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o0750
       ,
-        destination: "#{hdfs_pid_dir}/#{hdfs_user}"
-        uid: hdfs_user.name
+        destination: "#{hdfs.pid_dir}/#{hdfs.user}"
+        uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o0755
       ], next
@@ -130,14 +130,14 @@ keytab inside "/etc/security/keytabs/dn.service.keytab" with ownerships set to "
 and permissions set to "0600".
 
     module.exports.push name: 'HDFS DN # Kerberos', timeout: -1, callback: (ctx, next) ->
-      {hdfs_user, hdfs_group, realm} = ctx.config.ryba
+      {hdfs, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
         principal: "dn/#{ctx.config.host}@#{realm}"
         randkey: true
         keytab: "/etc/security/keytabs/dn.service.keytab"
-        uid: hdfs_user.name
-        gid: hdfs_group.name
+        uid: hdfs.user.name
+        gid: hdfs.group.name
         mode: 0o0600
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
@@ -186,7 +186,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
 ```
 
     module.exports.push name: 'HDFS DN # HDFS layout', timeout: -1, callback: (ctx, next) ->
-      {hadoop_group, hdfs_user} = ctx.config.ryba
+      {hdfs, hadoop_group} = ctx.config.ryba
       modified = false
       do_wait = ->
         ctx.waitForExecution mkcmd.hdfs(ctx, "hdfs dfs -test -d /"), (err) ->
@@ -205,7 +205,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
           cmd: mkcmd.hdfs ctx, """
           if hdfs dfs -test -d /tmp; then exit 2; fi
           hdfs dfs -mkdir /tmp
-          hdfs dfs -chown #{hdfs_user.name}:#{hadoop_group.name} /tmp
+          hdfs dfs -chown #{hdfs.user.name}:#{hadoop_group.name} /tmp
           hdfs dfs -chmod 1777 /tmp
           """
           code_skipped: 2
@@ -218,11 +218,11 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
           cmd: mkcmd.hdfs ctx, """
           if hdfs dfs -test -d /user; then exit 2; fi
           hdfs dfs -mkdir /user
-          hdfs dfs -chown #{hdfs_user.name}:#{hadoop_group.name} /user
+          hdfs dfs -chown #{hdfs.user.name}:#{hadoop_group.name} /user
           hdfs dfs -chmod 755 /user
-          hdfs dfs -mkdir /user/#{hdfs_user.name}
-          hdfs dfs -chown #{hdfs_user.name}:#{hadoop_group.name} /user/#{hdfs_user.name}
-          hdfs dfs -chmod 755 /user/#{hdfs_user.name}
+          hdfs dfs -mkdir /user/#{hdfs.user.name}
+          hdfs dfs -chown #{hdfs.user.name}:#{hadoop_group.name} /user/#{hdfs.user.name}
+          hdfs dfs -chmod 755 /user/#{hdfs.user.name}
           """
           code_skipped: 2
         , (err, executed, stdout) ->
@@ -234,7 +234,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
           cmd: mkcmd.hdfs ctx, """
           if hdfs dfs -test -d /apps; then exit 2; fi
           hdfs dfs -mkdir /apps
-          hdfs dfs -chown #{hdfs_user.name}:#{hadoop_group.name} /apps
+          hdfs dfs -chown #{hdfs.user.name}:#{hadoop_group.name} /apps
           hdfs dfs -chmod 755 /apps
           """
           code_skipped: 2

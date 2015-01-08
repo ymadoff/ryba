@@ -49,7 +49,7 @@ layout: module
       do_upload()
 
     module.exports.push name: 'XASecure HDFS # Configure', timeout: -1, callback: (ctx, next) ->
-      {hdfs, hdfs_url} = ctx.config.xasecure
+      {hdfs_url} = ctx.config.xasecure
       do_configure = ->
         write = for k, v of hdfs
           match: RegExp "^#{quote k}=.*$", 'mg'

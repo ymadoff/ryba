@@ -33,9 +33,9 @@ Example:
       {ryba} = ctx.config
       throw Error "Missing \"ryba.zkfc_password\" property" unless ryba.zkfc_password
       # Activate ACLs
-      ryba.hdfs_site['dfs.namenode.acls.enabled'] ?= 'true'
-      ryba.hdfs_site['dfs.namenode.accesstime.precision'] ?= null
-      ryba.hdfs_site['dfs.ha.automatic-failover.enabled'] ?= 'true'
+      ryba.hdfs.site['dfs.namenode.acls.enabled'] ?= 'true'
+      ryba.hdfs.site['dfs.namenode.accesstime.precision'] ?= null
+      ryba.hdfs.site['dfs.ha.automatic-failover.enabled'] ?= 'true'
       ryba.namenode_opts ?= null
 
     # module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_nn_backup'

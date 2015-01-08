@@ -15,13 +15,13 @@ through SSH over another one where the public key isn't yet deployed.
 ## Check HTTP
 
     module.exports.push name: 'HDFS NN # Check HTTP', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
-      {hdfs_site, active_nn_host} = ctx.config.ryba
+      {hdfs, active_nn_host} = ctx.config.ryba
       is_ha = ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       state = if not is_ha or active_nn_host is ctx.config.host then 'active' else 'standby'
-      protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      nameservice = if is_ha then ".#{ctx.config.ryba.hdfs_site['dfs.nameservices']}" else ''
+      protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      nameservice = if is_ha then ".#{ctx.config.ryba.hdfs.site['dfs.nameservices']}" else ''
       shortname = if is_ha then ".#{ctx.config.shortname}" else ''
-      address = hdfs_site["dfs.namenode.#{protocol}-address#{nameservice}#{shortname}"]
+      address = hdfs.site["dfs.namenode.#{protocol}-address#{nameservice}#{shortname}"]
       securityEnabled = protocol is 'https'
       ctx.execute
         cmd: mkcmd.hdfs ctx, "curl --negotiate -k -u : #{protocol}://#{address}/jmx?qry=Hadoop:service=NameNode,name=NameNodeStatus"
@@ -58,14 +58,14 @@ is a comma-separated list of SSH private key files.
 
     module.exports.push name: 'HDFS NN # Check SSH Fencing', label_true: 'CHECKED', callback: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      {hdfs_user} = ctx.config.ryba
+      {hdfs} = ctx.config.ryba
       nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       for host in nn_hosts
         source = host if host is ctx.config.host
         target = host if host isnt ctx.config.host
       # Disabling key checking shall be considered acceptable between 2 NNs
       ctx.execute
-        cmd: "su -l #{hdfs_user.name} -c \"ssh -q -o StrictHostKeyChecking=no #{hdfs_user.name}@#{target} hostname\""
+        cmd: "su -l #{hdfs.user.name} -c \"ssh -q -o StrictHostKeyChecking=no #{hdfs.user.name}@#{target} hostname\""
       , (err) ->
         next err, true
 

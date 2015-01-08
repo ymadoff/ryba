@@ -21,11 +21,11 @@
 # "start" (default value).
 
 #     module.exports.push name: 'Hadoop HDFS DN # IPTables', callback: (ctx, next) ->
-#       {hdfs_site} = ctx.config.ryba
-#       [_, dn_address] = hdfs_site['dfs.datanode.address'].split ':'
-#       [_, dn_http_address] = hdfs_site['dfs.datanode.http.address'].split ':'
-#       [_, dn_https_address] = hdfs_site['dfs.datanode.https.address'].split ':'
-#       [_, dn_ipc_address] = hdfs_site['dfs.datanode.ipc.address'].split ':'
+#       {hdfs} = ctx.config.ryba
+#       [_, dn_address] = hdfs.site['dfs.datanode.address'].split ':'
+#       [_, dn_http_address] = hdfs.site['dfs.datanode.http.address'].split ':'
+#       [_, dn_https_address] = hdfs.site['dfs.datanode.https.address'].split ':'
+#       [_, dn_ipc_address] = hdfs.site['dfs.datanode.ipc.address'].split ':'
 #       ctx.iptables
 #         rules: [
 #           { chain: 'INPUT', jump: 'ACCEPT', dport: dn_address, protocol: 'tcp', state: 'NEW', comment: "HDFS DN Data" }

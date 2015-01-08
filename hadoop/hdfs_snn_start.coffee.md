@@ -10,5 +10,5 @@
       lifecycle.snn_start ctx, next
 
     # module.exports.push name: 'HDFS SNN # Wait', callback: (ctx, next) ->
-    #   [host, port] = hdfs_site['dfs.namenode.secondary.http-address'].split ':'
+    #   [host, port] = hdfs.site['dfs.namenode.secondary.http-address'].split ':'
     #   ctx.waitIsOpen host, port, next

@@ -16,7 +16,7 @@
 ## HDFS Layout
 
     module.exports.push name: 'Tez # HDFS Layout', timeout: -1, callback: (ctx, next) ->
-      {hdfs_user, hadoop_group} = ctx.config.ryba
+      {hdfs, hadoop_group} = ctx.config.ryba
       # Group name on "/apps/tez" is suggested as "users", switch to hadoop
       version_local = 'ls /usr/lib/tez | grep tez-common | sed \'s/^tez-common-\\(.*\\)\\.jar$/\\1/g\''
       version_remote = 'hdfs dfs -ls /apps/tez | grep tez-common | sed \'s/.*tez-common-\\(.*\\)\\.jar$/\\1/g\''
@@ -25,7 +25,7 @@
         hdfs dfs -rm -f /apps/tez || true
         hdfs dfs -mkdir -p /apps/tez
         hdfs dfs -copyFromLocal /usr/lib/tez/* /apps/tez
-        hdfs dfs -chown -R  #{hdfs_user.name}:#{hadoop_group.name} /apps/tez
+        hdfs dfs -chown -R  #{hdfs.user.name}:#{hadoop_group.name} /apps/tez
         hdfs dfs -chmod 755 /apps
         hdfs dfs -chmod 755 /apps/tez
         hdfs dfs -chmod 755 /apps/tez/lib/

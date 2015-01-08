@@ -29,9 +29,9 @@ code.
 *   `ryba.static_host` (boolean)   
     Write the host name of the server instead of the Hadoop "_HOST" 
     placeholder accross all the configuration files, default to false.   
-*   `hdfs_user` (object|string)   
+*   `hdfs.user` (object|string)   
     The Unix HDFS login name or a user object (see Mecano User documentation).   
-*   `yarn:user` (object|string)   
+*   `yarn.user` (object|string)   
     The Unix YARN login name or a user object (see Mecano User documentation).   
 *   `mapred_user` (object|string)   
     The Unix MapReduce login name or a user object (see Mecano User documentation).   
@@ -39,9 +39,9 @@ code.
     The Unix Test user name or a user object (see Mecano User documentation).   
 *   `hadoop_group` (object|string)   
     The Unix Hadoop group name or a group object (see Mecano Group documentation).   
-*   `hdfs_group` (object|string)   
+*   `hdfs.group` (object|string)   
     The Unix HDFS group name or a group object (see Mecano Group documentation).   
-*   `yarn:group` (object|string)   
+*   `yarn.group` (object|string)   
     The Unix YARN group name or a group object (see Mecano Group documentation).   
 *   `mapred_group` (object|string)   
     The Unix MapReduce group name or a group object (see Mecano Group documentation).   
@@ -53,9 +53,14 @@ Default configuration:
 ```json
 {
   "ryba": {
-    "hdfs_user": {
-      "name": "hdfs", "system": true, "gid": "hdfs",
-      "comment": "HDFS User", "home": "/var/lib/hadoop-hdfs"
+    "hdfs": {
+      user": {
+        "name": "hdfs", "system": true, "gid": "hdfs",
+        "comment": "HDFS User", "home": "/var/lib/hadoop-hdfs"
+      },
+      group": {
+      "name": "hdfs", "system": true
+      }
     },
     "yarn: {
       user": {
@@ -77,9 +82,6 @@ Default configuration:
     "hadoop_group": {
       "name": "hadoop", "system": true
     },
-    "hdfs_group": {
-      "name": "hdfs", "system": true
-    },
     "mapred_group": {
       "name": "mapred", "system": true
     },
@@ -97,14 +99,14 @@ Default configuration:
       require('masson/core/krb5_client').configure ctx
       require('../lib/base').configure ctx
       # User
-      ctx.config.ryba.hdfs_user = name: ctx.config.ryba.hdfs_user if typeof ctx.config.ryba.hdfs_user is 'string'
-      ctx.config.ryba.hdfs_user ?= {}
-      ctx.config.ryba.hdfs_user.name ?= 'hdfs'
-      ctx.config.ryba.hdfs_user.system ?= true
-      ctx.config.ryba.hdfs_user.gid ?= 'hdfs'
-      ctx.config.ryba.hdfs_user.groups ?= 'hadoop'
-      ctx.config.ryba.hdfs_user.comment ?= 'Hadoop HDFS User'
-      ctx.config.ryba.hdfs_user.home ?= '/var/lib/hadoop-hdfs'
+      ctx.config.ryba.hdfs.user ?= {}
+      ctx.config.ryba.hdfs.user = name: ctx.config.ryba.hdfs.user if typeof ctx.config.ryba.hdfs.user is 'string'
+      ctx.config.ryba.hdfs.user.name ?= 'hdfs'
+      ctx.config.ryba.hdfs.user.system ?= true
+      ctx.config.ryba.hdfs.user.gid ?= 'hdfs'
+      ctx.config.ryba.hdfs.user.groups ?= 'hadoop'
+      ctx.config.ryba.hdfs.user.comment ?= 'Hadoop HDFS User'
+      ctx.config.ryba.hdfs.user.home ?= '/var/lib/hadoop-hdfs'
       ctx.config.ryba.yarn ?= {}
       ctx.config.ryba.yarn.user ?= {}
       ctx.config.ryba.yarn.user = name: ctx.config.ryba.yarn.user if typeof ctx.config.ryba.yarn.user is 'string'
@@ -127,10 +129,10 @@ Default configuration:
       ctx.config.ryba.hadoop_group ?= {}
       ctx.config.ryba.hadoop_group.name ?= 'hadoop'
       ctx.config.ryba.hadoop_group.system ?= true
-      ctx.config.ryba.hdfs_group = name: ctx.config.ryba.hdfs_group if typeof ctx.config.ryba.hdfs_group is 'string'
-      ctx.config.ryba.hdfs_group ?= {}
-      ctx.config.ryba.hdfs_group.name ?= 'hdfs'
-      ctx.config.ryba.hdfs_group.system ?= true
+      ctx.config.ryba.hdfs.group ?= {}
+      ctx.config.ryba.hdfs.group = name: ctx.config.ryba.hdfs.group if typeof ctx.config.ryba.hdfs.group is 'string'
+      ctx.config.ryba.hdfs.group.name ?= 'hdfs'
+      ctx.config.ryba.hdfs.group.system ?= true
       ctx.config.ryba.yarn.group ?= {}
       ctx.config.ryba.yarn.group = name: ctx.config.ryba.yarn.group if typeof ctx.config.ryba.yarn.group is 'string'
       ctx.config.ryba.yarn.group.name ?= 'yarn'
@@ -145,8 +147,8 @@ Default configuration:
       ctx.config.ryba.test_group.system ?= true
       # Layout
       ctx.config.ryba.hadoop_conf_dir ?= '/etc/hadoop/conf'
-      ctx.config.ryba.hdfs_log_dir ?= '/var/log/hadoop-hdfs'
-      ctx.config.ryba.hdfs_pid_dir ?= '/var/run/hadoop-hdfs'
+      ctx.config.ryba.hdfs.log_dir ?= '/var/log/hadoop-hdfs'
+      ctx.config.ryba.hdfs.pid_dir ?= '/var/run/hadoop-hdfs'
       ctx.config.ryba.mapred_log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
       # HA Configuration
       ctx.config.ryba.nameservice ?= null
@@ -223,11 +225,11 @@ Note, the package "hadoop" will also install the "dbus" user and group which are
 not handled here.
 
     module.exports.push name: 'Hadoop Core # Users & Groups', callback: (ctx, next) ->
-      {hadoop_group, hdfs_group, yarn, mapred_group,
-       hdfs_user, mapred_user} = ctx.config.ryba
-      ctx.group [hadoop_group, hdfs_group, yarn.group, mapred_group], (err, gmodified) ->
+      {hadoop_group, hdfs, yarn, mapred_group, mapred_user} = ctx.config.ryba
+      ctx.group [hadoop_group, hdfs.group, yarn.group, mapred_group], (err, gmodified) ->
+        console.log 'USER', hdfs.user
         return next err if err
-        ctx.user [hdfs_user, yarn.user, mapred_user], (err, umodified) ->
+        ctx.user [hdfs.user, yarn.user, mapred_user], (err, umodified) ->
           next err, gmodified or umodified
 
 ## Test User
@@ -278,14 +280,14 @@ Note, this is wrong. Problem is that multiple module modify this file. We shall
 instead enrich the original file installed by the package.
 
     module.exports.push name: 'Hadoop Core # Env', timeout: -1, callback: (ctx, next) ->
-      {hadoop_conf_dir, hdfs_user, hadoop_group} = ctx.config.ryba
+      {hadoop_conf_dir, hdfs, hadoop_group} = ctx.config.ryba
       ctx.fs.readFile "#{hadoop_conf_dir}/hadoop-env.sh", 'ascii', (err, content) ->
         return next null, false if /HDP/.test content
         ctx.upload
           source: "#{__dirname}/../resources/core_hadoop/hadoop-env.sh"
           destination: "#{hadoop_conf_dir}/hadoop-env.sh"
           local_source: true
-          uid: hdfs_user.name
+          uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o755
           backup: true
@@ -309,11 +311,11 @@ Update the "core-site.xml" configuration file with properties from the
       , next
 
     module.exports.push name: 'Hadoop Core # Topology', callback: (ctx, next) ->
-      {hdfs_user, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
+      {hdfs, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
       ctx.upload
         destination: "#{hadoop_conf_dir}/rack_topology.sh"
         source: "#{__dirname}/../resources/rack_topology.sh"
-        uid: hdfs_user.name
+        uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755
         backup: true
@@ -329,7 +331,7 @@ Update the "core-site.xml" configuration file with properties from the
         ctx.write
           destination: "#{hadoop_conf_dir}/rack_topology.data"
           content: content.join("\n")
-          uid: hdfs_user.name
+          uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o755
           backup: true
@@ -347,15 +349,15 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
     module.exports.push name: 'Hadoop Core # Hadoop OPTS', timeout: -1, callback: (ctx, next) ->
       {java_home} = ctx.config.java
-      {hadoop_conf_dir, hdfs_user, hadoop_group, hadoop_opts, hadoop_client_opts, hdfs_log_dir, hdfs_pid_dir} = ctx.config.ryba
+      {hadoop_conf_dir, hdfs, hadoop_group, hadoop_opts, hadoop_client_opts} = ctx.config.ryba
       ctx.fs.exists '/usr/libexec/bigtop-utils', (err, exists) ->
         return next err if err
         jsvc = if exists then '/usr/libexec/bigtop-utils' else '/usr/lib/bigtop-utils'
         write = [
           { match: /^export JAVA_HOME=.*$/mg, replace: "export JAVA_HOME=#{java_home}" }
           { match: /^export HADOOP_OPTS=.*$/mg, replace: hadoop_opts }
-          { match: /\/var\/log\/hadoop\//mg, replace: "#{hdfs_log_dir}/" }
-          { match: /\/var\/run\/hadoop\//mg, replace: "#{hdfs_pid_dir}/" }
+          { match: /\/var\/log\/hadoop\//mg, replace: "#{hdfs.log_dir}/" }
+          { match: /\/var\/run\/hadoop\//mg, replace: "#{hdfs.pid_dir}/" }
           { match: /^export JSVC_HOME=.*$/mg, replace: "export JSVC_HOME=#{jsvc}" }
           { match: /^export HADOOP_CLIENT_OPTS=.*$/mg, replace: hadoop_client_opts}
         ]

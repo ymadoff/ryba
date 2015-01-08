@@ -19,12 +19,12 @@ Follow the [Hortonworks Data Pipelines example][dpe].
       # TODO: RM HA latest
       nn_contexts = ctx.contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn').configure
       nn_rcp = nn_contexts[0].config.ryba.core_site['fs.defaultFS']
-      nn_protocol = if nn_contexts[0].config.ryba.hdfs_site['HTTP_ONLY'] then 'http' else 'https'
-      nn_nameservice = if nn_contexts[0].config.ryba.hdfs_site['dfs.nameservices'] then ".#{nn_contexts[0].config.ryba.hdfs_site['dfs.nameservices']}" else ''
+      nn_protocol = if nn_contexts[0].config.ryba.hdfs.site['HTTP_ONLY'] then 'http' else 'https'
+      nn_nameservice = if nn_contexts[0].config.ryba.hdfs.site['dfs.nameservices'] then ".#{nn_contexts[0].config.ryba.hdfs.site['dfs.nameservices']}" else ''
       nn_shortname = if nn_contexts.length then ".#{nn_contexts[0].config.shortname}" else ''
       # dfs.namenode.https-address.torval.master2
-      nn_http = ctx.config.ryba.hdfs_site["dfs.namenode.#{nn_protocol}-address#{nn_nameservice}#{nn_shortname}"] 
-      nn_principal = nn_contexts[0].config.ryba.hdfs_site['dfs.namenode.kerberos.principal'].replace '_HOST', nn_contexts[0].config.host
+      nn_http = ctx.config.ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address#{nn_nameservice}#{nn_shortname}"] 
+      nn_principal = nn_contexts[0].config.ryba.hdfs.site['dfs.namenode.kerberos.principal'].replace '_HOST', nn_contexts[0].config.host
       # TODO: RM HA latest
       rm_contexts = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn').configure
       rm_shortname = if rm_contexts.length > 1 then ".#{rm_contexts[0].config.shortname}" else ''

@@ -196,7 +196,7 @@ and "/etc/init.d/hive-server2".
     module.exports.push name: 'Hive & HCat Server # HDFS Layout', timeout: -1, callback: (ctx, next) ->
       # todo: this isnt pretty, ok that we need to execute hdfs command from an hadoop client
       # enabled environment, but there must be a better way
-      {active_nn_host, hdfs_user, hive_user, hive_group} = ctx.config.ryba
+      {active_nn_host, hdfs, hive_user, hive_group} = ctx.config.ryba
       hive_user = hive_user.name
       hive_group = hive_group.name
       cmd = mkcmd.hdfs ctx, "hdfs dfs -test -d /user && hdfs dfs -test -d /apps && hdfs dfs -test -d /tmp"
@@ -207,7 +207,7 @@ and "/etc/init.d/hive-server2".
             cmd: mkcmd.hdfs ctx, """
             if hdfs dfs -ls /user/#{hive_user} &>/dev/null; then exit 1; fi
             hdfs dfs -mkdir /user/#{hive_user}
-            hdfs dfs -chown #{hive_user}:#{hdfs_user.name} /user/#{hive_user}
+            hdfs dfs -chown #{hive_user}:#{hdfs.user.name} /user/#{hive_user}
             """
             code_skipped: 1
           , (err, executed, stdout) ->
@@ -220,7 +220,7 @@ and "/etc/init.d/hive-server2".
             if hdfs dfs -ls /apps/#{hive_user}/warehouse &>/dev/null; then exit 3; fi
             hdfs dfs -mkdir /apps/#{hive_user}
             hdfs dfs -mkdir /apps/#{hive_user}/warehouse
-            hdfs dfs -chown -R #{hive_user}:#{hdfs_user.name} /apps/#{hive_user}
+            hdfs dfs -chown -R #{hive_user}:#{hdfs.user.name} /apps/#{hive_user}
             hdfs dfs -chmod 755 /apps/#{hive_user}
             hdfs dfs -chmod 1777 /apps/#{hive_user}/warehouse
             """
@@ -235,7 +235,7 @@ and "/etc/init.d/hive-server2".
             if hdfs dfs -ls /tmp/scratch &> /dev/null; then exit 1; fi
             hdfs dfs -mkdir /tmp 2>/dev/null
             hdfs dfs -mkdir /tmp/scratch
-            hdfs dfs -chown #{hive_user}:#{hdfs_user.name} /tmp/scratch
+            hdfs dfs -chown #{hive_user}:#{hdfs.user.name} /tmp/scratch
             hdfs dfs -chmod -R 1777 /tmp/scratch
             """
             code_skipped: 1

@@ -72,7 +72,7 @@ Install and configure the startup script in
 "/etc/init.d/zookeeper-server".
 
     module.exports.push name: 'ZooKeeper Server # Startup', callback: (ctx, next) ->
-      {hdfs_pid_dir} = ctx.config.ryba
+      {hdfs} = ctx.config.ryba
       modified = false
       do_install = ->
         ctx.service

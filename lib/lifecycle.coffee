@@ -11,13 +11,13 @@ lifecyle = module.exports =
       code_skipped: [1, 3]
     , callback
   jn_start: (ctx, callback) ->
-    {hdfs_user, hadoop_conf_dir} = ctx.config.ryba
+    {hdfs, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.jn_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "JournalNode start"
       ctx.execute
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start journalnode"
-        # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start journalnode\""
+        # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start journalnode\""
         cmd: 'service hadoop-hdfs-journalnode start'
         # code_skipped: 1
       , (err, started) ->
@@ -25,13 +25,13 @@ lifecyle = module.exports =
         ctx.waitIsOpen ctx.config.host, 8485, timeout: 20000, (err) ->
           callback err, started
   jn_stop: (ctx, callback) ->
-    {hdfs_user, hadoop_conf_dir} = ctx.config.ryba
+    {hdfs, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.jn_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "JournalNode stop"
       ctx.execute
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop journalnode"
-        # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop journalnode\""
+        # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop journalnode\""
         cmd: 'service hadoop-hdfs-journalnode stop'
         # code_skipped: 1
       , callback
@@ -46,18 +46,18 @@ lifecyle = module.exports =
       ctx.log "NameNode start"
       ctx.execute
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start namenode"
-        # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start namenode\""
+        # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start namenode\""
         cmd: "service hadoop-hdfs-namenode start"
         code_skipped: [1, 3]
       , callback
   nn_stop: (ctx, callback) ->
-    {hdfs_user, hadoop_conf_dir} = ctx.config.ryba
+    {hdfs, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.nn_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "NameNode stop"
       ctx.execute
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop namenode"
-        # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop namenode\""
+        # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop namenode\""
         cmd: 'service hadoop-hdfs-namenode stop'
         # code_skipped: 1
       , callback
@@ -72,41 +72,41 @@ lifecyle = module.exports =
       code_skipped: [1, 3]
     , callback
   zkfc_start: (ctx, callback) ->
-    {hdfs_user} = ctx.config.ryba
+    {hdfs} = ctx.config.ryba
     lifecyle.zkfc_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "ZKFC start"
       ctx.execute
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh start zkfc"
-        # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh start zkfc\""
+        # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh start zkfc\""
         cmd: 'service hadoop-hdfs-zkfc start'
         # code_skipped: 1
       , callback
   zkfc_stop: (ctx, callback) ->
-    {hdfs_user} = ctx.config.ryba
+    {hdfs} = ctx.config.ryba
     lifecyle.zkfc_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "ZKFC stop"
       ctx.execute
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh stop zkfc"
-        # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh stop zkfc\""
+        # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh stop zkfc\""
         cmd: 'service hadoop-hdfs-zkfc stop'
         # code_skipped: 1
       , callback
   snn_start: (ctx, callback) ->
-    {hdfs_user, hadoop_conf_dir} = ctx.config.ryba
+    {hdfs, hadoop_conf_dir} = ctx.config.ryba
     ctx.log "SNN start"
     ctx.execute
       # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf start secondarynamenode"
-      cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} start secondarynamenode\""
+      cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} start secondarynamenode\""
       code_skipped: 1
     , callback
   snn_stop: (ctx, callback) ->
-    {hdfs_user, hadoop_conf_dir} = ctx.config.ryba
+    {hdfs, hadoop_conf_dir} = ctx.config.ryba
     ctx.log "SNN stop"
     ctx.execute
       # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf stop secondarynamenode"
-      cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} stop secondarynamenode\""
+      cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} stop secondarynamenode\""
       # code_skipped: 1
     , callback
   dn_status: (ctx, callback) ->

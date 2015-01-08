@@ -8,10 +8,10 @@
     module.exports.push require('./hdfs_client').configure
 
     module.exports.push name: 'HDFS Client # Configuration', callback: (ctx, next) ->
-      {hadoop_conf_dir, hdfs_site} = ctx.config.ryba
+      {hadoop_conf_dir, hdfs} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-        properties: hdfs_site
+        properties: hdfs.site
         merge: true
         backup: true
       , next

@@ -40,11 +40,11 @@ associated processing and management tasks on Hadoop clusters.
       # Runtime (http://falcon.incubator.apache.org/Security.html)
       nn_contexts = ctx.contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn').configure
       # nn_rcp = nn_contexts[0].config.ryba.core_site['fs.defaultFS']
-      # nn_protocol = if nn_contexts[0].config.ryba.hdfs_site['HTTP_ONLY'] then 'http' else 'https'
-      # nn_nameservice = if nn_contexts[0].config.ryba.hdfs_site['dfs.nameservices'] then ".#{nn_contexts[0].config.ryba.hdfs_site['dfs.nameservices']}" else ''
+      # nn_protocol = if nn_contexts[0].config.ryba.hdfs.site['HTTP_ONLY'] then 'http' else 'https'
+      # nn_nameservice = if nn_contexts[0].config.ryba.hdfs.site['dfs.nameservices'] then ".#{nn_contexts[0].config.ryba.hdfs.site['dfs.nameservices']}" else ''
       # nn_shortname = if nn_contexts.length then ".#{nn_contexts[0].config.shortname}" else ''
-      # nn_http = ctx.config.ryba.hdfs_site["dfs.namenode.#{nn_protocol}-address#{nn_nameservice}#{nn_shortname}"] 
-      nn_principal = nn_contexts[0].config.ryba.hdfs_site['dfs.namenode.kerberos.principal']
+      # nn_http = ctx.config.ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address#{nn_nameservice}#{nn_shortname}"] 
+      nn_principal = nn_contexts[0].config.ryba.hdfs.site['dfs.namenode.kerberos.principal']
       falcon.startup ?= {}
       falcon.startup['prism.falcon.local.endpoint'] ?= "http://#{ctx.config.host}:16000/"
       falcon.startup['*.falcon.authentication.type'] ?= 'kerberos'
