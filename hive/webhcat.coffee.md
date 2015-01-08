@@ -20,7 +20,7 @@ layout: module
       zookeeper_hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
       for server of ctx.config.servers
         continue if (i = zookeeper_hosts.indexOf server.host) is -1
-        zookeeper_hosts[i] = "#{zookeeper_hosts[i]}:#{ryba.zookeeper_port}"
+        zookeeper_hosts[i] = "#{zookeeper_hosts[i]}:#{ryba.zookeeper.port}"
       # ryba.webhcat.conf_dir ?= '/etc/hcatalog/conf/webhcat'
       ryba.webhcat ?= {}
       ryba.webhcat.conf_dir ?= '/etc/hive-webhcat/conf'

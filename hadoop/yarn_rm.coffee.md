@@ -36,7 +36,7 @@ RM2: yarncluster:shared-password:rwa,rm2:secret-password:cd
 
       zoo_ctxs = ctx.contexts modules: 'ryba/zookeeper/server', require('../zookeeper/server').configure
       quorum = for zoo_ctx in zoo_ctxs
-        "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper_conf['clientPort']}"
+        "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.config['clientPort']}"
       ryba.yarn.site['yarn.resourcemanager.zk-address'] ?= quorum.join ','
       # https://zookeeper.apache.org/doc/r3.1.2/zookeeperProgrammers.html#sc_ZooKeeperAccessControl
       # ACLs to be used for setting permissions on ZooKeeper znodes.

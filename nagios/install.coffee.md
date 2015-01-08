@@ -228,7 +228,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       , next
 
     module.exports.push name: 'Nagios # Services', callback: (ctx, next) ->
-      {nagios, force_check, active_nn_host, core_site, hdfs, zookeeper_port, 
+      {nagios, force_check, active_nn_host, core_site, hdfs, zookeeper, 
         yarn, hive, hbase, oozie, webhcat, ganglia, hue} = ctx.config.ryba
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
@@ -319,7 +319,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           hs_port: hs_webapp_port
           journalnode_port: journalnode_port
           datanode_port: datanode_port
-          clientPort: zookeeper_port
+          clientPort: zookeeper.port
           hbase_rs_port: hbase.site['hbase.regionserver.info.port']
           hbase_master_port: hbase.site['hbase.master.info.port']
           hbase_master_hosts_in_str: hm_hosts.join ','

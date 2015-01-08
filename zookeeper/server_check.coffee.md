@@ -15,12 +15,12 @@ layout: module
 Execute these commands on the ZooKeeper host machine(s).
 
     module.exports.push name: 'ZooKeeper Server # Check Registration', label_true: 'CHECKED', callback: (ctx, next) ->
-      {zookeeper_port} = ctx.config.ryba
+      {zookeeper} = ctx.config.ryba
       hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
-      ctx.waitIsOpen hosts, zookeeper_port, (err) ->
+      ctx.waitIsOpen hosts, zookeeper.port, (err) ->
         return next err if err
         cmds = for host in hosts
-          "{ echo conf; sleep 1; } | telnet #{host} #{zookeeper_port} 2>/dev/null | sed -n 's/.*serverId=\\(.*\\)/\\1/p'"
+          "{ echo conf; sleep 1; } | telnet #{host} #{zookeeper.port} 2>/dev/null | sed -n 's/.*serverId=\\(.*\\)/\\1/p'"
         ctx.execute
           cmd: cmds.join ';'
         , (err, _, stdout) ->

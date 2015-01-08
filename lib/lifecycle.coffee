@@ -414,9 +414,9 @@ lifecyle = module.exports =
         cmd: "service hue stop"
       , callback
   zookeeper_status: (ctx, callback) ->
-    # {zookeeper_pid_dir} = ctx.config.ryba
+    # {zookeeper} = ctx.config.ryba
     ctx.log "Zookeeper status"
-    # lifecyle.is_pidfile_running ctx, "#{zookeeper_pid_dir}/zookeeper_server.pid", (err, running) ->
+    # lifecyle.is_pidfile_running ctx, "#{zookeeper.pid_dir}/zookeeper_server.pid", (err, running) ->
     #   ctx.log "Zookeeper status: #{if running then 'RUNNING' else 'STOPPED'}"
     #   callback err, running
     ctx.execute
@@ -424,26 +424,26 @@ lifecyle = module.exports =
       code_skipped: [1, 3]
     , callback
   zookeeper_start: (ctx, callback) ->
-    {zookeeper_user, zookeeper_conf_dir, zookeeper_port} = ctx.config.ryba
+    {zookeeper} = ctx.config.ryba
     lifecyle.zookeeper_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "Zookeeper start"
       ctx.execute
         # su -l zookeeper -c "/usr/lib/zookeeper/bin/zkServer.sh start /etc/zookeeper/conf/zoo.cfg"
-        # cmd: "su -l #{zookeeper_user.name} -c \"/usr/lib/zookeeper/bin/zkServer.sh start #{zookeeper_conf_dir}/zoo.cfg\""
+        # cmd: "su -l #{zookeeper.user.name} -c \"/usr/lib/zookeeper/bin/zkServer.sh start #{zookeeper.conf_dir}/zoo.cfg\""
         cmd: "service zookeeper-server start"
       , (err, started) ->
         return callback err if err
-        ctx.waitIsOpen ctx.config.host, zookeeper_port, timeout: 2000000, (err) ->
+        ctx.waitIsOpen ctx.config.host, zookeeper.port, timeout: 2000000, (err) ->
           callback err, started
   zookeeper_stop: (ctx, callback) ->
-    {zookeeper_user, zookeeper_conf_dir} = ctx.config.ryba
+    {zookeeper} = ctx.config.ryba
     lifecyle.zookeeper_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "Zookeeper stop"
       ctx.execute
         # su -l zookeeper -c "/usr/lib/zookeeper/bin/zkServer.sh stop /etc/zookeeper/conf/zoo.cfg"
-        # cmd: "su -l #{zookeeper_user.name} -c \"/usr/lib/zookeeper/bin/zkServer.sh stop #{zookeeper_conf_dir}/zoo.cfg\""
+        # cmd: "su -l #{zookeeper.user.name} -c \"/usr/lib/zookeeper/bin/zkServer.sh stop #{zookeeper.conf_dir}/zoo.cfg\""
         cmd: "service zookeeper-server stop"
       , callback
 
