@@ -7,11 +7,22 @@
 
 ## Stop Service
 
+Stop the Falcon service. You can also stop the server manually with the
+following command:
+
+```
+su -l falcon -c "/usr/lib/falcon/bin/falcon-stop"
+```
+
     module.exports.push name: 'Falcon # Stop Service', timeout: -1, label_true: 'STOPPED', callback: (ctx, next) ->
       {user} = ctx.config.ryba.falcon
-      # su -l falcon -c '/usr/lib/falcon/bin/falcon-stop'
       ctx.execute
-        cmd: "su -l #{user.name} -c '/usr/lib/falcon/bin/falcon-stop'"
+        cmd: """
+          su -l #{user.name} -c '/usr/lib/falcon/bin/falcon-status'
+          if [ $? -eq 255 ]; then exit 3; fi
+          su -l #{user.name} -c '/usr/lib/falcon/bin/falcon-stop'
+        """
+        code_skipped: 3
         if_exists: '/usr/lib/falcon/bin/falcon-stop'
       , next
 
