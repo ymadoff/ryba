@@ -239,10 +239,12 @@ pointing to the Ganglia master hostname.
     module.exports.push name: 'Ganglia Collector # HTTPD Restart', callback: (ctx, next) ->
       ctx.service
         srv_name: 'httpd'
-        action: 'restart'
+        action: ['start', 'restart']
         not_if: (callback) ->
-          request "http://#{ctx.config.host}/ganglia/", (err, _, body) ->
-            callback err, /Ganglia Web Frontend/.test body
+          ctx.execute
+            cmd: "curl -s http://#{ctx.config.host}/ganglia/"
+          , (err, _, stdout) ->
+            callback null, !err and /Ganglia Web Frontend/.test stdout
       , next
 
 ## Start
