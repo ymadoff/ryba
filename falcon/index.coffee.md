@@ -84,7 +84,7 @@ associated processing and management tasks on Hadoop clusters.
 
     module.exports.push commands: 'start', modules: 'ryba/falcon/start'
 
-    # module.exports.push commands: 'status', modules: 'ryba/falcon/status'
+    module.exports.push commands: 'status', modules: 'ryba/falcon/status'
 
     module.exports.push commands: 'stop', modules: 'ryba/falcon/stop'
 
