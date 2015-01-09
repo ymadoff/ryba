@@ -12,7 +12,7 @@
 ## Check Client
 
     module.exports.push name: 'Oozie Client # Check Client', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
-      {realm, test_user, oozie} = ctx.config.ryba
+      {realm, user, oozie} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.test ctx, """
         oozie admin -oozie #{oozie.site['oozie.base.url']} -status
@@ -25,7 +25,7 @@
 ## Check REST
 
     module.exports.push name: 'Oozie Client # Check REST', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
-      {realm, test_user, oozie} = ctx.config.ryba
+      {realm, user, oozie} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.test ctx, """
         curl -s -k --negotiate -u : #{oozie.site['oozie.base.url']}/v1/admin/status
@@ -38,7 +38,7 @@
 ## Check HDFS Workflow
 
     module.exports.push name: 'Oozie Client # Check HDFS Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
-      {force_check, test_user, core_site, oozie} = ctx.config.ryba
+      {force_check, user, core_site, oozie} = ctx.config.ryba
       rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn').configure
       if rm_ctxs.length > 1
         rm_ctx = ctx.context active_rm_host, require('../hadoop/yarn').configure
@@ -52,12 +52,12 @@
           nameNode=#{core_site['fs.defaultFS']}
           jobTracker=#{rm_address}:8050
           queueName=default
-          basedir=${nameNode}/user/#{test_user.name}/check-#{ctx.config.shortname}-oozie-fs
+          basedir=${nameNode}/user/#{user.name}/check-#{ctx.config.shortname}-oozie-fs
           oozie.wf.application.path=${basedir}
         """
-        destination: "#{test_user.home}/check_oozie_fs/job.properties"
-        uid: test_user.name
-        gid: test_user.group
+        destination: "#{user.home}/check_oozie_fs/job.properties"
+        uid: user.name
+        gid: user.group
         eof: true
       ,
         content: """
@@ -76,9 +76,9 @@
           <end name="end"/>
         </workflow-app>
         """
-        destination: "#{test_user.home}/check_oozie_fs/workflow.xml"
-        uid: test_user.name
-        gid: test_user.group
+        destination: "#{user.home}/check_oozie_fs/workflow.xml"
+        uid: user.name
+        gid: user.group
         eof: true
       ], (err, written) ->
         return next err if err
@@ -87,11 +87,11 @@
           hdfs dfs -rm -r -skipTrash check-#{ctx.config.shortname}-oozie-fs 2>/dev/null
           hdfs dfs -mkdir -p check-#{ctx.config.shortname}-oozie-fs
           hdfs dfs -touchz check-#{ctx.config.shortname}-oozie-fs/source
-          hdfs dfs -put -f #{test_user.home}/check_oozie_fs/job.properties check-#{ctx.config.shortname}-oozie-fs
-          hdfs dfs -put -f #{test_user.home}/check_oozie_fs/workflow.xml check-#{ctx.config.shortname}-oozie-fs
+          hdfs dfs -put -f #{user.home}/check_oozie_fs/job.properties check-#{ctx.config.shortname}-oozie-fs
+          hdfs dfs -put -f #{user.home}/check_oozie_fs/workflow.xml check-#{ctx.config.shortname}-oozie-fs
           export OOZIE_URL=#{oozie.site['oozie.base.url']}
-          oozie job -dryrun -config #{test_user.home}/check_oozie_fs/job.properties
-          jobid=`oozie job -run -config #{test_user.home}/check_oozie_fs/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
+          oozie job -dryrun -config #{user.home}/check_oozie_fs/job.properties
+          jobid=`oozie job -run -config #{user.home}/check_oozie_fs/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
           i=0
           while [[ $i -lt 1000 ]] && [[ `oozie job -info $jobid | grep -e '^Status' | sed 's/^Status\\s\\+:\\s\\+\\(.*\\)$/\\1/'` == 'RUNNING' ]]
           do ((i++)); sleep 1; done
@@ -104,7 +104,7 @@
 ## Check Pig Workflow
 
     module.exports.push name: 'Oozie Client # Check Pig Workflow', skip: true, timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
-      {force_check, test_user, core_site, active_rm_host, oozie} = ctx.config.ryba
+      {force_check, user, core_site, active_rm_host, oozie} = ctx.config.ryba
       rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn').configure
       if rm_ctxs.length > 1
         rm_ctx = ctx.context active_rm_host, require('../hadoop/yarn').configure
@@ -122,13 +122,13 @@
           jobTracker=#{rm_address}
           oozie.libpath=/user/#{oozie.user.name}/share/lib
           queueName=default
-          basedir=${nameNode}/user/#{test_user.name}/check-#{ctx.config.shortname}-oozie-pig
+          basedir=${nameNode}/user/#{user.name}/check-#{ctx.config.shortname}-oozie-pig
           oozie.wf.application.path=${basedir}
           oozie.use.system.libpath=true
         """
-        destination: "#{test_user.home}/check_oozie_pig/job.properties"
-        uid: test_user.name
-        gid: test_user.group
+        destination: "#{user.home}/check_oozie_pig/job.properties"
+        uid: user.name
+        gid: user.group
         eof: true
       ,
         content: """
@@ -161,9 +161,9 @@
           <end name='end' />
         </workflow-app>
         """
-        destination: "#{test_user.home}/check_oozie_pig/workflow.xml"
-        uid: test_user.name
-        gid: test_user.group
+        destination: "#{user.home}/check_oozie_pig/workflow.xml"
+        uid: user.name
+        gid: user.group
         eof: true
       ,
         content: """
@@ -173,9 +173,9 @@
         D = foreach C generate COUNT(B), group;
         store D into '$OUTPUT' USING PigStorage();
         """
-        destination: "#{test_user.home}/check_oozie_pig/wordcount.pig"
-        uid: test_user.name
-        gid: test_user.group
+        destination: "#{user.home}/check_oozie_pig/wordcount.pig"
+        uid: user.name
+        gid: user.group
         eof: true
       ], (err, written) ->
         return next err if err
@@ -183,11 +183,11 @@
           cmd: mkcmd.test ctx, """
           hdfs dfs -rm -r -skipTrash check-#{ctx.config.shortname}-oozie-pig 2>/dev/null
           hdfs dfs -mkdir -p check-#{ctx.config.shortname}-oozie-pig/input
-          hdfs dfs -put -f #{test_user.home}/check_oozie_pig/workflow.xml check-#{ctx.config.shortname}-oozie-pig
-          hdfs dfs -put -f #{test_user.home}/check_oozie_pig/wordcount.pig check-#{ctx.config.shortname}-oozie-pig
+          hdfs dfs -put -f #{user.home}/check_oozie_pig/workflow.xml check-#{ctx.config.shortname}-oozie-pig
+          hdfs dfs -put -f #{user.home}/check_oozie_pig/wordcount.pig check-#{ctx.config.shortname}-oozie-pig
           export OOZIE_URL=#{oozie.site['oozie.base.url']}
-          oozie job -dryrun -config #{test_user.home}/check_oozie_pig/job.properties
-          jobid=`oozie job -run -config #{test_user.home}/check_oozie_pig/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
+          oozie job -dryrun -config #{user.home}/check_oozie_pig/job.properties
+          jobid=`oozie job -run -config #{user.home}/check_oozie_pig/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
           i=0
           while [[ $i -lt 1000 ]] && [[ `oozie job -info $jobid | grep -e '^Status' | sed 's/^Status\\s\\+:\\s\\+\\(.*\\)$/\\1/'` == 'RUNNING' ]]
           do ((i++)); sleep 1; done

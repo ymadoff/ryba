@@ -253,13 +253,13 @@ the NameNode is properly working. Note, those commands are NameNode specific, me
 afect HDFS metadata.
 
     module.exports.push name: 'HDFS DN # HDFS Layout User Test', timeout: -1, callback: (ctx, next) ->
-      {test_group, test_user} = ctx.config.ryba
+      {user,group} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.hdfs ctx, """
-        if hdfs dfs -test -d /user/#{test_user.name}; then exit 2; fi
-        hdfs dfs -mkdir /user/#{test_user.name}
-        hdfs dfs -chown #{test_user.name}:#{test_group.name} /user/#{test_user.name}
-        hdfs dfs -chmod 750 /user/#{test_user.name}
+        if hdfs dfs -test -d /user/#{user.name}; then exit 2; fi
+        hdfs dfs -mkdir /user/#{user.name}
+        hdfs dfs -chown #{user.name}:#{group.name} /user/#{user.name}
+        hdfs dfs -chmod 750 /user/#{user.name}
         """
         code_skipped: 2
       , next

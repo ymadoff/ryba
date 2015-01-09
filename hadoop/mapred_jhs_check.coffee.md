@@ -13,7 +13,7 @@ started, the server take some time before it can correctly answer HTTP request.
 For this reason, the "retry" property is set to the high value of "10".
 
     module.exports.push name: 'MapRed JHS # Check HTTP', retry: 100, label_true: 'CHECKED', callback: (ctx, next) ->
-      {test_user, mapred} = ctx.config.ryba
+      {mapred} = ctx.config.ryba
       protocol = if mapred.site['mapreduce.jobhistory.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       [host, port] = if protocol is 'http'
       then mapred.site['mapreduce.jobhistory.webapp.address'].split ':'

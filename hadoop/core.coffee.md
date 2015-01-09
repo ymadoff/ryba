@@ -35,7 +35,7 @@ code.
     The Unix YARN login name or a user object (see Mecano User documentation).   
 *   `mapred.user` (object|string)   
     The Unix MapReduce login name or a user object (see Mecano User documentation).   
-*   `test_user` (object|string)   
+*   `user` (object|string)   
     The Unix Test user name or a user object (see Mecano User documentation).   
 *   `hadoop_group` (object|string)   
     The Unix Hadoop group name or a group object (see Mecano Group documentation).   
@@ -45,7 +45,7 @@ code.
     The Unix YARN group name or a group object (see Mecano Group documentation).   
 *   `mapred.group` (object|string)   
     The Unix MapReduce group name or a group object (see Mecano Group documentation).   
-*   `test_group` (object|string)   
+*   `group` (object|string)   
     The Unix Test group name or a group object (see Mecano Group documentation).   
 
 Default configuration:
@@ -53,6 +53,13 @@ Default configuration:
 ```json
 {
   "ryba": {
+    "user": {
+      "name": "ryba", "system": true, "gid": "ryba",
+      "comment": "ryba User", "home": "/home/ryba"
+    },
+    "group": {
+      "name": "ryba", "system": true
+    },
     "hdfs": {
       user": {
         "name": "hdfs", "system": true, "gid": "hdfs",
@@ -80,15 +87,8 @@ Default configuration:
         "name": "mapred", "system": true
       }
     },
-    "test_user": {
-      "name": "ryba", "system": true, "gid": "ryba",
-      "comment": "ryba User", "home": "/home/ryba"
-    },
     "hadoop_group": {
       "name": "hadoop", "system": true
-    },
-    "test_group": {
-      "name": "ryba", "system": true
     }
   }
 }
@@ -149,10 +149,10 @@ Default configuration:
       ctx.config.ryba.mapred.group = name: ctx.config.ryba.mapred.group if typeof ctx.config.ryba.mapred.group is 'string'
       ctx.config.ryba.mapred.group.name ?= 'mapred'
       ctx.config.ryba.mapred.group.system ?= true
-      ctx.config.ryba.test_group = name: ctx.config.ryba.test_group if typeof ctx.config.ryba.test_group is 'string'
-      ctx.config.ryba.test_group ?= {}
-      ctx.config.ryba.test_group.name ?= 'ryba'
-      ctx.config.ryba.test_group.system ?= true
+      ctx.config.ryba.group ?= {}
+      ctx.config.ryba.group = name: ctx.config.ryba.group if typeof ctx.config.ryba.group is 'string'
+      ctx.config.ryba.group.name ?= 'ryba'
+      ctx.config.ryba.group.system ?= true
       # Layout
       ctx.config.ryba.hadoop_conf_dir ?= '/etc/hadoop/conf'
       ctx.config.ryba.hdfs.log_dir ?= '/var/log/hadoop-hdfs'
@@ -245,17 +245,17 @@ Create a Unix and Kerberos test user, by default "ryba". Its HDFS home directory
 will be created by one of the datanode.
 
     module.exports.push name: 'Hadoop HDFS DN # HDFS Layout User Test', timeout: -1, callback: (ctx, next) ->
-      {test_group, test_user, test_password, security, realm} = ctx.config.ryba
+      {krb5_user, user, group, security, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
       # ryba group and user may already exist in "/etc/passwd" or in any sssd backend
-      ctx.group test_group, (err, gmodified) ->
+      ctx.group group, (err, gmodified) ->
         return next err if err
-        ctx.user test_user, (err, umodified) ->
+        ctx.user user, (err, umodified) ->
           return next err if err
           ctx.krb5_addprinc
-            principal: "#{test_user.name}@#{realm}"
-            password: "#{test_password}"
+            principal: "#{krb5_user.name}@#{realm}"
+            password: "#{krb5_user.password}"
             kadmin_principal: kadmin_principal
             kadmin_password: kadmin_password
             kadmin_server: admin_server
@@ -533,11 +533,11 @@ recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
     module.exports.push 'ryba/hadoop/core_ssl'
 
     module.exports.push name: 'Hadoop Core # Check auth_to_local', label_true: 'CHECKED', callback: (ctx, next) ->
-      {test_user, realm} = ctx.config.ryba
+      {user, krb5_user, realm} = ctx.config.ryba
       ctx.execute
-        cmd: "hadoop org.apache.hadoop.security.HadoopKerberosName #{test_user.name}@#{realm}"
+        cmd: "hadoop org.apache.hadoop.security.HadoopKerberosName #{krb5_user.name}@#{realm}"
       , (err, _, stdout) ->
-        err = Error "Invalid mapping" if not err and stdout.indexOf("#{test_user.name}@#{realm} to #{test_user.name}") is -1
+        err = Error "Invalid mapping" if not err and stdout.indexOf("#{krb5_user.name}@#{realm} to #{user.name}") is -1
         next err, true
 
 

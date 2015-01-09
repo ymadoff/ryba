@@ -12,10 +12,10 @@
 Follow the [Hortonworks Data Pipelines example][dpe].
 
     module.exports.push name: 'Falcon # Check Data Pipelines', skip: true, timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
-      {test_user, active_rm_host} = ctx.config.ryba
-      cluster_path = "#{test_user.home}/check_falcon/cluster.xml"
-      feed_path = "#{test_user.home}/check_falcon/feed.xml"
-      process_path = "#{test_user.home}/check_falcon/process.xml"
+      {user, active_rm_host} = ctx.config.ryba
+      cluster_path = "#{user.home}/check_falcon/cluster.xml"
+      feed_path = "#{user.home}/check_falcon/feed.xml"
+      process_path = "#{user.home}/check_falcon/process.xml"
       # TODO: RM HA latest
       nn_contexts = ctx.contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn').configure
       nn_rcp = nn_contexts[0].config.ryba.core_site['fs.defaultFS']
@@ -61,7 +61,7 @@ Follow the [Hortonworks Data Pipelines example][dpe].
         </cluster>
         """
         destination: "#{cluster_path}"
-        uid: test_user.name
+        uid: user.name
         eof: true
       ,
         content: """
@@ -92,7 +92,7 @@ Follow the [Hortonworks Data Pipelines example][dpe].
         </feed>
         """
         destination: "#{feed_path}"
-        uid: test_user.name
+        uid: user.name
         eof: true
       ,
         content: """
@@ -120,7 +120,7 @@ Follow the [Hortonworks Data Pipelines example][dpe].
         </process>
         """
         destination: "#{process_path}"
-        uid: test_user.name
+        uid: user.name
         eof: true
       ], (err, written) ->
         return next err if err

@@ -46,12 +46,12 @@ Attemp to place a file inside HDFS. the file "/etc/passwd" will be placed at
 "/user/{test\_user}/#{ctx.config.host}\_dn".
 
     module.exports.push name: 'HDFS DN # Check HDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
-      {test_user} = ctx.config.ryba
+      {user} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.test ctx, """
-        if hdfs dfs -test -f /user/#{test_user.name}/#{ctx.config.host}-dn; then exit 2; fi
+        if hdfs dfs -test -f /user/#{user.name}/#{ctx.config.host}-dn; then exit 2; fi
         echo 'Upload file to HDFS'
-        hdfs dfs -put /etc/passwd /user/#{test_user.name}/#{ctx.config.host}-dn
+        hdfs dfs -put /etc/passwd /user/#{user.name}/#{ctx.config.host}-dn
         """
         code_skipped: 2
       , next
@@ -76,7 +76,7 @@ Read [Delegation Tokens in Hadoop Security](http://www.kodkast.com/blogs/hadoop/
 for more information.
 
     module.exports.push name: 'HDFS DN # Check WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
-      {hdfs, nameservice, test_user, force_check, active_nn_host} = ctx.config.ryba
+      {hdfs, nameservice, user, force_check, active_nn_host} = ctx.config.ryba
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
         nn_host = ctx.host_with_module 'ryba/hadoop/hdfs_nn'
@@ -95,8 +95,8 @@ for more information.
       do_init = ->
         ctx.execute
           cmd: mkcmd.test ctx, """
-          if hdfs dfs -test -f /user/#{test_user.name}/#{ctx.config.host}-webhdfs; then exit 2; fi
-          hdfs dfs -touchz /user/#{test_user.name}/#{ctx.config.host}-webhdfs
+          if hdfs dfs -test -f /user/#{user.name}/#{ctx.config.host}-webhdfs; then exit 2; fi
+          hdfs dfs -touchz /user/#{user.name}/#{ctx.config.host}-webhdfs
           kdestroy
           """
           code_skipped: 2
@@ -108,7 +108,7 @@ for more information.
       do_spnego = ->
         ctx.execute
           cmd: mkcmd.test ctx, """
-          curl -s --negotiate --insecure -u : "#{protocol}://#{nn_host}:#{nn_port}/webhdfs/v1/user/#{test_user.name}?op=LISTSTATUS"
+          curl -s --negotiate --insecure -u : "#{protocol}://#{nn_host}:#{nn_port}/webhdfs/v1/user/#{user.name}?op=LISTSTATUS"
           kdestroy
           """
         , (err, executed, stdout) ->
@@ -132,7 +132,7 @@ for more information.
           token = json.Token.urlString
           ctx.execute
             cmd: """
-            curl -s --insecure "#{protocol}://#{nn_host}:#{nn_port}/webhdfs/v1/user/#{test_user.name}?delegation=#{token}&op=LISTSTATUS"
+            curl -s --insecure "#{protocol}://#{nn_host}:#{nn_port}/webhdfs/v1/user/#{user.name}?delegation=#{token}&op=LISTSTATUS"
             """
           , (err, executed, stdout) ->
             return next err if err
@@ -145,7 +145,3 @@ for more information.
       do_end = ->
         next null, true
       do_wait()
-
-
-
-

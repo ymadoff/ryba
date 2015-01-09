@@ -11,13 +11,18 @@
       ryba.hdp_repo ?= 'http://s3.amazonaws.com/public-repo-1.hortonworks.com/HDP/centos6/2.x/2.1-latest/hdp.repo'
       # Testing
       ryba.force_check ?= false
-      ryba.test_user = name: ryba.test_user if typeof ryba.test_user is 'string'
-      ryba.test_user ?= {}
-      ryba.test_user.name ?= 'ryba'
-      ryba.test_user.system ?= true
-      ryba.test_user.gid ?= 'ryba'
-      ryba.test_user.comment ?= 'ryba User'
-      ryba.test_user.home ?= '/home/ryba'
+      ryba.user ?= {}
+      ryba.user = name: ryba.user if typeof ryba.user is 'string'
+      ryba.user.name ?= 'ryba'
+      ryba.user.system ?= true
+      ryba.user.gid ?= 'ryba'
+      ryba.user.comment ?= 'ryba User'
+      ryba.user.home ?= '/home/ryba'
+
+      ryba.krb5_user ?= {}
+      ryba.krb5_user = name: ryba.krb5_user if typeof ryba.krb5_user is 'string'
+      ryba.krb5_user.name ?= ryba.user.name
+      ryba.krb5_user.password ?= ryba.user.password if ryba.user.password?
       # Database administration
       # todo: `require('masson/commons/mysql_server').configure ctx` and use returned values as default values
       ryba.db_admin ?= {}

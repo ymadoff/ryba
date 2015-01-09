@@ -53,7 +53,7 @@ Example:
       # require('./core_ssl').configure ctx
       {nameservice, core_site, static_host, realm} = ctx.config.ryba
       throw new Error "Missing value for 'hdfs.krb5_user.password'" unless ctx.config.ryba.hdfs.krb5_user.password?
-      throw new Error "Missing value for 'test_password'" unless ctx.config.ryba.test_password?
+      throw new Error "Missing value for 'krb5_user.password'" unless ctx.config.ryba.krb5_user.password?
       # Options and configuration
       hdfs = ctx.config.ryba.hdfs ?= {}
       ctx.config.ryba.hdfs.namenode_timeout ?= 20000 # 20s

@@ -75,7 +75,7 @@ Install and configure the startup script in
       do_install()
 
     module.exports.push name: 'Hadoop YARN NM # Directories', timeout: -1, callback: (ctx, next) ->
-      {yarn, test_user, hadoop_group} = ctx.config.ryba
+      {yarn, user, hadoop_group} = ctx.config.ryba
       # no need to restrict parent directory and yarn will complain if not accessible by everyone
       log_dirs = yarn.site['yarn.nodemanager.log-dirs'].split ','
       local_dirs = yarn.site['yarn.nodemanager.local-dirs'].split ','
@@ -92,8 +92,8 @@ Install and configure the startup script in
       ], (err, created) ->
         return next err if err
         cmds = []
-        for dir in log_dirs then cmds.push cmd: "su -l #{test_user.name} -c 'ls -l #{dir}'"
-        for dir in local_dirs then cmds.push cmd: "su -l #{test_user.name} -c 'ls -l #{dir}'"
+        for dir in log_dirs then cmds.push cmd: "su -l #{user.name} -c 'ls -l #{dir}'"
+        for dir in local_dirs then cmds.push cmd: "su -l #{user.name} -c 'ls -l #{dir}'"
         ctx.execute cmds, (err) ->
           next err, created
 

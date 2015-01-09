@@ -9,13 +9,13 @@ Check the access to the HDFS cluster.
     module.exports.push require('./hdfs_client').configure
 
     module.exports.push name: 'HDFS Client # Check', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
-      {hadoop_conf_dir, hdfs, test_user} = ctx.config.ryba
-      ctx.waitForExecution mkcmd.test(ctx, "hdfs dfs -test -d /user/#{test_user.name}"), (err) ->
+      {hadoop_conf_dir, hdfs, user} = ctx.config.ryba
+      ctx.waitForExecution mkcmd.test(ctx, "hdfs dfs -test -d /user/#{user.name}"), (err) ->
         return next err if err
         ctx.execute
           cmd: mkcmd.test ctx, """
-          if hdfs dfs -test -f /user/#{test_user.name}/#{ctx.config.host}-hdfs; then exit 2; fi
-          hdfs dfs -touchz /user/#{test_user.name}/#{ctx.config.host}-hdfs
+          if hdfs dfs -test -f /user/#{user.name}/#{ctx.config.host}-hdfs; then exit 2; fi
+          hdfs dfs -touchz /user/#{user.name}/#{ctx.config.host}-hdfs
           """
           code_skipped: 2
         , next

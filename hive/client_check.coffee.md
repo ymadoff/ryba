@@ -16,7 +16,7 @@ layout: module
 Use the [Beeline][beeline] JDBC client to execute SQL queries.
 
     module.exports.push name: 'Hive & HCat Client # Check Server2', label_true: 'CHECKED', timeout: -1, callback: (ctx, next) ->
-      {force_check, realm, test_user, hive} = ctx.config.ryba
+      {force_check, realm, user, hive} = ctx.config.ryba
       url = "jdbc:hive2://#{hive.hive_server2.host}:#{hive.hive_server2.port}/default;principal=hive/#{hive.hive_server2.host}@#{realm}"
       query = (query) -> "/usr/lib/hive/bin/beeline -u \"#{url}\" --silent=true -e \"#{query}\" "
       ctx.waitIsOpen hive.hive_server2.host, hive.hive_server2.port, (err) ->
@@ -27,7 +27,7 @@ Use the [Beeline][beeline] JDBC client to execute SQL queries.
           hdfs dfs -mkdir -p check-#{host}-hive_server2/my_db/my_table
           echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{host}-hive_server2/my_db/my_table/data
           #{query "DROP TABLE IF EXISTS check_#{host}_server2.my_table; DROP DATABASE IF EXISTS check_#{host}_server2;"}
-          #{query "CREATE DATABASE IF NOT EXISTS check_#{host}_server2 LOCATION '/user/#{test_user.name}/check-#{host}-hive_server2/my_db'"}
+          #{query "CREATE DATABASE IF NOT EXISTS check_#{host}_server2 LOCATION '/user/#{user.name}/check-#{host}-hive_server2/my_db'"}
           #{query "CREATE TABLE IF NOT EXISTS check_#{host}_server2.my_table(col1 STRING, col2 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';"}
           #{query "SELECT SUM(col2) FROM check_#{host}_server2.my_table;"} | hdfs dfs -put - check-#{host}-hive_server2/result
           #{query "DROP TABLE check_#{host}_server2.my_table;"}
@@ -43,7 +43,7 @@ Use the [Hive CLI][hivecli] client to execute SQL queries using the MapReduce
 engine.
 
     module.exports.push name: 'Hive & HCat Client # Check MapReduce', label_true: 'CHECKED', timeout: -1, callback: (ctx, next) ->
-      {force_check, test_user, hive} = ctx.config.ryba
+      {force_check, user, hive} = ctx.config.ryba
       ctx.waitIsOpen hive.metastore.host, hive.metastore.port, (err) ->
         host = ctx.config.shortname
         ctx.execute
@@ -53,7 +53,7 @@ engine.
           echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{host}-hive_metastore/my_db/my_table/data
           hive -e "
             DROP TABLE IF EXISTS check_#{host}_metastore.my_table; DROP DATABASE IF EXISTS check_#{host}_metastore;
-            CREATE DATABASE check_#{host}_metastore LOCATION '/user/#{test_user.name}/check-#{host}-hive_metastore/my_db/';
+            CREATE DATABASE check_#{host}_metastore LOCATION '/user/#{user.name}/check-#{host}-hive_metastore/my_db/';
             USE check_#{host}_metastore;
             CREATE TABLE my_table(col1 STRING, col2 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
           "
@@ -68,7 +68,7 @@ engine.
 Use the [Hive CLI][hivecli] client to execute SQL queries using the Tez engine.
 
     module.exports.push name: 'Hive & HCat Client # Check Tez', label_true: 'CHECKED', timeout: -1, callback: (ctx, next) ->
-      {force_check, test_user, hive} = ctx.config.ryba
+      {force_check, user, hive} = ctx.config.ryba
       ctx.waitIsOpen hive.metastore.host, hive.metastore.port, (err) ->
         host = ctx.config.shortname
         ctx.execute
@@ -78,7 +78,7 @@ Use the [Hive CLI][hivecli] client to execute SQL queries using the Tez engine.
           echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{host}-hive_tez/my_db/my_table/data
           hive -e "
             DROP TABLE IF EXISTS check_#{host}_tez.test_#{host}_tez; DROP DATABASE IF EXISTS check_#{host}_tez;
-            CREATE DATABASE check_#{host}_tez LOCATION '/user/#{test_user.name}/check-#{host}-hive_tez/my_db/';
+            CREATE DATABASE check_#{host}_tez LOCATION '/user/#{user.name}/check-#{host}-hive_tez/my_db/';
             USE check_#{host}_tez;
             CREATE TABLE test_#{host}_tez(col1 STRING, col2 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
           "
