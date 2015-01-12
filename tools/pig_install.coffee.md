@@ -1,8 +1,3 @@
----
-title: Pig
-module: ryba/tools/pig
-layout: module
----
 
 # Pig
 

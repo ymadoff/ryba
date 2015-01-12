@@ -1,8 +1,3 @@
----
-title: Flume
-module: ryba/hadoop/flume
-layout: module
----
 
 # Flume
 

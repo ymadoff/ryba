@@ -1,8 +1,3 @@
----
-title: Ganglia Monitor
-module: ryba/ganglia/monitor
-layout: module
----
 
 # Ganglia Monitor Install
 

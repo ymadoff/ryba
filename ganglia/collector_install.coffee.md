@@ -1,8 +1,3 @@
----
-title: Ganglia Collector
-module: ryba/ganglia/collector
-layout: module
----
 
 # Ganglia Collector Install
 
