@@ -10,10 +10,10 @@ The backup script dump the content of the hive database as well as the logs.
 ## Database
 
     module.exports.push name: "Hive Server # Database", callback: (ctx, next) ->
-      {hive_site} = ctx.config.ryba
-      username = hive_site['javax.jdo.option.ConnectionUserName']
-      password = hive_site['javax.jdo.option.ConnectionPassword']
-      {engine, db, hostname, port} = parse_jdbc hive_site['javax.jdo.option.ConnectionURL']
+      {hive} = ctx.config.ryba
+      username = hive.site['javax.jdo.option.ConnectionUserName']
+      password = hive.site['javax.jdo.option.ConnectionPassword']
+      {engine, db, hostname, port} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
       engines = 
         mysql: ->
           escape = (text) -> text.replace(/[\\"]/g, "\\$&")

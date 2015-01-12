@@ -1,7 +1,3 @@
----
-title: 
-layout: module
----
 
 # XASecure
 
@@ -48,7 +44,7 @@ layout: module
       do_upload()
 
     module.exports.push name: 'XASecure Hive # Install', timeout: -1, callback: (ctx, next) ->
-      {hive_conf_dir} = ctx.config.ryba
+      {conf_dir} = ctx.config.ryba.hive
       {hive, hive_url} = ctx.config.xasecure
       modified = false
       do_configure = ->
@@ -71,7 +67,7 @@ layout: module
       do_conf = ->
         # TODO, need to merge properties "hive.exec.pre.hooks", "hive.exec.post.hooks"
         ctx.hconfigure
-          destination: "#{hive_conf_dir}/hive-site.xml"
+          destination: "#{conf_dir}/hive-site.xml"
           properties: 
             'hive.exec.pre.hooks': 'com.xasecure.authorization.hive.hooks.XaSecureHivePreExecuteRunHook'
             'hive.exec.post.hooks': 'com.xasecure.authorization.hive.hooks.XaSecureHivePostExecuteRunHook'
@@ -130,5 +126,3 @@ layout: module
     each = require 'each'
     quote = require 'regexp-quote'
     lifecycle = require '../lib/lifecycle'
-
-

@@ -8,7 +8,7 @@
     module.exports.push name: 'HDFS DN # Wait', timeout: -1, label_true: 'READY', callback: (ctx, next) ->
       contexts = ctx.contexts 'ryba/hadoop/hdfs_dn', require('./hdfs_dn').configure
       servers = for context in contexts
-        [_, port] = context.config.ryba.hdfs_site['dfs.datanode.address'].split ':'
+        [_, port] = context.config.ryba.hdfs.site['dfs.datanode.address'].split ':'
         host: context.config.host, port: port
       ctx.waitIsOpen servers, next
 

@@ -1,7 +1,3 @@
----
-title: 
-layout: module
----
 
 # HBase Master
 
@@ -11,12 +7,12 @@ layout: module
       require('masson/core/iptables').configure ctx
       # require('../hadoop/hdfs').configure ctx
       require('./_').configure ctx
-      {realm, hbase_site} = ctx.config.ryba
-      ctx.config.ryba.hbase_admin ?= {}
-      ctx.config.ryba.hbase_admin.principal ?= "#{hbase_site['hbase.superuser']}@#{realm}"
-      ctx.config.ryba.hbase_admin.password ?= "hbase123"
-      hbase_site['hbase.master.port'] ?= '60000'
-      hbase_site['hbase.master.info.port'] ?= '60010'
+      {realm, hbase} = ctx.config.ryba
+      hbase.admin ?= {}
+      hbase.admin.principal ?= "#{hbase.site['hbase.superuser']}@#{realm}"
+      hbase.admin.password ?= "hbase123"
+      hbase.site['hbase.master.port'] ?= '60000'
+      hbase.site['hbase.master.info.port'] ?= '60010'
 
     # module.exports.push commands: 'backup', modules: 'ryba/hbase/master_backup'
 

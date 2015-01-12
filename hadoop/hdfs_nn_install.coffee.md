@@ -54,7 +54,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install and configure the startup script in "/etc/init.d/hadoop-hdfs-namenode".
 
     module.exports.push name: 'HDFS NN # Startup', callback: (ctx, next) ->
-      {hdfs_pid_dir} = ctx.config.ryba
+      {hdfs} = ctx.config.ryba
       modified = false
       do_install = ->
         ctx.service [
@@ -68,12 +68,12 @@ Install and configure the startup script in "/etc/init.d/hadoop-hdfs-namenode".
         ctx.write [
           destination: '/etc/init.d/hadoop-hdfs-namenode'
           write: [
-            {match: /^PIDFILE=".*"$/m, replace: "PIDFILE=\"#{hdfs_pid_dir}/$SVC_USER/hadoop-hdfs-namenode.pid\""}
+            {match: /^PIDFILE=".*"$/m, replace: "PIDFILE=\"#{hdfs.pid_dir}/$SVC_USER/hadoop-hdfs-namenode.pid\""}
             {match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m, replace: "$1 -u $SVC_USER $2"}]
         ,
           destination: '/etc/init.d/hadoop-hdfs-zkfc'
           write: [
-            {match: /^PIDFILE=".*"$/m, replace: "PIDFILE=\"#{hdfs_pid_dir}/$SVC_USER/hadoop-hdfs-zkfc.pid\""}
+            {match: /^PIDFILE=".*"$/m, replace: "PIDFILE=\"#{hdfs.pid_dir}/$SVC_USER/hadoop-hdfs-zkfc.pid\""}
             {match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m, replace: "$1 -u $SVC_USER $2"}]
         ], (err, written) ->
           return next err if err
@@ -90,15 +90,15 @@ Create the NameNode data and pid directories. The NameNode data is by defined in
 file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
 
     module.exports.push name: 'HDFS NN # Layout', timeout: -1, callback: (ctx, next) ->
-      {hdfs_site, hdfs_pid_dir, hdfs_user, hadoop_group} = ctx.config.ryba
+      {hdfs, hadoop_group} = ctx.config.ryba
       ctx.mkdir [
-        destination: hdfs_site['dfs.namenode.name.dir'].split ','
-        uid: hdfs_user.name
+        destination: hdfs.site['dfs.namenode.name.dir'].split ','
+        uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755
       ,
-        destination: "#{hdfs_pid_dir}/#{hdfs_user.name}"
-        uid: hdfs_user.name
+        destination: "#{hdfs.pid_dir}/#{hdfs.user.name}"
+        uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755
       ], next
@@ -140,11 +140,11 @@ Environment passed to the NameNode before it starts.
 # Configure
 
     module.exports.push name: 'HDFS NN # Configure', callback: (ctx, next) ->
-      {hadoop_conf_dir, hdfs_user, hadoop_group, hdfs_site} = ctx.config.ryba
+      {hdfs, hadoop_conf_dir, hadoop_group} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-        properties: hdfs_site
-        uid: hdfs_user
+        properties: hdfs.site
+        uid: hdfs.user
         gid: hadoop_group
         merge: true
         backup: true
@@ -185,15 +185,15 @@ inside "/etc/security/access.conf". A specific rule for the HDFS user is
 inserted if ALL users or the HDFS user access is denied.
 
     module.exports.push name: 'HDFS NN # SSH Fencing', callback: (ctx, next) ->
-      {hadoop_conf_dir, ha_client_config, ssh_fencing, hdfs_user, hadoop_group} = ctx.config.ryba
+      {hdfs, hadoop_conf_dir, ha_client_config, ssh_fencing, hadoop_group} = ctx.config.ryba
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       modified = false
-      ha_client_config['dfs.ha.fencing.methods'] ?= "sshfence(#{hdfs_user.name})"
-      ha_client_config['dfs.ha.fencing.ssh.private-key-files'] ?= "#{hdfs_user.home}/.ssh/id_rsa"
+      ha_client_config['dfs.ha.fencing.methods'] ?= "sshfence(#{hdfs.user.name})"
+      ha_client_config['dfs.ha.fencing.ssh.private-key-files'] ?= "#{hdfs.user.home}/.ssh/id_rsa"
       do_mkdir = ->
         ctx.mkdir
-          destination: "#{hdfs_user.home}/.ssh"
-          uid: hdfs_user.name
+          destination: "#{hdfs.user.home}/.ssh"
+          uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o700
         , (err, created) ->
@@ -202,14 +202,14 @@ inserted if ALL users or the HDFS user access is denied.
       do_upload_keys = ->
         ctx.upload [
           source: "#{ssh_fencing.private_key}"
-          destination: "#{hdfs_user.home}/.ssh"
-          uid: hdfs_user.name
+          destination: "#{hdfs.user.home}/.ssh"
+          uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o600
         ,
           source: "#{ssh_fencing.public_key}"
-          destination: "#{hdfs_user.home}/.ssh"
-          uid: hdfs_user.name
+          destination: "#{hdfs.user.home}/.ssh"
+          uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o655
         ], (err, written) ->
@@ -220,10 +220,10 @@ inserted if ALL users or the HDFS user access is denied.
         fs.readFile "#{ssh_fencing.public_key}", (err, content) ->
           return next err if err
           ctx.write
-            destination: "#{hdfs_user.home}/.ssh/authorized_keys"
+            destination: "#{hdfs.user.home}/.ssh/authorized_keys"
             content: content
             append: true
-            uid: hdfs_user.name
+            uid: hdfs.user.name
             gid: hadoop_group.name
             mode: 0o600
           , (err, written) ->
@@ -234,15 +234,15 @@ inserted if ALL users or the HDFS user access is denied.
         ctx.fs.readFile '/etc/security/access.conf', (err, source) ->
           return next err if err
           content = []
-          exclude = ///^\-\s?:\s?(ALL|#{hdfs_user.name})\s?:\s?(.*?)\s*?(#.*)?$///
-          include = ///^\+\s?:\s?(#{hdfs_user.name})\s?:\s?(.*?)\s*?(#.*)?$///
+          exclude = ///^\-\s?:\s?(ALL|#{hdfs.user.name})\s?:\s?(.*?)\s*?(#.*)?$///
+          include = ///^\+\s?:\s?(#{hdfs.user.name})\s?:\s?(.*?)\s*?(#.*)?$///
           included = false
           for line, i in source = source.split /\r\n|[\n\r\u0085\u2028\u2029]/g
             if match = include.exec line
               included = true # we shall also check if the ip/fqdn match in origin
             if not included and match = exclude.exec line
               nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
-              content.push "+ : #{hdfs_user.name} : #{nn_hosts.join ','}"
+              content.push "+ : #{hdfs.user.name} : #{nn_hosts.join ','}"
             content.push line
           return do_configure() if content.length is source.length
           ctx.write
@@ -274,11 +274,11 @@ is only exected once all the JournalNodes are started. The NameNode is finally r
 if the NameNode was formated.
 
     module.exports.push name: 'HDFS NN # Format', timeout: -1, callback: (ctx, next) ->
-      {active_nn, hdfs_site, hdfs_user, nameservice} = ctx.config.ryba
-      any_dfs_name_dir = hdfs_site['dfs.namenode.name.dir'].split(',')[0]
+      {hdfs, active_nn, nameservice} = ctx.config.ryba
+      any_dfs_name_dir = hdfs.site['dfs.namenode.name.dir'].split(',')[0]
       unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
         ctx.execute
-          cmd: "su -l #{hdfs_user.name} -c \"hdfs namenode -format\""
+          cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -format\""
           not_if_exists: "#{any_dfs_name_dir}/current/VERSION"
         , next
       else
@@ -290,7 +290,7 @@ if the NameNode was formated.
           return next err if err
           ctx.execute
             # yes 'Y' | su -l hdfs -c "hdfs namenode -format -clusterId torval"
-            cmd: "su -l #{hdfs_user.name} -c \"hdfs namenode -format -clusterId #{nameservice}\""
+            cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -format -clusterId #{nameservice}\""
             # /hadoop/hdfs/namenode/current/VERSION
             not_if_exists: "#{any_dfs_name_dir}/current/VERSION"
           , next
@@ -323,7 +323,7 @@ is only executed on a non active NameNode.
 Secure the Zookeeper connection with JAAS.
 
     module.exports.push name: 'HDFS NN # Zookeeper JAAS', timeout: -1, callback: (ctx, next) ->
-      {hadoop_conf_dir, hdfs_user, hadoop_group, zkfc_password} = ctx.config.ryba
+      {hdfs, hadoop_conf_dir, hadoop_group, zkfc_password} = ctx.config.ryba
       modified = false
       do_core = ->
         ctx.hconfigure
@@ -341,7 +341,7 @@ Secure the Zookeeper connection with JAAS.
         ctx.write [
           destination: "#{hadoop_conf_dir}/zk-auth.txt"
           content: "digest:hdfs-zkfcs:#{zkfc_password}"
-          uid: hdfs_user.name
+          uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o0700
         ], (err, written) ->

@@ -1,8 +1,3 @@
----
-title: Ganglia Collector
-module: ryba/ganglia/collector_check
-layout: module
----
 
 # Check Ganglia Collector
 

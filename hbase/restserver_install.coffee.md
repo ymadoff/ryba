@@ -1,7 +1,3 @@
----
-title: 
-layout: module
----
 
 # HBase RestServer
 
@@ -24,11 +20,11 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HHBase RestServer # IPTables', callback: (ctx, next) ->
-      {hbase_site} = ctx.config.ryba
+      {hbase} = ctx.config.ryba
       ctx.iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.rest.port'] or 8080, protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.rest.info.port'] or 8085, protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.rest.port'] or 8080, protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.rest.info.port'] or 8085, protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
       , next

@@ -29,23 +29,23 @@ code.
 *   `ryba.static_host` (boolean)   
     Write the host name of the server instead of the Hadoop "_HOST" 
     placeholder accross all the configuration files, default to false.   
-*   `hdfs_user` (object|string)   
+*   `hdfs.user` (object|string)   
     The Unix HDFS login name or a user object (see Mecano User documentation).   
-*   `yarn:user` (object|string)   
+*   `yarn.user` (object|string)   
     The Unix YARN login name or a user object (see Mecano User documentation).   
-*   `mapred_user` (object|string)   
+*   `mapred.user` (object|string)   
     The Unix MapReduce login name or a user object (see Mecano User documentation).   
-*   `test_user` (object|string)   
+*   `user` (object|string)   
     The Unix Test user name or a user object (see Mecano User documentation).   
 *   `hadoop_group` (object|string)   
     The Unix Hadoop group name or a group object (see Mecano Group documentation).   
-*   `hdfs_group` (object|string)   
+*   `hdfs.group` (object|string)   
     The Unix HDFS group name or a group object (see Mecano Group documentation).   
-*   `yarn:group` (object|string)   
+*   `yarn.group` (object|string)   
     The Unix YARN group name or a group object (see Mecano Group documentation).   
-*   `mapred_group` (object|string)   
+*   `mapred.group` (object|string)   
     The Unix MapReduce group name or a group object (see Mecano Group documentation).   
-*   `test_group` (object|string)   
+*   `group` (object|string)   
     The Unix Test group name or a group object (see Mecano Group documentation).   
 
 Default configuration:
@@ -53,9 +53,21 @@ Default configuration:
 ```json
 {
   "ryba": {
-    "hdfs_user": {
-      "name": "hdfs", "system": true, "gid": "hdfs",
-      "comment": "HDFS User", "home": "/var/lib/hadoop-hdfs"
+    "user": {
+      "name": "ryba", "system": true, "gid": "ryba",
+      "comment": "ryba User", "home": "/home/ryba"
+    },
+    "group": {
+      "name": "ryba", "system": true
+    },
+    "hdfs": {
+      user": {
+        "name": "hdfs", "system": true, "gid": "hdfs",
+        "comment": "HDFS User", "home": "/var/lib/hadoop-hdfs"
+      },
+      group": {
+      "name": "hdfs", "system": true
+      }
     },
     "yarn: {
       user": {
@@ -66,25 +78,17 @@ Default configuration:
         "name": "yarn", "system": true
       }
     },
-    "mapred_user": {
-      "name": "mapred", "system": true, "gid": "mapred",
-      "comment": "MapReduce User", "home": "/var/lib/hadoop-mapreduce"
-    },
-    "test_user": {
-      "name": "ryba", "system": true, "gid": "ryba",
-      "comment": "ryba User", "home": "/home/ryba"
+    "mapred": {
+      "user": {
+        "name": "mapred", "system": true, "gid": "mapred",
+        "comment": "MapReduce User", "home": "/var/lib/hadoop-mapreduce"
+      },
+      "group": {
+        "name": "mapred", "system": true
+      }
     },
     "hadoop_group": {
       "name": "hadoop", "system": true
-    },
-    "hdfs_group": {
-      "name": "hdfs", "system": true
-    },
-    "mapred_group": {
-      "name": "mapred", "system": true
-    },
-    "test_group": {
-      "name": "ryba", "system": true
     }
   }
 }
@@ -97,14 +101,18 @@ Default configuration:
       require('masson/core/krb5_client').configure ctx
       require('../lib/base').configure ctx
       # User
-      ctx.config.ryba.hdfs_user = name: ctx.config.ryba.hdfs_user if typeof ctx.config.ryba.hdfs_user is 'string'
-      ctx.config.ryba.hdfs_user ?= {}
-      ctx.config.ryba.hdfs_user.name ?= 'hdfs'
-      ctx.config.ryba.hdfs_user.system ?= true
-      ctx.config.ryba.hdfs_user.gid ?= 'hdfs'
-      ctx.config.ryba.hdfs_user.groups ?= 'hadoop'
-      ctx.config.ryba.hdfs_user.comment ?= 'Hadoop HDFS User'
-      ctx.config.ryba.hdfs_user.home ?= '/var/lib/hadoop-hdfs'
+      ctx.config.ryba.hdfs.user ?= {}
+      ctx.config.ryba.hdfs.user = name: ctx.config.ryba.hdfs.user if typeof ctx.config.ryba.hdfs.user is 'string'
+      ctx.config.ryba.hdfs.user.name ?= 'hdfs'
+      ctx.config.ryba.hdfs.user.system ?= true
+      ctx.config.ryba.hdfs.user.gid ?= 'hdfs'
+      ctx.config.ryba.hdfs.user.groups ?= 'hadoop'
+      ctx.config.ryba.hdfs.user.comment ?= 'Hadoop HDFS User'
+      ctx.config.ryba.hdfs.user.home ?= '/var/lib/hadoop-hdfs'
+      
+      ctx.config.ryba.hdfs.krb5_user ?= {}
+      ctx.config.ryba.hdfs.krb5_user.name ?= ctx.config.ryba.hdfs.user.name
+      ctx.config.ryba.hdfs.krb5_user.password ?= 'hdfs123'
       ctx.config.ryba.yarn ?= {}
       ctx.config.ryba.yarn.user ?= {}
       ctx.config.ryba.yarn.user = name: ctx.config.ryba.yarn.user if typeof ctx.config.ryba.yarn.user is 'string'
@@ -114,40 +122,42 @@ Default configuration:
       ctx.config.ryba.yarn.user.groups ?= 'hadoop'
       ctx.config.ryba.yarn.user.comment ?= 'Hadoop YARN User'
       ctx.config.ryba.yarn.user.home ?= '/var/lib/hadoop-yarn'
-      ctx.config.ryba.mapred_user = name: ctx.config.ryba.mapred_user if typeof ctx.config.ryba.mapred_user is 'string'
-      ctx.config.ryba.mapred_user ?= {}
-      ctx.config.ryba.mapred_user.name ?= 'mapred'
-      ctx.config.ryba.mapred_user.system ?= true
-      ctx.config.ryba.mapred_user.gid ?= 'mapred'
-      ctx.config.ryba.mapred_user.groups ?= 'hadoop'
-      ctx.config.ryba.mapred_user.comment ?= 'Hadoop MapReduce User'
-      ctx.config.ryba.mapred_user.home ?= '/var/lib/hadoop-mapreduce'
+      
+      ctx.config.ryba.mapred ?= {}
+      ctx.config.ryba.mapred.user ?= {}
+      ctx.config.ryba.mapred.user = name: ctx.config.ryba.mapred.user if typeof ctx.config.ryba.mapred.user is 'string'
+      ctx.config.ryba.mapred.user.name ?= 'mapred'
+      ctx.config.ryba.mapred.user.system ?= true
+      ctx.config.ryba.mapred.user.gid ?= 'mapred'
+      ctx.config.ryba.mapred.user.groups ?= 'hadoop'
+      ctx.config.ryba.mapred.user.comment ?= 'Hadoop MapReduce User'
+      ctx.config.ryba.mapred.user.home ?= '/var/lib/hadoop-mapreduce'
       # Groups
       ctx.config.ryba.hadoop_group = name: ctx.config.ryba.hadoop_group if typeof ctx.config.ryba.hadoop_group is 'string'
       ctx.config.ryba.hadoop_group ?= {}
       ctx.config.ryba.hadoop_group.name ?= 'hadoop'
       ctx.config.ryba.hadoop_group.system ?= true
-      ctx.config.ryba.hdfs_group = name: ctx.config.ryba.hdfs_group if typeof ctx.config.ryba.hdfs_group is 'string'
-      ctx.config.ryba.hdfs_group ?= {}
-      ctx.config.ryba.hdfs_group.name ?= 'hdfs'
-      ctx.config.ryba.hdfs_group.system ?= true
+      ctx.config.ryba.hdfs.group ?= {}
+      ctx.config.ryba.hdfs.group = name: ctx.config.ryba.hdfs.group if typeof ctx.config.ryba.hdfs.group is 'string'
+      ctx.config.ryba.hdfs.group.name ?= 'hdfs'
+      ctx.config.ryba.hdfs.group.system ?= true
       ctx.config.ryba.yarn.group ?= {}
       ctx.config.ryba.yarn.group = name: ctx.config.ryba.yarn.group if typeof ctx.config.ryba.yarn.group is 'string'
       ctx.config.ryba.yarn.group.name ?= 'yarn'
       ctx.config.ryba.yarn.group.system ?= true
-      ctx.config.ryba.mapred_group = name: ctx.config.ryba.mapred_group if typeof ctx.config.ryba.mapred_group is 'string'
-      ctx.config.ryba.mapred_group ?= {}
-      ctx.config.ryba.mapred_group.name ?= 'mapred'
-      ctx.config.ryba.mapred_group.system ?= true
-      ctx.config.ryba.test_group = name: ctx.config.ryba.test_group if typeof ctx.config.ryba.test_group is 'string'
-      ctx.config.ryba.test_group ?= {}
-      ctx.config.ryba.test_group.name ?= 'ryba'
-      ctx.config.ryba.test_group.system ?= true
+      ctx.config.ryba.mapred.group ?= {}
+      ctx.config.ryba.mapred.group = name: ctx.config.ryba.mapred.group if typeof ctx.config.ryba.mapred.group is 'string'
+      ctx.config.ryba.mapred.group.name ?= 'mapred'
+      ctx.config.ryba.mapred.group.system ?= true
+      ctx.config.ryba.group ?= {}
+      ctx.config.ryba.group = name: ctx.config.ryba.group if typeof ctx.config.ryba.group is 'string'
+      ctx.config.ryba.group.name ?= 'ryba'
+      ctx.config.ryba.group.system ?= true
       # Layout
       ctx.config.ryba.hadoop_conf_dir ?= '/etc/hadoop/conf'
-      ctx.config.ryba.hdfs_log_dir ?= '/var/log/hadoop-hdfs'
-      ctx.config.ryba.hdfs_pid_dir ?= '/var/run/hadoop-hdfs'
-      ctx.config.ryba.mapred_log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
+      ctx.config.ryba.hdfs.log_dir ?= '/var/log/hadoop-hdfs'
+      ctx.config.ryba.hdfs.pid_dir ?= '/var/run/hadoop-hdfs'
+      ctx.config.ryba.mapred.log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
       # HA Configuration
       ctx.config.ryba.nameservice ?= null
       ctx.config.ryba.active_nn ?= false
@@ -223,11 +233,10 @@ Note, the package "hadoop" will also install the "dbus" user and group which are
 not handled here.
 
     module.exports.push name: 'Hadoop Core # Users & Groups', callback: (ctx, next) ->
-      {hadoop_group, hdfs_group, yarn, mapred_group,
-       hdfs_user, mapred_user} = ctx.config.ryba
-      ctx.group [hadoop_group, hdfs_group, yarn.group, mapred_group], (err, gmodified) ->
+      {hadoop_group, hdfs, yarn, mapred} = ctx.config.ryba
+      ctx.group [hadoop_group, hdfs.group, yarn.group, mapred.group], (err, gmodified) ->
         return next err if err
-        ctx.user [hdfs_user, yarn.user, mapred_user], (err, umodified) ->
+        ctx.user [hdfs.user, yarn.user, mapred.user], (err, umodified) ->
           next err, gmodified or umodified
 
 ## Test User
@@ -236,17 +245,17 @@ Create a Unix and Kerberos test user, by default "ryba". Its HDFS home directory
 will be created by one of the datanode.
 
     module.exports.push name: 'Hadoop HDFS DN # HDFS Layout User Test', timeout: -1, callback: (ctx, next) ->
-      {test_group, test_user, test_password, security, realm} = ctx.config.ryba
+      {krb5_user, user, group, security, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
       # ryba group and user may already exist in "/etc/passwd" or in any sssd backend
-      ctx.group test_group, (err, gmodified) ->
+      ctx.group group, (err, gmodified) ->
         return next err if err
-        ctx.user test_user, (err, umodified) ->
+        ctx.user user, (err, umodified) ->
           return next err if err
           ctx.krb5_addprinc
-            principal: "#{test_user.name}@#{realm}"
-            password: "#{test_password}"
+            principal: "#{krb5_user.name}@#{realm}"
+            password: "#{krb5_user.password}"
             kadmin_principal: kadmin_principal
             kadmin_password: kadmin_password
             kadmin_server: admin_server
@@ -278,14 +287,14 @@ Note, this is wrong. Problem is that multiple module modify this file. We shall
 instead enrich the original file installed by the package.
 
     module.exports.push name: 'Hadoop Core # Env', timeout: -1, callback: (ctx, next) ->
-      {hadoop_conf_dir, hdfs_user, hadoop_group} = ctx.config.ryba
+      {hadoop_conf_dir, hdfs, hadoop_group} = ctx.config.ryba
       ctx.fs.readFile "#{hadoop_conf_dir}/hadoop-env.sh", 'ascii', (err, content) ->
         return next null, false if /HDP/.test content
         ctx.upload
           source: "#{__dirname}/../resources/core_hadoop/hadoop-env.sh"
           destination: "#{hadoop_conf_dir}/hadoop-env.sh"
           local_source: true
-          uid: hdfs_user.name
+          uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o755
           backup: true
@@ -309,11 +318,11 @@ Update the "core-site.xml" configuration file with properties from the
       , next
 
     module.exports.push name: 'Hadoop Core # Topology', callback: (ctx, next) ->
-      {hdfs_user, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
+      {hdfs, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
       ctx.upload
         destination: "#{hadoop_conf_dir}/rack_topology.sh"
         source: "#{__dirname}/../resources/rack_topology.sh"
-        uid: hdfs_user.name
+        uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755
         backup: true
@@ -329,7 +338,7 @@ Update the "core-site.xml" configuration file with properties from the
         ctx.write
           destination: "#{hadoop_conf_dir}/rack_topology.data"
           content: content.join("\n")
-          uid: hdfs_user.name
+          uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o755
           backup: true
@@ -347,15 +356,15 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
     module.exports.push name: 'Hadoop Core # Hadoop OPTS', timeout: -1, callback: (ctx, next) ->
       {java_home} = ctx.config.java
-      {hadoop_conf_dir, hdfs_user, hadoop_group, hadoop_opts, hadoop_client_opts, hdfs_log_dir, hdfs_pid_dir} = ctx.config.ryba
+      {hadoop_conf_dir, hdfs, hadoop_group, hadoop_opts, hadoop_client_opts} = ctx.config.ryba
       ctx.fs.exists '/usr/libexec/bigtop-utils', (err, exists) ->
         return next err if err
         jsvc = if exists then '/usr/libexec/bigtop-utils' else '/usr/lib/bigtop-utils'
         write = [
           { match: /^export JAVA_HOME=.*$/mg, replace: "export JAVA_HOME=#{java_home}" }
           { match: /^export HADOOP_OPTS=.*$/mg, replace: hadoop_opts }
-          { match: /\/var\/log\/hadoop\//mg, replace: "#{hdfs_log_dir}/" }
-          { match: /\/var\/run\/hadoop\//mg, replace: "#{hdfs_pid_dir}/" }
+          { match: /\/var\/log\/hadoop\//mg, replace: "#{hdfs.log_dir}/" }
+          { match: /\/var\/run\/hadoop\//mg, replace: "#{hdfs.pid_dir}/" }
           { match: /^export JSVC_HOME=.*$/mg, replace: "export JSVC_HOME=#{jsvc}" }
           { match: /^export HADOOP_CLIENT_OPTS=.*$/mg, replace: hadoop_client_opts}
         ]
@@ -524,11 +533,11 @@ recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
     module.exports.push 'ryba/hadoop/core_ssl'
 
     module.exports.push name: 'Hadoop Core # Check auth_to_local', label_true: 'CHECKED', callback: (ctx, next) ->
-      {test_user, realm} = ctx.config.ryba
+      {user, krb5_user, realm} = ctx.config.ryba
       ctx.execute
-        cmd: "hadoop org.apache.hadoop.security.HadoopKerberosName #{test_user.name}@#{realm}"
+        cmd: "hadoop org.apache.hadoop.security.HadoopKerberosName #{krb5_user.name}@#{realm}"
       , (err, _, stdout) ->
-        err = Error "Invalid mapping" if not err and stdout.indexOf("#{test_user.name}@#{realm} to #{test_user.name}") is -1
+        err = Error "Invalid mapping" if not err and stdout.indexOf("#{krb5_user.name}@#{realm} to #{user.name}") is -1
         next err, true
 
 

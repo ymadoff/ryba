@@ -65,18 +65,19 @@ memory = (ctx) ->
         'yarn.scheduler.maximum-allocation-mb': "#{yarnSchedulerMaximumAllocationMb}"
         'yarn.app.mapreduce.am.resource.mb': "#{yarnAppMapreduceAmResourceMb}" # Default to "682"
         'yarn.app.mapreduce.am.command-opts': "-Xmx#{yarnAppMapreduceAmCommandOpts}m" # Default to "-Xmx546m"
-    mapred_site:
-      'mapreduce.map.memory.mb': "#{mapreduceMapMemoryMb}"
-      'mapreduce.reduce.memory.mb': "#{mapreduceReduceMemoryMb}"
-      'mapreduce.map.java.opts': "-Xmx#{Math.floor .8 * memoryPerContainer}m" # 0.8 * RAM-per-container
-      'mapreduce.reduce.java.opts': "-Xmx#{Math.floor .8 * 2 * memoryPerContainer}m" # 0.8 * 2 * RAM-per-container
-      'mapreduce.task.io.sort.mb': "#{Math.floor .4 * memoryPerContainer}"
+    mapred:
+      site:
+        'mapreduce.map.memory.mb': "#{mapreduceMapMemoryMb}"
+        'mapreduce.reduce.memory.mb': "#{mapreduceReduceMemoryMb}"
+        'mapreduce.map.java.opts': "-Xmx#{Math.floor .8 * memoryPerContainer}m" # 0.8 * RAM-per-container
+        'mapreduce.reduce.java.opts': "-Xmx#{Math.floor .8 * 2 * memoryPerContainer}m" # 0.8 * 2 * RAM-per-container
+        'mapreduce.task.io.sort.mb': "#{Math.floor .4 * memoryPerContainer}"
   # merge result.yarn.site, ctx.config.ryba.yarn.site
   for k, v of result.yarn.site
     result.yarn.site[k] = ctx.config.ryba.yarn.site[k] if ctx.config.ryba.yarn.site[k]?
-  # merge result.mapred_site, ctx.config.ryba.mapred_site
-  for k, v of result.mapred_site
-    result.mapred_site[k] = ctx.config.ryba.mapred_site[k] if ctx.config.ryba.mapred_site[k]?
+  # merge result.mapred.site, ctx.config.ryba.mapred.site
+  for k, v of result.mapred.site
+    result.mapred.site[k] = ctx.config.ryba.mapred.site[k] if ctx.config.ryba.mapred.site[k]?
   result
 
 memory.reservedStack = 4:1, 8:2, 16:2, 24:4, 48:6, 64:8, 72:8, 96:12, 128:24, 256:32, 512:64

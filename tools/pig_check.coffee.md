@@ -13,12 +13,12 @@ installed. The script will only be executed the first time it is deployed
 unless the "hdp.force_check" configuration property is set to "true".
 
     module.exports.push name: 'Hadoop Pig Check # Client', timeout: -1, callback: (ctx, next) ->
-      {force_check, test_user} = ctx.config.ryba
+      {force_check, user} = ctx.config.ryba
       ctx.write
         content: """
-        data = LOAD '/user/#{test_user.name}/#{ctx.config.shortname}-pig_tmp/data' USING PigStorage(',') AS (text, number);
+        data = LOAD '/user/#{user.name}/#{ctx.config.shortname}-pig_tmp/data' USING PigStorage(',') AS (text, number);
         result = foreach data generate UPPER(text), number+2;
-        STORE result INTO '/user/#{test_user.name}/#{ctx.config.shortname}-pig' USING PigStorage();
+        STORE result INTO '/user/#{user.name}/#{ctx.config.shortname}-pig' USING PigStorage();
         """
         destination: '/tmp/ryba-test.pig'
       , (err, written) ->
@@ -30,7 +30,7 @@ unless the "hdp.force_check" configuration property is set to "true".
           hdfs dfs -mkdir -p #{ctx.config.shortname}-pig_tmp
           echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - #{ctx.config.shortname}-pig_tmp/data
           pig /tmp/ryba-test.pig
-          hdfs dfs -test -d /user/#{test_user.name}/#{ctx.config.shortname}-pig
+          hdfs dfs -test -d /user/#{user.name}/#{ctx.config.shortname}-pig
           """
           not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -d #{ctx.config.shortname}-pig"
         , next
@@ -38,7 +38,7 @@ unless the "hdp.force_check" configuration property is set to "true".
 ## HCat
 
     module.exports.push name: 'Hadoop Pig Check # HCat', timeout: -1, callback: (ctx, next) ->
-      {test_user, force_check} = ctx.config.ryba
+      {user, force_check} = ctx.config.ryba
       query = (query) -> "hcat -e \"#{query}\" "
       db = "check_#{ctx.config.shortname}_pig_hcat"
       ctx.write
@@ -46,7 +46,7 @@ unless the "hdp.force_check" configuration property is set to "true".
         data = LOAD '#{db}.check_tb' USING org.apache.hive.hcatalog.pig.HCatLoader();
         agroup = GROUP data ALL;
         asum = foreach agroup GENERATE SUM(data.col2);
-        STORE asum INTO '/user/#{test_user.name}/#{ctx.config.shortname}-pig_hcat' USING PigStorage();
+        STORE asum INTO '/user/#{user.name}/#{ctx.config.shortname}-pig_hcat' USING PigStorage();
         """
         destination: "/tmp/ryba-pig_hcat.pig"
         eof: true
@@ -58,7 +58,7 @@ unless the "hdp.force_check" configuration property is set to "true".
           hdfs dfs -rm -r #{ctx.config.shortname}-pig_hcat || true
           hdfs dfs -mkdir -p #{ctx.config.shortname}-pig_hcat_tmp/db/check_tb
           echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - #{ctx.config.shortname}-pig_hcat_tmp/db/check_tb/data
-          #{query "CREATE DATABASE IF NOT EXISTS #{db} LOCATION '/user/#{test_user.name}/#{ctx.config.shortname}-pig_hcat_tmp/db';"}
+          #{query "CREATE DATABASE IF NOT EXISTS #{db} LOCATION '/user/#{user.name}/#{ctx.config.shortname}-pig_hcat_tmp/db';"}
           #{query "CREATE TABLE IF NOT EXISTS #{db}.check_tb(col1 STRING, col2 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';"}
           pig -useHCatalog /tmp/ryba-pig_hcat.pig
           #{query "DROP TABLE #{db}.check_tb;"}
@@ -73,6 +73,4 @@ unless the "hdp.force_check" configuration property is set to "true".
 ## Module Dependencies
 
     mkcmd = require '../lib/mkcmd'
-
-
 

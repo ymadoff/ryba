@@ -20,17 +20,17 @@ transaction log directory. By default these two directories are the same.
 TODO: Add the backup facility
 
     module.exports.push name: "ZooKeeper Server # Purge Transaction Logs", callback: (ctx, next) ->
-      {zookeeper_conf} = ctx.config.ryba
+      {zookeeper} = ctx.config.ryba
       now = Math.floor Date.now() / 1000
       ctx.execute [
         cmd: """
-        tar czf /var/tmp/ryba-zookeeper-data-#{now}.tgz -C #{zookeeper_conf.dataDir} .
+        tar czf /var/tmp/ryba-zookeeper-data-#{now}.tgz -C #{zookeeper.config.dataDir} .
         """
       ,
         cmd: """
-        tar czf /var/tmp/ryba-zookeeper-log-#{now}.tgz -C #{zookeeper_conf.dataLogDir} .
+        tar czf /var/tmp/ryba-zookeeper-log-#{now}.tgz -C #{zookeeper.config.dataLogDir} .
         """
-        if: zookeeper_conf.dataLogDir
+        if: zookeeper.config.dataLogDir
       ], next
 
 ## Purge Transaction Logs
@@ -47,12 +47,12 @@ introduced in version 3.4.0 and can be enabled via the following configuration
 parameters autopurge.snapRetainCount and autopurge.purgeInterval.
 
     module.exports.push name: "ZooKeeper Server # Purge Transaction Logs", callback: (ctx, next) ->
-      {zookeeper_conf} = ctx.config.ryba
+      {zookeeper} = ctx.config.ryba
       ctx.execute
         cmd: """
         java -cp zookeeper.jar:lib/slf4j-api-1.6.1.jar:lib/slf4j-log4j12-1.6.1.jar:lib/log4j-1.2.15.jar:conf \
           org.apache.zookeeper.server.PurgeTxnLog \
-          #{zookeeper_conf.dataLogDir or ''} #{zookeeper_conf.dataDir} -n #{zookeeper_retention}
+          #{zookeeper.config.dataLogDir or ''} #{zookeeper.config.dataDir} -n #{zookeeper.retention}
         """
       , next
 

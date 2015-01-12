@@ -1,7 +1,3 @@
----
-title: 
-layout: module
----
 
 # Hue Install
 
@@ -104,14 +100,14 @@ to allow impersonnation through the "hue" user.
 
 
     module.exports.push name: 'Hue # WebHCat', callback: (ctx, next) ->
-      {webhcat_conf_dir} = ctx.config.ryba
+      {webhcat} = ctx.config.ryba
       webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
       hconfigure = (ssh) ->
         properties = 
           'webhcat.proxyuser.hue.hosts': '*'
           'webhcat.proxyuser.hue.groups': '*'
         ctx.hconfigure
-          destination: "#{webhcat_conf_dir}/webhcat-site.xml"
+          destination: "#{webhcat.conf_dir}/webhcat-site.xml"
           properties: properties
           merge: true
         , next

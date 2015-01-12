@@ -10,10 +10,10 @@
 Check if Hive can authenticate and run a basic query to the database.
 
     module.exports.push name: 'Hive & HCat Server # Check Database', label_true: 'CHECKED', callback: (ctx, next) ->
-      {hive_site, db_admin} = ctx.config.ryba
-      username = hive_site['javax.jdo.option.ConnectionUserName']
-      password = hive_site['javax.jdo.option.ConnectionPassword']
-      {engine, db} = parse_jdbc hive_site['javax.jdo.option.ConnectionURL']
+      {hive, db_admin} = ctx.config.ryba
+      username = hive.site['javax.jdo.option.ConnectionUserName']
+      password = hive.site['javax.jdo.option.ConnectionPassword']
+      {engine, db} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
       engines = 
         mysql: ->
           escape = (text) -> text.replace(/[\\"]/g, "\\$&")
@@ -32,9 +32,9 @@ Check if the Hive HCatalog (Metastore) server is listening.
 
     module.exports.push name: 'Hive & HCat Server # Check Port HCatalog', label_true: 'CHECKED', callback: (ctx, next) ->
       {host} = ctx.config
-      {hive_metastore_port, hive_server2_port} = ctx.config.ryba
+      {metastore} = ctx.config.ryba.hive
       ctx.execute
-        cmd: "echo > /dev/tcp/#{host}/#{hive_metastore_port}"
+        cmd: "echo > /dev/tcp/#{host}/#{metastore.port}"
       , next
 
 ## Open Port Server2
@@ -43,9 +43,9 @@ Check if the Hive Server2 server is listening.
 
     module.exports.push name: 'Hive & HCat Server # Check Port Server2', label_true: 'CHECKED', callback: (ctx, next) ->
       {host} = ctx.config
-      {hive_metastore_port, hive_server2_port} = ctx.config.ryba
+      {hive_server2} = ctx.config.ryba.hive
       ctx.execute
-        cmd: "echo > /dev/tcp/#{host}/#{hive_server2_port}"
+        cmd: "echo > /dev/tcp/#{host}/#{hive_server2.port}"
       , next
 
     module.exports.push name: 'Hive & HCat Server # Check', timeout: -1, callback: (ctx, next) ->

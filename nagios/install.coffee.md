@@ -228,9 +228,9 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       , next
 
     module.exports.push name: 'Nagios # Services', callback: (ctx, next) ->
-      {nagios, force_check, active_nn_host, core_site, hdfs_site, zookeeper_port, 
-        yarn, hive_site, hbase_site, oozie, webhcat_site, ganglia, hue} = ctx.config.ryba
-      protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      {nagios, force_check, active_nn_host, core_site, hdfs, zookeeper, 
+        yarn, hive, hbase, oozie, webhcat, ganglia, hue} = ctx.config.ryba
+      protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       nn_hosts_map = {} # fqdn to port
       active_nn_port = null
@@ -242,7 +242,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
         for nn_host in nn_hosts
           nn_ctx = ctx.hosts[nn_host]
           require('../hadoop/hdfs_nn').configure nn_ctx
-          protocol = if nn_ctx.config.ryba.hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+          protocol = if nn_ctx.config.ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
           shortname = nn_ctx.config.shortname
           nameservice = nn_ctx.config.ryba.nameservice
           nn_host = ctx.config.ryba.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')
@@ -263,18 +263,18 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       if jhs_hosts.length
         jhs_ctx = ctx.hosts[jhs_hosts[0]]
         require('../hadoop/mapred_jhs').configure jhs_ctx
-        hs_webapp_port = jhs_ctx.config.ryba.mapred_site['mapreduce.jobhistory.webapp.address'].split(':')[1]
+        hs_webapp_port = jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.webapp.address'].split(':')[1]
       jn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
       if jn_hosts.length
         jn_ctx = ctx.hosts[jn_hosts[0]]
         require('../hadoop/hdfs_jn').configure jn_ctx
-        journalnode_port = jn_ctx.config.ryba.hdfs_site["dfs.journalnode.#{protocol}-address"].split(':')[1]
-      datanode_port = hdfs_site["dfs.datanode.#{protocol}.address"].split(':')[1]
+        journalnode_port = jn_ctx.config.ryba.hdfs.site["dfs.journalnode.#{protocol}-address"].split(':')[1]
+      datanode_port = hdfs.site["dfs.datanode.#{protocol}.address"].split(':')[1]
       hm_hosts = ctx.hosts_with_module 'ryba/hbase/master'
-      hive_server_port = if hive_site['hive.server2.transport.mode'] is 'binary'
-      then hive_site['hive.server2.thrift.port']
-      else hive_site['hive.server2.thrift.http.port']
-      # protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      hive_server_port = if hive.site['hive.server2.transport.mode'] is 'binary'
+      then hive.site['hive.server2.thrift.port']
+      else hive.site['hive.server2.thrift.http.port']
+      # protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       # shortname = ctx.hosts[active_nn_host].config.shortname
       # active_nn_port = ctx.config.ryba.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
       hostgroup_defs = {}
@@ -296,7 +296,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           ganglia_collector_hbase_port: ganglia.hm_port
           ganglia_collector_rm_port: ganglia.rm_port
           ganglia_collector_hs_port: ganglia.jhs_port
-          snamenode_port: hdfs_site['dfs.namenode.secondary.http-address']?.split(':')[1]
+          snamenode_port: hdfs.site['dfs.namenode.secondary.http-address']?.split(':')[1]
           storm_ui_port: 0 # TODO Storm
           nimbus_port: 0 # TODO Storm
           drpc_port: 0 # TODO Storm
@@ -310,8 +310,8 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           nn_ha_host_port_map: nn_hosts_map
           namenode_host: nn_hosts
           nn_hosts_string: nn_hosts.join ' '
-          dfs_namenode_checkpoint_period: hdfs_site['dfs.namenode.checkpoint.period'] or 21600
-          dfs_namenode_checkpoint_txns: hdfs_site['dfs.namenode.checkpoint.txns'] or 1000000
+          dfs_namenode_checkpoint_period: hdfs.site['dfs.namenode.checkpoint.period'] or 21600
+          dfs_namenode_checkpoint_txns: hdfs.site['dfs.namenode.checkpoint.txns'] or 1000000
           nn_metrics_property: 'FSNamesystem'
           rm_hosts_in_str: rm_hosts.join ','
           rm_port: rm_webapp_port
@@ -319,17 +319,17 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           hs_port: hs_webapp_port
           journalnode_port: journalnode_port
           datanode_port: datanode_port
-          clientPort: zookeeper_port
-          hbase_rs_port: hbase_site['hbase.regionserver.info.port']
-          hbase_master_port: hbase_site['hbase.master.info.port']
+          clientPort: zookeeper.port
+          hbase_rs_port: hbase.site['hbase.regionserver.info.port']
+          hbase_master_port: hbase.site['hbase.master.info.port']
           hbase_master_hosts_in_str: hm_hosts.join ','
           hbase_master_hosts: hm_hosts
-          hbase_master_rpc_port: hbase_site['hbase.master.port']
-          hive_metastore_port: url.parse(hive_site['hive.metastore.uris']).port
+          hbase_master_rpc_port: hbase.site['hbase.master.port']
+          hive_metastore_port: url.parse(hive.site['hive.metastore.uris']).port
           hive_server_port: hive_server_port
           oozie_server_port: url.parse(oozie.site['oozie.base.url']).port
           java64_home: ctx.config.java.java_home # Used by check_oozie_status.sh
-          templeton_port: webhcat_site['templeton.port']
+          templeton_port: webhcat.site['templeton.port']
           falcon_port: 0 # TODO
           ahs_port: 0 # TODO
           hue_port: hue.ini.desktop.http.port

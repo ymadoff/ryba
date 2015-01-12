@@ -1,7 +1,3 @@
----
-title: 
-layout: module
----
 
 # HBase RegionServer Install
 
@@ -24,11 +20,11 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HBase RegionServer # IPTables', callback: (ctx, next) ->
-      {hbase_site} = ctx.config.ryba
+      {hbase} = ctx.config.ryba
       ctx.iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.regionserver.port'], protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase_site['hbase.regionserver.info.port'], protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.regionserver.port'], protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.regionserver.info.port'], protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
       , next
@@ -67,32 +63,32 @@ JAAS configuration files for zookeeper to be deployed on the HBase Master,
 RegionServer, and HBase client host machines.
 
     module.exports.push name: 'HBase RegionServer # Zookeeper JAAS', timeout: -1, callback: (ctx, next) ->
-      {jaas_server, hbase_conf_dir, hbase_user, hbase_group} = ctx.config.ryba
+      {jaas_server, hbase} = ctx.config.ryba
       ctx.write
-        destination: "#{hbase_conf_dir}/hbase-regionserver.jaas"
+        destination: "#{hbase.conf_dir}/hbase-regionserver.jaas"
         content: jaas_server
-        uid: hbase_user.name
-        gid: hbase_group.name
+        uid: hbase.user.name
+        gid: hbase.group.name
         mode: 0o700
       , next
 
     module.exports.push name: 'HBase RegionServer # Kerberos', timeout: -1, callback: (ctx, next) ->
-      {hadoop_group, hbase_user, hbase_site, realm} = ctx.config.ryba
+      {hadoop_group, hbase, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       if ctx.has_module 'ryba/hbase/master'
-        if hbase_site['hbase.master.kerberos.principal'] isnt hbase_site['hbase.regionserver.kerberos.principal']
+        if hbase.site['hbase.master.kerberos.principal'] isnt hbase.site['hbase.regionserver.kerberos.principal']
           return next Error "HBase principals must match in single node"
         require('./master').configure(ctx)
         ctx.copy
-          source: hbase_site['hbase.master.keytab.file']
-          destination: hbase_site['hbase.regionserver.keytab.file']
+          source: hbase.site['hbase.master.keytab.file']
+          destination: hbase.site['hbase.regionserver.keytab.file']
         , next
       else
         ctx.krb5_addprinc
-          principal: hbase_site['hbase.regionserver.kerberos.principal'].replace '_HOST', ctx.config.host
+          principal: hbase.site['hbase.regionserver.kerberos.principal'].replace '_HOST', ctx.config.host
           randkey: true
-          keytab: hbase_site['hbase.regionserver.keytab.file']
-          uid: hbase_user.name
+          keytab: hbase.site['hbase.regionserver.keytab.file']
+          uid: hbase.user.name
           gid: hadoop_group.name
           kadmin_principal: kadmin_principal
           kadmin_password: kadmin_password
@@ -108,31 +104,31 @@ using the hadoop conf directory to retrieve the SPNEGO keytab. The user "hbase"
 is added membership to the group hadoop to gain read access.
 
     module.exports.push name: 'HBase RegionServer # FIX SPNEGO', callback: (ctx, next) ->
-      {hbase_site, hbase_user, hbase_group, hadoop_group} = ctx.config.ryba
-      {hdfs_site} = ctx.config.ryba
+      {hbase, hadoop_group} = ctx.config.ryba
+      {hdfs} = ctx.config.ryba
       ctx.execute
         cmd: """
-          if groups #{hbase_user.name} | grep #{hadoop_group.name}; then exit 2; fi
-          usermod -G #{hadoop_group.name} #{hbase_user.name}
+          if groups #{hbase.user.name} | grep #{hadoop_group.name}; then exit 2; fi
+          usermod -G #{hadoop_group.name} #{hbase.user.name}
         """
         code_skipped: 2
       , (err, modified) ->
         return next err if err
         ctx.execute
-          cmd: "su -l #{hbase_user.name} -c 'test -r /etc/security/keytabs/spnego.service.keytab'"
+          cmd: "su -l #{hbase.user.name} -c 'test -r /etc/security/keytabs/spnego.service.keytab'"
         , (err) ->
           next err, modified
       # ctx.copy [
       #   source: '/etc/security/keytabs/spnego.service.keytab'
-      #   destination: hbase_site['hbase.thrift.keytab.file']
-      #   uid: hbase_user.name
-      #   gid: hbase_group.name
+      #   destination: hbase.site['hbase.thrift.keytab.file']
+      #   uid: hbase.user.name
+      #   gid: hbase.group.name
       #   mode: 0o660
       # ,
       #   source: '/etc/security/keytabs/spnego.service.keytab'
-      #   destination: hbase_site['hbase.rest.authentication.kerberos.keytab']
-      #   uid: hbase_user.name
-      #   gid: hbase_group.name
+      #   destination: hbase.site['hbase.rest.authentication.kerberos.keytab']
+      #   uid: hbase.user.name
+      #   gid: hbase.group.name
       #   mode: 0o660
       
       # ], (err, copied) ->
@@ -143,12 +139,12 @@ is added membership to the group hadoop to gain read access.
 Enable stats collection in Ganglia.
 
     module.exports.push name: 'HBase RegionServer # Metrics', callback: (ctx, next) ->
-      {hbase_conf_dir} = ctx.config.ryba
+      {hbase} = ctx.config.ryba
       collector = ctx.host_with_module 'ryba/hadoop/ganglia_collector'
       return next() unless collector
       ctx.upload
         source: "#{__dirname}/../resources/hbase/hadoop-metrics.properties.regionservers-GANGLIA"
-        destination: "#{hbase_conf_dir}/hadoop-metrics.properties"
+        destination: "#{hbase.conf_dir}/hadoop-metrics.properties"
         match: 'TODO-GANGLIA-SERVER'
         replace: collector
       , next
@@ -164,8 +160,3 @@ Execute the "ryba/hbase/regionserver_start" module to start the RegionServer.
 Check this installation.
 
     module.exports.push 'ryba/hbase/regionserver_check'
-
-
-
-
-

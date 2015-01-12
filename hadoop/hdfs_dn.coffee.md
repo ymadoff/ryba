@@ -41,13 +41,13 @@ Example:
       require('./hdfs').configure ctx
       {ryba} = ctx.config
       # Tuning
-      dataDirs = ryba.hdfs_site['dfs.datanode.data.dir'].split(',')
+      dataDirs = ryba.hdfs.site['dfs.datanode.data.dir'].split(',')
       if dataDirs.length > 3
-        ryba.hdfs_site['dfs.datanode.failed.volumes.tolerated'] ?= '1'
+        ryba.hdfs.site['dfs.datanode.failed.volumes.tolerated'] ?= '1'
       else
-        ryba.hdfs_site['dfs.datanode.failed.volumes.tolerated'] ?= '0'
+        ryba.hdfs.site['dfs.datanode.failed.volumes.tolerated'] ?= '0'
       # Validation
-      if ryba.hdfs_site['dfs.datanode.failed.volumes.tolerated'] >= dataDirs.length
+      if ryba.hdfs.site['dfs.datanode.failed.volumes.tolerated'] >= dataDirs.length
         throw Error 'Number of failed volumes must be less than total volumes'
       ryba.datanode_opts ?= null
 
@@ -62,5 +62,4 @@ Example:
     module.exports.push commands: 'status', modules: 'ryba/hadoop/hdfs_dn_status'
 
     module.exports.push commands: 'stop', modules: 'ryba/hadoop/hdfs_dn_stop'
-
 

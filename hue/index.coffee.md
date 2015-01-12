@@ -61,21 +61,21 @@ Example:
       require('../hadoop/hdfs').configure ctx
       require('../hadoop/yarn').configure ctx
       {ryba} = ctx.config
-      {nameservice, hadoop_conf_dir, webhcat_site, hue, db_admin, core_site, hdfs_site, yarn} = ryba
+      {nameservice, hadoop_conf_dir, webhcat, hue, db_admin, core_site, hdfs, yarn} = ryba
       hdfs_nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       hue ?= {}
       hue.ini ?= {}
-      webhcat_port = webhcat_site['templeton.port']
+      webhcat_port = webhcat.site['templeton.port']
       webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
       # todo, this might not work as expected after ha migration
       nodemanagers = ctx.hosts_with_module 'ryba/hadoop/yarn_nm'
       # Webhdfs should be active on the NameNode, Secondary NameNode, and all the DataNodes
-      # throw new Error 'WebHDFS not active' if ryba.hdfs_site['dfs.webhdfs.enabled'] isnt 'true'
+      # throw new Error 'WebHDFS not active' if ryba.hdfs.site['dfs.webhdfs.enabled'] isnt 'true'
       hue.conf_dir ?= '/etc/hue/conf'
       hue.ca_bundle ?= '/etc/hue/conf/trust.pem'
       hue.ssl ?= {}
       hue.ssl.client_ca ?= null
-      throw Error "Property 'hue.ssl.client_ca' required in HA with HTTPS" if hdfs_nn_hosts.length > 1 and hdfs_site['dfs.http.policy'] is 'HTTPS_ONLY' and not hue.ssl.client_ca
+      throw Error "Property 'hue.ssl.client_ca' required in HA with HTTPS" if hdfs_nn_hosts.length > 1 and hdfs.site['dfs.http.policy'] is 'HTTPS_ONLY' and not hue.ssl.client_ca
       # User
       hue.user ?= {}
       hue.user = name: hue.user if typeof hue.user is 'string'
@@ -95,15 +95,15 @@ Example:
       # see https://github.com/cloudera/hue/blob/master/docs/manual.txt#L433-L439
       # another solution could be to set REQUESTS_CA_BUNDLE but this isnt tested
       # see http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cm_sg_ssl_hue.html
-      nn_protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      nn_protocol = 'http' if hdfs_site['dfs.http.policy'] is 'HTTP_AND_HTTPS' and not hue.ssl_client_ca
+      nn_protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      nn_protocol = 'http' if hdfs.site['dfs.http.policy'] is 'HTTP_AND_HTTPS' and not hue.ssl_client_ca
       if hdfs_nn_hosts.length > 1
         nn_host = ryba.active_nn_host
         shortname = ctx.hosts[nn_host].config.shortname
         nn_http_port = ryba.ha_client_config["dfs.namenode.#{nn_protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
       else
         nn_host = hdfs_nn_hosts[0]
-        nn_http_port = hdfs_site["dfs.namenode.#{nn_protocol}-address"].split(':')[1]
+        nn_http_port = hdfs.site["dfs.namenode.#{nn_protocol}-address"].split(':')[1]
       # Support for RM HA was added in Hue 3.7
       rm_protocol = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       rm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
@@ -146,10 +146,10 @@ Example:
       hue.ini['hadoop']['yarn_clusters']['default']['node_manager_api_url'] ?= "http://#{nodemanagers[0]}:8042"
       # JHS
       jhs_ctx = ctx.contexts('ryba/hadoop/mapred_jhs')[0]
-      jhs_protocol = if jhs_ctx.config.ryba.mapred_site['mapreduce.jobhistory.http.policy'] is 'HTTP' then 'http' else 'https'
+      jhs_protocol = if jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.http.policy'] is 'HTTP' then 'http' else 'https'
       jhs_port = if jhs_protocol is 'http'
-      then jhs_ctx.config.ryba.mapred_site['mapreduce.jobhistory.webapp.address'].split(':')[1]
-      else jhs_ctx.config.ryba.mapred_site['mapreduce.jobhistory.webapp.https.address'].split(':')[1]
+      then jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.webapp.address'].split(':')[1]
+      else jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.webapp.https.address'].split(':')[1]
       hue.ini['hadoop']['yarn_clusters']['default']['history_server_api_url'] ?= "#{jhs_protocol}://#{jhs_ctx.config.host}:#{jhs_port}"
       # Configure components
       hue.ini['liboozie'] ?= {}

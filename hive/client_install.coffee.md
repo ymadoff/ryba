@@ -1,7 +1,3 @@
----
-title: 
-layout: module
----
 
 # Hive & HCat Client
 
@@ -17,19 +13,19 @@ layout: module
 See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap6-3.html)
 
     module.exports.push name: 'Hive & HCat Client # Configure', callback: (ctx, next) ->
-      {hive_site, hive_user, hadoop_group, hive_conf_dir} = ctx.config.ryba
+      {hive, hadoop_group} = ctx.config.ryba
       ctx.hconfigure
-        destination: "#{hive_conf_dir}/hive-site.xml"
+        destination: "#{hive.conf_dir}/hive-site.xml"
         default: "#{__dirname}/../resources/hive/hive-site.xml"
         local_default: true
-        properties: hive_site
+        properties: hive.site
         merge: true
       , (err, configured) ->
         return next err if err
         ctx.execute
           cmd: """
-          chown -R #{hive_user.name}:#{hadoop_group.name} #{hive_conf_dir}
-          chmod -R 755 #{hive_conf_dir}
+          chown -R #{hive.user.name}:#{hadoop_group.name} #{hive.conf_dir}
+          chmod -R 755 #{hive.conf_dir}
           """
         , (err) ->
           next err, configured

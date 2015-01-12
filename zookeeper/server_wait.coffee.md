@@ -14,7 +14,7 @@ Wait for all ZooKeeper server to listen.
       wait = for zs_host in zs_hosts
         zs_ctx = ctx.hosts[zs_host]
         require('./server').configure zs_ctx
-        host: zs_host, port: zs_ctx.config.ryba.zookeeper_port
+        host: zs_host, port: zs_ctx.config.ryba.zookeeper.port
       ctx.waitIsOpen wait, (err) -> next err
 
 

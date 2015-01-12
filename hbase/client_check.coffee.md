@@ -11,7 +11,7 @@ scanning the table.
 ## Check Shell
 
     module.exports.push name: 'HBase Client # Check Shell', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
-      {jaas_client, hbase_conf_dir, hbase_user, hbase_group, shortname} = ctx.config.ryba
+      {jaas_client, hbase, shortname} = ctx.config.ryba
       cmd = mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"exists 'ryba'\" | grep 'Table ryba does exist'"
       ctx.waitForExecution cmd, (err) ->
         return next err if err

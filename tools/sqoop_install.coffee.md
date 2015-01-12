@@ -1,8 +1,3 @@
----
-title: Sqoop
-module: ryba/hadoop/sqoop
-layout: module
----
 
 # Sqoop
 

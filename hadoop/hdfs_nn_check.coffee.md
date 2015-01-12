@@ -15,13 +15,13 @@ through SSH over another one where the public key isn't yet deployed.
 ## Check HTTP
 
     module.exports.push name: 'HDFS NN # Check HTTP', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
-      {hdfs_site, active_nn_host} = ctx.config.ryba
+      {hdfs, active_nn_host} = ctx.config.ryba
       is_ha = ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       state = if not is_ha or active_nn_host is ctx.config.host then 'active' else 'standby'
-      protocol = if hdfs_site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      nameservice = if is_ha then ".#{ctx.config.ryba.hdfs_site['dfs.nameservices']}" else ''
+      protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      nameservice = if is_ha then ".#{ctx.config.ryba.hdfs.site['dfs.nameservices']}" else ''
       shortname = if is_ha then ".#{ctx.config.shortname}" else ''
-      address = hdfs_site["dfs.namenode.#{protocol}-address#{nameservice}#{shortname}"]
+      address = hdfs.site["dfs.namenode.#{protocol}-address#{nameservice}#{shortname}"]
       securityEnabled = protocol is 'https'
       ctx.execute
         cmd: mkcmd.hdfs ctx, "curl --negotiate -k -u : #{protocol}://#{address}/jmx?qry=Hadoop:service=NameNode,name=NameNodeStatus"
@@ -58,14 +58,14 @@ is a comma-separated list of SSH private key files.
 
     module.exports.push name: 'HDFS NN # Check SSH Fencing', label_true: 'CHECKED', callback: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      {hdfs_user} = ctx.config.ryba
+      {hdfs} = ctx.config.ryba
       nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       for host in nn_hosts
         source = host if host is ctx.config.host
         target = host if host isnt ctx.config.host
       # Disabling key checking shall be considered acceptable between 2 NNs
       ctx.execute
-        cmd: "su -l #{hdfs_user.name} -c \"ssh -q -o StrictHostKeyChecking=no #{hdfs_user.name}@#{target} hostname\""
+        cmd: "su -l #{hdfs.user.name} -c \"ssh -q -o StrictHostKeyChecking=no #{hdfs.user.name}@#{target} hostname\""
       , (err) ->
         next err, true
 
@@ -76,7 +76,7 @@ the NameNode is properly working. Note, those commands are NameNode specific, me
 afect HDFS metadata.
 
     # module.exports.push name: 'HDFS NN # Test User', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
-    #   {test_user, test_password, hadoop_group, security} = ctx.config.ryba
+    #   {user, krb5_user, hadoop_group, security} = ctx.config.ryba
     #   {realm, kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5_client
     #   modified = false
     #   do_user = ->
@@ -85,7 +85,7 @@ afect HDFS metadata.
     #     else do_user_unix()
     #   do_user_unix = ->
     #     ctx.execute
-    #       cmd: "useradd #{test_user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop to test\""
+    #       cmd: "useradd #{user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop to test\""
     #       code: 0
     #       code_skipped: 9
     #     , (err, created) ->
@@ -94,8 +94,8 @@ afect HDFS metadata.
     #       do_run()
     #   do_user_krb5 = ->
     #     ctx.krb5_addprinc
-    #       principal: "#{test_user.name}@#{realm}"
-    #       password: "#{test_password}"
+    #       principal: "#{krb5_user.name}@#{realm}"
+    #       password: "#{krb5_user.password}"
     #       kadmin_principal: kadmin_principal
     #       kadmin_password: kadmin_password
     #       kadmin_server: admin_server
@@ -109,9 +109,9 @@ afect HDFS metadata.
     #     ctx.execute
     #       cmd: mkcmd.hdfs ctx, """
     #       if hdfs dfs -ls /user/test 2>/dev/null; then exit 2; fi
-    #       hdfs dfs -mkdir /user/#{test_user.name}
-    #       hdfs dfs -chown #{test_user.name}:#{hadoop_group.name} /user/#{test_user.name}
-    #       hdfs dfs -chmod 755 /user/#{test_user.name}
+    #       hdfs dfs -mkdir /user/#{user.name}
+    #       hdfs dfs -chown #{user.name}:#{hadoop_group.name} /user/#{user.name}
+    #       hdfs dfs -chmod 755 /user/#{user.name}
     #       """
     #       code_skipped: 2
     #     , (err, executed, stdout) ->

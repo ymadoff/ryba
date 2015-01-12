@@ -12,19 +12,19 @@
 Follow the [Hortonworks Data Pipelines example][dpe].
 
     module.exports.push name: 'Falcon # Check Data Pipelines', skip: true, timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
-      {test_user, active_rm_host} = ctx.config.ryba
-      cluster_path = "#{test_user.home}/check_falcon/cluster.xml"
-      feed_path = "#{test_user.home}/check_falcon/feed.xml"
-      process_path = "#{test_user.home}/check_falcon/process.xml"
+      {user, active_rm_host} = ctx.config.ryba
+      cluster_path = "#{user.home}/check_falcon/cluster.xml"
+      feed_path = "#{user.home}/check_falcon/feed.xml"
+      process_path = "#{user.home}/check_falcon/process.xml"
       # TODO: RM HA latest
       nn_contexts = ctx.contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn').configure
       nn_rcp = nn_contexts[0].config.ryba.core_site['fs.defaultFS']
-      nn_protocol = if nn_contexts[0].config.ryba.hdfs_site['HTTP_ONLY'] then 'http' else 'https'
-      nn_nameservice = if nn_contexts[0].config.ryba.hdfs_site['dfs.nameservices'] then ".#{nn_contexts[0].config.ryba.hdfs_site['dfs.nameservices']}" else ''
+      nn_protocol = if nn_contexts[0].config.ryba.hdfs.site['HTTP_ONLY'] then 'http' else 'https'
+      nn_nameservice = if nn_contexts[0].config.ryba.hdfs.site['dfs.nameservices'] then ".#{nn_contexts[0].config.ryba.hdfs.site['dfs.nameservices']}" else ''
       nn_shortname = if nn_contexts.length then ".#{nn_contexts[0].config.shortname}" else ''
       # dfs.namenode.https-address.torval.master2
-      nn_http = ctx.config.ryba.hdfs_site["dfs.namenode.#{nn_protocol}-address#{nn_nameservice}#{nn_shortname}"] 
-      nn_principal = nn_contexts[0].config.ryba.hdfs_site['dfs.namenode.kerberos.principal'].replace '_HOST', nn_contexts[0].config.host
+      nn_http = ctx.config.ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address#{nn_nameservice}#{nn_shortname}"] 
+      nn_principal = nn_contexts[0].config.ryba.hdfs.site['dfs.namenode.kerberos.principal'].replace '_HOST', nn_contexts[0].config.host
       # TODO: RM HA latest
       rm_contexts = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn').configure
       rm_shortname = if rm_contexts.length > 1 then ".#{rm_contexts[0].config.shortname}" else ''
@@ -32,8 +32,8 @@ Follow the [Hortonworks Data Pipelines example][dpe].
       oozie_contexts = ctx.contexts 'ryba/oozie/server', require('../oozie/server').configure
       oozie_url = oozie_contexts[0].config.ryba.oozie_site['oozie.base.url']
       hive_contexts = ctx.contexts 'ryba/hive/server', require('../hive/_.coffee.md').configure
-      hive_url = hive_contexts[0].config.ryba.hive_site['hive.metastore.uris']
-      hive_principal = hive_contexts[0].config.ryba.hive_site['hive.metastore.kerberos.principal'].replace '_HOST', hive_contexts[0].config.host
+      hive_url = hive_contexts[0].config.ryba.hive.site['hive.metastore.uris']
+      hive_principal = hive_contexts[0].config.ryba.hive.site['hive.metastore.kerberos.principal'].replace '_HOST', hive_contexts[0].config.host
       ctx.write [
         content: """
         <?xml version="1.0"?>
@@ -61,7 +61,7 @@ Follow the [Hortonworks Data Pipelines example][dpe].
         </cluster>
         """
         destination: "#{cluster_path}"
-        uid: test_user.name
+        uid: user.name
         eof: true
       ,
         content: """
@@ -92,7 +92,7 @@ Follow the [Hortonworks Data Pipelines example][dpe].
         </feed>
         """
         destination: "#{feed_path}"
-        uid: test_user.name
+        uid: user.name
         eof: true
       ,
         content: """
@@ -120,7 +120,7 @@ Follow the [Hortonworks Data Pipelines example][dpe].
         </process>
         """
         destination: "#{process_path}"
-        uid: test_user.name
+        uid: user.name
         eof: true
       ], (err, written) ->
         return next err if err

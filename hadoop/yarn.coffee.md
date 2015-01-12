@@ -1,7 +1,3 @@
----
-title: 
-layout: module
----
 
 # YARN
 
@@ -34,9 +30,9 @@ layout: module
       [jhs_context] = ctx.contexts 'ryba/hadoop/mapred_jhs', require('./mapred_jhs').configure
       if jhs_context
         # TODO: detect https and port, see "./mapred_jhs_check"
-        jhs_protocol = if jhs_context.config.ryba.mapred_site['mapreduce.jobhistory.address'] is 'HTTP_ONLY' then 'http' else 'https'
+        jhs_protocol = if jhs_context.config.ryba.mapred.site['mapreduce.jobhistory.address'] is 'HTTP_ONLY' then 'http' else 'https'
         jhs_protocol_key = if jhs_protocol is 'http' then '' else '.https'
-        jhs_address = jhs_context.config.ryba.mapred_site["mapreduce.jobhistory.webapp#{jhs_protocol_key}.address"]
+        jhs_address = jhs_context.config.ryba.mapred.site["mapreduce.jobhistory.webapp#{jhs_protocol_key}.address"]
         ryba.yarn.site['yarn.log.server.url'] ?= "#{jhs_protocol}://#{jhs_address}/jobhistory/logs/"
 
 ## Configuration for High Availability

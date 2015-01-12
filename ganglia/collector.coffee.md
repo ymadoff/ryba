@@ -1,8 +1,3 @@
----
-title: Ganglia Collector
-module: ryba/ganglia/collector
-layout: module
----
 
 # Ganglia Collector
 
@@ -22,13 +17,15 @@ Example:
 
 ```json
 {
-  "ganglia": {
-    "rrdcached_user": {
-      "name": "rrdcached", "system": true, "gid": "rrdcached", "shell": false
-      "comment": "RRDtool User", "home": "/usr/lib/rrdcached"
-    }
-    "rrdcached_group": {
-      "name": "Hue", "system": true
+  "ryba": {
+    "ganglia": {
+      "rrdcached_user": {
+        "name": "rrdcached", "system": true, "gid": "rrdcached", "shell": false
+        "comment": "RRDtool User", "home": "/usr/lib/rrdcached"
+      }
+      "rrdcached_group": {
+        "name": "Hue", "system": true
+      }
     }
   }
 }

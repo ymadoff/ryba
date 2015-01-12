@@ -11,13 +11,13 @@ lifecyle = module.exports =
       code_skipped: [1, 3]
     , callback
   jn_start: (ctx, callback) ->
-    {hdfs_user, hadoop_conf_dir} = ctx.config.ryba
+    {hdfs, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.jn_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "JournalNode start"
       ctx.execute
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start journalnode"
-        # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start journalnode\""
+        # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start journalnode\""
         cmd: 'service hadoop-hdfs-journalnode start'
         # code_skipped: 1
       , (err, started) ->
@@ -25,13 +25,13 @@ lifecyle = module.exports =
         ctx.waitIsOpen ctx.config.host, 8485, timeout: 20000, (err) ->
           callback err, started
   jn_stop: (ctx, callback) ->
-    {hdfs_user, hadoop_conf_dir} = ctx.config.ryba
+    {hdfs, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.jn_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "JournalNode stop"
       ctx.execute
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop journalnode"
-        # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop journalnode\""
+        # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop journalnode\""
         cmd: 'service hadoop-hdfs-journalnode stop'
         # code_skipped: 1
       , callback
@@ -46,18 +46,18 @@ lifecyle = module.exports =
       ctx.log "NameNode start"
       ctx.execute
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start namenode"
-        # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start namenode\""
+        # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start namenode\""
         cmd: "service hadoop-hdfs-namenode start"
         code_skipped: [1, 3]
       , callback
   nn_stop: (ctx, callback) ->
-    {hdfs_user, hadoop_conf_dir} = ctx.config.ryba
+    {hdfs, hadoop_conf_dir} = ctx.config.ryba
     lifecyle.nn_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "NameNode stop"
       ctx.execute
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop namenode"
-        # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop namenode\""
+        # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop namenode\""
         cmd: 'service hadoop-hdfs-namenode stop'
         # code_skipped: 1
       , callback
@@ -72,41 +72,41 @@ lifecyle = module.exports =
       code_skipped: [1, 3]
     , callback
   zkfc_start: (ctx, callback) ->
-    {hdfs_user} = ctx.config.ryba
+    {hdfs} = ctx.config.ryba
     lifecyle.zkfc_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "ZKFC start"
       ctx.execute
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh start zkfc"
-        # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh start zkfc\""
+        # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh start zkfc\""
         cmd: 'service hadoop-hdfs-zkfc start'
         # code_skipped: 1
       , callback
   zkfc_stop: (ctx, callback) ->
-    {hdfs_user} = ctx.config.ryba
+    {hdfs} = ctx.config.ryba
     lifecyle.zkfc_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "ZKFC stop"
       ctx.execute
         # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh stop zkfc"
-        # cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh stop zkfc\""
+        # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh stop zkfc\""
         cmd: 'service hadoop-hdfs-zkfc stop'
         # code_skipped: 1
       , callback
   snn_start: (ctx, callback) ->
-    {hdfs_user, hadoop_conf_dir} = ctx.config.ryba
+    {hdfs, hadoop_conf_dir} = ctx.config.ryba
     ctx.log "SNN start"
     ctx.execute
       # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf start secondarynamenode"
-      cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} start secondarynamenode\""
+      cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} start secondarynamenode\""
       code_skipped: 1
     , callback
   snn_stop: (ctx, callback) ->
-    {hdfs_user, hadoop_conf_dir} = ctx.config.ryba
+    {hdfs, hadoop_conf_dir} = ctx.config.ryba
     ctx.log "SNN stop"
     ctx.execute
       # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf stop secondarynamenode"
-      cmd: "su -l #{hdfs_user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} stop secondarynamenode\""
+      cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} stop secondarynamenode\""
       # code_skipped: 1
     , callback
   dn_status: (ctx, callback) ->
@@ -204,7 +204,7 @@ lifecyle = module.exports =
       ctx.log "JobHistoryServer start"
       ctx.execute
         # su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config /etc/hadoop/conf start historyserver"
-        # cmd: "su -l #{mapred_user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config #{hadoop_conf_dir} start historyserver\""
+        # cmd: "su -l #{mapred.user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config #{hadoop_conf_dir} start historyserver\""
         cmd: 'service hadoop-mapreduce-historyserver start'
         # code_skipped: 1
       , callback
@@ -214,7 +214,7 @@ lifecyle = module.exports =
       ctx.log "JobHistoryServer stop"
       ctx.execute
         # su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config /etc/hadoop/conf stop historyserver"
-        # cmd: "su -l #{mapred_user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config #{hadoop_conf_dir} stop historyserver\""
+        # cmd: "su -l #{mapred.user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config #{hadoop_conf_dir} stop historyserver\""
         cmd: 'service hadoop-mapreduce-historyserver stop'
         # code_skipped: 1
       , callback
@@ -224,7 +224,7 @@ lifecyle = module.exports =
       code_skipped: [1, 3]
     , callback
   hive_metastore_start: (ctx, callback) ->
-    {hive_metastore_host, hive_metastore_port, hive_metastore_timeout} = ctx.config.ryba
+    {metastore} = ctx.config.ryba.hive
     lifecyle.hive_metastore_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "Hive Metastore start"
@@ -234,7 +234,7 @@ lifecyle = module.exports =
         # code_skipped: 1
       , (err, started) ->
         return callback err if err
-        ctx.waitIsOpen hive_metastore_host, hive_metastore_port, timeout: hive_metastore_timeout, (err) ->
+        ctx.waitIsOpen metastore.host, metastore.port, timeout: metastore.timeout, (err) ->
           callback err, started
   hive_metastore_stop: (ctx, callback) ->
     lifecyle.hive_metastore_status ctx, (err, running) ->
@@ -257,7 +257,7 @@ lifecyle = module.exports =
       code_skipped: [1, 3]
     , callback
   hive_server2_start: (ctx, callback) ->
-    {hive_server2_host, hive_server2_port, hive_server2_timeout} = ctx.config.ryba
+    {hive_server2} = ctx.config.ryba.hive
     lifecyle.hive_server2_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "Hive Server2 start"
@@ -267,7 +267,7 @@ lifecyle = module.exports =
         # code_skipped: 1
       , (err, started) ->
         return callback err if err
-        ctx.waitIsOpen hive_server2_host, hive_server2_port, timeout: hive_server2_timeout, (err) ->
+        ctx.waitIsOpen hive_server2.host, hive_server2.port, timeout: hive_server2.timeout, (err) ->
           callback err, started
   hive_server2_stop: (ctx, callback) ->
     lifecyle.hive_server2_status ctx, (err, running) ->
@@ -314,27 +314,27 @@ lifecyle = module.exports =
       code_skipped: [1, 3]
     , callback
   hbase_master_start: (ctx, callback) ->
-    {hbase_user, hbase_conf_dir} = ctx.config.ryba
+    {hbase} = ctx.config.ryba
     lifecyle.hbase_master_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "HBase Master start"
       ctx.execute
         # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start master"
-        # cmd: "su -l #{hbase_user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} start master\""
+        # cmd: "su -l #{hbase.user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase.conf_dir} start master\""
         cmd: "service hbase-master start"
       , callback
   hbase_master_stop: (ctx, callback) ->
-    {hbase_user, hbase_conf_dir} = ctx.config.ryba
+    {hbase} = ctx.config.ryba
     lifecyle.hbase_master_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "HBase Master stop"
       ctx.execute
         # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop master"
-        # cmd: "su -l #{hbase_user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} stop master\""
+        # cmd: "su -l #{hbase.user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase.conf_dir} stop master\""
         cmd: "service hbase-master stop"
       , callback
   hbase_regionserver_status: (ctx, callback) ->
-    # {hbase_pid_dir, hbase_user} = ctx.config.ryba
+    # {hbase} = ctx.config.ryba
     ctx.log "HBase RegionServer status"
     # lifecyle.is_pidfile_running ctx, "#{hbase_pid_dir}/hbase-#{hbase_user.name}-regionserver.pid", (err, running) ->
     #   ctx.log "HBase RegionServer status: #{if running then 'RUNNING' else 'STOPPED'}"
@@ -344,7 +344,7 @@ lifecyle = module.exports =
       code_skipped: [1, 3]
     , callback
   hbase_regionserver_start: (ctx, callback) ->
-    {hbase_user, hbase_conf_dir} = ctx.config.ryba
+    {hbase} = ctx.config.ryba
     lifecyle.hbase_regionserver_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "HBase RegionServer start"
@@ -354,7 +354,7 @@ lifecyle = module.exports =
         cmd: 'service hbase-regionserver start'
       , callback
   hbase_regionserver_stop: (ctx, callback) ->
-    {hbase_user, hbase_conf_dir} = ctx.config.ryba
+    {hbase} = ctx.config.ryba
     lifecyle.hbase_regionserver_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "HBase RegionServer stop"
@@ -364,8 +364,8 @@ lifecyle = module.exports =
         cmd: 'service hbase-regionserver stop'
       , callback
   # webhcat_status: (ctx, callback) ->
-  #   {webhcat_pid_dir} = ctx.config.ryba
-  #   # lifecyle.is_pidfile_running ctx, "#{webhcat_pid_dir}/webhcat.pid", (err, running) ->
+  #   {webhcat.pid_dir} = ctx.config.ryba
+  #   # lifecyle.is_pidfile_running ctx, "#{webhcat.pid_dir}/webhcat.pid", (err, running) ->
   #   #   ctx.log "WebHCat status: #{if running then 'RUNNING' else 'STOPPED'}"
   #   #   callback err, running
   #   ctx.execute
@@ -414,9 +414,9 @@ lifecyle = module.exports =
         cmd: "service hue stop"
       , callback
   zookeeper_status: (ctx, callback) ->
-    # {zookeeper_pid_dir} = ctx.config.ryba
+    # {zookeeper} = ctx.config.ryba
     ctx.log "Zookeeper status"
-    # lifecyle.is_pidfile_running ctx, "#{zookeeper_pid_dir}/zookeeper_server.pid", (err, running) ->
+    # lifecyle.is_pidfile_running ctx, "#{zookeeper.pid_dir}/zookeeper_server.pid", (err, running) ->
     #   ctx.log "Zookeeper status: #{if running then 'RUNNING' else 'STOPPED'}"
     #   callback err, running
     ctx.execute
@@ -424,26 +424,26 @@ lifecyle = module.exports =
       code_skipped: [1, 3]
     , callback
   zookeeper_start: (ctx, callback) ->
-    {zookeeper_user, zookeeper_conf_dir, zookeeper_port} = ctx.config.ryba
+    {zookeeper} = ctx.config.ryba
     lifecyle.zookeeper_status ctx, (err, running) ->
       return callback err, false if err or running
       ctx.log "Zookeeper start"
       ctx.execute
         # su -l zookeeper -c "/usr/lib/zookeeper/bin/zkServer.sh start /etc/zookeeper/conf/zoo.cfg"
-        # cmd: "su -l #{zookeeper_user.name} -c \"/usr/lib/zookeeper/bin/zkServer.sh start #{zookeeper_conf_dir}/zoo.cfg\""
+        # cmd: "su -l #{zookeeper.user.name} -c \"/usr/lib/zookeeper/bin/zkServer.sh start #{zookeeper.conf_dir}/zoo.cfg\""
         cmd: "service zookeeper-server start"
       , (err, started) ->
         return callback err if err
-        ctx.waitIsOpen ctx.config.host, zookeeper_port, timeout: 2000000, (err) ->
+        ctx.waitIsOpen ctx.config.host, zookeeper.port, timeout: 2000000, (err) ->
           callback err, started
   zookeeper_stop: (ctx, callback) ->
-    {zookeeper_user, zookeeper_conf_dir} = ctx.config.ryba
+    {zookeeper} = ctx.config.ryba
     lifecyle.zookeeper_status ctx, (err, running) ->
       return callback err, false if err or not running
       ctx.log "Zookeeper stop"
       ctx.execute
         # su -l zookeeper -c "/usr/lib/zookeeper/bin/zkServer.sh stop /etc/zookeeper/conf/zoo.cfg"
-        # cmd: "su -l #{zookeeper_user.name} -c \"/usr/lib/zookeeper/bin/zkServer.sh stop #{zookeeper_conf_dir}/zoo.cfg\""
+        # cmd: "su -l #{zookeeper.user.name} -c \"/usr/lib/zookeeper/bin/zkServer.sh stop #{zookeeper.conf_dir}/zoo.cfg\""
         cmd: "service zookeeper-server stop"
       , callback
 
@@ -457,12 +457,3 @@ module.exports.is_pidfile_running = (ctx, path, callback) ->
     code_skipped: 1
   , (err, started) ->
     callback err, started
-
-
-
-
-
-
-
-
-

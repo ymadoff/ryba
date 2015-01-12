@@ -1,7 +1,3 @@
----
-title: 
-layout: module
----
 
 # HBase RegionServer
 
@@ -11,9 +7,9 @@ layout: module
       require('masson/core/iptables').configure ctx
       require('../hadoop/hdfs').configure ctx
       require('./_').configure ctx
-      {hbase_site} = ctx.config.ryba
-      hbase_site['hbase.regionserver.port'] ?= '60020'
-      hbase_site['hbase.regionserver.info.port'] ?= '60030'
+      {hbase} = ctx.config.ryba
+      hbase.site['hbase.regionserver.port'] ?= '60020'
+      hbase.site['hbase.regionserver.info.port'] ?= '60030'
 
     # module.exports.push commands: 'backup', modules: 'ryba/hbase/regionserver_backup'
 
