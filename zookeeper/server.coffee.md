@@ -75,7 +75,11 @@ Example :
 
     module.exports.push commands: 'check', modules: 'ryba/zookeeper/server_check'
 
-    module.exports.push commands: 'install', modules: 'ryba/zookeeper/server_install'
+    module.exports.push commands: 'install', modules: [
+      'ryba/zookeeper/server_install'
+      'ryba/zookeeper/server_start'
+      'ryba/zookeeper/server_check'
+    ]
 
     module.exports.push commands: 'start', modules: 'ryba/zookeeper/server_start'
 
