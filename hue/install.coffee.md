@@ -226,8 +226,8 @@ the "security_enabled" property set to "true".
         hue.ini = {}
         hue.ini.desktop ?= {}
         hue.ini.desktop.kerberos ?= {}
-        hue.ini.desktop.kerberos.keytab ?= '/etc/hue/conf/hue.service.keytab'
-        hue.ini.desktop.kerberos.principal ?= principal
+        hue.ini.desktop.kerberos.hue_keytab ?= '/etc/hue/conf/hue.service.keytab'
+        hue.ini.desktop.kerberos.hue_principal ?= principal
         # Path to kinit
         # For RHEL/CentOS 5.x, kinit_path is /usr/kerberos/bin/kinit
         # For RHEL/CentOS 6.x, kinit_path is /usr/bin/kinit 
