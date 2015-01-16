@@ -84,7 +84,7 @@ user and one using interpolation.
     #     destination: '/tmp/flume.conf'
     #   , (err, written) ->
     #     return next err if written
-    #     next null, ctx.OK
+    #     next null, true
     #     # ctx.execute
     #     #   cmd: "flume-ng agent --conf conf --conf-file example.conf --name a1 -Dflume.root.logger=INFO,console"
 

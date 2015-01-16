@@ -59,7 +59,7 @@ Namespace and permissions are implemented and illustrated in [HBASE-8409].
       #   hasCreatedNamespace = /create_namespace 'ryba'\n0 row/.test stdout
       #   hasGrantedAccess = /grant 'ryba', 'RWC', '@ryba'\n0 row/.test stdout
       #   return next Error 'Invalid command output' if executed and ( not hasCreatedNamespace or not hasGrantedAccess)
-      #   next err, if executed then ctx.OK else ctx.PASS
+      #   next err, executed
 
 ## Module Dependencies
 

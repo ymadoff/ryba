@@ -35,7 +35,7 @@
 #         hasCreatedTable = /create 'ryba', 'family1'\n0 row/.test stdout
 #         hasGrantedAccess = /grant 'ryba', 'RWC', 'ryba'\n0 row/.test stdout
 #         return next Error 'Invalid command output' if executed and ( not hasCreatedTable or not hasGrantedAccess)
-#         next err, if executed then ctx.OK else ctx.PASS
+#         next err, executed
 #       # Note: apply this when namespace are functional
 #       # ctx.execute
 #       #   cmd: """
@@ -51,6 +51,6 @@
 #       #   hasCreatedNamespace = /create_namespace 'ryba'\n0 row/.test stdout
 #       #   hasGrantedAccess = /grant 'ryba', 'RWC', '@ryba'\n0 row/.test stdout
 #       #   return next Error 'Invalid command output' if executed and ( not hasCreatedNamespace or not hasGrantedAccess)
-#       #   next err, if executed then ctx.OK else ctx.PASS
+#       #   next err, executed
 
 

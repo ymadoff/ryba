@@ -9,7 +9,7 @@
 
     module.exports.push name: 'Hadoop NodeManager # Stop Server', label_true: 'STOPPED', handler: (ctx, next) ->
       lifecycle.nm_stop ctx, (err, stopped) ->
-        next err, if stopped then ctx.OK else ctx.PASS
+        next err, stopped
 
     module.exports.push name: 'Hadoop NodeManager # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       {clean_logs, yarn} = ctx.config.ryba

@@ -54,7 +54,7 @@ Install and configure the startup script in
           modified = true if written
           do_end()
       do_end = ->
-        next null, if modified then ctx.OK else ctx.PASS
+        next null, modified
       do_install()
 
 ## Zookeeper JAAS
@@ -132,7 +132,7 @@ is added membership to the group hadoop to gain read access.
       #   mode: 0o660
       
       # ], (err, copied) ->
-      #   return next err, if copied then ctx.OK else ctx.PASS
+      #   return next err, copied
 
 ## Metrics
 

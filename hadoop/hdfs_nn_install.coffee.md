@@ -430,7 +430,7 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
           return next err if err
           ctx.log "Is Zookeeper already formated: #{formated}"
           lifecycle.zkfc_start ctx, (err, started) ->
-            next null, if formated or started then ctx.OK else ctx.PASS
+            next null, formated or started
       do_zkfc_standby = ->
         ctx.log "Wait for active NameNode to take leadership"
         ctx.waitForExecution

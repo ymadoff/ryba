@@ -156,7 +156,7 @@ Upload the "hdp-gmetad" service file into "/etc/init.d".
 #       ctx.execute
 #         cmd: 'chown -R nobody:root /var/lib/ganglia/rrds'
 #       , (err, written) ->
-#         next err, ctx.PASS
+#         next err, false
 
 ## Fix User
 

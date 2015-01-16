@@ -68,7 +68,7 @@ Declare the HDP repository.
           proxy: proxy
         , (err, downloaded) ->
           return next err if err
-          return next null, ctx.PASS unless downloaded
+          return next null, false unless downloaded
           do_update()
       do_update = ->
           ctx.execute

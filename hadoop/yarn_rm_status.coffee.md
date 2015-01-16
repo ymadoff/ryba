@@ -6,7 +6,6 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./yarn_rm').configure
 
-    module.exports.push name: 'Yarn RM # Status', handler: (ctx, next) ->
-      lifecycle.rm_status ctx, (err, running) ->
-        next err, if running then 'STARTED' else 'STOPPED'
+    module.exports.push name: 'Yarn RM # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
+      lifecycle.rm_status ctx, next
 

@@ -76,21 +76,19 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: gateway_site['gateway.port'], protocol: 'tcp', state: 'NEW', comment: "Knox Gateway" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
 ## Service
 
     module.exports.push name: 'Knox # Service', timeout: -1, handler: (ctx, next) ->
       ctx.service
         name: 'knox'
-      , (err, serviced) ->
-        next err, if serviced then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'Knox # Master', handler: (ctx, next) ->
       {knox_conf_dir, gateway_site, master_secret} = ctx.config.knox
       ctx.fs.exists '/usr/lib/knox/data/security/master', (err, exists) ->
-        return next err, ctx.PASS if err or exists
+        return next err, false if err or exists
         ctx.ssh.shell (err, stream) ->
           return next err if err
           cmd = "su -l knox -c '/usr/lib/knox/bin/knoxcli.sh create-master'"
@@ -111,7 +109,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
               stream.write "#{master_secret}\n"
               reentered = true
           stream.on 'exit', ->
-            next null, ctx.OK
+            next null, true
           stream.pipe ctx.log.out
           stream.stderr.pipe ctx.log.err
       # su -l knox -c '$gateway_home/bin/knoxcli.sh create-master'
@@ -124,14 +122,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         destination: "#{knox_conf_dir}/gateway-site.xml"
         properties: gateway_site
         merge: true
-      , (err, configured) ->
-        next err, if configured then ctx.OK else ctx.PASS
+      , next
 
     module.exports.push name: 'Knox # Topology', handler: (ctx, next) ->
       {nameservice} = ctx.config.ryba
       {knox_conf_dir, gateway_site} = ctx.config.knox
       console.log "TODO: topology (disabled for now)"
-      return next null, ctx.PASS
+      return next null, false
       ctx.remove
         destination: "#{knox_conf_dir}/topologies/sandbox.xml"
         not_if: nameservice is 'sandbox'
@@ -141,8 +138,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           destination: "#{knox_conf_dir}/topologies/#{nameservice}.xml"
           properties: topology
           merge: true
-        , (err, configured) ->
-          next err, if configured then ctx.OK else ctx.PASS
+        , next
 
 
 

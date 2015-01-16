@@ -46,7 +46,7 @@ scanning the table.
       #   , (err, executed, stdout) ->
       #     isRowCreated = /column=family1:my_column10, timestamp=\d+, value=10/.test stdout
       #     return next Error 'Invalid command output' if executed and not isRowCreated
-      #     return next err, if executed then ctx.OK else ctx.PASS
+      #     return next err, executed
 
 ## Module Dependencies
 

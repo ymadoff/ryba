@@ -7,7 +7,6 @@
     module.exports.push (ctx) ->
       require('./yarn').configure ctx
 
-    module.exports.push name: 'Hadoop NodeManager # Status', handler: (ctx, next) ->
-      lifecycle.nm_status ctx, (err, running) ->
-        next err, if running then 'STARTED' else 'STOPPED'
+    module.exports.push name: 'Hadoop NodeManager # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
+      lifecycle.nm_status ctx, next
 

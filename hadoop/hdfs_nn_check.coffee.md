@@ -116,7 +116,7 @@ afect HDFS metadata.
     #       code_skipped: 2
     #     , (err, executed, stdout) ->
     #       modified = true if executed
-    #       next err, if modified then ctx.OK else ctx.PASS
+    #       next err, modified
     #   do_user()
 
 ## Module Dependencies

@@ -6,10 +6,8 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./hdfs_nn').configure
 
-    module.exports.push name: 'HDFS NN # Status NameNode', handler: (ctx, next) ->
-      lifecycle.nn_status ctx, (err, running) ->
-        next err, if running then 'STARTED' else 'STOPPED'
+    module.exports.push name: 'HDFS NN # Status NameNode', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
+      lifecycle.nn_status ctx, next
 
-    module.exports.push name: 'HDFS NN # Status ZKFC', handler: (ctx, next) ->
-      lifecycle.zkfc_status ctx, (err, running) ->
-        next err, if running then 'STARTED' else 'STOPPED'
+    module.exports.push name: 'HDFS NN # Status ZKFC', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
+      lifecycle.zkfc_status ctx, next
