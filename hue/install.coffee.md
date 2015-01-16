@@ -28,7 +28,7 @@ cat /etc/group | grep hue
 hue:x:494:
 ```
 
-    module.exports.push name: 'Hue # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Users & Groups', handler: (ctx, next) ->
       {hue} = ctx.config.ryba
       ctx.group hue.group, (err, gmodified) ->
         return next err if err
@@ -44,7 +44,7 @@ hue:x:494:
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'Hue # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # IPTables', handler: (ctx, next) ->
       {hue} = ctx.config.ryba
       ctx.iptables
         rules: [
@@ -57,7 +57,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 The packages "extjs-2.2-1" and "hue" are installed.
 
-    module.exports.push name: 'Hue # Packages', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Packages', timeout: -1, handler: (ctx, next) ->
       ctx.service [
         {name: 'extjs-2.2-1'}
         {name: 'hue'}
@@ -79,7 +79,7 @@ Todo: We are currently only modifying the "core-site.xml" locally while it shoul
 be deployed on all the master and worker nodes. This is currently achieved through
 the configuration picked up by the "ryba/hadoop/core" module.
 
-    module.exports.push name: 'Hue # Core', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Core', handler: (ctx, next) ->
       {hadoop_conf_dir} = ctx.config.ryba
       properties = 
         'hadoop.proxyuser.hue.hosts': '*'
@@ -99,7 +99,7 @@ Update the "webhcat-site.xml" on the server running the "webhcat" service
 to allow impersonnation through the "hue" user.
 
 
-    module.exports.push name: 'Hue # WebHCat', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # WebHCat', handler: (ctx, next) ->
       {webhcat} = ctx.config.ryba
       webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
       hconfigure = (ssh) ->
@@ -124,7 +124,7 @@ to allow impersonnation through the "hue" user.
 Update the "oozie-site.xml" on the server running the "oozie" service 
 to allow impersonnation through the "hue" user.
 
-    module.exports.push name: 'Hue # Oozie', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Oozie', handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
       oozie_server = ctx.host_with_module 'ryba/oozie/server'
       hconfigure = (ssh) ->
@@ -149,7 +149,7 @@ to allow impersonnation through the "hue" user.
 Configure the "/etc/hue/conf" file following the [HortonWorks](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue-5-2.html) 
 recommandations. Merge the configuration object from "hdp.hue.ini" with the properties of the destination file. 
 
-    module.exports.push name: 'Hue # Configure', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Configure', handler: (ctx, next) ->
       {hue} = ctx.config.ryba
       ctx.ini
         destination: "#{hue.conf_dir}/hue.ini"
@@ -167,7 +167,7 @@ Setup the database hosting the Hue data. Currently two database providers are
 implemented but Hue supports MySQL, PostgreSQL, and Oracle. Note, sqlite is 
 the default database while mysql is the recommanded choice.
 
-    module.exports.push name: 'Hue # Database', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Database', handler: (ctx, next) ->
       {hue, db_admin} = ctx.config.ryba
       engines = 
         mysql: ->
@@ -203,7 +203,7 @@ The principal for the Hue service is created and named after "hue/{host}@{realm}
 the "/etc/hue/conf/hue.ini" configuration file, all the composants myst be tagged with
 the "security_enabled" property set to "true".
 
-    module.exports.push name: 'Hue # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Kerberos', handler: (ctx, next) ->
       {hue, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       principal = "hue/#{ctx.config.host}@#{realm}"
@@ -270,7 +270,7 @@ the "security_enabled" property set to "true".
 
 ## SSL Client
 
-    module.exports.push name: 'Hue # SSL Client', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # SSL Client', handler: (ctx, next) ->
       {hue} = ctx.config.ryba
       hue.ca_bundle = '' unless hue.ssl.client_ca
       ctx.write [
@@ -293,7 +293,7 @@ configuration properties. It follows the [official Hue Web Server
 Configuration][web]. The "hue" service is restarted if there was any 
 changes.
 
-    module.exports.push name: 'Hue # SSL Server', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # SSL Server', handler: (ctx, next) ->
       {hue} = ctx.config.ryba
       modified = true
       do_upload = ->
@@ -340,7 +340,7 @@ changes.
 
 In the current version "2.5.1", the HTML of the banner is escaped.
 
-    module.exports.push name: 'Hue # Fix Banner', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Fix Banner', handler: (ctx, next) ->
       {hue} = ctx.config.ryba
       ctx.write [
         destination: '/usr/lib/hue/desktop/core/src/desktop/templates/login.mako'

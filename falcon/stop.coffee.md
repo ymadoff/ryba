@@ -14,7 +14,7 @@ following command:
 su -l falcon -c "/usr/lib/falcon/bin/falcon-stop"
 ```
 
-    module.exports.push name: 'Falcon # Stop Service', timeout: -1, label_true: 'STOPPED', callback: (ctx, next) ->
+    module.exports.push name: 'Falcon # Stop Service', timeout: -1, label_true: 'STOPPED', handler: (ctx, next) ->
       {user} = ctx.config.ryba.falcon
       ctx.execute
         cmd: """
@@ -28,6 +28,6 @@ su -l falcon -c "/usr/lib/falcon/bin/falcon-stop"
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'Falcon # Stop Clean Logs', timeout: -1, label_true: 'TODO', callback: (ctx, next) ->
+    module.exports.push name: 'Falcon # Stop Clean Logs', timeout: -1, label_true: 'TODO', handler: (ctx, next) ->
       next null, true
 

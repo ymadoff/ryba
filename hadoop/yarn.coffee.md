@@ -97,7 +97,7 @@ inside the configuration.
 http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
 
-    module.exports.push name: 'Hadoop YARN # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN # Users & Groups', handler: (ctx, next) ->
       return next() unless ctx.config.ryba.resourcemanager or ctx.config.ryba.nodemanager
       {yarn, hadoop_group} = ctx.config.ryba
       ctx.execute
@@ -106,7 +106,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         code_skipped: 9
       , next
 
-    module.exports.push name: 'Hadoop YARN # Install Common', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN # Install Common', timeout: -1, handler: (ctx, next) ->
       ctx.service [
         name: 'hadoop'
       ,
@@ -115,7 +115,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         name: 'hadoop-client'
       ], next
 
-    module.exports.push name: 'Hadoop YARN # Directories', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN # Directories', timeout: -1, handler: (ctx, next) ->
       {yarn, hadoop_group} = ctx.config.ryba
       ctx.mkdir
         destination: "#{yarn.log_dir}/#{yarn.user.name}"
@@ -129,7 +129,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         mode: 0o0755
       , next
 
-    module.exports.push name: 'Hadoop YARN # Yarn OPTS', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN # Yarn OPTS', handler: (ctx, next) ->
       {java_home} = ctx.config.java
       {yarn, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
       yarn_opts = ""
@@ -154,7 +154,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         mode: 0o0755
       , next
 
-    module.exports.push name: 'Hadoop YARN # Configuration', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN # Configuration', handler: (ctx, next) ->
       {yarn, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
@@ -179,7 +179,7 @@ TODO, got to [HortonWorks article and make properties dynamic or improve example
 
 Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Containers to be allocated to each node
 
-    module.exports.push name: 'Hadoop YARN # Memory Allocation', callback: module.exports.tuning = (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN # Memory Allocation', handler: module.exports.tuning = (ctx, next) ->
       {hadoop_conf_dir} = ctx.config.ryba
       {info, yarn} = memory ctx
       ctx.log "Server memory: #{info.memoryTotalMb} mb"

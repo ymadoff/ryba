@@ -22,7 +22,7 @@ cat /etc/group | grep hadoop
 hadoop:x:498:hdfs
 ```
 
-    module.exports.push name: 'ZooKeeper Server # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Users & Groups', handler: (ctx, next) ->
       {zookeeper, hadoop_group} = ctx.config.ryba
       ctx.group [zookeeper.group, hadoop_group], (err, gmodified) ->
         return next err if err
@@ -40,7 +40,7 @@ hadoop:x:498:hdfs
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'ZooKeeper Server # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # IPTables', handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
       ctx.iptables
         rules: [
@@ -56,7 +56,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Follow the [HDP recommandations][install] to install the "zookeeper" package
 which has no dependency.
 
-    module.exports.push name: 'ZooKeeper Server # Install', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Install', timeout: -1, handler: (ctx, next) ->
       ctx.service [
         {name: 'zookeeper'}
         {name: 'telnet'} # Used by check
@@ -67,7 +67,7 @@ which has no dependency.
 Install and configure the startup script in 
 "/etc/init.d/zookeeper-server".
 
-    module.exports.push name: 'ZooKeeper Server # Startup', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Startup', handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
       modified = false
       do_install = ->
@@ -93,7 +93,7 @@ Install and configure the startup script in
 
 ## Kerberos
 
-    module.exports.push name: 'ZooKeeper Server # Kerberos', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Kerberos', timeout: -1, handler: (ctx, next) ->
       {zookeeper, hadoop_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
@@ -151,7 +151,7 @@ Install and configure the startup script in
 Create the data, pid and log directories with the correct permissions and
 ownerships.
 
-    module.exports.push name: 'ZooKeeper Server # Layout', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Layout', handler: (ctx, next) ->
       {zookeeper, hadoop_group} = ctx.config.ryba
       ctx.mkdir [
         destination: zookeeper.config['dataDir']
@@ -170,7 +170,7 @@ ownerships.
         mode: 0o755
       ], next
 
-    module.exports.push name: 'ZooKeeper Server # Environment', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Environment', handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
       write = for k, v of zookeeper.env
         match: RegExp "^export\\s+(#{quote k})=(.*)$", 'mg'
@@ -183,7 +183,7 @@ ownerships.
         eof: true
       , next
 
-    module.exports.push name: 'ZooKeeper Server # Configure', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Configure', handler: (ctx, next) ->
       modified = false
       hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
       {zookeeper} = ctx.config.ryba
@@ -210,7 +210,7 @@ only on localhost (not over the network) or over an encrypted connection.
 
 Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx` 
 
-    module.exports.push name: 'ZooKeeper Server # Super User', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Super User', handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
       return next() unless zookeeper.superuser.password
       ctx.execute
@@ -232,7 +232,7 @@ Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
           eof: true
         , next
 
-    module.exports.push name: 'ZooKeeper Server # Write myid', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Write myid', handler: (ctx, next) ->
       {zookeeper, hadoop_group} = ctx.config.ryba
       hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
       return next() if hosts.length is 1
@@ -245,10 +245,6 @@ Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
         uid: zookeeper.user.name
         gid: hadoop_group.name
       , next
-
-    module.exports.push 'ryba/zookeeper/server_start'
-
-    module.exports.push 'ryba/zookeeper/server_check'
 
 ## Resources
 

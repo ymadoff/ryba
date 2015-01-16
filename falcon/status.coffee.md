@@ -12,7 +12,7 @@ retrieve the status of the Falcon server using Ryba.
 
 Discover the server status.
 
-    module.exports.push name: 'Falcon # Status Service', timeout: -1, label_true: 'STARTED', label_false: 'STOPPED', callback: (ctx, next) ->
+    module.exports.push name: 'Falcon # Status Service', timeout: -1, label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
       {user} = ctx.config.ryba.falcon
       ctx.execute
         cmd: "su -l #{user.name} -c '/usr/lib/falcon/bin/falcon-status'"

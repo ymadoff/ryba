@@ -7,10 +7,10 @@
     module.exports.push 'ryba/hadoop/hdfs_dn_wait'
     module.exports.push require('./yarn_rm').configure
 
-    module.exports.push name: 'Yarn RM # Start Server', label_true: 'STARTED', callback: (ctx, next) ->
+    module.exports.push name: 'Yarn RM # Start Server', label_true: 'STARTED', handler: (ctx, next) ->
       lifecycle.rm_start ctx, next
 
-    module.exports.push name: 'Yarn RM # Ensure Active/Standby', label_true: 'TODO', callback: (ctx, next) ->
+    module.exports.push name: 'Yarn RM # Ensure Active/Standby', label_true: 'TODO', handler: (ctx, next) ->
       rm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
       return next() unless rm_hosts.length > 1 
       {active_rm_host} = ctx.config.ryba

@@ -72,7 +72,7 @@ cat /etc/group | grep xasecure
 xasecure:x:493:
 ```
 
-    module.exports.push name: 'XASecure PolicyMgr # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'XASecure PolicyMgr # Users & Groups', handler: (ctx, next) ->
       {group, user} = ctx.config.xasecure
       ctx.group group, (err, gmodified) ->
         return next err if err
@@ -88,7 +88,7 @@ xasecure:x:493:
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'XASecure PolicyMgr # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'XASecure PolicyMgr # IPTables', handler: (ctx, next) ->
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 6080, protocol: 'tcp', state: 'NEW', comment: "XASecure Admin" }
@@ -96,7 +96,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: ctx.config.iptables.action is 'start'
       , next
 
-    module.exports.push name: 'XASecure PolicyMgr # Upload', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'XASecure PolicyMgr # Upload', timeout: -1, handler: (ctx, next) ->
       {policymgr_url} = ctx.config.xasecure
       do_upload = ->
         ctx[if url.parse(policymgr_url).protocol is 'http:' then 'download' else 'upload']
@@ -115,7 +115,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           return next err, true
       do_upload()
 
-    module.exports.push name: 'XASecure PolicyMgr # Install', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'XASecure PolicyMgr # Install', timeout: -1, handler: (ctx, next) ->
       {db_admin} = ctx.config.ryba
       {policymgr, policymgr_url} = ctx.config.xasecure
       modified = false

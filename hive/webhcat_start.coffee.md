@@ -22,7 +22,7 @@ service hive-webhcat-server start
 su -l hive -c "/usr/lib/hive-hcatalog/sbin/webhcat_server.sh start"
 ```
 
-    module.exports.push name: 'WebHCat # Start', label_true: 'STARTED', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Start', label_true: 'STARTED', handler: (ctx, next) ->
       ctx.service
         srv_name: 'hive-webhcat-server'
         action: 'start'

@@ -69,7 +69,7 @@ with Hadoop clusters.
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'Knox # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'Knox # IPTables', handler: (ctx, next) ->
       {gateway_site} = ctx.config.knox
       ctx.iptables
         rules: [
@@ -81,13 +81,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Service
 
-    module.exports.push name: 'Knox # Service', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Knox # Service', timeout: -1, handler: (ctx, next) ->
       ctx.service
         name: 'knox'
       , (err, serviced) ->
         next err, if serviced then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'Knox # Master', callback: (ctx, next) ->
+    module.exports.push name: 'Knox # Master', handler: (ctx, next) ->
       {knox_conf_dir, gateway_site, master_secret} = ctx.config.knox
       ctx.fs.exists '/usr/lib/knox/data/security/master', (err, exists) ->
         return next err, ctx.PASS if err or exists
@@ -118,7 +118,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       # MySecret
       next()
 
-    module.exports.push name: 'Knox # Configure', callback: (ctx, next) ->
+    module.exports.push name: 'Knox # Configure', handler: (ctx, next) ->
       {knox_conf_dir, gateway_site} = ctx.config.knox
       ctx.hconfigure
         destination: "#{knox_conf_dir}/gateway-site.xml"
@@ -127,7 +127,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       , (err, configured) ->
         next err, if configured then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'Knox # Topology', callback: (ctx, next) ->
+    module.exports.push name: 'Knox # Topology', handler: (ctx, next) ->
       {nameservice} = ctx.config.ryba
       {knox_conf_dir, gateway_site} = ctx.config.knox
       console.log "TODO: topology (disabled for now)"

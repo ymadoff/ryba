@@ -13,12 +13,12 @@
 
 Install the oozie client package. This package doesn't create any user and group.
 
-    module.exports.push name: 'Oozie Client # Install', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Install', timeout: -1, handler: (ctx, next) ->
       ctx.service [
         name: 'oozie-client'
       ], next
 
-    module.exports.push name: 'Oozie Client # Profile', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Profile', handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
       ctx.write
         destination: '/etc/profile.d/oozie.sh'

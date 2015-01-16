@@ -13,6 +13,6 @@ and some may be inactive.
     module.exports.push 'ryba/hadoop/hdfs_nn_wait'
     module.exports.push require('./hdfs_dn').configure
 
-    module.exports.push name: 'HDFS DN # Start', label_true: 'STARTED', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Start', label_true: 'STARTED', handler: (ctx, next) ->
       return next new Error "Not an DataNode" unless ctx.has_module 'ryba/hadoop/hdfs_dn'
       lifecycle.dn_start ctx, next

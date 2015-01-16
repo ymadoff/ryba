@@ -28,7 +28,7 @@ TODO:
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HBase master # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'HBase master # IPTables', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
       ctx.iptables
         rules: [
@@ -43,12 +43,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install and configure the startup script in 
 "/etc/init.d/hbase-master".
 
-    module.exports.push name: 'HBase Master # Service', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HBase Master # Service', timeout: -1, handler: (ctx, next) ->
       ctx.service
         name: 'hbase-master'
       , next
 
-    module.exports.push name: 'HBase Master # HDFS layout', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HBase Master # HDFS layout', timeout: -1, handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
       ctx.waitForExecution mkcmd.hdfs(ctx, "hdfs dfs -test -d /apps"), code_skipped: 1, (err) ->
         return next err if err
@@ -81,7 +81,7 @@ RegionServer, and HBase client host machines.
 
 Environment file is enriched by "ryba/hbase/_ # HBase # Env".
 
-    module.exports.push name: 'HBase master # Zookeeper JAAS', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HBase master # Zookeeper JAAS', timeout: -1, handler: (ctx, next) ->
       {jaas_server, hbase} = ctx.config.ryba
       ctx.write
         destination: "#{hbase.conf_dir}/hbase-master.jaas"
@@ -94,7 +94,7 @@ Environment file is enriched by "ryba/hbase/_ # HBase # Env".
 https://blogs.apache.org/hbase/entry/hbase_cell_security
 https://hbase.apache.org/book/security.html
 
-    module.exports.push name: 'HBase Master # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'HBase Master # Kerberos', handler: (ctx, next) ->
       {hadoop_group, hbase, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc [
@@ -134,7 +134,7 @@ Note: The Namenode webapp located in "/usr/lib/hbase/hbase-webapps/master" is
 using the hadoop conf directory to retrieve the SPNEGO keytab. The user "hbase"
 is added membership to the group hadoop to gain read access.
 
-    module.exports.push name: 'HBase Master # FIX SPNEGO', callback: (ctx, next) ->
+    module.exports.push name: 'HBase Master # FIX SPNEGO', handler: (ctx, next) ->
       {hbase, hadoop_group} = ctx.config.ryba
       ctx.execute
         cmd: """
@@ -153,7 +153,7 @@ is added membership to the group hadoop to gain read access.
 
 Enable stats collection in Ganglia.
 
-    module.exports.push name: 'HBase Master # Metrics', callback: (ctx, next) ->
+    module.exports.push name: 'HBase Master # Metrics', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
       collector = ctx.host_with_module 'ryba/hadoop/ganglia_collector'
       return next() unless collector
@@ -166,7 +166,7 @@ Enable stats collection in Ganglia.
 
     module.exports.push 'ryba/hbase/master_start'
 
-    module.exports.push name: 'HBase Master # Admin', callback: (ctx, next) ->
+    module.exports.push name: 'HBase Master # Admin', handler: (ctx, next) ->
       {hbase, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc

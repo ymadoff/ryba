@@ -11,7 +11,7 @@ associated the NameNodes.
 
 ## Stop Service
 
-    module.exports.push name: 'HDFS DN # Stop Service', label_true: 'STOPPED', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Stop Service', label_true: 'STOPPED', handler: (ctx, next) ->
       ctx.execute
         cmd: "service hadoop-hdfs-datanode stop"
         code_skipped: 3
@@ -19,7 +19,7 @@ associated the NameNodes.
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'HDFS DN # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute
         cmd: 'rm /var/log/hadoop-hdfs/*/*-datanode-*'

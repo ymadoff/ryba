@@ -11,7 +11,7 @@
     module.exports.push 'ryba/lib/base'
     module.exports.push require('./client').configure
 
-    module.exports.push name: 'ZooKeeper Client # Kerberos', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Client # Kerberos', timeout: -1, handler: (ctx, next) ->
       {zookeeper, hadoop_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
@@ -47,7 +47,7 @@
         next null, modified
       do_principal()
 
-    module.exports.push name: 'ZooKeeper Client # Environment', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Client # Environment', handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
       write = for k, v of zookeeper.env
         match: RegExp "^export\\s+(#{quote k})=(.*)$", 'mg'

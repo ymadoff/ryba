@@ -17,7 +17,7 @@ resource for particular job. Any NodeManager which has equal or more memory
 available than the one defined by this property will get selected for executing
 the job.
 
-    module.exports.push name: 'Hadoop YARN # Configuration', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN # Configuration', handler: (ctx, next) ->
       {hadoop_conf_dir, yarn} = ctx.config.ryba
       properties = {}
       for k, v of yarn.site

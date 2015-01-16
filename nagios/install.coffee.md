@@ -9,7 +9,7 @@
 
     module.exports.push require('./index').configure
 
-    module.exports.push name: 'Nagios # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Kerberos', handler: (ctx, next) ->
       {nagios, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
@@ -36,14 +36,14 @@ nagios:x:2418:
 nagiocmd:x:2419:apache
 ```
 
-    module.exports.push name: 'Nagios # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Users & Groups', handler: (ctx, next) ->
       {nagios} = ctx.config.ryba
       ctx.group [nagios.group, nagios.groupcmd], (err, gmodified) ->
         return next err if err
         ctx.user nagios.user, (err, umodified) ->
           next err, gmodified or umodified
 
-    module.exports.push name: 'Nagios # Service', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Service', handler: (ctx, next) ->
       ctx.service [
         {name: 'net-snmp'}
         {name: 'net-snmp-utils'}
@@ -59,7 +59,7 @@ nagiocmd:x:2419:apache
         {name: 'nagios-www'}
       ], next
 
-    module.exports.push name: 'Nagios # Layout', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Layout', handler: (ctx, next) ->
       {user, group, groupcmd} = ctx.config.ryba.nagios
       ctx.mkdir [
         destination: [
@@ -77,7 +77,7 @@ nagiocmd:x:2419:apache
 
 # Objects
 
-    module.exports.push name: 'Nagios # Objects', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Objects', handler: (ctx, next) ->
       {user, group, overwrite} = ctx.config.ryba.nagios
       objects = [
         'hadoop-commands', 'hadoop-hosts'
@@ -97,7 +97,7 @@ nagiocmd:x:2419:apache
 
 # Plugins
 
-    module.exports.push name: 'Nagios # Plugins', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Plugins', timeout: -1, handler: (ctx, next) ->
       {user, group, plugin_dir} = ctx.config.ryba.nagios
       glob "#{__dirname}/../resources/nagios/plugins/*", (err, plugins) ->
         return next err if err
@@ -110,7 +110,7 @@ nagiocmd:x:2419:apache
           mode: 0o0775
         ctx.upload plugins, next
 
-    module.exports.push name: 'Nagios # Admin Password', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Admin Password', handler: (ctx, next) ->
       {user, group, admin} = ctx.config.ryba.nagios
       ctx.execute
         cmd: """
@@ -125,7 +125,7 @@ nagiocmd:x:2419:apache
         code_skipped: 3
       , next
 
-    module.exports.push name: 'Nagios # Admin Email', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Admin Email', handler: (ctx, next) ->
       {user, group, admin_email} = ctx.config.ryba.nagios
       ctx.write
         destination: '/etc/nagios/objects/contacts.cfg'
@@ -133,7 +133,7 @@ nagiocmd:x:2419:apache
         replace: "$1#{admin_email}$3"
       , next
 
-    module.exports.push name: 'Nagios # Configuration', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Configuration', handler: (ctx, next) ->
       {user, group, plugin_dir} = ctx.config.ryba.nagios
       # Register Hadoop configuration files
       cfg_files = [
@@ -168,7 +168,7 @@ nagiocmd:x:2419:apache
         replace: "$USER1$=#{plugin_dir}"
       ], next
 
-    module.exports.push name: 'Nagios # Hosts', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Hosts', handler: (ctx, next) ->
       {user, group} = ctx.config.ryba.nagios
       content = for host of ctx.config.servers
         """
@@ -200,7 +200,7 @@ The following command list all the referenced host groups:
 cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
 ```
 
-    module.exports.push name: 'Nagios # Host Groups', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Host Groups', handler: (ctx, next) ->
       {nagios} = ctx.config.ryba
       hostgroup_defs = {}
       for group, hosts of nagios.hostgroups
@@ -214,7 +214,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           hostgroup_defs: hostgroup_defs
       , next
 
-    module.exports.push name: 'Nagios # Services Groups', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Services Groups', handler: (ctx, next) ->
       {nagios} = ctx.config.ryba
       hostgroup_defs = {}
       for group, hosts of nagios.hostgroups
@@ -227,7 +227,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           hostgroup_defs: hostgroup_defs
       , next
 
-    module.exports.push name: 'Nagios # Services', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Services', handler: (ctx, next) ->
       {nagios, force_check, active_nn_host, core_site, hdfs, zookeeper, 
         yarn, hive, hbase, oozie, webhcat, ganglia, hue} = ctx.config.ryba
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
@@ -335,7 +335,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           hue_port: hue.ini.desktop.http.port
       , next
 
-    module.exports.push name: 'Nagios # Commands', callback: (ctx, next) ->
+    module.exports.push name: 'Nagios # Commands', handler: (ctx, next) ->
       ctx.write
         source: "#{__dirname}/../resources/nagios/objects/hadoop-commands.cfg"
         local_source: true

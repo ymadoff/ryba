@@ -19,7 +19,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'WebHCat # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # IPTables', handler: (ctx, next) ->
       {webhcat} = ctx.config.ryba
       port = webhcat.site['templeton.port']
       ctx.iptables
@@ -29,7 +29,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: ctx.config.iptables.action is 'start'
       , next
 
-    module.exports.push name: 'WebHCat # Install', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Install', timeout: -1, handler: (ctx, next) ->
       ctx.service [
         name: 'hive-hcatalog'
       ,
@@ -44,7 +44,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
 
-    module.exports.push name: 'WebHCat # Startup', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Startup', handler: (ctx, next) ->
       {webhcat} = ctx.config.ryba
       modified = false
       do_install = ->
@@ -75,7 +75,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
         next null, modified
       do_install()
 
-    module.exports.push name: 'WebHCat # Directories', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Directories', handler: (ctx, next) ->
       {webhcat, hive, hadoop_group} = ctx.config.ryba
       modified = false
       do_log = ->
@@ -102,7 +102,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
         next null, modified
       do_log()
 
-    module.exports.push name: 'WebHCat # Configuration', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Configuration', handler: (ctx, next) ->
       {webhcat, hive, hadoop_group} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{webhcat.conf_dir}/webhcat-site.xml"
@@ -115,7 +115,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
         merge: true
       , next
 
-    module.exports.push name: 'WebHCat # Env', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Env', handler: (ctx, next) ->
       {webhcat, hive, hadoop_group} = ctx.config.ryba
       ctx.log 'Write webhcat-env.sh'
       ctx.upload
@@ -126,7 +126,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
         mode: 0o0755
       , next
 
-    module.exports.push name: 'WebHCat # HDFS', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # HDFS', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       modified = false
       ctx.execute [
@@ -168,7 +168,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
           , (err, executed, stdout) ->
             next err, modified
 
-    module.exports.push name: 'WebHCat # Fix HDFS tmp', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Fix HDFS tmp', handler: (ctx, next) ->
       # Avoid HTTP response
       # Permission denied: user=ryba, access=EXECUTE, inode=\"/tmp/hadoop-hcat\":HTTP:hadoop:drwxr-x---
       {hive, hadoop_group} = ctx.config.ryba
@@ -183,7 +183,7 @@ Install and configure the startup script in "/etc/init.d/hive-webhcat-server".
         code_skipped: 2
       ], next
 
-    module.exports.push name: 'WebHCat # SPNEGO', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # SPNEGO', handler: (ctx, next) ->
       {webhcat, hive, hadoop_group} = ctx.config.ryba
       ctx.copy
         source: '/etc/security/keytabs/spnego.service.keytab'

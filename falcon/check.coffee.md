@@ -11,7 +11,7 @@
 
 Follow the [Hortonworks Data Pipelines example][dpe].
 
-    module.exports.push name: 'Falcon # Check Data Pipelines', skip: true, timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
+    module.exports.push name: 'Falcon # Check Data Pipelines', skip: true, timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
       {user, active_rm_host} = ctx.config.ryba
       cluster_path = "#{user.home}/check_falcon/cluster.xml"
       feed_path = "#{user.home}/check_falcon/feed.xml"

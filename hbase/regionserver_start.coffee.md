@@ -10,5 +10,5 @@
 
 Execute these commands on all RegionServers.
 
-    module.exports.push name: 'HBase RegionServer # Start', label_true: 'STARTED', callback: (ctx, next) ->
+    module.exports.push name: 'HBase RegionServer # Start', label_true: 'STARTED', handler: (ctx, next) ->
       lifecycle.hbase_regionserver_start ctx, next

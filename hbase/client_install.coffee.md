@@ -13,7 +13,7 @@ Install the HBase client package and configure it with secured access.
 JAAS configuration files for zookeeper to be deployed on the HBase Master, 
 RegionServer, and HBase client host machines.
 
-    module.exports.push name: 'HBase Client # Zookeeper JAAS', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HBase Client # Zookeeper JAAS', timeout: -1, handler: (ctx, next) ->
       {jaas_client, hbase} = ctx.config.ryba
       ctx.write
         destination: "#{hbase.conf_dir}/hbase-client.jaas"

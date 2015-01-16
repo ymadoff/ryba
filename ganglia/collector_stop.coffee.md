@@ -7,7 +7,7 @@ Execute these commands on the Ganglia server host machine.
     module.exports.push 'masson/bootstrap/connection'
     module.exports.push 'masson/bootstrap/mecano'
 
-    module.exports.push name: 'Ganglia Collector # Stop', callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Collector # Stop', handler: (ctx, next) ->
       ctx.service [
       #   name: 'httpd'
       #   action: 'stop'

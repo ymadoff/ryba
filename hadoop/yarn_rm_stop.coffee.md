@@ -6,10 +6,10 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./yarn_rm').configure
 
-    module.exports.push name: 'Yarn RM # Stop Server', label_true: 'STOPPED', callback: (ctx, next) ->
+    module.exports.push name: 'Yarn RM # Stop Server', label_true: 'STOPPED', handler: (ctx, next) ->
       lifecycle.rm_stop ctx, next
 
-    module.exports.push name: 'Yarn RM # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->
+    module.exports.push name: 'Yarn RM # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       {clean_logs, yarn} = ctx.config.ryba
       return next() unless clean_logs
       ctx.execute

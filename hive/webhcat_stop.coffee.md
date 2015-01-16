@@ -18,7 +18,7 @@ su -l hive -c "/usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop"
 service hive-webhcat-server stop
 ```
 
-    module.exports.push name: 'WebHCat # Stop', label_true: 'STOPPED', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
       ctx.service
         srv_name: 'hive-webhcat-server'
         action: 'stop'
@@ -28,7 +28,7 @@ service hive-webhcat-server stop
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'WebHCat # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute [
         cmd: 'rm /var/log/webhcat/webhcat-console*'

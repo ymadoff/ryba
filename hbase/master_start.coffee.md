@@ -10,5 +10,5 @@
 
 Execute these commands on the HBase Master host machine.
 
-    module.exports.push name: 'HBase Master # Start', label_true: 'STARTED', callback: (ctx, next) ->
+    module.exports.push name: 'HBase Master # Start', label_true: 'STARTED', handler: (ctx, next) ->
       lifecycle.hbase_master_start ctx, next

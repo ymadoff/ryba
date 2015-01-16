@@ -7,5 +7,5 @@
     module.exports.push 'ryba/hadoop/yarn_rm_wait'
     module.exports.push require('./yarn').configure
 
-    module.exports.push name: 'Hadoop NodeManager # Start Server', label_true: 'STARTED', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop NodeManager # Start Server', label_true: 'STARTED', handler: (ctx, next) ->
       lifecycle.nm_start ctx, next

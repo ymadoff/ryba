@@ -37,7 +37,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'XASecure Sync # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'XASecure Sync # IPTables', handler: (ctx, next) ->
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 5151, protocol: 'tcp', state: 'NEW', comment: "XASecure Admin" }
@@ -45,7 +45,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: ctx.config.iptables.action is 'start'
       , next
 
-    module.exports.push name: 'XASecure Sync # Upload', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'XASecure Sync # Upload', timeout: -1, handler: (ctx, next) ->
       {uxugsync_url} = ctx.config.xasecure
       do_upload = ->
         ctx[if url.parse(uxugsync_url).protocol is 'http:' then 'download' else 'upload']
@@ -64,7 +64,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           return next err, true
       do_upload()
 
-    module.exports.push name: 'XASecure Sync # Install', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'XASecure Sync # Install', timeout: -1, handler: (ctx, next) ->
       {uxugsync, uxugsync_url} = ctx.config.xasecure
       modified = false
       do_configure = ->

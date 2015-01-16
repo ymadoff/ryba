@@ -19,7 +19,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HBase RegionServer # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'HBase RegionServer # IPTables', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
       ctx.iptables
         rules: [
@@ -34,7 +34,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install and configure the startup script in 
 "/etc/init.d/hbase-regionserver".
 
-    module.exports.push name: 'HBase RegionServer # Startup', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HBase RegionServer # Startup', timeout: -1, handler: (ctx, next) ->
       modified = false
       do_install = ->
         ctx.service 
@@ -62,7 +62,7 @@ Install and configure the startup script in
 JAAS configuration files for zookeeper to be deployed on the HBase Master, 
 RegionServer, and HBase client host machines.
 
-    module.exports.push name: 'HBase RegionServer # Zookeeper JAAS', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HBase RegionServer # Zookeeper JAAS', timeout: -1, handler: (ctx, next) ->
       {jaas_server, hbase} = ctx.config.ryba
       ctx.write
         destination: "#{hbase.conf_dir}/hbase-regionserver.jaas"
@@ -72,7 +72,7 @@ RegionServer, and HBase client host machines.
         mode: 0o700
       , next
 
-    module.exports.push name: 'HBase RegionServer # Kerberos', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HBase RegionServer # Kerberos', timeout: -1, handler: (ctx, next) ->
       {hadoop_group, hbase, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       if ctx.has_module 'ryba/hbase/master'
@@ -103,7 +103,7 @@ Note: The Namenode webapp located in "/usr/lib/hbase/hbase-webapps/regionserver"
 using the hadoop conf directory to retrieve the SPNEGO keytab. The user "hbase"
 is added membership to the group hadoop to gain read access.
 
-    module.exports.push name: 'HBase RegionServer # FIX SPNEGO', callback: (ctx, next) ->
+    module.exports.push name: 'HBase RegionServer # FIX SPNEGO', handler: (ctx, next) ->
       {hbase, hadoop_group} = ctx.config.ryba
       {hdfs} = ctx.config.ryba
       ctx.execute
@@ -138,7 +138,7 @@ is added membership to the group hadoop to gain read access.
 
 Enable stats collection in Ganglia.
 
-    module.exports.push name: 'HBase RegionServer # Metrics', callback: (ctx, next) ->
+    module.exports.push name: 'HBase RegionServer # Metrics', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
       collector = ctx.host_with_module 'ryba/hadoop/ganglia_collector'
       return next() unless collector

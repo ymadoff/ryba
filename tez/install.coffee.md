@@ -8,14 +8,14 @@
 
 ## Packages
 
-    module.exports.push name: 'Tez # Packages', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Tez # Packages', timeout: -1, handler: (ctx, next) ->
       ctx.service
         name: 'tez'
       , next
 
 ## HDFS Layout
 
-    module.exports.push name: 'Tez # HDFS Layout', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Tez # HDFS Layout', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba
       # Group name on "/apps/tez" is suggested as "users", switch to hadoop
       version_local = 'ls /usr/lib/tez | grep tez-common | sed \'s/^tez-common-\\(.*\\)\\.jar$/\\1/g\''
@@ -38,7 +38,7 @@
 
 ## Configuration
 
-    module.exports.push name: 'Tez # Configuration', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Tez # Configuration', timeout: -1, handler: (ctx, next) ->
       {tez} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{tez.env['TEZ_CONF_DIR']}/tez-site.xml"
@@ -52,7 +52,7 @@
 
 Environment passed to Hadoop.   
 
-    module.exports.push name: 'Tez # Environment', callback: (ctx, next) ->
+    module.exports.push name: 'Tez # Environment', handler: (ctx, next) ->
       {hadoop_conf_dir, tez} = ctx.config.ryba
       env = for k, v of tez.env
         "export #{k}=#{v}"

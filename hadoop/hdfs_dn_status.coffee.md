@@ -8,6 +8,6 @@ Display the status of the NameNode as "STARTED" or "STOPPED".
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./hdfs_dn').configure
 
-    module.exports.push name: 'HDFS DN # Status', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Status', handler: (ctx, next) ->
       lifecycle.dn_status ctx, (err, running) ->
         next err, if running then 'STARTED' else 'STOPPED'

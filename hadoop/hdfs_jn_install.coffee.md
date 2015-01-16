@@ -30,7 +30,7 @@ Note, "dfs.journalnode.rpc-address" is used by "dfs.namenode.shared.edits.dir".
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HDFS JN # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS JN # IPTables', handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
       rpc = hdfs.site['dfs.journalnode.rpc-address'].split(':')[1]
       http = hdfs.site['dfs.journalnode.http-address'].split(':')[1]
@@ -50,7 +50,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 The JournalNode data are stored inside the directory defined by the 
 "dfs.journalnode.edits.dir" property.
 
-    module.exports.push name: 'HDFS JN # Layout', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS JN # Layout', handler: (ctx, next) ->
       {hdfs, hadoop_conf_dir} = ctx.config.ryba
       ctx.mkdir
         destination: hdfs.site['dfs.journalnode.edits.dir'].split ','
@@ -63,7 +63,7 @@ The JournalNode data are stored inside the directory defined by the
 Install and configure the startup script in 
 "/etc/init.d/hadoop-hdfs-journalnode".
 
-    module.exports.push name: 'HDFS JN # Startup', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS JN # Startup', handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
       modified = false
       do_install = ->
@@ -104,7 +104,7 @@ SPNEGO tocken is stored inside the "/etc/security/keytabs/spnego.service.keytab"
 keytab, also used by the NameNodes, DataNodes, ResourceManagers and
 NodeManagers.
 
-    module.exports.push name: 'HDFS JN # Configure', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS JN # Configure', handler: (ctx, next) ->
       {hdfs, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
@@ -119,7 +119,7 @@ Add High Availability specific properties to the "hdfs-site.xml" file. Those
 properties include "dfs.namenode.shared.edits.dir". Note, this might not be
 read on JN side (see [DFSConfigKeys.java][keys]).
 
-    module.exports.push name: 'HDFS JN # Configure HA', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS JN # Configure HA', handler: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
       journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
       ha_client_config['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
@@ -130,18 +130,6 @@ read on JN side (see [DFSConfigKeys.java][keys]).
         merge: true
         backup: true
       , next
-
-## Start
-
-Load the module "ryba/hadoop/hdfs\_jn\_start" to start the JournalNode.
-
-    module.exports.push 'ryba/hadoop/hdfs_jn_start'
-
-## Check
-
-Load the module "ryba/hadoop/hdfs\_jn\_check" to check the JournalNode.
-
-    module.exports.push 'ryba/hadoop/hdfs_jn_check'
 
 ## Module Dependencies
 

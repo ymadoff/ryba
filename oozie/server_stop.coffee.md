@@ -17,7 +17,7 @@ following command:
 su -l oozie -c "/usr/lib/oozie/bin/oozied.sh stop"
 ```
 
-    module.exports.push name: 'Oozie Server # Stop', label_true: 'STOPPED', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Stop', label_true: 'STOPPED', timeout: -1, handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
       ctx.execute
         cmd: """
@@ -30,7 +30,7 @@ su -l oozie -c "/usr/lib/oozie/bin/oozied.sh stop"
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'Oozie Server # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute
         cmd: 'rm /var/log/oozie/*'

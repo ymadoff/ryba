@@ -8,7 +8,7 @@ Check the access to the HDFS cluster.
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./hdfs_client').configure
 
-    module.exports.push name: 'HDFS Client # Check', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS Client # Check', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
       {hadoop_conf_dir, hdfs, user} = ctx.config.ryba
       ctx.waitForExecution mkcmd.test(ctx, "hdfs dfs -test -d /user/#{user.name}"), (err) ->
         return next err if err

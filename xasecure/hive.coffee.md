@@ -24,7 +24,7 @@
       xasecure.hive['XAAUDIT.DB.USER_NAME'] ?= xasecure.policymgr['audit_db_user']
       xasecure.hive['XAAUDIT.DB.PASSWORD'] ?= xasecure.policymgr['audit_db_password']
 
-    module.exports.push name: 'XASecure HDFS # Upload', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'XASecure HDFS # Upload', timeout: -1, handler: (ctx, next) ->
       {hive_url} = ctx.config.xasecure
       do_upload = ->
         ctx[if url.parse(hive_url).protocol is 'http:' then 'download' else 'upload']
@@ -43,7 +43,7 @@
           return next err, true
       do_upload()
 
-    module.exports.push name: 'XASecure Hive # Install', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'XASecure Hive # Install', timeout: -1, handler: (ctx, next) ->
       {conf_dir} = ctx.config.ryba.hive
       {hive, hive_url} = ctx.config.xasecure
       modified = false
@@ -88,7 +88,7 @@
             next null, false
       do_configure()
 
-    module.exports.push name: 'XASecure Hive # Register', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'XASecure Hive # Register', timeout: -1, handler: (ctx, next) ->
       # POST http://front1.hadoop:6080/service/assets/assets
       body = 
         "name":"vagrant_hive"

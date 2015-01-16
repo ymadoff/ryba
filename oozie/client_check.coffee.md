@@ -5,13 +5,13 @@
     module.exports.push 'masson/bootstrap/'
     module.exports.push require('./client').configure
 
-    module.exports.push name: 'Oozie Client # Wait Server', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Wait Server', timeout: -1, handler: (ctx, next) ->
       {hostname, port} = url.parse ctx.config.ryba.oozie.site['oozie.base.url'] 
       ctx.waitIsOpen hostname, port, (err) -> next err
 
 ## Check Client
 
-    module.exports.push name: 'Oozie Client # Check Client', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Check Client', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
       {realm, user, oozie} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.test ctx, """
@@ -24,7 +24,7 @@
 
 ## Check REST
 
-    module.exports.push name: 'Oozie Client # Check REST', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Check REST', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
       {realm, user, oozie} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.test ctx, """
@@ -37,7 +37,7 @@
 
 ## Check HDFS Workflow
 
-    module.exports.push name: 'Oozie Client # Check HDFS Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Check HDFS Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
       {force_check, user, core_site, oozie} = ctx.config.ryba
       rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn').configure
       if rm_ctxs.length > 1
@@ -103,7 +103,7 @@
 
 ## Check Pig Workflow
 
-    module.exports.push name: 'Oozie Client # Check Pig Workflow', skip: true, timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Check Pig Workflow', skip: true, timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
       {force_check, user, core_site, active_rm_host, oozie} = ctx.config.ryba
       rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn').configure
       if rm_ctxs.length > 1

@@ -12,7 +12,7 @@
 
 See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap6-3.html)
 
-    module.exports.push name: 'Hive & HCat Client # Configure', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Client # Configure', handler: (ctx, next) ->
       {hive, hadoop_group} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hive.conf_dir}/hive-site.xml"

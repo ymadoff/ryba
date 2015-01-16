@@ -7,7 +7,7 @@
 
 ## Check HDFS
 
-    module.exports.push name: 'Tez # Check HDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
+    module.exports.push name: 'Tez # Check HDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
       {force_check, test_user} = ctx.config.ryba
       local_text = "#{test_user.home}/check-#{ctx.config.shortname}-tez-hdfs/test.txt"
       remote_dir = "check-#{ctx.config.shortname}-tez-hdfs"

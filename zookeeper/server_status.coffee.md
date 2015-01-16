@@ -8,7 +8,7 @@
 
 Discover the server status.
 
-    module.exports.push name: 'ZooKeeper Server # Status', label_true: 'STARTED', label_false: 'STOPPED', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
       ctx.execute
         cmd: "service zookeeper-server status"
         code_skipped: 3

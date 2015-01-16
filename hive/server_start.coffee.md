@@ -12,7 +12,7 @@ HDFS server to answer queries.
 
 ## Start Wait Database
 
-    module.exports.push name: 'Hive & HCat Server # Start Wait DB', timeout: -1, label_true: 'READY', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Start Wait DB', timeout: -1, label_true: 'READY', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       [_, host, port] = /^.*?\/\/?(.*?)(?::(.*))?\/.*$/.exec hive.site['javax.jdo.option.ConnectionURL']
       ctx.waitIsOpen host, port, next
@@ -21,7 +21,7 @@ HDFS server to answer queries.
 
 Execute these commands on the Hive HCatalog (Metastore) host machine.
 
-    module.exports.push name: 'Hive & HCat Server # Start HCatalog', timeout: -1, label_true: 'STARTED', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Start HCatalog', timeout: -1, label_true: 'STARTED', handler: (ctx, next) ->
       ctx.service
         srv_name: 'hive-hcatalog-server'
         action: 'start'
@@ -32,7 +32,7 @@ Execute these commands on the Hive HCatalog (Metastore) host machine.
 
 Execute these commands on the Hive Server2 host machine.
 
-    module.exports.push name: 'Hive & HCat Server # Start Server2', timeout: -1, label_true: 'STARTED', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Start Server2', timeout: -1, label_true: 'STARTED', handler: (ctx, next) ->
       lifecycle.hive_server2_start ctx, next
 
 ## Module Dependencies

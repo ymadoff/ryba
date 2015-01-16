@@ -27,7 +27,7 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'Hive & HCat Server # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # IPTables', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       hive_server_port = if hive.site['hive.server2.transport.mode'] is 'binary'
       then hive.site['hive.server2.thrift.port']
@@ -46,7 +46,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install and configure the startup script in "/etc/init.d/hive-hcatalog-server"
 and "/etc/init.d/hive-server2".
 
-    module.exports.push name: 'Hive & HCat Server # Startup', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Startup', handler: (ctx, next) ->
       ctx.service [
         name: 'hive-hcatalog-server'
         startup: true
@@ -55,7 +55,7 @@ and "/etc/init.d/hive-server2".
         startup: true
       ], next
 
-    module.exports.push name: 'Hive & HCat Server # Fix Startup', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Fix Startup', handler: (ctx, next) ->
       ctx.write [
         destination: '/etc/init.d/hive-hcatalog-server'
         match: /^.*# Ryba: clean pidfile if pid not running$/m
@@ -72,7 +72,7 @@ and "/etc/init.d/hive-server2".
         append: /^PIDFILE=.*$/m
       ], next
 
-    module.exports.push name: 'Hive & HCat Server # Database', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Database', handler: (ctx, next) ->
       {hive, db_admin} = ctx.config.ryba
       username = hive.site['javax.jdo.option.ConnectionUserName']
       password = hive.site['javax.jdo.option.ConnectionPassword']
@@ -96,7 +96,7 @@ and "/etc/init.d/hive-server2".
       return next new Error 'Database engine not supported' unless engines[engine]
       engines[engine]()
 
-    module.exports.push name: 'Hive & HCat Server # Configure', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Configure', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hive.conf_dir}/hive-site.xml"
@@ -114,7 +114,7 @@ and "/etc/init.d/hive-server2".
         , (err) ->
           next err, configured
 
-    module.exports.push name: 'Hive & HCat Server # Fix', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Fix', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       ctx.write
         destination: "#{hive.conf_dir}/hive-env.sh"
@@ -122,7 +122,7 @@ and "/etc/init.d/hive-server2".
         replace: 'export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-/usr/lib/hive-hcatalog/share/hcatalog/hive-hcatalog-core.jar}'
       , next
 
-    module.exports.push name: 'Hive & HCat Server # Libs', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Libs', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       return next() unless hive.libs.length
       uploads = for lib in hive.libs
@@ -130,13 +130,13 @@ and "/etc/init.d/hive-server2".
         destination: "/usr/lib/hive/lib/#{path.basename lib}"
       ctx.upload uploads, next
 
-    module.exports.push name: 'Hive & HCat Server # Driver', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Driver', handler: (ctx, next) ->
       ctx.link
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/lib/hive/lib/mysql-connector-java.jar'
       , next
 
-    module.exports.push name: 'Hive & HCat Server # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Kerberos', handler: (ctx, next) ->
       {hive, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
@@ -173,7 +173,7 @@ and "/etc/init.d/hive-server2".
         next null, modified
       do_metastore()
 
-    module.exports.push name: 'Hive & HCat Server # Logs', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Logs', handler: (ctx, next) ->
       ctx.write [
         source: "#{__dirname}/../resources/hive/hive-exec-log4j.properties.template"
         local_source: true
@@ -184,7 +184,7 @@ and "/etc/init.d/hive-server2".
         destination: '/etc/hive/conf/hive-log4j.properties'
       ], next
 
-    module.exports.push name: 'Hive & HCat Server # Layout', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Layout', timeout: -1, handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       # Required by service "hive-hcatalog-server"
       ctx.mkdir
@@ -193,7 +193,7 @@ and "/etc/init.d/hive-server2".
         gid: hive.group.name
       , next
 
-    module.exports.push name: 'Hive & HCat Server # HDFS Layout', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # HDFS Layout', timeout: -1, handler: (ctx, next) ->
       # todo: this isnt pretty, ok that we need to execute hdfs command from an hadoop client
       # enabled environment, but there must be a better way
       {active_nn_host, hdfs, hive} = ctx.config.ryba
@@ -247,13 +247,13 @@ and "/etc/init.d/hive-server2".
           next null, modified
         do_warehouse()
 
-    module.exports.push name: 'Hive & HCat Server # Tez Package', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Tez Package', timeout: -1, handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module 'ryba/tez'
       ctx.service
         name: 'tez'
       , next
 
-    module.exports.push name: 'Hive & HCat Server # Tez Layout', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Tez Layout', timeout: -1, handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module 'ryba/tez'
       {hive, hadoop_group} = ctx.config.ryba
       version_local = 'ls /usr/lib/hive/lib | grep hive-exec- | sed \'s/^hive-exec-\\(.*\\)\\.jar$/\\1/g\''

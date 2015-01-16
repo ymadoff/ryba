@@ -19,7 +19,7 @@ transaction log directory. By default these two directories are the same.
 
 TODO: Add the backup facility
 
-    module.exports.push name: "ZooKeeper Server # Purge Transaction Logs", callback: (ctx, next) ->
+    module.exports.push name: "ZooKeeper Server # Purge Transaction Logs", handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
       now = Math.floor Date.now() / 1000
       ctx.execute [
@@ -46,7 +46,7 @@ Note, Automatic purging of the snapshots and corresponding transaction logs was
 introduced in version 3.4.0 and can be enabled via the following configuration
 parameters autopurge.snapRetainCount and autopurge.purgeInterval.
 
-    module.exports.push name: "ZooKeeper Server # Purge Transaction Logs", callback: (ctx, next) ->
+    module.exports.push name: "ZooKeeper Server # Purge Transaction Logs", handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
       ctx.execute
         cmd: """

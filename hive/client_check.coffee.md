@@ -11,7 +11,7 @@
 
 Use the [Beeline][beeline] JDBC client to execute SQL queries.
 
-    module.exports.push name: 'Hive & HCat Client # Check Server2', label_true: 'CHECKED', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Client # Check Server2', label_true: 'CHECKED', timeout: -1, handler: (ctx, next) ->
       {force_check, realm, user, hive} = ctx.config.ryba
       url = "jdbc:hive2://#{hive.hive_server2.host}:#{hive.hive_server2.port}/default;principal=hive/#{hive.hive_server2.host}@#{realm}"
       query = (query) -> "/usr/lib/hive/bin/beeline -u \"#{url}\" --silent=true -e \"#{query}\" "
@@ -38,7 +38,7 @@ Use the [Beeline][beeline] JDBC client to execute SQL queries.
 Use the [Hive CLI][hivecli] client to execute SQL queries using the MapReduce
 engine.
 
-    module.exports.push name: 'Hive & HCat Client # Check MapReduce', label_true: 'CHECKED', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Client # Check MapReduce', label_true: 'CHECKED', timeout: -1, handler: (ctx, next) ->
       {force_check, user, hive} = ctx.config.ryba
       ctx.waitIsOpen hive.metastore.host, hive.metastore.port, (err) ->
         host = ctx.config.shortname
@@ -63,7 +63,7 @@ engine.
 
 Use the [Hive CLI][hivecli] client to execute SQL queries using the Tez engine.
 
-    module.exports.push name: 'Hive & HCat Client # Check Tez', label_true: 'CHECKED', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Client # Check Tez', label_true: 'CHECKED', timeout: -1, handler: (ctx, next) ->
       {force_check, user, hive} = ctx.config.ryba
       ctx.waitIsOpen hive.metastore.host, hive.metastore.port, (err) ->
         host = ctx.config.shortname

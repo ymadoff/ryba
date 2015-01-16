@@ -55,7 +55,7 @@
 
 Declare the HDP repository.
 
-    module.exports.push name: 'Ryba # Repository', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Ryba # Repository', timeout: -1, handler: (ctx, next) ->
       {proxy, hdp_repo} = ctx.config.ryba
       # Is there a repo to download and install
       return next() unless hdp_repo

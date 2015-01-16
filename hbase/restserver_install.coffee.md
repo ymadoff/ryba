@@ -19,7 +19,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HHBase RestServer # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'HHBase RestServer # IPTables', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
       ctx.iptables
         rules: [
@@ -29,7 +29,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: ctx.config.iptables.action is 'start'
       , next
 
-    module.exports.push name: 'HBase RestServer # Service', callback: (ctx, next) ->
+    module.exports.push name: 'HBase RestServer # Service', handler: (ctx, next) ->
       ctx.service
         name: 'hbase-rest'
       , next

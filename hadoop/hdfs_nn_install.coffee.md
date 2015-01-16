@@ -37,7 +37,7 @@ define inside the "ryba/hadoop/hdfs" and "masson/core/nc" modules.
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HDFS NN # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS NN # IPTables', handler: (ctx, next) ->
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 50070, protocol: 'tcp', state: 'NEW', comment: "HDFS NN HTTP" }
@@ -53,7 +53,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 Install and configure the startup script in "/etc/init.d/hadoop-hdfs-namenode".
 
-    module.exports.push name: 'HDFS NN # Startup', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS NN # Startup', handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
       modified = false
       do_install = ->
@@ -89,7 +89,7 @@ Create the NameNode data and pid directories. The NameNode data is by defined in
 "/etc/hadoop/conf/hdfs-site.xml" file by the "dfs.namenode.name.dir" property. The pid
 file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
 
-    module.exports.push name: 'HDFS NN # Layout', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HDFS NN # Layout', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba
       ctx.mkdir [
         destination: hdfs.site['dfs.namenode.name.dir'].split ','
@@ -108,7 +108,7 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
 Create a service principal for this NameNode. The principal is named after
 "nn/#{ctx.config.host}@#{realm}".
 
-    module.exports.push name: 'HDFS NN # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS NN # Kerberos', handler: (ctx, next) ->
       {realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
@@ -126,7 +126,7 @@ Create a service principal for this NameNode. The principal is named after
 
 Environment passed to the NameNode before it starts.   
 
-    module.exports.push name: 'HDFS NN # Opts', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS NN # Opts', handler: (ctx, next) ->
       {hadoop_conf_dir, namenode_opts} = ctx.config.ryba
       return next() unless namenode_opts
       ctx.write
@@ -139,7 +139,7 @@ Environment passed to the NameNode before it starts.
 
 # Configure
 
-    module.exports.push name: 'HDFS NN # Configure', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS NN # Configure', handler: (ctx, next) ->
       {hdfs, hadoop_conf_dir, hadoop_group} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
@@ -156,7 +156,7 @@ Update "hdfs-site.xml" with HA configuration. The inserted properties are
 similar than the ones for a client or slave configuration with the addtionnal
 "dfs.namenode.shared.edits.dir" and "dfs.namenode.shared.edits.dir" properties.
 
-    module.exports.push name: 'HDFS NN # Configure HA', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS NN # Configure HA', handler: (ctx, next) ->
       {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
@@ -184,7 +184,7 @@ We also make sure SSH access is not blocked by a rule defined
 inside "/etc/security/access.conf". A specific rule for the HDFS user is
 inserted if ALL users or the HDFS user access is denied.
 
-    module.exports.push name: 'HDFS NN # SSH Fencing', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS NN # SSH Fencing', handler: (ctx, next) ->
       {hdfs, hadoop_conf_dir, ha_client_config, ssh_fencing, hadoop_group} = ctx.config.ryba
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       modified = false
@@ -273,7 +273,7 @@ this NameNode isn't yet formated by detecting if the "current/VERSION" exists. T
 is only exected once all the JournalNodes are started. The NameNode is finally restarted
 if the NameNode was formated.
 
-    module.exports.push name: 'HDFS NN # Format', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HDFS NN # Format', timeout: -1, handler: (ctx, next) ->
       {hdfs, active_nn, nameservice} = ctx.config.ryba
       any_dfs_name_dir = hdfs.site['dfs.namenode.name.dir'].split(',')[0]
       unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
@@ -301,7 +301,7 @@ Copy over the contents of the active NameNode metadata directories to an other,
 unformatted NameNode. The command "hdfs namenode -bootstrapStandby" used for the transfer
 is only executed on a non active NameNode.
 
-    module.exports.push name: 'HDFS NN # HA Init Standby', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HDFS NN # HA Init Standby', timeout: -1, handler: (ctx, next) ->
       # Shall only be executed on the leader namenode
       {active_nn, active_nn_host} = ctx.config.ryba
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
@@ -322,7 +322,7 @@ is only executed on a non active NameNode.
 
 Secure the Zookeeper connection with JAAS.
 
-    module.exports.push name: 'HDFS NN # Zookeeper JAAS', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HDFS NN # Zookeeper JAAS', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_conf_dir, hadoop_group, zkfc_password} = ctx.config.ryba
       modified = false
       do_core = ->
@@ -377,7 +377,7 @@ The action start by enabling automatic failover in "hdfs-site.xml" and configuri
 If this is an active NameNode, we format ZooKeeper and start the ZKFC daemon. If this is a standby
 NameNode, we wait for the active NameNode to take leadership and start the ZKFC daemon.
 
-    module.exports.push name: 'HDFS NN # HA Auto Failover', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HDFS NN # HA Auto Failover', timeout: -1, handler: (ctx, next) ->
       {hadoop_conf_dir, active_nn, active_nn_host} = ctx.config.ryba
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       zookeepers = ctx.hosts_with_module 'ryba/zookeeper/server'

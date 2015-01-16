@@ -12,7 +12,7 @@
 
 The package "ganglia-gmond-3.5.0-99" is installed.
 
-    module.exports.push name: 'Ganglia Monitor # Service', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Monitor # Service', timeout: -1, handler: (ctx, next) ->
       ctx.service
         name: 'ganglia-gmond-3.5.0-99'
       , next
@@ -22,7 +22,7 @@ The package "ganglia-gmond-3.5.0-99" is installed.
 We prepare the directory "/usr/libexec/hdp/ganglia" in which we later upload
 the objects files and generate the hosts configuration.
 
-    module.exports.push name: 'Ganglia Monitor # Layout', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Monitor # Layout', timeout: -1, handler: (ctx, next) ->
       ctx.mkdir
         destination: '/usr/libexec/hdp/ganglia'
       , next
@@ -32,7 +32,7 @@ the objects files and generate the hosts configuration.
 Copy the object files provided in the HDP companion files into the 
 "/usr/libexec/hdp/ganglia" folder. Permissions on those file are set to "0o744".
 
-    module.exports.push name: 'Ganglia Monitor # Objects', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Monitor # Objects', timeout: -1, handler: (ctx, next) ->
       glob "#{__dirname}/../resources/ganglia/objects/*.*", (err, files) ->
         files = for file in files then source: file, destination: "/usr/libexec/hdp/ganglia", mode: 0o744
         ctx.upload files, next
@@ -41,7 +41,7 @@ Copy the object files provided in the HDP companion files into the
 
 Upload the "hdp-gmond" service file into "/etc/init.d".
 
-    module.exports.push name: 'Ganglia Monitor # Init Script', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Monitor # Init Script', timeout: -1, handler: (ctx, next) ->
       ctx.write
         destination: '/etc/init.d/hdp-gmond'
         source: "#{__dirname}/../resources/ganglia/scripts/hdp-gmond"
@@ -63,7 +63,7 @@ There is a first bug in the HDP companion files preventing RRDtool (thus
 Ganglia) from starting. The variable "RRDCACHED_BASE_DIR" should point to 
 "/var/lib/ganglia/rrds".
 
-    module.exports.push name: 'Ganglia Monitor # Fix RRD', callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Monitor # Fix RRD', handler: (ctx, next) ->
       ctx.write
         destination: '/usr/libexec/hdp/ganglia/gangliaLib.sh'
         match: /^RRDCACHED_BASE_DIR=.*$/mg
@@ -76,7 +76,7 @@ Ganglia) from starting. The variable "RRDCACHED_BASE_DIR" should point to
 Setup the Ganglia hosts. Categories are "HDPNameNode", "HDPResourceManager", 
 "HDPSlaves" and "HDPHBaseMaster".
 
-    module.exports.push name: 'Ganglia Monitor # Host', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Monitor # Host', timeout: -1, handler: (ctx, next) ->
       cmds = []
       # On the NameNode and SecondaryNameNode servers, to configure the gmond emitters
       if ctx.has_any_modules 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_snn'
@@ -99,7 +99,7 @@ Setup the Ganglia hosts. Categories are "HDPNameNode", "HDPResourceManager",
 
 Update the files generated in the "host" action with the host of the Ganglia Collector.
 
-    module.exports.push name: 'Ganglia Monitor # Configuration', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Monitor # Configuration', timeout: -1, handler: (ctx, next) ->
       collector = ctx.host_with_module 'ryba/ganglia/collector'
       writes = []
       if ctx.has_any_modules 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_snn'
@@ -137,7 +137,7 @@ Update the files generated in the "host" action with the host of the Ganglia Col
 
 Upload the "hadoop-metrics2.properties" to connect Hadoop with Ganglia.
 
-    module.exports.push name: 'Ganglia Monitor # Hadoop', callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Monitor # Hadoop', handler: (ctx, next) ->
       collector = ctx.host_with_module 'ryba/ganglia/collector'
       ctx.write
         source: "#{__dirname}/../resources/core_hadoop/hadoop-metrics2.properties-GANGLIA"

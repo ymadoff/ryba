@@ -25,7 +25,7 @@
       xasecure.hdfs['XAAUDIT.DB.USER_NAME'] ?= xasecure.policymgr['audit_db_user']
       xasecure.hdfs['XAAUDIT.DB.PASSWORD'] ?= xasecure.policymgr['audit_db_password']
 
-    module.exports.push name: 'XASecure HDFS # Upload', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'XASecure HDFS # Upload', timeout: -1, handler: (ctx, next) ->
       {hdfs_url} = ctx.config.xasecure
       do_upload = ->
         ctx[if url.parse(hdfs_url).protocol is 'http:' then 'download' else 'upload']
@@ -44,7 +44,7 @@
           return next err, true
       do_upload()
 
-    module.exports.push name: 'XASecure HDFS # Configure', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'XASecure HDFS # Configure', timeout: -1, handler: (ctx, next) ->
       {hdfs_url} = ctx.config.xasecure
       do_configure = ->
         write = for k, v of hdfs
@@ -88,12 +88,12 @@
           next err, true
       do_configure()
 
-    module.exports.push name: 'XASecure HDFS # Fix', callback: (ctx, next) ->
+    module.exports.push name: 'XASecure HDFS # Fix', handler: (ctx, next) ->
       ctx.remove
         destination: '/usr/lib/hadoop/lib/jersey-bundle-1.17.1.jar'
       , next
     
-    module.exports.push name: 'XASecure HDFS # Register', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'XASecure HDFS # Register', timeout: -1, handler: (ctx, next) ->
       # POST http://front1.hadoop:6080/service/assets/assets
       body = 
         assetType: '1'

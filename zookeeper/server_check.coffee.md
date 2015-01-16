@@ -10,7 +10,7 @@
 
 Execute these commands on the ZooKeeper host machine(s).
 
-    module.exports.push name: 'ZooKeeper Server # Check Registration', label_true: 'CHECKED', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Check Registration', label_true: 'CHECKED', handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
       hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
       ctx.waitIsOpen hosts, zookeeper.port, (err) ->

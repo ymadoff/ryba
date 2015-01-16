@@ -7,11 +7,11 @@
     module.exports.push (ctx) ->
       require('./yarn').configure ctx
 
-    module.exports.push name: 'Hadoop NodeManager # Stop Server', label_true: 'STOPPED', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop NodeManager # Stop Server', label_true: 'STOPPED', handler: (ctx, next) ->
       lifecycle.nm_stop ctx, (err, stopped) ->
         next err, if stopped then ctx.OK else ctx.PASS
 
-    module.exports.push name: 'Hadoop NodeManager # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop NodeManager # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       {clean_logs, yarn} = ctx.config.ryba
       return next() unless clean_logs
       ctx.execute

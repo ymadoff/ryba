@@ -23,7 +23,7 @@ cat /etc/group | grep oozie
 oozie:x:493:
 ```
 
-    module.exports.push name: 'Oozie Server # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Users & Groups', handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
       ctx.group oozie.group, (err, gmodified) ->
         return next err if err
@@ -39,7 +39,7 @@ oozie:x:493:
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'Oozie Server # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # IPTables', handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
       port = url.parse(oozie.site['oozie.base.url']).port
       ctx.iptables
@@ -49,7 +49,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: ctx.config.iptables.action is 'start'
       , next
 
-    module.exports.push name: 'Oozie Server # Install', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Install', timeout: -1, handler: (ctx, next) ->
       # Upgrading oozie failed, tested versions are hdp 2.1.2 -> 2.1.5 -> 2.1.7
       ctx.execute
         cmd: "rm -rf /usr/lib/oozie && yum remove -y oozie oozie-client"
@@ -68,7 +68,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           ctx.config.ryba.force_war = true if serviced
           next err, serviced
 
-    module.exports.push name: 'Oozie Server # Directories', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Directories', handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
       ctx.mkdir [
         destination: oozie.data
@@ -108,7 +108,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         , (err, executed) ->
           next err, copied
 
-    module.exports.push name: 'Oozie Server # Environment', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Environment', handler: (ctx, next) ->
       {java_home} = ctx.config.java
       {oozie} = ctx.config.ryba
       ctx.write
@@ -149,7 +149,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         mode: 0o0755
       , next
 
-    module.exports.push name: 'Oozie Server # ExtJS', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # ExtJS', handler: (ctx, next) ->
       ctx.copy
         source: '/usr/share/HDP-oozie/ext-2.2.zip'
         destination: '/usr/lib/oozie/libext/'
@@ -157,7 +157,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ctx.config.ryba.force_war = true if copied
         return next err, copied
 
-    module.exports.push name: 'Oozie Server # LZO', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # LZO', handler: (ctx, next) ->
       ctx.execute
         cmd: 'ls /usr/lib/hadoop/lib/hadoop-lzo-*.jar'
       , (err, _, stdout) ->
@@ -173,7 +173,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           not_if_exists: "/usr/lib/oozie/libext/#{path.basename lzo_jar}"
         , next
 
-    module.exports.push name: 'Oozie Server # Mysql Driver', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Mysql Driver', handler: (ctx, next) ->
       ctx.link
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/lib/oozie/libext/mysql-connector-java.jar'
@@ -181,7 +181,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ctx.config.ryba.force_war = true if linked
         return next err, linked
 
-    module.exports.push name: 'Oozie Server # Configuration', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Configuration', handler: (ctx, next) ->
       { hadoop_conf_dir, yarn, oozie } = ctx.config.ryba
       modified = false
       do_oozie_site = ->
@@ -218,7 +218,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         next null, modified
       do_oozie_site()
 
-    module.exports.push name: 'Oozie Server # War', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # War', handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
       falcon_cts = ctx.contexts 'ryba/falcon', require('../falcon').configure
       do_falcon = ->
@@ -268,7 +268,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         , next
       do_falcon()
 
-    module.exports.push name: 'Oozie Server # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Kerberos', handler: (ctx, next) ->
       {oozie, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
@@ -282,7 +282,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         kadmin_server: admin_server
       , next
 
-    module.exports.push name: 'Oozie Server # SPNEGO', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # SPNEGO', handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
       ctx.copy
         source: '/etc/security/keytabs/spnego.service.keytab'
@@ -292,7 +292,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         mode: 0o0600
       , next
 
-    module.exports.push name: 'Oozie Server # MySQL', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # MySQL', handler: (ctx, next) ->
       {db_admin, oozie} = ctx.config.ryba
       username = oozie.site['oozie.service.JPAService.jdbc.username']
       password = oozie.site['oozie.service.JPAService.jdbc.password']
@@ -316,7 +316,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       return next new Error 'Database engine not supported' unless engines[engine]
       engines[engine]()
 
-    module.exports.push name: 'Oozie Server # Database', callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Database', handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
       ctx.execute
         cmd: """
@@ -326,7 +326,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         err = null if err and /DB schema exists/.test stderr
         next err, executed
 
-    module.exports.push name: 'Oozie Server # Share lib', timeout: 600000, callback: (ctx, next) ->
+    module.exports.push name: 'Oozie Server # Share lib', timeout: 600000, handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
       version_local = 'ls /usr/lib/oozie/lib | grep oozie-client | sed \'s/^oozie-client-\\(.*\\)\\.jar$/\\1/g\''
       version_remote = 'hdfs dfs -cat /user/oozie/share/lib/sharelib.properties | grep build.version | sed \'s/^build.version=\\(.*\\)$/\\1/g\''

@@ -6,7 +6,7 @@
     module.exports.push 'masson/bootstrap/'
     module.exports.push require('./index').configure
 
-    module.exports.push name: 'Hue # Start', label_true: 'STARTED', callback: (ctx, next) ->
+    module.exports.push name: 'Hue # Start', label_true: 'STARTED', handler: (ctx, next) ->
       lifecycle.hue_start ctx, next
 
 

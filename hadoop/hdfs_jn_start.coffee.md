@@ -11,5 +11,5 @@ to be started on the active NameNode before it check if it must be formated.
     module.exports.push 'masson/core/krb5_client/wait'
     module.exports.push require('./hdfs_jn').configure
 
-    module.exports.push name: 'HDFS JN # Start', label_true: 'STARTED', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HDFS JN # Start', label_true: 'STARTED', timeout: -1, handler: (ctx, next) ->
       lifecycle.jn_start ctx, next

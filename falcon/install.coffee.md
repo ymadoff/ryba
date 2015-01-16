@@ -20,7 +20,7 @@
 # IPTables rules are only inserted if the parameter "iptables.action" is set to 
 # "start" (default value).
 
-#     module.exports.push name: 'Hadoop HDFS DN # IPTables', callback: (ctx, next) ->
+#     module.exports.push name: 'Hadoop HDFS DN # IPTables', handler: (ctx, next) ->
 #       {hdfs} = ctx.config.ryba
 #       [_, dn_address] = hdfs.site['dfs.datanode.address'].split ':'
 #       [_, dn_http_address] = hdfs.site['dfs.datanode.http.address'].split ':'
@@ -47,7 +47,7 @@ cat /etc/group | grep falcon
 falcon:x:498:falcon
 ```
 
-    module.exports.push name: 'Falcon # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'Falcon # Users & Groups', handler: (ctx, next) ->
       {group, user} = ctx.config.ryba.falcon
       ctx.group group, (err, gmodified) ->
         return next err if err
@@ -56,14 +56,14 @@ falcon:x:498:falcon
 
 ## Packages
 
-    module.exports.push name: 'Falcon # Packages', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Falcon # Packages', timeout: -1, handler: (ctx, next) ->
       ctx.service
         name: 'falcon'
       , next
 
 ## Kerberos
 
-    module.exports.push name: 'Falcon # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'Falcon # Kerberos', handler: (ctx, next) ->
       {realm} = ctx.config.ryba
       {user, group, startup} = ctx.config.ryba.falcon
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
@@ -78,7 +78,7 @@ falcon:x:498:falcon
         kadmin_server: admin_server
       , next
 
-    # module.exports.push name: 'Falcon # Runtime', callback: (ctx, next) ->
+    # module.exports.push name: 'Falcon # Runtime', handler: (ctx, next) ->
     #   # {falcon_conf_dir, runtime} = ctx.config.ryba.falcon
     #   # ctx.ini
     #   #   destination: "#{falcon_conf_dir}/runtime.properties"
@@ -98,7 +98,7 @@ falcon:x:498:falcon
     #     eof: true
     #   , next
 
-    module.exports.push name: 'Falcon # HFDS Layout', callback: (ctx, next) ->
+    module.exports.push name: 'Falcon # HFDS Layout', handler: (ctx, next) ->
       {user, group} = ctx.config.ryba.falcon
       ctx.execute
         cmd: "hdfs dfs -stat '%g;%u;%n' /apps/falcon"
@@ -120,7 +120,7 @@ falcon:x:498:falcon
 
 hdfs dfs -mkdir /apps/falcon
 
-    module.exports.push name: 'Falcon # Startup', callback: (ctx, next) ->
+    module.exports.push name: 'Falcon # Startup', handler: (ctx, next) ->
       {falcon_conf_dir, startup} = ctx.config.ryba.falcon
       write = for k, v of startup
         match: RegExp "^#{quote k}=.*$", 'mg'

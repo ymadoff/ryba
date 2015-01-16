@@ -7,7 +7,7 @@
 
 ## Start Service
 
-    module.exports.push name: 'Falcon # Start Service', timeout: -1, label_true: 'STARTED', callback: (ctx, next) ->
+    module.exports.push name: 'Falcon # Start Service', timeout: -1, label_true: 'STARTED', handler: (ctx, next) ->
       {user} = ctx.config.ryba.falcon
       # su -l falcon -c '/usr/lib/falcon/bin/falcon-start'
       ctx.execute

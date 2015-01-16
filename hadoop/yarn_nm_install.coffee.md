@@ -20,7 +20,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'Hadoop YARN NM # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN NM # IPTables', handler: (ctx, next) ->
       {yarn} = ctx.config.ryba
       nm_port = yarn.site['yarn.nodemanager.address'].split(':')[1]
       nm_localizer_port = yarn.site['yarn.nodemanager.localizer.address'].split(':')[1]
@@ -41,7 +41,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install and configure the startup script in 
 "/etc/init.d/hadoop-yarn-nodemanager".
 
-    module.exports.push name: 'Hadoop YARN NM # Startup', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN NM # Startup', handler: (ctx, next) ->
       {yarn} = ctx.config.ryba
       modified = false
       do_install = ->
@@ -70,7 +70,7 @@ Install and configure the startup script in
         next null, modified
       do_install()
 
-    module.exports.push name: 'Hadoop YARN NM # Directories', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN NM # Directories', timeout: -1, handler: (ctx, next) ->
       {yarn, user, hadoop_group} = ctx.config.ryba
       # no need to restrict parent directory and yarn will complain if not accessible by everyone
       log_dirs = yarn.site['yarn.nodemanager.log-dirs'].split ','
@@ -93,7 +93,7 @@ Install and configure the startup script in
         ctx.execute cmds, (err) ->
           next err, created
 
-    module.exports.push name: 'Hadoop YARN NM # Container Executor', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN NM # Container Executor', handler: (ctx, next) ->
       {container_executor, hadoop_conf_dir} = ctx.config.ryba
       ce_group = container_executor['yarn.nodemanager.linux-container-executor.group']
       modified = false
@@ -127,7 +127,7 @@ Install and configure the startup script in
           next err, modified
       do_stat()
 
-    module.exports.push name: 'Hadoop YARN NM # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN NM # Kerberos', handler: (ctx, next) ->
       {yarn, hadoop_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
@@ -141,7 +141,7 @@ Install and configure the startup script in
         kadmin_server: admin_server
       , next
 
-    module.exports.push name: 'Hadoop YARN NM # Configure', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN NM # Configure', handler: (ctx, next) ->
       {yarn, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
@@ -164,7 +164,7 @@ drwxrwxrwt   - yarn   hdfs            0 2014-05-26 11:01 /app-logs
 
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
-    module.exports.push name: 'Hadoop YARN NM # HDFS layout', callback: (ctx, next) ->
+    module.exports.push name: 'Hadoop YARN NM # HDFS layout', handler: (ctx, next) ->
       {yarn, hadoop_group} = ctx.config.ryba
       remote_app_log_dir = yarn.site['yarn.nodemanager.remote-app-log-dir']
       ctx.execute

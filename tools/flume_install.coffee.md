@@ -20,7 +20,7 @@ flume:x:496:
 Note, the "flume" package rely on the "zookeeper" and "hadoop-hdfs" dependencies
 creating the "zookeeper" and "hdfs" users and the "hadoop" and "hdfs" group.
 
-    module.exports.push name: 'Flume # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'Flume # Users & Groups', handler: (ctx, next) ->
       {flume_group, flume_user} = ctx.config.ryba
       ctx.group flume_group, (err, gmodified) ->
         return next err if err
@@ -31,7 +31,7 @@ creating the "zookeeper" and "hdfs" users and the "hadoop" and "hdfs" group.
 
 The package "flume" is installed.
 
-    module.exports.push name: 'Flume # Install', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Flume # Install', timeout: -1, handler: (ctx, next) ->
       ctx.service name: 'flume', next
 
 ## Kerberos
@@ -41,7 +41,7 @@ later usage. It is placed inside the flume configuration directory, by default
 "/etc/flume/conf/flume.service.keytab" with restrictive permissions set to
 "0600".
 
-    module.exports.push name: 'Flume # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'Flume # Kerberos', handler: (ctx, next) ->
       {flume_user, flume_group, flume_conf_dir, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
@@ -61,7 +61,7 @@ later usage. It is placed inside the flume configuration directory, by default
 We didnt yet activated any check. There could be two types, one using a kerberos
 user and one using interpolation.
 
-    # module.exports.push name: 'Flume # Check', timeout: -1, callback: (ctx, next) ->
+    # module.exports.push name: 'Flume # Check', timeout: -1, handler: (ctx, next) ->
     #   ctx.write
     #     content: """
     #     # Name the components on this agent

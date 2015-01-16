@@ -10,12 +10,12 @@
 
 Execute these commands on all RegionServers.
 
-    module.exports.push name: 'HBase RegionServer # Stop Server', label_true: 'STOPPED', callback: (ctx, next) ->
+    module.exports.push name: 'HBase RegionServer # Stop Server', label_true: 'STOPPED', handler: (ctx, next) ->
       lifecycle.hbase_regionserver_stop ctx, next
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'HBase RegionServer # Stop Clean Logs', label_true: 'CLEANED', callback: (ctx, next) ->
+    module.exports.push name: 'HBase RegionServer # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute
         cmd: 'rm /var/log/hbase/*-regionserver-*'

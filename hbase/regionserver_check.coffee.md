@@ -7,7 +7,7 @@
 
 ## Check HTTP JMX
 
-    module.exports.push name: 'HBase RegionServer # Check HTTP JMX', label_true: 'CHECKED', callback: (ctx, next) ->
+    module.exports.push name: 'HBase RegionServer # Check HTTP JMX', label_true: 'CHECKED', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
       port = hbase.site['hbase.regionserver.info.port']
       url = "http://#{ctx.config.host}:#{port}/jmx?qry=Hadoop:service=HBase,name=RegionServer,sub=Server"
@@ -25,7 +25,7 @@ namespace is used by other modules as a testing environment.
 
 Namespace and permissions are implemented and illustrated in [HBASE-8409].
 
-    module.exports.push name: 'HBase RegionServer # Check Shell', timeout:-1, label_true: 'CHECKED', callback: (ctx, next) ->
+    module.exports.push name: 'HBase RegionServer # Check Shell', timeout:-1, label_true: 'CHECKED', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
       keytab = hbase.site['hbase.regionserver.keytab.file']
       principal = hbase.site['hbase.regionserver.kerberos.principal'].replace '_HOST', ctx.config.host

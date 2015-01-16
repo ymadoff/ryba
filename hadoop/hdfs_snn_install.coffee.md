@@ -19,7 +19,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HDFS SNN # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS SNN # IPTables', handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
       [_, http_port] = hdfs.site['dfs.namenode.secondary.http-address'].split ':'
       [_, https_port] = hdfs.site['dfs.namenode.secondary.https-address'].split ':'
@@ -31,7 +31,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: ctx.config.iptables.action is 'start'
       , next
 
-    module.exports.push name: 'HDFS SNN # Directories', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HDFS SNN # Directories', timeout: -1, handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
       ctx.service
         name: 'hadoop-hdfs-secondarynamenode'
@@ -46,7 +46,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         , (err, written) ->
           next err, serviced or written
 
-    module.exports.push name: 'HDFS SNN # Directories', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HDFS SNN # Directories', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba
       ctx.log "Create SNN data, checkpind and pid directories"
       ctx.mkdir [
@@ -61,7 +61,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         mode: 0o755
       ], next
 
-    module.exports.push name: 'HDFS SNN # Kerberos', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS SNN # Kerberos', handler: (ctx, next) ->
       {realm, hdfs} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
@@ -77,7 +77,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 # Configure
 
-    module.exports.push name: 'HDFS SNN # Configure', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS SNN # Configure', handler: (ctx, next) ->
       {hdfs, hadoop_conf_dir, hadoop_group} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"

@@ -20,7 +20,7 @@ DataNodes.
 
 ## Check Disk Capacity
 
-    module.exports.push name: 'HDFS DN # Check Disk Capacity', timeout: -1, label_true: 'CHECKED', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Check Disk Capacity', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       port = hdfs.site["dfs.datanode.#{protocol}.address"].split(':')[1]
@@ -45,7 +45,7 @@ DataNodes.
 Attemp to place a file inside HDFS. the file "/etc/passwd" will be placed at 
 "/user/{test\_user}/#{ctx.config.host}\_dn".
 
-    module.exports.push name: 'HDFS DN # Check HDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Check HDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
       {user} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.test ctx, """
@@ -61,7 +61,7 @@ Attemp to place a file inside HDFS. the file "/etc/passwd" will be placed at
 Check for various inconsistencies on the overall filesystem. Use the command
 `hdfs fsck -list-corruptfileblocks` to list the corrupted blocks.
 
-    module.exports.push name: 'HDFS DN # Check FSCK', label_true: 'CHECKED', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Check FSCK', label_true: 'CHECKED', timeout: -1, handler: (ctx, next) ->
       ctx.execute
         cmd: mkcmd.hdfs ctx, "hdfs fsck / | tail -1 | grep HEALTHY"
       , next
@@ -75,7 +75,7 @@ is not present on HDFS.
 Read [Delegation Tokens in Hadoop Security](http://www.kodkast.com/blogs/hadoop/delegation-tokens-in-hadoop-security) 
 for more information.
 
-    module.exports.push name: 'HDFS DN # Check WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Check WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
       {hdfs, nameservice, user, force_check, active_nn_host} = ctx.config.ryba
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1

@@ -9,7 +9,7 @@
 
 Check if Hive can authenticate and run a basic query to the database.
 
-    module.exports.push name: 'Hive & HCat Server # Check Database', label_true: 'CHECKED', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Check Database', label_true: 'CHECKED', handler: (ctx, next) ->
       {hive, db_admin} = ctx.config.ryba
       username = hive.site['javax.jdo.option.ConnectionUserName']
       password = hive.site['javax.jdo.option.ConnectionPassword']
@@ -30,7 +30,7 @@ Check if Hive can authenticate and run a basic query to the database.
 
 Check if the Hive HCatalog (Metastore) server is listening.
 
-    module.exports.push name: 'Hive & HCat Server # Check Port HCatalog', label_true: 'CHECKED', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Check Port HCatalog', label_true: 'CHECKED', handler: (ctx, next) ->
       {host} = ctx.config
       {metastore} = ctx.config.ryba.hive
       ctx.execute
@@ -41,14 +41,14 @@ Check if the Hive HCatalog (Metastore) server is listening.
 
 Check if the Hive Server2 server is listening.
 
-    module.exports.push name: 'Hive & HCat Server # Check Port Server2', label_true: 'CHECKED', callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Check Port Server2', label_true: 'CHECKED', handler: (ctx, next) ->
       {host} = ctx.config
       {hive_server2} = ctx.config.ryba.hive
       ctx.execute
         cmd: "echo > /dev/tcp/#{host}/#{hive_server2.port}"
       , next
 
-    module.exports.push name: 'Hive & HCat Server # Check', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Hive & HCat Server # Check', timeout: -1, handler: (ctx, next) ->
       # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.3.0/CDH4-Security-Guide/cdh4sg_topic_9_1.html
       # !connect jdbc:hive2://big3.big:10001/default;principal=hive/big3.big@ADALTAS.COM 
       next null, 'TODO'

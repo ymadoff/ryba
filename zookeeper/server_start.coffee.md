@@ -11,6 +11,6 @@
 
 Execute these commands on the ZooKeeper host machine(s).
 
-    module.exports.push name: 'ZooKeeper Server # Start', label_true: 'STARTED', callback: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Start', label_true: 'STARTED', handler: (ctx, next) ->
       lifecycle.zookeeper_start ctx, next
 

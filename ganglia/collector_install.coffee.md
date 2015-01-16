@@ -43,7 +43,7 @@ cat /etc/group | grep rrdcached
 rrdcached:x:493:
 ```
 
-    module.exports.push name: 'Ganglia Collector # Users & Groups', callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Collector # Users & Groups', handler: (ctx, next) ->
       {rrdcached_group, rrdcached_user} = ctx.config.ryba.ganglia
       ctx.group rrdcached_group, (err, gmodified) ->
         return next err if err
@@ -64,7 +64,7 @@ rrdcached:x:493:
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'Ganglia Collector # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Collector # IPTables', handler: (ctx, next) ->
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 8649, protocol: 'tcp', state: 'NEW', comment: "Ganglia Collector Server" }
@@ -81,7 +81,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 The packages "ganglia-gmetad-3.5.0-99" and "ganglia-web-3.5.7-99" are installed.
 
-    module.exports.push name: 'Ganglia Collector # Service', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Collector # Service', timeout: -1, handler: (ctx, next) ->
       ctx.service [
         name: 'ganglia-gmetad-3.5.0-99'
         srv_name: 'gmetad'
@@ -96,7 +96,7 @@ The packages "ganglia-gmetad-3.5.0-99" and "ganglia-web-3.5.7-99" are installed.
 We prepare the directory "/usr/libexec/hdp/ganglia" in which we later upload
 the objects files and generate the hosts configuration.
 
-    module.exports.push name: 'Ganglia Collector # Layout', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Collector # Layout', timeout: -1, handler: (ctx, next) ->
       ctx.mkdir
         destination: '/usr/libexec/hdp/ganglia'
       , next
@@ -106,7 +106,7 @@ the objects files and generate the hosts configuration.
 Copy the object files provided in the HDP companion files into the 
 "/usr/libexec/hdp/ganglia" folder. Permissions on those file are set to "0o744".
 
-    module.exports.push name: 'Ganglia Collector # Objects', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Collector # Objects', timeout: -1, handler: (ctx, next) ->
       glob "#{__dirname}/../resources/ganglia/objects/*.*", (err, files) ->
         files = for file in files then source: file, destination: "/usr/libexec/hdp/ganglia", mode: 0o744
         ctx.upload files, next
@@ -115,7 +115,7 @@ Copy the object files provided in the HDP companion files into the
 
 Upload the "hdp-gmetad" service file into "/etc/init.d".
 
-    module.exports.push name: 'Ganglia Collector # Init Script', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Collector # Init Script', timeout: -1, handler: (ctx, next) ->
       ctx.write
         destination: '/etc/init.d/hdp-gmetad'
         source: "#{__dirname}/../resources/ganglia/scripts/hdp-gmetad"
@@ -138,7 +138,7 @@ Upload the "hdp-gmetad" service file into "/etc/init.d".
 # Ganglia) from starting. The variable "RRDCACHED_BASE_DIR" should point to 
 # "/var/lib/ganglia/rrds".
 
-#     module.exports.push name: 'Ganglia Collector # Fix RRD', callback: (ctx, next) ->
+#     module.exports.push name: 'Ganglia Collector # Fix RRD', handler: (ctx, next) ->
 #       ctx.write
 #         destination: '/usr/libexec/hdp/ganglia/gangliaLib.sh'
 #         match: /^RRDCACHED_BASE_DIR=.*$/mg
@@ -152,7 +152,7 @@ Upload the "hdp-gmetad" service file into "/etc/init.d".
 # appeared on one cluster. Another cluster installed at the same time seems
 # correct.
 
-#     module.exports.push name: 'Ganglia Collector # Fix permission', callback: (ctx, next) ->
+#     module.exports.push name: 'Ganglia Collector # Fix permission', handler: (ctx, next) ->
 #       ctx.execute
 #         cmd: 'chown -R nobody:root /var/lib/ganglia/rrds'
 #       , (err, written) ->
@@ -163,7 +163,7 @@ Upload the "hdp-gmetad" service file into "/etc/init.d".
 RRDtool is by default runing as "nobody". In order to work, nobody need a login shell
 in its user account definition.
 
-    module.exports.push name: 'Ganglia Collector # Fix User', callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Collector # Fix User', handler: (ctx, next) ->
       ctx.execute
         cmd: 'usermod -s /bin/bash nobody'
       , (err, executed, stdout, stderr) ->
@@ -174,7 +174,7 @@ in its user account definition.
 The cluster generation follow Hortonworks guideline and generate the clusters 
 "HDPHistoryServer", "HDPNameNode", "HDPResourceManager", "HDPSlaves" and "HDPHBaseMaster".
 
-    module.exports.push name: 'Ganglia Collector # Clusters', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Collector # Clusters', timeout: -1, handler: (ctx, next) ->
       cmds = []
       # On the Ganglia server, to configure the gmond collector
       cmds.push 
@@ -202,7 +202,7 @@ The cluster generation follow Hortonworks guideline and generate the clusters
 In order to work properly, each cluster must be updated with the "bind" property 
 pointing to the Ganglia master hostname.
 
-    module.exports.push name: 'Ganglia Collector # Configuration', callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Collector # Configuration', handler: (ctx, next) ->
       ctx.write [
         destination: "/etc/ganglia/hdp/HDPNameNode/conf.d/gmond.master.conf"
         match: /^(.*)bind = (.*)$/mg
@@ -231,7 +231,7 @@ pointing to the Ganglia master hostname.
 
 ## HTTPD Restart
 
-    module.exports.push name: 'Ganglia Collector # HTTPD Restart', callback: (ctx, next) ->
+    module.exports.push name: 'Ganglia Collector # HTTPD Restart', handler: (ctx, next) ->
       ctx.service
         srv_name: 'httpd'
         action: ['start', 'restart']

@@ -35,7 +35,7 @@ mode, it must be set to a value below "1024" and default to "1004".
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'HDFS DN # IPTables', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # IPTables', handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
       [_, dn_address] = hdfs.site['dfs.datanode.address'].split ':'
       [_, dn_http_address] = hdfs.site['dfs.datanode.http.address'].split ':'
@@ -56,7 +56,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install and configure the startup script in 
 "/etc/init.d/hadoop-yarn-nodemanager".
 
-    module.exports.push name: 'HDFS DN # Startup', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Startup', handler: (ctx, next) ->
       {hdfs, core_site} = ctx.config.ryba
       modified = false
       do_install = ->
@@ -92,7 +92,7 @@ Install and configure the startup script in
 Update the "hdfs.site.xml" configuration file with the High Availabity properties
 present inside the "hdp.ha\_client\_config" object.
 
-    module.exports.push name: 'HDFS DN # HA', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # HA', handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
       ctx.hconfigure
@@ -108,7 +108,7 @@ Create the DataNode data and pid directories. The data directory is set by the
 "hdp.hdfs.site['dfs.datanode.data.dir']" and default to "/var/hdfs/data". The 
 pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdfs"
 
-    module.exports.push name: 'HDFS DN # Layout', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Layout', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba
       # no need to restrict parent directory and yarn will complain if not accessible by everyone
       ctx.mkdir [
@@ -129,7 +129,7 @@ Create the DataNode service principal in the form of "dn/{host}@{realm}" and pla
 keytab inside "/etc/security/keytabs/dn.service.keytab" with ownerships set to "hdfs:hadoop"
 and permissions set to "0600".
 
-    module.exports.push name: 'HDFS DN # Kerberos', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Kerberos', timeout: -1, handler: (ctx, next) ->
       {hdfs, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
@@ -148,7 +148,7 @@ and permissions set to "0600".
 
 Environment passed to the DataNode before it starts.   
 
-    module.exports.push name: 'HDFS NN # Opts', callback: (ctx, next) ->
+    module.exports.push name: 'HDFS NN # Opts', handler: (ctx, next) ->
       {hadoop_conf_dir, datanode_opts} = ctx.config.ryba
       return next() unless datanode_opts
       ctx.write
@@ -170,6 +170,7 @@ Environment passed to the DataNode before it starts.
 Load the module "ryba/hadoop/hdfs\_dn\_start" to start the DataNode.
 
     module.exports.push 'ryba/hadoop/hdfs_dn_start'
+    module.exports.push 'ryba/hadoop/hdfs_dn_wait'
 
 ## HDFS layout
 
@@ -185,7 +186,7 @@ drwxr-xr-x   - hdfs   hadoop      /user
 drwxr-xr-x   - hdfs   hadoop      /user/hdfs
 ```
 
-    module.exports.push name: 'HDFS DN # HDFS layout', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # HDFS layout', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba
       modified = false
       do_wait = ->
@@ -252,7 +253,7 @@ Create a Unix and Kerberos test user, by default "test" and execute simple HDFS 
 the NameNode is properly working. Note, those commands are NameNode specific, meaning they only
 afect HDFS metadata.
 
-    module.exports.push name: 'HDFS DN # HDFS Layout User Test', timeout: -1, callback: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # HDFS Layout User Test', timeout: -1, handler: (ctx, next) ->
       {user,group} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.hdfs ctx, """
