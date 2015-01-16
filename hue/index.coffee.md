@@ -161,8 +161,8 @@ Example:
       # Desktop
       hue.ini['desktop'] ?= {}
       hue.ini['desktop']['http'] ?= {}
-      hue.ini['desktop']['http']['host'] ?= '0.0.0.0'
-      hue.ini['desktop']['http']['port'] ?= '8888'
+      hue.ini['desktop']['http_host'] ?= '0.0.0.0'
+      hue.ini['desktop']['http_port'] ?= '8888'
       hue.ini['desktop']['secret_key'] ?= 'jFE93j;2[290-eiwMYSECRTEKEYy#e=+Iei*@Mn<qW5o'
       hue.ini['desktop']['smtp'] ?= {}
       ctx.log "WARING: property 'hdp.hue.ini.desktop.smtp.host' isnt set" unless hue.ini['desktop']['smtp']['host']
