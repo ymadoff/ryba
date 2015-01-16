@@ -53,7 +53,11 @@ Example:
 
     module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_jn_check'
 
-    module.exports.push commands: 'install', modules: 'ryba/hadoop/hdfs_jn_install'
+    module.exports.push commands: 'install', modules: [
+      'ryba/hadoop/hdfs_jn_install'
+      'ryba/hadoop/hdfs_jn_start'
+      'ryba/hadoop/hdfs_jn_check'
+    ]
 
     module.exports.push commands: 'start', modules: 'ryba/hadoop/hdfs_jn_start'
 
