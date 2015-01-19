@@ -1,13 +1,14 @@
 
 # WebHCat Status
 
-    lifecycle = require '../lib/lifecycle'
-
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push require('./webhcat').configure
 
-    module.exports.push (ctx) ->
-      require('./webhcat').configure ctx
+## Status
+
+Check if the RegionServer is running. The process ID is located by default
+inside "/var/run/webhcat/webhcat.pid".
 
     module.exports.push name: 'WebHCat # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
       ctx.execute
