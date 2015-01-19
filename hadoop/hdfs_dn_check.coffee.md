@@ -63,7 +63,7 @@ Check for various inconsistencies on the overall filesystem. Use the command
 
     module.exports.push name: 'HDFS DN # Check FSCK', label_true: 'CHECKED', timeout: -1, handler: (ctx, next) ->
       ctx.execute
-        cmd: mkcmd.hdfs ctx, "hdfs fsck / | tail -1 | grep HEALTHY"
+        cmd: mkcmd.hdfs ctx, "exec 5>&1; hdfs fsck / | tee /dev/fd/5 | tail -1 | grep HEALTHY 1>/dev/null"
       , next
 
 ## Check WebHDFS
