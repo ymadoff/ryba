@@ -3,9 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-
-    module.exports.push (ctx) ->
-      require('./master').configure ctx
+    module.exports.push require('./master').configure
 
 # ## Shell
 

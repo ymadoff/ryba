@@ -14,8 +14,8 @@ Stop the WebHCat server. You can also stop the server manually with one of the
 following two commands:
 
 ```
-su -l hive -c "/usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop"
 service hive-webhcat-server stop
+su -l hive -c "/usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop"
 ```
 
     module.exports.push name: 'WebHCat # Stop', label_true: 'STOPPED', handler: (ctx, next) ->

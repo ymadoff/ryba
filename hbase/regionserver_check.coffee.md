@@ -1,5 +1,5 @@
 
-# HBase RegionServer
+# HBase RegionServer Check
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'

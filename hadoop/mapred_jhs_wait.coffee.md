@@ -5,7 +5,7 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./mapred_jhs').configure
 
-    module.exports.push name: 'Hadoop MapRed JHS # Wait', label_true: 'READY', handler: (ctx, next) ->
+    module.exports.push name: 'MapRed JHS # Wait', label_true: 'READY', handler: (ctx, next) ->
       jhs_ctxs = ctx.contexts 'ryba/hadoop/mapred_jhs', require('./mapred_jhs').configure
       if jhs_ctxs.length is 0 then return next() else jhs_ctx = jhs_ctxs[0]
       [_, port] = jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.address'].split ':'
