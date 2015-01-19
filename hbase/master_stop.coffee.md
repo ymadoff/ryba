@@ -1,17 +1,26 @@
 
 # HBase Master Stop
 
-    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push require('./_').configure
+    module.exports.push require('./master').configure
 
-## Stop Server
+# Stop
 
-Execute these commands on the HBase Master host machine.
+Stop the RegionServer server. You can also stop the server manually with one of
+the following two commands:
 
-    module.exports.push name: 'HBase Master # Stop Server', label_true: 'STOPPED', handler: (ctx, next) ->
-      lifecycle.hbase_master_stop ctx, next
+```
+service hbase-master stop
+su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop regionserver"
+```
+
+    module.exports.push name: 'HBase RegionServer # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
+      ctx.service
+        srv_name: 'hbase-master'
+        action: 'stop'
+        if_exists: '/etc/init.d/hbase-master'
+      , next
 
 ## Stop Clean Logs
 

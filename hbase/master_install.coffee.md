@@ -8,7 +8,6 @@ TODO: [HBase backup node](http://willddy.github.io/2013/07/02/HBase-Add-Backup-M
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push 'ryba/hbase/_'
-
     module.exports.push require('./master').configure
 
 ## IPTables
@@ -185,7 +184,6 @@ Enable stats collection in Ganglia.
 
     each = require 'each'
     path = require 'path'
-    lifecycle = require '../lib/lifecycle'
     mkcmd = require '../lib/mkcmd'
 
 [HBASE-8409]: https://issues.apache.org/jira/browse/HBASE-8409

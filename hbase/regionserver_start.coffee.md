@@ -1,14 +1,24 @@
 
-# HBase Start
+# HBase RegionServer Start
 
-    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push require('./_').configure
+    module.exports.push require('./regionserver').configure
 
-## Start HBase Region Server
+## Start
 
-Execute these commands on all RegionServers.
+Start the RegionServer server. You can also start the server manually with one of the
+following two commands:
+
+```
+service hbase-regionserver start
+su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start regionserver"
+```
 
     module.exports.push name: 'HBase RegionServer # Start', label_true: 'STARTED', handler: (ctx, next) ->
-      lifecycle.hbase_regionserver_start ctx, next
+      ctx.service
+        srv_name: 'hbase-regionserver'
+        action: 'start'
+        if_exists: '/etc/init.d/hbase-regionserver'
+      , next
+

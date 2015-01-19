@@ -19,6 +19,6 @@
 
     module.exports.push commands: 'start', modules: 'ryba/hbase/regionserver_start'
 
-    # module.exports.push commands: 'status', modules: 'ryba/hbase/regionserver_status'
+    module.exports.push commands: 'status', modules: 'ryba/hbase/regionserver_status'
 
     module.exports.push commands: 'stop', modules: 'ryba/hbase/regionserver_stop'

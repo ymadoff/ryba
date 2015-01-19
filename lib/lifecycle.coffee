@@ -307,62 +307,62 @@ lifecyle = module.exports =
   #       # su -l oozie -c "/usr/lib/oozie/bin/oozied.sh stop"
   #       cmd: "su -l #{oozie.user.name} -c \"/usr/lib/oozie/bin/oozied.sh stop\""
   #     , callback
-  hbase_master_status: (ctx, callback) ->
-    ctx.log "HBase Master status"
-    ctx.execute
-      cmd: "service hbase-master status"
-      code_skipped: [1, 3]
-    , callback
-  hbase_master_start: (ctx, callback) ->
-    {hbase} = ctx.config.ryba
-    lifecyle.hbase_master_status ctx, (err, running) ->
-      return callback err, false if err or running
-      ctx.log "HBase Master start"
-      ctx.execute
-        # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start master"
-        # cmd: "su -l #{hbase.user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase.conf_dir} start master\""
-        cmd: "service hbase-master start"
-      , callback
-  hbase_master_stop: (ctx, callback) ->
-    {hbase} = ctx.config.ryba
-    lifecyle.hbase_master_status ctx, (err, running) ->
-      return callback err, false if err or not running
-      ctx.log "HBase Master stop"
-      ctx.execute
-        # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop master"
-        # cmd: "su -l #{hbase.user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase.conf_dir} stop master\""
-        cmd: "service hbase-master stop"
-      , callback
-  hbase_regionserver_status: (ctx, callback) ->
-    # {hbase} = ctx.config.ryba
-    ctx.log "HBase RegionServer status"
-    # lifecyle.is_pidfile_running ctx, "#{hbase_pid_dir}/hbase-#{hbase_user.name}-regionserver.pid", (err, running) ->
-    #   ctx.log "HBase RegionServer status: #{if running then 'RUNNING' else 'STOPPED'}"
-    #   callback err, running
-    ctx.execute
-      cmd: "service hbase-regionserver status"
-      code_skipped: [1, 3]
-    , callback
-  hbase_regionserver_start: (ctx, callback) ->
-    {hbase} = ctx.config.ryba
-    lifecyle.hbase_regionserver_status ctx, (err, running) ->
-      return callback err, false if err or running
-      ctx.log "HBase RegionServer start"
-      ctx.execute
-        # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start regionserver"
-        # cmd: "su -l #{hbase_user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} start regionserver\""
-        cmd: 'service hbase-regionserver start'
-      , callback
-  hbase_regionserver_stop: (ctx, callback) ->
-    {hbase} = ctx.config.ryba
-    lifecyle.hbase_regionserver_status ctx, (err, running) ->
-      return callback err, false if err or not running
-      ctx.log "HBase RegionServer stop"
-      ctx.execute
-        # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop regionserver"
-        # cmd: "su -l #{hbase_user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} stop regionserver\""
-        cmd: 'service hbase-regionserver stop'
-      , callback
+  # hbase_master_status: (ctx, callback) ->
+  #   ctx.log "HBase Master status"
+  #   ctx.execute
+  #     cmd: "service hbase-master status"
+  #     code_skipped: [1, 3]
+  #   , callback
+  # hbase_master_start: (ctx, callback) ->
+  #   {hbase} = ctx.config.ryba
+  #   lifecyle.hbase_master_status ctx, (err, running) ->
+  #     return callback err, false if err or running
+  #     ctx.log "HBase Master start"
+  #     ctx.execute
+  #       # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start master"
+  #       # cmd: "su -l #{hbase.user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase.conf_dir} start master\""
+  #       cmd: "service hbase-master start"
+  #     , callback
+  # hbase_master_stop: (ctx, callback) ->
+  #   {hbase} = ctx.config.ryba
+  #   lifecyle.hbase_master_status ctx, (err, running) ->
+  #     return callback err, false if err or not running
+  #     ctx.log "HBase Master stop"
+  #     ctx.execute
+  #       # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop master"
+  #       # cmd: "su -l #{hbase.user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase.conf_dir} stop master\""
+  #       cmd: "service hbase-master stop"
+  #     , callback
+  # hbase_regionserver_status: (ctx, callback) ->
+  #   # {hbase} = ctx.config.ryba
+  #   ctx.log "HBase RegionServer status"
+  #   # lifecyle.is_pidfile_running ctx, "#{hbase_pid_dir}/hbase-#{hbase_user.name}-regionserver.pid", (err, running) ->
+  #   #   ctx.log "HBase RegionServer status: #{if running then 'RUNNING' else 'STOPPED'}"
+  #   #   callback err, running
+  #   ctx.execute
+  #     cmd: "service hbase-regionserver status"
+  #     code_skipped: [1, 3]
+  #   , callback
+  # hbase_regionserver_start: (ctx, callback) ->
+  #   {hbase} = ctx.config.ryba
+  #   lifecyle.hbase_regionserver_status ctx, (err, running) ->
+  #     return callback err, false if err or running
+  #     ctx.log "HBase RegionServer start"
+  #     ctx.execute
+  #       # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start regionserver"
+  #       # cmd: "su -l #{hbase_user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} start regionserver\""
+  #       cmd: 'service hbase-regionserver start'
+  #     , callback
+  # hbase_regionserver_stop: (ctx, callback) ->
+  #   {hbase} = ctx.config.ryba
+  #   lifecyle.hbase_regionserver_status ctx, (err, running) ->
+  #     return callback err, false if err or not running
+  #     ctx.log "HBase RegionServer stop"
+  #     ctx.execute
+  #       # su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop regionserver"
+  #       # cmd: "su -l #{hbase_user.name} -c \"/usr/lib/hbase/bin/hbase-daemon.sh --config #{hbase_conf_dir} stop regionserver\""
+  #       cmd: 'service hbase-regionserver stop'
+  #     , callback
   # webhcat_status: (ctx, callback) ->
   #   {webhcat.pid_dir} = ctx.config.ryba
   #   # lifecyle.is_pidfile_running ctx, "#{webhcat.pid_dir}/webhcat.pid", (err, running) ->
