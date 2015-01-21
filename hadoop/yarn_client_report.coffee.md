@@ -12,8 +12,12 @@
       {hadoop_conf_dir} = ctx.config.ryba
       properties.read ctx.ssh, "#{hadoop_conf_dir}/yarn-site.xml", (err, config) ->
         return next err if err
-        ctx.report 'yarn.app.mapreduce.am.resource.mb', config['yarn.app.mapreduce.am.resource.mb']
-        ctx.report 'yarn.app.mapreduce.am.command-opts', config['yarn.app.mapreduce.am.command-opts']
+        ctx.emit 'report',
+          key: 'yarn.app.mapreduce.am.resource.mb'
+          value: config['yarn.app.mapreduce.am.resource.mb']
+        ctx.emit 'report',
+          key: 'yarn.app.mapreduce.am.command-opts'
+          value: config['yarn.app.mapreduce.am.command-opts']
         next null, true
 
 ## Module Dependencies

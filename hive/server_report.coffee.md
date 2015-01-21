@@ -21,7 +21,7 @@ List the current FS root locations for the Hive databases.
         count = 0
         for line in string.lines stdout
           continue unless /^hdfs:\/\//.test line
-          ctx.report "FS Root #{++count}", line
+          ctx.emit 'report', key: "FS Root #{++count}", value: line
         next null, true
 
 ## Module Dependencies

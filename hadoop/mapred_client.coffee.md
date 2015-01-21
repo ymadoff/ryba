@@ -38,7 +38,7 @@
 
     module.exports.push commands: 'check', modules: 'ryba/hadoop/mapred_client_check'
 
-    module.exports.push commands: 'info', modules: 'ryba/hadoop/mapred_client_info'
+    module.exports.push commands: 'report', modules: 'ryba/hadoop/mapred_client_report'
 
     module.exports.push commands: 'install', modules: [
       'ryba/hadoop/mapred_client_install'

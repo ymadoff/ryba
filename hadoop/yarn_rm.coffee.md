@@ -69,7 +69,7 @@ the root znode where the ResourceManager state is stored is inside "/rmstore".
 
     module.exports.push commands: 'check', modules: 'ryba/hadoop/yarn_rm_check'
 
-    module.exports.push commands: 'info', modules: 'ryba/hadoop/yarn_rm_info'
+    module.exports.push commands: 'report', modules: 'ryba/hadoop/yarn_rm_report'
 
     module.exports.push commands: 'install', modules: [
       'ryba/hadoop/yarn_rm_install'

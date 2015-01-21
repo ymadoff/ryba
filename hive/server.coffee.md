@@ -71,7 +71,7 @@ Example:
 
     module.exports.push commands: 'check', modules: 'ryba/hive/server_check'
 
-    module.exports.push commands: 'info', modules: 'ryba/hive/server_info'
+    module.exports.push commands: 'report', modules: 'ryba/hive/server_report'
 
     module.exports.push commands: 'install', modules: [
       'ryba/hive/server_install'

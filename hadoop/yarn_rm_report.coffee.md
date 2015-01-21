@@ -12,8 +12,12 @@
       {hadoop_conf_dir} = ctx.config.ryba
       properties.read ctx.ssh, "#{hadoop_conf_dir}/yarn-site.xml", (err, config) ->
         return next err if err
-        ctx.report 'yarn.scheduler.minimum-allocation-mb', config['yarn.scheduler.minimum-allocation-mb']
-        ctx.report 'yarn.scheduler.maximum-allocation-mb', config['yarn.scheduler.maximum-allocation-mb']
+        ctx.emit 'report',
+          key: 'yarn.scheduler.minimum-allocation-mb'
+          value: config['yarn.scheduler.minimum-allocation-mb']
+        ctx.emit 'report',
+          key: 'yarn.scheduler.maximum-allocation-mb'
+          value: config['yarn.scheduler.maximum-allocation-mb']
         next null, true
 
 ## Module Dependencies
