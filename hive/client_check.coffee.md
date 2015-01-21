@@ -11,6 +11,8 @@
 
 Use the [Beeline][beeline] JDBC client to execute SQL queries.
 
+alias hive2='/usr/bin/beeline -d "org.apache.hive.jdbc.HiveDriver" -u "jdbc:hive2://{fqdn}:10001/;principal={hive}/fqdn@{realm}"
+
     module.exports.push name: 'Hive & HCat Client # Check Server2', label_true: 'CHECKED', timeout: -1, handler: (ctx, next) ->
       {force_check, realm, user, hive} = ctx.config.ryba
       url = "jdbc:hive2://#{hive.hive_server2.host}:#{hive.hive_server2.port}/default;principal=hive/#{hive.hive_server2.host}@#{realm}"
