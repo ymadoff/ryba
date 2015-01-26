@@ -16,8 +16,9 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         return next err if err
         ctx.emit 'report', 
           key: 'mapreduce.map.memory.mb'
-          value: config['mapreduce.map.memory.mb']
-          default: 1536
+          value: prink.filesize.from.megabytes config['mapreduce.map.memory.mb']
+          raw: config['mapreduce.map.memory.mb']
+          default: '1536'
           description: 'Larger resource limit for maps.'
         ctx.emit 'report',
           key: 'mapreduce.map.java.opts'
@@ -26,8 +27,9 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
           description: 'Larger heap-size for child jvms of maps.'
         ctx.emit 'report',
           key: 'mapreduce.reduce.memory.mb'
-          value: config['mapreduce.reduce.memory.mb']
-          default: 3072
+          value: prink.filesize.from.megabytes config['mapreduce.reduce.memory.mb']
+          raw: config['mapreduce.reduce.memory.mb']
+          default: '3072'
           description: 'Larger resource limit for reduces.'
         ctx.emit 'report',
           key: 'mapreduce.reduce.java.opts'
@@ -36,25 +38,26 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
           description: 'Larger heap-size for child jvms of reduces.'
         ctx.emit 'report',
           key: 'mapreduce.task.io.sort.mb'
-          value: config['mapreduce.task.io.sort.mb']
-          default: 512
+          value: prink.filesize.from.megabytes config['mapreduce.task.io.sort.mb']
+          raw: config['mapreduce.task.io.sort.mb']
+          default: '512'
           description: 'Higher memory-limit while sorting data for efficiency.'
         ctx.emit 'report',
           key: 'mapreduce.task.io.sort.factor'
           value: config['mapreduce.task.io.sort.factor']
-          default: 100
+          default: '100'
           description: 'More streams merged at once while sorting files.'
         ctx.emit 'report',
           key: 'mapreduce.reduce.shuffle.parallelcopies'
           value: config['mapreduce.reduce.shuffle.parallelcopies']
-          default: 50
+          default: '50'
           description: 'Higher number of parallel copies run by reduces to fetch outputs from very large number of maps.'
         next null, true
 
 ## Module Dependencies
 
-    # mkcmd = require '../lib/mkcmd'
     properties = require '../lib/properties'
+    prink = require 'prink'
 
 
 
