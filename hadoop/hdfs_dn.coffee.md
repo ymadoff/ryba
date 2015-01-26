@@ -23,7 +23,7 @@ The module extends the various settings set by the "ryba/hadoop/hdfs" module.
 Unless specified otherwise, the number of tolerated failed volumes is set to "1"
 if at least 4 disks are used for storage.
 
-*   `datanode_opts` (string)   
+*   `ryba.hdfs.datanode_opts` (string)   
     NameNode options.   
 
 Example:   

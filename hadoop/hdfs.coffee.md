@@ -21,15 +21,15 @@ In its current state, we are only supporting the installation of a
 The properties "hdp.hdfs.site['dfs.namenode.name.dir']" and
 "hdp.hdfs.site['dfs.datanode.data.dir']" are required.
   
-*   `hdfs.ha_client_config` (object)   
+*   `ryba.hdfs.ha_client_config` (object)   
     Properities added to the "hdfs-site.xml" file specific to the High Availability mode. There
     are defined in a seperate configuration key then "hdp.hdfs.site" to hide them from being 
     visible on a client setup.   
-*   `hdfs.hadoop_policy`    
-*   `hdfs.hdfs.namenode_timeout`   
-*   `hdfs.hdfs.site` (object)   
+*   `ryba.hdfs.hadoop_policy`    
+*   `ryba.hdfs.hdfs.namenode_timeout`   
+*   `ryba.hdfs.hdfs.site` (object)   
     Properities added to the "hdfs-site.xml" file.
-*   `hdfs.nameservice`   
+*   `ryba.hdfs.nameservice`   
     The Unix MapReduce group name or a group object (see Mecano Group documentation). 
 
 Example:
