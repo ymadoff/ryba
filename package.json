@@ -12,6 +12,7 @@
     "mecano": "latest",
     "pad": "latest",
     "parameters": "latest",
+    "prink": "latest",
     "regexp-quote": "latest",
     "request": "latest",
     "semver": "latest",
