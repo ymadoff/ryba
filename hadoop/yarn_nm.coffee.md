@@ -42,6 +42,7 @@ applications.
 
     # module.exports.push commands: 'check', modules: 'ryba/hadoop/yarn_nm_check'
 
+    module.exports.push commands: 'report', modules: 'ryba/hadoop/yarn_nm_report'
     module.exports.push commands: 'install', modules: 'ryba/hadoop/yarn_nm_install'
 
     module.exports.push commands: 'start', modules: 'ryba/hadoop/yarn_nm_start'
