@@ -167,7 +167,16 @@ Environment passed to the DataNode before it starts.
 
 # Kernel
 
-Configure kernel parameters at runtime.   
+Configure kernel parameters at runtime. A usefull resource is the Pivotal
+presentation [Key Hadoop Cluster Configuration - OS (slide 15)][key_os] which
+suggest:
+
+*    vm.swappiness = 0
+*    vm.overcommit_memory = 1
+*    vm.overcommit_ratio = 100
+*    net.core.somaxconn=1024 (default socket listen queue size 128)   
+
+Note, we might move this middleware to Masson.
 
     module.exports.push name: 'HDFS NN # Kernel', handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
@@ -309,5 +318,5 @@ afect HDFS metadata.
     lifecycle = require '../lib/lifecycle'
     mkcmd = require '../lib/mkcmd'
 
-
+[key_os]: http://fr.slideshare.net/vgogate/hadoop-configuration-performance-tuning
 
