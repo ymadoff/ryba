@@ -31,7 +31,14 @@ Example:
 ```json
 {
   "ryba": {
-    "datanode_opts": "-Xmx1024m"
+    "hdfs": {
+      "datanode_opts": "-Xmx1024m",
+      "sysctl": {
+        "vm.swappiness": 0,
+        "vm.overcommit_memory": 1,
+        "vm.overcommit_ratio": 100,
+        "net.core.somaxconn": 1024
+    }
   }
 }
 ```
@@ -40,6 +47,8 @@ Example:
       require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
       {ryba} = ctx.config
+      ryba.hdfs ?= {}
+      ryba.hdfs.sysctl ?= {}
       # Tuning
       dataDirs = ryba.hdfs.site['dfs.datanode.data.dir'].split(',')
       if dataDirs.length > 3

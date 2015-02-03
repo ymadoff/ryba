@@ -165,6 +165,39 @@ Environment passed to the DataNode before it starts.
         backup: true
       , next
 
+# Kernel
+
+Configure kernel parameters at runtime.   
+
+    module.exports.push name: 'HDFS NN # Kernel', handler: (ctx, next) ->
+      {hdfs} = ctx.config.ryba
+      return next() unless Object.keys(hdfs.sysctl).length
+      ctx.execute
+        cmd: 'sysctl -a'
+      , (err, _, content) ->
+        return next err if err
+        content = misc.ini.parse content
+        properties = {}
+        for k, v of hdfs.sysctl
+          v = "#{v}"
+          properties[k] = v if content[k] isnt v
+        return next null, false unless Object.keys(properties).length
+        writes = for k, v of properties
+          match: ///^#{misc.regexp.escape k}?\s+=\s*.*?\s///mg
+          replace: "#{k} = #{v}"
+          append: true
+        ctx.write
+          destination: '/etc/sysctl.conf'
+          write: writes
+          backup: true
+        , (err) ->
+          return next err if err
+          properties = for k, v of properties then "#{k}=#{v}"
+          properties = properties.join ' '
+          ctx.execute
+            cmd: "sysctl #{properties}"
+          , next
+
 ## DataNode Start
 
 Load the module "ryba/hadoop/hdfs\_dn\_start" to start the DataNode.
@@ -270,6 +303,8 @@ afect HDFS metadata.
 ## Module dependencies
 
     path = require 'path'
+    misc = require 'mecano/lib/misc'
+    string = require 'mecano/lib/misc/string'
     hdfs_nn = require './hdfs_nn'
     lifecycle = require '../lib/lifecycle'
     mkcmd = require '../lib/mkcmd'
