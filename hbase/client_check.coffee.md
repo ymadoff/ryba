@@ -11,20 +11,20 @@ scanning the table.
 ## Check Shell
 
     module.exports.push name: 'HBase Client # Check Shell', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
-      {jaas_client, hbase, shortname} = ctx.config.ryba
+      {shortname} = ctx.config
+      {force_check, jaas_client, hbase} = ctx.config.ryba
       cmd = mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"exists 'ryba'\" | grep 'Table ryba does exist'"
       ctx.waitForExecution cmd, (err) ->
         return next err if err
         ctx.execute
           cmd: mkcmd.test ctx, """
-          if hbase shell 2>/dev/null <<< "scan 'ryba', {COLUMNS => '#{shortname}'}" | egrep '[0-9]+ row'; then exit 2; fi
           hbase shell 2>/dev/null <<-CMD
             alter 'ryba', {NAME => '#{shortname}'}
             put 'ryba', 'my_row', '#{shortname}:my_column', 10
             scan 'ryba',  {COLUMNS => '#{shortname}'}
           CMD
           """
-          code_skipped: 2
+          not_if_exec: unless force_check then mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"scan 'ryba', {COLUMNS => '#{shortname}'}\" | egrep '[0-9]+ row'"
         , (err, executed, stdout) ->
           isRowCreated = RegExp("column=#{shortname}:my_column, timestamp=\\d+, value=10").test stdout
           return next Error 'Invalid command output' if executed and not isRowCreated
