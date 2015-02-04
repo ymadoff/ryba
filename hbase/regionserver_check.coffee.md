@@ -9,11 +9,12 @@
 
     module.exports.push name: 'HBase RegionServer # Check HTTP JMX', label_true: 'CHECKED', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
+      protocol = if hbase.site['hadoop.ssl.enabled'] is 'true' then 'https' else 'http'
       port = hbase.site['hbase.regionserver.info.port']
-      url = "http://#{ctx.config.host}:#{port}/jmx?qry=Hadoop:service=HBase,name=RegionServer,sub=Server"
+      url = "#{protocol}://#{ctx.config.host}:#{port}/jmx?qry=Hadoop:service=HBase,name=RegionServer,sub=Server"
       ctx.execute
         cmd: mkcmd.test ctx, """
-        host=`curl -s --negotiate -u : #{url} | grep tag.Hostname | sed 's/^.*:.*"\(.*\)".*$/\1/g'`      
+        host=`curl -s -k --negotiate -u : #{url} | grep tag.Hostname | sed 's/^.*:.*"\\(.*\\)".*$/\\1/g'`      
         if [ $host != '#{ctx.config.host}' ] ; then exit 1; fi
         """
       , next
