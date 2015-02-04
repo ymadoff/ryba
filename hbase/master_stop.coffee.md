@@ -26,7 +26,10 @@ su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop
 
     module.exports.push name: 'HBase Master # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
-      ctx.execute
+      ctx.execute [
         cmd: 'rm /var/log/hbase/*-master-*'
         code_skipped: 1
-      , next
+      ,
+        cmd: 'rm /var/log/hbase/gc.log-*'
+        code_skipped: 1
+      ], next
