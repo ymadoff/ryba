@@ -56,3 +56,5 @@ Example:
 
     module.exports.push commands: 'stop', modules: 'ryba/hadoop/hdfs_nn_stop'
 
+    module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_nn_backup'
+
