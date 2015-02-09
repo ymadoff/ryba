@@ -29,6 +29,15 @@ scanning the table.
           isRowCreated = RegExp("column=#{shortname}:my_column, timestamp=\\d+, value=10").test stdout
           return next Error 'Invalid command output' if executed and not isRowCreated
           next err, executed
+    
+    module.exports.push name: 'HBase Client # Check MapReduce', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
+      ctx.execute
+        cmd: mkcmd.test ctx, """
+          echo -e '1,toto\\n2,tata\\n3,titi\\n4,tutu' | hdfs dfs -put -f - /user/ryba/test_import.csv
+          hbase org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.separator=, -Dimporttsv.columns=HBASE_ROW_KEY,family1:value ryba /user/ryba/test_import.csv
+          """
+      , (err, executed, stdout) ->
+          next err, executed
       # Note: inspiration for when namespace are functional
       # cmd = mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"list_namespace_tables 'ryba'\" | egrep '[0-9]+ row'"
       # ctx.waitForExecution cmd, (err) ->
