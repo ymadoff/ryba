@@ -39,8 +39,8 @@ keytool -list -v -keystore keystore -alias hadoop
     module.exports.push 'masson/bootstrap'
 
     module.exports.push module.exports.configure = (ctx) ->
-      require('./core').configure ctx
-      require('./yarn').configure ctx
+      # require('./core').configure ctx
+      # require('./yarn').configure ctx
       {core_site, hadoop_conf_dir} = ctx.config.ryba
       ctx.config.ryba.ssl ?= {}
       ssl_client = ctx.config.ryba.ssl_client ?= {}
@@ -60,10 +60,10 @@ keytool -list -v -keystore keystore -alias hadoop
       ssl_server['ssl.server.keystore.location'] ?= "#{hadoop_conf_dir}/keystore"
       ssl_server['ssl.server.keystore.password'] ?= 'ryba123'
       ssl_server['ssl.server.keystore.type'] ?= 'jks'
+      ssl_server['ssl.server.keystore.keypassword'] ?= 'ryba123'
       ssl_server['ssl.server.truststore.location'] ?= "#{hadoop_conf_dir}/truststore"
       ssl_server['ssl.server.truststore.password'] ?= 'ryba123'
       ssl_server['ssl.server.truststore.type'] ?= 'jks'
-      ssl_server['ssl.server.keystore.keypassword'] ?= 'ryba123'
 
     module.exports.push name: 'Hadoop Core SSL # Configure', retry: 0, handler: (ctx, next) ->
       {core_site, ssl_server, ssl_client, hadoop_conf_dir} = ctx.config.ryba
