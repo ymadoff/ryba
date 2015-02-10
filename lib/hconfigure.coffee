@@ -74,13 +74,14 @@ module.exports = ->
         updated = true
       do_save()
     do_save = ->
-      return next() unless updated
-      options.log? "Save properties"
+      # return next() unless updated
+      # options.log? "Save properties"
       options.content = properties.stringify fnl_props
       options.source = null
       mecano.write options, (err, written) ->
-        next err, true
-    conditions.all options, next, do_read_source
+        updated = true if written
+        next err, updated
+    do_read_source()
 
 
 
