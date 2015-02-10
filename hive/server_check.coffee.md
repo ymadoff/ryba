@@ -31,10 +31,15 @@ Check if Hive can authenticate and run a basic query to the database.
 Check if the Hive HCatalog (Metastore) server is listening.
 
     module.exports.push name: 'Hive & HCat Server # Check Port HCatalog', label_true: 'CHECKED', handler: (ctx, next) ->
-      {host} = ctx.config
-      {metastore} = ctx.config.ryba.hive
+      {hive} = ctx.config.ryba
+      uris = hive.site['hive.metastore.uris'].split ','
+      servers = for uri in uris
+        {hostname, port} = url.parse uri
+        continue unless hostname is ctx.config.host
+        host: hostname, port: port
+      return next Error 'Invalid configuration' unless servers.length is 1
       ctx.execute
-        cmd: "echo > /dev/tcp/#{host}/#{metastore.port}"
+        cmd: "echo > /dev/tcp/#{servers[0].host}/#{servers[0].port}"
       , next
 
 ## Open Port Server2
@@ -42,10 +47,12 @@ Check if the Hive HCatalog (Metastore) server is listening.
 Check if the Hive Server2 server is listening.
 
     module.exports.push name: 'Hive & HCat Server # Check Port Server2', label_true: 'CHECKED', handler: (ctx, next) ->
-      {host} = ctx.config
-      {hive_server2} = ctx.config.ryba.hive
+      {hive} = ctx.config.ryba
+      port = if hive.site['hive.server2.transport.mode'] is 'http'
+      then hive.site['hive.server2.thrift.http.port']
+      else hive.site['hive.server2.thrift.port']
       ctx.execute
-        cmd: "echo > /dev/tcp/#{host}/#{hive_server2.port}"
+        cmd: "echo > /dev/tcp/#{ctx.config.host}/#{port}"
       , next
 
     module.exports.push name: 'Hive & HCat Server # Check', timeout: -1, handler: (ctx, next) ->
@@ -55,6 +62,7 @@ Check if the Hive Server2 server is listening.
 
 # Module Dependencies
 
+    url = require 'url'
     parse_jdbc = require '../lib/parse_jdbc'
 
 

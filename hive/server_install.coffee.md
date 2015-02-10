@@ -13,6 +13,7 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
     module.exports.push 'ryba/hadoop/core' # Configure "core-site.xml" and "hadoop-env.sh"
     module.exports.push 'ryba/hive/client_install' # Install the Hive and HCatalog service
     module.exports.push 'ryba/hadoop/hdfs_dn_wait'
+    module.exports.push 'ryba/hbase/client'
     module.exports.push require('./server').configure
 
 ## IPTables
@@ -46,13 +47,21 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install and configure the startup script in "/etc/init.d/hive-hcatalog-server"
 and "/etc/init.d/hive-server2".
 
+The servers are not activated on startup but they endup as zombies if HDFS isnt
+yet started.
+
     module.exports.push name: 'Hive & HCat Server # Startup', handler: (ctx, next) ->
+      {site} = ctx.config.ryba.hive
+      {engine} = parse_jdbc site['javax.jdo.option.ConnectionURL']
       ctx.service [
         name: 'hive-hcatalog-server'
-        startup: true
+        startup: false
       ,
         name: 'hive-server2'
-        startup: true
+        startup: false
+      # ,
+      #   name: 'mysql'
+      #   if: engine is 'mysql'
       ], next
 
     module.exports.push name: 'Hive & HCat Server # Fix Startup', handler: (ctx, next) ->
@@ -76,23 +85,66 @@ and "/etc/init.d/hive-server2".
       {hive, db_admin} = ctx.config.ryba
       username = hive.site['javax.jdo.option.ConnectionUserName']
       password = hive.site['javax.jdo.option.ConnectionPassword']
-      {engine, db} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
+      {engine, host, db} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
       engines = 
         mysql: ->
-          escape = (text) -> text.replace(/[\\"]/g, "\\$&")
-          cmd = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
-          ctx.execute
-            cmd: """
-            if #{cmd} "use #{db}"; then exit 2; fi
-            #{cmd} "
-            create database if not exists #{db};
-            grant all privileges on #{db}.* to '#{username}'@'localhost' identified by '#{password}';
-            grant all privileges on #{db}.* to '#{username}'@'%' identified by '#{password}';
-            flush privileges;
-            "
-            """
-            code_skipped: 2
-          , next
+          do_exists = ->
+            cmd = "#{db_admin.path} -u#{username} -p#{password} -h#{db_admin.host} -P#{db_admin.port}"
+            ctx.execute
+              cmd: "if ! #{cmd} -e \"use #{db}\"; then exit 3; fi"
+              code_skipped: 3
+            , (err, exists) ->
+              return next err if err
+              if exists then do_upgrade() else do_db()
+          do_db = ->
+            cmd = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port}"
+            ctx.execute
+              cmd: """
+              #{cmd} -e "
+              create database if not exists #{db};
+              grant all privileges on #{db}.* to '#{username}'@'localhost' identified by '#{password}';
+              grant all privileges on #{db}.* to '#{username}'@'%' identified by '#{password}';
+              flush privileges;
+              "
+              """
+            , (err) ->
+              return next err if err
+              do_create()
+          do_create = ->
+            cmd = "#{db_admin.path} -u#{username} -p#{password} -h#{db_admin.host} -P#{db_admin.port}"
+            target_version = 'ls /usr/lib/hive/lib | grep hive-common- | sed \'s/^hive-common-\\([0-9]\\+.[0-9]\\+.[0-9]\\+\\).*\\.jar$/\\1/g\''
+            ctx.execute
+              cmd: """
+              target=`#{target_version}`
+              create=/usr/lib/hive/scripts/metastore/upgrade/mysql/hive-schema-${target}.mysql.sql
+              if ! test -f $create; then exit 1; fi
+              # Create schema
+              #{cmd} #{db} < $create
+              # Import transaction schema
+              trnx=/usr/lib/hive/scripts/metastore/upgrade/mysql/hive-txn-schema-${target}.mysql.sql
+              if test -f $trnx; then #{cmd} #{db} < $trnx; fi
+              """
+            , next
+          do_upgrade = ->
+            cmd = "#{db_admin.path} -u#{username} -p#{password} -h#{db_admin.host} -P#{db_admin.port}"
+            current_version = "#{db_admin.path} -u#{username} -p#{password} -h#{db_admin.host} -P#{db_admin.port} -e 'select SCHEMA_VERSION from hive.VERSION' --skip-column-names"
+            target_version = 'ls /usr/lib/hive/lib | grep hive-common- | sed \'s/^hive-common-\\([0-9]\\+.[0-9]\\+.[0-9]\\+\\).*\\.jar$/\\1/g\''
+            ctx.execute
+              cmd: """
+              current=`#{current_version}`
+              target=`#{target_version}`
+              if [ $current == $target ]; then exit 3; fi
+              # Upgrade schema
+              upgrade=/usr/lib/hive/scripts/metastore/upgrade/mysql/upgrade-${current}-to-${target}.mysql.sql
+              if ! test -f $upgrade; then exit 1; fi
+              #{cmd} #{db} < $upgrade
+              # Import transaction schema
+              trnx=/usr/lib/hive/scripts/metastore/upgrade/mysql/hive-txn-schema-${target}.mysql.sql
+              if test -f $trnx; then #{cmd} #{db} < $trnx; fi
+              """
+              code_skipped: 3
+            , next
+          do_exists()
       return next new Error 'Database engine not supported' unless engines[engine]
       engines[engine]()
 

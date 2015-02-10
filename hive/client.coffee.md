@@ -6,6 +6,10 @@
     module.exports.configure = (ctx) ->
       require('../hadoop/hdfs').configure ctx
       require('./_').configure ctx
+      {hive} = ctx.config.ryba
+      server_ctxs = ctx.contexts modules: 'ryba/hive/server', require('./server').configure
+      server_ctx = server_ctxs[0]
+      hive.site['hive.metastore.uris'] ?= server_ctx.config.ryba.hive.site['hive.metastore.uris']
 
     module.exports.push commands: 'check', modules: 'ryba/hive/client_check'
 
