@@ -94,44 +94,26 @@ RegionServer, and HBase client host machines.
           kadmin_server: admin_server
         , next
 
-## SPNEGO
+## Configure
 
-Check if keytab file exists and if read permission is granted to the HBase user.
+*   [New Security Features in Apache HBase 0.98: An Operator's Guide][secop].
 
-Note: The Namenode webapp located in "/usr/lib/hbase/hbase-webapps/regionserver" is
-using the hadoop conf directory to retrieve the SPNEGO keytab. The user "hbase"
-is added membership to the group hadoop to gain read access.
+[secop]: http://fr.slideshare.net/HBaseCon/features-session-2
 
-    module.exports.push name: 'HBase RegionServer # FIX SPNEGO', handler: (ctx, next) ->
-      {hbase, hadoop_group} = ctx.config.ryba
-      {hdfs} = ctx.config.ryba
-      ctx.execute
-        cmd: """
-          if groups #{hbase.user.name} | grep #{hadoop_group.name}; then exit 2; fi
-          usermod -G #{hadoop_group.name} #{hbase.user.name}
-        """
-        code_skipped: 2
-      , (err, modified) ->
-        return next err if err
-        ctx.execute
-          cmd: "su -l #{hbase.user.name} -c 'test -r /etc/security/keytabs/spnego.service.keytab'"
-        , (err) ->
-          next err, modified
-      # ctx.copy [
-      #   source: '/etc/security/keytabs/spnego.service.keytab'
-      #   destination: hbase.site['hbase.thrift.keytab.file']
-      #   uid: hbase.user.name
-      #   gid: hbase.group.name
-      #   mode: 0o660
-      # ,
-      #   source: '/etc/security/keytabs/spnego.service.keytab'
-      #   destination: hbase.site['hbase.rest.authentication.kerberos.keytab']
-      #   uid: hbase.user.name
-      #   gid: hbase.group.name
-      #   mode: 0o660
-      
-      # ], (err, copied) ->
-      #   return next err, copied
+    module.exports.push name: 'HBase RegionServer # Configure', handler: (ctx, next) ->
+      {hbase} = ctx.config.ryba
+      mode = if ctx.has_module 'ryba/hbase/client' then 0o0644 else 0o0600
+      ctx.hconfigure
+        destination: "#{hbase.conf_dir}/hbase-site.xml"
+        default: "#{__dirname}/../resources/hbase/hbase-site.xml"
+        local_default: true
+        properties: hbase.site
+        merge: true
+        uid: hbase.user.name
+        gid: hbase.group.name
+        mode: mode # See slide 33 from [Operator's Guide][secop]
+        backup: true
+      , next
 
 ## Metrics
 

@@ -20,7 +20,25 @@ RegionServer, and HBase client host machines.
         content: jaas_client
         uid: hbase.user.name
         gid: hbase.group.name
-        mode: 0o700
+        mode: 0o744
+      , next
+
+## Configure
+
+Note, we left the permission mode as default, Master and RegionServer need to
+restrict it but not the client.
+
+    module.exports.push name: 'HBase Client # Configure', handler: (ctx, next) ->
+      {hbase} = ctx.config.ryba
+      ctx.hconfigure
+        destination: "#{hbase.conf_dir}/hbase-site.xml"
+        default: "#{__dirname}/../resources/hbase/hbase-site.xml"
+        local_default: true
+        properties: hbase.site
+        merge: true
+        uid: hbase.user.name
+        gid: hbase.group.name
+        backup: true
       , next
 
 ## Check

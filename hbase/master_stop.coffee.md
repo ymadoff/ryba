@@ -5,7 +5,7 @@
     module.exports.push 'masson/bootstrap/'
     module.exports.push require('./master').configure
 
-# Stop
+## Stop
 
 Stop the RegionServer server. You can also stop the server manually with one of
 the following two commands:
@@ -25,11 +25,12 @@ su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop
 ## Stop Clean Logs
 
     module.exports.push name: 'HBase Master # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
-      return next() unless ctx.config.ryba.clean_logs
+      {hbase, clean_logs} = ctx.config.ryba
+      return next() unless clean_logs
       ctx.execute [
-        cmd: 'rm /var/log/hbase/*-master-*'
+        cmd: "rm #{hbase.log_dir}/*-master-*"
         code_skipped: 1
       ,
-        cmd: 'rm /var/log/hbase/gc.log-*'
+        cmd: "rm #{hbase.log_dir}/gc.log-*"
         code_skipped: 1
       ], next

@@ -5,6 +5,20 @@
     module.exports.push 'masson/bootstrap/'
     module.exports.push require('./regionserver').configure
 
+## Check SPNEGO
+
+Check if keytab file exists and if read permission is granted to the HBase user.
+
+Note: The RegionServer webapp located in "/usr/lib/hbase/hbase-webapps/regionserver" is
+using the hadoop conf directory to retrieve the SPNEGO keytab. The user "hbase"
+is added membership to the group hadoop to gain read access.
+
+    module.exports.push name: 'HBase RegionServer # Check SPNEGO', label_true: 'CHECKED', handler: (ctx, next) ->
+      {core_site, hbase} = ctx.config.ryba
+      ctx.execute
+        cmd: "su -l #{hbase.user.name} -c 'test -r #{core_site['hadoop.http.authentication.kerberos.keytab']}'"
+      , next
+
 ## Check HTTP JMX
 
     module.exports.push name: 'HBase RegionServer # Check HTTP JMX', label_true: 'CHECKED', handler: (ctx, next) ->
@@ -65,3 +79,6 @@ Namespace and permissions are implemented and illustrated in [HBASE-8409].
 ## Module Dependencies
 
     mkcmd = require '../lib/mkcmd'
+
+[HBASE-8409]: https://issues.apache.org/jira/browse/HBASE-8409
+

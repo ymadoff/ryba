@@ -17,13 +17,6 @@ TODO: [HBase backup node](http://willddy.github.io/2013/07/02/HBase-Add-Backup-M
 | HBase Master        | 60000 | http  | hbase.master.port      |
 | HMaster Info Web UI | 60010 | http  | hbase.master.info.port |
 
-TODO:
-
-| Service                    | Port | Proto | Info                   |
-|----------------------------|------|-------|------------------------|
-| HBase Thrift Server        | 9090 | http  | hbase.thrift.port      |
-| HBase Thrift Server Web UI | 9095 | http  | hbase.thrift.info.port |
-
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
@@ -45,6 +38,27 @@ Install and configure the startup script in
     module.exports.push name: 'HBase Master # Service', timeout: -1, handler: (ctx, next) ->
       ctx.service
         name: 'hbase-master'
+      , next
+
+## Configure
+
+*   [New Security Features in Apache HBase 0.98: An Operator's Guide][secop].
+
+[secop]: http://fr.slideshare.net/HBaseCon/features-session-2
+
+    module.exports.push name: 'HBase Master # Configure', handler: (ctx, next) ->
+      {hbase} = ctx.config.ryba
+      mode = if ctx.has_module 'ryba/hbase/client' then 0o0644 else 0o0600
+      ctx.hconfigure
+        destination: "#{hbase.conf_dir}/hbase-site.xml"
+        default: "#{__dirname}/../resources/hbase/hbase-site.xml"
+        local_default: true
+        properties: hbase.site
+        merge: true
+        uid: hbase.user.name
+        gid: hbase.group.name
+        mode: mode # See slide 33 from [Operator's Guide][secop]
+        backup: true
       , next
 
     module.exports.push name: 'HBase Master # HDFS layout', timeout: -1, handler: (ctx, next) ->
@@ -105,48 +119,7 @@ https://hbase.apache.org/book/security.html
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      # ,
-      #   principal: hbase.site['hbase.thrift.kerberos.principal'].replace '_HOST', ctx.config.host
-      #   randkey: true
-      #   keytab: hbase.site['hbase.thrift.keytab.file']
-      #   uid: hbase.user.name
-      #   gid: hadoop_group.name
-      #   kadmin_principal: kadmin_principal
-      #   kadmin_password: kadmin_password
-      #   kadmin_server: admin_server
-      # ,
-      #   principal: hbase.site['hbase.rest.kerberos.principal'].replace '_HOST', ctx.config.host
-      #   randkey: true
-      #   keytab: hbase.site['hbase.rest.keytab.file']
-      #   uid: hbase.user.name
-      #   gid: hadoop_group.name
-      #   kadmin_principal: kadmin_principal
-      #   kadmin_password: kadmin_password
-      #   kadmin_server: admin_server
       ], next
-
-## SPNEGO
-
-Check if keytab file exists and if read permission is granted to the HBase user.
-
-Note: The Namenode webapp located in "/usr/lib/hbase/hbase-webapps/master" is
-using the hadoop conf directory to retrieve the SPNEGO keytab. The user "hbase"
-is added membership to the group hadoop to gain read access.
-
-    module.exports.push name: 'HBase Master # FIX SPNEGO', handler: (ctx, next) ->
-      {hbase, hadoop_group} = ctx.config.ryba
-      ctx.execute
-        cmd: """
-          if groups #{hbase.user.name} | grep #{hadoop_group.name}; then exit 2; fi
-          usermod -G #{hadoop_group.name} #{hbase.user.name}
-        """
-        code_skipped: 2
-      , (err, modified) ->
-        return next err if err
-        ctx.execute
-          cmd: "su -l #{hbase.user.name} -c 'test -r /etc/security/keytabs/spnego.service.keytab'"
-        , (err) ->
-          next err, modified
 
 ## Metrics
 
@@ -163,9 +136,7 @@ Enable stats collection in Ganglia.
         replace: collector
       , next
 
-    module.exports.push 'ryba/hbase/master_start'
-
-    module.exports.push name: 'HBase Master # Admin', handler: (ctx, next) ->
+    module.exports.push name: 'HBase Master # Kerberos Admin', handler: (ctx, next) ->
       {hbase, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
@@ -175,6 +146,8 @@ Enable stats collection in Ganglia.
         kadmin_password: kadmin_password
         kadmin_server: admin_server
       , next
+
+    module.exports.push 'ryba/hbase/master_start'
 
 ## Check
 
@@ -186,4 +159,3 @@ Enable stats collection in Ganglia.
     path = require 'path'
     mkcmd = require '../lib/mkcmd'
 
-[HBASE-8409]: https://issues.apache.org/jira/browse/HBASE-8409

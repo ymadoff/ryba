@@ -16,4 +16,4 @@ inside "/var/run/hbase/hbase-hbase-regionserver.pid".
         # code_skipped: [1, 3]
         code_skipped: 3
         if_exists: '/etc/init.d/hbase-regionserver'
-      , callback
+      , next
