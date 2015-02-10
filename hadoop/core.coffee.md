@@ -100,89 +100,96 @@ Default configuration:
       require('masson/commons/java').configure ctx
       require('masson/core/krb5_client').configure ctx
       require('../lib/base').configure ctx
-      # User
-      ctx.config.ryba.hdfs.user ?= {}
-      ctx.config.ryba.hdfs.user = name: ctx.config.ryba.hdfs.user if typeof ctx.config.ryba.hdfs.user is 'string'
-      ctx.config.ryba.hdfs.user.name ?= 'hdfs'
-      ctx.config.ryba.hdfs.user.system ?= true
-      ctx.config.ryba.hdfs.user.gid ?= 'hdfs'
-      ctx.config.ryba.hdfs.user.groups ?= 'hadoop'
-      ctx.config.ryba.hdfs.user.comment ?= 'Hadoop HDFS User'
-      ctx.config.ryba.hdfs.user.home ?= '/var/lib/hadoop-hdfs'
-      
-      ctx.config.ryba.hdfs.krb5_user ?= {}
-      ctx.config.ryba.hdfs.krb5_user.name ?= ctx.config.ryba.hdfs.user.name
-      ctx.config.ryba.hdfs.krb5_user.password ?= 'hdfs123'
-      ctx.config.ryba.yarn ?= {}
-      ctx.config.ryba.yarn.user ?= {}
-      ctx.config.ryba.yarn.user = name: ctx.config.ryba.yarn.user if typeof ctx.config.ryba.yarn.user is 'string'
-      ctx.config.ryba.yarn.user.name ?= 'yarn'
-      ctx.config.ryba.yarn.user.system ?= true
-      ctx.config.ryba.yarn.user.gid ?= 'yarn'
-      ctx.config.ryba.yarn.user.groups ?= 'hadoop'
-      ctx.config.ryba.yarn.user.comment ?= 'Hadoop YARN User'
-      ctx.config.ryba.yarn.user.home ?= '/var/lib/hadoop-yarn'
-      
-      ctx.config.ryba.mapred ?= {}
-      ctx.config.ryba.mapred.user ?= {}
-      ctx.config.ryba.mapred.user = name: ctx.config.ryba.mapred.user if typeof ctx.config.ryba.mapred.user is 'string'
-      ctx.config.ryba.mapred.user.name ?= 'mapred'
-      ctx.config.ryba.mapred.user.system ?= true
-      ctx.config.ryba.mapred.user.gid ?= 'mapred'
-      ctx.config.ryba.mapred.user.groups ?= 'hadoop'
-      ctx.config.ryba.mapred.user.comment ?= 'Hadoop MapReduce User'
-      ctx.config.ryba.mapred.user.home ?= '/var/lib/hadoop-mapreduce'
+      ryba = ctx.config.ryba ?= {}
+      ryba.yarn ?= {}
+      ryba.mapred ?= {}
+
+## Configuraiton for users and groups
+
+      # Group for hadoop
+      ryba.hadoop_group = name: ryba.hadoop_group if typeof ryba.hadoop_group is 'string'
+      ryba.hadoop_group ?= {}
+      ryba.hadoop_group.name ?= 'hadoop'
+      ryba.hadoop_group.system ?= true
+      # Unix user hdfs
+      ryba.hdfs.user ?= {}
+      ryba.hdfs.user = name: ryba.hdfs.user if typeof ryba.hdfs.user is 'string'
+      ryba.hdfs.user.name ?= 'hdfs'
+      ryba.hdfs.user.system ?= true
+      ryba.hdfs.user.gid ?= 'hdfs'
+      ryba.hdfs.user.groups ?= 'hadoop'
+      ryba.hdfs.user.comment ?= 'Hadoop HDFS User'
+      ryba.hdfs.user.home ?= '/var/lib/hadoop-hdfs'
+      # Kerberos user for hdfs
+      ryba.hdfs.krb5_user ?= {}
+      ryba.hdfs.krb5_user.name ?= ryba.hdfs.user.name
+      ryba.hdfs.krb5_user.password ?= 'hdfs123'
+      # Unix user for yarn
+      ryba.yarn.user ?= {}
+      ryba.yarn.user = name: ryba.yarn.user if typeof ryba.yarn.user is 'string'
+      ryba.yarn.user.name ?= 'yarn'
+      ryba.yarn.user.system ?= true
+      ryba.yarn.user.gid ?= 'yarn'
+      ryba.yarn.user.groups ?= 'hadoop'
+      ryba.yarn.user.comment ?= 'Hadoop YARN User'
+      ryba.yarn.user.home ?= '/var/lib/hadoop-yarn'
+      # Unix user for mapred
+      ryba.mapred.user ?= {}
+      ryba.mapred.user = name: ryba.mapred.user if typeof ryba.mapred.user is 'string'
+      ryba.mapred.user.name ?= 'mapred'
+      ryba.mapred.user.system ?= true
+      ryba.mapred.user.gid ?= 'mapred'
+      ryba.mapred.user.groups ?= 'hadoop'
+      ryba.mapred.user.comment ?= 'Hadoop MapReduce User'
+      ryba.mapred.user.home ?= '/var/lib/hadoop-mapreduce'
       # Groups
-      ctx.config.ryba.hadoop_group = name: ctx.config.ryba.hadoop_group if typeof ctx.config.ryba.hadoop_group is 'string'
-      ctx.config.ryba.hadoop_group ?= {}
-      ctx.config.ryba.hadoop_group.name ?= 'hadoop'
-      ctx.config.ryba.hadoop_group.system ?= true
-      ctx.config.ryba.hdfs.group ?= {}
-      ctx.config.ryba.hdfs.group = name: ctx.config.ryba.hdfs.group if typeof ctx.config.ryba.hdfs.group is 'string'
-      ctx.config.ryba.hdfs.group.name ?= 'hdfs'
-      ctx.config.ryba.hdfs.group.system ?= true
-      ctx.config.ryba.yarn.group ?= {}
-      ctx.config.ryba.yarn.group = name: ctx.config.ryba.yarn.group if typeof ctx.config.ryba.yarn.group is 'string'
-      ctx.config.ryba.yarn.group.name ?= 'yarn'
-      ctx.config.ryba.yarn.group.system ?= true
-      ctx.config.ryba.mapred.group ?= {}
-      ctx.config.ryba.mapred.group = name: ctx.config.ryba.mapred.group if typeof ctx.config.ryba.mapred.group is 'string'
-      ctx.config.ryba.mapred.group.name ?= 'mapred'
-      ctx.config.ryba.mapred.group.system ?= true
-      ctx.config.ryba.group ?= {}
-      ctx.config.ryba.group = name: ctx.config.ryba.group if typeof ctx.config.ryba.group is 'string'
-      ctx.config.ryba.group.name ?= 'ryba'
-      ctx.config.ryba.group.system ?= true
+      ryba.hdfs.group ?= {}
+      ryba.hdfs.group = name: ryba.hdfs.group if typeof ryba.hdfs.group is 'string'
+      ryba.hdfs.group.name ?= 'hdfs'
+      ryba.hdfs.group.system ?= true
+      ryba.yarn.group ?= {}
+      ryba.yarn.group = name: ryba.yarn.group if typeof ryba.yarn.group is 'string'
+      ryba.yarn.group.name ?= 'yarn'
+      ryba.yarn.group.system ?= true
+      ryba.mapred.group ?= {}
+      ryba.mapred.group = name: ryba.mapred.group if typeof ryba.mapred.group is 'string'
+      ryba.mapred.group.name ?= 'mapred'
+      ryba.mapred.group.system ?= true
+      ryba.group ?= {}
+      ryba.group = name: ryba.group if typeof ryba.group is 'string'
+      ryba.group.name ?= 'ryba'
+      ryba.group.system ?= true
       # Layout
-      ctx.config.ryba.hadoop_conf_dir ?= '/etc/hadoop/conf'
-      ctx.config.ryba.hdfs.log_dir ?= '/var/log/hadoop-hdfs'
-      ctx.config.ryba.hdfs.pid_dir ?= '/var/run/hadoop-hdfs'
-      ctx.config.ryba.mapred.log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
+      ryba.hadoop_conf_dir ?= '/etc/hadoop/conf'
+      ryba.hdfs.log_dir ?= '/var/log/hadoop-hdfs'
+      ryba.hdfs.pid_dir ?= '/var/run/hadoop-hdfs'
+      ryba.mapred.log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
       # HA Configuration
-      ctx.config.ryba.nameservice ?= null
-      ctx.config.ryba.active_nn ?= false
-      throw new Error "Invalid Service Name" unless ctx.config.ryba.nameservice
+      ryba.nameservice ?= null
+      ryba.active_nn ?= false
+      throw new Error "Invalid Service Name" unless ryba.nameservice
       namenodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       # throw new Error "Need at least 2 namenodes" if namenodes.length < 2
       # active_nn_hosts = ctx.config.servers.filter( (server) -> server.ryba?.active_nn ).map( (server) -> server.host )
       # standby_nn_hosts = ctx.config.servers.filter( (server) -> ! server.ryba?.active_nn ).map( (server) -> server.host )
       standby_nn_hosts = namenodes.filter( (server) -> ! ctx.config.servers[server].ryba?.active_nn )
       # throw new Error "Invalid Number of Passive NameNodes: #{standby_nn_hosts.length}" unless standby_nn_hosts.length is 1
-      ctx.config.ryba.standby_nn_host = standby_nn_hosts[0]
-      ctx.config.ryba.static_host = 
-        if ctx.config.ryba.static_host and ctx.config.ryba.static_host isnt '_HOST'
+      ryba.standby_nn_host = standby_nn_hosts[0]
+      ryba.static_host = 
+        if ryba.static_host and ryba.static_host isnt '_HOST'
         then ctx.config.host
         else '_HOST'
       # Configuration
-      core_site = ctx.config.ryba.core_site ?= {}
+      core_site = ryba.core_site ?= {}
+      core_site['io.compression.codecs'] ?= "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.SnappyCodec"
       unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
         core_site['fs.defaultFS'] ?= "hdfs://#{namenodes[0]}:8020"
       else
-        core_site['fs.defaultFS'] ?= "hdfs://#{ctx.config.ryba.nameservice}:8020"
+        core_site['fs.defaultFS'] ?= "hdfs://#{ryba.nameservice}:8020"
         active_nn_hosts = namenodes.filter( (server) -> ctx.config.servers[server].ryba?.active_nn )
         throw new Error "Invalid Number of Active NameNodes: #{active_nn_hosts.length}" unless active_nn_hosts.length is 1
-        ctx.config.ryba.active_nn_host = active_nn_hosts[0]
-      core_site['net.topology.script.file.name'] ?= "#{ctx.config.ryba.hadoop_conf_dir}/rack_topology.sh"
+        ryba.active_nn_host = active_nn_hosts[0]
+      core_site['net.topology.script.file.name'] ?= "#{ryba.hadoop_conf_dir}/rack_topology.sh"
       # Set the authentication for the cluster. Valid values are: simple or kerberos
       core_site['hadoop.security.authentication'] ?= 'kerberos'
       # Enable authorization for different protocols.
@@ -195,21 +202,75 @@ Default configuration:
       # hadoop.security.saslproperties.resolver.class can be used to override
       # the hadoop.rpc.protection for a connection at the server side.
       core_site['hadoop.rpc.protection'] ?= 'authentication'
-      # Proxy users
-      falcon_cts = ctx.contexts 'ryba/falcon', require('../falcon').configure
-      if falcon_cts.length
-        {user} = falcon_cts[0].config.ryba.falcon
-        core_site["hadoop.proxyuser.#{user.name}.groups"] = '*'
-        core_site["hadoop.proxyuser.#{user.name}.hosts"] = '*'
-      # Environment
-      ctx.config.ryba.hadoop_opts ?= 'java.net.preferIPv4Stack': 'true'
+
+Configuration for HTTP
+
+      core_site['hadoop.http.filter.initializers'] ?= 'org.apache.hadoop.security.AuthenticationFilterInitializer'
+      core_site['hadoop.http.authentication.type'] ?= 'kerberos'
+      core_site['hadoop.http.authentication.token.validity'] ?= '36000'
+      core_site['hadoop.http.authentication.signature.secret.file'] ?= '/etc/hadoop/hadoop-http-auth-signature-secret'
+      core_site['hadoop.http.authentication.simple.anonymous.allowed'] ?= 'false'
+      core_site['hadoop.http.authentication.kerberos.principal'] ?= "HTTP/#{ryba.static_host}@#{ryba.realm}"
+      core_site['hadoop.http.authentication.kerberos.keytab'] ?= '/etc/security/keytabs/spnego.service.keytab'
+      # Cluster domain
+      unless core_site['hadoop.http.authentication.cookie.domain']
+        domains = ctx.hosts_with_module('ryba/hadoop/core').map( (host) -> host.split('.').slice(1).join('.') ).filter( (el, pos, self) -> self.indexOf(el) is pos )
+        return next new Error "Multiple domains, set 'hadoop.http.authentication.cookie.domain' manually" if domains.length isnt 1
+        core_site['hadoop.http.authentication.cookie.domain'] = domains[0]
+
+Configuration for proxy users
+
+      core_site['hadoop.security.auth_to_local'] ?= """
+      
+            RULE:[2:$1@$0]([rn]m@.*)s/.*/yarn/
+            RULE:[2:$1@$0](jhs@.*)s/.*/mapred/
+            RULE:[2:$1@$0]([nd]n@.*)s/.*/hdfs/
+            RULE:[2:$1@$0](hm@.*)s/.*/hbase/
+            RULE:[2:$1@$0](rs@.*)s/.*/hbase/
+            DEFAULT
+
+        """
+      core_site['hadoop.proxyuser.hcat.hosts'] = null
+      core_site['hadoop.proxyuser.hcat.groups'] = null
+      core_site['hadoop.proxyuser.HTTP.hosts'] ?= '*'
+      core_site['hadoop.proxyuser.HTTP.groups'] ?= '*'
+      hbase_ctxs = ctx.contexts 'ryba/hbase/master', require('../hbase/master').configure
+      if hbase_ctxs.length
+        {hbase} = hbase_ctxs[0].config.ryba
+        core_site["hadoop.proxyuser.#{hbase.user.name}.groups"] ?= '*'
+        core_site["hadoop.proxyuser.#{hbase.user.name}.hosts"] ?= '*'
+      hive_ctxs = ctx.contexts 'ryba/hive/server', require('../hive/server').configure
+      if hive_ctxs.length
+        {hive} = hive_ctxs[0].config.ryba
+        core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'
+        core_site["hadoop.proxyuser.#{hive.user.name}.hosts"] ?= '*'
+      oozie_ctxs = ctx.contexts 'ryba/oozie/server', require('../oozie/server').configure
+      if oozie_ctxs.length
+        {oozie} = oozie_ctxs[0].config.ryba
+        core_site["hadoop.proxyuser.#{oozie.user.name}.groups"] ?= '*'
+        core_site["hadoop.proxyuser.#{oozie.user.name}.hosts"] ?= '*'
+      hue_ctxs = ctx.contexts 'ryba/hue', require('../hue').configure_system
+      if hue_ctxs.length
+        {hue} = hue_ctxs[0].config.ryba
+        core_site["hadoop.proxyuser.#{hue.user.name}.groups"] ?= '*'
+        core_site["hadoop.proxyuser.#{hue.user.name}.hosts"] ?= '*'
+        core_site['hue.kerberos.principal.shortname'] ?= hue.user.name
+      falcon_ctxs = ctx.contexts 'ryba/falcon', require('../falcon').configure
+      if falcon_ctxs.length
+        {user} = falcon_ctxs[0].config.ryba.falcon
+        core_site["hadoop.proxyuser.#{user.name}.groups"] ?= '*'
+        core_site["hadoop.proxyuser.#{user.name}.hosts"] ?= '*'
+
+Configuration for environment
+
+      ryba.hadoop_opts ?= 'java.net.preferIPv4Stack': 'true'
       hadoop_opts = "export HADOOP_OPTS=\""
-      for k, v of ctx.config.ryba.hadoop_opts
+      for k, v of ryba.hadoop_opts
         hadoop_opts += "-D#{k}=#{v} "
       hadoop_opts += "${HADOOP_OPTS}\""
-      ctx.config.ryba.hadoop_opts = hadoop_opts
-      hadoop_client_opts = ctx.config.ryba.hadoop_client_opts ?= '-Xmx2048m'
-      ctx.config.ryba.hadoop_client_opts = "export HADOOP_CLIENT_OPTS=\"#{hadoop_client_opts} $HADOOP_CLIENT_OPTS\""
+      ryba.hadoop_opts = hadoop_opts
+      hadoop_client_opts = ryba.hadoop_client_opts ?= '-Xmx2048m'
+      ryba.hadoop_client_opts = "export HADOOP_CLIENT_OPTS=\"#{hadoop_client_opts} $HADOOP_CLIENT_OPTS\""
 
 ## Users & Groups
 
@@ -427,108 +488,22 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
         ], (err, serviced) ->
           return next err if err
           modified = true if serviced
-          do_core()
-      do_core = ->
-        core_site = {}
-        core_site['io.compression.codecs'] ?= "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.SnappyCodec"
-        ctx.hconfigure
-          destination: "#{hadoop_conf_dir}/core-site.xml"
-          properties: core_site
-          merge: true
-          backup: true
-        , (err, configured) ->
-          return next err if err
-          modified = true if configured
           do_end()
       do_end = ->
         next null, modified
       do_snappy()
 
-    module.exports.push name: 'Hadoop Core # Kerberos', timeout: -1, handler: (ctx, next) ->
-      {hadoop_conf_dir, core_site, realm} = ctx.config.ryba
-      # TODO, discover and generate cross-realm settings
-      core_site['hadoop.security.auth_to_local'] ?= """
-      
-            RULE:[2:$1@$0]([rn]m@.*)s/.*/yarn/
-            RULE:[2:$1@$0](jhs@.*)s/.*/mapred/
-            RULE:[2:$1@$0]([nd]n@.*)s/.*/hdfs/
-            RULE:[2:$1@$0](hm@.*)s/.*/hbase/
-            RULE:[2:$1@$0](rs@.*)s/.*/hbase/
-            DEFAULT
-
-        """
-      # Allow the superuser hive to impersonate any members of the group users. Required only when installing Hive.
-      core_site['hadoop.proxyuser.hive.groups'] ?= '*'
-      # Hostname from where superuser hive can connect. Required 
-      # only when installing Hive.
-      core_site['hadoop.proxyuser.hive.hosts'] ?= '*'
-      # Allow the superuser oozie to impersonate any members of 
-      # the group users. Required only when installing Oozie.
-      core_site['hadoop.proxyuser.oozie.groups'] ?= '*'
-      # Hostname from where superuser oozie can connect. Required 
-      # only when installing Oozie.
-      core_site['hadoop.proxyuser.oozie.hosts'] ?= '*'
-      # Hostname from where superuser hcat can connect. Required 
-      # only when installing WebHCat.
-      core_site['hadoop.proxyuser.hcat.hosts'] ?= '*'
-      # Hostname from where superuser HTTP can connect.
-      core_site['hadoop.proxyuser.HTTP.groups'] ?= '*'
-      # Allow the superuser hcat to impersonate any members of the 
-      # group users. Required only when installing WebHCat.
-      core_site['hadoop.proxyuser.hcat.groups'] ?= '*'
-      # Hostname from where superuser hcat can connect. This is 
-      # required only when installing webhcat on the cluster.
-      core_site['hadoop.proxyuser.hcat.hosts'] ?= '*'
-      core_site['hadoop.proxyuser.hue.groups'] ?= '*'
-      core_site['hadoop.proxyuser.hue.hosts'] ?= '*'
-      core_site['hadoop.proxyuser.hbase.groups'] ?= '*'
-      core_site['hadoop.proxyuser.hbase.hosts'] ?= '*'
-      core_site['hadoop.proxyuser.HTTP.hosts'] = '*'
-      core_site['hadoop.proxyuser.HTTP.groups'] ?= '*'
-      # Todo, find a better place for this one
-      # http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap14-2-3-hue.html
-      core_site['hue.kerberos.principal.shortname'] ?= 'hue'
-      ctx.hconfigure
-        destination: "#{hadoop_conf_dir}/core-site.xml"
-        properties: core_site
-        merge: true
-        backup: true
-      , next
-
-Configure Web
--------------
+## Web UI
 
 This action follow the ["Authentication for Hadoop HTTP web-consoles" 
-recommandations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
+recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 
-    module.exports.push name: 'Hadoop Core # Kerberos Web UI', handler: (ctx, next) ->
+    module.exports.push name: 'Hadoop Core # Web UI', handler: (ctx, next) ->
       {core_site, realm} = ctx.config.ryba
-      # Cluster domain
-      unless core_site['hadoop.http.authentication.cookie.domain']
-        domains = ctx.hosts_with_module('ryba/hadoop/core').map( (host) -> host.split('.').slice(1).join('.') ).filter( (el, pos, self) -> self.indexOf(el) is pos )
-        return next new Error "Multiple domains, set 'hadoop.http.authentication.cookie.domain' manually" if domains.length isnt 1
-        core_site['hadoop.http.authentication.cookie.domain'] = domains[0]
       ctx.execute
         cmd: 'dd if=/dev/urandom of=/etc/hadoop/hadoop-http-auth-signature-secret bs=1024 count=1'
         not_if_exists: '/etc/hadoop/hadoop-http-auth-signature-secret'
-      , (err, executed) ->
-        return next err if err
-        ctx.hconfigure
-          destination: '/etc/hadoop/conf/core-site.xml'
-          properties:
-            'hadoop.http.filter.initializers': 'org.apache.hadoop.security.AuthenticationFilterInitializer'
-            'hadoop.http.authentication.type': 'kerberos'
-            'hadoop.http.authentication.token.validity': 36000
-            'hadoop.http.authentication.signature.secret.file': '/etc/hadoop/hadoop-http-auth-signature-secret'
-            'hadoop.http.authentication.cookie.domain': core_site['hadoop.http.authentication.cookie.domain']
-            'hadoop.http.authentication.simple.anonymous.allowed': 'false'
-            # For some reason, _HOST isnt leveraged
-            # TODO, this is now fix in HDP-1.3.9
-            'hadoop.http.authentication.kerberos.principal': "HTTP/#{ctx.config.host}@#{realm}"
-            'hadoop.http.authentication.kerberos.keytab': '/etc/security/keytabs/spnego.service.keytab'
-          merge: true
-          backup: true
-        , next
+      , next
 
     module.exports.push 'ryba/hadoop/core_ssl'
 

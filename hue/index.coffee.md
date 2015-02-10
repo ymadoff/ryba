@@ -106,7 +106,7 @@ Example:
       if hdfs_nn_hosts.length > 1
         nn_host = ryba.active_nn_host
         shortname = ctx.hosts[nn_host].config.shortname
-        nn_http_port = ryba.ha_client_config["dfs.namenode.#{nn_protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
+        nn_http_port = ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
       else
         nn_host = hdfs_nn_hosts[0]
         nn_http_port = hdfs.site["dfs.namenode.#{nn_protocol}-address"].split(':')[1]

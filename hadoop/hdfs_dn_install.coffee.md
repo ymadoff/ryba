@@ -94,13 +94,41 @@ present inside the "hdp.ha\_client\_config" object.
 
     module.exports.push name: 'HDFS DN # HA', handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
+      {hadoop_conf_dir, hdfs, hadoop_group} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-        properties: ha_client_config
+        default: "#{__dirname}/../resources/core_hadoop/hdfs-site.xml"
+        local_default: true
+        properties: hdfs.site
+        uid: hdfs.user
+        gid: hadoop_group
         merge: true
         backup: true
       , next
+
+# Configure Master
+
+Accoring to [Yahoo!](http://developer.yahoo.com/hadoop/tutorial/module7.html):
+The conf/masters file contains the hostname of the
+SecondaryNameNode. This should be changed from "localhost"
+to the fully-qualified domain name of the node to run the
+SecondaryNameNode service. It does not need to contain
+the hostname of the JobTracker/NameNode machine; 
+Also some [interesting info about snn](http://blog.cloudera.com/blog/2009/02/multi-host-secondarynamenode-configuration/)
+        
+    module.exports.push name: 'HDFS SNN # Configure Master', handler: (ctx, next) ->
+      {hdfs, hadoop_conf_dir, hadoop_group} = ctx.config.ryba
+      secondary_namenode = ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+      return next() unless secondary_namenode
+      ctx.write
+        content: "#{secondary_namenode}"
+        destination: "#{hadoop_conf_dir}/masters"
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+      , (err, configured) ->
+        return next err if err
+        modified = true if configured
+        do_slaves()
 
 ## Layout
 

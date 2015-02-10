@@ -104,28 +104,14 @@ keytab, also used by the NameNodes, DataNodes, ResourceManagers and
 NodeManagers.
 
     module.exports.push name: 'HDFS JN # Configure', handler: (ctx, next) ->
-      {hdfs, hadoop_conf_dir} = ctx.config.ryba
+      {hdfs, hadoop_conf_dir, hadoop_group} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
+        default: "#{__dirname}/../resources/core_hadoop/hdfs-site.xml"
+        local_default: true
         properties: hdfs.site
-        merge: true
-        backup: true
-      , next
-
-## Configure HA
-
-Add High Availability specific properties to the "hdfs-site.xml" file. Those
-properties include "dfs.namenode.shared.edits.dir". Note, this might not be
-read on JN side (see [DFSConfigKeys.java][keys]).
-
-    module.exports.push name: 'HDFS JN # Configure HA', handler: (ctx, next) ->
-      {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
-      journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
-      ha_client_config['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
-      ha_client_config['dfs.namenode.shared.edits.dir'] = "qjournal://#{ha_client_config['dfs.namenode.shared.edits.dir']}/#{ha_client_config['dfs.nameservices']}"
-      ctx.hconfigure
-        destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-        properties: ha_client_config
+        uid: hdfs.user.name
+        gid: hadoop_group.name
         merge: true
         backup: true
       , next
@@ -134,8 +120,6 @@ read on JN side (see [DFSConfigKeys.java][keys]).
 
     lifecycle = require '../lib/lifecycle'
     mkcmd = require '../lib/mkcmd'
-
-[keys]: https://github.com/apache/hadoop-common/blob/trunk/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSConfigKeys.java
 
 
 

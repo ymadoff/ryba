@@ -143,30 +143,27 @@ Environment passed to the NameNode before it starts.
       {hdfs, hadoop_conf_dir, hadoop_group} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
+        default: "#{__dirname}/../resources/core_hadoop/hdfs-site.xml"
+        local_default: true
         properties: hdfs.site
-        uid: hdfs.user
-        gid: hadoop_group
+        uid: hdfs.user.name
+        gid: hadoop_group.name
         merge: true
         backup: true
       , next
 
-# Configure HA
+# Slaves
 
-Update "hdfs-site.xml" with HA configuration. The inserted properties are
-similar than the ones for a client or slave configuration with the addtionnal
-"dfs.namenode.shared.edits.dir" and "dfs.namenode.shared.edits.dir" properties.
+The conf/slaves file should contain the hostname of every machine
+in the cluster which should start TaskTracker and DataNode daemons.
 
-    module.exports.push name: 'HDFS NN # Configure HA', handler: (ctx, next) ->
-      {hadoop_conf_dir, ha_client_config} = ctx.config.ryba
-      return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
-      ha_client_config['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
-      ha_client_config['dfs.namenode.shared.edits.dir'] = "qjournal://#{ha_client_config['dfs.namenode.shared.edits.dir']}/#{ha_client_config['dfs.nameservices']}"
-      ctx.hconfigure
-        destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-        properties: ha_client_config
-        merge: true
-        backup: true
+    module.exports.push name: 'HDFS NN # Slaves', handler: (ctx, next) ->
+      {hadoop_conf_dir} = ctx.config.ryba
+      datanodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_dn'
+      ctx.write
+        content: "#{datanodes.join '\n'}"
+        destination: "#{hadoop_conf_dir}/slaves"
+        eof: true
       , next
 
 # SSH Fencing
@@ -185,11 +182,9 @@ inside "/etc/security/access.conf". A specific rule for the HDFS user is
 inserted if ALL users or the HDFS user access is denied.
 
     module.exports.push name: 'HDFS NN # SSH Fencing', handler: (ctx, next) ->
-      {hdfs, hadoop_conf_dir, ha_client_config, ssh_fencing, hadoop_group} = ctx.config.ryba
+      {hdfs, hadoop_conf_dir, ssh_fencing, hadoop_group} = ctx.config.ryba
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       modified = false
-      ha_client_config['dfs.ha.fencing.methods'] ?= "sshfence(#{hdfs.user.name})"
-      ha_client_config['dfs.ha.fencing.ssh.private-key-files'] ?= "#{hdfs.user.home}/.ssh/id_rsa"
       do_mkdir = ->
         ctx.mkdir
           destination: "#{hdfs.user.home}/.ssh"
@@ -244,24 +239,14 @@ inserted if ALL users or the HDFS user access is denied.
               nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
               content.push "+ : #{hdfs.user.name} : #{nn_hosts.join ','}"
             content.push line
-          return do_configure() if content.length is source.length
+          return do_end() if content.length is source.length
           ctx.write
             destination: '/etc/security/access.conf'
             content: content.join '\n'
           , (err, written) ->
             return next err if err
             modified = true if written
-            do_configure()
-      do_configure = ->
-        ctx.hconfigure
-          destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-          properties: ha_client_config
-          merge: true
-          backup: true
-        , (err, configured) ->
-          return next err if err
-          modified = true if configured
-          do_end()
+            do_end()
       do_end = ->
           next null, modified
       do_mkdir()
@@ -393,10 +378,6 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
           modified = true if configured
           do_core()
       do_core = ->
-        # quorum = Object.keys(ctx.config.servers)
-        #   .filter( (host) -> zookeepers.indexOf(host) isnt -1 )
-        #   .map( (host) -> "#{host}:2181" )
-        #   .join ','
         quorum = zookeepers.map( (host) -> "#{host}:2181" ).join ','
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/core-site.xml"

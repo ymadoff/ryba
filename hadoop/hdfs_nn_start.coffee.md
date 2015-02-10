@@ -37,14 +37,6 @@ need a mojority of DataNodes to be started in order to exit safe mode.
         interval: 3000
       , (err) -> next err
 
-    # module.exports.push name: 'HDFS NN # Start Wait NameNode', timeout: -1, handler: (ctx, next) ->
-    #   return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-    #   {hdfs, nameservice, ha_client_config} = ctx.config.ryba
-    #   ipc_port = ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{ctx.config.shortname}"].split(':')[1] or 8020
-    #   protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-    #   http_port = ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{ctx.config.shortname}"].split(':')[1]
-    #   ctx.waitIsOpen ctx.config.host, [ipc_port, http_port], timeout: hdfs.namenode_timeout, (err) -> next err
-
     module.exports.push name: 'HDFS NN # Start ZKFC', label_true: 'STARTED', handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       # ZKFC should start first on active NameNode
@@ -73,7 +65,7 @@ This middleware duplicates the one present in 'masson/hadoop/hdfs_dn_wait' and
 is only called if a DataNode isn't installed on this server because this command
 only run on a NameNode with fencing installed and in normal mode.
 
-    module.exports.push name: 'HDFS DN Start # Wait Failover', handler: (ctx, next) ->
+    module.exports.push name: 'HDFS DN Start # Wait Failover', label_true: 'READY', handler: (ctx, next) ->
       return next() if ctx.has_module 'ryba/hadoop/hdfs_dn'
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       {active_nn_host, standby_nn_host} = ctx.config.ryba

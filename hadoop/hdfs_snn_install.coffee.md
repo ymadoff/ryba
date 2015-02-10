@@ -81,6 +81,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       {hdfs, hadoop_conf_dir, hadoop_group} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
+        default: "#{__dirname}/../resources/core_hadoop/hdfs-site.xml"
+        local_default: true
         properties: hdfs.site
         uid: hdfs.user
         gid: hadoop_group

@@ -11,10 +11,12 @@ does not store the data of these files itself. It’s important that this metada
 
 ## Configuration
 
-The NameNode doesn't define new configuration properties. However, it uses properties
-define inside the "ryba/hadoop/hdfs" and "masson/core/nc" modules.
+Look at the file [DFSConfigKeys.java][keys] for an exhaustive list of supported
+properties.
 
-*   `ryba.namenode_opts` (string)   
+*   `ryba.hdfs.site` (object)   
+    Properties added to the "hdfs-site.xml" file.   
+*   `ryba.hdfs.namenode_opts` (string)   
     NameNode options.   
 
 Example:   
@@ -40,6 +42,24 @@ Example:
       ryba.hdfs.site['dfs.ha.automatic-failover.enabled'] ?= 'true'
       ryba.hdfs.namenode_opts ?= null
 
+## Configuration for HDFS High Availability (HA)
+
+Add High Availability specific properties to the "hdfs-site.xml" file. The
+inserted properties are similar than the ones for a client or slave
+configuration with the additionnal "dfs.namenode.shared.edits.dir" property.
+
+The default configuration implement the "sshfence" fencing method. This method
+SSHes to the target node and uses fuser to kill the process listening on the
+service's TCP port.
+
+      if ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+        journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
+        ryba.hdfs.site['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
+        ryba.hdfs.site['dfs.namenode.shared.edits.dir'] = "qjournal://#{ryba.hdfs.site['dfs.namenode.shared.edits.dir']}/#{ryba.hdfs.site['dfs.nameservices']}"
+        # Fencing
+        ryba.hdfs.site['dfs.ha.fencing.methods'] ?= "sshfence(#{ryba.hdfs.user.name})"
+        ryba.hdfs.site['dfs.ha.fencing.ssh.private-key-files'] ?= "#{ryba.hdfs.user.home}/.ssh/id_rsa"
+
     # module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_nn_backup'
 
     module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_nn_check'
@@ -55,4 +75,6 @@ Example:
     module.exports.push commands: 'status', modules: 'ryba/hadoop/hdfs_nn_status'
 
     module.exports.push commands: 'stop', modules: 'ryba/hadoop/hdfs_nn_stop'
+
+[keys]: https://github.com/apache/hadoop-common/blob/trunk/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSConfigKeys.java
 

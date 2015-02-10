@@ -245,7 +245,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           protocol = if nn_ctx.config.ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
           shortname = nn_ctx.config.shortname
           nameservice = nn_ctx.config.ryba.nameservice
-          nn_host = ctx.config.ryba.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')
+          nn_host = ctx.config.ryba.hdfs.site["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')
           nn_hosts_map[nn_host[0]] = nn_host[1]
           active_nn_port = nn_host[1] if nn_ctx.config.host is active_nn_host
       rm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
@@ -276,7 +276,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       else hive.site['hive.server2.thrift.http.port']
       # protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       # shortname = ctx.hosts[active_nn_host].config.shortname
-      # active_nn_port = ctx.config.ryba.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
+      # active_nn_port = ctx.config.ryba.hdfs.site["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
       hostgroup_defs = {}
       for group, hosts of nagios.hostgroups
         hostgroup_defs[group] = if hosts.length then hosts else null

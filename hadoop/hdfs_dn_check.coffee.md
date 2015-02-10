@@ -76,45 +76,35 @@ Read [Delegation Tokens in Hadoop Security](http://www.kodkast.com/blogs/hadoop/
 for more information.
 
     module.exports.push name: 'HDFS DN # Check WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
-      {hdfs, nameservice, user, force_check, active_nn_host} = ctx.config.ryba
+      {hdfs, nameservice, user, force_check, active_nn_host, force_check} = ctx.config.ryba
+      is_ha = ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+      # state = if not is_ha or active_nn_host is ctx.config.host then 'active' else 'standby'
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-        nn_host = ctx.host_with_module 'ryba/hadoop/hdfs_nn'
-        nn_port = hdfs.site["dfs.namenode.#{protocol}-address"].split(':')[1]
-      else
-        nn_host = active_nn_host
-        shortname = ctx.hosts[active_nn_host].config.shortname
-        nn_port = ctx.config.ryba.ha_client_config["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
-      force_check = true
-      do_wait = ->
-        ctx.waitForExecution
-          cmd: mkcmd.hdfs ctx, 'hdfs dfsadmin -safemode get | grep OFF'
-        , (err) ->
-          return next err if err
-          do_init()
+      nameservice = if is_ha then ".#{ctx.config.ryba.hdfs.site['dfs.nameservices']}" else ''
+      shortname = if is_ha then ".#{ctx.contexts(hosts: active_nn_host)[0].config.shortname}" else ''
+      address = hdfs.site["dfs.namenode.#{protocol}-address#{nameservice}#{shortname}"]
       do_init = ->
         ctx.execute
           cmd: mkcmd.test ctx, """
-          if hdfs dfs -test -f /user/#{user.name}/#{ctx.config.host}-webhdfs; then exit 2; fi
-          hdfs dfs -touchz /user/#{user.name}/#{ctx.config.host}-webhdfs
+          hdfs dfs -touchz check-#{ctx.config.shortname}-webhdfs
           kdestroy
           """
           code_skipped: 2
+          not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{ctx.config.shortname}-webhdfs"
         , (err, executed, stdout) ->
           return next err if err
-          return do_spnego() if force_check
           return next null, false unless executed
           do_spnego()
       do_spnego = ->
         ctx.execute
           cmd: mkcmd.test ctx, """
-          curl -s --negotiate --insecure -u : "#{protocol}://#{nn_host}:#{nn_port}/webhdfs/v1/user/#{user.name}?op=LISTSTATUS"
+          curl -s --negotiate --insecure -u : "#{protocol}://#{address}/webhdfs/v1/user/#{user.name}?op=LISTSTATUS"
           kdestroy
           """
         , (err, executed, stdout) ->
           return next err if err
           try
-            count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "#{ctx.config.host}-webhdfs").length
+            count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "check-#{ctx.config.shortname}-webhdfs").length
           catch e then return next Error e
           err = Error "Invalid result" unless count
           return next err, false
@@ -122,7 +112,7 @@ for more information.
       do_token = ->
         ctx.execute
           cmd: mkcmd.test ctx, """
-          curl -s --negotiate --insecure -u : "#{protocol}://#{nn_host}:#{nn_port}/webhdfs/v1/?op=GETDELEGATIONTOKEN"
+          curl -s --negotiate --insecure -u : "#{protocol}://#{address}/webhdfs/v1/?op=GETDELEGATIONTOKEN"
           kdestroy
           """
         , (err, executed, stdout) ->
@@ -132,16 +122,16 @@ for more information.
           token = json.Token.urlString
           ctx.execute
             cmd: """
-            curl -s --insecure "#{protocol}://#{nn_host}:#{nn_port}/webhdfs/v1/user/#{user.name}?delegation=#{token}&op=LISTSTATUS"
+            curl -s --insecure "#{protocol}://#{address}/webhdfs/v1/user/#{user.name}?delegation=#{token}&op=LISTSTATUS"
             """
           , (err, executed, stdout) ->
             return next err if err
             try
-              count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "#{ctx.config.host}-webhdfs").length
+              count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "check-#{ctx.config.shortname}-webhdfs").length
             catch e then return next Error e
             err = Error "Invalid result" unless count
             return next err, false
             do_end()
       do_end = ->
         next null, true
-      do_wait()
+      do_init()

@@ -48,6 +48,9 @@ Example:
       ryba.hdfs.site['dfs.journalnode.keytab.file'] = '/etc/security/keytabs/spnego.service.keytab'
       ryba.hdfs.site['dfs.journalnode.edits.dir'] ?= ['/var/hdfs/edits']
       ryba.hdfs.site['dfs.journalnode.edits.dir'] = ryba.hdfs.site['dfs.journalnode.edits.dir'].join ',' if Array.isArray ryba.hdfs.site['dfs.journalnode.edits.dir']
+      nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn'
+      throw Error "HDFS not configured for HA" unless nn_ctxs.length is 2
+      ryba.hdfs.site['dfs.namenode.shared.edits.dir'] ?= nn_ctxs[0].config.ryba.hdfs.site['dfs.namenode.shared.edits.dir']
 
     # module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_jn_backup'
 

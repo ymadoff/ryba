@@ -21,14 +21,10 @@ In its current state, we are only supporting the installation of a
 The properties "hdp.hdfs.site['dfs.namenode.name.dir']" and
 "hdp.hdfs.site['dfs.datanode.data.dir']" are required.
   
-*   `ryba.hdfs.ha_client_config` (object)   
-    Properities added to the "hdfs-site.xml" file specific to the High Availability mode. There
-    are defined in a seperate configuration key then "hdp.hdfs.site" to hide them from being 
-    visible on a client setup.   
 *   `ryba.hdfs.hadoop_policy`    
 *   `ryba.hdfs.hdfs.namenode_timeout`   
 *   `ryba.hdfs.hdfs.site` (object)   
-    Properities added to the "hdfs-site.xml" file.
+    Properties added to the "hdfs-site.xml" file.
 *   `ryba.hdfs.nameservice`   
     The Unix MapReduce group name or a group object (see Mecano Group documentation). 
 
@@ -100,21 +96,17 @@ Example:
         # HDFS HA configuration
         namenodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
         ctx.config.ryba.shortname ?= ctx.config.shortname
-        ctx.config.ryba.ha_client_config = {}
-        ctx.config.ryba.ha_client_config['dfs.nameservices'] = nameservice
-        ctx.config.ryba.ha_client_config["dfs.ha.namenodes.#{nameservice}"] = (for nn in namenodes then nn.split('.')[0]).join ','
+        hdfs.site['dfs.nameservices'] = nameservice
+        hdfs.site["dfs.ha.namenodes.#{nameservice}"] = (for nn in namenodes then nn.split('.')[0]).join ','
         for nn in namenodes
           hdfs.site['dfs.namenode.http-address'] = null
           hdfs.site['dfs.namenode.https-address'] = null
           hconfig = ctx.hosts[nn].config
           shortname = hconfig.ryba.shortname ?= hconfig.shortname or nn.split('.')[0]
-          ctx.config.ryba.ha_client_config["dfs.namenode.rpc-address.#{nameservice}.#{shortname}"] ?= "#{nn}:8020"
-          ctx.config.ryba.ha_client_config["dfs.namenode.http-address.#{nameservice}.#{shortname}"] ?= "#{nn}:50070"
-          ctx.config.ryba.ha_client_config["dfs.namenode.https-address.#{nameservice}.#{shortname}"] ?= "#{nn}:50470"
-        ctx.config.ryba.ha_client_config["dfs.client.failover.proxy.provider.#{nameservice}"] ?= 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
-        # Temp fix, ha_client_config should disapear
-        for k, v of ctx.config.ryba.ha_client_config
-          hdfs.site[k] = v
+          hdfs.site["dfs.namenode.rpc-address.#{nameservice}.#{shortname}"] ?= "#{nn}:8020"
+          hdfs.site["dfs.namenode.http-address.#{nameservice}.#{shortname}"] ?= "#{nn}:50070"
+          hdfs.site["dfs.namenode.https-address.#{nameservice}.#{shortname}"] ?= "#{nn}:50470"
+        hdfs.site["dfs.client.failover.proxy.provider.#{nameservice}"] ?= 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
       # Fix HDP Companion File bug
       hdfs.site['dfs.https.namenode.https-address'] = null
 
@@ -164,59 +156,6 @@ with Kerberos specific properties.
       #   name: 'bigtop-jsvc'
       ], next
 
-    module.exports.push name: 'HDFS # Hadoop Configuration', timeout: -1, handler: (ctx, next) ->
-      {core, hdfs, hadoop_conf_dir} = ctx.config.ryba
-      datanodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_dn'
-      modified = false
-      do_hdfs = ->
-        ctx.log 'Configure hdfs-site.xml'
-        # Fix: the "dfs.cluster.administrators" value has a space inside
-        hdfs.site['dfs.cluster.administrators'] = 'hdfs'
-        # NameNode hostname for http access.
-        ctx.hconfigure
-          destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-          default: "#{__dirname}/../resources/core_hadoop/hdfs-site.xml"
-          local_default: true
-          properties: hdfs.site
-          merge: true
-          backup: true
-        , (err, configured) ->
-          return next err if err
-          modified = true if configured
-          do_master()
-      do_master = ->
-        # Accoring to [Yahoo!](http://developer.yahoo.com/hadoop/tutorial/module7.html):
-        # The conf/masters file contains the hostname of the
-        # SecondaryNameNode. This should be changed from "localhost"
-        # to the fully-qualified domain name of the node to run the
-        # SecondaryNameNode service. It does not need to contain
-        # the hostname of the JobTracker/NameNode machine; 
-        # Also some [interesting info about snn](http://blog.cloudera.com/blog/2009/02/multi-host-secondarynamenode-configuration/)
-        ctx.log 'Configure masters'
-        secondary_namenode = ctx.host_with_module 'ryba/hadoop/hdfs_snn'
-        return do_slaves() unless secondary_namenode
-        ctx.write
-          content: "#{secondary_namenode}"
-          destination: "#{hadoop_conf_dir}/masters"
-        , (err, configured) ->
-          return next err if err
-          modified = true if configured
-          do_slaves()
-      do_slaves = ->
-        # The conf/slaves file should contain the hostname of every machine
-        # in the cluster which should start TaskTracker and DataNode daemons
-        ctx.log 'Configure slaves'
-        ctx.write
-          content: "#{datanodes.join '\n'}"
-          destination: "#{hadoop_conf_dir}/slaves"
-          eof: true
-        , (err, configured) ->
-          return next err if err
-          modified = true if configured
-          do_end()
-      do_end = ->
-        next null, modified
-      do_hdfs()
 
 ## Policy
 
