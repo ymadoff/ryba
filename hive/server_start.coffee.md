@@ -19,7 +19,12 @@ HDFS server to answer queries.
 
 ## Start Hive HCatalog
 
-Execute these commands on the Hive HCatalog (Metastore) host machine.
+Start the Hive HCatalog server. You can also start the server manually with the
+following command:
+
+```
+service hive-hcatalog-server start
+```
 
     module.exports.push name: 'Hive & HCat Server # Start HCatalog', timeout: -1, label_true: 'STARTED', handler: (ctx, next) ->
       ctx.service
@@ -30,11 +35,17 @@ Execute these commands on the Hive HCatalog (Metastore) host machine.
 
 ## Start Server2
 
-Execute these commands on the Hive Server2 host machine.
+Start the Hive Server2. You can also start the server manually with one of the
+following two commands:
+
+```
+service hive-hcatalog-server start
+su -l hive -c 'nohup /usr/lib/hive/bin/hiveserver2 >/var/log/hive/hiveserver2.out 2>/var/log/hive/hiveserver2.log & echo $! >/var/run/hive/server2.pid'
+```
 
     module.exports.push name: 'Hive & HCat Server # Start Server2', timeout: -1, label_true: 'STARTED', handler: (ctx, next) ->
-      lifecycle.hive_server2_start ctx, next
-
-## Module Dependencies
-
-    lifecycle = require '../lib/lifecycle'
+      ctx.service
+        srv_name: 'hive-server2'
+        action: 'start'
+        if_exists: '/etc/init.d/hive-server2'
+      , next

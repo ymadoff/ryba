@@ -218,71 +218,72 @@ lifecyle = module.exports =
         cmd: 'service hadoop-mapreduce-historyserver stop'
         # code_skipped: 1
       , callback
-  hive_metastore_status: (ctx, callback) ->
-    ctx.execute
-      cmd: "service hive-hcatalog-server status"
-      code_skipped: [1, 3]
-    , callback
-  hive_metastore_start: (ctx, callback) ->
-    {metastore} = ctx.config.ryba.hive
-    lifecyle.hive_metastore_status ctx, (err, running) ->
-      return callback err, false if err or running
-      ctx.log "Hive Metastore start"
-      ctx.execute
-        # su -l hive -c 'nohup hive --service metastore >/var/log/hive/hive.out 2>/var/log/hive/hive.log & echo $! >/var/run/hive/metastore.pid'
-        cmd: "service hive-hcatalog-server start"
-        # code_skipped: 1
-      , (err, started) ->
-        return callback err if err
-        ctx.waitIsOpen metastore.host, metastore.port, timeout: metastore.timeout, (err) ->
-          callback err, started
-  hive_metastore_stop: (ctx, callback) ->
-    lifecyle.hive_metastore_status ctx, (err, running) ->
-      return callback err, false if err or not running
-      ctx.log "Hive Metastore stop"
-      ctx.execute
-        # su -l hive -c "kill `cat /var/run/hive/metastore.pid`"
-        cmd: "service hive-hcatalog-server stop"
-        # code_skipped: 1
-      , (err, stopped) ->
-        callback err, stopped
-  hive_metastore_restart: (ctx, callback) ->
-    ctx.log "Hive Metastore restart"
-    lifecyle.hive_metastore_stop ctx, (err) ->
-      return callback err if err
-      lifecyle.hive_metastore_start ctx, callback
-  hive_server2_status: (ctx, callback) ->
-    ctx.execute
-      cmd: "service hive-server2 status"
-      code_skipped: [1, 3]
-    , callback
-  hive_server2_start: (ctx, callback) ->
-    {hive_server2} = ctx.config.ryba.hive
-    lifecyle.hive_server2_status ctx, (err, running) ->
-      return callback err, false if err or running
-      ctx.log "Hive Server2 start"
-      ctx.execute
-        # su -l hive -c 'nohup /usr/lib/hive/bin/hiveserver2 >/var/log/hive/hiveserver2.out 2>/var/log/hive/hiveserver2.log & echo $! >/var/run/hive/server2.pid'
-        cmd: 'service hive-server2 start'
-        # code_skipped: 1
-      , (err, started) ->
-        return callback err if err
-        ctx.waitIsOpen hive_server2.host, hive_server2.port, timeout: hive_server2.timeout, (err) ->
-          callback err, started
-  hive_server2_stop: (ctx, callback) ->
-    lifecyle.hive_server2_status ctx, (err, running) ->
-      return callback err, false if err or not running
-      ctx.log "Hive Server2 stop"
-      ctx.execute
-        # su -l hive -c "kill `cat /var/run/hive/server2.pid`"
-        cmd: 'service hive-server2 stop'
-        # code_skipped: 1
-      , callback
-  hive_server2_restart: (ctx, callback) ->
-    ctx.log "Hive Server2 restart"
-    lifecyle.hive_server2_stop ctx, (err) ->
-      return callback err if err
-      lifecyle.hive_server2_start ctx, callback
+  # hive_metastore_status: (ctx, callback) ->
+  #   ctx.execute
+  #     cmd: "service hive-hcatalog-server status"
+  #     code_skipped: [1, 3]
+  #   , callback
+  # hive_metastore_start: (ctx, callback) ->
+  #   {metastore} = ctx.config.ryba.hive
+  #   lifecyle.hive_metastore_status ctx, (err, running) ->
+  #     return callback err, false if err or running
+  #     ctx.log "Hive Metastore start"
+  #     ctx.execute
+  #       # su -l hive -c 'nohup hive --service metastore >/var/log/hive/hive.out 2>/var/log/hive/hive.log & echo $! >/var/run/hive/metastore.pid'
+  #       cmd: "service hive-hcatalog-server start"
+  #       # code_skipped: 1
+  #     , (err, started) ->
+  #       return callback err if err
+  #       ctx.waitIsOpen metastore.host, metastore.port, timeout: metastore.timeout, (err) ->
+  #         callback err, started
+  # hive_metastore_stop: (ctx, callback) ->
+  #   lifecyle.hive_metastore_status ctx, (err, running) ->
+  #     return callback err, false if err or not running
+  #     ctx.log "Hive Metastore stop"
+  #     ctx.execute
+  #       # su -l hive -c "kill `cat /var/run/hive/metastore.pid`"
+  #       cmd: "service hive-hcatalog-server stop"
+  #       # code_skipped: 1
+  #     , (err, stopped) ->
+  #       callback err, stopped
+  # hive_metastore_restart: (ctx, callback) ->
+  #   ctx.log "Hive Metastore restart"
+  #   lifecyle.hive_metastore_stop ctx, (err) ->
+  #     return callback err if err
+  #     lifecyle.hive_metastore_start ctx, callback
+  # hive_server2_status: (ctx, callback) ->
+  #   ctx.execute
+  #     cmd: "service hive-server2 status"
+  #     code_skipped: [1, 3]
+  #   , callback
+  # hive_server2_start: (ctx, callback) ->
+  #   {hive_server2} = ctx.config.ryba.hive
+  #   lifecyle.hive_server2_status ctx, (err, running) ->
+  #     return callback err, false if err or running
+  #     ctx.log "Hive Server2 start"
+  #     ctx.execute
+  #       # su -l hive -c 'nohup /usr/lib/hive/bin/hiveserver2 >/var/log/hive/hiveserver2.out 2>/var/log/hive/hiveserver2.log & echo $! >/var/run/hive/server2.pid'
+  #       cmd: 'service hive-server2 start'
+  #       # code_skipped: 1
+  #     , next
+  #     # , (err, started) ->
+  #     #   return callback err if err
+  #     #   ctx.waitIsOpen hive_server2.host, hive_server2.port, timeout: hive_server2.timeout, (err) ->
+  #     #     callback err, started
+  # hive_server2_stop: (ctx, callback) ->
+  #   lifecyle.hive_server2_status ctx, (err, running) ->
+  #     return callback err, false if err or not running
+  #     ctx.log "Hive Server2 stop"
+  #     ctx.execute
+  #       # su -l hive -c "kill `cat /var/run/hive/server2.pid`"
+  #       cmd: 'service hive-server2 stop'
+  #       # code_skipped: 1
+  #     , callback
+  # hive_server2_restart: (ctx, callback) ->
+  #   ctx.log "Hive Server2 restart"
+  #   lifecyle.hive_server2_stop ctx, (err) ->
+  #     return callback err if err
+  #     lifecyle.hive_server2_start ctx, callback
   # oozie_status: (ctx, callback) ->
   #   ctx.log "Oozie status"
   #   {oozie} = ctx.config.ryba
