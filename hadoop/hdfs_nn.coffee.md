@@ -60,7 +60,7 @@ service's TCP port.
         ryba.hdfs.site['dfs.ha.fencing.methods'] ?= "sshfence(#{ryba.hdfs.user.name})"
         ryba.hdfs.site['dfs.ha.fencing.ssh.private-key-files'] ?= "#{ryba.hdfs.user.home}/.ssh/id_rsa"
 
-    # module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_nn_backup'
+    module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_nn_backup'
 
     module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_nn_check'
 
@@ -77,4 +77,5 @@ service's TCP port.
     module.exports.push commands: 'stop', modules: 'ryba/hadoop/hdfs_nn_stop'
 
 [keys]: https://github.com/apache/hadoop-common/blob/trunk/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSConfigKeys.java
+
 

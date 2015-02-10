@@ -35,49 +35,50 @@ Example
       require('masson/commons/java').configure ctx
       require('../hadoop/core').configure ctx
       # require('./client').configure ctx
-      {ryba} = ctx.config
       # Internal properties
+      {ryba} = ctx.config 
       ryba.force_war ?= false
       # User
-      ryba.oozie ?= {}
-      ryba.oozie.user ?= {}
-      ryba.oozie.user = name: ryba.oozie.user if typeof ryba.oozie.user is 'string'
-      ryba.oozie.user.name ?= 'oozie'
-      ryba.oozie.user.system ?= true
-      ryba.oozie.user.gid ?= 'oozie'
-      ryba.oozie.user.comment ?= 'Oozie User'
-      ryba.oozie.user.home ?= '/var/lib/oozie'
+      oozie = ryba.oozie ?= {}
+      oozie.user ?= {}
+      oozie.user = name: oozie.user if typeof oozie.user is 'string'
+      oozie.user.name ?= 'oozie'
+      oozie.user.system ?= true
+      oozie.user.gid ?= 'oozie'
+      oozie.user.comment ?= 'Oozie User'
+      oozie.user.home ?= '/var/lib/oozie'
       # Group
-      ryba.oozie.group ?= {}
-      ryba.oozie.group = name: ryba.oozie.group if typeof ryba.oozie.group is 'string'
-      ryba.oozie.group.name ?= 'oozie'
-      ryba.oozie.group.system ?= true
+      oozie.group ?= {}
+      oozie.group = name: oozie.group if typeof oozie.group is 'string'
+      oozie.group.name ?= 'oozie'
+      oozie.group.system ?= true
       # Layout
-      ryba.oozie.conf_dir ?= '/etc/oozie/conf'
-      ryba.oozie.data ?= '/var/db/oozie'
-      ryba.oozie.log_dir ?= '/var/log/oozie'
-      ryba.oozie.pid_dir ?= '/var/run/oozie'
-      ryba.oozie.tmp_dir ?= '/var/tmp/oozie'
+      oozie.conf_dir ?= '/etc/oozie/conf'
+      oozie.data ?= '/var/db/oozie'
+      oozie.log_dir ?= '/var/log/oozie'
+      oozie.pid_dir ?= '/var/run/oozie'
+      oozie.tmp_dir ?= '/var/tmp/oozie'
+      
       # Configuration
-      ryba.oozie.site ?= {}
-      ryba.oozie.site['oozie.base.url'] = "http://#{ctx.config.host}:11000/oozie"
+      oozie.site ?= {}
+      oozie.site['oozie.base.url'] = "http://#{ctx.config.host}:11000/oozie"
       # Configuration Database
-      ryba.oozie.site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{ryba.db_admin.host}:#{ryba.db_admin.port}/oozie?createDatabaseIfNotExist=true"
-      ryba.oozie.site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
-      ryba.oozie.site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'
-      ryba.oozie.site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
-      ryba.oozie.site['oozie.service.AuthorizationService.security.enabled'] ?= null # Now deprecated in favor of oozie.service.AuthorizationService.authorization.enabled (see oozie "oozie.log" file)
-      ryba.oozie.site['oozie.service.AuthorizationService.authorization.enabled'] ?= 'true'
-      ryba.oozie.site['oozie.service.HadoopAccessorService.kerberos.enabled'] ?= 'true'
-      ryba.oozie.site['local.realm'] ?= "#{ryba.realm}"
-      ryba.oozie.site['oozie.service.HadoopAccessorService.keytab.file'] ?= '/etc/oozie/conf/oozie.service.keytab'
-      ryba.oozie.site['oozie.service.HadoopAccessorService.kerberos.principal'] ?= "oozie/#{ctx.config.host}@#{ryba.realm}"
-      ryba.oozie.site['oozie.authentication.type'] ?= 'kerberos'
-      ryba.oozie.site['oozie.authentication.kerberos.principal'] ?= "HTTP/#{ctx.config.host}@#{ryba.realm}"
-      ryba.oozie.site['oozie.authentication.kerberos.keytab'] ?= '/etc/oozie/conf/spnego.service.keytab'
-      # ryba.oozie.site['oozie.service.HadoopAccessorService.nameNode.whitelist'] = ''
-      ryba.oozie.site['oozie.authentication.kerberos.name.rules'] ?= ryba.core_site['hadoop.security.auth_to_local']
-      ryba.oozie.site['oozie.service.HadoopAccessorService.nameNode.whitelist'] ?= '' # Fix space value
+      oozie.site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{ryba.db_admin.host}:#{ryba.db_admin.port}/oozie?createDatabaseIfNotExist=true"
+      oozie.site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
+      oozie.site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'
+      oozie.site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
+      oozie.site['oozie.service.AuthorizationService.security.enabled'] ?= null # Now deprecated in favor of oozie.service.AuthorizationService.authorization.enabled (see oozie "oozie.log" file)
+      oozie.site['oozie.service.AuthorizationService.authorization.enabled'] ?= 'true'
+      oozie.site['oozie.service.HadoopAccessorService.kerberos.enabled'] ?= 'true'
+      oozie.site['local.realm'] ?= "#{ryba.realm}"
+      oozie.site['oozie.service.HadoopAccessorService.keytab.file'] ?= '/etc/oozie/conf/oozie.service.keytab'
+      oozie.site['oozie.service.HadoopAccessorService.kerberos.principal'] ?= "oozie/#{ctx.config.host}@#{ryba.realm}"
+      oozie.site['oozie.authentication.type'] ?= 'kerberos'
+      oozie.site['oozie.authentication.kerberos.principal'] ?= "HTTP/#{ctx.config.host}@#{ryba.realm}"
+      oozie.site['oozie.authentication.kerberos.keytab'] ?= '/etc/oozie/conf/spnego.service.keytab'
+      # oozie.site['oozie.service.HadoopAccessorService.nameNode.whitelist'] = ''
+      oozie.site['oozie.authentication.kerberos.name.rules'] ?= ryba.core_site['hadoop.security.auth_to_local']
+      oozie.site['oozie.service.HadoopAccessorService.nameNode.whitelist'] ?= '' # Fix space value
       # ryba.extjs ?= {}
       # throw new Error "Missing extjs.source" unless ryba.extjs.source
       # throw new Error "Missing extjs.destination" unless ryba.extjs.destination
@@ -156,7 +157,7 @@ Example
       ryba.oozie.hadoop_config['dfs.namenode.kerberos.principal'] ?= "hdfs/#{ryba.static_host}@#{ryba.realm}"
       ryba.oozie.hadoop_config['mapreduce.framework.name'] ?= "yarn"
 
-    # module.exports.push commands: 'backup', modules: 'ryba/oozie/server_backup'
+    module.exports.push commands: 'backup', modules: 'ryba/oozie/server_backup'
 
     # module.exports.push commands: 'check', modules: 'ryba/oozie/server_check'
 

@@ -7,6 +7,7 @@ scanning the table.
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push require('./client').configure
+    util = require 'util'
 
 ## Check Shell
 
@@ -29,6 +30,35 @@ scanning the table.
           isRowCreated = RegExp("column=#{shortname}:my_column, timestamp=\\d+, value=10").test stdout
           return next Error 'Invalid command output' if executed and not isRowCreated
           next err, executed
+    
+    module.exports.push name: 'HBase Client # Check MapReduce', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
+      ctx.execute
+        cmd: mkcmd.test ctx, """
+          echo -e '1,toto\\n2,tata\\n3,titi\\n4,tutu' | hdfs dfs -put -f - /user/ryba/test_import.csv
+          hbase org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.separator=, -Dimporttsv.columns=HBASE_ROW_KEY,family1:value ryba /user/ryba/test_import.csv
+          """
+      , (err, executed, stdout) ->
+        next err, executed
+
+    module.exports.push name: 'HBase Client # Check Splits', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
+      hbase_ctxs = ctx.contexts 'ryba/hbase/master', require('./master').configure
+      {admin} = hbase_ctxs[0].config.ryba.hbase
+      ctx.execute
+        cmd: mkcmd.test ctx, """
+          echo #{admin.password} | kinit #{admin.principal}
+          if hbase shell 2>/dev/null <<< "list" | grep 'test_splits'; then echo "disable 'test_splits'" | hbase shell 2>/dev/null; echo "drop 'test_splits'" | hbase shell 2>/dev/null; fi
+          echo "create 'test_splits', 'cf1', SPLITS => ['1', '2', '3']" | hbase shell 2>/dev/null;
+          echo "scan 'hbase:meta',  {COLUMNS => 'info:regioninfo', FILTER => \\"PrefixFilter ('test_split')\\"}" | hbase shell 2>/dev/null
+          """
+      , (err, executed, stdout) ->
+        return next err if err
+        lines = string.lines stdout
+        count = 0
+        for line in lines
+          count++ if /^ test_splits,/.test line
+        return next Error 'Invalid Splits Count' unless count is 4
+        next null, executed
+
       # Note: inspiration for when namespace are functional
       # cmd = mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"list_namespace_tables 'ryba'\" | egrep '[0-9]+ row'"
       # ctx.waitForExecution cmd, (err) ->
@@ -51,3 +81,4 @@ scanning the table.
 ## Module Dependencies
 
     mkcmd = require '../lib/mkcmd'
+    string = require 'mecano/lib/misc/string'

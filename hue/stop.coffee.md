@@ -12,9 +12,10 @@
 ## Stop Clean Logs
 
     module.exports.push name: 'Hue # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
-      return next() unless ctx.config.ryba.clean_logs
+      {hue, clean_logs} = ctx.config.ryba
+      return next() unless clean_logs
       ctx.execute
-        cmd: 'rm /var/log/hue/*'
+        cmd: "rm #{hue.log_dir}/*"
         code_skipped: 1
       , next
 

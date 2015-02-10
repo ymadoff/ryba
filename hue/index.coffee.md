@@ -55,6 +55,7 @@ Example:
       hue = ctx.config.ryba.hue ?= {}
       # Layout
       hue.conf_dir ?= '/etc/hue/conf'
+      hue.log_dir ?= '/var/log/hue'
       # User
       hue.user ?= {}
       hue.user = name: hue.user if typeof hue.user is 'string'
@@ -180,7 +181,7 @@ Example:
       hue.ini['desktop']['database']['password'] ?= 'hue123'
       hue.ini['desktop']['database']['name'] ?= 'hue'
 
-    # module.exports.push commands: 'backup', modules: 'ryba/hue/backup'
+    module.exports.push commands: 'backup', modules: 'ryba/hue/backup'
 
     # module.exports.push commands: 'check', modules: 'ryba/hue/check'
 

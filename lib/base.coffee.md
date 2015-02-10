@@ -35,7 +35,7 @@
             mysql_host = ryba.db_admin.host = if mysql_hosts.length is 1 then mysql_hosts[0] else
               i = mysql_hosts.indexOf(ctx.config.host)
               if i isnt -1 then mysql_hosts[i] else throw new Error "Failed to find a Mysql Server"
-            mysql_conf = ctx.hosts[mysql_host].config.mysql_server
+            mysql_conf = ctx.hosts[mysql_host].config.mysql.server
           ryba.db_admin.path ?= 'mysql'
           ryba.db_admin.port ?= '3306'
           ryba.db_admin.username ?= 'root'
