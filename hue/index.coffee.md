@@ -89,6 +89,8 @@ Example:
       hue.group ?= {}
       hue.group.name ?= 'hue'
       hue.group.system ?= true
+      # Log
+      hue.log_dir ?= '/var/log/hue'
       # HDFS & YARN url
       # NOTE: default to unencrypted HTTP
       # error is "SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed"
@@ -175,7 +177,7 @@ Example:
       hue.ini['desktop']['database']['password'] ?= 'hue123'
       hue.ini['desktop']['database']['name'] ?= 'hue'
 
-    # module.exports.push commands: 'backup', modules: 'ryba/hue/backup'
+    module.exports.push commands: 'backup', modules: 'ryba/hue/backup'
 
     # module.exports.push commands: 'check', modules: 'ryba/hue/check'
 
