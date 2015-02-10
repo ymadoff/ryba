@@ -7,7 +7,7 @@ Execute this command on all the nodes in your Hadoop cluster.
     module.exports.push 'masson/bootstrap/connection'
     module.exports.push 'masson/bootstrap/mecano'
 
-    module.exports.push name: 'Ganglia Monitor # Start', handler: (ctx, next) ->
+    module.exports.push name: 'Ganglia Monitor # Start', label_true: 'STARTED', handler: (ctx, next) ->
       # Doesnt work for 3 reasons
       # waitIsOpen doesnt use udp
       # waitIsOpen use bash instead of nc which doesnt work for udp (always exit 0)
