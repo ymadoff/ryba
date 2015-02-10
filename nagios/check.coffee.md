@@ -58,7 +58,7 @@ php /usr/lib64/nagios/plugins/check_rpcq_latency_ha.php \
 
     module.exports.push name: 'Nagios # Check Command', label_true: 'CHECKED', handler: (ctx, next) ->
       {kinit} = ctx.config.krb5
-      {active_nn_host, nameservice, core_site, hdfs, realm} = ctx.config.ryba
+      {active_nn_host, nameservice, core_site, hdfs, nagios} = ctx.config.ryba
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
         nn_host = ctx.host_with_module 'ryba/hadoop/hdfs_nn'
@@ -72,8 +72,8 @@ php /usr/lib64/nagios/plugins/check_rpcq_latency_ha.php \
       cmd += " -p #{nn_port}"
       cmd += " -w 80%"
       cmd += " -c 90%"
-      cmd += " -k /etc/security/keytabs/nn.service.keytab"
-      cmd += " -r nn/#{nn_host}@#{realm}"
+      cmd += " -k #{nagios.keytab}"
+      cmd += " -r #{nagios.principal}"
       cmd += " -t #{kinit}"
       cmd += " -e #{if core_site['hadoop.security.authentication'] is 'kerberos' then 'true' else 'false'}"
       cmd += " -s #{if protocol is 'https' then 'true' else 'false'}"
