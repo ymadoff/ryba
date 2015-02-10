@@ -50,32 +50,11 @@ Example:
 }
 ```
 
-    module.exports.configure = (ctx) ->
-      require('masson/core/iptables').configure ctx
-      # Allow proxy user inside "webhcat-site.xml"
-      require('../hive/webhcat').configure ctx
-      # Allow proxy user inside "oozie-site.xml"
-      require('../oozie/server').configure ctx
-      # Allow proxy user inside "core-site.xml"
-      require('../hadoop/core').configure ctx
-      require('../hadoop/hdfs').configure ctx
-      require('../hadoop/yarn').configure ctx
-      {ryba} = ctx.config
-      {nameservice, hadoop_conf_dir, webhcat, hue, db_admin, core_site, hdfs, yarn} = ryba
-      hdfs_nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
-      hue ?= {}
-      hue.ini ?= {}
-      webhcat_port = webhcat.site['templeton.port']
-      webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
-      # todo, this might not work as expected after ha migration
-      nodemanagers = ctx.hosts_with_module 'ryba/hadoop/yarn_nm'
-      # Webhdfs should be active on the NameNode, Secondary NameNode, and all the DataNodes
-      # throw new Error 'WebHDFS not active' if ryba.hdfs.site['dfs.webhdfs.enabled'] isnt 'true'
+    module.exports.configure_system = (ctx) ->
+      ctx.config.ryba ?= {}
+      hue = ctx.config.ryba.hue ?= {}
+      # Layout
       hue.conf_dir ?= '/etc/hue/conf'
-      hue.ca_bundle ?= '/etc/hue/conf/trust.pem'
-      hue.ssl ?= {}
-      hue.ssl.client_ca ?= null
-      throw Error "Property 'hue.ssl.client_ca' required in HA with HTTPS" if hdfs_nn_hosts.length > 1 and hdfs.site['dfs.http.policy'] is 'HTTPS_ONLY' and not hue.ssl.client_ca
       # User
       hue.user ?= {}
       hue.user = name: hue.user if typeof hue.user is 'string'
@@ -89,6 +68,33 @@ Example:
       hue.group ?= {}
       hue.group.name ?= 'hue'
       hue.group.system ?= true
+
+    module.exports.configure = (ctx) ->
+      require('masson/core/iptables').configure ctx
+      # Allow proxy user inside "webhcat-site.xml"
+      require('../hive/webhcat').configure ctx
+      # Allow proxy user inside "oozie-site.xml"
+      require('../oozie/server').configure ctx
+      # Allow proxy user inside "core-site.xml"
+      require('../hadoop/core').configure ctx
+      require('../hadoop/hdfs').configure ctx
+      require('../hadoop/yarn').configure ctx
+      module.exports.configure_system ctx
+      {ryba} = ctx.config
+      {nameservice, hadoop_conf_dir, webhcat, hue, db_admin, core_site, hdfs, yarn} = ryba
+      hdfs_nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
+      hue ?= {}
+      hue.ini ?= {}
+      webhcat_port = webhcat.site['templeton.port']
+      webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
+      # todo, this might not work as expected after ha migration
+      nodemanagers = ctx.hosts_with_module 'ryba/hadoop/yarn_nm'
+      # Webhdfs should be active on the NameNode, Secondary NameNode, and all the DataNodes
+      # throw new Error 'WebHDFS not active' if ryba.hdfs.site['dfs.webhdfs.enabled'] isnt 'true'
+      hue.ca_bundle ?= '/etc/hue/conf/trust.pem'
+      hue.ssl ?= {}
+      hue.ssl.client_ca ?= null
+      throw Error "Property 'hue.ssl.client_ca' required in HA with HTTPS" if hdfs_nn_hosts.length > 1 and hdfs.site['dfs.http.policy'] is 'HTTPS_ONLY' and not hue.ssl.client_ca
       # HDFS & YARN url
       # NOTE: default to unencrypted HTTP
       # error is "SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed"
@@ -165,7 +171,6 @@ Example:
       hue.ini['desktop']['http_port'] ?= '8888'
       hue.ini['desktop']['secret_key'] ?= 'jFE93j;2[290-eiwMYSECRTEKEYy#e=+Iei*@Mn<qW5o'
       hue.ini['desktop']['smtp'] ?= {}
-      ctx.log "WARING: property 'hdp.hue.ini.desktop.smtp.host' isnt set" unless hue.ini['desktop']['smtp']['host']
       # Desktop database
       hue.ini['desktop']['database'] ?= {}
       hue.ini['desktop']['database']['engine'] ?= db_admin.engine
