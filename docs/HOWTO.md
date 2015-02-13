@@ -17,10 +17,60 @@ Launch the install after having cd into the directory named ryba
 ```
 
 #working environment in development mode (optional)
-check the Readme Page from ryba-cluster
+Check the Readme Page from ryba-cluster
+Working in development mode can be useful in order to test some configurations or commands on a cluster ( at least 1 master node )
+for this you can install Virtual machine on your computer and install haddop on it
+In order to manage the most easily possible a cluster we are going to use Vagrant
 
-#Set up the component to install in the cluster
-You can change the content of ryba/servers.coffee to change the different component you want to install on each server
+Please check the official webpage for Vagrant installation process at https://www.vagrantup.com.
+If you use a linux distribution, vagrant should be available from your package manager.
+
+Once Vagrant is installed, please also install some additionnal modules
+```
+vagrant plugin install vagrant-share
+vagrant plugin install vagrant-vbguest
+```
+
+And if you work behind a proxy
+
+`vagrant plugin install vagrant-proxyconf`
+
+The vagrant configuration file VagrantFile is located in the resources directory. Vagrant MUST be executed from this directory. If you use a UNIX OS, you can use the vagrant script for this purpose.
+
+Configure proxy using the env var *VAGRANT\_HTTP\_PROXY*. If you use proxy please set this variable :
+
+On linux :
+`export VAGRANT_HTTP_PROXY='http://user:password@proxyurl/'`
+
+On windows :
+
+`SET VAGRANT_HTTP_PROXY='http://user:password@proxyurl/'`
+
+You need an image of centos6 in order to build from it the virtual machine
+Be careful to indicate to vagrant the right name of the image in the folder resources/VagrantFile
+`box = 'centos65-x86_64'`
+
+VMs should have Vbox Guest Additions installed. The plugin vbguest is here to do the job. There is two ways to configure it :
+#### local
+
+You have to have the addition iso file on your computer, corresponding to the version of Virtualbox. You can manually download it or if you are on Linux, you might let your package manager handle it for you.
+
+then modify VagrantFile :
+```
+config.vbguest.iso_path=/path/to/VBoxGuestAdditions.iso
+config.no_remote=true
+```
+
+#### Remote
+
+You can let vbguest handle it for you, but your VM have to have an internet connection. This is the default behaviour but here is the corresponding configuration.
+`config.no_remote=false`
+
+Now it is time to let Vagrant configure your VMs !
+`/project_path/bin/vagrant up`
+
+
+
 
 #Working environment in offline mode (optional)
 The option to work offline is to have the needed repositories available whithout passing by the Internet
@@ -109,4 +159,20 @@ Download the installer from the offocial webpage and follow the instructions to 
    ```bash
    ./bin/ryba -c ./conf/users/offline.coffee install
    ```
+
+#Configuring ryba
+The default configuration works with 6 servers 3 master 1 front and 2 workers
+You can enhance the configuration , for this:
+
+##change the vagrant configuration
+Of course if you change the configuration of the cluster you have to tell to vagrant how much VM you want
+change the content of resources/VagrantFile to suit your needs
+take example from the set configuration
+
+##change the component composition of each server
+Ryba needs to know what component will be installed on each server
+You have to change the content of ryba-cluster/conf/servers.coffee in order to suit your needs
+Do not try change the order of component
+Be careful to let the security component for each server as it was written originally ( if you add server , add also the security component )
+take example from the set configuration
 
