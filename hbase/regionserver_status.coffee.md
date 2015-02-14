@@ -7,7 +7,7 @@
 
 ## Status
 
-Check if the RegionServer is running. The process ID is located by default
+Check if the HBase RegionServer is running. The process ID is located by default
 inside "/var/run/hbase/hbase-hbase-regionserver.pid".
 
     module.exports.push name: 'HBase RegionServer # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->

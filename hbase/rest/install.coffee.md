@@ -5,7 +5,7 @@
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/commons/java'
-    module.exports.push 'ryba/hadoop/core_ssl'
+    module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/hbase/_'
     module.exports.push require('./index').configure
 

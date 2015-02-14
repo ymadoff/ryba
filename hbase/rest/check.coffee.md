@@ -15,7 +15,7 @@
         return next err if err
         encode = (data) -> (new Buffer data, 'utf8').toString 'base64'
         decode = (data) -> (new Buffer data, 'base64').toString 'utf8'
-        curl = 'curl '
+        curl = 'curl -s '
         curl += '-k ' if hbase.site['hbase.rest.ssl.enabled'] is 'true'
         curl += '--negotiate -u: ' if hbase.site['hbase.rest.authentication.type'] is 'kerberos'
         curl += '-H "Accept: application/json" '

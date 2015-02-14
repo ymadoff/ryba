@@ -10,17 +10,22 @@
       require('../hadoop/hdfs').configure ctx
       require('./_').configure ctx
       {realm, hbase} = ctx.config.ryba
-      hr_ctxs = ctx.contexts 'ryba/hbase/master', require('./master').configure
-      throw Error "No Configured Master" unless hr_ctxs.length
+      m_ctxs = ctx.contexts 'ryba/hbase/master', require('./master').configure
+      throw Error "No Configured Master" unless m_ctxs.length
       hbase.site['hbase.regionserver.port'] ?= '60020'
       hbase.site['hbase.regionserver.info.port'] ?= '60030'
       hbase.site['hadoop.ssl.enabled'] ?= 'true'
     
 ## Configuration for Kerberos
 
-      hbase.site['hbase.master.kerberos.principal'] = hr_ctxs[0].config.ryba.hbase.site['hbase.master.kerberos.principal']
+      hbase.site['hbase.master.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.site['hbase.master.kerberos.principal'] #.replace '_HOST', m_ctxs[0].config.host
       hbase.site['hbase.regionserver.keytab.file'] ?= "#{hbase.conf_dir}/rs.service.keytab" # was rs.service.keytab
-      hbase.site['hbase.regionserver.kerberos.principal'] ?= "hbase/_HOST@#{realm}"
+      hbase.site['hbase.regionserver.kerberos.principal'] ?= m_ctxs[0].config.ryba.hbase.site['hbase.regionserver.kerberos.principal']
+      hbase.site['hbase.coprocessor.region.classes'] ?= [
+        'org.apache.hadoop.hbase.security.token.TokenProvider'
+        'org.apache.hadoop.hbase.security.access.SecureBulkLoadEndpoint'
+        'org.apache.hadoop.hbase.security.access.AccessController'
+      ]
 
 ## Proxy Users
 

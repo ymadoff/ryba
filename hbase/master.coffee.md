@@ -22,6 +22,8 @@
 
       hbase.site['hbase.master.keytab.file'] ?= "#{hbase.conf_dir}/hm.service.keytab" # was hm.service.keytab
       hbase.site['hbase.master.kerberos.principal'] ?= "hbase/_HOST@#{realm}"
+      hbase.site['hbase.regionserver.kerberos.principal'] ?= "hbase/_HOST@#{realm}"
+      hbase.site['hbase.coprocessor.master.classes'] ?= 'org.apache.hadoop.hbase.security.access.AccessController'
 
 ## Proxy Users
 

@@ -41,3 +41,8 @@ hbase.apache.org/book/ops_mgt.html#export
 http://hbase.apache.org/book/ops_mgt.html#copytable
 http://blog.cloudera.com/blog/2012/06/online-hbase-backups-with-copytable-2/
 https://blog.safaribooksonline.com/2013/06/18/backing-up-and-restoring-data-on-a-live-hbase-cluster/
+
+## ZooKeeper Dump
+
+Accessible from MasterUI
+https://master1.ryba:60010/zk.jsp

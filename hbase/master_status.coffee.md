@@ -7,15 +7,15 @@
 
 ## Status
 
-Check if the RegionServer is running. The process ID is located by default
-inside "/var/run/hbase/hbase-hbase-regionserver.pid".
+Check if the HBase Master is running. The process ID is located by default
+inside "/var/run/hbase/hbase-hbase-master.pid".
 
-    module.exports.push name: 'HBase RegionServer # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
+    module.exports.push name: 'HBase Master # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
       ctx.execute
-        cmd: "service hbase-regionserver status"
+        cmd: "service hbase-master status"
         # code_skipped: [1, 3]
         code_skipped: 3
-        if_exists: '/etc/init.d/hbase-regionserver'
+        if_exists: '/etc/init.d/hbase-master'
       , next
 
 
