@@ -8,6 +8,7 @@
       ctx.mapred_configured = true
       require('./hdfs').configure ctx
       require('./yarn').configure ctx
+      rm_contexts = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
       {static_host, realm, mapred} = ctx.config.ryba
       # Layout
       mapred.pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
@@ -36,6 +37,71 @@
       mapred.site['mapreduce.cluster.local.dir'] = null # Now "yarn.nodemanager.local-dirs"
       mapred.site['mapreduce.jobtracker.system.dir'] = null # JobTracker no longer used
 
+# Configuration for Resource Allocation
+
+There are three aspects to consider:
+
+*   Physical RAM limit for each Map And Reduce task
+*   The JVM heap size limit for each task
+*   The amount of virtual memory each task will get
+
+The total size of the memory given to the JVM available to each map/reduce
+container is defined by the properties "mapreduce.map.memory.mb" and
+"mapreduce.reduce.memory.mb" in megabytes (MB). This includes both heap memory
+(which many of us Java developers always are thinking about) and non-heap
+memory. Non-heap memory includes the stack and the PermGen space. It should be
+at least equal to or more than the YARN minimum Container allocation.
+
+For this reason, the maximum size of the heap (Java -Xmx parameter) is set to an
+inferior value, commonly 80% of the maximum available memory. The heap size
+parameter is defined inside the "mapreduce.map.java.opts" and
+"mapreduce.reduce.java.opts" properties.
+
+      memory_per_container = 512
+      rm_memory_max_mb = rm_contexts[0].config.ryba.yarn.site['yarn.scheduler.maximum-allocation-mb']
+      rm_memory_min_mb = rm_contexts[0].config.ryba.yarn.site['yarn.scheduler.minimum-allocation-mb']
+      rm_cpu_max = rm_contexts[0].config.ryba.yarn.site['yarn.scheduler.maximum-allocation-mb']
+      rm_cpu_min = rm_contexts[0].config.ryba.yarn.site['yarn.scheduler.minimum-allocation-vcores']
+
+      yarn_mapred_am_memory_mb = mapred.site['yarn.app.mapreduce.am.resource.mb'] or if memory_per_container > 1024 then 2 * memory_per_container else memory_per_container
+      yarn_mapred_am_memory_mb = Math.min rm_memory_max_mb, yarn_mapred_am_memory_mb
+      mapred.site['yarn.app.mapreduce.am.resource.mb'] = "#{yarn_mapred_am_memory_mb}"
+      
+      yarn_mapred_opts = /-Xmx(.*?)m/.exec(mapred.site['yarn.app.mapreduce.am.command-opts'])?[1] or Math.floor(.8 * yarn_mapred_am_memory_mb)
+      yarn_mapred_opts = Math.min rm_memory_max_mb, yarn_mapred_opts
+      mapred.site['yarn.app.mapreduce.am.command-opts'] = "-Xmx#{yarn_mapred_opts}m"
+
+      map_memory_mb = mapred.site['mapreduce.map.memory.mb'] or memory_per_container
+      map_memory_mb = Math.min rm_memory_max_mb, map_memory_mb
+      map_memory_mb = Math.max rm_memory_min_mb, map_memory_mb
+      mapred.site['mapreduce.map.memory.mb'] = "#{map_memory_mb}"
+
+      reduce_memory_mb = mapred.site['mapreduce.reduce.memory.mb'] or 2 * memory_per_container
+      reduce_memory_mb = Math.min rm_memory_max_mb, reduce_memory_mb
+      reduce_memory_mb = Math.max rm_memory_min_mb, reduce_memory_mb
+      mapred.site['mapreduce.reduce.memory.mb'] = "#{reduce_memory_mb}"
+
+      map_memory_xmx = /-Xmx(.*?)m/.exec(mapred.site['mapreduce.map.java.opts'])?[1] or Math.floor .8 * map_memory_mb
+      map_memory_xmx = Math.min rm_memory_max_mb, map_memory_xmx
+      mapred.site['mapreduce.map.java.opts'] ?= "-Xmx#{map_memory_xmx}m"
+
+      reduce_memory_xmx = /-Xmx(.*?)m/.exec(mapred.site['mapreduce.reduce.java.opts'])?[1] or Math.floor .8 * reduce_memory_mb
+      reduce_memory_xmx = Math.min rm_memory_max_mb, reduce_memory_xmx
+      mapred.site['mapreduce.reduce.java.opts'] ?= "-Xmx#{reduce_memory_xmx}m"
+
+      mapred.site['mapreduce.task.io.sort.mb'] ?= "#{Math.floor .4 * memory_per_container}"
+
+      map_cpu = mapred.site['mapreduce.map.cpu.vcores'] or 1
+      map_cpu = Math.min rm_cpu_max, map_cpu
+      map_cpu = Math.max rm_cpu_min, map_cpu
+      mapred.site['mapreduce.map.cpu.vcores'] = "#{map_cpu}"
+
+      reduce_cpu = mapred.site['mapreduce.reduce.cpu.vcores'] or 1
+      reduce_cpu = Math.min rm_cpu_max, reduce_cpu
+      reduce_cpu = Math.max rm_cpu_min, reduce_cpu
+      mapred.site['mapreduce.reduce.cpu.vcores'] = "#{reduce_cpu}"
+
+
     module.exports.push commands: 'check', modules: 'ryba/hadoop/mapred_client_check'
 
     module.exports.push commands: 'report', modules: 'ryba/hadoop/mapred_client_report'
@@ -45,6 +111,6 @@
       'ryba/hadoop/mapred_client_check'
     ]
 
-
+[beadooper]: http://beadooper.com/?p=165
 
 

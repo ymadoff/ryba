@@ -6,7 +6,6 @@
     module.exports.push 'masson/core/yum'
     module.exports.push 'ryba/hadoop/hdfs_client'
     module.exports.push 'ryba/hadoop/yarn_client'
-
     module.exports.push require('./mapred_client').configure
 
 ## IPTables
@@ -81,77 +80,16 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
 
     module.exports.push name: 'MapRed Client # Configuration', handler: (ctx, next) ->
       {mapred, hadoop_conf_dir} = ctx.config.ryba
-      modified = false
-      do_mapred = ->
-        ctx.hconfigure
-          destination: "#{hadoop_conf_dir}/mapred-site.xml"
-          default: "#{__dirname}/../resources/core_hadoop/mapred-site.xml"
-          local_default: true
-          properties: mapred.site
-          merge: true
-          backup: true
-          uid: mapred.user.name
-          gid: mapred.group.name
-        , (err, configured) ->
-          return next err if err
-          modified = true if configured
-          do_mapred_queue_acls()
-      do_mapred_queue_acls = ->
-        # TODO: remove, replaced by capacity scheduler
-        # Note, HDP-1.3.1 official doc is awkward, the example show an xml file.
-        # http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.1/bk_installing_manually_book/content/rpm_chap3.html
-        # The file is present inside HDP-2.0
-        ctx.hconfigure
-          destination: "#{hadoop_conf_dir}/mapred-queue-acls.xml"
-          default: "#{__dirname}/../resources/core_hadoop/mapred-queue-acls.xml"
-          local_default: true
-          properties: mapred.queue_acls
-          merge: true
-          uid: mapred.user.name
-          gid: mapred.group.name
-        , (err, configured) ->
-          return next err if err
-          modified = true if configured
-          do_end()
-      do_end = ->
-        next null, modified
-      do_mapred()
-
-## HDP MapRed # Tuning
-
-There are three aspects to consider:
-
-*   Physical RAM limit for each Map And Reduce task
-*   The JVM heap size limit for each task
-*   The amount of virtual memory each task will get
-
-The maximum memory each Map and Reduce task should be at least equal to or more 
-than the YARN minimum Container allocation.
-
-The JVM heap size should be set to lower than the Map and Reduce memory defined 
-above, so that they are within the bounds of the Container memory allocated by 
-YARN. There set by default to 3/4 of the YARN minimum Container allocation.
-
-The virtual memory (physical + paged memory) upper limit for each Map and 
-Reduce task is determined by the virtual memory ratio each YARN Container is 
-allowed.
-
-    module.exports.push name: 'MapRed Client # Tuning', handler: (ctx, next) ->
-      {hadoop_conf_dir} = ctx.config.ryba
-      {info, mapred} = memory ctx
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
+        default: "#{__dirname}/../resources/core_hadoop/mapred-site.xml"
+        local_default: true
         properties: mapred.site
-        backup: true
         merge: true
+        backup: true
+        uid: mapred.user.name
+        gid: mapred.group.name
       , next
-
-## Module Dependencies
-
-    memory = require '../lib/memory'
-
-
-
 
 
 

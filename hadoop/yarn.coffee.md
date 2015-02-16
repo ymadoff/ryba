@@ -3,6 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
+    module.exports.push '!masson/bootstrap/info'
     module.exports.push 'ryba/hadoop/core'
 
     module.exports.push module.exports.configure = (ctx) ->
@@ -63,41 +64,13 @@ inside the configuration.
         if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
           ryba.yarn.site["yarn.resourcemanager.resource-tracker.address#{shortname}"] ?= "#{rm_ctx.config.host}:8025"
 
-      # yarn_rm_hosts = for ctx in rm_ctxs then ctx.config.host
-      # yarn_rm_shortnames = for ctx in rm_ctxs then ctx.config.shortname
-      # if yarn_rm_hosts.length > 1
-      #   ryba.active_rm_host ?= yarn_rm_hosts[0]
-      #   if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm', 'ryba/hadoop/yarn_client'
-      #     ryba.yarn.site['yarn.resourcemanager.ha.enabled'] ?= 'true'
-      #     ryba.yarn.site['yarn.resourcemanager.ha.rm-ids'] ?= yarn_rm_shortnames.join ','
-      #   if ctx.has_module 'ryba/hadoop/yarn_rm'
-      #     ryba.yarn.site['yarn.resourcemanager.ha.id'] ?= ctx.config.shortname
-      #   for rm_ctx in rm_ctxs
-      #     shortname = rm_ctx.config.shortname
-      #     if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_client'
-      #       ryba.yarn.site["yarn.resourcemanager.address.#{shortname}"] ?= "#{rm_ctx.config.host}:8050"
-      #       ryba.yarn.site["yarn.resourcemanager.scheduler.address.#{shortname}"] ?= "#{rm_ctx.config.host}:8030"
-      #       ryba.yarn.site["yarn.resourcemanager.admin.address.#{shortname}"] ?= "#{rm_ctx.config.host}:8141"
-      #       ryba.yarn.site["yarn.resourcemanager.webapp.address.#{shortname}"] ?= "#{rm_ctx.config.host}:8088"
-      #       ryba.yarn.site["yarn.resourcemanager.webapp.https.address.#{shortname}"] ?= "#{rm_ctx.config.host}:8090"
-      #     if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
-      #       ryba.yarn.site["yarn.resourcemanager.resource-tracker.address.#{shortname}"] ?= "#{rm_ctx.config.host}:8025"
-      # else
-      #   if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm', 'ryba/hadoop/yarn_client'
-      #     ryba.yarn.site['yarn.resourcemanager.ha.enabled'] ?= 'false'
-      #   if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_client'
-      #     ryba.yarn.site['yarn.resourcemanager.address'] ?= "#{yarn_rm_hosts[0]}:8050"
-      #     ryba.yarn.site['yarn.resourcemanager.scheduler.address'] ?= "#{yarn_rm_hosts[0]}:8030"
-      #     ryba.yarn.site['yarn.resourcemanager.admin.address'] ?= "#{yarn_rm_hosts[0]}:8141"
-      #     ryba.yarn.site['yarn.resourcemanager.webapp.address'] ?= "#{yarn_rm_hosts[0]}:8088" # URL for job history server
-      #     ryba.yarn.site['yarn.resourcemanager.webapp.https.address'] ?= "#{yarn_rm_hosts[0]}:8090"
-      #   if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
-      #     ryba.yarn.site['yarn.resourcemanager.resource-tracker.address'] ?= "#{yarn_rm_hosts[0]}:8025"
+## Configuration for Resource Allocation
+
 
 http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
 
-    module.exports.push name: 'Hadoop YARN # Users & Groups', handler: (ctx, next) ->
+    module.exports.push name: 'YARN # Users & Groups', handler: (ctx, next) ->
       return next() unless ctx.config.ryba.resourcemanager or ctx.config.ryba.nodemanager
       {yarn, hadoop_group} = ctx.config.ryba
       ctx.execute
@@ -106,7 +79,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         code_skipped: 9
       , next
 
-    module.exports.push name: 'Hadoop YARN # Install Common', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'YARN # Install Common', timeout: -1, handler: (ctx, next) ->
       ctx.service [
         name: 'hadoop'
       ,
@@ -115,7 +88,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         name: 'hadoop-client'
       ], next
 
-    module.exports.push name: 'Hadoop YARN # Directories', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'YARN # Directories', timeout: -1, handler: (ctx, next) ->
       {yarn, hadoop_group} = ctx.config.ryba
       ctx.mkdir
         destination: "#{yarn.log_dir}/#{yarn.user.name}"
@@ -129,7 +102,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         mode: 0o0755
       , next
 
-    module.exports.push name: 'Hadoop YARN # Yarn OPTS', handler: (ctx, next) ->
+    module.exports.push name: 'YARN # Yarn OPTS', handler: (ctx, next) ->
       {java_home} = ctx.config.java
       {yarn, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
       yarn_opts = ""
@@ -154,7 +127,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         mode: 0o0755
       , next
 
-    module.exports.push name: 'Hadoop YARN # Configuration', handler: (ctx, next) ->
+    module.exports.push name: 'YARN # Configuration', handler: (ctx, next) ->
       {yarn, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
@@ -164,39 +137,6 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         merge: true
         backup: true
       , next
-
-## HDP YARN # Memory Allocation
-
-yarn.nodemanager.vmem-pmem-ratio property: Is defines ratio of virtual memory to
-available pysical memory, Here is 2.1 means virtual memory will be double the 
-size of physical memory.
-
-Ressources:
-http://stackoverflow.com/questions/18692631/difference-between-3-memory-parameters-in-hadoop-2
-blog.cloudera.com/blog/2014/04/apache-hadoop-yarn-avoiding-6-time-consuming-gotchas/
-
-TODO, got to [HortonWorks article and make properties dynamic or improve example](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
-
-Example cluster node with 12 disks and 12 cores, we will allow for 20 maximum Containers to be allocated to each node
-
-    module.exports.push name: 'Hadoop YARN # Memory Allocation', handler: module.exports.tuning = (ctx, next) ->
-      {hadoop_conf_dir} = ctx.config.ryba
-      {info, yarn} = memory ctx
-      ctx.log "Server memory: #{info.memoryTotalMb} mb"
-      ctx.log "Available memory: #{info.memoryAvailableMb} mb"
-      ctx.log "Yarn total memory: #{yarn.site['yarn.nodemanager.resource.memory-mb']} mb"
-      ctx.log "Number of containers: #{info.maxNumberOfcontainers}"
-      ctx.log "Minimum memory allocation: #{yarn.site['yarn.scheduler.minimum-allocation-mb']} mb (yarn.scheduler.minimum-allocation-mb)"
-      ctx.log "Maximum memory allocation: #{yarn.site['yarn.scheduler.maximum-allocation-mb']} mb (yarn.scheduler.maximum-allocation-mb)"
-      ctx.hconfigure
-        destination: "#{hadoop_conf_dir}/yarn-site.xml"
-        properties: yarn.site
-        merge: true
-      , next
-
-## Module Dependencies
-
-    memory = require '../lib/memory'
 
 [cloudera_ha]: http://www.cloudera.com/content/cloudera/en/documentation/cdh5/v5-1-x/CDH5-High-Availability-Guide/cdh5hag_rm_ha_config.html
 
