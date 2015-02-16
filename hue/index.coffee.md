@@ -115,7 +115,7 @@ Example:
       rm_protocol = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       rm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
       if rm_hosts.length > 1
-        rm_host = ryba.active_rm_host
+        rm_host = ryba.yarn.active_rm_host
         rm_ctx = ctx.context rm_host, require('../hadoop/yarn').configure
         rm_port = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address.#{rm_ctx.config.shortname}"].split(':')[1]
         yarn_api_url = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY'

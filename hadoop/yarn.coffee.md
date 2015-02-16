@@ -46,7 +46,7 @@ inside the configuration.
       rm_ctxs = ctx.contexts modules: 'ryba/hadoop/yarn_rm'
       rm_shortnames = for rm_ctx in rm_ctxs then rm_ctx.config.shortname
       is_ha = rm_ctxs.length > 1
-      ryba.active_rm_host ?= if is_ha then rm_ctxs[0].config.host else null
+      ryba.yarn.active_rm_host ?= if is_ha then rm_ctxs[0].config.host else null
       if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm', 'ryba/hadoop/yarn_client'
         ryba.yarn.site['yarn.resourcemanager.ha.enabled'] ?= if is_ha then 'true' else 'false'
         ryba.yarn.site['yarn.resourcemanager.ha.rm-ids'] ?= rm_shortnames.join ',' if is_ha

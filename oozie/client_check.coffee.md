@@ -38,10 +38,10 @@
 ## Check HDFS Workflow
 
     module.exports.push name: 'Oozie Client # Check HDFS Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
-      {force_check, user, core_site, active_rm_host, oozie} = ctx.config.ryba
+      {force_check, user, core_site, yarn, oozie} = ctx.config.ryba
       rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn').configure
       if rm_ctxs.length > 1
-        rm_ctx = ctx.context active_rm_host, require('../hadoop/yarn').configure
+        rm_ctx = ctx.context yarn.active_rm_host, require('../hadoop/yarn').configure
         shortname = ".#{rm_ctx.config.shortname}"
       else
         rm_ctx = rm_ctxs[0]
@@ -104,10 +104,10 @@
 ## Check Pig Workflow
 
     module.exports.push name: 'Oozie Client # Check Pig Workflow', skip: true, timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
-      {force_check, user, core_site, active_rm_host, oozie} = ctx.config.ryba
+      {force_check, user, core_site, yarn, oozie} = ctx.config.ryba
       rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn').configure
       if rm_ctxs.length > 1
-        rm_ctx = ctx.context active_rm_host, require('../hadoop/yarn').configure
+        rm_ctx = ctx.context yarn.active_rm_host, require('../hadoop/yarn').configure
         shortname = ".#{rm_ctx.config.shortname}"
       else
         rm_ctx = rm_ctxs[0]
