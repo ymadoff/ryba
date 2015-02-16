@@ -55,7 +55,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: ctx.config.iptables.action is 'start'
       , next
 
-    module.exports.push name: 'Hadoop YARN RM # Kerberos', handler: (ctx, next) ->
+    module.exports.push name: 'YARN RM # Kerberos', handler: (ctx, next) ->
       {yarn, hadoop_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
@@ -74,7 +74,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install and configure the startup script in 
 "/etc/init.d/hadoop-yarn-resourcemanager".
 
-    module.exports.push name: 'Hadoop YARN RM # Startup', handler: (ctx, next) ->
+    module.exports.push name: 'YARN RM # Startup', handler: (ctx, next) ->
       {yarn} = ctx.config.ryba
       modified = false
       do_install = ->
@@ -105,7 +105,7 @@ Install and configure the startup script in
 
 ## Configuration
 
-    module.exports.push name: 'Hadoop YARN RM # Configuration', handler: (ctx, next) ->
+    module.exports.push name: 'YARN RM # Configuration', handler: (ctx, next) ->
       {yarn, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
@@ -134,7 +134,7 @@ only uses Memory while DominantResourceCalculator uses Dominant-resource to
 compare multi-dimensional resources such as Memory, CPU etc. A Java
 ResourceCalculator class name is expected.
 
-    module.exports.push name: 'Hadoop YARN RM # Capacity Scheduler', handler: (ctx, next) ->
+    module.exports.push name: 'YARN RM # Capacity Scheduler', handler: (ctx, next) ->
       {yarn, hadoop_conf_dir, capacity_scheduler} = ctx.config.ryba
       return next() unless yarn.site['yarn.resourcemanager.scheduler.class'] is 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
       ctx.hconfigure
@@ -158,7 +158,7 @@ the server is defined by the propery "yarn.log.server.url" in "yarn-site.xml".
 The default port is "19888".
 
     # url = require 'url'
-    # module.exports.push name: 'Hadoop YARN RM # Wait JHS', timeout: -1, handler: (ctx, next) ->
+    # module.exports.push name: 'YARN RM # Wait JHS', timeout: -1, handler: (ctx, next) ->
     #   {hostname, port} = url.parse ctx.config.ryba.yarn.site['yarn.log.server.url']
     #   ctx.waitIsOpen hostname, port, (err) ->
     #     return next err if err
