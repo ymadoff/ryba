@@ -88,16 +88,25 @@ module.exports = exports =
   Similar to `parse` but read the xml from a file instead of 
   expecting a XML markup.
   ###
-  read: (path, property, callback) ->
-    args = Array.prototype.slice.call arguments, 0
-    # I tried `if args[0] instanceof Connection` but it wasnt working
-    ssh = if typeof args[0] isnt 'string' then args.shift() else null
-    path = args[0]
-    property = args[1]
-    callback = args[2]
-    if args.length is 2
+  read: (ssh, path, property, callback) ->
+    if typeof ssh is 'string'
+      callback = property
+      property = path
+      path = ssh
+      ssh = null
+    if typeof property is 'function'
       callback = property
       property = null
+
+    # args = Array.prototype.slice.call arguments, 0
+    # # I tried `if args[0] instanceof Connection` but it wasnt working
+    # ssh = if typeof args[0] isnt 'string' then args.shift() else null
+    # path = args[0]
+    # property = args[1]
+    # callback = args[2]
+    # if args.length is 2
+    #   callback = property
+    #   property = null
     fs.readFile ssh, path, 'utf8', (err, markup) ->
       return callback err if err
       callback null, exports.parse markup, property
