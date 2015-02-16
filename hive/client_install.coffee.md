@@ -5,6 +5,7 @@
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'ryba/hive/_'
     module.exports.push 'ryba/hadoop/mapred_client'
+    module.exports.push 'ryba/tez'
     module.exports.push 'ryba/hadoop/yarn_client'
     module.exports.push require('./client').configure
 

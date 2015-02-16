@@ -5,8 +5,9 @@
 
     module.exports.configure = (ctx) ->
       require('../hadoop/hdfs').configure ctx
+      require('../tez').configure ctx
       require('./_').configure ctx
-      {hive} = ctx.config.ryba
+      {hive, mapred, tez} = ctx.config.ryba
       server_ctxs = ctx.contexts modules: 'ryba/hive/server', require('./server').configure
       server_ctx = server_ctxs[0]
       hive.site['hive.metastore.uris'] ?= server_ctx.config.ryba.hive.site['hive.metastore.uris']
@@ -17,6 +18,9 @@
       hive.site['hive.exec.compress.intermediate'] ?= 'true'
       hive.site['hive.auto.convert.join'] ?= 'true'
       # hive.site['hive.mapjoin.smalltable.filesize'] ?= '50000000'
+
+      hive.site['hive.tez.container.size'] = tez.tez_site['tez.am.resource.memory.mb']
+      hive.site['hive.tez.java.opts'] = tez.tez_site['hive.tez.java.opts']
 
     module.exports.push commands: 'check', modules: 'ryba/hive/client_check'
 
