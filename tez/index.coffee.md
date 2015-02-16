@@ -7,7 +7,7 @@ built atop Apache Hadoop YARN.
 
     module.exports = []
 
-## Configure
+## Configuration
 
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
@@ -15,18 +15,28 @@ built atop Apache Hadoop YARN.
       require('../hadoop/core').configure ctx
       {ryba} = ctx.config
       hdfs_url = ryba.core_site['fs.defaultFS']
-      rm_contexts = ctx.contexts 'ryba/hadoop/yarn_rm'
+      rm_contexts = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
       ryba.tez ?= {}
-      ryba.tez.tez_site ?= {}
-      ryba.tez.tez_site['tez.lib.uris'] ?= "#{hdfs_url}/apps/tez/,#{hdfs_url}/apps/tez/lib/"
-      ryba.tez.tez_site['tez.am.resource.memory.mb'] ?= '1024'
-      if rm_max = rm_contexts[0].config.ryba.yarn.site['yarn.scheduler.maximum-allocation-mb']
-        ryba.tez.tez_site['tez.am.resource.memory.mb'] = Math.min rm_max, ryba.tez.tez_site['tez.am.resource.memory.mb']
-      if rm_min = rm_contexts[0].config.ryba.yarn.site['yarn.scheduler.minimum-allocation-mb']
-        ryba.tez.tez_site['tez.am.resource.memory.mb'] = Math.max rm_min, ryba.tez.tez_site['tez.am.resource.memory.mb']
       ryba.tez.env ?= {}
       ryba.tez.env['TEZ_CONF_DIR'] ?= '/etc/tez/conf'
       ryba.tez.env['TEZ_JARS'] ?= '/usr/lib/tez/*:/usr/lib/tez/lib/*'
+      ryba.tez.tez_site ?= {}
+      ryba.tez.tez_site['tez.lib.uris'] ?= "#{hdfs_url}/apps/tez/,#{hdfs_url}/apps/tez/lib/"
+
+## Configuration for Resource Allocation
+
+      memory_per_container = 512
+      rm_memory_max_mb = rm_contexts[0].config.ryba.yarn.site['yarn.scheduler.maximum-allocation-mb']
+      rm_memory_min_mb = rm_contexts[0].config.ryba.yarn.site['yarn.scheduler.minimum-allocation-mb']
+
+      am_memory_mb = ryba.tez.tez_site['tez.am.resource.memory.mb'] or memory_per_container
+      am_memory_mb = Math.min rm_memory_max_mb, am_memory_mb
+      am_memory_mb = Math.max rm_memory_min_mb, am_memory_mb
+      ryba.tez.tez_site['tez.am.resource.memory.mb'] = am_memory_mb
+
+      tez_memory_xmx = /-Xmx(.*?)m/.exec(ryba.tez.tez_site['hive.tez.java.opts'])?[1] or Math.floor .8 * am_memory_mb
+      tez_memory_xmx = Math.min rm_memory_max_mb, tez_memory_xmx
+      ryba.tez.tez_site['hive.tez.java.opts'] ?= "-Xmx#{tez_memory_xmx}m"
 
     module.exports.push commands: 'check', modules: 'ryba/tez/check'
 
@@ -34,9 +44,5 @@ built atop Apache Hadoop YARN.
       'ryba/tez/install'
       'ryba/tez/check'
     ]
-
-## Dependencies
-
-    memory = require '../lib/memory'
 
 [tez]: http://tez.apache.org/
