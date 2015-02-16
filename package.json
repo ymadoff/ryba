@@ -7,6 +7,7 @@
     "each": "latest",
     "glob": "latest",
     "ini": "latest",
+    "js2coffee": "latest",
     "ldapjs": "latest",
     "masson": "latest",
     "mecano": "latest",
