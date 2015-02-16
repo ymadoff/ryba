@@ -3,6 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
+    module.exports.push 'masson/bootstrap/info'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/yarn'
     module.exports.push 'ryba/hadoop/hdfs_dn_wait'
@@ -34,6 +35,15 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: nm_webapp_https_port, protocol: 'tcp', state: 'NEW', comment: "YARN NM Web Secured UI" }
         ]
         if: ctx.config.iptables.action is 'start'
+      , next
+
+## Package
+
+    module.exports.push name: 'Hadoop YARN NM # Package', handler: (ctx, next) ->
+      {yarn} = ctx.config.ryba
+      ctx.service
+        name: 'libcgroup'
+        if: yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] is 'true'
       , next
 
 ## Startup
@@ -93,6 +103,39 @@ Install and configure the startup script in
         ctx.execute cmds, (err) ->
           next err, created
 
+## Capacity Planning
+
+Naive discovery of the memory and CPU allocated by this NodeManager.
+
+It is recommended to use the "capacity" script prior install Hadoop on
+your cluster. It will suggest you relevant values for your servers with a
+global view of your system. In such case, this middleware is bypassed and has
+no effect. Also, this isnt included inside the configuration because it need an
+SSH connection to the node to gather the memory and CPU informations.
+
+    module.exports.push name: 'Hadoop YARN NM # Capacity Planning', handler: (ctx) ->
+      {yarn} = ctx.config.ryba
+      return next() if yarn.site['yarn.nodemanager.resource.memory-mb'] and yarn.site['yarn.nodemanager.resource.cpu-vcores']
+      # diskNumber = yarn.site['yarn.nodemanager.local-dirs'].length
+      memoryAvailableMb = Math.round ctx.meminfo.MemTotal / 1024 / 1024 * .8
+      yarn.site['yarn.nodemanager.resource.memory-mb'] ?= memoryAvailableMb
+      yarn.site['yarn.nodemanager.resource.cpu-vcores'] ?= ctx.cpuinfo.length
+
+## Configuration
+
+    module.exports.push name: 'Hadoop YARN NM # Configuration', handler: (ctx, next) ->
+      {yarn, hadoop_conf_dir} = ctx.config.ryba
+      ctx.hconfigure
+        destination: "#{hadoop_conf_dir}/yarn-site.xml"
+        default: "#{__dirname}/../resources/core_hadoop/yarn-site.xml"
+        local_default: true
+        properties: yarn.site
+        merge: true
+        backup: true
+      , next
+
+## Container Executor
+
     module.exports.push name: 'Hadoop YARN NM # Container Executor', handler: (ctx, next) ->
       {container_executor, hadoop_conf_dir} = ctx.config.ryba
       ce_group = container_executor['yarn.nodemanager.linux-container-executor.group']
@@ -141,15 +184,12 @@ Install and configure the startup script in
         kadmin_server: admin_server
       , next
 
-    module.exports.push name: 'Hadoop YARN NM # Configure', handler: (ctx, next) ->
-      {yarn, hadoop_conf_dir} = ctx.config.ryba
-      ctx.hconfigure
-        destination: "#{hadoop_conf_dir}/yarn-site.xml"
-        default: "#{__dirname}/../resources/core_hadoop/yarn-site.xml"
-        local_default: true
-        properties: yarn.site
-        merge: true
-        backup: true
+    module.exports.push name: 'Hadoop YARN NM # CGroup', handler: (ctx, next) ->
+      {yarn} = ctx.config.ryba
+      return next() unless yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] is 'true'
+      ctx.mkdir
+        destination: "#{yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path']}/cpu"
+        mode: 0o1777
       , next
 
 ### HDFS Layout
@@ -159,7 +199,7 @@ Create the YARN log directory defined by the property
 files is "/app-logs". The command `hdfs dfs -ls /` should print:
 
 ```
-drwxrwxrwt   - yarn   hdfs            0 2014-05-26 11:01 /app-logs
+drwxrwxrwt   - yarn   hadoop            0 2014-05-26 11:01 /app-logs
 ```
 
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
