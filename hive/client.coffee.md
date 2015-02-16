@@ -10,6 +10,13 @@
       server_ctxs = ctx.contexts modules: 'ryba/hive/server', require('./server').configure
       server_ctx = server_ctxs[0]
       hive.site['hive.metastore.uris'] ?= server_ctx.config.ryba.hive.site['hive.metastore.uris']
+      # Tuning
+      # [Christian Prokopp comments](http://www.quora.com/What-are-the-best-practices-for-using-Hive-What-settings-should-we-enable-most-of-the-time)
+      # [David Streever](https://streever.atlassian.net/wiki/display/HADOOP/Hive+Performance+Tips)
+      # hive.site['hive.exec.compress.output'] ?= 'true'
+      hive.site['hive.exec.compress.intermediate'] ?= 'true'
+      hive.site['hive.auto.convert.join'] ?= 'true'
+      # hive.site['hive.mapjoin.smalltable.filesize'] ?= '50000000'
 
     module.exports.push commands: 'check', modules: 'ryba/hive/client_check'
 
