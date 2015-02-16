@@ -18,6 +18,8 @@ The module extends the "ryba/hadoop/core" module configuration.
 *   `sqoop_user` (object|string)   
     The Unix Sqoop login name or a user object (see Mecano User documentation).   
 
+Todo, with oozie, it seems like drivers must be stored in "/user/oozie/share/lib/sqoop".
+
 Example:
 
 ```json
