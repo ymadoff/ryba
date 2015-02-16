@@ -12,6 +12,7 @@ DataNodes.
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/hdfs_dn_wait'
+    module.exports.push 'ryba/hadoop/hdfs_nn_wait'
 
     module.exports.push (ctx) ->
       require('./core').configure ctx

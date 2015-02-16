@@ -49,6 +49,12 @@ Example:
       {ryba} = ctx.config
       ryba.hdfs ?= {}
       ryba.hdfs.sysctl ?= {}
+      # Comma separated list of paths. Use the list of directories from $DFS_DATA_DIR.  
+      # For example, /grid/hadoop/hdfs/dn,/grid1/hadoop/hdfs/dn.
+      ryba.hdfs.site['dfs.datanode.data.dir'] ?= ['/var/hdfs/data']
+      ryba.hdfs.site['dfs.datanode.data.dir'] = ryba.hdfs.site['dfs.datanode.data.dir'].join ',' if Array.isArray ryba.hdfs.site['dfs.datanode.data.dir']
+      # ctx.config.ryba.hdfs.site['dfs.datanode.data.dir.perm'] ?= '750'
+      ryba.hdfs.site['dfs.datanode.data.dir.perm'] ?= '700'
       # Tuning
       dataDirs = ryba.hdfs.site['dfs.datanode.data.dir'].split(',')
       if dataDirs.length > 3

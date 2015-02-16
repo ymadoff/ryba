@@ -57,16 +57,6 @@ Example:
       hdfs.site ?= {}
       hdfs.site['dfs.http.policy'] ?= 'HTTPS_ONLY' # HTTP_ONLY or HTTPS_ONLY or HTTP_AND_HTTPS
       # REPLACED by "dfs.namenode.https-address": hdfs.site['dfs.https.port'] ?= '50470' # The https port where NameNode binds
-      # Comma separated list of paths. Use the list of directories from $DFS_NAME_DIR.
-      # For example, /grid/hadoop/hdfs/nn,/grid1/hadoop/hdfs/nn.
-      hdfs.site['dfs.namenode.name.dir'] ?= ['/var/hdfs/name']
-      hdfs.site['dfs.namenode.name.dir'] = hdfs.site['dfs.namenode.name.dir'].join ',' if Array.isArray hdfs.site['dfs.namenode.name.dir']
-      # Comma separated list of paths. Use the list of directories from $DFS_DATA_DIR.  
-      # For example, /grid/hadoop/hdfs/dn,/grid1/hadoop/hdfs/dn.
-      hdfs.site['dfs.datanode.data.dir'] ?= ['/var/hdfs/data']
-      hdfs.site['dfs.datanode.data.dir'] = hdfs.site['dfs.datanode.data.dir'].join ',' if Array.isArray hdfs.site['dfs.datanode.data.dir']
-      # ctx.config.ryba.hdfs.site['dfs.datanode.data.dir.perm'] ?= '750'
-      hdfs.site['dfs.datanode.data.dir.perm'] ?= '700'
       hdfs.site['fs.permissions.umask-mode'] ?= '027' # 0750
       if core_site['hadoop.security.authentication'] is 'kerberos'
         # Default values are retrieved from the official HDFS page called

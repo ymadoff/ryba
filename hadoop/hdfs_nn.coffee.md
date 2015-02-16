@@ -36,6 +36,11 @@ Example:
       require('./hdfs').configure ctx
       {ryba} = ctx.config
       throw Error "Missing \"ryba.zkfc_password\" property" unless ryba.zkfc_password
+      # Data
+      # Comma separated list of paths. Use the list of directories.
+      # For example, /data/1/hdfs/nn,/data/2/hdfs/nn.
+      ryba.hdfs.site['dfs.namenode.name.dir'] ?= ['/var/hdfs/name']
+      ryba.hdfs.site['dfs.namenode.name.dir'] = ryba.hdfs.site['dfs.namenode.name.dir'].join ',' if Array.isArray ryba.hdfs.site['dfs.namenode.name.dir']
       # Activate ACLs
       ryba.hdfs.site['dfs.namenode.acls.enabled'] ?= 'true'
       ryba.hdfs.site['dfs.namenode.accesstime.precision'] ?= null
