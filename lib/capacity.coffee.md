@@ -111,6 +111,12 @@ Example
         description: 'One or multiple configuration files.'
         required: true
       ,
+        name: 'hosts', shortcut: 'h', type: 'array'
+        description: 'Limit to a list of server hostnames'
+      ,
+        name: 'modules', shortcut: 'm', type: 'array'
+        description: 'Limit to a list of modules'
+      ,
         name: 'output', shortcut: 'o'
         description: 'Write the configuration to a file, extension is discoverd unless "format" is provided.'
       ,
@@ -565,6 +571,8 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
               ws.write "    #{config}['#{property}'] = '#{suggested_value}' #{diff}\n"
         for ctx in ctxs
           {capacity} = ctx.config
+          console.log config.params.hosts, ctx.config.host
+          # continue unless multimatch(config.params.hosts, [ctx.config.host]).length
           mods = [
             'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn'
             'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
