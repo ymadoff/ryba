@@ -286,10 +286,11 @@ Discover the most relevant partitions on each node.
         # max(MIN_CONTAINER_SIZE, (Total Available RAM) / containers))
         unless memory_per_container = ctx.config.capacity.memory_per_container
           memory_per_container = Math.floor Math.max minimum_container_size, memory_yarn / max_number_of_containers
+        memory_per_container = exports.rounded_memory memory_per_container
         ctx.config.capacity.memory_per_container = memory_per_container
 
         minimum_allocation_mb ?= Math.round memory_per_container / 1024 / 1024
-        minimum_allocation_mb = Math.min minimum_allocation_mb, memory_per_container / 1024 / 1024
+        minimum_allocation_mb = Math.round Math.min minimum_allocation_mb, memory_per_container / 1024 / 1024
 
 Amount of physical memory, in MB, dedicated by the node and that can be allocated for containers.
 
@@ -709,6 +710,20 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
         servers[ctx.config.host] = server
       servers
 
+    exports.rounded_memory = (memory) ->
+      exports.rounded_memory_mb(memory / 1024 / 1024) * 1024 * 1024
+
+    exports.rounded_memory_mb = (memory_mb) ->
+      denominator_mb = 128
+      if memory_mb > 4096
+        denominator_mb = 1024
+      else if memory_mb > 2048
+        denominator_mb = 512
+      else if memory_mb > 1024
+        denominator_mb = 256
+      else
+        denominator_mb = 128
+      Math.floor( memory_mb / denominator_mb ) * denominator_mb
 
 ## Resources
 
