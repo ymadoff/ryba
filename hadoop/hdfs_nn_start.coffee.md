@@ -65,7 +65,7 @@ This middleware duplicates the one present in 'masson/hadoop/hdfs_dn_wait' and
 is only called if a DataNode isn't installed on this server because this command
 only run on a NameNode with fencing installed and in normal mode.
 
-    module.exports.push name: 'HDFS DN Start # Wait Failover', label_true: 'READY', handler: (ctx, next) ->
+    module.exports.push name: 'HDFS NN Start # Wait Failover', label_true: 'READY', handler: (ctx, next) ->
       return next() if ctx.has_module 'ryba/hadoop/hdfs_dn'
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       {active_nn_host, standby_nn_host} = ctx.config.ryba

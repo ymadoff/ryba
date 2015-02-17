@@ -42,6 +42,9 @@ performing some diagnostics on itself, including checking if internal services
 are running as expected. This command will return 0 if the NameNode is healthy,
 non-zero otherwise. One might use this command for monitoring purposes.
 
+Checkhealth return result is not completely implemented
+See More http://hadoop.apache.org/docs/r2.0.2-alpha/hadoop-yarn/hadoop-yarn-site/HDFSHighAvailability.html#Administrative_commands
+
     module.exports.push name: 'HDFS NN # Check HA Health', label_true: 'CHECKED', handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       ctx.execute
