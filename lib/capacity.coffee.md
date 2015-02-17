@@ -577,7 +577,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           do_write fs.createWriteStream config.params.save, encoding: 'utf8'
       do_write = (ws) ->
         servers = exports.capacity_to_ryba ctxs
-        ws.write JSON.stringify servers, null, 2
+        ws.write JSON.stringify servers: servers, null, 2
       do_end = (ws) ->
         ws.end() if config.params.save
         next()
@@ -593,7 +593,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           do_write fs.createWriteStream config.params.save, encoding: 'utf8'
       do_write = (ws) ->
         servers = exports.capacity_to_ryba ctxs
-        source = JSON.stringify servers, null, 2
+        source = JSON.stringify servers: servers, null, 2
         source = "module.exports = #{source};"
         ws.write source
       do_end = (ws) ->
@@ -611,7 +611,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           do_write fs.createWriteStream config.params.save, encoding: 'utf8'
       do_write = (ws) ->
         servers = exports.capacity_to_ryba ctxs
-        source = JSON.stringify servers
+        source = JSON.stringify servers: servers
         source = "module.exports = #{source}"
         ws.write js2coffee.build(source).code
       do_end = (ws) ->
