@@ -14,7 +14,6 @@ if(params.parse().help){
 
 config(params.parse(), function(err, config){
   capacity(config, function(err){
-
     if(err){
       if(err.errors){
         for(var i=0; i<err.errors.length; i++){
