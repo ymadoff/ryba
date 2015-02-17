@@ -46,6 +46,14 @@ default setting for Yarn and its client application such as MapReduce or Tez.
         do_hdfs_dn = ->
           exports.hdfs_dn ctxs, (err) ->
             return callback err if err
+            do_hbase_m ctxs
+        do_hbase_m = ->
+          exports.hbase_m ctxs, (err) ->
+            return callback err if err
+            do_hbase_rs ctxs
+        do_hbase_rs = ->
+          exports.hbase_rs ctxs, (err) ->
+            return callback err if err
             do_mapred_client ctxs
         do_mapred_client = ->
           exports.mapred_client ctxs, (err) ->
@@ -362,6 +370,25 @@ the application (zombie state).
           path.resolve disk, ctx.config.params.hdfs_nn_name_dir or './hdfs/name'
       next()
 
+
+## HBase Master
+
+    exports.hbase_m = (ctxs, next) ->
+      for ctx in ctxs
+        continue unless ctx.has_any_modules 'ryba/hbase/master'
+        # Nothing to do for now, eg 'ryba.hbase.master_opts="..."'
+      next()
+
+## HBase RegionServer
+
+    exports.hbase_rs = (ctxs, next) ->
+      for ctx in ctxs
+        continue unless ctx.has_any_modules 'ryba/hbase/regionserver'
+        {memory_hbase} = ctx.config.capacity
+        memory_hbase_mb = Math.floor memory_hbase / 1024 / 1024
+        ctx.config.capacity['regionserver_opts'] ?= "-Xmx#{memory_hbase_mb}m"
+      next()
+
 ## MapReduce Client
 
     exports.mapred_client = (ctxs, next) ->
@@ -379,7 +406,7 @@ system. This value also needs to be less than what is defined in
 condition.  Can be set at site level with "mapred-site.xml", or
 can be set at the job level. This change does not require a service restart.
 
-        mapreduce_am_memory_mb = mapred_site['yarn.app.mapreduce.am.resource.mb'] or 2 * memory_per_container_mean_mb
+        mapreduce_am_memory_mb = mapred_site['yarn.app.mapreduce.am.resource.mb'] or if memory_per_container_mean_mb > 1024 then 2 * memory_per_container_mean_mb else memory_per_container_mean_mb
         mapreduce_am_memory_mb = Math.min mapreduce_am_memory_mb, maximum_allocation_mb
         mapred_site['yarn.app.mapreduce.am.resource.mb'] = mapreduce_am_memory_mb
 
@@ -463,6 +490,11 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           properties.read ctx.ssh, '/etc/hive/conf/hive-site.xml', (err, hive_site) ->
             ctx.config.capacity.remote.hive_site = hive_site unless err
             do_end()
+        # do_hbase = ->
+        #   return do_end() unless ctx.has_any_modules 'ryba/hbase/regionserver'
+        #   properties.read ctx.ssh, '/etc/hive/conf/hbase-site.xml', (err, hive_site) ->
+        #     ctx.config.capacity.remote.hive_site = hive_site unless err
+        #     do_end()
         do_end = ->
           ctx.ssh.end()
           ctx.ssh.on 'end', next
@@ -560,6 +592,11 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           if ctx.has_any_modules 'ryba/hive/client'
             ws.write "  Hive Client\n"
             print 'hive_site', ['hive.tez.container.size', 'hive.tez.java.opts']
+          if ctx.has_any_modules 'ryba/hbase/regionserver'
+            ws.write "  HBase RegionServer\n"
+            # print 'hive_site', ['hive.tez.container.size', 'hive.tez.java.opts']
+            {regionserver_opts} = ctx.config.capacity
+            ws.write "    hbase-env: #{regionserver_opts}\n"
         do_end ws
       do_end = (ws) ->
         ws.end() if config.params.save
