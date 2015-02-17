@@ -543,7 +543,26 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
             else if remote_value? then "'#{remote_value}'"
             else 'not defined'
             diff = "(currently #{diff})"
-            ws.write "    #{config}['#{property}'] = '#{suggested_value}' #{diff}\n"
+            if Array.isArray suggested_value
+              ws.write "    #{config}['#{property}'] = [\n"
+              for v, i in suggested_value
+                ws.write "      " if i % 3 is 0
+                ws.write "#{v}"
+                if i % 3 is 2 and i isnt suggested_value.length - 1
+                  ws.write "\n" 
+                else if i isnt suggested_value.length - 1
+                  ws.write ', '
+              ws.write "\n    ]"
+              if diff
+                ws.write " (currently [\n"
+                remote_value = remote_value.split ','
+                for v, i in remote_value
+                  ws.write "      #{v}"
+                  ws.write "\n" if i % 3 is 2 and i isnt remote_value.length - 1
+                ws.write "\n    ])"
+              ws.write "\n"
+            else
+              ws.write "    #{config}['#{property}'] = '#{suggested_value}' #{diff}\n"
         for ctx in ctxs
           {capacity} = ctx.config
           mods = [
