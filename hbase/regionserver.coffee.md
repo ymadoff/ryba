@@ -15,6 +15,7 @@
       hbase.site['hbase.regionserver.port'] ?= '60020'
       hbase.site['hbase.regionserver.info.port'] ?= '60030'
       hbase.site['hadoop.ssl.enabled'] ?= 'true'
+      hbase.regionserver_opts ?= ''
     
 ## Configuration for Kerberos
 
