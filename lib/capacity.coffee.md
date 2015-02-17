@@ -123,7 +123,7 @@ Example
         name: 'format', shortcut: 'f' # default: 'text'
         description: 'Output format are text (default), xml, json, js and coffee.'
       ,
-        name: 'overwrite', shortcut: 'o', type: 'boolean' # default: 'text'
+        name: 'overwrite', shortcut: 'w', type: 'boolean' # default: 'text'
         description: 'Overwrite any existing file.'
       ,
         name: 'hdfs_nn_name_dir' # default: './hdfs/name'
@@ -508,18 +508,18 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
       .on 'both', next
 
     exports.write = (config, ctxs, next) ->
-      # return next() unless config.params.save
+      # return next() unless config.params.output
       formats = ['xml', 'json', 'js', 'coffee']
       if config.params.format is 'text'
         # ok, print to stdout
       else if config.params.format
         return next Error "Insupported Extension #{extname}" unless config.params.format in formats
-        # unless config.params.save
+        # unless config.params.output
         #   # ok, print to stdout
-        # else if (basename = path.basename(config.params.save, ".#{config.params.format}")) isnt config.params.save
-        #   config.params.save = "#{basename}.#{config.params.format}" if config.params.format in ['json', 'js', 'coffee']
-      else if config.params.save
-        extname = path.extname config.params.save
+        # else if (basename = path.basename(config.params.output, ".#{config.params.format}")) isnt config.params.output
+        #   config.params.output = "#{basename}.#{config.params.format}" if config.params.format in ['json', 'js', 'coffee']
+      else if config.params.output
+        extname = path.extname config.params.output
         format = extname.substr 1
         return next Error "Could not guess format from arguments" unless format in formats
         config.params.format = format
@@ -527,19 +527,19 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
         config.params.format = 'text'      
       exports["write_#{config.params.format}"] config, ctxs, (err, content) ->
         return next err if err
-        # return next() unless config.params.save
-        # console.log 'SSSAAAVVVEEE', config.params.save
-        # # fs.stat config.params.save
+        # return next() unless config.params.output
+        # console.log 'SSSAAAVVVEEE', config.params.output
+        # # fs.stat config.params.output
         next()
 
     exports.write_text = (config, ctxs, next) ->
       do_open = ->
-        return do_write process.stdout unless config.params.save
-        return next() unless config.params.save
-        fs.stat config.params.save, (err, stat) ->
+        return do_write process.stdout unless config.params.output
+        return next() unless config.params.output
+        fs.stat config.params.output, (err, stat) ->
           return next err if err and err.code isnt 'ENOENT'
           return next Error 'File Already Exists, use --overwrite' unless err or config.params.overwrite
-          do_write fs.createWriteStream config.params.save, encoding: 'utf8'
+          do_write fs.createWriteStream config.params.output, encoding: 'utf8'
       do_write = (ws) ->
         print = (config, properties) ->
           for property in properties
@@ -626,60 +626,60 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
             ws.write "    hbase-env: #{regionserver_opts}\n"
         do_end ws
       do_end = (ws) ->
-        ws.end() if config.params.save
+        ws.end() if config.params.output
         next()
       do_open()
 
 
     exports.write_json = (config, ctxs, next) ->
       do_open = ->
-        return do_write process.stdout unless config.params.save
-        return next() unless config.params.save
-        fs.stat config.params.save, (err, stat) ->
+        return do_write process.stdout unless config.params.output
+        return next() unless config.params.output
+        fs.stat config.params.output, (err, stat) ->
           return next err if err and err.code isnt 'ENOENT'
           return next Error 'File Already Exists, use --overwrite' unless err or config.params.overwrite
-          do_write fs.createWriteStream config.params.save, encoding: 'utf8'
+          do_write fs.createWriteStream config.params.output, encoding: 'utf8'
       do_write = (ws) ->
         servers = exports.capacity_to_ryba ctxs
         ws.write JSON.stringify servers: servers, null, 2
       do_end = (ws) ->
-        ws.end() if config.params.save
+        ws.end() if config.params.output
         next()
       do_open()
 
     exports.write_js = (config, ctxs, next) ->
       do_open = ->
-        return do_write process.stdout unless config.params.save
-        return next() unless config.params.save
-        fs.stat config.params.save, (err, stat) ->
+        return do_write process.stdout unless config.params.output
+        return next() unless config.params.output
+        fs.stat config.params.output, (err, stat) ->
           return next err if err and err.code isnt 'ENOENT'
           return next Error 'File Already Exists, use --overwrite' unless err or config.params.overwrite
-          do_write fs.createWriteStream config.params.save, encoding: 'utf8'
+          do_write fs.createWriteStream config.params.output, encoding: 'utf8'
       do_write = (ws) ->
         servers = exports.capacity_to_ryba ctxs
         source = JSON.stringify servers: servers, null, 2
         source = "module.exports = #{source};"
         ws.write source
       do_end = (ws) ->
-        ws.end() if config.params.save
+        ws.end() if config.params.output
         next()
       do_open()
 
     exports.write_coffee = (config, ctxs, next) ->
       do_open = ->
-        return do_write process.stdout unless config.params.save
-        return next() unless config.params.save
-        fs.stat config.params.save, (err, stat) ->
+        return do_write process.stdout unless config.params.output
+        return next() unless config.params.output
+        fs.stat config.params.output, (err, stat) ->
           return next err if err and err.code isnt 'ENOENT'
           return next Error 'File Already Exists, use --overwrite' unless err or config.params.overwrite
-          do_write fs.createWriteStream config.params.save, encoding: 'utf8'
+          do_write fs.createWriteStream config.params.output, encoding: 'utf8'
       do_write = (ws) ->
         servers = exports.capacity_to_ryba ctxs
         source = JSON.stringify servers: servers
         source = "module.exports = #{source}"
         ws.write js2coffee.build(source).code
       do_end = (ws) ->
-        ws.end() if config.params.save
+        ws.end() if config.params.output
         next()
       do_open()
 
