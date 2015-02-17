@@ -113,7 +113,7 @@ global view of your system. In such case, this middleware is bypassed and has
 no effect. Also, this isnt included inside the configuration because it need an
 SSH connection to the node to gather the memory and CPU informations.
 
-    module.exports.push name: 'Hadoop YARN NM # Capacity Planning', handler: (ctx) ->
+    module.exports.push name: 'Hadoop YARN NM # Capacity Planning', handler: (ctx, next) ->
       {yarn} = ctx.config.ryba
       return next() if yarn.site['yarn.nodemanager.resource.memory-mb'] and yarn.site['yarn.nodemanager.resource.cpu-vcores']
       # diskNumber = yarn.site['yarn.nodemanager.local-dirs'].length
