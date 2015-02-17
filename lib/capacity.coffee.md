@@ -314,10 +314,17 @@ The property "yarn.nodemanager.local-dirs" defines multiple disks for
 localization. It enforces fail-over, preventing one disk to affect the
 containers, and load-balancing by spliting the access to the disks.
 
-        yarn_site['yarn.nodemanager.local-dirs'] ?= disks.map (disk) ->
-          path.resolve disk, ctx.config.params.yarn_nm_local_dir or './yarn/local'
-        yarn_site['yarn.nodemanager.log-dirs'] ?= disks.map (disk) ->
-          path.resolve disk, ctx.config.params.yarn_nm_log_dir or './yarn/log'
+        {yarn_nm_local_dir, yarn_nm_log_dir} = ctx.config.params
+        if /^\//.test yarn_nm_local_dir
+          yarn_site['yarn.nodemanager.local-dirs'] ?= yarn_nm_local_dir.split ','
+        else
+          yarn_site['yarn.nodemanager.local-dirs'] ?= disks.map (disk) ->
+            path.resolve disk, yarn_nm_local_dir or './yarn/local'
+        if /^\//.test yarn_nm_log_dir
+          yarn_site['dfs.datanode.data.dir'] ?= yarn_nm_log_dir.split ','
+        else
+          yarn_site['yarn.nodemanager.log-dirs'] ?= disks.map (disk) ->
+            path.resolve disk, yarn_nm_log_dir or './yarn/log'
 
 Raise the number of vcores later allocated for the ResourceManager.
 
@@ -362,8 +369,12 @@ the application (zombie state).
       for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/hadoop/hdfs_dn'
         {disks, hdfs_site} = ctx.config.capacity
-        hdfs_site['dfs.datanode.data.dir'] ?= disks.map (disk) ->
-          path.resolve disk, ctx.config.params.hdfs_dn_data_dir or './hdfs/data'
+        {hdfs_dn_data_dir} = ctx.config.params
+        if /^\//.test hdfs_dn_data_dir
+          hdfs_site['dfs.datanode.data.dir'] ?= hdfs_dn_data_dir.split ','
+        else
+          hdfs_site['dfs.datanode.data.dir'] ?= disks.map (disk) ->
+            path.resolve disk, hdfs_dn_data_dir or './hdfs/data'
       next()
 
 ## HDFS NameNode
@@ -372,9 +383,13 @@ the application (zombie state).
       for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/hadoop/hdfs_nn'
         {disks, hdfs_site} = ctx.config.capacity
-        hdfs_site['dfs.namenode.name.dir'] ?= disks.map (disk) ->
-          disk = '/var' if disk is '/'
-          path.resolve disk, ctx.config.params.hdfs_nn_name_dir or './hdfs/name'
+        {hdfs_nn_name_dir} = ctx.config.params
+        if /^\//.test hdfs_nn_name_dir
+          hdfs_site['dfs.namenode.name.dir'] ?= hdfs_nn_name_dir.split ','
+        else
+          hdfs_site['dfs.namenode.name.dir'] ?= disks.map (disk) ->
+            disk = '/var' if disk is '/'
+            path.resolve disk, hdfs_nn_name_dir or './hdfs/name'
       next()
 
 
@@ -697,6 +712,10 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
       for ctx in ctxs
         {capacity} = ctx.config
         server = ryba: {}
+        if ctx.has_any_modules 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn'
+          server.ryba.hdfs ?= {}
+          server.ryba.hdfs.site = capacity.hdfs_site
+          # server.ryba.yarn.capacity_scheduler = capacity.capacity_scheduler
         if ctx.has_any_modules 'ryba/hadoop/yarn_rm'
           server.ryba.yarn ?= {}
           server.ryba.yarn.site = capacity.yarn_site
@@ -710,6 +729,9 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
         if ctx.has_any_modules 'ryba/hive/client'
           server.ryba.hive ?= {}
           server.ryba.hive.site = capacity.hive_site
+        if ctx.has_any_modules 'ryba/hbase/regionserver'
+          server.ryba.hbase ?= {}
+          server.ryba.hbase.regionserver_opts = capacity.regionserver_opts
         servers[ctx.config.host] = server
       servers
 
