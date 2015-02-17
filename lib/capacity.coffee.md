@@ -678,6 +678,9 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
         servers = exports.capacity_to_ryba ctxs
         source = JSON.stringify servers: servers
         source = "module.exports = #{source}"
+        argv = process.argv
+        argv[1] = path.relative process.cwd(), argv[1]
+        ws.write "# #{argv.join(' ')}\n\n"
         ws.write js2coffee.build(source).code
       do_end = (ws) ->
         ws.end() if config.params.output
