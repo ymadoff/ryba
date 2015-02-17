@@ -19,6 +19,7 @@
       require('../hue/index').configure ctx
       nagios = ctx.config.ryba.nagios ?= {}
       nagios.overwrite ?= false
+      nagios.log_dir = '/var/log/nagios'
       # User
       nagios.user = name: nagios.user if typeof nagios.user is 'string'
       nagios.user ?= {}
