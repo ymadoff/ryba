@@ -20,7 +20,7 @@ config(params.parse(), function(err, config){
           console.log(err.errors[i].stack||err.errors[i].message);
         }
       }else{
-        console.log(err.message||err.stack);
+        console.log(err.stack);
       }
     }
   });
