@@ -115,7 +115,7 @@ SSH connection to the node to gather the memory and CPU informations.
 
     module.exports.push name: 'Hadoop YARN NM # Capacity Planning', handler: (ctx) ->
       {yarn} = ctx.config.ryba
-      return next() if yarn.site['yarn.nodemanager.resource.memory-mb'] and yarn.site['yarn.nodemanager.resource.cpu-vcores']
+      return if yarn.site['yarn.nodemanager.resource.memory-mb'] and yarn.site['yarn.nodemanager.resource.cpu-vcores']
       # diskNumber = yarn.site['yarn.nodemanager.local-dirs'].length
       memoryAvailableMb = Math.round ctx.meminfo.MemTotal / 1024 / 1024 * .8
       yarn.site['yarn.nodemanager.resource.memory-mb'] ?= memoryAvailableMb
