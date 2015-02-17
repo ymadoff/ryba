@@ -72,56 +72,6 @@ default setting for Yarn and its client application such as MapReduce or Tez.
         do_configure()
 
 ## Parameters
-
-    exports.params = 
-      name: 'capacity'
-      description: 'Hadoop Tool for Capacity Planning'
-      options: [
-        name: 'config', shortcut: 'c', type: 'array'
-        description: 'One or multiple configuration files'
-        required: true
-      ,
-        name: 'save', shortcut: 's'
-        description: 'Write the configuration to a file, valid extension are xml, json, js and coffee'
-      ,
-        name: 'format', shortcut: 'f' # default: 'text'
-        description: 'Output format are text (default), xml, json, js and coffee'
-      ,
-        name: 'overwrite', shortcut: 'o', type: 'boolean' # default: 'text'
-        description: 'Overwrite any existing file'
-      ,
-        name: 'hdfs_nn_name_dir' # default: './hdfs/name'
-        description: 'Relative path to the HDFS NameNode name directories'
-      ,
-        name: 'hdfs_dn_data_dir' # default: './hdfs/data'
-        description: 'Relative path to the HDFS DataNode local directories'
-      ,
-        name: 'yarn_nm_local_dir' # default: './yarn/local'
-        description: 'Relative path to the YARN NodeManager local directories'
-      ,
-        name: 'yarn_nm_log_dir' # default: './yarn/log'
-        description: 'Relative path to the YARN NodeManager local directories'
-      ]
-
-          
-          
-
-## SSH
-
-    exports.contexts = (config, next) ->
-      config.log ?= {}
-      config.log.disabled ?= true
-      config.connection.end = false
-      contexts = []
-      config.params.modules = ['masson/bootstrap/connection', 'masson/bootstrap/info']
-      run(config)
-      .on 'context', (ctx) ->
-        contexts.push ctx
-      .on 'error', next
-      .on 'end', -> next null, contexts
-
-## Configuration
-
 *   `total_memory` (int|string)   
     Total Memory available on the server.   
 *   `memory_system` (int|string)   
@@ -145,6 +95,57 @@ Example
 }
 ```
 
+    exports.params = 
+      name: 'capacity'
+      description: 'Hadoop Tool for Capacity Planning'
+      options: [
+        name: 'config', shortcut: 'c', type: 'array'
+        description: 'One or multiple configuration files.'
+        required: true
+      ,
+        name: 'output', shortcut: 'o'
+        description: 'Write the configuration to a file, extension is discoverd unless "format" is provided.'
+      ,
+        name: 'format', shortcut: 'f' # default: 'text'
+        description: 'Output format are text (default), xml, json, js and coffee.'
+      ,
+        name: 'overwrite', shortcut: 'o', type: 'boolean' # default: 'text'
+        description: 'Overwrite any existing file.'
+      ,
+        name: 'hdfs_nn_name_dir' # default: './hdfs/name'
+        description: 'Relative path to the HDFS NameNode name directories.'
+      ,
+        name: 'hdfs_dn_data_dir' # default: './hdfs/data'
+        description: 'Relative path to the HDFS DataNode local directories.'
+      ,
+        name: 'yarn_nm_local_dir' # default: './yarn/local'
+        description: 'Relative path to the YARN NodeManager local directories.'
+      ,
+        name: 'yarn_nm_log_dir' # default: './yarn/log'
+        description: 'Relative path to the YARN NodeManager local directories.'
+      ]
+
+          
+          
+
+## SSH
+
+    exports.contexts = (config, next) ->
+      config.log ?= {}
+      config.log.disabled ?= true
+      config.connection.end = false
+      contexts = []
+      config.params.modules = ['masson/bootstrap/connection', 'masson/bootstrap/info']
+      run(config)
+      .on 'context', (ctx) ->
+        contexts.push ctx
+      .on 'error', next
+      .on 'end', -> next null, contexts
+
+## Configuration
+
+Normalize configuration.
+
     exports.configure = (ctxs, next) ->
       for ctx in ctxs
         ctx.config.capacity ?= {}
@@ -162,6 +163,8 @@ Example
       next()
 
 ## Capacity Planning for Disks
+
+Discover the most relevant partitions on each node.
 
     exports.disks = (ctxs, next) ->
       for ctx in ctxs
@@ -242,7 +245,7 @@ Example
         ctx.config.capacity.memory_yarn ?= total_memory - memory_system - memory_hbase
       next()
 
-## Yarn ResourceManager
+## Yarn NodeManager
 
     exports.yarn_nm = (ctxs, next) ->
       minimum_allocation_mb = null
@@ -254,11 +257,11 @@ Example
 
         minimum_container_size = if memory_yarn <= 2*1024*1024*1024 then 128*1024*1024 # 128 MB
         else if memory_yarn <= 4*1024*1024*1024 then 256*1024*1024 # 256 MB
-        else if memory_mb <= 8*1024*1024*1024 then 512*1024*1024 # 512 MB
-        else if memory_mb <= 24*1024*1024*1024 then 1024*1024*1024 # 1 GB
+        else if memory_yarn <= 8*1024*1024*1024 then 512*1024*1024 # 512 MB
+        else if memory_yarn <= 24*1024*1024*1024 then 1024*1024*1024 # 1 GB
         else 2*1024*1024*1024 # 2 GB
         
-        # # min (2*CORES, 1.8*DISKS, (Total available RAM / MIN_CONTAINER_SIZE) )
+        # min (2*CORES, 1.8*DISKS, (Total available RAM / MIN_CONTAINER_SIZE) )
         unless max_number_of_containers = ctx.config.capacity.max_number_of_containers
           # Possible incoherence, here we multiply number of cores by 2 while
           # NodeManager vcores is set to number of cores only
@@ -272,11 +275,12 @@ Example
         ctx.config.capacity.memory_per_container = memory_per_container
 
         minimum_allocation_mb ?= Math.round memory_per_container / 1024 / 1024
-        minimum_allocation_mb = Math.min minimum_allocation_mb, memory_per_container
+        minimum_allocation_mb = Math.min minimum_allocation_mb, memory_per_container / 1024 / 1024
 
 Amount of physical memory, in MB, dedicated by the node and that can be allocated for containers.
 
         yarn_site['yarn.nodemanager.resource.memory-mb'] ?= Math.round memory_per_container * max_number_of_containers / 1024 / 1024
+
         maximum_allocation_mb = Math.max maximum_allocation_mb, yarn_site['yarn.nodemanager.resource.memory-mb']
 
 The property "yarn.nodemanager.vmem-pmem-rati" defines the virtual memory
@@ -291,7 +295,7 @@ Number of Virtual Cores dedicated by the node and that can be allocated for cont
         
         yarn_site['yarn.nodemanager.resource.cpu-vcores'] ?= cores
 
-The property "yarn.nodemanager.local-dirs" define multiple disks for
+The property "yarn.nodemanager.local-dirs" defines multiple disks for
 localization. It enforces fail-over, preventing one disk to affect the
 containers, and load-balancing by spliting the access to the disks.
 
@@ -300,12 +304,15 @@ containers, and load-balancing by spliting the access to the disks.
         yarn_site['yarn.nodemanager.log-dirs'] ?= disks.map (disk) ->
           path.resolve disk, ctx.config.params.yarn_nm_log_dir or './yarn/log'
 
+Raise the number of vcores later allocated for the ResourceManager.
+
         maximum_allocation_vcores = Math.max maximum_allocation_vcores, yarn_site['yarn.nodemanager.resource.cpu-vcores']
 
       memory_per_container_mean = for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/hadoop/yarn_nm'
         ctx.config.capacity.memory_per_container
       memory_per_container_mean = Math.round memory_per_container_mean.reduce( (a, b) -> a + b ) / memory_per_container_mean.length
+      
       for ctx in ctxs
         ctx.config.capacity.memory_per_container_mean = memory_per_container_mean
         ctx.config.capacity.minimum_allocation_mb = minimum_allocation_mb
@@ -552,7 +559,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
             print 'mapred_site', ['yarn.app.mapreduce.am.resource.mb', 'yarn.app.mapreduce.am.command-opts', 'mapreduce.map.memory.mb', 'mapreduce.map.java.opts', 'mapreduce.reduce.memory.mb', 'mapreduce.reduce.java.opts', 'mapreduce.task.io.sort.mb', 'mapreduce.map.cpu.vcores', 'mapreduce.reduce.cpu.vcores']
           if ctx.has_any_modules 'ryba/hive/client'
             ws.write "  Hive Client\n"
-            print 'hive_site', ['hive.tez.container.size', 'hive.tez.container.size', 'hive.tez.java.opts']
+            print 'hive_site', ['hive.tez.container.size', 'hive.tez.java.opts']
         do_end ws
       do_end = (ws) ->
         ws.end() if config.params.save
