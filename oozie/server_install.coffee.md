@@ -332,11 +332,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       version_remote = 'hdfs dfs -cat /user/oozie/share/lib/sharelib.properties | grep build.version | sed \'s/^build.version=\\(.*\\)$/\\1/g\''
       ctx.execute 
         cmd: mkcmd.hdfs ctx, """
+        if test -d /tmp/ooziesharelib ; then rm -rf /tmp/ooziesharelib; fi
         mkdir /tmp/ooziesharelib
         cd /tmp/ooziesharelib
         tar xzf /usr/lib/oozie/oozie-sharelib.tar.gz
         hdfs dfs -rm -r /user/#{oozie.user.name}/share || true
-        hdfs dfs -mkdir /user/#{oozie.user.name}
+        hdfs dfs -mkdir /user/#{oozie.user.name} || true
         hdfs dfs -put share /user/#{oozie.user.name}
         hdfs dfs -chown #{oozie.user.name}:#{oozie.group.name} /user/#{oozie.user.name}
         hdfs dfs -chmod -R 755 /user/#{oozie.user.name}
