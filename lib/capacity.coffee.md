@@ -145,10 +145,12 @@ Example
 ## SSH
 
     exports.contexts = (config, next) ->
+      config = merge {}, config
       config.log ?= {}
       config.log.disabled ?= true
       config.connection.end = false
       contexts = []
+      config.params.hosts = null
       config.params.modules = ['masson/bootstrap/connection', 'masson/bootstrap/info']
       run(config)
       .on 'context', (ctx) ->
@@ -586,9 +588,8 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
             else
               ws.write "    #{config}['#{property}'] = '#{suggested_value}' #{diff}\n"
         for ctx in ctxs
+          continue if config.params.hosts and not multimatch(config.params.hosts, ctx.config.host).length
           {capacity} = ctx.config
-          console.log config.params.hosts, ctx.config.host
-          # continue unless multimatch(config.params.hosts, [ctx.config.host]).length
           mods = [
             'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn'
             'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
@@ -596,15 +597,22 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           ]
           if ctx.has_any_modules mods
             ws.write "#{ctx.config.host}\n"
-          if ctx.has_any_modules 'ryba/hadoop/hdfs_nn'
+          print_hdfs_nn = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/hdfs_nn').length
+          if ctx.has_any_modules('ryba/hadoop/hdfs_nn') and print_hdfs_nn
             ws.write "  HDFS NameNode\n"
             print 'hdfs_site', ['dfs.namenode.name.dir']
-            # ws.write "    hdfs-site['dfs.namenode.name.dir'] = '#{capacity.hdfs_site['dfs.namenode.name.dir']}'\n"
-          if ctx.has_any_modules 'ryba/hadoop/hdfs_dn'
+          print_hdfs_dn = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/hdfs_dn').length
+          if ctx.has_any_modules('ryba/hadoop/hdfs_dn') and print_hdfs_dn
             ws.write "  HDFS DataNode\n"
             print 'hdfs_site', ['dfs.datanode.data.dir']
-            # ws.write "    hdfs-site['dfs.datanode.data.dir'] = '#{capacity.hdfs_site['dfs.datanode.data.dir']}'\n"
-          if ctx.has_any_modules 'ryba/hadoop/yarn_nm'
+          print_yarn_rm = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/yarn_rm').length
+          if ctx.has_any_modules('ryba/hadoop/yarn_rm') and print_yarn_rm
+            ws.write "  YARN ResourceManager\n"
+            print 'capacity_scheduler', ['yarn.scheduler.capacity.resource-calculator']
+            print 'yarn_site', ['yarn.scheduler.minimum-allocation-mb', 'yarn.scheduler.maximum-allocation-mb', 'yarn.scheduler.minimum-allocation-vcores', 'yarn.scheduler.maximum-allocation-vcores']
+          print_yarn_nm = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/yarn_nm').length
+          if ctx.has_any_modules('ryba/hadoop/yarn_nm') and print_yarn_nm
+            ws.write "  YARN NodeManager\n"
             ws.write "  Memory Total: #{prink.filesize capacity.total_memory, 3}\n"
             ws.write "  Memory System: #{prink.filesize capacity.memory_system, 3}\n"
             ws.write "  Memory HBase: #{prink.filesize capacity.memory_hbase, 3}\n"
@@ -612,32 +620,18 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
             ws.write "  Number of Cores: #{capacity.cores}\n"
             ws.write "  Number of Containers: #{capacity.max_number_of_containers}\n"
             ws.write "  Memory per Containers: #{prink.filesize capacity.memory_per_container, 3}\n"
-          if ctx.has_any_modules 'ryba/hadoop/yarn_rm'
-            ws.write "  YARN ResourceManager\n"
-            print 'capacity_scheduler', ['yarn.scheduler.capacity.resource-calculator']
-            print 'yarn_site', ['yarn.scheduler.minimum-allocation-mb', 'yarn.scheduler.maximum-allocation-mb', 'yarn.scheduler.minimum-allocation-vcores', 'yarn.scheduler.maximum-allocation-vcores']
-            # ws.write "    capacity-scheduler['yarn.scheduler.capacity.resource-calculator'] = '#{capacity.capacity_scheduler['yarn.scheduler.capacity.resource-calculator']}'"
-            # ws.write "    yarn-site['yarn.scheduler.minimum-allocation-mb'] = '#{capacity.yarn_site['yarn.scheduler.minimum-allocation-mb']}'"
-            # ws.write "    yarn-site['yarn.scheduler.maximum-allocation-mb'] = '#{capacity.yarn_site['yarn.scheduler.maximum-allocation-mb']}'"
-            # ws.write "    yarn-site['yarn.scheduler.minimum-allocation-vcores'] = '#{capacity.yarn_site['yarn.scheduler.minimum-allocation-vcores']}'"
-            # ws.write "    yarn-site['yarn.scheduler.maximum-allocation-vcores'] = '#{capacity.yarn_site['yarn.scheduler.maximum-allocation-vcores']}'"
-          if ctx.has_any_modules 'ryba/hadoop/yarn_nm'
-            ws.write "  YARN NodeManager\n"
             print 'yarn_site', ['yarn.nodemanager.resource.memory-mb', 'yarn.nodemanager.vmem-pmem-ratio', 'yarn.nodemanager.resource.cpu-vcores', 'yarn.nodemanager.local-dirs', 'yarn.nodemanager.log-dirs']
-            # ws.write "    yarn-site['yarn.nodemanager.resource.memory-mb'] = '#{capacity.yarn_site['yarn.nodemanager.resource.memory-mb']}'"
-            # ws.write "    yarn-site['yarn.nodemanager.vmem-pmem-ratio'] = '#{capacity.yarn_site['yarn.nodemanager.vmem-pmem-ratio']}'"
-            # ws.write "    yarn-site['yarn.nodemanager.resource.cpu-vcores'] = '#{capacity.yarn_site['yarn.nodemanager.resource.cpu-vcores']}'"
-            # ws.write "    yarn-site['yarn.nodemanager.local-dirs'] = '#{capacity.yarn_site['yarn.nodemanager.local-dirs']}'"
-            # ws.write "    yarn-site['yarn.nodemanager.log-dirs'] = '#{capacity.yarn_site['yarn.nodemanager.log-dirs']}'"
-          if ctx.has_any_modules 'ryba/hadoop/mapred_client'
+          print_mapred_client = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/mapred_client').length
+          if ctx.has_any_modules('ryba/hadoop/mapred_client') and print_mapred_client
             ws.write "  MapReduce Client\n"
             print 'mapred_site', ['yarn.app.mapreduce.am.resource.mb', 'yarn.app.mapreduce.am.command-opts', 'mapreduce.map.memory.mb', 'mapreduce.map.java.opts', 'mapreduce.reduce.memory.mb', 'mapreduce.reduce.java.opts', 'mapreduce.task.io.sort.mb', 'mapreduce.map.cpu.vcores', 'mapreduce.reduce.cpu.vcores']
-          if ctx.has_any_modules 'ryba/hive/client'
+          print_hive_client = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/hive_client').length
+          if ctx.has_any_modules('ryba/hive/client') and print_hive_client
             ws.write "  Hive Client\n"
             print 'hive_site', ['hive.tez.container.size', 'hive.tez.java.opts']
-          if ctx.has_any_modules 'ryba/hbase/regionserver'
+          print_hbase_regionserver = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/regionserver').length
+          if ctx.has_any_modules('ryba/hbase/regionserver') and print_hbase_regionserver
             ws.write "  HBase RegionServer\n"
-            # print 'hive_site', ['hive.tez.container.size', 'hive.tez.java.opts']
             {regionserver_opts} = ctx.config.capacity
             ws.write "    hbase-env: #{regionserver_opts}\n"
         do_end ws
@@ -656,7 +650,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           return next Error 'File Already Exists, use --overwrite' unless err or config.params.overwrite
           do_write fs.createWriteStream config.params.output, encoding: 'utf8'
       do_write = (ws) ->
-        servers = exports.capacity_to_ryba ctxs
+        servers = exports.capacity_to_ryba config, ctxs
         ws.write JSON.stringify servers: servers, null, 2
       do_end = (ws) ->
         ws.end() if config.params.output
@@ -672,7 +666,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           return next Error 'File Already Exists, use --overwrite' unless err or config.params.overwrite
           do_write fs.createWriteStream config.params.output, encoding: 'utf8'
       do_write = (ws) ->
-        servers = exports.capacity_to_ryba ctxs
+        servers = exports.capacity_to_ryba config, ctxs
         source = JSON.stringify servers: servers, null, 2
         source = "module.exports = #{source};"
         ws.write source
@@ -690,7 +684,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           return next Error 'File Already Exists, use --overwrite' unless err or config.params.overwrite
           do_write fs.createWriteStream config.params.output, encoding: 'utf8'
       do_write = (ws) ->
-        servers = exports.capacity_to_ryba ctxs
+        servers = exports.capacity_to_ryba config, ctxs
         source = JSON.stringify servers: servers
         source = "module.exports = #{source}"
         argv = process.argv
@@ -703,33 +697,39 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
       do_open()
 
     exports.write_xml = (config, ctxs, next) ->
-      servers = exports.capacity_to_ryba ctxs
-      console.log 'xml'
+      servers = exports.capacity_to_ryba config,ctxs
+      console.log 'TODO XML'
       next()
 
-    exports.capacity_to_ryba = (ctxs) ->
+    exports.capacity_to_ryba = (config, ctxs) ->
       servers = {}
       for ctx in ctxs
+        continue if config.params.hosts and not multimatch(config.params.hosts, ctx.config.host).length
         {capacity} = ctx.config
         server = ryba: {}
-        if ctx.has_any_modules 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn'
+        print_hdfs = not config.params.modules or multimatch(config.params.modules, ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn']).length
+        if ctx.has_any_modules('ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn') and print_hdfs
           server.ryba.hdfs ?= {}
           server.ryba.hdfs.site = capacity.hdfs_site
-          # server.ryba.yarn.capacity_scheduler = capacity.capacity_scheduler
-        if ctx.has_any_modules 'ryba/hadoop/yarn_rm'
+        print_yarn_rm = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/yarn_rm').length
+        if ctx.has_any_modules('ryba/hadoop/yarn_rm') and print_yarn_rm
           server.ryba.yarn ?= {}
           server.ryba.yarn.site = capacity.yarn_site
           server.ryba.yarn.capacity_scheduler = capacity.capacity_scheduler
-        if ctx.has_any_modules 'ryba/hadoop/yarn_nm'
+        print_yarn_nm = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/yarn_nm').length
+        if ctx.has_any_modules('ryba/hadoop/yarn_nm') and print_yarn_nm
           server.ryba.yarn ?= {}
           server.ryba.yarn.site = capacity.yarn_site
-        if ctx.has_any_modules 'ryba/hadoop/mapred_client'
+        print_mapred_client = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/mapred_client').length
+        if ctx.has_any_modules('ryba/hadoop/mapred_client') and print_mapred_client
           server.ryba.mapred ?= {}
           server.ryba.mapred.site = capacity.mapred_site
-        if ctx.has_any_modules 'ryba/hive/client'
+        print_hive_client = not config.params.modules or multimatch(config.params.modules, 'ryba/hive/client').length
+        if ctx.has_any_modules('ryba/hive/client') and print_hive_client
           server.ryba.hive ?= {}
           server.ryba.hive.site = capacity.hive_site
-        if ctx.has_any_modules 'ryba/hbase/regionserver'
+        print_hbase_regionserver = not config.params.modules or multimatch(config.params.modules, 'ryba/hbase/regionserver').length
+        if ctx.has_any_modules('ryba/hbase/regionserver') and print_hbase_regionserver
           server.ryba.hbase ?= {}
           server.ryba.hbase.regionserver_opts = capacity.regionserver_opts
         servers[ctx.config.host] = server
@@ -765,6 +765,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
     run = require 'masson/lib/run'
     {merge} = require 'mecano/lib/misc'
     parameters = require 'parameters'
+    multimatch = require 'multimatch'
     each = require 'each'
     prink = require 'prink'
     path = require 'path'
