@@ -225,7 +225,7 @@ Discover the most relevant partitions on each node.
 
 ## Capacity Planning for Memory
 
-    exports.memory_system_gb = [[1,.2], [2,.4], [4,1], [7,2], [8,2], [16,2], [24,4], [48,6], [64,8], [72,8], [96,12], [128,24], [256,32], [512,64]]
+    exports.memory_system_gb = [[1,.2], [2,.2], [4,1], [7,2], [8,2], [16,2], [24,4], [48,6], [64,8], [72,8], [96,12], [128,24], [256,32], [512,64]]
     exports.memory_hbase_gb = [[1,.2], [2,.4], [4,1], [8,1], [16,2], [24,4], [48,8], [64,8], [72,8], [96,16], [128,24], [256,32], [512,64]]
     exports.memory = (ctxs, next) ->
       for ctx in ctxs
@@ -256,9 +256,10 @@ Discover the most relevant partitions on each node.
               if total_memory_gb < total
                 memory_hbase_gb = reserved
                 break
-        ctx.config.capacity.memory_system ?= memory_system = Math.round memory_system_gb * 1024 * 1024 * 1024
-        ctx.config.capacity.memory_hbase ?= memory_hbase = Math.round memory_hbase_gb * 1024 * 1024 * 1024
-        ctx.config.capacity.memory_yarn ?= total_memory - memory_system - memory_hbase
+        memory_system = exports.rounded_memory memory_system_gb * 1024 * 1024 * 1024
+        ctx.config.capacity.memory_hbase ?= memory_hbase = exports.rounded_memory memory_hbase_gb * 1024 * 1024 * 1024
+        ctx.config.capacity.memory_yarn ?= memory_yarn = exports.rounded_memory total_memory - memory_system - memory_hbase
+        ctx.config.capacity.memory_system ?= total_memory - memory_hbase - memory_yarn
       next()
 
 ## Yarn NodeManager
@@ -639,7 +640,6 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
         ws.end() if config.params.output
         next()
       do_open()
-
 
     exports.write_json = (config, ctxs, next) ->
       do_open = ->
