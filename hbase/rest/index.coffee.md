@@ -27,7 +27,8 @@ See [REST Gateway Impersonation Configuration][impersonation].
       # hbase.site['hbase.rest.authentication.kerberos.keytab'] ?= "#{hbase.conf_dir}/hbase.service.keytab"
       hbase.site['hbase.rest.authentication.kerberos.keytab'] ?= core_site['hadoop.http.authentication.kerberos.keytab']
       m_ctxs = ctx.contexts 'ryba/hbase/master'
-      hbase.site['hbase.master.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.site['hbase.master.kerberos.principal']#.replace '_HOST', m_ctxs[0].config.host
+      hbase.site['hbase.master.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.site['hbase.master.kerberos.principal']
+      hbase.site['hbase.regionserver.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.site['hbase.regionserver.kerberos.principal']
 
     # module.exports.push commands: 'backup', modules: 'ryba/hbase/rest/backup'
 
