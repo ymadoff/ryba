@@ -53,6 +53,8 @@ Resources:
         ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] ?= 'true'
         ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path'] ?= '/cgroup'
 
+## Commands
+
     # module.exports.push commands: 'backup', modules: 'ryba/hadoop/yarn_nm_backup'
 
     # module.exports.push commands: 'check', modules: 'ryba/hadoop/yarn_nm_check'

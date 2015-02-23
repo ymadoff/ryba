@@ -30,6 +30,8 @@ See [REST Gateway Impersonation Configuration][impersonation].
       hbase.site['hbase.master.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.site['hbase.master.kerberos.principal']
       hbase.site['hbase.regionserver.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.site['hbase.regionserver.kerberos.principal']
 
+## Commands
+
     # module.exports.push commands: 'backup', modules: 'ryba/hbase/rest/backup'
 
     module.exports.push commands: 'check', modules: 'ryba/hbase/rest/check'

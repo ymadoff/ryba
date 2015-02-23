@@ -90,6 +90,7 @@ the application (zombie state).
       ryba.yarn.site['yarn.scheduler.minimum-allocation-vcores'] ?= 1
       ryba.yarn.site['yarn.scheduler.maximum-allocation-vcores'] ?= 32
 
+## Commands
 
     # module.exports.push commands: 'backup', modules: 'ryba/hadoop/yarn_rm_backup'
 

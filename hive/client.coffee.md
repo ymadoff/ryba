@@ -31,6 +31,8 @@
       hive.site['hive.txn.timeout'] = server_ctx.config.ryba.hive.site['hive.txn.timeout']
       hive.site['hive.txn.max.open.batch'] = server_ctx.config.ryba.hive.site['hive.txn.max.open.batch']
 
+## Commands
+
     module.exports.push commands: 'check', modules: 'ryba/hive/client_check'
 
     module.exports.push commands: 'install', modules: [

@@ -56,6 +56,8 @@ Example:
       ctx.config.ryba.ganglia.rm_port ?= 8664
       ctx.config.ryba.ganglia.jhs_port ?= 8666
 
+## Commands
+
     # module.exports.push command: 'backup', modules: 'ryba/ganglia/collector_backup'
 
     # module.exports.push commands: 'check', modules: 'ryba/ganglia/collector_check'

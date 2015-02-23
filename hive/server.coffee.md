@@ -134,6 +134,8 @@ default to the [DBTokenStore]. Also worth of interest is the
       # hive.support.concurrency = 'true' # Required, default to false
       # hive.zookeeper.quorum = list of zookeeper address
 
+## Commands
+
     module.exports.push commands: 'backup', modules: 'ryba/hive/server_backup'
 
     module.exports.push commands: 'check', modules: 'ryba/hive/server_check'

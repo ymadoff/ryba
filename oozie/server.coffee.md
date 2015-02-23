@@ -157,6 +157,8 @@ Example
       ryba.oozie.hadoop_config['dfs.namenode.kerberos.principal'] ?= "hdfs/#{ryba.static_host}@#{ryba.realm}"
       ryba.oozie.hadoop_config['mapreduce.framework.name'] ?= "yarn"
 
+## Commands
+
     module.exports.push commands: 'backup', modules: 'ryba/oozie/server_backup'
 
     # module.exports.push commands: 'check', modules: 'ryba/oozie/server_check'

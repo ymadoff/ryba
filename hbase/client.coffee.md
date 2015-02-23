@@ -19,6 +19,8 @@ Install the HBase client package and configure it with secured access.
       hbase.site['hbase.master.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.site['hbase.master.kerberos.principal']
       hbase.site['hbase.regionserver.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.site['hbase.regionserver.kerberos.principal']
 
+## Commands
+
     module.exports.push commands: 'check', modules: 'ryba/hbase/client_check'
 
     module.exports.push commands: 'install', modules: 'ryba/hbase/client_install'

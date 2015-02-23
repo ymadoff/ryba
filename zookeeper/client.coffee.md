@@ -39,6 +39,8 @@
       ctx.config.ryba.zookeeper.env['JAVA_HOME'] ?= "#{java_home}"
       ctx.config.ryba.zookeeper.env['CLIENT_JVMFLAGS'] ?= '-Djava.security.auth.login.config=/etc/zookeeper/conf/zookeeper-client.jaas'
 
+## Commands
+
     module.exports.push commands: 'check', modules: 'ryba/zookeeper/client_check'
 
     module.exports.push commands: 'install', modules: [

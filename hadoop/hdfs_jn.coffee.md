@@ -52,6 +52,8 @@ Example:
       throw Error "HDFS not configured for HA" unless nn_ctxs.length is 2
       ryba.hdfs.site['dfs.namenode.shared.edits.dir'] ?= nn_ctxs[0].config.ryba.hdfs.site['dfs.namenode.shared.edits.dir']
 
+## Commands
+
     # module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_jn_backup'
 
     module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_jn_check'

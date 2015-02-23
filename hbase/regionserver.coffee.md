@@ -48,6 +48,8 @@
         hbase.site["hadoop.proxyuser.#{match[1]}.groups"] ?= '*'
         hbase.site["hadoop.proxyuser.#{match[1]}.hosts"] ?= '*'
 
+## Commands
+
     # module.exports.push commands: 'backup', modules: 'ryba/hbase/regionserver_backup'
 
     module.exports.push commands: 'check', modules: 'ryba/hbase/regionserver_check'

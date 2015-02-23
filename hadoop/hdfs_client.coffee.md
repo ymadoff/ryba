@@ -9,6 +9,8 @@
       ryba.hdfs.site['dfs.domain.socket.path'] ?= '/var/lib/hadoop-hdfs/dn_socket'
       ryba.hdfs.site['dfs.namenode.kerberos.principal'] ?= "nn/#{ryba.static_host}@#{ryba.realm}"
 
+## Commands
+
     module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_client_check'
 
     module.exports.push commands: 'install', modules: 'ryba/hadoop/hdfs_client_install'

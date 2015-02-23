@@ -66,6 +66,8 @@ Example:
         throw Error 'Number of failed volumes must be less than total volumes'
       ryba.hdfs.datanode_opts ?= null
 
+## Commands
+
     # module.exports.push command: 'backup', modules: 'ryba/hadoop/hdfs_dn_backup'
 
     module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_dn_check'

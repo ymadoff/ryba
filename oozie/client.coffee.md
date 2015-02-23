@@ -16,6 +16,8 @@
       ryba.oozie.site['oozie.base.url'] = server_oozie_site['oozie.base.url']
       ryba.oozie.site['oozie.service.HadoopAccessorService.kerberos.principal'] = server_oozie_site['oozie.service.HadoopAccessorService.kerberos.principal']
 
+## Commands
+
     module.exports.push commands: 'install', modules: 'ryba/oozie/client_install'
 
     module.exports.push commands: 'check', modules: 'ryba/oozie/client_check'

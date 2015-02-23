@@ -76,6 +76,8 @@
         'falcon-server': [] # ctx.hosts_with_module 'ryba/falcon'
         'ats-servers': ctx.hosts_with_module 'ryba/ats'
 
+## Commands
+
     # module.exports.push commands: 'backup', modules: 'ryba/nagios/backup'
 
     module.exports.push commands: 'check', modules: 'ryba/nagios/check'

@@ -38,6 +38,8 @@ built atop Apache Hadoop YARN.
       tez_memory_xmx = Math.min rm_memory_max_mb, tez_memory_xmx
       ryba.tez.tez_site['hive.tez.java.opts'] ?= "-Xmx#{tez_memory_xmx}m"
 
+## Commands
+
     module.exports.push commands: 'check', modules: 'ryba/tez/check'
 
     module.exports.push commands: 'install', modules: [

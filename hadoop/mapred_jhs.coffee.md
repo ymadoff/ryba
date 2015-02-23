@@ -42,6 +42,7 @@ and "intermediate-done-dir".
       ryba.mapred.site['mapreduce.jobhistory.done-dir'] ?= '/mr-history/done' # Directory where history files are managed by the MR JobHistory Server.
       ryba.mapred.site['mapreduce.jobhistory.intermediate-done-dir'] ?= '/mr-history/tmp' # Directory where history files are written by MapReduce jobs.
 
+## Commands
 
     # module.exports.push commands: 'backup', modules: 'ryba/hadoop/mapred_jhs_backup'
 
