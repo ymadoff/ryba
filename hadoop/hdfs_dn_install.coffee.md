@@ -144,6 +144,7 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o0750
+        parent: true
       ,
         destination: "#{hdfs.pid_dir}/#{hdfs.user}"
         uid: hdfs.user.name
