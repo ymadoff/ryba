@@ -126,8 +126,11 @@ Example
         name: 'overwrite', shortcut: 'w', type: 'boolean' # default: 'text'
         description: 'Overwrite any existing file.'
       ,
+        name: 'partitions', shortcut: 'p', type: 'array'
+        description: 'List of disk partitions unless discovered.'
+      ,
         name: 'hdfs_nn_name_dir' # default: './hdfs/name'
-        description: 'Relative path to the HDFS NameNode name directories.'
+        description: 'Absolute path to a single directory or relative path to the HDFS NameNode name directories.'
       ,
         name: 'hdfs_dn_data_dir' # default: './hdfs/data'
         description: 'Relative path to the HDFS DataNode local directories.'
@@ -186,6 +189,10 @@ Discover the most relevant partitions on each node.
       for ctx in ctxs
         # continue unless ctx.has_any_modules 'ryba/hadoop/yarn_nm'
         continue if ctx.config.capacity.disks
+        # Provided by user
+        if ctx.config.params.partitions
+          ctx.config.capacity.disks = ctx.config.params.partitions
+          continue
         # Search common partition names
         found_common_names = []
         for disk in ctx.diskinfo
@@ -224,6 +231,9 @@ Discover the most relevant partitions on each node.
       next()
 
 ## Capacity Planning for Memory
+
+Estimates the memory available to the system, YARN and HBase. The ratio vary
+depending on the total amout of memory.
 
     exports.memory_system_gb = [[1,.2], [2,.2], [4,1], [7,2], [8,2], [16,2], [24,4], [48,6], [64,8], [72,8], [96,12], [128,24], [256,32], [512,64]]
     exports.memory_hbase_gb = [[1,.2], [2,.4], [4,1], [8,1], [16,2], [24,4], [48,8], [64,8], [72,8], [96,16], [128,24], [256,32], [512,64]]
@@ -282,13 +292,24 @@ Discover the most relevant partitions on each node.
         unless max_number_of_containers = ctx.config.capacity.max_number_of_containers
           # Possible incoherence, here we multiply number of cores by 2 while
           # NodeManager vcores is set to number of cores only
-          max_number_of_containers = Math.floor Math.min cores*2, disks.length * 1.8, (memory_yarn / minimum_container_size)
-        ctx.config.capacity.max_number_of_containers = max_number_of_containers
-
+          max_number_of_containers = Math.floor Math.min cores * 2, disks.length * 1.8, (memory_yarn / minimum_container_size)
+        
         # Amount of RAM per container
         # max(MIN_CONTAINER_SIZE, (Total Available RAM) / containers))
         unless memory_per_container = ctx.config.capacity.memory_per_container
           memory_per_container = Math.floor Math.max minimum_container_size, memory_yarn / max_number_of_containers
+
+        # # Work with small VM
+        # if memory_per_container < 512 * 1024 * 1024
+        #   unless max_number_of_containers = ctx.config.capacity.max_number_of_containers
+        #     max_number_of_containers = Math.floor Math.min cores, disks.length, (memory_yarn / minimum_container_size)
+        #   unless memory_per_container = ctx.config.capacity.memory_per_container
+        #     memory_per_container = Math.floor Math.max minimum_container_size, memory_yarn / max_number_of_containers
+
+        # Export number of containers
+        ctx.config.capacity.max_number_of_containers = max_number_of_containers
+
+        # Export RAM per container
         memory_per_container = exports.rounded_memory memory_per_container
         ctx.config.capacity.memory_per_container = memory_per_container
 
@@ -382,6 +403,14 @@ the application (zombie state).
 
 ## HDFS NameNode
 
+In HDFS High Availabity (HA) mode, we only set one name directory by default
+located inside "/var/hdfs/name" because the Journal Node are responsible for
+distributing logs into the passive NameNode (please get back to us if this isnt
+safe enough). In non-HA mode, we store as many copies as partitions inside the 
+partition "./hdfs/name" directory.
+
+This behavior may be altered with the "hdfs_nn_name_dir" parameter.
+
     exports.hdfs_nn = (ctxs, next) ->
       for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/hadoop/hdfs_nn'
@@ -390,9 +419,12 @@ the application (zombie state).
         if /^\//.test hdfs_nn_name_dir
           hdfs_site['dfs.namenode.name.dir'] ?= hdfs_nn_name_dir.split ','
         else
-          hdfs_site['dfs.namenode.name.dir'] ?= disks.map (disk) ->
-            disk = '/var' if disk is '/'
-            path.resolve disk, hdfs_nn_name_dir or './hdfs/name'
+          if ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+            hdfs_site['dfs.namenode.name.dir'] ?= [path.resolve '/var', hdfs_nn_name_dir or './hdfs/name']
+          else
+            hdfs_site['dfs.namenode.name.dir'] ?= disks.map (disk) ->
+              disk = '/var' if disk is '/'
+              path.resolve disk, hdfs_nn_name_dir or './hdfs/name'
       next()
 
 
@@ -435,7 +467,7 @@ can be set at the job level. This change does not require a service restart.
         mapreduce_am_memory_mb = Math.min mapreduce_am_memory_mb, maximum_allocation_mb
         mapred_site['yarn.app.mapreduce.am.resource.mb'] = mapreduce_am_memory_mb
 
-        mapreduce_am_opts = /-Xmx(.*?)m/.exec(mapred_site['yarn.app.mapreduce.am.command-opts'])?[1] or Math.floor .8 * 2 * memory_per_container_mean_mb
+        mapreduce_am_opts = /-Xmx(.*?)m/.exec(mapred_site['yarn.app.mapreduce.am.command-opts'])?[1] or Math.floor .8 * mapreduce_am_memory_mb
         mapreduce_am_opts = Math.min mapreduce_am_opts, maximum_allocation_mb
         mapred_site['yarn.app.mapreduce.am.command-opts'] = "-Xmx#{mapreduce_am_opts}m"
 
@@ -591,13 +623,16 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
         for ctx in ctxs
           continue if config.params.hosts and not multimatch(config.params.hosts, ctx.config.host).length
           {capacity} = ctx.config
-          mods = [
-            'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn'
-            'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
-            'ryba/hadoop/mapred_client', 'ryba/hadoop/hive_client'
-          ]
-          if ctx.has_any_modules mods
-            ws.write "#{ctx.config.host}\n"
+          # mods = [
+          #   'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn'
+          #   'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
+          #   'ryba/hadoop/mapred_client', 'ryba/hadoop/hive_client'
+          # ]
+          # if ctx.has_any_modules mods
+          ws.write "#{ctx.config.host}\n"
+          ws.write "  Number of core: #{capacity.cpus}\n"
+          ws.write "  Number of partitions: #{capacity.disks.length}\n"
+          ws.write "  Memory Total: #{prink.filesize capacity.total_memory, 3}\n"
           print_hdfs_nn = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/hdfs_nn').length
           if ctx.has_any_modules('ryba/hadoop/hdfs_nn') and print_hdfs_nn
             ws.write "  HDFS NameNode\n"
@@ -614,7 +649,6 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           print_yarn_nm = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/yarn_nm').length
           if ctx.has_any_modules('ryba/hadoop/yarn_nm') and print_yarn_nm
             ws.write "  YARN NodeManager\n"
-            ws.write "  Memory Total: #{prink.filesize capacity.total_memory, 3}\n"
             ws.write "  Memory System: #{prink.filesize capacity.memory_system, 3}\n"
             ws.write "  Memory HBase: #{prink.filesize capacity.memory_hbase, 3}\n"
             ws.write "  Memory YARN: #{prink.filesize capacity.memory_yarn, 3}\n"
@@ -689,8 +723,27 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
         source = "module.exports = #{source}"
         argv = process.argv
         argv[1] = path.relative process.cwd(), argv[1]
-        ws.write "# #{argv.join(' ')}\n\n"
+        ws.write "# #{argv.join(' ')}\n"
+        ws.write "\n"
         ws.write js2coffee.build(source).code
+        for ctx in ctxs
+          {capacity} = ctx.config
+          ws.write "\n"
+          ws.write "# #{ctx.config.host}\n"
+          ws.write "#   Number of core: #{capacity.cpus}\n"
+          ws.write "#   Number of partitions: #{capacity.disks.length}\n"
+          ws.write "#   Memory Total: #{prink.filesize capacity.total_memory, 3}\n"
+          print_yarn_nm = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/yarn_nm').length
+          if ctx.has_any_modules('ryba/hadoop/yarn_nm') and print_yarn_nm
+            ws.write "\n"
+            ws.write "#   YARN NodeManager\n"
+            ws.write "#     Memory Total: #{prink.filesize capacity.total_memory, 3}\n"
+            ws.write "#     Memory System: #{prink.filesize capacity.memory_system, 3}\n"
+            ws.write "#     Memory HBase: #{prink.filesize capacity.memory_hbase, 3}\n"
+            ws.write "#     Memory YARN: #{prink.filesize capacity.memory_yarn, 3}\n"
+            ws.write "#     Number of Cores: #{capacity.cores}\n"
+            ws.write "#     Number of Containers: #{capacity.max_number_of_containers}\n"
+            ws.write "#     Memory per Containers: #{prink.filesize capacity.memory_per_container, 3}\n"
       do_end = (ws) ->
         ws.end() if config.params.output
         next()
