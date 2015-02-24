@@ -65,6 +65,8 @@ service's TCP port.
         ryba.hdfs.site['dfs.ha.fencing.methods'] ?= "sshfence(#{ryba.hdfs.user.name})"
         ryba.hdfs.site['dfs.ha.fencing.ssh.private-key-files'] ?= "#{ryba.hdfs.user.home}/.ssh/id_rsa"
 
+## Commands
+
     module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_nn_backup'
 
     module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_nn_check'

@@ -22,7 +22,7 @@
       version_remote = 'hdfs dfs -ls /apps/tez | grep tez-common | sed \'s/.*tez-common-\\(.*\\)\\.jar$/\\1/g\''
       ctx.execute
         cmd: mkcmd.hdfs ctx, """
-        hdfs dfs -rm -f /apps/tez || true
+        hdfs dfs -rm -r -f /apps/tez || true
         hdfs dfs -mkdir -p /apps/tez
         hdfs dfs -copyFromLocal /usr/lib/tez/* /apps/tez
         hdfs dfs -chown -R  #{hdfs.user.name}:#{hadoop_group.name} /apps/tez

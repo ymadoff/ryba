@@ -64,6 +64,8 @@
       # hbase.site['hbase.region.replica.wait.for.primary.flush'] ?= 'true'
       # hbase.site['hbase.region.replica.storefile.refresh.memstore.multiplier'] ?= '4'
 
+## Commands
+
     # module.exports.push commands: 'backup', modules: 'ryba/hbase/master_backup'
 
     module.exports.push commands: 'check', modules: 'ryba/hbase/master_check'

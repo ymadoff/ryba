@@ -15,6 +15,11 @@
       hbase.site['hbase.regionserver.port'] ?= '60020'
       hbase.site['hbase.regionserver.info.port'] ?= '60030'
       hbase.site['hadoop.ssl.enabled'] ?= 'true'
+      hbase.site['hbase.regionserver.handler.count'] ?= 60 # HDP default
+      # http://blog.sematext.com/2012/07/16/hbase-memstore-what-you-should-know/
+      # Keep hbase.regionserver.hlog.blocksize * hbase.regionserver.maxlogs just
+      # a bit above hbase.regionserver.global.memstore.lowerLimit * HBASE_HEAPSIZE
+
       hbase.regionserver_opts ?= ''
     
 ## Configuration for Kerberos
@@ -42,6 +47,8 @@
         throw Error 'Invalid HBase Rest principal' unless match = /^(.+?)[@\/]/.exec principal
         hbase.site["hadoop.proxyuser.#{match[1]}.groups"] ?= '*'
         hbase.site["hadoop.proxyuser.#{match[1]}.hosts"] ?= '*'
+
+## Commands
 
     # module.exports.push commands: 'backup', modules: 'ryba/hbase/regionserver_backup'
 

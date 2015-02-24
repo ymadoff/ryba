@@ -37,6 +37,8 @@
       ryba.webhcat.site['templeton.port'] ?= 50111
       ryba.webhcat.site['templeton.controller.map.mem'] = 1600 # Total virtual memory available to map tasks.
 
+## Commands
+
     # module.exports.push commands: 'backup', modules: 'ryba/hive/webhcat_backup'
 
     module.exports.push commands: 'check', modules: 'ryba/hive/webhcat_check'

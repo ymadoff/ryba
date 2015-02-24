@@ -19,6 +19,7 @@
       require('../hue/index').configure ctx
       nagios = ctx.config.ryba.nagios ?= {}
       nagios.overwrite ?= false
+      nagios.log_dir = '/var/log/nagios'
       # User
       nagios.user = name: nagios.user if typeof nagios.user is 'string'
       nagios.user ?= {}
@@ -74,6 +75,8 @@
         'storm_rest_api': [] # ctx.hosts_with_module 'ryba/storm/rest'
         'falcon-server': [] # ctx.hosts_with_module 'ryba/falcon'
         'ats-servers': ctx.hosts_with_module 'ryba/ats'
+
+## Commands
 
     # module.exports.push commands: 'backup', modules: 'ryba/nagios/backup'
 

@@ -28,7 +28,7 @@ majority of DataNodes also need to be running.
           hdfs dfsadmin -safemode get | grep OFF
           """
         interval: 3000
-      , (err) -> next err
+      , (err) -> next err, true
 
 ## Wait Failover
 

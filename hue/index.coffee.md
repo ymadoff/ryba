@@ -181,6 +181,8 @@ Example:
       hue.ini['desktop']['database']['password'] ?= 'hue123'
       hue.ini['desktop']['database']['name'] ?= 'hue'
 
+## Commands
+
     module.exports.push commands: 'backup', modules: 'ryba/hue/backup'
 
     # module.exports.push commands: 'check', modules: 'ryba/hue/check'

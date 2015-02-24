@@ -111,13 +111,19 @@ Example
         description: 'One or multiple configuration files.'
         required: true
       ,
+        name: 'hosts', shortcut: 'h', type: 'array'
+        description: 'Limit to a list of server hostnames'
+      ,
+        name: 'modules', shortcut: 'm', type: 'array'
+        description: 'Limit to a list of modules'
+      ,
         name: 'output', shortcut: 'o'
         description: 'Write the configuration to a file, extension is discoverd unless "format" is provided.'
       ,
         name: 'format', shortcut: 'f' # default: 'text'
         description: 'Output format are text (default), xml, json, js and coffee.'
       ,
-        name: 'overwrite', shortcut: 'o', type: 'boolean' # default: 'text'
+        name: 'overwrite', shortcut: 'w', type: 'boolean' # default: 'text'
         description: 'Overwrite any existing file.'
       ,
         name: 'hdfs_nn_name_dir' # default: './hdfs/name'
@@ -139,10 +145,12 @@ Example
 ## SSH
 
     exports.contexts = (config, next) ->
+      config = merge {}, config
       config.log ?= {}
       config.log.disabled ?= true
       config.connection.end = false
       contexts = []
+      config.params.hosts = null
       config.params.modules = ['masson/bootstrap/connection', 'masson/bootstrap/info']
       run(config)
       .on 'context', (ctx) ->
@@ -217,7 +225,7 @@ Discover the most relevant partitions on each node.
 
 ## Capacity Planning for Memory
 
-    exports.memory_system_gb = [[1,.2], [2,.4], [4,1], [7,2], [8,2], [16,2], [24,4], [48,6], [64,8], [72,8], [96,12], [128,24], [256,32], [512,64]]
+    exports.memory_system_gb = [[1,.2], [2,.2], [4,1], [7,2], [8,2], [16,2], [24,4], [48,6], [64,8], [72,8], [96,12], [128,24], [256,32], [512,64]]
     exports.memory_hbase_gb = [[1,.2], [2,.4], [4,1], [8,1], [16,2], [24,4], [48,8], [64,8], [72,8], [96,16], [128,24], [256,32], [512,64]]
     exports.memory = (ctxs, next) ->
       for ctx in ctxs
@@ -248,9 +256,10 @@ Discover the most relevant partitions on each node.
               if total_memory_gb < total
                 memory_hbase_gb = reserved
                 break
-        ctx.config.capacity.memory_system ?= memory_system = Math.round memory_system_gb * 1024 * 1024 * 1024
-        ctx.config.capacity.memory_hbase ?= memory_hbase = Math.round memory_hbase_gb * 1024 * 1024 * 1024
-        ctx.config.capacity.memory_yarn ?= total_memory - memory_system - memory_hbase
+        memory_system = exports.rounded_memory memory_system_gb * 1024 * 1024 * 1024
+        ctx.config.capacity.memory_hbase ?= memory_hbase = exports.rounded_memory memory_hbase_gb * 1024 * 1024 * 1024
+        ctx.config.capacity.memory_yarn ?= memory_yarn = exports.rounded_memory total_memory - memory_system - memory_hbase
+        ctx.config.capacity.memory_system ?= total_memory - memory_hbase - memory_yarn
       next()
 
 ## Yarn NodeManager
@@ -280,10 +289,11 @@ Discover the most relevant partitions on each node.
         # max(MIN_CONTAINER_SIZE, (Total Available RAM) / containers))
         unless memory_per_container = ctx.config.capacity.memory_per_container
           memory_per_container = Math.floor Math.max minimum_container_size, memory_yarn / max_number_of_containers
+        memory_per_container = exports.rounded_memory memory_per_container
         ctx.config.capacity.memory_per_container = memory_per_container
 
         minimum_allocation_mb ?= Math.round memory_per_container / 1024 / 1024
-        minimum_allocation_mb = Math.min minimum_allocation_mb, memory_per_container / 1024 / 1024
+        minimum_allocation_mb = Math.round Math.min minimum_allocation_mb, memory_per_container / 1024 / 1024
 
 Amount of physical memory, in MB, dedicated by the node and that can be allocated for containers.
 
@@ -307,10 +317,17 @@ The property "yarn.nodemanager.local-dirs" defines multiple disks for
 localization. It enforces fail-over, preventing one disk to affect the
 containers, and load-balancing by spliting the access to the disks.
 
-        yarn_site['yarn.nodemanager.local-dirs'] ?= disks.map (disk) ->
-          path.resolve disk, ctx.config.params.yarn_nm_local_dir or './yarn/local'
-        yarn_site['yarn.nodemanager.log-dirs'] ?= disks.map (disk) ->
-          path.resolve disk, ctx.config.params.yarn_nm_log_dir or './yarn/log'
+        {yarn_nm_local_dir, yarn_nm_log_dir} = ctx.config.params
+        if /^\//.test yarn_nm_local_dir
+          yarn_site['yarn.nodemanager.local-dirs'] ?= yarn_nm_local_dir.split ','
+        else
+          yarn_site['yarn.nodemanager.local-dirs'] ?= disks.map (disk) ->
+            path.resolve disk, yarn_nm_local_dir or './yarn/local'
+        if /^\//.test yarn_nm_log_dir
+          yarn_site['dfs.datanode.data.dir'] ?= yarn_nm_log_dir.split ','
+        else
+          yarn_site['yarn.nodemanager.log-dirs'] ?= disks.map (disk) ->
+            path.resolve disk, yarn_nm_log_dir or './yarn/log'
 
 Raise the number of vcores later allocated for the ResourceManager.
 
@@ -355,8 +372,12 @@ the application (zombie state).
       for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/hadoop/hdfs_dn'
         {disks, hdfs_site} = ctx.config.capacity
-        hdfs_site['dfs.datanode.data.dir'] ?= disks.map (disk) ->
-          path.resolve disk, ctx.config.params.hdfs_dn_data_dir or './hdfs/data'
+        {hdfs_dn_data_dir} = ctx.config.params
+        if /^\//.test hdfs_dn_data_dir
+          hdfs_site['dfs.datanode.data.dir'] ?= hdfs_dn_data_dir.split ','
+        else
+          hdfs_site['dfs.datanode.data.dir'] ?= disks.map (disk) ->
+            path.resolve disk, hdfs_dn_data_dir or './hdfs/data'
       next()
 
 ## HDFS NameNode
@@ -365,9 +386,13 @@ the application (zombie state).
       for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/hadoop/hdfs_nn'
         {disks, hdfs_site} = ctx.config.capacity
-        hdfs_site['dfs.namenode.name.dir'] ?= disks.map (disk) ->
-          disk = '/var' if disk is '/'
-          path.resolve disk, ctx.config.params.hdfs_nn_name_dir or './hdfs/name'
+        {hdfs_nn_name_dir} = ctx.config.params
+        if /^\//.test hdfs_nn_name_dir
+          hdfs_site['dfs.namenode.name.dir'] ?= hdfs_nn_name_dir.split ','
+        else
+          hdfs_site['dfs.namenode.name.dir'] ?= disks.map (disk) ->
+            disk = '/var' if disk is '/'
+            path.resolve disk, hdfs_nn_name_dir or './hdfs/name'
       next()
 
 
@@ -502,18 +527,18 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
       .on 'both', next
 
     exports.write = (config, ctxs, next) ->
-      # return next() unless config.params.save
+      # return next() unless config.params.output
       formats = ['xml', 'json', 'js', 'coffee']
       if config.params.format is 'text'
         # ok, print to stdout
       else if config.params.format
         return next Error "Insupported Extension #{extname}" unless config.params.format in formats
-        # unless config.params.save
+        # unless config.params.output
         #   # ok, print to stdout
-        # else if (basename = path.basename(config.params.save, ".#{config.params.format}")) isnt config.params.save
-        #   config.params.save = "#{basename}.#{config.params.format}" if config.params.format in ['json', 'js', 'coffee']
-      else if config.params.save
-        extname = path.extname config.params.save
+        # else if (basename = path.basename(config.params.output, ".#{config.params.format}")) isnt config.params.output
+        #   config.params.output = "#{basename}.#{config.params.format}" if config.params.format in ['json', 'js', 'coffee']
+      else if config.params.output
+        extname = path.extname config.params.output
         format = extname.substr 1
         return next Error "Could not guess format from arguments" unless format in formats
         config.params.format = format
@@ -521,19 +546,19 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
         config.params.format = 'text'      
       exports["write_#{config.params.format}"] config, ctxs, (err, content) ->
         return next err if err
-        # return next() unless config.params.save
-        # console.log 'SSSAAAVVVEEE', config.params.save
-        # # fs.stat config.params.save
+        # return next() unless config.params.output
+        # console.log 'SSSAAAVVVEEE', config.params.output
+        # # fs.stat config.params.output
         next()
 
     exports.write_text = (config, ctxs, next) ->
       do_open = ->
-        return do_write process.stdout unless config.params.save
-        return next() unless config.params.save
-        fs.stat config.params.save, (err, stat) ->
+        return do_write process.stdout unless config.params.output
+        return next() unless config.params.output
+        fs.stat config.params.output, (err, stat) ->
           return next err if err and err.code isnt 'ENOENT'
           return next Error 'File Already Exists, use --overwrite' unless err or config.params.overwrite
-          do_write fs.createWriteStream config.params.save, encoding: 'utf8'
+          do_write fs.createWriteStream config.params.output, encoding: 'utf8'
       do_write = (ws) ->
         print = (config, properties) ->
           for property in properties
@@ -543,8 +568,28 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
             else if remote_value? then "'#{remote_value}'"
             else 'not defined'
             diff = "(currently #{diff})"
-            ws.write "    #{config}['#{property}'] = '#{suggested_value}' #{diff}\n"
+            if Array.isArray suggested_value
+              ws.write "    #{config}['#{property}'] = [\n"
+              for v, i in suggested_value
+                ws.write "      " if i % 3 is 0
+                ws.write "#{v}"
+                if i % 3 is 2 and i isnt suggested_value.length - 1
+                  ws.write "\n" 
+                else if i isnt suggested_value.length - 1
+                  ws.write ', '
+              ws.write "\n    ]"
+              if diff
+                ws.write " (currently [\n"
+                remote_value = remote_value.split ','
+                for v, i in remote_value
+                  ws.write "      #{v}"
+                  ws.write "\n" if i % 3 is 2 and i isnt remote_value.length - 1
+                ws.write "\n    ])"
+              ws.write "\n"
+            else
+              ws.write "    #{config}['#{property}'] = '#{suggested_value}' #{diff}\n"
         for ctx in ctxs
+          continue if config.params.hosts and not multimatch(config.params.hosts, ctx.config.host).length
           {capacity} = ctx.config
           mods = [
             'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn'
@@ -553,15 +598,22 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           ]
           if ctx.has_any_modules mods
             ws.write "#{ctx.config.host}\n"
-          if ctx.has_any_modules 'ryba/hadoop/hdfs_nn'
+          print_hdfs_nn = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/hdfs_nn').length
+          if ctx.has_any_modules('ryba/hadoop/hdfs_nn') and print_hdfs_nn
             ws.write "  HDFS NameNode\n"
             print 'hdfs_site', ['dfs.namenode.name.dir']
-            # ws.write "    hdfs-site['dfs.namenode.name.dir'] = '#{capacity.hdfs_site['dfs.namenode.name.dir']}'\n"
-          if ctx.has_any_modules 'ryba/hadoop/hdfs_dn'
+          print_hdfs_dn = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/hdfs_dn').length
+          if ctx.has_any_modules('ryba/hadoop/hdfs_dn') and print_hdfs_dn
             ws.write "  HDFS DataNode\n"
             print 'hdfs_site', ['dfs.datanode.data.dir']
-            # ws.write "    hdfs-site['dfs.datanode.data.dir'] = '#{capacity.hdfs_site['dfs.datanode.data.dir']}'\n"
-          if ctx.has_any_modules 'ryba/hadoop/yarn_nm'
+          print_yarn_rm = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/yarn_rm').length
+          if ctx.has_any_modules('ryba/hadoop/yarn_rm') and print_yarn_rm
+            ws.write "  YARN ResourceManager\n"
+            print 'capacity_scheduler', ['yarn.scheduler.capacity.resource-calculator']
+            print 'yarn_site', ['yarn.scheduler.minimum-allocation-mb', 'yarn.scheduler.maximum-allocation-mb', 'yarn.scheduler.minimum-allocation-vcores', 'yarn.scheduler.maximum-allocation-vcores']
+          print_yarn_nm = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/yarn_nm').length
+          if ctx.has_any_modules('ryba/hadoop/yarn_nm') and print_yarn_nm
+            ws.write "  YARN NodeManager\n"
             ws.write "  Memory Total: #{prink.filesize capacity.total_memory, 3}\n"
             ws.write "  Memory System: #{prink.filesize capacity.memory_system, 3}\n"
             ws.write "  Memory HBase: #{prink.filesize capacity.memory_hbase, 3}\n"
@@ -569,119 +621,134 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
             ws.write "  Number of Cores: #{capacity.cores}\n"
             ws.write "  Number of Containers: #{capacity.max_number_of_containers}\n"
             ws.write "  Memory per Containers: #{prink.filesize capacity.memory_per_container, 3}\n"
-          if ctx.has_any_modules 'ryba/hadoop/yarn_rm'
-            ws.write "  YARN ResourceManager\n"
-            print 'capacity_scheduler', ['yarn.scheduler.capacity.resource-calculator']
-            print 'yarn_site', ['yarn.scheduler.minimum-allocation-mb', 'yarn.scheduler.maximum-allocation-mb', 'yarn.scheduler.minimum-allocation-vcores', 'yarn.scheduler.maximum-allocation-vcores']
-            # ws.write "    capacity-scheduler['yarn.scheduler.capacity.resource-calculator'] = '#{capacity.capacity_scheduler['yarn.scheduler.capacity.resource-calculator']}'"
-            # ws.write "    yarn-site['yarn.scheduler.minimum-allocation-mb'] = '#{capacity.yarn_site['yarn.scheduler.minimum-allocation-mb']}'"
-            # ws.write "    yarn-site['yarn.scheduler.maximum-allocation-mb'] = '#{capacity.yarn_site['yarn.scheduler.maximum-allocation-mb']}'"
-            # ws.write "    yarn-site['yarn.scheduler.minimum-allocation-vcores'] = '#{capacity.yarn_site['yarn.scheduler.minimum-allocation-vcores']}'"
-            # ws.write "    yarn-site['yarn.scheduler.maximum-allocation-vcores'] = '#{capacity.yarn_site['yarn.scheduler.maximum-allocation-vcores']}'"
-          if ctx.has_any_modules 'ryba/hadoop/yarn_nm'
-            ws.write "  YARN NodeManager\n"
             print 'yarn_site', ['yarn.nodemanager.resource.memory-mb', 'yarn.nodemanager.vmem-pmem-ratio', 'yarn.nodemanager.resource.cpu-vcores', 'yarn.nodemanager.local-dirs', 'yarn.nodemanager.log-dirs']
-            # ws.write "    yarn-site['yarn.nodemanager.resource.memory-mb'] = '#{capacity.yarn_site['yarn.nodemanager.resource.memory-mb']}'"
-            # ws.write "    yarn-site['yarn.nodemanager.vmem-pmem-ratio'] = '#{capacity.yarn_site['yarn.nodemanager.vmem-pmem-ratio']}'"
-            # ws.write "    yarn-site['yarn.nodemanager.resource.cpu-vcores'] = '#{capacity.yarn_site['yarn.nodemanager.resource.cpu-vcores']}'"
-            # ws.write "    yarn-site['yarn.nodemanager.local-dirs'] = '#{capacity.yarn_site['yarn.nodemanager.local-dirs']}'"
-            # ws.write "    yarn-site['yarn.nodemanager.log-dirs'] = '#{capacity.yarn_site['yarn.nodemanager.log-dirs']}'"
-          if ctx.has_any_modules 'ryba/hadoop/mapred_client'
+          print_mapred_client = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/mapred_client').length
+          if ctx.has_any_modules('ryba/hadoop/mapred_client') and print_mapred_client
             ws.write "  MapReduce Client\n"
             print 'mapred_site', ['yarn.app.mapreduce.am.resource.mb', 'yarn.app.mapreduce.am.command-opts', 'mapreduce.map.memory.mb', 'mapreduce.map.java.opts', 'mapreduce.reduce.memory.mb', 'mapreduce.reduce.java.opts', 'mapreduce.task.io.sort.mb', 'mapreduce.map.cpu.vcores', 'mapreduce.reduce.cpu.vcores']
-          if ctx.has_any_modules 'ryba/hive/client'
+          print_hive_client = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/hive_client').length
+          if ctx.has_any_modules('ryba/hive/client') and print_hive_client
             ws.write "  Hive Client\n"
             print 'hive_site', ['hive.tez.container.size', 'hive.tez.java.opts']
-          if ctx.has_any_modules 'ryba/hbase/regionserver'
+          print_hbase_regionserver = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/regionserver').length
+          if ctx.has_any_modules('ryba/hbase/regionserver') and print_hbase_regionserver
             ws.write "  HBase RegionServer\n"
-            # print 'hive_site', ['hive.tez.container.size', 'hive.tez.java.opts']
             {regionserver_opts} = ctx.config.capacity
             ws.write "    hbase-env: #{regionserver_opts}\n"
         do_end ws
       do_end = (ws) ->
-        ws.end() if config.params.save
+        ws.end() if config.params.output
         next()
       do_open()
 
-
     exports.write_json = (config, ctxs, next) ->
       do_open = ->
-        return do_write process.stdout unless config.params.save
-        return next() unless config.params.save
-        fs.stat config.params.save, (err, stat) ->
+        return do_write process.stdout unless config.params.output
+        return next() unless config.params.output
+        fs.stat config.params.output, (err, stat) ->
           return next err if err and err.code isnt 'ENOENT'
           return next Error 'File Already Exists, use --overwrite' unless err or config.params.overwrite
-          do_write fs.createWriteStream config.params.save, encoding: 'utf8'
+          do_write fs.createWriteStream config.params.output, encoding: 'utf8'
       do_write = (ws) ->
-        servers = exports.capacity_to_ryba ctxs
+        servers = exports.capacity_to_ryba config, ctxs
         ws.write JSON.stringify servers: servers, null, 2
       do_end = (ws) ->
-        ws.end() if config.params.save
+        ws.end() if config.params.output
         next()
       do_open()
 
     exports.write_js = (config, ctxs, next) ->
       do_open = ->
-        return do_write process.stdout unless config.params.save
-        return next() unless config.params.save
-        fs.stat config.params.save, (err, stat) ->
+        return do_write process.stdout unless config.params.output
+        return next() unless config.params.output
+        fs.stat config.params.output, (err, stat) ->
           return next err if err and err.code isnt 'ENOENT'
           return next Error 'File Already Exists, use --overwrite' unless err or config.params.overwrite
-          do_write fs.createWriteStream config.params.save, encoding: 'utf8'
+          do_write fs.createWriteStream config.params.output, encoding: 'utf8'
       do_write = (ws) ->
-        servers = exports.capacity_to_ryba ctxs
+        servers = exports.capacity_to_ryba config, ctxs
         source = JSON.stringify servers: servers, null, 2
         source = "module.exports = #{source};"
         ws.write source
       do_end = (ws) ->
-        ws.end() if config.params.save
+        ws.end() if config.params.output
         next()
       do_open()
 
     exports.write_coffee = (config, ctxs, next) ->
       do_open = ->
-        return do_write process.stdout unless config.params.save
-        return next() unless config.params.save
-        fs.stat config.params.save, (err, stat) ->
+        return do_write process.stdout unless config.params.output
+        return next() unless config.params.output
+        fs.stat config.params.output, (err, stat) ->
           return next err if err and err.code isnt 'ENOENT'
           return next Error 'File Already Exists, use --overwrite' unless err or config.params.overwrite
-          do_write fs.createWriteStream config.params.save, encoding: 'utf8'
+          do_write fs.createWriteStream config.params.output, encoding: 'utf8'
       do_write = (ws) ->
-        servers = exports.capacity_to_ryba ctxs
+        servers = exports.capacity_to_ryba config, ctxs
         source = JSON.stringify servers: servers
         source = "module.exports = #{source}"
+        argv = process.argv
+        argv[1] = path.relative process.cwd(), argv[1]
+        ws.write "# #{argv.join(' ')}\n\n"
         ws.write js2coffee.build(source).code
       do_end = (ws) ->
-        ws.end() if config.params.save
+        ws.end() if config.params.output
         next()
       do_open()
 
     exports.write_xml = (config, ctxs, next) ->
-      servers = exports.capacity_to_ryba ctxs
-      console.log 'xml'
+      servers = exports.capacity_to_ryba config,ctxs
+      console.log 'TODO XML'
       next()
 
-    exports.capacity_to_ryba = (ctxs) ->
+    exports.capacity_to_ryba = (config, ctxs) ->
       servers = {}
       for ctx in ctxs
+        continue if config.params.hosts and not multimatch(config.params.hosts, ctx.config.host).length
         {capacity} = ctx.config
         server = ryba: {}
-        if ctx.has_any_modules 'ryba/hadoop/yarn_rm'
+        print_hdfs = not config.params.modules or multimatch(config.params.modules, ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn']).length
+        if ctx.has_any_modules('ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn') and print_hdfs
+          server.ryba.hdfs ?= {}
+          server.ryba.hdfs.site = capacity.hdfs_site
+        print_yarn_rm = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/yarn_rm').length
+        if ctx.has_any_modules('ryba/hadoop/yarn_rm') and print_yarn_rm
           server.ryba.yarn ?= {}
           server.ryba.yarn.site = capacity.yarn_site
           server.ryba.yarn.capacity_scheduler = capacity.capacity_scheduler
-        if ctx.has_any_modules 'ryba/hadoop/yarn_nm'
+        print_yarn_nm = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/yarn_nm').length
+        if ctx.has_any_modules('ryba/hadoop/yarn_nm') and print_yarn_nm
           server.ryba.yarn ?= {}
           server.ryba.yarn.site = capacity.yarn_site
-        if ctx.has_any_modules 'ryba/hadoop/mapred_client'
+        print_mapred_client = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/mapred_client').length
+        if ctx.has_any_modules('ryba/hadoop/mapred_client') and print_mapred_client
           server.ryba.mapred ?= {}
           server.ryba.mapred.site = capacity.mapred_site
-        if ctx.has_any_modules 'ryba/hive/client'
+        print_hive_client = not config.params.modules or multimatch(config.params.modules, 'ryba/hive/client').length
+        if ctx.has_any_modules('ryba/hive/client') and print_hive_client
           server.ryba.hive ?= {}
           server.ryba.hive.site = capacity.hive_site
+        print_hbase_regionserver = not config.params.modules or multimatch(config.params.modules, 'ryba/hbase/regionserver').length
+        if ctx.has_any_modules('ryba/hbase/regionserver') and print_hbase_regionserver
+          server.ryba.hbase ?= {}
+          server.ryba.hbase.regionserver_opts = capacity.regionserver_opts
         servers[ctx.config.host] = server
       servers
 
+    exports.rounded_memory = (memory) ->
+      exports.rounded_memory_mb(memory / 1024 / 1024) * 1024 * 1024
+
+    exports.rounded_memory_mb = (memory_mb) ->
+      denominator_mb = 128
+      if memory_mb > 4096
+        denominator_mb = 1024
+      else if memory_mb > 2048
+        denominator_mb = 512
+      else if memory_mb > 1024
+        denominator_mb = 256
+      else
+        denominator_mb = 128
+      Math.floor( memory_mb / denominator_mb ) * denominator_mb
 
 ## Resources
 
@@ -698,6 +765,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
     run = require 'masson/lib/run'
     {merge} = require 'mecano/lib/misc'
     parameters = require 'parameters'
+    multimatch = require 'multimatch'
     each = require 'each'
     prink = require 'prink'
     path = require 'path'

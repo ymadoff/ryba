@@ -71,9 +71,9 @@ define service {
         service_description     HDFS::Percent DataNodes with space available
         servicegroups           HDFS
         check_command           check_aggregate!"DATANODE::DataNode space"!10%!30%
-        normal_check_interval   0.5
-        retry_check_interval    1 
-        max_check_attempts      1
+        normal_check_interval   1
+        retry_check_interval    0.25 
+        max_check_attempts      2
 }
 
 define service {
@@ -404,9 +404,9 @@ define service {
         service_description     HDFS::Blocks health
         servicegroups           HDFS
         check_command           check_hdfs_blocks!$HOSTGROUPMEMBERS:namenode$!{{ namenode_port }}!{{ nn_metrics_property }}!{{ hadoop_ssl_enabled }}!{{ nagios_keytab_path }}!{{ nagios_principal_name }}!{{ kinit_path_local }}!{{ security_enabled }}
-        normal_check_interval   2
+        normal_check_interval   10
         retry_check_interval    1
-        max_check_attempts      1
+        max_check_attempts      3
 }
 
 define service {
@@ -417,7 +417,7 @@ define service {
         check_command           check_hdfs_capacity!$HOSTGROUPMEMBERS:namenode$!{{ namenode_port }}!80%!90%!{{ hadoop_ssl_enabled }}!{{ nagios_keytab_path }}!{{ nagios_principal_name }}!{{ kinit_path_local }}!{{ security_enabled }}
         normal_check_interval   2
         retry_check_interval    1
-        max_check_attempts      1
+        max_check_attempts      3
 }
 
 {% endif %}

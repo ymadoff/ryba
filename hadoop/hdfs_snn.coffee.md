@@ -24,6 +24,8 @@
       hdfs.site['dfs.secondary.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/#{static_host}@#{realm}"
       hdfs.site['dfs.secondary.namenode.kerberos.https.principal'] = "HTTP/#{static_host}@#{realm}"
 
+## Commands
+
     # module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_snn_backup'
 
     # module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_snn_check'

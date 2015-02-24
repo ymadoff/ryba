@@ -22,6 +22,17 @@
       hive.site['hive.tez.container.size'] = tez.tez_site['tez.am.resource.memory.mb']
       hive.site['hive.tez.java.opts'] = tez.tez_site['hive.tez.java.opts']
 
+      # Import transactions
+
+      hive.site['hive.support.concurrency'] = server_ctx.config.ryba.hive.site['hive.support.concurrency']
+      hive.site['hive.enforce.bucketing'] = server_ctx.config.ryba.hive.site['hive.enforce.bucketing']
+      hive.site['hive.exec.dynamic.partition.mode'] = server_ctx.config.ryba.hive.site['hive.exec.dynamic.partition.mode']
+      hive.site['hive.txn.manager'] = server_ctx.config.ryba.hive.site['hive.txn.manager']
+      hive.site['hive.txn.timeout'] = server_ctx.config.ryba.hive.site['hive.txn.timeout']
+      hive.site['hive.txn.max.open.batch'] = server_ctx.config.ryba.hive.site['hive.txn.max.open.batch']
+
+## Commands
+
     module.exports.push commands: 'check', modules: 'ryba/hive/client_check'
 
     module.exports.push commands: 'install', modules: [

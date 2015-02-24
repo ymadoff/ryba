@@ -96,6 +96,7 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755
+        parent: true
       ,
         destination: "#{hdfs.pid_dir}/#{hdfs.user.name}"
         uid: hdfs.user.name

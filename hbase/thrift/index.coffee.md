@@ -13,4 +13,6 @@
       # TODO: add acl (http://hbase.apache.org/book.html#d3314e6371)
       hbase.site['hbase.thrift.kerberos.principal'] ?= "hbase_thrift/_HOST@#{realm}" # Dont forget `grant 'thrift_server', 'RWCA'`
       hbase.site['hbase.thrift.keytab.file'] ?= '#{hbase.conf_dir}/thrift.service.keytab'
-      
+
+## Commands
+

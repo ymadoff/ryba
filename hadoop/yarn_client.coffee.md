@@ -5,6 +5,8 @@
     module.exports.push 'masson/bootstrap'
     module.exports.configure = require('./yarn').configure
 
+## Commands
+
     module.exports.push commands: 'check', modules: 'ryba/hadoop/yarn_client_check'
 
     module.exports.push commands: 'report', modules: 'ryba/hadoop/yarn_client_report'

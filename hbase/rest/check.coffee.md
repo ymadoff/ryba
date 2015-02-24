@@ -7,7 +7,7 @@
 
 ## Check Shell
 
-    module.exports.push name: 'HBase Rest # Check Shell', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
+    module.exports.push name: 'HBase Rest # Check', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
       {shortname} = ctx.config
       {force_check, jaas_client, hbase} = ctx.config.ryba
       cmd = mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"exists 'ryba'\" | grep 'Table ryba does exist'"

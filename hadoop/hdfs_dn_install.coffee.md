@@ -144,6 +144,7 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o0750
+        parent: true
       ,
         destination: "#{hdfs.pid_dir}/#{hdfs.user}"
         uid: hdfs.user.name
@@ -176,7 +177,7 @@ and permissions set to "0600".
 
 Environment passed to the DataNode before it starts.   
 
-    module.exports.push name: 'HDFS NN # Opts', handler: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Opts', handler: (ctx, next) ->
       {hadoop_conf_dir, hdfs} = ctx.config.ryba
       return next() unless hdfs.datanode_opts
       ctx.write
@@ -206,7 +207,7 @@ suggest:
 
 Note, we might move this middleware to Masson.
 
-    module.exports.push name: 'HDFS NN # Kernel', handler: (ctx, next) ->
+    module.exports.push name: 'HDFS DN # Kernel', handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
       return next() unless Object.keys(hdfs.sysctl).length
       ctx.execute

@@ -129,7 +129,7 @@ nagiocmd:x:2419:apache
       {user, group, admin_email} = ctx.config.ryba.nagios
       ctx.write
         destination: '/etc/nagios/objects/contacts.cfg'
-        match: /^(\s*email\s+)([^\s]+)(\s*;.*)$/mg
+        match: /^(\s*email\s+)([^\s]*)(\s*;.*)$/mg
         replace: "$1#{admin_email}$3"
       , next
 

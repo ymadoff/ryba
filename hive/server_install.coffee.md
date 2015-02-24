@@ -137,7 +137,12 @@ yet started.
               if [ $current == $target ]; then exit 3; fi
               # Upgrade schema
               upgrade=/usr/lib/hive/scripts/metastore/upgrade/mysql/upgrade-${current}-to-${target}.mysql.sql
-              if ! test -f $upgrade; then exit 1; fi
+              if ! test -f $upgrade; then
+                current_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
+                target_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
+                if [ $current_major == $target_major ]; then exit 0; fi
+                exit 1;
+              fi
               #{cmd} #{db} < $upgrade
               # Import transaction schema
               trnx=/usr/lib/hive/scripts/metastore/upgrade/mysql/hive-txn-schema-${target}.mysql.sql

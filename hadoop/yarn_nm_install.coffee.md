@@ -90,11 +90,13 @@ Install and configure the startup script in
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0755
+        parent: true
       ,
         destination: local_dirs
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0755
+        parent: true
       ], (err, created) ->
         return next err if err
         cmds = []
@@ -113,7 +115,7 @@ global view of your system. In such case, this middleware is bypassed and has
 no effect. Also, this isnt included inside the configuration because it need an
 SSH connection to the node to gather the memory and CPU informations.
 
-    module.exports.push name: 'Hadoop YARN NM # Capacity Planning', handler: (ctx) ->
+    module.exports.push name: 'Hadoop YARN NM # Capacity Planning', handler: (ctx, next) ->
       {yarn} = ctx.config.ryba
       return next() if yarn.site['yarn.nodemanager.resource.memory-mb'] and yarn.site['yarn.nodemanager.resource.cpu-vcores']
       # diskNumber = yarn.site['yarn.nodemanager.local-dirs'].length

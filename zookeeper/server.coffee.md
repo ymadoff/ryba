@@ -71,6 +71,8 @@ Example :
       zookeeper.superuser ?= {}
       zookeeper.superuser.password ?= 'ryba123'
 
+## Commands
+
     # module.exports.push commands: 'backup', modules: 'ryba/zookeeper/server_backup'
 
     module.exports.push commands: 'check', modules: 'ryba/zookeeper/server_check'
