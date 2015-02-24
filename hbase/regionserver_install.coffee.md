@@ -115,7 +115,7 @@ RegionServer, and HBase client host machines.
         backup: true
       , next
 
-# Opts
+## Opts
 
 Environment passed to the RegionServer before it starts.   
 
