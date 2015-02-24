@@ -251,9 +251,11 @@ depending on the total amout of memory.
         else
           for mem in exports.memory_system_gb
             [total, reserved] = mem
-            if total_memory_gb < total
-              memory_system_gb = reserved
-              break
+            
+              
+            # console.log memory_system_gb, ":", total_memory_gb, '<', total
+            break if total_memory_gb < total
+            memory_system_gb = reserved
         memory_hbase_gb = 0
         if ctx.has_module 'ryba/hbase/regionserver'
           if total_memory_gb < exports.memory_hbase_gb[0][0]
@@ -263,9 +265,8 @@ depending on the total amout of memory.
           else
             for mem in exports.memory_hbase_gb
               [total, reserved] = mem
-              if total_memory_gb < total
-                memory_hbase_gb = reserved
-                break
+              break if total_memory_gb < total
+              memory_hbase_gb = reserved
         memory_system = exports.rounded_memory memory_system_gb * 1024 * 1024 * 1024
         ctx.config.capacity.memory_hbase ?= memory_hbase = exports.rounded_memory memory_hbase_gb * 1024 * 1024 * 1024
         ctx.config.capacity.memory_yarn ?= memory_yarn = exports.rounded_memory total_memory - memory_system - memory_hbase
@@ -612,8 +613,8 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
               ws.write "\n    ]"
               if diff
                 ws.write " (currently [\n"
-                remote_value = remote_value.split ','
-                for v, i in remote_value
+                remote_value = remote_value?.split ','
+                if remote_value then for v, i in remote_value
                   ws.write "      #{v}"
                   ws.write "\n" if i % 3 is 2 and i isnt remote_value.length - 1
                 ws.write "\n    ])"
@@ -630,7 +631,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           # ]
           # if ctx.has_any_modules mods
           ws.write "#{ctx.config.host}\n"
-          ws.write "  Number of core: #{capacity.cpus}\n"
+          ws.write "  Number of core: #{capacity.cores}\n"
           ws.write "  Number of partitions: #{capacity.disks.length}\n"
           ws.write "  Memory Total: #{prink.filesize capacity.total_memory, 3}\n"
           print_hdfs_nn = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/hdfs_nn').length
@@ -730,7 +731,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           {capacity} = ctx.config
           ws.write "\n"
           ws.write "# #{ctx.config.host}\n"
-          ws.write "#   Number of core: #{capacity.cpus}\n"
+          ws.write "#   Number of core: #{capacity.cores}\n"
           ws.write "#   Number of partitions: #{capacity.disks.length}\n"
           ws.write "#   Memory Total: #{prink.filesize capacity.total_memory, 3}\n"
           print_yarn_nm = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/yarn_nm').length
