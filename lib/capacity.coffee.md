@@ -142,9 +142,6 @@ Example
         description: 'Relative path to the YARN NodeManager local directories.'
       ]
 
-          
-          
-
 ## SSH
 
     exports.contexts = (config, next) ->
