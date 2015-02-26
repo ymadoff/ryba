@@ -161,7 +161,7 @@ ownerships.
       ,
         destination: zookeeper.pid_dir
         uid: zookeeper.user.name
-        gid: hadoop_group.name
+        gid: zookeeper.group.name
         mode: 0o755
       ,
         destination: zookeeper.log_dir
