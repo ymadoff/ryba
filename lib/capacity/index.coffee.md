@@ -79,69 +79,6 @@ default setting for Yarn and its client application such as MapReduce or Tez.
           callback null
         do_configure()
 
-## Parameters
-*   `total_memory` (int|string)   
-    Total Memory available on the server.   
-*   `memory_system` (int|string)   
-    Total Memory allocated to the system.   
-*   `memory_hbase` (int|string)   
-    Total Memory allocated to the Yarn NodeManagers.   
-*   `memory_yarn` (int|string)   
-    Total Memory allocated to the HBase RegionServers.   
-*   `cores` (int)   
-    Number of available cores to the Yarn NodeManagers.   
-*   `disks` (array)   
-    List of disk partitions available to the HDFS DataNodes and YARN NodeManagers.   
-
-Example
-
-```json
-{
-  "capacity": {
-    total_memory: '2GB'
-  }
-}
-```
-
-    exports.params = 
-      name: 'capacity'
-      description: 'Hadoop Tool for Capacity Planning'
-      options: [
-        name: 'config', shortcut: 'c', type: 'array'
-        description: 'One or multiple configuration files.'
-        required: true
-      ,
-        name: 'hosts', shortcut: 'h', type: 'array'
-        description: 'Limit to a list of server hostnames'
-      ,
-        name: 'modules', shortcut: 'm', type: 'array'
-        description: 'Limit to a list of modules'
-      ,
-        name: 'output', shortcut: 'o'
-        description: 'Write the configuration to a file, extension is discoverd unless "format" is provided.'
-      ,
-        name: 'format', shortcut: 'f' # default: 'text'
-        description: 'Output format are text (default), xml, json, js and coffee.'
-      ,
-        name: 'overwrite', shortcut: 'w', type: 'boolean' # default: 'text'
-        description: 'Overwrite any existing file.'
-      ,
-        name: 'partitions', shortcut: 'p', type: 'array'
-        description: 'List of disk partitions unless discovered.'
-      ,
-        name: 'hdfs_nn_name_dir' # default: './hdfs/name'
-        description: 'Absolute path to a single directory or relative path to the HDFS NameNode name directories.'
-      ,
-        name: 'hdfs_dn_data_dir' # default: './hdfs/data'
-        description: 'Relative path to the HDFS DataNode local directories.'
-      ,
-        name: 'yarn_nm_local_dir' # default: './yarn/local'
-        description: 'Relative path to the YARN NodeManager local directories.'
-      ,
-        name: 'yarn_nm_log_dir' # default: './yarn/log'
-        description: 'Relative path to the YARN NodeManager local directories.'
-      ]
-
 ## SSH
 
     exports.contexts = (config, next) ->
@@ -828,7 +765,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
     prink = require 'prink'
     path = require 'path'
     js2coffee = require 'js2coffee'
-    properties = require './properties'
+    properties = require '../properties'
 
 
 

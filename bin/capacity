@@ -1,28 +1,4 @@
 #!/usr/bin/env node
 
 require('coffee-script/register');
-// params = require('masson/lib/params');
-parameters = require('parameters');
-config = require('masson/lib/config');
-capacity = require('../lib/capacity');
-util = require('util');
-
-params = parameters(capacity.params)
-if(params.parse().help){
-  return util.print(params.help());
-}
-
-config(params.parse(), function(err, config){
-  capacity(config, function(err){
-    if(err){
-      if(err.errors){
-        for(var i=0; i<err.errors.length; i++){
-          console.log(err.errors[i].stack||err.errors[i].message);
-        }
-      }else{
-        console.log(err.stack);
-      }
-    }
-  });
-});
-
+require('../lib/capacity/cli')
