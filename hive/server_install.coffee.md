@@ -180,6 +180,61 @@ yet started.
         replace: 'export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-/usr/lib/hive-hcatalog/share/hcatalog/hive-hcatalog-core.jar}'
       , next
 
+## Env
+
+Enrich the "hive-env.sh" file with the value of the configuration property
+"ryba.hive.hcatalog_opts". Internally, the environmental variable
+"HADOOP_CLIENT_OPTS" is enriched and only apply to the Hive HCatalog server.
+
+Using this functionnality, a user may for example raise the heap size of Hive
+HCatalog to 4Gb by setting a value equal to "-Xmx4096m".
+
+Note, the startup script found in "hive-hcatalog/bin/hcat_server.sh" references
+the Hive Metastore service and execute "./bin/hive --service metastore"
+
+    module.exports.push name: 'Hive & HCat Server # Env', handler: (ctx, next) ->
+      {hive} = ctx.config.ryba
+      ctx.write
+        destination: "#{hive.conf_dir}/hive-env.sh"
+        replace: """
+        if [ "$SERVICE" = "metastore" ]; then
+          # export HADOOP_CLIENT_OPTS="-Dcom.sun.management.jmxremote -Djava.rmi.server.hostname=130.98.196.54 -Dcom.sun.management.jmxremote.rmi.port=9526 -Dcom.sun.management.jmxremote.port=9526 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false  $HADOOP_CLIENT_OPTS"
+          export HADOOP_CLIENT_OPTS="#{hive.hcatalog_opts} $HADOOP_CLIENT_OPTS"
+        fi
+        """
+        from: '# RYBA Hive HCatalog START'
+        to: '# RYBA Hive HCatalog END'
+        append: true
+        eof: true
+        backup: true
+      , next
+
+## Env
+
+Enrich the "hive-env.sh" file with the value of the configuration property
+"ryba.hive.server2_opts". Internally, the environmental variable
+"HADOOP_CLIENT_OPTS" is enriched and only apply to the Hive Server2.
+
+Using this functionnality, a user may for example raise the heap size of Hive
+Server2 to 4Gb by setting a value equal to "-Xmx4096m".
+
+    module.exports.push name: 'Hive & HCat Server # Env', handler: (ctx, next) ->
+      {hive} = ctx.config.ryba
+      ctx.write
+        destination: "#{hive.conf_dir}/hive-env.sh"
+        replace: """
+        if [ "$SERVICE" = "hiveserver2" ]; then
+          # export HADOOP_CLIENT_OPTS="-Dcom.sun.management.jmxremote -Djava.rmi.server.hostname=130.98.196.54 -Dcom.sun.management.jmxremote.rmi.port=9526 -Dcom.sun.management.jmxremote.port=9526 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false  $HADOOP_CLIENT_OPTS"
+          export HADOOP_CLIENT_OPTS="#{hive.server2_opts} $HADOOP_CLIENT_OPTS"
+        fi
+        """
+        from: '# RYBA Hive Server2 START'
+        to: '# RYBA Hive Server2 END'
+        append: true
+        eof: true
+        backup: true
+      , next
+
     module.exports.push name: 'Hive & HCat Server # Libs', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       return next() unless hive.libs.length

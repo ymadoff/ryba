@@ -19,6 +19,7 @@ Example:
 {
   "ryba": {
     "hive": {
+      "server2_opts": "-Xmx4096m"
       "site": {
         "javax.jdo.option.ConnectionURL": "jdbc:mysql://front1.hadoop:3306/hive?createDatabaseIfNotExist=true"
         "javax.jdo.option.ConnectionDriverName": "com.mysql.jdbc.Driver"
@@ -37,6 +38,9 @@ Example:
       # Layout
       hive.log_dir ?= '/var/log/hive'
       hive.pid_dir ?= '/var/run/hive'
+      # Environment
+      hive.hcatalog_opts ?= ''
+      hive.server2_opts ?= ''
       # Configuration
       hive.site ?= {}
       unless hive.site['hive.metastore.uris']
