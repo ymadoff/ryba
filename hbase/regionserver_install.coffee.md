@@ -130,8 +130,6 @@ Environment passed to the RegionServer before it starts.
         backup: true
       , next
 
-^export HBASE_REGIONSERVER_OPTS=".*"$
-
 ## Metrics
 
 Enable stats collection in Ganglia.
