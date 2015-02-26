@@ -92,7 +92,7 @@ yet started.
           do_exists = ->
             cmd = "#{db_admin.path} -u#{username} -p#{password} -h#{db_admin.host} -P#{db_admin.port}"
             ctx.execute
-              cmd: "if ! #{cmd} -e \"use #{db}\"; then exit 3; fi"
+              cmd: "if ! #{cmd} -e \"USE #{db};\"; then exit 3; fi"
               code_skipped: 3
             , (err, exists) ->
               return next err if err
@@ -113,17 +113,25 @@ yet started.
               do_create()
           do_create = ->
             cmd = "#{db_admin.path} -u#{username} -p#{password} -h#{db_admin.host} -P#{db_admin.port}"
-            target_version = 'ls /usr/lib/hive/lib | grep hive-common- | sed \'s/^hive-common-\\([0-9]\\+.[0-9]\\+.[0-9]\\+\\).*\\.jar$/\\1/g\''
+            create_version = 'ls /usr/lib/hive/lib | grep hive-common- | sed \'s/^hive-common-\\([0-9]\\+.[0-9]\\+.[0-9]\\+\\).*\\.jar$/\\1/g\''
             ctx.execute
               cmd: """
-              target=`#{target_version}`
-              create=/usr/lib/hive/scripts/metastore/upgrade/mysql/hive-schema-${target}.mysql.sql
-              if ! test -f $create; then exit 1; fi
+              create_version=`#{create_version}`
+              create=/usr/lib/hive/scripts/metastore/upgrade/mysql/hive-schema-${create_version}.mysql.sql
+              create_major_version=`echo $create_version | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2.0/g\'`
+              create_major=/usr/lib/hive/scripts/metastore/upgrade/mysql/hive-schema-${create_major_version}.mysql.sql
+              if ! test -f $create && ! test -f $create_major; then exit 1; fi
               # Create schema
-              #{cmd} #{db} < $create
-              # Import transaction schema
-              trnx=/usr/lib/hive/scripts/metastore/upgrade/mysql/hive-txn-schema-${target}.mysql.sql
-              if test -f $trnx; then #{cmd} #{db} < $trnx; fi
+              if test -f $create; then
+                #{cmd} #{db} < $create;
+              elif test -f $create_major; then
+                #{cmd} #{db} < $create_major;
+              fi
+              # Import transaction schema (now created with 0.13.1)
+              #trnx=/usr/lib/hive/scripts/metastore/upgrade/mysql/hive-txn-schema-${create_version}.mysql.sql
+              #trnx_major=/usr/lib/hive/scripts/metastore/upgrade/mysql/hive-txn-schema-${create_major_version}.mysql.sql
+              #if test -f $trnx; then #{cmd} #{db} < $trnx;
+              #elif test -f $trnx_major; then #{cmd} #{db} < $trnx_major; fi
               """
             , next
           do_upgrade = ->
@@ -144,9 +152,9 @@ yet started.
                 exit 1;
               fi
               #{cmd} #{db} < $upgrade
-              # Import transaction schema
-              trnx=/usr/lib/hive/scripts/metastore/upgrade/mysql/hive-txn-schema-${target}.mysql.sql
-              if test -f $trnx; then #{cmd} #{db} < $trnx; fi
+              # Import transaction schema (now created with 0.13.1)
+              #trnx=/usr/lib/hive/scripts/metastore/upgrade/mysql/hive-txn-schema-${target}.mysql.sql
+              #if test -f $trnx; then #{cmd} #{db} < $trnx; fi
               """
               code_skipped: 3
             , next
