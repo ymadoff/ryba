@@ -3,26 +3,26 @@
   "version": "0.0.5",
   "description": "Hadoop deployment made easy: HA and Kerberos secured cluster in 1 command",
   "dependencies": {
-    "coffee-script": "latest",
-    "each": "latest",
-    "glob": "latest",
-    "ini": "latest",
-    "js2coffee": "latest",
-    "ldapjs": "latest",
-    "masson": "latest",
-    "mecano": "latest",
-    "pad": "latest",
-    "parameters": "latest",
-    "prink": "latest",
-    "regexp-quote": "latest",
-    "request": "latest",
-    "semver": "latest",
-    "ssh2-fs": "latest",
-    "xmlbuilder": "latest",
-    "xmldom": "latest"
+    "coffee-script": "1.9.1",
+    "each": "0.5.0",
+    "glob": "4.4.0",
+    "ini": "1.3.3",
+    "js2coffee": "2.0.3",
+    "ldapjs": "0.7.1",
+    "masson": "0.1.0",
+    "mecano": "0.4.0",
+    "pad": "0.0.8",
+    "parameters": "0.1.3",
+    "prink": "0.0.2",
+    "regexp-quote": "0.0.0",
+    "request": "2.53.0",
+    "semver": "4.3.1",
+    "ssh2-fs": "0.0.7",
+    "xmlbuilder": "2.6.1",
+    "xmldom": "0.1.19"
   },
   "devDependencies": {
-    "mocha": "latest",
-    "should": "latest"
+    "mocha": "2.1.0",
+    "should": "5.0.1"
   }
 }
