@@ -29,7 +29,7 @@ the following two commands:
 
 ```
 service hive-hcatalog-server stop
-su -l hive -c "kill `cat /var/run/hive/metastore.pid`"
+su -l hive -c "kill `cat /var/lib/hive-hcatalog/hcat.pid`"
 ```
 
     module.exports.push name: 'Hive & HCat # Stop Hive Metastore', label_true: 'STOPPED', handler: (ctx, next) ->

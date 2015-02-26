@@ -24,6 +24,7 @@ following command:
 
 ```
 service hive-hcatalog-server start
+su -l hive -c 'nohup hive --service metastore >/var/log/hive-hcatalog/hcat.out 2>/var/log/hive-hcatalog/hcat.err & echo $! >/var/lib/hive-hcatalog/hcat.pid'
 ```
 
     module.exports.push name: 'Hive & HCat Server # Start HCatalog', timeout: -1, label_true: 'STARTED', handler: (ctx, next) ->
