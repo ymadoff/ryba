@@ -174,7 +174,7 @@ ownerships.
       {zookeeper} = ctx.config.ryba
       write = for k, v of zookeeper.env
         match: RegExp "^export\\s+(#{quote k})=(.*)$", 'mg'
-        replace: "export #{k}=#{v}"
+        replace: "export #{k}=\"#{v}\""
         append: true
       ctx.write
         destination: "#{zookeeper.conf_dir}/zookeeper-env.sh"
