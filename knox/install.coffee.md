@@ -43,9 +43,9 @@ with Hadoop clusters.
       webhcat_host = ctx.host_with_module 'ryba/hive/webhcat'
       webhcat_port = webhcat_site['templeton.port']
       hbase_host = ctx.host_with_module 'ryba/hbase/master'
-      hive_host = ctx.host_with_module 'ryba/hive/server'
+      hive_host = ctx.host_with_module 'ryba/hive/hcatalog'
       hive_ctx = ctx.hosts[hive_host]
-      require('../hive/server').configure hive_ctx
+      require('../hive/hcatalog').configure hive_ctx
       hive_mode = hive_ctx.config.ryba.hive_site['hive.server2.transport.mode']
       throw Error "Invalid property \"hive.server2.transport.mode\", expect \"http\"" unless hive_mode is 'http'
       hive_port = hive_ctx.config.ryba.hive_site['hive.server2.thrift.http.port']
