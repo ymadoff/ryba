@@ -61,15 +61,15 @@ The packages "extjs-2.2-1" and "hue" are installed.
 
     module.exports.push name: 'Hue # Packages', timeout: -1, handler: (ctx, next) ->
       ctx.service [
-        {name: 'extjs-2.2-1'}
+        # {name: 'extjs-2.2-1'}
         {name: 'hue'}
-        {name: 'hue-hcatalog'}
-        {name: 'hue-oozie'}
-        {name: 'hue-pig'}
-        {name: 'hue-plugins'}
-        {name: 'hue-server'}
-        {name: 'hue-common'}
-        {name: 'hue-shell'}
+        # {name: 'hue-hcatalog'}
+        # {name: 'hue-oozie'}
+        # {name: 'hue-pig'}
+        # {name: 'hue-plugins'}
+        # {name: 'hue-server'}
+        # {name: 'hue-common'}
+        # {name: 'hue-shell'}
       ], next
 
 ## Core
@@ -317,9 +317,8 @@ changes.
         ctx.ini
           destination: "#{hue.conf_dir}/hue.ini"
           content: desktop:
-            ssl:
-              certificate: "#{hue.conf_dir}/cert.pem"
-              private_key: "#{hue.conf_dir}/key.pem"
+            ssl_certificate: "#{hue.conf_dir}/cert.pem"
+            ssl_private_key: "#{hue.conf_dir}/key.pem"
           merge: true
           parse: misc.ini.parse_multi_brackets 
           stringify: misc.ini.stringify_multi_brackets
@@ -369,7 +368,7 @@ Use the "ryba/hue/start" module to start the Hue server.
 
     module.exports.push "ryba/hue/start"
 
-## Module Dependencies
+## Dependencies
 
     misc = require 'mecano/lib/misc'
     lifecycle = require '../lib/lifecycle'

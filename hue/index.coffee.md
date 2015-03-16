@@ -1,5 +1,5 @@
 
-## Hue
+# Hue
 
 [Hue][home] features a File Browser for HDFS, a Job Browser for MapReduce/YARN,
 an HBase Browser, query editors for Hive, Pig, Cloudera Impala and Sqoop2.
@@ -79,7 +79,7 @@ Example:
       # Allow proxy user inside "core-site.xml"
       require('../hadoop/core').configure ctx
       require('../hadoop/hdfs').configure ctx
-      require('../hadoop/yarn').configure ctx
+      require('../hadoop/yarn_client').configure ctx
       module.exports.configure_system ctx
       {ryba} = ctx.config
       {nameservice, hadoop_conf_dir, webhcat, hue, db_admin, core_site, hdfs, yarn} = ryba
@@ -113,21 +113,37 @@ Example:
         nn_http_port = hdfs.site["dfs.namenode.#{nn_protocol}-address"].split(':')[1]
       # Support for RM HA was added in Hue 3.7
       rm_protocol = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      rm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
-      if rm_hosts.length > 1
-        rm_host = ryba.yarn.active_rm_host
-        rm_ctx = ctx.context rm_host, require('../hadoop/yarn').configure
-        rm_port = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address.#{rm_ctx.config.shortname}"].split(':')[1]
-        yarn_api_url = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
-        then "http://#{yarn.site['yarn.resourcemanager.webapp.address.#{rm_ctx.config.shortname}']}"
-        else "https://#{yarn.site['yarn.resourcemanager.webapp.https.address.#{rm_ctx.config.shortname}']}"
-      else
-        rm_host = rm_hosts[0]
-        rm_ctx = ctx.context rm_host, require('../hadoop/yarn').configure
-        rm_port = rm_ctx.config.ryba.yarn.site['yarn.resourcemanager.address'].split(':')[1]
-        yarn_api_url = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
-        then "http://#{yarn.site['yarn.resourcemanager.webapp.address']}"
-        else "https://#{yarn.site['yarn.resourcemanager.webapp.https.address']}"
+
+      # rm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
+      # if rm_hosts.length > 1
+      #   rm_host = ryba.yarn.active_rm_host
+      #   rm_ctx = ctx.context rm_host, require('../hadoop/yarn_rm').configure
+      #   rm_port = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address.#{rm_ctx.config.shortname}"].split(':')[1]
+      #   yarn_api_url = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
+      #   then "http://#{yarn.site['yarn.resourcemanager.webapp.address.#{rm_ctx.config.shortname}']}"
+      #   else "https://#{yarn.site['yarn.resourcemanager.webapp.https.address.#{rm_ctx.config.shortname}']}"
+      # else
+      #   rm_host = rm_hosts[0]
+      #   rm_ctx = ctx.context rm_host, require('../hadoop/yarn_rm').configure
+      #   rm_port = rm_ctx.config.ryba.yarn.site['yarn.resourcemanager.address'].split(':')[1]
+      #   yarn_api_url = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
+      #   then "http://#{yarn.site['yarn.resourcemanager.webapp.address']}"
+      #   else "https://#{yarn.site['yarn.resourcemanager.webapp.https.address']}"
+      # YARN ResourceManager
+      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
+      throw Error "No YARN ResourceManager configured" unless rm_ctxs.length
+      is_yarn_ha = rm_ctxs.length > 1
+      rm_ctx = rm_ctxs[0]
+      yarn_shortname = if is_yarn_ha then ".#{rm_ctx.config.shortname}" else ''
+      rm_host = rm_ctx.config.host
+      # Strange, "yarn_rpc_url" default to "http://localhost:8050" which doesnt make
+      # any sense since this isnt http
+      yarn_rpc_url = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{yarn_shortname}"]
+      yarn_rpc_url = "http://#{yarn_rpc_url}"
+      rm_port = yarn_rpc_url.split(':')[1]
+      yarn_api_url = if rm_ctx.config.ryba.yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
+      then "http://#{yarn.site['yarn.resourcemanager.webapp.address']}"
+      else "https://#{yarn.site['yarn.resourcemanager.webapp.https.address']}"
 
       # Configure HDFS Cluster
       hue.ini['hadoop'] ?= {}
@@ -142,13 +158,14 @@ Example:
       # Configure YARN (MR2) Cluster
       hue.ini['hadoop']['yarn_clusters'] ?= {}
       hue.ini['hadoop']['yarn_clusters']['default'] ?= {}
-      hue.ini['hadoop']['yarn_clusters']['default']['resourcemanager_host'] ?= "#{rm_host}"
-      hue.ini['hadoop']['yarn_clusters']['default']['resourcemanager_port'] ?= "#{rm_port}"
+      hue.ini['hadoop']['yarn_clusters']['default']['resourcemanager_host'] ?= "#{rm_host}" # Might no longer be required after hdp2.2
+      hue.ini['hadoop']['yarn_clusters']['default']['resourcemanager_port'] ?= "#{rm_port}" # Might no longer be required after hdp2.2
       hue.ini['hadoop']['yarn_clusters']['default']['submit_to'] ?= "true"
       hue.ini['hadoop']['yarn_clusters']['default']['hadoop_mapred_home'] ?= '/usr/lib/hadoop-mapreduce'
       hue.ini['hadoop']['yarn_clusters']['default']['hadoop_bin'] ?= '/usr/bin/hadoop'
       hue.ini['hadoop']['yarn_clusters']['default']['hadoop_conf_dir'] ?= hadoop_conf_dir
       hue.ini['hadoop']['yarn_clusters']['default']['resourcemanager_api_url'] ?= yarn_api_url
+      hue.ini['hadoop']['yarn_clusters']['default']['resourcemanager_rpc_url'] ?= yarn_rpc_url
       hue.ini['hadoop']['yarn_clusters']['default']['proxy_api_url'] ?= yarn_api_url
       hue.ini['hadoop']['yarn_clusters']['default']['node_manager_api_url'] ?= "http://#{nodemanagers[0]}:8042"
       # JHS
@@ -164,7 +181,16 @@ Example:
       hue.ini['hcatalog'] ?= {}
       hue.ini['hcatalog']['templeton_url'] ?= "http://#{webhcat_server}:#{webhcat_port}/templeton/v1/"
       hue.ini['beeswax'] ?= {}
-      hue.ini['beeswax']['beeswax_server_host'] ?= "#{ctx.config.host}"
+      # HCatalog
+      [hs2_ctx] = ctx.contexts 'ryba/hive/server2', require('../hive/server2').configure
+      throw Error "No Hive HCatalog Server configured" unless hs2_ctx
+      # hue.ini['beeswax']['beeswax_server_host'] ?= "#{ctx.config.host}"
+      hue.ini['beeswax']['hive_server_host'] ?= "#{hs2_ctx.config.host}"
+      hue.ini['beeswax']['hive_server_port'] ?= if hs2_ctx.config.ryba.hive.site['hive.server2.transport.mode'] is 'binary'
+      then hs2_ctx.config.ryba.hive.site['hive.server2.thrift.port']
+      else hs2_ctx.config.ryba.hive.site['hive.server2.thrift.http.port']
+      hue.ini['beeswax']['hive_conf_dir'] ?= "#{hs2_ctx.config.ryba.hive.conf_dir}"
+      hue.ini['beeswax']['server_conn_timeout'] ?= "240"
       # Desktop
       hue.ini['desktop'] ?= {}
       hue.ini['desktop']['http'] ?= {}
@@ -172,6 +198,7 @@ Example:
       hue.ini['desktop']['http_port'] ?= '8888'
       hue.ini['desktop']['secret_key'] ?= 'jFE93j;2[290-eiwMYSECRTEKEYy#e=+Iei*@Mn<qW5o'
       hue.ini['desktop']['smtp'] ?= {}
+      hue.ini['desktop']['time_zone'] ?= 'ETC/UTC'
       # Desktop database
       hue.ini['desktop']['database'] ?= {}
       hue.ini['desktop']['database']['engine'] ?= db_admin.engine

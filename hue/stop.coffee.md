@@ -1,7 +1,6 @@
 
 # Hue Stop
 
-    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push require('./index').configure
@@ -19,4 +18,6 @@
         code_skipped: 1
       , next
 
+## Dependencies
 
+    lifecycle = require '../lib/lifecycle'
