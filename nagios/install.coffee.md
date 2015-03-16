@@ -229,7 +229,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
 
     module.exports.push name: 'Nagios # Services', handler: (ctx, next) ->
       {nagios, force_check, active_nn_host, core_site, hdfs, zookeeper, 
-        yarn, hive, hbase, oozie, webhcat, ganglia, hue} = ctx.config.ryba
+        hbase, oozie, webhcat, ganglia, hue} = ctx.config.ryba
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       nn_hosts_map = {} # fqdn to port
@@ -248,41 +248,38 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           nn_host = ctx.config.ryba.hdfs.site["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')
           nn_hosts_map[nn_host[0]] = nn_host[1]
           active_nn_port = nn_host[1] if nn_ctx.config.host is active_nn_host
+      # YARN ResourceManager
       rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
-      rm_hosts = []
+      rm_hosts = rm_ctxs.map (rm_ctx) -> rm_ctx.config.host
       if rm_ctxs.lenth
         rm_site = rm_ctxs[0].config.ryba.yarn.site
-        rm_hosts = rm_ctxs.map (rm_ctx) -> rm_ctx.config.host
-        console.log '!!!!!!', rm_hosts
-        # rm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
         rm_webapp_port = if rm_site['yarn.http.policy'] is 'HTTP_ONLY'
         then rm_site['yarn.resourcemanager.webapp.address'].split(':')[1]
         else rm_site['yarn.resourcemanager.webapp.https.address'].split(':')[1]
-      nm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_nm'
-      if nm_hosts.length
-        nm_ctx = ctx.hosts[nm_hosts[0]]
-        require('../hadoop/yarn_nm').configure nm_ctx
-        nm_webapp_port = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
-        then nm_ctx.config.ryba.yarn.site['yarn.nodemanager.webapp.address'].split(':')[1]
-        else nm_ctx.config.ryba.yarn.site['yarn.nodemanager.webapp.https.address'].split(':')[1]
-      jhs_hosts = ctx.hosts_with_module 'ryba/hadoop/mapred_jhs'
-      if jhs_hosts.length
-        jhs_ctx = ctx.hosts[jhs_hosts[0]]
-        require('../hadoop/mapred_jhs').configure jhs_ctx
-        hs_webapp_port = jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.webapp.address'].split(':')[1]
-      jn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
-      if jn_hosts.length
-        jn_ctx = ctx.hosts[jn_hosts[0]]
-        require('../hadoop/hdfs_jn').configure jn_ctx
-        journalnode_port = jn_ctx.config.ryba.hdfs.site["dfs.journalnode.#{protocol}-address"].split(':')[1]
+      # YARN NodeManager
+      nm_ctxs = ctx.contexts 'ryba/hadoop/yarn_nm', require('../hadoop/yarn_nm').configure
+      if nm_ctxs.length
+        nm_webapp_port = if nm_ctxs[0].config.ryba.yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
+        then nm_ctxs[0].config.ryba.yarn.site['yarn.nodemanager.webapp.address'].split(':')[1]
+        else nm_ctxs[0].config.ryba.yarn.site['yarn.nodemanager.webapp.https.address'].split(':')[1]
+      # MapReduce JobHistoryServer
+      jhs_ctxs = ctx.contexts 'ryba/hadoop/mapred_jhs', require('../hadoop/mapred_jhs').configure
+      if jhs_ctxs.length
+        hs_webapp_port = jhs_ctxs[0].config.ryba.mapred.site['mapreduce.jobhistory.webapp.address'].split(':')[1]
+      # HDFS JournalNodes
+      jn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_jn', require('../hadoop/hdfs_jn').configure
+      if jn_ctxs.length
+        journalnode_port = jn_ctxs[0].config.ryba.hdfs.site["dfs.journalnode.#{protocol}-address"].split(':')[1]
       datanode_port = hdfs.site["dfs.datanode.#{protocol}.address"].split(':')[1]
+      # HBase
       hm_hosts = ctx.hosts_with_module 'ryba/hbase/master'
-      hive_server_port = if hive.site['hive.server2.transport.mode'] is 'binary'
-      then hive.site['hive.server2.thrift.port']
-      else hive.site['hive.server2.thrift.http.port']
-      # protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      # shortname = ctx.hosts[active_nn_host].config.shortname
-      # active_nn_port = ctx.config.ryba.hdfs.site["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
+      # Hive
+      hcat_ctxs = ctx.contexts 'ryba/hive/hcatalog', require('../hive/hcatalog').configure
+      hs2_ctxs = ctx.contexts 'ryba/hive/server2', require('../hive/server2').configure
+      hs2_port = if hs2_ctxs[0].config.ryba.hive.site['hive.server2.transport.mode'] is 'binary'
+      then 'hive.server2.thrift.port'
+      else 'hive.server2.thrift.http.port'
+      hs2_port = hs2_ctxs[0].config.ryba.hive.site[hs2_port]
       hostgroup_defs = {}
       for group, hosts of nagios.hostgroups
         hostgroup_defs[group] = if hosts.length then hosts else null
@@ -331,8 +328,8 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           hbase_master_hosts_in_str: hm_hosts.join ','
           hbase_master_hosts: hm_hosts
           hbase_master_rpc_port: hbase.site['hbase.master.port']
-          hive_metastore_port: url.parse(hive.site['hive.metastore.uris']).port
-          hive_server_port: hive_server_port
+          hive_metastore_port: url.parse(hcat_ctxs[0].config.ryba.hive.site['hive.metastore.uris']).port
+          hive_server_port: hs2_port
           oozie_server_port: url.parse(oozie.site['oozie.base.url']).port
           java64_home: ctx.config.java.java_home # Used by check_oozie_status.sh
           templeton_port: webhcat.site['templeton.port']

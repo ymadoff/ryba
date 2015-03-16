@@ -1,5 +1,5 @@
 
-# Nagios Install
+# Nagios
 
     module.exports = []
 
@@ -9,10 +9,11 @@
       require('masson/commons/java').configure ctx
       require('../zookeeper/client').configure ctx
       require('../hadoop/hdfs').configure ctx
-      require('../hadoop/yarn').configure ctx
+      # require('../hadoop/yarn').configure ctx
       require('../hbase/regionserver').configure ctx
       require('../hbase/master').configure ctx
-      require('../hive/server').configure ctx
+      require('../hive/hcatalog').configure ctx
+      require('../hive/server2').configure ctx
       require('../hive/webhcat').configure ctx
       require('../ganglia/collector').configure ctx
       require('../oozie/server').configure ctx
@@ -59,7 +60,7 @@
         'flume-servers': [] # ctx.hosts_with_module 'ryba/flume/server'
         'zookeeper-servers': ctx.hosts_with_module 'ryba/zookeeeper/server'
         'hbasemasters': ctx.hosts_with_module 'ryba/hbase/master'
-        'hiveserver': ctx.hosts_with_module 'ryba/hive/server'
+        'hiveserver': ctx.hosts_with_module 'ryba/hive/hcatalog'
         'region-servers': ctx.hosts_with_module 'ryba/hbase/regionserver'
         'oozie-server': ctx.hosts_with_module 'ryba/oozie/server'
         'webhcat-server': ctx.hosts_with_module 'ryba/hive/webhcat'
