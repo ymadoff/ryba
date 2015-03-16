@@ -85,31 +85,11 @@ The packages "ganglia-gmetad-3.5.0-99" and "ganglia-web-3.5.7-99" are installed.
       ctx.service [
         name: 'ganglia-gmetad-3.5.0-99'
         srv_name: 'gmetad'
-        action: 'stop'
+        # action: 'stop' # Stoping here invalidate hdp-service HTTPD to restard
         startup: false
       ,
         name: 'ganglia-web-3.5.7-99'
       ], next
-
-## Layout
-
-We prepare the directory "/usr/libexec/hdp/ganglia" in which we later upload
-the objects files and generate the hosts configuration.
-
-    module.exports.push name: 'Ganglia Collector # Layout', timeout: -1, handler: (ctx, next) ->
-      ctx.mkdir
-        destination: '/usr/libexec/hdp/ganglia'
-      , next
-
-## Objects
-
-Copy the object files provided in the HDP companion files into the 
-"/usr/libexec/hdp/ganglia" folder. Permissions on those file are set to "0o744".
-
-    module.exports.push name: 'Ganglia Collector # Objects', timeout: -1, handler: (ctx, next) ->
-      glob "#{__dirname}/../resources/ganglia/objects/*.*", (err, files) ->
-        files = for file in files then source: file, destination: "/usr/libexec/hdp/ganglia", mode: 0o744
-        ctx.upload files, next
 
 ## Init Script
 
@@ -131,32 +111,25 @@ Upload the "hdp-gmetad" service file into "/etc/init.d".
         , (err) ->
           next err, true
 
-# Note: latest companion files seems to fix this
-# ## Fix RRD
+## Layout
 
-# There is a first bug in the HDP companion files preventing RRDtool (thus
-# Ganglia) from starting. The variable "RRDCACHED_BASE_DIR" should point to 
-# "/var/lib/ganglia/rrds".
+We prepare the directory "/usr/libexec/hdp/ganglia" in which we later upload
+the objects files and generate the hosts configuration.
 
-#     module.exports.push name: 'Ganglia Collector # Fix RRD', handler: (ctx, next) ->
-#       ctx.write
-#         destination: '/usr/libexec/hdp/ganglia/gangliaLib.sh'
-#         match: /^RRDCACHED_BASE_DIR=.*$/mg
-#         replace: 'RRDCACHED_BASE_DIR=/var/lib/ganglia/rrds;'
-#         append: 'GANGLIA_RUNTIME_DIR'
-#       , next
+    module.exports.push name: 'Ganglia Collector # Layout', timeout: -1, handler: (ctx, next) ->
+      ctx.mkdir
+        destination: '/usr/libexec/hdp/ganglia'
+      , next
 
-# ## Fix permission
+## Objects
 
-# The message "error collecting ganglia data (127.0.0.1:8652): fsockopen error"
-# appeared on one cluster. Another cluster installed at the same time seems
-# correct.
+Copy the object files provided in the HDP companion files into the 
+"/usr/libexec/hdp/ganglia" folder. Permissions on those file are set to "0o744".
 
-#     module.exports.push name: 'Ganglia Collector # Fix permission', handler: (ctx, next) ->
-#       ctx.execute
-#         cmd: 'chown -R nobody:root /var/lib/ganglia/rrds'
-#       , (err, written) ->
-#         next err, false
+    module.exports.push name: 'Ganglia Collector # Objects', timeout: -1, handler: (ctx, next) ->
+      glob "#{__dirname}/../resources/ganglia/objects/*.*", (err, files) ->
+        files = for file in files then source: file, destination: "/usr/libexec/hdp/ganglia", mode: 0o744
+        ctx.upload files, next
 
 ## Fix User
 
@@ -164,10 +137,10 @@ RRDtool is by default runing as "nobody". In order to work, nobody need a login 
 in its user account definition.
 
     module.exports.push name: 'Ganglia Collector # Fix User', handler: (ctx, next) ->
-      ctx.execute
-        cmd: 'usermod -s /bin/bash nobody'
-      , (err, executed, stdout, stderr) ->
-        next err, not /no changes/.test(stdout)
+      ctx.user
+        name: 'nobody'
+        shell: '/bin/bash'
+      , next
 
 ## Clusters
 
