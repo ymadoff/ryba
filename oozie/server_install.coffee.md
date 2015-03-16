@@ -340,21 +340,24 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
             """
             code_skipped: 2
           ,
+            cmd: "su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-client/bin/ooziedb.sh create -sqlfile /tmp/oozie.sql -run Validate DB Connection'"
+            not_if_exec: "#{cmd} \"use #{db}; select data from OOZIE_SYS where name='oozie.version'\""
+          ,
             cmd: "su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-server/bin/ooziedb.sh upgrade -run'"
             not_if_exec: "[[ `#{version_local}` == `#{version_remote}` ]]"
           ], next
       return next new Error 'Database engine not supported' unless engines[engine]
       engines[engine]()
 
-    module.exports.push name: 'Oozie Server # Database', handler: (ctx, next) ->
-      {oozie} = ctx.config.ryba
-      ctx.execute
-        cmd: """
-        su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-client/bin/ooziedb.sh create -sqlfile oozie.sql -run Validate DB Connection'
-        """
-      , (err, executed, stdout, stderr) ->
-        err = null if err and /DB schema exists/.test stderr
-        next err, executed
+    # module.exports.push name: 'Oozie Server # Database', handler: (ctx, next) ->
+    #   {oozie} = ctx.config.ryba
+    #   ctx.execute
+    #     cmd: """
+    #     su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-client/bin/ooziedb.sh create -sqlfile oozie.sql -run Validate DB Connection'
+    #     """
+    #   , (err, executed, stdout, stderr) ->
+    #     err = null if err and /DB schema exists/.test stderr
+    #     next err, executed
 
     module.exports.push name: 'Oozie Server # Share lib', timeout: 600000, handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
