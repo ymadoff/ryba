@@ -16,6 +16,7 @@ most (N - 1) / 2 failures to continue to function normally.
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push require('./hdfs_jn').configure
+    module.exports.push require '../lib/hdp_service'
 
 ## IPTables
 
@@ -57,39 +58,70 @@ The JournalNode data are stored inside the directory defined by the
         gid: 'hadoop'
       , next
 
-## Startup
+## Service
 
-Install and configure the startup script in 
-"/etc/init.d/hadoop-hdfs-journalnode".
+Install the "hadoop-hdfs-journalnode" service, symlink the rc.d startup script
+inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'HDFS JN # Startup', handler: (ctx, next) ->
+    module.exports.push name: 'HDFS JN # Service', handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
-      modified = false
-      do_install = ->
-        ctx.service
-          name: 'hadoop-hdfs-journalnode'
-          startup: true
-        , (err, serviced) ->
-          return next err if err
-          modified = true if serviced
-          do_fix()
-      do_fix = ->
-        ctx.write
-          destination: '/etc/init.d/hadoop-hdfs-journalnode'
-          write: [
-            match: /^PIDFILE=".*"$/m
-            replace: "PIDFILE=\"#{hdfs.pid_dir}/$SVC_USER/hadoop-hdfs-journalnode.pid\""
-          ,
-            match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m
-            replace: "$1 -u $SVC_USER $2"
-          ]
-        , (err, written) ->
-          return next err if err
-          modified = true if written
-          do_end()
-      do_end = ->
-        next null, modified
-      do_install()
+      ctx.hdp_service
+        name: 'hadoop-hdfs-journalnode'
+        write: [
+          match: /^\. \/etc\/default\/hadoop-hdfs-journalnode .*$/m
+          replace: '. /etc/default/hadoop-hdfs-journalnode # RYBA FIX rc.d, DONT OVERWRITE'
+          append: ". /lib/lsb/init-functions"
+        ,
+          # HDP default is "/usr/lib/hadoop/sbin/hadoop-daemon.sh"
+          match: /^EXEC_PATH=.*$/m
+          replace: "EXEC_PATH=\"${HADOOP_HOME}/sbin/hadoop-daemon.sh\" # RYBA HONORS /etc/default, DONT OVEWRITE"
+        ,
+          # HDP default is "/var/run/hadoop-hdfs/hadoop-hdfs-journalnode.pid"
+          match: /^PIDFILE=".*".*$/mg
+          replace: "PIDFILE=\"${HADOOP_PID_DIR}/hadoop-$HADOOP_IDENT_STRING-journalnode.pid\" # RYBA FIX, DONT OVEWRITE"
+        ]
+        etc_default:
+          'hadoop-hdfs-journalnode': 
+            write: [
+              match: /^export HADOOP_PID_DIR=.*$/m # HDP default is "/var/run/hadoop-hdfs"
+              replace: "export HADOOP_PID_DIR=#{hdfs.pid_dir} # RYBA"
+            ,
+              match: /^export HADOOP_LOG_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
+              replace: "export HADOOP_LOG_DIR=#{hdfs.log_dir} # RYBA"
+            ,
+              match: /^export HADOOP_IDENT_STRING=.*$/m # HDP default is "hdfs"
+              replace: "export HADOOP_IDENT_STRING=#{hdfs.user.name} # RYBA"
+            ]
+      , next
+
+    # module.exports.push name: 'HDFS JN # Startup', handler: (ctx, next) ->
+    #   {hdfs} = ctx.config.ryba
+    #   modified = false
+    #   do_install = ->
+    #     ctx.service
+    #       name: 'hadoop-hdfs-journalnode'
+    #       startup: true
+    #     , (err, serviced) ->
+    #       return next err if err
+    #       modified = true if serviced
+    #       do_fix()
+    #   do_fix = ->
+    #     ctx.write
+    #       destination: '/etc/init.d/hadoop-hdfs-journalnode'
+    #       write: [
+    #         match: /^PIDFILE=".*"$/m
+    #         replace: "PIDFILE=\"#{hdfs.pid_dir}/$SVC_USER/hadoop-hdfs-journalnode.pid\""
+    #       ,
+    #         match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m
+    #         replace: "$1 -u $SVC_USER $2"
+    #       ]
+    #     , (err, written) ->
+    #       return next err if err
+    #       modified = true if written
+    #       do_end()
+    #   do_end = ->
+    #     next null, modified
+    #   do_install()
 
 ## Configure
 

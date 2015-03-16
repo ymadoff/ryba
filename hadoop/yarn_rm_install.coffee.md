@@ -3,8 +3,9 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/yarn'
+    module.exports.push 'ryba/hadoop/yarn_client_install'
     module.exports.push require('./yarn_rm').configure
+    module.exports.push require '../lib/hdp_service'
 
 ## IPTables
 
@@ -69,39 +70,40 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         kadmin_server: admin_server
       , next
 
-## Startup
+## Service
 
-Install and configure the startup script in 
-"/etc/init.d/hadoop-yarn-resourcemanager".
+Install the "hadoop-yarn-resourcemanager" service, symlink the rc.d startup script
+inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'YARN RM # Startup', handler: (ctx, next) ->
+    module.exports.push name: 'YARN RM # Service', handler: (ctx, next) ->
       {yarn} = ctx.config.ryba
-      modified = false
-      do_install = ->
-        ctx.service
-          name: 'hadoop-yarn-resourcemanager'
-          startup: true
-        , (err, serviced) ->
-          return next err if err
-          modified = true if serviced
-          do_fix()
-      do_fix = ->
-        ctx.write
-          destination: '/etc/init.d/hadoop-yarn-resourcemanager'
-          write: [
-            match: /^PIDFILE=".*"$/m
-            replace: "PIDFILE=\"#{yarn.pid_dir}/$SVC_USER/yarn-yarn-resourcemanager.pid\""
-          ,
-            match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m
-            replace: "$1 -u $SVC_USER $2"
-          ]
-        , (err, written) ->
-          return next err if err
-          modified = true if written
-          do_end()
-      do_end = ->
-        next null, modified
-      do_install()
+      ctx.hdp_service
+        name: 'hadoop-yarn-resourcemanager'
+        write: [
+          match: /^\. \/etc\/default\/hadoop-yarn-resourcemanager .*$/m
+          replace: '. /etc/default/hadoop-yarn-resourcemanager # RYBA FIX rc.d, DONT OVERWRITE'
+          append: ". /lib/lsb/init-functions"
+        ,
+          # HDP default is "$HADOOP_PID_DIR/yarn-$YARN_IDENT_STRING-resourcemanager.pid"
+          match: /^PIDFILE=".*".*$/mg
+          replace: "PIDFILE=\"${YARN_PID_DIR}/yarn-$YARN_IDENT_STRING-resourcemanager.pid\" # RYBA FIX, DONT OVERWRITE"
+        ]
+        etc_default:
+          'hadoop-yarn-resourcemanager': 
+            write: [
+              match: /^export YARN_PID_DIR=.*$/m # HDP default is "/var/run/hadoop-hdfs"
+              replace: "export YARN_PID_DIR=#{yarn.pid_dir} # RYBA, DONT OVERWRITE"
+            ,
+              match: /^export YARN_LOG_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
+              replace: "export YARN_LOG_DIR=#{yarn.log_dir} # RYBA, DONT OVERWRITE"
+            ,
+              match: /^export YARN_CONF_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
+              replace: "export YARN_CONF_DIR=#{yarn.conf_dir} # RYBA, DONT OVERWRITE"
+            ,
+              match: /^export YARN_IDENT_STRING=.*$/m # HDP default is "hdfs"
+              replace: "export YARN_IDENT_STRING=#{yarn.user.name} # RYBA, DONT OVERWRITE"
+            ]
+      , next
 
 ## Configuration
 

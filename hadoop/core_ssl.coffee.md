@@ -39,7 +39,7 @@ keytool -list -v -keystore keystore -alias hadoop
     module.exports.push 'masson/bootstrap'
 
     module.exports.push module.exports.configure = (ctx) ->
-      # require('./core').configure ctx
+      require('./core').configure ctx
       # require('./yarn').configure ctx
       {core_site, hadoop_conf_dir} = ctx.config.ryba
       ctx.config.ryba.ssl ?= {}

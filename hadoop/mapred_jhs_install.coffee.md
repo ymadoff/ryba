@@ -1,5 +1,5 @@
 
-# Hadoop MapRed JobHistoryServer Install
+# MapReduce JobHistoryServer Install
 
 Install and configure the MapReduce Job History Server (JHS).
 
@@ -11,6 +11,7 @@ Job History Server.
     module.exports.push 'masson/core/iptables'
     # module.exports.push 'ryba/hadoop/yarn_client_install'
     module.exports.push require('./mapred_jhs').configure
+    module.exports.push require '../lib/hdp_service'
 
 ## IPTables
 
@@ -25,7 +26,7 @@ Job History Server.
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'MapRed JHS # IPTables', handler: (ctx, next) ->
+    module.exports.push name: 'MapReduce JHS # IPTables', handler: (ctx, next) ->
       {mapred} = ctx.config.ryba
       jhs_shuffle_port = mapred.site['mapreduce.shuffle.port']
       jhs_port = mapred.site['mapreduce.jobhistory.address'].split(':')[1]
@@ -43,41 +44,45 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: ctx.config.iptables.action is 'start'
       , next
 
-## Startup
+## Service
 
-Install and configure the startup script in 
-"/etc/init.d/hadoop-mapreduce-historyserver".
+Install the "hadoop-mapreduce-historyserver" service, symlink the rc.d startup
+script inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'MapRed JHS # Startup', handler: (ctx, next) ->
-      {mapred} = ctx.config.ryba
-      modified = false
-      do_install = ->
-        ctx.service
-          name: 'hadoop-mapreduce-historyserver'
-          startup: true
-        , (err, serviced) ->
-          return next err if err
-          modified = true if serviced
-          do_fix()
-      do_fix = ->
-        ctx.write
-          destination: '/etc/init.d/hadoop-mapreduce-historyserver'
-          write: [
-            match: /^PIDFILE=".*"$/m
-            replace: "PIDFILE=\"#{mapred.pid_dir}/$SVC_USER/mapred-mapred-historyserver.pid\""
-          ,
-            match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m
-            replace: "$1 -u $SVC_USER $2"
-          ]
-        , (err, written) ->
-          return next err if err
-          modified = true if written
-          do_end()
-      do_end = ->
-        next null, modified
-      do_install()
+    module.exports.push name: 'MapReduce JHS # Service', handler: (ctx, next) ->
+      ctx.hdp_service
+        name: 'hadoop-mapreduce-historyserver'
+        write: [
+          match: /^\. \$CONF_DIR\/mapred-env\.sh .*$/m
+          replace: '. $CONF_DIR/mapred-env.sh # RYBA FIX pid dir'
+          append: '. $CONF_DIR/hadoop-env.sh'
+        ,
+          match:  /^HADOOP_PID_DIR=".*" # RYBA .*$/m
+          replace: 'HADOOP_PID_DIR="${HADOOP_MAPRED_PID_DIR:-$HADOOP_PID_DIR}" # RYBA FIX pid dir'
+          before: /^PIDFILE=".*"$/m
+        ]
+      , next
 
-    module.exports.push name: 'MapRed JHS # Kerberos', handler: (ctx, next) ->
+## Environnement
+
+Enrich the file "mapred-env.sh" present inside the Hadoop configuration
+directory with the location of the directory storing the process pid.
+
+    module.exports.push name: 'MapReduce JHS # Environnement', handler: (ctx, next) ->
+      {mapred, hadoop_conf_dir} = ctx.config.ryba
+      ctx.write
+        destination: "#{hadoop_conf_dir}/mapred-env.sh"
+        source: "#{__dirname}/../resources/core_hadoop/mapred-env.sh"
+        local_source: true
+        backup: true
+        write: [
+          match: /^export HADOOP_MAPRED_PID_DIR=.*$/m
+          replace: "export HADOOP_MAPRED_PID_DIR=\"#{mapred.pid_dir}\" # RYBA CONF \"ryba.mapred.pid_dir\", DONT OVEWRITE"
+          before: /^#export HADOOP_MAPRED_LOG_DIR.*/m
+        ]
+      , next
+
+    module.exports.push name: 'MapReduce JHS # Kerberos', handler: (ctx, next) ->
       {hadoop_conf_dir, mapred, yarn} = ctx.config.ryba
       ctx.hconfigure [
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
@@ -95,7 +100,7 @@ Install and configure the startup script in
 
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
-    module.exports.push name: 'MapRed JHS # HDFS Layout', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'MapReduce JHS # HDFS Layout', timeout: -1, handler: (ctx, next) ->
       {hadoop_group, yarn, mapred} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.hdfs ctx, """
@@ -128,7 +133,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         code_skipped: 2
       , next
 
-    module.exports.push name: 'MapRed JHS # Kerberos', handler: (ctx, next) ->
+    module.exports.push name: 'MapReduce JHS # Kerberos', handler: (ctx, next) ->
       {mapred, hadoop_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 

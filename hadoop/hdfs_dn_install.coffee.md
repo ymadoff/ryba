@@ -19,6 +19,7 @@ NameNodes, and send block location information and heartbeats to both.
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push require('./hdfs_dn').configure
+    module.exports.push require '../lib/hdp_service'
 
 ## IPTables
 
@@ -51,41 +52,48 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: ctx.config.iptables.action is 'start'
       , next
 
-## Startup
+## Service
 
-Install and configure the startup script in 
-"/etc/init.d/hadoop-yarn-nodemanager".
+Install the "hadoop-hdfs-datanode" service, symlink the rc.d startup script
+inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'HDFS DN # Startup', handler: (ctx, next) ->
-      {hdfs, core_site} = ctx.config.ryba
-      modified = false
-      do_install = ->
-        ctx.service
-          name: 'hadoop-hdfs-datanode'
-          startup: true
-        , (err, serviced) ->
-          return next err if err
-          modified = true if serviced
-          do_fix()
-      do_fix = ->
-        user = if core_site['hadoop.security.authentication'] is 'kerberos' then 'hdfs' else ''
-        ctx.write
-          destination: '/etc/init.d/hadoop-hdfs-datanode'
-          write: [
-            match: /^PIDFILE=".*"$/m
-            replace: "PIDFILE=\"#{hdfs.pid_dir}/$SVC_USER/hadoop-hdfs-datanode.pid\""
-          ,
-            match: /^HADOOP_SECURE_DN_USER=".*"$/m
-            replace: "HADOOP_SECURE_DN_USER=\"#{user}\""
-            append: /^WORKING_DIR=.*$/m
-          ]
-        , (err, written) ->
-          return next err if err
-          modified = true if written
-          do_end()
-      do_end = ->
-        next null, modified
-      do_install()
+    module.exports.push name: 'HDFS DN # Service', handler: (ctx, next) ->
+      {hdfs} = ctx.config.ryba
+      ctx.hdp_service
+        name: 'hadoop-hdfs-datanode'
+        write: [
+          match: /^\. \/etc\/default\/hadoop-hdfs-datanode .*$/m
+          replace: '. /etc/default/hadoop-hdfs-datanode # RYBA FIX rc.d, DONT OVERWRITE'
+          append: ". /lib/lsb/init-functions"
+        ,
+          match: /^export HADOOP_IDENT_STRING=.*$/m
+          replace: "export HADOOP_IDENT_STRING=${HADOOP_SECURE_DN_USER:-$HADOOP_DATANODE_USER} # RYBA FIX"
+        ]
+        etc_default:
+          'hadoop-hdfs-datanode': 
+            write: [
+              match: /^export HADOOP_PID_DIR=.*$/m # HDP default is "/var/run/hadoop-hdfs"
+              replace: "export HADOOP_PID_DIR=#{hdfs.pid_dir} # RYBA"
+            ,
+              match: /^export HADOOP_LOG_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
+              replace: "export HADOOP_LOG_DIR=#{hdfs.log_dir} # RYBA"
+            ,
+              match: /^export HADOOP_IDENT_STRING=.*$/m # HDP default is "hdfs"
+              replace: "export HADOOP_IDENT_STRING=#{hdfs.user.name} # RYBA"
+            ,
+              match: /^export HADOOP_SECURE_DN_USER=.*$/m # HDP default is "hdfs"
+              replace: "export HADOOP_SECURE_DN_USER=#{hdfs.secure_dn_user} # RYBA"
+              append: true
+            ,
+              match: /^export HADOOP_SECURE_DN_PID_DIR=.*$/m # HDP default is "hdfs"
+              replace: "export HADOOP_SECURE_DN_PID_DIR=#{hdfs.secure_dn_pid_dir} # RYBA"
+              append: true
+            ,
+              match: /^export HADOOP_SECURE_DN_LOG_DIR=.*$/m # HDP default is "hdfs"
+              replace: "export HADOOP_SECURE_DN_LOG_DIR=#{hdfs.log_dir} # RYBA"
+              append: true
+            ]
+      , next
 
 ## HA
 
@@ -100,8 +108,8 @@ present inside the "hdp.ha\_client\_config" object.
         default: "#{__dirname}/../resources/core_hadoop/hdfs-site.xml"
         local_default: true
         properties: hdfs.site
-        uid: hdfs.user
-        gid: hadoop_group
+        uid: hdfs.user.name
+        gid: hadoop_group.name
         merge: true
         backup: true
       , next
@@ -139,6 +147,12 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
     module.exports.push name: 'HDFS DN # Layout', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba
       # no need to restrict parent directory and yarn will complain if not accessible by everyone
+      pid_dir = hdfs.secure_dn_pid_dir
+      pid_dir = pid_dir.replace '$USER', hdfs.user.name
+      pid_dir = pid_dir.replace '$HADOOP_SECURE_DN_USER', hdfs.user.name
+      pid_dir = pid_dir.replace '$HADOOP_IDENT_STRING', hdfs.user.name
+      # TODO, in HDP 2.1, datanode are started as root but in HDP 2.2, we should
+      # start it as HDFS and use JAAS
       ctx.mkdir [
         destination: hdfs.site['dfs.datanode.data.dir'].split ','
         uid: hdfs.user.name
@@ -146,10 +160,11 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
         mode: 0o0750
         parent: true
       ,
-        destination: "#{hdfs.pid_dir}/#{hdfs.user}"
+        destination: "#{pid_dir}"
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o0755
+        parent: true
       ], next
 
 ## Kerberos
@@ -179,17 +194,19 @@ Environment passed to the DataNode before it starts.
 
     module.exports.push name: 'HDFS DN # Opts', handler: (ctx, next) ->
       {hadoop_conf_dir, hdfs} = ctx.config.ryba
-      return next() unless hdfs.datanode_opts
+      # export HADOOP_SECURE_DN_PID_DIR="/var/run/hadoop/$HADOOP_SECURE_DN_USER" # RYBA CONF "ryba.hadoop_pid_dir", DONT OVEWRITE
       ctx.write
         destination: "#{hadoop_conf_dir}/hadoop-env.sh"
         write: [
-          match: /^export HADOOP_DATANODE_OPTS # GENERATED BY RYBA, DONT OVEWRITE/mg
-          replace: "export HADOOP_DATANODE_OPTS # GENERATED BY RYBA, DONT OVEWRITE"
-          append: /^HADOOP_DATANODE_OPTS=.*$/mg
+          match: /^export HADOOP_SECURE_DN_PID_DIR=.*$/mg
+          replace: "export HADOOP_SECURE_DN_PID_DIR=\"#{hdfs.secure_dn_pid_dir}\" # RYBA CONF \"ryba.hadoop_pid_dir\", DONT OVEWRITE"
         ,
-          match: /^HADOOP_DATANODE_OPTS="(.*) \$\{HADOOP_DATANODE_OPTS\}" # GENERATED BY RYBA, DONT OVEWRITE/mg
-          replace: "HADOOP_DATANODE_OPTS=\"#{hdfs.datanode_opts} ${HADOOP_DATANODE_OPTS}\" # GENERATED BY RYBA, DONT OVEWRITE"
-          before: /^HADOOP_DATANODE_OPTS=.*$/mg
+          match: /^export HADOOP_SECURE_DN_USER=\${HADOOP_SECURE_DN_USER:-"(.*)"}.*/mg
+          replace: "export HADOOP_SECURE_DN_USER=${HADOOP_SECURE_DN_USER:-\"#{hdfs.user.name}\"} # RYBA CONF \"ryba.hdfs.user.name\", DONT OVERWRITE"
+        ,
+          match: /^export HADOOP_DATANODE_OPTS="(.*) \$\{HADOOP_DATANODE_OPTS\}" # RYBA CONF ".*?", DONT OVERWRITE/mg
+          replace: "export HADOOP_DATANODE_OPTS=\"#{hdfs.datanode_opts} ${HADOOP_DATANODE_OPTS}\" # RYBA CONF \"ryba.hdfs.datanode_opts\", DONT OVERWRITE"
+          before: /^export HADOOP_DATANODE_OPTS=".*"$/mg
         ]
         backup: true
       , next
@@ -212,6 +229,7 @@ Note, we might move this middleware to Masson.
       return next() unless Object.keys(hdfs.sysctl).length
       ctx.execute
         cmd: 'sysctl -a'
+        stdout: null
       , (err, _, content) ->
         return next err if err
         content = misc.ini.parse content
@@ -236,116 +254,10 @@ Note, we might move this middleware to Masson.
             cmd: "sysctl #{properties}"
           , next
 
-## DataNode Start
-
-Load the module "ryba/hadoop/hdfs\_dn\_start" to start the DataNode.
-
-    module.exports.push 'ryba/hadoop/hdfs_dn_start'
-    module.exports.push 'ryba/hadoop/hdfs_dn_wait'
-
-## HDFS layout
-
-Set up the directories and permissions inside the HDFS filesytem. The layout is inspired by the
-[Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
-on the official Apache website. The following folder are created:
-
-```
-drwxr-xr-x   - hdfs   hadoop      /
-drwxr-xr-x   - hdfs   hadoop      /apps
-drwxrwxrwt   - hdfs   hadoop      /tmp
-drwxr-xr-x   - hdfs   hadoop      /user
-drwxr-xr-x   - hdfs   hadoop      /user/hdfs
-```
-
-    module.exports.push name: 'HDFS DN # HDFS layout', timeout: -1, handler: (ctx, next) ->
-      {hdfs, hadoop_group} = ctx.config.ryba
-      modified = false
-      do_wait = ->
-        ctx.waitForExecution mkcmd.hdfs(ctx, "hdfs dfs -test -d /"), (err) ->
-          return next err if err
-          do_root()
-      do_root = ->
-        ctx.execute
-          cmd: mkcmd.hdfs ctx, """
-          hdfs dfs -chmod 755 /
-          """
-        , (err, executed, stdout) ->
-          return next err if err
-          do_tmp()
-      do_tmp = ->
-        ctx.execute
-          cmd: mkcmd.hdfs ctx, """
-          if hdfs dfs -test -d /tmp; then exit 2; fi
-          hdfs dfs -mkdir /tmp
-          hdfs dfs -chown #{hdfs.user.name}:#{hadoop_group.name} /tmp
-          hdfs dfs -chmod 1777 /tmp
-          """
-          code_skipped: 2
-        , (err, executed, stdout) ->
-          return next err if err
-          ctx.log 'Directory "/tmp" prepared' and modified = true if executed
-          do_user()
-      do_user = ->
-        ctx.execute
-          cmd: mkcmd.hdfs ctx, """
-          if hdfs dfs -test -d /user; then exit 2; fi
-          hdfs dfs -mkdir /user
-          hdfs dfs -chown #{hdfs.user.name}:#{hadoop_group.name} /user
-          hdfs dfs -chmod 755 /user
-          hdfs dfs -mkdir /user/#{hdfs.user.name}
-          hdfs dfs -chown #{hdfs.user.name}:#{hadoop_group.name} /user/#{hdfs.user.name}
-          hdfs dfs -chmod 755 /user/#{hdfs.user.name}
-          """
-          code_skipped: 2
-        , (err, executed, stdout) ->
-          return next err if err
-          ctx.log 'Directory "/user" prepared' and modified = true if executed
-          do_apps()
-      do_apps = ->
-        ctx.execute
-          cmd: mkcmd.hdfs ctx, """
-          if hdfs dfs -test -d /apps; then exit 2; fi
-          hdfs dfs -mkdir /apps
-          hdfs dfs -chown #{hdfs.user.name}:#{hadoop_group.name} /apps
-          hdfs dfs -chmod 755 /apps
-          """
-          code_skipped: 2
-        , (err, executed, stdout) ->
-          return next err if err
-          ctx.log 'Directory "/apps" prepared' and modified = true if executed
-          do_end()
-      do_end = ->
-        next null, modified
-      do_wait()
-
-## Test User
-
-Create a Unix and Kerberos test user, by default "test" and execute simple HDFS commands to ensure
-the NameNode is properly working. Note, those commands are NameNode specific, meaning they only
-afect HDFS metadata.
-
-    module.exports.push name: 'HDFS DN # HDFS Layout User Test', timeout: -1, handler: (ctx, next) ->
-      {user,group} = ctx.config.ryba
-      ctx.execute
-        cmd: mkcmd.hdfs ctx, """
-        if hdfs dfs -test -d /user/#{user.name}; then exit 2; fi
-        hdfs dfs -mkdir /user/#{user.name}
-        hdfs dfs -chown #{user.name}:#{group.name} /user/#{user.name}
-        hdfs dfs -chmod 750 /user/#{user.name}
-        """
-        code_skipped: 2
-      , next
-
-    module.exports.push 'ryba/hadoop/hdfs_dn_check'
 
 ## Module dependencies
 
-    path = require 'path'
     misc = require 'mecano/lib/misc'
-    string = require 'mecano/lib/misc/string'
-    hdfs_nn = require './hdfs_nn'
-    lifecycle = require '../lib/lifecycle'
-    mkcmd = require '../lib/mkcmd'
 
 [key_os]: http://fr.slideshare.net/vgogate/hadoop-configuration-performance-tuning
 

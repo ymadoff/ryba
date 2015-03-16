@@ -64,7 +64,7 @@ Example:
       # Validation
       if ryba.hdfs.site['dfs.datanode.failed.volumes.tolerated'] >= dataDirs.length
         throw Error 'Number of failed volumes must be less than total volumes'
-      ryba.hdfs.datanode_opts ?= null
+      ryba.hdfs.datanode_opts ?= ''
 
 ## Commands
 
@@ -72,7 +72,12 @@ Example:
 
     module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_dn_check'
 
-    module.exports.push commands: 'install', modules: 'ryba/hadoop/hdfs_dn_install'
+    module.exports.push commands: 'install', modules: [
+      'ryba/hadoop/hdfs_dn_install'
+      'ryba/hadoop/hdfs_dn_start'
+      'ryba/hadoop/hdfs_dn_layout'
+      'ryba/hadoop/hdfs_dn_check'
+    ]
 
     module.exports.push commands: 'start', modules: 'ryba/hadoop/hdfs_dn_start'
 

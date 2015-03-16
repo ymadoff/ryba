@@ -28,8 +28,13 @@
     </property>
 
     <property>
+      <name>hadoop.http.authentication.simple.anonymous.allowed</name>
+      <value>true</value>
+    </property>
+
+    <property>
       <name>io.compression.codecs</name>
-      <value>org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec</value>
+      <value>org.apache.hadoop.io.compress.SnappyCodec,org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec</value>
     </property> 
 
     <property>
@@ -125,6 +130,16 @@
       <name>hadoop.proxyuser.oozie.hosts</name>
       <value>*</value>
     </property> 
+    
+    <property>
+      <name>mapreduce.jobtracker.webinterface.trusted</name>
+      <value>false</value>
+    </property>
+    
+    <property>
+      <name>proxyuser_group</name>
+      <value>users</value>
+    </property>
 
 
 	<!-- If configuring Kerberos, then this should be 'kerberos' -->
@@ -138,6 +153,11 @@
     <name>hadoop.security.authorization</name>
     <value>false</value>
   </property> 
+  
+    <property>
+      <name>ipc.server.tcpnodelay</name>
+      <value>true</value>
+    </property>
     
     <!-- NameNode High Availability Configurations 
     

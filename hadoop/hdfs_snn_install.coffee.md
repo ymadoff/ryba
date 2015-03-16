@@ -6,6 +6,7 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push require('./hdfs_snn').configure
+    module.exports.push require '../lib/hdp_service'
 
 ## IPTables
 
@@ -31,31 +32,40 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: ctx.config.iptables.action is 'start'
       , next
 
-    module.exports.push name: 'HDFS SNN # Directories', timeout: -1, handler: (ctx, next) ->
-      {hdfs} = ctx.config.ryba
-      ctx.service
-        name: 'hadoop-hdfs-secondarynamenode'
-        startup: true
-      , (err, serviced) ->
-        return next err if err
-        ctx.write
-          destination: '/etc/init.d/hadoop-hdfs-secondarynamenode'
-          write: [
-            {match: /^PIDFILE=".*"$/m, replace: "PIDFILE=\"#{hdfs.pid_dir}/$SVC_USER/hadoop-hdfs-secondarynamenode.pid\""}
-            {match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m, replace: "$1 -u $SVC_USER $2"}]
-        , (err, written) ->
-          next err, serviced or written
+## Service
+
+Install the "hadoop-hdfs-secondarynamenode" service, symlink the rc.d startup
+script inside "/etc/init.d" and activate it on startup.
+
+    module.exports.push name: 'HDFS SNN # Service', handler: (ctx, next) ->
+      ctx.hdp_service 'hadoop-hdfs-secondarynamenode', next
+
+    # module.exports.push name: 'HDFS SNN # Service', timeout: -1, handler: (ctx, next) ->
+    #   {hdfs} = ctx.config.ryba
+    #   ctx.service
+    #     name: 'hadoop-hdfs-secondarynamenode'
+    #     startup: true
+    #   , (err, serviced) ->
+    #     return next err if err
+    #     ctx.write
+    #       destination: '/etc/init.d/hadoop-hdfs-secondarynamenode'
+    #       write: [
+    #         {match: /^PIDFILE=".*"$/m, replace: "PIDFILE=\"#{hdfs.pid_dir}/$SVC_USER/hadoop-hdfs-secondarynamenode.pid\""}
+    #         {match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m, replace: "$1 -u $SVC_USER $2"}]
+    #     , (err, written) ->
+    #       next err, serviced or written
 
     module.exports.push name: 'HDFS SNN # Directories', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba
       ctx.log "Create SNN data, checkpind and pid directories"
+      pid_dir = hdfs.pid_dir.replace '$USER', hdfs.user.name
       ctx.mkdir [
         destination: hdfs.site['dfs.namenode.checkpoint.dir'].split ','
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755
       ,
-        destination: "#{hdfs.pid_dir}/#{hdfs.user.name}"
+        destination: "#{pid_dir}"
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755

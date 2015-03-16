@@ -1,23 +1,33 @@
 
 # Hadoop HDFS NameNode Start
 
-Start the NameNode service as well as its ZKFC daemon. To ensure that the 
-leadership is assigned to the desired active NameNode, the ZKFC daemons on
-the standy NameNodes wait for the one on the active NameNode to start first.
+Start the NameNode service as well as its ZKFC daemon.
+
+In HA mode, all JournalNodes shall be started.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/xasecure/policymgr_wait'
+    module.exports.push 'ryba/zookeeper/server_wait'
     module.exports.push 'ryba/hadoop/hdfs_jn_wait'
     module.exports.push require('./hdfs_nn').configure
 
 ## Start
 
-Wait for all JournalNodes to be started before starting this NameNode if it wasn't yet started
-during the HDFS format phase.
+Start the HDFS NameNode Server. You can also start the server manually with the
+following two commands:
 
-    module.exports.push name: 'HDFS NN # Start NameNode', label_true: 'STARTED', handler: (ctx, next) ->
-      lifecycle.nn_start ctx, next
+```
+service hadoop-hdfs-namenode start
+su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start namenode"
+```
+
+    module.exports.push name: 'HDFS NN # Start', timeout: -1, label_true: 'STARTED', handler: (ctx, next) ->
+      ctx.service
+        srv_name: 'hadoop-hdfs-namenode'
+        action: 'start'
+        if_exists: '/etc/init.d/hadoop-hdfs-namenode'
+      , next
 
 ## Wait Safemode
 
@@ -28,7 +38,7 @@ This middleware duplicates the one present in 'masson/hadoop/hdfs_dn_wait' and
 is only called if a DataNode isn't installed on this server because a NameNode
 need a mojority of DataNodes to be started in order to exit safe mode.
 
-    module.exports.push name: 'HDFS DN # Wait Safemode', timeout: -1, label_true: 'READY', handler: (ctx, next) ->
+    module.exports.push name: 'HDFS NN # Wait Safemode', timeout: -1, label_true: 'READY', handler: (ctx, next) ->
       return next() if ctx.has_module 'ryba/hadoop/hdfs_dn'
       ctx.waitForExecution
         cmd: mkcmd.hdfs ctx, """
@@ -36,23 +46,6 @@ need a mojority of DataNodes to be started in order to exit safe mode.
           """
         interval: 3000
       , (err) -> next err
-
-    module.exports.push name: 'HDFS NN # Start ZKFC', label_true: 'STARTED', handler: (ctx, next) ->
-      return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      # ZKFC should start first on active NameNode
-      {active_nn, active_nn_host} = ctx.config.ryba
-      do_wait = ->
-        ctx.waitForExecution
-          # hdfs haadmin -getServiceState hadoop1
-          cmd: mkcmd.hdfs ctx, "hdfs haadmin -getServiceState #{active_nn_host.split('.')[0]}"
-          code_skipped: 255
-        , (err, stdout) ->
-          return next err if err
-          do_start()
-      do_start = ->
-        lifecycle.zkfc_start ctx, (err, started) ->
-          next err, started
-      if active_nn then do_start() else do_wait()
 
 ## Wait Failover
 
@@ -85,6 +78,5 @@ only run on a NameNode with fencing installed and in normal mode.
 ## Module Dependencies
 
     url = require 'url'
-    lifecycle = require '../lib/lifecycle'
     mkcmd = require '../lib/mkcmd'
 

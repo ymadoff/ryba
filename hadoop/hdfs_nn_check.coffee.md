@@ -29,9 +29,10 @@ through SSH over another one where the public key isn't yet deployed.
         return next err if err
         try
           data = JSON.parse stdout
-          return next Error "Invalid Response" unless /^Hadoop:service=NameNode,name=NameNodeStatus$/.test data?.beans[0]?.name
-          return next Error "WARNING: Invalid security (#{data.beans[0].SecurityEnabled}, instead of #{securityEnabled}" unless data.beans[0].SecurityEnabled is securityEnabled
-          # return next null, "WARNING: Invalid state (#{data.beans[0].State} instead of #{state})" unless data.beans[0].State is state
+          # After HDP2.2, the response needs some time before returning any beans
+          return next Error "Invalid Response" unless Array.isArray data?.beans
+          # return next Error "Invalid Response" unless /^Hadoop:service=NameNode,name=NameNodeStatus$/.test data?.beans[0]?.name
+          # return next Error "WARNING: Invalid security (#{data.beans[0].SecurityEnabled}, instead of #{securityEnabled}" unless data.beans[0].SecurityEnabled is securityEnabled
           next null, true
         catch err then return next err
 

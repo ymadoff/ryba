@@ -35,7 +35,7 @@ Example:
       require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
       {ryba} = ctx.config
-      throw Error "Missing \"ryba.zkfc_password\" property" unless ryba.zkfc_password
+      # throw Error "Missing \"ryba.zkfc_password\" property" unless ryba.zkfc_password
       # Data
       # Comma separated list of paths. Use the list of directories.
       # For example, /data/1/hdfs/nn,/data/2/hdfs/nn.

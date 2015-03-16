@@ -13,8 +13,17 @@ applications.
 
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
-      require('./yarn').configure ctx
+      require('./yarn_client').configure ctx
       {host, ryba} = ctx.config
+
+      # Working Directories (see capacity for server resource discovery)
+      ryba.yarn.site['yarn.nodemanager.local-dirs'] ?= ['/var/yarn/local']
+      ryba.yarn.site['yarn.nodemanager.local-dirs'] = ryba.yarn.site['yarn.nodemanager.local-dirs'].join ',' if Array.isArray ryba.yarn.site['yarn.nodemanager.local-dirs']
+      ryba.yarn.site['yarn.nodemanager.log-dirs'] ?= ['/var/yarn/logs']
+      ryba.yarn.site['yarn.nodemanager.log-dirs'] = ryba.yarn.site['yarn.nodemanager.log-dirs'].join ',' if Array.isArray ryba.yarn.site['yarn.nodemanager.log-dirs']
+      # Configuration
+      # ryba.yarn.site['yarn.scheduler.minimum-allocation-mb'] ?= null # Make sure we erase hdp default value
+      # ryba.yarn.site['yarn.scheduler.maximum-allocation-mb'] ?= null # Make sure we erase hdp default value
       ryba.yarn.site['yarn.nodemanager.address'] ?= "#{host}:45454"
       ryba.yarn.site['yarn.nodemanager.localizer.address'] ?= "#{host}:8040"
       ryba.yarn.site['yarn.nodemanager.webapp.address'] ?= "#{host}:8042"

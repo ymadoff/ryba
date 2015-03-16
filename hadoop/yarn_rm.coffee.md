@@ -6,7 +6,7 @@
 ## Configuration
 
     module.exports.configure = (ctx) ->
-      require('./yarn').configure ctx
+      require('./yarn_client').configure ctx
       {ryba} = ctx.config
       ryba.yarn.site['yarn.resourcemanager.keytab'] ?= '/etc/security/keytabs/rm.service.keytab'
       ryba.yarn.site['yarn.resourcemanager.principal'] ?= "rm/#{ryba.static_host}@#{ryba.realm}"

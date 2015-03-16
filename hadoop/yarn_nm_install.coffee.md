@@ -1,13 +1,14 @@
 
-# YARN NodeManager Install
+# HADOOP YARN NodeManager Install
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/bootstrap/info'
     module.exports.push 'masson/core/iptables'
-    module.exports.push 'ryba/hadoop/yarn'
+    module.exports.push 'ryba/hadoop/yarn_client_install'
     module.exports.push 'ryba/hadoop/hdfs_dn_wait'
     module.exports.push require('./yarn_nm').configure
+    module.exports.push require '../lib/hdp_service'
 
 ## IPTables
 
@@ -21,7 +22,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'Hadoop YARN NM # IPTables', handler: (ctx, next) ->
+    module.exports.push name: 'YARN NM # IPTables', handler: (ctx, next) ->
       {yarn} = ctx.config.ryba
       nm_port = yarn.site['yarn.nodemanager.address'].split(':')[1]
       nm_localizer_port = yarn.site['yarn.nodemanager.localizer.address'].split(':')[1]
@@ -39,48 +40,78 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Package
 
-    module.exports.push name: 'Hadoop YARN NM # Package', handler: (ctx, next) ->
+    module.exports.push name: 'YARN NM # Package', handler: (ctx, next) ->
       {yarn} = ctx.config.ryba
       ctx.service
         name: 'libcgroup'
         if: yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] is 'true'
       , next
 
-## Startup
+## Service
 
-Install and configure the startup script in 
-"/etc/init.d/hadoop-yarn-nodemanager".
+Install the "hadoop-yarn-nodemanager" service, symlink the rc.d startup script
+inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'Hadoop YARN NM # Startup', handler: (ctx, next) ->
+    module.exports.push name: 'YARN NM # Service', handler: (ctx, next) ->
       {yarn} = ctx.config.ryba
-      modified = false
-      do_install = ->
-        ctx.service
-          name: 'hadoop-yarn-nodemanager'
-          startup: true
-        , (err, serviced) ->
-          return next err if err
-          modified = true if serviced
-          do_fix()
-      do_fix = ->
-        ctx.write
-          destination: '/etc/init.d/hadoop-yarn-nodemanager'
-          write: [
-            match: /^PIDFILE=".*"$/m
-            replace: "PIDFILE=\"#{yarn.pid_dir}/$SVC_USER/yarn-yarn-nodemanager.pid\""
-          ,
-            match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m
-            replace: "$1 -u $SVC_USER $2"
-          ]
-        , (err, written) ->
-          return next err if err
-          modified = true if written
-          do_end()
-      do_end = ->
-        next null, modified
-      do_install()
+      ctx.hdp_service
+        name: 'hadoop-yarn-nodemanager'
+        write: [
+          match: /^\. \/etc\/default\/hadoop-yarn-nodemanager .*$/m
+          replace: '. /etc/default/hadoop-yarn-nodemanager # RYBA FIX rc.d, DONT OVERWRITE'
+          append: ". /lib/lsb/init-functions"
+        ,
+          # HDP default is "$HADOOP_PID_DIR/yarn-$YARN_IDENT_STRING-nodemanager.pid"
+          match: /^PIDFILE=".*".*$/mg
+          replace: "PIDFILE=\"${YARN_PID_DIR}/yarn-$YARN_IDENT_STRING-nodemanager.pid\" # RYBA FIX, DONT OVERWRITE"
+        ]
+        etc_default:
+          'hadoop-yarn-nodemanager': 
+            write: [
+              match: /^export YARN_PID_DIR=.*$/m # HDP default is "/var/run/hadoop-hdfs"
+              replace: "export YARN_PID_DIR=#{yarn.pid_dir} # RYBA, DONT OVERWRITE"
+            ,
+              match: /^export YARN_LOG_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
+              replace: "export YARN_LOG_DIR=#{yarn.log_dir} # RYBA, DONT OVERWRITE"
+            ,
+              match: /^export YARN_CONF_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
+              replace: "export YARN_CONF_DIR=#{yarn.conf_dir} # RYBA, DONT OVERWRITE"
+            ,
+              match: /^export YARN_IDENT_STRING=.*$/m # HDP default is "hdfs"
+              replace: "export YARN_IDENT_STRING=#{yarn.user.name} # RYBA, DONT OVERWRITE"
+            ]
+      , next
 
-    module.exports.push name: 'Hadoop YARN NM # Directories', timeout: -1, handler: (ctx, next) ->
+    # module.exports.push name: 'YARN NM # Startup', handler: (ctx, next) ->
+    #   {yarn} = ctx.config.ryba
+    #   modified = false
+    #   do_install = ->
+    #     ctx.service
+    #       name: 'hadoop-yarn-nodemanager'
+    #       startup: true
+    #     , (err, serviced) ->
+    #       return next err if err
+    #       modified = true if serviced
+    #       do_fix()
+    #   do_fix = ->
+    #     ctx.write
+    #       destination: '/etc/init.d/hadoop-yarn-nodemanager'
+    #       write: [
+    #         match: /^PIDFILE=".*"$/m
+    #         replace: "PIDFILE=\"#{yarn.pid_dir}/$SVC_USER/yarn-yarn-nodemanager.pid\""
+    #       ,
+    #         match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m
+    #         replace: "$1 -u $SVC_USER $2"
+    #       ]
+    #     , (err, written) ->
+    #       return next err if err
+    #       modified = true if written
+    #       do_end()
+    #   do_end = ->
+    #     next null, modified
+    #   do_install()
+
+    module.exports.push name: 'YARN NM # Directories', timeout: -1, handler: (ctx, next) ->
       {yarn, user, hadoop_group} = ctx.config.ryba
       # no need to restrict parent directory and yarn will complain if not accessible by everyone
       log_dirs = yarn.site['yarn.nodemanager.log-dirs'].split ','
@@ -115,7 +146,7 @@ global view of your system. In such case, this middleware is bypassed and has
 no effect. Also, this isnt included inside the configuration because it need an
 SSH connection to the node to gather the memory and CPU informations.
 
-    module.exports.push name: 'Hadoop YARN NM # Capacity Planning', handler: (ctx, next) ->
+    module.exports.push name: 'YARN NM # Capacity Planning', handler: (ctx, next) ->
       {yarn} = ctx.config.ryba
       return next() if yarn.site['yarn.nodemanager.resource.memory-mb'] and yarn.site['yarn.nodemanager.resource.cpu-vcores']
       # diskNumber = yarn.site['yarn.nodemanager.local-dirs'].length
@@ -125,7 +156,7 @@ SSH connection to the node to gather the memory and CPU informations.
 
 ## Configuration
 
-    module.exports.push name: 'Hadoop YARN NM # Configuration', handler: (ctx, next) ->
+    module.exports.push name: 'YARN NM # Configuration', handler: (ctx, next) ->
       {yarn, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
@@ -138,12 +169,12 @@ SSH connection to the node to gather the memory and CPU informations.
 
 ## Container Executor
 
-    module.exports.push name: 'Hadoop YARN NM # Container Executor', handler: (ctx, next) ->
+    module.exports.push name: 'YARN NM # Container Executor', handler: (ctx, next) ->
       {container_executor, hadoop_conf_dir} = ctx.config.ryba
       ce_group = container_executor['yarn.nodemanager.linux-container-executor.group']
       modified = false
       do_stat = ->
-        ce = '/usr/lib/hadoop-yarn/bin/container-executor';
+        ce = '/usr/hdp/current/hadoop-yarn-nodemanager/bin/container-executor';
         ctx.chown
           destination: ce
           uid: 'root'
@@ -172,7 +203,7 @@ SSH connection to the node to gather the memory and CPU informations.
           next err, modified
       do_stat()
 
-    module.exports.push name: 'Hadoop YARN NM # Kerberos', handler: (ctx, next) ->
+    module.exports.push name: 'YARN NM # Kerberos', handler: (ctx, next) ->
       {yarn, hadoop_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc 
@@ -186,7 +217,7 @@ SSH connection to the node to gather the memory and CPU informations.
         kadmin_server: admin_server
       , next
 
-    module.exports.push name: 'Hadoop YARN NM # CGroup', handler: (ctx, next) ->
+    module.exports.push name: 'YARN NM # CGroup', handler: (ctx, next) ->
       {yarn} = ctx.config.ryba
       return next() unless yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] is 'true'
       ctx.mkdir
@@ -206,7 +237,7 @@ drwxrwxrwt   - yarn   hadoop            0 2014-05-26 11:01 /app-logs
 
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
-    module.exports.push name: 'Hadoop YARN NM # HDFS layout', handler: (ctx, next) ->
+    module.exports.push name: 'YARN NM # HDFS layout', handler: (ctx, next) ->
       {yarn, hadoop_group} = ctx.config.ryba
       remote_app_log_dir = yarn.site['yarn.nodemanager.remote-app-log-dir']
       ctx.execute

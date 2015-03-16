@@ -1,5 +1,5 @@
 
-# Hadoop MapRed JobHistoryServer(JHS)
+# MapReduce JobHistoryServer(JHS)
 
     module.exports = []
 
@@ -7,7 +7,7 @@
 
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
-      require('./yarn').configure ctx
+      require('./yarn_client').configure ctx
       # require('./mapred').configure ctx
       {ryba} = ctx.config
       ryba.mapred ?= {}

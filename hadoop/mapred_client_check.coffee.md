@@ -1,5 +1,5 @@
 
-# Hadoop MapRed Client Check
+# MapReduce Client Check
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
@@ -13,7 +13,7 @@ be executed if the directory "/user/test/10gsort" generated
 by this action is not present on HDFS. Delete this directory 
 to re-execute the check.
 
-    module.exports.push name: 'Hadoop MapRed Client # Check', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
+    module.exports.push name: 'MapReduce Client # Check', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
       {force_check} = ctx.config.ryba
       host = ctx.config.shortname
       # 100 records = 1Ko
@@ -22,8 +22,8 @@ to re-execute the check.
         cmd: mkcmd.test ctx, """
         hdfs dfs -rm -r check-#{host}-mapred || true
         hdfs dfs -mkdir -p check-#{host}-mapred
-        hadoop jar /usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples-2*.jar teragen 100 check-#{host}-mapred/input
-        hadoop jar /usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples-2*.jar terasort check-#{host}-mapred/input check-#{host}-mapred/output
+        hadoop jar /usr/hdp/current/hadoop-mapreduce-client/hadoop-mapreduce-examples-2*.jar teragen 100 check-#{host}-mapred/input
+        hadoop jar /usr/hdp/current/hadoop-mapreduce-client/hadoop-mapreduce-examples-2*.jar terasort check-#{host}-mapred/input check-#{host}-mapred/output
         """
         not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -d check-#{host}-mapred/output"
         trap_on_error: true

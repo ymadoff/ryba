@@ -17,6 +17,7 @@ Worth to investigate:
     module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
+    module.exports.push require '../lib/hdp_service'
 
 ## Configuration
 
@@ -32,7 +33,7 @@ define inside the "ryba/hadoop/hdfs" and "masson/core/nc" modules.
 | namenode  | 50070 | tcp    | dfs.namdnode.http-address  |
 | namenode  | 50470 | tcp    | dfs.namenode.https-address |
 | namenode  | 8020  | tcp    | fs.defaultFS               |
-| namenode  | 8019  | tcp    | dfs.ha.zkfc.port           |
+# | namenode  | 8019  | tcp    | dfs.ha.zkfc.port           |
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
@@ -43,45 +44,19 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: 50070, protocol: 'tcp', state: 'NEW', comment: "HDFS NN HTTP" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: 50470, protocol: 'tcp', state: 'NEW', comment: "HDFS NN HTTPS" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: 8020, protocol: 'tcp', state: 'NEW', comment: "HDFS NN IPC" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 8019, protocol: 'tcp', state: 'NEW', comment: "HDFS NN IPC" }
+          # { chain: 'INPUT', jump: 'ACCEPT', dport: 8019, protocol: 'tcp', state: 'NEW', comment: "HDFS NN IPC" }
           # { chain: 'INPUT', jump: 'ACCEPT', dport: 9000, protocol: 'tcp', state: 'NEW', comment: "HDFS NN IPC" }
         ]
         if: ctx.config.iptables.action is 'start'
       , next
 
-## Startup
+## Service
 
-Install and configure the startup script in "/etc/init.d/hadoop-hdfs-namenode".
+Install the "hadoop-hdfs-namenode" service, symlink the rc.d startup script
+inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'HDFS NN # Startup', handler: (ctx, next) ->
-      {hdfs} = ctx.config.ryba
-      modified = false
-      do_install = ->
-        ctx.service [
-          {name: 'hadoop-hdfs-namenode', startup: true}
-          {name: 'hadoop-hdfs-zkfc', startup: true}
-        ], (err, serviced) ->
-          return next err if err
-          modified = true if serviced
-          do_fix()
-      do_fix = ->
-        ctx.write [
-          destination: '/etc/init.d/hadoop-hdfs-namenode'
-          write: [
-            {match: /^PIDFILE=".*"$/m, replace: "PIDFILE=\"#{hdfs.pid_dir}/$SVC_USER/hadoop-hdfs-namenode.pid\""}
-            {match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m, replace: "$1 -u $SVC_USER $2"}]
-        ,
-          destination: '/etc/init.d/hadoop-hdfs-zkfc'
-          write: [
-            {match: /^PIDFILE=".*"$/m, replace: "PIDFILE=\"#{hdfs.pid_dir}/$SVC_USER/hadoop-hdfs-zkfc.pid\""}
-            {match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m, replace: "$1 -u $SVC_USER $2"}]
-        ], (err, written) ->
-          return next err if err
-          modified = true if written
-          do_end()
-      do_end = ->
-        next null, modified
-      do_install()
+    module.exports.push name: 'HDFS NN # Service', handler: (ctx, next) ->
+      ctx.hdp_service 'hadoop-hdfs-namenode', next
 
 ## Layout
 
@@ -91,6 +66,7 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
 
     module.exports.push name: 'HDFS NN # Layout', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba
+      pid_dir = hdfs.pid_dir.replace '$USER', hdfs.user.name
       ctx.mkdir [
         destination: hdfs.site['dfs.namenode.name.dir'].split ','
         uid: hdfs.user.name
@@ -98,7 +74,7 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
         mode: 0o755
         parent: true
       ,
-        destination: "#{hdfs.pid_dir}/#{hdfs.user.name}"
+        destination: "#{pid_dir}"
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755
@@ -304,56 +280,6 @@ is only executed on a non active NameNode.
         , next
       do_wait()
 
-## Zookeeper JAAS
-
-Secure the Zookeeper connection with JAAS.
-
-    module.exports.push name: 'HDFS NN # Zookeeper JAAS', timeout: -1, handler: (ctx, next) ->
-      {hdfs, hadoop_conf_dir, hadoop_group, zkfc_password} = ctx.config.ryba
-      modified = false
-      do_core = ->
-        ctx.hconfigure
-          destination: "#{hadoop_conf_dir}/core-site.xml"
-          properties:
-            'ha.zookeeper.auth': "@#{hadoop_conf_dir}/zk-auth.txt"
-            'ha.zookeeper.acl': "@#{hadoop_conf_dir}/zk-acl.txt"
-          merge: true
-          backup: true
-        , (err, configured) ->
-          return next err if err
-          modified = true if configured
-          do_content()
-      do_content = ->
-        ctx.write [
-          destination: "#{hadoop_conf_dir}/zk-auth.txt"
-          content: "digest:hdfs-zkfcs:#{zkfc_password}"
-          uid: hdfs.user.name
-          gid: hadoop_group.name
-          mode: 0o0700
-        ], (err, written) ->
-          return next err if err
-          modified = true if written
-          do_generate()
-      do_generate = ->
-          ctx.execute
-            cmd: """
-            export ZK_HOME=/usr/lib/zookeeper/
-            java -cp $ZK_HOME/lib/*:$ZK_HOME/zookeeper.jar org.apache.zookeeper.server.auth.DigestAuthenticationProvider hdfs-zkfcs:#{zkfc_password}
-            """
-          , (err, _, stdout) ->
-            digest = match[1] if match = /\->(.*)/.exec(stdout)
-            return next Error "Failed to get digest" unless digest
-            ctx.write
-              destination: '/etc/hadoop/conf/zk-acl.txt'
-              content: "digest:#{digest}:rwcda"
-            , (err, written) ->
-              return next err if err
-              modified = true if written
-              do_end()
-      do_end = ->
-        next null, modified
-      do_core()
-
 ## HA Auto Failover
 
 The action start by enabling automatic failover in "hdfs-site.xml" and configuring HA zookeeper quorum in
@@ -379,22 +305,24 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
           modified = true if configured
           do_core()
       do_core = ->
-        quorum = zookeepers.map( (host) -> "#{host}:2181" ).join ','
-        ctx.hconfigure
-          destination: "#{hadoop_conf_dir}/core-site.xml"
-          properties: 'ha.zookeeper.quorum': quorum
-          merge: true
-          backup: true
-        , (err, configured) ->
-          return next err if err
-          modified = true if configured
-          do_wait()
+        # quorum = zookeepers.map( (host) -> "#{host}:2181" ).join ','
+        # ctx.hconfigure
+        #   destination: "#{hadoop_conf_dir}/core-site.xml"
+        #   properties: 'ha.zookeeper.quorum': quorum
+        #   merge: true
+        #   backup: true
+        # , (err, configured) ->
+        #   return next err if err
+        #   modified = true if configured
+        #   do_wait()
+        do_wait()
       do_wait = ->
-        ctx.waitIsOpen zookeepers, 2181, (err) ->
-          return next err if err
-          setTimeout ->
-            do_zkfc()
-          , 2000
+        # ctx.waitIsOpen zookeepers, 2181, (err) ->
+        #   return next err if err
+        #   setTimeout ->
+        #     do_zkfc()
+        #   , 2000
+        do_zkfc()
       do_zkfc = ->
         if active_nn
         then do_zkfc_active()

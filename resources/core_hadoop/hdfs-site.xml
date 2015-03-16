@@ -5,10 +5,20 @@
   </property> 
 
 	<!-- For short circuit read configuration -->
+    <property>
+    <name>dfs.client.read.shortcircuit</name>
+    <value>true</value>
+  </property> 
+
   <property>
     <name>dfs.block.local-path-access.user</name>
     <value>hbase</value>
   </property> 
+
+   <property>
+      <name>dfs.client.read.shortcircuit.streams.cache.size</name>
+      <value>4096</value>
+    </property>
 
     <property>
     <name>dfs.blockreport.initialDelay</name>
@@ -24,17 +34,7 @@
       <name>dfs.bytes-per-checksum</name>
       <value>512</value>
     </property> 
-
-    <property>
-    <name>dfs.client.read.shortcircuit</name>
-    <value>true</value>
-  </property> 
-
-    <property>
-    <name>dfs.client.read.shortcircuit.streams.cache.size</name>
-    <value>4096</value>
-  </property> 
-
+   
     <property>
     <name>dfs.cluster.administrators</name>
     <value> hdfs</value>
@@ -169,7 +169,7 @@
 
     <property>
     <name>dfs.namenode.handler.count</name>
-    <value>100</value>
+    <value>40</value>
   </property> 
 
     <property>
@@ -201,6 +201,11 @@
     <name>dfs.namenode.stale.datanode.interval</name>
     <value>30000</value>
   </property> 
+
+	<property>
+      <name>dfs.namenode.startup.delay.block.deletion.sec</name>
+      <value>3600</value>
+    </property>
 
     <property>
     <name>dfs.namenode.write.stale.datanode.ratio</name>
@@ -305,10 +310,12 @@
       <value>0.0.0.0:8480</value>
     </property> 
     
-  NameNode HA configurations end 
-    -->
+  - NameNode HA configurations end -->
   
-  <!-- Security enable configuration
+  <!--
+  	The following settings are applicable to Kerberos enabled clusters only.
+		
+		Secure cluster configurations section start
   
   <property>
       <name>dfs.datanode.kerberos.principal</name>
@@ -408,7 +415,6 @@
       <value>TODO-NAMENODE2-HOSTNAME:50470</value>
     </property> 
     
-  Security configurations end 
-    -->
+  - Security configurations end -->
 		
 </configuration>

@@ -163,6 +163,8 @@ Default configuration:
       ryba.hadoop_conf_dir ?= '/etc/hadoop/conf'
       ryba.hdfs.log_dir ?= '/var/log/hadoop-hdfs'
       ryba.hdfs.pid_dir ?= '/var/run/hadoop-hdfs'
+      ryba.hdfs.secure_dn_pid_dir ?= '/var/run/hadoop-hdfs' # /$HADOOP_SECURE_DN_USER
+      ryba.hdfs.secure_dn_user ?= ryba.hdfs.user.name
       ryba.mapred.log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
       # HA Configuration
       ryba.nameservice ?= null
@@ -202,6 +204,11 @@ Default configuration:
       # hadoop.security.saslproperties.resolver.class can be used to override
       # the hadoop.rpc.protection for a connection at the server side.
       core_site['hadoop.rpc.protection'] ?= 'authentication'
+      # Get ZooKeeper Quorum
+      zoo_ctxs = ctx.contexts 'ryba/zookeeper/server', require('../zookeeper/server').configure
+      zookeeper_quorum = for zoo_ctx in zoo_ctxs
+        "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
+      core_site['ha.zookeeper.quorum'] ?= zookeeper_quorum
 
 Configuration for HTTP
 
@@ -239,7 +246,7 @@ Configuration for proxy users
         {hbase} = hbase_ctxs[0].config.ryba
         core_site["hadoop.proxyuser.#{hbase.user.name}.groups"] ?= '*'
         core_site["hadoop.proxyuser.#{hbase.user.name}.hosts"] ?= '*'
-      hive_ctxs = ctx.contexts 'ryba/hive/server', require('../hive/server').configure
+      hive_ctxs = ctx.contexts 'ryba/hive/hcatalog', require('../hive/hcatalog').configure
       if hive_ctxs.length
         {hive} = hive_ctxs[0].config.ryba
         core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'
@@ -263,16 +270,16 @@ Configuration for proxy users
 
 Configuration for environment
 
-      ryba.hadoop_opts ?= 'java.net.preferIPv4Stack': 'true'
+      ryba.hadoop_opts ?= '-Djava.net.preferIPv4Stack=true'
       ryba.hadoop_heap ?= '1024'
       ryba.hadoop_namenode_init_heap ?= '-Xms1024m'
-      if Array.isArray ryba.hadoop_opts
-        ryba.hadoop_opts = ryba.hadoop_opts.join ' '
-      if typeof ryba.hadoop_opts is 'object'
-        hadoop_opts = ''
-        for k, v of ryba.hadoop_opts
-          hadoop_opts += "-D#{k}=#{v} "
-        ryba.hadoop_opts = hadoop_opts
+      # if Array.isArray ryba.hadoop_opts
+      #   ryba.hadoop_opts = ryba.hadoop_opts.join ' '
+      # if typeof ryba.hadoop_opts is 'object'
+      #   hadoop_opts = ''
+      #   for k, v of ryba.hadoop_opts
+      #     hadoop_opts += "-D#{k}=#{v} "
+      #   ryba.hadoop_opts = hadoop_opts
       # hadoop_opts = "export HADOOP_OPTS=\""
       # for k, v of ryba.hadoop_opts
       #   hadoop_opts += "-D#{k}=#{v} "
@@ -315,7 +322,7 @@ not handled here.
 Create a Unix and Kerberos test user, by default "ryba". Its HDFS home directory
 will be created by one of the datanode.
 
-    module.exports.push name: 'Hadoop HDFS DN # HDFS Layout User Test', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'Hadoop Core # User Test', timeout: -1, handler: (ctx, next) ->
       {krb5_user, user, group, security, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
@@ -432,29 +439,38 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
         return next err if err
         jsvc = if exists then '/usr/libexec/bigtop-utils' else '/usr/lib/bigtop-utils'
         write = [
-          { match: /^export JAVA_HOME=.*$/mg, replace: "export JAVA_HOME=#{java_home}" }
-          # { match: /^export HADOOP_OPTS=.*$/mg, replace: hadoop_opts }
-          { match: /\/var\/log\/hadoop\//mg, replace: "#{hdfs.log_dir}/" }
-          { match: /\/var\/run\/hadoop\//mg, replace: "#{hdfs.pid_dir}/" }
-          { match: /^export JSVC_HOME=.*$/mg, replace: "export JSVC_HOME=#{jsvc}" }
-          # { match: /^export HADOOP_CLIENT_OPTS=.*$/mg, replace: hadoop_client_opts}
+          # { match: /^export JAVA_HOME=.*$/m, replace: "export JAVA_HOME=#{java_home}" }
+          # { match: /^export HADOOP_OPTS=.*$/m, replace: hadoop_opts }
+          { match: /\/var\/log\/hadoop\//m, replace: "#{hdfs.log_dir}/" }
+          # { match: /\/var\/run\/hadoop\//m, replace: "#{hdfs.pid_dir}/" }
+          { match: /^export JSVC_HOME=.*$/m, replace: "export JSVC_HOME=#{jsvc}" }
+          # { match: /^export HADOOP_CLIENT_OPTS=.*$/m, replace: hadoop_client_opts}          
         ,
-          match: /^export HADOOP_HEAPSIZE="(.*)" # RYBA CONF ".*?", DONT OVEWRITE/mg
+          match: /^export JAVA_HOME=.*$/m
+          replace: "export JAVA_HOME=\"#{java_home}\" # RYBA CONF \"java.java_home\", DONT OVEWRITE"
+        ,
+          match: /^export HADOOP_PID_DIR=.*$/m
+          replace: "export HADOOP_PID_DIR=\"#{hdfs.pid_dir}\" # RYBA CONF \"hdfs.pid_dir\", DONT OVEWRITE"
+        ,
+          match: /^export HADOOP_HEAPSIZE="(.*)".*$/m
           replace: "export HADOOP_HEAPSIZE=\"#{hadoop_heap}\" # RYBA CONF \"ryba.hadoop_heap\", DONT OVEWRITE"
-          append: /^export HADOOP_HEAPSIZE=".*"$/mg
-
+          # match: /^export HADOOP_HEAPSIZE="(.*)" # RYBA CONF ".*?", DONT OVEWRITE/m
+          # replace: "export HADOOP_HEAPSIZE=\"#{hadoop_heap}\" # RYBA CONF \"ryba.hadoop_heap\", DONT OVEWRITE"
+          # append: /^export HADOOP_HEAPSIZE=".*"$/m
         ,
-          match: /^export HADOOP_NAMENODE_INIT_HEAPSIZE="(.*)" # RYBA CONF ".*?", DONT OVEWRITE/mg
+          match: /^export HADOOP_NAMENODE_INIT_HEAPSIZE=".*".*$/m
           replace: "export HADOOP_NAMENODE_INIT_HEAPSIZE=\"#{hadoop_namenode_init_heap}\" # RYBA CONF \"ryba.hadoop_namenode_init_heap\", DONT OVEWRITE"
-          append: /^export HADOOP_NAMENODE_INIT_HEAPSIZE=".*"$/mg
+        #   match: /^export HADOOP_NAMENODE_INIT_HEAPSIZE="(.*)" # RYBA CONF ".*?", DONT OVEWRITE/m
+        #   replace: "export HADOOP_NAMENODE_INIT_HEAPSIZE=\"#{hadoop_namenode_init_heap}\" # RYBA CONF \"ryba.hadoop_namenode_init_heap\", DONT OVEWRITE"
+        #   append: /^export HADOOP_NAMENODE_INIT_HEAPSIZE=".*"$/m
         ,
-          match: /^export HADOOP_OPTS="(.*) \$\{HADOOP_OPTS\}" # RYBA CONF ".*?", DONT OVEWRITE/mg
+          match: /^export HADOOP_OPTS="(.*) \$\{HADOOP_OPTS\}" # RYBA CONF ".*?", DONT OVEWRITE/m
           replace: "export HADOOP_OPTS=\"#{hadoop_opts} ${HADOOP_OPTS}\" # RYBA CONF \"ryba.hadoop_opts\", DONT OVEWRITE"
-          before: /^export HADOOP_OPTS=".*"$/mg
+          before: /^export HADOOP_OPTS=".*"$/m
         ,
-          match: /^export HADOOP_CLIENT_OPTS="(.*) \$\{HADOOP_CLIENT_OPTS\}" # RYBA CONF ".*?", DONT OVEWRITE/mg
+          match: /^export HADOOP_CLIENT_OPTS="(.*) \$\{HADOOP_CLIENT_OPTS\}" # RYBA CONF ".*?", DONT OVEWRITE/m
           replace: "export HADOOP_CLIENT_OPTS=\"#{hadoop_client_opts} ${HADOOP_CLIENT_OPTS}\" # RYBA CONF \"ryba.hadoop_client_opts\", DONT OVEWRITE"
-          before: /^export HADOOP_CLIENT_OPTS=".*"$/mg
+          before: /^export HADOOP_CLIENT_OPTS=".*"$/m
         ]
         if ctx.has_module 'ryba/xasecure/hdfs'
           write.push
@@ -467,15 +483,15 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
           eof: true
         , next
 
-    module.exports.push name: 'Hadoop Core # Environnment', timeout: -1, handler: (ctx, next) ->
-      ctx.write
-        destination: '/etc/profile.d/hadoop.sh'
-        content: """
-        #!/bin/bash
-        export HADOOP_HOME=/usr/lib/hadoop
-        """
-        mode: 0o0644
-      , next
+    # module.exports.push name: 'Hadoop Core # Environnment', timeout: -1, handler: (ctx, next) ->
+    #   ctx.write
+    #     destination: '/etc/profile.d/hadoop.sh'
+    #     content: """
+    #     #!/bin/bash
+    #     export HADOOP_HOME=/usr/lib/hadoop
+    #     """
+    #     mode: 0o0644
+    #   , next
 
     module.exports.push name: 'Hadoop Core # Keytabs', timeout: -1, handler: (ctx, next) ->
       {hadoop_group} = ctx.config.ryba
@@ -534,13 +550,13 @@ recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 
     module.exports.push 'ryba/hadoop/core_ssl'
 
-    module.exports.push name: 'Hadoop Core # Check auth_to_local', label_true: 'CHECKED', handler: (ctx, next) ->
-      {user, krb5_user, realm} = ctx.config.ryba
-      ctx.execute
-        cmd: "hadoop org.apache.hadoop.security.HadoopKerberosName #{krb5_user.name}@#{realm}"
-      , (err, _, stdout) ->
-        err = Error "Invalid mapping" if not err and stdout.indexOf("#{krb5_user.name}@#{realm} to #{user.name}") is -1
-        next err, true
+    # module.exports.push name: 'Hadoop Core # Check auth_to_local', label_true: 'CHECKED', handler: (ctx, next) ->
+    #   {user, krb5_user, realm} = ctx.config.ryba
+    #   ctx.execute
+    #     cmd: "hadoop org.apache.hadoop.security.HadoopKerberosName #{krb5_user.name}@#{realm}"
+    #   , (err, _, stdout) ->
+    #     err = Error "Invalid mapping" if not err and stdout.indexOf("#{krb5_user.name}@#{realm} to #{user.name}") is -1
+    #     next err, true
 
 
 

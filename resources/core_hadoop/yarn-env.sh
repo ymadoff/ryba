@@ -16,11 +16,11 @@
 # * limitations under the License.
 # */
 
-export HADOOP_YARN_HOME=/usr/lib/hadoop-yarn
+export HADOOP_YARN_HOME=/usr/hdp/current/hadoop-yarn-client
 export YARN_LOG_DIR=/var/log/hadoop-yarn/$USER
 export YARN_PID_DIR=/var/run/hadoop-yarn/$USER
-export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec
-export JAVA_HOME=/usr/java/default
+export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec
+export JAVA_HOME=TODO-JDK-PATH
 
 # User for YARN daemons
 export HADOOP_YARN_USER=${HADOOP_YARN_USER:-yarn}
@@ -97,7 +97,7 @@ export YARN_HISTORYSERVER_HEAPSIZE=1024
 IFS=
 
 
-# default log directory & file
+# default log directory and file
 if [ "$YARN_LOG_DIR" = "" ]; then
   YARN_LOG_DIR="$HADOOP_YARN_HOME/logs"
 fi

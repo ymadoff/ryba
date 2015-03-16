@@ -1,13 +1,18 @@
 
 # Hadoop HDFS NameNode Status
 
-    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./hdfs_nn').configure
 
-    module.exports.push name: 'HDFS NN # Status NameNode', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
-      lifecycle.nn_status ctx, next
+## Status
 
-    module.exports.push name: 'HDFS NN # Status ZKFC', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
-      lifecycle.zkfc_status ctx, next
+Check if the HDFS NameNode server is running. The process ID is located by default
+inside "/var/run/hadoop-hdfs/hdfs/hadoop-hdfs-namenode.pid".
+
+    module.exports.push name: 'HDFS NN # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
+      ctx.execute
+        cmd: 'service hadoop-hdfs-namenode status'
+        code_skipped: 3
+        if_exists: '/etc/init.d/hadoop-hdfs-namenode'
+      , next
