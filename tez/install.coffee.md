@@ -15,25 +15,47 @@
 
 ## HDFS Layout
 
+    # module.exports.push name: 'Tez # HDFS Layout', timeout: -1, handler: (ctx, next) ->
+    #   {hdfs, hadoop_group} = ctx.config.ryba
+    #   # Group name on "/apps/tez" is suggested as "users", switch to hadoop
+    #   version_local = 'ls /usr/hdp/current/tez-client | grep tez-common | sed \'s/^tez-common-\\(.*\\)\\.jar$/\\1/g\''
+    #   version_remote = 'hdfs dfs -ls /apps/tez | grep tez-common | sed \'s/.*tez-common-\\(.*\\)\\.jar$/\\1/g\''
+    #   ctx.execute
+    #     cmd: mkcmd.hdfs ctx, """
+    #     hdfs dfs -rm -r -f /apps/tez || true
+    #     hdfs dfs -mkdir -p /apps/tez
+    #     hdfs dfs -copyFromLocal /usr/lib/tez/* /apps/tez
+    #     hdfs dfs -chown -R  #{hdfs.user.name}:#{hadoop_group.name} /apps/tez
+    #     hdfs dfs -chmod 755 /apps
+    #     hdfs dfs -chmod 755 /apps/tez
+    #     hdfs dfs -chmod 755 /apps/tez/lib/
+    #     hdfs dfs -chmod 644 /apps/tez/*.jar
+    #     hdfs dfs -chmod 644 /apps/tez/lib/*.jar
+    #     """
+    #     trap_on_error: true
+    #     not_if_exec: mkcmd.hdfs ctx, "[[ `#{version_local}` == `#{version_remote}` ]]"
+    #   , next
+
+## HDFS Tarballs
+
+Upload the Tez tarball inside the "/hdp/apps/$version/tez"
+HDFS directory. Note, the parent directories are created by the 
+"ryba/hadoop/hdfs_dn_layout" module.
+
     module.exports.push name: 'Tez # HDFS Layout', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba
       # Group name on "/apps/tez" is suggested as "users", switch to hadoop
-      version_local = 'ls /usr/lib/tez | grep tez-common | sed \'s/^tez-common-\\(.*\\)\\.jar$/\\1/g\''
-      version_remote = 'hdfs dfs -ls /apps/tez | grep tez-common | sed \'s/.*tez-common-\\(.*\\)\\.jar$/\\1/g\''
       ctx.execute
         cmd: mkcmd.hdfs ctx, """
-        hdfs dfs -rm -r -f /apps/tez || true
-        hdfs dfs -mkdir -p /apps/tez
-        hdfs dfs -copyFromLocal /usr/lib/tez/* /apps/tez
-        hdfs dfs -chown -R  #{hdfs.user.name}:#{hadoop_group.name} /apps/tez
-        hdfs dfs -chmod 755 /apps
-        hdfs dfs -chmod 755 /apps/tez
-        hdfs dfs -chmod 755 /apps/tez/lib/
-        hdfs dfs -chmod 644 /apps/tez/*.jar
-        hdfs dfs -chmod 644 /apps/tez/lib/*.jar
+        version=`readlink /usr/hdp/current/tez-client | sed 's/.*\\/\\(.*\\)\\/tez/\\1/'`
+        hdfs dfs -mkdir -p /hdp/apps/$version/tez
+        hdfs dfs -copyFromLocal /usr/hdp/current/tez-client/lib/tez.tar.gz /hdp/apps/$version/tez
+        hdfs dfs -chmod -R 555 /hdp/apps/$version/tez
+        hdfs dfs -chmod -R 444 /hdp/apps/$version/tez/tez.tar.gz
+        hdfs dfs -ls /hdp/apps/$version/tez | grep tez.tar.gz
         """
         trap_on_error: true
-        not_if_exec: mkcmd.hdfs ctx, "[[ `#{version_local}` == `#{version_remote}` ]]"
+        not_if_exec: mkcmd.hdfs ctx, "version=`readlink /usr/hdp/current/tez-client | sed 's/.*\\/\\(.*\\)\\/tez/\\1/'` && hdfs dfs -test -d /hdp/apps/$version/tez"
       , next
 
 ## Configuration
@@ -62,12 +84,12 @@ Environment passed to Hadoop.
         content: env.join '\n'
         mode: 0o0644
         eof: true
-      ,
-        destination: "#{hadoop_conf_dir}/hadoop-env.sh"
-        match: /^export HADOOP_CLASSPATH="(.*):\$\{HADOOP_CLASSPATH\}" # RYBA TEZ CLASSPATH, DONT OVEWRITE/mg
-        replace: "export HADOOP_CLASSPATH=\"#{classpath}:${HADOOP_CLASSPATH}\" # RYBA TEZ CLASSPATH, DONT OVEWRITE"
-        before: /^export HADOOP_CLASSPATH=.*$/mg
-        backup: true
+      # ,
+      #   destination: "#{hadoop_conf_dir}/hadoop-env.sh"
+      #   match: /^export HADOOP_CLASSPATH="(.*):\$\{HADOOP_CLASSPATH\}" # RYBA TEZ CLASSPATH, DONT OVEWRITE/mg
+      #   replace: "export HADOOP_CLASSPATH=\"#{classpath}:${HADOOP_CLASSPATH}\" # RYBA TEZ CLASSPATH, DONT OVEWRITE"
+      #   before: /^export HADOOP_CLASSPATH=.*$/mg
+      #   backup: true
       ], next
 
 ## Dependencies

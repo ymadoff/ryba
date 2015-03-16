@@ -9,6 +9,9 @@ built atop Apache Hadoop YARN.
 
 ## Configuration
 
+A list for configuration properties supported by HDP 2.2 is available on the
+[Tez manual instructions][instructions].
+
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       require('masson/core/krb5_client').configure ctx
@@ -19,9 +22,11 @@ built atop Apache Hadoop YARN.
       ryba.tez ?= {}
       ryba.tez.env ?= {}
       ryba.tez.env['TEZ_CONF_DIR'] ?= '/etc/tez/conf'
-      ryba.tez.env['TEZ_JARS'] ?= '/usr/lib/tez/*:/usr/lib/tez/lib/*'
+      ryba.tez.env['TEZ_JARS'] ?= '/usr/hdp/current/tez-client/*:/usr/hdp/current/tez-client/lib/*'
+      ryba.tez.env['HADOOP_CLASSPATH'] ?= '$TEZ_CONF_DIR:$TEZ_JARS:$HADOOP_CLASSPATH'
       ryba.tez.tez_site ?= {}
-      ryba.tez.tez_site['tez.lib.uris'] ?= "#{hdfs_url}/apps/tez/,#{hdfs_url}/apps/tez/lib/"
+      # ryba.tez.tez_site['tez.lib.uris'] ?= "#{hdfs_url}/apps/tez/,#{hdfs_url}/apps/tez/lib/"
+      ryba.tez.tez_site['tez.lib.uris'] ?= "/hdp/apps/${hdp.version}/tez/tez.tar.gz"
 
 ## Configuration for Resource Allocation
 
@@ -48,3 +53,4 @@ built atop Apache Hadoop YARN.
     ]
 
 [tez]: http://tez.apache.org/
+[instructions]: (http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.0/HDP_Man_Install_v22/index.html#Item1.8.4)
