@@ -290,7 +290,7 @@ Save the namespace.
         if context.has_any_modules 'ryba/ganglia/monitor'
           cmds.push cmd: 'service hdp-gmond stop'
         for cmd in cmds then cmd.code_skipped = [1, 3]
-        context.execute cmds, next
+        context.execute cmds.reverse(), next
       .then next
 
 ## HDFS Check Edits
