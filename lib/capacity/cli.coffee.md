@@ -71,19 +71,18 @@ node node_modules/ryba/bin/capacity \
     capacity = require './index'
     util = require 'util'
 
-## Parameters and Help
+## Main Entry Point
 
     params = parameters(exports.params)
     if params.parse().help
       return util.print(params.help())
 
-## Main Entry Point
-
-    config params.parse(), (err, config) ->
+    params = params.parse()
+    config params.config, (err, config) ->
       capacity config, (err) ->
         if err
           if err.errors
             for err of err.errors
-              console.log err.stack or err.message
+              console.log(err.stack||err.message);
           else
-            console.log err.stack
+            console.log(err.stack)

@@ -162,6 +162,7 @@ Discover the most relevant partitions on each node.
     exports.cores = (ctxs, next) ->
       for ctx in ctxs
         ctx.config.capacity.cores ?= ctx.cpuinfo.length
+        ctx.config.capacity.cores_yarn ?= 100
       next()
 
 ## Capacity Planning for Memory
@@ -185,8 +186,6 @@ depending on the total amout of memory.
         else
           for mem in exports.memory_system_gb
             [total, reserved] = mem
-            
-              
             # console.log memory_system_gb, ":", total_memory_gb, '<', total
             break if total_memory_gb < total
             memory_system_gb = reserved
@@ -215,7 +214,7 @@ depending on the total amout of memory.
       maximum_allocation_vcores = 0
       for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/hadoop/yarn_nm'
-        {cores, disks, memory_yarn, yarn_site} = ctx.config.capacity
+        {cores, disks, cores_yarn, memory_yarn, yarn_site} = ctx.config.capacity
 
         minimum_container_size = if memory_yarn <= 2*1024*1024*1024 then 128*1024*1024 # 128 MB
         else if memory_yarn <= 4*1024*1024*1024 then 256*1024*1024 # 256 MB
@@ -233,6 +232,7 @@ depending on the total amout of memory.
         # max(MIN_CONTAINER_SIZE, (Total Available RAM) / containers))
         unless memory_per_container = ctx.config.capacity.memory_per_container
           memory_per_container = Math.floor Math.max minimum_container_size, memory_yarn / max_number_of_containers
+        # console.log 'memory_per_container', memory_per_container, 'max_number_of_containers', max_number_of_containers
 
         # # Work with small VM
         # if memory_per_container < 512 * 1024 * 1024
@@ -250,6 +250,10 @@ depending on the total amout of memory.
 
         minimum_allocation_mb ?= Math.round memory_per_container / 1024 / 1024
         minimum_allocation_mb = Math.round Math.min minimum_allocation_mb, memory_per_container / 1024 / 1024
+
+Pourcent of CPU dedicated to yarn
+
+        yarn_site['yarn.nodemanager.resource.percentage-physical-cpu-limit'] ?="#{cores_yarn}"
 
 Amount of physical memory, in MB, dedicated by the node and that can be allocated for containers.
 
