@@ -21,23 +21,9 @@
 #
 HOST=$1
 PORT=$2
-NODEMANAGER_URL="https://$HOST:$PORT/ws/v1/node/info"
-SSL_ENABLED=$3
-SEC_ENABLED=$4
+NODEMANAGER_URL="http://$HOST:$PORT/ws/v1/node/info"
 export PATH="/usr/bin:$PATH"
-if [[ "$SEC_ENABLED" == "true" ]]; then
-  NAGIOS_KEYTAB=$5
-  NAGIOS_USER=$6
-  KINIT_PATH=$7
-  out1=`${KINIT_PATH} -kt ${NAGIOS_KEYTAB} ${NAGIOS_USER} 2>&1`
-  if [[ "$?" -ne 0 ]]; then
-    echo "CRITICAL: Error doing kinit for nagios [$out1]";
-    exit 2;
-  fi
-fi
-
-export no_proxy=$HOST
-RESPONSE=`curl --negotiate -u : -s -k $NODEMANAGER_URL`
+RESPONSE=`curl -s $NODEMANAGER_URL`
 if [[ "$RESPONSE" == *'"nodeHealthy":true'* ]]; then 
   echo "OK: NodeManager healthy";
   exit 0;
