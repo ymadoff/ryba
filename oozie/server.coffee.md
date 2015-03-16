@@ -100,18 +100,20 @@ Example
         {user} = falcon_cts[0].config.ryba.falcon
         ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{user.name}.hosts"] ?= "*"
         ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{user.name}.groups"] ?= "*"
-        ryba.oozie.site['oozie.service.ELService.ext.functions.coord-job-submit-instances'] = """
+        ryba.oozie.site['oozie.service.URIHandlerService.uri.handlers'] ?= "org.apache.oozie.dependency.FSURIHandler,org.apache.oozie.dependency.HCatURIHandler"
+        ryba.oozie.site['oozie.service.ELService.ext.functions.coord-job-submit-instances'] ?= """
           now=org.apache.oozie.extensions.OozieELExtensions#ph1_now_echo,
           today=org.apache.oozie.extensions.OozieELExtensions#ph1_today_echo,
           yesterday=org.apache.oozie.extensions.OozieELExtensions#ph1_yesterday_echo,
           currentMonth=org.apache.oozie.extensions.OozieELExtensions#ph1_currentMonth_echo,
-          lastMonth=org.apache.oozie.extensions.OozieELExtensions#ph1_lastMonth_echo, currentYear=org.apache.oozie.extensions.OozieELExtensions#ph1_currentYear_echo,
+          lastMonth=org.apache.oozie.extensions.OozieELExtensions#ph1_lastMonth_echo,
+          currentYear=org.apache.oozie.extensions.OozieELExtensions#ph1_currentYear_echo,
           lastYear=org.apache.oozie.extensions.OozieELExtensions#ph1_lastYear_echo,
           formatTime=org.apache.oozie.coord.CoordELFunctions#ph1_coord_formatTime_echo,
           latest=org.apache.oozie.coord.CoordELFunctions#ph2_coord_latest_echo,
           future=org.apache.oozie.coord.CoordELFunctions#ph2_coord_future_echo
           """
-        ryba.oozie.site['oozie.service.ELService.ext.functions.coord-action-create-inst'] = """
+        ryba.oozie.site['oozie.service.ELService.ext.functions.coord-action-create-inst'] ?= """
           now=org.apache.oozie.extensions.OozieELExtensions#ph2_now_inst,
           today=org.apache.oozie.extensions.OozieELExtensions#ph2_today_inst,
           yesterday=org.apache.oozie.extensions.OozieELExtensions#ph2_yesterday_inst,
@@ -124,7 +126,7 @@ Example
           formatTime=org.apache.oozie.coord.CoordELFunctions#ph2_coord_formatTime,
           user=org.apache.oozie.coord.CoordELFunctions#coord_user
           """
-        ryba.oozie.site['oozie.service.ELService.ext.functions.coord-action-start'] = """
+        ryba.oozie.site['oozie.service.ELService.ext.functions.coord-action-start'] ?= """
           now=org.apache.oozie.extensions.OozieELExtensions#ph2_now,
           today=org.apache.oozie.extensions.OozieELExtensions#ph2_today,
           yesterday=org.apache.oozie.extensions.OozieELExtensions#ph2_yesterday,

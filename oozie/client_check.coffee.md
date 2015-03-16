@@ -39,9 +39,9 @@
 
     module.exports.push name: 'Oozie Client # Check HDFS Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
       {force_check, user, core_site, yarn, oozie} = ctx.config.ryba
-      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn').configure
+      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1
-        rm_ctx = ctx.context yarn.active_rm_host, require('../hadoop/yarn').configure
+        rm_ctx = ctx.context yarn.active_rm_host, require('../hadoop/yarn_rm').configure
         shortname = ".#{rm_ctx.config.shortname}"
       else
         rm_ctx = rm_ctxs[0]
@@ -103,11 +103,11 @@
 
 ## Check Pig Workflow
 
-    module.exports.push name: 'Oozie Client # Check Pig Workflow', skip: true, timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
+    module.exports.push skip: true, name: 'Oozie Client # Check Pig Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
       {force_check, user, core_site, yarn, oozie} = ctx.config.ryba
-      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn').configure
+      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1
-        rm_ctx = ctx.context yarn.active_rm_host, require('../hadoop/yarn').configure
+        rm_ctx = ctx.context yarn.active_rm_host, require('../hadoop/yarn_rm').configure
         shortname = ".#{rm_ctx.config.shortname}"
       else
         rm_ctx = rm_ctxs[0]
@@ -189,6 +189,7 @@
           oozie job -dryrun -config #{user.home}/check_oozie_pig/job.properties
           jobid=`oozie job -run -config #{user.home}/check_oozie_pig/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
           i=0
+          echo $jobid
           while [[ $i -lt 1000 ]] && [[ `oozie job -info $jobid | grep -e '^Status' | sed 's/^Status\\s\\+:\\s\\+\\(.*\\)$/\\1/'` == 'RUNNING' ]]
           do ((i++)); sleep 1; done
           oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
