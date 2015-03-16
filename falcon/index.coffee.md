@@ -13,9 +13,9 @@ associated processing and management tasks on Hadoop clusters.
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       require('masson/core/krb5_client').configure ctx
-      require('../lib/base').configure ctx
+      # require('../lib/base').configure ctx
       # require('masson/commons/java').configure ctx
-      # require('../hadoop/core').configure ctx
+      require('../hadoop/core').configure ctx
       # require('./client').configure ctx
       {realm} = ctx.config.ryba
       falcon = ctx.config.ryba.falcon ?= {}
@@ -39,6 +39,7 @@ associated processing and management tasks on Hadoop clusters.
       falcon.runtime ?= {}
       # Runtime (http://falcon.incubator.apache.org/Security.html)
       nn_contexts = ctx.contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn').configure
+      hcat_contexts = ctx.contexts 'ryba/hive/hcatalog', require('../hive/hcatalog').configure
       # nn_rcp = nn_contexts[0].config.ryba.core_site['fs.defaultFS']
       # nn_protocol = if nn_contexts[0].config.ryba.hdfs.site['HTTP_ONLY'] then 'http' else 'https'
       # nn_nameservice = if nn_contexts[0].config.ryba.hdfs.site['dfs.nameservices'] then ".#{nn_contexts[0].config.ryba.hdfs.site['dfs.nameservices']}" else ''
@@ -69,6 +70,18 @@ associated processing and management tasks on Hadoop clusters.
       # falcon.startup['*.keystore.file'] ?= '/path/to/keystore/file'
       # falcon.startup['*.keystore.password'] ?= 'password'
       # falcon.startup[''] ?= ''
+      # Cluster values in check
+      # falcon.cluster['hadoop.rpc.protection'] ?= nn_contexts[0].config.ryba.core_site['hadoop.rpc.protection']
+      # falcon.cluster['dfs.namenode.kerberos.principal'] ?= nn_contexts[0].config.ryba.hdfs.site['dfs.namenode.kerberos.principal']
+      # falcon.cluster['hive.metastore.kerberos.principal'] ?= hcat_contexts[0].config.ryba.hive.site['hive.metastore.kerberos.principal']
+      # falcon.cluster['hive.metastore.sasl.enabled'] ?= hcat_contexts[0].config.ryba.hive.site['hive.metastore.sasl.enabled']
+      # falcon.cluster['hive.metastore.uris'] ?= hcat_contexts[0].config.ryba.hive.site['hive.metastore.uris']
+      # Entity values in check
+      # falcon.entity['dfs.namenode.kerberos.principal'] ?= nn_contexts[0].config.ryba.hdfs.site['dfs.namenode.kerberos.principal']
+      # falcon.entity['hive.metastore.kerberos.principal'] ?= hcat_contexts[0].config.ryba.hive.site['hive.metastore.kerberos.principal']
+      # falcon.entity['hive.metastore.sasl.enabled'] ?= hcat_contexts[0].config.ryba.hive.site['hive.metastore.sasl.enabled']
+      # falcon.entity['hive.metastore.uris'] ?= hcat_contexts[0].config.ryba.hive.site['hive.metastore.uris']
+
 
 ## Commands
 

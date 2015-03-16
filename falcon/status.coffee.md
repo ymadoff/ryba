@@ -15,8 +15,8 @@ Discover the server status.
     module.exports.push name: 'Falcon # Status Service', timeout: -1, label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
       {user} = ctx.config.ryba.falcon
       ctx.execute
-        cmd: "su -l #{user.name} -c '/usr/lib/falcon/bin/falcon-status'"
+        cmd: "su -l #{user.name} -c '/usr/hdp/current/falcon-server/bin/falcon-status.sh falcon'"
         code: 254
         code_skipped: 255
-        if_exists: '/usr/lib/falcon/bin/falcon-status'
+        if_exists: '/usr/hdp/current/falcon-server/bin/falcon-status.sh'
       , next

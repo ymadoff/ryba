@@ -1,6 +1,11 @@
 
 # Falcon Install
 
+This procedure only support 1 Oozie server. If Falcon must interact with
+multiple servers, then each Oozie server must be updated. The property
+"oozie.service.HadoopAccessorService.hadoop.configurations" shall define
+each HDFS cluster.
+
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
@@ -57,6 +62,10 @@ falcon:x:498:falcon
 ## Packages
 
     module.exports.push name: 'Falcon # Packages', timeout: -1, handler: (ctx, next) ->
+      # ctx.hdp_service
+      #   name: 'falcon'
+      #   version_name: 'falcon_server'
+      # , next
       ctx.service
         name: 'falcon'
       , next
@@ -78,6 +87,25 @@ falcon:x:498:falcon
         kadmin_server: admin_server
       , next
 
+    module.exports.push name: 'Falcon # HFDS Layout', handler: (ctx, next) ->
+      {user, group} = ctx.config.ryba.falcon
+      ctx.execute
+        cmd: mkcmd.hdfs ctx, "hdfs dfs -stat '%g;%u;%n' /apps/falcon"
+        code_skipped: 1
+      , (err, exists, stdout) ->
+        return next err if err
+        [user_owner, group_owner, filename] = stdout.trim().split ';' if exists
+        ctx.execute [
+          cmd: mkcmd.hdfs ctx, 'hdfs dfs -mkdir /apps/falcon'
+          not_if: exists
+        ,
+          cmd: mkcmd.hdfs ctx, "hdfs dfs -chown #{user.name} /apps/falcon"
+          if: not exists or user.name isnt user_owner
+        ,
+          cmd: mkcmd.hdfs ctx, 'hdfs dfs -chgrp #{group.name} /apps/falcon'
+          if: not exists or group.name isnt group_owner
+        ], next
+
     # module.exports.push name: 'Falcon # Runtime', handler: (ctx, next) ->
     #   # {falcon_conf_dir, runtime} = ctx.config.ryba.falcon
     #   # ctx.ini
@@ -97,25 +125,6 @@ falcon:x:498:falcon
     #     backup: true
     #     eof: true
     #   , next
-
-    module.exports.push name: 'Falcon # HFDS Layout', handler: (ctx, next) ->
-      {user, group} = ctx.config.ryba.falcon
-      ctx.execute
-        cmd: "hdfs dfs -stat '%g;%u;%n' /apps/falcon"
-        code_skipped: 1
-      , (err, exists, stdout) ->
-        return next err if err
-        [user_owner, group_owner, filename] = stdout.trim().split ';' if exists
-        ctx.execute [
-          cmd: mkcmd.hdfs ctx, 'hdfs dfs -mkdir /apps/falcon'
-          not_if: exists
-        ,
-          cmd: mkcmd.hdfs ctx, "hdfs dfs -chown #{user.name} /apps/falcon"
-          if: not exists or user.name isnt user_owner
-        ,
-          cmd: mkcmd.hdfs ctx, 'hdfs dfs -chgrp #{group.name} /apps/falcon'
-          if: not exists or group.name isnt group_owner
-        ], next
 
 
 hdfs dfs -mkdir /apps/falcon
