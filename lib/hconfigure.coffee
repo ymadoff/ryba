@@ -43,13 +43,16 @@ module.exports = ->
         options.default = dft
         do_default()
     do_default = () ->
+      # Note, default properties overwrite current ones by default, not sure
+      # if this is the safest approach
+      overwrite_curent = true
       options.log? "Merge default properties"
       for k, v of options.default
         v = "#{v}" if typeof v is 'number'
         # if typeof v is 'undefined' or v is null
         # then delete fnl_props[k]
         # else fnl_props[k] = v
-        fnl_props[k] = v if typeof fnl_props[k] is 'undefined' or fnl_props[k] is null
+        fnl_props[k] = v if overwrite_curent or typeof fnl_props[k] is 'undefined' or fnl_props[k] is null
       do_merge()
     do_merge = () ->
       options.log? "Merge user properties"
