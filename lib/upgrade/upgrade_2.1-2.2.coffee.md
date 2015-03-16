@@ -246,7 +246,7 @@ Save the namespace.
 
     exports.stop = label: 'Stop Services', handler: (config, contexts, next) ->
       each contexts
-      .parallel config.params.cool_with_docker
+      .parallel true
       .run (context, next) ->
         cmds = []
         if context.has_any_modules 'ryba/zookeeper'
@@ -383,7 +383,7 @@ Re-install the major services.
 
     exports.services = label: 'Services', handler: (config, contexts, next) ->
       each contexts
-      .parallel true
+      .parallel config.params.cool_with_docker
       .run (context, next) ->
         services = []
         if context.has_any_modules 'ryba/zookeeper/server'
