@@ -50,7 +50,7 @@ The pig package is install.
 ## Configure
 
 TODO: Generate the "pig.properties" file dynamically, be carefull, the HDP
-companion file define no properties while the YUM package does.
+companion file defines no properties while the YUM package does.
 
     module.exports.push name: 'Hadoop Pig # Configure', handler: (ctx, next) ->
       {pig_conf_dir, pig_conf} = ctx.config.ryba
