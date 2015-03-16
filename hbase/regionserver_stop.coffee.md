@@ -11,7 +11,7 @@ Stop the RegionServer server. You can also stop the server manually with one of
 the following two commands:
 
 ```
-service hbase-regionserver start
+service hbase-regionserver stop
 su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop regionserver"
 ```
 
