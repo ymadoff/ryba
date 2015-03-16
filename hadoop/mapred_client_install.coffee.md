@@ -6,6 +6,7 @@
     module.exports.push 'masson/core/yum'
     module.exports.push 'ryba/hadoop/hdfs_client'
     module.exports.push 'ryba/hadoop/yarn_client'
+    module.exports.push 'ryba/hadoop/hdfs_dn_wait'
     module.exports.push require('./mapred_client').configure
 
 ## IPTables
@@ -95,20 +96,36 @@ HDFS directory. Note, the parent directories are created by the
 
     module.exports.push name: 'MapReduce Client # HDFS Tarballs', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba
+      lock_timeout = 120 # in seconds
       ctx.execute
         cmd: mkcmd.hdfs ctx, """
         version=`readlink /usr/hdp/current/hadoop-mapreduce-client | sed 's/.*\\/\\(.*\\)\\/hadoop-mapreduce/\\1/'`
+        if hdfs dfs -test -f /tmp/ryba-mapreduce.lock; then
+          echo 'lock exist, check if valid'
+          crdate=$(echo `hdfs dfs -ls /tmp/ryba-mapreduce.lock | grep -Po '\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}'` | xargs -0 date '+%s' -d) 
+          expire=$(($crdate - `date '+%s'` + #{lock_timeout}))
+          if [ $expire -ge 0 ]; then
+            echo "Lock is active, wait for ${expire}s until expiration"
+            sleep ${expire};
+            if hdfs dfs -test -f /tmp/ryba-mapreduce.lock; then exit 1; fi
+            if hdfs dfs -test -f /hdp/apps/$version/mapreduce/mapreduce.tar.gz; then exit 0; fi
+          fi
+        fi
+        hdfs dfs -touchz /tmp/ryba-mapreduce.lock
         hdfs dfs -mkdir -p /hdp/apps/$version/mapreduce
         hdfs dfs -chmod -R 555 /hdp/apps/$version/mapreduce
         hdfs dfs -chmod -R 555 /hdp/apps/$version/mapreduce
         hdfs dfs -copyFromLocal /usr/hdp/current/hadoop-client/mapreduce.tar.gz /hdp/apps/$version/mapreduce
         hdfs dfs -chmod -R 444 /hdp/apps/$version/mapreduce/mapreduce.tar.gz
-        hdfs dfs -ls /hdp/apps/$version/mapreduce | grep mapreduce.tar.gz
+        # hdfs dfs -ls /hdp/apps/$version/mapreduce | grep mapreduce.tar.gz
+        hdfs dfs -test -f /hdp/apps/$version/mapreduce/mapreduce.tar.gz
+        hdfs dfs -touchz /tmp/ryba-mapreduce.lock
+        hdfs dfs -rm /tmp/ryba-mapreduce.lock
         """
         trap_on_error: true
         not_if_exec: mkcmd.hdfs ctx, """
         version=`readlink /usr/hdp/current/hadoop-mapreduce-client | sed 's/.*\\/\\(.*\\)\\/hadoop-mapreduce/\\1/'`
-        hdfs dfs -test -d /hdp/apps/$version/mapreduce/
+        hdfs dfs -test -f /hdp/apps/$version/mapreduce/mapreduce.tar.gz
         """
       , next
 

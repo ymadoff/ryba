@@ -264,10 +264,9 @@ unformatted NameNode. The command "hdfs namenode -bootstrapStandby" used for the
 is only executed on a non active NameNode.
 
     module.exports.push name: 'HDFS NN # HA Init Standby', timeout: -1, handler: (ctx, next) ->
-      # Shall only be executed on the leader namenode
-      {active_nn, active_nn_host} = ctx.config.ryba
+      {active_nn_host} = ctx.config.ryba
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      return next() if active_nn
+      return next() if ctx.config.host is active_nn_host
       do_wait = ->
         ctx.waitIsOpen active_nn_host, 8020, (err) ->
           return next err if err

@@ -6,6 +6,7 @@ Check the access to the HDFS cluster.
     mkcmd = require '../lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap'
+    module.exports.push 'ryba/hadoop/hdfs_dn_wait'
     module.exports.push require('./hdfs_client').configure
 
     module.exports.push name: 'HDFS Client # Check', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
