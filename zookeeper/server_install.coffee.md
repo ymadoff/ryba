@@ -9,6 +9,7 @@
     module.exports.push 'masson/commons/java'
     # module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/lib/base'
+    module.exports.push require '../lib/hdp_service'
     module.exports.push require('./server').configure
 
 ## Users & Groups
@@ -57,39 +58,42 @@ Follow the [HDP recommandations][install] to install the "zookeeper" package
 which has no dependency.
 
     module.exports.push name: 'ZooKeeper Server # Install', timeout: -1, handler: (ctx, next) ->
-      ctx.service [
-        {name: 'zookeeper'}
-        {name: 'telnet'} # Used by check
-      ], next
+      ctx.service
+        name: 'telnet' # Used by check
+      , (err) ->
+        return next err if err
+        ctx.hdp_service
+          name: 'zookeeper-server'
+        , next
 
 ## Startup
 
 Install and configure the startup script in 
 "/etc/init.d/zookeeper-server".
 
-    module.exports.push name: 'ZooKeeper Server # Startup', handler: (ctx, next) ->
-      {hdfs} = ctx.config.ryba
-      modified = false
-      do_install = ->
-        ctx.service
-          name: 'zookeeper-server'
-          startup: true
-        , (err, serviced) ->
-          return next err if err
-          modified = true if serviced
-          do_fix()
-      do_fix = ->
-        ctx.write
-          destination: '/etc/init.d/zookeeper-server'
-          match: /^(\. .*\/bigtop-detect-javahome)$/m
-          replace: "#$1"
-        , (err, written) ->
-          return next err if err
-          modified = true if written
-          do_end()
-      do_end = ->
-        next null, modified
-      do_install()
+    # module.exports.push name: 'ZooKeeper Server # Startup', handler: (ctx, next) ->
+    #   {hdfs} = ctx.config.ryba
+    #   modified = false
+    #   do_install = ->
+    #     ctx.service
+    #       name: 'zookeeper-server'
+    #       startup: true
+    #     , (err, serviced) ->
+    #       return next err if err
+    #       modified = true if serviced
+    #       do_fix()
+    #   do_fix = ->
+    #     ctx.write
+    #       destination: '/etc/init.d/zookeeper-server'
+    #       match: /^(\. .*\/bigtop-detect-javahome)$/m
+    #       replace: "#$1"
+    #     , (err, written) ->
+    #       return next err if err
+    #       modified = true if written
+    #       do_end()
+    #   do_end = ->
+    #     next null, modified
+    #   do_install()
 
 ## Kerberos
 
@@ -173,7 +177,7 @@ ownerships.
     module.exports.push name: 'ZooKeeper Server # Environment', handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
       write = for k, v of zookeeper.env
-        match: RegExp "^export\\s+(#{quote k})=(.*)$", 'mg'
+        match: RegExp "^export\\s+(#{quote k})=(.*)$", 'm'
         replace: "export #{k}=\"#{v}\""
         append: true
       ctx.write
@@ -183,9 +187,12 @@ ownerships.
         eof: true
       , next
 
+## Configure
+
+Update the file "zoo.cfg" with the properties defined by the
+"ryba.zookeeper.config" configuration.
+
     module.exports.push name: 'ZooKeeper Server # Configure', handler: (ctx, next) ->
-      modified = false
-      hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
       {zookeeper} = ctx.config.ryba
       write = for k, v of zookeeper.config
         match: RegExp "^#{quote k}=.*$", 'mg'
@@ -197,6 +204,19 @@ ownerships.
         backup: true
         eof: true
       , next
+
+## Log4J
+
+Upload the ZooKeeper loging configuration file.
+
+    module.exports.push name: 'ZooKeeper Server # Log4J', handler: (ctx, next) ->
+      {zookeeper} = ctx.config.ryba
+      ctx.upload
+        destination: "#{zookeeper.conf_dir}/log4j.properties"
+        source: "#{__dirname}/../resources/zookeeper/log4j.properties"
+      , next
+
+
 
 ## Super User
 
@@ -215,7 +235,7 @@ Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
       return next() unless zookeeper.superuser.password
       ctx.execute
         cmd: """
-        export ZK_HOME=/usr/lib/zookeeper/
+        ZK_HOME=/usr/hdp/current/zookeeper-client/
         java -cp $ZK_HOME/lib/*:$ZK_HOME/zookeeper.jar org.apache.zookeeper.server.auth.DigestAuthenticationProvider super:#{zookeeper.superuser.password}
         """
       , (err, _, stdout) ->
@@ -225,7 +245,7 @@ Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
           destination: "#{zookeeper.conf_dir}/zookeeper-env.sh"
           # match: RegExp "^export CLIENT_JVMFLAGS=\"-D#{quote 'zookeeper.DigestAuthenticationProvider.superDigest'}=.* #{quote '${CLIENT_JVMFLAGS}'}$", 'mg'
           # replace: "export CLIENT_JVMFLAGS=\"-Dzookeeper.DigestAuthenticationProvider.superDigest=#{digest} ${CLIENT_JVMFLAGS}\""
-          match: RegExp "^export SERVER_JVMFLAGS=\"-D#{quote 'zookeeper.DigestAuthenticationProvider.superDigest'}=.* #{quote '${SERVER_JVMFLAGS}'}$", 'mg'
+          match: /^export SERVER_JVMFLAGS="-Dzookeeper\.DigestAuthenticationProvider\.superDigest=.* \${SERVER_JVMFLAGS}"$/m
           replace: "export SERVER_JVMFLAGS=\"-Dzookeeper.DigestAuthenticationProvider.superDigest=#{digest} ${SERVER_JVMFLAGS}\""
           append: true
           backup: true
