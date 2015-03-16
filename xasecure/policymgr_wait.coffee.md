@@ -1,4 +1,6 @@
 
+# XASecure Policy Wait
+
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 
