@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #
 #
 # Licensed to the Apache Software Foundation (ASF) under one
@@ -19,17 +19,15 @@
 # under the License.
 #
 #
+checkurl () {
+  url=$1
+  curl $url -o /dev/null
+  echo $?
+}
 
 service=$1
 host=$2
 port=$3
-
-checkurl () {
-  url=$1
-  export no_proxy=$host
-  curl $url -o /dev/null
-  echo $?
-}
 
 if [[ -z "$service" || -z "$host" ]]; then
   echo "UNKNOWN: Invalid arguments; Usage: check_webui.sh service_name host_name";
@@ -80,21 +78,7 @@ historyserver2)
       exit 1;
     fi
     ;;
-storm_ui)
-    rmweburl="http://$host:$port"
-    if [[ `checkurl "$rmweburl"` -ne 0 ]]; then
-      echo "WARNING: Storm Web UI not accessible : $rmweburl";
-      exit 1;
-    fi
-    ;;
-falconserver)
-    hsweburl="http://$host:$port/"
-    if [[ `checkurl "$hsweburl"` -ne 0 ]]; then
-      echo "WARNING: FalconServer Web UI not accessible : $hsweburl";
-      exit 1;
-    fi
-    ;;
-*) echo "UNKNOWN: Invalid service name [$service], valid options [jobtracker|jobhistory|hbase|namenode|resourcemanager|historyserver2|falconserver|storm_ui]"
+*) echo "UNKNOWN: Invalid service name [$service], valid options [jobtracker|jobhistory|hbase|namenode|resourcemanager|historyserver2]"
    exit 3
    ;;
 esac

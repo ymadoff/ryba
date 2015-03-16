@@ -16,7 +16,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-define("PASSIVE_MODE_STR", "AMBARIPASSIVE=");
 
   $options = getopt ("f:s:n:w:c:t:");
   if (!array_key_exists('t', $options) || !array_key_exists('f', $options) || !array_key_exists('w', $options)
@@ -95,10 +94,7 @@ define("PASSIVE_MODE_STR", "AMBARIPASSIVE=");
     $total_alerts=0;
     $alerts=0;
     foreach ($matches[0] as $object) {
-      $long_out = getParameter($object, "long_plugin_output");
-      $skip_if_match=!strncmp($long_out, PASSIVE_MODE_STR, strlen(PASSIVE_MODE_STR));
-
-      if (getParameter($object, "service_description") == $service_name && !$skip_if_match) {
+      if (getParameter($object, "service_description") == $service_name) {
         $total_alerts++;
         if (getParameter($object, "current_state") >= $status_code) {
           $alerts++;
@@ -127,7 +123,6 @@ define("PASSIVE_MODE_STR", "AMBARIPASSIVE=");
       case "HDFS":
       case "MAPREDUCE":
       case "HBASE":
-      case "STORM":
         break;
       default:
         $pieces[0] = "UNKNOWN";
