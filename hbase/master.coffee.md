@@ -6,6 +6,7 @@
 ## Configuration
 
     module.exports.configure = (ctx) ->
+      if ctx.hbase_master_configured then return else ctx.hbase_master_configured = null
       require('masson/core/iptables').configure ctx
       # require('../hadoop/hdfs').configure ctx
       require('./_').configure ctx
@@ -70,7 +71,11 @@
 
     module.exports.push commands: 'check', modules: 'ryba/hbase/master_check'
 
-    module.exports.push commands: 'install', modules: 'ryba/hbase/master_install'
+    module.exports.push commands: 'install', modules: [
+      'ryba/hbase/master_install'
+      'ryba/hbase/master_start'
+      'ryba/hbase/master_check'
+    ]
 
     module.exports.push commands: 'start', modules: 'ryba/hbase/master_start'
 

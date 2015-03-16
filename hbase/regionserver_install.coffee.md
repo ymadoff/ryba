@@ -7,6 +7,7 @@
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push 'ryba/hbase/_'
     module.exports.push require('./regionserver').configure
+    module.exports.push require '../lib/hdp_service'
 
 ## IPTables
 
@@ -30,31 +31,30 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Service
 
-Install and configure the startup script in 
-"/etc/init.d/hbase-regionserver".
+Install the "hbase-regionserver" service, symlink the rc.d startup script
+inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'HBase RegionServer # Startup', timeout: -1, handler: (ctx, next) ->
-      modified = false
-      do_install = ->
-        ctx.service 
-          name: 'hbase-regionserver'
-        , (err, serviced) ->
-          return next err if err
-          modified = true if serviced
-          do_write()
-      do_write = ->
-        ctx.write
-          destination: '/etc/init.d/hbase-regionserver'
-          match: /^\s+exit 3 # Ryba: Fix invalid exit code*$/m
-          replace: '            exit 3 # Ryba: Fix invalid exit code'
-          append: /^\s+echo "not running."$/m
-        , (err, written) ->
-          return next err if err
-          modified = true if written
-          do_end()
-      do_end = ->
-        next null, modified
-      do_install()
+    module.exports.push name: 'HBase Master # Service', timeout: -1, handler: (ctx, next) ->
+      ctx.hdp_service
+        name: 'hbase-regionserver'
+        write: [
+          replace: 'RETVAL=0'
+          before: /^case ".*?" in$/m
+        ,
+          match: /^exit (\d|\\$RETVAL)$/m
+          replace: 'exit $RETVAL'
+        ,
+          replace: '        RETVAL=$?'
+          append: '        status'
+        ]
+        etc_default:
+          'hadoop': true
+          'hbase':
+            write: [
+              match: /^export HBASE_HOME=.*$/m # HDP default is "/var/lib/hive-hcatalog"
+              replace: "export HBASE_HOME=/usr/hdp/current/hbase-client # RYBA FIX"
+            ]
+      , next
 
 ## Zookeeper JAAS
 
