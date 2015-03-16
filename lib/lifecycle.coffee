@@ -5,36 +5,36 @@ url = require 'url'
 http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html
 ###
 lifecyle = module.exports =
-  jn_status: (ctx, callback) ->
-    ctx.execute
-      cmd: "service hadoop-hdfs-journalnode status"
-      code_skipped: [1, 3]
-    , callback
-  jn_start: (ctx, callback) ->
-    {hdfs, hadoop_conf_dir} = ctx.config.ryba
-    lifecyle.jn_status ctx, (err, running) ->
-      return callback err, false if err or running
-      ctx.log "JournalNode start"
-      ctx.execute
-        # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start journalnode"
-        # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start journalnode\""
-        cmd: 'service hadoop-hdfs-journalnode start'
-        # code_skipped: 1
-      , (err, started) ->
-        return callback err if err
-        ctx.waitIsOpen ctx.config.host, 8485, timeout: 20000, (err) ->
-          callback err, started
-  jn_stop: (ctx, callback) ->
-    {hdfs, hadoop_conf_dir} = ctx.config.ryba
-    lifecyle.jn_status ctx, (err, running) ->
-      return callback err, false if err or not running
-      ctx.log "JournalNode stop"
-      ctx.execute
-        # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop journalnode"
-        # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop journalnode\""
-        cmd: 'service hadoop-hdfs-journalnode stop'
-        # code_skipped: 1
-      , callback
+  # jn_status: (ctx, callback) ->
+  #   ctx.execute
+  #     cmd: "service hadoop-hdfs-journalnode status"
+  #     code_skipped: [1, 3]
+  #   , callback
+  # jn_start: (ctx, callback) ->
+  #   {hdfs, hadoop_conf_dir} = ctx.config.ryba
+  #   lifecyle.jn_status ctx, (err, running) ->
+  #     return callback err, false if err or running
+  #     ctx.log "JournalNode start"
+  #     ctx.execute
+  #       # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start journalnode"
+  #       # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start journalnode\""
+  #       cmd: 'service hadoop-hdfs-journalnode start'
+  #       # code_skipped: 1
+  #     , (err, started) ->
+  #       return callback err if err
+  #       ctx.waitIsOpen ctx.config.host, 8485, timeout: 20000, (err) ->
+  #         callback err, started
+  # jn_stop: (ctx, callback) ->
+  #   {hdfs, hadoop_conf_dir} = ctx.config.ryba
+  #   lifecyle.jn_status ctx, (err, running) ->
+  #     return callback err, false if err or not running
+  #     ctx.log "JournalNode stop"
+  #     ctx.execute
+  #       # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop journalnode"
+  #       # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop journalnode\""
+  #       cmd: 'service hadoop-hdfs-journalnode stop'
+  #       # code_skipped: 1
+  #     , callback
   nn_status: (ctx, callback) ->
     ctx.execute
       cmd: "service hadoop-hdfs-namenode status"
@@ -193,31 +193,31 @@ lifecyle = module.exports =
         cmd: "service hadoop-yarn-nodemanager stop"
         # code_skipped: 1
       , callback
-  jhs_status: (ctx, callback) ->
-    ctx.execute
-      cmd: "service hadoop-mapreduce-historyserver status"
-      code_skipped: [1, 3]
-    , callback
-  jhs_start: (ctx, callback) ->
-    lifecyle.jhs_status ctx, (err, running) ->
-      return callback err, false if err or running
-      ctx.log "JobHistoryServer start"
-      ctx.execute
-        # su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config /etc/hadoop/conf start historyserver"
-        # cmd: "su -l #{mapred.user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config #{hadoop_conf_dir} start historyserver\""
-        cmd: 'service hadoop-mapreduce-historyserver start'
-        # code_skipped: 1
-      , callback
-  jhs_stop: (ctx, callback) ->
-    lifecyle.jhs_status ctx, (err, running) ->
-      return callback err, false if err or not running
-      ctx.log "JobHistoryServer stop"
-      ctx.execute
-        # su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config /etc/hadoop/conf stop historyserver"
-        # cmd: "su -l #{mapred.user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config #{hadoop_conf_dir} stop historyserver\""
-        cmd: 'service hadoop-mapreduce-historyserver stop'
-        # code_skipped: 1
-      , callback
+  # jhs_status: (ctx, callback) ->
+  #   ctx.execute
+  #     cmd: "service hadoop-mapreduce-historyserver status"
+  #     code_skipped: [1, 3]
+  #   , callback
+  # jhs_start: (ctx, callback) ->
+  #   lifecyle.jhs_status ctx, (err, running) ->
+  #     return callback err, false if err or running
+  #     ctx.log "JobHistoryServer start"
+  #     ctx.execute
+  #       # su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config /etc/hadoop/conf start historyserver"
+  #       # cmd: "su -l #{mapred.user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config #{hadoop_conf_dir} start historyserver\""
+  #       cmd: 'service hadoop-mapreduce-historyserver start'
+  #       # code_skipped: 1
+  #     , callback
+  # jhs_stop: (ctx, callback) ->
+  #   lifecyle.jhs_status ctx, (err, running) ->
+  #     return callback err, false if err or not running
+  #     ctx.log "JobHistoryServer stop"
+  #     ctx.execute
+  #       # su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config /etc/hadoop/conf stop historyserver"
+  #       # cmd: "su -l #{mapred.user.name} -c \"export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config #{hadoop_conf_dir} stop historyserver\""
+  #       cmd: 'service hadoop-mapreduce-historyserver stop'
+  #       # code_skipped: 1
+  #     , callback
   # hive_metastore_status: (ctx, callback) ->
   #   ctx.execute
   #     cmd: "service hive-hcatalog-server status"
