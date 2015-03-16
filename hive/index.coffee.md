@@ -47,6 +47,7 @@ Example:
       hive.user.name ?= 'hive'
       hive.user.system ?= true
       hive.user.gid ?= 'hive'
+      hive.user.groups ?= 'hadoop'
       hive.user.comment ?= 'Hive User'
       hive.user.home ?= '/var/lib/hive'
       # Group
@@ -108,13 +109,14 @@ hive:x:493:
 Instructions to [install the Hive and HCatalog RPMs](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3/bk_installing_manually_book/content/rpm-chap6-1.html)
 
     module.exports.push name: 'Hive & HCat # Install', timeout: -1, handler: (ctx, next) ->
-      ctx.service [
+      ctx.service
         name: 'hive'
-      ,
-        name: 'hive-hcatalog'
-      ], next
+      , next
 
 ## Environment
+
+Upload the "hive-env.sh" script from the companion file. Note, this file isnt
+present on a fresh install.
 
     module.exports.push name: 'Hive & HCat # Env', timeout: -1, handler: (ctx, next) ->
       {java_home} = ctx.config.java
@@ -123,10 +125,19 @@ Instructions to [install the Hive and HCatalog RPMs](http://docs.hortonworks.com
         source: "#{__dirname}/../resources/hive/hive-env.sh"
         destination: "#{hive.conf_dir}/hive-env.sh"
         local_source: true
-        write: [
-          match: /^export JAVA_HOME=.*$/mg
-          replace: "export JAVA_HOME=#{java_home}"
-        ]
-      , next
+        not_if_exists: true
+      , (err) ->
+        return next err if err
+        ctx.write
+          destination: "#{hive.conf_dir}/hive-env.sh"
+          write: [
+            match: /^export JAVA_HOME=.*$/m
+            replace: "export JAVA_HOME=#{java_home}"
+          ,
+            match: /^export HIVE_AUX_JARS_PATH=.*$/m
+            replace: 'export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar} # RYBA FIX'
+          ]
+        , next
+
 
 

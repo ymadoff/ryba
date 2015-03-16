@@ -1,11 +1,9 @@
 
 # WebHCat Check
 
-    mkcmd = require '../lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-
-    module.exports.push require('./webhcat').configure
+    module.exports.push require('./index').configure
 
     module.exports.push name: 'WebHCat # Check Status', label_true: 'CHECKED', handler: (ctx, next) ->
       # TODO, maybe we could test hive:
@@ -24,3 +22,7 @@
         return next null, false unless executed
         return next new Error "WebHCat not started" if stdout.trim() isnt '{"status":"ok","version":"v1"}'
         return next null, true
+
+# Dependencies
+
+    mkcmd = require '../../lib/mkcmd'

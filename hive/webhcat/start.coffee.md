@@ -9,8 +9,8 @@ By default, the pid of the running server is stored in
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'ryba/hive/server_wait'
-    module.exports.push require('./webhcat').configure
+    module.exports.push 'ryba/hive/hcatalog/wait'
+    module.exports.push require('./index').configure
 
 ## Start Server
 
