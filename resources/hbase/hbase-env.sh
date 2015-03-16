@@ -20,7 +20,7 @@
 # Set environment variables here.
 
 # The java implementation to use. Java 1.7 required.
-export JAVA_HOME=/usr/jdk64/jdk1.7.0_45
+export JAVA_HOME=TODO-JDK-PATH
 
 # HBase Configuration directory
 export HBASE_CONF_DIR=${HBASE_CONF_DIR:-/etc/hbase/conf}
@@ -45,8 +45,8 @@ export SERVER_GC_OPTS="-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -X
 # More details at: http://java.sun.com/javase/6/docs/technotes/guides/management/agent.html
 #
 # export HBASE_JMX_BASE="-Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
-export HBASE_MASTER_OPTS="-Xmx1024m"
-export HBASE_REGIONSERVER_OPTS="-Xmn200m -XX:CMSInitiatingOccupancyFraction=70  -Xms1024m -Xmx1024m"
+export HBASE_MASTER_OPTS="-Xmx2048m"
+export HBASE_REGIONSERVER_OPTS="-Xmn200m -Xms4096m -Xmx4096m"
 # export HBASE_THRIFT_OPTS="$HBASE_JMX_BASE -Dcom.sun.management.jmxremote.port=10103"
 # export HBASE_ZOOKEEPER_OPTS="$HBASE_JMX_BASE -Dcom.sun.management.jmxremote.port=10104"
 

@@ -35,6 +35,11 @@
     </property> 
 
     <property>
+      <name>hbase.hregion.majorcompaction.jitter</name>
+      <value>0.50</value>
+    </property> 
+
+    <property>
       <name>hbase.hregion.max.filesize</name>
       <value>10737418240</value>
     </property> 
@@ -47,7 +52,13 @@
     <property>
       <name>hbase.hregion.memstore.flush.size</name>
       <value>134217728</value>
-    </property> 
+    </property>
+
+    <property>
+      <name>hbase.hstore.flush.retries.number</name>
+      <value>120</value>
+      <deleted>true</deleted>
+    </property>
 
     <property>
       <name>hbase.hregion.memstore.mslab.enabled</name>
