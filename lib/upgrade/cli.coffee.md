@@ -26,6 +26,9 @@ node node_modules/ryba/bin/upgrade \
       ,
         name: 'start', shortcut: 's'
         description: 'Middleware to start from'
+      ,
+        name: 'easy_download', shortcut: 'e', type: 'boolean'
+        description: 'Number of concurrent downloads, parallel unless defined'
       ]
 
 ## Dependencies

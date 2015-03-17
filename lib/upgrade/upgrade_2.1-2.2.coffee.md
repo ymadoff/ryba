@@ -4,7 +4,7 @@
 Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
 
     exports = module.exports = (params, config, callback) ->
-      params.cool_with_docker = true
+      params.easy_download
       config.params = params
       config.directory = '/var/ryba/upgrade'
       config.repo = './resources/repos/hdp-2.2.0.0.local.repo'
