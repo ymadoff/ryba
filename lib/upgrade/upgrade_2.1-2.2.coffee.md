@@ -4,7 +4,7 @@
 Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
 
     exports = module.exports = (params, config, callback) ->
-      params.cool_with_docker = true
+      params.easy_download
       config.params = params
       config.directory = '/var/ryba/upgrade'
       config.repo = './resources/repos/hdp-2.2.0.0.local.repo'
@@ -28,9 +28,10 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           'hdfs_upgrade'
           'hdfs_standby'
           'hdfs_dn'
-          'hdfs_finalize'
           'hdfs_validate'
           'hdfs_upgrade_nn_running'
+          'hdfs_finalize'
+          'dispose'
         ]
         started = !params.start
         each middlewares
@@ -246,7 +247,7 @@ Save the namespace.
 
     exports.stop = label: 'Stop Services', handler: (config, contexts, next) ->
       each contexts
-      .parallel config.params.cool_with_docker
+      .parallel true
       .run (context, next) ->
         cmds = []
         if context.has_any_modules 'ryba/zookeeper'
@@ -290,7 +291,7 @@ Save the namespace.
         if context.has_any_modules 'ryba/ganglia/monitor'
           cmds.push cmd: 'service hdp-gmond stop'
         for cmd in cmds then cmd.code_skipped = [1, 3]
-        context.execute cmds, next
+        context.execute cmds.reverse(), next
       .then next
 
 ## HDFS Check Edits
@@ -383,7 +384,7 @@ Re-install the major services.
 
     exports.services = label: 'Services', handler: (config, contexts, next) ->
       each contexts
-      .parallel true
+      .parallel not config.params.easy_download
       .run (context, next) ->
         services = []
         if context.has_any_modules 'ryba/zookeeper/server'
@@ -459,6 +460,7 @@ Install Zookeeper and HDFS.
         'ryba/hadoop/hdfs_jn_install'
         'ryba/hadoop/hdfs'
         'ryba/hadoop/zkfc/install'
+        # 'ryba/hadoop/hdfs_nn_install'
         'ryba/hadoop/hdfs_dn_install'
         # 'ryba/zookeeper/server_start'
         # 'ryba/zookeeper/server_wait'
@@ -471,6 +473,7 @@ Install Zookeeper and HDFS.
         each contexts
         .parallel true
         .run (context, next) ->
+          console.log 'ok', context.config.host
           context.execute [
             # cmd: '/usr/hdp/2.2.0.0-2041/etc/rc.d/init.d/zookeeper-server start'
             cmd: 'service zookeeper-server start'
@@ -483,7 +486,7 @@ Install Zookeeper and HDFS.
             code_skipped: 3
           ,
             # cmd: '/usr/hdp/2.2.0.0-2041/etc/rc.d/init.d/hadoop-hdfs-journalnode start'
-            cmd: 'service hadoop-hdfs-zkfc start'
+            cmd: 'service hadoop-hdfs-journalnode start'
             if: context.has_module 'ryba/hadoop/hdfs_jn'
             code_skipped: 3
           ], next
@@ -517,8 +520,8 @@ Replace your configuration after upgrading on all the ZooKeeper nodes.
           """
         ,
           cmd: """
-          # su -l hdfs -c '/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh start namenode'
-          service hadoop-hdfs-namenode start
+          su -l hdfs -c '/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh start namenode'
+          # service hadoop-hdfs-namenode start
           """
         ], next
       .then next
@@ -530,21 +533,6 @@ Replace your configuration after upgrading on all the ZooKeeper nodes.
         require('../../hadoop/hdfs_dn').configure context
         context.execute
           cmd: "HADOOP_SECURE_DN_USER=hdfs /usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start datanode"
-        , next
-      .then next
-
-    exports.hdfs_finalize = label: 'HDFS Finalize', handler: (config, contexts, next) ->
-      each contexts
-      .run (context, next) ->
-        return next() unless context.has_module 'ryba/hadoop/hdfs_nn'
-        require('../../hadoop/hdfs_nn').configure context
-        return next() unless context.config.ryba.active_nn_host is context.config.host
-        context.execute
-          cmd: mkcmd.hdfs context, """
-          hdfs dfsadmin -safemode wait
-          hdfs dfsadmin -finalizeUpgrade
-          """
-          trap_on_error: true
         , next
       .then next
 
@@ -570,8 +558,48 @@ Replace your configuration after upgrading on all the ZooKeeper nodes.
       .run (context, next) ->
         cmds = []
         if context.has_module 'ryba/hadoop/hdfs_nn'
-          cmds.push cmd: "ps -ef|grep -i NameNode"
+          cmds.push cmd: "ps -ef | grep -i NameNode"
         context.execute cmds, next
+      .then next
+
+    exports.hdfs_finalize = label: 'HDFS Finalize', handler: (config, contexts, next) ->
+      each contexts
+      .run (context, next) ->
+        return next() unless context.has_module 'ryba/hadoop/hdfs_nn'
+        require('../../hadoop/hdfs_nn').configure context
+        return next() unless context.config.ryba.active_nn_host is context.config.host
+        context.execute
+          cmd: mkcmd.hdfs context, """
+          hdfs dfsadmin -safemode wait
+          hdfs dfsadmin -finalizeUpgrade
+          """
+          trap_on_error: true
+        , next
+      .then next
+
+    exports.dispose = label: 'Dispose', handler: (config, contexts, next) ->
+      each contexts
+      .run (context, next) ->
+        context.execute [
+          cmd: "HADOOP_SECURE_DN_USER=hdfs /usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop datanode"
+          if: context.has_module 'ryba/hadoop/hdfs_dn'
+        ,
+          cmd: "su -l hdfs -c '/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh stop namenode'"
+          if: context.has_module 'ryba/hadoop/hdfs_nn'
+        ,
+          cmd: 'service zookeeper-server stop'
+          if: context.has_module 'ryba/zookeeper/server'
+          # code_skipped: 3
+        ,
+          cmd: 'service hadoop-hdfs-zkfc stop'
+          if: context.has_module('ryba/hadoop/zkfc')
+          # code_skipped: 3
+        ,
+          cmd: 'service hadoop-hdfs-journalnode stop'
+          if: context.has_module 'ryba/hadoop/hdfs_jn'
+        ,
+          cmd: 'rm -rf /var/run/hadoop'
+        ], next
       .then next
 
 ## Disconnect
