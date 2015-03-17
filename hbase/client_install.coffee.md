@@ -5,6 +5,7 @@ Install the HBase client package and configure it with secured access.
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push 'ryba/hadoop/mapred_client' # Required for using/checking mapreduce
     module.exports.push 'ryba/hbase/_'
     module.exports.push require('./client').configure
 
