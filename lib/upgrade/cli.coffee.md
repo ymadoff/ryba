@@ -48,6 +48,7 @@ node node_modules/ryba/bin/upgrade \
 
     params = params.parse()
     config params.config, (err, config) ->
+      throw err if err
       upgrade params, config, (err) ->
         if err
           if err.errors

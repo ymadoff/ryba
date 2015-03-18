@@ -246,53 +246,94 @@ Save the namespace.
 ## Stop Services
 
     exports.stop = label: 'Stop Services', handler: (config, contexts, next) ->
-      each contexts
-      .parallel true
-      .run (context, next) ->
-        cmds = []
-        if context.has_any_modules 'ryba/zookeeper'
-          cmds.push cmd: 'service zookeeper-server stop'
-        if context.has_any_modules 'ryba/hadoop/hdfs_jn'
-          cmds.push cmd: 'service hadoop-hdfs-journalnode stop'
-        if context.has_any_modules 'ryba/hadoop/hdfs_nn'
-          cmds.push cmd: 'service hadoop-hdfs-zkfc stop'
-          cmds.push cmd: 'service hadoop-hdfs-namenode stop'
-        if context.has_any_modules 'ryba/hadoop/hdfs_snn'
-          cmds.push cmd: 'service hadoop-hdfs-secondarynamenode stop'
-        if context.has_any_modules 'ryba/hadoop/hdfs_dn'
-          cmds.push cmd: 'service hadoop-hdfs-datanode stop'
-        if context.has_any_modules 'ryba/hadoop/yarn_rm'
-          cmds.push cmd: 'service hadoop-yarn-resourcemanager stop'
-        if context.has_any_modules 'ryba/hadoop/yarn_nm'
-          cmds.push cmd: 'service hadoop-yarn-nodemanager stop'
-        if context.has_any_modules 'ryba/hadoop/mapred_jhs'
-          cmds.push cmd: 'service hadoop-mapreduce-historyserver stop'
-        if context.has_any_modules 'ryba/hive/server'
-          cmds.push cmd: 'service hive-server2 stop'
-          cmds.push cmd: 'service hive-hcatalog-server stop'
-        if context.has_any_modules 'ryba/hive/webhcat'
-          cmds.push cmd: 'service hive-webhcat-server stop'
-        if context.has_any_modules 'ryba/hbase/regionserver'
-          cmds.push cmd: 'service hbase-regionserver stop'
-        if context.has_any_modules 'ryba/hbase/master'
-          cmds.push cmd: 'service hbase-master stop'
-        if context.has_any_modules 'ryba/hbase/rest'
-          cmds.push cmd: 'service hbase-rest stop'
-        if context.has_any_modules 'ryba/oozie/server'
-          cmds.push cmd: """
+      services = [
+        { name: 'zookeeper-server', module: 'ryba/zookeeper' }
+        { name: 'hadoop-hdfs-journalnode', module: 'yba/hadoop/hdfs_jn' }
+        { name: 'hadoop-hdfs-zkfc', module: 'ryba/hadoop/hdfs_nn'}
+        { name: 'hadoop-hdfs-namenode', module: 'ryba/hadoop/hdfs_nn'}
+        { name: 'hadoop-hdfs-secondarynamenode', module: 'ryba/hadoop/hdfs_snn'}
+        { name: 'hadoop-hdfs-datanode', module: 'ryba/hadoop/hdfs_dn'}
+        { name: 'hadoop-yarn-resourcemanager', module: 'ryba/hadoop/yarn_rm'}
+        { name: 'hadoop-yarn-nodemanager', module: 'ryba/hadoop/yarn_nm'}
+        { name: 'hadoop-mapreduce-historyserver', module: 'ryba/hadoop/mapred_jhs'}
+        { name: 'hive-hcatalog-server', module: 'ryba/hive/server'}
+        { name: 'hive-server2', module: 'ryba/hive/server'}
+        { name: 'hive-webhcat-server', module: 'ryba/hive/webhcat'}
+        { name: 'hbase-regionserver', module: 'ryba/hbase/regionserver'}
+        { name: 'hbase-master', module: 'ryba/hbase/master'}
+        { name: 'hbase-rest', module: 'ryba/hbase/rest'}
+        { cmd: """
           if [ ! -f /var/run/oozie.pid ]; then exit 3; fi
           if ! kill -0 >/dev/null 2>&1 `cat /var/run/oozie.pid`; then exit 3; fi
           su -l oozie -c "/usr/lib/oozie/bin/oozied.sh stop 20 -force"
-          """
-        if context.has_any_modules 'ryba/nagios'
-          cmds.push cmd: 'service nagios stop'
-        if context.has_any_modules 'ryba/ganglia/collector'
-          cmds.push cmd: 'service hdp-gmetad stop'
-        if context.has_any_modules 'ryba/ganglia/monitor'
-          cmds.push cmd: 'service hdp-gmond stop'
-        for cmd in cmds then cmd.code_skipped = [1, 3]
-        context.execute cmds.reverse(), next
+          """, module: 'ryba/oozie/server'}
+        { name: 'nagios', module: 'ryba/nagios'}
+        { name: 'hdp-gmetad', module: 'ryba/ganglia/collector'}
+        { name: 'hdp-gmond', module: 'ryba/ganglia/monitor'}
+      ].reverse()
+      each services
+      .run (service, next) ->
+        each contexts
+        .parallel true
+        .run (context, next) ->
+          return next() unless context.has_any_modules service.module
+          cmd = service.cmd or "service #{service.name} stop"
+          context.log "Stop service '#{service.name}'"
+          context.execute
+            cmd: cmd
+            code_skipped: [1, 3]
+          , next
+        .then next
       .then next
+
+
+      # each contexts
+      # .parallel true
+      # .run (context, next) ->
+      #   cmds = []
+      #   if context.has_any_modules 'ryba/zookeeper'
+      #     cmds.push cmd: 'service zookeeper-server stop'
+      #   if context.has_any_modules 'ryba/hadoop/hdfs_jn'
+      #     cmds.push cmd: 'service hadoop-hdfs-journalnode stop'
+      #   if context.has_any_modules 'ryba/hadoop/hdfs_nn'
+      #     cmds.push cmd: 'service hadoop-hdfs-zkfc stop'
+      #     cmds.push cmd: 'service hadoop-hdfs-namenode stop'
+      #   if context.has_any_modules 'ryba/hadoop/hdfs_snn'
+      #     cmds.push cmd: 'service hadoop-hdfs-secondarynamenode stop'
+      #   if context.has_any_modules 'ryba/hadoop/hdfs_dn'
+      #     cmds.push cmd: 'service hadoop-hdfs-datanode stop'
+      #   if context.has_any_modules 'ryba/hadoop/yarn_rm'
+      #     cmds.push cmd: 'service hadoop-yarn-resourcemanager stop'
+      #   if context.has_any_modules 'ryba/hadoop/yarn_nm'
+      #     cmds.push cmd: 'service hadoop-yarn-nodemanager stop'
+      #   if context.has_any_modules 'ryba/hadoop/mapred_jhs'
+      #     cmds.push cmd: 'service hadoop-mapreduce-historyserver stop'
+      #   if context.has_any_modules 'ryba/hive/server'
+      #     cmds.push cmd: 'service hive-hcatalog-server stop'
+      #     cmds.push cmd: 'service hive-server2 stop'
+      #   if context.has_any_modules 'ryba/hive/webhcat'
+      #     cmds.push cmd: 'service hive-webhcat-server stop'
+      #   if context.has_any_modules 'ryba/hbase/regionserver'
+      #     cmds.push cmd: 'service hbase-regionserver stop'
+      #   if context.has_any_modules 'ryba/hbase/master'
+      #     cmds.push cmd: 'service hbase-master stop'
+      #   if context.has_any_modules 'ryba/hbase/rest'
+      #     cmds.push cmd: 'service hbase-rest stop'
+      #   if context.has_any_modules 'ryba/oozie/server'
+      #     cmds.push cmd: """
+      #     if [ ! -f /var/run/oozie.pid ]; then exit 3; fi
+      #     if ! kill -0 >/dev/null 2>&1 `cat /var/run/oozie.pid`; then exit 3; fi
+      #     su -l oozie -c "/usr/lib/oozie/bin/oozied.sh stop 20 -force"
+      #     """
+      #   if context.has_any_modules 'ryba/nagios'
+      #     cmds.push cmd: 'service nagios stop'
+      #   if context.has_any_modules 'ryba/ganglia/collector'
+      #     cmds.push cmd: 'service hdp-gmetad stop'
+      #   if context.has_any_modules 'ryba/ganglia/monitor'
+      #     cmds.push cmd: 'service hdp-gmond stop'
+      #   for cmd in cmds then cmd.code_skipped = [1, 3]
+      #   context.execute cmds.reverse(), next
+      # .then next
 
 ## HDFS Check Edits
 
@@ -473,7 +514,6 @@ Install Zookeeper and HDFS.
         each contexts
         .parallel true
         .run (context, next) ->
-          console.log 'ok', context.config.host
           context.execute [
             # cmd: '/usr/hdp/2.2.0.0-2041/etc/rc.d/init.d/zookeeper-server start'
             cmd: 'service zookeeper-server start'
@@ -544,7 +584,9 @@ Replace your configuration after upgrading on all the ZooKeeper nodes.
         if context.has_module 'ryba/hadoop/hdfs_nn'
           require('../../hadoop/hdfs_nn').configure context
           for name_dir, i in context.config.ryba.hdfs.site['dfs.namenode.name.dir'].split ','
-            cmds.push cmd: "test -d #{name_dir}/previous"
+            cmds.push
+              cmd: "test -d #{name_dir}/previous"
+              if: context.config.ryba.active_nn_host is context.config.host
         if context.has_module 'ryba/hadoop/hdfs_jn'
           require('../../hadoop/hdfs_jn').configure context
           for edit_dir, i in context.config.ryba.hdfs.site['dfs.journalnode.edits.dir'].split ','
