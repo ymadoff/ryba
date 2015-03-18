@@ -85,6 +85,7 @@ the application (zombie state).
 
       ryba.yarn.capacity_scheduler ?= {}
       ryba.yarn.capacity_scheduler['yarn.scheduler.capacity.resource-calculator'] ?= 'org.apache.hadoop.yarn.util.resource.DominantResourceCalculator'
+      ryba.yarn.capacity_scheduler['yarn.scheduler.capacity.maximum-am-resource-percent'] ?= '0.2'
       ryba.yarn.site['yarn.scheduler.minimum-allocation-mb'] ?= '256'
       ryba.yarn.site['yarn.scheduler.maximum-allocation-mb'] ?= '2048'
       ryba.yarn.site['yarn.scheduler.minimum-allocation-vcores'] ?= 1
