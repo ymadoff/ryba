@@ -15,7 +15,7 @@ Use the [Beeline][beeline] JDBC client to execute SQL queries.
 alias hs2=\'/usr/bin/beeline -d "org.apache.hive.jdbc.HiveDriver" -u "jdbc:hive2://{fqdn}:10001/;principal={hive}/fqdn@{realm}"
 ```
 
-    module.exports.push name: 'Hive & HCat Client # Check Server2', label_true: 'CHECKED', timeout: -1, handler: (ctx, next) ->
+    module.exports.push skip: true, name: 'Hive & HCat Client # Check Server2', label_true: 'CHECKED', timeout: -1, handler: (ctx, next) ->
       {force_check, realm, user, hive} = ctx.config.ryba
       hs2_ctxs = ctx.contexts 'ryba/hive/server', require('./server').configure
       return next() unless hs2_ctxs.length
@@ -56,7 +56,7 @@ alias hs2=\'/usr/bin/beeline -d "org.apache.hive.jdbc.HiveDriver" -u "jdbc:hive2
 Use the [Hive CLI][hivecli] client to execute SQL queries using the MapReduce
 engine.
 
-    module.exports.push name: 'Hive & HCat Client # Check MapReduce', label_true: 'CHECKED', timeout: -1, handler: (ctx, next) ->
+    module.exports.push skip: true, name: 'Hive & HCat Client # Check MapReduce', label_true: 'CHECKED', timeout: -1, handler: (ctx, next) ->
       {force_check, user} = ctx.config.ryba
       hcat_ctxs = ctx.contexts 'ryba/hive/server', require('./server').configure
       return next() unless hcat_ctxs.length
@@ -87,7 +87,7 @@ engine.
 
 Use the [Hive CLI][hivecli] client to execute SQL queries using the Tez engine.
 
-    module.exports.push name: 'Hive & HCat Client # Check Tez', label_true: 'CHECKED', timeout: -1, handler: (ctx, next) ->
+    module.exports.push skip: true, name: 'Hive & HCat Client # Check Tez', label_true: 'CHECKED', timeout: -1, handler: (ctx, next) ->
       {force_check, user} = ctx.config.ryba
       hcat_ctxs = ctx.contexts 'ryba/hive/server', require('./server').configure
       return next() unless hcat_ctxs.length
