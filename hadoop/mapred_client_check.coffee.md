@@ -13,7 +13,7 @@ be executed if the directory "/user/test/10gsort" generated
 by this action is not present on HDFS. Delete this directory 
 to re-execute the check.
 
-    module.exports.push name: 'Hadoop MapRed Client # Check', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
+    module.exports.push skip: true, name: 'Hadoop MapRed Client # Check', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
       {force_check} = ctx.config.ryba
       host = ctx.config.shortname
       # 100 records = 1Ko
