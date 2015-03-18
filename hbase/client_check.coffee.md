@@ -31,7 +31,7 @@ scanning the table.
           return next Error 'Invalid command output' if executed and not isRowCreated
           next err, executed
     
-    module.exports.push name: 'HBase Client # Check MapReduce', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
+    module.exports.push skip: true, name: 'HBase Client # Check MapReduce', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
       ctx.execute
         cmd: mkcmd.test ctx, """
           echo -e '1,toto\\n2,tata\\n3,titi\\n4,tutu' | hdfs dfs -put -f - /user/ryba/test_import.csv
