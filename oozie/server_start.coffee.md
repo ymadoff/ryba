@@ -28,6 +28,7 @@ Note, there is no need to clean a zombie pid file before starting the server.
         cmd: """
         if [ -f #{oozie.pid_dir}/oozie.pid ]; then
           if kill -0 >/dev/null 2>&1 `cat #{oozie.pid_dir}/oozie.pid`; then exit 3; fi
+          rm #{oozie.pid_dir}/oozie.pid # Or Oozie will complain
         fi
         su -l #{oozie.user.name} -c "/usr/hdp/current/oozie-server/bin/oozied.sh start"
         """

@@ -26,6 +26,7 @@ su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozied.sh stop"
         su -l #{oozie.user.name} -c "/usr/hdp/current/oozie-server/bin/oozied.sh stop 20 -force"
         """
         code_skipped: 3
+        if_exists: '/usr/hdp/current/oozie-server/bin/oozied.sh'
       , next
 
 ## Stop Clean Logs

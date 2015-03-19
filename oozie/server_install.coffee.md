@@ -263,15 +263,12 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
               code_skipped: 3
               , (err) ->
                 return next err if err
-                # ctx.service
-                #   srv_name: 'oozie'
-                #   action: 'stop'
-                # , (err) ->
                 ctx.execute
                   cmd: """
                   if [ ! -f #{oozie.pid_dir}/oozie.pid ]; then exit 3; fi
                   if ! kill -0 >/dev/null 2>&1 `cat #{oozie.pid_dir}/oozie.pid`; then exit 3; fi
                   su -l #{oozie.user.name} -c "/usr/hdp/current/oozie-server/bin/oozied.sh stop 20 -force"
+                  rm -rf cat #{oozie.pid_dir}/oozie.pid
                   """
                   code_skipped: 3
                 , (err) ->
