@@ -28,18 +28,27 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
 
     module.exports.push name: 'HDFS ZKFC # Start', label_true: 'STARTED', handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      {active_nn_host} = ctx.config.ryba
-      do_wait = ->
-        ctx.waitForExecution
-          cmd: mkcmd.hdfs ctx, "hdfs haadmin -getServiceState #{ctx.config.shortname}"
-          code_skipped: 255
-        , (err, stdout) ->
-          return next err if err
-          do_start()
-      do_start = ->
-        ctx.service
-          srv_name: 'hadoop-hdfs-zkfc'
-          action: 'start'
-          if_exists: '/etc/init.d/hadoop-hdfs-zkfc'
-        , next
-      if active_nn_host is ctx.config.host then do_start() else do_wait()
+      # {active_nn_host} = ctx.config.ryba
+      # do_wait = ->
+      #   ctx.waitForExecution
+      #     cmd: mkcmd.hdfs ctx, "hdfs haadmin -getServiceState #{ctx.config.shortname}"
+      #     code_skipped: 255
+      #   , (err, stdout) ->
+      #     return next err if err
+      #     do_start()
+      # do_start = ->
+      #   ctx.service
+      #     srv_name: 'hadoop-hdfs-zkfc'
+      #     action: 'start'
+      #     if_exists: '/etc/init.d/hadoop-hdfs-zkfc'
+      #   , next
+      # if active_nn_host is ctx.config.host then do_start() else do_wait()
+      ctx.service
+        srv_name: 'hadoop-hdfs-zkfc'
+        action: 'start'
+        if_exists: '/etc/init.d/hadoop-hdfs-zkfc'
+      , next
+
+## Dependencies
+
+    mkcmd = require '../../lib/mkcmd'
