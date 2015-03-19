@@ -1,6 +1,24 @@
 
 # Capacity Planning for Hadoop Cluster
 
+## Main Entry Point
+
+    module.exports = ->
+      # Parameters and Help
+      params = parameters(exports.params)
+      if params.parse().help
+        return util.print(params.help())
+      # Run
+      params = params.parse()
+      config params.config, (err, config) ->
+        capacity params, config, (err) ->
+          if err
+            if err.errors
+              for err of err.errors
+                console.log(err.stack||err.message);
+            else
+              console.log(err.stack)
+
 ## Parameters
 
 *   `config` (array|string)   
@@ -70,19 +88,3 @@ node node_modules/ryba/bin/capacity \
     config = require 'masson/lib/config'
     capacity = require './index'
     util = require 'util'
-
-## Main Entry Point
-
-    params = parameters(exports.params)
-    if params.parse().help
-      return util.print(params.help())
-
-    params = params.parse()
-    config params.config, (err, config) ->
-      capacity config, (err) ->
-        if err
-          if err.errors
-            for err of err.errors
-              console.log(err.stack||err.message);
-          else
-            console.log(err.stack)

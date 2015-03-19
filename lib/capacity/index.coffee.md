@@ -11,7 +11,8 @@ default setting for Yarn and its client application such as MapReduce or Tez.
 
 ## Source Code
 
-    exports = module.exports = (config, callback) ->
+    exports = module.exports = (params, config, callback) ->
+      config.params = params
       exports.contexts config, (err, ctxs) ->
         return callback err if err
         return callback Error 'No Servers Configured' unless Object.keys(ctxs).length
@@ -76,20 +77,23 @@ default setting for Yarn and its client application such as MapReduce or Tez.
             return callback err if err
             do_end()
         do_end = ->
+          ctx.emit 'end' for ctx in ctxs
           callback null
         do_configure()
 
 ## SSH
 
     exports.contexts = (config, next) ->
-      config = merge {}, config
+      params = merge {}, config.params
+      params.end = false
+      params.hosts = null
+      params.modules = ['masson/bootstrap/connection', 'masson/bootstrap/info']
+      run params, config
       config.log ?= {}
       config.log.disabled ?= true
-      config.connection.end = false
+      # config.connection.end = false
       contexts = []
-      config.params.hosts = null
-      config.params.modules = ['masson/bootstrap/connection', 'masson/bootstrap/info']
-      run(config)
+      run params, config
       .on 'context', (ctx) ->
         contexts.push ctx
       .on 'error', next
@@ -551,9 +555,9 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
                 if remote_value then for v, i in remote_value
                   ws.write "      " if i % 3 is 0
                   ws.write "#{v}"
-                  if i % 3 is 2 and i isnt suggested_value.length - 1
+                  if i % 3 is 2 and i isnt suggested_value.length# - 1
                     ws.write "\n" 
-                  else if i isnt suggested_value.length - 1
+                  else if i isnt suggested_value.length# - 1
                     ws.write ', '
                 else
                   ws.write '      undefined'
