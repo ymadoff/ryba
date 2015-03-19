@@ -33,7 +33,6 @@ define inside the "ryba/hadoop/hdfs" and "masson/core/nc" modules.
 | namenode  | 50070 | tcp    | dfs.namdnode.http-address  |
 | namenode  | 50470 | tcp    | dfs.namenode.https-address |
 | namenode  | 8020  | tcp    | fs.defaultFS               |
-# | namenode  | 8019  | tcp    | dfs.ha.zkfc.port           |
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
@@ -99,7 +98,7 @@ Create a service principal for this NameNode. The principal is named after
         kadmin_server: admin_server
       , next
 
-# Opts
+## Opts
 
 Environment passed to the NameNode before it starts.   
 
@@ -114,7 +113,7 @@ Environment passed to the NameNode before it starts.
         backup: true
       , next
 
-# Configure
+## Configure
 
     module.exports.push name: 'HDFS NN # Configure', handler: (ctx, next) ->
       {hdfs, hadoop_conf_dir, hadoop_group} = ctx.config.ryba
@@ -129,7 +128,7 @@ Environment passed to the NameNode before it starts.
         backup: true
       , next
 
-# Slaves
+## Slaves
 
 The conf/slaves file should contain the hostname of every machine
 in the cluster which should start TaskTracker and DataNode daemons.
@@ -142,91 +141,6 @@ in the cluster which should start TaskTracker and DataNode daemons.
         destination: "#{hadoop_conf_dir}/slaves"
         eof: true
       , next
-
-# SSH Fencing
-
-Implement the SSH fencing strategy on each NameNode. To achieve this, the
-"hdfs-site.xml" file is updated with the "dfs.ha.fencing.methods" and
-"dfs.ha.fencing.ssh.private-key-files" properties.
-
-For SSH fencing to work, the HDFS user must be able to log for each NameNode
-into any other NameNode. Thus, the public and private SSH keys of the
-HDFS user are deployed inside his "~/.ssh" folder and the
-"~/.ssh/authorized_keys" file is updated accordingly.
-
-We also make sure SSH access is not blocked by a rule defined
-inside "/etc/security/access.conf". A specific rule for the HDFS user is
-inserted if ALL users or the HDFS user access is denied.
-
-    module.exports.push name: 'HDFS NN # SSH Fencing', handler: (ctx, next) ->
-      {hdfs, hadoop_conf_dir, ssh_fencing, hadoop_group} = ctx.config.ryba
-      return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      modified = false
-      do_mkdir = ->
-        ctx.mkdir
-          destination: "#{hdfs.user.home}/.ssh"
-          uid: hdfs.user.name
-          gid: hadoop_group.name
-          mode: 0o700
-        , (err, created) ->
-          return next err if err
-          do_upload_keys()
-      do_upload_keys = ->
-        ctx.upload [
-          source: "#{ssh_fencing.private_key}"
-          destination: "#{hdfs.user.home}/.ssh"
-          uid: hdfs.user.name
-          gid: hadoop_group.name
-          mode: 0o600
-        ,
-          source: "#{ssh_fencing.public_key}"
-          destination: "#{hdfs.user.home}/.ssh"
-          uid: hdfs.user.name
-          gid: hadoop_group.name
-          mode: 0o655
-        ], (err, written) ->
-          return next err if err
-          modified = true if written
-          do_authorized()
-      do_authorized = ->
-        fs.readFile "#{ssh_fencing.public_key}", (err, content) ->
-          return next err if err
-          ctx.write
-            destination: "#{hdfs.user.home}/.ssh/authorized_keys"
-            content: content
-            append: true
-            uid: hdfs.user.name
-            gid: hadoop_group.name
-            mode: 0o600
-          , (err, written) ->
-            return next err if err
-            modified = true if written
-            do_access()
-      do_access = ->
-        ctx.fs.readFile '/etc/security/access.conf', (err, source) ->
-          return next err if err
-          content = []
-          exclude = ///^\-\s?:\s?(ALL|#{hdfs.user.name})\s?:\s?(.*?)\s*?(#.*)?$///
-          include = ///^\+\s?:\s?(#{hdfs.user.name})\s?:\s?(.*?)\s*?(#.*)?$///
-          included = false
-          for line, i in source = source.split /\r\n|[\n\r\u0085\u2028\u2029]/g
-            if match = include.exec line
-              included = true # we shall also check if the ip/fqdn match in origin
-            if not included and match = exclude.exec line
-              nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
-              content.push "+ : #{hdfs.user.name} : #{nn_hosts.join ','}"
-            content.push line
-          return do_end() if content.length is source.length
-          ctx.write
-            destination: '/etc/security/access.conf'
-            content: content.join '\n'
-          , (err, written) ->
-            return next err if err
-            modified = true if written
-            do_end()
-      do_end = ->
-          next null, modified
-      do_mkdir()
 
 ## Format
 
