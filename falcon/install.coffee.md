@@ -8,38 +8,27 @@ each HDFS cluster.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
+    module.exports.push 'masson/core/iptables'
+    module.exports.push require('masson/core/iptables').configure
     module.exports.push require('./index').configure
 
-# ## IPTables
+## IPTables
 
-# | Service   | Port       | Proto     | Parameter                  |
-# |-----------|------------|-----------|----------------------------|
-# | datanode  | 50010/1004 | tcp/http  | dfs.datanode.address       |
-# | datanode  | 50075/1006 | tcp/http  | dfs.datanode.http.address  |
-# | datanode  | 50475      | tcp/https | dfs.datanode.https.address |
-# | datanode  | 50020      | tcp       | dfs.datanode.ipc.address   |
+| Service   | Port       | Proto     | Parameter                   |
+|-----------|------------|-----------|-----------------------------|
+| falcon    | 15443      | tcp/http  | prism.falcon.local.endpoint |
 
-# The "dfs.datanode.address" default to "50010" in non-secured mode. In non-secured
-# mode, it must be set to a value below "1024" and default to "1004".
+Note, this hasnt been verified.
 
-# IPTables rules are only inserted if the parameter "iptables.action" is set to 
-# "start" (default value).
-
-#     module.exports.push name: 'Hadoop HDFS DN # IPTables', handler: (ctx, next) ->
-#       {hdfs} = ctx.config.ryba
-#       [_, dn_address] = hdfs.site['dfs.datanode.address'].split ':'
-#       [_, dn_http_address] = hdfs.site['dfs.datanode.http.address'].split ':'
-#       [_, dn_https_address] = hdfs.site['dfs.datanode.https.address'].split ':'
-#       [_, dn_ipc_address] = hdfs.site['dfs.datanode.ipc.address'].split ':'
-#       ctx.iptables
-#         rules: [
-#           { chain: 'INPUT', jump: 'ACCEPT', dport: dn_address, protocol: 'tcp', state: 'NEW', comment: "HDFS DN Data" }
-#           { chain: 'INPUT', jump: 'ACCEPT', dport: dn_http_address, protocol: 'tcp', state: 'NEW', comment: "HDFS DN HTTP" }
-#           { chain: 'INPUT', jump: 'ACCEPT', dport: dn_https_address, protocol: 'tcp', state: 'NEW', comment: "HDFS DN HTTPS" }
-#           { chain: 'INPUT', jump: 'ACCEPT', dport: dn_ipc_address, protocol: 'tcp', state: 'NEW', comment: "HDFS DN Meta" }
-#         ]
-#         if: ctx.config.iptables.action is 'start'
-#       , next
+    module.exports.push name: 'Hadoop HDFS DN # IPTables', handler: (ctx, next) ->
+      {falcon} = ctx.config.ryba
+      {hostname, port} = url.parse falcon.startup['prism.falcon.local.endpoint']
+      ctx.iptables
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "Falcon Prism Local EndPoint" }
+        ]
+        if: ctx.config.iptables.action is 'start'
+      , next
 
 ## Users & Groups
 
@@ -87,6 +76,8 @@ falcon:x:498:falcon
         kadmin_server: admin_server
       , next
 
+## HFDS Layout
+
     module.exports.push name: 'Falcon # HFDS Layout', handler: (ctx, next) ->
       {user, group} = ctx.config.ryba.falcon
       ctx.execute
@@ -105,6 +96,8 @@ falcon:x:498:falcon
           cmd: mkcmd.hdfs ctx, 'hdfs dfs -chgrp #{group.name} /apps/falcon'
           if: not exists or group.name isnt group_owner
         ], next
+
+## Runtime
 
     # module.exports.push name: 'Falcon # Runtime', handler: (ctx, next) ->
     #   # {falcon_conf_dir, runtime} = ctx.config.ryba.falcon
@@ -126,8 +119,7 @@ falcon:x:498:falcon
     #     eof: true
     #   , next
 
-
-hdfs dfs -mkdir /apps/falcon
+## Startup
 
     module.exports.push name: 'Falcon # Startup', handler: (ctx, next) ->
       {falcon_conf_dir, startup} = ctx.config.ryba.falcon
@@ -141,6 +133,8 @@ hdfs dfs -mkdir /apps/falcon
         eof: true
       , next
 
+## Notes
+
 Changes to ownership and permissions of directories managed by Falcon
 
 Directory   Location  Owner   Permissions
@@ -151,6 +145,7 @@ App logs  ${cluster.staging-location}/workflows/{entity}/{entity-name}/logs   fa
 
 ## Dependencies
 
+    url = require 'url'
     quote = require 'regexp-quote'
     mkcmd = require '../lib/mkcmd'
 
