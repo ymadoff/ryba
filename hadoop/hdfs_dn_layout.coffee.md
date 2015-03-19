@@ -7,6 +7,7 @@
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push require('./hdfs').configure
     module.exports.push 'ryba/hadoop/hdfs_dn_wait'
+    module.exports.push 'ryba/hadoop/hdfs_nn_wait'
 
 ## HDFS layout
 
