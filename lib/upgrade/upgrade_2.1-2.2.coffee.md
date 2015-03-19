@@ -5,9 +5,10 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
 
     exports = module.exports = (params, config, callback) ->
       params.easy_download
+      return callback Error "Missing 'repo' option" unless params.repo?
+      # params.repo ?= './resources/repos/hdp-2.2.0.0.local.repo'
       config.params = params
       config.directory = '/var/ryba/upgrade'
-      config.repo = './resources/repos/hdp-2.2.0.0.local.repo'
       exports.contexts config, (err, contexts) ->
         return callback err if err
         middlewares = [
@@ -410,7 +411,7 @@ Upload the HDP 2.2 repository.
       .parallel true
       .run (context, next) ->
         context.upload
-          source: config.repo
+          source: config.params.repo
           destination: '/etc/yum.repos.d/hdp.repo'
         , (err) ->
           return next err if err

@@ -1,6 +1,25 @@
 
 # Upgrade
 
+## Main Entry Point
+
+    module.exports = ->
+      # Parameters and Help
+      params = parameters(exports.params)
+      if params.parse().help
+        return util.print(params.help())
+      # Run
+      params = params.parse()
+      config params.config, (err, config) ->
+        throw err if err
+        upgrade params, config, (err) ->
+          if err
+            if err.errors
+              for err of err.errors
+                console.log err.stack or err.message
+            else
+              console.log err.stack
+
 ## Parameters
 
 *   `config` (array|string)   
@@ -27,6 +46,10 @@ node node_modules/ryba/bin/upgrade \
         name: 'start', shortcut: 's'
         description: 'Middleware to start from'
       ,
+        name: 'repo', shortcut: 'r'
+        description: 'Path to the new HDP 2.2 repository file.'
+        required: true
+      ,
         name: 'easy_download', shortcut: 'e', type: 'boolean'
         description: 'Number of concurrent downloads, parallel unless defined'
       ]
@@ -37,22 +60,3 @@ node node_modules/ryba/bin/upgrade \
     config = require 'masson/lib/config'
     upgrade = require './upgrade_2.1-2.2'
     util = require 'util'
-
-## Parameters and Help
-
-    params = parameters(exports.params)
-    if params.parse().help
-      return util.print(params.help())
-
-## Main Entry Point
-
-    params = params.parse()
-    config params.config, (err, config) ->
-      throw err if err
-      upgrade params, config, (err) ->
-        if err
-          if err.errors
-            for err of err.errors
-              console.log err.stack or err.message
-          else
-            console.log err.stack
