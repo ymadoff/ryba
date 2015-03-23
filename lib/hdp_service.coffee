@@ -36,6 +36,14 @@ module.exports = (ctx) ->
           cmd: """
           code=3
           version=`hdp-select status #{options.version_name} | sed 's/.* \\(\\d*\\)/\\1/'`
+          if [ ! -d "/usr/hdp/$version" ]; then
+            version=`yum repolist | egrep HDP-[0-9] | sed 's/^HDP-\\([0-9\\.]*\\).*$/\\1/'`
+            version=`ls --format=single-column /usr/hdp | grep ${version} | tail -1`
+            if [ ! -d "/usr/hdp/$version" ]; then
+              echo 'Failed to detect the latest HDP version'
+              exit 1
+            fi
+          fi
           echo $version
           source="/etc/init.d/#{options.name}"
           target="/usr/hdp/$version/etc/rc.d/init.d/#{options.name}"
