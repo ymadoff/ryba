@@ -11,6 +11,7 @@
     "ldapjs": "0.7.1",
     "masson": "0.1.0",
     "mecano": "0.4.1",
+    "multimatch": "2.0.0",
     "pad": "0.0.8",
     "parameters": "0.1.3",
     "prink": "0.0.2",
