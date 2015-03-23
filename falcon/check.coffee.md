@@ -26,7 +26,7 @@ Follow the [Hortonworks Data Pipelines example][dpe].
       nn_http = ctx.config.ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address#{nn_nameservice}#{nn_shortname}"] 
       nn_principal = nn_contexts[0].config.ryba.hdfs.site['dfs.namenode.kerberos.principal'].replace '_HOST', nn_contexts[0].config.host
       # TODO: RM HA latest
-      rm_contexts = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn').configure
+      rm_contexts = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
       rm_shortname = if rm_contexts.length > 1 then ".#{rm_contexts[0].config.shortname}" else ''
       rm_address = rm_contexts[0].config.ryba.yarn.site["yarn.resourcemanager.address#{rm_shortname}"]
       oozie_contexts = ctx.contexts 'ryba/oozie/server', require('../oozie/server').configure

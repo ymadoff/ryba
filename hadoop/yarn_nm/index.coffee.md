@@ -13,7 +13,7 @@ applications.
 
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
-      require('./yarn_client').configure ctx
+      require('../yarn_client').configure ctx
       {host, ryba} = ctx.config
 
       # Working Directories (see capacity for server resource discovery)
@@ -64,19 +64,22 @@ Resources:
 
 ## Commands
 
-    # module.exports.push commands: 'backup', modules: 'ryba/hadoop/yarn_nm_backup'
+    # module.exports.push commands: 'backup', modules: 'ryba/hadoop/yarn_nm/backup'
 
-    # module.exports.push commands: 'check', modules: 'ryba/hadoop/yarn_nm_check'
+    # module.exports.push commands: 'check', modules: 'ryba/hadoop/yarn_nm/check'
 
-    module.exports.push commands: 'report', modules: 'ryba/hadoop/yarn_nm_report'
+    module.exports.push commands: 'report', modules: 'ryba/hadoop/yarn_nm/report'
 
-    module.exports.push commands: 'install', modules: 'ryba/hadoop/yarn_nm_install'
+    module.exports.push commands: 'install', modules: [
+      'ryba/hadoop/yarn_nm/install'
+      'ryba/hadoop/yarn_nm/start'
+    ]
 
-    module.exports.push commands: 'start', modules: 'ryba/hadoop/yarn_nm_start'
+    module.exports.push commands: 'start', modules: 'ryba/hadoop/yarn_nm/start'
 
-    module.exports.push commands: 'status', modules: 'ryba/hadoop/yarn_nm_status'
+    module.exports.push commands: 'status', modules: 'ryba/hadoop/yarn_nm/status'
 
-    module.exports.push commands: 'stop', modules: 'ryba/hadoop/yarn_nm_stop'
+    module.exports.push commands: 'stop', modules: 'ryba/hadoop/yarn_nm/stop'
 
 
 

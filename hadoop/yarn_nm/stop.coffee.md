@@ -1,10 +1,10 @@
 
 # YARN NodeManager Stop
 
-    lifecycle = require '../lib/lifecycle'
+    lifecycle = require '../../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./yarn_nm').configure
+    module.exports.push require('./index').configure
 
     module.exports.push name: 'Hadoop NodeManager # Stop Server', label_true: 'STOPPED', handler: (ctx, next) ->
       lifecycle.nm_stop ctx, (err, stopped) ->

@@ -9,7 +9,6 @@ Job History Server.
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
-    # module.exports.push 'ryba/hadoop/yarn_client_install'
     module.exports.push require('./mapred_jhs').configure
     module.exports.push require '../lib/hdp_service'
 

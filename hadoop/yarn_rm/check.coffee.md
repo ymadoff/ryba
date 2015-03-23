@@ -5,7 +5,7 @@ Check the health of the ResourceManager(s).
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/yarn_rm_wait'
+    module.exports.push 'ryba/hadoop/yarn_rm/wait'
 
 ## Check Health
 
@@ -21,6 +21,6 @@ healthy, non-zero otherwise.
 
 # Dependencies
 
-    mkcmd = require '../lib/mkcmd'
+    mkcmd = require '../../lib/mkcmd'
 
     

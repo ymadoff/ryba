@@ -7,7 +7,7 @@ Wait for the ResourceManager RPC and HTTP ports. It supports HTTPS and HA.
     module.exports.push 'masson/bootstrap'
 
     module.exports.push name: 'Yarn RM # Wait RM', timeout: -1, label_true: 'READY', handler: (ctx, next) ->
-      rm_ctxs = ctx.contexts modules: 'ryba/hadoop/yarn_rm', require('./yarn_rm').configure
+      rm_ctxs = ctx.contexts modules: 'ryba/hadoop/yarn_rm', require('./index').configure
       servers = for rm_ctx in rm_ctxs
         {yarn} = rm_ctx.config.ryba
         protocol = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY' then '' else '.https'

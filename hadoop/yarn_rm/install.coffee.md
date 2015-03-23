@@ -3,9 +3,9 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/yarn_client_install'
-    module.exports.push require('./yarn_rm').configure
-    module.exports.push require '../lib/hdp_service'
+    module.exports.push 'ryba/hadoop/yarn_client/install'
+    module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hdp_service'
 
 ## IPTables
 
@@ -111,7 +111,7 @@ inside "/etc/init.d" and activate it on startup.
       {yarn, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
-        default: "#{__dirname}/../resources/core_hadoop/yarn-site.xml"
+        default: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
         local_default: true
         properties: yarn.site
         merge: true
@@ -141,7 +141,7 @@ ResourceCalculator class name is expected.
       return next() unless yarn.site['yarn.resourcemanager.scheduler.class'] is 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/capacity-scheduler.xml"
-        default: "#{__dirname}/../resources/core_hadoop/capacity-scheduler.xml"
+        default: "#{__dirname}/../../resources/core_hadoop/capacity-scheduler.xml"
         local_default: true
         properties: capacity_scheduler
         merge: true
@@ -167,7 +167,7 @@ The default port is "19888".
 
 ## Module Dependencies
 
-    mkcmd = require '../lib/mkcmd'
+    mkcmd = require '../../lib/mkcmd'
 
 ## Todo: WebAppProxy.   
 

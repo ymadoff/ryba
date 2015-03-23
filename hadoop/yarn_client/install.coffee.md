@@ -4,7 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/core'
-    module.exports.push require('./yarn_client').configure
+    module.exports.push require('./index').configure
 
 ## Package
 
@@ -53,7 +53,7 @@ Install the "hadoop-yarn" package.
       {java_home} = ctx.config.java
       {yarn, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
       ctx.render
-        source: "#{__dirname}/../resources/core_hadoop/yarn-env.sh"
+        source: "#{__dirname}/../../resources/core_hadoop/yarn-env.sh"
         destination: "#{hadoop_conf_dir}/yarn-env.sh"
         local_source: true
         write: [
@@ -86,7 +86,7 @@ Install the "hadoop-yarn" package.
       #   properties[k] = v
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
-        default: "#{__dirname}/../resources/core_hadoop/yarn-site.xml"
+        default: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
         local_default: true
         properties: yarn.site
         merge: true

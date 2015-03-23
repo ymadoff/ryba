@@ -12,7 +12,7 @@
       return if ctx.yarn_configured
       ctx.yarn_configured = true
       require('masson/commons/java').configure ctx
-      require('./hdfs').configure ctx
+      require('../hdfs_client').configure ctx
       {ryba} = ctx.config
       {static_host, realm} = ryba
       # Grab the host(s) for each roles
@@ -28,9 +28,9 @@
       ryba.yarn.site['yarn.log-aggregation.retain-seconds'] ?= '-1' #  How long to keep aggregation logs before deleting them. -1 disables. Be careful, set this too small and you will spam the name node.
       ryba.yarn.site['yarn.log-aggregation.retain-check-interval-seconds'] ?= '-1' # Time between checks for aggregated log retention. If set to 0 or a negative value then the value is computed as one-tenth of the aggregated log retention time. Be careful, set this too small and you will spam the name node.
       ryba.yarn.site['yarn.application.classpath'] ?= "$HADOOP_CONF_DIR,/usr/hdp/${hdp.version}/hadoop-client/*,/usr/hdp/${hdp.version}/hadoop-client/lib/*,/usr/hdp/${hdp.version}/hadoop-hdfs-client/*,/usr/hdp/${hdp.version}/hadoop-hdfs-client/lib/*,/usr/hdp/${hdp.version}/hadoop-yarn-client/*,/usr/hdp/${hdp.version}/hadoop-yarn-client/lib/*"
-      [jhs_context] = ctx.contexts 'ryba/hadoop/mapred_jhs', require('./mapred_jhs').configure
+      [jhs_context] = ctx.contexts 'ryba/hadoop/mapred_jhs', require('../mapred_jhs').configure
       if jhs_context
-        # TODO: detect https and port, see "./mapred_jhs_check"
+        # TODO: detect https and port, see "../mapred_jhs_check"
         jhs_protocol = if jhs_context.config.ryba.mapred.site['mapreduce.jobhistory.address'] is 'HTTP_ONLY' then 'http' else 'https'
         jhs_protocol_key = if jhs_protocol is 'http' then '' else '.https'
         jhs_address = jhs_context.config.ryba.mapred.site["mapreduce.jobhistory.webapp#{jhs_protocol_key}.address"]
@@ -76,13 +76,13 @@ values don't get pushed to the cluster.
 
 ## Commands
 
-    module.exports.push commands: 'check', modules: 'ryba/hadoop/yarn_client_check'
+    module.exports.push commands: 'check', modules: 'ryba/hadoop/yarn_client/check'
 
-    module.exports.push commands: 'report', modules: 'ryba/hadoop/yarn_client_report'
+    module.exports.push commands: 'report', modules: 'ryba/hadoop/yarn_client/report'
 
     module.exports.push commands: 'install', modules: [
-      'ryba/hadoop/yarn_client_install'
-      'ryba/hadoop/yarn_client_check'
+      'ryba/hadoop/yarn_client/install'
+      'ryba/hadoop/yarn_client/check'
     ]
 
 [cloudera_ha]: http://www.cloudera.com/content/cloudera/en/documentation/cdh5/v5-1-x/CDH5-High-Availability-Guide/cdh5hag_rm_ha_config.html

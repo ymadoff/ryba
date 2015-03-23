@@ -3,8 +3,8 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./yarn_client').configure
-    module.exports.push 'ryba/hadoop/yarn_rm_wait'
+    module.exports.push require('./index').configure
+    module.exports.push 'ryba/hadoop/yarn_rm/wait'
 
 ## Check CLI
 
@@ -15,6 +15,6 @@
 
 ## Module Dependencies
 
-    mkcmd = require '../lib/mkcmd'
+    mkcmd = require '../../lib/mkcmd'
 
 

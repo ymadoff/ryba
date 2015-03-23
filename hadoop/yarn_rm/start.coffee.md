@@ -1,11 +1,11 @@
 
 # Hadoop YARN ResourceManager Start
 
-    lifecycle = require '../lib/lifecycle'
+    lifecycle = require '../../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/hdfs_dn_wait'
-    module.exports.push require('./yarn_rm').configure
+    module.exports.push require('./index').configure
 
     module.exports.push name: 'Yarn RM # Start Server', label_true: 'STARTED', handler: (ctx, next) ->
       lifecycle.rm_start ctx, next
@@ -22,7 +22,7 @@ with the message "RMHAServiceTarget doesn't have a corresponding ZKFC address".
     module.exports.push name: 'Yarn RM # Ensure Active/Standby', handler: (ctx, next) ->
       {yarn} = ctx.config.ryba
       return next() if yarn.site['yarn.resourcemanager.ha.automatic-failover.enabled'] is 'true'
-      rm_ctxs = ctx.contexts modules: 'ryba/hadoop/yarn_rm', require('./yarn').configure
+      rm_ctxs = ctx.contexts modules: 'ryba/hadoop/yarn_rm', require('./index').configure
       return next() unless rm_ctxs.length > 1
       return next() unless yarn.active_rm_host is ctx.config.host
       active_rm_shortname = passive_rm_shortname = null
@@ -40,7 +40,7 @@ with the message "RMHAServiceTarget doesn't have a corresponding ZKFC address".
 
 ## Module Dependencies
 
-    mkcmd = require '../lib/mkcmd'
+    mkcmd = require '../../lib/mkcmd'
 
 ## Errors
 

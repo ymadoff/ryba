@@ -6,7 +6,7 @@
 ## Configuration
 
     module.exports.configure = (ctx) ->
-      require('./yarn_client').configure ctx
+      require('../yarn_client').configure ctx
       {ryba} = ctx.config
       ryba.yarn.site['yarn.resourcemanager.keytab'] ?= '/etc/security/keytabs/rm.service.keytab'
       ryba.yarn.site['yarn.resourcemanager.principal'] ?= "rm/#{ryba.static_host}@#{ryba.realm}"
@@ -37,7 +37,7 @@ setAcl /rmstore/ZKRMStateRoot world:anyone:rwacd
 rmr /rmstore/ZKRMStateRoot
 ```
 
-      zoo_ctxs = ctx.contexts modules: 'ryba/zookeeper/server', require('../zookeeper/server').configure
+      zoo_ctxs = ctx.contexts modules: 'ryba/zookeeper/server', require('../../zookeeper/server').configure
       quorum = for zoo_ctx in zoo_ctxs
         "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.config['clientPort']}"
       ryba.yarn.site['yarn.resourcemanager.zk-address'] ?= quorum.join ','
@@ -92,23 +92,23 @@ the application (zombie state).
 
 ## Commands
 
-    # module.exports.push commands: 'backup', modules: 'ryba/hadoop/yarn_rm_backup'
+    # module.exports.push commands: 'backup', modules: 'ryba/hadoop/yarn_rm/backup'
 
-    module.exports.push commands: 'check', modules: 'ryba/hadoop/yarn_rm_check'
+    module.exports.push commands: 'check', modules: 'ryba/hadoop/yarn_rm/check'
 
-    module.exports.push commands: 'report', modules: 'ryba/hadoop/yarn_rm_report'
+    module.exports.push commands: 'report', modules: 'ryba/hadoop/yarn_rm/report'
 
     module.exports.push commands: 'install', modules: [
-      'ryba/hadoop/yarn_rm_install'
-      'ryba/hadoop/yarn_rm_start'
-      'ryba/hadoop/yarn_rm_check'
+      'ryba/hadoop/yarn_rm/install'
+      'ryba/hadoop/yarn_rm/start'
+      'ryba/hadoop/yarn_rm/check'
     ]
 
-    module.exports.push commands: 'start', modules: 'ryba/hadoop/yarn_rm_start'
+    module.exports.push commands: 'start', modules: 'ryba/hadoop/yarn_rm/start'
 
-    module.exports.push commands: 'status', modules: 'ryba/hadoop/yarn_rm_status'
+    module.exports.push commands: 'status', modules: 'ryba/hadoop/yarn_rm/status'
 
-    module.exports.push commands: 'stop', modules: 'ryba/hadoop/yarn_rm_stop'
+    module.exports.push commands: 'stop', modules: 'ryba/hadoop/yarn_rm/stop'
 
 
 [restart]: http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/ResourceManagerRestart.html

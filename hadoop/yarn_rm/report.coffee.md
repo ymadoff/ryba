@@ -4,7 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/bootstrap/report'
-    module.exports.push require('./yarn_rm').configure
+    module.exports.push require('./index').configure
 
 ## Info Memory
 
@@ -28,7 +28,7 @@
 
 ## Module Dependencies
 
-    properties = require '../lib/properties'
+    properties = require '../../lib/properties'
     prink = require 'prink'
 
 

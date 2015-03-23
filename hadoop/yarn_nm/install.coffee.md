@@ -5,10 +5,10 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/bootstrap/info'
     module.exports.push 'masson/core/iptables'
-    module.exports.push 'ryba/hadoop/yarn_client_install'
+    module.exports.push 'ryba/hadoop/yarn_client/install'
     module.exports.push 'ryba/hadoop/hdfs_dn_wait'
-    module.exports.push require('./yarn_nm').configure
-    module.exports.push require '../lib/hdp_service'
+    module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hdp_service'
 
 ## IPTables
 
@@ -160,7 +160,7 @@ SSH connection to the node to gather the memory and CPU informations.
       {yarn, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
-        default: "#{__dirname}/../resources/core_hadoop/yarn-site.xml"
+        default: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
         local_default: true
         properties: yarn.site
         merge: true
@@ -250,9 +250,8 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         code_skipped: 2
       , next
 
-    module.exports.push 'ryba/hadoop/yarn_nm_start'
 
 ## Module Dependencies
 
-    mkcmd = require '../lib/mkcmd'
+    mkcmd = require '../../lib/mkcmd'
 
