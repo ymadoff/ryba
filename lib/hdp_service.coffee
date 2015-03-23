@@ -1,4 +1,4 @@
-  
+
 module.exports = (ctx) ->
   # Options include
   # startup: [true] or false
@@ -7,14 +7,16 @@ module.exports = (ctx) ->
   # version_name
   ctx.hdp_service = (options, callback) ->
     options = name: options if typeof options is 'string'
-    options = [options] unless Array.isArray options
-    changed = false
-    each options
-    .run (options, next) ->
+    wrap null, arguments, (options, callback) ->
+      # options = name: options if typeof options is 'string'
+      # options = [options] unless Array.isArray options
+      changed = false
+      # each options
+      # .run (options, next) ->
       options.startup ?= false
       # options.link ?= true
       options.version_name ?= options.name
-      return next Error "Missing Option 'name'" unless options.name
+      return callback Error "Missing Option 'name'" unless options.name
       version = null
       do_service = ->
         ctx.service
@@ -120,7 +122,8 @@ module.exports = (ctx) ->
       do_end = (err) ->
         callback err, changed
       do_service()
-    .then (err) -> callback err, changed
+    # .then (err) -> callback err, changed
 
 each = require 'each'
+wrap = require 'mecano/lib/misc/wrap'
 string = require 'mecano/lib/misc/string'

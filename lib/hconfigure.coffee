@@ -17,7 +17,7 @@ Options includes:
 *   `local_default`: Read the default file from the local filesystem (only apply if `default` is a string).   
 ###
 module.exports = ->
-  wrap arguments, (options, next) ->
+  wrap null, arguments, (options, callback) ->
     fnl_props = {}
     org_props = {}
     updated = 0
@@ -26,7 +26,7 @@ module.exports = ->
       options.log? "Read source properties from '#{options.source}'"
       # Populate org_props and, if merge, fnl_props
       properties.read options.ssh, options.source, (err, props) ->
-        return next err if err and err.code isnt 'ENOENT'
+        return callback err if err and err.code isnt 'ENOENT'
         org_props = if err then {} else props
         if options.merge
           fnl_props = {}
@@ -39,7 +39,7 @@ module.exports = ->
       # Populate options.default
       ssh = if options.local_default then null else options.ssh
       properties.read ssh, options.default, (err, dft) ->
-        return next err if err
+        return callback err if err
         options.default = dft
         do_default()
     do_default = () ->
@@ -63,7 +63,7 @@ module.exports = ->
         else if Array.isArray v
           fnl_props[k] = v.join ','
         else if typeof v isnt 'string'
-          return next Error "Invalid value type '#{typeof v}' for property '#{k}'"
+          return callback Error "Invalid value type '#{typeof v}' for property '#{k}'"
         else fnl_props[k] = v
       do_compare()
     do_compare = ->
@@ -77,13 +77,13 @@ module.exports = ->
         updated = true
       do_save()
     do_save = ->
-      # return next() unless updated
+      # return callback() unless updated
       # options.log? "Save properties"
       options.content = properties.stringify fnl_props
       options.source = null
       mecano.write options, (err, written) ->
         updated = true if written
-        next err, updated
+        callback err, updated
     do_read_source()
 
 
