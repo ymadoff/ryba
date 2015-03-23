@@ -19,16 +19,46 @@
 # under the License.
 #
 #
-MAPRED_LOCAL_DIRS=$1
-CRITICAL=`echo $2 | cut -d % -f 1`
-IFS=","
-for mapred_dir in $MAPRED_LOCAL_DIRS
+
+service=$1
+hosts=$2
+port=$3
+
+checkurl () {
+  url=$1
+  host=$2
+  export no_proxy=$host
+  curl $url -o /dev/null
+  echo $?
+}
+
+if [[ -z "$service" || -z "$hosts" ]]; then
+  echo "UNKNOWN: Invalid arguments; Usage: check_webui_ha.sh service_name, host_name";
+  exit 3;
+fi
+
+case "$service" in
+resourcemanager)
+    url_end_part="/cluster"
+    ;;
+*) echo "UNKNOWN: Invalid service name [$service], valid options [resourcemanager]"
+   exit 3
+   ;;
+esac
+
+OIFS="$IFS"
+IFS=','
+read -a hosts_array <<< "${hosts}"
+IFS="$OIFS"
+
+for host in "${hosts_array[@]}"
 do
-  percent=`df -hl $mapred_dir | awk '{percent=$5;} END{print percent}' | cut -d % -f 1`
-  if [ $percent -ge $CRITICAL ]; then
-    echo "CRITICAL: MapReduce local dir is full."
-    exit 2
+  weburl="http://${host}:${port}${url_end_part}"
+  if [[ `checkurl "$weburl" "$host"` -eq 0 ]]; then
+    echo "OK: Successfully accessed $service Web UI"
+    exit 0;
   fi
 done
-echo "OK: MapReduce local dir space is available."
-exit 0
+
+echo "WARNING: $service Web UI not accessible : $weburl";
+exit 1;
