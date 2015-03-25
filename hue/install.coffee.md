@@ -13,9 +13,10 @@ article from december 2014 describe how to
     # Install kerberos clients to create/test new Hive principal
     module.exports.push 'masson/core/krb5_client'
     # Set java_home in "hadoop-env.sh"
-    module.exports.push 'ryba/hadoop/core'
-    module.exports.push 'ryba/hadoop/mapred_client'
+    module.exports.push 'ryba/hadoop/hdfs_client'
     module.exports.push 'ryba/hadoop/yarn_client'
+    module.exports.push 'ryba/hadoop/mapred_client'
+    module.exports.push 'ryba/hive/client' # Hue reference hive conf dir
     module.exports.push 'ryba/tools/pig'
     module.exports.push require('./index').configure
 
@@ -66,7 +67,7 @@ The packages "extjs-2.2-1" and "hue" are installed.
         # {name: 'hue-hcatalog'}
         # {name: 'hue-oozie'}
         # {name: 'hue-pig'}
-        # {name: 'hue-plugins'}
+        {name: 'hue-plugins'}
         # {name: 'hue-server'}
         # {name: 'hue-common'}
         # {name: 'hue-shell'}
@@ -187,6 +188,7 @@ the default database while mysql is the recommanded choice.
             """
             not_if_exec: "#{mysql_exec} 'use #{name}'"
           ,
+            # TODO: handle updates
             cmd: """
             su -l #{hue.user.name} -c "/usr/lib/hue/build/env/bin/hue syncdb --noinput"
             """

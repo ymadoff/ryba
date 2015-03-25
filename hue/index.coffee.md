@@ -71,23 +71,17 @@ Example:
       hue.group.system ?= true
 
     module.exports.configure = (ctx) ->
-      require('masson/core/iptables').configure ctx
-      # Allow proxy user inside "webhcat-site.xml"
-      require('../hive/webhcat').configure ctx
-      # Allow proxy user inside "oozie-site.xml"
-      require('../oozie/server').configure ctx
-      # Allow proxy user inside "core-site.xml"
+      require('masson/core/iptables').configure 
       require('../hadoop/core').configure ctx
-      require('../hadoop/hdfs').configure ctx
+      require('../hadoop/hdfs_client').configure ctx
       require('../hadoop/yarn_client').configure ctx
+      require('../hive/client').configure ctx
       module.exports.configure_system ctx
       {ryba} = ctx.config
-      {nameservice, hadoop_conf_dir, webhcat, hue, db_admin, core_site, hdfs, yarn} = ryba
-      hdfs_nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
+      {hadoop_conf_dir, webhcat, hue, db_admin, core_site, hdfs, yarn} = ryba
+      nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn'
       hue ?= {}
       hue.ini ?= {}
-      webhcat_port = webhcat.site['templeton.port']
-      webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
       # todo, this might not work as expected after ha migration
       nodemanagers = ctx.hosts_with_module 'ryba/hadoop/yarn_nm'
       # Webhdfs should be active on the NameNode, Secondary NameNode, and all the DataNodes
@@ -95,24 +89,28 @@ Example:
       hue.ca_bundle ?= '/etc/hue/conf/trust.pem'
       hue.ssl ?= {}
       hue.ssl.client_ca ?= null
-      throw Error "Property 'hue.ssl.client_ca' required in HA with HTTPS" if hdfs_nn_hosts.length > 1 and hdfs.site['dfs.http.policy'] is 'HTTPS_ONLY' and not hue.ssl.client_ca
+      throw Error "Property 'hue.ssl.client_ca' required in HA with HTTPS" if nn_ctxs.length > 1 and ryba.hdfs.site['dfs.http.policy'] is 'HTTPS_ONLY' and not hue.ssl.client_ca
       # HDFS & YARN url
       # NOTE: default to unencrypted HTTP
       # error is "SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed"
       # see https://github.com/cloudera/hue/blob/master/docs/manual.txt#L433-L439
       # another solution could be to set REQUESTS_CA_BUNDLE but this isnt tested
       # see http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cm_sg_ssl_hue.html
-      nn_protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      nn_protocol = 'http' if hdfs.site['dfs.http.policy'] is 'HTTP_AND_HTTPS' and not hue.ssl_client_ca
-      if hdfs_nn_hosts.length > 1
+      
+      # Hue Install defines a dependency on HDFS client
+      nn_protocol = if ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      nn_protocol = 'http' if ryba.hdfs.site['dfs.http.policy'] is 'HTTP_AND_HTTPS' and not hue.ssl_client_ca
+      if ryba.hdfs.site['dfs.ha.automatic-failover.enabled'] is 'true'
         nn_host = ryba.active_nn_host
-        shortname = ctx.hosts[nn_host].config.shortname
-        nn_http_port = ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
+        shortname = ctx.contexts(hosts: nn_host)[0].config.shortname
+        nn_http_port = ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address.#{ryba.nameservice}.#{shortname}"].split(':')[1]
+        webhdfs_url = "#{nn_protocol}://#{nn_host}:#{nn_http_port}/webhdfs/v1"
       else
-        nn_host = hdfs_nn_hosts[0]
+        nn_host = nn_ctxs[0].config.host
         nn_http_port = hdfs.site["dfs.namenode.#{nn_protocol}-address"].split(':')[1]
+        webhdfs_url = "#{nn_protocol}://#{nn_host}:#{nn_http_port}/webhdfs/v1"
       # Support for RM HA was added in Hue 3.7
-      rm_protocol = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      # rm_protocol = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
 
       # rm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
       # if rm_hosts.length > 1
@@ -144,14 +142,21 @@ Example:
       yarn_api_url = if rm_ctx.config.ryba.yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
       then "http://#{yarn.site['yarn.resourcemanager.webapp.address']}"
       else "https://#{yarn.site['yarn.resourcemanager.webapp.https.address']}"
-
+      # NodeManager
+      node_manager_api_url = if ctx.config.ryba.yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
+      then "http://#{yarn.site['yarn.nodemanager.webapp.address']}"
+      else "https://#{yarn.site['yarn.nodemanager.webapp.https.address']}"
+      # WebHcat
+      [wc_ctx] = ctx.contexts 'ryba/hive/webhcat', require('../hive/webhcat').configure
+      webhcat_port = wc_ctx.config.ryba.webhcat.site['templeton.port']
+      templeton_url = "http://#{wc_ctx.config.host}:#{webhcat_port}/templeton/v1/"
       # Configure HDFS Cluster
       hue.ini['hadoop'] ?= {}
       hue.ini['hadoop']['hdfs_clusters'] ?= {}
       hue.ini['hadoop']['hdfs_clusters']['default'] ?= {}
       # HA require webhdfs_url
       hue.ini['hadoop']['hdfs_clusters']['default']['fs_defaultfs'] ?= core_site['fs.defaultFS']
-      hue.ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= "#{nn_protocol}://#{nn_host}:#{nn_http_port}/webhdfs/v1"
+      hue.ini['hadoop']['hdfs_clusters']['default']['webhdfs_url'] ?= webhdfs_url
       hue.ini['hadoop']['hdfs_clusters']['default']['hadoop_hdfs_home'] ?= '/usr/lib/hadoop'
       hue.ini['hadoop']['hdfs_clusters']['default']['hadoop_bin'] ?= '/usr/bin/hadoop'
       hue.ini['hadoop']['hdfs_clusters']['default']['hadoop_conf_dir'] ?= hadoop_conf_dir
@@ -161,13 +166,13 @@ Example:
       hue.ini['hadoop']['yarn_clusters']['default']['resourcemanager_host'] ?= "#{rm_host}" # Might no longer be required after hdp2.2
       hue.ini['hadoop']['yarn_clusters']['default']['resourcemanager_port'] ?= "#{rm_port}" # Might no longer be required after hdp2.2
       hue.ini['hadoop']['yarn_clusters']['default']['submit_to'] ?= "true"
-      hue.ini['hadoop']['yarn_clusters']['default']['hadoop_mapred_home'] ?= '/usr/lib/hadoop-mapreduce'
-      hue.ini['hadoop']['yarn_clusters']['default']['hadoop_bin'] ?= '/usr/bin/hadoop'
+      hue.ini['hadoop']['yarn_clusters']['default']['hadoop_mapred_home'] ?= '/usr/hdp/current/hadoop-mapreduce-client'
+      hue.ini['hadoop']['yarn_clusters']['default']['hadoop_bin'] ?= '/usr/hdp/current/hadoop-client/bin/hadoop'
       hue.ini['hadoop']['yarn_clusters']['default']['hadoop_conf_dir'] ?= hadoop_conf_dir
       hue.ini['hadoop']['yarn_clusters']['default']['resourcemanager_api_url'] ?= yarn_api_url
       hue.ini['hadoop']['yarn_clusters']['default']['resourcemanager_rpc_url'] ?= yarn_rpc_url
       hue.ini['hadoop']['yarn_clusters']['default']['proxy_api_url'] ?= yarn_api_url
-      hue.ini['hadoop']['yarn_clusters']['default']['node_manager_api_url'] ?= "http://#{nodemanagers[0]}:8042"
+      hue.ini['hadoop']['yarn_clusters']['default']['node_manager_api_url'] ?= node_manager_api_url
       # JHS
       jhs_ctx = ctx.contexts('ryba/hadoop/mapred_jhs')[0]
       jhs_protocol = if jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.http.policy'] is 'HTTP' then 'http' else 'https'
@@ -179,17 +184,16 @@ Example:
       hue.ini['liboozie'] ?= {}
       hue.ini['liboozie']['oozie_url'] ?= ryba.oozie.site['oozie.base.url']
       hue.ini['hcatalog'] ?= {}
-      hue.ini['hcatalog']['templeton_url'] ?= "http://#{webhcat_server}:#{webhcat_port}/templeton/v1/"
+      hue.ini['hcatalog']['templeton_url'] ?= templeton_url
       hue.ini['beeswax'] ?= {}
       # HCatalog
       [hs2_ctx] = ctx.contexts 'ryba/hive/server2', require('../hive/server2').configure
       throw Error "No Hive HCatalog Server configured" unless hs2_ctx
-      # hue.ini['beeswax']['beeswax_server_host'] ?= "#{ctx.config.host}"
       hue.ini['beeswax']['hive_server_host'] ?= "#{hs2_ctx.config.host}"
       hue.ini['beeswax']['hive_server_port'] ?= if hs2_ctx.config.ryba.hive.site['hive.server2.transport.mode'] is 'binary'
       then hs2_ctx.config.ryba.hive.site['hive.server2.thrift.port']
       else hs2_ctx.config.ryba.hive.site['hive.server2.thrift.http.port']
-      hue.ini['beeswax']['hive_conf_dir'] ?= "#{hs2_ctx.config.ryba.hive.conf_dir}"
+      hue.ini['beeswax']['hive_conf_dir'] ?= "#{ctx.config.ryba.hive.conf_dir}" # Hive client is a dependency of Hue
       hue.ini['beeswax']['server_conn_timeout'] ?= "240"
       # Desktop
       hue.ini['desktop'] ?= {}
