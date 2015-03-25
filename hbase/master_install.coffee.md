@@ -52,7 +52,7 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
           match: /^EXEC_PATH=.*$/m
           replace: "EXEC_PATH=\"${HBASE_HOME}/bin/hbase-daemon.sh\" # RYBA HONORS /etc/default, DONT OVEWRITE"
         ,
-          # HDP default is "/var/lib/hive-hcatalog/hcat.pid"
+          # HDP default is "/var/run/hbase/hbase-hbase-master.pid"
           match: /^PIDFILE=.*$/m
           replace: "PIDFILE=\"${HBASE_PID_DIR}/hbase-hbase-master.pid\" # RYBA HONORS /etc/default, DONT OVEWRITE"
         ]
@@ -60,7 +60,7 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
           'hadoop': true
           'hbase':
             write: [
-              match: /^export HBASE_HOME=.*$/m # HDP default is "/var/lib/hive-hcatalog"
+              match: /^export HBASE_HOME=.*$/m # HDP default is "/usr/lib/hbase"
               replace: "export HBASE_HOME=/usr/hdp/current/hbase-client # RYBA FIX"
             ]
       , next
@@ -196,21 +196,6 @@ principal.
       {hbase} = ctx.config.ryba
       ctx.execute
         cmd: "su -l #{hbase.user.name} -c 'test -r /etc/security/keytabs/spnego.service.keytab'"
-      , next
-
-## RegionServers
-
-Upload the list of registered RegionServers.
-
-    module.exports.push name: 'HBase # RegionServers', handler: (ctx, next) ->
-      {hbase, hadoop_group} = ctx.config.ryba
-      regionservers = ctx.hosts_with_module('ryba/hbase/regionserver').join '\n'
-      ctx.write
-        content: regionservers
-        destination: "#{hbase.conf_dir}/regionservers"
-        uid: hbase.user.name
-        gid: hadoop_group.name
-        eof: true
       , next
 
 # Module dependencies
