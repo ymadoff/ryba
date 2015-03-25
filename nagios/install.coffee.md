@@ -231,6 +231,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       {nagios, force_check, active_nn_host, core_site, hdfs, zookeeper, 
         hbase, oozie, webhcat, ganglia, hue} = ctx.config.ryba
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      # HDFS NameNode
       nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
       nn_hosts_map = {} # fqdn to port
       active_nn_port = null
@@ -248,6 +249,8 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           nn_host = ctx.config.ryba.hdfs.site["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')
           nn_hosts_map[nn_host[0]] = nn_host[1]
           active_nn_port = nn_host[1] if nn_ctx.config.host is active_nn_host
+      # HDFS Secondary NameNode
+      [snn_ctx] = ctx.contexts 'ryba/hadoop/hdfs_snn', require('../hadoop/hdfs_snn').configure
       # YARN ResourceManager
       rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
       rm_hosts = rm_ctxs.map (rm_ctx) -> rm_ctx.config.host
@@ -270,7 +273,10 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       jn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_jn', require('../hadoop/hdfs_jn').configure
       if jn_ctxs.length
         journalnode_port = jn_ctxs[0].config.ryba.hdfs.site["dfs.journalnode.#{protocol}-address"].split(':')[1]
-      datanode_port = hdfs.site["dfs.datanode.#{protocol}.address"].split(':')[1]
+      # HDFS Datanodes
+      [dn_ctx] = ctx.contexts 'ryba/hadoop/hdfs_dn', require('../hadoop/hdfs_dn').configure
+      dn_protocol = if dn_ctx.config.ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      dn_port = dn_ctx.config.ryba.hdfs.site["dfs.datanode.#{protocol}.address"].split(':')[1]
       # HBase
       hm_hosts = ctx.hosts_with_module 'ryba/hbase/master'
       # Hive
@@ -299,7 +305,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           ganglia_collector_hbase_port: ganglia.hm_port
           ganglia_collector_rm_port: ganglia.rm_port
           ganglia_collector_hs_port: ganglia.jhs_port
-          snamenode_port: hdfs.site['dfs.namenode.secondary.http-address']?.split(':')[1]
+          snamenode_port: snn_ctx?.config.ryba.hdfs.site['dfs.namenode.secondary.http-address'].split(':')[1]
           storm_ui_port: 0 # TODO Storm
           nimbus_port: 0 # TODO Storm
           drpc_port: 0 # TODO Storm
@@ -321,7 +327,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           nm_port: nm_webapp_port
           hs_port: hs_webapp_port
           journalnode_port: journalnode_port
-          datanode_port: datanode_port
+          datanode_port: dn_port
           clientPort: zookeeper.port
           hbase_rs_port: hbase.site['hbase.regionserver.info.port']
           hbase_master_port: hbase.site['hbase.master.info.port']
