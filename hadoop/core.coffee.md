@@ -165,7 +165,6 @@ Default configuration:
       ryba.hdfs.pid_dir ?= '/var/run/hadoop-hdfs'
       ryba.hdfs.secure_dn_pid_dir ?= '/var/run/hadoop-hdfs' # /$HADOOP_SECURE_DN_USER
       ryba.hdfs.secure_dn_user ?= ryba.hdfs.user.name
-      ryba.mapred.log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
       # HA Configuration
       ryba.nameservice ?= null
       ryba.active_nn ?= false
@@ -288,6 +287,10 @@ Configuration for environment
       ryba.hadoop_client_opts ?= '-Xmx2048m'
       # hadoop_client_opts = ryba.hadoop_client_opts ?= '-Xmx2048m'
       # ryba.hadoop_client_opts = "export HADOOP_CLIENT_OPTS=\"#{hadoop_client_opts} $HADOOP_CLIENT_OPTS\""
+      # Options for "hadoop-policy.xml"
+      # Note, according to the doc, it apply to the NameNode and JobTracker
+      # where JobTracker shall be understood as RerouceManager
+      ryba.hadoop_policy ?= {}
 
 ## Users & Groups
 
@@ -439,12 +442,11 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
         return next err if err
         jsvc = if exists then '/usr/libexec/bigtop-utils' else '/usr/lib/bigtop-utils'
         write = [
-          # { match: /^export JAVA_HOME=.*$/m, replace: "export JAVA_HOME=#{java_home}" }
-          # { match: /^export HADOOP_OPTS=.*$/m, replace: hadoop_opts }
-          { match: /\/var\/log\/hadoop\//m, replace: "#{hdfs.log_dir}/" }
-          # { match: /\/var\/run\/hadoop\//m, replace: "#{hdfs.pid_dir}/" }
-          { match: /^export JSVC_HOME=.*$/m, replace: "export JSVC_HOME=#{jsvc}" }
-          # { match: /^export HADOOP_CLIENT_OPTS=.*$/m, replace: hadoop_client_opts}          
+          match: /\/var\/log\/hadoop\//mg
+          replace: "#{hdfs.log_dir}/"
+        ,
+          match: /^export JSVC_HOME=.*$/m
+          replace: "export JSVC_HOME=#{jsvc}"
         ,
           match: /^export JAVA_HOME=.*$/m
           replace: "export JAVA_HOME=\"#{java_home}\" # RYBA CONF \"java.java_home\", DONT OVEWRITE"
@@ -482,6 +484,29 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
           backup: true
           eof: true
         , next
+
+## Policy
+
+By default the service-level authorization is disabled in hadoop, to enable that
+we need to set/configure the hadoop.security.authorization to true in
+${HADOOP_CONF_DIR}/core-site.xml
+
+    module.exports.push name: 'Hadoop Core # Policy', handler: (ctx, next) ->
+      {core_site, hadoop_conf_dir, hadoop_policy} = ctx.config.ryba
+      ctx.hconfigure
+        destination: "#{hadoop_conf_dir}/hadoop-policy.xml"
+        default: "#{__dirname}/../resources/core_hadoop/hadoop-policy.xml"
+        local_default: true
+        properties: hadoop_policy
+        merge: true
+        backup: true
+        if: core_site['hadoop.security.authorization'] is 'true'
+      , (err, changed) ->
+        return next err, false if err or not changed
+        ctx.execute
+          cmd: mkcmd.hdfs ctx, 'hdfs dfsadmin -refreshServiceAcl'
+        , (err) ->
+          return next err, true
 
     # module.exports.push name: 'Hadoop Core # Environnment', timeout: -1, handler: (ctx, next) ->
     #   ctx.write
@@ -558,6 +583,10 @@ recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
     #     err = Error "Invalid mapping" if not err and stdout.indexOf("#{krb5_user.name}@#{realm} to #{user.name}") is -1
     #     next err, true
 
+
+## Dependencies
+
+    mkcmd = require '../lib/mkcmd'
 
 
 
