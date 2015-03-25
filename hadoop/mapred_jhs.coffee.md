@@ -12,6 +12,7 @@
       {ryba} = ctx.config
       ryba.mapred ?= {}
       ryba.mapred.pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
+      ryba.mapred.log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
       ryba.mapred.site ?= {}
       ryba.mapred.site['mapreduce.jobhistory.keytab'] ?= "/etc/security/keytabs/jhs.service.keytab"
       ryba.mapred.site['mapreduce.jobhistory.principal'] ?= "jhs/#{ctx.config.host}@#{ryba.realm}"

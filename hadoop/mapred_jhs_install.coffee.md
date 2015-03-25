@@ -9,6 +9,7 @@ Job History Server.
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
+    # module.exports.push require('./mapred_client_install').configure
     module.exports.push require('./mapred_jhs').configure
     module.exports.push require '../lib/hdp_service'
 
@@ -94,6 +95,39 @@ directory with the location of the directory storing the process pid.
         merge: true
         backup: true
       ], next
+
+## Layout
+
+Create the log and pid directories.
+
+    module.exports.push name: 'MapReduce Client # System Directories', timeout: -1, handler: (ctx, next) ->
+      {mapred, hadoop_group} = ctx.config.ryba
+      modified = false
+      do_log = ->
+        ctx.log "Create hdfs and mapred log: #{mapred.log_dir}"
+        ctx.mkdir
+          destination: "#{mapred.log_dir}/#{mapred.user.name}"
+          uid: mapred.user.name
+          gid: hadoop_group.name
+          mode: 0o0755
+        , (err, created) ->
+          return next err if err
+          modified = true if created
+          do_pid()
+      do_pid = ->
+        ctx.log "Create hdfs and mapred pid: #{mapred.pid_dir}"
+        ctx.mkdir
+          destination: "#{mapred.pid_dir}/#{mapred.user.name}"
+          uid: mapred.user.name
+          gid: hadoop_group.name
+          mode: 0o0755
+        , (err, created) ->
+          return next err if err
+          modified = true if created
+          do_end()
+      do_end = ->
+        next null, modified
+      do_log()
 
 ## HDFS Layout
 

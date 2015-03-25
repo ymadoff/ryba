@@ -46,35 +46,6 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         code_skipped: 9
       , next
 
-    module.exports.push name: 'MapReduce Client # System Directories', timeout: -1, handler: (ctx, next) ->
-      {mapred, hadoop_group} = ctx.config.ryba
-      modified = false
-      do_log = ->
-        ctx.log "Create hdfs and mapred log: #{mapred.log_dir}"
-        ctx.mkdir
-          destination: "#{mapred.log_dir}/#{mapred.user.name}"
-          uid: mapred.user.name
-          gid: hadoop_group.name
-          mode: 0o0755
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_pid()
-      do_pid = ->
-        ctx.log "Create hdfs and mapred pid: #{mapred.pid_dir}"
-        ctx.mkdir
-          destination: "#{mapred.pid_dir}/#{mapred.user.name}"
-          uid: mapred.user.name
-          gid: hadoop_group.name
-          mode: 0o0755
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_end()
-      do_end = ->
-        next null, modified
-      do_log()
-
     module.exports.push name: 'MapReduce Client # Configuration', handler: (ctx, next) ->
       {mapred, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure
