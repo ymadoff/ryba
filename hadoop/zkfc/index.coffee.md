@@ -7,11 +7,23 @@
     module.exports.push module.exports.configure = (ctx) ->
       require('../core').configure ctx
       {ryba} = ctx.config
+      ryba.hdfs ?= {}
       # Validation
       throw Error "Missing \"ryba.zkfc_password\" property" unless ryba.zkfc_password
       nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn',(require '../hdfs_nn').configure
       throw Error "Require 2 NameNodes" unless nn_ctxs.length is 2
+      # Environment
+      ryba.hdfs.zkfc_opts ?= ''
+      if ryba.core_site['hadoop.security.authentication'] is 'kerberos'
+        ryba.hdfs.zkfc_opts = "-Djava.security.auth.login.config=#{ryba.hadoop_conf_dir}/hdfs-zkfc.jaas #{ryba.hdfs.zkfc_opts}"
+      ryba.hdfs.zkfc_digest ?= {}
+      ryba.hdfs.zkfc_digest.name ?= 'hdfs-zkfc'
+      ryba.hdfs.zkfc_digest.password ?= null
+      # Enrich "core-site.xml" with acl and auth
+      ryba.core_site['ha.zookeeper.acl'] ?= "@#{ryba.hadoop_conf_dir}/zk-acl.txt"
+      ryba.core_site['ha.zookeeper.auth'] = "@#{ryba.hadoop_conf_dir}/zk-auth.txt"
       # Import NameNode properties
+      # Note: need 'ha.zookeeper.quorum', 'dfs.ha.automatic-failover.enabled'
       require('../hdfs_nn').configure ctx
 
 ## Commands
