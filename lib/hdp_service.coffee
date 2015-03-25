@@ -37,6 +37,10 @@ module.exports = (ctx) ->
         ctx.execute
           cmd: """
           code=3
+          # !IMPORTANT!
+          # we are currently retrieving the current version and not the latest one
+          # solution would be to either get the version from configuration or
+          # always use the latest version (as inside the next condition).
           version=`hdp-select status #{options.version_name} | sed 's/.* \\(\\d*\\)/\\1/'`
           if [ ! -d "/usr/hdp/$version" ]; then
             version=`yum repolist | egrep HDP-[0-9] | sed 's/^HDP-\\([0-9\\.]*\\).*$/\\1/'`
@@ -47,6 +51,8 @@ module.exports = (ctx) ->
             fi
           fi
           echo $version
+          hdp-select set #{options.version_name} $version
+          # Deal with "rc.d" startup scripts
           source="/etc/init.d/#{options.name}"
           target="/usr/hdp/$version/etc/rc.d/init.d/#{options.name}"
           create=1
@@ -61,6 +67,7 @@ module.exports = (ctx) ->
             ln -sf $target $source
             code=0
           fi
+          # Deal with "/etc/default" environment scripts
           for filename in #{Object.keys(options.etc_default).join(' ')}; do
             source="/etc/default/$filename"
             target="/usr/hdp/$version/etc/default/$filename"
