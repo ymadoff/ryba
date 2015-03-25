@@ -41,6 +41,7 @@ Install the "hadoop-yarn" package.
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0755
+        parent: true
       ,
         destination: "#{pid_dir}"
         uid: yarn.user.name
