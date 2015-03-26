@@ -341,7 +341,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           templeton_port: webhcat.site['templeton.port']
           falcon_port: 0 # TODO
           ahs_port: 0 # TODO
-          hue_port: hue.ini.desktop.http.port
+          hue_port: hue.ini.desktop['http_port']
       , next
 
     module.exports.push name: 'Nagios # Commands', handler: (ctx, next) ->
