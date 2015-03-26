@@ -4,7 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'ryba/titan'
-    module.exports.push require '../../lib/write_jaas'
+    module.exports.push require '../lib/write_jaas'
     
     module.exports.push require('./').configure
     
