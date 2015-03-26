@@ -107,6 +107,7 @@ Secure the Zookeeper connection with JAAS
       ctx.write_jaas
         destination: path.join titan.home, 'titan.jaas'
         content: client: {}
+        mode: 0o644
       , next
 
 ## Configure

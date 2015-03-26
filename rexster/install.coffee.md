@@ -109,7 +109,6 @@ Zookeeper use JAAS for authentication. We configure JAAS to make SASL authentica
             principal: "rexster/#{ctx.config.host}@#{realm}"
         uid: rexster.user.name
         gid: rexster.group.name
-        mode: 0o600
       , next
 
     module.exports.push name: 'Rexster # Configure Titan Server', handler: (ctx, next) ->
