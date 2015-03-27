@@ -45,7 +45,7 @@ Example:
       ryba.hdfs.site['dfs.namenode.acls.enabled'] ?= 'true'
       ryba.hdfs.site['dfs.namenode.accesstime.precision'] ?= null
       ryba.hdfs.site['dfs.ha.automatic-failover.enabled'] ?= 'true'
-      ryba.hdfs.namenode_opts ?= null
+      ryba.hdfs.namenode_opts ?= ''
 
 ## Configuration for HDFS High Availability (HA)
 
