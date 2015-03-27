@@ -1,0 +1,26 @@
+
+###############################################################################
+#
+# CONTACTS
+#
+###############################################################################
+{% for name, user in users %}
+define contact{
+  contact_name  {{ name }}
+  use           generic-contact
+  alias         {{ user.alias }}
+  email         {{ user.email }}
+}
+{% endfor %}
+###############################################################################
+#
+# CONTACT GROUPS
+#
+###############################################################################
+{% for name, group in groups %}
+define contactgroup {
+  contactgroup_name  {{ name }};
+  alias              {{ group.alias }}
+  members            {{ group.members | join (",") }}
+}
+{% endfor %}

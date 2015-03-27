@@ -75,7 +75,7 @@ nagiocmd:x:2419:apache
         mode: 0o2770
       ], next
 
-# Objects
+## Objects
 
     module.exports.push name: 'Nagios # Objects', handler: (ctx, next) ->
       {user, group, overwrite} = ctx.config.ryba.nagios
@@ -95,7 +95,7 @@ nagiocmd:x:2419:apache
         not_if_exists: !overwrite
       ctx.upload objects, next
 
-# Plugins
+## Plugins
 
     module.exports.push name: 'Nagios # Plugins', timeout: -1, handler: (ctx, next) ->
       {user, group, plugin_dir} = ctx.config.ryba.nagios
@@ -110,28 +110,54 @@ nagiocmd:x:2419:apache
           mode: 0o0775
         ctx.upload plugins, next
 
-    module.exports.push name: 'Nagios # Admin Password', handler: (ctx, next) ->
-      {user, group, admin} = ctx.config.ryba.nagios
-      ctx.execute
-        cmd: """
-        hash=`cat /etc/nagios/htpasswd.users 2>/dev/null | grep #{admin.name}: | sed 's/.*:\\(.*\\)/\\1/'`
-        salt=`echo $hash | sed 's/\\(.\\{2\\}\\).*/\\1/'`
-        if [ $salt != "" ]; then
-          expect=`openssl passwd -crypt -salt $salt #{admin.password} 2>/dev/null`
-          if [ "$hash" == "$expect" ]; then exit 3; fi
-        fi
-        htpasswd -c -b  /etc/nagios/htpasswd.users #{admin.name} #{admin.password}
-        """
-        code_skipped: 3
+## WebUI Users & Groups
+
+### Password
+
+    module.exports.push name: 'Nagios # WebUI Users htpasswd', handler: (ctx, next) ->
+      {users} = ctx.config.ryba.nagios
+      return next null, false unless Object.getOwnPropertyNames(users).length > 0
+      modified = false
+      each(users)
+      .on 'item', (name, user, call) ->
+        ctx.log "user #{name}" 
+        ctx.execute
+          cmd: """
+          if [ -e /etc/nagios/htpasswd.users ]; then
+            hash=`cat /etc/nagios/htpasswd.users 2>/dev/null | grep #{name}: | sed 's/.*:\\(.*\\)/\\1/'`
+            salt=`echo $hash | sed 's/\\(.\\{2\\}\\).*/\\1/'`
+            if [ "$salt" != "" ]; then
+              expect=`openssl passwd -crypt -salt $salt #{user.password} 2>/dev/null`
+              if [ "$hash" == "$expect" ]; then exit 3; fi
+            fi
+            htpasswd -b /etc/nagios/htpasswd.users #{name} #{user.password}
+          else
+            htpasswd -c -b /etc/nagios/htpasswd.users #{name} #{user.password}
+          fi
+          """
+          code_skipped: 3
+        , (err, executed, stdout) ->
+          if executed
+            modified = true
+            ctx.log "user #{name} updated"
+          call err
+      .on 'both', (err) ->
+        next err, modified
+
+### Users Configuration 
+
+    module.exports.push name: 'Nagios # WebUI Users & Groups', handler: (ctx, next) ->
+      {users, groups} = ctx.config.ryba.nagios
+      ctx.render      
+        source: "#{__dirname}/../resources/nagios/templates/contacts.cfg.j2"
+        local_source: true
+        destination: '/etc/nagios/objects/contacts.cfg'
+        context:
+          users: users
+          groups: groups
       , next
 
-    module.exports.push name: 'Nagios # Admin Email', handler: (ctx, next) ->
-      {user, group, admin_email} = ctx.config.ryba.nagios
-      ctx.write
-        destination: '/etc/nagios/objects/contacts.cfg'
-        match: /^(\s*email\s+)([^\s]*)(\s*;.*)$/mg
-        replace: "$1#{admin_email}$3"
-      , next
+## Configuration
 
     module.exports.push name: 'Nagios # Configuration', handler: (ctx, next) ->
       {user, group, plugin_dir} = ctx.config.ryba.nagios
@@ -341,7 +367,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           templeton_port: webhcat.site['templeton.port']
           falcon_port: 0 # TODO
           ahs_port: 0 # TODO
-          hue_port: hue.ini.desktop['http_port']
+          hue_port: parseInt hue.ini.desktop['http_port']
       , next
 
     module.exports.push name: 'Nagios # Commands', handler: (ctx, next) ->
@@ -360,6 +386,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
     path = require 'path'
     url = require 'url'
     glob = require 'glob'
+    each = require 'each'
 
 
 
