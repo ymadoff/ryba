@@ -6,6 +6,7 @@
     module.exports.push 'ryba/hadoop/yarn_client/install'
     module.exports.push require('./index').configure
     module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/write_jaas'
 
 ## IPTables
 
@@ -56,6 +57,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: ctx.config.iptables.action is 'start'
       , next
 
+## Kerberos
+
     module.exports.push name: 'YARN RM # Kerberos', handler: (ctx, next) ->
       {yarn, hadoop_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
@@ -69,6 +72,19 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         kadmin_password: kadmin_password
         kadmin_server: admin_server
       , next
+
+
+    module.exports.push name: 'YARN RM # Kerberos JAAS', handler: (ctx, next) ->
+      {yarn, hadoop_conf_dir, hadoop_group, realm} = ctx.config.ryba
+      ctx.write_jaas
+        destination: "#{hadoop_conf_dir}/yarn-rm.jaas"
+        content: client:
+          principal: yarn.site['yarn.resourcemanager.principal'].replace '_HOST', ctx.config.host
+          keytab: yarn.site['yarn.resourcemanager.keytab']
+        uid: yarn.user.name
+        gid: hadoop_group.name
+      , next
+
 
 ## Service
 
@@ -104,6 +120,20 @@ inside "/etc/init.d" and activate it on startup.
               replace: "export YARN_IDENT_STRING=#{yarn.user.name} # RYBA, DONT OVERWRITE"
             ]
       , next
+
+## Environment
+
+    module.exports.push name: 'YARN RM # Env', handler: (ctx, next) ->
+      {java_home} = ctx.config.java
+      {yarn, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
+      rm_opts = "-Djava.security.auth.login.config=#{hadoop_conf_dir}/yarn-rm.jaas #{yarn.rm_opts}"
+      ctx.write
+        destination: "#{hadoop_conf_dir}/yarn-env.sh"
+        match: /^.*# RYBA CONF "ryba.yarn.rm_opts", DONT OVERWRITE/mg
+        replace: "YARN_RESOURCEMANAGER_OPTS=\"${YARN_RESOURCEMANAGER_OPTS} #{rm_opts}\" # RYBA CONF \"ryba.yarn.rm_opts\", DONT OVERWRITE"
+        append: true
+      , next
+
 
 ## Configuration
 

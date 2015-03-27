@@ -10,6 +10,7 @@
     # module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/lib/base'
     module.exports.push require('./client').configure
+    module.exports.push require '../lib/write_jaas'
 
     module.exports.push name: 'ZooKeeper Client # Kerberos', timeout: -1, handler: (ctx, next) ->
       {zookeeper, hadoop_group, realm} = ctx.config.ryba
@@ -30,15 +31,10 @@
           modified = true if created
           do_client_jaas()
       do_client_jaas = ->
-        ctx.write
+        ctx.write_jaas
           destination: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
-          content: """
-          Client {
-            com.sun.security.auth.module.Krb5LoginModule required
-            useKeyTab=false
-            useTicketCache=true;
-          };
-          """
+          content: client: {}
+          mode: 0o644
         , (err, written) ->
           next err if err
           modified = true if written

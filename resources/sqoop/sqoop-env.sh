@@ -29,7 +29,7 @@ export HBASE_HOME=${HBASE_HOME:-/usr/lib/hbase}
 #Set the path to where bin/hive is available
 export HIVE_HOME=${HIVE_HOME:-/usr/lib/hive}
 
-#Set the path for where zookeper config dir is
+#Set the path for where zookeeper config dir is
 export ZOOCFGDIR=${ZOOCFGDIR:-/etc/zookeeper/conf}
 
 # add libthrift in hive to sqoop class path first so hive imports work

@@ -57,7 +57,7 @@ Example :
       # sending a request and getting an acknowledgement
       zookeeper.config['syncLimit'] ?= "5"
       # the directory where the snapshot is stored.
-      zookeeper.config['dataDir'] ?= '/var/zookeper/data/'
+      zookeeper.config['dataDir'] ?= '/var/zookeeper/data/'
       # the port at which the clients will connect
       zookeeper.config['clientPort'] ?= "#{zookeeper.port}"
       if hosts.length > 1 then for host, i in hosts

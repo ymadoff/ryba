@@ -10,6 +10,7 @@ TODO: [HBase backup node](http://willddy.github.io/2013/07/02/HBase-Add-Backup-M
     module.exports.push 'ryba/hbase/_'
     module.exports.push require('./master').configure
     module.exports.push require '../lib/hdp_service'
+    module.exports.push require '../lib/write_jaas'
 
 ## IPTables
 
@@ -90,13 +91,13 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
 
 Environment passed to the Master before it starts.   
 
-    module.exports.push name: 'HDFS NN # Opts', handler: (ctx, next) ->
+    module.exports.push name: 'HBase Master # Opts', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
       return next() unless hbase.master_opts
       ctx.write
         destination: "#{hbase.conf_dir}/hbase-env.sh"
         match: /^export HBASE_MASTER_OPTS="(.*) \$\{HBASE_MASTER_OPTS\}" # RYBA .*/m
-        replace: "export HBASE_MASTER_OPTS=\"#{hbase.master_opts} ${HBASE_MASTER_OPTS}\" # RYBA CONF \"ryba.hbase.master_opts\", DONT OVEWRITE"
+        replace: "export HBASE_MASTER_OPTS=\"#{hbase.master_opts} ${HBASE_MASTER_OPTS}\" # RYBA CONF \"ryba.hbase.master_opts\", DONT OVERWRITE"
         before: /^export HBASE_MASTER_OPTS=".*"$/m
         backup: true
       , next
@@ -135,10 +136,12 @@ RegionServer, and HBase client host machines.
 Environment file is enriched by "ryba/hbase/_ # HBase # Env".
 
     module.exports.push name: 'HBase master # Zookeeper JAAS', timeout: -1, handler: (ctx, next) ->
-      {jaas_server, hbase} = ctx.config.ryba
-      ctx.write
+      {hbase} = ctx.config.ryba
+      ctx.write_jaas
         destination: "#{hbase.conf_dir}/hbase-master.jaas"
-        content: jaas_server
+        content: client:
+          keytab: hbase.site['hbase.master.keytab.file']
+          principal: hbase.site['hbase.master.kerberos.principal'].replace '_HOST', ctx.config.host
         uid: hbase.user.name
         gid: hbase.group.name
         mode: 0o700

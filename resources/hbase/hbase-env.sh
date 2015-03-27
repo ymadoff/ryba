@@ -77,6 +77,6 @@ export HBASE_PID_DIR=/var/run/hbase
 export HBASE_MANAGES_ZK=false
 
 # Use these settings only for Kerberized clusters.
-#export HBASE_OPTS="$HBASE_OPTS -Djava.security.auth.login.config=${HBASE_CONF_DIR}/hbase_client_jaas.conf"
-#export HBASE_MASTER_OPTS="$HBASE_MASTER_OPTS -Djava.security.auth.login.config=${HBASE_CONF_DIR}/hbase_master_jaas.conf"
-#export HBASE_REGIONSERVER_OPTS="$HBASE_REGIONSERVER_OPTS -Djava.security.auth.login.config=${HBASE_CONF_DIR}/hbase_regionserver_jaas.conf"
+#export HBASE_OPTS="$HBASE_OPTS -Djava.security.auth.login.config=${HBASE_CONF_DIR}/hbase_client.jaas"
+#export HBASE_MASTER_OPTS="$HBASE_MASTER_OPTS -Djava.security.auth.login.config=${HBASE_CONF_DIR}/hbase_master.jaas"
+#export HBASE_REGIONSERVER_OPTS="$HBASE_REGIONSERVER_OPTS -Djava.security.auth.login.config=${HBASE_CONF_DIR}/hbase_regionserver.jaas"

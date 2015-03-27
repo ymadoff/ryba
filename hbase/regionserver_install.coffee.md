@@ -8,6 +8,7 @@
     module.exports.push 'ryba/hbase/_'
     module.exports.push require('./regionserver').configure
     module.exports.push require '../lib/hdp_service'
+    module.exports.push require '../lib/write_jaas'
 
 ## IPTables
 
@@ -62,13 +63,14 @@ JAAS configuration files for zookeeper to be deployed on the HBase Master,
 RegionServer, and HBase client host machines.
 
     module.exports.push name: 'HBase RegionServer # Zookeeper JAAS', timeout: -1, handler: (ctx, next) ->
-      {jaas_server, hbase} = ctx.config.ryba
-      ctx.write
+      {hbase} = ctx.config.ryba
+      ctx.write_jaas
         destination: "#{hbase.conf_dir}/hbase-regionserver.jaas"
-        content: jaas_server
+        content: client:
+          principal: hbase.site['hbase.regionserver.kerberos.principal'].replace '_HOST', ctx.config.host
+          keytab: hbase.site['hbase.regionserver.keytab.file']
         uid: hbase.user.name
         gid: hbase.group.name
-        mode: 0o700
       , next
 
     module.exports.push name: 'HBase RegionServer # Kerberos', timeout: -1, handler: (ctx, next) ->

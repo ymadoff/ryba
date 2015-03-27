@@ -29,7 +29,7 @@ is added membership to the group hadoop to gain read access.
       ctx.execute
         cmd: mkcmd.test ctx, """
         host=`curl -s -k --negotiate -u : #{url} | grep tag.Hostname | sed 's/^.*:.*"\\(.*\\)".*$/\\1/g'`      
-        if [ $host != '#{ctx.config.host}' ] ; then exit 1; fi
+        if [ "$host" != '#{ctx.config.host}' ] ; then exit 1; fi
         """
       , next
 

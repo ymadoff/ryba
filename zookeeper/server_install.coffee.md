@@ -10,6 +10,7 @@
     # module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/lib/base'
     module.exports.push require '../lib/hdp_service'
+    module.exports.push require '../lib/write_jaas'
     module.exports.push require('./server').configure
 
 ## Users & Groups
@@ -116,32 +117,22 @@ Install and configure the startup script in
           modified = true if created
           do_server_jaas()
       do_server_jaas = ->
-        ctx.write
+        ctx.write_jaas
           destination: '/etc/zookeeper/conf/zookeeper-server.jaas'
-          content: """
-          Server {
-            com.sun.security.auth.module.Krb5LoginModule required
-            useKeyTab=true
-            storeKey=true
-            useTicketCache=false
-            keyTab="#{zookeeper.conf_dir}/zookeeper.keytab"
-            principal="zookeeper/#{ctx.config.host}@#{realm}";
-          };
-          """
+          content: server:
+            principal: "zookeeper/#{ctx.config.host}@#{realm}"
+            keytab: "#{zookeeper.conf_dir}/zookeeper.keytab"
+          uid: zookeeper.user.name
+          gid: hadoop_group.name
         , (err, written) ->
           next err if err
           modified = true if written
           do_client_jaas()
       do_client_jaas = ->
-        ctx.write
+        ctx.write_jaas
           destination: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
-          content: """
-          Client {
-            com.sun.security.auth.module.Krb5LoginModule required
-            useKeyTab=false
-            useTicketCache=true;
-          };
-          """
+          content: client: {}
+          mode: 0o644
         , (err, written) ->
           next err if err
           modified = true if written
