@@ -67,7 +67,8 @@ Example
       oozie.site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
       oozie.site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'
       oozie.site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
-      oozie.site['oozie.service.AuthorizationService.security.enabled'] ?= null # Now deprecated in favor of oozie.service.AuthorizationService.authorization.enabled (see oozie "oozie.log" file)
+      # oozie.site['oozie.service.AuthorizationService.security.enabled'] ?= null # Now deprecated in favor of oozie.service.AuthorizationService.authorization.enabled (see oozie "oozie.log" file)
+      oozie.site['oozie.service.AuthorizationService.security.enabled'] ?= 'true'
       oozie.site['oozie.service.AuthorizationService.authorization.enabled'] ?= 'true'
       oozie.site['oozie.service.HadoopAccessorService.kerberos.enabled'] ?= 'true'
       oozie.site['local.realm'] ?= "#{ryba.realm}"
@@ -79,6 +80,43 @@ Example
       # oozie.site['oozie.service.HadoopAccessorService.nameNode.whitelist'] = ''
       oozie.site['oozie.authentication.kerberos.name.rules'] ?= ryba.core_site['hadoop.security.auth_to_local']
       oozie.site['oozie.service.HadoopAccessorService.nameNode.whitelist'] ?= '' # Fix space value
+      oozie.site['oozie.services'] ?= [
+        'org.apache.oozie.service.SchedulerService'
+        'org.apache.oozie.service.InstrumentationService'
+        'org.apache.oozie.service.MemoryLocksService'
+        'org.apache.oozie.service.UUIDService'
+        'org.apache.oozie.service.ELService'
+        'org.apache.oozie.service.AuthorizationService'
+        'org.apache.oozie.service.UserGroupInformationService'
+        'org.apache.oozie.service.HadoopAccessorService'
+        'org.apache.oozie.service.JobsConcurrencyService'
+        'org.apache.oozie.service.URIHandlerService'
+        'org.apache.oozie.service.DagXLogInfoService'
+        'org.apache.oozie.service.SchemaService'
+        'org.apache.oozie.service.LiteWorkflowAppService'
+        'org.apache.oozie.service.JPAService'
+        'org.apache.oozie.service.StoreService'
+        'org.apache.oozie.service.CoordinatorStoreService'
+        'org.apache.oozie.service.SLAStoreService'
+        'org.apache.oozie.service.DBLiteWorkflowStoreService'
+        'org.apache.oozie.service.CallbackService'
+        'org.apache.oozie.service.ShareLibService'
+        'org.apache.oozie.service.CallableQueueService'
+        'org.apache.oozie.service.ActionService'
+        'org.apache.oozie.service.ActionCheckerService'
+        'org.apache.oozie.service.RecoveryService'
+        'org.apache.oozie.service.PurgeService'
+        'org.apache.oozie.service.CoordinatorEngineService'
+        'org.apache.oozie.service.BundleEngineService'
+        'org.apache.oozie.service.DagEngineService'
+        'org.apache.oozie.service.CoordMaterializeTriggerService'
+        'org.apache.oozie.service.StatusTransitService'
+        'org.apache.oozie.service.PauseTransitService'
+        'org.apache.oozie.service.GroupsService'
+        'org.apache.oozie.service.ProxyUserService'
+        'org.apache.oozie.service.XLogStreamingService'
+        'org.apache.oozie.service.JvmPauseMonitorService'
+      ].join(',')
       # ryba.extjs ?= {}
       # throw new Error "Missing extjs.source" unless ryba.extjs.source
       # throw new Error "Missing extjs.destination" unless ryba.extjs.destination

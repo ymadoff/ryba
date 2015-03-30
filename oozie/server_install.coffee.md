@@ -190,6 +190,9 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           not_if_exists: "/usr/hdp/current/oozie-client/libext/#{path.basename lzo_jar}"
         , next
 
+    # Note
+    # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.0/HDP_Man_Install_v22/index.html#Item1.12.4.3
+    # Copy or symlink the MySQL JDBC driver JAR into the /var/lib/oozie/ directory.
     module.exports.push name: 'Oozie Server # Mysql Driver', handler: (ctx, next) ->
       ctx.link
         source: '/usr/share/java/mysql-connector-java.jar'
@@ -209,6 +212,15 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           gid: oozie.group.name
           mode: 0o0755
           merge: true
+          backup: true
+        , (err, configured) ->
+          return next err if err
+          modified = true if configured
+          do_oozie_default()
+      do_oozie_default = ->
+        ctx.upload
+          destination: "#{oozie.conf_dir}/oozie-default.xml"
+          source: "#{__dirname}/../resources/oozie/oozie-default.xml"
           backup: true
         , (err, configured) ->
           return next err if err
@@ -356,25 +368,45 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
     #     err = null if err and /DB schema exists/.test stderr
     #     next err, executed
 
+# Share libs
+
+Upload the Oozie sharelibs folder. The location of the ShareLib is specified by
+the oozie.service.WorkflowAppService.system.libpath configuration property.
+Inside this directory, multiple versions may cooexiste inside "lib_{timestamp}"
+directories.
+
+Oozie will automatically clean up old ShareLib "lib_{timestamp}" directories
+based on the following rules:
+
+*   After ShareLibService.temp.sharelib.retention.days days (default: 7)
+*   Will always keep the latest 2
+
+Internally, the "sharelib create" and "sharelib upgrade" commands are used to
+upload the files. 
+
+The `oozie admin -shareliblist` command can be used by the final user to list
+the ShareLib contents without having to go into HDFS.
+
     module.exports.push name: 'Oozie Server # Share lib', timeout: 600000, handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
-      version_local = 'ls /usr/hdp/current/oozie-client/lib | grep oozie-client | sed \'s/^oozie-client-\\(.*\\)\\.jar$/\\1/g\''
-      version_remote = 'hdfs dfs -cat /user/oozie/share/lib/sharelib.properties | grep build.version | sed \'s/^build.version=\\(.*\\)$/\\1/g\''
       ctx.execute 
         cmd: mkcmd.hdfs ctx, """
-        if test -d /tmp/ooziesharelib ; then rm -rf /tmp/ooziesharelib; fi
-        mkdir /tmp/ooziesharelib
-        cd /tmp/ooziesharelib
-        tar xzf /usr/hdp/current/oozie-client/oozie-sharelib.tar.gz
-        hdfs dfs -rm -r /user/#{oozie.user.name}/share || true
-        hdfs dfs -mkdir /user/#{oozie.user.name} || true
-        hdfs dfs -put share /user/#{oozie.user.name}
-        hdfs dfs -chown #{oozie.user.name}:#{oozie.group.name} /user/#{oozie.user.name}
+        if hdfs dfs -test -d /user/#{oozie.user.name}/share/lib; then
+          echo 'Upgrade sharelib'
+          su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib upgrade -fs hdfs://torval:8020 /usr/hdp/current/oozie-client/oozie-sharelib.tar.gz"
+        else
+          hdfs dfs -mkdir /user/#{oozie.user.name} || true
+          hdfs dfs -chown #{oozie.user.name}:#{oozie.group.name} /user/#{oozie.user.name}
+          echo 'Create sharelib'
+          su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib create -fs hdfs://torval:8020 /usr/hdp/current/oozie-client/oozie-sharelib.tar.gz"
+        fi
         hdfs dfs -chmod -R 755 /user/#{oozie.user.name}
-        rm -rf /tmp/ooziesharelib
         """
         trap_on_error: true
-        not_if_exec: mkcmd.hdfs ctx, "[[ `#{version_local}` == `#{version_remote}` ]]"
+        not_if_exec: mkcmd.hdfs ctx, """
+        version=`ls /usr/hdp/current/oozie-client/lib | grep oozie-client | sed 's/^oozie-client-\\(.*\\)\\.jar$/\\1/g'`
+        hdfs dfs -cat /user/oozie/share/lib/*/sharelib.properties | grep build.version | grep $version
+        """
       , next
 
     module.exports.push name: 'Oozie Server # Hive', handler: (ctx, next) ->
