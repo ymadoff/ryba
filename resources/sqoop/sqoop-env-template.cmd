@@ -32,5 +32,5 @@
 ::Set the path to where bin/hive is available
 ::set HIVE_HOME=
 
-::Set the path for where zookeper config dir is
+::Set the path for where zookeeper config dir is
 ::set ZOOCFGDIR=

@@ -7,7 +7,7 @@ default configuration backup the last 3 snapshots(in case of corruption of the
 latest snap) and the transaction logs from the timestamp corresponding to the
 earliest snapshot.
 
-Execute `./bin/ryba backup -m ryba/zookeper/server` to run this module.
+Execute `./bin/ryba backup -m ryba/zookeeper/server` to run this module.
 
     module.exports = []
     module.exports.push require('./server').configure

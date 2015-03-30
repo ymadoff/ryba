@@ -43,15 +43,7 @@ rmr /rmstore/ZKRMStateRoot
       ryba.yarn.site['yarn.resourcemanager.zk-address'] ?= quorum.join ','
       # https://zookeeper.apache.org/doc/r3.1.2/zookeeperProgrammers.html#sc_ZooKeeperAccessControl
       # ACLs to be used for setting permissions on ZooKeeper znodes.
-      ryba.yarn.site['yarn.resourcemanager.zk-acl'] ?= 'world:anyone:rwcda'
-      # TODO: not sure how to configure this
-      # The ACLs used for the root node of the ZooKeeper state store. The ACLs
-      # set here should allow both ResourceManagers to read, write, and
-      # administer, with exclusive access to create and delete. If nothing is
-      # specified, the root node ACLs are automatically generated on the basis
-      # of the ACLs specified through yarn.resourcemanager.zk-acl. But that
-      # leaves a security hole in a secure setup.
-      ryba.yarn.site['yarn.resourcemanager.zk-state-store.root-node.acl'] ?= ''
+      ryba.yarn.site['yarn.resourcemanager.zk-acl'] ?= 'sasl:rm:rwcda'
 
 ## Configuration for automatic failover
 
@@ -72,7 +64,7 @@ the root znode where the ResourceManager state is stored is inside "/rmstore".
       ryba.yarn.site['yarn.resourcemanager.recovery.enabled'] ?= 'true'
       ryba.yarn.site['yarn.resourcemanager.store.class'] ?= 'org.apache.hadoop.yarn.server.resourcemanager.recovery.ZKRMStateStore'
 
-# Configuration for Memory and CPU
+## Configuration for Memory and CPU
 
 hadoop jar /usr/lib/hadoop-mapreduce/hadoop-mapreduce-examples.jar pi -Dmapreduce.map.cpu.vcores=32 1 1
 
@@ -89,6 +81,10 @@ the application (zombie state).
       ryba.yarn.site['yarn.scheduler.maximum-allocation-mb'] ?= '2048'
       ryba.yarn.site['yarn.scheduler.minimum-allocation-vcores'] ?= 1
       ryba.yarn.site['yarn.scheduler.maximum-allocation-vcores'] ?= 32
+
+## Environment
+
+      ryba.yarn.rm_opts ?= ''
 
 ## Commands
 

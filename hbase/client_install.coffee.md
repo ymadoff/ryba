@@ -8,6 +8,7 @@ Install the HBase client package and configure it with secured access.
     module.exports.push 'ryba/hadoop/mapred_client' # Required for using/checking mapreduce
     module.exports.push 'ryba/hbase/_'
     module.exports.push require('./client').configure
+    module.exports.push require '../lib/write_jaas'
 
 ## Zookeeper JAAS
 
@@ -15,13 +16,13 @@ JAAS configuration files for zookeeper to be deployed on the HBase Master,
 RegionServer, and HBase client host machines.
 
     module.exports.push name: 'HBase Client # Zookeeper JAAS', timeout: -1, handler: (ctx, next) ->
-      {jaas_client, hbase} = ctx.config.ryba
-      ctx.write
+      {hbase} = ctx.config.ryba
+      ctx.write_jaas
         destination: "#{hbase.conf_dir}/hbase-client.jaas"
-        content: jaas_client
+        content: client: {}
         uid: hbase.user.name
         gid: hbase.group.name
-        mode: 0o744
+        mode: 0o644
       , next
 
 ## Configure

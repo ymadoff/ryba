@@ -122,7 +122,6 @@ Secure the Zookeeper connection with JAAS.
           keytab: "/etc/security/keytabs/nn.service.keytab"
         uid: hdfs.user.name
         gid: hadoop_group.name
-        mode: 0o600
       , next
 
 ## ZK Auth and ACL

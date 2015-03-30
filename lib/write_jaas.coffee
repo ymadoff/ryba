@@ -10,6 +10,7 @@ module.exports = (ctx) ->
     # waiting for context registration of mecano actions as well as
     # waiting for uid_gid moved from wrap to their expected location
     options.ssh ?= ctx.ssh
+    options.mode ?= 0o600
     wrap null, arguments, (options, callback) ->
       jaas = ""
       return callback Error "Required option 'content'" unless options.content

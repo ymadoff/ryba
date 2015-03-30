@@ -5,6 +5,40 @@
 
 ## Configure
 
+*   `nagios.users` (object)   
+    Each property is a user object. The key is the username.   
+*   `oozie.group` (object|string)   
+    Each property is a group object. The key is the group name.   
+
+Example
+
+```json
+{
+  "ryba": {
+    "nagios": {
+      "users": {
+        "nagiosadmin": {
+          "password": 'adminpasswd',
+          "alias": 'Nagios Admin',
+          "email": 'admin@example.com'
+        },
+        "guest": {
+          "password": 'guestpasswd',
+          alias: 'Guest',
+          email: 'guest@example.com'
+        }
+      },
+      "groups": {
+        "admins": {
+          "alias": 'Nagios Administrators',
+          "members": ['nagiosadmin','guest']
+        }
+      }
+    }
+  }
+}
+```
+
     module.exports.configure = (ctx) ->
       require('masson/commons/java').configure ctx
       require('../zookeeper/client').configure ctx
@@ -38,12 +72,18 @@
       nagios.groupcmd = name: nagios.group if typeof nagios.group is 'string'
       nagios.groupcmd ?= {}
       nagios.groupcmd.name ?= 'nagiocmd'
-      nagios.groupcmd.system ?= true
-      # Admin
-      nagios.admin ?= {}
-      nagios.admin.name ?= 'nagiosadmin'
-      nagios.admin.password ?= 'nagios123'
-      nagios.admin.email ?= ''
+      nagios.groupcmd.system ?= true      
+      # WebUI Users
+      nagios.users ?= {}
+      if Object.getOwnPropertyNames(nagios.users).length is 0 then nagios.users.nagiosadmin =
+        password: 'nagios123'
+        alias: 'Nagios Admin'
+        email: ''
+      # WebUI Groups
+      nagios.groups ?= {}
+      if Object.getOwnPropertyNames(nagios.groups).length is 0 then nagios.groups.admins =
+          alias: 'Nagios Administrators'
+          members: ['nagiosadmin']
       # Kerberos
       nagios.keytab ?= '/etc/security/keytabs/nagios.service.keytab'
       nagios.principal ?= "nagios/#{ctx.config.host}@#{ctx.config.ryba.realm}"
@@ -79,7 +119,7 @@
 
 ## Commands
 
-    # module.exports.push commands: 'backup', modules: 'ryba/nagios/backup'
+    module.exports.push commands: 'backup', modules: 'ryba/nagios/backup'
 
     module.exports.push commands: 'check', modules: 'ryba/nagios/check'
 
