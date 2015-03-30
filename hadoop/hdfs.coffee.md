@@ -43,11 +43,12 @@ Example:
 ```
 
     module.exports.push module.exports.configure = (ctx) ->
+      if ctx.hdfs_configured then return else ctx.hdfs_configured = true
       # return if ctx.hdfs_configured
       # ctx.hdfs_configured = true
       require('./core').configure ctx
       # require('./core_ssl').configure ctx
-      {nameservice, core_site, static_host, realm} = ctx.config.ryba
+      {core_site, static_host, realm} = ctx.config.ryba
       throw new Error "Missing value for 'hdfs.krb5_user.password'" unless ctx.config.ryba.hdfs.krb5_user.password?
       throw new Error "Missing value for 'krb5_user.password'" unless ctx.config.ryba.krb5_user.password?
       # Options and configuration
@@ -58,47 +59,6 @@ Example:
       hdfs.site['dfs.http.policy'] ?= 'HTTPS_ONLY' # HTTP_ONLY or HTTPS_ONLY or HTTP_AND_HTTPS
       # REPLACED by "dfs.namenode.https-address": hdfs.site['dfs.https.port'] ?= '50470' # The https port where NameNode binds
       hdfs.site['fs.permissions.umask-mode'] ?= '027' # 0750
-      if core_site['hadoop.security.authentication'] is 'kerberos'
-        # Default values are retrieved from the official HDFS page called
-        # ["SecureMode"][hdfs_secure].
-        # Ports must be below 1024, because this provides part of the security
-        # mechanism to make it impossible for a user to run a map task which
-        # impersonates a DataNode
-        # TODO: Move this to 'ryba/hadoop/hdfs_dn'
-        hdfs.site['dfs.datanode.address'] ?= '0.0.0.0:1004'
-        hdfs.site['dfs.datanode.ipc.address'] ?= '0.0.0.0:50020'
-        hdfs.site['dfs.datanode.http.address'] ?= '0.0.0.0:1006' 
-        hdfs.site['dfs.datanode.https.address'] ?= '0.0.0.0:50475'
-      else
-        hdfs.site['dfs.datanode.address'] ?= '0.0.0.0:50010'
-        hdfs.site['dfs.datanode.ipc.address'] ?= '0.0.0.0:50020'
-        hdfs.site['dfs.datanode.http.address'] ?= '0.0.0.0:50075' 
-        hdfs.site['dfs.datanode.https.address'] ?= '0.0.0.0:50475'
-      # Options for "hadoop-policy.xml"
-      ctx.config.ryba.hadoop_policy ?= {}
-      # HDFS SNN
-      if secondary_namenode = ctx.host_with_module 'ryba/hadoop/hdfs_snn'
-        hdfs.site['dfs.namenode.secondary.http-address'] ?= "#{secondary_namenode}:50090"
-      unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-        hdfs.site['dfs.namenode.http-address'] ?= '0.0.0.0:50070'
-        hdfs.site['dfs.namenode.https-address'] ?= '0.0.0.0:50470'
-      else
-        # HDFS HA configuration
-        namenodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
-        ctx.config.ryba.shortname ?= ctx.config.shortname
-        hdfs.site['dfs.nameservices'] = nameservice
-        hdfs.site["dfs.ha.namenodes.#{nameservice}"] = (for nn in namenodes then nn.split('.')[0]).join ','
-        for nn in namenodes
-          hdfs.site['dfs.namenode.http-address'] = null
-          hdfs.site['dfs.namenode.https-address'] = null
-          hconfig = ctx.hosts[nn].config
-          shortname = hconfig.ryba.shortname ?= hconfig.shortname or nn.split('.')[0]
-          hdfs.site["dfs.namenode.rpc-address.#{nameservice}.#{shortname}"] ?= "#{nn}:8020"
-          hdfs.site["dfs.namenode.http-address.#{nameservice}.#{shortname}"] ?= "#{nn}:50070"
-          hdfs.site["dfs.namenode.https-address.#{nameservice}.#{shortname}"] ?= "#{nn}:50470"
-        hdfs.site["dfs.client.failover.proxy.provider.#{nameservice}"] ?= 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
-      # Fix HDP Companion File bug
-      hdfs.site['dfs.https.namenode.https-address'] = null
 
 ## Configurion for Kerberos
 
@@ -109,27 +69,6 @@ with Kerberos specific properties.
       # for accessing datanodes. If "false", no access tokens are checked on
       # accessing datanodes.
       hdfs.site['dfs.block.access.token.enable'] ?= 'true'
-      # Kerberos principal name for the NameNode
-      hdfs.site['dfs.namenode.kerberos.principal'] ?= "nn/#{static_host}@#{realm}"
-      # The HTTP Kerberos principal used by Hadoop-Auth in the HTTP 
-      # endpoint. The HTTP Kerberos principal MUST start with 'HTTP/' 
-      # per Kerberos HTTP SPNEGO specification. 
-      hdfs.site['dfs.web.authentication.kerberos.principal'] ?= "HTTP/#{static_host}@#{realm}"
-      # The Kerberos keytab file with the credentials for the HTTP 
-      # Kerberos principal used by Hadoop-Auth in the HTTP endpoint.
-      hdfs.site['dfs.web.authentication.kerberos.keytab'] ?= '/etc/security/keytabs/spnego.service.keytab'
-      # The Kerberos principal that the DataNode runs as. "_HOST" is replaced by the real host name.  
-      hdfs.site['dfs.datanode.kerberos.principal'] ?= "dn/#{static_host}@#{realm}"
-      # Combined keytab file containing the NameNode service and host principals.
-      hdfs.site['dfs.namenode.keytab.file'] ?= '/etc/security/keytabs/nn.service.keytab'
-      # The filename of the keytab file for the DataNode.
-      hdfs.site['dfs.datanode.keytab.file'] ?= '/etc/security/keytabs/dn.service.keytab'
-      # # Default to ${dfs.web.authentication.kerberos.principal}, but documented in hdp 1.3.2 manual install
-      hdfs.site['dfs.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/#{static_host}@#{realm}"
-      # # Default to ${dfs.web.authentication.kerberos.principal}, but documented in hdp 1.3.2 manual install
-      # Documented in http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
-      # Only seems to apply if "dfs.https.enable" is enabled
-      hdfs.site['dfs.namenode.kerberos.https.principal'] = "HTTP/#{static_host}@#{realm}"
 
     module.exports.push name: 'Hadoop HDFS # Install', timeout: -1, handler: (ctx, next) ->
       ctx.service [
@@ -142,28 +81,7 @@ with Kerberos specific properties.
         name: 'hadoop-client'
       ,
         name: 'openssl'
-      # ,
-      #   name: 'bigtop-jsvc'
       ], next
-
-
-## Policy
-
-By default the service-level authorization is disabled in hadoop, to enable that
-we need to set/configure the hadoop.security.authorization to true in
-${HADOOP_CONF_DIR}/core-site.xml
-
-    module.exports.push name: 'HDFS # Policy', handler: (ctx, next) ->
-      {core_site, hadoop_conf_dir, hadoop_policy} = ctx.config.ryba
-      return next() unless core_site['hadoop.security.authorization'] is 'true'
-      ctx.hconfigure
-        destination: "#{hadoop_conf_dir}/hadoop-policy.xml"
-        default: "#{__dirname}/../resources/core_hadoop/hadoop-policy.xml"
-        local_default: true
-        properties: hadoop_policy
-        merge: true
-        backup: true
-      , next
 
 ## Kerberos User
 
@@ -280,7 +198,20 @@ Note, a user must re-login for those changes to be taken into account.
           backup: true
         ], next
 
-## Module dependencies
+## Layout
+
+Create the log directory.
+
+    module.exports.push name: 'HDFS JN # Layout', handler: (ctx, next) ->
+      {hdfs} = ctx.config.ryba
+      ctx.mkdir
+        destination: "#{hdfs.log_dir}/#{hdfs.user.name}"
+        uid: hdfs.user.name
+        gid: hdfs.group.name
+        parent: true
+      , next
+
+## Dependencies
 
     url = require 'url'
 

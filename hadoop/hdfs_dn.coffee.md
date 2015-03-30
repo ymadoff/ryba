@@ -44,17 +44,38 @@ Example:
 ```
 
     module.exports.configure = (ctx) ->
+      if ctx.hdfs_dn_configured then return else ctx.hdfs_dn_configured = true
       require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
       {ryba} = ctx.config
       ryba.hdfs ?= {}
       ryba.hdfs.sysctl ?= {}
+      require('./hdfs_nn').client_config ctx
       # Comma separated list of paths. Use the list of directories from $DFS_DATA_DIR.  
       # For example, /grid/hadoop/hdfs/dn,/grid1/hadoop/hdfs/dn.
       ryba.hdfs.site['dfs.datanode.data.dir'] ?= ['/var/hdfs/data']
       ryba.hdfs.site['dfs.datanode.data.dir'] = ryba.hdfs.site['dfs.datanode.data.dir'].join ',' if Array.isArray ryba.hdfs.site['dfs.datanode.data.dir']
       # ctx.config.ryba.hdfs.site['dfs.datanode.data.dir.perm'] ?= '750'
       ryba.hdfs.site['dfs.datanode.data.dir.perm'] ?= '700'
+      if ryba.core_site['hadoop.security.authentication'] is 'kerberos'
+        # Default values are retrieved from the official HDFS page called
+        # ["SecureMode"][hdfs_secure].
+        # Ports must be below 1024, because this provides part of the security
+        # mechanism to make it impossible for a user to run a map task which
+        # impersonates a DataNode
+        # TODO: Move this to 'ryba/hadoop/hdfs_dn'
+        ryba.hdfs.site['dfs.datanode.address'] ?= '0.0.0.0:1004'
+        ryba.hdfs.site['dfs.datanode.ipc.address'] ?= '0.0.0.0:50020'
+        ryba.hdfs.site['dfs.datanode.http.address'] ?= '0.0.0.0:1006' 
+        ryba.hdfs.site['dfs.datanode.https.address'] ?= '0.0.0.0:50475'
+      else
+        ryba.hdfs.site['dfs.datanode.address'] ?= '0.0.0.0:50010'
+        ryba.hdfs.site['dfs.datanode.ipc.address'] ?= '0.0.0.0:50020'
+        ryba.hdfs.site['dfs.datanode.http.address'] ?= '0.0.0.0:50075' 
+        ryba.hdfs.site['dfs.datanode.https.address'] ?= '0.0.0.0:50475'
+      # Kerberos
+      ryba.hdfs.site['dfs.datanode.kerberos.principal'] ?= "dn/#{ryba.static_host}@#{ryba.realm}"
+      ryba.hdfs.site['dfs.datanode.keytab.file'] ?= '/etc/security/keytabs/dn.service.keytab'
       # Tuning
       dataDirs = ryba.hdfs.site['dfs.datanode.data.dir'].split(',')
       if dataDirs.length > 3
@@ -65,6 +86,16 @@ Example:
       if ryba.hdfs.site['dfs.datanode.failed.volumes.tolerated'] >= dataDirs.length
         throw Error 'Number of failed volumes must be less than total volumes'
       ryba.hdfs.datanode_opts ?= ''
+
+    module.exports.client_config = (ctx) ->
+      {ryba} = ctx.config
+      # Import properties from DataNode
+      [dn_ctx] = ctx.contexts 'ryba/hadoop/hdfs_dn', module.exports.configure
+      properties = [
+        'dfs.datanode.kerberos.principal'
+      ]
+      for property in properties
+        ryba.hdfs.site[property] ?= dn_ctx.config.ryba.hdfs.site[property]
 
 ## Commands
 

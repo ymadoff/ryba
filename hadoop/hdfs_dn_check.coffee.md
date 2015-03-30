@@ -7,8 +7,6 @@ interface.
 Run the command `./bin/ryba check -m ryba/hadoop/hdfs_dn` to check all the
 DataNodes.
 
-    lifecycle = require '../lib/lifecycle'
-    mkcmd = require '../lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/hdfs_dn_wait'
@@ -136,3 +134,9 @@ for more information.
       do_end = ->
         next null, true
       do_init()
+
+## Dependencies
+
+    mkcmd = require '../lib/mkcmd'
+
+

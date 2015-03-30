@@ -32,6 +32,7 @@ Example:
 ```
 
     module.exports.configure = (ctx) ->
+      if ctx.hdfs_nn_configured then return else ctx.hdfs_nn_configured = true
       require('masson/core/iptables').configure ctx
       require('./hdfs').configure ctx
       {ryba} = ctx.config
@@ -41,10 +42,38 @@ Example:
       # For example, /data/1/hdfs/nn,/data/2/hdfs/nn.
       ryba.hdfs.site['dfs.namenode.name.dir'] ?= ['/var/hdfs/name']
       ryba.hdfs.site['dfs.namenode.name.dir'] = ryba.hdfs.site['dfs.namenode.name.dir'].join ',' if Array.isArray ryba.hdfs.site['dfs.namenode.name.dir']
+
+      unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+        ryba.hdfs.site['dfs.namenode.http-address'] ?= '0.0.0.0:50070'
+        ryba.hdfs.site['dfs.namenode.https-address'] ?= '0.0.0.0:50470'
+      else
+        # HDFS HA configuration
+        namenodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
+        ctx.config.ryba.shortname ?= ctx.config.shortname
+        ryba.hdfs.site['dfs.nameservices'] = ryba.nameservice
+        ryba.hdfs.site["dfs.ha.namenodes.#{ryba.nameservice}"] = (for nn in namenodes then nn.split('.')[0]).join ','
+        for nn in namenodes
+          ryba.hdfs.site['dfs.namenode.http-address'] = null
+          ryba.hdfs.site['dfs.namenode.https-address'] = null
+          hconfig = ctx.hosts[nn].config
+          shortname = hconfig.ryba.shortname ?= hconfig.shortname or nn.split('.')[0]
+          ryba.hdfs.site["dfs.namenode.rpc-address.#{ryba.nameservice}.#{shortname}"] ?= "#{nn}:8020"
+          ryba.hdfs.site["dfs.namenode.http-address.#{ryba.nameservice}.#{shortname}"] ?= "#{nn}:50070"
+          ryba.hdfs.site["dfs.namenode.https-address.#{ryba.nameservice}.#{shortname}"] ?= "#{nn}:50470"
+        ryba.hdfs.site["dfs.client.failover.proxy.provider.#{ryba.nameservice}"] ?= 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
+      # Kerberos
+      ryba.hdfs.site['dfs.namenode.kerberos.principal'] ?= "nn/#{ryba.static_host}@#{ryba.realm}"
+      ryba.hdfs.site['dfs.namenode.keytab.file'] ?= '/etc/security/keytabs/nn.service.keytab'
+      ryba.hdfs.site['dfs.namenode.kerberos.internal.spnego.principal'] ?= "HTTP/#{ryba.static_host}@#{ryba.realm}"
+      ryba.hdfs.site['dfs.namenode.kerberos.https.principal'] = "HTTP/#{ryba.static_host}@#{ryba.realm}"
+      ryba.hdfs.site['dfs.web.authentication.kerberos.principal'] ?= "HTTP/#{ryba.static_host}@#{ryba.realm}"
+      ryba.hdfs.site['dfs.web.authentication.kerberos.keytab'] ?= '/etc/security/keytabs/spnego.service.keytab'
+      # Fix HDP Companion File bug
+      ryba.hdfs.site['dfs.https.namenode.https-address'] = null
       # Activate ACLs
       ryba.hdfs.site['dfs.namenode.acls.enabled'] ?= 'true'
       ryba.hdfs.site['dfs.namenode.accesstime.precision'] ?= null
-      ryba.hdfs.site['dfs.ha.automatic-failover.enabled'] ?= 'true'
+      # NameNode options
       ryba.hdfs.namenode_opts ?= null
 
 ## Configuration for HDFS High Availability (HA)
@@ -58,12 +87,35 @@ SSHes to the target node and uses fuser to kill the process listening on the
 service's TCP port.
 
       if ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+        ryba.hdfs.site['dfs.ha.automatic-failover.enabled'] ?= 'true'
         journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
         ryba.hdfs.site['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
         ryba.hdfs.site['dfs.namenode.shared.edits.dir'] = "qjournal://#{ryba.hdfs.site['dfs.namenode.shared.edits.dir']}/#{ryba.hdfs.site['dfs.nameservices']}"
         # Fencing
         ryba.hdfs.site['dfs.ha.fencing.methods'] ?= "sshfence(#{ryba.hdfs.user.name})"
         ryba.hdfs.site['dfs.ha.fencing.ssh.private-key-files'] ?= "#{ryba.hdfs.user.home}/.ssh/id_rsa"
+
+    module.exports.client_config = (ctx) ->
+      {ryba} = ctx.config
+      # Import properties from NameNode
+      [nn_ctx] = ctx.contexts 'ryba/hadoop/hdfs_nn', require('./hdfs_nn').configure
+      properties = [
+        'dfs.namenode.kerberos.principal'
+        'dfs.namenode.kerberos.internal.spnego.principal'
+        'dfs.namenode.kerberos.https.principal'
+        'dfs.web.authentication.kerberos.principal'
+        'dfs.ha.automatic-failover.enabled'
+        'dfs.nameservices'
+      ]
+      for property in properties
+        ryba.hdfs.site[property] ?= nn_ctx.config.ryba.hdfs.site[property]
+      for property of nn_ctx.config.ryba.hdfs.site
+        ok = false
+        ok = true if /^dfs\.namenode\.\w+-address/.test property
+        ok = true if property.indexOf('dfs.client.failover.proxy.provider.') is 0
+        ok = true if property.indexOf('dfs.ha.namenodes.') is 0
+        continue unless ok
+        ryba.hdfs.site[property] ?= nn_ctx.config.ryba.hdfs.site[property]
 
 ## Commands
 

@@ -20,8 +20,6 @@
         backup: true
       , next
 
-    module.exports.push 'ryba/hadoop/hdfs_client_check'
-
 ## Module dependencies
 
     hdfs_nn = require './hdfs_nn'
