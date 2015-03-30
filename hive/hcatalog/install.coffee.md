@@ -29,7 +29,7 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'Hive & HCat Server # IPTables', handler: (ctx, next) ->
+    module.exports.push name: 'Hive HCatalog # IPTables', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       ctx.iptables
         rules: [
@@ -47,7 +47,7 @@ inside "/etc/init.d" and activate it on startup.
 Note, the server is not activated on startup but they endup as zombies if HDFS
 isnt yet started.
 
-    module.exports.push name: 'Hive & HCat Server # Startup', handler: (ctx, next) ->
+    module.exports.push name: 'Hive HCatalog # Startup', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       ctx.hdp_service
         name: 'hive-hcatalog-server'
@@ -74,7 +74,7 @@ isnt yet started.
           'hive-hcatalog-server': 
             write: [
               match: /^export HCAT_PID_DIR=.*$/m # HDP default is "/var/lib/hive-hcatalog"
-              replace: "export HCAT_PID_DIR=#{hive.hcatalog_pid_dir} # RYBA FIX"
+              replace: "export HCAT_PID_DIR=#{hive.hcatalog.pid_dir} # RYBA FIX"
             ,
               match: /^export HCAT_HOME=.*$/m # HDP default is "/usr/lib/hive-hcatalog"
               replace: "export HCAT_HOME=/usr/hdp/current/hive-webhcat # RYBA FIX"
@@ -84,7 +84,7 @@ isnt yet started.
             ]
       , next
 
-    module.exports.push name: 'Hive & HCat Server # Database', handler: (ctx, next) ->
+    module.exports.push name: 'Hive HCatalog # Database', handler: (ctx, next) ->
       {hive, db_admin} = ctx.config.ryba
       username = hive.site['javax.jdo.option.ConnectionUserName']
       password = hive.site['javax.jdo.option.ConnectionPassword']
@@ -165,7 +165,7 @@ isnt yet started.
       return next new Error 'Database engine not supported' unless engines[engine]
       engines[engine]()
 
-    module.exports.push name: 'Hive & HCat Server # Configure', handler: (ctx, next) ->
+    module.exports.push name: 'Hive HCatalog # Configure', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hive.conf_dir}/hive-site.xml"
@@ -185,34 +185,37 @@ isnt yet started.
 
 ## Env
 
-Enrich the "hive-env.sh" file with the value of the configuration property
-"ryba.hive.hcatalog_opts". Internally, the environmental variable
-"HADOOP_CLIENT_OPTS" is enriched and only apply to the Hive HCatalog server.
+Enrich the "hive-env.sh" file with the value of the configuration properties
+"ryba.hive.hcatalog.opts" and "ryba.hive.hcatalog.heapsize". Internally, the
+environmental variables "HADOOP_CLIENT_OPTS" and "HADOOP_HEAPSIZE" are enriched
+and they only apply to the Hive HCatalog server.
 
 Using this functionnality, a user may for example raise the heap size of Hive
-HCatalog to 4Gb by setting a value equal to "-Xmx4096m".
+HCatalog to 4Gb by either setting a "opts" value equal to "-Xmx4096m" or the 
+by setting a "heapsize" value equal to "4096".
 
 Note, the startup script found in "hive-hcatalog/bin/hcat_server.sh" references
 the Hive Metastore service and execute "./bin/hive --service metastore"
 
-    module.exports.push name: 'Hive & HCat Server # Env', handler: (ctx, next) ->
+    module.exports.push name: 'Hive HCatalog # Env', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       ctx.write
         destination: "#{hive.conf_dir}/hive-env.sh"
         replace: """
         if [ "$SERVICE" = "metastore" ]; then
           # export HADOOP_CLIENT_OPTS="-Dcom.sun.management.jmxremote -Djava.rmi.server.hostname=130.98.196.54 -Dcom.sun.management.jmxremote.rmi.port=9526 -Dcom.sun.management.jmxremote.port=9526 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false  $HADOOP_CLIENT_OPTS"
-          export HADOOP_CLIENT_OPTS="#{hive.hcatalog_opts} $HADOOP_CLIENT_OPTS"
+          export HADOOP_HEAPSIZE="#{hive.hcatalog.heapsize}"
+          export HADOOP_CLIENT_OPTS="-Xmx${HADOOP_HEAPSIZE}m #{hive.hcatalog.opts} $HADOOP_CLIENT_OPTS"
         fi
         """
-        from: '# RYBA Hive HCatalog START'
-        to: '# RYBA Hive HCatalog END'
+        from: '# RYBA HIVE HCATALOG START'
+        to: '# RYBA HIVE HCATALOG END'
         append: true
         eof: true
         backup: true
       , next
 
-    module.exports.push name: 'Hive & HCat Server # Libs', handler: (ctx, next) ->
+    module.exports.push name: 'Hive HCatalog # Libs', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       return next() unless hive.libs.length
       uploads = for lib in hive.libs
@@ -220,13 +223,13 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
         destination: "/usr/hdp/current/hive-metastore/lib/#{path.basename lib}"
       ctx.upload uploads, next
 
-    module.exports.push name: 'Hive & HCat Server # Driver', handler: (ctx, next) ->
+    module.exports.push name: 'Hive HCatalog # Driver', handler: (ctx, next) ->
       ctx.link
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/hdp/current/hive-metastore/lib/mysql-connector-java.jar'
       , next
 
-    module.exports.push name: 'Hive & HCat Server # Kerberos', handler: (ctx, next) ->
+    module.exports.push name: 'Hive HCatalog # Kerberos', handler: (ctx, next) ->
       {hive, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
@@ -241,7 +244,7 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
         kadmin_server: admin_server
       , next
 
-    module.exports.push name: 'Hive & HCat Server # Logs', handler: (ctx, next) ->
+    module.exports.push name: 'Hive HCatalog # Logs', handler: (ctx, next) ->
       ctx.write [
         source: "#{__dirname}/../../resources/hive/hive-exec-log4j.properties.template"
         local_source: true
@@ -252,23 +255,27 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
         destination: '/etc/hive/conf/hive-log4j.properties'
       ], next
 
-    module.exports.push name: 'Hive & HCat Server # Layout', timeout: -1, handler: (ctx, next) ->
+## Layout
+
+Create the directories to store the logs and pid information. The properties
+"ryba.hive.hcatalog.log\_dir" and "ryba.hive.hcatalog.pid\_dir" may be modified.
+
+    module.exports.push name: 'Hive HCatalog # Layout', timeout: -1, handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       # Required by service "hive-hcatalog-server"
       ctx.mkdir [
-        destination: '/var/log/hive-hcatalog'
+        destination: hive.hcatalog.log_dir
         uid: hive.user.name
         gid: hive.group.name
         parent: true
       ,
-        destination: hive.hcatalog_pid_dir
+        destination: hive.hcatalog.pid_dir
         uid: hive.user.name
         gid: hive.group.name
         parent: true
-      ]
-      , next
+      ], next
 
-    module.exports.push name: 'Hive & HCat Server # HDFS Layout', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'Hive HCatalog # HDFS Layout', timeout: -1, handler: (ctx, next) ->
       # todo: this isnt pretty, ok that we need to execute hdfs command from an hadoop client
       # enabled environment, but there must be a better way
       {active_nn_host, hdfs, hive} = ctx.config.ryba
@@ -322,13 +329,13 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
           next null, modified
         do_warehouse()
 
-    module.exports.push name: 'Hive & HCat Server # Tez Package', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'Hive HCatalog # Tez Package', timeout: -1, handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module 'ryba/tez'
       ctx.service
         name: 'tez'
       , next
 
-    module.exports.push name: 'Hive & HCat Server # Tez Layout', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'Hive HCatalog # Tez Layout', timeout: -1, handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module 'ryba/tez'
       {hive, hadoop_group} = ctx.config.ryba
       version_local = 'ls /usr/hdp/current/hive-metastore/lib | grep hive-exec- | sed \'s/^hive-exec-\\(.*\\)\\.jar$/\\1/g\''

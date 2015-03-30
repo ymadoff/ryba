@@ -11,11 +11,14 @@ Example:
 {
   "ryba": {
     "hive": {
-      "server2_opts": "-Xmx4096m"
+      "hcatalog": {
+        opts": "-Xmx4096m",
+        heapsize": "1024"
+      },
       "site": {
-        "javax.jdo.option.ConnectionURL": "jdbc:mysql://front1.hadoop:3306/hive?createDatabaseIfNotExist=true"
-        "javax.jdo.option.ConnectionDriverName": "com.mysql.jdbc.Driver"
-        "javax.jdo.option.ConnectionUserName": "hive"
+        "javax.jdo.option.ConnectionURL": "jdbc:mysql://front1.hadoop:3306/hive?createDatabaseIfNotExist=true",
+        "javax.jdo.option.ConnectionDriverName": "com.mysql.jdbc.Driver",
+        "javax.jdo.option.ConnectionUserName": "hive",
         "javax.jdo.option.ConnectionPassword": "hive123"
       }
     }
@@ -27,12 +30,12 @@ Example:
       require('masson/commons/mysql_server').configure ctx
       require('../index').configure ctx
       {hive, db_admin, static_host, realm} = ctx.config.ryba
-      # Layout
-      hive.log_dir ?= '/var/log/hive'
-      hive.hcatalog_pid_dir ?= '/var/run/hive-hcatalog'
-      # Environment
-      hive.hcatalog_opts ?= ''
-      hive.server2_opts ?= ''
+      # Layout and environment
+      hive.hcatalog ?= {}
+      hive.hcatalog.log_dir ?= '/var/log/hive-hcatalog'
+      hive.hcatalog.pid_dir ?= '/var/run/hive-hcatalog'
+      hive.hcatalog.opts ?= ''
+      hive.hcatalog.heapsize = 1024
       # Configuration
       hive.site ?= {}
       unless hive.site['hive.metastore.uris']

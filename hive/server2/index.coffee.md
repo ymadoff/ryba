@@ -25,7 +25,13 @@ Example:
 {
   "ryba": {
     "hive": {
-      "server2_opts": "-Xmx4096m"
+      "server2": {
+        "heapsize": "4096",
+        "opts": "-Dcom.sun.management.jmxremote -Djava.rmi.server.hostname=130.98.196.54 -Dcom.sun.management.jmxremote.rmi.port=9526 -Dcom.sun.management.jmxremote.port=9526 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false"
+      },
+      "site": {
+        "hive.server2.thrift.port": "10001"
+      }
     }
   }
 }
@@ -36,10 +42,12 @@ Example:
       require('../../hadoop/core').configure ctx
       require('../index').configure ctx
       {core_site, hive, static_host, realm} = ctx.config.ryba
-      # Layout
-      hive.log_dir ?= '/var/log/hive'
-      # Environment
-      hive.server2_opts ?= ''
+      # Layout and environment
+      hive.server2 ?= {}
+      hive.server2.log_dir ?= '/var/log/hive-server2'
+      hive.server2.pid_dir ?= '/var/run/hive-server2'
+      hive.server2.opts ?= ''
+      hive.server2.heapsize = 1024
       # Configuration
       hive.site ?= {}
       properties = [ # Duplicate client, might remove
@@ -61,6 +69,9 @@ Example:
       hive.site['hive.server2.thrift.port'] ?= '10001'
       hive.site['hive.server2.thrift.http.port'] ?= '10001'
       hive.site['hive.server2.thrift.http.path'] ?= 'cliservice'
+      # Bug fix: java properties are not interpolated
+      # Default is "${system:java.io.tmpdir}/${system:user.name}/operation_logs"
+      hive.site['hive.server2.logging.operation.log.location'] ?= "/tmp/#{hive.user.name}/operation_logs"
       # Tez
       # https://streever.atlassian.net/wiki/pages/viewpage.action?pageId=4390918
       hive.site['hive.server2.tez.default.queues'] ?= 'default'

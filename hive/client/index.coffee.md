@@ -3,11 +3,29 @@
 
     module.exports = []
 
+Example:
+
+```json
+{
+  "ryba": {
+    "hive": {
+      "client": {
+        opts": "-Xmx4096m",
+        heapsize": "1024"
+      }
+    }
+  }
+}
+```
+
     module.exports.configure = (ctx) ->
       require('../../hadoop/hdfs').configure ctx
       require('../../tez').configure ctx
       require('../index').configure ctx
       {hive, mapred, tez} = ctx.config.ryba
+      hive.client ?= {}
+      hive.client.opts = ""
+      hive.client.heapsize = 1024
       # Tuning
       # [Christian Prokopp comments](http://www.quora.com/What-are-the-best-practices-for-using-Hive-What-settings-should-we-enable-most-of-the-time)
       # [David Streever](https://streever.atlassian.net/wiki/display/HADOOP/Hive+Performance+Tips)

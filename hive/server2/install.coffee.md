@@ -59,18 +59,18 @@ isnt yet started.
           match: /^\. \/etc\/default\/hive-server2 .*$/m
           replace: '. /etc/default/hive-server2 # RYBA FIX rc.d, DONT OVERWRITE'
           append: ". /lib/lsb/init-functions"
-        # ,
-        #   # HDP default is "/etc/hive-hcatalog/conf"
-        #   match: /^CONF_DIR=.*$/m
-        #   replace: "CONF_DIR=\"${HIVE_CONF_DIR}\" # RYBA HONORS /etc/default, DONT OVEWRITE"
         ,
           # HDP default is "/usr/lib/hive/bin/hive"
           match: /^EXEC_PATH=.*$/m
-          replace: "EXEC_PATH=\"/usr/hdp/current/hive-server2/bin/hive\" # RYBA FIX"
-        # ,
-        #   # Default is "/var/lib/hive-hcatalog/hcat.pid"
-        #   match: /^PIDFILE=.*$/m
-        #   replace: "PIDFILE=\"${HCAT_PID_DIR}/hcat.pid\" # RYBA HONORS /etc/default, DONT OVEWRITE"
+          replace: "EXEC_PATH=\"/usr/hdp/current/hive-server2/bin/hive\" # RYBA FIX, DONT OVEWRITE"
+        ,
+          # HDP default is "LOG_FILE=/var/log/hive/${DAEMON}.out"
+          match: /^(\s+)LOG_FILE=.*$/m
+          replace: "$1LOG_FILE=\"#{hive.server2.log_dir}/${DAEMON}.out\" # RYBA FIX, DONT OVEWRITE"
+        ,
+          # HDP default is "/var/run/hive/hive-server2.pid"
+          match: /^PIDFILE=.*$/m
+          replace: "PIDFILE=\"#{hive.server2.pid_dir}/hcat.pid\" # RYBA FIX, DONT OVEWRITE"
         ]
         etc_default: true
       , next
@@ -88,7 +88,7 @@ isnt yet started.
 ## Env
 
 Enrich the "hive-env.sh" file with the value of the configuration property
-"ryba.hive.server2_opts". Internally, the environmental variable
+"ryba.hive.server2.opts". Internally, the environmental variable
 "HADOOP_CLIENT_OPTS" is enriched and only apply to the Hive Server2.
 
 Using this functionnality, a user may for example raise the heap size of Hive
@@ -101,15 +101,36 @@ Server2 to 4Gb by setting a value equal to "-Xmx4096m".
         replace: """
         if [ "$SERVICE" = "hiveserver2" ]; then
           # export HADOOP_CLIENT_OPTS="-Dcom.sun.management.jmxremote -Djava.rmi.server.hostname=130.98.196.54 -Dcom.sun.management.jmxremote.rmi.port=9526 -Dcom.sun.management.jmxremote.port=9526 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false  $HADOOP_CLIENT_OPTS"
-          export HADOOP_CLIENT_OPTS="#{hive.server2_opts} $HADOOP_CLIENT_OPTS"
+          export HADOOP_HEAPSIZE="#{hive.server2.heapsize}"
+          export HADOOP_CLIENT_OPTS="-Xmx${HADOOP_HEAPSIZE}m #{hive.server2.opts} ${HADOOP_CLIENT_OPTS}"
         fi
         """
-        from: '# RYBA Hive Server2 START'
-        to: '# RYBA Hive Server2 END'
+        from: '# RYBA HIVE SERVER2 START'
+        to: '# RYBA HIVE SERVER2 END'
         append: true
         eof: true
         backup: true
       , next
+
+## Layout
+
+Create the directories to store the logs and pid information. The properties
+"ryba.hive.server2.log\_dir" and "ryba.hive.server2.pid\_dir" may be modified.
+
+    module.exports.push name: 'Hive Server2 # Layout', timeout: -1, handler: (ctx, next) ->
+      {hive} = ctx.config.ryba
+      # Required by service "hive-hcatalog-server"
+      ctx.mkdir [
+        destination: hive.server2.log_dir
+        uid: hive.user.name
+        gid: hive.group.name
+        parent: true
+      ,
+        destination: hive.server2.pid_dir
+        uid: hive.user.name
+        gid: hive.group.name
+        parent: true
+      ], next
 
     module.exports.push name: 'Hive Server2 # Kerberos', handler: (ctx, next) ->
       {hive, realm} = ctx.config.ryba
