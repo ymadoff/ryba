@@ -84,6 +84,11 @@ Example:
       # see https://cwiki.apache.org/confluence/display/Hive/WebHCat+InstallWebHCat
       hive.site['hive.security.metastore.authenticator.manager'] ?= 'org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator'
       hive.site['hive.metastore.pre.event.listeners'] ?= 'org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener'
+      # Unset unvalid properties
+      hive.site['hive.optimize.mapjoin.mapreduce'] = null
+      hive.site['hive.heapsize'] = null
+      hive.site['hive.auto.convert.sortmerge.join.noconditionaltask'] = null # "does not exist"
+      hive.site['hive.exec.max.created.files'] ?= '100000' # "expects LONG type value"
 
 ## Users & Groups
 
