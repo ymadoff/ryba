@@ -23,17 +23,13 @@ kill ...
       {titan, rexster} = ctx.config.ryba
       ctx.execute
         cmd: """
-        JPS=
-        for maybejps in jps "${JAVA_HOME}/bin/jps"; do
-          type "$maybejps" >/dev/null 2>&1
-          if [ $? -eq 0 ]; then
-            JPS="$maybejps"
-            break
-          fi
-        done
-        p = `$JPS -l | grep "com.tinkerpop.rexster.Application"`
+        p = `ps aux | grep "com.tinkerpop.rexster.Application"`
         if [ -z "$p" ]; then exit 3; fi
         #{path.join titan.home, 'bin', 'rexster.sh'} --stop --wait -rp #{rexster.config['shutdown-port']} | grep 'Rexster Server shutdown complete'
         """
         code_skipped: 3
       , next
+
+## Module Dependencies
+
+    path = require 'path'

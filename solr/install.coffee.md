@@ -41,7 +41,6 @@ Ryba execute this scripts then customize installation
       {solr} = ctx.config.ryba
       archive_name = path.basename solr.source
       archive_path = path.join solr.install_dir, archive_name
-      installer = path.join solr.install_dir, 'install_solr_service.sh'
       do_download = () ->
         ctx.log 'Downloading (if necessary)...'
         ctx.download
@@ -50,36 +49,35 @@ Ryba execute this scripts then customize installation
         , (err, downloaded) ->
           return next err if err
           ctx.log if downloaded then 'Archive downloaded !' else 'Download skipped'
-          do_extract()
-      do_extract = () ->
+          do_extract downloaded
+      do_extract = (forced) ->
         ctx.log 'Extracting install scripts...'
-        ctx.execute
+        exec =
           cmd:"""
-          cd #{solr.install_dir};
-          tar xzf solr-#{solr.version}.tgz solr-#{solr.version}/bin/install_solr_service.sh --strip-components=2
+          tar xzf #{solr.install_dir}/solr-#{solr.version}.tgz solr-#{solr.version}/bin/install_solr_service.sh --strip-components=2
           """
-          not_if_exists: installer
-        , (err, extracted) ->
-          console.log "COUCOU: #{ctx.config.host}"
+        # Extracting is skipped if the script already exists and the download was skipped
+        # Weassume that the script is the same, and was already executed
+        exec.not_if_exists = './install_solr_service.sh' unless forced
+        ctx.execute exec, (err, extracted) ->
           return next err if err
-          do_clean_script()
+          return if extracted then do_clean_script() else next err, extracted
       # Deactivate start solr in install script !
       do_clean_script = () ->
-        ctx.log 'Cleaning script...'      
+        ctx.log 'Cleaning script...'
         ctx.write
-          destination: installer
+          destination: './install_solr_service.sh'
           match: /\nservice \$SOLR_SERVICE start(.*)(\n*)status\n/m
           replace: '\n'
-          if_exists: installer
+          if_exists: './install_solr_service.sh'
         , (err, cleaned) ->
           return next err if err
-          ctx.log if cleaned then 'Script cleaned !' else 'Script unchanged [WARN]'
+          ctx.log if cleaned then 'Script cleaned !' else 'Script unchanged [INFO]'
           do_install()
       do_install = () ->
         ctx.execute
           cmd:"""
-          bash #{installer} solr-#{solr.version}.tgz -i #{solr.install_dir} -d #{solr.var_dir} -u #{solr.user.name} -p #{solr.port}
-          rm -f #{installer}
+          ./install_solr_service.sh #{solr.install_dir}/solr-#{solr.version}.tgz -i #{solr.install_dir} -d #{solr.var_dir} -u #{solr.user.name} -p #{solr.port}
           #{solr.install_dir}/solr/server/scripts/cloud-scripts/zkcli.sh -zkhost "#{solr.zkhost}" -cmd bootstrap -solrhome #{solr.user.home}
           """
         , next
@@ -124,14 +122,13 @@ Ryba execute this scripts then customize installation
       ctx.krb5_addprinc
         principal: "solr/#{ctx.config.host}@#{realm}"
         randkey: true
-        keytab: path.join solr.var_dir, 'solr.service.keytab'
+        keytab: 'etc/security/keytabs/solr.service.keytab'
         uid: solr.user.name
         gid: solr.group.name
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
       , next
-
 
     module.exports.push name: 'Solr # Tuning', handler: (ctx, next) ->
       next null, 'TODO'

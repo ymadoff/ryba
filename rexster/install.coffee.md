@@ -5,9 +5,9 @@
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'ryba/titan'
     module.exports.push require '../lib/write_jaas'
-    
+
     module.exports.push require('./').configure
-    
+
 
     module.exports.push name: 'Rexster # Users & Groups', handler: (ctx, next) ->
       {rexster} = ctx.config.ryba
@@ -84,7 +84,7 @@
       ctx.krb5_addprinc
         principal: "rexster/#{ctx.config.host}@#{realm}"
         randkey: true
-        keytab: path.join rexster.user.home, "rexster.service.keytab"
+        keytab: '/etc/security/keytabs/rexster.service.keytab'
         uid: rexster.user.name
         gid: rexster.group.name
         kadmin_principal: kadmin_principal
@@ -98,21 +98,23 @@ Zookeeper use JAAS for authentication. We configure JAAS to make SASL authentica
 
     module.exports.push name: 'Rexster # Kerberos JAAS', handler: (ctx, next) ->
       {rexster, realm} = ctx.config.ryba
+      princ = "rexster/#{ctx.config.host}@#{realm}"
+      keytab = '/etc/security/keytabs/rexster.service.keytab'
       ctx.write_jaas
         destination: path.join rexster.user.home, "rexster.jaas"
-        content: 
+        content:
           client:
-            keytab: path.join rexster.user.home, "rexster.service.keytab"
-            principal: "rexster/#{ctx.config.host}@#{realm}"
+            principal: princ
+            keytab: keytab
           server:
-            keytab: path.join rexster.user.home, "rexster.service.keytab"
-            principal: "rexster/#{ctx.config.host}@#{realm}"
+            principal: princ
+            keytab: keytab
         uid: rexster.user.name
         gid: rexster.group.name
       , next
 
     module.exports.push name: 'Rexster # Configure Titan Server', handler: (ctx, next) ->
-      {titan, rexster} = ctx.config.ryba
+      {titan, rexster, realm} = ctx.config.ryba
       ctx.write
         content: xml 'rexster': rexster.config
         destination: path.join rexster.user.home, 'titan-server.xml'
@@ -122,14 +124,14 @@ Zookeeper use JAAS for authentication. We configure JAAS to make SASL authentica
 
 ## HBase Namespace Permissions
 
-    module.exports.push name: 'Rexster # Grant HBase Perms', handler: (ctx, next) ->
+    module.exports.push name: 'Rexster # Grant HBase Perms', skip: true, handler: (ctx, next) ->
       return next() unless ctx.config.ryba.titan.config['storage.backend'] is 'hbase'
       require('../hbase/master').configure ctx
-      {hbase} = ctx.config.ryba
+      {hbase, realm} = ctx.config.ryba
       ctx.execute
         cmd: """
         echo #{hbase.admin.password} | kinit #{hbase.admin.principal} >/dev/null && {
-        hbase shell 2>/dev/null <<< "grant 'rexster', 'RWXCA', '@titan'"
+        hbase shell 2>/dev/null <<< "grant 'rexster', 'RWXCA', 'titan'"
         }
         """
         code_skipped: 3
