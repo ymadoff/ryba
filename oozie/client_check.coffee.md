@@ -103,7 +103,7 @@
 
 ## Check Pig Workflow
 
-    module.exports.push skip: true, name: 'Oozie Client # Check Pig Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
+    module.exports.push name: 'Oozie Client # Check Pig Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
       {force_check, user, core_site, yarn, oozie} = ctx.config.ryba
       rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1
@@ -132,7 +132,7 @@
         eof: true
       ,
         content: """
-        <workflow-app xmlns='uri:oozie:workflow:0.1' name='check-#{ctx.config.shortname}-oozie-pig'>
+        <workflow-app name='check-#{ctx.config.shortname}-oozie-pig' xmlns='uri:oozie:workflow:0.4'>
           <start to='test-pig' />
           <action name='test-pig'>
             <pig>
@@ -183,6 +183,7 @@
           cmd: mkcmd.test ctx, """
           hdfs dfs -rm -r -skipTrash check-#{ctx.config.shortname}-oozie-pig 2>/dev/null
           hdfs dfs -mkdir -p check-#{ctx.config.shortname}-oozie-pig/input
+          echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{ctx.config.shortname}-oozie-pig/input/data
           hdfs dfs -put -f #{user.home}/check_oozie_pig/workflow.xml check-#{ctx.config.shortname}-oozie-pig
           hdfs dfs -put -f #{user.home}/check_oozie_pig/wordcount.pig check-#{ctx.config.shortname}-oozie-pig
           export OOZIE_URL=#{oozie.site['oozie.base.url']}
