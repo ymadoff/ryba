@@ -134,18 +134,19 @@ Example:
       rm_ctx = rm_ctxs[0]
       yarn_shortname = if is_yarn_ha then ".#{rm_ctx.config.shortname}" else ''
       rm_host = rm_ctx.config.host
-      # Strange, "yarn_rpc_url" default to "http://localhost:8050" which doesnt make
+      # Strange, "rm_rpc_url" default to "http://localhost:8050" which doesnt make
       # any sense since this isnt http
-      yarn_rpc_url = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{yarn_shortname}"]
-      yarn_rpc_url = "http://#{yarn_rpc_url}"
-      rm_port = yarn_rpc_url.split(':')[1]
+      rm_rpc_add = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{yarn_shortname}"]
+      rm_rpc_url = "http://#{rm_rpc_add}"
+      rm_port = rm_rpc_add.split(':')[1]
       yarn_api_url = if rm_ctx.config.ryba.yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
       then "http://#{yarn.site['yarn.resourcemanager.webapp.address']}"
       else "https://#{yarn.site['yarn.resourcemanager.webapp.https.address']}"
       # NodeManager
+      [nm_ctx] = ctx.contexts 'ryba/hadoop/yarn_nm', require('../hadoop/yarn_nm').configure
       node_manager_api_url = if ctx.config.ryba.yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
-      then "http://#{yarn.site['yarn.nodemanager.webapp.address']}"
-      else "https://#{yarn.site['yarn.nodemanager.webapp.https.address']}"
+      then "http://#{nm_ctx.config.ryba.yarn.site['yarn.nodemanager.webapp.address']}"
+      else "https://#{nm_ctx.config.ryba.yarn.site['yarn.nodemanager.webapp.https.address']}"
       # WebHcat
       [wc_ctx] = ctx.contexts 'ryba/hive/webhcat', require('../hive/webhcat').configure
       webhcat_port = wc_ctx.config.ryba.webhcat.site['templeton.port']
@@ -170,7 +171,7 @@ Example:
       hue.ini['hadoop']['yarn_clusters']['default']['hadoop_bin'] ?= '/usr/hdp/current/hadoop-client/bin/hadoop'
       hue.ini['hadoop']['yarn_clusters']['default']['hadoop_conf_dir'] ?= hadoop_conf_dir
       hue.ini['hadoop']['yarn_clusters']['default']['resourcemanager_api_url'] ?= yarn_api_url
-      hue.ini['hadoop']['yarn_clusters']['default']['resourcemanager_rpc_url'] ?= yarn_rpc_url
+      hue.ini['hadoop']['yarn_clusters']['default']['resourcemanager_rpc_url'] ?= rm_rpc_url
       hue.ini['hadoop']['yarn_clusters']['default']['proxy_api_url'] ?= yarn_api_url
       hue.ini['hadoop']['yarn_clusters']['default']['node_manager_api_url'] ?= node_manager_api_url
       # JHS
