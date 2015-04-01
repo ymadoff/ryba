@@ -4,7 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 
-## Start
+## Stop
 
     module.exports.push name: 'Solr # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
       ctx.service

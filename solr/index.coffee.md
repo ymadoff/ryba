@@ -3,7 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-   
+
 ## Configure
 
 Example:
@@ -31,13 +31,13 @@ Example:
       solr.user.name ?= 'solr'
       solr.user.home ?= "#{path.join solr.var_dir, 'data'}"
       solr.user.system ?= true
-      solr.user.gid ?= 'solr'
       solr.user.comment ?= 'Solr User'
       # Group
       solr.group ?= {}
       solr.group = name: solr.group if typeof solr.group is 'string'
       solr.group.name ?= 'solr'
       solr.group.system ?= true
+      solr.user.gid ?= solr.group.name
       # Layout
       solr.version ?= '5.0.0'
       solr.mode ?= 'cloud'
@@ -45,14 +45,12 @@ Example:
       if solr.mode is 'cloud'
         require('../zookeeper/client').configure ctx
         {zookeeper} = ctx.config.ryba
-        solr.zkhost = ctx.hosts_with_module('ryba/zookeeper/server').join ":#{zookeeper.port},"
-        solr.zkhost = "#{solr.zkhost}:#{zookeeper.port}/solr"
+        solr.zkhosts = ctx.hosts_with_module('ryba/zookeeper/server').join ":#{zookeeper.port},"
+        solr.zkhosts = "#{solr.zkhosts}:#{zookeeper.port}/solr"
 
+Solr can be found [here](http://wwwftp.ciril.fr/pub/apache/lucene/solr/)
 
-Solr can be found [here](http://wwwftp.ciril.fr/pub/apache/lucene/solr/) 
-
-      # solr.source ?= "http://wwwftp.ciril.fr/pub/apache/lucene/solr/#{solr.version}/solr-#{solr.version}.tgz"
-      solr.source ?= "http://10.10.10.1/solr-#{solr.version}.tgz"
+      solr.source ?= "http://wwwftp.ciril.fr/pub/apache/lucene/solr/#{solr.version}/solr-#{solr.version}.tgz"
 
     module.exports.push commands: 'install', modules: [
       'ryba/solr/install',

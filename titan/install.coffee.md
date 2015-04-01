@@ -10,6 +10,8 @@ please see ryba/rexster
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
+    module.exports.push 'ryba/hbase/client'
+    module.exports.push 'ryba/elasticsearch'
     module.exports.push require('./index').configure
     module.exports.push require '../lib/write_jaas'
 
@@ -27,9 +29,6 @@ Download and extract a ZIP Archive
         ctx.download
           source: titan.source
           destination: archive_path
-          local_cache: true
-          no_check: true
-          cache_dir: 'titan'
         , (err, downloaded) ->
           return next err if err
           unless downloaded
@@ -45,7 +44,7 @@ Download and extract a ZIP Archive
               , (err, removed) ->
                 return next err if err
                 do_extract()
-            else do_extract() 
+            else do_extract()
       do_extract = () ->
         ctx.log 'Extracting...'
         ctx.extract
@@ -124,11 +123,13 @@ Creates a configuration file. Always load this one in Gremlin REPL !
         merge: true
       , next
 
-## HBase Namespace
+## HBase Configuration
+
+### HBase ACL
 
     module.exports.push name: 'Titan # Create HBase Namespace', handler: (ctx, next) ->
+      return next() # NAMESPACE NOT YET FULLY SUPPORTED
       return next() unless ctx.config.ryba.titan.config['storage.backend'] is 'hbase'
-      require('../hbase/master').configure ctx
       {titan, hbase, realm} = ctx.config.ryba
       ctx.execute
         cmd: """
