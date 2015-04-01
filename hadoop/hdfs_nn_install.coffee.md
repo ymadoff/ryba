@@ -104,7 +104,6 @@ Environment passed to the NameNode before it starts.
 
     module.exports.push name: 'HDFS NN # Opts', handler: (ctx, next) ->
       {hadoop_conf_dir, hdfs} = ctx.config.ryba
-      return next() if hdfs.namenode_opts is ''
       ctx.write
         destination: "#{hadoop_conf_dir}/hadoop-env.sh"
         match: /^export HADOOP_NAMENODE_OPTS="(.*) \$\{HADOOP_NAMENODE_OPTS\}" # RYBA CONF ".*?", DONT OVEWRITE/mg
