@@ -15,6 +15,26 @@
         ctx.user rexster.user, (err, umodified) ->
           next err, gmodified or umodified
 
+
+## IPTables
+
+| Service    | Port  | Proto | Parameter                  |
+|------------|-------|-------|----------------------------|
+| Hue Web UI | 8182  | http  | config.http.server-port    |
+
+IPTables rules are only inserted if the parameter "iptables.action" is set to
+"start" (default value).
+
+    module.exports.push name: 'Hue # IPTables', handler: (ctx, next) ->
+      {rexster} = ctx.config.ryba
+      ctx.iptables
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: rexster.config.http['server-port'], protocol: 'tcp', state: 'NEW', comment: "Rexster Web UI" }
+        ]
+        if: ctx.config.iptables.action is 'start'
+      , next
+
+
     module.exports.push name: 'Rexster # Env', handler: (ctx, next) ->
       {titan, rexster, hadoop_conf_dir} = ctx.config.ryba
       modified=false
