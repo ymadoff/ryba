@@ -6,6 +6,7 @@ Titan is a distributed graph database. It is an hadoop-friendly implementation o
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push 'ryba/hbase/client'
 
     module.exports.configure = (ctx) ->
       return if ctx.titan_configured
@@ -36,15 +37,11 @@ Storage Backend
 Indexation backend (mandatory even if it should not be)
 
       titan.config['index.search.backend'] ?= 'elasticsearch'
-
       if titan.config['index.search.backend'] is 'elasticsearch'
         es_ctxs = ctx.contexts 'ryba/elasticsearch', require('../elasticsearch').configure
+        titan.config['index.search.hostname'] ?= es_ctxs[0].config.host
         titan.config['index.search.elasticsearch.client-only'] ?= true
-        titan.config['index.search.elasticsearch.interface'] ?= 'NODE'
-        titan.config['index.search.elasticsearch.ext.node.data'] ?= true
-        titan.config['index.search.elasticsearch.ext.node.client'] ?= false
-        titan.config['index.search.elasticsearch.ext.node.local'] ?= true
-
+        titan.config['index.search.elasticsearch.cluster-name'] ?= es_ctxs[0].config.ryba.elasticsearch.cluster.name
       # else if titan.config['index.search.backend'] is 'solr'
       #   zk_ctxs = ctx.contexts 'ryba/zookeeper/server', require('../zookeeper/server').configure
       #   solr_ctxs = ctx.contexts 'ryba/solr', require('../solr').configure

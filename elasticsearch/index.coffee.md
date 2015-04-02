@@ -76,7 +76,7 @@ Example:
       # Layout
       es.version ?= '1.2.4'
       es.cluster ?= {}
-      es.cluster.name ?= 'elastic'
+      es.cluster.name ?= 'elasticsearch'
       es.number_of_shards ?= ctx.hosts_with_module('ryba/elasticsearch').length
       es.number_of_replicas ?= 1
 

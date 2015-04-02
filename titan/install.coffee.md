@@ -10,8 +10,6 @@ please see ryba/rexster
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hbase/client'
-    module.exports.push 'ryba/elasticsearch'
     module.exports.push require('./index').configure
     module.exports.push require '../lib/write_jaas'
 
@@ -115,9 +113,9 @@ Creates a configuration file. Always load this one in Gremlin REPL !
 
     module.exports.push name: 'Titan # Gremlin Properties', handler: (ctx, next) ->
       {titan} = ctx.config.ryba
-      ctx.log 'Configure titan.properties'
+      ctx.log 'Configure titan-console.conf'
       ctx.ini
-        destination: path.join titan.home, 'titan.properties'
+        destination: path.join titan.home, 'titan-console.conf'
         content: titan.config
         separator: '='
         merge: true
