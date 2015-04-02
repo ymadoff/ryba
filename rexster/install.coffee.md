@@ -25,7 +25,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Hue # IPTables', handler: (ctx, next) ->
+    module.exports.push name: 'Rexster # IPTables', handler: (ctx, next) ->
       {rexster} = ctx.config.ryba
       ctx.iptables
         rules: [
