@@ -27,9 +27,6 @@ Download and extract a ZIP Archive
         ctx.download
           source: titan.source
           destination: archive_path
-          local_cache: true
-          no_check: true
-          cache_dir: 'titan'
         , (err, downloaded) ->
           return next err if err
           unless downloaded
@@ -45,7 +42,7 @@ Download and extract a ZIP Archive
               , (err, removed) ->
                 return next err if err
                 do_extract()
-            else do_extract() 
+            else do_extract()
       do_extract = () ->
         ctx.log 'Extracting...'
         ctx.extract
@@ -116,19 +113,21 @@ Creates a configuration file. Always load this one in Gremlin REPL !
 
     module.exports.push name: 'Titan # Gremlin Properties', handler: (ctx, next) ->
       {titan} = ctx.config.ryba
-      ctx.log 'Configure titan.properties'
+      ctx.log 'Configure titan-console.conf'
       ctx.ini
-        destination: path.join titan.home, 'titan.properties'
+        destination: path.join titan.home, 'titan-console.conf'
         content: titan.config
         separator: '='
         merge: true
       , next
 
-## HBase Namespace
+## HBase Configuration
+
+### HBase ACL
 
     module.exports.push name: 'Titan # Create HBase Namespace', handler: (ctx, next) ->
+      return next() # NAMESPACE NOT YET FULLY SUPPORTED
       return next() unless ctx.config.ryba.titan.config['storage.backend'] is 'hbase'
-      require('../hbase/master').configure ctx
       {titan, hbase, realm} = ctx.config.ryba
       ctx.execute
         cmd: """

@@ -2,7 +2,8 @@
 # Rexster Check
 
     module.exports = []
-
+    module.exports.push 'masson/bootstrap/'
+    module.exports.push require('./').configure
 ## Check Status
 
 Check status using JMX

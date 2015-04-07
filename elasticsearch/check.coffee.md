@@ -1,0 +1,4 @@
+
+# ElasticSearch Check
+
+    module.exports = []
