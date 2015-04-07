@@ -28,6 +28,7 @@ Example :
     }
   }
 }
+```
 
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx

@@ -9,7 +9,6 @@
       {ryba} = ctx.config
       ryba.hdfs ?= {}
       # Validation
-      throw Error "Missing \"ryba.zkfc_password\" property" unless ryba.zkfc_password
       nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn',(require '../hdfs_nn').configure
       throw Error "Require 2 NameNodes" unless nn_ctxs.length is 2
       # Environment

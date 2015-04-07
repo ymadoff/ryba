@@ -65,7 +65,7 @@ HTTP
       config.http ?= {}
       config.http['server-port'] ?= 8182
       config.http['server-host'] ?= '0.0.0.0'
-      config.http['base-uri'] ?= ctx.config.host
+      config.http['base-uri'] ?= "http://#{ctx.config.host}"
       config.http['web-root'] ?= 'public'
       config.http['character-set'] ?= "UTF-8"
       config.http['enable-jmx'] ?= false

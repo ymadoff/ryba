@@ -10,5 +10,4 @@
       ctx.execute
         cmd: 'service solr status'
         code_skipped: 3
-        if_exists: '/etc/init.d/solr'
       , next

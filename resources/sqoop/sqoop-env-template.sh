@@ -31,5 +31,5 @@
 #Set the path to where bin/hive is available
 #export HIVE_HOME=
 
-#Set the path for where zookeper config dir is
+#Set the path for where zookeeper config dir is
 #export ZOOCFGDIR=
