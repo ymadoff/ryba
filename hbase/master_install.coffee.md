@@ -139,9 +139,9 @@ Environment file is enriched by "ryba/hbase/_ # HBase # Env".
       {hbase} = ctx.config.ryba
       ctx.write_jaas
         destination: "#{hbase.conf_dir}/hbase-master.jaas"
-        content: client:
-          keytab: hbase.site['hbase.master.keytab.file']
+        content: Client:
           principal: hbase.site['hbase.master.kerberos.principal'].replace '_HOST', ctx.config.host
+          keyTab: hbase.site['hbase.master.keytab.file']
         uid: hbase.user.name
         gid: hbase.group.name
         mode: 0o700

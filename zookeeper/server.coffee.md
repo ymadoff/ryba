@@ -63,10 +63,11 @@ Example :
       if hosts.length > 1 then for host, i in hosts
         zookeeper.config["server.#{i+1}"] = "#{host}:2888:3888"
       # SASL
-      zookeeper.config['authProvider.1'] ?= 'org.apache.zookeeper.server.auth.SASLAuthenticationProvider'
-      zookeeper.config['jaasLoginRenew'] ?= '3600000'
-      zookeeper.config['kerberos.removeHostFromPrincipal'] ?= 'true'
-      zookeeper.config['kerberos.removeRealmFromPrincipal'] ?= 'true'
+      if zookeeper.kerberos
+        zookeeper.config['authProvider.1'] ?= 'org.apache.zookeeper.server.auth.SASLAuthenticationProvider'
+        zookeeper.config['jaasLoginRenew'] ?= '3600000'
+        zookeeper.config['kerberos.removeHostFromPrincipal'] ?= 'true'
+        zookeeper.config['kerberos.removeRealmFromPrincipal'] ?= 'true'
       # Internal
       zookeeper.myid ?= null
       zookeeper.retention ?= '3' # Used to clean data dir

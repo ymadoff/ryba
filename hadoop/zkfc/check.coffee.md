@@ -13,7 +13,7 @@ it must be able to SSH to the target node without providing a passphrase. Thus,
 one must also configure the dfs.ha.fencing.ssh.private-key-files option, which
 is a comma-separated list of SSH private key files.
 
-    module.exports.push name: 'HDFS NN # Check SSH Fencing', label_true: 'CHECKED', handler: (ctx, next) ->
+    module.exports.push name: 'HDFS ZKFC # Check SSH Fencing', label_true: 'CHECKED', handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       {hdfs} = ctx.config.ryba
       nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'

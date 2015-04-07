@@ -106,7 +106,8 @@ Secure the Zookeeper connection with JAAS
       {titan} = ctx.config.ryba
       ctx.write_jaas
         destination: path.join titan.home, 'titan.jaas'
-        content: client: {}
+        content: Client:
+          useTicketCache: 'true'
         mode: 0o644
       , next
 

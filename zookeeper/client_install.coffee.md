@@ -33,7 +33,8 @@
       do_client_jaas = ->
         ctx.write_jaas
           destination: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
-          content: client: {}
+          content: Client:
+            useTicketCache: 'true'
           mode: 0o644
         , (err, written) ->
           next err if err

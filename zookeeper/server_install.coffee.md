@@ -67,35 +67,6 @@ which has no dependency.
           name: 'zookeeper-server'
         , next
 
-## Startup
-
-Install and configure the startup script in 
-"/etc/init.d/zookeeper-server".
-
-    # module.exports.push name: 'ZooKeeper Server # Startup', handler: (ctx, next) ->
-    #   {hdfs} = ctx.config.ryba
-    #   modified = false
-    #   do_install = ->
-    #     ctx.service
-    #       name: 'zookeeper-server'
-    #       startup: true
-    #     , (err, serviced) ->
-    #       return next err if err
-    #       modified = true if serviced
-    #       do_fix()
-    #   do_fix = ->
-    #     ctx.write
-    #       destination: '/etc/init.d/zookeeper-server'
-    #       match: /^(\. .*\/bigtop-detect-javahome)$/m
-    #       replace: "#$1"
-    #     , (err, written) ->
-    #       return next err if err
-    #       modified = true if written
-    #       do_end()
-    #   do_end = ->
-    #     next null, modified
-    #   do_install()
-
 ## Kerberos
 
     module.exports.push name: 'ZooKeeper Server # Kerberos', timeout: -1, handler: (ctx, next) ->
@@ -119,9 +90,9 @@ Install and configure the startup script in
       do_server_jaas = ->
         ctx.write_jaas
           destination: '/etc/zookeeper/conf/zookeeper-server.jaas'
-          content: server:
+          content: Server:
             principal: "zookeeper/#{ctx.config.host}@#{realm}"
-            keytab: "#{zookeeper.conf_dir}/zookeeper.keytab"
+            keyTab: "#{zookeeper.conf_dir}/zookeeper.keytab"
           uid: zookeeper.user.name
           gid: hadoop_group.name
         , (err, written) ->
@@ -131,8 +102,9 @@ Install and configure the startup script in
       do_client_jaas = ->
         ctx.write_jaas
           destination: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
-          content: client: {}
-          mode: 0o644
+          content: Client:
+            useTicketCache: true
+          mode: 0o0644
         , (err, written) ->
           next err if err
           modified = true if written

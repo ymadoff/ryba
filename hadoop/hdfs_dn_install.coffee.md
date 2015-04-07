@@ -97,7 +97,7 @@ inside "/etc/init.d" and activate it on startup.
 
 ## HA
 
-Update the "hdfs.site.xml" configuration file with the High Availabity properties
+Update the "hdfs-site.xml" configuration file with the High Availabity properties
 present inside the "hdp.ha\_client\_config" object.
 
     module.exports.push name: 'HDFS DN # HA', handler: (ctx, next) ->

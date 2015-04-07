@@ -101,11 +101,11 @@ Zookeeper use JAAS for authentication. We configure JAAS to make SASL authentica
       ctx.write_jaas
         destination: path.join rexster.user.home, "rexster.jaas"
         content: 
-          client:
-            keytab: path.join rexster.user.home, "rexster.service.keytab"
+          Client:
+            keyTab: path.join rexster.user.home, "rexster.service.keytab"
             principal: "rexster/#{ctx.config.host}@#{realm}"
-          server:
-            keytab: path.join rexster.user.home, "rexster.service.keytab"
+          Server:
+            keyTab: path.join rexster.user.home, "rexster.service.keytab"
             principal: "rexster/#{ctx.config.host}@#{realm}"
         uid: rexster.user.name
         gid: rexster.group.name

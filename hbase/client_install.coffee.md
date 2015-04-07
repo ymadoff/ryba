@@ -19,7 +19,8 @@ RegionServer, and HBase client host machines.
       {hbase} = ctx.config.ryba
       ctx.write_jaas
         destination: "#{hbase.conf_dir}/hbase-client.jaas"
-        content: client: {}
+        content: Client:
+          useTicketCache: 'true'
         uid: hbase.user.name
         gid: hbase.group.name
         mode: 0o644

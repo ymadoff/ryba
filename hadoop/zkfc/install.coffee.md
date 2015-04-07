@@ -117,9 +117,9 @@ Secure the Zookeeper connection with JAAS.
       {hdfs, hadoop_conf_dir, hadoop_group, realm} = ctx.config.ryba
       ctx.write_jaas
         destination: "#{hadoop_conf_dir}/hdfs-zkfc.jaas"
-        content: client:
+        content: Client:
           principal: "nn/#{ctx.config.host}@#{realm}"
-          keytab: "/etc/security/keytabs/nn.service.keytab"
+          keyTab: "/etc/security/keytabs/nn.service.keytab"
         uid: hdfs.user.name
         gid: hadoop_group.name
       , next

@@ -66,9 +66,9 @@ RegionServer, and HBase client host machines.
       {hbase} = ctx.config.ryba
       ctx.write_jaas
         destination: "#{hbase.conf_dir}/hbase-regionserver.jaas"
-        content: client:
+        content: Client:
           principal: hbase.site['hbase.regionserver.kerberos.principal'].replace '_HOST', ctx.config.host
-          keytab: hbase.site['hbase.regionserver.keytab.file']
+          keyTab: hbase.site['hbase.regionserver.keytab.file']
         uid: hbase.user.name
         gid: hbase.group.name
       , next

@@ -75,12 +75,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 
     module.exports.push name: 'YARN RM # Kerberos JAAS', handler: (ctx, next) ->
-      {yarn, hadoop_conf_dir, hadoop_group, realm} = ctx.config.ryba
+      {yarn, hadoop_conf_dir, hadoop_group, core_site, realm} = ctx.config.ryba
       ctx.write_jaas
         destination: "#{hadoop_conf_dir}/yarn-rm.jaas"
-        content: client:
+        content: Client:
           principal: yarn.site['yarn.resourcemanager.principal'].replace '_HOST', ctx.config.host
-          keytab: yarn.site['yarn.resourcemanager.keytab']
+          keyTab: yarn.site['yarn.resourcemanager.keytab']
         uid: yarn.user.name
         gid: hadoop_group.name
       , next
