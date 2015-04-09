@@ -47,7 +47,7 @@ Using this functionnality, a user may for example raise the heap size of Hive
 Client to 4Gb by either setting a "opts" value equal to "-Xmx4096m" or the 
 by setting a "heapsize" value equal to "4096".
 
-    module.exports.push name: 'Hive & HCat Server # Env', handler: (ctx, next) ->
+    module.exports.push name: 'Hive Client # Env', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       ctx.write
         destination: "#{hive.conf_dir}/hive-env.sh"

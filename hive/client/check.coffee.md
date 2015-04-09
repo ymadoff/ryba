@@ -1,5 +1,15 @@
 
-# Hive & HCatalog Client Check
+# Hive Client Check
+
+This module check both the HCatalog and Hive Server2 servers respectively using
+the commands "hive" and "beeline".
+
+Debug mode in the "hive" command is activated with the "hive.root.logger"
+parameter:
+
+```
+hive -hiveconf hive.root.logger=DEBUG,console
+```
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
