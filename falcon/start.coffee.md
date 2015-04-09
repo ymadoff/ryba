@@ -28,4 +28,5 @@ su -l falcon -c "/usr/hdp/current/falcon-server/bin/service-start.sh falcon"
         su -l #{user.name} -c '/usr/hdp/current/falcon-server/bin/service-start.sh falcon'
         """
         code_skipped: 3
+        if_exists: '/usr/hdp/current/falcon-server/bin/service-status.sh'
       , next
