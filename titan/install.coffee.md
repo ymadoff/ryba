@@ -62,8 +62,10 @@ Download and extract a ZIP Archive
               , next
       ctx.fs.exists titan.install_dir, (err, exists) ->
         return next err if err
-        if exists then return do_download()
-        else ctx.mkdir titan.install_dir, (err, created) ->
+        return do_download() if exists
+        ctx.mkdir
+          destination: titan.install_dir
+        , (err, created) ->
           return next err if err or not created
           ctx.log 'Titan Installation directory created !'
           do_download()
