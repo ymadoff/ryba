@@ -315,10 +315,10 @@ not handled here.
 
     module.exports.push name: 'Hadoop Core # Users & Groups', handler: (ctx, next) ->
       {hadoop_group, hdfs, yarn, mapred} = ctx.config.ryba
-      ctx.group [hadoop_group, hdfs.group, yarn.group, mapred.group], (err, gmodified) ->
-        return next err if err
-        ctx.user [hdfs.user, yarn.user, mapred.user], (err, umodified) ->
-          next err, gmodified or umodified
+      ctx
+      .group [hadoop_group, hdfs.group, yarn.group, mapred.group]
+      .user [hdfs.user, yarn.user, mapred.user]
+      .then next
 
 ## Test User
 
