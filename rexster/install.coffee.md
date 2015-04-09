@@ -101,9 +101,9 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       {rexster, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
-        principal: "rexster/#{ctx.config.host}@#{realm}"
+        principal: resxster.principal
         randkey: true
-        keytab: '/etc/security/keytabs/rexster.service.keytab'
+        keytab: rexster.keytab
         uid: rexster.user.name
         gid: rexster.group.name
         kadmin_principal: kadmin_principal
@@ -117,17 +117,15 @@ Zookeeper use JAAS for authentication. We configure JAAS to make SASL authentica
 
     module.exports.push name: 'Rexster # Kerberos JAAS', handler: (ctx, next) ->
       {rexster, realm} = ctx.config.ryba
-      princ = "rexster/#{ctx.config.host}@#{realm}"
-      keytab = '/etc/security/keytabs/rexster.service.keytab'
       ctx.write_jaas
         destination: path.join rexster.user.home, "rexster.jaas"
         content:
           Client:
-            principal: princ
-            keyTab: keytab
+            principal: rexster.principal
+            keyTab: rexster.keytab
           Server:
-            principal: princ
-            keyTab: keytab
+            principal: rexster.principal
+            keyTab: rexster.keytab
         uid: rexster.user.name
         gid: rexster.group.name
       , next

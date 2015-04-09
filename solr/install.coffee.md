@@ -38,9 +38,9 @@
       {solr, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
-        principal: "solr/#{ctx.config.host}@#{realm}"
+        principal: solr.principal
         randkey: true
-        keytab: 'etc/security/keytabs/solr.service.keytab'
+        keytab: solr.keytab
         uid: solr.user.name
         gid: solr.group.name
         kadmin_principal: kadmin_principal
@@ -98,7 +98,7 @@ Ryba execute this scripts then customize installation
           cmd:"""
           rm -f /etc/init.d/solr
           ./install_solr_service.sh #{solr.install_dir}/solr-#{solr.version}.tgz -i #{solr.install_dir} -d #{solr.var_dir} -u #{solr.user.name} -p #{solr.port}
-          kinit solr/#{ctx.config.host}@#{realm} -k -t /etc/security/keytabs/solr.service.keytab;
+          kinit /#{solr.principal} -k -t #{solr.keytab}
           #{solr.install_dir}/solr/server/scripts/cloud-scripts/zkcli.sh -zkhost "#{solr.zkhosts}" -cmd bootstrap -solrhome #{solr.user.home}
           """
           if: modified

@@ -51,9 +51,10 @@ Example:
       rexster.group = name: rexster.group if typeof rexster.group is 'string'
       rexster.group.name ?= 'rexster'
       rexster.group.system ?= true
-
-Force rexster home to titan.home/rexhome
-
+      # Kerberos config
+      rexster.principal ?= "rexster/#{ctx.config.host}@#{realm}"
+      rexster.keytab ?= '/etc/security/keytabs/rexster.service.keytab'
+      # Force rexster home to titan.home/rexhome
       rexster.user.home = path.join titan.home, 'rexhome'
       rexster.admin ?= {}
       rexster.admin = name: rexster.admin if typeof rexster.admin is 'string'

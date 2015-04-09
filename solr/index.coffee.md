@@ -44,6 +44,9 @@ Example:
       solr.version ?= '5.0.0'
       solr.mode ?= 'cloud'
       solr.port ?= 8983
+      # Kerberos
+      solr.principal ?= "solr/#{ctx.config.host}@#{ctx.config.ryba.realm}"
+      solr.keytab ?= '/etc/security/keytabs/solr.service.keytab'
       if solr.mode is 'cloud'
         require('../zookeeper/client').configure ctx
         {zookeeper} = ctx.config.ryba

@@ -82,6 +82,9 @@ Example:
       es.user.gid ?= es.group.name
       # Layout
       es.version ?= '1.2.4'
+      # Kerberos
+      es.principal ?= "elasticsearch/#{ctx.config.host}@#{ctx.config.ryba.realm}"
+      es.keytab ?= '/etc/security/keytabs/elasticsearch.service.keytab'
       es.cluster ?= {}
       es.cluster.name ?= 'elasticsearch'
       es.number_of_shards ?= ctx.hosts_with_module('ryba/elasticsearch').length
