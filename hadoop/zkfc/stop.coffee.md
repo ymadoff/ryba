@@ -7,7 +7,7 @@
 
 ## Stop
 
-Stop the HDFS ZKFC deamon. You can also stop the server manually with one of
+Stop the ZKFC deamon. You can also stop the server manually with one of
 the following two commands:
 
 ```
@@ -15,14 +15,14 @@ service hadoop-hdfs-zkfc stop
 su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop zkfc"
 ```
 
-    module.exports.push name: 'HDFS ZKFC # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
+    module.exports.push name: 'ZKFC # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
       ctx.service
         srv_name: 'hadoop-hdfs-zkfc'
         action: 'stop'
         if_exists: '/etc/init.d/hadoop-hdfs-zkfc'
       , next
 
-    module.exports.push name: 'HDFS ZKFC # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
+    module.exports.push name: 'ZKFC # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute
         cmd: 'rm /var/log/hadoop-hdfs/*/*-zkfc-*'

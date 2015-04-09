@@ -16,7 +16,7 @@
 |-----------|------|--------|----------------------------|
 | namenode  | 8019  | tcp   | dfs.ha.zkfc.port           |
 
-    module.exports.push name: 'HDFS ZKFC # IPTables', handler: (ctx, next) ->
+    module.exports.push name: 'ZKFC # IPTables', handler: (ctx, next) ->
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 8019, protocol: 'tcp', state: 'NEW', comment: "ZKFC IPC" }
@@ -29,7 +29,7 @@
 Install the "hadoop-hdfs-zkfc" service, symlink the rc.d startup script
 in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 
-    module.exports.push name: 'HDFS ZKFC # Service', handler: (ctx, next) ->
+    module.exports.push name: 'ZKFC # Service', handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
       ctx.hdp_service
         name: 'hadoop-hdfs-zkfc'
@@ -63,7 +63,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 
 ## Configure
 
-    module.exports.push name: 'HDFS ZKFC # Configure', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'ZKFC # Configure', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_conf_dir, hadoop_group} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
@@ -216,7 +216,7 @@ We also make sure SSH access is not blocked by a rule defined
 inside "/etc/security/access.conf". A specific rule for the HDFS user is
 inserted if ALL users or the HDFS user access is denied.
 
-    module.exports.push name: 'HDFS ZKFC # SSH Fencing', handler: (ctx, next) ->
+    module.exports.push name: 'ZKFC # SSH Fencing', handler: (ctx, next) ->
       {hdfs, hadoop_conf_dir, ssh_fencing, hadoop_group} = ctx.config.ryba
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       modified = false
@@ -295,7 +295,7 @@ The action start by enabling automatic failover in "hdfs-site.xml" and configuri
 If this is an active NameNode, we format ZooKeeper and start the ZKFC daemon. If this is a standby
 NameNode, we wait for the active NameNode to take leadership and start the ZKFC daemon.
 
-    module.exports.push name: 'HDFS ZKFC # HA Auto Failover', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'ZKFC # HA Auto Failover', timeout: -1, handler: (ctx, next) ->
       {hdfs, active_nn_host} = ctx.config.ryba
       return next() unless hdfs.site['dfs.ha.automatic-failover.enabled'] = 'true'
       do_zkfc_active = ->

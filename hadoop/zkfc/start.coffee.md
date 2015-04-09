@@ -17,7 +17,7 @@ active NameNode to start first.
 
 ## Start
 
-Start the HDFS ZKFC daemon. Important, ZKFC should start first on the active
+Start the ZKFC daemon. Important, ZKFC should start first on the active
 NameNode. You can also start the server manually with the following two
 commands:
 
@@ -26,7 +26,7 @@ service hadoop-hdfs-zkfc start
 su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start zkfc"
 ```
 
-    module.exports.push name: 'HDFS ZKFC # Start', label_true: 'STARTED', handler: (ctx, next) ->
+    module.exports.push name: 'ZKFC # Start', label_true: 'STARTED', handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       # {active_nn_host} = ctx.config.ryba
       # do_wait = ->
