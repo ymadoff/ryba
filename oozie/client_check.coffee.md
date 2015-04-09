@@ -101,6 +101,113 @@
           not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{ctx.config.shortname}-oozie-fs/target"
         , next
 
+## Check MapReduce Workflow
+
+    module.exports.push name: 'Oozie Client # Check MapReduce', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
+      {force_check, user, core_site, yarn, oozie} = ctx.config.ryba
+      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
+      if rm_ctxs.length > 1
+        rm_ctx = ctx.context yarn.active_rm_host, require('../hadoop/yarn_rm').configure
+        shortname = ".#{rm_ctx.config.shortname}"
+      else
+        rm_ctx = rm_ctxs[0]
+        shortname = ''
+      rm_address = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{shortname}"]
+      # Get the name of the user running the Oozie Server
+      os_ctxs = ctx.contexts 'ryba/oozie/server', require('./server').configure
+      {oozie} = os_ctxs[0].config.ryba
+      ctx.write [
+        content: """
+          nameNode=#{core_site['fs.defaultFS']}
+          jobTracker=#{rm_address}
+          oozie.libpath=/user/#{oozie.user.name}/share/lib
+          queueName=default
+          basedir=${nameNode}/user/#{user.name}/check-#{ctx.config.shortname}-oozie-mr
+          oozie.wf.application.path=${basedir}
+          oozie.use.system.libpath=true
+        """
+        destination: "#{user.home}/check_oozie_mr/job.properties"
+        uid: user.name
+        gid: user.group
+        eof: true
+      ,
+        content: """
+        <workflow-app name='check-#{ctx.config.shortname}-oozie-mr' xmlns='uri:oozie:workflow:0.4'>
+          <start to='test-mr' />
+          <action name='test-mr'>
+            <map-reduce>
+              <job-tracker>${jobTracker}</job-tracker>
+              <name-node>${nameNode}</name-node>
+              <configuration>
+                <property>
+                  <name>mapred.job.queue.name</name>
+                  <value>${queueName}</value>
+                </property>
+                <property>
+                  <name>mapred.mapper.class</name>
+                  <value>org.apache.oozie.example.SampleMapper</value>
+                </property>
+                <property>
+                  <name>mapred.reducer.class</name>
+                  <value>org.apache.oozie.example.SampleReducer</value>
+                </property>
+                <property>
+                  <name>mapred.map.tasks</name>
+                  <value>1</value>
+                </property>
+                <property>
+                  <name>mapred.input.dir</name>
+                  <value>/user/${wf:user()}/check-#{ctx.config.shortname}-oozie-mr/input</value>
+                </property>
+                <property>
+                  <name>mapred.output.dir</name>
+                  <value>/user/${wf:user()}/check-#{ctx.config.shortname}-oozie-mr/output</value>
+                </property>
+              </configuration>
+            </map-reduce>
+            <ok to="end" />
+            <error to="fail" />
+          </action>
+          <kill name="fail">
+            <message>MapReduce failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+          </kill>
+          <end name='end' />
+        </workflow-app>
+        """
+        destination: "#{user.home}/check_oozie_mr/workflow.xml"
+        uid: user.name
+        gid: user.group
+        eof: true
+      ], (err, written) ->
+        return next err if err
+        ctx.execute
+          cmd: mkcmd.test ctx, """
+          # Prepare HDFS
+          hdfs dfs -rm -r -skipTrash check-#{ctx.config.shortname}-oozie-mr 2>/dev/null
+          hdfs dfs -mkdir -p check-#{ctx.config.shortname}-oozie-mr/input
+          echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{ctx.config.shortname}-oozie-mr/input/data
+          hdfs dfs -put -f #{user.home}/check_oozie_mr/workflow.xml check-#{ctx.config.shortname}-oozie-mr
+          # Extract Examples
+          if [ ! -d /var/tmp/oozie-examples ]; then
+            mkdir /var/tmp/oozie-examples
+            tar xzf /usr/hdp/current/oozie-client/doc/oozie-examples.tar.gz -C /var/tmp/oozie-examples
+          fi
+          hdfs dfs -put /var/tmp/oozie-examples/examples/apps/map-reduce/lib check-#{ctx.config.shortname}-oozie-mr
+          # Run Oozie
+          export OOZIE_URL=#{oozie.site['oozie.base.url']}
+          oozie job -dryrun -config #{user.home}/check_oozie_mr/job.properties
+          jobid=`oozie job -run -config #{user.home}/check_oozie_mr/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
+          # Check Job
+          i=0
+          echo $jobid
+          while [[ $i -lt 1000 ]] && [[ `oozie job -info $jobid | grep -e '^Status' | sed 's/^Status\\s\\+:\\s\\+\\(.*\\)$/\\1/'` == 'RUNNING' ]]
+          do ((i++)); sleep 1; done
+          oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
+          """
+          trap_on_error: false # or while loop will exit on first run
+          not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{ctx.config.shortname}-oozie-mr/output/_SUCCESS"
+        , next
+
 ## Check Pig Workflow
 
     module.exports.push name: 'Oozie Client # Check Pig Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
