@@ -35,26 +35,20 @@ ElasticSearch archive comes with an RPM
 
     module.exports.push name: 'ES # Install', timeout: -1, handler: (ctx, next) ->
       {elasticsearch, realm} = ctx.config.ryba
-      archive_path =
-      modified = false
-      do_download = () ->
-        ctx.log 'Downloading (if necessary)...'
-        ctx.download
-          source: elasticsearch.source
-          destination: "/root/elasticsearch-#{elasticsearch.version}.noarch.rpm"
-          not_if_exec: "rpm -q --queryformat '%{VERSION}' elasticsearch | grep '#{elasticsearch.version}'"
-        , (err, downloaded) ->
-          return next err if err
-          do_install()
-      do_install = () ->
-        ctx.execute
-          cmd:"""
-          yum localinstall -y --nogpgcheck elasticsearch-#{elasticsearch.version}.noarch.rpm
-          chkconfig --add elasticsearch
-          """
-          not_if_exec: "rpm -q --queryformat '%{VERSION}' elasticsearch | grep '#{elasticsearch.version}'"
-        , next
-      do_download()
+      ctx
+      .download
+        source: elasticsearch.source
+        destination: "/root/elasticsearch-#{elasticsearch.version}.noarch.rpm"
+        # not_if_exec: "rpm -q --queryformat '%{VERSION}' elasticsearch | grep '#{elasticsearch.version}'"
+      .execute
+        cmd:"""
+        yum localinstall -y --nogpgcheck elasticsearch-#{elasticsearch.version}.noarch.rpm
+        chkconfig --add elasticsearch
+        """
+        not_if_exec: "rpm -q --queryformat '%{VERSION}' elasticsearch | grep '#{elasticsearch.version}'"
+      .then (err, modified) ->
+        console.log '??', err
+        next err
 
 ## Env
 
