@@ -21,7 +21,7 @@ is added membership to the group hadoop to gain read access.
 
 ## Check HTTP JMX
 
-    module.exports.push name: 'HBase RegionServer # Check HTTP JMX', label_true: 'CHECKED', handler: (ctx, next) ->
+    module.exports.push name: 'HBase RegionServer # Check HTTP JMX', retry: 200, label_true: 'CHECKED', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
       protocol = if hbase.site['hadoop.ssl.enabled'] is 'true' then 'https' else 'http'
       port = hbase.site['hbase.regionserver.info.port']
