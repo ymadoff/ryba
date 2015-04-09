@@ -15,7 +15,7 @@ service hbase-master stop
 su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop regionserver"
 ```
 
-    module.exports.push name: 'HBase RegionServer # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
+    module.exports.push name: 'HBase Master # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
       ctx.service
         srv_name: 'hbase-master'
         action: 'stop'

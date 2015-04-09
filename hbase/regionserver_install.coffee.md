@@ -121,7 +121,7 @@ RegionServer, and HBase client host machines.
 
 Environment passed to the RegionServer before it starts.   
 
-    module.exports.push name: 'HDFS NN # Opts', handler: (ctx, next) ->
+    module.exports.push name: 'HBase RegionServer # Opts', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
       return next() unless hbase.regionserver_opts
       ctx.write
