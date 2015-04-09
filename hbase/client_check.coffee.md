@@ -6,6 +6,7 @@ scanning the table.
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push 'ryba/hbase/master_wait'
     module.exports.push require('./client').configure
     util = require 'util'
 
