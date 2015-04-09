@@ -21,4 +21,5 @@ independently complaining that "rrdcached" is already running.
         # name: 'ganglia-gmetad-3.5.0-99'
         srv_name: 'hdp-gmetad'
         action: 'start'
+        if_exists: '/etc/init.d/hdp-gmetad'
       ], next

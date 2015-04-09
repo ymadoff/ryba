@@ -11,5 +11,6 @@ Execute this command on all the nodes in your Hadoop cluster.
       ctx.service
         srv_name: 'hdp-gmond'
         action: 'stop'
+        if_exists: '/etc/init.d/hdp-gmond'
       , next
 

@@ -15,4 +15,5 @@ Execute these commands on the Ganglia server host machine.
         # name: 'ganglia-gmetad-3.5.0-99'
         srv_name: 'hdp-gmetad'
         action: 'stop'
+        if_exists: '/etc/init.d/hdp-gmetad'
       ], next

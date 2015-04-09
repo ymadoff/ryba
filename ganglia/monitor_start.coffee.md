@@ -24,6 +24,7 @@ Execute this command on all the nodes in your Hadoop cluster.
         # name: 'ganglia-gmond-3.5.0-99'
         srv_name: 'hdp-gmond'
         action: 'start'
+        if_exists: '/etc/init.d/hdp-gmond'
       , next
 
 
