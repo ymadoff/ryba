@@ -45,6 +45,7 @@ To modify a group, replace the "-uid" option by "-gid".
 | Ganglia            | rrdcached   | ???? | ???? |         |
 | Knox               | knox        | 2420 | 2420 |         |
 | Flacon             | falcon      | 2423 | 2423 |         |
+| Kafka              | kafka       | 2424 | 2424 |         |
 
     falcon:
       group: gid: 2421
@@ -75,4 +76,5 @@ To modify a group, replace the "-uid" option by "-gid".
 | Ganglia            | rrdcached    | ???? |
 | Knox               | knox         | 2420 |
 | Flacon             | falcon       | 2423 |
+| Kafka              | kafka        | 2424 |
 
