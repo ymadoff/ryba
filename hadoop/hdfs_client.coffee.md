@@ -4,7 +4,6 @@
     module.exports = []
 
     module.exports.configure = (ctx) ->
-      console.log 'hdfs_client'
       require('./hdfs').configure ctx
       {ryba} = ctx.config
       ryba.hdfs.site['dfs.domain.socket.path'] ?= '/var/lib/hadoop-hdfs/dn_socket'
