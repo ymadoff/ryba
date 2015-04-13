@@ -24,8 +24,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       {hbase} = ctx.config.ryba
       ctx.iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.regionserver.port'], protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.regionserver.info.port'], protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.regionserver.port'], protocol: 'tcp', state: 'NEW', comment: "HBase RegionServer" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.regionserver.info.port'], protocol: 'tcp', state: 'NEW', comment: "HBase RegionServer Info Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
       , next
@@ -35,7 +35,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hbase-regionserver" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'HBase Master # Service', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'HBase RegionServer # Service', timeout: -1, handler: (ctx, next) ->
       ctx.hdp_service
         name: 'hbase-regionserver'
         write: [
