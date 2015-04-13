@@ -108,14 +108,14 @@ and permissions set to "0660". We had to give read/write permission to the group
 same keytab file is for now shared between hdfs and yarn services.
 
     module.exports.push name: 'HDFS # SPNEGO', handler: module.exports.spnego = (ctx, next) ->
-      {hdfs, realm} = ctx.config.ryba
+      {hdfs, hadoop_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
         principal: "HTTP/#{ctx.config.host}@#{realm}"
         randkey: true
         keytab: '/etc/security/keytabs/spnego.service.keytab'
-        uid: 'hdfs'
-        gid: 'hadoop'
+        uid: hdfs.user.name
+        gid: hadoop_group.name
         mode: 0o660 # need rw access for hadoop and mapred users
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
