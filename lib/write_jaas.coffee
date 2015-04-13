@@ -34,6 +34,7 @@ module.exports = (ctx) ->
     # waiting for uid_gid moved from wrap to their expected location
     options.ssh ?= ctx.ssh
     options.mode ?= 0o600
+    options.backup ?= true
     wrap null, arguments, (options, callback) ->
       content_jaas = ""
       return callback Error "Required option 'content'" unless options.content
@@ -58,10 +59,10 @@ module.exports = (ctx) ->
             value = if value then 'true' else 'false'
         # Detect JAAS/Kerberos
         if properties.keyTab or properties.useTicketCache is 'true'
-          content_jaas += 'com.sun.security.auth.module.Krb5LoginModule required\n'
+          content_jaas += '  com.sun.security.auth.module.Krb5LoginModule required\n'
           for property, value of properties
             value = "\"#{value}\"" unless value in ['true', 'false']
-            content_jaas += "#{property}=#{value}\n"
+            content_jaas += "  #{property}=#{value}\n"
           content_jaas = content_jaas.slice(0, -1) + ';\n'
         content_jaas += '};\n'
       options.content = content_jaas
