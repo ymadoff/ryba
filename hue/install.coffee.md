@@ -210,67 +210,16 @@ the "security_enabled" property set to "true".
     module.exports.push name: 'Hue # Kerberos', handler: (ctx, next) ->
       {hue, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      principal = "hue/#{ctx.config.host}@#{realm}"
-      modified = false
-      do_addprinc = ->
-        ctx.krb5_addprinc 
-          principal: principal
-          randkey: true
-          keytab: "/etc/hue/conf/hue.service.keytab"
-          uid: hue.user.name
-          gid: hue.group.name
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_config()
-      do_config = ->
-        hue.ini = {}
-        hue.ini.desktop ?= {}
-        hue.ini.desktop.kerberos ?= {}
-        hue.ini.desktop.kerberos.hue_keytab ?= '/etc/hue/conf/hue.service.keytab'
-        hue.ini.desktop.kerberos.hue_principal ?= principal
-        # Path to kinit
-        # For RHEL/CentOS 5.x, kinit_path is /usr/kerberos/bin/kinit
-        # For RHEL/CentOS 6.x, kinit_path is /usr/bin/kinit 
-        hue.ini['desktop']['kerberos']['kinit_path'] ?= '/usr/bin/kinit'
-        # Uncomment all security_enabled settings and set them to true
-        hue.ini.hadoop ?= {}
-        hue.ini.hadoop.hdfs_clusters ?= {}
-        hue.ini.hadoop.hdfs_clusters.default ?= {}
-        hue.ini.hadoop.hdfs_clusters.default.security_enabled = 'true'
-        
-        hue.ini.hadoop.mapred_clusters ?= {}
-        hue.ini.hadoop.mapred_clusters.default ?= {}
-        hue.ini.hadoop.mapred_clusters.default.security_enabled = 'true'
-        
-        hue.ini.hadoop.yarn_clusters ?= {}
-        hue.ini.hadoop.yarn_clusters.default ?= {}
-        hue.ini.hadoop.yarn_clusters.default.security_enabled = 'true'
-        
-        hue.ini.liboozie ?= {}
-        hue.ini.liboozie.security_enabled = 'true'
-        
-        hue.ini.hcatalog ?= {}
-        hue.ini.hcatalog.security_enabled = 'true'
-        
-        ctx.ini
-          destination: "#{hue.conf_dir}/hue.ini"
-          content: hue.ini
-          merge: true
-          parse: misc.ini.parse_multi_brackets 
-          stringify: misc.ini.stringify_multi_brackets
-          separator: '='
-          comment: '#'
-        , (err, written) ->
-          return next err if err
-          modified = true if written
-          do_end()
-      do_end = ->
-        next null, modified
-      do_addprinc()
+      ctx.krb5_addprinc 
+        principal: hue.ini.desktop.kerberos.hue_principal
+        randkey: true
+        keytab: "/etc/hue/conf/hue.service.keytab"
+        uid: hue.user.name
+        gid: hue.group.name
+        kadmin_principal: kadmin_principal
+        kadmin_password: kadmin_password
+        kadmin_server: admin_server
+      , next
 
 ## SSL Client
 
@@ -299,45 +248,33 @@ changes.
 
     module.exports.push name: 'Hue # SSL Server', handler: (ctx, next) ->
       {hue} = ctx.config.ryba
-      modified = true
-      do_upload = ->
-        ctx.upload [
-          source: hue.ssl.certificate
-          destination: "#{hue.conf_dir}/cert.pem"
-          uid: hue.user.name
-          gid: hue.group.name
-        ,
-          source: hue.ssl.private_key
-          destination: "#{hue.conf_dir}/key.pem"
-          uid: hue.user.name
-          gid: hue.group.name
-        ], (err, uploaded) ->
-          return next err if err
-          modified = true if uploaded
-          do_ini()
-      do_ini = ->
-        ctx.ini
-          destination: "#{hue.conf_dir}/hue.ini"
-          content: desktop:
-            ssl_certificate: "#{hue.conf_dir}/cert.pem"
-            ssl_private_key: "#{hue.conf_dir}/key.pem"
-          merge: true
-          parse: misc.ini.parse_multi_brackets 
-          stringify: misc.ini.stringify_multi_brackets
-          separator: '='
-          comment: '#'
-        , (err, written) ->
-          return next err if err
-          modified = true if written
-          do_end()
-      do_end = ->
-        return next null, false unless modified
+      ctx
+      .upload
+        source: hue.ssl.certificate
+        destination: "#{hue.conf_dir}/cert.pem"
+        uid: hue.user.name
+        gid: hue.group.name
+      .upload
+        source: hue.ssl.private_key
+        destination: "#{hue.conf_dir}/key.pem"
+        uid: hue.user.name
+        gid: hue.group.name
+      .ini
+        destination: "#{hue.conf_dir}/hue.ini"
+        content: desktop:
+          ssl_certificate: "#{hue.conf_dir}/cert.pem"
+          ssl_private_key: "#{hue.conf_dir}/key.pem"
+        merge: true
+        parse: misc.ini.parse_multi_brackets 
+        stringify: misc.ini.stringify_multi_brackets
+        separator: '='
+        comment: '#'
+      .then (err, modified) ->
+        return next err, false if err or not modified
         ctx.service
           name: 'hue'
           action: 'restart'
-        , (err) ->
-          next err, true
-      do_upload()
+        , next
 
 ## Fix Banner
 
@@ -345,12 +282,13 @@ In the current version "2.5.1", the HTML of the banner is escaped.
 
     module.exports.push name: 'Hue # Fix Banner', handler: (ctx, next) ->
       {hue} = ctx.config.ryba
-      ctx.write [
+      ctx
+      .write
         destination: '/usr/lib/hue/desktop/core/src/desktop/templates/login.mako'
         match: '${conf.CUSTOM.BANNER_TOP_HTML.get()}'
         replace: '${ conf.CUSTOM.BANNER_TOP_HTML.get() | n,unicode }'
         bck: true
-      ,
+      .write
         destination: '/usr/lib/hue/desktop/core/src/desktop/templates/common_header.mako'
         write: [
           match: '${conf.CUSTOM.BANNER_TOP_HTML.get()}'
@@ -362,7 +300,7 @@ In the current version "2.5.1", the HTML of the banner is escaped.
           bck: true
           if: hue.banner_style
         ]
-      ], next
+      .then next
 
 ## Start
 

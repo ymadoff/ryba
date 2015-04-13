@@ -212,6 +212,29 @@ Example:
       hue.ini['desktop']['database']['user'] ?= 'hue'
       hue.ini['desktop']['database']['password'] ?= 'hue123'
       hue.ini['desktop']['database']['name'] ?= 'hue'
+      # Kerberos
+      hue.ini.desktop.kerberos ?= {}
+      hue.ini.desktop.kerberos.hue_keytab ?= '/etc/hue/conf/hue.service.keytab'
+      hue.ini.desktop.kerberos.hue_principal ?= "hue/#{ctx.config.host}@#{ryba.realm}"
+      # Path to kinit
+      # For RHEL/CentOS 5.x, kinit_path is /usr/kerberos/bin/kinit
+      # For RHEL/CentOS 6.x, kinit_path is /usr/bin/kinit 
+      hue.ini['desktop']['kerberos']['kinit_path'] ?= '/usr/bin/kinit'
+      # Uncomment all security_enabled settings and set them to true
+      hue.ini.hadoop ?= {}
+      hue.ini.hadoop.hdfs_clusters ?= {}
+      hue.ini.hadoop.hdfs_clusters.default ?= {}
+      hue.ini.hadoop.hdfs_clusters.default.security_enabled = 'true'
+      hue.ini.hadoop.mapred_clusters ?= {}
+      hue.ini.hadoop.mapred_clusters.default ?= {}
+      hue.ini.hadoop.mapred_clusters.default.security_enabled = 'true'
+      hue.ini.hadoop.yarn_clusters ?= {}
+      hue.ini.hadoop.yarn_clusters.default ?= {}
+      hue.ini.hadoop.yarn_clusters.default.security_enabled = 'true'
+      hue.ini.liboozie ?= {}
+      hue.ini.liboozie.security_enabled = 'true'
+      hue.ini.hcatalog ?= {}
+      hue.ini.hcatalog.security_enabled = 'true'
 
 ## Commands
 
