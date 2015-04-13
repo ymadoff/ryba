@@ -35,6 +35,19 @@
         jhs_protocol_key = if jhs_protocol is 'http' then '' else '.https'
         jhs_address = jhs_context.config.ryba.mapred.site["mapreduce.jobhistory.webapp#{jhs_protocol_key}.address"]
         ryba.yarn.site['yarn.log.server.url'] ?= "#{jhs_protocol}://#{jhs_address}/jobhistory/logs/"
+      # Yarn Timeline Server
+      [ts_ctx] = ctx.contexts 'ryba/hadoop/yarn_ts', require('../yarn_ts').configure
+      ts_properties = [
+        'yarn.timeline-service.enabled'
+        'yarn.timeline-service.address'
+        'yarn.timeline-service.webapp.address'
+        'yarn.timeline-service.webapp.https.address'
+        'yarn.timeline-service.principal'
+        'yarn.timeline-service.http-authentication.type'
+        'yarn.timeline-service.http-authentication.kerberos.principal'
+      ]
+      for property in ts_properties
+        ryba.yarn.site[property] ?= if ts_ctx then ts_ctx.config.ryba.yarn.site[property] else null
 
 ## Configuration for High Availability
 
