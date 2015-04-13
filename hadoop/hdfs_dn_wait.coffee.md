@@ -14,7 +14,7 @@
 
 ## Wait Safemode
 
-Wait for HDFS safemode to exit. It isn't enough to start the NameNodes but the
+Wait for HDFS safemode to exit. It is not enough to start the NameNodes but the
 majority of DataNodes also need to be running.
 
 # This middleware duplicates the one present in 'masson/hadoop/hdfs_nn_start' and

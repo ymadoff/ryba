@@ -1,7 +1,7 @@
 
 # Hadoop HDFS DataNode
 
-A DataNode manages the storage attached to the node it run on. There are usually
+A [DataNode](http://wiki.apache.org/hadoop/DataNode) manages the storage attached to the node it run on. There are usually
 one DataNode per node in the cluster. HDFS exposes a file system namespace and
 allows user data to be stored in files. Internally, a file is split into one or
 more blocks and these blocks are stored in a set of DataNodes. The DataNodes

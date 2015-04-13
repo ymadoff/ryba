@@ -1,5 +1,6 @@
 
 # WebHCat
+[WebHCat](https://cwiki.apache.org/confluence/display/Hive/WebHCat) is a REST API for HCatalog. (REST stands for "representational state transfer", a style of API based on HTTP verbs).  The original name of WebHCat was Templeton.
 
     module.exports = []
 

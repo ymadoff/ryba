@@ -1,5 +1,7 @@
 
 # HBase RegionServer
+[HRegionServer](http://hbase.apache.org/book.html#regionserver.arch) is the RegionServer implementation.
+It is responsible for serving and managing regions. In a distributed cluster, a RegionServer runs on a DataNode.
 
     module.exports = []
     

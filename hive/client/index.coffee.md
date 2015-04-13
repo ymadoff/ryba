@@ -1,5 +1,8 @@
 
 # Hive & HCatolog Client
+[Hive Client](https://cwiki.apache.org/confluence/display/Hive/HiveClient) is the application that you use in order to administer, use Hive.
+Once installed you can type hive in a prompt and the hive client shell wil launch directly.
+
 
     module.exports = []
 

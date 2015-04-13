@@ -1,6 +1,8 @@
 
 # Hadoop HDFS Client
 
+[Clients](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HdfsUserGuide.html) contact NameNode for file metadata or file modifications and perform actual file I/O directly with the DataNodes.
+
     module.exports = []
 
     module.exports.configure = (ctx) ->
