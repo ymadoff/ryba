@@ -1,3 +1,6 @@
+
+BSD 3-Clause ("BSD New" or "BSD Simplified") license
+
 Copyright (c) 2014, SARL Adaltas.
 All rights reserved.
 
