@@ -65,7 +65,7 @@ Upload the MapReduce tarball inside the "/hdp/apps/$version/mapreduce"
 HDFS directory. Note, the parent directories are created by the 
 "ryba/hadoop/hdfs_dn_layout" module.
 
-    module.exports.push name: 'MapReduce Client # HDFS Tarballs', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'MapReduce Client # HDFS Tarballs', wait: 60*1000, timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba
       lock_timeout = 120 # in seconds
       ctx.execute
