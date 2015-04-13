@@ -12,7 +12,20 @@
       ryba.yarn.site['yarn.resourcemanager.principal'] ?= "rm/#{ryba.static_host}@#{ryba.realm}"
       ryba.yarn.site['yarn.resourcemanager.scheduler.class'] ?= 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
 
-## Configuration for ZooKeeper
+## Configuration for Restart Recovery
+
+[ResourceManager Restart][restart] is a feature that enhances ResourceManager to
+keep functioning across restarts and also makes ResourceManager down-time
+invisible to end-users.
+
+HDP companion files enable by default the recovery mode. Its implementation
+default to the ZooKeeper based state-store implementation. Unless specified,
+the root znode where the ResourceManager state is stored is inside "/rmstore".
+
+      ryba.yarn.site['yarn.resourcemanager.recovery.enabled'] ?= 'true'
+      ryba.yarn.site['yarn.resourcemanager.store.class'] ?= 'org.apache.hadoop.yarn.server.resourcemanager.recovery.ZKRMStateStore'
+
+## Configuration for Restart Recovery with ZooKeeper
 
 ZooKeeper is used in the context of restart recovering and high availability.
 
@@ -44,25 +57,13 @@ rmr /rmstore/ZKRMStateRoot
       # https://zookeeper.apache.org/doc/r3.1.2/zookeeperProgrammers.html#sc_ZooKeeperAccessControl
       # ACLs to be used for setting permissions on ZooKeeper znodes.
       ryba.yarn.site['yarn.resourcemanager.zk-acl'] ?= 'sasl:rm:rwcda'
+      ryba.yarn.site['yarn.resourcemanager.zk-state-store.parent-path'] ?= '/rmstore'
 
 ## Configuration for automatic failover
 
       ryba.yarn.site['yarn.resourcemanager.ha.automatic-failover.enabled'] ?= 'true'
       ryba.yarn.site['yarn.resourcemanager.ha.automatic-failover.embedded'] ?= 'true'
       ryba.yarn.site['yarn.resourcemanager.cluster-id'] ?= 'yarn_cluster_01'
-
-## Configuration for Restart Recovery
-
-[ResourceManager Restart][restart] is a feature that enhances ResourceManager to
-keep functioning across restarts and also makes ResourceManager down-time
-invisible to end-users.
-
-HDP companion files enable by default the recovery mode. Its implementation
-default to the ZooKeeper based state-store implementation. Unless specified,
-the root znode where the ResourceManager state is stored is inside "/rmstore".
-
-      ryba.yarn.site['yarn.resourcemanager.recovery.enabled'] ?= 'true'
-      ryba.yarn.site['yarn.resourcemanager.store.class'] ?= 'org.apache.hadoop.yarn.server.resourcemanager.recovery.ZKRMStateStore'
 
 ## Configuration for Memory and CPU
 

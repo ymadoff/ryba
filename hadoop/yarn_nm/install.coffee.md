@@ -128,6 +128,12 @@ inside "/etc/init.d" and activate it on startup.
         gid: hadoop_group.name
         mode: 0o0755
         parent: true
+      ,
+        destination: yarn.site['yarn.nodemanager.recovery.dir'] 
+        uid: yarn.user.name
+        gid: hadoop_group.name
+        mode: 0o0750
+        parent: true
       ], (err, created) ->
         return next err if err
         cmds = []
