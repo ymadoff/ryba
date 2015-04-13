@@ -461,6 +461,7 @@ Re-install the major services.
         services = []
         context.execute
           cmd: '''
+          rm -rf /var/zookeper
           rm -rf /usr/bin/oozie
           rm -rf /etc/profile.d/hadoop.sh
           rm -rf /usr/lib/pig
