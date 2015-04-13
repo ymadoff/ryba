@@ -11,6 +11,7 @@
     module.exports.push 'ryba/lib/base'
     module.exports.push require '../lib/hdp_service'
     module.exports.push require '../lib/write_jaas'
+    module.exports.push 'masson/core/krb5_client/wait'
     module.exports.push require('./server').configure
 
 ## Users & Groups
