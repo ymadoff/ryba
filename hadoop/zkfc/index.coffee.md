@@ -4,20 +4,45 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
 
+## Configuration
+
+ZKFC doesnt have any required configuration. By default, it uses the SASL
+mechanism to connect to zookeeper using kerberos.
+
+Optional, activate digest type access to zookeeper to manage the zkfc znode:
+
+```json
+{
+  "ryba": {
+    "zkfc": {
+      "digest": {
+        "name": "zkfc",
+        "password": "hdfs123"
+      }
+    }
+  }
+}
+```
+
     module.exports.push module.exports.configure = (ctx) ->
       require('../core').configure ctx
-      {ryba} = ctx.config
-      ryba.hdfs ?= {}
+      {ryba, host} = ctx.config
+      ryba.zkfc ?= {}
       # Validation
       nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn',(require '../hdfs_nn').configure
       throw Error "Require 2 NameNodes" unless nn_ctxs.length is 2
+      # ryba.zkfc.principal ?= "zkfc/#{host}@#{ryba.realm}"
+      # ryba.zkfc.keytab ?= '/etc/security/keytabs/zkfc.service.keytab'
+      ryba.zkfc.principal ?= ryba.hdfs.site['dfs.namenode.kerberos.principal']
+      ryba.zkfc.keytab ?= ryba.hdfs.site['dfs.namenode.keytab.file']
+      ryba.zkfc.jaas_file ?= "#{ryba.hadoop_conf_dir}/zkfc.jaas"
+      ryba.zkfc.digest ?= {}
+      ryba.zkfc.digest.name ?= 'zkfc'
+      ryba.zkfc.digest.password ?= null
       # Environment
-      ryba.hdfs.zkfc_opts ?= ''
+      ryba.zkfc.opts ?= ''
       if ryba.core_site['hadoop.security.authentication'] is 'kerberos'
-        ryba.hdfs.zkfc_opts = "-Djava.security.auth.login.config=#{ryba.hadoop_conf_dir}/hdfs-zkfc.jaas #{ryba.hdfs.zkfc_opts}"
-      ryba.hdfs.zkfc_digest ?= {}
-      ryba.hdfs.zkfc_digest.name ?= 'hdfs-zkfc'
-      ryba.hdfs.zkfc_digest.password ?= null
+        ryba.zkfc.opts = "-Djava.security.auth.login.config=#{ryba.zkfc.jaas_file} #{ryba.zkfc.opts}"
       # Enrich "core-site.xml" with acl and auth
       ryba.core_site['ha.zookeeper.acl'] ?= "@#{ryba.hadoop_conf_dir}/zk-acl.txt"
       ryba.core_site['ha.zookeeper.auth'] = "@#{ryba.hadoop_conf_dir}/zk-auth.txt"
