@@ -3,7 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./hdfs').configure
+    # module.exports.push require('./hdfs').configure
 
     module.exports.push name: 'HDFS NN # Wait', timeout: -1, label_true: 'READY', handler: (ctx, next) ->
       nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn', require('./hdfs_nn').configure

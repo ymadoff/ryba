@@ -85,14 +85,14 @@ Create a service principal for this NameNode. The principal is named after
 "nn/#{ctx.config.host}@#{realm}".
 
     module.exports.push name: 'HDFS NN # Kerberos', handler: (ctx, next) ->
-      {realm} = ctx.config.ryba
+      {realm, hadoop_group, hdfs} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
-        principal: "nn/#{ctx.config.host}@#{realm}"
+        principal: hdfs.site['dfs.namenode.kerberos.principal']
+        keytab: hdfs.site['dfs.namenode.keytab.file']
         randkey: true
-        keytab: "/etc/security/keytabs/nn.service.keytab"
-        uid: 'hdfs'
-        gid: 'hadoop'
+        uid: hdfs.user.name
+        gid: hadoop_group.name
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
@@ -148,8 +148,8 @@ this NameNode isn't yet formated by detecting if the "current/VERSION" exists. T
 is only exected once all the JournalNodes are started. The NameNode is finally restarted
 if the NameNode was formated.
 
-    module.exports.push name: 'HDFS NN # Format', timeout: -1, handler: (ctx, next) ->
-      {hdfs, active_nn, nameservice} = ctx.config.ryba
+    module.exports.push name: 'HDFS NN # Format', timeout: -1, modules: 'ryba/hadoop/hdfs_jn_wait', handler: (ctx, next) ->
+      {hdfs, active_nn_host, nameservice} = ctx.config.ryba
       any_dfs_name_dir = hdfs.site['dfs.namenode.name.dir'].split(',')[0]
       unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
         ctx.execute
@@ -158,17 +158,11 @@ if the NameNode was formated.
         , next
       else
         # Shall only be executed on the leader namenode
-        return next() unless active_nn
-        journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
-        # all the JournalNodes shall be started
-        ctx.waitIsOpen journalnodes, 8485, (err) ->
-          return next err if err
-          ctx.execute
-            # yes 'Y' | su -l hdfs -c "hdfs namenode -format -clusterId torval"
-            cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -format -clusterId #{nameservice}\""
-            # /hadoop/hdfs/namenode/current/VERSION
-            not_if_exists: "#{any_dfs_name_dir}/current/VERSION"
-          , next
+        ctx.execute
+          cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -format -clusterId #{nameservice}\""
+          if: active_nn_host is ctx.config.host
+          not_if_exists: "#{any_dfs_name_dir}/current/VERSION"
+        , next
 
 ## HA Init Standby NameNodes
 
@@ -177,7 +171,7 @@ unformatted NameNode. The command "hdfs namenode -bootstrapStandby" used for the
 is only executed on a non active NameNode.
 
     module.exports.push name: 'HDFS NN # HA Init Standby', timeout: -1, handler: (ctx, next) ->
-      {active_nn_host} = ctx.config.ryba
+      {hdfs, active_nn_host} = ctx.config.ryba
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       return next() if ctx.config.host is active_nn_host
       do_wait = ->
@@ -186,83 +180,10 @@ is only executed on a non active NameNode.
           do_init()
       do_init = ->
         ctx.execute
-          # su -l hdfs -c "hdfs namenode -bootstrapStandby -nonInteractive"
-          cmd: "su -l hdfs -c \"hdfs namenode -bootstrapStandby -nonInteractive\""
+          cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -bootstrapStandby -nonInteractive\""
           code_skipped: 5
         , next
       do_wait()
-
-# ## HA Auto Failover
-
-# The action start by enabling automatic failover in "hdfs-site.xml" and configuring HA zookeeper quorum in
-# "core-site.xml". The impacted properties are "dfs.ha.automatic-failover.enabled" and
-# "ha.zookeeper.quorum". Then, we wait for all ZooKeeper to be started. Note, this is a requirement.
-
-# If this is an active NameNode, we format ZooKeeper and start the ZKFC daemon. If this is a standby
-# NameNode, we wait for the active NameNode to take leadership and start the ZKFC daemon.
-
-#     module.exports.push name: 'HDFS NN # HA Auto Failover', timeout: -1, handler: (ctx, next) ->
-#       {hadoop_conf_dir, active_nn, active_nn_host} = ctx.config.ryba
-#       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-#       zookeepers = ctx.hosts_with_module 'ryba/zookeeper/server'
-#       modified = false
-#       do_hdfs = ->
-#         ctx.hconfigure
-#           destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-#           properties: 'dfs.ha.automatic-failover.enabled': 'true'
-#           merge: true
-#           backup: true
-#         , (err, configured) ->
-#           return next err if err
-#           modified = true if configured
-#           do_core()
-#       do_core = ->
-#         # quorum = zookeepers.map( (host) -> "#{host}:2181" ).join ','
-#         # ctx.hconfigure
-#         #   destination: "#{hadoop_conf_dir}/core-site.xml"
-#         #   properties: 'ha.zookeeper.quorum': quorum
-#         #   merge: true
-#         #   backup: true
-#         # , (err, configured) ->
-#         #   return next err if err
-#         #   modified = true if configured
-#         #   do_wait()
-#         do_wait()
-#       do_wait = ->
-#         # ctx.waitIsOpen zookeepers, 2181, (err) ->
-#         #   return next err if err
-#         #   setTimeout ->
-#         #     do_zkfc()
-#         #   , 2000
-#         do_zkfc()
-#       do_zkfc = ->
-#         if active_nn
-#         then do_zkfc_active()
-#         else do_zkfc_standby()
-#       do_zkfc_active = ->
-#         # About "formatZK"
-#         # If no created, no configuration asked and exit code is 0
-#         # If already exist, configuration is refused and exit code is 2
-#         # About "transitionToActive"
-#         # Seems like the first time, starting zkfc dont active the nn, so we force it
-#         ctx.execute
-#           cmd: "yes n | hdfs zkfc -formatZK"
-#           code_skipped: 2
-#         , (err, formated) ->
-#           return next err if err
-#           ctx.log "Is Zookeeper already formated: #{formated}"
-#           lifecycle.zkfc_start ctx, (err, started) ->
-#             next null, formated or started
-#       do_zkfc_standby = ->
-#         ctx.log "Wait for active NameNode to take leadership"
-#         ctx.waitForExecution
-#           # hdfs haadmin -getServiceState hadoop1
-#           cmd: mkcmd.hdfs ctx, "hdfs haadmin -getServiceState #{active_nn_host.split('.')[0]}"
-#           code_skipped: 255
-#         , (err, stdout) ->
-#           return next err if err
-#           lifecycle.zkfc_start ctx, next
-#       do_hdfs()
 
 ## Module Dependencies
 
