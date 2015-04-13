@@ -61,20 +61,20 @@ Default configuration:
       "name": "ryba", "system": true
     },
     "hdfs": {
-      user": {
+      "user": {
         "name": "hdfs", "system": true, "gid": "hdfs",
         "comment": "HDFS User", "home": "/var/lib/hadoop-hdfs"
       },
-      group": {
-      "name": "hdfs", "system": true
+      "group": {
+        "name": "hdfs", "system": true
       }
     },
     "yarn: {
-      user": {
+      "user": {
         "name": "yarn", "system": true, "gid": "yarn",
         "comment": "YARN User", "home": "/var/lib/hadoop-yarn"
       },
-      group": {
+      "group": {
         "name": "yarn", "system": true
       }
     },
@@ -104,7 +104,7 @@ Default configuration:
       ryba.yarn ?= {}
       ryba.mapred ?= {}
 
-## Configuraiton for users and groups
+## Configuration for users and groups
 
       # Group for hadoop
       ryba.hadoop_group = name: ryba.hadoop_group if typeof ryba.hadoop_group is 'string'
