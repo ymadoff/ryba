@@ -80,55 +80,66 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 
 Environment passed to the ZKFC before it starts.
 
-    module.exports.push name: 'HDFS ZKFC # Opts', handler: (ctx, next) ->
-      {hdfs, hadoop_conf_dir} = ctx.config.ryba
+    module.exports.push name: 'ZKFC # Opts', handler: (ctx, next) ->
+      {zkfc, hadoop_conf_dir} = ctx.config.ryba
       ctx.write
         destination: "#{hadoop_conf_dir}/hadoop-env.sh"
         match: /^export HADOOP_ZKFC_OPTS="(.*) \$\{HADOOP_ZKFC_OPTS\}" # RYBA ENV ".*?", DONT OVERWRITE/mg
-        replace: "export HADOOP_ZKFC_OPTS=\"#{hdfs.zkfc_opts} ${HADOOP_ZKFC_OPTS}\" # RYBA ENV \"ryba.hdfs.zkfc_opts\", DONT OVERWRITE"
+        replace: "export HADOOP_ZKFC_OPTS=\"#{zkfc.opts} ${HADOOP_ZKFC_OPTS}\" # RYBA ENV \"ryba.zkfc.opts\", DONT OVERWRITE"
         append: true
         backup: true
       , next
 
 ## Kerberos
 
-Create a service principal for this NameNode. The principal is named after
-"nn/#{ctx.config.host}@#{realm}".
+Create a service principal for the ZKFC daemon to authenticate with Zookeeper.
+The principal is named after "zkfc/#{ctx.config.host}@#{realm}" and its keytab
+is stored as "/etc/security/keytabs/zkfc.service.keytab".
 
-    module.exports.push name: 'HDFS ZKFC # Kerberos', handler: (ctx, next) ->
-      {realm} = ctx.config.ryba
+The Jaas file is registered as an Java property inside 'hadoop-env.sh' and is 
+stored as "/etc/hadoop/conf/zkfc.jaas"
+
+    module.exports.push name: 'ZKFC # Kerberos', handler: (ctx, next) ->
+      {realm, hadoop_group, hdfs, zkfc} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc
-        principal: "nn/#{ctx.config.host}@#{realm}"
+      zkfc_principal = zkfc.principal.replace '_HOST', ctx.config.host
+      nn_principal = hdfs.site['dfs.namenode.kerberos.principal'].replace '_HOST', ctx.config.host
+      ctx.krb5_addprinc [
+        principal: zkfc_principal
+        keytab: zkfc.keytab
         randkey: true
-        keytab: "/etc/security/keytabs/nn.service.keytab"
-        uid: 'hdfs'
-        gid: 'hadoop'
+        uid: hdfs.user.name
+        gid: hadoop_group.name
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
-
-## Kerberos JAAS
-
-Secure the Zookeeper connection with JAAS.
-
-    module.exports.push name: 'HDFS ZKFC # Kerberos JAAS', handler: (ctx, next) ->
-      {hdfs, hadoop_conf_dir, hadoop_group, realm} = ctx.config.ryba
-      ctx.write_jaas
-        destination: "#{hadoop_conf_dir}/hdfs-zkfc.jaas"
-        content: Client:
-          principal: "nn/#{ctx.config.host}@#{realm}"
-          keyTab: "/etc/security/keytabs/nn.service.keytab"
+        if: zkfc_principal isnt nn_principal
+      ,
+        principal: nn_principal
+        keytab: hdfs.site['dfs.namenode.keytab.file']
+        randkey: true
         uid: hdfs.user.name
         gid: hadoop_group.name
-      , next
+        kadmin_principal: kadmin_principal
+        kadmin_password: kadmin_password
+        kadmin_server: admin_server
+      ], (err, added) ->
+        return next err if err
+        ctx.write_jaas
+          destination: zkfc.jaas_file
+          content: Client:
+            principal: zkfc_principal
+            keyTab: zkfc.keytab
+          uid: hdfs.user.name
+          gid: hadoop_group.name
+        , (err, written) ->
+          return next err, added or written
 
 ## ZK Auth and ACL
 
 Secure the Zookeeper connection with JAAS. In a Kerberos cluster, the SASL
 provider is configured with the NameNode principal. The digest provider may also
-be configured if the property "ryba.hdfs.zkfc_digest.password" is set.
+be configured if the property "ryba.zkfc.digest.password" is set.
 
 The permissions for each provider is "cdrwa", for example:
 
@@ -142,12 +153,21 @@ isn't set. Probably the default acl "world:anyone:cdrwa" is used.
 
 http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HDFSHighAvailabilityWithQJM.html#Securing_access_to_ZooKeeper
 
-    module.exports.push name: 'HDFS ZKFC # ZK Auth and ACL', handler: (ctx, next) ->
-      {hadoop_conf_dir, core_site, hdfs} = ctx.config.ryba
+If you need to change the acl manually inside zookeeper, you can use this 
+command as an example:
+
+```
+setAcl /hadoop-ha sasl:zkfc:cdrwa,sasl:nn:cdrwa,digest:zkfc:ePBwNWc34ehcTu1FTNI7KankRXQ=:cdrwa
+```
+
+    module.exports.push name: 'ZKFC # ZK Auth and ACL', handler: (ctx, next) ->
+      {hadoop_conf_dir, core_site, hdfs, zkfc} = ctx.config.ryba
       modified = false
       acls = []
       # acls.push 'world:anyone:r'
-      acls.push "sasl:nn:cdrwa" if core_site['hadoop.security.authentication'] is 'kerberos'
+      jaas_user = /^(.*?)[@\/]/.exec(zkfc.principal)?[1]
+      acls.push "sasl:#{jaas_user}:cdrwa" if core_site['hadoop.security.authentication'] is 'kerberos'
+      # acls.push "sasl:nn:cdrwa" if core_site['hadoop.security.authentication'] is 'kerberos'
       do_core = ->
         ctx.hconfigure
           destination: "#{hadoop_conf_dir}/core-site.xml"
@@ -159,8 +179,8 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HDFSHighAv
           modified = true if configured
           do_auth()
       do_auth = ->
-        content = if hdfs.zkfc_digest.password
-        then "digest:#{hdfs.zkfc_digest.name}:#{hdfs.zkfc_digest.password}"
+        content = if zkfc.digest.password
+        then "digest:#{zkfc.digest.name}:#{zkfc.digest.password}"
         else ""
         ctx.write [
           destination: "#{hadoop_conf_dir}/zk-auth.txt"
@@ -176,9 +196,9 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HDFSHighAv
         ctx.execute
           cmd: """
           export ZK_HOME=/usr/hdp/current/zookeeper-client/
-          java -cp $ZK_HOME/lib/*:$ZK_HOME/zookeeper.jar org.apache.zookeeper.server.auth.DigestAuthenticationProvider #{hdfs.zkfc_digest.name}:#{hdfs.zkfc_digest.password}
+          java -cp $ZK_HOME/lib/*:$ZK_HOME/zookeeper.jar org.apache.zookeeper.server.auth.DigestAuthenticationProvider #{zkfc.digest.name}:#{zkfc.digest.password}
           """
-          if: hdfs.zkfc_digest.password
+          if: !!zkfc.digest.password
         , (err, generated, stdout) ->
           return next err if err
           return do_acl() unless generated
@@ -298,7 +318,7 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
     module.exports.push name: 'ZKFC # HA Auto Failover', timeout: -1, handler: (ctx, next) ->
       {hdfs, active_nn_host} = ctx.config.ryba
       return next() unless hdfs.site['dfs.ha.automatic-failover.enabled'] = 'true'
-      do_zkfc_active = ->
+      do_active = ->
         # About "formatZK"
         # If no created, no configuration asked and exit code is 0
         # If already exist, configuration is refused and exit code is 2
@@ -310,20 +330,26 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
         , (err, formated) ->
           return next err if err
           ctx.log "Is Zookeeper already formated: #{formated}"
-          lifecycle.zkfc_start ctx, (err, started) ->
-            next null, formated or started
-      do_zkfc_standby = ->
+          ctx.service
+            srv_name: 'hadoop-hdfs-zkfc'
+            action: 'start'
+          , (err, started) ->
+            next err, formated or started
+      do_standby = ->
         ctx.log "Wait for active NameNode to take leadership"
+        active_shortname = ctx.contexts(hosts: active_nn_host)[0].config.shortname
         ctx.waitForExecution
-          # hdfs haadmin -getServiceState hadoop1
-          cmd: mkcmd.hdfs ctx, "hdfs haadmin -getServiceState #{active_nn_host.split('.')[0]}"
+          cmd: mkcmd.hdfs ctx, "hdfs haadmin -getServiceState #{active_shortname}"
           code_skipped: 255
         , (err, stdout) ->
           return next err if err
-          lifecycle.zkfc_start ctx, next
+          ctx.service
+            srv_name: 'hadoop-hdfs-zkfc'
+            action: 'start'
+          , next
       if active_nn_host is ctx.config.host
-      then do_zkfc_active()
-      else do_zkfc_standby()
+      then do_active()
+      else do_standby()
 
 ## Dependencies
 

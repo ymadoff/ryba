@@ -28,10 +28,12 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
 
     module.exports.push name: 'ZKFC # Start', label_true: 'STARTED', handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      # {active_nn_host} = ctx.config.ryba
+      {active_nn_host} = ctx.config.ryba
       # do_wait = ->
+      #   return do_start() if active_nn_host is ctx.config.host
+      #   active_shortname = ctx.contexts(hosts: active_nn_host)[0].config.shortname
       #   ctx.waitForExecution
-      #     cmd: mkcmd.hdfs ctx, "hdfs haadmin -getServiceState #{ctx.config.shortname}"
+      #     cmd: mkcmd.hdfs ctx, "hdfs haadmin -getServiceState #{active_shortname}"
       #     code_skipped: 255
       #   , (err, stdout) ->
       #     return next err if err
@@ -42,12 +44,37 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
       #     action: 'start'
       #     if_exists: '/etc/init.d/hadoop-hdfs-zkfc'
       #   , next
-      # if active_nn_host is ctx.config.host then do_start() else do_wait()
-      ctx.service
+      # do_wait()
+      ctx
+      .call (next) ->
+        return next() if active_nn_host is ctx.config.host
+        active_shortname = ctx.contexts(hosts: active_nn_host)[0].config.shortname
+        # process.nextTick -> next null, false
+        ctx.waitForExecution
+          cmd: mkcmd.hdfs ctx, "hdfs haadmin -getServiceState #{active_shortname}"
+          code_skipped: 255
+        , (err) -> next null, false
+      .service
         srv_name: 'hadoop-hdfs-zkfc'
         action: 'start'
         if_exists: '/etc/init.d/hadoop-hdfs-zkfc'
-      , next
+      .then (err, started) ->
+        next err, started
+      # ctx
+      # .call (next) ->
+      #   return next() if active_nn_host is ctx.config.host
+      #   active_shortname = ctx.contexts(hosts: active_nn_host)[0].config.shortname
+      #   ctx.waitForExecution
+      #     cmd: mkcmd.hdfs ctx, "hdfs haadmin -getServiceState #{active_shortname}"
+      #     code_skipped: 255
+      #   , (err) -> next err, false
+      # .service
+      #   srv_name: 'hadoop-hdfs-zkfc'
+      #   action: 'start'
+      #   if_exists: '/etc/init.d/hadoop-hdfs-zkfc'
+      # .then (err, started) ->
+      #   console.log err, started
+      #   next err, started
 
 ## Dependencies
 
