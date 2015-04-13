@@ -16,11 +16,17 @@ su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop
 ```
 
     module.exports.push name: 'HBase RegionServer # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
-      ctx.service
+      ctx
+      .service
         srv_name: 'hbase-regionserver'
         action: 'stop'
         if_exists: '/etc/init.d/hbase-regionserver'
-      , next
+      .then (err, stoped) ->
+        return next null, stoped unless err
+        ctx
+        .execute
+          cmd: 'service hbase-regionserver force-stop'
+        .then next
 
 ## Stop Clean Logs
 

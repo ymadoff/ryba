@@ -20,7 +20,12 @@ su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop
         srv_name: 'hbase-master'
         action: 'stop'
         if_exists: '/etc/init.d/hbase-master'
-      , next
+      .then (err, stoped) ->
+        return next null, stoped unless err
+        ctx
+        .execute
+          cmd: 'service hbase-master force-stop'
+        .then next
 
 ## Stop Clean Logs
 
