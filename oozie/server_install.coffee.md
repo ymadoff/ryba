@@ -120,6 +120,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
     module.exports.push name: 'Oozie Server # Environment', handler: (ctx, next) ->
       {java_home} = ctx.config.java
       {oozie} = ctx.config.ryba
+      # CATALINA_OPTS="-Djavax.net.ssl.trustStore=/etc/hadoop/conf/truststore -Djavax.net.ssl.trustStorePassword=ryba123"
       ctx.write
         source: "#{__dirname}/../resources/oozie/oozie-env.sh"
         destination: "#{oozie.conf_dir}/oozie-env.sh"
@@ -157,6 +158,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         uid: oozie.user.name
         gid: oozie.group.name
         mode: 0o0755
+        backup: true
       , next
 
 # ExtJS
