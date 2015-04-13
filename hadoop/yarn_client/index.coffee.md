@@ -1,6 +1,9 @@
 
 # YARN Client
 
+The [Hadoop YARN Client](http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/WebServicesIntro.html) web service REST APIs are a set of URI resources that give access to the cluster, nodes, applications, and application historical information.
+The URI resources are grouped into APIs based on the type of information returned. Some URI resources return collections while others return singletons. 
+
     module.exports = []
     module.exports.push 'masson/bootstrap'
     # module.exports.push '!masson/bootstrap/info'

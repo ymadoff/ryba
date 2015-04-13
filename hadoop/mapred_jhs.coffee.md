@@ -1,5 +1,10 @@
 
 # MapReduce JobHistoryServer(JHS)
+The mapreduce job history server helps you to keep track about every job launched in the cluster.
+Tje job history server gather information for all jobs launched on every distinct server and can be found ( once you kerbos ticket initiated) [here](http://master1.ryba:19888/jobhistory) for example
+replace master2.ryba by the address of the server where the server is installed, or by its alias.
+Now the jobHistory Server tends to be replace by the Yarn timeline server.
+
 
     module.exports = []
 

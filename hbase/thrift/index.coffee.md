@@ -1,6 +1,10 @@
 
 # HBase ThriftServer
 
+[Apache Thrift](http://wiki.apache.org/hadoop/Hbase/ThriftApi) is a cross-platform, cross-language development framework.
+HBase includes a Thrift API and filter language. The Thrift API relies on client and server processes.
+Thrift is both cross-platform and more lightweight than REST for many operations. 
+
     module.exports = []      
     #  {realm} = ctx.config.ryba
      # hbase = ctx.config.ryba.hbase ?= {}

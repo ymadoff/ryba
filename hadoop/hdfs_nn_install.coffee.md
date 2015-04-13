@@ -95,6 +95,7 @@ Create a service principal for this NameNode. The principal is named after
         gid: 'hadoop'
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
+        mode: 0o0600
         kadmin_server: admin_server
       , next
 

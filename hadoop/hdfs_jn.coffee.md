@@ -2,7 +2,7 @@
 # Hadoop HDFS JournalNode
 
 This module configure the JournalNode following the 
-[HDFS High Availability Using the Quorum Journal Manager][qjm] official 
+[HDFS High Availability Using the Quorum Journal Manager](https://hadoop.apache.org/docs/r2.3.0/hadoop-yarn/hadoop-yarn-site/HDFSHighAvailabilityWithQJM.html) official 
 recommandations.
 
 In order for the Standby node to keep its state synchronized with the Active 

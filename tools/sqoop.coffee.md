@@ -1,7 +1,7 @@
 
 # Sqoop
 
-Apache Sqoop is a tool designed for efficiently transferring bulk data between 
+[Apache Sqoop](http://sqoop.apache.org/) is a tool designed for efficiently transferring bulk data between 
 Apache Hadoop and structured datastores such as relational databases.
 
     module.exports = []

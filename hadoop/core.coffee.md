@@ -1,10 +1,11 @@
 
 # Hadoop Core
 
-The Hadoop distribution used is the Hortonwork distribution named HDP. The
+The [Hadoop distribution](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.4/bk_getting-started-guide/content/ch_hdp1_getting_started_chp2_1.html) used is the Hortonwork distribution named HDP. The
 installation is leveraging the Yum repositories. [Individual tarballs][tar] 
 are also available as an alternative with the benefit of including the source 
 code.
+
 
 *   http://bigdataprocessing.wordpress.com/2013/07/30/hadoop-rack-awareness-and-configuration/
 *   http://ofirm.wordpress.com/2014/01/09/exploring-the-hadoop-network-topology/

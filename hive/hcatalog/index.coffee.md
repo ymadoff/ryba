@@ -1,6 +1,7 @@
 
 # Hive Server
-
+[HCatalog](https://cwiki.apache.org/confluence/display/Hive/HCatalog+UsingHCat) is a table and storage management layer for Hadoop that enables users with different data processing tools — Pig, MapReduce — to more easily read and write data on the grid. HCatalog’s table abstraction presents users with a relational view of data in the Hadoop distributed file system (HDFS) and ensures that users need not worry about where or in what format their data is stored — RCFile format, text files, SequenceFiles, or ORC files.
+    
     module.exports = []
 
 ## Configure
