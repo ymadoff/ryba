@@ -93,7 +93,8 @@ Environment passed to the Master before it starts.
 
     module.exports.push name: 'HBase Master # Opts', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
-      return next() unless hbase.master_opts
+      # return next() unless hbase.master_opts
+      console.log "export HBASE_MASTER_OPTS=\"#{hbase.master_opts} ${HBASE_MASTER_OPTS}\" # RYBA CONF \"ryba.hbase.master_opts\", DONT OVERWRITE"
       ctx.write
         destination: "#{hbase.conf_dir}/hbase-env.sh"
         match: /^export HBASE_MASTER_OPTS="(.*) \$\{HBASE_MASTER_OPTS\}" # RYBA .*/m
