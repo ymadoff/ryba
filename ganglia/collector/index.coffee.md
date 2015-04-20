@@ -1,17 +1,17 @@
 
 # Ganglia Collector
 
-Ganglia Collector is the server which recieve data collected on each 
+Ganglia Collector is the server which recieve data collected on each
 host by the Ganglia Monitor agents.
 
     module.exports = []
 
 ## Configure
 
-*   `rrdcached_user` (object|string)   
-    The Unix RRDtool login name or a user object (see Mecano User documentation).   
-*   `rrdcached_group` (object|string)   
-    The Unix Hue group name or a group object (see Mecano Group documentation).   
+*   `rrdcached_user` (object|string)
+    The Unix RRDtool login name or a user object (see Mecano User documentation).
+*   `rrdcached_group` (object|string)
+    The Unix Hue group name or a group object (see Mecano Group documentation).
 
 Example:
 
@@ -58,18 +58,14 @@ Example:
 
 ## Commands
 
-    # module.exports.push command: 'backup', modules: 'ryba/ganglia/collector_backup'
+    # module.exports.push command: 'backup', modules: 'ryba/ganglia/collector/backup'
 
-    # module.exports.push commands: 'check', modules: 'ryba/ganglia/collector_check'
+    # module.exports.push commands: 'check', modules: 'ryba/ganglia/collector/check'
 
-    module.exports.push commands: 'install', modules: 'ryba/ganglia/collector_install'
+    module.exports.push commands: 'install', modules: 'ryba/ganglia/collector/install'
 
-    module.exports.push commands: 'start', modules: 'ryba/ganglia/collector_start'
+    module.exports.push commands: 'start', modules: 'ryba/ganglia/collector/start'
 
-    # module.exports.push commands: 'status', modules: 'ryba/ganglia/collector_status'
+    # module.exports.push commands: 'status', modules: 'ryba/ganglia/collector/status'
 
-    module.exports.push commands: 'stop', modules: 'ryba/ganglia/collector_stop'
-
-
-
-
+    module.exports.push commands: 'stop', modules: 'ryba/ganglia/collector/stop'

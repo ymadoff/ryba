@@ -13,4 +13,3 @@ Call the "checkGmetad.sh" deployed by the Ganglia HDP package and check if the
       ctx.execute
         cmd: "/usr/libexec/hdp/ganglia/checkGmetad.sh"
       , next
-

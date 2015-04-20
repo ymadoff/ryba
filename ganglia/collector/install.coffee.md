@@ -9,10 +9,10 @@
 
 ## Configure
 
-*   `rrdcached_user` (object|string)   
-    The Unix RRDtool login name or a user object (see Mecano User documentation).   
-*   `rrdcached_group` (object|string)   
-    The Unix Hue group name or a group object (see Mecano Group documentation).   
+*   `rrdcached_user` (object|string)
+    The Unix RRDtool login name or a user object (see Mecano User documentation).
+*   `rrdcached_group` (object|string)
+    The Unix Hue group name or a group object (see Mecano Group documentation).
 
 Example:
 
@@ -30,7 +30,7 @@ Example:
 }
 ```
 
-    module.exports.push require('./collector').configure
+    module.exports.push require('./index').configure
 
 ## Users & Groups
 
@@ -61,7 +61,7 @@ rrdcached:x:493:
 | hdp-gmetad   | 8664 |   | Ganglia Collector HDPResourceManager |
 | hdp-gmetad   | 8666 |   | Ganglia Collector HDPHistoryServer |
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
+IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'Ganglia Collector # IPTables', handler: (ctx, next) ->
@@ -123,7 +123,7 @@ the objects files and generate the hosts configuration.
 
 ## Objects
 
-Copy the object files provided in the HDP companion files into the 
+Copy the object files provided in the HDP companion files into the
 "/usr/libexec/hdp/ganglia" folder. Permissions on those file are set to "0o744".
 
     module.exports.push name: 'Ganglia Collector # Objects', timeout: -1, handler: (ctx, next) ->
@@ -144,13 +144,13 @@ in its user account definition.
 
 ## Clusters
 
-The cluster generation follow Hortonworks guideline and generate the clusters 
+The cluster generation follow Hortonworks guideline and generate the clusters
 "HDPHistoryServer", "HDPNameNode", "HDPResourceManager", "HDPSlaves" and "HDPHBaseMaster".
 
     module.exports.push name: 'Ganglia Collector # Clusters', timeout: -1, handler: (ctx, next) ->
       cmds = []
       # On the Ganglia server, to configure the gmond collector
-      cmds.push 
+      cmds.push
         cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPHistoryServer -m"
         not_if_exists: '/etc/ganglia/hdp/HDPHistoryServer'
       cmds.push
@@ -172,7 +172,7 @@ The cluster generation follow Hortonworks guideline and generate the clusters
 
 ## Configuration
 
-In order to work properly, each cluster must be updated with the "bind" property 
+In order to work properly, each cluster must be updated with the "bind" property
 pointing to the Ganglia master hostname.
 
     module.exports.push name: 'Ganglia Collector # Configuration', handler: (ctx, next) ->
@@ -217,18 +217,13 @@ pointing to the Ganglia master hostname.
 
 ## Start
 
-    module.exports.push 'ryba/ganglia/collector_start'
+    module.exports.push 'ryba/ganglia/collector/start'
 
 ## Check
 
-    module.exports.push 'ryba/ganglia/collector_check'
+    module.exports.push 'ryba/ganglia/collector/check'
 
 ## Module dependencies
 
     request = require 'request'
     glob = require 'glob'
-
-
-
-
-
