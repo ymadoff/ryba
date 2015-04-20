@@ -23,7 +23,7 @@ with sudo access.
 -   Use secured comminication with SSH
 -   No database used, full distribution across multiple servers relying on GIT
 -   No agent or pre-installation required on your cluster nodes
--   Version control all your configuration and modifications (using GIT by default)
+-   Version control all your configuration and modifications with GIT and NPM, the Node.js Package Manager
 -   Command-based to integrate with your [Business Continuity Plan (BCP)][bcp] and existing scripts
 -   For developer, as simple as learning Node.js and not a new framework
 -   Self-documented code written in [Literate CoffeeScript ][literate]
