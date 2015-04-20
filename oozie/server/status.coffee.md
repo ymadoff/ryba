@@ -9,7 +9,7 @@ By default, the pid of the running server is stored in
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push require('./server').configure
+    module.exports.push require('./index').configure
 
 ## Status
 
@@ -24,4 +24,3 @@ Discover the server status.
         """
         code_skipped: 3
       , next
-

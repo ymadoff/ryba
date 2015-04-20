@@ -3,10 +3,10 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push require('./client').configure
+    module.exports.push require('./index').configure
 
     module.exports.push name: 'Oozie Client # Wait Server', timeout: -1, handler: (ctx, next) ->
-      {hostname, port} = url.parse ctx.config.ryba.oozie.site['oozie.base.url'] 
+      {hostname, port} = url.parse ctx.config.ryba.oozie.site['oozie.base.url']
       ctx.waitIsOpen hostname, port, (err) -> next err
 
 ## Check Client
@@ -39,9 +39,9 @@
 
     module.exports.push name: 'Oozie Client # Check HDFS Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
       {force_check, user, core_site, yarn, oozie} = ctx.config.ryba
-      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
+      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1
-        rm_ctx = ctx.context yarn.active_rm_host, require('../hadoop/yarn_rm').configure
+        rm_ctx = ctx.context yarn.active_rm_host, require('../../hadoop/yarn_rm').configure
         shortname = ".#{rm_ctx.config.shortname}"
       else
         rm_ctx = rm_ctxs[0]
@@ -212,16 +212,16 @@
 
     module.exports.push name: 'Oozie Client # Check Pig Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
       {force_check, user, core_site, yarn, oozie} = ctx.config.ryba
-      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
+      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1
-        rm_ctx = ctx.context yarn.active_rm_host, require('../hadoop/yarn_rm').configure
+        rm_ctx = ctx.context yarn.active_rm_host, require('../../hadoop/yarn_rm').configure
         shortname = ".#{rm_ctx.config.shortname}"
       else
         rm_ctx = rm_ctxs[0]
         shortname = ''
       rm_address = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{shortname}"]
       # Get the name of the user running the Oozie Server
-      os_ctxs = ctx.contexts 'ryba/oozie/server', require('./server').configure
+      os_ctxs = ctx.contexts 'ryba/oozie/server', require('../server').configure
       {oozie} = os_ctxs[0].config.ryba
       ctx.write [
         content: """
@@ -421,5 +421,4 @@
 # Module Dependencies
 
     url = require 'url'
-    mkcmd = require '../lib/mkcmd'
-
+    mkcmd = require '../../lib/mkcmd'

@@ -9,7 +9,7 @@ By default, the pid of the running server is stored in
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push require('./server').configure
+    module.exports.push require('./index').configure
 
 ## Start
 
@@ -34,4 +34,3 @@ Note, there is no need to clean a zombie pid file before starting the server.
         """
         code_skipped: 3
       , next
-

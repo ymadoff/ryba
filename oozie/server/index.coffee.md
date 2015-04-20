@@ -14,10 +14,10 @@ For the purposes of Oozie, a workflow is a collection of actions (i.e. Hadoop Ma
 
 ## Configure
 
-*   `oozie.user` (object|string)   
-    The Unix Oozie login name or a user object (see Mecano User documentation).   
-*   `oozie.group` (object|string)   
-    The Unix Oozie group name or a group object (see Mecano Group documentation).   
+*   `oozie.user` (object|string)
+    The Unix Oozie login name or a user object (see Mecano User documentation).
+*   `oozie.group` (object|string)
+    The Unix Oozie group name or a group object (see Mecano Group documentation).
 
 Example
 
@@ -36,10 +36,10 @@ Example
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       require('masson/commons/java').configure ctx
-      require('../hadoop/core').configure ctx
-      # require('./client').configure ctx
+      require('../../hadoop/core').configure ctx
+      # require('../client').configure ctx
       # Internal properties
-      {ryba} = ctx.config 
+      {ryba} = ctx.config
       ryba.force_war ?= false
       # User
       oozie = ryba.oozie ?= {}
@@ -61,7 +61,7 @@ Example
       oozie.log_dir ?= '/var/log/oozie'
       oozie.pid_dir ?= '/var/run/oozie'
       oozie.tmp_dir ?= '/var/tmp/oozie'
-      
+
       # Configuration
       oozie.site ?= {}
       oozie.site['oozie.base.url'] = "http://#{ctx.config.host}:11000/oozie"
@@ -136,7 +136,7 @@ Example
       ryba.oozie.site['oozie.service.ProxyUserService.proxyuser.hive.groups'] ?= "*"
       ryba.oozie.site['oozie.service.ProxyUserService.proxyuser.hue.hosts'] ?= "*"
       ryba.oozie.site['oozie.service.ProxyUserService.proxyuser.hue.groups'] ?= "*"
-      falcon_cts = ctx.contexts 'ryba/falcon', require('../falcon').configure
+      falcon_cts = ctx.contexts 'ryba/falcon', require('../../falcon').configure
       if falcon_cts.length
         {user} = falcon_cts[0].config.ryba.falcon
         ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{user.name}.hosts"] ?= "*"
@@ -202,16 +202,14 @@ Example
 
 ## Commands
 
-    module.exports.push commands: 'backup', modules: 'ryba/oozie/server_backup'
+    module.exports.push commands: 'backup', modules: 'ryba/oozie/server/backup'
 
-    # module.exports.push commands: 'check', modules: 'ryba/oozie/server_check'
+    # module.exports.push commands: 'check', modules: 'ryba/oozie/server/check'
 
-    module.exports.push commands: 'install', modules: 'ryba/oozie/server_install'
+    module.exports.push commands: 'install', modules: 'ryba/oozie/server/install'
 
-    module.exports.push commands: 'start', modules: 'ryba/oozie/server_start'
+    module.exports.push commands: 'start', modules: 'ryba/oozie/server/start'
 
-    module.exports.push commands: 'status', modules: 'ryba/oozie/server_status'
+    module.exports.push commands: 'status', modules: 'ryba/oozie/server/status'
 
-    module.exports.push commands: 'stop', modules: 'ryba/oozie/server_stop'
-
-
+    module.exports.push commands: 'stop', modules: 'ryba/oozie/server/stop'

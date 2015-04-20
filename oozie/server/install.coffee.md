@@ -10,7 +10,7 @@ Oozie source code and examples are located in "/usr/share/doc/oozie-$version".
     module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/hadoop/hdfs' # SPNEGO need access to the principal HTTP/$HOST@$REALM's keytab
     module.exports.push 'ryba/hadoop/hdfs_dn_wait' # Create directories inside HDFS
-    module.exports.push require('./server').configure
+    module.exports.push require('./index').configure
 
 ## Users & Groups
 
@@ -36,7 +36,7 @@ oozie:x:493:
 |---------|-------|-------|-------------------|
 | oozie   | 11000 | http  | Oozie HTTP server |
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
+IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'Oozie Server # IPTables', handler: (ctx, next) ->
@@ -122,7 +122,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       {oozie} = ctx.config.ryba
       # CATALINA_OPTS="-Djavax.net.ssl.trustStore=/etc/hadoop/conf/truststore -Djavax.net.ssl.trustStorePassword=ryba123"
       ctx.write
-        source: "#{__dirname}/../resources/oozie/oozie-env.sh"
+        source: "#{__dirname}/../../resources/oozie/oozie-env.sh"
         destination: "#{oozie.conf_dir}/oozie-env.sh"
         local_source: true
         write: [
@@ -207,7 +207,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
       do_oozie_site = ->
         ctx.hconfigure
           destination: "#{oozie.conf_dir}/oozie-site.xml"
-          default: "#{__dirname}/../resources/oozie/oozie-site.xml"
+          default: "#{__dirname}/../../resources/oozie/oozie-site.xml"
           local_default: true
           properties: oozie.site
           uid: oozie.user.name
@@ -222,7 +222,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
       do_oozie_default = ->
         ctx.upload
           destination: "#{oozie.conf_dir}/oozie-default.xml"
-          source: "#{__dirname}/../resources/oozie/oozie-default.xml"
+          source: "#{__dirname}/../../resources/oozie/oozie-default.xml"
           backup: true
         , (err, configured) ->
           return next err if err
@@ -290,7 +290,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
                   return next err if err
                   do_prepare_war()
       do_prepare_war = ->
-        # The script `ooziedb.sh` must be done as the oozie Unix user, otherwise 
+        # The script `ooziedb.sh` must be done as the oozie Unix user, otherwise
         # Oozie may fail to start or work properly because of incorrect file permissions.
         # There is already a "oozie.war" file inside /var/lib/oozie/oozie-server/webapps/.
         # The "prepare-war" command generate the file "/var/lib/oozie/oozie-server/webapps/oozie.war".
@@ -333,7 +333,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
       username = oozie.site['oozie.service.JPAService.jdbc.username']
       password = oozie.site['oozie.service.JPAService.jdbc.password']
       {engine, db} = parse_jdbc oozie.site['oozie.service.JPAService.jdbc.url']
-      engines = 
+      engines =
         mysql: ->
           escape = (text) -> text.replace(/[\\"]/g, "\\$&")
           cmd = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
@@ -384,14 +384,14 @@ based on the following rules:
 *   Will always keep the latest 2
 
 Internally, the "sharelib create" and "sharelib upgrade" commands are used to
-upload the files. 
+upload the files.
 
 The `oozie admin -shareliblist` command can be used by the final user to list
 the ShareLib contents without having to go into HDFS.
 
     module.exports.push name: 'Oozie Server # Share lib', timeout: 600000, handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
-      ctx.execute 
+      ctx.execute
         cmd: mkcmd.hdfs ctx, """
         if hdfs dfs -test -d /user/#{oozie.user.name}/share/lib; then
           echo 'Upgrade sharelib'
@@ -430,7 +430,7 @@ the ShareLib contents without having to go into HDFS.
       next()
 
 
-    module.exports.push 'ryba/oozie/server_start'
+    module.exports.push 'ryba/oozie/server/start'
 
     module.exports.push 'ryba/oozie/client'
 
@@ -438,10 +438,10 @@ the ShareLib contents without having to go into HDFS.
 
     url = require 'url'
     path = require 'path'
-    lifecycle = require '../lib/lifecycle'
-    mkcmd = require '../lib/mkcmd'
-    parse_jdbc = require '../lib/parse_jdbc'
-  
+    lifecycle = require '../../lib/lifecycle'
+    mkcmd = require '../../lib/mkcmd'
+    parse_jdbc = require '../../lib/parse_jdbc'
+
 
 ## Upgrade error
 
@@ -450,14 +450,10 @@ error:
 
 ```
 Running Transaction
-  Updating   : oozie-4.0.0.2.1.5.0-695.el6.noarch                                                                                                                                                   1/2 
+  Updating   : oozie-4.0.0.2.1.5.0-695.el6.noarch                                                                                                                                                   1/2
 Error unpacking rpm package oozie-4.0.0.2.1.5.0-695.el6.noarch
 error: unpacking of archive failed on file /usr/lib/oozie/webapps/oozie/WEB-INF: cpio: rename
-  Verifying  : oozie-4.0.0.2.1.5.0-695.el6.noarch                                                                                                                                                   1/2 
+  Verifying  : oozie-4.0.0.2.1.5.0-695.el6.noarch                                                                                                                                                   1/2
 oozie-4.0.0.2.1.2.0-402.el6.noarch was supposed to be removed but is not!
   Verifying  : oozie-4.0.0.2.1.2.0-402.el6.noarch
 ```
-
-
-
-

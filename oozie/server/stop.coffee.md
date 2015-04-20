@@ -6,7 +6,7 @@ server using Ryba.
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push require('./server').configure
+    module.exports.push require('./index').configure
 
 ## Stop
 

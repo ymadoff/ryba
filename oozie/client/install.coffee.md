@@ -7,7 +7,7 @@
     module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'ryba/hadoop/mapred_client'
     module.exports.push 'ryba/hadoop/yarn_client'
-    module.exports.push require('./client').configure
+    module.exports.push require('./index').configure
 
 ## Install
 
@@ -29,6 +29,4 @@ Install the oozie client package. This package doesn't create any user and group
         mode: 0o0755
       , next
 
-    module.exports.push 'ryba/oozie/client_check'
-
-
+    module.exports.push 'ryba/oozie/client/check'
