@@ -331,18 +331,17 @@ will be created by one of the datanode.
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       modified = false
       # ryba group and user may already exist in "/etc/passwd" or in any sssd backend
-      ctx.group group, (err, gmodified) ->
-        return next err if err
-        ctx.user user, (err, umodified) ->
-          return next err if err
-          ctx.krb5_addprinc
-            principal: "#{krb5_user.name}@#{realm}"
-            password: "#{krb5_user.password}"
-            kadmin_principal: kadmin_principal
-            kadmin_password: kadmin_password
-            kadmin_server: admin_server
-          , (err, pmodified) ->
-            next err, gmodified or umodified or pmodified
+      ctx
+      .group group
+      .user user
+      .krb5_addprinc
+        principal: "#{krb5_user.name}@#{realm}"
+        password: "#{krb5_user.password}"
+        kadmin_principal: kadmin_principal
+        kadmin_password: kadmin_password
+        kadmin_server: admin_server
+      .then (err, modified) ->
+        next err, modified
 
 ## Install
 
