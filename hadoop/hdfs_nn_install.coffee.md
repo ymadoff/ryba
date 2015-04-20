@@ -152,18 +152,19 @@ if the NameNode was formated.
     module.exports.push name: 'HDFS NN # Format', timeout: -1, modules: 'ryba/hadoop/hdfs_jn_wait', handler: (ctx, next) ->
       {hdfs, active_nn_host, nameservice} = ctx.config.ryba
       any_dfs_name_dir = hdfs.site['dfs.namenode.name.dir'].split(',')[0]
-      unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-        ctx.execute
-          cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -format\""
-          not_if_exists: "#{any_dfs_name_dir}/current/VERSION"
-        , next
-      else
-        # Shall only be executed on the leader namenode
-        ctx.execute
-          cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -format -clusterId #{nameservice}\""
-          if: active_nn_host is ctx.config.host
-          not_if_exists: "#{any_dfs_name_dir}/current/VERSION"
-        , next
+      is_hdfs_ha = ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+      ctx
+      # For non HA mode
+      .execute
+        cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -format\""
+        not_if_ha: is_hdfs_ha
+        not_if_exists: "#{any_dfs_name_dir}/current/VERSION"
+      # For HA mode, on the leader namenode
+      .execute
+        cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -format -clusterId #{nameservice}\""
+        if: is_hdfs_ha and active_nn_host is ctx.config.host
+        not_if_exists: "#{any_dfs_name_dir}/current/VERSION"
+      .then next
 
 ## HA Init Standby NameNodes
 
