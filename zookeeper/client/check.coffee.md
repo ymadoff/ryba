@@ -5,4 +5,4 @@ TODO: Cloudera provides some interesting [tests](http://www.cloudera.com/content
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'ryba/zookeeper/server_wait'
+    module.exports.push 'ryba/zookeeper/server/wait'

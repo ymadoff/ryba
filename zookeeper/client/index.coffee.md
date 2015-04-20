@@ -41,13 +41,9 @@
 
 ## Commands
 
-    module.exports.push commands: 'check', modules: 'ryba/zookeeper/client_check'
+    module.exports.push commands: 'check', modules: 'ryba/zookeeper/client/check'
 
     module.exports.push commands: 'install', modules: [
-      'ryba/zookeeper/client_install'
-      'ryba/zookeeper/client_check'
+      'ryba/zookeeper/client/install'
+      'ryba/zookeeper/client/check'
     ]
-
-
-
-

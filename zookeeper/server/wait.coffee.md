@@ -3,7 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push require('./server').configure
+    module.exports.push require('./index').configure
 
 ## Wait Listen
 
@@ -13,10 +13,6 @@ Wait for all ZooKeeper server to listen.
       zs_hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
       wait = for zs_host in zs_hosts
         zs_ctx = ctx.hosts[zs_host]
-        require('./server').configure zs_ctx
+        require('./index').configure zs_ctx
         host: zs_host, port: zs_ctx.config.ryba.zookeeper.port
       ctx.waitIsOpen wait, (err) -> next err
-
-
-
-

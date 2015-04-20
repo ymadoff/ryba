@@ -5,7 +5,7 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
-    module.exports.push 'ryba/zookeeper/server_wait'
+    module.exports.push 'ryba/zookeeper/server/wait'
     module.exports.push require '../../lib/hdp_service'
     module.exports.push require '../../lib/write_jaas'
     module.exports.push require('./index').configure
@@ -48,7 +48,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
         ]
         etc_default:
           'hadoop': true
-          'hadoop-hdfs-zkfc': 
+          'hadoop-hdfs-zkfc':
             write: [
               match: /^export HADOOP_PID_DIR=.*$/m # HDP default is "/var/run/hadoop-hdfs"
               replace: "export HADOOP_PID_DIR=#{hdfs.pid_dir} # RYBA"
@@ -96,7 +96,7 @@ Create a service principal for the ZKFC daemon to authenticate with Zookeeper.
 The principal is named after "zkfc/#{ctx.config.host}@#{realm}" and its keytab
 is stored as "/etc/security/keytabs/zkfc.service.keytab".
 
-The Jaas file is registered as an Java property inside 'hadoop-env.sh' and is 
+The Jaas file is registered as an Java property inside 'hadoop-env.sh' and is
 stored as "/etc/hadoop/conf/zkfc.jaas"
 
     module.exports.push name: 'ZKFC # Kerberos', handler: (ctx, next) ->
@@ -153,7 +153,7 @@ isn't set. Probably the default acl "world:anyone:cdrwa" is used.
 
 http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HDFSHighAvailabilityWithQJM.html#Securing_access_to_ZooKeeper
 
-If you need to change the acl manually inside zookeeper, you can use this 
+If you need to change the acl manually inside zookeeper, you can use this
 command as an example:
 
 ```
@@ -356,7 +356,3 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
     fs = require 'fs'
     lifecycle = require '../../lib/lifecycle'
     mkcmd = require '../../lib/mkcmd'
-
-
-
-

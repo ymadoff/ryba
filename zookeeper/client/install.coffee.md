@@ -9,8 +9,8 @@
     module.exports.push 'masson/commons/java'
     # module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/lib/base'
-    module.exports.push require('./client').configure
-    module.exports.push require '../lib/write_jaas'
+    module.exports.push require('./index').configure
+    module.exports.push require '../../lib/write_jaas'
 
     module.exports.push name: 'ZooKeeper Client # Kerberos', timeout: -1, handler: (ctx, next) ->
       {zookeeper, hadoop_group, realm} = ctx.config.ryba
@@ -59,4 +59,3 @@
 ## Module Dependencies
 
     quote = require 'regexp-quote'
-

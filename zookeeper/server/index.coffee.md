@@ -12,15 +12,15 @@ differences.
 
 ## Configure
 
-*   `zookeeper.user` (object|string)   
-    The Unix Zookeeper login name or a user object (see Mecano User documentation).   
+*   `zookeeper.user` (object|string)
+    The Unix Zookeeper login name or a user object (see Mecano User documentation).
 
-Example : 
+Example :
 
 ```json
 {
   "ryba": {
-    "zookeeper" : { 
+    "zookeeper" : {
       "user": {
         "name": "zookeeper", "system": true, "gid": "hadoop",
         "comment": "Zookeeper User", "home": "/var/lib/zookeeper"
@@ -33,7 +33,7 @@ Example :
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       require('masson/commons/java').configure ctx
-      require('./client').configure ctx
+      require('../client').configure ctx
       {java, ryba} = ctx.config
       # Environnment
       zookeeper = ryba.zookeeper ?= {}
@@ -77,20 +77,18 @@ Example :
 
 ## Commands
 
-    # module.exports.push commands: 'backup', modules: 'ryba/zookeeper/server_backup'
+    # module.exports.push commands: 'backup', modules: 'ryba/zookeeper/server/backup'
 
-    module.exports.push commands: 'check', modules: 'ryba/zookeeper/server_check'
+    module.exports.push commands: 'check', modules: 'ryba/zookeeper/server/check'
 
     module.exports.push commands: 'install', modules: [
-      'ryba/zookeeper/server_install'
-      'ryba/zookeeper/server_start'
-      'ryba/zookeeper/server_check'
+      'ryba/zookeeper/server/install'
+      'ryba/zookeeper/server/start'
+      'ryba/zookeeper/server/check'
     ]
 
-    module.exports.push commands: 'start', modules: 'ryba/zookeeper/server_start'
+    module.exports.push commands: 'start', modules: 'ryba/zookeeper/server/start'
 
-    module.exports.push commands: 'status', modules: 'ryba/zookeeper/server_status'
+    module.exports.push commands: 'status', modules: 'ryba/zookeeper/server/status'
 
-    module.exports.push commands: 'stop', modules: 'ryba/zookeeper/server_stop'
-
-
+    module.exports.push commands: 'stop', modules: 'ryba/zookeeper/server/stop'

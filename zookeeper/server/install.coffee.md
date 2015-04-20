@@ -9,10 +9,9 @@
     module.exports.push 'masson/commons/java'
     # module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/lib/base'
-    module.exports.push require '../lib/hdp_service'
-    module.exports.push require '../lib/write_jaas'
-    module.exports.push 'masson/core/krb5_client/wait'
-    module.exports.push require('./server').configure
+    module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/write_jaas'
+    module.exports.push require('./index').configure
 
 ## Users & Groups
 
@@ -40,7 +39,7 @@ hadoop:x:498:hdfs
 | zookeeper  | 2888 | tcp    | -                  |
 | zookeeper  | 3888 | tcp    | -                  |
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
+IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'ZooKeeper Server # IPTables', handler: (ctx, next) ->
@@ -177,7 +176,7 @@ Upload the ZooKeeper loging configuration file.
       {zookeeper} = ctx.config.ryba
       ctx.upload
         destination: "#{zookeeper.conf_dir}/log4j.properties"
-        source: "#{__dirname}/../resources/zookeeper/log4j.properties"
+        source: "#{__dirname}/../../resources/zookeeper/log4j.properties"
       , next
 
 
@@ -192,7 +191,7 @@ configuration property "ryba.zookeeper.superuser.password". The digest auth
 passes the authdata in plaintext to the server. Use this authentication method
 only on localhost (not over the network) or over an encrypted connection.
 
-Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx` 
+Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
 
     module.exports.push name: 'ZooKeeper Server # Super User', handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
@@ -239,4 +238,3 @@ Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
 ## Module Dependencies
 
     quote = require 'regexp-quote'
-

@@ -10,7 +10,7 @@ earliest snapshot.
 Execute `./bin/ryba backup -m ryba/zookeeper/server` to run this module.
 
     module.exports = []
-    module.exports.push require('./server').configure
+    module.exports.push require('./index').configure
 
 ## Compress the data directory
 
@@ -65,4 +65,3 @@ parameters autopurge.snapRetainCount and autopurge.purgeInterval.
 [data_file]: http://zookeeper.apache.org/doc/current/zookeeperAdmin.html#sc_dataFileManagement
 [maintenance]: http://zookeeper.apache.org/doc/current/zookeeperAdmin.html#sc_maintenance
 [cloudera]: http://www.cloudera.com/content/cloudera/en/documentation/cdh4/latest/CDH4-Installation-Guide/cdh4ig_topic_21_4.html
-

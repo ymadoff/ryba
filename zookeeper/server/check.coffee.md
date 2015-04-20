@@ -3,8 +3,8 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push require('./server').configure
-    module.exports.push 'ryba/zookeeper/server_wait'
+    module.exports.push require('./index').configure
+    module.exports.push 'ryba/zookeeper/server/wait'
 
 ## Check Registration
 
@@ -28,4 +28,3 @@ Execute these commands on the ZooKeeper host machine(s).
             unless stdout.trim().split('\n').sort().join(',') is [1..cmds.length].join(',')
               err = new Error "Servers are not properly registered"
           next err, true
-

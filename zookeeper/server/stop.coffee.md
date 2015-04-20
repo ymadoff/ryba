@@ -1,10 +1,10 @@
 
 # Zookeeper Server Stop
 
-    lifecycle = require '../lib/lifecycle'
+    lifecycle = require '../../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push require('./server').configure
+    module.exports.push require('./index').configure
 
 ## Stop
 
@@ -22,4 +22,3 @@ machines.
         cmd: 'rm /var/log/zookeeper/*'
         code_skipped: 1
       , next
-
