@@ -34,6 +34,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: ctx.config.iptables.action is 'start'
       , next
 
+## Env
 
     module.exports.push name: 'Rexster # Env', handler: (ctx, next) ->
       {titan, rexster, hadoop_conf_dir} = ctx.config.ryba
@@ -101,7 +102,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       {rexster, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
-        principal: resxster.principal
+        principal: rexster.principal
         randkey: true
         keytab: rexster.keytab
         uid: rexster.user.name
@@ -139,7 +140,30 @@ Zookeeper use JAAS for authentication. We configure JAAS to make SASL authentica
         gid:rexster.group.name
       , next
 
+## Cron-ed Kinit
+
+Rexster doesn't seems to correctly renew its keytab. For that, we use cron daemon
+We then ask a first TGT.
+
+    module.exports.push name: 'Rexster # Cron-ed kinit', handler: (ctx, next) ->
+      {rexster, realm} = ctx.config.ryba
+      kinit = "/usr/bin/kinit #{rexster.principal} -k -t #{rexster.keytab}"
+      ctx.execute
+        cmd: """
+        crontab -u #{rexster.user.name} -l | grep '#{kinit}'
+        if [ $? -eq 0 ]; then exit 3; fi;
+        echo '0 */5 * * * #{kinit}' | crontab -u rexster -
+        """
+        code_skipped: 3
+      , (err, croned) ->
+        return next err, croned  if err or not croned
+        ctx.execute
+          cmd: "su -l #{rexster.user.name} -c '#{kinit}'"
+        , next
+
 ## HBase Namespace Permissions
+
+TODO: Use a namespace
 
     module.exports.push name: 'Rexster # Grant HBase Perms', skip: true, handler: (ctx, next) ->
       return next() unless ctx.config.ryba.titan.config['storage.backend'] is 'hbase'

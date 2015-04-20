@@ -10,7 +10,7 @@ server-side “stored procedures” written in Gremlin, and a browser-based inte
 
 ## Configure
 
-*   `admin` (string | user object)   
+*   `admin` (string | user object)
     The login name or a user object (see Mecano User documentation).
 *   `config` (object)
     Object for Rexster configuration (xml) file
@@ -37,7 +37,7 @@ Example:
 
     module.exports.configure = (ctx) ->
       require('../titan').configure ctx
-      {titan} = ctx.config.ryba
+      {titan, realm} = ctx.config.ryba
       rexster = ctx.config.ryba.rexster ?= {}
       rexster.user ?= {}
       rexster.user = name: rexster.user if typeof rexster.user is 'string'
@@ -45,7 +45,6 @@ Example:
       rexster.user.system ?= true
       rexster.user.gid ?= 'rexster'
       rexster.user.comment ?= 'Rexster User'
-
       # Group
       rexster.group ?= {}
       rexster.group = name: rexster.group if typeof rexster.group is 'string'
@@ -60,12 +59,8 @@ Example:
       rexster.admin = name: rexster.admin if typeof rexster.admin is 'string'
       rexster.admin.name ?= 'rexster'
       rexster.admin.password ?= 'rexster123'
-
       rexster.log_dir ?= '/var/log/rexster'
       config = rexster.config ?= {}
-      
-HTTP
-
       config.http ?= {}
       config.http['server-port'] ?= 8182
       config.http['server-host'] ?= '0.0.0.0'
@@ -85,9 +80,6 @@ HTTP
           "core-size": 4
           "max-size": 4
       config.http['io-strategy'] ?= "leader-follower"
-
-Rexpro
-
       config.rexpro ?= {}
       config.rexpro['server-port'] ?= 8184
       config.rexpro['server-host'] ?= '0.0.0.0'
@@ -106,8 +98,7 @@ Rexpro
           'max-size': 4
       config.rexpro['io-strategy'] ?= "leader-follower"
 
-TODO: Security
-see https://github.com/tinkerpop/rexster/wiki/Rexster-Security
+TODO: Security see https://github.com/tinkerpop/rexster/wiki/Rexster-Security
 
       config['security'] ?=
         authentication:
@@ -131,7 +122,7 @@ see https://github.com/tinkerpop/rexster/wiki/Rexster-Security
           "reset-threshold": 500
           "imports": "com.tinkerpop.gremlin.*,com.tinkerpop.gremlin.java.*,com.tinkerpop.gremlin.pipes.filter.*,com.tinkerpop.gremlin.pipes.sideeffect.*,com.tinkerpop.gremlin.pipes.transform.*,com.tinkerpop.blueprints.*,com.tinkerpop.blueprints.impls.*,com.tinkerpop.blueprints.impls.tg.*,com.tinkerpop.blueprints.impls.neo4j.*,com.tinkerpop.blueprints.impls.neo4j.batch.*,com.tinkerpop.blueprints.impls.neo4j2.*,com.tinkerpop.blueprints.impls.neo4j2.batch.*,com.tinkerpop.blueprints.impls.orient.*,com.tinkerpop.blueprints.impls.orient.batch.*,com.tinkerpop.blueprints.impls.dex.*,com.tinkerpop.blueprints.impls.rexster.*,com.tinkerpop.blueprints.impls.sail.*,com.tinkerpop.blueprints.impls.sail.impls.*,com.tinkerpop.blueprints.util.*,com.tinkerpop.blueprints.util.io.*,com.tinkerpop.blueprints.util.io.gml.*,com.tinkerpop.blueprints.util.io.graphml.*,com.tinkerpop.blueprints.util.io.graphson.*,com.tinkerpop.blueprints.util.wrappers.*,com.tinkerpop.blueprints.util.wrappers.batch.*,com.tinkerpop.blueprints.util.wrappers.batch.cache.*,com.tinkerpop.blueprints.util.wrappers.event.*,com.tinkerpop.blueprints.util.wrappers.event.listener.*,com.tinkerpop.blueprints.util.wrappers.id.*,com.tinkerpop.blueprints.util.wrappers.partition.*,com.tinkerpop.blueprints.util.wrappers.readonly.*,com.tinkerpop.blueprints.oupls.sail.*,com.tinkerpop.blueprints.oupls.sail.pg.*,com.tinkerpop.blueprints.oupls.jung.*,com.tinkerpop.pipes.*,com.tinkerpop.pipes.branch.*,com.tinkerpop.pipes.filter.*,com.tinkerpop.pipes.sideeffect.*,com.tinkerpop.pipes.transform.*,com.tinkerpop.pipes.util.*,com.tinkerpop.pipes.util.iterators.*,com.tinkerpop.pipes.util.structures.*,org.apache.commons.configuration.*,com.thinkaurelius.titan.core.*,com.thinkaurelius.titan.core.attribute.*,com.thinkaurelius.titan.core.log.*,com.thinkaurelius.titan.core.olap.*,com.thinkaurelius.titan.core.schema.*,com.thinkaurelius.titan.core.util.*,com.thinkaurelius.titan.example.*,org.apache.commons.configuration.*,com.tinkerpop.gremlin.Tokens.T,com.tinkerpop.gremlin.groovy.*",
           "static-imports": "com.tinkerpop.blueprints.Direction.*,com.tinkerpop.blueprints.TransactionalGraph$Conclusion.*,com.tinkerpop.blueprints.Compare.*,com.thinkaurelius.titan.core.attribute.Geo.*,com.thinkaurelius.titan.core.attribute.Text.*,com.thinkaurelius.titan.core.Cardinality.*,com.thinkaurelius.titan.core.Multiplicity.*,com.tinkerpop.blueprints.Query$Compare.*"
-      ] 
+      ]
       config['metrics'] ?= [
           reporter: type:"jmx"
         ,
@@ -147,9 +138,6 @@ see https://github.com/tinkerpop/rexster/wiki/Rexster-Security
               "includes": "http.rest.*"
               "excludes": "http.rest.*.delete"
       ]
-
-Graphs
-
       config.graphs ?= [
         graph:
           'graph-name': 'titan'
@@ -159,16 +147,11 @@ Graphs
           'extensions': 'allows': 'allow': ['tp:gremlin']
       ]
 
-    # module.exports.push commands: 'backup', modules: 'ryba/rexster/backup'
-
     module.exports.push commands: 'install', modules: [
       'ryba/rexster/install',
       'ryba/rexster/start',
       'ryba/rexster/check'
     ]
-
-    # Rexster backup : only backup titan for now...
-    module.exports.push commands: 'backup', modules: 'ryba/titan/backup'
 
     module.exports.push commands: 'start', modules: 'ryba/rexster/start'
 

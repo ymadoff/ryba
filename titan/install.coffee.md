@@ -23,28 +23,21 @@ Download and extract a ZIP Archive
       unzip_dir = path.join titan.install_dir, path.basename archive_name, path.extname archive_name
       archive_path = path.join titan.install_dir, archive_name
       do_download = () ->
-        ctx.log 'downloading (if necessary)...'
         ctx.download
           source: titan.source
           destination: archive_path
         , (err, downloaded) ->
           return next err if err
-          unless downloaded
-            ctx.log 'download skipped'
-            return next null, false
-          ctx.log 'Archive downloaded !'
+          return next null, false unless downloaded
           ctx.fs.exists unzip_dir, (err, exists) ->
             return next err if err
-            if exists
-              ctx.log 'Archive content already exists. Removing before continue'
-              ctx.remove
-                destination: unzip_dir
-              , (err, removed) ->
-                return next err if err
-                do_extract()
+            if exists then ctx.remove
+              destination: unzip_dir
+            , (err, removed) ->
+              return next err if err
+              do_extract()
             else do_extract()
       do_extract = () ->
-        ctx.log 'Extracting...'
         ctx.extract
           source: archive_path,
           destination: titan.install_dir
@@ -60,15 +53,11 @@ Download and extract a ZIP Archive
                 source: unzip_dir
                 destination: titan.home
               , next
-      ctx.fs.exists titan.install_dir, (err, exists) ->
+      ctx.mkdir
+        destination: titan.install_dir
+      , (err, created) ->
         return next err if err
-        return do_download() if exists
-        ctx.mkdir
-          destination: titan.install_dir
-        , (err, created) ->
-          return next err if err or not created
-          ctx.log 'Titan Installation directory created !'
-          do_download()
+        do_download()
 
 ## Env
 
