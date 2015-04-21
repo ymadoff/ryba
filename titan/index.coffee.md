@@ -39,14 +39,16 @@ Indexation backend (mandatory even if it should not be)
       titan.config['index.search.backend'] ?= 'elasticsearch'
       if titan.config['index.search.backend'] is 'elasticsearch'
         es_ctxs = ctx.contexts 'ryba/elasticsearch', require('../elasticsearch').configure
+        throw new Error 'No elasticsearch node found' unless es_ctxs.length > 0
         titan.config['index.search.hostname'] ?= es_ctxs[0].config.host
         titan.config['index.search.elasticsearch.client-only'] ?= true
         titan.config['index.search.elasticsearch.cluster-name'] ?= es_ctxs[0].config.ryba.elasticsearch.cluster.name
-      # else if titan.config['index.search.backend'] is 'solr'
-      #   zk_ctxs = ctx.contexts 'ryba/zookeeper/server', require('../zookeeper/server').configure
-      #   solr_ctxs = ctx.contexts 'ryba/solr', require('../solr').configure
-      #   titan.config['index.seach.solr.mode'] = solr_ctxs[0].config.ryba.solr.mode
-      #   titan.config['index.search.solr.zookeeper-url'] ?= "#{zk_ctxs[0].config.host}:#{zk_ctxs[0].config.ryba.zookeeper.port}"
+      else if titan.config['index.search.backend'] is 'solr'
+        zk_ctxs = ctx.contexts 'ryba/zookeeper/server', require('../zookeeper/server').configure
+        solr_ctxs = ctx.contexts 'ryba/solr', require('../solr').configure
+        throw new Error 'No solr node found' unless solr_ctxs.length > 0
+        titan.config['index.seach.solr.mode'] = solr_ctxs[0].config.ryba.solr.mode
+        titan.config['index.search.solr.zookeeper-url'] ?= "#{zk_ctxs[0].config.host}:#{zk_ctxs[0].config.ryba.zookeeper.port}"
 
 Cache configuration
 
