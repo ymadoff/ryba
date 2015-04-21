@@ -6,8 +6,8 @@ scanning the table.
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'ryba/hbase/master_wait'
-    module.exports.push require('./client').configure
+    module.exports.push 'ryba/hbase/master/wait'
+    module.exports.push require('./index').configure
     util = require 'util'
 
 ## Check Shell
@@ -31,7 +31,7 @@ scanning the table.
           isRowCreated = RegExp("column=#{shortname}:my_column, timestamp=\\d+, value=10").test stdout
           return next Error 'Invalid command output' if executed and not isRowCreated
           next err, executed
-    
+
     module.exports.push name: 'HBase Client # Check MapReduce', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
       ctx.execute
         cmd: mkcmd.test ctx, """
@@ -42,7 +42,7 @@ scanning the table.
         next err, executed
 
     module.exports.push name: 'HBase Client # Check Splits', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
-      hbase_ctxs = ctx.contexts 'ryba/hbase/master', require('./master').configure
+      hbase_ctxs = ctx.contexts 'ryba/hbase/master', require('../master').configure
       {admin} = hbase_ctxs[0].config.ryba.hbase
       ctx.execute
         cmd: mkcmd.test ctx, """
@@ -81,5 +81,5 @@ scanning the table.
 
 ## Module Dependencies
 
-    mkcmd = require '../lib/mkcmd'
+    mkcmd = require '../../lib/mkcmd'
     string = require 'mecano/lib/misc/string'

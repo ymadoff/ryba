@@ -12,8 +12,8 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
     module.exports.configure = (ctx) ->
       if ctx.hbase_master_configured then return else ctx.hbase_master_configured = null
       require('masson/core/iptables').configure ctx
-      # require('../hadoop/hdfs').configure ctx
-      require('./_').configure ctx
+      # require('../../hadoop/hdfs').configure ctx
+      require('../').configure ctx
       {realm, hbase} = ctx.config.ryba
       hbase.admin ?= {}
       hbase.admin.principal ?= "#{hbase.site['hbase.superuser']}@#{realm}"
@@ -33,13 +33,13 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
 
 ## Proxy Users
 
-      thrift_ctxs = ctx.contexts 'ryba/hbase/thrift', require('./thrift').configure
+      thrift_ctxs = ctx.contexts 'ryba/hbase/thrift', require('../thrift').configure
       if thrift_ctxs.length
         principal = thrift_ctxs[0].config.ryba.hbase.site['hbase.thrift.kerberos.principal']
         throw Error 'Invalid HBase Thrift principal' unless match = /^(.+?)[@\/]/.exec principal
         hbase.site["hadoop.proxyuser.#{match[1]}.groups"] ?= '*'
         hbase.site["hadoop.proxyuser.#{match[1]}.hosts"] ?= '*'
-      rest_ctxs = ctx.contexts 'ryba/hbase/rest', require('./rest').configure
+      rest_ctxs = ctx.contexts 'ryba/hbase/rest', require('../rest').configure
       if rest_ctxs.length
         principal = rest_ctxs[0].config.ryba.hbase.site['hbase.rest.kerberos.principal']
         throw Error 'Invalid HBase Rest principal' unless match = /^(.+?)[@\/]/.exec principal
@@ -71,18 +71,18 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
 
 ## Commands
 
-    # module.exports.push commands: 'backup', modules: 'ryba/hbase/master_backup'
+    # module.exports.push commands: 'backup', modules: 'ryba/hbase/master/backup'
 
-    module.exports.push commands: 'check', modules: 'ryba/hbase/master_check'
+    module.exports.push commands: 'check', modules: 'ryba/hbase/master/check'
 
     module.exports.push commands: 'install', modules: [
-      'ryba/hbase/master_install'
-      'ryba/hbase/master_start'
-      'ryba/hbase/master_check'
+      'ryba/hbase/master/install'
+      'ryba/hbase/master/start'
+      'ryba/hbase/master/check'
     ]
 
-    module.exports.push commands: 'start', modules: 'ryba/hbase/master_start'
+    module.exports.push commands: 'start', modules: 'ryba/hbase/master/start'
 
-    # module.exports.push commands: 'status', modules: 'ryba/hbase/master_status'
+    # module.exports.push commands: 'status', modules: 'ryba/hbase/master/status'
 
-    module.exports.push commands: 'stop', modules: 'ryba/hbase/master_stop'
+    module.exports.push commands: 'stop', modules: 'ryba/hbase/master/stop'

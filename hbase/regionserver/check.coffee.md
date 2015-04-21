@@ -3,7 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push require('./regionserver').configure
+    module.exports.push require('./index').configure
 
 ## Check SPNEGO
 
@@ -28,7 +28,7 @@ is added membership to the group hadoop to gain read access.
       url = "#{protocol}://#{ctx.config.host}:#{port}/jmx?qry=Hadoop:service=HBase,name=RegionServer,sub=Server"
       ctx.execute
         cmd: mkcmd.test ctx, """
-        host=`curl -s -k --negotiate -u : #{url} | grep tag.Hostname | sed 's/^.*:.*"\\(.*\\)".*$/\\1/g'`      
+        host=`curl -s -k --negotiate -u : #{url} | grep tag.Hostname | sed 's/^.*:.*"\\(.*\\)".*$/\\1/g'`
         if [ "$host" != '#{ctx.config.host}' ] ; then exit 1; fi
         """
       , next
@@ -47,7 +47,7 @@ Namespace and permissions are implemented and illustrated in [HBASE-8409].
       ctx.execute
         cmd: """
         kinit -kt #{keytab} #{principal}
-        if hbase shell 2>/dev/null <<< "user_permission 'ryba'" | egrep '[0-9]+ row'; then exit 2; fi
+          if hbase shell 2>/dev/null <<< "user_permission 'ryba'" | egrep '[1-9][0-9]* row'; then exit 2; fi
         hbase shell 2>/dev/null <<-CMD
           create 'ryba', 'family1'
           grant 'ryba', 'RWC', 'ryba'
@@ -78,7 +78,6 @@ Namespace and permissions are implemented and illustrated in [HBASE-8409].
 
 ## Module Dependencies
 
-    mkcmd = require '../lib/mkcmd'
+    mkcmd = require '../../lib/mkcmd'
 
 [HBASE-8409]: https://issues.apache.org/jira/browse/HBASE-8409
-

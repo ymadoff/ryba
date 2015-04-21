@@ -6,13 +6,13 @@ Install the HBase client package and configure it with secured access.
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'ryba/hadoop/mapred_client' # Required for using/checking mapreduce
-    module.exports.push 'ryba/hbase/_'
-    module.exports.push require('./client').configure
-    module.exports.push require '../lib/write_jaas'
+    module.exports.push 'ryba/hbase'
+    module.exports.push require('./index').configure
+    module.exports.push require '../../lib/write_jaas'
 
 ## Zookeeper JAAS
 
-JAAS configuration files for zookeeper to be deployed on the HBase Master, 
+JAAS configuration files for zookeeper to be deployed on the HBase Master,
 RegionServer, and HBase client host machines.
 
     module.exports.push name: 'HBase Client # Zookeeper JAAS', timeout: -1, handler: (ctx, next) ->
@@ -35,7 +35,7 @@ restrict it but not the client.
       {hbase} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hbase.conf_dir}/hbase-site.xml"
-        default: "#{__dirname}/../resources/hbase/hbase-site.xml"
+        default: "#{__dirname}/../../resources/hbase/hbase-site.xml"
         local_default: true
         properties: hbase.site
         merge: true
@@ -46,9 +46,6 @@ restrict it but not the client.
 
 ## Check
 
-Require the "ryba/hbase/client_check" module.
+Require the "ryba/hbase/client/check" module.
 
-    module.exports.push 'ryba/hbase/client_check'
-
-
-
+    module.exports.push 'ryba/hbase/client/check'

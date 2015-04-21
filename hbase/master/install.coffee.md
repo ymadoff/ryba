@@ -7,10 +7,10 @@ TODO: [HBase backup node](http://willddy.github.io/2013/07/02/HBase-Add-Backup-M
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
-    module.exports.push 'ryba/hbase/_'
-    module.exports.push require('./master').configure
-    module.exports.push require '../lib/hdp_service'
-    module.exports.push require '../lib/write_jaas'
+    module.exports.push 'ryba/hbase'
+    module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/write_jaas'
 
 ## IPTables
 
@@ -19,10 +19,10 @@ TODO: [HBase backup node](http://willddy.github.io/2013/07/02/HBase-Add-Backup-M
 | HBase Master        | 60000 | http  | hbase.master.port      |
 | HMaster Info Web UI | 60010 | http  | hbase.master.info.port |
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
+IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'HBase master # IPTables', handler: (ctx, next) ->
+    module.exports.push name: 'HBase Master # IPTables', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
       ctx.iptables
         rules: [
@@ -77,7 +77,7 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
       mode = if ctx.has_module 'ryba/hbase/client' then 0o0644 else 0o0600
       ctx.hconfigure
         destination: "#{hbase.conf_dir}/hbase-site.xml"
-        default: "#{__dirname}/../resources/hbase/hbase-site.xml"
+        default: "#{__dirname}/../../resources/hbase/hbase-site.xml"
         local_default: true
         properties: hbase.site
         merge: true
@@ -89,12 +89,11 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
 
 # Opts
 
-Environment passed to the Master before it starts.   
+Environment passed to the Master before it starts.
 
     module.exports.push name: 'HBase Master # Opts', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
       # return next() unless hbase.master_opts
-      console.log "export HBASE_MASTER_OPTS=\"#{hbase.master_opts} ${HBASE_MASTER_OPTS}\" # RYBA CONF \"ryba.hbase.master_opts\", DONT OVERWRITE"
       ctx.write
         destination: "#{hbase.conf_dir}/hbase-env.sh"
         match: /^export HBASE_MASTER_OPTS="(.*) \$\{HBASE_MASTER_OPTS\}" # RYBA .*/m
@@ -133,12 +132,12 @@ Environment passed to the Master before it starts.
 
 ## Zookeeper JAAS
 
-JAAS configuration files for zookeeper to be deployed on the HBase Master, 
+JAAS configuration files for zookeeper to be deployed on the HBase Master,
 RegionServer, and HBase client host machines.
 
-Environment file is enriched by "ryba/hbase/_ # HBase # Env".
+Environment file is enriched by "ryba/hbase" # HBase # Env".
 
-    module.exports.push name: 'HBase master # Zookeeper JAAS', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'HBase Master # Zookeeper JAAS', timeout: -1, handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
       ctx.write_jaas
         destination: "#{hbase.conf_dir}/hbase-master.jaas"
@@ -176,7 +175,7 @@ Enable stats collection in Ganglia.
       collector = ctx.host_with_module 'ryba/hadoop/ganglia_collector'
       return next() unless collector
       ctx.upload
-        source: "#{__dirname}/../resources/hbase/hadoop-metrics.properties.master-GANGLIA"
+        source: "#{__dirname}/../../resources/hbase/hadoop-metrics.properties.master-GANGLIA"
         destination: "#{hbase.conf_dir}/hadoop-metrics.properties"
         match: 'TODO-GANGLIA-SERVER'
         replace: collector
@@ -208,5 +207,4 @@ principal.
 
     each = require 'each'
     path = require 'path'
-    mkcmd = require '../lib/mkcmd'
-
+    mkcmd = require '../../lib/mkcmd'

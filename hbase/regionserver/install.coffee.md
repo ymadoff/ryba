@@ -5,10 +5,10 @@
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
-    module.exports.push 'ryba/hbase/_'
-    module.exports.push require('./regionserver').configure
-    module.exports.push require '../lib/hdp_service'
-    module.exports.push require '../lib/write_jaas'
+    module.exports.push 'ryba/hbase'
+    module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/write_jaas'
 
 ## IPTables
 
@@ -17,7 +17,7 @@
 | HBase Region Server          | 60020 | http  | hbase.regionserver.port      |
 | HMaster Region Server Web UI | 60030 | http  | hbase.regionserver.info.port |
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
+IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HBase RegionServer # IPTables', handler: (ctx, next) ->
@@ -59,7 +59,7 @@ inside "/etc/init.d" and activate it on startup.
 
 ## Zookeeper JAAS
 
-JAAS configuration files for zookeeper to be deployed on the HBase Master, 
+JAAS configuration files for zookeeper to be deployed on the HBase Master,
 RegionServer, and HBase client host machines.
 
     module.exports.push name: 'HBase RegionServer # Zookeeper JAAS', timeout: -1, handler: (ctx, next) ->
@@ -107,7 +107,7 @@ RegionServer, and HBase client host machines.
       mode = if ctx.has_module 'ryba/hbase/client' then 0o0644 else 0o0600
       ctx.hconfigure
         destination: "#{hbase.conf_dir}/hbase-site.xml"
-        default: "#{__dirname}/../resources/hbase/hbase-site.xml"
+        default: "#{__dirname}/../../resources/hbase/hbase-site.xml"
         local_default: true
         properties: hbase.site
         merge: true
@@ -119,7 +119,7 @@ RegionServer, and HBase client host machines.
 
 ## Opts
 
-Environment passed to the RegionServer before it starts.   
+Environment passed to the RegionServer before it starts.
 
     module.exports.push name: 'HBase RegionServer # Opts', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
@@ -141,7 +141,7 @@ Enable stats collection in Ganglia.
       collector = ctx.host_with_module 'ryba/hadoop/ganglia_collector'
       return next() unless collector
       ctx.upload
-        source: "#{__dirname}/../resources/hbase/hadoop-metrics.properties.regionservers-GANGLIA"
+        source: "#{__dirname}/../../resources/hbase/hadoop-metrics.properties.regionservers-GANGLIA"
         destination: "#{hbase.conf_dir}/hadoop-metrics.properties"
         match: 'TODO-GANGLIA-SERVER'
         replace: collector
@@ -160,12 +160,12 @@ principal.
 
 ## Start
 
-Execute the "ryba/hbase/regionserver_start" module to start the RegionServer.
+Execute the "ryba/hbase/regionserver/start" module to start the RegionServer.
 
-    module.exports.push 'ryba/hbase/regionserver_start'
+    module.exports.push 'ryba/hbase/regionserver/start'
 
 ## Check
 
 Check this installation.
 
-    module.exports.push 'ryba/hbase/regionserver_check'
+    module.exports.push 'ryba/hbase/regionserver/check'

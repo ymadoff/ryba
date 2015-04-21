@@ -6,7 +6,7 @@
     module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/hadoop/core'
-    module.exports.push 'ryba/hbase/_'
+    module.exports.push 'ryba/hbase'
     module.exports.push require('./index').configure
     module.exports.push require '../../lib/hdp_service'
 
@@ -17,7 +17,7 @@
 | HBase REST Server          | 60080 | http  | hbase.rest.port        |
 | HBase REST Server Web UI   | 60085 | http  | hbase.rest.info.port   |
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
+IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HBase Rest # IPTables', handler: (ctx, next) ->
@@ -95,10 +95,3 @@ restrict it but not the rest server.
         gid: hbase.group.name
         backup: true
       , next
-
-
-
-
-
-
-

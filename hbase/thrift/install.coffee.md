@@ -5,7 +5,7 @@
     module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/hadoop/core'
-    module.exports.push 'ryba/hbase/_'
+    module.exports.push 'ryba/hbase'
     module.exports.push require('./index').configure
     url = require 'url'
 
@@ -16,7 +16,7 @@
 | HBase Thrift Server        | 9090 | http  | hbase.thrift.port      |
 | HBase Thrift Server Web UI | 9095 | http  | hbase.thrift.info.port |
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
+IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HBase Thrift # IPTables', handler: (ctx, next) ->
@@ -33,9 +33,9 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 DONE: Dependecies for thrift which are Autoconf - Automake - Bison
 Wait: checkinf i the version given by the os are the needed one
 Currently centos give Autoconf 2.63 - Automake 1.11 - Bison 2.4.1
-Needed for thrift     Autoconf 2.69 - Automake 1.14 - Bison 2.5    
+Needed for thrift     Autoconf 2.69 - Automake 1.14 - Bison 2.5
 TODO: Installing Thrift Compiler
-## Thrift Autoconf 
+## Thrift Autoconf
 
     module.exports.push name: 'Thrift # Install Autoconf', timeout: -1, handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
@@ -49,7 +49,7 @@ TODO: Installing Thrift Compiler
         if autoconf_version ==  hbase.thrift.autoconf.version
           ctx.log "autoconf :already up to date version #{hbase.thrift.autoconf.version}"
           return next null, false
-        else  
+        else
           action = if url.parse(hbase.thrift.autoconf.url).protocol is 'http:' then 'download' else 'upload'
           ctx.log "autoconf : is not installed "
           ctx[action]
@@ -62,9 +62,9 @@ TODO: Installing Thrift Compiler
             ctx.execute
               cmd: """
               rm -Rf #{hbase.thrift.autoconf.tmp}
-              mkdir #{hbase.thrift.autoconf.tmp} 
+              mkdir #{hbase.thrift.autoconf.tmp}
               tar xzf #{hbase.thrift.autoconf.destination} -C #{hbase.thrift.autoconf.tmp} --strip-components=1
-              cd #{hbase.thrift.autoconf.tmp} 
+              cd #{hbase.thrift.autoconf.tmp}
               ./configure --prefix=/usr
               make && make install
               cd ..
@@ -75,7 +75,7 @@ TODO: Installing Thrift Compiler
             , (err, executed, stdout) ->
               return next err, true
 
-## Thrift Automake 
+## Thrift Automake
 
     module.exports.push name: 'Thrift # Install Automake', timeout: -1, handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
@@ -86,7 +86,7 @@ TODO: Installing Thrift Compiler
         return next err if err and err.code isnt 2
         stdout = '' if err
         automake_version =  stdout.toString('utf-8').trim()
-        if automake_version ==  hbase.thrift.automake.version 
+        if automake_version ==  hbase.thrift.automake.version
           ctx.log "automake :already up to date version #{hbase.thrift.automake.version}"
           return next null, false
         action = if url.parse(hbase.thrift.automake.url).protocol is 'http:' then 'download' else 'upload'
@@ -101,9 +101,9 @@ TODO: Installing Thrift Compiler
           ctx.execute
             cmd: """
             rm -Rf #{hbase.thrift.automake.tmp}
-            mkdir #{hbase.thrift.automake.tmp} 
+            mkdir #{hbase.thrift.automake.tmp}
             tar xzf #{hbase.thrift.automake.destination} -C #{hbase.thrift.automake.tmp} --strip-components=1
-            cd #{hbase.thrift.automake.tmp} 
+            cd #{hbase.thrift.automake.tmp}
             ./configure --prefix=/usr
             make && make install
             cd ..
@@ -114,7 +114,7 @@ TODO: Installing Thrift Compiler
           , (err, executed, stdout) ->
             return next err, true
 
-## Thrift Bison 
+## Thrift Bison
 
     module.exports.push name: 'Thrift # Install Bison', timeout: -1, handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
@@ -125,7 +125,7 @@ TODO: Installing Thrift Compiler
         return next err if err and err.code isnt 2
         stdout = '' if err
         bison_version =  stdout.toString('utf-8').trim()
-        if bison_version ==  hbase.thrift.bison.version 
+        if bison_version ==  hbase.thrift.bison.version
           ctx.log "bison :already up to date version #{hbase.thrift.bison.version}"
           return next null, false
         action = if url.parse(hbase.thrift.bison.url).protocol is 'http:' then 'download' else 'upload'
@@ -140,9 +140,9 @@ TODO: Installing Thrift Compiler
           ctx.execute
             cmd: """
             rm -Rf #{hbase.thrift.bison.tmp}
-            mkdir #{hbase.thrift.bison.tmp} 
+            mkdir #{hbase.thrift.bison.tmp}
             tar xzf #{hbase.thrift.bison.destination} -C #{hbase.thrift.bison.tmp} --strip-components=1
-            cd #{hbase.thrift.bison.tmp} 
+            cd #{hbase.thrift.bison.tmp}
             ./configure --prefix=/usr
             make && make install
             cd ..
@@ -153,7 +153,7 @@ TODO: Installing Thrift Compiler
           , (err, executed, stdout) ->
             return next err, true
 
-## Thrift Thrift Compiler 
+## Thrift Thrift Compiler
 
     module.exports.push name: 'Thrift # Install Compiler', timeout: -1, handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
@@ -164,7 +164,7 @@ TODO: Installing Thrift Compiler
         return next err if err and err.code isnt 2
         stdout = '' if err
         compiler_version =  stdout.toString('utf-8').trim()
-        if compiler_version ==  hbase.thrift.compiler.version 
+        if compiler_version ==  hbase.thrift.compiler.version
           ctx.log "compiler :already up to date version #{hbase.thrift.compiler.version}"
           return next null, false
         action = if url.parse(hbase.thrift.compiler.url).protocol is 'http:' then 'download' else 'upload'
@@ -179,9 +179,9 @@ TODO: Installing Thrift Compiler
           ctx.execute
             cmd: """
             rm -Rf #{hbase.thrift.compiler.tmp}
-            mkdir #{hbase.thrift.compiler.tmp} 
+            mkdir #{hbase.thrift.compiler.tmp}
             tar xzf #{hbase.thrift.compiler.destination} -C #{hbase.thrift.compiler.tmp} --strip-components=1
-            cd #{hbase.thrift.compiler.tmp} 
+            cd #{hbase.thrift.compiler.tmp}
             ./configure --prefix=/usr
             make && make install
             cd ..
@@ -236,4 +236,3 @@ restrict it but not the rest server.
         gid: hbase.group.name
         backup: true
       , next
-

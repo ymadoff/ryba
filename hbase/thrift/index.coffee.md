@@ -3,9 +3,9 @@
 
 [Apache Thrift](http://wiki.apache.org/hadoop/Hbase/ThriftApi) is a cross-platform, cross-language development framework.
 HBase includes a Thrift API and filter language. The Thrift API relies on client and server processes.
-Thrift is both cross-platform and more lightweight than REST for many operations. 
+Thrift is both cross-platform and more lightweight than REST for many operations.
 
-    module.exports = []      
+    module.exports = []
     #  {realm} = ctx.config.ryba
      # hbase = ctx.config.ryba.hbase ?= {}
 
@@ -19,9 +19,9 @@ See [REST Gateway Impersonation Configuration][impersonation].
 
 [impersonation]: http://hbase.apache.org/book.html#d3314e6371
 
-    module.exports.configure = (ctx) ->  
+    module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
-      require('../_').configure ctx
+      require('../').configure ctx
       require('../../hadoop/core_ssl').configure ctx
       {realm, core_site, ssl_server, hbase} = ctx.config.ryba
       hbase.site['hbase.thrift.port'] ?= '9090' # Default to "8080"

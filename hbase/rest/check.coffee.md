@@ -3,7 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'ryba/hbase/regionserver_wait'
+    module.exports.push 'ryba/hbase/regionserver/wait'
     # module.exports.push 'ryba/hbase/client' # Using `hbase shell` to wait before running the checks
     module.exports.push require('./index').configure
 
@@ -36,7 +36,7 @@
         """
         not_if_exec: unless force_check then mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"scan 'ryba', {COLUMNS => '#{shortname}_rest'}\" | egrep '[0-9]+ row'"
       , (err, executed, stdout) ->
-        return next err, false if err or not executed 
+        return next err, false if err or not executed
         try
           data = JSON.parse(stdout)
         catch e then return next Error "Invalid Command Output: #{JSON.stringify stdout}"
@@ -46,5 +46,3 @@
 ## Module Dependencies
 
     mkcmd = require '../../lib/mkcmd'
-
-

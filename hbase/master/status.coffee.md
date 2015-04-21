@@ -3,7 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push require('./master').configure
+    module.exports.push require('./index').configure
 
 ## Status
 
@@ -17,6 +17,3 @@ inside "/var/run/hbase/hbase-hbase-master.pid".
         code_skipped: 3
         if_exists: '/etc/init.d/hbase-master'
       , next
-
-
-

@@ -1,6 +1,6 @@
 
 # HBase Rest Server
-Stargate is the name of the REST server bundled with HBase. 
+Stargate is the name of the REST server bundled with HBase.
 The [REST Server](http://wiki.apache.org/hadoop/Hbase/Stargate) is a daemon which enables other application to request HBASE database via http.
 Of course we deploy the secured version of the configuration of this API.
 
@@ -14,7 +14,7 @@ See [REST Gateway Impersonation Configuration][impersonation].
 
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
-      require('../_').configure ctx
+      require('../').configure ctx
       require('../../hadoop/core_ssl').configure ctx
       {realm, core_site, ssl_server, hbase} = ctx.config.ryba
       hbase.site['hbase.rest.port'] ?= '60080' # Default to "8080"
