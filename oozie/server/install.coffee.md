@@ -247,7 +247,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
 
     module.exports.push name: 'Oozie Server # War', handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
-      falcon_ctxs = ctx.contexts 'ryba/falcon', require('../falcon').configure
+      falcon_ctxs = ctx.contexts 'ryba/falcon', require('../../falcon').configure
       do_falcon = ->
         return do_prepare_war() unless falcon_ctxs.length
         ctx.service
@@ -414,7 +414,7 @@ the ShareLib contents without having to go into HDFS.
     module.exports.push name: 'Oozie Server # Hive', handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
       properties = {}
-      if falcon_ctxs = ctx.contexts 'ryba/falcon', require('../falcon').configure
+      if falcon_ctxs = ctx.contexts 'ryba/falcon', require('../../falcon').configure
         properties['hive.metastore.execute.setugi'] ?= 'true'
       # Note: hdp2.2 falcon docs mentions "hive-site.xml" but only "hive.xml"
       # exists

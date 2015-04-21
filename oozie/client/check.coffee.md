@@ -105,16 +105,16 @@
 
     module.exports.push name: 'Oozie Client # Check MapReduce', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
       {force_check, user, core_site, yarn, oozie} = ctx.config.ryba
-      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
+      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1
-        rm_ctx = ctx.context yarn.active_rm_host, require('../hadoop/yarn_rm').configure
+        rm_ctx = ctx.context yarn.active_rm_host, require('../../hadoop/yarn_rm').configure
         shortname = ".#{rm_ctx.config.shortname}"
       else
         rm_ctx = rm_ctxs[0]
         shortname = ''
       rm_address = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{shortname}"]
       # Get the name of the user running the Oozie Server
-      os_ctxs = ctx.contexts 'ryba/oozie/server', require('./server').configure
+      os_ctxs = ctx.contexts 'ryba/oozie/server', require('../server').configure
       {oozie} = os_ctxs[0].config.ryba
       ctx.write [
         content: """
@@ -310,19 +310,19 @@
 
     module.exports.push skip: true, name: 'Oozie Client # Check HCat Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
       {force_check, user, core_site, yarn, oozie} = ctx.config.ryba
-      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
+      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1
-        rm_ctx = ctx.context yarn.active_rm_host, require('../hadoop/yarn_rm').configure
+        rm_ctx = ctx.context yarn.active_rm_host, require('../../hadoop/yarn_rm').configure
         shortname = ".#{rm_ctx.config.shortname}"
       else
         rm_ctx = rm_ctxs[0]
         shortname = ''
       rm_address = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{shortname}"]
       # Get the name of the user running the Oozie Server
-      os_ctxs = ctx.contexts 'ryba/oozie/server', require('./server').configure
+      os_ctxs = ctx.contexts 'ryba/oozie/server', require('../server').configure
       {oozie} = os_ctxs[0].config.ryba
       # Hive
-      hcat_ctxs = ctx.contexts 'ryba/hive/hcatalog', require('../hive/hcatalog').configure
+      hcat_ctxs = ctx.contexts 'ryba/hive/hcatalog', require('../../hive/hcatalog').configure
       ctx.write [
         content: """
           nameNode=#{core_site['fs.defaultFS']}
