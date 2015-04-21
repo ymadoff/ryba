@@ -1,10 +1,9 @@
 
 # MapReduce JobHistoryServer Stop
 
-    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./mapred_jhs').configure
+    module.exports.push require('./index').configure
 
 ## Stop
 

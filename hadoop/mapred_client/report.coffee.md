@@ -4,7 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/bootstrap/report'
-    module.exports.push require('./mapred_client').configure
+    module.exports.push require('./index').configure
 
 ## Info Memory
 
@@ -14,7 +14,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       {hadoop_conf_dir} = ctx.config.ryba
       properties.read ctx.ssh, "#{hadoop_conf_dir}/mapred-site.xml", (err, config) ->
         return next err if err
-        ctx.emit 'report', 
+        ctx.emit 'report',
           key: 'mapreduce.map.memory.mb'
           value: prink.filesize.from.megabytes config['mapreduce.map.memory.mb']
           raw: config['mapreduce.map.memory.mb']
@@ -56,8 +56,5 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
 
 ## Module Dependencies
 
-    properties = require '../lib/properties'
+    properties = require '../../lib/properties'
     prink = require 'prink'
-
-
-

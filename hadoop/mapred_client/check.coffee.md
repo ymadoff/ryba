@@ -3,14 +3,14 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/mapred_jhs_wait'
-    module.exports.push require('./mapred_client').configure
+    module.exports.push 'ryba/hadoop/mapred_jhs/wait'
+    module.exports.push require('./index').configure
 
 ## Check
 
 Run the "teragen" and "terasort" hadoop examples. Will only
-be executed if the directory "/user/test/10gsort" generated 
-by this action is not present on HDFS. Delete this directory 
+be executed if the directory "/user/test/10gsort" generated
+by this action is not present on HDFS. Delete this directory
 to re-execute the check.
 
     module.exports.push name: 'MapReduce Client # Check', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
@@ -31,7 +31,4 @@ to re-execute the check.
 
 ## Module Dependencies
 
-    mkcmd = require '../lib/mkcmd'
-
-
-
+    mkcmd = require '../../lib/mkcmd'

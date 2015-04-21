@@ -9,9 +9,8 @@ Job History Server.
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
-    # module.exports.push require('./mapred_client_install').configure
-    module.exports.push require('./mapred_jhs').configure
-    module.exports.push require '../lib/hdp_service'
+    module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hdp_service'
 
 ## IPTables
 
@@ -23,7 +22,7 @@ Job History Server.
 | jobhistory | 13562 | tcp   | mapreduce.shuffle.port              | x
 | jobhistory | 10033 | tcp   | mapreduce.jobhistory.admin.address  |
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
+IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'MapReduce JHS # IPTables', handler: (ctx, next) ->
@@ -72,7 +71,7 @@ directory with the location of the directory storing the process pid.
       {mapred, hadoop_conf_dir} = ctx.config.ryba
       ctx.write
         destination: "#{hadoop_conf_dir}/mapred-env.sh"
-        source: "#{__dirname}/../resources/core_hadoop/mapred-env.sh"
+        source: "#{__dirname}/../../resources/core_hadoop/mapred-env.sh"
         local_source: true
         backup: true
         write: [
@@ -169,7 +168,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
     module.exports.push name: 'MapReduce JHS # Kerberos', handler: (ctx, next) ->
       {mapred, hadoop_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc 
+      ctx.krb5_addprinc
         principal: "jhs/#{ctx.config.host}@#{realm}"
         randkey: true
         keytab: "/etc/security/keytabs/jhs.service.keytab"
@@ -182,10 +181,6 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
 
 ## Module dependencies
 
-    lifecycle = require '../lib/lifecycle'
-    mkcmd = require '../lib/mkcmd'
+    mkcmd = require '../../lib/mkcmd'
 
 [keys]: https://github.com/apache/hadoop-common/blob/trunk/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSConfigKeys.java
-
-
-

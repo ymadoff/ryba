@@ -1,7 +1,7 @@
 
 # MapReduce Client
 
-MapReduce is the key algorithm that the Hadoop MapReduce engine uses to distribute work around a cluster. 
+MapReduce is the key algorithm that the Hadoop MapReduce engine uses to distribute work around a cluster.
 The key aspect of the MapReduce algorithm is that if every Map and Reduce is independent of all other ongoing Maps and Reduces,
 then the operation can be run in parallel on different keys and lists of data. On a large cluster of machines, you can go one step further, and run the Map operations on servers where the data lives.
 Rather than copy the data over the network to the program, you push out the program to the machines.
@@ -12,9 +12,9 @@ The output list can then be saved to the distributed filesystem, and the reducer
     module.exports.configure = (ctx) ->
       return if ctx.mapred_configured
       ctx.mapred_configured = true
-      require('./hdfs').configure ctx
-      require('./yarn_client').configure ctx
-      rm_contexts = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
+      require('../hdfs').configure ctx
+      require('../yarn_client').configure ctx
+      rm_contexts = ctx.contexts 'ryba/hadoop/yarn_rm', require('../yarn_rm').configure
       {static_host, realm, mapred} = ctx.config.ryba
       # Layout
       mapred.pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
@@ -33,7 +33,7 @@ The output list can then be saved to the distributed filesystem, and the reducer
       # [Configurations for MapReduce JobHistory Server](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuring_the_Hadoop_Daemons_in_Non-Secure_Mode)
       mapred.site['mapreduce.application.framework.path'] ?= "/hdp/apps/${hdp.version}/mapreduce/mapreduce.tar.gz#mr-framework"
       mapred.site['mapreduce.application.classpath'] ?= "$PWD/mr-framework/hadoop/share/hadoop/mapreduce/*:$PWD/mr-framework/hadoop/share/hadoop/mapreduce/lib/*:$PWD/mr-framework/hadoop/share/hadoop/common/*:$PWD/mr-framework/hadoop/share/hadoop/common/lib/*:$PWD/mr-framework/hadoop/share/hadoop/yarn/*:$PWD/mr-framework/hadoop/share/hadoop/yarn/lib/*:$PWD/mr-framework/hadoop/share/hadoop/hdfs/*:$PWD/mr-framework/hadoop/share/hadoop/hdfs/lib/*:/usr/hdp/${hdp.version}/hadoop/lib/hadoop-lzo-0.6.0.${hdp.version}.jar:/etc/hadoop/conf/secure"
-      [jhs_context] = ctx.contexts 'ryba/hadoop/mapred_jhs', require('./mapred_jhs').configure
+      [jhs_context] = ctx.contexts 'ryba/hadoop/mapred_jhs', require('../mapred_jhs').configure
       if jhs_context
         mapred.site['mapreduce.jobhistory.address'] ?= jhs_context.config.ryba.mapred.site['mapreduce.jobhistory.address']
         mapred.site['mapreduce.jobhistory.webapp.address'] ?= jhs_context.config.ryba.mapred.site['mapreduce.jobhistory.webapp.address']
@@ -78,7 +78,7 @@ parameter is defined inside the "mapreduce.map.java.opts" and
       yarn_mapred_am_memory_mb = mapred.site['yarn.app.mapreduce.am.resource.mb'] or if memory_per_container > 1024 then 2 * memory_per_container else memory_per_container
       yarn_mapred_am_memory_mb = Math.min rm_memory_max_mb, yarn_mapred_am_memory_mb
       mapred.site['yarn.app.mapreduce.am.resource.mb'] = "#{yarn_mapred_am_memory_mb}"
-      
+
       yarn_mapred_opts = /-Xmx(.*?)m/.exec(mapred.site['yarn.app.mapreduce.am.command-opts'])?[1] or Math.floor(.8 * yarn_mapred_am_memory_mb)
       yarn_mapred_opts = Math.min rm_memory_max_mb, yarn_mapred_opts
       mapred.site['yarn.app.mapreduce.am.command-opts'] = "-Xmx#{yarn_mapred_opts}m"
@@ -114,15 +114,13 @@ parameter is defined inside the "mapreduce.map.java.opts" and
       mapred.site['mapreduce.reduce.cpu.vcores'] = "#{reduce_cpu}"
 
 
-    module.exports.push commands: 'check', modules: 'ryba/hadoop/mapred_client_check'
+    module.exports.push commands: 'check', modules: 'ryba/hadoop/mapred_client/check'
 
-    module.exports.push commands: 'report', modules: 'ryba/hadoop/mapred_client_report'
+    module.exports.push commands: 'report', modules: 'ryba/hadoop/mapred_client/report'
 
     module.exports.push commands: 'install', modules: [
-      'ryba/hadoop/mapred_client_install'
-      'ryba/hadoop/mapred_client_check'
+      'ryba/hadoop/mapred_client/install'
+      'ryba/hadoop/mapred_client/check'
     ]
 
 [beadooper]: http://beadooper.com/?p=165
-
-

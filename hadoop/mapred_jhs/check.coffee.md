@@ -4,11 +4,11 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./mapred_jhs').configure
+    module.exports.push require('./index').configure
 
 ## Check HTTP
 
-Check if the JobHistoryServer is started with an HTTP REST command. Once 
+Check if the JobHistoryServer is started with an HTTP REST command. Once
 started, the server take some time before it can correctly answer HTTP request.
 For this reason, the "retry" property is set to the high value of "10".
 
@@ -32,4 +32,4 @@ For this reason, the "retry" property is set to the high value of "10".
 
 ## Module dependencies
 
-    mkcmd = require '../lib/mkcmd'
+    mkcmd = require '../../lib/mkcmd'

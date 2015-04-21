@@ -7,7 +7,7 @@
     module.exports.push 'ryba/hadoop/hdfs_client'
     module.exports.push 'ryba/hadoop/yarn_client'
     module.exports.push 'ryba/hadoop/hdfs_dn_wait'
-    module.exports.push require('./mapred_client').configure
+    module.exports.push require('./index').configure
 
 ## IPTables
 
@@ -16,7 +16,7 @@
 | mapreduce  | 59100-59200 | http  | yarn.app.mapreduce.am.job.client.port-range |
 
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
+IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'MapReduce Client # IPTables', handler: (ctx, next) ->
@@ -50,7 +50,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       {mapred, hadoop_conf_dir} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
-        default: "#{__dirname}/../resources/core_hadoop/mapred-site.xml"
+        default: "#{__dirname}/../../resources/core_hadoop/mapred-site.xml"
         local_default: true
         properties: mapred.site
         merge: true
@@ -62,7 +62,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
 ## HDFS Tarballs
 
 Upload the MapReduce tarball inside the "/hdp/apps/$version/mapreduce"
-HDFS directory. Note, the parent directories are created by the 
+HDFS directory. Note, the parent directories are created by the
 "ryba/hadoop/hdfs_dn_layout" module.
 
     module.exports.push name: 'MapReduce Client # HDFS Tarballs', wait: 60*1000, timeout: -1, handler: (ctx, next) ->
@@ -73,7 +73,7 @@ HDFS directory. Note, the parent directories are created by the
         version=`readlink /usr/hdp/current/hadoop-mapreduce-client | sed 's/.*\\/\\(.*\\)\\/hadoop-mapreduce/\\1/'`
         if hdfs dfs -test -f /tmp/ryba-mapreduce.lock; then
           echo 'lock exist, check if valid'
-          crdate=$(echo `hdfs dfs -ls /tmp/ryba-mapreduce.lock | grep -Po '\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}'` | xargs -0 date '+%s' -d) 
+          crdate=$(echo `hdfs dfs -ls /tmp/ryba-mapreduce.lock | grep -Po '\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}'` | xargs -0 date '+%s' -d)
           expire=$(($crdate - `date '+%s'` + #{lock_timeout}))
           if [ $expire -ge 0 ]; then
             echo "Lock is active, wait for ${expire}s until expiration"
@@ -102,8 +102,4 @@ HDFS directory. Note, the parent directories are created by the
 
 ## Dependencies
 
-    mkcmd = require '../lib/mkcmd'
-
-
-
-
+    mkcmd = require '../../lib/mkcmd'

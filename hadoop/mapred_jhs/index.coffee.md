@@ -12,7 +12,7 @@ Now the jobHistory Server tends to be replace by the Yarn timeline server.
 
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
-      require('./yarn_client').configure ctx
+      require('../yarn_client').configure ctx
       # require('./mapred').configure ctx
       {ryba} = ctx.config
       ryba.mapred ?= {}
@@ -32,7 +32,7 @@ Note: As of version "2.4.0", the property "mapreduce.jobhistory.http.policy"
 isn't honored. Instead, the property "yarn.http.policy" is used.
 
       # ryba.mapred.site['mapreduce.jobhistory.http.policy'] ?= 'HTTPS_ONLY' # 'HTTP_ONLY' or 'HTTPS_ONLY'
-      rm_contexts = ctx.contexts modules: 'ryba/hadoop/yarn_rm', require('./yarn_rm').configure
+      rm_contexts = ctx.contexts modules: 'ryba/hadoop/yarn_rm', require('../yarn_rm').configure
       ryba.yarn.site['yarn.http.policy'] ?= rm_contexts[0].config.ryba.yarn.site['yarn.http.policy']
       ryba.mapred.site['mapreduce.jobhistory.http.policy'] ?= rm_contexts[0].config.ryba.yarn.site['yarn.http.policy']
       # See './hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-common/src/main/java/org/apache/hadoop/mapreduce/v2/jobhistory/JHAdminConfig.java#158'
@@ -50,23 +50,18 @@ and "intermediate-done-dir".
 
 ## Commands
 
-    # module.exports.push commands: 'backup', modules: 'ryba/hadoop/mapred_jhs_backup'
+    # module.exports.push commands: 'backup', modules: 'ryba/hadoop/mapred_jhs/backup'
 
-    # module.exports.push commands: 'check', modules: 'ryba/hadoop/mapred_jhs_check'
+    # module.exports.push commands: 'check', modules: 'ryba/hadoop/mapred_jhs/check'
 
     module.exports.push commands: 'install', modules: [
-      'ryba/hadoop/mapred_jhs_install'
-      'ryba/hadoop/mapred_jhs_start'
-      'ryba/hadoop/mapred_jhs_check'
+      'ryba/hadoop/mapred_jhs/install'
+      'ryba/hadoop/mapred_jhs/start'
+      'ryba/hadoop/mapred_jhs/check'
     ]
 
-    module.exports.push commands: 'start', modules: 'ryba/hadoop/mapred_jhs_start'
+    module.exports.push commands: 'start', modules: 'ryba/hadoop/mapred_jhs/start'
 
-    module.exports.push commands: 'status', modules: 'ryba/hadoop/mapred_jhs_status'
+    module.exports.push commands: 'status', modules: 'ryba/hadoop/mapred_jhs/status'
 
-    module.exports.push commands: 'stop', modules: 'ryba/hadoop/mapred_jhs_stop'
-
-
-
-
-
+    module.exports.push commands: 'stop', modules: 'ryba/hadoop/mapred_jhs/stop'
