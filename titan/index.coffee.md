@@ -14,7 +14,7 @@ Titan is a distributed graph database. It is an hadoop-friendly implementation o
 
       titan = ctx.config.ryba.titan ?= {}
       # Layout
-      titan.install_dir ?= '/opt/titan/'
+      titan.install_dir ?= '/opt/titan'
       titan.home ?= path.join titan.install_dir, 'current'
       titan.version ?= '0.5.4'
 

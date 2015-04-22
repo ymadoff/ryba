@@ -66,7 +66,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           before: /^(.*)com.tinkerpop.rexster.Application.*/m
         ,
           match: /^(.*)-Djava.library.path.*/m
-          replace: "JAVA_OPTIONS=\"$JAVA_OPTIONS -Djava.library.path=${HADOOP_HOME}/lib/native\" # RYBA CONF hadoop native libs, DON'T OVERWRITE"
+          replace: "JAVA_OPTIONS=\"$JAVA_OPTIONS -Djava.library.path=/usr/hdp/current/hadoop-client/lib/native\" # RYBA CONF hadoop native libs, DON'T OVERWRITE"
           before: /^(.*)com.tinkerpop.rexster.Application.*/m
         ]
         if titan.config['storage.backend'] is 'hbase'
@@ -161,18 +161,20 @@ We then ask a first TGT.
           cmd: "su -l #{rexster.user.name} -c '#{kinit}'"
         , next
 
-## HBase Namespace Permissions
+## HBase Permissions
 
 TODO: Use a namespace
 
     module.exports.push name: 'Rexster # Grant HBase Perms', skip: true, handler: (ctx, next) ->
       return next() unless ctx.config.ryba.titan.config['storage.backend'] is 'hbase'
       require('../hbase/master').configure ctx
-      {hbase, realm} = ctx.config.ryba
+      {hbase, titan} = ctx.config.ryba
+      table = titan.config['storage.hbase.table']
       ctx.execute
         cmd: """
         echo #{hbase.admin.password} | kinit #{hbase.admin.principal} >/dev/null && {
-        hbase shell 2>/dev/null <<< "grant 'rexster', 'RWXCA', 'titan'"
+        if hbase shell 2>/dev/null <<< "user_permission '#{table}'" | grep 'rexster'; then exit 3; fi
+        hbase shell 2>/dev/null <<< "grant 'rexster', 'RWXCA', '#{table}'"
         }
         """
         code_skipped: 3
