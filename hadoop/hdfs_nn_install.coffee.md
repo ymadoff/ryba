@@ -88,7 +88,7 @@ Create a service principal for this NameNode. The principal is named after
       {realm, hadoop_group, hdfs} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
-        principal: hdfs.site['dfs.namenode.kerberos.principal']
+        principal: hdfs.site['dfs.namenode.kerberos.principal'].replace '_HOST', ctx.config.host
         keytab: hdfs.site['dfs.namenode.keytab.file']
         randkey: true
         uid: hdfs.user.name
@@ -157,7 +157,7 @@ if the NameNode was formated.
       # For non HA mode
       .execute
         cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -format\""
-        not_if_ha: is_hdfs_ha
+        not_if: is_hdfs_ha
         not_if_exists: "#{any_dfs_name_dir}/current/VERSION"
       # For HA mode, on the leader namenode
       .execute
