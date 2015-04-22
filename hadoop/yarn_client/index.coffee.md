@@ -2,7 +2,7 @@
 # YARN Client
 
 The [Hadoop YARN Client](http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/WebServicesIntro.html) web service REST APIs are a set of URI resources that give access to the cluster, nodes, applications, and application historical information.
-The URI resources are grouped into APIs based on the type of information returned. Some URI resources return collections while others return singletons. 
+The URI resources are grouped into APIs based on the type of information returned. Some URI resources return collections while others return singletons.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
@@ -33,7 +33,7 @@ The URI resources are grouped into APIs based on the type of information returne
       ryba.yarn.site['yarn.application.classpath'] ?= "$HADOOP_CONF_DIR,/usr/hdp/${hdp.version}/hadoop-client/*,/usr/hdp/${hdp.version}/hadoop-client/lib/*,/usr/hdp/${hdp.version}/hadoop-hdfs-client/*,/usr/hdp/${hdp.version}/hadoop-hdfs-client/lib/*,/usr/hdp/${hdp.version}/hadoop-yarn-client/*,/usr/hdp/${hdp.version}/hadoop-yarn-client/lib/*"
       [jhs_context] = ctx.contexts 'ryba/hadoop/mapred_jhs', require('../mapred_jhs').configure
       if jhs_context
-        # TODO: detect https and port, see "../mapred_jhs_check"
+        # TODO: detect https and port, see "../mapred_jhs/check"
         jhs_protocol = if jhs_context.config.ryba.mapred.site['mapreduce.jobhistory.address'] is 'HTTP_ONLY' then 'http' else 'https'
         jhs_protocol_key = if jhs_protocol is 'http' then '' else '.https'
         jhs_address = jhs_context.config.ryba.mapred.site["mapreduce.jobhistory.webapp#{jhs_protocol_key}.address"]
@@ -102,6 +102,3 @@ values don't get pushed to the cluster.
     ]
 
 [cloudera_ha]: http://www.cloudera.com/content/cloudera/en/documentation/cdh5/v5-1-x/CDH5-High-Availability-Guide/cdh5hag_rm_ha_config.html
-
-
-

@@ -19,9 +19,9 @@
       {elasticsearch, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
-        principal: "elasticsearch/#{ctx.config.host}@#{realm}"
+        principal: elasticsearch.principal
         randkey: true
-        keytab: 'etc/security/keytabs/elasticsearch.service.keytab'
+        keytab: elasticsearch.keytab
         uid: elasticsearch.user.name
         gid: elasticsearch.group.name
         kadmin_principal: kadmin_principal

@@ -8,7 +8,7 @@ In HA mode, all JournalNodes shall be started.
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/xasecure/policymgr_wait'
-    module.exports.push 'ryba/zookeeper/server_wait'
+    module.exports.push 'ryba/zookeeper/server/wait'
     module.exports.push 'ryba/hadoop/hdfs_jn_wait'
     module.exports.push require('./hdfs_nn').configure
 
@@ -79,4 +79,3 @@ only run on a NameNode with fencing installed and in normal mode.
 
     url = require 'url'
     mkcmd = require '../lib/mkcmd'
-

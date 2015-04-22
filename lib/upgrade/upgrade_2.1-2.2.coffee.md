@@ -496,8 +496,8 @@ Install Zookeeper and HDFS.
       params.hosts = null
       params.fast = true
       params.modules = [
-        'ryba/zookeeper/client_install'
-        'ryba/zookeeper/server_install'
+        'ryba/zookeeper/client/install'
+        'ryba/zookeeper/server/install'
         'ryba/hadoop/core'
         'ryba/hadoop/core_ssl'
         'ryba/hadoop/hdfs_jn_install'
@@ -505,8 +505,8 @@ Install Zookeeper and HDFS.
         'ryba/hadoop/zkfc/install'
         # 'ryba/hadoop/hdfs_nn_install'
         'ryba/hadoop/hdfs_dn_install'
-        # 'ryba/zookeeper/server_start'
-        # 'ryba/zookeeper/server_wait'
+        # 'ryba/zookeeper/server/start'
+        # 'ryba/zookeeper/server/wait'
         # 'ryba/hadoop/zkfc/start'
       ]
       run params, config

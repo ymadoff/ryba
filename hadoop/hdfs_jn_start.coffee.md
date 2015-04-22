@@ -8,7 +8,7 @@ to be started on the active NameNode before it check if it must be formated.
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/krb5_client/wait'
-    module.exports.push 'ryba/zookeeper/server_wait'
+    module.exports.push 'ryba/zookeeper/server/wait'
 
 ## Start HDFS JournalNode
 
