@@ -1,0 +1,61 @@
+
+# Ambari Agent Install
+
+    module.exports = []
+    module.exports.push 'masson/bootstrap'
+    module.exports.push 'ryba/ambari/server/wait'
+    module.exports.push require('./index').configure
+
+    # module.exports.push name: '', handler: (ctx, next) ->
+    #   ctx.mkdir 
+    #     destination: "/root/.ssh"
+    #     uid: 'root'
+    #     gid: null
+    #     mode: 0o700 # was "permissions: 16832"
+    #   , (err, created) ->
+    #     return next err if err
+    #     write = for key in user.authorized_keys
+    #       match: new RegExp ".*#{misc.regexp.escape key}.*", 'mg'
+    #       replace: key
+    #       append: true
+    #     ctx.write
+    #       destination: "#{user.home or '/home/'+user.name}/.ssh/authorized_keys"
+    #       write: write
+    #       uid: user.name
+    #       gid: null
+    #       mode: 0o600
+    #       eof: true
+    #     , (err, written) ->
+    #       return next err if err
+    #       modified = true if written
+    #       next()
+
+    module.exports.push name: 'Ambari Agent # Configure', timeout: -1, handler: (ctx, next) ->
+      {ambari_agent} = ctx.config.ryba
+      # ctx.ini # mecano need to manage multiline values
+      #   destination: "#{ambari_agent.conf_dir}/ambari-agent.ini"
+      #   content: ambari_agent.config
+      #   merge: true
+      #   backup: true
+      #   if: false
+      # , next
+      ctx.write
+        destination: "#{ambari_agent.conf_dir}/ambari-agent.ini"
+        write: [
+          match: /^hostname = (.*)/m
+          replace: "hostname = #{ambari_agent.config.server['hostname']}"
+        ,
+          match: /^url_port = (.*)/m
+          replace: "url_port = #{ambari_agent.config.server['url_port']}"
+        ,
+          match: /^secured_url_port = (.*)/m
+          replace: "secured_url_port = #{ambari_agent.config.server['secured_url_port']}"
+        ]
+      , next
+ 
+    module.exports.push name: 'Ambari Agent # Startup', timeout: -1, handler: (ctx, next) ->
+      ctx.service
+        name: 'ambari-agent'
+        startup: true
+        action: 'start'
+      , next
