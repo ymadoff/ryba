@@ -60,7 +60,7 @@ Example:
       # REPLACED by "dfs.namenode.https-address": hdfs.site['dfs.https.port'] ?= '50470' # The https port where NameNode binds
       hdfs.site['fs.permissions.umask-mode'] ?= '027' # 0750
 
-## Configurion for Kerberos
+## Configuration for Kerberos
 
 Update the HDFS configuration stored inside the "/etc/hadoop/hdfs-site.xml" file
 with Kerberos specific properties.
