@@ -10,6 +10,7 @@ please see ryba/rexster
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
+    module.exports.push require('../hbase/master').configure
     module.exports.push require('./index').configure
     module.exports.push require '../lib/write_jaas'
 
@@ -76,6 +77,10 @@ Modify envvars in the gremlin scripts.
         match: /^(.*)-Djava.library.path.*/m
         replace: "    JAVA_OPTIONS=\"$JAVA_OPTIONS -Djava.library.path=${HADOOP_HOME}/lib/native\" # RYBA CONF, DON'T OVERWRITE"
         append: /^(.*)-Dgremlin.mr.log4j.level=.*/m
+      ,
+        match: /^(.*)# RYBA SET HADOOP-ENV, DON'T OVERWRITE/m
+        replace: "HADOOP_HOME=/usr/hdp/current/hadoop-client # RYBA SET HADOOP-ENV, DON'T OVERWRITE"
+        before: /^CP=`abs_path`.*/m
       ]
       if titan.config['storage.backend'] is 'hbase' then write.unshift
         match: /^.*# RYBA CONF hbase-env, DON'T OVERWRITE/m
@@ -101,26 +106,44 @@ Secure the Zookeeper connection with JAAS
 
 ## Configure
 
-Creates a configuration file. Always load this one in Gremlin REPL !
+Creates a configuration file. Always load this file in Gremlin REPL !
 
     module.exports.push name: 'Titan # Gremlin Properties', handler: (ctx, next) ->
       {titan} = ctx.config.ryba
-      ctx.log 'Configure titan-console.conf'
+      storage = titan.config['storage.backend']
+      index = titan.config['index.search.backend']
       ctx.ini
-        destination: path.join titan.home, 'titan-console.conf'
+        destination: path.join titan.home, "titan-#{storage}-#{index}.properties"
         content: titan.config
         separator: '='
         merge: true
       , next
 
+## Configure Test
+
+Creates a configuration file. Always load this file in Gremlin REPL !
+
+    module.exports.push name: 'Titan # Gremlin Test Properties', handler: (ctx, next) ->
+      return next unless ctx.config.ryba.titan.config['storage.backend'] is 'hbase'
+      {titan} = ctx.config.ryba
+      storage = titan.config['storage.backend']
+      config = {}
+      config[k] = v for k, v of titan.config
+      config['storage.hbase.table'] = 'titan-test'
+      ctx.ini
+        destination: path.join titan.home, "titan-hbase-#{titan.config['index.search.backend']}-test.properties"
+        content: config
+        separator: '='
+        merge: true
+      , next
+
+
 ## HBase Configuration
 
-### HBase ACL
-
     module.exports.push name: 'Titan # Create HBase Namespace', handler: (ctx, next) ->
-      return next() # NAMESPACE NOT YET FULLY SUPPORTED
+      return next() # NAMESPACE NOT YET SUPPORTED
       return next() unless ctx.config.ryba.titan.config['storage.backend'] is 'hbase'
-      {titan, hbase, realm} = ctx.config.ryba
+      {titan, hbase} = ctx.config.ryba
       ctx.execute
         cmd: """
         echo #{hbase.admin.password} | kinit #{hbase.admin.principal} >/dev/null && {
@@ -130,6 +153,45 @@ Creates a configuration file. Always load this one in Gremlin REPL !
         """
         code_skipped: 3
       , next
+
+    module.exports.push name: 'Titan # Create HBase Table', handler: (ctx, next) ->
+      return next() unless ctx.config.ryba.titan.config['storage.backend'] is 'hbase'
+      {titan, hbase} = ctx.config.ryba
+      table = titan.config['storage.hbase.table']
+      ctx.execute
+        cmd: """
+        echo '#{hbase.admin.password}' | kinit '#{hbase.admin.principal}' >/dev/null && {
+        if hbase shell 2>/dev/null <<< "exists '#{table}'" | grep 'Table #{table} does exist'; then exit 3; fi
+        cd #{titan.home}
+        #{titan.install_dir}/current/bin/gremlin.sh 2>/dev/null <<< \"g = TitanFactory.open('titan-hbase-#{titan.config['index.search.backend']}.properties')\" | grep '==>titangraph'
+        }
+        """
+        code_skipped: 3
+      , next
+
+    module.exports.push name: 'Titan # Create HBase test table', handler: (ctx, next) ->
+      return next() unless ctx.config.ryba.titan.config['storage.backend'] is 'hbase'
+      {titan, hbase} = ctx.config.ryba
+      ctx.execute
+        cmd: """
+        echo '#{hbase.admin.password}' | kinit '#{hbase.admin.principal}' >/dev/null && {
+        if hbase shell 2>/dev/null <<< "exists 'titan-test'" | grep 'Table titan-test does exist'; then exit 3; fi
+        cd #{titan.home}
+        #{titan.install_dir}/current/bin/gremlin.sh 2>/dev/null <<< \"g = TitanFactory.open('titan-hbase-#{titan.config['index.search.backend']}-test.properties')\" | grep '==>titangraph'
+        }
+        """
+        code_skipped: 3
+      , (err, created) ->
+         return err if err
+         ctx.execute
+           cmd: """
+           echo '#{hbase.admin.password}' | kinit '#{hbase.admin.principal}' >/dev/null && {
+           if hbase shell 2>/dev/null <<< "user_permission 'titan-test'" | grep 'ryba'; then exit 3; fi
+           hbase shell 2>/dev/null <<< "grant 'ryba', 'RWC', 'titan-test'"
+           }
+           """
+           code_skipped: 3
+         , (err, granted) -> next err, created or granted
 
 ## Module Dependencies
 

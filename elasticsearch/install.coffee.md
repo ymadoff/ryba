@@ -47,7 +47,6 @@ ElasticSearch archive comes with an RPM
         """
         not_if_exec: "rpm -q --queryformat '%{VERSION}' elasticsearch | grep '#{elasticsearch.version}'"
       .then (err, modified) ->
-        console.log '??', err
         next err
 
 ## Env
