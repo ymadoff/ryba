@@ -17,7 +17,9 @@ module.exports = (ctx) ->
       # options.link ?= true
       options.version_name ?= options.name
       return callback Error "Missing Option 'name'" unless options.name
-      version = null
+      version=''
+      options.version ?= ctx.config.ryba.hdp?.version
+      options.version ?= 'latest'
       do_service = ->
         ctx.service
           name: "#{options.name}"
@@ -37,14 +39,16 @@ module.exports = (ctx) ->
         ctx.execute
           cmd: """
           code=3
-          # !IMPORTANT!
-          # we are currently retrieving the current version and not the latest one
-          # solution would be to either get the version from configuration or
-          # always use the latest version (as inside the next condition).
-          version=`hdp-select status #{options.version_name} | sed 's/.* \\(\\d*\\)/\\1/'`
+          if [ "#{options.version}" == "latest" ]; then
+            version=`hdp-select versions | tail -1`
+          elif [ "#{options.version}" == "current" ]; then
+            version=`hdp-select status #{options.version_name} | sed 's/.* \\(\\d*\\)/\\1/'`
+          else
+            version='#{options.version}'
+          fi
+          # If it doesn't exist, then we switch to the latest version
           if [ ! -d "/usr/hdp/$version" ]; then
-            version=`yum repolist | egrep HDP-[0-9] | sed 's/^HDP-\\([0-9\\.]*\\).*$/\\1/'`
-            version=`ls --format=single-column /usr/hdp | grep ${version} | tail -1`
+            version=`hdp-select versions | tail -1`
             if [ ! -d "/usr/hdp/$version" ]; then
               echo 'Failed to detect the latest HDP version'
               exit 1
