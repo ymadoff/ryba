@@ -52,13 +52,7 @@ Text mode of REST Server
 Binary mode (DSL) of REST Server
 
     module.exports.push name: 'Rexster # Check RexPro', skip: true, label_true: 'CHECKED', handler: (ctx, next) ->
-      # {realm, user, rexster} = ctx.config.ryba
-      # ctx.execute
-      #   cmd: mkcmd.test ctx, """
-      #   curl -s -k --negotiate -u : <url>
-      #   """
-      # , (err, executed, stdout) ->
-      next null, 'TODO'
+      return next() # Not ready
 
 ## Module Dependencies
 
