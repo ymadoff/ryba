@@ -154,7 +154,7 @@ Creates a configuration file. Always load this file in Gremlin REPL !
         code_skipped: 3
       , next
 
-    module.exports.push name: 'Titan # Create HBase Table', handler: (ctx, next) ->
+    module.exports.push name: 'Titan # Create HBase table', handler: (ctx, next) ->
       return next() unless ctx.config.ryba.titan.config['storage.backend'] is 'hbase'
       {titan, hbase} = ctx.config.ryba
       table = titan.config['storage.hbase.table']

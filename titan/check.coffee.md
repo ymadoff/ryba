@@ -8,16 +8,18 @@
 
 ## Check Configuration
 
+TODO: use ctx.ssh.shell
+
 Check the configuration file (current.properties)
 
     module.exports.push name: 'Titan # Check Shell', label_true: 'CHECKED', handler: (ctx, next) ->
       {shortname} = ctx.config
       {titan} = ctx.config.ryba
-      cmd = "#{titan.install_dir}/current/bin/gremlin.sh 2>/dev/null <<< \"g = TitanFactory.open('titan-#{titan.config['storage.backend']}-#{titan.config['index.search.backend']}-test.properties')\""
+      cmd = "g = TitanFactory.open('titan-#{titan.config['storage.backend']}-#{titan.config['index.search.backend']}-test.properties')"
       ctx.execute
         cmd: mkcmd.test ctx, """
           cd #{titan.home}
-          #{cmd} | grep '==>titangraph'
+          #{titan.install_dir}/current/bin/gremlin.sh 2>/dev/null <<< "#{cmd}" | grep '==>titangraph'
         """
       , (err, executed, stdout) ->
           next err, executed

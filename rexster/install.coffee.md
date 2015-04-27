@@ -165,7 +165,7 @@ We then ask a first TGT.
 
 TODO: Use a namespace
 
-    module.exports.push name: 'Rexster # Grant HBase Perms', skip: true, handler: (ctx, next) ->
+    module.exports.push name: 'Rexster # Grant HBase Perms', handler: (ctx, next) ->
       return next() unless ctx.config.ryba.titan.config['storage.backend'] is 'hbase'
       require('../hbase/master').configure ctx
       {hbase, titan} = ctx.config.ryba

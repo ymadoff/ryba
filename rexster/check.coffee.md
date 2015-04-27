@@ -3,6 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push 'ryba/titan/check'
     module.exports.push require('./').configure
 ## Check Status
 
@@ -20,27 +21,37 @@ Check status using JMX
 
 Check REPL (rexster-console.sh)
 
-    module.exports.push name: 'Rexster # Check REPL', label_true: 'CHECKED', handler: (ctx, next) ->
-      next null, 'TODO'
+
+## Check Shell
+
+TODO: use ctx.ssh.shell
 
 ## Check REST
 
 Text mode of REST Server
 
     module.exports.push name: 'Rexster # Check REST', label_true: 'CHECKED', handler: (ctx, next) ->
-      # {realm, user, rexster} = ctx.config.ryba
-      # ctx.execute
-      #   cmd: mkcmd.test ctx, """
-      #   curl -s -k --negotiate -u : <url>
-      #   """
-      # , (err, executed, stdout) ->
-      next null, 'TODO'
+      {rexster} = ctx.config.ryba
+      graphname = rexster.config.graphs[0].graph['graph-name']
+      curl = "curl -u #{rexster.admin.name}:#{rexster.admin.password} "
+      curl += "#{rexster.config.http['base-uri']}:#{rexster.config.http['server-port']}"
+      curl += "/graphs/#{graphname}/"
+      ctx.execute
+        cmd: curl
+      , (err, executed, stdout) ->
+        return next err, false if err or not executed
+        try
+          data = JSON.parse(stdout)
+          return next Error "Invalid response: #{data}" unless data?.name is graphname
+        catch e then return next Error "Invalid Command Output: #{JSON.stringify stdout}"
+        next err, executed
+
 
 ## Check Rexpro
 
 Binary mode (DSL) of REST Server
 
-    module.exports.push name: 'Rexster # Check RexPro', label_true: 'CHECKED', handler: (ctx, next) ->
+    module.exports.push name: 'Rexster # Check RexPro', skip: true, label_true: 'CHECKED', handler: (ctx, next) ->
       # {realm, user, rexster} = ctx.config.ryba
       # ctx.execute
       #   cmd: mkcmd.test ctx, """
