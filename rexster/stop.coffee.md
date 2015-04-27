@@ -30,6 +30,17 @@ kill ...
         code_skipped: 3
       , next
 
+
+## Stop Clean Logs
+
+    module.exports.push name: 'Rexster # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
+      {rexster, clean_logs} = ctx.config.ryba
+      return next() unless clean_logs
+      ctx.execute
+        cmd: "rm #{rexster.log_dir}/*"
+        code_skipped: 1
+      , next
+
 ## Module Dependencies
 
     path = require 'path'
