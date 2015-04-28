@@ -40,7 +40,6 @@ The pig package is install.
         name: 'pig'
       # .hdp_select
       #   name: 'pig-client'
-      #   version: 'latest'
       .then next
 
     module.exports.push name: 'Hadoop Pig # Users', handler: (ctx, next) ->
@@ -106,5 +105,3 @@ companion file defines no properties while the YUM package does.
     quote = require 'regexp-quote'
 
 [fly]: http://chimera.labs.oreilly.com/books/1234000001811/ch08.html
-
-

@@ -25,7 +25,6 @@
     module.exports.push name: 'HDFS Client # HDP Select', handler: (ctx, next) ->
       ctx.hdp_select
         name: 'hadoop-client'
-        version: 'latest'
       , next
 
 
@@ -34,5 +33,3 @@
 
     hdfs_nn = require './hdfs_nn'
     mkcmd = require '../lib/mkcmd'
-
-

@@ -1,7 +1,7 @@
 
 # Sqoop
 
-The only declared dependency is "mysql_client" which install the MySQL JDBC 
+The only declared dependency is "mysql_client" which install the MySQL JDBC
 driver used by Sqoop.
 
     path = require 'path'
@@ -73,12 +73,11 @@ Install the Sqoop package following the [HDP instructions][install].
         name: 'sqoop'
       .hdp_select
         name: 'sqoop-client'
-        version: 'latest'
       .then next
 
 ## Mysql Connector
 
-MySQL is by default usable by Sqoop. The driver installed after running the 
+MySQL is by default usable by Sqoop. The driver installed after running the
 "masson/commons/mysql_client" is copied into the Sqoop library folder.
 
     module.exports.push name: 'Hadoop Sqoop # MySQL Connector', handler: (ctx, next) ->
@@ -118,9 +117,3 @@ command][validate].
 
 [install]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap10-1.html
 [validate]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap10-4.html
-
-
-
-
-
-

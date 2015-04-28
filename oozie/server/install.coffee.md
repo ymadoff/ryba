@@ -69,10 +69,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         name: 'extjs-2.2-1'
       .hdp_select
         name: 'oozie-server'
-        version: 'latest'
       .hdp_select
         name: 'oozie-client'
-        version: 'latest'
       .then next
 
     module.exports.push name: 'Oozie Server # Directories', handler: (ctx, next) ->

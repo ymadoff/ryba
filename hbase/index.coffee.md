@@ -18,10 +18,10 @@ Apache HBase provides Bigtable-like capabilities on top of Hadoop and HDFS
 
 ## Configure
 
-*   `hbase.user` (object|string)   
-    The Unix HBase login name or a user object (see Mecano User documentation).   
-*   `hbase.group` (object|string)   
-    The Unix HBase group name or a group object (see Mecano Group documentation).   
+*   `hbase.user` (object|string)
+    The Unix HBase login name or a user object (see Mecano User documentation).
+*   `hbase.group` (object|string)
+    The Unix HBase group name or a group object (see Mecano Group documentation).
 
 Example
 
@@ -157,7 +157,6 @@ Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocument
         name: 'hbase'
       .hdp_select
         name: 'hbase-client'
-        version: 'latest'
       .then next
 
     module.exports.push name: 'HBase # Layout', timeout: -1, handler: (ctx, next) ->
@@ -217,5 +216,3 @@ Upload the list of registered RegionServers.
 *   [Visualizing HBase Flushes and Compactions (write optimization)](http://www.ngdata.com/visiualizing-hbase-flushes-and-compactions/)
 
 [SecureBulkLoadEndpoint]: http://hbase.apache.org/apidocs/org/apache/hadoop/hbase/security/access/SecureBulkLoadEndpoint.html
-
-

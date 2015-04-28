@@ -20,7 +20,6 @@ Install the oozie client package. This package doesn't create any user and group
         name: 'oozie-client'
       .hdp_select
         name: 'oozie-client'
-        version: 'latest'
       .then next
 
     module.exports.push name: 'Oozie Client # Profile', handler: (ctx, next) ->

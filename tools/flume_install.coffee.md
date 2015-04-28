@@ -38,7 +38,6 @@ The package "flume" is installed.
         name: 'flume'
       .hdp_select
         name: 'flume-server'
-        version: 'latest'
       .then next
 
 ## Kerberos
@@ -51,7 +50,7 @@ later usage. It is placed inside the flume configuration directory, by default
     module.exports.push name: 'Flume # Kerberos', handler: (ctx, next) ->
       {flume_user, flume_group, flume_conf_dir, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc 
+      ctx.krb5_addprinc
         principal: "#{flume_user.name}/#{ctx.config.host}@#{realm}"
         randkey: true
         keytab: "#{flume_conf_dir}/flume.service.keytab"
@@ -99,37 +98,24 @@ user and one using interpolation.
 ## Flume inside a Kerberos environment
 
 
-*   Flume agent machine that writes to HDFS (via a configured HDFS sink) 
-    needs a Kerberos principal of the form: 
+*   Flume agent machine that writes to HDFS (via a configured HDFS sink)
+    needs a Kerberos principal of the form:
     flume/fully.qualified.domain.name@YOUR-REALM.COM
-*   Each Flume agent machine that writes to HDFS does not need to 
-    have a flume Unix user account to write files owned by the flume 
-    Hadoop/Kerberos user. Only the keytab for the flume Hadoop/Kerberos 
-    user is required on the Flume agent machine.   
-*   DataNode machines do not need Flume Kerberos keytabs and also do 
-    not need the flume Unix user account.   
-*   TaskTracker (MRv1) or NodeManager (YARN) machines need a flume Unix 
-    user account if and only if MapReduce jobs are being run as the 
-    flume Hadoop/Kerberos user.   
-*   The NameNode machine needs to be able to resolve the groups of the 
-    flume user. The groups of the flume user on the NameNode machine 
-    are mapped to the Hadoop groups used for authorizing access.   
-*   The NameNode machine does not need a Flume Kerberos keytab.   
+*   Each Flume agent machine that writes to HDFS does not need to
+    have a flume Unix user account to write files owned by the flume
+    Hadoop/Kerberos user. Only the keytab for the flume Hadoop/Kerberos
+    user is required on the Flume agent machine.
+*   DataNode machines do not need Flume Kerberos keytabs and also do
+    not need the flume Unix user account.
+*   TaskTracker (MRv1) or NodeManager (YARN) machines need a flume Unix
+    user account if and only if MapReduce jobs are being run as the
+    flume Hadoop/Kerberos user.
+*   The NameNode machine needs to be able to resolve the groups of the
+    flume user. The groups of the flume user on the NameNode machine
+    are mapped to the Hadoop groups used for authorizing access.
+*   The NameNode machine does not need a Flume Kerberos keytab.
 
 ## Resources
 
 *   [Flume Account Requirements](https://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/latest/CDH4-Security-Guide/cdh4sg_topic_4_3.html)
 *   [Secure Impersonation]](https://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/latest/CDH4-Security-Guide/cdh4sg_topic_4_2.html)
-
-
-
-
-
-
-
-
-
-
-
-
-

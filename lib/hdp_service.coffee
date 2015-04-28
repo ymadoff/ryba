@@ -22,7 +22,6 @@ module.exports = (ctx) ->
       options.version_name ?= options.name
       return callback Error "Missing Option 'name'" unless options.name
       version=''
-      options.version ?= ctx.config.ryba.hdp?.version
       options.version ?= 'latest'
       do_service = ->
         ctx.service

@@ -17,6 +17,7 @@ module.exports = (ctx) ->
   ctx.register 'hdp_select', (options, callback) ->
     options = name: options if typeof options is 'string'
     wrap ctx, arguments, (options, callback) ->
+      options.version ?= 'latest'
       if options.version and options.version not in ['latest', 'current']
         options.db['hdp_select.version.default'] = options.version
       ctx
