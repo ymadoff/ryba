@@ -2,9 +2,6 @@
 # YARN ResourceManager
 
 [Yarn ResourceManager ](http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/ResourceManagerRestart.html) is the central authority that manages resources and schedules applications running atop of YARN.
-Hence, it is potentially a single point of failure in a Apache YARN cluster.
-
-
 
     module.exports = []
 

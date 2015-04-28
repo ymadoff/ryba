@@ -10,6 +10,7 @@ driver used by Sqoop.
     module.exports.push 'masson/commons/mysql_client'
     module.exports.push 'ryba/hadoop/hdfs_client'
     module.exports.push 'ryba/hadoop/yarn_client'
+    module.exports.push require '../lib/hdp_select'
     module.exports.push require('./sqoop').configure
 
 ## Users & Groups
@@ -67,9 +68,13 @@ Upload the "sqoop-site.xml" files into the "/etc/sqoop/conf" folder.
 Install the Sqoop package following the [HDP instructions][install].
 
     module.exports.push name: 'Hadoop Sqoop # Install', timeout: -1, handler: (ctx, next) ->
-      ctx.service
+      ctx
+      .service
         name: 'sqoop'
-      , next
+      .hdp_select
+        name: 'sqoop-client'
+        version: 'latest'
+      .then next
 
 ## Mysql Connector
 

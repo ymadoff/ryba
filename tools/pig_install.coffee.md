@@ -9,6 +9,7 @@ Learn more about Pig optimization by reading ["Making Pig Fly"][fly].
     module.exports.push 'ryba/hadoop/mapred_client'
     module.exports.push 'ryba/hadoop/yarn_client'
     module.exports.push 'ryba/hive/client' # In case pig is run through hcat
+    module.exports.push require '../lib/hdp_select'
     module.exports.push require('./pig').configure
 
 ## Users & Groups
@@ -34,9 +35,13 @@ hadoop:x:502:yarn,mapred,hdfs,hue
 The pig package is install.
 
     module.exports.push name: 'Hadoop Pig # Install', timeout: -1, handler: (ctx, next) ->
-      ctx.service
+      ctx
+      .service
         name: 'pig'
-      , next
+      # .hdp_select
+      #   name: 'pig-client'
+      #   version: 'latest'
+      .then next
 
     module.exports.push name: 'Hadoop Pig # Users', handler: (ctx, next) ->
       # 6th feb 2014: pig user isnt created by YUM, might change in a future HDP release

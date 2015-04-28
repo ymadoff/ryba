@@ -31,9 +31,9 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       , next
 
     module.exports.push name: 'MapReduce # Install Common', timeout: -1, handler: (ctx, next) ->
-      ctx.service [
+      ctx.service
         name: 'hadoop-mapreduce'
-      ], next
+      , next
 
 http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
