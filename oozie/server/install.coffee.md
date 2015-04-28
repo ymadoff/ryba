@@ -10,6 +10,7 @@ Oozie source code and examples are located in "/usr/share/doc/oozie-$version".
     module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/hadoop/hdfs' # SPNEGO need access to the principal HTTP/$HOST@$REALM's keytab
     module.exports.push 'ryba/hadoop/hdfs_dn_wait' # Create directories inside HDFS
+    module.exports.push require '../../lib/hdp_select'
     module.exports.push require('./index').configure
 
 ## Users & Groups
@@ -51,24 +52,28 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Oozie Server # Install', timeout: -1, handler: (ctx, next) ->
       # Upgrading oozie failed, tested versions are hdp 2.1.2 -> 2.1.5 -> 2.1.7
-      ctx.execute
+      ctx
+      .execute
         cmd: "rm -rf /usr/lib/oozie && yum remove -y oozie oozie-client"
         if: ctx.retry > 0
-      , (err) ->
-        return next err if err
-        ctx.service [
-          name: 'oozie' # Also install oozie-client and bigtop-tomcat
-        ,
-          name: 'falcon'
-          if: ctx.hosts_with_module('ryba/falcon').length
-        ,
-          name: 'unzip' # Required by the "prepare-war" command
-        ,
-          name: 'zip' # Required by the "prepare-war" command
-        ,
-          name: 'extjs-2.2-1'
-        ], (err, serviced) ->
-          next err, serviced
+      .service
+        name: 'oozie' # Also install oozie-client and bigtop-tomcat
+      .service
+        name: 'falcon'
+        if: ctx.hosts_with_module('ryba/falcon').length
+      .service
+        name: 'unzip' # Required by the "prepare-war" command
+      .service
+        name: 'zip' # Required by the "prepare-war" command
+      .service
+        name: 'extjs-2.2-1'
+      .hdp_select
+        name: 'oozie-server'
+        version: 'latest'
+      .hdp_select
+        name: 'oozie-client'
+        version: 'latest'
+      .then next
 
     module.exports.push name: 'Oozie Server # Directories', handler: (ctx, next) ->
       {hadoop_group, oozie} = ctx.config.ryba

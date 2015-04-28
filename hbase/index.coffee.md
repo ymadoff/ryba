@@ -14,6 +14,7 @@ Apache HBase provides Bigtable-like capabilities on top of Hadoop and HDFS
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/yum'
     module.exports.push 'ryba/hadoop/core'
+    module.exports.push require '../lib/hdp_select'
 
 ## Configure
 
@@ -117,8 +118,8 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
       hbase.env['JAVA_HOME'] ?= "#{java_home}"
       hbase.env['HBASE_LOG_DIR'] ?= "#{hbase.log_dir}"
       hbase.env['HBASE_OPTS'] ?= '-ea -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode'
-      hbase.env['HBASE_MASTER_OPTS'] ?= '-Xmx1024m'
-      hbase.env['HBASE_REGIONSERVER_OPTS'] ?= '-Xmx1024m'
+      hbase.env['HBASE_MASTER_OPTS'] ?= '-Xmx2048m' # Default in HDP companion file
+      hbase.env['HBASE_REGIONSERVER_OPTS'] ?= '-Xmn200m -Xms4096m -Xmx4096m' # Default in HDP companion file
       if ctx.has_module 'ryba/hbase/client'
       # if ctx.has_any_modules ['ryba/hbase/client', 'ryba/hbase/master', 'ryba/hbase/regionserver']
         hbase.env['HBASE_OPTS'] =  hbase.env['HBASE_OPTS'] + " -Djava.security.auth.login.config=#{hbase.conf_dir}/hbase-client.jaas"
@@ -151,8 +152,13 @@ hbase:x:492:
 Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap9-1.html)
 
     module.exports.push name: 'HBase # Install', timeout: -1, handler: (ctx, next) ->
-      ctx.service name: 'hbase', (err, serviced) ->
-        next err, serviced
+      ctx
+      .service
+        name: 'hbase'
+      .hdp_select
+        name: 'hbase-client'
+        version: 'latest'
+      .then next
 
     module.exports.push name: 'HBase # Layout', timeout: -1, handler: (ctx, next) ->
       {hbase} = ctx.config.ryba

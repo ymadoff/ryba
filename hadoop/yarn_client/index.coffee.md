@@ -67,6 +67,10 @@ inside the configuration.
       if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm', 'ryba/hadoop/yarn_client'
         ryba.yarn.site['yarn.resourcemanager.ha.enabled'] ?= if is_ha then 'true' else 'false'
         ryba.yarn.site['yarn.resourcemanager.ha.rm-ids'] ?= rm_shortnames.join ',' if is_ha
+        # Flag to enable override of the default kerberos authentication
+        # filter with the RM authentication filter to allow authentication using
+        # delegation tokens(fallback to kerberos if the tokens are missing)
+        ryba.yarn.site["yarn.resourcemanager.webapp.delegation-token-auth-filter.enabled"] ?= "true" # YARN default is "true"
       if ctx.has_module 'ryba/hadoop/yarn_rm'
         ryba.yarn.site['yarn.resourcemanager.ha.id'] ?= ctx.config.shortname if is_ha
       for rm_ctx in rm_ctxs

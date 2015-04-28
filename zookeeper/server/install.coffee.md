@@ -69,6 +69,7 @@ which has no dependency.
 
 ## Kerberos
 
+    module.exports.push 'masson/core/krb5_client/wait'
     module.exports.push name: 'ZooKeeper Server # Kerberos', timeout: -1, handler: (ctx, next) ->
       {zookeeper, hadoop_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]

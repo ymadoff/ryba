@@ -83,6 +83,7 @@ isnt yet started.
         local_default: true
         properties: hive.site
         merge: true
+        backup: true
       , next
 
 ## Env

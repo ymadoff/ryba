@@ -4,6 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'ryba/hadoop/hdfs' # Users and groups created by "zookeeper" and "hadoop-hdfs" dependencies
+    module.exports.push require '../lib/hdp_select'
     module.exports.push require('./flume').configure
 
 ## Users & Groups
@@ -32,7 +33,13 @@ creating the "zookeeper" and "hdfs" users and the "hadoop" and "hdfs" group.
 The package "flume" is installed.
 
     module.exports.push name: 'Flume # Install', timeout: -1, handler: (ctx, next) ->
-      ctx.service name: 'flume', next
+      ctx
+      .service
+        name: 'flume'
+      .hdp_select
+        name: 'flume-server'
+        version: 'latest'
+      .then next
 
 ## Kerberos
 

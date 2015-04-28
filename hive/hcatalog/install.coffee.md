@@ -173,6 +173,7 @@ isnt yet started.
         local_default: true
         properties: hive.site
         merge: true
+        backup: true
       , (err, configured) ->
         return next err if err
         ctx.execute
@@ -347,6 +348,7 @@ Create the directories to store the logs and pid information. The properties
         hdfs dfs -chmod -R 1777 /apps/hive/install
         hdfs dfs -rm -skipTrash '/apps/hive/install/hive-exec-*'
         hdfs dfs -copyFromLocal /usr/hdp/current/hive-metastore/lib/hive-exec-* /apps/hive/install
+        hdfs dfs -chown #{hive.user.name}:#{hadoop_group.name} /apps/hive/install/hive-exec-*
         """
         # code_skipped: 1
         not_if_exec: "[[ `#{version_local}` == `#{version_remote}` ]]"

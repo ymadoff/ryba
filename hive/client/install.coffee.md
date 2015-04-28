@@ -26,6 +26,7 @@ See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments
         local_default: true
         properties: hive.site
         merge: true
+        backup: true
       , (err, configured) ->
         return next err if err
         ctx.execute

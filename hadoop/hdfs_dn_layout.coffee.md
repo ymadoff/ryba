@@ -93,12 +93,15 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
         version=`readlink /usr/hdp/current/hadoop-client | sed 's/.*\\/\\(.*\\)\\/hadoop/\\1/'`
         hdfs dfs -mkdir -p /hdp/apps/$version
         hdfs dfs -chown -R  #{hdfs.user.name}:#{hadoop_group.name} /hdp
-        hdfs dfs -chmod -R 555 /hdp
-        hdfs dfs -chmod -R 555 /hdp/apps
+        hdfs dfs -chmod 555 /hdp
+        hdfs dfs -chmod 555 /hdp/apps
         hdfs dfs -chmod -R 555 /hdp/apps/$version
         """
         trap_on_error: true
-        not_if_exec: mkcmd.hdfs ctx, "version=`readlink /usr/hdp/current/hadoop-client | sed 's/.*\\/\\(.*\\)\\/hadoop/\\1/'` && hdfs dfs -test -d /hdp/apps/$version"
+        not_if_exec: mkcmd.hdfs ctx, """
+        version=`readlink /usr/hdp/current/hadoop-client | sed 's/.*\\/\\(.*\\)\\/hadoop/\\1/'`
+        hdfs dfs -test -d /hdp/apps/$version
+        """
       , next
 
 ## Test User

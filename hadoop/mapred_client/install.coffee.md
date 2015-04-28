@@ -31,9 +31,9 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       , next
 
     module.exports.push name: 'MapReduce # Install Common', timeout: -1, handler: (ctx, next) ->
-      ctx.service [
+      ctx.service
         name: 'hadoop-mapreduce'
-      ], next
+      , next
 
 http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
@@ -67,7 +67,7 @@ HDFS directory. Note, the parent directories are created by the
 
     module.exports.push name: 'MapReduce Client # HDFS Tarballs', wait: 60*1000, timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba
-      lock_timeout = 120 # in seconds
+      lock_timeout = 240 # in seconds
       ctx.execute
         cmd: mkcmd.hdfs ctx, """
         version=`readlink /usr/hdp/current/hadoop-mapreduce-client | sed 's/.*\\/\\(.*\\)\\/hadoop-mapreduce/\\1/'`
@@ -76,13 +76,16 @@ HDFS directory. Note, the parent directories are created by the
           crdate=$(echo `hdfs dfs -ls /tmp/ryba-mapreduce.lock | grep -Po '\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}'` | xargs -0 date '+%s' -d)
           expire=$(($crdate - `date '+%s'` + #{lock_timeout}))
           if [ $expire -ge 0 ]; then
+            expire=$(($expire + 10))
             echo "Lock is active, wait for ${expire}s until expiration"
             sleep ${expire};
             if hdfs dfs -test -f /tmp/ryba-mapreduce.lock; then exit 1; fi
             if hdfs dfs -test -f /hdp/apps/$version/mapreduce/mapreduce.tar.gz; then exit 0; fi
+            echo "Lock released, attemp to upload file"
           fi
         fi
         hdfs dfs -touchz /tmp/ryba-mapreduce.lock
+        echo "Upload file in /hdp/apps/$version/mapreduce"
         hdfs dfs -mkdir -p /hdp/apps/$version/mapreduce
         hdfs dfs -chmod -R 555 /hdp/apps/$version/mapreduce
         hdfs dfs -chmod -R 555 /hdp/apps/$version/mapreduce
