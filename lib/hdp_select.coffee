@@ -5,10 +5,10 @@ Select the version of a package distributed by HDP.
 
 Options include
 *   `name` (string)
-    Name of the package, required.   
-*   `version` (string)   
+    Name of the package, required.
+*   `version` (string)
     Version will be the latest auto-discovered version unless provided and can
-    be a valid version, "latest" or "current".   
+    be a valid version, "latest" or "current".
 
 ###
 
@@ -27,7 +27,10 @@ module.exports = (ctx) ->
           if [ "#{options.version}" == "latest" ]; then
             version=`hdp-select versions | tail -1`
           elif [ "#{options.version}" == "current" ]; then
-            version=`hdp-select status #{options.name} | sed 's/.* \\(.*\\)/\\1/'`
+            version=`hdp-select status #{options.name} | sed 's/.* \\(.*\\)/\\1/'`*
+            if [ "$version" == "None" ]; then
+              version=`hdp-select versions | tail -1`
+            fi
           else
             version='#{options.version}'
           fi

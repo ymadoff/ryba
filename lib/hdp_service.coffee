@@ -10,7 +10,7 @@ Options include
 *   `version_name`
 *   `etc_default` (string, array, object)
      List of filename present inside "hdp/{version}/etc/rc.d" directory to symlink
-     from "/etc/rc.d", default to options.name.   
+     from "/etc/rc.d", default to options.name.
 ###
 
 module.exports = (ctx) ->
@@ -47,6 +47,9 @@ module.exports = (ctx) ->
             version=`hdp-select versions | tail -1`
           elif [ "#{options.version}" == "current" ]; then
             version=`hdp-select status #{options.version_name} | sed 's/.* \\(.*\\)/\\1/'`
+            if [ "$version" == "None" ]; then
+              version=`hdp-select versions | tail -1`
+            fi
           else
             version='#{options.version}'
           fi
