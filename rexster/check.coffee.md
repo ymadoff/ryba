@@ -5,6 +5,7 @@
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'ryba/titan/check'
     module.exports.push require('./').configure
+
 ## Check Status
 
 Check status using JMX
@@ -17,14 +18,13 @@ Check status using JMX
         """
       , next
 
-## Check REPL
+## Check RexPro
 
-Check REPL (rexster-console.sh)
+Check REPL (rexster-console.sh). It is not equivalent to Titan REPL, as it use the
+binary protocol RexPro.
 
-
-## Check Shell
-
-TODO: use ctx.ssh.shell
+    module.exports.push name: 'Rexster # Check RexPro', skip: true, label_true: 'CHECKED', handler: (ctx, next) ->
+      return next() # Not ready
 
 ## Check REST
 
@@ -45,14 +45,6 @@ Text mode of REST Server
           return next Error "Invalid response: #{data}" unless data?.name is graphname
         catch e then return next Error "Invalid Command Output: #{JSON.stringify stdout}"
         next err, executed
-
-
-## Check Rexpro
-
-Binary mode (DSL) of REST Server
-
-    module.exports.push name: 'Rexster # Check RexPro', skip: true, label_true: 'CHECKED', handler: (ctx, next) ->
-      return next() # Not ready
 
 ## Module Dependencies
 
