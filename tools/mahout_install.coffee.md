@@ -13,5 +13,4 @@ http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.1/bk_installing_manually_b
         name: 'mahout'
       .hdp_select
         name: 'mahout-client'
-        version: 'latest'
       .then next
