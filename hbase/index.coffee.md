@@ -14,6 +14,7 @@ Apache HBase provides Bigtable-like capabilities on top of Hadoop and HDFS
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/yum'
     module.exports.push 'ryba/hadoop/core'
+    module.exports.push require '../lib/hdp_select'
 
 ## Configure
 
@@ -151,8 +152,13 @@ hbase:x:492:
 Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap9-1.html)
 
     module.exports.push name: 'HBase # Install', timeout: -1, handler: (ctx, next) ->
-      ctx.service name: 'hbase', (err, serviced) ->
-        next err, serviced
+      ctx
+      .service
+        name: 'hbase'
+      .hdp_select
+        name: 'hbase-client'
+        version: 'latest'
+      .then next
 
     module.exports.push name: 'HBase # Layout', timeout: -1, handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
