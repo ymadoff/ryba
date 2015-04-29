@@ -147,17 +147,6 @@ Enable stats collection in Ganglia.
         replace: collector
       , next
 
-## SPNEGO
-
-Ensure we have read access to the spnego keytab soring the server HTTP
-principal.
-
-    module.exports.push name: 'HBase RegionServer # SPNEGO', handler: (ctx, next) ->
-      {hbase} = ctx.config.ryba
-      ctx.execute
-        cmd: "su -l #{hbase.user.name} -c 'test -r /etc/security/keytabs/spnego.service.keytab'"
-      , next
-
 ## Start
 
 Execute the "ryba/hbase/regionserver/start" module to start the RegionServer.
