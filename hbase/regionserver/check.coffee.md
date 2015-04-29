@@ -45,9 +45,8 @@ Namespace and permissions are implemented and illustrated in [HBASE-8409].
       keytab = hbase.site['hbase.regionserver.keytab.file']
       principal = hbase.site['hbase.regionserver.kerberos.principal'].replace '_HOST', ctx.config.host
       ctx.execute
-        cmd: """
-        kinit -kt #{keytab} #{principal}
-          if hbase shell 2>/dev/null <<< "user_permission 'ryba'" | egrep '[1-9][0-9]* row'; then exit 2; fi
+        cmd: mkcmd.hbase ctx, """
+        if hbase shell 2>/dev/null <<< "user_permission 'ryba'" | egrep '[1-9][0-9]* row'; then exit 2; fi
         hbase shell 2>/dev/null <<-CMD
           create 'ryba', 'family1'
           grant 'ryba', 'RWC', 'ryba'
@@ -61,8 +60,7 @@ Namespace and permissions are implemented and illustrated in [HBASE-8409].
         next err, executed
       # Note: apply this when namespace are functional
       # ctx.execute
-      #   cmd: """
-      #   kinit -kt #{keytab} #{principal}
+      #   cmd: mkcmd.hbase ctx, """
       #   if hbase shell 2>/dev/null <<< "list_namespace_tables 'ryba'" | egrep '[0-9]+ row'; then exit 2; fi
       #   hbase shell 2>/dev/null <<-CMD
       #     create_namespace 'ryba'

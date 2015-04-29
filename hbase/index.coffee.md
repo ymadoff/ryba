@@ -43,7 +43,9 @@ Example
       {java_home} = ctx.config.java
       {ryba} = ctx.config
       {static_host, realm} = ryba
-      zookeeper_hosts = ctx.hosts_with_module('ryba/zookeeper/server').join ','
+      zk_hosts = ctx.hosts_with_module('ryba/zookeeper/server').join ','
+      zk_port = ctx.contexts 'ryba/zookeeper/server', require('../zookeeper/server').configure
+      zk_port = zk_port[0].config.ryba.zookeeper.port
       # User
       hbase = ryba.hbase ?= {}
       hbase.user ?= {}
@@ -54,6 +56,10 @@ Example
       hbase.user.comment ?= 'HBase User'
       hbase.user.home ?= '/var/run/hbase'
       hbase.user.groups ?= 'hadoop'
+      hbase.admin ?= {}
+      hbase.admin.name ?= hbase.user.name
+      hbase.admin.principal ?= "#{hbase.admin.name}@#{realm}"
+      hbase.admin.password ?= "hbase123"
       # Group
       hbase.group ?= {}
       hbase.group = name: hbase.group if typeof hbase.group is 'string'
@@ -76,10 +82,10 @@ Example
       then ctx.host_with_module 'ryba/hadoop/hdfs_nn'
       else ryba.nameservice
       hbase.site['hbase.rootdir'] ?= "hdfs://#{nn_host}:8020/apps/hbase/data"
-      # hbase.site['hbase.rootdir'] ?= "hdfs://#{namenode}:8020/apps/hbase/data"
       # Comma separated list of Zookeeper servers (match to
       # what is specified in zoo.cfg but without portnumbers)
-      hbase.site['hbase.zookeeper.quorum'] ?= "#{zookeeper_hosts}"
+      hbase.site['hbase.zookeeper.quorum'] = "#{zk_hosts}"
+      hbase.site['hbase.zookeeper.property.clientPort'] = "#{zk_port}"
       # Short-circuit are true but socket.path isnt defined for hbase, only for hdfs, see http://osdir.com/ml/hbase-user-hadoop-apache/2013-03/msg00007.html
       # hbase.site['dfs.domain.socket.path'] ?= hdfs.site['dfs.domain.socket.path']
       hbase.site['dfs.domain.socket.path'] ?= '/var/lib/hadoop-hdfs/dn_socket'
@@ -96,7 +102,7 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
       hbase.site['hbase.security.authentication'] ?= 'kerberos' # Required by HM, RS and client
       hbase.site['hbase.security.authorization'] ?= 'true'
       hbase.site['hbase.rpc.engine'] ?= 'org.apache.hadoop.hbase.ipc.SecureRpcEngine'
-      hbase.site['hbase.superuser'] ?= 'hbase'
+      hbase.site['hbase.superuser'] ?= hbase.admin.name
       hbase.site['hbase.bulkload.staging.dir'] ?= '/apps/hbase/staging'
       # if ctx.has_module 'ryba/hbase/master'
       # hbase.site['hbase.coprocessor.master.classes'] ?= 'org.apache.hadoop.hbase.security.access.AccessController'

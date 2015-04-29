@@ -171,11 +171,9 @@ TODO: Use a namespace
       {hbase, titan} = ctx.config.ryba
       table = titan.config['storage.hbase.table']
       ctx.execute
-        cmd: """
-        echo #{hbase.admin.password} | kinit #{hbase.admin.principal} >/dev/null && {
+        cmd: mkcmd.hbase ctx, """
         if hbase shell 2>/dev/null <<< "user_permission '#{table}'" | grep 'rexster'; then exit 3; fi
         hbase shell 2>/dev/null <<< "grant 'rexster', 'RWXCA', '#{table}'"
-        }
         """
         code_skipped: 3
       , next
@@ -183,4 +181,5 @@ TODO: Use a namespace
 ## Module Dependencies
 
     path = require 'path'
+    mkcmd = require '../lib/mkcmd'
     xml = require('jstoxml').toXML

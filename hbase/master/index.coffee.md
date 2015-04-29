@@ -15,9 +15,6 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
       # require('../../hadoop/hdfs').configure ctx
       require('../').configure ctx
       {realm, hbase} = ctx.config.ryba
-      hbase.admin ?= {}
-      hbase.admin.principal ?= "#{hbase.site['hbase.superuser']}@#{realm}"
-      hbase.admin.password ?= "hbase123"
       hbase.master_opts ?= ''
       hbase.site['hbase.master.port'] ?= '60000'
       hbase.site['hbase.master.info.port'] ?= '60010'
