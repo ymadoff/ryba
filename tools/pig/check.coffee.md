@@ -4,15 +4,15 @@
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'ryba/hadoop/yarn_rm/wait'
-    module.exports.push require('./pig').configure
+    module.exports.push require('./index').configure
 
 ## Check
 
-Run a Pig script to test the installation once the ResourceManager is 
-installed. The script will only be executed the first time it is deployed 
+Run a Pig script to test the installation once the ResourceManager is
+installed. The script will only be executed the first time it is deployed
 unless the "hdp.force_check" configuration property is set to "true".
 
-    module.exports.push name: 'Hadoop Pig Check # Client', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'Hadoop Pig Check # Client', label_true: 'CHECKED', timeout: -1, handler: (ctx, next) ->
       {force_check, user} = ctx.config.ryba
       ctx.write
         content: """
@@ -37,7 +37,7 @@ unless the "hdp.force_check" configuration property is set to "true".
 
 ## HCat
 
-    module.exports.push name: 'Hadoop Pig Check # HCat', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'Hadoop Pig Check # HCat', label_true: 'CHECKED', timeout: -1, handler: (ctx, next) ->
       {user, force_check} = ctx.config.ryba
       query = (query) -> "hcat -e \"#{query}\" "
       db = "check_#{ctx.config.shortname}_pig_hcat"
@@ -72,5 +72,4 @@ unless the "hdp.force_check" configuration property is set to "true".
 
 ## Module Dependencies
 
-    mkcmd = require '../lib/mkcmd'
-
+    mkcmd = require '../../lib/mkcmd'
