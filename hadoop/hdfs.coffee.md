@@ -1,11 +1,11 @@
 
 # Hadoop HDFS
 
-This module is not intended to be used directly. It is required by other modules to 
+This module is not intended to be used directly. It is required by other modules to
 setup a base installation. Such modules include "ryba/hadoop/hdfs_client",
 "ryba/hadoop/hdfs_dn" and "ryba/hadoop/hdfs_nn".
 
-In its current state, we are only supporting the installation of a 
+In its current state, we are only supporting the installation of a
 [secure cluster with Kerberos][secure].
 
 [secure]: http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/SecureMode.html
@@ -20,13 +20,13 @@ In its current state, we are only supporting the installation of a
 
 The properties "hdp.hdfs.site['dfs.namenode.name.dir']" and
 "hdp.hdfs.site['dfs.datanode.data.dir']" are required.
-  
-*   `ryba.hdfs.hadoop_policy`    
-*   `ryba.hdfs.hdfs.namenode_timeout`   
-*   `ryba.hdfs.hdfs.site` (object)   
+
+*   `ryba.hdfs.hadoop_policy`
+*   `ryba.hdfs.hdfs.namenode_timeout`
+*   `ryba.hdfs.hdfs.site` (object)
     Properties added to the "hdfs-site.xml" file.
-*   `ryba.hdfs.nameservice`   
-    The Unix MapReduce group name or a group object (see Mecano Group documentation). 
+*   `ryba.hdfs.nameservice`
+    The Unix MapReduce group name or a group object (see Mecano Group documentation).
 
 Example:
 
@@ -104,7 +104,7 @@ from multiple sessions with braking an active session.
 
 Create the SPNEGO service principal in the form of "HTTP/{host}@{realm}" and place its
 keytab inside "/etc/security/keytabs/spnego.service.keytab" with ownerships set to "hdfs:hadoop"
-and permissions set to "0660". We had to give read/write permission to the group because the 
+and permissions set to "0660". We had to give read/write permission to the group because the
 same keytab file is for now shared between hdfs and yarn services.
 
     module.exports.push name: 'HDFS # SPNEGO', handler: module.exports.spnego = (ctx, next) ->
@@ -130,7 +130,7 @@ same keytab file is for now shared between hdfs and yarn services.
 
 ## Ulimit
 
-Increase ulimit following [Kate Ting's recommandations][kate]. This is a cause 
+Increase ulimit following [Kate Ting's recommandations][kate]. This is a cause
 of error if you receive the message: 'Exception in thread "main" java.lang.OutOfMemoryError: unable to create new native thread'.
 
 The HDP package create the following files:
@@ -151,7 +151,7 @@ Refer to the "masson/core/security" module for instructions on how to add custom
 limit rules.
 
 Also worth of interest are the [Pivotal recommandations][hawq] as well as the
-[Greenplum recommandation from Nixus Technologies][greenplum] and the 
+[Greenplum recommandation from Nixus Technologies][greenplum] and the
 [MapR documentation][mapr].
 
 Note, a user must re-login for those changes to be taken into account.
@@ -220,6 +220,3 @@ Create the log directory.
 [greenplum]: http://nixustechnologies.com/2014/03/31/install-greenplum-community-edition/
 [mapr]: http://doc.mapr.com/display/MapR/Preparing+Each+Node
 [kate]: http://fr.slideshare.net/cloudera/hadoop-troubleshooting-101-kate-ting-cloudera
-
-
-

@@ -9,7 +9,7 @@ Oozie source code and examples are located in "/usr/share/doc/oozie-$version".
     module.exports.push 'masson/commons/mysql_client'
     module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/hadoop/hdfs' # SPNEGO need access to the principal HTTP/$HOST@$REALM's keytab
-    module.exports.push 'ryba/hadoop/hdfs_dn_wait' # Create directories inside HDFS
+    module.exports.push 'ryba/hadoop/hdfs_dn/wait' # Create directories inside HDFS
     module.exports.push require '../../lib/hdp_select'
     module.exports.push require('./index').configure
 

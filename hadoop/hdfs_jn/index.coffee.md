@@ -37,7 +37,7 @@ Example:
 
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
-      require('./hdfs').configure ctx
+      require('../hdfs').configure ctx
       nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn'
       throw Error "HDFS not configured for HA" unless nn_ctxs.length is 2
       {ryba} = ctx.config
@@ -56,19 +56,19 @@ Example:
 
     # module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_jn_backup'
 
-    module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_jn_check'
+    module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_jn/check'
 
     module.exports.push commands: 'install', modules: [
-      'ryba/hadoop/hdfs_jn_install'
-      'ryba/hadoop/hdfs_jn_start'
-      'ryba/hadoop/hdfs_jn_check'
+      'ryba/hadoop/hdfs_jn/install'
+      'ryba/hadoop/hdfs_jn/start'
+      'ryba/hadoop/hdfs_jn/check'
     ]
 
-    module.exports.push commands: 'start', modules: 'ryba/hadoop/hdfs_jn_start'
+    module.exports.push commands: 'start', modules: 'ryba/hadoop/hdfs_jn/start'
 
-    module.exports.push commands: 'status', modules: 'ryba/hadoop/hdfs_jn_status'
+    module.exports.push commands: 'status', modules: 'ryba/hadoop/hdfs_jn/status'
 
-    module.exports.push commands: 'stop', modules: 'ryba/hadoop/hdfs_jn_stop'
+    module.exports.push commands: 'stop', modules: 'ryba/hadoop/hdfs_jn/stop'
 
 
 [qjm]: http://hadoop.apache.org/docs/r2.3.0/hadoop-yarn/hadoop-yarn-site/HDFSHighAvailabilityWithQJM.html#Architecture

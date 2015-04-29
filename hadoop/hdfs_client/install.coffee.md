@@ -4,14 +4,14 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/core'
-    module.exports.push require('./hdfs_client').configure
-    module.exports.push require '../lib/hdp_select'
+    module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hdp_select'
 
     module.exports.push name: 'HDFS Client # Configuration', handler: (ctx, next) ->
       {hadoop_conf_dir, hdfs, hadoop_group} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-        default: "#{__dirname}/../resources/core_hadoop/hdfs-site.xml"
+        default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
         local_default: true
         properties: hdfs.site
         uid: hdfs.user.name
@@ -26,10 +26,3 @@
       ctx.hdp_select
         name: 'hadoop-client'
       , next
-
-
-
-## Module dependencies
-
-    hdfs_nn = require './hdfs_nn'
-    mkcmd = require '../lib/mkcmd'

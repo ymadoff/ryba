@@ -40,7 +40,7 @@
 
 Upload the Tez tarball inside the "/hdp/apps/$version/tez"
 HDFS directory. Note, the parent directories are created by the 
-"ryba/hadoop/hdfs_dn_layout" module.
+"ryba/hadoop/hdfs_dn/layout" module.
 
     module.exports.push name: 'Tez # HDFS Layout', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba

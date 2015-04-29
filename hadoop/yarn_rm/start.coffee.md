@@ -4,7 +4,7 @@
     lifecycle = require '../../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/hdfs_dn_wait'
+    module.exports.push 'ryba/hadoop/hdfs_dn/wait'
     module.exports.push require('./index').configure
 
     module.exports.push name: 'Yarn RM # Start Server', label_true: 'STARTED', handler: (ctx, next) ->

@@ -1,12 +1,12 @@
 
 # Hadoop HDFS JournalNode Stop
 
-Stop the JournalNode service. It is recommended to stop a JournalNode after its 
+Stop the JournalNode service. It is recommended to stop a JournalNode after its
 associated NameNodes.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./hdfs_jn').configure
+    module.exports.push require('./index').configure
 
 ## Stop HDFS JournalNode
 

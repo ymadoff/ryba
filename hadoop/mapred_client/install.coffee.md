@@ -6,7 +6,7 @@
     module.exports.push 'masson/core/yum'
     module.exports.push 'ryba/hadoop/hdfs_client'
     module.exports.push 'ryba/hadoop/yarn_client'
-    module.exports.push 'ryba/hadoop/hdfs_dn_wait'
+    module.exports.push 'ryba/hadoop/hdfs_dn/wait'
     module.exports.push require('./index').configure
 
 ## IPTables
@@ -63,7 +63,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
 
 Upload the MapReduce tarball inside the "/hdp/apps/$version/mapreduce"
 HDFS directory. Note, the parent directories are created by the
-"ryba/hadoop/hdfs_dn_layout" module.
+"ryba/hadoop/hdfs_dn/layout" module.
 
     module.exports.push name: 'MapReduce Client # HDFS Tarballs', wait: 60*1000, timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba

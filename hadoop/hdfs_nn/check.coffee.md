@@ -9,8 +9,8 @@ through SSH over another one where the public key isn't yet deployed.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/hdfs_nn_wait'
-    module.exports.push require('./hdfs').configure
+    module.exports.push 'ryba/hadoop/hdfs_nn/wait'
+    module.exports.push require('../hdfs').configure
 
 ## Check HTTP
 
@@ -104,6 +104,4 @@ afect HDFS metadata.
 
 ## Module Dependencies
 
-    mkcmd = require '../lib/mkcmd'
-
-
+    mkcmd = require '../../lib/mkcmd'

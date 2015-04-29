@@ -4,10 +4,9 @@
 Stop the DataNode service. It is recommended to stop a DataNode before its
 associated the NameNodes.
 
-    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./hdfs_dn').configure
+    module.exports.push require('./index').configure
 
 ## Stop Service
 
@@ -25,3 +24,7 @@ associated the NameNodes.
         cmd: 'rm /var/log/hadoop-hdfs/*/*-datanode-*'
         code_skipped: 1
       , next
+
+## Module Dependencies
+
+    lifecycle = require '../../lib/lifecycle'

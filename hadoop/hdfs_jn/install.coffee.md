@@ -2,21 +2,21 @@
 
 It apply to a secured HDFS installation with Kerberos.
 
-The JournalNode daemon is relatively lightweight, so these daemons may reasonably 
-be collocated on machines with other Hadoop daemons, for example NameNodes, the 
+The JournalNode daemon is relatively lightweight, so these daemons may reasonably
+be collocated on machines with other Hadoop daemons, for example NameNodes, the
 JobTracker, or the YARN ResourceManager.
 
-There must be at least 3 JournalNode daemons, since edit log modifications must 
+There must be at least 3 JournalNode daemons, since edit log modifications must
 be written to a majority of JNs. To increase the number of failures a system
-can tolerate, deploy an odd number of JNs because the system can tolerate at 
+can tolerate, deploy an odd number of JNs because the system can tolerate at
 most (N - 1) / 2 failures to continue to function normally.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
-    module.exports.push require('./hdfs_jn').configure
-    module.exports.push require '../lib/hdp_service'
+    module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hdp_service'
 
 ## IPTables
 
@@ -28,7 +28,7 @@ most (N - 1) / 2 failures to continue to function normally.
 
 Note, "dfs.journalnode.rpc-address" is used by "dfs.namenode.shared.edits.dir".
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
+IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HDFS JN # IPTables', handler: (ctx, next) ->
@@ -47,7 +47,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Layout
 
-The JournalNode data are stored inside the directory defined by the 
+The JournalNode data are stored inside the directory defined by the
 "dfs.journalnode.edits.dir" property.
 
     module.exports.push name: 'HDFS JN # Layout', handler: (ctx, next) ->
@@ -81,7 +81,7 @@ inside "/etc/init.d" and activate it on startup.
           replace: "PIDFILE=\"${HADOOP_PID_DIR}/hadoop-$HADOOP_IDENT_STRING-journalnode.pid\" # RYBA FIX, DONT OVEWRITE"
         ]
         etc_default:
-          'hadoop-hdfs-journalnode': 
+          'hadoop-hdfs-journalnode':
             write: [
               match: /^export HADOOP_PID_DIR=.*$/m # HDP default is "/var/run/hadoop-hdfs"
               replace: "export HADOOP_PID_DIR=#{hdfs.pid_dir} # RYBA"
@@ -127,9 +127,9 @@ inside "/etc/init.d" and activate it on startup.
 
 Update the "hdfs-site.xml" file with the "dfs.journalnode.edits.dir" property.
 
-Register the SPNEGO service principal in the form of "HTTP/{host}@{realm}" into 
+Register the SPNEGO service principal in the form of "HTTP/{host}@{realm}" into
 the "hdfs-site.xml" file. The impacted properties are
-"dfs.journalnode.kerberos.internal.spnego.principal", 
+"dfs.journalnode.kerberos.internal.spnego.principal",
 "dfs.journalnode.kerberos.principal" and "dfs.journalnode.keytab.file". The
 SPNEGO tocken is stored inside the "/etc/security/keytabs/spnego.service.keytab"
 keytab, also used by the NameNodes, DataNodes, ResourceManagers and
@@ -139,7 +139,7 @@ NodeManagers.
       {hdfs, hadoop_conf_dir, hadoop_group} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-        default: "#{__dirname}/../resources/core_hadoop/hdfs-site.xml"
+        default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
         local_default: true
         properties: hdfs.site
         uid: hdfs.user.name
@@ -150,8 +150,5 @@ NodeManagers.
 
 ## Module Dependencies
 
-    lifecycle = require '../lib/lifecycle'
-    mkcmd = require '../lib/mkcmd'
-
-
-
+    lifecycle = require '../../lib/lifecycle'
+    mkcmd = require '../../lib/mkcmd'

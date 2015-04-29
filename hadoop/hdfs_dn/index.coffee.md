@@ -23,10 +23,10 @@ The module extends the various settings set by the "ryba/hadoop/hdfs" module.
 Unless specified otherwise, the number of tolerated failed volumes is set to "1"
 if at least 4 disks are used for storage.
 
-*   `ryba.hdfs.datanode_opts` (string)   
-    NameNode options.   
+*   `ryba.hdfs.datanode_opts` (string)
+    NameNode options.
 
-Example:   
+Example:
 
 ```json
 {
@@ -46,12 +46,12 @@ Example:
     module.exports.configure = (ctx) ->
       if ctx.hdfs_dn_configured then return else ctx.hdfs_dn_configured = true
       require('masson/core/iptables').configure ctx
-      require('./hdfs').configure ctx
+      require('../hdfs').configure ctx
       {ryba} = ctx.config
       ryba.hdfs ?= {}
       ryba.hdfs.sysctl ?= {}
-      require('./hdfs_nn').client_config ctx
-      # Comma separated list of paths. Use the list of directories from $DFS_DATA_DIR.  
+      require('../hdfs_nn').client_config ctx
+      # Comma separated list of paths. Use the list of directories from $DFS_DATA_DIR.
       # For example, /grid/hadoop/hdfs/dn,/grid1/hadoop/hdfs/dn.
       ryba.hdfs.site['dfs.datanode.data.dir'] ?= ['/var/hdfs/data']
       ryba.hdfs.site['dfs.datanode.data.dir'] = ryba.hdfs.site['dfs.datanode.data.dir'].join ',' if Array.isArray ryba.hdfs.site['dfs.datanode.data.dir']
@@ -66,12 +66,12 @@ Example:
         # TODO: Move this to 'ryba/hadoop/hdfs_dn'
         ryba.hdfs.site['dfs.datanode.address'] ?= '0.0.0.0:1004'
         ryba.hdfs.site['dfs.datanode.ipc.address'] ?= '0.0.0.0:50020'
-        ryba.hdfs.site['dfs.datanode.http.address'] ?= '0.0.0.0:1006' 
+        ryba.hdfs.site['dfs.datanode.http.address'] ?= '0.0.0.0:1006'
         ryba.hdfs.site['dfs.datanode.https.address'] ?= '0.0.0.0:50475'
       else
         ryba.hdfs.site['dfs.datanode.address'] ?= '0.0.0.0:50010'
         ryba.hdfs.site['dfs.datanode.ipc.address'] ?= '0.0.0.0:50020'
-        ryba.hdfs.site['dfs.datanode.http.address'] ?= '0.0.0.0:50075' 
+        ryba.hdfs.site['dfs.datanode.http.address'] ?= '0.0.0.0:50075'
         ryba.hdfs.site['dfs.datanode.https.address'] ?= '0.0.0.0:50475'
       # Kerberos
       ryba.hdfs.site['dfs.datanode.kerberos.principal'] ?= "dn/#{ryba.static_host}@#{ryba.realm}"
@@ -101,18 +101,17 @@ Example:
 
     # module.exports.push command: 'backup', modules: 'ryba/hadoop/hdfs_dn_backup'
 
-    module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_dn_check'
+    module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_dn/check'
 
     module.exports.push commands: 'install', modules: [
-      'ryba/hadoop/hdfs_dn_install'
-      'ryba/hadoop/hdfs_dn_start'
-      'ryba/hadoop/hdfs_dn_layout'
-      'ryba/hadoop/hdfs_dn_check'
+      'ryba/hadoop/hdfs_dn/install'
+      'ryba/hadoop/hdfs_dn/start'
+      'ryba/hadoop/hdfs_dn/layout'
+      'ryba/hadoop/hdfs_dn/check'
     ]
 
-    module.exports.push commands: 'start', modules: 'ryba/hadoop/hdfs_dn_start'
+    module.exports.push commands: 'start', modules: 'ryba/hadoop/hdfs_dn/start'
 
-    module.exports.push commands: 'status', modules: 'ryba/hadoop/hdfs_dn_status'
+    module.exports.push commands: 'status', modules: 'ryba/hadoop/hdfs_dn/status'
 
-    module.exports.push commands: 'stop', modules: 'ryba/hadoop/hdfs_dn_stop'
-
+    module.exports.push commands: 'stop', modules: 'ryba/hadoop/hdfs_dn/stop'

@@ -15,7 +15,7 @@ hdfs oiv -p Ls -i /var/hdfs/name/current/fsimage_0000000000000023497 -o test_ls
 
 ### OEV
 
-can load content of HDFS fsimages dump 
+can load content of HDFS fsimages dump
 
 ## Curl
 
@@ -29,42 +29,39 @@ dfsadmin -fetchImage
 
 ### Local Backup
 
-    util = require 'util'
-    
     module.exports = []
-    
+
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/bootstrap/utils'
-    module.exports.push require('./hdfs_nn').configure
-    path = require 'path'
+    module.exports.push require('./index').configure
 
     # isRelative = () ->
     #   filepath = path.join.apply path, arguments
     #   return path.resolve(filepath) isnt filepath.replace(/[\/\\]+$/, ''\
 
     module.exports.push name: "HDFS NN # Backup HDFS LS output", timeout: -1, label_true: 'BACKUPED', handler: (ctx, next) ->
-      ls =
+      ctx.backup
         name: 'ls'
         cmd: 'hdfs dfs -ls -R / '
         destination: "/var/backups/nn_#{ctx.config.host}/"
         interval: month: 1
         retention: count: 2
-      ctx.backup ls, next
+      , next
 
     module.exports.push name: 'HDFS NN # Backup FSimages & edits', timeout: -1, label_true: 'BACKUPED', handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
-      fs =
+      ctx.backup
         name: 'fs'
         source: path.join hdfs.site['dfs.namenode.name.dir'].split(',').shift(), 'current'
         filter: ['fsimage_*','edits_0*']
         destination: "/var/backups/nn_#{ctx.config.host}/"
-        interval: month: 1 
+        interval: month: 1
         retention: count: 2
-      ctx.backup fs, next
+      , next
 
 ### Restoration procedure
 
-To restore the fsimage as it was at the date of backup with a shell command 
+To restore the fsimage as it was at the date of backup with a shell command
 with default configuration value:
 ```bash
 cd /var/hdfs/name/current/
@@ -73,3 +70,8 @@ tar -xzf /var/backups/nn_$HOSTNAME/<backup_date>.tar.gz
 ```
 
 `man tar` for more information if you have changed default options
+
+## Module Dependencies
+
+    util = require 'util'
+    path = require 'path'

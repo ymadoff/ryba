@@ -102,7 +102,7 @@ Environment passed to the Master before it starts.
         backup: true
       , next
 
-    module.exports.push 'ryba/hadoop/hdfs_nn_wait'
+    module.exports.push 'ryba/hadoop/hdfs_nn/wait'
 
     module.exports.push name: 'HBase Master # HDFS layout', timeout: -1, handler: (ctx, next) ->
       {hbase} = ctx.config.ryba

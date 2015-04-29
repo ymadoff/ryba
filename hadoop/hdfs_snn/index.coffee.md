@@ -6,7 +6,7 @@
 ## Configuration
 
     module.exports.configure = (ctx) ->
-      require('./hdfs').configure ctx
+      require('../hdfs').configure ctx
       {ryba} = ctx.config
       # Store the temporary images to merge
       ryba.hdfs.site['dfs.namenode.checkpoint.dir'] ?= ['/var/hdfs/checkpoint']
@@ -28,20 +28,20 @@
 
 ## Commands
 
-    # module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_snn_backup'
+    # module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_snn/backup'
 
     # module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_snn_check'
 
     module.exports.push commands: 'install', modules: [
-      'ryba/hadoop/hdfs_snn_install'
-      'ryba/hadoop/hdfs_snn_start'
+      'ryba/hadoop/hdfs_snn/install'
+      'ryba/hadoop/hdfs_snn/start'
     ]
 
-    module.exports.push commands: 'start', modules: 'ryba/hadoop/hdfs_snn_start'
+    module.exports.push commands: 'start', modules: 'ryba/hadoop/hdfs_snn/start'
 
     # module.exports.push commands: 'status', modules: 'ryba/hadoop/hdfs_snn_status'
 
-    module.exports.push commands: 'stop', modules: 'ryba/hadoop/hdfs_snn_stop'
+    module.exports.push commands: 'stop', modules: 'ryba/hadoop/hdfs_snn/stop'
 
 
 

@@ -1,10 +1,9 @@
 
 # Hadoop HDFS SecondaryNameNode Stop
 
-    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./hdfs_snn').configure
+    module.exports.push require('./index').configure
 
     module.exports.push name: 'HDFS SNN # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
       lifecycle.snn_stop ctx, next
@@ -15,3 +14,7 @@
         cmd: 'rm /var/log/hadoop-hdfs/*/*-secondarynamenode-*'
         code_skipped: 1
       , next
+
+## Module Dependencies
+
+    lifecycle = require '../../lib/lifecycle'

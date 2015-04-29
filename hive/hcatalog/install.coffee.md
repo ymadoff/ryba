@@ -13,7 +13,7 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
     module.exports.push 'ryba/hadoop/mapred_client'
     module.exports.push 'ryba/tez'
     module.exports.push 'ryba/hive/client/install' # Install the Hive and HCatalog service
-    module.exports.push 'ryba/hadoop/hdfs_dn_wait'
+    module.exports.push 'ryba/hadoop/hdfs_dn/wait'
     module.exports.push 'ryba/hbase/client'
     module.exports.push require('./index').configure
     module.exports.push require '../../lib/hdp_service'

@@ -7,7 +7,7 @@ HDFS server to answer queries.
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'ryba/hadoop/hdfs_dn_wait'
+    module.exports.push 'ryba/hadoop/hdfs_dn/wait'
     module.exports.push require('./index').configure
 
 ## Start Wait Database

@@ -6,7 +6,7 @@
     module.exports.push 'masson/bootstrap/info'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/yarn_client/install'
-    module.exports.push 'ryba/hadoop/hdfs_dn_wait'
+    module.exports.push 'ryba/hadoop/hdfs_dn/wait'
     module.exports.push require('./index').configure
     module.exports.push require '../../lib/hdp_service'
 

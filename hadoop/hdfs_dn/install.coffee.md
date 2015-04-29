@@ -1,25 +1,25 @@
 
 # Hadoop HDFS DataNode Install
 
-A DataNode manages the storage attached to the node it run on. There 
-are usually one DataNode per node in the cluster. HDFS exposes a file 
-system namespace and allows user data to be stored in files. Internally, 
-a file is split into one or more blocks and these blocks are stored in 
-a set of DataNodes. The DataNodes also perform block creation, deletion, 
+A DataNode manages the storage attached to the node it run on. There
+are usually one DataNode per node in the cluster. HDFS exposes a file
+system namespace and allows user data to be stored in files. Internally,
+a file is split into one or more blocks and these blocks are stored in
+a set of DataNodes. The DataNodes also perform block creation, deletion,
 and replication upon instruction from the NameNode.
 
-In a Hight Availabity (HA) enrironment, in order to provide a fast 
-failover, it is necessary that the Standby node have up-to-date 
-information regarding the location of blocks in the cluster. In order 
-to achieve this, the DataNodes are configured with the location of both 
+In a Hight Availabity (HA) enrironment, in order to provide a fast
+failover, it is necessary that the Standby node have up-to-date
+information regarding the location of blocks in the cluster. In order
+to achieve this, the DataNodes are configured with the location of both
 NameNodes, and send block location information and heartbeats to both.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
-    module.exports.push require('./hdfs_dn').configure
-    module.exports.push require '../lib/hdp_service'
+    module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hdp_service'
 
 ## IPTables
 
@@ -33,7 +33,7 @@ NameNodes, and send block location information and heartbeats to both.
 The "dfs.datanode.address" default to "50010" in non-secured mode. In non-secured
 mode, it must be set to a value below "1024" and default to "1004".
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
+IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HDFS DN # IPTables', handler: (ctx, next) ->
@@ -70,7 +70,7 @@ inside "/etc/init.d" and activate it on startup.
           replace: "export HADOOP_IDENT_STRING=${HADOOP_SECURE_DN_USER:-$HADOOP_DATANODE_USER} # RYBA FIX"
         ]
         etc_default:
-          'hadoop-hdfs-datanode': 
+          'hadoop-hdfs-datanode':
             write: [
               match: /^export HADOOP_PID_DIR=.*$/m # HDP default is "/var/run/hadoop-hdfs"
               replace: "export HADOOP_PID_DIR=#{hdfs.pid_dir} # RYBA"
@@ -105,7 +105,7 @@ present inside the "hdp.ha\_client\_config" object.
       {hadoop_conf_dir, hdfs, hadoop_group} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-        default: "#{__dirname}/../resources/core_hadoop/hdfs-site.xml"
+        default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
         local_default: true
         properties: hdfs.site
         uid: hdfs.user.name
@@ -121,9 +121,9 @@ The conf/masters file contains the hostname of the
 SecondaryNameNode. This should be changed from "localhost"
 to the fully-qualified domain name of the node to run the
 SecondaryNameNode service. It does not need to contain
-the hostname of the JobTracker/NameNode machine; 
+the hostname of the JobTracker/NameNode machine;
 Also some [interesting info about snn](http://blog.cloudera.com/blog/2009/02/multi-host-secondarynamenode-configuration/)
-        
+
     module.exports.push name: 'HDFS SNN # Configure Master', handler: (ctx, next) ->
       {hdfs, hadoop_conf_dir, hadoop_group} = ctx.config.ryba
       secondary_namenode = ctx.host_with_module 'ryba/hadoop/hdfs_snn'
@@ -140,8 +140,8 @@ Also some [interesting info about snn](http://blog.cloudera.com/blog/2009/02/mul
 
 ## Layout
 
-Create the DataNode data and pid directories. The data directory is set by the 
-"hdp.hdfs.site['dfs.datanode.data.dir']" and default to "/var/hdfs/data". The 
+Create the DataNode data and pid directories. The data directory is set by the
+"hdp.hdfs.site['dfs.datanode.data.dir']" and default to "/var/hdfs/data". The
 pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdfs"
 
     module.exports.push name: 'HDFS DN # Layout', timeout: -1, handler: (ctx, next) ->
@@ -176,7 +176,7 @@ and permissions set to "0600".
     module.exports.push name: 'HDFS DN # Kerberos', timeout: -1, handler: (ctx, next) ->
       {hdfs, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc 
+      ctx.krb5_addprinc
         principal: "dn/#{ctx.config.host}@#{realm}"
         randkey: true
         keytab: "/etc/security/keytabs/dn.service.keytab"
@@ -190,7 +190,7 @@ and permissions set to "0600".
 
 # Opts
 
-Environment passed to the DataNode before it starts.   
+Environment passed to the DataNode before it starts.
 
     module.exports.push name: 'HDFS DN # Opts', handler: (ctx, next) ->
       {hadoop_conf_dir, hdfs} = ctx.config.ryba
@@ -220,7 +220,7 @@ suggest:
 *    vm.swappiness = 0
 *    vm.overcommit_memory = 1
 *    vm.overcommit_ratio = 100
-*    net.core.somaxconn=1024 (default socket listen queue size 128)   
+*    net.core.somaxconn=1024 (default socket listen queue size 128)
 
 Note, we might move this middleware to Masson.
 
@@ -260,4 +260,3 @@ Note, we might move this middleware to Masson.
     misc = require 'mecano/lib/misc'
 
 [key_os]: http://fr.slideshare.net/vgogate/hadoop-configuration-performance-tuning
-

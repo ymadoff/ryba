@@ -17,7 +17,7 @@
 |---------|-------|-------|---------------------|
 | webhcat | 50111 | http  | WebHCat HTTP server |
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
+IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'WebHCat # IPTables', handler: (ctx, next) ->
@@ -168,8 +168,8 @@ inside "/etc/init.d" and activate it on startup.
 ## HDFS Tarballs
 
 Upload the Pig, Hive and Sqoop tarballs inside the "/hdp/apps/$version"
-HDFS directory. Note, the parent directories are created by the 
-"ryba/hadoop/hdfs_dn_layout" module.
+HDFS directory. Note, the parent directories are created by the
+"ryba/hadoop/hdfs_dn/layout" module.
 
     module.exports.push name: 'WebHCat # HDFS Tarballs', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba

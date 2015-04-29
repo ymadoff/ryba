@@ -17,14 +17,14 @@ Worth to investigate:
     module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
-    module.exports.push require '../lib/hdp_service'
+    module.exports.push require '../../lib/hdp_service'
 
 ## Configuration
 
 The NameNode doesn't define new configuration properties. However, it uses properties
 define inside the "ryba/hadoop/hdfs" and "masson/core/nc" modules.
 
-    module.exports.push require('./hdfs_nn').configure
+    module.exports.push require('./index').configure
 
 ## IPTables
 
@@ -34,7 +34,7 @@ define inside the "ryba/hadoop/hdfs" and "masson/core/nc" modules.
 | namenode  | 50470 | tcp    | dfs.namenode.https-address |
 | namenode  | 8020  | tcp    | fs.defaultFS               |
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
+IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HDFS NN # IPTables', handler: (ctx, next) ->
@@ -101,7 +101,7 @@ Create a service principal for this NameNode. The principal is named after
 
 ## Opts
 
-Environment passed to the NameNode before it starts.   
+Environment passed to the NameNode before it starts.
 
     module.exports.push name: 'HDFS NN # Opts', handler: (ctx, next) ->
       {hadoop_conf_dir, hdfs} = ctx.config.ryba
@@ -119,7 +119,7 @@ Environment passed to the NameNode before it starts.
       {hdfs, hadoop_conf_dir, hadoop_group} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-        default: "#{__dirname}/../resources/core_hadoop/hdfs-site.xml"
+        default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
         local_default: true
         properties: hdfs.site
         uid: hdfs.user.name
@@ -149,7 +149,7 @@ this NameNode isn't yet formated by detecting if the "current/VERSION" exists. T
 is only exected once all the JournalNodes are started. The NameNode is finally restarted
 if the NameNode was formated.
 
-    module.exports.push name: 'HDFS NN # Format', timeout: -1, modules: 'ryba/hadoop/hdfs_jn_wait', handler: (ctx, next) ->
+    module.exports.push name: 'HDFS NN # Format', timeout: -1, modules: 'ryba/hadoop/hdfs_jn/wait', handler: (ctx, next) ->
       {hdfs, active_nn_host, nameservice} = ctx.config.ryba
       any_dfs_name_dir = hdfs.site['dfs.namenode.name.dir'].split(',')[0]
       is_hdfs_ha = ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
@@ -189,9 +189,5 @@ is only executed on a non active NameNode.
 
 ## Module Dependencies
 
-    fs = require 'fs'
-    lifecycle = require '../lib/lifecycle'
-    mkcmd = require '../lib/mkcmd'
-    each = require 'each'
-
-
+    lifecycle = require '../../lib/lifecycle'
+    mkcmd = require '../../lib/mkcmd'

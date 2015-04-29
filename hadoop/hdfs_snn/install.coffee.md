@@ -5,8 +5,8 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/hdfs'
-    module.exports.push require('./hdfs_snn').configure
-    module.exports.push require '../lib/hdp_service'
+    module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hdp_service'
 
 ## IPTables
 
@@ -17,7 +17,7 @@
 | namenode  | 8020  | tcp    | fs.defaultFS               |
 | namenode  | 8019  | tcp    | dfs.ha.zkfc.port           |
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
+IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'HDFS SNN # IPTables', handler: (ctx, next) ->
@@ -74,7 +74,7 @@ script inside "/etc/init.d" and activate it on startup.
     module.exports.push name: 'HDFS SNN # Kerberos', handler: (ctx, next) ->
       {realm, hdfs} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc 
+      ctx.krb5_addprinc
         principal: "nn/#{ctx.config.host}@#{realm}"
         randkey: true
         keytab: hdfs.site['dfs.secondary.namenode.keytab.file']
@@ -91,7 +91,7 @@ script inside "/etc/init.d" and activate it on startup.
       {hdfs, hadoop_conf_dir, hadoop_group} = ctx.config.ryba
       ctx.hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-        default: "#{__dirname}/../resources/core_hadoop/hdfs-site.xml"
+        default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
         local_default: true
         properties: hdfs.site
         uid: hdfs.user
@@ -99,8 +99,3 @@ script inside "/etc/init.d" and activate it on startup.
         merge: true
         backup: true
       , next
-
-
-
-
-

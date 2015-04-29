@@ -3,7 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./hdfs_nn').configure
+    module.exports.push require('./index').configure
 
 ## Stop NameNode
 

@@ -11,8 +11,8 @@ active NameNode to start first.
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/xasecure/policymgr_wait'
     module.exports.push 'ryba/zookeeper/server/wait'
-    module.exports.push 'ryba/hadoop/hdfs_jn_wait'
-    # module.exports.push 'ryba/hadoop/hdfs_nn_wait'
+    module.exports.push 'ryba/hadoop/hdfs_jn/wait'
+    # module.exports.push 'ryba/hadoop/hdfs_nn/wait'
     module.exports.push require('./index').configure
 
 ## Start

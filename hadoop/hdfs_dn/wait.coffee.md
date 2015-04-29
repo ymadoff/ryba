@@ -3,10 +3,10 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./hdfs').configure
+    module.exports.push require('../hdfs').configure
 
     module.exports.push name: 'HDFS DN # Wait', timeout: -1, label_true: 'READY', handler: (ctx, next) ->
-      contexts = ctx.contexts 'ryba/hadoop/hdfs_dn', require('./hdfs_dn').configure
+      contexts = ctx.contexts 'ryba/hadoop/hdfs_dn', require('./index').configure
       servers = for context in contexts
         [_, port] = context.config.ryba.hdfs.site['dfs.datanode.address'].split ':'
         host: context.config.host, port: port
@@ -17,7 +17,7 @@
 Wait for HDFS safemode to exit. It is not enough to start the NameNodes but the
 majority of DataNodes also need to be running.
 
-# This middleware duplicates the one present in 'masson/hadoop/hdfs_nn_start' and
+# This middleware duplicates the one present in 'masson/hadoop/hdfs_nn/start' and
 # is only called if a NameNode is installed on this server because a NameNode need
 # a mojority of DataNodes to be started in order to exit safe mode.
 
@@ -37,7 +37,7 @@ Ensure a given NameNode is always active and force the failover otherwise.
 In order to work properly, the ZKFC daemon must be running and the command must
 be executed on the same server as ZKFC.
 
-This middleware duplicates the one present in 'masson/hadoop/hdfs_nn_wait' and
+This middleware duplicates the one present in 'masson/hadoop/hdfs_nn/wait' and
 is only called if a NameNode is installed on this server because this command
 only run on a NameNode with fencing installed and in normal mode.
 
@@ -60,4 +60,4 @@ only run on a NameNode with fencing installed and in normal mode.
 
 ## Module Dependencies
 
-    mkcmd = require '../lib/mkcmd'
+    mkcmd = require '../../lib/mkcmd'

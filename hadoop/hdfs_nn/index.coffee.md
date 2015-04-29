@@ -14,12 +14,12 @@ does not store the data of these files itself. It’s important that this metada
 Look at the file [DFSConfigKeys.java][keys] for an exhaustive list of supported
 properties.
 
-*   `ryba.hdfs.site` (object)   
-    Properties added to the "hdfs-site.xml" file.   
-*   `ryba.hdfs.namenode_opts` (string)   
-    NameNode options.   
+*   `ryba.hdfs.site` (object)
+    Properties added to the "hdfs-site.xml" file.
+*   `ryba.hdfs.namenode_opts` (string)
+    NameNode options.
 
-Example:   
+Example:
 
 ```json
 {
@@ -34,7 +34,7 @@ Example:
     module.exports.configure = (ctx) ->
       if ctx.hdfs_nn_configured then return else ctx.hdfs_nn_configured = true
       require('masson/core/iptables').configure ctx
-      require('./hdfs').configure ctx
+      require('../hdfs').configure ctx
       {ryba} = ctx.config
       # throw Error "Missing \"ryba.zkfc_password\" property" unless ryba.zkfc_password
       # Data
@@ -98,7 +98,7 @@ service's TCP port.
     module.exports.client_config = (ctx) ->
       {ryba} = ctx.config
       # Import properties from NameNode
-      [nn_ctx] = ctx.contexts 'ryba/hadoop/hdfs_nn', require('./hdfs_nn').configure
+      [nn_ctx] = ctx.contexts 'ryba/hadoop/hdfs_nn', require('./index').configure
       properties = [
         'dfs.namenode.kerberos.principal'
         'dfs.namenode.kerberos.internal.spnego.principal'
@@ -119,22 +119,20 @@ service's TCP port.
 
 ## Commands
 
-    module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_nn_backup'
+    module.exports.push commands: 'backup', modules: 'ryba/hadoop/hdfs_nn/backup'
 
-    module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_nn_check'
+    module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_nn/check'
 
     module.exports.push commands: 'install', modules: [
-      'ryba/hadoop/hdfs_nn_install'
-      'ryba/hadoop/hdfs_nn_start'
-      'ryba/hadoop/hdfs_nn_check'
+      'ryba/hadoop/hdfs_nn/install'
+      'ryba/hadoop/hdfs_nn/start'
+      'ryba/hadoop/hdfs_nn/check'
     ]
 
-    module.exports.push commands: 'start', modules: 'ryba/hadoop/hdfs_nn_start'
+    module.exports.push commands: 'start', modules: 'ryba/hadoop/hdfs_nn/start'
 
-    module.exports.push commands: 'status', modules: 'ryba/hadoop/hdfs_nn_status'
+    module.exports.push commands: 'status', modules: 'ryba/hadoop/hdfs_nn/status'
 
-    module.exports.push commands: 'stop', modules: 'ryba/hadoop/hdfs_nn_stop'
+    module.exports.push commands: 'stop', modules: 'ryba/hadoop/hdfs_nn/stop'
 
 [keys]: https://github.com/apache/hadoop-common/blob/trunk/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSConfigKeys.java
-
-

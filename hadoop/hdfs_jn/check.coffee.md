@@ -3,13 +3,12 @@
 
 Check if the JournalNode is running as expected.
 
-    mkcmd = require '../lib/mkcmd'
     module.exports = []
     module.exports.push 'masson/bootstrap'
 
     module.exports.push (ctx) ->
-      require('./core_ssl').configure ctx
-      require('./hdfs_jn').configure ctx
+      require('../core_ssl').configure ctx
+      require('./index').configure ctx
 
     module.exports.push name: 'HDFS JN Check # SPNEGO', label_true: 'CHECKED', handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
@@ -25,4 +24,6 @@ Check if the JournalNode is running as expected.
         catch err then return next err
         return next null, true
 
+## Module Dependencies
 
+    mkcmd = require '../../lib/mkcmd'

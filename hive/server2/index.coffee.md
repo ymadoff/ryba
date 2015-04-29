@@ -93,7 +93,7 @@ Example:
       # SPNEGO
       hive.site['hive.server2.authentication.spnego.principal'] ?= core_site['hadoop.http.authentication.kerberos.principal']
       hive.site['hive.server2.authentication.spnego.keytab'] ?= core_site['hadoop.http.authentication.kerberos.keytab']
-      
+
 
 ## Commands
 
@@ -116,7 +116,3 @@ Example:
     module.exports.push commands: 'status', modules: 'ryba/hive/server2/status'
 
     module.exports.push commands: 'stop', modules: 'ryba/hive/server2/stop'
-
-
-
-
