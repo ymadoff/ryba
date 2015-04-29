@@ -123,16 +123,15 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
       hbase.env ?=  {}
       hbase.env['JAVA_HOME'] ?= "#{java_home}"
       hbase.env['HBASE_LOG_DIR'] ?= "#{hbase.log_dir}"
-      hbase.env['HBASE_OPTS'] ?= '-ea -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode'
-      hbase.env['HBASE_MASTER_OPTS'] ?= '-Xmx2048m' # Default in HDP companion file
-      hbase.env['HBASE_REGIONSERVER_OPTS'] ?= '-Xmn200m -Xms4096m -Xmx4096m' # Default in HDP companion file
-      if ctx.has_module 'ryba/hbase/client'
-      # if ctx.has_any_modules ['ryba/hbase/client', 'ryba/hbase/master', 'ryba/hbase/regionserver']
-        hbase.env['HBASE_OPTS'] =  hbase.env['HBASE_OPTS'] + " -Djava.security.auth.login.config=#{hbase.conf_dir}/hbase-client.jaas"
-      if ctx.has_module 'ryba/hbase/master'
-        hbase.env['HBASE_MASTER_OPTS'] = hbase.env['HBASE_MASTER_OPTS'] + " -Djava.security.auth.login.config=#{hbase.conf_dir}/hbase-master.jaas"
-      if ctx.has_module 'ryba/hbase/regionserver'
-        hbase.env['HBASE_REGIONSERVER_OPTS'] = hbase.env['HBASE_REGIONSERVER_OPTS'] + " -Djava.security.auth.login.config=#{hbase.conf_dir}/hbase-regionserver.jaas"
+      hbase.env['HBASE_OPTS'] ?= if ctx.has_module 'ryba/hbase/client'
+      then "-ea -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -Djava.security.auth.login.config=#{hbase.conf_dir}/hbase-client.jaas"
+      else '-ea -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode' # Default in HDP companion file
+      hbase.env['HBASE_MASTER_OPTS'] ?= if ctx.has_module 'ryba/hbase/master'
+      then "-Xmx2048m -Djava.security.auth.login.config=#{hbase.conf_dir}/hbase-master.jaas"
+      else '-Xmx2048m' # Default in HDP companion file
+      hbase.env['HBASE_REGIONSERVER_OPTS'] ?= if ctx.has_module 'ryba/hbase/regionserver'
+      then "-Xmn200m -Xms4096m -Xmx4096m -Djava.security.auth.login.config=#{hbase.conf_dir}/hbase-regionserver.jaas"
+      else '-Xmn200m -Xms4096m -Xmx4096m' # Default in HDP companion file
       require('../hadoop/core').configure ctx
 
 ## Users & Groups
