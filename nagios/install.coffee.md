@@ -280,11 +280,12 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       # YARN ResourceManager
       rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
       rm_hosts = rm_ctxs.map (rm_ctx) -> rm_ctx.config.host
-      if rm_ctxs.lenth
-        rm_site = rm_ctxs[0].config.ryba.yarn.site
-        rm_webapp_port = if rm_site['yarn.http.policy'] is 'HTTP_ONLY'
-        then rm_site['yarn.resourcemanager.webapp.address'].split(':')[1]
-        else rm_site['yarn.resourcemanager.webapp.https.address'].split(':')[1]
+      # Get RM UI port for both HA and non-HA
+      # if rm_ctxs.lenth
+      rm_site = rm_ctxs[0].config.ryba.yarn.site
+      rm_webapp_port = if rm_site['yarn.http.policy'] is 'HTTP_ONLY'
+      then rm_site['yarn.resourcemanager.webapp.address'].split(':')[1]
+      else rm_site['yarn.resourcemanager.webapp.https.address'].split(':')[1]
       # YARN NodeManager
       nm_ctxs = ctx.contexts 'ryba/hadoop/yarn_nm', require('../hadoop/yarn_nm').configure
       if nm_ctxs.length
