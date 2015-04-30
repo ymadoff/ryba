@@ -35,6 +35,7 @@ Example:
       # hive.site['hive.exec.compress.output'] ?= 'true'
       hive.site['hive.exec.compress.intermediate'] ?= 'true'
       hive.site['hive.auto.convert.join'] ?= 'true'
+      hive.site['hive.cli.print.header'] ?= 'false'
       # hive.site['hive.mapjoin.smalltable.filesize'] ?= '50000000'
 
       hive.site['hive.execution.engine'] ?= 'tez'
