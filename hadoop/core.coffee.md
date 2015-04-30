@@ -340,8 +340,7 @@ will be created by one of the datanode.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      .then (err, modified) ->
-        next err, modified
+      .then next
 
 ## Install
 
