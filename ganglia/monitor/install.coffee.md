@@ -3,9 +3,6 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-
-## Dependencies
-
     module.exports.push 'masson/core/yum'
 
 ## Service
@@ -25,7 +22,7 @@ the objects files and generate the hosts configuration.
     module.exports.push name: 'Ganglia Monitor # Layout', timeout: -1, handler: (ctx, next) ->
       ctx.mkdir
         destination: '/usr/libexec/hdp/ganglia'
-      , next
+      .then next
 
 ## Objects
 
@@ -35,7 +32,8 @@ Copy the object files provided in the HDP companion files into the
     module.exports.push name: 'Ganglia Monitor # Objects', timeout: -1, handler: (ctx, next) ->
       glob "#{__dirname}/../../resources/ganglia/objects/*.*", (err, files) ->
         files = for file in files then source: file, destination: "/usr/libexec/hdp/ganglia", mode: 0o744
-        ctx.upload files, next
+        ctx.upload files
+        .then next
 
 ## Init Script
 
@@ -50,12 +48,19 @@ Upload the "hdp-gmond" service file into "/etc/init.d".
         replace: '# chkconfig: 2345 70 40'
         append: '#!/bin/sh'
         mode: 0o755
-      , (err, written) ->
-        return next err, false unless written
+      .then (err, written) ->
+        return next err, false if err or not written
         ctx.execute
-          cmd: "service gmond start; chkconfig --add gmond; chkconfig --add hdp-gmond"
-        , (err) ->
-          next err, true
+          # cmd: "service gmond start; chkconfig --add gmond; chkconfig --add hdp-gmond"
+          cmd: "service gmond start; chkconfig --add hdp-gmond"
+        .then next
+
+    module.exports.push name: 'Ganglia Monitor # Fix Gmond', handler: (ctx, next) ->
+      ctx
+      .service_startup
+        name: 'gmond'
+        startup: false
+      .then next
 
 ## Fix RRD
 
@@ -69,7 +74,7 @@ Ganglia) from starting. The variable "RRDCACHED_BASE_DIR" should point to
         match: /^RRDCACHED_BASE_DIR=.*$/mg
         replace: 'RRDCACHED_BASE_DIR=/var/lib/ganglia/rrds;'
         append: 'GANGLIA_RUNTIME_DIR'
-      , next
+      .then next
 
 ## Host
 
@@ -93,7 +98,8 @@ Setup the Ganglia hosts. Categories are "HDPNameNode", "HDPResourceManager",
       # If HBase is installed, on the HBase Master, to configure the gmond emitter
       if ctx.has_any_modules 'ryba/hbase/master'
         cmds.push cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPHBaseMaster"
-      ctx.execute cmds, next
+      ctx.execute cmds
+      .then next
 
 ## Configuration
 
@@ -131,7 +137,8 @@ Update the files generated in the "host" action with the host of the Ganglia Col
           destination: "/etc/ganglia/hdp/HDPHBaseMaster/conf.d/gmond.slave.conf"
           match: /^(.*)host = (.*)$/mg
           replace: "$1host = #{collector}"
-      ctx.write writes, next
+      ctx.write writes
+      .then next
 
 ## Hadoop
 
@@ -145,7 +152,7 @@ Upload the "hadoop-metrics2.properties" to connect Hadoop with Ganglia.
         destination: "/etc/hadoop/conf/hadoop-metrics2.properties"
         match: "TODO-GANGLIA-SERVER"
         replace: collector
-      , next
+      .then next
 
 
 ## Module dependencies
