@@ -9,8 +9,8 @@ Learn more about Pig optimization by reading ["Making Pig Fly"][fly].
     module.exports.push 'ryba/hadoop/mapred_client'
     module.exports.push 'ryba/hadoop/yarn_client'
     module.exports.push 'ryba/hive/client' # In case pig is run through hcat
-    module.exports.push require '../lib/hdp_select'
-    module.exports.push require('./pig').configure
+    module.exports.push require '../../lib/hdp_select'
+    module.exports.push require('./index').configure
 
 ## Users & Groups
 
@@ -70,7 +70,7 @@ companion file defines no properties while the YUM package does.
       {java_home} = ctx.config.java
       {hadoop_group, pig_conf_dir, pig_user} = ctx.config.ryba
       ctx.write
-        source: "#{__dirname}/../resources/pig/pig-env.sh"
+        source: "#{__dirname}/../../resources/pig/pig-env.sh"
         destination: "#{pig_conf_dir}/pig-env.sh"
         local_source: true
         write: [
@@ -98,7 +98,7 @@ companion file defines no properties while the YUM package does.
 
 ## Check
 
-    module.exports.push 'ryba/tools/pig_check'
+    module.exports.push 'ryba/tools/pig/check'
 
 ## Module Dependencies
 

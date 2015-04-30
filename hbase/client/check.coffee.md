@@ -45,8 +45,7 @@ scanning the table.
       hbase_ctxs = ctx.contexts 'ryba/hbase/master', require('../master').configure
       {admin} = hbase_ctxs[0].config.ryba.hbase
       ctx.execute
-        cmd: mkcmd.test ctx, """
-          echo #{admin.password} | kinit #{admin.principal}
+        cmd: mkcmd.hbase ctx, """
           if hbase shell 2>/dev/null <<< "list" | grep 'test_splits'; then echo "disable 'test_splits'" | hbase shell 2>/dev/null; echo "drop 'test_splits'" | hbase shell 2>/dev/null; fi
           echo "create 'test_splits', 'cf1', SPLITS => ['1', '2', '3']" | hbase shell 2>/dev/null;
           echo "scan 'hbase:meta',  {COLUMNS => 'info:regioninfo', FILTER => \\"PrefixFilter ('test_split')\\"}" | hbase shell 2>/dev/null

@@ -4,8 +4,8 @@
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'ryba/hadoop/hdfs' # Users and groups created by "zookeeper" and "hadoop-hdfs" dependencies
-    module.exports.push require '../lib/hdp_select'
-    module.exports.push require('./flume').configure
+    module.exports.push require '../../lib/hdp_select'
+    module.exports.push require('./index').configure
 
 ## Users & Groups
 
@@ -22,10 +22,10 @@ Note, the "flume" package rely on the "zookeeper" and "hadoop-hdfs" dependencies
 creating the "zookeeper" and "hdfs" users and the "hadoop" and "hdfs" group.
 
     module.exports.push name: 'Flume # Users & Groups', handler: (ctx, next) ->
-      {flume_group, flume_user} = ctx.config.ryba
-      ctx.group flume_group, (err, gmodified) ->
+      {flume} = ctx.config.ryba
+      ctx.group flume.group, (err, gmodified) ->
         return next err if err
-        ctx.user flume_user, (err, umodified) ->
+        ctx.user flume.user, (err, umodified) ->
           next err, gmodified or umodified
 
 ## Install
@@ -48,15 +48,14 @@ later usage. It is placed inside the flume configuration directory, by default
 "0600".
 
     module.exports.push name: 'Flume # Kerberos', handler: (ctx, next) ->
-      {flume_user, flume_group, flume_conf_dir, realm} = ctx.config.ryba
+      {flume, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
-        principal: "#{flume_user.name}/#{ctx.config.host}@#{realm}"
+        principal: "#{flume.user.name}/#{ctx.config.host}@#{realm}"
         randkey: true
-        keytab: "#{flume_conf_dir}/flume.service.keytab"
-        uid: flume_user.name
-        gid: flume_group.name
-        mode: 0o600
+        keytab: "#{flume.conf_dir}/flume.service.keytab"
+        uid: flume.user.name
+        gid: flume.group.name
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server

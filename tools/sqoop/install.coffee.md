@@ -10,8 +10,8 @@ driver used by Sqoop.
     module.exports.push 'masson/commons/mysql_client'
     module.exports.push 'ryba/hadoop/hdfs_client'
     module.exports.push 'ryba/hadoop/yarn_client'
-    module.exports.push require '../lib/hdp_select'
-    module.exports.push require('./sqoop').configure
+    module.exports.push require '../../lib/hdp_select'
+    module.exports.push require('./index').configure
 
 ## Users & Groups
 
@@ -25,10 +25,10 @@ hadoop:x:502:yarn,mapred,hdfs,hue
 ```
 
     module.exports.push name: 'Hadoop Sqoop # Users & Groups', handler: (ctx, next) ->
-      {hadoop_group, sqoop_user} = ctx.config.ryba
+      {sqoop, hadoop_group} = ctx.config.ryba
       ctx.group hadoop_group, (err, gmodified) ->
         return next err if err
-        ctx.user sqoop_user, (err, umodified) ->
+        ctx.user sqoop.user, (err, umodified) ->
           next err, gmodified or umodified
 
 ## Environment
@@ -36,12 +36,12 @@ hadoop:x:502:yarn,mapred,hdfs,hue
 Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
 
     module.exports.push name: 'Hadoop Sqoop # Environment', timeout: -1, handler: (ctx, next) ->
-      {sqoop_conf_dir, sqoop_user, hadoop_group} = ctx.config.ryba
+      {sqoop, hadoop_group} = ctx.config.ryba
       ctx.write
         source: "#{__dirname}/../resources/sqoop/sqoop-env.sh"
-        destination: "#{sqoop_conf_dir}/sqoop-env.sh"
+        destination: "#{sqoop.conf_dir}/sqoop-env.sh"
         local_source: true
-        uid: sqoop_user.name
+        uid: sqoop.user.name
         gid: hadoop_group.name
         mode: 0o755
       , next
@@ -51,13 +51,13 @@ Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
 Upload the "sqoop-site.xml" files into the "/etc/sqoop/conf" folder.
 
     module.exports.push name: 'Hadoop Sqoop # Configuration', timeout: -1, handler: (ctx, next) ->
-      {sqoop_conf_dir, sqoop_user, hadoop_group, sqoop_site} = ctx.config.ryba
+      {sqoop, hadoop_group} = ctx.config.ryba
       ctx.hconfigure
-        destination: "#{sqoop_conf_dir}/sqoop-site.xml"
-        default: "#{__dirname}/../resources/sqoop/sqoop-site.xml"
+        destination: "#{sqoop.conf_dir}/sqoop-site.xml"
+        default: "#{__dirname}/../../resources/sqoop/sqoop-site.xml"
         local_default: true
-        properties: sqoop_site
-        uid: sqoop_user.name
+        properties: sqoop.site
+        uid: sqoop.user.name
         gid: hadoop_group.name
         mode: 0o755
         merge: true

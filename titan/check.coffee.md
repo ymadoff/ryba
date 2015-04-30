@@ -21,8 +21,7 @@ Check the configuration file (current.properties)
           cd #{titan.home}
           #{titan.install_dir}/current/bin/gremlin.sh 2>/dev/null <<< "#{cmd}" | grep '==>titangraph'
         """
-      , (err, executed, stdout) ->
-          next err, executed
+      , next
 
 ## Module Dependencies
 
