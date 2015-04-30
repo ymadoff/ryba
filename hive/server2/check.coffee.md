@@ -19,9 +19,9 @@ Check if the Hive Server2 server is listening.
         cmd: "echo > /dev/tcp/#{ctx.config.host}/#{port}"
       , next
 
-    module.exports.push name: 'Hive Server2 # Check JDBC', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'Hive Server2 # Check JDBC', handler: (ctx, next) ->
       # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.3.0/CDH4-Security-Guide/cdh4sg_topic_9_1.html
-      # !connect jdbc:hive2://big3.big:10001/default;principal=hive/big3.big@ADALTAS.COM 
+      # !connect jdbc:hive2://master3.ryba:10001/default;principal=hive/master3.ryba@HADOOP.RYBA
       next null, 'TODO'
 
 
