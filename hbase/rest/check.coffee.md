@@ -1,5 +1,5 @@
 
-# HBase Rest Server Check
+# HBase Rest Gateway Check
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'

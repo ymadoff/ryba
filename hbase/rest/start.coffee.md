@@ -1,5 +1,5 @@
 
-# HBase Rest Server Start
+# HBase Rest Gateway Start
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
@@ -16,9 +16,8 @@ su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf star
 ```
 
     module.exports.push name: 'HBase Rest # Start', label_true: 'STARTED', handler: (ctx, next) ->
-      ctx.service
-        srv_name: 'hbase-rest'
-        action: 'start'
+      ctx.service_start
+        name: 'hbase-rest'
         if_exists: '/etc/init.d/hbase-rest'
       , next
 

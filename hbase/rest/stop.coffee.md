@@ -1,5 +1,5 @@
 
-# HBase Rest Server Stop
+# HBase Rest Gateway Stop
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
