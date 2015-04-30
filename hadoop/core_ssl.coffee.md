@@ -153,7 +153,9 @@ keytool -list -v -keystore keystore -alias hadoop
           code_skipped: 3
         ,
           cmd: """
+          # Read user CACert signature
           user=`openssl x509  -noout -in "#{tmp_location}_cacert" -md5 -fingerprint | sed 's/\\(.*\\)=\\(.*\\)/\\2/' | cat`
+          # Read registered CACert signature
           keystore=`keytool -list -v -keystore #{ssl_server['ssl.server.keystore.location']} -alias hadoop_root_ca -storepass #{ssl_server['ssl.server.keystore.password']} | grep MD5: | sed 's/\\s*MD5\\:\\s*\\(.*\\)/\\1/'`
           echo "User CACert: $user"
           echo "Keystore CACert: $keystore"
