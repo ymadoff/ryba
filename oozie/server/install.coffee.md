@@ -120,6 +120,33 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         # , (err, executed) ->
         #   next err, copied
 
+## Environment
+
+Update the Oozie environment file "oozie-env.sh" located inside
+"/etc/oozie/conf".
+
+Note, environment variables are grabed by oozie and translated into java
+properties inside "./bin/oozied.distro". Here's an extract:
+
+
+```bash
+catalina_opts="-Doozie.home.dir=${OOZIE_HOME}";
+catalina_opts="${catalina_opts} -Doozie.config.dir=${OOZIE_CONFIG}";
+catalina_opts="${catalina_opts} -Doozie.log.dir=${OOZIE_LOG}";
+catalina_opts="${catalina_opts} -Doozie.data.dir=${OOZIE_DATA}";
+catalina_opts="${catalina_opts} -Doozie.instance.id=${OOZIE_INSTANCE_ID}"
+catalina_opts="${catalina_opts} -Doozie.config.file=${OOZIE_CONFIG_FILE}";
+catalina_opts="${catalina_opts} -Doozie.log4j.file=${OOZIE_LOG4J_FILE}";
+catalina_opts="${catalina_opts} -Doozie.log4j.reload=${OOZIE_LOG4J_RELOAD}";
+catalina_opts="${catalina_opts} -Doozie.http.hostname=${OOZIE_HTTP_HOSTNAME}";
+catalina_opts="${catalina_opts} -Doozie.admin.port=${OOZIE_ADMIN_PORT}";
+catalina_opts="${catalina_opts} -Doozie.http.port=${OOZIE_HTTP_PORT}";
+catalina_opts="${catalina_opts} -Doozie.https.port=${OOZIE_HTTPS_PORT}";
+catalina_opts="${catalina_opts} -Doozie.base.url=${OOZIE_BASE_URL}";
+catalina_opts="${catalina_opts} -Doozie.https.keystore.file=${OOZIE_HTTPS_KEYSTORE_FILE}";
+catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTORE_PASS}";
+```
+
     module.exports.push name: 'Oozie Server # Environment', handler: (ctx, next) ->
       {java_home} = ctx.config.java
       {oozie} = ctx.config.ryba
@@ -156,6 +183,18 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ,
           match: /^export OOZIE_DATA=.*$/mg
           replace: "export OOZIE_DATA=#{oozie.data}"
+          append: true
+        ,
+          match: /^export OOZIE_DATA=.*$/mg
+          replace: "export OOZIE_DATA=#{oozie.data}"
+          append: true
+        ,
+          match: /^export OOZIE_HTTPS_KEYSTORE_FILE=.*$/mg
+          replace: "export OOZIE_HTTPS_KEYSTORE_FILE=#{oozie.keystore_file}"
+          append: true
+        ,
+          match: /^export OOZIE_HTTPS_KEYSTORE_PASS=.*$/mg
+          replace: "export OOZIE_HTTPS_KEYSTORE_PASS=#{oozie.keystore_pass}"
           append: true
         ]
         uid: oozie.user.name
@@ -248,50 +287,57 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         next null, modified
       do_oozie_site()
 
+    # module.exports.push name: 'Oozie Server # SSL', handler: (ctx, next) ->
+    #   {java_home, jre_home} = ctx.config.java
+    #   {ssl, oozie} = ctx.config.ryba
+    #   tmp_location = "/tmp/ryba_oozie_client_#{Date.now()}"
+    #   ctx
+    #   .upload
+    #     source: ssl.cacert
+    #     destination: "#{tmp_location}_cacert"
+    #   .execute
+    #     cmd: "su -l oozie -c 'keytool -import -alias tomcat -file #{tmp_location}_cacert'"
+    #   .remove
+    #     destination: "#{tmp_location}_cacert"
+    #   .then next
+
     module.exports.push name: 'Oozie Server # War', handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
       falcon_ctxs = ctx.contexts 'ryba/falcon', require('../../falcon').configure
       do_falcon = ->
         return do_prepare_war() unless falcon_ctxs.length
-        ctx.service
+        ctx.child()
+        .service
           name: 'falcon'
-        , (err, serviced) ->
+        .mkdir
+          destination: '/tmp/falcon-oozie-jars'
+        # Note, the documentation mentions using "-d" option but it doesnt
+        # seem to work. Instead, we deploy the jar where "-d" default.
+        .execute
+          # cmd: """
+          # rm -rf /tmp/falcon-oozie-jars/*
+          # cp  /usr/lib/falcon/oozie/ext/falcon-oozie-el-extension-*.jar \
+          #   /tmp/falcon-oozie-jars
+          # """, (err) ->
+          cmd: """
+          falconext=`ls /usr/hdp/current/falcon-client/oozie/ext/falcon-oozie-el-extension-*.jar`
+          if [ -f /usr/hdp/current/oozie-client/libext/`basename $falconext` ]; then exit 3; fi
+          rm -rf /tmp/falcon-oozie-jars/*
+          cp  /usr/hdp/current/falcon-client/oozie/ext/falcon-oozie-el-extension-*.jar \
+            /usr/hdp/current/oozie-client/libext
+          """
+          code_skipped: 3
+        .execute
+          cmd: """
+          if [ ! -f #{oozie.pid_dir}/oozie.pid ]; then exit 3; fi
+          if ! kill -0 >/dev/null 2>&1 `cat #{oozie.pid_dir}/oozie.pid`; then exit 3; fi
+          su -l #{oozie.user.name} -c "/usr/hdp/current/oozie-server/bin/oozied.sh stop 20 -force"
+          rm -rf cat #{oozie.pid_dir}/oozie.pid
+          """
+          code_skipped: 3
+        .then (err) ->
           return next err if err
-          # return do_prepare_war() unless serviced
-          ctx.mkdir
-            destination: '/tmp/falcon-oozie-jars'
-          , (err, created) ->
-            return next err if err
-            # Note, the documentation mentions using "-d" option but it doesnt
-            # seem to work. Instead, we deploy the jar where "-d" default.
-            ctx.execute
-              # cmd: """
-              # rm -rf /tmp/falcon-oozie-jars/*
-              # cp  /usr/lib/falcon/oozie/ext/falcon-oozie-el-extension-*.jar \
-              #   /tmp/falcon-oozie-jars
-              # """, (err) ->
-              cmd: """
-              falconext=`ls /usr/hdp/current/falcon-client/oozie/ext/falcon-oozie-el-extension-*.jar`
-              if [ -f /usr/hdp/current/oozie-client/libext/`basename $falconext` ]; then exit 3; fi
-              rm -rf /tmp/falcon-oozie-jars/*
-              cp  /usr/hdp/current/falcon-client/oozie/ext/falcon-oozie-el-extension-*.jar \
-                /usr/hdp/current/oozie-client/libext
-              """
-              code_skipped: 3
-              , (err) ->
-                return next err if err
-                ctx.execute
-                  cmd: """
-                  if [ ! -f #{oozie.pid_dir}/oozie.pid ]; then exit 3; fi
-                  if ! kill -0 >/dev/null 2>&1 `cat #{oozie.pid_dir}/oozie.pid`; then exit 3; fi
-                  su -l #{oozie.user.name} -c "/usr/hdp/current/oozie-server/bin/oozied.sh stop 20 -force"
-                  rm -rf cat #{oozie.pid_dir}/oozie.pid
-                  """
-                  code_skipped: 3
-                , (err) ->
-                  # console.log 'ok', err
-                  return next err if err
-                  do_prepare_war()
+          do_prepare_war()
       do_prepare_war = ->
         # The script `ooziedb.sh` must be done as the oozie Unix user, otherwise
         # Oozie may fail to start or work properly because of incorrect file permissions.
@@ -300,9 +346,11 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         # The directory being served by the web server is "prepare-war".
         # See note 20 lines above about "-d" option
         # falcon_opts = if falcon_ctxs.length then " –d /tmp/falcon-oozie-jars" else ''
+        secure_opt = if oozie.secure then '-secure' else ''
         falcon_opts = ''
         ctx.execute
-          cmd: "su -l #{oozie.user.name} -c 'cd /usr/hdp/current/oozie-client; ./bin/oozie-setup.sh prepare-war #{falcon_opts}'"
+          # su -l oozie -c 'cd /usr/hdp/current/oozie-client; ./bin/oozie-setup.sh prepare-war -secure'
+          cmd: "su -l #{oozie.user.name} -c 'cd /usr/hdp/current/oozie-client; ./bin/oozie-setup.sh prepare-war #{secure_opt} #{falcon_opts}'"
           code_skipped: 255 # Oozie already started, war is expected to be installed
         , next
       do_falcon()

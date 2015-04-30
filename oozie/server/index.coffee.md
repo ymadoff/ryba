@@ -1,8 +1,8 @@
 
 # Oozie Server
+
 [Oozie]https://oozie.apache.org/docs/3.1.3-incubating/index.html is a Java Web-Application that runs in a Java servlet-container which is a server based Workflow Engine specialized in running workflow jobs with actions that run Hadoop Map/Reduce and Pig jobs.
 For the purposes of Oozie, a workflow is a collection of actions (i.e. Hadoop Map/Reduce jobs, Pig jobs) arranged in a control dependency DAG (Direct Acyclic Graph). "control dependency" from one action to another means that the second action ca not run until the first action has completed.
-
 
     module.exports = []
 
@@ -37,6 +37,7 @@ Example
       require('masson/core/iptables').configure ctx
       require('masson/commons/java').configure ctx
       require('../../hadoop/core').configure ctx
+      require('../../hadoop/core_ssl').configure ctx
       # require('../client').configure ctx
       # Internal properties
       {ryba} = ctx.config
@@ -61,10 +62,16 @@ Example
       oozie.log_dir ?= '/var/log/oozie'
       oozie.pid_dir ?= '/var/run/oozie'
       oozie.tmp_dir ?= '/var/tmp/oozie'
-
+      # SSL
+      oozie.secure ?= true
+      oozie.keystore_file ?= ryba.ssl_server['ssl.server.keystore.location'] or ''
+      oozie.keystore_pass ?= ryba.ssl_server['ssl.server.keystore.password'] or ''
       # Configuration
       oozie.site ?= {}
-      oozie.site['oozie.base.url'] = "http://#{ctx.config.host}:11000/oozie"
+      if oozie.secure
+        oozie.site['oozie.base.url'] = "https://#{ctx.config.host}:11443/oozie"
+      else
+        oozie.site['oozie.base.url'] = "http://#{ctx.config.host}:11000/oozie"
       # Configuration Database
       oozie.site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{ryba.db_admin.host}:#{ryba.db_admin.port}/oozie?createDatabaseIfNotExist=true"
       oozie.site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
