@@ -67,9 +67,7 @@ See [REST Gateway Impersonation Configuration][impersonation].
 
 ## Commands
 
-    # module.exports.push commands: 'backup', modules: 'ryba/hbase/rest/backup'
-
-    module.exports.push commands: 'check', modules: 'ryba/hbase/thrift/check'
+    # module.exports.push commands: 'check', modules: 'ryba/hbase/thrift/check'
 
     module.exports.push commands: 'install', modules: [
       'ryba/hbase/thrift/install'
