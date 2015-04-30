@@ -25,4 +25,4 @@
     module.exports.push name: 'HDFS Client # HDP Select', handler: (ctx, next) ->
       ctx.hdp_select
         name: 'hadoop-client'
-      , next
+      .then next
