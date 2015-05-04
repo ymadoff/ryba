@@ -90,7 +90,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
 
     module.exports.push name: 'YARN # Directories', timeout: -1, handler: (ctx, next) ->
       {yarn, hadoop_group} = ctx.config.ryba
-      ctx.mkdir
+      ctx.mkdir [
         destination: "#{yarn.log_dir}/#{yarn.user.name}"
         uid: yarn.user.name
         gid: hadoop_group.name
@@ -100,7 +100,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0755
-      , next
+      ], next
 
     module.exports.push name: 'YARN # Yarn OPTS', handler: (ctx, next) ->
       {java_home} = ctx.config.java
@@ -139,12 +139,3 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       , next
 
 [cloudera_ha]: http://www.cloudera.com/content/cloudera/en/documentation/cdh5/v5-1-x/CDH5-High-Availability-Guide/cdh5hag_rm_ha_config.html
-
-
-
-
-
-
-
-
-
