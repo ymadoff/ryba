@@ -1,8 +1,9 @@
 
 # Oozie Server
-
-[Oozie]https://oozie.apache.org/docs/3.1.3-incubating/index.html is a Java Web-Application that runs in a Java servlet-container which is a server based Workflow Engine specialized in running workflow jobs with actions that run Hadoop Map/Reduce and Pig jobs.
-For the purposes of Oozie, a workflow is a collection of actions (i.e. Hadoop Map/Reduce jobs, Pig jobs) arranged in a control dependency DAG (Direct Acyclic Graph). "control dependency" from one action to another means that the second action ca not run until the first action has completed.
+[Oozie](https://oozie.apache.org/docs/3.1.3-incubating/index.html) is a server based Workflow Engine specialized in running workflow jobs.
+Workflows are basically collections of actions.
+These actions can be  Hadoop Map/Reduce jobs, Pig jobs arranged in a control dependency DAG (Direct Acyclic Graph).
+Please check Oozie page
 
     module.exports = []
 
@@ -211,7 +212,7 @@ Example
 
     module.exports.push commands: 'backup', modules: 'ryba/oozie/server/backup'
 
-    # module.exports.push commands: 'check', modules: 'ryba/oozie/server/check'
+    #module.exports.push commands: 'check', modules: 'ryba/oozie/server/check'
 
     module.exports.push commands: 'install', modules: 'ryba/oozie/server/install'
 

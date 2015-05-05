@@ -138,6 +138,8 @@ ownerships.
         mode: 0o755
       ], next
 
+## Environment
+
     module.exports.push name: 'ZooKeeper Server # Environment', handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
       write = for k, v of zookeeper.env
