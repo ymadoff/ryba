@@ -86,6 +86,9 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
 ## Backup
 
 Backup configuration files for each services
+```bash
+bin/upgrade [...] -s backup
+```
 
     exports.backup = label: 'Backup', handler: (config, contexts, next) ->
       each contexts
@@ -127,6 +130,9 @@ Backup configuration files for each services
 
 Run the fsck command as the HDFS Service user and fix any errors. The resulting
 file contains a complete block map of the file system.
+```bash
+bin/upgrade [...] -s hdfs_fsck
+```
 
     exports.hdfs_fsck = label: 'HDFS fsck', handler: (config, contexts, next) ->
       each contexts
@@ -145,6 +151,9 @@ file contains a complete block map of the file system.
 ## HDFS Namespace
 
 Capture the complete namespace of the file system.
+```bash
+bin/upgrade [...] -s hdfs_namespaces
+```
 
     exports.hdfs_namespaces = label: 'HDFS Namespaces', handler: (config, contexts, next) ->
       each contexts
@@ -162,6 +171,9 @@ Capture the complete namespace of the file system.
 ## HDFS Report
 
 Capture the complete namespace of the file system.
+```bash
+bin/upgrade [...] -s hdfs_report
+```
 
     exports.hdfs_report = label: 'HDFS Report', handler: (config, contexts, next) ->
       each contexts
@@ -179,6 +191,9 @@ Capture the complete namespace of the file system.
 ## HDFS Save
 
 Save the namespace.
+```bash
+bin/upgrade [...] -s hdfs_save
+```
 
     exports.hdfs_save = label: 'HDFS Save', handler: (config, contexts, next) ->
       do_save_namespaces = ->
@@ -229,6 +244,10 @@ Save the namespace.
 
 ## Backup Hive
 
+```bash
+bin/upgrade [...] -s hive
+```
+
     exports.hive = label: 'Hive Backup', handler: (config, contexts, next) ->
       each contexts
       .run (context, next) ->
@@ -245,6 +264,10 @@ Save the namespace.
       .then next
 
 ## Stop Services
+
+```bash
+bin/upgrade [...] -s stop
+```
 
     exports.stop = label: 'Stop Services', handler: (config, contexts, next) ->
       services = [
@@ -339,6 +362,9 @@ Save the namespace.
 ## HDFS Check Edits
 
 Save the namespace.
+```bash
+bin/upgrade [...] -s hdfs_check_edits
+```
 
     exports.hdfs_check_edits = label: 'HDFS Check Edits', handler: (config, contexts, next) ->
       each contexts
@@ -385,6 +411,9 @@ Save the namespace.
 Remove your old HDP 2.1 components. This command un-installs the HDP 2.1
 components. It leaves the user data, and metadata, but removes your
 configurations.
+```bash
+bin/upgrade [...] -s remove
+```
 
     exports.remove = label: 'Remove Services', handler: (config, contexts, next) ->
       each contexts
@@ -405,6 +434,9 @@ configurations.
 ## Repository
 
 Upload the HDP 2.2 repository.
+```bash
+bin/upgrade [...] -s repo
+```
 
     exports.repo = label: 'Repository', handler: (config, contexts, next) ->
       each contexts
@@ -423,6 +455,9 @@ Upload the HDP 2.2 repository.
 ## Services
 
 Re-install the major services.
+```bash
+bin/upgrade [...] -s services
+```
 
     exports.services = label: 'Services', handler: (config, contexts, next) ->
       each contexts
@@ -454,6 +489,10 @@ Re-install the major services.
 
 ## Cleanup
 
+```bash
+bin/upgrade [...] -s cleanup
+```
+
     exports.cleanup = label: 'Cleanup', handler: (config, contexts, next) ->
       each contexts
       .parallel true
@@ -476,6 +515,9 @@ Re-install the major services.
 ## HDP Select
 
 Symlink Directories with hdp-select
+```bash
+bin/upgrade [...] -s hdp_select
+```
 
     exports.hdp_select = label: 'HDP Select', handler: (config, contexts, next) ->
       each contexts
@@ -489,6 +531,9 @@ Symlink Directories with hdp-select
 ## HDP Install
 
 Install Zookeeper and HDFS.
+```bash
+bin/upgrade [...] -s install
+```
 
     exports.install = label: 'HDP Install', handler: (config, contexts, next) ->
       params = merge {}, config.params
@@ -537,6 +582,9 @@ Install Zookeeper and HDFS.
 ## HDFS Upgrade
 
 Replace your configuration after upgrading on all the ZooKeeper nodes.
+```bash
+bin/upgrade [...] -s hdfs_upgrade
+```
 
     exports.hdfs_upgrade = label: 'HDFS Upgrade', handler: (config, contexts, next) ->
       each contexts
