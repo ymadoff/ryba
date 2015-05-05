@@ -13,11 +13,11 @@ sept 2nd, 2013: need the [patched version](https://github.com/wdavidw/xmlbuilder
 to handle empty strings
 Options includes:
 *   `merge`: Merge with destination file
-*   `default`: Path to a file or object of properties used as default values.   
-*   `local_default`: Read the default file from the local filesystem (only apply if `default` is a string).   
+*   `default`: Path to a file or object of properties used as default values.
+*   `local_default`: Read the default file from the local filesystem (only apply if `default` is a string).
 ###
 module.exports = ->
-  wrap arguments, (options, next) ->
+  wrap null, arguments, (options, next) ->
     fnl_props = {}
     org_props = {}
     updated = 0
@@ -82,9 +82,3 @@ module.exports = ->
         updated = true if written
         next err, updated
     do_read_source()
-
-
-
-
-
-
