@@ -272,7 +272,7 @@ bin/upgrade [...] -s stop
     exports.stop = label: 'Stop Services', handler: (config, contexts, next) ->
       services = [
         { name: 'zookeeper-server', module: 'ryba/zookeeper' }
-        { name: 'hadoop-hdfs-journalnode', module: 'yba/hadoop/hdfs_jn' }
+        { name: 'hadoop-hdfs-journalnode', module: 'ryba/hadoop/hdfs_jn' }
         { name: 'hadoop-hdfs-zkfc', module: 'ryba/hadoop/hdfs_nn'}
         { name: 'hadoop-hdfs-namenode', module: 'ryba/hadoop/hdfs_nn'}
         { name: 'hadoop-hdfs-secondarynamenode', module: 'ryba/hadoop/hdfs_snn'}

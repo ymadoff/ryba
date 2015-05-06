@@ -62,6 +62,10 @@ Now it is time to let Vagrant configure your VMs !
 
 Note that the provider parameter is optional since virtualbox is the default provider
 
+Your environment is now ready for ryba.
+
+### Known Issues
+
 ## Libvirt
 
 Libvirt can be used for performance purpose. Libvirt is a wrapper for QEMU, QEMU/KVM, VMWare, Xen, ESX, etc. Only QEMU and QEMU/KVM have been tested, but other back-end should also work.
@@ -82,7 +86,7 @@ Storage → Add ... → ryba-cluster
 
 Once Vagrant is installed and libvirt is configured, please also install some additional modules:
 ```bash
-vagrant plugin install vagrant-libvirt
+CONFIGURE_ARGS="with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib64" vagrant plugin install vagrant-libvirt
 vagrant plugin install vagrant-mutate
 ```
 
@@ -109,3 +113,26 @@ Now it is time to let Vagrant configure your VMs !
 Note that the provider parameter is MANDATORY since virtualbox is the default provider
 
 Your environment is now ready for ryba.
+
+### Known Issues
+
+If you get this error:
+```
+undefined method `active?' for #<Libvirt::Domain:0x00000003255c08>
+```
+Please do:
+```bash
+vagrant plugin uninstall vagrant-libvirt
+
+sudo mv /opt/vagrant/embedded/lib/libcurl.so{,.backup}
+sudo mv /opt/vagrant/embedded/lib/libcurl.so.4{,.backup}
+sudo mv /opt/vagrant/embedded/lib/libcurl.so.4.3.0{,.backup}
+sudo mv /opt/vagrant/embedded/lib/pkgconfig/libcurl.pc{,.backup}
+
+CONFIGURE_ARGS="with-libvirt-include=/usr/include/libvirt with-libvirt-lib=/usr/lib" vagrant plugin install vagrant-libvirt
+
+sudo mv /opt/vagrant/embedded/lib/libcurl.so{.backup,}
+sudo mv /opt/vagrant/embedded/lib/libcurl.so.4{.backup,}
+sudo mv /opt/vagrant/embedded/lib/libcurl.so.4.3.0{.backup,}
+sudo mv /opt/vagrant/embedded/lib/pkgconfig/libcurl.pc{.backup,}
+```
