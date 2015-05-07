@@ -543,10 +543,11 @@ bin/upgrade [...] -s install
       params.modules = [
         'ryba/zookeeper/client/install'
         'ryba/zookeeper/server/install'
+        'ryba/zookeeper/server/start'
         'ryba/hadoop/core'
         'ryba/hadoop/core_ssl'
-        'ryba/hadoop/hdfs_jn/install'
         'ryba/hadoop/hdfs'
+        'ryba/hadoop/hdfs_jn/install'
         'ryba/hadoop/zkfc/install'
         # 'ryba/hadoop/hdfs_nn/install'
         'ryba/hadoop/hdfs_dn/install'
@@ -562,14 +563,9 @@ bin/upgrade [...] -s install
         .parallel true
         .run (context, next) ->
           context.execute [
-            # cmd: '/usr/hdp/2.2.0.0-2041/etc/rc.d/init.d/zookeeper-server start'
-            cmd: 'service zookeeper-server start'
-            if: context.has_module 'ryba/zookeeper/server'
-            code_skipped: 3
-          ,
             # cmd: '/usr/hdp/2.2.0.0-2041/etc/rc.d/init.d/hadoop-hdfs-zkfc start'
             cmd: 'service hadoop-hdfs-zkfc start'
-            if: context.has_module('ryba/hadoop/zkfc') and context.config.ryba.hdfs.active_nn_host is context.config.host
+            if: context.has_module('ryba/hadoop/zkfc') and context.config.ryba.active_nn_host is context.config.host
             code_skipped: 3
           ,
             # cmd: '/usr/hdp/2.2.0.0-2041/etc/rc.d/init.d/hadoop-hdfs-journalnode start'
