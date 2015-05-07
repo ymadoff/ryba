@@ -20,7 +20,7 @@ each HDFS cluster.
 
 Note, this hasnt been verified.
 
-    module.exports.push name: 'Hadoop HDFS DN # IPTables', handler: (ctx, next) ->
+    module.exports.push name: 'Falcon # IPTables', handler: (ctx, next) ->
       {falcon} = ctx.config.ryba
       {hostname, port} = url.parse falcon.startup['prism.falcon.local.endpoint']
       ctx.iptables
@@ -148,5 +148,3 @@ App logs  ${cluster.staging-location}/workflows/{entity}/{entity-name}/logs   fa
     url = require 'url'
     quote = require 'regexp-quote'
     mkcmd = require '../lib/mkcmd'
-
-
