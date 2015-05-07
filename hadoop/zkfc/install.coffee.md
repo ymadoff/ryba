@@ -315,41 +315,15 @@ The action start by enabling automatic failover in "hdfs-site.xml" and configuri
 If this is an active NameNode, we format ZooKeeper and start the ZKFC daemon. If this is a standby
 NameNode, we wait for the active NameNode to take leadership and start the ZKFC daemon.
 
-    module.exports.push name: 'ZKFC # HA Auto Failover', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'ZKFC # Format ZK', timeout: -1, handler: (ctx, next) ->
       {hdfs, active_nn_host} = ctx.config.ryba
+      return next() unless active_nn_host is ctx.config.host
       return next() unless hdfs.site['dfs.ha.automatic-failover.enabled'] = 'true'
-      do_active = ->
-        # About "formatZK"
-        # If no created, no configuration asked and exit code is 0
-        # If already exist, configuration is refused and exit code is 2
-        # About "transitionToActive"
-        # Seems like the first time, starting zkfc dont active the nn, so we force it
-        ctx.execute
-          cmd: "yes n | hdfs zkfc -formatZK"
-          code_skipped: 2
-        , (err, formated) ->
-          return next err if err
-          ctx.log "Is Zookeeper already formated: #{formated}"
-          ctx.service
-            srv_name: 'hadoop-hdfs-zkfc'
-            action: 'start'
-          , (err, started) ->
-            next err, formated or started
-      do_standby = ->
-        ctx.log "Wait for active NameNode to take leadership"
-        active_shortname = ctx.contexts(hosts: active_nn_host)[0].config.shortname
-        ctx.waitForExecution
-          cmd: mkcmd.hdfs ctx, "hdfs haadmin -getServiceState #{active_shortname}"
-          code_skipped: 255
-        , (err, stdout) ->
-          return next err if err
-          ctx.service
-            srv_name: 'hadoop-hdfs-zkfc'
-            action: 'start'
-          , next
-      if active_nn_host is ctx.config.host
-      then do_active()
-      else do_standby()
+      ctx.execute
+        cmd: "yes n | hdfs zkfc -formatZK"
+        code_skipped: 2
+      , next
+
 
 ## Dependencies
 
