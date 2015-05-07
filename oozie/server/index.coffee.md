@@ -1,6 +1,6 @@
 
 # Oozie Server
-[Oozie](https://oozie.apache.org/docs/3.1.3-incubating/index.html) is a server based Workflow Engine specialized in running workflow jobs.
+[Oozie Server][Oozie] is a server based Workflow Engine specialized in running workflow jobs.
 Workflows are basically collections of actions.
 These actions can be  Hadoop Map/Reduce jobs, Pig jobs arranged in a control dependency DAG (Direct Acyclic Graph).
 Please check Oozie page
@@ -221,3 +221,5 @@ Example
     module.exports.push commands: 'status', modules: 'ryba/oozie/server/status'
 
     module.exports.push commands: 'stop', modules: 'ryba/oozie/server/stop'
+
+[Oozie]: https://oozie.apache.org/docs/3.1.3-incubating/index.html
