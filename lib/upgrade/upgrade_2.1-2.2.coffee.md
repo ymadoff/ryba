@@ -524,7 +524,7 @@ bin/upgrade [...] -s hdp_select
       .parallel true
       .run (context, next) ->
         context.execute
-          cmd: 'hdp-select set all 2.2.0.0-2041'
+          cmd: 'hdp-select set all 2.2.4.2-2'
         , next
       .then next
 
