@@ -1,4 +1,3 @@
-
 # Ambari Server Install
 
     # util = require 'util'
@@ -10,6 +9,7 @@
      
     module.exports = []
     module.exports.push 'masson/bootstrap'
+    module.exports.push 'masson/commons/mysql_client'
     module.exports.push require('./index').configure
     # module.exports.push require './repoinfo'
  
@@ -25,39 +25,39 @@ Install Ambari server package.
         startup: true
       , next
  
-# ## Local repo
- 
-# Update the repository declaration files used by Ambari in local 
-# mode. Those files location match the pattern "/var/lib/ambari-server/resources/stacks/HDPLocal/{version}/repos/repoinfo.xml".
- 
-# We choose to regenerate all the metainfo.xml files base 
-# on internal configuration. This action may be skipped if the configuration
-# property "ambari.local" is set to `false`.
+    ### Local repo
+     
+    # Update the repository declaration files used by Ambari in local 
+    # mode. Those files location match the pattern "/var/lib/ambari-server/resources/stacks/HDPLocal/{version}/repos/repoinfo.xml".
+     
+    # We choose to regenerate all the metainfo.xml files base 
+    # on internal configuration. This action may be skipped if the configuration
+    # property "ambari.local" is set to `false`.
 
-#     module.exports.push name: 'Ambari Server # Local repo', handler: (ctx, next) ->
-#       ctx.repoinfo
-#         stack: '2.2'
-#         repoid: 'HDP-2.2'
-#         baseurl: 'http://10.10.10.101:10205/HDP/centos6/2.x/updates/2.2.4.2'
-#       , (err, modified) ->
-#         console.log err, modified
-#       # {local} = ctx.config.ryba.ambari
-#       # return next() unless local
-#       # writes = []
-#       # for version of local
-#       #   markup = builder.create 'reposinfo', version: '1.0', encoding: 'UTF-8'
-#       #   for platforms, config of local[version]
-#       #     for platform in platforms.split ','
-#       #       os = markup.ele 'os', type: platform
-#       #       for conf in config
-#       #         repo = os.ele 'repo'
-#       #         for k, v of conf
-#       #           repo.ele k, null, v
-#       #   writes.push
-#       #     content: markup.end pretty: true
-#       #     destination: "/var/lib/ambari-server/resources/stacks/HDP/#{version}/repos/repoinfo.xml"
-#       # ctx.write writes, next
- 
+    #     module.exports.push name: 'Ambari Server # Local repo', handler: (ctx, next) ->
+    #       ctx.repoinfo
+    #         stack: '2.2'
+    #         repoid: 'HDP-2.2'
+    #         baseurl: 'http://10.10.10.101:10205/HDP/centos6/2.x/updates/2.2.4.2'
+    #       , (err, modified) ->
+    #         console.log err, modified
+    #       # {local} = ctx.config.ryba.ambari
+    #       # return next() unless local
+    #       # writes = []
+    #       # for version of local
+    #       #   markup = builder.create 'reposinfo', version: '1.0', encoding: 'UTF-8'
+    #       #   for platforms, config of local[version]
+    #       #     for platform in platforms.split ','
+    #       #       os = markup.ele 'os', type: platform
+    #       #       for conf in config
+    #       #         repo = os.ele 'repo'
+    #       #         for k, v of conf
+    #       #           repo.ele k, null, v
+    #       #   writes.push
+    #       #     content: markup.end pretty: true
+    #       #     destination: "/var/lib/ambari-server/resources/stacks/HDP/#{version}/repos/repoinfo.xml"
+    #       # ctx.write writes, next
+    ###
 
 ## Repository
 
@@ -149,4 +149,3 @@ LDAP or Active Directory Authentication.
           --cluster-name=ryba-6vm
         """
       .then next
-

@@ -1,5 +1,6 @@
-
 # Ambari Agent Install
+
+The ambari server must be set in the configuration file.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
@@ -59,3 +60,4 @@
         startup: true
         action: 'start'
       , next
+

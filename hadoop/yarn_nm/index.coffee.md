@@ -3,7 +3,7 @@
 
 [The NodeManager](http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/YARN.htm) (NM) is YARN’s per-node agent,
 and takes care of the individual
-compute nodes in a Hadoop cluster. This includes keeping up-to date with the
+computing nodes in a Hadoop cluster. This includes keeping up-to date with the
 ResourceManager (RM), overseeing containers’ life-cycle management; monitoring
 resource usage (memory, CPU) of individual containers, tracking node-health,
 log’s management and auxiliary services which may be exploited by different YARN
