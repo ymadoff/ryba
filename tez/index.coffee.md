@@ -27,6 +27,9 @@ A list for configuration properties supported by HDP 2.2 is available on the
       ryba.tez.tez_site ?= {}
       # ryba.tez.tez_site['tez.lib.uris'] ?= "#{hdfs_url}/apps/tez/,#{hdfs_url}/apps/tez/lib/"
       ryba.tez.tez_site['tez.lib.uris'] ?= "/hdp/apps/${hdp.version}/tez/tez.tar.gz"
+      # For documentation purpose in case we HDFS_DELEGATION_TOKEN in hive queries
+      # Following line: ryba.tez.tez_site['tez.am.am.complete.cancel.delegation.tokens'] ?= 'false'
+      # Renamed to: ryba.tez.tez_site['tez.cancel.delegation.tokens.on.completion'] ?= 'false'
 
 ## Configuration for Resource Allocation
 
