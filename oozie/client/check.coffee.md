@@ -83,7 +83,7 @@
       ], (err, written) ->
         return next err if err
         ctx.execute
-          cmd: """
+          cmd: mkcmd.test ctx, """
           hdfs dfs -rm -r -skipTrash check-#{ctx.config.shortname}-oozie-fs 2>/dev/null
           hdfs dfs -mkdir -p check-#{ctx.config.shortname}-oozie-fs
           hdfs dfs -touchz check-#{ctx.config.shortname}-oozie-fs/source
