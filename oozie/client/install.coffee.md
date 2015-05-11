@@ -3,6 +3,13 @@
 
 Install and configure an Oozie client environment.
 
+The `oozie` command doesnt reference any configuration. It expect the
+environmental variable "OOZIE_URL" to connect to the server.
+
+Additionnal oozie properties may be defined inside the "OOZIE_CLIENT_OPTS"
+environmental variables. For example, HDP declare its version as
+"-Dhdp.version=${HDP_VERSION}".
+
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/bootstrap/utils'
