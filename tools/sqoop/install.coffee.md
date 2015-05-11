@@ -38,7 +38,7 @@ Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
     module.exports.push name: 'Hadoop Sqoop # Environment', timeout: -1, handler: (ctx, next) ->
       {sqoop, hadoop_group} = ctx.config.ryba
       ctx.write
-        source: "#{__dirname}/../resources/sqoop/sqoop-env.sh"
+        source: "#{__dirname}/../../resources/sqoop/sqoop-env.sh"
         destination: "#{sqoop.conf_dir}/sqoop-env.sh"
         local_source: true
         uid: sqoop.user.name

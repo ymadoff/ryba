@@ -52,8 +52,8 @@ define service {
         register                        0
 }
 
-define service {        
-        hostgroup_name          nagios-server        
+define service {
+        hostgroup_name          nagios-server
         use                     hadoop-service
         service_description     NAGIOS::Nagios status log freshness
         servicegroups           NAGIOS
@@ -72,7 +72,7 @@ define service {
         servicegroups           HDFS
         check_command           check_aggregate!"DATANODE::DataNode space"!10%!30%
         normal_check_interval   1
-        retry_check_interval    0.25 
+        retry_check_interval    0.25
         max_check_attempts      2
 }
 
@@ -423,7 +423,7 @@ define service {
 {% endif %}
 
 {% if hostgroup_defs['resourcemanager'] %}
-# YARN::RESOURCEMANAGER Checks 
+# YARN::RESOURCEMANAGER Checks
 define service {
         hostgroup_name          resourcemanager
         use                     hadoop-service
@@ -444,7 +444,7 @@ define service {
 #       check_command           check_cpu!200%!250%
         check_command           check_cpu_ha!{{ rm_hosts_in_str }}!{{ rm_port }}!200%!250%!{{ hadoop_ssl_enabled }}!{{ nagios_keytab_path }}!{{ nagios_principal_name }}!{{ kinit_path_local }}!{{ security_enabled }}
         normal_check_interval   5
-        retry_check_interval    2 
+        retry_check_interval    2
         max_check_attempts      5
 }
 {% endif %}
@@ -456,7 +456,7 @@ define service {
         servicegroups           YARN
         check_command           check_rpcq_latency_ha!{{ rm_hosts_in_str }}!ResourceManager!{{ rm_port }}!3000!5000!{{ hadoop_ssl_enabled }}!{{ nagios_keytab_path }}!{{ nagios_principal_name }}!{{ kinit_path_local }}!{{ security_enabled }}
         normal_check_interval   5
-        retry_check_interval    1 
+        retry_check_interval    1
         max_check_attempts      5
 }
 
@@ -531,7 +531,7 @@ define service {
 #        check_command           check_cpu!200%!250%
         check_command           check_cpu!{{ hs_port }}!200%!250%!{{ hadoop_ssl_enabled }}!{{ nagios_keytab_path }}!{{ nagios_principal_name }}!{{ kinit_path_local }}!{{ security_enabled }}
         normal_check_interval   5
-        retry_check_interval    2 
+        retry_check_interval    2
         max_check_attempts      5
 }
 {%  endif %}
@@ -543,7 +543,7 @@ define service {
         servicegroups           MAPREDUCE
         check_command           check_rpcq_latency!JobHistoryServer!{{ hs_port }}!3000!5000!{{ hadoop_ssl_enabled }}!{{ nagios_keytab_path }}!{{ nagios_principal_name }}!{{ kinit_path_local }}!{{ security_enabled }}
         normal_check_interval   5
-        retry_check_interval    1 
+        retry_check_interval    1
         max_check_attempts      5
 }
 
@@ -606,7 +606,7 @@ define service {
         service_description     DATANODE::DataNode space
         servicegroups           HDFS
         check_command           check_datanode_storage!{{ datanode_port }}!90%!90%!{{ hadoop_ssl_enabled }}!{{ nagios_keytab_path }}!{{ nagios_principal_name }}!{{ kinit_path_local }}!{{ security_enabled }}
-        normal_check_interval   2 
+        normal_check_interval   2
         retry_check_interval    1
         max_check_attempts      2
 }
@@ -716,9 +716,9 @@ define service {
         service_description     OOZIE::Oozie Server status
         servicegroups           OOZIE
         {% if security_enabled %}
-        check_command           check_oozie_status!{{ oozie_server_port }}!{{ java64_home }}!true!{{ nagios_keytab_path }}!{{ nagios_principal_name }}!{{ kinit_path_local }}
+        check_command           check_oozie_status!{{ oozie_url }}!{{ java64_home }}!true!{{ nagios_keytab_path }}!{{ nagios_principal_name }}!{{ kinit_path_local }}
         {% else %}
-        check_command           check_oozie_status!{{ oozie_server_port }}!{{ java64_home }}!false
+        check_command           check_oozie_status!{{ oozie_url }}!{{ java64_home }}!false
         {% endif %}
         normal_check_interval   1
         retry_check_interval    1
@@ -731,7 +731,7 @@ define service {
         hostgroup_name          webhcat-server
         use                     hadoop-service
         service_description     WEBHCAT::WebHCat Server status
-        servicegroups           WEBHCAT 
+        servicegroups           WEBHCAT
         {% if security_enabled %}
         check_command           check_templeton_status!{{ templeton_port }}!v1!{{ security_enabled }}!{{ nagios_keytab_path }}!{{ nagios_principal_name }}!{{ kinit_path_local }}
         {% else %}
@@ -805,4 +805,3 @@ define service {
         max_check_attempts      3
 }
 {% endif %}
-

@@ -12,7 +12,7 @@
     module.exports.push name: 'Nagios # Kerberos', handler: (ctx, next) ->
       {nagios, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc 
+      ctx.krb5_addprinc
         principal: nagios.principal
         randkey: true
         keytab: nagios.keytab
@@ -120,7 +120,7 @@ nagiocmd:x:2419:apache
       modified = false
       each(users)
       .on 'item', (name, user, call) ->
-        ctx.log "user #{name}" 
+        ctx.log "user #{name}"
         ctx.execute
           cmd: """
           if [ -e /etc/nagios/htpasswd.users ]; then
@@ -144,11 +144,11 @@ nagiocmd:x:2419:apache
       .on 'both', (err) ->
         next err, modified
 
-### Users Configuration 
+### Users Configuration
 
     module.exports.push name: 'Nagios # WebUI Users & Groups', handler: (ctx, next) ->
       {users, groups} = ctx.config.ryba.nagios
-      ctx.render      
+      ctx.render
         source: "#{__dirname}/../resources/nagios/templates/contacts.cfg.j2"
         local_source: true
         destination: '/etc/nagios/objects/contacts.cfg'
@@ -171,7 +171,7 @@ nagiocmd:x:2419:apache
         append: true
         eof: true
       # Update configuration parameters
-      cfgs = 
+      cfgs =
         'command_file': '/var/nagios/rw/nagios.cmd'
         'precached_object_file': '/var/nagios/objects.precache'
         'resource_file': '/etc/nagios/resource.cfg'
@@ -180,7 +180,7 @@ nagiocmd:x:2419:apache
         'temp_file': '/var/nagios/nagios.tmp'
         'date_format': 'iso8601'
       for k, v of cfgs
-        write.push 
+        write.push
           match: ///^#{k}=.*$///mg
           replace: "#{k}=#{v}"
           append: true
@@ -254,7 +254,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       , next
 
     module.exports.push name: 'Nagios # Services', handler: (ctx, next) ->
-      {nagios, force_check, active_nn_host, core_site, hdfs, zookeeper, 
+      {nagios, force_check, active_nn_host, core_site, hdfs, zookeeper,
         hbase, oozie, webhcat, ganglia, hue} = ctx.config.ryba
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       # HDFS NameNode
@@ -363,7 +363,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           hbase_master_rpc_port: hbase.site['hbase.master.port']
           hive_metastore_port: url.parse(hcat_ctxs[0].config.ryba.hive.site['hive.metastore.uris']).port
           hive_server_port: hs2_port
-          oozie_server_port: url.parse(oozie.site['oozie.base.url']).port
+          oozie_url: oozie.site['oozie.base.url']
           java64_home: ctx.config.java.java_home # Used by check_oozie_status.sh
           templeton_port: webhcat.site['templeton.port']
           falcon_port: 0 # TODO
@@ -388,7 +388,3 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
     url = require 'url'
     glob = require 'glob'
     each = require 'each'
-
-
-
-

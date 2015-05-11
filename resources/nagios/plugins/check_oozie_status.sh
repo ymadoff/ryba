@@ -20,24 +20,22 @@
 #
 #
 # OOZIE_URL is of the form http://<hostname>:<port>/oozie
-HOST=`echo $1 | tr '[:upper:]' '[:lower:]'`
-PORT=$2
-JAVA_HOME=$3
-SEC_ENABLED=$4
+OOZIE_URL=$1
+JAVA_HOME=$2
+SEC_ENABLED=$3
 if [[ "$SEC_ENABLED" == "true" ]]; then
-  NAGIOS_KEYTAB=$5
-  NAGIOS_USER=$6
-  KINIT_PATH=$7
+  NAGIOS_KEYTAB=$4
+  NAGIOS_USER=$5
+  KINIT_PATH=$6
   out1=`${KINIT_PATH} -kt ${NAGIOS_KEYTAB} ${NAGIOS_USER} 2>&1`
   if [[ "$?" -ne 0 ]]; then
     echo "CRITICAL: Error doing kinit for nagios [$out1]";
     exit 2;
   fi
 fi
-OOZIE_URL="http://$HOST:$PORT/oozie"
 export JAVA_HOME=$JAVA_HOME
 out=`oozie admin -oozie ${OOZIE_URL} -status 2>&1`
-if [[ "$?" -ne 0 ]]; then 
+if [[ "$?" -ne 0 ]]; then
   echo "CRITICAL: Error accessing Oozie Server status [$out]";
   exit 2;
 fi
