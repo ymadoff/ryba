@@ -152,7 +152,7 @@ We then ask a first TGT.
         cmd: """
         crontab -u #{rexster.user.name} -l | grep '#{kinit}'
         if [ $? -eq 0 ]; then exit 3; fi;
-        echo '0 */5 * * * #{kinit}' | crontab -u rexster -
+        echo '0 */9 * * * #{kinit}' | crontab -u #{rexster.user.name} -
         """
         code_skipped: 3
       , (err, croned) ->

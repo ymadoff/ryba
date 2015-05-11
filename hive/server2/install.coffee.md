@@ -27,7 +27,7 @@ Resources:
 | Hive Server    | 10001 | tcp   | env[HIVE_PORT]       |
 
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
+IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'Hive Server2 # IPTables', handler: (ctx, next) ->
@@ -133,6 +133,8 @@ Create the directories to store the logs and pid information. The properties
         parent: true
       ], next
 
+## Kerberos
+
     module.exports.push name: 'Hive Server2 # Kerberos', handler: (ctx, next) ->
       {hive, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
@@ -148,6 +150,28 @@ Create the directories to store the logs and pid information. The properties
         not_if: hive.site['hive.metastore.kerberos.principal'] is hive.site['hive.server2.authentication.kerberos.principal']
       , next
 
+Since HDP 2.2.4.2, Hive Server2 doesn't seems to correctly renew its keytab. For that, we use cron daemon
+We then ask a first TGT.
+
+    module.exports.push name: 'Hive Server2 # Kinit Fix (2.2.4.2)', handler: (ctx, next) ->
+      {hive, realm} = ctx.config.ryba
+      return next() unless hive.site['hive.server2.authentication'] is 'KERBEROS'
+      kinit = "/usr/bin/kinit #{hive.site['hive.server2.authentication.kerberos.principal']} -k -t #{hive.site['hive.server2.authentication.kerberos.keytab']}"
+      ctx.execute
+        cmd: """
+        crontab -u #{hive.user.name} -l | grep '#{kinit}'
+        if [ $? -eq 0 ]; then exit 3; fi;
+        echo '0 */9 * * * #{kinit}' | crontab -u #{hive.user.name} -
+        """
+        code_skipped: 3
+      , (err, croned) ->
+        return next err, croned  if err or not croned
+        ctx.execute
+          cmd: "su -l #{hive.user.name} -c '#{kinit}'"
+        , next
+
+## Logs
+
     module.exports.push name: 'Hive Server2 # Logs', handler: (ctx, next) ->
       ctx.write [
         source: "#{__dirname}/../../resources/hive/hive-exec-log4j.properties.template"
@@ -158,4 +182,3 @@ Create the directories to store the logs and pid information. The properties
         local_source: true
         destination: '/etc/hive/conf/hive-log4j.properties'
       ], next
-

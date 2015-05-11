@@ -18,7 +18,7 @@ co-located with any other service.
 | timeline  | 50075/1006 | tcp/http  | yarn.timeline-service.webapp.address       |
 | timeline  | 50475      | tcp/https | yarn.timeline-service.webapp.https.address |
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
+IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'YARN TS # IPTables', handler: (ctx, next) ->
@@ -67,10 +67,10 @@ Create the Application Timeserver service principal in the form of "ats/{host}@{
 keytab inside "/etc/security/keytabs/ats.service.keytab" with ownerships set to "yarn:yarn"
 and permissions set to "0600".
 
-    module.exports.push name: 'HDFS DN # Kerberos', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'YARN TS # Kerberos', timeout: -1, handler: (ctx, next) ->
       {yarn, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc 
+      ctx.krb5_addprinc
         principal: yarn.site['yarn.timeline-service.principal'].replace '_HOST', ctx.config.host
         randkey: true
         keytab: yarn.site['yarn.timeline-service.keytab']
@@ -81,4 +81,3 @@ and permissions set to "0600".
         kadmin_password: kadmin_password
         kadmin_server: admin_server
       , next
-
