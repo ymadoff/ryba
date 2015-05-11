@@ -21,4 +21,10 @@ ticket cache usage if it is found invalid.
 
 ### Solution
 
-The file can safely be removed with a command like `rm ~/.oozie-auth-token`.
+As a quick fix, the file can safely be removed with a command like
+`rm ~/.oozie-auth-token`.
+
+Another solution is to disable the creation of the ticket file by passing
+the Java system property "oozie.auth.token.cache". For example, run the command
+`export OOZIE_CLIENT_OPTS='-Doozie.auth.token.cache=false'` before executing
+the Oozie client.
