@@ -375,34 +375,33 @@ bin/upgrade [...] -s hdfs_check_edits
         each context.config.ryba.hdfs.site['dfs.namenode.name.dir'].split ','
         .run (name_dir, next) ->
           context.execute
-            cmd: """
-            ls #{name_dir}/current/edits_inprogress_* | wc -l | grep 0
-            """
+            cmd: "ls #{name_dir}/current/edits_inprogress_* | wc -l | grep 0"
             code_skipped: 1
           , (err, ready) ->
             return next err if err
             return next() if ready
-            context.execute """
-            hdfs oev -i /var/hdfs/name/current/edits_inprogress_* -o #{config.directory}/hdfs_edits.out
-            cat #{config.directory}/hdfs_edits.out | egrep '<OPCODE>(.*?)</OPCODE>' | egrep -v '<OPCODE>OP_START_LOG_SEGMENT</OPCODE>'
-            """
-            code_skipped: 1
-          , (err, invalid) ->
-            return next err if err
-            return next() unless invalid
-            # If edits.out has transactions other than OP_START_LOG_SEGMENT run the following steps and then verify edit logs are empty.
-            # Start the existing version NameNode.
-            # Ensure there is a new FS image file.
-            # Shut the NameNode down.
-            # hdfs dfsadmin – saveNamespace
             context.execute
-              cmd: mkcmd.hdfs context, """
-              service hadoop-hdfs-namenode start
-              service hadoop-hdfs-namenode stop
-              hdfs dfsadmin –saveNamespace
-              ls #{name_dir}/current/edits_inprogress_* | wc -l | grep 0
+              cmd: """
+              hdfs oev -i /var/hdfs/name/current/edits_inprogress_* -o #{config.directory}/hdfs_edits.out
+              cat #{config.directory}/hdfs_edits.out | egrep '<OPCODE>(.*?)</OPCODE>' | egrep -v '<OPCODE>OP_START_LOG_SEGMENT</OPCODE>'
               """
-            , next
+              code_skipped: 1
+            , (err, invalid) ->
+              return next err if err
+              return next() unless invalid
+              # If edits.out has transactions other than OP_START_LOG_SEGMENT run the following steps and then verify edit logs are empty.
+              # Start the existing version NameNode.
+              # Ensure there is a new FS image file.
+              # Shut the NameNode down.
+              # hdfs dfsadmin – saveNamespace
+              context.execute
+                cmd: mkcmd.hdfs context, """
+                service hadoop-hdfs-namenode start
+                service hadoop-hdfs-namenode stop
+                hdfs dfsadmin –saveNamespace
+                ls #{name_dir}/current/edits_inprogress_* | wc -l | grep 0
+                """
+              , next
         .then next
       .then next
 
