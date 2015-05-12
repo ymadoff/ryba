@@ -156,7 +156,9 @@ We then ask a first TGT.
     module.exports.push name: 'Hive Server2 # Kinit Fix (2.2.4.2)', handler: (ctx, next) ->
       {hive, realm} = ctx.config.ryba
       return next() unless hive.site['hive.server2.authentication'] is 'KERBEROS'
-      kinit = "/usr/bin/kinit #{hive.site['hive.server2.authentication.kerberos.principal']} -k -t #{hive.site['hive.server2.authentication.kerberos.keytab']}"
+      principal = hive.site['hive.server2.authentication.kerberos.principal'].replace '_HOST', ctx.config.host
+      keytab = hive.site['hive.server2.authentication.kerberos.keytab']
+      kinit = "/usr/bin/kinit #{principal} -k -t #{keytab}"
       ctx.execute
         cmd: """
         crontab -u #{hive.user.name} -l | grep '#{kinit}'
