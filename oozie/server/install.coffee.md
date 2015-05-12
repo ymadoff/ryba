@@ -350,7 +350,10 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         falcon_opts = ''
         ctx.execute
           # su -l oozie -c 'cd /usr/hdp/current/oozie-client; ./bin/oozie-setup.sh prepare-war -secure'
-          cmd: "su -l #{oozie.user.name} -c 'cd /usr/hdp/current/oozie-client; ./bin/oozie-setup.sh prepare-war #{secure_opt} #{falcon_opts}'"
+          cmd: """
+          chown #{oozie.user.name} /usr/hdp/current/oozie-client/oozie-server/conf/server.xml
+          su -l #{oozie.user.name} -c 'cd /usr/hdp/current/oozie-client; ./bin/oozie-setup.sh prepare-war #{secure_opt} #{falcon_opts}'
+          """
           code_skipped: 255 # Oozie already started, war is expected to be installed
         , next
       do_falcon()
