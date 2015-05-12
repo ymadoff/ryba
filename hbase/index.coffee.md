@@ -180,7 +180,6 @@ Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocument
 
     module.exports.push name: 'HBase # Env', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
-      ctx.log 'Write hbase-env.sh'
       write = for k, v of hbase.env
         match: RegExp "export #{k}=.*", 'm'
         replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
