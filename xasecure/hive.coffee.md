@@ -5,6 +5,7 @@
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/commons/java'
     module.exports.push 'masson/commons/mysql_client'
+    module.exports.push require '../lib/hconfigure'
 
 ## Configuration
 
@@ -66,7 +67,8 @@
           do_conf()
       do_conf = ->
         # TODO, need to merge properties "hive.exec.pre.hooks", "hive.exec.post.hooks"
-        ctx.hconfigure
+        ctx
+        .hconfigure
           destination: "#{conf_dir}/hive-site.xml"
           properties: 
             'hive.exec.pre.hooks': 'com.xasecure.authorization.hive.hooks.XaSecureHivePreExecuteRunHook'
@@ -77,7 +79,7 @@
             # Overwrite hive.exec.post.hooks,hive.exec.driver.run.hooks,hive.server2.authentication,hive.metastore.pre.event.listeners,hive.security.authorization.enabled,hive.security.authorization.manager,hive.semantic.analyzer.hook
             'hive.conf.restricted.list': 'hive.exec.driver.run.hooks,hive.server2.authentication,hive.metastore.pre.event.listeners,hive.security.authorization.enabled,hive.security.authorization.manager,hive.semantic.analyzer.hook,hive.exec.post.hooks'
           merge: true
-        , (err, configured) ->
+        .then (err, configured) ->
           return next err if err
           do_restart()
       do_restart = ->

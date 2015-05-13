@@ -10,6 +10,7 @@ Job History Server.
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
     module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
 
 ## IPTables
@@ -83,17 +84,18 @@ directory with the location of the directory storing the process pid.
 
     module.exports.push name: 'MapReduce JHS # Kerberos', handler: (ctx, next) ->
       {hadoop_conf_dir, mapred, yarn} = ctx.config.ryba
-      ctx.hconfigure [
+      ctx
+      .hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
         properties: yarn.site
         merge: true
         backup: true
-      ,
+      .hconfigure
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
         properties: mapred.site
         merge: true
         backup: true
-      ], next
+      .then next
 
 ## Layout
 

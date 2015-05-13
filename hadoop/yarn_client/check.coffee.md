@@ -9,9 +9,10 @@
 ## Check CLI
 
     module.exports.push name: 'YARN Client # Check CLI', label_true: 'CHECKED', handler: (ctx, next) ->
-      ctx.execute
+      ctx
+      .execute
         cmd: mkcmd.test ctx, 'yarn application -list'
-      , next
+      .then next
 
 ## Module Dependencies
 

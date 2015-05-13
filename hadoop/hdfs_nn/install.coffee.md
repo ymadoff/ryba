@@ -17,6 +17,7 @@ Worth to investigate:
     module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
 
 ## Configuration
@@ -126,7 +127,7 @@ Environment passed to the NameNode before it starts.
         gid: hadoop_group.name
         merge: true
         backup: true
-      , next
+      .then next
 
 ## Slaves
 

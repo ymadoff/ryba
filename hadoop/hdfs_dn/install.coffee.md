@@ -19,6 +19,7 @@ NameNodes, and send block location information and heartbeats to both.
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
 
 ## IPTables
@@ -103,7 +104,8 @@ present inside the "hdp.ha\_client\_config" object.
     module.exports.push name: 'HDFS DN # HA', handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       {hadoop_conf_dir, hdfs, hadoop_group} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
         local_default: true
@@ -112,7 +114,7 @@ present inside the "hdp.ha\_client\_config" object.
         gid: hadoop_group.name
         merge: true
         backup: true
-      , next
+      .then next
 
 # Configure Master
 

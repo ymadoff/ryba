@@ -14,6 +14,7 @@ default setting for Yarn and its client application such as MapReduce or Tez.
     exports = module.exports = (params, config, callback) ->
       config.params = params
       exports.contexts config, (err, ctxs) ->
+        console.log 'start'
         return callback err if err
         return callback Error 'No Servers Configured' unless Object.keys(ctxs).length
         do_configure = ->
@@ -65,6 +66,7 @@ default setting for Yarn and its client application such as MapReduce or Tez.
             return callback err if err
             do_remote ctxs
         do_remote = ->
+          console.log 'remote'
           exports.remote ctxs, (err) ->
             return callback err if err
             do_write ctxs
@@ -73,11 +75,13 @@ default setting for Yarn and its client application such as MapReduce or Tez.
         #     return callback err if err
         #     do_write()
         do_write = ->
+          console.log 'write'
           exports.write config, ctxs, (err) ->
             return callback err if err
             do_end()
         do_end = ->
           ctx.emit 'end' for ctx in ctxs
+          console.log 'done'
           callback null
         do_configure()
 
@@ -695,7 +699,9 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
             ws.write "#     Number of Containers: #{capacity.max_number_of_containers}\n"
             ws.write "#     Memory per Containers: #{prink.filesize capacity.memory_per_container, 3}\n"
       do_end = (ws) ->
-        ws.end() if config.params.output
+        # ws.end() if config.params.output
+        console.log 'end'
+        ws.end() if ws
         next()
       do_open()
 

@@ -6,6 +6,7 @@
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push 'ryba/zookeeper/server/wait'
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
     module.exports.push require '../../lib/write_jaas'
     module.exports.push require('./index').configure
@@ -65,7 +66,8 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 
     module.exports.push name: 'ZKFC # Configure', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_conf_dir, hadoop_group} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
         local_default: true
@@ -74,7 +76,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
         gid: hadoop_group.name
         merge: true
         backup: true
-      , next
+      .then next
 
 ## HDFS ZKFC
 
@@ -169,12 +171,13 @@ setAcl /hadoop-ha sasl:zkfc:cdrwa,sasl:nn:cdrwa,digest:zkfc:ePBwNWc34ehcTu1FTNI7
       acls.push "sasl:#{jaas_user}:cdrwa" if core_site['hadoop.security.authentication'] is 'kerberos'
       # acls.push "sasl:nn:cdrwa" if core_site['hadoop.security.authentication'] is 'kerberos'
       do_core = ->
-        ctx.hconfigure
+        ctx
+        .hconfigure
           destination: "#{hadoop_conf_dir}/core-site.xml"
           properties: core_site
           merge: true
           backup: true
-        , (err, configured) ->
+        .then (err, configured) ->
           return next err if err
           modified = true if configured
           do_auth()

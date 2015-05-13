@@ -10,6 +10,7 @@ driver used by Sqoop.
     module.exports.push 'masson/commons/mysql_client'
     module.exports.push 'ryba/hadoop/hdfs_client'
     module.exports.push 'ryba/hadoop/yarn_client'
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_select'
     module.exports.push require('./index').configure
 
@@ -52,7 +53,8 @@ Upload the "sqoop-site.xml" files into the "/etc/sqoop/conf" folder.
 
     module.exports.push name: 'Hadoop Sqoop # Configuration', timeout: -1, handler: (ctx, next) ->
       {sqoop, hadoop_group} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{sqoop.conf_dir}/sqoop-site.xml"
         default: "#{__dirname}/../../resources/sqoop/sqoop-site.xml"
         local_default: true
@@ -61,7 +63,7 @@ Upload the "sqoop-site.xml" files into the "/etc/sqoop/conf" folder.
         gid: hadoop_group.name
         mode: 0o755
         merge: true
-      , next
+      .then next
 
 ## Install
 

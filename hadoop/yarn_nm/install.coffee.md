@@ -8,6 +8,7 @@
     module.exports.push 'ryba/hadoop/yarn_client/install'
     module.exports.push 'ryba/hadoop/hdfs_dn/wait'
     module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
 
 ## IPTables
@@ -164,14 +165,15 @@ SSH connection to the node to gather the memory and CPU informations.
 
     module.exports.push name: 'YARN NM # Configuration', handler: (ctx, next) ->
       {yarn, hadoop_conf_dir} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
         local_default: true
         properties: yarn.site
         merge: true
         backup: true
-      , next
+      .then next
 
 ## Container Executor
 

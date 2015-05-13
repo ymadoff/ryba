@@ -6,6 +6,7 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
 
 ## IPTables
@@ -89,7 +90,8 @@ script inside "/etc/init.d" and activate it on startup.
 
     module.exports.push name: 'HDFS SNN # Configure', handler: (ctx, next) ->
       {hdfs, hadoop_conf_dir, hadoop_group} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
         local_default: true
@@ -98,4 +100,4 @@ script inside "/etc/init.d" and activate it on startup.
         gid: hadoop_group
         merge: true
         backup: true
-      , next
+      .then next

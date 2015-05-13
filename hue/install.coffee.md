@@ -18,6 +18,7 @@ article from december 2014 describe how to
     module.exports.push 'ryba/hadoop/mapred_client'
     module.exports.push 'ryba/hive/client' # Hue reference hive conf dir
     module.exports.push 'ryba/tools/pig'
+    module.exports.push require '../lib/hconfigure'
     module.exports.push require('./index').configure
 
 ## Users & Groups
@@ -73,27 +74,28 @@ The packages "extjs-2.2-1" and "hue" are installed.
         # {name: 'hue-shell'}
       ], next
 
-## Core
+# ## Core
 
-Update the "core-site.xml" to allow impersonnation through the "hue" and "hcat" 
-users.
+# Update the "core-site.xml" to allow impersonnation through the "hue" and "hcat" 
+# users.
 
-Todo: We are currently only modifying the "core-site.xml" locally while it should 
-be deployed on all the master and worker nodes. This is currently achieved through
-the configuration picked up by the "ryba/hadoop/core" module.
+# Todo: We are currently only modifying the "core-site.xml" locally while it should 
+# be deployed on all the master and worker nodes. This is currently achieved through
+# the configuration picked up by the "ryba/hadoop/core" module.
 
-    module.exports.push name: 'Hue # Core', handler: (ctx, next) ->
-      {hadoop_conf_dir} = ctx.config.ryba
-      properties = 
-        'hadoop.proxyuser.hue.hosts': '*'
-        'hadoop.proxyuser.hue.groups': '*'
-        'hadoop.proxyuser.hcat.groups': '*'
-        'hadoop.proxyuser.hcat.hosts': '*'
-      ctx.hconfigure
-        destination: "#{hadoop_conf_dir}/core-site.xml"
-        properties: properties
-        merge: true
-      , next
+#     module.exports.push name: 'Hue # Core', handler: (ctx, next) ->
+#       {hadoop_conf_dir} = ctx.config.ryba
+#       properties = 
+#         'hadoop.proxyuser.hue.hosts': '*'
+#         'hadoop.proxyuser.hue.groups': '*'
+#         'hadoop.proxyuser.hcat.groups': '*'
+#         'hadoop.proxyuser.hcat.hosts': '*'
+#       ctx
+#       .hconfigure
+#         destination: "#{hadoop_conf_dir}/core-site.xml"
+#         properties: properties
+#         merge: true
+#       .then next
 
 ## WebHCat
 
@@ -101,25 +103,20 @@ the configuration picked up by the "ryba/hadoop/core" module.
 Update the "webhcat-site.xml" on the server running the "webhcat" service 
 to allow impersonnation through the "hue" user.
 
+TODO: only work if WebHCat is running on the same server as Hue
 
     module.exports.push name: 'Hue # WebHCat', handler: (ctx, next) ->
       {webhcat} = ctx.config.ryba
       webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
-      hconfigure = (ssh) ->
-        properties = 
+      return next Error "WebHCat shall be on the same server as Hue" unless webhcat_server isnt ctx.config.host
+      ctx
+      .hconfigure
+        destination: "#{webhcat.conf_dir}/webhcat-site.xml"
+        properties: 
           'webhcat.proxyuser.hue.hosts': '*'
           'webhcat.proxyuser.hue.groups': '*'
-        ctx.hconfigure
-          destination: "#{webhcat.conf_dir}/webhcat-site.xml"
-          properties: properties
-          merge: true
-        , next
-      if ctx.config.host is webhcat_server
-        hconfigure ctx.ssh
-      else
-        ctx.connect webhcat_server, (err, ssh) ->
-          return next err if err
-          hconfigure ssh
+        merge: true
+      .then next
 
 ## Oozie
 
@@ -127,25 +124,19 @@ to allow impersonnation through the "hue" user.
 Update the "oozie-site.xml" on the server running the "oozie" service 
 to allow impersonnation through the "hue" user.
 
+TODO: only work if Oozie is running on the same server as Hue
+
     module.exports.push name: 'Hue # Oozie', handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
       oozie_server = ctx.host_with_module 'ryba/oozie/server'
-      hconfigure = (ssh) ->
-        properties = 
+      return next Error "Oozie shall be on the same server as Hue" unless oozie_server isnt ctx.config.host
+      ctx.hconfigure
+        destination: "#{oozie.conf_dir}/oozie-site.xml"
+        properties: 
           'oozie.service.ProxyUserService.proxyuser.hue.hosts': '*'
           'oozie.service.ProxyUserService.proxyuser.hue.groups': '*'
-        ctx.hconfigure
-          ssh: ssh
-          destination: "#{oozie.conf_dir}/oozie-site.xml"
-          properties: properties
-          merge: true
-        , next
-      if ctx.config.host is oozie_server
-        hconfigure ctx.ssh
-      else
-        ctx.connect oozie_server, (err, ssh) ->
-          return next err if err
-          hconfigure ssh
+        merge: true
+      .then next
 
 ## Configure
 

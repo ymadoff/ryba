@@ -5,6 +5,7 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/yarn_client/install'
     module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
     module.exports.push require '../../lib/write_jaas'
 
@@ -139,19 +140,17 @@ inside "/etc/init.d" and activate it on startup.
 
     module.exports.push name: 'YARN RM # Configuration', handler: (ctx, next) ->
       {yarn, hadoop_conf_dir} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
         local_default: true
         properties: yarn.site
         merge: true
         backup: true
-      , (err, configured) ->
-        return next err if err
-        ctx.touch
-          destination: "#{hadoop_conf_dir}/yarn.exclude"
-        , (err, touched) ->
-          next err, configured or touched
+      .touch
+        destination: "#{hadoop_conf_dir}/yarn.exclude"
+      .then next
 
 ## Capacity Scheduler
 
@@ -169,18 +168,20 @@ ResourceCalculator class name is expected.
     module.exports.push name: 'YARN RM # Capacity Scheduler', handler: (ctx, next) ->
       {yarn, hadoop_conf_dir, capacity_scheduler} = ctx.config.ryba
       return next() unless yarn.site['yarn.resourcemanager.scheduler.class'] is 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hadoop_conf_dir}/capacity-scheduler.xml"
         default: "#{__dirname}/../../resources/core_hadoop/capacity-scheduler.xml"
         local_default: true
         properties: capacity_scheduler
         merge: true
-      , (err, configured) ->
-        return next err, false if err or not configured
-        ctx.execute
+      .then (err, status) ->
+        return next err, false if err or not status
+        ctx
+        .execute
           cmd: mkcmd.hdfs ctx, 'service hadoop-yarn-resourcemanager status && yarn rmadmin -refreshQueues'
           code_skipped: 3
-        , (err) ->
+        .then (err) ->
           next err, true
 
 ## Wait JHS

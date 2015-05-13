@@ -8,6 +8,7 @@ co-located with any other service.
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/krb5_client/wait'
     module.exports.push 'ryba/hadoop/yarn_client'
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require('./index').configure
 
 ## IPTables
@@ -42,12 +43,13 @@ Update the "yarn-site.xml" configuration file.
     module.exports.push name: 'YARN TS # Configuration', handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       {hadoop_conf_dir, yarn, hadoop_group} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
         properties: yarn.site
         merge: true
         backup: true
-      , next
+      .then next
 
 # Layout
 

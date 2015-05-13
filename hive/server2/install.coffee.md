@@ -18,6 +18,7 @@ Resources:
     module.exports.push 'ryba/hbase/client'
     module.exports.push 'ryba/hive/hcatalog/wait'
     module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
 
 ## IPTables
@@ -77,14 +78,15 @@ isnt yet started.
 
     module.exports.push name: 'Hive Server2 # Configure', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hive.conf_dir}/hive-site.xml"
         default: "#{__dirname}/../../resources/hive/hive-site.xml"
         local_default: true
         properties: hive.site
         merge: true
         backup: true
-      , next
+      .then next
 
 ## Env
 

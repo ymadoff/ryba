@@ -4,6 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/core'
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require('./index').configure
 
 ## Package
@@ -85,7 +86,8 @@ Install the "hadoop-yarn" package.
       # for k, v of yarn.site
       #   continue if k isnt 'yarn.application.classpath' and k.indexOf('yarn.resourcemanager') is -1
       #   properties[k] = v
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
         local_default: true
@@ -93,6 +95,6 @@ Install the "hadoop-yarn" package.
         merge: true
         uid: yarn.user.name
         gid: yarn.group.name
-      , next
+      .then next
 
 

@@ -10,6 +10,7 @@ Oozie source code and examples are located in "/usr/share/doc/oozie-$version".
     module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/hadoop/hdfs' # SPNEGO need access to the principal HTTP/$HOST@$REALM's keytab
     module.exports.push 'ryba/hadoop/hdfs_dn/wait' # Create directories inside HDFS
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_select'
     module.exports.push require('./index').configure
 
@@ -247,7 +248,8 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
       { hadoop_conf_dir, yarn, oozie } = ctx.config.ryba
       modified = false
       do_oozie_site = ->
-        ctx.hconfigure
+        ctx
+        .hconfigure
           destination: "#{oozie.conf_dir}/oozie-site.xml"
           default: "#{__dirname}/../../resources/oozie/oozie-site.xml"
           local_default: true
@@ -257,7 +259,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           mode: 0o0755
           merge: true
           backup: true
-        , (err, configured) ->
+        .then (err, configured) ->
           return next err if err
           modified = true if configured
           do_oozie_default()
@@ -271,7 +273,8 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           modified = true if configured
           do_hadoop_config()
       do_hadoop_config = ->
-        ctx.hconfigure
+        ctx
+        .hconfigure
           destination: "#{oozie.conf_dir}/hadoop-conf/core-site.xml"
           local_default: true
           properties: oozie.hadoop_config
@@ -279,7 +282,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           gid: oozie.group.name
           mode: 0o0755
           backup: true
-        , (err, configured) ->
+        .then (err, configured) ->
           return next err if err
           modified = true if configured
           do_end()
@@ -472,11 +475,12 @@ the ShareLib contents without having to go into HDFS.
         properties['hive.metastore.execute.setugi'] ?= 'true'
       # Note: hdp2.2 falcon docs mentions "hive-site.xml" but only "hive.xml"
       # exists
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{oozie.conf_dir}/action-conf/hive.xml"
         properties: properties
         merge: true
-      , next
+      .then next
 
     module.exports.push name: 'Oozie Server # Log4J', handler: (ctx, next) ->
       # Instructions mention updating convertion pattern to the same value as

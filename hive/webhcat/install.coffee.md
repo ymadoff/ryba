@@ -9,6 +9,7 @@
     module.exports.push 'ryba/tools/pig'
     module.exports.push 'ryba/tools/sqoop'
     module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
 
 ## IPTables
@@ -143,7 +144,8 @@ inside "/etc/init.d" and activate it on startup.
 
     module.exports.push name: 'WebHCat # Configuration', handler: (ctx, next) ->
       {webhcat, hive, hadoop_group} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{webhcat.conf_dir}/webhcat-site.xml"
         default: "#{__dirname}/../../resources/hive-webhcat/webhcat-site.xml"
         local_default: true
@@ -152,7 +154,7 @@ inside "/etc/init.d" and activate it on startup.
         gid: hadoop_group.name
         mode: 0o0755
         merge: true
-      , next
+      .then next
 
     module.exports.push name: 'WebHCat # Env', handler: (ctx, next) ->
       {webhcat, hive, hadoop_group} = ctx.config.ryba

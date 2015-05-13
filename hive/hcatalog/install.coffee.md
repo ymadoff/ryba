@@ -16,6 +16,7 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
     module.exports.push 'ryba/hadoop/hdfs_dn/wait'
     module.exports.push 'ryba/hbase/client'
     module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
 
 ## IPTables
@@ -167,22 +168,21 @@ isnt yet started.
 
     module.exports.push name: 'Hive HCatalog # Configure', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hive.conf_dir}/hive-site.xml"
         default: "#{__dirname}/../../resources/hive/hive-site.xml"
         local_default: true
         properties: hive.site
         merge: true
         backup: true
-      , (err, configured) ->
-        return next err if err
-        ctx.execute
-          cmd: """
-          chown -R #{hive.user.name}:#{hive.group.name} #{hive.conf_dir}/
-          chmod -R 755 #{hive.conf_dir}
-          """
-        , (err) ->
-          next err, configured
+      .execute
+        cmd: """
+        chown -R #{hive.user.name}:#{hive.group.name} #{hive.conf_dir}/
+        chmod -R 755 #{hive.conf_dir}
+        """
+        shy: true # TODO: idempotence by detecting ownerships and permissions
+      .then next
 
 ## Env
 

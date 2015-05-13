@@ -7,6 +7,7 @@
     module.exports.push 'ryba/hadoop/hdfs_client'
     module.exports.push 'ryba/hadoop/yarn_client'
     module.exports.push 'ryba/hadoop/hdfs_dn/wait'
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require('./index').configure
 
 ## IPTables
@@ -48,7 +49,8 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
 
     module.exports.push name: 'MapReduce Client # Configuration', handler: (ctx, next) ->
       {mapred, hadoop_conf_dir} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/mapred-site.xml"
         local_default: true
@@ -57,7 +59,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         backup: true
         uid: mapred.user.name
         gid: mapred.group.name
-      , next
+      .then next
 
 ## HDFS Tarballs
 
