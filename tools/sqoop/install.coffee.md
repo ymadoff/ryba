@@ -100,7 +100,7 @@ the Sqoop library folder.
       return next() unless libs.length
       uploads = for lib in libs
         source: lib
-        destination: "/usr/lib/sqoop/lib/#{path.basename lib}"
+        destination: "/usr/hdp/current/sqoop-client/lib/#{path.basename lib}"
         binary: true
       ctx.upload uploads, next
 
