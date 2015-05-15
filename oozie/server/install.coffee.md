@@ -27,10 +27,10 @@ oozie:x:493:
 
     module.exports.push name: 'Oozie Server # Users & Groups', handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
-      ctx.group oozie.group, (err, gmodified) ->
-        return next err if err
-        ctx.user oozie.user, (err, umodified) ->
-          next err, gmodified or umodified
+      ctx
+      .group oozie.group
+      .user oozie.user
+      .then next
 
 ## IPTables
 
@@ -49,7 +49,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "Oozie HTTP Server" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
     module.exports.push name: 'Oozie Server # Install', timeout: -1, handler: (ctx, next) ->
       # Upgrading oozie failed, tested versions are hdp 2.1.2 -> 2.1.5 -> 2.1.7
@@ -76,50 +76,49 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Oozie Server # Directories', handler: (ctx, next) ->
       {hadoop_group, oozie} = ctx.config.ryba
-      ctx.mkdir [
+      ctx
+      .mkdir
         destination: oozie.data
         uid: oozie.user.name
         gid: hadoop_group.name
         mode: 0o0755
-      ,
+      .mkdir
         destination: oozie.log_dir
         uid: oozie.user.name
         gid: hadoop_group.name
         mode: 0o0755
-      ,
+      .mkdir
         destination: oozie.pid_dir
         uid: oozie.user.name
         gid: hadoop_group.name
         mode: 0o0755
-      ,
+      .mkdir
         destination: oozie.tmp_dir
         uid: oozie.user.name
         gid: hadoop_group.name
         mode: 0o0755
-      ,
+      .mkdir
         destination: "#{oozie.conf_dir}/action-conf"
         uid: oozie.user.name
         gid: hadoop_group.name
         mode: 0o0755
-      ], (err, copied) ->
-        return next err if err
-        # Set permission to action conf
-        ctx.execute
-          cmd: """
-          chown -R #{oozie.user.name}:#{hadoop_group.name} #{oozie.conf_dir}/action-conf
-          """
-        , (err, executed) ->
-          next err, copied
-        # Waiting for recursivity in ctx.mkdir
-        # ctx.execute
-        #   cmd: """
-        #   chown -R #{oozie.user.name}:#{hadoop_group.name} /usr/lib/oozie
-        #   chown -R #{oozie.user.name}:#{hadoop_group.name} #{oozie.data}
-        #   chown -R #{oozie.user.name}:#{hadoop_group.name} #{oozie.conf_dir} #/..
-        #   chmod -R 755 #{oozie.conf_dir} #/..
-        #   """
-        # , (err, executed) ->
-        #   next err, copied
+      # Set permission to action conf
+      .execute
+        cmd: """
+        chown -R #{oozie.user.name}:#{hadoop_group.name} #{oozie.conf_dir}/action-conf
+        """
+        shy: true
+      .then next
+      # Waiting for recursivity in ctx.mkdir
+      # ctx.execute
+      #   cmd: """
+      #   chown -R #{oozie.user.name}:#{hadoop_group.name} /usr/lib/oozie
+      #   chown -R #{oozie.user.name}:#{hadoop_group.name} #{oozie.data}
+      #   chown -R #{oozie.user.name}:#{hadoop_group.name} #{oozie.conf_dir} #/..
+      #   chmod -R 755 #{oozie.conf_dir} #/..
+      #   """
+      # , (err, executed) ->
+      #   next err, copied
 
 ## Environment
 
@@ -152,7 +151,8 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
       {java_home} = ctx.config.java
       {oozie} = ctx.config.ryba
       # CATALINA_OPTS="-Djavax.net.ssl.trustStore=/etc/hadoop/conf/truststore -Djavax.net.ssl.trustStorePassword=ryba123"
-      ctx.write
+      ctx
+      .write
         source: "#{__dirname}/../../resources/oozie/oozie-env.sh"
         destination: "#{oozie.conf_dir}/oozie-env.sh"
         local_source: true
@@ -202,17 +202,18 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
         gid: oozie.group.name
         mode: 0o0755
         backup: true
-      , next
+      .then next
 
 # ExtJS
 
 Install the ExtJS Javascript library as part of enabling the Oozie Web Console.
 
     module.exports.push name: 'Oozie Server # ExtJS', handler: (ctx, next) ->
-      ctx.copy
+      ctx
+      .copy
         source: '/usr/share/HDP-oozie/ext-2.2.zip'
         destination: '/usr/hdp/current/oozie-client/libext/'
-      , (err, copied) ->
+      .then (err, copied) ->
         return next err, copied
 
 # LZO
@@ -233,7 +234,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           cp #{lzo_jar} /usr/hdp/current/oozie-client/libext/
           """
           not_if_exists: "/usr/hdp/current/oozie-client/libext/#{path.basename lzo_jar}"
-        , next
+        .then next
 
     # Note
     # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.0/HDP_Man_Install_v22/index.html#Item1.12.4.3
@@ -242,7 +243,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
       ctx.link
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/hdp/current/oozie-client/libext/mysql-connector-java.jar'
-      , next
+      .then next
 
     module.exports.push name: 'Oozie Server # Configuration', handler: (ctx, next) ->
       { hadoop_conf_dir, yarn, oozie } = ctx.config.ryba
@@ -364,7 +365,8 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
     module.exports.push name: 'Oozie Server # Kerberos', handler: (ctx, next) ->
       {oozie, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc
+      ctx
+      .krb5_addprinc
         principal: oozie.site['oozie.service.HadoopAccessorService.kerberos.principal'] #.replace '_HOST', ctx.config.host
         randkey: true
         keytab: oozie.site['oozie.service.HadoopAccessorService.keytab.file']
@@ -373,17 +375,18 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
 
     module.exports.push name: 'Oozie Server # SPNEGO', handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
-      ctx.copy
+      ctx
+      .copy
         source: '/etc/security/keytabs/spnego.service.keytab'
         destination: "#{oozie.site['oozie.authentication.kerberos.keytab']}"
         uid: oozie.user.name
         gid: oozie.group.name
         mode: 0o0600
-      , next
+      .then next
 
     module.exports.push name: 'Oozie Server # MySQL', handler: (ctx, next) ->
       {db_admin, oozie} = ctx.config.ryba
@@ -448,13 +451,15 @@ the ShareLib contents without having to go into HDFS.
 
     module.exports.push name: 'Oozie Server # Share lib', timeout: 600000, handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
-      ctx.execute
+      ctx
+      .execute
         cmd: mkcmd.hdfs ctx, """
         if hdfs dfs -test -d /user/#{oozie.user.name}/share/lib; then
           echo 'Upgrade sharelib'
           su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib upgrade -fs hdfs://torval:8020 /usr/hdp/current/oozie-client/oozie-sharelib.tar.gz"
         else
-          hdfs dfs -mkdir /user/#{oozie.user.name} || true
+          # hdfs dfs -mkdir /user/#{oozie.user.name} || true
+          hdfs dfs -mkdir -p /user/#{oozie.user.name}/share/lib || true
           hdfs dfs -chown #{oozie.user.name}:#{oozie.group.name} /user/#{oozie.user.name}
           echo 'Create sharelib'
           su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib create -fs hdfs://torval:8020 /usr/hdp/current/oozie-client/oozie-sharelib.tar.gz"
@@ -466,7 +471,7 @@ the ShareLib contents without having to go into HDFS.
         version=`ls /usr/hdp/current/oozie-client/lib | grep oozie-client | sed 's/^oozie-client-\\(.*\\)\\.jar$/\\1/g'`
         hdfs dfs -cat /user/oozie/share/lib/*/sharelib.properties | grep build.version | grep $version
         """
-      , next
+      .then next
 
     module.exports.push name: 'Oozie Server # Hive', handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
