@@ -158,19 +158,12 @@ We then ask a first TGT.
       return next() unless hive.site['hive.server2.authentication'] is 'KERBEROS'
       principal = hive.site['hive.server2.authentication.kerberos.principal'].replace '_HOST', ctx.config.host
       keytab = hive.site['hive.server2.authentication.kerberos.keytab']
-      kinit = "/usr/bin/kinit #{principal} -k -t #{keytab}"
-      ctx.execute
-        cmd: """
-        crontab -u #{hive.user.name} -l | grep '#{kinit}'
-        if [ $? -eq 0 ]; then exit 3; fi;
-        echo '0 */9 * * * #{kinit}' | crontab -u #{hive.user.name} -
-        """
-        code_skipped: 3
-      , (err, croned) ->
-        return next err, croned  if err or not croned
-        ctx.execute
-          cmd: "su -l #{hive.user.name} -c '#{kinit}'"
-        , next
+      ctx.cron_add
+        cmd: "/usr/bin/kinit #{principal} -k -t #{keytab}"
+        when: '0 */9 * * *'
+        user: hive.user.name
+        exec: true
+      , next
 
 ## Logs
 

@@ -148,18 +148,12 @@ We then ask a first TGT.
     module.exports.push name: 'Rexster # Cron-ed kinit', handler: (ctx, next) ->
       {rexster, realm} = ctx.config.ryba
       kinit = "/usr/bin/kinit #{rexster.principal} -k -t #{rexster.keytab}"
-      ctx.execute
-        cmd: """
-        crontab -u #{rexster.user.name} -l | grep '#{kinit}'
-        if [ $? -eq 0 ]; then exit 3; fi;
-        echo '0 */9 * * * #{kinit}' | crontab -u #{rexster.user.name} -
-        """
-        code_skipped: 3
-      , (err, croned) ->
-        return next err, croned  if err or not croned
-        ctx.execute
-          cmd: "su -l #{rexster.user.name} -c '#{kinit}'"
-        , next
+      ctx.cron_add
+        cmd: kinit
+        when: '0 */9 * * *'
+        user: rexster.user.name
+        exec: true
+      , next
 
 ## HBase Permissions
 
