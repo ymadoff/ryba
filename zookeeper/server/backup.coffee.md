@@ -19,7 +19,7 @@ transaction log directory. By default these two directories are the same.
 
 TODO: Add the backup facility
 
-    module.exports.push name: "ZooKeeper Server # Purge Transaction Logs", handler: (ctx, next) ->
+    module.exports.push name: "ZooKeeper Server # Backup", handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
       now = Math.floor Date.now() / 1000
       ctx.execute [
@@ -35,22 +35,11 @@ TODO: Add the backup facility
 
 ## Purge Transaction Logs
 
-A ZooKeeper server will not remove old snapshots and log files when using the
-default configuration (see autopurge below), this is the responsibility of the
-operator.
-
-The PurgeTxnLog utility implements a simple retention policy that administrators
-can use. Its expected arguments are "dataLogDir [snapDir] -n count".
-
-Note, Automatic purging of the snapshots and corresponding transaction logs was
-introduced in version 3.4.0 and can be enabled via the following configuration
-parameters autopurge.snapRetainCount and autopurge.purgeInterval.
-
     module.exports.push name: "ZooKeeper Server # Purge Transaction Logs", handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
       ctx.execute
         cmd: """
-        java -cp zookeeper.jar:lib/slf4j-api-1.6.1.jar:lib/slf4j-log4j12-1.6.1.jar:lib/log4j-1.2.15.jar:conf \
+        java -cp /usr/hdp/current/zookeeper-server/zookeeper.jar:/usr/hdp/current/zookeeper-server/lib/*:/usr/hdp/current/zookeeper-server/conf \
           org.apache.zookeeper.server.PurgeTxnLog \
           #{zookeeper.config.dataLogDir or ''} #{zookeeper.config.dataDir} -n #{zookeeper.retention}
         """

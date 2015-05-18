@@ -70,7 +70,9 @@ Example :
       zookeeper.config['kerberos.removeRealmFromPrincipal'] ?= 'true'
       # Internal
       zookeeper.myid ?= null
-      zookeeper.retention ?= '3' # Used to clean data dir
+      zookeeper.retention ?= 3 # Used to clean data dir
+      zookeeper.purge ?= '@weekly'
+      zookeeper.purge = '@weeekly' if zookeeper.purge is true
       # Superuser
       zookeeper.superuser ?= {}
       zookeeper.superuser.password ?= 'ryba123'
