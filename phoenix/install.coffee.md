@@ -68,6 +68,8 @@ Please refer to the Hortonworks [documentation][phoenix-doc]
 
 ## Initialize
 
+    module.exports.push require 'ryba/hbase/regionserver/wait'
+
     module.exports.push name: 'Phoenix # Init', timeout: 200000, handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
       zk_path  = hbase.site['hbase.zookeeper.quorum'].split(',')[0]
@@ -81,7 +83,7 @@ Independently, if 'ryba' hasn't CREATE right on these 3 tables, it will be grant
       ctx.execute
         cmd: mkcmd.hbase ctx, """
         code=3
-        if [ `hbase shell 2>/dev/null <<< "list 'SYSTEM.*'" | egrep '^SYSTEM\.' | wc -l` -lt "3" ]; then
+        if [ `hbase shell 2>/dev/null <<< "list 'SYSTEM.*'" | egrep '^SYSTEM\.' | wc -l` -lt "2" ]; then
         /usr/hdp/current/phoenix-client/bin/sqlline.py #{zk_path} 2>/dev/null <<< "!q"
         code=0
         fi
