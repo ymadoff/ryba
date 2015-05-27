@@ -12,7 +12,7 @@ The package "ganglia-gmond-3.5.0-99" is installed.
     module.exports.push name: 'Ganglia Monitor # Service', timeout: -1, handler: (ctx, next) ->
       ctx.service
         name: 'ganglia-gmond-3.5.0-99'
-      , next
+      .then next
 
 ## Layout
 
@@ -40,20 +40,22 @@ Copy the object files provided in the HDP companion files into the
 Upload the "hdp-gmond" service file into "/etc/init.d".
 
     module.exports.push name: 'Ganglia Monitor # Init Script', timeout: -1, handler: (ctx, next) ->
-      ctx.write
-        destination: '/etc/init.d/hdp-gmond'
-        source: "#{__dirname}/../../resources/ganglia/scripts/hdp-gmond"
-        local_source: true
-        match: /# chkconfig: .*/mg
-        replace: '# chkconfig: 2345 70 40'
-        append: '#!/bin/sh'
-        mode: 0o755
-      .then (err, written) ->
-        return next err, false if err or not written
-        ctx.execute
-          # cmd: "service gmond start; chkconfig --add gmond; chkconfig --add hdp-gmond"
-          cmd: "service gmond start; chkconfig --add hdp-gmond"
-        .then next
+      ctx.call (_, callback) ->
+        ctx.write
+          destination: '/etc/init.d/hdp-gmond'
+          source: "#{__dirname}/../../resources/ganglia/scripts/hdp-gmond"
+          local_source: true
+          match: /# chkconfig: .*/mg
+          replace: '# chkconfig: 2345 70 40'
+          append: '#!/bin/sh'
+          mode: 0o755
+        .then (err, written) ->
+          return callback err, false if err or not written
+          ctx.execute
+            # cmd: "service gmond start; chkconfig --add gmond; chkconfig --add hdp-gmond"
+            cmd: "service gmond start; chkconfig --add hdp-gmond"
+          .then callback
+      .then next
 
     module.exports.push name: 'Ganglia Monitor # Fix Gmond', handler: (ctx, next) ->
       ctx
@@ -107,37 +109,36 @@ Update the files generated in the "host" action with the host of the Ganglia Col
 
     module.exports.push name: 'Ganglia Monitor # Configuration', timeout: -1, handler: (ctx, next) ->
       collector = ctx.host_with_module 'ryba/ganglia/collector'
-      writes = []
-      if ctx.has_any_modules 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_snn'
-        writes.push
-          destination: "/etc/ganglia/hdp/HDPNameNode/conf.d/gmond.slave.conf"
-          match: /^(.*)host = (.*)$/mg
-          replace: "$1host = #{collector}"
+      ctx
+      .write
+        destination: "/etc/ganglia/hdp/HDPNameNode/conf.d/gmond.slave.conf"
+        match: /^(.*)host = (.*)$/mg
+        replace: "$1host = #{collector}"
+        if: ctx.has_any_modules 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_snn'
       # On the ResourceManager server, to configure the gmond emitters
-      if ctx.has_any_modules 'ryba/hadoop/yarn_rm'
-        writes.push
-          destination: "/etc/ganglia/hdp/HDPResourceManager/conf.d/gmond.slave.conf"
-          match: /^(.*)host = (.*)$/mg
-          replace: "$1host = #{collector}"
+      .write
+        destination: "/etc/ganglia/hdp/HDPResourceManager/conf.d/gmond.slave.conf"
+        match: /^(.*)host = (.*)$/mg
+        replace: "$1host = #{collector}"
+        if: ctx.has_any_modules 'ryba/hadoop/yarn_rm'
       # On the JobHistoryServer, to configure the gmond emitters
-      if ctx.has_any_modules 'ryba/hadoop/mapred_jhs'
-        writes.push
-          destination: "/etc/ganglia/hdp/HDPHistoryServer/conf.d/gmond.slave.conf"
-          match: /^(.*)host = (.*)$/mg
-          replace: "$1host = #{collector}"
+      .write
+        destination: "/etc/ganglia/hdp/HDPHistoryServer/conf.d/gmond.slave.conf"
+        match: /^(.*)host = (.*)$/mg
+        replace: "$1host = #{collector}"
+        if: ctx.has_any_modules 'ryba/hadoop/mapred_jhs'
       # On all hosts, to configure the gmond emitters
-      if ctx.has_any_modules 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm'
-        writes.push
-          destination: "/etc/ganglia/hdp/HDPSlaves/conf.d/gmond.slave.conf"
-          match: /^(.*)host = (.*)$/mg
-          replace: "$1host = #{collector}"
+      .write
+        destination: "/etc/ganglia/hdp/HDPSlaves/conf.d/gmond.slave.conf"
+        match: /^(.*)host = (.*)$/mg
+        replace: "$1host = #{collector}"
+        if: ctx.has_any_modules 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm'
       # If HBase is installed, on the HBase Master, to configure the gmond emitter
-      if ctx.has_any_modules 'ryba/hbase/master'
-        writes.push
-          destination: "/etc/ganglia/hdp/HDPHBaseMaster/conf.d/gmond.slave.conf"
-          match: /^(.*)host = (.*)$/mg
-          replace: "$1host = #{collector}"
-      ctx.write writes
+      .write
+        destination: "/etc/ganglia/hdp/HDPHBaseMaster/conf.d/gmond.slave.conf"
+        match: /^(.*)host = (.*)$/mg
+        replace: "$1host = #{collector}"
+        if: ctx.has_any_modules 'ryba/hbase/master'
       .then next
 
 ## Hadoop

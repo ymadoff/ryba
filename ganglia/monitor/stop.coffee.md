@@ -12,5 +12,5 @@ Execute this command on all the nodes in your Hadoop cluster.
         srv_name: 'hdp-gmond'
         action: 'stop'
         if_exists: '/etc/init.d/hdp-gmond'
-      , next
+      .then next
 
