@@ -68,7 +68,7 @@ Please refer to the Hortonworks [documentation][phoenix-doc]
 
 ## Initialize
 
-    module.exports.push require 'ryba/hbase/regionserver/wait'
+    module.exports.push 'ryba/hbase/regionserver/wait'
 
     module.exports.push name: 'Phoenix # Init', timeout: 200000, handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
