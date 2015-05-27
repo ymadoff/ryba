@@ -7,7 +7,6 @@
 ## Start
 
     module.exports.push name: 'ES # Start', label_true: 'STARTED', handler: (ctx, next) ->
-      ctx.service
-        srv_name: 'elasticsearch'
-        action: 'start'
-      , next
+      ctx.service_start
+        name: 'elasticsearch'
+      .then next

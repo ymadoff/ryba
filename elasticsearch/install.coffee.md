@@ -8,17 +8,18 @@
 
     module.exports.push name: 'ES # Users & Groups', handler: (ctx, next) ->
       {elasticsearch} = ctx.config.ryba
-      ctx.group elasticsearch.group, (err, gmodified) ->
-        return next err if err
-        ctx.user elasticsearch.user, (err, umodified) ->
-          next err, gmodified or umodified
+      ctx
+      .group elasticsearch.group
+      .user elasticsearch.user
+      .then next
 
 ## Kerberos
 
     module.exports.push name: 'ES # Kerberos', skip: true, handler: (ctx, next) ->
       {elasticsearch, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc
+      ctx
+      .krb5_addprinc
         principal: elasticsearch.principal
         randkey: true
         keytab: elasticsearch.keytab
@@ -27,7 +28,7 @@
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
 
 ## Install
 
@@ -38,16 +39,16 @@ ElasticSearch archive comes with an RPM
       ctx
       .download
         source: elasticsearch.source
-        destination: "/root/elasticsearch-#{elasticsearch.version}.noarch.rpm"
+        destination: "/var/tmp/elasticsearch-#{elasticsearch.version}.noarch.rpm"
         # not_if_exec: "rpm -q --queryformat '%{VERSION}' elasticsearch | grep '#{elasticsearch.version}'"
+        not_if_exists: true
       .execute
         cmd:"""
-        yum localinstall -y --nogpgcheck elasticsearch-#{elasticsearch.version}.noarch.rpm
+        yum localinstall -y --nogpgcheck /var/tmp/elasticsearch-#{elasticsearch.version}.noarch.rpm
         chkconfig --add elasticsearch
         """
         not_if_exec: "rpm -q --queryformat '%{VERSION}' elasticsearch | grep '#{elasticsearch.version}'"
-      .then (err, modified) ->
-        next err
+      .then next
 
 ## Env
 
@@ -79,9 +80,5 @@ ElasticSearch archive comes with an RPM
       ctx.write
         destination: '/etc/elasticsearch/elasticsearch.yml'
         write: write
-      , next
+      .then next
 
-    module.exports.push name: 'ES # Tuning', handler: (ctx, next) ->
-      next null, 'TODO'
-
-## Module Dependencies
