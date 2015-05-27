@@ -179,3 +179,12 @@ We then ask a first TGT.
         local_source: true
         destination: '/etc/hive/conf/hive-log4j.properties'
       ], next
+## Limits
+
+    module.exports.push name: 'Hive Server2 : Limits', handler: (ctx, next) ->
+      {hive, realm} = ctx.config.ryba
+      ctx.system_limits
+        user: hive.user.name
+        nofile: true
+        nproc: true
+      .then next
