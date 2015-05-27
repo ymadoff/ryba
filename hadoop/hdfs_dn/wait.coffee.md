@@ -56,7 +56,7 @@ only run on a NameNode with fencing installed and in normal mode.
         else exit 2; fi
         """
         code_skipped: 2
-      , next
+      .then next
 
 ## Module Dependencies
 

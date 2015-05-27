@@ -23,11 +23,10 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
 ```
 
     module.exports.push name: 'HDFS NN # Start', timeout: -1, label_true: 'STARTED', handler: (ctx, next) ->
-      ctx.service
-        srv_name: 'hadoop-hdfs-namenode'
-        action: 'start'
+      ctx.service_start
+        name: 'hadoop-hdfs-namenode'
         if_exists: '/etc/init.d/hadoop-hdfs-namenode'
-      , next
+      .then next
 
 ## Wait Safemode
 
@@ -73,7 +72,7 @@ only run on a NameNode with fencing installed and in normal mode.
         else exit 2; fi
         """
         code_skipped: 2
-      , next
+      .then next
 
 ## Module Dependencies
 

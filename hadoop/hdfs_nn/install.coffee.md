@@ -48,7 +48,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           # { chain: 'INPUT', jump: 'ACCEPT', dport: 9000, protocol: 'tcp', state: 'NEW', comment: "HDFS NN IPC" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Service
 
@@ -56,7 +56,10 @@ Install the "hadoop-hdfs-namenode" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
     module.exports.push name: 'HDFS NN # Service', handler: (ctx, next) ->
-      ctx.hdp_service 'hadoop-hdfs-namenode', next
+      ctx
+      .hdp_service
+        name: 'hadoop-hdfs-namenode'
+      .then next
 
 ## Layout
 
@@ -67,18 +70,19 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
     module.exports.push name: 'HDFS NN # Layout', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba
       pid_dir = hdfs.pid_dir.replace '$USER', hdfs.user.name
-      ctx.mkdir [
+      ctx
+      .mkdir
         destination: hdfs.site['dfs.namenode.name.dir'].split ','
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755
         parent: true
-      ,
+      .mkdir
         destination: "#{pid_dir}"
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755
-      ], next
+      .then next
 
 ## Kerberos
 
@@ -98,7 +102,7 @@ Create a service principal for this NameNode. The principal is named after
         kadmin_password: kadmin_password
         mode: 0o0600
         kadmin_server: admin_server
-      , next
+      .then next
 
 ## Opts
 
@@ -112,7 +116,7 @@ Environment passed to the NameNode before it starts.
         replace: "export HADOOP_NAMENODE_OPTS=\"#{hdfs.namenode_opts} ${HADOOP_NAMENODE_OPTS}\" # RYBA CONF \"ryba.hdfs.namenode_opts\", DONT OVEWRITE"
         before: /^export HADOOP_NAMENODE_OPTS=".*"$/mg
         backup: true
-      , next
+      .then next
 
 ## Configure
 
@@ -141,7 +145,7 @@ in the cluster which should start TaskTracker and DataNode daemons.
         content: "#{datanodes.join '\n'}"
         destination: "#{hadoop_conf_dir}/slaves"
         eof: true
-      , next
+      .then next
 
 ## Format
 
@@ -177,18 +181,13 @@ is only executed on a non active NameNode.
       {hdfs, active_nn_host} = ctx.config.ryba
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       return next() if ctx.config.host is active_nn_host
-      do_wait = ->
-        ctx.waitIsOpen active_nn_host, 8020, (err) ->
-          return next err if err
-          do_init()
-      do_init = ->
+      ctx.waitIsOpen active_nn_host, 8020, (err) ->
+        return next err if err
         ctx.execute
           cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -bootstrapStandby -nonInteractive\""
           code_skipped: 5
-        , next
-      do_wait()
+        .then next
 
 ## Module Dependencies
 
-    lifecycle = require '../../lib/lifecycle'
     mkcmd = require '../../lib/mkcmd'

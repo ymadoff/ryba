@@ -20,14 +20,15 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
         srv_name: 'hadoop-hdfs-namenode'
         action: 'stop'
         if_exists: '/etc/init.d/hadoop-hdfs-namenode'
-      , next
+      .then next
 
     module.exports.push name: 'HDFS NN # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
-      ctx.execute [
+      ctx
+      .execute
         cmd: 'rm /var/log/hadoop-hdfs/*/*-namenode-*'
         code_skipped: 1
-      ,
+      .execute
         cmd: 'rm /var/log/hadoop-hdfs/*/*-zkfc-*'
         code_skipped: 1
-      ], next
+      .then next

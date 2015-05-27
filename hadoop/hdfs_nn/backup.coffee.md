@@ -46,7 +46,7 @@ dfsadmin -fetchImage
         destination: "/var/backups/nn_#{ctx.config.host}/"
         interval: month: 1
         retention: count: 2
-      , next
+      .then next
 
     module.exports.push name: 'HDFS NN # Backup FSimages & edits', timeout: -1, label_true: 'BACKUPED', handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
@@ -57,7 +57,7 @@ dfsadmin -fetchImage
         destination: "/var/backups/nn_#{ctx.config.host}/"
         interval: month: 1
         retention: count: 2
-      , next
+      .then next
 
 ### Restoration procedure
 

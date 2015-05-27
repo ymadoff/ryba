@@ -17,4 +17,4 @@ inside "/var/lib/hadoop-hdfs/hdfs/hadoop-hdfs-journalnode.pid".
         cmd: 'service hadoop-hdfs-journalnode status'
         code_skipped: 3
         if_exists: '/etc/init.d/hadoop-hdfs-journalnode'
-      , next
+      .then next

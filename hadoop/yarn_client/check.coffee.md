@@ -19,6 +19,8 @@
 The distributed shell is a yarn client application which submit a command or a
 Shell script to be executed inside one or multiple YARN containers.
 
+# http://riccomini.name/posts/hadoop/2013-06-14-yarn-with-cgroups/
+
     module.exports.push name: 'YARN Client # Check Distributed Shell', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
       {force_check, user} = ctx.config.ryba
       appname = "ryba_check_#{ctx.config.shortname}_distributed_cache_#{Date.now()}"

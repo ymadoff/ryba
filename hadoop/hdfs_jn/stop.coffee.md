@@ -23,11 +23,11 @@ su -l hive -c "kill `cat /var/lib/hive-hcatalog/hcat.pid`"
         srv_name: 'hadoop-hdfs-journalnode'
         action: 'stop'
         if_exists: '/etc/init.d/hadoop-hdfs-journalnode'
-      , next
+      .then next
 
     module.exports.push name: 'HDFS JN # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
-      return next() unless ctx.config.ryba.clean_logs
       ctx.execute
         cmd: 'rm /var/log/hadoop-hdfs/*/*-journalnode-*'
         code_skipped: 1
-      , next
+        if: ctx.config.ryba.clean_logs
+      .then next

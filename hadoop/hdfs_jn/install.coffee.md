@@ -44,7 +44,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: https, protocol: 'tcp', state: 'NEW', comment: "HDFS JournalNode" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Layout
 
@@ -57,7 +57,7 @@ The JournalNode data are stored inside the directory defined by the
         destination: hdfs.site['dfs.journalnode.edits.dir'].split ','
         uid: 'hdfs'
         gid: 'hadoop'
-      , next
+      .then next
 
 ## Service
 
@@ -93,7 +93,7 @@ inside "/etc/init.d" and activate it on startup.
               match: /^export HADOOP_IDENT_STRING=.*$/m # HDP default is "hdfs"
               replace: "export HADOOP_IDENT_STRING=#{hdfs.user.name} # RYBA"
             ]
-      , next
+      .then next
 
     # module.exports.push name: 'HDFS JN # Startup', handler: (ctx, next) ->
     #   {hdfs} = ctx.config.ryba

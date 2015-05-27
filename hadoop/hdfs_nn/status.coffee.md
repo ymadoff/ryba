@@ -15,4 +15,4 @@ inside "/var/run/hadoop-hdfs/hdfs/hadoop-hdfs-namenode.pid".
         cmd: 'service hadoop-hdfs-namenode status'
         code_skipped: 3
         if_exists: '/etc/init.d/hadoop-hdfs-namenode'
-      , next
+      .then next

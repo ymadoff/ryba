@@ -15,4 +15,4 @@
       ctx.execute
         cmd: 'rm #{yarn.log_dir}/*/*-resourcemanager-*'
         code_skipped: 1
-      , next
+      .then next

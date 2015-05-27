@@ -21,8 +21,7 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
 ```
 
     module.exports.push name: 'HDFS JN # Start', label_true: 'STARTED', handler: (ctx, next) ->
-      ctx.service
-        srv_name: 'hadoop-hdfs-journalnode'
-        action: 'start'
+      ctx.service_start
+        name: 'hadoop-hdfs-journalnode'
         if_exists: '/etc/init.d/hadoop-hdfs-journalnode'
-      , next
+      .then next

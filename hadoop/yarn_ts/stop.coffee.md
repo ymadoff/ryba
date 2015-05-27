@@ -18,4 +18,4 @@
         exit 3;
         """
         code_skipped: 3
-      , next
+      .then next

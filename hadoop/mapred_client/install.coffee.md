@@ -29,12 +29,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: jobclient, protocol: 'tcp', state: 'NEW', comment: "MapRed Client Range" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
     module.exports.push name: 'MapReduce # Install Common', timeout: -1, handler: (ctx, next) ->
       ctx.service
         name: 'hadoop-mapreduce'
-      , next
+      .then next
 
 http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
 http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
@@ -45,7 +45,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
         cmd: "useradd #{mapred.user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop MapReduce service\""
         code: 0
         code_skipped: 9
-      , next
+      .then next
 
     module.exports.push name: 'MapReduce Client # Configuration', handler: (ctx, next) ->
       {mapred, hadoop_conf_dir} = ctx.config.ryba
@@ -103,7 +103,7 @@ HDFS directory. Note, the parent directories are created by the
         version=`readlink /usr/hdp/current/hadoop-mapreduce-client | sed 's/.*\\/\\(.*\\)\\/hadoop-mapreduce/\\1/'`
         hdfs dfs -test -f /hdp/apps/$version/mapreduce/mapreduce.tar.gz
         """
-      , next
+      .then next
 
 ## Dependencies
 

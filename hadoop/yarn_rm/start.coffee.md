@@ -36,7 +36,7 @@ with the message "RMHAServiceTarget doesn't have a corresponding ZKFC address".
         else exit 2; fi
         """
         code_skipped: 2
-      , next
+      .then next
 
 ## Module Dependencies
 

@@ -31,7 +31,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: https_port, protocol: 'tcp', state: 'NEW', comment: "HDFS SNN HTTPS" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Service
 
@@ -39,7 +39,9 @@ Install the "hadoop-hdfs-secondarynamenode" service, symlink the rc.d startup
 script inside "/etc/init.d" and activate it on startup.
 
     module.exports.push name: 'HDFS SNN # Service', handler: (ctx, next) ->
-      ctx.hdp_service 'hadoop-hdfs-secondarynamenode', next
+      ctx.hdp_service
+        name: 'hadoop-hdfs-secondarynamenode'
+      .then next
 
     # module.exports.push name: 'HDFS SNN # Service', timeout: -1, handler: (ctx, next) ->
     #   {hdfs} = ctx.config.ryba
@@ -60,17 +62,17 @@ script inside "/etc/init.d" and activate it on startup.
       {hdfs, hadoop_group} = ctx.config.ryba
       ctx.log "Create SNN data, checkpind and pid directories"
       pid_dir = hdfs.pid_dir.replace '$USER', hdfs.user.name
-      ctx.mkdir [
+      ctx.mkdir
         destination: hdfs.site['dfs.namenode.checkpoint.dir'].split ','
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755
-      ,
+      .mkdir
         destination: "#{pid_dir}"
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755
-      ], next
+      .then next
 
     module.exports.push name: 'HDFS SNN # Kerberos', handler: (ctx, next) ->
       {realm, hdfs} = ctx.config.ryba
@@ -84,7 +86,7 @@ script inside "/etc/init.d" and activate it on startup.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
 
 # Configure
 

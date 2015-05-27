@@ -56,7 +56,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       ctx.iptables
         rules: rules
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Kerberos
 
@@ -72,8 +72,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
 
+## Kerberos JAAS
+
+The JAAS file is used by the ResourceManager to initiate a secure connection 
+with Zookeeper.
 
     module.exports.push name: 'YARN RM # Kerberos JAAS', handler: (ctx, next) ->
       {yarn, hadoop_conf_dir, hadoop_group, core_site, realm} = ctx.config.ryba
@@ -84,7 +88,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           keyTab: yarn.site['yarn.resourcemanager.keytab']
         uid: yarn.user.name
         gid: hadoop_group.name
-      , next
+      .then next
 
 
 ## Service
@@ -120,7 +124,7 @@ inside "/etc/init.d" and activate it on startup.
               match: /^export YARN_IDENT_STRING=.*$/m # HDP default is "hdfs"
               replace: "export YARN_IDENT_STRING=#{yarn.user.name} # RYBA, DONT OVERWRITE"
             ]
-      , next
+      .then next
 
 ## Environment
 
@@ -133,7 +137,7 @@ inside "/etc/init.d" and activate it on startup.
         match: /^.*# RYBA CONF "ryba.yarn.rm_opts", DONT OVERWRITE/mg
         replace: "YARN_RESOURCEMANAGER_OPTS=\"${YARN_RESOURCEMANAGER_OPTS} #{rm_opts}\" # RYBA CONF \"ryba.yarn.rm_opts\", DONT OVERWRITE"
         append: true
-      , next
+      .then next
 
 
 ## Configuration
@@ -183,18 +187,6 @@ ResourceCalculator class name is expected.
           code_skipped: 3
         .then (err) ->
           next err, true
-
-## Wait JHS
-
-Yarn use the the MapReduce Job History Server (JHS) to send logs. The address of
-the server is defined by the propery "yarn.log.server.url" in "yarn-site.xml".
-The default port is "19888".
-
-    # url = require 'url'
-    # module.exports.push name: 'YARN RM # Wait JHS', timeout: -1, handler: (ctx, next) ->
-    #   {hostname, port} = url.parse ctx.config.ryba.yarn.site['yarn.log.server.url']
-    #   ctx.waitIsOpen hostname, port, (err) ->
-    #     return next err if err
 
 ## Module Dependencies
 

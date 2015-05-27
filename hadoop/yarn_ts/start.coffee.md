@@ -17,4 +17,4 @@
         echo $?
         """
         code_skipped: 3
-      , next
+      .then next

@@ -7,7 +7,7 @@ co-located with any other service.
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/krb5_client/wait'
-    module.exports.push 'ryba/hadoop/yarn_client'
+    module.exports.push 'ryba/hadoop/yarn_client/install'
     module.exports.push require '../../lib/hconfigure'
     module.exports.push require('./index').configure
 
@@ -34,7 +34,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: https_port, protocol: 'tcp', state: 'NEW', comment: "Yarn Timeserver HTTPS" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Configuration
 
@@ -43,8 +43,7 @@ Update the "yarn-site.xml" configuration file.
     module.exports.push name: 'YARN TS # Configuration', handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       {hadoop_conf_dir, yarn, hadoop_group} = ctx.config.ryba
-      ctx
-      .hconfigure
+      ctx.hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
         properties: yarn.site
         merge: true
@@ -55,13 +54,14 @@ Update the "yarn-site.xml" configuration file.
 
     module.exports.push name: 'YARN TS # Layout', timeout: -1, handler: (ctx, next) ->
       {yarn, hadoop_group} = ctx.config.ryba
-      ctx.mkdir
+      ctx
+      .mkdir
         destination: yarn.site['yarn.timeline-service.leveldb-timeline-store.path']
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0750
         parent: true
-      , next
+      .then next
 
 ## Kerberos
 
@@ -82,4 +82,7 @@ and permissions set to "0600".
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
+
+
+

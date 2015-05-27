@@ -27,7 +27,7 @@ to re-execute the check.
         """
         not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -d check-#{host}-mapred/output"
         trap_on_error: true
-      , next
+      .then next
 
 ## Module Dependencies
 

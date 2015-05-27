@@ -42,7 +42,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: jhs_admin_port, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS Admin Server" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Service
 
@@ -61,7 +61,7 @@ script inside "/etc/init.d" and activate it on startup.
           replace: 'HADOOP_PID_DIR="${HADOOP_MAPRED_PID_DIR:-$HADOOP_PID_DIR}" # RYBA FIX pid dir'
           before: /^PIDFILE=".*"$/m
         ]
-      , next
+      .then next
 
 ## Environnement
 
@@ -80,7 +80,7 @@ directory with the location of the directory storing the process pid.
           replace: "export HADOOP_MAPRED_PID_DIR=\"#{mapred.pid_dir}\" # RYBA CONF \"ryba.mapred.pid_dir\", DONT OVEWRITE"
           before: /^#export HADOOP_MAPRED_LOG_DIR.*/m
         ]
-      , next
+      .then next
 
     module.exports.push name: 'MapReduce JHS # Kerberos', handler: (ctx, next) ->
       {hadoop_conf_dir, mapred, yarn} = ctx.config.ryba
@@ -103,32 +103,18 @@ Create the log and pid directories.
 
     module.exports.push name: 'MapReduce Client # System Directories', timeout: -1, handler: (ctx, next) ->
       {mapred, hadoop_group} = ctx.config.ryba
-      modified = false
-      do_log = ->
-        ctx.log "Create hdfs and mapred log: #{mapred.log_dir}"
-        ctx.mkdir
-          destination: "#{mapred.log_dir}/#{mapred.user.name}"
-          uid: mapred.user.name
-          gid: hadoop_group.name
-          mode: 0o0755
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_pid()
-      do_pid = ->
-        ctx.log "Create hdfs and mapred pid: #{mapred.pid_dir}"
-        ctx.mkdir
-          destination: "#{mapred.pid_dir}/#{mapred.user.name}"
-          uid: mapred.user.name
-          gid: hadoop_group.name
-          mode: 0o0755
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_end()
-      do_end = ->
-        next null, modified
-      do_log()
+      ctx
+      .mkdir
+        destination: "#{mapred.log_dir}/#{mapred.user.name}"
+        uid: mapred.user.name
+        gid: hadoop_group.name
+        mode: 0o0755
+      .mkdir
+        destination: "#{mapred.pid_dir}/#{mapred.user.name}"
+        uid: mapred.user.name
+        gid: hadoop_group.name
+        mode: 0o0755
+      .then next
 
 ## HDFS Layout
 
@@ -165,7 +151,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         if [ $modified != "1" ]; then exit 2; fi
         """
         code_skipped: 2
-      , next
+      .then next
 
     module.exports.push name: 'MapReduce JHS # Kerberos', handler: (ctx, next) ->
       {mapred, hadoop_group, realm} = ctx.config.ryba
@@ -179,7 +165,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
 
 ## Module dependencies
 

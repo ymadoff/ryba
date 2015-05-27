@@ -17,7 +17,7 @@ healthy, non-zero otherwise.
       return next() unless ctx.hosts_with_module('ryba/hadoop/yarn_rm').length > 1
       ctx.execute
         cmd: mkcmd.hdfs ctx, "yarn rmadmin -checkHealth #{ctx.config.shortname}"
-      , next
+      .then next
 
 # Dependencies
 

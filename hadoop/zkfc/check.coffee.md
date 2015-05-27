@@ -23,5 +23,4 @@ is a comma-separated list of SSH private key files.
       # Disabling key checking shall be considered acceptable between 2 NNs
       ctx.execute
         cmd: "su -l #{hdfs.user.name} -c \"ssh -q -o StrictHostKeyChecking=no #{hdfs.user.name}@#{target} hostname\""
-      , (err) ->
-        next err, true
+      .then next
