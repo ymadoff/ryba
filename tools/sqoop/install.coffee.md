@@ -27,10 +27,10 @@ hadoop:x:502:yarn,mapred,hdfs,hue
 
     module.exports.push name: 'Hadoop Sqoop # Users & Groups', handler: (ctx, next) ->
       {sqoop, hadoop_group} = ctx.config.ryba
-      ctx.group hadoop_group, (err, gmodified) ->
-        return next err if err
-        ctx.user sqoop.user, (err, umodified) ->
-          next err, gmodified or umodified
+      ctx
+      .group hadoop_group
+      .user sqoop.user
+      .then next
 
 ## Environment
 
@@ -107,7 +107,7 @@ MySQL is by default usable by Sqoop. The driver installed after running the
       ctx.link
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/hdp/current/sqoop-client/lib/mysql-connector-java.jar'
-      , next
+      .then next
 
 ## Libs
 
@@ -120,8 +120,9 @@ the Sqoop library folder.
       uploads = for lib in libs
         source: lib
         destination: "/usr/hdp/current/sqoop-client/lib/#{path.basename lib}"
-        binary: true
-      ctx.upload uploads, next
+      ctx
+      .download uploads
+      .then next
 
 ## Check
 
@@ -131,8 +132,7 @@ command][validate].
     module.exports.push name: 'Hadoop Sqoop # Check', handler: (ctx, next) ->
       ctx.execute
         cmd: "sqoop version | grep 'Sqoop [0-9].*'"
-      , (err) ->
-        next err, true
+      .then next
 
 [install]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap10-1.html
 [validate]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap10-4.html
