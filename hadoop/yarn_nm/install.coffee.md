@@ -39,15 +39,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: ctx.config.iptables.action is 'start'
       , next
 
-## Package
-
-    module.exports.push name: 'YARN NM # Package', handler: (ctx, next) ->
-      {yarn} = ctx.config.ryba
-      ctx.service
-        name: 'libcgroup'
-        if: yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] is 'true'
-      , next
-
 ## Service
 
 Install the "hadoop-yarn-nodemanager" service, symlink the rc.d startup script
@@ -228,7 +219,10 @@ SSH connection to the node to gather the memory and CPU informations.
     module.exports.push name: 'YARN NM # CGroup', handler: (ctx, next) ->
       {yarn} = ctx.config.ryba
       return next() unless yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] is 'true'
-      ctx.mkdir
+      ctx
+      .service
+        name: 'libcgroup'
+      .mkdir
         destination: "#{yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path']}/cpu"
         mode: 0o1777
       , next
