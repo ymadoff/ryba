@@ -16,8 +16,8 @@ co-located with any other service.
 | Service   | Port       | Proto     | Parameter                                  |
 |-----------|------------|-----------|--------------------------------------------|
 | timeline  | 10200      | tcp/http  | yarn.timeline-service.address              |
-| timeline  | 50075/1006 | tcp/http  | yarn.timeline-service.webapp.address       |
-| timeline  | 50475      | tcp/https | yarn.timeline-service.webapp.https.address |
+| timeline  | 8188 | tcp/http  | yarn.timeline-service.webapp.address       |
+| timeline  | 8190      | tcp/https | yarn.timeline-service.webapp.https.address |
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
