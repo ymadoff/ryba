@@ -177,10 +177,15 @@ Upload the ZooKeeper loging configuration file.
 
     module.exports.push name: 'ZooKeeper Server # Log4J', handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
-      ctx.upload
+      ctx.write
         destination: "#{zookeeper.conf_dir}/log4j.properties"
         source: "#{__dirname}/../../resources/zookeeper/log4j.properties"
-      , next
+        local_source: true
+        write:
+          match: /log4j\.rootLogger=.*/g
+          replace: "log4j.rootLogger=INFO, CONSOLE, ROLLINGFILE # RYBA, DONT OVEWRITE"
+
+      .then next
 
 ## Schedule Purge Transaction Logs
 
