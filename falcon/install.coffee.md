@@ -28,7 +28,7 @@ Note, this hasnt been verified.
           { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "Falcon Prism Local EndPoint" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Users & Groups
 
@@ -42,22 +42,17 @@ falcon:x:498:falcon
 ```
 
     module.exports.push name: 'Falcon # Users & Groups', handler: (ctx, next) ->
-      {group, user} = ctx.config.ryba.falcon
-      ctx.group group, (err, gmodified) ->
-        return next err if err
-        ctx.user user, (err, umodified) ->
-          next err, gmodified or umodified
+      {falcon} = ctx.config.ryba
+      ctx.group falcon.group
+      .user falcon.user
+      .then next
 
 ## Packages
 
     module.exports.push name: 'Falcon # Packages', timeout: -1, handler: (ctx, next) ->
-      # ctx.hdp_service
-      #   name: 'falcon'
-      #   version_name: 'falcon_server'
-      # , next
       ctx.service
         name: 'falcon'
-      , next
+      .then next
 
 ## Kerberos
 
@@ -74,28 +69,30 @@ falcon:x:498:falcon
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
 
 ## HFDS Layout
 
     module.exports.push name: 'Falcon # HFDS Layout', handler: (ctx, next) ->
       {user, group} = ctx.config.ryba.falcon
-      ctx.execute
-        cmd: mkcmd.hdfs ctx, "hdfs dfs -stat '%g;%u;%n' /apps/falcon"
-        code_skipped: 1
-      , (err, exists, stdout) ->
-        return next err if err
-        [user_owner, group_owner, filename] = stdout.trim().split ';' if exists
-        ctx.execute [
-          cmd: mkcmd.hdfs ctx, 'hdfs dfs -mkdir /apps/falcon'
-          not_if: exists
-        ,
-          cmd: mkcmd.hdfs ctx, "hdfs dfs -chown #{user.name} /apps/falcon"
-          if: not exists or user.name isnt user_owner
-        ,
-          cmd: mkcmd.hdfs ctx, 'hdfs dfs -chgrp #{group.name} /apps/falcon'
-          if: not exists or group.name isnt group_owner
-        ], next
+      ctx.call (_, next) ->
+        ctx.execute
+          cmd: mkcmd.hdfs ctx, "hdfs dfs -stat '%g;%u;%n' /apps/falcon"
+          code_skipped: 1
+        , (err, exists, stdout) ->
+          return next err if err
+          [user_owner, group_owner, filename] = stdout.trim().split ';' if exists
+          ctx.execute [
+            cmd: mkcmd.hdfs ctx, 'hdfs dfs -mkdir /apps/falcon'
+            not_if: exists
+          ,
+            cmd: mkcmd.hdfs ctx, "hdfs dfs -chown #{user.name} /apps/falcon"
+            if: not exists or user.name isnt user_owner
+          ,
+            cmd: mkcmd.hdfs ctx, 'hdfs dfs -chgrp #{group.name} /apps/falcon'
+            if: not exists or group.name isnt group_owner
+          ], next
+      .then next
 
 ## Runtime
 
@@ -131,7 +128,7 @@ falcon:x:498:falcon
         write: write
         backup: true
         eof: true
-      , next
+      .then next
 
 ## Notes
 

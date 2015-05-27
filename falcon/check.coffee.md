@@ -34,7 +34,8 @@ Follow the [Hortonworks Data Pipelines example][dpe].
       hive_contexts = ctx.contexts 'ryba/hive/hcatalog', require('../hive/hcatalog').configure
       hive_url = hive_contexts[0].config.ryba.hive.site['hive.metastore.uris']
       hive_principal = hive_contexts[0].config.ryba.hive.site['hive.metastore.kerberos.principal'].replace '_HOST', hive_contexts[0].config.host
-      ctx.write [
+      ctx
+      .write
         content: """
         <?xml version="1.0"?>
         <cluster colo="ryba-data-center" description="description" name="ryba-data-center" xmlns="uri:falcon:cluster:0.1">    
@@ -63,7 +64,7 @@ Follow the [Hortonworks Data Pipelines example][dpe].
         destination: "#{cluster_path}"
         uid: user.name
         eof: true
-      ,
+      .write
         content: """
         <?xml version="1.0"?>
         <feed description="ryba-input-feed" name="testFeed" xmlns="uri:falcon:feed:0.1">
@@ -94,7 +95,7 @@ Follow the [Hortonworks Data Pipelines example][dpe].
         destination: "#{feed_path}"
         uid: user.name
         eof: true
-      ,
+      .write
         content: """
         <?xml version="1.0"?>
         <process name="process-test" xmlns="uri:falcon:process:0.1">
@@ -122,15 +123,13 @@ Follow the [Hortonworks Data Pipelines example][dpe].
         destination: "#{process_path}"
         uid: user.name
         eof: true
-      ], (err, written) ->
-        return next err if err
-        ctx.execute [
-          cmd: mkcmd.test ctx, "falcon entity -type cluster -submit -file #{cluster_path}"
-        ,
-          cmd: mkcmd.test ctx, "falcon entity -type feed -submit -file #{feed_path}"
-        ,
-          cmd: mkcmd.test ctx, "falcon entity -type process -submit -file #{process_path}"
-        ], next
+      .execute
+        cmd: mkcmd.test ctx, "falcon entity -type cluster -submit -file #{cluster_path}"
+      .execute
+        cmd: mkcmd.test ctx, "falcon entity -type feed -submit -file #{feed_path}"
+      .execute
+        cmd: mkcmd.test ctx, "falcon entity -type process -submit -file #{process_path}"
+      .then next
 
 ## Dependencies
 
