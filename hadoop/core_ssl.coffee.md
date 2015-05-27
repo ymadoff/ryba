@@ -105,51 +105,12 @@ keytool -list -v -keystore keystore -alias hadoop
         destination: "#{tmp_location}_key"
         shy: true
       # Client: import certificate to all hosts
-      # openssl x509  -noout -in cacert.pem -md5 -fingerprint | sed 's/\(.*\)=\(.*\)/\2/' | sed 's/\://g' | cat
-      # cmd_cacert_md5 = "openssl x509  -noout -in cacert.pem -md5 -fingerprint | sed 's/\\(.*\\)=\\(.*\\)/\\2/' | sed 's/\\://g' | cat"
-      # keytool -list -v -keystore truststore -alias hadoop -storepass ryba123 | grep MD5: | sed 's/\s*MD5\:\s*\(.*\)/\1/'
-      # cmd_trustore_md5 = "keytool -list -v -keystore keystore -alias hadoop -storepass ryba123 | grep MD5: | sed 's/\\s*MD5\\:\\s*\\(.*\\)/\\1/'"
-      # .execute
-      #   cmd: """
-      #   user=`openssl x509  -noout -in "#{tmp_location}_cacert" -md5 -fingerprint | sed 's/\\(.*\\)=\\(.*\\)/\\2/' | cat`
-      #   truststore=`keytool -list -v -keystore #{ssl_client['ssl.client.truststore.location']} -alias hadoop_root_ca -storepass #{ssl_client['ssl.client.truststore.password']} | grep MD5: | sed 's/\\s*MD5\\:\\s*\\(.*\\)/\\1/'`
-      #   echo "User CACert: $user"
-      #   echo "Truststore CACert: $truststore"
-      #   if [ "$user" == "$truststore" ]; then exit 3; fi
-      #   # Import root CA certificate into the trustore
-      #   yes | keytool -importcert -alias hadoop_root_ca -file #{tmp_location}_cacert \
-      #     -keystore #{ssl_client['ssl.client.truststore.location']} \
-      #     -storepass #{ssl_client['ssl.client.truststore.password']}
-      #   """
       .java_keystore_add
         keystore: ssl_client['ssl.client.truststore.location']
         storepass: ssl_client['ssl.client.truststore.password']
         caname: "hadoop_root_ca"
         cacert: "#{tmp_location}_cacert"
       # Server: import certificates, private and public keys to hosts with a server
-      # .execute
-      #   # keytool -list -v -keystore keystore -alias hadoop -storepass ryba123 | grep MD5: | sed 's/\s*MD5\:\s*\(.*\)/\1/'
-      #   cmd: """
-      #   user=`openssl x509  -noout -in "#{tmp_location}_cert" -md5 -fingerprint | sed 's/\\(.*\\)=\\(.*\\)/\\2/' | cat`
-      #   keystore=`keytool -list -v -keystore #{ssl_server['ssl.server.keystore.location']} -alias #{shortname} -storepass #{ssl_server['ssl.server.keystore.password']} | grep MD5: | sed 's/\\s*MD5\\:\\s*\\(.*\\)/\\1/'`
-      #   echo "User Certificate: $user"
-      #   echo "Keystore Certificate: $keystore"
-      #   if [ "$user" == "$keystore" ]; then exit 3; fi
-      #   # Create a PKCS12 file that contains key and certificate
-      #   openssl pkcs12 -export \
-      #     -in "#{tmp_location}_cert" -inkey "#{tmp_location}_key" \
-      #     -out "#{tmp_location}_pkcs12" -name #{shortname} \
-      #     -CAfile "#{tmp_location}_cacert" -caname hadoop_root_ca \
-      #     -password pass:#{ssl_server['ssl.server.keystore.keypassword']}
-      #   # Import PKCS12 into keystore
-      #   yes | keytool -importkeystore \
-      #     -destkeystore #{ssl_server['ssl.server.keystore.location']} \
-      #     -deststorepass #{ssl_server['ssl.server.keystore.password']} \
-      #     -destkeypass #{ssl_server['ssl.server.keystore.keypassword']} \
-      #     -srckeystore "#{tmp_location}_pkcs12" -srcstoretype PKCS12 -srcstorepass #{ssl_server['ssl.server.keystore.keypassword']} \
-      #     -alias #{shortname}
-      #   """
-      #   code_skipped: 3
       .java_keystore_add
         keystore: ssl_server['ssl.server.keystore.location']
         storepass: ssl_server['ssl.server.keystore.password']
@@ -166,23 +127,6 @@ keytool -list -v -keystore keystore -alias hadoop
         caname: "hadoop_root_ca"
         cacert: "#{tmp_location}_cacert"
         if: has_modules
-      # .execute
-      #   cmd: """
-      #   # Read user CACert signature
-      #   user=`openssl x509  -noout -in "#{tmp_location}_cacert" -md5 -fingerprint | sed 's/\\(.*\\)=\\(.*\\)/\\2/' | cat`
-      #   # Read registered CACert signature
-      #   keystore=`keytool -list -v -keystore #{ssl_server['ssl.server.keystore.location']} -alias hadoop_root_ca -storepass #{ssl_server['ssl.server.keystore.password']} | grep MD5: | sed 's/\\s*MD5\\:\\s*\\(.*\\)/\\1/'`
-      #   echo "User CACert: $user"
-      #   echo "Keystore CACert: $keystore"
-      #   if [ "$user" == "$keystore" ]; then exit 3; fi
-      #   # Import CACert
-      #   yes | keytool -keystore #{ssl_server['ssl.server.keystore.location']} \
-      #     -storepass #{ssl_server['ssl.server.keystore.password']} \
-      #     -alias hadoop_root_ca \
-      #     -import \
-      #     -file #{tmp_location}_cacert
-      #   """
-      #   code_skipped: 3
       .remove
         destination: "#{tmp_location}_cacert"
         shy: true
