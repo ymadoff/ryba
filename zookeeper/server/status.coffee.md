@@ -13,4 +13,4 @@ Discover the server status.
         cmd: "service zookeeper-server status"
         code_skipped: 3
         if_exists: '/etc/init.d/zookeeper-server'
-      , next
+      .then next
