@@ -108,7 +108,7 @@ TODO: only work if WebHCat is running on the same server as Hue
     module.exports.push name: 'Hue # WebHCat', handler: (ctx, next) ->
       {webhcat} = ctx.config.ryba
       webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
-      return next Error "WebHCat shall be on the same server as Hue" unless webhcat_server isnt ctx.config.host
+      return next Error "WebHCat shall be on the same server as Hue" unless webhcat_server is ctx.config.host
       ctx
       .hconfigure
         destination: "#{webhcat.conf_dir}/webhcat-site.xml"
@@ -129,7 +129,7 @@ TODO: only work if Oozie is running on the same server as Hue
     module.exports.push name: 'Hue # Oozie', handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
       oozie_server = ctx.host_with_module 'ryba/oozie/server'
-      return next Error "Oozie shall be on the same server as Hue" unless oozie_server isnt ctx.config.host
+      return next Error "Oozie shall be on the same server as Hue" unless oozie_server is ctx.config.host
       ctx.hconfigure
         destination: "#{oozie.conf_dir}/oozie-site.xml"
         properties: 
