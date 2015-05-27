@@ -200,6 +200,12 @@ Note, Automatic purging of the snapshots and corresponding transaction logs was
 introduced in version 3.4.0 and can be enabled via the following configuration
 parameters autopurge.snapRetainCount and autopurge.purgeInterval.
 
+```
+/usr/bin/java \
+  -cp /usr/hdp/current/zookeeper-server/zookeeper.jar:/usr/hdp/current/zookeeper-server/lib/*:/usr/hdp/current/zookeeper-server/conf \
+  org.apache.zookeeper.server.PurgeTxnLog  /var/zookeeper/data/ -n 3
+```
+
     module.exports.push name: "ZooKeeper Server # Schedule Purge", handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
       return next() unless zookeeper.purge
