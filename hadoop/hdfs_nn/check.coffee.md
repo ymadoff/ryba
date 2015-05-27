@@ -52,6 +52,16 @@ See More http://hadoop.apache.org/docs/r2.0.2-alpha/hadoop-yarn/hadoop-yarn-site
         cmd: mkcmd.hdfs ctx, "hdfs haadmin -checkHealth #{ctx.config.shortname}"
       , next
 
+## Check FSCK
+
+Check for various inconsistencies on the overall filesystem. Use the command
+`hdfs fsck -list-corruptfileblocks` to list the corrupted blocks.
+
+    module.exports.push name: 'HDFS NN # Check FSCK', label_true: 'CHECKED', timeout: -1, retry: 3, wait: 60000, handler: (ctx, next) ->
+      ctx.execute
+        cmd: mkcmd.hdfs ctx, "exec 5>&1; hdfs fsck / | tee /dev/fd/5 | tail -1 | grep HEALTHY 1>/dev/null"
+      , next
+
 ## Test User
 
 Create a Unix and Kerberos test user, by default "test" and execute simple HDFS commands to ensure
