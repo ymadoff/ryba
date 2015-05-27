@@ -42,10 +42,27 @@ Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
         source: "#{__dirname}/../../resources/sqoop/sqoop-env.sh"
         destination: "#{sqoop.conf_dir}/sqoop-env.sh"
         local_source: true
+        write: [
+           match: /^export HADOOP_HOME=.*$/m # Sqoop default is "/usr/lib/hadoop"
+           replace: "export HADOOP_HOME=${HADOOP_HOME:-/usr/hdp/current/hadoop-client} # RYBA for HDP"
+         ,
+           match: /^export HBASE_HOME=.*$/m # Sqoop default is "/usr/lib/hbase"
+           replace: "export HBASE_HOME=${HBASE_HOME:-/usr/hdp/current/hbase-client} # RYBA for HDP"
+         ,
+           match: /^export HIVE_HOME=.*$/m # Sqoop default is "/usr/lib/hive"
+           replace: "export HIVE_HOME=${HIVE_HOME:-/usr/hdp/current/hive-server} # RYBA for HDP"
+         ,
+           match: /^export ZOOCFGDIR=.*$/m # Sqoop default is "/etc/zookeeper/conf"
+           replace: "export ZOOCFGDIR=${ZOOCFGDIR:-/etc/zookeeper/conf} # RYBA for HDP"
+         ,
+           match: /^export HBASE_HOME=.*$/m # Sqoop default is "/usr/lib/hbase"
+           replace: "export HBASE_HOME=${HADOOP_HOME:-/usr/lib/hbase} # RYBA for HDP"
+        ]
         uid: sqoop.user.name
         gid: hadoop_group.name
         mode: 0o755
-      , next
+        backup: true
+      .then next
 
 ## Configuration
 
