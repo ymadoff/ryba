@@ -151,8 +151,8 @@ Refer to the "masson/core/security" module for instructions on how to add custom
 limit rules.
 
 Also worth of interest are the [Pivotal recommandations][hawq] as well as the
-[Greenplum recommandation from Nixus Technologies][greenplum] and the
-[MapR documentation][mapr].
+[Greenplum recommandation from Nixus Technologies][greenplum], the
+[MapR documentation][mapr] and [Hadoop Performance via Linux presentation][hpl].
 
 Note, a user must re-login for those changes to be taken into account.
 
@@ -164,11 +164,11 @@ Note, a user must re-login for those changes to be taken into account.
           destination: '/etc/security/limits.d/hdfs.conf'
           write: [
             match: /^hdfs.+nofile.+$/mg
-            replace: "hdfs    -    nofile   #{max_nofile}"
+            replace: "hdfs    -    nofile   64000"
             append: true
           ,
             match: /^hdfs.+nproc.+$/mg
-            replace: "hdfs    -    nproc    65536"
+            replace: "hdfs    -    nproc    64000"
             append: true
           ]
           backup: true
@@ -176,11 +176,11 @@ Note, a user must re-login for those changes to be taken into account.
           destination: '/etc/security/limits.d/mapreduce.conf'
           write: [
             match: /^mapred.+nofile.+$/mg
-            replace: "mapred  -    nofile   #{max_nofile}"
+            replace: "mapred  -    nofile   64000"
             append: true
           ,
             match: /^mapred.+nproc.+$/mg
-            replace: "mapred  -    nproc    65536"
+            replace: "mapred  -    nproc    64000"
             append: true
           ]
           backup: true
@@ -188,11 +188,11 @@ Note, a user must re-login for those changes to be taken into account.
           destination: '/etc/security/limits.d/yarn.conf'
           write: [
             match: /^yarn.+nofile.+$/mg
-            replace: "yarn    -    nofile   #{max_nofile}"
+            replace: "yarn    -    nofile   64000"
             append: true
           ,
             match: /^yarn.+nproc.+$/mg
-            replace: "yarn    -    nproc    65536"
+            replace: "yarn    -    nproc    64000"
             append: true
           ]
           backup: true
@@ -219,4 +219,5 @@ Create the log directory.
 [hawq]: http://docs.gopivotal.com/pivotalhd/InstallingHAWQ.html
 [greenplum]: http://nixustechnologies.com/2014/03/31/install-greenplum-community-edition/
 [mapr]: http://doc.mapr.com/display/MapR/Preparing+Each+Node
+[hpl]: http://www.slideshare.net/technmsg/improving-hadoop-performancevialinux
 [kate]: http://fr.slideshare.net/cloudera/hadoop-troubleshooting-101-kate-ting-cloudera
