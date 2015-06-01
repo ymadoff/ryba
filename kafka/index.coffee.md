@@ -1,7 +1,7 @@
 
 # Kafka Commons
 
-Commons configuration and deployment actions shared between the server, producer
+Commons configuration and deployment actions shared between broker, producer
 and consumer Kafka components.
 
     module.exports = []
@@ -56,4 +56,4 @@ Install the Kafka package.
     module.exports.push name: 'Kafka # Service', handler: (ctx, next) ->
       ctx.service
         name: 'kafka'
-      , next
+      .then next

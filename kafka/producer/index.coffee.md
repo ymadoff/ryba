@@ -9,7 +9,7 @@ log. It is fast, scalable, durable and distributed by design.
 ## Configure
 
     module.exports.configure = (ctx) ->
-      require('../lib/commons').configure ctx
+      require('../').configure ctx
       {kafka} = ctx.config.ryba
       ks_ctxs = ctx.contexts 'ryba/kafka/server', require('../server').configure
       brokers = for ks_ctx in ks_ctxs

@@ -39,4 +39,4 @@ Make sure the server is listening. The default port is "9092".
           --topic test \
           --zookeeper #{quorum} --from-beginning --max-messages 1 | grep 'hello front1'
         """
-      , next
+      .then next
