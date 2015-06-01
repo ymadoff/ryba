@@ -35,37 +35,37 @@ lifecyle = module.exports =
   #       cmd: 'service hadoop-hdfs-journalnode stop'
   #       # code_skipped: 1
   #     , callback
-  nn_status: (ctx, callback) ->
-    ctx.execute
-      cmd: "service hadoop-hdfs-namenode status"
-      code_skipped: [1, 3]
-    , callback
-  nn_start: (ctx, callback) ->
-    lifecyle.nn_status ctx, (err, running) ->
-      return callback err, false if err or running
-      ctx.log "NameNode start"
-      ctx.execute
-        # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start namenode"
-        # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start namenode\""
-        cmd: "service hadoop-hdfs-namenode start"
-        code_skipped: [1, 3]
-      , callback
-  nn_stop: (ctx, callback) ->
-    {hdfs, hadoop_conf_dir} = ctx.config.ryba
-    lifecyle.nn_status ctx, (err, running) ->
-      return callback err, false if err or not running
-      ctx.log "NameNode stop"
-      ctx.execute
-        # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop namenode"
-        # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop namenode\""
-        cmd: 'service hadoop-hdfs-namenode stop'
-        # code_skipped: 1
-      , callback
-  nn_restart: (ctx, callback) ->
-    ctx.log "NameNode restart"
-    lifecyle.nn_stop ctx, (err) ->
-      return callback err if err
-      lifecyle.nn_start ctx, callback
+  # nn_status: (ctx, callback) ->
+  #   ctx.execute
+  #     cmd: "service hadoop-hdfs-namenode status"
+  #     code_skipped: [1, 3]
+  #   , callback
+  # nn_start: (ctx, callback) ->
+  #   lifecyle.nn_status ctx, (err, running) ->
+  #     return callback err, false if err or running
+  #     ctx.log "NameNode start"
+  #     ctx.execute
+  #       # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start namenode"
+  #       # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start namenode\""
+  #       cmd: "service hadoop-hdfs-namenode start"
+  #       code_skipped: [1, 3]
+  #     , callback
+  # nn_stop: (ctx, callback) ->
+  #   {hdfs, hadoop_conf_dir} = ctx.config.ryba
+  #   lifecyle.nn_status ctx, (err, running) ->
+  #     return callback err, false if err or not running
+  #     ctx.log "NameNode stop"
+  #     ctx.execute
+  #       # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop namenode"
+  #       # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs stop namenode\""
+  #       cmd: 'service hadoop-hdfs-namenode stop'
+  #       # code_skipped: 1
+  #     , callback
+  # nn_restart: (ctx, callback) ->
+  #   ctx.log "NameNode restart"
+  #   lifecyle.nn_stop ctx, (err) ->
+  #     return callback err if err
+  #     lifecyle.nn_start ctx, callback
   zkfc_status: (ctx, callback) ->
     ctx.execute
       cmd: "service hadoop-hdfs-zkfc status"
