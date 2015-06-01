@@ -34,10 +34,10 @@ hue:x:494:
 
     module.exports.push name: 'Hue # Users & Groups', handler: (ctx, next) ->
       {hue} = ctx.config.ryba
-      ctx.group hue.group, (err, gmodified) ->
-        return next err if err
-        ctx.user hue.user, (err, umodified) ->
-          next err, gmodified or umodified
+      ctx
+      .group hue.group
+      .user hue.user
+      .then next
 
 ## IPTables
 
@@ -55,24 +55,17 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: hue.ini.desktop.http['port'], protocol: 'tcp', state: 'NEW', comment: "Hue Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Packages
 
 The packages "extjs-2.2-1" and "hue" are installed.
 
     module.exports.push name: 'Hue # Packages', timeout: -1, handler: (ctx, next) ->
-      ctx.service [
-        # {name: 'extjs-2.2-1'}
-        {name: 'hue'}
-        # {name: 'hue-hcatalog'}
-        # {name: 'hue-oozie'}
-        # {name: 'hue-pig'}
-        {name: 'hue-plugins'}
-        # {name: 'hue-server'}
-        # {name: 'hue-common'}
-        # {name: 'hue-shell'}
-      ], next
+      ctx
+      .service name: 'hue'
+      .service name: 'hue-plugins'
+      .then next
 
 # ## Core
 
@@ -153,7 +146,7 @@ recommandations. Merge the configuration object from "hdp.hue.ini" with the prop
         stringify: misc.ini.stringify_multi_brackets
         separator: '='
         comment: '#'
-      , next
+      .then next
 
 ## Database
 
@@ -168,7 +161,8 @@ the default database while mysql is the recommanded choice.
           {host, port, user, password, name} = hue.ini.desktop.database
           escape = (text) -> text.replace(/[\\"]/g, "\\$&")
           mysql_exec = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
-          ctx.execute [
+          ctx
+          .execute
             cmd: """
             #{mysql_exec} "
             create database #{name};
@@ -178,14 +172,13 @@ the default database while mysql is the recommanded choice.
             "
             """
             not_if_exec: "#{mysql_exec} 'use #{name}'"
-          ,
+          .execute
             # TODO: handle updates
             cmd: """
             su -l #{hue.user.name} -c "/usr/lib/hue/build/env/bin/hue syncdb --noinput"
             """
             not_if_exec: "#{mysql_exec} 'show tables from #{name};' | grep auth"
-          ], (err, executed) ->
-              next err, executed
+          .then next
         sqlite: ->
           next null, false
       engine = hue.ini.desktop.database.engine
@@ -210,24 +203,25 @@ the "security_enabled" property set to "true".
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
 
 ## SSL Client
 
     module.exports.push name: 'Hue # SSL Client', handler: (ctx, next) ->
       {hue} = ctx.config.ryba
       hue.ca_bundle = '' unless hue.ssl.client_ca
-      ctx.write [
+      ctx
+      .write
         destination: "#{hue.ca_bundle}"
         source: "#{hue.ssl.client_ca}"
         local_source: true
         if: !!hue.ssl.client_ca
-      ,
+      .write
         destination: '/etc/init.d/hue'
         match: /^DAEMON="export REQUESTS_CA_BUNDLE='.*';\$DAEMON"$/m
         replace: "DAEMON=\"export REQUESTS_CA_BUNDLE='#{hue.ca_bundle}';$DAEMON\""
         append: /^DAEMON=.*$/m
-      ], next
+      .then next
 
 ## SSL Server
 
@@ -265,7 +259,7 @@ changes.
         ctx.service
           name: 'hue'
           action: 'restart'
-        , next
+        .then next
 
 ## Fix Banner
 
@@ -302,7 +296,6 @@ Use the "ryba/hue/start" module to start the Hue server.
 ## Dependencies
 
     misc = require 'mecano/lib/misc'
-    lifecycle = require '../lib/lifecycle'
 
 ## Resources:   
 

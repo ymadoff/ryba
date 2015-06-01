@@ -16,7 +16,7 @@
       ctx.execute
         cmd: "rm #{hue.log_dir}/*"
         code_skipped: 1
-      , next
+      .then next
 
 ## Dependencies
 
