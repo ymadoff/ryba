@@ -7,9 +7,20 @@
     module.exports.push 'masson/core/krb5_client/wait'
     module.exports.push require('./index').configure
 
-## Start ZooKeeper
+## Start
 
-Execute these commands on the ZooKeeper host machine(s).
+Start the ZooKeeper server. You can also start the server manually with the
+following two commands:
 
-    module.exports.push name: 'ZooKeeper Server # Start', label_true: 'STARTED', handler: (ctx, next) ->
-      lifecycle.zookeeper_start ctx, next
+```
+service zookeeper-server start
+su - zookeeper -c "export ZOOCFGDIR=/usr/hdp/current/zookeeper-server/conf; export ZOOCFG=zoo.cfg; source /usr/hdp/current/zookeeper-server/conf/zookeeper-env.sh; /usr/hdp/current/zookeeper-server/bin/zkServer.sh start"
+```
+
+    module.exports.push name: 'ZooKeeper Server # Start Server', label_true: 'STARTED', handler: (ctx, next) ->
+      {yarn} = ctx.config.ryba
+      ctx
+      .service_start
+        name: 'zookeeper-server'
+        if_exists: '/etc/init.d/zookeeper-server'
+      .then next

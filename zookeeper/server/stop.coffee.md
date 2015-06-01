@@ -8,15 +8,24 @@
 
 ## Stop
 
-Stop the Zookeeper service. Execute these commands on all the ZooKeeper host
-machines.
+Stop the Zookeeper server. You can also stop the server manually with one of
+the following two commands:
+
+```
+service zookeeper-server stop
+su - zookeeper -c "export ZOOCFGDIR=/usr/hdp/current/zookeeper-server/conf; export ZOOCFG=zoo.cfg; source /usr/hdp/current/zookeeper-server/conf/zookeeper-env.sh; /usr/hdp/current/zookeeper-server/bin/zkServer.sh stop"
+```
 
     module.exports.push name: 'ZooKeeper Server # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
-      lifecycle.zookeeper_stop ctx, next
+      ctx.service
+        srv_name: 'zookeeper-server'
+        action: 'stop'
+        if_exists: '/etc/init.d/zookeeper-server'
+      .then next
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'Oozie Server # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
+    module.exports.push name: 'ZooKeeper Server # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute
         cmd: 'rm /var/log/zookeeper/*'

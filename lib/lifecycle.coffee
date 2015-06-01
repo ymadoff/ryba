@@ -414,39 +414,38 @@ lifecyle = module.exports =
       ctx.execute
         cmd: "service hue stop"
       , callback
-  zookeeper_status: (ctx, callback) ->
-    # {zookeeper} = ctx.config.ryba
-    ctx.log "Zookeeper status"
-    # lifecyle.is_pidfile_running ctx, "#{zookeeper.pid_dir}/zookeeper_server.pid", (err, running) ->
-    #   ctx.log "Zookeeper status: #{if running then 'RUNNING' else 'STOPPED'}"
-    #   callback err, running
-    ctx.execute
-      cmd: "service zookeeper-server status"
-      code_skipped: [1, 3]
-    , callback
-  zookeeper_start: (ctx, callback) ->
-    {zookeeper} = ctx.config.ryba
-    lifecyle.zookeeper_status ctx, (err, running) ->
-      return callback err, false if err or running
-      ctx.log "Zookeeper start"
-      ctx.execute
-        # su -l zookeeper -c "/usr/lib/zookeeper/bin/zkServer.sh start /etc/zookeeper/conf/zoo.cfg"
-        # cmd: "su -l #{zookeeper.user.name} -c \"/usr/lib/zookeeper/bin/zkServer.sh start #{zookeeper.conf_dir}/zoo.cfg\""
-        cmd: "service zookeeper-server start"
-      , (err, started) ->
-        return callback err if err
-        ctx.waitIsOpen ctx.config.host, zookeeper.port, timeout: 2000000, (err) ->
-          callback err, started
-  zookeeper_stop: (ctx, callback) ->
-    {zookeeper} = ctx.config.ryba
-    lifecyle.zookeeper_status ctx, (err, running) ->
-      return callback err, false if err or not running
-      ctx.log "Zookeeper stop"
-      ctx.execute
-        # su -l zookeeper -c "/usr/lib/zookeeper/bin/zkServer.sh stop /etc/zookeeper/conf/zoo.cfg"
-        # cmd: "su -l #{zookeeper.user.name} -c \"/usr/lib/zookeeper/bin/zkServer.sh stop #{zookeeper.conf_dir}/zoo.cfg\""
-        cmd: "service zookeeper-server stop"
-      , callback
+  # zookeeper_status: (ctx, callback) ->
+  #   # {zookeeper} = ctx.config.ryba
+  #   ctx.log "Zookeeper status"
+  #   # lifecyle.is_pidfile_running ctx, "#{zookeeper.pid_dir}/zookeeper_server.pid", (err, running) ->
+  #   #   ctx.log "Zookeeper status: #{if running then 'RUNNING' else 'STOPPED'}"
+  #   #   callback err, running
+  #   ctx.execute
+  #     cmd: "service zookeeper-server status"
+  #     code_skipped: [1, 3]
+  #   , callback
+  # zookeeper_start: (ctx, callback) ->
+  #   {zookeeper} = ctx.config.ryba
+  #   lifecyle.zookeeper_status ctx, (err, running) ->
+  #     return callback err, false if err or running
+  #     ctx.log "Zookeeper start"
+  #     ctx.execute
+  #       # su -l zookeeper -c "/usr/lib/zookeeper/bin/zkServer.sh start /etc/zookeeper/conf/zoo.cfg"
+  #       cmd: "service zookeeper-server start"
+  #     , (err, started) ->
+  #       return callback err if err
+  #       ctx.waitIsOpen ctx.config.host, zookeeper.port, timeout: 2000000, (err) ->
+  #         callback err, started
+  # zookeeper_stop: (ctx, callback) ->
+  #   {zookeeper} = ctx.config.ryba
+  #   lifecyle.zookeeper_status ctx, (err, running) ->
+  #     return callback err, false if err or not running
+  #     ctx.log "Zookeeper stop"
+  #     ctx.execute
+  #       # su -l zookeeper -c "/usr/lib/zookeeper/bin/zkServer.sh stop /etc/zookeeper/conf/zoo.cfg"
+  #       # cmd: "su -l #{zookeeper.user.name} -c \"/usr/lib/zookeeper/bin/zkServer.sh stop #{zookeeper.conf_dir}/zoo.cfg\""
+  #       cmd: "service zookeeper-server stop"
+  #     , callback
 
 module.exports.is_pidfile_running = (ctx, path, callback) ->
   ctx.execute
