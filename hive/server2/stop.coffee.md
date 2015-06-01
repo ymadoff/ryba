@@ -20,15 +20,15 @@ su -l hive -c 'nohup /usr/lib/hive/bin/hiveserver2 >/var/log/hive/hiveserver2.ou
         srv_name: 'hive-server2'
         action: 'stop'
         if_exists: '/etc/init.d/hive-server2'
-      , next
+      .then next
 
 ## Stop Clean Logs
 
     module.exports.push name: 'Hive & HCat # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       # TODO: get path from config
-      ctx.execute [
+      ctx.execute
         cmd: 'rm /var/log/hive/*'
         code_skipped: 1
-      ], next
+      .then next
 

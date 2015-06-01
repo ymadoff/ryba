@@ -14,5 +14,5 @@ inside "/var/lib/hive-hcatalog/hcat.pid".
         cmd: 'service hive-hcatalog-server status'
         code_skipped: 3
         if_exists: '/etc/init.d/hive-hcatalog-server'
-      , next
+      .then next
 

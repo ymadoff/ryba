@@ -27,5 +27,5 @@ su -l hive -c "/usr/lib/hive-hcatalog/sbin/webhcat_server.sh start"
         srv_name: 'hive-webhcat-server'
         action: 'start'
         if_exists: '/etc/init.d/hive-webhcat-server'
-      , next
+      .then next
 

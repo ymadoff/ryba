@@ -40,7 +40,7 @@ Example:
     module.exports.configure = (ctx) ->
       require('masson/commons/mysql_server').configure ctx
       require('../../hadoop/core').configure ctx
-      require('../index').configure ctx
+      require('../client/index').configure ctx
       {core_site, hive, static_host, realm} = ctx.config.ryba
       # Layout and environment
       hive.server2 ?= {}
@@ -50,17 +50,19 @@ Example:
       hive.server2.heapsize = 1024
       # Configuration
       hive.site ?= {}
-      properties = [ # Duplicate client, might remove
-        'hive.metastore.uris'
-        'hive.security.authorization.enabled'
-        'hive.security.authorization.manager'
-        'hive.security.metastore.authorization.manager'
-        'hive.security.authenticator.manager'
-        # Transaction, read/write locks
-        'hive.support.concurrency'
-        'hive.zookeeper.quorum'
-      ]
-      for property in properties then hive.site[property] ?= hcat_ctx.config.ryba.hive.site[property]
+      # properties = [ # Duplicate client, might remove
+      #   'hive.metastore.uris'
+      #   'hive.security.authorization.enabled'
+      #   'hive.security.authorization.manager'
+      #   'hive.security.metastore.authorization.manager'
+      #   'hive.security.authenticator.manager'
+      #   # Transaction, read/write locks
+      #   'hive.support.concurrency'
+      #   'hive.zookeeper.quorum'
+      # ]
+      # for property in properties
+      #   console.log property, hive.site[property]
+      #   hive.site[property] ?= hcat_ctx.config.ryba.hive.site[property]
       # Server2 specific properties
       hive.site['hive.server2.enable.doAs'] ?= 'true'
       # hive.site['hive.server2.enable.impersonation'] ?= 'true' # Mention in CDH5.3 but hs2 logs complains it doesnt exist
@@ -94,6 +96,12 @@ Example:
       hive.site['hive.server2.authentication.spnego.principal'] ?= core_site['hadoop.http.authentication.kerberos.principal']
       hive.site['hive.server2.authentication.spnego.keytab'] ?= core_site['hadoop.http.authentication.kerberos.keytab']
 
+## Rolling Upgrade
+
+      # 'hive.zookeeper.quorum' imported from hive client
+      hive.site['hive.server2.support.dynamic.service.discovery'] ?= 'true'
+      hive.site['hive.zookeeper.session.timeout'] ?= '600000' # Default is "600000"
+      hive.site['hive.server2.zookeeper.namespace'] ?= 'hiveserver2' # Default is "hiveserver2"
 
 ## Commands
 

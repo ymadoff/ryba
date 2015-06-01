@@ -13,7 +13,7 @@
     module.exports.push name: 'Hive Client # Service', handler: (ctx, next) ->
       ctx.service
         name: 'hive-hcatalog'
-      , next
+      .then next
 
 ## Configure
 
@@ -64,7 +64,7 @@ by setting a "heapsize" value equal to "4096".
         append: true
         eof: true
         backup: true
-      , next
+      .then next
 
 
       

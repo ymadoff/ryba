@@ -34,14 +34,14 @@ Check if the Hive HCatalog (Metastore) server is listening.
     module.exports.push name: 'Hive HCatalog # Check Port', label_true: 'CHECKED', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       uris = hive.site['hive.metastore.uris'].split ','
-      servers = for uri in uris
+      [server] = for uri in uris
         {hostname, port} = url.parse uri
         continue unless hostname is ctx.config.host
         host: hostname, port: port
-      return next Error 'Invalid configuration' unless servers.length is 1
+      return next Error 'Invalid configuration' unless server
       ctx.execute
-        cmd: "echo > /dev/tcp/#{servers[0].host}/#{servers[0].port}"
-      , next
+        cmd: "echo > /dev/tcp/#{server.host}/#{server.port}"
+      .then next
 
 # Module Dependencies
 

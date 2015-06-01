@@ -41,7 +41,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: hive_server_port, protocol: 'tcp', state: 'NEW', comment: "Hive Server" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Startup
 
@@ -71,10 +71,10 @@ isnt yet started.
         ,
           # HDP default is "/var/run/hive/hive-server2.pid"
           match: /^PIDFILE=.*$/m
-          replace: "PIDFILE=\"#{hive.server2.pid_dir}/hcat.pid\" # RYBA FIX, DONT OVEWRITE"
+          replace: "PIDFILE=\"#{hive.server2.pid_dir}/hive-server2.pid\" # RYBA FIX, DONT OVEWRITE"
         ]
         etc_default: true
-      , next
+      .then next
 
     module.exports.push name: 'Hive Server2 # Configure', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
@@ -113,7 +113,7 @@ Server2 to 4Gb by setting a value equal to "-Xmx4096m".
         append: true
         eof: true
         backup: true
-      , next
+      .then next
 
 ## Layout
 
@@ -123,17 +123,18 @@ Create the directories to store the logs and pid information. The properties
     module.exports.push name: 'Hive Server2 # Layout', timeout: -1, handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       # Required by service "hive-hcatalog-server"
-      ctx.mkdir [
+      ctx
+      .mkdir
         destination: hive.server2.log_dir
         uid: hive.user.name
         gid: hive.group.name
         parent: true
-      ,
+      .mkdir
         destination: hive.server2.pid_dir
         uid: hive.user.name
         gid: hive.group.name
         parent: true
-      ], next
+      .then next
 
 ## Kerberos
 
@@ -150,7 +151,7 @@ Create the directories to store the logs and pid information. The properties
         kadmin_password: kadmin_password
         kadmin_server: admin_server
         not_if: hive.site['hive.metastore.kerberos.principal'] is hive.site['hive.server2.authentication.kerberos.principal']
-      , next
+      .then next
 
 Since HDP 2.2.4.2, Hive Server2 doesn't seems to correctly renew its keytab. For that, we use cron daemon
 We then ask a first TGT.
@@ -165,20 +166,22 @@ We then ask a first TGT.
         when: '0 */9 * * *'
         user: hive.user.name
         exec: true
-      , next
+      .then next
 
 ## Logs
 
     module.exports.push name: 'Hive Server2 # Logs', handler: (ctx, next) ->
-      ctx.write [
+      ctx
+      .write
         source: "#{__dirname}/../../resources/hive/hive-exec-log4j.properties.template"
         local_source: true
         destination: '/etc/hive/conf/hive-exec-log4j.properties'
-      ,
+      .write
         source: "#{__dirname}/../../resources/hive/hive-log4j.properties.template"
         local_source: true
         destination: '/etc/hive/conf/hive-log4j.properties'
-      ], next
+      .then next
+
 ## Limits
 
     module.exports.push name: 'Hive Server2 : Limits', handler: (ctx, next) ->
@@ -188,3 +191,10 @@ We then ask a first TGT.
         nofile: true
         nproc: true
       .then next
+
+
+
+
+
+
+

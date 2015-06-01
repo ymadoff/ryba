@@ -23,17 +23,18 @@ su -l hive -c "/usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop"
         srv_name: 'hive-webhcat-server'
         action: 'stop'
         if_exists: '/etc/init.d/hive-webhcat-server'
-      , next
+      .then next
 
 
 ## Stop Clean Logs
 
     module.exports.push name: 'WebHCat # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
-      ctx.execute [
+      ctx
+      .execute
         cmd: 'rm /var/log/webhcat/webhcat-console*'
         code_skipped: 1
-      ,
+      .execute
         cmd: 'rm /var/log/webhcat/webhcat.log*'
         code_skipped: 1
-      ], next
+      .then next

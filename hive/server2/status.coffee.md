@@ -14,5 +14,5 @@ inside "/var/run/hive/hive-server2.pid".
         cmd: 'service hive-server2 status'
         code_skipped: 3
         if_exists: '/etc/init.d/hive-server2'
-      , next
+      .then next
 

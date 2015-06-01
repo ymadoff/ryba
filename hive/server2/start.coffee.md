@@ -24,4 +24,4 @@ su -l hive -c 'nohup /usr/lib/hive/bin/hiveserver2 >/var/log/hive/hiveserver2.ou
         srv_name: 'hive-server2'
         action: 'start'
         if_exists: '/etc/init.d/hive-server2'
-      , next
+      .then next

@@ -15,6 +15,4 @@ Wait for the RPC or HTTP ports depending on the configured transport mode.
         else hive_ctx.config.ryba.hive.site['hive.server2.thrift.port']
       ctx.waitIsOpen servers, next
 
-## Dependencies
 
-    url = require 'url'

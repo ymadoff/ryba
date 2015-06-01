@@ -18,13 +18,13 @@ configuration.
       engines_cmd =
         mysql: "mysqldump -u#{user} -p#{password} -h#{hostname} -P#{port} #{db}"
       return next new Error 'Database engine not supported' unless engines_cmd[engine]
-      data =
+      ctx.backup
         name: 'db'
         cmd: engines_cmd[engine]
         destination: "/var/backups/hive/"
         interval: month: 1
         retention: count: 2
-      ctx.backup data, next
+      .then next
 
 ## Backup Configuration
 
@@ -32,13 +32,13 @@ Backup the active Hive configuration.
 
     module.exports.push name: "Hive HCatalog # Backup Configuration", label_true: 'BACKUPED', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
-      conf =
+      ctx.backup
         name: 'conf'
         source: hive.conf_dir
         destination: "/var/backups/hive/"
         interval: month: 1
         retention: count: 2
-      ctx.backup conf, next
+      .then next
 
 ## Module Dependencies
 
