@@ -9,7 +9,7 @@ and consumer Kafka components.
 ## Configure
 
     module.exports.push module.exports.configure = (ctx) ->
-      require('../../hadoop/core').configure ctx
+      require('../hadoop/core').configure ctx
       kafka = ctx.config.ryba.kafka ?= {}
       # Layout
       kafka.conf_dir ?= '/etc/kafka/conf'
