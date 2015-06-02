@@ -211,7 +211,7 @@ pointing to the Ganglia master hostname.
       .service
         srv_name: 'httpd'
         action: ['start', 'restart']
-        not_if: (callback) ->
+        not_if: (options, callback) ->
           ctx.execute
             cmd: "curl -s http://#{ctx.config.host}/ganglia/"
           , (err, _, stdout) ->
