@@ -247,6 +247,7 @@ Note, we might move this middleware to Masson.
             destination: '/etc/sysctl.conf'
             write: writes
             backup: true
+            eof: true
           , (err) ->
             return callback err if err
             properties = for k, v of properties then "#{k}=#{v}"
