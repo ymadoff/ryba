@@ -17,18 +17,19 @@
 Wait for HDFS safemode to exit. It is not enough to start the NameNodes but the
 majority of DataNodes also need to be running.
 
-# This middleware duplicates the one present in 'masson/hadoop/hdfs_nn/start' and
-# is only called if a NameNode is installed on this server because a NameNode need
-# a mojority of DataNodes to be started in order to exit safe mode.
-
     module.exports.push name: 'HDFS DN # Wait Safemode', timeout: -1, label_true: 'READY', handler: (ctx, next) ->
-      # return next() unless ctx.has_module 'ryba/hadoop/hdfs_nn'
-      ctx.waitForExecution
-        cmd: mkcmd.hdfs ctx, """
-          hdfs dfsadmin -safemode get | grep OFF
-          """
-        interval: 3000
-      , (err) -> next err, true
+      # TODO: there are much better solutions, for exemple
+      # if 'ryba/hadoop/hdfs_client', then `hdfs dfsadmin`
+      # else use curl
+      return next Error 'HDFS Client Not Installed' unless ctx.has_any_modules 'ryba/hadoop/hdfs_client', 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_snn', 'ryba/hadoop/hdfs_dn'
+      ctx.call (_, callback) ->
+        ctx.waitForExecution
+          cmd: mkcmd.hdfs ctx, """
+            hdfs dfsadmin -safemode get | grep OFF
+            """
+          interval: 3000
+        , callback
+      .then (err) -> next err, true
 
 ## Wait Failover
 
