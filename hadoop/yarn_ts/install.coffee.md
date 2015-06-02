@@ -7,6 +7,7 @@ co-located with any other service.
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/krb5_client/wait'
+    module.exports.push 'ryba/hadoop/hdfs_client/install'
     module.exports.push 'ryba/hadoop/yarn_client/install'
     module.exports.push require '../../lib/hconfigure'
     module.exports.push require('./index').configure
