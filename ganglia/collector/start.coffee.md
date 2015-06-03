@@ -14,12 +14,7 @@ The gmetad daemon is started by the "hdp-gmetad" script and not directly. The
 independently complaining that "rrdcached" is already running.
 
     module.exports.push name: 'Ganglia Collector # Start', label_true: 'STARTED', handler: (ctx, next) ->
-      ctx.service [
-      #   name: 'httpd'
-      #   action: 'start'
-      # ,
-        # name: 'ganglia-gmetad-3.5.0-99'
-        srv_name: 'hdp-gmetad'
-        action: 'start'
+      ctx.service_start
+        name: 'hdp-gmetad'
         if_exists: '/etc/init.d/hdp-gmetad'
-      ], next
+      .then next

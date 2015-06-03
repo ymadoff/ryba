@@ -16,8 +16,7 @@ su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/
 ```
 
     module.exports.push name: 'MapReduce JHS # Start', timeout: -1, label_true: 'STARTED', handler: (ctx, next) ->
-      ctx.service
-        srv_name: 'hadoop-mapreduce-historyserver'
-        action: 'start'
+      ctx.service_start
+        name: 'hadoop-mapreduce-historyserver'
         if_exists: '/etc/init.d/hadoop-mapreduce-historyserver'
-      , next
+      .then next

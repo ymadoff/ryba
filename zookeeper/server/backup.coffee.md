@@ -22,28 +22,30 @@ TODO: Add the backup facility
     module.exports.push name: "ZooKeeper Server # Backup", handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
       now = Math.floor Date.now() / 1000
-      ctx.execute [
+      ctx
+      .execute
         cmd: """
         tar czf /var/tmp/ryba-zookeeper-data-#{now}.tgz -C #{zookeeper.config.dataDir} .
         """
-      ,
+      .execute
         cmd: """
         tar czf /var/tmp/ryba-zookeeper-log-#{now}.tgz -C #{zookeeper.config.dataLogDir} .
         """
         if: zookeeper.config.dataLogDir
-      ], next
+      .then next
 
 ## Purge Transaction Logs
 
     module.exports.push name: "ZooKeeper Server # Purge Transaction Logs", handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
-      ctx.execute
+      ctx
+      .execute
         cmd: """
         java -cp /usr/hdp/current/zookeeper-server/zookeeper.jar:/usr/hdp/current/zookeeper-server/lib/*:/usr/hdp/current/zookeeper-server/conf \
           org.apache.zookeeper.server.PurgeTxnLog \
           #{zookeeper.config.dataLogDir or ''} #{zookeeper.config.dataDir} -n #{zookeeper.retention}
         """
-      , next
+      .then next
 
 ## Resources
 

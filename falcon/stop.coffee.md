@@ -24,7 +24,7 @@ su -l falcon -c "/usr/hdp/current/falcon-server/bin/service-stop.sh falcon"
         """
         code_skipped: 3
         if_exists: '/usr/hdp/current/falcon-server/bin/service-stop.sh'
-      , next
+      .then next
 
 ## Stop Clean Logs
 

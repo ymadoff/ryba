@@ -15,4 +15,4 @@ inside "/var/run/hive/hive-server2.pid".
         cmd: 'service hadoop-mapreduce-historyserver status'
         code_skipped: 3
         if_exists: '/etc/init.d/hadoop-mapreduce-historyserver'
-      , next
+      .then next

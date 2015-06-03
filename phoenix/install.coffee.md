@@ -10,6 +10,7 @@ Please refer to the Hortonworks [documentation][phoenix-doc]
     module.exports.push require('../hadoop/core').configure
     module.exports.push require('../hbase').configure
     module.exports.push require('./index').configure
+    module.exports.push require '../lib/hconfigure'
     module.exports.push require '../lib/hdp_select'
 
 ## Packages
@@ -53,7 +54,8 @@ Please refer to the Hortonworks [documentation][phoenix-doc]
 
     module.exports.push name: 'Phoenix # Configure', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hbase.conf_dir}/hbase-site.xml"
         default: "#{__dirname}/../resources/hbase/hbase-site.xml"
         local_default: true
@@ -62,11 +64,11 @@ Please refer to the Hortonworks [documentation][phoenix-doc]
         uid: hbase.user.name
         gid: hbase.group.name
         backup: true
-      , next
+      .then next
 
 ## Initialize
 
-    module.exports.push require 'ryba/hbase/regionserver/wait'
+    module.exports.push 'ryba/hbase/regionserver/wait'
 
     module.exports.push name: 'Phoenix # Init', timeout: 200000, handler: (ctx, next) ->
       {hbase} = ctx.config.ryba

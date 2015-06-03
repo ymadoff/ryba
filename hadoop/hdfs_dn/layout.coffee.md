@@ -25,21 +25,14 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
 
     module.exports.push name: 'HDFS DN # HDFS layout', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba
-      modified = false
-      do_wait = ->
-        ctx.waitForExecution mkcmd.hdfs(ctx, "hdfs dfs -test -d /"), (err) ->
-          return next err if err
-          do_root()
-      do_root = ->
-        ctx.execute
+      ctx.waitForExecution mkcmd.hdfs(ctx, "hdfs dfs -test -d /"), (err) ->
+        return next err if err
+        ctx
+        .execute
           cmd: mkcmd.hdfs ctx, """
           hdfs dfs -chmod 755 /
           """
-        , (err, executed, stdout) ->
-          return next err if err
-          do_tmp()
-      do_tmp = ->
-        ctx.execute
+        .execute
           cmd: mkcmd.hdfs ctx, """
           if hdfs dfs -test -d /tmp; then exit 2; fi
           hdfs dfs -mkdir /tmp
@@ -48,11 +41,8 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
           """
           code_skipped: 2
         , (err, executed, stdout) ->
-          return next err if err
           ctx.log 'Directory "/tmp" prepared' and modified = true if executed
-          do_user()
-      do_user = ->
-        ctx.execute
+        .execute
           cmd: mkcmd.hdfs ctx, """
           if hdfs dfs -test -d /user; then exit 2; fi
           hdfs dfs -mkdir /user
@@ -64,11 +54,8 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
           """
           code_skipped: 2
         , (err, executed, stdout) ->
-          return next err if err
           ctx.log 'Directory "/user" prepared' and modified = true if executed
-          do_apps()
-      do_apps = ->
-        ctx.execute
+        .execute
           cmd: mkcmd.hdfs ctx, """
           if hdfs dfs -test -d /apps; then exit 2; fi
           hdfs dfs -mkdir /apps
@@ -77,12 +64,8 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
           """
           code_skipped: 2
         , (err, executed, stdout) ->
-          return next err if err
           ctx.log 'Directory "/apps" prepared' and modified = true if executed
-          do_end()
-      do_end = ->
-        next null, modified
-      do_wait()
+        .then next
 
 ## HDP Layout
 
@@ -102,7 +85,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
         version=`readlink /usr/hdp/current/hadoop-client | sed 's/.*\\/\\(.*\\)\\/hadoop/\\1/'`
         hdfs dfs -test -d /hdp/apps/$version
         """
-      , next
+      .then next
 
 ## Test User
 
@@ -120,7 +103,7 @@ afect HDFS metadata.
         hdfs dfs -chmod 750 /user/#{user.name}
         """
         code_skipped: 2
-      , next
+      .then next
 
 ## Module dependencies
 

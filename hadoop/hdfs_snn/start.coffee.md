@@ -8,10 +8,6 @@
     module.exports.push name: 'HDFS SNN # Start', label_true: 'STARTED', handler: (ctx, next) ->
       lifecycle.snn_start ctx, next
 
-    # module.exports.push name: 'HDFS SNN # Wait', handler: (ctx, next) ->
-    #   [host, port] = hdfs.site['dfs.namenode.secondary.http-address'].split ':'
-    #   ctx.waitIsOpen host, port, next
-
 ## Module Dependencies
 
     lifecycle = require '../../lib/lifecycle'

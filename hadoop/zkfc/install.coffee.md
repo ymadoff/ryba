@@ -6,6 +6,7 @@
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push 'ryba/zookeeper/server/wait'
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
     module.exports.push require '../../lib/write_jaas'
     module.exports.push require('./index').configure
@@ -22,7 +23,7 @@
           { chain: 'INPUT', jump: 'ACCEPT', dport: 8019, protocol: 'tcp', state: 'NEW', comment: "ZKFC IPC" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Service
 
@@ -59,13 +60,14 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
               match: /^export HADOOP_IDENT_STRING=.*$/m # HDP default is "hdfs"
               replace: "export HADOOP_IDENT_STRING=#{hdfs.user.name} # RYBA"
             ]
-      , next
+      .then next
 
 ## Configure
 
     module.exports.push name: 'ZKFC # Configure', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_conf_dir, hadoop_group} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
         local_default: true
@@ -74,7 +76,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
         gid: hadoop_group.name
         merge: true
         backup: true
-      , next
+      .then next
 
 ## HDFS ZKFC
 
@@ -88,7 +90,7 @@ Environment passed to the ZKFC before it starts.
         replace: "export HADOOP_ZKFC_OPTS=\"#{zkfc.opts} ${HADOOP_ZKFC_OPTS}\" # RYBA ENV \"ryba.zkfc.opts\", DONT OVERWRITE"
         append: true
         backup: true
-      , next
+      .then next
 
 ## Kerberos
 
@@ -104,7 +106,7 @@ stored as "/etc/hadoop/conf/zkfc.jaas"
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       zkfc_principal = zkfc.principal.replace '_HOST', ctx.config.host
       nn_principal = hdfs.site['dfs.namenode.kerberos.principal'].replace '_HOST', ctx.config.host
-      ctx.krb5_addprinc [
+      ctx.krb5_addprinc
         principal: zkfc_principal
         keytab: zkfc.keytab
         randkey: true
@@ -114,7 +116,7 @@ stored as "/etc/hadoop/conf/zkfc.jaas"
         kadmin_password: kadmin_password
         kadmin_server: admin_server
         if: zkfc_principal isnt nn_principal
-      ,
+      .krb5_addprinc
         principal: nn_principal
         keytab: hdfs.site['dfs.namenode.keytab.file']
         randkey: true
@@ -123,17 +125,14 @@ stored as "/etc/hadoop/conf/zkfc.jaas"
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      ], (err, added) ->
-        return next err if err
-        ctx.write_jaas
-          destination: zkfc.jaas_file
-          content: Client:
-            principal: zkfc_principal
-            keyTab: zkfc.keytab
-          uid: hdfs.user.name
-          gid: hadoop_group.name
-        , (err, written) ->
-          return next err, added or written
+      .write_jaas
+        destination: zkfc.jaas_file
+        content: Client:
+          principal: zkfc_principal
+          keyTab: zkfc.keytab
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+      .then next
 
 ## ZK Auth and ACL
 
@@ -162,37 +161,22 @@ setAcl /hadoop-ha sasl:zkfc:cdrwa,sasl:nn:cdrwa,digest:zkfc:ePBwNWc34ehcTu1FTNI7
 
     module.exports.push name: 'ZKFC # ZK Auth and ACL', handler: (ctx, next) ->
       {hadoop_conf_dir, core_site, hdfs, zkfc} = ctx.config.ryba
-      modified = false
-      acls = []
-      # acls.push 'world:anyone:r'
-      jaas_user = /^(.*?)[@\/]/.exec(zkfc.principal)?[1]
-      acls.push "sasl:#{jaas_user}:cdrwa" if core_site['hadoop.security.authentication'] is 'kerberos'
-      # acls.push "sasl:nn:cdrwa" if core_site['hadoop.security.authentication'] is 'kerberos'
-      do_core = ->
-        ctx.hconfigure
-          destination: "#{hadoop_conf_dir}/core-site.xml"
-          properties: core_site
-          merge: true
-          backup: true
-        , (err, configured) ->
-          return next err if err
-          modified = true if configured
-          do_auth()
-      do_auth = ->
-        content = if zkfc.digest.password
-        then "digest:#{zkfc.digest.name}:#{zkfc.digest.password}"
-        else ""
-        ctx.write [
+      zk_auth = if zkfc.digest.password
+      then "digest:#{zkfc.digest.name}:#{zkfc.digest.password}"
+      else ""
+      ctx
+      .hconfigure
+        destination: "#{hadoop_conf_dir}/core-site.xml"
+        properties: core_site
+        merge: true
+        backup: true
+      .write
           destination: "#{hadoop_conf_dir}/zk-auth.txt"
-          content: content
+          content: zk_auth
           uid: hdfs.user.name
           gid: hdfs.group.name
           mode: 0o0700
-        ], (err, written) ->
-          return next err if err
-          modified = true if written
-          do_generate()
-      do_generate = ->
+      .call (_, callback) ->
         ctx.execute
           cmd: """
           export ZK_HOME=/usr/hdp/current/zookeeper-client/
@@ -204,22 +188,20 @@ setAcl /hadoop-ha sasl:zkfc:cdrwa,sasl:nn:cdrwa,digest:zkfc:ePBwNWc34ehcTu1FTNI7
           return do_acl() unless generated
           digest = match[1] if match = /\->(.*)/.exec(stdout)
           return next Error "Failed to get digest" unless digest
+          jaas_user = /^(.*?)[@\/]/.exec(zkfc.principal)?[1]
+          acls = []
+          # acls.push 'world:anyone:r'
+          acls.push "sasl:#{jaas_user}:cdrwa" if core_site['hadoop.security.authentication'] is 'kerberos'
+          # acls.push "sasl:nn:cdrwa" if core_site['hadoop.security.authentication'] is 'kerberos'
           acls.push "digest:#{digest}:cdrwa"
-          do_acl()
-      do_acl = ->
-        ctx.write
-          destination: "#{hadoop_conf_dir}/zk-acl.txt"
-          content: acls.join ','
-          uid: hdfs.user.name
-          gid: hdfs.group.name
-          mode: 0o0600
-        , (err, written) ->
-          return next err if err
-          modified = true if written
-          do_end()
-      do_end = ->
-        next null, modified
-      do_core()
+          ctx.write
+            destination: "#{hadoop_conf_dir}/zk-acl.txt"
+            content: acls.join ','
+            uid: hdfs.user.name
+            gid: hdfs.group.name
+            mode: 0o0600
+          , callback
+      .then next
 
 ## SSH Fencing
 
@@ -239,36 +221,27 @@ inserted if ALL users or the HDFS user access is denied.
     module.exports.push name: 'ZKFC # SSH Fencing', handler: (ctx, next) ->
       {hdfs, hadoop_conf_dir, ssh_fencing, hadoop_group} = ctx.config.ryba
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      modified = false
-      do_mkdir = ->
-        ctx.mkdir
-          destination: "#{hdfs.user.home}/.ssh"
-          uid: hdfs.user.name
-          gid: hadoop_group.name
-          mode: 0o700
-        , (err, created) ->
-          return next err if err
-          do_upload_keys()
-      do_upload_keys = ->
-        ctx.upload [
-          source: "#{ssh_fencing.private_key}"
-          destination: "#{hdfs.user.home}/.ssh"
-          uid: hdfs.user.name
-          gid: hadoop_group.name
-          mode: 0o600
-        ,
-          source: "#{ssh_fencing.public_key}"
-          destination: "#{hdfs.user.home}/.ssh"
-          uid: hdfs.user.name
-          gid: hadoop_group.name
-          mode: 0o655
-        ], (err, written) ->
-          return next err if err
-          modified = true if written
-          do_authorized()
-      do_authorized = ->
+      ctx
+      .mkdir
+        destination: "#{hdfs.user.home}/.ssh"
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+        mode: 0o700
+      .upload
+        source: "#{ssh_fencing.private_key}"
+        destination: "#{hdfs.user.home}/.ssh"
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+        mode: 0o600
+      .upload
+        source: "#{ssh_fencing.public_key}"
+        destination: "#{hdfs.user.home}/.ssh"
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+        mode: 0o655
+      .call (_, callback) ->
         fs.readFile "#{ssh_fencing.public_key}", (err, content) ->
-          return next err if err
+          return callback err if err
           ctx.write
             destination: "#{hdfs.user.home}/.ssh/authorized_keys"
             content: content
@@ -277,34 +250,27 @@ inserted if ALL users or the HDFS user access is denied.
             gid: hadoop_group.name
             mode: 0o600
           , (err, written) ->
-            return next err if err
+            return callback err if err
             modified = true if written
-            do_access()
-      do_access = ->
-        ctx.fs.readFile '/etc/security/access.conf', (err, source) ->
-          return next err if err
-          content = []
-          exclude = ///^\-\s?:\s?(ALL|#{hdfs.user.name})\s?:\s?(.*?)\s*?(#.*)?$///
-          include = ///^\+\s?:\s?(#{hdfs.user.name})\s?:\s?(.*?)\s*?(#.*)?$///
-          included = false
-          for line, i in source = source.split /\r\n|[\n\r\u0085\u2028\u2029]/g
-            if match = include.exec line
-              included = true # we shall also check if the ip/fqdn match in origin
-            if not included and match = exclude.exec line
-              nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
-              content.push "+ : #{hdfs.user.name} : #{nn_hosts.join ','}"
-            content.push line
-          return do_end() if content.length is source.length
-          ctx.write
-            destination: '/etc/security/access.conf'
-            content: content.join '\n'
-          , (err, written) ->
-            return next err if err
-            modified = true if written
-            do_end()
-      do_end = ->
-          next null, modified
-      do_mkdir()
+            ctx.fs.readFile '/etc/security/access.conf', (err, source) ->
+              return callback err if err
+              content = []
+              exclude = ///^\-\s?:\s?(ALL|#{hdfs.user.name})\s?:\s?(.*?)\s*?(#.*)?$///
+              include = ///^\+\s?:\s?(#{hdfs.user.name})\s?:\s?(.*?)\s*?(#.*)?$///
+              included = false
+              for line, i in source = source.split /\r\n|[\n\r\u0085\u2028\u2029]/g
+                if match = include.exec line
+                  included = true # we shall also check if the ip/fqdn match in origin
+                if not included and match = exclude.exec line
+                  nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
+                  content.push "+ : #{hdfs.user.name} : #{nn_hosts.join ','}"
+                content.push line
+              return callback null, false if content.length is source.length
+              ctx.write
+                destination: '/etc/security/access.conf'
+                content: content.join '\n'
+              , callback
+      .then next
 
 ## HA Auto Failover
 

@@ -8,12 +8,8 @@ Execute these commands on the Ganglia server host machine.
     module.exports.push 'masson/bootstrap/mecano'
 
     module.exports.push name: 'Ganglia Collector # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
-      ctx.service [
-      #   name: 'httpd'
-      #   action: 'stop'
-      # ,
-        # name: 'ganglia-gmetad-3.5.0-99'
+      ctx.service
         srv_name: 'hdp-gmetad'
         action: 'stop'
         if_exists: '/etc/init.d/hdp-gmetad'
-      ], next
+      .then next

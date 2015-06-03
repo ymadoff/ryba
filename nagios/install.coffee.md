@@ -22,7 +22,7 @@
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
 
 ## Users & Groups
 
@@ -38,42 +38,43 @@ nagiocmd:x:2419:apache
 
     module.exports.push name: 'Nagios # Users & Groups', handler: (ctx, next) ->
       {nagios} = ctx.config.ryba
-      ctx.group [nagios.group, nagios.groupcmd], (err, gmodified) ->
-        return next err if err
-        ctx.user nagios.user, (err, umodified) ->
-          next err, gmodified or umodified
+      ctx
+      .group nagios.group
+      .group nagios.groupcmd
+      .user nagios.user
+      .then next
 
     module.exports.push name: 'Nagios # Service', handler: (ctx, next) ->
-      ctx.service [
-        {name: 'net-snmp'}
-        {name: 'net-snmp-utils'}
-        {name: 'php-pecl-json'}
-        {name: 'wget'}
-        {name: 'httpd'}
-        {name: 'php'}
-        {name: 'net-snmp-perl'}
-        {name: 'perl-Net-SNMP'}
-        {name: 'fping'}
-        {name: 'nagios', startup: true}
-        {name: 'nagios-plugins'}
-        {name: 'nagios-www'}
-      ], next
+      ctx
+      .service name: 'net-snmp'
+      .service name: 'net-snmp-utils'
+      .service name: 'php-pecl-json'
+      .service name: 'wget'
+      .service name: 'httpd'
+      .service name: 'php'
+      .service name: 'net-snmp-perl'
+      .service name: 'perl-Net-SNMP'
+      .service name: 'fping'
+      .service name: 'nagios', startup: true
+      .service name: 'nagios-plugins'
+      .service name: 'nagios-www'
+      .then next
 
     module.exports.push name: 'Nagios # Layout', handler: (ctx, next) ->
       {user, group, groupcmd} = ctx.config.ryba.nagios
-      ctx.mkdir [
+      ctx.mkdir
         destination: [
           '/var/nagios', '/var/log/nagios',
           '/var/log/nagios/spool/checkresults', '/var/run/nagios'
         ]
         uid: user.name
         gid: group.name
-      ,
+      .mkdir
         destination: '/var/nagios/rw'
         uid: user.name
         gid: groupcmd.name
         mode: 0o2770
-      ], next
+      .then next
 
 ## Objects
 
@@ -117,32 +118,48 @@ nagiocmd:x:2419:apache
     module.exports.push name: 'Nagios # WebUI Users htpasswd', handler: (ctx, next) ->
       {users} = ctx.config.ryba.nagios
       return next null, false unless Object.getOwnPropertyNames(users).length > 0
-      modified = false
-      each(users)
-      .on 'item', (name, user, call) ->
-        ctx.log "user #{name}"
-        ctx.execute
-          cmd: """
-          if [ -e /etc/nagios/htpasswd.users ]; then
-            hash=`cat /etc/nagios/htpasswd.users 2>/dev/null | grep #{name}: | sed 's/.*:\\(.*\\)/\\1/'`
-            salt=`echo $hash | sed 's/\\(.\\{2\\}\\).*/\\1/'`
-            if [ "$salt" != "" ]; then
-              expect=`openssl passwd -crypt -salt $salt #{user.password} 2>/dev/null`
-              if [ "$hash" == "$expect" ]; then exit 3; fi
-            fi
-            htpasswd -b /etc/nagios/htpasswd.users #{name} #{user.password}
-          else
-            htpasswd -c -b /etc/nagios/htpasswd.users #{name} #{user.password}
+      for name, user of users then ctx.execute
+        cmd: """
+        if [ -e /etc/nagios/htpasswd.users ]; then
+          hash=`cat /etc/nagios/htpasswd.users 2>/dev/null | grep #{name}: | sed 's/.*:\\(.*\\)/\\1/'`
+          salt=`echo $hash | sed 's/\\(.\\{2\\}\\).*/\\1/'`
+          if [ "$salt" != "" ]; then
+            expect=`openssl passwd -crypt -salt $salt #{user.password} 2>/dev/null`
+            if [ "$hash" == "$expect" ]; then exit 3; fi
           fi
-          """
-          code_skipped: 3
-        , (err, executed, stdout) ->
-          if executed
-            modified = true
-            ctx.log "user #{name} updated"
-          call err
-      .on 'both', (err) ->
-        next err, modified
+          htpasswd -b /etc/nagios/htpasswd.users #{name} #{user.password}
+        else
+          htpasswd -c -b /etc/nagios/htpasswd.users #{name} #{user.password}
+        fi
+        """
+        code_skipped: 3
+      ctx.then next
+      # modified = false
+      # each(users)
+      # .on 'item', (name, user, call) ->
+      #   ctx.log "user #{name}"
+      #   ctx.execute
+      #     cmd: """
+      #     if [ -e /etc/nagios/htpasswd.users ]; then
+      #       hash=`cat /etc/nagios/htpasswd.users 2>/dev/null | grep #{name}: | sed 's/.*:\\(.*\\)/\\1/'`
+      #       salt=`echo $hash | sed 's/\\(.\\{2\\}\\).*/\\1/'`
+      #       if [ "$salt" != "" ]; then
+      #         expect=`openssl passwd -crypt -salt $salt #{user.password} 2>/dev/null`
+      #         if [ "$hash" == "$expect" ]; then exit 3; fi
+      #       fi
+      #       htpasswd -b /etc/nagios/htpasswd.users #{name} #{user.password}
+      #     else
+      #       htpasswd -c -b /etc/nagios/htpasswd.users #{name} #{user.password}
+      #     fi
+      #     """
+      #     code_skipped: 3
+      #   , (err, executed, stdout) ->
+      #     if executed
+      #       modified = true
+      #       ctx.log "user #{name} updated"
+      #     call err
+      # .on 'both', (err) ->
+      #   next err, modified
 
 ### Users Configuration
 
@@ -155,7 +172,7 @@ nagiocmd:x:2419:apache
         context:
           users: users
           groups: groups
-      , next
+      .then next
 
 ## Configuration
 
@@ -184,15 +201,16 @@ nagiocmd:x:2419:apache
           match: ///^#{k}=.*$///mg
           replace: "#{k}=#{v}"
           append: true
-      ctx.write [
+      ctx
+      .write
         destination: '/etc/nagios/nagios.cfg'
         write: write
         eof: true
-      ,
+      .write
         destination: '/etc/nagios/resource.cfg'
         match: /^\$USER1\$=.*$/mg
         replace: "$USER1$=#{plugin_dir}"
-      ], next
+      .then next
 
     module.exports.push name: 'Nagios # Hosts', handler: (ctx, next) ->
       {user, group} = ctx.config.ryba.nagios
@@ -216,7 +234,7 @@ nagiocmd:x:2419:apache
         destination: '/etc/nagios/objects/hadoop-hosts.cfg'
         content: content.join '\n'
         eof: true
-      , next
+      .then next
 
 ## Nagios # Host Groups
 
@@ -238,7 +256,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
         context:
           all_hosts: Object.keys ctx.config.servers
           hostgroup_defs: hostgroup_defs
-      , next
+      .then next
 
     module.exports.push name: 'Nagios # Services Groups', handler: (ctx, next) ->
       {nagios} = ctx.config.ryba
@@ -281,11 +299,16 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
       rm_hosts = rm_ctxs.map (rm_ctx) -> rm_ctx.config.host
       # Get RM UI port for both HA and non-HA
-      # if rm_ctxs.lenth
       rm_site = rm_ctxs[0].config.ryba.yarn.site
-      rm_webapp_port = if rm_site['yarn.http.policy'] is 'HTTP_ONLY'
-      then rm_site['yarn.resourcemanager.webapp.address'].split(':')[1]
-      else rm_site['yarn.resourcemanager.webapp.https.address'].split(':')[1]
+      unless rm_ctxs.length > 1
+        rm_webapp_port = if rm_site['yarn.http.policy'] is 'HTTP_ONLY'
+        then rm_site['yarn.resourcemanager.webapp.address'].split(':')[1]
+        else rm_site['yarn.resourcemanager.webapp.https.address'].split(':')[1]
+      else
+        shortname = rm_ctxs[0].config.shortname
+        rm_webapp_port = if rm_site['yarn.http.policy'] is 'HTTP_ONLY'
+        then rm_site["yarn.resourcemanager.webapp.address.#{shortname}"].split(':')[1]
+        else rm_site["yarn.resourcemanager.webapp.https.address.#{shortname}"].split(':')[1]
       # YARN NodeManager
       nm_ctxs = ctx.contexts 'ryba/hadoop/yarn_nm', require('../hadoop/yarn_nm').configure
       if nm_ctxs.length
@@ -369,7 +392,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           falcon_port: 0 # TODO
           ahs_port: 0 # TODO
           hue_port: parseInt hue.ini.desktop['http_port']
-      , next
+      .then next
 
     module.exports.push name: 'Nagios # Commands', handler: (ctx, next) ->
       ctx.write
@@ -380,7 +403,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           match: '@STATUS_DAT@'
           replace: '/var/nagios/status.dat'
         ]
-      , next
+      .then next
 
 ## Module Dependencies
 

@@ -41,15 +41,6 @@
           ryba.db_admin.username ?= 'root'
           ryba.db_admin.password ?= mysql_conf.password
         else throw new Error "Database engine not supported: #{ryba.engine}"
-      # Context
-      ctx.hconfigure = (options, callback) ->
-        options = [options] unless Array.isArray options
-        for opt in options
-          opt.ssh = ctx.ssh if typeof opt.ssh is 'undefined'
-          opt.log ?= ctx.log
-          opt.stdout ?= ctx.stdout
-          opt.stderr ?= ctx.stderr
-        hconfigure options, callback
 
 ## Repository
 

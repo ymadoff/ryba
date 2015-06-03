@@ -19,4 +19,4 @@ Discover the server status.
         code: 254
         code_skipped: 255
         if_exists: '/usr/hdp/current/falcon-server/bin/falcon-status.sh'
-      , next
+      .then next

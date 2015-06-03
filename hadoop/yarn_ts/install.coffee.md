@@ -7,7 +7,9 @@ co-located with any other service.
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/krb5_client/wait'
-    module.exports.push 'ryba/hadoop/yarn_client'
+    module.exports.push 'ryba/hadoop/hdfs_client/install'
+    module.exports.push 'ryba/hadoop/yarn_client/install'
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require('./index').configure
 
 ## IPTables
@@ -15,8 +17,8 @@ co-located with any other service.
 | Service   | Port       | Proto     | Parameter                                  |
 |-----------|------------|-----------|--------------------------------------------|
 | timeline  | 10200      | tcp/http  | yarn.timeline-service.address              |
-| timeline  | 50075/1006 | tcp/http  | yarn.timeline-service.webapp.address       |
-| timeline  | 50475      | tcp/https | yarn.timeline-service.webapp.https.address |
+| timeline  | 8188 | tcp/http  | yarn.timeline-service.webapp.address       |
+| timeline  | 8190      | tcp/https | yarn.timeline-service.webapp.https.address |
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
@@ -33,7 +35,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: https_port, protocol: 'tcp', state: 'NEW', comment: "Yarn Timeserver HTTPS" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Configuration
 
@@ -47,19 +49,20 @@ Update the "yarn-site.xml" configuration file.
         properties: yarn.site
         merge: true
         backup: true
-      , next
+      .then next
 
 # Layout
 
     module.exports.push name: 'YARN TS # Layout', timeout: -1, handler: (ctx, next) ->
       {yarn, hadoop_group} = ctx.config.ryba
-      ctx.mkdir
+      ctx
+      .mkdir
         destination: yarn.site['yarn.timeline-service.leveldb-timeline-store.path']
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0750
         parent: true
-      , next
+      .then next
 
 ## Kerberos
 
@@ -80,4 +83,7 @@ and permissions set to "0600".
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
+
+
+

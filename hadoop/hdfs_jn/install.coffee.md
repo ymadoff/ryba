@@ -16,6 +16,7 @@ most (N - 1) / 2 failures to continue to function normally.
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
 
 ## IPTables
@@ -43,7 +44,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: https, protocol: 'tcp', state: 'NEW', comment: "HDFS JournalNode" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Layout
 
@@ -56,7 +57,7 @@ The JournalNode data are stored inside the directory defined by the
         destination: hdfs.site['dfs.journalnode.edits.dir'].split ','
         uid: 'hdfs'
         gid: 'hadoop'
-      , next
+      .then next
 
 ## Service
 
@@ -92,7 +93,7 @@ inside "/etc/init.d" and activate it on startup.
               match: /^export HADOOP_IDENT_STRING=.*$/m # HDP default is "hdfs"
               replace: "export HADOOP_IDENT_STRING=#{hdfs.user.name} # RYBA"
             ]
-      , next
+      .then next
 
     # module.exports.push name: 'HDFS JN # Startup', handler: (ctx, next) ->
     #   {hdfs} = ctx.config.ryba
@@ -137,7 +138,8 @@ NodeManagers.
 
     module.exports.push name: 'HDFS JN # Configure', handler: (ctx, next) ->
       {hdfs, hadoop_conf_dir, hadoop_group} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
         local_default: true
@@ -146,7 +148,7 @@ NodeManagers.
         gid: hadoop_group.name
         merge: true
         backup: true
-      , next
+      .then next
 
 ## Module Dependencies
 

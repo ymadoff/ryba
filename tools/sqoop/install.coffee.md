@@ -10,6 +10,7 @@ driver used by Sqoop.
     module.exports.push 'masson/commons/mysql_client'
     module.exports.push 'ryba/hadoop/hdfs_client'
     module.exports.push 'ryba/hadoop/yarn_client'
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_select'
     module.exports.push require('./index').configure
 
@@ -26,10 +27,10 @@ hadoop:x:502:yarn,mapred,hdfs,hue
 
     module.exports.push name: 'Hadoop Sqoop # Users & Groups', handler: (ctx, next) ->
       {sqoop, hadoop_group} = ctx.config.ryba
-      ctx.group hadoop_group, (err, gmodified) ->
-        return next err if err
-        ctx.user sqoop.user, (err, umodified) ->
-          next err, gmodified or umodified
+      ctx
+      .group hadoop_group
+      .user sqoop.user
+      .then next
 
 ## Environment
 
@@ -41,10 +42,27 @@ Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
         source: "#{__dirname}/../../resources/sqoop/sqoop-env.sh"
         destination: "#{sqoop.conf_dir}/sqoop-env.sh"
         local_source: true
+        write: [
+           match: /^export HADOOP_HOME=.*$/m # Sqoop default is "/usr/lib/hadoop"
+           replace: "export HADOOP_HOME=${HADOOP_HOME:-/usr/hdp/current/hadoop-client} # RYBA for HDP"
+         ,
+           match: /^export HBASE_HOME=.*$/m # Sqoop default is "/usr/lib/hbase"
+           replace: "export HBASE_HOME=${HBASE_HOME:-/usr/hdp/current/hbase-client} # RYBA for HDP"
+         ,
+           match: /^export HIVE_HOME=.*$/m # Sqoop default is "/usr/lib/hive"
+           replace: "export HIVE_HOME=${HIVE_HOME:-/usr/hdp/current/hive-server} # RYBA for HDP"
+         ,
+           match: /^export ZOOCFGDIR=.*$/m # Sqoop default is "/etc/zookeeper/conf"
+           replace: "export ZOOCFGDIR=${ZOOCFGDIR:-/etc/zookeeper/conf} # RYBA for HDP"
+         ,
+           match: /^export HBASE_HOME=.*$/m # Sqoop default is "/usr/lib/hbase"
+           replace: "export HBASE_HOME=${HADOOP_HOME:-/usr/lib/hbase} # RYBA for HDP"
+        ]
         uid: sqoop.user.name
         gid: hadoop_group.name
         mode: 0o755
-      , next
+        backup: true
+      .then next
 
 ## Configuration
 
@@ -52,7 +70,8 @@ Upload the "sqoop-site.xml" files into the "/etc/sqoop/conf" folder.
 
     module.exports.push name: 'Hadoop Sqoop # Configuration', timeout: -1, handler: (ctx, next) ->
       {sqoop, hadoop_group} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{sqoop.conf_dir}/sqoop-site.xml"
         default: "#{__dirname}/../../resources/sqoop/sqoop-site.xml"
         local_default: true
@@ -61,7 +80,7 @@ Upload the "sqoop-site.xml" files into the "/etc/sqoop/conf" folder.
         gid: hadoop_group.name
         mode: 0o755
         merge: true
-      , next
+      .then next
 
 ## Install
 
@@ -88,7 +107,7 @@ MySQL is by default usable by Sqoop. The driver installed after running the
       ctx.link
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/hdp/current/sqoop-client/lib/mysql-connector-java.jar'
-      , next
+      .then next
 
 ## Libs
 
@@ -101,8 +120,9 @@ the Sqoop library folder.
       uploads = for lib in libs
         source: lib
         destination: "/usr/hdp/current/sqoop-client/lib/#{path.basename lib}"
-        binary: true
-      ctx.upload uploads, next
+      ctx
+      .download uploads
+      .then next
 
 ## Check
 
@@ -112,8 +132,7 @@ command][validate].
     module.exports.push name: 'Hadoop Sqoop # Check', handler: (ctx, next) ->
       ctx.execute
         cmd: "sqoop version | grep 'Sqoop [0-9].*'"
-      , (err) ->
-        next err, true
+      .then next
 
 [install]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap10-1.html
 [validate]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap10-4.html

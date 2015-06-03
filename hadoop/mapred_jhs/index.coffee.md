@@ -42,7 +42,11 @@ isn't honored. Instead, the property "yarn.http.policy" is used.
 ## Configuration for Staging Directories
 
 The property "yarn.app.mapreduce.am.staging-dir" is an alternative to "done-dir"
-and "intermediate-done-dir".
+and "intermediate-done-dir". According to Cloudera](): Configure 
+mapreduce.jobhistory.intermediate-done-dir and mapreduce.jobhistory.done-dir in
+mapred-site.xml. Create these two directories. Set permissions on
+mapreduce.jobhistory.intermediate-done-dir to 1777. Set permissions on
+mapreduce.jobhistory.done-dir to 750.
 
       ryba.mapred.site['yarn.app.mapreduce.am.staging-dir'] = null
       ryba.mapred.site['mapreduce.jobhistory.done-dir'] ?= '/mr-history/done' # Directory where history files are managed by the MR JobHistory Server.

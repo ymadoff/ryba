@@ -37,6 +37,7 @@ keytool -list -v -keystore keystore -alias hadoop
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
+    module.exports.push require '../lib/hconfigure'
 
     module.exports.push module.exports.configure = (ctx) ->
       require('./core').configure ctx
@@ -67,19 +68,20 @@ keytool -list -v -keystore keystore -alias hadoop
 
     module.exports.push name: 'Hadoop Core SSL # Configure', retry: 0, handler: (ctx, next) ->
       {core_site, ssl_server, ssl_client, hadoop_conf_dir} = ctx.config.ryba
-      ctx.hconfigure [
+      ctx
+      .hconfigure
         destination: "#{hadoop_conf_dir}/core-site.xml"
         properties: core_site
         merge: true
-      ,
+      .hconfigure
         destination: "#{hadoop_conf_dir}/ssl-server.xml"
         properties: ssl_server
         merge: true
-      ,
+      .hconfigure
         destination: "#{hadoop_conf_dir}/ssl-client.xml"
         properties: ssl_client
         merge: true
-      ], next
+      .then next
 
     module.exports.push name: 'Hadoop Core SSL # JKS stores', retry: 0, handler: (ctx, next) ->
       {ssl, ssl_server, ssl_client, hadoop_conf_dir} = ctx.config.ryba
@@ -89,130 +91,65 @@ keytool -list -v -keystore keystore -alias hadoop
         'ryba/hadoop/hdfs_jn', 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn'
         'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
       ]
-      do_upload = ->
-        ctx.upload [
-          source: ssl.cacert
-          destination: "#{tmp_location}_cacert"
-        ,
-          source: ssl.cert
-          destination: "#{tmp_location}_cert"
-        ,
-          source: ssl.key
-          destination: "#{tmp_location}_key"
-        ], (err, uploaded) ->
-          return next err if err
-          do_client()
-      do_client = ->
-        # openssl x509  -noout -in cacert.pem -md5 -fingerprint | sed 's/\(.*\)=\(.*\)/\2/' | sed 's/\://g' | cat
-        # cmd_cacert_md5 = "openssl x509  -noout -in cacert.pem -md5 -fingerprint | sed 's/\\(.*\\)=\\(.*\\)/\\2/' | sed 's/\\://g' | cat"
-        # keytool -list -v -keystore truststore -alias hadoop -storepass ryba123 | grep MD5: | sed 's/\s*MD5\:\s*\(.*\)/\1/'
-        # cmd_trustore_md5 = "keytool -list -v -keystore keystore -alias hadoop -storepass ryba123 | grep MD5: | sed 's/\\s*MD5\\:\\s*\\(.*\\)/\\1/'"
-        ctx.execute
-          cmd: """
-          user=`openssl x509  -noout -in "#{tmp_location}_cacert" -md5 -fingerprint | sed 's/\\(.*\\)=\\(.*\\)/\\2/' | cat`
-          truststore=`keytool -list -v -keystore #{ssl_client['ssl.client.truststore.location']} -alias hadoop_root_ca -storepass #{ssl_client['ssl.client.truststore.password']} | grep MD5: | sed 's/\\s*MD5\\:\\s*\\(.*\\)/\\1/'`
-          echo "User CACert: $user"
-          echo "Truststore CACert: $truststore"
-          if [ "$user" == "$truststore" ]; then exit 3; fi
-          # Import root CA certificate into the trustore
-          yes | keytool -importcert -alias hadoop_root_ca -file #{tmp_location}_cacert \
-            -keystore #{ssl_client['ssl.client.truststore.location']} \
-            -storepass #{ssl_client['ssl.client.truststore.password']}
-          """
-          code_skipped: 3
-        , (err, executed) ->
-          return next err if err
-          modified = true if executed
-          return do_server()
-      do_server = ->
-        return do_cleanup() unless has_modules
-        shortname = ctx.config.shortname
-        fqdn = ctx.config.host
-        ctx
-        # .execute
-        #   # keytool -list -v -keystore keystore -alias hadoop -storepass ryba123 | grep MD5: | sed 's/\s*MD5\:\s*\(.*\)/\1/'
-        #   cmd: """
-        #   user=`openssl x509  -noout -in "#{tmp_location}_cert" -md5 -fingerprint | sed 's/\\(.*\\)=\\(.*\\)/\\2/' | cat`
-        #   keystore=`keytool -list -v -keystore #{ssl_server['ssl.server.keystore.location']} -alias #{shortname} -storepass #{ssl_server['ssl.server.keystore.password']} | grep MD5: | sed 's/\\s*MD5\\:\\s*\\(.*\\)/\\1/'`
-        #   echo "User Certificate: $user"
-        #   echo "Keystore Certificate: $keystore"
-        #   if [ "$user" == "$keystore" ]; then exit 3; fi
-        #   # Create a PKCS12 file that contains key and certificate
-        #   openssl pkcs12 -export \
-        #     -in "#{tmp_location}_cert" -inkey "#{tmp_location}_key" \
-        #     -out "#{tmp_location}_pkcs12" -name #{shortname} \
-        #     -CAfile "#{tmp_location}_cacert" -caname hadoop_root_ca \
-        #     -password pass:#{ssl_server['ssl.server.keystore.keypassword']}
-        #   # Import PKCS12 into keystore
-        #   yes | keytool -importkeystore \
-        #     -destkeystore #{ssl_server['ssl.server.keystore.location']} \
-        #     -deststorepass #{ssl_server['ssl.server.keystore.password']} \
-        #     -destkeypass #{ssl_server['ssl.server.keystore.keypassword']} \
-        #     -srckeystore "#{tmp_location}_pkcs12" -srcstoretype PKCS12 -srcstorepass #{ssl_server['ssl.server.keystore.keypassword']} \
-        #     -alias #{shortname}
-        #   """
-        #   code_skipped: 3
-        .java_keystore_add
-          keystore: ssl_server['ssl.server.keystore.location']
-          storepass: ssl_server['ssl.server.keystore.password']
-          caname: "hadoop_root_ca"
-          cacert: "#{tmp_location}_cacert"
-          key: "#{tmp_location}_key"
-          cert: "#{tmp_location}_cert"
-          keypass: ssl_server['ssl.server.keystore.keypassword']
-          name: shortname
-        .java_keystore_add
-          keystore: ssl_server['ssl.server.keystore.location']
-          storepass: ssl_server['ssl.server.keystore.password']
-          caname: "hadoop_root_ca"
-          cacert: "#{tmp_location}_cacert"
-        # .execute
-        #   cmd: """
-        #   # Read user CACert signature
-        #   user=`openssl x509  -noout -in "#{tmp_location}_cacert" -md5 -fingerprint | sed 's/\\(.*\\)=\\(.*\\)/\\2/' | cat`
-        #   # Read registered CACert signature
-        #   keystore=`keytool -list -v -keystore #{ssl_server['ssl.server.keystore.location']} -alias hadoop_root_ca -storepass #{ssl_server['ssl.server.keystore.password']} | grep MD5: | sed 's/\\s*MD5\\:\\s*\\(.*\\)/\\1/'`
-        #   echo "User CACert: $user"
-        #   echo "Keystore CACert: $keystore"
-        #   if [ "$user" == "$keystore" ]; then exit 3; fi
-        #   # Import CACert
-        #   yes | keytool -keystore #{ssl_server['ssl.server.keystore.location']} \
-        #     -storepass #{ssl_server['ssl.server.keystore.password']} \
-        #     -alias hadoop_root_ca \
-        #     -import \
-        #     -file #{tmp_location}_cacert
-        #   """
-          code_skipped: 3
-        .then (err, executed) ->
-          return next err if err
-          modified = true if executed
-          do_cleanup()
-      do_cleanup = ->
-        ctx.remove [
-          destination: "#{tmp_location}_cacert"
-        ,
-          destination: "#{tmp_location}_cert"
-        ,
-          destination: "#{tmp_location}_key"
-        ,
-          destination: "#{tmp_location}_pkcs12"
-        ], (err, removed) ->
-          return next err if err
-          do_end()
-      do_end = ->
+      ctx
+      .upload
+        source: ssl.cacert
+        destination: "#{tmp_location}_cacert"
+        shy: true
+      .upload
+        source: ssl.cert
+        destination: "#{tmp_location}_cert"
+        shy: true
+      .upload
+        source: ssl.key
+        destination: "#{tmp_location}_key"
+        shy: true
+      # Client: import certificate to all hosts
+      .java_keystore_add
+        keystore: ssl_client['ssl.client.truststore.location']
+        storepass: ssl_client['ssl.client.truststore.password']
+        caname: "hadoop_root_ca"
+        cacert: "#{tmp_location}_cacert"
+      # Server: import certificates, private and public keys to hosts with a server
+      .java_keystore_add
+        keystore: ssl_server['ssl.server.keystore.location']
+        storepass: ssl_server['ssl.server.keystore.password']
+        caname: "hadoop_root_ca"
+        cacert: "#{tmp_location}_cacert"
+        key: "#{tmp_location}_key"
+        cert: "#{tmp_location}_cert"
+        keypass: ssl_server['ssl.server.keystore.keypassword']
+        name: ctx.config.shortname
+        if: has_modules
+      .java_keystore_add
+        keystore: ssl_server['ssl.server.keystore.location']
+        storepass: ssl_server['ssl.server.keystore.password']
+        caname: "hadoop_root_ca"
+        cacert: "#{tmp_location}_cacert"
+        if: has_modules
+      .remove
+        destination: "#{tmp_location}_cacert"
+        shy: true
+      .remove
+        destination: "#{tmp_location}_cert"
+        shy: true
+      .remove
+        destination: "#{tmp_location}_key"
+        shy: true
+      .then (err, status) ->
+        return next err, status if err or not status
         has_modules_map =
           'ryba/hadoop/hdfs_jn': 'hadoop-hdfs-journalnode'
           'ryba/hadoop/hdfs_nn': 'hadoop-hdfs-namenode'
           'ryba/hadoop/hdfs_dn': 'hadoop-hdfs-datanode'
           'ryba/hadoop/yarn_rm': 'hadoop-yarn-resourcemanager'
           'ryba/hadoop/yarn_nm': 'hadoop-yarn-namemanode'
-        args = for m in has_modules
-          srv_name: has_modules_map[m]
-          action: 'restart'
-          if: modified
-        ctx.service args, (err) ->
-          next err, modified
-      do_upload()
+        for m in has_modules
+          ctx.service
+            srv_name: has_modules_map[m]
+            action: 'restart'
+        ctx.then (err) ->
+          next err, status
 
 
 [hdp_ssl]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.1-latest/bk_reference/content/ch_wire-https.html

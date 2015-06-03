@@ -11,6 +11,7 @@ have usecase for it yet.
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/hbase'
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require('./index').configure
     url = require 'url'
 
@@ -196,9 +197,6 @@ TODO: Installing Thrift Compiler
             trap_on_error: true
           , (err, executed, stdout) ->
             return next err, true
-###
-
-
 
 ##  Hbase-Thrift Service
 
@@ -231,7 +229,8 @@ restrict it but not the rest server.
 
     module.exports.push name: 'HBase Thrift # Configure', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hbase.conf_dir}/hbase-site.xml"
         default: "#{__dirname}/../../resources/hbase/hbase-site.xml"
         local_default: true
@@ -240,4 +239,4 @@ restrict it but not the rest server.
         uid: hbase.user.name
         gid: hbase.group.name
         backup: true
-      , next
+      .then next

@@ -15,5 +15,5 @@ inside "/var/run/webhcat/webhcat.pid".
         cmd: 'service hive-webhcat-server status'
         code_skipped: 3
         if_exists: '/etc/init.d/hive-webhcat-server'
-      , next
+      .then next
 

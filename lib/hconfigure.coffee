@@ -2,10 +2,6 @@
 each = require 'each'
 {EventEmitter} = require 'events'
 
-mecano = require 'mecano'
-conditions = require 'mecano/lib/misc/conditions'
-misc = require 'mecano/lib/misc'
-wrap = require 'mecano/lib/misc/wrap'
 properties = require './properties'
 
 ###
@@ -16,8 +12,9 @@ Options includes:
 *   `default`: Path to a file or object of properties used as default values.   
 *   `local_default`: Read the default file from the local filesystem (only apply if `default` is a string).   
 ###
-module.exports = ->
-  wrap null, arguments, (options, callback) ->
+module.exports = (ctx) ->
+  return if ctx.registered 'hconfigure'
+  ctx.register 'hconfigure', (options, callback) ->
     fnl_props = {}
     org_props = {}
     updated = 0
@@ -81,7 +78,7 @@ module.exports = ->
       # options.log? "Save properties"
       options.content = properties.stringify fnl_props
       options.source = null
-      mecano.write options, (err, written) ->
+      ctx.write options, (err, written) ->
         updated = true if written
         callback err, updated
     do_read_source()

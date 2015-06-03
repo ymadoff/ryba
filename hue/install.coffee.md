@@ -18,6 +18,7 @@ article from december 2014 describe how to
     module.exports.push 'ryba/hadoop/mapred_client'
     module.exports.push 'ryba/hive/client' # Hue reference hive conf dir
     module.exports.push 'ryba/tools/pig'
+    module.exports.push require '../lib/hconfigure'
     module.exports.push require('./index').configure
 
 ## Users & Groups
@@ -33,10 +34,10 @@ hue:x:494:
 
     module.exports.push name: 'Hue # Users & Groups', handler: (ctx, next) ->
       {hue} = ctx.config.ryba
-      ctx.group hue.group, (err, gmodified) ->
-        return next err if err
-        ctx.user hue.user, (err, umodified) ->
-          next err, gmodified or umodified
+      ctx
+      .group hue.group
+      .user hue.user
+      .then next
 
 ## IPTables
 
@@ -54,46 +55,40 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: hue.ini.desktop.http['port'], protocol: 'tcp', state: 'NEW', comment: "Hue Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Packages
 
 The packages "extjs-2.2-1" and "hue" are installed.
 
     module.exports.push name: 'Hue # Packages', timeout: -1, handler: (ctx, next) ->
-      ctx.service [
-        # {name: 'extjs-2.2-1'}
-        {name: 'hue'}
-        # {name: 'hue-hcatalog'}
-        # {name: 'hue-oozie'}
-        # {name: 'hue-pig'}
-        {name: 'hue-plugins'}
-        # {name: 'hue-server'}
-        # {name: 'hue-common'}
-        # {name: 'hue-shell'}
-      ], next
+      ctx
+      .service name: 'hue'
+      .service name: 'hue-plugins'
+      .then next
 
-## Core
+# ## Core
 
-Update the "core-site.xml" to allow impersonnation through the "hue" and "hcat" 
-users.
+# Update the "core-site.xml" to allow impersonnation through the "hue" and "hcat" 
+# users.
 
-Todo: We are currently only modifying the "core-site.xml" locally while it should 
-be deployed on all the master and worker nodes. This is currently achieved through
-the configuration picked up by the "ryba/hadoop/core" module.
+# Todo: We are currently only modifying the "core-site.xml" locally while it should 
+# be deployed on all the master and worker nodes. This is currently achieved through
+# the configuration picked up by the "ryba/hadoop/core" module.
 
-    module.exports.push name: 'Hue # Core', handler: (ctx, next) ->
-      {hadoop_conf_dir} = ctx.config.ryba
-      properties = 
-        'hadoop.proxyuser.hue.hosts': '*'
-        'hadoop.proxyuser.hue.groups': '*'
-        'hadoop.proxyuser.hcat.groups': '*'
-        'hadoop.proxyuser.hcat.hosts': '*'
-      ctx.hconfigure
-        destination: "#{hadoop_conf_dir}/core-site.xml"
-        properties: properties
-        merge: true
-      , next
+#     module.exports.push name: 'Hue # Core', handler: (ctx, next) ->
+#       {hadoop_conf_dir} = ctx.config.ryba
+#       properties = 
+#         'hadoop.proxyuser.hue.hosts': '*'
+#         'hadoop.proxyuser.hue.groups': '*'
+#         'hadoop.proxyuser.hcat.groups': '*'
+#         'hadoop.proxyuser.hcat.hosts': '*'
+#       ctx
+#       .hconfigure
+#         destination: "#{hadoop_conf_dir}/core-site.xml"
+#         properties: properties
+#         merge: true
+#       .then next
 
 ## WebHCat
 
@@ -101,25 +96,20 @@ the configuration picked up by the "ryba/hadoop/core" module.
 Update the "webhcat-site.xml" on the server running the "webhcat" service 
 to allow impersonnation through the "hue" user.
 
+TODO: only work if WebHCat is running on the same server as Hue
 
     module.exports.push name: 'Hue # WebHCat', handler: (ctx, next) ->
       {webhcat} = ctx.config.ryba
       webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
-      hconfigure = (ssh) ->
-        properties = 
+      return next Error "WebHCat shall be on the same server as Hue" unless webhcat_server is ctx.config.host
+      ctx
+      .hconfigure
+        destination: "#{webhcat.conf_dir}/webhcat-site.xml"
+        properties: 
           'webhcat.proxyuser.hue.hosts': '*'
           'webhcat.proxyuser.hue.groups': '*'
-        ctx.hconfigure
-          destination: "#{webhcat.conf_dir}/webhcat-site.xml"
-          properties: properties
-          merge: true
-        , next
-      if ctx.config.host is webhcat_server
-        hconfigure ctx.ssh
-      else
-        ctx.connect webhcat_server, (err, ssh) ->
-          return next err if err
-          hconfigure ssh
+        merge: true
+      .then next
 
 ## Oozie
 
@@ -127,25 +117,19 @@ to allow impersonnation through the "hue" user.
 Update the "oozie-site.xml" on the server running the "oozie" service 
 to allow impersonnation through the "hue" user.
 
+TODO: only work if Oozie is running on the same server as Hue
+
     module.exports.push name: 'Hue # Oozie', handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
       oozie_server = ctx.host_with_module 'ryba/oozie/server'
-      hconfigure = (ssh) ->
-        properties = 
+      return next Error "Oozie shall be on the same server as Hue" unless oozie_server is ctx.config.host
+      ctx.hconfigure
+        destination: "#{oozie.conf_dir}/oozie-site.xml"
+        properties: 
           'oozie.service.ProxyUserService.proxyuser.hue.hosts': '*'
           'oozie.service.ProxyUserService.proxyuser.hue.groups': '*'
-        ctx.hconfigure
-          ssh: ssh
-          destination: "#{oozie.conf_dir}/oozie-site.xml"
-          properties: properties
-          merge: true
-        , next
-      if ctx.config.host is oozie_server
-        hconfigure ctx.ssh
-      else
-        ctx.connect oozie_server, (err, ssh) ->
-          return next err if err
-          hconfigure ssh
+        merge: true
+      .then next
 
 ## Configure
 
@@ -162,7 +146,7 @@ recommandations. Merge the configuration object from "hdp.hue.ini" with the prop
         stringify: misc.ini.stringify_multi_brackets
         separator: '='
         comment: '#'
-      , next
+      .then next
 
 ## Database
 
@@ -177,7 +161,8 @@ the default database while mysql is the recommanded choice.
           {host, port, user, password, name} = hue.ini.desktop.database
           escape = (text) -> text.replace(/[\\"]/g, "\\$&")
           mysql_exec = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
-          ctx.execute [
+          ctx
+          .execute
             cmd: """
             #{mysql_exec} "
             create database #{name};
@@ -187,14 +172,13 @@ the default database while mysql is the recommanded choice.
             "
             """
             not_if_exec: "#{mysql_exec} 'use #{name}'"
-          ,
+          .execute
             # TODO: handle updates
             cmd: """
             su -l #{hue.user.name} -c "/usr/lib/hue/build/env/bin/hue syncdb --noinput"
             """
             not_if_exec: "#{mysql_exec} 'show tables from #{name};' | grep auth"
-          ], (err, executed) ->
-              next err, executed
+          .then next
         sqlite: ->
           next null, false
       engine = hue.ini.desktop.database.engine
@@ -219,24 +203,25 @@ the "security_enabled" property set to "true".
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
 
 ## SSL Client
 
     module.exports.push name: 'Hue # SSL Client', handler: (ctx, next) ->
       {hue} = ctx.config.ryba
       hue.ca_bundle = '' unless hue.ssl.client_ca
-      ctx.write [
+      ctx
+      .write
         destination: "#{hue.ca_bundle}"
         source: "#{hue.ssl.client_ca}"
         local_source: true
         if: !!hue.ssl.client_ca
-      ,
+      .write
         destination: '/etc/init.d/hue'
         match: /^DAEMON="export REQUESTS_CA_BUNDLE='.*';\$DAEMON"$/m
         replace: "DAEMON=\"export REQUESTS_CA_BUNDLE='#{hue.ca_bundle}';$DAEMON\""
         append: /^DAEMON=.*$/m
-      ], next
+      .then next
 
 ## SSL Server
 
@@ -274,7 +259,7 @@ changes.
         ctx.service
           name: 'hue'
           action: 'restart'
-        , next
+        .then next
 
 ## Fix Banner
 
@@ -311,7 +296,6 @@ Use the "ryba/hue/start" module to start the Hue server.
 ## Dependencies
 
     misc = require 'mecano/lib/misc'
-    lifecycle = require '../lib/lifecycle'
 
 ## Resources:   
 

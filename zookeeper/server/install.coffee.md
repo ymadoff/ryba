@@ -26,10 +26,11 @@ hadoop:x:498:hdfs
 
     module.exports.push name: 'ZooKeeper Server # Users & Groups', handler: (ctx, next) ->
       {zookeeper, hadoop_group} = ctx.config.ryba
-      ctx.group [zookeeper.group, hadoop_group], (err, gmodified) ->
-        return next err if err
-        ctx.user zookeeper.user, (err, umodified) ->
-          next err, gmodified or umodified
+      ctx
+      .group zookeeper.group
+      .group hadoop_group
+      .user zookeeper.user
+      .then next
 
 ## IPTables
 
@@ -51,7 +52,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: 3888, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Leader" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Install
 
@@ -59,13 +60,12 @@ Follow the [HDP recommandations][install] to install the "zookeeper" package
 which has no dependency.
 
     module.exports.push name: 'ZooKeeper Server # Install', timeout: -1, handler: (ctx, next) ->
-      ctx.service
+      ctx
+      .service
         name: 'telnet' # Used by check
-      , (err) ->
-        return next err if err
-        ctx.hdp_service
-          name: 'zookeeper-server'
-        , next
+      .hdp_service
+        name: 'zookeeper-server'
+      .then next
 
 ## Kerberos
 
@@ -73,46 +73,29 @@ which has no dependency.
     module.exports.push name: 'ZooKeeper Server # Kerberos', timeout: -1, handler: (ctx, next) ->
       {zookeeper, hadoop_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      modified = false
-      do_principal = ->
-        ctx.krb5_addprinc
+      ctx
+      .krb5_addprinc
+        principal: "zookeeper/#{ctx.config.host}@#{realm}"
+        randkey: true
+        keytab: "#{zookeeper.conf_dir}/zookeeper.keytab"
+        uid: zookeeper.user.name
+        gid: hadoop_group.name
+        kadmin_principal: kadmin_principal
+        kadmin_password: kadmin_password
+        kadmin_server: admin_server
+      .write_jaas
+        destination: '/etc/zookeeper/conf/zookeeper-server.jaas'
+        content: Server:
           principal: "zookeeper/#{ctx.config.host}@#{realm}"
-          randkey: true
-          keytab: "#{zookeeper.conf_dir}/zookeeper.keytab"
-          uid: zookeeper.user.name
-          gid: hadoop_group.name
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
-        , (err, created) ->
-          return next err if err
-          modified = true if created
-          do_server_jaas()
-      do_server_jaas = ->
-        ctx.write_jaas
-          destination: '/etc/zookeeper/conf/zookeeper-server.jaas'
-          content: Server:
-            principal: "zookeeper/#{ctx.config.host}@#{realm}"
-            keyTab: "#{zookeeper.conf_dir}/zookeeper.keytab"
-          uid: zookeeper.user.name
-          gid: hadoop_group.name
-        , (err, written) ->
-          next err if err
-          modified = true if written
-          do_client_jaas()
-      do_client_jaas = ->
-        ctx.write_jaas
-          destination: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
-          content: Client:
-            useTicketCache: true
-          mode: 0o0644
-        , (err, written) ->
-          next err if err
-          modified = true if written
-          do_end()
-      do_end = ->
-        next null, modified
-      do_principal()
+          keyTab: "#{zookeeper.conf_dir}/zookeeper.keytab"
+        uid: zookeeper.user.name
+        gid: hadoop_group.name
+      .write_jaas
+        destination: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
+        content: Client:
+          useTicketCache: true
+        mode: 0o0644
+      .then next
 
 ## Layout
 
@@ -121,22 +104,23 @@ ownerships.
 
     module.exports.push name: 'ZooKeeper Server # Layout', handler: (ctx, next) ->
       {zookeeper, hadoop_group} = ctx.config.ryba
-      ctx.mkdir [
+      ctx
+      .mkdir
         destination: zookeeper.config['dataDir']
         uid: zookeeper.user.name
         gid: hadoop_group.name
         mode: 0o755
-      ,
+      .mkdir
         destination: zookeeper.pid_dir
         uid: zookeeper.user.name
         gid: zookeeper.group.name
         mode: 0o755
-      ,
+      .mkdir
         destination: zookeeper.log_dir
         uid: zookeeper.user.name
         gid: hadoop_group.name
         mode: 0o755
-      ], next
+      .then next
 
 ## Environment
 
@@ -151,7 +135,7 @@ ownerships.
         write: write
         backup: true
         eof: true
-      , next
+      .then next
 
 ## Configure
 
@@ -169,7 +153,7 @@ Update the file "zoo.cfg" with the properties defined by the
         write: write
         backup: true
         eof: true
-      , next
+      .then next
 
 ## Log4J
 
@@ -177,10 +161,15 @@ Upload the ZooKeeper loging configuration file.
 
     module.exports.push name: 'ZooKeeper Server # Log4J', handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
-      ctx.upload
+      ctx.write
         destination: "#{zookeeper.conf_dir}/log4j.properties"
         source: "#{__dirname}/../../resources/zookeeper/log4j.properties"
-      , next
+        local_source: true
+        write:
+          match: /log4j\.rootLogger=.*/g
+          replace: "log4j.rootLogger=INFO, CONSOLE, ROLLINGFILE # RYBA, DONT OVEWRITE"
+
+      .then next
 
 ## Schedule Purge Transaction Logs
 
@@ -195,6 +184,12 @@ Note, Automatic purging of the snapshots and corresponding transaction logs was
 introduced in version 3.4.0 and can be enabled via the following configuration
 parameters autopurge.snapRetainCount and autopurge.purgeInterval.
 
+```
+/usr/bin/java \
+  -cp /usr/hdp/current/zookeeper-server/zookeeper.jar:/usr/hdp/current/zookeeper-server/lib/*:/usr/hdp/current/zookeeper-server/conf \
+  org.apache.zookeeper.server.PurgeTxnLog  /var/zookeeper/data/ -n 3
+```
+
     module.exports.push name: "ZooKeeper Server # Schedule Purge", handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
       return next() unless zookeeper.purge
@@ -206,7 +201,7 @@ parameters autopurge.snapRetainCount and autopurge.purgeInterval.
         """
         when: zookeeper.purge
         user: zookeeper.user.name
-      , next
+      .then next
 
 ## Super User
 
@@ -223,24 +218,26 @@ Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
     module.exports.push name: 'ZooKeeper Server # Super User', handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
       return next() unless zookeeper.superuser.password
-      ctx.execute
-        cmd: """
-        ZK_HOME=/usr/hdp/current/zookeeper-client/
-        java -cp $ZK_HOME/lib/*:$ZK_HOME/zookeeper.jar org.apache.zookeeper.server.auth.DigestAuthenticationProvider super:#{zookeeper.superuser.password}
-        """
-      , (err, _, stdout) ->
-        digest = match[1] if match = /\->(.*)/.exec(stdout)
-        return next Error "Failed to get digest" unless digest
-        ctx.write
-          destination: "#{zookeeper.conf_dir}/zookeeper-env.sh"
-          # match: RegExp "^export CLIENT_JVMFLAGS=\"-D#{quote 'zookeeper.DigestAuthenticationProvider.superDigest'}=.* #{quote '${CLIENT_JVMFLAGS}'}$", 'mg'
-          # replace: "export CLIENT_JVMFLAGS=\"-Dzookeeper.DigestAuthenticationProvider.superDigest=#{digest} ${CLIENT_JVMFLAGS}\""
-          match: /^export SERVER_JVMFLAGS="-Dzookeeper\.DigestAuthenticationProvider\.superDigest=.* \${SERVER_JVMFLAGS}"$/m
-          replace: "export SERVER_JVMFLAGS=\"-Dzookeeper.DigestAuthenticationProvider.superDigest=#{digest} ${SERVER_JVMFLAGS}\""
-          append: true
-          backup: true
-          eof: true
-        , next
+      ctx.call (_, callback) ->
+        ctx.execute
+          cmd: """
+          ZK_HOME=/usr/hdp/current/zookeeper-client/
+          java -cp $ZK_HOME/lib/*:$ZK_HOME/zookeeper.jar org.apache.zookeeper.server.auth.DigestAuthenticationProvider super:#{zookeeper.superuser.password}
+          """
+        , (err, _, stdout) ->
+          digest = match[1] if match = /\->(.*)/.exec(stdout)
+          return callback Error "Failed to get digest" unless digest
+          ctx.write
+            destination: "#{zookeeper.conf_dir}/zookeeper-env.sh"
+            # match: RegExp "^export CLIENT_JVMFLAGS=\"-D#{quote 'zookeeper.DigestAuthenticationProvider.superDigest'}=.* #{quote '${CLIENT_JVMFLAGS}'}$", 'mg'
+            # replace: "export CLIENT_JVMFLAGS=\"-Dzookeeper.DigestAuthenticationProvider.superDigest=#{digest} ${CLIENT_JVMFLAGS}\""
+            match: /^export SERVER_JVMFLAGS="-Dzookeeper\.DigestAuthenticationProvider\.superDigest=.* \${SERVER_JVMFLAGS}"$/m
+            replace: "export SERVER_JVMFLAGS=\"-Dzookeeper.DigestAuthenticationProvider.superDigest=#{digest} ${SERVER_JVMFLAGS}\""
+            append: true
+            backup: true
+            eof: true
+          .then callback
+      .then next
 
     module.exports.push name: 'ZooKeeper Server # Write myid', handler: (ctx, next) ->
       {zookeeper, hadoop_group} = ctx.config.ryba
@@ -254,7 +251,7 @@ Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
         destination: "#{zookeeper.config['dataDir']}/myid"
         uid: zookeeper.user.name
         gid: hadoop_group.name
-      , next
+      .then next
 
 ## Resources
 

@@ -17,7 +17,7 @@ Check if the Hive Server2 server is listening.
       else hive.site['hive.server2.thrift.port']
       ctx.execute
         cmd: "echo > /dev/tcp/#{ctx.config.host}/#{port}"
-      , next
+      .then next
 
     module.exports.push name: 'Hive Server2 # Check JDBC', handler: (ctx, next) ->
       # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.3.0/CDH4-Security-Guide/cdh4sg_topic_9_1.html

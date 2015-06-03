@@ -6,8 +6,22 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
 
-    module.exports.push name: 'Yarn RM # Stop Server', label_true: 'STOPPED', handler: (ctx, next) ->
-      lifecycle.rm_stop ctx, next
+## Stop
+
+Stop the Hive HCatalog server. You can also stop the server manually with one of
+the following two commands:
+
+```
+service hadoop-yarn-resourcemanager stop
+su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf stop resourcemanager"
+```
+
+    module.exports.push name: 'Yarn RM # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
+      ctx.service
+        srv_name: 'hadoop-yarn-resourcemanager'
+        action: 'stop'
+        if_exists: '/etc/init.d/hadoop-yarn-resourcemanager'
+      .then next
 
     module.exports.push name: 'Yarn RM # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       {clean_logs, yarn} = ctx.config.ryba
@@ -15,4 +29,4 @@
       ctx.execute
         cmd: 'rm #{yarn.log_dir}/*/*-resourcemanager-*'
         code_skipped: 1
-      , next
+      .then next

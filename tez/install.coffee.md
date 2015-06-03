@@ -4,6 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/yarn_client'
+    module.exports.push require '../lib/hconfigure'
     module.exports.push require('./index').configure
 
 ## Packages
@@ -62,13 +63,14 @@ HDFS directory. Note, the parent directories are created by the
 
     module.exports.push name: 'Tez # Configuration', timeout: -1, handler: (ctx, next) ->
       {tez} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{tez.env['TEZ_CONF_DIR']}/tez-site.xml"
         default: "#{__dirname}/../resources/tez/tez-site.xml"
         local_default: true
         properties: tez.tez_site
         merge: true
-      , next
+      .then next
 
 ## Environment
 

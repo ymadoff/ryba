@@ -4,6 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/mapred_jhs/wait'
+    module.exports.push 'ryba/hadoop/yarn_ts/wait'
     module.exports.push require('./index').configure
 
 ## Check
@@ -27,7 +28,7 @@ to re-execute the check.
         """
         not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -d check-#{host}-mapred/output"
         trap_on_error: true
-      , next
+      .then next
 
 ## Module Dependencies
 

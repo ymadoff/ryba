@@ -8,6 +8,7 @@ Install the HBase client package and configure it with secured access.
     module.exports.push 'ryba/hadoop/mapred_client' # Required for using/checking mapreduce
     module.exports.push 'ryba/hbase'
     module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/write_jaas'
 
 ## Zookeeper JAAS
@@ -33,7 +34,8 @@ restrict it but not the client.
 
     module.exports.push name: 'HBase Client # Configure', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hbase.conf_dir}/hbase-site.xml"
         default: "#{__dirname}/../../resources/hbase/hbase-site.xml"
         local_default: true
@@ -42,7 +44,7 @@ restrict it but not the client.
         uid: hbase.user.name
         gid: hbase.group.name
         backup: true
-      , next
+      .then next
 
 ## Check
 

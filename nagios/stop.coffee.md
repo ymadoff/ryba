@@ -13,7 +13,7 @@ Stop the nagios service.
       ctx.service
         srv_name: 'nagios'
         action: 'stop'
-      , next
+      .then next
 
 ## Stop Clean Logs
 
@@ -22,4 +22,4 @@ Stop the nagios service.
       ctx.execute
         cmd: 'rm /var/log/nagios/*'
         code_skipped: 1
-      , next
+      .then next

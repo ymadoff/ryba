@@ -82,34 +82,37 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 The packages "ganglia-gmetad-3.5.0-99" and "ganglia-web-3.5.7-99" are installed.
 
     module.exports.push name: 'Ganglia Collector # Service', timeout: -1, handler: (ctx, next) ->
-      ctx.service [
+      ctx
+      .service
         name: 'ganglia-gmetad-3.5.0-99'
         srv_name: 'gmetad'
         # action: 'stop' # Stoping here invalidate hdp-service HTTPD to restard
         startup: false
-      ,
+      .service
         name: 'ganglia-web-3.5.7-99'
-      ], next
+      .then next
 
 ## Init Script
 
 Upload the "hdp-gmetad" service file into "/etc/init.d".
 
     module.exports.push name: 'Ganglia Collector # Init Script', timeout: -1, handler: (ctx, next) ->
-      ctx.write
-        destination: '/etc/init.d/hdp-gmetad'
-        source: "#{__dirname}/../../resources/ganglia/scripts/hdp-gmetad"
-        local_source: true
-        match: /# chkconfig: .*/mg
-        replace: '# chkconfig: 2345 20 80'
-        append: '#!/bin/sh'
-        mode: 0o755
-      , (err, written) ->
-        return next err, false unless written
-        ctx.execute
-          cmd: "service gmetad stop; chkconfig --del gmetad; chkconfig --add hdp-gmetad"
-        , (err) ->
-          next err, true
+      ctx.call (_, callback) ->
+        ctx.write
+          destination: '/etc/init.d/hdp-gmetad'
+          source: "#{__dirname}/../../resources/ganglia/scripts/hdp-gmetad"
+          local_source: true
+          match: /# chkconfig: .*/mg
+          replace: '# chkconfig: 2345 20 80'
+          append: '#!/bin/sh'
+          mode: 0o755
+        , (err, written) ->
+          return callback err, false unless written
+          ctx.execute
+            cmd: "service gmetad stop; chkconfig --del gmetad; chkconfig --add hdp-gmetad"
+          , (err) ->
+            callback err, true
+      .then next
 
 ## Layout
 
@@ -119,7 +122,7 @@ the objects files and generate the hosts configuration.
     module.exports.push name: 'Ganglia Collector # Layout', timeout: -1, handler: (ctx, next) ->
       ctx.mkdir
         destination: '/usr/libexec/hdp/ganglia'
-      , next
+      .then next
 
 ## Objects
 
@@ -140,7 +143,7 @@ in its user account definition.
       ctx.user
         name: 'nobody'
         shell: '/bin/bash'
-      , next
+      .then next
 
 ## Clusters
 
@@ -148,27 +151,26 @@ The cluster generation follow Hortonworks guideline and generate the clusters
 "HDPHistoryServer", "HDPNameNode", "HDPResourceManager", "HDPSlaves" and "HDPHBaseMaster".
 
     module.exports.push name: 'Ganglia Collector # Clusters', timeout: -1, handler: (ctx, next) ->
-      cmds = []
       # On the Ganglia server, to configure the gmond collector
-      cmds.push
+      ctx
+      .execute
         cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPHistoryServer -m"
         not_if_exists: '/etc/ganglia/hdp/HDPHistoryServer'
-      cmds.push
+      .execute
         cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPNameNode -m"
         not_if_exists: '/etc/ganglia/hdp/HDPNameNode'
-      cmds.push
+      .execute
         cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPResourceManager -m"
         not_if_exists: '/etc/ganglia/hdp/HDPResourceManager'
-      cmds.push
+      .execute
         cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPSlaves -m"
         not_if_exists: '/etc/ganglia/hdp/HDPSlaves'
-      cmds.push
         cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPHBaseMaster -m"
         not_if_exists: '/etc/ganglia/hdp/HDPHBaseMaster'
-      cmds.push
+      .execute
         cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -t"
         not_if_exists: '/etc/ganglia/hdp/gmetad.conf'
-      ctx.execute cmds, next
+      .then next
 
 ## Configuration
 
@@ -176,44 +178,45 @@ In order to work properly, each cluster must be updated with the "bind" property
 pointing to the Ganglia master hostname.
 
     module.exports.push name: 'Ganglia Collector # Configuration', handler: (ctx, next) ->
-      ctx.write [
+      ctx.write
         destination: "/etc/ganglia/hdp/HDPNameNode/conf.d/gmond.master.conf"
         match: /^(.*)bind = (.*)$/mg
         replace: "$1bind = #{ctx.config.host}"
-      ,
+      .write
         destination: "/etc/ganglia/hdp/HDPHistoryServer/conf.d/gmond.master.conf"
         match: /^(.*)bind = (.*)$/mg
         replace: "$1bind = #{ctx.config.host}"
-      ,
+      .write
         destination: "/etc/ganglia/hdp/HDPResourceManager/conf.d/gmond.master.conf"
         match: /^(.*)bind = (.*)$/mg
         replace: "$1bind = #{ctx.config.host}"
-      ,
+      .write
         destination: "/etc/ganglia/hdp/HDPSlaves/conf.d/gmond.master.conf"
         match: /^(.*)bind = (.*)$/mg
         replace: "$1bind = #{ctx.config.host}"
-      ,
+      .write
         destination: "/etc/ganglia/hdp/HDPHBaseMaster/conf.d/gmond.master.conf"
         match: /^(.*)bind = (.*)$/mg
         replace: "$1bind = #{ctx.config.host}"
-      ,
+      .write
         destination: "/etc/ganglia/hdp/gmetad.conf"
         match: /^(data_source.* )(.*):(\d+)$/mg
         replace: "$1#{ctx.config.host}:$3"
-      ], next
+      .then next
 
 ## HTTPD Restart
 
     module.exports.push name: 'Ganglia Collector # HTTPD Restart', handler: (ctx, next) ->
-      ctx.service
+      ctx
+      .service
         srv_name: 'httpd'
         action: ['start', 'restart']
-        not_if: (callback) ->
+        not_if: (options, callback) ->
           ctx.execute
             cmd: "curl -s http://#{ctx.config.host}/ganglia/"
           , (err, _, stdout) ->
             callback null, !err and /Ganglia Web Frontend/.test stdout
-      , next
+      .then next
 
 ## Start
 

@@ -20,7 +20,7 @@ su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/
         srv_name: 'hadoop-mapreduce-historyserver'
         action: 'stop'
         if_exists: '/etc/init.d/hadoop-mapreduce-historyserver'
-      , next
+      .then next
 
     # module.exports.push name: 'JobHistoryServer # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
     #   lifecycle.jhs_stop ctx, next

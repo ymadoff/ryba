@@ -16,6 +16,7 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
     module.exports.push 'ryba/hadoop/hdfs_dn/wait'
     module.exports.push 'ryba/hbase/client'
     module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
 
 ## IPTables
@@ -37,7 +38,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: 9999, protocol: 'tcp', state: 'NEW', comment: "Hive Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Startup
 
@@ -82,7 +83,7 @@ isnt yet started.
               match: /^export HIVE_HOME=.*$/m # HDP default is "/usr/lib/hive"
               replace: "export HIVE_HOME=/usr/hdp/current/hive-metastore # RYBA FIX"
             ]
-      , next
+      .then next
 
     module.exports.push name: 'Hive HCatalog # Database', handler: (ctx, next) ->
       {hive, db_admin} = ctx.config.ryba
@@ -91,98 +92,90 @@ isnt yet started.
       {engine, host, db} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
       engines = 
         mysql: ->
-          do_exists = ->
-            cmd = "#{db_admin.path} -u#{username} -p#{password} -h#{db_admin.host} -P#{db_admin.port}"
-            ctx.execute
-              cmd: "if ! #{cmd} -e \"USE #{db};\"; then exit 3; fi"
-              code_skipped: 3
-            , (err, exists) ->
-              return next err if err
-              if exists then do_upgrade() else do_db()
-          do_db = ->
-            cmd = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port}"
-            ctx.execute
-              cmd: """
-              #{cmd} -e "
-              create database if not exists #{db};
-              grant all privileges on #{db}.* to '#{username}'@'localhost' identified by '#{password}';
-              grant all privileges on #{db}.* to '#{username}'@'%' identified by '#{password}';
-              flush privileges;
-              "
-              """
-            , (err) ->
-              return next err if err
-              do_create()
-          do_create = ->
-            cmd = "#{db_admin.path} -u#{username} -p#{password} -h#{db_admin.host} -P#{db_admin.port}"
-            create_version = 'ls /usr/hdp/current/hive-metastore/lib | grep hive-common- | sed \'s/^hive-common-\\([0-9]\\+.[0-9]\\+.[0-9]\\+\\).*\\.jar$/\\1/g\''
-            ctx.execute
-              cmd: """
-              create_version=`#{create_version}`
-              create=/usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/hive-schema-${create_version}.mysql.sql
-              create_major_version=`echo $create_version | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2.0/g\'`
-              create_major=/usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/hive-schema-${create_major_version}.mysql.sql
-              if ! test -f $create && ! test -f $create_major; then exit 1; fi
-              # Create schema
-              if test -f $create; then
-                #{cmd} #{db} < $create;
-              elif test -f $create_major; then
-                #{cmd} #{db} < $create_major;
-              fi
-              # Import transaction schema (now created with 0.13.1)
-              #trnx=/usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/hive-txn-schema-${create_version}.mysql.sql
-              #trnx_major=/usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/hive-txn-schema-${create_major_version}.mysql.sql
-              #if test -f $trnx; then #{cmd} #{db} < $trnx;
-              #elif test -f $trnx_major; then #{cmd} #{db} < $trnx_major; fi
-              """
-            , next
-          do_upgrade = ->
-            cmd = "#{db_admin.path} -u#{username} -p#{password} -h#{db_admin.host} -P#{db_admin.port}"
-            current_version = "#{db_admin.path} -u#{username} -p#{password} -h#{db_admin.host} -P#{db_admin.port} -e 'select SCHEMA_VERSION from hive.VERSION' --skip-column-names"
-            target_version = 'ls /usr/hdp/current/hive-metastore/lib | grep hive-common- | sed \'s/^hive-common-\\([0-9]\\+.[0-9]\\+.[0-9]\\+\\).*\\.jar$/\\1/g\''
-            ctx.execute
-              cmd: """
-              current=`#{current_version}`
-              target=`#{target_version}`
-              if [ $current == $target ]; then exit 3; fi
-              # Upgrade schema
-              upgrade=/usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/upgrade-${current}-to-${target}.mysql.sql
-              if ! test -f $upgrade; then
-                current_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
-                target_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
-                if [ $current_major == $target_major ]; then exit 0; fi
-                exit 1;
-              fi
-              cd `dirname $upgrade`
-              #{cmd} #{db} < $upgrade
-              # Import transaction schema (now created with 0.13.1)
-              #trnx=/usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/hive-txn-schema-${target}.mysql.sql
-              #if test -f $trnx; then #{cmd} #{db} < $trnx; fi
-              """
-              code_skipped: 3
-            , next
-          do_exists()
+          mysql_admin = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port}"
+          mysql_client = "#{db_admin.path} -u#{username} -p#{password} -h#{db_admin.host} -P#{db_admin.port}"
+          target_version = 'ls /usr/hdp/current/hive-metastore/lib | grep hive-common- | sed \'s/^hive-common-\\([0-9]\\+.[0-9]\\+.[0-9]\\+\\).*\\.jar$/\\1/g\''
+          current_version = "#{mysql_client} -e 'select SCHEMA_VERSION from hive.VERSION' --skip-column-names"
+          exists = null
+          ctx
+          .execute
+            cmd: "if ! #{mysql_client} -e \"USE #{db};\"; then exit 3; fi"
+            code_skipped: 3
+          , (err, _exists) ->
+            return next err if err
+            exists = _exists
+          .execute
+            cmd: """
+            #{mysql_admin} -e "
+            create database if not exists #{db};
+            grant all privileges on #{db}.* to '#{username}'@'localhost' identified by '#{password}';
+            grant all privileges on #{db}.* to '#{username}'@'%' identified by '#{password}';
+            flush privileges;
+            "
+            """
+            not_if: -> exists
+          .execute
+            cmd: """
+            target_version=`#{target_version}`
+            target=/usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/hive-schema-${target_version}.mysql.sql
+            target_major_version=`echo $target_version | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2.0/g\'`
+            target_major=/usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/hive-schema-${target_major_version}.mysql.sql
+            if ! test -f $target && ! test -f $target_major; then exit 1; fi
+            # Create schema
+            if test -f $target; then
+              #{mysql_client} #{db} < $target;
+            elif test -f $target_major; then
+              #{mysql_client} #{db} < $target_major;
+            fi
+            # Import transaction schema (now created with 0.13.1)
+            #trnx=/usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/hive-txn-schema-${target_version}.mysql.sql
+            #trnx_major=/usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/hive-txn-schema-${target_major_version}.mysql.sql
+            #if test -f $trnx; then #{mysql_client} #{db} < $trnx;
+            #elif test -f $trnx_major; then #{mysql_client} #{db} < $trnx_major; fi
+            """
+            not_if: -> exists
+          .execute
+            cmd: """
+            current=`#{current_version}`
+            target=`#{target_version}`
+            if [ $current == $target ]; then exit 3; fi
+            # Upgrade schema
+            upgrade=/usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/upgrade-${current}-to-${target}.mysql.sql
+            if ! test -f $upgrade; then
+              current_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
+              target_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
+              if [ $current_major == $target_major ]; then exit 0; fi
+              exit 1;
+            fi
+            cd `dirname $upgrade`
+            #{mysql_client} #{db} < $upgrade
+            # Import transaction schema (now created with 0.13.1)
+            #trnx=/usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/hive-txn-schema-${target}.mysql.sql
+            #if test -f $trnx; then #{mysql_client} #{db} < $trnx; fi
+            """
+            code_skipped: 3
+            if: -> exists
+          .then next
       return next new Error 'Database engine not supported' unless engines[engine]
       engines[engine]()
 
     module.exports.push name: 'Hive HCatalog # Configure', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hive.conf_dir}/hive-site.xml"
         default: "#{__dirname}/../../resources/hive/hive-site.xml"
         local_default: true
         properties: hive.site
         merge: true
         backup: true
-      , (err, configured) ->
-        return next err if err
-        ctx.execute
-          cmd: """
-          chown -R #{hive.user.name}:#{hive.group.name} #{hive.conf_dir}/
-          chmod -R 755 #{hive.conf_dir}
-          """
-        , (err) ->
-          next err, configured
+      .execute
+        cmd: """
+        chown -R #{hive.user.name}:#{hive.group.name} #{hive.conf_dir}/
+        chmod -R 755 #{hive.conf_dir}
+        """
+        shy: true # TODO: idempotence by detecting ownerships and permissions
+      .then next
 
 ## Env
 
@@ -214,7 +207,7 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
         append: true
         eof: true
         backup: true
-      , next
+      .then next
 
     module.exports.push name: 'Hive HCatalog # Libs', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
@@ -222,13 +215,14 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
       uploads = for lib in hive.libs
         source: lib
         destination: "/usr/hdp/current/hive-metastore/lib/#{path.basename lib}"
-      ctx.upload uploads, next
+      ctx.upload uploads
+      .then next
 
     module.exports.push name: 'Hive HCatalog # Driver', handler: (ctx, next) ->
       ctx.link
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/hdp/current/hive-metastore/lib/mysql-connector-java.jar'
-      , next
+      .then next
 
     module.exports.push name: 'Hive HCatalog # Kerberos', handler: (ctx, next) ->
       {hive, realm} = ctx.config.ryba
@@ -243,18 +237,19 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
 
     module.exports.push name: 'Hive HCatalog # Logs', handler: (ctx, next) ->
-      ctx.write [
+      ctx
+      .write
         source: "#{__dirname}/../../resources/hive/hive-exec-log4j.properties.template"
         local_source: true
         destination: '/etc/hive/conf/hive-exec-log4j.properties'
-      ,
+      .write
         source: "#{__dirname}/../../resources/hive/hive-log4j.properties.template"
         local_source: true
         destination: '/etc/hive/conf/hive-log4j.properties'
-      ], next
+      .then next
 
 ## Layout
 
@@ -264,17 +259,18 @@ Create the directories to store the logs and pid information. The properties
     module.exports.push name: 'Hive HCatalog # Layout', timeout: -1, handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       # Required by service "hive-hcatalog-server"
-      ctx.mkdir [
+      ctx
+      .mkdir
         destination: hive.hcatalog.log_dir
         uid: hive.user.name
         gid: hive.group.name
         parent: true
-      ,
+      .mkdir
         destination: hive.hcatalog.pid_dir
         uid: hive.user.name
         gid: hive.group.name
         parent: true
-      ], next
+      .then next
 
     module.exports.push name: 'Hive HCatalog # HDFS Layout', timeout: -1, handler: (ctx, next) ->
       # todo: this isnt pretty, ok that we need to execute hdfs command from an hadoop client
@@ -284,57 +280,42 @@ Create the directories to store the logs and pid information. The properties
       hive_group = hive.group.name
       cmd = mkcmd.hdfs ctx, "hdfs dfs -test -d /user && hdfs dfs -test -d /apps && hdfs dfs -test -d /tmp"
       ctx.waitForExecution cmd, code_skipped: 1, (err) ->
-        modified = false
-        do_user = ->
-          ctx.execute
-            cmd: mkcmd.hdfs ctx, """
-            if hdfs dfs -ls /user/#{hive_user} &>/dev/null; then exit 1; fi
-            hdfs dfs -mkdir /user/#{hive_user}
-            hdfs dfs -chown #{hive_user}:#{hdfs.user.name} /user/#{hive_user}
-            """
-            code_skipped: 1
-          , (err, executed, stdout) ->
-            return next err if err
-            modified = true if executed
-            do_warehouse()
-        do_warehouse = ->
-          ctx.execute
-            cmd: mkcmd.hdfs ctx, """
-            if hdfs dfs -ls /apps/#{hive_user}/warehouse &>/dev/null; then exit 3; fi
-            hdfs dfs -mkdir /apps/#{hive_user}
-            hdfs dfs -mkdir /apps/#{hive_user}/warehouse
-            hdfs dfs -chown -R #{hive_user}:#{hdfs.user.name} /apps/#{hive_user}
-            hdfs dfs -chmod 755 /apps/#{hive_user}
-            hdfs dfs -chmod 1777 /apps/#{hive_user}/warehouse
-            """
-            code_skipped: 3
-          , (err, executed, stdout) ->
-            return next err if err
-            modified = true if executed
-            do_scratch()
-        do_scratch = ->
-          ctx.execute
-            cmd: mkcmd.hdfs ctx, """
-            if hdfs dfs -ls /tmp/scratch &> /dev/null; then exit 1; fi
-            hdfs dfs -mkdir /tmp 2>/dev/null
-            hdfs dfs -mkdir /tmp/scratch
-            hdfs dfs -chown #{hive_user}:#{hdfs.user.name} /tmp/scratch
-            hdfs dfs -chmod -R 1777 /tmp/scratch
-            """
-            code_skipped: 1
-          , (err, executed, stdout) ->
-            return next err if err
-            modified = true if executed
-            do_end()
-        do_end = ->
-          next null, modified
-        do_warehouse()
+        return next err if err
+        ctx
+        .execute
+          cmd: mkcmd.hdfs ctx, """
+          if hdfs dfs -ls /user/#{hive_user} &>/dev/null; then exit 1; fi
+          hdfs dfs -mkdir /user/#{hive_user}
+          hdfs dfs -chown #{hive_user}:#{hdfs.user.name} /user/#{hive_user}
+          """
+          code_skipped: 1
+          if: false # Disabled
+        .execute
+          cmd: mkcmd.hdfs ctx, """
+          if hdfs dfs -ls /apps/#{hive_user}/warehouse &>/dev/null; then exit 3; fi
+          hdfs dfs -mkdir /apps/#{hive_user}
+          hdfs dfs -mkdir /apps/#{hive_user}/warehouse
+          hdfs dfs -chown -R #{hive_user}:#{hdfs.user.name} /apps/#{hive_user}
+          hdfs dfs -chmod 755 /apps/#{hive_user}
+          hdfs dfs -chmod 1777 /apps/#{hive_user}/warehouse
+          """
+          code_skipped: 3
+        .execute
+          cmd: mkcmd.hdfs ctx, """
+          if hdfs dfs -ls /tmp/scratch &> /dev/null; then exit 1; fi
+          hdfs dfs -mkdir /tmp 2>/dev/null
+          hdfs dfs -mkdir /tmp/scratch
+          hdfs dfs -chown #{hive_user}:#{hdfs.user.name} /tmp/scratch
+          hdfs dfs -chmod -R 1777 /tmp/scratch
+          """
+          code_skipped: 1
+        .then next
 
     module.exports.push name: 'Hive HCatalog # Tez Package', timeout: -1, handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module 'ryba/tez'
       ctx.service
         name: 'tez'
-      , next
+      .then next
 
     module.exports.push name: 'Hive HCatalog # Tez Layout', timeout: -1, handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module 'ryba/tez'
@@ -352,7 +333,7 @@ Create the directories to store the logs and pid information. The properties
         """
         # code_skipped: 1
         not_if_exec: "[[ `#{version_local}` == `#{version_remote}` ]]"
-      , next
+      .then next
 
 # Module Dependencies
 

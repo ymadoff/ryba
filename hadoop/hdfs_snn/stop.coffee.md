@@ -9,11 +9,11 @@
       lifecycle.snn_stop ctx, next
 
     module.exports.push name: 'HDFS SNN # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
-      return next() unless ctx.config.ryba.clean_logs
       ctx.execute
         cmd: 'rm /var/log/hadoop-hdfs/*/*-secondarynamenode-*'
         code_skipped: 1
-      , next
+        if: ctx.config.ryba.clean_logs
+      .then next
 
 ## Module Dependencies
 

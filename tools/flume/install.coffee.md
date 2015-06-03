@@ -23,10 +23,9 @@ creating the "zookeeper" and "hdfs" users and the "hadoop" and "hdfs" group.
 
     module.exports.push name: 'Flume # Users & Groups', handler: (ctx, next) ->
       {flume} = ctx.config.ryba
-      ctx.group flume.group, (err, gmodified) ->
-        return next err if err
-        ctx.user flume.user, (err, umodified) ->
-          next err, gmodified or umodified
+      ctx.group flume.group
+      ctx.user flume.user
+      .then next
 
 ## Install
 
@@ -59,7 +58,7 @@ later usage. It is placed inside the flume configuration directory, by default
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
 
 ## Check
 

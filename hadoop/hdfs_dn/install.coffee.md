@@ -19,6 +19,7 @@ NameNodes, and send block location information and heartbeats to both.
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
 
 ## IPTables
@@ -50,7 +51,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: dn_ipc_address, protocol: 'tcp', state: 'NEW', comment: "HDFS DN Meta" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Service
 
@@ -93,7 +94,7 @@ inside "/etc/init.d" and activate it on startup.
               replace: "export HADOOP_SECURE_DN_LOG_DIR=#{hdfs.log_dir} # RYBA"
               append: true
             ]
-      , next
+      .then next
 
 ## HA
 
@@ -103,7 +104,8 @@ present inside the "hdp.ha\_client\_config" object.
     module.exports.push name: 'HDFS DN # HA', handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       {hadoop_conf_dir, hdfs, hadoop_group} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
         local_default: true
@@ -112,7 +114,7 @@ present inside the "hdp.ha\_client\_config" object.
         gid: hadoop_group.name
         merge: true
         backup: true
-      , next
+      .then next
 
 # Configure Master
 
@@ -133,10 +135,7 @@ Also some [interesting info about snn](http://blog.cloudera.com/blog/2009/02/mul
         destination: "#{hadoop_conf_dir}/masters"
         uid: hdfs.user.name
         gid: hadoop_group.name
-      , (err, configured) ->
-        return next err if err
-        modified = true if configured
-        do_slaves()
+      .then next
 
 ## Layout
 
@@ -153,19 +152,20 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
       pid_dir = pid_dir.replace '$HADOOP_IDENT_STRING', hdfs.user.name
       # TODO, in HDP 2.1, datanode are started as root but in HDP 2.2, we should
       # start it as HDFS and use JAAS
-      ctx.mkdir [
+      ctx
+      .mkdir
         destination: hdfs.site['dfs.datanode.data.dir'].split ','
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o0750
         parent: true
-      ,
+      .mkdir
         destination: "#{pid_dir}"
         uid: hdfs.user.name
         gid: hdfs.group.name # HDFS Group is forced by the system, hadoop_group can't be used
         mode: 0o0755
         parent: true
-      ], next
+      .then next
 
 ## Kerberos
 
@@ -186,7 +186,7 @@ and permissions set to "0600".
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
 
 # Opts
 
@@ -209,7 +209,7 @@ Environment passed to the DataNode before it starts.
           before: /^export HADOOP_DATANODE_OPTS=".*"$/mg
         ]
         backup: true
-      , next
+      .then next
 
 # Kernel
 
@@ -227,32 +227,35 @@ Note, we might move this middleware to Masson.
     module.exports.push name: 'HDFS DN # Kernel', handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
       return next() unless Object.keys(hdfs.sysctl).length
-      ctx.execute
-        cmd: 'sysctl -a'
-        stdout: null
-      , (err, _, content) ->
-        return next err if err
-        content = misc.ini.parse content
-        properties = {}
-        for k, v of hdfs.sysctl
-          v = "#{v}"
-          properties[k] = v if content[k] isnt v
-        return next null, false unless Object.keys(properties).length
-        writes = for k, v of properties
-          match: ///^#{misc.regexp.escape k}?\s+=\s*.*?\s///mg
-          replace: "#{k} = #{v}"
-          append: true
-        ctx.write
-          destination: '/etc/sysctl.conf'
-          write: writes
-          backup: true
-        , (err) ->
-          return next err if err
-          properties = for k, v of properties then "#{k}=#{v}"
-          properties = properties.join ' '
-          ctx.execute
-            cmd: "sysctl #{properties}"
-          , next
+      ctx.call (_, callback) ->
+        ctx.execute
+          cmd: 'sysctl -a'
+          stdout: null
+        , (err, _, content) ->
+          return callback err if err
+          content = misc.ini.parse content
+          properties = {}
+          for k, v of hdfs.sysctl
+            v = "#{v}"
+            properties[k] = v if content[k] isnt v
+          return callback null, false unless Object.keys(properties).length
+          writes = for k, v of properties
+            match: ///^#{misc.regexp.escape k}?\s+=\s*.*?\s///mg
+            replace: "#{k} = #{v}"
+            append: true
+          ctx.write
+            destination: '/etc/sysctl.conf'
+            write: writes
+            backup: true
+            eof: true
+          , (err) ->
+            return callback err if err
+            properties = for k, v of properties then "#{k}=#{v}"
+            properties = properties.join ' '
+            ctx.execute
+              cmd: "sysctl #{properties}"
+            , callback
+      .then next
 
 
 ## Module dependencies

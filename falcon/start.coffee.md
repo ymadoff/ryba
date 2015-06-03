@@ -17,10 +17,6 @@ su -l falcon -c "/usr/hdp/current/falcon-server/bin/service-start.sh falcon"
 
     module.exports.push name: 'Falcon # Start Service', timeout: -1, label_true: 'STARTED', handler: (ctx, next) ->
       {user} = ctx.config.ryba.falcon
-      # su -l falcon -c '/usr/lib/falcon/bin/falcon-start'
-      # su -l #{user.name} -c '/usr/lib/falcon/bin/falcon-status'
-      # if [ $? -eq 254 ]; then exit 3; fi
-      # su -l #{user.name} -c '/usr/lib/falcon/bin/falcon-start'
       ctx.execute
         cmd: """
         su -l #{user.name} -c '/usr/hdp/current/falcon-server/bin/service-status.sh falcon'
@@ -29,4 +25,4 @@ su -l falcon -c "/usr/hdp/current/falcon-server/bin/service-start.sh falcon"
         """
         code_skipped: 3
         if_exists: '/usr/hdp/current/falcon-server/bin/service-status.sh'
-      , next
+      .then next

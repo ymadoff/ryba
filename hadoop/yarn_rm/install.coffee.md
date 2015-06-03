@@ -5,6 +5,7 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/yarn_client/install'
     module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
     module.exports.push require '../../lib/write_jaas'
 
@@ -55,7 +56,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       ctx.iptables
         rules: rules
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Kerberos
 
@@ -71,8 +72,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
 
+## Kerberos JAAS
+
+The JAAS file is used by the ResourceManager to initiate a secure connection 
+with Zookeeper.
 
     module.exports.push name: 'YARN RM # Kerberos JAAS', handler: (ctx, next) ->
       {yarn, hadoop_conf_dir, hadoop_group, core_site, realm} = ctx.config.ryba
@@ -83,7 +88,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           keyTab: yarn.site['yarn.resourcemanager.keytab']
         uid: yarn.user.name
         gid: hadoop_group.name
-      , next
+      .then next
 
 
 ## Service
@@ -119,7 +124,7 @@ inside "/etc/init.d" and activate it on startup.
               match: /^export YARN_IDENT_STRING=.*$/m # HDP default is "hdfs"
               replace: "export YARN_IDENT_STRING=#{yarn.user.name} # RYBA, DONT OVERWRITE"
             ]
-      , next
+      .then next
 
 ## Environment
 
@@ -132,26 +137,24 @@ inside "/etc/init.d" and activate it on startup.
         match: /^.*# RYBA CONF "ryba.yarn.rm_opts", DONT OVERWRITE/mg
         replace: "YARN_RESOURCEMANAGER_OPTS=\"${YARN_RESOURCEMANAGER_OPTS} #{rm_opts}\" # RYBA CONF \"ryba.yarn.rm_opts\", DONT OVERWRITE"
         append: true
-      , next
+      .then next
 
 
 ## Configuration
 
     module.exports.push name: 'YARN RM # Configuration', handler: (ctx, next) ->
       {yarn, hadoop_conf_dir} = ctx.config.ryba
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
         local_default: true
         properties: yarn.site
         merge: true
         backup: true
-      , (err, configured) ->
-        return next err if err
-        ctx.touch
-          destination: "#{hadoop_conf_dir}/yarn.exclude"
-        , (err, touched) ->
-          next err, configured or touched
+      .touch
+        destination: "#{hadoop_conf_dir}/yarn.exclude"
+      .then next
 
 ## Capacity Scheduler
 
@@ -169,31 +172,21 @@ ResourceCalculator class name is expected.
     module.exports.push name: 'YARN RM # Capacity Scheduler', handler: (ctx, next) ->
       {yarn, hadoop_conf_dir, capacity_scheduler} = ctx.config.ryba
       return next() unless yarn.site['yarn.resourcemanager.scheduler.class'] is 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hadoop_conf_dir}/capacity-scheduler.xml"
         default: "#{__dirname}/../../resources/core_hadoop/capacity-scheduler.xml"
         local_default: true
         properties: capacity_scheduler
         merge: true
-      , (err, configured) ->
-        return next err, false if err or not configured
-        ctx.execute
+      .then (err, status) ->
+        return next err, false if err or not status
+        ctx
+        .execute
           cmd: mkcmd.hdfs ctx, 'service hadoop-yarn-resourcemanager status && yarn rmadmin -refreshQueues'
           code_skipped: 3
-        , (err) ->
+        .then (err) ->
           next err, true
-
-## Wait JHS
-
-Yarn use the the MapReduce Job History Server (JHS) to send logs. The address of
-the server is defined by the propery "yarn.log.server.url" in "yarn-site.xml".
-The default port is "19888".
-
-    # url = require 'url'
-    # module.exports.push name: 'YARN RM # Wait JHS', timeout: -1, handler: (ctx, next) ->
-    #   {hostname, port} = url.parse ctx.config.ryba.yarn.site['yarn.log.server.url']
-    #   ctx.waitIsOpen hostname, port, (err) ->
-    #     return next err if err
 
 ## Module Dependencies
 

@@ -24,6 +24,7 @@ code.
     module.exports.push 'masson/core/krb5_client'
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/lib/base'
+    module.exports.push require '../lib/hconfigure'
 
 ## Configuration
 
@@ -395,7 +396,7 @@ Update the "core-site.xml" configuration file with properties from the
         properties: core_site
         merge: true
         backup: true
-      , next
+      .then next
 
     module.exports.push name: 'Hadoop Core # Topology', handler: (ctx, next) ->
       {hdfs, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
@@ -500,11 +501,11 @@ ${HADOOP_CONF_DIR}/core-site.xml
         merge: true
         backup: true
         if: core_site['hadoop.security.authorization'] is 'true'
-      , (err, changed) ->
-        return next err, false if err or not changed
+      .then (err, status) ->
+        return next err, status if err or not status
         ctx.execute
           cmd: mkcmd.hdfs ctx, 'hdfs dfsadmin -refreshServiceAcl'
-        , (err) ->
+        .then (err) ->
           return next err, true
 
     # module.exports.push name: 'Hadoop Core # Environnment', timeout: -1, handler: (ctx, next) ->

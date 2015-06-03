@@ -50,11 +50,11 @@ php /usr/lib64/nagios/plugins/check_rpcq_latency_ha.php \
         cmd: "nagios -v /etc/nagios/nagios.cfg"
         code_skipped: 254
       , (err, executed, stdout) ->
-        return next err if err
-        return next Error "Nagios Invalid Configuration" unless executed
+        throw err if err
+        throw Error "Nagios Invalid Configuration" unless executed
         errors = /Total Errors:\s+(\d+)/.exec(stdout)?[1]
-        return next Error "Nagios Errors: #{errors}" unless errors is '0'
-        next null, true
+        throw Error "Nagios Errors: #{errors}" unless errors is '0'
+      .then next
 
     module.exports.push name: 'Nagios # Check Command', label_true: 'CHECKED', handler: (ctx, next) ->
       {kinit} = ctx.config.krb5
@@ -79,7 +79,7 @@ php /usr/lib64/nagios/plugins/check_rpcq_latency_ha.php \
       cmd += " -s #{if protocol is 'https' then 'true' else 'false'}"
       ctx.execute
         cmd: cmd
-      , next
+      .then next
 
 ## Module Dependencies
 

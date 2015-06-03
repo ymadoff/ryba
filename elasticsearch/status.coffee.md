@@ -10,4 +10,4 @@
       ctx.execute
         cmd: 'service elasticsearch status'
         code_skipped: 3
-      , next
+      .then next

@@ -8,23 +8,14 @@ Execute this command on all the nodes in your Hadoop cluster.
     module.exports.push 'masson/bootstrap/mecano'
 
     module.exports.push name: 'Ganglia Monitor # Start', label_true: 'STARTED', handler: (ctx, next) ->
-      # Doesnt work for 3 reasons
-      # waitIsOpen doesnt use udp
-      # waitIsOpen use bash instead of nc which doesnt work for udp (always exit 0)
-      # collector = ctx.host_with_module 'ryba/ganglia/collector'
-      # ports = []
-      # ports.push 8661 if ctx.has_any_modules 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_snn'
-      # ports.push 8664 if ctx.has_any_modules 'ryba/hadoop/yarn_rm'
-      # ports.push 8666 if ctx.has_any_modules 'ryba/hadoop/mapred_jhs'
-      # ports.push 8660 if ctx.has_any_modules 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm'
-      # ports.push 8663 if ctx.has_any_modules 'ryba/hbase/master'
-      # ctx.waitIsOpen collector, ports, (err) ->
-      #   return next err
-      ctx.service
-        # name: 'ganglia-gmond-3.5.0-99'
-        srv_name: 'hdp-gmond'
-        action: 'start'
+      ctx.service_start
+        name: 'hdp-gmond'
         if_exists: '/etc/init.d/hdp-gmond'
-      , next
+      # On error, it is often necessary to remove pid files
+      # this hasnt been tested yet:
+      # .execute
+      #   cmd: "rm -rf /var/run/ganglia/hdp/*/*.pid"
+      #   if: @retry
+      .then next
 
 

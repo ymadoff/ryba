@@ -25,10 +25,10 @@ hadoop:x:502:yarn,mapred,hdfs,hue
 
     module.exports.push name: 'Hadoop Pig # Users & Groups', handler: (ctx, next) ->
       {hadoop_group, pig_user} = ctx.config.ryba
-      ctx.group hadoop_group, (err, gmodified) ->
-        return next err if err
-        ctx.user pig_user, (err, umodified) ->
-          next err, gmodified or umodified
+      ctx
+      .group hadoop_group
+      .user pig_user
+      .then next
 
 ## Install
 
@@ -49,7 +49,7 @@ The pig package is install.
         cmd: "useradd pig -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop Pig service\""
         code: 0
         code_skipped: 9
-      , next
+      .then next
 
 ## Configure
 
@@ -64,7 +64,7 @@ companion file defines no properties while the YUM package does.
         separator: '='
         merge: true
         backup: true
-      , next
+      .then next
 
     module.exports.push name: 'Hadoop Pig # Env', handler: (ctx, next) ->
       {java_home} = ctx.config.java
@@ -81,7 +81,7 @@ companion file defines no properties while the YUM package does.
         gid: hadoop_group.name
         mode: 0o755
         backup: true
-      , next
+      .then next
 
     module.exports.push name: 'Hadoop Pig # Fix Pig', handler: (ctx, next) ->
       ctx.write
@@ -94,11 +94,7 @@ companion file defines no properties while the YUM package does.
         ]
         destination: '/usr/lib/pig/bin/pig'
         backup: true
-      , next
-
-## Check
-
-    module.exports.push 'ryba/tools/pig/check'
+      .then next
 
 ## Module Dependencies
 

@@ -46,14 +46,6 @@ information for the applications running inside YARN.
       # Timeline Server Authorization (ACLs)
       yarn.site['yarn.acl.enable'] ?= "true"
       yarn.site['yarn.admin.acl'] ?= ""
-      # # SSL
-      # yarn.site[''] ?= ""
-      # yarn.site[''] ?= ""
-      # yarn.site[''] ?= ""
-      # yarn.site[''] ?= ""
-      # yarn.site[''] ?= ""
-      # yarn.site[''] ?= ""
-      # yarn.site[''] ?= ""
 
 
     module.exports.push commands: 'check', modules: 'ryba/hadoop/yarn_ts/check'

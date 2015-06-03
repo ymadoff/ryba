@@ -1,9 +1,13 @@
 
 # YARN Timeline Server Start
 
+The ATS requires HDFS to be operationnal or an exception is trown: 
+"java.lang.IllegalArgumentException: java.net.UnknownHostException: {cluster name}".
+
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/krb5_client/wait'
+    module.exports.push 'ryba/hadoop/hdfs_nn/wait'
 
     module.exports.push name: 'YARN TS # Start', handler: (ctx, next) ->
       {yarn, hadoop_conf_dir} = ctx.config.ryba
@@ -17,4 +21,4 @@
         echo $?
         """
         code_skipped: 3
-      , next
+      .then next

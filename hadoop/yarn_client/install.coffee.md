@@ -4,6 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/core'
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require('./index').configure
 
 ## Package
@@ -22,33 +23,34 @@ Install the "hadoop-yarn" package.
         cmd: "useradd #{yarn.user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop YARN service\""
         code: 0
         code_skipped: 9
-      , next
+      .then next
 
     module.exports.push name: 'YARN # Install Common', timeout: -1, handler: (ctx, next) ->
-      ctx.service [
+      ctx
+      .service
         name: 'hadoop'
-      ,
+      .service
         name: 'hadoop-yarn'
-      ,
+      .service
         name: 'hadoop-client'
-      ], next
+      .then next
 
     module.exports.push name: 'YARN # Directories', timeout: -1, handler: (ctx, next) ->
       {yarn, hadoop_group} = ctx.config.ryba
       pid_dir = yarn.pid_dir.replace '$USER', yarn.user.name
-      ctx.mkdir [
+      ctx.mkdir
         destination: "#{yarn.log_dir}/#{yarn.user.name}"
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0755
         parent: true
-      ,
+      .mkdir
         destination: "#{pid_dir}"
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0755
         parent: true
-      ], next
+      .then next
 
     module.exports.push name: 'YARN # Yarn OPTS', handler: (ctx, next) ->
       {java_home} = ctx.config.java
@@ -75,7 +77,7 @@ Install the "hadoop-yarn" package.
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0755
-      , next
+      .then next
 
 ## Configuration
 
@@ -85,7 +87,8 @@ Install the "hadoop-yarn" package.
       # for k, v of yarn.site
       #   continue if k isnt 'yarn.application.classpath' and k.indexOf('yarn.resourcemanager') is -1
       #   properties[k] = v
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
         local_default: true
@@ -93,6 +96,6 @@ Install the "hadoop-yarn" package.
         merge: true
         uid: yarn.user.name
         gid: yarn.group.name
-      , next
+      .then next
 
 

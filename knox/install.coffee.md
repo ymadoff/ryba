@@ -8,6 +8,7 @@ with Hadoop clusters.
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/iptables'
+    module.exports.push require '../lib/hconfigure'
 
     module.exports.push (ctx) ->
       require('masson/core/iptables').configure ctx
@@ -118,27 +119,27 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Knox # Configure', handler: (ctx, next) ->
       {knox_conf_dir, gateway_site} = ctx.config.knox
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{knox_conf_dir}/gateway-site.xml"
         properties: gateway_site
         merge: true
-      , next
+      .then next
 
     module.exports.push name: 'Knox # Topology', handler: (ctx, next) ->
       {nameservice} = ctx.config.ryba
       {knox_conf_dir, gateway_site} = ctx.config.knox
       console.log "TODO: topology (disabled for now)"
       return next null, false
-      ctx.remove
+      ctx
+      .remove
         destination: "#{knox_conf_dir}/topologies/sandbox.xml"
         not_if: nameservice is 'sandbox'
-      , (err, removed) ->
-        return next err if err
-        ctx.hconfigure
-          destination: "#{knox_conf_dir}/topologies/#{nameservice}.xml"
-          properties: topology
-          merge: true
-        , next
+      .hconfigure
+        destination: "#{knox_conf_dir}/topologies/#{nameservice}.xml"
+        properties: topology
+        merge: true
+      .then next
 
 
 

@@ -7,6 +7,7 @@
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push 'ryba/hbase'
     module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
     module.exports.push require '../../lib/write_jaas'
 
@@ -105,7 +106,8 @@ RegionServer, and HBase client host machines.
     module.exports.push name: 'HBase RegionServer # Configure', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
       mode = if ctx.has_module 'ryba/hbase/client' then 0o0644 else 0o0600
-      ctx.hconfigure
+      ctx
+      .hconfigure
         destination: "#{hbase.conf_dir}/hbase-site.xml"
         default: "#{__dirname}/../../resources/hbase/hbase-site.xml"
         local_default: true
@@ -115,7 +117,7 @@ RegionServer, and HBase client host machines.
         gid: hbase.group.name
         mode: mode # See slide 33 from [Operator's Guide][secop]
         backup: true
-      , next
+      .then next
 
 ## Opts
 
