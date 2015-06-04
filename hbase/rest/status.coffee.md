@@ -14,7 +14,7 @@ Check if the Rest is running. The process ID is located by default inside
         cmd: "service hbase-rest status"
         code_skipped: 3
         if_exists: '/etc/init.d/hbase-rest'
-      , next
+      .then next
 
 
 

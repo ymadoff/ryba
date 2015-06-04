@@ -21,22 +21,22 @@ su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop
         srv_name: 'hbase-regionserver'
         action: 'stop'
         if_exists: '/etc/init.d/hbase-regionserver'
-      .then (err, stoped) ->
-        return next null, stoped unless err
-        ctx
-        .execute
-          cmd: 'service hbase-regionserver force-stop'
-        .then next
+        if: ctx.retry is 0
+      .execute
+        cmd: 'service hbase-regionserver force-stop'
+        if: ctx.retry > 0
+      .then next
 
 ## Stop Clean Logs
 
     module.exports.push name: 'HBase RegionServer # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       {hbase, clean_logs} = ctx.config.ryba
       return next() unless clean_logs
-      ctx.execute [
+      ctx
+      .execute
         cmd: "rm #{hbase.log_dir}/*-regionserver-*"
         code_skipped: 1
-      ,
+      .execute
         cmd: "rm #{hbase.log_dir}/gc.log-*"
         code_skipped: 1
-      ], next
+      .then next

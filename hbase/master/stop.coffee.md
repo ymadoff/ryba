@@ -16,26 +16,27 @@ su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop
 ```
 
     module.exports.push name: 'HBase Master # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
-      ctx.service
+      ctx
+      .service
         srv_name: 'hbase-master'
         action: 'stop'
         if_exists: '/etc/init.d/hbase-master'
-      .then (err, stoped) ->
-        return next null, stoped unless err
-        ctx
-        .execute
-          cmd: 'service hbase-master force-stop'
-        .then next
+        if: ctx.retry is 0
+      .execute
+        cmd: 'service hbase-master force-stop'
+        if_exists: '/etc/init.d/hbase-master'
+        if: ctx.retry > 0
+      .then next
 
 ## Stop Clean Logs
 
     module.exports.push name: 'HBase Master # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       {hbase, clean_logs} = ctx.config.ryba
       return next() unless clean_logs
-      ctx.execute [
+      ctx.execute
         cmd: "rm #{hbase.log_dir}/*-master-*"
         code_skipped: 1
-      ,
+      .execute
         cmd: "rm #{hbase.log_dir}/gc.log-*"
         code_skipped: 1
-      ], next
+      .then next

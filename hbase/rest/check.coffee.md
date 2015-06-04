@@ -41,7 +41,7 @@
           data = JSON.parse(stdout)
         catch e then return next Error "Invalid Command Output: #{JSON.stringify stdout}"
         return next Error "Invalid ROW Key: #{JSON.stringify stdout}" unless decode(data?.Row[0]?.key) is 'my_row_rest'
-        next err, executed
+      .then next
 
 ## Module Dependencies
 

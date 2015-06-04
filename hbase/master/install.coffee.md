@@ -31,7 +31,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.master.info.port'], protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Service
 
@@ -65,7 +65,7 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
               match: /^export HBASE_HOME=.*$/m # HDP default is "/usr/lib/hbase"
               replace: "export HBASE_HOME=/usr/hdp/current/hbase-client # RYBA FIX"
             ]
-      , next
+      .then next
 
 ## Configure
 
@@ -102,7 +102,7 @@ Environment passed to the Master before it starts.
         replace: "export HBASE_MASTER_OPTS=\"#{hbase.master_opts} ${HBASE_MASTER_OPTS}\" # RYBA CONF \"ryba.hbase.master_opts\", DONT OVERWRITE"
         before: /^export HBASE_MASTER_OPTS=".*"$/m
         backup: true
-      , next
+      .then next
 
     module.exports.push 'ryba/hadoop/hdfs_nn/wait'
 
@@ -112,10 +112,7 @@ Environment passed to the Master before it starts.
         return next err if err
         dirs = hbase.site['hbase.bulkload.staging.dir'].split '/'
         return next err "Invalid property \"hbase.bulkload.staging.dir\"" unless dirs.length > 2 and path.join('/', dirs[0], '/', dirs[1]) is '/apps'
-        ctx.log "Create /apps/hbase"
-        modified = false
-        each(dirs.slice 2)
-        .on 'item', (dir, index, next) ->
+        for dir, index in dirs.slice 2
           dir = dirs.slice(0, 3 + index).join '/'
           cmd = """
           if hdfs dfs -ls #{dir} &>/dev/null; then exit 2; fi
@@ -126,11 +123,24 @@ Environment passed to the Master before it starts.
           ctx.execute
             cmd: mkcmd.hdfs ctx, cmd
             code_skipped: 2
-          , (err, executed, stdout) ->
-            modified = true if executed
-            next err
-        .on 'both', (err) ->
-          next err, modified
+        ctx.then next
+        # each(dirs.slice 2)
+        # .on 'item', (dir, index, next) ->
+        #   dir = dirs.slice(0, 3 + index).join '/'
+        #   cmd = """
+        #   if hdfs dfs -ls #{dir} &>/dev/null; then exit 2; fi
+        #   hdfs dfs -mkdir #{dir}
+        #   hdfs dfs -chown #{hbase.user.name} #{dir}
+        #   """
+        #   cmd += "\nhdfs dfs -chmod 711 #{dir}"  if 3 + index is dirs.length
+        #   ctx.execute
+        #     cmd: mkcmd.hdfs ctx, cmd
+        #     code_skipped: 2
+        #   , (err, executed, stdout) ->
+        #     modified = true if executed
+        #     next err
+        # .on 'both', (err) ->
+        #   next err, modified
 
 ## Zookeeper JAAS
 
@@ -149,7 +159,7 @@ Environment file is enriched by "ryba/hbase" # HBase # Env".
         uid: hbase.user.name
         gid: hbase.group.name
         mode: 0o700
-      , next
+      .then next
 
 https://blogs.apache.org/hbase/entry/hbase_cell_security
 https://hbase.apache.org/book/security.html
@@ -157,7 +167,7 @@ https://hbase.apache.org/book/security.html
     module.exports.push name: 'HBase Master # Kerberos', handler: (ctx, next) ->
       {hadoop_group, hbase, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc [
+      ctx.krb5_addprinc
         principal: hbase.site['hbase.master.kerberos.principal'].replace '_HOST', ctx.config.host
         randkey: true
         keytab: hbase.site['hbase.master.keytab.file']
@@ -166,7 +176,7 @@ https://hbase.apache.org/book/security.html
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      ], next
+      .then next
 
 ## Metrics
 
@@ -181,7 +191,7 @@ Enable stats collection in Ganglia.
         destination: "#{hbase.conf_dir}/hadoop-metrics.properties"
         match: 'TODO-GANGLIA-SERVER'
         replace: collector
-      , next
+      .then next
 
     module.exports.push name: 'HBase Master # Kerberos Admin', handler: (ctx, next) ->
       {hbase, realm} = ctx.config.ryba
@@ -192,7 +202,7 @@ Enable stats collection in Ganglia.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
 
 ## SPNEGO
 
@@ -203,10 +213,9 @@ principal.
       {hbase} = ctx.config.ryba
       ctx.execute
         cmd: "su -l #{hbase.user.name} -c 'test -r /etc/security/keytabs/spnego.service.keytab'"
-      , next
+      .then next
 
 # Module dependencies
 
-    each = require 'each'
     path = require 'path'
     mkcmd = require '../../lib/mkcmd'

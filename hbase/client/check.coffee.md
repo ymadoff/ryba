@@ -29,8 +29,8 @@ scanning the table.
           not_if_exec: unless force_check then mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"scan 'ryba', {COLUMNS => '#{shortname}'}\" | egrep '[0-9]+ row'"
         , (err, executed, stdout) ->
           isRowCreated = RegExp("column=#{shortname}:my_column, timestamp=\\d+, value=10").test stdout
-          return next Error 'Invalid command output' if executed and not isRowCreated
-          next err, executed
+          throw Error 'Invalid command output' if executed and not isRowCreated
+        .then next
 
     module.exports.push name: 'HBase Client # Check MapReduce', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
       ctx.execute
@@ -38,8 +38,7 @@ scanning the table.
           echo -e '1,toto\\n2,tata\\n3,titi\\n4,tutu' | hdfs dfs -put -f - /user/ryba/test_import.csv
           hbase org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.separator=, -Dimporttsv.columns=HBASE_ROW_KEY,family1:value ryba /user/ryba/test_import.csv
           """
-      , (err, executed, stdout) ->
-        next err, executed
+      .then next
 
     module.exports.push name: 'HBase Client # Check Splits', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
       hbase_ctxs = ctx.contexts 'ryba/hbase/master', require('../master').configure
@@ -56,8 +55,8 @@ scanning the table.
         count = 0
         for line in lines
           count++ if /^ test_splits,/.test line
-        return next Error 'Invalid Splits Count' unless count is 4
-        next null, executed
+        throw Error 'Invalid Splits Count' unless count is 4
+      .then next
 
       # Note: inspiration for when namespace are functional
       # cmd = mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"list_namespace_tables 'ryba'\" | egrep '[0-9]+ row'"

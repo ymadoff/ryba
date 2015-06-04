@@ -21,4 +21,4 @@ su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf star
         srv_name: 'hbase-regionserver'
         action: 'start'
         if_exists: '/etc/init.d/hbase-regionserver'
-      , next
+      .then next

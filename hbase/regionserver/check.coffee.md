@@ -17,7 +17,7 @@ is added membership to the group hadoop to gain read access.
       {core_site, hbase} = ctx.config.ryba
       ctx.execute
         cmd: "su -l #{hbase.user.name} -c 'test -r #{core_site['hadoop.http.authentication.kerberos.keytab']}'"
-      , next
+      .then next
 
 ## Check HTTP JMX
 
@@ -31,7 +31,7 @@ is added membership to the group hadoop to gain read access.
         host=`curl -s -k --negotiate -u : #{url} | grep tag.Hostname | sed 's/^.*:.*"\\(.*\\)".*$/\\1/g'`
         if [ "$host" != '#{ctx.config.host}' ] ; then exit 1; fi
         """
-      , next
+      .then next
 
 ## Shell
 
@@ -39,6 +39,8 @@ Create a "ryba" namespace and set full permission to the "ryba" user. This
 namespace is used by other modules as a testing environment.
 
 Namespace and permissions are implemented and illustrated in [HBASE-8409].
+
+TODO: move to install
 
     module.exports.push name: 'HBase RegionServer # Check Shell', timeout:-1, label_true: 'CHECKED', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba

@@ -20,17 +20,17 @@ su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop
         srv_name: 'hbase-rest'
         action: 'stop'
         if_exists: '/etc/init.d/hbase-rest'
-      , next
+      .then next
 
 ## Stop Clean Logs
 
     module.exports.push name: 'HBase Rest # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       {hbase, clean_logs} = ctx.config.ryba
       return next() unless clean_logs
-      ctx.execute [
+      ctx.execute
         cmd: "rm #{hbase.log_dir}/*-rest-*"
         code_skipped: 1
-      ,
+      .execute
         cmd: "rm #{hbase.log_dir}/gc.log-*"
         code_skipped: 1
-      ], next
+      .then next

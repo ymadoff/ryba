@@ -25,7 +25,7 @@ RegionServer, and HBase client host machines.
         uid: hbase.user.name
         gid: hbase.group.name
         mode: 0o644
-      , next
+      .then next
 
 ## Configure
 

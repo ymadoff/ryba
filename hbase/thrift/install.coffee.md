@@ -33,7 +33,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.rest.info.port'], protocol: 'tcp', state: 'NEW', comment: "HMaster Thrift Info Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ###
 DONE: Dependecies for thrift which are Autoconf - Automake - Bison

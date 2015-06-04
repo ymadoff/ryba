@@ -19,5 +19,5 @@ su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf star
       ctx.service_start
         name: 'hbase-rest'
         if_exists: '/etc/init.d/hbase-rest'
-      , next
+      .then next
 

@@ -13,7 +13,6 @@ inside "/var/run/hbase/hbase-hbase-master.pid".
     module.exports.push name: 'HBase Master # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
       ctx.execute
         cmd: "service hbase-master status"
-        # code_skipped: [1, 3]
         code_skipped: 3
         if_exists: '/etc/init.d/hbase-master'
-      , next
+      .then next

@@ -34,7 +34,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.rest.info.port'], protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
     module.exports.push name: 'HBase Rest # Service', handler: (ctx, next) ->
       ctx.hdp_service
@@ -64,7 +64,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
               match: /^export HBASE_HOME=.*$/m # HDP default is "/var/lib/hive-hcatalog"
               replace: "export HBASE_HOME=/usr/hdp/current/hbase-client # RYBA FIX"
             ]
-      , next
+      .then next
 
 ## Kerberos
 
@@ -82,7 +82,7 @@ Create the Kerberos keytab for the service principal.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
 
 ## Configure
 
