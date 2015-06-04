@@ -1,6 +1,8 @@
 
 # ElasticSearch Stop
 
+This commands stops ElasticSearch service.
+
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 

@@ -1,6 +1,8 @@
 
 # ElasticSearch Start
 
+This commands starts Elastic Search using the default service command.
+
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 

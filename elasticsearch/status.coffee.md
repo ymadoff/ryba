@@ -1,6 +1,8 @@
 
 # ElasticSearch Status
 
+This commands checks the status of ElasticSearch (STARTED, STOPPED)
+
     module.exports = []
     module.exports.push 'masson/bootstrap/'
 

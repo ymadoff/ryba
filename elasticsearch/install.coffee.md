@@ -1,6 +1,10 @@
 
 # ElasticSearch Install
 
+Installs ElasticSearch on the specified hosts. It's divided into four main steps.
+The configuration of the Elastics Search Users and Group, the configuration of Kerberos, the installation
+of Elastics Search from rpm repositories and the configuration of Elastic Search environment
+
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/commons/java'
