@@ -41,6 +41,12 @@ Example:
       hive.site['hive.execution.engine'] ?= 'tez'
       hive.site['hive.tez.container.size'] ?= tez.tez_site['tez.am.resource.memory.mb']
       hive.site['hive.tez.java.opts'] ?= tez.tez_site['hive.tez.java.opts']
+      # Size per reducer. The default in Hive 0.14.0 and earlier is 1 GB. In
+      # Hive 0.14.0 and later the default is 256 MB.
+      # HDP set it to 64 MB which seems wrong
+      # Don't know if this default value should be hardcoded or estimated based
+      # on cluster capacity 
+      hive.site['hive.exec.reducers.bytes.per.reducer'] ?= '268435456'
 
       # Import HCatalog properties
       hcat_ctx = ctx.contexts('ryba/hive/hcatalog', require('../hcatalog').configure)[0]
