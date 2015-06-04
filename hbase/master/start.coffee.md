@@ -8,7 +8,7 @@
 
 ## Start
 
-Start the RegionServer server. You can also start the server manually with one
+Start the HBase Master server. You can also start the server manually with one
 of the following two commands:
 
 ```

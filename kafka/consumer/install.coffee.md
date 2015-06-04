@@ -3,13 +3,13 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'ryba/kafka/lib/commons'
+    module.exports.push 'ryba/kafka'
     module.exports.push require('./index').configure
 
 ## Configure
 
-Update the file "server.properties" with the properties defined by the
-"ryba.kafka.server" configuration.
+Update the file "consumer.properties" with the properties defined by the
+"ryba.kafka.consumer" configuration.
 
     module.exports.push name: 'Kafka Consumer # Configure', handler: (ctx, next) ->
       {kafka} = ctx.config.ryba
@@ -21,13 +21,8 @@ Update the file "server.properties" with the properties defined by the
           append: true
         backup: true
         eof: true
-      , next
+      .then next
 
 ## Dependencies
 
     quote = require 'regexp-quote'
-
-
-
-
-

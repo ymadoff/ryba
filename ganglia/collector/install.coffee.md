@@ -52,14 +52,14 @@ rrdcached:x:493:
 
 ## IPTables
 
-| Service          | Port  | Proto | Info                     |
-|------------------|-------|-------|--------------------------|
-| ganglia-gmetad   | 8649 | http   | Ganglia Collector server |
-| hdp-gmetad   | 8660 |   | Ganglia Collector HDPSlaves |
-| hdp-gmetad   | 8661 |   | Ganglia Collector HDPNameNode |
-| hdp-gmetad   | 8663 |   | Ganglia Collector HDPHBaseMaster |
-| hdp-gmetad   | 8664 |   | Ganglia Collector HDPResourceManager |
-| hdp-gmetad   | 8666 |   | Ganglia Collector HDPHistoryServer |
+| Service        | Port | Proto | Info                                 |
+|----------------|------|-------|--------------------------------------|
+| ganglia-gmetad | 8649 | http  | Ganglia Collector server             |
+| hdp-gmetad     | 8660 |       | Ganglia Collector HDPSlaves          |
+| hdp-gmetad     | 8661 |       | Ganglia Collector HDPNameNode        |
+| hdp-gmetad     | 8663 |       | Ganglia Collector HDPHBaseMaster     |
+| hdp-gmetad     | 8664 |       | Ganglia Collector HDPResourceManager |
+| hdp-gmetad     | 8666 |       | Ganglia Collector HDPHistoryServer   |
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).

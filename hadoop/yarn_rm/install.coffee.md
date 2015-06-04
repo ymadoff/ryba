@@ -11,22 +11,22 @@
 
 ## IPTables
 
-| Service    | Port | Proto  | Parameter                  |
-|------------|------|--------|----------------------------|
+| Service         | Port  | Proto  | Parameter                                     |
+|-----------------|-------|--------|-----------------------------------------------|
 | resourcemanager | 8025  | tcp    | yarn.resourcemanager.resource-tracker.address | x
 | resourcemanager | 8050  | tcp    | yarn.resourcemanager.address                  | x
 | scheduler       | 8030  | tcp    | yarn.resourcemanager.scheduler.address        | x
 | resourcemanager | 8088  | http   | yarn.resourcemanager.webapp.address           | x
-| resourcemanager | 8090  | https  | yarn.resourcemanager.webapp.https.address     | 
+| resourcemanager | 8090  | https  | yarn.resourcemanager.webapp.https.address     |
 | resourcemanager | 8141  | tcp    | yarn.resourcemanager.admin.address            | x
 
-| Service    | Port | Proto  | Parameter                  |
-|------------|------|--------|----------------------------|
-| timeline | 10200 | tcp    | yarn.timeline-service.address                 | 
-| timeline | 8188  | tcp    | yarn.timeline-service.webapp.address          | x
-| timeline | 8190  | tcp    | yarn.timeline-service.webapp.https.address    | x
+| Service  | Port  | Proto  | Parameter                                  |
+|----------|-------|--------|--------------------------------------------|
+| timeline | 10200 | tcp    | yarn.timeline-service.address              |
+| timeline | 8188  | tcp    | yarn.timeline-service.webapp.address       | x
+| timeline | 8190  | tcp    | yarn.timeline-service.webapp.https.address | x
 
-IPTables rules are only inserted if the parameter "iptables.action" is set to 
+IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
     module.exports.push name: 'YARN RM # IPTables', handler: (ctx, next) ->
@@ -63,7 +63,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
     module.exports.push name: 'YARN RM # Kerberos', handler: (ctx, next) ->
       {yarn, hadoop_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc 
+      ctx.krb5_addprinc
         principal: yarn.site['yarn.resourcemanager.principal'].replace '_HOST', ctx.config.host
         randkey: true
         keytab: yarn.site['yarn.resourcemanager.keytab']
@@ -110,7 +110,7 @@ inside "/etc/init.d" and activate it on startup.
           replace: "PIDFILE=\"${YARN_PID_DIR}/yarn-$YARN_IDENT_STRING-resourcemanager.pid\" # RYBA FIX, DONT OVERWRITE"
         ]
         etc_default:
-          'hadoop-yarn-resourcemanager': 
+          'hadoop-yarn-resourcemanager':
             write: [
               match: /^export YARN_PID_DIR=.*$/m # HDP default is "/var/run/hadoop-hdfs"
               replace: "export YARN_PID_DIR=#{yarn.pid_dir} # RYBA, DONT OVERWRITE"
@@ -193,10 +193,10 @@ ResourceCalculator class name is expected.
 
     mkcmd = require '../../lib/mkcmd'
 
-## Todo: WebAppProxy.   
+## Todo: WebAppProxy.
 
 It semms like it is run as part of rm by default and could also be started
-separately on an edge node.   
+separately on an edge node.
 
 *   yarn.web-proxy.address    WebAppProxy                                   host:port for proxy to AM web apps. host:port if this is the same as yarn.resourcemanager.webapp.address or it is not defined then the ResourceManager will run the proxy otherwise a standalone proxy server will need to be launched.
 *   yarn.web-proxy.keytab     /etc/security/keytabs/web-app.service.keytab  Kerberos keytab file for the WebAppProxy.
@@ -204,5 +204,3 @@ separately on an edge node.
 
 
 [capacity]: http://hadoop.apache.org/docs/r2.5.0/hadoop-yarn/hadoop-yarn-site/CapacityScheduler.html
-
-

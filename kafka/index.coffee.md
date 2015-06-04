@@ -1,7 +1,7 @@
 
 # Kafka Commons
 
-Commons configuration and deployment actions shared between the server, producer
+Commons configuration and deployment actions shared between broker, producer
 and consumer Kafka components.
 
     module.exports = []
@@ -9,7 +9,7 @@ and consumer Kafka components.
 ## Configure
 
     module.exports.push module.exports.configure = (ctx) ->
-      require('../../hadoop/core').configure ctx
+      require('../hadoop/core').configure ctx
       kafka = ctx.config.ryba.kafka ?= {}
       # Layout
       kafka.conf_dir ?= '/etc/kafka/conf'
@@ -56,4 +56,4 @@ Install the Kafka package.
     module.exports.push name: 'Kafka # Service', handler: (ctx, next) ->
       ctx.service
         name: 'kafka'
-      , next
+      .then next
