@@ -1,6 +1,8 @@
 
 # Falcon Check
 
+This commands checks if falcons works as required.
+
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/hdfs_client'
