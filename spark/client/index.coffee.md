@@ -9,22 +9,23 @@
       require('../../lib/base').configure ctx
       require('../../../ryba/hadoop/core').configure ctx
       require("../../../ryba/hive/hcatalog").configure ctx
+
+      {core_site, hadoop_conf_dir} = ctx.config.ryba
       {ryba} = ctx.config
       spark = ryba.spark ?= {}
-      spark.user = {}
-      spark.user.name = "spark"
-      spark.client_dir = "/usr/hdp/current/spark-client/"
-      spark.conf_dir = "/usr/hdp/current/spark-client/conf"
+      spark.user ?= {}
+      spark.user.name ?= "spark"
+      spark.client_dir ?= "/usr/hdp/current/spark-client/"
+      spark.conf_dir ?= "/usr/hdp/current/spark-client/conf"
+
       history_server = spark.history_server ?= {}
+      #not sure about the port of the webui from the configuration page these port and address is 
+      # the one of  yarn history server, but ambari and hortonworks does set these to a different 
+      #adresse and port let configuration as hortonworks documentation
       hs = ctx.hosts_with_module "ryba/spark/history_server"
-      throw new Error("Spark History UI can only set to oon one host") if hs.lenght>1
-      #history_server.fqdn = "#{hs[0]}"
-      history_server.fqdn = "master2.ryba"
-      history_server.port = "8190"
-      spark.ui ="18080"
-      history_server.isKerberos = "true"
-      # require('./yarn').configure ctx
-      {core_site, hadoop_conf_dir} = ctx.config.ryba
+      throw new Error("Spark History UI can only installed on one host") if hs.lenght>1
+      history_server.fqdn = "#{hs[0]}"
+      history_server.port = "18080"
       ctx.config.ryba.ssl ?= {}
       ssl_client = ctx.config.ryba.ssl_client ?= {}
       ssl_server = ctx.config.ryba.ssl_server ?= {}
@@ -47,9 +48,10 @@
 
 
       
-      
+    #does set the check during install because requires too much power from the dev environment
     module.exports.push commands: 'install', modules: [
       'ryba/spark/client/install'
+
       #'ryba/spark/client/check'
     ]
     module.exports.push commands: 'check', modules: 'ryba/spark/client/check'

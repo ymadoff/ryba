@@ -15,7 +15,7 @@ The driver program manages the executors task.
 
 ## Validate Spark installation with Pi-example in yarn-cluster mode
 The yarn cluster mode makes the driver part of the spark submitted program to run inside yarn.
-In this mode the driver is the yarn application master.
+In this mode the driver is the yarn application master (running inside yarn)
 
 
     module.exports.push name: 'Spark Client # Check', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
@@ -47,36 +47,35 @@ In this mode the driver is the yarn application master.
 
 ## Validate Spark installation with Pi-example in yarn-client mode
 The yarn client mode makes the driver part of program to run on the local machine.
-The local machine the one from which the job has been submitted ( called the client ).
-In this mode the driver is the spark master.
+The local machine is the one from which the job has been submitted ( called the client ).
+In this mode the driver is the spark master running outside yarn
 
-
-    #module.exports.push name: 'Spark Client # Check', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
-      ##{spark} = ctx.config.ryba
-      #applicationId = ""
-      #do_spark_pi_example = ->
-        #ctx
-            #.child().execute
-                  #cmd: mkcmd.test ctx, """
-                        ##{spark.client_dir}bin/spark-submit --class org.apache.spark.examples.SparkPi --master yarn-client --num-executors 2 --driver-memory 512m --executor-memory 512m --executor-cores 1 #{spark.client_dir}lib/spark-examples*.jar 10
-                        #"""
-          #, (err, executed, stdout, stderr) ->
-            #return err if err
-            #tracking_url_result = stdout.trim().split("/") if executed
-            #applicationId =tracking_url_result[tracking_url_result.length - 2]
-            #console.log "application id #{applicationId}"
-            #ctx
-                #.child().execute
-                      #cmd: mkcmd.test ctx, """
-                            #yarn logs -applicationId #{applicationId} 2>&1 /dev/null | grep -m 1 "Pi is roughly"
-                            #"""
-              #, (err, executed, stdout, stderr) ->
-                #return next err if err
-                #log_result = stdout.split(" ")
-                #pi = parseFloat(log_result[length - 1])
-                #return next true unless pi>3.00 and pi<3.20
-                #return next false
-      #do_spark_pi_example()
+    module.exports.push name: 'Spark Client # Check', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
+      {spark} = ctx.config.ryba
+      applicationId = ""
+      do_spark_pi_example = ->
+        ctx
+            .child().execute
+                  cmd: mkcmd.test ctx, """
+                        #{spark.client_dir}bin/spark-submit --class org.apache.spark.examples.SparkPi --master yarn-client --num-executors 2 --driver-memory 512m --executor-memory 512m --executor-cores 1 #{spark.client_dir}lib/spark-examples*.jar 10
+                        """
+          , (err, executed, stdout, stderr) ->
+            return err if err
+            tracking_url_result = stdout.trim().split("/") if executed
+            applicationId =tracking_url_result[tracking_url_result.length - 2]
+            console.log "application id #{applicationId}"
+            ctx
+                .child().execute
+                      cmd: mkcmd.test ctx, """
+                            yarn logs -applicationId #{applicationId} 2>&1 /dev/null | grep -m 1 "Pi is roughly"
+                            """
+              , (err, executed, stdout, stderr) ->
+                return next err if err
+                log_result = stdout.split(" ")
+                pi = parseFloat(log_result[length - 1])
+                return next true unless pi>3.00 and pi<3.20
+                return next false
+      do_spark_pi_example()
 
 
     mkcmd = require '../../lib/mkcmd'

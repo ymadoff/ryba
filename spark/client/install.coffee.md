@@ -1,7 +1,7 @@
 # Apache Spark Install Cluster Mode
 
 [Spark Installation][Spark-install] following hortonworks guidelines to install Spark
-Needing HDFS and YARN as prerequeresite
+Requires HDFS and Yarn. Install spark in Yarn cluster mode
   
 
     fs = require 'fs'
@@ -9,7 +9,6 @@ Needing HDFS and YARN as prerequeresite
 
     
     module.exports = []
-
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
     module.exports.push require '../../lib/hdp_select'
@@ -41,6 +40,8 @@ Needing HDFS and YARN as prerequeresite
       , next
 
 ## Spark SSL
+Installs SSL certificates for spark. At the moment of writing this lines, Spark supports SSL
+Only in akka mode and fs mode ( file sharing and date streaming). The web ui does not support SSL
 
     module.exports.push name: 'Spark SSL # JKS stores', retry: 0, handler: (ctx, next) ->
      {ssl, ssl_server, ssl_client, spark} = ctx.config.ryba
@@ -99,8 +100,10 @@ Needing HDFS and YARN as prerequeresite
 
 
 
-## Spark Configure Layout
-
+## Spark Configuration files
+Configure en environment file /etc/spark/conf/spark-env.sh and /etc/spark/conf/spark-defaults.conf
+Set the version of the hadoop cluster to the latest one. Yarn cluster mode supports starting to 2.2.2-4
+Set [Spark configuration][spark-conf] variables
 
     module.exports.push name: 'Spark # Configure',  handler: (ctx, next) ->
       {ryba} = ctx.config
@@ -169,18 +172,9 @@ Needing HDFS and YARN as prerequeresite
           return  err if err
           do_spark_defaults()
       do_spark_defaults = -> 
-        fs =spark.ssl.fs
         ctx.write
           destination: "#{spark.conf_dir}/spark-defaults.conf"
           write: [
-            match: /^spark\.yarn\.historyServer\.address.*$/m
-            replace: "spark.yarn.historyServer.address #{spark.history_server.fqdn}\:#{spark.history_server.port}" # Modified by RYBA Spark Client Install
-            append: true
-          ,
-            match: /^spark\.history\.ui\.port.*$/mg
-            replace: "spark.history.ui.port #{spark.history_server.port}"# Modified by RYBA Spark Client Install
-            append: true
-          ,
             match: /^spark\.driver\.extraJavaOptions*$/mg
             replace: "spark.driver.extraJavaOptions -Dhdp.version=#{hdp_select_version}"# Modified by RYBA Spark Client Install
             append: true
@@ -234,7 +228,6 @@ Needing HDFS and YARN as prerequeresite
               match: /^spark\.ssl\.trustStorePassword.*$/m
               replace: "spark.ssl.trustStorePassword #{fs['spark.ssl.trustStorePassword']}"# Modified by RYBA Spark History Server Install
               append:true
-
             , 
               match: /^spark\.ssl\.protocol.*$/m
               replace: "spark.ssl.protocol #{fs['spark.ssl.protocol']}"# Modified by RYBA Spark History Server Install
@@ -251,71 +244,37 @@ Needing HDFS and YARN as prerequeresite
 
 ## Spark History Server Configure
 
-    module.exports.push name: 'Spark History Server # Configure',  handler: (ctx, next) ->
+We set by default the address and port of the spark web ui server
+The web ui can not be started with SSL enabled
+
+    module.exports.push name: 'Spark Client HS # Configure',  handler: (ctx, next) ->
       require("../history_server/index").configure ctx
-      {ryba} = ctx.config
-      {hive,spark,hadoop_group,hadoop_conf_dir} = ryba
-      hdp_select_version = "latest"
-      do_get_hdp_version = ->
-        ctx
-          .child().execute
-                cmd:  """
-                      hdp-select versions | tail -1
-                      """
-        , (err, executed, stdout, stderr) ->
-          return callback err if err
-          hdp_select_version = stdout.trim() if executed
-          do_spark_defaults()
-      do_spark_defaults_download = ->
-        ctx.download
-          destination: "#{spark.conf_dir}/spark-defaults.conf"
-          source: "#{__dirname}/../../resources/spark/spark-defaults.conf"
-          uid: spark.user.name
-          gid: hadoop_group.name
-          mode: 0o755
-          backup: true
-        , (err, uploaded) ->
-          return  err if err
-          do_spark_defaults()
-      do_spark_defaults = -> 
-        ctx.write
-          destination: "#{spark.conf_dir}/spark-defaults.conf"
-          write: [
-            match: /^spark\.yarn\.historyServer\.address.*$/m
-            replace: "spark.yarn.historyServer.address #{spark.history_server.fqdn}\:#{spark.history_server.port}" # Modified by RYBA Spark History Server Install"
-            append: true
-          ,
-            match: /^spark\.history\.ui\.port.*$/m
-            replace: "spark.history.ui.port #{spark.ui}"# Modified by RYBA Spark History Server Install
-            math: true
-          ,
-            match: /^spark\.history\.kerberos\.enabled.*$/m
-            replace: "spark.history.kerberos.enabled #{spark.history_server.isKerberos}"# Modified by RYBA Spark History Server Install
-            append: true
-          ,
-            match: /^spark\.history\.kerberos\.principal.*$/m
-            replace: "spark.history.kerberos.principal spark"# Modified by RYBA Spark History Server Install
-            append: true
-          ,
-            match: /^spark\.history\.kerberos\.keytab.*$/m
-            replace: "spark.history.kerberos.keytab /etc/security/keytabs/spark.keytab"# Modified by RYBA Spark History Server Install
-            append:true
-          ,
-            match: /^spark\.eventLog\.enabled.*$/m
-            replace: "spark.eventLog.enabled true"# Modified by RYBA Spark History Server Install
-            append:true
-          ,
-          match: /^spark\.eventLog\.dir.*$/m
-          replace: "spark.eventLog.dir hdfs:///tmp/spark-events"# Modified by RYBA Spark History Server Install
-          append:true
-          
-          
-                    ]
-          
-          backup: true
-        , (err, executed) ->
-          next err, true
-      do_get_hdp_version()
+      {spark} = ctx.config.ryba  
+      ctx.write
+        destination: "#{spark.conf_dir}/spark-defaults.conf"
+        write: [
+          match: /^spark\.yarn\.historyServer\.address.*$/m
+          replace: "spark.yarn.historyServer.address #{spark.history_server.fqdn}\:#{spark.history_server.port}" 
+          append: true
+        ,
+          match: /^spark\.history\.ui\.port.*$/mg
+          replace: "spark.history.ui.port #{spark.history_server.port}"
+          append: true
+        
+        #thos properties enables the user to see the log after the job has finished 
+        #,
+            #match: /^spark\.eventLog\.enabled.*$/m
+            #replace: "spark.eventLog.enabled true"
+            #append:true
+          #,
+          #match: /^spark\.eventLog\.dir.*$/m
+          #replace: "spark.eventLog.dir hdfs:///tmp/spark-events"
+          #append:true          
+        ]
+        
+        backup: true
+      , (err, executed) ->
+        next err, true
 
 
 ## Spark Files Permissions
@@ -333,10 +292,6 @@ Needing HDFS and YARN as prerequeresite
 
     mkcmd = require '../../lib/mkcmd'
     
-
-
-
-      
-      
+[spark-conf]:https://spark.apache.org/docs/latest/configuration.html
     
 
