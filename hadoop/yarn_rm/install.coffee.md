@@ -137,6 +137,7 @@ inside "/etc/init.d" and activate it on startup.
         match: /^.*# RYBA CONF "ryba.yarn.rm_opts", DONT OVERWRITE/mg
         replace: "YARN_RESOURCEMANAGER_OPTS=\"${YARN_RESOURCEMANAGER_OPTS} #{rm_opts}\" # RYBA CONF \"ryba.yarn.rm_opts\", DONT OVERWRITE"
         append: true
+        backup: true
       .then next
 
 
