@@ -40,19 +40,21 @@ The ambari server must be set in the configuration file.
       #   backup: true
       #   if: false
       # , next
+
       ctx.write
         destination: "#{ambari_agent.conf_dir}/ambari-agent.ini"
         write: [
-          match: /^hostname = (.*)/m
-          replace: "hostname = #{ambari_agent.config.server['hostname']}"
+          match: /^hostname=(.*)/m
+          replace: "hostname=#{ambari_agent.config.server['hostname']}"
         ,
-          match: /^url_port = (.*)/m
-          replace: "url_port = #{ambari_agent.config.server['url_port']}"
+          match: /^url_port=(.*)/m
+          replace: "url_port=#{ambari_agent.config.server['url_port']}"
         ,
-          match: /^secured_url_port = (.*)/m
-          replace: "secured_url_port = #{ambari_agent.config.server['secured_url_port']}"
+          match: /^secured_url_port=(.*)/m
+          replace: "secured_url_port=#{ambari_agent.config.server['secured_url_port']}"
         ]
       , next
+
  
     module.exports.push name: 'Ambari Agent # Startup', timeout: -1, handler: (ctx, next) ->
       ctx.service
