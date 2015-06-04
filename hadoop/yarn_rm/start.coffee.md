@@ -11,7 +11,7 @@
 Only apply with manual failaover and to the passive RM which must wait for the
 active RM to be started.
 
-    module.exports.push name: 'Yarn RM # Wait Active', label_true: 'STARTED', handler: (ctx, next) ->
+    module.exports.push name: 'Yarn RM # Wait Active', label_true: 'STARTED', timeout: -1, handler: (ctx, next) ->
       {yarn} = ctx.config.ryba
       return next() if yarn.site['yarn.resourcemanager.ha.automatic-failover.enabled'] is 'true'
       rm_ctxs = ctx.contexts modules: 'ryba/hadoop/yarn_rm', require('./index').configure
@@ -21,9 +21,8 @@ active RM to be started.
       .filter (rm_ctx) -> rm_ctx.config.host is yarn.active_rm_host
       .map (rm_ctx) -> rm_ctx.config.shortname
       ctx.waitForExecution
-        cmd: """
-        yarn rmadmin -getServiceState '#{active_rm_shortname}'
-        """
+        cmd: "yarn rmadmin -getServiceState '#{active_rm_shortname}'"
+        code_skipped: 255
       , next
 
 ## Start
