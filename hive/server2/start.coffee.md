@@ -15,7 +15,7 @@ Start the Hive Server2. You can also start the server manually with one of the
 following two commands:
 
 ```
-service hive-hcatalog-server start
+service hive-server2 start
 su -l hive -c 'nohup /usr/lib/hive/bin/hiveserver2 >/var/log/hive/hiveserver2.out 2>/var/log/hive/hiveserver2.log & echo $! >/var/run/hive/server2.pid'
 ```
 
