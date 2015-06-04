@@ -11,12 +11,12 @@
 
 Install the "hadoop-yarn" package.
 
-    module.exports.push name: 'YARN # Package', handler: (ctx, next) ->
+    module.exports.push name: 'YARN Client # Package', handler: (ctx, next) ->
       ctx.service
         name: 'hadoop-yarn'
-      , next
+      .then next
 
-    module.exports.push name: 'YARN # Users & Groups', handler: (ctx, next) ->
+    module.exports.push name: 'YARN Client # Users & Groups', handler: (ctx, next) ->
       return next() unless ctx.config.ryba.resourcemanager or ctx.config.ryba.nodemanager
       {yarn, hadoop_group} = ctx.config.ryba
       ctx.execute
@@ -25,7 +25,7 @@ Install the "hadoop-yarn" package.
         code_skipped: 9
       .then next
 
-    module.exports.push name: 'YARN # Install Common', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'YARN Client # Install Common', timeout: -1, handler: (ctx, next) ->
       ctx
       .service
         name: 'hadoop'
@@ -35,7 +35,7 @@ Install the "hadoop-yarn" package.
         name: 'hadoop-client'
       .then next
 
-    module.exports.push name: 'YARN # Directories', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'YARN Client # Directories', timeout: -1, handler: (ctx, next) ->
       {yarn, hadoop_group} = ctx.config.ryba
       pid_dir = yarn.pid_dir.replace '$USER', yarn.user.name
       ctx.mkdir
@@ -52,7 +52,7 @@ Install the "hadoop-yarn" package.
         parent: true
       .then next
 
-    module.exports.push name: 'YARN # Yarn OPTS', handler: (ctx, next) ->
+    module.exports.push name: 'YARN Client # Yarn OPTS', handler: (ctx, next) ->
       {java_home} = ctx.config.java
       {yarn, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
       ctx.render
@@ -77,11 +77,12 @@ Install the "hadoop-yarn" package.
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0755
+        backup: true
       .then next
 
 ## Configuration
 
-    module.exports.push name: 'YARN # Configuration', handler: (ctx, next) ->
+    module.exports.push name: 'YARN Client # Configuration', handler: (ctx, next) ->
       {hadoop_conf_dir, yarn} = ctx.config.ryba
       # properties = {}
       # for k, v of yarn.site

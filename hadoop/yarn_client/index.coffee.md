@@ -19,7 +19,7 @@ The URI resources are grouped into APIs based on the type of information returne
       {ryba} = ctx.config
       {static_host, realm} = ryba
       # Grab the host(s) for each roles
-      ryba.yarn.log_dir ?= '/var/log/hadoop-yarn'         # /etc/hadoop/conf/yarn-env.sh
+      ryba.yarn.log_dir ?= '/var/log/hadoop-yarn'
       ryba.yarn.pid_dir ?= '/var/run/hadoop-yarn'
       ryba.yarn.conf_dir ?= ryba.hadoop_conf_dir
       ryba.yarn.opts ?= ''
@@ -55,7 +55,7 @@ The URI resources are grouped into APIs based on the type of information returne
       for property in ts_properties
         ryba.yarn.site[property] ?= if ts_ctx then ts_ctx.config.ryba.yarn.site[property] else null
 
-## Configuration for High Availability
+## High Availability with Manual Failover
 
 Cloudera [High Availability Guide][cloudera_ha] provides a nice documentation
 about each configuration and where they should apply.
@@ -66,6 +66,7 @@ inside the configuration.
       rm_ctxs = ctx.contexts modules: 'ryba/hadoop/yarn_rm'
       rm_shortnames = for rm_ctx in rm_ctxs then rm_ctx.config.shortname
       is_ha = rm_ctxs.length > 1
+      ryba.yarn.site['yarn.resourcemanager.cluster-id'] ?= 'yarn_cluster_01'
       ryba.yarn.active_rm_host ?= if is_ha then rm_ctxs[0].config.host else null
       if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm', 'ryba/hadoop/yarn_client'
         ryba.yarn.site['yarn.resourcemanager.ha.enabled'] ?= if is_ha then 'true' else 'false'
@@ -86,6 +87,77 @@ inside the configuration.
           ryba.yarn.site["yarn.resourcemanager.webapp.https.address#{shortname}"] ?= "#{rm_ctx.config.host}:8090"
         if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
           ryba.yarn.site["yarn.resourcemanager.resource-tracker.address#{shortname}"] ?= "#{rm_ctx.config.host}:8025"
+
+## High Availability with optional automatic failover
+
+      ryba.yarn.site['yarn.resourcemanager.ha.automatic-failover.enabled'] ?= 'false'
+      ryba.yarn.site['yarn.resourcemanager.ha.automatic-failover.embedded'] ?= 'false'
+      # ryba.yarn.site['yarn.resourcemanager.cluster-id'] ?= 'yarn_cluster_01'
+
+## Work Preserving Recovery
+
+Work Preserving Recovery is a feature that enhances ResourceManager to
+keep functioning across restarts and also makes ResourceManager down-time
+invisible to end-users.
+
+[Phase1][YARN-556-pdf] covered by [YARN-128] allowed YARN to continue to
+function across RM restarts in a user transparent manner. [Phase2][YARN-556-pdf]
+covered by [YARN-556] refresh the dynamic container state of the cluster from
+the node managers (NMs) after RM restart such as restarting AM’s and killing
+containers is not required.
+
+Restart Recovery apply separately to both the ResourceManager and NodeManager.
+The functionnality is supported by [Cloudera][cloudera_wp] and [Hortonworks][hdp_wp].
+
+HDP companion files enable by default the recovery mode. Its implementation
+default to the ZooKeeper based state-store implementation. Unless specified,
+the root znode where the ResourceManager state is stored is inside "/rmstore".
+
+ZooKeeper is used in the context of restart recovering and high availability.
+
+About the 'root-node.acl', the [mailing list][ml_root_acl] mentions: For the
+exclusive create-delete access, the RMs use username:password where the username
+is yarn.resourcemanager.address and the password is a secure random number. One
+should use that config only when they are not happy with this implicit default
+mechanism.
+
+Here's an example:
+
+```
+RM1: yarncluster:shared-password:rwa,rm1:secret-password:cd
+RM2: yarncluster:shared-password:rwa,rm2:secret-password:cd
+```
+
+To remove the entry (not tested) when transitioning from HA to normal mode:
+```
+/usr/lib/zookeeper/bin/zkCli.sh -server master2.ryba:2181
+setAcl /rmstore/ZKRMStateRoot world:anyone:rwacd
+rmr /rmstore/ZKRMStateRoot
+```
+
+      if ctx.has_module 'ryba/hadoop/yarn_rm'
+        ryba.yarn.site['yarn.resourcemanager.recovery.enabled'] ?= 'true'
+        ryba.yarn.site['yarn.resourcemanager.store.class'] ?= 'org.apache.hadoop.yarn.server.resourcemanager.recovery.ZKRMStateStore'
+        zoo_ctxs = ctx.contexts modules: 'ryba/zookeeper/server', require('../../zookeeper/server').configure
+        quorum = for zoo_ctx in zoo_ctxs
+          "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.config['clientPort']}"
+        ryba.yarn.site['yarn.resourcemanager.zk-address'] ?= quorum.join ','
+        # https://zookeeper.apache.org/doc/r3.1.2/zookeeperProgrammers.html#sc_ZooKeeperAccessControl
+        # ACLs to be used for setting permissions on ZooKeeper znodes.
+        ryba.yarn.site['yarn.resourcemanager.zk-acl'] ?= 'sasl:rm:rwcda'
+        # About 'yarn.resourcemanager.zk-state-store.root-node.acl'
+        # See http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cdh_hag_rm_ha_config.html
+        # The ACLs used for the root node of the ZooKeeper state store. The ACLs
+        # set here should allow both ResourceManagers to read, write, and
+        # administer, with exclusive access to create and delete. If nothing is
+        # specified, the root node ACLs are automatically generated on the basis
+        # of the ACLs specified through yarn.resourcemanager.zk-acl. But that
+        # leaves a security hole in a secure setup. To configure automatic failover:
+        ryba.yarn.site['yarn.resourcemanager.zk-state-store.parent-path'] ?= '/rmstore'
+
+      if ctx.has_module 'ryba/hadoop/yarn_nm'
+        ryba.yarn.site['yarn.nodemanager.recovery.enabled'] ?= 'true'
+        ryba.yarn.site['yarn.nodemanager.recovery.dir'] ?= '/var/yarn/recovery-state'
 
 ## FIX Companion Files
 
@@ -108,4 +180,12 @@ values don't get pushed to the cluster.
       'ryba/hadoop/yarn_client/check'
     ]
 
-[cloudera_ha]: http://www.cloudera.com/content/cloudera/en/documentation/cdh5/v5-1-x/CDH5-High-Availability-Guide/cdh5hag_rm_ha_config.html
+[cloudera_ha]: http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cdh_hag_rm_ha_config.html
+[cloudera_wp]: http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/admin_ha_yarn_work_preserving_recovery.html
+[hdp_wp]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.4/bk_yarn_resource_mgt/content/ch_work-preserving_restart.html
+[YARN-128]: https://issues.apache.org/jira/browse/YARN-128
+[YARN-128-pdf] https://issues.apache.org/jira/secure/attachment/12552867/RMRestartPhase1.pdf
+[YARN-556]: https://issues.apache.org/jira/browse/YARN-556
+[YARN-556-pdf]: https://issues.apache.org/jira/secure/attachment/12599562/Work%20Preserving%20RM%20Restart.pdf
+
+

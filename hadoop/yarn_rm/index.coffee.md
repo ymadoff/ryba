@@ -14,58 +14,6 @@
       ryba.yarn.site['yarn.resourcemanager.principal'] ?= "rm/#{ryba.static_host}@#{ryba.realm}"
       ryba.yarn.site['yarn.resourcemanager.scheduler.class'] ?= 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
 
-## Configuration for Restart Recovery
-
-[ResourceManager Restart][restart] is a feature that enhances ResourceManager to
-keep functioning across restarts and also makes ResourceManager down-time
-invisible to end-users.
-
-HDP companion files enable by default the recovery mode. Its implementation
-default to the ZooKeeper based state-store implementation. Unless specified,
-the root znode where the ResourceManager state is stored is inside "/rmstore".
-
-      ryba.yarn.site['yarn.resourcemanager.recovery.enabled'] ?= 'true'
-      ryba.yarn.site['yarn.resourcemanager.store.class'] ?= 'org.apache.hadoop.yarn.server.resourcemanager.recovery.ZKRMStateStore'
-
-## Configuration for Restart Recovery with ZooKeeper
-
-ZooKeeper is used in the context of restart recovering and high availability.
-
-About the 'root-node.acl', the [mailing list][ml_root_acl] mentions:
-
-> For the exclusive create-delete access, the RMs use username:password where
-the username is yarn.resourcemanager.address and the password is a secure random
-number. One should use that config only when they are not happy with this
-implicit default mechanism.
-
-Here's an example:
-
-```
-RM1: yarncluster:shared-password:rwa,rm1:secret-password:cd
-RM2: yarncluster:shared-password:rwa,rm2:secret-password:cd
-```
-
-To remove the entry (not yet tested) when transitioning from HA to normal mode:
-```
-/usr/lib/zookeeper/bin/zkCli.sh -server master2.ryba:2181
-setAcl /rmstore/ZKRMStateRoot world:anyone:rwacd
-rmr /rmstore/ZKRMStateRoot
-```
-
-      zoo_ctxs = ctx.contexts modules: 'ryba/zookeeper/server', require('../../zookeeper/server').configure
-      quorum = for zoo_ctx in zoo_ctxs
-        "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.config['clientPort']}"
-      ryba.yarn.site['yarn.resourcemanager.zk-address'] ?= quorum.join ','
-      # https://zookeeper.apache.org/doc/r3.1.2/zookeeperProgrammers.html#sc_ZooKeeperAccessControl
-      # ACLs to be used for setting permissions on ZooKeeper znodes.
-      ryba.yarn.site['yarn.resourcemanager.zk-acl'] ?= 'sasl:rm:rwcda'
-      ryba.yarn.site['yarn.resourcemanager.zk-state-store.parent-path'] ?= '/rmstore'
-
-## Configuration for automatic failover
-
-      ryba.yarn.site['yarn.resourcemanager.ha.automatic-failover.enabled'] ?= 'true'
-      ryba.yarn.site['yarn.resourcemanager.ha.automatic-failover.embedded'] ?= 'true'
-      ryba.yarn.site['yarn.resourcemanager.cluster-id'] ?= 'yarn_cluster_01'
 
 ## Configuration for Memory and CPU
 

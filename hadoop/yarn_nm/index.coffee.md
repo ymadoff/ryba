@@ -63,11 +63,6 @@ Resources:
       ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] ?= 'true'
       ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path'] ?= '/cgroup'
 
-## Configuration for Restart Recovery
-
-      ryba.yarn.site['yarn.nodemanager.recovery.enabled'] ?= 'true'
-      ryba.yarn.site['yarn.nodemanager.recovery.dir'] ?= '/var/yarn/recovery-state'
-
 ## Commands
 
     # module.exports.push commands: 'backup', modules: 'ryba/hadoop/yarn_nm/backup'
