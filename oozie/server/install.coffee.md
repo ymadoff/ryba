@@ -3,6 +3,10 @@
 
 Oozie source code and examples are located in "/usr/share/doc/oozie-$version".
 
+The current version of Oozie doesnt supported automatic failover of the Yarn
+Resource Manager. RM HA (High Availability) must be configure with manual
+failover and Oozie must target the active node. 
+
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/iptables'
@@ -460,7 +464,7 @@ the ShareLib contents without having to go into HDFS.
         else
           # hdfs dfs -mkdir /user/#{oozie.user.name} || true
           hdfs dfs -mkdir -p /user/#{oozie.user.name}/share/lib || true
-          hdfs dfs -chown #{oozie.user.name}:#{oozie.group.name} /user/#{oozie.user.name}
+          hdfs dfs -chown -R #{oozie.user.name}:#{oozie.group.name} /user/#{oozie.user.name}
           echo 'Create sharelib'
           su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib create -fs hdfs://torval:8020 /usr/hdp/current/oozie-client/oozie-sharelib.tar.gz"
         fi
