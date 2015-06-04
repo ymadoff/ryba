@@ -146,6 +146,6 @@ LDAP or Active Directory Authentication.
           --databasename=#{db.name} \
           --databaseusername=#{db.user} \
           --databasepassword=#{db.password} \
-          --cluster-name=ryba-6vm
+          --cluster-name=#{ctx.config.cluster.name}
         """
       .then next

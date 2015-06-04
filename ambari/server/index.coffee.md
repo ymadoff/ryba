@@ -31,7 +31,6 @@ ambari:
       require('../../lib/base').configure ctx
       # Servers onfiguration
       ambari_server = ctx.config.ryba.ambari_server ?= {}
-
       # Install 1.2.0 with rpm (http://incubator.apache.org/ambari/1.2.0/installing-hadoop-using-ambari/content/ambari-chap2-1.html)
       # http://public-repo-1.hortonworks.com/AMBARI-1.x/repos/centos6/AMBARI-1.x-1.el6.noarch.rpm
       # Upgrading from 1.2 to 1.2.1 by replacing repo file (http://incubator.apache.org/ambari/1.2.1/installing-hadoop-using-ambari/content/ambari-chap7.html)
@@ -49,6 +48,8 @@ ambari:
       ambari_server.config['server.jdbc.user.name'] ?= 'ambari'
       ambari_server.config['server.jdbc.database'] ?= 'mysql'
       ambari_server.config['server.jdbc.database_name'] ?= 'ambari'
+      cluster = ctx.config.cluster ?= {}
+      cluster.name ?= "cluster-6vm"
 
       # ambari.java ?= null
       ambari_server.java_home ?= '/usr/lib/jvm/java'
@@ -136,9 +137,9 @@ ambari:
       # 'ryba/ambari/server/check'
     ]
 
-    # module.exports.push commands: 'start', modules: 'ryba/ambari/server/start'
+    #module.exports.push commands: 'start', modules: 'ryba/ambari/server/start'
 
-    # module.exports.push commands: 'stop', modules: 'ryba/ambari/server/stop'
+    #module.exports.push commands: 'stop', modules: 'ryba/ambari/server/stop'
 
-    # module.exports.push commands: 'status', modules: 'ryba/ambari/server/status'
+    #module.exports.push commands: 'status', modules: 'ryba/ambari/server/status'
 [Ambari-server]: http://ambari.apache.org
