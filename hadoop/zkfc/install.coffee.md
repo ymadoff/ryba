@@ -184,8 +184,8 @@ setAcl /hadoop-ha sasl:zkfc:cdrwa,sasl:nn:cdrwa,digest:zkfc:ePBwNWc34ehcTu1FTNI7
           """
           if: !!zkfc.digest.password
         , (err, generated, stdout) ->
-          return next err if err
-          return do_acl() unless generated
+          return callback err if err
+          return callback null, generated unless generated
           digest = match[1] if match = /\->(.*)/.exec(stdout)
           return next Error "Failed to get digest" unless digest
           jaas_user = /^(.*?)[@\/]/.exec(zkfc.principal)?[1]
