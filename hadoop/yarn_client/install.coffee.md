@@ -7,15 +7,6 @@
     module.exports.push require '../../lib/hconfigure'
     module.exports.push require('./index').configure
 
-## Package
-
-Install the "hadoop-yarn" package.
-
-    module.exports.push name: 'YARN Client # Package', handler: (ctx, next) ->
-      ctx.service
-        name: 'hadoop-yarn'
-      .then next
-
     module.exports.push name: 'YARN Client # Users & Groups', handler: (ctx, next) ->
       return next() unless ctx.config.ryba.resourcemanager or ctx.config.ryba.nodemanager
       {yarn, hadoop_group} = ctx.config.ryba
