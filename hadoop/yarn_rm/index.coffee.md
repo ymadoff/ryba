@@ -33,6 +33,24 @@ the application (zombie state).
       ryba.yarn.site['yarn.scheduler.minimum-allocation-vcores'] ?= 1
       ryba.yarn.site['yarn.scheduler.maximum-allocation-vcores'] ?= 32
 
+## Capacity Scheduler
+
+Preemption is enabled by default. With Preemption, under-served queues can begin
+to claim their allocated cluster resources almost immediately, without having to
+wait for other queues' applications to finish running. Containers are only
+killed as a last resort.
+
+      # Enables preemption
+      ryba.yarn.site['yarn.resourcemanager.scheduler.monitor.enable'] ?= 'true'
+      # List of SchedulingEditPolicy classes that interact with the scheduler.
+      ryba.yarn.site['yarn.resourcemanager.scheduler.monitor.policies'] ?= 'org.apache.hadoop.yarn.server.resourcemanager.monitor.capacity.ProportionalCapacityPreemptionPolicy'
+      # The time in milliseconds between invocations of this policy.
+      ryba.yarn.site['yarn.resourcemanager.monitor.capacity.preemption.monitoring_interva'] ?= '3000'
+      # The time in milliseconds between requesting a preemption from an application and killing the container.
+      ryba.yarn.site['yarn.resourcemanager.monitor.capacity.preemption.max_wait_before_kill'] ?= '15000'
+      # The maximum percentage of resources preempted in a single round.
+      ryba.yarn.site['yarn.resourcemanager.monitor.capacity.preemption.total_preemption_per_round'] ?= '0.1'
+
 ## Environment
 
       ryba.yarn.rm_opts ?= ''
