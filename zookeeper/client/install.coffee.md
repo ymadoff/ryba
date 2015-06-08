@@ -10,7 +10,40 @@
     # module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/lib/base'
     module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hdp_select'
     module.exports.push require '../../lib/write_jaas'
+
+## Users & Groups
+
+By default, the "zookeeper" package create the following entries:
+
+```bash
+cat /etc/passwd | grep zookeeper
+zookeeper:x:497:498:ZooKeeper:/var/run/zookeeper:/bin/bash
+cat /etc/group | grep hadoop
+hadoop:x:498:hdfs
+```
+
+    module.exports.push name: 'ZooKeeper Client # Users & Groups', handler: (ctx, next) ->
+      {zookeeper, hadoop_group} = ctx.config.ryba
+      ctx
+      .group zookeeper.group
+      .group hadoop_group
+      .user zookeeper.user
+      .then next
+
+## Install
+
+Follow the [HDP recommandations][install] to install the "zookeeper" package
+which has no dependency.
+
+    module.exports.push name: 'ZooKeeper Client # Install', timeout: -1, handler: (ctx, next) ->
+      ctx
+      .service
+        name: 'zookeeper'
+      .hdp_select
+        name: 'zookeeper-client'
+      .then next
 
     module.exports.push name: 'ZooKeeper Client # Kerberos', timeout: -1, handler: (ctx, next) ->
       {zookeeper, hadoop_group, realm} = ctx.config.ryba
