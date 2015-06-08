@@ -400,32 +400,30 @@ Update the "core-site.xml" configuration file with properties from the
 
     module.exports.push name: 'Hadoop Core # Topology', handler: (ctx, next) ->
       {hdfs, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
-      ctx.upload
+      h_ctxs = ctx.contexts modules: ['ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm']
+      topology = []
+      for h_ctx in h_ctxs
+        rack = if h_ctx.config.ryba?.rack? then h_ctx.config.ryba.rack else ''
+        # topology.push "#{host}  #{rack}"
+        topology.push "#{h_ctx.config.ip}  #{rack}"
+      topology = topology.join("\n")
+      ctx
+      .upload
         destination: "#{hadoop_conf_dir}/rack_topology.sh"
         source: "#{__dirname}/../resources/rack_topology.sh"
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755
         backup: true
-      , (err, uploaded) ->
-        return next err if err
-        hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm'
-        content = []
-        for host in hosts
-          {config} = ctx.hosts[host]
-          rack = if config.ryba?.rack? then config.ryba.rack else ''
-          content.push "#{host}  #{rack}"
-          content.push "#{config.ip}  #{rack}"
-        ctx.write
-          destination: "#{hadoop_conf_dir}/rack_topology.data"
-          content: content.join("\n")
-          uid: hdfs.user.name
-          gid: hadoop_group.name
-          mode: 0o755
-          backup: true
-          eof: true
-        , (err, written) ->
-          next err, uploaded or written
+      .write
+        destination: "#{hadoop_conf_dir}/rack_topology.data"
+        content: topology
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+        mode: 0o755
+        backup: true
+        eof: true
+      .then next
 
 ## Hadoop OPTS
 
