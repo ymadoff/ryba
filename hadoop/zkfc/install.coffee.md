@@ -161,9 +161,12 @@ setAcl /hadoop-ha sasl:zkfc:cdrwa,sasl:nn:cdrwa,digest:zkfc:ePBwNWc34ehcTu1FTNI7
 
     module.exports.push name: 'ZKFC # ZK Auth and ACL', handler: (ctx, next) ->
       {hadoop_conf_dir, core_site, hdfs, zkfc} = ctx.config.ryba
-      zk_auth = if zkfc.digest.password
-      then "digest:#{zkfc.digest.name}:#{zkfc.digest.password}"
-      else ""
+      modified = false
+      acls = []
+      # acls.push 'world:anyone:r'
+      jaas_user = /^(.*?)[@\/]/.exec(zkfc.principal)?[1]
+      acls.push "sasl:#{jaas_user}:cdrwa" if core_site['hadoop.security.authentication'] is 'kerberos'
+      # acls.push "sasl:nn:cdrwa" if core_site['hadoop.security.authentication'] is 'kerberos'
       ctx
       .hconfigure
         destination: "#{hadoop_conf_dir}/core-site.xml"
@@ -171,36 +174,29 @@ setAcl /hadoop-ha sasl:zkfc:cdrwa,sasl:nn:cdrwa,digest:zkfc:ePBwNWc34ehcTu1FTNI7
         merge: true
         backup: true
       .write
-          destination: "#{hadoop_conf_dir}/zk-auth.txt"
-          content: zk_auth
-          uid: hdfs.user.name
-          gid: hdfs.group.name
-          mode: 0o0700
-      .call (_, callback) ->
-        ctx.execute
-          cmd: """
-          export ZK_HOME=/usr/hdp/current/zookeeper-client/
-          java -cp $ZK_HOME/lib/*:$ZK_HOME/zookeeper.jar org.apache.zookeeper.server.auth.DigestAuthenticationProvider #{zkfc.digest.name}:#{zkfc.digest.password}
-          """
-          if: !!zkfc.digest.password
-        , (err, generated, stdout) ->
-          return next err if err
-          return do_acl() unless generated
-          digest = match[1] if match = /\->(.*)/.exec(stdout)
-          return next Error "Failed to get digest" unless digest
-          jaas_user = /^(.*?)[@\/]/.exec(zkfc.principal)?[1]
-          acls = []
-          # acls.push 'world:anyone:r'
-          acls.push "sasl:#{jaas_user}:cdrwa" if core_site['hadoop.security.authentication'] is 'kerberos'
-          # acls.push "sasl:nn:cdrwa" if core_site['hadoop.security.authentication'] is 'kerberos'
-          acls.push "digest:#{digest}:cdrwa"
-          ctx.write
-            destination: "#{hadoop_conf_dir}/zk-acl.txt"
-            content: acls.join ','
-            uid: hdfs.user.name
-            gid: hdfs.group.name
-            mode: 0o0600
-          , callback
+        destination: "#{hadoop_conf_dir}/zk-auth.txt"
+        content: if zkfc.digest.password then "digest:#{zkfc.digest.name}:#{zkfc.digest.password}" else ""
+        uid: hdfs.user.name
+        gid: hdfs.group.name
+        mode: 0o0700
+      .execute
+        cmd: """
+        export ZK_HOME=/usr/hdp/current/zookeeper-client/
+        java -cp $ZK_HOME/lib/*:$ZK_HOME/zookeeper.jar org.apache.zookeeper.server.auth.DigestAuthenticationProvider #{zkfc.digest.name}:#{zkfc.digest.password}
+        """
+        if: !!zkfc.digest.password
+      , (err, generated, stdout) ->
+        return next err if err
+        return unless generated
+        digest = match[1] if match = /\->(.*)/.exec(stdout)
+        throw Error "Failed to get digest" unless digest
+        acls.push "digest:#{digest}:cdrwa"
+      .write
+        destination: "#{hadoop_conf_dir}/zk-acl.txt"
+        content: acls.join ','
+        uid: hdfs.user.name
+        gid: hdfs.group.name
+        mode: 0o0600
       .then next
 
 ## SSH Fencing
