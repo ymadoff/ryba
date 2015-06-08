@@ -3,7 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'ryba/kafka/server/wait'
+    module.exports.push 'ryba/kafka/broker/wait'
     module.exports.push require('./index').configure
 
 ## Check TCP
