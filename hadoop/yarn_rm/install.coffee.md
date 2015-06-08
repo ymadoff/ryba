@@ -173,6 +173,7 @@ ResourceCalculator class name is expected.
     module.exports.push name: 'YARN RM # Capacity Scheduler', handler: (ctx, next) ->
       {yarn, hadoop_conf_dir, capacity_scheduler} = ctx.config.ryba
       return next() unless yarn.site['yarn.resourcemanager.scheduler.class'] is 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
+      refresh = false
       ctx
       .hconfigure
         destination: "#{hadoop_conf_dir}/capacity-scheduler.xml"
@@ -180,14 +181,15 @@ ResourceCalculator class name is expected.
         local_default: true
         properties: capacity_scheduler
         merge: true
+      , (err, status) ->
+        return if err or not status
+        refresh = true
+      .execute
+        cmd: mkcmd.hdfs ctx, 'service hadoop-yarn-resourcemanager status && yarn rmadmin -refreshQueues'
+        code_skipped: 3
+        if: -> refresh
       .then (err, status) ->
-        return next err, false if err or not status
-        ctx
-        .execute
-          cmd: mkcmd.hdfs ctx, 'service hadoop-yarn-resourcemanager status && yarn rmadmin -refreshQueues'
-          code_skipped: 3
-        .then (err) ->
-          next err, true
+        next err, status
 
 ## Module Dependencies
 
