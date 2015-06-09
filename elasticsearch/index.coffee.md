@@ -107,6 +107,6 @@ ElasticSearch can be found [here](https://www.elastic.co/downloads/elasticsearch
 
     module.exports.push commands: 'stop', modules: 'ryba/elasticsearch/stop'
 
-## Module Dependencies
+## Dependencies
 
     path = require 'path'

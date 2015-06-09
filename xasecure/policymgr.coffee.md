@@ -148,7 +148,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push 'ryba/xasecure/policymgr_start'
 
-## Module Dependencies
+## Dependencies
 
     url = require 'url'
     path = require 'path'

@@ -53,7 +53,7 @@ Shell script to be executed inside one or multiple YARN containers.
         not_if_exists: unless force_check then scriptpath
       .then next
 
-## Module Dependencies
+## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
 

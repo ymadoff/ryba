@@ -100,7 +100,7 @@ Independently, if 'ryba' hasn't CREATE right on these 3 tables, it will be grant
         code_skipped: 3
       .then next
 
-## Module Dependencies
+## Dependencies
 
     path = require 'path'
     mkcmd = require '../lib/mkcmd'

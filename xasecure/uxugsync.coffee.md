@@ -86,7 +86,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           next null, true
       do_configure()
 
-## Module Dependencies
+## Dependencies
 
     url = require 'url'
     path = require 'path'

@@ -77,7 +77,7 @@ scanning the table.
       #     return next Error 'Invalid command output' if executed and not isRowCreated
       #     return next err, executed
 
-## Module Dependencies
+## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
     string = require 'mecano/lib/misc/string'

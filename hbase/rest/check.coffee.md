@@ -43,6 +43,6 @@
         return next Error "Invalid ROW Key: #{JSON.stringify stdout}" unless decode(data?.Row[0]?.key) is 'my_row_rest'
       .then next
 
-## Module Dependencies
+## Dependencies
 
     mkcmd = require '../../lib/mkcmd'

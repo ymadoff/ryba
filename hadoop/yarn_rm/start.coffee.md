@@ -75,7 +75,7 @@ with the message "RMHAServiceTarget doesn't have a corresponding ZKFC address".
         code_skipped: 2
       .then next
 
-## Module Dependencies
+## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
 

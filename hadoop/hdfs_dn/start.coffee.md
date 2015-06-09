@@ -16,6 +16,6 @@ and some may be inactive.
       return next new Error "Not an DataNode" unless ctx.has_module 'ryba/hadoop/hdfs_dn'
       lifecycle.dn_start ctx, next
 
-## Module Dependencies
+## Dependencies
 
     lifecycle = require '../../lib/lifecycle'

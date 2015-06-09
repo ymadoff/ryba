@@ -188,6 +188,6 @@ is only executed on a non active NameNode.
           code_skipped: 5
         .then next
 
-## Module Dependencies
+## Dependencies
 
     mkcmd = require '../../lib/mkcmd'

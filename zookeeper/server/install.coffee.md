@@ -259,6 +259,6 @@ Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
 
 [install]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.1-latest/bk_installing_manually_book/content/rpm-zookeeper-1.html
 
-## Module Dependencies
+## Dependencies
 
     quote = require 'regexp-quote'

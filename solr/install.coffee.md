@@ -208,6 +208,6 @@ Ryba execute this scripts then customize installation
     module.exports.push name: 'Solr # Tuning', handler: (ctx, next) ->
       next null, 'TODO'
 
-## Module Dependencies
+## Dependencies
 
     path = require 'path'

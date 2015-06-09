@@ -167,7 +167,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         kadmin_server: admin_server
       .then next
 
-## Module dependencies
+## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
 

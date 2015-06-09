@@ -40,7 +40,7 @@ Backup the active Hive configuration.
         retention: count: 2
       .then next
 
-## Module Dependencies
+## Dependencies
 
     parse_jdbc = require '../../lib/parse_jdbc'
 

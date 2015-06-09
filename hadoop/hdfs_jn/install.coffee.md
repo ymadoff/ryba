@@ -150,7 +150,7 @@ NodeManagers.
         backup: true
       .then next
 
-## Module Dependencies
+## Dependencies
 
     lifecycle = require '../../lib/lifecycle'
     mkcmd = require '../../lib/mkcmd'

@@ -286,7 +286,6 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
         code_skipped: 2
       , next
 
-
 ## Dependencies
 
     fs = require 'fs'

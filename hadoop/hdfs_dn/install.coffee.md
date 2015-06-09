@@ -258,7 +258,7 @@ Note, we might move this middleware to Masson.
       .then next
 
 
-## Module dependencies
+## Dependencies
 
     misc = require 'mecano/lib/misc'
 

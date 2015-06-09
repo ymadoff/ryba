@@ -41,6 +41,6 @@ kill ...
         code_skipped: 1
       , next
 
-## Module Dependencies
+## Dependencies
 
     path = require 'path'

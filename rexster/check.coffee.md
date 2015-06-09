@@ -46,6 +46,6 @@ Text mode of REST Server
         catch e then return next Error "Invalid Command Output: #{JSON.stringify stdout}"
         next err, executed
 
-## Module Dependencies
+## Dependencies
 
     path = require 'path'

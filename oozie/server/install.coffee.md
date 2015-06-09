@@ -501,7 +501,7 @@ the ShareLib contents without having to go into HDFS.
 
     module.exports.push 'ryba/oozie/client'
 
-## Module Dependencies
+## Dependencies
 
     url = require 'url'
     path = require 'path'

@@ -54,7 +54,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
           description: 'Higher number of parallel copies run by reduces to fetch outputs from very large number of maps.'
         next null, true
 
-## Module Dependencies
+## Dependencies
 
     properties = require '../../lib/properties'
     prink = require 'prink'

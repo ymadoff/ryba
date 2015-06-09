@@ -71,6 +71,6 @@ Solr can be found [here](http://wwwftp.ciril.fr/pub/apache/lucene/solr/)
 
     module.exports.push commands: 'stop', modules: 'ryba/solr/stop'
 
-## Module Dependencies
+## Dependencies
 
     path = require 'path'

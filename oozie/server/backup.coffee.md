@@ -53,6 +53,6 @@ Backup the active Oozie configuration.
         source: oozie.conf_dir
       ctx.backup conf, next
 
-## Module Dependencies
+## Dependencies
 
     parse_jdbc = require '../../lib/parse_jdbc'

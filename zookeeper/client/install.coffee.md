@@ -77,6 +77,6 @@ which has no dependency.
         backup: true
       , next
 
-## Module Dependencies
+## Dependencies
 
     quote = require 'regexp-quote'

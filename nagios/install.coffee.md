@@ -405,7 +405,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
         ]
       .then next
 
-## Module Dependencies
+## Dependencies
 
     path = require 'path'
     url = require 'url'

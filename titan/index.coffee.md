@@ -70,6 +70,6 @@ Cache configuration
 [Gremlin]: https://github.com/tinkerpop/gremlin/wiki
 [Rexster]: https://github.com/tinkerpop/rexster/wiki
 
-## Module Dependencies
+## Dependencies
 
     path = require 'path'

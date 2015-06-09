@@ -191,7 +191,7 @@ ResourceCalculator class name is expected.
       .then (err, status) ->
         next err, status
 
-## Module Dependencies
+## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
 

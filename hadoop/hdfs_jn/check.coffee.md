@@ -23,6 +23,6 @@ Check if the JournalNode is running as expected.
         throw Error "Invalid Response" unless data.beans[0].name is 'Hadoop:service=JournalNode,name=JournalNodeInfo'
       .then next
 
-## Module Dependencies
+## Dependencies
 
     mkcmd = require '../../lib/mkcmd'

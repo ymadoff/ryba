@@ -156,7 +156,7 @@ Upload the "hadoop-metrics2.properties" to connect Hadoop with Ganglia.
       .then next
 
 
-## Module dependencies
+## Dependencies
 
     glob = require 'glob'
 

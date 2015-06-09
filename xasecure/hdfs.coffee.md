@@ -131,7 +131,7 @@
         commonnameforcertificate: ''
       next()
 
-## Module Dependencies
+## Dependencies
 
     url = require 'url'
     path = require 'path'

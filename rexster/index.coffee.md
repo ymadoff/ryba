@@ -161,6 +161,6 @@ TODO: Security see https://github.com/tinkerpop/rexster/wiki/Rexster-Security
 
     module.exports.push commands: 'stop', modules: 'ryba/rexster/stop'
 
-## Module Dependencies
+## Dependencies
 
     path = require 'path'

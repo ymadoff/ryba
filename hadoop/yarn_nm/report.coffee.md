@@ -25,7 +25,7 @@
           description: 'Ratio between virtual memory to physical memory.'
         next null, true
 
-## Module Dependencies
+## Dependencies
 
     # mkcmd = require '../../lib/mkcmd'
     properties = require '../../lib/properties'

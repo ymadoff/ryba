@@ -20,6 +20,6 @@ Check the access to the HDFS cluster.
           code_skipped: 2
         .then next
 
-## Module Dependencies
+## Dependencies
 
     mkcmd = require '../../lib/mkcmd'

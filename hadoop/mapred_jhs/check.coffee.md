@@ -28,6 +28,6 @@ For this reason, the "retry" property is set to the high value of "10".
         JSON.parse(stdout).historyInfo.hadoopVersion
       .then next
 
-## Module dependencies
+## Dependencies
 
     mkcmd = require '../../lib/mkcmd'

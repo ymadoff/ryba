@@ -25,6 +25,6 @@ associated the NameNodes.
         code_skipped: 1
       , next
 
-## Module Dependencies
+## Dependencies
 
     lifecycle = require '../../lib/lifecycle'

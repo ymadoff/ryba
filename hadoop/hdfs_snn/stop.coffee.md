@@ -15,6 +15,6 @@
         if: ctx.config.ryba.clean_logs
       .then next
 
-## Module Dependencies
+## Dependencies
 
     lifecycle = require '../../lib/lifecycle'

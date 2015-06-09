@@ -185,7 +185,7 @@ Creates a configuration file. Always load this file in Gremlin REPL !
            code_skipped: 3
          , (err, granted) -> next err, created or granted
 
-## Module Dependencies
+## Dependencies
 
     path = require 'path'
     mkcmd = require '../lib/mkcmd'

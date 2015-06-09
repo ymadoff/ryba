@@ -92,7 +92,7 @@ Declare the HDP repository.
       do_repo()
 
 
-## Module Dependencies
+## Dependencies
 
     url = require 'url'
     hconfigure = require '../lib/hconfigure'

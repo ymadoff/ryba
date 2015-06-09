@@ -172,7 +172,7 @@ TODO: Use a namespace
         code_skipped: 3
       , next
 
-## Module Dependencies
+## Dependencies
 
     path = require 'path'
     mkcmd = require '../lib/mkcmd'

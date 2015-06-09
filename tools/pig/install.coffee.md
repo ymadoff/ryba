@@ -96,7 +96,7 @@ companion file defines no properties while the YUM package does.
         backup: true
       .then next
 
-## Module Dependencies
+## Dependencies
 
     quote = require 'regexp-quote'
 

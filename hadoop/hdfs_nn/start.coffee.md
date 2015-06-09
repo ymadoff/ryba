@@ -74,7 +74,7 @@ only run on a NameNode with fencing installed and in normal mode.
         code_skipped: 2
       .then next
 
-## Module Dependencies
+## Dependencies
 
     url = require 'url'
     mkcmd = require '../../lib/mkcmd'

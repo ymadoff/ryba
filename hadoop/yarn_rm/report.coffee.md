@@ -26,7 +26,7 @@
           description: 'Higher memory allocated in MB for every container request.'
         next null, true
 
-## Module Dependencies
+## Dependencies
 
     properties = require '../../lib/properties'
     prink = require 'prink'

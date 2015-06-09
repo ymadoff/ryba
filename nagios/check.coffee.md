@@ -81,7 +81,7 @@ php /usr/lib64/nagios/plugins/check_rpcq_latency_ha.php \
         cmd: cmd
       .then next
 
-## Module Dependencies
+## Dependencies
 
     url = require 'url'
 

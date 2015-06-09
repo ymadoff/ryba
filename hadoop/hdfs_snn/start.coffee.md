@@ -8,6 +8,6 @@
     module.exports.push name: 'HDFS SNN # Start', label_true: 'STARTED', handler: (ctx, next) ->
       lifecycle.snn_start ctx, next
 
-## Module Dependencies
+## Dependencies
 
     lifecycle = require '../../lib/lifecycle'

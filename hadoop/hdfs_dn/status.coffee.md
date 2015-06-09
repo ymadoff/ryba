@@ -10,6 +10,6 @@ Display the status of the NameNode as "STARTED" or "STOPPED".
     module.exports.push name: 'HDFS DN # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
       lifecycle.dn_status ctx, next
 
-## Module Dependencies
+## Dependencies
 
     lifecycle = require '../../lib/lifecycle'

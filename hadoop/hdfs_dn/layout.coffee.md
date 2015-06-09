@@ -105,6 +105,6 @@ afect HDFS metadata.
         code_skipped: 2
       .then next
 
-## Module dependencies
+## Dependencies
 
     mkcmd = require '../../lib/mkcmd'

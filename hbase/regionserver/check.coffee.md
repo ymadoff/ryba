@@ -76,7 +76,7 @@ TODO: move to install
       #   return next Error 'Invalid command output' if executed and ( not hasCreatedNamespace or not hasGrantedAccess)
       #   next err, executed
 
-## Module Dependencies
+## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
 

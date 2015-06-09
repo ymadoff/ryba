@@ -26,7 +26,7 @@ List the current FS root locations for the Hive databases.
           callback null, true
       .then next
 
-## Module Dependencies
+## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
     string = require 'mecano/lib/misc/string'

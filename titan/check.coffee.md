@@ -23,6 +23,6 @@ Check the configuration file (current.properties)
         """
       , next
 
-## Module Dependencies
+## Dependencies
 
     mkcmd = require '../lib/mkcmd'

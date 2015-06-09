@@ -60,6 +60,6 @@ Check for various inconsistencies on the overall filesystem. Use the command
         cmd: mkcmd.hdfs ctx, "exec 5>&1; hdfs fsck / | tee /dev/fd/5 | tail -1 | grep HEALTHY 1>/dev/null"
       .then next
 
-## Module Dependencies
+## Dependencies
 
     mkcmd = require '../../lib/mkcmd'

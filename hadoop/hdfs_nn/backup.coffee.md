@@ -71,7 +71,7 @@ tar -xzf /var/backups/nn_$HOSTNAME/<backup_date>.tar.gz
 
 `man tar` for more information if you have changed default options
 
-## Module Dependencies
+## Dependencies
 
     util = require 'util'
     path = require 'path'

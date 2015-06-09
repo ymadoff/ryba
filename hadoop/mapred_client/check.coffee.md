@@ -30,6 +30,6 @@ to re-execute the check.
         trap_on_error: true
       .then next
 
-## Module Dependencies
+## Dependencies
 
     mkcmd = require '../../lib/mkcmd'

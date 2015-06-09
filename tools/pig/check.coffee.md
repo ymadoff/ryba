@@ -70,6 +70,6 @@ unless the "hdp.force_check" configuration property is set to "true".
           trap_on_error: true
         , next
 
-## Module Dependencies
+## Dependencies
 
     mkcmd = require '../../lib/mkcmd'

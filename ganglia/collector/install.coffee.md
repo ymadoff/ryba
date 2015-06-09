@@ -226,7 +226,7 @@ pointing to the Ganglia master hostname.
 
     module.exports.push 'ryba/ganglia/collector/check'
 
-## Module dependencies
+## Dependencies
 
     request = require 'request'
     glob = require 'glob'

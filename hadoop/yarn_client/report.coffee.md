@@ -25,7 +25,7 @@
           description: 'Java opts for the MR App Master (recommandation: 0.8 * 2 * RAM-per-Container).'
         next null, true
 
-## Module Dependencies
+## Dependencies
 
     # mkcmd = require '../../lib/mkcmd'
     properties = require '../../lib/properties'
