@@ -21,13 +21,12 @@ associated processing and management tasks on Hadoop clusters.
       {realm} = ctx.config.ryba
       falcon = ctx.config.ryba.falcon ?= {}
       # Layout
-      falcon.falcon_conf_dir ?= '/etc/falcon/conf'
+      falcon.conf_dir ?= '/etc/falcon/conf'
       # User
       falcon.user = name: falcon.user if typeof falcon.user is 'string'
       falcon.user ?= {}
       falcon.user.name ?= 'falcon'
       falcon.user.system ?= true
-      falcon.user.gid ?= 'falcon'
       falcon.user.comment ?= 'Falcon User'
       falcon.user.home ?= '/var/lib/falcon'
       falcon.user.groups ?= ['hadoop']
@@ -36,6 +35,7 @@ associated processing and management tasks on Hadoop clusters.
       falcon.group ?= {}
       falcon.group.name ?= 'falcon'
       falcon.group.system ?= true
+      falcon.user.gid = falcon.group.name
       # Runtime
       falcon.runtime ?= {}
       # Runtime (http://falcon.incubator.apache.org/Security.html)
@@ -45,7 +45,7 @@ associated processing and management tasks on Hadoop clusters.
       # nn_protocol = if nn_contexts[0].config.ryba.hdfs.site['HTTP_ONLY'] then 'http' else 'https'
       # nn_nameservice = if nn_contexts[0].config.ryba.hdfs.site['dfs.nameservices'] then ".#{nn_contexts[0].config.ryba.hdfs.site['dfs.nameservices']}" else ''
       # nn_shortname = if nn_contexts.length then ".#{nn_contexts[0].config.shortname}" else ''
-      # nn_http = ctx.config.ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address#{nn_nameservice}#{nn_shortname}"] 
+      # nn_http = ctx.config.ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address#{nn_nameservice}#{nn_shortname}"]
       nn_principal = nn_contexts[0].config.ryba.hdfs.site['dfs.namenode.kerberos.principal']
       falcon.startup ?= {}
       falcon.startup['prism.falcon.local.endpoint'] ?= "http://#{ctx.config.host}:16000/"

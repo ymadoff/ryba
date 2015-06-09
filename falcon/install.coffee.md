@@ -97,20 +97,20 @@ falcon:x:498:falcon
 ## Runtime
 
     # module.exports.push name: 'Falcon # Runtime', handler: (ctx, next) ->
-    #   # {falcon_conf_dir, runtime} = ctx.config.ryba.falcon
+    #   # {conf_dir, runtime} = ctx.config.ryba.falcon
     #   # ctx.ini
-    #   #   destination: "#{falcon_conf_dir}/runtime.properties"
+    #   #   destination: "#{conf_dir}/runtime.properties"
     #   #   content: runtime
     #   #   separator: '='
     #   #   merge: true
     #   #   backup: true
     #   # , next
-    #   {falcon_conf_dir, runtime} = ctx.config.ryba.falcon
+    #   {conf_dir, runtime} = ctx.config.ryba.falcon
     #   write = for k, v of runtime
     #     match: RegExp "^#{quote k}=.*$", 'mg'
     #     replace: "#{k}=#{v}"
     #   ctx.write
-    #     destination: "#{falcon_conf_dir}/runtime.properties"
+    #     destination: "#{conf_dir}/runtime.properties"
     #     write: write
     #     backup: true
     #     eof: true
@@ -119,12 +119,12 @@ falcon:x:498:falcon
 ## Startup
 
     module.exports.push name: 'Falcon # Startup', handler: (ctx, next) ->
-      {falcon_conf_dir, startup} = ctx.config.ryba.falcon
+      {conf_dir, startup} = ctx.config.ryba.falcon
       write = for k, v of startup
         match: RegExp "^#{quote k}=.*$", 'mg'
         replace: "#{k}=#{v}"
       ctx.write
-        destination: "#{falcon_conf_dir}/startup.properties"
+        destination: "#{conf_dir}/startup.properties"
         write: write
         backup: true
         eof: true
