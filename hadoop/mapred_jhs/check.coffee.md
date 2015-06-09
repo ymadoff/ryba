@@ -24,7 +24,7 @@ For this reason, the "retry" property is set to the high value of "10".
         """
         # code_skipped: 2 # doesnt seems to be used
       , (err, checked, stdout) ->
-        return next err if err
+        throw err if err
         JSON.parse(stdout).historyInfo.hadoopVersion
       .then next
 
