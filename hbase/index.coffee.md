@@ -52,7 +52,6 @@ Example
       hbase.user = name: ryba.hbase.user if typeof ryba.hbase.user is 'string'
       hbase.user.name ?= 'hbase'
       hbase.user.system ?= true
-      hbase.user.gid ?= 'hbase'
       hbase.user.comment ?= 'HBase User'
       hbase.user.home ?= '/var/run/hbase'
       hbase.user.groups ?= 'hadoop'
@@ -65,6 +64,7 @@ Example
       hbase.group = name: hbase.group if typeof hbase.group is 'string'
       hbase.group.name ?= 'hbase'
       hbase.group.system ?= true
+      hbase.user.gid ?= hbase.group.name
       # Layout
       hbase.conf_dir ?= '/etc/hbase/conf'
       hbase.log_dir ?= '/var/log/hbase'
