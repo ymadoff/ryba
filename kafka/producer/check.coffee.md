@@ -3,14 +3,14 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'ryba/kafka/server/wait'
+    module.exports.push 'ryba/kafka/broker/wait'
     module.exports.push require('./index').configure
 
 ## Check TCP
 
 Make sure the server is listening. The default port is "9092".
 
-    module.exports.push name: 'Kafka Producer # Check TCP', handler: (ctx, next) ->
+    module.exports.push name: 'Kafka Producer # Check TCP', label_true: 'CHECKED', handler: (ctx, next) ->
       {kafka} = ctx.config.ryba
       execute = kafka.producer['metadata.broker.list'].split(',').map (broker) ->
         [host, port] = broker.split ':'
@@ -21,7 +21,7 @@ Make sure the server is listening. The default port is "9092".
 
 Make sure the server is listening. The default port is "9092".
 
-    module.exports.push name: 'Kafka Producer # Check Messages', handler: (ctx, next) ->
+    module.exports.push name: 'Kafka Producer # Check Messages', label_true: 'CHECKED', handler: (ctx, next) ->
       {kafka} = ctx.config.ryba
       return next() unless ctx.has_module 'ryba/kafka/consumer'
       brokers = ctx.contexts('ryba/kafka/server', require('../server').configure).map( (ctx) ->

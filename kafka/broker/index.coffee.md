@@ -28,6 +28,7 @@ log. It is fast, scalable, durable and distributed by design.
     module.exports.push commands: 'install', modules: [
       'ryba/kafka/broker/install'
       'ryba/kafka/broker/start'
+      'ryba/kafka/broker/check'
     ]
 
     module.exports.push commands: 'start', modules: 'ryba/kafka/broker/start'
