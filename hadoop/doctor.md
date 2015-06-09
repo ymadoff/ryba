@@ -23,3 +23,26 @@ There are a few concequences of this curruption.
 Inside the NodeManager after a mapreduce:
 
 > org.apache.hadoop.util.DiskChecker$DiskErrorException: Could not find usercache
+
+## FileSystem appear full while not full
+
+Some files (such as log files) have been removed while the service is still
+running. Here's how to list removed files:
+
+```
+# Disk Usage for directory
+# -m: in MB
+# -n: skip directories on different file systems
+du -mx /var/ | sort -n | tail -30
+# File system disk space
+df -h
+# List open files
+lsof | grep deleted
+```
+
+Solution: restart the service using those files.
+
+## FileSystem is not balanced
+
+http://www.swiss-scalability.com/2013/08/hadoop-hdfs-balancer-explained.html
+http://hadoop.apache.org/docs/r2.7.0/hadoop-project-dist/hadoop-hdfs/HDFSCommands.html#balancer
