@@ -22,15 +22,7 @@ Note, there is no need to clean a zombie pid file before starting the server.
       {titan, rexster, realm} = ctx.config.ryba
       ctx.execute
         cmd: """
-        JPS=
-        for maybejps in jps "${JAVA_HOME}/bin/jps"; do
-          type "$maybejps" >/dev/null 2>&1
-          if [ $? -eq 0 ]; then
-            JPS="$maybejps"
-            break
-          fi
-        done
-        p=`$JPS -l | grep "com.tinkerpop.rexster.Application"`
+        p=`ps aux | grep "com.tinkerpop.rexster.Application"`
         if [ -n "$p" ]; then exit 3; fi
         su -l #{rexster.user.name} -c "nohup #{path.join titan.home, 'bin', 'rexster.sh'} --start -c titan-server.xml >#{path.join rexster.log_dir, 'rexster.out'} 2>/dev/null &"
         """
