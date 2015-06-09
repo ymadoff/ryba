@@ -1,6 +1,6 @@
-# Spark Client 
+# Spark Client
 
-      
+
     module.exports = []
 
 ## Spark Configuration
@@ -12,23 +12,25 @@
 
       {core_site, hadoop_conf_dir} = ctx.config.ryba
       {ryba} = ctx.config
-      spark = ryba.spark ?= {}
+      spark = ctx.config.ryba.spark ?= {}
       spark.user ?= {}
-      spark.user.name ?= "spark"
-      spark.client_dir ?= "/usr/hdp/current/spark-client/"
-      spark.conf_dir ?= "/usr/hdp/current/spark-client/conf"
-
-      history_server = spark.history_server ?= {}
-      #not sure about the port of the webui from the configuration page these port and address is 
-      # the one of  yarn history server, but ambari and hortonworks does set these to a different 
+      spark.user = name: spark.user if typeof spark.user is 'string'
+      spark.user.name ?= 'spark'
+      spark.user.system ?= true
+      spark.user.comment ?= 'Spark User'
+      # spark.user.home ?= '/var/run/spark'
+      spark.user.groups ?= 'hadoop'
+      # Group
+      spark.group ?= {}
+      spark.group = name: spark.group if typeof spark.group is 'string'
+      spark.group.name ?= 'spark'
+      spark.group.system ?= true
+      spark.user.gid ?= spark.group.name
+      spark.client_dir ?= 'usr/hdp/current/spark-client/'
+      spark.conf_dir ?= '/usr/hdp/current/spark-client/conf'
+      #not sure about the port of the webui from the configuration page these port and address is
+      # the one of  yarn history server, but ambari and hortonworks does set these to a different
       #adresse and port let configuration as hortonworks documentation
-      hs = ctx.hosts_with_module "ryba/spark/history_server"
-      throw new Error("Spark History UI can only installed on one host") if hs.lenght>1
-      history_server.fqdn = "#{hs[0]}"
-      history_server.port = "18080"
-      ctx.config.ryba.ssl ?= {}
-      ssl_client = ctx.config.ryba.ssl_client ?= {}
-      ssl_server = ctx.config.ryba.ssl_server ?= {}
       # SSL for HTTPS connection and RPC Encryption
       core_site['hadoop.ssl.require.client.cert'] ?= 'false'
       core_site['hadoop.ssl.hostname.verifier'] ?= 'DEFAULT'
@@ -38,20 +40,19 @@
       spark.ssl = {}
       spark.ssl.fs = {}
       spark.ssl.fs['enabled'] = false
-      spark.ssl.fs['spark.ssl.enabledAlgorithms'] ?= "MD5"
-      spark.ssl.fs['spark.ssl.keyPassword'] ?= "ryba123"
+      spark.ssl.fs['spark.ssl.enabledAlgorithms'] ?= 'MD5'
+      spark.ssl.fs['spark.ssl.keyPassword'] ?= 'ryba123'
       spark.ssl.fs['spark.ssl.keyStore'] ?= "#{spark.conf_dir}/keystore"
-      spark.ssl.fs['spark.ssl.keyStorePassword'] ?= "ryba123"
-      spark.ssl.fs['spark.ssl.protocol'] ?= "SSLv3"
+      spark.ssl.fs['spark.ssl.keyStorePassword'] ?= 'ryba123'
+      spark.ssl.fs['spark.ssl.protocol'] ?= 'SSLv3'
       spark.ssl.fs['spark.ssl.trustStore'] ?= "#{spark.conf_dir}/trustore"
-      spark.ssl.fs['spark.ssl.trustStorePassword'] ?= "ryba123"
+      spark.ssl.fs['spark.ssl.trustStorePassword'] ?= 'ryba123'
 
 
-      
+
     #does set the check during install because requires too much power from the dev environment
     module.exports.push commands: 'install', modules: [
       'ryba/spark/client/install'
-
       #'ryba/spark/client/check'
     ]
     module.exports.push commands: 'check', modules: 'ryba/spark/client/check'

@@ -79,7 +79,7 @@ In this mode the driver is the spark master running outside yarn
 
 
     mkcmd = require '../../lib/mkcmd'
-        
+
 
 
 [Spark-Pi]:http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.4/Apache_Spark_Quickstart_v224/content/run_spark_pi.html
