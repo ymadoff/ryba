@@ -11,9 +11,9 @@ log. It is fast, scalable, durable and distributed by design.
     module.exports.configure = (ctx) ->
       require('../').configure ctx
       {kafka} = ctx.config.ryba
-      ks_ctxs = ctx.contexts 'ryba/kafka/server', require('../server').configure
+      ks_ctxs = ctx.contexts 'ryba/kafka/broker', require('../broker').configure
       brokers = for ks_ctx in ks_ctxs
-        "#{ks_ctx.config.host}:#{ks_ctx.config.ryba.kafka.server.port}"
+        "#{ks_ctx.config.host}:#{ks_ctx.config.ryba.kafka.broker.port}"
       # Configuration
       kafka.producer ?= {}
       kafka.producer['compression.codec'] ?= 'snappy'

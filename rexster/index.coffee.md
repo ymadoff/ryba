@@ -51,8 +51,9 @@ Example:
       rexster.group.name ?= 'rexster'
       rexster.group.system ?= true
       # Kerberos config
-      rexster.principal ?= "rexster/#{ctx.config.host}@#{realm}"
-      rexster.keytab ?= '/etc/security/keytabs/rexster.service.keytab'
+      rexster.krb5_user ?= {}
+      rexster.krb5_user.principal ?= "rexster/#{ctx.config.host}@#{realm}"
+      rexster.krb5_user.keytab ?= '/etc/security/keytabs/rexster.service.keytab'
       # Force rexster home to titan.home/rexhome
       rexster.user.home = path.join titan.home, 'rexhome'
       rexster.admin ?= {}

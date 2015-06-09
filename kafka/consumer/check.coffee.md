@@ -10,7 +10,7 @@
 
 Make sure the broker is listening. The default port is "9092".
 
-    module.exports.push name: 'Kafka Consumer # Check Messages', handler: (ctx, next) ->
+    module.exports.push name: 'Kafka Consumer # Check Messages', label_true: 'CHECKED', handler: (ctx, next) ->
       {kafka} = ctx.config.ryba
       return next() unless ctx.has_module 'ryba/kafka/producer'
       brokers = ctx.contexts('ryba/kafka/broker', require('../broker').configure).map( (ctx) ->

@@ -80,7 +80,7 @@ RegionServer, and HBase client host machines.
       if ctx.has_module 'ryba/hbase/master'
         if hbase.site['hbase.master.kerberos.principal'] isnt hbase.site['hbase.regionserver.kerberos.principal']
           return next Error "HBase principals must match in single node"
-        require('./master').configure(ctx)
+        require('../master').configure(ctx)
         ctx.copy
           source: hbase.site['hbase.master.keytab.file']
           destination: hbase.site['hbase.regionserver.keytab.file']

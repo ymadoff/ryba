@@ -93,7 +93,7 @@ from multiple sessions with braking an active session.
       {hdfs, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
-        principal: "#{hdfs.user.name}@#{realm}"
+        principal: hdfs.krb5_user.principal
         password: hdfs.krb5_user.password
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password

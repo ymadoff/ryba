@@ -1,6 +1,4 @@
-
-
-## HDFS layout
+# HDFS Datanode Layout
 
     module.exports = []
     module.exports.push 'masson/bootstrap'

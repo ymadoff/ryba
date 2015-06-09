@@ -1,5 +1,9 @@
-
 # Ambari Client
+
+[Ambari-agent][Ambari-agent-install] on hosts enables the ambari server to be
+aware of the  hosts where Hadoop will be deployed.
+The ambari server must be installed before performing manual registration.
+
 
     module.exports = []
      
@@ -17,3 +21,5 @@
     module.exports.push commands: 'install', modules: [
       'ryba/ambari/agent/install'
     ]
+
+[Ambari-agent-install]: https://cwiki.apache.org/confluence/display/AMBARI/Installing+ambari-agent+on+target+hosts
