@@ -32,8 +32,7 @@ directive once you enter the beeline shell.
       {force_check, realm, user, hive} = ctx.config.ryba
       hs2_ctxs = ctx.contexts 'ryba/hive/server2', require('../server2').configure
       return next() unless hs2_ctxs.length
-      each(hs2_ctxs)
-      .on 'item', (hs2_ctx, next) ->
+      for hs2_ctx in hs2_ctxs
         directory = "check-#{ctx.config.shortname}-hive_server2-#{hs2_ctx.config.shortname}"
         db = "check_#{ctx.config.shortname}_server2_#{hs2_ctx.config.shortname}"
         port = if hs2_ctx.config.ryba.hive.site['hive.server2.transport.mode'] is 'http'
@@ -60,8 +59,7 @@ directive once you enter the beeline shell.
           """
           not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f #{directory}/result"
           trap_on_error: true
-        , next
-      .on 'both', next
+      ctx.then next
 
 ## Check MapReduce
 
@@ -72,8 +70,7 @@ engine.
       {force_check, user} = ctx.config.ryba
       hcat_ctxs = ctx.contexts 'ryba/hive/hcatalog', require('../hcatalog').configure
       return next() unless hcat_ctxs.length
-      each(hcat_ctxs)
-      .on 'item', (hcat_ctx, next) ->
+      for hcat_ctx in hcat_ctxs
         directory = "check-#{ctx.config.shortname}-hive_hcatalog_mr-#{hcat_ctx.config.shortname}"
         db = "check_#{ctx.config.shortname}_hive_hcatalog_mr_#{hcat_ctx.config.shortname}"
         ctx.execute
@@ -93,8 +90,7 @@ engine.
           """
           not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f #{directory}/result"
           trap_on_error: true
-        , next
-      .on 'both', next
+      ctx.then next
 
 ## Check Tez
 
@@ -104,8 +100,7 @@ Use the [Hive CLI][hivecli] client to execute SQL queries using the Tez engine.
       {force_check, user} = ctx.config.ryba
       hcat_ctxs = ctx.contexts 'ryba/hive/hcatalog', require('../hcatalog').configure
       return next() unless hcat_ctxs.length
-      each(hcat_ctxs)
-      .on 'item', (hcat_ctx, next) ->
+      for hcat_ctx in hcat_ctxs
         directory = "check-#{ctx.config.shortname}-hive_hcatalog_tez-#{hcat_ctx.config.shortname}"
         db = "check_#{ctx.config.shortname}_hive_hcatalog_tez_#{hcat_ctx.config.shortname}"
         ctx.execute
@@ -124,12 +119,10 @@ Use the [Hive CLI][hivecli] client to execute SQL queries using the Tez engine.
           """
           not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f #{directory}/result"
           trap_on_error: true
-        , next
-      .on 'both', next
+       ctx.then next
 
 ## Dependencies
 
-    each = require 'each'
     mkcmd = require '../../lib/mkcmd'
 
 [hivecli]: https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Cli
