@@ -26,12 +26,10 @@
 
 ## Users & Groups
 
-By default, the "hbase" package create the following entries:
-
 ```bash
-cat /etc/passwd | grep hbase
+cat /etc/passwd | grep nagios
 nagios:x:2418:2418:nagios:/var/log/nagios:/bin/sh
-cat /etc/group | grep hbase
+cat /etc/group | grep nagios
 nagios:x:2418:
 nagiocmd:x:2419:apache
 ```
