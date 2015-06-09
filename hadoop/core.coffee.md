@@ -2,8 +2,8 @@
 # Hadoop Core
 
 The [Hadoop distribution](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.4/bk_getting-started-guide/content/ch_hdp1_getting_started_chp2_1.html) used is the Hortonwork distribution named HDP. The
-installation is leveraging the Yum repositories. [Individual tarballs][tar] 
-are also available as an alternative with the benefit of including the source 
+installation is leveraging the Yum repositories. [Individual tarballs][tar]
+are also available as an alternative with the benefit of including the source
 code.
 
 
@@ -28,27 +28,27 @@ code.
 
 ## Configuration
 
-*   `ryba.static_host` (boolean)   
-    Write the host name of the server instead of the Hadoop "_HOST" 
-    placeholder accross all the configuration files, default to false.   
-*   `hdfs.user` (object|string)   
-    The Unix HDFS login name or a user object (see Mecano User documentation).   
-*   `yarn.user` (object|string)   
-    The Unix YARN login name or a user object (see Mecano User documentation).   
-*   `mapred.user` (object|string)   
-    The Unix MapReduce login name or a user object (see Mecano User documentation).   
-*   `user` (object|string)   
-    The Unix Test user name or a user object (see Mecano User documentation).   
-*   `hadoop_group` (object|string)   
-    The Unix Hadoop group name or a group object (see Mecano Group documentation).   
-*   `hdfs.group` (object|string)   
-    The Unix HDFS group name or a group object (see Mecano Group documentation).   
-*   `yarn.group` (object|string)   
-    The Unix YARN group name or a group object (see Mecano Group documentation).   
-*   `mapred.group` (object|string)   
-    The Unix MapReduce group name or a group object (see Mecano Group documentation).   
-*   `group` (object|string)   
-    The Unix Test group name or a group object (see Mecano Group documentation).   
+*   `ryba.static_host` (boolean)
+    Write the host name of the server instead of the Hadoop "_HOST"
+    placeholder accross all the configuration files, default to false.
+*   `hdfs.user` (object|string)
+    The Unix HDFS login name or a user object (see Mecano User documentation).
+*   `yarn.user` (object|string)
+    The Unix YARN login name or a user object (see Mecano User documentation).
+*   `mapred.user` (object|string)
+    The Unix MapReduce login name or a user object (see Mecano User documentation).
+*   `user` (object|string)
+    The Unix Test user name or a user object (see Mecano User documentation).
+*   `hadoop_group` (object|string)
+    The Unix Hadoop group name or a group object (see Mecano Group documentation).
+*   `hdfs.group` (object|string)
+    The Unix HDFS group name or a group object (see Mecano Group documentation).
+*   `yarn.group` (object|string)
+    The Unix YARN group name or a group object (see Mecano Group documentation).
+*   `mapred.group` (object|string)
+    The Unix MapReduce group name or a group object (see Mecano Group documentation).
+*   `group` (object|string)
+    The Unix Test group name or a group object (see Mecano Group documentation).
 
 Default configuration:
 
@@ -102,6 +102,7 @@ Default configuration:
       require('masson/commons/java').configure ctx
       require('masson/core/krb5_client').configure ctx
       require('../lib/base').configure ctx
+      {realm} = ctx.config.ryba
       ryba = ctx.config.ryba ?= {}
       ryba.yarn ?= {}
       ryba.mapred ?= {}
@@ -124,7 +125,7 @@ Default configuration:
       ryba.hdfs.user.home ?= '/var/lib/hadoop-hdfs'
       # Kerberos user for hdfs
       ryba.hdfs.krb5_user ?= {}
-      ryba.hdfs.krb5_user.name ?= ryba.hdfs.user.name
+      ryba.hdfs.krb5_user.principal ?= "#{ryba.hdfs.user.name}@#{realm}"
       ryba.hdfs.krb5_user.password ?= 'hdfs123'
       # Unix user for yarn
       ryba.yarn.user ?= {}
@@ -178,7 +179,7 @@ Default configuration:
       standby_nn_hosts = namenodes.filter( (server) -> ! ctx.config.servers[server].ryba?.active_nn )
       # throw new Error "Invalid Number of Passive NameNodes: #{standby_nn_hosts.length}" unless standby_nn_hosts.length is 1
       ryba.standby_nn_host = standby_nn_hosts[0]
-      ryba.static_host = 
+      ryba.static_host =
         if ryba.static_host and ryba.static_host isnt '_HOST'
         then ctx.config.host
         else '_HOST'
@@ -197,10 +198,10 @@ Default configuration:
       core_site['hadoop.security.authentication'] ?= 'kerberos'
       # Enable authorization for different protocols.
       core_site['hadoop.security.authorization'] ?= 'true'
-      # A comma-separated list of protection values for secured sasl 
+      # A comma-separated list of protection values for secured sasl
       # connections. Possible values are authentication, integrity and privacy.
-      # authentication means authentication only and no integrity or privacy; 
-      # integrity implies authentication and integrity are enabled; and privacy 
+      # authentication means authentication only and no integrity or privacy;
+      # integrity implies authentication and integrity are enabled; and privacy
       # implies all of authentication, integrity and privacy are enabled.
       # hadoop.security.saslproperties.resolver.class can be used to override
       # the hadoop.rpc.protection for a connection at the server side.
@@ -229,7 +230,7 @@ Configuration for HTTP
 Configuration for proxy users
 
       core_site['hadoop.security.auth_to_local'] ?= """
-      
+
             RULE:[2:$1@$0]([rn]m@.*)s/.*/yarn/
             RULE:[2:$1@$0](jhs@.*)s/.*/mapred/
             RULE:[2:$1@$0]([nd]n@.*)s/.*/hdfs/
@@ -346,7 +347,7 @@ will be created by one of the datanode.
 ## Install
 
 Install the "hadoop-client" and "openssl" packages as well as their
-dependecies.   
+dependecies.
 
 The environment script "hadoop-env.sh" from the HDP companion files is also
 uploaded when the package is first installed or upgraded. Be careful, the
@@ -385,7 +386,7 @@ instead enrich the original file installed by the package.
 ## Configuration
 
 Update the "core-site.xml" configuration file with properties from the
-"ryba.core_site" configuration.   
+"ryba.core_site" configuration.
 
     module.exports.push name: 'Hadoop Core # Configuration', handler: (ctx, next) ->
       {core_site, hadoop_conf_dir} = ctx.config.ryba
@@ -563,7 +564,7 @@ ${HADOOP_CONF_DIR}/core-site.xml
 
 ## Web UI
 
-This action follow the ["Authentication for Hadoop HTTP web-consoles" 
+This action follow the ["Authentication for Hadoop HTTP web-consoles"
 recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 
     module.exports.push name: 'Hadoop Core # Web UI', handler: (ctx, next) ->
@@ -587,12 +588,3 @@ recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 ## Dependencies
 
     mkcmd = require '../lib/mkcmd'
-
-
-
-
-
-
-
-
-
