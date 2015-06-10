@@ -31,7 +31,7 @@ for  kerberos properties.
           append:true
       ]
       backup: true
-    .then next
+      .then next
 
 ## Kerberos
 
