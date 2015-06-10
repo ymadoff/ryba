@@ -17,7 +17,7 @@ The yarn cluster mode makes the driver part of the spark submitted program to ru
 In this mode the driver is the yarn application master (running inside yarn)
 
 
-    module.exports.push name: 'Spark Client Cluster # Check Cluster Mode', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
+    module.exports.push name: 'Spark Client  # Check Cluster Mode ', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
       {spark} = ctx.config.ryba
       applicationId = ""
       do_spark_pi_example = ->
@@ -47,6 +47,10 @@ In this mode the driver is the yarn application master (running inside yarn)
 The yarn client mode makes the driver part of program to run on the local machine.
 The local machine is the one from which the job has been submitted ( called the client ).
 In this mode the driver is the spark master running outside yarn
+
+TODO Search the logs after the job has finished elsewhere, the yarn-client prevent the yarn history 
+server to access logs.
+
 
     # module.exports.push name: 'Spark Client  # Check Client Mode', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
     #   {spark} = ctx.config.ryba

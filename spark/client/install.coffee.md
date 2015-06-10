@@ -4,6 +4,8 @@
 Requires HDFS and Yarn. Install spark in Yarn cluster mode
 
 
+
+
     fs = require 'fs'
     quote = require 'regexp-quote'
 
@@ -100,6 +102,8 @@ Only in akka mode and fs mode ( file sharing and date streaming). The web ui doe
 Configure en environment file /etc/spark/conf/spark-env.sh and /etc/spark/conf/spark-defaults.conf
 Set the version of the hadoop cluster to the latest one. Yarn cluster mode supports starting to 2.2.2-4
 Set [Spark configuration][spark-conf] variables
+The spark.logEvent.enabled property is set to true to enable the log to be available after the job
+has finished (logs are only available in yarn-cluster mode). 
 
     module.exports.push name: 'Spark # Configure',  handler: (ctx, next) ->
       {ryba} = ctx.config
@@ -211,7 +215,8 @@ Set [Spark configuration][spark-conf] variables
 ## Spark History Server Configure
 
 We set by default the address and port of the spark web ui server
-The web ui can not be started with SSL enabled
+Those properties are not set by default to enable user to access log trought Yarn RM WEB UI
+See ryba/spark/history_server/install.coffee.md's doc for detailed information on history server.
 
     module.exports.push name: 'Spark Client HS # Configure',  handler: (ctx, next) ->
       hs = ctx.hosts_with_module 'ryba/spark/history_server'
