@@ -15,7 +15,8 @@ log. It is fast, scalable, durable and distributed by design.
       kafka.broker ?= {}
       # kafka.broker['host.name'] ?= '0.0.0.0'
       kafka.broker['port'] ?= '9092'
-      kafka.broker['log.dirs'] # Comma-separated, default is "/tmp/kafka-logs"
+      kafka.broker['log.dirs'] ?= '/var/kafka'  # Comma-separated, default is "/tmp/kafka-logs"
+      kafka.broker['log.dirs'] = kafka.broker['log.dirs'].join ',' if Array.isArray kafka.broker['log.dirs']
       kafka.broker['zookeeper.connect'] ?= ctx.config.ryba.core_site['ha.zookeeper.quorum']
       kafka.broker['log.retention.hours'] ?= '168'
       hosts = ctx.hosts_with_module 'ryba/kafka/broker'
