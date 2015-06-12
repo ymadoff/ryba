@@ -3,7 +3,6 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('../mapred_jhs').configure
 
     module.exports.push name: 'HDFS JN # Wait', label_true: 'READY', handler: (ctx, next) ->
       jn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_jn', require('./index').configure
