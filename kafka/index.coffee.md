@@ -5,6 +5,7 @@ Commons configuration and deployment actions shared between broker, producer
 and consumer Kafka components.
 
     module.exports = []
+    module.exports.push 'masson/bootstrap/'
 
 ## Configure
 
