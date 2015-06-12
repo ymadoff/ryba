@@ -42,8 +42,8 @@ The URI resources are grouped into APIs based on the type of information returne
         jhs_address = jhs_context.config.ryba.mapred.site["mapreduce.jobhistory.webapp#{jhs_protocol_key}.address"]
         ryba.yarn.site['yarn.log.server.url'] ?= "#{jhs_protocol}://#{jhs_address}/jobhistory/logs/"
       # Yarn Timeline Server
-      [ts_ctx] = ctx.contexts 'ryba/hadoop/yarn_ts', require('../yarn_ts').configure
-      ts_properties = [
+      [ats_ctx] = ctx.contexts 'ryba/hadoop/yarn_ts', require('../yarn_ts').configure
+      ats_properties = [
         'yarn.timeline-service.enabled'
         'yarn.timeline-service.address'
         'yarn.timeline-service.webapp.address'
@@ -52,8 +52,8 @@ The URI resources are grouped into APIs based on the type of information returne
         'yarn.timeline-service.http-authentication.type'
         'yarn.timeline-service.http-authentication.kerberos.principal'
       ]
-      for property in ts_properties
-        ryba.yarn.site[property] ?= if ts_ctx then ts_ctx.config.ryba.yarn.site[property] else null
+      for property in ats_properties
+        ryba.yarn.site[property] ?= if ats_ctx then ats_ctx.config.ryba.yarn.site[property] else null
 
 ## High Availability with Manual Failover
 
@@ -90,8 +90,8 @@ inside the configuration.
 
 ## High Availability with optional automatic failover
 
-      ryba.yarn.site['yarn.resourcemanager.ha.automatic-failover.enabled'] ?= 'false'
-      ryba.yarn.site['yarn.resourcemanager.ha.automatic-failover.embedded'] ?= 'false'
+      ryba.yarn.site['yarn.resourcemanager.ha.automatic-failover.enabled'] ?= 'true'
+      ryba.yarn.site['yarn.resourcemanager.ha.automatic-failover.embedded'] ?= 'true'
       # ryba.yarn.site['yarn.resourcemanager.cluster-id'] ?= 'yarn_cluster_01'
 
 ## Work Preserving Recovery
