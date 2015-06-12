@@ -8,7 +8,7 @@
 
 ## Check TCP
 
-Make sure the server is listening. The default port is "9092".
+Make sure the broker are listening. The default port is "9092".
 
     module.exports.push name: 'Kafka Producer # Check TCP', label_true: 'CHECKED', handler: (ctx, next) ->
       {kafka} = ctx.config.ryba
@@ -19,13 +19,13 @@ Make sure the server is listening. The default port is "9092".
 
 ## Check Messages
 
-Make sure the server is listening. The default port is "9092".
+Make sure the broker are listening. The default port is "9092".
 
     module.exports.push name: 'Kafka Producer # Check Messages', label_true: 'CHECKED', handler: (ctx, next) ->
       {kafka} = ctx.config.ryba
       return next() unless ctx.has_module 'ryba/kafka/consumer'
-      brokers = ctx.contexts('ryba/kafka/server', require('../server').configure).map( (ctx) ->
-        "#{ctx.config.host}:#{ctx.config.ryba.kafka.server['port']}"
+      brokers = ctx.contexts('ryba/kafka/broker', require('../broker').configure).map( (ctx) ->
+        "#{ctx.config.host}:#{ctx.config.ryba.kafka.broker['port']}"
       ).join ','
       quorum = kafka.consumer['zookeeper.connect']
       ctx.execute
