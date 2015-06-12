@@ -133,10 +133,40 @@ Environment passed to the NameNode before it starts.
         backup: true
       .then next
 
+## Include/Exclude
+
+The "dfs.hosts" property specifies the file that contains a list of hosts that
+are permitted to connect to the namenode. The full pathname of the file must be
+specified. If the value is empty, all hosts are permitted.
+
+The "dfs.hosts.exclude" property specifies the file that contains a list of
+hosts that are not permitted to connect to the namenode.  The full pathname of
+the file must be specified.  If the value is empty, no hosts are excluded.
+
+    module.exports.push name: 'HDFS NN # Include/Exclude', handler: (ctx, next) ->
+      {hdfs} = ctx.config.ryba
+      ctx
+      .write
+        content: "#{hdfs.include.join '\n'}"
+        destination: "#{hdfs.site['dfs.hosts']}"
+        eof: true
+        backup: true
+      .write
+        content: "#{hdfs.exclude.join '\n'}"
+        destination: "#{hdfs.site['dfs.hosts.exclude']}"
+        eof: true
+        backup: true
+      .then next
+
 ## Slaves
 
-The conf/slaves file should contain the hostname of every machine
-in the cluster which should start TaskTracker and DataNode daemons.
+The slaves file should contain the hostname of every machine in the cluster
+which should start TaskTracker and DataNode daemons.
+
+Helper scripts (described below) use this file in "/etc/hadoop/conf/slaves"
+to run commands on many hosts at once. In order to use this functionality, ssh
+trusts (via either passphraseless ssh or some other means, such as Kerberos)
+must be established for the accounts used to run Hadoop.
 
     module.exports.push name: 'HDFS NN # Slaves', handler: (ctx, next) ->
       {hadoop_conf_dir} = ctx.config.ryba

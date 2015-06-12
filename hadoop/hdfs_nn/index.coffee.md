@@ -25,7 +25,9 @@ Example:
 {
   "ryba": {
     "hdfs": {
-      "namenode_opts": "-Xms1024m -Xmx1024m"
+      "namenode_opts": "-Xms1024m -Xmx1024m",
+      "include": ["in.my.cluster"],
+      "exclude": "not.in.my.cluster"
     }
   }
 }
@@ -42,7 +44,13 @@ Example:
       # For example, /data/1/hdfs/nn,/data/2/hdfs/nn.
       ryba.hdfs.site['dfs.namenode.name.dir'] ?= ['/var/hdfs/name']
       ryba.hdfs.site['dfs.namenode.name.dir'] = ryba.hdfs.site['dfs.namenode.name.dir'].join ',' if Array.isArray ryba.hdfs.site['dfs.namenode.name.dir']
-
+      # Network
+      ryba.hdfs.site['dfs.hosts'] ?= "#{ryba.hadoop_conf_dir}/dfs.include"
+      ryba.hdfs.include ?= ctx.hosts_with_module 'ryba/hadoop/hdfs_dn'
+      ryba.hdfs.include = string.lines ryba.hdfs.include if typeof ryba.hdfs.include is 'string'
+      ryba.hdfs.site['dfs.hosts.exclude'] ?= "#{ryba.hadoop_conf_dir}/dfs.exclude"
+      ryba.hdfs.exclude ?= []
+      ryba.hdfs.exclude = string.lines ryba.hdfs.exclude if typeof ryba.hdfs.exclude is 'string'
       unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
         ryba.hdfs.site['dfs.namenode.http-address'] ?= '0.0.0.0:50070'
         ryba.hdfs.site['dfs.namenode.https-address'] ?= '0.0.0.0:50470'
@@ -134,5 +142,9 @@ service's TCP port.
     module.exports.push commands: 'status', modules: 'ryba/hadoop/hdfs_nn/status'
 
     module.exports.push commands: 'stop', modules: 'ryba/hadoop/hdfs_nn/stop'
+
+## Dependencies
+
+    string = require 'mecano/lib/misc/string'
 
 [keys]: https://github.com/apache/hadoop-common/blob/trunk/hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSConfigKeys.java
