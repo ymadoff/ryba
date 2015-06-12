@@ -26,7 +26,7 @@
       spark.group.name ?= 'spark'
       spark.group.system ?= true
       spark.user.gid ?= spark.group.name
-      spark.client_dir ?= 'usr/hdp/current/spark-client/'
+      spark.client_dir ?= '/usr/hdp/current/spark-client/'
       spark.conf_dir ?= '/usr/hdp/current/spark-client/conf'
       #not sure about the port of the webui from the configuration page these port and address is
       # the one of  yarn history server, but ambari and hortonworks does set these to a different

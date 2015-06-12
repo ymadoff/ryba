@@ -2,6 +2,9 @@
 
 The history servers comes with the spark-client package. The single difference is in the configuration
 for  kerberos properties.
+We does not recommand using the spark WEB UI because it does not support SSL. Moreover it does make Yarn
+redirect the tracking URL to the WEBUI which prevents the user to see the log after the job has finished
+in the resource Manager web interface.
 
 
 
@@ -31,7 +34,7 @@ for  kerberos properties.
           append:true
       ]
       backup: true
-    .then next
+      .then next
 
 ## Kerberos
 

@@ -4,6 +4,8 @@
 Requires HDFS and Yarn. Install spark in Yarn cluster mode
 
 
+
+
     fs = require 'fs'
     quote = require 'regexp-quote'
 
@@ -12,11 +14,12 @@ Requires HDFS and Yarn. Install spark in Yarn cluster mode
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
     module.exports.push require '../../lib/hdp_select'
+    module.exports.push require '../../lib/hconfigure'
 
 
 ## Spark Users And Group
 
-    module.exports.push name: 'Falcon # Users & Groups', handler: (ctx, next) ->
+    module.exports.push name: 'Spark # Users & Groups', handler: (ctx, next) ->
       {spark} = ctx.config.ryba
       ctx.group spark.group
       .user spark.user
@@ -99,6 +102,8 @@ Only in akka mode and fs mode ( file sharing and date streaming). The web ui doe
 Configure en environment file /etc/spark/conf/spark-env.sh and /etc/spark/conf/spark-defaults.conf
 Set the version of the hadoop cluster to the latest one. Yarn cluster mode supports starting to 2.2.2-4
 Set [Spark configuration][spark-conf] variables
+The spark.logEvent.enabled property is set to true to enable the log to be available after the job
+has finished (logs are only available in yarn-cluster mode). 
 
     module.exports.push name: 'Spark # Configure',  handler: (ctx, next) ->
       {ryba} = ctx.config
@@ -144,20 +149,25 @@ Set [Spark configuration][spark-conf] variables
         .write
           destination: "#{spark.conf_dir}/spark-defaults.conf"
           write: [
-            match: /^spark\.driver\.extraJavaOptions*$/mg
-            replace: "spark.driver.extraJavaOptions -Dhdp.version=#{hdp_select_version}"# Modified by RYBA Spark Client Install
+            match: /^spark\.eventLog\.enabled.*$/mg
+            replace: "spark.eventLog.enabled true"
+            append: true
+
+          ,
+            match: /^spark\.driver\.extraJavaOptions.*$/mg
+            replace: "spark.driver.extraJavaOptions -Dhdp.version=#{hdp_select_version}"
             append: true
           ,
             match: /^spark\.yarn\.services.*$/mg
-            replace: "spark.yarn.services org.apache.spark.deploy.yarn.history.YarnHistoryService"# Modified by RYBA Spark Client Install
+            replace: "spark.yarn.services org.apache.spark.deploy.yarn.history.YarnHistoryService"
             append: true
           ,
             match: /^spark\.history\.provider.*$/mg
-            replace: "spark.history.provider org.apache.spark.deploy.yarn.history.YarnHistoryProvider"# Modified by RYBA Spark Client Install
+            replace: "spark.history.provider org.apache.spark.deploy.yarn.history.YarnHistoryProvider"
             append: true
           ,
             match: /^spark\.yarn\.am\.extraJavaOptions.*$/mg
-            replace: "spark.yarn.am.extraJavaOptions -Dhdp.version=#{hdp_select_version}"# Modified by RYBA Spark Client Install
+            replace: "spark.yarn.am.extraJavaOptions -Dhdp.version=#{hdp_select_version}"
             append: true
           ]
           backup: true
@@ -165,64 +175,68 @@ Set [Spark configuration][spark-conf] variables
           destination: "#{spark.conf_dir}/spark-defaults.conf"
           write: [
             match: /^spark\.ssl\.enabled.*$/m
-            replace: "spark.ssl.enabled #{fs['enabled']}"# Modified by RYBA Spark History Server Install
+            replace: "spark.ssl.enabled #{fs['enabled']}"
             append:true
           ,
             match: /^spark\.ssl\.enabledAlgorithms.*$/m
-            replace: "spark.ssl.enabledAlgorithms #{fs['spark.ssl.enabledAlgorithms']}"# Modified by RYBA Spark History Server Install
+            replace: "spark.ssl.enabledAlgorithms #{fs['spark.ssl.enabledAlgorithms']}"
             append:true
           ,
             match: /^spark\.ssl\.keyPassword.*$/m
-            replace: "spark.ssl.keyPassword #{fs['spark.ssl.keyPassword']}"# Modified by RYBA Spark History Server Install
+            replace: "spark.ssl.keyPassword #{fs['spark.ssl.keyPassword']}"
             append:true
           ,
             match: /^spark\.ssl\.keyStore.*$/m
-            replace: "spark.ssl.keyStore #{fs['spark.ssl.keyStore']}"# Modified by RYBA Spark History Server Install
+            replace: "spark.ssl.keyStore #{fs['spark.ssl.keyStore']}"
             append:true
           ,
             match: /^spark\.ssl\.keyStorePassword.*$/m
-            replace: "spark.ssl.keyStorePassword #{fs['spark.ssl.keyStorePassword']}"# Modified by RYBA Spark History Server Install
+            replace: "spark.ssl.keyStorePassword #{fs['spark.ssl.keyStorePassword']}"
             append:true
           ,
             match: /^spark\.ssl\.truststore.*$/m
-            replace: "spark.ssl.truststore #{fs['spark.ssl.trustStore']}"# Modified by RYBA Spark History Server Install
+            replace: "spark.ssl.truststore #{fs['spark.ssl.trustStore']}"
             append:true
           ,
             match: /^spark\.ssl\.trustStorePassword.*$/m
-            replace: "spark.ssl.trustStorePassword #{fs['spark.ssl.trustStorePassword']}"# Modified by RYBA Spark History Server Install
+            replace: "spark.ssl.trustStorePassword #{fs['spark.ssl.trustStorePassword']}"
             append:true
           ,
             match: /^spark\.ssl\.protocol.*$/m
-            replace: "spark.ssl.protocol #{fs['spark.ssl.protocol']}"# Modified by RYBA Spark History Server Install
+            replace: "spark.ssl.protocol #{fs['spark.ssl.protocol']}"
             append:true
           ]
           backup: true
           if: spark.ssl.fs['enabled']
         .then next
+      do_get_hdp_version()
 
 
 ## Spark History Server Configure
 
 We set by default the address and port of the spark web ui server
-The web ui can not be started with SSL enabled
+Those properties are not set by default to enable user to access log trought Yarn RM WEB UI
+See ryba/spark/history_server/install.coffee.md's doc for detailed information on history server.
 
     module.exports.push name: 'Spark Client HS # Configure',  handler: (ctx, next) ->
-      {spark} = ctx.config.ryba
-      require("../history_server/index").configure ctx
       hs = ctx.hosts_with_module 'ryba/spark/history_server'
-      ctx.write
-        destination: "#{spark.conf_dir}/spark-defaults.conf"
-        write: [
-          match: /^spark\.yarn\.historyServer\.address.*$/m
-          replace: "spark.yarn.historyServer.address #{hs[0]}\:#{spark.history_server.port}"
-          append: true
-        ,
-          match: /^spark\.history\.ui\.port.*$/mg
-          replace: "spark.history.ui.port #{spark.history_server.port}"
-          append: true
-        ]
-        backup: true
-      .then next
+      if hs.length > 1
+        {spark} = ctx.config.ryba
+        require("../history_server/index").configure ctx
+        ctx.write
+          destination: "#{spark.conf_dir}/spark-defaults.conf"
+          write: [
+            match: /^spark\.yarn\.historyServer\.address.*$/m
+            replace: "spark.yarn.historyServer.address #{hs[0]}\:#{spark.history_server.port}"
+            append: true
+          ,
+            match: /^spark\.history\.ui\.port.*$/mg
+            replace: "spark.history.ui.port #{spark.history_server.port}"
+            append: true
+          ]
+          backup: true
+        .then next
+      else next null, false 
 
 
 ## Spark Files Permissions
@@ -235,7 +249,7 @@ The web ui can not be started with SSL enabled
           hdfs dfs -chown #{spark.user.name}:#{spark.group.name}  /user/spark
           hdfs dfs -chmod -R 755 /user/spark
           """
-      .next
+      .then next
 
     mkcmd = require '../../lib/mkcmd'
 
