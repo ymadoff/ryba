@@ -45,6 +45,7 @@ A list for configuration properties supported by HDP 2.2 is available on the
       tez_memory_xmx = /-Xmx(.*?)m/.exec(ryba.tez.tez_site['hive.tez.java.opts'])?[1] or Math.floor .8 * am_memory_mb
       tez_memory_xmx = Math.min rm_memory_max_mb, tez_memory_xmx
       ryba.tez.tez_site['hive.tez.java.opts'] ?= "-Xmx#{tez_memory_xmx}m"
+      require('./deprecated') ctx
 
 ## Commands
 
