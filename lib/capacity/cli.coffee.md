@@ -70,16 +70,19 @@ node node_modules/ryba/bin/capacity \
         description: 'List of disk partitions unless discovered.'
       ,
         name: 'hdfs_nn_name_dir' # default: './hdfs/name'
-        description: 'Absolute path to a single directory or relative path to the HDFS NameNode name directories.'
+        description: 'Absolute path to a single directory or relative path to the HDFS NameNode directories.'
       ,
-        name: 'hdfs_dn_data_dir' # default: './hdfs/data'
-        description: 'Relative path to the HDFS DataNode local directories.'
+        name: 'hdfs_dn_data_dir' # default: './hdfs/data', eg '/mydata/1/hdfs/dn,/mydata/2/hdfs/dn'
+        description: 'List of absolute paths or a relative path for HDFS DataNode directories.'
       ,
-        name: 'yarn_nm_local_dir' # default: './yarn/local'
-        description: 'Relative path to the YARN NodeManager local directories.'
+        name: 'yarn_nm_local_dir' # default: './yarn/local', eg '/mydata/1/yarn/local,/mydata/2/yarn/local'
+        description: 'List of absolute paths or a relative path for YARN NodeManager directories.'
       ,
-        name: 'yarn_nm_log_dir' # default: './yarn/log'
-        description: 'Relative path to the YARN NodeManager local directories.'
+        name: 'yarn_nm_log_dir' # default: './yarn/log', eg '/mydata/1/yarn/log,/mydata/2/yarn/log'
+        description: 'List of absolute paths or a relative path for YARN NodeManager directories.'
+      ,
+        name: 'kafka_data_dir' # default: './kafka', eg '/mydata/1/kafka,/mydata/2/kafka'
+        description: 'List of absolute paths or a relative path for Kafka Broker directories.'
       ]
 
 ## Dependencies

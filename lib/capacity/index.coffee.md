@@ -14,7 +14,6 @@ default setting for Yarn and its client application such as MapReduce or Tez.
     exports = module.exports = (params, config, callback) ->
       config.params = params
       exports.contexts config, (err, ctxs) ->
-        console.log 'start'
         return callback err if err
         return callback Error 'No Servers Configured' unless Object.keys(ctxs).length
         do_configure = ->
@@ -64,9 +63,12 @@ default setting for Yarn and its client application such as MapReduce or Tez.
         do_hive_client = ->
           exports.hive_client ctxs, (err) ->
             return callback err if err
+            do_kafka_broker ctxs
+        do_kafka_broker = ->
+          exports.kafka_broker ctxs, (err) ->
+            return callback err if err
             do_remote ctxs
         do_remote = ->
-          console.log 'remote'
           exports.remote ctxs, (err) ->
             return callback err if err
             do_write ctxs
@@ -75,13 +77,11 @@ default setting for Yarn and its client application such as MapReduce or Tez.
         #     return callback err if err
         #     do_write()
         do_write = ->
-          console.log 'write'
           exports.write config, ctxs, (err) ->
             return callback err if err
             do_end()
         do_end = ->
           ctx.emit 'end' for ctx in ctxs
-          console.log 'done'
           callback null
         do_configure()
 
@@ -117,7 +117,7 @@ Normalize configuration.
         ctx.config.ryba ?= {}
         ctx.config.capacity ?= {}
         ctx.config.capacity.remote ?= {}
-        for conf in ['hdfs_site', 'yarn_site', 'mapred_site', 'hive_site', 'capacity_scheduler', 'hbase_site']
+        for conf in ['hdfs_site', 'yarn_site', 'mapred_site', 'hive_site', 'capacity_scheduler', 'hbase_site', 'kafka_broker']
           ctx.config.capacity[conf] ?= {}
           ctx.config.capacity.remote[conf] ?= {}
         ctx.config.capacity.capacity_scheduler['yarn.scheduler.capacity.resource-calculator'] ?= 'org.apache.hadoop.yarn.util.resource.DominantResourceCalculator'
@@ -194,7 +194,6 @@ depending on the total amout of memory.
         else
           for mem in exports.memory_system_gb
             [total, reserved] = mem
-            # console.log memory_system_gb, ":", total_memory_gb, '<', total
             break if total_memory_gb < total
             memory_system_gb = reserved
         memory_hbase_gb = 0
@@ -240,7 +239,6 @@ depending on the total amout of memory.
         # max(MIN_CONTAINER_SIZE, (Total Available RAM) / containers))
         unless memory_per_container = ctx.config.capacity.memory_per_container
           memory_per_container = Math.floor Math.max minimum_container_size, memory_yarn / max_number_of_containers
-        # console.log 'memory_per_container', memory_per_container, 'max_number_of_containers', max_number_of_containers
 
         # # Work with small VM
         # if memory_per_container < 512 * 1024 * 1024
@@ -465,10 +463,22 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
 
       next()
 
+    exports.kafka_broker = (ctxs, next) ->
+      for ctx in ctxs
+        continue unless ctx.has_any_modules 'ryba/kafka/broker'
+        {disks, kafka_broker} = ctx.config.capacity
+        {kafka_data_dir} = ctx.config.params
+        if /^\//.test kafka_data_dir
+          kafka_broker['log.dirs'] ?= kafka_data_dir.split ','
+        else
+          kafka_broker['log.dirs'] ?= disks.map (disk) ->
+            path.resolve disk, kafka_data_dir or './kafka'
+      next()
+
     exports.remote = (ctxs, next) ->
       each(ctxs)
       .parallel(true)
-      .on 'item', (ctx, next) ->
+      .run (ctx, next) ->
         do_hdfs = ->
           return do_yarn_capacity_scheduler() unless ctx.has_any_modules 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn'
           properties.read ctx.ssh, '/etc/hadoop/conf/hdfs-site.xml', (err, hdfs_site) ->
@@ -490,9 +500,22 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
             ctx.config.capacity.remote.mapred_site = mapred_site unless err
             do_hive()
         do_hive = ->
-          return do_end() unless ctx.has_any_modules 'ryba/hive/client'
+          return do_kafka_broker() unless ctx.has_any_modules 'ryba/hive/client'
           properties.read ctx.ssh, '/etc/hive/conf/hive-site.xml', (err, hive_site) ->
             ctx.config.capacity.remote.hive_site = hive_site unless err
+            do_kafka_broker()
+        do_kafka_broker = ->
+          return do_end() unless ctx.has_any_modules 'ryba/kafka/broker'
+          ssh2fs.readFile ctx.ssh, '/etc/kafka/conf/broker.properties', 'ascii', (err, content) ->
+            return do_end() if err
+            properties = {}
+            for line in string.lines content
+              continue if /^#.*$/.test line
+              continue unless /.+=.+/.test line
+              [key, value] = line.split '='
+              properties[key.trim()] = value.trim()
+            properties
+            ctx.config.capacity.remote.kafka_broker = properties
             do_end()
         # do_hbase = ->
         #   return do_end() unless ctx.has_any_modules 'ryba/hbase/regionserver'
@@ -503,7 +526,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           ctx.ssh.end()
           ctx.ssh.on 'end', next
         do_hdfs()
-      .on 'both', next
+      .then next
 
     exports.write = (config, ctxs, next) ->
       # return next() unless config.params.output
@@ -526,7 +549,6 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
       exports["write_#{config.params.format}"] config, ctxs, (err, content) ->
         return next err if err
         # return next() unless config.params.output
-        # console.log 'SSSAAAVVVEEE', config.params.output
         # # fs.stat config.params.output
         next()
 
@@ -540,6 +562,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           do_write fs.createWriteStream config.params.output, encoding: 'utf8'
       do_write = (ws) ->
         print = (config, properties) ->
+          {capacity} = ctx.config
           for property in properties
             suggested_value = capacity[config][property]
             remote_value = capacity.remote[config][property]
@@ -554,7 +577,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
                   ws.write ', '
               ws.write "\n    ]"
               remote_value = remote_value.split(',') if typeof remote_value is 'string'
-              if suggested_value.join(',') isnt remote_value.join(',')
+              if suggested_value.join(',') isnt remote_value?.join(',')
                 ws.write " (currently [\n"
                 if remote_value then for v, i in remote_value
                   ws.write "      " if i % 3 is 0
@@ -622,6 +645,10 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
             ws.write "  HBase RegionServer\n"
             {regionserver_opts} = ctx.config.capacity
             ws.write "    hbase-env: #{regionserver_opts}\n"
+          print_kafka_broker = not config.params.modules or multimatch(config.params.modules, 'ryba/kafka/broker').length
+          if ctx.has_module('ryba/kafka/broker') and print_kafka_broker
+            ws.write "  Kafka Broker\n"
+            print 'kafka_broker', ['log.dirs']
         do_end ws
       do_end = (ws) ->
         ws.end() if config.params.output
@@ -700,7 +727,6 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
             ws.write "#     Memory per Containers: #{prink.filesize capacity.memory_per_container, 3}\n"
       do_end = (ws) ->
         # ws.end() if config.params.output
-        console.log 'end'
         ws.end() if ws
         next()
       do_open()
@@ -742,6 +768,11 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           server.ryba.hbase ?= {}
           server.ryba.hbase.regionserver_opts = capacity.regionserver_opts
         servers[ctx.config.host] = server
+        print_kafka_broker = not config.params.modules or multimatch(config.params.modules, 'ryba/kafka/broker').length
+        if ctx.has_any_modules('ryba/kafka/broker') and print_hbase_regionserver
+          server.ryba.kafka ?= {}
+          server.ryba.kafka.broker = capacity.kafka_broker
+        servers[ctx.config.host] = server
       servers
 
     exports.rounded_memory = (memory) ->
@@ -771,8 +802,10 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
 ## Dependencies
 
     fs = require 'fs'
+    ssh2fs = require 'ssh2-fs'
     run = require 'masson/lib/run'
     {merge} = require 'mecano/lib/misc'
+    string = require 'mecano/lib/misc/string'
     parameters = require 'parameters'
     multimatch = require 'multimatch'
     each = require 'each'
