@@ -43,6 +43,22 @@ Update the file "broker.properties" with the properties defined by the
         eof: true
       .then next
 
+## Layout
+
+Directories in which Kafka data is stored. Each new partition that is created
+will be placed in the directory which currently has the fewest partitions.
+
+    module.exports.push name: 'Kafka Broker # Layout', handler: (ctx, next) ->
+      {kafka} = ctx.config.ryba
+      ctx.mkdir (
+        destination: dir
+        uid: kafka.user.name
+        gid: kafka.group.name
+        mode: 0o0750
+        parent: true
+      ) for dir in kafka.broker['log.dirs'].split ','
+      ctx.then next
+
 ## Dependencies
 
     quote = require 'regexp-quote'
