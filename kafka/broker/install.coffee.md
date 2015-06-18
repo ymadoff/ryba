@@ -37,7 +37,7 @@ Update the file "broker.properties" with the properties defined by the
         replace: "#{k}=#{v}"
         append: true
       ctx.write
-        destination: "#{kafka.conf_dir}/broker.properties"
+        destination: "#{kafka.conf_dir}/server.properties"
         write: write
         backup: true
         eof: true
