@@ -26,12 +26,12 @@ through SSH over another one where the public key isn't yet deployed.
       ctx.execute
         cmd: mkcmd.hdfs ctx, "curl --negotiate -k -u : #{protocol}://#{address}/jmx?qry=Hadoop:service=NameNode,name=NameNodeStatus"
       , (err, executed, stdout) ->
-        return next err if err
+        throw err if err
         data = JSON.parse stdout
         # After HDP2.2, the response needs some time before returning any beans
-        return next Error "Invalid Response" unless Array.isArray data?.beans
-        # return next Error "Invalid Response" unless /^Hadoop:service=NameNode,name=NameNodeStatus$/.test data?.beans[0]?.name
-        # return next Error "WARNING: Invalid security (#{data.beans[0].SecurityEnabled}, instead of #{securityEnabled}" unless data.beans[0].SecurityEnabled is securityEnabled
+        throw Error "Invalid Response" unless Array.isArray data?.beans
+        # throw Error "Invalid Response" unless /^Hadoop:service=NameNode,name=NameNodeStatus$/.test data?.beans[0]?.name
+        # throw Error "WARNING: Invalid security (#{data.beans[0].SecurityEnabled}, instead of #{securityEnabled}" unless data.beans[0].SecurityEnabled is securityEnabled
       .then next
 
 ## Check Health

@@ -224,7 +224,7 @@ Configuration for HTTP
       # Cluster domain
       unless core_site['hadoop.http.authentication.cookie.domain']
         domains = ctx.hosts_with_module('ryba/hadoop/core').map( (host) -> host.split('.').slice(1).join('.') ).filter( (el, pos, self) -> self.indexOf(el) is pos )
-        return next new Error "Multiple domains, set 'hadoop.http.authentication.cookie.domain' manually" if domains.length isnt 1
+        throw Error "Multiple domains, set 'hadoop.http.authentication.cookie.domain' manually" if domains.length isnt 1
         core_site['hadoop.http.authentication.cookie.domain'] = domains[0]
 
 Configuration for proxy users

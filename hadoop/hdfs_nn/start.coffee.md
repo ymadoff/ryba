@@ -44,7 +44,7 @@ need a mojority of DataNodes to be started in order to exit safe mode.
           hdfs dfsadmin -safemode get | grep OFF
           """
         interval: 3000
-      , (err) -> next err
+      , next
 
 ## Wait Failover
 

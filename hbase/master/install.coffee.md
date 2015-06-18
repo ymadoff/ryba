@@ -108,7 +108,7 @@ Environment passed to the Master before it starts.
 
     module.exports.push name: 'HBase Master # HDFS layout', timeout: -1, handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
-      ctx.waitForExecution mkcmd.hdfs(ctx, "hdfs dfs -test -d /apps"), code_skipped: 1, (err) ->
+      ctx.waitForExecution mkcmd.hdfs(ctx, "hdfs dfs -test -d /apps"), (err) -> # , code_skipped: 1
         return next err if err
         dirs = hbase.site['hbase.bulkload.staging.dir'].split '/'
         return next err "Invalid property \"hbase.bulkload.staging.dir\"" unless dirs.length > 2 and path.join('/', dirs[0], '/', dirs[1]) is '/apps'

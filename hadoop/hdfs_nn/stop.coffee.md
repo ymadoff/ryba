@@ -7,7 +7,7 @@
 
 ## Stop NameNode
 
-Stop the HDFS Namenode Server. You can also stop the server manually with one of
+Stop the HDFS Namenode service. You can also stop the server manually with one of
 the following two commands:
 
 ```
@@ -22,13 +22,15 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
         if_exists: '/etc/init.d/hadoop-hdfs-namenode'
       .then next
 
+## Stop Clean Logs
+
+Remove the "\*-namenode-\*" log files if the property "ryba.clean_logs" is
+activated.
+
     module.exports.push name: 'HDFS NN # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
-      return next() unless ctx.config.ryba.clean_logs
       ctx
       .execute
         cmd: 'rm /var/log/hadoop-hdfs/*/*-namenode-*'
         code_skipped: 1
-      .execute
-        cmd: 'rm /var/log/hadoop-hdfs/*/*-zkfc-*'
-        code_skipped: 1
+        if: ctx.config.ryba.clean_logs
       .then next

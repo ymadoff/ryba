@@ -16,9 +16,9 @@ Check the Timeline Server.
       ctx.execute
         cmd: mkcmd.hdfs ctx, "curl --negotiate -k -u : #{protocol}://#{address}/jmx?qry=Hadoop:service=ApplicationHistoryServer,name=JvmMetrics"
       , (err, executed, stdout) ->
-        return next err if err
+        throw err if err
         data = JSON.parse stdout
-        return next Error "Invalid Response" unless Array.isArray data?.beans
+        throw Error "Invalid Response" unless Array.isArray data?.beans
       .then next
 
 # Dependencies

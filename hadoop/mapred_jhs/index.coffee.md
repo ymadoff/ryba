@@ -48,7 +48,7 @@ mapred-site.xml. Create these two directories. Set permissions on
 mapreduce.jobhistory.intermediate-done-dir to 1777. Set permissions on
 mapreduce.jobhistory.done-dir to 750.
 
-      ryba.mapred.site['yarn.app.mapreduce.am.staging-dir'] = null
+      ryba.mapred.site['yarn.app.mapreduce.am.staging-dir'] = "/user"
       ryba.mapred.site['mapreduce.jobhistory.done-dir'] ?= '/mr-history/done' # Directory where history files are managed by the MR JobHistory Server.
       ryba.mapred.site['mapreduce.jobhistory.intermediate-done-dir'] ?= '/mr-history/tmp' # Directory where history files are written by MapReduce jobs.
 

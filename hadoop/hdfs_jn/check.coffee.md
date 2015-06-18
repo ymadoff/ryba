@@ -18,7 +18,7 @@ Check if the JournalNode is running as expected.
       .execute
         cmd: mkcmd.hdfs ctx, "curl --negotiate -k -u : #{protocol}://#{ctx.config.host}:#{port}/jmx?qry=Hadoop:service=JournalNode,name=JournalNodeInfo"
       , (err, executed, stdout) ->
-        return next err if err
+        throw err if err
         data = JSON.parse stdout
         throw Error "Invalid Response" unless data.beans[0].name is 'Hadoop:service=JournalNode,name=JournalNodeInfo'
       .then next
