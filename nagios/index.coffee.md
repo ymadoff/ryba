@@ -77,17 +77,21 @@ Example
       nagios.groupcmd ?= {}
       nagios.groupcmd.name ?= 'nagiocmd'
       nagios.groupcmd.system ?= true      
-      # WebUI Users
+      # WebUI Users & Groups
       nagios.users ?= {}
-      if Object.getOwnPropertyNames(nagios.users).length is 0 then nagios.users.nagiosadmin =
-        password: 'nagios123'
-        alias: 'Nagios Admin'
-        email: ''
-      # WebUI Groups
+      unless Object.keys(nagios.users).length
+        nagios.users.nagiosadmin =
+          password: 'nagios123'
+          alias: 'Nagios Admin'
+          email: ''
       nagios.groups ?= {}
-      if Object.getOwnPropertyNames(nagios.groups).length is 0 then nagios.groups.admins =
+      unless Object.keys(nagios.groups).length
+        members = if nagios.users.nagiosadmin
+        then ['nagiosadmin']
+        else Object.keys nagios.users
+        nagios.groups.admins =
           alias: 'Nagios Administrators'
-          members: ['nagiosadmin']
+          members: members
       # Kerberos
       nagios.keytab ?= '/etc/security/keytabs/nagios.service.keytab'
       nagios.principal ?= "nagios/#{ctx.config.host}@#{ctx.config.ryba.realm}"

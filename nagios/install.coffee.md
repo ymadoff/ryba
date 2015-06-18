@@ -267,7 +267,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
         destination: '/etc/nagios/objects/hadoop-servicegroups.cfg'
         context:
           hostgroup_defs: hostgroup_defs
-      , next
+      .then next
 
     module.exports.push name: 'Nagios # Services', handler: (ctx, next) ->
       {nagios, force_check, active_nn_host, core_site, hdfs, zookeeper,
