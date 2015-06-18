@@ -45,10 +45,10 @@ rrdcached:x:493:
 
     module.exports.push name: 'Ganglia Collector # Users & Groups', handler: (ctx, next) ->
       {rrdcached_group, rrdcached_user} = ctx.config.ryba.ganglia
-      ctx.group rrdcached_group, (err, gmodified) ->
-        return next err if err
-        ctx.user rrdcached_user, (err, umodified) ->
-          next err, gmodified or umodified
+      ctx
+      .group rrdcached_group
+      .user rrdcached_user
+      .then next
 
 ## IPTables
 
