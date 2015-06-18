@@ -8,6 +8,7 @@ Wait for the ResourceManager RPC and HTTP ports. It supports HTTPS and HA.
 
     module.exports.push name: 'YARN TS # Wait HTTP', timeout: -1, label_true: 'READY', handler: (ctx, next) ->
       [ats_ctx] = ctx.contexts modules: 'ryba/hadoop/yarn_ts', require('./index').configure
+      return next() unless ats_ctx
       {yarn} = ats_ctx.config.ryba
       protocol = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       address_key = if protocol is 'http' then "address" else "https.address"
