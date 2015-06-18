@@ -26,17 +26,19 @@ information for the applications running inside YARN.
       # Generic-data related Configuration
       # Yarn doc: yarn.timeline-service.generic-application-history.enabled = false
       yarn.site['yarn.timeline-service.generic-application-history.store-class'] ?= "org.apache.hadoop.yarn.server.applicationhistoryservice.FileSystemApplicationHistoryStore"
+      yarn.site['yarn.timeline-service.fs-history-store.uri'] ?= '/apps/ats' # Not documented, default to "$(hadoop.tmp.dir)/yarn/timeline/generic-history""
+      # Enabling Generic Data Collection (HDP specific)
+      yarn.site['yarn.resourcemanager.system-metrics-publisher.enabled'] ?= "true"
       # Per-framework-date related Configuration
       # Indicates to clients whether or not the Timeline Server is enabled. If
       # it is enabled, the TimelineClient library used by end-users will post
       # entities and events to the Timeline Server.
       yarn.site['yarn.timeline-service.enabled'] ?= "true"
+      # Timeline Server Store
       yarn.site['yarn.timeline-service.store-class'] ?= "org.apache.hadoop.yarn.server.timeline.LeveldbTimelineStore"
       yarn.site['yarn.timeline-service.leveldb-timeline-store.path'] ?= "/var/yarn/timeline"
       yarn.site['yarn.timeline-service.ttl-enable'] ?= "true"
       yarn.site['yarn.timeline-service.ttl-ms'] ?= "#{604800000 * 2}" # 14 days
-      # Enabling Generic Data Collection (HDP specific)
-      yarn.site['yarn.resourcemanager.system-metrics-publisher.enabled'] ?= "true"
       # Kerberos Authentication
       yarn.site['yarn.timeline-service.principal'] ?= "ats/_HOST@#{realm}"
       yarn.site['yarn.timeline-service.keytab'] ?= '/etc/security/keytabs/ats.service.keytab'
