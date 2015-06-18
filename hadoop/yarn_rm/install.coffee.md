@@ -20,12 +20,6 @@
 | resourcemanager | 8090  | https  | yarn.resourcemanager.webapp.https.address     |
 | resourcemanager | 8141  | tcp    | yarn.resourcemanager.admin.address            | x
 
-| Service  | Port  | Proto  | Parameter                                  |
-|----------|-------|--------|--------------------------------------------|
-| timeline | 10200 | tcp    | yarn.timeline-service.address              |
-| timeline | 8188  | tcp    | yarn.timeline-service.webapp.address       | x
-| timeline | 8190  | tcp    | yarn.timeline-service.webapp.https.address | x
-
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
@@ -180,14 +174,15 @@ ResourceCalculator class name is expected.
         default: "#{__dirname}/../../resources/core_hadoop/capacity-scheduler.xml"
         local_default: true
         properties: capacity_scheduler
-        merge: true
+        merge: false
+        backup: true
       , (err, status) ->
         return if err or not status
         refresh = true
       .execute
         cmd: mkcmd.hdfs ctx, 'service hadoop-yarn-resourcemanager status && yarn rmadmin -refreshQueues'
-        code_skipped: 3
-        if: -> refresh
+        code_skipped: [1, 3] # 1: if pid file exists but rm not running
+        if: -> refresh or ctx.retry > 0
       .then (err, status) ->
         next err, status
 
