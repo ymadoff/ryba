@@ -23,7 +23,7 @@ kill ...
       {titan, rexster} = ctx.config.ryba
       ctx.execute
         cmd: """
-        p=`ps aux | grep "com.tinkerpop.rexster.Application"`
+        p=`ps aux | grep "com.tinkerpop.rexster.Application" | grep -v grep`
         if [ -z "$p" ]; then exit 3; fi
         #{path.join titan.home, 'bin', 'rexster.sh'} --stop --wait -rp #{rexster.config['shutdown-port']} | grep 'Rexster Server shutdown complete'
         """
