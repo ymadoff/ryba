@@ -102,9 +102,9 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       {rexster, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
       ctx.krb5_addprinc
-        principal: rexster.principal
+        principal: rexster.krb5_user.principal
         randkey: true
-        keytab: rexster.keytab
+        keytab: rexster.krb5_user.keytab
         uid: rexster.user.name
         gid: rexster.group.name
         kadmin_principal: kadmin_principal
