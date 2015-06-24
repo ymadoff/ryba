@@ -355,11 +355,12 @@ original file will be overwritten with and user modifications. A copy will be
 made available in the same directory after any modification.
 
     module.exports.push name: 'Hadoop Core # Install', timeout: -1, handler: (ctx, next) ->
-      ctx.service [
+      ctx
+      .service
         name: 'openssl'
-      ,
+      .service
         name: 'hadoop-client'
-      ], next
+      .then next
 
 ## Env
 
@@ -381,7 +382,7 @@ instead enrich the original file installed by the package.
           mode: 0o755
           backup: true
           eof: true
-        , next
+        .then next
 
 ## Configuration
 
@@ -482,7 +483,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
           write: write
           backup: true
           eof: true
-        , next
+        .then next
 
 ## Policy
 
@@ -524,7 +525,7 @@ ${HADOOP_CONF_DIR}/core-site.xml
         uid: 'root'
         gid: hadoop_group.name
         mode: 0o0755
-      , next
+      .then next
 
     module.exports.push name: 'Hadoop Core # Compression', timeout: -1, handler: (ctx, next) ->
       { hadoop_conf_dir } = ctx.config.ryba
@@ -544,15 +545,16 @@ ${HADOOP_CONF_DIR}/core-site.xml
             modified = true
             do_lzo()
       do_lzo = ->
-        ctx.service [
+        ctx
+        .service
           name: 'lzo'
-        ,
+        .service
           name: 'lzo-devel'
-        ,
+        .service
           name: 'hadoop-lzo'
-        ,
+        .service
           name: 'hadoop-lzo-native'
-        ], (err, serviced) ->
+        .then (err, serviced) ->
           return next err if err
           modified = true if serviced
           do_end()
@@ -570,19 +572,44 @@ recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
       ctx.execute
         cmd: 'dd if=/dev/urandom of=/etc/hadoop/hadoop-http-auth-signature-secret bs=1024 count=1'
         not_if_exists: '/etc/hadoop/hadoop-http-auth-signature-secret'
-      , next
+      .then next
 
     module.exports.push 'ryba/hadoop/core_ssl'
 
-    # module.exports.push name: 'Hadoop Core # Check auth_to_local', label_true: 'CHECKED', handler: (ctx, next) ->
-    #   {user, krb5_user, realm} = ctx.config.ryba
-    #   ctx.execute
-    #     cmd: "hadoop org.apache.hadoop.security.HadoopKerberosName #{krb5_user.name}@#{realm}"
-    #   , (err, _, stdout) ->
-    #     err = Error "Invalid mapping" if not err and stdout.indexOf("#{krb5_user.name}@#{realm} to #{user.name}") is -1
-    #     next err, true
-
+    module.exports.push name: 'Hadoop Core # Jars', handler: (ctx, next) ->
+      {core_jars} = ctx.config.ryba
+      core_jars = Object.keys(core_jars).map (k) -> core_jars[k]
+      remote_files = null
+      ctx
+      .call ({}, callback) ->
+        ctx.fs.readdir '/usr/hdp/current/hadoop-hdfs-datanode/lib', (err, files) ->
+          remote_files = files unless err
+          callback err
+      .call ({}, callback) ->
+        remove_files = []
+        core_jars = for jar in core_jars
+          filtered_files = multimatch remote_files, jar.match
+          remove_files.push (filtered_files.filter (file) -> file isnt jar.filename)...
+          continue if jar.filename in remote_files
+          jar
+        # Remove jar if already uploaded
+        for file in remove_files
+          @remove destination: path.join '/usr/hdp/current/hadoop-hdfs-datanode/lib', file
+        for jar in core_jars
+          @upload
+            source: jar.source
+            destination: path.join '/usr/hdp/current/hadoop-hdfs-client/lib', "#{jar.filename}"
+            binary: true
+          @upload
+            source: jar.source
+            destination: path.join '/usr/hdp/current/hadoop-yarn-client/lib', "#{jar.filename}"
+            binary: true
+        @then callback
+      ctx.then next
 
 ## Dependencies
 
+    fs = require 'ssh2-fs'
+    path = require 'path'
+    multimatch = require 'multimatch'
     mkcmd = require '../lib/mkcmd'
