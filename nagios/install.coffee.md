@@ -132,32 +132,6 @@ nagiocmd:x:2419:apache
         """
         code_skipped: 3
       ctx.then next
-      # modified = false
-      # each(users)
-      # .on 'item', (name, user, call) ->
-      #   ctx.log "user #{name}"
-      #   ctx.execute
-      #     cmd: """
-      #     if [ -e /etc/nagios/htpasswd.users ]; then
-      #       hash=`cat /etc/nagios/htpasswd.users 2>/dev/null | grep #{name}: | sed 's/.*:\\(.*\\)/\\1/'`
-      #       salt=`echo $hash | sed 's/\\(.\\{2\\}\\).*/\\1/'`
-      #       if [ "$salt" != "" ]; then
-      #         expect=`openssl passwd -crypt -salt $salt #{user.password} 2>/dev/null`
-      #         if [ "$hash" == "$expect" ]; then exit 3; fi
-      #       fi
-      #       htpasswd -b /etc/nagios/htpasswd.users #{name} #{user.password}
-      #     else
-      #       htpasswd -c -b /etc/nagios/htpasswd.users #{name} #{user.password}
-      #     fi
-      #     """
-      #     code_skipped: 3
-      #   , (err, executed, stdout) ->
-      #     if executed
-      #       modified = true
-      #       ctx.log "user #{name} updated"
-      #     call err
-      # .on 'both', (err) ->
-      #   next err, modified
 
 ### Users Configuration
 
