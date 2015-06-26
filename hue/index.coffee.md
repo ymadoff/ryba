@@ -44,7 +44,8 @@ Example:
           }
         }
       },
-      banner_style: 'color:white;text-align:center;background-color:red;'
+      banner_style: 'color:white;text-align:center;background-color:red;',
+      clean_tmp: false
     }
   }
 }
@@ -69,6 +70,7 @@ Example:
       hue.group ?= {}
       hue.group.name ?= 'hue'
       hue.group.system ?= true
+      hue.clean_tmp ?= true
 
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure 

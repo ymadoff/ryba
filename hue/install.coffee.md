@@ -287,6 +287,23 @@ In the current version "2.5.1", the HTML of the banner is escaped.
         ]
       .then next
 
+## Clean Temp Files
+
+Clean up the "/tmp" from temporary Hue directories. All the directories which
+modified time are older than 10 days will be removed.
+
+    module.exports.push name: 'Hue # Clean Temp Files', handler: (ctx, next) ->
+      {hue} = ctx.config.ryba
+      ctx
+      .cron_add
+        cmd: "find /tmp -maxdepth 1 -type d -mtime +10 -user #{hue.user.name} -exec rm {} \\;",
+        when: '0 */19 * * *'
+        user: "#{hue.user.name}"
+        match: "\\/tmp .*-user #{hue.user.name}"
+        exec: true
+        if: hue.clean_tmp
+      .then next
+
 ## Start
 
 Use the "ryba/hue/start" module to start the Hue server.
