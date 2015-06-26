@@ -47,7 +47,7 @@ Example:
       hive.server2.log_dir ?= '/var/log/hive-server2'
       hive.server2.pid_dir ?= '/var/run/hive-server2'
       hive.server2.opts ?= ''
-      hive.server2.heapsize = 1024
+      hive.server2.heapsize ?= 1024
       # Configuration
       hive.site ?= {}
       # properties = [ # Duplicate client, might remove
