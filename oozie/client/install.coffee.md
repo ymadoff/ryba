@@ -55,6 +55,9 @@ in the "OOZIE_CLIENT_OPTS" environmental variable (both in shell and
 "oozie-env.sh" file) is enough to retrieve the oozie status but is not honored
 when submiting an Oozie job (erreur inside the mapreduce action).
 
+At the moment, we only support adding the certificate authority into the default
+Java location ("$JRE_HOME/lib/security/cacerts").
+
 ```
 keytool -keystore ${JAVA_HOME}/jre/lib/security/cacerts -delete -noprompt -alias tomcat
 keytool -keystore ${JAVA_HOME}/jre/lib/security/cacerts -import -alias tomcat -file master3_cert.pem
