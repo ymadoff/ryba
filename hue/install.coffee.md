@@ -52,7 +52,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       {hue} = ctx.config.ryba
       ctx.iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hue.ini.desktop.http['port'], protocol: 'tcp', state: 'NEW', comment: "Hue Web UI" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hue.ini.desktop.http_port, protocol: 'tcp', state: 'NEW', comment: "Hue Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
       .then next
