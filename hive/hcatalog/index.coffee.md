@@ -36,7 +36,7 @@ Example:
       hive.hcatalog.log_dir ?= '/var/log/hive-hcatalog'
       hive.hcatalog.pid_dir ?= '/var/run/hive-hcatalog'
       hive.hcatalog.opts ?= ''
-      hive.hcatalog.heapsize = 1024
+      hive.hcatalog.heapsize ?= 1024
       # Configuration
       hive.site ?= {}
       unless hive.site['hive.metastore.uris']
