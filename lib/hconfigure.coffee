@@ -78,9 +78,13 @@ module.exports = (ctx) ->
       # options.log? "Save properties"
       options.content = properties.stringify fnl_props
       options.source = null
-      ctx.write options, (err, written) ->
-        updated = true if written
-        callback err, updated
+      # ctx.write options, (err, written) ->
+      #   updated = true if written
+      #   callback err, updated
+      ctx
+      .write options
+      .then (err, status) ->
+        callback err, status
     do_read_source()
 
 
