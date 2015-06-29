@@ -207,6 +207,12 @@ Default configuration:
       # hadoop.security.saslproperties.resolver.class can be used to override
       # the hadoop.rpc.protection for a connection at the server side.
       core_site['hadoop.rpc.protection'] ?= 'authentication'
+      # Core Jars
+      core_jars = ctx.config.ryba.core_jars ?= {}
+      for k, v of core_jars
+        throw Error 'Invalid core_jars source' unless v.source
+        v.match ?= "#{k}-*.jar"
+        v.filename = path.basename v.source
       # Get ZooKeeper Quorum
       zoo_ctxs = ctx.contexts 'ryba/zookeeper/server', require('../zookeeper/server').configure
       zookeeper_quorum = for zoo_ctx in zoo_ctxs
@@ -585,7 +591,7 @@ recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
       remote_files = null
       ctx
       .call ({}, callback) ->
-        ctx.fs.readdir '/usr/hdp/current/hadoop-hdfs-datanode/lib', (err, files) ->
+        ctx.fs.readdir '/usr/hdp/current/hadoop-hdfs-client/lib', (err, files) ->
           remote_files = files unless err
           callback err
       .call ({}, callback) ->
@@ -597,7 +603,7 @@ recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
           jar
         # Remove jar if already uploaded
         for file in remove_files
-          @remove destination: path.join '/usr/hdp/current/hadoop-hdfs-datanode/lib', file
+          @remove destination: path.join '/usr/hdp/current/hadoop-hdfs-client/lib', file
         for jar in core_jars
           @upload
             source: jar.source
