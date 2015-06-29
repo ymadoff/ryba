@@ -71,17 +71,18 @@ with Kerberos specific properties.
       hdfs.site['dfs.block.access.token.enable'] ?= 'true'
 
     module.exports.push name: 'Hadoop HDFS # Install', timeout: -1, handler: (ctx, next) ->
-      ctx.service [
+      ctx
+      .service
         name: 'hadoop'
-      ,
+      .service
         name: 'hadoop-hdfs'
-      ,
+      .service
         name: 'hadoop-libhdfs'
-      ,
+      .service
         name: 'hadoop-client'
-      ,
+      .service
         name: 'openssl'
-      ], next
+      .then next
 
 ## Kerberos User
 
@@ -98,7 +99,7 @@ from multiple sessions with braking an active session.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
 
 ## SPNEGO
 
@@ -110,7 +111,9 @@ same keytab file is for now shared between hdfs and yarn services.
     module.exports.push name: 'HDFS # SPNEGO', handler: module.exports.spnego = (ctx, next) ->
       {hdfs, hadoop_group, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc
+      created = false
+      ctx
+      .krb5_addprinc
         principal: "HTTP/#{ctx.config.host}@#{realm}"
         randkey: true
         keytab: '/etc/security/keytabs/spnego.service.keytab'
@@ -120,13 +123,12 @@ same keytab file is for now shared between hdfs and yarn services.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , (err, created) ->
-        return next err if err
-        # Validate keytab access by the hdfs user
-        ctx.execute
-          cmd: "su -l #{hdfs.user.name} -c \"klist -kt /etc/security/keytabs/spnego.service.keytab\""
-        , (err) ->
-          next err, created
+      , (err, c) ->
+        created = c
+      .execute # Validate keytab access by the hdfs user
+        cmd: "su -l #{hdfs.user.name} -c \"klist -kt /etc/security/keytabs/spnego.service.keytab\""
+        if: -> created
+      .then next
 
 ## Ulimit
 
@@ -160,7 +162,8 @@ Note, a user must re-login for those changes to be taken into account.
       ctx.execute cmd: 'ulimit -Hn', (err, _, stdout) ->
         return next err if err
         max_nofile = stdout.trim()
-        ctx.write [
+        ctx
+        .write
           destination: '/etc/security/limits.d/hdfs.conf'
           write: [
             match: /^hdfs.+nofile.+$/mg
@@ -172,7 +175,7 @@ Note, a user must re-login for those changes to be taken into account.
             append: true
           ]
           backup: true
-        ,
+        .write
           destination: '/etc/security/limits.d/mapreduce.conf'
           write: [
             match: /^mapred.+nofile.+$/mg
@@ -184,7 +187,7 @@ Note, a user must re-login for those changes to be taken into account.
             append: true
           ]
           backup: true
-        ,
+        .write
           destination: '/etc/security/limits.d/yarn.conf'
           write: [
             match: /^yarn.+nofile.+$/mg
@@ -196,24 +199,20 @@ Note, a user must re-login for those changes to be taken into account.
             append: true
           ]
           backup: true
-        ], next
+        .then next
 
 ## Layout
 
 Create the log directory.
 
-    module.exports.push name: 'HDFS JN # Layout', handler: (ctx, next) ->
+    module.exports.push name: 'HDFS # Layout', handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
       ctx.mkdir
         destination: "#{hdfs.log_dir}/#{hdfs.user.name}"
         uid: hdfs.user.name
         gid: hdfs.group.name
         parent: true
-      , next
-
-## Dependencies
-
-    url = require 'url'
+      .then next
 
 [hdfs_secure]: http://hadoop.apache.org/docs/r2.4.1/hadoop-project-dist/hadoop-common/SecureMode.html#DataNode
 [hawq]: http://docs.gopivotal.com/pivotalhd/InstallingHAWQ.html
