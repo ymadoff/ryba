@@ -106,7 +106,6 @@ Example:
     module.exports.push commands: 'install', modules: [
       'ryba/hadoop/hdfs_dn/install'
       'ryba/hadoop/hdfs_dn/start'
-      'ryba/hadoop/hdfs_dn/layout'
       'ryba/hadoop/hdfs_dn/check'
     ]
 

@@ -5,7 +5,7 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
 
-## Stop NameNode
+## Stop Service
 
 Stop the HDFS Namenode service. You can also stop the server manually with one of
 the following two commands:

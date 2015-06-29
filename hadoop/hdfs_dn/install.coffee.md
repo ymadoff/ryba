@@ -101,8 +101,8 @@ inside "/etc/init.d" and activate it on startup.
 Update the "hdfs-site.xml" configuration file with the High Availabity properties
 present inside the "hdp.ha\_client\_config" object.
 
-    module.exports.push name: 'HDFS DN # HA', handler: (ctx, next) ->
-      return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+    module.exports.push name: 'HDFS DN # Configure', handler: (ctx, next) ->
+      # return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       {hadoop_conf_dir, hdfs, hadoop_group} = ctx.config.ryba
       ctx
       .hconfigure

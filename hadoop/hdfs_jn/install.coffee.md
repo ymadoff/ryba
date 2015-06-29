@@ -95,35 +95,6 @@ inside "/etc/init.d" and activate it on startup.
             ]
       .then next
 
-    # module.exports.push name: 'HDFS JN # Startup', handler: (ctx, next) ->
-    #   {hdfs} = ctx.config.ryba
-    #   modified = false
-    #   do_install = ->
-    #     ctx.service
-    #       name: 'hadoop-hdfs-journalnode'
-    #       startup: true
-    #     , (err, serviced) ->
-    #       return next err if err
-    #       modified = true if serviced
-    #       do_fix()
-    #   do_fix = ->
-    #     ctx.write
-    #       destination: '/etc/init.d/hadoop-hdfs-journalnode'
-    #       write: [
-    #         match: /^PIDFILE=".*"$/m
-    #         replace: "PIDFILE=\"#{hdfs.pid_dir}/$SVC_USER/hadoop-hdfs-journalnode.pid\""
-    #       ,
-    #         match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m
-    #         replace: "$1 -u $SVC_USER $2"
-    #       ]
-    #     , (err, written) ->
-    #       return next err if err
-    #       modified = true if written
-    #       do_end()
-    #   do_end = ->
-    #     next null, modified
-    #   do_install()
-
 ## Configure
 
 Update the "hdfs-site.xml" file with the "dfs.journalnode.edits.dir" property.

@@ -134,6 +134,7 @@ service's TCP port.
     module.exports.push commands: 'install', modules: [
       'ryba/hadoop/hdfs_nn/install'
       'ryba/hadoop/hdfs_nn/start'
+      'ryba/hadoop/hdfs_dn/layout'
       'ryba/hadoop/hdfs_nn/check'
     ]
 

@@ -12,7 +12,7 @@ In HA mode, all JournalNodes shall be started.
     module.exports.push 'ryba/hadoop/hdfs_jn/wait'
     module.exports.push require('./index').configure
 
-## Start
+## Start Service
 
 Start the HDFS NameNode Server. You can also start the server manually with the
 following two commands:
