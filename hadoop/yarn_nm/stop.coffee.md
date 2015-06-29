@@ -1,16 +1,27 @@
 
 # YARN NodeManager Stop
 
-    lifecycle = require '../../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
 
-    module.exports.push name: 'Hadoop NodeManager # Stop Server', label_true: 'STOPPED', handler: (ctx, next) ->
-      lifecycle.nm_stop ctx, (err, stopped) ->
-        next err, stopped
+## Stop Server
 
-    module.exports.push name: 'Hadoop NodeManager # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
+Stop the HDFS Namenode service. You can also stop the server manually with one of
+the following two commands:
+
+```
+service hadoop-yarn-nodemanager stop
+su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf stop nodemanager"
+```
+
+    module.exports.push name: 'YARN NM # Stop Server', label_true: 'STOPPED', handler: (ctx, next) ->
+      ctx.service_stop
+        name: 'hadoop-yarn-nodemanager'
+        if_exists: '/etc/init.d/hadoop-yarn-nodemanager'
+      .then next
+
+    module.exports.push name: 'YARN NM # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       {clean_logs, yarn} = ctx.config.ryba
       return next() unless clean_logs
       ctx.execute

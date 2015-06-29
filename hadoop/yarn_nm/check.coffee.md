@@ -1,13 +1,12 @@
 
 # YARN NodeManager Check
 
-    lifecycle = require '../../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/yarn_rm/wait'
     module.exports.push require('./index').configure
 
-    module.exports.push name: 'Hadoop NodeManager # FS Permissions', label_true: 'CHECKED', handler: (ctx, next) ->
+    module.exports.push name: 'YARN NM # FS Permissions', label_true: 'CHECKED', handler: (ctx, next) ->
       log_dirs = yarn.site['yarn.nodemanager.log-dirs'].split ','
       local_dirs = yarn.site['yarn.nodemanager.local-dirs'].split ','
       cmds = []
