@@ -25,6 +25,7 @@ code.
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/lib/base'
     module.exports.push require '../lib/hconfigure'
+    module.exports.push require '../lib/hdp_select'
 
 ## Configuration
 
@@ -331,7 +332,6 @@ will be created by one of the datanode.
     module.exports.push name: 'Hadoop Core # User Test', timeout: -1, handler: (ctx, next) ->
       {krb5_user, user, group, security, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      modified = false
       # ryba group and user may already exist in "/etc/passwd" or in any sssd backend
       ctx
       .group group
@@ -359,6 +359,8 @@ made available in the same directory after any modification.
       .service
         name: 'openssl'
       .service
+        name: 'hadoop-client'
+      .hdp_select
         name: 'hadoop-client'
       .then next
 
