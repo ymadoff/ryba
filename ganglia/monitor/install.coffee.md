@@ -62,6 +62,7 @@ Upload the "hdp-gmond" service file into "/etc/init.d".
       .service_startup
         name: 'gmond'
         startup: false
+        if_exec: '[[ rpm -qa | grep gmond ]]' # Saw a single node (front) without it on hdp 2.2.4
       .then next
 
 ## Fix RRD
