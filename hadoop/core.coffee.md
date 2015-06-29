@@ -506,7 +506,8 @@ ${HADOOP_CONF_DIR}/core-site.xml
       .then (err, status) ->
         return next err, status if err or not status
         ctx.execute
-          cmd: mkcmd.hdfs ctx, 'hdfs dfsadmin -refreshServiceAcl'
+          cmd: mkcmd.hdfs ctx, 'service hadoop-hfds-namenode status && hdfs dfsadmin -refreshServiceAcl'
+          code_skipped: 3
         .then (err) ->
           return next err, true
 
