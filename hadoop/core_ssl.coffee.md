@@ -85,7 +85,7 @@ keytool -list -v -keystore keystore -alias hadoop
 
     module.exports.push name: 'Hadoop Core SSL # JKS stores', retry: 0, handler: (ctx, next) ->
       {ssl, ssl_server, ssl_client, hadoop_conf_dir} = ctx.config.ryba
-      tmp_location = "/tmp/ryba_hdp_ssl_#{Date.now()}"
+      tmp_location = "/var/tmp/ryba/ssl"
       modified = false
       has_modules = ctx.has_any_modules [
         'ryba/hadoop/hdfs_jn', 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn'
@@ -94,30 +94,33 @@ keytool -list -v -keystore keystore -alias hadoop
       ctx
       .upload
         source: ssl.cacert
-        destination: "#{tmp_location}_cacert"
+        destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+        mode: 0o0600
         shy: true
       .upload
         source: ssl.cert
-        destination: "#{tmp_location}_cert"
+        destination: "#{tmp_location}/#{path.basename ssl.cert}"
+        mode: 0o0600
         shy: true
       .upload
         source: ssl.key
-        destination: "#{tmp_location}_key"
+        destination: "#{tmp_location}/#{path.basename ssl.key}"
+        mode: 0o0600
         shy: true
       # Client: import certificate to all hosts
       .java_keystore_add
         keystore: ssl_client['ssl.client.truststore.location']
         storepass: ssl_client['ssl.client.truststore.password']
         caname: "hadoop_root_ca"
-        cacert: "#{tmp_location}_cacert"
+        cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
       # Server: import certificates, private and public keys to hosts with a server
       .java_keystore_add
         keystore: ssl_server['ssl.server.keystore.location']
         storepass: ssl_server['ssl.server.keystore.password']
         caname: "hadoop_root_ca"
-        cacert: "#{tmp_location}_cacert"
-        key: "#{tmp_location}_key"
-        cert: "#{tmp_location}_cert"
+        cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
+        key: "#{tmp_location}/#{path.basename ssl.key}"
+        cert: "#{tmp_location}/#{path.basename ssl.cert}"
         keypass: ssl_server['ssl.server.keystore.keypassword']
         name: ctx.config.shortname
         if: has_modules
@@ -125,16 +128,16 @@ keytool -list -v -keystore keystore -alias hadoop
         keystore: ssl_server['ssl.server.keystore.location']
         storepass: ssl_server['ssl.server.keystore.password']
         caname: "hadoop_root_ca"
-        cacert: "#{tmp_location}_cacert"
+        cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
         if: has_modules
       .remove
-        destination: "#{tmp_location}_cacert"
+        destination: "#{tmp_location}/#{path.basename ssl.cacert}"
         shy: true
       .remove
-        destination: "#{tmp_location}_cert"
+        destination: "#{tmp_location}/#{path.basename ssl.cert}"
         shy: true
       .remove
-        destination: "#{tmp_location}_key"
+        destination: "#{tmp_location}/#{path.basename ssl.key}"
         shy: true
       .then (err, status) ->
         return next err, status if err or not status
@@ -151,6 +154,9 @@ keytool -list -v -keystore keystore -alias hadoop
         ctx.then (err) ->
           next err, status
 
+## Dependencies
+
+    path = require 'path'
 
 [hdp_ssl]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.1-latest/bk_reference/content/ch_wire-https.html
 
