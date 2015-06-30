@@ -5,16 +5,32 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
 
+## Stop Service
+
+Stop the HDFS Namenode service. You can also stop the server manually with one of
+the following two commands:
+
+```
+service hadoop-hdfs-secondarynamenode stop
+su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop secondarynamenode"
+```
+
     module.exports.push name: 'HDFS SNN # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
-      lifecycle.snn_stop ctx, next
+      ctx.service
+        srv_name: 'hadoop-hdfs-secondarynamenode'
+        action: 'stop'
+        if_exists: '/etc/init.d/hadoop-hdfs-secondarynamenode'
+      .then next
+
+## Stop Clean Logs
+
+Remove the "\*-namenode-\*" log files if the property "ryba.clean_logs" is
+activated.
 
     module.exports.push name: 'HDFS SNN # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
-      ctx.execute
+      ctx
+      .execute
         cmd: 'rm /var/log/hadoop-hdfs/*/*-secondarynamenode-*'
         code_skipped: 1
         if: ctx.config.ryba.clean_logs
       .then next
-
-## Dependencies
-
-    lifecycle = require '../../lib/lifecycle'

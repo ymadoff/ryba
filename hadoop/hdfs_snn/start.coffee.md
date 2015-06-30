@@ -4,10 +4,20 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
+xports.push require('./index').configure
 
-    module.exports.push name: 'HDFS SNN # Start', label_true: 'STARTED', handler: (ctx, next) ->
-      lifecycle.snn_start ctx, next
+## Start Service
 
-## Dependencies
+Start the HDFS NameNode Server. You can also start the server manually with the
+following two commands:
 
-    lifecycle = require '../../lib/lifecycle'
+```
+service hadoop-hdfs-secondarynamenode start
+su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start secondarynamenode"
+```
+
+    module.exports.push name: 'HDFS SNN # Start', timeout: -1, label_true: 'STARTED', handler: (ctx, next) ->
+      ctx.service_start
+        name: 'hadoop-hdfs-secondarynamenode'
+        if_exists: '/etc/init.d/hadoop-hdfs-secondarynamenode'
+      .then next

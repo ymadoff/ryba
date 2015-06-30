@@ -93,22 +93,22 @@ lifecyle = module.exports =
         cmd: 'service hadoop-hdfs-zkfc stop'
         # code_skipped: 1
       , callback
-  snn_start: (ctx, callback) ->
-    {hdfs, hadoop_conf_dir} = ctx.config.ryba
-    ctx.log "SNN start"
-    ctx.execute
-      # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf start secondarynamenode"
-      cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} start secondarynamenode\""
-      code_skipped: 1
-    , callback
-  snn_stop: (ctx, callback) ->
-    {hdfs, hadoop_conf_dir} = ctx.config.ryba
-    ctx.log "SNN stop"
-    ctx.execute
-      # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf stop secondarynamenode"
-      cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} stop secondarynamenode\""
-      # code_skipped: 1
-    , callback
+  # snn_start: (ctx, callback) ->
+  #   {hdfs, hadoop_conf_dir} = ctx.config.ryba
+  #   ctx.log "SNN start"
+  #   ctx.execute
+  #     # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf start secondarynamenode"
+  #     cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} start secondarynamenode\""
+  #     code_skipped: 1
+  #   , callback
+  # snn_stop: (ctx, callback) ->
+  #   {hdfs, hadoop_conf_dir} = ctx.config.ryba
+  #   ctx.log "SNN stop"
+  #   ctx.execute
+  #     # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf stop secondarynamenode"
+  #     cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} stop secondarynamenode\""
+  #     # code_skipped: 1
+  #   , callback
   dn_status: (ctx, callback) ->
     ctx.execute
       cmd: "service hadoop-hdfs-datanode status"
