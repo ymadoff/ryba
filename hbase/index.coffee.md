@@ -147,7 +147,7 @@ hbase:x:492:
       ctx
       .group hbase.group
       .user hbase.user
-      .then
+      .then next
 
 ## Install
 
