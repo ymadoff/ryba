@@ -86,6 +86,7 @@
         local_default: true
         properties: yarn.site
         merge: true
+        backup: true
         uid: yarn.user.name
         gid: yarn.group.name
       .then next

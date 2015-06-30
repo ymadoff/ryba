@@ -74,7 +74,6 @@ parameter is defined inside the "mapreduce.map.java.opts" and
       rm_memory_max_mb = rm_contexts[0].config.ryba.yarn.site['yarn.scheduler.maximum-allocation-mb']
       rm_cpu_min = rm_contexts[0].config.ryba.yarn.site['yarn.scheduler.minimum-allocation-vcores']
       rm_cpu_max = rm_contexts[0].config.ryba.yarn.site['yarn.scheduler.maximum-allocation-mb']
-
       yarn_mapred_am_memory_mb = mapred.site['yarn.app.mapreduce.am.resource.mb'] or if memory_per_container > 1024 then 2 * memory_per_container else memory_per_container
       yarn_mapred_am_memory_mb = Math.min rm_memory_max_mb, yarn_mapred_am_memory_mb
       mapred.site['yarn.app.mapreduce.am.resource.mb'] = "#{yarn_mapred_am_memory_mb}"
