@@ -8,12 +8,20 @@
 ## Configuration
 
     module.exports.configure = (ctx) ->
+      return if ctx.yarn_rm_configured
+      ctx.yarn_rm_configured = true
       require('../yarn_client').configure ctx
       {ryba} = ctx.config
       ryba.yarn.site['yarn.resourcemanager.keytab'] ?= '/etc/security/keytabs/rm.service.keytab'
       ryba.yarn.site['yarn.resourcemanager.principal'] ?= "rm/#{ryba.static_host}@#{ryba.realm}"
       ryba.yarn.site['yarn.resourcemanager.scheduler.class'] ?= 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
-
+      # MapReduce JobHistory Server
+      [jhs_ctx] = ctx.contexts 'ryba/hadoop/mapred_jhs', require('../mapred_jhs').configure
+      jhs_properties = [
+        'mapreduce.jobhistory.principal'
+      ]
+      for property in jhs_properties
+        ryba.mapred.site[property] ?= if jhs_ctx then jhs_ctx.config.ryba.mapred.site[property] else null
 
 ## Configuration for Memory and CPU
 
@@ -26,12 +34,33 @@ allocation limit and a container is eventually granted. Tests in version 2.4
 instead shows that the containers are never granted, and no progress is made by
 the application (zombie state).
 
-      ryba.yarn.capacity_scheduler ?= {}
-      ryba.yarn.capacity_scheduler['yarn.scheduler.capacity.resource-calculator'] ?= 'org.apache.hadoop.yarn.util.resource.DominantResourceCalculator'
       ryba.yarn.site['yarn.scheduler.minimum-allocation-mb'] ?= '256'
       ryba.yarn.site['yarn.scheduler.maximum-allocation-mb'] ?= '2048'
       ryba.yarn.site['yarn.scheduler.minimum-allocation-vcores'] ?= 1
       ryba.yarn.site['yarn.scheduler.maximum-allocation-vcores'] ?= 32
+
+## Capacity Scheduler
+
+      ryba.capacity_scheduler ?= {}
+      ryba.capacity_scheduler['yarn.scheduler.capacity.resource-calculator'] ?= 'org.apache.hadoop.yarn.util.resource.DominantResourceCalculator'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.default.minimum-user-limit-percent'] ?= '100'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.maximum-am-resource-percent'] ?= '0.2'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.maximum-applications'] ?= '10000'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.node-locality-delay'] ?= '40'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.resource-calculator'] ?= 'org.apache.hadoop.yarn.util.resource.DefaultResourceCalculator'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels'] ?= '*'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels.default.capacity'] ?= '-1'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels.default.maximum-capacity'] ?= '-1'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.acl_administer_queue'] ?= '*'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.capacity'] ?= '100'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.default-node-label-expression'] ?= ' '
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.default.acl_administer_jobs'] ?= '*'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.default.acl_submit_applications'] ?= '*'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.default.capacity'] ?= '100'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.default.maximum-capacity'] ?= '100'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.default.state'] ?= 'RUNNING'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.default.user-limit-factor'] ?= '1'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.queues'] ?= 'default'
 
 ## Capacity Scheduler
 

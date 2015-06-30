@@ -8,7 +8,7 @@
     module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
     module.exports.push require '../../lib/write_jaas'
-
+      
 ## IPTables
 
 | Service         | Port  | Proto  | Parameter                                     |
@@ -134,17 +134,21 @@ inside "/etc/init.d" and activate it on startup.
         backup: true
       .then next
 
-
 ## Configuration
 
     module.exports.push name: 'YARN RM # Configuration', handler: (ctx, next) ->
-      {yarn, hadoop_conf_dir} = ctx.config.ryba
+      {hadoop_conf_dir, yarn, mapred} = ctx.config.ryba
       ctx
       .hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
         local_default: true
         properties: yarn.site
+        merge: true
+        backup: true
+      .hconfigure # Ideally placed inside a mapred_jhs_client module
+        destination: "#{hadoop_conf_dir}/mapred-site.xml"
+        properties: mapred.site
         merge: true
         backup: true
       .touch
