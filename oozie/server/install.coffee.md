@@ -454,19 +454,19 @@ The `oozie admin -shareliblist` command can be used by the final user to list
 the ShareLib contents without having to go into HDFS.
 
     module.exports.push name: 'Oozie Server # Share lib', timeout: 600000, handler: (ctx, next) ->
-      {oozie} = ctx.config.ryba
+      {core_site, oozie} = ctx.config.ryba
       ctx
       .execute
         cmd: mkcmd.hdfs ctx, """
         if hdfs dfs -test -d /user/#{oozie.user.name}/share/lib; then
           echo 'Upgrade sharelib'
-          su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib upgrade -fs hdfs://torval:8020 /usr/hdp/current/oozie-client/oozie-sharelib.tar.gz"
+          su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib upgrade -fs #{core_site['fs.defaultFS']} /usr/hdp/current/oozie-client/oozie-sharelib.tar.gz"
         else
           # hdfs dfs -mkdir /user/#{oozie.user.name} || true
           hdfs dfs -mkdir -p /user/#{oozie.user.name}/share/lib || true
           hdfs dfs -chown -R #{oozie.user.name}:#{oozie.group.name} /user/#{oozie.user.name}
           echo 'Create sharelib'
-          su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib create -fs hdfs://torval:8020 /usr/hdp/current/oozie-client/oozie-sharelib.tar.gz"
+          su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib create -fs #{core_site['fs.defaultFS']} /usr/hdp/current/oozie-client/oozie-sharelib.tar.gz"
         fi
         hdfs dfs -chmod -R 755 /user/#{oozie.user.name}
         """
