@@ -35,6 +35,8 @@ applications.
       ryba.yarn.site['yarn.nodemanager.keytab'] ?= '/etc/security/keytabs/nm.service.keytab'
       ryba.yarn.site['yarn.nodemanager.principal'] ?= "nm/#{ryba.static_host}@#{ryba.realm}"
       ryba.yarn.site['yarn.nodemanager.vmem-pmem-ratio'] ?= '2.1'
+      ryba.yarn.site['yarn.nodemanager.resource.percentage-physical-cpu-limit'] ?= '100'
+      ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.strict-resource-usage'] ?= 'false' # By default, iyarn.nodemanager.container-executor.clasf spare CPU cycles are available, containers are allowed to exceed the CPU limits set for them
       # See '~/www/src/hadoop/hadoop-common/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-api/src/main/java/org/apache/hadoop/yarn/conf/YarnConfiguration.java#263'
       # ryba.yarn.site['yarn.nodemanager.webapp.spnego-principal']
       # ryba.yarn.site['yarn.nodemanager.webapp.spnego-keytab-file']
@@ -57,11 +59,19 @@ Resources:
 *   [VCore Configuration In Hadoop](http://jason4zhu.blogspot.fr/2014/10/vcore-configuration-in-hadoop.html)
 
       isLinuxContainer = ryba.yarn.site['yarn.nodemanager.container-executor.class'] is 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor'
-      # if isLinuxContainer and ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
+      # ryba.yarn.site['yarn.nodemanager.linux-container-executor.resources-handler.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.util.CgroupsLCEResourcesHandler'
+      # ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.hierarchy'] ?= '/hadoop-yarn'
+      # ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] ?= 'true'
+      # ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path'] ?= '/cgroup'
       ryba.yarn.site['yarn.nodemanager.linux-container-executor.resources-handler.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.util.CgroupsLCEResourcesHandler'
-      ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.hierarchy'] ?= '/hadoop-yarn'
+      ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.hierarchy'] ?= '/yarn'
       ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] ?= 'true'
       ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path'] ?= '/cgroup'
+      # HDP doc, probably incorrect
+      ryba.yarn.site['yarn.nodemanager.container-executor.cgroups.hierarchy'] ?= ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.hierarchy']
+      ryba.yarn.site['yarn.nodemanager.container-executor.cgroups.mount'] ?= ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount']
+      ryba.yarn.site['yarn.nodemanager.container-executor.resources-handler.class'] ?= ryba.yarn.site['yarn.nodemanager.container-executor.resources-handler.class']
+      ryba.yarn.site['yarn.nodemanager.container-executor.group'] ?= 'hadoop'
 
 ## Commands
 
@@ -74,6 +84,7 @@ Resources:
     module.exports.push commands: 'install', modules: [
       'ryba/hadoop/yarn_nm/install'
       'ryba/hadoop/yarn_nm/start'
+      # 'ryba/hadoop/yarn_nm/check'
     ]
 
     module.exports.push commands: 'start', modules: 'ryba/hadoop/yarn_nm/start'
