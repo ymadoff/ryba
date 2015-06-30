@@ -4,6 +4,8 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/hdfs_dn/wait'
+    module.exports.push 'ryba/hadoop/yarn_ts/wait'
+    module.exports.push 'ryba/hadoop/mapred_jhs/wait'
     module.exports.push require('./index').configure
 
 ## Wait Active
