@@ -20,6 +20,21 @@ Check the access to the HDFS cluster.
           code_skipped: 2
         .then next
 
+## Check Kerberos Mapping
+
+Kerberos Mapping is configured in "core-site.xml" by the
+"hadoop.security.auth_to_local" property. Hadoop provided a comman which take
+the principal name as argument and print the converted user name.
+
+    module.exports.push name: 'Hadoop Core # Check Kerberos Mapping', label_true: 'CHECKED', handler: (ctx, next) ->
+      {core_site, user, krb5_user, realm} = ctx.config.ryba
+      ctx.execute
+        cmd: "hadoop org.apache.hadoop.security.HadoopKerberosName #{krb5_user.name}@#{realm}"
+        if: core_site['hadoop.security.authentication'] is 'kerberos'
+      , (err, _, stdout) ->
+        throw Error "Invalid mapping" if not err and stdout.indexOf("#{krb5_user.name}@#{realm} to #{user.name}") is -1
+      .then next
+
 ## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
