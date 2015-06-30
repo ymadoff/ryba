@@ -124,23 +124,6 @@ Environment passed to the Master before it starts.
             cmd: mkcmd.hdfs ctx, cmd
             code_skipped: 2
         ctx.then next
-        # each(dirs.slice 2)
-        # .on 'item', (dir, index, next) ->
-        #   dir = dirs.slice(0, 3 + index).join '/'
-        #   cmd = """
-        #   if hdfs dfs -ls #{dir} &>/dev/null; then exit 2; fi
-        #   hdfs dfs -mkdir #{dir}
-        #   hdfs dfs -chown #{hbase.user.name} #{dir}
-        #   """
-        #   cmd += "\nhdfs dfs -chmod 711 #{dir}"  if 3 + index is dirs.length
-        #   ctx.execute
-        #     cmd: mkcmd.hdfs ctx, cmd
-        #     code_skipped: 2
-        #   , (err, executed, stdout) ->
-        #     modified = true if executed
-        #     next err
-        # .on 'both', (err) ->
-        #   next err, modified
 
 ## Zookeeper JAAS
 

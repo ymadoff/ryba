@@ -7,9 +7,6 @@ This project's goal is the hosting of very large tables database - atop clusters
 Apache HBase is an open-source, distributed, versioned, non-relational database modeled after Google's Bigtable: A Distributed Storage System for Structured Data by Chang et al. Just as Bigtable leverages the distributed data storage provided by the Google File System,
 Apache HBase provides Bigtable-like capabilities on top of Hadoop and HDFS
 
-
-
-    hproperties = require '../lib/properties'
     module.exports = []
     module.exports.push 'masson/bootstrap/'
     module.exports.push 'masson/core/yum'
@@ -147,10 +144,10 @@ hbase:x:492:
 
     module.exports.push name: 'HBase # Users & Groups', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
-      ctx.group hbase.group, (err, gmodified) ->
-        return next err if err
-        ctx.user hbase.user, (err, umodified) ->
-          next err, gmodified or umodified
+      ctx
+      .group hbase.group
+      .user hbase.user
+      .then
 
 ## Install
 
@@ -166,17 +163,18 @@ Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocument
 
     module.exports.push name: 'HBase # Layout', timeout: -1, handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
-      ctx.mkdir [
+      ctx
+      .mkdir
         destination: hbase.pid_dir
         uid: hbase.user.name
         gid: hbase.group.name
         mode: 0o0755
-      ,
+      .mkdir
         destination: hbase.log_dir
         uid: hbase.user.name
         gid: hbase.group.name
         mode: 0o0755
-      ], next
+      .then next
 
     module.exports.push name: 'HBase # Env', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
@@ -194,7 +192,7 @@ Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocument
         write: write
         backup: true
         eof: true
-      , next
+      .then next
 
 ## RegionServers
 
@@ -209,7 +207,7 @@ Upload the list of registered RegionServers.
         gid: hadoop_group.name
         eof: true
         if: !!ctx.has_any_modules ['ryba/hbase/master', 'ryba/hbase/regionserver']
-      , next
+      .then next
 
 
 ## Resources
