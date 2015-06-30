@@ -40,6 +40,10 @@ script inside "/etc/init.d" and activate it on startup.
     module.exports.push name: 'HDFS SNN # Service', handler: (ctx, next) ->
       ctx.hdp_service
         name: 'hadoop-hdfs-secondarynamenode'
+        write:[
+          match: /^EXEC_PATH=".*\/sbin\/hadoop-daemon\.sh".*$/m
+          replace: 'EXEC_PATH="$HADOOP_HOME/sbin/hadoop-daemon.sh" # RYBA FIX rc.d, DONT OVERWRITE'
+        ]
       .then next
 
     # module.exports.push name: 'HDFS SNN # Service', timeout: -1, handler: (ctx, next) ->
