@@ -64,6 +64,32 @@ Update the "yarn-site.xml" configuration file.
         parent: true
       .then next
 
+# HDFS Layout
+
+See:
+
+*   [YarnConfiguration](https://github.com/apache/hadoop/blob/trunk/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-api/src/main/java/org/apache/hadoop/yarn/conf/YarnConfiguration.java#L1425-L1426)
+*   [FileSystemApplicationHistoryStore](https://github.com/apache/hadoop/blob/trunk/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-applicationhistoryservice/src/main/java/org/apache/hadoop/yarn/server/applicationhistoryservice/FileSystemApplicationHistoryStore.java)
+
+Note, this is not documented anywhere and might not be considered as a best practice.
+
+    module.exports.push name: 'YARN TS # HDFS layout', timeout: -1, handler: (ctx, next) ->
+      {yarn} = ctx.config.ryba
+      return next() unless yarn.site['yarn.timeline-service.generic-application-history.store-class'] is "org.apache.hadoop.yarn.server.applicationhistoryservice.FileSystemApplicationHistoryStore"
+      dir = yarn.site['yarn.timeline-service.fs-history-store.uri']
+      ctx.waitForExecution mkcmd.hdfs(ctx, "hdfs dfs -test -d #{path.dirname dir}"), (err) ->
+        return next err if err
+        ctx.execute
+          cmd: mkcmd.hdfs ctx, """
+          hdfs dfs -mkdir -p #{dir}
+          hdfs dfs -chown #{yarn.user.name} #{dir}
+          hdfs dfs -chmod 1777 #{dir}
+          """
+          not_if_exec: "[[ hdfs dfs -d #{dir} ]]"
+        ctx.then next
+
+yarn.site['yarn.timeline-service.fs-history-store.uri']
+
 ## Kerberos
 
 Create the Application Timeserver service principal in the form of "ats/{host}@{realm}" and place its
@@ -84,6 +110,10 @@ and permissions set to "0600".
         kadmin_password: kadmin_password
         kadmin_server: admin_server
       .then next
+## Dependencies
+
+    path = require 'path'
+    mkcmd = require '../../lib/mkcmd'
 
 
 
