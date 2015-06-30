@@ -72,7 +72,9 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
       pid_dir = hdfs.pid_dir.replace '$USER', hdfs.user.name
       ctx
       .mkdir
-        destination: hdfs.site['dfs.namenode.name.dir'].split ','
+        destination: for dir in hdfs.site['dfs.namenode.name.dir'].split ','
+          if dir.indexOf('file://') is 0
+          then dir.substr(7) else dir
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755
@@ -187,6 +189,7 @@ if the NameNode was formated.
     module.exports.push name: 'HDFS NN # Format', timeout: -1, modules: 'ryba/hadoop/hdfs_jn/wait', handler: (ctx, next) ->
       {hdfs, active_nn_host, nameservice} = ctx.config.ryba
       any_dfs_name_dir = hdfs.site['dfs.namenode.name.dir'].split(',')[0]
+      any_dfs_name_dir = any_dfs_name_dir.substr(7) if any_dfs_name_dir.indexOf('file://') is 0
       is_hdfs_ha = ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       ctx
       # For non HA mode

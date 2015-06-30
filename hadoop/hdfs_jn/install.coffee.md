@@ -54,7 +54,9 @@ The JournalNode data are stored inside the directory defined by the
     module.exports.push name: 'HDFS JN # Layout', handler: (ctx, next) ->
       {hdfs, hadoop_conf_dir} = ctx.config.ryba
       ctx.mkdir
-        destination: hdfs.site['dfs.journalnode.edits.dir'].split ','
+        destination: for dir in hdfs.site['dfs.journalnode.edits.dir'].split ','
+          if dir.indexOf('file://') is 0
+          then dir.substr(7) else dir
         uid: 'hdfs'
         gid: 'hadoop'
       .then next

@@ -50,9 +50,11 @@ dfsadmin -fetchImage
 
     module.exports.push name: 'HDFS NN # Backup FSimages & edits', timeout: -1, label_true: 'BACKUPED', handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
+      any_dfs_name_dir = hdfs.site['dfs.namenode.name.dir'].split(',')[0]
+      any_dfs_name_dir = any_dfs_name_dir.substr(7) if any_dfs_name_dir.indexOf('file://') is 0
       ctx.backup
         name: 'fs'
-        source: path.join hdfs.site['dfs.namenode.name.dir'].split(',').shift(), 'current'
+        source: path.join any_dfs_name_dir, 'current'
         filter: ['fsimage_*','edits_0*']
         destination: "/var/backups/nn_#{ctx.config.host}/"
         interval: month: 1

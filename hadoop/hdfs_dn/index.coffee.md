@@ -53,7 +53,7 @@ Example:
       require('../hdfs_nn').client_config ctx
       # Comma separated list of paths. Use the list of directories from $DFS_DATA_DIR.
       # For example, /grid/hadoop/hdfs/dn,/grid1/hadoop/hdfs/dn.
-      ryba.hdfs.site['dfs.datanode.data.dir'] ?= ['/var/hdfs/data']
+      ryba.hdfs.site['dfs.datanode.data.dir'] ?= ['file:///var/hdfs/data']
       ryba.hdfs.site['dfs.datanode.data.dir'] = ryba.hdfs.site['dfs.datanode.data.dir'].join ',' if Array.isArray ryba.hdfs.site['dfs.datanode.data.dir']
       # ctx.config.ryba.hdfs.site['dfs.datanode.data.dir.perm'] ?= '750'
       ryba.hdfs.site['dfs.datanode.data.dir.perm'] ?= '700'
@@ -86,6 +86,11 @@ Example:
       if ryba.hdfs.site['dfs.datanode.failed.volumes.tolerated'] >= dataDirs.length
         throw Error 'Number of failed volumes must be less than total volumes'
       ryba.hdfs.datanode_opts ?= ''
+      # look at
+      # http://gbif.blogspot.fr/2015/05/dont-fill-your-hdfs-disks-upgrading-to.html
+      # dfs.datanode.du.reserved:25GB
+      # dfs.datanode.fsdataset.volume.choosing.policy:AvailableSpace 
+      # dfs.datanode.available-space-volume-choosing-policy.balanced-space-preference-fraction:1.0 
 
     module.exports.client_config = (ctx) ->
       {ryba} = ctx.config

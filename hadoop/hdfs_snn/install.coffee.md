@@ -65,8 +65,11 @@ script inside "/etc/init.d" and activate it on startup.
       {hdfs, hadoop_group} = ctx.config.ryba
       ctx.log "Create SNN data, checkpind and pid directories"
       pid_dir = hdfs.pid_dir.replace '$USER', hdfs.user.name
-      ctx.mkdir
-        destination: hdfs.site['dfs.namenode.checkpoint.dir'].split ','
+      ctx
+      .mkdir
+        destination: for dir in hdfs.site['dfs.namenode.checkpoint.dir'].split ','
+          if dir.indexOf('file://') is 0
+          then dir.substr(7) else dir
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755

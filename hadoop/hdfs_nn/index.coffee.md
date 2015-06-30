@@ -42,7 +42,7 @@ Example:
       # Data
       # Comma separated list of paths. Use the list of directories.
       # For example, /data/1/hdfs/nn,/data/2/hdfs/nn.
-      ryba.hdfs.site['dfs.namenode.name.dir'] ?= ['/var/hdfs/name']
+      ryba.hdfs.site['dfs.namenode.name.dir'] ?= ['file:///var/hdfs/name']
       ryba.hdfs.site['dfs.namenode.name.dir'] = ryba.hdfs.site['dfs.namenode.name.dir'].join ',' if Array.isArray ryba.hdfs.site['dfs.namenode.name.dir']
       # Network
       ryba.hdfs.site['dfs.hosts'] ?= "#{ryba.hadoop_conf_dir}/dfs.include"

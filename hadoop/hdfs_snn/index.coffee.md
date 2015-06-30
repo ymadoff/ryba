@@ -9,7 +9,7 @@
       require('../hdfs').configure ctx
       {ryba} = ctx.config
       # Store the temporary images to merge
-      ryba.hdfs.site['dfs.namenode.checkpoint.dir'] ?= ['/var/hdfs/checkpoint']
+      ryba.hdfs.site['dfs.namenode.checkpoint.dir'] ?= ['file:///var/hdfs/checkpoint']
       ryba.hdfs.site['dfs.namenode.checkpoint.dir'] = ryba.hdfs.site['dfs.namenode.checkpoint.dir'].join ',' if Array.isArray ryba.hdfs.site['dfs.namenode.checkpoint.dir']
       ryba.hdfs.site['dfs.namenode.checkpoint.edits.dir'] ?= '${dfs.namenode.checkpoint.dir}' # HDP invalid default value
       # Network

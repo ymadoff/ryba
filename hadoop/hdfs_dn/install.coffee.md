@@ -154,7 +154,9 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
       # start it as HDFS and use JAAS
       ctx
       .mkdir
-        destination: hdfs.site['dfs.datanode.data.dir'].split ','
+        destination: for dir in hdfs.site['dfs.datanode.data.dir'].split ','
+          if dir.indexOf('file://') is 0
+          then dir.substr(7) else dir
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o0750
