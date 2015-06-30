@@ -49,6 +49,7 @@ Example :
       # Configuration
       hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
       zookeeper.config ?= {}
+      zookeeper.config['maxClientCnxns'] ?= '200'
       # The number of milliseconds of each tick
       zookeeper.config['tickTime'] ?= "2000"
       # The number of ticks that the initial synchronization phase can take
