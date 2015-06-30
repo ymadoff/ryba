@@ -87,7 +87,7 @@ parameter is defined inside the "mapreduce.map.java.opts" and
       map_memory_mb = Math.max rm_memory_min_mb, map_memory_mb
       mapred.site['mapreduce.map.memory.mb'] = "#{map_memory_mb}"
 
-      reduce_memory_mb = mapred.site['mapreduce.reduce.memory.mb'] or 2 * memory_per_container
+      reduce_memory_mb = mapred.site['mapreduce.reduce.memory.mb'] or memory_per_container #2 * memory_per_container
       reduce_memory_mb = Math.min rm_memory_max_mb, reduce_memory_mb
       reduce_memory_mb = Math.max rm_memory_min_mb, reduce_memory_mb
       mapred.site['mapreduce.reduce.memory.mb'] = "#{reduce_memory_mb}"
