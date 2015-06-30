@@ -48,6 +48,12 @@ information for the applications running inside YARN.
       # Timeline Server Authorization (ACLs)
       yarn.site['yarn.acl.enable'] ?= "true"
       yarn.site['yarn.admin.acl'] ?= ""
+      # SSL
+      # yarn.site['hadoop.ssl.require.client.cert'] ?= "false"
+      # yarn.site['hadoop.ssl.hostname.verifier'] ?= "DEFAULT"
+      # yarn.site['hadoop.ssl.keystores.factory.class'] ?= "org.apache.hadoop.security.ssl.FileBasedKeyStoresFactory"
+      # yarn.site['hadoop.ssl.server.conf'] ?= "ssl-server.xml"
+      # yarn.site['hadoop.ssl.client.conf'] ?= "ssl-client.xml"
 
 
     module.exports.push commands: 'check', modules: 'ryba/hadoop/yarn_ts/check'
