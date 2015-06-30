@@ -41,20 +41,20 @@ Example:
       {static_host, realm} = ctx.config.ryba
       hive = ctx.config.ryba.hive ?= {}
       hive.conf_dir ?= '/etc/hive/conf'
-      # User
-      hive.user ?= {}
-      hive.user = name: hive.user if typeof hive.user is 'string'
-      hive.user.name ?= 'hive'
-      hive.user.system ?= true
-      hive.user.gid ?= 'hive'
-      hive.user.groups ?= 'hadoop'
-      hive.user.comment ?= 'Hive User'
-      hive.user.home ?= '/var/lib/hive'
       # Group
       hive.group ?= {}
       hive.group = name: hive.group if typeof hive.group is 'string'
       hive.group.name ?= 'hive'
       hive.group.system ?= true
+      # User
+      hive.user ?= {}
+      hive.user = name: hive.user if typeof hive.user is 'string'
+      hive.user.name ?= 'hive'
+      hive.user.system ?= true
+      hive.user.gid ?= hive.group.name
+      hive.user.groups ?= 'hadoop'
+      hive.user.comment ?= 'Hive User'
+      hive.user.home ?= '/var/lib/hive'
       # Configuration
       hive.site ?= {}
       hive.site[' hive.metastore.uris '] = null # Clean up HDP mess
