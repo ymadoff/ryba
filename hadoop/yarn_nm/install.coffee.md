@@ -6,7 +6,6 @@
     module.exports.push 'masson/bootstrap/info'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/yarn_client/install'
-    module.exports.push 'ryba/hadoop/hdfs_dn/wait'
     module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
@@ -115,6 +114,7 @@ SSH connection to the node to gather the memory and CPU informations.
       memoryAvailableMb = Math.round ctx.meminfo.MemTotal / 1024 / 1024 * .8
       yarn.site['yarn.nodemanager.resource.memory-mb'] ?= memoryAvailableMb
       yarn.site['yarn.nodemanager.resource.cpu-vcores'] ?= ctx.cpuinfo.length
+      next null, true
 
 ## Configuration
 
@@ -174,9 +174,13 @@ SSH connection to the node to gather the memory and CPU informations.
       ctx
       .service
         name: 'libcgroup'
+      # .execute
+      #   cmd: 'mount -t cgroup -o cpu cpu /cgroup'
+      #   code_skipped: 32
       .mkdir
         destination: "#{yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path']}/cpu"
         mode: 0o1777
+        parent: true
       .then next
 
 ### HDFS Layout
@@ -191,18 +195,27 @@ drwxrwxrwt   - yarn   hadoop            0 2014-05-26 11:01 /app-logs
 
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
+    module.exports.push 'ryba/hadoop/hdfs_nn/wait'
     module.exports.push name: 'YARN NM # HDFS layout', handler: (ctx, next) ->
       {yarn, hadoop_group} = ctx.config.ryba
       remote_app_log_dir = yarn.site['yarn.nodemanager.remote-app-log-dir']
       ctx.execute
         cmd: mkcmd.hdfs ctx, """
-        if hdfs dfs -test -d #{remote_app_log_dir}; then exit 2; fi
         hdfs dfs -mkdir -p #{remote_app_log_dir}
         hdfs dfs -chown #{yarn.user.name}:#{hadoop_group.name} #{remote_app_log_dir}
         hdfs dfs -chmod 1777 #{remote_app_log_dir}
         """
+        not_if_exec: "[[ hdfs dfs -d #{remote_app_log_dir} ]]"
         code_skipped: 2
+      # .execute # this isnt great
+      #   cmd: mkcmd.hdfs ctx, """
+      #   hdfs dfs -mkdir -p /tmp/hadoop-#{yarn.user.name}
+      #   hdfs dfs -chown #{yarn.user.name} /tmp/hadoop-#{yarn.user.name}
+      #   hdfs dfs -chmod 1777 /tmp/hadoop-#{yarn.user.name}
+      #   """
+      #   not_if_exec: "[[ hdfs dfs -d /tmp/hadoop-#{yarn.user.name} ]]"
       .then next
+
 
 ## Dependencies
 
