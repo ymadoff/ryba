@@ -15,24 +15,6 @@ in the resource Manager web interface.
     module.exports.push require('./index').configure
     module.exports.push 'ryba/spark/client/install'
 
-## Spark Users And Group
-
-By default, the "spark" package create the following entries:
-
-```bash
-cat /etc/passwd | grep spark
-spark:x:495:494:Spark:/var/lib/spark:/bin/bash
-cat /etc/group | grep spark
-spark:x:494:
-```
-
-    module.exports.push name: 'Spark HS # Users & Groups', handler: (ctx, next) ->
-      {spark} = ctx.config.ryba
-      ctx
-      .group spark.group
-      .user spark.user
-      .then next
-
 ## IPTables
 
 | Service              | Port  | Proto | Info              |

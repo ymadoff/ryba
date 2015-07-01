@@ -13,6 +13,20 @@
       spark = ctx.config.ryba.spark ?= {}
       spark.client_dir ?= '/usr/hdp/current/spark-client'
       spark.conf_dir ?= '/etc/spark/conf'
+      # Group
+      spark.group ?= {}
+      spark.group = name: spark.group if typeof spark.group is 'string'
+      spark.group.name ?= 'spark'
+      spark.group.system ?= true
+      # User
+      spark.user ?= {}
+      spark.user = name: spark.user if typeof spark.user is 'string'
+      spark.user.name ?= 'spark'
+      spark.user.system ?= true
+      spark.user.comment ?= 'Spark User'
+      spark.user.home ?= '/var/run/spark'
+      spark.user.groups ?= 'hadoop'
+      spark.user.gid ?= spark.group.name
       # Configuration
       spark.conf = {}
       spark.conf['spark.eventLog.enabled'] ?= "true"

@@ -12,20 +12,6 @@
       spark.pid_dir ?= '/var/run/spark'
       spark.conf_dir ?= '/etc/spark/conf'
       spark.log_dir ?= '/var/log/spark'
-      # Group
-      spark.group ?= {}
-      spark.group = name: spark.group if typeof spark.group is 'string'
-      spark.group.name ?= 'spark'
-      spark.group.system ?= true
-      # User
-      spark.user ?= {}
-      spark.user = name: spark.user if typeof spark.user is 'string'
-      spark.user.name ?= 'spark'
-      spark.user.system ?= true
-      spark.user.comment ?= 'Spark User'
-      spark.user.home ?= '/var/run/spark'
-      spark.user.groups ?= 'hadoop'
-      spark.user.gid ?= spark.group.name
       # https://spark.apache.org/docs/latest/monitoring.html
       spark.conf ?= {}
       spark.conf['spark.history.provider'] ?= 'org.apache.spark.deploy.history.FsHistoryProvider'
