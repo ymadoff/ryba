@@ -22,9 +22,8 @@ Note, there is no need to clean a zombie pid file before starting the server.
       {titan, rexster, realm} = ctx.config.ryba
       ctx.execute
         cmd: """
-        p=`ps aux | grep "com.tinkerpop.rexster.Application"`
-        if [ -n "$p" ]; then exit 3; fi
-        su -l #{rexster.user.name} -c "nohup #{path.join titan.home, 'bin', 'rexster.sh'} --start -c titan-server.xml >#{path.join rexster.log_dir, 'rexster.out'} 2>/dev/null &"
+        if ps aux | grep "com.tinkerpop.rexster.Application" | grep -v grep; then exit 3; fi
+        su -l #{rexster.user.name} -c "#{path.join titan.home, 'bin', 'rexster.sh'} --start -c titan-server.xml </dev/null >#{path.join rexster.log_dir, 'rexster.out'} 2>&1"
         """
         code_skipped: 3
       , next
