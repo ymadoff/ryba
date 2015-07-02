@@ -13,6 +13,7 @@ Spark comes with 1.2.1 in HDP 2.2.4.
 
     module.exports.push name: 'Zeppelin Package # Download',  handler: (ctx, next) ->
       zeppelin = ctx.config.ryba.zeppelin
+      return next null, null if zeppelin.build 
       tmp = "/tmp/zeppelin.tar.gz"
       ctx
         .download

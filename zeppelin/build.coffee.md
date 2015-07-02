@@ -23,6 +23,7 @@ Requires Internet to download repository & maven.
 
     module.exports.push name: 'Zeppelin Build # Maven', timeout: -1,  handler: (ctx, next) ->
       zeppelin = ctx.config.ryba.zeppelin
+      return next null, null unless zeppelin.build  
       ctx
         .execute
           cmd: """

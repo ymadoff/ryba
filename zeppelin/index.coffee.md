@@ -11,7 +11,11 @@
       zeppelin.source = "#{__dirname}/../resources/zeppelin-build.tar.gz"
       zeppelin.destination = "/var/lib/zeppelin"
       zeppelin.conf_dir = "/var/lib/zeppelin/conf"
+      #Set to true if you want to deploy from build 
+      #in this case zeppelin.source is required
+      zeppelin.build = true
       zeppelin.site ?= {}
+
 
       zeppelin.site['zeppelin.server.addr'] ?= '0.0.0.0'
       zeppelin.site['zeppelin.server.port'] ?= '9090'
@@ -64,7 +68,7 @@
       
     module.exports.push commands: 'install', modules: [
                                                         'ryba/zeppelin/build'
-                                                        #'ryba/zeppelin/install'
+                                                        'ryba/zeppelin/install'
                                                       ]
 
       
