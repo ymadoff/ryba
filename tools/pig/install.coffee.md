@@ -4,7 +4,7 @@
 Learn more about Pig optimization by reading ["Making Pig Fly"][fly].
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'ryba/hadoop/mapred_client'
     module.exports.push 'ryba/hadoop/yarn_client'

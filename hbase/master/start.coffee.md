@@ -2,7 +2,7 @@
 # HBase Start
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/hdfs_nn/wait'
     module.exports.push require('./index').configure
 

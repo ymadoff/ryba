@@ -6,7 +6,7 @@ clusters. The gateway provides a single access point for all REST interactions
 with Hadoop clusters.
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
     module.exports.push require '../lib/hconfigure'
 

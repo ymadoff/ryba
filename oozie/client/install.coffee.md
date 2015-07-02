@@ -11,7 +11,7 @@ environmental variables. For example, HDP declare its version as
 "-Dhdp.version=${HDP_VERSION}".
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/hadoop/mapred_client'

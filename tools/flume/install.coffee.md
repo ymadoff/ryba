@@ -2,7 +2,7 @@
 # Flume
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/hdfs' # Users and groups created by "zookeeper" and "hadoop-hdfs" dependencies
     module.exports.push require '../../lib/hdp_select'
     module.exports.push require('./index').configure

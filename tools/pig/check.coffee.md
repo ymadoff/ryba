@@ -2,7 +2,7 @@
 # HDP Pig Check
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/yarn_rm/wait'
     module.exports.push require('./index').configure
 

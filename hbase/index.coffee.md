@@ -8,7 +8,7 @@ Apache HBase is an open-source, distributed, versioned, non-relational database 
 Apache HBase provides Bigtable-like capabilities on top of Hadoop and HDFS
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/yum'
     module.exports.push 'ryba/hadoop/core'
     module.exports.push require '../lib/hdp_select'

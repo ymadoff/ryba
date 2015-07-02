@@ -2,7 +2,7 @@
 # Zookeeper Server Wait
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
 
 ## Wait Listen

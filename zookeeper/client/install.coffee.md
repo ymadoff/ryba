@@ -2,7 +2,7 @@
 # Zookeeper Client Install
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'masson/core/yum'
     module.exports.push 'masson/core/iptables'

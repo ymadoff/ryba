@@ -4,7 +4,7 @@
 Retrieve various info about the HCatalog Server and the Hive Server2.
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/bootstrap/report'
     module.exports.push 'ryba/hive/hcatalog/wait'
     module.exports.push require('./index').configure

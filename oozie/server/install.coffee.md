@@ -8,7 +8,7 @@ Resource Manager. RM HA (High Availability) must be configure with manual
 failover and Oozie must target the active node. 
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/commons/mysql_client'
     module.exports.push 'ryba/hadoop/core'

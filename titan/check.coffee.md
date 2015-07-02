@@ -2,7 +2,7 @@
 # Titan Check
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hbase/master/wait'
     module.exports.push require('./index').configure
 

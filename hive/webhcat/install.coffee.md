@@ -2,7 +2,7 @@
 # WebHCat
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs' # Install SPNEGO keytab
     module.exports.push 'ryba/hive/client'

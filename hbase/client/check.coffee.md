@@ -5,7 +5,7 @@ Check the HBase client installation by creating a table, inserting a cell and
 scanning the table.
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hbase/master/wait'
     module.exports.push require('./index').configure
     util = require 'util'

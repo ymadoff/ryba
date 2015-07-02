@@ -2,7 +2,7 @@
 # Hive
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/hadoop/hdfs_client'

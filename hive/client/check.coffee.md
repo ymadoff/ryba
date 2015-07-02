@@ -12,7 +12,7 @@ hive -hiveconf hive.root.logger=DEBUG,console
 ```
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hive/hcatalog/wait'
     module.exports.push 'ryba/hive/server2/wait'
     module.exports.push require('./index').configure
