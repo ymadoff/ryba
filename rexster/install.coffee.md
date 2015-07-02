@@ -32,66 +32,69 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: rexster.config.http['server-port'], protocol: 'tcp', state: 'NEW', comment: "Rexster Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
-      , next
+      .then next
 
 ## Env
 
     module.exports.push name: 'Rexster # Env', handler: (ctx, next) ->
       {titan, rexster, hadoop_conf_dir} = ctx.config.ryba
-      modified=false
-      ctx.chown
-        destination: rexster.user.home
-        uid: rexster.user.name
-        gid: rexster.group.name
-      , (err, changed) ->
-        return next err if err
-        modified ||= changed
-        write = [
-          match: /^(.*)#RYBA CONF hadoop-env, DON'T OVERWRITE/m
-          replace: "\tCP=\"$CP:#{hadoop_conf_dir}\" #RYBA CONF hadoop-env, DON'T OVERWRITE"
-          append: /^(.*)CP="\$CP:(.*)/m
-        ,
-          match: /LOG_DIR=.*$/m
-          replace: "LOG_DIR=\"#{rexster.log_dir}\" # RYBA CONF \"ryba.rexster.log_dir\", DON'T OVERWRITE"
-        ,
-          match: /\n(.*)-Dcom.sun.management.jmxremote.port=(.*)\\\n/m
-          replace: "\n"
-        ,
-          match: /^(.*)# RYBA CONF LOG, DON'T OVERWRITE/m
-          replace: "JAVA_OPTIONS=\"$JAVA_OPTIONS -Dlog4j.configuration=file:#{path.join rexster.user.home, 'log4j.properties'}\" # RYBA CONF LOG, DON'T OVERWRITE"
-          before: /^(.*)com.tinkerpop.rexster.Application.*/m
-        ,
-          match: /^(.*)-Djava.security.auth.login.config=.*/m
-          replace: "JAVA_OPTIONS=\"$JAVA_OPTIONS -Djava.security.auth.login.config=#{path.join rexster.user.home, 'rexster.jaas'}\" # RYBA CONF jaas, DON'T OVERWRITE"
-          before: /^(.*)com.tinkerpop.rexster.Application.*/m
-        ,
-          match: /^(.*)-Djava.library.path.*/m
-          replace: "JAVA_OPTIONS=\"$JAVA_OPTIONS -Djava.library.path=/usr/hdp/current/hadoop-client/lib/native\" # RYBA CONF hadoop native libs, DON'T OVERWRITE"
-          before: /^(.*)com.tinkerpop.rexster.Application.*/m
-        ]
-        if titan.config['storage.backend'] is 'hbase'
-          require('../hbase/client').configure ctx
-          write.unshift
-            match: /^(.*)# RYBA CONF hbase-env, DON'T OVERWRITE/m
-            replace: "\tCP=\"$CP:#{ctx.config.ryba.hbase.conf_dir}\" # RYBA CONF hbase-env, DON'T OVERWRITE"
+      ctx
+      .call ({}, callback) ->
+        modified=false
+        ctx.chown
+          destination: rexster.user.home
+          uid: rexster.user.name
+          gid: rexster.group.name
+        , (err, changed) ->
+          return callback err if err
+          modified ||= changed
+          write = [
+            match: /^(.*)#RYBA CONF hadoop-env, DON'T OVERWRITE/m
+            replace: "\tCP=\"$CP:#{hadoop_conf_dir}\" #RYBA CONF hadoop-env, DON'T OVERWRITE"
             append: /^(.*)CP="\$CP:(.*)/m
-        ctx.write
-          destination: path.join titan.home, 'bin', 'rexster.sh'
-          write: write
-        , (err, written) ->
-          return next err if err
-          modified ||= written
-          logfile = path.join rexster.log_dir, 'rexstitan.log'
-          ctx.fs.exists logfile, (err, exists) ->
-            return err if err
-            if exists then return next err, modified
-            else ctx.touch
-              destination: logfile
-              uid: rexster.user.name
-              gid: rexster.group.name
-            , (err, created) ->
-              modified||=created
-              return next err, modified
+          ,
+            match: /LOG_DIR=.*$/m
+            replace: "LOG_DIR=\"#{rexster.log_dir}\" # RYBA CONF \"ryba.rexster.log_dir\", DON'T OVERWRITE"
+          ,
+            match: /\n(.*)-Dcom.sun.management.jmxremote.port=(.*)\\\n/m
+            replace: "\n"
+          ,
+            match: /^(.*)# RYBA CONF LOG, DON'T OVERWRITE/m
+            replace: "JAVA_OPTIONS=\"$JAVA_OPTIONS -Dlog4j.configuration=file:#{path.join rexster.user.home, 'log4j.properties'}\" # RYBA CONF LOG, DON'T OVERWRITE"
+            before: /^(.*)com.tinkerpop.rexster.Application.*/m
+          ,
+            match: /^(.*)-Djava.security.auth.login.config=.*/m
+            replace: "JAVA_OPTIONS=\"$JAVA_OPTIONS -Djava.security.auth.login.config=#{path.join rexster.user.home, 'rexster.jaas'}\" # RYBA CONF jaas, DON'T OVERWRITE"
+            before: /^(.*)com.tinkerpop.rexster.Application.*/m
+          ,
+            match: /^(.*)-Djava.library.path.*/m
+            replace: "JAVA_OPTIONS=\"$JAVA_OPTIONS -Djava.library.path=/usr/hdp/current/hadoop-client/lib/native\" # RYBA CONF hadoop native libs, DON'T OVERWRITE"
+            before: /^(.*)com.tinkerpop.rexster.Application.*/m
+          ]
+          if titan.config['storage.backend'] is 'hbase'
+            require('../hbase/client').configure ctx
+            write.unshift
+              match: /^(.*)# RYBA CONF hbase-env, DON'T OVERWRITE/m
+              replace: "\tCP=\"$CP:#{ctx.config.ryba.hbase.conf_dir}\" # RYBA CONF hbase-env, DON'T OVERWRITE"
+              append: /^(.*)CP="\$CP:(.*)/m
+          ctx.write
+            destination: path.join titan.home, 'bin', 'rexster.sh'
+            write: write
+          , (err, written) ->
+            return callback err if err
+            modified ||= written
+            logfile = path.join rexster.log_dir, 'rexstitan.log'
+            ctx.fs.exists logfile, (err, exists) ->
+              return err if err
+              if exists then return callback err, modified
+              else ctx.touch
+                destination: logfile
+                uid: rexster.user.name
+                gid: rexster.group.name
+              , (err, created) ->
+                modified||=created
+                return callback err, modified
+      .then next
 
     module.exports.push name: 'Rexster # Tuning', handler: (ctx, next) ->
       next null, 'TODO'
@@ -110,7 +113,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
 
 ## Kerberos JAAS for ZooKeeper
 
@@ -122,14 +125,14 @@ Zookeeper use JAAS for authentication. We configure JAAS to make SASL authentica
         destination: path.join rexster.user.home, "rexster.jaas"
         content:
           Client:
-            principal: rexster.principal
-            keyTab: rexster.keytab
+            principal: rexster.krb5_user.principal
+            keyTab: rexster.krb5_user.keytab
           Server:
-            principal: rexster.principal
-            keyTab: rexster.keytab
+            principal: rexster.krb5_user.principal
+            keyTab: rexster.krb5_user.keytab
         uid: rexster.user.name
         gid: rexster.group.name
-      , next
+      .then next
 
     module.exports.push name: 'Rexster # Configure Titan Server', handler: (ctx, next) ->
       {titan, rexster, realm} = ctx.config.ryba
@@ -138,7 +141,7 @@ Zookeeper use JAAS for authentication. We configure JAAS to make SASL authentica
         destination: path.join rexster.user.home, 'titan-server.xml'
         uid:rexster.user.name
         gid:rexster.group.name
-      , next
+      .then next
 
 ## Cron-ed Kinit
 
@@ -147,13 +150,13 @@ We then ask a first TGT.
 
     module.exports.push name: 'Rexster # Cron-ed kinit', handler: (ctx, next) ->
       {rexster, realm} = ctx.config.ryba
-      kinit = "/usr/bin/kinit #{rexster.principal} -k -t #{rexster.keytab}"
+      kinit = "/usr/bin/kinit #{rexster.krb5_user.principal} -k -t #{rexster.krb5_user.keytab}"
       ctx.cron_add
         cmd: kinit
         when: '0 */9 * * *'
         user: rexster.user.name
         exec: true
-      , next
+      .then next
 
 ## HBase Permissions
 
@@ -170,7 +173,7 @@ TODO: Use a namespace
         hbase shell 2>/dev/null <<< "grant 'rexster', 'RWXCA', '#{table}'"
         """
         code_skipped: 3
-      , next
+      .then next
 
 ## Dependencies
 
