@@ -52,13 +52,13 @@ The JournalNode data are stored inside the directory defined by the
 "dfs.journalnode.edits.dir" property.
 
     module.exports.push name: 'HDFS JN # Layout', handler: (ctx, next) ->
-      {hdfs, hadoop_conf_dir} = ctx.config.ryba
+      {hdfs, hadoop_group} = ctx.config.ryba
       ctx.mkdir
         destination: for dir in hdfs.site['dfs.journalnode.edits.dir'].split ','
           if dir.indexOf('file://') is 0
           then dir.substr(7) else dir
-        uid: 'hdfs'
-        gid: 'hadoop'
+        uid: hdfs.user.name
+        gid: hadoop_group.name
       .then next
 
 ## Service
