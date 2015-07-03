@@ -15,8 +15,6 @@
       #in this case zeppelin.source is required
       zeppelin.build = true
       zeppelin.site ?= {}
-
-
       zeppelin.site['zeppelin.server.addr'] ?= '0.0.0.0'
       zeppelin.site['zeppelin.server.port'] ?= '9090'
       zeppelin.site['zeppelin.notebook.dir'] ?= '/notebook'
@@ -26,22 +24,22 @@
       zeppelin.site['zeppelin.notebook.storage'] ?= 'org.apache.zeppelin.notebook.repo.VFSNotebookRepo'
       zeppelin.site['zeppelin.interpreter.dir'] ?= 'interpreter'
       #list of interpreters, the first is the default 
-      zeppelin.site['zeppelin.interpreters'] ?= ['org.apache.zeppelin.spark.SparkInterpreter'
-                                                 'org.apache.zeppelin.spark.PySparkInterpreter'
-                                                 'org.apache.zeppelin.spark.SparkSqlInterpreter'
-                                                 'org.apache.zeppelin.spark.DepInterpreter'
-                                                 'org.apache.zeppelin.markdown.Markdown'
-                                                 'org.apache.zeppelin.angular.AngularInterpreter'
-                                                 'org.apache.zeppelin.shell.ShellInterpreter'
-                                                 'org.apache.zeppelin.hive.HiveInterpreter'
-                                                 'org.apache.zeppelin.tajo.TajoInterpreter'
-                                                 'org.apache.zeppelin.flink.FlinkInterpreter'
-                                                 'org.apache.zeppelin.lens.LensInterpreter'
-                                                 'org.apache.zeppelin.ignite.IgniteInterprete'
-                                                 'org.apache.zeppelin.ignite.IgniteSqlInterpreter'
-                                                ]
+      zeppelin.site['zeppelin.interpreters'] ?= [
+        'org.apache.zeppelin.spark.SparkInterpreter'
+        'org.apache.zeppelin.spark.PySparkInterpreter'
+        'org.apache.zeppelin.spark.SparkSqlInterpreter'
+        'org.apache.zeppelin.spark.DepInterpreter'
+        'org.apache.zeppelin.markdown.Markdown'
+        'org.apache.zeppelin.angular.AngularInterpreter'
+        'org.apache.zeppelin.shell.ShellInterpreter'
+        'org.apache.zeppelin.hive.HiveInterpreter'
+        'org.apache.zeppelin.tajo.TajoInterpreter'
+        'org.apache.zeppelin.flink.FlinkInterpreter'
+        'org.apache.zeppelin.lens.LensInterpreter'
+        'org.apache.zeppelin.ignite.IgniteInterprete'
+        'org.apache.zeppelin.ignite.IgniteSqlInterpreter'
+      ]
       zeppelin.site['zeppelin.interpreter.connect.timeout'] ?= '30000'
-
       #for now ryba does not install zepplin with SSL
       #putting properties for further installation
       #will be made soon
@@ -54,8 +52,6 @@
       zeppelin.site['zeppelin.ssl.truststore.type'] ?= 'JKS'
       zeppelin.site['zeppelin.ssl.client.auth'] ?= 'false'
       zeppelin.site['zeppelin.ssl.truststore.password'] ?= 'password'
-
-
       hadoop_conf_dir = ctx.config.ryba.hadoop_conf_dir ?= 'undefined'
       zeppelin.env ?= {}
       zeppelin.env['HADOOP_CONF_DIR'] = if hadoop_conf_dir? then hadoop_conf_dir else throw new Error 'Need Hadoop core installed'
@@ -64,12 +60,12 @@
       zeppelin.env['ZEPPELIN_PORT'] ?= zeppelin.site['zeppelin.server.port']
       zeppelin.env['ZEPPELIN_INTERPRETER_DIR'] ?= 'interpreter'
 
+    module.exports.push commands: 'prepare', modules:  'ryba/zeppelin/prepare'
 
-      
     module.exports.push commands: 'install', modules: [
-                                                        'ryba/zeppelin/build'
-                                                        'ryba/zeppelin/install'
-                                                      ]
+      # 'ryba/zeppelin/build'
+      'ryba/zeppelin/install'
+    ]
 
       
       
