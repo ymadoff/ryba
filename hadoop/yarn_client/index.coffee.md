@@ -137,6 +137,8 @@ rmr /rmstore/ZKRMStateRoot
 
       if ctx.has_module 'ryba/hadoop/yarn_rm'
         ryba.yarn.site['yarn.resourcemanager.recovery.enabled'] ?= 'true'
+        ryba.yarn.site['yarn.resourcemanager.work-preserving-recovery.enabled'] ?= 'true'
+        ryba.yarn.site['yarn.resourcemanager.am.max-attempts'] ?= '2'
         ryba.yarn.site['yarn.resourcemanager.store.class'] ?= 'org.apache.hadoop.yarn.server.resourcemanager.recovery.ZKRMStateStore'
         zoo_ctxs = ctx.contexts modules: 'ryba/zookeeper/server', require('../../zookeeper/server').configure
         quorum = for zoo_ctx in zoo_ctxs
@@ -154,6 +156,9 @@ rmr /rmstore/ZKRMStateRoot
         # of the ACLs specified through yarn.resourcemanager.zk-acl. But that
         # leaves a security hole in a secure setup. To configure automatic failover:
         ryba.yarn.site['yarn.resourcemanager.zk-state-store.parent-path'] ?= '/rmstore'
+        ryba.yarn.site['yarn.resourcemanager.zk-num-retries'] ?= '500'
+        ryba.yarn.site['yarn.resourcemanager.zk-retry-interval-ms'] ?= '2000'
+        ryba.yarn.site['yarn.resourcemanager.zk-timeout-ms'] ?= '10000'
 
       if ctx.has_module 'ryba/hadoop/yarn_nm'
         ryba.yarn.site['yarn.nodemanager.recovery.enabled'] ?= 'true'
