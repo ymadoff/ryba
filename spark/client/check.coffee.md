@@ -80,7 +80,5 @@ server to access logs.
 
     mkcmd = require '../../lib/mkcmd'
 
-
-
 [Spark-Pi]:http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.4/Apache_Spark_Quickstart_v224/content/run_spark_pi.html
 [Spark-yarn]:http://blog.cloudera.com/blog/2014/05/apache-spark-resource-management-and-yarn-app-models/
