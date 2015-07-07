@@ -18,7 +18,6 @@ This file contains shared Configuration.
       mongodb.user.system ?= true
       mongodb.user.comment ?= 'MongoDB User'
       mongodb.user.home ?= '/var/lib/mongo'
-      mongodb.user.groups ?= ['hadoop']
       # Group
       mongodb.group = name: mongodb.group if typeof mongodb.group is 'string'
       mongodb.group ?= {}
