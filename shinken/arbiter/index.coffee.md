@@ -28,6 +28,8 @@ to its associated Scheduler. Host the WebUI.
       shinken.overwrite ?= false
       # Arbiter specific configuration
       shinken.arbiter ?= {}
+      # Additionnal modules to install
+      shinken.arbiter.modules ?= {}
       # Config
       config = shinken.arbiter.config ?= {}
       config.port ?= 7770
@@ -45,7 +47,6 @@ to its associated Scheduler. Host the WebUI.
       #shinken.keytab ?= '/etc/security/keytabs/shinken.service.keytab'
       #shinken.principal ?= "shinken/#{ctx.config.host}@#{ctx.config.ryba.realm}"
       #shinken.plugin_dir ?= '/usr/lib64/shinken/plugins'
-      # WebUI Users
       shinken.config.users ?= {}
       if Object.getOwnPropertyNames(shinken.config.users).length is 0
         shinken.config.users.shinken =

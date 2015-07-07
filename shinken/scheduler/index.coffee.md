@@ -15,12 +15,14 @@ Sends broks (internal events of any kind) to the broker(s)
 
     module.exports.push module.exports.configure = (ctx) ->
       require('../').configure ctx
-      {shinken} = ctx.config.ryba
-      shinken.scheduler ?= {}
-      shinken.scheduler.config ?= {}
-      shinken.scheduler.config.port ?= 7768 # Propriété non honorée !!
-      shinken.scheduler.config.modules = [shinken.scheduler.modules] if typeof shinken.scheduler.modules is 'string'
-      shinken.scheduler.config.modules ?= []
+      scheduler = ctx.config.ryba.shinken.scheduler ?= {}
+      # Additionnal Modules to install
+      scheduler.modules ?= {}
+      # Config
+      scheduler.config ?= {}
+      scheduler.config.port ?= 7768 # Propriété non honorée !!
+      scheduler.config.modules = [scheduler.config.modules] if typeof scheduler.config.modules is 'string'
+      scheduler.config.modules ?= Object.getOwnPropertyNames scheduler.modules
 
 ## Commands
 

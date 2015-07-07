@@ -17,12 +17,15 @@ Poller modules:
 
     module.exports.push module.exports.configure = (ctx) ->
       require('../').configure ctx
-      {shinken} = ctx.config.ryba
-      shinken.poller ?= {}
-      shinken.poller.config ?= {}
-      shinken.poller.config.port ?= 7771
-      shinken.poller.config.modules = [shinken.poller.config.modules] if typeof shinken.poller.config.modules is 'string'
-      shinken.poller.config.modules ?= []
+      poller = ctx.config.ryba.shinken.poller ?= {}
+      # Additionnal Modules to install
+      poller.modules ?= {}
+      # Config
+      poller.config ?= {}
+      poller.config.port ?= 7771
+      poller.config.modules = [poller.config.modules] if typeof poller.config.modules is 'string'
+      poller.config.modules ?= Object.getOwnPropertyNames poller.modules
+
 ## Commands
 
     # module.exports.push commands: 'backup', modules: 'ryba/shinken/poller/backup'

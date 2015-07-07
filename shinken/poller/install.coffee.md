@@ -62,6 +62,36 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         destination: path.join shinken.log_dir
         uid: shinken.user.name
         gid: shinken.group.name
+      .execute
+        cmd: "shinken --init"
+        not_if_exists: ".shinken.ini"
+      .then next
+
+## Additional Modules
+
+    module.exports.push name: 'Shinken Poller # Modules', handler: (ctx, next) ->
+      {poller} = ctx.config.ryba.shinken
+      return next() unless Object.getOwnPropertyNames(poller.modules).length > 0
+      download = []
+      extract = []
+      exec = []
+      for name, mod of poller.modules
+        if mod.archive?
+          download.push
+            destination: "#{mod.archive}.zip"
+            source: mod.source
+            not_if_exec: "shinken inventory | grep #{name}"
+          extract.push
+            source: "#{mod.archive}.zip"
+            not_if_exec: "shinken inventory | grep #{name}"
+          install.push
+            cmd: "shinken install --local #{mod.archive}"
+            not_if_exec: "shinken inventory | grep #{name}"
+        else return next Error "Missing parameter: archive for poller.modules.#{name}"
+      ctx
+      .download download
+      .extract extract
+      .execute exec
       .then next
 
 ## Kerberos

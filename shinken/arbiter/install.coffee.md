@@ -53,6 +53,35 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         destination: path.join shinken.log_dir
         uid: shinken.user.name
         gid: shinken.group.name
+      .execute
+        cmd: "shinken --init"
+        not_if_exists: ".shinken.ini"
+      .then next
+
+## Additional Modules
+
+    module.exports.push name: 'Shinken Arbiter # Modules', handler: (ctx, next) ->
+      {arbiter} = ctx.config.ryba.shinken
+      return next() unless Object.getOwnPropertyNames(arbiter.modules).length > 0
+      download = []
+      extract = []
+      exec = []
+      for name, mod of arbiter.modules
+        if mod.archive?
+          download.push
+            destination: "#{mod.archive}.zip"
+            not_if_exec: "shinken inventory | grep #{name}"
+          extract.push
+            source: "#{mod.archive}.zip"
+            not_if_exec: "shinken inventory | grep #{name}"
+          exec.push
+            cmd: "shinken install --local #{mod.archive}"
+            not_if_exec: "shinken inventory | grep #{name}"
+        else return next Error "Missing parameter: archive for arbiter.modules.#{name}"
+      ctx
+      .download download
+      .extract extract
+      .execute exec
       .then next
 
 ## Ownership

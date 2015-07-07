@@ -20,12 +20,14 @@ Modules for receivers:
 
     module.exports.push module.exports.configure = (ctx) ->
       require('../').configure ctx
-      {shinken} = ctx.config.ryba
-      shinken.receiver ?= {}
-      shinken.receiver.config ?= {}
-      shinken.receiver.config.port ?= 7773 # Propriété non honorée !!
-      shinken.receiver.config.modules = [shinken.receiver.modules] if typeof shinken.receiver.modules is 'string'
-      shinken.receiver.config.modules ?= []
+      receiver = ctx.config.ryba.shinken.receiver ?= {}
+      # Additionnal Modules to install
+      receiver.modules ?= {}
+      # Config
+      receiver.config ?= {}
+      receiver.config.port ?= 7773
+      receiver.config.modules = [receiver.config.modules] if typeof receiver.config.modules is 'string'
+      receiver.config.modules ?= Object.getOwnPropertyNames receiver.modules
 
 ## Commands
 

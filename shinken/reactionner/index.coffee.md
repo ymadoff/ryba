@@ -10,12 +10,14 @@ and sends the results to the scheduler.
 
     module.exports.push module.exports.configure = (ctx) ->
       require('../').configure ctx
-      {shinken} = ctx.config.ryba
-      shinken.reactionner ?= {}
-      shinken.reactionner.config ?={}
-      shinken.reactionner.config.port ?= 7769 # Propriété non honorée !!
-      shinken.reactionner.config.modules = [shinken.reactionner.config.modules] if typeof shinken.reactionner.config.modules is 'string'
-      shinken.reactionner.config.modules ?= []
+      reactionner = ctx.config.ryba.shinken.reactionner ?= {}
+      # Additionnal Modules to install
+      reactionner.modules ?= {}
+      # Config
+      reactionner.config ?={}
+      reactionner.config.port ?= 7769
+      reactionner.config.modules = [reactionner.config.modules] if typeof reactionner.config.modules is 'string'
+      reactionner.config.modules ?= Object.getOwnPropertyNames reactionner.modules
 
 ## Commands
 
