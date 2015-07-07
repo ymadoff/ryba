@@ -2,7 +2,7 @@
 # HBase Rest Gateway Check
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hbase/regionserver/wait'
     # module.exports.push 'ryba/hbase/client' # Using `hbase shell` to wait before running the checks
     module.exports.push require('./index').configure

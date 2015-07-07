@@ -5,7 +5,7 @@ The backup script dump the content of the hive database as well as the
 configuration.
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
 
 ## Backup Database

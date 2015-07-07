@@ -2,7 +2,7 @@
 # Hive Server2 Stop
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
 
 ## Stop

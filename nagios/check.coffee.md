@@ -42,7 +42,7 @@ php /usr/lib64/nagios/plugins/check_rpcq_latency_ha.php \
 ```
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
 
     module.exports.push name: 'Nagios # Check Config', label_true: 'CHECKED', handler: (ctx, next) ->

@@ -5,7 +5,7 @@ Run the command `./bin/ryba stop -m ryba/oozie/server` to stop the Oozie
 server using Ryba.
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
 
 ## Stop

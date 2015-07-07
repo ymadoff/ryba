@@ -3,7 +3,7 @@
 
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push require('./').configure
 
 ## Start
@@ -26,6 +26,6 @@ Note, there is no need to clean a zombie pid file before starting the server.
         su -l #{rexster.user.name} -c "#{path.join titan.home, 'bin', 'rexster.sh'} --start -c titan-server.xml </dev/null >#{path.join rexster.log_dir, 'rexster.out'} 2>&1"
         """
         code_skipped: 3
-      , next
+      .then next
 
     path = require 'path'

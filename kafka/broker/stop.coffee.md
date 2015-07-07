@@ -2,7 +2,7 @@
 # Kafka Broker Start
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
 
     module.exports.push name: 'Kafka Broker # Stop', label_true: 'STOPPED', handler: (ctx, next) ->

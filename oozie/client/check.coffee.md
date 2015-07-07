@@ -2,7 +2,7 @@
 # Oozie Client Check
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
 
     module.exports.push name: 'Oozie Client # Wait Server', timeout: -1, handler: (ctx, next) ->

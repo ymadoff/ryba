@@ -2,7 +2,7 @@
 # Kafka Consumer Install
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/kafka'
     module.exports.push require('./index').configure
 

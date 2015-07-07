@@ -2,7 +2,7 @@
 # Solr Start
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
 
 ## Start
 

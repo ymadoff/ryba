@@ -8,7 +8,7 @@ By default, the pid of the running server is stored in
 "/var/run/webhcat/webhcat.pid".
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hive/hcatalog/wait'
     module.exports.push require('./index').configure
 

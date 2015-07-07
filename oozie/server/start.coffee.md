@@ -8,7 +8,7 @@ By default, the pid of the running server is stored in
 "/var/run/oozie/oozie.pid".
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
 
 ## Start

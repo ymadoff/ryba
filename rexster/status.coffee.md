@@ -5,7 +5,7 @@ Run the command `./bin/ryba status -m ryba/titan/rexster` to retrieve the status
 of the Titan server using Ryba.
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push require('./').configure
 
 ## Status

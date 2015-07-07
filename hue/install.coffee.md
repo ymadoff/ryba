@@ -6,7 +6,7 @@ article from december 2014 describe how to
 [install the latest version of hue on HDP](http://gethue.com/how-to-deploy-hue-on-hdp/).
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
     # Install the mysql connector
     module.exports.push 'masson/commons/mysql_client'

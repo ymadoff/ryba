@@ -6,7 +6,7 @@ require the HFDS Namenode to be started. Both of them will need to functionnal
 HDFS server to answer queries.
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/hdfs_dn/wait'
     module.exports.push require('./index').configure
 

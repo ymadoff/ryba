@@ -20,7 +20,13 @@ In this mode the driver is the yarn application master (running inside yarn)
       ctx
       .execute
         cmd: mkcmd.test ctx, """
-        spark-submit --class org.apache.spark.examples.SparkPi --master yarn-cluster --num-executors 2 --driver-memory 512m --executor-memory 512m --executor-cores 1 #{spark.client_dir}/lib/spark-examples*.jar 10 2>&1 /dev/null | grep -m 1 "proxy\/application_"
+        spark-submit \
+          --class org.apache.spark.examples.SparkPi \
+          --queue default \
+          --master yarn-cluster --num-executors 2 --driver-memory 512m \
+          --executor-memory 512m --executor-cores 1 \
+          #{spark.client_dir}/lib/spark-examples*.jar 10 2>&1 /dev/null \
+        | grep -m 1 "proxy\/application_"
         """
       , (err, executed, stdout, stderr) ->
         return err if err
@@ -73,8 +79,6 @@ server to access logs.
 ## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
-
-
 
 [Spark-Pi]:http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.4/Apache_Spark_Quickstart_v224/content/run_spark_pi.html
 [Spark-yarn]:http://blog.cloudera.com/blog/2014/05/apache-spark-resource-management-and-yarn-app-models/

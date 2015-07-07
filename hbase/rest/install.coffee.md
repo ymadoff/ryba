@@ -7,7 +7,7 @@ run the command `grant '$USER', 'RWCA'`. Ryba isnt doing it because we didn't
 have usecase for it yet.
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/hadoop/core'

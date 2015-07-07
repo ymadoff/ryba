@@ -2,7 +2,7 @@
 # Check Ganglia Collector
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
 
 ## Check Services
 

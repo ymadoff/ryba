@@ -2,7 +2,7 @@
 # Hive & HCatalog Client
 
     module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/yarn_client'
     module.exports.push 'ryba/hadoop/mapred_client'
     module.exports.push 'ryba/tez'
