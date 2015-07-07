@@ -85,7 +85,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             source: "#{mod.archive}.zip"
             not_if_exec: "shinken inventory | grep #{name}"
           install.push
-            cmd: "shinken install --local #{mod.archive}"
+            cmd: "su -l #{ctx.config.ryba.shinken.user.name} -c 'shinken install --local #{mod.archive}'"
             not_if_exec: "shinken inventory | grep #{name}"
         else return next Error "Missing parameter: archive for poller.modules.#{name}"
       ctx
