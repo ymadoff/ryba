@@ -49,6 +49,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           match: ///^#{k}=.*$///mg
           replace: "#{k}=#{v}"
           append: true
+      .chown
+        destination: path.join shinken.log_dir
+        uid: shinken.user.name
+        gid: shinken.group.name
       .then next
 
 ## Ownership

@@ -58,6 +58,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           match: ///^#{k}=.*$///mg
           replace: "#{k}=#{v}"
           append: true
+      .chown
+        destination: path.join shinken.log_dir
+        uid: shinken.user.name
+        gid: shinken.group.name
       .then next
 
 ## Kerberos
@@ -76,3 +80,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
     #     kadmin_password: kadmin_password
     #     kadmin_server: admin_server
     #   .then next
+
+## Module dependencies
+
+    path = require 'path'
