@@ -15,7 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #}
-{% for groupname, hostnames in hostgroups_defs %}
+{% for groupname, hostnames in hostgroups %}
 {% if hostnames %}
 define hostgroup {
         hostgroup_name  {{ groupname }}
