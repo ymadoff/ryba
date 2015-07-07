@@ -1,0 +1,44 @@
+{#
+# Licensed to the Apache Software Foundation (ASF) under one
+# or more contributor license agreements.  See the NOTICE file
+# distributed with this work for additional information
+# regarding copyright ownership.  The ASF licenses this file
+# to you under the Apache License, Version 2.0 (the
+# "License"); you may not use this file except in compliance
+# with the License.  You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#}
+{% for r in reactionners %}
+define reactionner {
+    reactionner_name    {{r.host}}
+    address             {{r.host}}
+    port                {{r.port}}
+    spare               {% if r.spare %}1{% else %}0{% endif %}
+
+    manage_sub_realms   0   {# Does it take jobs from schedulers of sub-Realms?#}
+    min_workers         1   {# Starts with N processes (0 = 1 per CPU)#}
+    max_workers         15  {# No more than N processes (0 = 1 per CPU)#}
+    polling_interval    1   {# Get jobs from schedulers each 1 second#}
+    timeout             3   {# Ping timeout#}
+    data_timeout        120 {# Data send timeout#}
+    max_check_attempts  3   {# If ping fails N or more, then the node is dead#}
+    check_interval      60  {# Ping node every N seconds#}
+
+    modules             {{ r.modules | join (',') }}
+    {# Reactionner tags are the tag that the reactionner will manage. Use None as tag name to manage
+    # untaggued notification/event handlers
+    #reactionner_tags     None #}
+
+    use_ssl	          {% if r.use_ssl %}1{% else %}0{% endif %}
+    hard_ssl_name_check {% if r.hard_ssl_name_check %}1{% else %}0{% endif %}
+
+    realm   All
+}
+{% endfor %}
