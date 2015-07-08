@@ -24,10 +24,12 @@
         .then (err, status) ->
           return callback err if err or not status
           ctx
-          .execute
+          .service
             srv_name: "hbase-master"
             action: 'restart'
+            if: ctx.has_module 'ryba/hbase/master'
           .service
             srv_name: "hbase-regionserver"
             action: 'restart'
+            if: ctx.has_module 'ryba/hbase/regionserver'
           .then (err) -> callback err, true
