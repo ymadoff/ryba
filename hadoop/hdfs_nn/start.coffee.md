@@ -33,7 +33,7 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
 Wait for HDFS safemode to exit. It isn't enough to start the NameNodes but the
 majority of DataNodes also need to be running.
 
-This middleware duplicates the one present in 'masson/hadoop/hdfs_dn/wait' and
+This middleware duplicates the one present in 'ryba/hadoop/hdfs_dn/wait' and
 is only called if a DataNode isn't installed on this server because a NameNode
 need a mojority of DataNodes to be started in order to exit safe mode.
 
@@ -53,7 +53,7 @@ Ensure a given NameNode is always active and force the failover otherwise.
 In order to work properly, the ZKFC daemon must be running and the command must
 be executed on the same server as ZKFC.
 
-This middleware duplicates the one present in 'masson/hadoop/hdfs_dn/wait' and
+This middleware duplicates the one present in 'ryba/hadoop/hdfs_dn/wait' and
 is only called if a DataNode isn't installed on this server because this command
 only run on a NameNode with fencing installed and in normal mode.
 

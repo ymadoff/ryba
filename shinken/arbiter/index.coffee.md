@@ -1,4 +1,4 @@
-x
+
 # Shinken Arbiter
 
 Loads the configuration files and dispatches the host and service objects to the
