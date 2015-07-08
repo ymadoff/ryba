@@ -11,4 +11,6 @@
       {scheduler} = ctx.config.ryba.shinken
       ctx.execute
         cmd: "echo > /dev/tcp/#{ctx.config.host}/#{scheduler.config.port}"
+      .execute
+        cmd: "curl http://#{ctx.config.host}:#{scheduler.config.port} | grep OK"
       .then next

@@ -11,4 +11,6 @@
       {reactionner} = ctx.config.ryba.shinken
       ctx.execute
         cmd: "echo > /dev/tcp/#{ctx.config.host}/#{reactionner.port}"
+      .execute
+        cmd: "curl http://#{ctx.config.host}:#{reactionner.config.port} | grep OK"
       .then next

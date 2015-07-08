@@ -3,7 +3,6 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push 'ryba/shinken/scheduler/wait'
 
 ## Start
 

@@ -9,8 +9,8 @@
 
 ## IPTables
 
-| Service          | Port  | Proto | Parameter       |
-|------------------|-------|-------|-----------------|
+| Service          | Port  | Proto | Parameter              |
+|------------------|-------|-------|------------------------|
 | shinken-arbiter  | 7770  |  tcp  |  arbiter.config.port   |
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to
@@ -65,19 +65,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       .extract extract
       .execute exec
       .then next
-
-## Ownership
-
-    # module.exports.push name: 'Shinken Arbiter # Permissions', handler: (ctx, next) ->
-    #   {shinken} = ctx.config.ryba
-    #   ch = for p in [shinken.log_dir, shinken.plugin_dir, '/var/lib/shinken']
-    #     destination: p
-    #     uid: shinken.user.name
-    #     gid: shinken.group.name
-    #     recursive: true
-    #   ctx
-    #   .chown ch
-    #   .then next
 
 ## Configuration
 

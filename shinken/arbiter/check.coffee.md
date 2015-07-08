@@ -17,4 +17,6 @@
       {arbiter} = ctx.config.ryba.shinken
       ctx.execute
         cmd: "echo > /dev/tcp/#{ctx.config.host}/#{arbiter.config.port}"
+      .execute
+        cmd: "curl http://#{ctx.config.host}:#{arbiter.config.port} | grep OK"
       .then next
