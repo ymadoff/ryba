@@ -98,12 +98,9 @@ Independently, if 'ryba' hasn't CREATE right on these 3 tables, it will be grant
 
     module.exports.push name: 'Phoenix Client # Init', timeout: 200000, handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
-      # zk_path  = hbase.site['hbase.zookeeper.quorum'].split(',')[0]
-      # zk_path += ':' + hbase.site['hbase.zookeeper.property.clientPort']
-      # zk_path += hbase.site['zookeeper.znode.parent']
-      zk_path = for host in hbase.site['hbase.zookeeper.quorum'].split(',')
-        "#{host}:#{hbase.site['hbase.zookeeper.property.clientPort']}"
-      zk_path = zk_path.join(',') + hbase.site['zookeeper.znode.parent']
+      zk_path = "#{hbase.site['hbase.zookeeper.quorum']}"
+      zk_path += ":#{hbase.site['hbase.zookeeper.property.clientPort']}"
+      zk_path += "hbase.site['zookeeper.znode.parent']"
       ctx.execute
         cmd: mkcmd.hbase ctx, """
         code=3
