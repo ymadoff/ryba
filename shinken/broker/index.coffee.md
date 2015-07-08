@@ -26,9 +26,9 @@ Some of the modules are:
       broker = ctx.config.ryba.shinken.broker ?= {}
       # Additionnal modules to install
       broker.modules ?= {}
-      webui = broker.modules.webui ?= {}
-      webui.source ?= 'https://github.com/shinken-monitoring/mod-webui/archive/bs3.zip'
-      webui.archive ?= 'mod-webui-bs3'
+      webui = broker.modules['webui'] ?= {}
+      webui.source ?= 'https://github.com/shinken-monitoring/mod-webui/archive/1.0.zip'
+      webui.archive ?= 'mod-webui-1.0'
       webui.config ?= {}
       webui.config.host ?= '0.0.0.0'
       webui.config.port ?= 7767
@@ -36,11 +36,11 @@ Some of the modules are:
       webui.config.modules = [webui.config.modules] if typeof webui.config.modules is 'string'
       webui.config.modules ?= ['auth-cfg-password', 'mongodb']
       auth = broker.modules['auth-cfg-password'] ?= {}
-      auth.source ?= 'https://github.com/shinken-monitoring/mod-auth-cfg-password/archive/master.zip'
-      auth.archive ?= 'mod-auth-cfg-password-master'
-      mongodb = broker.modules['mongodb'] ?= {}
-      mongodb.source ?= 'https://github.com/shinken-monitoring/mod-mongodb/archive/master.zip'
-      mongodb.archive ?= 'mod-mongodb-master'
+      auth.source ?= 'https://github.com/shinken-monitoring/mod-auth-cfg-password/archive/2.0.1.zip'
+      auth.archive ?= 'mod-auth-cfg-password-2.0.1'
+      mongodb = broker.modules['mongo-logs'] ?= {}
+      mongodb.source ?= 'https://github.com/shinken-monitoring/mod-mongo-logs/archive/1.0.2b.zip'
+      mongodb.archive ?= 'mod-mongo-logs-1.0.2b'
       ## CONFIG
       broker.config ?= {}
       broker.config.port ?= 7772

@@ -29,7 +29,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Shinken Poller # Install', handler: (ctx, next) ->
       {shinken} = ctx.config.ryba
-      daemon = 'poller'
       ctx
       .service name: 'net-snmp'
       .service name: 'net-snmp-utils'
@@ -40,31 +39,15 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       .service name: 'net-snmp-perl'
       .service name: 'perl-Net-SNMP'
       .service name: 'fping'
-      #.service name: "shinken-#{daemon}"
-      .execute cmd: "yum -y --disablerepo=HDP-UTILS-1.1.0.20 install shinken-#{daemon}"
-      .write
-        destination: "/etc/init.d/shinken-#{daemon}"
-        write: for k, v of {
-            'user': shinken.user.name
-            'group': shinken.group.name }
-          match: ///^#{k}=.*$///mg
-          replace: "#{k}=#{v}"
-          append: true
-      .write
-        destination: "/etc/shinken/daemons/#{daemon}d.ini"
-        write: for k, v of {
-            'user': shinken.user.name
-            'group': shinken.group.name }
-          match: ///^#{k}=.*$///mg
-          replace: "#{k}=#{v}"
-          append: true
+      #.service name: 'shinken-poller'
+      .execute cmd: "yum -y --disablerepo=HDP-UTILS-1.1.0.20 install shinken-poller"
       .chown
         destination: path.join shinken.log_dir
         uid: shinken.user.name
         gid: shinken.group.name
       .execute
-        cmd: "shinken --init"
-        not_if_exists: ".shinken.ini"
+        cmd: "su -l #{shinken.user.name} -c 'shinken --init'"
+        not_if_exists: "#{shinken.home}/.shinken.ini"
       .then next
 
 ## Additional Modules

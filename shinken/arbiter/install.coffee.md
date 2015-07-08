@@ -29,26 +29,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Shinken Arbiter # Packages', handler: (ctx, next) ->
       {shinken} = ctx.config.ryba
-      daemon = 'arbiter'
       ctx
-      .service
-        name: "shinken-#{daemon}"
-      .write
-        destination: "/etc/init.d/shinken-#{daemon}"
-        write: for k, v of {
-            'user': shinken.user.name
-            'group': shinken.group.name }
-          match: ///^#{k}=.*$///mg
-          replace: "#{k}=#{v}"
-          append: true
-      .write
-        destination: "/etc/shinken/daemons/#{daemon}d.ini"
-        write: for k, v of {
-            'user': shinken.user.name
-            'group': shinken.group.name }
-          match: ///^#{k}=.*$///mg
-          replace: "#{k}=#{v}"
-          append: true
+      .service name: 'shinken-arbiter'
       .chown
         destination: path.join shinken.log_dir
         uid: shinken.user.name
@@ -75,7 +57,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             source: "#{mod.archive}.zip"
             not_if_exec: "shinken inventory | grep #{name}"
           exec.push
-            cmd: "su -l #{ctx.config.ryba.shinken.user.name} -c 'shinken install --local #{mod.archive}'"
+            cmd: "shinken install --local #{mod.archive}"
             not_if_exec: "shinken inventory | grep #{name}"
         else return next Error "Missing parameter: archive for arbiter.modules.#{name}"
       ctx

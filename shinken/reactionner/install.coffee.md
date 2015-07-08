@@ -29,33 +29,14 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Shinken Reactionner # Packages', handler: (ctx, next) ->
       {shinken} = ctx.config.ryba
-      daemon = 'reactionner'
-      ctx
-      .service
-        name: "shinken-#{daemon}"
-      .write
-        destination: "/etc/init.d/shinken-#{daemon}"
-        write: for k, v of {
-            'user': shinken.user.name
-            'group': shinken.group.name }
-          match: ///^#{k}=.*$///mg
-          replace: "#{k}=#{v}"
-          append: true
-      .write
-        destination: "/etc/shinken/daemons/#{daemon}d.ini"
-        write: for k, v of {
-            'user': shinken.user.name
-            'group': shinken.group.name }
-          match: ///^#{k}=.*$///mg
-          replace: "#{k}=#{v}"
-          append: true
+      ctx.service name: 'shinken-reactionner'
       .chown
         destination: path.join shinken.log_dir
         uid: shinken.user.name
         gid: shinken.group.name
       .execute
-        cmd: "shinken --init"
-        not_if_exists: ".shinken.ini"
+        cmd: "su -l #{shinken.user.name} -c 'shinken --init'"
+        not_if_exists: "#{shinken.home}/.shinken.ini"
       .then next
 
 ## Additional Modules
@@ -76,7 +57,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             source: "#{mod.archive}.zip"
             not_if_exec: "shinken inventory | grep #{name}"
           exec.push
-            cmd: "su -l #{ctx.config.ryba.shinken.user.name} -c 'shinken install --local #{mod.archive}'"
+            cmd: "shinken install --local #{mod.archive}"
             not_if_exec: "shinken inventory | grep #{name}"
         else return next Error "Missing parameter: archive for reactionner.modules.#{name}"
       ctx

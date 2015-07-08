@@ -34,12 +34,12 @@ Example
       # User
       shinken.user = name: shinken.user if typeof shinken.user is 'string'
       shinken.user ?= {}
-      shinken.user.name ?= 'shinken'
+      shinken.user.name ?= 'nagios'
       shinken.user.system ?= true
       shinken.user.comment ?= 'Shinken User'
-      shinken.user.home ?= '/usr/lib64/nagios/plugins/'
+      shinken.user.home ?= '/var/lib/shinken'
       shinken.user.shell ?= '/bin/sh'
-      shinken.plugin_dir ?= shinken.user.home
+      shinken.plugin_dir ?= '/usr/lib64/nagios/plugins/'
       # Kerberos
       # shinken.krb5_user ?= {}
       # shinken.krb5_user.principal ?= "#{shinken.user.name}/#{ctx.config.host}@#{realm}"
@@ -51,10 +51,10 @@ Example
       # Groups
       shinken.group = name: shinken.group if typeof shinken.group is 'string'
       shinken.group ?= {}
-      shinken.group.name ?= 'shinken'
+      shinken.group.name ?= 'nagios'
       shinken.group.system ?= true
       shinken.user.gid = shinken.group.name
-  
+
 
 ## Users & Groups
 

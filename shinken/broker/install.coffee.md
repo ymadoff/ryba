@@ -33,29 +33,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       ctx
       .service name: 'python-pymongo'
       .service name: 'shinken-broker'
-      .write
-        destination: '/etc/init.d/shinken-broker'
-        write: for k, v of {
-            'user': shinken.user.name
-            'group': shinken.group.name }
-          match: ///^#{k}=.*$///mg
-          replace: "#{k}=#{v}"
-          append: true
-      .write
-        destination: '/etc/shinken/daemons/brokerd.ini'
-        write: for k, v of {
-            'user': shinken.user.name
-            'group': shinken.group.name }
-          match: ///^#{k}=.*$///mg
-          replace: "#{k}=#{v}"
-          append: true
-      .chown
-        destination: path.join shinken.log_dir
-        uid: shinken.user.name
-        gid: shinken.group.name
-      .execute
-        cmd: "shinken --init"
-        not_if_exists: ".shinken.ini"
       .then next
 
 ## Additional Modules
@@ -77,10 +54,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             source: "#{mod.archive}.zip"
             not_if_exec: "shinken inventory | grep #{name}"
           exec.push
-            cmd: "su -l #{ctx.config.ryba.shinken.user.name} -c 'shinken install --local #{mod.archive}'"
+            cmd: "shinken install --local #{mod.archive}"
             not_if_exec: "shinken inventory | grep #{name}"
         else return next Error "Missing parameter: archive for broker.modules.#{name}"
       ctx
+      .execute
+        cmd: 'shinken --init'
+        not_if_exists: '.shinken.ini'
       .download download
       .extract extract
       .execute exec
