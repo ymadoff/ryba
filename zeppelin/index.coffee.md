@@ -9,15 +9,20 @@
       zeppelin = ctx.config.ryba.zeppelin ?= {}
       zeppelin.repository = 'https://github.com/apache/incubator-zeppelin.git'
       zeppelin.source = "#{__dirname}/../resources/zeppelin-build.tar.gz"
-      zeppelin.destination = "/var/lib/zeppelin"
-      zeppelin.conf_dir = "/var/lib/zeppelin/conf"
+      zeppelin.destination = '/var/lib/zeppelin'
+      zeppelin.conf_dir = '/var/lib/zeppelin/conf'
       #Set to true if you want to deploy from build 
       #in this case zeppelin.source is required
-      zeppelin.build = true
+      zeppelin.build ?= {}
+      zeppelin.build.name ?= 'ryba/zeppelin-build'
+      zeppelin.build.execute ?= true
+      zeppelin.build.dockerfile ?= "#{__dirname}/../resources/zeppelin/Dockerfile"
+      zeppelin.build.directory ?= '/tmp/ryba/zeppelin-build/'
+      zeppelin.build.local ?= false
       zeppelin.site ?= {}
       zeppelin.site['zeppelin.server.addr'] ?= '0.0.0.0'
       zeppelin.site['zeppelin.server.port'] ?= '9090'
-      zeppelin.site['zeppelin.notebook.dir'] ?= '/notebook'
+      zeppelin.site['zeppelin.notebook.dir'] ?= '/var/lib/zeppelin/notebook'
       zeppelin.site['zeppelin.websocket.addr'] ?= '0.0.0.0'
       #If the port value is negative, then it'll default to the server port + 1
       zeppelin.site['zeppelin.websocket.port'] ?= '-1'
@@ -49,8 +54,8 @@
       zeppelin.site['zeppelin.ssl.keystore.type'] ?= 'JKS'
       zeppelin.site['zeppelin.ssl.keystore.password'] ?= 'password'
       zeppelin.site['zeppelin.ssl.key.manager.password'] ?= 'password'
+      zeppelin.site['zeppelin.ssl.truststore.path'] ?= 'truststore'
       zeppelin.site['zeppelin.ssl.truststore.type'] ?= 'JKS'
-      zeppelin.site['zeppelin.ssl.client.auth'] ?= 'false'
       zeppelin.site['zeppelin.ssl.truststore.password'] ?= 'password'
       hadoop_conf_dir = ctx.config.ryba.hadoop_conf_dir ?= 'undefined'
       zeppelin.env ?= {}
