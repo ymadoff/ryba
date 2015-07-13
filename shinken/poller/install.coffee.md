@@ -96,20 +96,20 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Kerberos
 
-    # module.exports.push name: 'Shinken # Kerberos', handler: (ctx, next) ->
-    #   {shinken, realm} = ctx.config.ryba
-    #   {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-    #   ctx.krb5_addprinc
-    #     principal: shinken.principal
-    #     randkey: true
-    #     keytab: shinken.keytab
-    #     uid: shinken.user.name
-    #     gid: shinken.group.name
-    #     mode: 0o600
-    #     kadmin_principal: kadmin_principal
-    #     kadmin_password: kadmin_password
-    #     kadmin_server: admin_server
-    #   .then next
+    module.exports.push name: 'Shinken Poller # Kerberos', handler: (ctx, next) ->
+      {shinken} = ctx.config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
+      1ctx.krb5_addprinc
+        principal: shinken.poller.krb5_user.principal
+        randkey: true
+        keytab: shinken.poller.kbr5_user.keytab
+        uid: shinken.user.name
+        gid: shinken.group.name
+        mode: 0o600
+        kadmin_principal: kadmin_principal
+        kadmin_password: kadmin_password
+        kadmin_server: admin_server
+      .then next
 
 ## Module dependencies
 

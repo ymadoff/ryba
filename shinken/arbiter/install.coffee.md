@@ -70,27 +70,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Shinken Arbiter # Commons Config', handler: (ctx, next) ->
       {shinken} = ctx.config.ryba
-      render_ctx = {}
-      render_ctx[k] = v for k, v of shinken.config
-      render_ctx.hosts = []
-      render_ctx.hosts.push server for server, k of ctx.config.servers
-      render = for hdp_obj in ['commands', 'contactgroups','contacts','hostgroups', 'hosts','servicegroups', 'templates']
+      render = for hdp_obj in ['commands', 'contactgroups', 'contacts', 'hostgroups', 'hosts', 'servicegroups', 'templates']
         destination: "/etc/shinken/#{hdp_obj}/hadoop-#{hdp_obj}.cfg"
         source: "#{__dirname}/../../resources/shinken/#{hdp_obj}/hadoop-#{hdp_obj}.cfg.j2"
         local_source: true
-        context: render_ctx
+        context: shinken.config
       ctx
       .render render
-      .write
-        destination: '/etc/shinken/shinken.cfg'
-        write: for k, v of {
-          'date_format': 'iso8601'
-          'shinken_user': shinken.user.name
-          'shinken_group': shinken.group.name }
-            match: ///^#{k}=.*$///mg
-            replace: "#{k}=#{v}"
-            append: true
-        eof: true
       .write
         destination: '/etc/shinken/resource.d/path.cfg'
         match: /^\$PLUGINSDIR\$=.*$/mg
@@ -237,8 +223,18 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         context: render_ctx
       ctx
       .render render
-      .then next
+      .write
+        destination: '/etc/shinken/shinken.cfg'
+        write: for k, v of {
+          'date_format': 'iso8601'
+          'shinken_user': shinken.user.name
+          'shinken_group': shinken.group.name }
+            match: ///^#{k}=.*$///mg
+            replace: "#{k}=#{v}"
+            append: true
+        eof: true
 
+      .then next
 
 ### Configure
 

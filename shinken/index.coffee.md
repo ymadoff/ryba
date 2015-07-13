@@ -40,14 +40,11 @@ Example
       shinken.user.home ?= '/var/lib/shinken'
       shinken.user.shell ?= '/bin/sh'
       shinken.plugin_dir ?= '/usr/lib64/nagios/plugins'
-      # Kerberos
-      # shinken.krb5_user ?= {}
-      # shinken.krb5_user.principal ?= "#{shinken.user.name}/#{ctx.config.host}@#{realm}"
-      # shinken.krb5_user.keytab ?= "/etc/security/keytabs/shinken.service.keytab"
       # Config
       shinken.config ?= {}
       shinken.config.use_ssl ?= false
       shinken.config.hard_ssl_name_check ?= false
+      shinken.config.hosts ?= ctx.config.servers
       # Groups
       shinken.group = name: shinken.group if typeof shinken.group is 'string'
       shinken.group ?= {}
