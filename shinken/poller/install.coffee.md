@@ -39,6 +39,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       .service name: 'net-snmp-perl'
       .service name: 'perl-Net-SNMP'
       .service name: 'fping'
+      .service name: 'nagios-plugins'
       #.service name: 'shinken-poller'
       .execute cmd: "yum -y --disablerepo=HDP-UTILS-1.1.0.20 install shinken-poller"
       .chown
@@ -77,6 +78,22 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       .execute exec
       .then next
 
+## Plugins
+
+    module.exports.push name: 'Shinken Poller # Plugins', timeout: -1, handler: (ctx, next) ->
+      {shinken} = ctx.config.ryba
+      glob "#{__dirname}/../../resources/shinken/plugins/*", (err, plugins) ->
+        return next err if err
+        plugins = for plugin in plugins
+          source: plugin
+          destination: "#{shinken.plugin_dir}/#{path.basename plugin}"
+          uid: shinken.user.name
+          gid: shinken.group.name
+          mode: 0o0755
+        ctx
+        .download plugins
+        .then next
+
 ## Kerberos
 
     # module.exports.push name: 'Shinken # Kerberos', handler: (ctx, next) ->
@@ -97,3 +114,4 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Module dependencies
 
     path = require 'path'
+    glob = require 'glob'

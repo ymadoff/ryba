@@ -97,22 +97,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         replace: "$PLUGINSDIR$=#{shinken.plugin_dir}"
       .then next
 
-## Plugins
-
-    module.exports.push name: 'Shinken Arbiter # Plugins', timeout: -1, handler: (ctx, next) ->
-      {shinken} = ctx.config.ryba
-      glob "#{__dirname}/../../resources/shinken/plugins/*", (err, plugins) ->
-        return next err if err
-        plugins = for plugin in plugins
-          source: plugin
-          destination: "#{shinken.plugin_dir}/#{path.basename plugin}"
-          uid: shinken.user.name
-          gid: shinken.group.name
-          mode: 0o0775
-        ctx
-        .download plugins
-        .then next
-
 ## Services
 
     module.exports.push name: 'Shinken Arbiter # Services Config', handler: (ctx, next) ->
@@ -277,4 +261,3 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     path = require 'path'
     url = require 'url'
-    glob = require 'glob'
