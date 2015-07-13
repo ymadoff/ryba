@@ -39,7 +39,7 @@ Example
       shinken.user.comment ?= 'Shinken User'
       shinken.user.home ?= '/var/lib/shinken'
       shinken.user.shell ?= '/bin/sh'
-      shinken.plugin_dir ?= '/usr/lib64/nagios/plugins/'
+      shinken.plugin_dir ?= '/usr/lib64/nagios/plugins'
       # Kerberos
       # shinken.krb5_user ?= {}
       # shinken.krb5_user.principal ?= "#{shinken.user.name}/#{ctx.config.host}@#{realm}"
