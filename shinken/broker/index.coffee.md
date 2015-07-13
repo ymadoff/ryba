@@ -38,9 +38,9 @@ Some of the modules are:
       auth = broker.modules['auth-cfg-password'] ?= {}
       auth.source ?= 'https://github.com/shinken-monitoring/mod-auth-cfg-password/archive/2.0.1.zip'
       auth.archive ?= 'mod-auth-cfg-password-2.0.1'
-      mongodb = broker.modules['mongo-logs'] ?= {}
-      mongodb.source ?= 'https://github.com/shinken-monitoring/mod-mongo-logs/archive/1.0.2b.zip'
-      mongodb.archive ?= 'mod-mongo-logs-1.0.2b'
+      mongodb = broker.modules['mongodb'] ?= {}
+      mongodb.source ?= 'https://github.com/shinken-monitoring/mod-mongodb/archive/1.0.1.zip'
+      mongodb.archive ?= 'mod-mongodb-1.0.1'
       ## CONFIG
       broker.config ?= {}
       broker.config.port ?= 7772
