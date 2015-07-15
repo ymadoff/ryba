@@ -59,6 +59,7 @@ RUN wget https://nodejs.org/dist/v0.10.36/node-v0.10.36-linux-x64.tar.gz
 RUN ls -l /tmp/
 RUN tar -C /usr/local --strip-components 1 -xzf /tmp/node-v0.10.36-linux-x64.tar.gz
 WORKDIR /tmp/incubator-zeppelin/zeppelin-web
+RUN ls -l
 RUN npm cache clean
 RUN npm  --registry http://registry.npmjs.eu/ install -g bower
 RUN npm  --registry http://registry.npmjs.eu/ install  bower

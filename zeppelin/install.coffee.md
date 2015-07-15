@@ -16,6 +16,8 @@ Spark comes with 1.2.1 in HDP 2.2.4.
 |-------------------------|-------|-------|--------------------------|
 | Zeppelin Server http    | 9090  | tcp   | env[ZEPPELIN_PORT]       |
 | Zeppelin Server https   | 9099  | tcp   | env[ZEPPELIN_PORT]       |
+| Zeppelin Websocket      | 9091  | tcp   | env[ZEPPELIN_PORT] +  1  |
+| Zeppelin Websocket      | 10000 | tcp   | env[ZEPPELIN_PORT] +  1  |
 
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to
@@ -132,11 +134,13 @@ SSL only required for the server
 
     module.exports.push name: 'Zeppelin Container # Run',  handler: (ctx, next) ->
       {hadoop_group,hadoop_conf_dir, hdfs, zeppelin} = ctx.config.ryba
+      websocket = parseInt(zeppelin.site['zeppelin.server.port'])+1
       ctx
       .docker_run
         image: 'ryba/zeppelin'
         port: [
                 "#{zeppelin.site['zeppelin.server.port']}:#{zeppelin.site['zeppelin.server.port']}"
+                "#{websocket}:#{websocket}"
               ]
         volume: [
                 "#{hadoop_conf_dir}:#{hadoop_conf_dir}"

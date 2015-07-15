@@ -16,9 +16,9 @@
       zeppelin.build ?= {}
       zeppelin.build.name ?= 'ryba/zeppelin-build'
       zeppelin.build.execute ?= true
-      zeppelin.build.dockerfile ?= "#{__dirname}/../resources/zeppelin/Dockerfile"
+      zeppelin.build.dockerfile ?= "#{__dirname}/../resources/zeppelin/build/Dockerfile"
       zeppelin.build.directory ?= '/tmp/ryba/zeppelin-build/'
-      zeppelin.build.local ?= false
+      zeppelin.build.local ?= true
       zeppelin.site ?= {}
       zeppelin.site['zeppelin.server.addr'] ?= '0.0.0.0'
       zeppelin.site['zeppelin.server.port'] ?= '9090'

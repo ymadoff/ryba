@@ -25,8 +25,9 @@ Intermetiate container to build zeppelin from source. Builds ryba/zeppelin-build
         name: zeppelin.build.name
         source: zeppelin.build.dockerfile
         ssh: ssh
+        machine: 'ryba'
       .execute
-        cmd: "docker stop extractor && docker rm extractor "
+        cmd: "eval \"$(docker-machine env ryba )\" 1>&2 /dev/null && docker stop extractor && docker rm extractor "
         ssh: ssh
         code_skipped: 1
       .docker_run
@@ -40,12 +41,13 @@ Intermetiate container to build zeppelin from source. Builds ryba/zeppelin-build
         ssh: ssh
         not_if_exists: "#{zeppelin.build.directory}/resources/zeppelin-build.tar.gz"
       .execute
-        cmd: "docker cp extractor:/zeppelin-build.tar.gz  #{zeppelin.build.directory}/resources/"
+        cmd: "eval \"$(docker-machine env ryba )\" 1>&2 /dev/null && docker cp extractor:/zeppelin-build.tar.gz  #{zeppelin.build.directory}/resources/"
         ssh: ssh
         not_if_exists: "#{zeppelin.build.directory}/resources/zeppelin-build.tar.gz"
       .execute
         ssh: ssh
         cmd: """
+              eval \"$(docker-machine env ryba )\" 1>&2 /dev/null
               docker stop extractor
               docker rm extractor
              """
@@ -67,9 +69,10 @@ needs zeppelin-built resource. Get it from ryba/zeppelin-build image.
         ssh: ssh
       .docker_build
         name: 'ryba/zeppelin'
-        source: '/Users/Bakalian/Developpement/docker/zeppelin/ryba/Dockerfile'
+        source: "#{__dirname}/../resources/zeppelin/prod/Dockerfile"
         cwd: "#{zeppelin.build.directory}"
         ssh: ssh
+        machine: 'ryba'
       .then next
 
 ## Docker image extract and download
@@ -82,12 +85,13 @@ needs zeppelin-built resource. Get it from ryba/zeppelin-build image.
       ctx
       .execute 
         cmd: """
-              docker export ryba/zeppelin -o #{zeppelin.build.directory}/zeppelin.tar
+              eval \"$(docker-machine env ryba )\"
+              docker save -o #{zeppelin.build.directory}zeppelin.tar ryba/zeppelin 
              """
         ssh: null if zeppelin.build.local
       .download
-        source: "#{zeppelin.build.directory}/zeppelin.tar"
-        destination: "#{zeppelin.build.directory}/zeppelin.tar"
+        source: "#{zeppelin.build.directory}zeppelin.tar"
+        destination: "#{zeppelin.build.directory}zeppelin.tar"
       .execute
         cmd:"docker load < #{zeppelin.build.directory}/zeppelin.tar"
       .then next  
