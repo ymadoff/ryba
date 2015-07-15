@@ -39,7 +39,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       .service name: 'net-snmp-perl'
       .service name: 'perl-Net-SNMP'
       .service name: 'fping'
-      .service name: 'nagios-plugins'
+      #.service name: 'nagios-plugins' # Will be installed automatically by shinken poller
       #.service name: 'shinken-poller'
       .execute cmd: "yum -y --disablerepo=HDP-UTILS-1.1.0.20 install shinken-poller"
       .chown
@@ -97,12 +97,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Kerberos
 
     module.exports.push name: 'Shinken Poller # Kerberos', handler: (ctx, next) ->
-      {shinken} = ctx.config.ryba
+      {shinken, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      1ctx.krb5_addprinc
+      ctx.krb5_addprinc
         principal: shinken.poller.krb5_user.principal
         randkey: true
-        keytab: shinken.poller.kbr5_user.keytab
+        keytab: shinken.poller.krb5_user.keytab
         uid: shinken.user.name
         gid: shinken.group.name
         mode: 0o600

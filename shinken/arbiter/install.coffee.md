@@ -155,54 +155,53 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         local_source: true
         destination: '/etc/shinken/services/hadoop-services.cfg'
         context:
-          hostgroups: shinken.config.hostgroups
-          all_hosts: [] # Ambari agents
-          shinken_lookup_daemon_str: '/usr/sbin/shinken'
-          namenode_port: active_nn_port
-          dfs_ha_enabled: not ctx.host_with_module 'ryba/hadoop/hdfs_snn'
-          all_ping_ports: null # Ambari agent ports
-          ganglia_port: ganglia.collector_port
-          ganglia_collector_namenode_port: ganglia.nn_port
-          ganglia_collector_hbase_port: ganglia.hm_port
-          ganglia_collector_rm_port: ganglia.rm_port
-          ganglia_collector_hs_port: ganglia.jhs_port
-          snamenode_port: snn_ctx?.config.ryba.hdfs.site['dfs.namenode.secondary.http-address'].split(':')[1]
-          storm_ui_port: 0 # TODO Storm
-          nimbus_port: 0 # TODO Storm
-          drpc_port: 0 # TODO Storm
-          storm_rest_api_port: 0 # TODO Storm
-          supervisor_port: 0 # TODO Storm
-          hadoop_ssl_enabled: protocol is 'https'
-          shinken_keytab_path: shinken.keytab
-          shinken_principal_name: shinken.principal
-          kinit_path_local: shinken.kinit
-          security_enabled: true
-          nn_ha_host_port_map: nn_hosts_map
-          namenode_host: nn_hosts
-          nn_hosts_string: nn_hosts.join ' '
-          dfs_namenode_checkpoint_period: hdfs.site['dfs.namenode.checkpoint.period'] or 21600
-          dfs_namenode_checkpoint_txns: hdfs.site['dfs.namenode.checkpoint.txns'] or 1000000
-          nn_metrics_property: 'FSNamesystem'
-          rm_hosts_in_str: rm_hosts.join ','
-          rm_port: rm_webapp_port
-          nm_port: nm_webapp_port
-          hs_port: hs_webapp_port
-          journalnode_port: journalnode_port
-          datanode_port: dn_port
-          clientPort: zookeeper.port
-          hbase_rs_port: hbase.site['hbase.regionserver.info.port']
-          hbase_master_port: hbase.site['hbase.master.info.port']
-          hbase_master_hosts_in_str: hm_hosts.join ','
-          hbase_master_hosts: hm_hosts
-          hbase_master_rpc_port: hbase.site['hbase.master.port']
-          hive_metastore_port: url.parse(hcat_ctxs[0].config.ryba.hive.site['hive.metastore.uris']).port
-          hive_server_port: hs2_port
-          oozie_url: oozie.site['oozie.base.url']
-          java64_home: ctx.config.java.java_home # Used by check_oozie_status.sh
-          templeton_port: webhcat.site['templeton.port']
-          falcon_port: 0 # TODO
-          ahs_port: 0 # TODO
-          hue_port: parseInt hue.ini.desktop['http_port']
+          shinken: shinken
+          # shinken_lookup_daemon_str: '/usr/sbin/shinken'
+          # namenode_port: active_nn_port
+          # dfs_ha_enabled: not ctx.host_with_module 'ryba/hadoop/hdfs_snn'
+          # all_ping_ports: null # Ambari agent ports
+          # ganglia_port: ganglia.collector_port
+          # ganglia_collector_namenode_port: ganglia.nn_port
+          # ganglia_collector_hbase_port: ganglia.hm_port
+          # ganglia_collector_rm_port: ganglia.rm_port
+          # ganglia_collector_hs_port: ganglia.jhs_port
+          # snamenode_port: snn_ctx?.config.ryba.hdfs.site['dfs.namenode.secondary.http-address'].split(':')[1]
+          # storm_ui_port: 0 # TODO Storm
+          # nimbus_port: 0 # TODO Storm
+          # drpc_port: 0 # TODO Storm
+          # storm_rest_api_port: 0 # TODO Storm
+          # supervisor_port: 0 # TODO Storm
+          # hadoop_ssl_enabled: protocol is 'https'
+          # shinken_keytab_path: shinken.keytab
+          # shinken_principal_name: shinken.principal
+          # kinit_path_local: shinken.kinit
+          # security_enabled: true
+          # nn_ha_host_port_map: nn_hosts_map
+          # namenode_host: nn_hosts
+          # nn_hosts_string: nn_hosts.join ' '
+          # dfs_namenode_checkpoint_period: hdfs.site['dfs.namenode.checkpoint.period'] or 21600
+          # dfs_namenode_checkpoint_txns: hdfs.site['dfs.namenode.checkpoint.txns'] or 1000000
+          # nn_metrics_property: 'FSNamesystem'
+          # rm_hosts_in_str: rm_hosts.join ','
+          # rm_port: rm_webapp_port
+          # nm_port: nm_webapp_port
+          # hs_port: hs_webapp_port
+          # journalnode_port: journalnode_port
+          # datanode_port: dn_port
+          # clientPort: zookeeper.port
+          # hbase_rs_port: hbase.site['hbase.regionserver.info.port']
+          # hbase_master_port: hbase.site['hbase.master.info.port']
+          # hbase_master_hosts_in_str: hm_hosts.join ','
+          # hbase_master_hosts: hm_hosts
+          # hbase_master_rpc_port: hbase.site['hbase.master.port']
+          # hive_metastore_port: url.parse(hcat_ctxs[0].config.ryba.hive.site['hive.metastore.uris']).port
+          # hive_server_port: hs2_port
+          # oozie_url: oozie.site['oozie.base.url']
+          # java64_home: ctx.config.java.java_home # Used by check_oozie_status.sh
+          # templeton_port: webhcat.site['templeton.port']
+          # falcon_port: 0 # TODO
+          # ahs_port: 0 # TODO
+          # hue_port: parseInt hue.ini.desktop['http_port']
       .then next
 
     module.exports.push name: 'Shinken Arbiter # Shinken Config', handler: (ctx, next) ->

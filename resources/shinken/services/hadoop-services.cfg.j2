@@ -1,17 +1,111 @@
-{% if hostgroups['shinken-server'] %}
-# SHINKEN SERVER Check (status log update)
+# ambari agent
+# ambari server
+# elasticsearch
+# falcon
+# HBase client
+# HBase master
+# HBase regionserver
+# HBase REST server
+# HBase Thrift
+# HDFS Client
+# HDFS DN
+# HDFS JN
+# HDFS NN
+# HDFS ZKFC
+# Hive client
+# Hive HCatalog Server
+# Hive WebHCat
+# Hue
+# Kafka broker
+# Kafka consumer
+# Kafka producer
+# MapReduce client
+# MapReduce JHS
+# MongoDB
+# MongoDB Shard
+# Oozie client
+# Oozie server
+# Phoenix
+# Rexster
+# Shinken Arbiter
 define service {
-        hostgroup_name          shinken-server
+        hostgroup_name          shinken-arbiters
         use                     hadoop-service
-        service_description     SHINKEN::Shinken status log freshness
+        service_description     SHINKEN::Check Arbiter
         servicegroups           SHINKEN
-        check_command           check_shinken!10!/var/shinken/status.dat!{{shinken_lookup_daemon_str}}
+        check_command           check_shinken!arbiter!{{shinken.arbiter.config.port}}
         normal_check_interval   5
         retry_check_interval    0.5
         max_check_attempts      2
 }
-{% if hostgroups['namenode'] %}
-# SHINKEN SERVER HDFS Checks
+# Shinken Broker
+define service {
+        hostgroup_name          shinken-brokers
+        use                     hadoop-service
+        service_description     SHINKEN::Check Broker
+        servicegroups           SHINKEN
+        check_command           check_shinken!broker!{{shinken.broker.config.port}}
+        normal_check_interval   5
+        retry_check_interval    0.5
+        max_check_attempts      2
+}
+# Shinken Poller
+define service {
+        hostgroup_name          shinken-pollers
+        use                     hadoop-service
+        service_description     SHINKEN::Check Poller
+        servicegroups           SHINKEN
+        check_command           check_shinken!poller!{{shinken.poller.config.port}}
+        normal_check_interval   5
+        retry_check_interval    0.5
+        max_check_attempts      2
+}
+# Shinken Reactionner
+define service {
+        hostgroup_name          shinken-reactionners
+        use                     hadoop-service
+        service_description     SHINKEN::Check Reactionner
+        servicegroups           SHINKEN
+        check_command           check_shinken!reactionner!{{shinken.reactionner.config.port}}
+        normal_check_interval   5
+        retry_check_interval    0.5
+        max_check_attempts      2
+}
+# Shinken Receiver
+define service {
+        hostgroup_name          shinken-receivers
+        use                     hadoop-service
+        service_description     SHINKEN::Check Receiver
+        servicegroups           SHINKEN
+        check_command           check_shinken!receiver!{{shinken.receiver.config.port}}
+        normal_check_interval   5
+        retry_check_interval    0.5
+        max_check_attempts      2
+}
+# Shinken Scheduler
+define service {
+        hostgroup_name          shinken-schedulers
+        use                     hadoop-service
+        service_description     SHINKEN::Check Scheduler
+        servicegroups           SHINKEN
+        check_command           check_shinken!scheduler!{{shinken.scheduler.config.port}}
+        normal_check_interval   5
+        retry_check_interval    0.5
+        max_check_attempts      2
+}
+# Solr
+# Spark client
+# Spark History Server
+# Titan
+# YARN client
+# YARN NM
+# YARN RM
+# YARN TS
+# Zeppelin
+# Zookeeper client
+# Zookeeper server
+
+
 define service {
         hostgroup_name          shinken-server
         use                     hadoop-service
@@ -32,9 +126,6 @@ define service {
         retry_check_interval    0.25
         max_check_attempts      3
 }
-{% endif %}
-{# used only for HDP2 #}
-{% if hostgroups['namenode'] and dfs_ha_enabled %}
 define service {
         hostgroup_name          shinken-server
         use                     hadoop-service
@@ -45,7 +136,6 @@ define service {
         retry_check_interval    0.25
         max_check_attempts      5
 }
-{% endif %}
 {% if hostgroups['zookeeper-servers'] %}
 # SHINKEN SERVER ZOOKEEPER Checks
 define service {
@@ -71,7 +161,6 @@ define service {
         retry_check_interval    0.25
         max_check_attempts      3
 }
-{% endif %}
 {% endif %}
 {% if hostgroups['ganglia-server'] %}
 # GANGLIA SERVER Checks
