@@ -10,6 +10,8 @@ Spark requires HDFS and Yarn. Install spark in Yarn cluster mode.
     module.exports.push require('./index').configure
     module.exports.push require '../../lib/hdp_select'
     module.exports.push require '../../lib/hconfigure'
+    module.exports.push 'ryba/spark/default'
+
 
 ## Spark Users And Group
 
