@@ -18,6 +18,11 @@ log. It is fast, scalable, durable and distributed by design.
       kafka.producer ?= {}
       kafka.producer['compression.codec'] ?= 'snappy'
       kafka.producer['metadata.broker.list'] ?= brokers.join ','
+      kafka.producer.log4j ?= {}
+      kafka.producer.log4j['log4j.rootLogger'] ?= 'WARN, stdout'
+      kafka.producer.log4j['log4j.appender.stdout'] ?= 'org.apache.log4j.ConsoleAppender'
+      kafka.producer.log4j['log4j.appender.stdout.layout'] ?= 'org.apache.log4j.PatternLayout'
+      kafka.producer.log4j['log4j.appender.stdout.layout.ConversionPattern'] ?= '[%d] %p %m (%c)%n'
 
     module.exports.push commands: 'check', modules: 'ryba/kafka/producer/check'
 
