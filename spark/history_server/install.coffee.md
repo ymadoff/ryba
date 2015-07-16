@@ -13,7 +13,7 @@ in the resource Manager web interface.
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/hadoop/hdfs_client'
     module.exports.push require('./index').configure
-    module.exports.push 'ryba/spark/client/default'
+    module.exports.push 'ryba/spark/default'
 
 ## IPTables
 

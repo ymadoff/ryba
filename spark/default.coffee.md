@@ -42,8 +42,8 @@ Its required by the other modules spark/client and spar/history_server
       .execute
         cmd: mkcmd.hdfs ctx, """
           hdfs dfs -mkdir -p /user/#{spark.user.name}
-          hdfs dfs -chown #{spark.user.name}:#{spark.group.name} /user/#{spark.user.name}
           hdfs dfs -mkdir -p #{fs_log_dir}
+          hdfs dfs -chown #{spark.user.name}:#{spark.group.name} /user/#{spark.user.name}
           hdfs dfs -chmod -R 755 /user/#{spark.user.name}
           hdfs dfs -chmod 1777 #{fs_log_dir}
           """
