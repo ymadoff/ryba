@@ -15,8 +15,8 @@ Its required by the other modules spark/client and spar/history_server
       {core_site} = ctx.config.ryba
       spark  = ctx.config.ryba.spark ?= {}
       spark.conf ?= {}
-      spark.conf['spark.eventLog.Dir'] ?= "#{core_site['fs.defaultFS']}/user/spark/applicationHistory"
-      spark.conf['spark.history.fs.logDirectory'] ?= spark.conf['spark.eventLog.Dir']
+      spark.conf['spark.eventLog.dir'] ?= "#{core_site['fs.defaultFS']}/user/spark/applicationHistory"
+      spark.conf['spark.history.fs.logDirectory'] ?= "#{spark.conf['spark.eventLog.dir']}"
       # Group
       spark.group ?= {}
       spark.group = name: spark.group if typeof spark.group is 'string'
@@ -43,8 +43,8 @@ Its required by the other modules spark/client and spar/history_server
         cmd: mkcmd.hdfs ctx, """
           hdfs dfs -mkdir -p /user/#{spark.user.name}
           hdfs dfs -chown #{spark.user.name}:#{spark.group.name} /user/#{spark.user.name}
-          hdfs dfs -chmod -R 755 /user/#{spark.user.name}
           hdfs dfs -mkdir -p #{fs_log_dir}
+          hdfs dfs -chmod -R 755 /user/#{spark.user.name}
           hdfs dfs -chmod 1777 #{fs_log_dir}
           """
       .then next 

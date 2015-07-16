@@ -13,7 +13,7 @@ in the resource Manager web interface.
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/hadoop/hdfs_client'
     module.exports.push require('./index').configure
-    module.exports.push 'ryba/spark/client/install'
+    module.exports.push 'ryba/spark/client/default'
 
 ## IPTables
 
@@ -99,17 +99,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         kadmin_server: admin_server
       .then next
 
-## Spark Files Permissions
-
-    module.exports.push name: 'Spark HS # Permissions', handler: (ctx, next) ->
-      {spark} = ctx.config.ryba
-      ctx.execute
-        cmd: mkcmd.hdfs ctx, """
-          hdfs dfs -mkdir -p /user/#{spark.user.name}
-          hdfs dfs -chown #{spark.user.name}:#{spark.group.name} /user/#{spark.user.name}
-          hdfs dfs -chmod -R 755 /user/#{spark.user.name}
-          """
-      .then next
 
 ## Dependencies
 
