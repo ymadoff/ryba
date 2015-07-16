@@ -161,6 +161,13 @@ has finished (logs are only available in yarn-cluster mode).
             replace: if v is null then "" else "#{k} #{v}"
             append: v isnt null
           backup: true
+        .write
+          destination: "#{spark.conf_dir}/metrics.properties"
+          write: for k, v of spark.metrics
+            match: ///^#{quote k}=.*$///mg
+            replace: if v is null then "" else "#{k}=#{v}"
+            append: v isnt null
+          backup: true
         .then next
 
 ## Dependencies
