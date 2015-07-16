@@ -15,6 +15,9 @@ Its required by the other modules spark/client and spar/history_server
       {core_site} = ctx.config.ryba
       spark  = ctx.config.ryba.spark ?= {}
       spark.conf ?= {}
+      # Base directory in which Spark events are logged, if spark.eventLog.enabled is true. 
+      # Within this base directory, Spark creates a sub-directory for each application, and logs the events specific to the application in this directory. 
+      # Users may want to set this to a unified location like an HDFS directory so history files can be read by the history server.
       spark.conf['spark.eventLog.dir'] ?= "#{core_site['fs.defaultFS']}/user/spark/applicationHistory"
       spark.conf['spark.history.fs.logDirectory'] ?= "#{spark.conf['spark.eventLog.dir']}"
       # Group
@@ -37,13 +40,13 @@ Its required by the other modules spark/client and spar/history_server
 
     module.exports.push name: 'Spark Logdir # Permissions', handler: (ctx, next) ->
       {spark} = ctx.config.ryba
-      fs_log_dir = spark.conf['spark.eventLog.Dir']
+      fs_log_dir = spark.conf['spark.eventLog.dir']
       ctx
       .execute
         cmd: mkcmd.hdfs ctx, """
           hdfs dfs -mkdir -p /user/#{spark.user.name}
           hdfs dfs -mkdir -p #{fs_log_dir}
-          hdfs dfs -chown #{spark.user.name}:#{spark.group.name} /user/#{spark.user.name}
+          hdfs dfs -chown -R #{spark.user.name}:#{spark.group.name} /user/#{spark.user.name}
           hdfs dfs -chmod -R 755 /user/#{spark.user.name}
           hdfs dfs -chmod 1777 #{fs_log_dir}
           """
