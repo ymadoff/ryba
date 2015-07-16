@@ -29,7 +29,6 @@ Example:
   }
 }
 ```
-    console.log "hello"
     module.exports.push require('./index').configure
 
 

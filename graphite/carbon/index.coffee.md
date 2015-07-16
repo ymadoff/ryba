@@ -33,7 +33,6 @@ Example:
 ```
 
     module.exports.configure = (ctx) ->
-      console.log "hello"
       #require('masson/core/iptables').configure ctx
       ctx.config.ryba ?= {}
       ctx.config.ryba.graphite ?= {}
