@@ -52,6 +52,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if mod.archive?
           download.push
             destination: "#{mod.archive}.zip"
+            source: mod.source
+            cache_file: "#{mod.archive}.zip"
             not_if_exec: "shinken inventory | grep #{name}"
           extract.push
             source: "#{mod.archive}.zip"
