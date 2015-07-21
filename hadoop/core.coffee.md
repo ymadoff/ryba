@@ -163,7 +163,7 @@ Default configuration:
           name: 'graphite'
           class: 'org.apache.hadoop.metrics2.sink.GraphiteSink'
           period: '10'
-          host: graphite_hosts
+          host: graphite_host
           properties: {server_host: graphite_host, server_port: graphite_port , metrics_prefix: metrics_prefix}
           options: {}
       # Configuration
