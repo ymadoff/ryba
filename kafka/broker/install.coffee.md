@@ -43,6 +43,29 @@ Update the file "broker.properties" with the properties defined by the
         eof: true
       .then next
 
+Update the file kafka-server-start.sh (prefered to the general "kafka-env.sh" file) with the env variables defined by the
+"ryba.kafka.env" configuration.
+
+    module.exports.push name: 'Kafka Broker # Env', handler: (ctx, next) ->
+      {kafka} = ctx.config.ryba
+      ctx.write
+        destination: "#{kafka.conf_dir}/kafka-server-start.sh"
+        write: for k, v of kafka.broker.env
+          match: RegExp "export #{k}=.*", 'm'
+          replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
+          append: true
+        backup: true
+        eof: true
+      ctx.write
+        destination: "#{kafka.conf_dir}/log4j.properties"
+        write: for k, v of kafka.broker.log4j
+          match: RegExp "^#{quote k}=.*$", 'mg'
+          replace: "#{k}=#{v}"
+          append: true
+        backup: true
+        eof: true
+      .then next
+
 ## Layout
 
 Directories in which Kafka data is stored. Each new partition that is created
