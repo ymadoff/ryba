@@ -56,10 +56,11 @@ Example:
 
       ctx.config.ryba.graphite.carbon_rewrite_rules ?= [
          '[pre]'
+         '^(?P<cluster>\w+).hbase.[a-zA-Z0-9_.,:;\x2d\x3D]*Context\x3D(?P<context>\w+).Hostname\x3D(?P<host>\w+).(?P<metric>.\w+)*$ = \g<cluster>.\g<host>.hbase.\g<context>\g<metric>'
          '^(?P<cluster>\w+).(?P<bean>\w+).(?P<foobar>\w+).Hostname\x3D(?P<host>\w+).(?P<metric>.\w+)*$ = \g<cluster>.\g<host>.\g<foobar>\g<metric>'
          '^(?P<cluster>\w+).(?P<bean>\w+).[a-zA-Z0-9_.\x3D]*port\x3D(?P<port>\w+).Context\x3D(?P<context>\w+).[a-zA-Z0-9_.\x3D]*Hostname\x3D(?P<host>\w+).(?P<metric>.\w+)*$ = \g<cluster>.\g<host>.\g<context>.\g<port>\g<metric>'
          '^(?P<cluster>\w+).(?P<bean>\w+).[a-zA-Z0-9_.\x3D]*Queue\x3Droot(?P<queue>.\w+\b)*.Context\x3D(?P<context>\w+).[a-zA-Z0-9_.\x3D]*Hostname\x3D(?P<host>\w+).(?P<metric>.\w+)*$ = \g<cluster>.\g<host>.\g<context>.queue.\g<queue>\g<metric>'
-         '^(?P<cluster>\w+).(?P<bean>\w+).[a-zA-Z0-9_.\x3D]*Context\x3D(?P<context>\w+).ProcessName\x3D(?P<process>\w+).[a-zA-Z0-9_.\x3D]*Hostname\x3D(?P<host>\w+).(?P<metric>.\w+)*$ = \g<cluster>.\g<host>.\g<process>.\g<context>\g<metric>'
+         '^(?P<cluster>\w+).(?P<bean>\w+).[a-zA-Z0-9_.\x3D]*Context\x3D(?P<context>\w+).ProcessName\x3D(?P<process>\w+).[a-zA-Z0-9_.\x3D]*Hostname\x3D(?P<host>\w+).(?P<metric>.\w+)*$ = \g<cluster>.\g<host>.\g<context>.\g<process>\g<metric>'
          '^(?P<cluster>\w+).(?P<bean>\w+).[a-zA-Z0-9_.\x3D]*Context\x3D(?P<context>\w+).[a-zA-Z0-9_.\x3D]*Hostname\x3D(?P<host>\w+).(?P<metric>.\w+)*$ = \g<cluster>.\g<host>.\g<context>\g<metric>'
          'rpcdetailed = rpc'
          ]

@@ -144,6 +144,8 @@ Environment file is enriched by "ryba/hbase" # HBase # Env".
         mode: 0o700
       .then next
 
+## Kerberos
+
 https://blogs.apache.org/hbase/entry/hbase_cell_security
 https://hbase.apache.org/book/security.html
 
@@ -161,21 +163,6 @@ https://hbase.apache.org/book/security.html
         kadmin_server: admin_server
       .then next
 
-## Metrics
-
-Enable stats collection in Ganglia.
-
-    module.exports.push name: 'HBase Master # Metrics', handler: (ctx, next) ->
-      {hbase} = ctx.config.ryba
-      collector = ctx.host_with_module 'ryba/hadoop/ganglia_collector'
-      return next() unless collector
-      ctx.upload
-        source: "#{__dirname}/../../resources/hbase/hadoop-metrics.properties.master-GANGLIA"
-        destination: "#{hbase.conf_dir}/hadoop-metrics.properties"
-        match: 'TODO-GANGLIA-SERVER'
-        replace: collector
-      .then next
-
     module.exports.push name: 'HBase Master # Kerberos Admin', handler: (ctx, next) ->
       {hbase, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
@@ -185,6 +172,22 @@ Enable stats collection in Ganglia.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
+      .then next
+
+## Metrics
+
+Enable stats collection in Ganglia and Graphite
+
+    module.exports.push name: 'HBase Master # Metrics', handler: (ctx, next) ->
+      {hbase} = ctx.config.ryba
+      ctx
+      .write
+        destination: "#{hbase.conf_dir}/hadoop-metrics2-hbase.properties"
+        write: for k, v of hbase.metrics
+          match: ///^#{quote k}=.*$///mg
+          replace: if v is null then "" else "#{k}=#{v}"
+          append: v isnt null
+        backup: true
       .then next
 
 ## SPNEGO
@@ -202,3 +205,4 @@ principal.
 
     path = require 'path'
     mkcmd = require '../../lib/mkcmd'
+    quote = require 'regexp-quote'
