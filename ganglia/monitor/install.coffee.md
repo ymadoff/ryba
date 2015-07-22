@@ -142,21 +142,6 @@ Update the files generated in the "host" action with the host of the Ganglia Col
         if: ctx.has_any_modules 'ryba/hbase/master'
       .then next
 
-## Hadoop
-
-Upload the "hadoop-metrics2.properties" to connect Hadoop with Ganglia.
-
-    module.exports.push name: 'Ganglia Monitor # Hadoop', handler: (ctx, next) ->
-      collector = ctx.host_with_module 'ryba/ganglia/collector'
-      ctx.write
-        source: "#{__dirname}/../../resources/core_hadoop/hadoop-metrics2.properties-GANGLIA"
-        local_source: true
-        destination: "/etc/hadoop/conf/hadoop-metrics2.properties"
-        match: "TODO-GANGLIA-SERVER"
-        replace: collector
-      .then next
-
-
 ## Dependencies
 
     glob = require 'glob'

@@ -136,17 +136,18 @@ Environment passed to the RegionServer before it starts.
 
 ## Metrics
 
-Enable stats collection in Ganglia.
+Enable stats collection in Ganglia and Graphite
 
     module.exports.push name: 'HBase RegionServer # Metrics', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
-      collector = ctx.host_with_module 'ryba/hadoop/ganglia_collector'
-      return next() unless collector
-      ctx.upload
-        source: "#{__dirname}/../../resources/hbase/hadoop-metrics.properties.regionservers-GANGLIA"
-        destination: "#{hbase.conf_dir}/hadoop-metrics.properties"
-        match: 'TODO-GANGLIA-SERVER'
-        replace: collector
+      ctx
+      .write
+        destination: "#{hbase.conf_dir}/hadoop-metrics2-hbase.properties"
+        write: for k, v of hbase.metrics
+          match: ///^#{quote k}=.*$///mg
+          replace: if v is null then "" else "#{k}=#{v}"
+          append: v isnt null
+        backup: true
       .then next
 
 ## Start
@@ -160,3 +161,7 @@ Execute the "ryba/hbase/regionserver/start" module to start the RegionServer.
 Check this installation.
 
     module.exports.push 'ryba/hbase/regionserver/check'
+
+# Module dependencies
+
+    quote = require 'regexp-quote'

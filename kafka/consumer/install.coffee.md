@@ -21,6 +21,14 @@ Update the file "consumer.properties" with the properties defined by the
           append: true
         backup: true
         eof: true
+      ctx.write
+        destination: "#{kafka.conf_dir}/tools-log4j.properties"
+        write: for k, v of kafka.consumer.log4j
+          match: RegExp "^#{quote k}=.*$", 'mg'
+          replace: "#{k}=#{v}"
+          append: true
+        backup: true
+        eof: true
       .then next
 
 ## Dependencies

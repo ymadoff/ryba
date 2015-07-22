@@ -1,0 +1,5 @@
+{% for servicegroup in servicegroups %}
+define servicegroup {
+  servicegroup_name {{ servicegroup | upper }}
+  alias {{ servicegroup | capitalize }} Checks
+}{% endfor %}

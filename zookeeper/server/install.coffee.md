@@ -161,14 +161,63 @@ Upload the ZooKeeper loging configuration file.
 
     module.exports.push name: 'ZooKeeper Server # Log4J', handler: (ctx, next) ->
       {zookeeper} = ctx.config.ryba
+      writes = [
+        match: /log4j\.rootLogger=.*/g
+        replace: "log4j.rootLogger=#{zookeeper.env['ZOO_LOG4J_PROP']}"
+      ]
+      # Append the configuration of the SocketHubAppender
+      if zookeeper.log4j.server_port
+        writes.push
+            match: /^# Add SOCKET to rootLogger to serve logs to the remote Logstash TCP Client(.*)/m
+            replace: "\n#\n# Add SOCKET to rootLogger to serve logs to the remote Logstash TCP Client\n#"
+            append: true
+        ,
+            match: /^log4j.appender.SOCKETHUB=(.*)/m
+            replace: "log4j.appender.SOCKETHUB=org.apache.log4j.net.SocketHubAppender"
+            append: true
+        ,
+            match: /^log4j.appender.SOCKETHUB.Application=(.*)/m
+            replace: "log4j.appender.SOCKETHUB.Application=zookeeper"
+            append: true
+        ,
+            match: /^log4j.appender.SOCKETHUB.Port=(.*)/m
+            replace: "log4j.appender.SOCKETHUB.Port=#{zookeeper.log4j.server_port}"
+            append: true
+        ,
+            match: /^log4j.appender.SOCKETHUB.BufferSize=(.*)/m
+            replace: "log4j.appender.SOCKETHUB.BufferSize=100"
+            append: true
+      # Append the configuration of the SocketAppender
+      if zookeeper.log4j.remote_host && zookeeper.log4j.remote_port
+        writes.push
+            match: /^# Add SOCKET to rootLogger to send logs to the remote Logstash TCP Server(.*)/m
+            replace: "\n#\n# Add SOCKET to rootLogger to send logs to the remote Logstash TCP Server\n#"
+            append: true
+        ,
+            match: /^log4j.appender.SOCKET=(.*)/m
+            replace: "log4j.appender.SOCKET=org.apache.log4j.net.SocketAppender"
+            append: true
+        ,
+            match: /^log4j.appender.SOCKET.Application=(.*)/m
+            replace: "log4j.appender.SOCKET.Application=zookeeper"
+            append: true
+        ,
+            match: /^log4j.appender.SOCKET.RemoteHost=(.*)/m
+            replace: "log4j.appender.SOCKET.RemoteHost=#{zookeeper.log4j.remote_host}"
+            append: true
+        ,
+            match: /^log4j.appender.SOCKET.Port=(.*)/m
+            replace: "log4j.appender.SOCKET.Port=#{zookeeper.log4j.remote_port}"
+            append: true
+        ,
+            match: /^log4j.appender.SOCKET.ReconnectionDelay(.*)/m
+            replace: "log4j.appender.SOCKET.ReconnectionDelay=10000"
+            append: true
       ctx.write
         destination: "#{zookeeper.conf_dir}/log4j.properties"
         source: "#{__dirname}/../../resources/zookeeper/log4j.properties"
         local_source: true
-        write:
-          match: /log4j\.rootLogger=.*/g
-          replace: "log4j.rootLogger=INFO, CONSOLE, ROLLINGFILE # RYBA, DONT OVEWRITE"
-
+        write: writes
       .then next
 
 ## Schedule Purge Transaction Logs

@@ -98,15 +98,85 @@ Default configuration:
 ```
 
     module.exports.push module.exports.configure = (ctx) ->
+      require('../ganglia/collector').configure ctx
+      require('../graphite/carbon').configure ctx
       return if ctx.core_configured
       ctx.core_configured = true
       require('masson/commons/java').configure ctx
       require('masson/core/krb5_client').configure ctx
       require('../lib/base').configure ctx
-      {realm} = ctx.config.ryba
+      {realm, ganglia, graphite} = ctx.config.ryba
       ryba = ctx.config.ryba ?= {}
       ryba.yarn ?= {}
       ryba.mapred ?= {}
+      # Configuration of hadoop metrics properties
+      hadoop = ryba.hadoop ?= {}
+      metrics_contexts = []
+      # Enum of services to collect
+      # On the NameNode and SecondaryNameNode servers, to configure the metric contexts
+      for name, module of {
+        namenode: "ryba/hadoop/hdfs_nn",
+        resourcemanager : "ryba/hadoop/yarn_rm",
+        historyserver: "ryba/hadoop/mapred_jhs",
+        datanode: "ryba/hadoop/hdfs_dn",
+        journalnode: "ryba/hadoop/hdfs_jn",
+        nodemanager: "ryba/hadoop/yarn_nm",
+        maptask: "ryba/hadoop/yarn_nm",
+        reducetask: "ryba/hadoop/yarn_nm",
+        nimbus:"ryba/storm/nimbus",
+        supervisor: "ryba/storm/supervisor" }
+        metrics_contexts.push name if ctx.has_module module
+
+      do_ganglia_servers = (sink, context) ->
+        return "#{sink.host}:#{sink.ports[context]}"
+      # Enum of configured sinks
+      metrics_sinks = []
+      ganglia_host =  ctx.host_with_module 'ryba/ganglia/collector'
+      graphite_host = ctx.host_with_module 'ryba/graphite/carbon'
+      if ganglia_host
+        metrics_sinks.push
+          name: 'ganglia'
+          class: 'org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31'
+          period: '10'
+          host: ganglia_host
+          ports: {
+            namenode: ganglia.nn_port
+            resourcemanager: ganglia.rm_port
+            historyserver: ganglia.jhs_port
+            datanode: ganglia.slaves_port
+            journalnode: ""
+            nodemanager: ganglia.rm_port
+            maptask: ganglia.slaves_port
+            reducetask: ganglia.slaves_port
+            nimbus:""
+            supervisor: ""}
+          properties: {servers: do_ganglia_servers, metrics_prefix: ''}
+          options: {
+            '*.sink.ganglia.supportsparse': 'true',
+            '.sink.ganglia.slope=jvm.metrics.gcCount': 'zero,jvm.metrics.memHeapUsedM=both',
+            '.sink.ganglia.dmax=jvm.metrics.threadsBlocked': '70,jvm.metrics.memHeapUsedM=40'
+          }
+      if graphite_host
+        graphite_port = graphite.carbon_aggregator_port
+        metrics_prefix = graphite.metrics_prefix
+        metrics_sinks.push
+          name: 'graphite'
+          class: 'org.apache.hadoop.metrics2.sink.GraphiteSink'
+          period: '10'
+          host: graphite_host
+          properties: {server_host: graphite_host, server_port: graphite_port , metrics_prefix: metrics_prefix}
+          options: {}
+      # Configuration
+      hadoop_metrics = ryba.hadoop_metrics ?= {}
+      hadoop_metrics['*.period'] ?= '60'
+      for sink in metrics_sinks
+        hadoop_metrics["*.sink.#{sink.name}.class"] ?= sink.class
+        hadoop_metrics["*.sink.#{sink.name}.period"] ?= sink.period
+        for k,v of sink.options
+           hadoop_metrics[k] = v
+        for context in metrics_contexts
+          for k,v of sink.properties
+            hadoop_metrics["#{context}.sink.#{sink.name}.#{k}"] = if typeof v is 'function' then v sink,context else v
 
 ## Configuration for users and groups
 
@@ -616,9 +686,26 @@ recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
         @then callback
       ctx.then next
 
+## Hadoop Metrics
+
+Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collector like Ganglia or Graphite.
+    
+    module.exports.push name: 'Hadoop Core # Metrics', handler: (ctx, next) ->
+      {hadoop_metrics, hadoop_conf_dir} = ctx.config.ryba
+      ctx
+      .write
+        destination: "#{hadoop_conf_dir}/hadoop-metrics2.properties"
+        write: for k, v of hadoop_metrics
+          match: ///^#{quote k}=.*$///mg
+          replace: if v is null then "" else "#{k}=#{v}"
+          append: v isnt null
+        backup: true
+      .then next
+
 ## Dependencies
 
     fs = require 'ssh2-fs'
     path = require 'path'
     multimatch = require 'multimatch'
     mkcmd = require '../lib/mkcmd'
+    quote = require 'regexp-quote'

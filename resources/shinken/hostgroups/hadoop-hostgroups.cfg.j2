@@ -1,0 +1,6 @@
+{% for name, hosts in hostgroups %}
+define hostgroup {
+  hostgroup_name  {{ name }}
+  alias           {{ name }}
+  members         {% if hosts | isArray %}{{ hosts | join(',') }}{% elif hosts %}{{ hosts }}{% endif %}
+}{% endfor %}

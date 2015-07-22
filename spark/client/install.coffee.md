@@ -5,11 +5,12 @@ Spark requires HDFS and Yarn. Install spark in Yarn cluster mode.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/hive/client'
     module.exports.push require('./index').configure
     module.exports.push require '../../lib/hdp_select'
     module.exports.push require '../../lib/hconfigure'
+    module.exports.push 'ryba/spark/default'
+
 
 ## Spark Users And Group
 
@@ -158,6 +159,13 @@ has finished (logs are only available in yarn-cluster mode).
             match: ///^#{quote k}\ .*$///mg # Seems like space are discarded
             # match: new RegExp "^#{quote k} .*$", 'mg'
             replace: if v is null then "" else "#{k} #{v}"
+            append: v isnt null
+          backup: true
+        .write
+          destination: "#{spark.conf_dir}/metrics.properties"
+          write: for k, v of spark.metrics
+            match: ///^#{quote k}=.*$///mg
+            replace: if v is null then "" else "#{k}=#{v}"
             append: v isnt null
           backup: true
         .then next

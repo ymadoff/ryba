@@ -15,7 +15,6 @@
       # https://spark.apache.org/docs/latest/monitoring.html
       spark.conf ?= {}
       spark.conf['spark.history.provider'] ?= 'org.apache.spark.deploy.history.FsHistoryProvider'
-      spark.conf['spark.history.fs.logDirectory'] ?= 'file://var/spark/events'
       spark.conf['spark.history.fs.update.interval'] ?= '10s'
       spark.conf['spark.history.retainedApplications'] ?= '50'
       spark.conf['spark.history.ui.port'] ?= '18080'

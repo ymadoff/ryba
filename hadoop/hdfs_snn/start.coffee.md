@@ -4,7 +4,6 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
-xports.push require('./index').configure
 
 ## Start Service
 

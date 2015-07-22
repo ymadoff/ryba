@@ -40,7 +40,7 @@ Example:
     module.exports.configure = (ctx) ->
       require('masson/commons/mysql_server').configure ctx
       require('../../hadoop/core').configure ctx
-      require('../client/index').configure ctx
+      require('../client').configure ctx
       {core_site, hive, static_host, realm} = ctx.config.ryba
       # Layout and environment
       hive.server2 ?= {}

@@ -13,7 +13,7 @@ in the resource Manager web interface.
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/hadoop/hdfs_client'
     module.exports.push require('./index').configure
-    module.exports.push 'ryba/spark/client/install'
+    module.exports.push 'ryba/spark/default'
 
 ## IPTables
 
@@ -24,7 +24,7 @@ in the resource Manager web interface.
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Oozie Server # IPTables', handler: (ctx, next) ->
+    module.exports.push name: 'Spark Server # IPTables', handler: (ctx, next) ->
       {spark} = ctx.config.ryba
       ctx.iptables
         rules: [
@@ -35,8 +35,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Spark HS # Layout', handler: (ctx, next) ->
       {spark} = ctx.config.ryba
-      fs_log_dir = spark.conf['spark.history.fs.logDirectory']
-      fs_log_dir = if fs_log_dir.indexOf('file:/') is 0 then fs_log_dir.substr(5) else fs_log_dir
       ctx
       .mkdir
         destination: spark.pid_dir
@@ -46,11 +44,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         destination: spark.log_dir
         uid: spark.user.name
         gid: spark.group.name
-      .mkdir
-        destination: fs_log_dir
-        uid: spark.user.name
-        gid: spark.group.name
-        parent: true
       .then next
 
 ## Spark History Server Configure
@@ -106,17 +99,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         kadmin_server: admin_server
       .then next
 
-## Spark Files Permissions
-
-    module.exports.push name: 'Spark HS # Permissions', handler: (ctx, next) ->
-      {spark} = ctx.config.ryba
-      ctx.execute
-        cmd: mkcmd.hdfs ctx, """
-          hdfs dfs -mkdir -p /user/#{spark.user.name}
-          hdfs dfs -chown #{spark.user.name}:#{spark.group.name} /user/#{spark.user.name}
-          hdfs dfs -chmod -R 755 /user/#{spark.user.name}
-          """
-      .then next
 
 ## Dependencies
 

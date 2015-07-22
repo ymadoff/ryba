@@ -39,31 +39,6 @@ See [REST Gateway Impersonation Configuration][impersonation].
       m_ctxs = ctx.contexts 'ryba/hbase/master'
       hbase.site['hbase.master.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.site['hbase.master.kerberos.principal']
       hbase.site['hbase.regionserver.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.site['hbase.regionserver.kerberos.principal']
-      hbase.thrift = []
-      hbase.thrift.autoconf = []
-      hbase.thrift.autoconf.url = 'http://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz';
-      hbase.thrift.autoconf.url = '/Users/Bakalian/ryba/ryba-cluster/resources/autoconf.tar.gz';
-      hbase.thrift.autoconf.destination = '/tmp/autoconf.tar.gz'
-      hbase.thrift.autoconf.tmp = '/tmp/autoconf'
-      hbase.thrift.autoconf.version = '2.69'
-      hbase.thrift.automake = []
-      hbase.thrift.automake.url = 'http://ftp.gnu.org/gnu/automake/automake-1.14.tar.gz';
-      hbase.thrift.automake.url = '/Users/Bakalian/ryba/ryba-cluster/resources/automake-1.14.tar.gz';
-      hbase.thrift.automake.destination = '/tmp/automake.tar.gz'
-      hbase.thrift.automake.tmp = '/tmp/automake'
-      hbase.thrift.automake.version = '1.14'
-      hbase.thrift.bison = []
-      hbase.thrift.bison.url = 'http://ftp.gnu.org/gnu/bison/bison-2.5.1.tar.gz';
-      hbase.thrift.bison.url = '/Users/Bakalian/ryba/ryba-cluster/resources/bison.tar.gz';
-      hbase.thrift.bison.destination = '/tmp/bison.tar.gz'
-      hbase.thrift.bison.tmp = '/tmp/bison'
-      hbase.thrift.bison.version = '2.5.1'
-      hbase.thrift.compiler = []
-      hbase.thrift.compiler.url = 'https://git-wip-us.apache.org/repos/asf/thrift.git';
-      hbase.thrift.compiler.url = '/Users/Bakalian/ryba/ryba-cluster/resources/compiler.tar.gz';
-      hbase.thrift.compiler.destination = '/tmp/bison.tar.gz'
-      hbase.thrift.compiler.tmp = '/tmp/bison'
-      hbase.thrift.destination= '/usr/lib/thrift/'
 
 ## Commands
 

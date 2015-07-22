@@ -1,0 +1,10 @@
+{% for name, user in users %}
+define contact{
+  contact_name  {{ name }}
+  use           generic-contact
+  alias         {{ user.alias }}
+  email         {{ user.email }}
+  password      {{ user.password }}
+  isAdmin       {% if user.admin %}1{% else %}0{% endif %}
+}
+{% endfor %}

@@ -1,0 +1,6 @@
+{% for name, group in groups %}
+define contactgroup {
+  contactgroup_name  {{ name }}
+  alias              {{ group.alias }}
+  members            {{ group.members | join (",") }}
+}{% endfor %}
