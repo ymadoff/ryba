@@ -41,7 +41,9 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       .service name: 'bzip2-devel'
       .service name: 'openssl-devel'
       .service name: 'ncurses-devel'
-      .service name: 'python-pip'
+      #.service name: 'python27'
+      #.service name: 'python27-python-pip'
+      #.service name: 'python27-python-devel'
       #.service name: 'nagios-plugins' # Will be installed automatically by shinken poller
       #.service name: 'shinken-poller'
       .execute cmd: "yum -y --disablerepo=HDP-UTILS-1.1.0.20 install shinken-poller"
@@ -87,20 +89,16 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Shinken modules needs python 2.7 but yum needs python 2.6 so we install
 an alternative python without replacing python 2.6
 
-    module.exports.push name: 'Shinken Poller # Python 2.7', handler: (ctx, next) ->
+    module.exports.push name: 'Shinken Poller # Python 2.7', skip: true, handler: (ctx, next) ->
       {poller} = ctx.config.ryba.shinken
       ctx
-      .download
-        destination: "#{poller.python.archive}.tgz"
-        source: poller.python.source
-        cache_file: "#{poller.python.archive}.tgz"
         not_if_exec: '/usr/local/bin/python2.7'
       .extract
         source: "#{poller.python.archive}.tgz"
         not_if_exists: '/usr/local/bin/python2.7'
       .execute
         cmd: """
-        echo -e '/usr/local/lib\n' > /etc/ld.so.conf.d/local.conf
+        echo '/usr/local/lib' > /etc/ld.so.conf.d/local.conf
         ldconfig
         """
         not_if_exists: '/etc/ld.so.conf.d/local.conf'
@@ -115,7 +113,7 @@ an alternative python without replacing python 2.6
 
 ## Python Modules
 
-      module.exports.push name: 'Shinken Poller # Python Modules', handler: (ctx, next) ->
+      module.exports.push name: 'Shinken Poller # Python Modules', skip: true, handler: (ctx, next) ->
       {poller} = ctx.config.ryba.shinken
       return next() unless Object.getOwnPropertyNames(poller.python_modules).length > 0
       download = []
