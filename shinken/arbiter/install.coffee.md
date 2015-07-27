@@ -52,6 +52,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if mod.archive?
           download.push
             destination: "#{mod.archive}.zip"
+            source: mod.source
+            cache_file: "#{mod.archive}.zip"
             not_if_exec: "shinken inventory | grep #{name}"
           extract.push
             source: "#{mod.archive}.zip"
@@ -85,77 +87,104 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Services
 
+
     module.exports.push name: 'Shinken Arbiter # Services Config', handler: (ctx, next) ->
-      {shinken, force_check, active_nn_host, core_site, hdfs, zookeeper,
-        hbase, oozie, webhcat, ganglia, hue} = ctx.config.ryba
-      protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      # {shinken, force_check, active_nn_host, core_site, hdfs, zookeeper,
+      #  hbase, oozie, webhcat, ganglia, hue} = ctx.config.ryba
+      [shinken] = ctx.contexts 'ryba/shinken/arbiter', require('../../shinken/arbiter').configure
+      require('../broker').configure shinken
+      require('../poller').configure shinken
+      require('../reactionner').configure shinken
+      require('../receiver').configure shinken
+      require('../scheduler').configure shinken
+      shinken = shinken.config.ryba.shinken
+      [hbase] = ctx.contexts 'ryba/hbase/master', require('../../hbase/master').configure
+      require('../../hbase/client').configure hbase
+      require('../../hbase/regionserver').configure hbase
+      require('../../hbase/rest').configure hbase
+      require('../../hbase/thrift').configure hbase
+      hbase = hbase.config.ryba.hbase
+      [hdfs] = ctx.contexts 'ryba/hadoop/hdfs_nn', require('../../hadoop/hdfs_nn').configure
+      require('../../hadoop/hdfs_dn').configure hdfs
+      require('../../hadoop/hdfs_jn').configure hdfs
+      is_ha = ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+      nameservice = if is_ha then "#{hdfs.config.ryba.hdfs.site['dfs.nameservices']}" else ''
+      shortname = if is_ha then "#{hdfs.config.shortname}" else ''
+      hdfs = hdfs.config.ryba.hdfs
+      hdfs.ssl = hdfs.site['dfs.http.policy'] isnt 'HTTP_ONLY'
+      protocol = "http#{if hdfs.ssl then 's' else ''}"
+      hdfs.nn_info_port = hdfs.site["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
+      hdfs.dn_info_port = hdfs.site["dfs.datanode.#{protocol}.address"].split(':')[1]
+      hdfs.jn_info_port = hdfs.site["dfs.journalnode.#{protocol}-address"].split(':')[1]
       # HDFS NameNode
-      nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
-      nn_hosts_map = {} # fqdn to port
-      active_nn_port = null
-      unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-        u = url.parse core_site['fs.defaultFS']
-        nn_hosts_map[u.hostname] = u.port
-        active_nn_port = u.port
-      else
-        for nn_host in nn_hosts
-          nn_ctx = ctx.hosts[nn_host]
-          require('../../hadoop/hdfs_nn').configure nn_ctx
-          protocol = if nn_ctx.config.ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-          shortname = nn_ctx.config.shortname
-          nameservice = nn_ctx.config.ryba.nameservice
-          nn_host = ctx.config.ryba.hdfs.site["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')
-          nn_hosts_map[nn_host[0]] = nn_host[1]
-          active_nn_port = nn_host[1] if nn_ctx.config.host is active_nn_host
-      # HDFS Secondary NameNode
-      [snn_ctx] = ctx.contexts 'ryba/hadoop/hdfs_snn', require('../../hadoop/hdfs_snn').configure
-      # YARN ResourceManager
-      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../../hadoop/yarn_rm').configure
-      rm_hosts = rm_ctxs.map (rm_ctx) -> rm_ctx.config.host
-      # Get RM UI port for both HA and non-HA
-      rm_site = rm_ctxs[0].config.ryba.yarn.site
-      unless rm_ctxs.length > 1
-        rm_webapp_port = if rm_site['yarn.http.policy'] is 'HTTP_ONLY'
-        then rm_site['yarn.resourcemanager.webapp.address'].split(':')[1]
-        else rm_site['yarn.resourcemanager.webapp.https.address'].split(':')[1]
-      else
-        shortname = rm_ctxs[0].config.shortname
-        rm_webapp_port = if rm_site['yarn.http.policy'] is 'HTTP_ONLY'
-        then rm_site["yarn.resourcemanager.webapp.address.#{shortname}"].split(':')[1]
-        else rm_site["yarn.resourcemanager.webapp.https.address.#{shortname}"].split(':')[1]
-      # YARN NodeManager
-      nm_ctxs = ctx.contexts 'ryba/hadoop/yarn_nm', require('../../hadoop/yarn_nm').configure
-      if nm_ctxs.length
-        nm_webapp_port = if nm_ctxs[0].config.ryba.yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
-        then nm_ctxs[0].config.ryba.yarn.site['yarn.nodemanager.webapp.address'].split(':')[1]
-        else nm_ctxs[0].config.ryba.yarn.site['yarn.nodemanager.webapp.https.address'].split(':')[1]
-      # MapReduce JobHistoryServer
-      jhs_ctxs = ctx.contexts 'ryba/hadoop/mapred_jhs', require('../../hadoop/mapred_jhs').configure
-      if jhs_ctxs.length
-        hs_webapp_port = jhs_ctxs[0].config.ryba.mapred.site['mapreduce.jobhistory.webapp.address'].split(':')[1]
-      # HDFS JournalNodes
-      jn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_jn', require('../../hadoop/hdfs_jn').configure
-      if jn_ctxs.length
-        journalnode_port = jn_ctxs[0].config.ryba.hdfs.site["dfs.journalnode.#{protocol}-address"].split(':')[1]
-      # HDFS Datanodes
-      [dn_ctx] = ctx.contexts 'ryba/hadoop/hdfs_dn', require('../../hadoop/hdfs_dn').configure
-      dn_protocol = if dn_ctx.config.ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      dn_port = dn_ctx.config.ryba.hdfs.site["dfs.datanode.#{protocol}.address"].split(':')[1]
-      # HBase
-      hm_hosts = ctx.hosts_with_module 'ryba/hbase/master'
-      # Hive
-      hcat_ctxs = ctx.contexts 'ryba/hive/hcatalog', require('../../hive/hcatalog').configure
-      hs2_ctxs = ctx.contexts 'ryba/hive/server2', require('../../hive/server2').configure
-      hs2_port = if hs2_ctxs[0].config.ryba.hive.site['hive.server2.transport.mode'] is 'binary'
-      then 'hive.server2.thrift.port'
-      else 'hive.server2.thrift.http.port'
-      hs2_port = hs2_ctxs[0].config.ryba.hive.site[hs2_port]
+      # nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
+      # nn_hosts_map = {} # fqdn to port
+      # active_nn_port = null
+      # unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+      #   u = url.parse core_site['fs.defaultFS']
+      #   nn_hosts_map[u.hostname] = u.port
+      #   active_nn_port = u.port
+      # else
+      #   for nn_host in nn_hosts
+      #     nn_ctx = ctx.hosts[nn_host]
+      #     require('../../hadoop/hdfs_nn').configure nn_ctx
+      #     protocol = if nn_ctx.config.ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      #     shortname = nn_ctx.config.shortname
+      #     nameservice = nn_ctx.config.ryba.nameservice
+      #     nn_host = ctx.config.ryba.hdfs.site["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')
+      #     nn_hosts_map[nn_host[0]] = nn_host[1]
+      #     active_nn_port = nn_host[1] if nn_ctx.config.host is active_nn_host
+      # # HDFS Secondary NameNode
+      # [snn_ctx] = ctx.contexts 'ryba/hadoop/hdfs_snn', require('../../hadoop/hdfs_snn').configure
+      # # YARN ResourceManager
+      # rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../../hadoop/yarn_rm').configure
+      # rm_hosts = rm_ctxs.map (rm_ctx) -> rm_ctx.config.host
+      # # Get RM UI port for both HA and non-HA
+      # rm_site = rm_ctxs[0].config.ryba.yarn.site
+      # unless rm_ctxs.length > 1
+      #   rm_webapp_port = if rm_site['yarn.http.policy'] is 'HTTP_ONLY'
+      #   then rm_site['yarn.resourcemanager.webapp.address'].split(':')[1]
+      #   else rm_site['yarn.resourcemanager.webapp.https.address'].split(':')[1]
+      # else
+      #   shortname = rm_ctxs[0].config.shortname
+      #   rm_webapp_port = if rm_site['yarn.http.policy'] is 'HTTP_ONLY'
+      #   then rm_site["yarn.resourcemanager.webapp.address.#{shortname}"].split(':')[1]
+      #   else rm_site["yarn.resourcemanager.webapp.https.address.#{shortname}"].split(':')[1]
+      # # YARN NodeManager
+      # nm_ctxs = ctx.contexts 'ryba/hadoop/yarn_nm', require('../../hadoop/yarn_nm').configure
+      # if nm_ctxs.length
+      #   nm_webapp_port = if nm_ctxs[0].config.ryba.yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
+      #   then nm_ctxs[0].config.ryba.yarn.site['yarn.nodemanager.webapp.address'].split(':')[1]
+      #   else nm_ctxs[0].config.ryba.yarn.site['yarn.nodemanager.webapp.https.address'].split(':')[1]
+      # # MapReduce JobHistoryServer
+      # jhs_ctxs = ctx.contexts 'ryba/hadoop/mapred_jhs', require('../../hadoop/mapred_jhs').configure
+      # if jhs_ctxs.length
+      #   hs_webapp_port = jhs_ctxs[0].config.ryba.mapred.site['mapreduce.jobhistory.webapp.address'].split(':')[1]
+      # # HDFS JournalNodes
+      # jn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_jn', require('../../hadoop/hdfs_jn').configure
+      # if jn_ctxs.length
+      #   journalnode_port = jn_ctxs[0].config.ryba.hdfs.site["dfs.journalnode.#{protocol}-address"].split(':')[1]
+      # # HDFS Datanodes
+      # [dn_ctx] = ctx.contexts 'ryba/hadoop/hdfs_dn', require('../../hadoop/hdfs_dn').configure
+      # dn_protocol = if dn_ctx.config.ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      # dn_port = dn_ctx.config.ryba.hdfs.site["dfs.datanode.#{protocol}.address"].split(':')[1]
+      # # HBase
+      # hm_hosts = ctx.hosts_with_module 'ryba/hbase/master'
+      # # Hive
+      # hcat_ctxs = ctx.contexts 'ryba/hive/hcatalog', require('../../hive/hcatalog').configure
+      # hs2_ctxs = ctx.contexts 'ryba/hive/server2', require('../../hive/server2').configure
+      # hs2_port = if hs2_ctxs[0].config.ryba.hive.site['hive.server2.transport.mode'] is 'binary'
+      # then 'hive.server2.thrift.port'
+      # else 'hive.server2.thrift.http.port'
+      # hs2_port = hs2_ctxs[0].config.ryba.hive.site[hs2_port]
       ctx.render
         source: "#{__dirname}/../../resources/shinken/services/hadoop-services.cfg.j2"
         local_source: true
         destination: '/etc/shinken/services/hadoop-services.cfg'
         context:
           shinken: shinken
+          hbase: hbase
+          hdfs: hdfs
           # shinken_lookup_daemon_str: '/usr/sbin/shinken'
           # namenode_port: active_nn_port
           # dfs_ha_enabled: not ctx.host_with_module 'ryba/hadoop/hdfs_snn'

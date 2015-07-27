@@ -32,13 +32,18 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       ctx
       .service name: 'net-snmp'
       .service name: 'net-snmp-utils'
-      .service name: 'php-pecl-json'
-      .service name: 'wget'
       .service name: 'httpd'
-      .service name: 'php'
       .service name: 'net-snmp-perl'
       .service name: 'perl-Net-SNMP'
       .service name: 'fping'
+      .service name: 'krb5-devel'
+      .service name: 'zlib-devel'
+      .service name: 'bzip2-devel'
+      .service name: 'openssl-devel'
+      .service name: 'ncurses-devel'
+      #.service name: 'python27'
+      #.service name: 'python27-python-pip'
+      #.service name: 'python27-python-devel'
       #.service name: 'nagios-plugins' # Will be installed automatically by shinken poller
       #.service name: 'shinken-poller'
       .execute cmd: "yum -y --disablerepo=HDP-UTILS-1.1.0.20 install shinken-poller"
@@ -64,6 +69,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           download.push
             destination: "#{mod.archive}.zip"
             source: mod.source
+            cache_file: "#{mod.archive}.zip"
             not_if_exec: "shinken inventory | grep #{name}"
           extract.push
             source: "#{mod.archive}.zip"
@@ -75,6 +81,58 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       ctx
       .download download
       .extract extract
+      .execute exec
+      .then next
+
+## Alternative Python
+
+Shinken modules needs python 2.7 but yum needs python 2.6 so we install
+an alternative python without replacing python 2.6
+
+    module.exports.push name: 'Shinken Poller # Python 2.7', skip: true, handler: (ctx, next) ->
+      {poller} = ctx.config.ryba.shinken
+      ctx
+        not_if_exec: '/usr/local/bin/python2.7'
+      .extract
+        source: "#{poller.python.archive}.tgz"
+        not_if_exists: '/usr/local/bin/python2.7'
+      .execute
+        cmd: """
+        echo '/usr/local/lib' > /etc/ld.so.conf.d/local.conf
+        ldconfig
+        """
+        not_if_exists: '/etc/ld.so.conf.d/local.conf'
+      .execute
+        cmd: """
+        cd #{poller.python.archive}
+        ./configure --prefix=/usr/local --enable-shared
+        make && make altinstall
+        """
+        not_if_exists: '/usr/local/bin/python2.7'
+      .then next
+
+## Python Modules
+
+      module.exports.push name: 'Shinken Poller # Python Modules', skip: true, handler: (ctx, next) ->
+      {poller} = ctx.config.ryba.shinken
+      return next() unless Object.getOwnPropertyNames(poller.python_modules).length > 0
+      download = []
+      extract = []
+      exec = []
+      for name, mod of poller.python_modules
+        if mod.archive?
+          archive_name = "#{mod.archive}.tar.gz"
+          download.push
+            destination: archive_name
+            source: mod.source
+            cache_file: archive_name
+            not_if_exec: "pip list | grep #{name}"
+          exec.push
+            cmd: "pip install #{mod.archive}.tar.gz"
+            not_if_exec: "pip list | grep #{name}"
+        else return next Error "Missing parameter: archive for poller.python_modules.#{name}"
+      ctx
+      .download download
       .execute exec
       .then next
 
