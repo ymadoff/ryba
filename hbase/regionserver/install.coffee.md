@@ -40,6 +40,9 @@ inside "/etc/init.d" and activate it on startup.
       ctx.hdp_service
         name: 'hbase-regionserver'
         write: [
+          match: /^set -e$/m
+          replace: '#set -e'
+        ,
           replace: 'RETVAL=0'
           before: /^case ".*?" in$/m
         ,

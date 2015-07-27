@@ -49,14 +49,18 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
           # HDP default is "/etc/hbase/conf"
           match: /^CONF_DIR=.*$/m
           replace: "CONF_DIR=\"${HBASE_CONF_DIR}\" # RYBA HONORS /etc/default, DONT OVEWRITE"
+        # ,
+        #   # HDP default is "/usr/lib/hbase/bin/hbase-daemon.sh"
+        #   match: /^EXEC_PATH=.*$/m
+        #   replace: "EXEC_PATH=\"${HBASE_HOME}/bin/hbase-daemon.sh\" # RYBA HONORS /etc/default, DONT OVEWRITE"
+        # ,
+        #   # HDP default is "/var/run/hbase/hbase-hbase-master.pid"
+        #   match: /^PIDFILE=.*$/m
+        #   replace: "PIDFILE=\"${HBASE_PID_DIR}/hbase-hbase-master.pid\" # RYBA HONORS /etc/default, DONT OVEWRITE"
         ,
-          # HDP default is "/usr/lib/hbase/bin/hbase-daemon.sh"
-          match: /^EXEC_PATH=.*$/m
-          replace: "EXEC_PATH=\"${HBASE_HOME}/bin/hbase-daemon.sh\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-        ,
-          # HDP default is "/var/run/hbase/hbase-hbase-master.pid"
-          match: /^PIDFILE=.*$/m
-          replace: "PIDFILE=\"${HBASE_PID_DIR}/hbase-hbase-master.pid\" # RYBA HONORS /etc/default, DONT OVEWRITE"
+          # HDP default is "/usr/hdp/current/hbase-@HBASE_MASTER@/../hbase"
+          match: /^export HBASE_HOME=".*"$/m
+          replace: "export HBASE_HOME=\"${HBASE_HOME:-/usr/hdp/current/hbase-client}\" # RYBA HONORS /etc/default, DONT OVEWRITE"
         ]
         etc_default:
           'hadoop': true
