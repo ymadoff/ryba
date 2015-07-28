@@ -66,33 +66,33 @@ lifecyle = module.exports =
   #   lifecyle.nn_stop ctx, (err) ->
   #     return callback err if err
   #     lifecyle.nn_start ctx, callback
-  zkfc_status: (ctx, callback) ->
-    ctx.execute
-      cmd: "service hadoop-hdfs-zkfc status"
-      code_skipped: [1, 3]
-    , callback
-  zkfc_start: (ctx, callback) ->
-    {hdfs} = ctx.config.ryba
-    lifecyle.zkfc_status ctx, (err, running) ->
-      return callback err, false if err or running
-      ctx.log "ZKFC start"
-      ctx.execute
-        # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh start zkfc"
-        # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh start zkfc\""
-        cmd: 'service hadoop-hdfs-zkfc start'
-        # code_skipped: 1
-      , callback
-  zkfc_stop: (ctx, callback) ->
-    {hdfs} = ctx.config.ryba
-    lifecyle.zkfc_status ctx, (err, running) ->
-      return callback err, false if err or not running
-      ctx.log "ZKFC stop"
-      ctx.execute
-        # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh stop zkfc"
-        # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh stop zkfc\""
-        cmd: 'service hadoop-hdfs-zkfc stop'
-        # code_skipped: 1
-      , callback
+  # zkfc_status: (ctx, callback) ->
+  #   ctx.execute
+  #     cmd: "service hadoop-hdfs-zkfc status"
+  #     code_skipped: [1, 3]
+  #   , callback
+  # zkfc_start: (ctx, callback) ->
+  #   {hdfs} = ctx.config.ryba
+  #   lifecyle.zkfc_status ctx, (err, running) ->
+  #     return callback err, false if err or running
+  #     ctx.log "ZKFC start"
+  #     ctx.execute
+  #       # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh start zkfc"
+  #       # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh start zkfc\""
+  #       cmd: 'service hadoop-hdfs-zkfc start'
+  #       # code_skipped: 1
+  #     , callback
+  # zkfc_stop: (ctx, callback) ->
+  #   {hdfs} = ctx.config.ryba
+  #   lifecyle.zkfc_status ctx, (err, running) ->
+  #     return callback err, false if err or not running
+  #     ctx.log "ZKFC stop"
+  #     ctx.execute
+  #       # su -l hdfs -c "/usr/lib/hadoop/sbin/hadoop-daemon.sh stop zkfc"
+  #       # cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh stop zkfc\""
+  #       cmd: 'service hadoop-hdfs-zkfc stop'
+  #       # code_skipped: 1
+  #     , callback
   # snn_start: (ctx, callback) ->
   #   {hdfs, hadoop_conf_dir} = ctx.config.ryba
   #   ctx.log "SNN start"
@@ -109,31 +109,31 @@ lifecyle = module.exports =
   #     cmd: "su -l #{hdfs.user.name} -c \"/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} stop secondarynamenode\""
   #     # code_skipped: 1
   #   , callback
-  dn_status: (ctx, callback) ->
-    ctx.execute
-      cmd: "service hadoop-hdfs-datanode status"
-      code_skipped: [1, 3]
-    , callback
-  dn_start: (ctx, callback) ->
-    lifecyle.dn_status ctx, (err, running) ->
-      return callback err, false if err or running
-      ctx.log "DataNode start"
-      ctx.execute
-        # HADOOP_SECURE_DN_USER=hdfs /usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start datanode
-        # cmd: "HADOOP_SECURE_DN_USER=hdfs /usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start datanode"
-        cmd: "service hadoop-hdfs-datanode start"
-        # code_skipped: 1
-      , callback
-  dn_stop: (ctx, callback) ->
-    lifecyle.dn_status ctx, (err, running) ->
-      return callback err, false if err or not running
-      ctx.log "DataNode stop"
-      ctx.execute
-        # /usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf stop datanode
-        # cmd: "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} stop datanode"
-        cmd: "service hadoop-hdfs-datanode stop"
-        # code_skipped: 1
-      , callback
+  # dn_status: (ctx, callback) ->
+  #   ctx.execute
+  #     cmd: "service hadoop-hdfs-datanode status"
+  #     code_skipped: [1, 3]
+  #   , callback
+  # dn_start: (ctx, callback) ->
+  #   lifecyle.dn_status ctx, (err, running) ->
+  #     return callback err, false if err or running
+  #     ctx.log "DataNode start"
+  #     ctx.execute
+  #       # HADOOP_SECURE_DN_USER=hdfs /usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start datanode
+  #       # cmd: "HADOOP_SECURE_DN_USER=hdfs /usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} --script hdfs start datanode"
+  #       cmd: "service hadoop-hdfs-datanode start"
+  #       # code_skipped: 1
+  #     , callback
+  # dn_stop: (ctx, callback) ->
+  #   lifecyle.dn_status ctx, (err, running) ->
+  #     return callback err, false if err or not running
+  #     ctx.log "DataNode stop"
+  #     ctx.execute
+  #       # /usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf stop datanode
+  #       # cmd: "/usr/lib/hadoop/sbin/hadoop-daemon.sh --config #{hadoop_conf_dir} stop datanode"
+  #       cmd: "service hadoop-hdfs-datanode stop"
+  #       # code_skipped: 1
+  #     , callback
   # rm_status: (ctx, callback) ->
   #   ctx.execute
   #     cmd: "service hadoop-yarn-resourcemanager status"

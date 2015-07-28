@@ -7,9 +7,14 @@ Display the status of the NameNode as "STARTED" or "STOPPED".
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
 
-    module.exports.push name: 'HDFS DN # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
-      lifecycle.dn_status ctx, next
+## Status
 
-## Dependencies
+Check if the HDFS DataNode server is running. The process ID is located by default
+inside "/var/run/hadoop-hdfs/hadoop-hdfs-datanode.pid".
 
-    lifecycle = require '../../lib/lifecycle'
+    module.exports.push name: 'HDFS NN # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
+      ctx.execute
+        cmd: 'service hadoop-hdfs-datanode status'
+        code_skipped: 3
+        if_exists: '/etc/init.d/hadoop-hdfs-datanode'
+      .then next
