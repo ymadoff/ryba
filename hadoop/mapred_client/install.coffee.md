@@ -69,34 +69,46 @@ HDFS directory. Note, the parent directories are created by the
 
     module.exports.push name: 'MapReduce Client # HDFS Tarballs', wait: 60*1000, timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba
-      lock_timeout = 240 # in seconds
       ctx.execute
         cmd: mkcmd.hdfs ctx, """
         version=`readlink /usr/hdp/current/hadoop-mapreduce-client | sed 's/.*\\/\\(.*\\)\\/hadoop-mapreduce/\\1/'`
-        if hdfs dfs -test -f /tmp/ryba-mapreduce.lock; then
+        if hdfs dfs -mkdir /tmp/ryba-mapreduce.lock; then
+          echo "Lock created"
+        else
           echo 'lock exist, check if valid'
+          timeout=240 # 4 minutes
+          now=`date '+%s'`
           crdate=$(echo `hdfs dfs -ls /tmp/ryba-mapreduce.lock | grep -Po '\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}'` | xargs -0 date '+%s' -d)
-          expire=$(($crdate - `date '+%s'` + #{lock_timeout}))
-          if [ $expire -ge 0 ]; then
-            expire=$(($expire + 10))
-            echo "Lock is active, wait for ${expire}s until expiration"
-            sleep ${expire};
-            if hdfs dfs -test -f /tmp/ryba-mapreduce.lock; then exit 1; fi
-            if hdfs dfs -test -f /hdp/apps/$version/mapreduce/mapreduce.tar.gz; then exit 0; fi
+          #expire=$(($crdate - `date '+%s'` + $timeout))
+          #if [ $expire -ge $timeout ]; then
+          if [ $(($now - $crdate)) -le $timeout ]; then
+            sleep_time=$((240 - $crdate + $now + 5))
+            echo crdate $crdate
+            echo now $now
+            echo sleep_time $sleep_time
+            echo "Lock is active, wait for ${sleep_time}s until expiration"
+            sleep $sleep_time
+            if hdfs dfs -test -d /tmp/ryba-mapreduce.lock; then
+              echo "Lock still present after waiting"
+              exit 1
+            fi
+            if hdfs dfs -test -f /hdp/apps/$version/mapreduce/mapreduce.tar.gz; then
+              echo "File uploaded in parallel by somebody else"
+              exit 0
+            fi
             echo "Lock released, attemp to upload file"
+          else
+            echo "Lock has expired $(($now - $crdate + $timeout))s ago, pursue uploading"
           fi
         fi
-        hdfs dfs -touchz /tmp/ryba-mapreduce.lock
         echo "Upload file in /hdp/apps/$version/mapreduce"
         hdfs dfs -mkdir -p /hdp/apps/$version/mapreduce
         hdfs dfs -chmod -R 555 /hdp/apps/$version/mapreduce
         hdfs dfs -chmod -R 555 /hdp/apps/$version/mapreduce
         hdfs dfs -copyFromLocal /usr/hdp/current/hadoop-client/mapreduce.tar.gz /hdp/apps/$version/mapreduce
         hdfs dfs -chmod -R 444 /hdp/apps/$version/mapreduce/mapreduce.tar.gz
-        # hdfs dfs -ls /hdp/apps/$version/mapreduce | grep mapreduce.tar.gz
         hdfs dfs -test -f /hdp/apps/$version/mapreduce/mapreduce.tar.gz
-        hdfs dfs -touchz /tmp/ryba-mapreduce.lock
-        hdfs dfs -rm /tmp/ryba-mapreduce.lock
+        hdfs dfs -rm -r /tmp/ryba-mapreduce.lock
         """
         trap_on_error: true
         not_if_exec: mkcmd.hdfs ctx, """
