@@ -9,9 +9,10 @@ Job History Server.
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
-    module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_service'
+    # module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/hdp_select'
+    module.exports.push require('./index').configure
 
 ## IPTables
 
@@ -50,17 +51,32 @@ Install the "hadoop-mapreduce-historyserver" service, symlink the rc.d startup
 script inside "/etc/init.d" and activate it on startup.
 
     module.exports.push name: 'MapReduce JHS # Service', handler: (ctx, next) ->
-      ctx.hdp_service
+      # ctx.hdp_service
+      #   name: 'hadoop-mapreduce-historyserver'
+      #   write: [
+      #     match: /^\. \$CONF_DIR\/mapred-env\.sh .*$/m
+      #     replace: '. $CONF_DIR/mapred-env.sh # RYBA FIX pid dir'
+      #     append: '. $CONF_DIR/hadoop-env.sh'
+      #   ,
+      #     match:  /^HADOOP_PID_DIR=".*" # RYBA .*$/m
+      #     replace: 'HADOOP_PID_DIR="${HADOOP_MAPRED_PID_DIR:-$HADOOP_PID_DIR}" # RYBA FIX pid dir'
+      #     before: /^PIDFILE=".*"$/m
+      #   ]
+      # .then next
+      ctx
+      .service
         name: 'hadoop-mapreduce-historyserver'
-        write: [
-          match: /^\. \$CONF_DIR\/mapred-env\.sh .*$/m
-          replace: '. $CONF_DIR/mapred-env.sh # RYBA FIX pid dir'
-          append: '. $CONF_DIR/hadoop-env.sh'
-        ,
-          match:  /^HADOOP_PID_DIR=".*" # RYBA .*$/m
-          replace: 'HADOOP_PID_DIR="${HADOOP_MAPRED_PID_DIR:-$HADOOP_PID_DIR}" # RYBA FIX pid dir'
-          before: /^PIDFILE=".*"$/m
-        ]
+      .hdp_select
+        name: 'hadoop-mapreduce-client' # Not checked
+        name: 'hadoop-mapreduce-historyserver'
+      .write
+        source: "#{__dirname}/hadoop-mapreduce-historyserver"
+        local_source: true
+        destination: '/etc/init.d/hadoop-mapreduce-historyserver'
+        mode: 0o0755
+      .execute
+        cmd: "service hadoop-mapreduce-historyserver restart"
+        if: -> @status(-3)
       .then next
 
 ## Environnement
@@ -110,7 +126,7 @@ Create the log and pid directories.
         gid: hadoop_group.name
         mode: 0o0755
       .mkdir
-        destination: "#{mapred.pid_dir}/#{mapred.user.name}"
+        destination: "#{mapred.pid_dir}"
         uid: mapred.user.name
         gid: hadoop_group.name
         mode: 0o0755

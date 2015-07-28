@@ -6,7 +6,8 @@
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_service'
+    # module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/hdp_select'
 
 ## IPTables
 
@@ -38,12 +39,27 @@ Install the "hadoop-hdfs-secondarynamenode" service, symlink the rc.d startup
 script inside "/etc/init.d" and activate it on startup.
 
     module.exports.push name: 'HDFS SNN # Service', handler: (ctx, next) ->
-      ctx.hdp_service
+      # ctx.hdp_service
+      #   name: 'hadoop-hdfs-secondarynamenode'
+      #   write:[
+      #     match: /^EXEC_PATH=".*\/sbin\/hadoop-daemon\.sh".*$/m
+      #     replace: 'EXEC_PATH="$HADOOP_HOME/sbin/hadoop-daemon.sh" # RYBA FIX rc.d, DONT OVERWRITE'
+      #   ]
+      # .then next
+      ctx
+      .service
         name: 'hadoop-hdfs-secondarynamenode'
-        write:[
-          match: /^EXEC_PATH=".*\/sbin\/hadoop-daemon\.sh".*$/m
-          replace: 'EXEC_PATH="$HADOOP_HOME/sbin/hadoop-daemon.sh" # RYBA FIX rc.d, DONT OVERWRITE'
-        ]
+      .hdp_select
+        name: 'hadoop-hdfs-client' # Not checked
+        name: 'hadoop-hdfs-secondarynamenode'
+      .write
+        source: "#{__dirname}/secondarynamenode"
+        local_source: true
+        destination: '/etc/init.d/hadoop-hdfs-secondarynamenode'
+        mode: 0o0755
+      .execute
+        cmd: "service hadoop-hdfs-secondarynamenode restart"
+        if: -> @status(-3)
       .then next
 
     # module.exports.push name: 'HDFS SNN # Service', timeout: -1, handler: (ctx, next) ->

@@ -20,7 +20,8 @@ NameNodes, and send block location information and heartbeats to both.
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_service'
+    # module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/hdp_select'
 
 ## IPTables
 
@@ -60,40 +61,55 @@ inside "/etc/init.d" and activate it on startup.
 
     module.exports.push name: 'HDFS DN # Service', handler: (ctx, next) ->
       {hdfs} = ctx.config.ryba
-      ctx.hdp_service
+      # ctx.hdp_service
+      #   name: 'hadoop-hdfs-datanode'
+      #   write: [
+      #     match: /^\. \/etc\/default\/hadoop-hdfs-datanode .*$/m
+      #     replace: '. /etc/default/hadoop-hdfs-datanode # RYBA FIX rc.d, DONT OVERWRITE'
+      #     append: ". /lib/lsb/init-functions"
+      #   ,
+      #     match: /^export HADOOP_IDENT_STRING=.*$/m
+      #     replace: "export HADOOP_IDENT_STRING=${HADOOP_SECURE_DN_USER:-$HADOOP_DATANODE_USER} # RYBA FIX"
+      #   ]
+      #   etc_default:
+      #     'hadoop-hdfs-datanode':
+      #       write: [
+      #         match: /^export HADOOP_PID_DIR=.*$/m # HDP default is "/var/run/hadoop-hdfs"
+      #         replace: "export HADOOP_PID_DIR=#{hdfs.pid_dir} # RYBA"
+      #       ,
+      #         match: /^export HADOOP_LOG_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
+      #         replace: "export HADOOP_LOG_DIR=#{hdfs.log_dir} # RYBA"
+      #       ,
+      #         match: /^export HADOOP_IDENT_STRING=.*$/m # HDP default is "hdfs"
+      #         replace: "export HADOOP_IDENT_STRING=#{hdfs.user.name} # RYBA"
+      #       ,
+      #         match: /^export HADOOP_SECURE_DN_USER=.*$/m # HDP default is "hdfs"
+      #         replace: "export HADOOP_SECURE_DN_USER=#{hdfs.secure_dn_user} # RYBA"
+      #         append: true
+      #       ,
+      #         match: /^export HADOOP_SECURE_DN_PID_DIR=.*$/m # HDP default is "hdfs"
+      #         replace: "export HADOOP_SECURE_DN_PID_DIR=#{hdfs.secure_dn_pid_dir} # RYBA"
+      #         append: true
+      #       ,
+      #         match: /^export HADOOP_SECURE_DN_LOG_DIR=.*$/m # HDP default is "hdfs"
+      #         replace: "export HADOOP_SECURE_DN_LOG_DIR=#{hdfs.log_dir} # RYBA"
+      #         append: true
+      #       ]
+      # .then next
+      ctx
+      .service
         name: 'hadoop-hdfs-datanode'
-        write: [
-          match: /^\. \/etc\/default\/hadoop-hdfs-datanode .*$/m
-          replace: '. /etc/default/hadoop-hdfs-datanode # RYBA FIX rc.d, DONT OVERWRITE'
-          append: ". /lib/lsb/init-functions"
-        ,
-          match: /^export HADOOP_IDENT_STRING=.*$/m
-          replace: "export HADOOP_IDENT_STRING=${HADOOP_SECURE_DN_USER:-$HADOOP_DATANODE_USER} # RYBA FIX"
-        ]
-        etc_default:
-          'hadoop-hdfs-datanode':
-            write: [
-              match: /^export HADOOP_PID_DIR=.*$/m # HDP default is "/var/run/hadoop-hdfs"
-              replace: "export HADOOP_PID_DIR=#{hdfs.pid_dir} # RYBA"
-            ,
-              match: /^export HADOOP_LOG_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
-              replace: "export HADOOP_LOG_DIR=#{hdfs.log_dir} # RYBA"
-            ,
-              match: /^export HADOOP_IDENT_STRING=.*$/m # HDP default is "hdfs"
-              replace: "export HADOOP_IDENT_STRING=#{hdfs.user.name} # RYBA"
-            ,
-              match: /^export HADOOP_SECURE_DN_USER=.*$/m # HDP default is "hdfs"
-              replace: "export HADOOP_SECURE_DN_USER=#{hdfs.secure_dn_user} # RYBA"
-              append: true
-            ,
-              match: /^export HADOOP_SECURE_DN_PID_DIR=.*$/m # HDP default is "hdfs"
-              replace: "export HADOOP_SECURE_DN_PID_DIR=#{hdfs.secure_dn_pid_dir} # RYBA"
-              append: true
-            ,
-              match: /^export HADOOP_SECURE_DN_LOG_DIR=.*$/m # HDP default is "hdfs"
-              replace: "export HADOOP_SECURE_DN_LOG_DIR=#{hdfs.log_dir} # RYBA"
-              append: true
-            ]
+      .hdp_select
+        name: 'hadoop-hdfs-client' # Not checked
+        name: 'hadoop-hdfs-datanode'
+      .write
+        source: "#{__dirname}/hadoop-hdfs-datanode"
+        local_source: true
+        destination: '/etc/init.d/hadoop-hdfs-datanode'
+        mode: 0o0755
+      .execute
+        cmd: "service hadoop-hdfs-datanode restart"
+        if: -> @status(-3)
       .then next
 
 ## HA
