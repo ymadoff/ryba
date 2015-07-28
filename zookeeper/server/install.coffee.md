@@ -9,7 +9,8 @@
     module.exports.push 'masson/commons/java'
     # module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/lib/base'
-    module.exports.push require '../../lib/hdp_service'
+    # module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/hdp_select'
     module.exports.push require '../../lib/write_jaas'
     module.exports.push require('./index').configure
 
@@ -63,8 +64,16 @@ which has no dependency.
       ctx
       .service
         name: 'telnet' # Used by check
-      .hdp_service
+      .service
         name: 'zookeeper-server'
+      .hdp_select
+        name: 'zookeeper-server'
+      .hdp_select
+        name: 'zookeeper-client'
+      .download
+        source: "#{__dirname}/zookeeper"
+        destination: '/etc/init.d/zookeeper-server'
+        mode: 0o0755
       .then next
 
 ## Kerberos
