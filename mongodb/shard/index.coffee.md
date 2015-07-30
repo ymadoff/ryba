@@ -67,6 +67,6 @@ MongoDB is a document-oriented database. Distributed Version
 
     module.exports.push commands: 'status', modules: 'ryba/mongodb/shard/status'
 
-## Module Dependencies
+## Dependencies
 
     path = require 'path'

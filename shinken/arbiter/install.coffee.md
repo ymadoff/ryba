@@ -281,7 +281,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       .render render
       .then next
 
-## Module Dependencies
+## Dependencies
 
     path = require 'path'
     url = require 'url'

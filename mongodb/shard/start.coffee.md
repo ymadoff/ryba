@@ -25,6 +25,6 @@
         cmd: "mongod --shardsrv #{mongos_hosts} --logappend"
       .then next
 
-## Module Dependencies
+## Dependencies
 
     path = require 'path'

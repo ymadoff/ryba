@@ -49,6 +49,6 @@ This file contains shared Configuration.
 
     module.exports.push commands: 'status', modules: 'ryba/mongodb/status'
 
-## Module Dependencies
+## Dependencies
 
     path = require 'path'

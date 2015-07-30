@@ -64,6 +64,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         gid: mongodb.group.name
       .then next
 
-## Module Dependencies
+## Dependencies
 
     quote = require 'regexp-quote'

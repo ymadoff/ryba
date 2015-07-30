@@ -169,7 +169,7 @@ an alternative python without replacing python 2.6
         kadmin_server: admin_server
       .then next
 
-## Module dependencies
+## Dependencies
 
     path = require 'path'
     glob = require 'glob'

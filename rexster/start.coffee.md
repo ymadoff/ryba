@@ -28,4 +28,6 @@ Note, there is no need to clean a zombie pid file before starting the server.
         code_skipped: 3
       .then next
 
+## Dependencies
+
     path = require 'path'

@@ -66,6 +66,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       .execute exec
       .then next
 
-## Module dependencies
+## Dependencies
 
     path = require 'path'
