@@ -19,4 +19,4 @@ Discover the server status.
         if [ -n "$p" ]; then exit 3; fi
         """
         code_skipped: 3
-      , next
+      .then next
