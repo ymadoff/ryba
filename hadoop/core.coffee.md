@@ -190,7 +190,6 @@ Default configuration:
       ryba.hdfs.user = name: ryba.hdfs.user if typeof ryba.hdfs.user is 'string'
       ryba.hdfs.user.name ?= 'hdfs'
       ryba.hdfs.user.system ?= true
-      ryba.hdfs.user.gid ?= 'hdfs'
       ryba.hdfs.user.groups ?= 'hadoop'
       ryba.hdfs.user.comment ?= 'Hadoop HDFS User'
       ryba.hdfs.user.home ?= '/var/lib/hadoop-hdfs'
@@ -203,7 +202,6 @@ Default configuration:
       ryba.yarn.user = name: ryba.yarn.user if typeof ryba.yarn.user is 'string'
       ryba.yarn.user.name ?= 'yarn'
       ryba.yarn.user.system ?= true
-      ryba.yarn.user.gid ?= 'yarn'
       ryba.yarn.user.groups ?= 'hadoop'
       ryba.yarn.user.comment ?= 'Hadoop YARN User'
       ryba.yarn.user.home ?= '/var/lib/hadoop-yarn'
@@ -212,7 +210,6 @@ Default configuration:
       ryba.mapred.user = name: ryba.mapred.user if typeof ryba.mapred.user is 'string'
       ryba.mapred.user.name ?= 'mapred'
       ryba.mapred.user.system ?= true
-      ryba.mapred.user.gid ?= 'mapred'
       ryba.mapred.user.groups ?= 'hadoop'
       ryba.mapred.user.comment ?= 'Hadoop MapReduce User'
       ryba.mapred.user.home ?= '/var/lib/hadoop-mapreduce'
@@ -221,14 +218,17 @@ Default configuration:
       ryba.hdfs.group = name: ryba.hdfs.group if typeof ryba.hdfs.group is 'string'
       ryba.hdfs.group.name ?= 'hdfs'
       ryba.hdfs.group.system ?= true
+      ryba.hdfs.user.gid = ryba.hdfs.group.name
       ryba.yarn.group ?= {}
       ryba.yarn.group = name: ryba.yarn.group if typeof ryba.yarn.group is 'string'
       ryba.yarn.group.name ?= 'yarn'
       ryba.yarn.group.system ?= true
+      ryba.yarn.user.gid = ryba.yarn.group.name
       ryba.mapred.group ?= {}
       ryba.mapred.group = name: ryba.mapred.group if typeof ryba.mapred.group is 'string'
       ryba.mapred.group.name ?= 'mapred'
       ryba.mapred.group.system ?= true
+      ryba.mapred.user.gid = ryba.mapred.group.name
       ryba.group ?= {}
       ryba.group = name: ryba.group if typeof ryba.group is 'string'
       ryba.group.name ?= 'ryba'
@@ -689,7 +689,7 @@ recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 ## Hadoop Metrics
 
 Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collector like Ganglia or Graphite.
-    
+
     module.exports.push name: 'Hadoop Core # Metrics', handler: (ctx, next) ->
       {hadoop_metrics, hadoop_conf_dir} = ctx.config.ryba
       ctx

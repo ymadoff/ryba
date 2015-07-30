@@ -10,16 +10,16 @@ a Zookeeper Browser and a SDK.
 
 ## Configure
 
-*   `hdp.hue.ini.desktop.database.admin_username` (string)   
-    Database admin username used to create the Hue database user.  
-*   `hdp.hue.ini.desktop.database.admin_password` (string)   
-    Database admin password used to create the Hue database user.   
+*   `hdp.hue.ini.desktop.database.admin_username` (string)
+    Database admin username used to create the Hue database user.
+*   `hdp.hue.ini.desktop.database.admin_password` (string)
+    Database admin password used to create the Hue database user.
 *   `hue.ini`
-    Configuration merged with default values and written to "/etc/hue/conf/hue.ini" file.   
-*   `hue.user` (object|string)   
-    The Unix Hue login name or a user object (see Mecano User documentation).   
-*   `hue.group` (object|string)   
-    The Unix Hue group name or a group object (see Mecano Group documentation).   
+    Configuration merged with default values and written to "/etc/hue/conf/hue.ini" file.
+*   `hue.user` (object|string)
+    The Unix Hue login name or a user object (see Mecano User documentation).
+*   `hue.group` (object|string)
+    The Unix Hue group name or a group object (see Mecano Group documentation).
 
 Example:
 
@@ -62,7 +62,6 @@ Example:
       hue.user = name: hue.user if typeof hue.user is 'string'
       hue.user.name ?= 'hue'
       hue.user.system ?= true
-      hue.user.gid = 'hue'
       hue.user.comment ?= 'Hue User'
       hue.user.home = '/var/lib/hue'
       # Group
@@ -70,10 +69,11 @@ Example:
       hue.group ?= {}
       hue.group.name ?= 'hue'
       hue.group.system ?= true
+      hue.user.gid = hue.group.name
       hue.clean_tmp ?= true
 
     module.exports.configure = (ctx) ->
-      require('masson/core/iptables').configure 
+      require('masson/core/iptables').configure
       require('../hadoop/core').configure ctx
       require('../hadoop/hdfs_client').configure ctx
       require('../hadoop/yarn_client').configure ctx
@@ -98,7 +98,7 @@ Example:
       # see https://github.com/cloudera/hue/blob/master/docs/manual.txt#L433-L439
       # another solution could be to set REQUESTS_CA_BUNDLE but this isnt tested
       # see http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cm_sg_ssl_hue.html
-      
+
       # Hue Install defines a dependency on HDFS client
       nn_protocol = if ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       nn_protocol = 'http' if ryba.hdfs.site['dfs.http.policy'] is 'HTTP_AND_HTTPS' and not hue.ssl_client_ca
@@ -220,7 +220,7 @@ Example:
       hue.ini.desktop.kerberos.hue_principal ?= "hue/#{ctx.config.host}@#{ryba.realm}"
       # Path to kinit
       # For RHEL/CentOS 5.x, kinit_path is /usr/kerberos/bin/kinit
-      # For RHEL/CentOS 6.x, kinit_path is /usr/bin/kinit 
+      # For RHEL/CentOS 6.x, kinit_path is /usr/bin/kinit
       hue.ini['desktop']['kerberos']['kinit_path'] ?= '/usr/bin/kinit'
       # Uncomment all security_enabled settings and set them to true
       hue.ini.hadoop ?= {}
@@ -253,5 +253,3 @@ Example:
     module.exports.push commands: 'stop', modules: 'ryba/hue/stop'
 
 [home]: http://gethue.com
-
-

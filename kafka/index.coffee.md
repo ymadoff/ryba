@@ -20,7 +20,6 @@ and consumer Kafka components.
       kafka.user = name: kafka.user if typeof kafka.user is 'string'
       kafka.user.name ?= 'kafka'
       kafka.user.system ?= true
-      kafka.user.gid = 'kafka'
       kafka.user.comment ?= 'Kafka User'
       kafka.user.home = '/var/lib/kafka'
       # Group
@@ -28,6 +27,7 @@ and consumer Kafka components.
       kafka.group ?= {}
       kafka.group.name ?= 'kafka'
       kafka.group.system ?= true
+      kafka.user.gid = kafka.group.name
       # Configuration
       kafka.consumer ?= {}
       kafka.consumer['zookeeper.connect'] ?= ctx.config.ryba.core_site['ha.zookeeper.quorum']

@@ -10,10 +10,10 @@
 
 ## Configure
 
-*   `hive.user` (object|string)   
-    The Unix Hive login name or a user object (see Mecano User documentation).   
-*   `hive.group` (object|string)   
-    The Unix Hive group name or a group object (see Mecano Group documentation).   
+*   `hive.user` (object|string)
+    The Unix Hive login name or a user object (see Mecano User documentation).
+*   `hive.group` (object|string)
+    The Unix Hive group name or a group object (see Mecano Group documentation).
 
 Example:
 
@@ -41,20 +41,20 @@ Example:
       {static_host, realm} = ctx.config.ryba
       hive = ctx.config.ryba.hive ?= {}
       hive.conf_dir ?= '/etc/hive/conf'
-      # Group
-      hive.group ?= {}
-      hive.group = name: hive.group if typeof hive.group is 'string'
-      hive.group.name ?= 'hive'
-      hive.group.system ?= true
       # User
       hive.user ?= {}
       hive.user = name: hive.user if typeof hive.user is 'string'
       hive.user.name ?= 'hive'
       hive.user.system ?= true
-      hive.user.gid ?= hive.group.name
       hive.user.groups ?= 'hadoop'
       hive.user.comment ?= 'Hive User'
       hive.user.home ?= '/var/lib/hive'
+      # Group
+      hive.group ?= {}
+      hive.group = name: hive.group if typeof hive.group is 'string'
+      hive.group.name ?= 'hive'
+      hive.group.system ?= true
+      hive.user.gid = hive.group.name
       # Configuration
       hive.site ?= {}
       hive.site[' hive.metastore.uris '] = null # Clean up HDP mess
@@ -143,6 +143,3 @@ present on a fresh install.
             replace: 'export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar} # RYBA FIX'
           ]
         , next
-
-
-

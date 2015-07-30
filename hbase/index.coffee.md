@@ -61,7 +61,7 @@ Example
       hbase.group = name: hbase.group if typeof hbase.group is 'string'
       hbase.group.name ?= 'hbase'
       hbase.group.system ?= true
-      hbase.user.gid ?= hbase.group.name
+      hbase.user.gid = hbase.group.name
       # Layout
       hbase.conf_dir ?= '/etc/hbase/conf'
       hbase.log_dir ?= '/var/log/hbase'
