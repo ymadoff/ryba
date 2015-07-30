@@ -10,7 +10,7 @@ to its associated Scheduler. Host the WebUI.
 
 ## Configure
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       require('../').configure ctx
       {shinken} = ctx.config.ryba
       require('masson/commons/java').configure ctx

@@ -13,7 +13,7 @@ Sends broks (internal events of any kind) to the broker(s)
 
 ## Configure
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       require('../').configure ctx
       scheduler = ctx.config.ryba.shinken.scheduler ?= {}
       # Additionnal Modules to install

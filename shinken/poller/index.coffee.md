@@ -20,7 +20,7 @@ is approximatively 1000 checks/s
 
 ## Configure
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       require('../').configure ctx
       {shinken, realm} = ctx.config.ryba
       poller = ctx.config.ryba.shinken.poller ?= {}

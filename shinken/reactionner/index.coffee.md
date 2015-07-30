@@ -8,7 +8,7 @@ and sends the results to the scheduler.
 
 ## Configure
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       require('../').configure ctx
       reactionner = ctx.config.ryba.shinken.reactionner ?= {}
       # Additionnal Modules to install
