@@ -84,14 +84,15 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       .then next
 
     module.exports.push name: 'Knox # Topology', handler: (ctx, next) ->
-      {knox, nameservice} = ctx.config.ryba
-      return next null, false
+      {knox} = ctx.config.ryba
+      topologies = for nameservice, topology of knox.topologies
+        source: "#{__dirname}/../resources/knox/topology.xml.j2"
+        local_source: true
+        destination: "#{knox.conf_dir}/topologies/#{nameservice}.xml"
+        context: topology
       ctx
       .remove
         destination: "#{knox.conf_dir}/topologies/sandbox.xml"
         not_if: nameservice is 'sandbox'
-      .hconfigure
-        destination: "#{knox.conf_dir}/topologies/#{nameservice}.xml"
-        properties: knox.topology
-        merge: true
+      .render topologies
       .then next

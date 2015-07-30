@@ -140,7 +140,7 @@ Oozie coord/bundle XMLs   ${cluster.staging-location}/workflows/{entity}/{entity
 Shared libs   {cluster.working}/{lib,libext}  falcon  755
 App logs  ${cluster.staging-location}/workflows/{entity}/{entity-name}/logs   falcon  777
 
-## Module Dependencies
+## Dependencies
 
     url = require 'url'
     quote = require 'regexp-quote'

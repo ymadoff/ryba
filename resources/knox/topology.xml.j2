@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<topology>
+    <gateway>{% for name, p in providers %}
+        <provider>
+            <name>{{ name }}</name>
+            <role>{{ p.role }}</role>
+            <enabled>true</enabled>{% for name, value in p.config %}
+            <param>
+                <name>{{ name }}</name>
+                <value>{{ value }}</value>
+            </param>{% endfor %}
+        </provider>{% endfor %}
+    </gateway>
+    {% for role, url in services %}
+    <service>
+        <role>{{ role }}</role>{% if url | isArray %}{% for u in url %}
+        <url>{{ u }}</url>{% endfor %}{% else %}
+        <url>{{ url }}</url>{% endif %}
+    </service>{% endfor %}
+</topology>
