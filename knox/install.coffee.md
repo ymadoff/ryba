@@ -47,7 +47,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Knox # Master Secret', handler: (ctx, next) ->
       {knox} = ctx.config.ryba
-      ctx.fs.exists '/usr/hdp/current/knox-server/data/security/mastertet', (err, exists) ->
+      ctx.fs.exists '/usr/hdp/current/knox-server/data/security/master', (err, exists) ->
         return next err, false if err or exists
         ctx.ssh.shell (err, stream) ->
           return next err if err
