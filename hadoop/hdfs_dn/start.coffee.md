@@ -9,13 +9,20 @@ and some may be inactive.
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/krb5_client/wait'
-    # module.exports.push 'ryba/hadoop/hdfs_nn/wait' # DN shall be independent from NN
     module.exports.push require('./index').configure
 
+## Start HDFS DataNode
+
+Start the HDFS DataNode server. You can also start the server manually with
+the following two commands:
+
+```
+service hadoop-hdfs-datanode start
+HADOOP_SECURE_DN_USER=hdfs /usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start datanode
+```
+
     module.exports.push name: 'HDFS DN # Start', label_true: 'STARTED', handler: (ctx, next) ->
-      return next new Error "Not an DataNode" unless ctx.has_module 'ryba/hadoop/hdfs_dn'
-      lifecycle.dn_start ctx, next
-
-## Dependencies
-
-    lifecycle = require '../../lib/lifecycle'
+      ctx.service_start
+        name: 'hadoop-hdfs-datanode'
+        if_exists: '/etc/init.d/hadoop-hdfs-datanode'
+      .then next

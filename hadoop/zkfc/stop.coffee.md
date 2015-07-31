@@ -16,15 +16,14 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
 ```
 
     module.exports.push name: 'ZKFC # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
-      ctx.service
-        srv_name: 'hadoop-hdfs-zkfc'
-        action: 'stop'
+      ctx.service_stop
+        name: 'hadoop-hdfs-zkfc'
         if_exists: '/etc/init.d/hadoop-hdfs-zkfc'
-      , next
+      .then next
 
     module.exports.push name: 'ZKFC # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
       return next() unless ctx.config.ryba.clean_logs
       ctx.execute
         cmd: 'rm /var/log/hadoop-hdfs/*/*-zkfc-*'
         code_skipped: 1
-      , next
+      .then next

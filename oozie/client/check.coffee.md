@@ -47,7 +47,8 @@
         rm_ctx = rm_ctxs[0]
         shortname = ''
       rm_address = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{shortname}"]
-      ctx.write [
+      ctx
+      .write
         content: """
           nameNode=#{core_site['fs.defaultFS']}
           jobTracker=#{rm_address}:8050
@@ -59,7 +60,7 @@
         uid: user.name
         gid: user.group
         eof: true
-      ,
+      .write
         content: """
         <workflow-app xmlns="uri:oozie:workflow:0.2" name="test-oozie-wf">
           <start to="move"/>
@@ -80,26 +81,24 @@
         uid: user.name
         gid: user.group
         eof: true
-      ], (err, written) ->
-        return next err if err
-        ctx.execute
-          cmd: mkcmd.test ctx, """
-          hdfs dfs -rm -r -skipTrash check-#{ctx.config.shortname}-oozie-fs 2>/dev/null
-          hdfs dfs -mkdir -p check-#{ctx.config.shortname}-oozie-fs
-          hdfs dfs -touchz check-#{ctx.config.shortname}-oozie-fs/source
-          hdfs dfs -put -f #{user.home}/check_oozie_fs/job.properties check-#{ctx.config.shortname}-oozie-fs
-          hdfs dfs -put -f #{user.home}/check_oozie_fs/workflow.xml check-#{ctx.config.shortname}-oozie-fs
-          export OOZIE_URL=#{oozie.site['oozie.base.url']}
-          oozie job -dryrun -config #{user.home}/check_oozie_fs/job.properties
-          jobid=`oozie job -run -config #{user.home}/check_oozie_fs/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
-          i=0
-          while [[ $i -lt 1000 ]] && [[ `oozie job -info $jobid | grep -e '^Status' | sed 's/^Status\\s\\+:\\s\\+\\(.*\\)$/\\1/'` == 'RUNNING' ]]
-          do ((i++)); sleep 1; done
-          oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
-          """
-          code_skipped: 2
-          not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{ctx.config.shortname}-oozie-fs/target"
-        , next
+      .execute
+        cmd: mkcmd.test ctx, """
+        hdfs dfs -rm -r -skipTrash check-#{ctx.config.shortname}-oozie-fs 2>/dev/null
+        hdfs dfs -mkdir -p check-#{ctx.config.shortname}-oozie-fs
+        hdfs dfs -touchz check-#{ctx.config.shortname}-oozie-fs/source
+        hdfs dfs -put -f #{user.home}/check_oozie_fs/job.properties check-#{ctx.config.shortname}-oozie-fs
+        hdfs dfs -put -f #{user.home}/check_oozie_fs/workflow.xml check-#{ctx.config.shortname}-oozie-fs
+        export OOZIE_URL=#{oozie.site['oozie.base.url']}
+        oozie job -dryrun -config #{user.home}/check_oozie_fs/job.properties
+        jobid=`oozie job -run -config #{user.home}/check_oozie_fs/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
+        i=0
+        while [[ $i -lt 1000 ]] && [[ `oozie job -info $jobid | grep -e '^Status' | sed 's/^Status\\s\\+:\\s\\+\\(.*\\)$/\\1/'` == 'RUNNING' ]]
+        do ((i++)); sleep 1; done
+        oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
+        """
+        code_skipped: 2
+        not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{ctx.config.shortname}-oozie-fs/target"
+      .then next
 
 ## Check MapReduce Workflow
 
@@ -116,7 +115,8 @@
       # Get the name of the user running the Oozie Server
       os_ctxs = ctx.contexts 'ryba/oozie/server', require('../server').configure
       {oozie} = os_ctxs[0].config.ryba
-      ctx.write [
+      ctx
+      .write
         content: """
           nameNode=#{core_site['fs.defaultFS']}
           jobTracker=#{rm_address}
@@ -130,7 +130,7 @@
         uid: user.name
         gid: user.group
         eof: true
-      ,
+      .write
         content: """
         <workflow-app name='check-#{ctx.config.shortname}-oozie-mr' xmlns='uri:oozie:workflow:0.4'>
           <start to='test-mr' />
@@ -178,35 +178,33 @@
         uid: user.name
         gid: user.group
         eof: true
-      ], (err, written) ->
-        return next err if err
-        ctx.execute
-          cmd: mkcmd.test ctx, """
-          # Prepare HDFS
-          hdfs dfs -rm -r -skipTrash check-#{ctx.config.shortname}-oozie-mr 2>/dev/null
-          hdfs dfs -mkdir -p check-#{ctx.config.shortname}-oozie-mr/input
-          echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{ctx.config.shortname}-oozie-mr/input/data
-          hdfs dfs -put -f #{user.home}/check_oozie_mr/workflow.xml check-#{ctx.config.shortname}-oozie-mr
-          # Extract Examples
-          if [ ! -d /var/tmp/oozie-examples ]; then
-            mkdir /var/tmp/oozie-examples
-            tar xzf /usr/hdp/current/oozie-client/doc/oozie-examples.tar.gz -C /var/tmp/oozie-examples
-          fi
-          hdfs dfs -put /var/tmp/oozie-examples/examples/apps/map-reduce/lib check-#{ctx.config.shortname}-oozie-mr
-          # Run Oozie
-          export OOZIE_URL=#{oozie.site['oozie.base.url']}
-          oozie job -dryrun -config #{user.home}/check_oozie_mr/job.properties
-          jobid=`oozie job -run -config #{user.home}/check_oozie_mr/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
-          # Check Job
-          i=0
-          echo $jobid
-          while [[ $i -lt 1000 ]] && [[ `oozie job -info $jobid | grep -e '^Status' | sed 's/^Status\\s\\+:\\s\\+\\(.*\\)$/\\1/'` == 'RUNNING' ]]
-          do ((i++)); sleep 1; done
-          oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
-          """
-          trap_on_error: false # or while loop will exit on first run
-          not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{ctx.config.shortname}-oozie-mr/output/_SUCCESS"
-        , next
+      .execute
+        cmd: mkcmd.test ctx, """
+        # Prepare HDFS
+        hdfs dfs -rm -r -skipTrash check-#{ctx.config.shortname}-oozie-mr 2>/dev/null
+        hdfs dfs -mkdir -p check-#{ctx.config.shortname}-oozie-mr/input
+        echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{ctx.config.shortname}-oozie-mr/input/data
+        hdfs dfs -put -f #{user.home}/check_oozie_mr/workflow.xml check-#{ctx.config.shortname}-oozie-mr
+        # Extract Examples
+        if [ ! -d /var/tmp/oozie-examples ]; then
+          mkdir /var/tmp/oozie-examples
+          tar xzf /usr/hdp/current/oozie-client/doc/oozie-examples.tar.gz -C /var/tmp/oozie-examples
+        fi
+        hdfs dfs -put /var/tmp/oozie-examples/examples/apps/map-reduce/lib check-#{ctx.config.shortname}-oozie-mr
+        # Run Oozie
+        export OOZIE_URL=#{oozie.site['oozie.base.url']}
+        oozie job -dryrun -config #{user.home}/check_oozie_mr/job.properties
+        jobid=`oozie job -run -config #{user.home}/check_oozie_mr/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
+        # Check Job
+        i=0
+        echo $jobid
+        while [[ $i -lt 1000 ]] && [[ `oozie job -info $jobid | grep -e '^Status' | sed 's/^Status\\s\\+:\\s\\+\\(.*\\)$/\\1/'` == 'RUNNING' ]]
+        do ((i++)); sleep 1; done
+        oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
+        """
+        trap_on_error: false # or while loop will exit on first run
+        not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{ctx.config.shortname}-oozie-mr/output/_SUCCESS"
+      .then next
 
 ## Check Pig Workflow
 
@@ -223,21 +221,22 @@
       # Get the name of the user running the Oozie Server
       os_ctxs = ctx.contexts 'ryba/oozie/server', require('../server').configure
       {oozie} = os_ctxs[0].config.ryba
-      ctx.write [
+      ctx
+      .write
         content: """
-          nameNode=#{core_site['fs.defaultFS']}
-          jobTracker=#{rm_address}
-          oozie.libpath=/user/#{oozie.user.name}/share/lib
-          queueName=default
-          basedir=${nameNode}/user/#{user.name}/check-#{ctx.config.shortname}-oozie-pig
-          oozie.wf.application.path=${basedir}
-          oozie.use.system.libpath=true
+        nameNode=#{core_site['fs.defaultFS']}
+        jobTracker=#{rm_address}
+        oozie.libpath=/user/#{oozie.user.name}/share/lib
+        queueName=default
+        basedir=${nameNode}/user/#{user.name}/check-#{ctx.config.shortname}-oozie-pig
+        oozie.wf.application.path=${basedir}
+        oozie.use.system.libpath=true
         """
         destination: "#{user.home}/check_oozie_pig/job.properties"
         uid: user.name
         gid: user.group
         eof: true
-      ,
+      .write
         content: """
         <workflow-app name='check-#{ctx.config.shortname}-oozie-pig' xmlns='uri:oozie:workflow:0.4'>
           <start to='test-pig' />
@@ -272,7 +271,7 @@
         uid: user.name
         gid: user.group
         eof: true
-      ,
+      .write
         content: """
         A = load '$INPUT';
         B = foreach A generate flatten(TOKENIZE((chararray)$0)) as word;
@@ -284,29 +283,65 @@
         uid: user.name
         gid: user.group
         eof: true
-      ], (err, written) ->
-        return next err if err
-        ctx.execute
-          cmd: mkcmd.test ctx, """
-          hdfs dfs -rm -r -skipTrash check-#{ctx.config.shortname}-oozie-pig 2>/dev/null
-          hdfs dfs -mkdir -p check-#{ctx.config.shortname}-oozie-pig/input
-          echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{ctx.config.shortname}-oozie-pig/input/data
-          hdfs dfs -put -f #{user.home}/check_oozie_pig/workflow.xml check-#{ctx.config.shortname}-oozie-pig
-          hdfs dfs -put -f #{user.home}/check_oozie_pig/wordcount.pig check-#{ctx.config.shortname}-oozie-pig
-          export OOZIE_URL=#{oozie.site['oozie.base.url']}
-          oozie job -dryrun -config #{user.home}/check_oozie_pig/job.properties
-          jobid=`oozie job -run -config #{user.home}/check_oozie_pig/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
-          i=0
-          echo $jobid
-          while [[ $i -lt 1000 ]] && [[ `oozie job -info $jobid | grep -e '^Status' | sed 's/^Status\\s\\+:\\s\\+\\(.*\\)$/\\1/'` == 'RUNNING' ]]
-          do ((i++)); sleep 1; done
-          oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
-          """
-          trap_on_error: false # or while loop will exit on first run
-          not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{ctx.config.shortname}-oozie-pig/output/_SUCCESS"
-        , next
+      .execute
+        cmd: mkcmd.test ctx, """
+        hdfs dfs -rm -r -skipTrash check-#{ctx.config.shortname}-oozie-pig 2>/dev/null
+        hdfs dfs -mkdir -p check-#{ctx.config.shortname}-oozie-pig/input
+        echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{ctx.config.shortname}-oozie-pig/input/data
+        hdfs dfs -put -f #{user.home}/check_oozie_pig/workflow.xml check-#{ctx.config.shortname}-oozie-pig
+        hdfs dfs -put -f #{user.home}/check_oozie_pig/wordcount.pig check-#{ctx.config.shortname}-oozie-pig
+        export OOZIE_URL=#{oozie.site['oozie.base.url']}
+        oozie job -dryrun -config #{user.home}/check_oozie_pig/job.properties
+        jobid=`oozie job -run -config #{user.home}/check_oozie_pig/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
+        i=0
+        echo $jobid
+        while [[ $i -lt 1000 ]] && [[ `oozie job -info $jobid | grep -e '^Status' | sed 's/^Status\\s\\+:\\s\\+\\(.*\\)$/\\1/'` == 'RUNNING' ]]
+        do ((i++)); sleep 1; done
+        oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
+        """
+        trap_on_error: false # or while loop will exit on first run
+        not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{ctx.config.shortname}-oozie-pig/output/_SUCCESS"
+      .then next
 
 ## Check HCat Workflow
+
+# When Hive metastore is set in HA (High Availability) with Kerberos authentication, Oozie Hive/Pig action needs to be configured with HCat credential with HA mode. The following example demonstrates how to configure Oozie Hive/Pig action to work with Hive metastore HA:
+
+# <workflow-app xmlns="uri:oozie:workflow:0.5" name="pig-wf">
+#   <credentials>
+#     <credential name='my_auth' type='hcat'>
+#       <property>
+#         <name>hcat.metastore.uri</name
+#         <value>thrift://hdpsecc04.secc.hwxsup.com:9083,thrift://hdpsecc02.secc.hwxsup.com:9083</value>
+#       </property>
+#       <property>
+#         <name>hcat.metastore.principal</name>
+#         <value>hive/_HOST@HDPSECC.SUPSECC.COM</value>
+#       </property>
+#    </credential>
+#   </credentials>
+#   <start to="pig-node"/>
+#   <action name="pig-node" cred="my_auth">
+#     <pig>
+#       <job-tracker>${jobTracker}</job-tracker>
+#       <name-node>${nameNode}</name-node>
+#       <job-xml>hive-site.xml</job-xml>
+#       <configuration>
+#         <property>
+#           <name>mapreduce.job.queuename</name>
+#           <value>${queueName}</value>
+#         </property>
+#       </configuration>
+#       <script>testscript.pig</script>
+#     </pig>
+#    <ok to="end"/>
+#    <error to="fail"/>
+#   </action>
+#   <kill name="fail">
+#     <message>Pig failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+#   </kill>
+#   <end name="end"/>
+# </workflow-app>
 
     module.exports.push skip: true, name: 'Oozie Client # Check HCat Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
       {force_check, user, core_site, yarn, oozie} = ctx.config.ryba
@@ -323,21 +358,22 @@
       {oozie} = os_ctxs[0].config.ryba
       # Hive
       hcat_ctxs = ctx.contexts 'ryba/hive/hcatalog', require('../../hive/hcatalog').configure
-      ctx.write [
+      ctx
+      .write
         content: """
-          nameNode=#{core_site['fs.defaultFS']}
-          jobTracker=#{rm_address}
-          oozie.libpath=/user/#{oozie.user.name}/share/lib
-          queueName=default
-          basedir=${nameNode}/user/#{user.name}/check-#{ctx.config.shortname}-oozie-pig
-          oozie.wf.application.path=${basedir}
-          oozie.use.system.libpath=true
+        nameNode=#{core_site['fs.defaultFS']}
+        jobTracker=#{rm_address}
+        oozie.libpath=/user/#{oozie.user.name}/share/lib
+        queueName=default
+        basedir=${nameNode}/user/#{user.name}/check-#{ctx.config.shortname}-oozie-pig
+        oozie.wf.application.path=${basedir}
+        oozie.use.system.libpath=true
         """
         destination: "#{user.home}/check_oozie_pig/job.properties"
         uid: user.name
         gid: user.group
         eof: true
-      ,
+      .write
         content: """
         <workflow-app name='check-#{ctx.config.shortname}-oozie-pig' xmlns='uri:oozie:workflow:0.4'>
           <credentials>
@@ -384,7 +420,7 @@
         uid: user.name
         gid: user.group
         eof: true
-      ,
+      .write
         content: """
         A = load '$INPUT';
         B = foreach A generate flatten(TOKENIZE((chararray)$0)) as word;
@@ -396,27 +432,25 @@
         uid: user.name
         gid: user.group
         eof: true
-      ], (err, written) ->
-        return next err if err
-        ctx.execute
-          cmd: mkcmd.test ctx, """
-          hdfs dfs -rm -r -skipTrash check-#{ctx.config.shortname}-oozie-pig 2>/dev/null
-          hdfs dfs -mkdir -p check-#{ctx.config.shortname}-oozie-pig/input
-          echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{ctx.config.shortname}-oozie-pig/input/data
-          hdfs dfs -put -f #{user.home}/check_oozie_pig/workflow.xml check-#{ctx.config.shortname}-oozie-pig
-          hdfs dfs -put -f #{user.home}/check_oozie_pig/wordcount.pig check-#{ctx.config.shortname}-oozie-pig
-          export OOZIE_URL=#{oozie.site['oozie.base.url']}
-          oozie job -dryrun -config #{user.home}/check_oozie_pig/job.properties
-          jobid=`oozie job -run -config #{user.home}/check_oozie_pig/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
-          i=0
-          echo $jobid
-          while [[ $i -lt 1000 ]] && [[ `oozie job -info $jobid | grep -e '^Status' | sed 's/^Status\\s\\+:\\s\\+\\(.*\\)$/\\1/'` == 'RUNNING' ]]
-          do ((i++)); sleep 1; done
-          oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
-          """
-          trap_on_error: false # or while loop will exit on first run
-          not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -d check-#{ctx.config.shortname}-oozie-pig/output"
-        , next
+      .execute
+        cmd: mkcmd.test ctx, """
+        hdfs dfs -rm -r -skipTrash check-#{ctx.config.shortname}-oozie-pig 2>/dev/null
+        hdfs dfs -mkdir -p check-#{ctx.config.shortname}-oozie-pig/input
+        echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{ctx.config.shortname}-oozie-pig/input/data
+        hdfs dfs -put -f #{user.home}/check_oozie_pig/workflow.xml check-#{ctx.config.shortname}-oozie-pig
+        hdfs dfs -put -f #{user.home}/check_oozie_pig/wordcount.pig check-#{ctx.config.shortname}-oozie-pig
+        export OOZIE_URL=#{oozie.site['oozie.base.url']}
+        oozie job -dryrun -config #{user.home}/check_oozie_pig/job.properties
+        jobid=`oozie job -run -config #{user.home}/check_oozie_pig/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
+        i=0
+        echo $jobid
+        while [[ $i -lt 1000 ]] && [[ `oozie job -info $jobid | grep -e '^Status' | sed 's/^Status\\s\\+:\\s\\+\\(.*\\)$/\\1/'` == 'RUNNING' ]]
+        do ((i++)); sleep 1; done
+        oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
+        """
+        trap_on_error: false # or while loop will exit on first run
+        not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -d check-#{ctx.config.shortname}-oozie-pig/output"
+      .then next
 
 # Module Dependencies
 

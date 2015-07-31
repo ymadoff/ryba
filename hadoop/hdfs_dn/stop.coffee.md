@@ -10,11 +10,21 @@ associated the NameNodes.
 
 ## Stop Service
 
-    module.exports.push name: 'HDFS DN # Stop Service', label_true: 'STOPPED', handler: (ctx, next) ->
-      ctx.execute
-        cmd: "service hadoop-hdfs-datanode stop"
-        code_skipped: 3
-      , next
+## Stop Service
+
+Stop the HDFS Namenode service. You can also stop the server manually with one of
+the following two commands:
+
+```
+service hadoop-hdfs-datanode stop
+/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf stop datanode
+```
+
+    module.exports.push name: 'HDFS DN # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
+      ctx.service_stop
+        name: 'hadoop-hdfs-datanode'
+        if_exists: '/etc/init.d/hadoop-hdfs-datanode'
+      .then next
 
 ## Stop Clean Logs
 
@@ -25,6 +35,3 @@ associated the NameNodes.
         code_skipped: 1
       , next
 
-## Dependencies
-
-    lifecycle = require '../../lib/lifecycle'

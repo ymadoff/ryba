@@ -6,7 +6,10 @@ information for the applications running inside YARN.
 
     module.exports = []
 
+## Configuration
+
     module.exports.configure = (ctx) ->
+      # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.0/bk_yarn_resource_mgt/content/ref-c2f35f55-fa15-4154-b80a-36df2db297d5.1.html
       # require('../core').configure ctx
       require('../yarn_client').configure ctx
       {yarn, core_site, realm} = ctx.config.ryba
@@ -17,7 +20,7 @@ information for the applications running inside YARN.
       yarn.site['yarn.timeline-service.address'] ?= "#{hostname}:10200"
       yarn.site['yarn.timeline-service.webapp.address'] ?= "#{hostname}:8188"
       yarn.site['yarn.timeline-service.webapp.https.address'] ?= "#{hostname}:8190"
-      yarn.site['yarn.timeline-service.handler-thread-count'] ?= "10"
+      yarn.site['yarn.timeline-service.handler-thread-count'] ?= "100" # HDP default is "10"
       yarn.site['yarn.timeline-service.http-cross-origin.enabled'] ?= "true"
       yarn.site['yarn.timeline-service.http-cross-origin.allowed-origins'] ?= "*"
       yarn.site['yarn.timeline-service.http-cross-origin.allowed-methods'] ?= "GET,POST,HEAD"
@@ -38,7 +41,7 @@ information for the applications running inside YARN.
       yarn.site['yarn.timeline-service.store-class'] ?= "org.apache.hadoop.yarn.server.timeline.LeveldbTimelineStore"
       yarn.site['yarn.timeline-service.leveldb-timeline-store.path'] ?= "/var/yarn/timeline"
       yarn.site['yarn.timeline-service.ttl-enable'] ?= "true"
-      yarn.site['yarn.timeline-service.ttl-ms'] ?= "#{604800000 * 2}" # 14 days
+      yarn.site['yarn.timeline-service.ttl-ms'] ?= "#{604800000 * 2}" # 14 days, HDP default is "604800000"
       # Kerberos Authentication
       yarn.site['yarn.timeline-service.principal'] ?= "ats/_HOST@#{realm}"
       yarn.site['yarn.timeline-service.keytab'] ?= '/etc/security/keytabs/ats.service.keytab'
@@ -48,7 +51,7 @@ information for the applications running inside YARN.
       # Timeline Server Authorization (ACLs)
       yarn.site['yarn.acl.enable'] ?= "true"
       yarn.site['yarn.admin.acl'] ?= ""
-      # SSL
+      # SSL, must be added to "core-site.xml"
       # yarn.site['hadoop.ssl.require.client.cert'] ?= "false"
       # yarn.site['hadoop.ssl.hostname.verifier'] ?= "DEFAULT"
       # yarn.site['hadoop.ssl.keystores.factory.class'] ?= "org.apache.hadoop.security.ssl.FileBasedKeyStoresFactory"

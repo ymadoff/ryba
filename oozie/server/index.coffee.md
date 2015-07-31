@@ -133,10 +133,10 @@ Example
       # throw new Error "Missing extjs.destination" unless ryba.extjs.destination
       # Note, we might also enrich "oozie.credentials.credentialclasses"
       # For example
-      # ryba.oozie.site['oozie.credentials.credentialclasses'] = """
-      # hcat=org.apache.oozie.action.hadoop.HCatCredentials,
-      # hbase=org.apache.oozie.action.hadoop.HbaseCredentials
-      # """
+      ryba.oozie.site['oozie.credentials.credentialclasses'] = """
+      hcat=org.apache.oozie.action.hadoop.HCatCredentials,
+      hbase=org.apache.oozie.action.hadoop.HbaseCredentials
+      """
 
 ## Configuration for Proxy Users
 

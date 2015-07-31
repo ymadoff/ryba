@@ -38,9 +38,8 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
 
     module.exports.push name: 'ZKFC # Start', label_true: 'STARTED', handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      ctx.service
-        srv_name: 'hadoop-hdfs-zkfc'
-        action: 'start'
+      ctx.service_start
+        name: 'hadoop-hdfs-zkfc'
       .then next
 
 ## Dependencies
