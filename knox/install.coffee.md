@@ -74,6 +74,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       # su -l knox -c '$gateway_home/bin/knoxcli.sh create-master'
       # MySecret
 
+## Configure
+
     module.exports.push name: 'Knox # Configure', skip: true, handler: (ctx, next) ->
       {knox} = ctx.config.ryba
       ctx
@@ -83,16 +85,40 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         merge: true
       .then next
 
-    module.exports.push name: 'Knox # Topology', handler: (ctx, next) ->
+
+## Topologies
+
+    module.exports.push name: 'Knox # Topologies', handler: (ctx, next) ->
       {knox} = ctx.config.ryba
-      topologies = for nameservice, topology of knox.topologies
-        source: "#{__dirname}/../resources/knox/topology.xml.j2"
-        local_source: true
-        destination: "#{knox.conf_dir}/topologies/#{nameservice}.xml"
-        context: topology
+      write = []
+      for nameservice, topology of knox.topologies
+        doc = builder.create 'configuration', version: '1.0', encoding: 'UTF-8'
+        gateway = doc.ele 'gateway'
+        for name, p of topology.providers
+          provider = gateway.ele 'provider'
+          provider.ele 'name', name
+          provider.ele 'role', p.role
+          provider.ele 'enabled', 'true'
+          for name, value of p.config
+            param = provider.ele 'param'
+            param.ele 'name', name
+            param.ele 'value', value
+        for role, url of topology.services
+          service = doc.ele 'service'
+          service.ele 'role', role.toUpperCase()
+          if Array.isArray url then for u in url
+            service.ele 'url', u
+          else service.ele 'url', url
+        write.push
+          destination: "#{knox.conf_dir}/topologies/#{nameservice}.xml"
+          content: doc.end pretty: true
       ctx
       .remove
-        destination: "#{knox.conf_dir}/topologies/sandbox.xml"
-        not_if: nameservice is 'sandbox'
-      .render topologies
+         destination: "#{knox.conf_dir}/topologies/sandbox.xml"
+         not_if: 'sandbox' in Object.keys knox.topologies
+      .write write
       .then next
+
+## Dependencies
+
+    builder = require 'xmlbuilder'
