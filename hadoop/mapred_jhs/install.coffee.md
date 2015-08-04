@@ -51,18 +51,6 @@ Install the "hadoop-mapreduce-historyserver" service, symlink the rc.d startup
 script inside "/etc/init.d" and activate it on startup.
 
     module.exports.push name: 'MapReduce JHS # Service', handler: (ctx, next) ->
-      # ctx.hdp_service
-      #   name: 'hadoop-mapreduce-historyserver'
-      #   write: [
-      #     match: /^\. \$CONF_DIR\/mapred-env\.sh .*$/m
-      #     replace: '. $CONF_DIR/mapred-env.sh # RYBA FIX pid dir'
-      #     append: '. $CONF_DIR/hadoop-env.sh'
-      #   ,
-      #     match:  /^HADOOP_PID_DIR=".*" # RYBA .*$/m
-      #     replace: 'HADOOP_PID_DIR="${HADOOP_MAPRED_PID_DIR:-$HADOOP_PID_DIR}" # RYBA FIX pid dir'
-      #     before: /^PIDFILE=".*"$/m
-      #   ]
-      # .then next
       ctx
       .service
         name: 'hadoop-mapreduce-historyserver'
@@ -70,7 +58,7 @@ script inside "/etc/init.d" and activate it on startup.
         name: 'hadoop-mapreduce-client' # Not checked
         name: 'hadoop-mapreduce-historyserver'
       .write
-        source: "#{__dirname}/hadoop-mapreduce-historyserver"
+        source: "#{__dirname}/../resources/hadoop-mapreduce-historyserver"
         local_source: true
         destination: '/etc/init.d/hadoop-mapreduce-historyserver'
         mode: 0o0755
