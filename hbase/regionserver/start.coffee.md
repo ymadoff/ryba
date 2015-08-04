@@ -13,7 +13,7 @@ following two commands:
 
 ```
 service hbase-regionserver start
-su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start regionserver"
+su -l hbase -c "/usr/hdp/current/hbase-regionserver/bin/hbase-daemon.sh --config /etc/hbase/conf start regionserver"
 ```
 
     module.exports.push name: 'HBase RegionServer # Start', label_true: 'STARTED', handler: (ctx, next) ->
