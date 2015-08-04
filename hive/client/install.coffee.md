@@ -11,7 +11,8 @@
     module.exports.push require('./index').configure
 
     module.exports.push name: 'Hive Client # Service', handler: (ctx, next) ->
-      ctx.service
+      ctx
+      .service
         name: 'hive-hcatalog'
       .then next
 
