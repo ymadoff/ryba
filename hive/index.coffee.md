@@ -104,19 +104,22 @@ hive:x:493:
 
     module.exports.push name: 'Hive & HCat # Users & Groups', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
-      ctx.group hive.group, (err, gmodified) ->
-        return next err if err
-        ctx.user hive.user, (err, umodified) ->
-          next err, gmodified or umodified
+      ctx
+      .group hive.group
+      .user hive.user
+      .then next
 
 ## Install
 
 Instructions to [install the Hive and HCatalog RPMs](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3/bk_installing_manually_book/content/rpm-chap6-1.html)
 
     module.exports.push name: 'Hive & HCat # Install', timeout: -1, handler: (ctx, next) ->
-      ctx.service
+      ctx
+      .service
         name: 'hive'
-      , next
+      .hdp_select
+        name: 'hive-webhcat' # HIVE_AUX_JARS_PATH fix
+      .then next
 
 ## Environment
 
@@ -126,20 +129,22 @@ present on a fresh install.
     module.exports.push name: 'Hive & HCat # Env', timeout: -1, handler: (ctx, next) ->
       {java_home} = ctx.config.java
       {hive} = ctx.config.ryba
-      ctx.write
+      ctx
+      .write
         source: "#{__dirname}/../resources/hive/hive-env.sh"
         destination: "#{hive.conf_dir}/hive-env.sh"
         local_source: true
         not_if_exists: true
-      , (err) ->
-        return next err if err
-        ctx.write
-          destination: "#{hive.conf_dir}/hive-env.sh"
-          write: [
-            match: /^export JAVA_HOME=.*$/m
-            replace: "export JAVA_HOME=#{java_home}"
-          ,
-            match: /^export HIVE_AUX_JARS_PATH=.*$/m
-            replace: 'export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar} # RYBA FIX'
-          ]
-        , next
+      .write
+        destination: "#{hive.conf_dir}/hive-env.sh"
+        write: [
+          match: /^export JAVA_HOME=.*$/m
+          replace: "export JAVA_HOME=#{java_home}"
+        ,
+          match: /^export HIVE_AUX_JARS_PATH=.*$/m
+          replace: 'export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar} # RYBA FIX'
+        ]
+      .then next
+
+
+
