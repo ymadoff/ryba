@@ -1,4 +1,4 @@
-
+  
 # Hive Client Check
 
 This module check both the HCatalog and Hive Server2 servers respectively using
@@ -22,7 +22,7 @@ hive -hiveconf hive.root.logger=DEBUG,console
 Use the [Beeline][beeline] JDBC client to execute SQL queries.
 
 ```
-alias hs2=\'/usr/bin/beeline -d "org.apache.hive.jdbc.HiveDriver" -u "jdbc:hive2://{fqdn}:10001/;principal=hive/{fqdn}@{realm}"
+/usr/bin/beeline -d "org.apache.hive.jdbc.HiveDriver" -u "jdbc:hive2://{fqdn}:10001/;principal=hive/{fqdn}@{realm}"
 ```
 
 The JDBC url may be provided inside the "-u" option or after the "!connect"
