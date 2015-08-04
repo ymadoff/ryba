@@ -84,18 +84,16 @@ script inside "/etc/init.d" and activate it on startup.
 Enrich the file "mapred-env.sh" present inside the Hadoop configuration
 directory with the location of the directory storing the process pid.
 
+Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
+
     module.exports.push name: 'MapReduce JHS # Environnement', handler: (ctx, next) ->
       {mapred, hadoop_conf_dir} = ctx.config.ryba
-      ctx.write
+      @render
         destination: "#{hadoop_conf_dir}/mapred-env.sh"
-        source: "#{__dirname}/../../resources/core_hadoop/mapred-env.sh"
+        source: "#{__dirname}/../resources/mapred-env.sh"
+        context: @config
         local_source: true
         backup: true
-        write: [
-          match: /^export HADOOP_MAPRED_PID_DIR=.*$/m
-          replace: "export HADOOP_MAPRED_PID_DIR=\"#{mapred.pid_dir}\" # RYBA CONF \"ryba.mapred.pid_dir\", DONT OVEWRITE"
-          before: /^#export HADOOP_MAPRED_LOG_DIR.*/m
-        ]
       .then next
 
     module.exports.push name: 'MapReduce JHS # Kerberos', handler: (ctx, next) ->

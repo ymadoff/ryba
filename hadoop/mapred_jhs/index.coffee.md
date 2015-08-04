@@ -16,6 +16,7 @@ Now the jobHistory Server tends to be replace by the Yarn timeline server.
       # require('./mapred').configure ctx
       {ryba} = ctx.config
       ryba.mapred ?= {}
+      ryba.mapred.heapsize ?= '900'
       ryba.mapred.pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
       ryba.mapred.log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
       ryba.mapred.site ?= {}
