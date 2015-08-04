@@ -6,7 +6,8 @@
     module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/core/yum'
     module.exports.push require '../lib/hconfigure'
-    module.exports.push require('./index').configure
+    module.exports.push require '../lib/write_jaas'
+    module.exports.push require('./').configure
 
 ## Users & Groups
 
@@ -76,7 +77,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Configure
 
-    module.exports.push name: 'Knox # Configure', skip: true, handler: (ctx, next) ->
+    module.exports.push name: 'Knox # Configure', handler: (ctx, next) ->
       {knox} = ctx.config.ryba
       ctx
       .hconfigure
@@ -85,6 +86,35 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         merge: true
       .then next
 
+## Kerberos
+
+    module.exports.push name: 'Knox # Kerberos', handler: (ctx, next) ->
+      {knox, realm} = ctx.config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
+      ctx.krb5_addprinc
+        principal: knox.krb5_user.principal
+        randkey: true
+        keytab: knox.krb5_user.keytab
+        uid: knox.user.name
+        gid: knox.group.name
+        kadmin_principal: kadmin_principal
+        kadmin_password: kadmin_password
+        kadmin_server: admin_server
+      .write_jaas
+        destination: knox.site['java.security.auth.login.config']
+        content: 'com.sun.security.jgss.initiate':
+          principal: knox.krb5_user.principal
+          keyTab: knox.krb5_user.keytab
+          renewTGT: true
+          doNotPrompt: true
+          isInitiator: true
+          useTicketCache: true
+          client: true
+        no_entry_check: true
+        uid: knox.user.name
+        gid: knox.group.name
+        mode: 0o700
+      .then next
 
 ## Topologies
 

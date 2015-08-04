@@ -35,11 +35,18 @@ with Hadoop clusters.
       knox.group.name ?= 'knox'
       knox.group.system ?= true
       knox.user.gid = knox.group.name
+      # Kerberos
+      knox.krb5_user ?= {}
+      knox.krb5_user.principal ?= "#{knox.user.name}/#{ctx.config.host}@#{ctx.config.ryba.realm}"
+      knox.krb5_user.keytab ?= '/etc/security/keytabs/knox.service.keytab'
       # Security
       knox.master_secret ?= 'knox_master_secret_123'
       # Configuration
       knox.site ?= {}
       knox.site['gateway.port'] ?= '8443'
+      knox.site['gateway.path'] ?= 'gateway'
+      knox.site['java.security.krb5.conf'] ?= '/etc/krb5.conf'
+      knox.site['java.security.auth.login.config'] ?= "#{knox.conf_dir}/knox.jaas"
       knox.site['gateway.hadoop.kerberos.secured'] ?= 'true'
       # # Services
       # rm_contexts = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
@@ -47,6 +54,7 @@ with Hadoop clusters.
       # rm_address = rm_contexts[0].config.ryba.yarn.site["yarn.resourcemanager.address#{rm_shortname}"]
       #
       # [webhdfs_host] = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
+      knox.site['sun.security.krb5.debug'] ?= 'true'
       # webhcat_host = ctx.host_with_module 'ryba/hive/webhcat'
       # webhcat_port = webhcat.site['templeton.port']
       # hbase_host = ctx.host_with_module 'ryba/hbase/master'
