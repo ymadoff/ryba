@@ -75,7 +75,7 @@ engine.
         db = "check_#{ctx.config.shortname}_hive_hcatalog_mr_#{hcat_ctx.config.shortname}"
         ctx.execute
           cmd: mkcmd.test ctx, """
-          hdfs dfs -rm -r #{directory} || true
+          hdfs dfs -rm -r -skipTrash #{directory} || true
           hdfs dfs -mkdir -p #{directory}/my_db/my_table
           echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - #{directory}/my_db/my_table/data
           hive -e "
