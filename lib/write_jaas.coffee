@@ -39,8 +39,8 @@ module.exports = (ctx) ->
     content_jaas = ""
     return callback Error "Required option 'content'" unless options.content
     for type, properties of options.content
-      type = "#{type.charAt(0).toUpperCase()}#{type.slice 1}"
-      throw Error 'Invalid property type' unless type in ['Client', 'Server']
+      # type = "#{type.charAt(0).toUpperCase()}#{type.slice 1}"
+      throw Error 'Invalid property type' unless type in ['Client', 'Server'] or options.no_entry_check
       content_jaas += "#{type} {\n"
       # Validation and Normalization
       throw Error 'Invalid keytab option' if properties.keyTab and typeof properties.keyTab isnt 'string'
@@ -61,10 +61,9 @@ module.exports = (ctx) ->
       if properties.keyTab or properties.useTicketCache is 'true'
         content_jaas += '  com.sun.security.auth.module.Krb5LoginModule required\n'
         for property, value of properties
-          value = "\"#{value}\"" unless value in ['true', 'false']
+          value = "\"#{value}\"" unless value in [true, false, 'true', 'false']
           content_jaas += "  #{property}=#{value}\n"
         content_jaas = content_jaas.slice(0, -1) + ';\n'
       content_jaas += '};\n'
     options.content = content_jaas
     ctx.write options, callback
-
