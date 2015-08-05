@@ -155,12 +155,7 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
       {java_home} = ctx.config.java
       {oozie} = ctx.config.ryba
       # CATALINA_OPTS="-Djavax.net.ssl.trustStore=/etc/hadoop/conf/truststore -Djavax.net.ssl.trustStorePassword=ryba123"
-      ctx
-      .write
-        source: "#{__dirname}/../../resources/oozie/oozie-env.sh"
-        destination: "#{oozie.conf_dir}/oozie-env.sh"
-        local_source: true
-        write: [
+      writes = [
           match: /^export JAVA_HOME=.*$/mg
           replace: "export JAVA_HOME=#{java_home}"
           append: true
@@ -190,10 +185,6 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
           replace: "export OOZIE_DATA=#{oozie.data}"
           append: true
         ,
-          match: /^export OOZIE_DATA=.*$/mg
-          replace: "export OOZIE_DATA=#{oozie.data}"
-          append: true
-        ,
           match: /^export OOZIE_HTTPS_KEYSTORE_FILE=.*$/mg
           replace: "export OOZIE_HTTPS_KEYSTORE_FILE=#{oozie.keystore_file}"
           append: true
@@ -201,7 +192,63 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
           match: /^export OOZIE_HTTPS_KEYSTORE_PASS=.*$/mg
           replace: "export OOZIE_HTTPS_KEYSTORE_PASS=#{oozie.keystore_pass}"
           append: true
+        ,
+          match: /^export OOZIE_LOG=.*$/mg
+          replace: "export OOZIE_LOG=#{oozie.log_dir}"
+          append: true
         ]
+      # Append the Log4J configuration
+      if oozie.log4j.extra_appender
+        writes.push
+            match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.extra_appender=(.*)/m
+            replace: """
+            export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.extra_appender=,#{oozie.log4j.extra_appender}"
+            """
+            append: true
+        # Append the configuration of the SocketAppender
+        if oozie.log4j.extra_appender == "socket_client"
+          writes.push
+              match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.remote_host=(.*)/m
+              replace: """
+              export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.remote_host=#{oozie.log4j.remote_host}"
+              """
+              append: true
+            ,
+              match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.remote_port=(.*)/m
+              replace: """
+              export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.remote_port=#{oozie.log4j.remote_port}"
+              """
+              append: true
+        else
+          writes.push
+              match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.remote_host=(.*)/m
+              replace: ""  
+            ,
+              match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.remote_port=(.*)/m
+              replace: ""  
+        # Append the configuration of the SocketHubAppender
+        if oozie.log4j.extra_appender == "socket_server"
+          writes.push
+              match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.server_port=(.*)/m
+              replace: """
+              export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.server_port=#{oozie.log4j.server_port}"
+              """
+              append: true
+        else
+          writes.push
+              match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.server_port=(.*)/m
+              replace: ""
+      else   
+        writes.push
+            match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.extra_appender=(.*)/m
+            replace: ""
+
+      ctx
+      .write
+        source: "#{__dirname}/../../resources/oozie/oozie-env.sh"
+        destination: "#{oozie.conf_dir}/oozie-env.sh"
+        local_source: true
+        write: writes
         uid: oozie.user.name
         gid: oozie.group.name
         mode: 0o0755
@@ -218,6 +265,18 @@ Install the ExtJS Javascript library as part of enabling the Oozie Web Console.
         source: '/usr/share/HDP-oozie/ext-2.2.zip'
         destination: '/usr/hdp/current/oozie-client/libext/'
       .then (err, copied) ->
+        return next err, copied
+
+# HBase credentials
+
+Install the HBase Libs as part of enabling the Oozie Unified Credentials with HBase.
+
+    module.exports.push name: 'Oozie Server # HBase Libs', handler: (ctx, next) ->
+      ctx
+      .copy
+        source: '/usr/hdp/current/hbase-client/hbase-commons.jar'
+        destination: '/usr/hdp/current/oozie-client/libserver/
+'      .then (err, copied) ->
         return next err, copied
 
 # LZO
@@ -494,7 +553,13 @@ the ShareLib contents without having to go into HDFS.
     module.exports.push name: 'Oozie Server # Log4J', handler: (ctx, next) ->
       # Instructions mention updating convertion pattern to the same value as
       # default, skip for now
-      next()
+      {oozie} = ctx.config.ryba
+      ctx
+      .write
+        destination: "#{oozie.conf_dir}/oozie-log4j.properties"
+        source: "#{__dirname}/../../resources/oozie/oozie-log4j.properties"
+        local_source: true
+      .then next
 
 
     module.exports.push 'ryba/oozie/server/start'

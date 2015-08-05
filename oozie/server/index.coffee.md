@@ -128,6 +128,10 @@ Example
         'org.apache.oozie.service.XLogStreamingService'
         'org.apache.oozie.service.JvmPauseMonitorService'
       ].join(',')
+      oozie.site['oozie.credentials.credentialclasses'] = "
+        hcat=org.apache.oozie.action.hadoop.HCatCredentials,
+        hbase=org.apache.oozie.action.hadoop.HbaseCredentials
+        "
       # ryba.extjs ?= {}
       # throw new Error "Missing extjs.source" unless ryba.extjs.source
       # throw new Error "Missing extjs.destination" unless ryba.extjs.destination
@@ -206,6 +210,12 @@ Example
       oozie.hadoop_config['yarn.resourcemanager.principal'] ?= "yarn/#{ryba.static_host}@#{ryba.realm}"
       oozie.hadoop_config['dfs.namenode.kerberos.principal'] ?= "hdfs/#{ryba.static_host}@#{ryba.realm}"
       oozie.hadoop_config['mapreduce.framework.name'] ?= "yarn"
+
+## Configuration for Log4J
+
+      ryba.oozie.log4j ?= {}
+      ryba.oozie.log4j.extra_appender = "socket_server" if ryba.oozie.log4j.server_port?
+      ryba.oozie.log4j.extra_appender = "socket_client" if ryba.oozie.log4j.remote_host? && ryba.oozie.log4j.remote_port?
 
 ## Commands
 
