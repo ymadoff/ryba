@@ -6,7 +6,6 @@ and consumer Kafka components.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require '../lib/hdp_select'
 
 ## Configure
 
@@ -49,17 +48,4 @@ kafka:x:496:kafka
       ctx
       .group kafka.group
       .user kafka.user
-      .then next
-
-## Package
-
-Install the Kafka broker package and set it to the latest version. Note, there
-are no "kafka-producer" nor "kafka-consumer" directories.
-
-    module.exports.push name: 'Kafka Broker # Package', handler: (ctx, next) ->
-      ctx
-      .service
-        name: 'kafka'
-      .hdp_select
-        name: 'kafka-broker'
       .then next
