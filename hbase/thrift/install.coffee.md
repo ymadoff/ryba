@@ -11,9 +11,9 @@ have usecase for it yet.
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/hbase'
-    module.exports.push require '../../lib/hconfigure'
     module.exports.push require('./index').configure
-    url = require 'url'
+    module.exports.push require '../../lib/hconfigure'
+    module.exports.push require '../../lib/hdp_select'
 
 ## IPTables
 
@@ -163,7 +163,7 @@ TODO: Installing Thrift Compiler
 
     module.exports.push name: 'Thrift # Install Compiler', timeout: -1, handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
-      ctx.log "Check if the Thrift Compiler is installed "
+      # Check if Thrift Compiler is installed
       ctx.execute
         cmd: "compiler --version | egrep '.*[0-9]\\.[0-9]\\.[0-9]' | awk '{ print $4 }'"
       , (err, executed, stdout) ->
@@ -174,37 +174,48 @@ TODO: Installing Thrift Compiler
           ctx.log "compiler :already up to date version #{hbase.thrift.compiler.version}"
           return next null, false
         action = if url.parse(hbase.thrift.compiler.url).protocol is 'http:' then 'download' else 'upload'
-        ctx.log "compiler : is not installed "
+        # Download and install compiler
         ctx[action]
-                    source: hbase.thrift.compiler.url
-                    destination: hbase.thrift.compiler.destination
-                    binary: true
+          source: hbase.thrift.compiler.url
+          destination: hbase.thrift.compiler.destination
+          binary: true
         , (err, downloaded) ->
           return next err if err
-          ctx.log "compiler : preparing for installation "
-          ctx.execute
-            cmd: """
-            rm -Rf #{hbase.thrift.compiler.tmp}
-            mkdir #{hbase.thrift.compiler.tmp}
-            tar xzf #{hbase.thrift.compiler.destination} -C #{hbase.thrift.compiler.tmp} --strip-components=1
-            cd #{hbase.thrift.compiler.tmp}
-            ./configure --prefix=/usr
-            make && make install
-            cd ..
-            rm -Rf #{hbase.thrift.compiler.destination}
-            rm -Rf #{hbase.thrift.compiler.tmp}
-            """
-            trap_on_error: true
-          , (err, executed, stdout) ->
-            return next err, true
+        .execute
+          cmd: """
+          rm -Rf #{hbase.thrift.compiler.tmp}
+          mkdir #{hbase.thrift.compiler.tmp}
+          tar xzf #{hbase.thrift.compiler.destination} -C #{hbase.thrift.compiler.tmp} --strip-components=1
+          cd #{hbase.thrift.compiler.tmp}
+          ./configure --prefix=/usr
+          make && make install
+          cd ..
+          rm -Rf #{hbase.thrift.compiler.destination}
+          rm -Rf #{hbase.thrift.compiler.tmp}
+          """
+          trap_on_error: true
+        , (err, executed, stdout) ->
+          return next err, true
 
 ##  Hbase-Thrift Service
 
     module.exports.push name: 'HBase Thrift # Service', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
-      ctx.service
+      ctx
+      .service
         name: 'hbase-thrift'
-      , next
+      .hdp_select
+        name: 'hbase-client'
+      .write
+        source: "#{__dirname}/../resources/hbase-thrift"
+        local_source: true
+        destination: '/etc/init.d/hbase-thrift'
+        mode: 0o0755
+        unlink: true
+      .execute
+        cmd: "service hbase-thrift restart"
+        if: -> @status -3
+      .then next
 
 ## Kerberos
 
@@ -220,7 +231,7 @@ TODO: Installing Thrift Compiler
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , next
+      .then next
 
 ## Configure
 
@@ -240,3 +251,9 @@ restrict it but not the rest server.
         gid: hbase.group.name
         backup: true
       .then next
+
+## Dependecies
+
+    url = require 'url'
+
+

@@ -10,7 +10,7 @@ TODO: [HBase backup node](http://willddy.github.io/2013/07/02/HBase-Add-Backup-M
     module.exports.push 'ryba/hbase'
     module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/hdp_select'
     module.exports.push require '../../lib/write_jaas'
 
 ## IPTables
@@ -39,32 +39,22 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
 "/etc/init.d" and activate it on startup.
 
     module.exports.push name: 'HBase Master # Service', timeout: -1, handler: (ctx, next) ->
-      ctx.hdp_service
+      ctx
+      .service
         name: 'hbase-master'
-        write: [
-          match: /^\. \/etc\/default\/hbase .*$/m
-          replace: '. /etc/default/hbase # RYBA FIX rc.d, DONT OVERWRITE'
-          append: ". /lib/lsb/init-functions"
-        ,
-          # HDP default is "/etc/hbase/conf"
-          match: /^CONF_DIR=.*$/m
-          replace: "CONF_DIR=\"${HBASE_CONF_DIR}\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-        ,
-          # HDP default is "/usr/lib/hbase/bin/hbase-daemon.sh"
-          match: /^EXEC_PATH=.*$/m
-          replace: "EXEC_PATH=\"${HBASE_HOME}/bin/hbase-daemon.sh\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-        ,
-          # HDP default is "/var/run/hbase/hbase-hbase-master.pid"
-          match: /^PIDFILE=.*$/m
-          replace: "PIDFILE=\"${HBASE_PID_DIR}/hbase-hbase-master.pid\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-        ]
-        etc_default:
-          'hadoop': true
-          'hbase':
-            write: [
-              match: /^export HBASE_HOME=.*$/m # HDP default is "/usr/lib/hbase"
-              replace: "export HBASE_HOME=/usr/hdp/current/hbase-client # RYBA FIX"
-            ]
+      .hdp_select
+        name: 'hbase-client'
+      .hdp_select
+        name: 'hbase-master'
+      .write
+        source: "#{__dirname}/../resources/hbase-master"
+        local_source: true
+        destination: '/etc/init.d/hbase-master'
+        mode: 0o0755
+        unlink: true
+      .execute
+        cmd: "service hbase-master restart"
+        if: -> @status -4
       .then next
 
 ## Configure

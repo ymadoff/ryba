@@ -12,9 +12,9 @@ have usecase for it yet.
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/hbase'
-    module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_service'
     module.exports.push require('./index').configure
+    module.exports.push require '../../lib/hconfigure'
+    module.exports.push require '../../lib/hdp_select'
 
 ## IPTables
 
@@ -37,33 +37,20 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       .then next
 
     module.exports.push name: 'HBase Rest # Service', handler: (ctx, next) ->
-      ctx.hdp_service
+      ctx
+      .service
         name: 'hbase-rest'
-        version_name: 'hbase-client'
-        write: [
-          match: /^\. \/etc\/default\/hbase .*$/m
-          replace: '. /etc/default/hbase # RYBA FIX rc.d, DONT OVERWRITE'
-          append: ". /lib/lsb/init-functions"
-        ,
-          # HDP default is "/etc/hbase/conf"
-          match: /^CONF_DIR=.*$/m
-          replace: "CONF_DIR=\"${HBASE_CONF_DIR}\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-        ,
-          # HDP default is "/usr/lib/hbase/bin/hbase-daemon.sh"
-          match: /^EXEC_PATH=.*$/m
-          replace: "EXEC_PATH=\"${HBASE_HOME}/bin/hbase-daemon.sh\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-        ,
-          # HDP default is "/var/lib/hive-hcatalog/hcat.pid"
-          match: /^PIDFILE=.*$/m
-          replace: "PIDFILE=\"${HBASE_PID_DIR}/hbase-hbase-rest.pid\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-        ]
-        etc_default:
-          'hadoop': true
-          'hbase':
-            write: [
-              match: /^export HBASE_HOME=.*$/m # HDP default is "/var/lib/hive-hcatalog"
-              replace: "export HBASE_HOME=/usr/hdp/current/hbase-client # RYBA FIX"
-            ]
+      .hdp_select
+        name: 'hbase-client'
+      .write
+        source: "#{__dirname}/../resources/hbase-rest"
+        local_source: true
+        destination: '/etc/init.d/hbase-rest'
+        mode: 0o0755
+        unlink: true
+      .execute
+        cmd: "service hbase-rest restart"
+        if: -> @status -3
       .then next
 
 ## Kerberos

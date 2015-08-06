@@ -8,7 +8,7 @@
     module.exports.push 'ryba/hbase'
     module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/hdp_select'
     module.exports.push require '../../lib/write_jaas'
 
 ## IPTables
@@ -37,25 +37,22 @@ Install the "hbase-regionserver" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
     module.exports.push name: 'HBase RegionServer # Service', timeout: -1, handler: (ctx, next) ->
-      ctx.hdp_service
+      ctx
+      .service
         name: 'hbase-regionserver'
-        write: [
-          replace: 'RETVAL=0'
-          before: /^case ".*?" in$/m
-        ,
-          match: /^exit (\d|\\$RETVAL)$/m
-          replace: 'exit $RETVAL'
-        ,
-          replace: '        RETVAL=$?'
-          append: '        status'
-        ]
-        etc_default:
-          'hadoop': true
-          'hbase':
-            write: [
-              match: /^export HBASE_HOME=.*$/m # HDP default is "/var/lib/hive-hcatalog"
-              replace: "export HBASE_HOME=/usr/hdp/current/hbase-client # RYBA FIX"
-            ]
+      .hdp_select
+        name: 'hbase-client'
+      .hdp_select
+        name: 'hbase-regionserver'
+      .write
+        source: "#{__dirname}/../resources/hbase-regionserver"
+        local_source: true
+        destination: '/etc/init.d/hbase-regionserver'
+        mode: 0o0755
+        unlink: true
+      .execute
+        cmd: "service hbase-regionserver restart"
+        if: -> @status -4
       .then next
 
 ## Zookeeper JAAS
