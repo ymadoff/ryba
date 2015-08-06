@@ -7,9 +7,7 @@
     module.exports.push 'masson/core/yum'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/commons/java'
-    # module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/lib/base'
-    # module.exports.push require '../../lib/hdp_service'
     module.exports.push require '../../lib/hdp_select'
     module.exports.push require '../../lib/write_jaas'
     module.exports.push require('./index').configure
@@ -74,6 +72,7 @@ which has no dependency.
         source: "#{__dirname}/zookeeper"
         destination: '/etc/init.d/zookeeper-server'
         mode: 0o0755
+        unlink: true
       .then next
 
 ## Kerberos
