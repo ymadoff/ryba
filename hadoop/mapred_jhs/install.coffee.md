@@ -62,9 +62,10 @@ script inside "/etc/init.d" and activate it on startup.
         local_source: true
         destination: '/etc/init.d/hadoop-mapreduce-historyserver'
         mode: 0o0755
+        unlink: true
       .execute
         cmd: "service hadoop-mapreduce-historyserver restart"
-        if: -> @status(-3)
+        if: -> @status -3
       .then next
 
 ## Environnement
@@ -116,6 +117,13 @@ Create the log and pid directories.
         uid: mapred.user.name
         gid: hadoop_group.name
         mode: 0o0755
+      .mkdir
+        destination: mapred.site['mapreduce.jobhistory.recovery.store.leveldb.path']
+        uid: mapred.user.name
+        gid: hadoop_group.name
+        mode: 0o0750
+        parent: true
+        if: mapred.site['mapreduce.jobhistory.recovery.store.class'] is 'org.apache.hadoop.mapreduce.v2.hs.HistoryServerLeveldbStateStoreService'
       .then next
 
 ## HDFS Layout
@@ -123,35 +131,41 @@ Create the log and pid directories.
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
     module.exports.push name: 'MapReduce JHS # HDFS Layout', timeout: -1, handler: (ctx, next) ->
-      {hadoop_group, yarn, mapred} = ctx.config.ryba
+      {yarn, mapred} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.hdfs ctx, """
-        if ! hdfs dfs -test -d /mr-history; then
-          hdfs dfs -mkdir -p /mr-history
-          hdfs dfs -chmod 0751 /mr-history
-          hdfs dfs -chown #{mapred.user.name}:#{hadoop_group.name} /mr-history
-          modified=1
-        fi
-        if ! hdfs dfs -test -d /mr-history/tmp; then
-          hdfs dfs -mkdir -p /mr-history/tmp
-          hdfs dfs -chmod 1777 /mr-history/tmp
-          hdfs dfs -chown #{mapred.user.name}:#{hadoop_group.name} /mr-history/tmp
-          modified=1
-        fi
-        if ! hdfs dfs -test -d /mr-history/done; then
-          hdfs dfs -mkdir -p /mr-history/done
-          hdfs dfs -chmod 1777 /mr-history/done
-          hdfs dfs -chown #{mapred.user.name}:#{hadoop_group.name} /mr-history/done
+        if ! hdfs dfs -test -d #{yarn.site['yarn.app.mapreduce.am.staging-dir']}/history; then
+          hdfs dfs -mkdir -p #{yarn.site['yarn.app.mapreduce.am.staging-dir']}/history
+          hdfs dfs -chmod 0750 #{yarn.site['yarn.app.mapreduce.am.staging-dir']}/history
+          hdfs dfs -chown #{mapred.user.name} #{yarn.site['yarn.app.mapreduce.am.staging-dir']}/history
           modified=1
         fi
         if ! hdfs dfs -test -d /app-logs; then
           hdfs dfs -mkdir -p /app-logs
           hdfs dfs -chmod 1777 /app-logs
-          hdfs dfs -chown #{yarn.user.name}:#{hadoop_group.name} /app-logs
+          hdfs dfs -chown #{yarn.user.name} /app-logs
           modified=1
         fi
         if [ $modified != "1" ]; then exit 2; fi
         """
+        # if ! hdfs dfs -test -d /mr-history; then
+        #   hdfs dfs -mkdir -p /mr-history
+        #   hdfs dfs -chmod 0751 /mr-history
+        #   hdfs dfs -chown #{mapred.user.name}:#{hadoop_group.name} /mr-history
+        #   modified=1
+        # fi
+        # if ! hdfs dfs -test -d /mr-history/tmp; then
+        #   hdfs dfs -mkdir -p /mr-history/tmp
+        #   hdfs dfs -chmod 1777 /mr-history/tmp
+        #   hdfs dfs -chown #{mapred.user.name}:#{hadoop_group.name} /mr-history/tmp
+        #   modified=1
+        # fi
+        # if ! hdfs dfs -test -d /mr-history/done; then
+        #   hdfs dfs -mkdir -p /mr-history/done
+        #   hdfs dfs -chmod 1777 /mr-history/done
+        #   hdfs dfs -chown #{mapred.user.name}:#{hadoop_group.name} /mr-history/done
+        #   modified=1
+        # fi
         code_skipped: 2
       .then next
 

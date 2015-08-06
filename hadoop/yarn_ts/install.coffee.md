@@ -55,9 +55,10 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
         local_source: true
         destination: '/etc/init.d/hadoop-yarn-timelineserver'
         mode: 0o0755
+        unlink: true
       .execute
         cmd: "service hadoop-yarn-timelineserver restart"
-        if: -> @status(-3)
+        if: -> @status -3
       .then next
 
 ## Configuration

@@ -46,33 +46,6 @@ inside "/etc/init.d" and activate it on startup.
 
     module.exports.push name: 'YARN NM # Service', handler: (ctx, next) ->
       {yarn} = ctx.config.ryba
-      # ctx.hdp_service
-      #   name: 'hadoop-yarn-nodemanager'
-      #   write: [
-      #     match: /^\. \/etc\/default\/hadoop-yarn-nodemanager .*$/m
-      #     replace: '. /etc/default/hadoop-yarn-nodemanager # RYBA FIX rc.d, DONT OVERWRITE'
-      #     append: ". /lib/lsb/init-functions"
-      #   ,
-      #     # HDP default is "$HADOOP_PID_DIR/yarn-$YARN_IDENT_STRING-nodemanager.pid"
-      #     match: /^PIDFILE=".*".*$/mg
-      #     replace: "PIDFILE=\"${YARN_PID_DIR}/yarn-$YARN_IDENT_STRING-nodemanager.pid\" # RYBA FIX, DONT OVERWRITE"
-      #   ]
-      #   etc_default:
-      #     'hadoop-yarn-nodemanager': 
-      #       write: [
-      #         match: /^export YARN_PID_DIR=.*$/m # HDP default is "/var/run/hadoop-hdfs"
-      #         replace: "export YARN_PID_DIR=#{yarn.pid_dir} # RYBA, DONT OVERWRITE"
-      #       ,
-      #         match: /^export YARN_LOG_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
-      #         replace: "export YARN_LOG_DIR=#{yarn.log_dir} # RYBA, DONT OVERWRITE"
-      #       ,
-      #         match: /^export YARN_CONF_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
-      #         replace: "export YARN_CONF_DIR=#{yarn.conf_dir} # RYBA, DONT OVERWRITE"
-      #       ,
-      #         match: /^export YARN_IDENT_STRING=.*$/m # HDP default is "hdfs"
-      #         replace: "export YARN_IDENT_STRING=#{yarn.user.name} # RYBA, DONT OVERWRITE"
-      #       ]
-      # .then next
       ctx
       .service
         name: 'hadoop-yarn-nodemanager'
@@ -84,9 +57,10 @@ inside "/etc/init.d" and activate it on startup.
         local_source: true
         destination: '/etc/init.d/hadoop-yarn-nodemanager'
         mode: 0o0755
+        unlink: true
       .execute
         cmd: "service hadoop-yarn-nodemanager restart"
-        if: -> @status(-3)
+        if: -> @status -3
       .then next
 
     module.exports.push name: 'YARN NM # Directories', timeout: -1, handler: (ctx, next) ->
@@ -160,7 +134,7 @@ SSH connection to the node to gather the memory and CPU informations.
       .chmod
         destination: ce
         mode: 0o6050
-      ctx.ini
+      .ini
         destination: "#{hadoop_conf_dir}/container-executor.cfg"
         content: container_executor
         uid: 'root'

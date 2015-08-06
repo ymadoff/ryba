@@ -131,9 +131,10 @@ inside "/etc/init.d" and activate it on startup.
         local_source: true
         destination: '/etc/init.d/hadoop-yarn-resourcemanager'
         mode: 0o0755
+        unlink: true
       .execute
         cmd: "service hadoop-yarn-resourcemanager restart"
-        if: -> @status(-3)
+        if: -> @status -3
       .then next
 
 ## Environment

@@ -57,9 +57,10 @@ script inside "/etc/init.d" and activate it on startup.
         local_source: true
         destination: '/etc/init.d/hadoop-hdfs-secondarynamenode'
         mode: 0o0755
+        unlink: true
       .execute
         cmd: "service hadoop-hdfs-secondarynamenode restart"
-        if: -> @status(-3)
+        if: -> @status -3
       .then next
 
     # module.exports.push name: 'HDFS SNN # Service', timeout: -1, handler: (ctx, next) ->
