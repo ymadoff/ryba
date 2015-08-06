@@ -19,10 +19,8 @@ deployment is heavily inspired by [Anil Gupta instruction][agi].
 
     module.exports.push name: 'Phoenix Client # Install', handler: (ctx, next) ->
       ctx
-      .service
-        name: 'phoenix'
-      .hdp_select
-        name: 'phoenix-client'
+      .service name: 'phoenix'
+      .hdp_select name: 'phoenix-client'
       .then next
 
     module.exports.push name: 'Phoenix Client # Hadoop Configuration', handler: (ctx, next) ->

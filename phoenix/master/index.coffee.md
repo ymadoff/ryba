@@ -15,6 +15,11 @@ running of those scans to produce regular JDBC result sets.
       require('../../hbase').configure ctx
       {hbase} = ctx.config.ryba
       hbase.site['hbase.defaults.for.version.skip'] ?= 'true'
+      hbase.site['phoenix.functions.allowUserDefinedFunctions'] ?= 'true'
+      hbase.site['hbase.rpc.controllerfactory.class'] ?= 'org.apache.hadoop.hbase.ipc.controller.ServerRpcControllerFactory'
+      # Local indexing
+      hbase.site['hbase.master.loadbalancer.class'] ?= 'org.apache.phoenix.hbase.index.balancer.IndexLoadBalancer'
+      hbase.site['hbase.coprocessor.master.classes'] ?= 'org.apache.phoenix.hbase.index.master.IndexMasterObserver'
 
 These properties ensure co-location of data table and local index regions:
 The local indexing feature is a technical preview and is still under
