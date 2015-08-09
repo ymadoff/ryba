@@ -114,3 +114,46 @@ Caused by: java.net.ConnectException: Connection refused
 ```
 
 Solution: start the JHS server before the YARN RM
+
+## HDFS reports Configured Capacity: 0 (0 B) for datanode
+
+In such case, you may still see Datanode services to be running on the server, 
+but if you try to load any data onto HDFS, it will report an exception for 
+dfs.replication.min threshold:
+
+```
+org.apache.hadoop.ipc.RemoteException(java.io.IOException): File <_FILENAME_>._COPYING_ could only be replicated to x nodes instead of minReplication (=1).  There are x datanode(s) running and x node(s) are excluded in this operation.
+	at org.apache.hadoop.hdfs.server.blockmanagement.BlockManager.chooseTarget4NewBlock(BlockManager.java:1550)
+	at org.apache.hadoop.hdfs.server.namenode.FSNamesystem.getAdditionalBlock(FSNamesystem.java:3447)
+	at org.apache.hadoop.hdfs.server.namenode.NameNodeRpcServer.addBlock(NameNodeRpcServer.java:642)
+	at org.apache.hadoop.hdfs.protocolPB.ClientNamenodeProtocolServerSideTranslatorPB.addBlock(ClientNamenodeProtocolServerSideTranslatorPB.java:484)
+	at org.apache.hadoop.hdfs.protocol.proto.ClientNamenodeProtocolProtos$ClientNamenodeProtocol$2.callBlockingMethod(ClientNamenodeProtocolProtos.java)
+	at org.apache.hadoop.ipc.ProtobufRpcEngine$Server$ProtoBufRpcInvoker.call(ProtobufRpcEngine.java:619)
+	at org.apache.hadoop.ipc.RPC$Server.call(RPC.java:962)
+	at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2039)
+	at org.apache.hadoop.ipc.Server$Handler$1.run(Server.java:2035)
+	at java.security.AccessController.doPrivileged(Native Method)
+	at javax.security.auth.Subject.doAs(Subject.java:415)
+	at org.apache.hadoop.security.UserGroupInformation.doAs(UserGroupInformation.java:1628)
+	at org.apache.hadoop.ipc.Server$Handler.run(Server.java:2033)
+```
+
+Possible situations:
+
+*   Only namenode are running and it's not in safemode   
+*   Namenode and Datanodes are both running, but datanodes are not able to send  their heartbeat & blockreport to the namenode.   
+*   Datanode is dead   
+
+Note: These are symptoms that either of the below is a problem:
+
+*   Configuration files are not setup properly, including proper permissions for the directories.   
+*   There is connectivity issue between datanode and namenode   
+
+Troubleshoot:
+
+*   Verify that capacity is properly configured (using capacity generator script).
+*   Verify the status of namenode and datanode services.
+*   Verify whether core-site.xml has fs.defaultFS value specified correctly.
+*   Verify logs for namenode and datanode services.
+*   Verify hdfs-site.xml has dfs.namenode.http(s)-address.<nameservice>.<namenodeid>.
+*   Verify data.dir permission on datanodes
