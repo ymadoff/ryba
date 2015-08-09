@@ -21,9 +21,9 @@ instructions.
 
     module.exports.push name: 'Phoenix # Check', handler: (ctx, next) ->
       {force_check, user, hbase} = ctx.config.ryba
-      zk_path = for host in hbase.site['hbase.zookeeper.quorum'].split(',')
-        "#{host}:#{hbase.site['hbase.zookeeper.property.clientPort']}"
-      zk_path = zk_path.join(',') + hbase.site['zookeeper.znode.parent']
+      zk_path = "#{hbase.site['hbase.zookeeper.quorum']}"
+      zk_path += ":#{hbase.site['hbase.zookeeper.property.clientPort']}"
+      zk_path += "hbase.site['zookeeper.znode.parent']"
       # ../doc/examples/WEB_STAT_QUERIES.sql
       table = "ryba_check_phoenix_#{ctx.config.shortname}".toUpperCase()
       check = false

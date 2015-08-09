@@ -6,9 +6,10 @@
     module.exports.push 'masson/bootstrap/info'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/yarn_client/install'
-    module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_service'
+    # module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/hdp_select'
+    module.exports.push require('./index').configure
 
 ## IPTables
 
@@ -45,32 +46,47 @@ inside "/etc/init.d" and activate it on startup.
 
     module.exports.push name: 'YARN NM # Service', handler: (ctx, next) ->
       {yarn} = ctx.config.ryba
-      ctx.hdp_service
+      # ctx.hdp_service
+      #   name: 'hadoop-yarn-nodemanager'
+      #   write: [
+      #     match: /^\. \/etc\/default\/hadoop-yarn-nodemanager .*$/m
+      #     replace: '. /etc/default/hadoop-yarn-nodemanager # RYBA FIX rc.d, DONT OVERWRITE'
+      #     append: ". /lib/lsb/init-functions"
+      #   ,
+      #     # HDP default is "$HADOOP_PID_DIR/yarn-$YARN_IDENT_STRING-nodemanager.pid"
+      #     match: /^PIDFILE=".*".*$/mg
+      #     replace: "PIDFILE=\"${YARN_PID_DIR}/yarn-$YARN_IDENT_STRING-nodemanager.pid\" # RYBA FIX, DONT OVERWRITE"
+      #   ]
+      #   etc_default:
+      #     'hadoop-yarn-nodemanager': 
+      #       write: [
+      #         match: /^export YARN_PID_DIR=.*$/m # HDP default is "/var/run/hadoop-hdfs"
+      #         replace: "export YARN_PID_DIR=#{yarn.pid_dir} # RYBA, DONT OVERWRITE"
+      #       ,
+      #         match: /^export YARN_LOG_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
+      #         replace: "export YARN_LOG_DIR=#{yarn.log_dir} # RYBA, DONT OVERWRITE"
+      #       ,
+      #         match: /^export YARN_CONF_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
+      #         replace: "export YARN_CONF_DIR=#{yarn.conf_dir} # RYBA, DONT OVERWRITE"
+      #       ,
+      #         match: /^export YARN_IDENT_STRING=.*$/m # HDP default is "hdfs"
+      #         replace: "export YARN_IDENT_STRING=#{yarn.user.name} # RYBA, DONT OVERWRITE"
+      #       ]
+      # .then next
+      ctx
+      .service
         name: 'hadoop-yarn-nodemanager'
-        write: [
-          match: /^\. \/etc\/default\/hadoop-yarn-nodemanager .*$/m
-          replace: '. /etc/default/hadoop-yarn-nodemanager # RYBA FIX rc.d, DONT OVERWRITE'
-          append: ". /lib/lsb/init-functions"
-        ,
-          # HDP default is "$HADOOP_PID_DIR/yarn-$YARN_IDENT_STRING-nodemanager.pid"
-          match: /^PIDFILE=".*".*$/mg
-          replace: "PIDFILE=\"${YARN_PID_DIR}/yarn-$YARN_IDENT_STRING-nodemanager.pid\" # RYBA FIX, DONT OVERWRITE"
-        ]
-        etc_default:
-          'hadoop-yarn-nodemanager': 
-            write: [
-              match: /^export YARN_PID_DIR=.*$/m # HDP default is "/var/run/hadoop-hdfs"
-              replace: "export YARN_PID_DIR=#{yarn.pid_dir} # RYBA, DONT OVERWRITE"
-            ,
-              match: /^export YARN_LOG_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
-              replace: "export YARN_LOG_DIR=#{yarn.log_dir} # RYBA, DONT OVERWRITE"
-            ,
-              match: /^export YARN_CONF_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
-              replace: "export YARN_CONF_DIR=#{yarn.conf_dir} # RYBA, DONT OVERWRITE"
-            ,
-              match: /^export YARN_IDENT_STRING=.*$/m # HDP default is "hdfs"
-              replace: "export YARN_IDENT_STRING=#{yarn.user.name} # RYBA, DONT OVERWRITE"
-            ]
+      .hdp_select
+        name: 'hadoop-yarn-client' # Not checked
+        name: 'hadoop-yarn-nodemanager'
+      .write
+        source: "#{__dirname}/hadoop-yarn-nodemanager"
+        local_source: true
+        destination: '/etc/init.d/hadoop-yarn-nodemanager'
+        mode: 0o0755
+      .execute
+        cmd: "service hadoop-yarn-nodemanager restart"
+        if: -> @status(-3)
       .then next
 
     module.exports.push name: 'YARN NM # Directories', timeout: -1, handler: (ctx, next) ->

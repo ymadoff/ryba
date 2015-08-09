@@ -4,13 +4,121 @@
 # falcon
 # HBase client
 # HBase master
+define service {
+  service_description     HBASE Master::Check JMX
+  hostgroup_name          hbase-masters
+  use                     hadoop-service
+  servicegroups           HBASE
+  check_command           check_rest!{{hbase.site['hbase.master.info.port']}}!{% if hbase.site['hadoop.ssl.enabled'] %}-s -k {% endif %} --negotiate
+  normal_check_interval   5
+  retry_check_interval    0.5
+  max_check_attempts      2
+}
 # HBase regionserver
+define service {
+  service_description     HBASE RegionServer::Check JMX
+  hostgroup_name          hbase-regionservers
+  use                     hadoop-service
+  servicegroups           HBASE
+  check_command           check_rest!{{hbase.site['hbase.regionserver.info.port']}}!{% if hbase.site['hadoop.ssl.enabled'] %}-s -k {% endif %} --negotiate
+  normal_check_interval   5
+  retry_check_interval    0.5
+  max_check_attempts      2
+}
+define service {
+  service_description     HBASE RegionServer::Query JMX
+  hostgroup_name          hbase-regionservers
+  use                     hadoop-service
+  servicegroups           HBASE
+  check_command           query_hbase_rs_jmx!{{hbase.site['hbase.regionserver.info.port']}}!{% if hbase.site['hadoop.ssl.enabled'] %}-s -k{% endif %} --negotiate
+}
+# define servicedependency{
+#   dependent_hostgroup_name hbase-regionservers
+#   service_description      HBASE RegionServer::Check JMX
+#   dependent_hostgroup_name hbase-regionservers
+#   dependent_service_description  HBASE RegionServer::Query JMX
+#   execution_failure_criteria   w,u,c
+#   notification_failure_criteria   w,u,c
+# }
 # HBase REST server
+define service {
+  service_description     HBASE REST::Check JMX
+  hostgroup_name          hbase-rest-servers
+  use                     hadoop-service
+  servicegroups           HBASE
+  check_command           check_rest!{{hbase.site['hbase.rest.port']}}!{% if hbase.site['hbase.rest.ssl.enabled'] %}-s -k{% endif %}  --negotiate
+  normal_check_interval   5
+  retry_check_interval    0.5
+  max_check_attempts      2
+}
+# define service {
+#   service_description     HBASE REST::Query REST
+#   hostgroup_name          hbase-rest-servers
+#   use                     hadoop-service
+#   servicegroups           HBASE
+#   check_command           query_rest!{{hbase.site['hbase.rest.port']}}!query_to_do!other_args
+# }
+# define servicedependency{
+#   dependent_hostgroup_name hbase-rest-servers
+#   service_description      HBASE REST::Check REST
+#   dependent_hostgroup_name hbase-rest-servers
+#   dependent_service_description  HBASE REST::Query REST
+#   execution_failure_criteria   w,u,c
+#   notification_failure_criteria   w,u,c
+# }
 # HBase Thrift
 # HDFS Client
 # HDFS DN
+define service {
+  service_description     HDFS DataNode::Check JMX
+  hostgroup_name          hdfs-datanodes
+  use                     hadoop-service
+  servicegroups           HDFS
+  check_command           check_rest!{{hdfs.dn_info_port}}!{% if hdfs.ssl %}-s -k{% endif %} --negotiate
+  normal_check_interval   5
+  retry_check_interval    0.5
+  max_check_attempts      2
+}
+define service {
+  service_description     HDFS DataNode::Check Disk Capacity
+  hostgroup_name          hdfs-datanodes
+  use                     hadoop-service
+  servicegroups           HDFS
+  check_command           check_hdfs_disk_capacity!{{hdfs.dn_info_port}}!70%!90%!{% if hdfs.ssl %}-s -k{% endif %} --negotiate -K {{hdfs.krb5_user.principal}} -W {{hdfs.krb5_user.password}}
+  normal_check_interval   5
+  retry_check_interval    0.5
+  max_check_attempts      2
+}
+# define servicedependency{
+#   dependent_hostgroup_name hdfs-datanodes
+#   service_description      HDFS DataNode::Check JMX
+#   dependent_hostgroup_name hdfs-datanodes
+#   dependent_service_description HDFS DataNode::Check Disk Capacity
+#   execution_failure_criteria   w,u,c
+#   notification_failure_criteria   w,u,c
+# }
 # HDFS JN
+define service {
+  service_description     HDFS JournalNode::Check JMX
+  hostgroup_name          hdfs-journalnodes
+  use                     hadoop-service
+  servicegroups           HDFS
+  check_command           check_rest!{{hdfs.jn_info_port}}!{% if hdfs.ssl %}-s -k{% endif %} -P "/jmx?qry=Hadoop:service=JournalNode,name=JournalNodeInfo" --negotiate -K {{hdfs.krb5_user.principal}} -W {{hdfs.krb5_user.password}}
+  normal_check_interval   5
+  retry_check_interval    0.5
+  max_check_attempts      2
+}
 # HDFS NN
+define service {
+  service_description     HDFS JournalNode::Check JMX
+  hostgroup_name          hdfs-journalnodes
+  use                     hadoop-service
+  servicegroups           HDFS
+  check_command           check_rest!{{hdfs.nn_info_port}}!{% if hdfs.ssl %}-s -k{% endif %} -P "/jmx?qry=Hadoop:service=NameNode,name=NameNodeStatus" --negotiate -K {{hdfs.krb5_user.principal}} -W {{hdfs.krb5_user.password}}
+  normal_check_interval   5
+  retry_check_interval    0.5
+  max_check_attempts      2
+}
 # HDFS ZKFC
 # Hive client
 # Hive HCatalog Server
@@ -29,69 +137,69 @@
 # Rexster
 # Shinken Arbiter
 define service {
-        hostgroup_name          shinken-arbiters
-        use                     hadoop-service
-        service_description     SHINKEN::Check Arbiter
-        servicegroups           SHINKEN
-        check_command           check_shinken!arbiter!{{shinken.arbiter.config.port}}
-        normal_check_interval   5
-        retry_check_interval    0.5
-        max_check_attempts      2
+    hostgroup_name          shinken-arbiters
+    use                     hadoop-service
+    service_description     SHINKEN::Check Arbiter
+    servicegroups           SHINKEN
+    check_command           check_shinken!arbiter!{{shinken.arbiter.config.port}}
+    normal_check_interval   5
+    retry_check_interval    0.5
+    max_check_attempts      2
 }
 # Shinken Broker
 define service {
-        hostgroup_name          shinken-brokers
-        use                     hadoop-service
-        service_description     SHINKEN::Check Broker
-        servicegroups           SHINKEN
-        check_command           check_shinken!broker!{{shinken.broker.config.port}}
-        normal_check_interval   5
-        retry_check_interval    0.5
-        max_check_attempts      2
+    hostgroup_name          shinken-brokers
+    use                     hadoop-service
+    service_description     SHINKEN::Check Broker
+    servicegroups           SHINKEN
+    check_command           check_shinken!broker!{{shinken.broker.config.port}}
+    normal_check_interval   5
+    retry_check_interval    0.5
+    max_check_attempts      2
 }
 # Shinken Poller
 define service {
-        hostgroup_name          shinken-pollers
-        use                     hadoop-service
-        service_description     SHINKEN::Check Poller
-        servicegroups           SHINKEN
-        check_command           check_shinken!poller!{{shinken.poller.config.port}}
-        normal_check_interval   5
-        retry_check_interval    0.5
-        max_check_attempts      2
+    hostgroup_name          shinken-pollers
+    use                     hadoop-service
+    service_description     SHINKEN::Check Poller
+    servicegroups           SHINKEN
+    check_command           check_shinken!poller!{{shinken.poller.config.port}}
+    normal_check_interval   5
+    retry_check_interval    0.5
+    max_check_attempts      2
 }
 # Shinken Reactionner
 define service {
-        hostgroup_name          shinken-reactionners
-        use                     hadoop-service
-        service_description     SHINKEN::Check Reactionner
-        servicegroups           SHINKEN
-        check_command           check_shinken!reactionner!{{shinken.reactionner.config.port}}
-        normal_check_interval   5
-        retry_check_interval    0.5
-        max_check_attempts      2
+    hostgroup_name          shinken-reactionners
+    use                     hadoop-service
+    service_description     SHINKEN::Check Reactionner
+    servicegroups           SHINKEN
+    check_command           check_shinken!reactionner!{{shinken.reactionner.config.port}}
+    normal_check_interval   5
+    retry_check_interval    0.5
+    max_check_attempts      2
 }
 # Shinken Receiver
 define service {
-        hostgroup_name          shinken-receivers
-        use                     hadoop-service
-        service_description     SHINKEN::Check Receiver
-        servicegroups           SHINKEN
-        check_command           check_shinken!receiver!{{shinken.receiver.config.port}}
-        normal_check_interval   5
-        retry_check_interval    0.5
-        max_check_attempts      2
+    hostgroup_name          shinken-receivers
+    use                     hadoop-service
+    service_description     SHINKEN::Check Receiver
+    servicegroups           SHINKEN
+    check_command           check_shinken!receiver!{{shinken.receiver.config.port}}
+    normal_check_interval   5
+    retry_check_interval    0.5
+    max_check_attempts      2
 }
 # Shinken Scheduler
 define service {
-        hostgroup_name          shinken-schedulers
-        use                     hadoop-service
-        service_description     SHINKEN::Check Scheduler
-        servicegroups           SHINKEN
-        check_command           check_shinken!scheduler!{{shinken.scheduler.config.port}}
-        normal_check_interval   5
-        retry_check_interval    0.5
-        max_check_attempts      2
+    hostgroup_name          shinken-schedulers
+    use                     hadoop-service
+    service_description     SHINKEN::Check Scheduler
+    servicegroups           SHINKEN
+    check_command           check_shinken!scheduler!{{shinken.scheduler.config.port}}
+    normal_check_interval   5
+    retry_check_interval    0.5
+    max_check_attempts      2
 }
 # Solr
 # Spark client
@@ -104,85 +212,85 @@ define service {
 # Zeppelin
 # Zookeeper client
 # Zookeeper server
-
-
+{#
 define service {
-        hostgroup_name          shinken-server
-        use                     hadoop-service
-        service_description     HDFS::Percent DataNodes with space available
-        servicegroups           HDFS
-        check_command           check_aggregate!"DATANODE::DataNode space"!10%!30%
-        normal_check_interval   1
-        retry_check_interval    0.25
-        max_check_attempts      2
+    hostgroup_name          shinken-server
+    use                     hadoop-service
+    service_description     HDFS::Percent DataNodes with space available
+    servicegroups           HDFS
+    check_command           check_aggregate!"DATANODE::DataNode space"!10%!30%
+    normal_check_interval   1
+    retry_check_interval    0.25
+    max_check_attempts      2
 }
 define service {
-        hostgroup_name          shinken-server
-        use                     hadoop-service
-        service_description     HDFS::Percent DataNodes live
-        servicegroups           HDFS
-        check_command           check_aggregate!"DATANODE::DataNode process"!10%!30%
-        normal_check_interval   0.5
-        retry_check_interval    0.25
-        max_check_attempts      3
+    hostgroup_name          shinken-server
+    use                     hadoop-service
+    service_description     HDFS::Percent DataNodes live
+    servicegroups           HDFS
+    check_command           check_aggregate!"DATANODE::DataNode process"!10%!30%
+    normal_check_interval   0.5
+    retry_check_interval    0.25
+    max_check_attempts      3
 }
 define service {
-        hostgroup_name          shinken-server
-        use                     hadoop-service
-        service_description     HDFS::NameNode HA Healthy
-        servicegroups           HDFS
-        check_command           check_namenodes_ha!$HOSTGROUPMEMBERS:namenode$!{{ namenode_port }}
-        normal_check_interval   0.5
-        retry_check_interval    0.25
-        max_check_attempts      5
+    hostgroup_name          shinken-server
+    use                     hadoop-service
+    service_description     HDFS::NameNode HA Healthy
+    servicegroups           HDFS
+    check_command           check_namenodes_ha!$HOSTGROUPMEMBERS:namenode$!{{ namenode_port }}
+    normal_check_interval   0.5
+    retry_check_interval    0.25
+    max_check_attempts      5
 }
+#}
 {% if hostgroups['zookeeper-servers'] %}
 # SHINKEN SERVER ZOOKEEPER Checks
 define service {
-        hostgroup_name          shinken-server
-        use                     hadoop-service
-        service_description     ZOOKEEPER::Percent ZooKeeper Servers live
-        servicegroups           ZOOKEEPER
-        check_command           check_aggregate!"ZOOKEEPER::ZooKeeper Server process"!35%!70%
-        normal_check_interval   0.5
-        retry_check_interval    0.25
-        max_check_attempts      3
+    hostgroup_name          shinken-server
+    use                     hadoop-service
+    service_description     ZOOKEEPER::Percent ZooKeeper Servers live
+    servicegroups           ZOOKEEPER
+    check_command           check_aggregate!"ZOOKEEPER::ZooKeeper Server process"!35%!70%
+    normal_check_interval   0.5
+    retry_check_interval    0.25
+    max_check_attempts      3
 }
 {% endif %}
 {% if hostgroups['hbasemasters'] %}
 # SHINKEN SERVER HBASE Checks
 define service {
-        hostgroup_name          shinken-server
-        use                     hadoop-service
-        service_description     HBASE::Percent RegionServers live
-        servicegroups           HBASE
-        check_command           check_aggregate!"REGIONSERVER::RegionServer process"!10%!30%
-        normal_check_interval   0.5
-        retry_check_interval    0.25
-        max_check_attempts      3
+    hostgroup_name          shinken-server
+    use                     hadoop-service
+    service_description     HBASE::Percent RegionServers live
+    servicegroups           HBASE
+    check_command           check_aggregate!"REGIONSERVER::RegionServer process"!10%!30%
+    normal_check_interval   0.5
+    retry_check_interval    0.25
+    max_check_attempts      3
 }
 {% endif %}
 {% if hostgroups['ganglia-server'] %}
 # GANGLIA SERVER Checks
 define service {
-        hostgroup_name          ganglia-server
-        use                     hadoop-service
-        service_description     GANGLIA::Ganglia Server process
-        servicegroups           GANGLIA
-        check_command           check_tcp_wrapper!{{ ganglia_port }}!-w 1 -c 1
-        normal_check_interval   0.25
-        retry_check_interval    0.25
-        max_check_attempts      4
+    hostgroup_name          ganglia-server
+    use                     hadoop-service
+    service_description     GANGLIA::Ganglia Server process
+    servicegroups           GANGLIA
+    check_command           check_tcp_wrapper!{{ ganglia_port }}!-w 1 -c 1
+    normal_check_interval   0.25
+    retry_check_interval    0.25
+    max_check_attempts      4
 }
 {% if hostgroups['namenode'] %}
 define service {
-        hostgroup_name	        ganglia-server
-        use                     hadoop-service
-        service_description     GANGLIA::Ganglia Monitor process for NameNode
-        servicegroups           GANGLIA
-        check_command           check_tcp_wrapper!{{ ganglia_collector_namenode_port }}!-w 1 -c 1
-        normal_check_interval   0.25
-        retry_check_interval    0.25
+    hostgroup_name	        ganglia-server
+    use                     hadoop-service
+    service_description     GANGLIA::Ganglia Monitor process for NameNode
+    servicegroups           GANGLIA
+    check_command           check_tcp_wrapper!{{ ganglia_collector_namenode_port }}!-w 1 -c 1
+    normal_check_interval   0.25
+      retry_check_interval    0.25
         max_check_attempts      4
 }
 {% endif %}

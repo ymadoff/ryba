@@ -86,9 +86,13 @@ Example:
       if ryba.hdfs.site['dfs.datanode.failed.volumes.tolerated'] >= dataDirs.length
         throw Error 'Number of failed volumes must be less than total volumes'
       ryba.hdfs.datanode_opts ?= ''
-      # look at
+      # Configuring Storage-Balancing for DataNodes
       # http://gbif.blogspot.fr/2015/05/dont-fill-your-hdfs-disks-upgrading-to.html
-      # dfs.datanode.du.reserved:25GB
+      # http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/admin_dn_storage_balancing.html
+      ryba.hdfs.site['dfs.datanode.fsdataset.volume.choosing.policy'] ?= 'org.apache.hadoop.hdfs.server.datanode.fsdataset.AvailableSpaceVolumeChoosingPolicy'
+      ryba.hdfs.site['dfs.datanode.available-space-volume-choosing-policy.balanced-space-threshold'] ?= '10737418240' # 10GB
+      ryba.hdfs.site['dfs.datanode.available-space-volume-choosing-policy.balanced-space-preference-fraction'] ?= '1.0'
+      ryba.hdfs.site['dfs.datanode.du.reserved'] ?= '53687091200' # 50GB
       # dfs.datanode.fsdataset.volume.choosing.policy:AvailableSpace 
       # dfs.datanode.available-space-volume-choosing-policy.balanced-space-preference-fraction:1.0 
 

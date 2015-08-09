@@ -18,6 +18,7 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
     module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/hdp_select'
 
 ## IPTables
 
@@ -55,6 +56,10 @@ isnt yet started.
         version_name: 'hive-metastore'
         startup: false
         write: [
+          match: /^.*export HADOOP_HOME.*$/m
+          replace: 'this="$(dirname -- "$(readlink -f -- "${BASH_SOURCE-$0}")")"; export HADOOP_HOME="$(readlink -f -- "$this/../../..")/hadoop"'
+          before: /^SVC_USER=.*$/m
+        ,
           match: /^\. \/etc\/default\/hive-hcatalog-server .*$/m
           replace: '. /etc/default/hive-hcatalog-server # RYBA FIX rc.d, DONT OVERWRITE'
           append: ". /lib/lsb/init-functions"
@@ -83,6 +88,8 @@ isnt yet started.
               match: /^export HIVE_HOME=.*$/m # HDP default is "/usr/lib/hive"
               replace: "export HIVE_HOME=/usr/hdp/current/hive-metastore # RYBA FIX"
             ]
+      .hdp_select
+        name: 'hive-webhcat'
       .then next
 
     module.exports.push name: 'Hive HCatalog # Database', handler: (ctx, next) ->

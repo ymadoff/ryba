@@ -10,6 +10,7 @@ co-located with any other service.
     module.exports.push 'ryba/hadoop/hdfs_client/install'
     module.exports.push 'ryba/hadoop/yarn_client/install'
     module.exports.push require '../../lib/hconfigure'
+    module.exports.push require '../../lib/hdp_select'
     module.exports.push require('./index').configure
 
 ## IPTables
@@ -35,6 +36,28 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: https_port, protocol: 'tcp', state: 'NEW', comment: "Yarn Timeserver HTTPS" }
         ]
         if: ctx.config.iptables.action is 'start'
+      .then next
+
+## Service
+
+Install the "hadoop-yarn-timelineserver" service, symlink the rc.d startup script
+in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
+
+    module.exports.push name: 'YARN TS # Service', handler: (ctx, next) ->
+      ctx
+      .service
+        name: 'hadoop-yarn-timelineserver'
+      .hdp_select
+        name: 'hadoop-yarn-client' # Not checked
+        name: 'hadoop-yarn-timelineserver'
+      .write
+        source: "#{__dirname}/hadoop-yarn-timelineserver"
+        local_source: true
+        destination: '/etc/init.d/hadoop-yarn-timelineserver'
+        mode: 0o0755
+      .execute
+        cmd: "service hadoop-yarn-timelineserver restart"
+        if: -> @status(-3)
       .then next
 
 ## Configuration

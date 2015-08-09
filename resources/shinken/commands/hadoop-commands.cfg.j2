@@ -1,7 +1,24 @@
 
 define command {
   command_name    check_shinken
-  command_line    $PLUGINSDIR$/check_shinken.py -a $HOSTADDRESS$ -d $ARG1$ -p $ARG2$ -s {% if use_ssl %}-s{% endif %}
+  command_line    $PLUGINSDIR$/check_shinken.py -a $HOSTADDRESS$ -d $ARG1$ -p $ARG2$ {% if use_ssl %}-s SSL{% endif %}
+}
+define command {
+  command_name    check_tcp
+  command_line    $PLUGINSDIR$/check_tcp -H $HOSTADDRESS$ -p $ARG1$ -w 0.5 -c 1
+}
+define command {
+  command_name    check_rest
+  command_line    $PLUGINSDIR$/check_rest.py -H $HOSTADDRESS$ -p $ARG1$ $ARG2$
+}
+define command {
+  command_name    query_hbase_rs_jmx
+  command_line    $PLUGINSDIR$/check_rest.py -H $HOSTADDRESS$ -p $ARG1$ -P "/jmx?qry=Hadoop:service=HBase,name=RegionServer,sub=Server" --co '"tag.Hostname" : "$HOSTADDRESS$"' $ARG2$
+}
+define command {t
+
+  command_name    check_hdfs_disk_capacity
+  command_line    $PLUGINSDIR$/check_hdfs_disk_capacity.py -H $HOSTADDRESS$ -p $ARG1$ -w $ARG2$ -c $ARG3$ $ARG4$
 }
 define command {
         command_name    check_cpu

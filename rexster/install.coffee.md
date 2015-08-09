@@ -7,14 +7,14 @@
     module.exports.push require '../lib/write_jaas'
     module.exports.push require('./').configure
 
+## Users & Groups
 
     module.exports.push name: 'Rexster # Users & Groups', handler: (ctx, next) ->
       {rexster} = ctx.config.ryba
-      ctx.group rexster.group, (err, gmodified) ->
-        return next err if err
-        ctx.user rexster.user, (err, umodified) ->
-          next err, gmodified or umodified
-
+      ctx
+      .group rexster.group
+      .user rexster.user
+      .then next
 
 ## IPTables
 

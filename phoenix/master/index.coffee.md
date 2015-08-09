@@ -8,11 +8,11 @@ running of those scans to produce regular JDBC result sets.
 
 
     module.exports = []
-    module.exports.push require('../../hbase').configure
 
 ## Configuration
 
     module.exports.configure = (ctx) ->
+      require('../../hbase').configure ctx
       {hbase} = ctx.config.ryba
       hbase.site['hbase.defaults.for.version.skip'] ?= 'true'
 

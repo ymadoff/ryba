@@ -34,7 +34,7 @@ to its associated Scheduler. Host the WebUI.
       config = shinken.arbiter.config ?= {}
       config.port ?= 7770
       config.modules = [config.modules] if typeof config.modules is 'string'
-      config.modules ?= ['named-pipe']
+      config.modules ?= []
       config.distributed ?= ctx.hosts_with_module('ryba/shinken/arbiter').length > 1
       config.hostname ?= ctx.config.host
       config.user ?= shinken.user.name

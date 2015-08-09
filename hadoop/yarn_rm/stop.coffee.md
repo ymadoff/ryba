@@ -13,7 +13,7 @@ the following two commands:
 
 ```
 service hadoop-yarn-resourcemanager stop
-su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf stop resourcemanager"
+su -l yarn -c "/usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf stop resourcemanager"
 ```
 
     module.exports.push name: 'Yarn RM # Stop', label_true: 'STOPPED', handler: (ctx, next) ->

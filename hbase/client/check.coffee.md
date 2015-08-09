@@ -41,16 +41,20 @@ scanning the table.
       .then next
 
     module.exports.push name: 'HBase Client # Check Splits', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
+      {force_check} = ctx.config.ryba
       hbase_ctxs = ctx.contexts 'ryba/hbase/master', require('../master').configure
       {admin} = hbase_ctxs[0].config.ryba.hbase
       ctx.execute
         cmd: mkcmd.hbase ctx, """
-          if hbase shell 2>/dev/null <<< "list" | grep 'test_splits'; then echo "disable 'test_splits'" | hbase shell 2>/dev/null; echo "drop 'test_splits'" | hbase shell 2>/dev/null; fi
+          #if hbase shell 2>/dev/null <<< "list" | grep 'test_splits'; then echo "disable 'test_splits'; drop 'test_splits'" | hbase shell 2>/dev/null; fi
+          echo "disable 'test_splits'; drop 'test_splits'" | hbase shell 2>/dev/null
           echo "create 'test_splits', 'cf1', SPLITS => ['1', '2', '3']" | hbase shell 2>/dev/null;
           echo "scan 'hbase:meta',  {COLUMNS => 'info:regioninfo', FILTER => \\"PrefixFilter ('test_split')\\"}" | hbase shell 2>/dev/null
           """
+        not_if_exec: unless force_check then mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"list 'test_splits'\" | grep -w 'test_splits'"
       , (err, executed, stdout) ->
-        return next err if err
+        throw err if err
+        return unless executed
         lines = string.lines stdout
         count = 0
         for line in lines

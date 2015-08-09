@@ -30,6 +30,8 @@ A list for configuration properties supported by HDP 2.2 is available on the
       # For documentation purpose in case we HDFS_DELEGATION_TOKEN in hive queries
       # Following line: ryba.tez.tez_site['tez.am.am.complete.cancel.delegation.tokens'] ?= 'false'
       # Renamed to: ryba.tez.tez_site['tez.cancel.delegation.tokens.on.completion'] ?= 'false'
+      # Tez UI
+      ryba.tez.tez_site['tez.runtime.convert.user-payload.to.history-text'] ?= 'true' if ctx.hosts_with_module('ryba/tez/ui').length
 
 ## Configuration for Resource Allocation
 

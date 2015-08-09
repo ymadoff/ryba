@@ -23,5 +23,7 @@ Check if the Hive Server2 server is listening.
       # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.3.0/CDH4-Security-Guide/cdh4sg_topic_9_1.html
       # !connect jdbc:hive2://master3.ryba:10001/default;principal=hive/master3.ryba@HADOOP.RYBA
       next null, 'TODO'
+      # hive.site['hive.zookeeper.quorum']
+      # jdbc:hive2://<zookeeper_ensemble>;serviceDiscoveryMode=zooKeeper; zooKeeperNamespace=<hiveserver2_namespace
 
 

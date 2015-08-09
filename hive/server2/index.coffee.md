@@ -96,10 +96,14 @@ Example:
       hive.site['hive.server2.authentication.spnego.principal'] ?= core_site['hadoop.http.authentication.kerberos.principal']
       hive.site['hive.server2.authentication.spnego.keytab'] ?= core_site['hadoop.http.authentication.kerberos.keytab']
 
-## Rolling Upgrade
+## HS2 High Availability & Rolling Upgrade
 
-      # 'hive.zookeeper.quorum' imported from hive client
-      hive.site['hive.server2.support.dynamic.service.discovery'] ?= 'true'
+      zoo_ctxs = ctx.contexts 'ryba/zookeeper/server', require('../../zookeeper/server').configure
+      zookeeper_quorum = for zoo_ctx in zoo_ctxs
+        "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
+      hive.site['hive.zookeeper.quorum'] ?= zookeeper_quorum.join ','
+      hs2_ctxs = ctx.contexts 'ryba/hive/server2'
+      hive.site['hive.server2.support.dynamic.service.discovery'] ?= if hs2_ctxs.length > 1 then 'true' else 'false'
       hive.site['hive.zookeeper.session.timeout'] ?= '600000' # Default is "600000"
       hive.site['hive.server2.zookeeper.namespace'] ?= 'hiveserver2' # Default is "hiveserver2"
 

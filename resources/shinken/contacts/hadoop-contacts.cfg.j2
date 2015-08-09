@@ -5,6 +5,6 @@ define contact{
   alias         {{ user.alias }}
   email         {{ user.email }}
   password      {{ user.password }}
-  isAdmin       {% if user.admin %}1{% else %}0{% endif %}
-}
-{% endfor %}
+  is_admin       {% if user.admin %}1{% else %}0{% endif %}
+  can_submit_commands {% if user.admin %}1{% else %}0{% endif %}
+}{% endfor %}

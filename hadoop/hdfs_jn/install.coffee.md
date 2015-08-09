@@ -17,7 +17,7 @@ most (N - 1) / 2 failures to continue to function normally.
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/hdp_select'
 
 ## IPTables
 
@@ -67,34 +67,20 @@ Install the "hadoop-hdfs-journalnode" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
     module.exports.push name: 'HDFS JN # Service', handler: (ctx, next) ->
-      {hdfs} = ctx.config.ryba
-      ctx.hdp_service
+      ctx
+      .service
         name: 'hadoop-hdfs-journalnode'
-        write: [
-          match: /^\. \/etc\/default\/hadoop-hdfs-journalnode .*$/m
-          replace: '. /etc/default/hadoop-hdfs-journalnode # RYBA FIX rc.d, DONT OVERWRITE'
-          append: ". /lib/lsb/init-functions"
-        ,
-          # HDP default is "/usr/lib/hadoop/sbin/hadoop-daemon.sh"
-          match: /^EXEC_PATH=.*$/m
-          replace: "EXEC_PATH=\"${HADOOP_HOME}/sbin/hadoop-daemon.sh\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-        ,
-          # HDP default is "/var/run/hadoop-hdfs/hadoop-hdfs-journalnode.pid"
-          match: /^PIDFILE=".*".*$/mg
-          replace: "PIDFILE=\"${HADOOP_PID_DIR}/hadoop-$HADOOP_IDENT_STRING-journalnode.pid\" # RYBA FIX, DONT OVEWRITE"
-        ]
-        etc_default:
-          'hadoop-hdfs-journalnode':
-            write: [
-              match: /^export HADOOP_PID_DIR=.*$/m # HDP default is "/var/run/hadoop-hdfs"
-              replace: "export HADOOP_PID_DIR=#{hdfs.pid_dir} # RYBA"
-            ,
-              match: /^export HADOOP_LOG_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
-              replace: "export HADOOP_LOG_DIR=#{hdfs.log_dir} # RYBA"
-            ,
-              match: /^export HADOOP_IDENT_STRING=.*$/m # HDP default is "hdfs"
-              replace: "export HADOOP_IDENT_STRING=#{hdfs.user.name} # RYBA"
-            ]
+      .hdp_select
+        name: 'hadoop-hdfs-client' # Not checked
+        name: 'hadoop-hdfs-journalnode'
+      .write
+        source: "#{__dirname}/hadoop-hdfs-journalnode"
+        local_source: true
+        destination: '/etc/init.d/hadoop-hdfs-journalnode'
+        mode: 0o0755
+      .execute
+        cmd: "service hadoop-hdfs-journalnode restart"
+        if: -> @status(-3)
       .then next
 
 ## Configure

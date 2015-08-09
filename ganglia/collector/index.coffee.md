@@ -51,9 +51,11 @@ Example:
       # Ports
       ctx.config.ryba.ganglia.collector_port ?= 8649
       ctx.config.ryba.ganglia.slaves_port ?= 8660
+      ctx.config.ryba.ganglia.hbase_region_port ?= ctx.config.ryba.ganglia.slaves_port
       ctx.config.ryba.ganglia.nn_port ?= 8661
       ctx.config.ryba.ganglia.jt_port ?= 8662
       ctx.config.ryba.ganglia.hm_port ?= 8663
+      ctx.config.ryba.ganglia.hbase_master_port ?= ctx.config.ryba.ganglia.hm_port
       ctx.config.ryba.ganglia.rm_port ?= 8664
       ctx.config.ryba.ganglia.jhs_port ?= 8666
       ctx.config.ryba.ganglia.spark_port ?= 8667
