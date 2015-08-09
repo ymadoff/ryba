@@ -70,10 +70,10 @@
       zeppelin.env['ZEPPELIN_SPARK_USEHIVECONTEXT'] ?= 'false'
       zeppelin.env['SPARK_HOME'] ?= '/usr/hdp/current/spark-client'
       zeppelin.env['ZEPPELIN_JAVA_OPTS'] ?= '-Dhdp.version=2.3.0.0-2557'
-      zeppelin.env['SPARK_CONF_DIR'] ?= spark.conf_dir
+      
 
       #zeppelin.env['SPARK_YARN_JAR'] ?= 'file:///var/lib/zeppelin/interpreter/spark/zeppelin-spark-0.6.0-incubating-SNAPSHOT.jar'
-      zeppelin.env['SPARK_YARN_JAR'] ?= 'hdfs:///user/spark/share/lib/spark-assembly-1.3.1.2.3.0.0-2557-hadoop2.7.1.2.3.0.0-2557.jar'
+      # zeppelin.env['SPARK_YARN_JAR'] ?= 'hdfs:///user/spark/share/lib/spark-assembly-1.3.1.2.3.0.0-2557-hadoop2.7.1.2.3.0.0-2557.jar'
       zeppelin.env['HADOOP_HOME'] ?= '/usr/hdp/current'
 
 

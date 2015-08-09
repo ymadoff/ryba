@@ -92,7 +92,7 @@ SSL only required for the server
     #     shy: true
     #  .then next
 
-## GetHDP select status
+## HDP select status
 
     module.exports.push name: 'Zeppelin Environment # HDP',  handler: (ctx, next) ->
       {zeppelin} = ctx.config.ryba
@@ -104,6 +104,22 @@ SSL only required for the server
           hdp_select_version = stdout.trim() if executed
           zeppelin.env['ZEPPELIN_JAVA_OPTS'] ?= "-Dhdp.version=#{hdp_select_version}"
           next null
+
+
+## Zeppelin spark assemblye Jar
+
+Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
+
+    module.exports.push name: 'Zeppelin Yarn # Spark',  handler: (ctx, next) ->
+      {zeppelin, core_site, spark} = ctx.config.ryba
+      ctx
+        .execute
+          cmd: 'ls -l /usr/hdp/current/spark-client/lib/ | grep -m 1 assembly | awk {\'print $9\'}'
+        , (err, _, stdout) ->
+          return next err if err
+          spark_jar = stdout.trim()
+          zeppelin.env['SPARK_YARN_JAR'] ?= "#{core_site['fs.defaultFS']}/user/#{spark.user.name}/share/lib/#{spark_jar}"
+          return next()
 
 
 ## Zeppelin properties configuration
@@ -178,6 +194,7 @@ SSL only required for the server
                 '/etc/security/keytabs:/etc/security/keytabs'
                 '/etc/usr/hdp:/usr/hdp'
                 '/etc/spark/conf:/etc/spark/conf'
+                '/etc/hive/conf:/etc/hive/conf'
                 ]
         net: 'host'
         name: 'zeppelin_notebook'
