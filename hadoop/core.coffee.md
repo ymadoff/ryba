@@ -692,13 +692,13 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 
     module.exports.push name: 'Hadoop Core # Metrics', handler: (ctx, next) ->
       {hadoop_metrics, hadoop_conf_dir} = ctx.config.ryba
+      content = ""
+      for k, v of hadoop_metrics
+        content += "#{k}=#{v}\n" if v?
       ctx
       .write
         destination: "#{hadoop_conf_dir}/hadoop-metrics2.properties"
-        write: for k, v of hadoop_metrics
-          match: ///^#{quote k}=.*$///mg
-          replace: if v is null then "" else "#{k}=#{v}"
-          append: v isnt null
+        content: content
         backup: true
       .then next
 

@@ -35,7 +35,7 @@ Example:
     module.exports.configure = (ctx) ->
       #require('masson/core/iptables').configure ctx
       ctx.config.ryba ?= {}
-      ctx.config.ryba.graphite ?= {}
+      graphite = ctx.config.ryba.graphite ?= {}
       #ctx.config.ryba.graphite.carbon_user = name: ctx.config.ryba.carbon_user if typeof ctx.config.ryba.carbon_user is 'string'
       #ctx.config.ryba.graphite.carbon_user ?= {}
       #ctx.config.ryba.graphite.carbon_user.name ?= 'carbon'
@@ -50,11 +50,11 @@ Example:
       #ctx.config.ryba.graphite.carbon_group.name ?= 'carbon'
       #ctx.config.ryba.graphite.carbon_group.system ?= true
       ## Ports
-      ctx.config.ryba.graphite.carbon_port ?= 2023
-      ctx.config.ryba.graphite.carbon_cache_port ?= 2003
-      ctx.config.ryba.graphite.carbon_aggregator_port ?= 2023
-
-      ctx.config.ryba.graphite.carbon_rewrite_rules ?= [
+      graphite.carbon_port ?= 2023
+      graphite.carbon_cache_port ?= 2003
+      graphite.carbon_aggregator_port ?= 2023
+      graphite.metrics_prefix ?= 'hadoop'
+      graphite.carbon_rewrite_rules ?= [
          '[pre]'
          '^(?P<cluster>\w+).hbase.[a-zA-Z0-9_.,:;\x2d\x3D]*Context\x3D(?P<context>\w+).Hostname\x3D(?P<host>\w+).(?P<metric>.\w+)*$ = \g<cluster>.\g<host>.hbase.\g<context>\g<metric>'
          '^(?P<cluster>\w+).(?P<bean>\w+).(?P<foobar>\w+).Hostname\x3D(?P<host>\w+).(?P<metric>.\w+)*$ = \g<cluster>.\g<host>.\g<foobar>\g<metric>'
@@ -65,7 +65,7 @@ Example:
          'rpcdetailed = rpc'
          ]
 
-      ctx.config.ryba.graphite.carbon_conf ?= [
+      graphite.carbon_conf ?= [
          '[aggregator]'
          'LINE_RECEIVER_INTERFACE = 0.0.0.0'
          'LINE_RECEIVER_PORT = 2023'
