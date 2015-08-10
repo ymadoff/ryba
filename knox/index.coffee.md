@@ -14,13 +14,6 @@ with Hadoop clusters.
     module.exports.configure = (ctx) ->
       knox = ctx.config.ryba.knox ?= {}
       # Load configurations
-      require('masson/core/iptables').configure ctx
-      require('../hadoop/core').configure ctx
-      # require('../hadoop/yarn_rm').configure ctx
-      # require('../hive/webhcat').configure ctx
-      # require('../oozie/server').configure ctx
-      # {core_site, hive, webhcat, oozie} = ctx.config.ryba
-      # Layout
       knox.conf_dir ?= '/etc/knox/conf'
       # User
       knox.user = name: knox.user if typeof knox.user is 'string'
@@ -50,11 +43,7 @@ with Hadoop clusters.
       knox.site['gateway.hadoop.kerberos.secured'] ?= 'true'
       knox.site['sun.security.krb5.debug'] ?= 'true'
       # Calculate Services config values for default topology
-      rm_contexts = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
-      rm_shortname = if rm_contexts.length > 1 then ".#{rm_contexts[0].config.shortname}" else ''      
-      rm_address = rm_contexts[0].config.ryba.yarn.site["yarn.resourcemanager.address#{rm_shortname}"]
-      nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
-      nn_context = ctx.contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn').configure
+      webhcat_ctxs = ctx.contexts 'ryba/hive/webhcat', require('../hive/webhcat').configure
       # require('../hadoop/hdfs_nn').configure hdfs_ctx
       # console.log require('util').inspect hdfs_ctx.config.ryba.hdfs
       # webhcat_host = ctx.host_with_module 'ryba/hive/webhcat'
@@ -96,22 +85,35 @@ with Hadoop clusters.
       topology.providers.haProvider ?=
         role: 'ha'
         config: WEBHDFS: 'maxFailoverAttempts=3;failoverSleep=1000;maxRetryAttempts=300;retrySleep=1000;enabled=true'
+      ### Services ###
       topology.services ?= {}
-      topology.services['namenode'] ?= "#{ctx.config.ryba.core_site['fs.defaultFS']}"
-       # If condition is mandatory since it is undefined at the first execs
-      topology.services['jobtracker'] ?= "rpc://#{rm_address}" if rm_address?
-      topology.services.webhdfs ?= nn_context.config.ryba.hdfs.site["dfs.namenode.https-address.#{ryba.nameservice}.#{nn_host.slit('.')[0]}"] for nn_host in nn_hosts
-      # knox.services['webhdfs'] ?= "https://#{webhdfs_host}:50470/webhdfs"
-      # knox.services['webhcat'] ?= "http://#{webhcat_host}:#{webhcat_port}/templeton"
-      # knox.services['oozie'] ?= "#{oozie.site['oozie.base.url']}"
+      # Namenode
+      nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn').configure
+      if nn_ctxs.length
+        topology.services['namenode'] ?= nn_ctxs[0].config.ryba.core_site['fs.defaultFS']
+      # WebHDFS
+        topology.services['webhdfs'] ?= path.join nn_ctx.config.ryba.hdfs.site["dfs.namenode.https-address.#{ryba.nameservice}.#{nn_ctx.config.shortname}"], 'webhdfs' for nn_ctx in nn_ctxs
+      # Jobtracker
+      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
+      if rm_ctxs.length
+        rm_shortname = if rm_ctxs.length > 1 then ".#{rm_ctxs[0].config.shortname}" else ''    
+        rm_address = rm_ctxs[0].config.ryba.yarn.site["yarn.resourcemanager.address#{rm_shortname}"]
+        topology.services['jobtracker'] ?= "rpc://#{rm_address}" if rm_address?
+      # WebHCat
+      if nn_ctxs.length
+        host = webhcat_ctxs[0].config.host if nn_ctxs.length
+        port = webhcat_ctxs[0].config.ryba.webhcat.site['templeton.port']
+        knox.services['webhcat'] ?= "http://#{host}:#{port}/templeton"
+      # Oozie
+      oozie_ctxs = ctx.contexts 'ryba/oozie/server', require('../oozie/server').configure
+      if oozie_ctxs.length
+        knox.services['oozie'] ?= oozie_ctxs[0].config.ryba.oozie.site['oozie.base.url']
+      # WebHBase
+      stargate_ctxs = 
       # knox.services['webhbase'] ?= "http://#{hbase_host}:60080" if hbase_host
-      # knox.services['hive'] ?= "http://#{hive_host}:#{hive_port}/cliservice" if hive_host
-        # services:
-        #   NAMENODE: 'hfds://localhost:8020'
-        #   JOBTRACKER: 'rpc://localhost:8050'
-        #   WEBHDFS: ['http://host1:50070/webhdfs', 'http://host1:50070/webhdfs']
-        #   WEBHCAT: 'http://localhost:50111/templeton'
-
+      # Thrift
+      knox.services['hive'] ?= "http://#{hive_host}:#{hive_port}/cliservice" if hive_host
+        
     module.exports.push commands: 'check', modules: 'ryba/knox/check'
 
     module.exports.push commands: 'install', modules: [
@@ -125,3 +127,7 @@ with Hadoop clusters.
     module.exports.push commands: 'stop', modules: 'ryba/knox/stop'
 
     module.exports.push commands: 'status', modules: 'ryba/knox/status'
+
+## Dependencies
+
+    path = require 'path'
