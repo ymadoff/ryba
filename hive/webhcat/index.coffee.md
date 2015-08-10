@@ -36,6 +36,8 @@
       webhcat.site['templeton.kerberos.secret'] ?= 'secret'
       webhcat.site['webhcat.proxyuser.hue.groups'] ?= '*'
       webhcat.site['webhcat.proxyuser.hue.hosts'] ?= '*'
+      webhcat.site['webhcat.proxyuser.knox.groups'] ?= '*'
+      webhcat.site['webhcat.proxyuser.knox.hosts'] ?= '*'
       webhcat.site['templeton.port'] ?= 50111
       webhcat.site['templeton.controller.map.mem'] = 1600 # Total virtual memory available to map tasks.
 

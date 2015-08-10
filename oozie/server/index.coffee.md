@@ -133,24 +133,23 @@ Example
       # throw new Error "Missing extjs.destination" unless ryba.extjs.destination
       # Note, we might also enrich "oozie.credentials.credentialclasses"
       # For example
-      ryba.oozie.site['oozie.credentials.credentialclasses'] = """
+      oozie.site['oozie.credentials.credentialclasses'] = """
       hcat=org.apache.oozie.action.hadoop.HCatCredentials,
       hbase=org.apache.oozie.action.hadoop.HbaseCredentials
       """
 
 ## Configuration for Proxy Users
 
-      ryba.oozie.site['oozie.service.ProxyUserService.proxyuser.hive.hosts'] ?= "*"
-      ryba.oozie.site['oozie.service.ProxyUserService.proxyuser.hive.groups'] ?= "*"
-      ryba.oozie.site['oozie.service.ProxyUserService.proxyuser.hue.hosts'] ?= "*"
-      ryba.oozie.site['oozie.service.ProxyUserService.proxyuser.hue.groups'] ?= "*"
+      for user in ['hive', 'hue', 'knox']
+        oozie.site["oozie.service.ProxyUserService.proxyuser.#{user}.hosts"] ?= "*"
+        oozie.site["oozie.service.ProxyUserService.proxyuser.#{user}.groups"] ?= "*"
       falcon_cts = ctx.contexts 'ryba/falcon', require('../../falcon').configure
       if falcon_cts.length
         {user} = falcon_cts[0].config.ryba.falcon
-        ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{user.name}.hosts"] ?= "*"
-        ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{user.name}.groups"] ?= "*"
-        ryba.oozie.site['oozie.service.URIHandlerService.uri.handlers'] ?= "org.apache.oozie.dependency.FSURIHandler,org.apache.oozie.dependency.HCatURIHandler"
-        ryba.oozie.site['oozie.service.ELService.ext.functions.coord-job-submit-instances'] ?= """
+        oozie.site["oozie.service.ProxyUserService.proxyuser.#{user.name}.hosts"] ?= "*"
+        oozie.site["oozie.service.ProxyUserService.proxyuser.#{user.name}.groups"] ?= "*"
+        oozie.site['oozie.service.URIHandlerService.uri.handlers'] ?= "org.apache.oozie.dependency.FSURIHandler,org.apache.oozie.dependency.HCatURIHandler"
+        oozie.site['oozie.service.ELService.ext.functions.coord-job-submit-instances'] ?= """
           now=org.apache.oozie.extensions.OozieELExtensions#ph1_now_echo,
           today=org.apache.oozie.extensions.OozieELExtensions#ph1_today_echo,
           yesterday=org.apache.oozie.extensions.OozieELExtensions#ph1_yesterday_echo,
@@ -162,7 +161,7 @@ Example
           latest=org.apache.oozie.coord.CoordELFunctions#ph2_coord_latest_echo,
           future=org.apache.oozie.coord.CoordELFunctions#ph2_coord_future_echo
           """
-        ryba.oozie.site['oozie.service.ELService.ext.functions.coord-action-create-inst'] ?= """
+        oozie.site['oozie.service.ELService.ext.functions.coord-action-create-inst'] ?= """
           now=org.apache.oozie.extensions.OozieELExtensions#ph2_now_inst,
           today=org.apache.oozie.extensions.OozieELExtensions#ph2_today_inst,
           yesterday=org.apache.oozie.extensions.OozieELExtensions#ph2_yesterday_inst,
@@ -175,7 +174,7 @@ Example
           formatTime=org.apache.oozie.coord.CoordELFunctions#ph2_coord_formatTime,
           user=org.apache.oozie.coord.CoordELFunctions#coord_user
           """
-        ryba.oozie.site['oozie.service.ELService.ext.functions.coord-action-start'] ?= """
+        oozie.site['oozie.service.ELService.ext.functions.coord-action-start'] ?= """
           now=org.apache.oozie.extensions.OozieELExtensions#ph2_now,
           today=org.apache.oozie.extensions.OozieELExtensions#ph2_today,
           yesterday=org.apache.oozie.extensions.OozieELExtensions#ph2_yesterday,
@@ -191,22 +190,22 @@ Example
           formatTime=org.apache.oozie.coord.CoordELFunctions#ph3_coord_formatTime,
           user=org.apache.oozie.coord.CoordELFunctions#coord_user
           """
-        ryba.oozie.site['oozie.service.ELService.ext.functions.coord-sla-submit'] = """
+        oozie.site['oozie.service.ELService.ext.functions.coord-sla-submit'] = """
           instanceTime=org.apache.oozie.coord.CoordELFunctions#ph1_coord_nominalTime_echo_fixed,
           user=org.apache.oozie.coord.CoordELFunctions#coord_user
           """
-        ryba.oozie.site['oozie.service.ELService.ext.functions.coord-sla-create'] = """
+        oozie.site['oozie.service.ELService.ext.functions.coord-sla-create'] = """
           instanceTime=org.apache.oozie.coord.CoordELFunctions#ph2_coord_nominalTime,
           user=org.apache.oozie.coord.CoordELFunctions#coord_user
           """
 
 ## Configuration for Hadoop
 
-      ryba.oozie.hadoop_config ?= {}
-      ryba.oozie.hadoop_config['mapreduce.jobtracker.kerberos.principal'] ?= "mapred/#{ryba.static_host}@#{ryba.realm}"
-      ryba.oozie.hadoop_config['yarn.resourcemanager.principal'] ?= "yarn/#{ryba.static_host}@#{ryba.realm}"
-      ryba.oozie.hadoop_config['dfs.namenode.kerberos.principal'] ?= "hdfs/#{ryba.static_host}@#{ryba.realm}"
-      ryba.oozie.hadoop_config['mapreduce.framework.name'] ?= "yarn"
+      oozie.hadoop_config ?= {}
+      oozie.hadoop_config['mapreduce.jobtracker.kerberos.principal'] ?= "mapred/#{ryba.static_host}@#{ryba.realm}"
+      oozie.hadoop_config['yarn.resourcemanager.principal'] ?= "yarn/#{ryba.static_host}@#{ryba.realm}"
+      oozie.hadoop_config['dfs.namenode.kerberos.principal'] ?= "hdfs/#{ryba.static_host}@#{ryba.realm}"
+      oozie.hadoop_config['mapreduce.framework.name'] ?= "yarn"
 
 ## Commands
 
