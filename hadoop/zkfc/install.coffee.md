@@ -73,9 +73,10 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
         local_source: true
         destination: '/etc/init.d/hadoop-hdfs-zkfc'
         mode: 0o0755
+        unlink: true
       .execute
         cmd: "service hadoop-hdfs-zkfc restart"
-        if: -> @status(-3)
+        if: -> @status -3
       .then next
 
 ## Configure
