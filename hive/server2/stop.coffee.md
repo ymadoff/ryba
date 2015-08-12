@@ -16,10 +16,8 @@ su -l hive -c 'nohup /usr/lib/hive/bin/hiveserver2 >/var/log/hive/hiveserver2.ou
 ```
 
     module.exports.push name: 'Hive & Server2 # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
-      ctx.service
-        srv_name: 'hive-server2'
-        action: 'stop'
-        if_exists: '/etc/init.d/hive-server2'
+      ctx.service_stop
+        name: 'hive-server2'
       .then next
 
 ## Stop Clean Logs
