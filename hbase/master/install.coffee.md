@@ -98,11 +98,19 @@ Environment passed to the Master before it starts.
       # return next() unless hbase.master_opts
       ctx.write
         destination: "#{hbase.conf_dir}/hbase-env.sh"
-        match: /^export HBASE_MASTER_OPTS="(.*) \$\{HBASE_MASTER_OPTS\}" # RYBA .*/m
+        match: /^export HBASE_MASTER_OPTS="(.*)" # RYBA(.*)$/m
         replace: "export HBASE_MASTER_OPTS=\"#{hbase.master_opts} ${HBASE_MASTER_OPTS}\" # RYBA CONF \"ryba.hbase.master_opts\", DONT OVERWRITE"
         before: /^export HBASE_MASTER_OPTS=".*"$/m
         backup: true
       .then next
+
+      #  match: /^export HBASE_ROOT_LOGGER=.*$/mg
+      #  replace: "export HBASE_ROOT_LOGGER=#{hbase.master.log4j.root_logger}"
+      #  append: true
+      #  match: /^export HBASE_SECURITY_LOGGER=.*$/mg
+      #  replace: "export HBASE_SECURITY_LOGGER=#{hbase.master.log4j.security_logger}"
+      #  append: true
+
 
     module.exports.push 'ryba/hadoop/hdfs_nn/wait'
 
@@ -173,6 +181,17 @@ https://hbase.apache.org/book/security.html
         kadmin_password: kadmin_password
         kadmin_server: admin_server
       .then next
+
+
+    module.exports.push name: 'HBase Master # Log4J', handler: (ctx, next) ->
+      {hbase} = ctx.config.ryba
+      ctx
+      .write
+        destination: "#{hbase.conf_dir}/log4j.properties"
+        source: "#{__dirname}/../../resources/hbase/log4j.properties"
+        local_source: true
+      .then next
+
 
 ## Metrics
 

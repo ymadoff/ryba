@@ -17,7 +17,7 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
       # require('../../hadoop/hdfs').configure ctx
       require('../').configure ctx
       {realm, hbase, ganglia, graphite} = ctx.config.ryba
-      hbase.master_opts ?= ''
+      hbase.master_opts ?= hbase.env['HBASE_MASTER_OPTS']
       hbase.site['hbase.master.port'] ?= '60000'
       hbase.site['hbase.master.info.port'] ?= '60010'
       hbase.site['hbase.master.info.bindAddress'] ?= '0.0.0.0'
@@ -67,6 +67,15 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
       # hbase.site['hbase.meta.replica.count'] ?= '3' # Default to '1'
       # hbase.site['hbase.region.replica.wait.for.primary.flush'] ?= 'true'
       # hbase.site['hbase.region.replica.storefile.refresh.memstore.multiplier'] ?= '4'
+
+## Configuration for Log4J
+
+      hbase.master_opts = "#{hbase.env['HBASE_MASTER_OPTS']} -Dhbase.log4j.extra_appender=,socket_server -Dhbase.log4j.server_port=#{hbase.log4j.server_port}" if hbase.log4j?.server_port?
+      hbase.master_opts = "#{hbase.env['HBASE_MASTER_OPTS']} -Dhbase.log4j.extra_appender=,socket_client -Dhbase.log4j.remote_host=#{hbase.log4j.remote_host} -Dhbase.log4j.remote_port=#{hbase.log4j.remote_port}" if hbase.log4j?.remote_host? && hbase.log4j?.remote_port?
+      #hbase.master.log4j.root_logger = "INFO,RFA,socket_server" if hbase.log4j.server_port?
+      #hbase.master.log4j.root_logger = "INFO,RFA,socket_client" if hbase.log4j.remote_host? && hbase.log4j.remote_port?
+      #hbase.master.log4j.security_logger = "INFO,RFAS,socket_server" if hbase.log4j.server_port?
+      #hbase.master.log4j.security_logger = "INFO,RFAS,socket_client" if hbase.log4j.remote_host? && hbase.log4j.remote_port?
 
 ## Metrics systems
 
