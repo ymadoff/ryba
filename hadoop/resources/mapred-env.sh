@@ -4,6 +4,8 @@ export HADOOP_JOB_HISTORYSERVER_HEAPSIZE={{ryba.mapred.heapsize}}
 
 export HADOOP_MAPRED_ROOT_LOGGER=INFO,RFA
 
+export HADOOP_MAPRED_PID_DIR="{{ryba.mapred.pid_dir}}"
+
 #export HADOOP_JOB_HISTORYSERVER_OPTS=
 #export HADOOP_MAPRED_LOG_DIR="" # Where log files are stored.  $HADOOP_MAPRED_HOME/logs by default.
 #export HADOOP_JHS_LOGGER=INFO,RFA # Hadoop JobSummary logger.
