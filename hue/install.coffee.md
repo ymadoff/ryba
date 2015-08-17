@@ -64,7 +64,6 @@ The packages "extjs-2.2-1" and "hue" are installed.
     module.exports.push name: 'Hue # Packages', timeout: -1, handler: (ctx, next) ->
       ctx
       .service name: 'hue'
-      .service name: 'hue-plugins'
       .then next
 
 # ## Core
