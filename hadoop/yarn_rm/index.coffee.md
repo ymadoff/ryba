@@ -22,6 +22,7 @@
       ]
       for property in jhs_properties
         ryba.mapred.site[property] ?= if jhs_ctx then jhs_ctx.config.ryba.mapred.site[property] else null
+      ryba.yarn.site['yarn.resourcemanager.bind-host'] ?= '0.0.0.0'
 
 ## Configuration for Memory and CPU
 

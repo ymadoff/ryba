@@ -11,7 +11,8 @@ Check the health of the ResourceManager(s).
 
 Connect to the provided ResourceManager to check its health. This command
 `yarn rmadmin -checkHealth {serviceId}` return 0 if the ResourceManager is
-healthy, non-zero otherwise.
+healthy, non-zero otherwise. This check is only executed in High Availability
+mode.
 
     module.exports.push name: 'YARN RM # Check HA Health', label_true: 'CHECKED', handler: (ctx, next) ->
       return next() unless ctx.hosts_with_module('ryba/hadoop/yarn_rm').length > 1
