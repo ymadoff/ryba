@@ -29,10 +29,3 @@ su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec 
         if_exists: '/etc/init.d/hadoop-yarn-resourcemanager'
       .then next
 
-
-## Errors
-
-*   Message "yarn is trying to renew a token with wrong password"  on startup
-    Cause: an application fail to recover
-    Solution: remove the zookeeper entries `rmr /rmstore`
-
