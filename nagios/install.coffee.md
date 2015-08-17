@@ -5,7 +5,7 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/commons/httpd'
     module.exports.push 'masson/commons/java'
-    module.exports.push 'ryba/oozie/client' # Used by check_oozie_status.sh
+    module.exports.push 'ryba/oozie/client/install' # Used by check_oozie_status.sh
 
     module.exports.push require('./index').configure
 
