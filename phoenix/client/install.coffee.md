@@ -106,9 +106,10 @@ Independently, if 'ryba' hasn't CREATE right on these 3 tables, it will be grant
         /usr/hdp/current/phoenix-client/bin/sqlline.py #{zk_path} 2>/dev/null <<< '!q'
         code=0
         fi
-        if [ `hbase shell 2>/dev/null <<< "user_permission 'SYSTEM.*'" | egrep 'ryba.*(CREATE|READ|WRITE).*(CREATE|READ|WRITE).*(CREATE|READ|WRITE)' | wc -l` -lt "3" ]; then
+        if [ `hbase shell 2>/dev/null <<< "user_permission 'SYSTEM.*'" | egrep 'ryba.*(CREATE|READ|WRITE).*(CREATE|READ|WRITE).*(CREATE|READ|WRITE)' | wc -l` -lt "4" ]; then
         hbase shell 2>/dev/null <<-CMD
         grant 'ryba', 'RWC', 'SYSTEM.CATALOG'
+        grant 'ryba', 'RWC', 'SYSTEM.FUNCTION'
         grant 'ryba', 'RWC', 'SYSTEM.SEQUENCE'
         grant 'ryba', 'RWC', 'SYSTEM.STATS'
         CMD

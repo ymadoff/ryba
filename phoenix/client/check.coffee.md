@@ -19,7 +19,7 @@ Phoenix table are automatically converted to uppercase.
 Refer to the [sqlline] documentation for a complete list of supported command
 instructions.
 
-    module.exports.push name: 'Phoenix # Check', handler: (ctx, next) ->
+    module.exports.push name: 'Phoenix Client # Check', handler: (ctx, next) ->
       {force_check, user, hbase} = ctx.config.ryba
       zk_path = "#{hbase.site['hbase.zookeeper.quorum']}"
       zk_path += ":#{hbase.site['hbase.zookeeper.property.clientPort']}"
@@ -30,13 +30,15 @@ instructions.
       ctx
       .execute
         cmd: mkcmd.hbase ctx, """
+        hdfs dfs -rm -skipTrash check-#{ctx.config.host}-phoenix
         # Drop table if it exists
         # if hbase shell 2>/dev/null <<< "list" | grep '#{table}'; then echo "disable '#{table}'; drop '#{table}'" | hbase shell 2>/dev/null; fi
         echo "disable '#{table}'; drop '#{table}'" | hbase shell 2>/dev/null
         # Create table with dummy column family and grant access to ryba
         echo "create '#{table}', 'cf1'; grant 'ryba', 'RWXCA', '#{table}'" | hbase shell 2>/dev/null;
         """
-        not_if_exec: unless force_check then mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"list\" | grep -w '#{table}'"
+        # not_if_exec: unless force_check then mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"list\" | grep -w '#{table}'"
+        not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{ctx.config.host}-phoenix"
       , (err, status) ->
         check = status unless err
       .write
@@ -76,8 +78,10 @@ instructions.
         ./sqlline.py #{zk_path} \
           #{user.home}/check_phoenix/select.sql \
         | egrep "^'" | tail -n+2
+        hdfs dfs -touchz check-#{ctx.config.host}-phoenix
         """
         if: -> check
+        trap_on_error: true
       , (err, check, data) ->
         throw err if err
         return unless check

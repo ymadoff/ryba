@@ -10,7 +10,7 @@
 
 ## Packages
 
-    module.exports.push name: 'Phoenix # Install', handler: (ctx, next) ->
+    module.exports.push name: 'Phoenix Master # Install', handler: (ctx, next) ->
       ctx
       .service name: 'phoenix'
       .hdp_select name: 'phoenix-client'
