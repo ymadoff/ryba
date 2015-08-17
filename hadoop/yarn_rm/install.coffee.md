@@ -93,33 +93,6 @@ inside "/etc/init.d" and activate it on startup.
 
     module.exports.push name: 'YARN RM # Service', handler: (ctx, next) ->
       {yarn} = ctx.config.ryba
-      # ctx.hdp_service
-      #   name: 'hadoop-yarn-resourcemanager'
-      #   write: [
-      #     match: /^\. \/etc\/default\/hadoop-yarn-resourcemanager .*$/m
-      #     replace: '. /etc/default/hadoop-yarn-resourcemanager # RYBA FIX rc.d, DONT OVERWRITE'
-      #     append: ". /lib/lsb/init-functions"
-      #   ,
-      #     # HDP default is "$HADOOP_PID_DIR/yarn-$YARN_IDENT_STRING-resourcemanager.pid"
-      #     match: /^PIDFILE=".*".*$/mg
-      #     replace: "PIDFILE=\"${YARN_PID_DIR}/yarn-$YARN_IDENT_STRING-resourcemanager.pid\" # RYBA FIX, DONT OVERWRITE"
-      #   ]
-      #   etc_default:
-      #     'hadoop-yarn-resourcemanager':
-      #       write: [
-      #         match: /^export YARN_PID_DIR=.*$/m # HDP default is "/var/run/hadoop-hdfs"
-      #         replace: "export YARN_PID_DIR=#{yarn.pid_dir} # RYBA, DONT OVERWRITE"
-      #       ,
-      #         match: /^export YARN_LOG_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
-      #         replace: "export YARN_LOG_DIR=#{yarn.log_dir} # RYBA, DONT OVERWRITE"
-      #       ,
-      #         match: /^export YARN_CONF_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
-      #         replace: "export YARN_CONF_DIR=#{yarn.conf_dir} # RYBA, DONT OVERWRITE"
-      #       ,
-      #         match: /^export YARN_IDENT_STRING=.*$/m # HDP default is "hdfs"
-      #         replace: "export YARN_IDENT_STRING=#{yarn.user.name} # RYBA, DONT OVERWRITE"
-      #       ]
-      # .then next
       ctx
       .service
         name: 'hadoop-yarn-resourcemanager'
@@ -188,7 +161,6 @@ ResourceCalculator class name is expected.
     module.exports.push name: 'YARN RM # Capacity Scheduler', handler: (ctx, next) ->
       {yarn, hadoop_conf_dir, capacity_scheduler} = ctx.config.ryba
       return next() unless yarn.site['yarn.resourcemanager.scheduler.class'] is 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
-      refresh = false
       ctx
       .hconfigure
         destination: "#{hadoop_conf_dir}/capacity-scheduler.xml"
@@ -197,15 +169,10 @@ ResourceCalculator class name is expected.
         properties: capacity_scheduler
         merge: false
         backup: true
-      , (err, status) ->
-        return if err or not status
-        refresh = true
       .execute
-        cmd: mkcmd.hdfs ctx, 'service hadoop-yarn-resourcemanager status && yarn rmadmin -refreshQueues'
-        code_skipped: [1, 3] # 1: if pid file exists but rm not running
-        if: -> refresh or ctx.retry > 0
-      .then (err, status) ->
-        next err, status
+        cmd: mkcmd.hdfs ctx, 'service hadoop-yarn-resourcemanager status && yarn rmadmin -refreshQueues || exit'
+        if: -> @status -1
+      .then next
 
 ## Dependencies
 
