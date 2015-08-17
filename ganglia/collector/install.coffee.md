@@ -97,21 +97,19 @@ The packages "ganglia-gmetad-3.5.0-99" and "ganglia-web-3.5.7-99" are installed.
 Upload the "hdp-gmetad" service file into "/etc/init.d".
 
     module.exports.push name: 'Ganglia Collector # Init Script', timeout: -1, handler: (ctx, next) ->
-      ctx.call (_, callback) ->
-        ctx.write
-          destination: '/etc/init.d/hdp-gmetad'
-          source: "#{__dirname}/../../resources/ganglia/scripts/hdp-gmetad"
-          local_source: true
-          match: /# chkconfig: .*/mg
-          replace: '# chkconfig: 2345 20 80'
-          append: '#!/bin/sh'
-          mode: 0o755
-        , (err, written) ->
-          return callback err, false unless written
-          ctx.execute
-            cmd: "service gmetad stop; chkconfig --del gmetad; chkconfig --add hdp-gmetad"
-          , (err) ->
-            callback err, true
+      ctx
+      .write
+        destination: '/etc/init.d/hdp-gmetad'
+        source: "#{__dirname}/../../resources/ganglia/scripts/hdp-gmetad"
+        local_source: true
+        match: /# chkconfig: .*/mg
+        replace: '# chkconfig: 2345 20 80'
+        append: '#!/bin/sh'
+        mode: 0o755
+        unlink: true
+      .execute
+        cmd: "service gmetad stop; chkconfig --del gmetad; chkconfig --add hdp-gmetad"
+        if: -> @status -1
       .then next
 
 ## Layout

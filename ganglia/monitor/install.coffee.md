@@ -51,11 +51,11 @@ Upload the "hdp-gmond" service file into "/etc/init.d".
           mode: 0o755
         .then (err, written) ->
           return callback err, false if err or not written
-          ctx.execute
-            # cmd: "service gmond start; chkconfig --add gmond; chkconfig --add hdp-gmond"
-            cmd: "service gmond start; chkconfig --add hdp-gmond"
-          .then callback
-      .then next
+        .execute
+          # cmd: "service gmond start; chkconfig --add gmond; chkconfig --add hdp-gmond"
+          cmd: "service gmond start; chkconfig --add hdp-gmond"
+          if: -> @status -1
+        .then next
 
     module.exports.push name: 'Ganglia Monitor # Fix Gmond', handler: (ctx, next) ->
       ctx
