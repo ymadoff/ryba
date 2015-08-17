@@ -235,6 +235,7 @@ Default configuration:
       ryba.group.system ?= true
       # Layout
       ryba.hadoop_conf_dir ?= '/etc/hadoop/conf'
+      ryba.hadoop_lib_home ?= '/usr/hdp/current/hadoop-client/lib' # refered by oozie-env.sh
       ryba.hdfs.log_dir ?= '/var/log/hadoop-hdfs'
       ryba.hdfs.pid_dir ?= '/var/run/hadoop-hdfs'
       ryba.hdfs.secure_dn_pid_dir ?= '/var/run/hadoop-hdfs' # /$HADOOP_SECURE_DN_USER
@@ -277,6 +278,8 @@ Default configuration:
       # hadoop.security.saslproperties.resolver.class can be used to override
       # the hadoop.rpc.protection for a connection at the server side.
       core_site['hadoop.rpc.protection'] ?= 'authentication'
+      # Default group mapping
+      core_site['hadoop.security.group.mapping'] ?= 'org.apache.hadoop.security.JniBasedUnixGroupsMappingWithFallback'
       # Core Jars
       core_jars = ctx.config.ryba.core_jars ?= {}
       for k, v of core_jars
