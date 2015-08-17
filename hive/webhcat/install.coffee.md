@@ -10,7 +10,8 @@
     module.exports.push 'ryba/tools/sqoop'
     module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/hdfs_upload'
+    module.exports.push require '../../lib/hdp_select'
 
 ## IPTables
 
@@ -31,58 +32,31 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: ctx.config.iptables.action is 'start'
       .then next
 
-    # module.exports.push name: 'WebHCat # Install', timeout: -1, handler: (ctx, next) ->
-    #   ctx.service [
-    #     name: 'hive-hcatalog'
-    #   ,
-    #     name: 'hive-webhcat'
-    #   ,
-    #     name: 'webhcat-tar-hive'
-    #   ,
-    #     name: 'webhcat-tar-pig'
-    #   ], next
-
 ## Startup
 
 Install the "hadoop-yarn-resourcemanager" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
     module.exports.push name: 'WebHCat # Service', handler: (ctx, next) ->
-      {webhcat} = ctx.config.ryba
-      ctx.hdp_service
+      ctx
+      .service
         name: 'hive-webhcat-server'
-        version_name: 'hive-webhcat'
-        write: [
-          match: /^\. \/etc\/default\/hive-webhcat-server .*$/m
-          replace: '. /etc/default/hive-webhcat-server # RYBA FIX rc.d, DONT OVERWRITE'
-          append: ". /lib/lsb/init-functions"
-        # ,
-        #   # HDP default is "/etc/hbase/conf"
-        #   match: /^CONF_DIR=.*$/m
-        #   replace: "CONF_DIR=\"${HBASE_CONF_DIR}\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-        ,
-          # HDP default is "/usr/lib/hbase/bin/hbase-daemon.sh"
-          match: /^EXEC_PATH=.*$/m
-          replace: "EXEC_PATH=\"${HCAT_HOME}/sbin/webhcat_server.sh\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-        ,
-          # HDP default is "/var/lib/hive-hcatalog/hcat.pid"
-          match: /^PIDFILE=.*$/m
-          replace: "PIDFILE=\"${WEBHCAT_PID_DIR}/webhcat.pid\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-        ]
-        etc_default:
-          'hadoop': true
-          'hive-webhcat-server':
-            write: [
-              match: /^export WEBHCAT_PID_DIR=.*$/m # HDP default is "/var/lib/hive-hcatalog"
-              replace: "export WEBHCAT_PID_DIR=#{webhcat.pid_dir} # RYBA FIX"
-            ,
-              match: /^export HCAT_HOME=.*$/m # HDP default is "/usr/lib/hive-hcatalog"
-              replace: "export HCAT_HOME=/usr/hdp/current/hive-webhcat # RYBA FIX"
-            ,
-              match: /^export HIVE_HOME=.*$/m # HDP default is "/usr/lib/hive"
-              replace: "export HIVE_HOME=/usr/hdp/current/hive-metastore # RYBA FIX"
-            ]
+      .hdp_select
+        name: 'hive-webhcat'
+      .write
+        source: "#{__dirname}/../resources/hive-webhcat-server"
+        local_source: true
+        destination: '/etc/init.d/hive-webhcat-server'
+        mode: 0o0755
+        unlink: true
+      .execute
+        cmd: "service hive-webhcat-server restart"
+        if: -> @status -3
       .then next
+
+## Directories
+
+Create file system directories for log and pid. 
 
     module.exports.push name: 'WebHCat # Directories', handler: (ctx, next) ->
       {webhcat, hive, hadoop_group} = ctx.config.ryba
@@ -99,10 +73,13 @@ inside "/etc/init.d" and activate it on startup.
         mode: 0o755
       .then next
 
+## Configuration
+
+Upload configuration inside '/etc/hive-webhcat/conf/webhcat-site.xml'.
+
     module.exports.push name: 'WebHCat # Configuration', handler: (ctx, next) ->
       {webhcat, hive, hadoop_group} = ctx.config.ryba
-      ctx
-      .hconfigure
+      ctx.hconfigure
         destination: "#{webhcat.conf_dir}/webhcat-site.xml"
         default: "#{__dirname}/../../resources/hive-webhcat/webhcat-site.xml"
         local_default: true
@@ -112,6 +89,10 @@ inside "/etc/init.d" and activate it on startup.
         mode: 0o0755
         merge: true
       .then next
+
+## Env
+
+Update environnmental variables inside '/etc/hive-webhcat/conf/webhcat-env.sh'.
 
     module.exports.push name: 'WebHCat # Env', handler: (ctx, next) ->
       {webhcat, hive, hadoop_group} = ctx.config.ryba
@@ -130,19 +111,12 @@ HDFS directory. Note, the parent directories are created by the
 "ryba/hadoop/hdfs_dn/layout" module.
 
     module.exports.push name: 'WebHCat # HDFS Tarballs', timeout: -1, handler: (ctx, next) ->
-      {hdfs, hadoop_group} = ctx.config.ryba
-      # Group name on "/apps/tez" is suggested as "users", switch to hadoop
-      for lib in ['pig', 'hive', 'sqoop'] then ctx.execute
-        cmd: mkcmd.hdfs ctx, """
-        version=`readlink /usr/hdp/current/#{lib}-client | sed 's/.*\\/\\(.*\\)\\/#{lib}/\\1/'`
-        hdfs dfs -mkdir -p /hdp/apps/$version/#{lib}
-        hdfs dfs -copyFromLocal /usr/hdp/current/#{lib}-client/#{lib}.tar.gz /hdp/apps/$version/#{lib}
-        hdfs dfs -chmod -R 555 /hdp/apps/$version/#{lib}
-        hdfs dfs -chmod -R 444 /hdp/apps/$version/#{lib}/#{lib}.tar.gz
-        hdfs dfs -ls /hdp/apps/$version/#{lib} | grep #{lib}.tar.gz
-        """
-        trap_on_error: true
-        not_if_exec: mkcmd.hdfs ctx, "version=`readlink /usr/hdp/current/#{lib}-client | sed 's/.*\\/\\(.*\\)\\/#{lib}/\\1/'` && hdfs dfs -test -d /hdp/apps/$version/#{lib}"
+      ctx.hdfs_upload (
+        for lib in ['pig', 'hive', 'sqoop']
+          source: "/usr/hdp/current/#{lib}-client/#{lib}.tar.gz"
+          target: "/hdp/apps/$version/#{lib}/#{lib}.tar.gz"
+          lock: "/tmp/ryba-#{lib}.lock"
+      )
       ctx.then next
 
     module.exports.push name: 'WebHCat # Fix HDFS tmp', handler: (ctx, next) ->
@@ -159,6 +133,10 @@ HDFS directory. Note, the parent directories are created by the
         """
         code_skipped: 2
       .then next
+
+## SPNEGO
+
+Copy the spnego keytab with restricitive permissions
 
     module.exports.push name: 'WebHCat # SPNEGO', handler: (ctx, next) ->
       {webhcat, hive, hadoop_group} = ctx.config.ryba

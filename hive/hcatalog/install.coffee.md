@@ -15,10 +15,9 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
     module.exports.push 'ryba/hive/client/install' # Install the Hive and HCatalog service
     module.exports.push 'ryba/hadoop/hdfs_dn/wait'
     module.exports.push 'ryba/hbase/client'
-    module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_service'
     module.exports.push require '../../lib/hdp_select'
+    module.exports.push require('./index').configure
 
 ## IPTables
 
@@ -50,46 +49,20 @@ Note, the server is not activated on startup but they endup as zombies if HDFS
 isnt yet started.
 
     module.exports.push name: 'Hive HCatalog # Startup', handler: (ctx, next) ->
-      {hive} = ctx.config.ryba
-      ctx.hdp_service
+      ctx
+      .service
         name: 'hive-hcatalog-server'
-        version_name: 'hive-metastore'
-        startup: false
-        write: [
-          match: /^.*export HADOOP_HOME.*$/m
-          replace: 'this="$(dirname -- "$(readlink -f -- "${BASH_SOURCE-$0}")")"; export HADOOP_HOME="$(readlink -f -- "$this/../../..")/hadoop"'
-          before: /^SVC_USER=.*$/m
-        ,
-          match: /^\. \/etc\/default\/hive-hcatalog-server .*$/m
-          replace: '. /etc/default/hive-hcatalog-server # RYBA FIX rc.d, DONT OVERWRITE'
-          append: ". /lib/lsb/init-functions"
-        ,
-          # HDP default is "/etc/hive-hcatalog/conf"
-          match: /^CONF_DIR=.*$/m
-          replace: "CONF_DIR=\"${HIVE_CONF_DIR}\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-        ,
-          # HDP default is "/usr/lib/hive-hcatalog/sbin/hcat_server.sh"
-          match: /^EXEC_PATH=.*$/m
-          replace: "EXEC_PATH=\"${HCAT_HOME}/sbin/hcat_server.sh\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-        ,
-          # HDP default is "/var/lib/hive-hcatalog/hcat.pid"
-          match: /^PIDFILE=.*$/m
-          replace: "PIDFILE=\"${HCAT_PID_DIR}/hcat.pid\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-        ]
-        etc_default:
-          'hive-hcatalog-server': 
-            write: [
-              match: /^export HCAT_PID_DIR=.*$/m # HDP default is "/var/lib/hive-hcatalog"
-              replace: "export HCAT_PID_DIR=#{hive.hcatalog.pid_dir} # RYBA FIX"
-            ,
-              match: /^export HCAT_HOME=.*$/m # HDP default is "/usr/lib/hive-hcatalog"
-              replace: "export HCAT_HOME=/usr/hdp/current/hive-webhcat # RYBA FIX"
-            ,
-              match: /^export HIVE_HOME=.*$/m # HDP default is "/usr/lib/hive"
-              replace: "export HIVE_HOME=/usr/hdp/current/hive-metastore # RYBA FIX"
-            ]
       .hdp_select
-        name: 'hive-webhcat'
+        name: 'hive-metastore'
+      .write
+        source: "#{__dirname}/../resources/hive-hcatalog-server"
+        local_source: true
+        destination: '/etc/init.d/hive-hcatalog-server'
+        mode: 0o0755
+        unlink: true
+      .execute
+        cmd: "service hive-hcatalog-server restart"
+        if: -> @status -3
       .then next
 
     module.exports.push name: 'Hive HCatalog # Database', handler: (ctx, next) ->
@@ -109,8 +82,7 @@ isnt yet started.
             cmd: "if ! #{mysql_client} -e \"USE #{db};\"; then exit 3; fi"
             code_skipped: 3
           , (err, _exists) ->
-            return next err if err
-            exists = _exists
+            exists = _exists unless err
           .execute
             cmd: """
             #{mysql_admin} -e "
@@ -121,46 +93,54 @@ isnt yet started.
             "
             """
             not_if: -> exists
+            trap_on_error: true
           .execute
             cmd: """
+            cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql # Required for sql sources
             target_version=`#{target_version}`
-            target=/usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/hive-schema-${target_version}.mysql.sql
+            echo Target Version: "$target_version"
+            target=hive-schema-${target_version}.mysql.sql
             target_major_version=`echo $target_version | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2.0/g\'`
-            target_major=/usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/hive-schema-${target_major_version}.mysql.sql
+            echo Target Version: "$target_major_version"
+            target_major=hive-schema-${target_major_version}.mysql.sql
             if ! test -f $target && ! test -f $target_major; then exit 1; fi
             # Create schema
             if test -f $target; then
+              echo Importing $target
               #{mysql_client} #{db} < $target;
             elif test -f $target_major; then
+              echo Importing $target_major
               #{mysql_client} #{db} < $target_major;
             fi
-            # Import transaction schema (now created with 0.13.1)
-            #trnx=/usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/hive-txn-schema-${target_version}.mysql.sql
-            #trnx_major=/usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/hive-txn-schema-${target_major_version}.mysql.sql
-            #if test -f $trnx; then #{mysql_client} #{db} < $trnx;
-            #elif test -f $trnx_major; then #{mysql_client} #{db} < $trnx_major; fi
             """
             not_if: -> exists
+            trap_on_error: true
           .execute
             cmd: """
+            cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql # Required for sql sources
             current=`#{current_version}`
+            echo Current Version: "$current"
             target=`#{target_version}`
-            if [ $current == $target ]; then exit 3; fi
+            echo Target Version: "$target"
+            if [ "$current" == "$target" ]; then exit 3; fi
             # Upgrade schema
-            upgrade=/usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/upgrade-${current}-to-${target}.mysql.sql
+            upgrade=upgrade-${current}-to-${target}.mysql.sql
             if ! test -f $upgrade; then
+              echo 'Upgrade script does not exists'
               current_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
               target_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
+              echo Target Major Version: "$target_major"
               if [ $current_major == $target_major ]; then exit 0; fi
               exit 1;
             fi
             cd `dirname $upgrade`
             #{mysql_client} #{db} < $upgrade
             # Import transaction schema (now created with 0.13.1)
-            #trnx=/usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql/hive-txn-schema-${target}.mysql.sql
+            #trnx=hive-txn-schema-${target}.mysql.sql
             #if test -f $trnx; then #{mysql_client} #{db} < $trnx; fi
             """
             code_skipped: 3
+            trap_on_error: true
             if: -> exists
           .then next
       return next new Error 'Database engine not supported' unless engines[engine]

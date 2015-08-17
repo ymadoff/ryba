@@ -15,14 +15,12 @@ following two commands:
 
 ```
 service hive-webhcat-server stop
-su -l hive -c "/usr/lib/hive-hcatalog/sbin/webhcat_server.sh stop"
+su -l hive -c "/usr/hdp/current/hive-webhcat/sbin/webhcat_server.sh stop"
 ```
 
     module.exports.push name: 'WebHCat # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
-      ctx.service
-        srv_name: 'hive-webhcat-server'
-        action: 'stop'
-        if_exists: '/etc/init.d/hive-webhcat-server'
+      ctx.service_stop
+        name: 'hive-webhcat-server'
       .then next
 
 

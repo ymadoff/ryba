@@ -20,9 +20,9 @@ Resources:
     module.exports.push 'ryba/hive/client/install' # Install the Hive and HCatalog service
     module.exports.push 'ryba/hbase/client'
     module.exports.push 'ryba/hive/hcatalog/wait'
-    module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/hdp_select'
+    module.exports.push require('./index').configure
 
 ## IPTables
 
@@ -55,28 +55,20 @@ The server is not activated on startup because they endup as zombies if HDFS
 isnt yet started.
 
     module.exports.push name: 'Hive Server2 # Startup', handler: (ctx, next) ->
-      {hive} = ctx.config.ryba
-      ctx.hdp_service
+      ctx
+      .service
         name: 'hive-server2'
-        startup: false
-        write: [
-          match: /^\. \/etc\/default\/hive-server2 .*$/m
-          replace: '. /etc/default/hive-server2 # RYBA FIX rc.d, DONT OVERWRITE'
-          append: ". /lib/lsb/init-functions"
-        ,
-          # HDP default is "/usr/lib/hive/bin/hive"
-          match: /^EXEC_PATH=.*$/m
-          replace: "EXEC_PATH=\"/usr/hdp/current/hive-server2/bin/hive\" # RYBA FIX, DONT OVEWRITE"
-        ,
-          # HDP default is "LOG_FILE=/var/log/hive/${DAEMON}.out"
-          match: /^(\s+)LOG_FILE=.*$/m
-          replace: "$1LOG_FILE=\"#{hive.server2.log_dir}/${DAEMON}.out\" # RYBA FIX, DONT OVEWRITE"
-        ,
-          # HDP default is "/var/run/hive/hive-server2.pid"
-          match: /^PIDFILE=.*$/m
-          replace: "PIDFILE=\"#{hive.server2.pid_dir}/hive-server2.pid\" # RYBA FIX, DONT OVEWRITE"
-        ]
-        etc_default: true
+      .hdp_select
+        name: 'hive-server2'
+      .write
+        source: "#{__dirname}/../resources/hive-server2"
+        local_source: true
+        destination: '/etc/init.d/hive-server2'
+        mode: 0o0755
+        unlink: true
+      .execute
+        cmd: "service hive-server2 restart"
+        if: -> @status -3
       .then next
 
     module.exports.push name: 'Hive Server2 # Configure', handler: (ctx, next) ->
@@ -154,21 +146,6 @@ Create the directories to store the logs and pid information. The properties
         kadmin_password: kadmin_password
         kadmin_server: admin_server
         not_if: ctx.has_module('ryba/hive/hcatalog') and hive.site['hive.metastore.kerberos.principal'] is hive.site['hive.server2.authentication.kerberos.principal']
-      .then next
-
-Since HDP 2.2.4.2, Hive Server2 doesn't seems to correctly renew its keytab. For that, we use cron daemon
-We then ask a first TGT.
-
-    module.exports.push name: 'Hive Server2 # Kinit Fix (2.2.4.2)', handler: (ctx, next) ->
-      {hive, realm} = ctx.config.ryba
-      return next() unless hive.site['hive.server2.authentication'] is 'KERBEROS'
-      principal = hive.site['hive.server2.authentication.kerberos.principal'].replace '_HOST', ctx.config.host
-      keytab = hive.site['hive.server2.authentication.kerberos.keytab']
-      ctx.cron_add
-        cmd: "/usr/bin/kinit #{principal} -k -t #{keytab}"
-        when: '0 */9 * * *'
-        user: hive.user.name
-        exec: true
       .then next
 
 ## Logs
