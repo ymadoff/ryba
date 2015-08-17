@@ -17,6 +17,66 @@ hive -hiveconf hive.root.logger=DEBUG,console
     module.exports.push 'ryba/hive/server2/wait'
     module.exports.push require('./index').configure
 
+## Check HCatalog MapReduce
+
+Use the [Hive CLI][hivecli] client to execute SQL queries using the MapReduce
+engine.
+
+    module.exports.push name: 'Hive Client # Check HCatalog MapReduce', label_true: 'CHECKED', timeout: -1, handler: (ctx, next) ->
+      {force_check, user} = ctx.config.ryba
+      hcat_ctxs = ctx.contexts 'ryba/hive/hcatalog', require('../hcatalog').configure
+      return next() unless hcat_ctxs.length
+      for hcat_ctx in hcat_ctxs
+        directory = "check-#{ctx.config.shortname}-hive_hcatalog_mr-#{hcat_ctx.config.shortname}"
+        db = "check_#{ctx.config.shortname}_hive_hcatalog_mr_#{hcat_ctx.config.shortname}"
+        ctx.execute
+          cmd: mkcmd.test ctx, """
+          hdfs dfs -rm -r -skipTrash #{directory} || true
+          hdfs dfs -mkdir -p #{directory}/my_db/my_table
+          echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - #{directory}/my_db/my_table/data
+          hive -e "
+            SET hive.execution.engine=mr;
+            DROP TABLE IF EXISTS #{db}.my_table; DROP DATABASE IF EXISTS #{db};
+            CREATE DATABASE #{db} LOCATION '/user/#{user.name}/#{directory}/my_db/';
+            USE #{db};
+            CREATE TABLE my_table(col1 STRING, col2 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+          "
+          hive -S -e "SET hive.execution.engine=mr; SELECT SUM(col2) FROM #{db}.my_table;" | hdfs dfs -put - #{directory}/result
+          hive -e "DROP TABLE #{db}.my_table; DROP DATABASE #{db};"
+          """
+          not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f #{directory}/result"
+          trap_on_error: true
+      ctx.then next
+
+## Check HCatalog Tez
+
+Use the [Hive CLI][hivecli] client to execute SQL queries using the Tez engine.
+
+    module.exports.push name: 'Hive Client # Check HCatalog Tez', label_true: 'CHECKED', timeout: -1, handler: (ctx, next) ->
+      {force_check, user} = ctx.config.ryba
+      hcat_ctxs = ctx.contexts 'ryba/hive/hcatalog', require('../hcatalog').configure
+      return next() unless hcat_ctxs.length
+      for hcat_ctx in hcat_ctxs
+        directory = "check-#{ctx.config.shortname}-hive_hcatalog_tez-#{hcat_ctx.config.shortname}"
+        db = "check_#{ctx.config.shortname}_hive_hcatalog_tez_#{hcat_ctx.config.shortname}"
+        ctx.execute
+          cmd: mkcmd.test ctx, """
+          hdfs dfs -rm -r -skipTrash #{directory} || true
+          hdfs dfs -mkdir -p #{directory}/my_db/my_table
+          echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - #{directory}/my_db/my_table/data
+          hive -e "
+            DROP TABLE IF EXISTS #{db}.my_table; DROP DATABASE IF EXISTS #{db};
+            CREATE DATABASE #{db} LOCATION '/user/#{user.name}/#{directory}/my_db/';
+            USE #{db};
+            CREATE TABLE my_table(col1 STRING, col2 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
+          "
+          hive -S -e "set hive.execution.engine=tez; SELECT SUM(col2) FROM #{db}.my_table;" | hdfs dfs -put - #{directory}/result
+          hive -e "DROP TABLE #{db}.my_table; DROP DATABASE #{db};"
+          """
+          not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f #{directory}/result"
+          trap_on_error: true
+       ctx.then next
+
 ## Check Server2
 
 Use the [Beeline][beeline] JDBC client to execute SQL queries.
@@ -60,66 +120,6 @@ directive once you enter the beeline shell.
           not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f #{directory}/result"
           trap_on_error: true
       ctx.then next
-
-## Check MapReduce
-
-Use the [Hive CLI][hivecli] client to execute SQL queries using the MapReduce
-engine.
-
-    module.exports.push name: 'Hive Client # Check HCat MapReduce', label_true: 'CHECKED', timeout: -1, handler: (ctx, next) ->
-      {force_check, user} = ctx.config.ryba
-      hcat_ctxs = ctx.contexts 'ryba/hive/hcatalog', require('../hcatalog').configure
-      return next() unless hcat_ctxs.length
-      for hcat_ctx in hcat_ctxs
-        directory = "check-#{ctx.config.shortname}-hive_hcatalog_mr-#{hcat_ctx.config.shortname}"
-        db = "check_#{ctx.config.shortname}_hive_hcatalog_mr_#{hcat_ctx.config.shortname}"
-        ctx.execute
-          cmd: mkcmd.test ctx, """
-          hdfs dfs -rm -r -skipTrash #{directory} || true
-          hdfs dfs -mkdir -p #{directory}/my_db/my_table
-          echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - #{directory}/my_db/my_table/data
-          hive -e "
-            SET hive.execution.engine=mr;
-            DROP TABLE IF EXISTS #{db}.my_table; DROP DATABASE IF EXISTS #{db};
-            CREATE DATABASE #{db} LOCATION '/user/#{user.name}/#{directory}/my_db/';
-            USE #{db};
-            CREATE TABLE my_table(col1 STRING, col2 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
-          "
-          hive -S -e "SET hive.execution.engine=mr; SELECT SUM(col2) FROM #{db}.my_table;" | hdfs dfs -put - #{directory}/result
-          hive -e "DROP TABLE #{db}.my_table; DROP DATABASE #{db};"
-          """
-          not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f #{directory}/result"
-          trap_on_error: true
-      ctx.then next
-
-## Check Tez
-
-Use the [Hive CLI][hivecli] client to execute SQL queries using the Tez engine.
-
-    module.exports.push name: 'Hive Client # Check HCat Tez', label_true: 'CHECKED', timeout: -1, handler: (ctx, next) ->
-      {force_check, user} = ctx.config.ryba
-      hcat_ctxs = ctx.contexts 'ryba/hive/hcatalog', require('../hcatalog').configure
-      return next() unless hcat_ctxs.length
-      for hcat_ctx in hcat_ctxs
-        directory = "check-#{ctx.config.shortname}-hive_hcatalog_tez-#{hcat_ctx.config.shortname}"
-        db = "check_#{ctx.config.shortname}_hive_hcatalog_tez_#{hcat_ctx.config.shortname}"
-        ctx.execute
-          cmd: mkcmd.test ctx, """
-          hdfs dfs -rm -r -skipTrash #{directory} || true
-          hdfs dfs -mkdir -p #{directory}/my_db/my_table
-          echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - #{directory}/my_db/my_table/data
-          hive -e "
-            DROP TABLE IF EXISTS #{db}.my_table; DROP DATABASE IF EXISTS #{db};
-            CREATE DATABASE #{db} LOCATION '/user/#{user.name}/#{directory}/my_db/';
-            USE #{db};
-            CREATE TABLE my_table(col1 STRING, col2 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';
-          "
-          hive -S -e "set hive.execution.engine=tez; SELECT SUM(col2) FROM #{db}.my_table;" | hdfs dfs -put - #{directory}/result
-          hive -e "DROP TABLE #{db}.my_table; DROP DATABASE #{db};"
-          """
-          not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f #{directory}/result"
-          trap_on_error: true
-       ctx.then next
 
 ## Dependencies
 
