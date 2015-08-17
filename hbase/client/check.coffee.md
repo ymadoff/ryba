@@ -8,13 +8,12 @@ scanning the table.
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hbase/master/wait'
     module.exports.push require('./index').configure
-    util = require 'util'
 
 ## Check Shell
 
     module.exports.push name: 'HBase Client # Check Shell', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
       {shortname} = ctx.config
-      {force_check, jaas_client, hbase} = ctx.config.ryba
+      {force_check} = ctx.config.ryba
       cmd = mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"exists 'ryba'\" | grep 'Table ryba does exist'"
       ctx.waitForExecution cmd, (err) ->
         return next err if err
@@ -32,13 +31,21 @@ scanning the table.
           throw Error 'Invalid command output' if executed and not isRowCreated
         .then next
 
+## Check MapReduce
+
     module.exports.push name: 'HBase Client # Check MapReduce', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
+      {force_check} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.test ctx, """
+          hdfs dfs -rm -skipTrash check-#{ctx.config.host}-hbase-mapred
           echo -e '1,toto\\n2,tata\\n3,titi\\n4,tutu' | hdfs dfs -put -f - /user/ryba/test_import.csv
           hbase org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.separator=, -Dimporttsv.columns=HBASE_ROW_KEY,family1:value ryba /user/ryba/test_import.csv
+          hdfs dfs -touchz check-#{ctx.config.host}-hbase-mapred
           """
+        not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{ctx.config.host}-hbase-mapred"
       .then next
+
+## Check Splits
 
     module.exports.push name: 'HBase Client # Check Splits', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
       {force_check} = ctx.config.ryba
