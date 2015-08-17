@@ -53,7 +53,7 @@ http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterS
       ctx
       .hconfigure
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
-        default: "#{__dirname}/../../resources/core_hadoop/mapred-site.xml"
+        default: "#{__dirname}/../resources/mapred-site.xml"
         local_default: true
         properties: mapred.site
         merge: true

@@ -35,13 +35,24 @@ The output list can then be saved to the distributed filesystem, and the reducer
       mapred.site['mapreduce.application.classpath'] ?= "$PWD/mr-framework/hadoop/share/hadoop/mapreduce/*:$PWD/mr-framework/hadoop/share/hadoop/mapreduce/lib/*:$PWD/mr-framework/hadoop/share/hadoop/common/*:$PWD/mr-framework/hadoop/share/hadoop/common/lib/*:$PWD/mr-framework/hadoop/share/hadoop/yarn/*:$PWD/mr-framework/hadoop/share/hadoop/yarn/lib/*:$PWD/mr-framework/hadoop/share/hadoop/hdfs/*:$PWD/mr-framework/hadoop/share/hadoop/hdfs/lib/*:/usr/hdp/${hdp.version}/hadoop/lib/hadoop-lzo-0.6.0.${hdp.version}.jar:/etc/hadoop/conf/secure"
       [jhs_context] = ctx.contexts 'ryba/hadoop/mapred_jhs', require('../mapred_jhs').configure
       if jhs_context
-        mapred.site['mapreduce.jobhistory.address'] ?= jhs_context.config.ryba.mapred.site['mapreduce.jobhistory.address']
-        mapred.site['mapreduce.jobhistory.webapp.address'] ?= jhs_context.config.ryba.mapred.site['mapreduce.jobhistory.webapp.address']
-        mapred.site['mapreduce.jobhistory.webapp.https.address'] ?= jhs_context.config.ryba.mapred.site['mapreduce.jobhistory.webapp.https.address']
-        mapred.site['mapreduce.jobhistory.done-dir'] ?= jhs_context.config.ryba.mapred.site['mapreduce.jobhistory.done-dir']
-        mapred.site['mapreduce.jobhistory.intermediate-done-dir'] ?= jhs_context.config.ryba.mapred.site['mapreduce.jobhistory.intermediate-done-dir']
-        # Important, JHS principal must be deployed on all mapreduce workers
-        mapred.site['mapreduce.jobhistory.principal'] ?= "jhs/#{jhs_context.config.host}@#{realm}"
+        for property in [
+          'yarn.app.mapreduce.am.staging-dir'
+          'mapreduce.jobhistory.address'
+          'mapreduce.jobhistory.webapp.address'
+          'mapreduce.jobhistory.webapp.https.address'
+          'mapreduce.jobhistory.done-dir'
+          'mapreduce.jobhistory.intermediate-done-dir'
+          'mapreduce.jobhistory.principal'
+        ]
+          mapred.site[property] ?= jhs_context.config.ryba.mapred.site[property]
+        # mapred.site['yarn.app.mapreduce.am.staging-dir'] ?= jhs_context.config.ryba.mapred.site['mapreduce.jobhistory.address']
+        # mapred.site['mapreduce.jobhistory.address'] ?= jhs_context.config.ryba.mapred.site['mapreduce.jobhistory.address']
+        # mapred.site['mapreduce.jobhistory.webapp.address'] ?= jhs_context.config.ryba.mapred.site['mapreduce.jobhistory.webapp.address']
+        # mapred.site['mapreduce.jobhistory.webapp.https.address'] ?= jhs_context.config.ryba.mapred.site['mapreduce.jobhistory.webapp.https.address']
+        # mapred.site['mapreduce.jobhistory.done-dir'] ?= jhs_context.config.ryba.mapred.site['mapreduce.jobhistory.done-dir']
+        # mapred.site['mapreduce.jobhistory.intermediate-done-dir'] ?= jhs_context.config.ryba.mapred.site['mapreduce.jobhistory.intermediate-done-dir']
+        # # Important, JHS principal must be deployed on all mapreduce workers
+        # mapred.site['mapreduce.jobhistory.principal'] ?= "jhs/#{jhs_context.config.host}@#{realm}"
       # The value is set by the client app and the iptables are enforced on the worker nodes
       mapred.site['yarn.app.mapreduce.am.job.client.port-range'] ?= '59100-59200'
       mapred.site['mapreduce.framework.name'] ?= 'yarn' # Execution framework set to Hadoop YARN.
