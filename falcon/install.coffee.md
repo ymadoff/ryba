@@ -10,6 +10,7 @@ each HDFS cluster.
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
     module.exports.push require('masson/core/iptables').configure
+    module.exports.push require '../lib/hdp_select'
     module.exports.push require('./index').configure
 
 ## IPTables
@@ -50,8 +51,20 @@ falcon:x:498:falcon
 ## Packages
 
     module.exports.push name: 'Falcon # Packages', timeout: -1, handler: (ctx, next) ->
-      ctx.service
+      ctx
+      .service
         name: 'falcon'
+      .hdp_select
+        name: 'falcon-server'
+      .write
+        source: "#{__dirname}/resources/falcon"
+        local_source: true
+        destination: '/etc/init.d/falcon'
+        mode: 0o0755
+        unlink: true
+      .execute
+        cmd: "service falcon restart"
+        if: -> @status(-3)
       .then next
 
 ## Kerberos
