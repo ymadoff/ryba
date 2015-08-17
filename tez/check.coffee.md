@@ -22,8 +22,8 @@
         """
         not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -d #{remote_dir}/output"
       , (err, executed, stdout) ->
-        err = Error "Invalid output" if executed and stdout?.trim().split('\n').slice(-2).join('\n') isnt 'bar\t2\nfoo\t3'
-        next err, executed
+        throw Error "Invalid output" if executed and stdout?.trim().split('\n').slice(-2).join('\n') isnt 'bar\t2\nfoo\t3'
+      .then next
 
 ## Dependencies
 
