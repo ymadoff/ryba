@@ -14,20 +14,15 @@ Stop the Oozie service. You can also stop the server manually with the
 following command:
 
 ```
+service stop oozie
 su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozied.sh stop"
 ```
 
     module.exports.push name: 'Oozie Server # Stop', label_true: 'STOPPED', timeout: -1, handler: (ctx, next) ->
       {oozie} = ctx.config.ryba
-      ctx.execute
-        cmd: """
-        if [ ! -f #{oozie.pid_dir}/oozie.pid ]; then exit 3; fi
-        if ! kill -0 >/dev/null 2>&1 `cat #{oozie.pid_dir}/oozie.pid`; then exit 3; fi
-        su -l #{oozie.user.name} -c "/usr/hdp/current/oozie-server/bin/oozied.sh stop 20 -force"
-        """
-        code_skipped: 3
-        if_exists: '/usr/hdp/current/oozie-server/bin/oozied.sh'
-      , next
+      ctx.service_stop
+        name: 'oozie'
+      .then next
 
 ## Stop Clean Logs
 

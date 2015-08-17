@@ -12,28 +12,28 @@
 ## Check Client
 
     module.exports.push name: 'Oozie Client # Check Client', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
-      {realm, user, oozie} = ctx.config.ryba
+      {oozie} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.test ctx, """
         oozie admin -oozie #{oozie.site['oozie.base.url']} -status
         """
       , (err, executed, stdout) ->
-        return next err if err
-        return next new Error "Oozie not ready, got: #{JSON.stringify stdout}" if stdout.trim() isnt 'System mode: NORMAL'
-        return next null, true
+        throw err if err
+        throw new Error "Oozie not ready, got: #{JSON.stringify stdout}" if stdout.trim() isnt 'System mode: NORMAL'
+      .then next
 
 ## Check REST
 
     module.exports.push name: 'Oozie Client # Check REST', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
-      {realm, user, oozie} = ctx.config.ryba
+      {oozie} = ctx.config.ryba
       ctx.execute
         cmd: mkcmd.test ctx, """
         curl -s -k --negotiate -u : #{oozie.site['oozie.base.url']}/v1/admin/status
         """
       , (err, executed, stdout) ->
-        return next err if err
-        return next new Error "Oozie not ready" if stdout.trim() isnt '{"systemMode":"NORMAL"}'
-        return next null, true
+        throw err if err
+        throw new Error "Oozie not ready" if stdout.trim() isnt '{"systemMode":"NORMAL"}'
+      .then next
 
 ## Check HDFS Workflow
 

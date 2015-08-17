@@ -63,22 +63,28 @@ Example
       oozie.log_dir ?= '/var/log/oozie'
       oozie.pid_dir ?= '/var/run/oozie'
       oozie.tmp_dir ?= '/var/tmp/oozie'
+      oozie.server_dir ?= '/usr/hdp/current/oozie-client/oozie-server'
       # SSL
       oozie.secure ?= true
       oozie.keystore_file ?= ryba.ssl_server['ssl.server.keystore.location'] or ''
       oozie.keystore_pass ?= ryba.ssl_server['ssl.server.keystore.password'] or ''
       # Configuration
       oozie.site ?= {}
+      ryba.oozie.http_port ?= if oozie.secure then 11443 else 11000
+      ryba.oozie.admin_port ?= 11001
       if oozie.secure
-        oozie.site['oozie.base.url'] = "https://#{ctx.config.host}:11443/oozie"
+        oozie.site['oozie.base.url'] = "https://#{ctx.config.host}:#{ryba.oozie.http_port}/oozie"
       else
-        oozie.site['oozie.base.url'] = "http://#{ctx.config.host}:11000/oozie"
+        oozie.site['oozie.base.url'] = "http://#{ctx.config.host}:#{ryba.oozie.http_port}/oozie"
       # Configuration Database
       oozie.site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{ryba.db_admin.host}:#{ryba.db_admin.port}/oozie?createDatabaseIfNotExist=true"
       oozie.site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
       oozie.site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'
       oozie.site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
       # oozie.site['oozie.service.AuthorizationService.security.enabled'] ?= null # Now deprecated in favor of oozie.service.AuthorizationService.authorization.enabled (see oozie "oozie.log" file)
+      # Path to hadoop configuration is required when running 'sharelib upgrade'
+      # or an error will conplain that the hdfs url is invalid
+      oozie.site['oozie.service.HadoopAccessorService.hadoop.configurations'] ?= '*=/etc/hadoop/conf'
       oozie.site['oozie.service.AuthorizationService.security.enabled'] ?= 'true'
       oozie.site['oozie.service.AuthorizationService.authorization.enabled'] ?= 'true'
       oozie.site['oozie.service.HadoopAccessorService.kerberos.enabled'] ?= 'true'
@@ -107,13 +113,12 @@ Example
         'org.apache.oozie.service.LiteWorkflowAppService'
         'org.apache.oozie.service.JPAService'
         'org.apache.oozie.service.StoreService'
-        'org.apache.oozie.service.CoordinatorStoreService'
         'org.apache.oozie.service.SLAStoreService'
         'org.apache.oozie.service.DBLiteWorkflowStoreService'
         'org.apache.oozie.service.CallbackService'
+        'org.apache.oozie.service.ActionService'
         'org.apache.oozie.service.ShareLibService'
         'org.apache.oozie.service.CallableQueueService'
-        'org.apache.oozie.service.ActionService'
         'org.apache.oozie.service.ActionCheckerService'
         'org.apache.oozie.service.RecoveryService'
         'org.apache.oozie.service.PurgeService'
@@ -127,6 +132,7 @@ Example
         'org.apache.oozie.service.ProxyUserService'
         'org.apache.oozie.service.XLogStreamingService'
         'org.apache.oozie.service.JvmPauseMonitorService'
+        'org.apache.oozie.service.SparkConfigurationService'
       ].join(',')
       oozie.site['oozie.credentials.credentialclasses'] = "
         hcat=org.apache.oozie.action.hadoop.HCatCredentials,

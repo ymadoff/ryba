@@ -17,14 +17,13 @@ be installed in remote machines only.
       ryba.oozie ?= {}
       ryba.oozie.site ?= {}
       # ryba.oozie.site['oozie.base.url'] = "http://#{oozie_server}:11000/oozie"
-      server_contexts = ctx.contexts modules: 'ryba/oozie/server', require('../server').configure
-      server_oozie_site = server_contexts[0].config.ryba.oozie.site
-      ryba.oozie.site['oozie.base.url'] = server_oozie_site['oozie.base.url']
-      ryba.oozie.site['oozie.service.HadoopAccessorService.kerberos.principal'] = server_oozie_site['oozie.service.HadoopAccessorService.kerberos.principal']
+      [o_ctx] = ctx.contexts modules: 'ryba/oozie/server', require('../server').configure
+      ryba.oozie.site['oozie.base.url'] = o_ctx.config.ryba.oozie.site['oozie.base.url']
+      ryba.oozie.site['oozie.service.HadoopAccessorService.kerberos.principal'] = o_ctx.config.ryba.oozie.site['oozie.service.HadoopAccessorService.kerberos.principal']
       # Remove password
-      unless ctx.has_module 'ryba/oozie/client'
-        oozie.site['oozie.service.JPAService.jdbc.username'] = null
-        oozie.site['oozie.service.JPAService.jdbc.password'] = null
+      unless ctx.has_module 'ryba/oozie/server'
+        ryba.oozie.site['oozie.service.JPAService.jdbc.username'] = null
+        ryba.oozie.site['oozie.service.JPAService.jdbc.password'] = null
 
 ## Commands
 

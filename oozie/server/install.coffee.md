@@ -38,9 +38,10 @@ oozie:x:493:
 
 ## IPTables
 
-| Service | Port  | Proto | Info              |
-|---------|-------|-------|-------------------|
-| oozie   | 11000 | http  | Oozie HTTP server |
+| Service | Port  | Proto | Info                      |
+|---------|-------|-------|---------------------------|
+| oozie   | 11443 | http  | Oozie HTTP secure server  |
+| oozie   | 11001 | http  | Oozie Admin server        |
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
@@ -51,6 +52,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       ctx.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "Oozie HTTP Server" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: oozie.admin_port, protocol: 'tcp', state: 'NEW', comment: "Oozie HTTP Server" }
         ]
         if: ctx.config.iptables.action is 'start'
       .then next
@@ -62,8 +64,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         cmd: "rm -rf /usr/lib/oozie && yum remove -y oozie oozie-client"
         if: ctx.retry > 0
       .service
-        name: 'oozie' # Also install oozie-client and bigtop-tomcat
-      .service
         name: 'falcon'
         if: ctx.hosts_with_module('ryba/falcon').length
       .service
@@ -72,10 +72,32 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         name: 'zip' # Required by the "prepare-war" command
       .service
         name: 'extjs-2.2-1'
+      # @call if: ctx.contexts('ryba/falcon').length, ->
+      #   @service
+      #     name: 'falcon'
+      #   @hdp_select
+      #     name: 'falcon-client'
+      @service
+        name: 'falcon'
+        if: ctx.contexts('ryba/falcon').length
+      @hdp_select
+        name: 'falcon-client'
+        if: ctx.contexts('ryba/falcon').length
+      .service
+        name: 'oozie' # Also install oozie-client and bigtop-tomcat
       .hdp_select
         name: 'oozie-server'
       .hdp_select
         name: 'oozie-client'
+      .write
+        source: "#{__dirname}/../resources/oozie"
+        local_source: true
+        destination: '/etc/init.d/oozie'
+        mode: 0o0755
+        unlink: true
+      .execute
+        cmd: "service oozie-server restart"
+        if: -> @status -4
       .then next
 
     module.exports.push name: 'Oozie Server # Directories', handler: (ctx, next) ->
@@ -154,37 +176,14 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
     module.exports.push name: 'Oozie Server # Environment', handler: (ctx, next) ->
       {java_home} = ctx.config.java
       {oozie} = ctx.config.ryba
-      # CATALINA_OPTS="-Djavax.net.ssl.trustStore=/etc/hadoop/conf/truststore -Djavax.net.ssl.trustStorePassword=ryba123"
-      writes = [
-          match: /^export JAVA_HOME=.*$/mg
-          replace: "export JAVA_HOME=#{java_home}"
-          append: true
-        ,
-          match: /^export JRE_HOME=.*$/mg
-          replace: "export JRE_HOME=${JAVA_HOME}" # Not in HDP 2.0.6 but mentioned in [HDP 2.1 doc](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.1-latest/bk_installing_manually_book/content/rpm-chap8-3.html)
-          append: true
-        ,
-          match: /^export OOZIE_CONFIG=.*$/mg
-          replace: "export OOZIE_CONFIG=${OOZIE_CONFIG:-/etc/oozie/conf}"
-          append: true
-        ,
-          match: /^export CATALINA_BASE=.*$/mg
-          # replace: "export CATALINA_BASE=${CATALINA_BASE:-/var/lib/oozie/tomcat-deployment}"
-          replace: "export CATALINA_BASE=${CATALINA_BASE:-/usr/hdp/current/oozie-client/oozie-server}"
-          append: true
-        ,
-          match: /^export CATALINA_TMPDIR=.*$/mg
-          replace: "export CATALINA_TMPDIR=${CATALINA_TMPDIR:-/var/tmp/oozie}"
-          append: true
-        ,
-          match: /^export OOZIE_CATALINA_HOME=.*$/mg
-          replace: "export OOZIE_CATALINA_HOME=/usr/lib/bigtop-tomcat"
-          append: true
-        ,
-          match: /^export OOZIE_DATA=.*$/mg
-          replace: "export OOZIE_DATA=#{oozie.data}"
-          append: true
-        ,
+      # CATALINA_OPTS="-Djavax.net.ssl.trustStore=/etc/hadoop/conf/truststore -Djavax.net.ssl.trustStorePassword=ryba123"      
+      @render
+        source: "#{__dirname}/../resources/oozie-env.sh"
+        local_source: true
+        destination: "#{oozie.conf_dir}/oozie-env.sh"
+        context: @config
+        backup: true
+        write: [
           match: /^export OOZIE_HTTPS_KEYSTORE_FILE=.*$/mg
           replace: "export OOZIE_HTTPS_KEYSTORE_FILE=#{oozie.keystore_file}"
           append: true
@@ -315,7 +314,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         ctx
         .hconfigure
           destination: "#{oozie.conf_dir}/oozie-site.xml"
-          default: "#{__dirname}/../../resources/oozie/oozie-site.xml"
+          default: "#{__dirname}/../resources/oozie-site.xml"
           local_default: true
           properties: oozie.site
           uid: oozie.user.name
@@ -373,7 +372,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
       falcon_ctxs = ctx.contexts 'ryba/falcon', require('../../falcon').configure
       do_falcon = ->
         return do_prepare_war() unless falcon_ctxs.length
-        ctx.child()
+        ctx
         .service
           name: 'falcon'
         .mkdir
@@ -564,28 +563,12 @@ the ShareLib contents without having to go into HDFS.
 
     module.exports.push 'ryba/oozie/server/start'
 
-    module.exports.push 'ryba/oozie/client'
+    # module.exports.push 'ryba/oozie/client'
 
 ## Dependencies
 
     url = require 'url'
     path = require 'path'
-    lifecycle = require '../../lib/lifecycle'
     mkcmd = require '../../lib/mkcmd'
     parse_jdbc = require '../../lib/parse_jdbc'
 
-
-## Upgrade error
-
-Run `yum remove -y oozie oozie-client` before `ryba install` if you see this
-error:
-
-```
-Running Transaction
-  Updating   : oozie-4.0.0.2.1.5.0-695.el6.noarch                                                                                                                                                   1/2
-Error unpacking rpm package oozie-4.0.0.2.1.5.0-695.el6.noarch
-error: unpacking of archive failed on file /usr/lib/oozie/webapps/oozie/WEB-INF: cpio: rename
-  Verifying  : oozie-4.0.0.2.1.5.0-695.el6.noarch                                                                                                                                                   1/2
-oozie-4.0.0.2.1.2.0-402.el6.noarch was supposed to be removed but is not!
-  Verifying  : oozie-4.0.0.2.1.2.0-402.el6.noarch
-```

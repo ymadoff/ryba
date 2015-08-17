@@ -45,7 +45,7 @@ Expose the "OOZIE_URL" environmental variable to every users.
         export OOZIE_URL=#{oozie.site['oozie.base.url']}
         """
         mode: 0o0755
-      , next
+      .then next
 
 ## SSL
 
@@ -71,6 +71,7 @@ keytool -keystore ${JAVA_HOME}/jre/lib/security/cacerts -import -alias tomcat -f
       .upload
         source: ssl.cacert
         destination: "#{tmp_location}_cacert"
+        shy: true
       .java_keystore_add
         keystore: "#{jre_home or java_home}/lib/security/cacerts"
         storepass: "changeit"
@@ -78,6 +79,7 @@ keytool -keystore ${JAVA_HOME}/jre/lib/security/cacerts -import -alias tomcat -f
         cacert: "#{tmp_location}_cacert"
       .remove
         destination: "#{tmp_location}_cacert"
+        shy: true
       .then next
 
     module.exports.push 'ryba/oozie/client/check'
