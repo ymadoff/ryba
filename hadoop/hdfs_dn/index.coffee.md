@@ -92,7 +92,10 @@ Example:
       ryba.hdfs.site['dfs.datanode.fsdataset.volume.choosing.policy'] ?= 'org.apache.hadoop.hdfs.server.datanode.fsdataset.AvailableSpaceVolumeChoosingPolicy'
       ryba.hdfs.site['dfs.datanode.available-space-volume-choosing-policy.balanced-space-threshold'] ?= '10737418240' # 10GB
       ryba.hdfs.site['dfs.datanode.available-space-volume-choosing-policy.balanced-space-preference-fraction'] ?= '1.0'
-      ryba.hdfs.site['dfs.datanode.du.reserved'] ?= '53687091200' # 50GB
+      # Note, maybe do a better estimation of du.reserved inside capacity
+      # currently, 50GB throw DataXceiver exception inside vagrant vm
+      # ryba.hdfs.site['dfs.datanode.du.reserved'] ?= '53687091200' # 50GB
+      ryba.hdfs.site['dfs.datanode.du.reserved'] ?= '1073741824' # 1GB
       # dfs.datanode.fsdataset.volume.choosing.policy:AvailableSpace 
       # dfs.datanode.available-space-volume-choosing-policy.balanced-space-preference-fraction:1.0 
 
