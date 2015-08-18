@@ -35,7 +35,7 @@ HDFS directory. Note, the parent directories are created by the
       ctx
       .hconfigure
         destination: "#{tez.env['TEZ_CONF_DIR']}/tez-site.xml"
-        default: "./resources/tez-site.xml"
+        default: "#{__dirname}/resources/tez-site.xml"
         local_default: true
         properties: tez.tez_site
         merge: true
