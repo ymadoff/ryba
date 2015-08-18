@@ -18,7 +18,7 @@ module.exports = (ctx) ->
     # options = name: options if typeof options is 'string'
     options.version ?= 'latest'
     if options.version and options.version not in ['latest', 'current']
-      options.db['hdp_select.version.default'] = options.version
+      options.store['hdp_select.version.default'] = options.version
     ctx
     .call (_, callback) ->
       # Get the current or latest version
@@ -41,14 +41,14 @@ module.exports = (ctx) ->
         fi
         echo $version
         """
-        not_if: options.db['hdp_select.version.default']
+        not_if: options.store['hdp_select.version.default']
         shy: true
       , (err, executed, stdout, stderr) ->
         return callback err if err
-        options.db['hdp_select.version.default'] = stdout.trim() if executed
+        options.store['hdp_select.version.default'] = stdout.trim() if executed
         callback()
     .call (_, callback) ->
-      version = options.db['hdp_select.version.default']
+      version = options.store['hdp_select.version.default']
       # Set the service to its expected version
       ctx.execute
         cmd: """
