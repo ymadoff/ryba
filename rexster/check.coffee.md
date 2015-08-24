@@ -42,10 +42,16 @@ Text mode of REST Server
         return next err, false if err or not executed
         try
           data = JSON.parse(stdout)
-          return next Error "Invalid response: #{data}" unless data?.name is graphname
+          return next Error "Invalid response: #{JSON.stringify data}" unless data?.name is graphname
         catch e then return next Error "Invalid Command Output: #{JSON.stringify stdout}"
         next err, executed
 
 ## Dependencies
 
     path = require 'path'
+
+
+
+
+
+
