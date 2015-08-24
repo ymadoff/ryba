@@ -312,11 +312,11 @@ This behavior may be altered with the "hdfs_nn_name_dir" parameter.
           hdfs_site['dfs.namenode.name.dir'] ?= hdfs_nn_name_dir.split ','
         else
           if ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-            hdfs_site['dfs.namenode.name.dir'] ?= ['file:/' + path.resolve '/var', hdfs_nn_name_dir or './hdfs/name']
+            hdfs_site['dfs.namenode.name.dir'] ?= ['file://' + path.resolve '/var', hdfs_nn_name_dir or './hdfs/name']
           else
             hdfs_site['dfs.namenode.name.dir'] ?= disks.map (disk) ->
               disk = '/var' if disk is '/'
-              'file:/' + path.resolve disk, hdfs_nn_name_dir or './hdfs/name'
+              'file://' + path.resolve disk, hdfs_nn_name_dir or './hdfs/name'
 
 ## HBase Master
 
