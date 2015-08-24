@@ -15,7 +15,6 @@ following command:
 
 ```
 ps aux | grep "rexster"
-
 kill ...
 ```
 
