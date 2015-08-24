@@ -16,74 +16,33 @@ default setting for Yarn and its client application such as MapReduce or Tez.
       exports.contexts config, (err, ctxs) ->
         return callback err if err
         return callback Error 'No Servers Configured' unless Object.keys(ctxs).length
-        do_configure = ->
-          exports.configure ctxs, (err) ->
-            return callback err if err
-            do_disks ctxs
-        do_disks = ->
-          exports.disks ctxs, (err) ->
-            return callback err if err
-            do_cores ctxs
-        do_cores = ->
-          exports.cores ctxs, (err) ->
-            return callback err if err
-            do_memory ctxs
-        do_memory = ->
-          exports.memory ctxs, (err) ->
-            return callback err if err
-            do_yarn_nm ctxs
-        do_yarn_nm = ->
-          exports.yarn_nm ctxs, (err) ->
-            return callback err if err
-            do_yarn_rm ctxs
-        do_yarn_rm = ->
-          exports.yarn_rm ctxs, (err) ->
-            return callback err if err
-            do_hdfs_nn ctxs
-        do_hdfs_nn = ->
-          exports.hdfs_nn ctxs, (err) ->
-            return callback err if err
-            do_hdfs_dn ctxs
-        do_hdfs_dn = ->
-          exports.hdfs_dn ctxs, (err) ->
-            return callback err if err
-            do_hbase_m ctxs
-        do_hbase_m = ->
-          exports.hbase_m ctxs, (err) ->
-            return callback err if err
-            do_hbase_rs ctxs
-        do_hbase_rs = ->
-          exports.hbase_rs ctxs, (err) ->
-            return callback err if err
-            do_mapred_client ctxs
-        do_mapred_client = ->
-          exports.mapred_client ctxs, (err) ->
-            return callback err if err
-            do_hive_client ctxs
-        do_hive_client = ->
-          exports.hive_client ctxs, (err) ->
-            return callback err if err
-            do_kafka_broker ctxs
-        do_kafka_broker = ->
-          exports.kafka_broker ctxs, (err) ->
-            return callback err if err
-            do_remote ctxs
-        do_remote = ->
-          exports.remote ctxs, (err) ->
-            return callback err if err
-            do_write ctxs
-        # do_report = ->
-        #   exports.report ctxs, (err) ->
-        #     return callback err if err
-        #     do_write()
-        do_write = ->
-          exports.write config, ctxs, (err) ->
-            return callback err if err
-            do_end()
-        do_end = ->
+        console.log 'connected'
+        each [
+          'configure', 'disks', 'cores', 'memory'
+          'yarn_nm', 'yarn_rm'
+          'hdfs_client', 'hdfs_nn', 'hdfs_dn'
+          'hbase_m', 'hbase_rs'
+          'mapred_client', 'tez_client'
+          'hive_client', 'kafka_broker'
+          'remote' ]
+        .run (handler, next) ->
+          console.log handler
+          handler = exports[handler]
+          if handler.length is 2
+            handler ctxs, next
+          else
+            handler ctxs
+            next()
+        .then (err) ->
           ctx.emit 'end' for ctx in ctxs
-          callback null
-        do_configure()
+
+          return console.log 'ERROR', err if err
+          console.log '_____0', err
+          exports.write config, ctxs, (err) ->
+            console.log '_____1', err
+            return console.log 'ERROR', err if err
+            console.log 'SUCCESS'
+
 
 ## SSH
 
@@ -107,7 +66,7 @@ default setting for Yarn and its client application such as MapReduce or Tez.
 
 Normalize configuration.
 
-    exports.configure = (ctxs, next) ->
+    exports.configure = (ctxs) ->
       for ctx in ctxs
         ctx.config.capacity ?= {}
         ctx.config.capacity.total_memory ?= null
@@ -121,13 +80,12 @@ Normalize configuration.
           ctx.config.capacity[conf] ?= {}
           ctx.config.capacity.remote[conf] ?= {}
         ctx.config.capacity.capacity_scheduler['yarn.scheduler.capacity.resource-calculator'] ?= 'org.apache.hadoop.yarn.util.resource.DominantResourceCalculator'
-      next()
 
 ## Capacity Planning for Disks
 
 Discover the most relevant partitions on each node.
 
-    exports.disks = (ctxs, next) ->
+    exports.disks = (ctxs) ->
       for ctx in ctxs
         # continue unless ctx.has_any_modules 'ryba/hadoop/yarn_nm'
         continue if ctx.config.capacity.disks
@@ -163,15 +121,13 @@ Discover the most relevant partitions on each node.
           ctx.config.capacity.disks = [found_root]
         else next Error 'No Appropriate Disk Found'
         ctx.config.capacity.disks = ctx.config.capacity.disks.map (disk) -> disk.mountpoint
-      next()
 
 ## Capacity Planning for CPU
 
-    exports.cores = (ctxs, next) ->
+    exports.cores = (ctxs) ->
       for ctx in ctxs
         ctx.config.capacity.cores ?= ctx.cpuinfo.length
         ctx.config.capacity.cores_yarn ?= 100
-      next()
 
 ## Capacity Planning for Memory
 
@@ -180,7 +136,7 @@ depending on the total amout of memory.
 
     exports.memory_system_gb = [[1,.2], [2,.2], [4,1], [7,2], [8,2], [16,2], [24,4], [48,6], [64,8], [72,8], [96,12], [128,24], [256,32], [512,64]]
     exports.memory_hbase_gb = [[1,.2], [2,.4], [4,1], [8,1], [16,2], [24,4], [48,8], [64,8], [72,8], [96,16], [128,24], [256,32], [512,64]]
-    exports.memory = (ctxs, next) ->
+    exports.memory = (ctxs) ->
       for ctx in ctxs
         ctx.config.capacity.total_memory ?= ctx.meminfo.MemTotal
         continue unless ctx.has_any_modules 'ryba/hadoop/yarn_nm'
@@ -211,11 +167,10 @@ depending on the total amout of memory.
         ctx.config.capacity.memory_hbase ?= memory_hbase = exports.rounded_memory memory_hbase_gb * 1024 * 1024 * 1024
         ctx.config.capacity.memory_yarn ?= memory_yarn = exports.rounded_memory total_memory - memory_system - memory_hbase
         ctx.config.capacity.memory_system ?= total_memory - memory_hbase - memory_yarn
-      next()
 
 ## Yarn NodeManager
 
-    exports.yarn_nm = (ctxs, next) ->
+    exports.yarn_nm = (ctxs) ->
       minimum_allocation_mb = null
       maximum_allocation_mb = 0
       maximum_allocation_vcores = 0
@@ -310,11 +265,10 @@ Raise the number of vcores later allocated for the ResourceManager.
         ctx.config.capacity.maximum_allocation_mb = maximum_allocation_mb
         ctx.config.capacity.maximum_allocation_vcores = maximum_allocation_vcores
 
-      next()
 
 ## Yarn ResourceManager
 
-    exports.yarn_rm = (ctxs, next) ->
+    exports.yarn_rm = (ctxs) ->
       for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/hadoop/yarn_rm'
         {minimum_allocation_mb, maximum_allocation_mb, maximum_allocation_vcores, yarn_site} = ctx.config.capacity
@@ -330,11 +284,10 @@ instead shows that the containers are never granted, and no progress is made by
 the application (zombie state).
 
         yarn_site['yarn.scheduler.maximum-allocation-vcores'] ?= maximum_allocation_vcores
-      next()
 
 ## HDFS DataNode
 
-    exports.hdfs_dn = (ctxs, next) ->
+    exports.hdfs_dn = (ctxs) ->
       for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/hadoop/hdfs_dn'
         {disks, hdfs_site} = ctx.config.capacity
@@ -344,7 +297,6 @@ the application (zombie state).
         else
           hdfs_site['dfs.datanode.data.dir'] ?= disks.map (disk) ->
             path.resolve disk, hdfs_dn_data_dir or './hdfs/data'
-      next()
 
 ## HDFS NameNode
 
@@ -356,7 +308,6 @@ partition "./hdfs/name" directory.
 
 This behavior may be altered with the "hdfs_nn_name_dir" parameter.
 
-    exports.hdfs_nn = (ctxs, next) ->
       for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/hadoop/hdfs_nn'
         {disks, hdfs_site} = ctx.config.capacity
@@ -370,30 +321,26 @@ This behavior may be altered with the "hdfs_nn_name_dir" parameter.
             hdfs_site['dfs.namenode.name.dir'] ?= disks.map (disk) ->
               disk = '/var' if disk is '/'
               'file:/' + path.resolve disk, hdfs_nn_name_dir or './hdfs/name'
-      next()
-
 
 ## HBase Master
 
-    exports.hbase_m = (ctxs, next) ->
+    exports.hbase_m = (ctxs) ->
       for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/hbase/master'
         # Nothing to do for now, eg 'ryba.hbase.master_opts="..."'
-      next()
 
 ## HBase RegionServer
 
-    exports.hbase_rs = (ctxs, next) ->
+    exports.hbase_rs = (ctxs) ->
       for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/hbase/regionserver'
         {memory_hbase} = ctx.config.capacity
         memory_hbase_mb = Math.floor memory_hbase / 1024 / 1024
         ctx.config.capacity['regionserver_opts'] ?= "-Xmx#{memory_hbase_mb}m"
-      next()
 
 ## MapReduce Client
 
-    exports.mapred_client = (ctxs, next) ->
+    exports.mapred_client = (ctxs) ->
       for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/hadoop/mapred_client'
         {memory_per_container_mean, maximum_allocation_mb, mapred_site} = ctx.config.capacity
@@ -438,11 +385,10 @@ options "-Xmx" and "-Xms". The values must be less than their
         mapred_site['mapreduce.map.cpu.vcores'] ?= 1
         #  The number of virtual CPU cores for each reduce task of a job
         mapred_site['mapreduce.reduce.cpu.vcores'] ?= 1
-      next()
 
 ## Hive Client
 
-    exports.hive_client = (ctxs, next) ->
+    exports.hive_client = (ctxs) ->
       for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/hive/client'
         {memory_per_container_mean, maximum_allocation_mb, hive_site} = ctx.config.capacity
@@ -461,9 +407,9 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
 
         hive_site['hive.tez.java.opts'] ?= "-Xmx#{Math.floor .8 * tez_memory_mb}m" # 0.8 * RAM-per-container
 
-      next()
+## Kafka Broker
 
-    exports.kafka_broker = (ctxs, next) ->
+    exports.kafka_broker = (ctxs) ->
       for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/kafka/broker'
         {disks, kafka_broker} = ctx.config.capacity
@@ -473,7 +419,6 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
         else
           kafka_broker['log.dirs'] ?= disks.map (disk) ->
             path.resolve disk, kafka_data_dir or './kafka'
-      next()
 
     exports.remote = (ctxs, next) ->
       each(ctxs)
