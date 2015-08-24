@@ -16,7 +16,6 @@ default setting for Yarn and its client application such as MapReduce or Tez.
       exports.contexts config, (err, ctxs) ->
         return callback err if err
         return callback Error 'No Servers Configured' unless Object.keys(ctxs).length
-        console.log 'connected'
         each [
           'configure', 'disks', 'cores', 'memory'
           'yarn_nm', 'yarn_rm'
@@ -26,7 +25,6 @@ default setting for Yarn and its client application such as MapReduce or Tez.
           'hive_client', 'kafka_broker'
           'remote' ]
         .run (handler, next) ->
-          console.log handler
           handler = exports[handler]
           if handler.length is 2
             handler ctxs, next
@@ -37,9 +35,7 @@ default setting for Yarn and its client application such as MapReduce or Tez.
           ctx.emit 'end' for ctx in ctxs
 
           return console.log 'ERROR', err if err
-          console.log '_____0', err
           exports.write config, ctxs, (err) ->
-            console.log '_____1', err
             return console.log 'ERROR', err if err
             console.log 'SUCCESS'
 
