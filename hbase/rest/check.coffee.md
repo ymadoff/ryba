@@ -9,7 +9,7 @@
 
 ## Check Shell
 
-    module.exports.push name: 'HBase Rest # Check', timeout: -1, skip: true, label_true: 'CHECKED', handler: (ctx, next) ->
+    module.exports.push name: 'HBase Rest # Check', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
       {shortname} = ctx.config
       {force_check, jaas_client, hbase} = ctx.config.ryba
       # cmd = mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"exists 'ryba'\" | grep 'Table ryba does exist'"
@@ -36,7 +36,7 @@
         """
         not_if_exec: unless force_check then mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"scan 'ryba', {COLUMNS => '#{shortname}_rest'}\" | egrep '[0-9]+ row'"
       , (err, executed, stdout) ->
-        return next err, false if err or not executed
+        return if err or not executed
         try
           data = JSON.parse(stdout)
         catch e then return next Error "Invalid Command Output: #{JSON.stringify stdout}"
