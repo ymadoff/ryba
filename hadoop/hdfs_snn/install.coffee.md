@@ -39,13 +39,6 @@ Install the "hadoop-hdfs-secondarynamenode" service, symlink the rc.d startup
 script inside "/etc/init.d" and activate it on startup.
 
     module.exports.push name: 'HDFS SNN # Service', handler: (ctx, next) ->
-      # ctx.hdp_service
-      #   name: 'hadoop-hdfs-secondarynamenode'
-      #   write:[
-      #     match: /^EXEC_PATH=".*\/sbin\/hadoop-daemon\.sh".*$/m
-      #     replace: 'EXEC_PATH="$HADOOP_HOME/sbin/hadoop-daemon.sh" # RYBA FIX rc.d, DONT OVERWRITE'
-      #   ]
-      # .then next
       ctx
       .service
         name: 'hadoop-hdfs-secondarynamenode'
@@ -53,7 +46,7 @@ script inside "/etc/init.d" and activate it on startup.
         name: 'hadoop-hdfs-client' # Not checked
         name: 'hadoop-hdfs-secondarynamenode'
       .write
-        source: "#{__dirname}/secondarynamenode"
+        source: "#{__dirname}/../resources/secondarynamenode"
         local_source: true
         destination: '/etc/init.d/hadoop-hdfs-secondarynamenode'
         mode: 0o0755
@@ -62,21 +55,6 @@ script inside "/etc/init.d" and activate it on startup.
         cmd: "service hadoop-hdfs-secondarynamenode restart"
         if: -> @status -3
       .then next
-
-    # module.exports.push name: 'HDFS SNN # Service', timeout: -1, handler: (ctx, next) ->
-    #   {hdfs} = ctx.config.ryba
-    #   ctx.service
-    #     name: 'hadoop-hdfs-secondarynamenode'
-    #     startup: true
-    #   , (err, serviced) ->
-    #     return next err if err
-    #     ctx.write
-    #       destination: '/etc/init.d/hadoop-hdfs-secondarynamenode'
-    #       write: [
-    #         {match: /^PIDFILE=".*"$/m, replace: "PIDFILE=\"#{hdfs.pid_dir}/$SVC_USER/hadoop-hdfs-secondarynamenode.pid\""}
-    #         {match: /^(\s+start_daemon)\s+(\$EXEC_PATH.*)$/m, replace: "$1 -u $SVC_USER $2"}]
-    #     , (err, written) ->
-    #       next err, serviced or written
 
     module.exports.push name: 'HDFS SNN # Directories', timeout: -1, handler: (ctx, next) ->
       {hdfs, hadoop_group} = ctx.config.ryba

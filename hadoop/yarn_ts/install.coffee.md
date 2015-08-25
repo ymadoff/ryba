@@ -51,7 +51,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
         name: 'hadoop-yarn-client' # Not checked
         name: 'hadoop-yarn-timelineserver'
       .write
-        source: "#{__dirname}/hadoop-yarn-timelineserver"
+        source: "#{__dirname}/../resources/hadoop-yarn-timelineserver"
         local_source: true
         destination: '/etc/init.d/hadoop-yarn-timelineserver'
         mode: 0o0755

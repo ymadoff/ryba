@@ -67,7 +67,7 @@ inside "/etc/init.d" and activate it on startup.
         name: 'hadoop-hdfs-client' # Not checked
         name: 'hadoop-hdfs-namenode'
       .write
-        source: "#{__dirname}/hadoop-hfds-namenode"
+        source: "#{__dirname}/../resources/hadoop-hfds-namenode"
         local_source: true
         destination: '/etc/init.d/hadoop-hdfs-namenode'
         mode: 0o0755

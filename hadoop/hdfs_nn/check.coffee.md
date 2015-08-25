@@ -56,6 +56,12 @@ See More http://hadoop.apache.org/docs/r2.0.2-alpha/hadoop-yarn/hadoop-yarn-site
 Check for various inconsistencies on the overall filesystem. Use the command
 `hdfs fsck -list-corruptfileblocks` to list the corrupted blocks.
 
+Corrupted blocks for removal can be found with the command: 
+`hdfs fsck / | egrep -v '^\.+$' | grep -v replica | grep -v Replica`
+Additionnal information may be found on the [CentOS HowTos site][corblk].
+
+[corblk]: http://centoshowtos.org/hadoop/fix-corrupt-blocks-on-hdfs/
+
     module.exports.push name: 'HDFS NN # Check FSCK', label_true: 'CHECKED', timeout: -1, retry: 3, wait: 60000, handler: (ctx, next) ->
       ctx.execute
         cmd: mkcmd.hdfs ctx, "exec 5>&1; hdfs fsck / | tee /dev/fd/5 | tail -1 | grep HEALTHY 1>/dev/null"

@@ -53,7 +53,7 @@ inside "/etc/init.d" and activate it on startup.
         name: 'hadoop-yarn-client' # Not checked
         name: 'hadoop-yarn-nodemanager'
       .write
-        source: "#{__dirname}/hadoop-yarn-nodemanager"
+        source: "#{__dirname}/../resources/hadoop-yarn-nodemanager"
         local_source: true
         destination: '/etc/init.d/hadoop-yarn-nodemanager'
         mode: 0o0755

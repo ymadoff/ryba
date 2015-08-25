@@ -32,36 +32,6 @@ Install the "hadoop-hdfs-zkfc" service, symlink the rc.d startup script
 in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 
     module.exports.push name: 'ZKFC # Service', handler: (ctx, next) ->
-      # {hdfs} = ctx.config.ryba
-      # ctx.hdp_service
-      #   name: 'hadoop-hdfs-zkfc'
-      #   version_name: 'hadoop-hdfs-namenode'
-      #   write: [
-      #     match: /^USER=".*?".*CONF_DIR.*$/mg
-      #     replace: "USER=\"$SVC_USER\"; . $CONF_DIR/hadoop-env.sh # RYBA FIX rc.d"
-      #     before: /^DAEMON=.*$/mg
-      #   ,
-      #     # HDP default is "/usr/lib/hadoop/sbin/hadoop-daemon.sh"
-      #     match: /^EXEC_PATH=.*$/m
-      #     replace: "EXEC_PATH=\"${HADOOP_HOME}/sbin/hadoop-daemon.sh\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-      #   ,
-      #     match: /^PIDFILE=".*".*$/mg
-      #     replace: "PIDFILE=\"$HADOOP_PID_DIR/hadoop-$HADOOP_IDENT_STRING-zkfc.pid\" # RYBA FIX rc.d"
-      #   ]
-      #   etc_default:
-      #     'hadoop': true
-      #     'hadoop-hdfs-zkfc':
-      #       write: [
-      #         match: /^export HADOOP_PID_DIR=.*$/m # HDP default is "/var/run/hadoop-hdfs"
-      #         replace: "export HADOOP_PID_DIR=#{hdfs.pid_dir} # RYBA"
-      #       ,
-      #         match: /^export HADOOP_LOG_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
-      #         replace: "export HADOOP_LOG_DIR=#{hdfs.log_dir} # RYBA"
-      #       ,
-      #         match: /^export HADOOP_IDENT_STRING=.*$/m # HDP default is "hdfs"
-      #         replace: "export HADOOP_IDENT_STRING=#{hdfs.user.name} # RYBA"
-      #       ]
-      # .then next
       ctx
       .service
         name: 'hadoop-hdfs-zkfc'
@@ -69,7 +39,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
         name: 'hadoop-hdfs-client' # Not checked
         name: 'hadoop-hdfs-namenode'
       .write
-        source: "#{__dirname}/hadoop-hdfs-zkfc"
+        source: "#{__dirname}/../resources/hadoop-hdfs-zkfc"
         local_source: true
         destination: '/etc/init.d/hadoop-hdfs-zkfc'
         mode: 0o0755

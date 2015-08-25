@@ -100,7 +100,7 @@ inside "/etc/init.d" and activate it on startup.
         name: 'hadoop-yarn-client' # Not checked
         name: 'hadoop-yarn-resourcemanager'
       .write
-        source: "#{__dirname}/hadoop-yarn-resourcemanager"
+        source: "#{__dirname}/../resources/hadoop-yarn-resourcemanager"
         local_source: true
         destination: '/etc/init.d/hadoop-yarn-resourcemanager'
         mode: 0o0755

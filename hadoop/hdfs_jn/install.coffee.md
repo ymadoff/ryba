@@ -74,7 +74,7 @@ inside "/etc/init.d" and activate it on startup.
         name: 'hadoop-hdfs-client' # Not checked
         name: 'hadoop-hdfs-journalnode'
       .write
-        source: "#{__dirname}/hadoop-hdfs-journalnode"
+        source: "#{__dirname}/../resources/hadoop-hdfs-journalnode"
         local_source: true
         destination: '/etc/init.d/hadoop-hdfs-journalnode'
         mode: 0o0755
