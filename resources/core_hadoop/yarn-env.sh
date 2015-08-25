@@ -61,7 +61,7 @@ fi
 # and/or YARN_RESOURCEMANAGER_OPTS.
 # If not specified, the default value will be picked from either YARN_HEAPMAX
 # or JAVA_HEAP_MAX with YARN_HEAPMAX as the preferred option of the two.
-export YARN_RESOURCEMANAGER_HEAPSIZE=1024
+export YARN_RESOURCEMANAGER_HEAPSIZE=2048 # Ryba, was 1024
 
 # Specify the JVM options to be used when starting the ResourceManager.
 # These options will be appended to the options specified as YARN_OPTS
