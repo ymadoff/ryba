@@ -63,8 +63,11 @@ Additionnal information may be found on the [CentOS HowTos site][corblk].
 [corblk]: http://centoshowtos.org/hadoop/fix-corrupt-blocks-on-hdfs/
 
     module.exports.push name: 'HDFS NN # Check FSCK', label_true: 'CHECKED', timeout: -1, retry: 3, wait: 60000, handler: (ctx, next) ->
+      {force_check, check_hdfs_fsck} = ctx.config.ryba
+      check_hdfs_fsck = if check_hdfs_fsck? then !!check_hdfs_fsck else true
       ctx.execute
         cmd: mkcmd.hdfs ctx, "exec 5>&1; hdfs fsck / | tee /dev/fd/5 | tail -1 | grep HEALTHY 1>/dev/null"
+        if: force_check or check_hdfs_fsck
       .then next
 
 ## Check HDFS
