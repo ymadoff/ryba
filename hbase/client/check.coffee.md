@@ -88,7 +88,38 @@ scanning the table.
       #     return next Error 'Invalid command output' if executed and not isRowCreated
       #     return next err, executed
 
+## Check HA
+
+This check is only executed if more than two HBase Master are declared.
+
+    module.exports.push name: 'HBase Client # Check HA', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
+      {force_check} = ctx.config.ryba
+      hbase_ctxs = ctx.contexts 'ryba/hbase/master', require('../master').configure
+      return next() unless hbase_ctxs.length > 1
+      {admin} = hbase_ctxs[0].config.ryba.hbase
+      table = "check_#{ctx.config.shortname}_ha"
+      ctx.execute
+        cmd: mkcmd.hbase ctx, """
+          # Create new table
+          echo "disable '#{table}'; drop '#{table}'" | hbase shell 2>/dev/null
+          echo "create '#{table}', 'cf1', {REGION_REPLICATION => 2}" | hbase shell 2>/dev/null;
+          # Insert records
+          echo "put '#{table}', 'my_row', 'cf1:my_column', 10" | hbase shell 2>/dev/null
+          echo "scan '#{table}',  { CONSISTENCY => 'STRONG' }" | hbase shell 2>/dev/null
+          echo "scan '#{table}',  { CONSISTENCY => 'TIMELINE' }" | hbase shell 2>/dev/null
+          """
+        # not_if_exec: unless force_check then mkcmd.test ctx, "hbase shell 2>/dev/null <<< \"list '#{table}'\" | grep -w '#{table}'"
+      .then next
+
 ## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
     string = require 'mecano/lib/misc/string'
+
+
+
+
+
+
+
+

@@ -131,6 +131,38 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
       else '-Xmn200m -Xms4096m -Xmx4096m' # Default in HDP companion file
       require('../hadoop/core').configure ctx
 
+## Configuration for High Availability (HA)
+
+*   [Hortonworks presentation of HBase HA][ha-next-level]
+*   [HDP 2.3 Read HA instruction][hdp23]
+*   [Bring quorum based write ahead log (write HA)][HBASE-12259]
+
+[ha-next-level]: http://hortonworks.com/blog/apache-hbase-high-availability-next-level/
+[hdp23]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.0/bk_hadoop-ha/content/ch_HA-HBase.html
+[HBASE-12259]: https://issues.apache.org/jira/browse/HBASE-12259
+
+      if ctx.contexts('ryba/hbase/master').length > 1 # HA enabled
+        if ctx.has_any_modules 'ryba/hbase/master', 'ryba/hbase/regionserver'
+          # StoreFile Refresher
+          hbase.site['hbase.regionserver.storefile.refresh.all'] ?= 'true'
+          # Store File TTL
+          hbase.site['hbase.regionserver.storefile.refresh.period'] ?= '30000' # Default to '0'
+          # Async WAL Replication
+          hbase.site['hbase.region.replica.replication.enabled'] ?= 'true'
+          hbase.site['hbase.regionserver.storefile.refresh.all'] ?= 'false'
+          # Store File TTL
+          hbase.site['hbase.master.hfilecleaner.ttl'] ?= '3600000' # 1 hour
+          hbase.site['hbase.master.loadbalancer.class'] ?= 'org.apache.hadoop.hbase.master.balancer.StochasticLoadBalancer' # Default value
+          hbase.site['hbase.meta.replica.count'] ?= '3' # Default to '1'
+          hbase.site['hbase.region.replica.wait.for.primary.flush'] ?= 'true'
+          hbase.site['hbase.region.replica.storefile.refresh.memstore.multiplier'] ?= '4'
+        if ctx.has_any_modules 'ryba/hbase/client'
+          hbase.site['hbase.ipc.client.specificThreadForWriting'] ?= 'true'
+          hbase.site['hbase.client.primaryCallTimeout.get'] ?= '10000'
+          hbase.site['hbase.client.primaryCallTimeout. multiget'] ?= '10000'
+          hbase.site['hbase.client.primaryCallTimeout.scan'] ?= '1000000'
+          hbase.site['hbase.meta.replicas.use'] ?= 'true'
+
 ## Users & Groups
 
 By default, the "hbase" package create the following entries:
