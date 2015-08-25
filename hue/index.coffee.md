@@ -201,6 +201,8 @@ Example:
       hue.ini['beeswax']['server_conn_timeout'] ?= "240"
       # Desktop
       hue.ini['desktop'] ?= {}
+      hue.ini['desktop']['django_debug_mode'] ?= '0' # Disable debug by default
+      hue.ini['desktop']['http_500_debug_mode'] ?= '0' # Disable debug by default
       hue.ini['desktop']['http'] ?= {}
       hue.ini['desktop']['http_host'] ?= '0.0.0.0'
       hue.ini['desktop']['http_port'] ?= '8888'
