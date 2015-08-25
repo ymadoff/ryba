@@ -11,7 +11,7 @@ following two commands:
 
 ```
 service hbase-thrift start
-su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start thrift"
+su -l hbase -c "/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config /etc/hbase/conf start thrift"
 ```
 
     module.exports.push name: 'HBase Thrift # Start', label_true: 'STARTED', handler: (ctx, next) ->

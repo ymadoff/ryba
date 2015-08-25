@@ -12,7 +12,7 @@ the following two commands:
 
 ```
 service hbase-rest start
-su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf stop rest"
+su -l hbase -c "/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config /etc/hbase/conf stop rest"
 ```
 
     module.exports.push name: 'HBase Rest # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
