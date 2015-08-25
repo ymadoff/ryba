@@ -5,6 +5,21 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push require('./index').configure
 
+## Check FSCK
+
+It is possible that HBase fail to started because of currupted WAL files.
+Corrupted blocks for removal can be found with the command: 
+`hdfs fsck / | egrep -v '^\.+$' | grep -v replica | grep -v Replica`
+Additionnal information may be found on the [CentOS HowTos site][corblk].
+
+[corblk]: http://centoshowtos.org/hadoop/fix-corrupt-blocks-on-hdfs/
+
+    module.exports.push name: 'HBase RegionServer # Check SPNEGO', label_true: 'CHECKED', handler: (ctx, next) ->
+      rootdir = ctx.contexts('ryba/hbase/master')[0].config.ryba.hbase.site['hbase.rootdir']
+      ctx.execute
+        cmd: mkcmd.hdfs "hdfs fsck #{rootdir}/WALs | grep 'Status: HEALTHY'"
+      .then next
+
 ## Check SPNEGO
 
 Check if keytab file exists and if read permission is granted to the HBase user.
