@@ -145,6 +145,9 @@ recommandations. Merge the configuration object from "hdp.hue.ini" with the prop
         stringify: misc.ini.stringify_multi_brackets
         separator: '='
         comment: '#'
+        uid: hue.user.name
+        gid: hue.group.name
+        mode: 0o0750
       .then next
 
 ## Database
