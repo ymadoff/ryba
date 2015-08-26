@@ -6,7 +6,6 @@ Titan is a distributed graph database. It is an hadoop-friendly implementation o
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hbase/client'
 
     module.exports.configure = (ctx) ->
       return if ctx.titan_configured

@@ -4,8 +4,6 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/commons/java'
-    module.exports.push 'ryba/hadoop/core'
-    module.exports.push 'ryba/hadoop/hdfs_client'
     module.exports.push 'ryba/hadoop/core' # Hive dependency, need to create user and group for zookeeper
     module.exports.push require '../lib/hdp_select'
 

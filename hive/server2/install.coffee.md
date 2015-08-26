@@ -15,10 +15,10 @@ Resources:
     module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'masson/core/krb5_client'
     module.exports.push 'masson/core/iptables'
-    module.exports.push 'ryba/hadoop/mapred_client'
-    module.exports.push 'ryba/tez'
+    module.exports.push 'ryba/hadoop/mapred_client/install'
+    module.exports.push 'ryba/tez/install'
     module.exports.push 'ryba/hive/client/install' # Install the Hive and HCatalog service
-    module.exports.push 'ryba/hbase/client'
+    module.exports.push 'ryba/hbase/client/install'
     module.exports.push 'ryba/hive/hcatalog/wait'
     module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_select'

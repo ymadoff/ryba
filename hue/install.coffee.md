@@ -13,11 +13,11 @@ article from december 2014 describe how to
     # Install kerberos clients to create/test new Hive principal
     module.exports.push 'masson/core/krb5_client'
     # Set java_home in "hadoop-env.sh"
-    module.exports.push 'ryba/hadoop/hdfs_client'
-    module.exports.push 'ryba/hadoop/yarn_client'
-    module.exports.push 'ryba/hadoop/mapred_client'
-    module.exports.push 'ryba/hive/client' # Hue reference hive conf dir
-    module.exports.push 'ryba/tools/pig'
+    module.exports.push 'ryba/hadoop/hdfs_client/install'
+    module.exports.push 'ryba/hadoop/yarn_client/install'
+    module.exports.push 'ryba/hadoop/mapred_client/install'
+    module.exports.push 'ryba/hive/client/install' # Hue reference hive conf dir
+    module.exports.push 'ryba/tools/pig/install'
     module.exports.push require '../lib/hconfigure'
     module.exports.push require('./index').configure
 

@@ -10,6 +10,7 @@ please see ryba/rexster
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
+    module.exports.push 'ryba/hbase/client/install'
     module.exports.push require('../hbase').configure
     module.exports.push require('./index').configure
     module.exports.push require '../lib/write_jaas'

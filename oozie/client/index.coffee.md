@@ -27,6 +27,9 @@ be installed in remote machines only.
 
 ## Commands
 
-    module.exports.push commands: 'install', modules: 'ryba/oozie/client/install'
+    module.exports.push commands: 'install', modules: [
+      'ryba/oozie/client/install'
+      'ryba/oozie/client/check'
+    ]
 
     module.exports.push commands: 'check', modules: 'ryba/oozie/client/check'

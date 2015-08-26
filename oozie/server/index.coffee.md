@@ -229,7 +229,10 @@ Example
 
     #module.exports.push commands: 'check', modules: 'ryba/oozie/server/check'
 
-    module.exports.push commands: 'install', modules: 'ryba/oozie/server/install'
+    module.exports.push commands: 'install', modules: [
+      'ryba/oozie/server/install'
+      'ryba/oozie/server/start'
+    ]
 
     module.exports.push commands: 'start', modules: 'ryba/oozie/server/start'
 

@@ -6,7 +6,6 @@
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
-    # module.exports.push require '../../lib/hdp_service'
     module.exports.push require '../../lib/hdp_select'
 
 ## IPTables

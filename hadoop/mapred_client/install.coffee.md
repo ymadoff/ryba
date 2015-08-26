@@ -4,8 +4,8 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/yum'
-    module.exports.push 'ryba/hadoop/hdfs_client'
-    module.exports.push 'ryba/hadoop/yarn_client'
+    module.exports.push 'ryba/hadoop/hdfs_client/install'
+    module.exports.push 'ryba/hadoop/yarn_client/install'
     module.exports.push 'ryba/hadoop/hdfs_dn/wait'
     module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdfs_upload'

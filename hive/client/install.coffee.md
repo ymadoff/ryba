@@ -3,8 +3,9 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/yarn_client'
-    module.exports.push 'ryba/hadoop/mapred_client'
+    module.exports.push 'ryba/hadoop/hdfs_client/install'
+    module.exports.push 'ryba/hadoop/yarn_client/install'
+    module.exports.push 'ryba/hadoop/mapred_client/install'
     module.exports.push 'ryba/tez'
     module.exports.push 'ryba/hive/index'
     module.exports.push require '../../lib/hconfigure'

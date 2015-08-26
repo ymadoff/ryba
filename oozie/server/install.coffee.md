@@ -560,11 +560,6 @@ the ShareLib contents without having to go into HDFS.
         local_source: true
       .then next
 
-
-    module.exports.push 'ryba/oozie/server/start'
-
-    # module.exports.push 'ryba/oozie/client'
-
 ## Dependencies
 
     url = require 'url'

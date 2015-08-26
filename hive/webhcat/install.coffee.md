@@ -5,9 +5,9 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs' # Install SPNEGO keytab
-    module.exports.push 'ryba/hive/client'
-    module.exports.push 'ryba/tools/pig'
-    module.exports.push 'ryba/tools/sqoop'
+    module.exports.push 'ryba/hive/client/install'
+    module.exports.push 'ryba/tools/pig/install'
+    module.exports.push 'ryba/tools/sqoop/install'
     module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdfs_upload'
