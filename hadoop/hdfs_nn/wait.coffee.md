@@ -25,7 +25,7 @@ majority of DataNodes also need to be running.
       # TODO: there are much better solutions, for exemple
       # if 'ryba/hadoop/hdfs_client', then `hdfs dfsadmin`
       # else use curl
-      return next Error 'HDFS Client Not Installed' unless ctx.has_any_modules 'ryba/hadoop/hdfs_client', 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_snn', 'ryba/hadoop/hdfs_dn'
+      return next Error 'HDFS Client Not Installed' unless ctx.has_any_modules 'ryba/hadoop/hdfs_client/install', 'ryba/hadoop/hdfs_nn/install', 'ryba/hadoop/hdfs_snn/install', 'ryba/hadoop/hdfs_dn/install'
       ctx.call (_, callback) ->
         ctx.waitForExecution
           cmd: mkcmd.hdfs ctx, """
