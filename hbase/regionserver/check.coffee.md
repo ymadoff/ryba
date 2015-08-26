@@ -14,10 +14,13 @@ Additionnal information may be found on the [CentOS HowTos site][corblk].
 
 [corblk]: http://centoshowtos.org/hadoop/fix-corrupt-blocks-on-hdfs/
 
-    module.exports.push name: 'HBase RegionServer # Check SPNEGO', label_true: 'CHECKED', handler: (ctx, next) ->
+    module.exports.push name: 'HBase RegionServer # Check FSCK', label_true: 'CHECKED', handler: (ctx, next) ->
       rootdir = ctx.contexts('ryba/hbase/master')[0].config.ryba.hbase.site['hbase.rootdir']
       ctx.execute
-        cmd: mkcmd.hdfs "hdfs fsck #{rootdir}/WALs | grep 'Status: HEALTHY'"
+        cmd: mkcmd.hdfs ctx, "hdfs fsck #{rootdir}/WALs | grep 'Status: HEALTHY'"
+        relax: true
+      , (err) ->
+        console.log 'WARNING, fsck show wall corruption' if err
       .then next
 
 ## Check SPNEGO
@@ -39,6 +42,8 @@ is added membership to the group hadoop to gain read access.
     module.exports.push name: 'HBase RegionServer # Check HTTP JMX', retry: 200, label_true: 'CHECKED', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
       protocol = if hbase.site['hadoop.ssl.enabled'] is 'true' then 'https' else 'http'
+      # WARNING: after upgrade to 2.3, there is no more https
+      protocol = 'http'
       port = hbase.site['hbase.regionserver.info.port']
       url = "#{protocol}://#{ctx.config.host}:#{port}/jmx?qry=Hadoop:service=HBase,name=RegionServer,sub=Server"
       ctx.execute
