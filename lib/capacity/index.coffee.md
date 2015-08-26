@@ -285,7 +285,7 @@ the application (zombie state).
 
     exports.hdfs_client = (ctxs) ->
       for ctx in ctxs
-        continue unless ctx.has_any_modules 'ryba/hadoop/hdfs_client'
+        continue unless ctx.has_any_modules 'ryba/hadoop/hdfs_nn',  'ryba/hadoop/hdfs_dn',  'ryba/hadoop/hdfs_client'
         {hdfs_site} = ctx.config.capacity
         hdfs_site['dfs.replication'] ?= Math.min 3, ctx.hosts_with_module('ryba/hadoop/hdfs_dn').length # Not sure if this really is a client property
 
