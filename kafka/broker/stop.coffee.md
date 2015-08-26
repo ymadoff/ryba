@@ -22,6 +22,7 @@
         cmd: "su -l #{kafka.user.name} -c '/usr/hdp/current/kafka-broker/bin/kafka clean'"
         code_skipped: 1
         if: ctx.config.ryba.clean_logs
+        if_exists: '/usr/hdp/current/kafka-broker/bin/kafka'
       .execute
         cmd: 'rm /var/log/kafka/*'
         code_skipped: 1
