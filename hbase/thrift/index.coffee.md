@@ -6,18 +6,6 @@ HBase includes a Thrift API and filter language. The Thrift API relies on client
 Thrift is both cross-platform and more lightweight than REST for many operations.
 
     module.exports = []
-    #  {realm} = ctx.config.ryba
-     # hbase = ctx.config.ryba.hbase ?= {}
-
-      # Secure Client Configuration
-      # TODO: add acl (http://hbase.apache.org/book.html#d3314e6371)
-      #hbase.site['hbase.thrift.kerberos.principal'] ?= "hbase_thrift/_HOST@#{realm}" # Dont forget `grant 'thrift_server', 'RWCA'`
-      #hbase.site['hbase.thrift.keytab.file'] ?= '#{hbase.conf_dir}/thrift.service.keytab'
-      ## Configuration
-
-See [REST Gateway Impersonation Configuration][impersonation].
-
-[impersonation]: http://hbase.apache.org/book.html#d3314e6371
 
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
@@ -30,7 +18,7 @@ See [REST Gateway Impersonation Configuration][impersonation].
       hbase.site['hbase.thrift.ssl.keystore.store'] ?= ssl_server['ssl.server.keystore.location']
       hbase.site['hbase.thrift.ssl.keystore.password'] ?= ssl_server['ssl.server.keystore.password']
       hbase.site['hbase.thrift.ssl.keystore.keypassword'] ?= ssl_server['ssl.server.keystore.keypassword']
-      hbase.site['hbase.thrift.kerberos.principal'] ?= "hbase_thrift/_HOST@#{realm}" # Dont forget `grant 'rest_server', 'RWCA'`
+      hbase.site['hbase.thrift.kerberos.principal'] ?= "hbase_thrift/_HOST@#{realm}" # Dont forget `grant 'thrift_server', 'RWCA'`
       hbase.site['hbase.thrift.keytab.file'] ?= "#{hbase.conf_dir}/thrift.service.keytab"
       hbase.site['hbase.thrift.authentication.type'] ?= 'kerberos'
       hbase.site['hbase.thrift.authentication.kerberos.principal'] ?= "HTTP/_HOST@#{realm}"

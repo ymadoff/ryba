@@ -29,8 +29,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       {hbase} = ctx.config.ryba
       ctx.iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.rest.port'], protocol: 'tcp', state: 'NEW', comment: "HBase Thrift Master" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.rest.info.port'], protocol: 'tcp', state: 'NEW', comment: "HMaster Thrift Info Web UI" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.thrift.port'], protocol: 'tcp', state: 'NEW', comment: "HBase Thrift Master" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.thrift.info.port'], protocol: 'tcp', state: 'NEW', comment: "HMaster Thrift Info Web UI" }
         ]
         if: ctx.config.iptables.action is 'start'
       .then next
@@ -236,7 +236,7 @@ TODO: Installing Thrift Compiler
 ## Configure
 
 Note, we left the permission mode as default, Master and RegionServer need to
-restrict it but not the rest server.
+restrict it but not the thrift server.
 
     module.exports.push name: 'HBase Thrift # Configure', handler: (ctx, next) ->
       {hbase} = ctx.config.ryba
