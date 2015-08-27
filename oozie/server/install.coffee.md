@@ -177,13 +177,7 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
       {java_home} = ctx.config.java
       {oozie} = ctx.config.ryba
       # CATALINA_OPTS="-Djavax.net.ssl.trustStore=/etc/hadoop/conf/truststore -Djavax.net.ssl.trustStorePassword=ryba123"      
-      @render
-        source: "#{__dirname}/../resources/oozie-env.sh"
-        local_source: true
-        destination: "#{oozie.conf_dir}/oozie-env.sh"
-        context: @config
-        backup: true
-        write: [
+      writes = [
           match: /^export OOZIE_HTTPS_KEYSTORE_FILE=.*$/mg
           replace: "export OOZIE_HTTPS_KEYSTORE_FILE=#{oozie.keystore_file}"
           append: true
@@ -241,12 +235,11 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
         writes.push
             match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.extra_appender=(.*)/m
             replace: ""
-
-      ctx
-      .write
-        source: "#{__dirname}/../../resources/oozie/oozie-env.sh"
-        destination: "#{oozie.conf_dir}/oozie-env.sh"
+      @render
+        source: "#{__dirname}/../resources/oozie-env.sh"
         local_source: true
+        destination: "#{oozie.conf_dir}/oozie-env.sh"
+        context: @config
         write: writes
         uid: oozie.user.name
         gid: oozie.group.name
@@ -263,8 +256,7 @@ Install the ExtJS Javascript library as part of enabling the Oozie Web Console.
       .copy
         source: '/usr/share/HDP-oozie/ext-2.2.zip'
         destination: '/usr/hdp/current/oozie-client/libext/'
-      .then (err, copied) ->
-        return next err, copied
+      .then next
 
 # HBase credentials
 
@@ -273,10 +265,9 @@ Install the HBase Libs as part of enabling the Oozie Unified Credentials with HB
     module.exports.push name: 'Oozie Server # HBase Libs', handler: (ctx, next) ->
       ctx
       .copy
-        source: '/usr/hdp/current/hbase-client/hbase-commons.jar'
-        destination: '/usr/hdp/current/oozie-client/libserver/
-'      .then (err, copied) ->
-        return next err, copied
+        source: '/usr/hdp/current/hbase-client/lib/hbase-common.jar'
+        destination: '/usr/hdp/current/oozie-client/libserver/'
+      .then next
 
 # LZO
 
