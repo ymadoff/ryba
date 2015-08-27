@@ -6,7 +6,8 @@
     module.exports.push require('./index').configure
 
     module.exports.push name: 'MapReduce JHS # Wait', timeout: -1, label_true: 'READY', handler: (ctx, next) ->
-      jhs_ctxs = ctx.contexts 'ryba/hadoop/mapred_jhs', require('./index').configure
-      if jhs_ctxs.length is 0 then return next() else jhs_ctx = jhs_ctxs[0]
-      [_, port] = jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.address'].split ':'
-      ctx.waitIsOpen jhs_ctx.config.host, port, next
+      ctx.wait_connect
+        servers: for jhs_ctx in ctx.contexts 'ryba/hadoop/mapred_jhs', require('./index').configure
+          [_, port] = jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.address'].split ':'
+          host: jhs_ctx.config.host, port: port
+      .then next

@@ -5,8 +5,8 @@
     module.exports.push 'masson/bootstrap'
 
     module.exports.push name: 'HDFS JN # Wait', label_true: 'READY', handler: (ctx, next) ->
-      jn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_jn', require('./index').configure
-      servers = for jn_ctx in jn_ctxs
-        [_, port] = jn_ctx.config.ryba.hdfs.site['dfs.journalnode.rpc-address'].split ':'
-        host: jn_ctx.config.host, port: port
-      ctx.waitIsOpen servers, next
+      ctx.wait_connect
+        servers: for jn_ctx in ctx.contexts 'ryba/hadoop/hdfs_jn', require('./index').configure
+          [_, port] = jn_ctx.config.ryba.hdfs.site['dfs.journalnode.rpc-address'].split ':'
+          host: jn_ctx.config.host, port: port
+      .then next

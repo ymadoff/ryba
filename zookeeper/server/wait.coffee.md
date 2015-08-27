@@ -10,9 +10,8 @@
 Wait for all ZooKeeper server to listen.
 
     module.exports.push name: 'ZooKeeper Server # Wait Listen', timeout: -1, label_true: 'READY', handler: (ctx, next) ->
-      zs_hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
-      wait = for zs_host in zs_hosts
-        zs_ctx = ctx.hosts[zs_host]
-        require('./index').configure zs_ctx
-        host: zs_host, port: zs_ctx.config.ryba.zookeeper.port
-      ctx.waitIsOpen wait, quorum: true, next
+      ctx.wait_connect
+        servers: for zk_ctx in ctx.contexts 'ryba/zookeeper/server', require('./index').configure
+          host: zk_ctx.config.host, port: zk_ctx.config.ryba.zookeeper.port
+        quorum: true
+      .then next

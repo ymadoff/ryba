@@ -230,12 +230,13 @@ is only executed on the standby NameNode.
       {hdfs, active_nn_host} = ctx.config.ryba
       return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       return next() if ctx.config.host is active_nn_host
-      ctx.waitIsOpen active_nn_host, 8020, (err) ->
-        return next err if err
-        ctx.execute
-          cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -bootstrapStandby -nonInteractive\""
-          code_skipped: 5
-        .then next
+      ctx.wait_connect
+        host: active_nn_host
+        port: 8020
+      .execute
+        cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -bootstrapStandby -nonInteractive\""
+        code_skipped: 5
+      .then next
 
 ## Dependencies
 

@@ -15,7 +15,10 @@ HDFS server to answer queries.
     module.exports.push name: 'Hive HCatalog # Start Wait DB', timeout: -1, label_true: 'READY', handler: (ctx, next) ->
       {hive} = ctx.config.ryba
       [_, host, port] = /^.*?\/\/?(.*?)(?::(.*))?\/.*$/.exec hive.site['javax.jdo.option.ConnectionURL']
-      ctx.waitIsOpen host, port, next
+      ctx.wait_connect
+        host: host
+        port: port
+      .then next
 
 ## Start Hive HCatalog
 
