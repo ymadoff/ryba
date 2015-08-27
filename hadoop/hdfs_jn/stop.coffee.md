@@ -15,7 +15,7 @@ the following two commands:
 
 ```
 service hadoop-hdfs-journalnode stop
-su -l hive -c "kill `cat /var/lib/hive-hcatalog/hcat.pid`"
+su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-journalnode/../hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop journalnode"
 ```
 
     module.exports.push name: 'HDFS JN # Stop', label_true: 'STOPPED', handler: (ctx, next) ->

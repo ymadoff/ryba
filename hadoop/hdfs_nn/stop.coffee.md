@@ -12,7 +12,7 @@ the following two commands:
 
 ```
 service hadoop-hdfs-namenode stop
-su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop namenode"
+su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-namenode/../hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop namenode"
 ```
 
     module.exports.push name: 'HDFS NN # Stop', label_true: 'STOPPED', handler: (ctx, next) ->

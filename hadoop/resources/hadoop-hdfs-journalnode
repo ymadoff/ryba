@@ -35,7 +35,7 @@ NAME='HDFS Journalnode'
 USER='hdfs'
 CONF_DIR='/etc/hadoop/conf'
 PID_FILE='/var/run/hadoop-hdfs/hadoop-hdfs-journalnode.pid'
-CMD="su -l $USER -c \"/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config $CONF_DIR --script hdfs start journalnode\""
+CMD="su -l $USER -c \"/usr/hdp/current/hadoop-hdfs-journalnode/../hadoop/sbin/hadoop-daemon.sh --config $CONF_DIR --script hdfs start journalnode\""
 KILL_FORCE=0
 KILL_SLEEP=10
 

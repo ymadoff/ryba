@@ -17,7 +17,7 @@ the following two commands:
 
 ```
 service hadoop-hdfs-datanode stop
-/usr/lib/hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf stop datanode
+/usr/hdp/current/hadoop-hdfs-datanode/../hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf stop datanode
 ```
 
     module.exports.push name: 'HDFS DN # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
