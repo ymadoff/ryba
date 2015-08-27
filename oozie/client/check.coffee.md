@@ -3,11 +3,8 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
+    module.exports.push 'ryba/oozie/server/wait'
     module.exports.push require('./index').configure
-
-    module.exports.push name: 'Oozie Client # Wait Server', timeout: -1, handler: (ctx, next) ->
-      {hostname, port} = url.parse ctx.config.ryba.oozie.site['oozie.base.url']
-      ctx.waitIsOpen hostname, port, (err) -> next err
 
 ## Check Client
 
