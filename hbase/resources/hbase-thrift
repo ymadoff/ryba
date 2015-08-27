@@ -33,7 +33,7 @@
 
 NAME='HBase Region Server'
 USER='hbase'
-CONF_DIR='/etc/hadoop/conf'
+CONF_DIR='/etc/hbase/conf'
 PID_FILE='/var/run/hbase/hbase-hbase-thrift.pid'
 CMD="su -l $USER -c \"/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config $CONF_DIR start thrift\""
 KILL_FORCE=0
