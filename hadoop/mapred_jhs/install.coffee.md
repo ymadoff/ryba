@@ -147,24 +147,6 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         fi
         if [ $modified != "1" ]; then exit 2; fi
         """
-        # if ! hdfs dfs -test -d /mr-history; then
-        #   hdfs dfs -mkdir -p /mr-history
-        #   hdfs dfs -chmod 0751 /mr-history
-        #   hdfs dfs -chown #{mapred.user.name}:#{hadoop_group.name} /mr-history
-        #   modified=1
-        # fi
-        # if ! hdfs dfs -test -d /mr-history/tmp; then
-        #   hdfs dfs -mkdir -p /mr-history/tmp
-        #   hdfs dfs -chmod 1777 /mr-history/tmp
-        #   hdfs dfs -chown #{mapred.user.name}:#{hadoop_group.name} /mr-history/tmp
-        #   modified=1
-        # fi
-        # if ! hdfs dfs -test -d /mr-history/done; then
-        #   hdfs dfs -mkdir -p /mr-history/done
-        #   hdfs dfs -chmod 1777 /mr-history/done
-        #   hdfs dfs -chown #{mapred.user.name}:#{hadoop_group.name} /mr-history/done
-        #   modified=1
-        # fi
         code_skipped: 2
       .then next
 

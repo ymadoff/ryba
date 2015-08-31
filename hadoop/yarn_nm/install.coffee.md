@@ -7,7 +7,6 @@
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/yarn_client/install'
     module.exports.push require '../../lib/hconfigure'
-    # module.exports.push require '../../lib/hdp_service'
     module.exports.push require '../../lib/hdp_select'
     module.exports.push require('./index').configure
 
@@ -197,13 +196,6 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         """
         not_if_exec: "[[ hdfs dfs -d #{remote_app_log_dir} ]]"
         code_skipped: 2
-      # .execute # this isnt great
-      #   cmd: mkcmd.hdfs ctx, """
-      #   hdfs dfs -mkdir -p /tmp/hadoop-#{yarn.user.name}
-      #   hdfs dfs -chown #{yarn.user.name} /tmp/hadoop-#{yarn.user.name}
-      #   hdfs dfs -chmod 1777 /tmp/hadoop-#{yarn.user.name}
-      #   """
-      #   not_if_exec: "[[ hdfs dfs -d /tmp/hadoop-#{yarn.user.name} ]]"
       .then next
 
 

@@ -276,5 +276,4 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
 ## Dependencies
 
     fs = require 'fs'
-    lifecycle = require '../../lib/lifecycle'
     mkcmd = require '../../lib/mkcmd'

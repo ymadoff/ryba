@@ -6,6 +6,9 @@ Spark comes with 1.2.1 in HDP 2.2.4.
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
+    module.exports.push 'masson/commons/docker'
+    module.exports.push 'ryba/spark/client'
+    module.exports.push 'ryba/hive/client'
     module.exports.push require '../lib/hconfigure'
     module.exports.push require('./index').configure
 
@@ -89,6 +92,35 @@ SSL only required for the server
     #     shy: true
     #  .then next
 
+## HDP select status
+
+    module.exports.push name: 'Zeppelin Environment # HDP',  handler: (ctx, next) ->
+      {zeppelin} = ctx.config.ryba
+      ctx
+      .execute
+          cmd:  "hdp-select versions | tail -1"
+      , (err, executed, stdout, stderr) ->
+          return next err if err
+          hdp_select_version = stdout.trim() if executed
+          zeppelin.env['ZEPPELIN_JAVA_OPTS'] ?= "-Dhdp.version=#{hdp_select_version}"
+          next null
+
+
+## Zeppelin spark assemblye Jar
+
+Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
+
+    module.exports.push name: 'Zeppelin Yarn # Spark',  handler: (ctx, next) ->
+      {zeppelin, core_site, spark} = ctx.config.ryba
+      ctx
+        .execute
+          cmd: 'ls -l /usr/hdp/current/spark-client/lib/ | grep -m 1 assembly | awk {\'print $9\'}'
+        , (err, _, stdout) ->
+          return next err if err
+          spark_jar = stdout.trim()
+          zeppelin.env['SPARK_YARN_JAR'] ?= "#{core_site['fs.defaultFS']}/user/#{spark.user.name}/share/lib/#{spark_jar}"
+          return next()
+
 
 ## Zeppelin properties configuration
     
@@ -129,6 +161,23 @@ SSL only required for the server
         eof: true
       .then next
 
+## Install Zeppelin docker image
+
+ Load Zeppelin docker image from local host
+
+    module.exports.push name: 'Zeppelin Image # Import', timeout: -1, handler: (ctx, next) ->
+      {zeppelin} = ctx.config.ryba
+      ctx
+      .download
+        source: "#{zeppelin.build.directory}/zeppelin.tar"
+        destination: "#{zeppelin.build.directory}/zeppelin.tar"
+        if_not_exists: "#{zeppelin.build.directory}/zeppelin.tar"
+      .docker_load
+        machine: 'ryba'
+        source: "#{zeppelin.build.directory}/zeppelin.tar"
+        
+      .then next  
+
 
 ## Runs Zeppelin container 
 
@@ -137,16 +186,20 @@ SSL only required for the server
       websocket = parseInt(zeppelin.site['zeppelin.server.port'])+1
       ctx
       .docker_run
-        image: 'ryba/zeppelin'
-        port: [
-                "#{zeppelin.site['zeppelin.server.port']}:#{zeppelin.site['zeppelin.server.port']}"
-                "#{websocket}:#{websocket}"
-              ]
+        image: 'ryba/zeppelin:0.6'
         volume: [
                 "#{hadoop_conf_dir}:#{hadoop_conf_dir}"
                 "#{zeppelin.conf_dir}:#{zeppelin.conf_dir}"
+                '/etc/krb5.conf:/etc/krb5.conf'
+                '/etc/security/keytabs:/etc/security/keytabs'
+                '/etc/usr/hdp:/usr/hdp'
+                '/etc/spark/conf:/etc/spark/conf'
+                '/etc/hive/conf:/etc/hive/conf'
                 ]
+        net: 'host'
         name: 'zeppelin_notebook'
+        hostname: 'zeppelin_notebook.ryba'
+        #not_if_exec: 'docker inspect zeppelin_notebook'
       .then next
 
 ## Dependencies

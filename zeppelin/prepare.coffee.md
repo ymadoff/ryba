@@ -1,101 +1,113 @@
 # Apache Zeppelin build
 
 Builds Zeppelin from as [required][zeppelin-build]. For now it's the single way to get Zeppelin.
+It uses several containers. One to build zeppelin and an other for deploying zeppelin.
 Requires Internet to download repository & maven.
-Sometimes you have to restar docker service because container can't acces the internet
-This script can build the final zeppelin docker image either completely from source or from docker repository
-The intermediate image and final image can be built locally. 
-The final zeppelin docker image will alwayse be deployed on the server.
+Zeppelin 0.6 builds for Hadoop Cluster on Yarn with Spark.
+Version:
+  - Spark: 1.3
+  - Hadoop: 2.7 (HDP 2.3)
+
 
     module.exports = []
-    module.exports.push 'masson/bootstrap'
-    #module.exports.push 'masson/commons/docker'
-    module.exports.push require('./index').configure
+    #module.exports.push () ->
+    zeppelin = {}
+    zeppelin.destination = '/var/lib/zeppelin'
+    zeppelin.conf_dir = '/var/lib/zeppelin/conf'
+    #Set to true if you want to deploy from build 
+    #in this case zeppelin.source is required
+    zeppelin.build ?= {}
+    zeppelin.build.name ?= 'ryba/zeppelin-build'
+    zeppelin.build.dockerfile ?= "#{__dirname}/../resources/zeppelin/build/Dockerfile"
+    zeppelin.build.directory ?= '/tmp/ryba/zeppelin-build'
+    machine = 'ryba'
 
 ## Zeppelin compiling build from Dockerfile
 
 Intermetiate container to build zeppelin from source. Builds ryba/zeppelin-build image
 
-    module.exports.push name: 'Zeppelin Build # Docker', timeout: -1, handler: (ctx, next) ->
-      {zeppelin} = ctx.config.ryba
-      ssh = if zeppelin.build.local then null else ctx.ssh 
-      return next unless zeppelin.build.execute
-      ctx
-      .docker_build
-        name: zeppelin.build.name
-        source: zeppelin.build.dockerfile
-        ssh: ssh
-        machine: 'ryba'
-      .execute
-        cmd: "eval \"$(docker-machine env ryba )\" 1>&2 /dev/null && docker stop extractor && docker rm extractor "
-        ssh: ssh
-        code_skipped: 1
-      .docker_run
-        image: zeppelin.build.name
-        name: 'extractor'
-        ssh: ssh
-        entrypoint: '/bin/bash'
-        not_if_exists: "#{zeppelin.build.directory}/resources/zeppelin-build.tar.gz"
-      .mkdir
-        destination: "#{zeppelin.build.directory}"
-        ssh: ssh
-        not_if_exists: "#{zeppelin.build.directory}/resources/zeppelin-build.tar.gz"
-      .execute
-        cmd: "eval \"$(docker-machine env ryba )\" 1>&2 /dev/null && docker cp extractor:/zeppelin-build.tar.gz  #{zeppelin.build.directory}/resources/"
-        ssh: ssh
-        not_if_exists: "#{zeppelin.build.directory}/resources/zeppelin-build.tar.gz"
-      .execute
-        ssh: ssh
-        cmd: """
-              eval \"$(docker-machine env ryba )\" 1>&2 /dev/null
-              docker stop extractor
-              docker rm extractor
-             """
-        not_if_exists: "#{zeppelin.build.directory}/resources/zeppelin-build.tar.gz"
-      .then next
 
-## Zeppelin final production docker image
-
-Builds zeppelin using the resources previously constructed. The dockerfile for building ryba/zeppelin
-needs zeppelin-built resource. Get it from ryba/zeppelin-build image.
-
-    module.exports.push name: 'Zeppelin Build # Package', timeout: -1, handler: (ctx, next) ->
-      {zeppelin} = ctx.config.ryba
-      ssh = if zeppelin.build.local then null else ctx.ssh 
-      ctx
-      .download
-        source: "#{__dirname}/../resources/zeppelin/supervisord.conf"
-        destination: "#{zeppelin.build.directory}resources/supervisord.conf"
-        ssh: ssh
-      .docker_build
-        name: 'ryba/zeppelin'
-        source: "#{__dirname}/../resources/zeppelin/prod/Dockerfile"
-        cwd: "#{zeppelin.build.directory}"
-        ssh: ssh
-        machine: 'ryba'
-      .then next
-
-## Docker image extract and download
-
-    module.exports.push name: 'Zeppelin Build # Import', timeout: -1, handler: (ctx, next) ->
-      {zeppelin} = ctx.config.ryba
-      #executing docker-machine environment initialization by hand until mecano support all docker commands
-      #eval \"$(docker-machine env dev )\" 1>&2 /dev/null
-      return next null, null unless zeppelin.build.local
-      ctx
-      .execute 
-        cmd: """
-              eval \"$(docker-machine env ryba )\"
-              docker save -o #{zeppelin.build.directory}zeppelin.tar ryba/zeppelin 
-             """
-        ssh: null if zeppelin.build.local
-      .download
-        source: "#{zeppelin.build.directory}zeppelin.tar"
-        destination: "#{zeppelin.build.directory}zeppelin.tar"
-      .execute
-        cmd:"docker load < #{zeppelin.build.directory}/zeppelin.tar"
-      .then next  
+    module.exports.push name: 'Zeppelin Build # Docker', timeout: -1, (options, next) ->
+      fs.stat "#{zeppelin.build.directory}/resources/zeppelin-build.tar.gz", (err, stats) ->
+        return do_image() unless  err 
+        return if err.code == 'ENOENT' then do_build() else err
+      do_build = =>
+        @
+        .download
+          source: zeppelin.build.dockerfile
+          destination: "#{zeppelin.build.directory}/Dockerfile"
+          force: true
+        .docker_build
+          image: zeppelin.build.name
+          cwd: zeppelin.build.directory
+          machine: machine
+        .docker_stop
+          machine: machine
+          container: 'extractor'
+          code_skipped: 1
+        .docker_rm
+          machine: machine
+          container: 'extractor'
+          code_skipped: 1
+        .docker_run
+          image: zeppelin.build.name
+          container: 'extractor'
+          entrypoint: '/bin/bash'
+          machine: machine
+        .mkdir
+          destination: "#{zeppelin.build.directory}"
+        .docker_cp
+          source: '/zeppelin-build.tar.gz'
+          destination: "#{zeppelin.build.directory}/resources/"
+          machine: machine
+          container: 'extractor'
+        .docker_stop
+          machine: machine
+          container: 'extractor'
+          code_skipped: 1
+        .docker_rm
+          machine: machine
+          container: 'extractor'
+          code_skipped: 1
+        .then (err) ->
+          return err if err
+          fs.stat "#{zeppelin.build.directory}/zeppelin.tar", (err, stats) ->
+            return do_end() unless  err 
+            return if err.code == 'ENOENT' then do_image() else err 
+      do_image = =>
+        @
+        .download
+          source: "#{__dirname}/../../ryba-cluster-no-secure-4vm-2pc/resources/java/local_policy.jar"
+          destination: "#{zeppelin.build.directory}/resources/local_policy.jar"
+        .download
+          source: "#{__dirname}/../../ryba-cluster-no-secure-4vm-2pc/resources/java/US_export_policy.jar"
+          destination: "#{zeppelin.build.directory}/resources/US_export_policy.jar"
+        .download
+          source: "#{__dirname}/../resources/zeppelin/prod/Dockerfile"
+          destination: "#{zeppelin.build.directory}/Dockerfile"
+          local: true
+          force: true
+        .docker_build
+          image: 'ryba/zeppelin:0.6'
+          machine: machine
+          cwd: zeppelin.build.directory
+        .then do_save
+      do_save = =>
+        @
+        .docker_save
+          image: 'ryba/zeppelin:0.6'
+          machine: machine
+          destination: "#{zeppelin.build.directory}/zeppelin.tar"
+        .then do_end
+      do_end = =>
+        return      
 
 ## Dependencies  
 
+    fs = require 'fs'
+
+## Instructions
+
 [zeppelin-build]:http://zeppelin.incubator.apache.org/docs/install/install.html
+[github-instruction]:https://github.com/apache/incubator-zeppelin
+[hortonwork-instruction]:http://fr.hortonworks.com/blog/introduction-to-data-science-with-apache-spark/
