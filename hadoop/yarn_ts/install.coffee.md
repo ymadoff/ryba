@@ -7,7 +7,6 @@ co-located with any other service.
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/krb5_client/wait'
-    module.exports.push 'ryba/hadoop/hdfs_client/install'
     module.exports.push 'ryba/hadoop/yarn_client/install'
     module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_select'
@@ -116,10 +115,13 @@ yarn.site['yarn.timeline-service.fs-history-store.uri']
 
 ## Kerberos
 
-Create the Application Timeserver service principal in the form of "ats/{host}@{realm}" and place its
-keytab inside "/etc/security/keytabs/ats.service.keytab" with ownerships set to "yarn:yarn"
-and permissions set to "0600".
+Create the Kerberos service principal by default in the form of
+"ats/{host}@{realm}" and place its keytab inside
+"/etc/security/keytabs/ats.service.keytab" with ownerships set to
+"mapred:hadoop" and permissions set to "0600".
 
+    module.exports.push 'ryba/hadoop/hdfs_nn/wait'
+    module.exports.push 'ryba/hadoop/hdfs_client/install'
     module.exports.push name: 'YARN TS # Kerberos', timeout: -1, handler: (ctx, next) ->
       {yarn, realm} = ctx.config.ryba
       {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
@@ -134,6 +136,7 @@ and permissions set to "0600".
         kadmin_password: kadmin_password
         kadmin_server: admin_server
       .then next
+
 ## Dependencies
 
     path = require 'path'
