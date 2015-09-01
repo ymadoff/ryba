@@ -125,10 +125,34 @@ Create the log and pid directories.
         if: mapred.site['mapreduce.jobhistory.recovery.store.class'] is 'org.apache.hadoop.mapreduce.v2.hs.HistoryServerLeveldbStateStoreService'
       .then next
 
+## Kerberos
+
+Create the Kerberos service principal by default in the form of
+"jhs/{host}@{realm}" and place its keytab inside
+"/etc/security/keytabs/jhs.service.keytab" with ownerships set to
+"mapred:hadoop" and permissions set to "0600".
+
+    module.exports.push name: 'MapReduce JHS # Kerberos', handler: (ctx, next) ->
+      {mapred, hadoop_group, realm} = ctx.config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
+      ctx.krb5_addprinc
+        principal: "jhs/#{ctx.config.host}@#{realm}"
+        randkey: true
+        keytab: "/etc/security/keytabs/jhs.service.keytab"
+        uid: mapred.user.name
+        gid: hadoop_group.name
+        kadmin_principal: kadmin_principal
+        kadmin_password: kadmin_password
+        kadmin_server: admin_server
+        mode: 0o0600
+      .then next
+
 ## HDFS Layout
 
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
+    module.exports.push 'ryba/hadoop/hdfs_nn/wait'
+    module.exports.push 'ryba/hadoop/hdfs_client/install'
     module.exports.push name: 'MapReduce JHS # HDFS Layout', timeout: -1, handler: (ctx, next) ->
       {yarn, mapred} = ctx.config.ryba
       ctx.execute
@@ -148,20 +172,6 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         if [ $modified != "1" ]; then exit 2; fi
         """
         code_skipped: 2
-      .then next
-
-    module.exports.push name: 'MapReduce JHS # Kerberos', handler: (ctx, next) ->
-      {mapred, hadoop_group, realm} = ctx.config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc
-        principal: "jhs/#{ctx.config.host}@#{realm}"
-        randkey: true
-        keytab: "/etc/security/keytabs/jhs.service.keytab"
-        uid: mapred.user.name
-        gid: hadoop_group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
       .then next
 
 ## Dependencies
