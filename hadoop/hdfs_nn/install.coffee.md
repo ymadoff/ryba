@@ -56,10 +56,6 @@ Install the "hadoop-hdfs-namenode" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
     module.exports.push name: 'HDFS NN # Service', handler: (ctx, next) ->
-      # ctx
-      # .hdp_service
-      #   name: 'hadoop-hdfs-namenode'
-      # .then next
       ctx
       .service
         name: 'hadoop-hdfs-namenode'
