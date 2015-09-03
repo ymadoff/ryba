@@ -187,12 +187,12 @@ We then ask a first TGT.
 
 ## Limits
 
-    module.exports.push name: 'Hive Server2 : Limits', handler: (ctx, next) ->
+    module.exports.push name: 'Hive Server2 # Limits', handler: (ctx, next) ->
       {hive, realm} = ctx.config.ryba
       ctx.system_limits
         user: hive.user.name
-        nofile: true
-        nproc: true
+        nofile: 65536
+        nproc: 65536
       .then next
 
 
