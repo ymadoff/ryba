@@ -40,8 +40,16 @@ module.exports = (ctx) ->
         fi
       fi
       echo "Upload file to $(dirname $target)"
-      hdfs dfs -mkdir -p $(dirname $target)
-      hdfs dfs -chmod -R 555 $(dirname $target)
+      function create_parent_dir {
+        local dir=`dirname $1`
+        if [ $dir == "/" ]; then return; fi
+        if hdfs dfs -test -d $dir; then return; fi
+        create_parent_dir $dir
+        echo "Create parent directory: $dir"
+        hdfs dfs -mkdir -p $dir
+        hdfs dfs -chmod -R 555 $dir
+      }
+      create_parent_dir $target
       hdfs dfs -copyFromLocal $source $(dirname $target)
       hdfs dfs -chmod -R 444 $target
       hdfs dfs -test -f $target

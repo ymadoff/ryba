@@ -8,6 +8,7 @@
     module.exports.push 'ryba/hadoop/yarn_client/install'
     module.exports.push 'ryba/hadoop/hdfs_dn/wait'
     module.exports.push require '../../lib/hconfigure'
+    module.exports.push require '../../lib/hdp_select'
     module.exports.push require '../../lib/hdfs_upload'
     module.exports.push require('./index').configure
 
@@ -32,20 +33,22 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: ctx.config.iptables.action is 'start'
       .then next
 
-    module.exports.push name: 'MapReduce # Install Common', timeout: -1, handler: (ctx, next) ->
-      ctx.service
-        name: 'hadoop-mapreduce'
-      .then next
-
-http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3.1/bk_installing_manually_book/content/rpm-chap1-9.html
-http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Running_Hadoop_in_Secure_Mode
+## Users & Groups
 
     module.exports.push name: 'MapReduce Client # Users & Groups', handler: (ctx, next) ->
       {mapred, hadoop_group} = ctx.config.ryba
-      ctx.execute
-        cmd: "useradd #{mapred.user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop MapReduce service\""
-        code: 0
-        code_skipped: 9
+      ctx
+      .group hadoop_group
+      .user mapred.user
+      .then next
+
+## Service
+
+    module.exports.push name: 'MapReduce # Service', timeout: -1, handler: (ctx, next) ->
+      ctx.service
+        name: 'hadoop-mapreduce'
+      .hdp_select
+        name: 'hadoop-client'
       .then next
 
     module.exports.push name: 'MapReduce Client # Configuration', handler: (ctx, next) ->
