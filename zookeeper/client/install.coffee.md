@@ -7,9 +7,8 @@
     module.exports.push 'masson/core/yum'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/commons/java'
-    # module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/lib/base'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
     module.exports.push require '../../lib/hdp_select'
     module.exports.push require '../../lib/write_jaas'
 
@@ -24,33 +23,28 @@ cat /etc/group | grep hadoop
 hadoop:x:498:hdfs
 ```
 
-    module.exports.push name: 'ZooKeeper Client # Users & Groups', handler: (ctx, next) ->
-      {zookeeper, hadoop_group} = ctx.config.ryba
-      ctx
-      .group zookeeper.group
-      .group hadoop_group
-      .user zookeeper.user
-      .then next
+    module.exports.push name: 'ZooKeeper Client # Users & Groups', handler: ->
+      {zookeeper, hadoop_group} = @config.ryba
+      @group zookeeper.group
+      @group hadoop_group
+      @user zookeeper.user
 
 ## Install
 
 Follow the [HDP recommandations][install] to install the "zookeeper" package
 which has no dependency.
 
-    module.exports.push name: 'ZooKeeper Client # Install', timeout: -1, handler: (ctx, next) ->
-      ctx
-      .service
+    module.exports.push name: 'ZooKeeper Client # Install', timeout: -1, handler: ->
+      @service
         name: 'zookeeper'
-      .hdp_select
+      @hdp_select
         name: 'zookeeper-client'
-      .then next
 
-    module.exports.push name: 'ZooKeeper Client # Kerberos', timeout: -1, handler: (ctx, next) ->
-      {zookeeper, hadoop_group, realm} = ctx.config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx
-      .krb5_addprinc
-        principal: "zookeeper/#{ctx.config.host}@#{realm}"
+    module.exports.push name: 'ZooKeeper Client # Kerberos', timeout: -1, handler: ->
+      {zookeeper, hadoop_group, realm} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      @krb5_addprinc
+        principal: "zookeeper/#{@config.host}@#{realm}"
         randkey: true
         keytab: "#{zookeeper.conf_dir}/zookeeper.keytab"
         uid: zookeeper.user.name
@@ -58,24 +52,21 @@ which has no dependency.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      .write_jaas
+      @write_jaas
         destination: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
         content: Client:
           useTicketCache: 'true'
         mode: 0o644
-      .then next
 
-    module.exports.push name: 'ZooKeeper Client # Environment', handler: (ctx, next) ->
-      {zookeeper} = ctx.config.ryba
-      write = for k, v of zookeeper.env
-        match: RegExp "^export\\s+(#{quote k})=(.*)$", 'mg'
-        replace: "export #{k}=\"#{v}\""
-        append: true
-      ctx.write
+    module.exports.push name: 'ZooKeeper Client # Environment', handler: ->
+      {zookeeper} = @config.ryba
+      @write
         destination: "#{zookeeper.conf_dir}/zookeeper-env.sh"
-        write: write
+        write: for k, v of zookeeper.env
+          match: RegExp "^export\\s+(#{quote k})=(.*)$", 'mg'
+          replace: "export #{k}=\"#{v}\""
+          append: true
         backup: true
-      , next
 
 ## Dependencies
 
