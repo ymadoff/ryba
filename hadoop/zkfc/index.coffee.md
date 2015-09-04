@@ -28,12 +28,12 @@ Optional, activate digest type access to zookeeper to manage the zkfc znode:
 }
 ```
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       require('../core').configure ctx
       {ryba, host} = ctx.config
       ryba.zkfc ?= {}
       # Validation
-      nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn',(require '../hdfs_nn').configure
+      nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn', require('../hdfs_nn').configure
       throw Error "Require 2 NameNodes" unless nn_ctxs.length is 2
       # ryba.zkfc.principal ?= "zkfc/#{host}@#{ryba.realm}"
       # ryba.zkfc.keytab ?= '/etc/security/keytabs/zkfc.service.keytab'

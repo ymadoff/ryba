@@ -33,33 +33,31 @@ dfsadmin -fetchImage
 
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/bootstrap/utils'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
     # isRelative = () ->
     #   filepath = path.join.apply path, arguments
     #   return path.resolve(filepath) isnt filepath.replace(/[\/\\]+$/, ''\
 
-    module.exports.push name: "HDFS NN # Backup HDFS LS output", timeout: -1, label_true: 'BACKUPED', handler: (ctx, next) ->
-      ctx.backup
+    module.exports.push name: "HDFS NN # Backup HDFS LS output", timeout: -1, label_true: 'BACKUPED', handler: ->
+      @backup
         name: 'ls'
         cmd: 'hdfs dfs -ls -R / '
-        destination: "/var/backups/nn_#{ctx.config.host}/"
+        destination: "/var/backups/nn_#{@config.host}/"
         interval: month: 1
         retention: count: 2
-      .then next
 
-    module.exports.push name: 'HDFS NN # Backup FSimages & edits', timeout: -1, label_true: 'BACKUPED', handler: (ctx, next) ->
-      {hdfs} = ctx.config.ryba
+    module.exports.push name: 'HDFS NN # Backup FSimages & edits', timeout: -1, label_true: 'BACKUPED', handler: ->
+      {hdfs} = @config.ryba
       any_dfs_name_dir = hdfs.site['dfs.namenode.name.dir'].split(',')[0]
       any_dfs_name_dir = any_dfs_name_dir.substr(7) if any_dfs_name_dir.indexOf('file://') is 0
-      ctx.backup
+      @backup
         name: 'fs'
         source: path.join any_dfs_name_dir, 'current'
         filter: ['fsimage_*','edits_0*']
-        destination: "/var/backups/nn_#{ctx.config.host}/"
+        destination: "/var/backups/nn_#{@config.host}/"
         interval: month: 1
         retention: count: 2
-      .then next
 
 ### Restoration procedure
 

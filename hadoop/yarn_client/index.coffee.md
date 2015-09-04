@@ -11,7 +11,7 @@ The URI resources are grouped into APIs based on the type of information returne
 
 ## Configuration
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       return if ctx.yarn_configured
       ctx.yarn_configured = true
       require('masson/commons/java').configure ctx
@@ -192,5 +192,3 @@ values don't get pushed to the cluster.
 [YARN-128-pdf] https://issues.apache.org/jira/secure/attachment/12552867/RMRestartPhase1.pdf
 [YARN-556]: https://issues.apache.org/jira/browse/YARN-556
 [YARN-556-pdf]: https://issues.apache.org/jira/secure/attachment/12599562/Work%20Preserving%20RM%20Restart.pdf
-
-

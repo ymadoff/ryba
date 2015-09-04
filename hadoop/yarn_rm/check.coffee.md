@@ -14,11 +14,10 @@ Connect to the provided ResourceManager to check its health. This command
 healthy, non-zero otherwise. This check is only executed in High Availability
 mode.
 
-    module.exports.push name: 'YARN RM # Check HA Health', label_true: 'CHECKED', handler: (ctx, next) ->
-      return next() unless ctx.hosts_with_module('ryba/hadoop/yarn_rm').length > 1
-      ctx.execute
-        cmd: mkcmd.hdfs ctx, "yarn rmadmin -checkHealth #{ctx.config.shortname}"
-      .then next
+    module.exports.push name: 'YARN RM # Check HA Health', label_true: 'CHECKED', handler: ->
+      return next() unless @hosts_with_module('ryba/hadoop/yarn_rm').length > 1
+      @execute
+        cmd: mkcmd.hdfs @, "yarn rmadmin -checkHealth #{@config.shortname}"
 
 # Dependencies
 

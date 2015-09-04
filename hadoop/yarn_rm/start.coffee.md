@@ -6,7 +6,7 @@
     module.exports.push 'ryba/hadoop/hdfs_dn/wait'
     module.exports.push 'ryba/hadoop/yarn_ts/wait'
     module.exports.push 'ryba/hadoop/mapred_jhs/wait'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Start
 
@@ -18,14 +18,11 @@ service hadoop-yarn-resourcemanager start
 su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf start resourcemanager"
 ```
 
-    module.exports.push name: 'Yarn RM # Start', label_true: 'STARTED', handler: (ctx, next) ->
-      {yarn} = ctx.config.ryba
-      ctx
-      .remove
+    module.exports.push name: 'Yarn RM # Start', label_true: 'STARTED', handler: ->
+      {yarn} = @config.ryba
+      @remove
         destination: "#{yarn.pid_dir}/yarn-#{yarn.user.name}-resourcemanager.pid"
-        if: ctx.retry > 0
-      .service_start
+        if: @retry > 0
+      @service_start
         name: 'hadoop-yarn-resourcemanager'
         if_exists: '/etc/init.d/hadoop-yarn-resourcemanager'
-      .then next
-

@@ -42,7 +42,7 @@ Example:
 }
 ```
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       if ctx.hdfs_configured then return else ctx.hdfs_configured = true
       # return if ctx.hdfs_configured
       # ctx.hdfs_configured = true
@@ -70,19 +70,17 @@ with Kerberos specific properties.
       # accessing datanodes.
       hdfs.site['dfs.block.access.token.enable'] ?= 'true'
 
-    module.exports.push name: 'Hadoop HDFS # Install', timeout: -1, handler: (ctx, next) ->
-      ctx
-      .service
+    module.exports.push name: 'Hadoop HDFS # Install', timeout: -1, handler: ->
+      @service
         name: 'hadoop'
-      .service
+      @service
         name: 'hadoop-hdfs'
-      .service
+      @service
         name: 'hadoop-libhdfs'
-      .service
+      @service
         name: 'hadoop-client'
-      .service
+      @service
         name: 'openssl'
-      .then next
 
 ## Kerberos User
 
@@ -90,16 +88,15 @@ Create the HDFS user principal. This will be the super administrator for the HDF
 filesystem. Note, we do not create a principal with a keytab to allow HDFS login
 from multiple sessions with braking an active session.
 
-    module.exports.push name: 'HDFS # Kerberos User', handler: (ctx, next) ->
-      {hdfs, realm} = ctx.config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc
+    module.exports.push name: 'HDFS # Kerberos User', handler: ->
+      {hdfs, realm} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      @krb5_addprinc
         principal: hdfs.krb5_user.principal
         password: hdfs.krb5_user.password
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      .then next
 
 ## SPNEGO
 
@@ -108,13 +105,11 @@ keytab inside "/etc/security/keytabs/spnego.service.keytab" with ownerships set 
 and permissions set to "0660". We had to give read/write permission to the group because the
 same keytab file is for now shared between hdfs and yarn services.
 
-    module.exports.push name: 'HDFS # SPNEGO', handler: module.exports.spnego = (ctx, next) ->
-      {hdfs, hadoop_group, realm} = ctx.config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      created = false
-      ctx
-      .krb5_addprinc
-        principal: "HTTP/#{ctx.config.host}@#{realm}"
+    module.exports.push name: 'HDFS # SPNEGO', handler: module.exports.spnego = ->
+      {hdfs, hadoop_group, realm} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      @krb5_addprinc
+        principal: "HTTP/#{@config.host}@#{realm}"
         randkey: true
         keytab: '/etc/security/keytabs/spnego.service.keytab'
         uid: hdfs.user.name
@@ -123,12 +118,9 @@ same keytab file is for now shared between hdfs and yarn services.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      , (err, c) ->
-        created = c
-      .execute # Validate keytab access by the hdfs user
+      @execute # Validate keytab access by the hdfs user
         cmd: "su -l #{hdfs.user.name} -c \"klist -kt /etc/security/keytabs/spnego.service.keytab\""
-        if: -> created
-      .then next
+        if: -> @status -1
 
 ## Ulimit
 
@@ -158,61 +150,55 @@ Also worth of interest are the [Pivotal recommandations][hawq] as well as the
 
 Note, a user must re-login for those changes to be taken into account.
 
-    module.exports.push name: 'HDFS # Ulimit', handler: (ctx, next) ->
-      ctx.execute cmd: 'ulimit -Hn', (err, _, stdout) ->
-        return next err if err
-        max_nofile = stdout.trim()
-        ctx
-        .write
-          destination: '/etc/security/limits.d/hdfs.conf'
-          write: [
-            match: /^hdfs.+nofile.+$/mg
-            replace: "hdfs    -    nofile   64000"
-            append: true
-          ,
-            match: /^hdfs.+nproc.+$/mg
-            replace: "hdfs    -    nproc    64000"
-            append: true
-          ]
-          backup: true
-        .write
-          destination: '/etc/security/limits.d/mapreduce.conf'
-          write: [
-            match: /^mapred.+nofile.+$/mg
-            replace: "mapred  -    nofile   64000"
-            append: true
-          ,
-            match: /^mapred.+nproc.+$/mg
-            replace: "mapred  -    nproc    64000"
-            append: true
-          ]
-          backup: true
-        .write
-          destination: '/etc/security/limits.d/yarn.conf'
-          write: [
-            match: /^yarn.+nofile.+$/mg
-            replace: "yarn    -    nofile   64000"
-            append: true
-          ,
-            match: /^yarn.+nproc.+$/mg
-            replace: "yarn    -    nproc    64000"
-            append: true
-          ]
-          backup: true
-        .then next
+    module.exports.push name: 'HDFS # Ulimit', handler: ->
+      @write
+        destination: '/etc/security/limits.d/hdfs.conf'
+        write: [
+          match: /^hdfs.+nofile.+$/mg
+          replace: "hdfs    -    nofile   64000"
+          append: true
+        ,
+          match: /^hdfs.+nproc.+$/mg
+          replace: "hdfs    -    nproc    64000"
+          append: true
+        ]
+        backup: true
+      @write
+        destination: '/etc/security/limits.d/mapreduce.conf'
+        write: [
+          match: /^mapred.+nofile.+$/mg
+          replace: "mapred  -    nofile   64000"
+          append: true
+        ,
+          match: /^mapred.+nproc.+$/mg
+          replace: "mapred  -    nproc    64000"
+          append: true
+        ]
+        backup: true
+      @write
+        destination: '/etc/security/limits.d/yarn.conf'
+        write: [
+          match: /^yarn.+nofile.+$/mg
+          replace: "yarn    -    nofile   64000"
+          append: true
+        ,
+          match: /^yarn.+nproc.+$/mg
+          replace: "yarn    -    nproc    64000"
+          append: true
+        ]
+        backup: true
 
 ## Layout
 
 Create the log directory.
 
-    module.exports.push name: 'HDFS # Layout', handler: (ctx, next) ->
-      {hdfs} = ctx.config.ryba
-      ctx.mkdir
+    module.exports.push name: 'HDFS # Layout', handler: ->
+      {hdfs} = @config.ryba
+      @mkdir
         destination: "#{hdfs.log_dir}/#{hdfs.user.name}"
         uid: hdfs.user.name
         gid: hdfs.group.name
         parent: true
-      .then next
 
 [hdfs_secure]: http://hadoop.apache.org/docs/r2.4.1/hadoop-project-dist/hadoop-common/SecureMode.html#DataNode
 [hawq]: http://docs.gopivotal.com/pivotalhd/InstallingHAWQ.html

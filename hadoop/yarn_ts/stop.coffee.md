@@ -14,16 +14,14 @@ service hadoop-yarn-timelineserver stop
 su -l yarn -c "/usr/hdp/current/hadoop-yarn-timelineserver/sbin/yarn-daemon.sh --config /etc/hadoop/conf stop timelineserver"
 ```
 
-    module.exports.push name: 'YARN TS # Stop Server', label_true: 'STOPPED', handler: (ctx, next) ->
-      ctx.service_stop
+    module.exports.push name: 'YARN TS # Stop Server', label_true: 'STOPPED', handler: ->
+      @service_stop
         name: 'hadoop-yarn-timelineserver'
         if_exists: '/etc/init.d/hadoop-yarn-timelineserver'
-      .then next
 
-    # module.exports.push name: 'YARN TS # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
-    #   {clean_logs, yarn} = ctx.config.ryba
+    # module.exports.push name: 'YARN TS # Stop Clean Logs', label_true: 'CLEANED', handler: ->
+    #   {clean_logs, yarn} = @config.ryba
     #   return next() unless clean_logs
-    #   ctx.execute
+    #   @execute
     #     cmd: 'rm #{yarn.log_dir}/*/*-nodemanager-*'
     #     code_skipped: 1
-    #   .then next

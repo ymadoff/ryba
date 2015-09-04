@@ -9,13 +9,13 @@ The output list can then be saved to the distributed filesystem, and the reducer
 
     module.exports = []
 
-    module.exports.configure = (ctx) ->
-      return if ctx.mapred_configured
-      ctx.mapred_configured = true
-      require('../hdfs').configure ctx
-      require('../yarn_client').configure ctx
-      rm_contexts = ctx.contexts 'ryba/hadoop/yarn_rm', require('../yarn_rm').configure
-      {static_host, realm, mapred} = ctx.config.ryba
+    module.exports.configure = ->
+      return if @mapred_configured
+      @mapred_configured = true
+      require('../hdfs').configure @
+      require('../yarn_client').configure @
+      rm_contexts = @contexts 'ryba/hadoop/yarn_rm', require('../yarn_rm').configure
+      {static_host, realm, mapred} = @config.ryba
       # Layout
       mapred.pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
       # Configuration
@@ -33,7 +33,7 @@ The output list can then be saved to the distributed filesystem, and the reducer
       # [Configurations for MapReduce JobHistory Server](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuring_the_Hadoop_Daemons_in_Non-Secure_Mode)
       mapred.site['mapreduce.application.framework.path'] ?= "/hdp/apps/${hdp.version}/mapreduce/mapreduce.tar.gz#mr-framework"
       mapred.site['mapreduce.application.classpath'] ?= "$PWD/mr-framework/hadoop/share/hadoop/mapreduce/*:$PWD/mr-framework/hadoop/share/hadoop/mapreduce/lib/*:$PWD/mr-framework/hadoop/share/hadoop/common/*:$PWD/mr-framework/hadoop/share/hadoop/common/lib/*:$PWD/mr-framework/hadoop/share/hadoop/yarn/*:$PWD/mr-framework/hadoop/share/hadoop/yarn/lib/*:$PWD/mr-framework/hadoop/share/hadoop/hdfs/*:$PWD/mr-framework/hadoop/share/hadoop/hdfs/lib/*:/usr/hdp/${hdp.version}/hadoop/lib/hadoop-lzo-0.6.0.${hdp.version}.jar:/etc/hadoop/conf/secure"
-      [jhs_context] = ctx.contexts 'ryba/hadoop/mapred_jhs', require('../mapred_jhs').configure
+      [jhs_context] = @contexts 'ryba/hadoop/mapred_jhs', require('../mapred_jhs').configure
       if jhs_context
         for property in [
           'yarn.app.mapreduce.am.staging-dir'

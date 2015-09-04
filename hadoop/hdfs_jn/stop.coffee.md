@@ -6,7 +6,7 @@ associated NameNodes.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Stop HDFS JournalNode
 
@@ -18,16 +18,14 @@ service hadoop-hdfs-journalnode stop
 su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-journalnode/../hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop journalnode"
 ```
 
-    module.exports.push name: 'HDFS JN # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
-      ctx.service
+    module.exports.push name: 'HDFS JN # Stop', label_true: 'STOPPED', handler: ->
+      @service
         srv_name: 'hadoop-hdfs-journalnode'
         action: 'stop'
         if_exists: '/etc/init.d/hadoop-hdfs-journalnode'
-      .then next
 
-    module.exports.push name: 'HDFS JN # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
-      ctx.execute
+    module.exports.push name: 'HDFS JN # Stop Clean Logs', label_true: 'CLEANED', handler: ->
+      @execute
         cmd: 'rm /var/log/hadoop-hdfs/*/*-journalnode-*'
         code_skipped: 1
-        if: ctx.config.ryba.clean_logs
-      .then next
+        if: @config.ryba.clean_logs

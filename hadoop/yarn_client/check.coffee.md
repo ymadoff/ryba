@@ -3,16 +3,14 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
     module.exports.push 'ryba/hadoop/yarn_rm/wait'
 
 ## Check CLI
 
-    module.exports.push name: 'YARN Client # Check CLI', label_true: 'CHECKED', handler: (ctx, next) ->
-      ctx
-      .execute
-        cmd: mkcmd.test ctx, 'yarn application -list'
-      .then next
+    module.exports.push name: 'YARN Client # Check CLI', label_true: 'CHECKED', handler: ->
+      @execute
+        cmd: mkcmd.test @, 'yarn application -list'
 
 ## Check Distributed Shell
 
@@ -21,20 +19,19 @@ Shell script to be executed inside one or multiple YARN containers.
 
 # http://riccomini.name/posts/hadoop/2013-06-14-yarn-with-cgroups/
 
-    module.exports.push name: 'YARN Client # Check Distributed Shell', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
-      {force_check, user} = ctx.config.ryba
-      appname = "ryba_check_#{ctx.config.shortname}_distributed_cache_#{Date.now()}"
+    module.exports.push name: 'YARN Client # Check Distributed Shell', timeout: -1, label_true: 'CHECKED', handler: ->
+      {force_check, user} = @config.ryba
+      appname = "ryba_check_#{@config.shortname}_distributed_cache_#{Date.now()}"
       scriptpath = "#{user.home}/check_distributed_shell.sh"
-      ctx
-      .write
+      @write
         destination: "#{scriptpath}"
         content: """
         #!/usr/bin/env bash
         echo Ryba Ryba NM hostname: `hostname`
         """
         mode: 0o0640
-      .execute
-        cmd: mkcmd.test ctx, """
+      @execute
+        cmd: mkcmd.test @, """
         yarn org.apache.hadoop.yarn.applications.distributedshell.Client \
           -jar /usr/hdp/current/hadoop-yarn-client/hadoop-yarn-applications-distributedshell.jar \
           -shell_script #{scriptpath} \
@@ -51,10 +48,7 @@ Shell script to be executed inside one or multiple YARN containers.
         [ "$rm" ]
         """
         not_if_exists: unless force_check then scriptpath
-      .then next
 
 ## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
-
-

@@ -3,7 +3,7 @@
 
     module.exports = []
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       require('masson/core/proxy').configure ctx
       ryba = ctx.config.ryba ?= {}
       # Repository
@@ -46,58 +46,44 @@
 
 Declare the HDP repository.
 
-    module.exports.push name: 'Ryba # Repository', timeout: -1, handler: (ctx, next) ->
-      {proxy, hdp_repo} = ctx.config.ryba
-      # Is there a repo to download and install
-      return next() unless hdp_repo
-      do_repo = ->
-        ctx.log "Download #{hdp_repo} to /etc/yum.repos.d/hdp.repo"
-        u = url.parse hdp_repo
-        ctx[if u.protocol is 'http:' then 'download' else 'upload']
+    module.exports.push
+      name: 'Ryba # Repository'
+      timeout: -1
+      if: -> @config.ryba.hdp_repo
+      handler: ->
+        {proxy, hdp_repo} = @config.ryba
+        @download
           source: hdp_repo
           destination: '/etc/yum.repos.d/hdp.repo'
           proxy: proxy
-        , (err, downloaded) ->
+        @execute
+          cmd: "yum clean metadata; yum update -y"
+          if: -> @status -1
+        , (err, executed) ->
           return next err if err
-          return next null, false unless downloaded
-          do_update()
-      do_update = ->
-          ctx.execute
-            cmd: "yum clean metadata; yum update -y"
-          , (err, executed) ->
-            return next err if err
-            do_keys()
-      do_keys = ->
-        ctx.log 'Upload PGP keys'
-        ctx.fs.readFile "/etc/yum.repos.d/hdp.repo", (err, content) ->
-          return next err if err
-          keys = {}
-          reg = /^pgkey=(.*)/gm
-          while matches = reg.exec content
-            keys[matches[1]] = true
-          keys = Object.keys keys
-          return next null, true unless keys.length
-          each(keys)
-          .on 'item', (key, next) ->
-            # TODO, should use `ctx.download`
-            ctx.execute
-              cmd: """
-              curl #{key} -o /etc/pki/rpm-gpg/#{path.basename key}
-              rpm --import  /etc/pki/rpm-gpg/#{path.basename key}
-              """
-            , (err, executed) ->
-              next err
-          .on 'both', (err) ->
-            next err, true
-      do_repo()
+          do_keys()
+        @call
+          if: -> @status -2
+          handler: (_, callback) ->
+            @log 'Upload PGP keys'
+            @fs.readFile "/etc/yum.repos.d/hdp.repo", (err, content) =>
+              return next err if err
+              keys = {}
+              reg = /^pgkey=(.*)/gm
+              while matches = reg.exec content
+                keys[matches[1]] = true
+              keys = Object.keys keys
+              return next null, true unless keys.length
+              for key in keys
+                @execute # TODO, should use `@download`
+                  cmd: """
+                  curl #{key} -o /etc/pki/rpm-gpg/#{path.basename key}
+                  rpm --import  /etc/pki/rpm-gpg/#{path.basename key}
+                  """
+              @then callback
 
 
 ## Dependencies
 
     url = require 'url'
     hconfigure = require '../lib/hconfigure'
-
-
-
-
-

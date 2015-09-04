@@ -39,7 +39,7 @@ keytool -list -v -keystore keystore -alias hadoop
     module.exports.push 'masson/bootstrap'
     module.exports.push require '../lib/hconfigure'
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       require('./core').configure ctx
       # require('./yarn').configure ctx
       {core_site, hadoop_conf_dir} = ctx.config.ryba
@@ -66,55 +66,52 @@ keytool -list -v -keystore keystore -alias hadoop
       ssl_server['ssl.server.truststore.password'] ?= 'ryba123'
       ssl_server['ssl.server.truststore.type'] ?= 'jks'
 
-    module.exports.push name: 'Hadoop Core SSL # Configure', retry: 0, handler: (ctx, next) ->
-      {core_site, ssl_server, ssl_client, hadoop_conf_dir} = ctx.config.ryba
-      ctx
-      .hconfigure
+    module.exports.push name: 'Hadoop Core SSL # Configure', retry: 0, handler: ->
+      {core_site, ssl_server, ssl_client, hadoop_conf_dir} = @config.ryba
+      @hconfigure
         destination: "#{hadoop_conf_dir}/core-site.xml"
         properties: core_site
         merge: true
-      .hconfigure
+      @hconfigure
         destination: "#{hadoop_conf_dir}/ssl-server.xml"
         properties: ssl_server
         merge: true
-      .hconfigure
+      @hconfigure
         destination: "#{hadoop_conf_dir}/ssl-client.xml"
         properties: ssl_client
         merge: true
-      .then next
 
-    module.exports.push name: 'Hadoop Core SSL # JKS stores', retry: 0, handler: (ctx, next) ->
-      {ssl, ssl_server, ssl_client, hadoop_conf_dir} = ctx.config.ryba
+    module.exports.push name: 'Hadoop Core SSL # JKS stores', retry: 0, handler: (_, next) ->
+      {ssl, ssl_server, ssl_client, hadoop_conf_dir} = @config.ryba
       tmp_location = "/var/tmp/ryba/ssl"
       modified = false
-      has_modules = ctx.has_any_modules [
+      has_modules = @has_any_modules [
         'ryba/hadoop/hdfs_jn', 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn'
         'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
       ]
-      ctx
-      .upload
+      @upload
         source: ssl.cacert
         destination: "#{tmp_location}/#{path.basename ssl.cacert}"
         mode: 0o0600
         shy: true
-      .upload
+      @upload
         source: ssl.cert
         destination: "#{tmp_location}/#{path.basename ssl.cert}"
         mode: 0o0600
         shy: true
-      .upload
+      @upload
         source: ssl.key
         destination: "#{tmp_location}/#{path.basename ssl.key}"
         mode: 0o0600
         shy: true
       # Client: import certificate to all hosts
-      .java_keystore_add
+      @java_keystore_add
         keystore: ssl_client['ssl.client.truststore.location']
         storepass: ssl_client['ssl.client.truststore.password']
         caname: "hadoop_root_ca"
         cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
       # Server: import certificates, private and public keys to hosts with a server
-      .java_keystore_add
+      @java_keystore_add
         keystore: ssl_server['ssl.server.keystore.location']
         storepass: ssl_server['ssl.server.keystore.password']
         caname: "hadoop_root_ca"
@@ -122,24 +119,24 @@ keytool -list -v -keystore keystore -alias hadoop
         key: "#{tmp_location}/#{path.basename ssl.key}"
         cert: "#{tmp_location}/#{path.basename ssl.cert}"
         keypass: ssl_server['ssl.server.keystore.keypassword']
-        name: ctx.config.shortname
+        name: @config.shortname
         if: has_modules
-      .java_keystore_add
+      @java_keystore_add
         keystore: ssl_server['ssl.server.keystore.location']
         storepass: ssl_server['ssl.server.keystore.password']
         caname: "hadoop_root_ca"
         cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
         if: has_modules
-      .remove
+      @remove
         destination: "#{tmp_location}/#{path.basename ssl.cacert}"
         shy: true
-      .remove
+      @remove
         destination: "#{tmp_location}/#{path.basename ssl.cert}"
         shy: true
-      .remove
+      @remove
         destination: "#{tmp_location}/#{path.basename ssl.key}"
         shy: true
-      .then (err, status) ->
+      @then (err, status) ->
         return next err, status if err or not status
         has_modules_map =
           'ryba/hadoop/hdfs_jn': 'hadoop-hdfs-journalnode'
@@ -148,10 +145,10 @@ keytool -list -v -keystore keystore -alias hadoop
           'ryba/hadoop/yarn_rm': 'hadoop-yarn-resourcemanager'
           'ryba/hadoop/yarn_nm': 'hadoop-yarn-namemanode'
         for m in has_modules
-          ctx.service
+          @service
             srv_name: has_modules_map[m]
             action: 'restart'
-        ctx.then (err) ->
+        @then (err) ->
           next err, status
 
 ## Dependencies
@@ -159,8 +156,3 @@ keytool -list -v -keystore keystore -alias hadoop
     path = require 'path'
 
 [hdp_ssl]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.1-latest/bk_reference/content/ch_wire-https.html
-
-
-
-
-
