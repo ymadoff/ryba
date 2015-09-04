@@ -2,6 +2,7 @@
 # Ryba
 
     module.exports = []
+    module.exports.push 'masson/bootstrap'
 
     module.exports.configure = (ctx) ->
       require('masson/core/proxy').configure ctx
@@ -59,9 +60,6 @@ Declare the HDP repository.
         @execute
           cmd: "yum clean metadata; yum update -y"
           if: -> @status -1
-        , (err, executed) ->
-          return next err if err
-          do_keys()
         @call
           if: -> @status -2
           handler: (_, callback) ->

@@ -12,9 +12,9 @@ Options includes:
 *   `default`: Path to a file or object of properties used as default values.   
 *   `local_default`: Read the default file from the local filesystem (only apply if `default` is a string).   
 ###
-module.exports = (ctx) ->
-  return if ctx.registered 'hconfigure'
-  ctx.register 'hconfigure', (options, callback) ->
+module.exports = ->
+  return if @registered 'hconfigure'
+  @register 'hconfigure', (options, callback) ->
     fnl_props = {}
     org_props = {}
     updated = 0
@@ -73,7 +73,7 @@ module.exports = (ctx) ->
         options.log? "Property '#{k}' was '#{org_props[k]}' and is now '#{fnl_props[k]}'"
         updated = true
       do_save()
-    do_save = ->
+    do_save = =>
       # return callback() unless updated
       # options.log? "Save properties"
       options.content = properties.stringify fnl_props
@@ -81,14 +81,7 @@ module.exports = (ctx) ->
       # ctx.write options, (err, written) ->
       #   updated = true if written
       #   callback err, updated
-      ctx
-      .write options
-      .then (err, status) ->
+      @write options
+      @then (err, status) ->
         callback err, status
     do_read_source()
-
-
-
-
-
-

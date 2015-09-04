@@ -1,12 +1,12 @@
 
-module.exports = (ctx) ->
-  return if ctx.registered 'hdfs_upload'
-  ctx.register 'hdfs_upload', (options, callback) ->
+module.exports = ->
+  return if @registered 'hdfs_upload'
+  @register 'hdfs_upload', (options, callback) ->
     return callback Error "Required option 'source'" unless options.source
     return callback Error "Required option 'target'" unless options.target
     options.lock ?= "/tmp/ryba-#{string.hash options.target}"
-    ctx.execute
-      cmd: mkcmd.hdfs ctx, """
+    @execute
+      cmd: mkcmd.hdfs @, """
       source=#{options.source}
       link=`echo $source | sed  's|\\(.*/hdp/current/[^/]*\\)/.*|\\1|'`
       version=`readlink $link | sed  's|.*/hdp/\\([^/]*\\)/.*|\\1|'`
@@ -57,7 +57,7 @@ module.exports = (ctx) ->
       """
       trap_on_error: true
       code_skipped: 3
-      not_if_exec: mkcmd.hdfs ctx, """
+      not_if_exec: mkcmd.hdfs @, """
       source=#{options.source}
       link=`echo $source | sed  's|\\(.*/hdp/current/[^/]*\\)/.*|\\1|'`
       version=`readlink $link | sed  's|.*/hdp/\\([^/]*\\)/.*|\\1|'`

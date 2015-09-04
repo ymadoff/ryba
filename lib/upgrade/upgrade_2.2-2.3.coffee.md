@@ -1,5 +1,9 @@
 
+# Upgrade from HDP 2.2 to 2.3
 
+## Procedure in pseudo-code
+
+```
 # on all nodes
 ./bin/ryba -c ./conf/env/offline.coffee install -m 'masson/**' -f
 # on nn1 or nn2
@@ -30,12 +34,11 @@ hdp-select set hadoop-hdfs-datanode 2.3.0.0-2557
 HADOOP_SECURE_DN_USER=hdfs /usr/hdp/current/hadoop-hdfs-datanode/../hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start datanode
 # somewhere
 hdfs dfsadmin -rollingUpgrade finalize
+```
 
-# Upgrade HDP 2.1 to 2.2
+## Source code
 
 Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
-
-`./bin/upgrade 
 
     exports = module.exports = (params, config, callback) ->
       params.easy_download
