@@ -3,7 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Stop
 
@@ -15,28 +15,27 @@ service hbase-regionserver stop
 su -l hbase -c "/usr/hdp/current/hbase-regionserver/bin/hbase-daemon.sh --config /etc/hbase/conf stop regionserver"
 ```
 
-    module.exports.push name: 'HBase RegionServer # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
-      ctx
-      .service
+    module.exports.push name: 'HBase RegionServer # Stop', label_true: 'STOPPED', handler: ->
+      @service
         srv_name: 'hbase-regionserver'
         action: 'stop'
         if_exists: '/etc/init.d/hbase-regionserver'
-        if: ctx.retry is 0
-      .execute
-        cmd: 'service hbase-regionserver force-stop'
-        if: ctx.retry > 0
-      .then next
+        # relax: true
+      # @execute
+      #   cmd: 'service hbase-regionserver force-stop'
+      #   if: -> @error -1
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'HBase RegionServer # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
-      {hbase, clean_logs} = ctx.config.ryba
-      return next() unless clean_logs
-      ctx
-      .execute
-        cmd: "rm #{hbase.log_dir}/*-regionserver-*"
-        code_skipped: 1
-      .execute
-        cmd: "rm #{hbase.log_dir}/gc.log-*"
-        code_skipped: 1
-      .then next
+    module.exports.push
+      name: 'HBase RegionServer # Stop Clean Logs'
+      label_true: 'CLEANED'
+      if: -> @config.ryba.clean_logs
+      handler: ->
+        {hbase} = @config.ryba
+        @execute
+          cmd: "rm #{hbase.log_dir}/*-regionserver-*"
+          code_skipped: 1
+        @execute
+          cmd: "rm #{hbase.log_dir}/gc.log-*"
+          code_skipped: 1

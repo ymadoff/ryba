@@ -3,7 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Stop
 
@@ -15,22 +15,22 @@ service hbase-thrift start
 su -l hbase -c "/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config /etc/hbase/conf stop rest"
 ```
 
-    module.exports.push name: 'HBase Thrift # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
-      ctx.service
-        srv_name: 'hbase-thrift'
-        action: 'stop'
+    module.exports.push name: 'HBase Thrift # Stop', label_true: 'STOPPED', handler: ->
+      @service_stop
+        name: 'hbase-thrift'
         if_exists: '/etc/init.d/hbase-thrift'
-      , next
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'HBase Thrift # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
-      {hbase, clean_logs} = ctx.config.ryba
-      return next() unless clean_logs
-      ctx.execute [
-        cmd: "rm #{hbase.log_dir}/*-thrift-*"
-        code_skipped: 1
-      ,
-        cmd: "rm #{hbase.log_dir}/gc.log-*"
-        code_skipped: 1
-      ], next
+    module.exports.push
+      name: 'HBase Thrift # Stop Clean Logs'
+      label_true: 'CLEANED'
+      if: -> @config.ryba.clean_logs
+      handler: ->
+        {hbase} = @config.ryba
+        @execute
+          cmd: "rm #{hbase.log_dir}/*-thrift-*"
+          code_skipped: 1
+        @execute
+          cmd: "rm #{hbase.log_dir}/gc.log-*"
+          code_skipped: 1

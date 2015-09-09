@@ -34,7 +34,7 @@ Example
     }
 ```
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       if ctx.hbase_configured then return else ctx.hbase_configured = null
       require('masson/commons/java').configure ctx
       {java_home} = ctx.config.java
@@ -174,42 +174,36 @@ cat /etc/group | grep hbase
 hbase:x:492:
 ```
 
-    module.exports.push name: 'HBase # Users & Groups', handler: (ctx, next) ->
-      {hbase} = ctx.config.ryba
-      ctx
-      .group hbase.group
-      .user hbase.user
-      .then next
+    module.exports.push name: 'HBase # Users & Groups', handler: ->
+      {hbase} = @config.ryba
+      @group hbase.group
+      @user hbase.user
 
 ## Install
 
 Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap9-1.html)
 
-    module.exports.push name: 'HBase # Install', timeout: -1, handler: (ctx, next) ->
-      ctx
-      .service
+    module.exports.push name: 'HBase # Install', timeout: -1, handler: ->
+      @service
         name: 'hbase'
-      .hdp_select
+      @hdp_select
         name: 'hbase-client'
-      .then next
 
-    module.exports.push name: 'HBase # Layout', timeout: -1, handler: (ctx, next) ->
-      {hbase} = ctx.config.ryba
-      ctx
-      .mkdir
+    module.exports.push name: 'HBase # Layout', timeout: -1, handler: ->
+      {hbase} = @config.ryba
+      @mkdir
         destination: hbase.pid_dir
         uid: hbase.user.name
         gid: hbase.group.name
         mode: 0o0755
-      .mkdir
+      @mkdir
         destination: hbase.log_dir
         uid: hbase.user.name
         gid: hbase.group.name
         mode: 0o0755
-      .then next
 
-    module.exports.push name: 'HBase # Env', handler: (ctx, next) ->
-      {hbase} = ctx.config.ryba
+    module.exports.push name: 'HBase # Env', handler: ->
+      {hbase} = @config.ryba
       write = for k, v of hbase.env
         match: RegExp "export #{k}=.*", 'm'
         replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
@@ -218,29 +212,26 @@ Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocument
         match: /^export HBASE_OPTS=".*" # RYBA HDP VERSION$/m
         replace: "export HBASE_OPTS=\"-Dhdp.version=$HDP_VERSION $HBASE_OPTS\" # RYBA HDP VERSION"
         append: true
-      ctx.upload
+      @upload
         source: "#{__dirname}/../resources/hbase/hbase-env.sh"
         destination: "#{hbase.conf_dir}/hbase-env.sh"
         write: write
         backup: true
         eof: true
-      .then next
 
 ## RegionServers
 
 Upload the list of registered RegionServers.
 
-    module.exports.push name: 'HBase # RegionServers', handler: (ctx, next) ->
-      {hbase, hadoop_group} = ctx.config.ryba
-      ctx.write
-        content: ctx.hosts_with_module('ryba/hbase/regionserver').join '\n'
+    module.exports.push name: 'HBase # RegionServers', handler: ->
+      {hbase, hadoop_group} = @config.ryba
+      @write
+        content: @hosts_with_module('ryba/hbase/regionserver').join '\n'
         destination: "#{hbase.conf_dir}/regionservers"
         uid: hbase.user.name
         gid: hadoop_group.name
         eof: true
-        if: !!ctx.has_any_modules ['ryba/hbase/master', 'ryba/hbase/regionserver']
-      .then next
-
+        if: !!@has_any_modules ['ryba/hbase/master', 'ryba/hbase/regionserver']
 
 ## Resources
 

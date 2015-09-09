@@ -4,7 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/hdfs_nn/wait'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Start
 
@@ -16,9 +16,8 @@ service hbase-regionserver start
 su -l hbase -c "/usr/hdp/current/hbase-regionserver/bin/hbase-daemon.sh --config /etc/hbase/conf start regionserver"
 ```
 
-    module.exports.push name: 'HBase RegionServer # Start', label_true: 'STARTED', handler: (ctx, next) ->
-      ctx.service
+    module.exports.push name: 'HBase RegionServer # Start', label_true: 'STARTED', handler: ->
+      @service
         srv_name: 'hbase-regionserver'
         action: 'start'
         if_exists: '/etc/init.d/hbase-regionserver'
-      .then next

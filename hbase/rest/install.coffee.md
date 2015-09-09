@@ -12,7 +12,7 @@ have usecase for it yet.
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/hbase'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_select'
 
@@ -26,42 +26,39 @@ have usecase for it yet.
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'HBase Rest # IPTables', handler: (ctx, next) ->
-      {hbase} = ctx.config.ryba
-      ctx.iptables
+    module.exports.push name: 'HBase Rest # IPTables', handler: ->
+      {hbase} = @config.ryba
+      @iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.rest.port'], protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.rest.info.port'], protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
         ]
-        if: ctx.config.iptables.action is 'start'
-      .then next
+        if: @config.iptables.action is 'start'
 
-    module.exports.push name: 'HBase Rest # Service', handler: (ctx, next) ->
-      ctx
-      .service
+    module.exports.push name: 'HBase Rest # Service', handler: ->
+      @service
         name: 'hbase-rest'
-      .hdp_select
+      @hdp_select
         name: 'hbase-client'
-      .write
+      @write
         source: "#{__dirname}/../resources/hbase-rest"
         local_source: true
         destination: '/etc/init.d/hbase-rest'
         mode: 0o0755
         unlink: true
-      .execute
+      @execute
         cmd: "service hbase-rest restart"
         if: -> @status -3
-      .then next
 
 ## Kerberos
 
 Create the Kerberos keytab for the service principal.
 
-    module.exports.push name: 'HBase Rest # Kerberos', handler: (ctx, next) ->
-      {hadoop_group, hbase, realm} = ctx.config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc
-        principal: hbase.site['hbase.rest.kerberos.principal'].replace '_HOST', ctx.config.host
+    module.exports.push name: 'HBase Rest # Kerberos', handler: ->
+      {hadoop_group, hbase, realm} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      @krb5_addprinc
+        principal: hbase.site['hbase.rest.kerberos.principal'].replace '_HOST', @config.host
         randkey: true
         keytab: hbase.site['hbase.rest.keytab.file']
         uid: hbase.user.name
@@ -69,17 +66,15 @@ Create the Kerberos keytab for the service principal.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      .then next
 
 ## Configure
 
 Note, we left the permission mode as default, Master and RegionServer need to
 restrict it but not the rest server.
 
-    module.exports.push name: 'HBase Rest # Configure', handler: (ctx, next) ->
-      {hbase} = ctx.config.ryba
-      ctx
-      .hconfigure
+    module.exports.push name: 'HBase Rest # Configure', handler: ->
+      {hbase} = @config.ryba
+      @hconfigure
         destination: "#{hbase.conf_dir}/hbase-site.xml"
         default: "#{__dirname}/../../resources/hbase/hbase-site.xml"
         local_default: true
@@ -88,7 +83,3 @@ restrict it but not the rest server.
         uid: hbase.user.name
         gid: hbase.group.name
         backup: true
-      .then next
-
-
-
