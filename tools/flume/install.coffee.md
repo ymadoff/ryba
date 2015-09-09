@@ -5,7 +5,7 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/hdfs' # Users and groups created by "zookeeper" and "hadoop-hdfs" dependencies
     module.exports.push require '../../lib/hdp_select'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Users & Groups
 
@@ -21,23 +21,19 @@ flume:x:496:
 Note, the "flume" package rely on the "zookeeper" and "hadoop-hdfs" dependencies
 creating the "zookeeper" and "hdfs" users and the "hadoop" and "hdfs" group.
 
-    module.exports.push name: 'Flume # Users & Groups', handler: (ctx, next) ->
-      {flume} = ctx.config.ryba
-      ctx.group flume.group
-      ctx.user flume.user
-      .then next
+    module.exports.push name: 'Flume # Users & Groups', handler: ->
+      @group @config.ryba.flume.group
+      @user @config.ryba.flume.user
 
 ## Install
 
 The package "flume" is installed.
 
-    module.exports.push name: 'Flume # Install', timeout: -1, handler: (ctx, next) ->
-      ctx
-      .service
+    module.exports.push name: 'Flume # Install', timeout: -1, handler: ->
+      @service
         name: 'flume'
-      .hdp_select
+      @hdp_select
         name: 'flume-server'
-      .then next
 
 ## Kerberos
 
@@ -46,11 +42,11 @@ later usage. It is placed inside the flume configuration directory, by default
 "/etc/flume/conf/flume.service.keytab" with restrictive permissions set to
 "0600".
 
-    module.exports.push name: 'Flume # Kerberos', handler: (ctx, next) ->
-      {flume, realm} = ctx.config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc
-        principal: "#{flume.user.name}/#{ctx.config.host}@#{realm}"
+    module.exports.push name: 'Flume # Kerberos', handler: ->
+      {flume, realm} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      @krb5_addprinc
+        principal: "#{flume.user.name}/#{@config.host}@#{realm}"
         randkey: true
         keytab: "#{flume.conf_dir}/flume.service.keytab"
         uid: flume.user.name
@@ -58,15 +54,14 @@ later usage. It is placed inside the flume configuration directory, by default
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      .then next
 
 ## Check
 
 We didnt yet activated any check. There could be two types, one using a kerberos
 user and one using interpolation.
 
-    # module.exports.push name: 'Flume # Check', timeout: -1, handler: (ctx, next) ->
-    #   ctx.write
+    # module.exports.push name: 'Flume # Check', timeout: -1, handler: ->
+    #   @write
     #     content: """
     #     # Name the components on this agent
     #     a1.sources = r1
@@ -89,7 +84,7 @@ user and one using interpolation.
     #   , (err, written) ->
     #     return next err if written
     #     next null, true
-    #     # ctx.execute
+    #     # @execute
     #     #   cmd: "flume-ng agent --conf conf --conf-file example.conf --name a1 -Dflume.root.logger=INFO,console"
 
 
