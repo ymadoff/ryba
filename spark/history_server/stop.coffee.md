@@ -2,7 +2,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Stop
 
@@ -13,11 +13,10 @@ following command:
 su -l spark -c '/usr/hdp/current/spark-historyserver/sbin/stop-history-server.sh'
 ```
 
-    module.exports.push name: 'Spark History Server # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
-      {spark} = ctx.config.ryba
-      ctx.execute
+    module.exports.push name: 'Spark History Server # Stop', label_true: 'STOPPED', handler: ->
+      {spark} = @config.ryba
+      @execute
         cmd:  """
         su -l #{spark.user.name} -c '/usr/hdp/current/spark-historyserver/sbin/stop-history-server.sh'
         """
         if_exists: '/usr/hdp/current/spark-historyserver/sbin/stop-history-server.sh'
-      .then next

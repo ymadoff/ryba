@@ -12,7 +12,7 @@ in the resource Manager web interface.
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/hadoop/hdfs_client'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
     module.exports.push 'ryba/spark/default'
 
 ## IPTables
@@ -24,35 +24,31 @@ in the resource Manager web interface.
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Spark Server # IPTables', handler: (ctx, next) ->
-      {spark} = ctx.config.ryba
-      ctx.iptables
+    module.exports.push name: 'Spark Server # IPTables', handler: ->
+      {spark} = @config.ryba
+      @iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: spark.conf['spark.history.ui.port'], protocol: 'tcp', state: 'NEW', comment: "Oozie HTTP Server" }
         ]
-        if: ctx.config.iptables.action is 'start'
-      .then next
+        if: @config.iptables.action is 'start'
 
-    module.exports.push name: 'Spark HS # Layout', handler: (ctx, next) ->
-      {spark} = ctx.config.ryba
-      ctx
-      .mkdir
+    module.exports.push name: 'Spark HS # Layout', handler: ->
+      {spark} = @config.ryba
+      @mkdir
         destination: spark.pid_dir
         uid: spark.user.name
         gid: spark.group.name
-      .mkdir
+      @mkdir
         destination: spark.log_dir
         uid: spark.user.name
         gid: spark.group.name
-      .then next
 
 ## Spark History Server Configure
 
-    module.exports.push name: 'Spark HS # Configuration',  handler: (ctx, next) ->
-      {java_home} = ctx.config.java
-      {spark} = ctx.config.ryba
-      ctx
-      .write
+    module.exports.push name: 'Spark HS # Configuration',  handler: ->
+      {java_home} = @config.java
+      {spark} = @config.ryba
+      @write
         destination : "#{spark.conf_dir}/spark-env.sh"
         # See "/usr/hdp/current/spark-historyserver/sbin/spark-daemon.sh" for
         # additionnal environmental variables.
@@ -74,21 +70,20 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           replace:"export JAVA_HOME=#{java_home} # RYBA, DONT OVERWRITE"
           append: true
         ]
-      .write
+      @write
         destination: "#{spark.conf_dir}/spark-defaults.conf"
         write: for k, v of spark.conf
           match: ///^#{quote k}\ .*$///mg
           replace: if v is null then "" else "#{k} #{v}"
           append: v isnt null
         backup: true
-      .then next
 
 ## Kerberos
 
-    module.exports.push name: 'Spark HS # Kerberos', handler: (ctx, next) ->
-      {spark, realm} = ctx.config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc
+    module.exports.push name: 'Spark HS # Kerberos', handler: ->
+      {spark, realm} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      @krb5_addprinc
         principal: spark.conf['spark.history.kerberos.principal']
         keytab: spark.conf['spark.history.kerberos.keytab']
         randkey: true
@@ -97,8 +92,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      .then next
-
 
 ## Dependencies
 

@@ -9,7 +9,7 @@ Its required by the other modules spark/client and spar/history_server
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/hdfs_client'
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       require('../lib/base').configure ctx
       require('../hadoop/core').configure ctx
       {core_site} = ctx.config.ryba
@@ -38,19 +38,17 @@ Its required by the other modules spark/client and spar/history_server
 
 ## Spark Worker events log dir
 
-    module.exports.push name: 'Spark Logdir # HDFS Permissions', handler: (ctx, next) ->
-      {spark} = ctx.config.ryba
+    module.exports.push name: 'Spark Logdir # HDFS Permissions', handler: ->
+      {spark} = @config.ryba
       fs_log_dir = spark.conf['spark.eventLog.dir']
-      ctx
-      .execute
-        cmd: mkcmd.hdfs ctx, """
+      @execute
+        cmd: mkcmd.hdfs @, """
           hdfs dfs -mkdir -p /user/#{spark.user.name}
           hdfs dfs -mkdir -p #{fs_log_dir}
           hdfs dfs -chown -R #{spark.user.name}:#{spark.group.name} /user/#{spark.user.name}
           hdfs dfs -chmod -R 755 /user/#{spark.user.name}
           hdfs dfs -chmod 1777 #{fs_log_dir}
           """
-      .then next
 
 ## Dependecies
 

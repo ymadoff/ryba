@@ -58,11 +58,20 @@ of your cluster.
       
       # Configuration
       spark.conf = {}
+      # For [Spark on YARN deployments][[secu]], configuring spark.authenticate to true
+      # will automatically handle generating and distributing the shared secret.
+      # Each application will use a unique shared secret. 
+      # wdavidw: not tested, work without it on spark 1.3
+      spark.conf['spark.authenticate'] ?= "true"
       # This causes Spark applications running on this client to write their history to the directory that the history server reads.
       spark.conf['spark.eventLog.enabled'] ?= "true"
       spark.conf['spark.yarn.services'] ?= "org.apache.spark.deploy.yarn.history.YarnHistoryService"
       spark.conf['spark.history.provider'] ?= "org.apache.spark.deploy.yarn.history.YarnHistoryProvider"
-      spark.conf['spark.ssl.enabled'] ?= "true"
+      # For now on spark 1.3, [SSL is falling][secu] even after distributing keystore
+      # and trustore on worker nodes as suggested in official documentation.
+      # Maybe we shall share and deploy public keys instead of just the cacert
+      # Disabling for now 
+      spark.conf['spark.ssl.enabled'] ?= "false"
       spark.conf['spark.ssl.enabledAlgorithms'] ?= "MD5"
       spark.conf['spark.ssl.keyPassword'] ?= "ryba123"
       spark.conf['spark.ssl.keyStore'] ?= "#{spark.conf_dir}/keystore"
@@ -70,6 +79,9 @@ of your cluster.
       spark.conf['spark.ssl.protocol'] ?= "SSLv3"
       spark.conf['spark.ssl.trustStore'] ?= "#{spark.conf_dir}/trustore"
       spark.conf['spark.ssl.trustStorePassword'] ?= "ryba123"
+      spark.conf['spark.eventLog.overwrite'] ?= 'true'
+
+[secu]: http://spark.apache.org/docs/latest/security.html
 
 ## Spark History Server Configure
 
