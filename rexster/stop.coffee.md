@@ -6,7 +6,7 @@ server using Ryba.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./').configure
+    # module.exports.push require('./').configure
 
 ## Stop
 
@@ -18,9 +18,9 @@ ps aux | grep "rexster"
 kill ...
 ```
 
-    module.exports.push name: 'Rexster # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
-      {titan, rexster} = ctx.config.ryba
-      ctx.execute
+    module.exports.push name: 'Rexster # Stop', label_true: 'STOPPED', handler: ->
+      {titan, rexster} = @config.ryba
+      @execute
         cmd: """
         p=`ps aux | grep "com.tinkerpop.rexster.Application" | grep -v grep`
         if [ -z "$p" ]; then exit 3; fi
@@ -28,18 +28,15 @@ kill ...
         """
         code_skipped: 3
         if_exists: '/opt/titan/current/bin/rexster.sh'
-      .then next
-
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'Rexster # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
-      {rexster, clean_logs} = ctx.config.ryba
-      ctx.execute
+    module.exports.push name: 'Rexster # Stop Clean Logs', label_true: 'CLEANED', handler: ->
+      {rexster, clean_logs} = @config.ryba
+      @execute
         cmd: "rm #{rexster.log_dir}/*"
         code_skipped: 1
         if: clean_logs
-      .then next
 
 ## Dependencies
 
