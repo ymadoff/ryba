@@ -1,12 +1,18 @@
 
 # Hue Start
 
-    lifecycle = require '../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./index').configure
 
-    module.exports.push name: 'Hue # Start', label_true: 'STARTED', handler: (ctx, next) ->
-      lifecycle.hue_start ctx, next
+## Start Server
 
+Start the Hue server. You can also start the server manually with the following
+command:
 
+```
+service hue start
+```
+
+    module.exports.push name: 'Hue # Start', label_true: 'STARTED', handler: ->
+      @service_start
+        name: 'hue'
