@@ -6,7 +6,7 @@ server using Ryba.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 # Stop Server
 
@@ -18,21 +18,20 @@ service hive-webhcat-server stop
 su -l hive -c "/usr/hdp/current/hive-webhcat/sbin/webhcat_server.sh stop"
 ```
 
-    module.exports.push name: 'WebHCat # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
-      ctx.service_stop
+    module.exports.push name: 'WebHCat # Stop', label_true: 'STOPPED', handler: ->
+      @service_stop
         name: 'hive-webhcat-server'
-      .then next
-
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'WebHCat # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
-      return next() unless ctx.config.ryba.clean_logs
-      ctx
-      .execute
-        cmd: 'rm /var/log/webhcat/webhcat-console*'
-        code_skipped: 1
-      .execute
-        cmd: 'rm /var/log/webhcat/webhcat.log*'
-        code_skipped: 1
-      .then next
+    module.exports.push
+      name: 'WebHCat # Stop Clean Logs'
+      label_true: 'CLEANED'
+      if: -> @config.ryba.clean_logs
+      handler: ->
+        @execute
+          cmd: 'rm /var/log/webhcat/webhcat-console*'
+          code_skipped: 1
+        @execute
+          cmd: 'rm /var/log/webhcat/webhcat.log*'
+          code_skipped: 1

@@ -10,7 +10,7 @@ By default, the pid of the running server is stored in
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hive/hcatalog/wait'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Start Server
 
@@ -22,8 +22,6 @@ service hive-webhcat-server start
 su -l hive -c "/usr/hdp/current/hive-webhcat/sbin/webhcat_server.sh start"
 ```
 
-    module.exports.push name: 'WebHCat # Start', label_true: 'STARTED', handler: (ctx, next) ->
-      ctx.service_start
+    module.exports.push name: 'WebHCat # Start', label_true: 'STARTED', handler: ->
+      @service_start
         name: 'hive-webhcat-server'
-      .then next
-

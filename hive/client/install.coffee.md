@@ -9,35 +9,31 @@
     module.exports.push 'ryba/tez'
     module.exports.push 'ryba/hive/index'
     module.exports.push require '../../lib/hconfigure'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
-    module.exports.push name: 'Hive Client # Service', handler: (ctx, next) ->
-      ctx
-      .service
+    module.exports.push name: 'Hive Client # Service', handler: ->
+      @service
         name: 'hive-hcatalog'
-      .then next
 
 ## Configure
 
 See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap6-3.html)
 
-    module.exports.push name: 'Hive Client # Configure', handler: (ctx, next) ->
-      {hive, hadoop_group} = ctx.config.ryba
-      ctx
-      .hconfigure
+    module.exports.push name: 'Hive Client # Configure', handler: ->
+      {hive, hadoop_group} = @config.ryba
+      @hconfigure
         destination: "#{hive.conf_dir}/hive-site.xml"
         default: "#{__dirname}/../../resources/hive/hive-site.xml"
         local_default: true
         properties: hive.site
         merge: true
         backup: true
-      .execute
+      @execute
         cmd: """
         chown -R #{hive.user.name}:#{hadoop_group.name} #{hive.conf_dir}
         chmod -R 755 #{hive.conf_dir}
         """
         shy: true # TODO: indempotence by detecting ownerships and permissions 
-      .then next
 
 ## Env
 
@@ -50,9 +46,9 @@ Using this functionnality, a user may for example raise the heap size of Hive
 Client to 4Gb by either setting a "opts" value equal to "-Xmx4096m" or the 
 by setting a "heapsize" value equal to "4096".
 
-    module.exports.push name: 'Hive Client # Env', handler: (ctx, next) ->
-      {hive} = ctx.config.ryba
-      ctx.write
+    module.exports.push name: 'Hive Client # Env', handler: ->
+      {hive} = @config.ryba
+      @write
         destination: "#{hive.conf_dir}/hive-env.sh"
         replace: """
         if [ "$SERVICE" = "cli" ]; then
@@ -66,26 +62,8 @@ by setting a "heapsize" value equal to "4096".
         append: true
         eof: true
         backup: true
-      .then next
 
 
       
 
   
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
