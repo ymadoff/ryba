@@ -9,15 +9,13 @@ server using Ryba.
 
 ## Wait TCP
 
-    module.exports.push name: 'HDFS NN # Wait', timeout: -1, label_true: 'READY', handler: (ctx, next) ->
-      os_ctxs = ctx.contexts 'ryba/oozie/server', require('./index').configure
-      ctx.wait_connect
+    module.exports.push name: 'HDFS NN # Wait', timeout: -1, label_true: 'READY', handler: ->
+      os_ctxs = @contexts 'ryba/oozie/server'#, require('./index').configure
+      @wait_connect
         servers: for os_ctx in os_ctxs
           {hostname, port} = url.parse os_ctx.config.ryba.oozie.site['oozie.base.url']
           host: hostname, port: port
-      .then next
 
 ## Dependencies
-
 
     url = require 'url'

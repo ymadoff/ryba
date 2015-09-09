@@ -9,7 +9,7 @@ By default, the pid of the running server is stored in
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Start
 
@@ -23,8 +23,7 @@ su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozied.sh start"
 
 Note, there is no need to clean a zombie pid file before starting the server.
 
-    module.exports.push name: 'Oozie Server # Start', label_true: 'STARTED', timeout: -1, handler: (ctx, next) ->
-      {oozie} = ctx.config.ryba
-      ctx.service_start
+    module.exports.push name: 'Oozie Server # Start', label_true: 'STARTED', timeout: -1, handler: ->
+      {oozie} = @config.ryba
+      @service_start
         name: 'oozie'
-      .then next

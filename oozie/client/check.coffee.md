@@ -4,60 +4,57 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/oozie/server/wait'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Check Client
 
-    module.exports.push name: 'Oozie Client # Check Client', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
-      {oozie} = ctx.config.ryba
-      ctx.execute
-        cmd: mkcmd.test ctx, """
+    module.exports.push name: 'Oozie Client # Check Client', timeout: -1, label_true: 'CHECKED', handler: ->
+      {oozie} = @config.ryba
+      @execute
+        cmd: mkcmd.test @, """
         oozie admin -oozie #{oozie.site['oozie.base.url']} -status
         """
       , (err, executed, stdout) ->
         throw err if err
         throw new Error "Oozie not ready, got: #{JSON.stringify stdout}" if stdout.trim() isnt 'System mode: NORMAL'
-      .then next
 
 ## Check REST
 
-    module.exports.push name: 'Oozie Client # Check REST', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
-      {oozie} = ctx.config.ryba
-      ctx.execute
-        cmd: mkcmd.test ctx, """
+    module.exports.push name: 'Oozie Client # Check REST', timeout: -1, label_true: 'CHECKED', handler: ->
+      {oozie} = @config.ryba
+      @execute
+        cmd: mkcmd.test @, """
         curl -s -k --negotiate -u : #{oozie.site['oozie.base.url']}/v1/admin/status
         """
       , (err, executed, stdout) ->
         throw err if err
         throw new Error "Oozie not ready" if stdout.trim() isnt '{"systemMode":"NORMAL"}'
-      .then next
 
 ## Check HDFS Workflow
 
-    module.exports.push name: 'Oozie Client # Check HDFS Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
-      {force_check, user, core_site, yarn, oozie} = ctx.config.ryba
-      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../../hadoop/yarn_rm').configure
+    module.exports.push name: 'Oozie Client # Check HDFS Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+      {force_check, user, core_site, yarn, oozie} = @config.ryba
+      rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'#, require('../../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1
-        rm_ctx = ctx.context yarn.active_rm_host, require('../../hadoop/yarn_rm').configure
+        rm_ctx = @context yarn.active_rm_host#, require('../../hadoop/yarn_rm').configure
         shortname = ".#{rm_ctx.config.shortname}"
       else
         rm_ctx = rm_ctxs[0]
         shortname = ''
       rm_address = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{shortname}"]
-      ctx
-      .write
+      @write
         content: """
           nameNode=#{core_site['fs.defaultFS']}
           jobTracker=#{rm_address}:8050
           queueName=default
-          basedir=${nameNode}/user/#{user.name}/check-#{ctx.config.shortname}-oozie-fs
+          basedir=${nameNode}/user/#{user.name}/check-#{@config.shortname}-oozie-fs
           oozie.wf.application.path=${basedir}
         """
         destination: "#{user.home}/check_oozie_fs/job.properties"
         uid: user.name
         gid: user.group
         eof: true
-      .write
+      @write
         content: """
         <workflow-app xmlns="uri:oozie:workflow:0.2" name="test-oozie-wf">
           <start to="move"/>
@@ -78,13 +75,13 @@
         uid: user.name
         gid: user.group
         eof: true
-      .execute
-        cmd: mkcmd.test ctx, """
-        hdfs dfs -rm -r -skipTrash check-#{ctx.config.shortname}-oozie-fs 2>/dev/null
-        hdfs dfs -mkdir -p check-#{ctx.config.shortname}-oozie-fs
-        hdfs dfs -touchz check-#{ctx.config.shortname}-oozie-fs/source
-        hdfs dfs -put -f #{user.home}/check_oozie_fs/job.properties check-#{ctx.config.shortname}-oozie-fs
-        hdfs dfs -put -f #{user.home}/check_oozie_fs/workflow.xml check-#{ctx.config.shortname}-oozie-fs
+      @execute
+        cmd: mkcmd.test @, """
+        hdfs dfs -rm -r -skipTrash check-#{@config.shortname}-oozie-fs 2>/dev/null
+        hdfs dfs -mkdir -p check-#{@config.shortname}-oozie-fs
+        hdfs dfs -touchz check-#{@config.shortname}-oozie-fs/source
+        hdfs dfs -put -f #{user.home}/check_oozie_fs/job.properties check-#{@config.shortname}-oozie-fs
+        hdfs dfs -put -f #{user.home}/check_oozie_fs/workflow.xml check-#{@config.shortname}-oozie-fs
         export OOZIE_URL=#{oozie.site['oozie.base.url']}
         oozie job -dryrun -config #{user.home}/check_oozie_fs/job.properties
         jobid=`oozie job -run -config #{user.home}/check_oozie_fs/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
@@ -94,32 +91,30 @@
         oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
         """
         code_skipped: 2
-        not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{ctx.config.shortname}-oozie-fs/target"
-      .then next
+        not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.shortname}-oozie-fs/target"
 
 ## Check MapReduce Workflow
 
-    module.exports.push name: 'Oozie Client # Check MapReduce', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
-      {force_check, user, core_site, yarn, oozie} = ctx.config.ryba
-      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../../hadoop/yarn_rm').configure
+    module.exports.push name: 'Oozie Client # Check MapReduce', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+      {force_check, user, core_site, yarn, oozie} = @config.ryba
+      rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'#, require('../../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1
-        rm_ctx = ctx.context yarn.active_rm_host, require('../../hadoop/yarn_rm').configure
+        rm_ctx = @context yarn.active_rm_host#, require('../../hadoop/yarn_rm').configure
         shortname = ".#{rm_ctx.config.shortname}"
       else
         rm_ctx = rm_ctxs[0]
         shortname = ''
       rm_address = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{shortname}"]
       # Get the name of the user running the Oozie Server
-      os_ctxs = ctx.contexts 'ryba/oozie/server', require('../server').configure
+      os_ctxs = @contexts 'ryba/oozie/server', require('../server').configure
       {oozie} = os_ctxs[0].config.ryba
-      ctx
-      .write
+      @write
         content: """
           nameNode=#{core_site['fs.defaultFS']}
           jobTracker=#{rm_address}
           oozie.libpath=/user/#{oozie.user.name}/share/lib
           queueName=default
-          basedir=${nameNode}/user/#{user.name}/check-#{ctx.config.shortname}-oozie-mr
+          basedir=${nameNode}/user/#{user.name}/check-#{@config.shortname}-oozie-mr
           oozie.wf.application.path=${basedir}
           oozie.use.system.libpath=true
         """
@@ -127,9 +122,9 @@
         uid: user.name
         gid: user.group
         eof: true
-      .write
+      @write
         content: """
-        <workflow-app name='check-#{ctx.config.shortname}-oozie-mr' xmlns='uri:oozie:workflow:0.4'>
+        <workflow-app name='check-#{@config.shortname}-oozie-mr' xmlns='uri:oozie:workflow:0.4'>
           <start to='test-mr' />
           <action name='test-mr'>
             <map-reduce>
@@ -154,11 +149,11 @@
                 </property>
                 <property>
                   <name>mapred.input.dir</name>
-                  <value>/user/${wf:user()}/check-#{ctx.config.shortname}-oozie-mr/input</value>
+                  <value>/user/${wf:user()}/check-#{@config.shortname}-oozie-mr/input</value>
                 </property>
                 <property>
                   <name>mapred.output.dir</name>
-                  <value>/user/${wf:user()}/check-#{ctx.config.shortname}-oozie-mr/output</value>
+                  <value>/user/${wf:user()}/check-#{@config.shortname}-oozie-mr/output</value>
                 </property>
               </configuration>
             </map-reduce>
@@ -175,19 +170,19 @@
         uid: user.name
         gid: user.group
         eof: true
-      .execute
-        cmd: mkcmd.test ctx, """
+      @execute
+        cmd: mkcmd.test @, """
         # Prepare HDFS
-        hdfs dfs -rm -r -skipTrash check-#{ctx.config.shortname}-oozie-mr 2>/dev/null
-        hdfs dfs -mkdir -p check-#{ctx.config.shortname}-oozie-mr/input
-        echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{ctx.config.shortname}-oozie-mr/input/data
-        hdfs dfs -put -f #{user.home}/check_oozie_mr/workflow.xml check-#{ctx.config.shortname}-oozie-mr
+        hdfs dfs -rm -r -skipTrash check-#{@config.shortname}-oozie-mr 2>/dev/null
+        hdfs dfs -mkdir -p check-#{@config.shortname}-oozie-mr/input
+        echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{@config.shortname}-oozie-mr/input/data
+        hdfs dfs -put -f #{user.home}/check_oozie_mr/workflow.xml check-#{@config.shortname}-oozie-mr
         # Extract Examples
         if [ ! -d /var/tmp/oozie-examples ]; then
           mkdir /var/tmp/oozie-examples
           tar xzf /usr/hdp/current/oozie-client/doc/oozie-examples.tar.gz -C /var/tmp/oozie-examples
         fi
-        hdfs dfs -put /var/tmp/oozie-examples/examples/apps/map-reduce/lib check-#{ctx.config.shortname}-oozie-mr
+        hdfs dfs -put /var/tmp/oozie-examples/examples/apps/map-reduce/lib check-#{@config.shortname}-oozie-mr
         # Run Oozie
         export OOZIE_URL=#{oozie.site['oozie.base.url']}
         oozie job -dryrun -config #{user.home}/check_oozie_mr/job.properties
@@ -200,32 +195,30 @@
         oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
         """
         trap_on_error: false # or while loop will exit on first run
-        not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{ctx.config.shortname}-oozie-mr/output/_SUCCESS"
-      .then next
+        not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.shortname}-oozie-mr/output/_SUCCESS"
 
 ## Check Pig Workflow
 
-    module.exports.push name: 'Oozie Client # Check Pig Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
-      {force_check, user, core_site, yarn, oozie} = ctx.config.ryba
-      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../../hadoop/yarn_rm').configure
+    module.exports.push name: 'Oozie Client # Check Pig Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+      {force_check, user, core_site, yarn, oozie} = @config.ryba
+      rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'#, require('../../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1
-        rm_ctx = ctx.context yarn.active_rm_host, require('../../hadoop/yarn_rm').configure
+        rm_ctx = @context yarn.active_rm_host#, require('../../hadoop/yarn_rm').configure
         shortname = ".#{rm_ctx.config.shortname}"
       else
         rm_ctx = rm_ctxs[0]
         shortname = ''
       rm_address = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{shortname}"]
       # Get the name of the user running the Oozie Server
-      os_ctxs = ctx.contexts 'ryba/oozie/server', require('../server').configure
+      os_ctxs = @contexts 'ryba/oozie/server', require('../server').configure
       {oozie} = os_ctxs[0].config.ryba
-      ctx
-      .write
+      @write
         content: """
         nameNode=#{core_site['fs.defaultFS']}
         jobTracker=#{rm_address}
         oozie.libpath=/user/#{oozie.user.name}/share/lib
         queueName=default
-        basedir=${nameNode}/user/#{user.name}/check-#{ctx.config.shortname}-oozie-pig
+        basedir=${nameNode}/user/#{user.name}/check-#{@config.shortname}-oozie-pig
         oozie.wf.application.path=${basedir}
         oozie.use.system.libpath=true
         """
@@ -233,9 +226,9 @@
         uid: user.name
         gid: user.group
         eof: true
-      .write
+      @write
         content: """
-        <workflow-app name='check-#{ctx.config.shortname}-oozie-pig' xmlns='uri:oozie:workflow:0.4'>
+        <workflow-app name='check-#{@config.shortname}-oozie-pig' xmlns='uri:oozie:workflow:0.4'>
           <start to='test-pig' />
           <action name='test-pig'>
             <pig>
@@ -252,8 +245,8 @@
                 </property>
               </configuration>
               <script>wordcount.pig</script>
-              <param>INPUT=/user/${wf:user()}/check-#{ctx.config.shortname}-oozie-pig/input</param>
-              <param>OUTPUT=/user/${wf:user()}/check-#{ctx.config.shortname}-oozie-pig/output</param>
+              <param>INPUT=/user/${wf:user()}/check-#{@config.shortname}-oozie-pig/input</param>
+              <param>OUTPUT=/user/${wf:user()}/check-#{@config.shortname}-oozie-pig/output</param>
             </pig>
             <ok to="end" />
             <error to="fail" />
@@ -268,7 +261,7 @@
         uid: user.name
         gid: user.group
         eof: true
-      .write
+      @write
         content: """
         A = load '$INPUT';
         B = foreach A generate flatten(TOKENIZE((chararray)$0)) as word;
@@ -280,13 +273,13 @@
         uid: user.name
         gid: user.group
         eof: true
-      .execute
-        cmd: mkcmd.test ctx, """
-        hdfs dfs -rm -r -skipTrash check-#{ctx.config.shortname}-oozie-pig 2>/dev/null
-        hdfs dfs -mkdir -p check-#{ctx.config.shortname}-oozie-pig/input
-        echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{ctx.config.shortname}-oozie-pig/input/data
-        hdfs dfs -put -f #{user.home}/check_oozie_pig/workflow.xml check-#{ctx.config.shortname}-oozie-pig
-        hdfs dfs -put -f #{user.home}/check_oozie_pig/wordcount.pig check-#{ctx.config.shortname}-oozie-pig
+      @execute
+        cmd: mkcmd.test @, """
+        hdfs dfs -rm -r -skipTrash check-#{@config.shortname}-oozie-pig 2>/dev/null
+        hdfs dfs -mkdir -p check-#{@config.shortname}-oozie-pig/input
+        echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{@config.shortname}-oozie-pig/input/data
+        hdfs dfs -put -f #{user.home}/check_oozie_pig/workflow.xml check-#{@config.shortname}-oozie-pig
+        hdfs dfs -put -f #{user.home}/check_oozie_pig/wordcount.pig check-#{@config.shortname}-oozie-pig
         export OOZIE_URL=#{oozie.site['oozie.base.url']}
         oozie job -dryrun -config #{user.home}/check_oozie_pig/job.properties
         jobid=`oozie job -run -config #{user.home}/check_oozie_pig/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
@@ -297,8 +290,7 @@
         oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
         """
         trap_on_error: false # or while loop will exit on first run
-        not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{ctx.config.shortname}-oozie-pig/output/_SUCCESS"
-      .then next
+        not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.shortname}-oozie-pig/output/_SUCCESS"
 
 ## Check HCat Workflow
 
@@ -340,29 +332,28 @@
 #   <end name="end"/>
 # </workflow-app>
 
-    module.exports.push skip: true, name: 'Oozie Client # Check HCat Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
-      {force_check, user, core_site, yarn, oozie} = ctx.config.ryba
-      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../../hadoop/yarn_rm').configure
+    module.exports.push skip: true, name: 'Oozie Client # Check HCat Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+      {force_check, user, core_site, yarn, oozie} = @config.ryba
+      rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'#, require('../../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1
-        rm_ctx = ctx.context yarn.active_rm_host, require('../../hadoop/yarn_rm').configure
+        rm_ctx = @context yarn.active_rm_host#, require('../../hadoop/yarn_rm').configure
         shortname = ".#{rm_ctx.config.shortname}"
       else
         rm_ctx = rm_ctxs[0]
         shortname = ''
       rm_address = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{shortname}"]
       # Get the name of the user running the Oozie Server
-      os_ctxs = ctx.contexts 'ryba/oozie/server', require('../server').configure
+      os_ctxs = @contexts 'ryba/oozie/server'#, require('../server').configure
       {oozie} = os_ctxs[0].config.ryba
       # Hive
-      hcat_ctxs = ctx.contexts 'ryba/hive/hcatalog', require('../../hive/hcatalog').configure
-      ctx
-      .write
+      hcat_ctxs = @contexts 'ryba/hive/hcatalog'#, require('../../hive/hcatalog').configure
+      @write
         content: """
         nameNode=#{core_site['fs.defaultFS']}
         jobTracker=#{rm_address}
         oozie.libpath=/user/#{oozie.user.name}/share/lib
         queueName=default
-        basedir=${nameNode}/user/#{user.name}/check-#{ctx.config.shortname}-oozie-pig
+        basedir=${nameNode}/user/#{user.name}/check-#{@config.shortname}-oozie-pig
         oozie.wf.application.path=${basedir}
         oozie.use.system.libpath=true
         """
@@ -370,9 +361,9 @@
         uid: user.name
         gid: user.group
         eof: true
-      .write
+      @write
         content: """
-        <workflow-app name='check-#{ctx.config.shortname}-oozie-pig' xmlns='uri:oozie:workflow:0.4'>
+        <workflow-app name='check-#{@config.shortname}-oozie-pig' xmlns='uri:oozie:workflow:0.4'>
           <credentials>
             <credential name='hive_credentials' type='hcat'>
               <property>
@@ -401,8 +392,8 @@
                 </property>
               </configuration>
               <script>wordcount.pig</script>
-              <param>INPUT=/user/${wf:user()}/check-#{ctx.config.shortname}-oozie-pig/input</param>
-              <param>OUTPUT=/user/${wf:user()}/check-#{ctx.config.shortname}-oozie-pig/output</param>
+              <param>INPUT=/user/${wf:user()}/check-#{@config.shortname}-oozie-pig/input</param>
+              <param>OUTPUT=/user/${wf:user()}/check-#{@config.shortname}-oozie-pig/output</param>
             </pig>
             <ok to="end" />
             <error to="fail" />
@@ -417,7 +408,7 @@
         uid: user.name
         gid: user.group
         eof: true
-      .write
+      @write
         content: """
         A = load '$INPUT';
         B = foreach A generate flatten(TOKENIZE((chararray)$0)) as word;
@@ -429,13 +420,13 @@
         uid: user.name
         gid: user.group
         eof: true
-      .execute
-        cmd: mkcmd.test ctx, """
-        hdfs dfs -rm -r -skipTrash check-#{ctx.config.shortname}-oozie-pig 2>/dev/null
-        hdfs dfs -mkdir -p check-#{ctx.config.shortname}-oozie-pig/input
-        echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{ctx.config.shortname}-oozie-pig/input/data
-        hdfs dfs -put -f #{user.home}/check_oozie_pig/workflow.xml check-#{ctx.config.shortname}-oozie-pig
-        hdfs dfs -put -f #{user.home}/check_oozie_pig/wordcount.pig check-#{ctx.config.shortname}-oozie-pig
+      @execute
+        cmd: mkcmd.test @, """
+        hdfs dfs -rm -r -skipTrash check-#{@config.shortname}-oozie-pig 2>/dev/null
+        hdfs dfs -mkdir -p check-#{@config.shortname}-oozie-pig/input
+        echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{@config.shortname}-oozie-pig/input/data
+        hdfs dfs -put -f #{user.home}/check_oozie_pig/workflow.xml check-#{@config.shortname}-oozie-pig
+        hdfs dfs -put -f #{user.home}/check_oozie_pig/wordcount.pig check-#{@config.shortname}-oozie-pig
         export OOZIE_URL=#{oozie.site['oozie.base.url']}
         oozie job -dryrun -config #{user.home}/check_oozie_pig/job.properties
         jobid=`oozie job -run -config #{user.home}/check_oozie_pig/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
@@ -446,8 +437,7 @@
         oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
         """
         trap_on_error: false # or while loop will exit on first run
-        not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -d check-#{ctx.config.shortname}-oozie-pig/output"
-      .then next
+        not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -d check-#{@config.shortname}-oozie-pig/output"
 
 # Module Dependencies
 
