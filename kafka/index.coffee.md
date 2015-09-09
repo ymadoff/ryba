@@ -9,7 +9,7 @@ and consumer Kafka components.
 
 ## Configure
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       require('../hadoop/core').configure ctx
       kafka = ctx.config.ryba.kafka ?= {}
       # Layout
@@ -43,9 +43,7 @@ cat /etc/group | grep kafka
 kafka:x:496:kafka
 ```
 
-    module.exports.push name: 'Kafka # Users & Groups', handler: (ctx, next) ->
-      {kafka} = ctx.config.ryba
-      ctx
-      .group kafka.group
-      .user kafka.user
-      .then next
+    module.exports.push name: 'Kafka # Users & Groups', handler: ->
+      {kafka} = @config.ryba
+      @group kafka.group
+      @user kafka.user
