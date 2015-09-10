@@ -43,10 +43,10 @@ php /usr/lib64/nagios/plugins/check_rpcq_latency_ha.php \
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
-    module.exports.push name: 'Nagios # Check Config', label_true: 'CHECKED', handler: (ctx, next) ->
-      ctx.execute
+    module.exports.push name: 'Nagios # Check Config', label_true: 'CHECKED', handler: ->
+      @execute
         cmd: "nagios -v /etc/nagios/nagios.cfg"
         code_skipped: 254
       , (err, executed, stdout) ->
@@ -54,19 +54,18 @@ php /usr/lib64/nagios/plugins/check_rpcq_latency_ha.php \
         throw Error "Nagios Invalid Configuration" unless executed
         errors = /Total Errors:\s+(\d+)/.exec(stdout)?[1]
         throw Error "Nagios Errors: #{errors}" unless errors is '0'
-      .then next
 
-    module.exports.push name: 'Nagios # Check Command', label_true: 'CHECKED', handler: (ctx, next) ->
-      {kinit} = ctx.config.krb5
-      {active_nn_host, nameservice, core_site, hdfs, nagios} = ctx.config.ryba
+    module.exports.push name: 'Nagios # Check Command', label_true: 'CHECKED', handler: ->
+      {kinit} = @config.krb5
+      {active_nn_host, nameservice, core_site, hdfs, nagios} = @config.ryba
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-        nn_host = ctx.host_with_module 'ryba/hadoop/hdfs_nn'
+      unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+        nn_host = @host_with_module 'ryba/hadoop/hdfs_nn'
         nn_port = hdfs.site['dfs.namenode.https-address'].split(':')[1]
       else
         nn_host = active_nn_host
-        shortname = ctx.hosts[active_nn_host].config.shortname
-        nn_port = ctx.config.ryba.hdfs.site["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
+        shortname = @hosts[active_nn_host].config.shortname
+        nn_port = @config.ryba.hdfs.site["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
       cmd = "php /usr/lib64/nagios/plugins/check_hdfs_capacity.php"
       cmd += " -h #{nn_host}"
       cmd += " -p #{nn_port}"
@@ -77,12 +76,9 @@ php /usr/lib64/nagios/plugins/check_rpcq_latency_ha.php \
       cmd += " -t #{kinit}"
       cmd += " -e #{if core_site['hadoop.security.authentication'] is 'kerberos' then 'true' else 'false'}"
       cmd += " -s #{if protocol is 'https' then 'true' else 'false'}"
-      ctx.execute
+      @execute
         cmd: cmd
-      .then next
 
 ## Dependencies
 
     url = require 'url'
-
-
