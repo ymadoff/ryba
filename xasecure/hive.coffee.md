@@ -25,72 +25,48 @@
       xasecure.hive['XAAUDIT.DB.USER_NAME'] ?= xasecure.policymgr['audit_db_user']
       xasecure.hive['XAAUDIT.DB.PASSWORD'] ?= xasecure.policymgr['audit_db_password']
 
-    module.exports.push name: 'XASecure HDFS # Upload', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'XASecure HDFS # Upload', timeout: -1, handler: ->
       {hive_url} = ctx.config.xasecure
-      do_upload = ->
-        ctx[if url.parse(hive_url).protocol is 'http:' then 'download' else 'upload']
-          source: hive_url
-          destination: '/var/tmp'
-          binary: true
-          not_if_exists: "/var/tmp/#{path.basename hive_url, '.tar'}"
-        , (err, uploaded) ->
-          return next err, false if err or not uploaded
-          modified = true
-          do_extract()
-      do_extract = ->
-        ctx.extract
-          source: "/var/tmp/#{path.basename hive_url}"
-        , (err) ->
-          return next err, true
-      do_upload()
+      @download
+        source: hive_url
+        destination: '/var/tmp'
+        binary: true
+        not_if_exists: "/var/tmp/#{path.basename hive_url, '.tar'}"
+      @extract
+        source: "/var/tmp/#{path.basename hive_url}"
+        if: -> @status -1
 
-    module.exports.push name: 'XASecure Hive # Install', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'XASecure Hive # Install', timeout: -1, handler: ->
       {conf_dir} = ctx.config.ryba.hive
       {hive, hive_url} = ctx.config.xasecure
-      modified = false
-      do_configure = ->
-        write = for k, v of hive
+      @write
+        destination: "/var/tmp/#{path.basename hive_url, '.tar'}/install.properties"
+        write: for k, v of hive
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
-        ctx.write
-          destination: "/var/tmp/#{path.basename hive_url, '.tar'}/install.properties"
-          write: write
-          eof: true
-        , (err, written) ->
-          return next err, false if err or not written
-          do_install()
-      do_install = ->
-        ctx.execute
-          cmd: "cd /var/tmp/#{path.basename hive_url, '.tar'} && ./install.sh"
-        , (err, executed) ->
-          return next err if err
-          do_conf()
-      do_conf = ->
-        # TODO, need to merge properties "hive.exec.pre.hooks", "hive.exec.post.hooks"
-        ctx
-        .hconfigure
-          destination: "#{conf_dir}/hive-site.xml"
-          properties: 
-            'hive.exec.pre.hooks': 'com.xasecure.authorization.hive.hooks.XaSecureHivePreExecuteRunHook'
-            'hive.exec.post.hooks': 'com.xasecure.authorization.hive.hooks.XaSecureHivePostExecuteRunHook'
-            'hive.semantic.analyzer.hook': 'com.xasecure.authorization.hive.hooks.XaSecureSemanticAnalyzerHook'
-            # Overwrite com.xasecure.authentication.hive.LoginNameAuthenticator
-            'hive.server2.custom.authentication.class': 'com.xasecure.authentication.hive.LoginNameAuthenticator'
-            # Overwrite hive.exec.post.hooks,hive.exec.driver.run.hooks,hive.server2.authentication,hive.metastore.pre.event.listeners,hive.security.authorization.enabled,hive.security.authorization.manager,hive.semantic.analyzer.hook
-            'hive.conf.restricted.list': 'hive.exec.driver.run.hooks,hive.server2.authentication,hive.metastore.pre.event.listeners,hive.security.authorization.enabled,hive.security.authorization.manager,hive.semantic.analyzer.hook,hive.exec.post.hooks'
-          merge: true
-        .then (err, configured) ->
-          return next err if err
-          do_restart()
-      do_restart = ->
-        lifecycle.hive_metastore_restart ctx, (err) ->
-          return next err if err
-          lifecycle.hive_server2_restart ctx, (err) ->
-            return next err if err
-            next null, false
-      do_configure()
+        eof: true
+      @execute
+        cmd: "cd /var/tmp/#{path.basename hive_url, '.tar'} && ./install.sh"
+      # TODO, need to merge properties "hive.exec.pre.hooks", "hive.exec.post.hooks"
+      @hconfigure
+        destination: "#{conf_dir}/hive-site.xml"
+        properties: 
+          'hive.exec.pre.hooks': 'com.xasecure.authorization.hive.hooks.XaSecureHivePreExecuteRunHook'
+          'hive.exec.post.hooks': 'com.xasecure.authorization.hive.hooks.XaSecureHivePostExecuteRunHook'
+          'hive.semantic.analyzer.hook': 'com.xasecure.authorization.hive.hooks.XaSecureSemanticAnalyzerHook'
+          # Overwrite com.xasecure.authentication.hive.LoginNameAuthenticator
+          'hive.server2.custom.authentication.class': 'com.xasecure.authentication.hive.LoginNameAuthenticator'
+          # Overwrite hive.exec.post.hooks,hive.exec.driver.run.hooks,hive.server2.authentication,hive.metastore.pre.event.listeners,hive.security.authorization.enabled,hive.security.authorization.manager,hive.semantic.analyzer.hook
+          'hive.conf.restricted.list': 'hive.exec.driver.run.hooks,hive.server2.authentication,hive.metastore.pre.event.listeners,hive.security.authorization.enabled,hive.security.authorization.manager,hive.semantic.analyzer.hook,hive.exec.post.hooks'
+        merge: true
+      @service
+        name: 'hive-hcatalog-server'
+        action: 'restart'
+      @service
+        name: 'hive-server2'
+        action: 'restart'
 
-    module.exports.push name: 'XASecure Hive # Register', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'XASecure Hive # Register', timeout: -1, handler: ->
       # POST http://front1.hadoop:6080/service/assets/assets
       body = 
         "name":"vagrant_hive"
@@ -119,7 +95,6 @@
         "zookeeperProperty":""
         "zookeeperQuorum":""
         "zookeeperZnodeParent":""
-      next()
 
 ## Dependencies
 

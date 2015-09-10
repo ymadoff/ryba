@@ -12,8 +12,8 @@
       require('masson/core/iptables').configure ctx
       require('masson/commons/java').configure ctx
       # require('../hadoop/core').configure ctx
-      policymgr = ctx.host_with_module 'ryba/xasecure/policymgr'
-      xasecure = ctx.config.xasecure ?= {}
+      policymgr = @host_with_module 'ryba/xasecure/policymgr'
+      xasecure = @config.xasecure ?= {}
       throw new Error "Required property \"xasecure.uxugsync_url\"" unless xasecure.uxugsync_url?
       xasecure.uxugsync ?= {}
       xasecure.uxugsync['POLICY_MGR_URL'] = "http://#{policymgr}:6080"
@@ -37,54 +37,34 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'XASecure Sync # IPTables', handler: (ctx, next) ->
-      ctx.iptables
+    module.exports.push name: 'XASecure Sync # IPTables', handler: ->
+      @iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 5151, protocol: 'tcp', state: 'NEW', comment: "XASecure Admin" }
         ]
-        if: ctx.config.iptables.action is 'start'
-      , next
+        if: @config.iptables.action is 'start'
 
-    module.exports.push name: 'XASecure Sync # Upload', timeout: -1, handler: (ctx, next) ->
-      {uxugsync_url} = ctx.config.xasecure
-      do_upload = ->
-        ctx[if url.parse(uxugsync_url).protocol is 'http:' then 'download' else 'upload']
-          source: uxugsync_url
-          destination: '/var/tmp'
-          binary: true
-          not_if_exists: "/var/tmp/#{path.basename uxugsync_url, '.tar'}"
-        , (err, uploaded) ->
-          return next err, false if err or not uploaded
-          modified = true
-          do_extract()
-      do_extract = ->
-        ctx.extract
-          source: "/var/tmp/#{path.basename uxugsync_url}"
-        , (err) ->
-          return next err, true
-      do_upload()
+    module.exports.push name: 'XASecure Sync # Upload', timeout: -1, handler: ->
+      {uxugsync_url} = @config.xasecure
+      @download
+        source: uxugsync_url
+        destination: '/var/tmp'
+        binary: true
+        not_if_exists: "/var/tmp/#{path.basename uxugsync_url, '.tar'}"
+      @extract
+        source: "/var/tmp/#{path.basename uxugsync_url}"
+        if: -> @status -1
 
-    module.exports.push name: 'XASecure Sync # Install', timeout: -1, handler: (ctx, next) ->
-      {uxugsync, uxugsync_url} = ctx.config.xasecure
-      modified = false
-      do_configure = ->
-        write = for k, v of uxugsync
+    module.exports.push name: 'XASecure Sync # Install', timeout: -1, handler: ->
+      {uxugsync, uxugsync_url} = @config.xasecure
+      @write
+        destination: "/var/tmp/#{path.basename uxugsync_url, '.tar'}/install.properties"
+        write: for k, v of uxugsync
           match: RegExp "^#{k} = .*$", 'mg'
           replace: "#{k} = #{v}"
-        ctx.write
-          destination: "/var/tmp/#{path.basename uxugsync_url, '.tar'}/install.properties"
-          write: write
-          eof: true
-        , (err, written) ->
-          return next err, false if err or not written
-          do_install()
-      do_install = ->
-        ctx.execute
-          cmd: "cd /var/tmp/#{path.basename uxugsync_url, '.tar'} && ./install.sh"
-        , (err, executed) ->
-          return next err if err
-          next null, true
-      do_configure()
+        eof: true
+      @execute
+        cmd: "cd /var/tmp/#{path.basename uxugsync_url, '.tar'} && ./install.sh"
 
 ## Dependencies
 
