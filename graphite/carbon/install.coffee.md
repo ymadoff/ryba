@@ -34,29 +34,26 @@ Example:
 
 ## IPTables
 
-#| Service        | Port | Proto | Info                                 |
-#|----------------|------|-------|--------------------------------------|
-#| carbon-cache   | 2003 | tcp   | Graphite Carbon Daemon               |
-#
-#IPTables rules are only inserted if the parameter "iptables.action" is set to
-#"start" (default value).
-#
-#    module.exports.push name: 'Graphite Carbon # IPTables', handler: (ctx, next) ->
-#      ctx.iptables
-#        rules: [
-#          { chain: 'INPUT', jump: 'ACCEPT', dport: 2003, protocol: 'tcp', state: 'NEW', comment: "Graphite Carbon Daemon" }
-#        ]
-#        if: ctx.config.iptables.action is 'start'
-#      , next
+| Service        | Port | Proto | Info                                 |
+|----------------|------|-------|--------------------------------------|
+| carbon-cache   | 2003 | tcp   | Graphite Carbon Daemon               |
+IPTables rules are only inserted if the parameter "iptables.action" is set to
+"start" (default value).
 
+    module.exports.push name: 'Graphite Carbon # IPTables', handler: ->
+      @iptables
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 2003, protocol: 'tcp', state: 'NEW', comment: "Graphite Carbon Daemon" }
+        ]
+        if: @config.iptables.action is 'start'
 
 ## Start
 
-    #module.exports.push 'ryba/graphite/collector/start'
+    #module.exports.push 'ryba/graphite/carbon/start'
 
 ## Check
 
-    #module.exports.push 'ryba/graphite/collector/check'
+    #module.exports.push 'ryba/graphite/carbon/check'
 
 ## Dependencies
 

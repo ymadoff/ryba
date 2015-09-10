@@ -6,5 +6,5 @@
 
 ## Check Services
 
-    module.exports.push name: 'Graphite Carbon # Check Services', label_true: 'CHECKED', handler: (ctx, next) ->
-      next null, 'TODO'
+    module.exports.push name: 'Graphite Carbon # Check Services', skip: true, label_true: 'CHECKED', handler: ->
+      # TODO
