@@ -23,6 +23,8 @@ The URI resources are grouped into APIs based on the type of information returne
       ryba.yarn.pid_dir ?= '/var/run/hadoop-yarn'
       ryba.yarn.conf_dir ?= ryba.hadoop_conf_dir
       ryba.yarn.opts ?= ''
+      ryba.yarn.heapsize ?= '1024'
+      ryba.yarn.home ?= '/usr/hdp/current/hadoop-yarn-client'
       # Configure yarn
       ryba.yarn.site['yarn.http.policy'] ?= 'HTTPS_ONLY' # HTTP_ONLY or HTTPS_ONLY or HTTP_AND_HTTPS
       # Required by yarn client

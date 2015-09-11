@@ -8,11 +8,21 @@ information for the applications running inside YARN.
 
 ## Configuration
 
+```json
+{ "ryba": { "yarn": { "ats": {
+    "opts": "",
+    "heapsize": "1024"
+} } } }
+```
+
     module.exports.configure = (ctx) ->
       # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.0/bk_yarn_resource_mgt/content/ref-c2f35f55-fa15-4154-b80a-36df2db297d5.1.html
       # require('../core').configure ctx
       require('../yarn_client').configure ctx
       {yarn, core_site, realm} = ctx.config.ryba
+      yarn.ats ?= {}
+      yarn.ats.opts ?= ''
+      yarn.ats.heapsize ?= '1024'
       # The hostname of the Timeline service web application.
       yarn.site['yarn.timeline-service.hostname'] ?= ctx.config.host
       hostname = yarn.site['yarn.timeline-service.hostname']

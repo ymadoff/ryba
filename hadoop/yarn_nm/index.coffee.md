@@ -12,11 +12,22 @@ applications.
     module.exports = []
     module.exports.push 'masson/bootstrap'
 
+## Configuration
+
+```json
+{ "ryba": { "yarn": { "nm": {
+    "opts": "",
+    "heapsize": "1024"
+} } } }
+```
+
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       require('../yarn_client').configure ctx
       {host, ryba} = ctx.config
-
+      ryba.yarn.nm ?= {}
+      ryba.yarn.nm.opts ?= ''
+      ryba.yarn.nm.heapsize ?= '1024'
       # Working Directories (see capacity for server resource discovery)
       ryba.yarn.site['yarn.nodemanager.local-dirs'] ?= ['/var/yarn/local']
       ryba.yarn.site['yarn.nodemanager.local-dirs'] = ryba.yarn.site['yarn.nodemanager.local-dirs'].join ',' if Array.isArray ryba.yarn.site['yarn.nodemanager.local-dirs']

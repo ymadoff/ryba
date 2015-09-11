@@ -104,19 +104,6 @@ inside "/etc/init.d" and activate it on startup.
         cmd: "service hadoop-yarn-resourcemanager restart"
         if: -> @status -3
 
-## Environment
-
-    module.exports.push name: 'YARN RM # Env', handler: ->
-      {java_home} = @config.java
-      {yarn, hadoop_group, hadoop_conf_dir} = @config.ryba
-      rm_opts = "-Djava.security.auth.login.config=#{hadoop_conf_dir}/yarn-rm.jaas #{yarn.rm_opts}"
-      @write
-        destination: "#{hadoop_conf_dir}/yarn-env.sh"
-        match: /^.*# RYBA CONF "ryba.yarn.rm_opts", DONT OVERWRITE/mg
-        replace: "YARN_RESOURCEMANAGER_OPTS=\"${YARN_RESOURCEMANAGER_OPTS} #{rm_opts}\" # RYBA CONF \"ryba.yarn.rm_opts\", DONT OVERWRITE"
-        append: true
-        backup: true
-
 ## Configuration
 
     module.exports.push name: 'YARN RM # Configuration', handler: ->
