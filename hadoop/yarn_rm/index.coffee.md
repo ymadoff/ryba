@@ -20,7 +20,9 @@
       require('../yarn_client').configure ctx
       {ryba} = ctx.config
       ryba.yarn.rm ?= {}
+      # Enable JAAS/Kerberos connection between YARN RM and ZooKeeper
       ryba.yarn.rm.opts ?= ''
+      ryba.yarn.rm.opts = "-Djava.security.auth.login.config=#{ryba.hadoop_conf_dir}/yarn-rm.jaas #{ryba.yarn.rm.opts}"
       ryba.yarn.rm.heapsize ?= '1024'
       ryba.yarn.site['yarn.resourcemanager.keytab'] ?= '/etc/security/keytabs/rm.service.keytab'
       ryba.yarn.site['yarn.resourcemanager.principal'] ?= "rm/#{ryba.static_host}@#{ryba.realm}"
@@ -90,12 +92,6 @@ killed as a last resort.
       ryba.yarn.site['yarn.resourcemanager.monitor.capacity.preemption.max_wait_before_kill'] ?= '15000'
       # The maximum percentage of resources preempted in a single round.
       ryba.yarn.site['yarn.resourcemanager.monitor.capacity.preemption.total_preemption_per_round'] ?= '0.1'
-
-## Environment
-
-      ryba.yarn.rm_opts ?= ''
-      # Enable JAAS/Kerberos connection between YARN RM and ZooKeeper
-      ryba.yarn.rm_opts = "-Djava.security.auth.login.config=#{ryba.hadoop_conf_dir}/yarn-rm.jaas #{ryba.yarn.rm_opts}"
 
 ## Commands
 

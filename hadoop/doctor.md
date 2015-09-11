@@ -16,7 +16,7 @@ chmod 2750 /data/*/yarn/local/usercache/$user/appcache
 chown $user /data/*/yarn/local/usercache/$user/filecache
 chown -R $user:$user /data/*/yarn/local/usercache/$user/filecache
 
-The cause is still unkown. 
+The cause is still unknown. 
 
 There are a few concequences of this curruption.
 
