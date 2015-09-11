@@ -15,14 +15,14 @@ Resources:
     module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'masson/core/krb5_client'
     module.exports.push 'masson/core/iptables'
-    module.exports.push 'ryba/hadoop/mapred_client'
-    module.exports.push 'ryba/tez'
+    module.exports.push 'ryba/hadoop/mapred_client/install'
+    module.exports.push 'ryba/tez/install'
     module.exports.push 'ryba/hive/client/install' # Install the Hive and HCatalog service
-    module.exports.push 'ryba/hbase/client'
+    module.exports.push 'ryba/hbase/client/install'
     module.exports.push 'ryba/hive/hcatalog/wait'
-    module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/hdp_select'
+    # module.exports.push require('./index').configure
 
 ## IPTables
 
@@ -34,17 +34,16 @@ Resources:
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Hive Server2 # IPTables', handler: (ctx, next) ->
-      {hive} = ctx.config.ryba
+    module.exports.push name: 'Hive Server2 # IPTables', handler: ->
+      {hive} = @config.ryba
       hive_server_port = if hive.site['hive.server2.transport.mode'] is 'binary'
       then hive.site['hive.server2.thrift.port']
       else hive.site['hive.server2.thrift.http.port']
-      ctx.iptables
+      @iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: hive_server_port, protocol: 'tcp', state: 'NEW', comment: "Hive Server" }
         ]
-        if: ctx.config.iptables.action is 'start'
-      .then next
+        if: @config.iptables.action is 'start'
 
 ## Startup
 
@@ -54,42 +53,30 @@ inside "/etc/init.d" and activate it on startup.
 The server is not activated on startup because they endup as zombies if HDFS
 isnt yet started.
 
-    module.exports.push name: 'Hive Server2 # Startup', handler: (ctx, next) ->
-      {hive} = ctx.config.ryba
-      ctx.hdp_service
+    module.exports.push name: 'Hive Server2 # Startup', handler: ->
+      @service
         name: 'hive-server2'
-        startup: false
-        write: [
-          match: /^\. \/etc\/default\/hive-server2 .*$/m
-          replace: '. /etc/default/hive-server2 # RYBA FIX rc.d, DONT OVERWRITE'
-          append: ". /lib/lsb/init-functions"
-        ,
-          # HDP default is "/usr/lib/hive/bin/hive"
-          match: /^EXEC_PATH=.*$/m
-          replace: "EXEC_PATH=\"/usr/hdp/current/hive-server2/bin/hive\" # RYBA FIX, DONT OVEWRITE"
-        ,
-          # HDP default is "LOG_FILE=/var/log/hive/${DAEMON}.out"
-          match: /^(\s+)LOG_FILE=.*$/m
-          replace: "$1LOG_FILE=\"#{hive.server2.log_dir}/${DAEMON}.out\" # RYBA FIX, DONT OVEWRITE"
-        ,
-          # HDP default is "/var/run/hive/hive-server2.pid"
-          match: /^PIDFILE=.*$/m
-          replace: "PIDFILE=\"#{hive.server2.pid_dir}/hive-server2.pid\" # RYBA FIX, DONT OVEWRITE"
-        ]
-        etc_default: true
-      .then next
+      @hdp_select
+        name: 'hive-server2'
+      @write
+        source: "#{__dirname}/../resources/hive-server2"
+        local_source: true
+        destination: '/etc/init.d/hive-server2'
+        mode: 0o0755
+        unlink: true
+      @execute
+        cmd: "service hive-server2 restart"
+        if: -> @status -3
 
-    module.exports.push name: 'Hive Server2 # Configure', handler: (ctx, next) ->
-      {hive} = ctx.config.ryba
-      ctx
-      .hconfigure
+    module.exports.push name: 'Hive Server2 # Configure', handler: ->
+      {hive} = @config.ryba
+      @hconfigure
         destination: "#{hive.conf_dir}/hive-site.xml"
         default: "#{__dirname}/../../resources/hive/hive-site.xml"
         local_default: true
         properties: hive.site
         merge: true
         backup: true
-      .then next
 
 ## Env
 
@@ -100,9 +87,9 @@ Enrich the "hive-env.sh" file with the value of the configuration property
 Using this functionnality, a user may for example raise the heap size of Hive
 Server2 to 4Gb by setting a value equal to "-Xmx4096m".
 
-    module.exports.push name: 'Hive Server2 # Env', handler: (ctx, next) ->
-      {hive} = ctx.config.ryba
-      ctx.write
+    module.exports.push name: 'Hive Server2 # Env', handler: ->
+      {hive} = @config.ryba
+      @write
         destination: "#{hive.conf_dir}/hive-env.sh"
         replace: """
         if [ "$SERVICE" = "hiveserver2" ]; then
@@ -116,36 +103,33 @@ Server2 to 4Gb by setting a value equal to "-Xmx4096m".
         append: true
         eof: true
         backup: true
-      .then next
 
 ## Layout
 
 Create the directories to store the logs and pid information. The properties
 "ryba.hive.server2.log\_dir" and "ryba.hive.server2.pid\_dir" may be modified.
 
-    module.exports.push name: 'Hive Server2 # Layout', timeout: -1, handler: (ctx, next) ->
-      {hive} = ctx.config.ryba
+    module.exports.push name: 'Hive Server2 # Layout', timeout: -1, handler: ->
+      {hive} = @config.ryba
       # Required by service "hive-hcatalog-server"
-      ctx
-      .mkdir
+      @mkdir
         destination: hive.server2.log_dir
         uid: hive.user.name
         gid: hive.group.name
         parent: true
-      .mkdir
+      @mkdir
         destination: hive.server2.pid_dir
         uid: hive.user.name
         gid: hive.group.name
         parent: true
-      .then next
 
 ## Kerberos
 
-    module.exports.push name: 'Hive Server2 # Kerberos', handler: (ctx, next) ->
-      {hive, realm} = ctx.config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc
-        principal: hive.site['hive.server2.authentication.kerberos.principal'].replace '_HOST', ctx.config.host
+    module.exports.push name: 'Hive Server2 # Kerberos', handler: ->
+      {hive, realm} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      @krb5_addprinc
+        principal: hive.site['hive.server2.authentication.kerberos.principal'].replace '_HOST', @config.host
         randkey: true
         keytab: hive.site['hive.server2.authentication.kerberos.keytab']
         uid: hive.user.name
@@ -153,51 +137,25 @@ Create the directories to store the logs and pid information. The properties
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-        not_if: ctx.has_module('ryba/hive/hcatalog') and hive.site['hive.metastore.kerberos.principal'] is hive.site['hive.server2.authentication.kerberos.principal']
-      .then next
-
-Since HDP 2.2.4.2, Hive Server2 doesn't seems to correctly renew its keytab. For that, we use cron daemon
-We then ask a first TGT.
-
-    module.exports.push name: 'Hive Server2 # Kinit Fix (2.2.4.2)', handler: (ctx, next) ->
-      {hive, realm} = ctx.config.ryba
-      return next() unless hive.site['hive.server2.authentication'] is 'KERBEROS'
-      principal = hive.site['hive.server2.authentication.kerberos.principal'].replace '_HOST', ctx.config.host
-      keytab = hive.site['hive.server2.authentication.kerberos.keytab']
-      ctx.cron_add
-        cmd: "/usr/bin/kinit #{principal} -k -t #{keytab}"
-        when: '0 */9 * * *'
-        user: hive.user.name
-        exec: true
-      .then next
+        not_if: @has_module('ryba/hive/hcatalog') and hive.site['hive.metastore.kerberos.principal'] is hive.site['hive.server2.authentication.kerberos.principal']
 
 ## Logs
 
-    module.exports.push name: 'Hive Server2 # Logs', handler: (ctx, next) ->
-      ctx
-      .write
+    module.exports.push name: 'Hive Server2 # Logs', handler: ->
+      @write
         source: "#{__dirname}/../../resources/hive/hive-exec-log4j.properties.template"
         local_source: true
         destination: '/etc/hive/conf/hive-exec-log4j.properties'
-      .write
+      @write
         source: "#{__dirname}/../../resources/hive/hive-log4j.properties.template"
         local_source: true
         destination: '/etc/hive/conf/hive-log4j.properties'
-      .then next
 
 ## Limits
 
-    module.exports.push name: 'Hive Server2 : Limits', handler: (ctx, next) ->
-      {hive, realm} = ctx.config.ryba
-      ctx.system_limits
+    module.exports.push name: 'Hive Server2 : Limits', handler: ->
+      {hive, realm} = @config.ryba
+      @system_limits
         user: hive.user.name
         nofile: true
         nproc: true
-      .then next
-
-
-
-
-
-
-

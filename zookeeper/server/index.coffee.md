@@ -35,8 +35,10 @@ Example :
       require('masson/commons/java').configure ctx
       require('../client').configure ctx
       {java, ryba} = ctx.config
-      # Environnment
       zookeeper = ryba.zookeeper ?= {}
+      # Layout
+      zookeeper.pid_dir ?= '/var/run/zookeeper'
+      # Environnment
       zookeeper.env ?= {}
       zookeeper.env['JAVA_HOME'] ?= "#{java.java_home}"
       zookeeper.env['ZOOKEEPER_HOME'] ?= "/usr/hdp/current/zookeeper-client"

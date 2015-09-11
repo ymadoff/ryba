@@ -45,29 +45,6 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
         hbase.site["hadoop.proxyuser.#{match[1]}.groups"] ?= '*'
         hbase.site["hadoop.proxyuser.#{match[1]}.hosts"] ?= '*'
 
-## Highly Available Reads with HBase
-
-*   [Hortonworks presentation of HBase HA][ha-next-level]
-*   [HDP 2.2 Read HA instruction][hdp22]
-*   [Bring quorum based write ahead log (write HA)][HBASE-12259]
-
-[ha-next-level]: http://hortonworks.com/blog/apache-hbase-high-availability-next-level/
-[hdp22]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.0/Hadoop_HA_v22/ha_hbase_reads/index.html#Item1.1.5
-[HBASE-12259]: https://issues.apache.org/jira/browse/HBASE-12259
-
-      # # StoreFile Refresher
-      # hbase.site['hbase.regionserver.storefile.refresh.all'] ?= 'true'
-      # # Async WAL Replication
-      # # hbase.site['hbase.region.replica.replication.enabled] ?= 'true'
-      # # hbase.site['hbase.regionserver.storefile.refresh.all'] ?= 'false'
-      # # Store File TTL
-      # hbase.site['hbase.regionserver.storefile.refresh.period'] ?= '30000' # Default to '0'
-      # hbase.site['hbase.master.hfilecleaner.ttl'] ?= '3600000' # 1 hour
-      # hbase.site['hbase.master.loadbalancer.class'] ?= 'org.apache.hadoop.hbase.master.balancer.StochasticLoadBalancer' # Default value
-      # hbase.site['hbase.meta.replica.count'] ?= '3' # Default to '1'
-      # hbase.site['hbase.region.replica.wait.for.primary.flush'] ?= 'true'
-      # hbase.site['hbase.region.replica.storefile.refresh.memstore.multiplier'] ?= '4'
-
 ## Configuration for Log4J
 
       hbase.master_opts = "#{hbase.env['HBASE_MASTER_OPTS']} -Dhbase.log4j.extra_appender=,socket_server -Dhbase.log4j.server_port=#{hbase.log4j.server_port}" if hbase.log4j?.server_port?

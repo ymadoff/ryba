@@ -22,6 +22,7 @@
       ]
       for property in jhs_properties
         ryba.mapred.site[property] ?= if jhs_ctx then jhs_ctx.config.ryba.mapred.site[property] else null
+      ryba.yarn.site['yarn.resourcemanager.bind-host'] ?= '0.0.0.0'
 
 ## Configuration for Memory and CPU
 
@@ -49,8 +50,8 @@ the application (zombie state).
       ryba.capacity_scheduler['yarn.scheduler.capacity.node-locality-delay'] ?= '40'
       ryba.capacity_scheduler['yarn.scheduler.capacity.resource-calculator'] ?= 'org.apache.hadoop.yarn.util.resource.DefaultResourceCalculator'
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels'] ?= '*'
-      ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels.default.capacity'] ?= '-1'
-      ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels.default.maximum-capacity'] ?= '-1'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels.default.capacity'] ?= '100'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels.default.maximum-capacity'] ?= '100'
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.acl_administer_queue'] ?= '*'
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.capacity'] ?= '100'
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.default-node-label-expression'] ?= ' '

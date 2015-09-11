@@ -3,7 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Start
 
@@ -12,12 +12,10 @@ following two commands:
 
 ```
 service hbase-rest start
-su -l hbase -c "/usr/lib/hbase/bin/hbase-daemon.sh --config /etc/hbase/conf start rest"
+su -l hbase -c "/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config /etc/hbase/conf start rest"
 ```
 
-    module.exports.push name: 'HBase Rest # Start', label_true: 'STARTED', handler: (ctx, next) ->
-      ctx.service_start
+    module.exports.push name: 'HBase Rest # Start', label_true: 'STARTED', handler: ->
+      @service_start
         name: 'hbase-rest'
         if_exists: '/etc/init.d/hbase-rest'
-      .then next
-

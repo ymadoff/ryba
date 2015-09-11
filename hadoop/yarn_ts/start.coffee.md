@@ -9,16 +9,17 @@ The ATS requires HDFS to be operationnal or an exception is trown:
     module.exports.push 'masson/core/krb5_client/wait'
     module.exports.push 'ryba/hadoop/hdfs_nn/wait'
 
-    module.exports.push name: 'YARN TS # Start', handler: (ctx, next) ->
-      {yarn, hadoop_conf_dir} = ctx.config.ryba
-      ctx.execute
-        # su -l yarn -c "/usr/hdp/current/hadoop-yarn-timelineserver/sbin/yarn-daemon.sh --config /etc/hadoop/conf start timelineserver"
-        cmd: """
-        if pid=`cat /var/run/hadoop-yarn/yarn-yarn-timelineserver.pid`; then
-          if ps -e -o pid | grep -v grep | grep -w $pid; then exit 3; fi; 
-        fi;
-        su -l #{yarn.user.name} -c "/usr/hdp/current/hadoop-yarn-timelineserver/sbin/yarn-daemon.sh --config #{hadoop_conf_dir} start timelineserver"
-        echo $?
-        """
-        code_skipped: 3
-      .then next
+## Start
+
+Start the Yarn Application History Server. You can also start the server
+manually with the following command:
+
+```
+service hadoop-yarn-timelineserver start
+su -l yarn -c "/usr/hdp/current/hadoop-yarn-timelineserver/sbin/yarn-daemon.sh --config /etc/hadoop/conf start timelineserver"
+```
+
+    module.exports.push name: 'YARN TS # Start', handler: ->
+      @service_start
+        name: 'hadoop-yarn-timelineserver'
+        if_exists: '/etc/init.d/hadoop-yarn-timelineserver'

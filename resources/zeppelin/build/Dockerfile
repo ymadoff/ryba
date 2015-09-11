@@ -13,8 +13,9 @@ WORKDIR /tmp/
 
 RUN yum clean all
 RUN yum update -y
-RUN yum install -y wget unzip openssl git rpm tar
 RUN yum install -y epel-release
+RUN yum install -y wget unzip openssl git rpm tar bzip2 git yum-utils make gcc-c++ tar  words
+
 RUN yum groupinstall -y 'Developement Tools'
 RUN yum install -y npm
 
@@ -24,7 +25,8 @@ RUN yum install -y npm
 
 #RUN mkdir -p /tmp/jdk
 #RUN yum install -y tar
-RUN wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/7u79-b15/jdk-7u79-linux-x64.rpm
+#RUN wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/7u79-b15/jdk-7u79-linux-x64.rpm
+RUN curl -L -O -H "Cookie: oraclelicense=accept-securebackup-cookie" -k "http://download.oracle.com/otn-pub/java/jdk/7u79-b15/jdk-7u79-linux-x64.rpm"
 RUN rpm -ivh jdk-7u79-linux-x64.rpm
 ENV JAVA_HOME /usr/java/default
 
@@ -55,24 +57,29 @@ RUN mvn -version
 
 WORKDIR /tmp/
 RUN git clone https://github.com/apache/incubator-zeppelin.git
-RUN wget https://nodejs.org/dist/v0.10.36/node-v0.10.36-linux-x64.tar.gz 
-RUN ls -l /tmp/
-RUN tar -C /usr/local --strip-components 1 -xzf /tmp/node-v0.10.36-linux-x64.tar.gz
-WORKDIR /tmp/incubator-zeppelin/zeppelin-web
-RUN ls -l
-RUN npm cache clean
-RUN npm  --registry http://registry.npmjs.eu/ install -g bower
-RUN npm  --registry http://registry.npmjs.eu/ install  bower
-RUN bower -v
-RUN yum install -y bzip2
-RUN npm --registry http://registry.npmjs.eu/ install  grunt-cli
-RUN npm --registry http://registry.npmjs.eu/  install
-RUN ls -l node_modules
-RUN echo Y | bower --allow-root install
-RUN ls -l node_modules
-#RUN mvn clean package -e -X -U -Pspark-1.2 -Dspark.version=1.2.1 -Dhadoop.version=2.6.0 -Phadoop-2.4 -Pyarn -DskipTests
+#RUN wget https://nodejs.org/dist/v0.10.36/node-v0.10.36-linux-x64.tar.gz 
+#RUN ls -l /tmp/
+#RUN tar -C /usr/local --strip-components 1 -xzf /tmp/node-v0.10.36-linux-x64.tar.gz
+#WORKDIR /tmp/incubator-zeppelin/zeppelin-web
+#RUN ls -l
+#RUN npm cache clean
+#RUN npm  --registry http://registry.npmjs.eu/ install -g bower
+#RUN npm  --registry http://registry.npmjs.eu/ install  bower
+#RUN bower -v
+#RUN yum install -y bzip2
+#RUN npm --registry http://registry.npmjs.eu/ install  grunt-cli
+#RUN npm --registry http://registry.npmjs.eu/  install
+#RUN ls -l node_modules
+#RUN echo Y | bower --allow-root install
+#RUN ls -l node_modules
+#RUN mvn clean package -e -X -U -Pspark-1.2 -Dspark.version=1.2.1 -Dhadoop.version=2.6.0 -Phadoop-2.2 -Pyarn -DskipTests
 WORKDIR /tmp/incubator-zeppelin/
-RUN mvn clean package -e -X  -Pspark-1.2 -Dspark.version=1.2.1 -Dhadoop.version=2.6.0 -Phadoop-2.4 -Pyarn -DskipTests
+#RUN mvn clean package -e -X  -Pspark-1.3 -Dspark.version=1.3.1  -Dhadoop.version=2.7.1 -Pyarn -DskipTests
+#RUN mvn clean package -e -X -U -Pspark-1.2 -Dspark.version=1.2.1 -Dhadoop.version=2.6.0 -Phadoop-2.2 -Pyarn -DskipTests
+
+RUN mvn clean package -Pspark-1.2 -Dspark.version=1.2.1 -Dhadoop.version=2.7.0 -Phadoop-2.6 -Pyarn -DskipTests
+
+#RUN mvn clean package -P build-distr -DskipTests
 WORKDIR /tmp/
 RUN mv /tmp/incubator-zeppelin /tmp/zeppelin-build
 RUN tar -chzf zeppelin-build.tar.gz zeppelin-build

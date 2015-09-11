@@ -13,17 +13,22 @@ active NameNode to start first.
     module.exports.push 'ryba/zookeeper/server/wait'
     module.exports.push 'ryba/hadoop/hdfs_jn/wait'
     # module.exports.push 'ryba/hadoop/hdfs_nn/wait'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
-    module.exports.push name: 'ZKFC # Wait Active NN', label_true: 'READY', timeout: -1, handler: (ctx, next) ->
-      return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      {active_nn_host} = ctx.config.ryba
-      return next() if active_nn_host is ctx.config.host
-      active_shortname = ctx.contexts(hosts: active_nn_host)[0].config.shortname
-      ctx.waitForExecution
-        cmd: mkcmd.hdfs ctx, "hdfs haadmin -getServiceState #{active_shortname}"
-        code_skipped: 255
-      , next
+    module.exports.push
+      name: 'ZKFC # Wait Active NN'
+      label_true: 'READY'
+      timeout: -1
+      if: [
+        -> @contexts('ryba/hadoop/hdfs_nn').length > 1
+        -> @config.ryba.active_nn_host isnt @config.host
+      ]
+      handler: ->
+        {active_nn_host} = @config.ryba
+        active_shortname = @contexts(hosts: active_nn_host)[0].config.shortname
+        @wait_execute
+          cmd: mkcmd.hdfs @, "hdfs haadmin -getServiceState #{active_shortname}"
+          code_skipped: 255
 
 ## Start
 
@@ -36,11 +41,10 @@ service hadoop-hdfs-zkfc start
 su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start zkfc"
 ```
 
-    module.exports.push name: 'ZKFC # Start', label_true: 'STARTED', handler: (ctx, next) ->
-      return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      ctx.service_start
+    module.exports.push name: 'ZKFC # Start', label_true: 'STARTED', handler: ->
+      return next() unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+      @service_start
         name: 'hadoop-hdfs-zkfc'
-      .then next
 
 ## Dependencies
 

@@ -10,22 +10,22 @@ through SSH over another one where the public key isn't yet deployed.
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/hdfs_nn/wait'
-    module.exports.push require('../hdfs').configure
+    # module.exports.push require('../hdfs').configure
 
 ## Check HTTP
 
-    module.exports.push name: 'HDFS NN # Check HTTP', timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
-      {hdfs, active_nn_host} = ctx.config.ryba
-      is_ha = ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      # state = if not is_ha or active_nn_host is ctx.config.host then 'active' else 'standby'
+    module.exports.push name: 'HDFS NN # Check HTTP', timeout: -1, label_true: 'CHECKED', handler: ->
+      {hdfs, active_nn_host} = @config.ryba
+      is_ha = @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+      # state = if not is_ha or active_nn_host is @config.host then 'active' else 'standby'
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      nameservice = if is_ha then ".#{ctx.config.ryba.hdfs.site['dfs.nameservices']}" else ''
-      shortname = if is_ha then ".#{ctx.config.shortname}" else ''
+      nameservice = if is_ha then ".#{@config.ryba.hdfs.site['dfs.nameservices']}" else ''
+      shortname = if is_ha then ".#{@config.shortname}" else ''
       address = hdfs.site["dfs.namenode.#{protocol}-address#{nameservice}#{shortname}"]
       [_, port] = address.split ':'
       securityEnabled = protocol is 'https'
-      ctx.execute
-        cmd: mkcmd.hdfs ctx, "curl --negotiate -k -u : #{protocol}://#{ctx.config.host}:#{port}/jmx?qry=Hadoop:service=NameNode,name=NameNodeStatus"
+      @execute
+        cmd: mkcmd.hdfs @, "curl --negotiate -k -u : #{protocol}://#{@config.host}:#{port}/jmx?qry=Hadoop:service=NameNode,name=NameNodeStatus"
       , (err, executed, stdout) ->
         throw err if err
         data = JSON.parse stdout
@@ -33,7 +33,6 @@ through SSH over another one where the public key isn't yet deployed.
         throw Error "Invalid Response" unless Array.isArray data?.beans
         # throw Error "Invalid Response" unless /^Hadoop:service=NameNode,name=NameNodeStatus$/.test data?.beans[0]?.name
         # throw Error "WARNING: Invalid security (#{data.beans[0].SecurityEnabled}, instead of #{securityEnabled}" unless data.beans[0].SecurityEnabled is securityEnabled
-      .then next
 
 ## Check Health
 
@@ -45,37 +44,47 @@ non-zero otherwise. One might use this command for monitoring purposes.
 Checkhealth return result is not completely implemented
 See More http://hadoop.apache.org/docs/r2.0.2-alpha/hadoop-yarn/hadoop-yarn-site/HDFSHighAvailability.html#Administrative_commands
 
-    module.exports.push name: 'HDFS NN # Check HA Health', label_true: 'CHECKED', handler: (ctx, next) ->
-      return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      ctx.execute
-        cmd: mkcmd.hdfs ctx, "hdfs haadmin -checkHealth #{ctx.config.shortname}"
-      .then next
+    module.exports.push
+      name: 'HDFS NN # Check HA Health'
+      label_true: 'CHECKED',
+      if: -> @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+      handler: ->
+        # return next() unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+        @execute
+          cmd: mkcmd.hdfs @, "hdfs haadmin -checkHealth #{@config.shortname}"
 
 ## Check FSCK
 
 Check for various inconsistencies on the overall filesystem. Use the command
 `hdfs fsck -list-corruptfileblocks` to list the corrupted blocks.
 
-    module.exports.push name: 'HDFS NN # Check FSCK', label_true: 'CHECKED', timeout: -1, retry: 3, wait: 60000, handler: (ctx, next) ->
-      ctx.execute
-        cmd: mkcmd.hdfs ctx, "exec 5>&1; hdfs fsck / | tee /dev/fd/5 | tail -1 | grep HEALTHY 1>/dev/null"
-      .then next
+Corrupted blocks for removal can be found with the command: 
+`hdfs fsck / | egrep -v '^\.+$' | grep -v replica | grep -v Replica`
+Additionnal information may be found on the [CentOS HowTos site][corblk].
+
+[corblk]: http://centoshowtos.org/hadoop/fix-corrupt-blocks-on-hdfs/
+
+    module.exports.push name: 'HDFS NN # Check FSCK', label_true: 'CHECKED', timeout: -1, retry: 3, wait: 60000, handler: ->
+      {force_check, check_hdfs_fsck} = @config.ryba
+      check_hdfs_fsck = if check_hdfs_fsck? then !!check_hdfs_fsck else true
+      @execute
+        cmd: mkcmd.hdfs @, "exec 5>&1; hdfs fsck / | tee /dev/fd/5 | tail -1 | grep HEALTHY 1>/dev/null"
+        if: force_check or check_hdfs_fsck
 
 ## Check HDFS
 
 Attemp to place a file inside HDFS. the file "/etc/passwd" will be placed at
-"/user/{test\_user}/#{ctx.config.host}\_dn".
+"/user/{test\_user}/#{@config.host}\_dn".
 
-    module.exports.push name: 'HDFS NN # Check HDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
-      {user} = ctx.config.ryba
-      ctx.execute
-        cmd: mkcmd.test ctx, """
-        if hdfs dfs -test -f /user/#{user.name}/#{ctx.config.host}-nn; then exit 2; fi
+    module.exports.push name: 'HDFS NN # Check HDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+      {user} = @config.ryba
+      @execute
+        cmd: mkcmd.test @, """
+        if hdfs dfs -test -f /user/#{user.name}/#{@config.host}-nn; then exit 2; fi
         echo 'Upload file to HDFS'
-        hdfs dfs -put /etc/passwd /user/#{user.name}/#{ctx.config.host}-nn
+        hdfs dfs -put /etc/passwd /user/#{user.name}/#{@config.host}-nn
         """
         code_skipped: 2
-      .then next
 
 ## Check WebHDFS
 
@@ -86,44 +95,44 @@ is not present on HDFS.
 Read [Delegation Tokens in Hadoop Security](http://www.kodkast.com/blogs/hadoop/delegation-tokens-in-hadoop-security)
 for more information.
 
-    module.exports.push name: 'HDFS DN # Check WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: (ctx, next) ->
-      ctx.call (_, callback) ->
-        {hdfs, nameservice, user, force_check, active_nn_host, force_check} = ctx.config.ryba
-        is_ha = ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-        # state = if not is_ha or active_nn_host is ctx.config.host then 'active' else 'standby'
+    module.exports.push name: 'HDFS DN # Check WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+      @call (_, callback) ->
+        {hdfs, nameservice, user, force_check, active_nn_host, force_check} = @config.ryba
+        is_ha = @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+        # state = if not is_ha or active_nn_host is @config.host then 'active' else 'standby'
         protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-        nameservice = if is_ha then ".#{ctx.config.ryba.hdfs.site['dfs.nameservices']}" else ''
-        shortname = if is_ha then ".#{ctx.contexts(hosts: active_nn_host)[0].config.shortname}" else ''
+        nameservice = if is_ha then ".#{@config.ryba.hdfs.site['dfs.nameservices']}" else ''
+        shortname = if is_ha then ".#{@contexts(hosts: active_nn_host)[0].config.shortname}" else ''
         address = hdfs.site["dfs.namenode.#{protocol}-address#{nameservice}#{shortname}"]
-        do_init = ->
-          ctx.execute
-            cmd: mkcmd.test ctx, """
-            hdfs dfs -touchz check-#{ctx.config.shortname}-webhdfs
+        do_init = =>
+          @execute
+            cmd: mkcmd.test @, """
+            hdfs dfs -touchz check-#{@config.shortname}-webhdfs
             kdestroy
             """
             code_skipped: 2
-            not_if_exec: unless force_check then mkcmd.test ctx, "hdfs dfs -test -f check-#{ctx.config.shortname}-webhdfs"
+            not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.shortname}-webhdfs"
           , (err, executed, stdout) ->
             return callback err if err
             return callback null, false unless executed
             do_spnego()
-        do_spnego = ->
-          ctx.execute
-            cmd: mkcmd.test ctx, """
+        do_spnego = =>
+          @execute
+            cmd: mkcmd.test @, """
             curl -s --negotiate --insecure -u : "#{protocol}://#{address}/webhdfs/v1/user/#{user.name}?op=LISTSTATUS"
             kdestroy
             """
           , (err, executed, stdout) ->
             return callback err if err
             try
-              count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "check-#{ctx.config.shortname}-webhdfs").length
+              count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "check-#{@config.shortname}-webhdfs").length
             catch e then return callback Error e
             err = Error "Invalid result" unless count
             return callback err, false
             do_token()
-        do_token = ->
-          ctx.execute
-            cmd: mkcmd.test ctx, """
+        do_token = =>
+          @execute
+            cmd: mkcmd.test @, """
             curl -s --negotiate --insecure -u : "#{protocol}://#{address}/webhdfs/v1/?op=GETDELEGATIONTOKEN"
             kdestroy
             """
@@ -132,14 +141,14 @@ for more information.
             json = JSON.parse(stdout)
             return setTimeout do_tocken, 3000 if json.exception is 'RetriableException'
             token = json.Token.urlString
-            ctx.execute
+            @execute
               cmd: """
               curl -s --insecure "#{protocol}://#{address}/webhdfs/v1/user/#{user.name}?delegation=#{token}&op=LISTSTATUS"
               """
             , (err, executed, stdout) ->
               return callback err if err
               try
-                count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "check-#{ctx.config.shortname}-webhdfs").length
+                count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "check-#{@config.shortname}-webhdfs").length
               catch e then return callback Error e
               err = Error "Invalid result" unless count
               return callback err, false
@@ -147,7 +156,6 @@ for more information.
         do_end = ->
           callback null, true
         do_init()
-      .then next
 
 ## Dependencies
 

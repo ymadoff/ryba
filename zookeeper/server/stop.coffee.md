@@ -4,7 +4,7 @@
     lifecycle = require '../../lib/lifecycle'
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Stop
 
@@ -16,18 +16,16 @@ service zookeeper-server stop
 su - zookeeper -c "export ZOOCFGDIR=/usr/hdp/current/zookeeper-server/conf; export ZOOCFG=zoo.cfg; source /usr/hdp/current/zookeeper-server/conf/zookeeper-env.sh; /usr/hdp/current/zookeeper-server/bin/zkServer.sh stop"
 ```
 
-    module.exports.push name: 'ZooKeeper Server # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
-      ctx.service
+    module.exports.push name: 'ZooKeeper Server # Stop', label_true: 'STOPPED', handler: ->
+      @service
         srv_name: 'zookeeper-server'
         action: 'stop'
         if_exists: '/etc/init.d/zookeeper-server'
-      .then next
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'ZooKeeper Server # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
-      return next() unless ctx.config.ryba.clean_logs
-      ctx.execute
+    module.exports.push name: 'ZooKeeper Server # Stop Clean Logs', label_true: 'CLEANED', handler: ->
+      return next() unless @config.ryba.clean_logs
+      @execute
         cmd: 'rm /var/log/zookeeper/*'
         code_skipped: 1
-      .then next

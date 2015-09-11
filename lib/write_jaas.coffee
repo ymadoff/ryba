@@ -27,13 +27,13 @@ write_jaas
 
 ###
 
-module.exports = (ctx) ->
-  return if ctx.registered 'write_jaas'
-  ctx.register 'write_jaas', (options, callback) ->
+module.exports = ->
+  return if @registered 'write_jaas'
+  @register 'write_jaas', (options, callback) ->
     # Quick fix
     # waiting for context registration of mecano actions as well as
     # waiting for uid_gid moved from wrap to their expected location
-    options.ssh ?= ctx.ssh
+    options.ssh ?= @ssh
     options.mode ?= 0o600
     options.backup ?= true
     content_jaas = ""
@@ -66,4 +66,4 @@ module.exports = (ctx) ->
         content_jaas = content_jaas.slice(0, -1) + ';\n'
       content_jaas += '};\n'
     options.content = content_jaas
-    ctx.write options, callback
+    @write options, callback

@@ -97,7 +97,7 @@ Default configuration:
 }
 ```
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       require('../ganglia/collector').configure ctx
       require('../graphite/carbon').configure ctx
       return if ctx.core_configured
@@ -235,6 +235,7 @@ Default configuration:
       ryba.group.system ?= true
       # Layout
       ryba.hadoop_conf_dir ?= '/etc/hadoop/conf'
+      ryba.hadoop_lib_home ?= '/usr/hdp/current/hadoop-client/lib' # refered by oozie-env.sh
       ryba.hdfs.log_dir ?= '/var/log/hadoop-hdfs'
       ryba.hdfs.pid_dir ?= '/var/run/hadoop-hdfs'
       ryba.hdfs.secure_dn_pid_dir ?= '/var/run/hadoop-hdfs' # /$HADOOP_SECURE_DN_USER
@@ -277,6 +278,8 @@ Default configuration:
       # hadoop.security.saslproperties.resolver.class can be used to override
       # the hadoop.rpc.protection for a connection at the server side.
       core_site['hadoop.rpc.protection'] ?= 'authentication'
+      # Default group mapping
+      core_site['hadoop.security.group.mapping'] ?= 'org.apache.hadoop.security.JniBasedUnixGroupsMappingWithFallback'
       # Core Jars
       core_jars = ctx.config.ryba.core_jars ?= {}
       for k, v of core_jars
@@ -393,32 +396,28 @@ mapred:x:494:
 Note, the package "hadoop" will also install the "dbus" user and group which are
 not handled here.
 
-    module.exports.push name: 'Hadoop Core # Users & Groups', handler: (ctx, next) ->
-      {hadoop_group, hdfs, yarn, mapred} = ctx.config.ryba
-      ctx
-      .group [hadoop_group, hdfs.group, yarn.group, mapred.group]
-      .user [hdfs.user, yarn.user, mapred.user]
-      .then next
+    module.exports.push name: 'Hadoop Core # Users & Groups', handler: ->
+      {hadoop_group, hdfs, yarn, mapred} = @config.ryba
+      @group [hadoop_group, hdfs.group, yarn.group, mapred.group]
+      @user [hdfs.user, yarn.user, mapred.user]
 
 ## Test User
 
 Create a Unix and Kerberos test user, by default "ryba". Its HDFS home directory
 will be created by one of the datanode.
 
-    module.exports.push name: 'Hadoop Core # User Test', timeout: -1, handler: (ctx, next) ->
-      {krb5_user, user, group, security, realm} = ctx.config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
+    module.exports.push name: 'Hadoop Core # User Test', timeout: -1, handler: ->
+      {krb5_user, user, group, security, realm} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       # ryba group and user may already exist in "/etc/passwd" or in any sssd backend
-      ctx
-      .group group
-      .user user
-      .krb5_addprinc
+      @group group
+      @user user
+      @krb5_addprinc
         principal: "#{krb5_user.name}@#{realm}"
         password: "#{krb5_user.password}"
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      .then next
 
 ## Install
 
@@ -430,15 +429,13 @@ uploaded when the package is first installed or upgraded. Be careful, the
 original file will be overwritten with and user modifications. A copy will be
 made available in the same directory after any modification.
 
-    module.exports.push name: 'Hadoop Core # Install', timeout: -1, handler: (ctx, next) ->
-      ctx
-      .service
+    module.exports.push name: 'Hadoop Core # Install', timeout: -1, handler: ->
+      @service
         name: 'openssl'
-      .service
+      @service
         name: 'hadoop-client'
-      .hdp_select
+      @hdp_select
         name: 'hadoop-client'
-      .then next
 
 ## Env
 
@@ -447,63 +444,21 @@ Upload the "hadoop-env.sh" file present in the HDP companion File.
 Note, this is wrong. Problem is that multiple module modify this file. We shall
 instead enrich the original file installed by the package.
 
-    module.exports.push name: 'Hadoop Core # Env', timeout: -1, handler: (ctx, next) ->
-      {hadoop_conf_dir, hdfs, hadoop_group} = ctx.config.ryba
-      ctx.fs.readFile "#{hadoop_conf_dir}/hadoop-env.sh", 'ascii', (err, content) ->
-        return next null, false if /HDP/.test content
-        ctx.upload
-          source: "#{__dirname}/../resources/core_hadoop/hadoop-env.sh"
-          local_source: true
-          destination: "#{hadoop_conf_dir}/hadoop-env.sh"
-          uid: hdfs.user.name
-          gid: hadoop_group.name
-          mode: 0o755
-          backup: true
-          eof: true
-        .then next
-
-## Configuration
-
-Update the "core-site.xml" configuration file with properties from the
-"ryba.core_site" configuration.
-
-    module.exports.push name: 'Hadoop Core # Configuration', handler: (ctx, next) ->
-      {core_site, hadoop_conf_dir} = ctx.config.ryba
-      ctx.hconfigure
-        destination: "#{hadoop_conf_dir}/core-site.xml"
-        default: "#{__dirname}/../resources/core_hadoop/core-site.xml"
-        local_default: true
-        properties: core_site
-        merge: true
-        backup: true
-      .then next
-
-    module.exports.push name: 'Hadoop Core # Topology', handler: (ctx, next) ->
-      {hdfs, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
-      h_ctxs = ctx.contexts modules: ['ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm']
-      topology = []
-      for h_ctx in h_ctxs
-        rack = if h_ctx.config.ryba?.rack? then h_ctx.config.ryba.rack else ''
-        # topology.push "#{host}  #{rack}"
-        topology.push "#{h_ctx.config.ip}  #{rack}"
-      topology = topology.join("\n")
-      ctx
-      .upload
-        destination: "#{hadoop_conf_dir}/rack_topology.sh"
-        source: "#{__dirname}/../resources/rack_topology.sh"
-        uid: hdfs.user.name
-        gid: hadoop_group.name
-        mode: 0o755
-        backup: true
-      .write
-        destination: "#{hadoop_conf_dir}/rack_topology.data"
-        content: topology
+    module.exports.push name: 'Hadoop Core # Env', timeout: -1, handler: ->
+      {hadoop_conf_dir, hdfs, hadoop_group} = @config.ryba
+      @call (_, callback) ->
+        @fs.readFile "#{hadoop_conf_dir}/hadoop-env.sh", 'ascii', (err, content) ->
+          callback null, not /HDP/.test content
+      @upload
+        source: "#{__dirname}/../resources/core_hadoop/hadoop-env.sh"
+        local_source: true
+        destination: "#{hadoop_conf_dir}/hadoop-env.sh"
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755
         backup: true
         eof: true
-      .then next
+        if: -> @status -1
 
 ## Hadoop OPTS
 
@@ -513,55 +468,96 @@ The location for JSVC depends on the platform. The Hortonworks documentation
 mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
 correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
-    module.exports.push name: 'Hadoop Core # Hadoop OPTS', timeout: -1, handler: (ctx, next) ->
-      {java_home} = ctx.config.java
-      {hadoop_conf_dir, hdfs, hadoop_group, hadoop_opts, hadoop_client_opts, hadoop_namenode_init_heap, hadoop_heap} = ctx.config.ryba
-      ctx.fs.exists '/usr/libexec/bigtop-utils', (err, exists) ->
-        return next err if err
-        jsvc = if exists then '/usr/libexec/bigtop-utils' else '/usr/lib/bigtop-utils'
-        write = [
-          match: /\/var\/log\/hadoop\//mg
-          replace: "#{hdfs.log_dir}/"
-        ,
-          match: /^export JSVC_HOME=.*$/m
-          replace: "export JSVC_HOME=#{jsvc}"
-        ,
-          match: /^export JAVA_HOME=.*$/m
-          replace: "export JAVA_HOME=\"#{java_home}\" # RYBA CONF \"java.java_home\", DONT OVEWRITE"
-        ,
-          match: /^export HADOOP_PID_DIR=.*$/m
-          replace: "export HADOOP_PID_DIR=\"#{hdfs.pid_dir}\" # RYBA CONF \"hdfs.pid_dir\", DONT OVEWRITE"
-        ,
-          match: /^export HADOOP_HEAPSIZE="(.*)".*$/m
-          replace: "export HADOOP_HEAPSIZE=\"#{hadoop_heap}\" # RYBA CONF \"ryba.hadoop_heap\", DONT OVEWRITE"
-          # match: /^export HADOOP_HEAPSIZE="(.*)" # RYBA CONF ".*?", DONT OVEWRITE/m
-          # replace: "export HADOOP_HEAPSIZE=\"#{hadoop_heap}\" # RYBA CONF \"ryba.hadoop_heap\", DONT OVEWRITE"
-          # append: /^export HADOOP_HEAPSIZE=".*"$/m
-        ,
-          match: /^export HADOOP_NAMENODE_INIT_HEAPSIZE=".*".*$/m
-          replace: "export HADOOP_NAMENODE_INIT_HEAPSIZE=\"#{hadoop_namenode_init_heap}\" # RYBA CONF \"ryba.hadoop_namenode_init_heap\", DONT OVEWRITE"
-        #   match: /^export HADOOP_NAMENODE_INIT_HEAPSIZE="(.*)" # RYBA CONF ".*?", DONT OVEWRITE/m
-        #   replace: "export HADOOP_NAMENODE_INIT_HEAPSIZE=\"#{hadoop_namenode_init_heap}\" # RYBA CONF \"ryba.hadoop_namenode_init_heap\", DONT OVEWRITE"
-        #   append: /^export HADOOP_NAMENODE_INIT_HEAPSIZE=".*"$/m
-        ,
-          match: /^export HADOOP_OPTS="(.*) \$\{HADOOP_OPTS\}" # RYBA CONF ".*?", DONT OVEWRITE/m
-          replace: "export HADOOP_OPTS=\"#{hadoop_opts} ${HADOOP_OPTS}\" # RYBA CONF \"ryba.hadoop_opts\", DONT OVEWRITE"
-          before: /^export HADOOP_OPTS=".*"$/m
-        ,
-          match: /^export HADOOP_CLIENT_OPTS="(.*) \$\{HADOOP_CLIENT_OPTS\}" # RYBA CONF ".*?", DONT OVEWRITE/m
-          replace: "export HADOOP_CLIENT_OPTS=\"#{hadoop_client_opts} ${HADOOP_CLIENT_OPTS}\" # RYBA CONF \"ryba.hadoop_client_opts\", DONT OVEWRITE"
-          before: /^export HADOOP_CLIENT_OPTS=".*"$/m
-        ]
-        if ctx.has_module 'ryba/xasecure/hdfs'
+    module.exports.push name: 'Hadoop Core # Hadoop OPTS', timeout: -1, handler: ->
+      {java_home} = @config.java
+      {hadoop_conf_dir, hdfs, hadoop_group, hadoop_opts, hadoop_client_opts, hadoop_namenode_init_heap, hadoop_heap} = @config.ryba
+      write = [
+        match: /\/var\/log\/hadoop\//mg
+        replace: "#{hdfs.log_dir}/"
+      ,
+        match: /^export JAVA_HOME=.*$/m
+        replace: "export JAVA_HOME=\"#{java_home}\" # RYBA CONF \"java.java_home\", DONT OVEWRITE"
+      ,
+        match: /^export HADOOP_PID_DIR=.*$/m
+        replace: "export HADOOP_PID_DIR=\"#{hdfs.pid_dir}\" # RYBA CONF \"hdfs.pid_dir\", DONT OVEWRITE"
+      ,
+        match: /^export HADOOP_HEAPSIZE="(.*)".*$/m
+        replace: "export HADOOP_HEAPSIZE=\"#{hadoop_heap}\" # RYBA CONF \"ryba.hadoop_heap\", DONT OVEWRITE"
+        # match: /^export HADOOP_HEAPSIZE="(.*)" # RYBA CONF ".*?", DONT OVEWRITE/m
+        # replace: "export HADOOP_HEAPSIZE=\"#{hadoop_heap}\" # RYBA CONF \"ryba.hadoop_heap\", DONT OVEWRITE"
+        # append: /^export HADOOP_HEAPSIZE=".*"$/m
+      ,
+        match: /^export HADOOP_NAMENODE_INIT_HEAPSIZE=".*".*$/m
+        replace: "export HADOOP_NAMENODE_INIT_HEAPSIZE=\"#{hadoop_namenode_init_heap}\" # RYBA CONF \"ryba.hadoop_namenode_init_heap\", DONT OVEWRITE"
+      #   match: /^export HADOOP_NAMENODE_INIT_HEAPSIZE="(.*)" # RYBA CONF ".*?", DONT OVEWRITE/m
+      #   replace: "export HADOOP_NAMENODE_INIT_HEAPSIZE=\"#{hadoop_namenode_init_heap}\" # RYBA CONF \"ryba.hadoop_namenode_init_heap\", DONT OVEWRITE"
+      #   append: /^export HADOOP_NAMENODE_INIT_HEAPSIZE=".*"$/m
+      ,
+        match: /^export HADOOP_OPTS="(.*) \$\{HADOOP_OPTS\}" # RYBA CONF ".*?", DONT OVEWRITE/m
+        replace: "export HADOOP_OPTS=\"#{hadoop_opts} ${HADOOP_OPTS}\" # RYBA CONF \"ryba.hadoop_opts\", DONT OVEWRITE"
+        before: /^export HADOOP_OPTS=".*"$/m
+      ,
+        match: /^export HADOOP_CLIENT_OPTS="(.*) \$\{HADOOP_CLIENT_OPTS\}" # RYBA CONF ".*?", DONT OVEWRITE/m
+        replace: "export HADOOP_CLIENT_OPTS=\"#{hadoop_client_opts} ${HADOOP_CLIENT_OPTS}\" # RYBA CONF \"ryba.hadoop_client_opts\", DONT OVEWRITE"
+        before: /^export HADOOP_CLIENT_OPTS=".*"$/m
+      ]
+      if @has_module 'ryba/xasecure/hdfs'
+        write.push
+          replace: '. /etc/hadoop/conf/xasecure-hadoop-env.sh'
+          append: true
+      @call (_, callback) ->
+        @fs.exists '/usr/libexec/bigtop-utils', (err, exists) ->
+          return callback err if err
+          jsvc = if exists then '/usr/libexec/bigtop-utils' else '/usr/lib/bigtop-utils'
           write.push
-            replace: '. /etc/hadoop/conf/xasecure-hadoop-env.sh'
-            append: true
-        ctx.write
-          destination: "#{hadoop_conf_dir}/hadoop-env.sh"
-          write: write
-          backup: true
-          eof: true
-        .then next
+            match: /^export JSVC_HOME=.*$/m
+            replace: "export JSVC_HOME=#{jsvc}"
+          callback()
+      @write
+        destination: "#{hadoop_conf_dir}/hadoop-env.sh"
+        write: write
+        backup: true
+        eof: true
+
+## Configuration
+
+Update the "core-site.xml" configuration file with properties from the
+"ryba.core_site" configuration.
+
+    module.exports.push name: 'Hadoop Core # Configuration', handler: ->
+      {core_site, hadoop_conf_dir} = @config.ryba
+      @hconfigure
+        destination: "#{hadoop_conf_dir}/core-site.xml"
+        default: "#{__dirname}/../resources/core_hadoop/core-site.xml"
+        local_default: true
+        properties: core_site
+        merge: true
+        backup: true
+
+    module.exports.push name: 'Hadoop Core # Topology', handler: ->
+      {hdfs, hadoop_group, hadoop_conf_dir} = @config.ryba
+      h_ctxs = @contexts modules: ['ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm']
+      topology = []
+      for h_ctx in h_ctxs
+        rack = if h_ctx.config.ryba?.rack? then h_ctx.config.ryba.rack else ''
+        # topology.push "#{host}  #{rack}"
+        topology.push "#{h_ctx.config.ip}  #{rack}"
+      topology = topology.join("\n")
+      @upload
+        destination: "#{hadoop_conf_dir}/rack_topology.sh"
+        source: "#{__dirname}/../resources/rack_topology.sh"
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+        mode: 0o755
+        backup: true
+      @write
+        destination: "#{hadoop_conf_dir}/rack_topology.data"
+        content: topology
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+        mode: 0o755
+        backup: true
+        eof: true
 
 ## Policy
 
@@ -569,9 +565,9 @@ By default the service-level authorization is disabled in hadoop, to enable that
 we need to set/configure the hadoop.security.authorization to true in
 ${HADOOP_CONF_DIR}/core-site.xml
 
-    module.exports.push name: 'Hadoop Core # Policy', handler: (ctx, next) ->
-      {core_site, hadoop_conf_dir, hadoop_policy} = ctx.config.ryba
-      ctx.hconfigure
+    module.exports.push name: 'Hadoop Core # Policy', handler: ->
+      {core_site, hadoop_conf_dir, hadoop_policy} = @config.ryba
+      @hconfigure
         destination: "#{hadoop_conf_dir}/hadoop-policy.xml"
         default: "#{__dirname}/../resources/core_hadoop/hadoop-policy.xml"
         local_default: true
@@ -579,92 +575,57 @@ ${HADOOP_CONF_DIR}/core-site.xml
         merge: true
         backup: true
         if: core_site['hadoop.security.authorization'] is 'true'
-      .then (err, status) ->
-        return next err, status if err or not status
-        ctx.execute
-          cmd: mkcmd.hdfs ctx, 'service hadoop-hfds-namenode status && hdfs dfsadmin -refreshServiceAcl'
-          code_skipped: 3
-        .then (err) ->
-          return next err, true
+      @execute
+        cmd: mkcmd.hdfs @, 'service hadoop-hfds-namenode status && hdfs dfsadmin -refreshServiceAcl'
+        code_skipped: 3
+        if: -> @status -1
 
-    # module.exports.push name: 'Hadoop Core # Environnment', timeout: -1, handler: (ctx, next) ->
-    #   ctx.write
-    #     destination: '/etc/profile.d/hadoop.sh'
-    #     content: """
-    #     #!/bin/bash
-    #     export HADOOP_HOME=/usr/lib/hadoop
-    #     """
-    #     mode: 0o0644
-    #   , next
-
-    module.exports.push name: 'Hadoop Core # Keytabs', timeout: -1, handler: (ctx, next) ->
-      {hadoop_group} = ctx.config.ryba
-      ctx.mkdir
+    module.exports.push name: 'Hadoop Core # Keytabs', timeout: -1, handler: ->
+      {hadoop_group} = @config.ryba
+      @mkdir
         destination: '/etc/security/keytabs'
         uid: 'root'
         gid: hadoop_group.name
         mode: 0o0755
-      .then next
 
-    module.exports.push name: 'Hadoop Core # Compression', timeout: -1, handler: (ctx, next) ->
-      { hadoop_conf_dir } = ctx.config.ryba
-      modified = false
-      do_snappy = ->
-        ctx.service [
-          name: 'snappy'
-        ,
-          name: 'snappy-devel'
-        ], (err, serviced) ->
-          return next err if err
-          return do_lzo() unless serviced
-          ctx.execute
-            cmd: 'ln -sf /usr/lib64/libsnappy.so /usr/lib/hadoop/lib/native/.'
-          , (err) ->
-            return next err if err
-            modified = true
-            do_lzo()
-      do_lzo = ->
-        ctx
-        .service
-          name: 'lzo'
-        .service
-          name: 'lzo-devel'
-        .service
-          name: 'hadoop-lzo'
-        .service
-          name: 'hadoop-lzo-native'
-        .then (err, serviced) ->
-          return next err if err
-          modified = true if serviced
-          do_end()
-      do_end = ->
-        next null, modified
-      do_snappy()
+    module.exports.push name: 'Hadoop Core # Compression', timeout: -1, handler: ->
+      { hadoop_conf_dir } = @config.ryba
+      @service name: 'snappy'
+      @service name: 'snappy-devel'
+      @execute
+        cmd: 'ln -sf /usr/lib64/libsnappy.so /usr/lib/hadoop/lib/native/.'
+        if: -> @status(-1) or @status(-2)
+      @service
+        name: 'lzo'
+      @service
+        name: 'lzo-devel'
+      @service
+        name: 'hadoop-lzo'
+      @service
+        name: 'hadoop-lzo-native'
 
 ## Web UI
 
 This action follow the ["Authentication for Hadoop HTTP web-consoles"
 recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 
-    module.exports.push name: 'Hadoop Core # Web UI', handler: (ctx, next) ->
-      {core_site, realm} = ctx.config.ryba
-      ctx.execute
+    module.exports.push name: 'Hadoop Core # Web UI', handler: ->
+      {core_site, realm} = @config.ryba
+      @execute
         cmd: 'dd if=/dev/urandom of=/etc/hadoop/hadoop-http-auth-signature-secret bs=1024 count=1'
         not_if_exists: '/etc/hadoop/hadoop-http-auth-signature-secret'
-      .then next
 
     module.exports.push 'ryba/hadoop/core_ssl'
 
-    module.exports.push name: 'Hadoop Core # Jars', handler: (ctx, next) ->
-      {core_jars} = ctx.config.ryba
+    module.exports.push name: 'Hadoop Core # Jars', handler: ->
+      {core_jars} = @config.ryba
       core_jars = Object.keys(core_jars).map (k) -> core_jars[k]
       remote_files = null
-      ctx
-      .call ({}, callback) ->
-        ctx.fs.readdir '/usr/hdp/current/hadoop-hdfs-client/lib', (err, files) ->
+      @call (_, callback) ->
+        @fs.readdir '/usr/hdp/current/hadoop-hdfs-client/lib', (err, files) ->
           remote_files = files unless err
           callback err
-      .call ({}, callback) ->
+      @call (_, callback) ->
         remove_files = []
         core_jars = for jar in core_jars
           filtered_files = multimatch remote_files, jar.match
@@ -684,23 +645,20 @@ recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
             destination: path.join '/usr/hdp/current/hadoop-yarn-client/lib', "#{jar.filename}"
             binary: true
         @then callback
-      ctx.then next
 
 ## Hadoop Metrics
 
 Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collector like Ganglia or Graphite.
 
-    module.exports.push name: 'Hadoop Core # Metrics', handler: (ctx, next) ->
-      {hadoop_metrics, hadoop_conf_dir} = ctx.config.ryba
+    module.exports.push name: 'Hadoop Core # Metrics', handler: ->
+      {hadoop_metrics, hadoop_conf_dir} = @config.ryba
       content = ""
       for k, v of hadoop_metrics
         content += "#{k}=#{v}\n" if v?
-      ctx
-      .write
+      @write
         destination: "#{hadoop_conf_dir}/hadoop-metrics2.properties"
         content: content
         backup: true
-      .then next
 
 ## Dependencies
 

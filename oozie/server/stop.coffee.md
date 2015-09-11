@@ -6,7 +6,7 @@ server using Ryba.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Stop
 
@@ -14,26 +14,22 @@ Stop the Oozie service. You can also stop the server manually with the
 following command:
 
 ```
+service stop oozie
 su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozied.sh stop"
 ```
 
-    module.exports.push name: 'Oozie Server # Stop', label_true: 'STOPPED', timeout: -1, handler: (ctx, next) ->
-      {oozie} = ctx.config.ryba
-      ctx.execute
-        cmd: """
-        if [ ! -f #{oozie.pid_dir}/oozie.pid ]; then exit 3; fi
-        if ! kill -0 >/dev/null 2>&1 `cat #{oozie.pid_dir}/oozie.pid`; then exit 3; fi
-        su -l #{oozie.user.name} -c "/usr/hdp/current/oozie-server/bin/oozied.sh stop 20 -force"
-        """
-        code_skipped: 3
-        if_exists: '/usr/hdp/current/oozie-server/bin/oozied.sh'
-      , next
+    module.exports.push name: 'Oozie Server # Stop', label_true: 'STOPPED', timeout: -1, handler: ->
+      {oozie} = @config.ryba
+      @service_stop
+        name: 'oozie'
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'Oozie Server # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
-      return next() unless ctx.config.ryba.clean_logs
-      ctx.execute
-        cmd: 'rm /var/log/oozie/*'
-        code_skipped: 1
-      , next
+    module.exports.push
+      name: 'Oozie Server # Stop Clean Logs'
+      label_true: 'CLEANED'
+      if: -> @config.ryba.clean_logs
+      handler: ->
+        @execute
+          cmd: 'rm /var/log/oozie/*'
+          code_skipped: 1

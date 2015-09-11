@@ -10,7 +10,7 @@ Learn more about Pig optimization by reading ["Making Pig Fly"][fly].
     module.exports.push 'ryba/hadoop/yarn_client'
     module.exports.push 'ryba/hive/client' # In case pig is run through hcat
     module.exports.push require '../../lib/hdp_select'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Users & Groups
 
@@ -23,53 +23,50 @@ cat /etc/group | grep hadoop
 hadoop:x:502:yarn,mapred,hdfs,hue
 ```
 
-    module.exports.push name: 'Hadoop Pig # Users & Groups', handler: (ctx, next) ->
-      {hadoop_group, pig_user} = ctx.config.ryba
-      ctx
-      .group hadoop_group
-      .user pig_user
-      .then next
+    module.exports.push name: 'Hadoop Pig # Users & Groups', handler: ->
+      {hadoop_group, pig_user} = @config.ryba
+      @group hadoop_group
+      @user pig_user
 
 ## Install
 
 The pig package is install.
 
-    module.exports.push name: 'Hadoop Pig # Install', timeout: -1, handler: (ctx, next) ->
-      ctx
-      .service
+    module.exports.push name: 'Hadoop Pig # Install', timeout: -1, handler: ->
+      @service
         name: 'pig'
-      # .hdp_select
+      console.log 'test pig'
+      # pig-client not registered in hdp-select
+      # need to see if hadoop-client will switch pig as well
+      # @hdp_select
       #   name: 'pig-client'
-      .then next
 
-    module.exports.push name: 'Hadoop Pig # Users', handler: (ctx, next) ->
+    module.exports.push name: 'Hadoop Pig # Users', handler: ->
       # 6th feb 2014: pig user isnt created by YUM, might change in a future HDP release
-      {hadoop_group} = ctx.config.ryba
-      ctx.execute
+      {hadoop_group} = @config.ryba
+      @execute
         cmd: "useradd pig -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop Pig service\""
         code: 0
         code_skipped: 9
-      .then next
 
 ## Configure
 
 TODO: Generate the "pig.properties" file dynamically, be carefull, the HDP
 companion file defines no properties while the YUM package does.
 
-    module.exports.push name: 'Hadoop Pig # Configure', handler: (ctx, next) ->
-      {pig_conf_dir, pig_conf} = ctx.config.ryba
-      ctx.ini
+    module.exports.push name: 'Hadoop Pig # Configure', handler: ->
+      {pig_conf_dir, pig_conf} = @config.ryba
+      @ini
         destination: "#{pig_conf_dir}/pig.properties"
         content: pig_conf
         separator: '='
         merge: true
         backup: true
-      .then next
 
-    module.exports.push name: 'Hadoop Pig # Env', handler: (ctx, next) ->
-      {java_home} = ctx.config.java
-      {hadoop_group, pig_conf_dir, pig_user} = ctx.config.ryba
-      ctx.write
+    module.exports.push name: 'Hadoop Pig # Env', handler: ->
+      {java_home} = @config.java
+      {hadoop_group, pig_conf_dir, pig_user} = @config.ryba
+      @write
         source: "#{__dirname}/../../resources/pig/pig-env.sh"
         destination: "#{pig_conf_dir}/pig-env.sh"
         local_source: true
@@ -81,10 +78,9 @@ companion file defines no properties while the YUM package does.
         gid: hadoop_group.name
         mode: 0o755
         backup: true
-      .then next
 
-    module.exports.push name: 'Hadoop Pig # Fix Pig', handler: (ctx, next) ->
-      ctx.write
+    module.exports.push name: 'Hadoop Pig # Fix Pig', handler: ->
+      @write
         write: [
           match: /^(\s)*slfJarVersion=.*/mg
           replace: "$1slfJarVersion=''"
@@ -94,7 +90,6 @@ companion file defines no properties while the YUM package does.
         ]
         destination: '/usr/lib/pig/bin/pig'
         backup: true
-      .then next
 
 ## Dependencies
 

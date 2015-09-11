@@ -12,10 +12,8 @@ inside "/var/run/hive/hive-server2.pid".
 Exit code is "3" if server not runnig or "3" if server not running but pid file
 still exists.
 
-    module.exports.push name: 'Hive Server2 # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
-      ctx.execute
+    module.exports.push name: 'Hive Server2 # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
+      @execute
         cmd: 'service hive-server2 status'
         code_skipped: [1, 3]
         if_exists: '/etc/init.d/hive-server2'
-      .then next
-

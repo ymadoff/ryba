@@ -34,7 +34,7 @@ Example
     }
 ```
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       if ctx.hbase_configured then return else ctx.hbase_configured = null
       require('masson/commons/java').configure ctx
       {java_home} = ctx.config.java
@@ -131,6 +131,38 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
       else '-Xmn200m -Xms4096m -Xmx4096m' # Default in HDP companion file
       require('../hadoop/core').configure ctx
 
+## Configuration for High Availability (HA)
+
+*   [Hortonworks presentation of HBase HA][ha-next-level]
+*   [HDP 2.3 Read HA instruction][hdp23]
+*   [Bring quorum based write ahead log (write HA)][HBASE-12259]
+
+[ha-next-level]: http://hortonworks.com/blog/apache-hbase-high-availability-next-level/
+[hdp23]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.0/bk_hadoop-ha/content/ch_HA-HBase.html
+[HBASE-12259]: https://issues.apache.org/jira/browse/HBASE-12259
+
+      if ctx.contexts('ryba/hbase/master').length > 1 # HA enabled
+        if ctx.has_any_modules 'ryba/hbase/master', 'ryba/hbase/regionserver'
+          # StoreFile Refresher
+          hbase.site['hbase.regionserver.storefile.refresh.all'] ?= 'true'
+          # Store File TTL
+          hbase.site['hbase.regionserver.storefile.refresh.period'] ?= '30000' # Default to '0'
+          # Async WAL Replication
+          hbase.site['hbase.region.replica.replication.enabled'] ?= 'true'
+          hbase.site['hbase.regionserver.storefile.refresh.all'] ?= 'false'
+          # Store File TTL
+          hbase.site['hbase.master.hfilecleaner.ttl'] ?= '3600000' # 1 hour
+          hbase.site['hbase.master.loadbalancer.class'] ?= 'org.apache.hadoop.hbase.master.balancer.StochasticLoadBalancer' # Default value
+          hbase.site['hbase.meta.replica.count'] ?= '3' # Default to '1'
+          hbase.site['hbase.region.replica.wait.for.primary.flush'] ?= 'true'
+          hbase.site['hbase.region.replica.storefile.refresh.memstore.multiplier'] ?= '4'
+        if ctx.has_any_modules 'ryba/hbase/client'
+          hbase.site['hbase.ipc.client.specificThreadForWriting'] ?= 'true'
+          hbase.site['hbase.client.primaryCallTimeout.get'] ?= '10000'
+          hbase.site['hbase.client.primaryCallTimeout. multiget'] ?= '10000'
+          hbase.site['hbase.client.primaryCallTimeout.scan'] ?= '1000000'
+          hbase.site['hbase.meta.replicas.use'] ?= 'true'
+
 ## Users & Groups
 
 By default, the "hbase" package create the following entries:
@@ -142,42 +174,36 @@ cat /etc/group | grep hbase
 hbase:x:492:
 ```
 
-    module.exports.push name: 'HBase # Users & Groups', handler: (ctx, next) ->
-      {hbase} = ctx.config.ryba
-      ctx
-      .group hbase.group
-      .user hbase.user
-      .then next
+    module.exports.push name: 'HBase # Users & Groups', handler: ->
+      {hbase} = @config.ryba
+      @group hbase.group
+      @user hbase.user
 
 ## Install
 
 Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap9-1.html)
 
-    module.exports.push name: 'HBase # Install', timeout: -1, handler: (ctx, next) ->
-      ctx
-      .service
+    module.exports.push name: 'HBase # Install', timeout: -1, handler: ->
+      @service
         name: 'hbase'
-      .hdp_select
+      @hdp_select
         name: 'hbase-client'
-      .then next
 
-    module.exports.push name: 'HBase # Layout', timeout: -1, handler: (ctx, next) ->
-      {hbase} = ctx.config.ryba
-      ctx
-      .mkdir
+    module.exports.push name: 'HBase # Layout', timeout: -1, handler: ->
+      {hbase} = @config.ryba
+      @mkdir
         destination: hbase.pid_dir
         uid: hbase.user.name
         gid: hbase.group.name
         mode: 0o0755
-      .mkdir
+      @mkdir
         destination: hbase.log_dir
         uid: hbase.user.name
         gid: hbase.group.name
         mode: 0o0755
-      .then next
 
-    module.exports.push name: 'HBase # Env', handler: (ctx, next) ->
-      {hbase} = ctx.config.ryba
+    module.exports.push name: 'HBase # Env', handler: ->
+      {hbase} = @config.ryba
       write = for k, v of hbase.env
         match: RegExp "export #{k}=.*", 'm'
         replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
@@ -186,29 +212,26 @@ Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocument
         match: /^export HBASE_OPTS=".*" # RYBA HDP VERSION$/m
         replace: "export HBASE_OPTS=\"-Dhdp.version=$HDP_VERSION $HBASE_OPTS\" # RYBA HDP VERSION"
         append: true
-      ctx.upload
+      @upload
         source: "#{__dirname}/../resources/hbase/hbase-env.sh"
         destination: "#{hbase.conf_dir}/hbase-env.sh"
         write: write
         backup: true
         eof: true
-      .then next
 
 ## RegionServers
 
 Upload the list of registered RegionServers.
 
-    module.exports.push name: 'HBase # RegionServers', handler: (ctx, next) ->
-      {hbase, hadoop_group} = ctx.config.ryba
-      ctx.write
-        content: ctx.hosts_with_module('ryba/hbase/regionserver').join '\n'
+    module.exports.push name: 'HBase # RegionServers', handler: ->
+      {hbase, hadoop_group} = @config.ryba
+      @write
+        content: @hosts_with_module('ryba/hbase/regionserver').join '\n'
         destination: "#{hbase.conf_dir}/regionservers"
         uid: hbase.user.name
         gid: hadoop_group.name
         eof: true
-        if: !!ctx.has_any_modules ['ryba/hbase/master', 'ryba/hbase/regionserver']
-      .then next
-
+        if: !!@has_any_modules ['ryba/hbase/master', 'ryba/hbase/regionserver']
 
 ## Resources
 

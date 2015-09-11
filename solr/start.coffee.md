@@ -6,9 +6,6 @@
 
 ## Start
 
-    module.exports.push name: 'Solr # Start', label_true: 'STARTED', handler: (ctx, next) ->
-      {solr} = ctx.config.ryba
-      ctx.service
-        srv_name: 'solr'
-        action: 'start'
-      , next
+    module.exports.push name: 'Solr # Start', label_true: 'STARTED', handler: ->
+      @service_start
+        name: 'solr'

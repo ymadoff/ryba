@@ -81,10 +81,12 @@ Resources:
 
     module.exports.push commands: 'report', modules: 'ryba/hadoop/yarn_nm/report'
 
+    module.exports.push commands: 'check', modules: 'ryba/hadoop/yarn_nm/check'
+
     module.exports.push commands: 'install', modules: [
       'ryba/hadoop/yarn_nm/install'
       'ryba/hadoop/yarn_nm/start'
-      # 'ryba/hadoop/yarn_nm/check'
+      'ryba/hadoop/yarn_nm/check'
     ]
 
     module.exports.push commands: 'start', modules: 'ryba/hadoop/yarn_nm/start'
@@ -92,6 +94,3 @@ Resources:
     module.exports.push commands: 'status', modules: 'ryba/hadoop/yarn_nm/status'
 
     module.exports.push commands: 'stop', modules: 'ryba/hadoop/yarn_nm/stop'
-
-
-

@@ -14,30 +14,28 @@ environmental variables. For example, HDP declare its version as
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'masson/commons/java'
-    module.exports.push 'ryba/hadoop/mapred_client'
-    module.exports.push 'ryba/hadoop/yarn_client'
+    module.exports.push 'ryba/hadoop/mapred_client/install'
+    module.exports.push 'ryba/hadoop/yarn_client/install'
     module.exports.push require '../../lib/hdp_select'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Install
 
 Install the oozie client package. This package doesn't create any user and group.
 
-    module.exports.push name: 'Oozie Client # Install', timeout: -1, handler: (ctx, next) ->
-      ctx
-      .service
+    module.exports.push name: 'Oozie Client # Install', timeout: -1, handler: ->
+      @service
         name: 'oozie-client'
-      .hdp_select
+      @hdp_select
         name: 'oozie-client'
-      .then next
 
 ## Profile
 
 Expose the "OOZIE_URL" environmental variable to every users.
 
-    module.exports.push name: 'Oozie Client # Profile', handler: (ctx, next) ->
-      {oozie} = ctx.config.ryba
-      ctx.write
+    module.exports.push name: 'Oozie Client # Profile', handler: ->
+      {oozie} = @config.ryba
+      @write
         destination: '/etc/profile.d/oozie.sh'
         # export OOZIE_CLIENT_OPTS='-Djavax.net.ssl.trustStore=/etc/hadoop/conf/truststore'
         content: """
@@ -45,7 +43,6 @@ Expose the "OOZIE_URL" environmental variable to every users.
         export OOZIE_URL=#{oozie.site['oozie.base.url']}
         """
         mode: 0o0755
-      , next
 
 ## SSL
 
@@ -63,21 +60,19 @@ keytool -keystore ${JAVA_HOME}/jre/lib/security/cacerts -delete -noprompt -alias
 keytool -keystore ${JAVA_HOME}/jre/lib/security/cacerts -import -alias tomcat -file master3_cert.pem
 ```
 
-    module.exports.push name: 'Oozie Client # SSL', handler: (ctx, next) ->
-      {java_home, jre_home} = ctx.config.java
-      {ssl, oozie} = ctx.config.ryba
+    module.exports.push name: 'Oozie Client # SSL', handler: ->
+      {java_home, jre_home} = @config.java
+      {ssl, oozie} = @config.ryba
       tmp_location = "/tmp/ryba_oozie_client_#{Date.now()}"
-      ctx
-      .upload
+      @upload
         source: ssl.cacert
         destination: "#{tmp_location}_cacert"
-      .java_keystore_add
+        shy: true
+      @java_keystore_add
         keystore: "#{jre_home or java_home}/lib/security/cacerts"
         storepass: "changeit"
         caname: "ryba_cluster" # was tomcat
         cacert: "#{tmp_location}_cacert"
-      .remove
+      @remove
         destination: "#{tmp_location}_cacert"
-      .then next
-
-    module.exports.push 'ryba/oozie/client/check'
+        shy: true

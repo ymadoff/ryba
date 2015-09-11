@@ -8,7 +8,7 @@
 
 ## Configuration
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       require('masson/commons/java').configure ctx
       require('../hadoop/hdfs').configure ctx # Check if still required
       require('./policymgr').configure ctx
@@ -25,75 +25,44 @@
       xasecure.hdfs['XAAUDIT.DB.USER_NAME'] ?= xasecure.policymgr['audit_db_user']
       xasecure.hdfs['XAAUDIT.DB.PASSWORD'] ?= xasecure.policymgr['audit_db_password']
 
-    module.exports.push name: 'XASecure HDFS # Upload', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'XASecure HDFS # Upload', timeout: -1, handler: ->
       {hdfs_url} = ctx.config.xasecure
-      do_upload = ->
-        ctx[if url.parse(hdfs_url).protocol is 'http:' then 'download' else 'upload']
-          source: hdfs_url
-          destination: '/var/tmp'
-          binary: true
-          not_if_exists: "/var/tmp/#{path.basename hdfs_url, '.tar'}"
-        , (err, uploaded) ->
-          return next err, false if err or not uploaded
-          modified = true
-          do_extract()
-      do_extract = ->
-        ctx.extract
-          source: "/var/tmp/#{path.basename hdfs_url}"
-        , (err) ->
-          return next err, true
-      do_upload()
+      @download
+        source: hdfs_url
+        destination: '/var/tmp'
+        binary: true
+        not_if_exists: "/var/tmp/#{path.basename hdfs_url, '.tar'}"
+      @extract
+        source: "/var/tmp/#{path.basename hdfs_url}"
+        if: -> @status -1
 
-    module.exports.push name: 'XASecure HDFS # Configure', timeout: -1, handler: (ctx, next) ->
-      {hdfs_url} = ctx.config.xasecure
-      do_configure = ->
-        write = for k, v of hdfs
+    module.exports.push name: 'XASecure HDFS # Configure', timeout: -1, handler: ->
+      {hdfs_url} = @config.xasecure
+      @write
+        destination: "/var/tmp/#{path.basename hdfs_url, '.tar'}/install.properties"
+        write: for k, v of hdfs
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
-        ctx.write
-          destination: "/var/tmp/#{path.basename hdfs_url, '.tar'}/install.properties"
-          write: write
-          eof: true
-        , (err, written) ->
-          return next err, false if err or not written
-          do_install()
-      do_install = ->
-        ctx.execute
-          cmd: "cd /var/tmp/#{path.basename hdfs_url, '.tar'} && ./install.sh"
-        , (err, executed) ->
-          return next err if err
-          do_env()
-      do_env = ->
-        ctx.write
-          destination: '/usr/lib/hadoop/libexec/hadoop-config.sh'
-          match: /.*xasecure\-hadoop\-env\.sh.*/mg
-          replace: """
-          if [ -f  ${HADOOP_CONF_DIR}/xasecure-hadoop-env.sh ]; then . ${HADOOP_CONF_DIR}/xasecure-hadoop-env.sh; fi
-          """
-          append: true
-          eof: true
-        , (err, written) ->
-          return next err if err
-          do_restart()
-      #     do_fix()
-      # do_fix = ->
-      #     ctx.remove
-      #       destination: '/usr/lib/hadoop/lib/jersey-bundle-1.17.1.jar'
-      #     , (err, removed) ->
-      #       return next err if err
-      #       do_restart()
-      do_restart = ->
-        lifecycle.nn_restart ctx, (err) ->
-          return next err if err
-          next err, true
-      do_configure()
+        eof: true
+      @execute
+        cmd: "cd /var/tmp/#{path.basename hdfs_url, '.tar'} && ./install.sh"
+      @write
+        destination: '/usr/lib/hadoop/libexec/hadoop-config.sh'
+        match: /.*xasecure\-hadoop\-env\.sh.*/mg
+        replace: """
+        if [ -f  ${HADOOP_CONF_DIR}/xasecure-hadoop-env.sh ]; then . ${HADOOP_CONF_DIR}/xasecure-hadoop-env.sh; fi
+        """
+        append: true
+        eof: true
+      @service
+        name: 'hadoop-hfds-namenode'
+        action: 'restart'
 
-    module.exports.push name: 'XASecure HDFS # Fix', handler: (ctx, next) ->
-      ctx.remove
+    module.exports.push name: 'XASecure HDFS # Fix', handler: ->
+      @remove
         destination: '/usr/lib/hadoop/lib/jersey-bundle-1.17.1.jar'
-      , next
     
-    module.exports.push name: 'XASecure HDFS # Register', timeout: -1, handler: (ctx, next) ->
+    module.exports.push name: 'XASecure HDFS # Register', timeout: -1, handler: ->
       # POST http://front1.hadoop:6080/service/assets/assets
       body = 
         assetType: '1'
@@ -129,7 +98,6 @@
         zookeeperQuorum: ''
         zookeeperZnodeParent: ''
         commonnameforcertificate: ''
-      next()
 
 ## Dependencies
 

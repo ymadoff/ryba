@@ -8,14 +8,16 @@ HDFS server to answer queries.
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/hdfs_dn/wait'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Start Wait Database
 
-    module.exports.push name: 'Hive HCatalog # Start Wait DB', timeout: -1, label_true: 'READY', handler: (ctx, next) ->
-      {hive} = ctx.config.ryba
+    module.exports.push name: 'Hive HCatalog # Start Wait DB', timeout: -1, label_true: 'READY', handler: ->
+      {hive} = @config.ryba
       [_, host, port] = /^.*?\/\/?(.*?)(?::(.*))?\/.*$/.exec hive.site['javax.jdo.option.ConnectionURL']
-      ctx.waitIsOpen host, port, next
+      @wait_connect
+        host: host
+        port: port
 
 ## Start Hive HCatalog
 
@@ -27,8 +29,7 @@ service hive-hcatalog-server start
 su -l hive -c 'nohup hive --service metastore >/var/log/hive-hcatalog/hcat.out 2>/var/log/hive-hcatalog/hcat.err & echo $! >/var/lib/hive-hcatalog/hcat.pid'
 ```
 
-    module.exports.push name: 'Hive HCatalog # Start HCatalog', timeout: -1, label_true: 'STARTED', handler: (ctx, next) ->
-      ctx.service_start
+    module.exports.push name: 'Hive HCatalog # Start HCatalog', timeout: -1, label_true: 'STARTED', handler: ->
+      @service_start
         name: 'hive-hcatalog-server'
         if_exists: '/etc/init.d/hive-hcatalog-server'
-      .then next

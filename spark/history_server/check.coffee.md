@@ -3,5 +3,5 @@
 
     module.exports = []
     
-    module.exports.push name: 'Spark HS # Check', label_true: 'CHECKED', handler: (ctx, next) ->
-      return next null, 'TODO'
+    module.exports.push name: 'Spark HS # Check', skip: true, label_true: 'CHECKED', handler: ->
+      # TODO

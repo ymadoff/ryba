@@ -6,34 +6,34 @@ This commands checks if falcons works as required.
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/hdfs_client'
-    module.exports.push require('../hadoop/hdfs_client').configure
-    module.exports.push require('./index').configure
+    # module.exports.push require('../hadoop/hdfs_client').configure
+    # module.exports.push require('./index').configure
 
 ## Check Data Pipelines
 
 Follow the [Hortonworks Data Pipelines example][dpe].
 
-    module.exports.push name: 'Falcon # Check Data Pipelines', skip: true, timeout: -1, label_true: 'CHECKED', handler: (ctx, next) ->
-      {user} = ctx.config.ryba
+    module.exports.push name: 'Falcon # Check Data Pipelines', skip: true, timeout: -1, label_true: 'CHECKED', handler: ->
+      {user} = @config.ryba
       cluster_path = "#{user.home}/check_falcon/cluster.xml"
       feed_path = "#{user.home}/check_falcon/feed.xml"
       process_path = "#{user.home}/check_falcon/process.xml"
       # TODO: RM HA latest
-      nn_contexts = ctx.contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn').configure
+      nn_contexts = @contexts 'ryba/hadoop/hdfs_nn'#, require('../hadoop/hdfs_nn').configure
       nn_rcp = nn_contexts[0].config.ryba.core_site['fs.defaultFS']
       nn_protocol = if nn_contexts[0].config.ryba.hdfs.site['HTTP_ONLY'] then 'http' else 'https'
       nn_nameservice = if nn_contexts[0].config.ryba.hdfs.site['dfs.nameservices'] then ".#{nn_contexts[0].config.ryba.hdfs.site['dfs.nameservices']}" else ''
       nn_shortname = if nn_contexts.length then ".#{nn_contexts[0].config.shortname}" else ''
       # dfs.namenode.https-address.torval.master2
-      nn_http = ctx.config.ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address#{nn_nameservice}#{nn_shortname}"] 
+      nn_http = @config.ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address#{nn_nameservice}#{nn_shortname}"] 
       nn_principal = nn_contexts[0].config.ryba.hdfs.site['dfs.namenode.kerberos.principal'].replace '_HOST', nn_contexts[0].config.host
       # TODO: RM HA latest
-      rm_contexts = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
+      rm_contexts = @contexts 'ryba/hadoop/yarn_rm'#, require('../hadoop/yarn_rm').configure
       rm_shortname = if rm_contexts.length > 1 then ".#{rm_contexts[0].config.shortname}" else ''
       rm_address = rm_contexts[0].config.ryba.yarn.site["yarn.resourcemanager.address#{rm_shortname}"]
-      oozie_contexts = ctx.contexts 'ryba/oozie/server', require('../oozie/server').configure
+      oozie_contexts = @contexts 'ryba/oozie/server'#, require('../oozie/server').configure
       oozie_url = oozie_contexts[0].config.ryba.oozie_site['oozie.base.url']
-      hive_contexts = ctx.contexts 'ryba/hive/hcatalog', require('../hive/hcatalog').configure
+      hive_contexts = @contexts 'ryba/hive/hcatalog'#, require('../hive/hcatalog').configure
       hive_url = hive_contexts[0].config.ryba.hive.site['hive.metastore.uris']
       hive_principal = hive_contexts[0].config.ryba.hive.site['hive.metastore.kerberos.principal'].replace '_HOST', hive_contexts[0].config.host
       ctx
@@ -47,7 +47,7 @@ Follow the [Hortonworks Data Pipelines example][dpe].
             <interface type="execute" endpoint="#{rm_address}" version="2.4.0" /> <!-- Needed to write to jobs as MapReduce-->
             <interface type="workflow" endpoint="#{oozie_url}" version="4.0.0" /> <!-- Required. Submits Oozie jobs.-->
             <interface type="registry" endpoint="#{hive_url}" version="0.13.0" /> <!--Register/deregister partitions in the Hive Metastore and get events on partition availability -->
-            <interface type="messaging" endpoint="tcp://#{ctx.config.host}:61616?daemon=true" version="5.1.6" /> <!--Needed for alerts-->
+            <interface type="messaging" endpoint="tcp://#{@config.host}:61616?daemon=true" version="5.1.6" /> <!--Needed for alerts-->
           </interfaces>
           <locations>
             <location name="staging" path="/apps/falcon/prod-cluster/staging" /> <!--HDFS directories used by the Falcon server-->

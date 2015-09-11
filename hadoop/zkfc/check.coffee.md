@@ -3,7 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Test SSH Fencing
 
@@ -16,13 +16,16 @@ is a comma-separated list of SSH private key files.
 Strict host key checking is disabled during this check with the
 "StrictHostKeyChecking" argument set to "no".
 
-    module.exports.push name: 'HDFS ZKFC # Check SSH Fencing', retry: 100, label_true: 'CHECKED', handler: (ctx, next) ->
-      return next() unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      {hdfs} = ctx.config.ryba
-      nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
-      for host in nn_hosts
-        source = host if host is ctx.config.host
-        target = host if host isnt ctx.config.host
-      ctx.execute
-        cmd: "su -l #{hdfs.user.name} -c \"ssh -q -o StrictHostKeyChecking=no #{hdfs.user.name}@#{target} hostname\""
-      .then next
+    module.exports.push
+      name: 'HDFS ZKFC # Check SSH Fencing'
+      retry: 100
+      label_true: 'CHECKED'
+      if: -> @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+      handler: ->
+        {hdfs} = @config.ryba
+        nn_hosts = @hosts_with_module 'ryba/hadoop/hdfs_nn'
+        for host in nn_hosts
+          source = host if host is @config.host
+          target = host if host isnt @config.host
+        @execute
+          cmd: "su -l #{hdfs.user.name} -c \"ssh -q -o StrictHostKeyChecking=no #{hdfs.user.name}@#{target} hostname\""

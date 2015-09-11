@@ -8,22 +8,19 @@ of Elastics Search from rpm repositories and the configuration of Elastic Search
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/commons/java'
-    module.exports.push require('./').configure
+    # module.exports.push require('./').configure
 
-    module.exports.push name: 'ES # Users & Groups', handler: (ctx, next) ->
-      {elasticsearch} = ctx.config.ryba
-      ctx
-      .group elasticsearch.group
-      .user elasticsearch.user
-      .then next
+    module.exports.push name: 'ES # Users & Groups', handler: ->
+      {elasticsearch} = @config.ryba
+      @group elasticsearch.group
+      @user elasticsearch.user
 
 ## Kerberos
 
-    module.exports.push name: 'ES # Kerberos', skip: true, handler: (ctx, next) ->
-      {elasticsearch, realm} = ctx.config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx
-      .krb5_addprinc
+    module.exports.push name: 'ES # Kerberos', skip: true, handler: ->
+      {elasticsearch, realm} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      @krb5_addprinc
         principal: elasticsearch.principal
         randkey: true
         keytab: elasticsearch.keytab
@@ -32,32 +29,29 @@ of Elastics Search from rpm repositories and the configuration of Elastic Search
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      .then next
 
 ## Install
 
 ElasticSearch archive comes with an RPM
 
-    module.exports.push name: 'ES # Install', timeout: -1, handler: (ctx, next) ->
-      {elasticsearch, realm} = ctx.config.ryba
-      ctx
-      .download
+    module.exports.push name: 'ES # Install', timeout: -1, handler: ->
+      {elasticsearch, realm} = @config.ryba
+      @download
         source: elasticsearch.source
         destination: "/var/tmp/elasticsearch-#{elasticsearch.version}.noarch.rpm"
         # not_if_exec: "rpm -q --queryformat '%{VERSION}' elasticsearch | grep '#{elasticsearch.version}'"
         not_if_exists: true
-      .execute
+      @execute
         cmd:"""
         yum localinstall -y --nogpgcheck /var/tmp/elasticsearch-#{elasticsearch.version}.noarch.rpm
         chkconfig --add elasticsearch
         """
         not_if_exec: "rpm -q --queryformat '%{VERSION}' elasticsearch | grep '#{elasticsearch.version}'"
-      .then next
 
 ## Env
 
-    module.exports.push name: 'ES # Env', handler: (ctx, next) ->
-      {elasticsearch, zookeeper} = ctx.config.ryba
+    module.exports.push name: 'ES # Env', handler: ->
+      {elasticsearch, zookeeper} = @config.ryba
       write = [
         match: /^.*cluster.name: .*/m
         replace: "cluster.name: \"#{elasticsearch.cluster.name}\" # RYBA CONF `elasticsearch.cluster.name`, DON'T OVERWRITE"
@@ -81,8 +75,6 @@ ElasticSearch archive comes with an RPM
           match: /^node.data: .*/m
           replace: "node.data: #{elasticsearch.node.data} # RYBA CONF `elasticsearch.node.data`, DON'T OVERWRITE"
           append: true
-      ctx.write
+      @write
         destination: '/etc/elasticsearch/elasticsearch.yml'
         write: write
-      .then next
-

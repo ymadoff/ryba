@@ -67,7 +67,7 @@ Example:
 ```
 
     module.exports.configure = (ctx) ->
-      es = ctx.config.ryba.elasticsearch ?= {}
+      es = @config.ryba.elasticsearch ?= {}
       es.user ?= {}
       es.user = name: es.user if typeof es.user is 'string'
       es.user.name ?= 'elasticsearch'
@@ -83,11 +83,11 @@ Example:
       # Layout
       es.version ?= '1.2.4'
       # Kerberos
-      es.principal ?= "elasticsearch/#{ctx.config.host}@#{ctx.config.ryba.realm}"
+      es.principal ?= "elasticsearch/#{@config.host}@#{@config.ryba.realm}"
       es.keytab ?= '/etc/security/keytabs/elasticsearch.service.keytab'
       es.cluster ?= {}
       es.cluster.name ?= 'elasticsearch'
-      es.number_of_shards ?= ctx.hosts_with_module('ryba/elasticsearch').length
+      es.number_of_shards ?= @hosts_with_module('ryba/elasticsearch').length
       es.number_of_replicas ?= 1
 
 ElasticSearch can be found [here](https://www.elastic.co/downloads/elasticsearch)
@@ -106,7 +106,3 @@ ElasticSearch can be found [here](https://www.elastic.co/downloads/elasticsearch
     module.exports.push commands: 'status', modules: 'ryba/elasticsearch/status'
 
     module.exports.push commands: 'stop', modules: 'ryba/elasticsearch/stop'
-
-## Dependencies
-
-    path = require 'path'

@@ -65,8 +65,6 @@ Solr can be found [here](http://wwwftp.ciril.fr/pub/apache/lucene/solr/)
 
     module.exports.push commands: 'start', modules: 'ryba/solr/start'
 
-    module.exports.push commands: 'check', modules: 'ryba/solr/check'
-
     module.exports.push commands: 'status', modules: 'ryba/solr/status'
 
     module.exports.push commands: 'stop', modules: 'ryba/solr/stop'

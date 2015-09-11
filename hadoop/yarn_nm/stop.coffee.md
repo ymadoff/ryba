@@ -3,7 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Stop Server
 
@@ -15,16 +15,14 @@ service hadoop-yarn-nodemanager stop
 su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf stop nodemanager"
 ```
 
-    module.exports.push name: 'YARN NM # Stop Server', label_true: 'STOPPED', handler: (ctx, next) ->
-      ctx.service_stop
+    module.exports.push name: 'YARN NM # Stop Server', label_true: 'STOPPED', handler: ->
+      @service_stop
         name: 'hadoop-yarn-nodemanager'
         if_exists: '/etc/init.d/hadoop-yarn-nodemanager'
-      .then next
 
-    module.exports.push name: 'YARN NM # Stop Clean Logs', label_true: 'CLEANED', handler: (ctx, next) ->
-      {clean_logs, yarn} = ctx.config.ryba
+    module.exports.push name: 'YARN NM # Stop Clean Logs', label_true: 'CLEANED', handler: ->
+      {clean_logs, yarn} = @config.ryba
       return next() unless clean_logs
-      ctx.execute
+      @execute
         cmd: 'rm #{yarn.log_dir}/*/*-nodemanager-*'
         code_skipped: 1
-      .then next

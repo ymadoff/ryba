@@ -13,13 +13,13 @@ article from december 2014 describe how to
     # Install kerberos clients to create/test new Hive principal
     module.exports.push 'masson/core/krb5_client'
     # Set java_home in "hadoop-env.sh"
-    module.exports.push 'ryba/hadoop/hdfs_client'
-    module.exports.push 'ryba/hadoop/yarn_client'
-    module.exports.push 'ryba/hadoop/mapred_client'
-    module.exports.push 'ryba/hive/client' # Hue reference hive conf dir
-    module.exports.push 'ryba/tools/pig'
+    module.exports.push 'ryba/hadoop/hdfs_client/install'
+    module.exports.push 'ryba/hadoop/yarn_client/install'
+    module.exports.push 'ryba/hadoop/mapred_client/install'
+    module.exports.push 'ryba/hive/client/install' # Hue reference hive conf dir
+    module.exports.push 'ryba/tools/pig/install'
     module.exports.push require '../lib/hconfigure'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Users & Groups
 
@@ -32,12 +32,10 @@ cat /etc/group | grep hue
 hue:x:494:
 ```
 
-    module.exports.push name: 'Hue # Users & Groups', handler: (ctx, next) ->
-      {hue} = ctx.config.ryba
-      ctx
-      .group hue.group
-      .user hue.user
-      .then next
+    module.exports.push name: 'Hue # Users & Groups', handler: ->
+      {hue} = @config.ryba
+      @group hue.group
+      @user hue.user
 
 ## IPTables
 
@@ -48,24 +46,20 @@ hue:x:494:
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'Hue # IPTables', handler: (ctx, next) ->
-      {hue} = ctx.config.ryba
-      ctx.iptables
+    module.exports.push name: 'Hue # IPTables', handler: ->
+      {hue} = @config.ryba
+      @iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: hue.ini.desktop.http_port, protocol: 'tcp', state: 'NEW', comment: "Hue Web UI" }
         ]
-        if: ctx.config.iptables.action is 'start'
-      .then next
+        if: @config.iptables.action is 'start'
 
 ## Packages
 
 The packages "extjs-2.2-1" and "hue" are installed.
 
-    module.exports.push name: 'Hue # Packages', timeout: -1, handler: (ctx, next) ->
-      ctx
-      .service name: 'hue'
-      .service name: 'hue-plugins'
-      .then next
+    module.exports.push name: 'Hue # Packages', timeout: -1, handler: ->
+      @service name: 'hue'
 
 # ## Core
 
@@ -76,19 +70,16 @@ The packages "extjs-2.2-1" and "hue" are installed.
 # be deployed on all the master and worker nodes. This is currently achieved through
 # the configuration picked up by the "ryba/hadoop/core" module.
 
-#     module.exports.push name: 'Hue # Core', handler: (ctx, next) ->
-#       {hadoop_conf_dir} = ctx.config.ryba
-#       properties = 
-#         'hadoop.proxyuser.hue.hosts': '*'
-#         'hadoop.proxyuser.hue.groups': '*'
-#         'hadoop.proxyuser.hcat.groups': '*'
-#         'hadoop.proxyuser.hcat.hosts': '*'
-#       ctx
-#       .hconfigure
+#     module.exports.push name: 'Hue # Core', handler: ->
+#       {hadoop_conf_dir} = @config.ryba
+#       @hconfigure
 #         destination: "#{hadoop_conf_dir}/core-site.xml"
-#         properties: properties
+#         properties:
+#           'hadoop.proxyuser.hue.hosts': '*'
+#           'hadoop.proxyuser.hue.groups': '*'
+#           'hadoop.proxyuser.hcat.groups': '*'
+#           'hadoop.proxyuser.hcat.hosts': '*'
 #         merge: true
-#       .then next
 
 ## WebHCat
 
@@ -98,18 +89,16 @@ to allow impersonnation through the "hue" user.
 
 TODO: only work if WebHCat is running on the same server as Hue
 
-    module.exports.push name: 'Hue # WebHCat', handler: (ctx, next) ->
-      {webhcat} = ctx.config.ryba
-      webhcat_server = ctx.host_with_module 'ryba/hive/webhcat'
-      return next Error "WebHCat shall be on the same server as Hue" unless webhcat_server is ctx.config.host
-      ctx
-      .hconfigure
+    module.exports.push name: 'Hue # WebHCat', handler: ->
+      {webhcat} = @config.ryba
+      webhcat_server = @host_with_module 'ryba/hive/webhcat'
+      return next Error "WebHCat shall be on the same server as Hue" unless webhcat_server is @config.host
+      @hconfigure
         destination: "#{webhcat.conf_dir}/webhcat-site.xml"
         properties: 
           'webhcat.proxyuser.hue.hosts': '*'
           'webhcat.proxyuser.hue.groups': '*'
         merge: true
-      .then next
 
 ## Oozie
 
@@ -119,26 +108,25 @@ to allow impersonnation through the "hue" user.
 
 TODO: only work if Oozie is running on the same server as Hue
 
-    module.exports.push name: 'Hue # Oozie', handler: (ctx, next) ->
-      {oozie} = ctx.config.ryba
-      oozie_server = ctx.host_with_module 'ryba/oozie/server'
-      return next Error "Oozie shall be on the same server as Hue" unless oozie_server is ctx.config.host
-      ctx.hconfigure
+    module.exports.push name: 'Hue # Oozie', handler: ->
+      {oozie} = @config.ryba
+      oozie_server = @host_with_module 'ryba/oozie/server'
+      return next Error "Oozie shall be on the same server as Hue" unless oozie_server is @config.host
+      @hconfigure
         destination: "#{oozie.conf_dir}/oozie-site.xml"
         properties: 
           'oozie.service.ProxyUserService.proxyuser.hue.hosts': '*'
           'oozie.service.ProxyUserService.proxyuser.hue.groups': '*'
         merge: true
-      .then next
 
 ## Configure
 
 Configure the "/etc/hue/conf" file following the [HortonWorks](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue-5-2.html) 
 recommandations. Merge the configuration object from "hdp.hue.ini" with the properties of the destination file. 
 
-    module.exports.push name: 'Hue # Configure', handler: (ctx, next) ->
-      {hue} = ctx.config.ryba
-      ctx.ini
+    module.exports.push name: 'Hue # Configure', handler: ->
+      {hue} = @config.ryba
+      @ini
         destination: "#{hue.conf_dir}/hue.ini"
         content: hue.ini
         merge: true
@@ -146,7 +134,9 @@ recommandations. Merge the configuration object from "hdp.hue.ini" with the prop
         stringify: misc.ini.stringify_multi_brackets
         separator: '='
         comment: '#'
-      .then next
+        uid: hue.user.name
+        gid: hue.group.name
+        mode: 0o0750
 
 ## Database
 
@@ -154,15 +144,14 @@ Setup the database hosting the Hue data. Currently two database providers are
 implemented but Hue supports MySQL, PostgreSQL, and Oracle. Note, sqlite is 
 the default database while mysql is the recommanded choice.
 
-    module.exports.push name: 'Hue # Database', handler: (ctx, next) ->
-      {hue, db_admin} = ctx.config.ryba
-      engines = 
-        mysql: ->
+    module.exports.push name: 'Hue # Database', handler: ->
+      {hue, db_admin} = @config.ryba
+      switch hue.ini.desktop.database.engine
+        when 'mysql'
           {host, port, user, password, name} = hue.ini.desktop.database
           escape = (text) -> text.replace(/[\\"]/g, "\\$&")
           mysql_exec = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
-          ctx
-          .execute
+          @execute
             cmd: """
             #{mysql_exec} "
             create database #{name};
@@ -172,18 +161,13 @@ the default database while mysql is the recommanded choice.
             "
             """
             not_if_exec: "#{mysql_exec} 'use #{name}'"
-          .execute
+          @execute
             # TODO: handle updates
             cmd: """
             su -l #{hue.user.name} -c "/usr/lib/hue/build/env/bin/hue syncdb --noinput"
             """
             not_if_exec: "#{mysql_exec} 'show tables from #{name};' | grep auth"
-          .then next
-        sqlite: ->
-          next null, false
-      engine = hue.ini.desktop.database.engine
-      return next new Error 'Hue database engine not supported' unless engines[engine]
-      engines[engine]()
+        else throw Error 'Hue database engine not supported'
 
 ## Kerberos
 
@@ -191,10 +175,10 @@ The principal for the Hue service is created and named after "hue/{host}@{realm}
 the "/etc/hue/conf/hue.ini" configuration file, all the composants myst be tagged with
 the "security_enabled" property set to "true".
 
-    module.exports.push name: 'Hue # Kerberos', handler: (ctx, next) ->
-      {hue, realm} = ctx.config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc 
+    module.exports.push name: 'Hue # Kerberos', handler: ->
+      {hue, realm} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      @krb5_addprinc 
         principal: hue.ini.desktop.kerberos.hue_principal
         randkey: true
         keytab: "/etc/hue/conf/hue.service.keytab"
@@ -203,25 +187,22 @@ the "security_enabled" property set to "true".
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      .then next
 
 ## SSL Client
 
-    module.exports.push name: 'Hue # SSL Client', handler: (ctx, next) ->
-      {hue} = ctx.config.ryba
+    module.exports.push name: 'Hue # SSL Client', handler: ->
+      {hue} = @config.ryba
       hue.ca_bundle = '' unless hue.ssl.client_ca
-      ctx
-      .write
+      @write
         destination: "#{hue.ca_bundle}"
         source: "#{hue.ssl.client_ca}"
         local_source: true
         if: !!hue.ssl.client_ca
-      .write
+      @write
         destination: '/etc/init.d/hue'
         match: /^DAEMON="export REQUESTS_CA_BUNDLE='.*';\$DAEMON"$/m
         replace: "DAEMON=\"export REQUESTS_CA_BUNDLE='#{hue.ca_bundle}';$DAEMON\""
         append: /^DAEMON=.*$/m
-      .then next
 
 ## SSL Server
 
@@ -231,20 +212,19 @@ configuration properties. It follows the [official Hue Web Server
 Configuration][web]. The "hue" service is restarted if there was any 
 changes.
 
-    module.exports.push name: 'Hue # SSL Server', handler: (ctx, next) ->
-      {hue} = ctx.config.ryba
-      ctx
-      .upload
+    module.exports.push name: 'Hue # SSL Server', handler: ->
+      {hue} = @config.ryba
+      @upload
         source: hue.ssl.certificate
         destination: "#{hue.conf_dir}/cert.pem"
         uid: hue.user.name
         gid: hue.group.name
-      .upload
+      @upload
         source: hue.ssl.private_key
         destination: "#{hue.conf_dir}/key.pem"
         uid: hue.user.name
         gid: hue.group.name
-      .ini
+      @ini
         destination: "#{hue.conf_dir}/hue.ini"
         content: desktop:
           ssl_certificate: "#{hue.conf_dir}/cert.pem"
@@ -254,26 +234,22 @@ changes.
         stringify: misc.ini.stringify_multi_brackets
         separator: '='
         comment: '#'
-      .then (err, modified) ->
-        return next err, false if err or not modified
-        ctx.service
-          name: 'hue'
-          action: 'restart'
-        .then next
-
+      @service
+        name: 'hue'
+        action: 'restart'
+        if: -> @status -1
 ## Fix Banner
 
 In the current version "2.5.1", the HTML of the banner is escaped.
 
-    module.exports.push name: 'Hue # Fix Banner', handler: (ctx, next) ->
-      {hue} = ctx.config.ryba
-      ctx
-      .write
+    module.exports.push name: 'Hue # Fix Banner', handler: ->
+      {hue} = @config.ryba
+      @write
         destination: '/usr/lib/hue/desktop/core/src/desktop/templates/login.mako'
         match: '${conf.CUSTOM.BANNER_TOP_HTML.get()}'
         replace: '${ conf.CUSTOM.BANNER_TOP_HTML.get() | n,unicode }'
         bck: true
-      .write
+      @write
         destination: '/usr/lib/hue/desktop/core/src/desktop/templates/common_header.mako'
         write: [
           match: '${conf.CUSTOM.BANNER_TOP_HTML.get()}'
@@ -285,24 +261,21 @@ In the current version "2.5.1", the HTML of the banner is escaped.
           bck: true
           if: hue.banner_style
         ]
-      .then next
 
 ## Clean Temp Files
 
 Clean up the "/tmp" from temporary Hue directories. All the directories which
 modified time are older than 10 days will be removed.
 
-    module.exports.push name: 'Hue # Clean Temp Files', handler: (ctx, next) ->
-      {hue} = ctx.config.ryba
-      ctx
-      .cron_add
+    module.exports.push name: 'Hue # Clean Temp Files', handler: ->
+      {hue} = @config.ryba
+      @cron_add
         cmd: "find /tmp -maxdepth 1 -type d -mtime +10 -user #{hue.user.name} -exec rm {} \\;",
         when: '0 */19 * * *'
         user: "#{hue.user.name}"
         match: "\\/tmp .*-user #{hue.user.name}"
         exec: true
         if: hue.clean_tmp
-      .then next
 
 ## Start
 

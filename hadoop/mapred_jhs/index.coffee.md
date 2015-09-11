@@ -16,6 +16,7 @@ Now the jobHistory Server tends to be replace by the Yarn timeline server.
       # require('./mapred').configure ctx
       {ryba} = ctx.config
       ryba.mapred ?= {}
+      ryba.mapred.heapsize ?= '900'
       ryba.mapred.pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
       ryba.mapred.log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
       ryba.mapred.site ?= {}
@@ -48,9 +49,33 @@ mapred-site.xml. Create these two directories. Set permissions on
 mapreduce.jobhistory.intermediate-done-dir to 1777. Set permissions on
 mapreduce.jobhistory.done-dir to 750.
 
-      ryba.mapred.site['yarn.app.mapreduce.am.staging-dir'] = "/user"
-      ryba.mapred.site['mapreduce.jobhistory.done-dir'] ?= '/mr-history/done' # Directory where history files are managed by the MR JobHistory Server.
-      ryba.mapred.site['mapreduce.jobhistory.intermediate-done-dir'] ?= '/mr-history/tmp' # Directory where history files are written by MapReduce jobs.
+If "yarn.app.mapreduce.am.staging-dir" is active (if the other two are unset),
+a folder history must be created and own by the mapreduce user. On startup, JHS
+will create two folders:
+
+```bash
+hdfs dfs -ls /user/history
+Found 2 items
+drwxrwx---   - mapred hadoop          0 2015-08-04 23:21 /user/history/done
+drwxrwxrwt   - mapred hadoop          0 2015-08-04 23:21 /user/history/done_intermediate
+```
+
+      ryba.mapred.site['yarn.app.mapreduce.am.staging-dir'] = "/user" # default to "/tmp/hadoop-yarn/staging"
+      # ryba.mapred.site['mapreduce.jobhistory.done-dir'] ?= '/mr-history/done' # Directory where history files are managed by the MR JobHistory Server.
+      # ryba.mapred.site['mapreduce.jobhistory.intermediate-done-dir'] ?= '/mr-history/tmp' # Directory where history files are written by MapReduce jobs.
+      ryba.mapred.site['mapreduce.jobhistory.done-dir'] = null
+      ryba.mapred.site['mapreduce.jobhistory.intermediate-done-dir'] = null
+
+
+## Job Recovery
+
+The following properties provides persistent state to the Job history server.
+They are referenced by [the druid hadoop configuration][druid] and
+[the Ambari 2.3 stack][amb-mr-site]. Job Recovery is activated by default.   
+
+      ryba.mapred.site['mapreduce.jobhistory.recovery.enable'] ?= 'true'
+      ryba.mapred.site['mapreduce.jobhistory.recovery.store.class'] ?= 'org.apache.hadoop.mapreduce.v2.hs.HistoryServerLeveldbStateStoreService'
+      ryba.mapred.site['mapreduce.jobhistory.recovery.store.leveldb.path'] ?= '/var/mapred/jhs'
 
 ## Commands
 
@@ -69,3 +94,8 @@ mapreduce.jobhistory.done-dir to 750.
     module.exports.push commands: 'status', modules: 'ryba/hadoop/mapred_jhs/status'
 
     module.exports.push commands: 'stop', modules: 'ryba/hadoop/mapred_jhs/stop'
+
+[druid]: http://druid.io/docs/latest/configuration/hadoop.html
+[amb-mr-site]: https://github.com/apache/ambari/blob/trunk/ambari-server/src/main/resources/stacks/HDP/2.3/services/YARN/configuration-mapred/mapred-site.xml
+
+

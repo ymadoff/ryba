@@ -32,7 +32,6 @@
       # Layout
       ctx.config.ryba.zookeeper.conf_dir ?= '/etc/zookeeper/conf'
       ctx.config.ryba.zookeeper.log_dir ?= '/var/log/zookeeper'
-      ctx.config.ryba.zookeeper.pid_dir ?= '/var/run/zookeeper'
       ctx.config.ryba.zookeeper.port ?= 2181
       # Environnment
       ctx.config.ryba.zookeeper.env ?= {}

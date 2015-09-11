@@ -150,9 +150,10 @@ Example:
       then "http://#{nm_ctx.config.ryba.yarn.site['yarn.nodemanager.webapp.address']}"
       else "https://#{nm_ctx.config.ryba.yarn.site['yarn.nodemanager.webapp.https.address']}"
       # WebHcat
-      [wc_ctx] = ctx.contexts 'ryba/hive/webhcat', require('../hive/webhcat').configure
-      webhcat_port = wc_ctx.config.ryba.webhcat.site['templeton.port']
-      templeton_url = "http://#{wc_ctx.config.host}:#{webhcat_port}/templeton/v1/"
+      [webhcat_ctx] = ctx.contexts 'ryba/hive/webhcat', require('../hive/webhcat').configure
+      if webhcat_ctx
+        webhcat_port = webhcat_ctx.config.ryba.webhcat.site['templeton.port']
+        templeton_url = "http://#{webhcat_ctx.config.host}:#{webhcat_port}/templeton/v1/"
       # Configure HDFS Cluster
       hue.ini['hadoop'] ?= {}
       hue.ini['hadoop']['hdfs_clusters'] ?= {}
@@ -200,6 +201,8 @@ Example:
       hue.ini['beeswax']['server_conn_timeout'] ?= "240"
       # Desktop
       hue.ini['desktop'] ?= {}
+      hue.ini['desktop']['django_debug_mode'] ?= '0' # Disable debug by default
+      hue.ini['desktop']['http_500_debug_mode'] ?= '0' # Disable debug by default
       hue.ini['desktop']['http'] ?= {}
       hue.ini['desktop']['http_host'] ?= '0.0.0.0'
       hue.ini['desktop']['http_port'] ?= '8888'

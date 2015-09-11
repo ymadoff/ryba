@@ -15,9 +15,9 @@ most (N - 1) / 2 failures to continue to function normally.
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/hdp_select'
 
 ## IPTables
 
@@ -32,70 +32,53 @@ Note, "dfs.journalnode.rpc-address" is used by "dfs.namenode.shared.edits.dir".
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'HDFS JN # IPTables', handler: (ctx, next) ->
-      {hdfs} = ctx.config.ryba
+    module.exports.push name: 'HDFS JN # IPTables', handler: ->
+      {hdfs} = @config.ryba
       rpc = hdfs.site['dfs.journalnode.rpc-address'].split(':')[1]
       http = hdfs.site['dfs.journalnode.http-address'].split(':')[1]
       https = hdfs.site['dfs.journalnode.https-address'].split(':')[1]
-      ctx.iptables
+      @iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: rpc, protocol: 'tcp', state: 'NEW', comment: "HDFS JournalNode" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: http, protocol: 'tcp', state: 'NEW', comment: "HDFS JournalNode" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: https, protocol: 'tcp', state: 'NEW', comment: "HDFS JournalNode" }
         ]
-        if: ctx.config.iptables.action is 'start'
-      .then next
+        if: @config.iptables.action is 'start'
 
 ## Layout
 
 The JournalNode data are stored inside the directory defined by the
 "dfs.journalnode.edits.dir" property.
 
-    module.exports.push name: 'HDFS JN # Layout', handler: (ctx, next) ->
-      {hdfs, hadoop_group} = ctx.config.ryba
-      ctx.mkdir
+    module.exports.push name: 'HDFS JN # Layout', handler: ->
+      {hdfs, hadoop_group} = @config.ryba
+      @mkdir
         destination: for dir in hdfs.site['dfs.journalnode.edits.dir'].split ','
           if dir.indexOf('file://') is 0
           then dir.substr(7) else dir
         uid: hdfs.user.name
         gid: hadoop_group.name
-      .then next
 
 ## Service
 
 Install the "hadoop-hdfs-journalnode" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'HDFS JN # Service', handler: (ctx, next) ->
-      {hdfs} = ctx.config.ryba
-      ctx.hdp_service
+    module.exports.push name: 'HDFS JN # Service', handler: ->
+      @service
         name: 'hadoop-hdfs-journalnode'
-        write: [
-          match: /^\. \/etc\/default\/hadoop-hdfs-journalnode .*$/m
-          replace: '. /etc/default/hadoop-hdfs-journalnode # RYBA FIX rc.d, DONT OVERWRITE'
-          append: ". /lib/lsb/init-functions"
-        ,
-          # HDP default is "/usr/lib/hadoop/sbin/hadoop-daemon.sh"
-          match: /^EXEC_PATH=.*$/m
-          replace: "EXEC_PATH=\"${HADOOP_HOME}/sbin/hadoop-daemon.sh\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-        ,
-          # HDP default is "/var/run/hadoop-hdfs/hadoop-hdfs-journalnode.pid"
-          match: /^PIDFILE=".*".*$/mg
-          replace: "PIDFILE=\"${HADOOP_PID_DIR}/hadoop-$HADOOP_IDENT_STRING-journalnode.pid\" # RYBA FIX, DONT OVEWRITE"
-        ]
-        etc_default:
-          'hadoop-hdfs-journalnode':
-            write: [
-              match: /^export HADOOP_PID_DIR=.*$/m # HDP default is "/var/run/hadoop-hdfs"
-              replace: "export HADOOP_PID_DIR=#{hdfs.pid_dir} # RYBA"
-            ,
-              match: /^export HADOOP_LOG_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
-              replace: "export HADOOP_LOG_DIR=#{hdfs.log_dir} # RYBA"
-            ,
-              match: /^export HADOOP_IDENT_STRING=.*$/m # HDP default is "hdfs"
-              replace: "export HADOOP_IDENT_STRING=#{hdfs.user.name} # RYBA"
-            ]
-      .then next
+      @hdp_select
+        name: 'hadoop-hdfs-client' # Not checked
+        name: 'hadoop-hdfs-journalnode'
+      @write
+        source: "#{__dirname}/../resources/hadoop-hdfs-journalnode"
+        local_source: true
+        destination: '/etc/init.d/hadoop-hdfs-journalnode'
+        mode: 0o0755
+        unlink: true
+      @execute
+        cmd: "service hadoop-hdfs-journalnode restart"
+        if: -> @status -3
 
 ## Configure
 
@@ -109,10 +92,9 @@ SPNEGO tocken is stored inside the "/etc/security/keytabs/spnego.service.keytab"
 keytab, also used by the NameNodes, DataNodes, ResourceManagers and
 NodeManagers.
 
-    module.exports.push name: 'HDFS JN # Configure', handler: (ctx, next) ->
-      {hdfs, hadoop_conf_dir, hadoop_group} = ctx.config.ryba
-      ctx
-      .hconfigure
+    module.exports.push name: 'HDFS JN # Configure', handler: ->
+      {hdfs, hadoop_conf_dir, hadoop_group} = @config.ryba
+      @hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
         local_default: true
@@ -121,9 +103,7 @@ NodeManagers.
         gid: hadoop_group.name
         merge: true
         backup: true
-      .then next
 
 ## Dependencies
 
-    lifecycle = require '../../lib/lifecycle'
     mkcmd = require '../../lib/mkcmd'

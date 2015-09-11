@@ -4,9 +4,8 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/commons/java'
-    module.exports.push 'ryba/hadoop/core'
-    module.exports.push 'ryba/hadoop/hdfs_client'
     module.exports.push 'ryba/hadoop/core' # Hive dependency, need to create user and group for zookeeper
+    module.exports.push require '../lib/hdp_select'
 
 ## Configure
 
@@ -33,7 +32,7 @@ Example:
 }
 ```
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       return if ctx.hive_configured
       ctx.hive_configured = true
       require('masson/commons/java').configure ctx
@@ -102,44 +101,40 @@ cat /etc/group | grep hive
 hive:x:493:
 ```
 
-    module.exports.push name: 'Hive & HCat # Users & Groups', handler: (ctx, next) ->
-      {hive} = ctx.config.ryba
-      ctx.group hive.group, (err, gmodified) ->
-        return next err if err
-        ctx.user hive.user, (err, umodified) ->
-          next err, gmodified or umodified
+    module.exports.push name: 'Hive & HCat # Users & Groups', handler: ->
+      {hive} = @config.ryba
+      @group hive.group
+      @user hive.user
 
 ## Install
 
 Instructions to [install the Hive and HCatalog RPMs](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3/bk_installing_manually_book/content/rpm-chap6-1.html)
 
-    module.exports.push name: 'Hive & HCat # Install', timeout: -1, handler: (ctx, next) ->
-      ctx.service
+    module.exports.push name: 'Hive & HCat # Install', timeout: -1, handler: ->
+      @service
         name: 'hive'
-      , next
+      @hdp_select
+        name: 'hive-webhcat' # HIVE_AUX_JARS_PATH fix
 
 ## Environment
 
 Upload the "hive-env.sh" script from the companion file. Note, this file isnt
 present on a fresh install.
 
-    module.exports.push name: 'Hive & HCat # Env', timeout: -1, handler: (ctx, next) ->
-      {java_home} = ctx.config.java
-      {hive} = ctx.config.ryba
-      ctx.write
+    module.exports.push name: 'Hive & HCat # Env', timeout: -1, handler: ->
+      {java_home} = @config.java
+      {hive} = @config.ryba
+      @write
         source: "#{__dirname}/../resources/hive/hive-env.sh"
         destination: "#{hive.conf_dir}/hive-env.sh"
         local_source: true
         not_if_exists: true
-      , (err) ->
-        return next err if err
-        ctx.write
-          destination: "#{hive.conf_dir}/hive-env.sh"
-          write: [
-            match: /^export JAVA_HOME=.*$/m
-            replace: "export JAVA_HOME=#{java_home}"
-          ,
-            match: /^export HIVE_AUX_JARS_PATH=.*$/m
-            replace: 'export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar} # RYBA FIX'
-          ]
-        , next
+      @write
+        destination: "#{hive.conf_dir}/hive-env.sh"
+        write: [
+          match: /^export JAVA_HOME=.*$/m
+          replace: "export JAVA_HOME=#{java_home}"
+        ,
+          match: /^export HIVE_AUX_JARS_PATH=.*$/m
+          replace: 'export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar} # RYBA FIX'
+        ]

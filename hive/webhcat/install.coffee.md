@@ -8,9 +8,10 @@
     module.exports.push 'ryba/hive/client'
     module.exports.push 'ryba/tools/pig'
     module.exports.push 'ryba/tools/sqoop'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/hdfs_upload'
+    module.exports.push require '../../lib/hdp_select'
 
 ## IPTables
 
@@ -21,88 +22,59 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'WebHCat # IPTables', handler: (ctx, next) ->
-      {webhcat} = ctx.config.ryba
+    module.exports.push name: 'WebHCat # IPTables', handler: ->
+      {webhcat} = @config.ryba
       port = webhcat.site['templeton.port']
-      ctx.iptables
+      @iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "WebHCat HTTP Server" }
         ]
-        if: ctx.config.iptables.action is 'start'
-      .then next
-
-    # module.exports.push name: 'WebHCat # Install', timeout: -1, handler: (ctx, next) ->
-    #   ctx.service [
-    #     name: 'hive-hcatalog'
-    #   ,
-    #     name: 'hive-webhcat'
-    #   ,
-    #     name: 'webhcat-tar-hive'
-    #   ,
-    #     name: 'webhcat-tar-pig'
-    #   ], next
+        if: @config.iptables.action is 'start'
 
 ## Startup
 
 Install the "hadoop-yarn-resourcemanager" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'WebHCat # Service', handler: (ctx, next) ->
-      {webhcat} = ctx.config.ryba
-      ctx.hdp_service
+    module.exports.push name: 'WebHCat # Service', handler: ->
+      @service
         name: 'hive-webhcat-server'
-        version_name: 'hive-webhcat'
-        write: [
-          match: /^\. \/etc\/default\/hive-webhcat-server .*$/m
-          replace: '. /etc/default/hive-webhcat-server # RYBA FIX rc.d, DONT OVERWRITE'
-          append: ". /lib/lsb/init-functions"
-        # ,
-        #   # HDP default is "/etc/hbase/conf"
-        #   match: /^CONF_DIR=.*$/m
-        #   replace: "CONF_DIR=\"${HBASE_CONF_DIR}\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-        ,
-          # HDP default is "/usr/lib/hbase/bin/hbase-daemon.sh"
-          match: /^EXEC_PATH=.*$/m
-          replace: "EXEC_PATH=\"${HCAT_HOME}/sbin/webhcat_server.sh\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-        ,
-          # HDP default is "/var/lib/hive-hcatalog/hcat.pid"
-          match: /^PIDFILE=.*$/m
-          replace: "PIDFILE=\"${WEBHCAT_PID_DIR}/webhcat.pid\" # RYBA HONORS /etc/default, DONT OVEWRITE"
-        ]
-        etc_default:
-          'hadoop': true
-          'hive-webhcat-server':
-            write: [
-              match: /^export WEBHCAT_PID_DIR=.*$/m # HDP default is "/var/lib/hive-hcatalog"
-              replace: "export WEBHCAT_PID_DIR=#{webhcat.pid_dir} # RYBA FIX"
-            ,
-              match: /^export HCAT_HOME=.*$/m # HDP default is "/usr/lib/hive-hcatalog"
-              replace: "export HCAT_HOME=/usr/hdp/current/hive-webhcat # RYBA FIX"
-            ,
-              match: /^export HIVE_HOME=.*$/m # HDP default is "/usr/lib/hive"
-              replace: "export HIVE_HOME=/usr/hdp/current/hive-metastore # RYBA FIX"
-            ]
-      .then next
+      @hdp_select
+        name: 'hive-webhcat'
+      @write
+        source: "#{__dirname}/../resources/hive-webhcat-server"
+        local_source: true
+        destination: '/etc/init.d/hive-webhcat-server'
+        mode: 0o0755
+        unlink: true
+      @execute
+        cmd: "service hive-webhcat-server restart"
+        if: -> @status -3
 
-    module.exports.push name: 'WebHCat # Directories', handler: (ctx, next) ->
-      {webhcat, hive, hadoop_group} = ctx.config.ryba
-      ctx
-      .mkdir
+## Directories
+
+Create file system directories for log and pid. 
+
+    module.exports.push name: 'WebHCat # Directories', handler: ->
+      {webhcat, hive, hadoop_group} = @config.ryba
+      @mkdir
         destination: webhcat.log_dir
         uid: hive.user.name
         gid: hadoop_group.name
         mode: 0o755
-      .mkdir
+      @mkdir
         destination: webhcat.pid_dir
         uid: hive.user.name
         gid: hadoop_group.name
         mode: 0o755
-      .then next
 
-    module.exports.push name: 'WebHCat # Configuration', handler: (ctx, next) ->
-      {webhcat, hive, hadoop_group} = ctx.config.ryba
-      ctx
-      .hconfigure
+## Configuration
+
+Upload configuration inside '/etc/hive-webhcat/conf/webhcat-site.xml'.
+
+    module.exports.push name: 'WebHCat # Configuration', handler: ->
+      {webhcat, hive, hadoop_group} = @config.ryba
+      @hconfigure
         destination: "#{webhcat.conf_dir}/webhcat-site.xml"
         default: "#{__dirname}/../../resources/hive-webhcat/webhcat-site.xml"
         local_default: true
@@ -111,17 +83,19 @@ inside "/etc/init.d" and activate it on startup.
         gid: hadoop_group.name
         mode: 0o0755
         merge: true
-      .then next
 
-    module.exports.push name: 'WebHCat # Env', handler: (ctx, next) ->
-      {webhcat, hive, hadoop_group} = ctx.config.ryba
-      ctx.upload
+## Env
+
+Update environnmental variables inside '/etc/hive-webhcat/conf/webhcat-env.sh'.
+
+    module.exports.push name: 'WebHCat # Env', handler: ->
+      {webhcat, hive, hadoop_group} = @config.ryba
+      @upload
         source: "#{__dirname}/../../resources/hive-webhcat/webhcat-env.sh"
         destination: "#{webhcat.conf_dir}/webhcat-env.sh"
         uid: hive.user.name
         gid: hadoop_group.name
         mode: 0o0755
-      .then next
 
 ## HDFS Tarballs
 
@@ -129,46 +103,40 @@ Upload the Pig, Hive and Sqoop tarballs inside the "/hdp/apps/$version"
 HDFS directory. Note, the parent directories are created by the
 "ryba/hadoop/hdfs_dn/layout" module.
 
-    module.exports.push name: 'WebHCat # HDFS Tarballs', timeout: -1, handler: (ctx, next) ->
-      {hdfs, hadoop_group} = ctx.config.ryba
-      # Group name on "/apps/tez" is suggested as "users", switch to hadoop
-      for lib in ['pig', 'hive', 'sqoop'] then ctx.execute
-        cmd: mkcmd.hdfs ctx, """
-        version=`readlink /usr/hdp/current/#{lib}-client | sed 's/.*\\/\\(.*\\)\\/#{lib}/\\1/'`
-        hdfs dfs -mkdir -p /hdp/apps/$version/#{lib}
-        hdfs dfs -copyFromLocal /usr/hdp/current/#{lib}-client/#{lib}.tar.gz /hdp/apps/$version/#{lib}
-        hdfs dfs -chmod -R 555 /hdp/apps/$version/#{lib}
-        hdfs dfs -chmod -R 444 /hdp/apps/$version/#{lib}/#{lib}.tar.gz
-        hdfs dfs -ls /hdp/apps/$version/#{lib} | grep #{lib}.tar.gz
-        """
-        trap_on_error: true
-        not_if_exec: mkcmd.hdfs ctx, "version=`readlink /usr/hdp/current/#{lib}-client | sed 's/.*\\/\\(.*\\)\\/#{lib}/\\1/'` && hdfs dfs -test -d /hdp/apps/$version/#{lib}"
-      ctx.then next
+    module.exports.push name: 'WebHCat # HDFS Tarballs', timeout: -1, handler: ->
+      @hdfs_upload (
+        for lib in ['pig', 'hive', 'sqoop']
+          source: "/usr/hdp/current/#{lib}-client/#{lib}.tar.gz"
+          target: "/hdp/apps/$version/#{lib}/#{lib}.tar.gz"
+          lock: "/tmp/ryba-#{lib}.lock"
+      )
 
-    module.exports.push name: 'WebHCat # Fix HDFS tmp', handler: (ctx, next) ->
+    module.exports.push name: 'WebHCat # Fix HDFS tmp', handler: ->
       # Avoid HTTP response
       # Permission denied: user=ryba, access=EXECUTE, inode=\"/tmp/hadoop-hcat\":HTTP:hadoop:drwxr-x---
-      {hive, hadoop_group} = ctx.config.ryba
+      {hive, hadoop_group} = @config.ryba
       modified = false
-      ctx.execute
-        cmd: mkcmd.hdfs ctx, """
+      @execute
+        cmd: mkcmd.hdfs @, """
         if hdfs dfs -test -d /tmp/hadoop-hcat; then exit 2; fi
         hdfs dfs -mkdir -p /tmp/hadoop-hcat
         hdfs dfs -chown HTTP:#{hadoop_group.name} /tmp/hadoop-hcat
         hdfs dfs -chmod -R 1777 /tmp/hadoop-hcat
         """
         code_skipped: 2
-      .then next
 
-    module.exports.push name: 'WebHCat # SPNEGO', handler: (ctx, next) ->
-      {webhcat, hive, hadoop_group} = ctx.config.ryba
-      ctx.copy
+## SPNEGO
+
+Copy the spnego keytab with restricitive permissions
+
+    module.exports.push name: 'WebHCat # SPNEGO', handler: ->
+      {webhcat, hive, hadoop_group} = @config.ryba
+      @copy
         source: '/etc/security/keytabs/spnego.service.keytab'
         destination: webhcat.site['templeton.kerberos.keytab']
         uid: hive.user.name
         gid: hadoop_group.name
         mode: 0o0660
-      .then next
 
 ## Dependencies
 

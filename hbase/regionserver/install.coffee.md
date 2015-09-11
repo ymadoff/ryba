@@ -6,9 +6,9 @@
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push 'ryba/hbase'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/hdp_select'
     module.exports.push require '../../lib/write_jaas'
 
 ## IPTables
@@ -21,73 +21,64 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'HBase RegionServer # IPTables', handler: (ctx, next) ->
-      {hbase} = ctx.config.ryba
-      ctx.iptables
+    module.exports.push name: 'HBase RegionServer # IPTables', handler: ->
+      {hbase} = @config.ryba
+      @iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.regionserver.port'], protocol: 'tcp', state: 'NEW', comment: "HBase RegionServer" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.regionserver.info.port'], protocol: 'tcp', state: 'NEW', comment: "HBase RegionServer Info Web UI" }
         ]
-        if: ctx.config.iptables.action is 'start'
-      .then next
+        if: @config.iptables.action is 'start'
 
 ## Service
 
 Install the "hbase-regionserver" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'HBase RegionServer # Service', timeout: -1, handler: (ctx, next) ->
-      ctx.hdp_service
+    module.exports.push name: 'HBase RegionServer # Service', timeout: -1, handler: ->
+      @service
         name: 'hbase-regionserver'
-        write: [
-          replace: 'RETVAL=0'
-          before: /^case ".*?" in$/m
-        ,
-          match: /^exit (\d|\\$RETVAL)$/m
-          replace: 'exit $RETVAL'
-        ,
-          replace: '        RETVAL=$?'
-          append: '        status'
-        ]
-        etc_default:
-          'hadoop': true
-          'hbase':
-            write: [
-              match: /^export HBASE_HOME=.*$/m # HDP default is "/var/lib/hive-hcatalog"
-              replace: "export HBASE_HOME=/usr/hdp/current/hbase-client # RYBA FIX"
-            ]
-      .then next
+      @hdp_select
+        name: 'hbase-client'
+      @hdp_select
+        name: 'hbase-regionserver'
+      @write
+        source: "#{__dirname}/../resources/hbase-regionserver"
+        local_source: true
+        destination: '/etc/init.d/hbase-regionserver'
+        mode: 0o0755
+        unlink: true
+      @execute
+        cmd: "service hbase-regionserver restart"
+        if: -> @status -4
 
 ## Zookeeper JAAS
 
 JAAS configuration files for zookeeper to be deployed on the HBase Master,
 RegionServer, and HBase client host machines.
 
-    module.exports.push name: 'HBase RegionServer # Zookeeper JAAS', timeout: -1, handler: (ctx, next) ->
-      {hbase} = ctx.config.ryba
-      ctx.write_jaas
+    module.exports.push name: 'HBase RegionServer # Zookeeper JAAS', timeout: -1, handler: ->
+      {hbase} = @config.ryba
+      @write_jaas
         destination: "#{hbase.conf_dir}/hbase-regionserver.jaas"
         content: Client:
-          principal: hbase.site['hbase.regionserver.kerberos.principal'].replace '_HOST', ctx.config.host
+          principal: hbase.site['hbase.regionserver.kerberos.principal'].replace '_HOST', @config.host
           keyTab: hbase.site['hbase.regionserver.keytab.file']
         uid: hbase.user.name
         gid: hbase.group.name
-      .then next
 
-    module.exports.push name: 'HBase RegionServer # Kerberos', timeout: -1, handler: (ctx, next) ->
-      {hadoop_group, hbase, realm} = ctx.config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      if ctx.has_module 'ryba/hbase/master'
+    module.exports.push name: 'HBase RegionServer # Kerberos', timeout: -1, handler: ->
+      {hadoop_group, hbase, realm} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      if @has_module 'ryba/hbase/master'
         if hbase.site['hbase.master.kerberos.principal'] isnt hbase.site['hbase.regionserver.kerberos.principal']
-          return next Error "HBase principals must match in single node"
-        require('../master').configure(ctx)
-        ctx.copy
+          return throw Error "HBase principals must match in single node"
+        @copy
           source: hbase.site['hbase.master.keytab.file']
           destination: hbase.site['hbase.regionserver.keytab.file']
-        .then next
       else
-        ctx.krb5_addprinc
-          principal: hbase.site['hbase.regionserver.kerberos.principal'].replace '_HOST', ctx.config.host
+        @krb5_addprinc
+          principal: hbase.site['hbase.regionserver.kerberos.principal'].replace '_HOST', @config.host
           randkey: true
           keytab: hbase.site['hbase.regionserver.keytab.file']
           uid: hbase.user.name
@@ -95,7 +86,6 @@ RegionServer, and HBase client host machines.
           kadmin_principal: kadmin_principal
           kadmin_password: kadmin_password
           kadmin_server: admin_server
-        .then next
 
 ## Configure
 
@@ -103,11 +93,10 @@ RegionServer, and HBase client host machines.
 
 [secop]: http://fr.slideshare.net/HBaseCon/features-session-2
 
-    module.exports.push name: 'HBase RegionServer # Configure', handler: (ctx, next) ->
-      {hbase} = ctx.config.ryba
-      mode = if ctx.has_module 'ryba/hbase/client' then 0o0644 else 0o0600
-      ctx
-      .hconfigure
+    module.exports.push name: 'HBase RegionServer # Configure', handler: ->
+      {hbase} = @config.ryba
+      mode = if @has_module 'ryba/hbase/client' then 0o0644 else 0o0600
+      @hconfigure
         destination: "#{hbase.conf_dir}/hbase-site.xml"
         default: "#{__dirname}/../../resources/hbase/hbase-site.xml"
         local_default: true
@@ -117,38 +106,36 @@ RegionServer, and HBase client host machines.
         gid: hbase.group.name
         mode: mode # See slide 33 from [Operator's Guide][secop]
         backup: true
-      .then next
 
 ## Opts
 
 Environment passed to the RegionServer before it starts.
 
-    module.exports.push name: 'HBase RegionServer # Opts', handler: (ctx, next) ->
-      {hbase} = ctx.config.ryba
-      return next() unless hbase.regionserver_opts
-      ctx.write
-        destination: "#{hbase.conf_dir}/hbase-env.sh"
-        match: /^export HBASE_REGIONSERVER_OPTS="(.*) \$\{HBASE_REGIONSERVER_OPTS\}" # GENERATED BY RYBA, DONT OVEWRITE/m
-        replace: "export HBASE_REGIONSERVER_OPTS=\"${HBASE_REGIONSERVER_OPTS} #{hbase.regionserver_opts}\" # GENERATED BY RYBA, DONT OVEWRITE"
-        append: /^export HBASE_REGIONSERVER_OPTS=".*"$/m
-        backup: true
-      .then next
+    module.exports.push
+      name: 'HBase RegionServer # Opts'
+      if: -> @config.ryba.hbase.regionserver_opts
+      handler: ->
+        {hbase} = @config.ryba
+        @write
+          destination: "#{hbase.conf_dir}/hbase-env.sh"
+          match: /^export HBASE_REGIONSERVER_OPTS="(.*) \$\{HBASE_REGIONSERVER_OPTS\}" # GENERATED BY RYBA, DONT OVEWRITE/m
+          replace: "export HBASE_REGIONSERVER_OPTS=\"${HBASE_REGIONSERVER_OPTS} #{hbase.regionserver_opts}\" # GENERATED BY RYBA, DONT OVEWRITE"
+          append: /^export HBASE_REGIONSERVER_OPTS=".*"$/m
+          backup: true
 
 ## Metrics
 
 Enable stats collection in Ganglia and Graphite
 
-    module.exports.push name: 'HBase RegionServer # Metrics', handler: (ctx, next) ->
-      {hbase} = ctx.config.ryba
+    module.exports.push name: 'HBase RegionServer # Metrics', handler: ->
+      {hbase} = @config.ryba
       content = ""
       for k, v of hbase.metrics
         content += "#{k}=#{v}\n" if v?
-      ctx
-      .write
+      @write
         destination: "#{hbase.conf_dir}/hadoop-metrics2-hbase.properties"
         content: content
         backup: true
-      .then next
 
 ## Start
 

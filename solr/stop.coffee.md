@@ -6,9 +6,7 @@
 
 ## Stop
 
-    module.exports.push name: 'Solr # Stop', label_true: 'STOPPED', handler: (ctx, next) ->
-      ctx.service
-        srv_name: 'solr'
-        action: 'stop'
+    module.exports.push name: 'Solr # Stop', label_true: 'STOPPED', handler: ->
+      @service_stop
+        name: 'solr'
         if_exists: '/etc/init.d/solr'
-      , next

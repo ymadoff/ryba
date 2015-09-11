@@ -4,10 +4,11 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/yarn_client/install'
-    module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_service'
+    # module.exports.push require '../../lib/hdp_service'
+    module.exports.push require '../../lib/hdp_select'
     module.exports.push require '../../lib/write_jaas'
+    # module.exports.push require('./index').configure
       
 ## IPTables
 
@@ -23,9 +24,9 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'YARN RM # IPTables', handler: (ctx, next) ->
-      {yarn} = ctx.config.ryba
-      shortname = if ctx.hosts_with_module('ryba/hadoop/yarn_rm').length is 1 then '' else ".#{ctx.config.shortname}"
+    module.exports.push name: 'YARN RM # IPTables', handler: ->
+      {yarn} = @config.ryba
+      shortname = if @hosts_with_module('ryba/hadoop/yarn_rm').length is 1 then '' else ".#{@config.shortname}"
       rules = []
       # Application
       rpc_port = yarn.site["yarn.resourcemanager.address#{shortname}"].split(':')[1]
@@ -47,18 +48,17 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       # Resource Tracker
       rt_port = yarn.site["yarn.resourcemanager.resource-tracker.address#{shortname}"].split(':')[1]
       rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: rt_port, protocol: 'tcp', state: 'NEW', comment: "YARN RM Application Submissions" }
-      ctx.iptables
+      @iptables
         rules: rules
-        if: ctx.config.iptables.action is 'start'
-      .then next
+        if: @config.iptables.action is 'start'
 
 ## Kerberos
 
-    module.exports.push name: 'YARN RM # Kerberos', handler: (ctx, next) ->
-      {yarn, hadoop_group, realm} = ctx.config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc
-        principal: yarn.site['yarn.resourcemanager.principal'].replace '_HOST', ctx.config.host
+    module.exports.push name: 'YARN RM # Kerberos', handler: ->
+      {yarn, hadoop_group, realm} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      @krb5_addprinc
+        principal: yarn.site['yarn.resourcemanager.principal'].replace '_HOST', @config.host
         randkey: true
         keytab: yarn.site['yarn.resourcemanager.keytab']
         uid: yarn.user.name
@@ -66,94 +66,75 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      .then next
 
 ## Kerberos JAAS
 
 The JAAS file is used by the ResourceManager to initiate a secure connection 
 with Zookeeper.
 
-    module.exports.push name: 'YARN RM # Kerberos JAAS', handler: (ctx, next) ->
-      {yarn, hadoop_conf_dir, hadoop_group, core_site, realm} = ctx.config.ryba
-      ctx.write_jaas
+    module.exports.push name: 'YARN RM # Kerberos JAAS', handler: ->
+      {yarn, hadoop_conf_dir, hadoop_group, core_site, realm} = @config.ryba
+      @write_jaas
         destination: "#{hadoop_conf_dir}/yarn-rm.jaas"
         content: Client:
-          principal: yarn.site['yarn.resourcemanager.principal'].replace '_HOST', ctx.config.host
+          principal: yarn.site['yarn.resourcemanager.principal'].replace '_HOST', @config.host
           keyTab: yarn.site['yarn.resourcemanager.keytab']
         uid: yarn.user.name
         gid: hadoop_group.name
-      .then next
-
 
 ## Service
 
 Install the "hadoop-yarn-resourcemanager" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'YARN RM # Service', handler: (ctx, next) ->
-      {yarn} = ctx.config.ryba
-      ctx.hdp_service
+    module.exports.push name: 'YARN RM # Service', handler: ->
+      {yarn} = @config.ryba
+      @service
         name: 'hadoop-yarn-resourcemanager'
-        write: [
-          match: /^\. \/etc\/default\/hadoop-yarn-resourcemanager .*$/m
-          replace: '. /etc/default/hadoop-yarn-resourcemanager # RYBA FIX rc.d, DONT OVERWRITE'
-          append: ". /lib/lsb/init-functions"
-        ,
-          # HDP default is "$HADOOP_PID_DIR/yarn-$YARN_IDENT_STRING-resourcemanager.pid"
-          match: /^PIDFILE=".*".*$/mg
-          replace: "PIDFILE=\"${YARN_PID_DIR}/yarn-$YARN_IDENT_STRING-resourcemanager.pid\" # RYBA FIX, DONT OVERWRITE"
-        ]
-        etc_default:
-          'hadoop-yarn-resourcemanager':
-            write: [
-              match: /^export YARN_PID_DIR=.*$/m # HDP default is "/var/run/hadoop-hdfs"
-              replace: "export YARN_PID_DIR=#{yarn.pid_dir} # RYBA, DONT OVERWRITE"
-            ,
-              match: /^export YARN_LOG_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
-              replace: "export YARN_LOG_DIR=#{yarn.log_dir} # RYBA, DONT OVERWRITE"
-            ,
-              match: /^export YARN_CONF_DIR=.*$/m # HDP default is "/var/log/hadoop-hdfs"
-              replace: "export YARN_CONF_DIR=#{yarn.conf_dir} # RYBA, DONT OVERWRITE"
-            ,
-              match: /^export YARN_IDENT_STRING=.*$/m # HDP default is "hdfs"
-              replace: "export YARN_IDENT_STRING=#{yarn.user.name} # RYBA, DONT OVERWRITE"
-            ]
-      .then next
+      @hdp_select
+        name: 'hadoop-yarn-client' # Not checked
+        name: 'hadoop-yarn-resourcemanager'
+      @write
+        source: "#{__dirname}/../resources/hadoop-yarn-resourcemanager"
+        local_source: true
+        destination: '/etc/init.d/hadoop-yarn-resourcemanager'
+        mode: 0o0755
+        unlink: true
+      @execute
+        cmd: "service hadoop-yarn-resourcemanager restart"
+        if: -> @status -3
 
 ## Environment
 
-    module.exports.push name: 'YARN RM # Env', handler: (ctx, next) ->
-      {java_home} = ctx.config.java
-      {yarn, hadoop_group, hadoop_conf_dir} = ctx.config.ryba
+    module.exports.push name: 'YARN RM # Env', handler: ->
+      {java_home} = @config.java
+      {yarn, hadoop_group, hadoop_conf_dir} = @config.ryba
       rm_opts = "-Djava.security.auth.login.config=#{hadoop_conf_dir}/yarn-rm.jaas #{yarn.rm_opts}"
-      ctx.write
+      @write
         destination: "#{hadoop_conf_dir}/yarn-env.sh"
         match: /^.*# RYBA CONF "ryba.yarn.rm_opts", DONT OVERWRITE/mg
         replace: "YARN_RESOURCEMANAGER_OPTS=\"${YARN_RESOURCEMANAGER_OPTS} #{rm_opts}\" # RYBA CONF \"ryba.yarn.rm_opts\", DONT OVERWRITE"
         append: true
         backup: true
-      .then next
 
 ## Configuration
 
-    module.exports.push name: 'YARN RM # Configuration', handler: (ctx, next) ->
-      {hadoop_conf_dir, yarn, mapred} = ctx.config.ryba
-      ctx
-      .hconfigure
+    module.exports.push name: 'YARN RM # Configuration', handler: ->
+      {hadoop_conf_dir, yarn, mapred} = @config.ryba
+      @hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
         local_default: true
         properties: yarn.site
         merge: true
         backup: true
-      .hconfigure # Ideally placed inside a mapred_jhs_client module
+      @hconfigure # Ideally placed inside a mapred_jhs_client module
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
         properties: mapred.site
         merge: true
         backup: true
-      .touch
+      @touch
         destination: "#{hadoop_conf_dir}/yarn.exclude"
-      .then next
 
 ## Capacity Scheduler
 
@@ -168,27 +149,19 @@ only uses Memory while DominantResourceCalculator uses Dominant-resource to
 compare multi-dimensional resources such as Memory, CPU etc. A Java
 ResourceCalculator class name is expected.
 
-    module.exports.push name: 'YARN RM # Capacity Scheduler', handler: (ctx, next) ->
-      {yarn, hadoop_conf_dir, capacity_scheduler} = ctx.config.ryba
+    module.exports.push name: 'YARN RM # Capacity Scheduler', handler: ->
+      {yarn, hadoop_conf_dir, capacity_scheduler} = @config.ryba
       return next() unless yarn.site['yarn.resourcemanager.scheduler.class'] is 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
-      refresh = false
-      ctx
-      .hconfigure
+      @hconfigure
         destination: "#{hadoop_conf_dir}/capacity-scheduler.xml"
         default: "#{__dirname}/../../resources/core_hadoop/capacity-scheduler.xml"
         local_default: true
         properties: capacity_scheduler
         merge: false
         backup: true
-      , (err, status) ->
-        return if err or not status
-        refresh = true
-      .execute
-        cmd: mkcmd.hdfs ctx, 'service hadoop-yarn-resourcemanager status && yarn rmadmin -refreshQueues'
-        code_skipped: [1, 3] # 1: if pid file exists but rm not running
-        if: -> refresh or ctx.retry > 0
-      .then (err, status) ->
-        next err, status
+      @execute
+        cmd: mkcmd.hdfs @, 'service hadoop-yarn-resourcemanager status && yarn rmadmin -refreshQueues || exit'
+        if: -> @status -1
 
 ## Dependencies
 

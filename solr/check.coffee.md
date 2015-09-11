@@ -1,4 +1,0 @@
-
-# Solr Check
-
-    module.exports = []

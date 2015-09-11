@@ -12,10 +12,11 @@
       params = params.parse()
       config params.config, (err, config) ->
         throw err if err
+        upgrade = require "./upgrade_#{params.from}-#{params.to}"
         upgrade params, config, (err) ->
           if err
             if err.errors
-              for err of err.errors
+              for err in err.errors
                 console.log err.stack or err.message
             else
               console.log err.stack
@@ -43,12 +44,20 @@ node node_modules/ryba/bin/upgrade \
         description: 'One or multiple configuration files.'
         required: true
       ,
-        name: 'start', shortcut: 's'
-        description: 'Middleware to start from'
-      ,
         name: 'repo', shortcut: 'r'
         description: 'Path to the new HDP 2.2 repository file.'
         required: true
+      ,
+        name: 'from', shortcut: 'f'
+        description: 'Current version.'
+        required: true
+      ,
+        name: 'to', shortcut: 't'
+        description: 'Target version.'
+        required: true
+      ,
+        name: 'start', shortcut: 's'
+        description: 'Middleware to start from'
       ,
         name: 'easy_download', shortcut: 'e', type: 'boolean'
         description: 'Number of concurrent downloads, parallel unless defined'
@@ -58,5 +67,4 @@ node node_modules/ryba/bin/upgrade \
 
     parameters = require 'parameters'
     config = require 'masson/lib/config'
-    upgrade = require './upgrade_2.1-2.2'
     util = require 'util'

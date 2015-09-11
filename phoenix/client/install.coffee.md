@@ -9,49 +9,42 @@ deployment is heavily inspired by [Anil Gupta instruction][agi].
     module.exports.push 'masson/core/yum'
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/hbase/client/install'
-    module.exports.push require('../../hadoop/core').configure
-    module.exports.push require('../../hbase/client').configure
-    module.exports.push require('./index').configure
+    # module.exports.push require('../../hadoop/core').configure
+    # module.exports.push require('../../hbase/client').configure
+    # module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_select'
 
 ## Packages
 
-    module.exports.push name: 'Phoenix Client # Install', handler: (ctx, next) ->
-      ctx
-      .service
-        name: 'phoenix'
-      .hdp_select
-        name: 'phoenix-client'
-      .then next
+    module.exports.push name: 'Phoenix Client # Install', handler: ->
+      @service name: 'phoenix'
+      @hdp_select name: 'phoenix-client'
 
-    module.exports.push name: 'Phoenix Client # Hadoop Configuration', handler: (ctx, next) ->
-      {hadoop_conf_dir} = ctx.config.ryba
-      ctx.execute
+    module.exports.push name: 'Phoenix Client # Hadoop Configuration', handler: ->
+      {hadoop_conf_dir} = @config.ryba
+      @execute
         cmd:"""
         ln -sf #{path.join hadoop_conf_dir, 'core-site.xml'} /usr/hdp/current/phoenix-client/bin/core-site.xml
         """
         not_if_exists: '/usr/hdp/current/phoenix-client/bin/core-site.xml'
-      .then next
 
-    module.exports.push name: 'Phoenix Client # HBase Configuration', handler: (ctx, next) ->
-      {hbase} = ctx.config.ryba
-      ctx.execute
+    module.exports.push name: 'Phoenix Client # HBase Configuration', handler: ->
+      {hbase} = @config.ryba
+      @execute
         cmd:"""
         ln -sf #{path.join hbase.conf_dir, 'hbase-site.xml'} /usr/hdp/current/phoenix-client/bin/hbase-site.xml
         """
         not_if_exists: '/usr/hdp/current/phoenix-client/bin/hbase-site.xml'
-      .then next
 
 ## Kerberos
 
 Thanks to [Anil Gupta](http://bigdatanoob.blogspot.fr/2013/09/connect-phoenix-to-secure-hbase-cluster.html)
 for its instructions.
 
-    module.exports.push name: 'Phoenix Client # Kerberos', handler: (ctx, next) ->
-      {hadoop_conf_dir, hbase, phoenix} = ctx.config.ryba
-      ctx
-      .write
+    module.exports.push name: 'Phoenix Client # Kerberos', handler: ->
+      {hadoop_conf_dir, hbase, phoenix} = @config.ryba
+      @write
         destination: "#{phoenix.conf_dir}/phoenix-client.jaas"
         content: """
         Client {
@@ -60,7 +53,7 @@ for its instructions.
           useTicketCache=true;
         };
         """
-      .write
+      @write
         destination: '/usr/hdp/current/phoenix-client/bin/psql.py'
         write: [
           replace: "    os.pathsep + '#{hadoop_conf_dir}' + os.pathsep + '#{hbase.conf_dir}' + os.pathsep + '/usr/hdp/current/hadoop-client/hadoop-auth-*.jar' \\"
@@ -72,7 +65,7 @@ for its instructions.
           before: 'org.apache.phoenix.util.PhoenixRuntime'
         ]
         backup: true
-      .write
+      @write
         destination: '/usr/hdp/current/phoenix-client/bin/sqlline.py'
         write: [
           replace: "    os.pathsep + '#{hadoop_conf_dir}' + os.pathsep + '#{hbase.conf_dir}' + os.pathsep + '/usr/hdp/current/hadoop-client/hadoop-auth-*.jar' \\"
@@ -84,7 +77,6 @@ for its instructions.
           before: 'sqlline.SqlLine'
         ]
         backup: true
-      .then next
 
 ## Wait for HBase
 
@@ -96,21 +88,22 @@ There is 3 phoenix 'SYSTEM.*' tables. If they don't exist in HBase, we launch
 phoenix with hbase admin user.
 Independently, if 'ryba' hasn't CREATE right on these 3 tables, it will be granted
 
-    module.exports.push name: 'Phoenix Client # Init', timeout: 200000, handler: (ctx, next) ->
-      {hbase} = ctx.config.ryba
+    module.exports.push name: 'Phoenix Client # Init', timeout: 200000, handler: ->
+      {hbase} = @config.ryba
       zk_path = "#{hbase.site['hbase.zookeeper.quorum']}"
       zk_path += ":#{hbase.site['hbase.zookeeper.property.clientPort']}"
-      zk_path += "hbase.site['zookeeper.znode.parent']"
-      ctx.execute
-        cmd: mkcmd.hbase ctx, """
+      zk_path += "#{hbase.site['zookeeper.znode.parent']}"
+      @execute
+        cmd: mkcmd.hbase @, """
         code=3
         if [ `hbase shell 2>/dev/null <<< "list 'SYSTEM.*'" | egrep '^SYSTEM\.' | wc -l` -lt "2" ]; then
         /usr/hdp/current/phoenix-client/bin/sqlline.py #{zk_path} 2>/dev/null <<< '!q'
         code=0
         fi
-        if [ `hbase shell 2>/dev/null <<< "user_permission 'SYSTEM.*'" | egrep 'ryba.*(CREATE|READ|WRITE).*(CREATE|READ|WRITE).*(CREATE|READ|WRITE)' | wc -l` -lt "3" ]; then
+        if [ `hbase shell 2>/dev/null <<< "user_permission 'SYSTEM.*'" | egrep 'ryba.*(CREATE|READ|WRITE).*(CREATE|READ|WRITE).*(CREATE|READ|WRITE)' | wc -l` -lt "4" ]; then
         hbase shell 2>/dev/null <<-CMD
         grant 'ryba', 'RWC', 'SYSTEM.CATALOG'
+        grant 'ryba', 'RWC', 'SYSTEM.FUNCTION'
         grant 'ryba', 'RWC', 'SYSTEM.SEQUENCE'
         grant 'ryba', 'RWC', 'SYSTEM.STATS'
         CMD
@@ -119,7 +112,6 @@ Independently, if 'ryba' hasn't CREATE right on these 3 tables, it will be grant
         exit $code
         """
         code_skipped: 3
-      .then next
 
 ## Dependencies
 

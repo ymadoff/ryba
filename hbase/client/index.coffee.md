@@ -24,4 +24,7 @@ Client code accessing a cluster finds the cluster by querying ZooKeeper.
 
     module.exports.push commands: 'check', modules: 'ryba/hbase/client/check'
 
-    module.exports.push commands: 'install', modules: 'ryba/hbase/client/install'
+    module.exports.push commands: 'install', modules: [
+      'ryba/hbase/client/install'
+      'ryba/hbase/client/check'
+    ]

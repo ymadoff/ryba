@@ -6,11 +6,10 @@ and consumer Kafka components.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require '../lib/hdp_select'
 
 ## Configure
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       require('../hadoop/core').configure ctx
       kafka = ctx.config.ryba.kafka ?= {}
       # Layout
@@ -44,22 +43,7 @@ cat /etc/group | grep kafka
 kafka:x:496:kafka
 ```
 
-    module.exports.push name: 'Kafka # Users & Groups', handler: (ctx, next) ->
-      {kafka} = ctx.config.ryba
-      ctx
-      .group kafka.group
-      .user kafka.user
-      .then next
-
-## Package
-
-Install the Kafka broker package and set it to the latest version. Note, there
-are no "kafka-producer" nor "kafka-consumer" directories.
-
-    module.exports.push name: 'Kafka Broker # Package', handler: (ctx, next) ->
-      ctx
-      .service
-        name: 'kafka'
-      .hdp_select
-        name: 'kafka-broker'
-      .then next
+    module.exports.push name: 'Kafka # Users & Groups', handler: ->
+      {kafka} = @config.ryba
+      @group kafka.group
+      @user kafka.user
