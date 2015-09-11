@@ -6,6 +6,7 @@
     module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/core/yum'
     module.exports.push require '../lib/hconfigure'
+    module.exports.push require '../lib/hdp_select'
     module.exports.push require '../lib/write_jaas'
     module.exports.push require('./').configure
 
@@ -42,6 +43,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
     module.exports.push name: 'Knox # Service', timeout: -1, handler: (ctx, next) ->
       ctx.service
         name: 'knox'
+      .hdp_select
+        name: 'knox-server'
       .then next
 
 ## Master Secret
@@ -128,7 +131,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           provider = gateway.ele 'provider'
           provider.ele 'name', name
           provider.ele 'role', p.role
-          provider.ele 'enabled', 'true'
+          provider.ele 'enabled', if p.enabled is false then 'false' else 'true'
           for name, value of p.config
             param = provider.ele 'param'
             param.ele 'name', name
@@ -146,6 +149,9 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       .remove
          destination: "#{knox.conf_dir}/topologies/sandbox.xml"
          not_if: 'sandbox' in Object.keys knox.topologies
+      .remove
+         destination: "#{knox.conf_dir}/topologies/admin.xml"
+         not_if: 'admin' in Object.keys knox.topologies 
       .write write
       .then next
 

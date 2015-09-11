@@ -43,77 +43,61 @@ with Hadoop clusters.
       knox.site['gateway.hadoop.kerberos.secured'] ?= 'true'
       knox.site['sun.security.krb5.debug'] ?= 'true'
       # Calculate Services config values for default topology
-      webhcat_ctxs = ctx.contexts 'ryba/hive/webhcat', require('../hive/webhcat').configure
-      # require('../hadoop/hdfs_nn').configure hdfs_ctx
-      # console.log require('util').inspect hdfs_ctx.config.ryba.hdfs
-      # webhcat_host = ctx.host_with_module 'ryba/hive/webhcat'
-      # webhcat_port = webhcat.site['templeton.port']
-      # hbase_hosts = ctx.hosts_with_module 'ryba/hbase/master'
-      # hive_hosts = ctx.hosts_with_module 'ryba/hive/hcatalog'
-      # hive_ctx = ctx.hosts[hive_hosts[0]]
-      # require('../hive/hcatalog').configure hive_ctx
-      # hive_mode = hive_ctx.config.ryba.hive.site['hive.server2.transport.mode']
-      # throw Error "Invalid property \"hive.server2.transport.mode\", expect \"http\"" unless hive_mode is 'http'
-      # hive_port = hive_ctx.config.ryba.hive.site['hive.server2.thrift.http.port']
-      # knox.services ?= {}
-      # knox.services['namenode'] ?=
-      # knox.services['jobtracker'] ?= "rpc://#{rm_address}"
-      # knox.services['webhdfs'] ?= "https://#{webhdfs_host}:50470/webhdfs"
-      # knox.services['webhcat'] ?= "http://#{webhcat_host}:#{webhcat_port}/templeton"
-      # knox.services['oozie'] ?= "#{oozie.site['oozie.base.url']}"
-      # knox.services['webhbase'] ?= "http://#{hbase_host}:60080" if hbase_host
-      # knox.services['hive'] ?= "http://#{hive_host}:#{hive_port}/cliservice" if hive_host
       knox.topologies ?= {}
       topology = knox.topologies[ctx.config.ryba.nameservice] ?= {}
       topology.providers ?= {}
-      topology.providers.ShiroProvider ?=
-        role: 'authentication'
-        config:
-          'sessionTimeout': 30
-          'main.ldapRealm': 'org.apache.hadoop.gateway.shirorealm.KnoxLdapRealm'
-          'main.ldapContextFactory': 'org.apache.hadoop.gateway.shirorealm.KnoxLdapContextFactory'
-          'main.ldapRealm.contextFactory': '$ldapContextFactory'
-          'main.ldapRealm.userDnTemplate': 'uid={0},ou=people,dc=hadoop,dc=apache,dc=org'
-          'main.ldapRealm.contextFactory.url': 'ldap://localhost:33389'
-          'main.ldapRealm.contextFactory.authenticationMechanism': 'simple'
-          'urls./**':'authcBasic'
       topology.providers.Default ?= role: 'identity-assertion'
       topology.providers.static ?=
         role: 'hostmap'
-        config:
-          localhost: 'sandbox,sandbox.hortonworks.com'
+        enabled: false
       topology.providers.haProvider ?=
         role: 'ha'
+        enabled: false
         config: WEBHDFS: 'maxFailoverAttempts=3;failoverSleep=1000;maxRetryAttempts=300;retrySleep=1000;enabled=true'
       ### Services ###
       topology.services ?= {}
       # Namenode
-      nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn').configure
+      nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn'
       if nn_ctxs.length
-        topology.services['namenode'] ?= nn_ctxs[0].config.ryba.core_site['fs.defaultFS']
+        [nn_ctx] = nn_ctxs 
+        topology.services['namenode'] ?= nn_ctx.config.ryba.core_site['fs.defaultFS']
       # WebHDFS
-        topology.services['webhdfs'] ?= path.join nn_ctx.config.ryba.hdfs.site["dfs.namenode.https-address.#{ryba.nameservice}.#{nn_ctx.config.shortname}"], 'webhdfs' for nn_ctx in nn_ctxs
+        topology.services['webhdfs'] ?= for nn_ctx in nn_ctxs
+          path.join nn_ctx.config.ryba.hdfs.site["dfs.namenode.https-address.#{nn_ctx.config.ryba.nameservice}.#{nn_ctx.config.shortname}"], 'webhdfs'
       # Jobtracker
-      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
+      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm'
       if rm_ctxs.length
-        rm_shortname = if rm_ctxs.length > 1 then ".#{rm_ctxs[0].config.shortname}" else ''    
-        rm_address = rm_ctxs[0].config.ryba.yarn.site["yarn.resourcemanager.address#{rm_shortname}"]
+        [rm_ctx] = rm_ctxs
+        rm_shortname = if rm_ctxs.length > 1 then ".#{rm_ctx.config.shortname}" else ''    
+        rm_address = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{rm_shortname}"]
         topology.services['jobtracker'] ?= "rpc://#{rm_address}" if rm_address?
       # WebHCat
-      if nn_ctxs.length
-        host = webhcat_ctxs[0].config.host if nn_ctxs.length
-        port = webhcat_ctxs[0].config.ryba.webhcat.site['templeton.port']
-        knox.services['webhcat'] ?= "http://#{host}:#{port}/templeton"
+      webhcat_ctxs = ctx.contexts 'ryba/hive/webhcat'
+      if webhcat_ctxs.length
+        [webhcat_ctx] = webhcat_ctxs
+        host = webhcat_ctx.config.host 
+        port = webhcat_ctx.config.ryba.webhcat.site['templeton.port']
+        topology.services['webhcat'] ?= "http://#{host}:#{port}/templeton"
       # Oozie
-      oozie_ctxs = ctx.contexts 'ryba/oozie/server', require('../oozie/server').configure
+      oozie_ctxs = ctx.contexts 'ryba/oozie/server'
       if oozie_ctxs.length
-        knox.services['oozie'] ?= oozie_ctxs[0].config.ryba.oozie.site['oozie.base.url']
+        [oozie_ctx] = oozie_ctxs
+        topology.services['oozie'] ?= oozie_ctx.config.ryba.oozie.site['oozie.base.url']
       # WebHBase
-      stargate_ctxs = 
-      # knox.services['webhbase'] ?= "http://#{hbase_host}:60080" if hbase_host
+      stargate_ctxs = ctx.contexts 'ryba/hbase/rest'
+      if stargate_ctxs.length
+        [stargate_ctx] = stargate_ctxs
+        host = stargate_ctx.config.host
+        port = stargate_ctx.config.ryba.hbase.site['hbase.rest.port']
+        topology.services['webhbase'] ?= "http://#{host}:#{port}"
       # Thrift
-      knox.services['hive'] ?= "http://#{hive_host}:#{hive_port}/cliservice" if hive_host
-        
+      hive_ctxs = ctx.contexts 'ryba/hive/thrift'
+      if hive_ctxs.length
+        [hive_ctx] = hive_ctxs
+        host = hive_ctx.config.host
+        port = hive_ctx.config.ryba.hive.site['hive.server2.thrift.http.port']
+        topology.services['hive'] ?= "http://#{host}:#{port}/cliservice"
+
     module.exports.push commands: 'check', modules: 'ryba/knox/check'
 
     module.exports.push commands: 'install', modules: [

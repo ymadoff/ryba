@@ -159,3 +159,4 @@ Create the directories to store the logs and pid information. The properties
         user: hive.user.name
         nofile: true
         nproc: true
+
