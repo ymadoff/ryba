@@ -41,28 +41,22 @@
         mode: 0o0755
         parent: true
 
+## Yarn OPTS
+
+Inject YARN environmental properties used by the client, nodemanager and
+resourcemanager.
+
+Properties accepted by the template are: `ryba.yarn.rm_opts`   
+
+
     module.exports.push name: 'YARN Client # Yarn OPTS', handler: ->
       {java_home} = @config.java
       {yarn, hadoop_group, hadoop_conf_dir} = @config.ryba
       @render
-        source: "#{__dirname}/../../resources/core_hadoop/yarn-env.sh"
+        source: "#{__dirname}/../resources/yarn-env.sh"
         destination: "#{hadoop_conf_dir}/yarn-env.sh"
         local_source: true
-        write: [
-          match: /^export JAVA_HOME=.*$/m
-          replace: "export JAVA_HOME=\"#{java_home}\" # RYBA CONF \"java.java_home\", DONT OVEWRITE"
-        ,
-          match: /^export YARN_PID_DIR=.*$/m
-          replace: "export YARN_PID_DIR=\"#{yarn.pid_dir}\" # RYBA CONF \"ryba.yarn.pid_dir\", DONT OVEWRITE"
-        ,
-          match: /^YARN_OPTS="(.*) \$\{YARN_OPTS\}" # RYBA CONF ".*?", DONT OVERWRITE/m
-          replace: "YARN_OPTS=\"#{yarn.opts} ${YARN_OPTS}\" # RYBA CONF \"ryba.yarn.opts\", DONT OVERWRITE"
-          before: /^YARN_OPTS=".*"$/m
-        ,
-          match: /^export YARN_IDENT_STRING=.* # RYBA.*$/m
-          replace: "export YARN_IDENT_STRING=${YARN_IDENT_STRING:-yarn} # RYBA FIX rc.d"
-          append: /^export HADOOP_YARN_USER=.*$/m
-        ]
+        context: @config
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0755

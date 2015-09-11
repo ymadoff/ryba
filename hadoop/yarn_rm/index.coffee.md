@@ -7,11 +7,21 @@
 
 ## Configuration
 
+```json
+{ "ryba": { "yarn": { "rm": {
+    "opts": "",
+    "heapsize": "1024"
+} } } }
+```
+
     module.exports.configure = (ctx) ->
       return if ctx.yarn_rm_configured
       ctx.yarn_rm_configured = true
       require('../yarn_client').configure ctx
       {ryba} = ctx.config
+      ryba.yarn.rm ?= {}
+      ryba.yarn.rm.opts ?= ''
+      ryba.yarn.rm.heapsize ?= '1024'
       ryba.yarn.site['yarn.resourcemanager.keytab'] ?= '/etc/security/keytabs/rm.service.keytab'
       ryba.yarn.site['yarn.resourcemanager.principal'] ?= "rm/#{ryba.static_host}@#{ryba.realm}"
       ryba.yarn.site['yarn.resourcemanager.scheduler.class'] ?= 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
@@ -84,6 +94,8 @@ killed as a last resort.
 ## Environment
 
       ryba.yarn.rm_opts ?= ''
+      # Enable JAAS/Kerberos connection between YARN RM and ZooKeeper
+      ryba.yarn.rm_opts = "-Djava.security.auth.login.config=#{ryba.hadoop_conf_dir}/yarn-rm.jaas #{ryba.yarn.rm_opts}"
 
 ## Commands
 
@@ -108,5 +120,3 @@ killed as a last resort.
 
 [restart]: http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/ResourceManagerRestart.html
 [ml_root_acl]: http://lucene.472066.n3.nabble.com/Yarn-HA-Zookeeper-ACLs-td4138735.html
-
-
