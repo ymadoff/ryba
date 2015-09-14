@@ -18,9 +18,9 @@ Additionnal information may be found on the [CentOS HowTos site][corblk].
       rootdir = @contexts('ryba/hbase/master')[0].config.ryba.hbase.site['hbase.rootdir']
       @execute
         cmd: mkcmd.hdfs @, "hdfs fsck #{rootdir}/WALs | grep 'Status: HEALTHY'"
-        # relax: true
+        relax: true
       , (err) ->
-        @log? 'ERROR, fsck show WAL corruption' if err
+        @log? 'WARN, fsck show WAL corruption' if err
 
 ## Check SPNEGO
 
