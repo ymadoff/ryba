@@ -5,8 +5,7 @@
     module.exports.push 'masson/bootstrap/'
 
 
-    module.exports.push name: 'MongoDB Server # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
-      ctx.execute
+    module.exports.push name: 'MongoDB Server # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
+      @execute
         cmd: 'service mongod status'
         code_skipped: 3
-      .then next
