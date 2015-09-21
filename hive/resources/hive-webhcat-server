@@ -34,7 +34,8 @@
 NAME='Hive Webhcat Server'
 USER='hive'
 PID_FILE='/var/run/webhcat/webhcat.pid'
-CMD="su -l $USER -c \"su -l hive -c \"/usr/hdp/current/hive-webhcat/sbin/webhcat_server.sh start\""
+CMD="su -l $USER -c \"/usr/hdp/current/hive-webhcat/sbin/webhcat_server.sh start\""
+
 KILL_FORCE=0
 KILL_SLEEP=10
 
@@ -94,4 +95,3 @@ else
   N=/etc/init.d/$NAME
   echo "Usage: $N {start|stop|restart|status}" >&2
 fi
-
