@@ -36,6 +36,13 @@ The URI resources are grouped into APIs based on the type of information returne
       # wont replace "hdp.version" and result in class not found.
       # ryba.yarn.site['yarn.application.classpath'] ?= "$HADOOP_CONF_DIR,/usr/hdp/${hdp.version}/hadoop-client/*,/usr/hdp/${hdp.version}/hadoop-client/lib/*,/usr/hdp/${hdp.version}/hadoop-hdfs-client/*,/usr/hdp/${hdp.version}/hadoop-hdfs-client/lib/*,/usr/hdp/${hdp.version}/hadoop-yarn-client/*,/usr/hdp/${hdp.version}/hadoop-yarn-client/lib/*"
       ryba.yarn.site['yarn.application.classpath'] ?= "$HADOOP_CONF_DIR,/usr/hdp/current/hadoop-client/*,/usr/hdp/current/hadoop-client/lib/*,/usr/hdp/current/hadoop-hdfs-client/*,/usr/hdp/current/hadoop-hdfs-client/lib/*,/usr/hdp/current/hadoop-yarn-client/*,/usr/hdp/current/hadoop-yarn-client/lib/*"
+      # The default value of yarn.generic-application-history.save-non-am-container-meta-info
+      # is true, so there is no change in behavior. For clusters with more than
+      # 100 nodes, we recommend this configuration value be set to false to
+      # reduce the load on the Application Timeline Service.
+      # see http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.8/bk_HDP_RelNotes/content/behav-changes-228.html
+      default_save_am_info = if ctx.contexts('ryba/hadoop/yarn_client').length > 100 then 'false' else 'true'
+      ryba.yarn.site['yarn.generic-application-history.save-non-am-container-meta-info'] ?= "#{default_save_am_info}"
       [jhs_context] = ctx.contexts 'ryba/hadoop/mapred_jhs', require('../mapred_jhs').configure
       if jhs_context
         # TODO: detect https and port, see "../mapred_jhs/check"
