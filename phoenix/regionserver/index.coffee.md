@@ -25,5 +25,9 @@ Factory to create the Phoenix RPC Scheduler that knows to put index updates into
       hbase.site['hbase.region.server.rpc.scheduler.factory.class'] = null
       hbase.site['hbase.regionserver.rpc.scheduler.factory.class'] ?= 'org.apache.hadoop.hbase.ipc.PhoenixRpcSchedulerFactory'
       hbase.site['hbase.rpc.controllerfactory.class'] ?= 'org.apache.hadoop.hbase.ipc.controller.ServerRpcControllerFactory'
+      ctx.before
+        type: 'service'
+        name: 'hbase-regionserver'
+      , require './install'
 
     module.exports.push commands: 'install', modules: 'ryba/phoenix/regionserver/install'
