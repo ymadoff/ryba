@@ -5,7 +5,7 @@ Oozie source code and examples are located in "/usr/share/doc/oozie-$version".
 
 The current version of Oozie doesnt supported automatic failover of the Yarn
 Resource Manager. RM HA (High Availability) must be configure with manual
-failover and Oozie must target the active node. 
+failover and Oozie must target the active node.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
@@ -16,6 +16,7 @@ failover and Oozie must target the active node.
     module.exports.push 'ryba/hadoop/hdfs_dn/wait' # Create directories inside HDFS
     module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdp_select'
+    module.exports.push require('../../lib/hdfs_mkdir').register
     # module.exports.push require('./index').configure
 
 ## Users & Groups
@@ -454,15 +455,20 @@ the ShareLib contents without having to go into HDFS.
 
     module.exports.push name: 'Oozie Server # Share lib', timeout: 600000, handler: ->
       {core_site, oozie} = @config.ryba
+      @hdfs_mkdir
+        destination: "/user/#{oozie.user.name}/share/lib"
+        user: "#{oozie.user.name}"
+        group:  "#{oozie.group.name}"
+        mode: 0o0755
+        krb5_user: @config.ryba.hdfs.krb5_user
       @execute
         cmd: mkcmd.hdfs @, """
         if hdfs dfs -test -d /user/#{oozie.user.name}/share/lib; then
           echo 'Upgrade sharelib'
           su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib upgrade -fs #{core_site['fs.defaultFS']} /usr/hdp/current/oozie-client/oozie-sharelib.tar.gz"
         else
-          # hdfs dfs -mkdir /user/#{oozie.user.name} || true
-          hdfs dfs -mkdir -p /user/#{oozie.user.name}/share/lib || true
-          hdfs dfs -chown -R #{oozie.user.name}:#{oozie.group.name} /user/#{oozie.user.name}
+          #hdfs dfs -mkdir -p /user/#{oozie.user.name}/share/lib || true
+          #hdfs dfs -chown -R #{oozie.user.name}:#{oozie.group.name} /user/#{oozie.user.name}
           echo 'Create sharelib'
           su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib create -fs #{core_site['fs.defaultFS']} /usr/hdp/current/oozie-client/oozie-sharelib.tar.gz"
         fi
