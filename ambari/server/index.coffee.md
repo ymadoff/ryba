@@ -133,7 +133,7 @@ ambari:
 
     module.exports.push commands: 'install', modules: [
       'ryba/ambari/server/install'
-      # 'ryba/ambari/server/start'
+      'ryba/ambari/server/start'
       # 'ryba/ambari/server/check'
     ]
 

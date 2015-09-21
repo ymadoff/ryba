@@ -4,11 +4,12 @@ The ambari server must be set in the configuration file.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
+    module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/ambari/server/wait'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
-    # module.exports.push name: '', handler: (ctx, next) ->
-    #   ctx.mkdir 
+    # module.exports.push name: '', handler: ->
+    #   @mkdir 
     #     destination: "/root/.ssh"
     #     uid: 'root'
     #     gid: null
@@ -19,7 +20,7 @@ The ambari server must be set in the configuration file.
     #       match: new RegExp ".*#{misc.regexp.escape key}.*", 'mg'
     #       replace: key
     #       append: true
-    #     ctx.write
+    #     @write
     #       destination: "#{user.home or '/home/'+user.name}/.ssh/authorized_keys"
     #       write: write
     #       uid: user.name
@@ -31,17 +32,16 @@ The ambari server must be set in the configuration file.
     #       modified = true if written
     #       next()
 
-    module.exports.push name: 'Ambari Agent # Configure', timeout: -1, handler: (ctx, next) ->
-      {ambari_agent} = ctx.config.ryba
-      # ctx.ini # mecano need to manage multiline values
+    module.exports.push name: 'Ambari Agent # Configure', timeout: -1, handler: ->
+      {ambari_agent} = @config.ryba
+      # @ini # mecano need to manage multiline values
       #   destination: "#{ambari_agent.conf_dir}/ambari-agent.ini"
       #   content: ambari_agent.config
       #   merge: true
       #   backup: true
       #   if: false
-      # , next
 
-      ctx.write
+      @write
         destination: "#{ambari_agent.conf_dir}/ambari-agent.ini"
         write: [
           match: /^hostname=(.*)/m
@@ -53,13 +53,10 @@ The ambari server must be set in the configuration file.
           match: /^secured_url_port=(.*)/m
           replace: "secured_url_port=#{ambari_agent.config.server['secured_url_port']}"
         ]
-      , next
 
  
-    module.exports.push name: 'Ambari Agent # Startup', timeout: -1, handler: (ctx, next) ->
-      ctx.service
+    module.exports.push name: 'Ambari Agent # Startup', timeout: -1, handler: ->
+      @service
         name: 'ambari-agent'
         startup: true
         action: 'start'
-      , next
-
