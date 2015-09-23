@@ -91,12 +91,11 @@ from multiple sessions with braking an active session.
     module.exports.push name: 'HDFS # Kerberos User', handler: ->
       {hdfs, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
-      @krb5_addprinc
-        principal: hdfs.krb5_user.principal
-        password: hdfs.krb5_user.password
+      @krb5_addprinc merge
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
+      , hdfs.krb5_user
 
 ## SPNEGO
 
@@ -199,6 +198,10 @@ Create the log directory.
         uid: hdfs.user.name
         gid: hdfs.group.name
         parent: true
+
+## Dependencies
+
+    {merge} = require 'mecano/lib/misc'
 
 [hdfs_secure]: http://hadoop.apache.org/docs/r2.4.1/hadoop-project-dist/hadoop-common/SecureMode.html#DataNode
 [hawq]: http://docs.gopivotal.com/pivotalhd/InstallingHAWQ.html

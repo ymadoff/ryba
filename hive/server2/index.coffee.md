@@ -61,7 +61,6 @@ Example:
       #   'hive.zookeeper.quorum'
       # ]
       # for property in properties
-      #   console.log property, hive.site[property]
       #   hive.site[property] ?= hcat_ctx.config.ryba.hive.site[property]
       # Server2 specific properties
       hive.site['hive.server2.enable.doAs'] ?= 'true'

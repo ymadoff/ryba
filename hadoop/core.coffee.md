@@ -196,7 +196,7 @@ Default configuration:
       # Kerberos user for hdfs
       ryba.hdfs.krb5_user ?= {}
       ryba.hdfs.krb5_user.principal ?= "#{ryba.hdfs.user.name}@#{realm}"
-      ryba.hdfs.krb5_user.password ?= 'hdfs123'
+      ryba.hdfs.krb5_user.password ?= 'password'
       # Unix user for yarn
       ryba.yarn.user ?= {}
       ryba.yarn.user = name: ryba.yarn.user if typeof ryba.yarn.user is 'string'

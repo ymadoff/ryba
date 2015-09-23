@@ -35,7 +35,7 @@ The pig package is install.
     module.exports.push name: 'Hadoop Pig # Install', timeout: -1, handler: ->
       @service
         name: 'pig'
-      console.log 'test pig'
+      console.log 'TODO: pig-client not registered in hdp-select'
       # pig-client not registered in hdp-select
       # need to see if hadoop-client will switch pig as well
       # @hdp_select
