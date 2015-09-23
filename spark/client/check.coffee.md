@@ -11,9 +11,12 @@ The driver program manages the executors task.
     module.exports.push 'ryba/spark/history_server/wait'
     # module.exports.push require('./index').configure
 
-## Validate Spark installation with Pi-example in yarn-cluster mode
+## Check Cluster Mode
+
+Validate Spark installation with Pi-example in yarn-cluster mode.
+
 The yarn cluster mode makes the driver part of the spark submitted program to run inside yarn.
-In this mode the driver is the yarn application master (running inside yarn)
+In this mode the driver is the yarn application master (running inside yarn).
 
     module.exports.push name: 'Spark Client # Check Cluster Mode', timeout: -1, label_true: 'CHECKED', handler: ->
       {spark} = @config.ryba
@@ -43,7 +46,10 @@ In this mode the driver is the yarn application master (running inside yarn)
           pi = parseFloat(log_result[log_result.length - 1])
           throw Error 'Invalid Output' unless pi > 3.00 and pi < 3.20
 
-## Validate Spark installation with Pi-example in yarn-client mode
+## Check Client Mode
+
+Validate Spark installation with Pi-example in yarn-client mode.
+
 The yarn client mode makes the driver part of program to run on the local machine.
 The local machine is the one from which the job has been submitted ( called the client ).
 In this mode the driver is the spark master running outside yarn
@@ -74,6 +80,10 @@ server to access logs.
     #         pi = parseFloat(log_result[log_result.length - 1])
     #         return next null, true if pi>3.00 and pi<3.20
     #         return next null, false
+
+## Check Python
+
+
 
 ## Dependencies
 
