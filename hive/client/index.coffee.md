@@ -69,6 +69,7 @@ Example:
         'hive.cluster.delegation.token.store.zookeeper.connectString'
         'hive.cluster.delegation.token.store.class'
       ]
+      
       for property in properties then hive.site[property] ?= hcat_ctx.config.ryba.hive.site[property]
       # Remove password from client configuration
       unless ctx.has_module 'ryba/hive/hcatalog' or ctx.has_module 'ryba/hive/server2'
@@ -109,15 +110,3 @@ Example of a minimal client configuration:
   </property>
 </configuration>
 ```
-
-
-
-
-
-
-
-
-
-
-
-

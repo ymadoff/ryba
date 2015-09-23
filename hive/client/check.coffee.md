@@ -82,35 +82,80 @@ Use the [Beeline][beeline] JDBC client to execute SQL queries.
 The JDBC url may be provided inside the "-u" option or after the "!connect"
 directive once you enter the beeline shell.
 
-    module.exports.push name: 'Hive Client # Check Server2', label_true: 'CHECKED', timeout: -1, handler: ->
-      {force_check, realm, user, hive} = @config.ryba
-      for hs2_ctx in @contexts 'ryba/hive/server2'
-        directory = "check-#{@config.shortname}-hive_server2-#{hs2_ctx.config.shortname}"
-        db = "check_#{@config.shortname}_server2_#{hs2_ctx.config.shortname}"
-        port = if hs2_ctx.config.ryba.hive.site['hive.server2.transport.mode'] is 'http'
-        then hs2_ctx.config.ryba.hive.site['hive.server2.thrift.http.port']
-        else hs2_ctx.config.ryba.hive.site['hive.server2.thrift.port']
-        principal = hs2_ctx.config.ryba.hive.site['hive.server2.authentication.kerberos.principal']
-        url = "jdbc:hive2://#{hs2_ctx.config.host}:#{port}/default;principal=#{principal}"
-        beeline = "beeline -u \"#{url}\" --silent=true "
-        @execute
-          cmd: mkcmd.test @, """
-          hdfs dfs -rm -r -f -skipTrash #{directory} || true
-          hdfs dfs -mkdir -p #{directory}/my_db/my_table || true
-          echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - #{directory}/my_db/my_table/data
-          #{beeline} \
-          -e "DROP TABLE IF EXISTS #{db}.my_table;" \
-          -e "DROP DATABASE IF EXISTS #{db};" \
-          -e "CREATE DATABASE IF NOT EXISTS #{db} LOCATION '/user/#{user.name}/#{directory}/my_db'" \
-          -e "CREATE TABLE IF NOT EXISTS #{db}.my_table(col1 STRING, col2 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';"
-          #{beeline} \
-          -e "SELECT SUM(col2) FROM #{db}.my_table;" | hdfs dfs -put - #{directory}/result
-          #{beeline} \
-          -e "DROP TABLE #{db}.my_table;" \
-          -e "DROP DATABASE #{db};"
-          """
-          not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
-          trap_on_error: true
+    module.exports.push
+      name: 'Hive Client # Check Server2 Without ZooKeeper'
+      label_true: 'CHECKED'
+      timeout: -1
+      handler: ->
+        {force_check, realm, user, hive} = @config.ryba
+        for hs2_ctx in @contexts 'ryba/hive/server2'
+          directory = "check-#{@config.shortname}-hive_server2-#{hs2_ctx.config.shortname}"
+          db = "check_#{@config.shortname}_server2_#{hs2_ctx.config.shortname}"
+          port = if hs2_ctx.config.ryba.hive.site['hive.server2.transport.mode'] is 'http'
+          then hs2_ctx.config.ryba.hive.site['hive.server2.thrift.http.port']
+          else hs2_ctx.config.ryba.hive.site['hive.server2.thrift.port']
+          principal = hs2_ctx.config.ryba.hive.site['hive.server2.authentication.kerberos.principal']
+          url = "jdbc:hive2://#{hs2_ctx.config.host}:#{port}/default;principal=#{principal}"
+          beeline = "beeline -u \"#{url}\" --silent=true "
+          @execute
+            cmd: mkcmd.test @, """
+            hdfs dfs -rm -r -f -skipTrash #{directory} || true
+            hdfs dfs -mkdir -p #{directory}/my_db/my_table || true
+            echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - #{directory}/my_db/my_table/data
+            #{beeline} \
+            -e "DROP TABLE IF EXISTS #{db}.my_table;" \
+            -e "DROP DATABASE IF EXISTS #{db};" \
+            -e "CREATE DATABASE IF NOT EXISTS #{db} LOCATION '/user/#{user.name}/#{directory}/my_db'" \
+            -e "CREATE TABLE IF NOT EXISTS #{db}.my_table(col1 STRING, col2 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';"
+            #{beeline} \
+            -e "SELECT SUM(col2) FROM #{db}.my_table;" | hdfs dfs -put - #{directory}/result
+            #{beeline} \
+            -e "DROP TABLE #{db}.my_table;" \
+            -e "DROP DATABASE #{db};"
+            """
+            not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
+            trap_on_error: true
+
+    module.exports.push
+      name: 'Hive Client # Check Server2 With ZooKeeper'
+      label_true: 'CHECKED'
+      timeout: -1
+      if: -> @contexts('ryba/hive/server2').length > 1
+      handler: ->
+        {force_check, realm, user, hive} = @config.ryba
+        current = null;
+        urls = @contexts 'ryba/hive/server2'
+        .map (hs2_ctx) =>
+          {hive} = hs2_ctx.config.ryba
+          quorum = hive.site['hive.zookeeper.quorum']
+          namespace = hive.site['hive.server2.zookeeper.namespace']
+          principal = hive.site['hive.server2.authentication.kerberos.principal']
+          "jdbc:hive2://#{quorum}/;principal=#{principal};serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=#{namespace}"
+        .sort()
+        .filter( (c) -> p = current; current = c; p isnt c )
+        for url in urls
+          namespace = /zooKeeperNamespace=(.*)/.exec(url)[1]
+          directory = "check-#{@config.shortname}-hive_server2-zoo-#{namespace}"
+          db = "check_#{@config.shortname}_hs2_zoo_#{namespace}"
+          beeline = "beeline -u \"#{url}\" --silent=true "
+          @execute
+            cmd: mkcmd.test @, """
+            hdfs dfs -rm -r -f -skipTrash #{directory} || true
+            hdfs dfs -mkdir -p #{directory}/my_db/my_table || true
+            echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - #{directory}/my_db/my_table/data
+            #{beeline} \
+            -e "DROP TABLE IF EXISTS #{db}.my_table;" \
+            -e "DROP DATABASE IF EXISTS #{db};" \
+            -e "CREATE DATABASE IF NOT EXISTS #{db} LOCATION '/user/#{user.name}/#{directory}/my_db'" \
+            -e "CREATE TABLE IF NOT EXISTS #{db}.my_table(col1 STRING, col2 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';"
+            #{beeline} \
+            -e "SELECT SUM(col2) FROM #{db}.my_table;" | hdfs dfs -put - #{directory}/result
+            #{beeline} \
+            -e "DROP TABLE #{db}.my_table;" \
+            -e "DROP DATABASE #{db};"
+            """
+            not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
+            trap_on_error: true
 
 ## Dependencies
 

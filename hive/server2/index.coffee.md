@@ -97,6 +97,10 @@ Example:
 
 ## HS2 High Availability & Rolling Upgrade
 
+HS2 use Zookeepper to track registered servers. The znode address is 
+"/<hs2_namespace>/serverUri=<host:port>;version=<versionInfo>; sequence=<sequence_number>"
+and its value is the server "host:port".
+
       zoo_ctxs = ctx.contexts 'ryba/zookeeper/server', require('../../zookeeper/server').configure
       zookeeper_quorum = for zoo_ctx in zoo_ctxs
         "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
