@@ -53,10 +53,8 @@ The ambari server must be set in the configuration file.
           match: /^secured_url_port=(.*)/m
           replace: "secured_url_port=#{ambari_agent.config.server['secured_url_port']}"
         ]
-
  
     module.exports.push name: 'Ambari Agent # Startup', timeout: -1, handler: ->
       @service
         name: 'ambari-agent'
         startup: true
-        action: 'start'

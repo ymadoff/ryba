@@ -1,8 +1,9 @@
+
 # Ambari Server
 
 [Ambari-server][Ambari-server] is the master host for ambari software.
-Once logged into the ambari server host, the administrotr can  provision, 
-manage and monitor  a Hadoop cluster.
+Once logged into the ambari server host, the administrator can  provision, 
+manage and monitor a Hadoop cluster.
     
     module.exports = []
 
@@ -17,11 +18,11 @@ ambari:
   password: process.env['HADOOP_PASSWORD']
   config: 
     'client.security': 'ldap'
-    'authentication.ldap.useSSL': false
-    'authentication.ldap.primaryUrl': 'pcy0qstar.pcy.edfgdf.fr:389'
-    'authentication.ldap.baseDn': 'ou=users,dc=edfgdf,dc=fr'
+    'authentication.ldap.useSSL': true
+    'authentication.ldap.primaryUrl': 'master3.ryba:636'
+    'authentication.ldap.baseDn': 'ou=users,dc=ryba'
     'authentication.ldap.bindAnonymously': false
-    'authentication.ldap.managerDn': 'cn=solaix,ou=systems,ou=lotc,dc=edfgdf,dc=fr'
+    'authentication.ldap.managerDn': 'cn=admin,ou=users,dc=ryba'
     'authentication.ldap.managerPassword': 'XXX'
     'authentication.ldap.usernameAttribute': 'cn'
 ```
@@ -129,17 +130,15 @@ ambari:
 
     # module.exports.push commands: 'check', modules: 'ryba/ambari/server/check'
 
-
-
     module.exports.push commands: 'install', modules: [
       'ryba/ambari/server/install'
       'ryba/ambari/server/start'
       # 'ryba/ambari/server/check'
     ]
 
-    #module.exports.push commands: 'start', modules: 'ryba/ambari/server/start'
+    module.exports.push commands: 'start', modules: 'ryba/ambari/server/start'
 
-    #module.exports.push commands: 'stop', modules: 'ryba/ambari/server/stop'
+    module.exports.push commands: 'stop', modules: 'ryba/ambari/server/stop'
 
     #module.exports.push commands: 'status', modules: 'ryba/ambari/server/status'
 [Ambari-server]: http://ambari.apache.org

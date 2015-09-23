@@ -17,9 +17,14 @@ The ambari server must be installed before performing manual registration.
       ambari_agent.config.server['hostname'] ?= "#{srv_ctx.config.host}"
       ambari_agent.config.server['url_port'] ?= "8440"
       ambari_agent.config.server['secured_url_port'] ?= "8441"
- 
+
     module.exports.push commands: 'install', modules: [
       'ryba/ambari/agent/install'
+      'ryba/ambari/agent/start'
     ]
+
+    module.exports.push commands: 'start', modules: 'ryba/ambari/agent/start'
+
+    module.exports.push commands: 'stop', modules: 'ryba/ambari/agent/stop'
 
 [Ambari-agent-install]: https://cwiki.apache.org/confluence/display/AMBARI/Installing+ambari-agent+on+target+hosts

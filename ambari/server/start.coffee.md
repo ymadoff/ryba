@@ -1,13 +1,15 @@
-# Ambari server start
 
-Ambari server is started with the service's syntax command
+# Ambari Server start
+
+Ambari server is started with the service's syntax command.
 
     module.exports = []
- 
-# su -l hdfs -c "/usr/lib/hadoop/bin/hadoop-daemon.sh --config /etc/hadoop/conf start namenode"
-# su $HDFS_USER; /usr/lib/hadoop/bin/hadoop-daemon.sh --config $HADOOP_CONF_DIR start secondarynamenode
-# su $HDFS_USER; /usr/lib/hadoop/bin/hadoop-daemon.sh --config $HADOOP_CONF_DIR start datanode
- 
+
+## Start
+
     module.exports.push name: 'Ambari Server # Start', timeout: -1, label_true: 'STARTED', handler: ->
-      @service_start
-        name: 'ambari-server'
+      @execute
+        cmd: 'service ambari-server start'
+        not_if_exists: '/var/run/ambari-server/ambari-server.pid'
+      # @service_start
+      #   name: 'ambari-server'
