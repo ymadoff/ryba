@@ -7,6 +7,7 @@
     module.exports.configure = (ctx) ->
       require('masson/core/proxy').configure ctx
       ryba = ctx.config.ryba ?= {}
+      throw Error "Require configuration 'realm'" unless ryba.realm # TODO: discover default realm
       # Repository
       ryba.proxy = ctx.config.proxy.http_proxy if typeof ryba.http_proxy is 'undefined'
       ryba.hdp_repo ?= 'http://s3.amazonaws.com/public-repo-1.hortonworks.com/HDP/centos6/2.x/2.1-latest/hdp.repo'
@@ -15,15 +16,16 @@
       ryba.user ?= {}
       ryba.user = name: ryba.user if typeof ryba.user is 'string'
       ryba.user.name ?= 'ryba'
+      ryba.user.password ?= 'password'
       ryba.user.system ?= true
       ryba.user.gid ?= 'ryba'
       ryba.user.comment ?= 'ryba User'
       ryba.user.home ?= '/home/ryba'
-
       ryba.krb5_user ?= {}
-      ryba.krb5_user = name: ryba.krb5_user if typeof ryba.krb5_user is 'string'
-      ryba.krb5_user.name ?= ryba.user.name
+      ryba.krb5_user = principal: ryba.krb5_user if typeof ryba.krb5_user is 'string'
+      ryba.krb5_user.principal ?= ryba.user.name
       ryba.krb5_user.password ?= ryba.user.password if ryba.user.password?
+      ryba.krb5_user.principal = "#{ryba.krb5_user.principal}@#{ryba.realm}" unless /.+@.+/.test ryba.krb5_user.principal
       # Database administration
       # todo: `require('masson/commons/mysql_server').configure ctx` and use returned values as default values
       ryba.db_admin ?= {}

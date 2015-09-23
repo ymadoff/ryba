@@ -17,5 +17,5 @@ exports.test = (ctx, cmd) ->
   {security, user, krb5_user, realm} = ctx.config.ryba
   if security is 'kerberos'
   # then "kinit -kt /etc/security/keytabs/test.headless.keytab test && {\n#{cmd}\n}"
-  then "echo #{krb5_user.password} | kinit #{krb5_user.name}@#{realm} >/dev/null && {\n#{cmd}\n}"
+  then "echo #{krb5_user.password} | kinit #{krb5_user.principal} >/dev/null && {\n#{cmd}\n}"
   else "su -l #{user.name} -c \"#{cmd}\""

@@ -28,10 +28,10 @@ the principal name as argument and print the converted user name.
     module.exports.push name: 'Hadoop Core # Check Kerberos Mapping', label_true: 'CHECKED', handler: ->
       {core_site, user, krb5_user, realm} = @config.ryba
       @execute
-        cmd: "hadoop org.apache.hadoop.security.HadoopKerberosName #{krb5_user.name}@#{realm}"
+        cmd: "hadoop org.apache.hadoop.security.HadoopKerberosName #{krb5_user.principal}"
         if: core_site['hadoop.security.authentication'] is 'kerberos'
       , (err, _, stdout) ->
-        throw Error "Invalid mapping" if not err and stdout.indexOf("#{krb5_user.name}@#{realm} to #{user.name}") is -1
+        throw Error "Invalid mapping" if not err and stdout.indexOf("#{krb5_user.principal} to #{user.name}") is -1
 
 ## Dependencies
 

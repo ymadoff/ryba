@@ -12,11 +12,6 @@ code.
 
 [tar]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap13.html
 
-    url = require 'url'
-    path = require 'path'
-    misc = require 'mecano/lib/misc'
-    each = require 'each'
-
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/yum'
@@ -412,12 +407,11 @@ will be created by one of the datanode.
       # ryba group and user may already exist in "/etc/passwd" or in any sssd backend
       @group group
       @user user
-      @krb5_addprinc
-        principal: "#{krb5_user.name}@#{realm}"
-        password: "#{krb5_user.password}"
+      @krb5_addprinc merge
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
+      , krb5_user
 
 ## Install
 
@@ -662,8 +656,9 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 
 ## Dependencies
 
+
     fs = require 'ssh2-fs'
     path = require 'path'
     multimatch = require 'multimatch'
     mkcmd = require '../lib/mkcmd'
-    quote = require 'regexp-quote'
+    {merge} = require 'mecano/lib/misc'
