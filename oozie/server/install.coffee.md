@@ -286,8 +286,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         destination: '/usr/hdp/current/oozie-client/libext/mysql-connector-java.jar'
 
     module.exports.push name: 'Oozie Server # Configuration', handler: ->
-      { hadoop_conf_dir, yarn, oozie } = @config.ryba
-      modified = false
+      {hadoop_conf_dir, yarn, oozie} = @config.ryba
       @hconfigure
         destination: "#{oozie.conf_dir}/oozie-site.xml"
         default: "#{__dirname}/../resources/oozie-site.xml"
