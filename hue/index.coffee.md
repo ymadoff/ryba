@@ -71,6 +71,16 @@ Example:
       hue.group.system ?= true
       hue.user.gid = hue.group.name
       hue.clean_tmp ?= true
+      hdfs_ctxs = ctx.contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn']
+      for hdfs_ctx in hdfs_ctxs
+        hdfs_ctx.config.ryba.core_site['hadoop.proxyuser.hue.hosts'] ?= '*'
+        hdfs_ctx.config.ryba.core_site['hadoop.proxyuser.hue.groups'] ?= '*'
+      oozie_ctxs = ctx.contexts 'ryba/oozie/server'
+      for oozie_ctx in oozie_ctxs
+        oozie_ctx.config.oozie ?= {}
+        oozie_ctx.config.oozie.site ?= {}
+        oozie_ctx.config.oozie.site['oozie.service.ProxyUserService.proxyuser.hue.hosts'] ?= '*'
+        oozie_ctx.config.oozie.site['oozie.service.ProxyUserService.proxyuser.hue.groups'] ?= '*'
 
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure
