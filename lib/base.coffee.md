@@ -7,7 +7,7 @@
     module.exports.configure = (ctx) ->
       require('masson/core/proxy').configure ctx
       ryba = ctx.config.ryba ?= {}
-      throw Error "Require configuration 'realm'" unless ryba.realm # TODO: discover default realm
+      # throw Error "Require configuration 'realm'" unless ryba.realm # TODO: discover default realm
       # Repository
       ryba.proxy = ctx.config.proxy.http_proxy if typeof ryba.http_proxy is 'undefined'
       ryba.hdp_repo ?= 'http://s3.amazonaws.com/public-repo-1.hortonworks.com/HDP/centos6/2.x/2.1-latest/hdp.repo'
