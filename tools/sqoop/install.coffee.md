@@ -52,9 +52,6 @@ Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
          ,
            match: /^export ZOOCFGDIR=.*$/m # Sqoop default is "/etc/zookeeper/conf"
            replace: "export ZOOCFGDIR=${ZOOCFGDIR:-/etc/zookeeper/conf} # RYBA for HDP"
-         ,
-           match: /^export HBASE_HOME=.*$/m # Sqoop default is "/usr/lib/hbase"
-           replace: "export HBASE_HOME=${HADOOP_HOME:-/usr/lib/hbase} # RYBA for HDP"
         ]
         uid: sqoop.user.name
         gid: hadoop_group.name
