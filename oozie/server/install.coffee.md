@@ -497,7 +497,7 @@ the ShareLib contents without having to go into HDFS.
       {oozie} = @config.ryba
       @write
         destination: "#{oozie.conf_dir}/oozie-log4j.properties"
-        source: "#{__dirname}/../../resources/oozie/oozie-log4j.properties"
+        source: "#{__dirname}/../resources/oozie/oozie-log4j.properties"
         local_source: true
 
 ## Dependencies
