@@ -48,6 +48,9 @@ applications.
       ryba.yarn.site['yarn.nodemanager.vmem-pmem-ratio'] ?= '2.1'
       ryba.yarn.site['yarn.nodemanager.resource.percentage-physical-cpu-limit'] ?= '100'
       ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.strict-resource-usage'] ?= 'false' # By default, iyarn.nodemanager.container-executor.clasf spare CPU cycles are available, containers are allowed to exceed the CPU limits set for them
+      # Fix bug in HDP companion files (missing "s")
+      ryba.yarn.site['yarn.nodemanager.log.retain-second'] ?= null
+      ryba.yarn.site['yarn.nodemanager.log.retain-seconds'] ?= '604800'
       # See '~/www/src/hadoop/hadoop-common/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-api/src/main/java/org/apache/hadoop/yarn/conf/YarnConfiguration.java#263'
       # ryba.yarn.site['yarn.nodemanager.webapp.spnego-principal']
       # ryba.yarn.site['yarn.nodemanager.webapp.spnego-keytab-file']
@@ -60,6 +63,14 @@ applications.
       ryba.container_executor['yarn.nodemanager.log-dirs'] = ryba.yarn.site['yarn.nodemanager.log-dirs']
       ryba.container_executor['banned.users'] ?= 'hfds,yarn,mapred,bin'
       ryba.container_executor['min.user.id'] ?= '0'
+      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm'
+      for rm_ctx in rm_ctxs
+        rm_ctx.config.ryba ?= {}
+        rm_ctx.config.ryba.yarn ?= {}
+        rm_ctx.config.ryba.yarn.site ?= {}
+        # Not sure if this is required but since we only apply log retention to the
+        # Yarn RMs, it seems logical to pass them the log directory.
+        rm_ctx.config.ryba.yarn.site['yarn.nodemanager.remote-app-log-dir'] = ryba.yarn.site['yarn.nodemanager.remote-app-log-dir']
 
 ## Configuration for CGroups
 
