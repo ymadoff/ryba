@@ -125,13 +125,12 @@ ownerships.
 
     module.exports.push name: 'ZooKeeper Server # Environment', handler: ->
       {zookeeper} = @config.ryba
-      write = for k, v of zookeeper.env
-        match: RegExp "^export\\s+(#{quote k})=(.*)$", 'm'
-        replace: "export #{k}=\"#{v}\""
-        append: true
       @write
         destination: "#{zookeeper.conf_dir}/zookeeper-env.sh"
-        write: write
+        write: for k, v of zookeeper.env
+          match: RegExp "^export\\s+(#{quote k})=(.*)$", 'm'
+          replace: "export #{k}=\"#{v}\""
+          append: true
         backup: true
         eof: true
 
@@ -142,13 +141,12 @@ Update the file "zoo.cfg" with the properties defined by the
 
     module.exports.push name: 'ZooKeeper Server # Configure', handler: ->
       {zookeeper} = @config.ryba
-      write = for k, v of zookeeper.config
-        match: RegExp "^#{quote k}=.*$", 'mg'
-        replace: "#{k}=#{v}"
-        append: true
       @write
         destination: "#{zookeeper.conf_dir}/zoo.cfg"
-        write: write
+        write: for k, v of zookeeper.config
+          match: RegExp "^#{quote k}=.*$", 'mg'
+          replace: "#{k}=#{v}"
+          append: true
         backup: true
         eof: true
 
