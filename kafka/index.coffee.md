@@ -14,18 +14,18 @@ and consumer Kafka components.
       kafka = ctx.config.ryba.kafka ?= {}
       # Layout
       kafka.conf_dir ?= '/etc/kafka/conf'
-      # User
-      kafka.user ?= {}
-      kafka.user = name: kafka.user if typeof kafka.user is 'string'
-      kafka.user.name ?= 'kafka'
-      kafka.user.system ?= true
-      kafka.user.comment ?= 'Kafka User'
-      kafka.user.home = '/var/lib/kafka'
       # Group
       kafka.group = name: kafka.group if typeof kafka.group is 'string'
       kafka.group ?= {}
       kafka.group.name ?= 'kafka'
       kafka.group.system ?= true
+      # User
+      kafka.user ?= {}
+      kafka.user = name: kafka.user if typeof kafka.user is 'string'
+      kafka.user.name ?= kafka.group.name
+      kafka.user.system ?= true
+      kafka.user.comment ?= 'Kafka User'
+      kafka.user.home = "/var/lib/#{kafka.user.name}"
       kafka.user.gid = kafka.group.name
       # Configuration
       kafka.consumer ?= {}
