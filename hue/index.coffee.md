@@ -77,10 +77,18 @@ Example:
         hdfs_ctx.config.ryba.core_site['hadoop.proxyuser.hue.groups'] ?= '*'
       oozie_ctxs = ctx.contexts 'ryba/oozie/server'
       for oozie_ctx in oozie_ctxs
-        oozie_ctx.config.oozie ?= {}
-        oozie_ctx.config.oozie.site ?= {}
-        oozie_ctx.config.oozie.site['oozie.service.ProxyUserService.proxyuser.hue.hosts'] ?= '*'
-        oozie_ctx.config.oozie.site['oozie.service.ProxyUserService.proxyuser.hue.groups'] ?= '*'
+        oozie_ctx.config.ryba ?= {}
+        oozie_ctx.config.ryba.oozie ?= {}
+        oozie_ctx.config.ryba.oozie.site ?= {}
+        oozie_ctx.config.ryba.oozie.site['oozie.service.ProxyUserService.proxyuser.hue.hosts'] ?= '*'
+        oozie_ctx.config.ryba.oozie.site['oozie.service.ProxyUserService.proxyuser.hue.groups'] ?= '*'
+      httpfs_ctxs = ctx.contexts 'ryba/hadoop/httpfs'
+      for httpfs_ctx in httpfs_ctxs
+        httpfs_ctx.config.ryba ?= {}
+        httpfs_ctx.config.ryba.httpfs ?= {}
+        httpfs_ctx.config.ryba.httpfs.site ?= {}
+        httpfs_ctx.config.ryba.httpfs.site["httpfs.proxyuser.#{hue.user.name}.hosts"] ?= '*'
+        httpfs_ctx.config.ryba.httpfs.site["httpfs.proxyuser.#{hue.user.name}.groups"] ?= '*'
 
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure
