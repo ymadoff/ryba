@@ -34,27 +34,32 @@ The ambari server must be set in the configuration file.
 
     module.exports.push name: 'Ambari Agent # Configure', timeout: -1, handler: ->
       {ambari_agent} = @config.ryba
-      # @ini # mecano need to manage multiline values
-      #   destination: "#{ambari_agent.conf_dir}/ambari-agent.ini"
-      #   content: ambari_agent.config
-      #   merge: true
-      #   backup: true
-      #   if: false
-
-      @write
+      @ini
         destination: "#{ambari_agent.conf_dir}/ambari-agent.ini"
-        write: [
-          match: /^hostname=(.*)/m
-          replace: "hostname=#{ambari_agent.config.server['hostname']}"
-        ,
-          match: /^url_port=(.*)/m
-          replace: "url_port=#{ambari_agent.config.server['url_port']}"
-        ,
-          match: /^secured_url_port=(.*)/m
-          replace: "secured_url_port=#{ambari_agent.config.server['secured_url_port']}"
-        ]
+        content: ambari_agent.ini
+        parse: misc.ini.parse_multi_brackets_multi_lines
+        stringify: misc.ini.stringify_multi_brackets
+        indent: ''
+        merge: true
+        comment: '#'
+        backup: true
+
+      # @write
+      #   destination: "#{ambari_agent.conf_dir}/ambari-agent.ini"
+      #   write: [
+      #     match: /^hostname=(.*)/m
+      #     replace: "hostname=#{ambari_agent.config.server['hostname']}"
+      #   ,
+      #     match: /^url_port=(.*)/m
+      #     replace: "url_port=#{ambari_agent.config.server['url_port']}"
+      #   ,
+      #     match: /^secured_url_port=(.*)/m
+      #     replace: "secured_url_port=#{ambari_agent.config.server['secured_url_port']}"
+      #   ]
  
     module.exports.push name: 'Ambari Agent # Startup', timeout: -1, handler: ->
       @service
         name: 'ambari-agent'
         startup: true
+
+    misc = require 'mecano/lib/misc'
