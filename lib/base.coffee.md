@@ -10,7 +10,7 @@
       # throw Error "Require configuration 'realm'" unless ryba.realm # TODO: discover default realm
       # Repository
       ryba.proxy = ctx.config.proxy.http_proxy if typeof ryba.http_proxy is 'undefined'
-      ryba.hdp_repo ?= 'http://s3.amazonaws.com/public-repo-1.hortonworks.com/HDP/centos6/2.x/2.1-latest/hdp.repo'
+      ryba.hdp_repo ?= 'http://public-repo-1.hortonworks.com/HDP/centos6/2.x/updates/2.3.2.0/hdp.repo'
       # Testing
       ryba.force_check ?= false
       ryba.user ?= {}

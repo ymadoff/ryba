@@ -40,7 +40,7 @@ ambari:
       # http://public-repo-1.hortonworks.com/ambari/centos6/1.x/GA/ambari-1.2.0.1-1.el6.noarch.rpm
       # ambari.proxy ?= proxy.http_proxy
       ambari_server.http ?= '/var/www/html'
-      ambari_server.repo ?= 'http://public-repo-1.hortonworks.com/ambari/centos6/2.x/updates/2.0.0/ambari.repo'
+      ambari_server.repo ?= 'http://public-repo-1.hortonworks.com/ambari/centos6/2.x/updates/2.1.2/ambari.repo'
       ambari_server.conf_dir ?= '/etc/ambari-server/conf'
       ambari_server.database_password ?= 'ambari123'
       ambari_server.config ?= {}
