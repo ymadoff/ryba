@@ -7,6 +7,8 @@ log file complaining it cant reach the JSH server (default port is "10020").
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
+    module.exports.push 'masson/core/krb5_client/wait'
+    module.exports.push 'ryba/hadoop/hdfs_nn/wait'
     # module.exports.push require('./index').configure
 
 ## Start

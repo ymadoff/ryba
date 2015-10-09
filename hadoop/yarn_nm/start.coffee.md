@@ -3,7 +3,10 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/yarn_rm/wait'
+    module.exports.push 'masson/core/krb5_client/wait'
+    module.exports.push 'ryba/zookeeper/server/wait'
+    module.exports.push 'ryba/hadoop/hdfs_nn/wait'
+    # module.exports.push 'ryba/hadoop/yarn_rm/wait'
     # module.exports.push require('./index').configure
 
 ## Start Server

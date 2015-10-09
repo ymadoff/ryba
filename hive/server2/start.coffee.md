@@ -7,6 +7,9 @@ HDFS server to answer queries.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
+    module.exports.push 'masson/core/krb5_client/wait'
+    module.exports.push 'ryba/zookeeper/server/wait'
+    module.exports.push 'ryba/hadoop/hdfs_nn/wait'
     module.exports.push 'ryba/hive/hcatalog/wait'
 
 ## Start

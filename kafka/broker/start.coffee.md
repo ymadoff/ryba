@@ -3,6 +3,8 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
+    module.exports.push 'masson/core/krb5_client/wait'
+    module.exports.push 'ryba/zookeeper/server/wait'
     # module.exports.push require('./index').configure
 
     module.exports.push name: 'Kafka Broker # Start', label_true: 'STARTED', handler: ->

@@ -9,7 +9,8 @@ active NameNode to start first.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/xasecure/policymgr_wait'
+    # module.exports.push 'ryba/xasecure/policymgr_wait'
+    module.exports.push 'masson/core/krb5_client/wait'
     module.exports.push 'ryba/zookeeper/server/wait'
     module.exports.push 'ryba/hadoop/hdfs_jn/wait'
     module.exports.push 'ryba/hadoop/hdfs_nn/wait'
