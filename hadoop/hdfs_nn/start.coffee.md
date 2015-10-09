@@ -50,6 +50,9 @@ This middleware duplicates the one present in 'ryba/hadoop/hdfs_dn/wait' and
 is only called if a DataNode isn't installed on this server because this command
 only run on a NameNode with fencing installed and in normal mode.
 
+TODO sep 2015: maybe should we simply move this to ZKFC?
+
+    module.exports.push 'ryba/hadoop/zkfc/start'
     module.exports.push name: 'HDFS NN Start # Failover', label_true: 'READY', handler: ->
       return next() unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       {active_nn_host, standby_nn_host} = @config.ryba
