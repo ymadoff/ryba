@@ -19,9 +19,10 @@
 | namenode  | 8019  | tcp   | dfs.ha.zkfc.port           |
 
     module.exports.push name: 'ZKFC # IPTables', handler: ->
+      {hdfs} = @config.ryba
       @iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 8019, protocol: 'tcp', state: 'NEW', comment: "ZKFC IPC" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hdfs.site['dfs.ha.zkfc.port'], protocol: 'tcp', state: 'NEW', comment: "ZKFC IPC" }
         ]
         if: @config.iptables.action is 'start'
 

@@ -50,6 +50,7 @@ Optional, activate digest type access to zookeeper to manage the zkfc znode:
       # Enrich "core-site.xml" with acl and auth
       ryba.core_site['ha.zookeeper.acl'] ?= "@#{ryba.hadoop_conf_dir}/zk-acl.txt"
       ryba.core_site['ha.zookeeper.auth'] = "@#{ryba.hadoop_conf_dir}/zk-auth.txt"
+      ryba.hdfs.site['dfs.ha.zkfc.port'] ?= '8019'
       # Import NameNode properties
       # Note: need 'ha.zookeeper.quorum', 'dfs.ha.automatic-failover.enabled'
       require('../hdfs_nn').configure ctx
