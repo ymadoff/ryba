@@ -11,6 +11,7 @@
       # Run
       params = params.parse()
       config params.config, (err, config) ->
+        throw err if err
         capacity params, config, (err) ->
           if err
             if err.errors
@@ -89,5 +90,5 @@ node node_modules/ryba/bin/capacity \
 
     parameters = require 'parameters'
     config = require 'masson/lib/config'
-    capacity = require './index'
+    capacity = require '.'
     util = require 'util'

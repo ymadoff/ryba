@@ -33,12 +33,10 @@ default setting for Yarn and its client application such as MapReduce or Tez.
             next()
         .then (err) ->
           ctx.emit 'end' for ctx in ctxs
-
           return console.log 'ERROR', err if err
           exports.write config, ctxs, (err) ->
             return console.log 'ERROR', err if err
             console.log 'SUCCESS'
-
 
 ## SSH
 
@@ -47,7 +45,6 @@ default setting for Yarn and its client application such as MapReduce or Tez.
       params.end = false
       params.hosts = null
       params.modules = ['masson/bootstrap/connection', 'masson/bootstrap/info']
-      run params, config
       config.log ?= {}
       config.log.disabled ?= true
       # config.connection.end = false
@@ -496,8 +493,8 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
         #     ctx.config.capacity.remote.hive_site = hive_site unless err
         #     do_end()
         do_end = ->
-          ctx.ssh.end()
-          ctx.ssh.on 'end', next
+          ctx.options.ssh.end()
+          ctx.options.ssh.on 'end', next
         do_hdfs()
       .then next
 
@@ -796,8 +793,3 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
     path = require 'path'
     js2coffee = require 'js2coffee'
     properties = require '../properties'
-
-
-
-
-
