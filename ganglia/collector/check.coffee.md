@@ -1,5 +1,5 @@
 
-# Check Ganglia Collector
+# Ganglia Collector Check
 
     module.exports = []
     module.exports.push 'masson/bootstrap'

@@ -12,7 +12,7 @@ the following two commands:
 
 ```
 service hive-server2 stop
-su -l hive -c 'nohup /usr/lib/hive/bin/hiveserver2 >/var/log/hive/hiveserver2.out 2>/var/log/hive/hiveserver2.log & echo $! >/var/run/hive/server2.pid'
+su -l hive -c "kill `cat /var/run/hive-server2/hive-server2.pid`"
 ```
 
     module.exports.push name: 'Hive & Server2 # Stop', label_true: 'STOPPED', handler: ->

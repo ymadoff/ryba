@@ -1,5 +1,5 @@
 
-# Ganglia Monitor Start
+# Ganglia Collector Start
 
 Execute these commands on the Ganglia server host machine.
 
@@ -12,6 +12,12 @@ Execute these commands on the Ganglia server host machine.
 The gmetad daemon is started by the "hdp-gmetad" script and not directly. The
 "hdp-gemetad" will enter into an invalid state if "gmetad" is stoped
 independently complaining that "rrdcached" is already running.
+
+You can also start the server manually with the following command:
+
+```
+service hdp-gmetad start
+```
 
     module.exports.push name: 'Ganglia Collector # Start', label_true: 'STARTED', handler: ->
       @service_start

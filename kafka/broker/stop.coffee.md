@@ -5,6 +5,17 @@
     module.exports.push 'masson/bootstrap'
     # module.exports.push require('./index').configure
 
+## Stop
+
+Stop the Kafka Broker. You can also stop the server manually with the following
+command:
+
+```
+su -l kafka -c '/usr/hdp/current/kafka-broker/bin/kafka stop'
+```
+
+The file storing the PID is "/var/run/kafka/kafka.pid".
+
     module.exports.push name: 'Kafka Broker # Stop service', label_true: 'STOPPED', handler: ->
       {kafka} = @config.ryba
       @execute

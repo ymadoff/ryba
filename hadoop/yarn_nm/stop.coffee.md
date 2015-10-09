@@ -15,6 +15,8 @@ service hadoop-yarn-nodemanager stop
 su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf stop nodemanager"
 ```
 
+The file storing the PID is "/var/run/hadoop-yarn/yarn/yarn-yarn-nodemanager.pid".
+
     module.exports.push name: 'YARN NM # Stop Server', label_true: 'STOPPED', handler: ->
       @service_stop
         name: 'hadoop-yarn-nodemanager'

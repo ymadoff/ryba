@@ -15,6 +15,8 @@ service hadoop-hdfs-namenode stop
 su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-namenode/../hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop namenode"
 ```
 
+The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-namenode.pid".
+
     module.exports.push name: 'HDFS NN # Stop', label_true: 'STOPPED', handler: ->
       @service
         srv_name: 'hadoop-hdfs-namenode'

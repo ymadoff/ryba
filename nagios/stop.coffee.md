@@ -7,12 +7,18 @@
 
 ## Stop
 
-Stop the nagios service.
+Stop the Nagios server. The file storing the process ID (PID) is located in
+"/var/run/nagios.pid". You can also stop the server manually with the following
+command:
+
+```
+service nagios stop
+```
+
+The file storing the PID is "/var/run/nagios.pid".
 
     module.exports.push name: 'Nagios # Stop', label_true: 'STOPPED', handler: ->
-      @service
-        srv_name: 'nagios'
-        action: 'stop'
+      @service_stop action: 'stop'
 
 ## Stop Clean Logs
 

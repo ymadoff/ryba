@@ -16,6 +16,8 @@ service zookeeper-server stop
 su - zookeeper -c "export ZOOCFGDIR=/usr/hdp/current/zookeeper-server/conf; export ZOOCFG=zoo.cfg; source /usr/hdp/current/zookeeper-server/conf/zookeeper-env.sh; /usr/hdp/current/zookeeper-server/bin/zkServer.sh stop"
 ```
 
+The file storing the PID is "/var/run/zookeeper/zookeeper_server.pid".
+
     module.exports.push name: 'ZooKeeper Server # Stop', label_true: 'STOPPED', handler: ->
       @service
         srv_name: 'zookeeper-server'

@@ -15,6 +15,8 @@ service hadoop-mapreduce-historyserver stop
 su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/hadoop-mapreduce/sbin/mr-jobhistory-daemon.sh --config /etc/hadoop/conf stop historyserver"
 ```
 
+The file storing the PID is "/var/run/hadoop-mapreduce/mapred-mapred-historyserver.pid".
+
     module.exports.push name: 'MapReduce JHS # Stop', label_true: 'STOPPED', handler: ->
       @service
         srv_name: 'hadoop-mapreduce-historyserver'

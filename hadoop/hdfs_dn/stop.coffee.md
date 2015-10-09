@@ -20,6 +20,8 @@ service hadoop-hdfs-datanode stop
 /usr/hdp/current/hadoop-hdfs-datanode/../hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf stop datanode
 ```
 
+The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-datanode.pid".
+
     module.exports.push name: 'HDFS DN # Stop', label_true: 'STOPPED', handler: ->
       @service_stop
         name: 'hadoop-hdfs-datanode'

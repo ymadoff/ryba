@@ -18,6 +18,8 @@ service hadoop-hdfs-journalnode stop
 su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-journalnode/../hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop journalnode"
 ```
 
+The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-journalnode.pid".
+
     module.exports.push name: 'HDFS JN # Stop', label_true: 'STOPPED', handler: ->
       @service
         srv_name: 'hadoop-hdfs-journalnode'

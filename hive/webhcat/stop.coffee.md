@@ -18,6 +18,8 @@ service hive-webhcat-server stop
 su -l hive -c "/usr/hdp/current/hive-webhcat/sbin/webhcat_server.sh stop"
 ```
 
+The file storing the PID is "/var/run/webhcat/webhcat.pid".
+
     module.exports.push name: 'WebHCat # Stop', label_true: 'STOPPED', handler: ->
       @service_stop
         name: 'hive-webhcat-server'
