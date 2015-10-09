@@ -45,7 +45,7 @@
       @write
         content: """
           nameNode=#{core_site['fs.defaultFS']}
-          jobTracker=#{rm_address}:8050
+          jobTracker=#{rm_address}
           queueName=default
           basedir=${nameNode}/user/#{user.name}/check-#{@config.shortname}-oozie-fs
           oozie.wf.application.path=${basedir}
