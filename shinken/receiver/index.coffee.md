@@ -15,11 +15,11 @@ Modules for receivers:
 ## Dependencies
 
     module.exports = []
+    module.exports.push 'ryba/shinken'
 
 ## Configure
 
     module.exports.configure = (ctx) ->
-      require('../').configure ctx
       receiver = ctx.config.ryba.shinken.receiver ?= {}
       # Additionnal Modules to install
       receiver.modules ?= {}

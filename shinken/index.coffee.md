@@ -55,9 +55,16 @@ Example
 
 ## Users & Groups
 
-    module.exports.push name: 'Shinken # Users & Groups', handler: (ctx, next) ->
-      {shinken} = ctx.config.ryba
-      ctx
-      .group shinken.group
-      .user shinken.user
-      .then next
+    module.exports.push name: 'Shinken # Users & Groups', handler: ->
+      {shinken} = @config.ryba
+      @group shinken.group
+      @user shinken.user
+
+## Startup Sequence
+
+*   shinken-scheduler
+*   shinken-poller
+*   shinken-receiver
+*   shinken-reactionner
+*   shinken-broker
+*   shinken-arbiter

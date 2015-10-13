@@ -7,24 +7,25 @@ failovers if an error is detected. Can route check result events from a Receiver
 to its associated Scheduler. Host the WebUI.
 
     module.exports = []
+    module.exports.push 'ryba/shinken'
 
 ## Configure
 
     module.exports.configure = (ctx) ->
-      require('../').configure ctx
+      # require('../').configure ctx
       {shinken} = ctx.config.ryba
-      require('masson/commons/java').configure ctx
-      require('../../zookeeper/client').configure ctx
-      require('../../hadoop/hdfs').configure ctx
+      # require('masson/commons/java').configure ctx
+      # require('../../zookeeper/client').configure ctx
+      # require('../../hadoop/hdfs').configure ctx
       # require('../hadoop/yarn').configure ctx
-      require('../../hbase/regionserver').configure ctx
-      require('../../hbase/master').configure ctx
-      require('../../hive/hcatalog').configure ctx
-      require('../../hive/server2').configure ctx
-      require('../../hive/webhcat').configure ctx
-      require('../../ganglia/collector').configure ctx
-      require('../../oozie/server').configure ctx
-      require('../../hue').configure ctx
+      # require('../../hbase/regionserver').configure ctx
+      # require('../../hbase/master').configure ctx
+      # require('../../hive/hcatalog').configure ctx
+      # require('../../hive/server2').configure ctx
+      # require('../../hive/webhcat').configure ctx
+      # require('../../ganglia/collector').configure ctx
+      # require('../../oozie/server').configure ctx
+      # require('../../hue').configure ctx
       shinken.overwrite ?= false
       # Arbiter specific configuration
       shinken.arbiter ?= {}

@@ -17,11 +17,11 @@ is approximatively 1000 checks/s
 ## Dependencies
 
     module.exports = []
+    module.exports.push 'ryba/shinken'
 
 ## Configure
 
     module.exports.configure = (ctx) ->
-      require('../').configure ctx
       {shinken, realm} = ctx.config.ryba
       poller = ctx.config.ryba.shinken.poller ?= {}
       # Kerberos

@@ -8,8 +8,7 @@
 
 Start the Shinken Reactionner service.
 
-    module.exports.push name: 'Shinken Reactionner # Start', label_true: 'STARTED', handler: (ctx, next) ->
-      ctx.service
+    module.exports.push name: 'Shinken Reactionner # Start', label_true: 'STARTED', handler: ->
+      @service
         srv_name: 'shinken-reactionner'
         action: 'start'
-      .then next

@@ -5,11 +5,11 @@ Gets notifications and eventhandlers from the scheduler, executes plugins/script
 and sends the results to the scheduler.
 
     module.exports = []
+    module.exports.push 'ryba/shinken'
 
 ## Configure
 
     module.exports.configure = (ctx) ->
-      require('../').configure ctx
       reactionner = ctx.config.ryba.shinken.reactionner ?= {}
       # Additionnal Modules to install
       reactionner.modules ?= {}

@@ -5,7 +5,6 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/yum'
     module.exports.push 'ryba/shinken'
-    module.exports.push require('./index').configure
 
 ## IPTables
 
@@ -16,98 +15,85 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Shinken Arbiter # IPTables', handler: (ctx, next) ->
-      {arbiter} = ctx.config.ryba.shinken
-      ctx.iptables
+    module.exports.push name: 'Shinken Arbiter # IPTables', handler: ->
+      {arbiter} = @config.ryba.shinken
+      @iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: arbiter.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Arbiter" }
         ]
-        if: ctx.config.iptables.action is 'start'
-      .then next
+        if: @config.iptables.action is 'start'
 
 ## Packages
 
-    module.exports.push name: 'Shinken Arbiter # Packages', handler: (ctx, next) ->
-      {shinken} = ctx.config.ryba
-      ctx
-      .service name: 'shinken-arbiter'
-      .chown
+    module.exports.push name: 'Shinken Arbiter # Packages', handler: ->
+      {shinken} = @config.ryba
+      @service
+        name: 'shinken-arbiter'
+      @chown
         destination: path.join shinken.log_dir
         uid: shinken.user.name
         gid: shinken.group.name
-      .execute
+      @execute
         cmd: "shinken --init"
         not_if_exists: ".shinken.ini"
-      .then next
 
 ## Additional Modules
 
-    module.exports.push name: 'Shinken Arbiter # Modules', handler: (ctx, next) ->
-      {arbiter} = ctx.config.ryba.shinken
+    module.exports.push name: 'Shinken Arbiter # Modules', handler: ->
+      {arbiter} = @config.ryba.shinken
       return next() unless Object.getOwnPropertyNames(arbiter.modules).length > 0
-      download = []
-      extract = []
-      exec = []
       for name, mod of arbiter.modules
         if mod.archive?
-          download.push
+          @download
             destination: "#{mod.archive}.zip"
             source: mod.source
             cache_file: "#{mod.archive}.zip"
             not_if_exec: "shinken inventory | grep #{name}"
-          extract.push
+          @extract
             source: "#{mod.archive}.zip"
             not_if_exec: "shinken inventory | grep #{name}"
-          exec.push
+          @exec
             cmd: "shinken install --local #{mod.archive}"
             not_if_exec: "shinken inventory | grep #{name}"
-        else return next Error "Missing parameter: archive for arbiter.modules.#{name}"
-      ctx
-      .download download
-      .extract extract
-      .execute exec
-      .then next
+        else throw Error "Missing parameter: archive for arbiter.modules.#{name}"
 
 ## Configuration
 
-    module.exports.push name: 'Shinken Arbiter # Commons Config', handler: (ctx, next) ->
-      {shinken} = ctx.config.ryba
-      render = for hdp_obj in ['commands', 'contactgroups', 'contacts', 'hostgroups', 'hosts', 'servicegroups', 'templates']
-        destination: "/etc/shinken/#{hdp_obj}/hadoop-#{hdp_obj}.cfg"
-        source: "#{__dirname}/../../resources/shinken/#{hdp_obj}/hadoop-#{hdp_obj}.cfg.j2"
-        local_source: true
-        context: shinken.config
-      ctx
-      .render render
-      .write
+    module.exports.push name: 'Shinken Arbiter # Commons Config', handler: ->
+      {shinken} = @config.ryba
+      for hdp_obj in ['commands', 'contactgroups', 'contacts', 'hostgroups', 'hosts', 'servicegroups', 'templates']
+        @render
+          destination: "/etc/shinken/#{hdp_obj}/hadoop-#{hdp_obj}.cfg"
+          source: "#{__dirname}/../../resources/shinken/#{hdp_obj}/hadoop-#{hdp_obj}.cfg.j2"
+          local_source: true
+          context: shinken.config
+      @write
         destination: '/etc/shinken/resource.d/path.cfg'
         match: /^\$PLUGINSDIR\$=.*$/mg
         replace: "$PLUGINSDIR$=#{shinken.plugin_dir}"
-      .then next
 
 ## Services
 
-
-    module.exports.push name: 'Shinken Arbiter # Services Config', handler: (ctx, next) ->
+    module.exports.push name: 'Shinken Arbiter # Services Config', handler: ->
       # {shinken, force_check, active_nn_host, core_site, hdfs, zookeeper,
-      #  hbase, oozie, webhcat, ganglia, hue} = ctx.config.ryba
-      [shinken] = ctx.contexts 'ryba/shinken/arbiter', require('../../shinken/arbiter').configure
+      #  hbase, oozie, webhcat, ganglia, hue} = @config.ryba
+      [shinken] = @contexts 'ryba/shinken/arbiter', require('../../shinken/arbiter').configure
       require('../broker').configure shinken
       require('../poller').configure shinken
       require('../reactionner').configure shinken
       require('../receiver').configure shinken
       require('../scheduler').configure shinken
       shinken = shinken.config.ryba.shinken
-      [hbase] = ctx.contexts 'ryba/hbase/master', require('../../hbase/master').configure
+      [hbase] = @contexts 'ryba/hbase/master', require('../../hbase/master').configure
       require('../../hbase/client').configure hbase
       require('../../hbase/regionserver').configure hbase
       require('../../hbase/rest').configure hbase
       require('../../hbase/thrift').configure hbase
       hbase = hbase.config.ryba.hbase
-      [hdfs] = ctx.contexts 'ryba/hadoop/hdfs_nn', require('../../hadoop/hdfs_nn').configure
+      [hdfs] = @contexts 'ryba/hadoop/hdfs_nn', require('../../hadoop/hdfs_nn').configure
       require('../../hadoop/hdfs_dn').configure hdfs
       require('../../hadoop/hdfs_jn').configure hdfs
-      is_ha = ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+      is_ha = @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       nameservice = if is_ha then "#{hdfs.config.ryba.hdfs.site['dfs.nameservices']}" else ''
       shortname = if is_ha then "#{hdfs.config.shortname}" else ''
       hdfs = hdfs.config.ryba.hdfs
@@ -177,7 +163,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       # then 'hive.server2.thrift.port'
       # else 'hive.server2.thrift.http.port'
       # hs2_port = hs2_ctxs[0].config.ryba.hive.site[hs2_port]
-      ctx.render
+      @render
         source: "#{__dirname}/../../resources/shinken/services/hadoop-services.cfg.j2"
         local_source: true
         destination: '/etc/shinken/services/hadoop-services.cfg'
@@ -231,27 +217,23 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           # falcon_port: 0 # TODO
           # ahs_port: 0 # TODO
           # hue_port: parseInt hue.ini.desktop['http_port']
-      .then next
 
-    module.exports.push name: 'Shinken Arbiter # Shinken Config', handler: (ctx, next) ->
-      {shinken} = ctx.config.ryba
+    module.exports.push name: 'Shinken Arbiter # Shinken Config', handler: ->
+      {shinken} = @config.ryba
       render_ctx = {}
-      for s_module in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
-        render_ctx["#{s_module}s"] = []
-        ctxs = ctx.contexts "ryba/shinken/#{s_module}", require("../#{s_module}").configure
-        for _ctx in ctxs
+      for sub_module in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
+        render_ctx["#{sub_module}s"] = []
+        for ctx in @contexts "ryba/shinken/#{sub_module}"
           config = {}
-          config[k] = v for k, v of _ctx.config.ryba.shinken[s_module].config
-          config.host = _ctx.config.host
-          render_ctx["#{s_module}s"].push config
-      render = for s_module in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
-        destination: "/etc/shinken/#{s_module}s/#{s_module}-master.cfg"
-        source: "#{__dirname}/../../resources/shinken/#{s_module}s/#{s_module}-master.cfg.j2"
-        local_source: true
-        context: render_ctx
-      ctx
-      .render render
-      .write
+          config[k] = v for k, v of ctx.config.ryba.shinken[sub_module].config
+          config.host = ctx.config.host
+          render_ctx["#{sub_module}s"].push config
+        @render
+          destination: "/etc/shinken/#{sub_module}s/#{sub_module}-master.cfg"
+          source: "#{__dirname}/../../resources/shinken/#{sub_module}s/#{sub_module}-master.cfg.j2"
+          local_source: true
+          context: render_ctx
+      @write
         destination: '/etc/shinken/shinken.cfg'
         write: for k, v of {
           'date_format': 'iso8601'
@@ -262,24 +244,18 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             append: true
         eof: true
 
-      .then next
-
 ### Configure
 
-    module.exports.push name: 'Shinken Arbiter # Modules Config', handler: (ctx, next) ->
-      render = []
-      for s_module in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
-        ctxs = ctx.contexts "ryba/shinken/#{s_module}", require("../#{s_module}").configure
-        for name, mod of ctxs[0].config.ryba.shinken[s_module].modules
-          render.push
+    module.exports.push name: 'Shinken Arbiter # Modules Config', handler: ->
+      for sub_module in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
+        ctxs = @contexts "ryba/shinken/#{sub_module}", require("../#{sub_module}").configure
+        for name, mod of ctxs[0].config.ryba.shinken[sub_module].modules
+          @render
             destination: "/etc/shinken/modules/#{name}.cfg"
             source:  "#{__dirname}/../../resources/shinken/modules/#{name}.cfg.j2"
             local_source: true
             context: mod.config
             if: mod.config?
-      ctx
-      .render render
-      .then next
 
 ## Dependencies
 

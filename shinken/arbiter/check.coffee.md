@@ -3,20 +3,17 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push require('./').configure
 
 ## Check
 
-    module.exports.push name: 'Shinken Arbiter # Check Configuration', label_true: 'CHECKED', handler: (ctx, next) ->
-      ctx.service
+    module.exports.push name: 'Shinken Arbiter # Check Configuration', label_true: 'CHECKED', handler: ->
+      @service
         srv_name: 'shinken'
         action: 'check'
-      .then next
 
-    module.exports.push name: 'Shinken Arbiter # Check TCP', label_true: 'CHECKED', handler: (ctx, next) ->
-      {arbiter} = ctx.config.ryba.shinken
-      ctx.execute
-        cmd: "echo > /dev/tcp/#{ctx.config.host}/#{arbiter.config.port}"
-      .execute
-        cmd: "curl http://#{ctx.config.host}:#{arbiter.config.port} | grep OK"
-      .then next
+    module.exports.push name: 'Shinken Arbiter # Check TCP', label_true: 'CHECKED', handler: ->
+      {arbiter} = @config.ryba.shinken
+      @execute
+        cmd: "echo > /dev/tcp/#{@config.host}/#{arbiter.config.port}"
+      @execute
+        cmd: "curl http://#{@config.host}:#{arbiter.config.port} | grep OK"

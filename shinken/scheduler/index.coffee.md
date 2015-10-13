@@ -10,11 +10,11 @@ Updates the retention file (or other retention backends)
 Sends broks (internal events of any kind) to the broker(s)
 
     module.exports = []
+    module.exports.push 'ryba/shinken'
 
 ## Configure
 
     module.exports.configure = (ctx) ->
-      require('../').configure ctx
       scheduler = ctx.config.ryba.shinken.scheduler ?= {}
       # Additionnal Modules to install
       scheduler.modules ?= {}

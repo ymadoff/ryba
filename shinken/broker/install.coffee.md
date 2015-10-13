@@ -6,7 +6,6 @@
     module.exports.push 'masson/core/yum'
     module.exports.push 'ryba/shinken'
     module.exports.push 'ryba/mongodb'
-    module.exports.push require('./index').configure
 
 ## IPTables
 
@@ -17,55 +16,44 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Shinken Broker # IPTables', handler: (ctx, next) ->
-      {broker} = ctx.config.ryba.shinken
-      ctx.iptables
+    module.exports.push name: 'Shinken Broker # IPTables', handler: ->
+      {broker} = @config.ryba.shinken
+      @iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: broker.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Broker" }
         ]
         if: ctx.config.iptables.action is 'start'
-      .then next
 
 ## Packages
 
-    module.exports.push name: 'Shinken Broker # Packages', handler: (ctx, next) ->
-      {shinken} = ctx.config.ryba
-      ctx
-      .service name: 'python-pymongo'
-      .service name: 'shinken-broker'
-      .then next
+    module.exports.push name: 'Shinken Broker # Packages', handler: ->
+      {shinken} = @config.ryba
+      @service name: 'python-pymongo'
+      @service name: 'shinken-broker'
 
 ## Additional Modules
 
-    module.exports.push name: 'Shinken Broker # Modules', handler: (ctx, next) ->
-      {broker} = ctx.config.ryba.shinken
+    module.exports.push name: 'Shinken Broker # Modules', handler: ->
+      {broker} = @config.ryba.shinken
       return next() unless Object.getOwnPropertyNames(broker.modules).length > 0
-      download = []
-      extract = []
-      exec = []
+      @execute
+        cmd: 'shinken --init'
+        not_if_exists: '.shinken.ini'
       for name, mod of broker.modules
         if mod.archive?
-          download.push
+          @download
             destination: "#{mod.archive}.zip"
             source: mod.source
             cache_file: "#{mod.archive}.zip"
             not_if_exec: "shinken inventory | grep #{name}"
-          extract.push
+          @extract
             source: "#{mod.archive}.zip"
             not_if_exec: "shinken inventory | grep #{name}"
-          exec.push
+          @exec
             cmd: "shinken install --local #{mod.archive}"
             not_if_exec: "shinken inventory | grep #{name}"
-        else return next Error "Missing parameter: archive for broker.modules.#{name}"
-      ctx
-      .execute
-        cmd: 'shinken --init'
-        not_if_exists: '.shinken.ini'
-      .download download
-      .extract extract
-      .execute exec
-      .then next
-
+        else throw Error "Missing parameter: archive for broker.modules.#{name}"
+      
 ## Dependencies
 
     path = require 'path'
