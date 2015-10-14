@@ -9,8 +9,8 @@
 
 ## Wait
 
-    module.exports.push name: 'Shinken Poller # Wait', label_true: 'READY', handler: ->
-      @wait_connect @contexts('ryba/shinken/reactionner').map((ctx) -> 
-        host: ctx.config.host
-        port: ctx.config.ryba.shinken.reactionner.config.port
-      )
+    module.exports.push name: 'Shinken Reactionner # Wait', label_true: 'READY', handler: ->
+      @wait_connect
+        servers: for ctx in @contexts 'ryba/shinken/reactionner'
+          host: ctx.config.host
+          port: ctx.config.ryba.shinken.reactionner.config.port
