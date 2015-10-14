@@ -64,7 +64,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       for hdp_obj in ['commands', 'contactgroups', 'contacts', 'hostgroups', 'hosts', 'servicegroups', 'templates']
         @render
           destination: "/etc/shinken/#{hdp_obj}/hadoop-#{hdp_obj}.cfg"
-          source: "#{__dirname}/../../resources/shinken/#{hdp_obj}/hadoop-#{hdp_obj}.cfg.j2"
+          source: "#{__dirname}/resources/hadoop-#{hdp_obj}.cfg.j2"
           local_source: true
           context: shinken.config
       @write
@@ -252,7 +252,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         for name, mod of ctxs[0].config.ryba.shinken[sub_module].modules
           @render
             destination: "/etc/shinken/modules/#{name}.cfg"
-            source:  "#{__dirname}/../../resources/shinken/modules/#{name}.cfg.j2"
+            source:  "#{__dirname}/resources/#{name}.cfg.j2"
             local_source: true
             context: mod.config
             if: mod.config?
