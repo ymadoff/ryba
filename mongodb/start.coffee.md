@@ -3,9 +3,8 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require('./index').configure
+    
+## Start
 
-    module.exports.push name: 'MongoDB # Start', label_true: 'STARTED', handler: (ctx, next) ->
-      ctx.service_start
-        name: 'mongod'
-      .then next
+    module.exports.push name: 'MongoDB # Start', label_true: 'STARTED', handler: ->
+      @service_start name: 'mongod'
