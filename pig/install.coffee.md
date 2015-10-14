@@ -67,7 +67,7 @@ companion file defines no properties while the YUM package does.
       {java_home} = @config.java
       {hadoop_group, pig_conf_dir, pig_user} = @config.ryba
       @write
-        source: "#{__dirname}/../../resources/pig/pig-env.sh"
+        source: "#{__dirname}/resources/pig-env.sh"
         destination: "#{pig_conf_dir}/pig-env.sh"
         local_source: true
         write: [
