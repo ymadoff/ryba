@@ -34,31 +34,31 @@ Example:
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       ctx.config.ryba ?= {}
-      ctx.config.ryba.ganglia ?= {}
-      ctx.config.ryba.ganglia.rrdcached_user = name: ctx.config.ryba.rrdcached_user if typeof ctx.config.ryba.rrdcached_user is 'string'
-      ctx.config.ryba.ganglia.rrdcached_user ?= {}
-      ctx.config.ryba.ganglia.rrdcached_user.name ?= 'rrdcached'
-      ctx.config.ryba.ganglia.rrdcached_user.system ?= true
-      ctx.config.ryba.ganglia.rrdcached_user.gid = 'rrdcached'
-      ctx.config.ryba.ganglia.rrdcached_user.shell = false
-      ctx.config.ryba.ganglia.rrdcached_user.comment ?= 'RRDtool User'
-      ctx.config.ryba.ganglia.rrdcached_user.home = '/var/rrdtool/rrdcached'
+      ganglia = ctx.config.ryba.ganglia ?= {}
+      ganglia.rrdcached_user = name: ctx.config.ryba.rrdcached_user if typeof ctx.config.ryba.rrdcached_user is 'string'
+      ganglia.rrdcached_user ?= {}
+      ganglia.rrdcached_user.name ?= 'rrdcached'
+      ganglia.rrdcached_user.system ?= true
+      ganglia.rrdcached_user.gid = 'rrdcached'
+      ganglia.rrdcached_user.shell = false
+      ganglia.rrdcached_user.comment ?= 'RRDtool User'
+      ganglia.rrdcached_user.home = '/var/rrdtool/rrdcached'
       # Group
-      ctx.config.ryba.ganglia.rrdcached_group = name: ctx.config.ryba.rrdcached_group if typeof ctx.config.ryba.rrdcached_group is 'string'
-      ctx.config.ryba.ganglia.rrdcached_group ?= {}
-      ctx.config.ryba.ganglia.rrdcached_group.name ?= 'rrdcached'
-      ctx.config.ryba.ganglia.rrdcached_group.system ?= true
+      ganglia.rrdcached_group = name: ctx.config.ryba.rrdcached_group if typeof ctx.config.ryba.rrdcached_group is 'string'
+      ganglia.rrdcached_group ?= {}
+      ganglia.rrdcached_group.name ?= 'rrdcached'
+      ganglia.rrdcached_group.system ?= true
       # Ports
-      ctx.config.ryba.ganglia.collector_port ?= 8649
-      ctx.config.ryba.ganglia.slaves_port ?= 8660
-      ctx.config.ryba.ganglia.hbase_region_port ?= ctx.config.ryba.ganglia.slaves_port
-      ctx.config.ryba.ganglia.nn_port ?= 8661
-      ctx.config.ryba.ganglia.jt_port ?= 8662
-      ctx.config.ryba.ganglia.hm_port ?= 8663
-      ctx.config.ryba.ganglia.hbase_master_port ?= ctx.config.ryba.ganglia.hm_port
-      ctx.config.ryba.ganglia.rm_port ?= 8664
-      ctx.config.ryba.ganglia.jhs_port ?= 8666
-      ctx.config.ryba.ganglia.spark_port ?= 8667
+      ganglia.collector_port ?= 8649
+      ganglia.slaves_port ?= 8660
+      ganglia.hbase_region_port ?= ctx.config.ryba.ganglia.slaves_port
+      ganglia.nn_port ?= 8661
+      ganglia.jt_port ?= 8662
+      ganglia.hm_port ?= 8663
+      ganglia.hbase_master_port ?= ctx.config.ryba.ganglia.hm_port
+      ganglia.rm_port ?= 8664
+      ganglia.jhs_port ?= 8666
+      ganglia.spark_port ?= 8667
 
 ## Commands
 
