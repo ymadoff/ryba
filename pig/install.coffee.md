@@ -9,7 +9,7 @@ Learn more about Pig optimization by reading ["Making Pig Fly"][fly].
     module.exports.push 'ryba/hadoop/mapred_client'
     module.exports.push 'ryba/hadoop/yarn_client'
     module.exports.push 'ryba/hive/client' # In case pig is run through hcat
-    module.exports.push require '../../lib/hdp_select'
+    module.exports.push require '../lib/hdp_select'
     # module.exports.push require('./index').configure
 
 ## Users & Groups
@@ -24,9 +24,9 @@ hadoop:x:502:yarn,mapred,hdfs,hue
 ```
 
     module.exports.push name: 'Hadoop Pig # Users & Groups', handler: ->
-      {hadoop_group, pig_user} = @config.ryba
+      {hadoop_group, pig} = @config.ryba
       @group hadoop_group
-      @user pig_user
+      @user pig.user
 
 ## Install
 
@@ -55,26 +55,26 @@ TODO: Generate the "pig.properties" file dynamically, be carefull, the HDP
 companion file defines no properties while the YUM package does.
 
     module.exports.push name: 'Hadoop Pig # Configure', handler: ->
-      {pig_conf_dir, pig_conf} = @config.ryba
+      {pig} = @config.ryba
       @ini
-        destination: "#{pig_conf_dir}/pig.properties"
-        content: pig_conf
+        destination: "#{pig.conf_dir}/pig.properties"
+        content: pig.config
         separator: '='
         merge: true
         backup: true
 
     module.exports.push name: 'Hadoop Pig # Env', handler: ->
       {java_home} = @config.java
-      {hadoop_group, pig_conf_dir, pig_user} = @config.ryba
+      {hadoop_group, pig} = @config.ryba
       @write
         source: "#{__dirname}/resources/pig-env.sh"
-        destination: "#{pig_conf_dir}/pig-env.sh"
+        destination: "#{pig.conf_dir}/pig-env.sh"
         local_source: true
         write: [
           match: /^JAVA_HOME=.*$/mg
           replace: "JAVA_HOME=#{java_home}"
         ]
-        uid: pig_user.name
+        uid: pig.user.name
         gid: hadoop_group.name
         mode: 0o755
         backup: true

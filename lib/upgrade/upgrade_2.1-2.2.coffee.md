@@ -104,7 +104,7 @@ bin/upgrade [...] -s backup
           cmds.push cmd: "cp -rp /etc/hive-hcatalog/conf/ #{config.directory}/hcatalog_conf"
         if context.has_any_modules ['ryba/hive/webhcat']
           cmds.push cmd: "cp -rp /etc/hive-webhcat/conf/ #{config.directory}/webhcat_conf"
-        if context.has_any_modules ['ryba/tools/pig']
+        if context.has_any_modules ['ryba/pig']
           cmds.push cmd: "cp -rp /etc/pig/conf/ #{config.directory}/pig_conf"
         if context.has_any_modules ['ryba/tools/sqoop']
           cmds.push cmd: "cp -rp /etc/sqoop/conf/ #{config.directory}/sqoop_conf"
