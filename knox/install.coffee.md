@@ -109,7 +109,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Topologies
 
-    module.exports.push name: 'Knox # Topologies', handler: (ctx, next) ->
+    module.exports.push name: 'Knox # Topologies', handler: ->
       {knox} = @config.ryba
       @remove
         destination: "#{knox.conf_dir}/topologies/admin.xml"
