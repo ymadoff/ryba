@@ -65,7 +65,7 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
       mode = if @has_module 'ryba/hbase/client' then 0o0644 else 0o0600
       @hconfigure
         destination: "#{hbase.conf_dir}/hbase-site.xml"
-        default: "#{__dirname}/../../resources/hbase/hbase-site.xml"
+        default: "#{__dirname}/../resources/hbase-site.xml"
         local_default: true
         properties: hbase.site
         merge: true
@@ -167,7 +167,7 @@ https://hbase.apache.org/book/security.html
       {hbase} = @config.ryba
       @write
         destination: "#{hbase.conf_dir}/log4j.properties"
-        source: "#{__dirname}/../../resources/hbase/log4j.properties"
+        source: "#{__dirname}/../resources/log4j.properties"
         local_source: true
 
 

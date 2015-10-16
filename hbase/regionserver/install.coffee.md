@@ -98,7 +98,7 @@ RegionServer, and HBase client host machines.
       mode = if @has_module 'ryba/hbase/client' then 0o0644 else 0o0600
       @hconfigure
         destination: "#{hbase.conf_dir}/hbase-site.xml"
-        default: "#{__dirname}/../../resources/hbase/hbase-site.xml"
+        default: "#{__dirname}/../resources/hbase-site.xml"
         local_default: true
         properties: hbase.site
         merge: true

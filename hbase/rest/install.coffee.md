@@ -76,7 +76,7 @@ restrict it but not the rest server.
       {hbase} = @config.ryba
       @hconfigure
         destination: "#{hbase.conf_dir}/hbase-site.xml"
-        default: "#{__dirname}/../../resources/hbase/hbase-site.xml"
+        default: "#{__dirname}/../resources/hbase-site.xml"
         local_default: true
         properties: hbase.site
         merge: true
