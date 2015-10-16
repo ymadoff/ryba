@@ -7,7 +7,7 @@
     module.exports.push 'ryba/hadoop/hdfs' # Install SPNEGO keytab
     module.exports.push 'ryba/hive/client'
     module.exports.push 'ryba/pig'
-    module.exports.push 'ryba/tools/sqoop'
+    module.exports.push 'ryba/sqoop'
     # module.exports.push require('./index').configure
     module.exports.push require '../../lib/hconfigure'
     module.exports.push require '../../lib/hdfs_upload'

@@ -37,7 +37,6 @@ Example:
 ```
 
     module.exports.configure = (ctx) ->
-      require('../../hadoop/core').configure ctx
       sqoop = ctx.config.ryba.sqoop ?= {}
       # User
       sqoop.user = name: sqoop.user if typeof sqoop.user is 'string'
@@ -52,7 +51,7 @@ Example:
       # Configuration
       sqoop.site ?= {}
       # Libs
-      ctx.config.ryba.sqoop.libs ?= []
-      ctx.config.ryba.sqoop.libs = ctx.config.ryba.sqoop.libs.split /[\s,]+/ if typeof ctx.config.ryba.sqoop.libs is 'string'
+      sqoop.libs ?= []
+      sqoop.libs = sqoop.libs.split /[\s,]+/ if typeof sqoop.libs is 'string'
 
-    module.exports.push commands: 'install', modules: 'ryba/tools/sqoop/install'
+    module.exports.push commands: 'install', modules: 'ryba/sqoop/install'

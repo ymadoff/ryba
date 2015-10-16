@@ -10,8 +10,8 @@ driver used by Sqoop.
     module.exports.push 'masson/commons/mysql_client'
     module.exports.push 'ryba/hadoop/hdfs_client/install'
     module.exports.push 'ryba/hadoop/yarn_client/install'
-    module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_select'
+    module.exports.push require '../lib/hconfigure'
+    module.exports.push require '../lib/hdp_select'
     # module.exports.push require('./index').configure
 
 ## Users & Groups
@@ -37,7 +37,7 @@ Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
     module.exports.push name: 'Hadoop Sqoop # Environment', timeout: -1, handler: ->
       {sqoop, hadoop_group} = @config.ryba
       @write
-        source: "#{__dirname}/../../resources/sqoop/sqoop-env.sh"
+        source: "#{__dirname}/resources/sqoop-env.sh"
         destination: "#{sqoop.conf_dir}/sqoop-env.sh"
         local_source: true
         write: [
@@ -62,11 +62,11 @@ Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
 
 Upload the "sqoop-site.xml" files into the "/etc/sqoop/conf" folder.
 
-    module.exports.push name: 'Hadoop Sqoop # Configuration', timeout: -1, handler: ->
+    module.exports.push name: 'Hadoop Sqoop # Configure', timeout: -1, handler: ->
       {sqoop, hadoop_group} = @config.ryba
       @hconfigure
         destination: "#{sqoop.conf_dir}/sqoop-site.xml"
-        default: "#{__dirname}/../../resources/sqoop/sqoop-site.xml"
+        default: "#{__dirname}/resources/sqoop-site.xml"
         local_default: true
         properties: sqoop.site
         uid: sqoop.user.name
