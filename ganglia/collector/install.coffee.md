@@ -94,7 +94,7 @@ Upload the "hdp-gmetad" service file into "/etc/init.d".
     module.exports.push name: 'Ganglia Collector # Init Script', timeout: -1, handler: ->
       @write
         destination: '/etc/init.d/hdp-gmetad'
-        source: "#{__dirname}/../../resources/ganglia/scripts/hdp-gmetad"
+        source: "#{__dirname}/../resources/scripts/hdp-gmetad"
         local_source: true
         match: /# chkconfig: .*/mg
         replace: '# chkconfig: 2345 20 80'
@@ -120,7 +120,7 @@ Copy the object files provided in the HDP companion files into the
 "/usr/libexec/hdp/ganglia" folder. Permissions on those file are set to "0o744".
 
     module.exports.push name: 'Ganglia Collector # Objects', timeout: -1, handler: (_, callback) ->
-      glob "#{__dirname}/../../resources/ganglia/objects/*.*", (err, files) =>
+      glob "#{__dirname}/../resources/objects/*.*", (err, files) =>
         for file in files
           @upload
             source: file

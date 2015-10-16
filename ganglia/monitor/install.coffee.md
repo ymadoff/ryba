@@ -28,7 +28,7 @@ Copy the object files provided in the HDP companion files into the
 "/usr/libexec/hdp/ganglia" folder. Permissions on those file are set to "0o744".
 
     module.exports.push name: 'Ganglia Monitor # Objects', timeout: -1, handler: (_, callback) ->
-      glob "#{__dirname}/../../resources/ganglia/objects/*.*", (err, files) =>
+      glob "#{__dirname}/../resources/objects/*.*", (err, files) =>
         return callback err if err
         for file in files
           @upload
@@ -44,7 +44,7 @@ Upload the "hdp-gmond" service file into "/etc/init.d".
     module.exports.push name: 'Ganglia Monitor # Init Script', timeout: -1, handler: ->
         @write
           destination: '/etc/init.d/hdp-gmond'
-          source: "#{__dirname}/../../resources/ganglia/scripts/hdp-gmond"
+          source: "#{__dirname}/../resources/scripts/hdp-gmond"
           local_source: true
           match: /# chkconfig: .*/mg
           replace: '# chkconfig: 2345 70 40'
