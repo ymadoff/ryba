@@ -11,10 +11,10 @@ mechanisms.
 
 ## Configure
 
-*   `flume_user` (object|string)
+*   `user` (object|string)
     The Unix Flume login name or a user object (see Mecano User
     documentation).
-*   `flume_group` (object|string)
+*   `group` (object|string)
     The Unix Flume group name or a group object (see Mecano Group
     documentation).
 
@@ -38,7 +38,7 @@ Example:
 ```
 
     module.exports.configure = (ctx) ->
-      require('masson/core/krb5_client').configure ctx
+      # require('masson/core/krb5_client').configure ctx
       flume = ctx.config.ryba.flume ?= {}
       # User
       flume.user = name: flume.user if typeof flume.user is 'string'
@@ -56,4 +56,4 @@ Example:
       # Layout
       flume.conf_dir = '/etc/flume/conf'
 
-    module.exports.push commands: 'install', modules: 'ryba/tools/flume/install'
+    module.exports.push commands: 'install', modules: 'ryba/flume/install'
