@@ -46,6 +46,7 @@ Solution: restart the service using those files.
 
 http://www.swiss-scalability.com/2013/08/hadoop-hdfs-balancer-explained.html
 http://hadoop.apache.org/docs/r2.7.0/hadoop-project-dist/hadoop-hdfs/HDFSCommands.html#balancer
+http://bradhedlund.com/2011/09/10/understanding-hadoop-clusters-and-the-network/
 
 ## ResourceManager looking for JobHistoryServer
 
