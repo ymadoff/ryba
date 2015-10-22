@@ -42,18 +42,18 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Configure
 
-    module.exports.push name: 'MongoDB # Configuration', handler: ->
+    module.exports.push name: 'MongoDB # Configure', handler: ->
       {mongodb} = @config.ryba
       @write
         destination: '/etc/mongod.conf'
-        write: for k, v of mongodb.srv_config
+        write: for k, v of mongodb.config
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
           append: true
         backup: true
         eof: true
       @mkdir
-        destination: mongodb.srv_config.dbpath
+        destination: mongodb.config.dbpath
         uid: mongodb.user.name
         gid: mongodb.group.name
 

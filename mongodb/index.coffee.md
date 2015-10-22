@@ -25,7 +25,7 @@ This file contains shared Configuration.
       mongodb.group.system ?= true
       mongodb.user.gid = mongodb.group.name
       # Config
-      config = mongodb.srv_config ?= {}
+      config = mongodb.config ?= {}
       config.bind_ip ?= '0.0.0.0'
       config.fork ?= true
       config.port ?= 27017
