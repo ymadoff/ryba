@@ -42,6 +42,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Layout
 
     module.exports.push name: 'MongoDB # Layout', handler: ->
+      {mongodb} = @config.ryba
       @mkdir
         destination: mongodb.config.dbpath
         uid: mongodb.user.name
