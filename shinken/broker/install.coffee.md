@@ -26,14 +26,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Packages
 
     module.exports.push name: 'Shinken Broker # Packages', handler: ->
-      {shinken} = @config.ryba
       @service name: 'shinken-broker'
 
 ## Additional Modules
 
     module.exports.push name: 'Shinken Broker # Modules', handler: ->
       {broker} = @config.ryba.shinken
-      return next() unless Object.getOwnPropertyNames(broker.modules).length > 0
+      return unless Object.getOwnPropertyNames(broker.modules).length > 0
       @execute
         cmd: 'shinken --init'
         not_if_exists: '.shinken.ini'
@@ -47,7 +46,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           @extract
             source: "#{mod.archive}.zip"
             not_if_exec: "shinken inventory | grep #{name}"
-          @exec
+          @execute
             cmd: "shinken install --local #{mod.archive}"
             not_if_exec: "shinken inventory | grep #{name}"
         else throw Error "Missing parameter: archive for broker.modules.#{name}"

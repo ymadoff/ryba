@@ -41,7 +41,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Shinken Arbiter # Modules', handler: ->
       {arbiter} = @config.ryba.shinken
-      return next() unless Object.getOwnPropertyNames(arbiter.modules).length > 0
+      return unless Object.getOwnPropertyNames(arbiter.modules).length > 0
       for name, mod of arbiter.modules
         if mod.archive?
           @download
