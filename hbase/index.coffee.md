@@ -213,7 +213,7 @@ Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocument
         replace: "export HBASE_OPTS=\"-Dhdp.version=$HDP_VERSION $HBASE_OPTS\" # RYBA HDP VERSION"
         append: true
       @upload
-        source: "#{__dirname}/../resources/hbase/hbase-env.sh"
+        source: "#{__dirname}/resources/hbase-env.sh"
         destination: "#{hbase.conf_dir}/hbase-env.sh"
         write: write
         backup: true

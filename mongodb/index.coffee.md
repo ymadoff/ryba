@@ -25,15 +25,17 @@ This file contains shared Configuration.
       mongodb.group.system ?= true
       mongodb.user.gid = mongodb.group.name
       # Config
-      config = mongodb.srv_config ?= {}
+      config = mongodb.config ?= {}
       config.bind_ip ?= '0.0.0.0'
       config.fork ?= true
       config.port ?= 27017
       config.pidfilepath ?= '/var/run/mongodb/mongod.pid'
       config.logpath ?= '/var/log/mongodb/mongod.log'
-      config.dbpath ?= path.join mongodb.user.home, 'server'
+      config.dbpath ?= '/var/lib/mongo/server'
       config.journal ?= true
       config.smallfiles ?= true
+
+## Commands
 
     module.exports.push commands: 'check', modules: 'ryba/mongodb/check'
 
@@ -48,7 +50,3 @@ This file contains shared Configuration.
     module.exports.push commands: 'stop', modules: 'ryba/mongodb/stop'
 
     module.exports.push commands: 'status', modules: 'ryba/mongodb/status'
-
-## Dependencies
-
-    path = require 'path'

@@ -104,13 +104,13 @@ bin/upgrade [...] -s backup
           cmds.push cmd: "cp -rp /etc/hive-hcatalog/conf/ #{config.directory}/hcatalog_conf"
         if context.has_any_modules ['ryba/hive/webhcat']
           cmds.push cmd: "cp -rp /etc/hive-webhcat/conf/ #{config.directory}/webhcat_conf"
-        if context.has_any_modules ['ryba/tools/pig']
+        if context.has_any_modules ['ryba/pig']
           cmds.push cmd: "cp -rp /etc/pig/conf/ #{config.directory}/pig_conf"
-        if context.has_any_modules ['ryba/tools/sqoop']
+        if context.has_any_modules ['ryba/sqoop']
           cmds.push cmd: "cp -rp /etc/sqoop/conf/ #{config.directory}/sqoop_conf"
-        if context.has_any_modules ['ryba/tools/flume']
+        if context.has_any_modules ['ryba/flume']
           cmds.push cmd: "cp -rp /etc/flume/conf/ #{config.directory}/flume_conf"
-        if context.has_any_modules ['ryba/tools/mahout']
+        if context.has_any_modules ['ryba/mahout']
           cmds.push cmd: "cp -rp /etc/mahout/conf/ #{config.directory}/mahout_conf"
         if context.has_any_modules ['ryba/oozie/server', 'ryba/oozie/client']
           cmds.push cmd: "cp -rp /etc/oozie/conf/ #{config.directory}/oozie_conf"

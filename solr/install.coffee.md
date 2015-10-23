@@ -4,8 +4,6 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/commons/java'
-    # module.exports.push require('./').configure
-
 
     module.exports.push name: 'Solr # Users & Groups', handler: ->
       {solr} = @config.ryba
@@ -176,7 +174,8 @@ Ryba execute this scripts then customize installation
 #       next()
 #
     module.exports.push name: 'Solr # Tuning', handler: ->
-      next null, 'TODO'
+      return
+      #next null, 'TODO'
 
 ## Dependencies
 

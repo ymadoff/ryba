@@ -18,7 +18,7 @@ Some of the modules are:
 #
 
     module.exports = []
-
+    module.exports.push 'ryba/shinken'
 ## Configure
 
     module.exports.configure = (ctx) ->

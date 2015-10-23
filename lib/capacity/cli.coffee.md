@@ -90,5 +90,5 @@ node node_modules/ryba/bin/capacity \
 
     parameters = require 'parameters'
     config = require 'masson/lib/config'
-    capacity = require '.'
+    capacity = require './'
     util = require 'util'

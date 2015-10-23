@@ -6,5 +6,6 @@
 
 ## Status
 
-    module.exports.push name: 'Shinken Broker # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: (ctx, next) ->
-      next null, 'TODO'
+    module.exports.push name: 'Shinken Broker # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
+      {broker} = @config.ryba.shinken
+      # 'TODO'

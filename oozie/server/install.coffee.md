@@ -228,7 +228,7 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
             match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.extra_appender=(.*)/m
             replace: ""
       @render
-        source: "#{__dirname}/../resources/oozie-env.sh"
+        source: "#{__dirname}/../resources/oozie-env.sh.j2"
         local_source: true
         destination: "#{oozie.conf_dir}/oozie-env.sh"
         context: @config

@@ -2,7 +2,7 @@
 Convert [deprecated values][dep] between HDP 2.1 and HDP 2.2
 
     module.exports = (ctx) ->
-      {tez_site} = ctx.config.ryba.tez
+      {tez} = ctx.config.ryba
       deprecated = {}
       deprecated['tez.am.java.opts'] = 'tez.am.launch.cmd-opts'
       deprecated['tez.am.env'] = 'tez.am.launch.env'
@@ -41,8 +41,8 @@ Convert [deprecated values][dep] between HDP 2.1 and HDP 2.2
       deprecated['tez.task.initial.memory.scale.ratios'] = 'tez.task.scale.memory.ratios'
       deprecated['tez.resource.calculator.process-tree.class'] = 'tez.task.resource.calculator.process-tree.class'
       for previous, current of deprecated
-        continue unless tez_site[previous]
-        tez_site[current] = tez_site[previous]
+        continue unless tez.site[previous]
+        tez.site[current] = tez.site[previous]
         ctx.log? "Deprecated property '#{previous}' [WARN]"
 
 [dev]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.4/bk_upgrading_hdp_manually/content/start-tez-21.html

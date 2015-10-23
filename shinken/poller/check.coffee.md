@@ -7,10 +7,9 @@
 
 ## Check
 
-    module.exports.push name: 'Shinken Poller # Check TCP', label_true: 'CHECKED', handler: (ctx, next) ->
+    module.exports.push name: 'Shinken Poller # Check TCP', label_true: 'CHECKED', handler: ->
       {poller} = ctx.config.ryba.shinken
-      ctx.execute
+      @execute
         cmd: "echo > /dev/tcp/#{ctx.config.host}/#{poller.port}"
-      .execute
+      @execute
         cmd: "curl http://#{ctx.config.host}:#{poller.config.port} | grep OK"
-      .then next

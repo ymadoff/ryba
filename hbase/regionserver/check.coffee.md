@@ -75,7 +75,7 @@ TODO: move to install
       , (err, executed, stdout) ->
         hasCreatedTable = /create 'ryba', 'family1'\n0 row/.test stdout
         hasGrantedAccess = /grant 'ryba', 'RWC', 'ryba'\n0 row/.test stdout
-        throw Error 'Invalid command output' if executed and ( not hasCreatedTable or not hasGrantedAccess)
+        throw Error 'Invalid command output' if executed and (not hasCreatedTable or not hasGrantedAccess)
       # Note: apply this when namespace are functional
       # @execute
       #   cmd: mkcmd.hbase @, """

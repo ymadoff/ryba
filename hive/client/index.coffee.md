@@ -39,8 +39,8 @@ Example:
       # hive.site['hive.mapjoin.smalltable.filesize'] ?= '50000000'
 
       hive.site['hive.execution.engine'] ?= 'tez'
-      hive.site['hive.tez.container.size'] ?= tez.tez_site['tez.am.resource.memory.mb']
-      hive.site['hive.tez.java.opts'] ?= tez.tez_site['hive.tez.java.opts']
+      hive.site['hive.tez.container.size'] ?= tez.site['tez.am.resource.memory.mb']
+      hive.site['hive.tez.java.opts'] ?= tez.site['hive.tez.java.opts']
       # Size per reducer. The default in Hive 0.14.0 and earlier is 1 GB. In
       # Hive 0.14.0 and later the default is 256 MB.
       # HDP set it to 64 MB which seems wrong

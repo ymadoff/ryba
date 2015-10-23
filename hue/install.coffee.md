@@ -17,7 +17,7 @@ article from december 2014 describe how to
     module.exports.push 'ryba/hadoop/yarn_client/install'
     module.exports.push 'ryba/hadoop/mapred_client/install'
     module.exports.push 'ryba/hive/client/install' # Hue reference hive conf dir
-    module.exports.push 'ryba/tools/pig/install'
+    module.exports.push 'ryba/pig/install'
     module.exports.push require '../lib/hconfigure'
     # module.exports.push require('./index').configure
 

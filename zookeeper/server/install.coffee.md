@@ -210,7 +210,7 @@ Upload the ZooKeeper loging configuration file.
           append: true
       @write
         destination: "#{zookeeper.conf_dir}/log4j.properties"
-        source: "#{__dirname}/../../resources/zookeeper/log4j.properties"
+        source: "#{__dirname}/resources/log4j.properties"
         local_source: true
         write: writes
 

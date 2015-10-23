@@ -7,7 +7,7 @@ Builds Hue from source
     hue = {}
     hue.build ?= {}
     hue.build.name ?= 'ryba/hue-build'
-    hue.build.dockerfile ?= "#{__dirname}/../resources/hue/build/Dockerfile"
+    hue.build.dockerfile ?= "#{__dirname}/resources/build/Dockerfile"
     hue.build.directory ?= '/tmp/ryba/hue-build'
     machine = 'ryba'
 
@@ -74,7 +74,7 @@ Intermetiate container to build hue from source. Builds ryba/hue-build image
         #   source: "#{__dirname}/../../ryba-cluster-no-secure-4vm-2pc/resources/java/US_export_policy.jar"
         #   destination: "#{hue.build.directory}/resources/US_export_policy.jar"
         .download
-          source: "#{__dirname}/../resources/hue/prod/Dockerfile"
+          source: "#{__dirname}/resources/prod/Dockerfile"
           destination: "#{hue.build.directory}/Dockerfile"
           local: true
           force: true
@@ -85,7 +85,7 @@ Intermetiate container to build hue from source. Builds ryba/hue-build image
         #   source: "#{__dirname}/../../ryba-standalone-secure/conf/certs/cacert_key.pem"
         #   destination: "#{hue.build.directory}/resources/cacert_key.pem"
         .download
-          source: "#{__dirname}/../resources/hue/hue_init.sh"
+          source: "#{__dirname}/resources/hue_init.sh"
           destination: "#{hue.build.directory}/resources/hue_init.sh"
           local: true
           force: true

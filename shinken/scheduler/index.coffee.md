@@ -10,6 +10,7 @@ Updates the retention file (or other retention backends)
 Sends broks (internal events of any kind) to the broker(s)
 
     module.exports = []
+    module.exports.push 'ryba/shinken'
 
 ## Configure
 

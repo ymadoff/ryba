@@ -5,6 +5,7 @@ Gets notifications and eventhandlers from the scheduler, executes plugins/script
 and sends the results to the scheduler.
 
     module.exports = []
+    module.exports.push 'ryba/shinken'
 
 ## Configure
 

@@ -15,6 +15,7 @@ Modules for receivers:
 ## Dependencies
 
     module.exports = []
+    module.exports.push 'ryba/shinken'
 
 ## Configure
 

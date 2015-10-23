@@ -7,24 +7,13 @@ failovers if an error is detected. Can route check result events from a Receiver
 to its associated Scheduler. Host the WebUI.
 
     module.exports = []
+    module.exports.push 'ryba/shinken'
 
 ## Configure
 
     module.exports.configure = (ctx) ->
       require('../').configure ctx
       {shinken} = ctx.config.ryba
-      require('masson/commons/java').configure ctx
-      require('../../zookeeper/client').configure ctx
-      require('../../hadoop/hdfs').configure ctx
-      # require('../hadoop/yarn').configure ctx
-      require('../../hbase/regionserver').configure ctx
-      require('../../hbase/master').configure ctx
-      require('../../hive/hcatalog').configure ctx
-      require('../../hive/server2').configure ctx
-      require('../../hive/webhcat').configure ctx
-      require('../../ganglia/collector').configure ctx
-      require('../../oozie/server').configure ctx
-      require('../../hue').configure ctx
       shinken.overwrite ?= false
       # Arbiter specific configuration
       shinken.arbiter ?= {}
@@ -37,8 +26,8 @@ to its associated Scheduler. Host the WebUI.
       config.modules ?= []
       config.distributed ?= ctx.hosts_with_module('ryba/shinken/arbiter').length > 1
       config.hostname ?= ctx.config.host
-      config.user ?= shinken.user.name
-      config.group ?= shinken.group.name
+      config.user = shinken.user.name
+      config.group = shinken.group.name
       config.host ?= '0.0.0.0'
       config.spare ?= shinken.config.spare
       config.use_ssl ?= shinken.config.use_ssl
@@ -90,6 +79,8 @@ to its associated Scheduler. Host the WebUI.
         'kafka-consumers': ctx.hosts_with_module 'ryba/kafka/consumer'
         'kafka-producers': ctx.hosts_with_module 'ryba/kafka/producer'
         'mongodb-servers': ctx.hosts_with_module 'ryba/mongodb'
+        'mongodb-configservers': ctx.hosts_with_module 'ryba/mongodb/configsrv'
+        'mongodb-routers': ctx.hosts_with_module 'ryba/mongodb/router'
         'mongodb-shards': ctx.hosts_with_module 'ryba/mongodb/shard'
         'oozie-clients': ctx.hosts_with_module 'ryba/oozie/client'
         'oozie-servers': ctx.hosts_with_module 'ryba/oozie/servers'
@@ -103,7 +94,7 @@ to its associated Scheduler. Host the WebUI.
         'shinken-schedulers': ctx.hosts_with_module 'ryba/shinken/scheduler'
         'solr-servers': ctx.hosts_with_module 'ryba/solr'
         'spark-clients': ctx.hosts_with_module 'ryba/spark/client'
-        'spark-history-servers': ctx.hosts_with_module 'ryba/history_server'
+        'spark-history-servers': ctx.hosts_with_module 'ryba/spark/history_server'
         'titan-servers': ctx.hosts_with_module 'ryba/titan'
         'zeppelin-servers': ctx.hosts_with_module 'ryba/zeppelin'
         'zookeeper-clients': ctx.hosts_with_module 'ryba/zookeeper/client'

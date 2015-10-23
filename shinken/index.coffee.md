@@ -27,7 +27,7 @@ Example
     }
 ```
 
-    module.exports.push module.exports.configure = (ctx) ->
+    module.exports.configure = (ctx) ->
       ctx.config.ryba.shinken ?= {}
       {shinken, realm} = ctx.config.ryba
       shinken.log_dir = '/var/log/shinken'
@@ -36,7 +36,7 @@ Example
       shinken.user ?= {}
       shinken.user.name ?= 'nagios'
       shinken.user.system ?= true
-      shinken.user.comment ?= 'Shinken User'
+      shinken.user.comment ?= 'Nagios/Shinken User'
       shinken.user.home ?= '/var/lib/shinken'
       shinken.user.shell ?= '/bin/sh'
       shinken.plugin_dir ?= '/usr/lib64/nagios/plugins'
@@ -55,9 +55,16 @@ Example
 
 ## Users & Groups
 
-    module.exports.push name: 'Shinken # Users & Groups', handler: (ctx, next) ->
-      {shinken} = ctx.config.ryba
-      ctx
-      .group shinken.group
-      .user shinken.user
-      .then next
+    module.exports.push name: 'Shinken # Users & Groups', handler: ->
+      {shinken} = @config.ryba
+      @group shinken.group
+      @user shinken.user
+
+## Startup Sequence
+
+*   shinken-scheduler
+*   shinken-poller
+*   shinken-receiver
+*   shinken-reactionner
+*   shinken-broker
+*   shinken-arbiter

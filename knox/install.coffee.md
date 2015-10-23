@@ -6,19 +6,15 @@
     module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/core/yum'
     module.exports.push require '../lib/hconfigure'
-    module.exports.push require '../lib/hdp_select'
     module.exports.push require '../lib/write_jaas'
-    module.exports.push require('./').configure
 
 ## Users & Groups
 
-    module.exports.push name: 'Knox # Users & Groups', handler: (ctx, next) ->
-      {knox} = ctx.config.ryba
-      ctx
-      .group knox.group
-      .user knox.user
-      .then next
-
+    module.exports.push name: 'Knox # Users & Groups', handler: ->
+      {knox} = @config.ryba
+      @group knox.group
+      @user knox.user
+      
 ## IPTables
 
 | Service        | Port  | Proto | Parameter       |
@@ -29,36 +25,31 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Knox # IPTables', handler: (ctx, next) ->
-      {knox} = ctx.config.ryba
-      ctx.iptables
+    module.exports.push name: 'Knox # IPTables', handler: ->
+      {knox} = @config.ryba
+      @iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: knox.site['gateway.port'], protocol: 'tcp', state: 'NEW', comment: "Knox Gateway" }
         ]
-        if: ctx.config.iptables.action is 'start'
-      , next
+        if: @config.iptables.action is 'start'
 
 ## Service
 
-    module.exports.push name: 'Knox # Service', timeout: -1, handler: (ctx, next) ->
-      ctx.service
-        name: 'knox'
-      .hdp_select
-        name: 'knox-server'
-      .then next
+    module.exports.push name: 'Knox # Service', timeout: -1, handler: ->
+      @service name: 'knox'
 
 ## Master Secret
 
-    module.exports.push name: 'Knox # Master Secret', handler: (ctx, next) ->
-      {knox} = ctx.config.ryba
-      ctx.fs.exists '/usr/hdp/current/knox-server/data/security/master', (err, exists) ->
+    module.exports.push name: 'Knox # Master Secret', handler: ->
+      {knox} = @config.ryba
+      @fs.exists '/usr/hdp/current/knox-server/data/security/master', (err, exists) ->
         return next err, false if err or exists
-        ctx.ssh.shell (err, stream) ->
+        @ssh.shell (err, stream) ->
           return next err if err
           emitted = done = false
           stream.write "su -l #{knox.user.name} -c '/usr/hdp/current/knox-server/bin/knoxcli.sh create-master'\n"
           stream.on 'data', (data, stderr) ->
-            ctx.log[if stderr then 'err' else 'out'].write data
+            @log[if stderr then 'err' else 'out'].write data
             data = data.toString()
             if emitted
               # Wait the end
@@ -73,28 +64,26 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           stream.on 'exit', ->
             return next Error 'Exit before the end' unless done
             next null, done
-          stream.pipe ctx.log.out
-          stream.stderr.pipe ctx.log.err
+          stream.pipe @log.out
+          stream.stderr.pipe @log.err
       # su -l knox -c '$gateway_home/bin/knoxcli.sh create-master'
       # MySecret
 
 ## Configure
 
-    module.exports.push name: 'Knox # Configure', handler: (ctx, next) ->
-      {knox} = ctx.config.ryba
-      ctx
-      .hconfigure
+    module.exports.push name: 'Knox # Configure', handler: ->
+      {knox} = @config.ryba
+      @hconfigure
         destination: "#{knox.conf_dir}/gateway-site.xml"
         properties: knox.site
         merge: true
-      .then next
 
 ## Kerberos
 
-    module.exports.push name: 'Knox # Kerberos', handler: (ctx, next) ->
-      {knox, realm} = ctx.config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = ctx.config.krb5.etc_krb5_conf.realms[realm]
-      ctx.krb5_addprinc
+    module.exports.push name: 'Knox # Kerberos', handler: ->
+      {knox, realm} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      @krb5_addprinc
         principal: knox.krb5_user.principal
         randkey: true
         keytab: knox.krb5_user.keytab
@@ -103,7 +92,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      .write_jaas
+      @write_jaas
         destination: knox.site['java.security.auth.login.config']
         content: 'com.sun.security.jgss.initiate':
           principal: knox.krb5_user.principal
@@ -116,44 +105,66 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         no_entry_check: true
         uid: knox.user.name
         gid: knox.group.name
-        mode: 0o700
-      .then next
+        mode: 0o600
 
 ## Topologies
 
-    module.exports.push name: 'Knox # Topologies', handler: (ctx, next) ->
-      {knox} = ctx.config.ryba
-      write = []
+    module.exports.push name: 'Knox # Topologies', handler: ->
+      {knox} = @config.ryba
+      @remove
+        destination: "#{knox.conf_dir}/topologies/admin.xml"
+        not_if: 'admin' in Object.keys knox.topologies
+      @remove
+        destination: "#{knox.conf_dir}/topologies/sandbox.xml"
+        not_if: 'sandbox' in Object.keys knox.topologies
       for nameservice, topology of knox.topologies
-        doc = builder.create 'configuration', version: '1.0', encoding: 'UTF-8'
-        gateway = doc.ele 'gateway'
-        for name, p of topology.providers
+        doc = builder.create 'topology', version: '1.0', encoding: 'UTF-8'
+        gateway = doc.ele 'gateway' if topology.providers?
+        for role, p of topology.providers
           provider = gateway.ele 'provider'
-          provider.ele 'name', name
-          provider.ele 'role', p.role
-          provider.ele 'enabled', if p.enabled is false then 'false' else 'true'
-          for name, value of p.config
-            param = provider.ele 'param'
-            param.ele 'name', name
-            param.ele 'value', value
+          provider.ele 'role', role
+          provider.ele 'name', p.name
+          provider.ele 'enabled', if p.enabled? then "#{p.enabled}" else 'true'
+          if typeof p.config is 'object'
+            for name in Object.keys(p.config).sort()
+              if p.config[name]
+                param = provider.ele 'param'
+                param.ele 'name', name
+                param.ele 'value', p.config[name]
         for role, url of topology.services
-          service = doc.ele 'service'
-          service.ele 'role', role.toUpperCase()
-          if Array.isArray url then for u in url
-            service.ele 'url', u
-          else service.ele 'url', url
-        write.push
+          unless url is false
+            service = doc.ele 'service'
+            service.ele 'role', role.toUpperCase()
+            if Array.isArray url then for u in url
+              service.ele 'url', u
+            else if url not in [null, ''] then service.ele 'url', url
+        @write
           destination: "#{knox.conf_dir}/topologies/#{nameservice}.xml"
           content: doc.end pretty: true
-      ctx
-      .remove
-         destination: "#{knox.conf_dir}/topologies/sandbox.xml"
-         not_if: 'sandbox' in Object.keys knox.topologies
-      .remove
-         destination: "#{knox.conf_dir}/topologies/admin.xml"
-         not_if: 'admin' in Object.keys knox.topologies 
-      .write write
-      .then next
+          eof: true
+
+## LDAP SSL CA Certificate
+
+Knox use Shiro for LDAP authentication and Shiro cannot be configured for 
+unsecure SSL.
+With LDAPS, the certificate must be imported into the JRE's keystore for the
+client to connect to openldap.
+
+    # module.exports.push name: 'Knox # LDAPS CA cert', handler: ->
+    #   {java_home, jre_home} = @config.java
+    #   {knox} = @config.ryba
+    #   return next() unless knox.ssl?.cafile? and knox.ssl?.caname?
+    #   tmp_location = "/tmp/ryba_knox_cacerts_#{Date.now()}"
+    #   @upload
+    #     source: knox.ssl.cafile
+    #     destination: "#{tmp_location}/cacert"
+    #   @java_keystore_add
+    #     keystore: "#{jre_home or java_home}/lib/security/cacerts"
+    #     storepass: "changeit"
+    #     caname: knox.ssl.caname
+    #     cacert: "#{tmp_location}/cacert"
+    #   @remove
+    #     destination: "#{tmp_location}/cacert"
 
 ## Dependencies
 
