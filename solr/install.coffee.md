@@ -53,7 +53,6 @@ Ryba execute this scripts then customize installation
       {solr, realm} = @config.ryba
       archive_name = path.basename solr.source
       archive_path = path.join solr.install_dir, archive_name
-      modified = false
       @download
         source: solr.source
         destination: archive_path
