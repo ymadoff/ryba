@@ -4,7 +4,6 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/yum'
-    module.exports.push 'ryba/shinken'
     module.exports.push 'ryba/mongodb'
 
 ## IPTables
@@ -28,7 +27,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Shinken Broker # Packages', handler: ->
       {shinken} = @config.ryba
-      @service name: 'python-pymongo'
       @service name: 'shinken-broker'
 
 ## Additional Modules

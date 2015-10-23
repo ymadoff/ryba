@@ -22,6 +22,7 @@ Some of the modules are:
 ## Configure
 
     module.exports.configure = (ctx) ->
+      require('../').configure ctx
       broker = ctx.config.ryba.shinken.broker ?= {}
       # Additionnal modules to install
       broker.modules ?= {}

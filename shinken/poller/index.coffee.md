@@ -22,11 +22,11 @@ is approximatively 1000 checks/s
 ## Configure
 
     module.exports.configure = (ctx) ->
-      {shinken, realm} = ctx.config.ryba
+      require('../').configure ctx
       poller = ctx.config.ryba.shinken.poller ?= {}
       # Kerberos
       poller.krb5_user ?= {}
-      poller.krb5_user.principal ?= "#{shinken.user.name}/#{ctx.config.host}@#{realm}"
+      poller.krb5_user.principal ?= "#{shinken.user.name}/#{ctx.config.host}@#{ctx.config.ryba.realm}"
       poller.krb5_user.keytab ?= "/etc/security/keytabs/shinken-poller.service.keytab"
       # Python
       poller.python ?= {}
