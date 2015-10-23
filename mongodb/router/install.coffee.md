@@ -1,11 +1,10 @@
 
-# MongoDB Shard Install
+# MongoDB Router Install
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/yum'
     module.exports.push 'masson/core/iptables'
-    module.exports.push 'ryba/mongodb/install'
 
 ## IPTables
 
@@ -16,11 +15,11 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'MongoDB Shard # IPTables', handler: ->
-      {shard} = @config.ryba.mongodb
+    module.exports.push name: 'MongoDB Router # IPTables', handler: ->
+      {router} = @config.ryba.mongodb
       @iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: mongodb.config.port, protocol: 'tcp', state: 'NEW', comment: "MongoDB port" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: router.config.port, protocol: 'tcp', state: 'NEW', comment: "MongoDB port" }
         ]
         if: @config.iptables.action is 'start'
 
@@ -33,17 +32,16 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Packages
 
-    module.exports.push name: 'MongoDB Shard # Packages', timeout: -1, handler: ->
-      @service name: 'mongodb-org-server'
-      @service name: 'mongodb-org-tools'
+    module.exports.push name: 'MongoDB Router # Packages', timeout: -1, handler: ->
+      @service name: 'mongodb-org-mongos'
 
 ## Configure
 
-    module.exports.push name: 'MongoDB Shard # Configure', handler: ->
-      {shard} = @config.ryba.mongodb
+    module.exports.push name: 'MongoDB Router # Configure', handler: ->
+      {router} = @config.ryba.mongodb
       @write
-        destination: '/etc/mongodb/mongod.conf'
-        write: for k, v of shard.config
+        destination: '/etc/mongodb/mongos.conf'
+        write: for k, v of router.config
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
           append: true

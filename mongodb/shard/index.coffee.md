@@ -8,7 +8,6 @@ MongoDB is a document-oriented database. Distributed Version
 ## Configure
 
     module.exports.configure = (ctx) ->
-      require('../').configure ctx
       mongodb = ctx.config.ryba.mongodb ?= {}
       # User
       mongodb.user = name: mongodb.user if typeof mongodb.user is 'string'
@@ -25,23 +24,6 @@ MongoDB is a document-oriented database. Distributed Version
       mongodb.group.system ?= true
       mongodb.user.gid = mongodb.group.name
       # ConfigSrv Config
-      config = mongodb.conf_config ?= {}
-      config.bind_ip ?= '0.0.0.0'
-      config.fork ?= true
-      config.port ?= 27019
-      config.pidfilepath ?= '/var/run/mongodb/config.pid'
-      config.logpath ?= '/var/log/mongodb/mongod.log'
-      config.dbpath ?= path.join mongodb.user.home, 'config'
-      config.journal ?= true
-      config.smallfiles ?= true
-      # RoutingSrv Config
-      config = mongodb.routing_config ?= {}
-      config.bind_ip ?= '0.0.0.0'
-      config.fork ?= true
-      config.port ?= 27017
-      config.pidfilepath ?= '/var/run/mongodb/mongos.pid'
-      config.logpath ?= '/var/log/mongodb/mongod.log'
-      config.configdb ?=
       # ShardSrv Config
       config = mongodb.shard_config ?= {}
       config.bind_ip ?= '0.0.0.0'

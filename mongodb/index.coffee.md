@@ -31,9 +31,11 @@ This file contains shared Configuration.
       config.port ?= 27017
       config.pidfilepath ?= '/var/run/mongodb/mongod.pid'
       config.logpath ?= '/var/log/mongodb/mongod.log'
-      config.dbpath ?= path.join mongodb.user.home, 'server'
+      config.dbpath ?= '/var/lib/mongo/server'
       config.journal ?= true
       config.smallfiles ?= true
+
+## Commands
 
     module.exports.push commands: 'check', modules: 'ryba/mongodb/check'
 
@@ -48,7 +50,3 @@ This file contains shared Configuration.
     module.exports.push commands: 'stop', modules: 'ryba/mongodb/stop'
 
     module.exports.push commands: 'status', modules: 'ryba/mongodb/status'
-
-## Dependencies
-
-    path = require 'path'

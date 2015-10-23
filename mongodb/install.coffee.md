@@ -6,14 +6,6 @@
     module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/core/yum'
 
-## Users & Groups
-
-    module.exports.push name: 'MongoDB # Users & Groups', handler: ->
-      {mongodb} = @config.ryba
-      @group mongodb.group
-      @user mongodb.user
-
-
 ## IPTables
 
 | Service       | Port  | Proto | Parameter       |
@@ -27,9 +19,16 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       {mongodb} = @config.ryba
       @iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: mongodb.srv_config.port, protocol: 'tcp', state: 'NEW', comment: "MongoDB port" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: mongodb.config.port, protocol: 'tcp', state: 'NEW', comment: "MongoDB port" }
         ]
         if: @config.iptables.action is 'start'
+
+## Users & Groups
+
+    module.exports.push name: 'MongoDB # Users & Groups', handler: ->
+      {mongodb} = @config.ryba
+      @group mongodb.group
+      @user mongodb.user
 
 ## Install
 
@@ -39,6 +38,15 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @service name: 'mongodb-org-server'
       @service name: 'mongodb-org-shell'
       @service name: 'mongodb-org-tools'
+
+## Layout
+
+    module.exports.push name: 'MongoDB # Layout', handler: ->
+      @mkdir
+        destination: mongodb.config.dbpath
+        uid: mongodb.user.name
+        gid: mongodb.group.name
+
 
 ## Configure
 
@@ -52,10 +60,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           append: true
         backup: true
         eof: true
-      @mkdir
-        destination: mongodb.config.dbpath
-        uid: mongodb.user.name
-        gid: mongodb.group.name
 
 ## Dependencies
 
