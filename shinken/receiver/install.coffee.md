@@ -21,7 +21,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: receiver.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Receiver" }
         ]
-        if: ctx.config.iptables.action is 'start'
+        if: @config.iptables.action is 'start'
 
 ## Packages
 

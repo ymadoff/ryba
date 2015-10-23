@@ -30,7 +30,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @service
         name: 'shinken-arbiter'
       @chown
-        destination: path.join shinken.log_dir
+        destination: shinken.log_dir
         uid: shinken.user.name
         gid: shinken.group.name
       @execute
@@ -103,10 +103,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       hdfs.dn_info_port = hdfs.site["dfs.datanode.#{protocol}.address"].split(':')[1]
       hdfs.jn_info_port = hdfs.site["dfs.journalnode.#{protocol}-address"].split(':')[1]
       # HDFS NameNode
-      # nn_hosts = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
+      # nn_hosts = @hosts_with_module 'ryba/hadoop/hdfs_nn'
       # nn_hosts_map = {} # fqdn to port
       # active_nn_port = null
-      # unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+      # unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       #   u = url.parse core_site['fs.defaultFS']
       #   nn_hosts_map[u.hostname] = u.port
       #   active_nn_port = u.port
@@ -225,8 +225,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         render_ctx["#{sub_module}s"] = []
         for ctx in @contexts "ryba/shinken/#{sub_module}"
           config = {}
-          config[k] = v for k, v of ctx.config.ryba.shinken[sub_module].config
-          config.host = ctx.config.host
+          config[k] = v for k, v of @config.ryba.shinken[sub_module].config
+          config.host = @config.host
           render_ctx["#{sub_module}s"].push config
         @render
           destination: "/etc/shinken/#{sub_module}s/#{sub_module}-master.cfg"

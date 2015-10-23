@@ -6,9 +6,12 @@
 
 ## Check
 
+    module.exports.push name: 'Shinken Broker # Check TCP', label_true: 'CHECKED', handler: ->
+      {broker} = @config.ryba.shinken
+      @execute
+        cmd: "echo > /dev/tcp/#{@config.host}/#{broker.config.port}"
+      
     module.exports.push name: 'Shinken Broker # Check Status', label_true: 'CHECKED', handler: ->
       {broker} = @config.ryba.shinken
       @execute
-        cmd: "echo > /dev/tcp/#{ctx.config.host}/#{broker.config.port}"
-      @execute
-        cmd: "curl http://#{ctx.config.host}:#{broker.config.port} | grep OK"
+        cmd: "curl http://#{@config.host}:#{broker.config.port} | grep OK"

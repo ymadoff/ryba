@@ -27,8 +27,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Shinken Scheduler # Packages', handler: ->
       {shinken} = @config.ryba
-      @service
-        name: 'shinken-scheduler'
+      @service name: 'shinken-scheduler'
       @chown
         destination: shinken.log_dir
         uid: shinken.user.name
