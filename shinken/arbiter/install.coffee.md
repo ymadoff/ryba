@@ -61,12 +61,14 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Shinken Arbiter # Commons Config', handler: ->
       {shinken} = @config.ryba
-      for hdp_obj in ['commands', 'contactgroups', 'contacts', 'hostgroups', 'hosts', 'servicegroups', 'templates']
-        @render
-          destination: "/etc/shinken/#{hdp_obj}/hadoop-#{hdp_obj}.cfg"
-          source: "#{__dirname}/resources/hadoop-#{hdp_obj}.cfg.j2"
-          local_source: true
-          context: shinken.config
+      for obj in ['commands', 'contactgroups', 'contacts', 'hostgroups', 'hosts', 'servicegroups', 'templates']
+        files = glob.sync "#{__dirname}/resources/#{obj}/*.j2"
+        for file in files
+          @render
+            destination: "/etc/shinken/#{obj}/#{path.basename file, '.j2'}"
+            source: file
+            local_source: true
+            context: shinken.config
       @write
         destination: '/etc/shinken/resource.d/path.cfg'
         match: /^\$PLUGINSDIR\$=.*$/mg
@@ -164,7 +166,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       # else 'hive.server2.thrift.http.port'
       # hs2_port = hs2_ctxs[0].config.ryba.hive.site[hs2_port]
       @render
-        source: "#{__dirname}/../../resources/shinken/services/hadoop-services.cfg.j2"
+        source: "#{__dirname}/resources/hadoop-services.cfg.j2"
         local_source: true
         destination: '/etc/shinken/services/hadoop-services.cfg'
         context:
@@ -222,17 +224,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       {shinken} = @config.ryba
       render_ctx = {}
       for sub_module in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
-        render_ctx["#{sub_module}s"] = []
         for ctx in @contexts "ryba/shinken/#{sub_module}"
-          config = {}
-          config[k] = v for k, v of @config.ryba.shinken[sub_module].config
-          config.host = @config.host
-          render_ctx["#{sub_module}s"].push config
-        @render
-          destination: "/etc/shinken/#{sub_module}s/#{sub_module}-master.cfg"
-          source: "#{__dirname}/../../resources/shinken/#{sub_module}s/#{sub_module}-master.cfg.j2"
-          local_source: true
-          context: render_ctx
+          @render
+            destination: "/etc/shinken/#{sub_module}s/#{sub_module}-master.cfg"
+            source: "#{__dirname}/resources/#{sub_module}-master.cfg.j2"
+            local_source: true
+            context: ctx.config.ryba.shinken[sub_module].config
       @write
         destination: '/etc/shinken/shinken.cfg'
         write: for k, v of {
@@ -252,12 +249,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         for name, mod of ctxs[0].config.ryba.shinken[sub_module].modules
           @render
             destination: "/etc/shinken/modules/#{name}.cfg"
-            source:  "#{__dirname}/resources/#{name}.cfg.j2"
+            source:  "#{__dirname}/resources/modules/#{name}.cfg.j2"
             local_source: true
             context: mod.config
             if: mod.config?
 
 ## Dependencies
 
+    glob = require 'glob'
     path = require 'path'
     url = require 'url'
