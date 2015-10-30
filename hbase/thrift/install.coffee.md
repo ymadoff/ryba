@@ -42,7 +42,7 @@ Needed for thrift     Autoconf 2.69 - Automake 1.14 - Bison 2.5
 TODO: Installing Thrift Compiler
 ## Thrift Autoconf
 
-    module.exports.push name: 'Thrift # Install Autoconf', timeout: -1, handler: ->
+    module.exports.push name: 'Thrift # Install Autoconf', timeout: -1, handler: (options) ->
       {hbase} = @config.ryba
       @call (_, callback) ->
         @execute
@@ -52,10 +52,10 @@ TODO: Installing Thrift Compiler
           stdout = '' if err
           autoconf_version =  stdout.trim()
           if autoconf_version == hbase.thrift.autoconf.version
-            @log "autoconf :already up to date version #{hbase.thrift.autoconf.version}"
+            options.log "autoconf :already up to date version #{hbase.thrift.autoconf.version}"
             callback null, false
           else
-            @log "autoconf : is not installed "
+            options.log "autoconf : is not installed "
             callback null, true
       @download
         source: hbase.thrift.autoconf.url
@@ -79,9 +79,9 @@ TODO: Installing Thrift Compiler
 
 ## Thrift Automake
 
-    module.exports.push name: 'Thrift # Install Automake', timeout: -1, handler: ->
+    module.exports.push name: 'Thrift # Install Automake', timeout: -1, handler: (options) ->
       {hbase} = @config.ryba
-      @log? "Check if Automake is installed "
+      options.log? "Check if Automake is installed "
       @call (_, callback) ->
         @execute
           cmd: "automake --version | egrep '.*[0-9]\\.[0-9]{2}' | awk '{ print $4 }'"
@@ -90,10 +90,10 @@ TODO: Installing Thrift Compiler
           stdout = '' if err
           automake_version =  stdout.toString('utf-8').trim()
           if automake_version ==  hbase.thrift.automake.version
-            @log "automake :already up to date version #{hbase.thrift.automake.version}"
+            options.log "automake :already up to date version #{hbase.thrift.automake.version}"
             callback null, false
           else
-            @log "automake : is not installed"
+            options.log "automake : is not installed"
             callback null, true
       @download
         source: hbase.thrift.automake.url
@@ -117,9 +117,9 @@ TODO: Installing Thrift Compiler
 
 ## Thrift Bison
 
-    module.exports.push name: 'Thrift # Install Bison', timeout: -1, handler: ->
+    module.exports.push name: 'Thrift # Install Bison', timeout: -1, handler: (options) ->
       {hbase} = @config.ryba
-      @log "Check if Bison is installed"
+      options.log "Check if Bison is installed"
       @call (_, callback) ->
         @execute
           cmd: "bison --version | egrep '.*[0-9]\\.[0-9]\\.[0-9]' | awk '{ print $4 }'"
@@ -128,10 +128,10 @@ TODO: Installing Thrift Compiler
           stdout = '' if err
           bison_version =  stdout.toString('utf-8').trim()
           if bison_version ==  hbase.thrift.bison.version
-            @log "bison :already up to date version #{hbase.thrift.bison.version}"
+            options.log "bison :already up to date version #{hbase.thrift.bison.version}"
             return callback null, false
           else
-            @log "bison : is not installed"
+            options.log "bison : is not installed"
             callback null, true
       @download
         source: hbase.thrift.bison.url
@@ -153,7 +153,7 @@ TODO: Installing Thrift Compiler
 
 ## Thrift Thrift Compiler
 
-    module.exports.push name: 'Thrift # Install Compiler', timeout: -1, handler: ->
+    module.exports.push name: 'Thrift # Install Compiler', timeout: -1, handler: (options) ->
       {hbase} = @config.ryba
       # Check if Thrift Compiler is installed
       @call (_, callback) ->
@@ -164,7 +164,7 @@ TODO: Installing Thrift Compiler
           stdout = '' if err
           compiler_version =  stdout.toString('utf-8').trim()
           if compiler_version ==  hbase.thrift.compiler.version
-            @log "compiler :already up to date version #{hbase.thrift.compiler.version}"
+            options.log "compiler :already up to date version #{hbase.thrift.compiler.version}"
             callback null, false
           else
             callback null, true

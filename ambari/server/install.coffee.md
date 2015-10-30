@@ -41,7 +41,6 @@ Install Ambari server package.
     #         repoid: 'HDP-2.2'
     #         baseurl: 'http://10.10.10.101:10205/HDP/centos6/2.x/updates/2.2.4.2'
     #       , (err, modified) =>
-    #         console.log err, modified
     #       # {local} = @config.ryba.ambari
     #       # return next() unless local
     #       # writes = []

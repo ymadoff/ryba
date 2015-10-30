@@ -302,7 +302,6 @@ bin/upgrade [...] -s stop
         .run (context, next) ->
           return next() unless context.has_any_modules service.module
           cmd = service.cmd or "service #{service.name} stop"
-          context.log "Stop service '#{service.name}'"
           context.execute
             cmd: cmd
             code_skipped: [1, 3]

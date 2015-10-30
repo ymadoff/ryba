@@ -53,7 +53,7 @@ Declare the HDP repository.
       name: 'Ryba # Repository'
       timeout: -1
       if: -> @config.ryba.hdp_repo
-      handler: ->
+      handler: (options) ->
         {proxy, hdp_repo} = @config.ryba
         @download
           source: hdp_repo
@@ -65,7 +65,7 @@ Declare the HDP repository.
         @call
           if: -> @status -2
           handler: (_, callback) ->
-            @log 'Upload PGP keys'
+            options.log 'Upload PGP keys'
             @fs.readFile "/etc/yum.repos.d/hdp.repo", (err, content) =>
               return next err if err
               keys = {}

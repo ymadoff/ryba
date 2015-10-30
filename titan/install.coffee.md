@@ -120,8 +120,8 @@ Creates a configuration file. Always load this file in Gremlin REPL !
     module.exports.push
       skip: true, name: 'Titan # Create HBase Namespace'
       if: -> @config.ryba.titan.config['storage.backend'] is 'hbase'
-      handler: ->
-        @log "Titan: HBase namespace not yet ready"
+      handler: (options) ->
+        options.log "Titan: HBase namespace not yet ready"
         {titan, hbase} = @config.ryba
         @execute
           cmd: mkcmd.hbase @, """
