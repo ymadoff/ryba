@@ -81,7 +81,7 @@ Example:
       es.group.system ?= true
       es.user.gid ?= es.group.name
       # Layout
-      es.version ?= '1.2.4'
+      es.version ?= '1.7.1'
       # Kerberos
       es.principal ?= "elasticsearch/#{@config.host}@#{@config.ryba.realm}"
       es.keytab ?= '/etc/security/keytabs/elasticsearch.service.keytab'
