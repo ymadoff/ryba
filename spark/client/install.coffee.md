@@ -3,6 +3,10 @@
 [Spark Installation][Spark-install] following hortonworks guidelines to install
 Spark requires HDFS and Yarn. Install spark in Yarn cluster mode.
 
+Resources:
+
+[Tips and Tricks from Altic Scale][https://www.altiscale.com/blog/tips-and-tricks-for-running-spark-on-hadoop-part-2-2/)   
+    
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hive/client'
