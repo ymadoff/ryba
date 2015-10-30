@@ -28,6 +28,7 @@ Factory to create the Phoenix RPC Scheduler that knows to put index updates into
       ctx.before
         type: 'service'
         name: 'hbase-regionserver'
-      , require './install'
-
-    module.exports.push commands: 'install', modules: 'ryba/phoenix/regionserver/install'
+      , ->
+        @service name: 'phoenix'
+        @hdp_select name: 'phoenix-client'
+        @call require '../lib/hbase_enrich'

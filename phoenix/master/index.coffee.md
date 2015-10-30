@@ -20,11 +20,13 @@ running of those scans to produce regular JDBC result sets.
       # Local indexing
       hbase.site['hbase.master.loadbalancer.class'] ?= 'org.apache.phoenix.hbase.index.balancer.IndexLoadBalancer'
       hbase.site['hbase.coprocessor.master.classes'] ?= 'org.apache.phoenix.hbase.index.master.IndexMasterObserver'
-      console.log ctx.before
       ctx.before
         type: 'service'
         name: 'hbase-master'
-      , require './install'
+      , ->
+        @service name: 'phoenix'
+        @hdp_select name: 'phoenix-client'
+        @call require '../lib/hbase_enrich'
 
 These properties ensure co-location of data table and local index regions:
 The local indexing feature is a technical preview and is still under
@@ -32,5 +34,3 @@ development.
 
       # hbase.site['hbase.master.loadbalancer.class'] ?= 'org.apache.phoenix.hbase.index.balancer.IndexLoadBalancers'
       # hbase.site['hbase.coprocessor.master.classes'] ?= 'org.apache.phoenix.hbase.index.master.IndexMasterObserver'
-
-    module.exports.push commands: 'install', modules: 'ryba/phoenix/master/install'
