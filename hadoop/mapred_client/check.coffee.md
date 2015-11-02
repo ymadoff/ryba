@@ -5,7 +5,7 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/mapred_jhs/wait'
     module.exports.push 'ryba/hadoop/yarn_ts/wait'
-    module.exports.push require('./index').configure
+    # module.exports.push require('./index').configure
 
 ## Check
 

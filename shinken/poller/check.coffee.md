@@ -3,7 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    module.exports.push require('./').configure
+    # module.exports.push require('./').configure
 
 ## Check
 

@@ -5,7 +5,7 @@ This commands checks if falcons works as required.
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/hdfs_client'
+    # module.exports.push 'ryba/hadoop/hdfs_client'
     # module.exports.push require('../hadoop/hdfs_client').configure
     # module.exports.push require('./index').configure
 
