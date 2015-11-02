@@ -33,6 +33,9 @@ with Hadoop clusters.
       knox.krb5_user.keytab ?= '/etc/security/keytabs/knox.service.keytab'
       # Security
       knox.master_secret ?= 'knox_master_secret_123'
+      # Env
+      knox.env ?= {}
+      knox.env.app_mem_opts ?= '-Xmx8192m'
       # Configuration
       knox.site ?= {}
       knox.site['gateway.port'] ?= '8443'

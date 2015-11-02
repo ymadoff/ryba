@@ -78,6 +78,20 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         properties: knox.site
         merge: true
 
+## Env
+
+We do not edit knox-env.sh because environnement variables are directly set
+in the gateway.sh service script.
+  
+    module.exports.push name: 'Knox # Env', handler: ->
+      {knox} = @config.ryba
+      @write
+        destination: "#{knox.conf_dir}/gateway.sh"
+        write: for k, v of knox.env
+          match: new RegExp "^#{k}=.*$", 'i'
+          replace: "#{k.toUpperCase()}=#{v}"
+          append: true
+
 ## Kerberos
 
     module.exports.push name: 'Knox # Kerberos', handler: ->
