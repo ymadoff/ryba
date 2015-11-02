@@ -9,6 +9,9 @@
     module.exports.push name: 'Shinken Receiver # Check TCP', label_true: 'CHECKED', handler: ->
       {receiver} = @config.ryba.shinken
       @execute
-        cmd: "echo > /dev/tcp/#{ctx.config.host}/#{receiver.port}"
+        cmd: "echo > /dev/tcp/#{@config.host}/#{receiver.port}"
+
+    module.exports.push name: 'Shinken Receiver # Check HTTP', label_true: 'CHECKED', handler: ->
+      {receiver} = @config.ryba.shinken
       @execute
-        cmd: "curl http://#{ctx.config.host}:#{receiver.config.port} | grep OK"
+        cmd: "curl http://#{@config.host}:#{receiver.config.port} | grep OK"

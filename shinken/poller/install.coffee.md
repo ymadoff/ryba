@@ -17,33 +17,35 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Shinken Poller # IPTables', handler: ->
       {poller} = @config.ryba.shinken
+      rules = [{ chain: 'INPUT', jump: 'ACCEPT', dport: poller.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Poller" }]
+      for name, mod of poller.modules
+        if mod.config?.port?
+          rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: mod.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Poller #{name}" }
       @iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: poller.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Poller" }
         ]
         if: @config.iptables.action is 'start'
 
-## Install
+## Package
 
-    module.exports.push name: 'Shinken Poller # Install', handler: ->
-      {shinken} = @config.ryba
+    module.exports.push name: 'Shinken Poller # Packages', handler: ->
       @service name: 'net-snmp'
       @service name: 'net-snmp-utils'
       @service name: 'httpd'
-      @service name: 'net-snmp-perl'
-      @service name: 'perl-Net-SNMP'
+      # @service name: 'perl-Net-SNMP'
       @service name: 'fping'
       @service name: 'krb5-devel'
       @service name: 'zlib-devel'
       @service name: 'bzip2-devel'
       @service name: 'openssl-devel'
       @service name: 'ncurses-devel'
-      # @service name: 'python27'
-      # @service name: 'python27-python-pip'
-      # @service name: 'python27-python-devel'
-      # @service name: 'nagios-plugins' # Will be installed automatically by shinken poller
-      # @service name: 'shinken-poller'
-      @execute cmd: "yum -y --disablerepo=HDP-UTILS-1.1.0.20 install shinken-poller"
+      @service name: 'shinken-poller'
+
+## Layout
+
+    module.exports.push name: 'Shinken Poller # Layout', handler: ->
+      {shinken} = @config.ryba
       @chown
         destination: shinken.log_dir
         uid: shinken.user.name
@@ -55,7 +57,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Additional Modules
 
     module.exports.push name: 'Shinken Poller # Modules', handler: ->
-      {poller} = @config.ryba.shinken
+      {shinken, shinken:{poller}} = @config.ryba
       return unless Object.getOwnPropertyNames(poller.modules).length > 0
       for name, mod of poller.modules
         if mod.archive?
@@ -63,23 +65,14 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             destination: "#{mod.archive}.zip"
             source: mod.source
             cache_file: "#{mod.archive}.zip"
-            not_if_exec: "shinken inventory | grep #{name}"
+            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
           @extract
             source: "#{mod.archive}.zip"
-            not_if_exec: "shinken inventory | grep #{name}"
-          @install
-            cmd: "su -l #{ctx.config.ryba.shinken.user.name} -c 'shinken install --local #{mod.archive}'"
-            not_if_exec: "shinken inventory | grep #{name}"
+            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
+          @execute
+            cmd: "su -l #{shinken.user.name} -c 'shinken install --local #{mod.archive}'"
+            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
         else throw Error "Missing parameter: archive for poller.modules.#{name}"
-
-## Alternative Python
-
-Shinken modules needs python 2.7 but yum needs python 2.6 so we install
-an alternative python without replacing python 2.6
-
-    module.exports.push name: 'Shinken Poller # Python 2.7', skip: true, handler: ->
-      {poller} = @config.ryba.shinken
-      # TODO Use SCL
 
 ## Python Modules
 
@@ -115,7 +108,7 @@ an alternative python without replacing python 2.6
 
 ## Kerberos
 
-    module.exports.push name: 'Shinken Poller # Kerberos', handler: ->
+    module.exports.push name: 'Shinken Poller # Kerberos', skip: true, handler: ->
       {shinken, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc

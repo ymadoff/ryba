@@ -6,7 +6,7 @@
 
 ## Check
 
-    module.exports.push name: 'Shinken Arbiter # Check Configuration', label_true: 'CHECKED', handler: ->
+    module.exports.push name: 'Shinken Arbiter # Check Status', label_true: 'CHECKED', handler: ->
       @service
         srv_name: 'shinken'
         action: 'check'
@@ -15,5 +15,8 @@
       {arbiter} = @config.ryba.shinken
       @execute
         cmd: "echo > /dev/tcp/#{@config.host}/#{arbiter.config.port}"
+    
+    module.exports.push name: 'Shinken Arbiter # Check HTTP', label_true: 'CHECKED', handler: ->
+      {arbiter} = @config.ryba.shinken  
       @execute
         cmd: "curl http://#{@config.host}:#{arbiter.config.port} | grep OK"

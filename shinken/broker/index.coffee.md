@@ -23,16 +23,17 @@ Some of the modules are:
 
     module.exports.configure = (ctx) ->
       require('../').configure ctx
-      broker = ctx.config.ryba.shinken.broker ?= {}
+      {shinken} = ctx.config.ryba
+      broker = shinken.broker ?= {}
       # Additionnal modules to install
       broker.modules ?= {}
-      webui = broker.modules['webui'] ?= {}
-      webui.source ?= 'https://github.com/shinken-monitoring/mod-webui/archive/1.0.zip'
-      webui.archive ?= 'mod-webui-1.0'
+      webui = broker.modules['webui2'] ?= {}
+      webui.source ?= 'https://github.com/shinken-monitoring/mod-webui/archive/2.0.1.zip'
+      webui.archive ?= 'mod-webui-2.0.1'
       webui.config ?= {}
       webui.config.host ?= '0.0.0.0'
       webui.config.port ?= 7767
-      webui.config.auth_secret ?= 'rybashinken'
+      webui.config.auth_secret ?= 'rybashinken123'
       webui.config.modules = [webui.config.modules] if typeof webui.config.modules is 'string'
       webui.config.modules ?= ['auth-cfg-password', 'mongodb']
       auth = broker.modules['auth-cfg-password'] ?= {}
@@ -41,11 +42,12 @@ Some of the modules are:
       mongodb = broker.modules['mongodb'] ?= {}
       mongodb.source ?= 'https://github.com/shinken-monitoring/mod-mongodb/archive/1.0.1.zip'
       mongodb.archive ?= 'mod-mongodb-1.0.1'
-      ## CONFIG
+      # CONFIG
       broker.config ?= {}
       broker.config.port ?= 7772
       broker.config.modules = [broker.config.modules] if typeof broker.config.modules is 'string'
       broker.config.modules ?= ['webui']
+
 ## Commands
 
     # module.exports.push commands: 'backup', modules: 'ryba/shinken/broker/backup'

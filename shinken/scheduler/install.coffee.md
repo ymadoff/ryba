@@ -27,8 +27,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Shinken Scheduler # Packages', handler: ->
       {shinken} = @config.ryba
-      @service
-        name: 'shinken-scheduler'
+      @service name: 'shinken-scheduler'
       @chown
         destination: shinken.log_dir
         uid: shinken.user.name
@@ -40,7 +39,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Additional Modules
 
     module.exports.push name: 'Shinken Scheduler # Modules', handler: ->
-      {scheduler} = @config.ryba.shinken
+      {shinken, shinken:{scheduler}} = @config.ryba
       return unless Object.getOwnPropertyNames(scheduler.modules).length > 0
       for name, mod of scheduler.modules
         if mod.archive?
@@ -48,13 +47,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             destination: "#{mod.archive}.zip"
             source: mod.source
             cache_file: "#{mod.archive}.zip"
-            not_if_exec: "shinken inventory | grep #{name}"
+            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
           @extract
             source: "#{mod.archive}.zip"
-            not_if_exec: "shinken inventory | grep #{name}"
-          @exec
-            cmd: "shinken install --local #{mod.archive}"
-            not_if_exec: "shinken inventory | grep #{name}"
+            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
+          @execute
+            cmd: "su -l #{shinken.user.name} -c 'shinken install --local #{mod.archive}'"
+            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
         else throw Error "Missing parameter: archive for scheduler.modules.#{name}"
 
 ## Dependencies

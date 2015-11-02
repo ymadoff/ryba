@@ -60,6 +60,12 @@ Example
       @group shinken.group
       @user shinken.user
 
+## Commons Packages
+
+    module.exports.push name: 'Shinken # Commons Packages', handler: ->
+      @service name: 'python'
+      @service name: 'python-pycurl'
+
 ## Startup Sequence
 
 *   shinken-scheduler

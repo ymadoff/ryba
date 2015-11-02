@@ -23,7 +23,8 @@ is approximatively 1000 checks/s
 
     module.exports.configure = (ctx) ->
       require('../').configure ctx
-      poller = ctx.config.ryba.shinken.poller ?= {}
+      {shinken} = ctx.config.ryba
+      poller = shinken.poller ?= {}
       # Kerberos
       poller.krb5_user ?= {}
       poller.krb5_user.principal ?= "#{shinken.user.name}/#{ctx.config.host}@#{ctx.config.ryba.realm}"
