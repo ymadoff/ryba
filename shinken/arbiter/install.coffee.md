@@ -17,10 +17,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Shinken Arbiter # IPTables', handler: ->
       {arbiter} = @config.ryba.shinken
+      rules = [{ chain: 'INPUT', jump: 'ACCEPT', dport: arbiter.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Arbiter" }]
+      for name, mod of arbiter.modules
+        if mod.config?.port?
+          rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: mod.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Arbiter #{name}" }
       @iptables
-        rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: arbiter.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Arbiter" }
-        ]
+        rules: rules
         if: @config.iptables.action is 'start'
 
 ## Packages
