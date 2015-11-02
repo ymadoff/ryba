@@ -20,8 +20,8 @@ Resources:
     module.exports.push 'ryba/hive/client/install' # Install the Hive and HCatalog service
     module.exports.push 'ryba/hbase/client/install'
     module.exports.push 'ryba/hive/hcatalog/wait'
-    module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_select'
+    module.exports.push 'ryba/lib/hconfigure'
+    module.exports.push 'ryba/lib/hdp_select'
     # module.exports.push require('./index').configure
 
 ## IPTables

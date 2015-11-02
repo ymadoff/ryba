@@ -12,8 +12,8 @@ deployment is heavily inspired by [Anil Gupta instruction][agi].
     # module.exports.push require('../../hadoop/core').configure
     # module.exports.push require('../../hbase/client').configure
     # module.exports.push require('./index').configure
-    module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_select'
+    module.exports.push 'ryba/lib/hconfigure'
+    module.exports.push 'ryba/lib/hdp_select'
 
 ## Packages
 

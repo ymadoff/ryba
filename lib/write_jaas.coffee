@@ -27,7 +27,8 @@ write_jaas
 
 ###
 
-module.exports = ->
+module.exports = []
+module.exports.push required: true, handler: ->
   return if @registered 'write_jaas'
   @register 'write_jaas', (options, callback) ->
     # Quick fix

@@ -9,7 +9,7 @@ Learn more about Pig optimization by reading ["Making Pig Fly"][fly].
     module.exports.push 'ryba/hadoop/mapred_client'
     module.exports.push 'ryba/hadoop/yarn_client'
     module.exports.push 'ryba/hive/client' # In case pig is run through hcat
-    module.exports.push require '../lib/hdp_select'
+    module.exports.push 'ryba/lib/hdp_select'
     # module.exports.push require('./index').configure
 
 ## Users & Groups

@@ -9,7 +9,7 @@ Spark comes with 1.2.1 in HDP 2.2.4.
     module.exports.push 'masson/commons/docker'
     module.exports.push 'ryba/spark/client'
     module.exports.push 'ryba/hive/client'
-    module.exports.push require '../lib/hconfigure'
+    module.exports.push 'ryba/lib/hconfigure'
 
 ## IPTables
 

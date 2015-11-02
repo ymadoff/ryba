@@ -15,8 +15,8 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
     module.exports.push 'ryba/hive/client/install' # Install the Hive and HCatalog service
     module.exports.push 'ryba/hadoop/hdfs_dn/wait'
     module.exports.push 'ryba/hbase/client/install'
-    module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_select'
+    module.exports.push 'ryba/lib/hconfigure'
+    module.exports.push 'ryba/lib/hdp_select'
     # module.exports.push require('./index').configure
 
 ## IPTables

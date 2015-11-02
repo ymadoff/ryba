@@ -37,7 +37,7 @@ keytool -list -v -keystore keystore -alias hadoop
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push require '../lib/hconfigure'
+    module.exports.push 'ryba/lib/hconfigure'
 
     module.exports.configure = (ctx) ->
       require('./core').configure ctx

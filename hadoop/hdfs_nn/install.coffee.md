@@ -17,9 +17,9 @@ Worth to investigate:
     module.exports.push 'masson/bootstrap/utils'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
-    module.exports.push require '../../lib/hconfigure'
+    module.exports.push 'ryba/lib/hconfigure'
     # module.exports.push require '../../lib/hdp_service'
-    module.exports.push require '../../lib/hdp_select'
+    module.exports.push 'ryba/lib/hdp_select'
 
 ## Configuration
 

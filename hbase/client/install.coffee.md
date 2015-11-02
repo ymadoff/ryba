@@ -8,8 +8,8 @@ Install the HBase client package and configure it with secured access.
     module.exports.push 'ryba/hadoop/mapred_client/install' # Required for using/checking mapreduce
     module.exports.push 'ryba/hbase'
     # module.exports.push require('./index').configure
-    module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/write_jaas'
+    module.exports.push 'ryba/lib/hconfigure'
+    module.exports.push 'ryba/lib/write_jaas'
 
 ## Zookeeper JAAS
 

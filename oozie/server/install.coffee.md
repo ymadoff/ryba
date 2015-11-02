@@ -14,8 +14,8 @@ failover and Oozie must target the active node.
     module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/hadoop/hdfs' # SPNEGO need access to the principal HTTP/$HOST@$REALM's keytab
     module.exports.push 'ryba/hadoop/hdfs_dn/wait' # Create directories inside HDFS
-    module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_select'
+    module.exports.push 'ryba/lib/hconfigure'
+    module.exports.push 'ryba/lib/hdp_select'
     module.exports.push require('../../lib/hdfs_mkdir').register
     # module.exports.push require('./index').configure
 
@@ -497,7 +497,7 @@ the ShareLib contents without having to go into HDFS.
       {oozie} = @config.ryba
       @write
         destination: "#{oozie.conf_dir}/oozie-log4j.properties"
-        source: "#{__dirname}/../resources/oozie/oozie-log4j.properties"
+        source: "#{__dirname}/../resources/oozie-log4j.properties"
         local_source: true
 
 ## Dependencies

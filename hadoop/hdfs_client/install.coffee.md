@@ -5,8 +5,8 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/core'
     # module.exports.push require('./index').configure
-    module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_select'
+    module.exports.push 'ryba/lib/hconfigure'
+    module.exports.push 'ryba/lib/hdp_select'
 
     module.exports.push name: 'HDFS Client # Configuration', handler: ->
       {hadoop_conf_dir, hdfs, hadoop_group} = @config.ryba

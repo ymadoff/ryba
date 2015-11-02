@@ -4,8 +4,8 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/kafka'
-    module.exports.push require '../../lib/hdp_select'
     # module.exports.push require('./index').configure
+    module.exports.push 'ryba/lib/hdp_select'
 
 ## Package
 

@@ -12,7 +12,8 @@ Options include
 
 ###
 
-module.exports = ->
+module.exports = []
+module.exports.push required: true, handler: ->
   return if @registered 'hdp_select'
   @register 'hdp_select', (options, callback) ->
     options.version ?= 'latest'

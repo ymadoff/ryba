@@ -5,8 +5,8 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/core/yum'
-    module.exports.push require '../lib/hconfigure'
-    module.exports.push require '../lib/write_jaas'
+    module.exports.push 'ryba/lib/hconfigure'
+    module.exports.push 'ryba/lib/write_jaas'
 
 ## Users & Groups
 

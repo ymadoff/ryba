@@ -13,7 +13,7 @@ please see ryba/rexster
     module.exports.push 'ryba/hbase/client/install'
     # module.exports.push require('../hbase').configure
     # module.exports.push require('./index').configure
-    module.exports.push require '../lib/write_jaas'
+    module.exports.push 'ryba/lib/write_jaas'
 
 ## Install
 

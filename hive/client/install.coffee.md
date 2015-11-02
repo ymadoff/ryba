@@ -8,7 +8,7 @@
     module.exports.push 'ryba/hadoop/mapred_client/install'
     module.exports.push 'ryba/tez'
     module.exports.push 'ryba/hive/index'
-    module.exports.push require '../../lib/hconfigure'
+    module.exports.push 'ryba/lib/hconfigure'
     # module.exports.push require('./index').configure
 
     module.exports.push name: 'Hive Client # Service', handler: ->

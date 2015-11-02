@@ -4,6 +4,8 @@ each = require 'each'
 
 properties = require './properties'
 
+module.exports = []
+
 ###
 sept 2nd, 2013: need the [patched version](https://github.com/wdavidw/xmlbuilder-js/)
 to handle empty strings
@@ -12,7 +14,7 @@ Options includes:
 *   `default`: Path to a file or object of properties used as default values.   
 *   `local_default`: Read the default file from the local filesystem (only apply if `default` is a string).   
 ###
-module.exports = ->
+module.exports.push required: true, handler: ->
   return if @registered 'hconfigure'
   @register 'hconfigure', (options, callback) ->
     fnl_props = {}

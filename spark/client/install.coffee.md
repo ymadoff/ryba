@@ -11,8 +11,8 @@ Resources:
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hive/client'
     # module.exports.push require('./index').configure
-    module.exports.push require '../../lib/hdp_select'
-    module.exports.push require '../../lib/hconfigure'
+    module.exports.push 'ryba/lib/hdp_select'
+    module.exports.push 'ryba/lib/hconfigure'
     module.exports.push 'ryba/spark/default'
 
 

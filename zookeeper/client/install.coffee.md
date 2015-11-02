@@ -9,8 +9,8 @@
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/lib/base'
     # module.exports.push require('./index').configure
-    module.exports.push require '../../lib/hdp_select'
-    module.exports.push require '../../lib/write_jaas'
+    module.exports.push 'ryba/lib/hdp_select'
+    module.exports.push 'ryba/lib/write_jaas'
 
 ## Users & Groups
 

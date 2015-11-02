@@ -7,8 +7,8 @@
     module.exports.push 'ryba/hadoop/hdfs_client/install'
     module.exports.push 'ryba/hadoop/yarn_client/install'
     module.exports.push 'ryba/hadoop/hdfs_dn/wait'
-    module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_select'
+    module.exports.push 'ryba/lib/hconfigure'
+    module.exports.push 'ryba/lib/hdp_select'
     module.exports.push require '../../lib/hdfs_upload'
     module.exports.push require('./index').configure
 

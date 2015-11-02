@@ -16,8 +16,8 @@ most (N - 1) / 2 failures to continue to function normally.
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/hdfs'
     # module.exports.push require('./index').configure
-    module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_select'
+    module.exports.push 'ryba/lib/hconfigure'
+    module.exports.push 'ryba/lib/hdp_select'
 
 ## IPTables
 

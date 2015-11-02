@@ -5,7 +5,7 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/commons/java'
     module.exports.push 'masson/commons/mysql_client'
-    module.exports.push require '../lib/hconfigure'
+    module.exports.push 'ryba/lib/hconfigure'
 
 ## Configuration
 

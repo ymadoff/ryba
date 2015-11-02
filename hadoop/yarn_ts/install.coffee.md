@@ -8,8 +8,8 @@ co-located with any other service.
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/krb5_client/wait'
     module.exports.push 'ryba/hadoop/yarn_client/install'
-    module.exports.push require '../../lib/hconfigure'
-    module.exports.push require '../../lib/hdp_select'
+    module.exports.push 'ryba/lib/hconfigure'
+    module.exports.push 'ryba/lib/hdp_select'
     # module.exports.push require('./index').configure
 
 ## IPTables

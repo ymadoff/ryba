@@ -16,7 +16,7 @@ environmental variables. For example, HDP declare its version as
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/hadoop/mapred_client/install'
     module.exports.push 'ryba/hadoop/yarn_client/install'
-    module.exports.push require '../../lib/hdp_select'
+    module.exports.push 'ryba/lib/hdp_select'
     # module.exports.push require('./index').configure
 
 ## Install

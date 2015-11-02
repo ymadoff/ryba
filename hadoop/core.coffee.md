@@ -19,8 +19,8 @@ code.
     module.exports.push 'masson/core/krb5_client'
     module.exports.push 'masson/commons/java'
     module.exports.push 'ryba/lib/base'
-    module.exports.push require '../lib/hconfigure'
-    module.exports.push require '../lib/hdp_select'
+    module.exports.push 'ryba/lib/hconfigure'
+    module.exports.push 'ryba/lib/hdp_select'
 
 ## Configuration
 
