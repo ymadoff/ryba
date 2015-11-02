@@ -27,9 +27,9 @@ Some of the modules are:
       broker = shinken.broker ?= {}
       # Additionnal modules to install
       broker.modules ?= {}
-      webui = broker.modules['webui'] ?= {}
-      webui.source ?= 'https://github.com/shinken-monitoring/mod-webui/archive/1.0.zip'
-      webui.archive ?= 'mod-webui-1.0'
+      webui = broker.modules['webui2'] ?= {}
+      webui.source ?= 'https://github.com/shinken-monitoring/mod-webui/archive/2.0.1.zip'
+      webui.archive ?= 'mod-webui-2.0.1'
       webui.config ?= {}
       webui.config.host ?= '0.0.0.0'
       webui.config.port ?= 7767
