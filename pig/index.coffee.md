@@ -56,6 +56,8 @@ Example:
       pig.user.home ?= '/home/pig'
       # Layout
       pig.conf_dir ?= '/etc/pig/conf'
+      # Configuration
+      pig.config ?= {}
 
     module.exports.push commands: 'check', modules: 'ryba/pig/check'
 
