@@ -17,10 +17,10 @@
 #}
 {% for r in receivers %}
 define receiver {
-    receiver_name   {{r.host}}
-    address         {{r.host}}
-    port            {{r.port}}
-    spare           {% if r.spare %}1{% else %}0{% endif %}
+    receiver_name   receiver_{{r.config.shortname}}
+    address         {{r.config.host}}
+    port            {{r.config.ryba.shinken.receiver.config.port}}
+    spare           {% if r.config.ryba.shinken.receiver.config.spare %}1{% else %}0{% endif %}
 
     timeout             3   {# Ping timeout#}
     data_timeout        120 {# Data send timeout#}
@@ -34,10 +34,10 @@ define receiver {
     # - ws-arbiter              = WebService for pushing results to the arbiter
     # - Collectd                = Receive collectd perfdata
     #}
-    modules         {{ r.modules | join (',') }}
+    modules         {{ r.config.ryba.shinken.receiver.config.modules | join (',') }}
 
-    use_ssl	          {% if r.use_ssl %}1{% else %}0{% endif %}
-    hard_ssl_name_check   {% if r.hard_ssl_name_check %}1{% else %}0{% endif %}
+    use_ssl	          {% if r.config.ryba.shinken.receiver.config.use_ssl %}1{% else %}0{% endif %}
+    hard_ssl_name_check   {% if r.config.ryba.shinken.receiver.config.hard_ssl_name_check %}1{% else %}0{% endif %}
     direct_routing      0  {# If enabled, it will directly send commands to the
                             # schedulers if it know about the hostname in the
                             # command.

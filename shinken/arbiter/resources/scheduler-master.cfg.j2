@@ -17,11 +17,11 @@
 #}
 {% for s in schedulers %}
 define scheduler {
-    scheduler_name      {{s.host}} {# Just the name #}
-    address             {{s.host}} {# IP or DNS address of the daemon #}
-    port                {{s.port}}       {# TCP port of the daemon#}
+    scheduler_name      scheduler_{{s.config.shortname}} {# Just the name #}
+    address             {{s.config.host}} {# IP or DNS address of the daemon #}
+    port                {{s.config.ryba.shinken.scheduler.config.port}}       {# TCP port of the daemon#}
 
-    spare               {% if s.spare %}1{% else %}0{% endif %}
+    spare               {% if s.config.ryba.shinken.scheduler.config.spare %}1{% else %}0{% endif %}
     weight              1   {# Some schedulers can manage more hosts than others #}
     timeout             3   {# Ping timeout #}
     data_timeout        120 {# Data send timeout #}
@@ -37,7 +37,7 @@ define scheduler {
     #                         (does not save, only read)
     # - SnmpBooster             = Snmp bulk polling module
     #}
-    modules           {{ s.modules | join (',') }}
+    modules           {{ s.config.ryba.shinken.scheduler.config.modules | join (',') }}
 
     {# Skip initial broks creation. Boot fast, but some broker modules won't work with it!#}
     skip_initial_broks  0
@@ -47,8 +47,8 @@ define scheduler {
     # is used)
     #satellitemap    poller-1=1.2.3.4:1772, reactionner-1=1.2.3.5:1773, ...
     #}
-    use_ssl	          {% if s.use_ssl %}1{% else %}0{% endif %}
-    hard_ssl_name_check   {% if s.hard_ssl_name_check %}1{% else %}0{% endif %}
+    use_ssl	          {% if s.config.ryba.shinken.scheduler.config.use_ssl %}1{% else %}0{% endif %}
+    hard_ssl_name_check   {% if s.config.ryba.shinken.scheduler.config.hard_ssl_name_check %}1{% else %}0{% endif %}
 
     realm   All
 }

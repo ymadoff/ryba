@@ -28,25 +28,30 @@ Some of the modules are:
       # Additionnal modules to install
       broker.modules ?= {}
       webui = broker.modules['webui2'] ?= {}
-      webui.source ?= 'https://github.com/shinken-monitoring/mod-webui/archive/2.0.1.zip'
-      webui.archive ?= 'mod-webui-2.0.1'
+      webui.version ?= "2.0.1"
+      webui.source ?= "https://github.com/shinken-monitoring/mod-webui/archive/#{webui.version}.zip"
+      webui.archive ?= "mod-webui-#{webui.version}"
       webui.config ?= {}
       webui.config.host ?= '0.0.0.0'
-      webui.config.port ?= 7767
+      webui.config.port ?= '7767'
       webui.config.auth_secret ?= 'rybashinken123'
-      webui.config.modules = [webui.config.modules] if typeof webui.config.modules is 'string'
-      webui.config.modules ?= ['auth-cfg-password', 'mongodb']
-      auth = broker.modules['auth-cfg-password'] ?= {}
-      auth.source ?= 'https://github.com/shinken-monitoring/mod-auth-cfg-password/archive/2.0.1.zip'
-      auth.archive ?= 'mod-auth-cfg-password-2.0.1'
-      mongodb = broker.modules['mongodb'] ?= {}
-      mongodb.source ?= 'https://github.com/shinken-monitoring/mod-mongodb/archive/1.0.1.zip'
-      mongodb.archive ?= 'mod-mongodb-1.0.1'
+      logs =  broker.modules['mongo-logs'] ?= {}
+      logs.version = '1.0.2b'
+      graphite = broker.modules['graphite2'] ?= {}
+      graphite.version = '2.1.0'
+      graphite.source ?= "https://github.com/shinken-monitoring/mod-graphite/archive/#{graphite.version}.zip"
+      graphite.archive ?= "mod-graphite-#{graphite.version}"
+      uigraphite = broker.modules['ui-graphite'] ?= {}
+      uigraphite.version = '1.0.1'
+      for name, mod of broker.modules
+        if mod.version?
+          mod.source ?= "https://github.com/shinken-monitoring/mod-#{name}/archive/#{mod.version}.zip"
+          mod.archive ?= "mod-#{name}-#{mod.version}"
       # CONFIG
       broker.config ?= {}
       broker.config.port ?= 7772
       broker.config.modules = [broker.config.modules] if typeof broker.config.modules is 'string'
-      broker.config.modules ?= ['webui']
+      broker.config.modules ?= Object.keys broker.modules
 
 ## Commands
 

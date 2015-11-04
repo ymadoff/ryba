@@ -18,7 +18,7 @@ and sends the results to the scheduler.
       reactionner.config ?={}
       reactionner.config.port ?= 7769
       reactionner.config.modules = [reactionner.config.modules] if typeof reactionner.config.modules is 'string'
-      reactionner.config.modules ?= Object.getOwnPropertyNames reactionner.modules
+      reactionner.config.modules ?= Object.keys reactionner.modules
 
 ## Commands
 

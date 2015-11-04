@@ -28,7 +28,7 @@ Modules for receivers:
       receiver.config ?= {}
       receiver.config.port ?= 7773
       receiver.config.modules = [receiver.config.modules] if typeof receiver.config.modules is 'string'
-      receiver.config.modules ?= Object.getOwnPropertyNames receiver.modules
+      receiver.config.modules ?= Object.keys receiver.modules
 
 ## Commands
 

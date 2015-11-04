@@ -40,7 +40,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Shinken Scheduler # Modules', handler: ->
       {shinken, shinken:{scheduler}} = @config.ryba
-      return unless Object.getOwnPropertyNames(scheduler.modules).length > 0
+      return unless Object.keys(scheduler.modules).length > 0
       for name, mod of scheduler.modules
         if mod.archive?
           @download

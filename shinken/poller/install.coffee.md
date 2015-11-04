@@ -58,7 +58,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Shinken Poller # Modules', handler: ->
       {shinken, shinken:{poller}} = @config.ryba
-      return unless Object.getOwnPropertyNames(poller.modules).length > 0
+      return unless Object.keys(poller.modules).length > 0
       for name, mod of poller.modules
         if mod.archive?
           @download
@@ -78,7 +78,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       module.exports.push name: 'Shinken Poller # Python Modules', skip: true, handler: ->
       {poller} = @config.ryba.shinken
-      return unless Object.getOwnPropertyNames(poller.python_modules).length > 0
+      return unless Object.keys(poller.python_modules).length > 0
       for name, mod of poller.python_modules
         if mod.archive?
           archive_name = "#{mod.archive}.tar.gz"

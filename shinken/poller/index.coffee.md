@@ -50,7 +50,7 @@ is approximatively 1000 checks/s
       poller.config ?= {}
       poller.config.port ?= 7771
       poller.config.modules = [poller.config.modules] if typeof poller.config.modules is 'string'
-      poller.config.modules ?= Object.getOwnPropertyNames poller.modules
+      poller.config.modules ?= Object.keys poller.modules
 
 ## Commands
 

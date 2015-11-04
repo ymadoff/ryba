@@ -43,7 +43,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Shinken Arbiter # Modules', handler: ->
       {shinken, shinken:{arbiter}} = @config.ryba
-      return unless Object.getOwnPropertyNames(arbiter.modules).length > 0
+      return unless Object.keys(arbiter.modules).length > 0
       for name, mod of arbiter.modules
         if mod.archive?
           @download
@@ -78,7 +78,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Services
 
-    module.exports.push name: 'Shinken Arbiter # Services Config', handler: ->
+    module.exports.push name: 'Shinken Arbiter # Services Config', skip: true, handler: ->
       # {shinken, force_check, active_nn_host, core_site, hdfs, zookeeper,
       #  hbase, oozie, webhcat, ganglia, hue} = @config.ryba
       [shinken] = @contexts 'ryba/shinken/arbiter', require('../../shinken/arbiter').configure
@@ -225,13 +225,14 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
     module.exports.push name: 'Shinken Arbiter # Shinken Config', handler: ->
       {shinken} = @config.ryba
       render_ctx = {}
-      for sub_module in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
-        for ctx in @contexts "ryba/shinken/#{sub_module}"
-          @render
-            destination: "/etc/shinken/#{sub_module}s/#{sub_module}-master.cfg"
-            source: "#{__dirname}/resources/#{sub_module}-master.cfg.j2"
-            local_source: true
-            context: ctx.config.ryba.shinken[sub_module].config
+      for sub_module in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']  
+        render_ctx["#{sub_module}s"] = @contexts("ryba/shinken/#{sub_module}")
+        console.log render_ctx
+        @render
+          destination: "/etc/shinken/#{sub_module}s/#{sub_module}-master.cfg"
+          source: "#{__dirname}/resources/#{sub_module}-master.cfg.j2"
+          local_source: true
+          context: render_ctx
       @write
         destination: '/etc/shinken/shinken.cfg'
         write: for k, v of {
@@ -247,8 +248,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Shinken Arbiter # Modules Config', handler: ->
       for sub_module in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
-        ctxs = @contexts "ryba/shinken/#{sub_module}", require("../#{sub_module}").configure
-        for name, mod of ctxs[0].config.ryba.shinken[sub_module].modules
+        [ctx] = @contexts "ryba/shinken/#{sub_module}"
+        for name, mod of ctx.config.ryba.shinken[sub_module].modules
           @render
             destination: "/etc/shinken/modules/#{name}.cfg"
             source:  "#{__dirname}/resources/modules/#{name}.cfg.j2"

@@ -17,10 +17,10 @@
 #}
 {% for r in reactionners %}
 define reactionner {
-    reactionner_name    {{r.host}}
-    address             {{r.host}}
-    port                {{r.port}}
-    spare               {% if r.spare %}1{% else %}0{% endif %}
+    reactionner_name    reactionner_{{r.config.shortname}}
+    address             {{r.config.host}}
+    port                {{r.config.ryba.shinken.reactionner.config.port}}
+    spare               {% if r.config.ryba.shinken.reactionner.config.spare %}1{% else %}0{% endif %}
 
     manage_sub_realms   0   {# Does it take jobs from schedulers of sub-Realms?#}
     min_workers         1   {# Starts with N processes (0 = 1 per CPU)#}
@@ -31,13 +31,13 @@ define reactionner {
     max_check_attempts  3   {# If ping fails N or more, then the node is dead#}
     check_interval      60  {# Ping node every N seconds#}
 
-    modules             {{ r.modules | join (',') }}
+    modules             {{ r.config.ryba.shinken.reactionner.config.modules | join (',') }}
     {# Reactionner tags are the tag that the reactionner will manage. Use None as tag name to manage
     # untaggued notification/event handlers
     #reactionner_tags     None #}
 
-    use_ssl	          {% if r.use_ssl %}1{% else %}0{% endif %}
-    hard_ssl_name_check {% if r.hard_ssl_name_check %}1{% else %}0{% endif %}
+    use_ssl	          {% if r.config.ryba.shinken.reactionner.config.use_ssl %}1{% else %}0{% endif %}
+    hard_ssl_name_check {% if r.config.ryba.shinken.reactionner.config.hard_ssl_name_check %}1{% else %}0{% endif %}
 
     realm   All
 }
