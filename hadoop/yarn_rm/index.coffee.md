@@ -77,6 +77,8 @@ the application (zombie state).
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.default.state'] ?= 'RUNNING'
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.default.user-limit-factor'] ?= '1'
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.queues'] ?= 'default'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.queue-mappings'] ?= '' # Introduce by hadoop 2.7
+      ryba.capacity_scheduler['yarn.scheduler.capacity.queue-mappings-override.enable'] ?= 'false' # Introduce by hadoop 2.7
 
 ## Capacity Scheduler
 
