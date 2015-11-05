@@ -314,8 +314,6 @@ Configuration for proxy users
             DEFAULT
 
         """
-      core_site['hadoop.proxyuser.hcat.hosts'] = null
-      core_site['hadoop.proxyuser.hcat.groups'] = null
       core_site['hadoop.proxyuser.HTTP.hosts'] ?= '*'
       core_site['hadoop.proxyuser.HTTP.groups'] ?= '*'
       hbase_ctxs = ctx.contexts 'ryba/hbase/master', require('../hbase/master').configure
