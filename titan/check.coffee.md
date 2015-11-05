@@ -11,7 +11,7 @@
 Creates a configuration file. Always load this file in Gremlin REPL !
 Check the configuration file (current.properties).
 
-    module.exports.push name: 'Titan # Check Shell', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Titan # Check Shell', timeout: -1, label_true: 'CHECKED', handler: ->
       {shortname} = @config
       {force_check, hbase, titan} = @config.ryba
       config = {}

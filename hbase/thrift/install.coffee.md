@@ -25,7 +25,7 @@ have usecase for it yet.
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'HBase Thrift # IPTables', handler: ->
+    module.exports.push header: 'HBase Thrift # IPTables', handler: ->
       {hbase} = @config.ryba
       @iptables
         rules: [
@@ -42,7 +42,7 @@ Needed for thrift     Autoconf 2.69 - Automake 1.14 - Bison 2.5
 TODO: Installing Thrift Compiler
 ## Thrift Autoconf
 
-    module.exports.push name: 'Thrift # Install Autoconf', timeout: -1, handler: (options) ->
+    module.exports.push header: 'Thrift # Install Autoconf', timeout: -1, handler: (options) ->
       {hbase} = @config.ryba
       @call (_, callback) ->
         @execute
@@ -79,7 +79,7 @@ TODO: Installing Thrift Compiler
 
 ## Thrift Automake
 
-    module.exports.push name: 'Thrift # Install Automake', timeout: -1, handler: (options) ->
+    module.exports.push header: 'Thrift # Install Automake', timeout: -1, handler: (options) ->
       {hbase} = @config.ryba
       options.log? "Check if Automake is installed "
       @call (_, callback) ->
@@ -117,7 +117,7 @@ TODO: Installing Thrift Compiler
 
 ## Thrift Bison
 
-    module.exports.push name: 'Thrift # Install Bison', timeout: -1, handler: (options) ->
+    module.exports.push header: 'Thrift # Install Bison', timeout: -1, handler: (options) ->
       {hbase} = @config.ryba
       options.log "Check if Bison is installed"
       @call (_, callback) ->
@@ -153,7 +153,7 @@ TODO: Installing Thrift Compiler
 
 ## Thrift Thrift Compiler
 
-    module.exports.push name: 'Thrift # Install Compiler', timeout: -1, handler: (options) ->
+    module.exports.push header: 'Thrift # Install Compiler', timeout: -1, handler: (options) ->
       {hbase} = @config.ryba
       # Check if Thrift Compiler is installed
       @call (_, callback) ->
@@ -188,7 +188,7 @@ TODO: Installing Thrift Compiler
 
 ##  Hbase-Thrift Service
 
-    module.exports.push name: 'HBase Thrift # Service', handler: ->
+    module.exports.push header: 'HBase Thrift # Service', handler: ->
       {hbase} = @config.ryba
       @service
         name: 'hbase-thrift'
@@ -206,7 +206,7 @@ TODO: Installing Thrift Compiler
 
 ## Kerberos
 
-    module.exports.push name: 'HBase Thrift # Kerberos', handler: ->
+    module.exports.push header: 'HBase Thrift # Kerberos', handler: ->
       {hadoop_group, hbase, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
@@ -224,7 +224,7 @@ TODO: Installing Thrift Compiler
 Note, we left the permission mode as default, Master and RegionServer need to
 restrict it but not the thrift server.
 
-    module.exports.push name: 'HBase Thrift # Configure', handler: ->
+    module.exports.push header: 'HBase Thrift # Configure', handler: ->
       {hbase} = @config.ryba
       @hconfigure
         destination: "#{hbase.conf_dir}/hbase-site.xml"

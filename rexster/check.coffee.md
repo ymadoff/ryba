@@ -10,7 +10,7 @@
 
 Check status using JMX
 
-    module.exports.push name: 'Rexster # Check Status', label_true: 'CHECKED', retry: 10, wait: 10000, handler: ->
+    module.exports.push header: 'Rexster # Check Status', label_true: 'CHECKED', retry: 10, wait: 10000, handler: ->
       {titan, rexster} = @config.ryba
       @execute
         cmd:"""
@@ -22,14 +22,14 @@ Check status using JMX
 Check REPL (rexster-console.sh). It is not equivalent to Titan REPL, as it use the
 binary protocol RexPro.
 
-    module.exports.push name: 'Rexster # Check RexPro', skip: true, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Rexster # Check RexPro', skip: true, label_true: 'CHECKED', handler: ->
       return # Not ready
 
 ## Check REST
 
 Text mode of REST Server
 
-    module.exports.push name: 'Rexster # Check REST', label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Rexster # Check REST', label_true: 'CHECKED', handler: ->
       {rexster} = @config.ryba
       graphname = rexster.config.graphs[0].graph['graph-name']
       curl = "curl -u #{rexster.admin.name}:#{rexster.admin.password} "

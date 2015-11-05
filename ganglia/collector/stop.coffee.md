@@ -19,7 +19,7 @@ service hdp-gmetad stop
 The files storing the PIDs are "/var/run/ganglia/hdp/gmetad.pid" and
 "/var/run/ganglia/hdp/rrdcached.pid".
 
-    module.exports.push name: 'Ganglia Collector # Stop', label_true: 'STOPPED', handler: ->
+    module.exports.push header: 'Ganglia Collector # Stop', label_true: 'STOPPED', handler: ->
       @service_stop
         name: 'hdp-gmetad'
         if_exists: '/etc/init.d/hdp-gmetad'

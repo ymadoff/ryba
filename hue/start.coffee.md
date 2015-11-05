@@ -13,6 +13,6 @@ command:
 service hue start
 ```
 
-    module.exports.push name: 'Hue # Start', label_true: 'STARTED', handler: ->
+    module.exports.push header: 'Hue # Start', label_true: 'STARTED', handler: ->
       @service_start
         name: 'hue'

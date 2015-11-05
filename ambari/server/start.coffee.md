@@ -7,7 +7,7 @@ Ambari server is started with the service's syntax command.
 
 ## Start
 
-    module.exports.push name: 'Ambari Server # Start', timeout: -1, label_true: 'STARTED', handler: ->
+    module.exports.push header: 'Ambari Server # Start', timeout: -1, label_true: 'STARTED', handler: ->
       @execute
         cmd: 'service ambari-server start'
         not_if_exists: '/var/run/ambari-server/ambari-server.pid'

@@ -10,7 +10,7 @@
 
 Check if Hive can authenticate and run a basic query to the database.
 
-    module.exports.push name: 'Hive HCatalog # Check Database', label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Hive HCatalog # Check Database', label_true: 'CHECKED', handler: ->
       {hive, db_admin} = @config.ryba
       username = hive.site['javax.jdo.option.ConnectionUserName']
       password = hive.site['javax.jdo.option.ConnectionPassword']
@@ -29,7 +29,7 @@ Check if Hive can authenticate and run a basic query to the database.
 
 Check if the Hive HCatalog (Metastore) server is listening.
 
-    module.exports.push name: 'Hive HCatalog # Check Port', label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Hive HCatalog # Check Port', label_true: 'CHECKED', handler: ->
       {hive} = @config.ryba
       uris = hive.site['hive.metastore.uris'].split ','
       [server] = for uri in uris

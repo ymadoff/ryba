@@ -22,7 +22,7 @@ hive -hiveconf hive.root.logger=DEBUG,console
 Use the [Hive CLI][hivecli] client to execute SQL queries using the MapReduce
 engine.
 
-    module.exports.push name: 'Hive Client # Check HCatalog MapReduce', label_true: 'CHECKED', timeout: -1, handler: ->
+    module.exports.push header: 'Hive Client # Check HCatalog MapReduce', label_true: 'CHECKED', timeout: -1, handler: ->
       {force_check, user} = @config.ryba
       for hcat_ctx in @contexts 'ryba/hive/hcatalog'
         directory = "check-#{@config.shortname}-hive_hcatalog_mr-#{hcat_ctx.config.shortname}"
@@ -49,7 +49,7 @@ engine.
 
 Use the [Hive CLI][hivecli] client to execute SQL queries using the Tez engine.
 
-    module.exports.push name: 'Hive Client # Check HCatalog Tez', label_true: 'CHECKED', timeout: -1, handler: ->
+    module.exports.push header: 'Hive Client # Check HCatalog Tez', label_true: 'CHECKED', timeout: -1, handler: ->
       {force_check, user} = @config.ryba
       for hcat_ctx in @contexts 'ryba/hive/hcatalog'
         directory = "check-#{@config.shortname}-hive_hcatalog_tez-#{hcat_ctx.config.shortname}"
@@ -83,7 +83,7 @@ The JDBC url may be provided inside the "-u" option or after the "!connect"
 directive once you enter the beeline shell.
 
     module.exports.push
-      name: 'Hive Client # Check Server2 Without ZooKeeper'
+      header: 'Hive Client # Check Server2 Without ZooKeeper'
       label_true: 'CHECKED'
       timeout: -1
       handler: ->
@@ -117,7 +117,7 @@ directive once you enter the beeline shell.
             trap_on_error: true
 
     module.exports.push
-      name: 'Hive Client # Check Server2 With ZooKeeper'
+      header: 'Hive Client # Check Server2 With ZooKeeper'
       label_true: 'CHECKED'
       timeout: -1
       if: -> @contexts('ryba/hive/server2').length > 1

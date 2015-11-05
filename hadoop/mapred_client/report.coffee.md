@@ -10,7 +10,7 @@
 
 http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html
 
-    module.exports.push name: 'MapReduce Client # Info Memory', timeout: -1, label_true: 'INFO', handler: (ctx, next) ->
+    module.exports.push header: 'MapReduce Client # Info Memory', timeout: -1, label_true: 'INFO', handler: (ctx, next) ->
       {hadoop_conf_dir} = ctx.config.ryba
       properties.read ctx.ssh, "#{hadoop_conf_dir}/mapred-site.xml", (err, config) ->
         return next err if err

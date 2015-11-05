@@ -12,7 +12,7 @@ of the Titan server using Ryba.
 
 Discover the server status.
 
-    module.exports.push name: 'Rexster # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
+    module.exports.push header: 'Rexster # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       @execute
         cmd: """
         p=`ps aux | grep "com.tinkerpop.rexster.Application"`

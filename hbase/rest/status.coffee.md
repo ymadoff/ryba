@@ -9,7 +9,7 @@
 Check if the Rest is running. The process ID is located by default inside
 "/var/run/hbase/hbase-hbase-rest.pid".
 
-    module.exports.push name: 'HBase Rest # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
+    module.exports.push header: 'HBase Rest # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       @execute
         cmd: "service hbase-rest status"
         code_skipped: 3

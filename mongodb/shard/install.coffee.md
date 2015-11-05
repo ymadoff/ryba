@@ -16,7 +16,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'MongoDB Shard # IPTables', handler: ->
+    module.exports.push header: 'MongoDB Shard # IPTables', handler: ->
       {shard} = @config.ryba.mongodb
       @iptables
         rules: [
@@ -26,20 +26,20 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Users & Groups
 
-    module.exports.push name: 'MongoDB # Users & Groups', handler: ->
+    module.exports.push header: 'MongoDB # Users & Groups', handler: ->
       {mongodb} = @config.ryba
       @group mongodb.group
       @user mongodb.user
 
 ## Packages
 
-    module.exports.push name: 'MongoDB Shard # Packages', timeout: -1, handler: ->
+    module.exports.push header: 'MongoDB Shard # Packages', timeout: -1, handler: ->
       @service name: 'mongodb-org-server'
       @service name: 'mongodb-org-tools'
 
 ## Configure
 
-    module.exports.push name: 'MongoDB Shard # Configure', handler: ->
+    module.exports.push header: 'MongoDB Shard # Configure', handler: ->
       {shard} = @config.ryba.mongodb
       @write
         destination: '/etc/mongodb/mongod.conf'

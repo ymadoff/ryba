@@ -8,7 +8,7 @@ Check the Timeline Server.
     module.exports.push 'ryba/hadoop/yarn_ts/wait'
     # module.exports.push require('./index').configure
 
-    module.exports.push name: 'YARN TS # Check HTTP', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'YARN TS # Check HTTP', timeout: -1, label_true: 'CHECKED', handler: ->
       {yarn} = @config.ryba
       protocol = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       address_key = if protocol is 'http' then "address" else "https.address"

@@ -13,7 +13,7 @@ This commands checks if falcons works as required.
 
 Follow the [Hortonworks Data Pipelines example][dpe].
 
-    module.exports.push name: 'Falcon # Check Data Pipelines', skip: true, timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Falcon # Check Data Pipelines', skip: true, timeout: -1, label_true: 'CHECKED', handler: ->
       {user} = @config.ryba
       cluster_path = "#{user.home}/check_falcon/cluster.xml"
       feed_path = "#{user.home}/check_falcon/feed.xml"

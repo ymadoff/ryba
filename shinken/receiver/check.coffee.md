@@ -6,12 +6,12 @@
 
 ## Check
 
-    module.exports.push name: 'Shinken Receiver # Check TCP', label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Shinken Receiver # Check TCP', label_true: 'CHECKED', handler: ->
       {receiver} = @config.ryba.shinken
       @execute
         cmd: "echo > /dev/tcp/#{@config.host}/#{receiver.port}"
 
-    module.exports.push name: 'Shinken Receiver # Check HTTP', label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Shinken Receiver # Check HTTP', label_true: 'CHECKED', handler: ->
       {receiver} = @config.ryba.shinken
       @execute
         cmd: "curl http://#{@config.host}:#{receiver.config.port} | grep OK"

@@ -7,7 +7,7 @@
 
 ## Check HDFS
 
-    module.exports.push name: 'Tez # Check HDFS', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Tez # Check HDFS', timeout: -1, label_true: 'CHECKED', handler: ->
       {force_check, user} = @config.ryba
       local_text = "#{user.home}/check-#{@config.shortname}-tez-hdfs"
       remote_dir = "check-#{@config.shortname}-tez-hdfs"

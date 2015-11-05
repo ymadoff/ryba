@@ -15,7 +15,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Shinken Receiver # IPTables', handler: ->
+    module.exports.push header: 'Shinken Receiver # IPTables', handler: ->
       {receiver} = @config.ryba.shinken
       @iptables
         rules: [
@@ -25,7 +25,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Packages
 
-    module.exports.push name: 'Shinken Receiver # Packages', handler: ->
+    module.exports.push header: 'Shinken Receiver # Packages', handler: ->
       {shinken} = @config.ryba
       @service
         name: 'shinken-receiver'
@@ -39,7 +39,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Additional Modules
 
-    module.exports.push name: 'Shinken Receiver # Modules', handler: ->
+    module.exports.push header: 'Shinken Receiver # Modules', handler: ->
       {shinken, shinken:{receiver}} = @config.ryba
       return unless Object.getOwnPropertyNames(receiver.modules).length > 0
       for name, mod of receiver.modules

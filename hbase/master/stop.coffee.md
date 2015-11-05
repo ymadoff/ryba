@@ -17,10 +17,9 @@ su -l hbase -c "/usr/hdp/current/hbase-regionserver/bin/hbase-daemon.sh --config
 
 The file storing the PID is "/var/run/hbase/yarn/hbase-hbase-master.pid".
 
-    module.exports.push name: 'HBase Master # Stop', label_true: 'STOPPED', handler: ->
+    module.exports.push header: 'HBase Master # Stop', label_true: 'STOPPED', handler: ->
       @service
-        srv_name: 'hbase-master'
-        action: 'stop'
+        name: 'hbase-master'
         if_exists: '/etc/init.d/hbase-master'
         if: @retry is 0
       @execute
@@ -31,7 +30,7 @@ The file storing the PID is "/var/run/hbase/yarn/hbase-hbase-master.pid".
 ## Stop Clean Logs
 
     module.exports.push
-      name: 'HBase Master # Stop Clean Logs'
+      header: 'HBase Master # Stop Clean Logs'
       label_true: 'CLEANED'
       if: -> @config.ryba.clean_logs
       handler: ->

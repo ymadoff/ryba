@@ -26,7 +26,7 @@ Job History Server.
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'MapReduce JHS # IPTables', handler: ->
+    module.exports.push header: 'MapReduce JHS # IPTables', handler: ->
       {mapred} = @config.ryba
       jhs_shuffle_port = mapred.site['mapreduce.shuffle.port']
       jhs_port = mapred.site['mapreduce.jobhistory.address'].split(':')[1]
@@ -48,7 +48,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-mapreduce-historyserver" service, symlink the rc.d startup
 script inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'MapReduce JHS # Service', handler: ->
+    module.exports.push header: 'MapReduce JHS # Service', handler: ->
       @service
         name: 'hadoop-mapreduce-historyserver'
       @hdp_select
@@ -71,7 +71,7 @@ directory with the location of the directory storing the process pid.
 
 Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
-    module.exports.push name: 'MapReduce JHS # Environnement', handler: ->
+    module.exports.push header: 'MapReduce JHS # Environnement', handler: ->
       {mapred, hadoop_conf_dir} = @config.ryba
       @render
         destination: "#{hadoop_conf_dir}/mapred-env.sh"
@@ -80,7 +80,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
         local_source: true
         backup: true
 
-    module.exports.push name: 'MapReduce JHS # Kerberos', handler: ->
+    module.exports.push header: 'MapReduce JHS # Kerberos', handler: ->
       {hadoop_conf_dir, mapred, yarn} = @config.ryba
       @hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
@@ -97,7 +97,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
 Create the log and pid directories.
 
-    module.exports.push name: 'MapReduce Client # System Directories', timeout: -1, handler: ->
+    module.exports.push header: 'MapReduce Client # System Directories', timeout: -1, handler: ->
       {mapred, hadoop_group} = @config.ryba
       @mkdir
         destination: "#{mapred.log_dir}/#{mapred.user.name}"
@@ -124,7 +124,7 @@ Create the Kerberos service principal by default in the form of
 "/etc/security/keytabs/jhs.service.keytab" with ownerships set to
 "mapred:hadoop" and permissions set to "0600".
 
-    module.exports.push name: 'MapReduce JHS # Kerberos', handler: ->
+    module.exports.push header: 'MapReduce JHS # Kerberos', handler: ->
       {mapred, hadoop_group, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
@@ -144,7 +144,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
 
     module.exports.push 'ryba/hadoop/hdfs_nn/wait'
     module.exports.push 'ryba/hadoop/hdfs_client/install'
-    module.exports.push name: 'MapReduce JHS # HDFS Layout', timeout: -1, handler: ->
+    module.exports.push header: 'MapReduce JHS # HDFS Layout', timeout: -1, handler: ->
       {yarn, mapred} = @config.ryba
       @execute
         cmd: mkcmd.hdfs @, """

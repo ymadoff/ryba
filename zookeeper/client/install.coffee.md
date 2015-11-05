@@ -23,7 +23,7 @@ cat /etc/group | grep hadoop
 hadoop:x:498:hdfs
 ```
 
-    module.exports.push name: 'ZooKeeper Client # Users & Groups', handler: ->
+    module.exports.push header: 'ZooKeeper Client # Users & Groups', handler: ->
       {zookeeper, hadoop_group} = @config.ryba
       @group zookeeper.group
       @group hadoop_group
@@ -34,13 +34,13 @@ hadoop:x:498:hdfs
 Follow the [HDP recommandations][install] to install the "zookeeper" package
 which has no dependency.
 
-    module.exports.push name: 'ZooKeeper Client # Install', timeout: -1, handler: ->
+    module.exports.push header: 'ZooKeeper Client # Install', timeout: -1, handler: ->
       @service
         name: 'zookeeper'
       @hdp_select
         name: 'zookeeper-client'
 
-    module.exports.push name: 'ZooKeeper Client # Kerberos', timeout: -1, handler: ->
+    module.exports.push header: 'ZooKeeper Client # Kerberos', timeout: -1, handler: ->
       {zookeeper, hadoop_group, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
@@ -58,7 +58,7 @@ which has no dependency.
           useTicketCache: 'true'
         mode: 0o644
 
-    module.exports.push name: 'ZooKeeper Client # Environment', handler: ->
+    module.exports.push header: 'ZooKeeper Client # Environment', handler: ->
       {zookeeper} = @config.ryba
       @write
         destination: "#{zookeeper.conf_dir}/zookeeper-env.sh"

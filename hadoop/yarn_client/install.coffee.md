@@ -8,7 +8,7 @@
     # module.exports.push require('./index').configure
 
     module.exports.push
-      name: 'YARN Client # Users & Groups'
+      header: 'YARN Client # Users & Groups'
       if: -> @config.ryba.resourcemanager or @config.ryba.nodemanager
       handler: ->
         {yarn, hadoop_group} = @config.ryba
@@ -17,7 +17,7 @@
           code: 0
           code_skipped: 9
 
-    module.exports.push name: 'YARN Client # Install Common', timeout: -1, handler: ->
+    module.exports.push header: 'YARN Client # Install Common', timeout: -1, handler: ->
       @service
         name: 'hadoop'
       @service
@@ -25,7 +25,7 @@
       @service
         name: 'hadoop-client'
 
-    module.exports.push name: 'YARN Client # Directories', timeout: -1, handler: ->
+    module.exports.push header: 'YARN Client # Directories', timeout: -1, handler: ->
       {yarn, hadoop_group} = @config.ryba
       pid_dir = yarn.pid_dir.replace '$USER', yarn.user.name
       @mkdir
@@ -49,7 +49,7 @@ resourcemanager.
 Properties accepted by the template are: `ryba.yarn.rm_opts`   
 
 
-    module.exports.push name: 'YARN Client # Yarn OPTS', handler: ->
+    module.exports.push header: 'YARN Client # Yarn OPTS', handler: ->
       {java_home} = @config.java
       {yarn, hadoop_group, hadoop_conf_dir} = @config.ryba
       @render
@@ -64,7 +64,7 @@ Properties accepted by the template are: `ryba.yarn.rm_opts`
 
 ## Configuration
 
-    module.exports.push name: 'YARN Client # Configuration', handler: ->
+    module.exports.push header: 'YARN Client # Configuration', handler: ->
       {hadoop_conf_dir, yarn} = @config.ryba
       @hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"

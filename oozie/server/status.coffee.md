@@ -15,7 +15,7 @@ By default, the pid of the running server is stored in
 
 Discover the server status.
 
-    module.exports.push name: 'Oozie Server # Status', label_true: 'STARTED', label_false: 'STOPPED', timeout: -1, handler: ->
+    module.exports.push header: 'Oozie Server # Status', label_true: 'STARTED', label_false: 'STOPPED', timeout: -1, handler: ->
       {oozie} = @config.ryba
       @execute
         cmd: """

@@ -15,7 +15,7 @@ following command:
 su -l falcon -c "/usr/hdp/current/falcon-server/bin/service-start.sh falcon"
 ```
 
-    module.exports.push name: 'Falcon # Start Service', timeout: -1, label_true: 'STARTED', handler: ->
+    module.exports.push header: 'Falcon # Start Service', timeout: -1, label_true: 'STARTED', handler: ->
       {user} = @config.ryba.falcon
       @execute
         cmd: """

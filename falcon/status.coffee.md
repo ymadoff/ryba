@@ -12,7 +12,7 @@ retrieve the status of the Falcon server using Ryba.
 
 Discover the server status.
 
-    module.exports.push name: 'Falcon # Status Service', timeout: -1, label_true: 'STARTED', label_false: 'STOPPED', handler: ->
+    module.exports.push header: 'Falcon # Status Service', timeout: -1, label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       {user} = @config.ryba.falcon
       @execute
         cmd: "su -l #{user.name} -c '/usr/hdp/current/falcon-server/bin/falcon-status.sh falcon'"

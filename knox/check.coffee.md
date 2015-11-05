@@ -17,7 +17,7 @@ The external client displays: {"Path":"/user/gopher"}
 
 curl -fiku hdfs:hdfs123 "https://front1.ryba:8443/gateway/torval/webhdfs/v1/?op=GETHOMEDIRECTORY"
 
-    module.exports.push name: 'Knox # Check WebHDFS', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Knox # Check WebHDFS', timeout: -1, label_true: 'CHECKED', handler: ->
       {knox} = @config.ryba
       return next() unless knox.test_user?.name? and knox.test_user?.password?
       topologies = Object.keys(knox.topologies).filter((tp) -> knox.topologies[tp].services.webhdfs?)
@@ -35,7 +35,7 @@ The host displays: {"supportedVersions":["v1"],"version":"v1"}
 At an external client, enter `curl -ku user:password https://$gateway-host:$gateway_port/$gateway/$cluster_name/webhcat/v1/version`.
 The external client displays: {"supportedVersions":["v1"],"version":"v1"}
 
-    module.exports.push name: 'Knox # Check WebHCat', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Knox # Check WebHCat', timeout: -1, label_true: 'CHECKED', handler: ->
       {knox} = @config.ryba
       return next() unless knox.test_user?.name? and knox.test_user?.password?
       topologies = Object.keys(knox.topologies).filter((tp) -> knox.topologies[tp].services.webhcat)
@@ -55,7 +55,7 @@ At an external client, enter `curl -ku user:password http://$gateway-host:$gatew
 The external client displays:
 rest 0.0.2 JVM: Oracle Corporation 1.7.0_51-24.45-b08 OS: Linux 3.8.0-29-generic amd64 Server: jetty/6.1.26 Jersey: 1.8.
 
-    module.exports.push name: 'Knox # Check WebHBase', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Knox # Check WebHBase', timeout: -1, label_true: 'CHECKED', handler: ->
       {knox} = @config.ryba
       return next() unless knox.test_user?.name? and knox.test_user?.password?
       topologies = Object.keys(knox.topologies).filter((tp) -> knox.topologies[tp].services.webhcat)
@@ -75,7 +75,7 @@ At an external client, enter `curl -ku user:password https://$gateway-host:$gate
 The external client displays:
 {"buildVersion":"4.0.0.2.1.1.0-302"}
 
-    module.exports.push name: 'Knox # Check Oozie', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Knox # Check Oozie', timeout: -1, label_true: 'CHECKED', handler: ->
       {knox} = @config.ryba
       return next() unless knox.test_user?.name? and knox.test_user?.password?
       topologies = Object.keys(knox.topologies).filter((tp) -> knox.topologies[tp].services.oozie)
@@ -92,7 +92,7 @@ Both of the following URLs return an authentication error, which users can safel
 At the gateway host, enter `curl --negotiate -u : http://$hive-host:10001/cliservice`.
 At an external client, enter `curl -ku user:password https://$gateway-host:$gateway_port/$gateway/$cluster_name/hive/cliservice`/
 
-    module.exports.push name: 'Knox # Check HiveServer2', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Knox # Check HiveServer2', timeout: -1, label_true: 'CHECKED', handler: ->
       {knox} = @config.ryba
       return next() unless knox.test_user?.name? and knox.test_user?.password?
       topologies = Object.keys(knox.topologies).filter((tp) -> knox.topologies[tp].services.hive)

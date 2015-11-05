@@ -16,7 +16,7 @@ cat /etc/group | grep kafka
 kafka:x:496:kafka
 ```
 
-    module.exports.push name: 'Kafka Producer # Users & Groups', handler: ->
+    module.exports.push header: 'Kafka Producer # Users & Groups', handler: ->
       {kafka} = @config.ryba
       @group kafka.group
       @user kafka.user
@@ -27,7 +27,7 @@ Install the Kafka producer package and set it to the latest version. Note, we
 select the "kafka-broker" HDP directory. There is no "kafka-producer"
 directories.
 
-    module.exports.push name: 'Kafka Producer # Package', handler: ->
+    module.exports.push header: 'Kafka Producer # Package', handler: ->
       @service
         name: 'kafka'
       @hdp_select
@@ -38,7 +38,7 @@ directories.
 Update the file "server.properties" with the properties defined by the
 "ryba.kafka.server" configuration.
 
-    module.exports.push name: 'Kafka Producer # Configure', handler: (options, next) ->
+    module.exports.push header: 'Kafka Producer # Configure', handler: (options, next) ->
       {kafka} = @config.ryba
       @write
         destination: "#{kafka.conf_dir}/producer.properties"

@@ -14,7 +14,7 @@ HDFS server to answer queries.
 
 ## Start Wait Database
 
-    module.exports.push name: 'Hive HCatalog # Start Wait DB', timeout: -1, label_true: 'READY', handler: ->
+    module.exports.push header: 'Hive HCatalog # Start Wait DB', timeout: -1, label_true: 'READY', handler: ->
       {hive} = @config.ryba
       [_, host, port] = /^.*?\/\/?(.*?)(?::(.*))?\/.*$/.exec hive.site['javax.jdo.option.ConnectionURL']
       @wait_connect
@@ -31,7 +31,7 @@ service hive-hcatalog-server start
 su -l hive -c 'nohup hive --service metastore >/var/log/hive-hcatalog/hcat.out 2>/var/log/hive-hcatalog/hcat.err & echo $! >/var/lib/hive-hcatalog/hcat.pid'
 ```
 
-    module.exports.push name: 'Hive HCatalog # Start HCatalog', timeout: -1, label_true: 'STARTED', handler: ->
+    module.exports.push header: 'Hive HCatalog # Start HCatalog', timeout: -1, label_true: 'STARTED', handler: ->
       @service_start
         name: 'hive-hcatalog-server'
         if_exists: '/etc/init.d/hive-hcatalog-server'

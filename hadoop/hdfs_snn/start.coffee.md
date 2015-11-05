@@ -15,7 +15,7 @@ service hadoop-hdfs-secondarynamenode start
 su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start secondarynamenode"
 ```
 
-    module.exports.push name: 'HDFS SNN # Start', timeout: -1, label_true: 'STARTED', handler: ->
+    module.exports.push header: 'HDFS SNN # Start', timeout: -1, label_true: 'STARTED', handler: ->
       @service_start
         name: 'hadoop-hdfs-secondarynamenode'
         if_exists: '/etc/init.d/hadoop-hdfs-secondarynamenode'

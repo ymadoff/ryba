@@ -14,12 +14,12 @@ service hadoop-httpfs start
 su -l httpfs -c '/usr/hdp/current/hadoop-httpfs/sbin/httpfs.sh stop'
 ```
 
-    module.exports.push name: 'HDFS HttpFS # Stop Server', label_true: 'STOPPED', handler: ->
+    module.exports.push header: 'HDFS HttpFS # Stop Server', label_true: 'STOPPED', handler: ->
       @service_stop
         name: 'hadoop-httpfs'
         if_exists: '/etc/init.d/hadoop-httpfs'
 
-    # module.exports.push name: 'YARN TS # Stop Clean Logs', label_true: 'CLEANED', handler: ->
+    # module.exports.push header: 'YARN TS # Stop Clean Logs', label_true: 'CLEANED', handler: ->
     #   {clean_logs, yarn} = @config.ryba
     #   return next() unless clean_logs
     #   @execute

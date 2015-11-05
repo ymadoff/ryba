@@ -22,7 +22,7 @@ service hadoop-hdfs-datanode start
 HADOOP_SECURE_DN_USER=hdfs /usr/hdp/current/hadoop-hdfs-datanode/../hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start datanode
 ```
 
-    module.exports.push name: 'HDFS DN # Start', label_true: 'STARTED', handler: ->
+    module.exports.push header: 'HDFS DN # Start', label_true: 'STARTED', handler: ->
       @service_start
         name: 'hadoop-hdfs-datanode'
         if_exists: '/etc/init.d/hadoop-hdfs-datanode'

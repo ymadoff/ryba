@@ -9,7 +9,7 @@
 
 Make sure the broker are listening. The default port is "9092".
 
-    module.exports.push name: 'Kafka Producer # Check TCP', label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Kafka Producer # Check TCP', label_true: 'CHECKED', handler: ->
       {kafka} = @config.ryba
       execute = kafka.producer.config['metadata.broker.list'].split(',').map (broker) ->
         [host, port] = broker.split ':'
@@ -20,7 +20,7 @@ Make sure the broker are listening. The default port is "9092".
 
 Make sure the broker are listening. The default port is "9092".
 
-    module.exports.push name: 'Kafka Producer # Check Messages', label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Kafka Producer # Check Messages', label_true: 'CHECKED', handler: ->
       {kafka} = @config.ryba
       return next() unless @has_module 'ryba/kafka/consumer'
       brokers = @contexts('ryba/kafka/broker').map (ctx) ->

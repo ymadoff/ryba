@@ -14,7 +14,7 @@ be executed if the directory "/user/test/10gsort" generated
 by this action is not present on HDFS. Delete this directory
 to re-execute the check.
 
-    module.exports.push name: 'MapReduce Client # Check', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'MapReduce Client # Check', timeout: -1, label_true: 'CHECKED', handler: ->
       {force_check} = @config.ryba
       host = @config.shortname
       # 100 records = 1Ko

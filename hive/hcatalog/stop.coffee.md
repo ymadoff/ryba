@@ -17,10 +17,9 @@ su -l hive -c "kill `cat /var/lib/hive-hcatalog/hcat.pid`"
 
 The file storing the PID is "/var/run/hive-server2/hive-server2.pid".
 
-    module.exports.push name: 'Hive HCatalog # Stop Hive Metastore', label_true: 'STOPPED', handler: ->
-      @service
-        srv_name: 'hive-hcatalog-server'
-        action: 'stop'
+    module.exports.push header: 'Hive HCatalog # Stop Hive Metastore', label_true: 'STOPPED', handler: ->
+      @service_stop
+        name: 'hive-hcatalog-server'
         if_exists: '/etc/init.d/hive-hcatalog-server'
 
 ## Stop Clean Logs

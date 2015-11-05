@@ -15,14 +15,14 @@ service hive-server2 stop
 su -l hive -c "kill `cat /var/run/hive-server2/hive-server2.pid`"
 ```
 
-    module.exports.push name: 'Hive & Server2 # Stop', label_true: 'STOPPED', handler: ->
+    module.exports.push header: 'Hive & Server2 # Stop', label_true: 'STOPPED', handler: ->
       @service_stop
         name: 'hive-server2'
 
 ## Stop Clean Logs
 
     module.exports.push
-      name: 'Hive & HCat # Stop Clean Logs'
+      header: 'Hive & HCat # Stop Clean Logs'
       label_true: 'CLEANED'
       if: -> @config.ryba.clean_logs
       handler: ->

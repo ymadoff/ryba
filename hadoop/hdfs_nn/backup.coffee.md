@@ -39,7 +39,7 @@ dfsadmin -fetchImage
     #   filepath = path.join.apply path, arguments
     #   return path.resolve(filepath) isnt filepath.replace(/[\/\\]+$/, ''\
 
-    module.exports.push name: "HDFS NN # Backup HDFS LS output", timeout: -1, label_true: 'BACKUPED', handler: ->
+    module.exports.push header: 'HDFS NN # Backup HDFS LS output', timeout: -1, label_true: 'BACKUPED', handler: ->
       @backup
         name: 'ls'
         cmd: 'hdfs dfs -ls -R / '
@@ -47,7 +47,7 @@ dfsadmin -fetchImage
         interval: month: 1
         retention: count: 2
 
-    module.exports.push name: 'HDFS NN # Backup FSimages & edits', timeout: -1, label_true: 'BACKUPED', handler: ->
+    module.exports.push header: 'HDFS NN # Backup FSimages & edits', timeout: -1, label_true: 'BACKUPED', handler: ->
       {hdfs} = @config.ryba
       any_dfs_name_dir = hdfs.site['dfs.namenode.name.dir'].split(',')[0]
       any_dfs_name_dir = any_dfs_name_dir.substr(7) if any_dfs_name_dir.indexOf('file://') is 0

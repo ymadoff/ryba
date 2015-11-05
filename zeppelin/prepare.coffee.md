@@ -27,7 +27,7 @@ Version:
 Intermetiate container to build zeppelin from source. Builds ryba/zeppelin-build image
 
 
-    module.exports.push name: 'Zeppelin Build # Docker', timeout: -1, (options, next) ->
+    module.exports.push header: 'Zeppelin Build # Docker', timeout: -1, (options, next) ->
       fs.stat "#{zeppelin.build.directory}/resources/zeppelin-build.tar.gz", (err, stats) ->
         return do_image() unless  err 
         return if err.code == 'ENOENT' then do_build() else err

@@ -9,7 +9,7 @@
 
 ## Users & Groups
 
-    module.exports.push name: 'Rexster # Users & Groups', handler: ->
+    module.exports.push header: 'Rexster # Users & Groups', handler: ->
       {rexster} = @config.ryba
       @group rexster.group
       @user rexster.user
@@ -23,7 +23,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Rexster # IPTables', handler: ->
+    module.exports.push header: 'Rexster # IPTables', handler: ->
       {rexster} = @config.ryba
       @iptables
         rules: [
@@ -33,7 +33,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Env
 
-    module.exports.push name: 'Rexster # Env', handler: ->
+    module.exports.push header: 'Rexster # Env', handler: ->
       {titan, rexster, hadoop_conf_dir} = @config.ryba
       @chown
         destination: rexster.user.home
@@ -76,12 +76,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         uid: rexster.user.name
         gid: rexster.group.name
 
-    module.exports.push name: 'Rexster # Tuning', skip: true, handler: ->
+    module.exports.push header: 'Rexster # Tuning', skip: true, handler: ->
       # TODO
 
 ## Kerberos JAAS for ZooKeeper
 
-    module.exports.push name: 'Rexster # Kerberos', handler: ->
+    module.exports.push header: 'Rexster # Kerberos', handler: ->
       {rexster, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
@@ -98,7 +98,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 Zookeeper use JAAS for authentication. We configure JAAS to make SASL authentication using Kerberos module.
 
-    module.exports.push name: 'Rexster # Kerberos JAAS', handler: ->
+    module.exports.push header: 'Rexster # Kerberos JAAS', handler: ->
       {rexster, realm} = @config.ryba
       @write_jaas
         destination: path.join rexster.user.home, "rexster.jaas"
@@ -112,7 +112,7 @@ Zookeeper use JAAS for authentication. We configure JAAS to make SASL authentica
         uid: rexster.user.name
         gid: rexster.group.name
 
-    module.exports.push name: 'Rexster # Configure Titan Server', handler: ->
+    module.exports.push header: 'Rexster # Configure Titan Server', handler: ->
       {titan, rexster, realm} = @config.ryba
       @write
         content: xml 'rexster': rexster.config
@@ -125,7 +125,7 @@ Zookeeper use JAAS for authentication. We configure JAAS to make SASL authentica
 Rexster doesn't seems to correctly renew its keytab. For that, we use cron daemon
 We then ask a first TGT.
 
-    module.exports.push name: 'Rexster # Cron-ed kinit', handler: ->
+    module.exports.push header: 'Rexster # Cron-ed kinit', handler: ->
       {rexster, realm} = @config.ryba
       kinit = "/usr/bin/kinit #{rexster.krb5_user.principal} -k -t #{rexster.krb5_user.keytab}"
       @cron_add
@@ -139,7 +139,7 @@ We then ask a first TGT.
 TODO: Use a namespace
 
     module.exports.push
-      name: 'Rexster # Grant HBase Perms'
+      header: 'Rexster # Grant HBase Perms'
       if: -> @config.ryba.titan.config['storage.backend'] is 'hbase'
       handler: ->
         {hbase, titan} = @config.ryba

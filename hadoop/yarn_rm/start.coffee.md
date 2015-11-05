@@ -20,7 +20,7 @@ service hadoop-yarn-resourcemanager start
 su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf start resourcemanager"
 ```
 
-    module.exports.push name: 'Yarn RM # Start', label_true: 'STARTED', handler: ->
+    module.exports.push header: 'Yarn RM # Start', label_true: 'STARTED', handler: ->
       {yarn} = @config.ryba
       @remove
         destination: "#{yarn.pid_dir}/yarn-#{yarn.user.name}-resourcemanager.pid"

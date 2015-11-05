@@ -10,7 +10,7 @@ Check if the JournalNode is running as expected.
     #   require('../core_ssl').configure ctx
     #   require('./index').configure ctx
 
-    module.exports.push name: 'HDFS JN # Check SPNEGO', label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'HDFS JN # Check SPNEGO', label_true: 'CHECKED', handler: ->
       {hdfs} = @config.ryba
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       port = hdfs.site["dfs.journalnode.#{protocol}-address"].split(':')[1]

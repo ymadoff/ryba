@@ -21,7 +21,7 @@ service hadoop-mapreduce-historyserver start
 su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec && /usr/hdp/current/hadoop-mapreduce-historyserver/sbin/mr-jobhistory-daemon.sh --config /etc/hadoop/conf start historyserver"
 ```
 
-    module.exports.push name: 'MapReduce JHS # Start', timeout: -1, label_true: 'STARTED', handler: ->
+    module.exports.push header: 'MapReduce JHS # Start', timeout: -1, label_true: 'STARTED', handler: ->
       @service_start
         name: 'hadoop-mapreduce-historyserver'
         if_exists: '/etc/init.d/hadoop-mapreduce-historyserver'

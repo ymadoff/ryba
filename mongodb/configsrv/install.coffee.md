@@ -15,7 +15,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'MongoDB ConfigSrv # IPTables', handler: ->
+    module.exports.push header: 'MongoDB ConfigSrv # IPTables', handler: ->
       {configsrv} = @config.ryba.mongodb
       @iptables
         rules: [
@@ -25,14 +25,14 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Users & Groups
 
-    module.exports.push name: 'MongoDB # Users & Groups', handler: ->
+    module.exports.push header: 'MongoDB # Users & Groups', handler: ->
       {mongodb} = @config.ryba
       @group mongodb.group
       @user mongodb.user
 
 ## Packages
 
-    module.exports.push name: 'MongoDB ConfigSrv # Packages', timeout: -1, handler: ->
+    module.exports.push header: 'MongoDB ConfigSrv # Packages', timeout: -1, handler: ->
       @service name: 'mongodb-org-server'
 
 ## Layout
@@ -41,7 +41,7 @@ Config Server is just a 'classic' mongodb server, but stores configuration and
 metadata for shards.
 So we create a mongod-configsrv daemon with a specific configuration file.
 
-    module.exports.push name: 'MongoDB ConfigSrv # Layout', handler: ->
+    module.exports.push header: 'MongoDB ConfigSrv # Layout', handler: ->
       {mongodb} = @config.ryba
       @mkdir
         destination: mongodb.configsrv.config.dbpath
@@ -64,7 +64,7 @@ So we create a mongod-configsrv daemon with a specific configuration file.
 
 ## Configure
 
-    module.exports.push name: 'MongoDB ConfigSrv # Configure', handler: ->
+    module.exports.push header: 'MongoDB ConfigSrv # Configure', handler: ->
       {configsrv} = @config.ryba.mongodb
       @write
         destination: '/etc/mongodb/mongod-configsrv.conf'

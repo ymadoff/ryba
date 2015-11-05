@@ -14,6 +14,6 @@ manually with the following command:
 service nagios start
 ```
 
-    module.exports.push name: 'Nagios # Start', label_true: 'STARTED', handler: ->
+    module.exports.push header: 'Nagios # Start', label_true: 'STARTED', handler: ->
       @service_start
         name: 'nagios'

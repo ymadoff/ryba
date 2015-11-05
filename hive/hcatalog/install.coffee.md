@@ -30,7 +30,7 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'Hive HCatalog # IPTables', handler: ->
+    module.exports.push header: 'Hive HCatalog # IPTables', handler: ->
       {hive} = @config.ryba
       @iptables
         rules: [
@@ -47,7 +47,7 @@ inside "/etc/init.d" and activate it on startup.
 Note, the server is not activated on startup but they endup as zombies if HDFS
 isnt yet started.
 
-    module.exports.push name: 'Hive HCatalog # Startup', handler: ->
+    module.exports.push header: 'Hive HCatalog # Startup', handler: ->
       @service
         name: 'hive-hcatalog-server'
       @hdp_select
@@ -62,7 +62,7 @@ isnt yet started.
         cmd: "service hive-hcatalog-server restart"
         if: -> @status -3
 
-    module.exports.push name: 'Hive HCatalog # Database', handler: ->
+    module.exports.push header: 'Hive HCatalog # Database', handler: ->
       {hive, db_admin} = @config.ryba
       username = hive.site['javax.jdo.option.ConnectionUserName']
       password = hive.site['javax.jdo.option.ConnectionPassword']
@@ -137,7 +137,7 @@ isnt yet started.
             not_if: -> @status -3
         else throw new Error 'Database engine not supported'
 
-    module.exports.push name: 'Hive HCatalog # Configure', handler: ->
+    module.exports.push header: 'Hive HCatalog # Configure', handler: ->
       {hive} = @config.ryba
       @hconfigure
         destination: "#{hive.conf_dir}/hive-site.xml"
@@ -167,7 +167,7 @@ by setting a "heapsize" value equal to "4096".
 Note, the startup script found in "hive-hcatalog/bin/hcat_server.sh" references
 the Hive Metastore service and execute "./bin/hive --service metastore"
 
-    module.exports.push name: 'Hive HCatalog # Env', handler: ->
+    module.exports.push header: 'Hive HCatalog # Env', handler: ->
       {hive} = @config.ryba
       @write
         destination: "#{hive.conf_dir}/hive-env.sh"
@@ -185,7 +185,7 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
         backup: true
 
     module.exports.push
-      name: 'Hive HCatalog # Libs'
+      header: 'Hive HCatalog # Libs'
       if: -> @config.ryba.hive.libs.length
       handler: ->
         {hive} = @config.ryba
@@ -195,12 +195,12 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
             destination: "/usr/hdp/current/hive-metastore/lib/#{path.basename lib}"
         )
 
-    module.exports.push name: 'Hive HCatalog # Driver', handler: ->
+    module.exports.push header: 'Hive HCatalog # Driver', handler: ->
       @link
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/hdp/current/hive-metastore/lib/mysql-connector-java.jar'
 
-    module.exports.push name: 'Hive HCatalog # Kerberos', handler: ->
+    module.exports.push header: 'Hive HCatalog # Kerberos', handler: ->
       {hive, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
@@ -214,7 +214,7 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
         kadmin_password: kadmin_password
         kadmin_server: admin_server
 
-    module.exports.push name: 'Hive HCatalog # Logs', handler: ->
+    module.exports.push header: 'Hive HCatalog # Logs', handler: ->
       @write
         source: "#{__dirname}/../../resources/hive/hive-exec-log4j.properties.template"
         local_source: true
@@ -229,7 +229,7 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
 Create the directories to store the logs and pid information. The properties
 "ryba.hive.hcatalog.log\_dir" and "ryba.hive.hcatalog.pid\_dir" may be modified.
 
-    module.exports.push name: 'Hive HCatalog # Layout', timeout: -1, handler: ->
+    module.exports.push header: 'Hive HCatalog # Layout', timeout: -1, handler: ->
       {hive} = @config.ryba
       # Required by service "hive-hcatalog-server"
       @mkdir
@@ -243,7 +243,7 @@ Create the directories to store the logs and pid information. The properties
         gid: hive.group.name
         parent: true
 
-    module.exports.push name: 'Hive HCatalog # HDFS Layout', timeout: -1, handler: ->
+    module.exports.push header: 'Hive HCatalog # HDFS Layout', timeout: -1, handler: ->
       # todo: this isnt pretty, ok that we need to execute hdfs command from an hadoop client
       # enabled environment, but there must be a better way
       {active_nn_host, hdfs, hive} = @config.ryba
@@ -282,15 +282,14 @@ Create the directories to store the logs and pid information. The properties
         code_skipped: 1
 
     module.exports.push
-      name: 'Hive HCatalog # Tez Package'
+      header: 'Hive HCatalog # Tez Package'
       timeout: -1
       if: -> @hosts_with_module 'ryba/tez'
       handler: ->
-        @service
-          name: 'tez'
+        @service name: 'tez'
 
     module.exports.push
-      name: 'Hive HCatalog # Tez Layout'
+      header: 'Hive HCatalog # Tez Layout'
       timeout: -1
       if: -> @hosts_with_module 'ryba/tez'
       handler: ->

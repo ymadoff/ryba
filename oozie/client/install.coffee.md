@@ -23,7 +23,7 @@ environmental variables. For example, HDP declare its version as
 
 Install the oozie client package. This package doesn't create any user and group.
 
-    module.exports.push name: 'Oozie Client # Install', timeout: -1, handler: ->
+    module.exports.push header: 'Oozie Client # Install', timeout: -1, handler: ->
       @service
         name: 'oozie-client'
       @hdp_select
@@ -33,7 +33,7 @@ Install the oozie client package. This package doesn't create any user and group
 
 Expose the "OOZIE_URL" environmental variable to every users.
 
-    module.exports.push name: 'Oozie Client # Profile', handler: ->
+    module.exports.push header: 'Oozie Client # Profile', handler: ->
       {oozie} = @config.ryba
       @write
         destination: '/etc/profile.d/oozie.sh'
@@ -60,7 +60,7 @@ keytool -keystore ${JAVA_HOME}/jre/lib/security/cacerts -delete -noprompt -alias
 keytool -keystore ${JAVA_HOME}/jre/lib/security/cacerts -import -alias tomcat -file master3_cert.pem
 ```
 
-    module.exports.push name: 'Oozie Client # SSL', handler: ->
+    module.exports.push header: 'Oozie Client # SSL', handler: ->
       {java_home, jre_home} = @config.java
       {ssl, oozie} = @config.ryba
       tmp_location = "/tmp/ryba_oozie_client_#{Date.now()}"

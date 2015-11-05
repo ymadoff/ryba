@@ -14,7 +14,7 @@ Additionnal information may be found on the [CentOS HowTos site][corblk].
 
 [corblk]: http://centoshowtos.org/hadoop/fix-corrupt-blocks-on-hdfs/
 
-    module.exports.push name: 'HBase RegionServer # Check FSCK', label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'HBase RegionServer # Check FSCK', label_true: 'CHECKED', handler: ->
       rootdir = @contexts('ryba/hbase/master')[0].config.ryba.hbase.site['hbase.rootdir']
       @execute
         cmd: mkcmd.hdfs @, "hdfs fsck #{rootdir}/WALs | grep 'Status: HEALTHY'"
@@ -30,14 +30,14 @@ Note: The RegionServer webapp located in "/usr/lib/hbase/hbase-webapps/regionser
 using the hadoop conf directory to retrieve the SPNEGO keytab. The user "hbase"
 is added membership to the group hadoop to gain read access.
 
-    module.exports.push name: 'HBase RegionServer # Check SPNEGO', label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'HBase RegionServer # Check SPNEGO', label_true: 'CHECKED', handler: ->
       {core_site, hbase} = @config.ryba
       @execute
         cmd: "su -l #{hbase.user.name} -c 'test -r #{core_site['hadoop.http.authentication.kerberos.keytab']}'"
 
 ## Check HTTP JMX
 
-    module.exports.push name: 'HBase RegionServer # Check HTTP JMX', retry: 200, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'HBase RegionServer # Check HTTP JMX', retry: 200, label_true: 'CHECKED', handler: ->
       {hbase} = @config.ryba
       protocol = if hbase.site['hadoop.ssl.enabled'] is 'true' then 'https' else 'http'
       # WARNING: after upgrade to 2.3, there is no more https
@@ -59,7 +59,7 @@ Namespace and permissions are implemented and illustrated in [HBASE-8409].
 
 TODO: move to install
 
-    module.exports.push name: 'HBase RegionServer # Check Shell', timeout:-1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'HBase RegionServer # Check Shell', timeout:-1, label_true: 'CHECKED', handler: ->
       {hbase} = @config.ryba
       keytab = hbase.site['hbase.regionserver.keytab.file']
       principal = hbase.site['hbase.regionserver.kerberos.principal'].replace '_HOST', @config.host

@@ -34,7 +34,7 @@ Resources:
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Hive Server2 # IPTables', handler: ->
+    module.exports.push header: 'Hive Server2 # IPTables', handler: ->
       {hive} = @config.ryba
       hive_server_port = if hive.site['hive.server2.transport.mode'] is 'binary'
       then hive.site['hive.server2.thrift.port']
@@ -53,7 +53,7 @@ inside "/etc/init.d" and activate it on startup.
 The server is not activated on startup because they endup as zombies if HDFS
 isnt yet started.
 
-    module.exports.push name: 'Hive Server2 # Startup', handler: ->
+    module.exports.push header: 'Hive Server2 # Startup', handler: ->
       @service
         name: 'hive-server2'
       @hdp_select
@@ -68,7 +68,7 @@ isnt yet started.
         cmd: "service hive-server2 restart"
         if: -> @status -3
 
-    module.exports.push name: 'Hive Server2 # Configure', handler: ->
+    module.exports.push header: 'Hive Server2 # Configure', handler: ->
       {hive} = @config.ryba
       @hconfigure
         destination: "#{hive.conf_dir}/hive-site.xml"
@@ -87,7 +87,7 @@ Enrich the "hive-env.sh" file with the value of the configuration property
 Using this functionnality, a user may for example raise the heap size of Hive
 Server2 to 4Gb by setting a value equal to "-Xmx4096m".
 
-    module.exports.push name: 'Hive Server2 # Env', handler: ->
+    module.exports.push header: 'Hive Server2 # Env', handler: ->
       {hive} = @config.ryba
       @write
         destination: "#{hive.conf_dir}/hive-env.sh"
@@ -109,7 +109,7 @@ Server2 to 4Gb by setting a value equal to "-Xmx4096m".
 Create the directories to store the logs and pid information. The properties
 "ryba.hive.server2.log\_dir" and "ryba.hive.server2.pid\_dir" may be modified.
 
-    module.exports.push name: 'Hive Server2 # Layout', timeout: -1, handler: ->
+    module.exports.push header: 'Hive Server2 # Layout', timeout: -1, handler: ->
       {hive} = @config.ryba
       # Required by service "hive-hcatalog-server"
       @mkdir
@@ -125,7 +125,7 @@ Create the directories to store the logs and pid information. The properties
 
 ## Kerberos
 
-    module.exports.push name: 'Hive Server2 # Kerberos', handler: ->
+    module.exports.push header: 'Hive Server2 # Kerberos', handler: ->
       {hive, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
@@ -141,7 +141,7 @@ Create the directories to store the logs and pid information. The properties
 
 ## Logs
 
-    module.exports.push name: 'Hive Server2 # Logs', handler: ->
+    module.exports.push header: 'Hive Server2 # Logs', handler: ->
       @write
         source: "#{__dirname}/../../resources/hive/hive-exec-log4j.properties.template"
         local_source: true
@@ -153,10 +153,9 @@ Create the directories to store the logs and pid information. The properties
 
 ## Limits
 
-    module.exports.push name: 'Hive Server2 : Limits', handler: ->
+    module.exports.push header: 'Hive Server2 : Limits', handler: ->
       {hive, realm} = @config.ryba
       @system_limits
         user: hive.user.name
         nofile: true
         nproc: true
-

@@ -18,7 +18,7 @@ service hbase-master start
 su -l hbase -c "/usr/hdp/current/hbase-regionserver/bin/hbase-daemon.sh --config /etc/hbase/conf start master"
 ```
 
-    module.exports.push name: 'HBase Master # Start', label_true: 'STARTED', handler: ->
+    module.exports.push header: 'HBase Master # Start', label_true: 'STARTED', handler: ->
       @service_start
         name: 'hbase-master'
         if_exists: '/etc/init.d/hbase-master'

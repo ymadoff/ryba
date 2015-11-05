@@ -9,7 +9,7 @@ server using Ryba.
 
 ## Wait TCP
 
-    module.exports.push name: 'HDFS NN # Wait', timeout: -1, label_true: 'READY', handler: ->
+    module.exports.push header: 'HDFS NN # Wait', timeout: -1, label_true: 'READY', handler: ->
       os_ctxs = @contexts 'ryba/oozie/server'#, require('./index').configure
       @wait_connect
         servers: for os_ctx in os_ctxs

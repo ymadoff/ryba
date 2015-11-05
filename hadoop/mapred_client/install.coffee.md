@@ -22,7 +22,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'MapReduce Client # IPTables', handler: ->
+    module.exports.push header: 'MapReduce Client # IPTables', handler: ->
       {mapred} = @config.ryba
       jobclient = mapred.site['yarn.app.mapreduce.am.job.client.port-range']
       jobclient = jobclient.replace '-', ':'
@@ -34,20 +34,20 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Users & Groups
 
-    module.exports.push name: 'MapReduce Client # Users & Groups', handler: ->
+    module.exports.push header: 'MapReduce Client # Users & Groups', handler: ->
       {mapred, hadoop_group} = @config.ryba
       @group hadoop_group
       @user mapred.user
 
 ## Service
 
-    module.exports.push name: 'MapReduce # Service', timeout: -1, handler: ->
+    module.exports.push header: 'MapReduce # Service', timeout: -1, handler: ->
       @service
         name: 'hadoop-mapreduce'
       @hdp_select
         name: 'hadoop-client'
 
-    module.exports.push name: 'MapReduce Client # Configuration', handler: ->
+    module.exports.push header: 'MapReduce Client # Configuration', handler: ->
       {mapred, hadoop_conf_dir} = @config.ryba
       @hconfigure
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
@@ -65,7 +65,7 @@ Upload the MapReduce tarball inside the "/hdp/apps/$version/mapreduce"
 HDFS directory. Note, the parent directories are created by the
 "ryba/hadoop/hdfs_dn/layout" module.
 
-    module.exports.push name: 'MapReduce Client # HDFS Tarballs', wait: 60*1000, timeout: -1, handler: ->
+    module.exports.push header: 'MapReduce Client # HDFS Tarballs', wait: 60*1000, timeout: -1, handler: ->
       @hdfs_upload
         source: '/usr/hdp/current/hadoop-client/mapreduce.tar.gz'
         target: '/hdp/apps/$version/mapreduce/mapreduce.tar.gz'

@@ -10,14 +10,14 @@ of Elastics Search from rpm repositories and the configuration of Elastic Search
     module.exports.push 'masson/commons/java'
     # module.exports.push require('./').configure
 
-    module.exports.push name: 'ES # Users & Groups', handler: ->
+    module.exports.push header: 'ES # Users & Groups', handler: ->
       {elasticsearch} = @config.ryba
       @group elasticsearch.group
       @user elasticsearch.user
 
 ## Kerberos
 
-    module.exports.push name: 'ES # Kerberos', skip: true, handler: ->
+    module.exports.push header: 'ES # Kerberos', skip: true, handler: ->
       {elasticsearch, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
@@ -34,7 +34,7 @@ of Elastics Search from rpm repositories and the configuration of Elastic Search
 
 ElasticSearch archive comes with an RPM
 
-    module.exports.push name: 'ES # Install', timeout: -1, handler: ->
+    module.exports.push header: 'ES # Install', timeout: -1, handler: (options) ->
       {elasticsearch, realm} = @config.ryba
       @download
         source: elasticsearch.source
@@ -50,7 +50,7 @@ ElasticSearch archive comes with an RPM
 
 ## Env
 
-    module.exports.push name: 'ES # Env', handler: ->
+    module.exports.push header: 'ES # Env', handler: ->
       {elasticsearch, zookeeper} = @config.ryba
       write = [
         match: /^.*cluster.name: .*/m

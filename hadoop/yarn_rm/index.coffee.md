@@ -67,7 +67,7 @@ the application (zombie state).
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels.default.capacity'] ?= null
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels.default.maximum-capacity'] ?= null
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.acl_administer_queue'] ?= '*'
-      ryba.capacity_scheduler['yarn.scheduler.capacity.root.capacity'] ?= '100'
+      # ryba.capacity_scheduler['yarn.scheduler.capacity.root.capacity'] ?= '100'
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.default-node-label-expression'] ?= ' '
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.default.acl_administer_jobs'] ?= '*'
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.default.acl_submit_applications'] ?= '*'

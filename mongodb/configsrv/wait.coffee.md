@@ -6,7 +6,7 @@
 
 ## Wait
 
-    module.exports.push name: 'MongoDB ConfigSrv # Wait', label_true: 'READY', timeout: -1, handler: ->
+    module.exports.push header: 'MongoDB ConfigSrv # Wait', label_true: 'READY', timeout: -1, handler: ->
       @wait_connect
         servers: for ctx in @contexts 'ryba/mongodb/configsrv'
           host: ctx.config.host

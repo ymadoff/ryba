@@ -8,7 +8,5 @@
 
 Start the Shinken Poller service.
 
-    module.exports.push name: 'Shinken Poller # Start', label_true: 'STARTED', handler: ->
-      @service
-        srv_name: 'shinken-poller'
-        action: 'start'
+    module.exports.push header: 'Shinken Poller # Start', label_true: 'STARTED', handler: ->
+      @service_start name: 'shinken-poller'

@@ -23,7 +23,7 @@ cat /etc/group | grep hadoop
 hadoop:x:498:hdfs
 ```
 
-    module.exports.push name: 'ZooKeeper Server # Users & Groups', handler: ->
+    module.exports.push header: 'ZooKeeper Server # Users & Groups', handler: ->
       {zookeeper, hadoop_group} = @config.ryba
       @group zookeeper.group
       @group hadoop_group
@@ -40,7 +40,7 @@ hadoop:x:498:hdfs
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'ZooKeeper Server # IPTables', handler: ->
+    module.exports.push header: 'ZooKeeper Server # IPTables', handler: ->
       {zookeeper} = @config.ryba
       @iptables
         rules: [
@@ -55,7 +55,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Follow the [HDP recommandations][install] to install the "zookeeper" package
 which has no dependency.
 
-    module.exports.push name: 'ZooKeeper Server # Install', timeout: -1, handler: ->
+    module.exports.push header: 'ZooKeeper Server # Install', timeout: -1, handler: ->
       @service
         name: 'telnet' # Used by check
       @service
@@ -73,7 +73,7 @@ which has no dependency.
 ## Kerberos
 
     module.exports.push 'masson/core/krb5_client/wait'
-    module.exports.push name: 'ZooKeeper Server # Kerberos', timeout: -1, handler: ->
+    module.exports.push header: 'ZooKeeper Server # Kerberos', timeout: -1, handler: ->
       {zookeeper, hadoop_group, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
@@ -103,7 +103,7 @@ which has no dependency.
 Create the data, pid and log directories with the correct permissions and
 ownerships.
 
-    module.exports.push name: 'ZooKeeper Server # Layout', handler: ->
+    module.exports.push header: 'ZooKeeper Server # Layout', handler: ->
       {zookeeper, hadoop_group} = @config.ryba
       @mkdir
         destination: zookeeper.config['dataDir']
@@ -123,7 +123,7 @@ ownerships.
 
 ## Environment
 
-    module.exports.push name: 'ZooKeeper Server # Environment', handler: ->
+    module.exports.push header: 'ZooKeeper Server # Environment', handler: ->
       {zookeeper} = @config.ryba
       @write
         destination: "#{zookeeper.conf_dir}/zookeeper-env.sh"
@@ -139,7 +139,7 @@ ownerships.
 Update the file "zoo.cfg" with the properties defined by the
 "ryba.zookeeper.config" configuration.
 
-    module.exports.push name: 'ZooKeeper Server # Configure', handler: ->
+    module.exports.push header: 'ZooKeeper Server # Configure', handler: ->
       {zookeeper} = @config.ryba
       @write
         destination: "#{zookeeper.conf_dir}/zoo.cfg"
@@ -154,7 +154,7 @@ Update the file "zoo.cfg" with the properties defined by the
 
 Upload the ZooKeeper loging configuration file.
 
-    module.exports.push name: 'ZooKeeper Server # Log4J', handler: ->
+    module.exports.push header: 'ZooKeeper Server # Log4J', handler: ->
       {zookeeper} = @config.ryba
       writes = [
         match: /log4j\.rootLogger=.*/g
@@ -258,7 +258,7 @@ only on localhost (not over the network) or over an encrypted connection.
 Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
 
     module.exports.push
-      name: 'ZooKeeper Server # Super User'
+      header: 'ZooKeeper Server # Super User'
       if: -> @config.ryba.zookeeper.superuser.password
       handler: (_, callback) ->
         {zookeeper} = @config.ryba
@@ -281,7 +281,7 @@ Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
             eof: true
           .then callback
 
-    module.exports.push name: 'ZooKeeper Server # Write myid', handler: ->
+    module.exports.push header: 'ZooKeeper Server # Write myid', handler: ->
       {zookeeper, hadoop_group} = @config.ryba
       hosts = @hosts_with_module 'ryba/zookeeper/server'
       return next() if hosts.length is 1

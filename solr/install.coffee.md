@@ -5,14 +5,14 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/commons/java'
 
-    module.exports.push name: 'Solr # Users & Groups', handler: ->
+    module.exports.push header: 'Solr # Users & Groups', handler: ->
       {solr} = @config.ryba
       @group solr.group
       @user solr.user
 
 ## Layout
 
-    module.exports.push name: 'Solr # Layout', timeout: -1, handler: ->
+    module.exports.push header: 'Solr # Layout', timeout: -1, handler: ->
       {solr} = @config.ryba
       @mkdir
         destination: solr.install_dir
@@ -29,7 +29,7 @@
 
 ## Kerberos
 
-    module.exports.push name: 'Solr # Kerberos', handler: ->
+    module.exports.push header: 'Solr # Kerberos', handler: ->
       {solr, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
@@ -47,7 +47,7 @@
 Solr archive comes with an install scripts which creates and sets directories, env vars & scripts.
 Ryba execute this scripts then customize installation
 
-    module.exports.push name: 'Solr # Install', timeout: -1, handler: ->
+    module.exports.push header: 'Solr # Install', timeout: -1, handler: ->
       {solr, realm} = @config.ryba
       archive_name = path.basename solr.source
       archive_path = path.join solr.install_dir, archive_name
@@ -75,7 +75,7 @@ Ryba execute this scripts then customize installation
         """
         if: -> @status -1
 
-    module.exports.push name: 'Solr # Env', handler: ->
+    module.exports.push header: 'Solr # Env', handler: ->
       {solr, zookeeper} = @config.ryba
       write = [
         match: /^SOLR_PID_DIR=.*/m
@@ -107,7 +107,7 @@ Ryba execute this scripts then customize installation
 
 ## Config Set
 
-    module.exports.push name: 'Solr # Config Set Pool', handler: ->
+    module.exports.push header: 'Solr # Config Set Pool', handler: ->
       {solr} = @config.ryba
       @mkdir
         destination: path.join solr.user.home, 'configsets'
@@ -119,7 +119,7 @@ Ryba execute this scripts then customize installation
 #
 # ### Titan Config Set
 #
-#     module.exports.push name: 'Solr # Titan Config Set', handler: ->
+#     module.exports.push header: 'Solr # Titan Config Set', handler: ->
 #       titan_ctxs = @contexts 'ryba/titan', require('../titan').configure
 #       return next() if titan_ctxs.length is 0
 #       {solr} = @config.ryba
@@ -169,11 +169,11 @@ Ryba execute this scripts then customize installation
 #
 # ### Solr Collection
 #
-#     module.exports.push name: 'Solr # Titan Collection', handler: ->
+#     module.exports.push header: 'Solr # Titan Collection', handler: ->
 #       return next() unless @config.ryba.titan.config['index.search.backend'] is 'solr'
 #       next()
 #
-    module.exports.push name: 'Solr # Tuning', handler: ->
+    module.exports.push header: 'Solr # Tuning', handler: ->
       return
       #next null, 'TODO'
 

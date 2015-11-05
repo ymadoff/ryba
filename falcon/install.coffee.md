@@ -21,7 +21,7 @@ each HDFS cluster.
 
 Note, this hasnt been verified.
 
-    module.exports.push name: 'Falcon # IPTables', handler: ->
+    module.exports.push header: 'Falcon # IPTables', handler: ->
       {falcon} = @config.ryba
       {hostname, port} = url.parse falcon.startup['prism.falcon.local.endpoint']
       @iptables
@@ -41,14 +41,14 @@ cat /etc/group | grep falcon
 falcon:x:498:falcon
 ```
 
-    module.exports.push name: 'Falcon # Users & Groups', handler: ->
+    module.exports.push header: 'Falcon # Users & Groups', handler: ->
       {falcon} = @config.ryba
       @group falcon.group
       @user falcon.user
 
 ## Packages
 
-    module.exports.push name: 'Falcon # Packages', timeout: -1, handler: ->
+    module.exports.push header: 'Falcon # Packages', timeout: -1, handler: ->
       @service
         name: 'falcon'
       @hdp_select
@@ -65,7 +65,7 @@ falcon:x:498:falcon
 
 ## Kerberos
 
-    module.exports.push name: 'Falcon # Kerberos', handler: ->
+    module.exports.push header: 'Falcon # Kerberos', handler: ->
       {realm} = @config.ryba
       {user, group, startup} = @config.ryba.falcon
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
@@ -81,7 +81,7 @@ falcon:x:498:falcon
 
 ## HFDS Layout
 
-    module.exports.push name: 'Falcon # HFDS Layout', handler: ->
+    module.exports.push header: 'Falcon # HFDS Layout', handler: ->
       {user, group} = @config.ryba.falcon
       status = user_owner = group_owner = null
       @execute
@@ -104,7 +104,7 @@ falcon:x:498:falcon
 
 ## Runtime
 
-    # module.exports.push name: 'Falcon # Runtime', handler: ->
+    # module.exports.push header: 'Falcon # Runtime', handler: ->
     #   # {conf_dir, runtime} = @config.ryba.falcon
     #   # @ini
     #   #   destination: "#{conf_dir}/runtime.properties"
@@ -126,7 +126,7 @@ falcon:x:498:falcon
 
 ## Startup
 
-    module.exports.push name: 'Falcon # Startup', handler: ->
+    module.exports.push header: 'Falcon # Startup', handler: ->
       {conf_dir, startup} = @config.ryba.falcon
       @write
         destination: "#{conf_dir}/startup.properties"

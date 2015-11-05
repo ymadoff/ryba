@@ -7,7 +7,7 @@
 
 ## Check HTTP
       
-    module.exports.push name: 'HDFS HttpFS # Check', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+    module.exports.push header: 'HDFS HttpFS # Check', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
       {user} = @config.ryba
       protocol = 'http'
       @execute

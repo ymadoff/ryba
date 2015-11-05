@@ -24,7 +24,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'YARN RM # IPTables', handler: ->
+    module.exports.push header: 'YARN RM # IPTables', handler: ->
       {yarn} = @config.ryba
       shortname = if @hosts_with_module('ryba/hadoop/yarn_rm').length is 1 then '' else ".#{@config.shortname}"
       rules = []
@@ -54,7 +54,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Kerberos
 
-    module.exports.push name: 'YARN RM # Kerberos', handler: ->
+    module.exports.push header: 'YARN RM # Kerberos', handler: ->
       {yarn, hadoop_group, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
@@ -72,7 +72,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 The JAAS file is used by the ResourceManager to initiate a secure connection 
 with Zookeeper.
 
-    module.exports.push name: 'YARN RM # Kerberos JAAS', handler: ->
+    module.exports.push header: 'YARN RM # Kerberos JAAS', handler: ->
       {yarn, hadoop_conf_dir, hadoop_group, core_site, realm} = @config.ryba
       @write_jaas
         destination: "#{hadoop_conf_dir}/yarn-rm.jaas"
@@ -87,7 +87,7 @@ with Zookeeper.
 Install the "hadoop-yarn-resourcemanager" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'YARN RM # Service', handler: ->
+    module.exports.push header: 'YARN RM # Service', handler: ->
       {yarn} = @config.ryba
       @service
         name: 'hadoop-yarn-resourcemanager'
@@ -106,7 +106,7 @@ inside "/etc/init.d" and activate it on startup.
 
 ## Configuration
 
-    module.exports.push name: 'YARN RM # Configuration', handler: ->
+    module.exports.push header: 'YARN RM # Configuration', handler: ->
       {hadoop_conf_dir, yarn, mapred} = @config.ryba
       @hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
@@ -136,7 +136,7 @@ only uses Memory while DominantResourceCalculator uses Dominant-resource to
 compare multi-dimensional resources such as Memory, CPU etc. A Java
 ResourceCalculator class name is expected.
 
-    module.exports.push name: 'YARN RM # Capacity Scheduler', handler: ->
+    module.exports.push header: 'YARN RM # Capacity Scheduler', handler: ->
       {yarn, hadoop_conf_dir, capacity_scheduler} = @config.ryba
       return next() unless yarn.site['yarn.resourcemanager.scheduler.class'] is 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
       @hconfigure

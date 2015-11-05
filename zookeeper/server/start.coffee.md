@@ -16,7 +16,7 @@ service zookeeper-server start
 su - zookeeper -c "export ZOOCFGDIR=/usr/hdp/current/zookeeper-server/conf; export ZOOCFG=zoo.cfg; source /usr/hdp/current/zookeeper-server/conf/zookeeper-env.sh; /usr/hdp/current/zookeeper-server/bin/zkServer.sh start"
 ```
 
-    module.exports.push name: 'ZooKeeper Server # Start Server', label_true: 'STARTED', handler: ->
+    module.exports.push header: 'ZooKeeper Server # Start Server', label_true: 'STARTED', handler: ->
       {yarn} = @config.ryba
       @service_start
         name: 'zookeeper-server'

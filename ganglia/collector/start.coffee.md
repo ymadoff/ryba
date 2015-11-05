@@ -19,7 +19,7 @@ You can also start the server manually with the following command:
 service hdp-gmetad start
 ```
 
-    module.exports.push name: 'Ganglia Collector # Start', label_true: 'STARTED', handler: ->
+    module.exports.push header: 'Ganglia Collector # Start', label_true: 'STARTED', handler: ->
       @service_start
         name: 'hdp-gmetad'
         if_exists: '/etc/init.d/hdp-gmetad'

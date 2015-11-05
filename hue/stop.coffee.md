@@ -14,14 +14,14 @@ command:
 service hue stop
 ```
 
-    module.exports.push name: 'Hue # Stop', label_true: 'STOPPED', handler: ->
+    module.exports.push header: 'Hue # Stop', label_true: 'STOPPED', handler: ->
       @service_stop
         name: 'hue'
 
 ## Stop Clean Logs
 
     module.exports.push
-      name: 'Hue # Stop Clean Logs'
+      header: 'Hue # Stop Clean Logs'
       label_true: 'CLEANED'
       if: -> @config.ryba.clean_logs
       handler: ->

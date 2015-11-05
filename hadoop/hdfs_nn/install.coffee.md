@@ -39,7 +39,7 @@ define inside the "ryba/hadoop/hdfs" and "masson/core/nc" modules.
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'HDFS NN # IPTables', handler: ->
+    module.exports.push header: 'HDFS NN # IPTables', handler: ->
       @iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 50070, protocol: 'tcp', state: 'NEW', comment: "HDFS NN HTTP" }
@@ -55,7 +55,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-hdfs-namenode" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'HDFS NN # Service', handler: ->
+    module.exports.push header: 'HDFS NN # Service', handler: ->
       @service
         name: 'hadoop-hdfs-namenode'
       @hdp_select
@@ -77,7 +77,7 @@ Create the NameNode data and pid directories. The NameNode data is by defined in
 "/etc/hadoop/conf/hdfs-site.xml" file by the "dfs.namenode.name.dir" property. The pid
 file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
 
-    module.exports.push name: 'HDFS NN # Layout', timeout: -1, handler: ->
+    module.exports.push header: 'HDFS NN # Layout', timeout: -1, handler: ->
       {hdfs, hadoop_group} = @config.ryba
       pid_dir = hdfs.pid_dir.replace '$USER', hdfs.user.name
       @mkdir
@@ -99,7 +99,7 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
 Create a service principal for this NameNode. The principal is named after
 "nn/#{@config.host}@#{realm}".
 
-    module.exports.push name: 'HDFS NN # Kerberos', handler: ->
+    module.exports.push header: 'HDFS NN # Kerberos', handler: ->
       {realm, hadoop_group, hdfs} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
@@ -117,7 +117,7 @@ Create a service principal for this NameNode. The principal is named after
 
 Environment passed to the NameNode before it starts.
 
-    module.exports.push name: 'HDFS NN # Opts', handler: ->
+    module.exports.push header: 'HDFS NN # Opts', handler: ->
       {hadoop_conf_dir, hdfs} = @config.ryba
       @write
         destination: "#{hadoop_conf_dir}/hadoop-env.sh"
@@ -128,7 +128,7 @@ Environment passed to the NameNode before it starts.
 
 ## Configure
 
-    module.exports.push name: 'HDFS NN # Configure', handler: ->
+    module.exports.push header: 'HDFS NN # Configure', handler: ->
       {hdfs, hadoop_conf_dir, hadoop_group} = @config.ryba
       @hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
@@ -150,7 +150,7 @@ The "dfs.hosts.exclude" property specifies the file that contains a list of
 hosts that are not permitted to connect to the namenode.  The full pathname of
 the file must be specified.  If the value is empty, no hosts are excluded.
 
-    module.exports.push name: 'HDFS NN # Include/Exclude', handler: ->
+    module.exports.push header: 'HDFS NN # Include/Exclude', handler: ->
       {hdfs} = @config.ryba
       @write
         content: "#{hdfs.include.join '\n'}"
@@ -173,7 +173,7 @@ to run commands on many hosts at once. In order to use this functionality, ssh
 trusts (via either passphraseless ssh or some other means, such as Kerberos)
 must be established for the accounts used to run Hadoop.
 
-    module.exports.push name: 'HDFS NN # Slaves', handler: ->
+    module.exports.push header: 'HDFS NN # Slaves', handler: ->
       {hadoop_conf_dir} = @config.ryba
       datanodes = @hosts_with_module 'ryba/hadoop/hdfs_dn'
       @write
@@ -188,7 +188,7 @@ this NameNode isn't yet formated by detecting if the "current/VERSION" exists. T
 is only exected once all the JournalNodes are started. The NameNode is finally restarted
 if the NameNode was formated.
 
-    module.exports.push name: 'HDFS NN # Format', timeout: -1, modules: 'ryba/hadoop/hdfs_jn/wait', handler: ->
+    module.exports.push header: 'HDFS NN # Format', timeout: -1, modules: 'ryba/hadoop/hdfs_jn/wait', handler: ->
       {hdfs, active_nn_host, nameservice} = @config.ryba
       any_dfs_name_dir = hdfs.site['dfs.namenode.name.dir'].split(',')[0]
       any_dfs_name_dir = any_dfs_name_dir.substr(7) if any_dfs_name_dir.indexOf('file://') is 0
@@ -211,7 +211,7 @@ unformatted NameNode. The command "hdfs namenode -bootstrapStandby" used for the
 is only executed on the standby NameNode.
 
     module.exports.push
-      name: 'HDFS NN # HA Init Standby'
+      header: 'HDFS NN # HA Init Standby'
       timeout: -1
       if: -> @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       not_if: -> @config.host is @config.ryba.active_nn_host

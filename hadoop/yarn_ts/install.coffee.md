@@ -23,7 +23,7 @@ co-located with any other service.
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'YARN TS # IPTables', handler: ->
+    module.exports.push header: 'YARN TS # IPTables', handler: ->
       {yarn} = @config.ryba
       [_, rpc_port] = yarn.site['yarn.timeline-service.address'].split ':'
       [_, http_port] = yarn.site['yarn.timeline-service.webapp.address'].split ':'
@@ -41,7 +41,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-yarn-timelineserver" service, symlink the rc.d startup script
 in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 
-    module.exports.push name: 'YARN TS # Service', handler: ->
+    module.exports.push header: 'YARN TS # Service', handler: ->
       @service
         name: 'hadoop-yarn-timelineserver'
       @hdp_select
@@ -61,7 +61,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 
 Update the "yarn-site.xml" configuration file.
 
-    module.exports.push name: 'YARN TS # Configuration', handler: ->
+    module.exports.push header: 'YARN TS # Configuration', handler: ->
       return next() unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       {hadoop_conf_dir, yarn, hadoop_group} = @config.ryba
       @hconfigure
@@ -72,7 +72,7 @@ Update the "yarn-site.xml" configuration file.
 
 # Layout
 
-    module.exports.push name: 'YARN TS # Layout', timeout: -1, handler: ->
+    module.exports.push header: 'YARN TS # Layout', timeout: -1, handler: ->
       {yarn, hadoop_group} = @config.ryba
       @mkdir
         destination: yarn.site['yarn.timeline-service.leveldb-timeline-store.path']
@@ -90,7 +90,7 @@ See:
 
 Note, this is not documented anywhere and might not be considered as a best practice.
 
-    module.exports.push name: 'YARN TS # HDFS layout', timeout: -1, handler: ->
+    module.exports.push header: 'YARN TS # HDFS layout', timeout: -1, handler: ->
       {yarn} = @config.ryba
       return next() unless yarn.site['yarn.timeline-service.generic-application-history.store-class'] is "org.apache.hadoop.yarn.server.applicationhistoryservice.FileSystemApplicationHistoryStore"
       dir = yarn.site['yarn.timeline-service.fs-history-store.uri']
@@ -115,7 +115,7 @@ Create the Kerberos service principal by default in the form of
 
     module.exports.push 'ryba/hadoop/hdfs_nn/wait'
     module.exports.push 'ryba/hadoop/hdfs_client/install'
-    module.exports.push name: 'YARN TS # Kerberos', timeout: -1, handler: ->
+    module.exports.push header: 'YARN TS # Kerberos', timeout: -1, handler: ->
       {yarn, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc

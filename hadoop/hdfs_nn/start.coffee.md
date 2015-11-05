@@ -22,7 +22,7 @@ service hadoop-hdfs-namenode start
 su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-namenode/../hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start namenode"
 ```
 
-    module.exports.push name: 'HDFS NN # Start', timeout: -1, label_true: 'STARTED', handler: ->
+    module.exports.push header: 'HDFS NN # Start', timeout: -1, label_true: 'STARTED', handler: ->
       @service_start
         name: 'hadoop-hdfs-namenode'
         if_exists: '/etc/init.d/hadoop-hdfs-namenode'
@@ -33,7 +33,7 @@ Wait for HDFS safemode to exit. It isn't enough to start the NameNodes but the
 majority of DataNodes also need to be running.
 
     module.exports.push 'ryba/hadoop/hdfs_nn/wait'
-    # module.exports.push name: 'HDFS NN # Wait Safemode', timeout: -1, label_true: 'READY', handler: ->
+    # module.exports.push header: 'HDFS NN # Wait Safemode', timeout: -1, label_true: 'READY', handler: ->
     #   # return next() if @has_module 'ryba/hadoop/hdfs_dn'
     #   @wait_execute
     #     cmd: mkcmd.hdfs @, "hdfs dfsadmin -safemode get | grep OFF"
@@ -53,7 +53,7 @@ only run on a NameNode with fencing installed and in normal mode.
 TODO sep 2015: maybe should we simply move this to ZKFC?
 
     module.exports.push 'ryba/hadoop/zkfc/start'
-    module.exports.push name: 'HDFS NN Start # Failover', label_true: 'READY', handler: ->
+    module.exports.push header: 'HDFS NN Start # Failover', label_true: 'READY', handler: ->
       return next() unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       {active_nn_host, standby_nn_host} = @config.ryba
       active_nn_host = active_nn_host.split('.')[0]

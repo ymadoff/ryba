@@ -10,7 +10,7 @@
 
 Execute these commands on the ZooKeeper host machine(s).
 
-    module.exports.push name: 'ZooKeeper Server # Check Registration', label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'ZooKeeper Server # Check Registration', label_true: 'CHECKED', handler: ->
       {zookeeper} = @config.ryba
       zoo_ctxs = @contexts 'ryba/zookeeper/server', require('./').configure
       cmds = for zoo_ctx in zoo_ctxs

@@ -26,7 +26,7 @@ have usecase for it yet.
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'HBase Rest # IPTables', handler: ->
+    module.exports.push header: 'HBase Rest # IPTables', handler: ->
       {hbase} = @config.ryba
       @iptables
         rules: [
@@ -35,7 +35,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ]
         if: @config.iptables.action is 'start'
 
-    module.exports.push name: 'HBase Rest # Service', handler: ->
+    module.exports.push header: 'HBase Rest # Service', handler: ->
       @service
         name: 'hbase-rest'
       @hdp_select
@@ -54,7 +54,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 Create the Kerberos keytab for the service principal.
 
-    module.exports.push name: 'HBase Rest # Kerberos', handler: ->
+    module.exports.push header: 'HBase Rest # Kerberos', handler: ->
       {hadoop_group, hbase, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
@@ -72,7 +72,7 @@ Create the Kerberos keytab for the service principal.
 Note, we left the permission mode as default, Master and RegionServer need to
 restrict it but not the rest server.
 
-    module.exports.push name: 'HBase Rest # Configure', handler: ->
+    module.exports.push header: 'HBase Rest # Configure', handler: ->
       {hbase} = @config.ryba
       @hconfigure
         destination: "#{hbase.conf_dir}/hbase-site.xml"

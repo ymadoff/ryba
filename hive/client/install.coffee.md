@@ -11,7 +11,7 @@
     module.exports.push 'ryba/lib/hconfigure'
     # module.exports.push require('./index').configure
 
-    module.exports.push name: 'Hive Client # Service', handler: ->
+    module.exports.push header: 'Hive Client # Service', handler: ->
       @service
         name: 'hive-hcatalog'
 
@@ -19,7 +19,7 @@
 
 See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap6-3.html)
 
-    module.exports.push name: 'Hive Client # Configure', handler: ->
+    module.exports.push header: 'Hive Client # Configure', handler: ->
       {hive, hadoop_group} = @config.ryba
       @hconfigure
         destination: "#{hive.conf_dir}/hive-site.xml"
@@ -46,7 +46,7 @@ Using this functionnality, a user may for example raise the heap size of Hive
 Client to 4Gb by either setting a "opts" value equal to "-Xmx4096m" or the 
 by setting a "heapsize" value equal to "4096".
 
-    module.exports.push name: 'Hive Client # Env', handler: ->
+    module.exports.push header: 'Hive Client # Env', handler: ->
       {hive} = @config.ryba
       @write
         destination: "#{hive.conf_dir}/hive-env.sh"

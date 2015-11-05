@@ -8,14 +8,12 @@
 
 Stop the Shinken Poller service.
 
-    module.exports.push name: 'Shinken Poller # Stop', label_true: 'STOPPED', handler: ->
-      @service
-        srv_name: 'shinken-poller'
-        action: 'stop'
+    module.exports.push header: 'Shinken Poller # Stop', label_true: 'STOPPED', handler: ->
+      @service_stop name: 'shinken-poller'
 
 ## Clean Logs
 
-    module.exports.push name: 'Shinken Poller # Clean Logs', label_true: 'CLEANED', handler: ->
+    module.exports.push header: 'Shinken Poller # Clean Logs', label_true: 'CLEANED', handler: ->
       return unless @config.ryba.clean_logs
       @execute
         cmd: 'rm /var/log/shinken/*'

@@ -8,14 +8,12 @@
 
 Stop the Shinken Broker service.
 
-    module.exports.push name: 'Shinken Broker # Stop', label_true: 'STOPPED', handler: ->
-      @service
-        srv_name: 'shinken-broker'
-        action: 'stop'
+    module.exports.push header: 'Shinken Broker # Stop', label_true: 'STOPPED', handler: ->
+      @service_stop name: 'shinken-broker'
 
 ## Clean Logs
 
-    module.exports.push name: 'Shinken Broker # Clean Logs', label_true: 'CLEANED', handler: ->
+    module.exports.push header: 'Shinken Broker # Clean Logs', label_true: 'CLEANED', handler: ->
       return unless @config.ryba.clean_logs
       @execute
         cmd: 'rm /var/log/shinken/*'

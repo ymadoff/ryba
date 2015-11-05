@@ -15,7 +15,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Shinken Scheduler # IPTables', handler: ->
+    module.exports.push header: 'Shinken Scheduler # IPTables', handler: ->
       {scheduler} = @config.ryba.shinken
       @iptables
         rules: [
@@ -25,7 +25,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Packages
 
-    module.exports.push name: 'Shinken Scheduler # Packages', handler: ->
+    module.exports.push header: 'Shinken Scheduler # Packages', handler: ->
       {shinken} = @config.ryba
       @service name: 'shinken-scheduler'
       @chown
@@ -38,7 +38,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Additional Modules
 
-    module.exports.push name: 'Shinken Scheduler # Modules', handler: ->
+    module.exports.push header: 'Shinken Scheduler # Modules', handler: ->
       {shinken, shinken:{scheduler}} = @config.ryba
       return unless Object.getOwnPropertyNames(scheduler.modules).length > 0
       for name, mod of scheduler.modules

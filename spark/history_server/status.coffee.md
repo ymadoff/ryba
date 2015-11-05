@@ -7,7 +7,7 @@
     module.exports.push 'masson/bootstrap'
     # module.exports.push require('./index').configure
 
-    module.exports.push name: 'Spark HS # Status', label_true: 'STARTED', label_false: "STOPPED", handler: ->
+    module.exports.push header: 'Spark HS # Status', label_true: 'STARTED', label_false: "STOPPED", handler: ->
       {spark} = @config.ryba
       @execute
         cmd:  """

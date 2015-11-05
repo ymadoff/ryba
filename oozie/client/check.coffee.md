@@ -8,7 +8,7 @@
 
 ## Check Client
 
-    module.exports.push name: 'Oozie Client # Check Client', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Oozie Client # Check Client', timeout: -1, label_true: 'CHECKED', handler: ->
       {oozie} = @config.ryba
       @execute
         cmd: mkcmd.test @, """
@@ -20,7 +20,7 @@
 
 ## Check REST
 
-    module.exports.push name: 'Oozie Client # Check REST', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Oozie Client # Check REST', timeout: -1, label_true: 'CHECKED', handler: ->
       {oozie} = @config.ryba
       @execute
         cmd: mkcmd.test @, """
@@ -32,7 +32,7 @@
 
 ## Check HDFS Workflow
 
-    module.exports.push name: 'Oozie Client # Check HDFS Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+    module.exports.push header: 'Oozie Client # Check HDFS Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
       {force_check, user, core_site, yarn, oozie} = @config.ryba
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'#, require('../../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1
@@ -95,7 +95,7 @@
 
 ## Check MapReduce Workflow
 
-    module.exports.push name: 'Oozie Client # Check MapReduce', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+    module.exports.push header: 'Oozie Client # Check MapReduce', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
       {force_check, user, core_site, yarn, oozie} = @config.ryba
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'#, require('../../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1
@@ -199,7 +199,7 @@
 
 ## Check Pig Workflow
 
-    module.exports.push name: 'Oozie Client # Check Pig Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+    module.exports.push header: 'Oozie Client # Check Pig Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
       {force_check, user, core_site, yarn, oozie} = @config.ryba
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'#, require('../../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1
@@ -332,7 +332,7 @@
 #   <end name="end"/>
 # </workflow-app>
 
-    module.exports.push skip: true, name: 'Oozie Client # Check HCat Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+    module.exports.push skip: true, header: 'Oozie Client # Check HCat Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
       {force_check, user, core_site, yarn, oozie} = @config.ryba
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'#, require('../../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1

@@ -25,7 +25,7 @@ cat /etc/group | grep hadoop
 hadoop:x:502:yarn,mapred,hdfs,hue
 ```
 
-    module.exports.push name: 'Hadoop Sqoop # Users & Groups', handler: ->
+    module.exports.push header: 'Hadoop Sqoop # Users & Groups', handler: ->
       {sqoop, hadoop_group} = @config.ryba
       @group hadoop_group
       @user sqoop.user
@@ -34,7 +34,7 @@ hadoop:x:502:yarn,mapred,hdfs,hue
 
 Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
 
-    module.exports.push name: 'Hadoop Sqoop # Environment', timeout: -1, handler: ->
+    module.exports.push header: 'Hadoop Sqoop # Environment', timeout: -1, handler: ->
       {sqoop, hadoop_group} = @config.ryba
       @write
         source: "#{__dirname}/resources/sqoop-env.sh"
@@ -62,7 +62,7 @@ Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
 
 Upload the "sqoop-site.xml" files into the "/etc/sqoop/conf" folder.
 
-    module.exports.push name: 'Hadoop Sqoop # Configure', timeout: -1, handler: ->
+    module.exports.push header: 'Hadoop Sqoop # Configure', timeout: -1, handler: ->
       {sqoop, hadoop_group} = @config.ryba
       @hconfigure
         destination: "#{sqoop.conf_dir}/sqoop-site.xml"
@@ -78,7 +78,7 @@ Upload the "sqoop-site.xml" files into the "/etc/sqoop/conf" folder.
 
 Install the Sqoop package following the [HDP instructions][install].
 
-    module.exports.push name: 'Hadoop Sqoop # Install', timeout: -1, handler: ->
+    module.exports.push header: 'Hadoop Sqoop # Install', timeout: -1, handler: ->
       @service
         name: 'sqoop'
       @hdp_select
@@ -89,7 +89,7 @@ Install the Sqoop package following the [HDP instructions][install].
 MySQL is by default usable by Sqoop. The driver installed after running the
 "masson/commons/mysql_client" is copied into the Sqoop library folder.
 
-    module.exports.push name: 'Hadoop Sqoop # MySQL Connector', handler: ->
+    module.exports.push header: 'Hadoop Sqoop # MySQL Connector', handler: ->
       # @copy
       #   source: '/usr/share/java/mysql-connector-java.jar'
       #   destination: '/usr/hdp/current/sqoop-client/lib/'
@@ -104,7 +104,7 @@ Upload all the drivers present in the `hdp.sqoop.libs"` configuration property i
 the Sqoop library folder.
 
     module.exports.push
-      name: 'Hadoop Sqoop # Database Connector'
+      header: 'Hadoop Sqoop # Database Connector'
       if: -> @config.ryba.sqoop.libs.length
       handler: ->
         for lib in  @config.ryba.sqoop.libs
@@ -117,7 +117,7 @@ the Sqoop library folder.
 Make sure the sqoop client is available on this server, using the [HDP validation
 command][validate].
 
-    module.exports.push name: 'Hadoop Sqoop # Check', handler: ->
+    module.exports.push header: 'Hadoop Sqoop # Check', handler: ->
       @execute
         cmd: "sqoop version | grep 'Sqoop [0-9].*'"
 

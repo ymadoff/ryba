@@ -6,6 +6,6 @@
 
 ## Status
 
-    module.exports.push name: 'Shinken Arbiter # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
+    module.exports.push header: 'Shinken Arbiter # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       plugin = null
       # TODO

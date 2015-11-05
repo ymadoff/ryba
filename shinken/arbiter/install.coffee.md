@@ -15,7 +15,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Shinken Arbiter # IPTables', handler: ->
+    module.exports.push header: 'Shinken Arbiter # IPTables', handler: ->
       {arbiter} = @config.ryba.shinken
       rules = [{ chain: 'INPUT', jump: 'ACCEPT', dport: arbiter.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Arbiter" }]
       for name, mod of arbiter.modules
@@ -27,7 +27,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Packages
 
-    module.exports.push name: 'Shinken Arbiter # Packages', handler: ->
+    module.exports.push header: 'Shinken Arbiter # Packages', handler: ->
       {shinken} = @config.ryba
       @service
         name: 'shinken-arbiter'
@@ -41,7 +41,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Additional Modules
 
-    module.exports.push name: 'Shinken Arbiter # Modules', handler: ->
+    module.exports.push header: 'Shinken Arbiter # Modules', handler: ->
       {shinken, shinken:{arbiter}} = @config.ryba
       return unless Object.getOwnPropertyNames(arbiter.modules).length > 0
       for name, mod of arbiter.modules
@@ -61,7 +61,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Configuration
 
-    module.exports.push name: 'Shinken Arbiter # Commons Config', handler: ->
+    module.exports.push header: 'Shinken Arbiter # Commons Config', handler: ->
       {shinken} = @config.ryba
       for obj in ['commands', 'contactgroups', 'contacts', 'hostgroups', 'hosts', 'servicegroups', 'templates']
         files = glob.sync "#{__dirname}/resources/#{obj}/*.j2"
@@ -78,7 +78,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Services
 
-    module.exports.push name: 'Shinken Arbiter # Services Config', handler: ->
+    module.exports.push header: 'Shinken Arbiter # Services Config', handler: ->
       # {shinken, force_check, active_nn_host, core_site, hdfs, zookeeper,
       #  hbase, oozie, webhcat, ganglia, hue} = @config.ryba
       [shinken] = @contexts 'ryba/shinken/arbiter', require('../../shinken/arbiter').configure
@@ -222,7 +222,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           # ahs_port: 0 # TODO
           # hue_port: parseInt hue.ini.desktop['http_port']
 
-    module.exports.push name: 'Shinken Arbiter # Shinken Config', handler: ->
+    module.exports.push header: 'Shinken Arbiter # Shinken Config', handler: ->
       {shinken} = @config.ryba
       render_ctx = {}
       for sub_module in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
@@ -245,7 +245,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ### Configure
 
-    module.exports.push name: 'Shinken Arbiter # Modules Config', handler: ->
+    module.exports.push header: 'Shinken Arbiter # Modules Config', handler: ->
       for sub_module in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
         ctxs = @contexts "ryba/shinken/#{sub_module}", require("../#{sub_module}").configure
         for name, mod of ctxs[0].config.ryba.shinken[sub_module].modules

@@ -15,7 +15,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Shinken Broker # IPTables', handler: ->
+    module.exports.push header: 'Shinken Broker # IPTables', handler: ->
       {broker} = @config.ryba.shinken
       rules = [{ chain: 'INPUT', jump: 'ACCEPT', dport: broker.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Broker" }]
       for name, mod of broker.modules
@@ -27,12 +27,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Packages
 
-    module.exports.push name: 'Shinken Broker # Packages', handler: ->
+    module.exports.push header: 'Shinken Broker # Packages', handler: ->
       @service name: 'shinken-broker'
 
 ## Additional Modules
 
-    module.exports.push name: 'Shinken Broker # Modules', handler: ->
+    module.exports.push header: 'Shinken Broker # Modules', handler: ->
       {shinken, shinken:{broker}} = @config.ryba
       return unless Object.getOwnPropertyNames(broker.modules).length > 0
       @execute

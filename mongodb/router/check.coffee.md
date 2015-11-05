@@ -6,7 +6,7 @@
 
 ## Check
 
-    module.exports.push name: 'MongoDB Routing Server # Check TCP', label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'MongoDB Routing Server # Check TCP', label_true: 'CHECKED', handler: ->
       {mongodb} = @config.ryba
       @execute
         cmd: "echo > /dev/tcp/#{ctx.config.host}/#{mongodb.config.port}"

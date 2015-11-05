@@ -12,7 +12,7 @@ You can also start the server manually with the following command:
 su -l knox -c "/usr/hdp/current/knox-server/bin/gateway.sh start"
 ```
 
-    module.exports.push name: 'Knox # Start', label_true: 'STARTED', handler: ->
+    module.exports.push header: 'Knox # Start', label_true: 'STARTED', handler: ->
       {knox} = @config.ryba
       @execute
         cmd: """

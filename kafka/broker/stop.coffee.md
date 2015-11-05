@@ -15,7 +15,7 @@ su -l kafka -c '/usr/hdp/current/kafka-broker/bin/kafka stop'
 
 The file storing the PID is "/var/run/kafka/kafka.pid".
 
-    module.exports.push name: 'Kafka Broker # Stop service', label_true: 'STOPPED', handler: ->
+    module.exports.push header: 'Kafka Broker # Stop service', label_true: 'STOPPED', handler: ->
       {kafka} = @config.ryba
       @execute
         cmd: "su -l #{kafka.user.name} -c '/usr/hdp/current/kafka-broker/bin/kafka stop'"
@@ -23,7 +23,7 @@ The file storing the PID is "/var/run/kafka/kafka.pid".
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'Kafka Broker # Stop Clean Logs', label_true: 'CLEANED', handler: ->
+    module.exports.push header: 'Kafka Broker # Stop Clean Logs', label_true: 'CLEANED', handler: ->
       return next() unless @config.ryba.clean_logs
       {kafka} = @config.ryba
       @execute

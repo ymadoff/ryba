@@ -101,7 +101,7 @@ cat /etc/group | grep hive
 hive:x:493:
 ```
 
-    module.exports.push name: 'Hive & HCat # Users & Groups', handler: ->
+    module.exports.push header: 'Hive & HCat # Users & Groups', handler: ->
       {hive} = @config.ryba
       @group hive.group
       @user hive.user
@@ -110,7 +110,7 @@ hive:x:493:
 
 Instructions to [install the Hive and HCatalog RPMs](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.3/bk_installing_manually_book/content/rpm-chap6-1.html)
 
-    module.exports.push name: 'Hive & HCat # Install', timeout: -1, handler: ->
+    module.exports.push header: 'Hive & HCat # Install', timeout: -1, handler: ->
       @service
         name: 'hive'
       @hdp_select
@@ -121,7 +121,7 @@ Instructions to [install the Hive and HCatalog RPMs](http://docs.hortonworks.com
 Upload the "hive-env.sh" script from the companion file. Note, this file isnt
 present on a fresh install.
 
-    module.exports.push name: 'Hive & HCat # Env', timeout: -1, handler: ->
+    module.exports.push header: 'Hive & HCat # Env', timeout: -1, handler: ->
       {java_home} = @config.java
       {hive} = @config.ryba
       @write

@@ -17,15 +17,14 @@ su - zookeeper -c "export ZOOCFGDIR=/usr/hdp/current/zookeeper-server/conf; expo
 
 The file storing the PID is "/var/run/zookeeper/zookeeper_server.pid".
 
-    module.exports.push name: 'ZooKeeper Server # Stop', label_true: 'STOPPED', handler: ->
-      @service
-        srv_name: 'zookeeper-server'
-        action: 'stop'
+    module.exports.push header: 'ZooKeeper Server # Stop', label_true: 'STOPPED', handler: ->
+      @service_stop
+        name: 'zookeeper-server'
         if_exists: '/etc/init.d/zookeeper-server'
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'ZooKeeper Server # Stop Clean Logs', label_true: 'CLEANED', handler: ->
+    module.exports.push header: 'ZooKeeper Server # Stop Clean Logs', label_true: 'CLEANED', handler: ->
       return next() unless @config.ryba.clean_logs
       @execute
         cmd: 'rm /var/log/zookeeper/*'

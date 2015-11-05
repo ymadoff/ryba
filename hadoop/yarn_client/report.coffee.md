@@ -8,7 +8,7 @@
 
 ## Info Memory
 
-    module.exports.push name: 'YARN Client # Info Memory', timeout: -1, label_true: 'INFO', handler: ->
+    module.exports.push header: 'YARN Client # Info Memory', timeout: -1, label_true: 'INFO', handler: ->
       {hadoop_conf_dir} = @config.ryba
       properties.read @ssh, "#{hadoop_conf_dir}/yarn-site.xml", (err, config) ->
         return next err if err

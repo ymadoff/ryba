@@ -24,7 +24,7 @@ in the resource Manager web interface.
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Spark Server # IPTables', handler: ->
+    module.exports.push header: 'Spark Server # IPTables', handler: ->
       {spark} = @config.ryba
       @iptables
         rules: [
@@ -32,7 +32,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ]
         if: @config.iptables.action is 'start'
 
-    module.exports.push name: 'Spark HS # Layout', handler: ->
+    module.exports.push header: 'Spark HS # Layout', handler: ->
       {spark} = @config.ryba
       @mkdir
         destination: spark.pid_dir
@@ -45,7 +45,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Spark History Server Configure
 
-    module.exports.push name: 'Spark HS # Configuration',  handler: ->
+    module.exports.push header: 'Spark HS # Configuration',  handler: ->
       {java_home} = @config.java
       {spark} = @config.ryba
       @write
@@ -80,7 +80,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Kerberos
 
-    module.exports.push name: 'Spark HS # Kerberos', handler: ->
+    module.exports.push header: 'Spark HS # Kerberos', handler: ->
       {spark, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc

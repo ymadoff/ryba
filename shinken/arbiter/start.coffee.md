@@ -6,7 +6,5 @@
 
 ## Start
 
-    module.exports.push name: 'Shinken Arbiter # Start', label_true: 'STARTED', handler: ->
-      @service
-        srv_name: 'shinken-arbiter'
-        action: 'start'
+    module.exports.push header: 'Shinken Arbiter # Start', label_true: 'STARTED', handler: ->
+      @service_start name: 'shinken-arbiter'

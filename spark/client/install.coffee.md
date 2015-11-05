@@ -27,7 +27,7 @@ cat /etc/group | grep spark
 spark:x:494:
 ```
 
-    module.exports.push name: 'Spark HS # Users & Groups', handler: ->
+    module.exports.push header: 'Spark HS # Users & Groups', handler: ->
       {spark} = @config.ryba
       @group spark.group
       @user spark.user
@@ -36,7 +36,7 @@ spark:x:494:
 
 Install the spark and python packages.
 
-    module.exports.push name: 'Spark Client # Service', handler: ->
+    module.exports.push header: 'Spark Client # Service', handler: ->
       @service
         name: 'spark'
       @service
@@ -52,7 +52,7 @@ SSL must be configured on each node and configured for each component involved
 in communication using the particular protocol.
 
     module.exports.push
-      name: 'Spark Client # JKS stores'
+      header: 'Spark Client # JKS stores'
       retry: 0
       if: -> @config.ryba.spark.conf['spark.ssl.enabled'] is 'true'
       handler: ->
@@ -109,7 +109,7 @@ Set [Spark configuration][spark-conf] variables
 The spark.logEvent.enabled property is set to true to enable the log to be available after the job
 has finished (logs are only available in yarn-cluster mode). 
 
-    module.exports.push name: 'Spark Client # Configure',  handler: ->
+    module.exports.push header: 'Spark Client # Configure',  handler: ->
       {java_home} = @config.java
       {ryba} = @config
       {spark, hadoop_group, hadoop_conf_dir, hive} = ryba

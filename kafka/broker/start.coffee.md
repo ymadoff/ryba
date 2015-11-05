@@ -6,7 +6,7 @@
     module.exports.push 'masson/core/krb5_client/wait'
     module.exports.push 'ryba/zookeeper/server/wait'
 
-    module.exports.push name: 'Kafka Broker # Start', label_true: 'STARTED', handler: ->
+    module.exports.push header: 'Kafka Broker # Start', label_true: 'STARTED', handler: ->
       {kafka} = @config.ryba
       @execute
         cmd: "su -l #{kafka.user.name} -c '/usr/hdp/current/kafka-broker/bin/kafka start'"

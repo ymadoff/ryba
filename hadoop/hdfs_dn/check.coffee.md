@@ -18,7 +18,7 @@ DataNodes.
 
 ## Check Disk Capacity
 
-    module.exports.push name: 'HDFS DN # Check Disk Capacity', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'HDFS DN # Check Disk Capacity', timeout: -1, label_true: 'CHECKED', handler: ->
       {hdfs} = @config.ryba
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       port = hdfs.site["dfs.datanode.#{protocol}.address"].split(':')[1]

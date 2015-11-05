@@ -6,6 +6,6 @@
 
 ## Status
 
-    module.exports.push name: 'Shinken Poller # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
+    module.exports.push header: 'Shinken Poller # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       plugins = null
       # TODO

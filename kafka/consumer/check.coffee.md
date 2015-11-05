@@ -10,7 +10,7 @@
 Make sure the broker is listening. The default port is "9092".
 
     module.exports.push
-      name: 'Kafka Consumer # Check Messages'
+      header: 'Kafka Consumer # Check Messages'
       label_true: 'CHECKED'
       if: -> @has_module 'ryba/kafka/producer'
       handler: ->

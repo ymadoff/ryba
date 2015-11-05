@@ -22,7 +22,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'YARN NM # IPTables', handler: ->
+    module.exports.push header: 'YARN NM # IPTables', handler: ->
       {yarn} = @config.ryba
       nm_port = yarn.site['yarn.nodemanager.address'].split(':')[1]
       nm_localizer_port = yarn.site['yarn.nodemanager.localizer.address'].split(':')[1]
@@ -42,7 +42,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-yarn-nodemanager" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'YARN NM # Service', handler: ->
+    module.exports.push header: 'YARN NM # Service', handler: ->
       {yarn} = @config.ryba
       @service
         name: 'hadoop-yarn-nodemanager'
@@ -59,7 +59,7 @@ inside "/etc/init.d" and activate it on startup.
         cmd: "service hadoop-yarn-nodemanager restart"
         if: -> @status -3
 
-    module.exports.push name: 'YARN NM # Directories', timeout: -1, handler: ->
+    module.exports.push header: 'YARN NM # Directories', timeout: -1, handler: ->
       {yarn, hadoop_group} = @config.ryba
       log_dirs = yarn.site['yarn.nodemanager.log-dirs'].split ','
       local_dirs = yarn.site['yarn.nodemanager.local-dirs'].split ','
@@ -93,7 +93,7 @@ no effect. Also, this isnt included inside the configuration because it need an
 SSH connection to the node to gather the memory and CPU informations.
 
     module.exports.push
-      name: 'YARN NM # Capacity Planning'
+      header: 'YARN NM # Capacity Planning'
       not_if: ->
         {yarn} = @config.ryba
         yarn.site['yarn.nodemanager.resource.memory-mb'] and yarn.site['yarn.nodemanager.resource.cpu-vcores']
@@ -106,7 +106,7 @@ SSH connection to the node to gather the memory and CPU informations.
 
 ## Configuration
 
-    module.exports.push name: 'YARN NM # Configuration', handler: ->
+    module.exports.push header: 'YARN NM # Configuration', handler: ->
       {yarn, hadoop_conf_dir} = @config.ryba
       @hconfigure
         destination: "#{hadoop_conf_dir}/yarn-site.xml"
@@ -118,7 +118,7 @@ SSH connection to the node to gather the memory and CPU informations.
 
 ## Container Executor
 
-    module.exports.push name: 'YARN NM # Container Executor', handler: ->
+    module.exports.push header: 'YARN NM # Container Executor', handler: ->
       {container_executor, hadoop_conf_dir} = @config.ryba
       ce_group = container_executor['yarn.nodemanager.linux-container-executor.group']
       ce = '/usr/hdp/current/hadoop-yarn-nodemanager/bin/container-executor';
@@ -138,7 +138,7 @@ SSH connection to the node to gather the memory and CPU informations.
         separator: '='
         backup: true
 
-    module.exports.push name: 'YARN NM # Kerberos', handler: ->
+    module.exports.push header: 'YARN NM # Kerberos', handler: ->
       {yarn, hadoop_group, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc 
@@ -152,7 +152,7 @@ SSH connection to the node to gather the memory and CPU informations.
         kadmin_server: admin_server
 
     module.exports.push
-      name: 'YARN NM # CGroup'
+      header: 'YARN NM # CGroup'
       if: -> @config.ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] is 'true'
       handler: ->
         {yarn} = @config.ryba
@@ -179,7 +179,7 @@ drwxrwxrwt   - yarn   hadoop            0 2014-05-26 11:01 /app-logs
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
     module.exports.push 'ryba/hadoop/hdfs_nn/wait'
-    module.exports.push name: 'YARN NM # HDFS layout', handler: ->
+    module.exports.push header: 'YARN NM # HDFS layout', handler: ->
       {yarn, hadoop_group} = @config.ryba
       remote_app_log_dir = yarn.site['yarn.nodemanager.remote-app-log-dir']
       @execute

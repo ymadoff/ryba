@@ -14,7 +14,7 @@ through SSH over another one where the public key isn't yet deployed.
 
 ## Check HTTP
 
-    module.exports.push name: 'HDFS NN # Check HTTP', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'HDFS NN # Check HTTP', timeout: -1, label_true: 'CHECKED', handler: ->
       {hdfs, active_nn_host} = @config.ryba
       is_ha = @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       # state = if not is_ha or active_nn_host is @config.host then 'active' else 'standby'
@@ -45,7 +45,7 @@ Checkhealth return result is not completely implemented
 See More http://hadoop.apache.org/docs/r2.0.2-alpha/hadoop-yarn/hadoop-yarn-site/HDFSHighAvailability.html#Administrative_commands
 
     module.exports.push
-      name: 'HDFS NN # Check HA Health'
+      header: 'HDFS NN # Check HA Health'
       label_true: 'CHECKED',
       if: -> @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       handler: ->
@@ -64,7 +64,7 @@ Additionnal information may be found on the [CentOS HowTos site][corblk].
 
 [corblk]: http://centoshowtos.org/hadoop/fix-corrupt-blocks-on-hdfs/
 
-    module.exports.push name: 'HDFS NN # Check FSCK', label_true: 'CHECKED', timeout: -1, retry: 3, wait: 60000, handler: ->
+    module.exports.push header: 'HDFS NN # Check FSCK', label_true: 'CHECKED', timeout: -1, retry: 3, wait: 60000, handler: ->
       {force_check, check_hdfs_fsck} = @config.ryba
       check_hdfs_fsck = if check_hdfs_fsck? then !!check_hdfs_fsck else true
       @execute
@@ -76,7 +76,7 @@ Additionnal information may be found on the [CentOS HowTos site][corblk].
 Attemp to place a file inside HDFS. the file "/etc/passwd" will be placed at
 "/user/{test\_user}/#{@config.host}\_dn".
 
-    module.exports.push name: 'HDFS NN # Check HDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+    module.exports.push header: 'HDFS NN # Check HDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
       {user} = @config.ryba
       @execute
         cmd: mkcmd.test @, """
@@ -95,7 +95,7 @@ is not present on HDFS.
 Read [Delegation Tokens in Hadoop Security](http://www.kodkast.com/blogs/hadoop/delegation-tokens-in-hadoop-security)
 for more information.
 
-    module.exports.push name: 'HDFS DN # Check WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+    module.exports.push header: 'HDFS DN # Check WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
       @call (_, callback) ->
         {hdfs, nameservice, user, force_check, active_nn_host, force_check} = @config.ryba
         is_ha = @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1

@@ -6,7 +6,5 @@
 
 ## Start
 
-    module.exports.push name: 'MongoDB Routing Server # Start', label_true: 'STARTED', handler: ->
+    module.exports.push header: 'MongoDB Routing Server # Start', label_true: 'STARTED', handler: ->
       @service_start name: 'mongos'
-
-

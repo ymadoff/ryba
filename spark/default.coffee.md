@@ -39,7 +39,7 @@ Its required by the other modules spark/client and spar/history_server
 
 ## Spark Worker events log dir
 
-    module.exports.push name: 'Spark # Logdir HDFS Permissions', handler: ->
+    module.exports.push header: 'Spark # Logdir HDFS Permissions', handler: ->
       {spark} = @config.ryba
       fs_log_dir = spark.conf['spark.eventLog.dir']
       @execute
@@ -53,7 +53,7 @@ Its required by the other modules spark/client and spar/history_server
 
 ## HFDS Layout
 
-    module.exports.push name: 'Spark # HFDS Layout', handler: ->
+    module.exports.push header: 'Spark # HFDS Layout', handler: ->
       {spark} = @config.ryba
       status = user_owner = group_owner = null
       spark_yarn_jar = spark.conf['spark.yarn.jar']

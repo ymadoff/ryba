@@ -17,7 +17,7 @@ Strict host key checking is disabled during this check with the
 "StrictHostKeyChecking" argument set to "no".
 
     module.exports.push
-      name: 'HDFS ZKFC # Check SSH Fencing'
+      header: 'HDFS ZKFC # Check SSH Fencing'
       retry: 100
       label_true: 'CHECKED'
       if: -> @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1

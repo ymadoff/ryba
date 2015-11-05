@@ -11,7 +11,7 @@ scanning the table.
 
 ## Check Shell
 
-    module.exports.push name: 'HBase Client # Check Shell', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'HBase Client # Check Shell', timeout: -1, label_true: 'CHECKED', handler: ->
       {shortname} = @config
       {force_check} = @config.ryba
       cmd = mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists 'ryba'\" | grep 'Table ryba does exist'"
@@ -32,7 +32,7 @@ scanning the table.
 
 ## Check MapReduce
 
-    module.exports.push name: 'HBase Client # Check MapReduce', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'HBase Client # Check MapReduce', timeout: -1, label_true: 'CHECKED', handler: ->
       {force_check} = @config.ryba
       @execute
         cmd: mkcmd.test @, """
@@ -45,7 +45,7 @@ scanning the table.
 
 ## Check Splits
 
-    module.exports.push name: 'HBase Client # Check Splits', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'HBase Client # Check Splits', timeout: -1, label_true: 'CHECKED', handler: ->
       {force_check} = @config.ryba
       hbase_ctxs = @contexts 'ryba/hbase/master'#, require('../master').configure
       {admin} = hbase_ctxs[0].config.ryba.hbase
@@ -89,7 +89,7 @@ scanning the table.
 
 This check is only executed if more than two HBase Master are declared.
 
-    module.exports.push name: 'HBase Client # Check HA', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'HBase Client # Check HA', timeout: -1, label_true: 'CHECKED', handler: ->
       {force_check} = @config.ryba
       hbase_ctxs = @contexts 'ryba/hbase/master', require('../master').configure
       return unless hbase_ctxs.length > 1

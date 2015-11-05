@@ -17,7 +17,7 @@ cat /etc/group | grep kafka
 kafka:x:496:kafka
 ```
 
-    module.exports.push name: 'Kafka # Users & Groups', handler: ->
+    module.exports.push header: 'Kafka # Users & Groups', handler: ->
       {kafka} = @config.ryba
       @group kafka.group
       @user kafka.user
@@ -31,7 +31,7 @@ kafka:x:496:kafka
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Kafka Broker # IPTables', handler: ->
+    module.exports.push header: 'Kafka Broker # IPTables', handler: ->
       {kafka} = @config.ryba
       @iptables
         rules: [
@@ -45,7 +45,7 @@ Install the Kafka consumer package and set it to the latest version. Note, we
 select the "kafka-broker" hdp directory. There is no "kafka-consumer"
 directories.
 
-    module.exports.push name: 'Kafka Broker # Package', handler: ->
+    module.exports.push header: 'Kafka Broker # Package', handler: ->
       @service
         name: 'kafka'
       @hdp_select
@@ -56,7 +56,7 @@ directories.
 Update the file "broker.properties" with the properties defined by the
 "ryba.kafka.broker" configuration.
 
-    module.exports.push name: 'Kafka Broker # Configure', handler: ->
+    module.exports.push header: 'Kafka Broker # Configure', handler: ->
       {kafka} = @config.ryba
       @write
         destination: "#{kafka.conf_dir}/server.properties"
@@ -70,7 +70,7 @@ Update the file "broker.properties" with the properties defined by the
 Update the file kafka-server-start.sh (prefered to the general "kafka-env.sh" file) with the env variables defined by the
 "ryba.kafka.env" configuration.
 
-    module.exports.push name: 'Kafka Broker # Env', handler: ->
+    module.exports.push header: 'Kafka Broker # Env', handler: ->
       {kafka} = @config.ryba
       @write
         destination: "#{kafka.conf_dir}/kafka-server-start.sh"
@@ -94,7 +94,7 @@ Update the file kafka-server-start.sh (prefered to the general "kafka-env.sh" fi
 Directories in which Kafka data is stored. Each new partition that is created
 will be placed in the directory which currently has the fewest partitions.
 
-    module.exports.push name: 'Kafka Broker # Layout', handler: ->
+    module.exports.push header: 'Kafka Broker # Layout', handler: ->
       {kafka} = @config.ryba
       @mkdir (
         destination: dir

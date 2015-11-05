@@ -94,6 +94,12 @@ ElasticSearch can be found [here](https://www.elastic.co/downloads/elasticsearch
 
       es.source ?= "https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-#{es.version}.noarch.rpm"
 
+
+    module.exports.push commands: 'prepare', modules: [
+      'masson/bootstrap'
+      'ryba/elasticsearch/prepare'
+    ]
+
     module.exports.push commands: 'install', modules: [
       'ryba/elasticsearch/install',
       'ryba/elasticsearch/start'

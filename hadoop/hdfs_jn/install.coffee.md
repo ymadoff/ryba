@@ -32,7 +32,7 @@ Note, "dfs.journalnode.rpc-address" is used by "dfs.namenode.shared.edits.dir".
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'HDFS JN # IPTables', handler: ->
+    module.exports.push header: 'HDFS JN # IPTables', handler: ->
       {hdfs} = @config.ryba
       rpc = hdfs.site['dfs.journalnode.rpc-address'].split(':')[1]
       http = hdfs.site['dfs.journalnode.http-address'].split(':')[1]
@@ -50,7 +50,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 The JournalNode data are stored inside the directory defined by the
 "dfs.journalnode.edits.dir" property.
 
-    module.exports.push name: 'HDFS JN # Layout', handler: ->
+    module.exports.push header: 'HDFS JN # Layout', handler: ->
       {hdfs, hadoop_group} = @config.ryba
       @mkdir
         destination: for dir in hdfs.site['dfs.journalnode.edits.dir'].split ','
@@ -64,7 +64,7 @@ The JournalNode data are stored inside the directory defined by the
 Install the "hadoop-hdfs-journalnode" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'HDFS JN # Service', handler: ->
+    module.exports.push header: 'HDFS JN # Service', handler: ->
       @service
         name: 'hadoop-hdfs-journalnode'
       @hdp_select
@@ -92,7 +92,7 @@ SPNEGO tocken is stored inside the "/etc/security/keytabs/spnego.service.keytab"
 keytab, also used by the NameNodes, DataNodes, ResourceManagers and
 NodeManagers.
 
-    module.exports.push name: 'HDFS JN # Configure', handler: ->
+    module.exports.push header: 'HDFS JN # Configure', handler: ->
       {hdfs, hadoop_conf_dir, hadoop_group} = @config.ryba
       @hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"

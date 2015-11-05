@@ -38,7 +38,7 @@ mode, it must be set to a value below "1024" and default to "1004".
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'HDFS DN # IPTables', handler: ->
+    module.exports.push header: 'HDFS DN # IPTables', handler: ->
       {hdfs} = @config.ryba
       [_, dn_address] = hdfs.site['dfs.datanode.address'].split ':'
       [_, dn_http_address] = hdfs.site['dfs.datanode.http.address'].split ':'
@@ -58,7 +58,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-hdfs-datanode" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'HDFS DN # Service', handler: ->
+    module.exports.push header: 'HDFS DN # Service', handler: ->
       {hdfs} = @config.ryba
       @service
         name: 'hadoop-hdfs-datanode'
@@ -80,7 +80,7 @@ inside "/etc/init.d" and activate it on startup.
 Update the "hdfs-site.xml" configuration file with the High Availabity properties
 present inside the "hdp.ha\_client\_config" object.
 
-    module.exports.push name: 'HDFS DN # Configure', handler: ->
+    module.exports.push header: 'HDFS DN # Configure', handler: ->
       # return next() unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       {hadoop_conf_dir, hdfs, hadoop_group} = @config.ryba
       @hconfigure
@@ -104,7 +104,7 @@ the hostname of the JobTracker/NameNode machine;
 Also some [interesting info about snn](http://blog.cloudera.com/blog/2009/02/multi-host-secondarynamenode-configuration/)
 
     module.exports.push
-      name: 'HDFS SNN # Configure Master'
+      header: 'HDFS SNN # Configure Master'
       if: (-> @host_with_module 'ryba/hadoop/hdfs_snn')
       handler: ->
         {hdfs, hadoop_conf_dir, hadoop_group} = @config.ryba
@@ -122,7 +122,7 @@ Create the DataNode data and pid directories. The data directory is set by the
 "hdp.hdfs.site['dfs.datanode.data.dir']" and default to "/var/hdfs/data". The
 pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdfs"
 
-    module.exports.push name: 'HDFS DN # Layout', timeout: -1, handler: ->
+    module.exports.push header: 'HDFS DN # Layout', timeout: -1, handler: ->
       {hdfs, hadoop_group} = @config.ryba
       # no need to restrict parent directory and yarn will complain if not accessible by everyone
       pid_dir = hdfs.secure_dn_pid_dir
@@ -152,7 +152,7 @@ Create the DataNode service principal in the form of "dn/{host}@{realm}" and pla
 keytab inside "/etc/security/keytabs/dn.service.keytab" with ownerships set to "hdfs:hadoop"
 and permissions set to "0600".
 
-    module.exports.push name: 'HDFS DN # Kerberos', timeout: -1, handler: ->
+    module.exports.push header: 'HDFS DN # Kerberos', timeout: -1, handler: ->
       {hdfs, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
@@ -170,7 +170,7 @@ and permissions set to "0600".
 
 Environment passed to the DataNode before it starts.
 
-    module.exports.push name: 'HDFS DN # Opts', handler: ->
+    module.exports.push header: 'HDFS DN # Opts', handler: ->
       {hadoop_conf_dir, hdfs} = @config.ryba
       # export HADOOP_SECURE_DN_PID_DIR="/var/run/hadoop/$HADOOP_SECURE_DN_USER" # RYBA CONF "ryba.hadoop_pid_dir", DONT OVEWRITE
       @write
@@ -201,7 +201,7 @@ suggest:
 
 Note, we might move this middleware to Masson.
 
-    module.exports.push name: 'HDFS DN # Kernel', handler: (_, next) ->
+    module.exports.push header: 'HDFS DN # Kernel', handler: (_, next) ->
       {hdfs} = @config.ryba
       return next() unless Object.keys(hdfs.sysctl).length
       @execute

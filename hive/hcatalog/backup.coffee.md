@@ -10,7 +10,7 @@ configuration.
 
 ## Backup Database
 
-    module.exports.push name: "Hive HCatalog # Backup Database", label_true: 'BACKUPED', handler: ->
+    module.exports.push header: 'Hive HCatalog # Backup Database', label_true: 'BACKUPED', handler: ->
       {hive} = @config.ryba
       user = hive.site['javax.jdo.option.ConnectionUserName']
       password = hive.site['javax.jdo.option.ConnectionPassword']
@@ -29,7 +29,7 @@ configuration.
 
 Backup the active Hive configuration.
 
-    module.exports.push name: "Hive HCatalog # Backup Configuration", label_true: 'BACKUPED', handler: ->
+    module.exports.push header: 'Hive HCatalog # Backup Configuration', label_true: 'BACKUPED', handler: ->
       {hive} = @config.ryba
       @backup
         name: 'conf'

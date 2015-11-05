@@ -37,14 +37,14 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'XASecure Sync # IPTables', handler: ->
+    module.exports.push header: 'XASecure Sync # IPTables', handler: ->
       @iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 5151, protocol: 'tcp', state: 'NEW', comment: "XASecure Admin" }
         ]
         if: @config.iptables.action is 'start'
 
-    module.exports.push name: 'XASecure Sync # Upload', timeout: -1, handler: ->
+    module.exports.push header: 'XASecure Sync # Upload', timeout: -1, handler: ->
       {uxugsync_url} = @config.xasecure
       @download
         source: uxugsync_url
@@ -55,7 +55,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         source: "/var/tmp/#{path.basename uxugsync_url}"
         if: -> @status -1
 
-    module.exports.push name: 'XASecure Sync # Install', timeout: -1, handler: ->
+    module.exports.push header: 'XASecure Sync # Install', timeout: -1, handler: ->
       {uxugsync, uxugsync_url} = @config.xasecure
       @write
         destination: "/var/tmp/#{path.basename uxugsync_url, '.tar'}/install.properties"

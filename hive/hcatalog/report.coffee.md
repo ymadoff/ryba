@@ -13,7 +13,7 @@ Retrieve various info about the HCatalog Server and the Hive Server2.
 
 List the current FS root locations for the Hive databases.
 
-    module.exports.push name: 'Hive HCatalog # Info FS Roots', timeout: -1, label_true: 'INFO', handler: ->
+    module.exports.push header: 'Hive HCatalog # Info FS Roots', timeout: -1, label_true: 'INFO', handler: ->
       @execute
         cmd: mkcmd.hdfs , "hive --service metatool -listFSRoot 2>/dev/nul"
       , (err, _, stdout) ->

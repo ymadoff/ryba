@@ -20,7 +20,7 @@ service hadoop-hdfs-journalnode start
 su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-journalnode/../hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start journalnode"
 ```
 
-    module.exports.push name: 'HDFS JN # Start', label_true: 'STARTED', handler: ->
+    module.exports.push header: 'HDFS JN # Start', label_true: 'STARTED', handler: ->
       @service_start
         name: 'hadoop-hdfs-journalnode'
         if_exists: '/etc/init.d/hadoop-hdfs-journalnode'

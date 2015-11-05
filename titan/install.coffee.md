@@ -19,7 +19,7 @@ please see ryba/rexster
 
 Download and extract a ZIP Archive
 
-    module.exports.push name: 'Titan # Install', timeout: -1, handler: ->
+    module.exports.push header: 'Titan # Install', timeout: -1, handler: ->
       {titan} = @config.ryba
       archive_name = path.basename titan.source
       unzip_dir = path.join titan.install_dir, path.basename archive_name, path.extname archive_name
@@ -47,7 +47,7 @@ Download and extract a ZIP Archive
 
 Modify envvars in the gremlin scripts.
 
-    module.exports.push name: 'Titan # Gremlin Env', handler: ->
+    module.exports.push header: 'Titan # Gremlin Env', handler: ->
       {titan, hbase} = @config.ryba
       write = [
         match: /^(.*)JAVA_OPTIONS="-Dlog4j.configuration=[^f].*/m
@@ -77,7 +77,7 @@ Modify envvars in the gremlin scripts.
 
 Secure the Zookeeper connection with JAAS
 
-    module.exports.push name: 'Titan # Gremlin Kerberos JAAS', handler: ->
+    module.exports.push header: 'Titan # Gremlin Kerberos JAAS', handler: ->
       {titan} = @config.ryba
       @write_jaas
         destination: path.join titan.home, 'titan.jaas'
@@ -89,7 +89,7 @@ Secure the Zookeeper connection with JAAS
 
 Creates a configuration file. Always load this file in Gremlin REPL !
 
-    module.exports.push name: 'Titan # Gremlin Properties', handler: ->
+    module.exports.push header: 'Titan # Gremlin Properties', handler: ->
       {titan} = @config.ryba
       storage = titan.config['storage.backend']
       index = titan.config['index.search.backend']
@@ -103,7 +103,7 @@ Creates a configuration file. Always load this file in Gremlin REPL !
 
 # Creates a configuration file. Always load this file in Gremlin REPL !
 
-#     module.exports.push name: 'Titan # Gremlin Test Properties', handler: ->
+#     module.exports.push header: 'Titan # Gremlin Test Properties', handler: ->
 #       {titan} = @config.ryba
 #       storage = titan.config['storage.backend']
 #       config = {}
@@ -118,7 +118,7 @@ Creates a configuration file. Always load this file in Gremlin REPL !
 ## HBase Configuration
 
     module.exports.push
-      skip: true, name: 'Titan # Create HBase Namespace'
+      skip: true, header: 'Titan # Create HBase Namespace'
       if: -> @config.ryba.titan.config['storage.backend'] is 'hbase'
       handler: (options) ->
         options.log "Titan: HBase namespace not yet ready"
@@ -131,7 +131,7 @@ Creates a configuration file. Always load this file in Gremlin REPL !
           code_skipped: 3
 
     module.exports.push
-      name: 'Titan # Create HBase table'
+      header: 'Titan # Create HBase table'
       if: -> @config.ryba.titan.config['storage.backend'] is 'hbase'
       handler: ->
         {titan, hbase} = @config.ryba
@@ -144,7 +144,7 @@ Creates a configuration file. Always load this file in Gremlin REPL !
           """
           code_skipped: 3
 
-    # module.exports.push name: 'Titan # Create HBase test table', handler: ->
+    # module.exports.push header: 'Titan # Create HBase test table', handler: ->
     #   return next() unless @config.ryba.titan.config['storage.backend'] is 'hbase'
     #   {titan, hbase} = @config.ryba
     #   @execute

@@ -391,7 +391,7 @@ mapred:x:494:
 Note, the package "hadoop" will also install the "dbus" user and group which are
 not handled here.
 
-    module.exports.push name: 'Hadoop Core # Users & Groups', handler: ->
+    module.exports.push header: 'Hadoop Core # Users & Groups', handler: ->
       {hadoop_group, hdfs, yarn, mapred} = @config.ryba
       @group [hadoop_group, hdfs.group, yarn.group, mapred.group]
       @user [hdfs.user, yarn.user, mapred.user]
@@ -401,7 +401,7 @@ not handled here.
 Create a Unix and Kerberos test user, by default "ryba". Its HDFS home directory
 will be created by one of the datanode.
 
-    module.exports.push name: 'Hadoop Core # User Test', timeout: -1, handler: ->
+    module.exports.push header: 'Hadoop Core # User Test', timeout: -1, handler: ->
       {krb5_user, user, group, security, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       # ryba group and user may already exist in "/etc/passwd" or in any sssd backend
@@ -423,7 +423,7 @@ uploaded when the package is first installed or upgraded. Be careful, the
 original file will be overwritten with and user modifications. A copy will be
 made available in the same directory after any modification.
 
-    module.exports.push name: 'Hadoop Core # Install', timeout: -1, handler: ->
+    module.exports.push header: 'Hadoop Core # Install', timeout: -1, handler: ->
       @service
         name: 'openssl'
       @service
@@ -438,7 +438,7 @@ Upload the "hadoop-env.sh" file present in the HDP companion File.
 Note, this is wrong. Problem is that multiple module modify this file. We shall
 instead enrich the original file installed by the package.
 
-    module.exports.push name: 'Hadoop Core # Env', timeout: -1, handler: ->
+    module.exports.push header: 'Hadoop Core # Env', timeout: -1, handler: ->
       {hadoop_conf_dir, hdfs, hadoop_group} = @config.ryba
       @call (_, callback) ->
         @fs.readFile "#{hadoop_conf_dir}/hadoop-env.sh", 'ascii', (err, content) ->
@@ -462,7 +462,7 @@ The location for JSVC depends on the platform. The Hortonworks documentation
 mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
 correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
-    module.exports.push name: 'Hadoop Core # Hadoop OPTS', timeout: -1, handler: ->
+    module.exports.push header: 'Hadoop Core # Hadoop OPTS', timeout: -1, handler: ->
       {java_home} = @config.java
       {hadoop_conf_dir, hdfs, hadoop_group, hadoop_opts, hadoop_client_opts, hadoop_namenode_init_heap, hadoop_heap} = @config.ryba
       write = [
@@ -518,7 +518,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 Update the "core-site.xml" configuration file with properties from the
 "ryba.core_site" configuration.
 
-    module.exports.push name: 'Hadoop Core # Configuration', handler: ->
+    module.exports.push header: 'Hadoop Core # Configuration', handler: ->
       {core_site, hadoop_conf_dir} = @config.ryba
       @hconfigure
         destination: "#{hadoop_conf_dir}/core-site.xml"
@@ -528,7 +528,7 @@ Update the "core-site.xml" configuration file with properties from the
         merge: true
         backup: true
 
-    module.exports.push name: 'Hadoop Core # Topology', handler: ->
+    module.exports.push header: 'Hadoop Core # Topology', handler: ->
       {hdfs, hadoop_group, hadoop_conf_dir} = @config.ryba
       h_ctxs = @contexts modules: ['ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm']
       topology = []
@@ -559,7 +559,7 @@ By default the service-level authorization is disabled in hadoop, to enable that
 we need to set/configure the hadoop.security.authorization to true in
 ${HADOOP_CONF_DIR}/core-site.xml
 
-    module.exports.push name: 'Hadoop Core # Policy', handler: ->
+    module.exports.push header: 'Hadoop Core # Policy', handler: ->
       {core_site, hadoop_conf_dir, hadoop_policy} = @config.ryba
       @hconfigure
         destination: "#{hadoop_conf_dir}/hadoop-policy.xml"
@@ -574,7 +574,7 @@ ${HADOOP_CONF_DIR}/core-site.xml
         code_skipped: 3
         if: -> @status -1
 
-    module.exports.push name: 'Hadoop Core # Keytabs', timeout: -1, handler: ->
+    module.exports.push header: 'Hadoop Core # Keytabs', timeout: -1, handler: ->
       {hadoop_group} = @config.ryba
       @mkdir
         destination: '/etc/security/keytabs'
@@ -582,7 +582,7 @@ ${HADOOP_CONF_DIR}/core-site.xml
         gid: hadoop_group.name
         mode: 0o0755
 
-    module.exports.push name: 'Hadoop Core # Compression', timeout: -1, handler: ->
+    module.exports.push header: 'Hadoop Core # Compression', timeout: -1, handler: ->
       { hadoop_conf_dir } = @config.ryba
       @service name: 'snappy'
       @service name: 'snappy-devel'
@@ -603,7 +603,7 @@ ${HADOOP_CONF_DIR}/core-site.xml
 This action follow the ["Authentication for Hadoop HTTP web-consoles"
 recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 
-    module.exports.push name: 'Hadoop Core # Web UI', handler: ->
+    module.exports.push header: 'Hadoop Core # Web UI', handler: ->
       {core_site, realm} = @config.ryba
       @execute
         cmd: 'dd if=/dev/urandom of=/etc/hadoop/hadoop-http-auth-signature-secret bs=1024 count=1'
@@ -611,7 +611,7 @@ recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 
     module.exports.push 'ryba/hadoop/core_ssl'
 
-    module.exports.push name: 'Hadoop Core # Jars', handler: ->
+    module.exports.push header: 'Hadoop Core # Jars', handler: ->
       {core_jars} = @config.ryba
       core_jars = Object.keys(core_jars).map (k) -> core_jars[k]
       remote_files = null
@@ -644,7 +644,7 @@ recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 
 Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collector like Ganglia or Graphite.
 
-    module.exports.push name: 'Hadoop Core # Metrics', handler: ->
+    module.exports.push header: 'Hadoop Core # Metrics', handler: ->
       {hadoop_metrics, hadoop_conf_dir} = @config.ryba
       content = ""
       for k, v of hadoop_metrics

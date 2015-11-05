@@ -20,7 +20,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'HDFS SNN # IPTables', handler: ->
+    module.exports.push header: 'HDFS SNN # IPTables', handler: ->
       {hdfs} = @config.ryba
       [_, http_port] = hdfs.site['dfs.namenode.secondary.http-address'].split ':'
       [_, https_port] = hdfs.site['dfs.namenode.secondary.https-address'].split ':'
@@ -36,7 +36,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-hdfs-secondarynamenode" service, symlink the rc.d startup
 script inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'HDFS SNN # Service', handler: ->
+    module.exports.push header: 'HDFS SNN # Service', handler: ->
       @service
         name: 'hadoop-hdfs-secondarynamenode'
       @hdp_select
@@ -52,7 +52,7 @@ script inside "/etc/init.d" and activate it on startup.
         cmd: "service hadoop-hdfs-secondarynamenode restart"
         if: -> @status -3
 
-    module.exports.push name: 'HDFS SNN # Directories', timeout: -1, handler: ->
+    module.exports.push header: 'HDFS SNN # Directories', timeout: -1, handler: ->
       {hdfs, hadoop_group} = @config.ryba
       @log? "Create SNN data, checkpind and pid directories"
       pid_dir = hdfs.pid_dir.replace '$USER', hdfs.user.name
@@ -69,7 +69,7 @@ script inside "/etc/init.d" and activate it on startup.
         gid: hadoop_group.name
         mode: 0o755
 
-    module.exports.push name: 'HDFS SNN # Kerberos', handler: ->
+    module.exports.push header: 'HDFS SNN # Kerberos', handler: ->
       {realm, hdfs} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
@@ -84,7 +84,7 @@ script inside "/etc/init.d" and activate it on startup.
 
 # Configure
 
-    module.exports.push name: 'HDFS SNN # Configure', handler: ->
+    module.exports.push header: 'HDFS SNN # Configure', handler: ->
       {hdfs, hadoop_conf_dir, hadoop_group} = @config.ryba
       @hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"

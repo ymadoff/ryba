@@ -9,7 +9,7 @@
 
 ## Wait
 
-    module.exports.push name: 'Shinken Reactionner # Wait', label_true: 'READY', handler: ->
+    module.exports.push header: 'Shinken Reactionner # Wait', label_true: 'READY', handler: ->
       @wait_connect
         servers: for ctx in @contexts 'ryba/shinken/reactionner'
           host: ctx.config.host

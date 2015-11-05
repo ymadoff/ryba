@@ -10,7 +10,7 @@
 Check if the ResourceManager is running. The process ID is located by default
 inside "/var/run/hadoop-yarn/yarn-yarn-resourcemanager.pid".
 
-    module.exports.push name: 'Hive HCatalog # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
+    module.exports.push header: 'Hive HCatalog # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       @execute
         cmd: 'service hadoop-yarn-resourcemanager status'
         code_skipped: 3

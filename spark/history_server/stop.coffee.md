@@ -13,7 +13,7 @@ following command:
 su -l spark -c '/usr/hdp/current/spark-historyserver/sbin/stop-history-server.sh'
 ```
 
-    module.exports.push name: 'Spark History Server # Stop', label_true: 'STOPPED', handler: ->
+    module.exports.push header: 'Spark History Server # Stop', label_true: 'STOPPED', handler: ->
       {spark} = @config.ryba
       @execute
         cmd:  """

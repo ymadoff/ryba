@@ -12,7 +12,7 @@ You can also stop the server manually with the following command:
 su -l knox -c "/usr/hdp/current/knox-server/bin/gateway.sh stop"
 ```
 
-    module.exports.push name: 'Knox # Stop', label_true: 'STOPPED', handler: ->
+    module.exports.push header: 'Knox # Stop', label_true: 'STOPPED', handler: ->
       {knox} = @config.ryba
       @execute
         cmd: """

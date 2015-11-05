@@ -6,7 +6,7 @@ user and one using interpolation.
 
 ## Check
 
-    # module.exports.push name: 'Flume # Check', timeout: -1, handler: ->
+    # module.exports.push header: 'Flume # Check', timeout: -1, handler: ->
     #   @write
     #     content: """
     #     # Name the components on this agent
@@ -32,5 +32,3 @@ user and one using interpolation.
     #     next null, true
     #     # @execute
     #     #   cmd: "flume-ng agent --conf conf --conf-file example.conf --name a1 -Dflume.root.logger=INFO,console"
-
-

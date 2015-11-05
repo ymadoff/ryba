@@ -13,7 +13,7 @@ following command:
 su -l spark -c '/usr/hdp/current/spark-historyserver/sbin/start-history-server.sh'
 ```
 
-    module.exports.push name: 'Spark HS # Start', label_true: 'STARTED', handler: ->
+    module.exports.push header: 'Spark HS # Start', label_true: 'STARTED', handler: ->
       {spark} = @config.ryba
       @execute
         cmd:  """

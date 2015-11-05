@@ -25,7 +25,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 It's the  host' port server map from the container
 
-    module.exports.push name: 'Zeppelin Server # IPTables', handler: ->
+    module.exports.push header: 'Zeppelin Server # IPTables', handler: ->
       {zeppelin} = @config.ryba
       # @iptables
       #   rules: [
@@ -38,7 +38,7 @@ It's the  host' port server map from the container
 Installs SSL certificates for Zeppelin. Creates trustore et keystore
 SSL only required for the server
 
-    # module.exports.push name: 'Zeppelin Server # JKS stores', handler: ->
+    # module.exports.push header: 'Zeppelin Server # JKS stores', handler: ->
     #  {ssl, ssl_server, ssl_client, zeppelin} = @config.ryba
     #  tmp_location = "/tmp/ryba_hdp_ssl_#{Date.now()}"
     #  modified = false
@@ -87,7 +87,7 @@ SSL only required for the server
 
 ## HDP select status
 
-    module.exports.push name: 'Zeppelin Environment # HDP',  handler: ->
+    module.exports.push header: 'Zeppelin Environment # HDP',  handler: ->
       {zeppelin} = @config.ryba
       @execute
           cmd:  "hdp-select versions | tail -1"
@@ -100,7 +100,7 @@ SSL only required for the server
 
 Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
 
-    module.exports.push name: 'Zeppelin Yarn # Spark',  handler: ->
+    module.exports.push header: 'Zeppelin Yarn # Spark',  handler: ->
       {zeppelin, core_site, spark} = @config.ryba
       @execute
         cmd: 'ls -l /usr/hdp/current/spark-client/lib/ | grep -m 1 assembly | awk {\'print $9\'}'
@@ -111,7 +111,7 @@ Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
 
 ## Zeppelin properties configuration
     
-    module.exports.push name: 'Zeppelin Environment # Configure',  handler: ->
+    module.exports.push header: 'Zeppelin Environment # Configure',  handler: ->
       {hadoop_group,hadoop_conf_dir, hdfs, zeppelin} = @config.ryba
       @mkdir
         destination: zeppelin.destination
@@ -150,7 +150,7 @@ Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
 
  Load Zeppelin docker image from local host
 
-    module.exports.push name: 'Zeppelin Image # Import', timeout: -1, handler: ->
+    module.exports.push header: 'Zeppelin Image # Import', timeout: -1, handler: ->
       {zeppelin} = @config.ryba
       @download
         source: "#{zeppelin.build.directory}/zeppelin.tar"
@@ -162,7 +162,7 @@ Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
 
 ## Runs Zeppelin container 
 
-    module.exports.push name: 'Zeppelin Container # Run',  handler: ->
+    module.exports.push header: 'Zeppelin Container # Run',  handler: ->
       {hadoop_group,hadoop_conf_dir, hdfs, zeppelin} = @config.ryba
       websocket = parseInt(zeppelin.site['zeppelin.server.port'])+1
       @docker_run

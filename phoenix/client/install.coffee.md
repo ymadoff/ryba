@@ -17,11 +17,11 @@ deployment is heavily inspired by [Anil Gupta instruction][agi].
 
 ## Packages
 
-    module.exports.push name: 'Phoenix Client # Install', handler: ->
+    module.exports.push header: 'Phoenix Client # Install', handler: ->
       @service name: 'phoenix'
       @hdp_select name: 'phoenix-client'
 
-    module.exports.push name: 'Phoenix Client # Hadoop Configuration', handler: ->
+    module.exports.push header: 'Phoenix Client # Hadoop Configuration', handler: ->
       {hadoop_conf_dir} = @config.ryba
       @execute
         cmd:"""
@@ -29,7 +29,7 @@ deployment is heavily inspired by [Anil Gupta instruction][agi].
         """
         not_if_exists: '/usr/hdp/current/phoenix-client/bin/core-site.xml'
 
-    module.exports.push name: 'Phoenix Client # HBase Configuration', handler: ->
+    module.exports.push header: 'Phoenix Client # HBase Configuration', handler: ->
       {hbase} = @config.ryba
       @execute
         cmd:"""
@@ -42,7 +42,7 @@ deployment is heavily inspired by [Anil Gupta instruction][agi].
 Thanks to [Anil Gupta](http://bigdatanoob.blogspot.fr/2013/09/connect-phoenix-to-secure-hbase-cluster.html)
 for its instructions.
 
-    module.exports.push name: 'Phoenix Client # Kerberos', handler: ->
+    module.exports.push header: 'Phoenix Client # Kerberos', handler: ->
       {hadoop_conf_dir, hbase, phoenix} = @config.ryba
       @write
         destination: "#{phoenix.conf_dir}/phoenix-client.jaas"
@@ -88,7 +88,7 @@ There is 3 phoenix 'SYSTEM.*' tables. If they don't exist in HBase, we launch
 phoenix with hbase admin user.
 Independently, if 'ryba' hasn't CREATE right on these 3 tables, it will be granted
 
-    module.exports.push name: 'Phoenix Client # Init', timeout: 200000, handler: ->
+    module.exports.push header: 'Phoenix Client # Init', timeout: 200000, handler: ->
       {hbase} = @config.ryba
       zk_path = "#{hbase.site['hbase.zookeeper.quorum']}"
       zk_path += ":#{hbase.site['hbase.zookeeper.property.clientPort']}"

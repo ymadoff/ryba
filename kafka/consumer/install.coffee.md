@@ -16,7 +16,7 @@ cat /etc/group | grep kafka
 kafka:x:496:kafka
 ```
 
-    module.exports.push name: 'Kafka Consumer # Users & Groups', handler: ->
+    module.exports.push header: 'Kafka Consumer # Users & Groups', handler: ->
       {kafka} = @config.ryba
       @group kafka.group
       @user kafka.user
@@ -27,7 +27,7 @@ Install the Kafka consumer package and set it to the latest version. Note, we
 select the "kafka-broker" hdp directory. There is no "kafka-consumer"
 directories.
 
-    module.exports.push name: 'Kafka Consumer # Package', handler: ->
+    module.exports.push header: 'Kafka Consumer # Package', handler: ->
       @service
         name: 'kafka'
       @hdp_select
@@ -38,7 +38,7 @@ directories.
 Update the file "consumer.properties" with the properties defined by the
 "ryba.kafka.consumer" configuration.
 
-    module.exports.push name: 'Kafka Consumer # Configure', handler: ->
+    module.exports.push header: 'Kafka Consumer # Configure', handler: ->
       {kafka} = @config.ryba
       @write
         destination: "#{kafka.conf_dir}/consumer.properties"

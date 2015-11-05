@@ -8,7 +8,5 @@
 
 Start the Shinken Broker service.
 
-    module.exports.push name: 'Shinken Broker # Start', label_true: 'STARTED', handler: ->
-      @service
-        srv_name: 'shinken-broker'
-        action: 'start'
+    module.exports.push header: 'Shinken Broker # Start', label_true: 'STARTED', handler: ->
+      @service_start name: 'shinken-broker'

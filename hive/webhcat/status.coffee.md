@@ -10,7 +10,7 @@
 Check if the RegionServer is running. The process ID is located by default
 inside "/var/run/webhcat/webhcat.pid".
 
-    module.exports.push name: 'WebHCat # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
+    module.exports.push header: 'WebHCat # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       @execute
         cmd: 'service hive-webhcat-server status'
         code_skipped: 3

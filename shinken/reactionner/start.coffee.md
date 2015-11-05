@@ -8,7 +8,5 @@
 
 Start the Shinken Reactionner service.
 
-    module.exports.push name: 'Shinken Reactionner # Start', label_true: 'STARTED', handler: ->
-      @service
-        srv_name: 'shinken-reactionner'
-        action: 'start'
+    module.exports.push header: 'Shinken Reactionner # Start', label_true: 'STARTED', handler: ->
+      @service_start name: 'shinken-reactionner'

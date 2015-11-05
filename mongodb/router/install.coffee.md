@@ -15,7 +15,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'MongoDB Router # IPTables', handler: ->
+    module.exports.push header: 'MongoDB Router # IPTables', handler: ->
       {router} = @config.ryba.mongodb
       @iptables
         rules: [
@@ -25,19 +25,19 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Users & Groups
 
-    module.exports.push name: 'MongoDB # Users & Groups', handler: ->
+    module.exports.push header: 'MongoDB # Users & Groups', handler: ->
       {mongodb} = @config.ryba
       @group mongodb.group
       @user mongodb.user
 
 ## Packages
 
-    module.exports.push name: 'MongoDB Router # Packages', timeout: -1, handler: ->
+    module.exports.push header: 'MongoDB Router # Packages', timeout: -1, handler: ->
       @service name: 'mongodb-org-mongos'
 
 ## Configure
 
-    module.exports.push name: 'MongoDB Router # Configure', handler: ->
+    module.exports.push header: 'MongoDB Router # Configure', handler: ->
       {router} = @config.ryba.mongodb
       @write
         destination: '/etc/mongodb/mongos.conf'

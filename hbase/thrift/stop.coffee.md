@@ -15,15 +15,15 @@ service hbase-thrift start
 su -l hbase -c "/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config /etc/hbase/conf stop rest"
 ```
 
-    module.exports.push name: 'HBase Thrift # Stop', label_true: 'STOPPED', handler: ->
+    module.exports.push header: 'HBase Thrift # Stop', label_true: 'STOPPED', handler: ->
       @service_stop
-        name: 'hbase-thrift'
+        header: 'hbase-thrift'
         if_exists: '/etc/init.d/hbase-thrift'
 
 ## Stop Clean Logs
 
     module.exports.push
-      name: 'HBase Thrift # Stop Clean Logs'
+      header: 'HBase Thrift # Stop Clean Logs'
       label_true: 'CLEANED'
       if: -> @config.ryba.clean_logs
       handler: ->

@@ -10,7 +10,7 @@
 
 Check if the Hive Server2 server is listening.
 
-    module.exports.push name: 'Hive Server2 # Check Thrift Port', label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Hive Server2 # Check Thrift Port', label_true: 'CHECKED', handler: ->
       {hive} = @config.ryba
       port = if hive.site['hive.server2.transport.mode'] is 'http'
       then hive.site['hive.server2.thrift.http.port']
@@ -18,7 +18,7 @@ Check if the Hive Server2 server is listening.
       @execute
         cmd: "echo > /dev/tcp/#{@config.host}/#{port}"
 
-    module.exports.push name: 'Hive Server2 # Check JDBC', handler: ->
+    module.exports.push header: 'Hive Server2 # Check JDBC', handler: ->
       # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.3.0/CDH4-Security-Guide/cdh4sg_topic_9_1.html
       # !connect jdbc:hive2://master3.ryba:10001/default;principal=hive/master3.ryba@HADOOP.RYBA
       @log? 'TODO: check hive server2 jdbc'

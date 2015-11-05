@@ -18,7 +18,7 @@ cat /etc/group | grep httpfs
 httpfs:x:494:httpfs
 ```
 
-    module.exports.push name: 'HDFS HttpFS # Users & Groups', handler: ->
+    module.exports.push header: 'HDFS HttpFS # Users & Groups', handler: ->
       {httpfs} = @config.ryba
       @group httpfs.group
       @user httpfs.user
@@ -36,7 +36,7 @@ mode, it must be set to a value below "1024" and default to "1004".
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'HDFS HttpFS # IPTables', handler: ->
+    module.exports.push header: 'HDFS HttpFS # IPTables', handler: ->
       {httpfs} = @config.ryba
       @iptables
         rules: [
@@ -47,7 +47,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Package
 
-    module.exports.push name: 'HDFS HttpFS # Package', timeout: -1, handler: ->
+    module.exports.push header: 'HDFS HttpFS # Package', timeout: -1, handler: ->
       @service
         name: 'hadoop-httpfs'
       @hdp_select
@@ -61,7 +61,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Kerberos
 
-    module.exports.push name: 'HDFS HttpFS # Kerberos', timeout: -1, handler: ->
+    module.exports.push header: 'HDFS HttpFS # Kerberos', timeout: -1, handler: ->
       {httpfs, realm, core_site} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @copy # SPNEGO Keytab
@@ -85,7 +85,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Environment
 
-    module.exports.push name: 'HDFS HttpFS # Environment', timeout: -1, handler: ->
+    module.exports.push header: 'HDFS HttpFS # Environment', timeout: -1, handler: ->
       {httpfs} = @config.ryba
       @mkdir
         destination: "#{httpfs.pid_dir}"
@@ -120,7 +120,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Configuration
 
-    module.exports.push name: 'HDFS HttpFS # Environment', timeout: -1, handler: ->
+    module.exports.push header: 'HDFS HttpFS # Environment', timeout: -1, handler: ->
       {httpfs} = @config.ryba
       @hconfigure
         destination: "#{httpfs.conf_dir}/httpfs-site.xml"

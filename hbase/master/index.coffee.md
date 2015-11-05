@@ -11,6 +11,9 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
 
     module.exports.configure = (ctx) ->
       if ctx.hbase_master_configured then return else ctx.hbase_master_configured = null
+      # require('../../lib/hconfigure').call ctx
+      # require('../../libmodule.exports.push 'ryba/lib/hdp_select'').call ctx
+      # require('../../lib/write_jaas').call ctx
       require('masson/core/iptables').configure ctx
       require('../../ganglia/collector').configure ctx
       require('../../graphite/carbon').configure ctx
@@ -84,7 +87,16 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
     module.exports.push commands: 'check', modules: 'ryba/hbase/master/check'
 
     module.exports.push commands: 'install', modules: [
+      'masson/bootstrap'
+      'masson/core/iptables'
+      'ryba/hadoop/hdfs'
+      'ryba/hbase'
+      'ryba/lib/hconfigure'
+      'ryba/lib/hdp_select'
+      'ryba/lib/write_jaas'
       'ryba/hbase/master/install'
+      'ryba/hadoop/hdfs_nn/wait'
+      'ryba/hbase/master/layout'
       'ryba/hbase/master/start'
       'ryba/hbase/master/check'
     ]

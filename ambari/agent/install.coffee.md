@@ -8,7 +8,7 @@ The ambari server must be set in the configuration file.
     module.exports.push 'ryba/ambari/server/wait'
     # module.exports.push require('./index').configure
 
-    # module.exports.push name: '', handler: ->
+    # module.exports.push header: '', handler: ->
     #   @mkdir 
     #     destination: "/root/.ssh"
     #     uid: 'root'
@@ -32,7 +32,7 @@ The ambari server must be set in the configuration file.
     #       modified = true if written
     #       next()
 
-    module.exports.push name: 'Ambari Agent # Configure', timeout: -1, handler: ->
+    module.exports.push header: 'Ambari Agent # Configure', timeout: -1, handler: ->
       {ambari_agent} = @config.ryba
       @ini
         destination: "#{ambari_agent.conf_dir}/ambari-agent.ini"
@@ -57,7 +57,7 @@ The ambari server must be set in the configuration file.
       #     replace: "secured_url_port=#{ambari_agent.config.server['secured_url_port']}"
       #   ]
  
-    module.exports.push name: 'Ambari Agent # Startup', timeout: -1, handler: ->
+    module.exports.push header: 'Ambari Agent # Startup', timeout: -1, handler: ->
       @service
         name: 'ambari-agent'
         startup: true

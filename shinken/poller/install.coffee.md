@@ -15,7 +15,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Shinken Poller # IPTables', handler: ->
+    module.exports.push header: 'Shinken Poller # IPTables', handler: ->
       {poller} = @config.ryba.shinken
       rules = [{ chain: 'INPUT', jump: 'ACCEPT', dport: poller.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Poller" }]
       for name, mod of poller.modules
@@ -29,7 +29,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Package
 
-    module.exports.push name: 'Shinken Poller # Packages', handler: ->
+    module.exports.push header: 'Shinken Poller # Packages', handler: ->
       @service name: 'net-snmp'
       @service name: 'net-snmp-utils'
       @service name: 'httpd'
@@ -44,7 +44,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Layout
 
-    module.exports.push name: 'Shinken Poller # Layout', handler: ->
+    module.exports.push header: 'Shinken Poller # Layout', handler: ->
       {shinken} = @config.ryba
       @chown
         destination: shinken.log_dir
@@ -56,7 +56,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Additional Modules
 
-    module.exports.push name: 'Shinken Poller # Modules', handler: ->
+    module.exports.push header: 'Shinken Poller # Modules', handler: ->
       {shinken, shinken:{poller}} = @config.ryba
       return unless Object.getOwnPropertyNames(poller.modules).length > 0
       for name, mod of poller.modules
@@ -76,7 +76,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Python Modules
 
-      module.exports.push name: 'Shinken Poller # Python Modules', skip: true, handler: ->
+      module.exports.push header: 'Shinken Poller # Python Modules', skip: true, handler: ->
       {poller} = @config.ryba.shinken
       return unless Object.getOwnPropertyNames(poller.python_modules).length > 0
       for name, mod of poller.python_modules
@@ -94,7 +94,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Plugins
 
-    module.exports.push name: 'Shinken Poller # Plugins', timeout: -1, handler: ->
+    module.exports.push header: 'Shinken Poller # Plugins', timeout: -1, handler: ->
       {shinken} = @config.ryba
       glob "#{__dirname}/resources/plugins/*", (err, plugins) =>
         throw err if err
@@ -108,7 +108,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Kerberos
 
-    module.exports.push name: 'Shinken Poller # Kerberos', skip: true, handler: ->
+    module.exports.push header: 'Shinken Poller # Kerberos', skip: true, handler: ->
       {shinken, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc

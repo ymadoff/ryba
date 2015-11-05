@@ -16,7 +16,7 @@ the following command:
 service hdp-gmond start
 ```
 
-    module.exports.push name: 'Ganglia Monitor # Start', label_true: 'STARTED', handler: ->
+    module.exports.push header: 'Ganglia Monitor # Start', label_true: 'STARTED', handler: ->
       @service_start
         name: 'hdp-gmond'
         if_exists: '/etc/init.d/hdp-gmond'

@@ -5,7 +5,7 @@
     module.exports.push 'masson/bootstrap'
 
     module.exports.push
-      name: 'XASecure Policy # Wait'
+      header: 'XASecure Policy # Wait'
       timeout: -1
       if: -> @hosts_with_module('ryba/xasecure/policymgr').length
       handler: ->

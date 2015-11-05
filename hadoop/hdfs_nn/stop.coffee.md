@@ -17,7 +17,7 @@ su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-namenode/../hadoop/sbin/hadoop-daemo
 
 The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-namenode.pid".
 
-    module.exports.push name: 'HDFS NN # Stop', label_true: 'STOPPED', handler: ->
+    module.exports.push header: 'HDFS NN # Stop', label_true: 'STOPPED', handler: ->
       @service
         srv_name: 'hadoop-hdfs-namenode'
         action: 'stop'
@@ -28,7 +28,7 @@ The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-namenode.pid".
 Remove the "\*-namenode-\*" log files if the property "ryba.clean_logs" is
 activated.
 
-    module.exports.push name: 'HDFS NN # Stop Clean Logs', label_true: 'CLEANED', handler: ->
+    module.exports.push header: 'HDFS NN # Stop Clean Logs', label_true: 'CLEANED', handler: ->
       @execute
         cmd: 'rm /var/log/hadoop-hdfs/*/*-namenode-*'
         code_skipped: 1

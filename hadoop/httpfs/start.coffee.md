@@ -16,7 +16,7 @@ service hadoop-httpfs start
 su -l httpfs -c '/usr/hdp/current/hadoop-httpfs/sbin/httpfs.sh start'
 ```
 
-    module.exports.push name: 'HDFS HttpFS # Start', handler: ->
+    module.exports.push header: 'HDFS HttpFS # Start', handler: ->
       @service_start
         name: 'hadoop-httpfs'
         if_exists: '/etc/init.d/hadoop-httpfs'

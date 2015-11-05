@@ -17,13 +17,13 @@ service nagios stop
 
 The file storing the PID is "/var/run/nagios.pid".
 
-    module.exports.push name: 'Nagios # Stop', label_true: 'STOPPED', handler: ->
+    module.exports.push header: 'Nagios # Stop', label_true: 'STOPPED', handler: ->
       @service_stop
         name: 'nagios'
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'Nagios # Stop Clean Logs', label_true: 'CLEANED', handler: ->
+    module.exports.push header: 'Nagios # Stop Clean Logs', label_true: 'CLEANED', handler: ->
       return next() unless @config.ryba.clean_logs
       @execute
         cmd: 'rm /var/log/nagios/*'

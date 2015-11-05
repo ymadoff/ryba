@@ -9,7 +9,7 @@
 
 ## Check Shell
 
-    module.exports.push name: 'HBase Rest # Check', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'HBase Rest # Check', timeout: -1, label_true: 'CHECKED', handler: ->
       {shortname} = @config
       {force_check, jaas_client, hbase} = @config.ryba
       # cmd = mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists 'ryba'\" | grep 'Table ryba does exist'"

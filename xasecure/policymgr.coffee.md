@@ -72,7 +72,7 @@ cat /etc/group | grep xasecure
 xasecure:x:493:
 ```
 
-    module.exports.push name: 'XASecure PolicyMgr # Users & Groups', handler: ->
+    module.exports.push header: 'XASecure PolicyMgr # Users & Groups', handler: ->
       {group, user} = ctx.config.xasecure
       ctx.group group, (err, gmodified) ->
         return next err if err
@@ -88,14 +88,14 @@ xasecure:x:493:
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'XASecure PolicyMgr # IPTables', handler: ->
+    module.exports.push header: 'XASecure PolicyMgr # IPTables', handler: ->
       @iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 6080, protocol: 'tcp', state: 'NEW', comment: "XASecure Admin" }
         ]
         if: config.iptables.action is 'start'
 
-    module.exports.push name: 'XASecure PolicyMgr # Upload', timeout: -1, handler: ->
+    module.exports.push header: 'XASecure PolicyMgr # Upload', timeout: -1, handler: ->
       {policymgr_url} = config.xasecure
       @download
         source: policymgr_url
@@ -106,7 +106,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         source: "/var/tmp/#{path.basename policymgr_url}"
         if: -> @status -1
 
-    module.exports.push name: 'XASecure PolicyMgr # Install', timeout: -1, handler: ->
+    module.exports.push header: 'XASecure PolicyMgr # Install', timeout: -1, handler: ->
       {db_admin} = ctx.config.ryba
       {policymgr, policymgr_url} = ctx.config.xasecure
       modified = false

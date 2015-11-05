@@ -15,7 +15,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Shinken Reactionner # IPTables', handler: ->
+    module.exports.push header: 'Shinken Reactionner # IPTables', handler: ->
       {reactionner} = @config.ryba.shinken
       rules = [{ chain: 'INPUT', jump: 'ACCEPT', dport: reactionner.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Reactionner" }]
       for name, mod of reactionner.modules
@@ -27,7 +27,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Packages
 
-    module.exports.push name: 'Shinken Reactionner # Packages', handler: ->
+    module.exports.push header: 'Shinken Reactionner # Packages', handler: ->
       {shinken} = @config.ryba
       @service
         name: 'shinken-reactionner'
@@ -41,7 +41,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Additional Modules
 
-    module.exports.push name: 'Shinken Reactionner # Modules', handler: ->
+    module.exports.push header: 'Shinken Reactionner # Modules', handler: ->
       {shinken, shinken:{reactionner}} = @config.ryba
       return unless Object.getOwnPropertyNames(reactionner.modules).length > 0
       for name, mod of reactionner.modules

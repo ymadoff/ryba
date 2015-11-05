@@ -8,6 +8,6 @@ This commands stops ElasticSearch service.
 
 ## Stop
 
-    module.exports.push name: 'ES # Stop', label_true: 'STOPPED', handler: ->
+    module.exports.push header: 'ES # Stop', label_true: 'STOPPED', handler: ->
       @service_stop
         name: 'elasticsearch'

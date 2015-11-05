@@ -8,7 +8,7 @@
 
 ## Check CLI
 
-    module.exports.push name: 'YARN Client # Check CLI', label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'YARN Client # Check CLI', label_true: 'CHECKED', handler: ->
       @execute
         cmd: mkcmd.test @, 'yarn application -list'
 
@@ -19,7 +19,7 @@ Shell script to be executed inside one or multiple YARN containers.
 
 # http://riccomini.name/posts/hadoop/2013-06-14-yarn-with-cgroups/
 
-    module.exports.push name: 'YARN Client # Check Distributed Shell', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'YARN Client # Check Distributed Shell', timeout: -1, label_true: 'CHECKED', handler: ->
       {force_check, user} = @config.ryba
       appname = "ryba_check_#{@config.shortname}_distributed_cache_#{Date.now()}"
       scriptpath = "#{user.home}/check_distributed_shell.sh"

@@ -26,6 +26,7 @@ Factory to create the Phoenix RPC Scheduler that knows to put index updates into
       hbase.site['hbase.regionserver.rpc.scheduler.factory.class'] ?= 'org.apache.hadoop.hbase.ipc.PhoenixRpcSchedulerFactory'
       hbase.site['hbase.rpc.controllerfactory.class'] ?= 'org.apache.hadoop.hbase.ipc.controller.ServerRpcControllerFactory'
       ctx.before
+        # TODO: add header support to aspect in mecano
         type: 'service'
         name: 'hbase-regionserver'
       , ->

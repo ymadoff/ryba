@@ -6,7 +6,7 @@
 
 ## Start
 
-    module.exports.push name: 'MongoDB ConfigSrv # Start', label_true: 'STARTED', handler: ->
+    module.exports.push header: 'MongoDB ConfigSrv # Start', label_true: 'STARTED', handler: ->
       @service_start name: 'mongod-configsrv'
 
 ## Dependencies

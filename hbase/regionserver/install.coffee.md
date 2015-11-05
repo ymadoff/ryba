@@ -21,7 +21,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'HBase RegionServer # IPTables', handler: ->
+    module.exports.push header: 'HBase RegionServer # IPTables', handler: ->
       {hbase} = @config.ryba
       @iptables
         rules: [
@@ -35,7 +35,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hbase-regionserver" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push name: 'HBase RegionServer # Service', timeout: -1, handler: ->
+    module.exports.push header: 'HBase RegionServer # Service', timeout: -1, handler: ->
       @service
         name: 'hbase-regionserver'
       @hdp_select
@@ -57,7 +57,7 @@ inside "/etc/init.d" and activate it on startup.
 JAAS configuration files for zookeeper to be deployed on the HBase Master,
 RegionServer, and HBase client host machines.
 
-    module.exports.push name: 'HBase RegionServer # Zookeeper JAAS', timeout: -1, handler: ->
+    module.exports.push header: 'HBase RegionServer # Zookeeper JAAS', timeout: -1, handler: ->
       {hbase} = @config.ryba
       @write_jaas
         destination: "#{hbase.conf_dir}/hbase-regionserver.jaas"
@@ -67,7 +67,7 @@ RegionServer, and HBase client host machines.
         uid: hbase.user.name
         gid: hbase.group.name
 
-    module.exports.push name: 'HBase RegionServer # Kerberos', timeout: -1, handler: ->
+    module.exports.push header: 'HBase RegionServer # Kerberos', timeout: -1, handler: ->
       {hadoop_group, hbase, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       if @has_module 'ryba/hbase/master'
@@ -93,7 +93,7 @@ RegionServer, and HBase client host machines.
 
 [secop]: http://fr.slideshare.net/HBaseCon/features-session-2
 
-    module.exports.push name: 'HBase RegionServer # Configure', handler: ->
+    module.exports.push header: 'HBase RegionServer # Configure', handler: ->
       {hbase} = @config.ryba
       mode = if @has_module 'ryba/hbase/client' then 0o0644 else 0o0600
       @hconfigure
@@ -112,7 +112,7 @@ RegionServer, and HBase client host machines.
 Environment passed to the RegionServer before it starts.
 
     module.exports.push
-      name: 'HBase RegionServer # Opts'
+      header: 'HBase RegionServer # Opts'
       if: -> @config.ryba.hbase.regionserver_opts
       handler: ->
         {hbase} = @config.ryba
@@ -127,7 +127,7 @@ Environment passed to the RegionServer before it starts.
 
 Enable stats collection in Ganglia and Graphite
 
-    module.exports.push name: 'HBase RegionServer # Metrics', handler: ->
+    module.exports.push header: 'HBase RegionServer # Metrics', handler: ->
       {hbase} = @config.ryba
       content = ""
       for k, v of hbase.metrics

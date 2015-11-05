@@ -6,7 +6,7 @@
     module.exports.push 'ryba/hadoop/yarn_rm/wait'
     # module.exports.push require('./index').configure
 
-    module.exports.push name: 'YARN NM # FS Permissions', label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'YARN NM # FS Permissions', label_true: 'CHECKED', handler: ->
       {yarn} = @config.ryba
       log_dirs = yarn.site['yarn.nodemanager.log-dirs'].split ','
       local_dirs = yarn.site['yarn.nodemanager.local-dirs'].split ','

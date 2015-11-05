@@ -8,7 +8,7 @@
     module.exports.push 'ryba/lib/hconfigure'
     module.exports.push 'ryba/lib/hdp_select'
 
-    module.exports.push name: 'HDFS Client # Configuration', handler: ->
+    module.exports.push header: 'HDFS Client # Configuration', handler: ->
       {hadoop_conf_dir, hdfs, hadoop_group} = @config.ryba
       @hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
@@ -22,6 +22,6 @@
 
 ## HDP Select
 
-    module.exports.push name: 'HDFS Client # HDP Select', handler: ->
+    module.exports.push header: 'HDFS Client # HDP Select', handler: ->
       @hdp_select
         name: 'hadoop-client'

@@ -18,7 +18,7 @@ ps aux | grep "rexster"
 kill ...
 ```
 
-    module.exports.push name: 'Rexster # Stop', label_true: 'STOPPED', handler: ->
+    module.exports.push header: 'Rexster # Stop', label_true: 'STOPPED', handler: ->
       {titan, rexster} = @config.ryba
       @execute
         cmd: """
@@ -31,7 +31,7 @@ kill ...
 
 ## Stop Clean Logs
 
-    module.exports.push name: 'Rexster # Stop Clean Logs', label_true: 'CLEANED', handler: ->
+    module.exports.push header: 'Rexster # Stop Clean Logs', label_true: 'CLEANED', handler: ->
       {rexster, clean_logs} = @config.ryba
       @execute
         cmd: "rm #{rexster.log_dir}/*"

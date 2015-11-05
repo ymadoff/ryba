@@ -8,6 +8,6 @@ This commands starts Elastic Search using the default service command.
 
 ## Start
 
-    module.exports.push name: 'ES # Start', label_true: 'STARTED', handler: ->
+    module.exports.push header: 'ES # Start', label_true: 'STARTED', handler: ->
       @service_start
         name: 'elasticsearch'

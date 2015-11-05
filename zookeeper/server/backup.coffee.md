@@ -19,7 +19,7 @@ transaction log directory. By default these two directories are the same.
 
 TODO: Add the backup facility
 
-    module.exports.push name: "ZooKeeper Server # Backup", handler: ->
+    module.exports.push header: 'ZooKeeper Server # Backup', handler: ->
       {zookeeper} = @config.ryba
       now = Math.floor Date.now() / 1000
       @execute
@@ -34,7 +34,7 @@ TODO: Add the backup facility
 
 ## Purge Transaction Logs
 
-    module.exports.push name: "ZooKeeper Server # Purge Transaction Logs", handler: ->
+    module.exports.push header: 'ZooKeeper Server # Purge Transaction Logs', handler: ->
       {zookeeper} = @config.ryba
       @execute
         cmd: """

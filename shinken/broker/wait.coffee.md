@@ -6,7 +6,7 @@
 
 ## Wait
 
-    module.exports.push name: 'Shinken Broker # Wait', label_true: 'READY', handler: ->
+    module.exports.push header: 'Shinken Broker # Wait', label_true: 'READY', handler: ->
       @wait_connect
         servers: for ctx in @contexts 'ryba/shinken/broker'
           host: ctx.config.host

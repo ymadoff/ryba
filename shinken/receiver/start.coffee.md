@@ -8,7 +8,5 @@
 
 Start the Shinken Receiver service.
 
-    module.exports.push name: 'Shinken Receiver # Start', label_true: 'STARTED', handler: ->
-      @service
-        srv_name: 'shinken-receiver'
-        action: 'start'
+    module.exports.push header: 'Shinken Receiver # Start', label_true: 'STARTED', handler: ->
+      @service_start name: 'shinken-receiver'

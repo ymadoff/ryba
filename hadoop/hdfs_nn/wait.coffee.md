@@ -5,7 +5,7 @@
     module.exports.push 'masson/bootstrap'
     # module.exports.push require('../hdfs').configure
 
-    module.exports.push name: 'HDFS NN # Wait', timeout: -1, label_true: 'READY', handler:  ->
+    module.exports.push header: 'HDFS NN # Wait', timeout: -1, label_true: 'READY', handler:  ->
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'#, require('./index').configure
       @wait_connect
         servers: for nn_ctx in nn_ctxs
@@ -21,7 +21,7 @@
 Wait for HDFS safemode to exit. It is not enough to start the NameNodes but the
 majority of DataNodes also need to be running.
 
-    module.exports.push name: 'HDFS NN # Wait Safemode', timeout: -1, label_true: 'READY', handler:  ->
+    module.exports.push header: 'HDFS NN # Wait Safemode', timeout: -1, label_true: 'READY', handler:  ->
       # TODO: there are much better solutions, for exemple
       # if 'ryba/hadoop/hdfs_client', then `hdfs dfsadmin`
       # else use curl

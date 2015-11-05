@@ -32,7 +32,7 @@ cat /etc/group | grep hue
 hue:x:494:
 ```
 
-    module.exports.push name: 'Hue # Users & Groups', handler: ->
+    module.exports.push header: 'Hue # Users & Groups', handler: ->
       {hue} = @config.ryba
       @group hue.group
       @user hue.user
@@ -46,7 +46,7 @@ hue:x:494:
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push name: 'Hue # IPTables', handler: ->
+    module.exports.push header: 'Hue # IPTables', handler: ->
       {hue} = @config.ryba
       @iptables
         rules: [
@@ -58,7 +58,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 The packages "extjs-2.2-1" and "hue" are installed.
 
-    module.exports.push name: 'Hue # Packages', timeout: -1, handler: ->
+    module.exports.push header: 'Hue # Packages', timeout: -1, handler: ->
       @service name: 'hue'
 
 # ## Core
@@ -70,7 +70,7 @@ The packages "extjs-2.2-1" and "hue" are installed.
 # be deployed on all the master and worker nodes. This is currently achieved through
 # the configuration picked up by the "ryba/hadoop/core" module.
 
-#     module.exports.push name: 'Hue # Core', handler: ->
+#     module.exports.push header: 'Hue # Core', handler: ->
 #       {hadoop_conf_dir} = @config.ryba
 #       @hconfigure
 #         destination: "#{hadoop_conf_dir}/core-site.xml"
@@ -89,7 +89,7 @@ to allow impersonnation through the "hue" user.
 
 TODO: only work if WebHCat is running on the same server as Hue
 
-    module.exports.push name: 'Hue # WebHCat', handler: ->
+    module.exports.push header: 'Hue # WebHCat', handler: ->
       {webhcat} = @config.ryba
       webhcat_server = @host_with_module 'ryba/hive/webhcat'
       return next Error "WebHCat shall be on the same server as Hue" unless webhcat_server is @config.host
@@ -108,7 +108,7 @@ to allow impersonnation through the "hue" user.
 
 TODO: only work if Oozie is running on the same server as Hue
 
-    module.exports.push name: 'Hue # Oozie', handler: ->
+    module.exports.push header: 'Hue # Oozie', handler: ->
       {oozie} = @config.ryba
       oozie_server = @host_with_module 'ryba/oozie/server'
       return next Error "Oozie shall be on the same server as Hue" unless oozie_server is @config.host
@@ -124,7 +124,7 @@ TODO: only work if Oozie is running on the same server as Hue
 Configure the "/etc/hue/conf" file following the [HortonWorks](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue-5-2.html) 
 recommandations. Merge the configuration object from "hdp.hue.ini" with the properties of the destination file. 
 
-    module.exports.push name: 'Hue # Configure', handler: ->
+    module.exports.push header: 'Hue # Configure', handler: ->
       {hue} = @config.ryba
       @ini
         destination: "#{hue.conf_dir}/hue.ini"
@@ -144,7 +144,7 @@ Setup the database hosting the Hue data. Currently two database providers are
 implemented but Hue supports MySQL, PostgreSQL, and Oracle. Note, sqlite is 
 the default database while mysql is the recommanded choice.
 
-    module.exports.push name: 'Hue # Database', handler: ->
+    module.exports.push header: 'Hue # Database', handler: ->
       {hue, db_admin} = @config.ryba
       switch hue.ini.desktop.database.engine
         when 'mysql'
@@ -175,7 +175,7 @@ The principal for the Hue service is created and named after "hue/{host}@{realm}
 the "/etc/hue/conf/hue.ini" configuration file, all the composants myst be tagged with
 the "security_enabled" property set to "true".
 
-    module.exports.push name: 'Hue # Kerberos', handler: ->
+    module.exports.push header: 'Hue # Kerberos', handler: ->
       {hue, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc 
@@ -190,7 +190,7 @@ the "security_enabled" property set to "true".
 
 ## SSL Client
 
-    module.exports.push name: 'Hue # SSL Client', handler: ->
+    module.exports.push header: 'Hue # SSL Client', handler: ->
       {hue} = @config.ryba
       hue.ca_bundle = '' unless hue.ssl.client_ca
       @write
@@ -212,7 +212,7 @@ configuration properties. It follows the [official Hue Web Server
 Configuration][web]. The "hue" service is restarted if there was any 
 changes.
 
-    module.exports.push name: 'Hue # SSL Server', handler: ->
+    module.exports.push header: 'Hue # SSL Server', handler: ->
       {hue} = @config.ryba
       @upload
         source: hue.ssl.certificate
@@ -242,7 +242,7 @@ changes.
 
 In the current version "2.5.1", the HTML of the banner is escaped.
 
-    module.exports.push name: 'Hue # Fix Banner', handler: ->
+    module.exports.push header: 'Hue # Fix Banner', handler: ->
       {hue} = @config.ryba
       @write
         destination: '/usr/lib/hue/desktop/core/src/desktop/templates/login.mako'
@@ -267,7 +267,7 @@ In the current version "2.5.1", the HTML of the banner is escaped.
 Clean up the "/tmp" from temporary Hue directories. All the directories which
 modified time are older than 10 days will be removed.
 
-    module.exports.push name: 'Hue # Clean Temp Files', handler: ->
+    module.exports.push header: 'Hue # Clean Temp Files', handler: ->
       {hue} = @config.ryba
       @cron_add
         cmd: "find /tmp -maxdepth 1 -type d -mtime +10 -user #{hue.user.name} -exec rm {} \\;",

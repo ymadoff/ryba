@@ -10,7 +10,7 @@
 
 ## Users & Groups
 
-    module.exports.push name: 'Knox # Users & Groups', handler: ->
+    module.exports.push header: 'Knox # Users & Groups', handler: ->
       {knox} = @config.ryba
       @group knox.group
       @user knox.user
@@ -25,7 +25,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Knox # IPTables', handler: ->
+    module.exports.push header: 'Knox # IPTables', handler: ->
       {knox} = @config.ryba
       @iptables
         rules: [
@@ -35,12 +35,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Service
 
-    module.exports.push name: 'Knox # Service', timeout: -1, handler: ->
+    module.exports.push header: 'Knox # Service', timeout: -1, handler: ->
       @service name: 'knox'
 
 ## Master Secret
 
-    module.exports.push name: 'Knox # Master Secret', handler: ->
+    module.exports.push header: 'Knox # Master Secret', handler: ->
       {knox} = @config.ryba
       @fs.exists '/usr/hdp/current/knox-server/data/security/master', (err, exists) ->
         return next err, false if err or exists
@@ -71,7 +71,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Configure
 
-    module.exports.push name: 'Knox # Configure', handler: ->
+    module.exports.push header: 'Knox # Configure', handler: ->
       {knox} = @config.ryba
       @hconfigure
         destination: "#{knox.conf_dir}/gateway-site.xml"
@@ -83,7 +83,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 We do not edit knox-env.sh because environnement variables are directly set
 in the gateway.sh service script.
   
-    module.exports.push name: 'Knox # Env', handler: ->
+    module.exports.push header: 'Knox # Env', handler: ->
       {knox} = @config.ryba
       @write
         destination: "#{knox.conf_dir}/gateway.sh"
@@ -94,7 +94,7 @@ in the gateway.sh service script.
 
 ## Kerberos
 
-    module.exports.push name: 'Knox # Kerberos', handler: ->
+    module.exports.push header: 'Knox # Kerberos', handler: ->
       {knox, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
@@ -123,7 +123,7 @@ in the gateway.sh service script.
 
 ## Topologies
 
-    module.exports.push name: 'Knox # Topologies', handler: ->
+    module.exports.push header: 'Knox # Topologies', handler: ->
       {knox} = @config.ryba
       @remove
         destination: "#{knox.conf_dir}/topologies/admin.xml"
@@ -164,7 +164,7 @@ unsecure SSL.
 With LDAPS, the certificate must be imported into the JRE's keystore for the
 client to connect to openldap.
 
-    # module.exports.push name: 'Knox # LDAPS CA cert', handler: ->
+    # module.exports.push header: 'Knox # LDAPS CA cert', handler: ->
     #   {java_home, jre_home} = @config.java
     #   {knox} = @config.ryba
     #   return next() unless knox.ssl?.cafile? and knox.ssl?.caname?

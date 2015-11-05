@@ -20,13 +20,13 @@ su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-journalnode/../hadoop/sbin/hadoop-da
 
 The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-journalnode.pid".
 
-    module.exports.push name: 'HDFS JN # Stop', label_true: 'STOPPED', handler: ->
+    module.exports.push header: 'HDFS JN # Stop', label_true: 'STOPPED', handler: ->
       @service
         srv_name: 'hadoop-hdfs-journalnode'
         action: 'stop'
         if_exists: '/etc/init.d/hadoop-hdfs-journalnode'
 
-    module.exports.push name: 'HDFS JN # Stop Clean Logs', label_true: 'CLEANED', handler: ->
+    module.exports.push header: 'HDFS JN # Stop Clean Logs', label_true: 'CLEANED', handler: ->
       @execute
         cmd: 'rm /var/log/hadoop-hdfs/*/*-journalnode-*'
         code_skipped: 1

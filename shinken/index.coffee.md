@@ -55,14 +55,14 @@ Example
 
 ## Users & Groups
 
-    module.exports.push name: 'Shinken # Users & Groups', handler: ->
+    module.exports.push header: 'Shinken # Users & Groups', handler: ->
       {shinken} = @config.ryba
       @group shinken.group
       @user shinken.user
 
 ## Commons Packages
 
-    module.exports.push name: 'Shinken # Commons Packages', handler: ->
+    module.exports.push header: 'Shinken # Commons Packages', handler: ->
       @service name: 'python'
       @service name: 'python-pycurl'
 

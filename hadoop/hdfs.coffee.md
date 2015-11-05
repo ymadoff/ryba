@@ -70,7 +70,7 @@ with Kerberos specific properties.
       # accessing datanodes.
       hdfs.site['dfs.block.access.token.enable'] ?= 'true'
 
-    module.exports.push name: 'Hadoop HDFS # Install', timeout: -1, handler: ->
+    module.exports.push header: 'Hadoop HDFS # Install', timeout: -1, handler: ->
       @service
         name: 'hadoop'
       @service
@@ -88,7 +88,7 @@ Create the HDFS user principal. This will be the super administrator for the HDF
 filesystem. Note, we do not create a principal with a keytab to allow HDFS login
 from multiple sessions with braking an active session.
 
-    module.exports.push name: 'HDFS # Kerberos User', handler: ->
+    module.exports.push header: 'HDFS # Kerberos User', handler: ->
       {hdfs, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc merge
@@ -104,7 +104,7 @@ keytab inside "/etc/security/keytabs/spnego.service.keytab" with ownerships set 
 and permissions set to "0660". We had to give read/write permission to the group because the
 same keytab file is for now shared between hdfs and yarn services.
 
-    module.exports.push name: 'HDFS # SPNEGO', handler: module.exports.spnego = ->
+    module.exports.push header: 'HDFS # SPNEGO', handler: module.exports.spnego = ->
       {hdfs, hadoop_group, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
@@ -149,7 +149,7 @@ Also worth of interest are the [Pivotal recommandations][hawq] as well as the
 
 Note, a user must re-login for those changes to be taken into account.
 
-    module.exports.push name: 'HDFS # Ulimit', handler: ->
+    module.exports.push header: 'HDFS # Ulimit', handler: ->
       @write
         destination: '/etc/security/limits.d/hdfs.conf'
         write: [
@@ -191,7 +191,7 @@ Note, a user must re-login for those changes to be taken into account.
 
 Create the log directory.
 
-    module.exports.push name: 'HDFS # Layout', handler: ->
+    module.exports.push header: 'HDFS # Layout', handler: ->
       {hdfs} = @config.ryba
       @mkdir
         destination: "#{hdfs.log_dir}/#{hdfs.user.name}"

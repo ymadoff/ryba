@@ -16,7 +16,7 @@ Builds Hue from source
 Intermetiate container to build hue from source. Builds ryba/hue-build image
 
 
-    module.exports.push name: 'Hue Build # Docker', timeout: -1, (options, next) ->
+    module.exports.push header: 'Hue Build # Docker', timeout: -1, (options, next) ->
       fs.stat "#{hue.build.directory}/resources/hue-build.tar.gz", (err, stats) ->
         return ( if err.code == 'ENOENT' then do_build() else err ) if err
         fs.stat "#{hue.build.directory}/hue.tar", (err, stats) ->

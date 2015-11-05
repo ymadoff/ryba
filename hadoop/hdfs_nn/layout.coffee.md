@@ -21,7 +21,7 @@ drwxr-xr-x   - hdfs   hadoop      /user
 drwxr-xr-x   - hdfs   hadoop      /user/hdfs
 ```
 
-    module.exports.push name: 'HDFS NN # HDFS layout', timeout: -1, handler: ->
+    module.exports.push header: 'HDFS NN # HDFS layout', timeout: -1, handler: ->
       {hdfs, hadoop_group} = @config.ryba
       @wait_execute
         cmd: mkcmd.hdfs @, "hdfs dfs -test -d /"
@@ -65,7 +65,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
 
 ## HDP Layout
 
-    module.exports.push name: 'HDFS NN # HDP Layout', timeout: -1, handler: ->
+    module.exports.push header: 'HDFS NN # HDP Layout', timeout: -1, handler: ->
       {hdfs, hadoop_group} = @config.ryba
       @execute
         cmd: mkcmd.hdfs @, """
@@ -88,7 +88,7 @@ Create a Unix and Kerberos test user, by default "test" and execute simple HDFS 
 the NameNode is properly working. Note, those commands are NameNode specific, meaning they only
 afect HDFS metadata.
 
-    module.exports.push name: 'HDFS NN # HDFS Layout User Test', timeout: -1, handler: ->
+    module.exports.push header: 'HDFS NN # HDFS Layout User Test', timeout: -1, handler: ->
       {user,group} = @config.ryba
       @execute
         cmd: mkcmd.hdfs @, """

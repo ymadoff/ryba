@@ -30,7 +30,7 @@ cat /etc/group | grep oozie
 oozie:x:493:
 ```
 
-    module.exports.push name: 'Oozie Server # Users & Groups', handler: ->
+    module.exports.push header: 'Oozie Server # Users & Groups', handler: ->
       {oozie} = @config.ryba
       @group oozie.group
       @user oozie.user
@@ -45,7 +45,7 @@ oozie:x:493:
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Oozie Server # IPTables', handler: ->
+    module.exports.push header: 'Oozie Server # IPTables', handler: ->
       {oozie} = @config.ryba
       port = url.parse(oozie.site['oozie.base.url']).port
       @iptables
@@ -55,7 +55,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ]
         if: @config.iptables.action is 'start'
 
-    module.exports.push name: 'Oozie Server # Install', timeout: -1, handler: ->
+    module.exports.push header: 'Oozie Server # Install', timeout: -1, handler: ->
       # Upgrading oozie failed, tested versions are hdp 2.1.2 -> 2.1.5 -> 2.1.7
       @execute
         cmd: "rm -rf /usr/lib/oozie && yum remove -y oozie oozie-client"
@@ -96,7 +96,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         cmd: "service oozie-server restart"
         if: -> @status -4
 
-    module.exports.push name: 'Oozie Server # Directories', handler: ->
+    module.exports.push header: 'Oozie Server # Directories', handler: ->
       {hadoop_group, oozie} = @config.ryba
       @mkdir
         destination: oozie.data
@@ -165,7 +165,7 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.file=${OOZIE_HTTPS_KEYSTO
 catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTORE_PASS}";
 ```
 
-    module.exports.push name: 'Oozie Server # Environment', handler: ->
+    module.exports.push header: 'Oozie Server # Environment', handler: ->
       {java_home} = @config.java
       {oozie} = @config.ryba
       # CATALINA_OPTS="-Djavax.net.ssl.trustStore=/etc/hadoop/conf/truststore -Djavax.net.ssl.trustStorePassword=ryba123"      
@@ -242,7 +242,7 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
 
 Install the ExtJS Javascript library as part of enabling the Oozie Web Console.
 
-    module.exports.push name: 'Oozie Server # ExtJS', handler: ->
+    module.exports.push header: 'Oozie Server # ExtJS', handler: ->
       @copy
         source: '/usr/share/HDP-oozie/ext-2.2.zip'
         destination: '/usr/hdp/current/oozie-client/libext/'
@@ -251,7 +251,7 @@ Install the ExtJS Javascript library as part of enabling the Oozie Web Console.
 
 Install the HBase Libs as part of enabling the Oozie Unified Credentials with HBase.
 
-    module.exports.push name: 'Oozie Server # HBase Libs', handler: ->
+    module.exports.push header: 'Oozie Server # HBase Libs', handler: ->
       @copy
         source: '/usr/hdp/current/hbase-client/lib/hbase-common.jar'
         destination: '/usr/hdp/current/oozie-client/libserver/'
@@ -260,7 +260,7 @@ Install the HBase Libs as part of enabling the Oozie Unified Credentials with HB
 
 Install the LZO compression library as part of enabling the Oozie Web Console.
 
-    module.exports.push name: 'Oozie Server # LZO', handler: ->
+    module.exports.push header: 'Oozie Server # LZO', handler: ->
       lzo_jar = null
       @execute
         cmd: 'ls /usr/hdp/current/share/lzo/*/lib/hadoop-lzo-*.jar'
@@ -280,12 +280,12 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
     # Note
     # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.0/HDP_Man_Install_v22/index.html#Item1.12.4.3
     # Copy or symlink the MySQL JDBC driver JAR into the /var/lib/oozie/ directory.
-    module.exports.push name: 'Oozie Server # Mysql Driver', handler: ->
+    module.exports.push header: 'Oozie Server # Mysql Driver', handler: ->
       @link
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/hdp/current/oozie-client/libext/mysql-connector-java.jar'
 
-    module.exports.push name: 'Oozie Server # Configuration', handler: ->
+    module.exports.push header: 'Oozie Server # Configuration', handler: ->
       {hadoop_conf_dir, yarn, oozie} = @config.ryba
       @hconfigure
         destination: "#{oozie.conf_dir}/oozie-site.xml"
@@ -310,7 +310,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         mode: 0o0755
         backup: true
 
-    # module.exports.push name: 'Oozie Server # SSL', handler: ->
+    # module.exports.push header: 'Oozie Server # SSL', handler: ->
     #   {java_home, jre_home} = @config.java
     #   {ssl, oozie} = @config.ryba
     #   tmp_location = "/tmp/ryba_oozie_client_#{Date.now()}"
@@ -322,7 +322,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
     #   @remove
     #     destination: "#{tmp_location}_cacert"
 
-    module.exports.push name: 'Oozie Server # War', handler: ->
+    module.exports.push header: 'Oozie Server # War', handler: ->
       {oozie} = @config.ryba
       falcon_ctxs = @contexts 'ryba/falcon', require('../../falcon').configure
       @call
@@ -372,7 +372,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         """
         code_skipped: 255 # Oozie already started, war is expected to be installed
 
-    module.exports.push name: 'Oozie Server # Kerberos', handler: ->
+    module.exports.push header: 'Oozie Server # Kerberos', handler: ->
       {oozie, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
@@ -385,7 +385,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         kadmin_password: kadmin_password
         kadmin_server: admin_server
 
-    module.exports.push name: 'Oozie Server # SPNEGO', handler: ->
+    module.exports.push header: 'Oozie Server # SPNEGO', handler: ->
       {oozie} = @config.ryba
       @copy
         source: '/etc/security/keytabs/spnego.service.keytab'
@@ -394,7 +394,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         gid: oozie.group.name
         mode: 0o0600
 
-    module.exports.push name: 'Oozie Server # MySQL', handler: ->
+    module.exports.push header: 'Oozie Server # MySQL', handler: ->
       {db_admin, oozie} = @config.ryba
       username = oozie.site['oozie.service.JPAService.jdbc.username']
       password = oozie.site['oozie.service.JPAService.jdbc.password']
@@ -424,7 +424,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
              not_if_exec: "[[ `#{version_local}` == `#{version_remote}` ]]"
         else throw Error 'Database engine not supported'
 
-    # module.exports.push name: 'Oozie Server # Database', handler: ->
+    # module.exports.push header: 'Oozie Server # Database', handler: ->
     #   {oozie} = @config.ryba
     #   @execute
     #     cmd: """
@@ -452,7 +452,7 @@ upload the files.
 The `oozie admin -shareliblist` command can be used by the final user to list
 the ShareLib contents without having to go into HDFS.
 
-    module.exports.push name: 'Oozie Server # Share lib', timeout: 600000, handler: ->
+    module.exports.push header: 'Oozie Server # Share lib', timeout: 600000, handler: ->
       {core_site, oozie} = @config.ryba
       @hdfs_mkdir
         destination: "/user/#{oozie.user.name}/share/lib"
@@ -479,7 +479,7 @@ the ShareLib contents without having to go into HDFS.
         hdfs dfs -cat /user/oozie/share/lib/*/sharelib.properties | grep build.version | grep $version
         """
 
-    module.exports.push name: 'Oozie Server # Hive', handler: ->
+    module.exports.push header: 'Oozie Server # Hive', handler: ->
       {oozie} = @config.ryba
       properties = {}
       if falcon_ctxs = @contexts 'ryba/falcon'#, require('../../falcon').configure
@@ -491,7 +491,7 @@ the ShareLib contents without having to go into HDFS.
         properties: properties
         merge: true
 
-    module.exports.push name: 'Oozie Server # Log4J', handler: ->
+    module.exports.push header: 'Oozie Server # Log4J', handler: ->
       # Instructions mention updating convertion pattern to the same value as
       # default, skip for now
       {oozie} = @config.ryba

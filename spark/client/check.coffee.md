@@ -18,7 +18,7 @@ Validate Spark installation with Pi-example in yarn-cluster mode.
 The yarn cluster mode makes the driver part of the spark submitted program to run inside yarn.
 In this mode the driver is the yarn application master (running inside yarn).
 
-    module.exports.push name: 'Spark Client # Check Cluster Mode', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Spark Client # Check Cluster Mode', timeout: -1, label_true: 'CHECKED', handler: ->
       {spark} = @config.ryba
       applicationId = null
       @execute
@@ -57,7 +57,7 @@ In this mode the driver is the spark master running outside yarn
 TODO Search the logs after the job has finished elsewhere, the yarn-client prevent the yarn history 
 server to access logs.
 
-    # module.exports.push name: 'Spark Client  # Check Client Mode', timeout: -1, label_true: 'CHECKED', handler: ->
+    # module.exports.push header: 'Spark Client  # Check Client Mode', timeout: -1, label_true: 'CHECKED', handler: ->
     #   {spark} = @config.ryba
     #   applicationId = ""
     #   ctx
