@@ -9,4 +9,4 @@
       @wait_connect
         servers: for ks_ctx in @contexts 'ryba/kafka/broker'#, require('./index').configure
           host: ks_ctx.config.host
-          port: ks_ctx.config.ryba.kafka.broker['port']
+          port: ks_ctx.config.ryba.kafka.broker.config['port']

@@ -3,7 +3,6 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    # module.exports.push require('./index').configure
 
     module.exports.push name: 'Kafka Broker # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       {kafka} = @config.ryba

@@ -4,7 +4,6 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/kafka/broker/wait'
-    # module.exports.push require('./index').configure
 
 ## Check Messages
 
@@ -17,7 +16,7 @@ Make sure the broker is listening. The default port is "9092".
       handler: ->
         {kafka} = @config.ryba
         brokers = @contexts('ryba/kafka/broker').map( (ctx) => #, require('../broker').configure
-          "#{ctx.config.host}:#{ctx.config.ryba.kafka.broker['port']}"
+          "#{ctx.config.host}:#{ctx.config.ryba.kafka.broker.config['port']}"
         ).join ','
         @execute
           cmd: """
@@ -28,5 +27,5 @@ Make sure the broker is listening. The default port is "9092".
           )&
           /usr/hdp/current/kafka-broker/bin/kafka-console-consumer.sh \
             --topic test \
-            --zookeeper #{kafka.consumer['zookeeper.connect']} --from-beginning --max-messages 1 | grep 'hello front1'
+            --zookeeper #{kafka.consumer.config['zookeeper.connect']} --from-beginning --max-messages 1 | grep 'hello front1'
           """

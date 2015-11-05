@@ -3,9 +3,23 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/kafka'
-    # module.exports.push require('./index').configure
     module.exports.push 'ryba/lib/hdp_select'
+
+## Users & Groups
+
+By default, the "kafka" package create the following entries:
+
+```bash
+cat /etc/passwd | grep kafka
+kafka:x:496:496:KAFKA:/home/kafka:/bin/bash
+cat /etc/group | grep kafka
+kafka:x:496:kafka
+```
+
+    module.exports.push name: 'Kafka Consumer # Users & Groups', handler: ->
+      {kafka} = @config.ryba
+      @group kafka.group
+      @user kafka.user
 
 ## Package
 
@@ -28,7 +42,7 @@ Update the file "consumer.properties" with the properties defined by the
       {kafka} = @config.ryba
       @write
         destination: "#{kafka.conf_dir}/consumer.properties"
-        write: for k, v of kafka.consumer
+        write: for k, v of kafka.consumer.config
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
           append: true

@@ -4,9 +4,23 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
-    module.exports.push 'ryba/kafka'
-    # module.exports.push require('./index').configure
     module.exports.push 'ryba/lib/hdp_select'
+
+## Users & Groups
+
+By default, the "kafka" package create the following entries:
+
+```bash
+cat /etc/passwd | grep kafka
+kafka:x:496:496:KAFKA:/home/kafka:/bin/bash
+cat /etc/group | grep kafka
+kafka:x:496:kafka
+```
+
+    module.exports.push name: 'Kafka # Users & Groups', handler: ->
+      {kafka} = @config.ryba
+      @group kafka.group
+      @user kafka.user
 
 ## IPTables
 
@@ -21,7 +35,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       {kafka} = @config.ryba
       @iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: kafka.broker['port'], protocol: 'tcp', state: 'NEW', comment: "Kafka Broker" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: kafka.broker.config['port'], protocol: 'tcp', state: 'NEW', comment: "Kafka Broker" }
         ]
         if: @config.iptables.action is 'start'
 
@@ -31,7 +45,7 @@ Install the Kafka consumer package and set it to the latest version. Note, we
 select the "kafka-broker" hdp directory. There is no "kafka-consumer"
 directories.
 
-    module.exports.push name: 'Kafka Consumer # Package', handler: ->
+    module.exports.push name: 'Kafka Broker # Package', handler: ->
       @service
         name: 'kafka'
       @hdp_select
@@ -46,7 +60,7 @@ Update the file "broker.properties" with the properties defined by the
       {kafka} = @config.ryba
       @write
         destination: "#{kafka.conf_dir}/server.properties"
-        write: for k, v of kafka.broker
+        write: for k, v of kafka.broker.config
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
           append: true
@@ -88,7 +102,7 @@ will be placed in the directory which currently has the fewest partitions.
         gid: kafka.group.name
         mode: 0o0750
         parent: true
-      ) for dir in kafka.broker['log.dirs'].split ','
+      ) for dir in kafka.broker.config['log.dirs'].split ','
 
 ## Dependencies
 

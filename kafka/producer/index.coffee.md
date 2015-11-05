@@ -9,15 +9,21 @@ log. It is fast, scalable, durable and distributed by design.
 ## Configure
 
     module.exports.configure = (ctx) ->
-      require('../').configure ctx
+      require('../../lib/base').configure ctx
       {kafka} = ctx.config.ryba
       ks_ctxs = ctx.contexts 'ryba/kafka/broker', require('../broker').configure
       brokers = for ks_ctx in ks_ctxs
-        "#{ks_ctx.config.host}:#{ks_ctx.config.ryba.kafka.broker.port}"
-      # Configuration
+        "#{ks_ctx.config.host}:#{ks_ctx.config.ryba.kafka.broker.config.port}"
+      kafka.conf_dir = ks_ctxs[0].config.ryba.kafka.conf_dir
+      kafka.user ?= {}
+      kafka.user[k] ?= v for k, v of ks_ctxs[0].config.ryba.kafka.user
+      kafka.group ?= {}
+      kafka.group[k] ?= v for k, v of ks_ctxs[0].config.ryba.kafka.group
+      #Configuration
       kafka.producer ?= {}
-      kafka.producer['compression.codec'] ?= 'snappy'
-      kafka.producer['metadata.broker.list'] ?= brokers.join ','
+      kafka.producer.config ?= {}
+      kafka.producer.config['compression.codec'] ?= 'snappy'
+      kafka.producer.config['metadata.broker.list'] ?= brokers.join ','
       kafka.producer.log4j ?= {}
       kafka.producer.log4j['log4j.rootLogger'] ?= 'WARN, stdout'
       kafka.producer.log4j['log4j.appender.stdout'] ?= 'org.apache.log4j.ConsoleAppender'
