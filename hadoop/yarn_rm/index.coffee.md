@@ -58,15 +58,14 @@ the application (zombie state).
 ## Capacity Scheduler
 
       ryba.capacity_scheduler ?= {}
-      ryba.capacity_scheduler['yarn.scheduler.capacity.resource-calculator'] ?= 'org.apache.hadoop.yarn.util.resource.DominantResourceCalculator'
       ryba.capacity_scheduler['yarn.scheduler.capacity.default.minimum-user-limit-percent'] ?= '100'
       ryba.capacity_scheduler['yarn.scheduler.capacity.maximum-am-resource-percent'] ?= '0.2'
       ryba.capacity_scheduler['yarn.scheduler.capacity.maximum-applications'] ?= '10000'
       ryba.capacity_scheduler['yarn.scheduler.capacity.node-locality-delay'] ?= '40'
-      ryba.capacity_scheduler['yarn.scheduler.capacity.resource-calculator'] ?= 'org.apache.hadoop.yarn.util.resource.DefaultResourceCalculator'
-      ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels'] ?= '*'
-      ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels.default.capacity'] ?= '100'
-      ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels.default.maximum-capacity'] ?= '100'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.resource-calculator'] ?= 'org.apache.hadoop.yarn.util.resource.DominantResourceCalculator'
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels'] ?= null
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels.default.capacity'] ?= null
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels.default.maximum-capacity'] ?= null
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.acl_administer_queue'] ?= '*'
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.capacity'] ?= '100'
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.default-node-label-expression'] ?= ' '
