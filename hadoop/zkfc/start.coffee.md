@@ -47,6 +47,34 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
       @service_start
         name: 'hadoop-hdfs-zkfc'
 
+## Wait Failover
+
+Ensure a given NameNode is always active and force the failover otherwise.
+
+In order to work properly, the ZKFC daemon must be running and the command must
+be executed on the same server as ZKFC.
+
+This middleware duplicates the one present in 'ryba/hadoop/hdfs_dn/wait' and
+is only called if a DataNode isn't installed on this server because this command
+only run on a NameNode with fencing installed and in normal mode.
+
+TODO sep 2015: maybe should we simply move this to ZKFC?
+
+    module.exports.push header: 'HDFS ZKFC # Start Failover', label_true: 'READY', handler: ->
+      return next() unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+      {active_nn_host, standby_nn_host} = @config.ryba
+      active_nn_host = active_nn_host.split('.')[0]
+      standby_nn_host = standby_nn_host.split('.')[0]
+      # This command seems to crash the standby namenode when it is made active and
+      # when the active_nn is restarting and still in safemode
+      @execute
+        cmd: mkcmd.hdfs @, """
+        if hdfs haadmin -getServiceState #{active_nn_host} | grep standby;
+        then hdfs haadmin -failover #{standby_nn_host} #{active_nn_host};
+        else exit 2; fi
+        """
+        code_skipped: 2
+
 ## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
