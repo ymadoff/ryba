@@ -13,7 +13,6 @@
     module.exports.push 'masson/commons/java'
     module.exports.push 'masson/commons/mysql_client'
     # module.exports.push require('./index').configure
-    # module.exports.push require './repoinfo'
  
 See the documentation about [Software Requirements][sr].
 
@@ -25,39 +24,6 @@ Install Ambari server package.
       @service
         name: 'ambari-server'
         startup: true
- 
-    ### Local repo
-     
-    # Update the repository declaration files used by Ambari in local 
-    # mode. Those files location match the pattern "/var/lib/ambari-server/resources/stacks/HDPLocal/{version}/repos/repoinfo.xml".
-     
-    # We choose to regenerate all the metainfo.xml files base 
-    # on internal configuration. This action may be skipped if the configuration
-    # property "ambari.local" is set to `false`.
-
-    #     module.exports.push header: 'Ambari Server # Local repo', handler: ->
-    #       @repoinfo
-    #         stack: '2.2'
-    #         repoid: 'HDP-2.2'
-    #         baseurl: 'http://10.10.10.101:10205/HDP/centos6/2.x/updates/2.2.4.2'
-    #       , (err, modified) =>
-    #       # {local} = @config.ryba.ambari
-    #       # return next() unless local
-    #       # writes = []
-    #       # for version of local
-    #       #   markup = builder.create 'reposinfo', version: '1.0', encoding: 'UTF-8'
-    #       #   for platforms, config of local[version]
-    #       #     for platform in platforms.split ','
-    #       #       os = markup.ele 'os', type: platform
-    #       #       for conf in config
-    #       #         repo = os.ele 'repo'
-    #       #         for k, v of conf
-    #       #           repo.ele k, null, v
-    #       #   writes.push
-    #       #     content: markup.end pretty: true
-    #       #     destination: "/var/lib/ambari-server/resources/stacks/HDP/#{version}/repos/repoinfo.xml"
-    #       # @write writes, next
-    ###
 
 ## Repository
 
