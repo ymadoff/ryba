@@ -17,7 +17,7 @@ active NameNode to start first.
     # module.exports.push require('./index').configure
 
     module.exports.push
-      header: 'ZKFC # Wait Active NN'
+      header: 'HDFS ZKFC # Wait Active NN'
       label_true: 'READY'
       timeout: -1
       if: [
@@ -42,7 +42,7 @@ service hadoop-hdfs-zkfc start
 su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start zkfc"
 ```
 
-    module.exports.push header: 'ZKFC # Start', label_true: 'STARTED', handler: ->
+    module.exports.push header: 'HDFS ZKFC # Start', label_true: 'STARTED', handler: ->
       return next() unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       @service_start
         name: 'hadoop-hdfs-zkfc'

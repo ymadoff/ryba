@@ -5,7 +5,7 @@
     module.exports.push 'masson/bootstrap'
     # module.exports.push require('../hdfs').configure
 
-    module.exports.push header: 'ZKFC # Wait', timeout: -1, label_true: 'READY', handler:  ->
+    module.exports.push header: 'HDFS ZKFC # Wait', timeout: -1, label_true: 'READY', handler:  ->
       zkfc_ctxs = @contexts 'ryba/hadoop/zkfc'#, require('./index').configure
       @wait_connect
         servers: for zkfc_ctx in zkfc_ctxs

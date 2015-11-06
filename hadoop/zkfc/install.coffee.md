@@ -18,7 +18,7 @@
 |-----------|------|--------|----------------------------|
 | namenode  | 8019  | tcp   | dfs.ha.zkfc.port           |
 
-    module.exports.push header: 'ZKFC # IPTables', handler: ->
+    module.exports.push header: 'HDFS ZKFC # IPTables', handler: ->
       {hdfs} = @config.ryba
       @iptables
         rules: [
@@ -31,7 +31,7 @@
 Install the "hadoop-hdfs-zkfc" service, symlink the rc.d startup script
 in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 
-    module.exports.push header: 'ZKFC # Service', handler: ->
+    module.exports.push header: 'HDFS ZKFC # Service', handler: ->
       @service
         name: 'hadoop-hdfs-zkfc'
       @hdp_select
@@ -49,7 +49,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 
 ## Configure
 
-    module.exports.push header: 'ZKFC # Configure', timeout: -1, handler: ->
+    module.exports.push header: 'HDFS ZKFC # Configure', timeout: -1, handler: ->
       {hdfs, hadoop_conf_dir, hadoop_group} = @config.ryba
       @hconfigure
         destination: "#{hadoop_conf_dir}/hdfs-site.xml"
@@ -65,7 +65,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 
 Environment passed to the ZKFC before it starts.
 
-    module.exports.push header: 'ZKFC # Opts', handler: ->
+    module.exports.push header: 'HDFS ZKFC # Opts', handler: ->
       {zkfc, hadoop_conf_dir} = @config.ryba
       @write
         destination: "#{hadoop_conf_dir}/hadoop-env.sh"
@@ -83,7 +83,7 @@ is stored as "/etc/security/keytabs/zkfc.service.keytab".
 The Jaas file is registered as an Java property inside 'hadoop-env.sh' and is
 stored as "/etc/hadoop/conf/zkfc.jaas"
 
-    module.exports.push header: 'ZKFC # Kerberos', handler: ->
+    module.exports.push header: 'HDFS ZKFC # Kerberos', handler: ->
       {realm, hadoop_group, hdfs, zkfc} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       zkfc_principal = zkfc.principal.replace '_HOST', @config.host
@@ -140,7 +140,7 @@ command as an example:
 setAcl /hadoop-ha sasl:zkfc:cdrwa,sasl:nn:cdrwa,digest:zkfc:ePBwNWc34ehcTu1FTNI7KankRXQ=:cdrwa
 ```
 
-    module.exports.push header: 'ZKFC # ZK Auth and ACL', handler: ->
+    module.exports.push header: 'HDFS ZKFC # ZK Auth and ACL', handler: ->
       {hadoop_conf_dir, core_site, hdfs, zkfc} = @config.ryba
       acls = []
       # acls.push 'world:anyone:r'
@@ -193,7 +193,7 @@ inside "/etc/security/access.conf". A specific rule for the HDFS user is
 inserted if ALL users or the HDFS user access is denied.
 
     module.exports.push
-      header: 'ZKFC # SSH Fencing'
+      header: 'HDFS ZKFC # SSH Fencing'
       if: -> @contexts('ryba/hadoop/hdfs_nn').length > 1
       handler: ->
         {hdfs, hadoop_conf_dir, ssh_fencing, hadoop_group} = @config.ryba
@@ -255,7 +255,7 @@ If this is an active NameNode, we format ZooKeeper and start the ZKFC daemon. If
 NameNode, we wait for the active NameNode to take leadership and start the ZKFC daemon.
 
     module.exports.push
-      header: 'ZKFC # Format ZK'
+      header: 'HDFS ZKFC # Format ZK'
       timeout: -1
       if: [
         -> @config.ryba.active_nn_host is @config.host
