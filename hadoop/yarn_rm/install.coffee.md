@@ -149,8 +149,35 @@ ResourceCalculator class name is expected.
       @execute
         cmd: mkcmd.hdfs @, 'service hadoop-yarn-resourcemanager status && yarn rmadmin -refreshQueues || exit'
         if: -> @status -1
+## Ulimit
+
+Increase ulimit for the HFDS user. The HDP package create the following
+files:
 
 ## Dependencies
+```bash
+cat /etc/security/limits.d/yarn.conf
+yarn   - nofile 32768
+yarn   - nproc  65536
+```
+
+Note, a user must re-login for those changes to be taken into account. See
+the "ryba/hadoop/hdfs" module for additional information.
+
+    module.exports.push header: 'YARN RM # Ulimit', handler: ->
+      {user} = @config.ryba.yarn
+      @write
+        destination: '/etc/security/limits.d/#{user.name}.conf'
+        write: [
+          match: /^#{user.name}.+nofile.+$/mg
+          replace: "#{user.name}    -    nofile   64000"
+          append: true
+        ,
+          match: /^#{user.name}.+nproc.+$/mg
+          replace: "#{user.name}    -    nproc    64000"
+          append: true
+        ]
+        backup: true
 
     mkcmd = require '../../lib/mkcmd'
 

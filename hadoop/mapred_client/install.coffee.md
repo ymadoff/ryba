@@ -71,6 +71,35 @@ HDFS directory. Note, the parent directories are created by the
         target: '/hdp/apps/$version/mapreduce/mapreduce.tar.gz'
         lock: '/tmp/ryba-mapreduce.lock'
 
+## Ulimit
+
+Increase ulimit for the MapReduce user. The HDP package create the following
+files:
+
+```bash
+cat /etc/security/limits.d/mapred.conf
+mapred    - nofile 32768
+mapred    - nproc  65536
+```
+
+Note, a user must re-login for those changes to be taken into account. See
+the "ryba/hadoop/hdfs" module for additional information.
+
+    module.exports.push header: 'MapReduce # Ulimit', handler: ->
+      {user} = @config.ryba.mapred
+      @write
+        destination: '/etc/security/limits.d/#{user.name}.conf'
+        write: [
+          match: /^#{user.name}.+nofile.+$/mg
+          replace: "#{user.name}  -    nofile   64000"
+          append: true
+        ,
+          match: /^#{user.name}.+nproc.+$/mg
+          replace: "#{user.name}  -    nproc    64000"
+          append: true
+        ]
+        backup: true
+
 ## Dependencies
 
     mkcmd = require '../../lib/mkcmd'

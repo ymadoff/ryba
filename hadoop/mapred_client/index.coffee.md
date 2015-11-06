@@ -123,7 +123,6 @@ parameter is defined inside the "mapreduce.map.java.opts" and
       reduce_cpu = Math.max rm_cpu_min, reduce_cpu
       mapred.site['mapreduce.reduce.cpu.vcores'] = "#{reduce_cpu}"
 
-
     module.exports.push commands: 'check', modules: 'ryba/hadoop/mapred_client/check'
 
     module.exports.push commands: 'report', modules: 'ryba/hadoop/mapred_client/report'

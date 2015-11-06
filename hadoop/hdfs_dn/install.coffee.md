@@ -231,6 +231,41 @@ Note, we might move this middleware to Masson.
             cmd: "sysctl #{properties}"
           , next
 
+## Ulimit
+
+Increase ulimit for the HFDS user. The HDP package create the following
+files:
+
+```bash
+cat /etc/security/limits.d/hdfs.conf
+hdfs   - nofile 32768
+hdfs   - nproc  65536
+```
+
+The procedure follows [Kate Ting's recommandations][kate]. This is a cause
+of error if you receive the message: 'Exception in thread "main" java.lang.OutOfMemoryError: unable to create new native thread'.
+
+Also worth of interest are the [Pivotal recommandations][hawq] as well as the
+[Greenplum recommandation from Nixus Technologies][greenplum], the
+[MapR documentation][mapr] and [Hadoop Performance via Linux presentation][hpl].
+
+Note, a user must re-login for those changes to be taken into account.
+
+    module.exports.push header: 'HDFS NN # Ulimit', handler: ->
+      {user} = @config.ryba.hdfs
+      @write
+        destination: '/etc/security/limits.d/#{user.name}.conf'
+        write: [
+          match: /^#{user.name}.+nofile.+$/mg
+          replace: "#{user.name}    -    nofile   64000"
+          append: true
+        ,
+          match: /^#{user.name}.+nproc.+$/mg
+          replace: "#{user.name}    -    nproc    64000"
+          append: true
+        ]
+        backup: true
+
 
 ## Dependencies
 
