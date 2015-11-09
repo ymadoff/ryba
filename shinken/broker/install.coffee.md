@@ -29,8 +29,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Shinken Broker # Packages', handler: ->
       @service name: 'shinken-broker'
+      @service name: 'python-requests'
+      @service name: 'python-arrow'
 
-## Additional Modules
+## Additional Shinken Modules
 
     module.exports.push name: 'Shinken Broker # Modules', handler: ->
       {shinken, shinken:{broker}} = @config.ryba

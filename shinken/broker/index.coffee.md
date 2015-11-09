@@ -37,9 +37,9 @@ Some of the modules are:
       webui.config.port ?= '7767'
       webui.config.auth_secret ?= 'rybashinken123'
       logs =  broker.modules['mongo-logs'] ?= {}
-      logs.version = '1.0.2'
+      logs.version ?= '1.0.2'
       graphite = broker.modules['graphite2'] ?= {}
-      graphite.version = '2.1.0'
+      graphite.version ?= '2.1.0'
       graphite.source ?= "https://github.com/shinken-monitoring/mod-graphite/archive/#{graphite.version}.zip"
       graphite.archive ?= "mod-graphite-#{graphite.version}"
       ## Auto discovery
