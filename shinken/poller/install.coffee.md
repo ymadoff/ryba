@@ -96,15 +96,14 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push name: 'Shinken Poller # Plugins', timeout: -1, handler: ->
       {shinken} = @config.ryba
-      glob "#{__dirname}/resources/plugins/*", (err, plugins) =>
-        throw err if err
-        for plugin in plugins
-          @download
-            source: plugin
-            destination: "#{shinken.plugin_dir}/#{path.basename plugin}"
-            uid: shinken.user.name
-            gid: shinken.group.name
-            mode: 0o0755
+      for plugin in glob.sync "#{__dirname}/resources/plugins/*"
+        @download
+          destination: "#{shinken.plugin_dir}/#{path.basename plugin}"
+          source: plugin
+          local_source: true
+          uid: shinken.user.name
+          gid: shinken.group.name
+          mode: 0o0755
 
 ## Kerberos
 
