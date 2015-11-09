@@ -225,7 +225,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       render_ctx = {}
       for sub_module in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']  
         render_ctx["#{sub_module}s"] = @contexts("ryba/shinken/#{sub_module}")
-        console.log render_ctx
         @render
           destination: "/etc/shinken/#{sub_module}s/#{sub_module}-master.cfg"
           source: "#{__dirname}/resources/#{sub_module}-master.cfg.j2"
@@ -250,13 +249,14 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         for name, mod of ctx.config.ryba.shinken[sub_module].modules
           @render
             destination: "/etc/shinken/modules/#{name}.cfg"
-            source:  "#{__dirname}/../#{sub_module}/resources/modules/#{name}.cfg.j2"
+            source: "#{__dirname}/../#{sub_module}/resources/modules/#{name}.cfg.j2"
             local_source: true
             context: mod.config
-            if: mod.config?
+            if: fs.existsSync "#{__dirname}/../#{sub_module}/resources/modules/#{name}.cfg.j2"
 
 ## Dependencies
 
+    fs = require 'fs'
     glob = require 'glob'
     path = require 'path'
     url = require 'url'

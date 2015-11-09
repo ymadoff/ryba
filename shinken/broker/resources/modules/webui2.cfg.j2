@@ -80,37 +80,27 @@ define module {
    # Login form
    # Welcome text in the login form.
    login_text                 Login to the Shinken WebUI - Live System
-
-   # Company logo in the login form and header bar
+   {# Company logo in the login form and header bar
    # company_logo property is suffixed with .png and searched in photos_dir
    # Default logo is used if company_logo is not found in photos_dir
    # Default logo is always used if company_logo property is empty
-   # Default logo is default_company.png (Shinken logo) in webui/htdocs/images
+   # Default logo is default_company.png (Shinken logo) in webui/htdocs/images #}
    company_logo               my_company
-
-
+   {# Allow or not HTML chars in plugins output.
+   # WARNING: Allowing can be a security issue. #}
    allow_html_output          1
-                              ; Allow or not HTML chars in plugins output.
-                              ; WARNING: Allowing can be a security issue.
-
+   {# Use image if available for elements' tags
+   # Monitoring packs may include an image for the host/service tag
+   # WebUI also has some tags as images #}
    tag_as_image               0
-                              ; Use image if available for elements' tags
-                              ; Monitoring packs may include an image for the host/service tag
-                              ; WebUI also has some tags as images
-
+   {# Play sound on new non-acknowledged problems. #}
    play_sound                 1
-                              ; Play sound on new non-acknowledged problems.
-
-   # Gravatar image for logged in users
+   {# Gravatar image for logged in users
+   # If gravatar=0, image used is username.png in webui/htdocs/images/logo
+   # If not found, default is default_user.png in webui/htdocs/images/logo #}
    gravatar                   0
-                              ; If gravatar=0, image used is username.png in webui/htdocs/images/logo
-                              ; If not found, default is default_user.png in webui/htdocs/images/logo
-
    # Refresh period
    refresh_period             60
-                              ; Number of seconds between each page refresh
-                              ; 0 to disable refresh
-
    # Visual alerting thresholds
    # Used in the dashboard view to select background color for percentages
    hosts_states_warning       95
@@ -120,20 +110,17 @@ define module {
 
    # WebUI timezone (default is Europe/Paris)
    #timezone                  Europe/Paris
-
    {# Manage contacts ACL
    # 0 allows actions for all contacts
    # 1 allows actions only for contacts whose property 'is_admin' equals to 1
    # Default is 1 #}
    manage_acl                 1
-
    {# Allow anonymous access for some pages
    # 0 always disallow
    # 1 allows anonymous access if an anonymous
    # contact is declared in the Shinken configuration
    # Default is 0 #}
    allow_anonymous            1
-
    {## Advanced Options for Bottle Web Server
    # Best choice is auto, whereas Bottle chooses the best server it finds amongst:
    # - [WaitressServer, PasteServer, TwistedServer, CherryPyServer, WSGIRefServer]
@@ -141,28 +128,12 @@ define module {
    # ------------
    # Handle with very much care! #}
    #http_backend              auto
-                              ; Choice is: auto, wsgiref or cherrypy if available
-
    # Specific options store in the serverOptions when invoking Bottle run method ...
    # ------------
    # Handle with very much care!
    #bindAddress               auto
-                              ; bindAddress for backend server
    #umask                     auto
-                              ; umask for backend server
-
    #remote_user_enable        1
-                              ; If WebUI is behind a web server which
-                              ; has already authentified user, enable.
-
    #remote_user_enable        2
-                              ; Look for remote user in the WSGI environment
-                              ; instead of the HTTP header. This allows
-                              ; for fastcgi (flup) and scgi (flupscgi)
-                              ; integration, eg. with the apache modules.
-
    #remote_user_variable      X_Remote_User
-                              ; Set to the HTTP header containing
-                              ; the authentificated user s name, which
-                              ; must be a Shinken contact.
 }
