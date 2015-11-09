@@ -3,7 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    # module.exports.push 'ryba/hadoop/httpfs/wait'
+    module.exports.push 'ryba/hadoop/httpfs/wait'
 
 ## Check HTTP
       
