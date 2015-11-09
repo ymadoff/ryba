@@ -1,10 +1,7 @@
-{% for name, user in users %}
+{% for name, user in contacts %}
 define contact{
   contact_name  {{ name }}
   use           generic-contact
-  alias         {{ user.alias }}
-  email         {{ user.email }}
-  password      {{ user.password }}
-  is_admin       {% if user.admin %}1{% else %}0{% endif %}
-  can_submit_commands {% if user.admin %}1{% else %}0{% endif %}
+  {% for prop, value in user %}
+  {{ prop }}    {{ value }}{% endfor %}
 }{% endfor %}
