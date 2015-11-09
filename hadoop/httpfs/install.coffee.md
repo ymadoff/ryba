@@ -86,7 +86,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Environment
 
     module.exports.push header: 'HDFS HttpFS # Environment', timeout: -1, handler: ->
-      {httpfs} = @config.ryba
+      {hdfs, httpfs} = @config.ryba
       @mkdir
         destination: "#{httpfs.pid_dir}"
         uid: httpfs.user.name
@@ -97,6 +97,11 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         uid: httpfs.user.name
         gid: httpfs.group.name
         mode: 0o0755
+      @mkdir
+        destination: "#{hdfs.log_dir}" #/#{hdfs.user.name}
+        uid: hdfs.user.name
+        gid: hdfs.group.name
+        parent: true
       @render
         destination: "#{httpfs.conf_dir}/httpfs-env.sh"
         source: "#{__dirname}/../resources/httpfs-env.sh"

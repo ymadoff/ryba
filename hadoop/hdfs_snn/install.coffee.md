@@ -52,10 +52,8 @@ script inside "/etc/init.d" and activate it on startup.
         cmd: "service hadoop-hdfs-secondarynamenode restart"
         if: -> @status -3
 
-    module.exports.push header: 'HDFS SNN # Directories', timeout: -1, handler: ->
+    module.exports.push header: 'HDFS SNN # Layout', timeout: -1, handler: ->
       {hdfs, hadoop_group} = @config.ryba
-      @log? "Create SNN data, checkpind and pid directories"
-      pid_dir = hdfs.pid_dir.replace '$USER', hdfs.user.name
       @mkdir
         destination: for dir in hdfs.site['dfs.namenode.checkpoint.dir'].split ','
           if dir.indexOf('file://') is 0
@@ -64,10 +62,15 @@ script inside "/etc/init.d" and activate it on startup.
         gid: hadoop_group.name
         mode: 0o755
       @mkdir
-        destination: "#{pid_dir}"
+        destination: "#{hdfs.pid_dir.replace '$USER', hdfs.user.name}"
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755
+      @mkdir
+        destination: "#{hdfs.log_dir}" #/#{hdfs.user.name}
+        uid: hdfs.user.name
+        gid: hdfs.group.name
+        parent: true
 
     module.exports.push header: 'HDFS SNN # Kerberos', handler: ->
       {realm, hdfs} = @config.ryba

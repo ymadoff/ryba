@@ -79,7 +79,6 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
 
     module.exports.push header: 'HDFS NN # Layout', timeout: -1, handler: ->
       {hdfs, hadoop_group} = @config.ryba
-      pid_dir = hdfs.pid_dir.replace '$USER', hdfs.user.name
       @mkdir
         destination: for dir in hdfs.site['dfs.namenode.name.dir'].split ','
           if dir.indexOf('file://') is 0
@@ -89,10 +88,15 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
         mode: 0o755
         parent: true
       @mkdir
-        destination: "#{pid_dir}"
+        destination: "#{hdfs.pid_dir.replace '$USER', hdfs.user.name}"
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755
+      @mkdir
+        destination: "#{hdfs.log_dir}" #/#{hdfs.user.name}
+        uid: hdfs.user.name
+        gid: hdfs.group.name
+        parent: true
 
 ## Kerberos
 

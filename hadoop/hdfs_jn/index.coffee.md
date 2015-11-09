@@ -73,6 +73,3 @@ Example:
 
 
 [qjm]: http://hadoop.apache.org/docs/r2.3.0/hadoop-yarn/hadoop-yarn-site/HDFSHighAvailabilityWithQJM.html#Architecture
-
-
-

@@ -58,6 +58,11 @@ The JournalNode data are stored inside the directory defined by the
           then dir.substr(7) else dir
         uid: hdfs.user.name
         gid: hadoop_group.name
+      @mkdir
+        destination: "#{hdfs.log_dir}" #/#{hdfs.user.name}
+        uid: hdfs.user.name
+        gid: hdfs.group.name
+        parent: true
 
 ## Service
 
