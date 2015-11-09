@@ -65,13 +65,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             destination: "#{mod.archive}.zip"
             source: mod.source
             cache_file: "#{mod.archive}.zip"
-            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
+            not_if_exec: "shinken inventory | grep #{name}"
           @extract
             source: "#{mod.archive}.zip"
-            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
+            not_if_exec: "shinken inventory | grep #{name}"
           @execute
-            cmd: "su -l #{shinken.user.name} -c 'shinken install --local #{mod.archive}'"
-            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
+            cmd: "shinken install --local #{mod.archive}"
+            not_if_exec: "shinken inventory | grep #{name}"
         else throw Error "Missing parameter: archive for poller.modules.#{name}"
 
 ## Python Modules

@@ -50,13 +50,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             destination: "#{mod.archive}.zip"
             source: mod.source
             cache_file: "#{mod.archive}.zip"
-            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
+            not_if_exec: "shinken inventory | grep #{name}"
           @extract
             source: "#{mod.archive}.zip"
-            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
+            not_if_exec: "shinken inventory | grep #{name}"
           @execute
-            cmd: "su -l #{shinken.user.name} -c 'shinken install --local #{mod.archive}'"
-            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
+            cmd: "shinken install --local #{mod.archive}"
+            not_if_exec: "shinken inventory | grep #{name}"
         else throw Error "Missing parameter: archive for arbiter.modules.#{name}"
 
 ## Configuration
@@ -223,11 +223,11 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
     module.exports.push name: 'Shinken Arbiter # Shinken Config', handler: ->
       {shinken} = @config.ryba
       render_ctx = {}
-      for sub_module in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']  
-        render_ctx["#{sub_module}s"] = @contexts("ryba/shinken/#{sub_module}")
+      for service in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']  
+        render_ctx["#{service}s"] = @contexts("ryba/shinken/#{service}")
         @render
-          destination: "/etc/shinken/#{sub_module}s/#{sub_module}-master.cfg"
-          source: "#{__dirname}/resources/#{sub_module}-master.cfg.j2"
+          destination: "/etc/shinken/#{service}s/#{service}-master.cfg"
+          source: "#{__dirname}/resources/#{service}-master.cfg.j2"
           local_source: true
           context: render_ctx
       @write
@@ -244,16 +244,20 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ### Configure
 
     module.exports.push name: 'Shinken Arbiter # Modules Config', handler: ->
-      for sub_module in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
-        [ctx] = @contexts "ryba/shinken/#{sub_module}"
-        for name, mod of ctx.config.ryba.shinken[sub_module].modules
-          @render
-            destination: "/etc/shinken/modules/#{name}.cfg"
-            source: "#{__dirname}/../#{sub_module}/resources/modules/#{name}.cfg.j2"
-            local_source: true
-            context: mod.config
-            if: fs.existsSync "#{__dirname}/../#{sub_module}/resources/modules/#{name}.cfg.j2"
-
+      config_mod = (service, name, mod) =>
+        @render
+          destination: "/etc/shinken/modules/#{name}.cfg"
+          source: "#{__dirname}/../#{service}/resources/modules/#{name}.cfg.j2"
+          local_source: true
+          context: mod.config
+          if: fs.existsSync "#{__dirname}/../#{service}/resources/modules/#{name}.cfg.j2"
+        for sub_name, sub_mod of mod.modules then config_mod service, sub_name, sub_mod 
+      # Loop on all services
+      for service in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
+        [ctx] = @contexts "ryba/shinken/#{service}"
+        for name, mod of ctx.config.ryba.shinken[service].modules
+          config_mod service, name, mod
+        
 ## Dependencies
 
     fs = require 'fs'
