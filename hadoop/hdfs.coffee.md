@@ -70,17 +70,17 @@ with Kerberos specific properties.
       # accessing datanodes.
       hdfs.site['dfs.block.access.token.enable'] ?= 'true'
 
-    module.exports.push header: 'Hadoop HDFS # Install', timeout: -1, handler: ->
-      @service
-        name: 'hadoop'
-      @service
-        name: 'hadoop-hdfs'
-      @service
-        name: 'hadoop-libhdfs'
-      @service
-        name: 'hadoop-client'
-      @service
-        name: 'openssl'
+    # module.exports.push header: 'Hadoop HDFS # Install', timeout: -1, handler: ->
+    #   @service
+    #     name: 'hadoop'
+    #   @service
+    #     name: 'hadoop-hdfs'
+    #   @service
+    #     name: 'hadoop-libhdfs'
+    #   @service
+    #     name: 'hadoop-client'
+    #   @service
+    #     name: 'openssl'
 
 ## Kerberos User
 
