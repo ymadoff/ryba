@@ -64,13 +64,11 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
     module.exports.push name: 'Shinken Arbiter # Commons Config', handler: ->
       {shinken} = @config.ryba
       for obj in ['commands', 'contactgroups', 'contacts', 'hostgroups', 'hosts', 'servicegroups', 'templates']
-        files = glob.sync "#{__dirname}/resources/#{obj}/*.j2"
-        for file in files
-          @render
-            destination: "/etc/shinken/#{obj}/#{path.basename file, '.j2'}"
-            source: file
-            local_source: true
-            context: shinken.config
+        @render
+          destination: "/etc/shinken/#{obj}/#{obj}.cfg"
+          source: "#{__dirname}/resources/#{obj}.cfg.j2"
+          local_source: true
+          context: shinken.config
       @write
         destination: '/etc/shinken/resource.d/path.cfg'
         match: /^\$PLUGINSDIR\$=.*$/mg
@@ -252,7 +250,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         for name, mod of ctx.config.ryba.shinken[sub_module].modules
           @render
             destination: "/etc/shinken/modules/#{name}.cfg"
-            source:  "#{__dirname}/resources/modules/#{name}.cfg.j2"
+            source:  "#{__dirname}/../#{sub_module}/resources/modules/#{name}.cfg.j2"
             local_source: true
             context: mod.config
             if: mod.config?
