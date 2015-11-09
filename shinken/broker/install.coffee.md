@@ -38,7 +38,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @execute
         cmd: "su -l #{shinken.user.name} 'shinken --init'"
         not_if_exists: "#{shinken.user.home}/.shinken.ini"
-      for name, mod of broker.modules
+      installmod = (name, mod) =>  
         if mod.archive?
           @download
             destination: "#{mod.archive}.zip"
@@ -52,6 +52,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             cmd: "shinken install --local #{mod.archive}"
             not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
         else throw Error "Missing parameter: archive for broker.modules.#{name}"
+        for subname, submod of mod.modules then installmod subname, submod
+      for name, mod of broker.modules then installmod name, mod
       
 ## Dependencies
 
