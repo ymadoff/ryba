@@ -121,7 +121,7 @@ Example:
       module.exports.configure_system ctx
       {ryba} = ctx.config
       {hadoop_conf_dir, webhcat, hue, db_admin, core_site, hdfs, yarn, hbase} = ryba
-      hue.port ?= '9999'
+      hue.port ?= '8888'
       nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn'
       hue.blacklisted_app ?= []
       hue.ini ?= {}
