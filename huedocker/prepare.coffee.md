@@ -1,6 +1,24 @@
-# Cloudera Hue  build
+#  Hue  build
 
-Builds Hue from source 
+Follows Cloudera   [build-instruction][cloudera-hue] for Hue 3.8 version.
+An internet Connection is needed to be able to download.
+Becareful when used with docker-machine mecano might exit before finishing
+the execution. you can resume build by executing again prepare script or directly
+by taking the command launched by mecano and start it by hand
+
+First container
+```
+cd /tmp/ryba/hue-build/
+eval "$(docker-machine env dev)" && docker build -t "ryba/hue-build" .
+```
+
+Second container
+```
+cd /tmp/ryba/hue-build/
+eval "$(docker-machine env dev)" && docker build -t "ryba/hue-build" .
+```
+
+Builds Hue from source
 
     module.exports = []
 
@@ -9,19 +27,28 @@ Builds Hue from source
     hue.build.name ?= 'ryba/hue-build'
     hue.build.dockerfile ?= "#{__dirname}/resources/build/Dockerfile"
     hue.build.directory ?= '/tmp/ryba/hue-build'
-    machine = 'ryba'
+    hue.prod ?= {}
+    hue.prod.image ?= 'ryba/hue:3.8'
+    machine = 'dev'
 
-    # Zeppelin compiling build from Dockerfile
+# Hue compiling build from Dockerfile
 
-Intermetiate container to build hue from source. Builds ryba/hue-build image
+Builds Hue in two steps:
+1 - the first step creates a docker container to build hue from source with all the tools needed
+2 - the second step builds a production ready ryba/hue image by setting:
+  * the needed yum packages
+  * user and group layout
+It's the install middleware which takes care about mounting the differents volumes
+for hue to be able to communicate with the hadoop cluster in secure mode.
+
 
 
     module.exports.push name: 'Hue Build # Docker', timeout: -1, (options, next) ->
       fs.stat "#{hue.build.directory}/resources/hue-build.tar.gz", (err, stats) ->
         return ( if err.code == 'ENOENT' then do_build() else err ) if err
-        fs.stat "#{hue.build.directory}/hue.tar", (err, stats) ->
-            return do_end() unless  err 
-            return if err.code == 'ENOENT' then do_image() else err        
+        fs.stat "#{__dirname}/resources/hue.tar", (err, stats) ->
+            return do_end() unless  err
+            return if err.code == 'ENOENT' then do_image() else err
       do_build = =>
         @
         .download
@@ -63,34 +90,24 @@ Intermetiate container to build hue from source. Builds ryba/hue-build image
         .then (err) ->
           return err if err
           fs.stat "#{hue.build.directory}/hue.tar", (err, stats) ->
-            return do_end() unless  err 
+            return do_end() unless  err
             return if err.code == 'ENOENT' then do_image() else err
+      # Builds the production image
+      # Stores the image inside resources/ directory
       do_image = =>
-        @ 
-        # .download
-        #   source: "#{__dirname}/../../ryba-cluster-no-secure-4vm-2pc/resources/java/local_policy.jar"
-        #   destination: "#{hue.build.directory}/resources/local_policy.jar"
-        # .download
-        #   source: "#{__dirname}/../../ryba-cluster-no-secure-4vm-2pc/resources/java/US_export_policy.jar"
-        #   destination: "#{hue.build.directory}/resources/US_export_policy.jar"
+        @
         .download
           source: "#{__dirname}/resources/prod/Dockerfile"
           destination: "#{hue.build.directory}/Dockerfile"
           local: true
           force: true
-        # .download
-        #   source: "#{__dirname}/../../ryba-standalone-secure/conf/certs/cacert.pem"
-        #   destination: "#{hue.build.directory}/resources/cacert.pem"
-        # .download
-        #   source: "#{__dirname}/../../ryba-standalone-secure/conf/certs/cacert_key.pem"
-        #   destination: "#{hue.build.directory}/resources/cacert_key.pem"
         .download
           source: "#{__dirname}/resources/hue_init.sh"
           destination: "#{hue.build.directory}/resources/hue_init.sh"
           local: true
           force: true
         .docker_build
-          image: 'ryba/hue:3.8'
+          image: hue.prod.image
           machine: machine
           cwd: hue.build.directory
         .then do_save
@@ -99,14 +116,16 @@ Intermetiate container to build hue from source. Builds ryba/hue-build image
         .docker_save
           image: 'ryba/hue:3.8'
           machine: machine
-          destination: "#{hue.build.directory}/hue.tar"
+          destination: "#{__dirname}/resources/hue.tar"
         .then do_end
       do_end = =>
         console.log 'Hue Prepare Done'
-        return      
+        return
 
-## Dependencies  
+## Dependencies
 
     fs = require 'fs'
 
 ## Instructions
+
+[cloudera-hue]:(https://github.com/cloudera/hue#development-prerequisites)
