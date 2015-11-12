@@ -4,8 +4,8 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
-    module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push 'ryba/zookeeper/server/wait'
+    module.exports.push 'ryba/hadoop/hdfs'
     module.exports.push 'ryba/lib/hconfigure'
     # module.exports.push require '../../lib/hdp_service'
     module.exports.push 'ryba/lib/hdp_select'
