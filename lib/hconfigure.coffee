@@ -16,12 +16,12 @@ Options includes:
 ###
 module.exports.push required: true, handler: ->
   return if @registered 'hconfigure'
-  @register 'hconfigure', (options, callback) ->
+  @register 'hconfigure', (options) ->
     fnl_props = {}
     org_props = {}
     updated = 0
     options.source ?= options.destination
-    do_read_source = ->
+    @call (_, callback) ->
       options.log? "Read source properties from '#{options.source}'"
       # Populate org_props and, if merge, fnl_props
       properties.read options.ssh, options.source, (err, props) ->
@@ -30,30 +30,27 @@ module.exports.push required: true, handler: ->
         if options.merge
           fnl_props = {}
           for k, v of org_props then fnl_props[k] = v
-        do_load_default()
-    do_load_default = () ->
-      return do_merge() unless options.default
-      return do_default() unless typeof options.default is 'string'
+        callback()
+    @call (_, callback) ->
+      return unless options.default
+      return unless typeof options.default is 'string'
       options.log? "Read default properties from #{options.default}"
       # Populate options.default
       ssh = if options.local_default then null else options.ssh
       properties.read ssh, options.default, (err, dft) ->
         return callback err if err
         options.default = dft
-        do_default()
-    do_default = () ->
+        callback()
+    @call ->
+      return unless options.default
       # Note, default properties overwrite current ones by default, not sure
       # if this is the safest approach
       overwrite_curent = true
       options.log? "Merge default properties"
       for k, v of options.default
         v = "#{v}" if typeof v is 'number'
-        # if typeof v is 'undefined' or v is null
-        # then delete fnl_props[k]
-        # else fnl_props[k] = v
         fnl_props[k] = v if overwrite_curent or typeof fnl_props[k] is 'undefined' or fnl_props[k] is null
-      do_merge()
-    do_merge = () ->
+    @call ->
       options.log? "Merge user properties"
       for k, v of options.properties
         v = "#{v}" if typeof v is 'number'
@@ -62,10 +59,9 @@ module.exports.push required: true, handler: ->
         else if Array.isArray v
           fnl_props[k] = v.join ','
         else if typeof v isnt 'string'
-          return callback Error "Invalid value type '#{typeof v}' for property '#{k}'"
+          throw Error "Invalid value type '#{typeof v}' for property '#{k}'"
         else fnl_props[k] = v
-      do_compare()
-    do_compare = ->
+    @call ->
       keys = {}
       for k in Object.keys(org_props) then keys[k] = true
       for k in Object.keys(fnl_props) then keys[k] = true unless keys[k]?
@@ -74,16 +70,7 @@ module.exports.push required: true, handler: ->
         continue unless org_props[k] isnt fnl_props[k]
         options.log? "Property '#{k}' was '#{org_props[k]}' and is now '#{fnl_props[k]}'"
         updated = true
-      do_save()
-    do_save = =>
-      # return callback() unless updated
-      # options.log? "Save properties"
+    @call ->
       options.content = properties.stringify fnl_props
       options.source = null
-      # ctx.write options, (err, written) ->
-      #   updated = true if written
-      #   callback err, updated
       @write options
-      @then (err, status) ->
-        callback err, status
-    do_read_source()
