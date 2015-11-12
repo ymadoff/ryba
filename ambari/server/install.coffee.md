@@ -104,7 +104,7 @@ Create the database hosting the Ambari data with restrictive user permissions.
         flush privileges;
         "
         """
-        not_if_exec: "#{mysql_exec} -e 'use #{db.name}'"
+        unless_exec: "#{mysql_exec} -e 'use #{db.name}'"
 
 Load the database with initial data
 

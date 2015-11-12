@@ -196,13 +196,13 @@ if the NameNode was formated.
       # For non HA mode
       @execute
         cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -format\""
-        not_if: is_hdfs_ha
-        not_if_exists: "#{any_dfs_name_dir}/current/VERSION"
+        unless: is_hdfs_ha
+        unless_exists: "#{any_dfs_name_dir}/current/VERSION"
       # For HA mode, on the leader namenode
       @execute
         cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -format -clusterId #{nameservice}\""
         if: is_hdfs_ha and active_nn_host is @config.host
-        not_if_exists: "#{any_dfs_name_dir}/current/VERSION"
+        unless_exists: "#{any_dfs_name_dir}/current/VERSION"
 
 ## HA Init Standby NameNodes
 
@@ -214,7 +214,7 @@ is only executed on the standby NameNode.
       name: 'HDFS NN # HA Init Standby'
       timeout: -1
       if: -> @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      not_if: -> @config.host is @config.ryba.active_nn_host
+      unless: -> @config.host is @config.ryba.active_nn_host
       handler: ->
         {hdfs, active_nn_host} = @config.ryba
         # return next() unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1

@@ -37,7 +37,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         gid: shinken.group.name
       @execute
         cmd: "shinken --init"
-        not_if_exists: ".shinken.ini"
+        unless_exists: ".shinken.ini"
 
 ## Additional Modules
 
@@ -50,13 +50,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             destination: "#{mod.archive}.zip"
             source: mod.source
             cache_file: "#{mod.archive}.zip"
-            not_if_exec: "shinken inventory | grep #{name}"
+            unless_exec: "shinken inventory | grep #{name}"
           @extract
             source: "#{mod.archive}.zip"
-            not_if_exec: "shinken inventory | grep #{name}"
+            unless_exec: "shinken inventory | grep #{name}"
           @execute
             cmd: "shinken install --local #{mod.archive}"
-            not_if_exec: "shinken inventory | grep #{name}"
+            unless_exec: "shinken inventory | grep #{name}"
         else throw Error "Missing parameter: archive for arbiter.modules.#{name}"
 
 ## Configuration

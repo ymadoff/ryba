@@ -86,7 +86,7 @@ nagiocmd:x:2419:apache
           uid: user.name
           gid: group.name
           mode: 0o0644
-          not_if_exists: !overwrite
+          unless_exists: !overwrite
       )
 
 ## Plugins

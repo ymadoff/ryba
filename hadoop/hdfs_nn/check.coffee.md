@@ -111,7 +111,7 @@ for more information.
             kdestroy
             """
             code_skipped: 2
-            not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.shortname}-webhdfs"
+            unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.shortname}-webhdfs"
           , (err, executed, stdout) ->
             return callback err if err
             return callback null, false unless executed

@@ -137,7 +137,7 @@ Create the directories to store the logs and pid information. The properties
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-        not_if: @has_module('ryba/hive/hcatalog') and hive.site['hive.metastore.kerberos.principal'] is hive.site['hive.server2.authentication.kerberos.principal']
+        unless: @has_module('ryba/hive/hcatalog') and hive.site['hive.metastore.kerberos.principal'] is hive.site['hive.server2.authentication.kerberos.principal']
 
 ## Logs
 

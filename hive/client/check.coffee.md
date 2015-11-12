@@ -42,7 +42,7 @@ engine.
           hive -S -e "SET hive.execution.engine=mr; SELECT SUM(col2) FROM #{db}.my_table;" | hdfs dfs -put - #{directory}/result
           hive -e "DROP TABLE #{db}.my_table; DROP DATABASE #{db};"
           """
-          not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
+          unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
           trap_on_error: true
 
 ## Check HCatalog Tez
@@ -68,7 +68,7 @@ Use the [Hive CLI][hivecli] client to execute SQL queries using the Tez engine.
           hive -S -e "set hive.execution.engine=tez; SELECT SUM(col2) FROM #{db}.my_table;" | hdfs dfs -put - #{directory}/result
           hive -e "DROP TABLE #{db}.my_table; DROP DATABASE #{db};"
           """
-          not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
+          unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
           trap_on_error: true
 
 ## Check Server2
@@ -113,7 +113,7 @@ directive once you enter the beeline shell.
             -e "DROP TABLE #{db}.my_table;" \
             -e "DROP DATABASE #{db};"
             """
-            not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
+            unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
             trap_on_error: true
 
     module.exports.push
@@ -154,7 +154,7 @@ directive once you enter the beeline shell.
             -e "DROP TABLE #{db}.my_table;" \
             -e "DROP DATABASE #{db};"
             """
-            not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
+            unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
             trap_on_error: true
 
 ## Dependencies

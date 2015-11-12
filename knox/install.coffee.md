@@ -127,10 +127,10 @@ in the gateway.sh service script.
       {knox} = @config.ryba
       @remove
         destination: "#{knox.conf_dir}/topologies/admin.xml"
-        not_if: 'admin' in Object.keys knox.topologies
+        unless: 'admin' in Object.keys knox.topologies
       @remove
         destination: "#{knox.conf_dir}/topologies/sandbox.xml"
-        not_if: 'sandbox' in Object.keys knox.topologies
+        unless: 'sandbox' in Object.keys knox.topologies
       for nameservice, topology of knox.topologies
         doc = builder.create 'topology', version: '1.0', encoding: 'UTF-8'
         gateway = doc.ele 'gateway' if topology.providers?

@@ -36,8 +36,8 @@ instructions.
         # Create table with dummy column family and grant access to ryba
         echo "create '#{table}', 'cf1'; grant 'ryba', 'RWXCA', '#{table}'" | hbase shell 2>/dev/null;
         """
-        # not_if_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"list\" | grep -w '#{table}'"
-        not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.host}-phoenix"
+        # unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"list\" | grep -w '#{table}'"
+        unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.host}-phoenix"
       , (err, status) ->
         check = status unless err
       @write

@@ -39,14 +39,14 @@ ElasticSearch archive comes with an RPM
       @download
         source: elasticsearch.source
         destination: "/var/tmp/elasticsearch-#{elasticsearch.version}.noarch.rpm"
-        # not_if_exec: "rpm -q --queryformat '%{VERSION}' elasticsearch | grep '#{elasticsearch.version}'"
-        not_if_exists: true
+        # unless_exec: "rpm -q --queryformat '%{VERSION}' elasticsearch | grep '#{elasticsearch.version}'"
+        unless_exists: true
       @execute
         cmd:"""
         yum localinstall -y --nogpgcheck /var/tmp/elasticsearch-#{elasticsearch.version}.noarch.rpm
         chkconfig --add elasticsearch
         """
-        not_if_exec: "rpm -q --queryformat '%{VERSION}' elasticsearch | grep '#{elasticsearch.version}'"
+        unless_exec: "rpm -q --queryformat '%{VERSION}' elasticsearch | grep '#{elasticsearch.version}'"
 
 ## Env
 

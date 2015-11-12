@@ -52,7 +52,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         gid: shinken.group.name
       @execute
         cmd: "su -l #{shinken.user.name} -c 'shinken --init'"
-        not_if_exists: "#{shinken.home}/.shinken.ini"
+        unless_exists: "#{shinken.home}/.shinken.ini"
 
 ## Additional Modules
 
@@ -65,13 +65,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             destination: "#{mod.archive}.zip"
             source: mod.source
             cache_file: "#{mod.archive}.zip"
-            not_if_exec: "shinken inventory | grep #{name}"
+            unless_exec: "shinken inventory | grep #{name}"
           @extract
             source: "#{mod.archive}.zip"
-            not_if_exec: "shinken inventory | grep #{name}"
+            unless_exec: "shinken inventory | grep #{name}"
           @execute
             cmd: "shinken install --local #{mod.archive}"
-            not_if_exec: "shinken inventory | grep #{name}"
+            unless_exec: "shinken inventory | grep #{name}"
         else throw Error "Missing parameter: archive for poller.modules.#{name}"
 
 ## Python Modules
@@ -86,10 +86,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             destination: archive_name
             source: mod.source
             cache_file: archive_name
-            not_if_exec: "pip list | grep #{name}"
+            unless_exec: "pip list | grep #{name}"
           @exec
             cmd: "pip install #{mod.archive}.tar.gz"
-            not_if_exec: "pip list | grep #{name}"
+            unless_exec: "pip list | grep #{name}"
         else throw Error "Missing parameter: archive for poller.python_modules.#{name}"
 
 ## Plugins

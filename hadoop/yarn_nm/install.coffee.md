@@ -94,7 +94,7 @@ SSH connection to the node to gather the memory and CPU informations.
 
     module.exports.push
       name: 'YARN NM # Capacity Planning'
-      not_if: ->
+      unless: ->
         {yarn} = @config.ryba
         yarn.site['yarn.nodemanager.resource.memory-mb'] and yarn.site['yarn.nodemanager.resource.cpu-vcores']
       handler: ->
@@ -188,7 +188,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         hdfs dfs -chown #{yarn.user.name}:#{hadoop_group.name} #{remote_app_log_dir}
         hdfs dfs -chmod 1777 #{remote_app_log_dir}
         """
-        not_if_exec: "[[ hdfs dfs -d #{remote_app_log_dir} ]]"
+        unless_exec: "[[ hdfs dfs -d #{remote_app_log_dir} ]]"
         code_skipped: 2
 
 ## Dependencies

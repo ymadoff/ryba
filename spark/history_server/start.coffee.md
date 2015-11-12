@@ -19,8 +19,8 @@ su -l spark -c '/usr/hdp/current/spark-historyserver/sbin/start-history-server.s
         cmd:  """
         su -l #{spark.user.name} -c '/usr/hdp/current/spark-historyserver/sbin/start-history-server.sh'
         """
-        not_if_exists: "#{spark.pid_dir}/spark-#{spark.user.name}-org.apache.spark.deploy.history.HistoryServer-1.pid"
-        not_if: ({}, callback) ->
+        unless_exists: "#{spark.pid_dir}/spark-#{spark.user.name}-org.apache.spark.deploy.history.HistoryServer-1.pid"
+        unless: ({}, callback) ->
           pidfile = "#{spark.pid_dir}/spark-#{spark.user.name}-org.apache.spark.deploy.history.HistoryServer-1.pid"
           pidfile_running @ssh, pidfile, callback
 

@@ -27,7 +27,7 @@ deployment is heavily inspired by [Anil Gupta instruction][agi].
         cmd:"""
         ln -sf #{path.join hadoop_conf_dir, 'core-site.xml'} /usr/hdp/current/phoenix-client/bin/core-site.xml
         """
-        not_if_exists: '/usr/hdp/current/phoenix-client/bin/core-site.xml'
+        unless_exists: '/usr/hdp/current/phoenix-client/bin/core-site.xml'
 
     module.exports.push name: 'Phoenix Client # HBase Configuration', handler: ->
       {hbase} = @config.ryba
@@ -35,7 +35,7 @@ deployment is heavily inspired by [Anil Gupta instruction][agi].
         cmd:"""
         ln -sf #{path.join hbase.conf_dir, 'hbase-site.xml'} /usr/hdp/current/phoenix-client/bin/hbase-site.xml
         """
-        not_if_exists: '/usr/hdp/current/phoenix-client/bin/hbase-site.xml'
+        unless_exists: '/usr/hdp/current/phoenix-client/bin/hbase-site.xml'
 
 ## Kerberos
 

@@ -102,7 +102,7 @@ Note, this is not documented anywhere and might not be considered as a best prac
         hdfs dfs -chown #{yarn.user.name} #{dir}
         hdfs dfs -chmod 1777 #{dir}
         """
-        not_if_exec: "[[ hdfs dfs -d #{dir} ]]"
+        unless_exec: "[[ hdfs dfs -d #{dir} ]]"
 
 yarn.site['yarn.timeline-service.fs-history-store.uri']
 

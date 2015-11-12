@@ -275,7 +275,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           # Copy lzo
           cp #{lzo_jar} /usr/hdp/current/oozie-client/libext/
           """
-          not_if_exists: "/usr/hdp/current/oozie-client/libext/#{path.basename lzo_jar}"
+          unless_exists: "/usr/hdp/current/oozie-client/libext/#{path.basename lzo_jar}"
 
     # Note
     # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.0/HDP_Man_Install_v22/index.html#Item1.12.4.3
@@ -418,10 +418,10 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
             code_skipped: 2
           @execute
              cmd: "su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-client/bin/ooziedb.sh create -sqlfile /tmp/oozie.sql -run Validate DB Connection'"
-             not_if_exec: "#{cmd} \"use #{db}; select data from OOZIE_SYS where name='oozie.version'\""
+             unless_exec: "#{cmd} \"use #{db}; select data from OOZIE_SYS where name='oozie.version'\""
           @execute
              cmd: "su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-server/bin/ooziedb.sh upgrade -run'"
-             not_if_exec: "[[ `#{version_local}` == `#{version_remote}` ]]"
+             unless_exec: "[[ `#{version_local}` == `#{version_remote}` ]]"
         else throw Error 'Database engine not supported'
 
     # module.exports.push name: 'Oozie Server # Database', handler: ->
@@ -474,7 +474,7 @@ the ShareLib contents without having to go into HDFS.
         hdfs dfs -chmod -R 755 /user/#{oozie.user.name}
         """
         trap_on_error: true
-        not_if_exec: mkcmd.hdfs @, """
+        unless_exec: mkcmd.hdfs @, """
         version=`ls /usr/hdp/current/oozie-client/lib | grep oozie-client | sed 's/^oozie-client-\\(.*\\)\\.jar$/\\1/g'`
         hdfs dfs -cat /user/oozie/share/lib/*/sharelib.properties | grep build.version | grep $version
         """

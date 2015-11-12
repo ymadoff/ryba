@@ -7,7 +7,6 @@ redirect the tracking URL to the WEBUI which prevents the user to see the log af
 in the resource Manager web interface.
 
 
-
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/commons/java'

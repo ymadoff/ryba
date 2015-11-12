@@ -40,7 +40,7 @@ module.exports.push required: true, handler: ->
         fi
         echo $version
         """
-        not_if: options.store['hdp_select.version.default']
+        unless: options.store['hdp_select.version.default']
         shy: true
       , (err, executed, stdout, stderr) ->
         return callback err if err

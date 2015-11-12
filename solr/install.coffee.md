@@ -61,7 +61,7 @@ Ryba execute this scripts then customize installation
         cmd:"""
         tar xzf #{solr.install_dir}/solr-#{solr.version}.tgz solr-#{solr.version}/bin/install_solr_service.sh --strip-components=2
         """
-        not_if_exists: './install_solr_service.sh'
+        unless_exists: './install_solr_service.sh'
       @write
         destination: './install_solr_service.sh'
         match: /\nservice \$SOLR_SERVICE start(.*)(\n|.)*status\n/m
@@ -132,7 +132,7 @@ Ryba execute this scripts then customize installation
 #           source: conf_sample
 #           uid: solr.user.name
 #           gid: solr.group.name
-#           not_if_exists: titan_set
+#           unless_exists: titan_set
 #           mode: 0o0755
 #         , (err, changed) ->
 #           return next err if err

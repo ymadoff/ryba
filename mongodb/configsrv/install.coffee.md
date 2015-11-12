@@ -50,11 +50,11 @@ So we create a mongod-configsrv daemon with a specific configuration file.
       @copy
         source: '/etc/init.d/mongod'
         destination: '/etc/init.d/mongod-configsrv'
-        not_if_exists: true
+        unless_exists: true
       @copy
         source: '/etc/mongod.conf'
         destination: '/etc/mongod-configsrv.conf'
-        not_if_exists: true
+        unless_exists: true
       @write
         destination: '/etc/init.d/mongod-configsrv'
         write:

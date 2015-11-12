@@ -25,7 +25,7 @@ scanning the table.
           scan 'ryba',  {COLUMNS => '#{shortname}'}
         CMD
         """
-        not_if_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"scan 'ryba', {COLUMNS => '#{shortname}'}\" | egrep '[0-9]+ row'"
+        unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"scan 'ryba', {COLUMNS => '#{shortname}'}\" | egrep '[0-9]+ row'"
       , (err, executed, stdout) ->
         isRowCreated = RegExp("column=#{shortname}:my_column, timestamp=\\d+, value=10").test stdout
         throw Error 'Invalid command output' if executed and not isRowCreated
@@ -41,7 +41,7 @@ scanning the table.
           hbase org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.separator=, -Dimporttsv.columns=HBASE_ROW_KEY,family1:value ryba /user/ryba/test_import.csv
           hdfs dfs -touchz check-#{@config.host}-hbase-mapred
           """
-        not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.host}-hbase-mapred"
+        unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.host}-hbase-mapred"
 
 ## Check Splits
 
@@ -56,7 +56,7 @@ scanning the table.
           echo "create 'test_splits', 'cf1', SPLITS => ['1', '2', '3']" | hbase shell 2>/dev/null;
           echo "scan 'hbase:meta',  {COLUMNS => 'info:regioninfo', FILTER => \\"PrefixFilter ('test_split')\\"}" | hbase shell 2>/dev/null
           """
-        not_if_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"list 'test_splits'\" | grep -w 'test_splits'"
+        unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"list 'test_splits'\" | grep -w 'test_splits'"
       , (err, executed, stdout) ->
         throw err if err
         return unless executed
@@ -105,7 +105,7 @@ This check is only executed if more than two HBase Master are declared.
           echo "scan '#{table}',  { CONSISTENCY => 'STRONG' }" | hbase shell 2>/dev/null
           echo "scan '#{table}',  { CONSISTENCY => 'TIMELINE' }" | hbase shell 2>/dev/null
           """
-        # not_if_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"list '#{table}'\" | grep -w '#{table}'"
+        # unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"list '#{table}'\" | grep -w '#{table}'"
 
 ## Dependencies
 
