@@ -71,8 +71,6 @@ Update the "hive-site.xml" with the hive/server2 kerberos principal.
       [hive_ctx] = @contexts 'ryba/hive/server2'
       if hive_ctx?
         {hive} = hive_ctx.config.ryba
-        # oozie_server = @host_with_module 'ryba/oozie/server'
-        # return Error "Oozie shall be on the same server as Hue" unless oozie_server is @config.host
         @hconfigure
           destination: "#{hive.conf_dir}/hive-site.xml"
           properties: 'hive.server2.authentication.kerberos.principal': "#{hive.site['hive.server2.authentication.kerberos.principal']}"
@@ -81,7 +79,7 @@ Update the "hive-site.xml" with the hive/server2 kerberos principal.
 
 ## HBase
 
-Update the "hbase-site.xml" with the hbase/master kerberos principal.
+Update the "hbase-site.xml" with the hbase/thrift kerberos principal.
 
     module.exports.push name: 'Hue Docker # Hbase',  handler: ->
       [hbase_ctx] = @contexts 'ryba/hbase/thrift'
@@ -136,7 +134,7 @@ the default database while mysql is the recommanded choice.
             flush privileges;
             "
             """
-            not_if_exec: "#{mysql_exec} 'use #{name}'"
+            unless_exec: "#{mysql_exec} 'use #{name}'"
         else throw Error 'Hue database engine not supported'
 
 ## Kerberos
@@ -205,7 +203,7 @@ changes.
         comment: '#'
         backup: true
       @docker_stop
-        container: 'hue_server'
+        container: hue.container
         if_exec:"""
         if docker ps | grep #{hue.container};
         then  exit 0 ; else exit 1; fi
@@ -233,20 +231,28 @@ modified time are older than 10 days will be removed.
  Load Hue Container from local host
 
     module.exports.push
-      not_if_exec: """
-      hue_version=`docker images | grep 'ryba/hue' | awk '{ print $2 }'`
-      hue_target=3.8
-      if [ "$hue_version" == "$hue_target" ];then  exit 0 ; else exit 1; fi
-      """
-      name: 'Hue Docker # Container'
-      timeout: -1
-      handler:  ->
+
+      name: 'Hue Docker # Container', timeout: -1, handler:  ->
         {hue} = @config.ryba
+        tmp = '/user/hue.tar'
         @download
           source: "#{__dirname}/resources/hue.tar"
-          destination: '/tmp/hue.tar'
+          destination: tmp
+          unless_exec: "docker images | grep #{hue.image}| grep #{hue.version}"
         @docker_load
-          source: '/tmp/hue.tar'
+          source: tmp
+          unless_exec: "docker images | grep #{hue.image} | grep #{hue.version}"
+        @docker_rm
+          force: true
+          container: hue.container
+          unless_exec: "docker ps -a | grep #{hue.image} | grep #{hue.version}"
+        @remove
+          destination: tmp
+          # unless_exec: """
+          # hue_version=`docker images | grep #{hue.image}:#{hue.version} | awk '{ print $2 }'`
+          # hue_target=#{hue.version}
+          # if [ "$hue_version" == "$hue_target" ];then  exit 0 ; else exit 1; fi
+          # """
 
 ## Run Hue Server Container
 
@@ -266,7 +272,7 @@ ryba/hue:3.8
     module.exports.push name: 'Hue Docker # Run', label_true: 'RUNNED', handler:  ->
       {hadoop_group,hadoop_conf_dir, hdfs, hue, hive, hbase} = @config.ryba
       @docker_run
-        image: hue.prod.image
+        image: "#{hue.image}:#{hue.version}"
         volume: [
           "#{hadoop_conf_dir}:#{hadoop_conf_dir}"
           "#{hive.conf_dir}:#{hive.conf_dir}"
@@ -286,8 +292,8 @@ ryba/hue:3.8
         net: 'host'
         service: true
         container: hue.container
-        not_if_exec:"""
-        if docker ps -a | grep #{hue.prod.image};
+        unless_exec:"""
+        if docker ps -a | grep #{hue.image};
         then  exit 0 ; else exit 1; fi
         """
 

@@ -28,7 +28,7 @@ Builds Hue from source
     hue.build.dockerfile ?= "#{__dirname}/resources/build/Dockerfile"
     hue.build.directory ?= '/tmp/ryba/hue-build'
     hue.prod ?= {}
-    hue.prod.image ?= 'ryba/hue:3.8'
+    hue.prod.image ?= 'ryba/hue:3.9'
     machine = 'dev'
 
 # Hue compiling build from Dockerfile
@@ -114,7 +114,7 @@ for hue to be able to communicate with the hadoop cluster in secure mode.
       do_save = =>
         @
         .docker_save
-          image: 'ryba/hue:3.8'
+          image: hue.prod.image
           machine: machine
           destination: "#{__dirname}/resources/hue.tar"
         .then do_end

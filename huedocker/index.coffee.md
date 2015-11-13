@@ -62,16 +62,24 @@ Example:
 
 [hbase-configuration]:(http://gethue.com/hbase-browsing-with-doas-impersonation-and-kerberos/)
 
-    module.exports.configure_system = (ctx) ->
-      ctx.config.ryba ?= {}
+    module.exports.configure = (ctx) ->
+      require('masson/core/iptables').configure
+      require('../hadoop/core').configure ctx
+      require('../hadoop/hdfs_client').configure ctx
+      require('../hadoop/yarn_client').configure ctx
+      require('../hive/client').configure ctx
+      ryba = ctx.config.ryba ?= {}
+      {hadoop_conf_dir, webhcat, db_admin, core_site, hdfs, yarn, hbase} = ryba
       hue = ctx.config.ryba.hue ?= {}
-
       # Layout
       hue.conf_dir ?= '/etc/hue/conf'
       hue.log_dir ?= '/var/log/hue'
       # Production container image name
-      hue.prod ?= {}
-      hue.prod.image ?= 'ryba/hue:3.8'
+      hue.version ?= '3.9'
+      hue.image ?= 'ryba/hue'
+      hue.container ?= 'hue_server'
+      hue.port ?= '8888'
+      blacklisted_app = []
       # User
       hue.user ?= {}
       hue.user = name: hue.user if typeof hue.user is 'string'
@@ -109,24 +117,10 @@ Example:
         httpfs_ctx.config.ryba.httpfs.site ?= {}
         httpfs_ctx.config.ryba.httpfs.site["httpfs.proxyuser.#{hue.user.name}.hosts"] ?= '*'
         httpfs_ctx.config.ryba.httpfs.site["httpfs.proxyuser.#{hue.user.name}.groups"] ?= '*'
-      hue.container ?= 'hue_server'
 
-
-    module.exports.configure = (ctx) ->
-      require('masson/core/iptables').configure
-      require('../hadoop/core').configure ctx
-      require('../hadoop/hdfs_client').configure ctx
-      require('../hadoop/yarn_client').configure ctx
-      require('../hive/client').configure ctx
-      module.exports.configure_system ctx
-      {ryba} = ctx.config
-      {hadoop_conf_dir, webhcat, hue, db_admin, core_site, hdfs, yarn, hbase} = ryba
-      hue.port ?= '8888'
       nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn'
-      hue.blacklisted_app ?= []
+
       hue.ini ?= {}
-      # todo, this might not work as expected after ha migration
-      nodemanagers = ctx.hosts_with_module 'ryba/hadoop/yarn_nm'
       # Webhdfs should be active on the NameNode, Secondary NameNode, and all the DataNodes
       # throw new Error 'WebHDFS not active' if ryba.hdfs.site['dfs.webhdfs.enabled'] isnt 'true'
       hue.ca_bundle ?= '/etc/hue/conf/trust.pem'
@@ -141,10 +135,10 @@ Example:
       # see http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cm_sg_ssl_hue.html
 
       hue.ini['hadoop'] ?= {}
-
       # Hue Install defines a dependency on HDFS client
       nn_protocol = if ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       nn_protocol = 'http' if ryba.hdfs.site['dfs.http.policy'] is 'HTTP_AND_HTTPS' and not hue.ssl_client_ca
+
       if ryba.hdfs.site['dfs.ha.automatic-failover.enabled'] is 'true'
         nn_host = ryba.active_nn_host
         shortname = ctx.contexts(hosts: nn_host)[0].config.shortname
@@ -152,7 +146,7 @@ Example:
         webhdfs_url = "#{nn_protocol}://#{nn_host}:#{nn_http_port}/webhdfs/v1"
       else
         nn_host = nn_ctxs[0].config.host
-        nn_http_port = hdfs.site["dfs.namenode.#{nn_protocol}-address"].split(':')[1]
+        nn_http_port = ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address"].split(':')[1]
         webhdfs_url = "#{nn_protocol}://#{nn_host}:#{nn_http_port}/webhdfs/v1"
 
       # YARN ResourceManager (MR2 Cluster)
@@ -239,7 +233,7 @@ Example:
           webhcat_ctx.config.ryba.webhcat.site['webhcat_ctxs'] ?= '*'
           webhcat_ctx.config.ryba.webhcat.site['webhcat.proxyuser.hue.groups'] ?= '*'
       else
-        hue.blacklisted_app.push 'webhcat'
+        blacklisted_app.push 'webhcat'
       # HCatalog
       [hs2_ctx] = ctx.contexts 'ryba/hive/server2', require('../hive/server2').configure
       throw Error "No Hive HCatalog Server configured" unless hs2_ctx
@@ -262,7 +256,6 @@ Example:
       hue.ini['desktop']['smtp'] ?= {}
       # From Hue 3.7 ETC has become Etc
       hue.ini['desktop']['time_zone'] ?= 'Etc/UCT'
-
       hue.ini.desktop.database ?= {}
       hue.ini.desktop.database.user ?= 'hue'
       hue.ini.desktop.database.password ?= 'hue123'
@@ -279,7 +272,6 @@ Example:
       hue.ini.desktop.kerberos ?= {}
       hue.ini.desktop.kerberos.hue_keytab ?= '/etc/hue/conf/hue.service.keytab'
       hue.ini.desktop.kerberos.hue_principal ?= "hue/#{ctx.config.host}@#{ryba.realm}"
-
       # Path to kinit
       # For RHEL/CentOS 5.x, kinit_path is /usr/kerberos/bin/kinit
       # For RHEL/CentOS 6.x, kinit_path is /usr/bin/kinit
@@ -288,11 +280,10 @@ Example:
       hue.ini['desktop']['kerberos']['ccache_path'] ?= "/tmp/krb5cc_#{hue.user.uid}"
 
       # Remove unused module
-      hue.blacklisted_app.push 'rdbms'
-      hue.blacklisted_app.push 'impala'
-      hue.blacklisted_app.push 'sqoop'
-
-
+      blacklisted_app.push 'rdbms'
+      blacklisted_app.push 'impala'
+      blacklisted_app.push 'sqoop'
+      blacklisted_app.push 'sentry'
       # Sqoop
       sqoop_hosts = ctx.hosts_with_module 'ryba/sqoop'
 
@@ -339,11 +330,9 @@ Example:
       # hue.ini['clusters']['default']['host_ports'] ?= zookeeper_hosts
       # hue.ini['clusters']['default']['rest_url'] ?= 'http://example:port'
       # else
-      #   hue.blacklisted_app.push 'zookeeper'
-      hue.blacklisted_app.push 'zookeeper'
-      hue.blacklisted_app.push 'spark'
-
-
+      #   blacklisted_app.push 'zookeeper'
+      blacklisted_app.push 'zookeeper'
+      blacklisted_app.push 'spark'
       # Uncomment all security_enabled settings and set them to true
       hue.ini.hadoop ?= {}
       hue.ini.hadoop.hdfs_clusters ?= {}
@@ -358,16 +347,11 @@ Example:
       hue.ini.hadoop.yarn_clusters ?= {}
       hue.ini.hadoop.yarn_clusters.default ?= {}
       hue.ini.hadoop.yarn_clusters.default.security_enabled = 'true'
-
       hue.ini.liboozie ?= {}
       hue.ini.liboozie.security_enabled = 'true'
       hue.ini.hcatalog ?= {}
       hue.ini.hcatalog.security_enabled = 'true'
-
-      hue.ini['desktop']['app_blacklist'] ?= hue.blacklisted_app.join()
-
-
-
+      hue.ini['desktop']['app_blacklist'] ?= blacklisted_app.join()
 
 ## Commands
 
@@ -380,12 +364,12 @@ Example:
       'ryba/huedocker/start'
       'ryba/huedocker/check'
     ]
+
     module.exports.push commands: 'start', modules: 'ryba/huedocker/start'
     #
     module.exports.push commands: 'status', modules: 'ryba/huedocker/status'
     #
     module.exports.push commands: 'stop', modules: 'ryba/huedocker/stop'
-
     # module.exports.push commands: 'wait', modules: 'ryba/huedocker/wait'
 
 [home]: http://gethue.com

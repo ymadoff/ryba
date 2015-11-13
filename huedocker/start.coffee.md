@@ -18,7 +18,7 @@ docker start hue_server
       {hue} = @config.ryba
       @docker_start
         container: hue.container
-        not_if_exec:"""
+        unless_exec:"""
         if docker ps | grep #{hue.container};
         then  exit 0 ; else exit 1; fi
         """
