@@ -245,10 +245,10 @@ modified time are older than 10 days will be removed.
         @docker_load
           source: tmp
           unless_exec: "docker images | grep #{hue.image} | grep #{hue.version}"
-        @docker_rm
-          force: true
-          container: hue.container
-          unless_exec: "docker ps -a | grep #{hue.image} | grep #{hue.version}"
+        # @docker_rm
+        #   force: true
+        #   container: hue.container
+        #   unless_exec: "docker ps -a | grep #{hue.image} | grep #{hue.version}"
         @remove
           destination: tmp
           # unless_exec: """
