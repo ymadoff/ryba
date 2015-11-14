@@ -25,8 +25,8 @@ Follows [cloudera hbase setup in secure mode][hbase-configuration]
       # hbase.site['hbase.thrift.keytab.file'] ?= "#{hbase.conf_dir}/thrift.service.keytab"
       # Principal changed to http by default in order to enable impersonation and make it work with hue
       # http://gethue.com/hbase-browsing-with-doas-impersonation-and-kerberos/
-      hbase.site['hbase.thrift.kerberos.principal'] ?= "HTTP/_HOST@#{realm}" # was hbase_thrift/_HOST
-      hbase.site['hbase.thrift.keytab.file'] ?= '/etc/hbase/conf/thrift.service.keytab'#core_site['hadoop.http.authentication.kerberos.keytab']
+      hbase.site['hbase.thrift.kerberos.principal'] ?= "HTTP/#{@config.host}@#{realm}" # was hbase_thrift/_HOST
+      hbase.site['hbase.thrift.keytab.file'] ?= core_site['hadoop.http.authentication.kerberos.keytab']
       hbase.site['hbase.regionserver.thrift.framed'] ?= 'buffered'
       # Enables impersonation
       # http://hbase.apache.org/book.html#security.client.thrift
