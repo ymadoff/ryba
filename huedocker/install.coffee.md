@@ -85,12 +85,15 @@ Update the "hbase-site.xml" with the hbase/thrift kerberos principal.
       [hbase_ctx] = @contexts 'ryba/hbase/thrift'
       if hbase_ctx?
         {hbase} = hbase_ctx.config.ryba
+        # props = {}
+        # props['hbase.security.authentication'] = hbase.site['hbase.security.authentication']
+        # props['hbase.security.authorization'] = hbase.site['hbase.security.authorization']
+        # for k, v of hbase.site
+        #   props[k] = v if  k.indexOf('thrift') isnt  -1
         @hconfigure
           destination: "#{hbase.conf_dir}/hbase-site.xml"
-          properties:
-            # 'hbase.master.kerberos.principal': "#{hbase.site['hbase.master.kerberos.principal']}"
-            'hbase.rest.authentication.kerberos.principal': "#{hbase.site['hbase.rest.authentication.kerberos.principal']}"
-          merge: true
+          properties: hbase.site
+          # 'hbase.thrift.kerberos.principal': "#{hbase.site['hbase.thrift.kerberos.principal']}"
           backup: true
 
 ## Configure

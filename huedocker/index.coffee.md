@@ -103,6 +103,8 @@ Example:
         hdfs_ctx.config.ryba.core_site['hadoop.proxyuser.hcat.hosts'] ?= '*'
         hdfs_ctx.config.ryba.core_site['hadoop.proxyuser.httpfs.groups'] ?= '*'
         hdfs_ctx.config.ryba.core_site['hadoop.proxyuser.httpfs.hosts'] ?= '*'
+        hdfs_ctx.config.ryba.core_site['hadoop.proxyuser.hbase.groups'] ?= '*'
+        hdfs_ctx.config.ryba.core_site['hadoop.proxyuser.hbase.hosts'] ?= '*'
       oozie_ctxs = ctx.contexts 'ryba/oozie/server'
       for oozie_ctx in oozie_ctxs
         oozie_ctx.config.ryba ?= {}
@@ -278,7 +280,6 @@ Example:
       hue.ini['desktop']['kerberos']['kinit_path'] ?= '/usr/bin/kinit'
       # setting cache_name
       hue.ini['desktop']['kerberos']['ccache_path'] ?= "/tmp/krb5cc_#{hue.user.uid}"
-
       # Remove unused module
       blacklisted_app.push 'rdbms'
       blacklisted_app.push 'impala'
@@ -288,38 +289,35 @@ Example:
       sqoop_hosts = ctx.hosts_with_module 'ryba/sqoop'
 
       # HBase
-
-      # Configuration for Hue version > 3.7 (March 2015)
+      # Configuration for Hue version > 3.8.1 (July 2015)
       # Hue communicates with hbase throught the thrift server from Hue 3.7 version
       # Hbase has to be configured to offer impersonation
       # http://gethue.com/hbase-browsing-with-doas-impersonation-and-kerberos/
-      hbase_service_ctxs = ctx.contexts ['ryba/hbase/master','ryba/hbase/thrift']
       hbase_thrift_ctxs = ctx.contexts 'ryba/hbase/thrift', require('../hbase/thrift').configure
-      if hbase_service_ctxs.length and hbase_thrift_ctxs.length
-        for hbase_ctx in hbase_service_ctxs
-          # warn hue that thirft server uses http ( and not binary )
-          # can also be configured directly from hue.ini file
-          # @hosts[host].config.ryba.hbase.site['hbase.regionserver.thrift.http'] ?= 'true'
-          hbase_ctx.config.ryba.hbase.site['hbase.thrift.support.proxyuser'] ?= 'true'
-          hbase_ctx.config.ryba.hbase.site['hbase.regionserver.thrift.framed'] ?= 'true'
-          hbase_ctx.config.ryba.hbase.site['hbase.regionserver.thrift.server.type'] ?= 'TThreadPoolServer'
-
+      if hbase_thrift_ctxs.length
         hbase_thrift_cluster = ''
-        hbase_thrift_cluster += ( if key == '0' then "(Cluster|#{hbase_ctx.config.host}:#{hbase_ctx.config.ryba.hbase.site['hbase.thrift.port']})" else ",(Cluster|#{hbase_ctx.config.host}:#{hbase_ctx.config.ryba.hbase.site['hbase.thrift.port']})" ) for key, hbase_ctx of hbase_thrift_ctxs
+        for key, hbase_ctx of hbase_thrift_ctxs
+          host_adress = ''
+          # from source code the hostname should be prefixed with https to warn hue that SSL is enabled
+          # activating ssl make hue mismatch fully qualified hostname
+          # for now not prefixing anything
+          # host_adress += 'https' if hbase_ctx.config.ryba.hbase.site['hbase.thrift.ssl.enabled'] and hbase_ctx.config.ryba.hbase.site['hbase.regionserver.thrift.http']
+          host_adress += '' if hbase_ctx.config.ryba.hbase.site['hbase.thrift.ssl.enabled'] and hbase_ctx.config.ryba.hbase.site['hbase.regionserver.thrift.http']
+          host_adress += "#{hbase_ctx.config.host}:#{hbase_ctx.config.ryba.hbase.site['hbase.thrift.port']}"
+          hbase_thrift_cluster +=  if key == '0' then "(Cluster|#{host_adress})" else ",(Cluster|https://#{host_adress})"
         hue.ini['hbase'] ?= {}
         hue.ini['hbase']['hbase_conf_dir'] ?= hbase.conf_dir
         hue.ini['hbase']['hbase_clusters'] ?= hbase_thrift_cluster
-        # http://gethue.com/how-to-configure-hue-in-your-hadoop-cluster/
         # Hard limit of rows or columns per row fetched before truncating.
         hue.ini['hbase']['truncate_limit'] ?= '500'
-        # 'buffered' is the default of the HBase Thrift Server and supports security.
-        # 'framed' can be used to chunk up responses,
-        # which is useful when used in conjunction with the nonblocking server in Thrift.
-        hue.ini['hbase']['thrift_transport'] ?= 'framed'
-        # property should work if thrift server was using http
-        # hue.ini['hbase']['use_doas'] ?= 'true'
+        # use_doas says that HBASE THRIFT uses http in order to enable impersonation
+        # set to false if you want to unable
+        # not stable
+        hue.ini['hbase']['use_doas'] = if hbase_thrift_ctxs[0].config.ryba.hbase.site['hbase.regionserver.thrift.http'] then 'true' else 'false'
+        hue.ini['hbase']['thrift_transport'] =  hbase_ctx.config.ryba.hbase.site['hbase.regionserver.thrift.framed']
       else
-        hue.blacklisted_app.push 'hbase'
+        blacklisted_app.push 'hbase'
+
 
       # Zookeeper
       # for now we do not support zookeeper rest interface
