@@ -104,74 +104,110 @@ Default configuration:
       ryba = ctx.config.ryba ?= {}
       ryba.yarn ?= {}
       ryba.mapred ?= {}
-      # Configuration of hadoop metrics properties
-      hadoop = ryba.hadoop ?= {}
-      metrics_contexts = []
-      # Enum of services to collect
-      # On the NameNode and SecondaryNameNode servers, to configure the metric contexts
-      for name, module of {
-        namenode: "ryba/hadoop/hdfs_nn",
-        resourcemanager : "ryba/hadoop/yarn_rm",
-        historyserver: "ryba/hadoop/mapred_jhs",
-        datanode: "ryba/hadoop/hdfs_dn",
-        journalnode: "ryba/hadoop/hdfs_jn",
-        nodemanager: "ryba/hadoop/yarn_nm",
-        maptask: "ryba/hadoop/yarn_nm",
-        reducetask: "ryba/hadoop/yarn_nm",
-        nimbus:"ryba/storm/nimbus",
-        supervisor: "ryba/storm/supervisor" }
-        metrics_contexts.push name if ctx.has_module module
 
-      do_ganglia_servers = (sink, context) ->
-        return "#{sink.host}:#{sink.ports[context]}"
-      # Enum of configured sinks
-      metrics_sinks = []
-      ganglia_host =  ctx.host_with_module 'ryba/ganglia/collector'
-      graphite_host = ctx.host_with_module 'ryba/graphite/carbon'
-      if ganglia_host
-        metrics_sinks.push
-          name: 'ganglia'
-          class: 'org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31'
-          period: '10'
-          host: ganglia_host
-          ports: {
-            namenode: ganglia.nn_port
-            resourcemanager: ganglia.rm_port
-            historyserver: ganglia.jhs_port
-            datanode: ganglia.slaves_port
-            journalnode: ""
-            nodemanager: ganglia.rm_port
-            maptask: ganglia.slaves_port
-            reducetask: ganglia.slaves_port
-            nimbus:""
-            supervisor: ""}
-          properties: {servers: do_ganglia_servers, metrics_prefix: ''}
-          options: {
-            '*.sink.ganglia.supportsparse': 'true',
-            '.sink.ganglia.slope=jvm.metrics.gcCount': 'zero,jvm.metrics.memHeapUsedM=both',
-            '.sink.ganglia.dmax=jvm.metrics.threadsBlocked': '70,jvm.metrics.memHeapUsedM=40'
-          }
-      if graphite_host
-        graphite_port = graphite.carbon_aggregator_port
-        metrics_prefix = graphite.metrics_prefix
-        metrics_sinks.push
-          name: 'graphite'
-          class: 'org.apache.hadoop.metrics2.sink.GraphiteSink'
-          period: '10'
-          host: graphite_host
-          properties: {server_host: graphite_host, server_port: graphite_port , metrics_prefix: metrics_prefix}
-          options: {}
-      # Configuration
-      hadoop_metrics = ryba.hadoop_metrics ?= {}
+
+## Configuration for metrics
+
+Configuration of hadoop metrics properties. 
+
+The File sink is activated by default. The Ganglia and Graphite sinks are
+automatically activated if the "ryba/ganglia/collector" and
+"ryba/graphite/collector" are respectively registered on one of the nodes of the
+cluster. You can disable any of those sinks by setting its class to null, here
+how:
+
+```json
+{ "ryba": { "metrics": 
+  "*.sink.file.class": null, 
+  "*.sink.ganglia.class": null, 
+  "*.sink.graphite.class": null
+ } }
+```
+
+Metric prefix can be defined globally with the usage of glob expression or per
+context. Here's an exemple:
+
+```json
+{ "ryba": { "hadoop_metrics": 
+  "*.sink.*.metrics_prefix": "default", 
+  "*.sink.file.metrics_prefix": "file_prefix", 
+  "namenode.sink.ganglia.metrics_prefix": "master_prefix", 
+  "resourcemanager.sink.ganglia.metrics_prefix": "master_prefix"
+ } }
+```
+
+According to the source code, the list of supported contexts is: "namenode",
+"resourcemanager", "datanode", "nodemanager", "maptask", "reducetask",
+"journalnode", "historyserver", "nimbus", "supervisor"
+
+      hadoop_metrics = ctx.config.ryba.hadoop_metrics ?= {}
+      # default sampling period, in seconds
       hadoop_metrics['*.period'] ?= '60'
-      for sink in metrics_sinks
-        hadoop_metrics["*.sink.#{sink.name}.class"] ?= sink.class
-        hadoop_metrics["*.sink.#{sink.name}.period"] ?= sink.period
-        for k,v of sink.options
-           hadoop_metrics[k] = v
-        for context in metrics_contexts
-          for k,v of sink.properties
-            hadoop_metrics["#{context}.sink.#{sink.name}.#{k}"] = if typeof v is 'function' then v sink,context else v
+      # File sink
+      hadoop_metrics['*.sink.file.class'] ?= 'org.apache.hadoop.metrics2.sink.FileSink'
+      if hadoop_metrics['*.sink.file.class'] isnt null # Meaning undefined or defined
+        hadoop_metrics['*.sink.file.filename'] ?= 'metrics.out'
+        hadoop_metrics['namenode.sink.file.filename'] ?= 'namenode-metrics.out'
+        hadoop_metrics['datanode.sink.file.filename'] ?= 'datanode-metrics.out'
+        hadoop_metrics['resourcemanager.sink.file.filename'] ?= 'resourcemanager-metrics.out'
+        hadoop_metrics['nodemanager.sink.file.filename'] ?= 'nodemanager-metrics.out'
+        hadoop_metrics['mrappmaster.sink.file.filename'] ?= 'mrappmaster-metrics.out'
+        hadoop_metrics['jobhistoryserver.sink.file.filename'] ?= 'jobhistoryserver-metrics.out'
+      # Ganglia sink
+      [ganglia_ctx] =  ctx.contexts 'ryba/ganglia/collector', require('../ganglia/collector').configure
+      if ganglia_ctx and hadoop_metrics['*.sink.ganglia.class'] isnt null # Meaning undefined or defined
+        hadoop_metrics['*.sink.ganglia.class'] ?= 'org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31'
+        hadoop_metrics['*.sink.ganglia.period'] ?= '10'
+        hadoop_metrics['*.sink.ganglia.supportsparse'] ?= 'true' # Cant find definition but majority of examples are "true"
+        hadoop_metrics['*.sink.ganglia.slope'] ?= 'jvm.metrics.gcCount=zero,jvm.metrics.memHeapUsedM=both'
+        hadoop_metrics['*.sink.ganglia.dmax'] ?= 'jvm.metrics.threadsBlocked=70,jvm.metrics.memHeapUsedM=40'
+        if ctx.has_module 'ryba/hadoop/hdfs_nn'
+          hadoop_metrics['namenode.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
+        if ctx.has_module 'ryba/hadoop/yarn_rm'
+          hadoop_metrics['resourcemanager.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.rm_port}"
+        if ctx.has_module 'ryba/hadoop/hdfs_dn'
+          hadoop_metrics['datanode.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
+        if ctx.has_module 'ryba/hadoop/yarn_nm'
+          hadoop_metrics['nodemanager.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
+          hadoop_metrics['maptask.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
+          hadoop_metrics['reducetask.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
+        # if ctx.has_module 'ryba/hadoop/hdfs_jn'
+        #   hadoop_metrics['journalnode.sink.ganglia.servers']
+        # if ctx.has_module 'ryba/hadoop/mapred_jhs'
+        #   hadoop_metrics['historyserver.sink.ganglia.servers']
+        # if ctx.has_module 'ryba/storm/nimbus'
+        #   hadoop_metrics['nimbus.sink.ganglia.servers']
+        # if ctx.has_module 'ryba/storm/supervisor'
+        #   hadoop_metrics['supervisor.sink.ganglia.servers']
+      # Graphite sink
+      [graphite_ctx] =  ctx.contexts 'ryba/graphite/collector'
+      if graphite_ctx and hadoop_metrics['*.sink.graphite.class'] isnt null # Meaning undefined or defined
+        hadoop_metrics['*.sink.graphite.class'] ?= 'org.apache.hadoop.metrics2.sink.GraphiteSink'
+        hadoop_metrics['*.sink.graphite.period'] ?= '10'
+        if ctx.has_module 'ryba/hadoop/hdfs_nn'
+          hadoop_metrics['namenode.sink.graphite.server_host'] ?= "#{ganglia_ctx.config.host}"
+          hadoop_metrics['namenode.sink.graphite.server_port'] ?= "#{ganglia_ctx.config.ryba.graphite.carbon_aggregator_port}"
+        if ctx.has_module 'ryba/hadoop/yarn_rm'
+          hadoop_metrics['resourcemanager.sink.graphite.server_host'] ?= "#{ganglia_ctx.config.host}"
+          hadoop_metrics['resourcemanager.sink.graphite.server_port'] ?= "#{ganglia_ctx.config.ryba.graphite.carbon_aggregator_port}"
+        if ctx.has_module 'ryba/hadoop/hdfs_dn'
+          hadoop_metrics['datanode.sink.graphite.server_host'] ?= "#{ganglia_ctx.config.host}"
+          hadoop_metrics['datanode.sink.graphite.server_port'] ?= "#{ganglia_ctx.config.ryba.graphite.carbon_aggregator_port}"
+        if ctx.has_module 'ryba/hadoop/yarn_nm'
+          hadoop_metrics['nodemanager.sink.graphite.server_host'] ?= "#{ganglia_ctx.config.host}"
+          hadoop_metrics['nodemanager.sink.graphite.server_port'] ?= "#{ganglia_ctx.config.ryba.ganglia.nn_port}"
+          hadoop_metrics['maptask.sink.graphite.server_host'] ?= "#{ganglia_ctx.config.host}"
+          hadoop_metrics['maptask.sink.graphite.server_port'] ?= "#{ganglia_ctx.config.ryba.graphite.carbon_aggregator_port}"
+          hadoop_metrics['reducetask.sink.graphite.server_host'] ?= "#{ganglia_ctx.config.host}"
+          hadoop_metrics['reducetask.sink.graphite.server_port'] ?= "#{ganglia_ctx.config.ryba.graphite.carbon_aggregator_port}"
+        if ctx.has_module 'ryba/hadoop/hdfs_jn'
+          hadoop_metrics['journalnode.sink.graphite.server_host']
+        if ctx.has_module 'ryba/hadoop/mapred_jhs'
+          hadoop_metrics['historyserver.sink.graphite.server_host']
+        # if ctx.has_module 'ryba/storm/nimbus'
+        #   hadoop_metrics['nimbus.sink.graphite.server_host']
+        # if ctx.has_module 'ryba/storm/supervisor'
+        #   hadoop_metrics['supervisor.sink.graphite.server_host']
 
 ## Configuration for users and groups
 
