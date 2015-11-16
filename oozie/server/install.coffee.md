@@ -168,7 +168,6 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
     module.exports.push header: 'Oozie Server # Environment', handler: ->
       {java_home} = @config.java
       {oozie} = @config.ryba
-      # CATALINA_OPTS="-Djavax.net.ssl.trustStore=/etc/hadoop/conf/truststore -Djavax.net.ssl.trustStorePassword=ryba123"      
       writes = [
           match: /^export OOZIE_HTTPS_KEYSTORE_FILE=.*$/mg
           replace: "export OOZIE_HTTPS_KEYSTORE_FILE=#{oozie.keystore_file}"
@@ -176,10 +175,6 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
         ,
           match: /^export OOZIE_HTTPS_KEYSTORE_PASS=.*$/mg
           replace: "export OOZIE_HTTPS_KEYSTORE_PASS=#{oozie.keystore_pass}"
-          append: true
-        ,
-          match: /^export OOZIE_LOG=.*$/mg
-          replace: "export OOZIE_LOG=#{oozie.log_dir}"
           append: true
         ]
       # Append the Log4J configuration

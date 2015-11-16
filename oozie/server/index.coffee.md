@@ -66,6 +66,9 @@ Example
       oozie.server_dir ?= '/usr/hdp/current/oozie-client/oozie-server'
       # SSL
       oozie.secure ?= true
+      # see comment in ../resources/oozie-env.sh.j2
+      # oozie.trustore_location = '/etc/hadoop/conf/truststore'
+      # oozie.trustore_password = 'ryba123'
       oozie.keystore_file ?= ryba.ssl_server['ssl.server.keystore.location'] or ''
       oozie.keystore_pass ?= ryba.ssl_server['ssl.server.keystore.password'] or ''
       # Configuration

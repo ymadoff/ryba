@@ -44,6 +44,21 @@ Expose the "OOZIE_URL" environmental variable to every users.
         """
         mode: 0o0755
 
+## Configuration
+
+    module.exports.push header: 'Oozie Client # Configuration', handler: ->
+      {hadoop_conf_dir, yarn, oozie} = @config.ryba
+      @hconfigure
+        destination: "#{oozie.conf_dir}/oozie-site.xml"
+        default: "#{__dirname}/../resources/oozie-site.xml"
+        local_default: true
+        properties: oozie.site
+        uid: oozie.user.name
+        gid: oozie.group.name
+        mode: 0o0755
+        merge: true
+        backup: true
+
 ## SSL
 
 Over HTTPS, the certificate must be imported into the JRE's keystore for the

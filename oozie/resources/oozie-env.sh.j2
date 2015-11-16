@@ -17,7 +17,10 @@ export JRE_HOME=${JAVA_HOME}
 # Settings for the Embedded Tomcat that runs Oozie
 # Java System properties for Oozie should be specified in this variable
 #
-# export CATALINA_OPTS=
+export HDP_VERSION=${HDP_VERSION:-`hdp-select | grep oozie-server | sed 's/^.* - \(.*\)$/\1/'`}
+export CATALINA_OPTS="${CATALINA_OPTS} -Dhdp.version=${HDP_VERSION}"
+#on first install, ssl failed asking for trustore, then latert work
+#export CATALINA_OPTS="-Djavax.net.ssl.trustStore={{ryba.oozie.trustore_location}} -Djavax.net.ssl.trustStorePassword={{ryba.oozie.trustore_password}}"
 
 # Oozie configuration file to load from Oozie configuration directory
 #
