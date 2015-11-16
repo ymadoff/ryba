@@ -34,7 +34,6 @@ Its required by the other modules spark/client and spar/history_server
       # Users may want to set this to a unified location like an HDFS directory so history files can be read by the history server.
       spark.conf['spark.eventLog.dir'] ?= "#{core_site['fs.defaultFS']}/user/#{spark.user.name}/applicationHistory"
       spark.conf['spark.history.fs.logDirectory'] ?= "#{spark.conf['spark.eventLog.dir']}"
-      spark.conf['spark.yarn.jar'] ?= "hdfs:///apps/#{spark.user.name}/spark-assembly.jar"
 
 
 ## Spark Worker events log dir
@@ -49,22 +48,6 @@ Its required by the other modules spark/client and spar/history_server
           hdfs dfs -chown -R #{spark.user.name}:#{spark.group.name} /user/#{spark.user.name}
           hdfs dfs -chmod -R 755 /user/#{spark.user.name}
           hdfs dfs -chmod 1777 #{fs_log_dir}
-          """
-
-## HFDS Layout
-
-    module.exports.push header: 'Spark # HFDS Layout', handler: ->
-      {spark} = @config.ryba
-      status = user_owner = group_owner = null
-      spark_yarn_jar = spark.conf['spark.yarn.jar']
-      @execute
-        cmd: mkcmd.hdfs @, """
-          hdfs dfs -mkdir -p /apps/#{spark.user.name}
-          hdfs dfs -chown -R #{spark.user.name}:#{spark.group.name} /apps/#{spark.user.name}
-          hdfs dfs -chmod 755 /apps/#{spark.user.name}
-          hdfs dfs -put -f /usr/hdp/current/spark-client/lib/spark-assembly-*.jar #{spark_yarn_jar}
-          hdfs dfs -chown #{spark.user.name}:#{spark.group.name} #{spark_yarn_jar}
-          hdfs dfs -chmod 644 #{spark_yarn_jar}
           """
   
 ## Dependecies

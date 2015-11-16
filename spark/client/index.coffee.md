@@ -81,6 +81,7 @@ of your cluster.
       spark.conf['spark.ssl.trustStore'] ?= "#{spark.conf_dir}/trustore"
       spark.conf['spark.ssl.trustStorePassword'] ?= "ryba123"
       spark.conf['spark.eventLog.overwrite'] ?= 'true'
+      spark.conf['spark.yarn.jar'] ?= "hdfs:///apps/#{spark.user.name}/spark-assembly.jar"
 
 [secu]: http://spark.apache.org/docs/latest/security.html
 

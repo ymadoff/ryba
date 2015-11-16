@@ -42,6 +42,22 @@ Install the spark and python packages.
       @service
         name: 'spark-python'
 
+## HFDS Layout
+
+    module.exports.push header: 'Spark # HFDS Layout', handler: ->
+      {spark} = @config.ryba
+      status = user_owner = group_owner = null
+      spark_yarn_jar = spark.conf['spark.yarn.jar']
+      @execute
+        cmd: mkcmd.hdfs @, """
+          hdfs dfs -mkdir -p /apps/#{spark.user.name}
+          hdfs dfs -chown -R #{spark.user.name}:#{spark.group.name} /apps/#{spark.user.name}
+          hdfs dfs -chmod 755 /apps/#{spark.user.name}
+          hdfs dfs -put -f /usr/hdp/current/spark-client/lib/spark-assembly-*.jar #{spark_yarn_jar}
+          hdfs dfs -chown #{spark.user.name}:#{spark.group.name} #{spark_yarn_jar}
+          hdfs dfs -chmod 644 #{spark_yarn_jar}
+          """
+
 ## Spark SSL
 
 Installs SSL certificates for spark. At the moment of this writing, Spark
