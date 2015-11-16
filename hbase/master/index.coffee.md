@@ -15,16 +15,17 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
       # require('../../libmodule.exports.push 'ryba/lib/hdp_select'').call ctx
       # require('../../lib/write_jaas').call ctx
       require('masson/core/iptables').configure ctx
-      require('../../ganglia/collector').configure ctx
-      require('../../graphite/carbon').configure ctx
+      # require('../../ganglia/collector').configure ctx
+      # require('../../graphite/carbon').configure ctx
       # require('../../hadoop/hdfs').configure ctx
       require('../').configure ctx
+      require('../lib/configure_metrics.coffee.md').call ctx
       {realm, hbase, ganglia, graphite} = ctx.config.ryba
       hbase.master_opts ?= hbase.env['HBASE_MASTER_OPTS']
       hbase.site['hbase.master.port'] ?= '60000'
       hbase.site['hbase.master.info.port'] ?= '60010'
       hbase.site['hbase.master.info.bindAddress'] ?= '0.0.0.0'
-      hbase.site['hadoop.ssl.enabled'] ?= 'true'
+      hbase.site['hbase.ssl.enabled'] ?= 'true'
 
 ## Configuration for Kerberos
 
@@ -56,29 +57,6 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
       #hbase.master.log4j.root_logger = "INFO,RFA,socket_client" if hbase.log4j.remote_host? && hbase.log4j.remote_port?
       #hbase.master.log4j.security_logger = "INFO,RFAS,socket_server" if hbase.log4j.server_port?
       #hbase.master.log4j.security_logger = "INFO,RFAS,socket_client" if hbase.log4j.remote_host? && hbase.log4j.remote_port?
-
-## Metrics systems
-
-      metrics_sinks = []
-      ganglia_host =  ctx.host_with_module 'ryba/ganglia/collector'
-      graphite_host = ctx.host_with_module 'ryba/graphite/carbon'
-      if ganglia_host
-        ganglia_hbase_port = ganglia.hbase_master_port
-        metrics_sinks.push
-          name: 'ganglia'
-          properties: {class: 'org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31', period: '10', servers: "#{ganglia_host}:#{ganglia_hbase_port}", metrics_prefix: ''}
-      if graphite_host
-        graphite_port = graphite.carbon_aggregator_port
-        metrics_prefix = "#{graphite.metrics_prefix}.hbase"
-        metrics_sinks.push
-          name: 'graphite'
-          properties: {class: 'org.apache.hadoop.metrics2.sink.GraphiteSink', period: '10', server_host: graphite_host, server_port: graphite_port , metrics_prefix: metrics_prefix}
-      hbase.metrics ?= {}
-      hbase.metrics['hbase.extendedperiod'] ?= '3600'
-      for sink in metrics_sinks
-        for context in ['hbase','jvm','rpc']
-          for k,v of sink.properties
-            hbase.metrics["#{context}.sink.#{sink.name}.#{k}"] = v
 
 ## Commands
 

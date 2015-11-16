@@ -39,9 +39,7 @@ is added membership to the group hadoop to gain read access.
 
     module.exports.push header: 'HBase RegionServer # Check HTTP JMX', retry: 200, label_true: 'CHECKED', handler: ->
       {hbase} = @config.ryba
-      protocol = if hbase.site['hadoop.ssl.enabled'] is 'true' then 'https' else 'http'
-      # WARNING: after upgrade to 2.3, there is no more https
-      protocol = 'http'
+      protocol = if hbase.site['hbase.ssl.enabled'] is 'true' then 'https' else 'http'
       port = hbase.site['hbase.regionserver.info.port']
       url = "#{protocol}://#{@config.host}:#{port}/jmx?qry=Hadoop:service=HBase,name=RegionServer,sub=Server"
       @execute

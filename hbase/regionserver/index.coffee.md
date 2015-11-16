@@ -13,12 +13,13 @@ It is responsible for serving and managing regions. In a distributed cluster, a 
       require('../../graphite/carbon').configure ctx
       require('../../hadoop/hdfs').configure ctx
       require('../').configure ctx
+      require('../lib/configure_metrics.coffee.md').call ctx
       {realm, hbase, ganglia, graphite} = ctx.config.ryba
       m_ctxs = ctx.contexts 'ryba/hbase/master', require('../master').configure
       throw Error "No Configured Master" unless m_ctxs.length
       hbase.site['hbase.regionserver.port'] ?= '60020'
       hbase.site['hbase.regionserver.info.port'] ?= '60030'
-      hbase.site['hadoop.ssl.enabled'] ?= 'true'
+      hbase.site['hbase.ssl.enabled'] ?= 'true'
       hbase.site['hbase.regionserver.handler.count'] ?= 60 # HDP default
       # http://blog.sematext.com/2012/07/16/hbase-memstore-what-you-should-know/
       # Keep hbase.regionserver.hlog.blocksize * hbase.regionserver.maxlogs just
@@ -53,29 +54,6 @@ It is responsible for serving and managing regions. In a distributed cluster, a 
         throw Error 'Invalid HBase Rest principal' unless match = /^(.+?)[@\/]/.exec principal
         hbase.site["hadoop.proxyuser.#{match[1]}.groups"] ?= '*'
         hbase.site["hadoop.proxyuser.#{match[1]}.hosts"] ?= '*'
-
-## Metrics systems
-
-      metrics_sinks = []
-      ganglia_host =  ctx.host_with_module 'ryba/ganglia/collector'
-      graphite_host = ctx.host_with_module 'ryba/graphite/carbon'
-      if ganglia_host
-        ganglia_hbase_port = ganglia.hbase_region_port
-        metrics_sinks.push
-          name: 'ganglia'
-          properties: {class: 'org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31', period: '10', servers: "#{ganglia_host}:#{ganglia_hbase_port}", metrics_prefix: ''}
-      if graphite_host
-        graphite_port = graphite.carbon_aggregator_port
-        metrics_prefix = "#{graphite.metrics_prefix}.hbase"
-        metrics_sinks.push
-          name: 'graphite'
-          properties: {class: 'org.apache.hadoop.metrics2.sink.GraphiteSink', period: '10', server_host: graphite_host, server_port: graphite_port , metrics_prefix: metrics_prefix}
-      hbase.metrics ?= {}
-      hbase.metrics['hbase.extendedperiod'] ?= '3600'
-      for sink in metrics_sinks
-        for context in ['hbase','jvm','rpc']
-          for k,v of sink.properties
-            hbase.metrics["#{context}.sink.#{sink.name}.#{k}"] = v
 
 ## Commands
 
