@@ -14,7 +14,7 @@ DataNodes.
     module.exports.configure = (ctx) ->
       require('../core').configure ctx
       require('../core_ssl').configure ctx
-      require('../hdfs').configure ctx
+      require('../core').configure ctx
 
 ## Check Disk Capacity
 

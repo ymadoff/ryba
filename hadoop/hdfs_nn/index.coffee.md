@@ -36,7 +36,7 @@ Example:
     module.exports.configure = (ctx) ->
       if ctx.hdfs_nn_configured then return else ctx.hdfs_nn_configured = true
       require('masson/core/iptables').configure ctx
-      require('../hdfs').configure ctx
+      require('../core').configure ctx
       {ryba} = ctx.config
       ryba.hdfs ?= {}
       ryba.hdfs.site ?= {}

@@ -3,7 +3,6 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    # module.exports.push require('../hdfs').configure
 
     module.exports.push header: 'HDFS DN # Wait IPC', timeout: -1, label_true: 'READY', handler: ->
       @wait_connect

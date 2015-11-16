@@ -6,7 +6,7 @@
 ## Configuration
 
     module.exports.configure = (ctx) ->
-      require('../hdfs').configure ctx
+      require('../core').configure ctx
       {ryba} = ctx.config
       # Store the temporary images to merge
       ryba.hdfs.site['dfs.namenode.checkpoint.dir'] ?= ['file:///var/hdfs/checkpoint']
@@ -43,6 +43,3 @@
     module.exports.push commands: 'status', modules: 'ryba/hadoop/hdfs_snn/status'
 
     module.exports.push commands: 'stop', modules: 'ryba/hadoop/hdfs_snn/stop'
-
-
-

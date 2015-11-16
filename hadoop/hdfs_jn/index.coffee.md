@@ -37,7 +37,7 @@ Example:
 
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
-      require('../hdfs').configure ctx
+      require('../core').configure ctx
       nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn'
       throw Error "HDFS not configured for HA" unless nn_ctxs.length is 2
       {ryba} = ctx.config

@@ -12,7 +12,7 @@ The output list can then be saved to the distributed filesystem, and the reducer
     module.exports.configure = ->
       return if @mapred_configured
       @mapred_configured = true
-      require('../hdfs').configure @
+      require('../core').configure @
       require('../yarn_client').configure @
       rm_contexts = @contexts 'ryba/hadoop/yarn_rm', require('../yarn_rm').configure
       {static_host, realm, mapred} = @config.ryba
