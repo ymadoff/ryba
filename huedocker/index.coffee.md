@@ -368,6 +368,8 @@ Example:
     module.exports.push commands: 'status', modules: 'ryba/huedocker/status'
     #
     module.exports.push commands: 'stop', modules: 'ryba/huedocker/stop'
+    
+    module.exports.push commands: 'prepare', modules: 'ryba/huedocker/prepare'
     # module.exports.push commands: 'wait', modules: 'ryba/huedocker/wait'
 
 [home]: http://gethue.com
