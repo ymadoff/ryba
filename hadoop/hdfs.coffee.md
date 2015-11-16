@@ -22,7 +22,6 @@ The properties "hdp.hdfs.site['dfs.namenode.name.dir']" and
 "hdp.hdfs.site['dfs.datanode.data.dir']" are required.
 
 *   `ryba.hdfs.hadoop_policy`
-*   `ryba.hdfs.hdfs.namenode_timeout`
 *   `ryba.hdfs.hdfs.site` (object)
     Properties added to the "hdfs-site.xml" file.
 *   `ryba.hdfs.nameservice`
@@ -43,44 +42,8 @@ Example:
 ```
 
     module.exports.configure = (ctx) ->
-      if ctx.hdfs_configured then return else ctx.hdfs_configured = true
-      # return if ctx.hdfs_configured
-      # ctx.hdfs_configured = true
-      require('./core').configure ctx
-      # require('./core_ssl').configure ctx
-      {core_site, static_host, realm} = ctx.config.ryba
       throw new Error "Missing value for 'hdfs.krb5_user.password'" unless ctx.config.ryba.hdfs.krb5_user.password?
       throw new Error "Missing value for 'krb5_user.password'" unless ctx.config.ryba.krb5_user.password?
-      # Options and configuration
-      hdfs = ctx.config.ryba.hdfs ?= {}
-      ctx.config.ryba.hdfs.namenode_timeout ?= 20000 # 20s
-      # Options for "hdfs-site.xml"
-      hdfs.site ?= {}
-      hdfs.site['dfs.http.policy'] ?= 'HTTPS_ONLY' # HTTP_ONLY or HTTPS_ONLY or HTTP_AND_HTTPS
-      # REPLACED by "dfs.namenode.https-address": hdfs.site['dfs.https.port'] ?= '50470' # The https port where NameNode binds
-      hdfs.site['fs.permissions.umask-mode'] ?= '027' # 0750
-
-## Configuration for Kerberos
-
-Update the HDFS configuration stored inside the "/etc/hadoop/hdfs-site.xml" file
-with Kerberos specific properties.
-
-      # If "true", access tokens are used as capabilities
-      # for accessing datanodes. If "false", no access tokens are checked on
-      # accessing datanodes.
-      hdfs.site['dfs.block.access.token.enable'] ?= 'true'
-
-    # module.exports.push header: 'Hadoop HDFS # Install', timeout: -1, handler: ->
-    #   @service
-    #     name: 'hadoop'
-    #   @service
-    #     name: 'hadoop-hdfs'
-    #   @service
-    #     name: 'hadoop-libhdfs'
-    #   @service
-    #     name: 'hadoop-client'
-    #   @service
-    #     name: 'openssl'
 
 ## Kerberos User
 

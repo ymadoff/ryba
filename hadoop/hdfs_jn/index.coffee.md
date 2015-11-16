@@ -45,6 +45,8 @@ Example:
       ryba.hdfs.site['dfs.journalnode.http-address'] ?= '0.0.0.0:8480'
       ryba.hdfs.site['dfs.journalnode.https-address'] ?= '0.0.0.0:8481'
       # Kerberos
+      # TODO: Principal should be "jn/{host}@{realm}", however, there is
+      # no properties to have a separated keytab between jn and spnego principals
       ryba.hdfs.site['dfs.journalnode.kerberos.internal.spnego.principal'] = "HTTP/#{ryba.static_host}@#{ryba.realm}"
       ryba.hdfs.site['dfs.journalnode.kerberos.principal'] = "HTTP/#{ryba.static_host}@#{ryba.realm}"
       ryba.hdfs.site['dfs.journalnode.keytab.file'] = '/etc/security/keytabs/spnego.service.keytab'

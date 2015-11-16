@@ -38,6 +38,9 @@ Example:
       require('masson/core/iptables').configure ctx
       require('../hdfs').configure ctx
       {ryba} = ctx.config
+      ryba.hdfs ?= {}
+      ryba.hdfs.site ?= {}
+      ryba.hdfs.site['dfs.http.policy'] ?= 'HTTPS_ONLY' # HTTP_ONLY or HTTPS_ONLY or HTTP_AND_HTTPS
       # throw Error "Missing \"ryba.zkfc_password\" property" unless ryba.zkfc_password
       # Data
       # Comma separated list of paths. Use the list of directories.
@@ -51,24 +54,12 @@ Example:
       ryba.hdfs.site['dfs.hosts.exclude'] ?= "#{ryba.hadoop_conf_dir}/dfs.exclude"
       ryba.hdfs.exclude ?= []
       ryba.hdfs.exclude = string.lines ryba.hdfs.exclude if typeof ryba.hdfs.exclude is 'string'
-      unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-        ryba.hdfs.site['dfs.namenode.http-address'] ?= '0.0.0.0:50070'
-        ryba.hdfs.site['dfs.namenode.https-address'] ?= '0.0.0.0:50470'
-      else
-        # HDFS HA configuration
-        namenodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
-        ctx.config.ryba.shortname ?= ctx.config.shortname
-        ryba.hdfs.site['dfs.nameservices'] = ryba.nameservice
-        ryba.hdfs.site["dfs.ha.namenodes.#{ryba.nameservice}"] = (for nn in namenodes then nn.split('.')[0]).join ','
-        for nn in namenodes
-          ryba.hdfs.site['dfs.namenode.http-address'] = null
-          ryba.hdfs.site['dfs.namenode.https-address'] = null
-          hconfig = ctx.hosts[nn].config
-          shortname = hconfig.ryba.shortname ?= hconfig.shortname or nn.split('.')[0]
-          ryba.hdfs.site["dfs.namenode.rpc-address.#{ryba.nameservice}.#{shortname}"] ?= "#{nn}:8020"
-          ryba.hdfs.site["dfs.namenode.http-address.#{ryba.nameservice}.#{shortname}"] ?= "#{nn}:50070"
-          ryba.hdfs.site["dfs.namenode.https-address.#{ryba.nameservice}.#{shortname}"] ?= "#{nn}:50470"
-        ryba.hdfs.site["dfs.client.failover.proxy.provider.#{ryba.nameservice}"] ?= 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
+      ryba.hdfs.namenode_opts ?= ''
+      ryba.hdfs.site['fs.permissions.umask-mode'] ?= '027' # 0750
+      # If "true", access tokens are used as capabilities
+      # for accessing datanodes. If "false", no access tokens are checked on
+      # accessing datanodes.
+      ryba.hdfs.site['dfs.block.access.token.enable'] ?= 'true'
       # Kerberos
       ryba.hdfs.site['dfs.namenode.kerberos.principal'] ?= "nn/#{ryba.static_host}@#{ryba.realm}"
       ryba.hdfs.site['dfs.namenode.keytab.file'] ?= '/etc/security/keytabs/nn.service.keytab'
@@ -81,8 +72,9 @@ Example:
       # Activate ACLs
       ryba.hdfs.site['dfs.namenode.acls.enabled'] ?= 'true'
       ryba.hdfs.site['dfs.namenode.accesstime.precision'] ?= null
-      # NameNode options
-      ryba.hdfs.namenode_opts ?= ''
+      nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn'
+      jn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_jn'
+      dn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_dn'
 
 ## Configuration for HDFS High Availability (HA)
 
@@ -94,14 +86,44 @@ The default configuration implement the "sshfence" fencing method. This method
 SSHes to the target node and uses fuser to kill the process listening on the
 service's TCP port.
 
-      if ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+      if nn_ctxs.length is 1
+        ryba.hdfs.site['dfs.ha.automatic-failover.enabled'] ?= 'false'
+        ryba.hdfs.site['dfs.namenode.http-address'] ?= '0.0.0.0:50070'
+        ryba.hdfs.site['dfs.namenode.https-address'] ?= '0.0.0.0:50470'
+      else
+        # HDFS HA configuration
+        for nn_ctx in nn_ctxs
+          nn_ctx.config.shortname ?= nn_ctx.config.host.split('.')[0]
+        ryba.hdfs.site['dfs.nameservices'] = ryba.nameservice
+        ryba.hdfs.site["dfs.ha.namenodes.#{ryba.nameservice}"] = (for nn_ctx in nn_ctxs then nn_ctx.config.shortname).join ','
+        for nn_ctx in nn_ctxs
+          ryba.hdfs.site['dfs.namenode.http-address'] = null
+          ryba.hdfs.site['dfs.namenode.https-address'] = null
+          ryba.hdfs.site["dfs.namenode.rpc-address.#{ryba.nameservice}.#{nn_ctx.config.shortname}"] ?= "#{nn_ctx.config.host}:8020"
+          ryba.hdfs.site["dfs.namenode.http-address.#{ryba.nameservice}.#{nn_ctx.config.shortname}"] ?= "#{nn_ctx.config.host}:50070"
+          ryba.hdfs.site["dfs.namenode.https-address.#{ryba.nameservice}.#{nn_ctx.config.shortname}"] ?= "#{nn_ctx.config.host}:50470"
+        ryba.hdfs.site["dfs.client.failover.proxy.provider.#{ryba.nameservice}"] ?= 'org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider'
         ryba.hdfs.site['dfs.ha.automatic-failover.enabled'] ?= 'true'
-        journalnodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
-        ryba.hdfs.site['dfs.namenode.shared.edits.dir'] = (for jn in journalnodes then "#{jn}:8485").join ';'
+        ryba.hdfs.site['dfs.namenode.shared.edits.dir'] = (for jn_ctx in jn_ctxs then "#{jn_ctx.config.host}:8485").join ';'
         ryba.hdfs.site['dfs.namenode.shared.edits.dir'] = "qjournal://#{ryba.hdfs.site['dfs.namenode.shared.edits.dir']}/#{ryba.hdfs.site['dfs.nameservices']}"
         # Fencing
         ryba.hdfs.site['dfs.ha.fencing.methods'] ?= "sshfence(#{ryba.hdfs.user.name})"
         ryba.hdfs.site['dfs.ha.fencing.ssh.private-key-files'] ?= "#{ryba.hdfs.user.home}/.ssh/id_rsa"
+      hdfs_ctxs = ctx.contexts ['ryba/hadoop/hdfs_dn', 'ryba/hadoop/hdfs_snn', 'ryba/hadoop/httpfs']
+      for hdfs_ctx in hdfs_ctxs
+        hdfs_ctx.config ?= {}
+        hdfs_ctx.config.ryba.hdfs ?= {}
+        hdfs_ctx.config.ryba.hdfs.site ?= {}
+        hdfs_ctx.config.ryba.hdfs.site['dfs.http.policy'] ?= ctx.config.ryba.hdfs.site['dfs.http.policy']
+
+## Export configuration
+
+      for dn_ctx in dn_ctxs
+        dn_ctx.config ?= {}
+        dn_ctx.config.ryba.hdfs ?= {}
+        dn_ctx.config.ryba.hdfs.site ?= {}
+        dn_ctx.config.ryba.hdfs.site['fs.permissions.umask-mode'] ?= ryba.hdfs.site['fs.permissions.umask-mode']
+        dn_ctx.config.ryba.hdfs.site['dfs.block.access.token.enable'] ?= ryba.hdfs.site['dfs.block.access.token.enable']
 
     module.exports.client_config = (ctx) ->
       {ryba} = ctx.config
@@ -134,6 +156,8 @@ service's TCP port.
     module.exports.push commands: 'install', modules: [
       'ryba/hadoop/hdfs_nn/install'
       'ryba/hadoop/hdfs_nn/start'
+      'ryba/hadoop/zkfc/install'
+      'ryba/hadoop/zkfc/start'
       'ryba/hadoop/hdfs_nn/layout'
       'ryba/hadoop/hdfs_nn/check'
     ]
