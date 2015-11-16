@@ -32,8 +32,8 @@ module.exports.push required: true, handler: ->
           for k, v of org_props then fnl_props[k] = v
         callback()
     @call (_, callback) ->
-      return unless options.default
-      return unless typeof options.default is 'string'
+      return callback() unless options.default
+      return callback() unless typeof options.default is 'string'
       options.log? "Read default properties from #{options.default}"
       # Populate options.default
       ssh = if options.local_default then null else options.ssh
