@@ -61,6 +61,20 @@ The URI resources are grouped into APIs based on the type of information returne
       for property in ats_properties
         ryba.yarn.site[property] ?= if ats_ctx then ats_ctx.config.ryba.yarn.site[property] else null
 
+## Zookeeper
+
+The Zookeeper quorum is used for HA and recovery. High availability
+with automatic failover stores information inside "yarn.resourcemanager.ha.automatic-failover.zk-base-path"
+(default to "/yarn-leader-election"). Work preserving recovery stores
+information inside "yarn.resourcemanager.zk-state-store.parent-path" (default to
+"/rmstore").
+
+      if ctx.has_module 'ryba/hadoop/yarn_rm'
+        zoo_ctxs = ctx.contexts modules: 'ryba/zookeeper/server', require('../../zookeeper/server').configure
+        quorum = for zoo_ctx in zoo_ctxs
+          "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.config['clientPort']}"
+        ryba.yarn.site['yarn.resourcemanager.zk-address'] ?= quorum.join ','
+
 ## High Availability with Manual Failover
 
 Cloudera [High Availability Guide][cloudera_ha] provides a nice documentation
@@ -98,6 +112,8 @@ inside the configuration.
 
       ryba.yarn.site['yarn.resourcemanager.ha.automatic-failover.enabled'] ?= 'true'
       ryba.yarn.site['yarn.resourcemanager.ha.automatic-failover.embedded'] ?= 'true'
+      ryba.yarn.site['yarn.resourcemanager.ha.automatic-failover.zk-base-path'] ?= '/yarn-leader-election'
+      
       # ryba.yarn.site['yarn.resourcemanager.cluster-id'] ?= 'yarn_cluster_01'
 
 ## Work Preserving Recovery
@@ -146,10 +162,6 @@ rmr /rmstore/ZKRMStateRoot
         ryba.yarn.site['yarn.resourcemanager.work-preserving-recovery.enabled'] ?= 'true'
         ryba.yarn.site['yarn.resourcemanager.am.max-attempts'] ?= '2'
         ryba.yarn.site['yarn.resourcemanager.store.class'] ?= 'org.apache.hadoop.yarn.server.resourcemanager.recovery.ZKRMStateStore'
-        zoo_ctxs = ctx.contexts modules: 'ryba/zookeeper/server', require('../../zookeeper/server').configure
-        quorum = for zoo_ctx in zoo_ctxs
-          "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.config['clientPort']}"
-        ryba.yarn.site['yarn.resourcemanager.zk-address'] ?= quorum.join ','
         # https://zookeeper.apache.org/doc/r3.1.2/zookeeperProgrammers.html#sc_ZooKeeperAccessControl
         # ACLs to be used for setting permissions on ZooKeeper znodes.
         ryba.yarn.site['yarn.resourcemanager.zk-acl'] ?= 'sasl:rm:rwcda'
@@ -165,7 +177,6 @@ rmr /rmstore/ZKRMStateRoot
         ryba.yarn.site['yarn.resourcemanager.zk-num-retries'] ?= '500'
         ryba.yarn.site['yarn.resourcemanager.zk-retry-interval-ms'] ?= '2000'
         ryba.yarn.site['yarn.resourcemanager.zk-timeout-ms'] ?= '10000'
-
       if ctx.has_module 'ryba/hadoop/yarn_nm'
         ryba.yarn.site['yarn.nodemanager.recovery.enabled'] ?= 'true'
         ryba.yarn.site['yarn.nodemanager.recovery.dir'] ?= '/var/yarn/recovery-state'
