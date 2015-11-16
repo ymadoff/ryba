@@ -411,6 +411,30 @@ will be created by one of the datanode.
         kadmin_server: admin_server
       , krb5_user
 
+## SPNEGO
+
+Create the SPNEGO service principal in the form of "HTTP/{host}@{realm}" and place its
+keytab inside "/etc/security/keytabs/spnego.service.keytab" with ownerships set to "hdfs:hadoop"
+and permissions set to "0660". We had to give read/write permission to the group because the
+same keytab file is for now shared between hdfs and yarn services.
+
+    module.exports.push header: 'Hadoop Core # SPNEGO', handler: module.exports.spnego = ->
+      {hdfs, hadoop_group, realm} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      @krb5_addprinc
+        principal: "HTTP/#{@config.host}@#{realm}"
+        randkey: true
+        keytab: '/etc/security/keytabs/spnego.service.keytab'
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+        mode: 0o660 # need rw access for hadoop and mapred users
+        kadmin_principal: kadmin_principal
+        kadmin_password: kadmin_password
+        kadmin_server: admin_server
+      @execute # Validate keytab access by the hdfs user
+        cmd: "su -l #{hdfs.user.name} -c \"klist -kt /etc/security/keytabs/spnego.service.keytab\""
+        if: -> @status -1
+
 ## Install
 
 Install the "hadoop-client" and "openssl" packages as well as their
