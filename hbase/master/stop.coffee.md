@@ -18,7 +18,7 @@ su -l hbase -c "/usr/hdp/current/hbase-regionserver/bin/hbase-daemon.sh --config
 The file storing the PID is "/var/run/hbase/yarn/hbase-hbase-master.pid".
 
     module.exports.push header: 'HBase Master # Stop', label_true: 'STOPPED', handler: ->
-      @service
+      @service_stop
         name: 'hbase-master'
         if_exists: '/etc/init.d/hbase-master'
         if: @retry is 0
