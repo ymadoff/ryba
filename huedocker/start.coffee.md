@@ -22,10 +22,10 @@ docker start hue_server
 ```
 
     module.exports.push name: 'Hue Docker # Start', label_true: 'STARTED', handler: ->
-      {hue} = @config.ryba
+      {hue_docker} = @config.ryba
       @docker_start
-        container: hue.container
+        container: hue_docker.container
         unless_exec:"""
-        if docker ps | grep #{hue.container};
+        if docker ps | grep #{hue_docker.container};
         then  exit 0 ; else exit 1; fi
         """

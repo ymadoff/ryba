@@ -21,6 +21,7 @@ eval "$(docker-machine env dev)" && docker build -t "ryba/hue-build" .
 Builds Hue from source
 
     module.exports = []
+    module.exports.push 'masson/bootstrap/log'
 
     hue = {}
     hue.build ?= {}
