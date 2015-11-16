@@ -71,10 +71,14 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @write
         destination: path.join titan.home, 'bin', 'rexster.sh'
         write: write
-      @touch
-        destination: path.join rexster.log_dir, 'rexstitan.log'
+      @mkdir
+        destination: rexster.log_dir
         uid: rexster.user.name
         gid: rexster.group.name
+      # @touch
+      #   destination: path.join rexster.log_dir, 'rexstitan.log'
+      #   uid: rexster.user.name
+      #   gid: rexster.group.name
 
     module.exports.push header: 'Rexster # Tuning', skip: true, handler: ->
       # TODO
