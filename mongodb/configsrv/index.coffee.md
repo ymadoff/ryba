@@ -15,9 +15,9 @@ changes to cluster metadata. Config servers do not run as replica sets.
 ## Configure
 
     module.exports.configure = (ctx) ->
-      ctx.config.ryba.mongodb ?= {}
-      configsrv = ctx.config.ryba.mongodb.configsrv ?= {}
-      config = configsrv.config ?= {}
+      mongodb = ctx.config.ryba.mongodb ?= {}
+      mongodb.configsrv ?= {}
+      config = mongodb.configsrv.config ?= {}
       config.port ?= 27019
       config.bind_ip ?= '0.0.0.0'
       config.fork ?= true

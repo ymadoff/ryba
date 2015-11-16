@@ -147,21 +147,21 @@ The cluster generation follow Hortonworks guideline and generate the clusters
       # On the Ganglia server, to configure the gmond collector
       @execute
         cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPHistoryServer -m"
-        not_if_exists: '/etc/ganglia/hdp/HDPHistoryServer'
+        unless_exists: '/etc/ganglia/hdp/HDPHistoryServer'
       @execute
         cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPNameNode -m"
-        not_if_exists: '/etc/ganglia/hdp/HDPNameNode'
+        unless_exists: '/etc/ganglia/hdp/HDPNameNode'
       @execute
         cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPResourceManager -m"
-        not_if_exists: '/etc/ganglia/hdp/HDPResourceManager'
+        unless_exists: '/etc/ganglia/hdp/HDPResourceManager'
       @execute
         cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPSlaves -m"
-        not_if_exists: '/etc/ganglia/hdp/HDPSlaves'
+        unless_exists: '/etc/ganglia/hdp/HDPSlaves'
         cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPHBaseMaster -m"
-        not_if_exists: '/etc/ganglia/hdp/HDPHBaseMaster'
+        unless_exists: '/etc/ganglia/hdp/HDPHBaseMaster'
       @execute
         cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -t"
-        not_if_exists: '/etc/ganglia/hdp/gmetad.conf'
+        unless_exists: '/etc/ganglia/hdp/gmetad.conf'
 
 ## Configuration
 
@@ -200,7 +200,7 @@ pointing to the Ganglia master hostname.
       @service
         srv_name: 'httpd'
         action: ['start', 'restart']
-        not_if: (options, callback) ->
+        unless: (options, callback) ->
           @execute
             cmd: "curl -s http://#{@config.host}/ganglia/"
           , (err, _, stdout) ->

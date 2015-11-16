@@ -29,29 +29,33 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push header: 'Shinken Broker # Packages', handler: ->
       @service name: 'shinken-broker'
+      @service name: 'python-requests'
+      @service name: 'python-arrow'
 
-## Additional Modules
+## Additional Shinken Modules
 
     module.exports.push header: 'Shinken Broker # Modules', handler: ->
       {shinken, shinken:{broker}} = @config.ryba
-      return unless Object.getOwnPropertyNames(broker.modules).length > 0
+      return unless Object.keys(broker.modules).length > 0
       @execute
         cmd: "su -l #{shinken.user.name} 'shinken --init'"
-        not_if_exists: "#{shinken.user.home}/.shinken.ini"
-      for name, mod of broker.modules
+        unless_exists: "#{shinken.user.home}/.shinken.ini"
+      installmod = (name, mod) =>  
         if mod.archive?
           @download
             destination: "#{mod.archive}.zip"
             source: mod.source
             cache_file: "#{mod.archive}.zip"
-            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
+            unless_exec: "shinken inventory | grep #{name}"
           @extract
             source: "#{mod.archive}.zip"
-            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
+            unless_exec: "shinken inventory | grep #{name}"
           @execute
             cmd: "shinken install --local #{mod.archive}"
-            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
+            unless_exec: "shinken inventory | grep #{name}"
         else throw Error "Missing parameter: archive for broker.modules.#{name}"
+        for subname, submod of mod.modules then installmod subname, submod
+      for name, mod of broker.modules then installmod name, mod
       
 ## Dependencies
 

@@ -10,22 +10,9 @@ MongoDB is a document-oriented database. Distributed Version
     module.exports.configure = (ctx) ->
       mongodb = ctx.config.ryba.mongodb ?= {}
       # User
-      mongodb.user = name: mongodb.user if typeof mongodb.user is 'string'
-      mongodb.user ?= {}
-      mongodb.user.name ?= 'mongodb'
-      mongodb.user.system ?= true
-      mongodb.user.comment ?= 'MongoDB User'
-      mongodb.user.home ?= '/var/lib/mongodb'
-      mongodb.user.groups ?= ['hadoop']
-      # Group
-      mongodb.group = name: mongodb.group if typeof mongodb.group is 'string'
-      mongodb.group ?= {}
-      mongodb.group.name ?= 'mongodb'
-      mongodb.group.system ?= true
-      mongodb.user.gid = mongodb.group.name
-      # ConfigSrv Config
+      mongodb.shard ?= {}
       # ShardSrv Config
-      config = mongodb.shard_config ?= {}
+      config = mongodb.shard.config ?= {}
       config.bind_ip ?= '0.0.0.0'
       config.fork ?= true
       config.port ?= 27017

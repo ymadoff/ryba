@@ -17,10 +17,10 @@
 #}
 {% for b in brokers %}
 define broker {
-    broker_name     {{b.host}}
-    address         {{b.host}}
-    port            {{b.port}}
-    spare           {% if b.spare %}1{% else %}0{% endif %}
+    broker_name     broker_{{b.config.shortname}}
+    address         {{b.config.host}}
+    port            {{b.config.ryba.shinken.broker.config.port}}
+    spare           {% if b.config.ryba.shinken.broker.config.spare %}1{% else %}0{% endif %}
 
     manage_arbiters     1   {# Take data from Arbiter. There should be only one broker for the arbiter.#}
     manage_sub_realms   1   {# Does it take jobs from schedulers of sub-Realms?#}
@@ -40,9 +40,9 @@ define broker {
     # - webui                   = Shinken Web interface
     # - glpidb                  = Save data in GLPI MySQL database
     #}
-    modules {{ b.modules | join (',') }}
-    use_ssl	          {% if b.use_ssl %}1{% else %}0{% endif %}
-    hard_ssl_name_check   {% if b.hard_ssl_name_check %}1{% else %}0{% endif %}
+    modules {{ b.config.ryba.shinken.broker.config.modules | join (',') }}
+    use_ssl	          {% if b.config.ryba.shinken.broker.config.use_ssl %}1{% else %}0{% endif %}
+    hard_ssl_name_check   {% if b.config.ryba.shinken.broker.config.hard_ssl_name_check %}1{% else %}0{% endif %}
 
     realm   All
 }

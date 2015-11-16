@@ -34,26 +34,26 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         gid: shinken.group.name
       @execute
         cmd: "su -l #{shinken.user.name} -c 'shinken --init'"
-        not_if_exists: "#{shinken.home}/.shinken.ini"
+        unless_exists: "#{shinken.home}/.shinken.ini"
 
 ## Additional Modules
 
     module.exports.push header: 'Shinken Scheduler # Modules', handler: ->
       {shinken, shinken:{scheduler}} = @config.ryba
-      return unless Object.getOwnPropertyNames(scheduler.modules).length > 0
+      return unless Object.keys(scheduler.modules).length > 0
       for name, mod of scheduler.modules
         if mod.archive?
           @download
             destination: "#{mod.archive}.zip"
             source: mod.source
             cache_file: "#{mod.archive}.zip"
-            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
+            unless_exec: "shinken inventory | grep #{name}"
           @extract
             source: "#{mod.archive}.zip"
-            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
+            unless_exec: "shinken inventory | grep #{name}"
           @execute
-            cmd: "su -l #{shinken.user.name} -c 'shinken install --local #{mod.archive}'"
-            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
+            cmd: "shinken install --local #{mod.archive}"
+            unless_exec: "shinken inventory | grep #{name}"
         else throw Error "Missing parameter: archive for scheduler.modules.#{name}"
 
 ## Dependencies

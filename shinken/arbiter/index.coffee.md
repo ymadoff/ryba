@@ -37,7 +37,7 @@ to its associated Scheduler. Host the WebUI.
       #shinken.principal ?= "shinken/#{ctx.config.host}@#{ctx.config.ryba.realm}"
       #shinken.plugin_dir ?= '/usr/lib64/shinken/plugins'
       shinken.config.users ?= {}
-      if Object.getOwnPropertyNames(shinken.config.users).length is 0
+      if Object.keys(shinken.config.users).length is 0
         shinken.config.users.shinken =
           password: 'shinken123'
           alias: 'Shinken Admin'
@@ -45,7 +45,7 @@ to its associated Scheduler. Host the WebUI.
           admin: true
       # WebUI Groups
       shinken.config.groups ?= {}
-      if Object.getOwnPropertyNames(shinken.config.groups).length is 0
+      if Object.keys(shinken.config.groups).length is 0
         shinken.config.groups.admins =
           alias: 'Shinken Administrators'
           members: ['shinken']

@@ -57,6 +57,7 @@ the application (zombie state).
 
 ## Capacity Scheduler
 
+      # TODO Capacity Scheduler node_labels http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.2/bk_yarn_resource_mgt/content/configuring_node_labels.html
       ryba.capacity_scheduler ?= {}
       ryba.capacity_scheduler['yarn.scheduler.capacity.default.minimum-user-limit-percent'] ?= '100'
       ryba.capacity_scheduler['yarn.scheduler.capacity.maximum-am-resource-percent'] ?= '0.2'
@@ -64,8 +65,8 @@ the application (zombie state).
       ryba.capacity_scheduler['yarn.scheduler.capacity.node-locality-delay'] ?= '40'
       ryba.capacity_scheduler['yarn.scheduler.capacity.resource-calculator'] ?= 'org.apache.hadoop.yarn.util.resource.DominantResourceCalculator'
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels'] ?= null
-      ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels.default.capacity'] ?= null
-      ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels.default.maximum-capacity'] ?= null
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels.default.capacity'] ?= null # was 100
+      ryba.capacity_scheduler['yarn.scheduler.capacity.root.accessible-node-labels.default.maximum-capacity'] ?= null # was 100
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.acl_administer_queue'] ?= '*'
       # ryba.capacity_scheduler['yarn.scheduler.capacity.root.capacity'] ?= '100'
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.default-node-label-expression'] ?= ' '
@@ -75,6 +76,7 @@ the application (zombie state).
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.default.maximum-capacity'] ?= '100'
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.default.state'] ?= 'RUNNING'
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.default.user-limit-factor'] ?= '1'
+      # Defines root's child queue named 'default'
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.queues'] ?= 'default'
       ryba.capacity_scheduler['yarn.scheduler.capacity.queue-mappings'] ?= '' # Introduce by hadoop 2.7
       ryba.capacity_scheduler['yarn.scheduler.capacity.queue-mappings-override.enable'] ?= 'false' # Introduce by hadoop 2.7

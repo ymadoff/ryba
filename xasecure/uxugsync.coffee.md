@@ -50,7 +50,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         source: uxugsync_url
         destination: '/var/tmp'
         binary: true
-        not_if_exists: "/var/tmp/#{path.basename uxugsync_url, '.tar'}"
+        unless_exists: "/var/tmp/#{path.basename uxugsync_url, '.tar'}"
       @extract
         source: "/var/tmp/#{path.basename uxugsync_url}"
         if: -> @status -1

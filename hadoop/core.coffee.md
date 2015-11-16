@@ -665,7 +665,7 @@ recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
       {core_site, realm} = @config.ryba
       @execute
         cmd: 'dd if=/dev/urandom of=/etc/hadoop/hadoop-http-auth-signature-secret bs=1024 count=1'
-        not_if_exists: '/etc/hadoop/hadoop-http-auth-signature-secret'
+        unless_exists: '/etc/hadoop/hadoop-http-auth-signature-secret'
 
     module.exports.push 'ryba/hadoop/core_ssl'
 

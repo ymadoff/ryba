@@ -5,7 +5,6 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/yum'
     module.exports.push 'masson/core/iptables'
-    module.exports.push 'ryba/mongodb/install'
 
 ## IPTables
 
@@ -26,7 +25,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Users & Groups
 
-    module.exports.push header: 'MongoDB # Users & Groups', handler: ->
+    module.exports.push header: 'MongoDB Shard # Users & Groups', handler: ->
       {mongodb} = @config.ryba
       @group mongodb.group
       @user mongodb.user
@@ -36,6 +35,15 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
     module.exports.push header: 'MongoDB Shard # Packages', timeout: -1, handler: ->
       @service name: 'mongodb-org-server'
       @service name: 'mongodb-org-tools'
+
+## Layout
+
+    module.exports.push name: 'MongoDB Shard # Layout', handler: ->
+      {mongodb} = @config.ryba
+      @mkdir
+        destination: mongodb.shard.config.dbpath
+        uid: mongodb.user.name
+        gid: mongodb.group.name
 
 ## Configure
 

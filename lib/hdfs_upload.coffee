@@ -57,7 +57,7 @@ module.exports = ->
       """
       trap_on_error: true
       code_skipped: 3
-      not_if_exec: mkcmd.hdfs @, """
+      unless_exec: mkcmd.hdfs @, """
       source=#{options.source}
       link=`echo $source | sed  's|\\(.*/hdp/current/[^/]*\\)/.*|\\1|'`
       version=`readlink $link | sed  's|.*/hdp/\\([^/]*\\)/.*|\\1|'`

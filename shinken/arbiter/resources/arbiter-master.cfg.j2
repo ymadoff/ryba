@@ -17,13 +17,11 @@
 #}
 {% for a in arbiters %}
 define arbiter {
-    arbiter_name    {{a.host}}
-    {% if distributed %}
-    host_name       {{a.host}}
-    {% endif %}
-    address         {{a.host}}
-    port            {{a.port}}
-    spare           {% if a.spare %}1{% else %}0{% endif %}
+    arbiter_name    arbiter_{{a.config.shortname}}
+    {# host_name       {{a.config.shortname}} ### WARNING SHOULD BE SET FOR DISTRIBUTED MODE !!! #}
+    address         {{a.config.host}}
+    port            {{a.config.ryba.shinken.arbiter.config.port}}
+    spare           {% if a.config.ryba.shinken.arbiter.config.spare %}1{% else %}0{% endif %}
 
     {# Interesting modules:
     # - named-pipe             = Open the named pipe nagios.cmd
@@ -43,9 +41,9 @@ define arbiter {
     # - FileTag			= Tag an host if it's on a flat file
     # - CSVTag			= Tag an host from the content of a CSV file
     #}
-    modules    	 {{ a.modules | join (",") }}
-    use_ssl	          {% if a.use_ssl %}1{% else %}0{% endif %}
-    hard_ssl_name_check   {% if a.hard_ssl_name_check %}1{% else %}0{% endif %}
+    modules    	 {{ a.config.ryba.shinken.arbiter.config.modules | join (",") }}
+    use_ssl	          {% if a.config.ryba.shinken.arbiter.config.use_ssl %}1{% else %}0{% endif %}
+    hard_ssl_name_check   {% if a.config.ryba.shinken.arbiter.config.hard_ssl_name_check %}1{% else %}0{% endif %}
 
     {# Uncomment these lines in a HA architecture so the master and slaves know
     # how long they may wait for each other.

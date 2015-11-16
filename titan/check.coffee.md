@@ -29,7 +29,7 @@ Check the configuration file (current.properties).
         #{titan.install_dir}/current/bin/gremlin.sh 2>/dev/null <<< \"g = TitanFactory.open('titan-hbase-#{titan.config['index.search.backend']}-test.properties')\" | grep '==>titangraph'
         hbase shell 2>/dev/null <<< "grant 'ryba', 'RWC', 'titan-test'"
         """
-        not_if_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists 'titan-test'\""
+        unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists 'titan-test'\""
       , (err, status) ->
         check = true if status
       @execute

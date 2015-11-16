@@ -91,7 +91,7 @@
         oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
         """
         code_skipped: 2
-        not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.shortname}-oozie-fs/target"
+        unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.shortname}-oozie-fs/target"
 
 ## Check MapReduce Workflow
 
@@ -195,7 +195,7 @@
         oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
         """
         trap_on_error: false # or while loop will exit on first run
-        not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.shortname}-oozie-mr/output/_SUCCESS"
+        unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.shortname}-oozie-mr/output/_SUCCESS"
 
 ## Check Pig Workflow
 
@@ -290,7 +290,7 @@
         oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
         """
         trap_on_error: false # or while loop will exit on first run
-        not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.shortname}-oozie-pig/output/_SUCCESS"
+        unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.shortname}-oozie-pig/output/_SUCCESS"
 
 ## Check HCat Workflow
 
@@ -437,7 +437,7 @@
         oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
         """
         trap_on_error: false # or while loop will exit on first run
-        not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -d check-#{@config.shortname}-oozie-pig/output"
+        unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -d check-#{@config.shortname}-oozie-pig/output"
 
 # Module Dependencies
 

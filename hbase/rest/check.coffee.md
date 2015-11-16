@@ -34,7 +34,7 @@
         #{curl} --data '#{rows}' #{protocol}://#{host}:#{port}/ryba/___false-row-key___/#{shortname}_rest%3A
         #{curl} #{protocol}://#{host}:#{port}/ryba/my_row_rest
         """
-        not_if_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"scan 'ryba', {COLUMNS => '#{shortname}_rest'}\" | egrep '[0-9]+ row'"
+        unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"scan 'ryba', {COLUMNS => '#{shortname}_rest'}\" | egrep '[0-9]+ row'"
       , (err, executed, stdout) ->
         return if err or not executed
         try

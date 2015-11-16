@@ -47,7 +47,7 @@ Shell script to be executed inside one or multiple YARN containers.
         rm=`yarn logs -applicationId $application 2>/dev/null | grep 'Ryba NM hostname' | sed 's/Ryba NM hostname: \\(.*\\)/\\1/'`
         [ "$rm" ]
         """
-        not_if_exists: unless force_check then scriptpath
+        unless_exists: unless force_check then scriptpath
 
 ## Dependencies
 

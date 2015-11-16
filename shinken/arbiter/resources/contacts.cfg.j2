@@ -1,0 +1,7 @@
+{% for name, user in contacts %}
+define contact{
+  contact_name  {{ name }}
+  use           generic-contact
+  {% for prop, value in user %}
+  {{ prop }}    {{ value }}{% endfor %}
+}{% endfor %}

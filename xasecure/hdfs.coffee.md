@@ -31,7 +31,7 @@
         source: hdfs_url
         destination: '/var/tmp'
         binary: true
-        not_if_exists: "/var/tmp/#{path.basename hdfs_url, '.tar'}"
+        unless_exists: "/var/tmp/#{path.basename hdfs_url, '.tar'}"
       @extract
         source: "/var/tmp/#{path.basename hdfs_url}"
         if: -> @status -1

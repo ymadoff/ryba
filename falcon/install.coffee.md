@@ -94,7 +94,7 @@ falcon:x:498:falcon
       @call ->
         @execute
           cmd: mkcmd.hdfs @, 'hdfs dfs -mkdir /apps/falcon'
-          not_if: -> status
+          unless: -> status
         @execute
           cmd: mkcmd.hdfs @, "hdfs dfs -chown #{user.name} /apps/falcon"
           if: not status or user.name isnt user_owner

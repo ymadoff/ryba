@@ -34,11 +34,9 @@ RUN rm -rf ./UnlimitedJCEPolicyJDK7*
 RUN groupadd hue -g 2410
 RUN useradd hue -u 2410 -g 2410 -d /var/lib/hue
 RUN mkdir -p /var/lib/hue/ssl
-#COPY resources/cacert.pem /var/lib/hue/ssl/
-#COPY resources/cacert_key.pem /var/lib/hue/ssl/
 
 # Fix hue request verify path: setting the ca bundle path as global env variable
-ENV  REQUESTS_CA_BUNDLE /var/lib/hue/ssl/cacert.pem 
+# ENV  REQUESTS_CA_BUNDLE /etc/hue/conf/cert.pem
 
 USER hue
 
@@ -58,4 +56,4 @@ USER root
 RUN chmod +x /var/lib/hue/hue_init.sh
 USER hue
 
-ENTRYPOINT ["./var/lib/hue/hue_init.sh"]
+ENTRYPOINT ["/var/lib/hue/hue_init.sh"]

@@ -92,7 +92,7 @@ TODO: only work if WebHCat is running on the same server as Hue
     module.exports.push header: 'Hue # WebHCat', handler: ->
       {webhcat} = @config.ryba
       webhcat_server = @host_with_module 'ryba/hive/webhcat'
-      return next Error "WebHCat shall be on the same server as Hue" unless webhcat_server is @config.host
+      return Error "WebHCat shall be on the same server as Hue" unless webhcat_server is @config.host
       @hconfigure
         destination: "#{webhcat.conf_dir}/webhcat-site.xml"
         properties: 
@@ -111,7 +111,7 @@ TODO: only work if Oozie is running on the same server as Hue
     module.exports.push header: 'Hue # Oozie', handler: ->
       {oozie} = @config.ryba
       oozie_server = @host_with_module 'ryba/oozie/server'
-      return next Error "Oozie shall be on the same server as Hue" unless oozie_server is @config.host
+      return Error "Oozie shall be on the same server as Hue" unless oozie_server is @config.host
       @hconfigure
         destination: "#{oozie.conf_dir}/oozie-site.xml"
         properties: 

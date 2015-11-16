@@ -128,7 +128,7 @@ present on a fresh install.
         source: "#{__dirname}/../resources/hive/hive-env.sh"
         destination: "#{hive.conf_dir}/hive-env.sh"
         local_source: true
-        not_if_exists: true
+        unless_exists: true
       @write
         destination: "#{hive.conf_dir}/hive-env.sh"
         write: [

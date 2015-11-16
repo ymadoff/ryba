@@ -14,7 +14,7 @@ Stop the Shinken Reactionner service.
 ## Clean Logs
 
     module.exports.push header: 'Shinken Reactionner # Clean Logs', label_true: 'CLEANED', handler: ->
-      return unless ctx.config.ryba.clean_logs
+      return unless @config.ryba.clean_logs
       @execute
         cmd: 'rm /var/log/shinken/*'
         code_skipped: 1

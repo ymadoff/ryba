@@ -52,33 +52,33 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         gid: shinken.group.name
       @execute
         cmd: "su -l #{shinken.user.name} -c 'shinken --init'"
-        not_if_exists: "#{shinken.home}/.shinken.ini"
+        unless_exists: "#{shinken.home}/.shinken.ini"
 
 ## Additional Modules
 
     module.exports.push header: 'Shinken Poller # Modules', handler: ->
       {shinken, shinken:{poller}} = @config.ryba
-      return unless Object.getOwnPropertyNames(poller.modules).length > 0
+      return unless Object.keys(poller.modules).length > 0
       for name, mod of poller.modules
         if mod.archive?
           @download
             destination: "#{mod.archive}.zip"
             source: mod.source
             cache_file: "#{mod.archive}.zip"
-            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
+            unless_exec: "shinken inventory | grep #{name}"
           @extract
             source: "#{mod.archive}.zip"
-            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
+            unless_exec: "shinken inventory | grep #{name}"
           @execute
-            cmd: "su -l #{shinken.user.name} -c 'shinken install --local #{mod.archive}'"
-            not_if_exec: "su -l #{shinken.user.name} 'shinken inventory | grep #{name}'"
+            cmd: "shinken install --local #{mod.archive}"
+            unless_exec: "shinken inventory | grep #{name}"
         else throw Error "Missing parameter: archive for poller.modules.#{name}"
 
 ## Python Modules
 
       module.exports.push header: 'Shinken Poller # Python Modules', skip: true, handler: ->
       {poller} = @config.ryba.shinken
-      return unless Object.getOwnPropertyNames(poller.python_modules).length > 0
+      return unless Object.keys(poller.python_modules).length > 0
       for name, mod of poller.python_modules
         if mod.archive?
           archive_name = "#{mod.archive}.tar.gz"
@@ -86,25 +86,24 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             destination: archive_name
             source: mod.source
             cache_file: archive_name
-            not_if_exec: "pip list | grep #{name}"
+            unless_exec: "pip list | grep #{name}"
           @exec
             cmd: "pip install #{mod.archive}.tar.gz"
-            not_if_exec: "pip list | grep #{name}"
+            unless_exec: "pip list | grep #{name}"
         else throw Error "Missing parameter: archive for poller.python_modules.#{name}"
 
 ## Plugins
 
     module.exports.push header: 'Shinken Poller # Plugins', timeout: -1, handler: ->
       {shinken} = @config.ryba
-      glob "#{__dirname}/resources/plugins/*", (err, plugins) =>
-        throw err if err
-        for plugin in plugins
-          @download
-            source: plugin
-            destination: "#{shinken.plugin_dir}/#{path.basename plugin}"
-            uid: shinken.user.name
-            gid: shinken.group.name
-            mode: 0o0755
+      for plugin in glob.sync "#{__dirname}/resources/plugins/*"
+        @download
+          destination: "#{shinken.plugin_dir}/#{path.basename plugin}"
+          source: plugin
+          local_source: true
+          uid: shinken.user.name
+          gid: shinken.group.name
+          mode: 0o0755
 
 ## Kerberos
 

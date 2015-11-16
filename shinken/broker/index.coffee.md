@@ -28,25 +28,36 @@ Some of the modules are:
       # Additionnal modules to install
       broker.modules ?= {}
       webui = broker.modules['webui2'] ?= {}
-      webui.source ?= 'https://github.com/shinken-monitoring/mod-webui/archive/2.0.1.zip'
-      webui.archive ?= 'mod-webui-2.0.1'
+      webui.version ?= "2.0.1"
+      webui.source ?= "https://github.com/shinken-monitoring/mod-webui/archive/#{webui.version}.zip"
+      webui.archive ?= "mod-webui-#{webui.version}"
+      webui.modules ?= {}
       webui.config ?= {}
       webui.config.host ?= '0.0.0.0'
-      webui.config.port ?= 7767
+      webui.config.port ?= '7767'
       webui.config.auth_secret ?= 'rybashinken123'
-      webui.config.modules = [webui.config.modules] if typeof webui.config.modules is 'string'
-      webui.config.modules ?= ['auth-cfg-password', 'mongodb']
-      auth = broker.modules['auth-cfg-password'] ?= {}
-      auth.source ?= 'https://github.com/shinken-monitoring/mod-auth-cfg-password/archive/2.0.1.zip'
-      auth.archive ?= 'mod-auth-cfg-password-2.0.1'
-      mongodb = broker.modules['mongodb'] ?= {}
-      mongodb.source ?= 'https://github.com/shinken-monitoring/mod-mongodb/archive/1.0.1.zip'
-      mongodb.archive ?= 'mod-mongodb-1.0.1'
+      logs =  broker.modules['mongo-logs'] ?= {}
+      logs.version ?= '1.1.0'
+      graphite = broker.modules['graphite2'] ?= {}
+      graphite.version ?= '2.1.0'
+      graphite.source ?= "https://github.com/shinken-monitoring/mod-graphite/archive/#{graphite.version}.zip"
+      graphite.archive ?= "mod-graphite-#{graphite.version}"
+      ## Auto discovery
+      configmod = (name, mod) =>
+        if mod.version?
+          mod.source ?= "https://github.com/shinken-monitoring/mod-#{name}/archive/#{mod.version}.zip"
+          mod.archive ?= "mod-#{name}-#{mod.version}"
+        mod.modules ?= {}
+        mod.config ?= {}
+        mod.config.modules = [mod.config.modules] if typeof mod.config.modules is 'string'
+        mod.config.modules ?= Object.keys mod.modules
+        for subname, submod of mod.modules then configmod subname, submod
+      for name, mod of broker.modules then configmod name, mod
       # CONFIG
       broker.config ?= {}
       broker.config.port ?= 7772
       broker.config.modules = [broker.config.modules] if typeof broker.config.modules is 'string'
-      broker.config.modules ?= ['webui']
+      broker.config.modules ?= Object.keys broker.modules
 
 ## Commands
 

@@ -9,7 +9,7 @@
         PKG=${PKG/el*/jar};
         ln -sf $PKG /usr/hdp/current/hbase-client/lib/phoenix.jar
         """
-        not_if_exists: '/usr/hdp/current/hbase-client/lib/phoenix.jar'
+        unless_exists: '/usr/hdp/current/hbase-client/lib/phoenix.jar'
       @hconfigure
         destination: "#{hbase.conf_dir}/hbase-site.xml"
         properties: hbase.site

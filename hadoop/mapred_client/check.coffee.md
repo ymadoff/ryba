@@ -26,7 +26,7 @@ to re-execute the check.
         hadoop jar /usr/hdp/current/hadoop-mapreduce-client/hadoop-mapreduce-examples-2*.jar teragen 100 check-#{host}-mapred/input
         hadoop jar /usr/hdp/current/hadoop-mapreduce-client/hadoop-mapreduce-examples-2*.jar terasort check-#{host}-mapred/input check-#{host}-mapred/output
         """
-        not_if_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -d check-#{host}-mapred/output"
+        unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -d check-#{host}-mapred/output"
         trap_on_error: true
 
 ## Dependencies

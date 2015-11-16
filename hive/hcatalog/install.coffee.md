@@ -85,7 +85,7 @@ isnt yet started.
             flush privileges;
             "
             """
-            not_if: -> @status -1
+            unless: -> @status -1
             trap_on_error: true
           @execute
             cmd: """
@@ -106,7 +106,7 @@ isnt yet started.
               #{mysql_client} #{db} < $target_major;
             fi
             """
-            not_if: -> @status -2
+            unless: -> @status -2
             trap_on_error: true
           @execute
             cmd: """
@@ -134,7 +134,7 @@ isnt yet started.
             """
             code_skipped: 3
             trap_on_error: true
-            not_if: -> @status -3
+            unless: -> @status -3
         else throw new Error 'Database engine not supported'
 
     module.exports.push header: 'Hive HCatalog # Configure', handler: ->
@@ -305,7 +305,7 @@ Create the directories to store the logs and pid information. The properties
           hdfs dfs -copyFromLocal /usr/hdp/current/hive-metastore/lib/hive-exec-* /apps/hive/install
           hdfs dfs -chown #{hive.user.name}:#{hadoop_group.name} /apps/hive/install/hive-exec-*
           """
-          not_if_exec: "[[ `#{version_local}` == `#{version_remote}` ]]"
+          unless_exec: "[[ `#{version_local}` == `#{version_remote}` ]]"
 
 # Module Dependencies
 
