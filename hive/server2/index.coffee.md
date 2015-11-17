@@ -44,6 +44,7 @@ Example:
       {core_site, hive, static_host, realm} = ctx.config.ryba
       # Layout and environment
       hive.server2 ?= {}
+      hive.server2.conf_dir ?= '/etc/conf/hive'
       hive.server2.log_dir ?= '/var/log/hive-server2'
       hive.server2.pid_dir ?= '/var/run/hive-server2'
       hive.server2.opts ?= ''
@@ -66,7 +67,7 @@ Example:
       hive.site['hive.server2.enable.doAs'] ?= 'true'
       # hive.site['hive.server2.enable.impersonation'] ?= 'true' # Mention in CDH5.3 but hs2 logs complains it doesnt exist
       hive.site['hive.server2.allow.user.substitution'] ?= 'true'
-      hive.site['hive.server2.transport.mode'] ?= 'binary' # Kerberos not working with "http", see https://issues.apache.org/jira/browse/HIVE-6697
+      hive.site['hive.server2.transport.mode'] ?= 'http'
       hive.site['hive.server2.thrift.port'] ?= '10001'
       hive.site['hive.server2.thrift.http.port'] ?= '10001'
       hive.site['hive.server2.thrift.http.path'] ?= 'cliservice'
@@ -94,6 +95,12 @@ Example:
       # SPNEGO
       hive.site['hive.server2.authentication.spnego.principal'] ?= core_site['hadoop.http.authentication.kerberos.principal']
       hive.site['hive.server2.authentication.spnego.keytab'] ?= core_site['hadoop.http.authentication.kerberos.keytab']
+
+## Configure SSL
+
+      hive.site['hive.server2.use.SSL'] ?= 'true'
+      hive.site['hive.server2.keystore.path'] ?= "#{hive.server2.conf_dir}/keystore"
+      hive.site['hive.server2.keystore.password'] ?= "ryba123"
 
 ## HS2 High Availability & Rolling Upgrade
 

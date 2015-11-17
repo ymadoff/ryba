@@ -3,6 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
+    module.exports.push 'ryba/hadoop/core_ssl'
     module.exports.push 'ryba/hadoop/hdfs_client/install'
     module.exports.push 'ryba/hadoop/yarn_client/install'
     module.exports.push 'ryba/hadoop/mapred_client/install'
@@ -63,7 +64,27 @@ by setting a "heapsize" value equal to "4096".
         eof: true
         backup: true
 
+## SSL
 
+    module.exports.push header: 'Hive Client # SSL', handler: ->
+      {ssl, ssl_server, ssl_client, hadoop_conf_dir} = @config.ryba
+      tmp_location = "/var/tmp/ryba/ssl"
+      {hive} = @config.ryba
+      @upload
+        source: ssl.cacert
+        destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+        mode: 0o0600
+        shy: true
+      @java_keystore_add
+        keystore: hive.client.truststore_location
+        storepass: hive.client.truststore_password
+        caname: "hive_root_ca"
+        cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
+      @remove
+        destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+        shy: true
       
+## Dependencies
 
+    path = require 'path'
   

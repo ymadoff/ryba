@@ -76,6 +76,11 @@ Example:
         hive.site['javax.jdo.option.ConnectionUserName']= null
         hive.site['javax.jdo.option.ConnectionPassword'] = null
 
+## Configure SSL
+
+      hive.client.truststore_location ?= "#{hive.conf_dir}/truststore"
+      hive.client.truststore_password ?= "ryba123"
+
 ## Commands
 
     module.exports.push commands: 'check', modules: 'ryba/hive/client/check'

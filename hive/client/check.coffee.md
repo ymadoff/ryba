@@ -89,13 +89,21 @@ directive once you enter the beeline shell.
       handler: ->
         {force_check, realm, user, hive} = @config.ryba
         for hs2_ctx in @contexts 'ryba/hive/server2'
+          {hive} = hs2_ctx.config.ryba
           directory = "check-#{@config.shortname}-hive_server2-#{hs2_ctx.config.shortname}"
           db = "check_#{@config.shortname}_server2_#{hs2_ctx.config.shortname}"
-          port = if hs2_ctx.config.ryba.hive.site['hive.server2.transport.mode'] is 'http'
-          then hs2_ctx.config.ryba.hive.site['hive.server2.thrift.http.port']
-          else hs2_ctx.config.ryba.hive.site['hive.server2.thrift.port']
-          principal = hs2_ctx.config.ryba.hive.site['hive.server2.authentication.kerberos.principal']
+          port = if hive.site['hive.server2.transport.mode'] is 'http'
+          then hive.site['hive.server2.thrift.http.port']
+          else hive.site['hive.server2.thrift.port']
+          principal = hive.site['hive.server2.authentication.kerberos.principal']
           url = "jdbc:hive2://#{hs2_ctx.config.host}:#{port}/default;principal=#{principal}"
+          if hive.site['hive.server2.use.SSL'] is 'true'
+            url += ";ssl=true"
+            url += ";sslTrustStore=#{hive.client.truststore_location}"
+            url += ";trustStorePassword=#{hive.client.truststore_password}"
+          if hive.site['hive.server2.transport.mode'] is 'http'
+            url += ";transportMode=#{hive.site['hive.server2.transport.mode']}"
+            url += ";httpPath=#{hive.site['hive.server2.thrift.http.path']}"
           beeline = "beeline -u \"#{url}\" --silent=true "
           @execute
             cmd: mkcmd.test @, """
@@ -130,11 +138,19 @@ directive once you enter the beeline shell.
           quorum = hive.site['hive.zookeeper.quorum']
           namespace = hive.site['hive.server2.zookeeper.namespace']
           principal = hive.site['hive.server2.authentication.kerberos.principal']
-          "jdbc:hive2://#{quorum}/;principal=#{principal};serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=#{namespace}"
+          url = "jdbc:hive2://#{quorum}/;principal=#{principal};serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=#{namespace}"
+          if hive.site['hive.server2.use.SSL'] is 'true'
+            url += ";ssl=true"
+            url += ";sslTrustStore=#{hive.client.truststore_location}"
+            url += ";trustStorePassword=#{hive.client.truststore_password}"
+          if hive.site['hive.server2.transport.mode'] is 'http'
+            url += ";transportMode=#{hive.site['hive.server2.transport.mode']}"
+            url += ";httpPath=#{hive.site['hive.server2.thrift.http.path']}"
+          url
         .sort()
         .filter( (c) -> p = current; current = c; p isnt c )
         for url in urls
-          namespace = /zooKeeperNamespace=(.*)/.exec(url)[1]
+          namespace = /zooKeeperNamespace=(.*?)(;|$)/.exec(url)[1]
           directory = "check-#{@config.shortname}-hive_server2-zoo-#{namespace}"
           db = "check_#{@config.shortname}_hs2_zoo_#{namespace}"
           beeline = "beeline -u \"#{url}\" --silent=true "
