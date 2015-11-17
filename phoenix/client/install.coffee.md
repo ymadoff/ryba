@@ -84,9 +84,9 @@ for its instructions.
 
 ## Init
 
-There is 3 phoenix 'SYSTEM.*' tables. If they don't exist in HBase, we launch
+There is 4 phoenix 'SYSTEM.*' tables. If they don't exist in HBase, we launch
 phoenix with hbase admin user.
-Independently, if 'ryba' hasn't CREATE right on these 3 tables, it will be granted
+Independently, if 'ryba' hasn't CREATE right on these 4 tables, it will be granted
 
     module.exports.push header: 'Phoenix Client # Init', timeout: 200000, handler: ->
       {hbase} = @config.ryba
@@ -96,7 +96,7 @@ Independently, if 'ryba' hasn't CREATE right on these 3 tables, it will be grant
       @execute
         cmd: mkcmd.hbase @, """
         code=3
-        if [ `hbase shell 2>/dev/null <<< "list 'SYSTEM.*'" | egrep '^SYSTEM\.' | wc -l` -lt "2" ]; then
+        if [ `hbase shell 2>/dev/null <<< "list 'SYSTEM.*'" | egrep '^SYSTEM.' | wc -l` -lt "2" ]; then
         /usr/hdp/current/phoenix-client/bin/sqlline.py #{zk_path} 2>/dev/null <<< '!q'
         code=0
         fi

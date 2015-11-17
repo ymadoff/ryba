@@ -1,6 +1,9 @@
 
 # Phoenix Check
 
+CSV data can be bulk loaded with built in utility named "psql.py". A shell is
+available with the utility named "sqlline.py"
+
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hadoop/yarn_rm/wait'

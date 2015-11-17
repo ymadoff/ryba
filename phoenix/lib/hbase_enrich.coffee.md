@@ -4,6 +4,7 @@
     module.exports = (options) ->
       {hbase} = @config.ryba
       @execute
+        header: 'HBase Master: Phoenix: Link JAR'
         cmd:"""
         PKG=`rpm --queryformat "/usr/hdp/current/phoenix-client/lib/phoenix-core-%{VERSION}-%{RELEASE}" -q phoenix`;
         PKG=${PKG/el*/jar};
@@ -11,6 +12,7 @@
         """
         unless_exists: '/usr/hdp/current/hbase-client/lib/phoenix.jar'
       @hconfigure
+        header: 'HBase Master: Phoenix: Configure HBase'
         destination: "#{hbase.conf_dir}/hbase-site.xml"
         properties: hbase.site
         merge: true
@@ -18,6 +20,7 @@
         gid: hbase.group.name
         backup: true
       @service
+        header: 'HBase Master: Phoenix: Restart Master'
         srv_name: "hbase-master"
         action: 'restart'
         if: [
@@ -25,6 +28,7 @@
           -> @status -1
         ]
       @service
+        header: 'HBase Master: Phoenix: Restart RegionServer'
         srv_name: "hbase-regionserver"
         action: 'restart'
         if: [
