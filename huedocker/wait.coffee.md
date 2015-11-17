@@ -12,4 +12,4 @@ be released soon.
       @wait_connect
         servers: for hue_ in @contexts 'ryba/huedocker', require('./index').configure
           host: hue_.config.host
-          port: hue_.config.ryba.hue.port
+          port: hue_.config.ryba.hue_docker.port

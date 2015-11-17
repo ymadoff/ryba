@@ -13,6 +13,6 @@ the server to start...
   # TODO: Novembre 2015 check hue server by adding a user with the webservice.
 
     module.exports.push name: 'Hue Docker # Check', label_true: 'CHECKED', handler: ->
-      {hue} = @config.ryba
+      {hue_docker} = @config.ryba
       @execute
-        cmd: "echo > /dev/tcp/#{@config.host}/#{hue.port}"
+        cmd: "echo > /dev/tcp/#{@config.host}/#{hue_docker.port}"
