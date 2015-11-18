@@ -25,7 +25,7 @@
         action: 'restart'
         if: [
           @has_module 'ryba/hbase/master'
-          -> @status -1
+          -> @status()
         ]
       @service
         header: 'HBase Master: Phoenix: Restart RegionServer'
@@ -33,7 +33,7 @@
         action: 'restart'
         if: [
           @has_module 'ryba/hbase/regionserver'
-          -> @status -2
+          -> @status()
         ]
         
     module.exports.register = (options) ->
