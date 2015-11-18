@@ -96,66 +96,49 @@ Read [Delegation Tokens in Hadoop Security](http://www.kodkast.com/blogs/hadoop/
 for more information.
 
     module.exports.push header: 'HDFS DN # Check WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
-      @call (_, callback) ->
-        {hdfs, nameservice, user, force_check, active_nn_host, force_check} = @config.ryba
-        is_ha = @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-        # state = if not is_ha or active_nn_host is @config.host then 'active' else 'standby'
-        protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-        nameservice = if is_ha then ".#{@config.ryba.hdfs.site['dfs.nameservices']}" else ''
-        shortname = if is_ha then ".#{@contexts(hosts: active_nn_host)[0].config.shortname}" else ''
-        address = hdfs.site["dfs.namenode.#{protocol}-address#{nameservice}#{shortname}"]
-        do_init = =>
-          @execute
-            cmd: mkcmd.test @, """
-            hdfs dfs -touchz check-#{@config.shortname}-webhdfs
-            kdestroy
-            """
-            code_skipped: 2
-            unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.shortname}-webhdfs"
-          , (err, executed, stdout) ->
-            return callback err if err
-            return callback null, false unless executed
-            do_spnego()
-        do_spnego = =>
-          @execute
-            cmd: mkcmd.test @, """
-            curl -s --negotiate --insecure -u : "#{protocol}://#{address}/webhdfs/v1/user/#{user.name}?op=LISTSTATUS"
-            kdestroy
-            """
-          , (err, executed, stdout) ->
-            return callback err if err
-            try
-              count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "check-#{@config.shortname}-webhdfs").length
-            catch e then return callback Error e
-            err = Error "Invalid result" unless count
-            return callback err, false
-            do_token()
-        do_token = =>
-          @execute
-            cmd: mkcmd.test @, """
-            curl -s --negotiate --insecure -u : "#{protocol}://#{address}/webhdfs/v1/?op=GETDELEGATIONTOKEN"
-            kdestroy
-            """
-          , (err, executed, stdout) ->
-            return callback err if err
-            json = JSON.parse(stdout)
-            return setTimeout do_tocken, 3000 if json.exception is 'RetriableException'
-            token = json.Token.urlString
-            @execute
-              cmd: """
-              curl -s --insecure "#{protocol}://#{address}/webhdfs/v1/user/#{user.name}?delegation=#{token}&op=LISTSTATUS"
-              """
-            , (err, executed, stdout) ->
-              return callback err if err
-              try
-                count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) -> e.pathSuffix is "check-#{@config.shortname}-webhdfs").length
-              catch e then return callback Error e
-              err = Error "Invalid result" unless count
-              return callback err, false
-              do_end()
-        do_end = ->
-          callback null, true
-        do_init()
+      {hdfs, nameservice, user, active_nn_host} = @config.ryba
+      is_ha = @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+      protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      nameservice = if is_ha then ".#{@config.ryba.hdfs.site['dfs.nameservices']}" else ''
+      shortname = if is_ha then ".#{@contexts(hosts: active_nn_host)[0].config.shortname}" else ''
+      address = hdfs.site["dfs.namenode.#{protocol}-address#{nameservice}#{shortname}"]
+      @execute
+        cmd: mkcmd.test @, """
+        hdfs dfs -touchz check-#{@config.shortname}-webhdfs
+        kdestroy
+        """
+        code_skipped: 2
+      @execute
+        cmd: mkcmd.test @, """
+        curl -s --negotiate --insecure -u : "#{protocol}://#{address}/webhdfs/v1/user/#{user.name}?op=LISTSTATUS"
+        kdestroy
+        """
+      , (err, executed, stdout) ->
+        throw err if err
+        try
+          count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) => e.pathSuffix is "check-#{@config.shortname}-webhdfs").length
+        catch e then throw Error e
+        throw Error "Invalid result" unless count
+      @execute
+        cmd: mkcmd.test @, """
+        curl -s --negotiate --insecure -u : "#{protocol}://#{address}/webhdfs/v1/?op=GETDELEGATIONTOKEN"
+        kdestroy
+        """
+      , (err, executed, stdout) ->
+        throw err if err
+        json = JSON.parse(stdout)
+        return setTimeout do_tocken, 3000 if json.exception is 'RetriableException'
+        token = json.Token.urlString
+        @execute
+          cmd: """
+          curl -s --insecure "#{protocol}://#{address}/webhdfs/v1/user/#{user.name}?delegation=#{token}&op=LISTSTATUS"
+          """
+        , (err, executed, stdout) ->
+          throw err if err
+          try
+            count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) => e.pathSuffix is "check-#{@config.shortname}-webhdfs").length
+          catch e then throw Error e
+          throw Error "Invalid result" unless count
 
 ## Dependencies
 
