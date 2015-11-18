@@ -611,27 +611,6 @@ Update the "core-site.xml" configuration file with properties from the
         backup: true
         eof: true
 
-## Policy
-
-By default the service-level authorization is disabled in hadoop, to enable that
-we need to set/configure the hadoop.security.authorization to true in
-${HADOOP_CONF_DIR}/core-site.xml
-
-    module.exports.push header: 'Hadoop Core # Policy', handler: ->
-      {core_site, hadoop_conf_dir, hadoop_policy} = @config.ryba
-      @hconfigure
-        destination: "#{hadoop_conf_dir}/hadoop-policy.xml"
-        default: "#{__dirname}/../resources/core_hadoop/hadoop-policy.xml"
-        local_default: true
-        properties: hadoop_policy
-        merge: true
-        backup: true
-        if: core_site['hadoop.security.authorization'] is 'true'
-      @execute
-        cmd: mkcmd.hdfs @, 'service hadoop-hfds-namenode status && hdfs dfsadmin -refreshServiceAcl'
-        code_skipped: 3
-        if: -> @status -1
-
     module.exports.push header: 'Hadoop Core # Keytabs', timeout: -1, handler: ->
       {hadoop_group} = @config.ryba
       @mkdir

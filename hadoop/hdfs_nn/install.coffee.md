@@ -265,6 +265,27 @@ is only executed on the standby NameNode.
           cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -bootstrapStandby -nonInteractive\""
           code_skipped: 5
 
+## Policy
+
+By default the service-level authorization is disabled in hadoop, to enable that
+we need to set/configure the hadoop.security.authorization to true in
+${HADOOP_CONF_DIR}/core-site.xml
+
+    module.exports.push header: 'Hadoop Core # Policy', handler: ->
+      {core_site, hadoop_conf_dir, hadoop_policy} = @config.ryba
+      @hconfigure
+        destination: "#{hadoop_conf_dir}/hadoop-policy.xml"
+        default: "#{__dirname}/../../resources/core_hadoop/hadoop-policy.xml"
+        local_default: true
+        properties: hadoop_policy
+        merge: true
+        backup: true
+        if: core_site['hadoop.security.authorization'] is 'true'
+      @execute
+        cmd: mkcmd.hdfs @, 'service hadoop-hdfs-namenode status && hdfs dfsadmin -refreshServiceAcl'
+        code_skipped: 3
+        if: -> @status -1
+
 ## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
