@@ -51,7 +51,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
         each exports.steps
         .run (middleware, i, next) ->
           return next() if params.start? and i < params.start
-          process.stdout.write "[#{i}] #{middleware.label}\n"
+          process.stdout.write "[#{i}] #{middleware.header}\n"
           each contexts
           .run (context, j, next) ->
             sign = if j+1 < contexts.length then '├' else '└'
@@ -100,7 +100,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
     exports.steps = []
 
     exports.steps.push
-      label: 'Prepare Rolling Upgrade'
+      header: 'Prepare Rolling Upgrade'
       if: -> @config.ryba.active_nn_host is @config.host
       handler: ->
         @execute
@@ -109,7 +109,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           cmd: 'hdfs dfsadmin -rollingUpgrade query | grep "Proceed with rolling upgrade"'
 
     exports.steps.push
-      label: 'Upgrade Zookeeper'
+      header: 'Upgrade Zookeeper'
       if: -> @has_module 'ryba/zookeeper/server'
       handler: ->
         @execute
@@ -122,7 +122,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           port: @config.ryba.zookeeper?.port
 
     exports.steps.push
-      label: 'Upgrade JournalNode'
+      header: 'Upgrade JournalNode'
       if: -> @has_module 'ryba/hadoop/hdfs_jn'
       handler: ->
         @execute
@@ -137,7 +137,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           setTimeout callback, 10000
 
     exports.steps.push
-      label: 'Upgrade ZKFC'
+      header: 'Upgrade ZKFC'
       if: -> @has_module 'ryba/hadoop/hdfs_zkfc'
       handler: ->
         @execute
@@ -147,7 +147,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           """
 
     exports.steps.push
-      label: 'Upgrade standby NameNode'
+      header: 'Upgrade standby NameNode'
       if: -> @has_module('ryba/hadoop/hdfs_nn') and @config.ryba.active_nn_host isnt @config.host
       handler: ->
         nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
@@ -164,7 +164,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           """
 
     exports.steps.push
-      label: 'Upgrade active NameNode'
+      header: 'Upgrade active NameNode'
       if: -> @has_module('ryba/hadoop/hdfs_nn') and @config.ryba.active_nn_host is @config.host
       handler: ->
         nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
@@ -181,7 +181,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           """
 
     exports.steps.push
-      label: 'Upgrade DataNode'
+      header: 'Upgrade DataNode'
       if: -> @has_module 'ryba/hadoop/hdfs_dn'
       handler: ->
         @execute
@@ -193,7 +193,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           """
 
     exports.steps.push
-      label: 'Finalize'
+      header: 'Finalize'
       if: -> @config.ryba.active_nn_host is @config.host
       handler: ->
         @execute

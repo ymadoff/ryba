@@ -32,8 +32,8 @@
 
 ```bash
 node node_modules/ryba/bin/upgrade \
-  -f 2.1 \
-  -t 2.2
+  -f 2.2 \
+  -t 2.3
 ```
 
     exports.params = 
