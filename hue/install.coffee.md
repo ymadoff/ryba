@@ -160,13 +160,13 @@ the default database while mysql is the recommanded choice.
             flush privileges;
             "
             """
-            not_if_exec: "#{mysql_exec} 'use #{name}'"
+            unless_exec: "#{mysql_exec} 'use #{name}'"
           @execute
             # TODO: handle updates
             cmd: """
             su -l #{hue.user.name} -c "/usr/lib/hue/build/env/bin/hue syncdb --noinput"
             """
-            not_if_exec: "#{mysql_exec} 'show tables from #{name};' | grep auth"
+            unless_exec: "#{mysql_exec} 'show tables from #{name};' | grep auth"
         else throw Error 'Hue database engine not supported'
 
 ## Kerberos
