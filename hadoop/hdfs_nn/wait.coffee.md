@@ -27,9 +27,7 @@ majority of DataNodes also need to be running.
       # else use curl
       throw Error 'HDFS Client Not Installed' unless @has_any_modules 'ryba/hadoop/hdfs_client/install', 'ryba/hadoop/hdfs_nn/install', 'ryba/hadoop/hdfs_snn/install', 'ryba/hadoop/hdfs_dn/install'
       @wait_execute
-        cmd: mkcmd.hdfs @, """
-          hdfs dfsadmin -safemode get | grep OFF
-          """
+        cmd: mkcmd.hdfs @, 'hdfs dfsadmin -safemode get | grep OFF'
         interval: 3000
 
 ## Dependencies
