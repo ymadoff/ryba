@@ -23,7 +23,7 @@ Example:
 
     module.exports.configure = (ctx) ->
       require('../../lib/base').configure ctx
-      {kafka} = ctx.config.ryba
+      kafka = ctx.config.ryba.kafka ?= {}
       # Layout
       kafka.conf_dir ?= '/etc/kafka/conf'
       # Group
