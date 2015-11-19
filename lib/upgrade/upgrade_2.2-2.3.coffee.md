@@ -42,9 +42,6 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
 
     exports = module.exports = (params, config, callback) ->
       params.easy_download
-      return callback Error "Missing 'repo' option" unless params.repo?
-      # params.repo ?= './resources/repos/hdp-2.2.0.0.local.repo'
-      # config.params = params
       config.directory = '/var/ryba/upgrade'
       exports.contexts params, config, (err, contexts) ->
         return callback err if err
@@ -198,6 +195,9 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       header: 'Finalize'
       if: -> @config.ryba.active_nn_host is @config.host
       handler: ->
+        @wait_execute
+          cmd: mkcmd.hdfs @, 'hdfs dfsadmin -safemode get | grep OFF'
+          interval: 3000
         @execute
           cmd: mkcmd.hdfs @, "hdfs dfsadmin -rollingUpgrade finalize"
 

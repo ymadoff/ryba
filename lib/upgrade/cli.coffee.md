@@ -44,10 +44,6 @@ node node_modules/ryba/bin/upgrade \
         description: 'One or multiple configuration files.'
         required: true
       ,
-        name: 'repo', shortcut: 'r'
-        description: 'Path to the new HDP 2.2 repository file.'
-        required: true
-      ,
         name: 'from', shortcut: 'f'
         description: 'Current version.'
         required: true
