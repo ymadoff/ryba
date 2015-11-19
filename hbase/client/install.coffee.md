@@ -38,7 +38,7 @@ restrict it but not the client.
         default: "#{__dirname}/../resources/hbase-site.xml"
         local_default: true
         properties: hbase.site
-        merge: true
+        merge: false
         uid: hbase.user.name
         gid: hbase.group.name
         backup: true

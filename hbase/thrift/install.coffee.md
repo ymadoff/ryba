@@ -86,13 +86,12 @@ restrict it but not the thrift server.
 
     module.exports.push header: 'HBase Thrift # Configure', handler: ->
       {hbase} = @config.ryba
-      console.log
       @hconfigure
         destination: "#{hbase.conf_dir}/hbase-site.xml"
         default: "#{__dirname}/../resources/hbase-site.xml"
         local_default: true
         properties: hbase.site
-        merge: true
+        merge: false
         uid: hbase.user.name
         gid: hbase.group.name
         backup: true
