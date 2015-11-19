@@ -82,6 +82,17 @@ of your cluster.
       spark.conf['spark.ssl.trustStorePassword'] ?= "ryba123"
       spark.conf['spark.eventLog.overwrite'] ?= 'true'
       spark.conf['spark.yarn.jar'] ?= "hdfs:///apps/#{spark.user.name}/spark-assembly.jar"
+      spark.conf['spark.yarn.applicationMaster.waitTries'] = null # Deprecated in favor of "spark.yarn.am.waitTime"
+      spark.conf['spark.yarn.am.waitTime'] ?= '10'
+      spark.conf['spark.yarn.containerLauncherMaxThreads'] ?= '25'
+      spark.conf['spark.yarn.driver.memoryOverhead'] ?= '384'
+      spark.conf['spark.yarn.executor.memoryOverhead'] ?= '384'
+      spark.conf['spark.yarn.max.executor.failures'] ?= '3'
+      spark.conf['spark.yarn.preserve.staging.files'] ?= 'false'
+      spark.conf['spark.yarn.queue'] ?= 'default'
+      spark.conf['spark.yarn.scheduler.heartbeat.interval-ms'] ?= '5000'
+      spark.conf['spark.yarn.services'] ?= 'org.apache.spark.deploy.yarn.history.YarnHistoryService'
+      spark.conf['spark.yarn.submit.file.replication'] ?= '3'          
 
 [secu]: http://spark.apache.org/docs/latest/security.html
 

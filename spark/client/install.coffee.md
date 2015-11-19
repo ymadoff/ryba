@@ -126,10 +126,9 @@ The spark.logEvent.enabled property is set to true to enable the log to be avail
 has finished (logs are only available in yarn-cluster mode). 
 
     module.exports.push header: 'Spark Client # Configure',  handler: ->
-      {java_home} = @config.java
-      {ryba} = @config
-      {spark, hadoop_group, hadoop_conf_dir, hive} = ryba
+      {spark, hadoop_group, hadoop_conf_dir, hive} = @config.ryba
       hdp_select_version = null
+      hadoop_conf_dir = '/usr/hdp/current/hadoop-client/conf'
       @execute
         cmd:  "hdp-select versions | tail -1"
       , (err, executed, stdout, stderr) ->
@@ -144,32 +143,12 @@ has finished (logs are only available in yarn-cluster mode).
         @hconfigure
           destination: "#{spark.conf_dir}/hive-site.xml"
           properties: hive.site
-        @write
+        @render
+          source: "#{__dirname}/../resources/spark-env.sh"
+          local_source: true
           destination : "#{spark.conf_dir}/spark-env.sh"
-          write: [
-            match :/^export HADOOP_CONF_DIR=.*$/mg
-            replace:"export HADOOP_CONF_DIR=#{hadoop_conf_dir}"
-          ,
-            replace: """
-            if [ -d "/etc/tez/conf/" ]; then
-            export TEZ_CONF_DIR=/etc/tez/conf
-            else
-            export TEZ_CONF_DIR=
-            fi
-            """
-            from: '# RYBA TEZ START'
-            to: '# RYBA TEZ END'
-            append: true
-          ,
-            match :/^export SPARK_CONF_DIR=.*$/mg
-            # replace:"export SPARK_CONF_DIR=#{spark.conf_dir} # RYBA CONF \"ryba.spark.conf_dir\", DONT OVERWRITE"
-            replace:"export SPARK_CONF_DIR=${SPARK_HOME:-/usr/hdp/current/spark-historyserver}/conf # RYBA CONF \"ryba.spark.conf_dir\", DONT OVERWRITE"
-            append: true
-          ,
-            match :/^export JAVA_HOME=.*$/mg
-            replace:"export JAVA_HOME=#{java_home} # RYBA, DONT OVERWRITE"
-            append: true
-          ]
+          context: @config
+          backup: true
         @write
           destination: "#{spark.conf_dir}/spark-defaults.conf"
           write: for k, v of spark.conf
