@@ -103,10 +103,12 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       header: 'Prepare Rolling Upgrade'
       if: -> @config.ryba.active_nn_host is @config.host
       handler: ->
-        @execute
+        @register 'kexecute', require '../kexecute'
+        @kexecute
+          krb5_user: @config.ryba.hdfs.krb5_user
           cmd: "hdfs dfsadmin -rollingUpgrade prepare"
         @wait_execute
-          cmd: 'hdfs dfsadmin -rollingUpgrade query | grep "Proceed with rolling upgrade"'
+          cmd: mkcmd.hdfs @, 'hdfs dfsadmin -rollingUpgrade query | grep "Proceed with rolling upgrade"'
 
     exports.steps.push
       header: 'Upgrade Zookeeper'
