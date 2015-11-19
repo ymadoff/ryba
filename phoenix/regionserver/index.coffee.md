@@ -22,7 +22,7 @@ running of those scans to produce regular JDBC result sets.
       hbase.site['hbase.regionserver.rpc.scheduler.factory.class'] = 'org.apache.hadoop.hbase.ipc.PhoenixRpcSchedulerFactory'
       # [Local Indexing](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.2/bk_installing_manually_book/content/configuring-hbase-for-phoenix.html)
       # The local indexing feature is a technical preview and considered under development.
-      hbase.site['hbase.rpc.controllerfactory.class'] = 'org.apache.hadoop.hbase.ipc.controller.ServerRpcControllerFactory'
+      hbase.site['hbase.rpc.controllerfactory.class'] ?= 'org.apache.hadoop.hbase.ipc.controller.ServerRpcControllerFactory'
       ctx.after
         # TODO: add header support to aspect in mecano
         type: 'service'
