@@ -278,6 +278,7 @@ Configuration for proxy users
 Configuration for environment
 
       ryba.hadoop_opts ?= '-Djava.net.preferIPv4Stack=true'
+      ryba.hadoop_classpath ?= ''
       ryba.hadoop_heap ?= '1024'
       ryba.hadoop_namenode_init_heap ?= '-Xms1024m'
       # if Array.isArray ryba.hadoop_opts
@@ -491,83 +492,22 @@ made available in the same directory after any modification.
 
 ## Env
 
-Upload the "hadoop-env.sh" file present in the HDP companion File.
-
-Note, this is wrong. Problem is that multiple module modify this file. We shall
-instead enrich the original file installed by the package.
-
-    module.exports.push header: 'Hadoop Core # Env', timeout: -1, handler: ->
-      {hadoop_conf_dir, hdfs, hadoop_group} = @config.ryba
-      @call (_, callback) ->
-        @fs.readFile "#{hadoop_conf_dir}/hadoop-env.sh", 'ascii', (err, content) ->
-          callback null, not /HDP/.test content
-      @upload
-        source: "#{__dirname}/../resources/core_hadoop/hadoop-env.sh"
-        local_source: true
-        destination: "#{hadoop_conf_dir}/hadoop-env.sh"
-        uid: hdfs.user.name
-        gid: hadoop_group.name
-        mode: 0o755
-        backup: true
-        eof: true
-        if: -> @status -1
-
-## Hadoop OPTS
-
-Update the "/etc/hadoop/conf/hadoop-env.sh" file.
+Maintain the "hadoop-env.sh" file present in the HDP companion File.
 
 The location for JSVC depends on the platform. The Hortonworks documentation
 mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
 correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
-    module.exports.push header: 'Hadoop Core # Hadoop OPTS', timeout: -1, handler: ->
-      {java_home} = @config.java
-      {hadoop_conf_dir, hdfs, hadoop_group, hadoop_opts, hadoop_client_opts, hadoop_namenode_init_heap, hadoop_heap} = @config.ryba
-      write = [
-        match: /\/var\/log\/hadoop\//mg
-        replace: "#{hdfs.log_dir}/"
-      ,
-        match: /^export JAVA_HOME=.*$/m
-        replace: "export JAVA_HOME=\"#{java_home}\" # RYBA CONF \"java.java_home\", DONT OVEWRITE"
-      ,
-        match: /^export HADOOP_PID_DIR=.*$/m
-        replace: "export HADOOP_PID_DIR=\"#{hdfs.pid_dir}\" # RYBA CONF \"hdfs.pid_dir\", DONT OVEWRITE"
-      ,
-        match: /^export HADOOP_HEAPSIZE="(.*)".*$/m
-        replace: "export HADOOP_HEAPSIZE=\"#{hadoop_heap}\" # RYBA CONF \"ryba.hadoop_heap\", DONT OVEWRITE"
-        # match: /^export HADOOP_HEAPSIZE="(.*)" # RYBA CONF ".*?", DONT OVEWRITE/m
-        # replace: "export HADOOP_HEAPSIZE=\"#{hadoop_heap}\" # RYBA CONF \"ryba.hadoop_heap\", DONT OVEWRITE"
-        # append: /^export HADOOP_HEAPSIZE=".*"$/m
-      ,
-        match: /^export HADOOP_NAMENODE_INIT_HEAPSIZE=".*".*$/m
-        replace: "export HADOOP_NAMENODE_INIT_HEAPSIZE=\"#{hadoop_namenode_init_heap}\" # RYBA CONF \"ryba.hadoop_namenode_init_heap\", DONT OVEWRITE"
-      #   match: /^export HADOOP_NAMENODE_INIT_HEAPSIZE="(.*)" # RYBA CONF ".*?", DONT OVEWRITE/m
-      #   replace: "export HADOOP_NAMENODE_INIT_HEAPSIZE=\"#{hadoop_namenode_init_heap}\" # RYBA CONF \"ryba.hadoop_namenode_init_heap\", DONT OVEWRITE"
-      #   append: /^export HADOOP_NAMENODE_INIT_HEAPSIZE=".*"$/m
-      ,
-        match: /^export HADOOP_OPTS="(.*) \$\{HADOOP_OPTS\}" # RYBA CONF ".*?", DONT OVEWRITE/m
-        replace: "export HADOOP_OPTS=\"#{hadoop_opts} ${HADOOP_OPTS}\" # RYBA CONF \"ryba.hadoop_opts\", DONT OVEWRITE"
-        before: /^export HADOOP_OPTS=".*"$/m
-      ,
-        match: /^export HADOOP_CLIENT_OPTS="(.*) \$\{HADOOP_CLIENT_OPTS\}" # RYBA CONF ".*?", DONT OVEWRITE/m
-        replace: "export HADOOP_CLIENT_OPTS=\"#{hadoop_client_opts} ${HADOOP_CLIENT_OPTS}\" # RYBA CONF \"ryba.hadoop_client_opts\", DONT OVEWRITE"
-        before: /^export HADOOP_CLIENT_OPTS=".*"$/m
-      ]
-      if @has_module 'ryba/xasecure/hdfs'
-        write.push
-          replace: '. /etc/hadoop/conf/xasecure-hadoop-env.sh'
-          append: true
-      @call (_, callback) ->
-        @fs.exists '/usr/libexec/bigtop-utils', (err, exists) ->
-          return callback err if err
-          jsvc = if exists then '/usr/libexec/bigtop-utils' else '/usr/lib/bigtop-utils'
-          write.push
-            match: /^export JSVC_HOME=.*$/m
-            replace: "export JSVC_HOME=#{jsvc}"
-          callback()
-      @write
+    module.exports.push header: 'Hadoop Core # Env', timeout: -1, handler: ->
+      {hadoop_conf_dir, hdfs, hadoop_group} = @config.ryba
+      @render
+        source: "#{__dirname}/resources/hadoop-env.sh"
+        local_source: true
+        context: @config
         destination: "#{hadoop_conf_dir}/hadoop-env.sh"
-        write: write
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+        mode: 0o755
         backup: true
         eof: true
 

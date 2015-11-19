@@ -117,19 +117,6 @@ Create a service principal for this NameNode. The principal is named after
         mode: 0o0600
         kadmin_server: admin_server
 
-## Opts
-
-Environment passed to the NameNode before it starts.
-
-    module.exports.push header: 'HDFS NN # Opts', handler: ->
-      {hadoop_conf_dir, hdfs} = @config.ryba
-      @write
-        destination: "#{hadoop_conf_dir}/hadoop-env.sh"
-        match: /^export HADOOP_NAMENODE_OPTS="(.*) \$\{HADOOP_NAMENODE_OPTS\}" # RYBA CONF ".*?", DONT OVEWRITE/mg
-        replace: "export HADOOP_NAMENODE_OPTS=\"#{hdfs.namenode_opts} ${HADOOP_NAMENODE_OPTS}\" # RYBA CONF \"ryba.hdfs.namenode_opts\", DONT OVEWRITE"
-        before: /^export HADOOP_NAMENODE_OPTS=".*"$/mg
-        backup: true
-
 ## Configure
 
     module.exports.push header: 'HDFS NN # Configure', handler: ->

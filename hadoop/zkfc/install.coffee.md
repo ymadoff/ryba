@@ -61,19 +61,6 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
         merge: true
         backup: true
 
-## HDFS ZKFC
-
-Environment passed to the ZKFC before it starts.
-
-    module.exports.push header: 'HDFS ZKFC # Opts', handler: ->
-      {zkfc, hadoop_conf_dir} = @config.ryba
-      @write
-        destination: "#{hadoop_conf_dir}/hadoop-env.sh"
-        match: /^export HADOOP_ZKFC_OPTS="(.*) \$\{HADOOP_ZKFC_OPTS\}" # RYBA ENV ".*?", DONT OVERWRITE/mg
-        replace: "export HADOOP_ZKFC_OPTS=\"#{zkfc.opts} ${HADOOP_ZKFC_OPTS}\" # RYBA ENV \"ryba.zkfc.opts\", DONT OVERWRITE"
-        append: true
-        backup: true
-
 ## Kerberos
 
 Create a service principal for the ZKFC daemon to authenticate with Zookeeper.

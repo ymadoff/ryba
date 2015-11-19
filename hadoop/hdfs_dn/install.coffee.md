@@ -171,28 +171,6 @@ and permissions set to "0600".
         kadmin_password: kadmin_password
         kadmin_server: admin_server
 
-# Opts
-
-Environment passed to the DataNode before it starts.
-
-    module.exports.push header: 'HDFS DN # Opts', handler: ->
-      {hadoop_conf_dir, hdfs} = @config.ryba
-      # export HADOOP_SECURE_DN_PID_DIR="/var/run/hadoop/$HADOOP_SECURE_DN_USER" # RYBA CONF "ryba.hadoop_pid_dir", DONT OVEWRITE
-      @write
-        destination: "#{hadoop_conf_dir}/hadoop-env.sh"
-        write: [
-          match: /^export HADOOP_SECURE_DN_PID_DIR=.*$/mg
-          replace: "export HADOOP_SECURE_DN_PID_DIR=\"#{hdfs.secure_dn_pid_dir}\" # RYBA CONF \"ryba.hadoop_pid_dir\", DONT OVEWRITE"
-        ,
-          match: /^export HADOOP_SECURE_DN_USER=\${HADOOP_SECURE_DN_USER:-"(.*)"}.*/mg
-          replace: "export HADOOP_SECURE_DN_USER=${HADOOP_SECURE_DN_USER:-\"#{hdfs.user.name}\"} # RYBA CONF \"ryba.hdfs.user.name\", DONT OVERWRITE"
-        ,
-          match: /^export HADOOP_DATANODE_OPTS="(.*) \$\{HADOOP_DATANODE_OPTS\}" # RYBA CONF ".*?", DONT OVERWRITE/mg
-          replace: "export HADOOP_DATANODE_OPTS=\"#{hdfs.datanode_opts} ${HADOOP_DATANODE_OPTS}\" # RYBA CONF \"ryba.hdfs.datanode_opts\", DONT OVERWRITE"
-          before: /^export HADOOP_DATANODE_OPTS=".*"$/mg
-        ]
-        backup: true
-
 # Kernel
 
 Configure kernel parameters at runtime. A usefull resource is the Pivotal
