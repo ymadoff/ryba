@@ -11,14 +11,14 @@
         ln -sf $PKG /usr/hdp/current/hbase-client/lib/phoenix.jar
         """
         unless_exists: '/usr/hdp/current/hbase-client/lib/phoenix.jar'
-      @hconfigure
-        header: 'HBase Master: Phoenix: Configure HBase'
-        destination: "#{hbase.conf_dir}/hbase-site.xml"
-        properties: hbase.site
-        merge: true
-        uid: hbase.user.name
-        gid: hbase.group.name
-        backup: true
+      # @hconfigure
+      #   header: 'HBase Master: Phoenix: Configure HBase'
+      #   destination: "#{hbase.conf_dir}/hbase-site.xml"
+      #   properties: hbase.site
+      #   merge: true
+      #   uid: hbase.user.name
+      #   gid: hbase.group.name
+      #   backup: true
       @service
         header: 'HBase Master: Phoenix: Restart Master'
         srv_name: "hbase-master"
