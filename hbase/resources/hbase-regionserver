@@ -104,6 +104,7 @@ elif [[ $1 == "stop" ]]; then
   stop "$@"
 elif [[ $1 == "restart" ]]; then
   stop "$@"
+  sleep 1
   start "$@"
 elif [[ $1 == "status" ]]; then
   status "$@"
@@ -111,4 +112,3 @@ else
   N=/etc/init.d/$NAME
   echo "Usage: $N {start|stop|restart|status}" >&2
 fi
-
