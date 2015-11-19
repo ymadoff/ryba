@@ -12,13 +12,13 @@ hdfs dfsadmin -rollingUpgrade prepare
 # wait until
 hdfs dfsadmin -rollingUpgrade query | grep 'Proceed with rolling upgrade'
 # on all zookeeper nodes, sequencially
-hdp-select set zookeeper-server 2.3.0.0-2557
+hdp-select set zookeeper-server 2.3.2.0-2950
 service zookeeper-server restart
 # on all journal nodes, sequencially
-hdp-select set hadoop-hdfs-journalnode 2.3.0.0-2557
+hdp-select set hadoop-hdfs-journalnode 2.3.2.0-2950
 service hadoop-hdfs-journalnode restart
 # on all zkfc nodes, sequencially
-hdp-select set hadoop-hdfs-namenode 2.3.0.0-2557
+hdp-select set hadoop-hdfs-namenode 2.3.2.0-2950
 service hadoop-hdfs-zkfc restart
 # on nn2
 service hadoop-hdfs-namenode stop
@@ -30,7 +30,7 @@ su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-namenode/../hadoop/sbin/hadoop-daemo
 # on each datanode
 hdfs dfsadmin -shutdownDatanode `hostname`:50020 upgrade
 while hdfs dfsadmin -D ipc.client.connect.max.retries=1 -getDatanodeInfo `hostname`:50020; do sleep 1; done
-hdp-select set hadoop-hdfs-datanode 2.3.0.0-2557
+hdp-select set hadoop-hdfs-datanode 2.3.2.0-2950
 HADOOP_SECURE_DN_USER=hdfs /usr/hdp/current/hadoop-hdfs-datanode/../hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start datanode
 # somewhere
 hdfs dfsadmin -rollingUpgrade finalize
@@ -113,9 +113,10 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       handler: ->
         @execute
           cmd: """
-          hdp-select set zookeeper-server 2.3.0.0-2557
+          hdp-select set zookeeper-server 2.3.2.0-2950
           service zookeeper-server restart
           """
+          trap_on_error: true
         @wait_connect
           host: @config.host
           port: @config.ryba.zookeeper?.port
@@ -126,9 +127,10 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       handler: ->
         @execute
           cmd: """
-          hdp-select set hadoop-hdfs-journalnode 2.3.0.0-2557
+          hdp-select set hadoop-hdfs-journalnode 2.3.2.0-2950
           service hadoop-hdfs-journalnode restart
           """
+          trap_on_error: true
         @wait_connect
           host: @config.host
           port: @config.ryba.hdfs.site['dfs.journalnode.rpc-address']?.split(':')[1]
@@ -141,9 +143,10 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       handler: ->
         @execute
           cmd: """
-          hdp-select set hadoop-hdfs-zkfc 2.3.0.0-2557
+          hdp-select set hadoop-hdfs-zkfc 2.3.2.0-2950
           service hadoop-hdfs-zkfc restart
           """
+          trap_on_error: true
 
     exports.steps.push
       header: 'Upgrade standby NameNode'
@@ -157,10 +160,11 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
         @execute
           cmd: mkcmd.hdfs @, """
           service hadoop-hdfs-namenode stop
-          hdp-select set hadoop-hdfs-namenode 2.3.0.0-2557
+          hdp-select set hadoop-hdfs-namenode 2.3.2.0-2950
           su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-namenode/../hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start namenode -rollingUpgrade started"
           hdfs haadmin -failover #{active} #{standby}
           """
+          trap_on_error: true
 
     exports.steps.push
       header: 'Upgrade active NameNode'
@@ -174,10 +178,11 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
         @execute
           cmd: mkcmd.hdfs @, """
           service hadoop-hdfs-namenode stop
-          hdp-select set hadoop-hdfs-namenode 2.3.0.0-2557
+          hdp-select set hadoop-hdfs-namenode 2.3.2.0-2950
           su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-namenode/../hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start namenode -rollingUpgrade started"
           hdfs haadmin -failover #{standby} #{active}
           """
+          trap_on_error: true
 
     exports.steps.push
       header: 'Upgrade DataNode'
@@ -187,9 +192,10 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           cmd: mkcmd.hdfs @, """
           hdfs dfsadmin -shutdownDatanode `hostname`:50020 upgrade
           while hdfs dfsadmin -D ipc.client.connect.max.retries=1 -getDatanodeInfo `hostname`:50020; do sleep 1; done
-          hdp-select set hadoop-hdfs-datanode 2.3.0.0-2557
+          hdp-select set hadoop-hdfs-datanode 2.3.2.0-2950
           HADOOP_SECURE_DN_USER=hdfs /usr/hdp/current/hadoop-hdfs-datanode/../hadoop/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start datanode
           """
+          trap_on_error: true
 
     exports.steps.push
       header: 'Finalize'
