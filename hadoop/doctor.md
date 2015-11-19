@@ -158,3 +158,4 @@ Troubleshoot:
 *   Verify logs for namenode and datanode services.
 *   Verify hdfs-site.xml has dfs.namenode.http(s)-address.<nameservice>.<namenodeid>.
 *   Verify data.dir permission on datanodes
+*   Verify that du.datanode.reserved is lower than available space
