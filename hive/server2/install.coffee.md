@@ -207,11 +207,11 @@ Create the directories to store the logs and pid information. The properties
 ## Limits
 
     module.exports.push header: 'Hive Server2 : Limits', handler: ->
-      {hive, realm} = @config.ryba
+      {hive} = @config.ryba
       @system_limits
         user: hive.user.name
-        nofile: true
-        nproc: true
+        nofile: 64000
+        nproc: 64000
       
 ## Dependencies
 

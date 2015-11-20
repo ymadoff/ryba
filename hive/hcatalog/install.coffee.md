@@ -307,6 +307,15 @@ Create the directories to store the logs and pid information. The properties
           """
           unless_exec: "[[ `#{version_local}` == `#{version_remote}` ]]"
 
+## Limits
+
+    module.exports.push header: 'Hive HCatalog : Limits', handler: ->
+      {hive} = @config.ryba
+      @system_limits
+        user: hive.user.name
+        nofile: 64000
+        nproc: 64000
+
 # Module Dependencies
 
     path = require 'path'
