@@ -59,6 +59,12 @@ The JournalNode data are stored inside the directory defined by the
         uid: hdfs.user.name
         gid: hadoop_group.name
       @mkdir
+        destination: "#{hdfs.pid_dir}"
+        uid: hdfs.user.name
+        gid: hdfs.group.name # HDFS Group is forced by the system, hadoop_group can't be used
+        mode: 0o0755
+        parent: true
+      @mkdir
         destination: "#{hdfs.log_dir}" #/#{hdfs.user.name}
         uid: hdfs.user.name
         gid: hdfs.group.name
