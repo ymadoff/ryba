@@ -9,3 +9,10 @@ org.apache.hadoop.ipc.RemoteException(java.io.IOException): File /user/ryba/.sta
 cause:
 
 HFDS DN saturation, logs were printing [DataXceiver errors](../hdfs_dn/doctor.md).
+
+## Invalid Permissions on Staging Directories
+
+Caused by: org.apache.hadoop.ipc.RemoteException(org.apache.hadoop.security.AccessControlException): Permission denied: user=ryba, access=WRITE, inode="/user/history/done_intermediate":mapred:hadoop:drwxr-xr-x
+
+Remove the directory and restart the Job History Server. It should the be
+created with valid permissions.
