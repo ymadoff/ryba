@@ -96,7 +96,7 @@ Independently, if 'ryba' hasn't CREATE right on these 4 tables, it will be grant
       @execute
         cmd: mkcmd.hbase @, """
         code=3
-        if [ `hbase shell 2>/dev/null <<< "list 'SYSTEM.*'" | egrep '^SYSTEM.' | wc -l` -lt "2" ]; then
+        if [ `hbase shell 2>/dev/null <<< "list 'SYSTEM.*'" | egrep '^SYSTEM.' | wc -l` -lt "4" ]; then
         /usr/hdp/current/phoenix-client/bin/sqlline.py #{zk_path} 2>/dev/null <<< '!q'
         code=0
         fi
