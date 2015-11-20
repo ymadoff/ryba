@@ -66,7 +66,7 @@ isnt yet started.
       {hive, db_admin} = @config.ryba
       username = hive.site['javax.jdo.option.ConnectionUserName']
       password = hive.site['javax.jdo.option.ConnectionPassword']
-      {engine, host, db} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
+      {engine, _, db} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
       switch engine
         when 'mysql'
           mysql_admin = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port}"

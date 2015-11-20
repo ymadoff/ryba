@@ -57,10 +57,13 @@ Note, at the moment, only MySQL is supported.
 
       if hive.site['javax.jdo.option.ConnectionURL']
         # Ensure the url host is the same as the one configured in config.ryba.db_admin
-        {engine, hostname, port} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
+        # console.log parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
+        {engine, addresses, port} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
         switch engine
           when 'mysql'
-            throw new Error "Invalid host configuration" if hostname isnt db_admin.host and port isnt db_admin.port
+            admin = addresses.filter (address) ->
+              address.host is db_admin.host and address.port is db_admin.port
+            throw new Error "Invalid host configuration" unless admin.length
           else throw new Error 'Unsupported database engine'
       else
         switch db_admin.engine

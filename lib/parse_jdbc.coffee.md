@@ -3,12 +3,25 @@
 
 Enrich the result of `url.parse` with the "engine" and "db" properties.
 
-    url = require 'url'
+Exemple:
+
+```
+parse 'jdbc:mysql://host1:3306,host2:3306/hive?createDatabaseIfNotExist=true'
+{ engine: 'mysql',
+  addresses: 
+   [ { host: 'host1', port: '3306' },
+     { host: 'host2', port: '3306' } ],
+  db: 'hive' }
+```
 
     module.exports = (jdbc) ->
-      jdbc = jdbc.substr(5) if jdbc.substr(0, 5) is 'jdbc:'
-      u = url.parse(jdbc)
-      u.engine =  /(.*):/.exec(u.protocol)[1]
-      u.db =  /\/(.*)/.exec(u.pathname)[1]
-      u
-
+      if /^jdbc:mysql:/.test jdbc
+        [_, engine, addresses, db] = /^jdbc:(.*?):\/+(.*?)\/(.*?)(\?(.*)|$)/.exec jdbc
+        addresses = addresses.split(',').map (address) ->
+          [host, port] = address.split ':'
+          host: host, port: port
+        engine: 'mysql'
+        addresses: addresses
+        db: db
+      else
+        throw Error 'Invalid JDBC URL'

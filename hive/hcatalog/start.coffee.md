@@ -16,10 +16,8 @@ HDFS server to answer queries.
 
     module.exports.push header: 'Hive HCatalog # Start Wait DB', timeout: -1, label_true: 'READY', handler: ->
       {hive} = @config.ryba
-      [_, host, port] = /^.*?\/\/?(.*?)(?::(.*))?\/.*$/.exec hive.site['javax.jdo.option.ConnectionURL']
-      @wait_connect
-        host: host
-        port: port
+      {engine, addresses, port} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
+      @wait_connect addresses
 
 ## Start Hive HCatalog
 
@@ -35,3 +33,7 @@ su -l hive -c 'nohup hive --service metastore >/var/log/hive-hcatalog/hcat.out 2
       @service_start
         name: 'hive-hcatalog-server'
         if_exists: '/etc/init.d/hive-hcatalog-server'
+
+# Module Dependencies
+
+    parse_jdbc = require '../../lib/parse_jdbc'
