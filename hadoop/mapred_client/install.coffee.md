@@ -87,18 +87,10 @@ the "ryba/hadoop/hdfs" module for additional information.
 
     module.exports.push header: 'MapReduce # Ulimit', handler: ->
       {user} = @config.ryba.mapred
-      @write
-        destination: '/etc/security/limits.d/#{user.name}.conf'
-        write: [
-          match: /^#{user.name}.+nofile.+$/mg
-          replace: "#{user.name}  -    nofile   64000"
-          append: true
-        ,
-          match: /^#{user.name}.+nproc.+$/mg
-          replace: "#{user.name}  -    nproc    64000"
-          append: true
-        ]
-        backup: true
+      @system_limits
+        user: user.name
+        nofile: 64000
+        nproc: 64000
 
 ## Dependencies
 

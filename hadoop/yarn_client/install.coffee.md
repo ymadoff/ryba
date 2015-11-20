@@ -48,7 +48,6 @@ resourcemanager.
 
 Properties accepted by the template are: `ryba.yarn.rm_opts`   
 
-
     module.exports.push header: 'YARN Client # Yarn OPTS', handler: ->
       {java_home} = @config.java
       {yarn, hadoop_group, hadoop_conf_dir} = @config.ryba

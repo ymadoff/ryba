@@ -139,18 +139,10 @@ the "ryba/hadoop/hdfs" module for additional information.
 
     module.exports.push header: 'YARN RM # Ulimit', handler: ->
       {user} = @config.ryba.yarn
-      @write
-        destination: '/etc/security/limits.d/#{user.name}.conf'
-        write: [
-          match: /^#{user.name}.+nofile.+$/mg
-          replace: "#{user.name}    -    nofile   64000"
-          append: true
-        ,
-          match: /^#{user.name}.+nproc.+$/mg
-          replace: "#{user.name}    -    nproc    64000"
-          append: true
-        ]
-        backup: true
+      @system_limits
+        user: user.name
+        nofile: 64000
+        nproc: 64000
 
     module.exports.push 'ryba/hadoop/yarn_rm/capacity'
 
