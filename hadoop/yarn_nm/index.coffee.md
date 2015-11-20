@@ -40,13 +40,13 @@ applications.
       ryba.yarn.site['yarn.nodemanager.localizer.address'] ?= "#{host}:8040"
       ryba.yarn.site['yarn.nodemanager.webapp.address'] ?= "#{host}:8042"
       ryba.yarn.site['yarn.nodemanager.webapp.https.address'] ?= "#{host}:8044"
-      ryba.yarn.site['yarn.nodemanager.container-executor.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor'
-      ryba.yarn.site['yarn.nodemanager.linux-container-executor.group'] ?= 'yarn'
       ryba.yarn.site['yarn.nodemanager.remote-app-log-dir'] ?= "/app-logs"
       ryba.yarn.site['yarn.nodemanager.keytab'] ?= '/etc/security/keytabs/nm.service.keytab'
       ryba.yarn.site['yarn.nodemanager.principal'] ?= "nm/#{ryba.static_host}@#{ryba.realm}"
       ryba.yarn.site['yarn.nodemanager.vmem-pmem-ratio'] ?= '2.1'
       ryba.yarn.site['yarn.nodemanager.resource.percentage-physical-cpu-limit'] ?= '100'
+      ryba.yarn.site['yarn.nodemanager.container-executor.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor'
+      ryba.yarn.site['yarn.nodemanager.linux-container-executor.group'] ?= 'yarn'
       ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.strict-resource-usage'] ?= 'false' # By default, iyarn.nodemanager.container-executor.clasf spare CPU cycles are available, containers are allowed to exceed the CPU limits set for them
       # Fix bug in HDP companion files (missing "s")
       ryba.yarn.site['yarn.nodemanager.log.retain-second'] ?= null
@@ -90,10 +90,10 @@ Resources:
       ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] ?= 'true'
       ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path'] ?= '/cgroup'
       # HDP doc, probably incorrect
-      ryba.yarn.site['yarn.nodemanager.container-executor.cgroups.hierarchy'] ?= ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.hierarchy']
-      ryba.yarn.site['yarn.nodemanager.container-executor.cgroups.mount'] ?= ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount']
-      ryba.yarn.site['yarn.nodemanager.container-executor.resources-handler.class'] ?= ryba.yarn.site['yarn.nodemanager.container-executor.resources-handler.class']
-      ryba.yarn.site['yarn.nodemanager.container-executor.group'] ?= 'hadoop'
+      # ryba.yarn.site['yarn.nodemanager.container-executor.cgroups.hierarchy'] ?= ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.hierarchy']
+      # ryba.yarn.site['yarn.nodemanager.container-executor.cgroups.mount'] ?= ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount']
+      # ryba.yarn.site['yarn.nodemanager.container-executor.resources-handler.class'] ?= ryba.yarn.site['yarn.nodemanager.container-executor.resources-handler.class']
+      # ryba.yarn.site['yarn.nodemanager.container-executor.group'] ?= 'hadoop'
 
 ## Commands
 
