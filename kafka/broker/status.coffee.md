@@ -8,7 +8,7 @@
       {kafka} = @config.ryba
       @execute
         cmd: """
-        if su -l #{kafka.user.name} -c '/usr/hdp/current/kafka-broker/bin/kafka status' | grep 'not running'; then
+        if su - #{kafka.user.name} -c '/usr/hdp/current/kafka-broker/bin/kafka status' | grep 'not running'; then
           exit 3;
         fi
         """
