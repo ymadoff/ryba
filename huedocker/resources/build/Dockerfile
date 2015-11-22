@@ -16,7 +16,7 @@ RUN yum install -y cyrus-sasl-gssapi
 RUN yum install -y gcc
 RUN yum install -y gcc-c++
 RUN yum install -y krb5-devel
-RUN yum install -y libtidy 
+RUN yum install -y libtidy
 RUN yum install -y libxml2-devel
 RUN yum install -y libxslt-devel
 RUN yum install -y make
@@ -50,14 +50,12 @@ RUN export CLASSPATH=.
 
 #    HUE BUILD   #
 
-WORKDIR /var/lib/
-RUN git clone https://github.com/cloudera/hue.git
-WORKDIR /var/lib/hue/
-RUN make apps
+WORKDIR /var/lib/hue
+COPY {{git_source}} /var/lib/hue
+WORKDIR /var/lib/hue
+RUN make -Wno-error -k apps || true
 WORKDIR /var/lib/
 RUN rm -f /var/lib/hue/data
 
 RUN tar -chzf hue-build.tar.gz hue
 RUN mv hue-build.tar.gz /
-
-

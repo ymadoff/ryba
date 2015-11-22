@@ -21,7 +21,7 @@ ENV JAVA_HOME /usr/java/default
 
 # Custom Dependencies #
 
-COPY resources/hue-build.tar.gz /var/lib/
+COPY hue-build.tar.gz /var/lib/
 WORKDIR /tmp/
 RUN curl -L -O -H "Cookie: oraclelicense=accept-securebackup-cookie" -k "http://download.oracle.com/otn-pub/java/jce/7/UnlimitedJCEPolicyJDK7.zip"
 RUN unzip UnlimitedJCEPolicyJDK7.zip
@@ -31,14 +31,14 @@ RUN rm -rf ./UnlimitedJCEPolicyJDK7*
 
 # Hue Layout #
 
-RUN groupadd hue -g 2410
-RUN useradd hue -u 2410 -g 2410 -d /var/lib/hue
+RUN groupadd {{user}} -g {{gid}}
+RUN useradd {{user}} -u {{uid}} -g {{gid}} -d /var/lib/hue
 RUN mkdir -p /var/lib/hue/ssl
 
 # Fix hue request verify path: setting the ca bundle path as global env variable
-# ENV  REQUESTS_CA_BUNDLE /etc/hue/conf/cert.pem
 
-USER hue
+
+USER {{user}}
 
 #  Hue INSTALL   #
 
@@ -46,14 +46,14 @@ RUN tar -C /var/lib/hue -xzf /var/lib/hue-build.tar.gz --strip-components 1
 RUN rm -f /var/lib/hue/desktop/conf/pseudo-distributed.ini
 USER root
 RUN rm -f /var/lib/hue-build.tar.gz
-USER hue
+USER {{user}}
 
 
-COPY resources/hue_init.sh /var/lib/hue/
+COPY hue_init.sh /var/lib/hue/
 
 
 USER root
 RUN chmod +x /var/lib/hue/hue_init.sh
-USER hue
+USER {{user}}
 
 ENTRYPOINT ["/var/lib/hue/hue_init.sh"]

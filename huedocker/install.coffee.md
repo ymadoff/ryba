@@ -152,7 +152,7 @@ the "security_enabled" property set to "true".
       @krb5_addprinc
         principal: hue_docker.ini.desktop.kerberos.hue_principal
         randkey: true
-        keytab: "/etc/hue/conf/hue_docker.service.keytab"
+        keytab: hue_docker.ini.desktop.kerberos.hue_keytab
         uid: hue_docker.user.name
         gid: hue_docker.group.name
         kadmin_principal: kadmin_principal
@@ -272,7 +272,7 @@ ryba/hue:3.8
         # Fix SSL Communication for hue as client by setting the ca bundle path as global env variable
         env: [
           "REQUESTS_CA_BUNDLE=#{hue_docker.ca_bundle}"
-          "KRB5CCNAME=:/tmp/krb5cc_2410"
+          "KRB5CCNAME=FILE:/tmp/krb5cc_#{hue_docker.user.uid}"
         ]
         net: 'host'
         service: true

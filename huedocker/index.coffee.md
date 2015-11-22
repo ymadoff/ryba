@@ -60,7 +60,7 @@ Example:
 }
 ```
 
-[hbase-configuration]:(http://gethue_docker.com/hbase-browsing-with-doas-impersonation-and-kerberos/)
+[hbase-configuration]:(http://gethue.com/hbase-browsing-with-doas-impersonation-and-kerberos/)
 
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure
@@ -74,6 +74,7 @@ Example:
       # Layout
       hue_docker.conf_dir ?= '/etc/hue_docker/conf'
       hue_docker.log_dir ?= '/var/log/hue_docker'
+      hue_docker.pid_file ?= '/var/run/hue_docker'
       # Production container image name
       hue_docker.version ?= '3.9'
       hue_docker.image ?= 'ryba/hue'
@@ -81,7 +82,9 @@ Example:
       hue_docker.build ?= {}
       hue_docker.build.name ?= 'ryba/hue-build'
       hue_docker.build.dockerfile ?= "#{__dirname}/resources/build/Dockerfile"
-      hue_docker.build.directory ?= '/tmp/ryba/hue-build'
+      hue_docker.build.directory ?= "#{__dirname}/resources/cache/build" # was '/tmp/ryba/hue-build'
+      hue_docker.prod ?= {}
+      hue_docker.prod.directory ?= "#{__dirname}/resources/cache/prod"
       hue_docker.port ?= '8888'
       blacklisted_app = []
       # User
@@ -91,18 +94,18 @@ Example:
       hue_docker.user.uid ?= '2410'
       hue_docker.user.system ?= true
       hue_docker.user.comment ?= 'Hue User'
-      hue_docker.user.home = '/var/lib/hue'
+      hue_docker.user.home = '/var/lib/hue_docker'
       # Group
       hue_docker.group = name: hue_docker.group if typeof hue_docker.group is 'string'
       hue_docker.group ?= {}
       hue_docker.group.name ?= 'hue'
       hue_docker.group.system ?= true
-      hue_docker.user.gid = hue_docker.group.name
+      hue_docker.user.gid ?= hue_docker.group.name
       hue_docker.clean_tmp ?= true
       hdfs_ctxs = ctx.contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn']
       for hdfs_ctx in hdfs_ctxs
-        hdfs_ctx.config.ryba.core_site['hadoop.proxyuser.hue.hosts'] ?= '*'
-        hdfs_ctx.config.ryba.core_site['hadoop.proxyuser.hue.groups'] ?= '*'
+        hdfs_ctx.config.ryba.core_site["hadoop.proxyuser.#{hue_docker.user.name}.hosts"] ?= '*'
+        hdfs_ctx.config.ryba.core_site["hadoop.proxyuser.#{hue_docker.user.name}.groups"] ?= '*'
         hdfs_ctx.config.ryba.core_site['hadoop.proxyuser.hcat.groups'] ?= '*'
         hdfs_ctx.config.ryba.core_site['hadoop.proxyuser.hcat.hosts'] ?= '*'
         hdfs_ctx.config.ryba.core_site['hadoop.proxyuser.httpfs.groups'] ?= '*'
@@ -114,8 +117,8 @@ Example:
         oozie_ctx.config.ryba ?= {}
         oozie_ctx.config.ryba.oozie ?= {}
         oozie_ctx.config.ryba.oozie.site ?= {}
-        oozie_ctx.config.ryba.oozie.site['oozie.service.ProxyUserService.proxyuser.hue_docker.hosts'] ?= '*'
-        oozie_ctx.config.ryba.oozie.site['oozie.service.ProxyUserService.proxyuser.hue_docker.groups'] ?= '*'
+        oozie_ctx.config.ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{hue_docker.user.name}.hosts"] ?= '*'
+        oozie_ctx.config.ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{hue_docker.user.name}.groups"] ?= '*'
       httpfs_ctxs = ctx.contexts 'ryba/hadoop/httpfs'
       for httpfs_ctx in httpfs_ctxs
         httpfs_ctx.config.ryba ?= {}
@@ -129,7 +132,7 @@ Example:
       hue_docker.ini ?= {}
       # Webhdfs should be active on the NameNode, Secondary NameNode, and all the DataNodes
       # throw new Error 'WebHDFS not active' if ryba.hdfs.site['dfs.webhdfs.enabled'] isnt 'true'
-      hue_docker.ca_bundle ?= '/etc/hue/conf/trust.pem'
+      hue_docker.ca_bundle ?= "#{hue_docker.conf_dir}/trust.pem"
       hue_docker.ssl ?= {}
       hue_docker.ssl.client_ca ?= null
       throw Error "Property 'hue_docker.ssl.client_ca' required in HA with HTTPS" if nn_ctxs.length > 1 and ryba.hdfs.site['dfs.http.policy'] is 'HTTPS_ONLY' and not hue_docker.ssl.client_ca
@@ -237,7 +240,8 @@ Example:
       if webhcat_ctxs.length
         for webhcat_ctx in webhcat_ctxs
           webhcat_ctx.config.ryba.webhcat.site['webhcat_ctxs'] ?= '*'
-          webhcat_ctx.config.ryba.webhcat.site['webhcat.proxyuser.hue_docker.groups'] ?= '*'
+          webhcat_ctx.config.ryba.webhcat.site["webhcat.proxyuser.#{hue_docker.user.name}.users"] ?= '*'
+          webhcat_ctx.config.ryba.webhcat.site["webhcat.proxyuser.#{hue_docker.user.name}.groups"] ?= '*'
       else
         blacklisted_app.push 'webhcat'
       # HCatalog
@@ -276,8 +280,8 @@ Example:
       hue_docker.ini['desktop']['database']['name'] ?= hue_docker.ini.desktop.database.name
       # Kerberos
       hue_docker.ini.desktop.kerberos ?= {}
-      hue_docker.ini.desktop.kerberos.hue_keytab ?= '/etc/hue/conf/hue_docker.service.keytab'
-      hue_docker.ini.desktop.kerberos.hue_principal ?= "hue_docker/#{ctx.config.host}@#{ryba.realm}"
+      hue_docker.ini.desktop.kerberos.hue_keytab ?= "#{hue_docker.conf_dir}/hue.service.keytab" # was /etc/hue/conf/hue.server.keytab
+      hue_docker.ini.desktop.kerberos.hue_principal ?= "#{hue_docker.user.name}/#{ctx.config.host}@#{ryba.realm}" # was hue_docker/#{ctx.config.host}@#{ryba.realm}
       # Path to kinit
       # For RHEL/CentOS 5.x, kinit_path is /usr/kerberos/bin/kinit
       # For RHEL/CentOS 6.x, kinit_path is /usr/bin/kinit
@@ -317,6 +321,7 @@ Example:
         # use_doas says that HBASE THRIFT uses http in order to enable impersonation
         # set to false if you want to unable
         # not stable
+        # force the use of impersonation in hue.ini, it can be read by hue if set inside hbase-site.xml file
         hue_docker.ini['hbase']['use_doas'] = if hbase_thrift_ctxs[0].config.ryba.hbase.site['hbase.regionserver.thrift.http'] then 'true' else 'false'
         hue_docker.ini['hbase']['thrift_transport'] =  hbase_ctx.config.ryba.hbase.site['hbase.regionserver.thrift.framed']
       else

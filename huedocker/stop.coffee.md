@@ -3,7 +3,6 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/commons/docker'
 
 ## Clean Logs dir
 
@@ -26,4 +25,4 @@ docker stop hue_server
     module.exports.push name: 'Hue Docker # Stop', label_true: 'STOPPED', handler: ->
       {hue_docker} = @config.ryba
       @docker_stop
-        container: 'hue_server'
+        container: hue_docker.container
