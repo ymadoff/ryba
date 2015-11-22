@@ -9,8 +9,10 @@
 Clens the log directory
 
     module.exports.push name: 'Hue Docker # Clean Log', handler: ->
-      @remove
-        destination: hue_docker.log_dir
+      {hue_docker} = @config.ryba
+      @execute
+        cmd: "rm #{hue_docker.log_dir.log_dir}/*.log"
+        code_skipped: 1
 
 ## Stop Server
 

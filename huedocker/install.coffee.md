@@ -207,10 +207,6 @@ changes.
         backup: true
       @docker_stop
         container: hue_docker.container
-        if_exec:"""
-        if docker ps | grep #{hue_docker.container};
-        then  exit 0 ; else exit 1; fi
-        """
 
 ## Install Hue  container
 
@@ -218,26 +214,34 @@ changes.
 
     module.exports.push
       name: 'Hue Docker # Container', timeout: -1, handler:  ->
-        {hue_docker} = @config.ryba
-        tmp = '/user/hue_docker.tar'
-        @download
-          source: "#{__dirname}/resources/hue.tar"
-          destination: tmp
-          unless_exec: "docker images | grep #{hue_docker.image}| grep #{hue_docker.version}"
-        @docker_load
-          source: tmp
-          unless_exec: "docker images | grep #{hue_docker.image} | grep #{hue_docker.version}"
-        # @docker_rm
-        #   force: true
-        #   container: hue_docker.container
-        #   unless_exec: "docker ps -a | grep #{hue_docker.image} | grep #{hue_docker.version}"
-        @remove
-          destination: tmp
-          # unless_exec: """
-          # hue_version=`docker images | grep #{hue_docker.image}:#{hue_docker.version} | awk '{ print $2 }'`
-          # hue_target=#{hue_docker.version}
-          # if [ "$hue_version" == "$hue_target" ];then  exit 0 ; else exit 1; fi
-          # """
+      {hue_docker} = @config.ryba
+      tmp = '/user/hue_docker.tar'
+      checksum = ''
+      @call (options, callback) ->
+        fs.readFile "#{hue_docker.prod.directory}/checksum", 'ascii', (err, content) =>
+          if err?
+            return callback err if err.code != 'ENOENT'
+            options.log message: "Cache cheksum file does not exist:#{hue_docker.prod.directory}/checksum", level: 'WARN'
+            options.log message: "You should execute prepare command", level: 'WARN'
+            return callback null, true
+          else
+            checksum = content
+            @docker_checksum
+              image: hue_docker.image
+              tag: '3.9'
+            , (err, _, __, ___, hash) ->
+              return callback err if err
+              return callback null, false if hash == checksum
+              return callback null, true
+      @upload
+        source: "#{__dirname}/resources/hue_docker.tar"
+        destination: tmp
+        binary: true
+        if: -> @status -1
+      @docker_load
+        source: tmp
+        checksum: checksum
+        if: -> @status -2 or @status -1
 
 ## Run Hue Server Container
 
@@ -277,15 +281,12 @@ ryba/hue:3.8
         net: 'host'
         service: true
         container: hue_docker.container
-        unless_exec:"""
-        if docker ps -a | grep #{hue_docker.image};
-        then  exit 0 ; else exit 1; fi
-        """
 
 
 ## Dependencies
 
     misc = require 'mecano/lib/misc'
+    fs = require 'fs'
 
 ## Resources:
 
