@@ -17,7 +17,7 @@ su -l hbase -c "/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config /etc/
 
     module.exports.push header: 'HBase Thrift # Stop', label_true: 'STOPPED', handler: ->
       @service_stop
-        header: 'hbase-thrift'
+        name: 'hbase-thrift'
         if_exists: '/etc/init.d/hbase-thrift'
 
 ## Stop Clean Logs
