@@ -55,7 +55,7 @@ hue:x:494:
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push name: 'Hue Docker # IPTables', handler: ->
+    module.exports.push header: 'Hue Docker # IPTables', handler: ->
       {hue_docker} = @config.ryba
       @iptables
         rules: [
@@ -67,7 +67,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 Update the "hive-site.xml" with the hive/server2 kerberos principal.
 
-    module.exports.push name: 'Hue Docker # Hive',  handler: ->
+    module.exports.push header: 'Hue Docker # Hive',  handler: ->
       [hive_ctx] = @contexts 'ryba/hive/server2'
       if hive_ctx?
         {hive} = hive_ctx.config.ryba
@@ -81,7 +81,7 @@ Update the "hive-site.xml" with the hive/server2 kerberos principal.
 
 Update the "hbase-site.xml" with the hbase/thrift kerberos principal.
 
-    module.exports.push name: 'Hue Docker # Hbase',  handler: ->
+    module.exports.push header: 'Hue Docker # Hbase',  handler: ->
       [hbase_ctx] = @contexts 'ryba/hbase/thrift'
       if hbase_ctx?
         {hbase} = hbase_ctx.config.ryba
@@ -101,7 +101,7 @@ Update the "hbase-site.xml" with the hbase/thrift kerberos principal.
 Configure the "/etc/hue/conf" file following the [HortonWorks](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue-5-2.html)
 recommandations. Merge the configuration object from "pseudo-distributed.ini" with the properties of the destination file.
 
-    module.exports.push name: 'Hue Docker # Configure', handler: ->
+    module.exports.push header: 'Hue Docker # Configure', handler: ->
       {hue_docker} = @config.ryba
       @ini
         destination: "#{hue_docker.conf_dir}/hue_docker.ini"
@@ -146,7 +146,7 @@ The principal for the Hue service is created and named after "hue/{host}@{realm}
 the "/etc/hue/conf/hue_docker.ini" configuration file, all the composants myst be tagged with
 the "security_enabled" property set to "true".
 
-    module.exports.push name: 'Hue Docker # Kerberos', handler: ->
+    module.exports.push header: 'Hue Docker # Kerberos', handler: ->
       {hue_docker, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
@@ -165,7 +165,7 @@ Write trustore into /etc/hue/conf folder for hue to be able to connect as a
 client over ssl. Then the REQUESTS_CA_BUNDLE environment variable is set to the
 path  during docker run.
 
-    module.exports.push name: 'Hue Docker # SSL Client', handler: ->
+    module.exports.push header: 'Hue Docker # SSL Client', handler: ->
       {hue_docker} = @config.ryba
       hue_docker.ca_bundle = '' unless hue_docker.ssl.client_ca
       @write
@@ -182,7 +182,7 @@ configuration properties. It follows the [official Hue Web Server
 Configuration][web]. The "hue" service is restarted if there was any
 changes.
 
-    module.exports.push name: 'Hue Docker # SSL Server', handler: ->
+    module.exports.push header: 'Hue Docker # SSL Server', handler: ->
       {hue_docker} = @config.ryba
       @upload
         source: hue_docker.ssl.certificate
@@ -212,8 +212,7 @@ changes.
 
  Load Hue Container from local host
 
-    module.exports.push
-      name: 'Hue Docker # Container', timeout: -1, handler:  ->
+    module.exports.push header: 'Hue Docker # Container', timeout: -1, handler: (options)  ->
       {hue_docker} = @config.ryba
       tmp = '/user/hue_docker.tar'
       checksum = ''
@@ -258,7 +257,7 @@ ryba/hue:3.8
 
 ```
 
-    module.exports.push name: 'Hue Docker # Run', label_true: 'RUNNED', handler:  ->
+    module.exports.push header: 'Hue Docker # Run', label_true: 'RUNNED', handler:  ->
       {hadoop_group,hadoop_conf_dir, hdfs, hue_docker, hive, hbase} = @config.ryba
       @docker_run
         image: "#{hue_docker.image}:#{hue_docker.version}"

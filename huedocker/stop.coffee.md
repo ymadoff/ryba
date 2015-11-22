@@ -8,7 +8,7 @@
 
 Clens the log directory
 
-    module.exports.push name: 'Hue Docker # Clean Log', handler: ->
+    module.exports.push header: 'Hue Docker # Clean Log', handler: ->
       {hue_docker} = @config.ryba
       @execute
         cmd: "rm #{hue_docker.log_dir.log_dir}/*.log"
@@ -24,7 +24,7 @@ docker stop hue_server
 ```
 
 
-    module.exports.push name: 'Hue Docker # Stop', label_true: 'STOPPED', handler: ->
+    module.exports.push header: 'Hue Docker # Stop', label_true: 'STOPPED', handler: ->
       {hue_docker} = @config.ryba
       @docker_stop
         container: hue_docker.container

@@ -21,7 +21,7 @@ command:
 docker start hue_server
 ```
 
-    module.exports.push name: 'Hue Docker # Start', label_true: 'STARTED', handler: ->
+    module.exports.push header: 'Hue Docker # Start', label_true: 'STARTED', handler: ->
       {hue_docker} = @config.ryba
       @docker_start
         container: hue_docker.container
