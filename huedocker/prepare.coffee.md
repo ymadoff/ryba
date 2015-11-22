@@ -1,10 +1,13 @@
 #  Hue  build
 
-Follows Cloudera   [build-instruction][cloudera-hue] for Hue 3.8 version.
+Follows Cloudera   [build-instruction][cloudera-hue] for Hue 3.7 and later versionz.
 An internet Connection is needed to be able to download.
 Becareful when used with docker-machine mecano might exit before finishing
-the execution. you can resume build by executing again prepare script or directly
-by taking the command launched by mecano and start it by hand
+the execution. you can resume build by executing again prepare
+
+    module.exports = []
+    module.exports.push 'masson/bootstrap/log'
+
 
 First container
 ```
@@ -20,17 +23,6 @@ eval "$(docker-machine env dev)" && docker build -t "ryba/hue-build" .
 
 Builds Hue from source
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap/log'
-
-    hue = {}
-    hue.build ?= {}
-    hue.build.name ?= 'ryba/hue-build'
-    hue.build.dockerfile ?= "#{__dirname}/resources/build/Dockerfile"
-    hue.build.directory ?= '/tmp/ryba/hue-build'
-    hue.prod ?= {}
-    hue.prod.image ?= 'ryba/hue:3.9'
-    machine = 'dev'
 
 # Hue compiling build from Dockerfile
 
@@ -43,89 +35,79 @@ It's the install middleware which takes care about mounting the differents volum
 for hue to be able to communicate with the hadoop cluster in secure mode.
 
 
+# Hue Build dockerfile execution
 
-    module.exports.push header: 'Hue Build # Docker', timeout: -1, (options, next) ->
-      fs.stat "#{hue.build.directory}/resources/hue-build.tar.gz", (err, stats) ->
-        return ( if err.code == 'ENOENT' then do_build() else err ) if err
-        fs.stat "#{__dirname}/resources/hue.tar", (err, stats) ->
-            return do_end() unless  err
-            return if err.code == 'ENOENT' then do_image() else err
-      do_build = =>
-        @
-        .download
-          source: hue.build.dockerfile
-          destination: "#{hue.build.directory}/Dockerfile"
-          force: true
-        .docker_build
-          image: hue.build.name
-          cwd: hue.build.directory
-          machine: machine
-        .docker_stop
-          machine: machine
-          container: 'extractor'
-          code_skipped: 1
-        .docker_rm
-          machine: machine
-          container: 'extractor'
-          code_skipped: 1
-        .docker_run
-          image: hue.build.name
-          container: 'extractor'
-          entrypoint: '/bin/bash'
-          machine: machine
-        .mkdir
-          destination: "#{hue.build.directory}"
-        .docker_cp
-          source: '/hue-build.tar.gz'
-          destination: "#{hue.build.directory}/resources/"
-          machine: machine
-          container: 'extractor'
-        .docker_stop
-          machine: machine
-          container: 'extractor'
-          code_skipped: 1
-        .docker_rm
-          machine: machine
-          container: 'extractor'
-          code_skipped: 1
-        .then (err) ->
-          return err if err
-          fs.stat "#{hue.build.directory}/hue.tar", (err, stats) ->
-            return do_end() unless  err
-            return if err.code == 'ENOENT' then do_image() else err
-      # Builds the production image
-      # Stores the image inside resources/ directory
-      do_image = =>
-        @
-        .download
-          source: "#{__dirname}/resources/prod/Dockerfile"
-          destination: "#{hue.build.directory}/Dockerfile"
-          local: true
-          force: true
-        .download
-          source: "#{__dirname}/resources/hue_init.sh"
-          destination: "#{hue.build.directory}/resources/hue_init.sh"
-          local: true
-          force: true
-        .docker_build
-          image: hue.prod.image
-          machine: machine
-          cwd: hue.build.directory
-        .then do_save
-      do_save = =>
-        @
-        .docker_save
-          image: hue.prod.image
-          machine: machine
-          destination: "#{__dirname}/resources/hue.tar"
-        .then do_end
-      do_end = =>
-        console.log 'Hue Prepare Done'
-        return
+    module.exports.push header: 'Hue Docker # Build Prepare', timeout: -1,  handler: ->
+      machine = 'dev'
+      {hue_docker} = @config.ryba
+      @git
+        source: 'https://github.com/cloudera/hue.git'
+        destination: "#{hue_docker.build.directory}/hue"
+      @mkdir
+        destination: "#{hue_docker.build.directory}/"
+      @render
+        source: hue_docker.build.dockerfile
+        destination: "#{hue_docker.build.directory}/Dockerfile"
+        context: { git_source: 'hue' }
+      # docker build -t "ryba/hue-build" .
+      @docker_build
+        image: hue_docker.build.name
+        cwd: hue_docker.build.directory
+        machine: machine
+      @docker_rm
+        machine: machine
+        container: 'extractor'
+      @docker_run
+        image: hue_docker.build.name
+        container: 'extractor'
+        entrypoint: '/bin/bash'
+        machine: machine
+      @mkdir
+        destination: "#{hue_docker.prod.directory}"
+      @docker_cp
+        source: '/hue-build.tar.gz'
+        destination: hue_docker.prod.directory
+        machine: machine
+        container: 'extractor'
 
-## Dependencies
 
-    fs = require 'fs'
+# Hue Production dockerfile execution
+
+This production container running as hue service
+
+    module.exports.push header: 'Hue Docker # Production Container', timeout: -1, handler: ->
+      {hue_docker} = @config.ryba
+      machine = 'dev'
+      @render
+        source: "#{__dirname}/resources/prod/Dockerfile"
+        destination: "#{hue_docker.prod.directory}/Dockerfile"
+        context: {
+          user : hue_docker.user.name
+          uid : hue_docker.user.uid
+          gid : hue_docker.user.gid
+        }
+      @render
+        source: "#{__dirname}/resources/hue_init.sh"
+        destination: "#{hue_docker.prod.directory}/hue_init.sh"
+        context: {
+          pid_file: hue_docker.pid_file
+        }
+      # docker build -t "ryba/hue-build:3.9" .
+      @docker_build
+        image: "#{hue_docker.image}:#{hue_docker.version}"
+        machine: dev
+        cwd: hue_docker.prod.directory
+      , (err, _, __, ___, checksum ) =>
+        return err if err
+        @write
+          content: "#{checksum}"
+          destination: "#{hue_docker.prod.directory}/checksum"
+      @docker_save
+        image: "#{hue_docker.image}:#{hue_docker.version}"
+        machine: machine
+        destination: "#{__dirname}/resources/hue_docker.tar"
+
+
 
 ## Instructions
 
