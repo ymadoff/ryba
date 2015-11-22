@@ -73,7 +73,13 @@ Update the "hive-site.xml" with the hive/server2 kerberos principal.
         {hive} = hive_ctx.config.ryba
         @hconfigure
           destination: "#{hive.conf_dir}/hive-site.xml"
-          properties: 'hive.server2.authentication.kerberos.principal': "#{hive.site['hive.server2.authentication.kerberos.principal']}"
+          properties: {
+            'hive.server2.authentication.kerberos.principal': "#{hive.site['hive.server2.authentication.kerberos.principal']}"
+            # Properties in client which are not synced
+            'hive.server2.transport.mode': "#{hive.site['hive.server2.transport.mode']}"
+            'hive.server2.use.SSL' : "#{hive.site['hive.server2.use.SSL']}"
+            'hive.server2.thrift.sasl.qop' : "#{hive.site['hive.server2.thrift.sasl.qop']}"
+          }
           merge: true
           backup: true
 
@@ -121,7 +127,7 @@ Setup the database hosting the Hue data. Currently two database providers are
 implemented but Hue supports MySQL, PostgreSQL, and Oracle. Note, sqlite is
 the default database while mysql is the recommanded choice.
 
-    module.exports.push name: 'Hue Docker # Database', handler: ->
+    module.exports.push header: 'Hue Docker # Database', handler: ->
       {hue_docker, db_admin} = @config.ryba
       switch hue_docker.ini.desktop.database.engine
         when 'mysql'
@@ -208,7 +214,18 @@ changes.
       @docker_stop
         container: hue_docker.container
 
-## Install Hue  container
+## Layout log Hue
+
+    module.exports.push header: 'Hue Docker # Layout', timeout: -1, handler:  ->
+      {hue_docker} = @config.ryba
+      @mkdir
+        destination: hue_docker.log_dir
+        uid: hue_docker.user.name
+        gid: hue_docker.group.name
+        mode: 0o755
+        parent: true
+
+## Install Hue container
 
  Load Hue Container from local host
 
