@@ -67,11 +67,7 @@ keytool -list -v -keystore keystore -alias hadoop
       ssl_server['ssl.server.truststore.type'] ?= 'jks'
 
     module.exports.push header: 'Hadoop Core SSL # Configure', retry: 0, handler: ->
-      {core_site, ssl_server, ssl_client, hadoop_conf_dir} = @config.ryba
-      @hconfigure
-        destination: "#{hadoop_conf_dir}/core-site.xml"
-        properties: core_site
-        merge: true
+      {ssl_server, ssl_client, hadoop_conf_dir} = @config.ryba
       @hconfigure
         destination: "#{hadoop_conf_dir}/ssl-server.xml"
         properties: ssl_server
