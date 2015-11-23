@@ -40,11 +40,11 @@ for hue to be able to communicate with the hadoop cluster in secure mode.
     module.exports.push header: 'Hue Docker # Build Prepare', timeout: -1,  handler: ->
       machine = 'dev'
       {hue_docker} = @config.ryba
+      @mkdir
+        destination: "#{hue_docker.build.directory}/"
       @git
         source: 'https://github.com/cloudera/hue.git'
         destination: "#{hue_docker.build.directory}/hue"
-      @mkdir
-        destination: "#{hue_docker.build.directory}/"
       @render
         source: hue_docker.build.dockerfile
         destination: "#{hue_docker.build.directory}/Dockerfile"
@@ -84,7 +84,7 @@ This production container running as hue service
         context: {
           user : hue_docker.user.name
           uid : hue_docker.user.uid
-          gid : hue_docker.user.gid
+          gid : hue_docker.user.uid
         }
       @render
         source: "#{__dirname}/resources/hue_init.sh"
@@ -95,7 +95,7 @@ This production container running as hue service
       # docker build -t "ryba/hue-build:3.9" .
       @docker_build
         image: "#{hue_docker.image}:#{hue_docker.version}"
-        machine: dev
+        machine: 'dev'
         cwd: hue_docker.prod.directory
       , (err, _, __, ___, checksum ) =>
         return err if err
