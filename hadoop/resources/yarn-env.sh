@@ -1,7 +1,7 @@
 
 export HADOOP_YARN_HOME={{ryba.yarn.home}}
 export YARN_LOG_DIR={{ryba.yarn.log_dir}}/$USER
-export YARN_PID_DIR={{ryba.yarn.pid_dir}}/$USER
+export YARN_PID_DIR={{ryba.yarn.pid_dir}}
 export HADOOP_LIBEXEC_DIR={{ryba.hadoop_libexec_dir}}
 export JAVA_HOME={{java.java_home}}
 

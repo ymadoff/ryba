@@ -94,4 +94,3 @@ else
   N=/etc/init.d/$NAME
   echo "Usage: $N {start|stop|restart|status}" >&2
 fi
-
