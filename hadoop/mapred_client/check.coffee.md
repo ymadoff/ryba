@@ -29,6 +29,11 @@ to re-execute the check.
         unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -d check-#{host}-mapred/output"
         trap_on_error: true
 
+    module.exports.push header: 'MapReduce Client # Uploaded files', handler: ->
+      @execute
+        # Reference in "mapred_site['mapreduce.application.classpath']"
+        cmd: '[ -f /usr/hdp/current/share/lzo/0.6.0/lib/hadoop-lzo-0.6.0.jar ]'
+
 ## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
