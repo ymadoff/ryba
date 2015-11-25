@@ -121,11 +121,68 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         uid: httpfs.user.name
         gid: httpfs.group.name
         mode: 0o0750
-      
+      @copy # Copie original server.xml for no-SSL environments
+        source: "#{httpfs.catalina_home}/conf/server.xml"
+        destination: "#{httpfs.catalina_home}/conf/nossl-server.xml"
+        unless_exists: true
+      @copy
+        source: "#{httpfs.catalina_home}/conf/nossl-server.xml"
+        destination: "#{httpfs.catalina_home}/conf/server.xml"
+        unless: @config.ryba.httpfs.env.HTTPFS_SSL_ENABLED is 'true'
+      @copy
+        source: "#{httpfs.catalina_home}/conf/ssl-server.xml"
+        destination: "#{httpfs.catalina_home}/conf/server.xml"
+        if: @config.ryba.httpfs.env.HTTPFS_SSL_ENABLED is 'true'
+        
+## SSL
 
+    module.exports.push
+      header: 'HDFS HttpFS # SSL'
+      if: -> @config.ryba.httpfs.env.HTTPFS_SSL_ENABLED is 'true'
+      handler: ->
+          {ssl, ssl_server, ssl_client, hadoop_conf_dir} = @config.ryba
+          tmp_location = "/var/tmp/ryba/ssl"
+          {httpfs} = @config.ryba
+          @upload
+            source: ssl.cacert
+            destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+            mode: 0o0600
+            shy: true
+          @upload
+            source: ssl.cert
+            destination: "#{tmp_location}/#{path.basename ssl.cert}"
+            mode: 0o0600
+            shy: true
+          @upload
+            source: ssl.key
+            destination: "#{tmp_location}/#{path.basename ssl.key}"
+            mode: 0o0600
+            shy: true
+          @java_keystore_add
+            keystore: httpfs.env.HTTPFS_SSL_KEYSTORE_FILE
+            storepass: httpfs.env.HTTPFS_SSL_KEYSTORE_PASS
+            caname: "httpfs_root_ca"
+            cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
+            key: "#{tmp_location}/#{path.basename ssl.key}"
+            cert: "#{tmp_location}/#{path.basename ssl.cert}"
+            keypass: ssl_server['ssl.server.keystore.keypassword']
+            name: @config.shortname
+            uid: httpfs.user.name
+            gid: httpfs.group.name
+            mode: 0o0640
+          @remove
+            destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+            shy: true
+          @remove
+            destination: "#{tmp_location}/#{path.basename ssl.cert}"
+            shy: true
+          @remove
+            destination: "#{tmp_location}/#{path.basename ssl.key}"
+            shy: true
+      
 ## Configuration
 
-    module.exports.push header: 'HDFS HttpFS # Environment', timeout: -1, handler: ->
+    module.exports.push header: 'HDFS HttpFS # Configuration', timeout: -1, handler: ->
       {httpfs} = @config.ryba
       @hconfigure
         destination: "#{httpfs.conf_dir}/httpfs-site.xml"
@@ -134,3 +191,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         gid: httpfs.group.name
         merge: true
         backup: true
+
+## Dependencies
+
+    path = require 'path'

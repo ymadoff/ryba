@@ -15,6 +15,7 @@ The default configuration is located inside the source code in the location
     module.exports.configure = (ctx)->
       {realm} = ctx.config.ryba
       require('../core').configure ctx # Get "core_site['hadoop.security.auth_to_local']"
+      require('../core_ssl').configure ctx
       httpfs = ctx.config.ryba.httpfs ?= {}
       # Environment, layout
       httpfs.pid_dir ?= '/var/run/httpfs'
@@ -39,6 +40,11 @@ The default configuration is located inside the source code in the location
       httpfs.user.home = "/var/lib/#{httpfs.user.name}"
       httpfs.user.gid = httpfs.group.name
       httpfs.user.groups ?= 'hadoop'
+      # env
+      httpfs.env ?= {}
+      httpfs.env.HTTPFS_SSL_ENABLED ?= 'true' # Default is "false"
+      httpfs.env.HTTPFS_SSL_KEYSTORE_FILE ?= "#{httpfs.conf_dir}/keystore" # Default is "${HOME}/.keystore"
+      httpfs.env.HTTPFS_SSL_KEYSTORE_PASS ?= 'ryba123' # Default to "password"
       # Site
       httpfs.site ?= {}
       httpfs.site['httpfs.hadoop.config.dir'] ?= '/etc/hadoop/conf'

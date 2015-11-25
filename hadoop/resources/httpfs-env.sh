@@ -42,15 +42,15 @@
 
 # Indicates if HttpFS is using SSL
 #
-# export HTTPFS_SSL_ENABLED=false
+export HTTPFS_SSL_ENABLED={{ryba.httpfs.env.HTTPFS_SSL_ENABLED}}
 
 # The location of the SSL keystore if using SSL
 #
-# export HTTPFS_SSL_KEYSTORE_FILE=${HOME}/.keystore
+export HTTPFS_SSL_KEYSTORE_FILE={{ryba.httpfs.env.HTTPFS_SSL_KEYSTORE_FILE}}
 
 # The password of the SSL keystore if using SSL
 #
-# export HTTPFS_SSL_KEYSTORE_PASS=password
+export HTTPFS_SSL_KEYSTORE_PASS={{ryba.httpfs.env.HTTPFS_SSL_KEYSTORE_PASS}}
 
 export CATALINA_OPTS={{ryba.httpfs.catalina_opts}}
 export CATALINA_HOME={{ryba.httpfs.catalina_home}}
