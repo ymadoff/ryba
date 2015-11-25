@@ -63,6 +63,35 @@ falcon:x:498:falcon
         cmd: "service falcon restart"
         if: -> @status -3
 
+    module.exports.push header: 'Falcon # Layout', handler: ->
+      {falcon} = @config.ryba
+      @mkdir
+        destination: falcon.log_dir
+        uid: falcon.user
+        gid: falcon.group
+        parent: true
+      @mkdir
+        destination: falcon.pid_dir
+        uid: falcon.user.name
+        gid: falcon.group.name
+        parent: true
+
+## Environnement
+
+Enrich the file "mapred-env.sh" present inside the Hadoop configuration
+directory with the location of the directory storing the process pid.
+
+Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
+
+    module.exports.push header: 'Falcon # Environnement', handler: ->
+      {falcon} = @config.ryba
+      @render
+        destination: "#{falcon.conf_dir}/falcon-env.sh"
+        source: "#{__dirname}/resources/falcon-env.sh"
+        context: @config
+        local_source: true
+        backup: true
+
 ## Kerberos
 
     module.exports.push header: 'Falcon # Kerberos', handler: ->

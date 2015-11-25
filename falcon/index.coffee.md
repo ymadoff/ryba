@@ -22,6 +22,10 @@ associated processing and management tasks on Hadoop clusters.
       falcon = ctx.config.ryba.falcon ?= {}
       # Layout
       falcon.conf_dir ?= '/etc/falcon/conf'
+      falcon.log_dir ?= '/var/log/falcon'
+      falcon.pid_dir ?= '/var/run/falcon'
+      falcon.server_opts ?= ''
+      falcon.server_heap ?= ''
       # User
       falcon.user = name: falcon.user if typeof falcon.user is 'string'
       falcon.user ?= {}
