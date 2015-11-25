@@ -3,7 +3,7 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/bootstrap/info'
+    module.exports.push 'masson/core/info'
     module.exports.push 'masson/core/iptables'
     module.exports.push 'ryba/hadoop/yarn_client/install'
     module.exports.push 'ryba/lib/hconfigure'
