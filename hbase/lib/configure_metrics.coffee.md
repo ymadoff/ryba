@@ -44,8 +44,8 @@ supported contexts are "hbase", "jvm" and "rpc".
       hbase.metrics ?= {}
       hbase.metrics['*.period'] ?= '60'
       # File sink
-      if hbase.metrics['*.sink.file.class'] or hbase.metrics['*.sink.file.class'] is undefined
-        hbase.metrics['*.sink.file.class'] ?= 'org.apache.hadoop.metrics2.sink.FileSink'
+      if hbase.metrics['*.sink.file.class']
+        # hbase.metrics['*.sink.file.class'] ?= 'org.apache.hadoop.metrics2.sink.FileSink'
         hbase.metrics['hbase.sink.file.filename'] ?= 'metrics.out' # Default location is "/var/run/hbase/metrics.out"
         hbase.metrics['hbase.sink.file.filename'] ?= 'hbase-metrics.out'
       # Ganglia sink, accepted properties are "servers" and "supportsparse"
