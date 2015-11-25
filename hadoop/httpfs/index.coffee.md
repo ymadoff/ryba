@@ -67,3 +67,5 @@ The default configuration is located inside the source code in the location
     ]
 
     module.exports.push commands: 'stop', modules: 'ryba/hadoop/httpfs/stop'
+
+    module.exports.push commands: 'status', modules: 'ryba/hadoop/httpfs/status'
