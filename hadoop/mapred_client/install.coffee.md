@@ -86,11 +86,11 @@ Note, a user must re-login for those changes to be taken into account. See
 the "ryba/hadoop/hdfs" module for additional information.
 
     module.exports.push header: 'MapReduce # Ulimit', handler: ->
-      {user} = @config.ryba.mapred
+      {mapred} = @config.ryba
       @system_limits
-        user: user.name
-        nofile: 64000
-        nproc: 64000
+        user: mapred.user.name
+        nofile: mapred.user.limits.nofile
+        nproc: mapred.user.limits.nproc
 
 ## Dependencies
 

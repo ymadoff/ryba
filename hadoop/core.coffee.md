@@ -120,6 +120,9 @@ Default configuration:
       ryba.hdfs.user.groups ?= 'hadoop'
       ryba.hdfs.user.comment ?= 'Hadoop HDFS User'
       ryba.hdfs.user.home ?= '/var/lib/hadoop-hdfs'
+      ryba.hdfs.user.limits ?= {}
+      ryba.hdfs.user.limits.nproc ?= 64000
+      ryba.hdfs.user.limits.nofile ?= 64000
       # Kerberos user for hdfs
       ryba.hdfs.krb5_user ?= {}
       ryba.hdfs.krb5_user.principal ?= "#{ryba.hdfs.user.name}@#{realm}"
@@ -132,6 +135,9 @@ Default configuration:
       ryba.yarn.user.groups ?= 'hadoop'
       ryba.yarn.user.comment ?= 'Hadoop YARN User'
       ryba.yarn.user.home ?= '/var/lib/hadoop-yarn'
+      ryba.yarn.user.limits ?= {}
+      ryba.yarn.user.limits.nproc ?= 64000
+      ryba.yarn.user.limits.nofile ?= 64000
       # Unix user for mapred
       ryba.mapred.user ?= {}
       ryba.mapred.user = name: ryba.mapred.user if typeof ryba.mapred.user is 'string'

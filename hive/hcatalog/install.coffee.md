@@ -306,14 +306,14 @@ Create the directories to store the logs and pid information. The properties
             clean: "/apps/hive/install/hive-exec-*.jar"
             lock: "/tmp/hive-exec-#{version}.jar"
 
-## Limits
+## Ulimit
 
-    module.exports.push header: 'Hive HCatalog : Limits', handler: ->
+    module.exports.push header: 'Hive HCatalog # Ulimit', handler: ->
       {hive} = @config.ryba
       @system_limits
         user: hive.user.name
-        nofile: 64000
-        nproc: 64000
+        nofile: hive.user.limits.nofile
+        nproc: hive.user.limits.nproc
 
 # Module Dependencies
 

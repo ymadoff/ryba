@@ -48,6 +48,9 @@ Example:
       hive.user.groups ?= 'hadoop'
       hive.user.comment ?= 'Hive User'
       hive.user.home ?= '/var/lib/hive'
+      hive.user.limits ?= {}
+      hive.user.limits.nofile ?= 64000
+      hive.user.limits.nproc ?= 64000
       # Group
       hive.group ?= {}
       hive.group = name: hive.group if typeof hive.group is 'string'

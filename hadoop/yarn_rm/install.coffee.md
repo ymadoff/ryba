@@ -138,11 +138,11 @@ Note, a user must re-login for those changes to be taken into account. See
 the "ryba/hadoop/hdfs" module for additional information.
 
     module.exports.push header: 'YARN RM # Ulimit', handler: ->
-      {user} = @config.ryba.yarn
+      {yarn} = @config.ryba
       @system_limits
-        user: user.name
-        nofile: 64000
-        nproc: 64000
+        user: yarn.user.name
+        nofile: yarn.user.limits.nofile
+        nproc: yarn.user.limits.nproc
 
     module.exports.push 'ryba/hadoop/yarn_rm/capacity'
 
