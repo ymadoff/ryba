@@ -16,6 +16,7 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
     module.exports.push 'ryba/hadoop/hdfs_dn/wait'
     module.exports.push 'ryba/hbase/client/install'
     module.exports.push 'ryba/lib/hconfigure'
+    module.exports.push 'ryba/lib/hdfs_upload'
     module.exports.push 'ryba/lib/hdp_select'
     # module.exports.push require('./index').configure
 
@@ -294,18 +295,16 @@ Create the directories to store the logs and pid information. The properties
       if: -> @hosts_with_module 'ryba/tez'
       handler: ->
         {hive, hadoop_group} = @config.ryba
-        version_local = 'ls /usr/hdp/current/hive-metastore/lib | grep hive-exec- | sed \'s/^hive-exec-\\(.*\\)\\.jar$/\\1/g\''
-        version_remote = 'hdfs dfs -ls /apps/hive/install/hive-exec-* | sed \'s/.*\\/hive-exec-\\(.*\\)\\.jar$/\\1/g\''
         @execute
-          cmd: mkcmd.hdfs @, """
-          hdfs dfs -mkdir -p /apps/hive/install 2>/dev/null
-          hdfs dfs -chown #{hive.user.name}:#{hadoop_group.name} /apps/hive/install
-          hdfs dfs -chmod -R 1777 /apps/hive/install
-          hdfs dfs -rm -skipTrash '/apps/hive/install/hive-exec-*'
-          hdfs dfs -copyFromLocal /usr/hdp/current/hive-metastore/lib/hive-exec-* /apps/hive/install
-          hdfs dfs -chown #{hive.user.name}:#{hadoop_group.name} /apps/hive/install/hive-exec-*
-          """
-          unless_exec: "[[ `#{version_local}` == `#{version_remote}` ]]"
+          cmd: 'ls /usr/hdp/current/hive-metastore/lib | grep hive-exec- | sed \'s/^hive-exec-\\(.*\\)\\.jar$/\\1/g\''
+          shy: true
+        , (err, status, stdout) ->
+          version = stdout.trim() unless err
+          @hdfs_upload
+            source: "/usr/hdp/current/hive-metastore/lib/hive-exec-#{version}.jar"
+            target: "/apps/hive/install/hive-exec-#{version}.jar"
+            clean: "/apps/hive/install/hive-exec-*.jar"
+            lock: "/tmp/hive-exec-#{version}.jar"
 
 ## Limits
 
