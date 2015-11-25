@@ -340,8 +340,8 @@ source code, the list of supported prefixes is: "namenode", "resourcemanager",
       # default sampling period, in seconds
       hadoop_metrics['*.period'] ?= '60'
       # File sink
-      if hbase.metrics['*.sink.file.class'] or hbase.metrics['*.sink.file.class'] is undefined
-        hadoop_metrics['*.sink.file.class'] ?= 'org.apache.hadoop.metrics2.sink.FileSink'
+      if hadoop_metrics['*.sink.file.class'] is 'org.apache.hadoop.metrics2.sink.FileSink'
+        # hadoop_metrics['*.sink.file.class'] ?= 'org.apache.hadoop.metrics2.sink.FileSink'
         hadoop_metrics['*.sink.file.filename'] ?= 'metrics.out'
         hadoop_metrics['namenode.sink.file.filename'] ?= 'namenode-metrics.out'
         hadoop_metrics['datanode.sink.file.filename'] ?= 'datanode-metrics.out'
@@ -351,7 +351,7 @@ source code, the list of supported prefixes is: "namenode", "resourcemanager",
         hadoop_metrics['jobhistoryserver.sink.file.filename'] ?= 'jobhistoryserver-metrics.out'
       # Ganglia sink, accepted properties are "servers" and "supportsparse"
       [ganglia_ctx] =  ctx.contexts 'ryba/ganglia/collector', require('../ganglia/collector').configure
-      if ganglia_ctx and (hbase.metrics['*.sink.ganglia.class'] or hbase.metrics['*.sink.ganglia.class'] is undefined)
+      if ganglia_ctx and (hadoop_metrics['*.sink.ganglia.class'] or hadoop_metrics['*.sink.ganglia.class'] is undefined)
         hadoop_metrics['*.sink.ganglia.class'] ?= 'org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31'
         hadoop_metrics['*.sink.ganglia.period'] ?= '10'
         hadoop_metrics['*.sink.ganglia.supportsparse'] ?= 'true' # Setting to "true" helps in reducing bandwith (see "Practical Hadoop Security")
@@ -377,7 +377,7 @@ source code, the list of supported prefixes is: "namenode", "resourcemanager",
         #   hadoop_metrics['supervisor.sink.ganglia.servers']
       # Graphite sink, accepted properties are "server_host", "server_port" and "metrics_prefix"
       [graphite_ctx] =  ctx.contexts 'ryba/graphite/collector'
-      if graphite_ctx and (hbase.metrics['*.sink.graphite.class'] or hbase.metrics['*.sink.graphite.class'] is undefined)
+      if graphite_ctx and (hadoop_metrics['*.sink.graphite.class'] or hadoop_metrics['*.sink.graphite.class'] is undefined)
         hadoop_metrics['*.sink.graphite.class'] ?= 'org.apache.hadoop.metrics2.sink.GraphiteSink'
         hadoop_metrics['*.sink.graphite.period'] ?= '10'
         if ctx.has_module 'ryba/hadoop/hdfs_nn'
