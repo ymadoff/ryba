@@ -82,8 +82,9 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       params = merge {}, params
       params.end = false
       params.modules = [
-        'masson/bootstrap/connection', 'masson/bootstrap/info'
-        'masson/bootstrap/mecano', 'masson/bootstrap/log'
+        'masson/bootstrap/connection'
+        'masson/bootstrap/mecano'
+        'masson/bootstrap/log'
         'masson/core/yum'
       ]
       run params, config

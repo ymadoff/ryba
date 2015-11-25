@@ -12,7 +12,7 @@
       params = params.parse()
       config params.config, (err, config) ->
         throw err if err
-        upgrade = require "./upgrade_#{params.from}-#{params.to}"
+        upgrade = require "."
         upgrade params, config, (err) ->
           if err
             if err.errors
@@ -31,9 +31,7 @@
     The target HDP version to deploy.    
 
 ```bash
-node node_modules/ryba/bin/upgrade \
-  -f 2.2 \
-  -t 2.3
+node node_modules/ryba/bin/upgrade
 ```
 
     exports.params = 
@@ -42,14 +40,6 @@ node node_modules/ryba/bin/upgrade \
       options: [
         name: 'config', shortcut: 'c', type: 'array'
         description: 'One or multiple configuration files.'
-        required: true
-      ,
-        name: 'from', shortcut: 'f'
-        description: 'Current version.'
-        required: true
-      ,
-        name: 'to', shortcut: 't'
-        description: 'Target version.'
         required: true
       ,
         name: 'start', shortcut: 's'
