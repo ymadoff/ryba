@@ -83,7 +83,24 @@ server to access logs.
 
 ## Check Python
 
+TODO
 
+## Running Streaming Example
+
+Original source code: https://github.com/apache/spark/blob/master/examples/src/main/scala/org/apache/spark/examples/streaming/KafkaWordCount.scala
+Good introduction: http://www.michael-noll.com/blog/2014/10/01/kafka-spark-streaming-integration-example-tutorial/
+Here's how to run the Kafka WordCount example:
+
+```
+spark-submit \
+  --class org.apache.spark.examples.streaming.KafkaWordCount \
+  --queue default \
+  --master yarn-cluster  --num-executors 2 --driver-memory 512m \
+  --executor-memory 512m --executor-cores 1 \
+  /usr/hdp/current/spark-client/lib/spark-examples*.jar \
+  master1.ryba:2181,master2.ryba:2181,master3.ryba:2181 \
+  my-consumer-group topic1,topic2 1
+```
 
 ## Dependencies
 
