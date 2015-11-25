@@ -36,7 +36,7 @@ Check the configuration file (current.properties).
         cmd: mkcmd.test @, """
         cd #{titan.home}
         cmd="TitanFactory.open('titan-#{titan.config['storage.backend']}-#{titan.config['index.search.backend']}-test.properties')"
-        #{titan.install_dir}/current/bin/gremlin.sh 2>/dev/null <<< "$cmd" | grep '==>titangraph'
+        #{titan.install_dir}/current/bin/gremlin.sh <<< "$cmd" | grep '==>titangraph'
         """
         if: -> check
 
