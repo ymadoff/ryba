@@ -6,7 +6,6 @@ The URI resources are grouped into APIs based on the type of information returne
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    # module.exports.push '!masson/bootstrap/info'
     module.exports.push 'ryba/hadoop/core'
 
 ## Configuration
@@ -99,7 +98,7 @@ inside the configuration.
         ryba.yarn.site['yarn.resourcemanager.ha.id'] ?= ctx.config.shortname if is_ha
       for rm_ctx in rm_ctxs
         shortname = if is_ha then ".#{rm_ctx.config.shortname}" else ''
-        if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_client'
+        if ctx.has_any_modules 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_client/install'
           ryba.yarn.site["yarn.resourcemanager.address#{shortname}"] ?= "#{rm_ctx.config.host}:8050"
           ryba.yarn.site["yarn.resourcemanager.scheduler.address#{shortname}"] ?= "#{rm_ctx.config.host}:8030"
           ryba.yarn.site["yarn.resourcemanager.admin.address#{shortname}"] ?= "#{rm_ctx.config.host}:8141"
