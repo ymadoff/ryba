@@ -65,7 +65,7 @@ which has no dependency.
       @hdp_select
         name: 'zookeeper-client'
       @download
-        source: "#{__dirname}/zookeeper"
+        source: "#{__dirname}/resources/zookeeper"
         destination: '/etc/init.d/zookeeper-server'
         mode: 0o0755
         unlink: true

@@ -53,20 +53,35 @@ function start {
 }
 
 function stop {
-  kill $(<$PID_FILE) 2>/dev/null
-  if [[ $? -eq 1 ]]; then
-    if [[ $KILL_FORCE -eq 1 ]]; then
-      sleep $KILL_SLEEP
-      kill -9 $(<$PID_FILE) 2>/dev/null
-      rm $PID_FILE
-      echo "$NAME stopped"
-    else
-      echo "$NAME already stopped"
-    fi
-  else
-    rm $PID_FILE
-    echo "$NAME stopped"
+  if [ ! -f $PID_FILE ]; then
+    echo "$NAME already stopped"
+    return
   fi
+  pid=$(<$PID_FILE)
+  kill $pid 2>/dev/null
+  i=0
+  while kill -0 $pid 2>dev/null && [ $i -lt $KILL_SLEEP ]; do
+    (( i++ ))
+    sleep 1
+  done
+  if ! kill -0 $pid 2>dev/null; then
+    rm $PID_FILE || true
+    echo "$NAME stopped"
+    return
+  fi
+  force_stop
+}
+
+function force_stop {
+  pid=$(<$PID_FILE)
+  kill -9 $pid 2>/dev/null
+  sleep 1
+  if kill -0 $pid; then
+    echo "$NAME failed to stop"
+    exit 1
+  fi
+  rm $PID_FILE
+  echo "$NAME forced stopped after ${KILL_SLEEP}s"
 }
 
 function status {
@@ -87,6 +102,7 @@ elif [[ $1 == "stop" ]]; then
   stop "$@"
 elif [[ $1 == "restart" ]]; then
   stop "$@"
+  sleep 1
   start "$@"
 elif [[ $1 == "status" ]]; then
   status "$@"
@@ -94,4 +110,3 @@ else
   N=/etc/init.d/$NAME
   echo "Usage: $N {start|stop|restart|status}" >&2
 fi
-
