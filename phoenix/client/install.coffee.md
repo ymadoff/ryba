@@ -81,6 +81,7 @@ for its instructions.
 ## Wait for HBase
 
     module.exports.push 'ryba/hbase/regionserver/wait'
+    module.exports.push 'ryba/hbase/master/wait'
 
 ## Init
 
@@ -97,8 +98,9 @@ Independently, if 'ryba' hasn't CREATE right on these 4 tables, it will be grant
         cmd: mkcmd.hbase @, """
         code=3
         if [ `hbase shell 2>/dev/null <<< "list 'SYSTEM.*'" | egrep '^SYSTEM.' | wc -l` -lt "4" ]; then
-        /usr/hdp/current/phoenix-client/bin/sqlline.py #{zk_path} 2>/dev/null <<< '!q'
-        code=0
+          /usr/hdp/current/phoenix-client/bin/sqlline.py #{zk_path} <<< '!q' # 2>/dev/null
+          echo 'Phoenix tables now created'
+          code=0
         fi
         if [ `hbase shell 2>/dev/null <<< "user_permission 'SYSTEM.*'" | egrep 'ryba.*(CREATE|READ|WRITE).*(CREATE|READ|WRITE).*(CREATE|READ|WRITE)' | wc -l` -lt "4" ]; then
         hbase shell 2>/dev/null <<-CMD

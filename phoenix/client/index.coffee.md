@@ -25,3 +25,7 @@ running of those scans to produce regular JDBC result sets.
       'ryba/phoenix/client/install'
       'ryba/phoenix/client/check'
     ]
+
+## Optimisation
+
+Set "hbase.bucketcache.ioengine" to "offheap".

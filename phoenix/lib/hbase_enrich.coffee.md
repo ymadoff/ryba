@@ -3,14 +3,14 @@
 
     module.exports = (options) ->
       {hbase} = @config.ryba
-      @execute
-        header: 'HBase Master: Phoenix: Link JAR'
-        cmd:"""
-        PKG=`rpm --queryformat "/usr/hdp/current/phoenix-client/lib/phoenix-core-%{VERSION}-%{RELEASE}" -q phoenix`;
-        PKG=${PKG/el*/jar};
-        ln -sf $PKG /usr/hdp/current/hbase-client/lib/phoenix.jar
-        """
-        unless_exists: '/usr/hdp/current/hbase-client/lib/phoenix.jar'
+      # @execute
+      #   header: 'HBase Master: Phoenix: Link JAR'
+      #   cmd:"""
+      #   PKG=`rpm --queryformat "/usr/hdp/current/phoenix-client/lib/phoenix-core-%{VERSION}-%{RELEASE}" -q phoenix`;
+      #   PKG=${PKG/el*/jar};
+      #   ln -sf $PKG /usr/hdp/current/hbase-client/lib/phoenix.jar
+      #   """
+      #   unless_exists: '/usr/hdp/current/hbase-client/lib/phoenix.jar'
       # @hconfigure
       #   header: 'HBase Master: Phoenix: Configure HBase'
       #   destination: "#{hbase.conf_dir}/hbase-site.xml"

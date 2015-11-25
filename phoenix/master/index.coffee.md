@@ -17,7 +17,7 @@ running of those scans to produce regular JDBC result sets.
       # Avoid message "Class org.apache.hadoop.hbase.regionserver.LocalIndexSplitter
       # cannot be loaded Set hbase.table.sanity.checks to false at conf or table
       # descriptor if you want to bypass sanity checks"
-      hbase.site['hbase.table.sanity.checks'] = 'false'
+      hbase.site['hbase.table.sanity.checks'] = 'true'
       hbase.site['hbase.defaults.for.version.skip'] = 'true'
       hbase.site['phoenix.functions.allowUserDefinedFunctions'] = 'true'
       hbase.site['hbase.rpc.controllerfactory.class'] = 'org.apache.hadoop.hbase.ipc.controller.ServerRpcControllerFactory'
@@ -33,10 +33,3 @@ running of those scans to produce regular JDBC result sets.
         @service name: 'phoenix'
         @hdp_select name: 'phoenix-client'
         @call require '../lib/hbase_enrich'
-
-These properties ensure co-location of data table and local index regions:
-The local indexing feature is a technical preview and is still under
-development.
-
-      # hbase.site['hbase.master.loadbalancer.class'] ?= 'org.apache.phoenix.hbase.index.balancer.IndexLoadBalancers'
-      # hbase.site['hbase.coprocessor.master.classes'] ?= 'org.apache.phoenix.hbase.index.master.IndexMasterObserver'
