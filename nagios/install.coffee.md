@@ -39,7 +39,7 @@ nagiocmd:x:2419:apache
       @group nagios.groupcmd
       @user nagios.user
 
-    module.exports.push header: 'Nagios # Service', handler: ->
+    module.exports.push header: 'Nagios # Service', timeout: -1, handler: ->
       @service name: 'net-snmp'
       @service name: 'net-snmp-utils'
       @service name: 'php-pecl-json'
