@@ -8,7 +8,7 @@ be released soon.
     module.exports = []
     module.exports.push 'masson/bootstrap'
 
-    module.exports.push name: 'Hue Docker # Wait', timeout: -1, label_true: 'READY', handler: ->
+    module.exports.push header: 'Hue Docker # Wait', timeout: -1, label_true: 'READY', handler: ->
       @wait_connect
         servers: for hue_ in @contexts 'ryba/huedocker', require('./index').configure
           host: hue_.config.host

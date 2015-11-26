@@ -41,7 +41,7 @@ cat /etc/group | grep hue
 hue:x:494:
 ```
 
-    module.exports.push name: 'Hue # Users & Groups', handler: ->
+    module.exports.push header: 'Hue # Users & Groups', handler: ->
       {hue_docker} = @config.ryba
       @group hue_docker.group
       @user hue_docker.user

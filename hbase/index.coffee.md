@@ -174,7 +174,7 @@ cat /etc/group | grep hbase
 hbase:x:492:
 ```
 
-    module.exports.push name: 'HBase # Users & Groups', handler: ->
+    module.exports.push header: 'HBase # Users & Groups', handler: ->
       {hbase} = @config.ryba
       @group hbase.group
       @user hbase.user
@@ -183,13 +183,13 @@ hbase:x:492:
 
 Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap9-1.html)
 
-    module.exports.push name: 'HBase # Install', timeout: -1, handler: ->
+    module.exports.push header: 'HBase # Install', timeout: -1, handler: ->
       @service
         name: 'hbase'
       @hdp_select
         name: 'hbase-client'
 
-    module.exports.push name: 'HBase # Layout', timeout: -1, handler: ->
+    module.exports.push header: 'HBase # Layout', timeout: -1, handler: ->
       {hbase} = @config.ryba
       @mkdir
         destination: hbase.pid_dir
@@ -202,7 +202,7 @@ Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocument
         gid: hbase.group.name
         mode: 0o0755
 
-    module.exports.push name: 'HBase # Env', handler: ->
+    module.exports.push header: 'HBase # Env', handler: ->
       {hbase} = @config.ryba
       write = for k, v of hbase.env
         match: RegExp "export #{k}=.*", 'm'
@@ -223,7 +223,7 @@ Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocument
 
 Upload the list of registered RegionServers.
 
-    module.exports.push name: 'HBase # RegionServers', handler: ->
+    module.exports.push header: 'HBase # RegionServers', handler: ->
       {hbase, hadoop_group} = @config.ryba
       @write
         content: @hosts_with_module('ryba/hbase/regionserver').join '\n'

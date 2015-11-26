@@ -50,7 +50,7 @@
 Declare the HDP repository.
 
     module.exports.push
-      name: 'Ryba # Repository'
+      header: 'Ryba # Repository'
       timeout: -1
       if: -> @config.ryba.hdp_repo
       handler: (options) ->

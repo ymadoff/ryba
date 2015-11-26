@@ -25,7 +25,7 @@ The file storing the PID is "/var/run/hive-server2/hive-server2.pid".
 ## Stop Clean Logs
 
     module.exports.push
-      name: 'Hive HCatalog # Stop Clean Logs'
+      header: 'Hive HCatalog # Stop Clean Logs'
       label_true: 'CLEANED'
       if: -> @config.ryba.clean_logs
       handler: ->

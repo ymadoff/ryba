@@ -69,7 +69,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## ACL Table
 
-      module.exports.push name: 'HBase Thrift # ACL Table', handler: ->
+      module.exports.push header: 'HBase Thrift # ACL Table', handler: ->
         {hbase} = @config.ryba
         @execute
           cmd: mkcmd.hbase @, """
@@ -98,7 +98,7 @@ restrict it but not the thrift server.
 
 ## Hbase-Thrift Service
 
-    module.exports.push name: 'HBase Thrift # Service', handler: ->
+    module.exports.push header: 'HBase Thrift # Service', handler: ->
       {hbase} = @config.ryba
       @service
         name: 'hbase-thrift'
