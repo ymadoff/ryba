@@ -261,8 +261,8 @@ Example:
       hue_docker.ini['desktop']['http_host'] ?= '0.0.0.0'
       hue_docker.ini['desktop']['http_port'] ?= hue_docker.port
       hue_docker.ini['desktop']['secret_key'] ?= 'jFE93j;2[290-eiwMYSECRTEKEYy#e=+Iei*@Mn<qW5o'
-      hue_docker.ini['desktop']['ssl_certificate'] ?= if hue_docker.ssl then '/etc/hue/conf/cert.pem' else null
-      hue_docker.ini['desktop']['ssl_private_key'] ?= if hue_docker.ssl then '/etc/hue/conf/key.pem' else null
+      hue_docker.ini['desktop']['ssl_certificate'] ?= if hue_docker.ssl then "#{hue_docker.conf_dir}/cert.pem"else null
+      hue_docker.ini['desktop']['ssl_private_key'] ?= if hue_docker.ssl then "#{hue_docker.conf_dir}/key.pem" else null
       hue_docker.ini['desktop']['smtp'] ?= {}
       # From Hue 3.7 ETC has become Etc
       hue_docker.ini['desktop']['time_zone'] ?= 'Etc/UCT'
