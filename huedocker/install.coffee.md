@@ -255,7 +255,7 @@ changes.
           else
             checksum = content
             @docker_checksum
-              image: hue_docker.image
+              repository: hue_docker.image
               tag: '3.9'
             , (err, _, __, ___, hash) ->
               return callback err if err
@@ -267,7 +267,7 @@ changes.
         binary: true
         if: -> @status -1
       @docker_load
-        source: tmp
+        input: tmp
         checksum: checksum
         if: -> @status -2 or @status -1
 
@@ -308,7 +308,7 @@ ryba/hue:3.8
         ]
         net: 'host'
         service: true
-        container: hue_docker.container
+        name: hue_docker.container
 
 
 ## Dependencies
