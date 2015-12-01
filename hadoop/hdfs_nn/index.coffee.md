@@ -59,7 +59,7 @@ Example:
       # If "true", access tokens are used as capabilities
       # for accessing datanodes. If "false", no access tokens are checked on
       # accessing datanodes.
-      ryba.hdfs.site['dfs.block.access.token.enable'] ?= 'true'
+      ryba.hdfs.site['dfs.block.access.token.enable'] ?= if ryba.core_site['hadoop.security.authentication'] is 'kerberos' then 'true' else 'false'
       # Kerberos
       ryba.hdfs.site['dfs.namenode.kerberos.principal'] ?= "nn/#{ryba.static_host}@#{ryba.realm}"
       ryba.hdfs.site['dfs.namenode.keytab.file'] ?= '/etc/security/keytabs/nn.service.keytab'
