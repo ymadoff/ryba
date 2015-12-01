@@ -73,7 +73,7 @@ Update the file kafka-server-start.sh (prefered to the general "kafka-env.sh" fi
     module.exports.push header: 'Kafka Broker # Env', handler: ->
       {kafka} = @config.ryba
       @write
-        destination: "#{kafka.conf_dir}/kafka-server-start.sh"
+        destination: "#{kafka.conf_dir}/kafka-env.sh"
         write: for k, v of kafka.broker.env
           match: RegExp "export #{k}=.*", 'm'
           replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"

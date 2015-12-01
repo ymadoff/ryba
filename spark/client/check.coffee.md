@@ -18,33 +18,40 @@ Validate Spark installation with Pi-example in yarn-cluster mode.
 The yarn cluster mode makes the driver part of the spark submitted program to run inside yarn.
 In this mode the driver is the yarn application master (running inside yarn).
 
-    module.exports.push header: 'Spark Client # Check Cluster Mode', timeout: -1, label_true: 'CHECKED', handler: ->
-      {spark} = @config.ryba
+    module.exports.push header: 'Spark Client # Check Yarn Cluster', timeout: -1, label_true: 'CHECKED', handler: ->
+      {spark, force_check} = @config.ryba
+      file_check = "check-#{@config.shortname}-spark-cluster"
       applicationId = null
       @execute
         cmd: mkcmd.test @, """
-        spark-submit \
-          --class org.apache.spark.examples.SparkPi \
-          --queue default \
-          --master yarn-cluster --num-executors 2 --driver-memory 512m \
-          --executor-memory 512m --executor-cores 1 \
-          #{spark.client_dir}/lib/spark-examples*.jar 10 2>&1 /dev/null \
-        | grep -m 1 "proxy\/application_"
+          spark-submit \
+            --class org.apache.spark.examples.SparkPi \
+            --queue default \
+            --master yarn-cluster --num-executors 2 --driver-memory 512m \
+            --executor-memory 512m --executor-cores 1 \
+            #{spark.client_dir}/lib/spark-examples*.jar 10 2>&1 /dev/null \
+          | grep -m 1 "proxy\/application_";
         """
+        unless_exec : unless force_check then mkcmd.test @, "hdfs dfs -test -f #{file_check}"
       , (err, executed, stdout, stderr) ->
-        return if err
-        tracking_url_result = stdout.trim().split("/") if executed
+        return err if err
+        tracking_url_result = stdout.trim().split("/")
         applicationId = tracking_url_result[tracking_url_result.length - 2]
-      @call ->
         @execute
           cmd: mkcmd.test @, """
-            yarn logs -applicationId #{applicationId} 2>&1 /dev/null | grep -m 1 "Pi is roughly"
+            yarn logs -applicationId #{applicationId} 2>&1 /dev/null | grep -m 1 "Pi is roughly";
             """
         , (err, executed, stdout, stderr) ->
-          return if err
+          return err if err
           log_result = stdout.split(" ")
           pi = parseFloat(log_result[log_result.length - 1])
-          throw Error 'Invalid Output' unless pi > 3.00 and pi < 3.20
+          return Error 'Invalid Output' unless pi > 3.00 and pi < 3.20
+          return
+      @execute
+        cmd: mkcmd.test @, """
+        hdfs dfs -touchz #{file_check}
+        """
+        if: -> @status -1
 
 ## Check Client Mode
 

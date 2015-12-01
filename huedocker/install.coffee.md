@@ -41,7 +41,7 @@ cat /etc/group | grep hue
 hue:x:494:
 ```
 
-    module.exports.push name: 'Hue # Users & Groups', handler: ->
+    module.exports.push header: 'Hue # Users & Groups', handler: ->
       {hue_docker} = @config.ryba
       @group hue_docker.group
       @user hue_docker.user
@@ -67,7 +67,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 Update the "hive-site.xml" with the hive/server2 kerberos principal.
 
-    module.exports.push header: 'Hue Docker # Hive',  handler: ->
+    module.exports.push header: 'Hue Docker # Hive', handler: ->
       [hive_ctx] = @contexts 'ryba/hive/server2'
       if hive_ctx?
         {hive} = hive_ctx.config.ryba
@@ -75,10 +75,13 @@ Update the "hive-site.xml" with the hive/server2 kerberos principal.
           destination: "#{hive.conf_dir}/hive-site.xml"
           properties: {
             'hive.server2.authentication.kerberos.principal': "#{hive.site['hive.server2.authentication.kerberos.principal']}"
+            'hive.server2.authentication': "#{hive.site['hive.server2.authentication']}"
             # Properties in client which are not synced
             'hive.server2.transport.mode': "#{hive.site['hive.server2.transport.mode']}"
             'hive.server2.use.SSL' : "#{hive.site['hive.server2.use.SSL']}"
             'hive.server2.thrift.sasl.qop' : "#{hive.site['hive.server2.thrift.sasl.qop']}"
+            'hive.server2.thrift.http.port' : "#{hive.site['hive.server2.thrift.http.port']}"
+            'hive.server2.thrift.port' : "#{hive.site['hive.server2.thrift.port']}"
           }
           merge: true
           backup: true
@@ -87,7 +90,7 @@ Update the "hive-site.xml" with the hive/server2 kerberos principal.
 
 Update the "hbase-site.xml" with the hbase/thrift kerberos principal.
 
-    module.exports.push header: 'Hue Docker # Hbase',  handler: ->
+    module.exports.push header: 'Hue Docker #  Hbase', handler: ->
       [hbase_ctx] = @contexts 'ryba/hbase/thrift'
       if hbase_ctx?
         {hbase} = hbase_ctx.config.ryba
@@ -98,9 +101,17 @@ Update the "hbase-site.xml" with the hbase/thrift kerberos principal.
         #   props[k] = v if  k.indexOf('thrift') isnt  -1
         @hconfigure
           destination: "#{hbase.conf_dir}/hbase-site.xml"
-          properties: hbase.site
-          # 'hbase.thrift.kerberos.principal': "#{hbase.site['hbase.thrift.kerberos.principal']}"
+          properties: {
+            'hbase.thrift.port': "#{hbase.site['hbase.thrift.port']}"
+            'hbase.thrift.info.port': "#{hbase.site['hbase.thrift.info.port']}"
+            'hbase.thrift.support.proxyuser': "#{hbase.site['hbase.thrift.support.proxyuser']}"
+            'hbase.thrift.security.qop': "#{hbase.site['hbase.thrift.security.qop']}"
+            'hbase.thrift.authentication.type': "#{hbase.site['hbase.thrift.authentication.type']}"
+            'hbase.thrift.kerberos.principal': "#{hbase.site['hbase.thrift.kerberos.principal']}"
+            'hbase.thrift.ssl.enabled': "#{hbase.site['hbase.thrift.ssl.enabled']}"
+          }
           backup: true
+          merge: true
 
 ## Configure
 
@@ -179,6 +190,7 @@ path  during docker run.
         source: "#{hue_docker.ssl.client_ca}"
         local_source: true
         if: !!hue_docker.ssl.client_ca
+        backup: true
 
 ## SSL Server
 
@@ -243,7 +255,7 @@ changes.
           else
             checksum = content
             @docker_checksum
-              image: hue_docker.image
+              repository: hue_docker.image
               tag: '3.9'
             , (err, _, __, ___, hash) ->
               return callback err if err
@@ -255,7 +267,7 @@ changes.
         binary: true
         if: -> @status -1
       @docker_load
-        source: tmp
+        input: tmp
         checksum: checksum
         if: -> @status -2 or @status -1
 
@@ -296,7 +308,7 @@ ryba/hue:3.8
         ]
         net: 'host'
         service: true
-        container: hue_docker.container
+        name: hue_docker.container
 
 
 ## Dependencies

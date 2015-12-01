@@ -152,19 +152,11 @@ Also worth of interest are the [Pivotal recommandations][hawq] as well as the
 Note, a user must re-login for those changes to be taken into account.
 
     module.exports.push header: 'HDFS NN # Ulimit', handler: ->
-      {user} = @config.ryba.hdfs
-      @write
-        destination: '/etc/security/limits.d/#{user.name}.conf'
-        write: [
-          match: /^#{user.name}.+nofile.+$/mg
-          replace: "#{user.name}    -    nofile   64000"
-          append: true
-        ,
-          match: /^#{user.name}.+nproc.+$/mg
-          replace: "#{user.name}    -    nproc    64000"
-          append: true
-        ]
-        backup: true
+      {hdfs} = @config.ryba
+      @system_limits
+        user: hdfs.user.name
+        nofile: hdfs.user.limits.nofile
+        nproc: hdfs.user.limits.nproc
 
 ## Include/Exclude
 

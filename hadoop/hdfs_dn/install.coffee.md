@@ -235,11 +235,11 @@ Also worth of interest are the [Pivotal recommandations][hawq] as well as the
 Note, a user must re-login for those changes to be taken into account.
 
     module.exports.push header: 'HDFS DN # Ulimit', handler: ->
-      {user} = @config.ryba.hdfs
+      {hdfs} = @config.ryba
       @system_limits
-        user: user.name
-        nofile: 64000
-        nproc: 64000
+        user: hdfs.user.name
+        nofile: hdfs.user.limits.nofile
+        nproc: hdfs.user.limits.nproc
 
 
 ## Dependencies

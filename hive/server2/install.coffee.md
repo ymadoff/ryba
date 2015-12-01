@@ -204,14 +204,14 @@ Create the directories to store the logs and pid information. The properties
         local_source: true
         destination: '/etc/hive/conf/hive-log4j.properties'
 
-## Limits
+## Ulimit
 
-    module.exports.push header: 'Hive Server2 : Limits', handler: ->
+    module.exports.push header: 'Hive Server2 # Ulimit', handler: ->
       {hive} = @config.ryba
       @system_limits
         user: hive.user.name
-        nofile: 64000
-        nproc: 64000
+        nofile: hive.user.limits.nofile
+        nproc: hive.user.limits.nproc
       
 ## Dependencies
 

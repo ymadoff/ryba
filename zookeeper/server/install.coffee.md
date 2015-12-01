@@ -233,7 +233,7 @@ parameters autopurge.snapRetainCount and autopurge.purgeInterval.
   org.apache.zookeeper.server.PurgeTxnLog  /var/zookeeper/data/ -n 3
 ```
 
-    module.exports.push name: "ZooKeeper Server # Schedule Purge", handler: ->
+    module.exports.push header: "ZooKeeper Server # Schedule Purge", handler: ->
       {zookeeper} = @config.ryba
       return next() unless zookeeper.purge
       @cron_add

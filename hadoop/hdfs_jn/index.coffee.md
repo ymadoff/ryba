@@ -39,7 +39,7 @@ Example:
       require('masson/core/iptables').configure ctx
       require('../core').configure ctx
       nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn'
-      throw Error "HDFS not configured for HA" unless nn_ctxs.length is 2
+      throw Error "HDFS not configured for HA" unless nn_ctxs.length >= 2
       {ryba} = ctx.config
       ryba.hdfs.site['dfs.journalnode.rpc-address'] ?= '0.0.0.0:8485'
       ryba.hdfs.site['dfs.journalnode.http-address'] ?= '0.0.0.0:8480'
