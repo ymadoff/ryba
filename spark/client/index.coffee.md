@@ -92,7 +92,7 @@ of your cluster.
       spark.conf['spark.yarn.queue'] ?= 'default'
       spark.conf['spark.yarn.scheduler.heartbeat.interval-ms'] ?= '5000'
       spark.conf['spark.yarn.services'] ?= 'org.apache.spark.deploy.yarn.history.YarnHistoryService'
-      spark.conf['spark.yarn.submit.file.replication'] ?= '3'          
+      spark.conf['spark.yarn.submit.file.replication'] ?= '3'
 
 [secu]: http://spark.apache.org/docs/latest/security.html
 
@@ -117,7 +117,8 @@ Configure the "metrics.properties" to connect Spark to a metrics collector like 
 The metrics.properties file needs to be sent to every executor, 
 and spark.metrics.conf=metrics.properties will tell all executors to load that file when initializing their respective MetricsSystems
 
-      spark.conf['spark.metrics.conf'] ?= 'metrics.properties'
+      # spark.conf['spark.metrics.conf'] ?= 'metrics.properties'
+      spark.conf['spark.metrics.conf'] ?= null # Error, spark complain it cant find if value is 'metrics.properties'    
       spark.conf['spark.yarn.dist.files'] ?= "file://#{spark.conf_dir}/metrics.properties"
 
       spark.metrics =

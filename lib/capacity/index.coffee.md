@@ -13,9 +13,9 @@ default setting for Yarn and its client application such as MapReduce or Tez.
 
     exports = module.exports = (params, config, callback) ->
       config.params = params
-      exports.contexts config, (err, ctxs) ->
+      exports.contexts params, config, (err, contexts) ->
         return callback err if err
-        return callback Error 'No Servers Configured' unless Object.keys(ctxs).length
+        return callback Error 'No Servers Configured' unless Object.keys(contexts).length
         each [
           'configure', 'disks', 'cores', 'memory'
           'yarn_nm', 'yarn_rm'
@@ -25,26 +25,27 @@ default setting for Yarn and its client application such as MapReduce or Tez.
           'hive_client', 'kafka_broker'
           'remote' ]
         .run (handler, next) ->
+          console.log 'ok'
           handler = exports[handler]
           if handler.length is 2
-            handler ctxs, next
+            handler contexts, next
           else
-            handler ctxs
+            handler contexts
             next()
         .then (err) ->
-          ctx.emit 'end' for ctx in ctxs
-          return console.log 'ERROR', err if err
-          exports.write config, ctxs, (err) ->
+          ctx.emit 'end' for ctx in contexts
+          return console.log 'ERROR', err.message, err.stack if err
+          exports.write config, contexts, (err) ->
             return console.log 'ERROR', err if err
             console.log 'SUCCESS'
 
 ## SSH
 
-    exports.contexts = (config, next) ->
+    exports.contexts = (params, config, next) ->
       params = merge {}, config.params
       params.end = false
       params.hosts = null
-      params.modules = ['masson/bootstrap/connection', 'masson/bootstrap/info']
+      params.modules = ['masson/bootstrap/connection']
       config.log ?= {}
       config.log.disabled ?= true
       # config.connection.end = false
@@ -60,6 +61,7 @@ default setting for Yarn and its client application such as MapReduce or Tez.
 Normalize configuration.
 
     exports.configure = (ctxs) ->
+      info = require 'masson/core/info'
       for ctx in ctxs
         ctx.config.capacity ?= {}
         ctx.config.capacity.total_memory ?= null
@@ -73,6 +75,7 @@ Normalize configuration.
           ctx.config.capacity[conf] ?= {}
           ctx.config.capacity.remote[conf] ?= {}
         ctx.config.capacity.capacity_scheduler['yarn.scheduler.capacity.resource-calculator'] ?= 'org.apache.hadoop.yarn.util.resource.DominantResourceCalculator'
+        
 
 ## Capacity Planning for Disks
 
