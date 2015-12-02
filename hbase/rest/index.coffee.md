@@ -26,6 +26,7 @@ See [REST Gateway Impersonation Configuration][impersonation].
       hbase.site['hbase.rest.kerberos.principal'] ?= "hbase_rest/_HOST@#{realm}" # Dont forget `grant 'rest_server', 'RWCA'`
       hbase.site['hbase.rest.keytab.file'] ?= "#{hbase.conf_dir}/rest.service.keytab"
       hbase.site['hbase.rest.authentication.type'] ?= 'kerberos'
+      hbase.site['hbase.rest.support.proxyuser'] ?= 'true'
       hbase.site['hbase.rest.authentication.kerberos.principal'] ?= "HTTP/_HOST@#{realm}"
       # hbase.site['hbase.rest.authentication.kerberos.keytab'] ?= "#{hbase.conf_dir}/hbase.service.keytab"
       hbase.site['hbase.rest.authentication.kerberos.keytab'] ?= core_site['hadoop.http.authentication.kerberos.keytab']
