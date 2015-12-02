@@ -1,5 +1,5 @@
 
-# Pig
+# Pig Install
 
 Learn more about Pig optimization by reading ["Making Pig Fly"][fly].
 
@@ -18,12 +18,12 @@ By default, the "pig" package create the following entries:
 
 ```bash
 cat /etc/passwd | grep pig
-pig:x:490:502:Used by Hadoop Pig service:/home/pig:/bin/bash
+pig:x:490:502:Used by Pig service:/home/pig:/bin/bash
 cat /etc/group | grep hadoop
 hadoop:x:502:yarn,mapred,hdfs,hue
 ```
 
-    module.exports.push header: 'Hadoop Pig # Users & Groups', handler: ->
+    module.exports.push header: 'Pig # Users & Groups', handler: ->
       {hadoop_group, pig} = @config.ryba
       @group hadoop_group
       @user pig.user
@@ -32,7 +32,7 @@ hadoop:x:502:yarn,mapred,hdfs,hue
 
 The pig package is install.
 
-    module.exports.push header: 'Hadoop Pig # Install', timeout: -1, handler: ->
+    module.exports.push header: 'Pig # Install', timeout: -1, handler: ->
       @service
         name: 'pig'
       console.log 'TODO: pig-client not registered in hdp-select'
@@ -41,11 +41,11 @@ The pig package is install.
       # @hdp_select
       #   name: 'pig-client'
 
-    module.exports.push header: 'Hadoop Pig # Users', handler: ->
+    module.exports.push header: 'Pig # Users', handler: ->
       # 6th feb 2014: pig user isnt created by YUM, might change in a future HDP release
       {hadoop_group} = @config.ryba
       @execute
-        cmd: "useradd pig -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop Pig service\""
+        cmd: "useradd pig -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Pig service\""
         code: 0
         code_skipped: 9
 
@@ -54,7 +54,7 @@ The pig package is install.
 TODO: Generate the "pig.properties" file dynamically, be carefull, the HDP
 companion file defines no properties while the YUM package does.
 
-    module.exports.push header: 'Hadoop Pig # Configure', handler: ->
+    module.exports.push header: 'Pig # Configure', handler: ->
       {pig} = @config.ryba
       @ini
         destination: "#{pig.conf_dir}/pig.properties"
@@ -63,7 +63,7 @@ companion file defines no properties while the YUM package does.
         merge: true
         backup: true
 
-    module.exports.push header: 'Hadoop Pig # Env', handler: ->
+    module.exports.push header: 'Pig # Env', handler: ->
       {java_home} = @config.java
       {hadoop_group, pig} = @config.ryba
       @write
@@ -79,7 +79,7 @@ companion file defines no properties while the YUM package does.
         mode: 0o755
         backup: true
 
-    module.exports.push header: 'Hadoop Pig # Fix Pig', handler: ->
+    module.exports.push header: 'Pig # Fix Pig', handler: ->
       @write
         write: [
           match: /^(\s)*slfJarVersion=.*/mg
