@@ -83,7 +83,7 @@ The JDBC url may be provided inside the "-u" option or after the "!connect"
 directive once you enter the beeline shell.
 
     module.exports.push
-      header: 'Hive Client # Check Server2 Without ZooKeeper'
+      header: 'Hive Client # Check Server2 (no ZK)'
       label_true: 'CHECKED'
       timeout: -1
       handler: ->
@@ -125,7 +125,7 @@ directive once you enter the beeline shell.
             trap_on_error: true
 
     module.exports.push
-      header: 'Hive Client # Check Server2 With ZooKeeper'
+      header: 'Hive Client # Check Server2 (with ZK)'
       label_true: 'CHECKED'
       timeout: -1
       if: -> @contexts('ryba/hive/server2').length > 1
