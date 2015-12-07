@@ -146,6 +146,9 @@ Default configuration:
       ryba.mapred.user.groups ?= 'hadoop'
       ryba.mapred.user.comment ?= 'Hadoop MapReduce User'
       ryba.mapred.user.home ?= '/var/lib/hadoop-mapreduce'
+      ryba.mapred.user.limits ?= {}
+      ryba.mapred.user.limits.nproc ?= 64000
+      ryba.mapred.user.limits.nofile ?= 64000
       # Groups
       ryba.hdfs.group ?= {}
       ryba.hdfs.group = name: ryba.hdfs.group if typeof ryba.hdfs.group is 'string'
