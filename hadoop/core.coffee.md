@@ -257,32 +257,6 @@ Configuration for proxy users
         """
       core_site['hadoop.proxyuser.HTTP.hosts'] ?= '*'
       core_site['hadoop.proxyuser.HTTP.groups'] ?= '*'
-      hbase_ctxs = ctx.contexts 'ryba/hbase/master', require('../hbase/master').configure
-      if hbase_ctxs.length
-        {hbase} = hbase_ctxs[0].config.ryba
-        core_site["hadoop.proxyuser.#{hbase.user.name}.groups"] ?= '*'
-        core_site["hadoop.proxyuser.#{hbase.user.name}.hosts"] ?= '*'
-      hive_ctxs = ctx.contexts 'ryba/hive/hcatalog', require('../hive/hcatalog').configure
-      if hive_ctxs.length
-        {hive} = hive_ctxs[0].config.ryba
-        core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'
-        core_site["hadoop.proxyuser.#{hive.user.name}.hosts"] ?= '*'
-      oozie_ctxs = ctx.contexts 'ryba/oozie/server', require('../oozie/server').configure
-      if oozie_ctxs.length
-        {oozie} = oozie_ctxs[0].config.ryba
-        core_site["hadoop.proxyuser.#{oozie.user.name}.groups"] ?= '*'
-        core_site["hadoop.proxyuser.#{oozie.user.name}.hosts"] ?= '*'
-      hue_ctxs = ctx.contexts 'ryba/hue', require('../hue').configure_system
-      if hue_ctxs.length
-        {hue} = hue_ctxs[0].config.ryba
-        core_site["hadoop.proxyuser.#{hue.user.name}.groups"] ?= '*'
-        core_site["hadoop.proxyuser.#{hue.user.name}.hosts"] ?= '*'
-        core_site['hue.kerberos.principal.shortname'] ?= hue.user.name
-      falcon_ctxs = ctx.contexts 'ryba/falcon', require('../falcon').configure
-      if falcon_ctxs.length
-        {user} = falcon_ctxs[0].config.ryba.falcon
-        core_site["hadoop.proxyuser.#{user.name}.groups"] ?= '*'
-        core_site["hadoop.proxyuser.#{user.name}.hosts"] ?= '*'
 
 Configuration for environment
 

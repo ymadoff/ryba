@@ -117,6 +117,15 @@ and its value is the server "host:port".
       hive.site['hive.zookeeper.session.timeout'] ?= '600000' # Default is "600000"
       hive.site['hive.server2.zookeeper.namespace'] ?= 'hiveserver2' # Default is "hiveserver2"
 
+## Configuration for Proxy users
+
+      hadoop_ctxs = ctx.contexts ['ryba/hadoop/hdfs_nn','ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
+      for hadoop_ctx in hadoop_ctxs
+        hadoop_ctx.config.ryba ?= {}
+        hadoop_ctx.config.ryba.core_site ?= {}
+        hadoop_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'
+        hadoop_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.hosts"] ?= '*'
+
 ## Commands
 
     module.exports.push commands: 'backup', modules: 'ryba/hive/server2/backup'

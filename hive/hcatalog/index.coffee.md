@@ -130,6 +130,15 @@ default to the [DBTokenStore]. Also worth of interest is the
       # hive.support.concurrency = 'true' # Required, default to false
       # hive.zookeeper.quorum = list of zookeeper address
 
+## Configuration for Proxy users
+
+      hadoop_ctxs = ctx.contexts ['ryba/hadoop/hdfs_nn','ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
+      for hadoop_ctx in hadoop_ctxs
+        hadoop_ctx.config.ryba ?= {}
+        hadoop_ctx.config.ryba.core_site ?= {}
+        hadoop_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'
+        hadoop_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.hosts"] ?= '*'
+
 ## Commands
 
     module.exports.push commands: 'backup', modules: 'ryba/hive/hcatalog/backup'

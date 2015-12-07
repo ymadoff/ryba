@@ -46,12 +46,37 @@ with Hadoop clusters.
       knox.site['sun.security.krb5.debug'] ?= 'true'
       knox.topologies ?= {}
   
+
+## Configuration for Proxy Users
+
+      knox_hosts = ctx.contexts('ryba/knox').map((ctx) -> ctx.config.host).join ','
+      hadoop_ctxs = ctx.contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
+      for hadoop_ctx in hadoop_ctxs
+        hadoop_ctx.config.ryba ?= {}
+        hadoop_ctx.config.ryba.core_site ?= {}
+        hadoop_ctx.config.ryba.core_site["hadoop.proxyuser.#{knox.user.name}.hosts"] ?= knox_hosts
+        hadoop_ctx.config.ryba.core_site["hadoop.proxyuser.#{knox.user.name}.groups"] ?= '*'
+      httpfs_ctxs = ctx.contexts 'ryba/hadoop/httpfs'
+      for httpfs_ctx in httpfs_ctxs
+        httpfs_ctx.config.ryba ?= {}
+        httpfs_ctx.config.ryba.httpfs ?= {}
+        httpfs_ctx.config.ryba.httpfs.site ?= {}
+        httpfs_ctx.config.ryba.httpfs.site["httpfs.proxyuser.#{knox.user.name}.hosts"] ?= knox_hosts
+        httpfs_ctx.config.ryba.httpfs.site["httpfs.proxyuser.#{knox.user.name}.groups"] ?= '*'
+      oozie_ctxs = ctx.contexts 'ryba/oozie/server'
+      for oozie_ctx in oozie_ctxs
+        oozie_ctx.config.ryba ?= {}
+        oozie_ctx.config.ryba.oozie ?= {}
+        oozie_ctx.config.ryba.oozie.site ?= {}
+        oozie_ctx.config.ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{knox.user.name}.hosts"] ?= knox_hosts
+        oozie_ctx.config.ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{knox.user.name}.groups"] ?= '*'
+
 ## Configure topology
 
       topology = knox.topologies[ctx.config.ryba.nameservice] ?= {}
       # Configure providers
       topology.providers ?= {}
-      
+
 LDAP authentication is configured by adding a "ShiroProvider" authentication 
 provider to the cluster's topology file. When enabled, the Knox Gateway uses 
 Apache Shiro (org.apache.shiro.realm.ldap.JndiLdapRealm) to authenticate users 

@@ -51,6 +51,8 @@ Example:
 }
 ```
 
+## Configure (System)
+
     module.exports.configure_system = (ctx) ->
       ctx.config.ryba ?= {}
       hue = ctx.config.ryba.hue ?= {}
@@ -71,17 +73,15 @@ Example:
       hue.group.system ?= true
       hue.user.gid = hue.group.name
       hue.clean_tmp ?= true
-      hdfs_ctxs = ctx.contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn']
-      for hdfs_ctx in hdfs_ctxs
-        hdfs_ctx.config.ryba.core_site['hadoop.proxyuser.hue.hosts'] ?= '*'
-        hdfs_ctx.config.ryba.core_site['hadoop.proxyuser.hue.groups'] ?= '*'
-      oozie_ctxs = ctx.contexts 'ryba/oozie/server'
-      for oozie_ctx in oozie_ctxs
-        oozie_ctx.config.ryba ?= {}
-        oozie_ctx.config.ryba.oozie ?= {}
-        oozie_ctx.config.ryba.oozie.site ?= {}
-        oozie_ctx.config.ryba.oozie.site['oozie.service.ProxyUserService.proxyuser.hue.hosts'] ?= '*'
-        oozie_ctx.config.ryba.oozie.site['oozie.service.ProxyUserService.proxyuser.hue.groups'] ?= '*'
+
+## Configuration for Proxy Users
+
+      hadoop_ctxs = ctx.contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
+      for hadoop_ctx in hadoop_ctxs
+        hadoop_ctx.config.ryba ?= {}
+        hadoop_ctx.config.ryba.core_site ?= {}
+        hadoop_ctx.config.ryba.core_site["hadoop.proxyuser.#{hue.user.name}.hosts"] ?= '*'
+        hadoop_ctx.config.ryba.core_site["hadoop.proxyuser.#{hue.user.name}.groups"] ?= '*'
       httpfs_ctxs = ctx.contexts 'ryba/hadoop/httpfs'
       for httpfs_ctx in httpfs_ctxs
         httpfs_ctx.config.ryba ?= {}
@@ -89,6 +89,15 @@ Example:
         httpfs_ctx.config.ryba.httpfs.site ?= {}
         httpfs_ctx.config.ryba.httpfs.site["httpfs.proxyuser.#{hue.user.name}.hosts"] ?= '*'
         httpfs_ctx.config.ryba.httpfs.site["httpfs.proxyuser.#{hue.user.name}.groups"] ?= '*'
+      oozie_ctxs = ctx.contexts 'ryba/oozie/server'
+      for oozie_ctx in oozie_ctxs
+        oozie_ctx.config.ryba ?= {}
+        oozie_ctx.config.ryba.oozie ?= {}
+        oozie_ctx.config.ryba.oozie.site ?= {}
+        oozie_ctx.config.ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{hue.user.name}.hosts"] ?= '*'
+        oozie_ctx.config.ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{hue.user.name}.groups"] ?= '*'
+
+## Configure
 
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure

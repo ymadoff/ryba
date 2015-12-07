@@ -61,7 +61,7 @@ The default configuration is located inside the source code in the location
       for hdfs_ctx in hdfs_ctxs
         hdfs_ctx.config.ryba ?= {}
         hdfs_ctx.config.ryba.core_site ?= {}
-        hdfs_ctx.config.ryba.core_site["hadoop.proxyuser.#{httpfs.user.name}.hosts"] ?= '*'
+        hdfs_ctx.config.ryba.core_site["hadoop.proxyuser.#{httpfs.user.name}.hosts"] ?= ctx.contexts('ryba/hadoop/httpfs').map((ctx) -> ctx.config.host).join ','
         hdfs_ctx.config.ryba.core_site["hadoop.proxyuser.#{httpfs.user.name}.groups"] ?= '*'
 
     module.exports.push commands: 'check', modules: 'ryba/hadoop/httpfs/check'

@@ -31,7 +31,7 @@ Follows [cloudera hbase setup in secure mode][hbase-configuration]
       # Enables impersonation
       # http://hbase.apache.org/book.html#security.client.thrift
       # For now thrift server does not support impersonation for framed transport: check cloudera setup warning
-      if hbase.site['hbase.thrift.kerberos.principal'].indexOf 'HTTP' > -1 and hbase.site['hbase.regionserver.thrift.framed'] != 'framed'
+      if hbase.site['hbase.regionserver.thrift.framed'] != 'framed'
         hbase.site['hbase.regionserver.thrift.http'] ?= 'true'
         hbase.site['hbase.thrift.support.proxyuser'] ?= 'true'
       # Type of HBase thrift server

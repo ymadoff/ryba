@@ -34,20 +34,14 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
       hbase.site['hbase.regionserver.kerberos.principal'] ?= "hbase/_HOST@#{realm}"
       hbase.site['hbase.coprocessor.master.classes'] ?= 'org.apache.hadoop.hbase.security.access.AccessController'
 
-## Proxy Users
+## Configuration for Proxy Users
 
-      thrift_ctxs = ctx.contexts 'ryba/hbase/thrift', require('../thrift').configure
-      if thrift_ctxs.length
-        principal = thrift_ctxs[0].config.ryba.hbase.site['hbase.thrift.kerberos.principal']
-        throw Error 'Invalid HBase Thrift principal' unless match = /^(.+?)[@\/]/.exec principal
-        hbase.site["hadoop.proxyuser.#{match[1]}.groups"] ?= '*'
-        hbase.site["hadoop.proxyuser.#{match[1]}.hosts"] ?= '*'
-      rest_ctxs = ctx.contexts 'ryba/hbase/rest', require('../rest').configure
-      if rest_ctxs.length
-        principal = rest_ctxs[0].config.ryba.hbase.site['hbase.rest.kerberos.principal']
-        throw Error 'Invalid HBase Rest principal' unless match = /^(.+?)[@\/]/.exec principal
-        hbase.site["hadoop.proxyuser.#{match[1]}.groups"] ?= '*'
-        hbase.site["hadoop.proxyuser.#{match[1]}.hosts"] ?= '*'
+      hadoop_ctxs = ctx.contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
+      for hadoop_ctx in hadoop_ctxs
+        hadoop_ctx.config.ryba ?= {}
+        hadoop_ctx.config.ryba.core_site ?= {}
+        hadoop_ctx.config.ryba.core_site["hadoop.proxyuser.#{hbase.user.name}.hosts"] ?= '*'
+        hadoop_ctx.config.ryba.core_site["hadoop.proxyuser.#{hbase.user.name}.groups"] ?= '*'
 
 ## Configuration for Log4J
 
