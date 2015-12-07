@@ -98,7 +98,7 @@ Example:
       # Group
       hue_docker.group = name: hue_docker.group if typeof hue_docker.group is 'string'
       hue_docker.group ?= {}
-      hue_docker.group.name ?= 'hue'
+      hue_docker.group.name ?= hue_docker.user.name
       hue_docker.group.system ?= true
       hue_docker.user.gid ?= hue_docker.group.name
       hue_docker.clean_tmp ?= true

@@ -69,7 +69,7 @@ Example:
       # Group
       hue.group = name: hue.group if typeof hue.group is 'string'
       hue.group ?= {}
-      hue.group.name ?= 'hue'
+      hue.group.name ?= hue.user.name
       hue.group.system ?= true
       hue.user.gid = hue.group.name
       hue.clean_tmp ?= true
