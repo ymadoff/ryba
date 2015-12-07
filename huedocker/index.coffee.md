@@ -121,19 +121,25 @@ Example:
       # see http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cm_sg_ssl_hue.html
 
       hue_docker.ini['hadoop'] ?= {}
-      # Hue Install defines a dependency on HDFS client
-      nn_protocol = if ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      nn_protocol = 'http' if ryba.hdfs.site['dfs.http.policy'] is 'HTTP_AND_HTTPS' and not hue_docker.ssl_client_ca
-
-      if ryba.hdfs.site['dfs.ha.automatic-failover.enabled'] is 'true'
-        nn_host = ryba.active_nn_host
-        shortname = ctx.contexts(hosts: nn_host)[0].config.shortname
-        nn_http_port = ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address.#{ryba.nameservice}.#{shortname}"].split(':')[1]
-        webhdfs_url = "#{nn_protocol}://#{nn_host}:#{nn_http_port}/webhdfs/v1"
+      # For HDFS HA deployments,  HttpFS is preferred over webhdfs.It should be installed
+      [httpfs_ctx] = ctx.contexts 'ryba/hadoop/httpfs', require('../hadoop/httpfs').configure
+      if httpfs_ctx
+        httpfs_protocol = if httpfs_ctx.config.ryba.httpfs.env.HTTPFS_SSL_ENABLED then 'https' else 'http'
+        httpfs_port = httpfs_ctx.config.ryba.httpfs.http_port
+        webhdfs_url = "#{httpfs_protocol}://#{httpfs_ctx.config.host}:#{httpfs_port}/webhdfs/v1"
       else
-        nn_host = nn_ctxs[0].config.host
-        nn_http_port = ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address"].split(':')[1]
-        webhdfs_url = "#{nn_protocol}://#{nn_host}:#{nn_http_port}/webhdfs/v1"
+        # Hue Install defines a dependency on HDFS client
+        nn_protocol = if ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+        nn_protocol = 'http' if ryba.hdfs.site['dfs.http.policy'] is 'HTTP_AND_HTTPS' and not hue_docker.ssl_client_ca
+        if ryba.hdfs.site['dfs.ha.automatic-failover.enabled'] is 'true'
+          nn_host = ryba.active_nn_host
+          shortname = ctx.contexts(hosts: nn_host)[0].config.shortname
+          nn_http_port = ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address.#{ryba.nameservice}.#{shortname}"].split(':')[1]
+          webhdfs_url = "#{nn_protocol}://#{nn_host}:#{nn_http_port}/webhdfs/v1"
+        else
+          nn_host = nn_ctxs[0].config.host
+          nn_http_port = ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address"].split(':')[1]
+          webhdfs_url = "#{nn_protocol}://#{nn_host}:#{nn_http_port}/webhdfs/v1"
 
       # YARN ResourceManager (MR2 Cluster)
       hue_docker.ini['hadoop']['yarn_clusters'] = {}
@@ -201,13 +207,16 @@ Example:
       else jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.webapp.https.address'].split(':')[1]
       hue_docker.ini['hadoop']['yarn_clusters']['default']['history_server_api_url'] ?= "#{jhs_protocol}://#{jhs_ctx.config.host}:#{jhs_port}"
 
-      # Configure components
       # Oozie
-      hue_docker.ini['liboozie'] ?= {}
-      hue_docker.ini['liboozie']['oozie_url'] ?= ryba.oozie.site['oozie.base.url']
-      hue_docker.ini['hcatalog'] ?= {}
-      hue_docker.ini['hcatalog']['templeton_url'] ?= templeton_url
-      hue_docker.ini['beeswax'] ?= {}
+      [oozie_ctx] = ctx.contexts 'ryba/oozie/server', require('../oozie/server').configure
+      if oozie_ctx
+        hue_docker.ini['liboozie'] ?= {}
+        hue_docker.ini['liboozie']['oozie_url'] ?= oozie_ctx.config.ryba.oozie.site['oozie.base.url']
+        hue_docker.ini['hcatalog'] ?= {}
+        hue_docker.ini['hcatalog']['templeton_url'] ?= templeton_url
+        hue_docker.ini['beeswax'] ?= {}
+      else
+        blacklisted_app.push 'oozie'
       # WebHcat
       [webhcat_ctx] = ctx.contexts 'ryba/hive/webhcat', require('../hive/webhcat').configure
       if webhcat_ctx
