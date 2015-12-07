@@ -37,37 +37,26 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push header: 'Knox # Service', timeout: -1, handler: ->
       @service name: 'knox'
+      @hdp_select name: 'knox-server'
+      # Fix autogen of master secret
+      @remove
+        destination: [
+          '/usr/hdp/current/knox-server/data/security/master'
+          '/usr/hdp/current/knox-server/data/security/keystore'
+        ] 
+        if: @status -2
 
 ## Master Secret
 
-    module.exports.push header: 'Knox # Master Secret', handler: ->
+    module.exports.push header: 'Knox # Master Secret', handler: (options, callback) ->
       {knox} = @config.ryba
-      @fs.exists '/usr/hdp/current/knox-server/data/security/master', (err, exists) ->
-        return next err, false if err or exists
-        @ssh.shell (err, stream) ->
-          return next err if err
-          emitted = done = false
-          stream.write "su -l #{knox.user.name} -c '/usr/hdp/current/knox-server/bin/knoxcli.sh create-master'\n"
-          stream.on 'data', (data, stderr) ->
-            @log[if stderr then 'err' else 'out'].write data
-            data = data.toString()
-            if emitted
-              # Wait the end
-            else if done
-              emitted = true
-              stream.end 'exit\n'
-            else if /Enter master secret:/.test data
-              stream.write "#{knox.master_secret}\n"
-            else if /Enter master secret again:/.test data
-              stream.write "#{knox.master_secret}\n"
-              done = true
-          stream.on 'exit', ->
-            return next Error 'Exit before the end' unless done
-            next null, done
-          stream.pipe @log.out
-          stream.stderr.pipe @log.err
-      # su -l knox -c '$gateway_home/bin/knoxcli.sh create-master'
-      # MySecret
+      @options.ssh.shell (err, stream) =>
+        stream.write "su -l #{knox.user.name} -c '/usr/hdp/current/knox-server/bin/knoxcli.sh create-master'\n"
+        stream.on 'data', (data, extended) ->
+          if /Enter master secret/.test data then stream.write "#{knox.ssl.storepass}\n"
+          if /Master secret is already present on disk/.test data then callback null, false
+          else if /Master secret has been persisted to disk/.test data then callback null, true
+        stream.on 'exit', -> callback Error 'Exit before end'
 
 ## Configure
 
@@ -94,32 +83,32 @@ in the gateway.sh service script.
 
 ## Kerberos
 
-    module.exports.push header: 'Knox # Kerberos', handler: ->
-      {knox, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
-      @krb5_addprinc
-        principal: knox.krb5_user.principal
-        randkey: true
-        keytab: knox.krb5_user.keytab
-        uid: knox.user.name
-        gid: knox.group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
-      @write_jaas
-        destination: knox.site['java.security.auth.login.config']
-        content: 'com.sun.security.jgss.initiate':
-          principal: knox.krb5_user.principal
-          keyTab: knox.krb5_user.keytab
-          renewTGT: true
-          doNotPrompt: true
-          isInitiator: true
-          useTicketCache: true
-          client: true
-        no_entry_check: true
-        uid: knox.user.name
-        gid: knox.group.name
-        mode: 0o600
+    # module.exports.push header: 'Knox # Kerberos', skip: true, handler: ->
+    #   {knox, realm} = @config.ryba
+    #   {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+    #   @krb5_addprinc
+    #     principal: knox.krb5_user.principal
+    #     randkey: true
+    #     keytab: knox.krb5_user.keytab
+    #     uid: knox.user.name
+    #     gid: knox.group.name
+    #     kadmin_principal: kadmin_principal
+    #     kadmin_password: kadmin_password
+    #     kadmin_server: admin_server
+    #   @write_jaas
+    #     destination: knox.site['java.security.auth.login.config']
+    #     content: 'com.sun.security.jgss.initiate':
+    #       principal: knox.krb5_user.principal
+    #       keyTab: knox.krb5_user.keytab
+    #       renewTGT: true
+    #       doNotPrompt: true
+    #       isInitiator: true
+    #       useTicketCache: true
+    #       client: true
+    #     no_entry_check: true
+    #     uid: knox.user.name
+    #     gid: knox.group.name
+    #     mode: 0o600
 
 ## Topologies
 
@@ -157,6 +146,45 @@ in the gateway.sh service script.
           content: doc.end pretty: true
           eof: true
 
+## SSL Certificate
+
+    module.exports.push header: 'Knox # JKS store', handler: ->
+      {knox} = @config.ryba
+      tmp_location = "/var/tmp/ryba/ssl"
+      @upload
+        source: knox.ssl.cacert
+        destination: "#{tmp_location}/#{path.basename knox.ssl.cacert}"
+        mode: 0o0600
+        shy: true
+      @upload
+        source: knox.ssl.cert
+        destination: "#{tmp_location}/#{path.basename knox.ssl.cert}"
+        mode: 0o0600
+        shy: true
+      @upload
+        source: knox.ssl.key
+        destination: "#{tmp_location}/#{path.basename knox.ssl.key}"
+        mode: 0o0600
+        shy: true
+      @java_keystore_add
+        keystore: '/usr/hdp/current/knox-server/data/security/keystores/gateway.jks'
+        storepass: knox.ssl.storepass
+        caname: "hadoop_root_ca"
+        cacert: "#{tmp_location}/#{path.basename knox.ssl.cacert}"
+        key: "#{tmp_location}/#{path.basename knox.ssl.key}"
+        cert: "#{tmp_location}/#{path.basename knox.ssl.cert}"
+        keypass: knox.ssl.storepass # storepass & keypass MUST be the SAME
+        name: 'gateway-identity'
+      @remove
+        destination: "#{tmp_location}/#{path.basename knox.ssl.cacert}"
+        shy: true
+      @remove
+        destination: "#{tmp_location}/#{path.basename knox.ssl.cert}"
+        shy: true
+      @remove
+        destination: "#{tmp_location}/#{path.basename knox.ssl.key}"
+        shy: true
+
 ## LDAP SSL CA Certificate
 
 Knox use Shiro for LDAP authentication and Shiro cannot be configured for 
@@ -183,3 +211,4 @@ client to connect to openldap.
 ## Dependencies
 
     builder = require 'xmlbuilder'
+    path = require 'path'
