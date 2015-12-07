@@ -102,9 +102,11 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       if: -> @config.ryba.active_nn_host is @config.host
       handler: ->
         @register 'kexecute', require '../kexecute'
-        @kexecute
-          krb5_user: @config.ryba.hdfs.krb5_user
-          cmd: "hdfs dfsadmin -rollingUpgrade prepare"
+        # @kexecute
+        #   krb5_user: @config.ryba.hdfs.krb5_user
+        #   cmd: "hdfs dfsadmin -rollingUpgrade prepare"
+        @execute
+          cmd: mkcmd.hdfs @, 'hdfs dfsadmin -rollingUpgrade prepare'
         @wait_execute
           cmd: mkcmd.hdfs @, 'hdfs dfsadmin -rollingUpgrade query | grep "Proceed with rolling upgrade"'
 
