@@ -3,7 +3,6 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/commons/docker'
     module.exports.push 'ryba/hadoop/yarn_rm/wait'
     module.exports.push 'ryba/hadoop/hdfs_nn/wait'
     module.exports.push 'ryba/hbase/thrift/wait'
@@ -21,7 +20,10 @@ command:
 docker start hue_server
 ```
 
-    module.exports.push header: 'Hue Docker # Start', label_true: 'STARTED', handler: ->
+    module.exports.push header: 'Hue Docker # Start', label_true: 'STARTED', timeout: -1, handler: ->
       {hue_docker} = @config.ryba
-      @docker_start
-        container: hue_docker.container
+      # @docker_start
+      #   container: hue_docker.container
+      @service_start
+        name: hue_docker.service
+        if_exists: "/etc/init.d/#{hue_docker.service}"

@@ -310,6 +310,20 @@ ryba/hue:3.8
         service: true
         name: hue_docker.container
 
+## Startup Script
+
+Write startup script to /etc/init.d/service-hue-docker
+
+    module.exports.push header: 'Hue Docker # Startup', handler:  ->
+      {hue_docker} = @config.ryba
+      @render
+        source: "#{__dirname}/resources/#{hue_docker.service}"
+        local_source: true
+        destination: "/etc/init.d/#{hue_docker.service}"
+        context: hue_docker
+      @execute
+        cmd: "chmod +x /etc/init.d/#{hue_docker.service}"
+
 
 ## Dependencies
 

@@ -26,5 +26,8 @@ docker stop hue_server
 
     module.exports.push header: 'Hue Docker # Stop', label_true: 'STOPPED', handler: ->
       {hue_docker} = @config.ryba
-      @docker_stop
-        container: hue_docker.container
+      # @docker_stop
+      #   container: hue_docker.container
+      @service_stop
+        name: hue_docker.service
+        if_exists: "/etc/init.d/#{hue_docker.service}"

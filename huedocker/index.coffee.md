@@ -79,6 +79,7 @@ Example:
       hue_docker.version ?= '3.9'
       hue_docker.image ?= 'ryba/hue'
       hue_docker.container ?= 'hue_server'
+      hue_docker.service ?= 'hue-server-docker'
       hue_docker.build ?= {}
       hue_docker.build.name ?= 'ryba/hue-build'
       hue_docker.build.dockerfile ?= "#{__dirname}/resources/build/Dockerfile"
