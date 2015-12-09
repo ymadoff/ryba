@@ -127,19 +127,19 @@ has finished (logs are only available in yarn-cluster mode).
 
     module.exports.push header: 'Spark Client # Configure',  handler: ->
       {spark, hadoop_group, hadoop_conf_dir, hive} = @config.ryba
-      hdp_select_version = null
+      hdp_current_version = null
       hadoop_conf_dir = '/usr/hdp/current/hadoop-client/conf'
       @execute
         cmd:  "hdp-select versions | tail -1"
       , (err, executed, stdout, stderr) ->
         return next err if err
-        hdp_select_version = stdout.trim() if executed
-        spark.conf['spark.driver.extraJavaOptions'] ?= "-Dhdp.version=#{hdp_select_version}"
-        spark.conf['spark.yarn.am.extraJavaOptions'] ?= "-Dhdp.version=#{hdp_select_version}"
+        hdp_current_version = stdout.trim() if executed
+        spark.conf['spark.driver.extraJavaOptions'] ?= "-Dhdp.version=#{hdp_current_version}"
+        spark.conf['spark.yarn.am.extraJavaOptions'] ?= "-Dhdp.version=#{hdp_current_version}"
       @call ->
         @write
           destination : "#{spark.conf_dir}/java-opts"
-          content: "-Dhdp.version=#{hdp_select_version}"
+          content: "-Dhdp.version=#{hdp_current_version}"
         @hconfigure
           destination: "#{spark.conf_dir}/hive-site.xml"
           properties: hive.site
@@ -149,14 +149,11 @@ has finished (logs are only available in yarn-cluster mode).
           destination : "#{spark.conf_dir}/spark-env.sh"
           context: @config
           backup: true
-        @write
+        @write_properties
           destination: "#{spark.conf_dir}/spark-defaults.conf"
-          write: for k, v of spark.conf
-            match: ///^#{quote k}\ .*$///mg # Seems like space are discarded
-            # match: new RegExp "^#{quote k} .*$", 'mg'
-            replace: if v is null then "" else "#{k} #{v}"
-            append: v isnt null
-          backup: true
+          content: spark.conf
+          merge: true
+          separator: ' '
         @write
           destination: "#{spark.conf_dir}/metrics.properties"
           write: for k, v of spark.metrics
@@ -169,5 +166,6 @@ has finished (logs are only available in yarn-cluster mode).
 
     mkcmd = require '../../lib/mkcmd'
     quote = require 'regexp-quote'
+    string = require 'mecano/lib/misc/string'
 
 [spark-conf]:https://spark.apache.org/docs/latest/configuration.html
