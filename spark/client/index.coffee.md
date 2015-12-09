@@ -58,7 +58,7 @@ of your cluster.
       
       # Configuration
       spark.conf = {}
-      spark.conf['spark.master'] ?= "yarn-client"
+      spark.conf['spark.master'] ?= "local[*]"
       # For [Spark on YARN deployments][[secu]], configuring spark.authenticate to true
       # will automatically handle generating and distributing the shared secret.
       # Each application will use a unique shared secret. 
