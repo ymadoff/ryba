@@ -39,9 +39,9 @@ A list for configuration properties supported by HDP 2.2 is available on the
 ## Configuration for Resource Allocation
 
       memory_per_container = 512
-      rm_memory_max_mb = rm_contexts[0].config.ryba.yarn.site['yarn.scheduler.maximum-allocation-mb']
-      rm_memory_min_mb = rm_contexts[0].config.ryba.yarn.site['yarn.scheduler.minimum-allocation-mb']
-
+      rm_memory_max_mb = rm_contexts[0].config.ryba.yarn.rm.site['yarn.scheduler.maximum-allocation-mb']
+      rm_memory_min_mb = rm_contexts[0].config.ryba.yarn.rm.site['yarn.scheduler.minimum-allocation-mb']
+      
       am_memory_mb = ryba.tez.site['tez.am.resource.memory.mb'] or memory_per_container
       am_memory_mb = Math.min rm_memory_max_mb, am_memory_mb
       am_memory_mb = Math.max rm_memory_min_mb, am_memory_mb

@@ -49,7 +49,7 @@ dfsadmin -fetchImage
 
     module.exports.push header: 'HDFS NN # Backup FSimages & edits', timeout: -1, label_true: 'BACKUPED', handler: ->
       {hdfs} = @config.ryba
-      any_dfs_name_dir = hdfs.site['dfs.namenode.name.dir'].split(',')[0]
+      any_dfs_name_dir = hdfs.nn.site['dfs.namenode.name.dir'].split(',')[0]
       any_dfs_name_dir = any_dfs_name_dir.substr(7) if any_dfs_name_dir.indexOf('file://') is 0
       @backup
         name: 'fs'

@@ -34,6 +34,17 @@ See [REST Gateway Impersonation Configuration][impersonation].
       hbase.site['hbase.master.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.site['hbase.master.kerberos.principal']
       hbase.site['hbase.regionserver.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.site['hbase.regionserver.kerberos.principal']
 
+## Proxy Users
+
+      hbase_ctxs = ctx.contexts modules: ['ryba/hbase/master', 'ryba/hbase/regionserver']
+      for hbase_ctx in hbase_ctxs
+        match = /^(.+?)[@\/]/.exec hbase.site['hbase.rest.kerberos.principal']
+        throw Error 'Invalid HBase Rest principal' unless match
+        hbase_ctx.config.ryba.hbase ?= {}
+        hbase_ctx.config.ryba.hbase.site ?= {}
+        hbase_ctx.config.ryba.hbase.site["hadoop.proxyuser.#{match[1]}.groups"] ?= '*'
+        hbase_ctx.config.ryba.hbase.site["hadoop.proxyuser.#{match[1]}.hosts"] ?= '*'
+
 ## Commands
 
     module.exports.push commands: 'check', modules: 'ryba/hbase/rest/check'

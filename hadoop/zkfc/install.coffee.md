@@ -22,7 +22,7 @@
       {hdfs} = @config.ryba
       @iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hdfs.site['dfs.ha.zkfc.port'], protocol: 'tcp', state: 'NEW', comment: "ZKFC IPC" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hdfs.nn.site['dfs.ha.zkfc.port'], protocol: 'tcp', state: 'NEW', comment: "ZKFC IPC" }
         ]
         if: @config.iptables.action is 'start'
 
@@ -37,10 +37,11 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
       @hdp_select
         name: 'hadoop-hdfs-client' # Not checked
         name: 'hadoop-hdfs-namenode'
-      @write
+      @render
+        destination: '/etc/init.d/hadoop-hdfs-zkfc'
         source: "#{__dirname}/../resources/hadoop-hdfs-zkfc"
         local_source: true
-        destination: '/etc/init.d/hadoop-hdfs-zkfc'
+        context: @config
         mode: 0o0755
         unlink: true
       @execute
@@ -50,16 +51,37 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 ## Configure
 
     module.exports.push header: 'HDFS ZKFC # Configure', timeout: -1, handler: ->
-      {hdfs, hadoop_conf_dir, hadoop_group} = @config.ryba
+      {hdfs, zkfc, core_site, hadoop_group} = @config.ryba
+      @mkdir
+        destination: "#{zkfc.conf_dir}"
       @hconfigure
-        destination: "#{hadoop_conf_dir}/hdfs-site.xml"
+        destination: "#{zkfc.conf_dir}/core-site.xml"
+        properties: core_site
+        backup: true
+      @hconfigure
+        destination: "#{zkfc.conf_dir}/hdfs-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
         local_default: true
-        properties: hdfs.site
+        properties: hdfs.nn.site
         uid: hdfs.user.name
         gid: hadoop_group.name
-        merge: true
         backup: true
+      @render
+        header: 'Environment'
+        destination: "#{zkfc.conf_dir}/hadoop-env.sh"
+        source: "#{__dirname}/../resources/hadoop-env.sh"
+        local_source: true
+        context: @config
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+        mode: 0o755
+        backup: true
+        eof: true
+      @write
+        header: 'Log4j'
+        destination: "#{zkfc.conf_dir}/log4j.properties"
+        source: "#{__dirname}/../resources/log4j.properties"
+        local_source: true
 
 ## Kerberos
 
@@ -74,7 +96,7 @@ stored as "/etc/hadoop/conf/zkfc.jaas"
       {realm, hadoop_group, hdfs, zkfc} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       zkfc_principal = zkfc.principal.replace '_HOST', @config.host
-      nn_principal = hdfs.site['dfs.namenode.kerberos.principal'].replace '_HOST', @config.host
+      nn_principal = hdfs.nn.site['dfs.namenode.kerberos.principal'].replace '_HOST', @config.host
       @krb5_addprinc
         principal: zkfc_principal
         keytab: zkfc.keytab
@@ -87,7 +109,7 @@ stored as "/etc/hadoop/conf/zkfc.jaas"
         if: zkfc_principal isnt nn_principal
       @krb5_addprinc
         principal: nn_principal
-        keytab: hdfs.site['dfs.namenode.keytab.file']
+        keytab: hdfs.nn.site['dfs.namenode.keytab.file']
         randkey: true
         uid: hdfs.user.name
         gid: hadoop_group.name
@@ -128,19 +150,13 @@ setAcl /hadoop-ha sasl:zkfc:cdrwa,sasl:nn:cdrwa,digest:zkfc:ePBwNWc34ehcTu1FTNI7
 ```
 
     module.exports.push header: 'HDFS ZKFC # ZK Auth and ACL', handler: ->
-      {hadoop_conf_dir, core_site, hdfs, zkfc} = @config.ryba
+      {hdfs, core_site, zkfc} = @config.ryba
       acls = []
       # acls.push 'world:anyone:r'
       jaas_user = /^(.*?)[@\/]/.exec(zkfc.principal)?[1]
       acls.push "sasl:#{jaas_user}:cdrwa" if core_site['hadoop.security.authentication'] is 'kerberos'
-      # acls.push "sasl:nn:cdrwa" if core_site['hadoop.security.authentication'] is 'kerberos'
-      @hconfigure
-        destination: "#{hadoop_conf_dir}/core-site.xml"
-        properties: core_site
-        merge: true
-        backup: true
       @write
-        destination: "#{hadoop_conf_dir}/zk-auth.txt"
+        destination: "#{zkfc.conf_dir}/zk-auth.txt"
         content: if zkfc.digest.password then "digest:#{zkfc.digest.name}:#{zkfc.digest.password}" else ""
         uid: hdfs.user.name
         gid: hdfs.group.name
@@ -158,7 +174,7 @@ setAcl /hadoop-ha sasl:zkfc:cdrwa,sasl:nn:cdrwa,digest:zkfc:ePBwNWc34ehcTu1FTNI7
         throw Error "Failed to get digest" unless digest
         acls.push "digest:#{digest}:cdrwa"
       @write
-        destination: "#{hadoop_conf_dir}/zk-acl.txt"
+        destination: "#{zkfc.conf_dir}/zk-acl.txt"
         content: acls.join ','
         uid: hdfs.user.name
         gid: hdfs.group.name
@@ -183,7 +199,7 @@ inserted if ALL users or the HDFS user access is denied.
       header: 'HDFS ZKFC # SSH Fencing'
       if: -> @contexts('ryba/hadoop/hdfs_nn').length > 1
       handler: ->
-        {hdfs, hadoop_conf_dir, ssh_fencing, hadoop_group} = @config.ryba
+        {hdfs, ssh_fencing, hadoop_group} = @config.ryba
         @mkdir
           destination: "#{hdfs.user.home}/.ssh"
           uid: hdfs.user.name
@@ -246,11 +262,12 @@ NameNode, we wait for the active NameNode to take leadership and start the ZKFC 
       timeout: -1
       if: [
         -> @config.ryba.active_nn_host is @config.host
-        -> @config.ryba.hdfs.site['dfs.ha.automatic-failover.enabled'] = 'true'
+        -> @config.ryba.hdfs.nn.site['dfs.ha.automatic-failover.enabled'] = 'true'
       ]
       handler: ->
+        {zkfc} = @config.ryba
         @execute
-          cmd: "yes n | hdfs zkfc -formatZK"
+          cmd: "yes n | hdfs --config #{zkfc.conf_dir} zkfc -formatZK"
           code_skipped: 2
 
 ## Dependencies

@@ -18,14 +18,18 @@ information for the applications running inside YARN.
     module.exports.configure = (ctx) ->
       # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.0/bk_yarn_resource_mgt/content/ref-c2f35f55-fa15-4154-b80a-36df2db297d5.1.html
       # require('../core').configure ctx
-      require('../yarn_client').configure ctx
+      # require('../yarn_client').configure ctx
       {yarn, core_site, realm} = ctx.config.ryba
       yarn.ats ?= {}
+      yarn.ats.log_dir ?= '/var/log/hadoop-yarn'
+      yarn.ats.pid_dir ?= '/var/run/hadoop-yarn'
+      yarn.ats.conf_dir ?= '/etc/hadoop-yarn-timelineserver/conf'
       yarn.ats.opts ?= ''
       yarn.ats.heapsize ?= '1024'
       # The hostname of the Timeline service web application.
       yarn.site['yarn.timeline-service.hostname'] ?= ctx.config.host
       hostname = yarn.site['yarn.timeline-service.hostname']
+      yarn.site['yarn.http.policy'] ?= 'HTTPS_ONLY' # HTTP_ONLY or HTTPS_ONLY or HTTP_AND_HTTPS
       # Advanced Configuration
       yarn.site['yarn.timeline-service.address'] ?= "#{hostname}:10200"
       yarn.site['yarn.timeline-service.webapp.address'] ?= "#{hostname}:8188"

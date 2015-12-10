@@ -42,10 +42,11 @@ script inside "/etc/init.d" and activate it on startup.
       @hdp_select
         name: 'hadoop-hdfs-client' # Not checked
         name: 'hadoop-hdfs-secondarynamenode'
-      @write
+      @render
+        destination: '/etc/init.d/hadoop-hdfs-secondarynamenode'
         source: "#{__dirname}/../resources/secondarynamenode"
         local_source: true
-        destination: '/etc/init.d/hadoop-hdfs-secondarynamenode'
+        context: @config
         mode: 0o0755
         unlink: true
       @execute
@@ -88,13 +89,12 @@ script inside "/etc/init.d" and activate it on startup.
 # Configure
 
     module.exports.push header: 'HDFS SNN # Configure', handler: ->
-      {hdfs, hadoop_conf_dir, hadoop_group} = @config.ryba
+      {hdfs, hadoop_group} = @config.ryba
       @hconfigure
-        destination: "#{hadoop_conf_dir}/hdfs-site.xml"
+        destination: "#{hdfs.snn.conf_dir}/hdfs-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
         local_default: true
         properties: hdfs.site
         uid: hdfs.user
         gid: hadoop_group
-        merge: true
         backup: true

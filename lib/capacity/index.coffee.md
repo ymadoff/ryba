@@ -71,7 +71,7 @@ Normalize configuration.
         ctx.config.ryba ?= {}
         ctx.config.capacity ?= {}
         ctx.config.capacity.remote ?= {}
-        for conf in ['hdfs_site', 'yarn_site', 'mapred_site', 'tez_site', 'hive_site', 'capacity_scheduler', 'hbase_site', 'kafka_broker']
+        for conf in ['hdfs_site', 'rm_yarn_site', 'yarn_site', 'mapred_site', 'tez_site', 'hive_site', 'capacity_scheduler', 'hbase_site', 'kafka_broker']
           ctx.config.capacity[conf] ?= {}
           ctx.config.capacity.remote[conf] ?= {}
         ctx.config.capacity.capacity_scheduler['yarn.scheduler.capacity.resource-calculator'] ?= 'org.apache.hadoop.yarn.util.resource.DominantResourceCalculator'
@@ -172,7 +172,7 @@ depending on the total amout of memory.
       maximum_allocation_vcores = 0
       for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/hadoop/yarn_nm'
-        {cores, disks, cores_yarn, memory_yarn, yarn_site} = ctx.config.capacity
+        {cores, disks, cores_yarn, memory_yarn, rm_yarn_site, yarn_site} = ctx.config.capacity
 
         minimum_container_size = if memory_yarn <= 2*1024*1024*1024 then 128*1024*1024 # 128 MB
         else if memory_yarn <= 4*1024*1024*1024 then 256*1024*1024 # 256 MB
@@ -248,7 +248,7 @@ containers, and load-balancing by spliting the access to the disks.
 
 Raise the number of vcores later allocated for the ResourceManager.
 
-        maximum_allocation_vcores = Math.max maximum_allocation_vcores, yarn_site['yarn.nodemanager.resource.cpu-vcores']
+        maximum_allocation_vcores = Math.max maximum_allocation_vcores, rm_yarn_site['yarn.nodemanager.resource.cpu-vcores']
 
       memory_per_container_mean = for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/hadoop/yarn_nm'
@@ -267,10 +267,10 @@ Raise the number of vcores later allocated for the ResourceManager.
     exports.yarn_rm = (ctxs) ->
       for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/hadoop/yarn_rm'
-        {minimum_allocation_mb, maximum_allocation_mb, maximum_allocation_vcores, yarn_site} = ctx.config.capacity
-        yarn_site['yarn.scheduler.minimum-allocation-mb'] ?= minimum_allocation_mb
-        yarn_site['yarn.scheduler.maximum-allocation-mb'] ?= maximum_allocation_mb
-        yarn_site['yarn.scheduler.minimum-allocation-vcores'] ?= 1
+        {minimum_allocation_mb, maximum_allocation_mb, maximum_allocation_vcores, rm_yarn_site} = ctx.config.capacity
+        rm_yarn_site['yarn.scheduler.minimum-allocation-mb'] ?= minimum_allocation_mb
+        rm_yarn_site['yarn.scheduler.maximum-allocation-mb'] ?= maximum_allocation_mb
+        rm_yarn_site['yarn.scheduler.minimum-allocation-vcores'] ?= 1
 
 The property "yarn.scheduler.maximum-allocation-vcores" should not be larger
 than the value for the yarn.nodemanager.resource.cpu-vcores parameter on any
@@ -279,7 +279,7 @@ allocation limit and a container is eventually granted. Tests in version 2.4
 instead shows that the containers are never granted, and no progress is made by
 the application (zombie state).
 
-        yarn_site['yarn.scheduler.maximum-allocation-vcores'] ?= maximum_allocation_vcores
+        rm_yarn_site['yarn.scheduler.maximum-allocation-vcores'] ?= maximum_allocation_vcores
 
 ## HDFS Client
 
@@ -596,7 +596,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           if ctx.has_any_modules('ryba/hadoop/yarn_rm') and print_yarn_rm
             ws.write "  YARN ResourceManager\n"
             print 'capacity_scheduler', ['yarn.scheduler.capacity.resource-calculator']
-            print 'yarn_site', ['yarn.scheduler.minimum-allocation-mb', 'yarn.scheduler.maximum-allocation-mb', 'yarn.scheduler.minimum-allocation-vcores', 'yarn.scheduler.maximum-allocation-vcores']
+            print 'rm_yarn_site', ['yarn.scheduler.minimum-allocation-mb', 'yarn.scheduler.maximum-allocation-mb', 'yarn.scheduler.minimum-allocation-vcores', 'yarn.scheduler.maximum-allocation-vcores']
           print_yarn_nm = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/yarn_nm').length
           if ctx.has_any_modules('ryba/hadoop/yarn_nm') and print_yarn_nm
             ws.write "  YARN NodeManager\n"
@@ -728,7 +728,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
         print_yarn_rm = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/yarn_rm').length
         if ctx.has_any_modules('ryba/hadoop/yarn_rm') and print_yarn_rm
           server.ryba.yarn ?= {}
-          server.ryba.yarn.site = capacity.yarn_site
+          server.ryba.yarn.rm.site = capacity.rm_yarn_site
           server.ryba.yarn.capacity_scheduler = capacity.capacity_scheduler
         print_yarn_nm = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/yarn_nm').length
         if ctx.has_any_modules('ryba/hadoop/yarn_nm') and print_yarn_nm

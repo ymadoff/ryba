@@ -36,12 +36,12 @@
       {force_check, user, core_site, yarn, oozie} = @config.ryba
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'#, require('../../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1
-        rm_ctx = @context yarn.active_rm_host#, require('../../hadoop/yarn_rm').configure
-        shortname = ".#{rm_ctx.config.shortname}"
+        rm_ctx = rm_ctxs[0]
+        shortname = ".#{rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id']}"
       else
         rm_ctx = rm_ctxs[0]
         shortname = ''
-      rm_address = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{shortname}"]
+      rm_address = rm_ctx.config.ryba.yarn.rm.site["yarn.resourcemanager.address#{shortname}"]
       @write
         content: """
           nameNode=#{core_site['fs.defaultFS']}
@@ -99,12 +99,13 @@
       {force_check, user, core_site, yarn, oozie} = @config.ryba
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'#, require('../../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1
-        rm_ctx = @context yarn.active_rm_host#, require('../../hadoop/yarn_rm').configure
-        shortname = ".#{rm_ctx.config.shortname}"
+        rm_ctx = rm_ctxs[0]
+        # rm_ctx = @context rm_ctxs[0].config.ryba.yarn.active_rm_host#, require('../../hadoop/yarn_rm').configure
+        shortname = ".#{rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id']}"
       else
         rm_ctx = rm_ctxs[0]
         shortname = ''
-      rm_address = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{shortname}"]
+      rm_address = rm_ctx.config.ryba.yarn.rm.site["yarn.resourcemanager.address#{shortname}"]
       # Get the name of the user running the Oozie Server
       os_ctxs = @contexts 'ryba/oozie/server', require('../server').configure
       {oozie} = os_ctxs[0].config.ryba
@@ -203,12 +204,13 @@
       {force_check, user, core_site, yarn, oozie} = @config.ryba
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'#, require('../../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1
-        rm_ctx = @context yarn.active_rm_host#, require('../../hadoop/yarn_rm').configure
-        shortname = ".#{rm_ctx.config.shortname}"
+        rm_ctx = rm_ctxs[0]
+        # rm_ctx = @context rm_ctxs[0].config.ryba.yarn.active_rm_host#, require('../../hadoop/yarn_rm').configure
+        shortname = ".#{rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id']}"
       else
         rm_ctx = rm_ctxs[0]
         shortname = ''
-      rm_address = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{shortname}"]
+      rm_address = rm_ctx.config.ryba.yarn.rm.site["yarn.resourcemanager.address#{shortname}"]
       # Get the name of the user running the Oozie Server
       os_ctxs = @contexts 'ryba/oozie/server', require('../server').configure
       {oozie} = os_ctxs[0].config.ryba
@@ -336,8 +338,9 @@
       {force_check, user, core_site, yarn, oozie} = @config.ryba
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'#, require('../../hadoop/yarn_rm').configure
       if rm_ctxs.length > 1
-        rm_ctx = @context yarn.active_rm_host#, require('../../hadoop/yarn_rm').configure
-        shortname = ".#{rm_ctx.config.shortname}"
+        rm_ctx = rm_ctxs[0]
+        # rm_ctx = @context rm_ctxs[0].config.ryba.yarn.active_rm_host#, require('../../hadoop/yarn_rm').configure
+        shortname = ".#{rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id']}"
       else
         rm_ctx = rm_ctxs[0]
         shortname = ''

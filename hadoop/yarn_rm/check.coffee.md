@@ -17,7 +17,7 @@ mode.
     module.exports.push header: 'YARN RM # Check HA Health', label_true: 'CHECKED', handler: ->
       return next() unless @hosts_with_module('ryba/hadoop/yarn_rm').length > 1
       @execute
-        cmd: mkcmd.hdfs @, "yarn rmadmin -checkHealth #{@config.shortname}"
+        cmd: mkcmd.hdfs @, "yarn --config #{@config.ryba.yarn.rm.conf_dir} rmadmin -checkHealth #{@config.shortname}"
 
 # Dependencies
 

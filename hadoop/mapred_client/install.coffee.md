@@ -54,7 +54,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         default: "#{__dirname}/../resources/mapred-site.xml"
         local_default: true
         properties: mapred.site
-        merge: true
         backup: true
         uid: mapred.user.name
         gid: mapred.group.name

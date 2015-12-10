@@ -17,6 +17,7 @@ The output list can then be saved to the distributed filesystem, and the reducer
       rm_contexts = @contexts 'ryba/hadoop/yarn_rm', require('../yarn_rm').configure
       {static_host, realm, mapred} = @config.ryba
       # Layout
+      mapred.log_dir ?= '/var/log/hadoop-mapreduce' # Default to "/var/log/hadoop-mapreduce/$USER"
       mapred.pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
       # Configuration
       mapred.site['mapreduce.job.counters.max'] ?= 120
@@ -81,10 +82,10 @@ parameter is defined inside the "mapreduce.map.java.opts" and
 "mapreduce.reduce.java.opts" properties.
 
       memory_per_container = 512
-      rm_memory_min_mb = rm_contexts[0].config.ryba.yarn.site['yarn.scheduler.minimum-allocation-mb']
-      rm_memory_max_mb = rm_contexts[0].config.ryba.yarn.site['yarn.scheduler.maximum-allocation-mb']
-      rm_cpu_min = rm_contexts[0].config.ryba.yarn.site['yarn.scheduler.minimum-allocation-vcores']
-      rm_cpu_max = rm_contexts[0].config.ryba.yarn.site['yarn.scheduler.maximum-allocation-mb']
+      rm_memory_min_mb = rm_contexts[0].config.ryba.yarn.rm.site['yarn.scheduler.minimum-allocation-mb']
+      rm_memory_max_mb = rm_contexts[0].config.ryba.yarn.rm.site['yarn.scheduler.maximum-allocation-mb']
+      rm_cpu_min = rm_contexts[0].config.ryba.yarn.rm.site['yarn.scheduler.minimum-allocation-vcores']
+      rm_cpu_max = rm_contexts[0].config.ryba.yarn.rm.site['yarn.scheduler.maximum-allocation-mb']
       yarn_mapred_am_memory_mb = mapred.site['yarn.app.mapreduce.am.resource.mb'] or if memory_per_container > 1024 then 2 * memory_per_container else memory_per_container
       yarn_mapred_am_memory_mb = Math.min rm_memory_max_mb, yarn_mapred_am_memory_mb
       mapred.site['yarn.app.mapreduce.am.resource.mb'] = "#{yarn_mapred_am_memory_mb}"

@@ -4,7 +4,6 @@
 The only declared dependency is "mysql_client" which install the MySQL JDBC
 driver used by Sqoop.
 
-    path = require 'path'
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/commons/mysql_client'
@@ -120,6 +119,10 @@ command][validate].
     module.exports.push header: 'Sqoop # Check', handler: ->
       @execute
         cmd: "sqoop version | grep 'Sqoop [0-9].*'"
+
+## Dependencies
+
+    path = require 'path'
 
 [install]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap10-1.html
 [validate]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap10-4.html

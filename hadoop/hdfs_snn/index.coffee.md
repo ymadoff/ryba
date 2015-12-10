@@ -8,6 +8,8 @@
     module.exports.configure = (ctx) ->
       require('../core').configure ctx
       {ryba} = ctx.config
+      ryba.hdfs.snn ?= {}
+      ryba.hdfs.snn.conf_dir ?= '/etc/hadoop-hdfs-secondarynamenode/conf'
       # Store the temporary images to merge
       ryba.hdfs.site['dfs.namenode.checkpoint.dir'] ?= ['file:///var/hdfs/checkpoint']
       ryba.hdfs.site['dfs.namenode.checkpoint.dir'] = ryba.hdfs.site['dfs.namenode.checkpoint.dir'].join ',' if Array.isArray ryba.hdfs.site['dfs.namenode.checkpoint.dir']

@@ -18,10 +18,10 @@ through SSH over another one where the public key isn't yet deployed.
       {hdfs, active_nn_host} = @config.ryba
       is_ha = @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       # state = if not is_ha or active_nn_host is @config.host then 'active' else 'standby'
-      protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      nameservice = if is_ha then ".#{@config.ryba.hdfs.site['dfs.nameservices']}" else ''
+      protocol = if hdfs.nn.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      nameservice = if is_ha then ".#{@config.ryba.hdfs.nn.site['dfs.nameservices']}" else ''
       shortname = if is_ha then ".#{@config.shortname}" else ''
-      address = hdfs.site["dfs.namenode.#{protocol}-address#{nameservice}#{shortname}"]
+      address = hdfs.nn.site["dfs.namenode.#{protocol}-address#{nameservice}#{shortname}"]
       [_, port] = address.split ':'
       securityEnabled = protocol is 'https'
       @execute
@@ -50,8 +50,9 @@ See More http://hadoop.apache.org/docs/r2.0.2-alpha/hadoop-yarn/hadoop-yarn-site
       if: -> @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       handler: ->
         # return next() unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+        {hdfs} = @config.ryba
         @execute
-          cmd: mkcmd.hdfs @, "hdfs haadmin -checkHealth #{@config.shortname}"
+          cmd: mkcmd.hdfs @, "hdfs --config '#{hdfs.nn.conf_dir}' haadmin -checkHealth #{@config.shortname}"
 
 ## Check FSCK
 
@@ -77,12 +78,12 @@ Attemp to place a file inside HDFS. the file "/etc/passwd" will be placed at
 "/user/{test\_user}/#{@config.host}\_dn".
 
     module.exports.push header: 'HDFS NN # Check HDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
-      {user} = @config.ryba
+      {user, hdfs} = @config.ryba
       @execute
         cmd: mkcmd.test @, """
-        if hdfs dfs -test -f /user/#{user.name}/#{@config.host}-nn; then exit 2; fi
+        if hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -f /user/#{user.name}/#{@config.host}-nn; then exit 2; fi
         echo 'Upload file to HDFS'
-        hdfs dfs -put /etc/passwd /user/#{user.name}/#{@config.host}-nn
+        hdfs --config '#{hdfs.nn.conf_dir}' dfs -put /etc/passwd /user/#{user.name}/#{@config.host}-nn
         """
         code_skipped: 2
 
@@ -98,13 +99,13 @@ for more information.
     module.exports.push header: 'HDFS DN # Check WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
       {hdfs, nameservice, user, active_nn_host} = @config.ryba
       is_ha = @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      nameservice = if is_ha then ".#{@config.ryba.hdfs.site['dfs.nameservices']}" else ''
+      protocol = if hdfs.nn.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      nameservice = if is_ha then ".#{@config.ryba.hdfs.nn.site['dfs.nameservices']}" else ''
       shortname = if is_ha then ".#{@contexts(hosts: active_nn_host)[0].config.shortname}" else ''
-      address = hdfs.site["dfs.namenode.#{protocol}-address#{nameservice}#{shortname}"]
+      address = hdfs.nn.site["dfs.namenode.#{protocol}-address#{nameservice}#{shortname}"]
       @execute
         cmd: mkcmd.test @, """
-        hdfs dfs -touchz check-#{@config.shortname}-webhdfs
+        hdfs --config '#{hdfs.nn.conf_dir}' dfs -touchz check-#{@config.shortname}-webhdfs
         kdestroy
         """
         code_skipped: 2

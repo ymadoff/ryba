@@ -4,6 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/iptables'
+    module.exports.push 'ryba/hadoop/hdfs_client'
     module.exports.push 'ryba/lib/hconfigure'
     module.exports.push 'ryba/lib/hdp_select'
 
@@ -86,7 +87,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Environment
 
     module.exports.push header: 'HDFS HttpFS # Environment', timeout: -1, handler: ->
-      {hdfs, httpfs} = @config.ryba
+      {httpfs} = @config.ryba
       @mkdir
         destination: "#{httpfs.pid_dir}"
         uid: httpfs.user.name
@@ -98,9 +99,9 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         gid: httpfs.group.name
         mode: 0o0755
       @mkdir
-        destination: "#{hdfs.log_dir}" #/#{hdfs.user.name}
-        uid: hdfs.user.name
-        gid: hdfs.group.name
+        destination: "#{httpfs.log_dir}" #/#{hdfs.user.name}
+        uid: httpfs.user.name
+        gid: httpfs.group.name
         parent: true
       @render
         destination: "#{httpfs.conf_dir}/httpfs-env.sh"
@@ -140,7 +141,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       header: 'HDFS HttpFS # SSL'
       if: -> @config.ryba.httpfs.env.HTTPFS_SSL_ENABLED is 'true'
       handler: ->
-          {ssl, ssl_server, ssl_client, hadoop_conf_dir} = @config.ryba
+          {ssl, ssl_server, ssl_client} = @config.ryba
           tmp_location = "/var/tmp/ryba/ssl"
           {httpfs} = @config.ryba
           @upload
@@ -189,7 +190,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         properties: httpfs.site
         uid: httpfs.user.name
         gid: httpfs.group.name
-        merge: true
         backup: true
 
 ## Dependencies

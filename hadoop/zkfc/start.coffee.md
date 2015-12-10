@@ -25,10 +25,10 @@ active NameNode to start first.
         -> @config.ryba.active_nn_host isnt @config.host
       ]
       handler: ->
-        {active_nn_host} = @config.ryba
+        {hdfs, active_nn_host} = @config.ryba
         active_shortname = @contexts(hosts: active_nn_host)[0].config.shortname
         @wait_execute
-          cmd: mkcmd.hdfs @, "hdfs haadmin -getServiceState #{active_shortname}"
+          cmd: mkcmd.hdfs @, "hdfs --config #{hdfs.nn.conf_dir} haadmin -getServiceState #{active_shortname}"
           code_skipped: 255
 
 ## Start
@@ -61,16 +61,20 @@ only run on a NameNode with fencing installed and in normal mode.
 TODO sep 2015: maybe should we simply move this to ZKFC?
 
     module.exports.push header: 'HDFS ZKFC # Start Failover', label_true: 'READY', handler: ->
-      return next() unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      {active_nn_host, standby_nn_host} = @config.ryba
-      active_nn_host = active_nn_host.split('.')[0]
-      standby_nn_host = standby_nn_host.split('.')[0]
+      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
+      return next() unless nn_ctxs.length > 1
+      {hdfs, active_nn_host, standby_nn_host} = @config.ryba # HDFS NN and ZKFC are always on the same host
+      active_nn_ctx = nn_ctxs.filter( (ctx) -> ctx.config.host is active_nn_host)[0]
+      standby_nn_ctx = nn_ctxs.filter( (ctx) -> ctx.config.host isnt active_nn_host)[0]
+      # {active_nn_host, standby_nn_host} = @config.ryba
+      # active_nn_host = active_nn_host.split('.')[0]
+      # standby_nn_host = standby_nn_host.split('.')[0]
       # This command seems to crash the standby namenode when it is made active and
       # when the active_nn is restarting and still in safemode
       @execute
         cmd: mkcmd.hdfs @, """
-        if hdfs haadmin -getServiceState #{active_nn_host} | grep standby;
-        then hdfs haadmin -failover #{standby_nn_host} #{active_nn_host};
+        if hdfs --config #{hdfs.nn.conf_dir} haadmin -getServiceState #{active_nn_ctx.config.shortcut} | grep standby;
+        then hdfs --config #{hdfs.nn.conf_dir} haadmin -failover #{standby_nn_ctx.config.shortcut} #{active_nn_ctx.config.shortcut};
         else exit 2; fi
         """
         code_skipped: 2

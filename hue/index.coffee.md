@@ -108,7 +108,7 @@ Example:
       module.exports.configure_system ctx
       {ryba} = ctx.config
       {hadoop_conf_dir, webhcat, hue, db_admin, core_site, hdfs, yarn} = ryba
-      nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn'
+      nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn').configure
       hue ?= {}
       hue.ini ?= {}
       # todo, this might not work as expected after ha migration
@@ -118,7 +118,7 @@ Example:
       hue.ca_bundle ?= '/etc/hue/conf/trust.pem'
       hue.ssl ?= {}
       hue.ssl.client_ca ?= null
-      throw Error "Property 'hue.ssl.client_ca' required in HA with HTTPS" if nn_ctxs.length > 1 and ryba.hdfs.site['dfs.http.policy'] is 'HTTPS_ONLY' and not hue.ssl.client_ca
+      throw Error "Property 'hue.ssl.client_ca' required in HA with HTTPS" if nn_ctxs.length > 1 and ryba.hdfs.nn.site['dfs.http.policy'] is 'HTTPS_ONLY' and not hue.ssl.client_ca
       # HDFS & YARN url
       # NOTE: default to unencrypted HTTP
       # error is "SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed"
@@ -127,16 +127,16 @@ Example:
       # see http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cm_sg_ssl_hue.html
 
       # Hue Install defines a dependency on HDFS client
-      nn_protocol = if ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      nn_protocol = 'http' if ryba.hdfs.site['dfs.http.policy'] is 'HTTP_AND_HTTPS' and not hue.ssl_client_ca
-      if ryba.hdfs.site['dfs.ha.automatic-failover.enabled'] is 'true'
-        nn_host = ryba.active_nn_host
+      nn_protocol = if nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+      nn_protocol = 'http' if nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.http.policy'] is 'HTTP_AND_HTTPS' and not hue.ssl_client_ca
+      if nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.ha.automatic-failover.enabled'] is 'true'
+        nn_host = nn_ctxs[0].config.ryba.active_nn_host
         shortname = ctx.contexts(hosts: nn_host)[0].config.shortname
-        nn_http_port = ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address.#{ryba.nameservice}.#{shortname}"].split(':')[1]
+        nn_http_port = nn_ctxs[0].config.ryba.hdfs.nn.site["dfs.namenode.#{nn_protocol}-address.#{nn_ctxs[0].config.ryba.nameservice}.#{shortname}"].split(':')[1]
         webhdfs_url = "#{nn_protocol}://#{nn_host}:#{nn_http_port}/webhdfs/v1"
       else
         nn_host = nn_ctxs[0].config.host
-        nn_http_port = hdfs.site["dfs.namenode.#{nn_protocol}-address"].split(':')[1]
+        nn_http_port = nn_ctxs[0].config.ryba.hdfs.nn.site["dfs.namenode.#{nn_protocol}-address"].split(':')[1]
         webhdfs_url = "#{nn_protocol}://#{nn_host}:#{nn_http_port}/webhdfs/v1"
       # Support for RM HA was added in Hue 3.7
       # rm_protocol = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
@@ -161,14 +161,14 @@ Example:
       throw Error "No YARN ResourceManager configured" unless rm_ctxs.length
       is_yarn_ha = rm_ctxs.length > 1
       rm_ctx = rm_ctxs[0]
-      yarn_shortname = if is_yarn_ha then ".#{rm_ctx.config.shortname}" else ''
+      yarn_id = if rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.enabled'] is 'true' then ".#{rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id']}" else ''
       rm_host = rm_ctx.config.host
       # Strange, "rm_rpc_url" default to "http://localhost:8050" which doesnt make
       # any sense since this isnt http
-      rm_rpc_add = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address#{yarn_shortname}"]
+      rm_rpc_add = rm_ctx.config.ryba.yarn.rm.site["yarn.resourcemanager.address#{yarn_id}"]
       rm_rpc_url = "http://#{rm_rpc_add}"
       rm_port = rm_rpc_add.split(':')[1]
-      yarn_api_url = if rm_ctx.config.ryba.yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
+      yarn_api_url = if rm_ctx.config.ryba.yarn.rm.site['yarn.http.policy'] is 'HTTP_ONLY'
       then "http://#{yarn.site['yarn.resourcemanager.webapp.address']}"
       else "https://#{yarn.site['yarn.resourcemanager.webapp.https.address']}"
       # NodeManager

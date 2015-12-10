@@ -23,11 +23,15 @@ applications.
 
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
-      require('../yarn_client').configure ctx
+      # require('../yarn_client').configure ctx
       {host, ryba} = ctx.config
+      ryba.yarn.log_dir ?= '/var/log/hadoop-yarn'
+      ryba.yarn.pid_dir ?= '/var/run/hadoop-yarn'
       ryba.yarn.nm ?= {}
+      ryba.yarn.nm.conf_dir ?= '/etc/hadoop-yarn-nodemanager/conf'
       ryba.yarn.nm.opts ?= ''
       ryba.yarn.nm.heapsize ?= '1024'
+      ryba.yarn.site['yarn.http.policy'] ?= 'HTTPS_ONLY' # HTTP_ONLY or HTTPS_ONLY or HTTP_AND_HTTPS
       # Working Directories (see capacity for server resource discovery)
       ryba.yarn.site['yarn.nodemanager.local-dirs'] ?= ['/var/yarn/local']
       ryba.yarn.site['yarn.nodemanager.local-dirs'] = ryba.yarn.site['yarn.nodemanager.local-dirs'].join ',' if Array.isArray ryba.yarn.site['yarn.nodemanager.local-dirs']
@@ -51,6 +55,11 @@ applications.
       # Fix bug in HDP companion files (missing "s")
       ryba.yarn.site['yarn.nodemanager.log.retain-second'] ?= null
       ryba.yarn.site['yarn.nodemanager.log.retain-seconds'] ?= '604800'
+      # Configurations for History Server (Not sure wether this should be deployed on NMs):
+      ryba.yarn.site['yarn.log-aggregation-enable'] ?= 'true'
+      ryba.yarn.site['yarn.log-aggregation.retain-seconds'] ?= '2592000' #  30 days, how long to keep aggregation logs before deleting them. -1 disables. Be careful, set this too small and you will spam the name node.
+      ryba.yarn.site['yarn.log-aggregation.retain-check-interval-seconds'] ?= '-1' # Time between checks for aggregated log retention. If set to 0 or a negative value then the value is computed as one-tenth of the aggregated log retention time. Be careful, set this too small and you will spam the name node.
+      
       # See '~/www/src/hadoop/hadoop-common/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-api/src/main/java/org/apache/hadoop/yarn/conf/YarnConfiguration.java#263'
       # ryba.yarn.site['yarn.nodemanager.webapp.spnego-principal']
       # ryba.yarn.site['yarn.nodemanager.webapp.spnego-keytab-file']
@@ -63,14 +72,47 @@ applications.
       ryba.container_executor['yarn.nodemanager.log-dirs'] = ryba.yarn.site['yarn.nodemanager.log-dirs']
       ryba.container_executor['banned.users'] ?= 'hfds,yarn,mapred,bin'
       ryba.container_executor['min.user.id'] ?= '0'
-      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm'
+      rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../yarn_rm').configure
       for rm_ctx in rm_ctxs
-        rm_ctx.config.ryba ?= {}
-        rm_ctx.config.ryba.yarn ?= {}
-        rm_ctx.config.ryba.yarn.site ?= {}
-        # Not sure if this is required but since we only apply log retention to the
-        # Yarn RMs, it seems logical to pass them the log directory.
-        rm_ctx.config.ryba.yarn.site['yarn.nodemanager.remote-app-log-dir'] = ryba.yarn.site['yarn.nodemanager.remote-app-log-dir']
+        id = if rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.enabled'] is 'true' then ".#{rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id']}" else ''
+        for property in [
+          'yarn.http.policy'
+          'yarn.log.server.url'
+          'yarn.resourcemanager.principal'
+          'yarn.resourcemanager.cluster-id'
+          'yarn.nodemanager.remote-app-log-dir'
+          'yarn.resourcemanager.ha.enabled'
+          'yarn.resourcemanager.ha.rm-ids'
+          'yarn.resourcemanager.webapp.delegation-token-auth-filter.enabled'
+          "yarn.resourcemanager.address#{id}"
+          "yarn.resourcemanager.scheduler.address#{id}"
+          "yarn.resourcemanager.admin.address#{id}"
+          "yarn.resourcemanager.webapp.address#{id}"
+          "yarn.resourcemanager.webapp.https.address#{id}"
+          "yarn.resourcemanager.resource-tracker.address#{id}"
+        ]
+          ctx.config.ryba.yarn.site[property] ?= rm_ctx.config.ryba.yarn.rm.site[property]
+          
+## Yarn Timeline Server
+
+      [ats_ctx] = ctx.contexts 'ryba/hadoop/yarn_ts', require('../yarn_ts').configure
+      for property in [
+        'yarn.timeline-service.enabled'
+        'yarn.timeline-service.address'
+        'yarn.timeline-service.webapp.address'
+        'yarn.timeline-service.webapp.https.address'
+        'yarn.timeline-service.principal'
+        'yarn.timeline-service.http-authentication.type'
+        'yarn.timeline-service.http-authentication.kerberos.principal'
+      ]
+        ryba.yarn.site[property] ?= if ats_ctx then ats_ctx.config.ryba.yarn.site[property] else null
+
+## Work Preserving Recovery
+
+See ResourceManager for additionnal informations.
+
+      ryba.yarn.site['yarn.nodemanager.recovery.enabled'] ?= 'true'
+      ryba.yarn.site['yarn.nodemanager.recovery.dir'] ?= '/var/yarn/recovery-state'
 
 ## Configuration for CGroups
 
@@ -80,7 +122,7 @@ Resources:
 *   [Using YARN with Cgroups](http://riccomini.name/posts/hadoop/2013-06-14-yarn-with-cgroups/)
 *   [VCore Configuration In Hadoop](http://jason4zhu.blogspot.fr/2014/10/vcore-configuration-in-hadoop.html)
 
-      isLinuxContainer = ryba.yarn.site['yarn.nodemanager.container-executor.class'] is 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor'
+      # isLinuxContainer = ryba.yarn.site['yarn.nodemanager.container-executor.class'] is 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor'
       # ryba.yarn.site['yarn.nodemanager.linux-container-executor.resources-handler.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.util.CgroupsLCEResourcesHandler'
       # ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.hierarchy'] ?= '/hadoop-yarn'
       # ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] ?= 'true'

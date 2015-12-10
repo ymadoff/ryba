@@ -35,7 +35,7 @@ NAME='HBase Master'
 USER='hbase'
 CONF_DIR='/etc/hbase/conf'
 PID_FILE='/var/run/hbase/hbase-hbase-master.pid'
-CMD="su -l $USER -c \"/usr/hdp/current/hbase-master/bin/hbase-daemon.sh --config $CONF_DIR start master\""
+CMD="su - $USER -c \"/usr/hdp/current/hbase-master/bin/hbase-daemon.sh --config $CONF_DIR start master\""
 KILL_FORCE=0
 KILL_SLEEP=10
 

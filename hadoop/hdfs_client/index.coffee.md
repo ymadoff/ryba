@@ -8,7 +8,7 @@
     module.exports.configure = (ctx) ->
       require('../core').configure ctx
       {ryba} = ctx.config
-      ryba.hdfs.site['dfs.domain.socket.path'] ?= '/var/lib/hadoop-hdfs/dn_socket'
+      ryba.hdfs.site['dfs.http.policy'] ?= 'HTTPS_ONLY'
 
 Since Hadoop 2.6, [SaslRpcClient](https://issues.apache.org/jira/browse/HDFS-7546) check
 that targetted server principal matches configured server principal.
@@ -17,10 +17,8 @@ to match. By default any principal ('*') will be authorized, as cross-realm trus
 is already handled by kerberos
 
       ryba.hdfs.site['dfs.namenode.kerberos.principal.pattern'] ?= '*'
-
       require('../hdfs_nn').client_config ctx
       require('../hdfs_dn').client_config ctx
-
 
 ## Commands
 

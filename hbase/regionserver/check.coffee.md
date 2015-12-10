@@ -63,30 +63,31 @@ TODO: move to install
       principal = hbase.site['hbase.regionserver.kerberos.principal'].replace '_HOST', @config.host
       @execute
         cmd: mkcmd.hbase @, """
-        if hbase shell 2>/dev/null <<< "user_permission 'ryba'" | egrep '[1-9][0-9]* row'; then exit 2; fi
+        if hbase shell 2>/dev/null <<< "user_permission '#{hbase.test.default_table}'" | egrep '[1-9][0-9]* row'; then exit 2; fi
         hbase shell 2>/dev/null <<-CMD
-          create 'ryba', 'family1'
-          grant 'ryba', 'RWC', 'ryba'
+          create '#{hbase.test.default_table}', 'family1'
+          grant 'ryba', 'RWC', '#{hbase.test.default_table}'
         CMD
+        hbase shell 2>/dev/null <<< "user_permission '#{hbase.test.default_table}'" | egrep '[1-9][0-9]* row'
         """
         code_skipped: 2
       , (err, executed, stdout) ->
-        hasCreatedTable = /create 'ryba', 'family1'\n0 row/.test stdout
-        hasGrantedAccess = /grant 'ryba', 'RWC', 'ryba'\n0 row/.test stdout
+        hasCreatedTable = ///create '#{hbase.test.default_table}', 'family1'\n0 row///.test stdout
+        hasGrantedAccess = ///grant '#{hbase.test.default_table}', 'RWC', 'ryba'\n0 row///.test stdout
         throw Error 'Invalid command output' if executed and (not hasCreatedTable or not hasGrantedAccess)
       # Note: apply this when namespace are functional
       # @execute
       #   cmd: mkcmd.hbase @, """
-      #   if hbase shell 2>/dev/null <<< "list_namespace_tables 'ryba'" | egrep '[0-9]+ row'; then exit 2; fi
+      #   if hbase shell 2>/dev/null <<< "list_namespace_tables '#{hbase.test.default_table}'" | egrep '[0-9]+ row'; then exit 2; fi
       #   hbase shell 2>/dev/null <<-CMD
-      #     create_namespace 'ryba'
-      #     grant 'ryba', 'RWC', '@ryba'
+      #     create_namespace '#{hbase.test.default_table}'
+      #     grant '#{hbase.test.default_table}', 'RWC', '@ryba'
       #   CMD
       #   """
       #   code_skipped: 2
       # , (err, executed, stdout) ->
-      #   hasCreatedNamespace = /create_namespace 'ryba'\n0 row/.test stdout
-      #   hasGrantedAccess = /grant 'ryba', 'RWC', '@ryba'\n0 row/.test stdout
+      #   hasCreatedNamespace = /create_namespace '#{hbase.test.default_table}'\n0 row/.test stdout
+      #   hasGrantedAccess = /grant '#{hbase.test.default_table}', 'RWC', '@ryba'\n0 row/.test stdout
       #   return  Error 'Invalid command output' if executed and ( not hasCreatedNamespace or not hasGrantedAccess)
       #    err, executed
 

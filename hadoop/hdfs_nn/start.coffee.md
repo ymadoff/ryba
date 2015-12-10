@@ -33,11 +33,6 @@ Wait for HDFS safemode to exit. It isn't enough to start the NameNodes but the
 majority of DataNodes also need to be running.
 
     module.exports.push 'ryba/hadoop/hdfs_nn/wait'
-    # module.exports.push header: 'HDFS NN # Wait Safemode', timeout: -1, label_true: 'READY', handler: ->
-    #   # return next() if @has_module 'ryba/hadoop/hdfs_dn'
-    #   @wait_execute
-    #     cmd: mkcmd.hdfs @, "hdfs dfsadmin -safemode get | grep OFF"
-    #     interval: 3000
 
 
 ## Dependencies

@@ -33,7 +33,7 @@
 
 NAME='Yarn JobHistoryServer'
 USER='yarn'
-CONF_DIR='/etc/hadoop/conf'
+CONF_DIR='{{ryba.yarn.ats.conf_dir}}'
 PID_FILE='/var/run/hadoop-yarn/yarn-yarn-timelineserver.pid'
 CMD="su -l $USER -c \"/usr/hdp/current/hadoop-yarn-timelineserver/sbin/yarn-daemon.sh --config $CONF_DIR start timelineserver\""
 KILL_FORCE=0

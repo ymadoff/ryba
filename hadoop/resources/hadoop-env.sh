@@ -73,10 +73,10 @@ export HADOOP_SECURE_DN_USER=${HADOOP_SECURE_DN_USER:-"{{hdfs.user.name}}"} # RY
 export HADOOP_SSH_OPTS="-o ConnectTimeout=5 -o SendEnv=HADOOP_CONF_DIR"
 
 # History server logs
-export HADOOP_MAPRED_LOG_DIR=/var/log/hadoop-mapreduce/$USER
+export HADOOP_MAPRED_LOG_DIR=${HADOOP_MAPRED_LOG_DIR:-{{ryba.mapred.log_dir}}}
 
 # Where log files are stored in the secure data environment.
-export HADOOP_SECURE_DN_LOG_DIR=/var/log/hadoop/$HADOOP_SECURE_DN_USER
+export HADOOP_SECURE_DN_LOG_DIR={{ryba.hdfs.log_dir}}
 
 # File naming remote slave hosts.  $HADOOP_HOME/conf/slaves by default.
 # export HADOOP_SLAVES=${HADOOP_HOME}/conf/slaves
@@ -94,7 +94,7 @@ export HADOOP_PID_DIR=${HADOOP_PID_DIR:-"{{ryba.hdfs.pid_dir}}"} # RYBA CONF "ry
 export HADOOP_SECURE_DN_PID_DIR=${HADOOP_SECURE_DN_PID_DIR-"{{ryba.hdfs.secure_dn_pid_dir}}"} # RYBA CONF "ryba.hdfs.secure_dn_pid_dir", DONT OVEWRITE
 
 # History server pid
-export HADOOP_MAPRED_PID_DIR=/var/run/hadoop-mapreduce/$USER
+export HADOOP_MAPRED_PID_DIR=${HADOOP_MAPRED_PID_DIR:-{{ryba.mapred.pid_dir}}}
 
 YARN_RESOURCEMANAGER_OPTS="-Dyarn.server.resourcemanager.appsummary.logger=INFO,RMSUMMARY"
 

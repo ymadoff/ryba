@@ -78,6 +78,16 @@ isnt yet started.
         properties: hive.site
         merge: true
         backup: true
+      @render
+        source: "#{__dirname}/../resources/hive-log4j.properties"
+        local_source: true
+        destination: '/etc/hive/conf/hive-log4j.properties'
+        context: @config
+      @render
+        source: "#{__dirname}/../resources/hive-exec-log4j.properties"
+        local_source: true
+        destination: '/etc/hive/conf/hive-exec-log4j.properties'
+        context: @config
 
 ## Env
 
@@ -191,18 +201,6 @@ Create the directories to store the logs and pid information. The properties
         kadmin_password: kadmin_password
         kadmin_server: admin_server
         unless: @has_module('ryba/hive/hcatalog') and hive.site['hive.metastore.kerberos.principal'] is hive.site['hive.server2.authentication.kerberos.principal']
-
-## Logs
-
-    module.exports.push header: 'Hive Server2 # Logs', handler: ->
-      @write
-        source: "#{__dirname}/../../resources/hive/hive-exec-log4j.properties.template"
-        local_source: true
-        destination: '/etc/hive/conf/hive-exec-log4j.properties'
-      @write
-        source: "#{__dirname}/../../resources/hive/hive-log4j.properties.template"
-        local_source: true
-        destination: '/etc/hive/conf/hive-log4j.properties'
 
 ## Ulimit
 

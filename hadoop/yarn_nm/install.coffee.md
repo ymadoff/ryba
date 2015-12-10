@@ -5,7 +5,7 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/info'
     module.exports.push 'masson/core/iptables'
-    module.exports.push 'ryba/hadoop/yarn_client/install'
+    # module.exports.push 'ryba/hadoop/yarn_client/install'
     module.exports.push 'ryba/lib/hconfigure'
     module.exports.push 'ryba/lib/hdp_select'
     # module.exports.push require('./index').configure
@@ -49,20 +49,37 @@ inside "/etc/init.d" and activate it on startup.
       @hdp_select
         name: 'hadoop-yarn-client' # Not checked
         name: 'hadoop-yarn-nodemanager'
-      @write
+      @render
+        destination: '/etc/init.d/hadoop-yarn-nodemanager'
         source: "#{__dirname}/../resources/hadoop-yarn-nodemanager"
         local_source: true
-        destination: '/etc/init.d/hadoop-yarn-nodemanager'
+        context: @config
         mode: 0o0755
         unlink: true
+      @service # Seems like NM complain with message "java.lang.ClassNotFoundException: Class org.apache.hadoop.mapred.ShuffleHandler not found"
+        name: 'hadoop-mapreduce'
+      @hdp_select
+        name: 'hadoop-client'
       @execute
         cmd: "service hadoop-yarn-nodemanager restart"
         if: -> @status -3
 
-    module.exports.push header: 'YARN NM # Directories', timeout: -1, handler: ->
+    module.exports.push header: 'YARN NM # Layout', timeout: -1, handler: ->
       {yarn, hadoop_group} = @config.ryba
       log_dirs = yarn.site['yarn.nodemanager.log-dirs'].split ','
       local_dirs = yarn.site['yarn.nodemanager.local-dirs'].split ','
+      @mkdir
+        destination: "#{yarn.nm.conf_dir}"
+      @mkdir
+        destination: "#{yarn.pid_dir}"
+        uid: yarn.user.name
+        gid: hadoop_group.name
+        mode: 0o0755
+      @mkdir
+        destination: "#{yarn.log_dir}"
+        uid: yarn.user.name
+        gid: yarn.group.name
+        parent: true
       @mkdir
         destination: log_dirs
         uid: yarn.user.name
@@ -104,22 +121,63 @@ SSH connection to the node to gather the memory and CPU informations.
         yarn.site['yarn.nodemanager.resource.memory-mb'] ?= memoryAvailableMb
         yarn.site['yarn.nodemanager.resource.cpu-vcores'] ?= @cpuinfo.length
 
-## Configuration
+## Configure
 
-    module.exports.push header: 'YARN NM # Configuration', handler: ->
-      {yarn, hadoop_conf_dir} = @config.ryba
+    module.exports.push header: 'YARN NM # Configure', handler: ->
+      {core_site, yarn, hdfs, hadoop_group, hadoop_metrics} = @config.ryba
       @hconfigure
-        destination: "#{hadoop_conf_dir}/yarn-site.xml"
+        header: 'Core Site'
+        destination: "#{yarn.nm.conf_dir}/core-site.xml"
+        default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
+        local_default: true
+        properties: core_site
+        backup: true
+      @hconfigure
+        header: 'HDFS Site'
+        destination: "#{yarn.nm.conf_dir}/hdfs-site.xml"
+        properties: hdfs.site
+        backup: true
+      @hconfigure
+        destination: "#{yarn.nm.conf_dir}/yarn-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
         local_default: true
         properties: yarn.site
-        merge: true
+        backup: true
+      @write
+        header: 'Log4j'
+        destination: "#{yarn.nm.conf_dir}/log4j.properties"
+        source: "#{__dirname}/../resources/log4j.properties"
+        local_source: true
+      @render
+        source: "#{__dirname}/../resources/yarn-env.sh"
+        destination: "#{yarn.nm.conf_dir}/yarn-env.sh"
+        local_source: true
+        context: @config
+        uid: yarn.user.name
+        gid: hadoop_group.name
+        mode: 0o0755
+        backup: true
+
+Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collector like Ganglia or Graphite.
+
+      @write_properties
+        header: 'Metrics'
+        destination: "#{yarn.nm.conf_dir}/hadoop-metrics2.properties"
+        content: hadoop_metrics
         backup: true
 
 ## Container Executor
 
+Important: path seems hardcoded to "../etc/hadoop/container-executor.cfg", 
+running `/usr/hdp/current/hadoop-yarn-client/bin/container-executor` will print
+"Configuration file ../etc/hadoop/container-executor.cfg not found." if missing.
+
+The parent directory must be owned by root or it will print: "Caused by:
+ExitCodeException exitCode=24: File File /etc/hadoop/conf must be owned by root,
+but is owned by 2401"
+
     module.exports.push header: 'YARN NM # Container Executor', handler: ->
-      {container_executor, hadoop_conf_dir} = @config.ryba
+      {container_executor, yarn, hadoop_conf_dir} = @config.ryba
       ce_group = container_executor['yarn.nodemanager.linux-container-executor.group']
       ce = '/usr/hdp/current/hadoop-yarn-nodemanager/bin/container-executor';
       @chown
@@ -129,6 +187,9 @@ SSH connection to the node to gather the memory and CPU informations.
       @chmod
         destination: ce
         mode: 0o6050
+      @mkdir
+        destination: "#{hadoop_conf_dir}"
+        uid: 'root'
       @ini
         destination: "#{hadoop_conf_dir}/container-executor.cfg"
         content: container_executor
@@ -137,6 +198,44 @@ SSH connection to the node to gather the memory and CPU informations.
         mode: 0o0640
         separator: '='
         backup: true
+
+## SSL
+
+    module.exports.push header: 'YARN NM # SSL', retry: 0, handler: ->
+      {ssl, ssl_server, ssl_client, yarn} = @config.ryba
+      ssl_client['ssl.client.truststore.location'] = "#{yarn.nm.conf_dir}/truststore"
+      ssl_server['ssl.server.keystore.location'] = "#{yarn.nm.conf_dir}/keystore"
+      ssl_server['ssl.server.truststore.location'] = "#{yarn.nm.conf_dir}/truststore"
+      @hconfigure
+        destination: "#{yarn.nm.conf_dir}/ssl-server.xml"
+        properties: ssl_server
+      @hconfigure
+        destination: "#{yarn.nm.conf_dir}/ssl-client.xml"
+        properties: ssl_client
+      # Client: import certificate to all hosts
+      @java_keystore_add
+        keystore: ssl_client['ssl.client.truststore.location']
+        storepass: ssl_client['ssl.client.truststore.password']
+        caname: "hadoop_root_ca"
+        cacert: "#{ssl.cacert}"
+        local_source: true
+      # Server: import certificates, private and public keys to hosts with a server
+      @java_keystore_add
+        keystore: ssl_server['ssl.server.keystore.location']
+        storepass: ssl_server['ssl.server.keystore.password']
+        caname: "hadoop_root_ca"
+        cacert: "#{ssl.cacert}"
+        key: "#{ssl.key}"
+        cert: "#{ssl.cert}"
+        keypass: ssl_server['ssl.server.keystore.keypassword']
+        name: @config.shortname
+        local_source: true
+      @java_keystore_add
+        keystore: ssl_server['ssl.server.keystore.location']
+        storepass: ssl_server['ssl.server.keystore.password']
+        caname: "hadoop_root_ca"
+        cacert: "#{ssl.cacert}"
+        local_source: true
 
     module.exports.push header: 'YARN NM # Kerberos', handler: ->
       {yarn, hadoop_group, realm} = @config.ryba
@@ -201,13 +300,13 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
 
     module.exports.push 'ryba/hadoop/hdfs_nn/wait'
     module.exports.push header: 'YARN NM # HDFS layout', handler: ->
-      {yarn, hadoop_group} = @config.ryba
+      {yarn, hdfs, hadoop_group} = @config.ryba
       remote_app_log_dir = yarn.site['yarn.nodemanager.remote-app-log-dir']
       @execute
         cmd: mkcmd.hdfs @, """
-        hdfs dfs -mkdir -p #{remote_app_log_dir}
-        hdfs dfs -chown #{yarn.user.name}:#{hadoop_group.name} #{remote_app_log_dir}
-        hdfs dfs -chmod 1777 #{remote_app_log_dir}
+        hdfs --config #{hdfs.dn.conf_dir} dfs -mkdir -p #{remote_app_log_dir}
+        hdfs --config #{hdfs.dn.conf_dir} dfs -chown #{yarn.user.name}:#{hadoop_group.name} #{remote_app_log_dir}
+        hdfs --config #{hdfs.dn.conf_dir} dfs -chmod 1777 #{remote_app_log_dir}
         """
         unless_exec: "[[ hdfs dfs -d #{remote_app_log_dir} ]]"
         code_skipped: 2

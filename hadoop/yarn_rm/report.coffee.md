@@ -9,8 +9,8 @@
 ## Info Memory
 
     module.exports.push header: 'YARN RM # Info Memory', timeout: -1, label_true: 'INFO', handler: (_, callback) ->
-      {hadoop_conf_dir} = @config.ryba
-      properties.read @ssh, "#{hadoop_conf_dir}/yarn-site.xml", (err, config) ->
+      {yarn} = @config.ryba
+      properties.read @ssh, "#{yarn.rm.conf_dir}/yarn-site.xml", (err, config) ->
         return next err if err
         @emit 'report',
           key: 'yarn.scheduler.minimum-allocation-mb'

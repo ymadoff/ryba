@@ -49,10 +49,13 @@ Example:
       require('../core').configure ctx
       {ryba} = ctx.config
       ryba.hdfs ?= {}
+      ryba.hdfs.dn ?= {}
+      ryba.hdfs.dn.conf_dir ?= '/etc/hadoop-hdfs-datanode/conf'
       ryba.hdfs.sysctl ?= {}
       require('../hdfs_nn').client_config ctx
       # Comma separated list of paths. Use the list of directories from $DFS_DATA_DIR.
       # For example, /grid/hadoop/hdfs/dn,/grid1/hadoop/hdfs/dn.
+      ryba.hdfs.site['dfs.http.policy'] ?= 'HTTPS_ONLY'
       ryba.hdfs.site['dfs.datanode.data.dir'] ?= ['file:///var/hdfs/data']
       ryba.hdfs.site['dfs.datanode.data.dir'] = ryba.hdfs.site['dfs.datanode.data.dir'].join ',' if Array.isArray ryba.hdfs.site['dfs.datanode.data.dir']
       # ctx.config.ryba.hdfs.site['dfs.datanode.data.dir.perm'] ?= '750'
@@ -97,7 +100,14 @@ Example:
       # ryba.hdfs.site['dfs.datanode.du.reserved'] ?= '53687091200' # 50GB
       ryba.hdfs.site['dfs.datanode.du.reserved'] ?= '1073741824' # 1GB
       # dfs.datanode.fsdataset.volume.choosing.policy:AvailableSpace 
-      # dfs.datanode.available-space-volume-choosing-policy.balanced-space-preference-fraction:1.0 
+      # dfs.datanode.available-space-volume-choosing-policy.balanced-space-preference-fraction:1.0
+
+## HDFS Short-Circuit Local Reads
+
+[Short Circuit] need to be configured on the DataNode and the client.
+
+      ryba.hdfs.site['dfs.client.read.shortcircuit'] ?= if ctx.has_module 'ryba/hadoop/hdfs_dn' then 'true' else 'false'
+      ryba.hdfs.site['dfs.domain.socket.path'] ?= '/var/lib/hadoop-hdfs/dn_socket'
 
     module.exports.client_config = (ctx) ->
       {ryba} = ctx.config
@@ -105,6 +115,8 @@ Example:
       [dn_ctx] = ctx.contexts 'ryba/hadoop/hdfs_dn', module.exports.configure
       properties = [
         'dfs.datanode.kerberos.principal'
+        'dfs.client.read.shortcircuit'
+        'dfs.domain.socket.path'
       ]
       for property in properties
         ryba.hdfs.site[property] ?= dn_ctx.config.ryba.hdfs.site[property]
@@ -126,3 +138,5 @@ Example:
     module.exports.push commands: 'status', modules: 'ryba/hadoop/hdfs_dn/status'
 
     module.exports.push commands: 'stop', modules: 'ryba/hadoop/hdfs_dn/stop'
+
+[Short Circuit]: https://hadoop.apache.org/docs/r2.4.1/hadoop-project-dist/hadoop-hdfs/ShortCircuitLocalReads.html

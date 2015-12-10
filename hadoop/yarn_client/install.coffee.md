@@ -49,7 +49,7 @@ resourcemanager.
 Properties accepted by the template are: `ryba.yarn.rm_opts`   
 
     module.exports.push header: 'YARN Client # Yarn OPTS', handler: ->
-      {java_home} = @config.java
+      # {java_home} = @config.java
       {yarn, hadoop_group, hadoop_conf_dir} = @config.ryba
       @render
         source: "#{__dirname}/../resources/yarn-env.sh"
@@ -70,7 +70,6 @@ Properties accepted by the template are: `ryba.yarn.rm_opts`
         default: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
         local_default: true
         properties: yarn.site
-        merge: true
         backup: true
         uid: yarn.user.name
         gid: yarn.group.name

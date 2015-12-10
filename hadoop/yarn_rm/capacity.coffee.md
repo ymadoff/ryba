@@ -19,11 +19,11 @@ ResourceCalculator class name is expected.
     
     module.exports.push
       header: 'YARN RM # Capacity Scheduler',
-      if: -> @config.ryba.yarn.site['yarn.resourcemanager.scheduler.class'] is 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
+      if: -> @config.ryba.yarn.rm.site['yarn.resourcemanager.scheduler.class'] is 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
       handler: ->
-        {hadoop_conf_dir, capacity_scheduler} = @config.ryba
+        {yarn, capacity_scheduler} = @config.ryba
         @hconfigure
-          destination: "#{hadoop_conf_dir}/capacity-scheduler.xml"
+          destination: "#{yarn.rm.conf_dir}/capacity-scheduler.xml"
           default: "#{__dirname}/../../resources/core_hadoop/capacity-scheduler.xml"
           local_default: true
           properties: capacity_scheduler

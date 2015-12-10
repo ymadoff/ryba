@@ -147,6 +147,18 @@ isnt yet started.
         properties: hive.site
         merge: true
         backup: true
+      @render
+        header: 'Log4j'
+        destination: "#{hive.conf_dir}/hive-log4j.properties"
+        source: "#{__dirname}/../resources/hive-log4j.properties"
+        local_source: true
+        context: @config
+      @render
+        header: 'Exec Log4j'
+        destination: "#{hive.conf_dir}/hive-exec-log4j.properties"
+        source: "#{__dirname}/../resources/hive-exec-log4j.properties"
+        local_source: true
+        context: @config
       @execute
         cmd: """
         chown -R #{hive.user.name}:#{hive.group.name} #{hive.conf_dir}/
@@ -214,16 +226,6 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-
-    module.exports.push header: 'Hive HCatalog # Logs', handler: ->
-      @write
-        source: "#{__dirname}/../../resources/hive/hive-exec-log4j.properties.template"
-        local_source: true
-        destination: '/etc/hive/conf/hive-exec-log4j.properties'
-      @write
-        source: "#{__dirname}/../../resources/hive/hive-log4j.properties.template"
-        local_source: true
-        destination: '/etc/hive/conf/hive-log4j.properties'
 
 ## Layout
 

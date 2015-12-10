@@ -13,19 +13,18 @@ scanning the table.
 
     module.exports.push header: 'HBase Client # Check Shell', timeout: -1, label_true: 'CHECKED', handler: ->
       {shortname} = @config
-      {force_check} = @config.ryba
-      cmd = mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists 'ryba'\" | grep 'Table ryba does exist'"
+      {force_check, hbase} = @config.ryba
       @wait_execute
-        cmd: cmd
+        cmd: mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists '#{hbase.test.default_table}'\" | grep 'Table ryba does exist'"
       @execute
         cmd: mkcmd.test @, """
         hbase shell 2>/dev/null <<-CMD
-          alter 'ryba', {NAME => '#{shortname}'}
-          put 'ryba', 'my_row', '#{shortname}:my_column', 10
-          scan 'ryba',  {COLUMNS => '#{shortname}'}
+          alter '#{hbase.test.default_table}', {NAME => '#{shortname}'}
+          put '#{hbase.test.default_table}', 'my_row', '#{shortname}:my_column', 10
+          scan '#{hbase.test.default_table}',  {COLUMNS => '#{shortname}'}
         CMD
         """
-        unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"scan 'ryba', {COLUMNS => '#{shortname}'}\" | egrep '[0-9]+ row'"
+        unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"scan '#{hbase.test.default_table}', {COLUMNS => '#{shortname}'}\" | egrep '[0-9]+ row'"
       , (err, executed, stdout) ->
         isRowCreated = RegExp("column=#{shortname}:my_column, timestamp=\\d+, value=10").test stdout
         throw Error 'Invalid command output' if executed and not isRowCreated

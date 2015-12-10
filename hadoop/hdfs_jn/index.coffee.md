@@ -38,12 +38,15 @@ Example:
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
       require('../core').configure ctx
-      nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn'
+      nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn', require('../hdfs_nn').configure
       throw Error "HDFS not configured for HA" unless nn_ctxs.length >= 2
       {ryba} = ctx.config
+      ryba.hdfs.jn ?= {}
+      ryba.hdfs.jn.conf_dir ?= '/etc/hadoop-hdfs-journalnode/conf'
       ryba.hdfs.site['dfs.journalnode.rpc-address'] ?= '0.0.0.0:8485'
       ryba.hdfs.site['dfs.journalnode.http-address'] ?= '0.0.0.0:8480'
       ryba.hdfs.site['dfs.journalnode.https-address'] ?= '0.0.0.0:8481'
+      ryba.hdfs.site['dfs.http.policy'] ?= 'HTTPS_ONLY'
       # Kerberos
       # TODO: Principal should be "jn/{host}@{realm}", however, there is
       # no properties to have a separated keytab between jn and spnego principals
@@ -53,7 +56,7 @@ Example:
       # ryba.hdfs.site['dfs.journalnode.edits.dir'] ?= ['file:///var/hdfs/edits']
       ryba.hdfs.site['dfs.journalnode.edits.dir'] ?= ['/var/hdfs/edits']
       ryba.hdfs.site['dfs.journalnode.edits.dir'] = ryba.hdfs.site['dfs.journalnode.edits.dir'].join ',' if Array.isArray ryba.hdfs.site['dfs.journalnode.edits.dir']
-      ryba.hdfs.site['dfs.namenode.shared.edits.dir'] ?= nn_ctxs[0].config.ryba.hdfs.site['dfs.namenode.shared.edits.dir']
+      ryba.hdfs.site['dfs.namenode.shared.edits.dir'] ?= nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.namenode.shared.edits.dir']
 
 ## Commands
 

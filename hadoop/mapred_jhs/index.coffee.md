@@ -12,10 +12,12 @@ Now the jobHistory Server tends to be replace by the Yarn timeline server.
 
     module.exports.configure = (ctx) ->
       require('masson/core/iptables').configure ctx
-      require('../yarn_client').configure ctx
+      # require('../yarn_client').configure ctx
       # require('./mapred').configure ctx
       {ryba} = ctx.config
       ryba.mapred ?= {}
+      ryba.mapred.jhs ?= {}
+      ryba.mapred.jhs.conf_dir ?= '/etc/hadoop-mapreduce-historyserver/conf'
       ryba.mapred.heapsize ?= '900'
       ryba.mapred.pid_dir ?= '/var/run/hadoop-mapreduce'  # /etc/hadoop/conf/hadoop-env.sh#94
       ryba.mapred.log_dir ?= '/var/log/hadoop-mapreduce' # required by hadoop-env.sh
@@ -32,10 +34,9 @@ Now the jobHistory Server tends to be replace by the Yarn timeline server.
 Note: As of version "2.4.0", the property "mapreduce.jobhistory.http.policy"
 isn't honored. Instead, the property "yarn.http.policy" is used.
 
-      # ryba.mapred.site['mapreduce.jobhistory.http.policy'] ?= 'HTTPS_ONLY' # 'HTTP_ONLY' or 'HTTPS_ONLY'
       rm_contexts = ctx.contexts modules: 'ryba/hadoop/yarn_rm', require('../yarn_rm').configure
-      ryba.yarn.site['yarn.http.policy'] ?= rm_contexts[0].config.ryba.yarn.site['yarn.http.policy']
-      ryba.mapred.site['mapreduce.jobhistory.http.policy'] ?= rm_contexts[0].config.ryba.yarn.site['yarn.http.policy']
+      # ryba.yarn.site['yarn.http.policy'] ?= rm_contexts[0].config.ryba.yarn.site['yarn.http.policy']
+      ryba.mapred.site['mapreduce.jobhistory.http.policy'] ?= rm_contexts[0].config.ryba.yarn.rm.site['yarn.http.policy']
       # See './hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-common/src/main/java/org/apache/hadoop/mapreduce/v2/jobhistory/JHAdminConfig.java#158'
       # yarn.site['mapreduce.jobhistory.webapp.spnego-principal']
       # yarn.site['mapreduce.jobhistory.webapp.spnego-keytab-file']
@@ -97,5 +98,3 @@ They are referenced by [the druid hadoop configuration][druid] and
 
 [druid]: http://druid.io/docs/latest/configuration/hadoop.html
 [amb-mr-site]: https://github.com/apache/ambari/blob/trunk/ambari-server/src/main/resources/stacks/HDP/2.3/services/YARN/configuration-mapred/mapred-site.xml
-
-

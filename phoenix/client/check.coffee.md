@@ -6,8 +6,9 @@ available with the utility named "sqlline.py"
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/yarn_rm/wait'
+    # module.exports.push 'ryba/hadoop/yarn_rm/wait'
     module.exports.push 'ryba/hbase/master/wait'
+    module.exports.push 'ryba/hbase/regionserver/wait'
     # module.exports.push require('../../hbase/client').configure
     # module.exports.push require('./index').configure
 

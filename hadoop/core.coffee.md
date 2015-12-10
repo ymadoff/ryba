@@ -8,7 +8,6 @@ code.
 
 
 *   http://bigdataprocessing.wordpress.com/2013/07/30/hadoop-rack-awareness-and-configuration/
-*   http://ofirm.wordpress.com/2014/01/09/exploring-the-hadoop-network-topology/
 
 [tar]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap13.html
 
@@ -121,8 +120,8 @@ Default configuration:
       ryba.hdfs.user.comment ?= 'Hadoop HDFS User'
       ryba.hdfs.user.home ?= '/var/lib/hadoop-hdfs'
       ryba.hdfs.user.limits ?= {}
-      ryba.hdfs.user.limits.nproc ?= 64000
-      ryba.hdfs.user.limits.nofile ?= 64000
+      ryba.hdfs.user.limits.nproc ?= true
+      ryba.hdfs.user.limits.nofile ?= true
       # Kerberos user for hdfs
       ryba.hdfs.krb5_user ?= {}
       ryba.hdfs.krb5_user.principal ?= "#{ryba.hdfs.user.name}@#{realm}"
@@ -136,8 +135,8 @@ Default configuration:
       ryba.yarn.user.comment ?= 'Hadoop YARN User'
       ryba.yarn.user.home ?= '/var/lib/hadoop-yarn'
       ryba.yarn.user.limits ?= {}
-      ryba.yarn.user.limits.nproc ?= 64000
-      ryba.yarn.user.limits.nofile ?= 64000
+      ryba.yarn.user.limits.nproc ?= true
+      ryba.yarn.user.limits.nofile ?= true
       # Unix user for mapred
       ryba.mapred.user ?= {}
       ryba.mapred.user = name: ryba.mapred.user if typeof ryba.mapred.user is 'string'
@@ -201,7 +200,6 @@ Default configuration:
         active_nn_hosts = namenodes.filter( (server) -> ctx.config.servers[server].ryba?.active_nn )
         throw new Error "Invalid Number of Active NameNodes: #{active_nn_hosts.length}" unless active_nn_hosts.length is 1
         ryba.active_nn_host = active_nn_hosts[0]
-      core_site['net.topology.script.file.name'] ?= "#{ryba.hadoop_conf_dir}/rack_topology.sh"
       # Set the authentication for the cluster. Valid values are: simple or kerberos
       core_site['hadoop.security.authentication'] ?= 'kerberos'
       # Enable authorization for different protocols.
@@ -227,6 +225,9 @@ Default configuration:
       zookeeper_quorum = for zoo_ctx in zoo_ctxs
         "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
       core_site['ha.zookeeper.quorum'] ?= zookeeper_quorum
+      # Topology
+      # http://ofirm.wordpress.com/2014/01/09/exploring-the-hadoop-network-topology/
+      core_site['net.topology.script.file.name'] ?= "#{ryba.hadoop_conf_dir}/rack_topology.sh"
 
 Configuration for HTTP
 
@@ -414,6 +415,31 @@ not handled here.
       @group [hadoop_group, hdfs.group, yarn.group, mapred.group]
       @user [hdfs.user, yarn.user, mapred.user]
 
+    module.exports.push header: 'Hadoop Core # Topology', handler: ->
+      {hdfs, hadoop_conf_dir, hadoop_group} = @config.ryba
+      h_ctxs = @contexts modules: ['ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm']
+      topology = []
+      for h_ctx in h_ctxs
+        rack = if h_ctx.config.ryba?.rack? then h_ctx.config.ryba.rack else ''
+        # topology.push "#{host}  #{rack}"
+        topology.push "#{h_ctx.config.ip}  #{rack}"
+      topology = topology.join("\n")
+      @upload
+        destination: "#{hadoop_conf_dir}/rack_topology.sh"
+        source: "#{__dirname}/../resources/rack_topology.sh"
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+        mode: 0o755
+        backup: true
+      @write
+        destination: "#{hadoop_conf_dir}/rack_topology.data"
+        content: topology
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+        mode: 0o755
+        backup: true
+        eof: true
+
 ## Test User
 
 Create a Unix and Kerberos test user, by default "ryba". Its HDFS home directory
@@ -455,85 +481,6 @@ same keytab file is for now shared between hdfs and yarn services.
         cmd: "su -l #{hdfs.user.name} -c \"klist -kt /etc/security/keytabs/spnego.service.keytab\""
         if: -> @status -1
 
-## Install
-
-Install the "hadoop-client" and "openssl" packages as well as their
-dependecies.
-
-The environment script "hadoop-env.sh" from the HDP companion files is also
-uploaded when the package is first installed or upgraded. Be careful, the
-original file will be overwritten with and user modifications. A copy will be
-made available in the same directory after any modification.
-
-    module.exports.push header: 'Hadoop Core # Install', timeout: -1, handler: ->
-      @service
-        name: 'openssl'
-      @service
-        name: 'hadoop-client'
-      @hdp_select
-        name: 'hadoop-client'
-
-## Env
-
-Maintain the "hadoop-env.sh" file present in the HDP companion File.
-
-The location for JSVC depends on the platform. The Hortonworks documentation
-mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
-correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
-
-    module.exports.push header: 'Hadoop Core # Env', timeout: -1, handler: ->
-      {hadoop_conf_dir, hdfs, hadoop_group} = @config.ryba
-      @render
-        source: "#{__dirname}/resources/hadoop-env.sh"
-        local_source: true
-        context: @config
-        destination: "#{hadoop_conf_dir}/hadoop-env.sh"
-        uid: hdfs.user.name
-        gid: hadoop_group.name
-        mode: 0o755
-        backup: true
-        eof: true
-
-## Configuration
-
-Update the "core-site.xml" configuration file with properties from the
-"ryba.core_site" configuration.
-
-    module.exports.push header: 'Hadoop Core # Configuration', handler: ->
-      {core_site, hadoop_conf_dir} = @config.ryba
-      @hconfigure
-        destination: "#{hadoop_conf_dir}/core-site.xml"
-        default: "#{__dirname}/../resources/core_hadoop/core-site.xml"
-        local_default: true
-        properties: core_site
-        merge: true
-        backup: true
-
-    module.exports.push header: 'Hadoop Core # Topology', handler: ->
-      {hdfs, hadoop_group, hadoop_conf_dir} = @config.ryba
-      h_ctxs = @contexts modules: ['ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm']
-      topology = []
-      for h_ctx in h_ctxs
-        rack = if h_ctx.config.ryba?.rack? then h_ctx.config.ryba.rack else ''
-        # topology.push "#{host}  #{rack}"
-        topology.push "#{h_ctx.config.ip}  #{rack}"
-      topology = topology.join("\n")
-      @upload
-        destination: "#{hadoop_conf_dir}/rack_topology.sh"
-        source: "#{__dirname}/../resources/rack_topology.sh"
-        uid: hdfs.user.name
-        gid: hadoop_group.name
-        mode: 0o755
-        backup: true
-      @write
-        destination: "#{hadoop_conf_dir}/rack_topology.data"
-        content: topology
-        uid: hdfs.user.name
-        gid: hadoop_group.name
-        mode: 0o755
-        backup: true
-        eof: true
-
     module.exports.push header: 'Hadoop Core # Keytabs', timeout: -1, handler: ->
       {hadoop_group} = @config.ryba
       @mkdir
@@ -570,49 +517,6 @@ recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
         unless_exists: '/etc/hadoop/hadoop-http-auth-signature-secret'
 
     module.exports.push 'ryba/hadoop/core_ssl'
-
-    module.exports.push header: 'Hadoop Core # Jars', handler: ->
-      {core_jars} = @config.ryba
-      core_jars = Object.keys(core_jars).map (k) -> core_jars[k]
-      remote_files = null
-      @call (_, callback) ->
-        @fs.readdir '/usr/hdp/current/hadoop-hdfs-client/lib', (err, files) ->
-          remote_files = files unless err
-          callback err
-      @call (_, callback) ->
-        remove_files = []
-        core_jars = for jar in core_jars
-          filtered_files = multimatch remote_files, jar.match
-          remove_files.push (filtered_files.filter (file) -> file isnt jar.filename)...
-          continue if jar.filename in remote_files
-          jar
-        # Remove jar if already uploaded
-        for file in remove_files
-          @remove destination: path.join '/usr/hdp/current/hadoop-hdfs-client/lib', file
-        for jar in core_jars
-          @upload
-            source: jar.source
-            destination: path.join '/usr/hdp/current/hadoop-hdfs-client/lib', "#{jar.filename}"
-            binary: true
-          @upload
-            source: jar.source
-            destination: path.join '/usr/hdp/current/hadoop-yarn-client/lib', "#{jar.filename}"
-            binary: true
-        @then callback
-
-## Hadoop Metrics
-
-Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collector like Ganglia or Graphite.
-
-    module.exports.push header: 'Hadoop Core # Metrics', handler: ->
-      {hadoop_metrics, hadoop_conf_dir} = @config.ryba
-      content = ""
-      for k, v of hadoop_metrics
-        content += "#{k}=#{v}\n" if v?
-      @write
-        destination: "#{hadoop_conf_dir}/hadoop-metrics2.properties"
-        content: content
-        backup: true
 
 ## Dependencies
 

@@ -45,6 +45,8 @@ Example
       zk_port = zk_port[0].config.ryba.zookeeper.port
       # User
       hbase = ryba.hbase ?= {}
+      hbase.test ?= {}
+      hbase.test.default_table ?= 'ryba'
       hbase.user ?= {}
       hbase.user = name: ryba.hbase.user if typeof ryba.hbase.user is 'string'
       hbase.user.name ?= 'hbase'

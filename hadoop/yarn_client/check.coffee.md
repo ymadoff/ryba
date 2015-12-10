@@ -4,6 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     # module.exports.push require('./index').configure
+    module.exports.push 'ryba/hadoop/yarn_ts/wait'
     module.exports.push 'ryba/hadoop/yarn_rm/wait'
 
 ## Check CLI

@@ -58,63 +58,22 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-hdfs-datanode" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push header: 'HDFS DN # Service', handler: ->
-      {hdfs} = @config.ryba
+    module.exports.push header: 'HDFS DN # Service', timeout: -1, handler: ->
       @service
         name: 'hadoop-hdfs-datanode'
       @hdp_select
         name: 'hadoop-hdfs-client' # Not checked
         name: 'hadoop-hdfs-datanode'
-      @write
+      @render
+        destination: '/etc/init.d/hadoop-hdfs-datanode'
         source: "#{__dirname}/../resources/hadoop-hdfs-datanode"
         local_source: true
-        destination: '/etc/init.d/hadoop-hdfs-datanode'
+        context: @config
         mode: 0o0755
         unlink: true
       @execute
         cmd: "service hadoop-hdfs-datanode restart"
         if: -> @status -3
-
-## HA
-
-Update the "hdfs-site.xml" configuration file with the High Availabity properties
-present inside the "hdp.ha\_client\_config" object.
-
-    module.exports.push header: 'HDFS DN # Configure', handler: ->
-      # return next() unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      {hadoop_conf_dir, hdfs, hadoop_group} = @config.ryba
-      @hconfigure
-        destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-        default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
-        local_default: true
-        properties: hdfs.site
-        uid: hdfs.user.name
-        gid: hadoop_group.name
-        merge: true
-        backup: true
-
-# Configure Master
-
-Accoring to [Yahoo!](http://developer.yahoo.com/hadoop/tutorial/module7.html):
-The conf/masters file contains the hostname of the
-SecondaryNameNode. This should be changed from "localhost"
-to the fully-qualified domain name of the node to run the
-SecondaryNameNode service. It does not need to contain
-the hostname of the JobTracker/NameNode machine;
-Also some [interesting info about snn](http://blog.cloudera.com/blog/2009/02/multi-host-secondarynamenode-configuration/)
-
-    module.exports.push
-      header: 'HDFS SNN # Configure Master'
-      if: (-> @host_with_module 'ryba/hadoop/hdfs_snn')
-      handler: ->
-        {hdfs, hadoop_conf_dir, hadoop_group} = @config.ryba
-        # secondary_namenode = @host_with_module 'ryba/hadoop/hdfs_snn'
-        # return unless secondary_namenode
-        @write
-          content: "#{secondary_namenode}"
-          destination: "#{hadoop_conf_dir}/masters"
-          uid: hdfs.user.name
-          gid: hadoop_group.name
 
 ## Layout
 
@@ -131,6 +90,8 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
       pid_dir = pid_dir.replace '$HADOOP_IDENT_STRING', hdfs.user.name
       # TODO, in HDP 2.1, datanode are started as root but in HDP 2.2, we should
       # start it as HDFS and use JAAS
+      @mkdir
+        destination: "#{hdfs.dn.conf_dir}"
       @mkdir
         destination: for dir in hdfs.site['dfs.datanode.data.dir'].split ','
           if dir.indexOf('file://') is 0
@@ -150,6 +111,133 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
         uid: hdfs.user.name
         gid: hdfs.group.name
         parent: true
+
+## Configure
+
+    module.exports.push header: 'HDFS DN', handler: ->
+      {core_site, hdfs, hadoop_group, hadoop_metrics} = @config.ryba
+
+## Core Site
+
+Update the "core-site.xml" configuration file with properties from the
+"ryba.core_site" configuration.
+
+      @hconfigure
+        header: 'Core Site'
+        destination: "#{hdfs.dn.conf_dir}/core-site.xml"
+        default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
+        local_default: true
+        properties: core_site
+        backup: true
+
+## HDFS Site
+
+Update the "hdfs-site.xml" configuration file with the High Availabity properties
+present inside the "hdp.ha\_client\_config" object.
+
+      @hconfigure
+        header: 'HDFS Site'
+        destination: "#{hdfs.dn.conf_dir}/hdfs-site.xml"
+        default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
+        local_default: true
+        properties: hdfs.site
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+        backup: true
+
+## Environment
+
+Maintain the "hadoop-env.sh" file present in the HDP companion File.
+
+The location for JSVC depends on the platform. The Hortonworks documentation
+mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
+correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
+      
+      @render
+        header: 'Environment'
+        destination: "#{hdfs.dn.conf_dir}/hadoop-env.sh"
+        source: "#{__dirname}/../resources/hadoop-env.sh"
+        local_source: true
+        context: @config
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+        mode: 0o755
+        backup: true
+        eof: true
+
+## Log4j
+
+      @write
+        header: 'Log4j'
+        destination: "#{hdfs.dn.conf_dir}/log4j.properties"
+        source: "#{__dirname}/../resources/log4j.properties"
+        local_source: true
+
+## Hadoop Metrics
+
+Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collector like Ganglia or Graphite.
+
+      @write_properties
+        header: 'Metrics'
+        destination: "#{hdfs.dn.conf_dir}/hadoop-metrics2.properties"
+        content: hadoop_metrics
+        backup: true
+
+# Configure Master
+
+Accoring to [Yahoo!](http://developer.yahoo.com/hadoop/tutorial/module7.html):
+The conf/masters file contains the hostname of the
+SecondaryNameNode. This should be changed from "localhost"
+to the fully-qualified domain name of the node to run the
+SecondaryNameNode service. It does not need to contain
+the hostname of the JobTracker/NameNode machine;
+Also some [interesting info about snn](http://blog.cloudera.com/blog/2009/02/multi-host-secondarynamenode-configuration/)
+
+      @write
+        header: 'SNN Master'
+        if: (-> @host_with_module 'ryba/hadoop/hdfs_snn')
+        content: "#{@host_with_module 'ryba/hadoop/hdfs_snn'}"
+        destination: "#{hdfs.dn.conf_dir}/masters"
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+
+## SSL
+
+    module.exports.push header: 'HDFS DN # SSL', retry: 0, handler: ->
+      {ssl, ssl_server, ssl_client, hdfs} = @config.ryba
+      ssl_client['ssl.client.truststore.location'] = "#{hdfs.dn.conf_dir}/truststore"
+      ssl_server['ssl.server.keystore.location'] = "#{hdfs.dn.conf_dir}/keystore"
+      ssl_server['ssl.server.truststore.location'] = "#{hdfs.dn.conf_dir}/truststore"
+      @hconfigure
+        destination: "#{hdfs.dn.conf_dir}/ssl-server.xml"
+        properties: ssl_server
+      @hconfigure
+        destination: "#{hdfs.dn.conf_dir}/ssl-client.xml"
+        properties: ssl_client
+      # Client: import certificate to all hosts
+      @java_keystore_add
+        keystore: ssl_client['ssl.client.truststore.location']
+        storepass: ssl_client['ssl.client.truststore.password']
+        caname: "hadoop_root_ca"
+        cacert: "#{ssl.cacert}"
+        local_source: true
+      # Server: import certificates, private and public keys to hosts with a server
+      @java_keystore_add
+        keystore: ssl_server['ssl.server.keystore.location']
+        storepass: ssl_server['ssl.server.keystore.password']
+        caname: "hadoop_root_ca"
+        cacert: "#{ssl.cacert}"
+        key: "#{ssl.key}"
+        cert: "#{ssl.cert}"
+        keypass: ssl_server['ssl.server.keystore.keypassword']
+        name: @config.shortname
+        local_source: true
+      @java_keystore_add
+        keystore: ssl_server['ssl.server.keystore.location']
+        storepass: ssl_server['ssl.server.keystore.password']
+        caname: "hadoop_root_ca"
+        cacert: "#{ssl.cacert}"
+        local_source: true
 
 ## Kerberos
 

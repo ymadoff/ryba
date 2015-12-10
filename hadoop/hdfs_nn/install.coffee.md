@@ -61,10 +61,11 @@ inside "/etc/init.d" and activate it on startup.
       @hdp_select
         name: 'hadoop-hdfs-client' # Not checked
         name: 'hadoop-hdfs-namenode'
-      @write
+      @render
+        destination: '/etc/init.d/hadoop-hdfs-namenode'
         source: "#{__dirname}/../resources/hadoop-hfds-namenode"
         local_source: true
-        destination: '/etc/init.d/hadoop-hdfs-namenode'
+        context: @config
         mode: 0o0755
         unlink: true
       @execute
@@ -80,7 +81,9 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
     module.exports.push header: 'HDFS NN # Layout', timeout: -1, handler: ->
       {hdfs, hadoop_group} = @config.ryba
       @mkdir
-        destination: for dir in hdfs.site['dfs.namenode.name.dir'].split ','
+        destination: "#{hdfs.nn.conf_dir}"
+      @mkdir
+        destination: for dir in hdfs.nn.site['dfs.namenode.name.dir'].split ','
           if dir.indexOf('file://') is 0
           then dir.substr(7) else dir
         uid: hdfs.user.name
@@ -98,6 +101,99 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
         gid: hdfs.group.name
         parent: true
 
+## Configure
+
+    module.exports.push header: 'HDFS NN # Configure', handler: ->
+      {hdfs, core_site, hadoop_group, hadoop_metrics} = @config.ryba
+      @hconfigure
+        header: 'Core Site'
+        destination: "#{hdfs.nn.conf_dir}/core-site.xml"
+        default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
+        local_default: true
+        properties: core_site
+        backup: true
+      @hconfigure
+        destination: "#{hdfs.nn.conf_dir}/hdfs-site.xml"
+        default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
+        local_default: true
+        properties: hdfs.nn.site
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+        backup: true
+
+## Environment
+
+Maintain the "hadoop-env.sh" file present in the HDP companion File.
+
+The location for JSVC depends on the platform. The Hortonworks documentation
+mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
+correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
+      
+      @render
+        header: 'Environment'
+        destination: "#{hdfs.nn.conf_dir}/hadoop-env.sh"
+        source: "#{__dirname}/../resources/hadoop-env.sh"
+        local_source: true
+        context: @config
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+        mode: 0o755
+        backup: true
+        eof: true
+      @write
+        header: 'Log4j'
+        destination: "#{hdfs.nn.conf_dir}/log4j.properties"
+        source: "#{__dirname}/../resources/log4j.properties"
+        local_source: true
+
+## Hadoop Metrics
+
+Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collector like Ganglia or Graphite.
+
+      @write_properties
+        header: 'Metrics'
+        destination: "#{hdfs.nn.conf_dir}/hadoop-metrics2.properties"
+        content: hadoop_metrics
+        backup: true
+
+## SSL
+
+    module.exports.push header: 'HDFS NN # SSL', retry: 0, handler: ->
+      {ssl, ssl_server, ssl_client, hdfs} = @config.ryba
+      ssl_client['ssl.client.truststore.location'] = "#{hdfs.nn.conf_dir}/truststore"
+      ssl_server['ssl.server.keystore.location'] = "#{hdfs.nn.conf_dir}/keystore"
+      ssl_server['ssl.server.truststore.location'] = "#{hdfs.nn.conf_dir}/truststore"
+      @hconfigure
+        destination: "#{hdfs.nn.conf_dir}/ssl-server.xml"
+        properties: ssl_server
+      @hconfigure
+        destination: "#{hdfs.nn.conf_dir}/ssl-client.xml"
+        properties: ssl_client
+      # Client: import certificate to all hosts
+      @java_keystore_add
+        keystore: ssl_client['ssl.client.truststore.location']
+        storepass: ssl_client['ssl.client.truststore.password']
+        caname: "hadoop_root_ca"
+        cacert: "#{ssl.cacert}"
+        local_source: true
+      # Server: import certificates, private and public keys to hosts with a server
+      @java_keystore_add
+        keystore: ssl_server['ssl.server.keystore.location']
+        storepass: ssl_server['ssl.server.keystore.password']
+        caname: "hadoop_root_ca"
+        cacert: "#{ssl.cacert}"
+        key: "#{ssl.key}"
+        cert: "#{ssl.cert}"
+        keypass: ssl_server['ssl.server.keystore.keypassword']
+        name: @config.shortname
+        local_source: true
+      @java_keystore_add
+        keystore: ssl_server['ssl.server.keystore.location']
+        storepass: ssl_server['ssl.server.keystore.password']
+        caname: "hadoop_root_ca"
+        cacert: "#{ssl.cacert}"
+        local_source: true
+
 ## Kerberos
 
 Create a service principal for this NameNode. The principal is named after
@@ -107,8 +203,8 @@ Create a service principal for this NameNode. The principal is named after
       {realm, hadoop_group, hdfs} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
-        principal: hdfs.site['dfs.namenode.kerberos.principal'].replace '_HOST', @config.host
-        keytab: hdfs.site['dfs.namenode.keytab.file']
+        principal: hdfs.nn.site['dfs.namenode.kerberos.principal'].replace '_HOST', @config.host
+        keytab: hdfs.nn.site['dfs.namenode.keytab.file']
         randkey: true
         uid: hdfs.user.name
         gid: hadoop_group.name
@@ -116,20 +212,6 @@ Create a service principal for this NameNode. The principal is named after
         kadmin_password: kadmin_password
         mode: 0o0600
         kadmin_server: admin_server
-
-## Configure
-
-    module.exports.push header: 'HDFS NN # Configure', handler: ->
-      {hdfs, hadoop_conf_dir, hadoop_group} = @config.ryba
-      @hconfigure
-        destination: "#{hadoop_conf_dir}/hdfs-site.xml"
-        default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
-        local_default: true
-        properties: hdfs.site
-        uid: hdfs.user.name
-        gid: hadoop_group.name
-        merge: true
-        backup: true
 
 ## Ulimit
 
@@ -172,12 +254,12 @@ the file must be specified.  If the value is empty, no hosts are excluded.
       {hdfs} = @config.ryba
       @write
         content: "#{hdfs.include.join '\n'}"
-        destination: "#{hdfs.site['dfs.hosts']}"
+        destination: "#{hdfs.nn.site['dfs.hosts']}"
         eof: true
         backup: true
       @write
         content: "#{hdfs.exclude.join '\n'}"
-        destination: "#{hdfs.site['dfs.hosts.exclude']}"
+        destination: "#{hdfs.nn.site['dfs.hosts.exclude']}"
         eof: true
         backup: true
 
@@ -192,11 +274,10 @@ trusts (via either passphraseless ssh or some other means, such as Kerberos)
 must be established for the accounts used to run Hadoop.
 
     module.exports.push header: 'HDFS NN # Slaves', handler: ->
-      {hadoop_conf_dir} = @config.ryba
-      datanodes = @hosts_with_module 'ryba/hadoop/hdfs_dn'
+      {hdfs} = @config.ryba
       @write
-        content: "#{datanodes.join '\n'}"
-        destination: "#{hadoop_conf_dir}/slaves"
+        content: @contexts('ryba/hadoop/hdfs_dn').map((ctx) -> ctx.config.host).join '\n'
+        destination: "#{hdfs.nn.conf_dir}/slaves"
         eof: true
 
 ## Format
@@ -208,17 +289,17 @@ if the NameNode was formated.
 
     module.exports.push header: 'HDFS NN # Format', timeout: -1, modules: 'ryba/hadoop/hdfs_jn/wait', handler: ->
       {hdfs, active_nn_host, nameservice} = @config.ryba
-      any_dfs_name_dir = hdfs.site['dfs.namenode.name.dir'].split(',')[0]
+      any_dfs_name_dir = hdfs.nn.site['dfs.namenode.name.dir'].split(',')[0]
       any_dfs_name_dir = any_dfs_name_dir.substr(7) if any_dfs_name_dir.indexOf('file://') is 0
       is_hdfs_ha = @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       # For non HA mode
       @execute
-        cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -format\""
+        cmd: "su -l #{hdfs.user.name} -c \"hdfs --config '#{hdfs.nn.conf_dir}' namenode -format\""
         unless: is_hdfs_ha
         unless_exists: "#{any_dfs_name_dir}/current/VERSION"
       # For HA mode, on the leader namenode
       @execute
-        cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -format -clusterId #{nameservice}\""
+        cmd: "su -l #{hdfs.user.name} -c \"hdfs --config '#{hdfs.nn.conf_dir}' namenode -format -clusterId '#{nameservice}'\""
         if: is_hdfs_ha and active_nn_host is @config.host
         unless_exists: "#{any_dfs_name_dir}/current/VERSION"
 
@@ -235,13 +316,11 @@ is only executed on the standby NameNode.
       unless: -> @config.host is @config.ryba.active_nn_host
       handler: ->
         {hdfs, active_nn_host} = @config.ryba
-        # return next() unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-        # return next() if @config.host is active_nn_host
         @wait_connect
           host: active_nn_host
           port: 8020
         @execute
-          cmd: "su -l #{hdfs.user.name} -c \"hdfs namenode -bootstrapStandby -nonInteractive\""
+          cmd: "su -l #{hdfs.user.name} -c \"hdfs --config '#{hdfs.nn.conf_dir}' namenode -bootstrapStandby -nonInteractive\""
           code_skipped: 5
 
 ## Policy
@@ -251,17 +330,16 @@ we need to set/configure the hadoop.security.authorization to true in
 ${HADOOP_CONF_DIR}/core-site.xml
 
     module.exports.push header: 'Hadoop Core # Policy', handler: ->
-      {core_site, hadoop_conf_dir, hadoop_policy} = @config.ryba
+      {core_site, hdfs, hadoop_policy} = @config.ryba
       @hconfigure
-        destination: "#{hadoop_conf_dir}/hadoop-policy.xml"
+        destination: "#{hdfs.nn.conf_dir}/hadoop-policy.xml"
         default: "#{__dirname}/../../resources/core_hadoop/hadoop-policy.xml"
         local_default: true
         properties: hadoop_policy
-        merge: true
         backup: true
         if: core_site['hadoop.security.authorization'] is 'true'
       @execute
-        cmd: mkcmd.hdfs @, 'service hadoop-hdfs-namenode status && hdfs dfsadmin -refreshServiceAcl'
+        cmd: mkcmd.hdfs @, "service hadoop-hdfs-namenode status && hdfs --config '#{hdfs.nn.conf_dir}' dfsadmin -refreshServiceAcl"
         code_skipped: 3
         if: -> @status -1
 

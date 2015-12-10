@@ -33,7 +33,7 @@
 
 NAME='MapReduce JobHistoryServer'
 USER='mapred'
-CONF_DIR='/etc/hadoop/conf'
+CONF_DIR='{{ryba.mapred.jhs.conf_dir}}'
 PID_FILE='/var/run/hadoop-mapreduce/mapred-mapred-historyserver.pid'
 CMD="su -l $USER -c \"export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec && /usr/hdp/current/hadoop-mapreduce-historyserver/sbin/mr-jobhistory-daemon.sh --config $CONF_DIR start historyserver\""
 KILL_FORCE=0

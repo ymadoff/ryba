@@ -54,44 +54,16 @@ script inside "/etc/init.d" and activate it on startup.
       @hdp_select
         name: 'hadoop-mapreduce-client' # Not checked
         name: 'hadoop-mapreduce-historyserver'
-      @write
+      @render
+        destination: '/etc/init.d/hadoop-mapreduce-historyserver'
         source: "#{__dirname}/../resources/hadoop-mapreduce-historyserver"
         local_source: true
-        destination: '/etc/init.d/hadoop-mapreduce-historyserver'
+        context: @config
         mode: 0o0755
         unlink: true
       @execute
         cmd: "service hadoop-mapreduce-historyserver restart"
         if: -> @status -3
-
-## Environnement
-
-Enrich the file "mapred-env.sh" present inside the Hadoop configuration
-directory with the location of the directory storing the process pid.
-
-Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
-
-    module.exports.push header: 'MapReduce JHS # Environnement', handler: ->
-      {mapred, hadoop_conf_dir} = @config.ryba
-      @render
-        destination: "#{hadoop_conf_dir}/mapred-env.sh"
-        source: "#{__dirname}/../resources/mapred-env.sh"
-        context: @config
-        local_source: true
-        backup: true
-
-    module.exports.push header: 'MapReduce JHS # Kerberos', handler: ->
-      {hadoop_conf_dir, mapred, yarn} = @config.ryba
-      @hconfigure
-        destination: "#{hadoop_conf_dir}/yarn-site.xml"
-        properties: yarn.site
-        merge: true
-        backup: true
-      @hconfigure
-        destination: "#{hadoop_conf_dir}/mapred-site.xml"
-        properties: mapred.site
-        merge: true
-        backup: true
 
 ## Layout
 
@@ -100,7 +72,7 @@ Create the log and pid directories.
     module.exports.push header: 'MapReduce Client # System Directories', timeout: -1, handler: ->
       {mapred, hadoop_group} = @config.ryba
       @mkdir
-        destination: "#{mapred.log_dir}/#{mapred.user.name}"
+        destination: "#{mapred.log_dir}"
         uid: mapred.user.name
         gid: hadoop_group.name
         mode: 0o0755
@@ -116,6 +88,113 @@ Create the log and pid directories.
         mode: 0o0750
         parent: true
         if: mapred.site['mapreduce.jobhistory.recovery.store.class'] is 'org.apache.hadoop.mapreduce.v2.hs.HistoryServerLeveldbStateStoreService'
+
+## Configure
+
+Enrich the file "mapred-env.sh" present inside the Hadoop configuration
+directory with the location of the directory storing the process pid.
+
+Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
+
+    module.exports.push header: 'MapReduce JHS # Configure', handler: ->
+      {core_site, mapred, hdfs, yarn, hadoop_metrics, hadoop_group} = @config.ryba
+      @hconfigure
+        header: 'Core Site'
+        destination: "#{mapred.jhs.conf_dir}/core-site.xml"
+        default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
+        local_default: true
+        properties: core_site
+        backup: true
+      @hconfigure
+        destination: "#{mapred.jhs.conf_dir}/hdfs-site.xml"
+        properties: hdfs.site
+        backup: true
+      @hconfigure
+        destination: "#{mapred.jhs.conf_dir}/yarn-site.xml"
+        properties: yarn.site
+        backup: true
+      @hconfigure
+        destination: "#{mapred.jhs.conf_dir}/mapred-site.xml"
+        properties: mapred.site
+        backup: true
+      @write
+        header: 'Log4j'
+        destination: "#{mapred.jhs.conf_dir}/log4j.properties"
+        source: "#{__dirname}/../resources/log4j.properties"
+        local_source: true
+      @render
+        header: 'Mapred Env'
+        destination: "#{mapred.jhs.conf_dir}/mapred-env.sh"
+        source: "#{__dirname}/../resources/mapred-env.sh"
+        context: @config
+        local_source: true
+        backup: true
+      @render
+        header: 'Hadoop Env'
+        source: "#{__dirname}/../resources/hadoop-env.sh"
+        destination: "#{mapred.jhs.conf_dir}/hadoop-env.sh"
+        local_source: true
+        context: @config
+        uid: mapred.user.name
+        gid: hadoop_group.name
+        mode: 0o0755
+        backup: true
+      @render
+        header: 'MapRed Env'
+        source: "#{__dirname}/../resources/mapred-env.sh"
+        destination: "#{mapred.jhs.conf_dir}/mapred-env.sh"
+        local_source: true
+        context: @config
+        uid: mapred.user.name
+        gid: hadoop_group.name
+        mode: 0o0755
+        backup: true
+
+Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collector like Ganglia or Graphite.
+
+      @write_properties
+        header: 'Metrics'
+        destination: "#{mapred.jhs.conf_dir}/hadoop-metrics2.properties"
+        content: hadoop_metrics
+        backup: true
+
+## SSL
+
+    module.exports.push header: 'MapReduce JHS # SSL', retry: 0, handler: ->
+      {ssl, ssl_server, ssl_client, mapred} = @config.ryba
+      ssl_client['ssl.client.truststore.location'] = "#{mapred.jhs.conf_dir}/truststore"
+      ssl_server['ssl.server.keystore.location'] = "#{mapred.jhs.conf_dir}/keystore"
+      ssl_server['ssl.server.truststore.location'] = "#{mapred.jhs.conf_dir}/truststore"
+      @hconfigure
+        destination: "#{mapred.jhs.conf_dir}/ssl-server.xml"
+        properties: ssl_server
+      @hconfigure
+        destination: "#{mapred.jhs.conf_dir}/ssl-client.xml"
+        properties: ssl_client
+      # Client: import certificate to all hosts
+      @java_keystore_add
+        keystore: ssl_client['ssl.client.truststore.location']
+        storepass: ssl_client['ssl.client.truststore.password']
+        caname: "hadoop_root_ca"
+        cacert: "#{ssl.cacert}"
+        local_source: true
+      # Server: import certificates, private and public keys to hosts with a server
+      @java_keystore_add
+        keystore: ssl_server['ssl.server.keystore.location']
+        storepass: ssl_server['ssl.server.keystore.password']
+        caname: "hadoop_root_ca"
+        cacert: "#{ssl.cacert}"
+        key: "#{ssl.key}"
+        cert: "#{ssl.cert}"
+        keypass: ssl_server['ssl.server.keystore.keypassword']
+        name: @config.shortname
+        local_source: true
+      @java_keystore_add
+        keystore: ssl_server['ssl.server.keystore.location']
+        storepass: ssl_server['ssl.server.keystore.password']
+        caname: "hadoop_root_ca"
+        cacert: "#{ssl.cacert}"
+        local_source: true
 
 ## Kerberos
 

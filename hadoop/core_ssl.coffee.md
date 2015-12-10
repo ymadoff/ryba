@@ -66,86 +66,40 @@ keytool -list -v -keystore keystore -alias hadoop
       ssl_server['ssl.server.truststore.password'] ?= 'ryba123'
       ssl_server['ssl.server.truststore.type'] ?= 'jks'
 
-    module.exports.push header: 'Hadoop Core SSL # Configure', retry: 0, handler: ->
-      {ssl_server, ssl_client, hadoop_conf_dir} = @config.ryba
+## SSL
+
+    module.exports.push header: 'HDFS NN # SSL', retry: 0, handler: ->
+      {ssl, ssl_server, ssl_client, hadoop_conf_dir} = @config.ryba
       @hconfigure
         destination: "#{hadoop_conf_dir}/ssl-server.xml"
         properties: ssl_server
-        merge: true
       @hconfigure
         destination: "#{hadoop_conf_dir}/ssl-client.xml"
         properties: ssl_client
-        merge: true
-
-    module.exports.push header: 'Hadoop Core SSL # JKS stores', retry: 0, handler: (_, next) ->
-      {ssl, ssl_server, ssl_client, hadoop_conf_dir} = @config.ryba
-      tmp_location = "/var/tmp/ryba/ssl"
-      modified = false
-      has_modules = @has_any_modules [
-        'ryba/hadoop/hdfs_jn', 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn'
-        'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm'
-      ]
-      @upload
-        source: ssl.cacert
-        destination: "#{tmp_location}/#{path.basename ssl.cacert}"
-        mode: 0o0600
-        shy: true
-      @upload
-        source: ssl.cert
-        destination: "#{tmp_location}/#{path.basename ssl.cert}"
-        mode: 0o0600
-        shy: true
-      @upload
-        source: ssl.key
-        destination: "#{tmp_location}/#{path.basename ssl.key}"
-        mode: 0o0600
-        shy: true
       # Client: import certificate to all hosts
       @java_keystore_add
         keystore: ssl_client['ssl.client.truststore.location']
         storepass: ssl_client['ssl.client.truststore.password']
         caname: "hadoop_root_ca"
-        cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
+        cacert: "#{ssl.cacert}"
+        local_source: true
       # Server: import certificates, private and public keys to hosts with a server
       @java_keystore_add
         keystore: ssl_server['ssl.server.keystore.location']
         storepass: ssl_server['ssl.server.keystore.password']
         caname: "hadoop_root_ca"
-        cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
-        key: "#{tmp_location}/#{path.basename ssl.key}"
-        cert: "#{tmp_location}/#{path.basename ssl.cert}"
+        cacert: "#{ssl.cacert}"
+        key: "#{ssl.key}"
+        cert: "#{ssl.cert}"
         keypass: ssl_server['ssl.server.keystore.keypassword']
         name: @config.shortname
-        if: has_modules
+        local_source: true
       @java_keystore_add
         keystore: ssl_server['ssl.server.keystore.location']
         storepass: ssl_server['ssl.server.keystore.password']
         caname: "hadoop_root_ca"
-        cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
-        if: has_modules
-      @remove
-        destination: "#{tmp_location}/#{path.basename ssl.cacert}"
-        shy: true
-      @remove
-        destination: "#{tmp_location}/#{path.basename ssl.cert}"
-        shy: true
-      @remove
-        destination: "#{tmp_location}/#{path.basename ssl.key}"
-        shy: true
-      @then (err, status) ->
-        return next err, status if err or not status
-        has_modules_map =
-          'ryba/hadoop/hdfs_jn': 'hadoop-hdfs-journalnode'
-          'ryba/hadoop/hdfs_nn': 'hadoop-hdfs-namenode'
-          'ryba/hadoop/hdfs_dn': 'hadoop-hdfs-datanode'
-          'ryba/hadoop/yarn_rm': 'hadoop-yarn-resourcemanager'
-          'ryba/hadoop/yarn_nm': 'hadoop-yarn-namemanode'
-        for m in has_modules
-          @service
-            srv_name: has_modules_map[m]
-            action: 'restart'
-        @then (err) ->
-          next err, status
+        cacert: "#{ssl.cacert}"
+        local_source: true
 
 ## Dependencies
 

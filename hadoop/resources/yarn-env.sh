@@ -1,6 +1,6 @@
 
 export HADOOP_YARN_HOME={{ryba.yarn.home}}
-export YARN_LOG_DIR={{ryba.yarn.log_dir}}/$USER
+export YARN_LOG_DIR={{ryba.yarn.log_dir}}
 export YARN_PID_DIR={{ryba.yarn.pid_dir}}
 export HADOOP_LIBEXEC_DIR={{ryba.hadoop_libexec_dir}}
 export JAVA_HOME={{java.java_home}}
@@ -82,7 +82,7 @@ export YARN_NODEMANAGER_HEAPSIZE={{ryba.yarn.nm.heapsize}}
 # or JAVA_HEAP_MAX with YARN_HEAPMAX as the preferred option of the two.
 export YARN_HISTORYSERVER_HEAPSIZE={{ryba.yarn.ats.heapsize}}
 # Ryba: user defined YARN RM options
-export YARN_HISTORYSERVER_OPTS="${YARN_HISTORYSERVER_OPTS} {{ryba.yarn.ats.opts}}" # RYBA CONF "ryba.yarn.rm_opts", DONT OVERWRITE"
+export YARN_HISTORYSERVER_OPTS="${YARN_HISTORYSERVER_OPTS} {{ryba.yarn.ats.opts}}" # RYBA CONF "ryba.yarn.ats.opts", DONT OVERWRITE"
 
 # Specify the JVM options to be used when starting the NodeManager.
 # These options will be appended to the options specified as YARN_OPTS
@@ -90,7 +90,7 @@ export YARN_HISTORYSERVER_OPTS="${YARN_HISTORYSERVER_OPTS} {{ryba.yarn.ats.opts}
 #export YARN_NODEMANAGER_OPTS=
 
 # Ryba: user defined YARN RM options
-export YARN_NODEMANAGER_OPTS="${YARN_NODEMANAGER_OPTS} {{ryba.yarn.nm.opts}}" # RYBA CONF "ryba.yarn.rm_opts", DONT OVERWRITE"
+export YARN_NODEMANAGER_OPTS="${YARN_NODEMANAGER_OPTS} {{ryba.yarn.nm.opts}}" # RYBA CONF "ryba.yarn_nm.opts", DONT OVERWRITE"
 
 # so that filenames w/ spaces are handled correctly in loops below
 IFS=
