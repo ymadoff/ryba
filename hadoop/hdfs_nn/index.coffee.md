@@ -40,7 +40,7 @@ Example:
       {ryba} = ctx.config
       ryba.hdfs.nn ?= {}
       ryba.hdfs.nn.conf_dir ?= '/etc/hadoop-hdfs-namenode/conf'
-      ryba.hdfs ?= {}
+      ryba.hdfs.nn.core_site ?= {}
       ryba.hdfs.nn.site ?= {}
       ryba.hdfs.nn.site['dfs.http.policy'] ?= 'HTTPS_ONLY' # HTTP_ONLY or HTTPS_ONLY or HTTP_AND_HTTPS
       # throw Error "Missing \"ryba.zkfc_password\" property" unless ryba.zkfc_password

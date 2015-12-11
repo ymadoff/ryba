@@ -110,7 +110,7 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
         destination: "#{hdfs.nn.conf_dir}/core-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
         local_default: true
-        properties: core_site
+        properties: merge {}, core_site, hdfs.nn.core_site
         backup: true
       @hconfigure
         destination: "#{hdfs.nn.conf_dir}/hdfs-site.xml"
@@ -346,3 +346,4 @@ ${HADOOP_CONF_DIR}/core-site.xml
 ## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
+    {merge} = require 'mecano/lib/misc'

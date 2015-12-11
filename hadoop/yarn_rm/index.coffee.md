@@ -24,6 +24,7 @@
       ryba.yarn.pid_dir ?= '/var/run/hadoop-yarn'
       ryba.yarn.rm ?= {}
       ryba.yarn.rm.conf_dir ?= '/etc/hadoop-yarn-resourcemanager/conf'
+      ryba.yarn.rm.core_site ?= {}
       # Enable JAAS/Kerberos connection between YARN RM and ZooKeeper
       ryba.yarn.rm.opts ?= ''
       ryba.yarn.rm.opts = "-Djava.security.auth.login.config=#{ryba.yarn.rm.conf_dir}/yarn-rm.jaas #{ryba.yarn.rm.opts}"
@@ -257,6 +258,9 @@ rmr /rmstore/ZKRMStateRoot
 
     module.exports.push commands: 'stop', modules: 'ryba/hadoop/yarn_rm/stop'
 
+## Dependencies
+
+    {merge} = require 'mecano/lib/misc'
 
 [restart]: http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/ResourceManagerRestart.html
 [ml_root_acl]: http://lucene.472066.n3.nabble.com/Yarn-HA-Zookeeper-ACLs-td4138735.html

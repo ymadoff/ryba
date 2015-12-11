@@ -98,12 +98,13 @@ inside "/etc/init.d" and activate it on startup.
 
     module.exports.push header: 'YARN RM # Configure', handler: ->
       {core_site, hdfs, yarn, mapred, hadoop_group, hadoop_metrics} = @config.ryba
+      console.log yarn.rm.core_site
       @hconfigure
         header: 'Core Site'
         destination: "#{yarn.rm.conf_dir}/core-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
         local_default: true
-        properties: core_site
+        properties: merge {}, core_site, yarn.rm.core_site
         backup: true
       @hconfigure
         header: 'HDFS Site'
@@ -237,6 +238,10 @@ the "ryba/hadoop/hdfs" module for additional information.
         nproc: yarn.user.limits.nproc
 
     module.exports.push 'ryba/hadoop/yarn_rm/capacity'
+
+## Dependencies
+
+    {merge} = require 'mecano/lib/misc'
 
 ## Todo: WebAppProxy.
 
