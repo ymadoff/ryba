@@ -61,7 +61,8 @@ Example:
       # http://docs.confluent.io/1.0.1/kafka-rest/docs/deployment.html#jvm
       kafka.broker.env['KAFKA_HEAP_OPTS'] ?= "-Xmx#{kafka.broker['heapsize']}m -Xms#{kafka.broker['heapsize']}m"
       # Avoid console verbose ouput in a non-rotated kafka.out file
-      kafka.broker.env['KAFKA_LOG4J_OPTS'] ?= "-Dlog4j.configuration=file:$base_dir/../config/log4j.properties -Dkafka.root.logger=INFO, kafkaAppender"
+      # kafka.broker.env['KAFKA_LOG4J_OPTS'] ?= "-Dlog4j.configuration=file:$base_dir/../config/log4j.properties -Dkafka.root.logger=INFO, kafkaAppender"
+      kafka.broker.env['KAFKA_LOG4J_OPTS'] ?= ""
       kafka.broker.log4j ?= {}
       kafka.broker.log4j['log4j.rootLogger'] ?= '${kafka.root.logger}'
       kafka.broker.log4j['log4j.additivity.kafka'] ?= "false"
