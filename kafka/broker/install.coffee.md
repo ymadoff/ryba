@@ -50,6 +50,12 @@ directories.
         name: 'kafka'
       @hdp_select
         name: 'kafka-broker'
+      @write
+        destination: '/etc/init.d/kafka-broker'
+        source: "#{__dirname}/../resources/kafka-broker"
+        local_source: true
+        mode: 0o0755
+        unlink: true
 
 ## Configure
 

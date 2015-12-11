@@ -7,9 +7,10 @@
 ## Stop
 
 Stop the Kafka Broker. You can also stop the server manually with the following
-command:
+tow commands:
 
 ```
+service kafka-broker stop
 su -l kafka -c '/usr/hdp/current/kafka-broker/bin/kafka stop'
 ```
 
