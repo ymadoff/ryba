@@ -23,8 +23,10 @@ running of those scans to produce regular JDBC result sets.
       hbase.site['hbase.rpc.controllerfactory.class'] = 'org.apache.hadoop.hbase.ipc.controller.ServerRpcControllerFactory'
       # [Local Indexing](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.2/bk_installing_manually_book/content/configuring-hbase-for-phoenix.html)
       # The local indexing feature is a technical preview and considered under development.
-      hbase.site['hbase.master.loadbalancer.class'] ?= 'org.apache.phoenix.hbase.index.balancer.IndexLoadBalancer'
-      hbase.site['hbase.coprocessor.master.classes'] ?= 'org.apache.phoenix.hbase.index.master.IndexMasterObserver'
+      # As of dec 2015, dont activate or it will prevent permission from working, displaying a message like
+      # "ERROR: DISABLED: Security features are not available" after a grant 
+      # hbase.site['hbase.master.loadbalancer.class'] ?= 'org.apache.phoenix.hbase.index.balancer.IndexLoadBalancer'
+      # hbase.site['hbase.coprocessor.master.classes'] ?= 'org.apache.phoenix.hbase.index.master.IndexMasterObserver'
       ctx.after
         # TODO: add header support to aspect in mecano
         type: 'service'
