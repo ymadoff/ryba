@@ -120,8 +120,8 @@ Default configuration:
       ryba.hdfs.user.comment ?= 'Hadoop HDFS User'
       ryba.hdfs.user.home ?= '/var/lib/hadoop-hdfs'
       ryba.hdfs.user.limits ?= {}
+      ryba.hdfs.user.limits.nofile ?= 64000
       ryba.hdfs.user.limits.nproc ?= true
-      ryba.hdfs.user.limits.nofile ?= true
       # Kerberos user for hdfs
       ryba.hdfs.krb5_user ?= {}
       ryba.hdfs.krb5_user.principal ?= "#{ryba.hdfs.user.name}@#{realm}"
@@ -135,8 +135,8 @@ Default configuration:
       ryba.yarn.user.comment ?= 'Hadoop YARN User'
       ryba.yarn.user.home ?= '/var/lib/hadoop-yarn'
       ryba.yarn.user.limits ?= {}
+      ryba.yarn.user.limits.nofile ?= 64000
       ryba.yarn.user.limits.nproc ?= true
-      ryba.yarn.user.limits.nofile ?= true
       # Unix user for mapred
       ryba.mapred.user ?= {}
       ryba.mapred.user = name: ryba.mapred.user if typeof ryba.mapred.user is 'string'
@@ -146,8 +146,8 @@ Default configuration:
       ryba.mapred.user.comment ?= 'Hadoop MapReduce User'
       ryba.mapred.user.home ?= '/var/lib/hadoop-mapreduce'
       ryba.mapred.user.limits ?= {}
-      ryba.mapred.user.limits.nproc ?= 64000
       ryba.mapred.user.limits.nofile ?= 64000
+      ryba.mapred.user.limits.nproc ?= 64000
       # Groups
       ryba.hdfs.group ?= {}
       ryba.hdfs.group = name: ryba.hdfs.group if typeof ryba.hdfs.group is 'string'
