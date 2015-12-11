@@ -251,7 +251,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
         for nn_host in nn_hosts
           nn_ctx = @hosts[nn_host]
           require('../hadoop/hdfs_nn').configure nn_ctx
-          protocol = if nn_ctx.config.ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+          protocol = if nn_ctx.config.ryba.hdfs.nn.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
           shortname = nn_ctx.config.shortname
           nameservice = nn_ctx.config.ryba.nameservice
           nn_host = @config.ryba.hdfs.site["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')
@@ -263,16 +263,11 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'#, require('../hadoop/yarn_rm').configure
       rm_hosts = rm_ctxs.map (rm_ctx) -> rm_ctx.config.host
       # Get RM UI port for both HA and non-HA
-      rm_site = rm_ctxs[0].config.ryba.yarn.site
-      unless rm_ctxs.length > 1
-        rm_webapp_port = if rm_site['yarn.http.policy'] is 'HTTP_ONLY'
-        then rm_site['yarn.resourcemanager.webapp.address'].split(':')[1]
-        else rm_site['yarn.resourcemanager.webapp.https.address'].split(':')[1]
-      else
-        shortname = rm_ctxs[0].config.shortname
-        rm_webapp_port = if rm_site['yarn.http.policy'] is 'HTTP_ONLY'
-        then rm_site["yarn.resourcemanager.webapp.address.#{shortname}"].split(':')[1]
-        else rm_site["yarn.resourcemanager.webapp.https.address.#{shortname}"].split(':')[1]
+      rm_site = rm_ctxs[0].config.ryba.yarn.rm.site
+      id = if rm_ctxs.length > 1 then ".#{rm_site['yarn.resourcemanager.ha.id']}" else ''
+      rm_webapp_port = if rm_site['yarn.http.policy'] is 'HTTP_ONLY'
+      then rm_site["yarn.resourcemanager.webapp.address#{id}"].split(':')[1]
+      else rm_site["yarn.resourcemanager.webapp.https.address#{id}"].split(':')[1]
       # YARN NodeManager
       nm_ctxs = @contexts 'ryba/hadoop/yarn_nm'#, require('../hadoop/yarn_nm').configure
       if nm_ctxs.length
