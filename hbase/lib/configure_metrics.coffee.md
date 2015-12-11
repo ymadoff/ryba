@@ -43,15 +43,20 @@ supported contexts are "hbase", "jvm" and "rpc".
       hbase = @config.ryba.hbase
       hbase.metrics ?= {}
       hbase.metrics['*.period'] ?= '60'
+      hbase.metrics_file_discover ?= false
+      hbase.metrics_ganglia_discover ?= true
+      hbase.metrics_graphite_discover ?= true
       # File sink
-      if hbase.metrics['*.sink.file.class']
+      if hbase.metrics_file_discover
         # hbase.metrics['*.sink.file.class'] ?= 'org.apache.hadoop.metrics2.sink.FileSink'
         hbase.metrics['hbase.sink.file.filename'] ?= 'metrics.out' # Default location is "/var/run/hbase/metrics.out"
         hbase.metrics['hbase.sink.file.filename'] ?= 'hbase-metrics.out'
       # Ganglia sink, accepted properties are "servers" and "supportsparse"
       [ganglia_ctx] =  @contexts 'ryba/ganglia/collector', require('../../ganglia/collector').configure
-      if ganglia_ctx and (hbase.metrics['*.sink.ganglia.class'] or hbase.metrics['*.sink.ganglia.class'] is undefined)
-        hbase.metrics['*.sink.ganglia.class'] ?= 'org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31'
+      if ganglia_ctx and hbase.metrics_ganglia_discover
+        hbase.metrics['hbase.sink.ganglia.class'] ?= 'org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31'
+        hbase.metrics['jvm.sink.ganglia.class'] ?= 'org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31'
+        hbase.metrics['rpm.sink.ganglia.class'] ?= 'org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31'
         hbase.metrics['*.sink.ganglia.period'] ?= '10'
         hbase.metrics['*.sink.ganglia.supportsparse'] ?= 'true' # Cant find definition but majority of examples are "true"
         hbase.metrics['*.sink.ganglia.slope'] ?= 'jvm.metrics.gcCount=zero,jvm.metrics.memHeapUsedM=both'
@@ -61,14 +66,11 @@ supported contexts are "hbase", "jvm" and "rpc".
         hbase.metrics['rpc.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
       # Graphite sink, accepted properties are "server_host", "server_port" and "metrics_prefix"
       [graphite_ctx] =  @contexts 'ryba/graphite/collector'
-      if graphite_ctx and (hbase.metrics['*.sink.graphite.class'] or hbase.metrics['*.sink.graphite.class'] is undefined)
-        hbase.metrics['*.sink.graphite.class'] ?= 'org.apache.hadoop.metrics2.sink.GraphiteSink'
+      # if graphite_ctx and (hbase.metrics['*.sink.graphite.class'] or hbase.metrics['*.sink.graphite.class'] is undefined)
+      if graphite_ctx and hbase.metrics_graphite_discover
+        hbase.metrics['hbase.sink.graphite.class'] ?= 'org.apache.hadoop.metrics2.sink.GraphiteSink'
+        hbase.metrics['jvm.sink.graphite.class'] ?= 'org.apache.hadoop.metrics2.sink.GraphiteSink'
+        hbase.metrics['rpc.sink.graphite.class'] ?= 'org.apache.hadoop.metrics2.sink.GraphiteSink'
         hbase.metrics['*.sink.graphite.period'] ?= '10'
-        hbase.metrics['hbase.sink.ganglia.server_host'] ?= "#{graphite_ctx.config.host}:#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
-        hbase.metrics['hbase.sink.ganglia.server_port'] ?= "#{graphite_ctx.config.host}:#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
-        hbase.metrics['jvm.sink.ganglia.server_host'] ?= "#{graphite_ctx.config.host}:#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
-        hbase.metrics['jvm.sink.ganglia.server_port'] ?= "#{graphite_ctx.config.host}:#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
-        hbase.metrics['rpc.sink.ganglia.server_host'] ?= "#{graphite_ctx.config.host}:#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
-        hbase.metrics['rpc.sink.ganglia.server_port'] ?= "#{graphite_ctx.config.host}:#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
-
-  
+        hbase.metrics['*.sink.graphite.server_host'] ?= "#{graphite_ctx.config.host}:#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
+        hbase.metrics['*.sink.graphite.server_port'] ?= "#{graphite_ctx.config.host}:#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
