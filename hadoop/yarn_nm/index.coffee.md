@@ -27,6 +27,7 @@ applications.
       {host, ryba} = ctx.config
       ryba.yarn.log_dir ?= '/var/log/hadoop-yarn'
       ryba.yarn.pid_dir ?= '/var/run/hadoop-yarn'
+      ryba.yarn.home ?= '/usr/hdp/current/hadoop-yarn-nodemanager'
       ryba.yarn.nm ?= {}
       ryba.yarn.nm.conf_dir ?= '/etc/hadoop-yarn-nodemanager/conf'
       ryba.yarn.nm.opts ?= ''
