@@ -7,9 +7,5 @@
     module.exports.push header: 'Kafka Broker # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       {kafka} = @config.ryba
       @execute
-        cmd: """
-        if su - #{kafka.user.name} -c '/usr/hdp/current/kafka-broker/bin/kafka status' | grep 'not running'; then
-          exit 3;
-        fi
-        """
+        cmd: 'service kafka-broker status'
         code_skipped: 3

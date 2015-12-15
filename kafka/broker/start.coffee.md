@@ -17,7 +17,4 @@ su - kafka -c '/usr/hdp/current/kafka-broker/bin/kafka start'
 ```
 
     module.exports.push header: 'Kafka Broker # Start', label_true: 'STARTED', handler: ->
-      {kafka} = @config.ryba
-      @execute
-        cmd: "su - #{kafka.user.name} -c '/usr/hdp/current/kafka-broker/bin/kafka start'"
-        if_exec: "su - #{kafka.user.name} -c '/usr/hdp/current/kafka-broker/bin/kafka status' | grep 'not running'"
+      @service_start name: 'kafka-broker'

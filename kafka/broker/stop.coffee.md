@@ -17,10 +17,7 @@ su -l kafka -c '/usr/hdp/current/kafka-broker/bin/kafka stop'
 The file storing the PID is "/var/run/kafka/kafka.pid".
 
     module.exports.push header: 'Kafka Broker # Stop service', label_true: 'STOPPED', handler: ->
-      {kafka} = @config.ryba
-      @execute
-        cmd: "/usr/hdp/current/kafka-broker/bin/kafka stop"
-        if_exec: "/usr/hdp/current/kafka-broker/bin/kafka status | grep 'running with PID'"
+      @service_stop name: 'kafka-broker'
 
 ## Stop Clean Logs
 
