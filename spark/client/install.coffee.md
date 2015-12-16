@@ -132,7 +132,7 @@ has finished (logs are only available in yarn-cluster mode).
       @execute
         cmd:  "hdp-select versions | tail -1"
       , (err, executed, stdout, stderr) ->
-        return next err if err
+        return err if err
         hdp_current_version = stdout.trim() if executed
         spark.conf['spark.driver.extraJavaOptions'] ?= "-Dhdp.version=#{hdp_current_version}"
         spark.conf['spark.yarn.am.extraJavaOptions'] ?= "-Dhdp.version=#{hdp_current_version}"

@@ -93,6 +93,10 @@ of your cluster.
       spark.conf['spark.yarn.scheduler.heartbeat.interval-ms'] ?= '5000'
       spark.conf['spark.yarn.services'] ?= 'org.apache.spark.deploy.yarn.history.YarnHistoryService'
       spark.conf['spark.yarn.submit.file.replication'] ?= '3'
+      # Set hive.execution.engine to mr by default
+      # Spark 1.4.1 being built against hive 0.13 does not work with hive 1.2.1 in HDP 2.3.2.0
+      # waiting spark 1.5.1
+      @config.ryba.hive.site['hive.execution.engine'] = 'mr'
 
 [secu]: http://spark.apache.org/docs/latest/security.html
 

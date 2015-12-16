@@ -2,7 +2,7 @@
 
 ## Run twice "[Spark Pi][Spark-Pi]" example for validating installation . The configuration is a 10 stages run.
 [Spark on Yarn][Spark-yarn] cluster can turn into two different mode :  yarn-client mode and yarn-cluster mode.
-Spark programs are divide into a driver part and executors part.
+Spark programs are divided into a driver part and executors part.
 The driver program manages the executors task.
 
     module.exports = []
@@ -59,34 +59,85 @@ Validate Spark installation with Pi-example in yarn-client mode.
 
 The yarn client mode makes the driver part of program to run on the local machine.
 The local machine is the one from which the job has been submitted ( called the client ).
-In this mode the driver is the spark master running outside yarn
+In this mode the driver is the spark master running outside yarn.
 
-TODO Search the logs after the job has finished elsewhere, the yarn-client prevent the yarn history 
-server to access logs.
+For current version 1.4.1 of spark (HDP-2.3.2.0), when running in yarn-client mode, the spark
+driver does not copy metrics.properties file as it should. This is fixed in version 1.5.2. at least.
 
-    # module.exports.push header: 'Spark Client  # Check Client Mode', timeout: -1, label_true: 'CHECKED', handler: ->
-    #   {spark} = @config.ryba
-    #   applicationId = ""
-    #   ctx
-    #     .child().execute
-    #           cmd: mkcmd.test ctx, """
-    #                 spark-submit --class org.apache.spark.examples.SparkPi --master yarn-client --num-executors 2 --driver-memory 512m --executor-memory 512m --executor-cores 1 #{spark.client_dir}/lib/spark-examples*.jar 10 2>&1 /dev/null | grep -m 1 "proxy\/application_"
-    #                 """
-    #   , (err, executed, stdout, stderr) ->
-    #     return err if err
-    #     tracking_url_result = stdout.trim().split("/") if executed
-    #     applicationId =tracking_url_result[tracking_url_result.length - 2]
-    #     ctx
-    #         .child().execute
-    #               cmd: mkcmd.test ctx, """
-    #                     yarn logs -applicationId #{applicationId} 2>&1 /dev/null | grep -m 1 "Pi is roughly"
-    #                     """
-    #       , (err, executed, stdout, stderr) ->
-    #         return next err if err
-    #         log_result = stdout.split(" ")
-    #         pi = parseFloat(log_result[log_result.length - 1])
-    #         return next null, true if pi>3.00 and pi<3.20
-    #         return next null, false
+    module.exports.push header: 'Spark Client # Check Yarn Client', timeout: -1, label_true: 'CHECKED', handler: ->
+      {spark, force_check} = @config.ryba
+      file_check = "check-#{@config.shortname}-spark-client"
+      applicationId = null
+      @execute
+        cmd: mkcmd.test @, """
+          spark-submit \
+            --class org.apache.spark.examples.SparkPi \
+            --queue default \
+            --master yarn-client --num-executors 2 --driver-memory 512m \
+            --executor-memory 512m --executor-cores 1 \
+            #{spark.client_dir}/lib/spark-examples*.jar 10 2>&1 /dev/null \
+          | grep -m 1 "Pi is roughly";
+        """
+        unless_exec : unless force_check then mkcmd.test @, "hdfs dfs -test -f #{file_check}"
+      , (err, executed, stdout, stderr) ->
+        return err if err
+        log_result = stdout.split(" ")
+        pi = parseFloat(log_result[log_result.length - 1])
+        return Error 'Invalid Output' unless pi > 3.00 and pi < 3.20
+        return
+      @execute
+        cmd: mkcmd.test @, """
+        hdfs dfs -touchz #{file_check}
+        """
+        if: -> @status -1
+
+## Spark Shell Scala
+
+Test spark-shell, in yarn-client mode. Spark-shell supports onyl local[*] mode and
+yarn-client mode, not yarn-cluster.
+TODO: Check hive communication with sparkSql queries
+
+    module.exports.push header: 'Spark Client # Check Spark Scala-Shell', timeout: -1, label_true: 'CHECKED', handler: ->
+      {spark, force_check} = @config.ryba
+      file_check = "check-#{@config.shortname}-spark-shell-scala"
+      directory = "check-#{@config.shortname}-spark_shell_scala"
+      db = "check_#{@config.shortname}_spark_shell_scala"
+      @execute
+        cmd: mkcmd.test @, """
+        echo 'println(\"spark_shell_scala\")' | spark-shell --master yarn-client 2>/dev/null | grep ^spark_shell_scala$
+        """
+        unless_exec : unless force_check then mkcmd.test @, "hdfs dfs -test -f #{file_check}"
+      , (err, executed, stdout) ->
+        return err if err
+        return Error 'Invalid Output' unless stdout.indexOf 'spark_shell_scala' > -1
+        return
+      @execute
+        cmd: mkcmd.test @, """
+        hdfs dfs -touchz #{file_check}
+        """
+        if: -> @status -1
+
+## Spark Shell Python
+
+    module.exports.push header: 'Spark Client # Check Spark Python-Shell', timeout: -1, label_true: 'CHECKED', handler: ->
+      {spark, force_check} = @config.ryba
+      file_check = "check-#{@config.shortname}-spark-shell-python"
+      directory = "check-#{@config.shortname}-spark_shell_python"
+      db = "check_#{@config.shortname}_spark_shell_python"
+      @execute
+        cmd: mkcmd.test @, """
+        echo 'print \"spark_shell_python\"' | pyspark  --master yarn-client 2>/dev/null | grep ^spark_shell_python$
+        """
+        unless_exec : unless force_check then mkcmd.test @, "hdfs dfs -test -f #{file_check}"
+      , (err, executed, stdout) ->
+        return err if err
+        return Error 'Invalid Output' unless stdout.indexOf 'spark_shell_python' > -1
+        return
+      @execute
+        cmd: mkcmd.test @, """
+        hdfs dfs -touchz #{file_check}
+        """
+        if: -> @status -1
 
 ## Check Python
 
