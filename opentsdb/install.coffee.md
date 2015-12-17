@@ -95,12 +95,9 @@ OpenTSDB archive comes with an RPM
 
     module.exports.push header: 'OpenTSDB # Configure', handler: ->
       {opentsdb} = @config.ryba
-      @write
+      @write_properties
         destination: '/etc/opentsdb/opentsdb.conf'
-        write: for k, v of opentsdb.config
-          match: new RegExp "^(#+ *|)#{k} =.*$", 'm'
-          replace: "#{k} = #{v}"
-          append: true
+        content: opentsdb.config
         backup: true
 
 ## HBase Table
