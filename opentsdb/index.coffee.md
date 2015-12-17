@@ -43,9 +43,11 @@ OpenTSDB does not seem to work without the hbase rights
       opentsdb.config['tsd.network.port'] ?= 4242
       opentsdb.config['tsd.storage.hbase.zk_basedir'] ?= hbase.site['zookeeper.znode.parent']
       opentsdb.config['hbase.security.authentication'] ?= hbase.site['hbase.security.authentication']
-      opentsdb.config['hbase.kerberos.regionserver.principal'] ?= hbase.site['hbase.regionserver.kerberos.principal']
-      opentsdb.config['java.security.auth.login.config'] ?= '/etc/opentsdb/opentsdb.jaas'
-      opentsdb.config['hbase.sasl.clientconfig'] ?= 'Client'
+      if opentsdb.config['hbase.security.authentication'] is 'kerberos'
+        opentsdb.config['hbase.security.auth.enable'] ?= 'true' 
+        opentsdb.config['hbase.kerberos.regionserver.principal'] ?= hbase.site['hbase.regionserver.kerberos.principal']
+        opentsdb.config['java.security.auth.login.config'] ?= '/etc/opentsdb/opentsdb.jaas'
+        opentsdb.config['hbase.sasl.clientconfig'] ?= 'Client'
       opentsdb.config['tsd.storage.hbase.data_table'] ?= 'tsdb'
       opentsdb.config['tsd.storage.hbase.uid_table'] ?= 'tsdb-uid'
       opentsdb.config['tsd.storage.hbase.tree_table'] ?= 'tsdb-tree'
