@@ -7,7 +7,6 @@
     module.exports.configure = (ctx) ->
       # require('../hadoop/core').configure ctx
       # require('../spark/client').configure ctx
-      {spark} = ctx.config.ryba
       zeppelin = ctx.config.ryba.zeppelin ?= {}
       zeppelin.repository = 'https://github.com/apache/incubator-zeppelin.git'
       zeppelin.source = "#{__dirname}/../resources/zeppelin-build.tar.gz"
@@ -16,10 +15,11 @@
       #Set to true if you want to deploy from build 
       #in this case zeppelin.source is required
       zeppelin.build ?= {}
+      zeppelin.build.cwd ?= "#{__dirname}/resources/build"
       zeppelin.build.name ?= 'ryba/zeppelin-build'
       zeppelin.build.execute ?= true
-      zeppelin.build.dockerfile ?= "#{__dirname}/../resources/zeppelin/build/Dockerfile"
-      zeppelin.build.directory ?= '/tmp/ryba/zeppelin-build'
+      # zeppelin.build.dockerfile ?= "#{__dirname}/../resources/zeppelin/build/Dockerfile"
+      # zeppelin.build.directory ?= '/tmp/ryba/zeppelin-build'
       zeppelin.build.local ?= true
       zeppelin.site ?= {}
       zeppelin.site['zeppelin.server.addr'] ?= '0.0.0.0'
@@ -75,8 +75,11 @@
       zeppelin.env['HADOOP_HOME'] ?= '/usr/hdp/current'
 
 
+    module.exports.push commands: 'prepare', modules: [
+      'ryba/zeppelin/prepare'
+    ]
+
     module.exports.push commands: 'install', modules: [
-      # 'ryba/zeppelin/build'
       'ryba/zeppelin/install'
     ]
 
@@ -86,4 +89,3 @@
       
 
       
-

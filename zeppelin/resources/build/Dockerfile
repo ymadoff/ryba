@@ -1,15 +1,11 @@
-#Apache Zeppelin on centos 6.6 OS
-#(sudo) docker build -t ryba/zeppelin-build .
+# Apache Zeppelin on centos 6.6 OS
+# docker build -t ryba/zeppelin-build .
 
 FROM centos:6.6
 
 MAINTAINER Lucas Bakalian <https://github.com/lucasbak>
 
 WORKDIR /tmp/
-
-##------------------------##
-#  BUILDING TOOLS INSTALL  #
-##------------------------##
 
 RUN yum clean all
 RUN yum update -y
@@ -19,68 +15,36 @@ RUN yum install -y wget unzip openssl git rpm tar bzip2 git yum-utils make gcc-c
 RUN yum groupinstall -y 'Developement Tools'
 RUN yum install -y npm
 
-##--------------##
-#  JAVA INSTALL  #
-##--------------##
-
-#RUN mkdir -p /tmp/jdk
-#RUN yum install -y tar
-#RUN wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/7u79-b15/jdk-7u79-linux-x64.rpm
 RUN curl -L -O -H "Cookie: oraclelicense=accept-securebackup-cookie" -k "http://download.oracle.com/otn-pub/java/jdk/7u79-b15/jdk-7u79-linux-x64.rpm"
 RUN rpm -ivh jdk-7u79-linux-x64.rpm
 ENV JAVA_HOME /usr/java/default
-
-#Test
 RUN java -version
-
-##---------------##
-#  MAVEN INSTALL  #
-##---------------##
 
 RUN wget http://apache.websitebeheerjd.nl/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.zip
 RUN unzip apache-maven-3.3.3-bin.zip
 RUN mv apache-maven-3.3.3/ /opt/maven
-#ADD resources/maven.sh /etc/profile.d/
-#ENV MAVEN_HOME=/opt/maven
-#ENV PATH=$MAVEN_HOME/bin:$PATH
+RUN mkdir -p /root/.m2/
+RUN echo "<settings><mirrors><mirror><id>nexus</id><mirrorOf>*</mirrorOf><url>http://10.10.10.1:7444/nexus/content/groups/public</url></mirror></mirrors>><profiles><profile><id>nexus</id><repositories><repository><id>central</id><url>http://central</url><releases><enabled>true</enabled></releases><snapshots><enabled>true</enabled></snapshots></repository></repositories><pluginRepositories><pluginRepository><id>central</id><url>http://central</url><releases><enabled>true</enabled></releases><snapshots><enabled>true</enabled></snapshots></pluginRepository></pluginRepositories></profile></profiles><activeProfiles><activeProfile>nexus</activeProfile></activeProfiles></settings>" > /root/.m2/settings.xml
+
 ENV MAVEN_HOME /opt/maven
 ENV PATH $MAVEN_HOME/bin:$PATH
 RUN export PATH MAVEN_HOME
 RUN export CLASSPATH=.
-  
-#Test
 RUN mvn -version
-
-##----------------##
-#  ZEPPELIN BUILD  #
-##----------------##
 
 WORKDIR /tmp/
 RUN git clone https://github.com/apache/incubator-zeppelin.git
-#RUN wget https://nodejs.org/dist/v0.10.36/node-v0.10.36-linux-x64.tar.gz 
-#RUN ls -l /tmp/
-#RUN tar -C /usr/local --strip-components 1 -xzf /tmp/node-v0.10.36-linux-x64.tar.gz
-#WORKDIR /tmp/incubator-zeppelin/zeppelin-web
-#RUN ls -l
-#RUN npm cache clean
-#RUN npm  --registry http://registry.npmjs.eu/ install -g bower
-#RUN npm  --registry http://registry.npmjs.eu/ install  bower
-#RUN bower -v
-#RUN yum install -y bzip2
-#RUN npm --registry http://registry.npmjs.eu/ install  grunt-cli
-#RUN npm --registry http://registry.npmjs.eu/  install
-#RUN ls -l node_modules
-#RUN echo Y | bower --allow-root install
-#RUN ls -l node_modules
-#RUN mvn clean package -e -X -U -Pspark-1.2 -Dspark.version=1.2.1 -Dhadoop.version=2.6.0 -Phadoop-2.2 -Pyarn -DskipTests
 WORKDIR /tmp/incubator-zeppelin/
-#RUN mvn clean package -e -X  -Pspark-1.3 -Dspark.version=1.3.1  -Dhadoop.version=2.7.1 -Pyarn -DskipTests
-#RUN mvn clean package -e -X -U -Pspark-1.2 -Dspark.version=1.2.1 -Dhadoop.version=2.6.0 -Phadoop-2.2 -Pyarn -DskipTests
+RUN git checkout cc3b8c049f2791b97141d8e5ee980db455ef520b
+RUN sed -i '/<\/dependencies>/ i <dependency><groupId>sqlline</groupId><artifactId>sqlline</artifactId><version>1.1.9</version></dependency>' phoenix/pom.xml
+RUN echo "registry = http://10.10.10.1:7444/nexus/content/groups/npm-all" > ~/.npmrc
+RUN sed -i "s/   'karma'/    \/\/'karma'/" zeppelin-web/Gruntfile.js
+RUN mvn clean package -X  -Pspark-1.4 -Dspark.version=1.2.1 -Dhadoop.version=2.7.1 -Phadoop-2.6 -Pyarn -DskipTests
 
-RUN mvn clean package -Pspark-1.2 -Dspark.version=1.2.1 -Dhadoop.version=2.7.0 -Phadoop-2.6 -Pyarn -DskipTests
-
-#RUN mvn clean package -P build-distr -DskipTests
 WORKDIR /tmp/
 RUN mv /tmp/incubator-zeppelin /tmp/zeppelin-build
 RUN tar -chzf zeppelin-build.tar.gz zeppelin-build
-RUN mv zeppelin-build.tar.gz /
+
+# Publish package at run time
+# eg: `docker run --rm -v /tmp:/target ryba/zeppelin-build`
+CMD if mountpoint -q /target; then mv /tmp/zeppelin-build.tar.gz /target/zeppelin-build.tar.gz; else echo '/target is not a mountpoint.'; fi

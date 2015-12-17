@@ -8,7 +8,6 @@ the execution. you can resume build by executing again prepare
     module.exports = []
     module.exports.push 'masson/bootstrap/log'
 
-
 First container
 ```
 cd /tmp/ryba/hue-build/
