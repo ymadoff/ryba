@@ -137,19 +137,6 @@ Example
         'org.apache.oozie.service.JvmPauseMonitorService'
         'org.apache.oozie.service.SparkConfigurationService'
       ].join(',')
-      oozie.site['oozie.credentials.credentialclasses'] = "
-        hcat=org.apache.oozie.action.hadoop.HCatCredentials,
-        hbase=org.apache.oozie.action.hadoop.HbaseCredentials
-        "
-      # ryba.extjs ?= {}
-      # throw new Error "Missing extjs.source" unless ryba.extjs.source
-      # throw new Error "Missing extjs.destination" unless ryba.extjs.destination
-      # Note, we might also enrich "oozie.credentials.credentialclasses"
-      # For example
-      oozie.site['oozie.credentials.credentialclasses'] = """
-      hcat=org.apache.oozie.action.hadoop.HCatCredentials,
-      hbase=org.apache.oozie.action.hadoop.HbaseCredentials
-      """
 
 ## Configuration for Proxy Users
 
