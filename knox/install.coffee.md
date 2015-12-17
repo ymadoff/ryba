@@ -45,6 +45,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           '/usr/hdp/current/knox-server/data/security/keystore'
         ] 
         if: @status -2
+      @render
+        destination: '/etc/init.d/knox-server'
+        source: "#{__dirname}/resources/knox-server.j2"
+        local_source: true
+        context: @config.ryba.knox
+        mode: 0o755
 
 ## Master Secret
 
