@@ -247,14 +247,16 @@ Configuration for HTTP
 Configuration for proxy users
 
       core_site['hadoop.security.auth_to_local'] ?= """
-
-            RULE:[2:$1@$0]([rn]m@.*)s/.*/yarn/
-            RULE:[2:$1@$0](jhs@.*)s/.*/mapred/
-            RULE:[2:$1@$0]([nd]n@.*)s/.*/hdfs/
-            RULE:[2:$1@$0](hm@.*)s/.*/hbase/
-            RULE:[2:$1@$0](rs@.*)s/.*/hbase/
-            DEFAULT
-
+            
+            RULE:[2:$1]([rn]m)s/.*/yarn/
+            RULE:[2:$1](jhs)s/.*/mapred/
+            RULE:[2:$1]([nd]n)s/.*/hdfs/
+            RULE:[2:$1](hm)s/.*/hbase/
+            RULE:[2:$1](rs)s/.*/hbase/
+            RULE:[2:$1](opentsdb)s/.*/hbase/
+            RULE:[1:$1]
+            RULE:[2:$1]
+            
         """
       core_site['hadoop.proxyuser.HTTP.hosts'] ?= '*'
       core_site['hadoop.proxyuser.HTTP.groups'] ?= '*'
