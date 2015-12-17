@@ -65,8 +65,16 @@ OpenTSDB does not seem to work without the hbase rights
 
     module.exports.push commands: 'install', modules: [
       'ryba/opentsdb/install'
+      'ryba/opentsdb/start'
       'ryba/opentsdb/check'
     ]
+
+    module.exports.push commands: 'start', modules: 'ryba/opentsdb/start'
+
+    module.exports.push commands: 'status', modules: 'ryba/opentsdb/status'
+
+    module.exports.push commands: 'stop', modules: 'ryba/opentsdb/stop'
+
 
 ## Resources
 
