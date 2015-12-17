@@ -4,6 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/hbase/client'
+    module.exports.push 'ryba/hbase/master/wait'
     module.exports.push 'ryba/lib/write_jaas'
 
 ## Users & Groups
@@ -46,9 +47,14 @@ OpenTSDB archive comes with an RPM
         unless_exec: "rpm -q --queryformat '%{VERSION}' opentsdb | grep '#{opentsdb.version}'"
       @remove
         destination: "/var/tmp/opentsdb-#{opentsdb.version}.noarch.rpm"
+      @remove
+        destination: '/usr/share/opentsdb/lib/zookeeper-3.3.6.jar'
+      @link
+        source: '/usr/hdp/current/zookeeper-client/zookeeper.jar'
+        destination: '/usr/share/opentsdb/lib/zookeeper.jar'
 
 ## Kerberos
- 
+
     module.exports.push header: 'OpenTSDB # Kerberos', handler: ->
       {opentsdb, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm] 
@@ -69,7 +75,7 @@ OpenTSDB archive comes with an RPM
         uid: opentsdb.user.name
         gid: opentsdb.group.name
 
-## Env
+## Fix Service
 
     module.exports.push header: 'OpenTSDB # Fix Service', handler: ->
       {opentsdb} = @config.ryba
