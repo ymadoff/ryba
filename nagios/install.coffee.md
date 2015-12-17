@@ -343,7 +343,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           hbase_master_hosts_in_str: hm_hosts.join ','
           hbase_master_hosts: hm_hosts
           hbase_master_rpc_port: hbase.site['hbase.master.port']
-          hive_metastore_port: url.parse(hcat_ctxs[0].config.ryba.hive.site['hive.metastore.uris']).port
+          hive_metastore_port: url.parse(hcat_ctxs[0].config.ryba.hive.site['hive.metastore.uris'].split(',')[0]).port
           hive_server_port: hs2_port
           oozie_url: oozie.site['oozie.base.url']
           java64_home: @config.java.java_home # Used by check_oozie_status.sh

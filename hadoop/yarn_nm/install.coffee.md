@@ -179,7 +179,7 @@ but is owned by 2401"
     module.exports.push header: 'YARN NM # Container Executor', handler: ->
       {container_executor, yarn, hadoop_conf_dir} = @config.ryba
       ce_group = container_executor['yarn.nodemanager.linux-container-executor.group']
-      ce = '/usr/hdp/current/hadoop-yarn-nodemanager/bin/container-executor';
+      ce = '/usr/hdp/current/hadoop-yarn-nodemanager/bin/container-executor'
       @chown
         destination: ce
         uid: 'root'

@@ -118,7 +118,7 @@ from external users without requiring internal cluster user names to be exposed.
       fs_ctxs = ctx.contexts 'ryba/hadoop/httpfs', require('../hadoop/httpfs').configure
       if nn_ctxs.length  
         # Namenode
-        topology.services['namenode'] ?= ctxs[0].config.ryba.core_site['fs.defaultFS']
+        topology.services['namenode'] ?= nn_ctxs[0].config.ryba.core_site['fs.defaultFS']
         if fs_ctxs.length
           if fs_ctxs.length > 1
             topology.providers['ha'] ?= name: 'HaProvider'

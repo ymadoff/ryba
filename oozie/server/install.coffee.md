@@ -294,7 +294,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         backup: true
       @upload
         destination: "#{oozie.conf_dir}/oozie-default.xml"
-        source: "#{__dirname}/../../resources/oozie/oozie-default.xml"
+        source: "#{__dirname}/../resources/oozie-default.xml"
         backup: true
       @hconfigure
         destination: "#{oozie.conf_dir}/hadoop-conf/core-site.xml"

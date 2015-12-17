@@ -125,8 +125,8 @@ Creates a configuration file. Always load this file in Gremlin REPL !
         {titan, hbase} = @config.ryba
         @execute
           cmd: mkcmd.hbase @, """
-          if hbase shell 2>/dev/null <<< "list_namespace 'titan'" | grep '1 row(s)'; then exit 3; fi
-          hbase shell 2>/dev/null <<< "create_namespace 'titan'"
+          if hbase shell -n 2>/dev/null <<< "list_namespace 'titan'" | grep '1 row(s)'; then exit 3; fi
+          hbase shell -n 2>/dev/null <<< "create_namespace 'titan'"
           """
           code_skipped: 3
 
@@ -138,7 +138,7 @@ Creates a configuration file. Always load this file in Gremlin REPL !
         table = titan.config['storage.hbase.table']
         @execute
           cmd: mkcmd.hbase @, """
-          if hbase shell 2>/dev/null <<< "exists '#{table}'" | grep 'Table #{table} does exist'; then exit 3; fi
+          if hbase shell -n 2>/dev/null <<< "exists '#{table}'" | grep 'Table #{table} does exist'; then exit 3; fi
           cd #{titan.home}
           #{titan.install_dir}/current/bin/gremlin.sh 2>/dev/null <<< \"g = TitanFactory.open('titan-hbase-#{titan.config['index.search.backend']}.properties')\" | grep '==>titangraph'
           """

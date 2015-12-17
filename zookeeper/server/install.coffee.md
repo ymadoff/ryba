@@ -64,7 +64,7 @@ which has no dependency.
         name: 'zookeeper-server'
       @hdp_select
         name: 'zookeeper-client'
-      @download
+      @upload
         source: "#{__dirname}/resources/zookeeper"
         destination: '/etc/init.d/zookeeper-server'
         mode: 0o0755
@@ -73,6 +73,7 @@ which has no dependency.
 ## Kerberos
 
     module.exports.push 'masson/core/krb5_client/wait'
+
     module.exports.push header: 'ZooKeeper Server # Kerberos', timeout: -1, handler: ->
       {zookeeper, hadoop_group, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]

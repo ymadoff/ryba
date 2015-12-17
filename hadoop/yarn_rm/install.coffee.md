@@ -98,7 +98,6 @@ inside "/etc/init.d" and activate it on startup.
 
     module.exports.push header: 'YARN RM # Configure', handler: ->
       {core_site, hdfs, yarn, mapred, hadoop_group, hadoop_metrics} = @config.ryba
-      console.log yarn.rm.core_site
       @hconfigure
         header: 'Core Site'
         destination: "#{yarn.rm.conf_dir}/core-site.xml"
