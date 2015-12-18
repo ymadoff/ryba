@@ -29,7 +29,6 @@ to its associated Scheduler. Host the WebUI.
       config.user = shinken.user.name
       config.group = shinken.group.name
       config.host ?= '0.0.0.0'
-      config.spare ?= shinken.config.spare
       config.use_ssl ?= shinken.config.use_ssl
       config.hard_ssl_name_check ?= shinken.config.hard_ssl_name_check
       # Kerberos

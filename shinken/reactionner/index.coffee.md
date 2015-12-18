@@ -17,6 +17,7 @@ and sends the results to the scheduler.
       # Config
       reactionner.config ?={}
       reactionner.config.port ?= 7769
+      reactionner.config.realm ?= 'All'
       reactionner.config.modules = [reactionner.config.modules] if typeof reactionner.config.modules is 'string'
       reactionner.config.modules ?= Object.keys reactionner.modules
 

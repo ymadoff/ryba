@@ -49,6 +49,7 @@ is approximatively 1000 checks/s
       # Config
       poller.config ?= {}
       poller.config.port ?= 7771
+      poller.config.realm ?= 'All'
       poller.config.modules = [poller.config.modules] if typeof poller.config.modules is 'string'
       poller.config.modules ?= Object.keys poller.modules
 

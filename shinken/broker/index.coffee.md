@@ -56,6 +56,7 @@ Some of the modules are:
       # CONFIG
       broker.config ?= {}
       broker.config.port ?= 7772
+      broker.config.realm ?= 'All'
       broker.config.modules = [broker.config.modules] if typeof broker.config.modules is 'string'
       broker.config.modules ?= Object.keys broker.modules
 

@@ -27,6 +27,7 @@ Modules for receivers:
       # Config
       receiver.config ?= {}
       receiver.config.port ?= 7773
+      receiver.config.realm ?= 'All'
       receiver.config.modules = [receiver.config.modules] if typeof receiver.config.modules is 'string'
       receiver.config.modules ?= Object.keys receiver.modules
 

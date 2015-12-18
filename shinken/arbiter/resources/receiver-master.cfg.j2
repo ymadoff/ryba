@@ -42,6 +42,6 @@ define receiver {
                             # schedulers if it know about the hostname in the
                             # command.
                             #}
-    realm   All
+    realm      {{ r.config.ryba.shinken.receiver.config.realm }}
 }
 {% endfor %}

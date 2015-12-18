@@ -22,6 +22,7 @@ Sends broks (internal events of any kind) to the broker(s)
       # Config
       scheduler.config ?= {}
       scheduler.config.port ?= 7768 # Propriété non honorée !!
+      scheduler.config.realm ?= 'All'
       scheduler.config.modules = [scheduler.config.modules] if typeof scheduler.config.modules is 'string'
       scheduler.config.modules ?= Object.keys scheduler.modules
 

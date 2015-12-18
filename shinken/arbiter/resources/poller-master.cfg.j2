@@ -41,16 +41,15 @@ define poller {
     #                     should you desire it.
     # - SnmpBooster     = Snmp bulk polling module
     #}
-    modules        {{ p.config.ryba.shinken.poller.config.modules | join (',') }}
+    modules         {{ p.config.ryba.shinken.poller.config.modules | join (',') }}
     {#passive         0#}    {#For DMZ monitoring, set to 1 so the connections will be from scheduler -> poller.#}
 
     {# Poller tags are the tag that the poller will manage. Use None as tag name to manage
     # untaggued checks:
     #poller_tags     None #}
 
-    use_ssl	          {% if p.config.ryba.shinken.poller.config.use_ssl %}1{% else %}0{% endif %}
+    use_ssl         {% if p.config.ryba.shinken.poller.config.use_ssl %}1{% else %}0{% endif %}
     hard_ssl_name_check   {% if p.config.ryba.shinken.poller.config.hard_ssl_name_check %}1{% else %}0{% endif %}
-
-    realm   All
+    realm           {{ p.config.ryba.shinken.poller.config.realm }}
 }
 {% endfor %}
