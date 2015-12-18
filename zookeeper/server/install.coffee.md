@@ -122,16 +122,41 @@ ownerships.
         gid: hadoop_group.name
         mode: 0o755
 
+## Super User
+
+Enables a ZooKeeper ensemble administrator to access the znode hierarchy as a
+"super" user.
+
+This functionnality is disactivated by default. Enable it by setting the
+configuration property "ryba.zookeeper.superuser.password". The digest auth
+passes the authdata in plaintext to the server. Use this authentication method
+only on localhost (not over the network) or over an encrypted connection.
+
+Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
+
+    module.exports.push
+      header: 'ZooKeeper Server # Generate Super User'
+      if: -> @config.ryba.zookeeper.superuser.password
+      handler: (_, callback) ->
+        {zookeeper} = @config.ryba
+        @execute
+          cmd: """
+          ZK_HOME=/usr/hdp/current/zookeeper-client/
+          java -cp $ZK_HOME/lib/*:$ZK_HOME/zookeeper.jar org.apache.zookeeper.server.auth.DigestAuthenticationProvider super:#{zookeeper.superuser.password}
+          """
+        , (err, _, stdout) ->
+          digest = match[1] if match = /\->(.*)/.exec(stdout)
+          return callback Error "Failed to get digest" unless digest
+          zookeeper.env['SERVER_JVMFLAGS'] += " -Dzookeeper.DigestAuthenticationProvider.superDigest=#{digest}"
+          callback()
+
 ## Environment
 
     module.exports.push header: 'ZooKeeper Server # Environment', handler: ->
       {zookeeper} = @config.ryba
       @write
         destination: "#{zookeeper.conf_dir}/zookeeper-env.sh"
-        write: for k, v of zookeeper.env
-          match: RegExp "^export\\s+(#{quote k})=(.*)$", 'm'
-          replace: "export #{k}=\"#{v}\""
-          append: true
+        content: ("export #{k}=\"#{v}\"" for k, v of zookeeper.env).join '\n'
         backup: true
         eof: true
 
@@ -246,41 +271,9 @@ parameters autopurge.snapRetainCount and autopurge.purgeInterval.
         when: zookeeper.purge
         user: zookeeper.user.name
 
-## Super User
+## Write myid
 
-Enables a ZooKeeper ensemble administrator to access the znode hierarchy as a
-"super" user.
-
-This functionnality is disactivated by default. Enable it by setting the
-configuration property "ryba.zookeeper.superuser.password". The digest auth
-passes the authdata in plaintext to the server. Use this authentication method
-only on localhost (not over the network) or over an encrypted connection.
-
-Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
-
-    module.exports.push
-      header: 'ZooKeeper Server # Super User'
-      if: -> @config.ryba.zookeeper.superuser.password
-      handler: (_, callback) ->
-        {zookeeper} = @config.ryba
-        @execute
-          cmd: """
-          ZK_HOME=/usr/hdp/current/zookeeper-client/
-          java -cp $ZK_HOME/lib/*:$ZK_HOME/zookeeper.jar org.apache.zookeeper.server.auth.DigestAuthenticationProvider super:#{zookeeper.superuser.password}
-          """
-        , (err, _, stdout) ->
-          digest = match[1] if match = /\->(.*)/.exec(stdout)
-          return callback Error "Failed to get digest" unless digest
-          @write
-            destination: "#{zookeeper.conf_dir}/zookeeper-env.sh"
-            # match: RegExp "^export CLIENT_JVMFLAGS=\"-D#{quote 'zookeeper.DigestAuthenticationProvider.superDigest'}=.* #{quote '${CLIENT_JVMFLAGS}'}$", 'mg'
-            # replace: "export CLIENT_JVMFLAGS=\"-Dzookeeper.DigestAuthenticationProvider.superDigest=#{digest} ${CLIENT_JVMFLAGS}\""
-            match: /^export SERVER_JVMFLAGS="-Dzookeeper\.DigestAuthenticationProvider\.superDigest=.* \${SERVER_JVMFLAGS}"$/m
-            replace: "export SERVER_JVMFLAGS=\"-Dzookeeper.DigestAuthenticationProvider.superDigest=#{digest} ${SERVER_JVMFLAGS}\""
-            append: true
-            backup: true
-            eof: true
-          .then callback
+myid is a unique id that must be generated for each node of the zookeeper cluster
 
     module.exports.push header: 'ZooKeeper Server # Write myid', handler: ->
       {zookeeper, hadoop_group} = @config.ryba
