@@ -117,12 +117,12 @@ Zookeeper use JAAS for authentication. We configure JAAS to make SASL authentica
         gid: rexster.group.name
 
     module.exports.push header: 'Rexster # Configure Titan Server', handler: ->
-      {titan, rexster, realm} = @config.ryba
+      {titan, rexster} = @config.ryba
       @write
         content: xml 'rexster': rexster.config
         destination: path.join rexster.user.home, 'titan-server.xml'
-        uid:rexster.user.name
-        gid:rexster.group.name
+        uid: rexster.user.name
+        gid: rexster.group.name
 
 ## Cron-ed Kinit
 
@@ -130,7 +130,7 @@ Rexster doesn't seems to correctly renew its keytab. For that, we use cron daemo
 We then ask a first TGT.
 
     module.exports.push header: 'Rexster # Cron-ed kinit', handler: ->
-      {rexster, realm} = @config.ryba
+      {rexster} = @config.ryba
       kinit = "/usr/bin/kinit #{rexster.krb5_user.principal} -k -t #{rexster.krb5_user.keytab}"
       @cron_add
         cmd: kinit
