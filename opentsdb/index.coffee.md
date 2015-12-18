@@ -39,25 +39,27 @@ OpenTSDB does not seem to work without the hbase rights
       throw Error "Invalid opentsdb.hbase.compression '#{opentsdb.hbase.compression}' (NONE|LZO|GZIP|SNAPPY)" unless opentsdb.hbase.compression in ['NONE', 'LZO', 'GZIP', 'SNAPPY']
       # Config
       opentsdb.config ?= {}
+      opentsdb.config['tsd.http.staticroot'] ?= "#{opentsdb.user.home}/static/"
+      opentsdb.config['tsd.http.cachedir'] ?= '/tmp/opentsdb'
       opentsdb.config['tsd.core.plugin_path'] ?= "#{opentsdb.user.home}/plugins"
       opentsdb.config['tsd.network.port'] ?= 4242
+      # zookeeper...
+      zoo_ctxs = ctx.contexts 'ryba/zookeeper/server'
+      opentsdb.config['tsd.storage.hbase.zk_quorum'] ?= zoo_ctxs.map((ctx) -> "#{ctx.config.host}:#{ctx.config.ryba.zookeeper.port}").join ','
       opentsdb.config['tsd.storage.hbase.zk_basedir'] ?= hbase.site['zookeeper.znode.parent']
+      opentsdb.config['tsd.storage.hbase.data_table'] ?= 'tsdb'
+      opentsdb.config['tsd.storage.hbase.uid_table'] ?= 'tsdb-uid'
+      opentsdb.config['tsd.storage.hbase.tree_table'] ?= 'tsdb-tree'
+      opentsdb.config['tsd.storage.hbase.meta_table'] ?= 'tsdb-meta'
       opentsdb.config['hbase.security.authentication'] ?= hbase.site['hbase.security.authentication']
       if opentsdb.config['hbase.security.authentication'] is 'kerberos'
         opentsdb.config['hbase.security.auth.enable'] ?= 'true' 
         opentsdb.config['hbase.kerberos.regionserver.principal'] ?= hbase.site['hbase.regionserver.kerberos.principal']
         opentsdb.config['java.security.auth.login.config'] ?= '/etc/opentsdb/opentsdb.jaas'
         opentsdb.config['hbase.sasl.clientconfig'] ?= 'Client'
-      opentsdb.config['tsd.storage.hbase.data_table'] ?= 'tsdb'
-      opentsdb.config['tsd.storage.hbase.uid_table'] ?= 'tsdb-uid'
-      opentsdb.config['tsd.storage.hbase.tree_table'] ?= 'tsdb-tree'
-      opentsdb.config['tsd.storage.hbase.meta_table'] ?= 'tsdb-meta'
-      # zookeeper...
-      zoo_ctxs = ctx.contexts 'ryba/zookeeper/server'
-      opentsdb.config['tsd.storage.hbase.zk_quorum'] ?= (for zoo_ctx in zoo_ctxs then "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}").join ','
       # Env
       opentsdb.env ?= {}
-      opentsdb.env['java.security.auth.login.config'] ?= '/etc/opentsdb/opentsdb.jaas'
+      opentsdb.env['java.security.auth.login.config'] ?= opentsdb.config['java.security.auth.login.config']
       # Opts
       opentsdb.java_opts ?= ''
 
