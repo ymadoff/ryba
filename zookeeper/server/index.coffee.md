@@ -44,7 +44,7 @@ Example :
       zookeeper.env['ZOOKEEPER_HOME'] ?= "/usr/hdp/current/zookeeper-client"
       zookeeper.env['ZOO_LOG_DIR'] ?= "#{zookeeper.log_dir}"
       zookeeper.env['ZOOPIDFILE'] ?= "#{zookeeper.pid_dir}/zookeeper_server.pid"
-      zookeeper.env['SERVER_JVMFLAGS'] ?= "-Xmx1024m -Djava.security.auth.login.config=#{zookeeper.conf_dir}/zookeeper-server.jaas"
+      zookeeper.env['SERVER_JVMFLAGS'] ?= "-Xmx1024m -Djava.security.auth.login.config=#{zookeeper.conf_dir}/zookeeper-server.jaas -Dzookeeper.security.auth_to_local=RULE:[1:\\$1]RULE:[2:\\$1]"
       zookeeper.env['CLIENT_JVMFLAGS'] ?= "-Djava.security.auth.login.config=#{zookeeper.conf_dir}/zookeeper-client.jaas"
       zookeeper.env['JAVA'] ?= '$JAVA_HOME/bin/java'
       zookeeper.env['CLASSPATH'] ?= '$CLASSPATH:/usr/share/zookeeper/*'
@@ -82,7 +82,7 @@ Example :
       zookeeper.purge = '@weeekly' if zookeeper.purge is true
       # Superuser
       zookeeper.superuser ?= {}
-      zookeeper.superuser.password ?= 'ryba123'
+      # zookeeper.superuser.password ?= 'ryba123'
 
 ## Commands
 
