@@ -67,13 +67,13 @@ Declare the HDP repository.
           handler: (_, callback) ->
             options.log 'Upload PGP keys'
             @fs.readFile "/etc/yum.repos.d/hdp.repo", (err, content) =>
-              return next err if err
+              return callback err if err
               keys = {}
               reg = /^pgkey=(.*)/gm
               while matches = reg.exec content
                 keys[matches[1]] = true
               keys = Object.keys keys
-              return next null, true unless keys.length
+              return callback null, true unless keys.length
               for key in keys
                 @execute # TODO, should use `@download`
                   cmd: """

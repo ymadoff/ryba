@@ -261,7 +261,7 @@ parameters autopurge.snapRetainCount and autopurge.purgeInterval.
 
     module.exports.push header: "ZooKeeper Server # Schedule Purge", handler: ->
       {zookeeper} = @config.ryba
-      return next() unless zookeeper.purge
+      return unless zookeeper.purge
       @cron_add
         cmd: """
         /usr/bin/java -cp /usr/hdp/current/zookeeper-server/zookeeper.jar:/usr/hdp/current/zookeeper-server/lib/*:/usr/hdp/current/zookeeper-server/conf \
@@ -278,7 +278,7 @@ myid is a unique id that must be generated for each node of the zookeeper cluste
     module.exports.push header: 'ZooKeeper Server # Write myid', handler: ->
       {zookeeper, hadoop_group} = @config.ryba
       hosts = @hosts_with_module 'ryba/zookeeper/server'
-      return next() if hosts.length is 1
+      return if hosts.length is 1
       unless zookeeper.myid
         for host, i in hosts
           zookeeper.myid = i+1 if host is @config.host

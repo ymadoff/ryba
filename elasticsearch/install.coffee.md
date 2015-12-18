@@ -34,7 +34,7 @@ of Elastics Search from rpm repositories and the configuration of Elastic Search
 
 ElasticSearch archive comes with an RPM
 
-    module.exports.push header: 'ES # Install', timeout: -1, handler: (options) ->
+    module.exports.push header: 'ES # Install', timeout: -1, handler: ->
       {elasticsearch, realm} = @config.ryba
       @download
         source: elasticsearch.source

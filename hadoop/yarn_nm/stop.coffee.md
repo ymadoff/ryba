@@ -24,7 +24,7 @@ The file storing the PID is "/var/run/hadoop-yarn/yarn/yarn-yarn-nodemanager.pid
 
     module.exports.push header: 'YARN NM # Stop Clean Logs', label_true: 'CLEANED', handler: ->
       {clean_logs, yarn} = @config.ryba
-      return next() unless clean_logs
+      return unless clean_logs
       @execute
         cmd: 'rm #{yarn.log_dir}/*/*-nodemanager-*'
         code_skipped: 1

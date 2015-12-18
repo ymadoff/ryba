@@ -87,7 +87,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 Update the "yarn-site.xml" configuration file.
 
     module.exports.push header: 'YARN ATS # Configuration', handler: ->
-      return next() unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+      return unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       {yarn, hdfs, core_site, hadoop_group, hadoop_metrics} = @config.ryba
       @hconfigure
         header: 'Core Site'

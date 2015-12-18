@@ -201,7 +201,7 @@ client to connect to openldap.
     # module.exports.push header: 'Knox # LDAPS CA cert', handler: ->
     #   {java_home, jre_home} = @config.java
     #   {knox} = @config.ryba
-    #   return next() unless knox.ssl?.cafile? and knox.ssl?.caname?
+    #   return unless knox.ssl?.cafile? and knox.ssl?.caname?
     #   tmp_location = "/tmp/ryba_knox_cacerts_#{Date.now()}"
     #   @upload
     #     source: knox.ssl.cafile

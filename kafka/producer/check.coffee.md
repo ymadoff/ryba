@@ -22,7 +22,7 @@ Make sure the broker are listening. The default port is "9092".
 
     module.exports.push header: 'Kafka Producer # Check Messages', label_true: 'CHECKED', handler: ->
       {kafka} = @config.ryba
-      return next() unless @has_module 'ryba/kafka/consumer'
+      return unless @has_module 'ryba/kafka/consumer'
       brokers = @contexts('ryba/kafka/broker').map (ctx) ->
         "#{ctx.config.host}:#{ctx.config.ryba.kafka.broker['port']}"
       zookeeper_quorum = @contexts('ryba/kafka/consumer')[0].config.ryba.kafka.consumer.config['zookeeper.connect']

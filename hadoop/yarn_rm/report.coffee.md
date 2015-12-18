@@ -11,7 +11,7 @@
     module.exports.push header: 'YARN RM # Info Memory', timeout: -1, label_true: 'INFO', handler: (_, callback) ->
       {yarn} = @config.ryba
       properties.read @ssh, "#{yarn.rm.conf_dir}/yarn-site.xml", (err, config) ->
-        return next err if err
+        return callback err if err
         @emit 'report',
           key: 'yarn.scheduler.minimum-allocation-mb'
           value: prink.filesize.from.megabytes config['yarn.scheduler.minimum-allocation-mb']

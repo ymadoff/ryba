@@ -11,7 +11,7 @@
       {engine, host, port, user, password, name} = @config.ryba.hue.ini.desktop.database
       engines_cmd =
         mysql: "mysqldump -u#{user} -p#{password} -h#{host} -P#{port} #{name}"
-      return next new Error 'Database engine not supported' unless engines_cmd[engine]
+      throw Error 'Database engine not supported' unless engines_cmd[engine]
       @backup
         name: 'db'
         cmd: engines_cmd[engine]

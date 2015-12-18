@@ -23,7 +23,7 @@ The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-zkfc.pid".
         if_exists: '/etc/init.d/hadoop-hdfs-zkfc'
 
     module.exports.push header: 'HDFS ZKFC # Stop Clean Logs', label_true: 'CLEANED', handler: ->
-      return next() unless @config.ryba.clean_logs
+      return unless @config.ryba.clean_logs
       @execute
         cmd: 'rm /var/log/hadoop-hdfs/*/*-zkfc-*'
         code_skipped: 1

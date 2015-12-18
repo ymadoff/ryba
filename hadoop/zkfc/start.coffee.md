@@ -43,7 +43,7 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
 ```
 
     module.exports.push header: 'HDFS ZKFC # Start', label_true: 'STARTED', handler: ->
-      return next() unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+      return unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       @service_start
         name: 'hadoop-hdfs-zkfc'
 
@@ -62,7 +62,7 @@ TODO sep 2015: maybe should we simply move this to ZKFC?
 
     module.exports.push header: 'HDFS ZKFC # Start Failover', label_true: 'READY', handler: ->
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
-      return next() unless nn_ctxs.length > 1
+      return unless nn_ctxs.length > 1
       {hdfs, active_nn_host, standby_nn_host} = @config.ryba # HDFS NN and ZKFC are always on the same host
       active_nn_ctx = nn_ctxs.filter( (ctx) -> ctx.config.host is active_nn_host)[0]
       standby_nn_ctx = nn_ctxs.filter( (ctx) -> ctx.config.host isnt active_nn_host)[0]
