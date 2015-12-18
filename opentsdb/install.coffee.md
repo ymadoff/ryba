@@ -48,15 +48,16 @@ OpenTSDB archive comes with an RPM
       @remove
         destination: "/var/tmp/opentsdb-#{opentsdb.version}.noarch.rpm"
       @remove
-        destination: '/usr/share/opentsdb/lib/zookeeper-3.3.6.jar'
+        destination: "#{opentsdb.user.home}/lib/zookeeper-3.3.6.jar"
       @link
         source: '/usr/hdp/current/zookeeper-client/zookeeper.jar'
-        destination: '/usr/share/opentsdb/lib/zookeeper.jar'
+        destination: "#{opentsdb.user.home}/lib/zookeeper.jar"
 
 ## Kerberos
 
     module.exports.push header: 'OpenTSDB # Kerberos', handler: ->
       {opentsdb, realm} = @config.ryba
+      return unless opentsdb.config['hbase.security.authentication'] is 'kerberos'
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm] 
       @krb5_addprinc
         principal: "#{opentsdb.user.name}/#{@config.host}@#{realm}"
@@ -71,9 +72,14 @@ OpenTSDB archive comes with an RPM
         destination: '/etc/opentsdb/opentsdb.jaas'
         content: "#{opentsdb.config['hbase.sasl.clientconfig']}":
           principal: "#{opentsdb.user.name}/#{@config.host}@#{realm}"
-          keyTab: '/etc/security/keytabs/opentsdb.service.keytab'
+          useTicketCache: true
         uid: opentsdb.user.name
         gid: opentsdb.group.name
+      @cron_add
+        cmd: "/usr/bin/kinit #{opentsdb.user.name}/#{@config.host}@#{realm} -k -t /etc/security/keytabs/opentsdb.service.keytab"
+        when: '0 */9 * * *'
+        user: opentsdb.user.name
+        exec: true
 
 ## Fix Service
 
@@ -131,7 +137,7 @@ OpenTSDB archive comes with an RPM
         # grant 'opentsdb', 'RWXCA', '#{t_tree}'
         # EOF
         # """
-        unless_exec: mkcmd.hbase @, "[ `hbase shell <<< 'list' | egrep '^(#{t_data}|#{t_uid}|#{t_tree}|#{t_meta})' | wc -l` -eq 4 ]"
+        unless_exec: mkcmd.hbase @, "[ `hbase shell -n <<< 'list' | egrep '^(#{t_data}|#{t_uid}|#{t_tree}|#{t_meta})' | sort | uniq | wc -l` -eq 4 ]"
 
 ## Dependencies
 
