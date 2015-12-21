@@ -244,20 +244,49 @@ Configuration for HTTP
         throw Error "Multiple domains, set 'hadoop.http.authentication.cookie.domain' manually" if domains.length isnt 1
         core_site['hadoop.http.authentication.cookie.domain'] = domains[0]
 
-Configuration for proxy users
+Configuration for auth\_to\_local
 
+The local name will be formulated from exp.
+The format for exp is [n:string](regexp)s/pattern/replacement/g.
+The integer n indicates how many components the target principal should have. 
+If this matches, then a string will be formed from string, substituting the realm 
+of the principal for $0 and the n‘th component of the principal for $n. 
+If this string matches regexp, then the s//[g] substitution command will be run 
+over the string. The optional g will cause the substitution to be global over 
+the string, instead of replacing only the first match in the string.
+The rule apply with priority order, so we write rules from the most specific to
+the most general:
+There is 4 identified cases:
+
+*   The principal is a 'sub-service' principal from our internal realm. It replaces with the corresponding service name
+*   The principal is from our internal realm. We apply DEFAULT rule (It takes the first component of the principal as a
+    username. Only apply on the internal realm)
+*   The principal is NOT from our realm, and would be mapped to an admin user like hdfs. It maps it to 'nobody'
+*   The principal is NOT from our internal realm, and do NOT match any admin account.
+    It takes the first component of the principal as username.
+
+Notice that the third rule will disallow admin account on multiple clusters.
+the property must be overriden in a config file to permit it. 
+
+      esc_realm = quote realm
       core_site['hadoop.security.auth_to_local'] ?= """
-            
-            RULE:[2:$1]([rn]m)s/.*/yarn/
-            RULE:[2:$1](jhs)s/.*/mapred/
-            RULE:[2:$1]([nd]n)s/.*/hdfs/
-            RULE:[2:$1](hm)s/.*/hbase/
-            RULE:[2:$1](rs)s/.*/hbase/
-            RULE:[2:$1](opentsdb)s/.*/hbase/
+
+            RULE:[2:$1@$0]([rn]m@#{esc_realm})s/.*/yarn/
+            RULE:[2:$1@$0](jhs@#{esc_realm})s/.*/mapred/
+            RULE:[2:$1@$0]([nd]n@#{esc_realm})s/.*/hdfs/
+            RULE:[2:$1@$0](hm@#{esc_realm})s/.*/hbase/
+            RULE:[2:$1@$0](rs@#{esc_realm})s/.*/hbase/
+            RULE:[2:$1@$0](opentsdb@#{esc_realm})s/.*/hbase/
+            DEFAULT
+            RULE:[1:$1](yarn|mapred|hdfs|hive|hbase|oozie)s/.*/nobody/
+            RULE:[2:$1](yarn|mapred|hdfs|hive|hbase|oozie)s/.*/nobody/
             RULE:[1:$1]
             RULE:[2:$1]
-            
-        """
+
+      """
+
+Configuration for proxy users
+
       core_site['hadoop.proxyuser.HTTP.hosts'] ?= '*'
       core_site['hadoop.proxyuser.HTTP.groups'] ?= '*'
 
@@ -522,9 +551,9 @@ recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 
 ## Dependencies
 
-
     fs = require 'ssh2-fs'
-    path = require 'path'
-    multimatch = require 'multimatch'
-    mkcmd = require '../lib/mkcmd'
     {merge} = require 'mecano/lib/misc'
+    mkcmd = require '../lib/mkcmd'
+    multimatch = require 'multimatch'
+    path = require 'path'
+    quote = require 'regexp-quote'
