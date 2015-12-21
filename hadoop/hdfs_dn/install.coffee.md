@@ -103,7 +103,7 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
       @mkdir
         destination: "#{pid_dir}"
         uid: hdfs.user.name
-        gid: hdfs.group.name # HDFS Group is forced by the system, hadoop_group can't be used
+        gid: hadoop_group.name
         mode: 0o0755
         parent: true
       @mkdir
