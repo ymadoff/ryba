@@ -73,8 +73,8 @@ TODO sep 2015: maybe should we simply move this to ZKFC?
       # when the active_nn is restarting and still in safemode
       @execute
         cmd: mkcmd.hdfs @, """
-        if hdfs --config #{hdfs.nn.conf_dir} haadmin -getServiceState #{active_nn_ctx.config.shortcut} | grep standby;
-        then hdfs --config #{hdfs.nn.conf_dir} haadmin -failover #{standby_nn_ctx.config.shortcut} #{active_nn_ctx.config.shortcut};
+        if hdfs --config #{hdfs.nn.conf_dir} haadmin -getServiceState #{active_nn_ctx.config.shortname} | grep standby;
+        then hdfs --config #{hdfs.nn.conf_dir} haadmin -failover #{standby_nn_ctx.config.shortname} #{active_nn_ctx.config.shortname};
         else exit 2; fi
         """
         code_skipped: 2
