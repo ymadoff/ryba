@@ -291,6 +291,9 @@ Example:
         hbase_thrift_cluster = ''
         for key, hbase_ctx of hbase_thrift_ctxs
           host_adress = ''
+          hbase_ctx.config.ryba.core_site ?= {}
+          hbase_ctx.config.ryba.core_site["hadoop.proxyuser.#{hue_docker.user.name}.hosts"] ?= '*'
+          hbase_ctx.config.ryba.core_site["hadoop.proxyuser.#{hue_docker.user.name}.groups"] ?= '*'
           # from source code the hostname should be prefixed with https to warn hue that SSL is enabled
           # activating ssl make hue mismatch fully qualified hostname
           # for now not prefixing anything
@@ -311,7 +314,6 @@ Example:
         hue_docker.ini['hbase']['thrift_transport'] =  hbase_ctx.config.ryba.hbase.site['hbase.regionserver.thrift.framed']
       else
         blacklisted_app.push 'hbase'
-
 
       # Zookeeper
       # for now we do not support zookeeper rest interface
