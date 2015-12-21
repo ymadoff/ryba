@@ -24,7 +24,7 @@ Make sure the broker are listening. The default port is "9092".
       {kafka} = @config.ryba
       return unless @has_module 'ryba/kafka/consumer'
       brokers = @contexts('ryba/kafka/broker').map (ctx) ->
-        "#{ctx.config.host}:#{ctx.config.ryba.kafka.broker['port']}"
+        "#{ctx.config.host}:#{ctx.config.ryba.kafka.broker.config['port']}"
       zookeeper_quorum = @contexts('ryba/kafka/consumer')[0].config.ryba.kafka.consumer.config['zookeeper.connect']
       @execute
         cmd: """
