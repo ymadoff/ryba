@@ -166,6 +166,7 @@ setAcl /hadoop-ha sasl:zkfc:cdrwa,sasl:nn:cdrwa,digest:zkfc:ePBwNWc34ehcTu1FTNI7
         export ZK_HOME=/usr/hdp/current/zookeeper-client/
         java -cp $ZK_HOME/lib/*:$ZK_HOME/zookeeper.jar org.apache.zookeeper.server.auth.DigestAuthenticationProvider #{zkfc.digest.name}:#{zkfc.digest.password}
         """
+        shy: true
         if: !!zkfc.digest.password
       , (err, generated, stdout) ->
         throw err if err
@@ -173,12 +174,13 @@ setAcl /hadoop-ha sasl:zkfc:cdrwa,sasl:nn:cdrwa,digest:zkfc:ePBwNWc34ehcTu1FTNI7
         digest = match[1] if match = /\->(.*)/.exec(stdout)
         throw Error "Failed to get digest" unless digest
         acls.push "digest:#{digest}:cdrwa"
-      @write
-        destination: "#{zkfc.conf_dir}/zk-acl.txt"
-        content: acls.join ','
-        uid: hdfs.user.name
-        gid: hdfs.group.name
-        mode: 0o0600
+      @call ->
+        @write
+          destination: "#{zkfc.conf_dir}/zk-acl.txt"
+          content: acls.join ','
+          uid: hdfs.user.name
+          gid: hdfs.group.name
+          mode: 0o0600
 
 ## SSH Fencing
 
