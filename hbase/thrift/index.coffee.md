@@ -27,13 +27,12 @@ Follows [cloudera hbase setup in secure mode][hbase-configuration]
       # http://gethue.com/hbase-browsing-with-doas-impersonation-and-kerberos/
       hbase.site['hbase.thrift.kerberos.principal'] ?= "HTTP/#{@config.host}@#{realm}" # was hbase_thrift/_HOST
       hbase.site['hbase.thrift.keytab.file'] ?= core_site['hadoop.http.authentication.kerberos.keytab']
-      hbase.site['hbase.regionserver.thrift.framed'] ?= 'buffered'
       # Enables impersonation
-      # http://hbase.apache.org/book.html#security.client.thrift
       # For now thrift server does not support impersonation for framed transport: check cloudera setup warning
-      if hbase.site['hbase.regionserver.thrift.framed'] != 'framed'
-        hbase.site['hbase.regionserver.thrift.http'] ?= 'true'
-        hbase.site['hbase.thrift.support.proxyuser'] ?= 'true'
+      # http://hbase.apache.org/book.html#security.gateway.thrift
+      hbase.site['hbase.regionserver.thrift.http'] ?= 'true'
+      hbase.site['hbase.thrift.support.proxyuser'] ?= 'true'
+      hbase.site['hbase.regionserver.thrift.framed'] ?= if hbase.site['hbase.regionserver.thrift.http'] then 'buffered' else 'framed'
       # Type of HBase thrift server
       hbase.site['hbase.regionserver.thrift.server.type'] ?= 'TThreadPoolServer'
       # The value for the property hbase.thrift.security.qop can be one of the following values:
