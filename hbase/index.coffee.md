@@ -88,6 +88,8 @@ Example
       # Short-circuit are true but socket.path isnt defined for hbase, only for hdfs, see http://osdir.com/ml/hbase-user-hadoop-apache/2013-03/msg00007.html
       # hbase.site['dfs.domain.socket.path'] ?= hdfs.site['dfs.domain.socket.path']
       hbase.site['dfs.domain.socket.path'] ?= '/var/lib/hadoop-hdfs/dn_socket'
+      # Hbase replication
+      hbase.site['hbase.replication'] ?= 'true' if hbase.replicated_clusters
 
 
 ## Configuration for Security

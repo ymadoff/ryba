@@ -10,6 +10,7 @@ Install the HBase client package and configure it with secured access.
     # module.exports.push require('./index').configure
     module.exports.push 'ryba/lib/hconfigure'
     module.exports.push 'ryba/lib/write_jaas'
+    module.exports.push 'ryba/zookeeper/client'
 
 ## Zookeeper JAAS
 
@@ -42,3 +43,30 @@ restrict it but not the client.
         uid: hbase.user.name
         gid: hbase.group.name
         backup: true
+
+## HBase Cluster Replication
+
+retrive the target cluster to replicate to.
+
+    module.exports.push header: 'HBase Client # Replication', handler: ->
+      {hbase} = @config.ryba
+      return unless @hosts_with_module('ryba/hbase/client').indexOf(@config.host) > -1
+      for k, cluster of hbase.replicated_clusters
+        peer_key = parseInt(k) + 1
+        peer_value = "#{cluster.zookeeper_quorum}:#{cluster.zookeeper_port}:#{cluster.zookeeper_node}"
+        if cluster.zookeeper_node != hbase.site['zookeeper.znode.parent']
+          msg_err = "Slave Cluster should have same zookeeper hbase node: #{cluster.zookeeper_node} instead of #{hbase.site['zookeeper.znode.parent']}"
+          throw new Error msg_err
+        else
+          @execute
+            cmd: mkcmd.hbase @, """
+            hbase shell 2>/dev/null <<-CMD
+              add_peer '#{peer_key}', '#{peer_value}'
+            CMD
+            """
+            unless_exec: mkcmd.hbase @, "hbase shell 2>/dev/null <<< \"list_peers\" | grep '#{peer_key} #{peer_value} ENABLED'"
+
+## Dependencies
+
+    mkcmd = require '../../lib/mkcmd'
+    each = require 'each'
