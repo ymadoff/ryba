@@ -68,7 +68,7 @@ keytool -list -v -keystore keystore -alias hadoop
 
 ## SSL
 
-    module.exports.push header: 'HDFS NN # SSL', retry: 0, handler: ->
+    module.exports.push header: 'Hadoop Core # SSL', retry: 0, handler: ->
       {ssl, ssl_server, ssl_client, hadoop_conf_dir} = @config.ryba
       @hconfigure
         destination: "#{hadoop_conf_dir}/ssl-server.xml"
