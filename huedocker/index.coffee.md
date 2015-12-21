@@ -70,6 +70,7 @@ Example:
       require('../hive/client').configure ctx
       ryba = ctx.config.ryba ?= {}
       {hadoop_conf_dir, webhcat, db_admin, core_site, hdfs, yarn, hbase} = ryba
+      nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn').configure
       hue_docker = ctx.config.ryba.hue_docker ?= {}
       # Layout
       hue_docker.conf_dir ?= '/etc/hue_docker/conf'
@@ -129,16 +130,16 @@ Example:
         webhdfs_url = "#{httpfs_protocol}://#{httpfs_ctx.config.host}:#{httpfs_port}/webhdfs/v1"
       else
         # Hue Install defines a dependency on HDFS client
-        nn_protocol = if ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-        nn_protocol = 'http' if ryba.hdfs.site['dfs.http.policy'] is 'HTTP_AND_HTTPS' and not hue_docker.ssl_client_ca
-        if ryba.hdfs.site['dfs.ha.automatic-failover.enabled'] is 'true'
-          nn_host = ryba.active_nn_host
+        nn_protocol = if nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+        nn_protocol = 'http' if nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.http.policy'] is 'HTTP_AND_HTTPS' and not hue.ssl_client_ca
+        if nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.ha.automatic-failover.enabled'] is 'true'
+          nn_host = nn_ctxs[0].config.ryba.active_nn_host
           shortname = ctx.contexts(hosts: nn_host)[0].config.shortname
-          nn_http_port = ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address.#{ryba.nameservice}.#{shortname}"].split(':')[1]
+          nn_http_port = nn_ctxs[0].config.ryba.hdfs.nn.site["dfs.namenode.#{nn_protocol}-address.#{nn_ctxs[0].config.ryba.nameservice}.#{shortname}"].split(':')[1]
           webhdfs_url = "#{nn_protocol}://#{nn_host}:#{nn_http_port}/webhdfs/v1"
         else
           nn_host = nn_ctxs[0].config.host
-          nn_http_port = ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address"].split(':')[1]
+          nn_http_port = nn_ctxs[0].config.ryba.hdfs.nn.site["dfs.namenode.#{nn_protocol}-address"].split(':')[1]
           webhdfs_url = "#{nn_protocol}://#{nn_host}:#{nn_http_port}/webhdfs/v1"
 
       # YARN ResourceManager (MR2 Cluster)
@@ -152,19 +153,18 @@ Example:
       # Support for RM HA was added in Hue 3.7
       if rm_hosts.length > 1
         # Active RM
-        rm_ctx = ctx.context rm_host, require('../hadoop/yarn_rm').configure
-        rm_port = rm_ctx.config.ryba.yarn.site["yarn.resourcemanager.address.#{rm_ctx.config.shortname}"].split(':')[1]
-        yarn_api_url[0] = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
-        then "http://#{yarn.site["yarn.resourcemanager.webapp.http.address.#{rm_ctx.config.shortname}"]}"
-        else "https://#{yarn.site["yarn.resourcemanager.webapp.https.address.#{rm_ctx.config.shortname}"]}"
+        rm_ctx = rm_ctxs[0]#ctx.context rm_host, require('../hadoop/yarn_rm').configure
+        rm_port = rm_ctx.config.ryba.yarn.rm.site["yarn.resourcemanager.address.#{rm_ctx.config.shortname}"].split(':')[1]
+        yarn_api_url[0] = if rm_ctx.config.ryba.yarn.rm.site['yarn.http.policy'] is 'HTTP_ONLY'
+        then "http://#{rm_ctx.config.ryba.yarn.rm.site["yarn.resourcemanager.webapp.http.address.#{rm_ctx.config.shortname}"]}"
+        else "https://#{rm_ctx.config.ryba.yarn.rm.site["yarn.resourcemanager.webapp.https.address.#{rm_ctx.config.shortname}"]}"
 
         # Standby RM
-        rm_host_ha = rm_hosts[1]
-        rm_ctx_ha = ctx.context rm_host_ha, require('../hadoop/yarn_rm').configure
-        rm_port_ha = rm_ctx_ha.config.ryba.yarn.site["yarn.resourcemanager.address.#{rm_ctx_ha.config.shortname}"].split(':')[1]
-        yarn_api_url[1] = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
-        then "http://#{yarn.site["yarn.resourcemanager.webapp.http.address.#{rm_ctx_ha.config.shortname}"]}"
-        else "https://#{yarn.site["yarn.resourcemanager.webapp.https.address.#{rm_ctx_ha.config.shortname}"]}"
+        rm_ctx_ha = rm_ctxs[1]
+        rm_port_ha = rm_ctx_ha.config.ryba.yarn.rm.site["yarn.resourcemanager.address.#{rm_ctx_ha.config.shortname}"].split(':')[1]
+        yarn_api_url[1] = if rm_ctx_ha.config.ryba.yarn.rm.site['yarn.http.policy'] is 'HTTP_ONLY'
+        then "http://#{rm_ctx_ha.config.ryba.yarn.rm.site["yarn.resourcemanager.webapp.http.address.#{rm_ctx_ha.config.shortname}"]}"
+        else "https://#{rm_ctx_ha.config.ryba.yarn.rm.site["yarn.resourcemanager.webapp.https.address.#{rm_ctx_ha.config.shortname}"]}"
 
         # hue_docker.ini['hadoop']['yarn_clusters']['default']['logical_name'] ?= "#{yarn.site['yarn.resourcemanager.cluster-id']}"
         hue_docker.ini['hadoop']['yarn_clusters']['default']['logical_name'] ?= "#{rm_ctx.config.shortname}"
@@ -173,22 +173,21 @@ Example:
         hue_docker.ini['hadoop']['yarn_clusters']['ha'] ?= {}
         hue_docker.ini['hadoop']['yarn_clusters']['ha']['submit_to'] ?= "true"
         hue_docker.ini['hadoop']['yarn_clusters']['ha']['resourcemanager_api_url'] ?= "#{yarn_api_url[1]}"
-        hue_docker.ini['hadoop']['yarn_clusters']['ha']['resourcemanager_port'] ?= "#{rm_port_ha}"
+        # hue_docker.ini['hadoop']['yarn_clusters']['ha']['resourcemanager_port'] ?= "#{rm_port_ha}"
         hue_docker.ini['hadoop']['yarn_clusters']['ha']['logical_name'] ?= "#{rm_ctx_ha.config.shortname}"
         # hue_docker.ini['hadoop']['yarn_clusters']['ha']['logical_name'] ?= "#{yarn.site['yarn.resourcemanager.cluster-id']}"
       else
         rm_ctx = ctx.context rm_host, require('../hadoop/yarn_rm').configure
-        rm_port = rm_ctx.config.ryba.yarn.site['yarn.resourcemanager.address'].split(':')[1]
+        rm_port = rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.address'].split(':')[1]
         yarn_api_url[0] = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
-        then "http://#{yarn.site['yarn.resourcemanager.webapp.http.address']}"
-        else "https://#{yarn.site['yarn.resourcemanager.webapp.https.address']}"
+        then "http://#{rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.webapp.http.address']}"
+        else "https://#{rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.webapp.https.address']}"
 
       hue_docker.ini['hadoop']['yarn_clusters']['default']['submit_to'] ?= "true"
-      hue_docker.ini['hadoop']['yarn_clusters']['default']['resourcemanager_host'] ?= "#{rm_host}"
-      hue_docker.ini['hadoop']['yarn_clusters']['default']['resourcemanager_port'] ?= "#{rm_port}"
+      # hue_docker.ini['hadoop']['yarn_clusters']['default']['resourcemanager_host'] ?= "#{rm_host}"
+      # hue_docker.ini['hadoop']['yarn_clusters']['default']['resourcemanager_port'] ?= "#{rm_port}"
       hue_docker.ini['hadoop']['yarn_clusters']['default']['resourcemanager_api_url'] ?= "#{yarn_api_url[0]}"
       hue_docker.ini['hadoop']['yarn_clusters']['default']['hadoop_mapred_home'] ?= '/usr/hdp/current/hadoop-mapreduce-client'
-
 
       # Configure HDFS Cluster
       hue_docker.ini['hadoop']['hdfs_clusters'] ?= {}
