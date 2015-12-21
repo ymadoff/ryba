@@ -6,6 +6,8 @@ an HBase Browser, query editors for Hive, Pig, Cloudera Impala and Sqoop2.
 It also ships with an Oozie Application for creating and monitoring workflows,
 a Zookeeper Browser and a SDK.
 
+Link to configure [hive hue configuration][hive-hue-ssl] over ssl.
+
     module.exports = []
 
 ## Configure
@@ -224,8 +226,14 @@ Example:
       hue.ini['beeswax']['hive_server_port'] ?= if hs2_ctx.config.ryba.hive.site['hive.server2.transport.mode'] is 'binary'
       then hs2_ctx.config.ryba.hive.site['hive.server2.thrift.port']
       else hs2_ctx.config.ryba.hive.site['hive.server2.thrift.http.port']
-      hue.ini['beeswax']['hive_conf_dir'] ?= "#{ctx.config.ryba.hive.conf_dir}" # Hive client is a dependency of Hue
-      hue.ini['beeswax']['server_conn_timeout'] ?= "240"
+      # http://www.cloudera.com/content/www/en-us/documentation/cdh/5-0-x/CDH5-Security-Guide/cdh5sg_hue_security.html
+      if hs2_ctx.config.ryba.hive.site['hive.server2.use.SSL']
+        throw Error 'Hue must be configured with ssl if communicating with hive over ssl' unless  hue.ssl.client_ca
+        hue.ini['beeswax']['ssl'] ?= {}
+        hue.ini['beeswax']['ssl']['enabled'] ?= 'true'
+        hue.ini['beeswax']['ssl']['cacerts'] ?= "#{hue.conf_dir}/trust.pem"
+        hue.ini['beeswax']['ssl']['cert'] ?= "#{hue.conf_dir}/cert.pem"
+        hue.ini['beeswax']['ssl']['key'] ?= "#{hue.conf_dir}/key.pem"
       # Desktop
       hue.ini['desktop'] ?= {}
       hue.ini['desktop']['django_debug_mode'] ?= '0' # Disable debug by default
@@ -283,3 +291,4 @@ Example:
     module.exports.push commands: 'stop', modules: 'ryba/hue/stop'
 
 [home]: http://gethue.com
+[hive-hue-ssl]:(http://www.cloudera.com/content/www/en-us/documentation/cdh/5-0-x/CDH5-Security-Guide/cdh5sg_hue_security.html)
