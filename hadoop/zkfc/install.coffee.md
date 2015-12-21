@@ -218,7 +218,7 @@ inserted if ALL users or the HDFS user access is denied.
           destination: "#{hdfs.user.home}/.ssh"
           uid: hdfs.user.name
           gid: hadoop_group.name
-          mode: 0o655
+          mode: 0o644
         @call (_, callback) ->
           fs.readFile "#{ssh_fencing.public_key}", (err, content) =>
             return callback err if err
