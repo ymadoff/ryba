@@ -12,6 +12,7 @@ Apache HBase provides Bigtable-like capabilities on top of Hadoop and HDFS
     module.exports.push 'masson/core/yum'
     module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/lib/hdp_select'
+    module.exports.push 'ryba/zookeeper/client'
 
 ## Configure
 
