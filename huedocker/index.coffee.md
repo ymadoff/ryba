@@ -84,9 +84,9 @@ Example:
       hue_docker.build ?= {}
       hue_docker.build.name ?= 'ryba/hue-build'
       hue_docker.build.dockerfile ?= "#{__dirname}/resources/build/Dockerfile"
-      hue_docker.build.directory ?= "#{__dirname}/resources/cache/build" # was '/tmp/ryba/hue-build'
+      hue_docker.build.directory ?= "#{__dirname}/cache/build" # was '/tmp/ryba/hue-build'
       hue_docker.prod ?= {}
-      hue_docker.prod.directory ?= "#{__dirname}/resources/cache/prod"
+      hue_docker.prod.directory ?= "#{__dirname}/cache/prod"
       hue_docker.port ?= '8888'
       blacklisted_app = []
       # User
@@ -123,6 +123,7 @@ Example:
 
       hue_docker.ini['hadoop'] ?= {}
       # For HDFS HA deployments,  HttpFS is preferred over webhdfs.It should be installed
+
       [httpfs_ctx] = ctx.contexts 'ryba/hadoop/httpfs', require('../hadoop/httpfs').configure
       if httpfs_ctx
         httpfs_protocol = if httpfs_ctx.config.ryba.httpfs.env.HTTPFS_SSL_ENABLED then 'https' else 'http'
@@ -229,6 +230,7 @@ Example:
           webhcat_ctx.config.ryba.webhcat.site["webhcat.proxyuser.#{hue_docker.user.name}.groups"] ?= '*'
       else
         blacklisted_app.push 'webhcat'
+
       # HCatalog
       [hs2_ctx] = ctx.contexts 'ryba/hive/server2', require('../hive/server2').configure
       throw Error "No Hive HCatalog Server configured" unless hs2_ctx
@@ -372,8 +374,6 @@ Example:
 
 ## Commands
 
-    # module.exports.push commands: 'backup', modules: 'ryba/huedocker/backup'
-
     module.exports.push commands: 'check', modules: 'ryba/huedocker/check'
 
     module.exports.push commands: 'install', modules: [
@@ -383,12 +383,13 @@ Example:
     ]
 
     module.exports.push commands: 'start', modules: 'ryba/huedocker/start'
-    #
+
     module.exports.push commands: 'status', modules: 'ryba/huedocker/status'
-    #
+
     module.exports.push commands: 'stop', modules: 'ryba/huedocker/stop'
 
     module.exports.push commands: 'prepare', modules: 'ryba/huedocker/prepare'
+
     module.exports.push commands: 'wait', modules: 'ryba/huedocker/wait'
 
 [home]: http://gethue.com

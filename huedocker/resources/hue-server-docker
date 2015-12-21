@@ -69,25 +69,26 @@ restart)
     $0 start
 ;;
 
-remove)
-        printf "You will have to run the container again"
-        printf "%s\n"
-        read -r -p "Are you sure? [y/N] " response
-        case $response in
-            [yY][eE][sS]|[yY])
-                printf "%-50s" "Removing (force) $NAME"
-                docker rm -f $CONTAINER
-                printf "%s\n" "Removed"
-                exit 0
-                ;;
-            *)
-                printf "%s\n" "Not removed"
-                exit 1
-                ;;
-        esac
-;;
+# remove)
+#         printf "You will have to run the container again"
+#         printf "%s\n"
+#         read -r -p "Are you sure ? [y/N] " response
+#         case $response in
+#             [yY][eE][sS]|[yY])
+#                 printf "%-50s" "Removing (force) $NAME"
+#                 docker rm -f $CONTAINER
+#                 printf "%s\n" "Removed"
+#                 exit 0
+#                 ;;
+#             *)
+#                 printf "%s\n" "Not removed"
+#                 exit 1
+#                 ;;
+#         esac
+# ;;
+
 
 *)
-        echo "Usage: $0 {status|start|stop|restart|remove}"
+        echo "Usage: $N {status|start|stop|restart}"
         exit 1
 esac

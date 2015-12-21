@@ -41,10 +41,11 @@ cat /etc/group | grep hue
 hue:x:494:
 ```
 
-    module.exports.push header: 'Hue # Users & Groups', handler: ->
+    module.exports.push header: 'Hue Docker # Users & Groups', handler: ->
       {hue_docker} = @config.ryba
       @group hue_docker.group
       @user hue_docker.user
+
 
 ## IPTables
 
@@ -90,7 +91,7 @@ Update the "hive-site.xml" with the hive/server2 kerberos principal.
 
 Update the "hbase-site.xml" with the hbase/thrift kerberos principal.
 
-    module.exports.push header: 'Hue Docker #  Hbase', handler: ->
+    module.exports.push header: 'Hue Docker # Hbase', handler: ->
       [hbase_ctx] = @contexts 'ryba/hbase/thrift'
       if hbase_ctx?
         {hbase} = hbase_ctx.config.ryba
@@ -236,22 +237,30 @@ changes.
         gid: hue_docker.group.name
         mode: 0o755
         parent: true
+      @mkdir
+        destination: '/tmp/hue_docker'
+        uid: hue_docker.user.name
+        gid: hue_docker.group.name
+        mode: 0o755
 
 ## Install Hue container
 
- Load Hue Container from local host
+Load Hue Container from local host ( if local container exists e.g. after a ryba prepare)
+Checks also if remote image's checksum and local container's one are indentical
 
     module.exports.push header: 'Hue Docker # Container', timeout: -1, handler: (options)  ->
       {hue_docker} = @config.ryba
-      tmp = '/user/hue_docker.tar'
+      tmp = '/logiciels/hue_docker.tar'
       checksum = ''
+      local_container = true
       @call (options, callback) ->
         fs.readFile "#{hue_docker.prod.directory}/checksum", 'ascii', (err, content) =>
           if err?
             return callback err if err.code != 'ENOENT'
             options.log message: "Cache cheksum file does not exist:#{hue_docker.prod.directory}/checksum", level: 'WARN'
-            options.log message: "You should execute prepare command", level: 'WARN'
-            return callback null, true
+            options.log message: "You should execute prepare command, skipping container upload", level: 'WARN'
+            local_container = false
+            return callback null, false
           else
             checksum = content
             @docker_checksum
@@ -259,22 +268,27 @@ changes.
               tag: '3.9'
             , (err, _, __, ___, hash) ->
               return callback err if err
-              return callback null, false if hash == checksum
-              return callback null, true
+              if hash == checksum
+                options.log message: "Not uploading image, cache cheksum matches remote checksum:#{checksum}-#{hash}", level: 'WARN'
+                return callback null, false
+              else
+                options.log message: "Cache cheksum doesn't match remote checksum:#{checksum}-#{hash}", level: 'WARN'
+                return callback null, true
       @upload
-        source: "#{__dirname}/resources/hue_docker.tar"
+        source: "#{__dirname}/cache/hue_docker.tar"
         destination: tmp
         binary: true
-        if: -> @status -1
+        md5: true
+        if: -> @status -1 or local_container
       @docker_load
         input: tmp
         checksum: checksum
-        if: -> @status -2 or @status -1
+        if_exists: tmp
+        if: -> @status -1
 
 ## Run Hue Server Container
 
 Runs the hue docker container after configuration and installation
-
 ```
 docker run --name hue_server --net host -d -v /etc/hadoop/conf:/etc/hadoop/conf
 -v /etc/hadoop-httpfs/conf:/etc/hadoop-httpfs/conf -v /etc/hive/conf:/etc/hive/conf
@@ -282,15 +296,17 @@ docker run --name hue_server --net host -d -v /etc/hadoop/conf:/etc/hadoop/conf
 -v /etc/security/keytabs:/etc/security/keytabs -v /etc/usr/hdp:/usr/hdp
 -v /etc/hue/conf/hue_docker.ini:/var/lib/hue/desktop/conf/pseudo-distributed.ini
 -e REQUESTS_CA_BUNDLE=/etc/hue/conf/trust.pem -e KRB5CCNAME=:/tmp/krb5cc_2410
-ryba/hue:3.8
+ryba/hue:3.9
 
 ```
 
     module.exports.push header: 'Hue Docker # Run', label_true: 'RUNNED', handler:  ->
       {hadoop_group,hadoop_conf_dir, hdfs, hue_docker, hive, hbase} = @config.ryba
       @docker_run
+        force: true
         image: "#{hue_docker.image}:#{hue_docker.version}"
         volume: [
+          "#{hue_docker.conf_dir}/hue_docker.ini:/var/lib/hue/desktop/conf/pseudo-distributed.ini"
           "#{hadoop_conf_dir}:#{hadoop_conf_dir}"
           "#{hive.conf_dir}:#{hive.conf_dir}"
           "#{hue_docker.conf_dir}:#{hue_docker.conf_dir}"
@@ -299,9 +315,10 @@ ryba/hue:3.8
           '/etc/krb5.conf:/etc/krb5.conf'
           '/etc/security/keytabs:/etc/security/keytabs'
           '/etc/usr/hdp:/usr/hdp'
-          "#{hue_docker.conf_dir}/hue_docker.ini:/var/lib/hue/desktop/conf/pseudo-distributed.ini"
+          '/tmp/hue_docker:/tmp'
         ]
-        # Fix SSL Communication for hue as client by setting the ca bundle path as global env variable
+        # Fix SSL Communication between hue as client and hadoop components
+        # by setting the ca bundle path as global env variable
         env: [
           "REQUESTS_CA_BUNDLE=#{hue_docker.ca_bundle}"
           "KRB5CCNAME=FILE:/tmp/krb5cc_#{hue_docker.user.uid}"
@@ -314,16 +331,16 @@ ryba/hue:3.8
 
 Write startup script to /etc/init.d/service-hue-docker
 
-    module.exports.push header: 'Hue Docker # Startup', handler:  ->
+    module.exports.push header: 'Hue Docker # Startup Script', handler:  ->
       {hue_docker} = @config.ryba
       @render
         source: "#{__dirname}/resources/#{hue_docker.service}"
         local_source: true
         destination: "/etc/init.d/#{hue_docker.service}"
         context: hue_docker
-      @execute
-        cmd: "chmod +x /etc/init.d/#{hue_docker.service}"
-
+      @chmod
+        destination: "/etc/init.d/#{hue_docker.service}"
+        mode: 0o755
 
 ## Dependencies
 

@@ -54,6 +54,9 @@ COPY hue_init.sh /var/lib/hue/
 
 USER root
 RUN chmod +x /var/lib/hue/hue_init.sh
+RUN echo 'ZONE="Europe/Paris"'> /etc/sysconfig/clock
+RUN ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime
+RUN rm -f /jdk-7u79-linux-x64.rpm
 USER {{user}}
 
 ENTRYPOINT ["/var/lib/hue/hue_init.sh"]

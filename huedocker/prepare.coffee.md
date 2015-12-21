@@ -50,25 +50,26 @@ for hue to be able to communicate with the hadoop cluster in secure mode.
         context: { git_source: 'hue' }
       # docker build -t "ryba/hue-build" .
       @docker_build
-        image: hue_docker.build.name
-        cwd: hue_docker.build.directory
+        tag: hue_docker.build.name
+        path: "#{hue_docker.build.directory}/Dockerfile"
         machine: machine
       @docker_rm
         machine: machine
         container: 'extractor'
+        force: true
       @docker_run
         image: hue_docker.build.name
-        container: 'extractor'
+        name: 'extractor'
         entrypoint: '/bin/bash'
         machine: machine
+        service: true
       @mkdir
         destination: "#{hue_docker.prod.directory}"
       @docker_cp
-        source: '/hue-build.tar.gz'
+        source: 'extractor:/hue-build.tar.gz'
         destination: hue_docker.prod.directory
         machine: machine
         container: 'extractor'
-
 
 # Hue Production dockerfile execution
 
@@ -92,21 +93,21 @@ This production container running as hue service
           pid_file: hue_docker.pid_file
         }
       # docker build -t "ryba/hue-build:3.9" .
-      @docker_build
-        image: "#{hue_docker.image}:#{hue_docker.version}"
-        machine: 'dev'
-        cwd: hue_docker.prod.directory
-      , (err, _, __, ___, checksum ) =>
-        return err if err
-        @write
-          content: "#{checksum}"
-          destination: "#{hue_docker.prod.directory}/checksum"
-      @docker_save
-        image: "#{hue_docker.image}:#{hue_docker.version}"
-        machine: machine
-        destination: "#{__dirname}/resources/hue_docker.tar"
-
-
+      @call (_, callback) ->
+        @docker_build
+          tag: "#{hue_docker.image}:#{hue_docker.version}"
+          machine: 'dev'
+          path: "#{hue_docker.prod.directory}/Dockerfile"
+        , (err, _, checksum) =>
+          return err if err
+          @write
+            content: "#{checksum}"
+            destination: "#{hue_docker.prod.directory}/checksum"
+          , (err, done) -> callback err, done
+      # @docker_save
+      #   image: "#{hue_docker.image}:#{hue_docker.version}"
+      #   machine: machine
+      #   output: "#{__dirname}/cache/hue_docker.tar"
 
 ## Instructions
 
