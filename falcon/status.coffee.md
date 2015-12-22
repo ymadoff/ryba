@@ -17,7 +17,7 @@ su -l falcon -c '/usr/hdp/current/falcon-server/bin/service-status.sh falcon'; [
 ```
 
     module.exports.push header: 'Falcon # Status Service', timeout: -1, label_true: 'STARTED', label_false: 'STOPPED', handler: ->
-      @execute
-        cmd: 'service falcon status'
+      @service_status 
+        name: 'falcon'
         code_skipped: [1, 3]
         if_exists: '/etc/init.d/falcon'

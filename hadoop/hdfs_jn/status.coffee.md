@@ -13,7 +13,6 @@ Check if the JournalNode Server is running. The process ID is located by default
 inside "/var/lib/hadoop-hdfs/hdfs/hadoop-hdfs-journalnode.pid".
 
     module.exports.push header: 'HDFS JN # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
-      @execute
-        cmd: 'service hadoop-hdfs-journalnode status'
-        code_skipped: 3
+      @service_status
+        name: 'hadoop-hdfs-journalnode'
         if_exists: '/etc/init.d/hadoop-hdfs-journalnode'

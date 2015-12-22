@@ -14,7 +14,4 @@ su -l knox -c "/usr/hdp/current/knox-server/bin/gateway.sh status"
 ```
 
     module.exports.push header: 'Knox # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
-      {knox} = @config.ryba
-      @execute
-        cmd: 'service knox-server status'
-        code_skipped: 3
+      @service_status name: 'knox-server'

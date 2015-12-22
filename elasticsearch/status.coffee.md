@@ -9,6 +9,4 @@ This commands checks the status of ElasticSearch (STARTED, STOPPED)
 ## Status
 
     module.exports.push header: 'ES # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
-      @execute
-        cmd: 'service elasticsearch status'
-        code_skipped: 3
+      @service_status name: 'elasticsearch'

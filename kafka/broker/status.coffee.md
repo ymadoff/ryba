@@ -4,7 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
 
+## Status
+
     module.exports.push header: 'Kafka Broker # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
-      @execute
-        cmd: 'service kafka-broker status'
-        code_skipped: 3
+      @service_status name: 'kafka-broker'
