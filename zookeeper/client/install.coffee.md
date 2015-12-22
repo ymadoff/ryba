@@ -62,11 +62,9 @@ which has no dependency.
       {zookeeper} = @config.ryba
       @write
         destination: "#{zookeeper.conf_dir}/zookeeper-env.sh"
-        write: for k, v of zookeeper.env
-          match: RegExp "^export\\s+(#{quote k})=(.*)$", 'mg'
-          replace: "export #{k}=\"#{v}\""
-          append: true
+        content: ("export #{k}=\"#{v}\"" for k, v of zookeeper.env).join '\n'
         backup: true
+        eof: true
 
 ## Dependencies
 
