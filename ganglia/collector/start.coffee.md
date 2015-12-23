@@ -22,4 +22,4 @@ service hdp-gmetad start
     module.exports.push header: 'Ganglia Collector # Start', label_true: 'STARTED', handler: ->
       @service_start
         name: 'hdp-gmetad'
-        if_exists: '/etc/init.d/hdp-gmetad'
+        code_stopped: 1

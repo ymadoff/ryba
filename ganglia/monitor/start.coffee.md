@@ -19,7 +19,7 @@ service hdp-gmond start
     module.exports.push header: 'Ganglia Monitor # Start', label_true: 'STARTED', handler: ->
       @service_start
         name: 'hdp-gmond'
-        if_exists: '/etc/init.d/hdp-gmond'
+        code_stopped: 1
       # On error, it is often necessary to remove pid files
       # this hasnt been tested yet:
       # .execute
