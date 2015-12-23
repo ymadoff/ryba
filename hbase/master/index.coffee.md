@@ -29,9 +29,9 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
 
 ## Configuration for Kerberos
 
-      hbase.site['hbase.master.keytab.file'] ?= "#{hbase.conf_dir}/hm.service.keytab" # was hm.service.keytab
-      hbase.site['hbase.master.kerberos.principal'] ?= "hbase/_HOST@#{realm}"
-      hbase.site['hbase.regionserver.kerberos.principal'] ?= "hbase/_HOST@#{realm}"
+      hbase.site['hbase.master.keytab.file'] ?= '/etc/security/keytabs/hm.service.keytab'
+      hbase.site['hbase.master.kerberos.principal'] ?= "hbase/_HOST@#{realm}" # "hm/_HOST@#{realm}" <-- need zookeeper auth_to_local
+      hbase.site['hbase.regionserver.kerberos.principal'] ?= "hbase/_HOST@#{realm}" # "rs/_HOST@#{realm}" <-- need zookeeper auth_to_localw
       hbase.site['hbase.coprocessor.master.classes'] ?= 'org.apache.hadoop.hbase.security.access.AccessController'
 
 ## Configuration for Proxy Users

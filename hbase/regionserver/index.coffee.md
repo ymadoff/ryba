@@ -30,7 +30,7 @@ It is responsible for serving and managing regions. In a distributed cluster, a 
 ## Configuration for Kerberos
 
       hbase.site['hbase.master.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.site['hbase.master.kerberos.principal'] #.replace '_HOST', m_ctxs[0].config.host
-      hbase.site['hbase.regionserver.keytab.file'] ?= "#{hbase.conf_dir}/rs.service.keytab" # was rs.service.keytab
+      hbase.site['hbase.regionserver.keytab.file'] ?= '/etc/security/keytabs/rs.service.keytab'
       hbase.site['hbase.regionserver.kerberos.principal'] ?= m_ctxs[0].config.ryba.hbase.site['hbase.regionserver.kerberos.principal']
       hbase.site['hbase.regionserver.global.memstore.upperLimit'] = null # Deprecated from HDP 2.3
       hbase.site['hbase.regionserver.global.memstore.size'] = '0.4' # Default in HDP Companion Files
