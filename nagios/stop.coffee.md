@@ -3,7 +3,6 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    # module.exports.push require('./index').configure
 
 ## Stop
 
@@ -20,6 +19,7 @@ The file storing the PID is "/var/run/nagios.pid".
     module.exports.push header: 'Nagios # Stop', label_true: 'STOPPED', handler: ->
       @service_stop
         name: 'nagios'
+        code_stopped: 1
 
 ## Stop Clean Logs
 

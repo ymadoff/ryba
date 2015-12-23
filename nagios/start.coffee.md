@@ -3,7 +3,6 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    # module.exports.push require('./index').configure
 
 ## Start
 
@@ -17,3 +16,4 @@ service nagios start
     module.exports.push header: 'Nagios # Start', label_true: 'STARTED', handler: ->
       @service_start
         name: 'nagios'
+        code_stopped: 1
