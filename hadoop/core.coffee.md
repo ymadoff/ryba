@@ -393,32 +393,22 @@ source code, the list of supported prefixes is: "namenode", "resourcemanager",
       # Graphite sink, accepted properties are "server_host", "server_port" and "metrics_prefix"
       [graphite_ctx] =  ctx.contexts 'ryba/graphite/collector'
       if graphite_ctx and (hadoop_metrics['*.sink.graphite.class'] or hadoop_metrics['*.sink.graphite.class'] is undefined)
-        hadoop_metrics['*.sink.graphite.class'] ?= 'org.apache.hadoop.metrics2.sink.GraphiteSink'
         hadoop_metrics['*.sink.graphite.period'] ?= '10'
-        if ctx.has_module 'ryba/hadoop/hdfs_nn'
-          hadoop_metrics['namenode.sink.graphite.server_host'] ?= "#{graphite_ctx.config.host}"
-          hadoop_metrics['namenode.sink.graphite.server_port'] ?= "#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
-        if ctx.has_module 'ryba/hadoop/yarn_rm'
-          hadoop_metrics['resourcemanager.sink.graphite.server_host'] ?= "#{graphite_ctx.config.host}"
-          hadoop_metrics['resourcemanager.sink.graphite.server_port'] ?= "#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
-        if ctx.has_module 'ryba/hadoop/hdfs_dn'
-          hadoop_metrics['datanode.sink.graphite.server_host'] ?= "#{graphite_ctx.config.host}"
-          hadoop_metrics['datanode.sink.graphite.server_port'] ?= "#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
-        if ctx.has_module 'ryba/hadoop/yarn_nm'
-          hadoop_metrics['nodemanager.sink.graphite.server_host'] ?= "#{graphite_ctx.config.host}"
-          hadoop_metrics['nodemanager.sink.graphite.server_port'] ?= "#{graphite_ctx.config.ryba.ganglia.nn_port}"
-          hadoop_metrics['maptask.sink.graphite.server_host'] ?= "#{graphite_ctx.config.host}"
-          hadoop_metrics['maptask.sink.graphite.server_port'] ?= "#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
-          hadoop_metrics['reducetask.sink.graphite.server_host'] ?= "#{graphite_ctx.config.host}"
-          hadoop_metrics['reducetask.sink.graphite.server_port'] ?= "#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
-        if ctx.has_module 'ryba/hadoop/hdfs_jn'
-          hadoop_metrics['journalnode.sink.graphite.server_host']
-        if ctx.has_module 'ryba/hadoop/mapred_jhs'
-          hadoop_metrics['historyserver.sink.graphite.server_host']
-        # if ctx.has_module 'ryba/storm/nimbus'
-        #   hadoop_metrics['nimbus.sink.graphite.server_host']
-        # if ctx.has_module 'ryba/storm/supervisor'
-        #   hadoop_metrics['supervisor.sink.graphite.server_host']
+        hadoop_metrics['*.sink.graphite.server_host'] ?= "#{graphite_ctx.config.host}"
+        hadoop_metrics['*.sink.graphite.server_port'] ?= "#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
+        # hadoop_metrics['maptask.sink.graphite.server_host'] ?= "#{graphite_ctx.config.host}"
+        # hadoop_metrics['maptask.sink.graphite.server_port'] ?= "#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
+        # hadoop_metrics['reducetask.sink.graphite.server_host'] ?= "#{graphite_ctx.config.host}"
+        # hadoop_metrics['reducetask.sink.graphite.server_port'] ?= "#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
+        for k, mod of {
+          namenode: 'ryba/hadoop/hdfs_nn'
+          resourcemanager: 'ryba/hadoop/yarn_rm'
+          datanode: 'ryba/hadoop/hdfs_dn'
+          nodemanager: 'ryba/hadoop/yarn_nm'
+          journalnode: 'ryba/hadoop/hdfs_jn'
+          historyserver: 'ryba/hadoop/mapred_jhs'
+        } then if ctx.has_module mod
+          hadoop_metrics["#{k}.sink.graphite.class"] ?= 'org.apache.hadoop.metrics2.sink.GraphiteSink'
 
 ## Users & Groups
 
