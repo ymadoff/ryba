@@ -91,13 +91,12 @@ driver does not copy metrics.properties file as it should. This is fixed in vers
         """
         if: -> @status -1
 
-## Spark Shell Scala
+## Spark Shell Scala (no hive)
 
 Test spark-shell, in yarn-client mode. Spark-shell supports onyl local[*] mode and
 yarn-client mode, not yarn-cluster.
-TODO: Check hive communication with sparkSql queries
 
-    module.exports.push header: 'Spark Client # Check Spark Scala-Shell', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Spark Client # Check Shell (No SQL)', timeout: -1, label_true: 'CHECKED', handler: ->
       {spark, force_check} = @config.ryba
       file_check = "check-#{@config.shortname}-spark-shell-scala"
       directory = "check-#{@config.shortname}-spark_shell_scala"
@@ -117,9 +116,44 @@ TODO: Check hive communication with sparkSql queries
         """
         if: -> @status -1
 
+## Spark Shell Scala (no hive)
+
+Executes hive queries to check communication with Hive.
+Creating database from SparkSql is not supported for now.
+
+    module.exports.push header: 'Spark Client # Check Shell (Hive SQL)', timeout: -1,label_true: 'CHECKED', handler: ->
+      return unless @hosts_with_module('ryba/hive/server2').length
+      {spark, force_check, user, core_site} = @config.ryba
+      dir_check = "check-#{@config.shortname}-spark-shell-scala-sql"
+      directory = "check-#{@config.shortname}-spark_shell_scala-sql"
+      db = "check_#{@config.shortname}_spark_shell_hive_#{@config.shortname}"
+      @execute
+        cmd: mkcmd.test @, """
+        hdfs dfs -rm -r -skipTrash #{directory} || true
+        hdfs dfs -rm -r -skipTrash #{dir_check} || true
+        hdfs dfs -mkdir -p #{directory}/my_db/spark_sql_test
+        echo -e 'a,1\\nb,2\\nc,3' > /var/tmp/spark_sql_test
+        hive -e "
+          DROP DATABASE IF EXISTS #{db};
+          CREATE DATABASE #{db} LOCATION '/user/#{user.name}/#{directory}/my_db/';
+        "
+        spark-shell --master yarn-client 2>/dev/null <<SPARKSHELL
+        sqlContext.sql(\"USE #{db}\");
+        sqlContext.sql(\"DROP TABLE IF EXISTS spark_sql_test\");
+        sqlContext.sql(\"CREATE TABLE IF NOT EXISTS spark_sql_test (key STRING, value INT)\");
+        sqlContext.sql(\"LOAD DATA LOCAL INPATH '/var/tmp/spark_sql_test' INTO TABLE spark_sql_test\");
+        sqlContext.sql(\"FROM spark_sql_test SELECT key, value\").collect().foreach(println)
+        sqlContext.sql(\"FROM spark_sql_test SELECT key, value\").rdd.saveAsTextFile(\"#{core_site['fs.defaultFS']}/user/#{user.name}/#{dir_check}\")
+        SPARKSHELL
+        hive -e "DROP TABLE #{db}.spark_sql_test; DROP DATABASE #{db};"
+        if hdfs dfs -test -f /user/#{user.name}/#{dir_check}/_SUCCESS; then exit 0; else exit 1;fi
+        """
+        unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{dir_check}/_SUCCESS"
+
+
 ## Spark Shell Python
 
-    module.exports.push header: 'Spark Client # Check Spark Python-Shell', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Spark Client # Check Shell Python', timeout: -1, label_true: 'CHECKED', handler: ->
       {spark, force_check} = @config.ryba
       file_check = "check-#{@config.shortname}-spark-shell-python"
       directory = "check-#{@config.shortname}-spark_shell_python"
