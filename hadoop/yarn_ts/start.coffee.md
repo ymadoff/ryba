@@ -19,7 +19,7 @@ service hadoop-yarn-timelineserver start
 su -l yarn -c "/usr/hdp/current/hadoop-yarn-timelineserver/sbin/yarn-daemon.sh --config /etc/hadoop/conf start timelineserver"
 ```
 
-    module.exports.push header: 'YARN ATS # Start', handler: ->
+    module.exports.push header: 'YARN ATS # Start', label_true: 'STARTED', handler: ->
       @service_start
         name: 'hadoop-yarn-timelineserver'
         if_exists: '/etc/init.d/hadoop-yarn-timelineserver'
