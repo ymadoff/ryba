@@ -136,12 +136,9 @@ https://hbase.apache.org/book/security.html
 Enable stats collection in Ganglia and Graphite
 
       @call header: 'HBase Master # Metrics', handler: ->
-        content = ""
-        for k, v of hbase.metrics
-          content += "#{k}=#{v}\n" if v?
-        @write
+        @write_properties
           destination: "#{hbase.conf_dir}/hadoop-metrics2-hbase.properties"
-          content: content
+          content: hbase.metrics.config
           backup: true
 
       # @call header: 'HBase Master # SSL', retry: 0, handler: ->
