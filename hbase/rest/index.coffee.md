@@ -24,13 +24,13 @@ See [REST Gateway Impersonation Configuration][impersonation].
       hbase.site['hbase.rest.ssl.keystore.password'] ?= ssl_server['ssl.server.keystore.password']
       hbase.site['hbase.rest.ssl.keystore.keypassword'] ?= ssl_server['ssl.server.keystore.keypassword']
       hbase.site['hbase.rest.kerberos.principal'] ?= "hbase_rest/_HOST@#{realm}" # Dont forget `grant 'rest_server', 'RWCA'`
-      hbase.site['hbase.rest.keytab.file'] ?= "#{hbase.conf_dir}/rest.service.keytab"
+      hbase.site['hbase.rest.keytab.file'] ?= '/etc/security/keytabs/hbase_rest.service.keytab'
       hbase.site['hbase.rest.authentication.type'] ?= 'kerberos'
       hbase.site['hbase.rest.support.proxyuser'] ?= 'true'
       hbase.site['hbase.rest.authentication.kerberos.principal'] ?= "HTTP/_HOST@#{realm}"
       # hbase.site['hbase.rest.authentication.kerberos.keytab'] ?= "#{hbase.conf_dir}/hbase.service.keytab"
       hbase.site['hbase.rest.authentication.kerberos.keytab'] ?= core_site['hadoop.http.authentication.kerberos.keytab']
-      m_ctxs = ctx.contexts 'ryba/hbase/master'
+      m_ctxs = ctx.contexts 'ryba/hbase/master', require('../master').configure
       hbase.site['hbase.master.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.site['hbase.master.kerberos.principal']
       hbase.site['hbase.regionserver.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.site['hbase.regionserver.kerberos.principal']
 
