@@ -50,6 +50,7 @@ Example :
       zookeeper.env['CLASSPATH'] ?= '$CLASSPATH:/usr/share/zookeeper/*'
       zookeeper.env['ZOO_LOG4J_PROP'] = "INFO,CONSOLE,ROLLINGFILE"
       zookeeper.log4j ?= {}
+      zookeeper.log4j[k] ?= v for k, v of ctx.config.log4j
       if zookeeper.log4j.server_port? then zookeeper.env['ZOO_LOG4J_PROP'] = "#{zookeeper.env['ZOO_LOG4J_PROP']},SOCKETHUB"
       if zookeeper.log4j.remote_host? && zookeeper.log4j.remote_port? then zookeeper.env['ZOO_LOG4J_PROP'] = "#{zookeeper.env['ZOO_LOG4J_PROP']},SOCKET"
       # Configuration

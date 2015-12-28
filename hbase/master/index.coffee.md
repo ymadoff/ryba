@@ -45,12 +45,10 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
 
 ## Configuration for Log4J
 
+      hbase.log4j ?= {}
+      hbase.log4j[k] ?= v for k, v of ctx.config.log4j
       hbase.master_opts = "#{hbase.env['HBASE_MASTER_OPTS']} -Dhbase.log4j.extra_appender=,socket_server -Dhbase.log4j.server_port=#{hbase.log4j.server_port}" if hbase.log4j?.server_port?
       hbase.master_opts = "#{hbase.env['HBASE_MASTER_OPTS']} -Dhbase.log4j.extra_appender=,socket_client -Dhbase.log4j.remote_host=#{hbase.log4j.remote_host} -Dhbase.log4j.remote_port=#{hbase.log4j.remote_port}" if hbase.log4j?.remote_host? && hbase.log4j?.remote_port?
-      #hbase.master.log4j.root_logger = "INFO,RFA,socket_server" if hbase.log4j.server_port?
-      #hbase.master.log4j.root_logger = "INFO,RFA,socket_client" if hbase.log4j.remote_host? && hbase.log4j.remote_port?
-      #hbase.master.log4j.security_logger = "INFO,RFAS,socket_server" if hbase.log4j.server_port?
-      #hbase.master.log4j.security_logger = "INFO,RFAS,socket_client" if hbase.log4j.remote_host? && hbase.log4j.remote_port?
 
 ## Commands
 
