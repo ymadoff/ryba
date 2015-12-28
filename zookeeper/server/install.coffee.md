@@ -147,7 +147,7 @@ Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
         , (err, _, stdout) ->
           digest = match[1] if match = /\->(.*)/.exec(stdout)
           return callback Error "Failed to get digest" unless digest
-          zookeeper.env['SERVER_JVMFLAGS'] += " -Dzookeeper.DigestAuthenticationProvider.superDigest=#{digest}"
+          zookeeper.env['SERVER_JVMFLAGS'] = "-Dzookeeper.DigestAuthenticationProvider.superDigest=#{digest} #{zookeeper.env['SERVER_JVMFLAGS']}"
           callback()
 
 ## Environment
