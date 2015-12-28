@@ -12,7 +12,7 @@ Run a Pig script to test the installation once the ResourceManager is
 installed. The script will only be executed the first time it is deployed
 unless the "hdp.force_check" configuration property is set to "true".
 
-    module.exports.push header: 'Pig Check # Client', label_true: 'CHECKED', timeout: -1, handler: ->
+    module.exports.push header: 'Pig # Check Client', label_true: 'CHECKED', timeout: -1, handler: ->
       {force_check, user} = @config.ryba
       @write
         content: """
@@ -35,7 +35,7 @@ unless the "hdp.force_check" configuration property is set to "true".
 
 ## HCat
 
-    module.exports.push header: 'Pig Check # HCat', label_true: 'CHECKED', timeout: -1, handler: ->
+    module.exports.push header: 'Pig # Check HCat', label_true: 'CHECKED', timeout: -1, handler: ->
       {user, force_check} = @config.ryba
       query = (query) -> "hcat -e \"#{query}\" "
       db = "check_#{@config.shortname}_pig_hcat"
