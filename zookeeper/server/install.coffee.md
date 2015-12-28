@@ -80,7 +80,7 @@ which has no dependency.
       @krb5_addprinc
         principal: "zookeeper/#{@config.host}@#{realm}"
         randkey: true
-        keytab: "#{zookeeper.conf_dir}/zookeeper.keytab"
+        keytab: '/etc/security/keytabs/zookeeper.service.keytab'
         uid: zookeeper.user.name
         gid: hadoop_group.name
         kadmin_principal: kadmin_principal
@@ -90,7 +90,7 @@ which has no dependency.
         destination: '/etc/zookeeper/conf/zookeeper-server.jaas'
         content: Server:
           principal: "zookeeper/#{@config.host}@#{realm}"
-          keyTab: "#{zookeeper.conf_dir}/zookeeper.keytab"
+          keyTab: '/etc/security/keytabs/zookeeper.service.keytab'
         uid: zookeeper.user.name
         gid: hadoop_group.name
       @write_jaas

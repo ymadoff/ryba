@@ -54,7 +54,7 @@ The default configuration is located inside the source code in the location
       httpfs.site['httpfs.authentication.kerberos.principal'] ?= "HTTP/#{ctx.config.host}@#{realm}" # Default to "HTTP/${httpfs.hostname}@${kerberos.realm}"
       httpfs.site['httpfs.authentication.kerberos.keytab'] ?= '/etc/security/keytabs/spnego.service.keytab' # Default to "${user.home}/httpfs.keytab"
       httpfs.site['httpfs.hadoop.authentication.type'] ?= 'kerberos'
-      httpfs.site['httpfs.hadoop.authentication.kerberos.keytab'] ?= '/etc/hadoop-httpfs/conf/httpfs.keytab' # Default to "${user.home}/httpfs.keytab"
+      httpfs.site['httpfs.hadoop.authentication.kerberos.keytab'] ?= '/etc/security/keytabs/httpfs.service.keytab' # Default to "${user.home}/httpfs.keytab"
       httpfs.site['httpfs.hadoop.authentication.kerberos.principal'] ?= "#{httpfs.user.name}/#{ctx.config.host}@#{realm}" # Default to "${user.name}/${httpfs.hostname}@${kerberos.realm}"
       httpfs.site['httpfs.authentication.kerberos.name.rules'] ?= ctx.config.ryba.core_site['hadoop.security.auth_to_local']
       hdfs_ctxs = ctx.contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn']
