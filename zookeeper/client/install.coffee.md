@@ -41,17 +41,7 @@ which has no dependency.
         name: 'zookeeper-client'
 
     module.exports.push header: 'ZooKeeper Client # Kerberos', timeout: -1, handler: ->
-      {zookeeper, hadoop_group, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
-      @krb5_addprinc
-        principal: "zookeeper/#{@config.host}@#{realm}"
-        randkey: true
-        keytab: "#{zookeeper.conf_dir}/zookeeper.keytab"
-        uid: zookeeper.user.name
-        gid: hadoop_group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
+      {zookeeper} = @config.ryba
       @write_jaas
         destination: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
         content: Client:
