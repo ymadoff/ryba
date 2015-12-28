@@ -185,7 +185,7 @@ Enable stats collection in Ganglia and Graphite
 Ensure we have read access to the spnego keytab soring the server HTTP
 principal.
 
-      @call header: 'HBase RegionServer # SPNEGO', handler: ->
+      @call header: 'HBase Master # SPNEGO', handler: ->
         @execute
           cmd: "su -l #{hbase.user.name} -c 'test -r /etc/security/keytabs/spnego.service.keytab'"
 
