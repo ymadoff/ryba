@@ -25,7 +25,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 It's the  host' port server map from the container
 
-    module.exports.push header: 'Zeppelin Server # IPTables', handler: ->
+    module.exports.push header: 'Zeppelin Install # IPTables', handler: ->
       {zeppelin} = @config.ryba
       # @iptables
       #   rules: [
@@ -87,7 +87,7 @@ SSL only required for the server
 
 ## HDP select status
 
-    module.exports.push header: 'Zeppelin Environment # HDP',  handler: ->
+    module.exports.push header: 'Zeppelin Install # HDP Version',  handler: ->
       {zeppelin} = @config.ryba
       @execute
           cmd:  "hdp-select versions | tail -1"
@@ -100,7 +100,7 @@ SSL only required for the server
 
 Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
 
-    module.exports.push header: 'Zeppelin Yarn # Spark',  handler: ->
+    module.exports.push header: 'Zeppelin Install # Spark',  handler: ->
       {zeppelin, core_site, spark} = @config.ryba
       @execute
         cmd: 'ls -l /usr/hdp/current/spark-client/lib/ | grep -m 1 assembly | awk {\'print $9\'}'
@@ -111,28 +111,21 @@ Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
 
 ## Zeppelin properties configuration
     
-    module.exports.push header: 'Zeppelin Environment # Configure',  handler: ->
+    module.exports.push header: 'Zeppelin Install # Configure',  handler: ->
       {hadoop_group,hadoop_conf_dir, hdfs, zeppelin} = @config.ryba
       @mkdir
-        destination: zeppelin.destination
+        destination: "#{zeppelin.conf_dir}"
         mode: 0o0750
       @download
-        source: "#{__dirname}/../resources/zeppelin/zeppelin-site.xml"
-        destination: "#{zeppelin.conf_dir}/zeppelin-site.xml"
-        uid: hdfs.user.name
-        gid: hadoop_group.name
-        mode: 0o755
-        if_not_exists: "#{zeppelin.conf_dir}/zeppelin-site.xml"
-      @download
-        source: "#{__dirname}/../resources/zeppelin/zeppelin-env.sh"
+        source: "#{__dirname}/resources/zeppelin-env.sh"
         destination: "#{zeppelin.conf_dir}/zeppelin-env.sh"
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755
-        if_not_exists: "#{zeppelin.conf_dir}/zeppelin-env.sh"
+        unless_exists: true
       @hconfigure
         destination: "#{zeppelin.conf_dir}/zeppelin-site.xml"
-        default: "#{__dirname}/../resources/zeppelin/zeppelin-site.xml"
+        default: "#{__dirname}/resources/zeppelin-site.xml"
         local_default: true
         properties: zeppelin.site
         merge: true
@@ -148,37 +141,39 @@ Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
 
 ## Install Zeppelin docker image
 
- Load Zeppelin docker image from local host
+Load Zeppelin docker image from local host
 
-    module.exports.push header: 'Zeppelin Image # Import', timeout: -1, handler: ->
+    module.exports.push header: 'Zeppelin Install # Import', timeout: -1, handler: ->
       {zeppelin} = @config.ryba
       @download
-        source: "#{zeppelin.build.directory}/zeppelin.tar"
-        destination: "#{zeppelin.build.directory}/zeppelin.tar"
-        if_not_exists: "#{zeppelin.build.directory}/zeppelin.tar"
+        source: "#{@config.mecano.cache_dir}/zeppelin.tar"
+        destination: "/tmp/zeppelin.tar" # add versioning
       @docker_load
         machine: 'ryba'
-        source: "#{zeppelin.build.directory}/zeppelin.tar"
+        source: "/tmp/zeppelin.tar"
 
 ## Runs Zeppelin container 
 
-    module.exports.push header: 'Zeppelin Container # Run',  handler: ->
+    module.exports.push header: 'Zeppelin Install # Run',  handler: ->
       {hadoop_group,hadoop_conf_dir, hdfs, zeppelin} = @config.ryba
       websocket = parseInt(zeppelin.site['zeppelin.server.port'])+1
       @docker_run
-        image: 'ryba/zeppelin:0.6'
+        image: "#{zeppelin.prod.tag}"
         volume: [
           "#{hadoop_conf_dir}:#{hadoop_conf_dir}"
-          "#{zeppelin.conf_dir}:#{zeppelin.conf_dir}"
+          "#{zeppelin.conf_dir}:/usr/lib/zeppelin/conf"
           '/etc/krb5.conf:/etc/krb5.conf'
           '/etc/security/keytabs:/etc/security/keytabs'
-          '/etc/usr/hdp:/usr/hdp'
+          '/usr/bin/hdfs:/usr/bin/hdfs'
+          '/usr/bin/yarn:/usr/bin/yarn'
+          '/usr/hdp:/usr/hdp'
           '/etc/spark/conf:/etc/spark/conf'
           '/etc/hive/conf:/etc/hive/conf'
+          "#{zeppelin.log_dir}:/usr/lib/zeppelin/logs"
         ]
         net: 'host'
         name: 'zeppelin_notebook'
-        hostname: 'zeppelin_notebook.ryba'
+        # hostname: 'zeppelin_notebook.ryba'
 
 ## Dependencies
 

@@ -11,52 +11,47 @@ Version:
     module.exports = []
     module.exports.push 'masson/bootstrap/log'
 
-## Zeppelin compiling build from Dockerfile
+## Prepare Build
 
-Intermetiate container to build zeppelin from source. Builds ryba/zeppelin-build image
+Intermetiate container to build zeppelin from source. Builds ryba/zeppelin-build
+image.
 
-    module.exports.push header: 'Zeppelin Build # Docker', retry: 1, timeout: -1, handler: ->
+    module.exports.push header: 'Zeppelin # Prepare Build', retry: 1, timeout: -1, handler: ->
       {zeppelin} = @config.ryba
       machine = 'ryba'
-      @call
-        handler: ->
-          @docker_build
-            machine: machine
-            tag: zeppelin.build.name
-            cwd: zeppelin.build.cwd
-          @docker_run
-            machine: machine
-            image: zeppelin.build.name
-            rm: true
-            volume: "#{@config.mecano.cache_dir}:/target"
-      # @call
-      #   unless: (_, callback) ->
-      #     fs.stat "#{zeppelin.build.directory}/zeppelin.tar", (err, stats) ->
-      #       return callback null, !!err 
-      #   handler: ->
-      #     @download
-      #       source: "#{__dirname}/../../ryba-cluster-no-secure-4vm-2pc/resources/java/local_policy.jar"
-      #       destination: "#{zeppelin.build.directory}/resources/local_policy.jar"
-      #     @download
-      #       source: "#{__dirname}/../../ryba-cluster-no-secure-4vm-2pc/resources/java/US_export_policy.jar"
-      #       destination: "#{zeppelin.build.directory}/resources/US_export_policy.jar"
-      #     @download
-      #       source: "#{__dirname}/../resources/zeppelin/prod/Dockerfile"
-      #       destination: "#{zeppelin.build.directory}/Dockerfile"
-      #       local: true
-      #       force: true
-      #     @docker_build
-      #       image: 'ryba/zeppelin:0.6'
-      #       machine: machine
-      #       cwd: zeppelin.build.directory
-      #     @docker_save
-      #       image: 'ryba/zeppelin:0.6'
-      #       machine: machine
-      #       destination: "#{zeppelin.build.directory}/zeppelin.tar"   
+      @docker_build
+        machine: machine
+        tag: zeppelin.build.tag
+        cwd: zeppelin.build.cwd
+      @docker_run
+        machine: machine
+        image: zeppelin.build.tag
+        rm: true
+        volume: "#{@config.mecano.cache_dir}:/target"
+      @mkdir
+        destination: "#{@config.mecano.cache_dir}/zeppelin"
+      @copy
+        source: "#{zeppelin.prod.cwd}/Dockerfile"
+        destination: "#{@config.mecano.cache_dir}/zeppelin"
+      @copy
+        source: "#{@config.mecano.cache_dir}/zeppelin-build.tar.gz"
+        destination: "#{@config.mecano.cache_dir}/zeppelin"
 
-## Dependencies  
+## Prepare Container
 
-    fs = require 'fs'
+Build the Docker container and place it inside the cache directory.
+
+    module.exports.push header: 'Zeppelin # Prepare Container', retry: 1, timeout: -1, handler: ->
+      {zeppelin} = @config.ryba
+      machine = 'ryba'
+      @docker_build
+        machine: machine
+        tag: "#{zeppelin.prod.tag}"
+        cwd: "#{@config.mecano.cache_dir}/zeppelin"
+      @docker_save
+        image: "#{zeppelin.prod.tag}"
+        machine: machine
+        destination: "#{@config.mecano.cache_dir}/zeppelin.tar"
 
 ## Instructions
 

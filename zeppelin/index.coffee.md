@@ -10,17 +10,14 @@
       zeppelin = ctx.config.ryba.zeppelin ?= {}
       zeppelin.repository = 'https://github.com/apache/incubator-zeppelin.git'
       zeppelin.source = "#{__dirname}/../resources/zeppelin-build.tar.gz"
-      zeppelin.destination = '/var/lib/zeppelin'
       zeppelin.conf_dir = '/var/lib/zeppelin/conf'
-      #Set to true if you want to deploy from build 
-      #in this case zeppelin.source is required
+      zeppelin.log_dir = '/var/log/zeppelin'
       zeppelin.build ?= {}
       zeppelin.build.cwd ?= "#{__dirname}/resources/build"
-      zeppelin.build.name ?= 'ryba/zeppelin-build'
-      zeppelin.build.execute ?= true
-      # zeppelin.build.dockerfile ?= "#{__dirname}/../resources/zeppelin/build/Dockerfile"
-      # zeppelin.build.directory ?= '/tmp/ryba/zeppelin-build'
-      zeppelin.build.local ?= true
+      zeppelin.build.tag ?= 'ryba/zeppelin-build'
+      zeppelin.prod ?= {}
+      zeppelin.prod.cwd ?= "#{__dirname}/resources/prod"
+      zeppelin.prod.tag ?= 'ryba/zeppelin:0.1'
       zeppelin.site ?= {}
       zeppelin.site['zeppelin.server.addr'] ?= '0.0.0.0'
       zeppelin.site['zeppelin.server.port'] ?= '9090'
@@ -72,7 +69,8 @@
       zeppelin.env['ZEPPELIN_JAVA_OPTS'] ?= '-Dhdp.version=2.3.0.0-2557'
       #zeppelin.env['SPARK_YARN_JAR'] ?= 'file:///var/lib/zeppelin/interpreter/spark/zeppelin-spark-0.6.0-incubating-SNAPSHOT.jar'
       # zeppelin.env['SPARK_YARN_JAR'] ?= 'hdfs:///user/spark/share/lib/spark-assembly-1.3.1.2.3.0.0-2557-hadoop2.7.1.2.3.0.0-2557.jar'
-      zeppelin.env['HADOOP_HOME'] ?= '/usr/hdp/current'
+      zeppelin.env['HADOOP_HOME'] ?= '/usr/hdp/current/hadoop-client'
+      
 
 
     module.exports.push commands: 'prepare', modules: [
