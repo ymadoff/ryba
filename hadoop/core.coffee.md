@@ -351,37 +351,57 @@ source code, the list of supported prefixes is: "namenode", "resourcemanager",
 "datanode", "nodemanager", "maptask", "reducetask", "journalnode",
 "historyserver", "nimbus", "supervisor".
 
-      hadoop_metrics = ctx.config.ryba.hadoop_metrics ?= {}
-      # default sampling period, in seconds
-      hadoop_metrics['*.period'] ?= '60'
+      sinks = ctx.config.metrics_sinks ?= {}
       # File sink
-      if hadoop_metrics['*.sink.file.class'] is 'org.apache.hadoop.metrics2.sink.FileSink'
-        # hadoop_metrics['*.sink.file.class'] ?= 'org.apache.hadoop.metrics2.sink.FileSink'
-        hadoop_metrics['*.sink.file.filename'] ?= 'metrics.out'
-        hadoop_metrics['namenode.sink.file.filename'] ?= 'namenode-metrics.out'
-        hadoop_metrics['datanode.sink.file.filename'] ?= 'datanode-metrics.out'
-        hadoop_metrics['resourcemanager.sink.file.filename'] ?= 'resourcemanager-metrics.out'
-        hadoop_metrics['nodemanager.sink.file.filename'] ?= 'nodemanager-metrics.out'
-        hadoop_metrics['mrappmaster.sink.file.filename'] ?= 'mrappmaster-metrics.out'
-        hadoop_metrics['jobhistoryserver.sink.file.filename'] ?= 'jobhistoryserver-metrics.out'
+      sinks.file ?= {}
+      sinks.file.class ?= 'org.apache.hadoop.metrics2.sink.FileSink'
+      sinks.file.filename ?= 'metrics.out'
+      # Ganglia Sink
+      sinks.ganglia ?= {}
+      sinks.ganglia.class ?= 'org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31'
+      sinks.ganglia.period ?= '10'
+      sinks.ganglia.supportparse ?= 'true' # Setting to "true" helps in reducing bandwith (see "Practical Hadoop Security")
+      sinks.ganglia.slope ?= 'jvm.metrics.gcCount=zero,jvm.metrics.memHeapUsedM=both'
+      sinks.ganglia.dmax ?= 'jvm.metrics.threadsBlocked=70,jvm.metrics.memHeapUsedM=40' # How long a particular value will be retained
+      # Graphite Sink
+      sinks.graphite ?= {}
+      sinks.graphite.class ?= 'org.apache.hadoop.metrics2.sink.GraphiteSink'
+      sinks.graphite.period ?= '10'
+      # Hadoop metrics
+      hadoop_metrics = ctx.config.ryba.hadoop_metrics ?= {}
+      hadoop_metrics.sinks ?= ['file']
+      hadoop_metrics.config ?= {}
+      # default sampling period, in seconds
+      hadoop_metrics.config['*.period'] ?= '60'
+      # File sink
+      if 'file' in hadoop_metrics.sinks
+        hadoop_metrics.config["*.sink.file.#{k}"] ?= v for k, v of sinks.file
+        hadoop_metrics.config['namenode.sink.file.filename'] ?= 'namenode-metrics.out'
+        hadoop_metrics.config['datanode.sink.file.filename'] ?= 'datanode-metrics.out'
+        hadoop_metrics.config['resourcemanager.sink.file.filename'] ?= 'resourcemanager-metrics.out'
+        hadoop_metrics.config['nodemanager.sink.file.filename'] ?= 'nodemanager-metrics.out'
+        hadoop_metrics.config['mrappmaster.sink.file.filename'] ?= 'mrappmaster-metrics.out'
+        hadoop_metrics.config['jobhistoryserver.sink.file.filename'] ?= 'jobhistoryserver-metrics.out'
       # Ganglia sink, accepted properties are "servers" and "supportsparse"
-      [ganglia_ctx] =  ctx.contexts 'ryba/ganglia/collector', require('../ganglia/collector').configure
-      if ganglia_ctx and (hadoop_metrics['*.sink.ganglia.class'] or hadoop_metrics['*.sink.ganglia.class'] is undefined)
-        hadoop_metrics['*.sink.ganglia.class'] ?= 'org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31'
-        hadoop_metrics['*.sink.ganglia.period'] ?= '10'
-        hadoop_metrics['*.sink.ganglia.supportsparse'] ?= 'true' # Setting to "true" helps in reducing bandwith (see "Practical Hadoop Security")
-        hadoop_metrics['*.sink.ganglia.slope'] ?= 'jvm.metrics.gcCount=zero,jvm.metrics.memHeapUsedM=both'
-        hadoop_metrics['*.sink.ganglia.dmax'] ?= 'jvm.metrics.threadsBlocked=70,jvm.metrics.memHeapUsedM=40' # How long a particular value will be retained
+      if 'ganglia' in hadoop_metrics.sinks
+        [ganglia_ctx] =  ctx.contexts 'ryba/ganglia/collector'
+        hadoop_metrics.config["*.sink.ganglia.#{k}"] ?= v for k, v of sinks.ganglia
         if ctx.has_module 'ryba/hadoop/hdfs_nn'
-          hadoop_metrics['namenode.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
+          hadoop_metrics.config['namenode.sink.ganglia.class'] ?= sinks.ganglia.class
+          hadoop_metrics.config['namenode.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
         if ctx.has_module 'ryba/hadoop/yarn_rm'
-          hadoop_metrics['resourcemanager.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.rm_port}"
+          hadoop_metrics.config['resourcemanager.sink.ganglia.class'] ?= sinks.ganglia.class
+          hadoop_metrics.config['resourcemanager.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.rm_port}"
         if ctx.has_module 'ryba/hadoop/hdfs_dn'
-          hadoop_metrics['datanode.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
+          hadoop_metrics.config['datanode.sink.ganglia.class'] ?= sinks.ganglia.class
+          hadoop_metrics.config['datanode.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
         if ctx.has_module 'ryba/hadoop/yarn_nm'
-          hadoop_metrics['nodemanager.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
-          hadoop_metrics['maptask.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
-          hadoop_metrics['reducetask.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
+          hadoop_metrics.config['nodemanager.sink.ganglia.class'] ?= sinks.ganglia.class
+          hadoop_metrics.config['nodemanager.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
+          hadoop_metrics.config['maptask.sink.ganglia.class'] ?= sinks.ganglia.class
+          hadoop_metrics.config['maptask.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
+          hadoop_metrics.config['reducetask.sink.ganglia.class'] ?= sinks.ganglia.class
+          hadoop_metrics.config['reducetask.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
         # if ctx.has_module 'ryba/hadoop/hdfs_jn'
         #   hadoop_metrics['journalnode.sink.ganglia.servers']
         # if ctx.has_module 'ryba/hadoop/mapred_jhs'
@@ -391,15 +411,9 @@ source code, the list of supported prefixes is: "namenode", "resourcemanager",
         # if ctx.has_module 'ryba/storm/supervisor'
         #   hadoop_metrics['supervisor.sink.ganglia.servers']
       # Graphite sink, accepted properties are "server_host", "server_port" and "metrics_prefix"
-      [graphite_ctx] =  ctx.contexts 'ryba/graphite/collector'
-      if graphite_ctx and (hadoop_metrics['*.sink.graphite.class'] or hadoop_metrics['*.sink.graphite.class'] is undefined)
-        hadoop_metrics['*.sink.graphite.period'] ?= '10'
-        hadoop_metrics['*.sink.graphite.server_host'] ?= "#{graphite_ctx.config.host}"
-        hadoop_metrics['*.sink.graphite.server_port'] ?= "#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
-        # hadoop_metrics['maptask.sink.graphite.server_host'] ?= "#{graphite_ctx.config.host}"
-        # hadoop_metrics['maptask.sink.graphite.server_port'] ?= "#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
-        # hadoop_metrics['reducetask.sink.graphite.server_host'] ?= "#{graphite_ctx.config.host}"
-        # hadoop_metrics['reducetask.sink.graphite.server_port'] ?= "#{graphite_ctx.config.ryba.graphite.carbon_aggregator_port}"
+      if 'graphite' in hadoop_metrics.sinks
+        throw Error 'Unvalid metrics sink, please provide ctx.config.metrics_sinks.graphite.server_host and server_port' unless sinks.graphite.server_host? and sinks.graphite.server_port?
+        hadoop_metrics.config["*.sink.graphite.#{k}"] ?= v for k, v of sinks.graphite
         for k, mod of {
           namenode: 'ryba/hadoop/hdfs_nn'
           resourcemanager: 'ryba/hadoop/yarn_rm'
@@ -408,7 +422,7 @@ source code, the list of supported prefixes is: "namenode", "resourcemanager",
           journalnode: 'ryba/hadoop/hdfs_jn'
           historyserver: 'ryba/hadoop/mapred_jhs'
         } then if ctx.has_module mod
-          hadoop_metrics["#{k}.sink.graphite.class"] ?= 'org.apache.hadoop.metrics2.sink.GraphiteSink'
+          hadoop_metrics.config["#{k}.sink.graphite.class"] ?= sinks.graphite.class
 
 ## Users & Groups
 

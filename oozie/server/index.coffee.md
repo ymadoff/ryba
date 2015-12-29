@@ -158,6 +158,7 @@ Example
 ## Configuration for Log4J
 
       ryba.oozie.log4j ?= {}
+      ryba.oozie.log4j[k] ?= v for k, v of ctx.config.log4j
       ryba.oozie.log4j.extra_appender = "socket_server" if ryba.oozie.log4j.server_port?
       ryba.oozie.log4j.extra_appender = "socket_client" if ryba.oozie.log4j.remote_host? && ryba.oozie.log4j.remote_port?
 

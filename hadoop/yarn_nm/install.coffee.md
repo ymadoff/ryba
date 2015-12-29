@@ -163,7 +163,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
       @write_properties
         header: 'Metrics'
         destination: "#{yarn.nm.conf_dir}/hadoop-metrics2.properties"
-        content: hadoop_metrics
+        content: hadoop_metrics.config
         backup: true
 
 ## Container Executor
