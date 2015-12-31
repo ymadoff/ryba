@@ -9,4 +9,4 @@
       @wait_connect
         servers: for hm_ctx in @contexts 'ryba/hbase/master'#, require('./index').configure
           host: hm_ctx.config.host
-          port: hm_ctx.config.ryba.hbase.site['hbase.master.port']
+          port: hm_ctx.config.ryba.hbase.master.site['hbase.master.port']

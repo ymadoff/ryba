@@ -37,8 +37,8 @@ The file storing the PID is "/var/run/hbase/yarn/hbase-hbase-regionserver.pid".
       handler: ->
         {hbase} = @config.ryba
         @execute
-          cmd: "rm #{hbase.log_dir}/*-regionserver-*"
+          cmd: "rm #{hbase.rs.log_dir}/*-regionserver-*"
           code_skipped: 1
         @execute
-          cmd: "rm #{hbase.log_dir}/gc.log-*"
+          cmd: "rm #{hbase.rs.log_dir}/gc.log-*"
           code_skipped: 1

@@ -103,13 +103,13 @@ Update the "hbase-site.xml" with the hbase/thrift kerberos principal.
         @hconfigure
           destination: "#{hbase.conf_dir}/hbase-site.xml"
           properties: {
-            'hbase.thrift.port': "#{hbase.site['hbase.thrift.port']}"
-            'hbase.thrift.info.port': "#{hbase.site['hbase.thrift.info.port']}"
-            'hbase.thrift.support.proxyuser': "#{hbase.site['hbase.thrift.support.proxyuser']}"
-            'hbase.thrift.security.qop': "#{hbase.site['hbase.thrift.security.qop']}"
-            'hbase.thrift.authentication.type': "#{hbase.site['hbase.thrift.authentication.type']}"
-            'hbase.thrift.kerberos.principal': "#{hbase.site['hbase.thrift.kerberos.principal']}"
-            'hbase.thrift.ssl.enabled': "#{hbase.site['hbase.thrift.ssl.enabled']}"
+            'hbase.thrift.port': "#{hbase.thrift.site['hbase.thrift.port']}"
+            'hbase.thrift.info.port': "#{hbase.thrift.site['hbase.thrift.info.port']}"
+            'hbase.thrift.support.proxyuser': "#{hbase.thrift.site['hbase.thrift.support.proxyuser']}"
+            'hbase.thrift.security.qop': "#{hbase.site['hbase.thrift.thrift.security.qop']}"
+            'hbase.thrift.authentication.type': "#{hbase.thrift.site['hbase.thrift.authentication.type']}"
+            'hbase.thrift.kerberos.principal': "#{hbase.thrift.site['hbase.thrift.kerberos.principal']}"
+            'hbase.thrift.ssl.enabled': "#{hbase.thrift.site['hbase.thrift.ssl.enabled']}"
           }
           backup: true
           merge: true

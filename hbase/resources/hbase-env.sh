@@ -20,7 +20,7 @@
 # Set environment variables here.
 
 # The java implementation to use. Java 1.7 required.
-export JAVA_HOME=TODO-JDK-PATH
+export JAVA_HOME={{java.java_home}}
 
 # HBase Configuration directory
 export HBASE_CONF_DIR=${HBASE_CONF_DIR:-/etc/hbase/conf}

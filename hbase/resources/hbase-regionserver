@@ -49,8 +49,8 @@
 
 NAME='HBase Region Server'
 USER='hbase'
-CONF_DIR='/etc/hbase/conf'
-PID_FILE='/var/run/hbase/hbase-hbase-regionserver.pid'
+CONF_DIR='{{ryba.hbase.rs.conf_dir}}'
+PID_FILE='{{ryba.hbase.rs.pid_dir}}/hbase-hbase-regionserver.pid'
 CMD="su - $USER -c \"/usr/hdp/current/hbase-regionserver/bin/hbase-daemon.sh --config $CONF_DIR start regionserver\""
 KILL_FORCE=0
 KILL_SLEEP=10

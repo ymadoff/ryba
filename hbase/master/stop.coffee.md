@@ -36,8 +36,8 @@ The file storing the PID is "/var/run/hbase/yarn/hbase-hbase-master.pid".
       handler: ->
         {hbase} = @config.ryba
         @execute
-          cmd: "rm #{hbase.log_dir}/*-master-*"
+          cmd: "rm #{hbase.master.log_dir}/*-master-*"
           code_skipped: 1
         @execute
-          cmd: "rm #{hbase.log_dir}/gc.log-*"
+          cmd: "rm #{hbase.master.log_dir}/gc.log-*"
           code_skipped: 1

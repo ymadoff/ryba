@@ -12,7 +12,7 @@ Apache HBase provides Bigtable-like capabilities on top of Hadoop and HDFS
     module.exports.push 'masson/core/yum'
     module.exports.push 'ryba/hadoop/core'
     module.exports.push 'ryba/lib/hdp_select'
-    module.exports.push 'ryba/zookeeper/client'
+    module.exports.push 'ryba/lib/hconfigure'
 
 ## Configure
 
@@ -71,7 +71,6 @@ Example
       # Layout
       hbase.conf_dir ?= '/etc/hbase/conf'
       hbase.log_dir ?= '/var/log/hbase'
-      hbase.pid_dir ?= '/var/run/hbase'
       # Configuration
       hbase.site ?= {}
       hbase.site['zookeeper.znode.parent'] ?= '/hbase'
@@ -93,22 +92,20 @@ Example
       # hbase.site['dfs.domain.socket.path'] ?= hdfs.site['dfs.domain.socket.path']
       hbase.site['dfs.domain.socket.path'] ?= '/var/lib/hadoop-hdfs/dn_socket'
       # Hbase replication
-      hbase.site['hbase.replication'] ?= 'true' if hbase.replicated_clusters
+      
 
 
 ## Configuration for Security
-
-Bulk loading in secure mode is a bit more involved than normal setup, since the
-client has to transfer the ownership of the files generated from the mapreduce
-job to HBase. Secure bulk loading is implemented by a coprocessor, named
-[SecureBulkLoadEndpoint] and use an HDFS directory which is world traversable
-(-rwx--x--x, 711).
+      
+TODO: remove those properties from hbase/index (have to rewrite hbase master/rs/client checks to not
+use hbase shell on none client servers, or require client dependency)
+Might move everything to hbase/master to remove ryba/hbase/index file
 
       hbase.site['hbase.security.authentication'] ?= 'kerberos' # Required by HM, RS and client
       hbase.site['hbase.security.authorization'] ?= 'true'
+      hbase.site['hbase.master.kerberos.principal'] ?= "hbase/_HOST@#{realm}" # "hm/_HOST@#{realm}" <-- need zookeeper auth_to_local
+      hbase.site['hbase.regionserver.kerberos.principal'] ?= "hbase/_HOST@#{realm}" # "rs/_HOST@#{realm}" <-- need zookeeper auth_to_localw
       hbase.site['hbase.rpc.engine'] ?= 'org.apache.hadoop.hbase.ipc.SecureRpcEngine'
-      hbase.site['hbase.superuser'] ?= hbase.admin.name
-      hbase.site['hbase.bulkload.staging.dir'] ?= '/apps/hbase/staging'
       # if ctx.has_module 'ryba/hbase/master'
       # hbase.site['hbase.coprocessor.master.classes'] ?= 'org.apache.hadoop.hbase.security.access.AccessController'
       # if ctx.has_module 'ryba/hbase/regionserver'
@@ -125,51 +122,14 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
       # ]
       # hbase.site['hbase.coprocessor.master.classes'] ?= 'org.apache.hadoop.hbase.security.access.AccessController'
       # Environment
+      # Environment
       hbase.env ?=  {}
       hbase.env['JAVA_HOME'] ?= "#{java_home}"
       hbase.env['HBASE_LOG_DIR'] ?= "#{hbase.log_dir}"
-      hbase.env['HBASE_OPTS'] ?= if ctx.has_module 'ryba/hbase/client'
-      then "-ea -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -Djava.security.auth.login.config=#{hbase.conf_dir}/hbase-client.jaas"
-      else '-ea -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode' # Default in HDP companion file
-      hbase.env['HBASE_MASTER_OPTS'] ?= if ctx.has_module 'ryba/hbase/master'
-      then "-Xmx2048m -Djava.security.auth.login.config=#{hbase.conf_dir}/hbase-master.jaas"
-      else '-Xmx2048m' # Default in HDP companion file
-      hbase.env['HBASE_REGIONSERVER_OPTS'] ?= if ctx.has_module 'ryba/hbase/regionserver'
-      then "-Xmn200m -Xms4096m -Xmx4096m -Djava.security.auth.login.config=#{hbase.conf_dir}/hbase-regionserver.jaas"
-      else '-Xmn200m -Xms4096m -Xmx4096m' # Default in HDP companion file
+      hbase.env['HBASE_OPTS'] ?= '-ea -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode' # Default in HDP companion file
+      hbase.env['HBASE_MASTER_OPTS'] ?= '-Xmx2048m' # Default in HDP companion file
+      hbase.env['HBASE_REGIONSERVER_OPTS'] ?= '-Xmn200m -Xms4096m -Xmx4096m' # Default in HDP companion file
       require('../hadoop/core').configure ctx
-
-## Configuration for High Availability (HA)
-
-*   [Hortonworks presentation of HBase HA][ha-next-level]
-*   [HDP 2.3 Read HA instruction][hdp23]
-*   [Bring quorum based write ahead log (write HA)][HBASE-12259]
-
-[ha-next-level]: http://hortonworks.com/blog/apache-hbase-high-availability-next-level/
-[hdp23]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.0/bk_hadoop-ha/content/ch_HA-HBase.html
-[HBASE-12259]: https://issues.apache.org/jira/browse/HBASE-12259
-
-      if ctx.contexts('ryba/hbase/master').length > 1 # HA enabled
-        if ctx.has_any_modules 'ryba/hbase/master', 'ryba/hbase/regionserver'
-          # StoreFile Refresher
-          hbase.site['hbase.regionserver.storefile.refresh.all'] ?= 'true'
-          # Store File TTL
-          hbase.site['hbase.regionserver.storefile.refresh.period'] ?= '30000' # Default to '0'
-          # Async WAL Replication
-          hbase.site['hbase.region.replica.replication.enabled'] ?= 'true'
-          hbase.site['hbase.regionserver.storefile.refresh.all'] ?= 'false'
-          # Store File TTL
-          hbase.site['hbase.master.hfilecleaner.ttl'] ?= '3600000' # 1 hour
-          hbase.site['hbase.master.loadbalancer.class'] ?= 'org.apache.hadoop.hbase.master.balancer.StochasticLoadBalancer' # Default value
-          hbase.site['hbase.meta.replica.count'] ?= '3' # Default to '1'
-          hbase.site['hbase.region.replica.wait.for.primary.flush'] ?= 'true'
-          hbase.site['hbase.region.replica.storefile.refresh.memstore.multiplier'] ?= '4'
-        if ctx.has_any_modules 'ryba/hbase/client'
-          hbase.site['hbase.ipc.client.specificThreadForWriting'] ?= 'true'
-          hbase.site['hbase.client.primaryCallTimeout.get'] ?= '10000'
-          hbase.site['hbase.client.primaryCallTimeout. multiget'] ?= '10000'
-          hbase.site['hbase.client.primaryCallTimeout.scan'] ?= '1000000'
-          hbase.site['hbase.meta.replicas.use'] ?= 'true'
 
 ## Users & Groups
 
@@ -197,19 +157,6 @@ Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocument
       @hdp_select
         name: 'hbase-client'
 
-    module.exports.push header: 'HBase # Layout', timeout: -1, handler: ->
-      {hbase} = @config.ryba
-      @mkdir
-        destination: hbase.pid_dir
-        uid: hbase.user.name
-        gid: hbase.group.name
-        mode: 0o0755
-      @mkdir
-        destination: hbase.log_dir
-        uid: hbase.user.name
-        gid: hbase.group.name
-        mode: 0o0755
-
     module.exports.push header: 'HBase # Env', handler: ->
       {hbase} = @config.ryba
       write = for k, v of hbase.env
@@ -220,26 +167,31 @@ Instructions to [install the HBase RPMs](http://docs.hortonworks.com/HDPDocument
         match: /^export HBASE_OPTS=".*" # RYBA HDP VERSION$/m
         replace: "export HBASE_OPTS=\"-Dhdp.version=$HDP_VERSION $HBASE_OPTS\" # RYBA HDP VERSION"
         append: true
-      @upload
+      @render
         source: "#{__dirname}/resources/hbase-env.sh"
         destination: "#{hbase.conf_dir}/hbase-env.sh"
         write: write
+        local_source: true
+        context: @config
+        mode: 0o0755
+        uid: hbase.user.name
+        gid: hbase.group.name
+        unlink: true
         backup: true
         eof: true
 
-## RegionServers
-
-Upload the list of registered RegionServers.
-
-    module.exports.push header: 'HBase # RegionServers', handler: ->
-      {hbase, hadoop_group} = @config.ryba
-      @write
-        content: @hosts_with_module('ryba/hbase/regionserver').join '\n'
-        destination: "#{hbase.conf_dir}/regionservers"
+    module.exports.push header: 'HBase # Configure', handler: ->
+      {hbase} = @config.ryba
+      @hconfigure
+        destination: "#{hbase.conf_dir}/hbase-site.xml"
+        default: "#{__dirname}/resources/hbase-site.xml"
+        local_default: true
+        properties: hbase.site
+        merge: false
         uid: hbase.user.name
-        gid: hadoop_group.name
-        eof: true
-        if: !!@has_any_modules ['ryba/hbase/master', 'ryba/hbase/regionserver']
+        gid: hbase.group.name
+        mode: 0o0644 # See slide 33 from [Operator's Guide][secop]
+        backup: true
 
 ## Resources
 

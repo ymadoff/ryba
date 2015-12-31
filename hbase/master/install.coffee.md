@@ -16,20 +16,39 @@ TODO: [HBase backup node](http://willddy.github.io/2013/07/02/HBase-Add-Backup-M
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
-
+      
       @iptables
         header: 'HBase Master # IPTables'
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.master.port'], protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.master.info.port'], protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.master.site['hbase.master.port'], protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.master.site['hbase.master.info.port'], protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
         ]
         if: @config.iptables.action is 'start'
+
+## HBase Master Layout
+
+      @call header: 'HBase Master # Layout', timeout: -1, handler: ->
+        @mkdir
+          destination: hbase.master.pid_dir
+          uid: hbase.user.name
+          gid: hbase.group.name
+          mode: 0o0755
+        @mkdir
+          destination: hbase.master.log_dir
+          uid: hbase.user.name
+          gid: hbase.group.name
+          mode: 0o0755
+        @mkdir
+          destination: hbase.master.conf_dir
+          uid: hbase.user.name
+          gid: hbase.group.name
+          mode: 0o0755
 
 ## Service
 
 Install the "hbase-master" service, symlink the rc.d startup script inside
 "/etc/init.d" and activate it on startup.
-
+      
       @call header: 'HBase Master # Service', timeout: -1, handler: ->
         @service
           name: 'hbase-master'
@@ -37,9 +56,10 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
           name: 'hbase-client'
         @hdp_select
           name: 'hbase-master'
-        @write
+        @render
           source: "#{__dirname}/../resources/hbase-master"
           local_source: true
+          context: @config
           destination: '/etc/init.d/hbase-master'
           mode: 0o0755
           unlink: true
@@ -53,29 +73,46 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
 
 [secop]: http://fr.slideshare.net/HBaseCon/features-session-2
 
-      mode = if @has_module 'ryba/hbase/client' then 0o0644 else 0o0600
       @hconfigure
         header: 'HBase Master # Configure'
-        destination: "#{hbase.conf_dir}/hbase-site.xml"
+        destination: "#{hbase.master.conf_dir}/hbase-site.xml"
         default: "#{__dirname}/../resources/hbase-site.xml"
         local_default: true
-        properties: hbase.site
+        properties: hbase.master.site
         merge: false
         uid: hbase.user.name
         gid: hbase.group.name
-        mode: mode # See slide 33 from [Operator's Guide][secop]
+        mode: 0o0600 # See slide 33 from [Operator's Guide][secop]
         backup: true
 
-# Opts
+## Opts
 
 Environment passed to the Master before it starts.
 
       @call header: 'HBase Master # Opts', handler: ->
+        {hbase} = @config.ryba
+        writes = for k, v of hbase.master.env
+          match: RegExp "export #{k}=.*", 'm'
+          replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
+          append: true
+        # HBase master opts
+        if hbase.master.opts
+          writes.push
+            match: /^export HBASE_MASTER_OPTS="(.*)" # RYBA(.*)$/m
+            replace: "export HBASE_MASTER_OPTS=\"#{hbase.master.opts} ${HBASE_MASTER_OPTS}\" # RYBA CONF \"ryba.hbase.master.opts\", DONT OVERWRITE"
+            before: /^export HBASE_MASTER_OPTS=".*"$/m
+        @render
+          source: "#{__dirname}/../resources/hbase-env.sh"
+          destination: "#{hbase.master.conf_dir}/hbase-env.sh"
+          backup: true  
+          local_source: true
+          context: @config
+          uid: hbase.user.name
+          gid: hbase.group.name
         @write
-          destination: "#{hbase.conf_dir}/hbase-env.sh"
-          match: /^export HBASE_MASTER_OPTS="(.*)" # RYBA(.*)$/m
-          replace: "export HBASE_MASTER_OPTS=\"#{hbase.master_opts} ${HBASE_MASTER_OPTS}\" # RYBA CONF \"ryba.hbase.master_opts\", DONT OVERWRITE"
-          before: /^export HBASE_MASTER_OPTS=".*"$/m
+          destination: "#{hbase.master.conf_dir}/hbase-env.sh"
+          write: writes
+          eof: true  
           backup: true
         #  match: /^export HBASE_ROOT_LOGGER=.*$/mg
         #  replace: "export HBASE_ROOT_LOGGER=#{hbase.master.log4j.root_logger}"
@@ -83,6 +120,20 @@ Environment passed to the Master before it starts.
         #  match: /^export HBASE_SECURITY_LOGGER=.*$/mg
         #  replace: "export HBASE_SECURITY_LOGGER=#{hbase.master.log4j.security_logger}"
         #  append: true
+
+## RegionServers
+
+Upload the list of registered RegionServers.
+
+      @call header: 'HBase Master # RegionServers', timeout: -1, handler: ->
+        {hbase, hadoop_group} = @config.ryba
+        @write
+          content: @hosts_with_module('ryba/hbase/regionserver').join '\n'
+          destination: "#{hbase.master.conf_dir}/regionservers"
+          uid: hbase.user.name
+          gid: hadoop_group.name
+          eof: true
+
 
 ## Zookeeper JAAS
 
@@ -93,10 +144,10 @@ Environment file is enriched by "ryba/hbase" # HBase # Env".
 
       @call header: 'HBase Master # Zookeeper JAAS', timeout: -1, handler: ->
         @write_jaas
-          destination: "#{hbase.conf_dir}/hbase-master.jaas"
+          destination: "#{hbase.master.conf_dir}/hbase-master.jaas"
           content: Client:
-            principal: hbase.site['hbase.master.kerberos.principal'].replace '_HOST', @config.host
-            keyTab: hbase.site['hbase.master.keytab.file']
+            principal: hbase.master.site['hbase.master.kerberos.principal'].replace '_HOST', @config.host
+            keyTab: hbase.master.site['hbase.master.keytab.file']
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o700
@@ -108,9 +159,9 @@ https://hbase.apache.org/book/security.html
 
       @call header: 'HBase Master # Kerberos', handler: ->
         @krb5_addprinc
-          principal: hbase.site['hbase.master.kerberos.principal'].replace '_HOST', @config.host
+          principal: hbase.master.site['hbase.master.kerberos.principal'].replace '_HOST', @config.host
           randkey: true
-          keytab: hbase.site['hbase.master.keytab.file']
+          keytab: hbase.master.site['hbase.master.keytab.file']
           uid: hbase.user.name
           gid: hadoop_group.name
           kadmin_principal: kadmin_principal
@@ -127,7 +178,7 @@ https://hbase.apache.org/book/security.html
 
       @call header: 'HBase Master # Log4J', handler: ->
         @write
-          destination: "#{hbase.conf_dir}/log4j.properties"
+          destination: "#{hbase.master.conf_dir}/log4j.properties"
           source: "#{__dirname}/../resources/log4j.properties"
           local_source: true
 
@@ -137,7 +188,7 @@ Enable stats collection in Ganglia and Graphite
 
       @call header: 'HBase Master # Metrics', handler: ->
         @write_properties
-          destination: "#{hbase.conf_dir}/hadoop-metrics2-hbase.properties"
+          destination: "#{hbase.master.conf_dir}/hadoop-metrics2-hbase.properties"
           content: hbase.metrics.config
           backup: true
 

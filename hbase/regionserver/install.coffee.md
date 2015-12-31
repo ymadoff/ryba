@@ -25,10 +25,30 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       {hbase} = @config.ryba
       @iptables
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.regionserver.port'], protocol: 'tcp', state: 'NEW', comment: "HBase RegionServer" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.site['hbase.regionserver.info.port'], protocol: 'tcp', state: 'NEW', comment: "HBase RegionServer Info Web UI" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.rs.site['hbase.regionserver.port'], protocol: 'tcp', state: 'NEW', comment: "HBase RegionServer" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.rs.site['hbase.regionserver.info.port'], protocol: 'tcp', state: 'NEW', comment: "HBase RegionServer Info Web UI" }
         ]
         if: @config.iptables.action is 'start'
+
+## HBase Regionserver Layout
+
+    module.exports.push header: 'HBase RegionServer # Layout', timeout: -1, handler: ->
+      {hbase} = @config.ryba
+      @mkdir
+        destination: hbase.rs.pid_dir
+        uid: hbase.user.name
+        gid: hbase.group.name
+        mode: 0o0755
+      @mkdir
+        destination: hbase.rs.log_dir
+        uid: hbase.user.name
+        gid: hbase.group.name
+        mode: 0o0755
+      @mkdir
+        destination: hbase.rs.conf_dir
+        uid: hbase.user.name
+        gid: hbase.group.name
+        mode: 0o0755
 
 ## Service
 
@@ -42,9 +62,10 @@ inside "/etc/init.d" and activate it on startup.
         name: 'hbase-client'
       @hdp_select
         name: 'hbase-regionserver'
-      @write
+      @render
         source: "#{__dirname}/../resources/hbase-regionserver"
         local_source: true
+        context: @config
         destination: '/etc/init.d/hbase-regionserver'
         mode: 0o0755
         unlink: true
@@ -60,10 +81,10 @@ RegionServer, and HBase client host machines.
     module.exports.push header: 'HBase RegionServer # Zookeeper JAAS', timeout: -1, handler: ->
       {hbase} = @config.ryba
       @write_jaas
-        destination: "#{hbase.conf_dir}/hbase-regionserver.jaas"
+        destination: "#{hbase.rs.conf_dir}/hbase-regionserver.jaas"
         content: Client:
-          principal: hbase.site['hbase.regionserver.kerberos.principal'].replace '_HOST', @config.host
-          keyTab: hbase.site['hbase.regionserver.keytab.file']
+          principal: hbase.rs.site['hbase.regionserver.kerberos.principal'].replace '_HOST', @config.host
+          keyTab: hbase.rs.site['hbase.regionserver.keytab.file']
         uid: hbase.user.name
         gid: hbase.group.name
 
@@ -71,16 +92,16 @@ RegionServer, and HBase client host machines.
       {hadoop_group, hbase, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       if @has_module 'ryba/hbase/master'
-        if hbase.site['hbase.master.kerberos.principal'] isnt hbase.site['hbase.regionserver.kerberos.principal']
+        if hbase.master.site['hbase.master.kerberos.principal'] isnt hbase.rs.site['hbase.regionserver.kerberos.principal']
           return throw Error "HBase principals must match in single node"
         @copy
-          source: hbase.site['hbase.master.keytab.file']
-          destination: hbase.site['hbase.regionserver.keytab.file']
+          source: hbase.master.site['hbase.master.keytab.file']
+          destination: hbase.rs.site['hbase.regionserver.keytab.file']
       else
         @krb5_addprinc
-          principal: hbase.site['hbase.regionserver.kerberos.principal'].replace '_HOST', @config.host
+          principal: hbase.rs.site['hbase.regionserver.kerberos.principal'].replace '_HOST', @config.host
           randkey: true
-          keytab: hbase.site['hbase.regionserver.keytab.file']
+          keytab: hbase.rs.site['hbase.regionserver.keytab.file']
           uid: hbase.user.name
           gid: hadoop_group.name
           kadmin_principal: kadmin_principal
@@ -95,16 +116,15 @@ RegionServer, and HBase client host machines.
 
     module.exports.push header: 'HBase RegionServer # Configure', handler: ->
       {hbase} = @config.ryba
-      mode = if @has_module 'ryba/hbase/client' then 0o0644 else 0o0600
       @hconfigure
-        destination: "#{hbase.conf_dir}/hbase-site.xml"
+        destination: "#{hbase.rs.conf_dir}/hbase-site.xml"
         default: "#{__dirname}/../resources/hbase-site.xml"
         local_default: true
-        properties: hbase.site
+        properties: hbase.rs.site
         merge: false
         uid: hbase.user.name
         gid: hbase.group.name
-        mode: mode # See slide 33 from [Operator's Guide][secop]
+        mode: 0o0600 # See slide 33 from [Operator's Guide][secop]
         backup: true
 
 ## Opts
@@ -113,15 +133,43 @@ Environment passed to the RegionServer before it starts.
 
     module.exports.push
       header: 'HBase RegionServer # Opts'
-      if: -> @config.ryba.hbase.regionserver_opts
       handler: ->
         {hbase} = @config.ryba
-        @write
-          destination: "#{hbase.conf_dir}/hbase-env.sh"
-          match: /^export HBASE_REGIONSERVER_OPTS="(.*) \$\{HBASE_REGIONSERVER_OPTS\}" # GENERATED BY RYBA, DONT OVEWRITE/m
-          replace: "export HBASE_REGIONSERVER_OPTS=\"${HBASE_REGIONSERVER_OPTS} #{hbase.regionserver_opts}\" # GENERATED BY RYBA, DONT OVEWRITE"
-          append: /^export HBASE_REGIONSERVER_OPTS=".*"$/m
+        writes = for k, v of hbase.rs.env
+          match: RegExp "export #{k}=.*", 'm'
+          replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
+          append: true
+        if hbase.rs.opts
+          writes.push
+            match: /^export HBASE_REGIONSERVER_OPTS="(.*) \$\{HBASE_REGIONSERVER_OPTS\}" # GENERATED BY RYBA, DONT OVEWRITE/m
+            replace: "export HBASE_REGIONSERVER_OPTS=\"${HBASE_REGIONSERVER_OPTS} #{hbase.rs.opts}\" # GENERATED BY RYBA, DONT OVEWRITE"
+            append: /^export HBASE_REGIONSERVER_OPTS=".*"$/m
+        @render
+          source: "#{__dirname}/../resources/hbase-env.sh"
+          destination: "#{hbase.rs.conf_dir}/hbase-env.sh"
           backup: true
+          uid: hbase.user.name
+          gid: hbase.group.name
+          local_source: true
+          context: @config
+        @write
+          destination: "#{hbase.rs.conf_dir}/hbase-env.sh"
+          write: writes
+          eof: true
+          backup: true
+
+## RegionServers
+
+Upload the list of registered RegionServers.
+
+    module.exports.push header: 'HBase Master # RegionServers', handler: ->
+      {hbase, hadoop_group} = @config.ryba
+      @write
+        content: @hosts_with_module('ryba/hbase/regionserver').join '\n'
+        destination: "#{hbase.rs.conf_dir}/regionservers"
+        uid: hbase.user.name
+        gid: hadoop_group.name
+        eof: true
 
 ## Metrics
 
@@ -130,7 +178,7 @@ Enable stats collection in Ganglia and Graphite
     module.exports.push header: 'HBase RegionServer # Metrics', handler: ->
       {hbase} = @config.ryba
       @write_properties
-        destination: "#{hbase.conf_dir}/hadoop-metrics2-hbase.properties"
+        destination: "#{hbase.rs.conf_dir}/hadoop-metrics2-hbase.properties"
         content: hbase.metrics.config
         backup: true
 
@@ -142,6 +190,15 @@ Enable stats collection in Ganglia and Graphite
         user: hbase.user.name
         nofile: hbase.user.limits.nofile
         nproc: hbase.user.limits.nproc
+
+## Logging
+
+    module.exports.push header: 'HBase Regionserver # Log4J', handler: ->
+      {hbase} = @config.ryba
+      @write
+        destination: "#{hbase.rs.conf_dir}/log4j.properties"
+        source: "#{__dirname}/../resources/log4j.properties"
+        local_source: true
 
 ## Start
 

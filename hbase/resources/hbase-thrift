@@ -31,10 +31,10 @@
 # Should-Stop:
 ### END INIT INFO
 
-NAME='HBase Region Server'
+NAME='HBase Thrift Server'
 USER='hbase'
-CONF_DIR='/etc/hbase/conf'
-PID_FILE='/var/run/hbase/hbase-hbase-thrift.pid'
+CONF_DIR='{{ryba.hbase.thrift.conf_dir}}'
+PID_FILE='{{ryba.hbase.thrift.pid_dir}}/hbase-hbase-thrift.pid'
 CMD="su - $USER -c \"/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config $CONF_DIR start thrift\""
 KILL_FORCE=0
 KILL_SLEEP=10

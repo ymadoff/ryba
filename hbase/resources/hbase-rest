@@ -31,10 +31,10 @@
 # Should-Stop:
 ### END INIT INFO
 
-NAME='HBase Region Server'
+NAME='HBase Rest Server'
 USER='hbase'
-CONF_DIR='/etc/hbase/conf'
-PID_FILE='/var/run/hbase/hbase-hbase-rest.pid'
+CONF_DIR='{{ryba.hbase.rest.conf_dir}}'
+PID_FILE='{{ryba.hbase.rest.pid_dir}}/hbase-hbase-rest.pid'
 CMD="su - $USER -c \"/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config $CONF_DIR start rest\""
 KILL_FORCE=0
 KILL_SLEEP=10

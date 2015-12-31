@@ -15,7 +15,7 @@ Additionnal information may be found on the [CentOS HowTos site][corblk].
 [corblk]: http://centoshowtos.org/hadoop/fix-corrupt-blocks-on-hdfs/
 
     module.exports.push header: 'HBase RegionServer # Check FSCK', label_true: 'CHECKED', handler: ->
-      rootdir = @contexts('ryba/hbase/master')[0].config.ryba.hbase.site['hbase.rootdir']
+      rootdir = @contexts('ryba/hbase/master')[0].config.ryba.hbase.master.site['hbase.rootdir']
       @execute
         cmd: mkcmd.hdfs @, "hdfs fsck #{rootdir}/WALs | grep 'Status: HEALTHY'"
         relax: true
@@ -39,8 +39,8 @@ is added membership to the group hadoop to gain read access.
 
     module.exports.push header: 'HBase RegionServer # Check HTTP JMX', retry: 200, label_true: 'CHECKED', handler: ->
       {hbase} = @config.ryba
-      protocol = if hbase.site['hbase.ssl.enabled'] is 'true' then 'https' else 'http'
-      port = hbase.site['hbase.regionserver.info.port']
+      protocol = if hbase.rs.site['hbase.ssl.enabled'] is 'true' then 'https' else 'http'
+      port = hbase.rs.site['hbase.regionserver.info.port']
       url = "#{protocol}://#{@config.host}:#{port}/jmx?qry=Hadoop:service=HBase,name=RegionServer,sub=Server"
       @execute
         cmd: mkcmd.test @, """
@@ -59,8 +59,6 @@ TODO: move to install
 
     module.exports.push header: 'HBase RegionServer # Check Shell', timeout:-1, label_true: 'CHECKED', handler: ->
       {hbase} = @config.ryba
-      keytab = hbase.site['hbase.regionserver.keytab.file']
-      principal = hbase.site['hbase.regionserver.kerberos.principal'].replace '_HOST', @config.host
       @execute
         cmd: mkcmd.hbase @, """
         if hbase shell 2>/dev/null <<< "user_permission '#{hbase.test.default_table}'" | egrep '[1-9][0-9]* row'; then exit 2; fi

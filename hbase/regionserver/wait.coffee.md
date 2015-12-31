@@ -8,6 +8,6 @@
       @wait_connect
         servers: for rs_ctx in @contexts 'ryba/hbase/regionserver'#, require('./index').configure
           host: rs_ctx.config.host, port: [
-            rs_ctx.config.ryba.hbase.site['hbase.regionserver.port']
-            rs_ctx.config.ryba.hbase.site['hbase.regionserver.info.port']
+            rs_ctx.config.ryba.hbase.rs.site['hbase.regionserver.port']
+            rs_ctx.config.ryba.hbase.rs.site['hbase.regionserver.info.port']
           ]
