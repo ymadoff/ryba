@@ -106,14 +106,11 @@ Environment passed to the Master before it starts.
           destination: "#{hbase.master.conf_dir}/hbase-env.sh"
           backup: true  
           local_source: true
+          eof: true  
           context: @config
           uid: hbase.user.name
           gid: hbase.group.name
-        @write
-          destination: "#{hbase.master.conf_dir}/hbase-env.sh"
           write: writes
-          eof: true  
-          backup: true
         #  match: /^export HBASE_ROOT_LOGGER=.*$/mg
         #  replace: "export HBASE_ROOT_LOGGER=#{hbase.master.log4j.root_logger}"
         #  append: true

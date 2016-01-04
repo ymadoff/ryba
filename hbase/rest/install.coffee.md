@@ -94,10 +94,7 @@ Environment passed to the HBase Rest Server before it starts.
           uid: hbase.user.name
           gid: hbase.group.name
           unlink: true
-        @write
-          destination: "#{hbase.rest.conf_dir}/hbase-env.sh"
-          backup: true
-          write: writes
+          write: writes          
 
 ## Kerberos
 

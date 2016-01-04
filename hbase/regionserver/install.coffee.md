@@ -88,6 +88,8 @@ RegionServer, and HBase client host machines.
         uid: hbase.user.name
         gid: hbase.group.name
 
+## Kerberos
+
     module.exports.push header: 'HBase RegionServer # Kerberos', timeout: -1, handler: ->
       {hadoop_group, hbase, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
@@ -152,11 +154,9 @@ Environment passed to the RegionServer before it starts.
           gid: hbase.group.name
           local_source: true
           context: @config
-        @write
-          destination: "#{hbase.rs.conf_dir}/hbase-env.sh"
           write: writes
+          unlink: true
           eof: true
-          backup: true
 
 ## RegionServers
 

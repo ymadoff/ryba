@@ -129,10 +129,7 @@ Environment passed to the HBase Rest Server before it starts.
           gid: hbase.group.name
           mode: 0o0755
           unlink: true
-        @write
-          destination: "#{hbase.thrift.conf_dir}/hbase-env.sh"
-          backup: true
-          write: writes
+          write: writes          
 
 ##  Hbase-Thrift Service
 
