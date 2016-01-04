@@ -369,12 +369,15 @@ source code, the list of supported prefixes is: "namenode", "resourcemanager",
       sinks.graphite.period ?= '10'
       # Hadoop metrics
       hadoop_metrics = ctx.config.ryba.hadoop_metrics ?= {}
-      hadoop_metrics.sinks ?= ['file']
+      hadoop_metrics.sinks ?= {}
+      hadoop_metrics.sinks.file ?= true
+      hadoop_metrics.sinks.ganglia ?= false
+      hadoop_metrics.sinks.graphite ?= false
       hadoop_metrics.config ?= {}
       # default sampling period, in seconds
       hadoop_metrics.config['*.period'] ?= '60'
       # File sink
-      if 'file' in hadoop_metrics.sinks
+      if hadoop_metrics.sinks.file
         hadoop_metrics.config["*.sink.file.#{k}"] ?= v for k, v of sinks.file
         hadoop_metrics.config['namenode.sink.file.filename'] ?= 'namenode-metrics.out'
         hadoop_metrics.config['datanode.sink.file.filename'] ?= 'datanode-metrics.out'
@@ -383,7 +386,7 @@ source code, the list of supported prefixes is: "namenode", "resourcemanager",
         hadoop_metrics.config['mrappmaster.sink.file.filename'] ?= 'mrappmaster-metrics.out'
         hadoop_metrics.config['jobhistoryserver.sink.file.filename'] ?= 'jobhistoryserver-metrics.out'
       # Ganglia sink, accepted properties are "servers" and "supportsparse"
-      if 'ganglia' in hadoop_metrics.sinks
+      if hadoop_metrics.sinks.ganglia
         [ganglia_ctx] =  ctx.contexts 'ryba/ganglia/collector'
         hadoop_metrics.config["*.sink.ganglia.#{k}"] ?= v for k, v of sinks.ganglia
         if ctx.has_module 'ryba/hadoop/hdfs_nn'
@@ -411,18 +414,20 @@ source code, the list of supported prefixes is: "namenode", "resourcemanager",
         # if ctx.has_module 'ryba/storm/supervisor'
         #   hadoop_metrics['supervisor.sink.ganglia.servers']
       # Graphite sink, accepted properties are "server_host", "server_port" and "metrics_prefix"
-      if 'graphite' in hadoop_metrics.sinks
+      if hadoop_metrics.sinks.graphite
         throw Error 'Unvalid metrics sink, please provide ctx.config.metrics_sinks.graphite.server_host and server_port' unless sinks.graphite.server_host? and sinks.graphite.server_port?
         hadoop_metrics.config["*.sink.graphite.#{k}"] ?= v for k, v of sinks.graphite
-        for k, mod of {
-          namenode: 'ryba/hadoop/hdfs_nn'
-          resourcemanager: 'ryba/hadoop/yarn_rm'
-          datanode: 'ryba/hadoop/hdfs_dn'
-          nodemanager: 'ryba/hadoop/yarn_nm'
-          journalnode: 'ryba/hadoop/hdfs_jn'
-          historyserver: 'ryba/hadoop/mapred_jhs'
-        } then if ctx.has_module mod
-          hadoop_metrics.config["#{k}.sink.graphite.class"] ?= sinks.graphite.class
+        for mod, modlist of {
+          'ryba/hadoop/hdfs_nn': ['namenode']
+          'ryba/hadoop/yarn_rm': ['resourcemanager'] 
+          'ryba/hadoop/hdfs_dn': ['datanode']
+          'ryba/hadoop/yarn_nm': ['nodemanager', 'maptask', 'reducetask']
+          'ryba/hadoop/hdfs_jn': ['journalnode']
+          'ryba/hadoop/mapred_jhs': ['historyserver']
+        }
+        then if ctx.has_module mod
+        then for k in modlist
+          hadoop_metrics.config["#{k}.sink.graphite.class"] ?= sinks.graphite.class 
 
 ## Users & Groups
 

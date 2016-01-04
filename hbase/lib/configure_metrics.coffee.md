@@ -42,16 +42,19 @@ supported contexts are "hbase", "jvm" and "rpc".
     module.exports = ->
       hbase = @config.ryba.hbase
       hbase.metrics ?= {}
-      hbase.metrics.sinks ?= ['file']
+      hbase.metrics.sinks ?= {}
+      hbase.metrics.sinks.file ?= true
+      hbase.metrics.sinks.ganglia ?= false
+      hbase.metrics.sinks.graphite ?= false
       hbase.metrics.config ?= {}
       hbase.metrics.config['*.period'] ?= '60'
       sinks = @config.metrics_sinks
       # File sink
-      if 'file' in hbase.metrics.sinks
+      if hbase.metrics.sinks.file
         hbase.metrics.config["*.sink.file.#{k}"] ?= v for k, v of sinks.file
         hbase.metrics.config['hbase.sink.file.filename'] ?= 'hbase-metrics.out'
       # Ganglia sink, accepted properties are "servers" and "supportsparse"
-      if 'ganglia' in hbase.metrics.sinks
+      if hbase.metrics.sinks.ganglia
         [ganglia_ctx] =  @contexts 'ryba/ganglia/collector', require('../../ganglia/collector').configure
         hbase.metrics.config["*.sink.ganglia.#{k}"] ?= v for k, v of sinks.ganglia
         hbase.metrics.config['hbase.sink.ganglia.class'] ?= sinks.ganglia.class
@@ -60,7 +63,7 @@ supported contexts are "hbase", "jvm" and "rpc".
         hbase.metrics.config['hbase.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
         hbase.metrics.config['jvm.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
         hbase.metrics.config['rpc.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
-      if 'graphite' in hbase.metrics.sinks
+      if hbase.metrics.sinks.graphite
         hbase.metrics.config["*.sink.ganglia.#{k}"] ?= v for k, v of sinks.graphite
         hbase.metrics.config['hbase.sink.graphite.class'] ?= sinks.graphite.class
         hbase.metrics.config['jvm.sink.graphite.class'] ?= sinks.graphite.class
