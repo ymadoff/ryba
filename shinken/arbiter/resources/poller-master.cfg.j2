@@ -50,6 +50,6 @@ define poller {
 
     use_ssl         {% if p.config.ryba.shinken.poller.config.use_ssl %}1{% else %}0{% endif %}
     hard_ssl_name_check   {% if p.config.ryba.shinken.poller.config.hard_ssl_name_check %}1{% else %}0{% endif %}
-    realm           {{ p.config.ryba.shinken.poller.config.realm }}
+    realm           {% if p.config.ryba.shinken.poller.config.realm %}{{ p.config.ryba.shinken.poller.config.realm }}{% else %}All{% endif %}
 }
 {% endfor %}

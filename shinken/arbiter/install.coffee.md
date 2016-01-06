@@ -63,7 +63,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push header: 'Shinken Arbiter # Commons Config', handler: ->
       {shinken} = @config.ryba
-      for obj in ['commands', 'contactgroups', 'contacts', 'hostgroups', 'hosts', 'servicegroups', 'templates']
+      for obj in ['commands', 'contactgroups', 'contacts', 'hostgroups', 'hosts', 'servicegroups', 'realms', 'templates']
         @render
           destination: "/etc/shinken/#{obj}/#{obj}.cfg"
           source: "#{__dirname}/resources/#{obj}.cfg.j2"

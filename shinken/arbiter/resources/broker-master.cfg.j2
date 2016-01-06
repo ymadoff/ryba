@@ -43,6 +43,6 @@ define broker {
     modules {{ b.config.ryba.shinken.broker.config.modules | join (',') }}
     use_ssl	          {% if b.config.ryba.shinken.broker.config.use_ssl %}1{% else %}0{% endif %}
     hard_ssl_name_check   {% if b.config.ryba.shinken.broker.config.hard_ssl_name_check %}1{% else %}0{% endif %}
-    realm      {{ b.config.ryba.shinken.broker.config.realm }}
+    realm      {% if b.config.ryba.shinken.broker.config.realm %}{{ b.config.ryba.shinken.broker.config.realm }}{% else %}All{% endif %}
 }
 {% endfor %}

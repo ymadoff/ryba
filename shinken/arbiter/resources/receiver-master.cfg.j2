@@ -42,6 +42,6 @@ define receiver {
                             # schedulers if it know about the hostname in the
                             # command.
                             #}
-    realm      {{ r.config.ryba.shinken.receiver.config.realm }}
+    realm           {% if r.config.ryba.shinken.receiver.config.realm %}{{ p.config.ryba.shinken.receiver.config.realm }}{% else %}All{% endif %}
 }
 {% endfor %}

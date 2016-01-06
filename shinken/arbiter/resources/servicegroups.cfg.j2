@@ -1,5 +1,6 @@
 {% for servicegroup in servicegroups %}
 define servicegroup {
-  servicegroup_name {{ servicegroup | upper }}
-  alias {{ servicegroup | capitalize }} Checks
+  servicegroup_name {{ servicegroup }}
+  alias             {% if servicegroup.alias %}{{ servicegroup.alias }}{% else %}{{ servicegroup }}{% endif %}
+  members           {% if servicegroup.members | isArray %}{{ servicegroup.members | join(',') }}{% elif servicegroup.members %}{{ servicegroup.members }}{% endif %}
 }{% endfor %}

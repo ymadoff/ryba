@@ -1,6 +1,7 @@
-{% for name, hosts in hostgroups %}
+{% for name, host in hostgroups %}
 define hostgroup {
   hostgroup_name  {{ name }}
-  alias           {{ name }}
-  members         {% if hosts | isArray %}{{ hosts | join(',') }}{% elif hosts %}{{ hosts }}{% endif %}
+  alias           {% if host.alias %}{{ host.alias }}{% else %}{{ name }}{% endif %}
+  members         {% if host.members | isArray %}{{ host.members | join(',') }}{% elif host.members %}{{ host.members }}{% endif %}{% if host.realm %}
+  realm           {{ host.realm }}{% endif %}
 }{% endfor %}

@@ -49,6 +49,6 @@ define scheduler {
     #}
     use_ssl	          {% if s.config.ryba.shinken.scheduler.config.use_ssl %}1{% else %}0{% endif %}
     hard_ssl_name_check   {% if s.config.ryba.shinken.scheduler.config.hard_ssl_name_check %}1{% else %}0{% endif %}
-    realm      {{ s.config.ryba.shinken.scheduler.config.realm }}
+    realm           {% if s.config.ryba.shinken.scheduler.config.realm %}{{ s.config.ryba.shinken.scheduler.config.realm }}{% else %}All{% endif %}
 }
 {% endfor %}

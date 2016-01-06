@@ -38,6 +38,5 @@ define reactionner {
 
     use_ssl	          {% if r.config.ryba.shinken.reactionner.config.use_ssl %}1{% else %}0{% endif %}
     hard_ssl_name_check {% if r.config.ryba.shinken.reactionner.config.hard_ssl_name_check %}1{% else %}0{% endif %}
-    realm      {{ r.config.ryba.shinken.reactionner.config.realm }}
-}
+    realm           {% if r.config.ryba.shinken.reactionner.config.realm %}{{ r.config.ryba.shinken.reactionner.config.realm }}{% else %}All{% endif %}}
 {% endfor %}

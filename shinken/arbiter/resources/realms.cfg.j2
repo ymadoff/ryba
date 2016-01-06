@@ -1,0 +1,12 @@
+{% set sep = joiner() %}
+define realm {
+    realm_name      All
+    realm_members   {% for name, realm in realms %}{{sep()}}{{name}}{% endfor %}
+    default         1
+}
+{% for name, realm in realms %}
+define realm {
+    realm_name      {name}}
+    realm_members   {% if realm.members | isArray %}{{ realm.members | join(',') }}{% elif realm.members %}{{ realm.members }}{% endif %}
+}
+{% endfor %}
