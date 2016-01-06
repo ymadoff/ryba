@@ -21,6 +21,4 @@ su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-journalnode/../hadoop/sbin/hadoop-da
 ```
 
     module.exports.push header: 'HDFS JN # Start', label_true: 'STARTED', handler: ->
-      @service_start
-        name: 'hadoop-hdfs-journalnode'
-        if_exists: '/etc/init.d/hadoop-hdfs-journalnode'
+      @service_start name: 'hadoop-hdfs-journalnode'

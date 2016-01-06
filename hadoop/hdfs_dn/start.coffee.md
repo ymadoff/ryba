@@ -23,6 +23,4 @@ HADOOP_SECURE_DN_USER=hdfs /usr/hdp/current/hadoop-hdfs-datanode/../hadoop/sbin/
 ```
 
     module.exports.push header: 'HDFS DN # Start', label_true: 'STARTED', handler: ->
-      @service_start
-        name: 'hadoop-hdfs-datanode'
-        if_exists: '/etc/init.d/hadoop-hdfs-datanode'
+      @service_start name: 'hadoop-hdfs-datanode'
