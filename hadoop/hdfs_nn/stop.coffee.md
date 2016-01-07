@@ -30,6 +30,6 @@ activated.
 
     module.exports.push header: 'HDFS NN # Stop Clean Logs', label_true: 'CLEANED', handler: ->
       @execute
-        cmd: 'rm /var/log/hadoop-hdfs/*/*-namenode-*'
+        cmd: 'rm /var/log/hadoop-hdfs/*-namenode-*'
         code_skipped: 1
         if: @config.ryba.clean_logs
