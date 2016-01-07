@@ -56,6 +56,7 @@ Example
       require('../ganglia/collector').configure ctx
       require('../oozie/server').configure ctx
       require('../hue/index').configure ctx
+      require('../huedocker/index').configure ctx
       nagios = ctx.config.ryba.nagios ?= {}
       nagios.overwrite ?= false
       nagios.log_dir = '/var/log/nagios'
@@ -113,6 +114,7 @@ Example
         'oozie-server': ctx.hosts_with_module 'ryba/oozie/server'
         'webhcat-server': ctx.hosts_with_module 'ryba/hive/webhcat'
         'hue-server': ctx.hosts_with_module 'ryba/hue/install'
+        'hue-server-docker': ctx.hosts_with_module 'ryba/huedocker/install'
         'resourcemanager': ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
         'nodemanagers': ctx.hosts_with_module 'ryba/hadoop/yarn_nm'
         'historyserver2': ctx.hosts_with_module 'ryba/hadoop/servers'

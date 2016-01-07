@@ -94,6 +94,12 @@ define servicegroup {
   alias  HUE Checks
 }
 {% endif %}
+{% if hostgroup_defs['hue-server-docker'] %}
+define servicegroup {
+  servicegroup_name  HUE_DOCKER
+  alias  HUE_DOCKER Checks
+}
+{% endif %}
 {% if hostgroup_defs['nimbus'] or
   hostgroup_defs['drpc-server'] or
   hostgroup_defs['storm_ui'] or

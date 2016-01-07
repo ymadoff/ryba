@@ -758,6 +758,21 @@ define service {
 }
 {% endif %}
 
+{% if hostgroup_defs['hue-server-docker'] %}
+define service {
+        hostgroup_name          hue-server-docker
+        use                     hadoop-service
+        service_description     HUE_DOCKER::Hue Server Docker status
+        servicegroups           HUE_DOCKER
+        # WRONG:  work if hue installed on nagios host
+        # check_command           check_hue_status
+        check_command           check_tcp_wrapper!{{ hue_docker_port }}!-w 1 -c 1
+        normal_check_interval   100
+        retry_check_interval    0.5
+        max_check_attempts      3
+}
+{% endif %}
+
 #FALCON checks
 {% if hostgroup_defs['falcon-server'] %}
 define service {

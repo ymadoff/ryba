@@ -52,6 +52,9 @@ function real_component() {
     HUE)
       realCompName="HUE_SERVER"
     ;;
+    HUE_DOCKER)
+      realCompName="HUE_SERVER_DOCKER"
+    ;;
     WEBHCAT)
       realCompName="WEBHCAT_SERVER"
     ;;

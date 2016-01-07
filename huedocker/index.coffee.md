@@ -80,6 +80,7 @@ Example:
       hue_docker.version ?= '3.9'
       hue_docker.image ?= 'ryba/hue'
       hue_docker.container ?= 'hue_server'
+      # Huedocker service name has to match nagios hue_docker_check_status.sh file in ryba/nagios/resources/plugins
       hue_docker.service ?= 'hue-server-docker'
       hue_docker.build ?= {}
       hue_docker.build.name ?= 'ryba/hue-build'

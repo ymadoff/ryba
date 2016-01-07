@@ -13,17 +13,15 @@
 
 ## Start Server
 
-Start the Hue 'hue_server' container. You can also start the server manually with the following
+Start the Hue 'hue_server' container as a service. It ensures that docker is running and start hue_server container.
+You can start the server manually with the following
 command:
 
 ```
-docker start hue_server
+service hue-server-docker start
 ```
 
     module.exports.push header: 'Hue Docker # Start', label_true: 'STARTED', timeout: -1, handler: ->
       {hue_docker} = @config.ryba
-      # @docker_start
-      #   container: hue_docker.container
       @service_start
         name: hue_docker.service
-        if_exists: "/etc/init.d/#{hue_docker.service}"

@@ -39,6 +39,8 @@ php /usr/lib64/nagios/plugins/check_rpcq_latency_ha.php \
   /usr/bin/kinit
 # HUE::Hue Server status
 /usr/lib64/nagios/plugins/check_hue_status.sh
+# HUE_DOCKER::Hue Docker Server status
+/usr/lib64/nagios/plugins/check_hue_docker_status.sh
 ```
 
     module.exports = []
