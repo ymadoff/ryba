@@ -225,6 +225,7 @@ changes.
         comment: '#'
         backup: true
       @docker_stop
+        if: -> @status -1
         container: hue_docker.container
 
 ## Layout log Hue
@@ -245,46 +246,45 @@ changes.
 
 ## Install Hue container
 
-Load Hue Container from local host ( if local container exists e.g. after a ryba prepare)
-Checks also if remote image's checksum and local container's one are indentical
+Install Hue server docker container.
+Assumes that the hue docker image exists in the remote temporary directory.
+The image can be uploaded by an other bin/ryba install (e.g. by a team mate), or it will be uploaded
+from local (needs local container to exist e.g. after bin/ryba prepare).
+Compares local/remote hash to check if docker_load is needed.
 
     module.exports.push header: 'Hue Docker # Container', timeout: -1, handler: (options)  ->
       {hue_docker} = @config.ryba
-      tmp = '/logiciels/hue_docker.tar'
-      checksum = ''
-      local_container = true
-      @call (options, callback) ->
-        fs.readFile "#{hue_docker.prod.directory}/checksum", 'ascii', (err, content) =>
-          if err?
-            return callback err if err.code != 'ENOENT'
-            options.log message: "Cache cheksum file does not exist:#{hue_docker.prod.directory}/checksum", level: 'WARN'
-            options.log message: "You should execute prepare command, skipping container upload", level: 'WARN'
-            local_container = false
+      tmp = hue_docker.tmp ?= '/tmp'
+      current_checksum = ''
+      # check if remote image exists (store the checkusm)
+      # force status to false when only reading files
+      @call (options, callback) =>
+        @fs.exists "#{tmp}/hue_docker.tar", (err, exists) =>
+          return callback err if err?.code != 'ENOENT' and err
+          return callback null, false if err?.code == 'ENOENT' or !exists
+          @fs.readFile "#{tmp}/checksum", 'ascii', (err, content) ->
+            return callback err if err?.code != 'ENOENT' and err
+            return callback null, exists if err?.code == 'ENOENT'
+            current_checksum = content
+            # return false because we don't want modified status (just reading)
             return callback null, false
-          else
-            checksum = content
-            @docker_checksum
-              repository: hue_docker.image
-              tag: '3.9'
-            , (err, _, __, ___, hash) ->
-              return callback err if err
-              if hash == checksum
-                options.log message: "Not uploading image, cache cheksum matches remote checksum:#{checksum}-#{hash}", level: 'WARN'
-                return callback null, false
-              else
-                options.log message: "Cache cheksum doesn't match remote checksum:#{checksum}-#{hash}", level: 'WARN'
-                return callback null, true
+      # upload image and its checksum if remote  do not exists
       @upload
         source: "#{__dirname}/cache/hue_docker.tar"
-        destination: tmp
+        destination: "#{tmp}/hue_docker.tar"
         binary: true
         md5: true
-        if: -> @status -1 or local_container
-      @docker_load
-        input: tmp
-        checksum: checksum
-        if_exists: tmp
-        if: -> @status -1
+        if: -> (current_checksum.length == 0)
+      @upload
+        source: "#{__dirname}/cache/prod/checksum"
+        destination: "#{tmp}/checksum"
+        binary: true
+        md5: true
+        if: -> (current_checksum.length == 0)
+      @call ->
+        @docker_load
+          input: "#{tmp}/hue_docker.tar"
+          checksum: current_checksum
 
 ## Run Hue Server Container
 
@@ -300,10 +300,11 @@ ryba/hue:3.9
 
 ```
 
-    module.exports.push header: 'Hue Docker # Run', label_true: 'RUNNED', handler:  ->
-      {hadoop_group,hadoop_conf_dir, hdfs, hue_docker, hive, hbase} = @config.ryba
+      {hadoop_group,hadoop_conf_dir, hdfs, hive, hbase} = @config.ryba
       @docker_run
-        force: true
+        header: 'Hue Docker # Run'
+        label_true: 'RUNNED'
+        force: -> @status -1
         image: "#{hue_docker.image}:#{hue_docker.version}"
         volume: [
           "#{hue_docker.conf_dir}/hue_docker.ini:/var/lib/hue/desktop/conf/pseudo-distributed.ini"
