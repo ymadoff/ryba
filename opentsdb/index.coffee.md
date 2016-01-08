@@ -42,6 +42,8 @@ OpenTSDB does not seem to work without the hbase rights
       opentsdb.config['tsd.http.staticroot'] ?= "#{opentsdb.user.home}/static/"
       opentsdb.config['tsd.http.cachedir'] ?= '/tmp/opentsdb'
       opentsdb.config['tsd.core.plugin_path'] ?= "#{opentsdb.user.home}/plugins"
+      opentsdb.config['tsd.core.meta.enable_realtime_ts'] ?= 'true'
+      opentsdb.config['tsd.http.request.cors_domains'] ?= '*'
       opentsdb.config['tsd.network.port'] ?= 4242
       # zookeeper...
       zoo_ctxs = ctx.contexts 'ryba/zookeeper/server'
@@ -51,6 +53,7 @@ OpenTSDB does not seem to work without the hbase rights
       opentsdb.config['tsd.storage.hbase.uid_table'] ?= 'tsdb-uid'
       opentsdb.config['tsd.storage.hbase.tree_table'] ?= 'tsdb-tree'
       opentsdb.config['tsd.storage.hbase.meta_table'] ?= 'tsdb-meta'
+      opentsdb.config['tsd.query.allow_simultaneous_duplicates'] ?= 'true'
       opentsdb.config['hbase.security.authentication'] ?= hbase.site['hbase.security.authentication']
       if opentsdb.config['hbase.security.authentication'] is 'kerberos'
         opentsdb.config['hbase.security.auth.enable'] ?= 'true' 
