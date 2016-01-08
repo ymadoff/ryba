@@ -1,7 +1,27 @@
 {% for name, user in contacts %}
 define contact{
-  contact_name  {{ name }}
-  use           generic-contact
-  {% for prop, value in user %}
-  {{ prop }}    {{ value }}{% endfor %}
+  contact_name      {{ name }}
+  alias             {% if user.alias %}{{ user.alias }}{% else %}{{ name }}{% endif %}{% if user.contactgroups %}{% if user.contactgroups %}
+  contactgroups     {% if user.contactgroups | isArray %}{{ user.contactgroups | join(',') }}{% else %}{{ user.contactgroups }}{% endif %}
+  host_notifications_enabled {% if user.host_notifications_enabled %}{{ user.host_notifications_enabled }}{% else %}1{% endif %}
+  service_notifications_enabled {% if user.service_notifications_enabled %}{{ user.service_notifications_enabled }}{% else %}1{% endif %}
+  host_notifications_period {% if user.host_notifications_period %}{{ user.host_notifications_period }}{% else %}24x7{% endif %}
+  service_notifications_period {% if user.service_notifications_period %}{{ user.service_notifications_period }}{% else %}24x7{% endif %}
+  host_notifications_options {% if user.host_notifications_options %}{{ user.host_notifications_options }}{% else %}d,u,r{% endif %}
+  service_notifications_options {% if user.service_notifications_options %}{{ user.service_notifications_options }}{% else %}w,u,c,r{% endif %}
+  host_notifications_command {% if user.host_notifications_command %}{{ user.host_notifications_command }}{% else %}notify-host-by-email{% endif %}
+  service_notifications_command {% if user.service_notifications_command %}{{ user.service_notifications_command }}{% else %}notify-service-by-email{% endif %}{% if user.email %}
+  email             {{ user.email }}{% endif %}{% if user.pager %}
+  pager             {{ user.pager }}{% endif %}{% if user.address1 %}
+  address1          {{ user.address1 }}{% endif %}{% if user.address2 %}
+  address2          {{ user.address2 }}{% endif %}{% if user.address3 %}
+  address3          {{ user.address3 }}{% endif %}{% if user.address4 %}
+  address4          {{ user.address4 }}{% endif %}{% if user.address5 %}
+  address5          {{ user.address5 }}{% endif %}{% if user.address6 %}
+  address6          {{ user.address6 }}{% endif %}{% if user.can_submit_commands %}
+  can_submit_commands {{ user.can_submit_commands }}{% endif %}{% if user.is_admin %}
+  is_admin          {{ user.is_admin }}{% endif %}{% if user.retain_status_information %}
+  retain_status_information {{ user.retain_status_information }}{% endif %}{% if user.retain_nonstatus_information %}
+  retain_nonstatus_information {{ user.retain_nonstatus_information }}{% endif %}{% if user.min_business_impact %}
+  min_business_impact {{ user.min_business_impact }}{% endif %}
 }{% endfor %}

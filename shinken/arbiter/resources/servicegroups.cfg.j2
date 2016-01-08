@@ -1,6 +1,10 @@
-{% for servicegroup in servicegroups %}
-define servicegroup {
-  servicegroup_name {{ servicegroup }}
-  alias             {% if servicegroup.alias %}{{ servicegroup.alias }}{% else %}{{ servicegroup }}{% endif %}
-  members           {% if servicegroup.members | isArray %}{{ servicegroup.members | join(',') }}{% elif servicegroup.members %}{{ servicegroup.members }}{% endif %}
+{% for name, group in servicegroups %}
+define servicegroups {
+  servicegroup_name    {{ name }}
+  alias                {% if group.alias %}{{ group.alias }}{% else %}{{ name }}{% endif %}{% if group.members %}
+  members              {% if group.members | isArray %}{{ group.members | join(',') }}{% else %}{{ group.members }}{% endif %}{% if group.servicegroup_members %}
+  servicegroup_members {% if group.servicegroup_members | isArray %}{{ group.servicegroup_members | join(',') }}{% else %}{{ group.servicegroup_members }}{% endif %}{% if group.notes %}
+  notes                {{ group.notes }}{% endif %}{% if group.notes_url %}
+  notes_url            {{ group.notes_url }}{% endif %}{% if group.action_url %}
+  action_url           {{ group.action_url }}{% endif %}
 }{% endfor %}

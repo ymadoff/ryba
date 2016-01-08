@@ -1,6 +1,7 @@
-{% for name, group in contactgroups %}
-define contactgroup {
-  contactgroup_name  {{ name }}
-  alias              {{ group.alias }}
-  members            {{ group.members | join (",") }}
+{% for name, group in contactgroup %}
+define hostgroup {
+  contactgroup_name    {{ name }}
+  alias                {% if group.alias %}{{ group.alias }}{% else %}{{ name }}{% endif %}{% if group.members %}
+  members              {% if group.members | isArray %}{{ group.members | join(',') }}{% else %}{{ group.members }}{% endif %}{% if group.contactgroup_members %}
+  contactgroup_members {% if group.contactgroup_members | isArray %}{{ group.contactgroup_members | join(',') }}{% else %}{{ group.contactgroup_members }}{% endif %}
 }{% endfor %}

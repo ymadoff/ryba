@@ -21,7 +21,6 @@ define broker {
     address         {{b.config.host}}
     port            {{b.config.ryba.shinken.broker.config.port}}
     spare           {% if b.config.ryba.shinken.broker.config.spare %}1{% else %}0{% endif %}
-
     manage_arbiters     1   {# Take data from Arbiter. There should be only one broker for the arbiter.#}
     manage_sub_realms   1   {# Does it take jobs from schedulers of sub-Realms?#}
     timeout             3   {# Ping timeout#}

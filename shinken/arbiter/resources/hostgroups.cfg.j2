@@ -1,7 +1,11 @@
-{% for name, host in hostgroups %}
+{% for name, group in hostgroups %}
 define hostgroup {
-  hostgroup_name  {{ name }}
-  alias           {% if host.alias %}{{ host.alias }}{% else %}{{ name }}{% endif %}
-  members         {% if host.members | isArray %}{{ host.members | join(',') }}{% elif host.members %}{{ host.members }}{% endif %}{% if host.realm %}
-  realm           {{ host.realm }}{% endif %}
+  hostgroup_name    {{ name }}
+  alias             {% if group.alias %}{{ group.alias }}{% else %}{{ name }}{% endif %}{% if group.members %}
+  members           {% if group.members | isArray %}{{ group.members | join(',') }}{% else %}{{ group.members }}{% endif %}{% if group.hostgroup_members %}
+  hostgroup_members {% if group.hostgroup_members | isArray %}{{ group.hostgroup_members | join(',') }}{% else %}{{ group.hostgroup_members }}{% endif %}{% if group.notes %}
+  notes             {{ group.notes }}{% endif %}{% if group.notes_url %}
+  notes_url         {{ group.notes_url }}{% endif %}{% if group.action_url %}
+  action_url        {{ group.action_url }}{% endif %}{% if group.realm %}
+  realm             {{ group.realm }}{% endif %}
 }{% endfor %}

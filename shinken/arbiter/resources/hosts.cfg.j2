@@ -1,15 +1,70 @@
 {% for name, host in hosts %}
 define host {
   host_name                 {{ name }}
-  alias                     {{ host.shortname }}
-  use                       linux-server
-  address                   {{ host.ip }}
-  check_interval            0.25
-  retry_interval            0.25
-  max_check_attempts        4
-  notifications_enabled     1
-  first_notification_delay  0
-  notification_interval     1440
-  notification_options      d,u,r{% if host.realm %}
-  realm                     {{ host.realm }}{% endif %}
+  alias                     {% if host.alias %}{{ host.alias }}{% else %}{{ name }}{% endif %}{% if display_name %}
+  display_name              {{ host.display_name}}{% endif %}
+  address                   {{ host.ip }}{% if host.parents %}
+  parents                   {% if host.parents | isArray %}{{ host.parents | join(',') }}{% else %}{{ host.parents }}{% endif %}{% if host.hostgroups %}
+  hostgroups                {% if host.hostgroups | isArray %}{{ host.hostgroups | join(',') }}{% else %}{{ host.hostgroups }}{% endif %}{% if host.check_command %}
+  check_command             {{ host.check_command }}{% endif %}{% if host.initial_state %}
+  initial_state             {{ host.initial_state }}{% endif %}
+  max_check_attempts        {% if host.max_check_attempts %}{{ host.max_check_attempts }}{% else %}3{% endif %}{% if host.check_interval %}
+  check_interval            {{ host.check_interval }}{% endif %}{% if host.retry_interval %}
+  retry_interval            {{ host.retry_interval }}{% endif %}{% if host.active_checks_enabled %}
+  active_checks_enabled     {{ host.active_checks_enabled }}{% endif %}{% if host.passive_checks_enabled %}
+  passive_checks_enabled    {{ host.passive_checks_enabled }}{% endif %}{% if host.check_period %}
+  check_period              {{ host.check_period }}{% endif %}{% if host.obsess_over_host %}
+  obsess_over_host          {{ host.obsess_over_host }}{% endif %}{% if host.check_freshness %}
+  check_freshness           {{ host.check_freshness }}{% endif %}{% if host.freshness_threshold %}
+  freshness_threshold       {{ host.freshness_threshold }}{% endif %}{% if host.event_handler %}
+  event_handler             {{ host.event_handler }}{% endif %}{% if host.event_handler_enabled %}
+  event_handler_enabled     {{ host.event_handler_enabled }}{% endif %}{% if host.low_flap_threshold %}
+  low_flap_threshold        {{ host.low_flap_threshold }}{% endif %}{% if host.high_flap_threshold %}
+  high_flap_threshold       {{ host.high_flap_threshold }}{% endif %}{% if host.flap_detection_enabled %}
+  flap_detection_enabled    {{ host.flap_detection_enabled }}{% endif %}{% if host.flap_detection_options %}
+  flap_detection_options    {{ host.flap_detection_options }}{% endif %}{% if host.process_perf_data %}
+  process_perf_data         {{ host.process_perf_data }}{% endif %}{% if host.retain_status_information %}
+  retain_status_information {{ host.retain_status_information }}{% endif %}{% if host.retain_nonstatus_information %}
+  retain_nonstatus_information {{ host.retain_nonstatus_information }}{% endif %}{% if host.contacts %}
+  contacts                  {% if host.contacts | isArray %}{{ host.contacts | join(',') }}{% else %}{{ host.contacts }}{% endif %}
+  contact_groups            {% if host.contact_groups | isArray %}{{ host.contact_groups | join(',') }}{% elif host.contact_groups %}{{ host.contact_groups }}{% else %}admin{% endif %}
+  notification_interval     {% if host.notification_interval %}{{ host.notification_interval }}{% else %}1440{% endif %}{% if host.first_notification_delay %}
+  first_notification_delay  {{ host.first_notification_delay }}{% endif %}{% if host.notification_period %}
+  notification_period       {{ host.notification_period }}{% endif %}{% if host.notification_options %}
+  notification_options      {{ host.notification_options }}{% endif %}{% if host.notification_enabled %}
+  notification_enabled      {{ host.notification_enabled }}{% endif %}{% if host.stalking_options %}
+  stalking_options          {{ host.stalking_options }}{% endif %}{% if host.notes %}
+  notes                     {{ host.notes }}{% endif %}{% if host.notes_url %}
+  notes_url                 {{ host.notes_url }}{% endif %}{% if host.action_url %}
+  action_url                {{ host.action_url }}{% endif %}{% if host.icon_image %}
+  icon_image                {{ host.icon_image }}{% endif %}{% if host.icon_image_alt %}
+  icon_image_alt            {{ host.icon_image_alt }}{% endif %}{% if host.vrml_image %}
+  vrml_image                {{ host.vrml_image }}{% endif %}{% if host.statusmap_image %}
+  statusmap_image           {{ host.statusmap_image }}{% endif %}{% if host.2d_coords %}
+  2d_coords                 {{ host.2d_coords }}{% endif %}{% if host.3d_coords %}
+  3d_coords                 {{ host.3d_coords }}{% endif %}{% if host.realm %}
+  realm                     {{ host.realm }}{% endif %}{% if host.poller_tag %}
+  poller_tag                {{ host.poller_tag }}{% endif %}{% if host.reactionner_tag %}
+  reactionner_tag           {{ host.reactionner_tag }}{% endif %}{% if host.business_impact %}
+  business_impact           {{ host.business_impact }}{% endif %}{% if host.resultmodulations %}
+  resultmodulations         {{ host.resultmodulations }}{% endif %}{% if host.escalations %}
+  escalations               {{ host.escalations }}{% endif %}{% if host.business_impact_modulations %}
+  business_impact_modulations {{ host.business_impact_modulations }}{% endif %}{% if host.icon_set %}
+  icon_set                  {{ host.icon_set }}{% endif %}{% if host.maintenance_period %}
+  maintenance_period        {{ host.maintenance_period }}{% endif %}{% if host.service_overrides %}
+  service_overrides         {{ host.service_overrides }}{% endif %}{% if host.service_excludes %}
+  service_excludes          {{ host.service_excludes }}{% endif %}{% if host.service_includes %}
+  service_includes          {{ host.service_includes }}{% endif %}{% if host.labels %}
+  labels                    {{ host.labels }}{% endif %}{% if host.business_rule_output_template %}
+  business_rule_output_template {{ host.business_rule_output_template }}{% endif %}{% if host.business_rule_smart_notifications %}
+  business_rule_smart_notifications {{ host.business_rule_smart_notifications }}{% endif %}{% if host.business_rule_downtime_as_ack %}
+  business_rule_downtime_as_ack {{ host.business_rule_downtime_as_ack }}{% endif %}{% if host.business_rule_host_notification_options %}
+  business_rule_host_notification_options {{ host.business_rule_host_notification_options }}{% endif %}{% if host.business_rule_service_notification_options %}
+  business_rule_service_notification_options {{ host.business_rule_service_notification_options }}{% endif %}{% if host.snapshot_enabled %}
+  snapshot_enabled          {{ host.snapshot_enabled }}{% endif %}{% if host.snapshot_command %}
+  snapshot_command          {{ host.snapshot_command }}{% endif %}{% if host.snapshot_period %}
+  snapshot_period           {{ host.snapshot_period }}{% endif %}{% if host.snapshot_criteria %}
+  snapshot_criteria         {{ host.snapshot_criteria }}{% endif %}{% if host.trigger_name %}
+  trigger_name              {{ host.trigger_name }}{% endif %}{% if host.trigger_broker_raise_enabled %}
+  trigger_broker_raise_enabled {{ host.trigger_broker_raise_enabled }}{% endif %}
 }{% endfor %}
