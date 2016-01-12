@@ -16,7 +16,7 @@ TODO: [HBase backup node](http://willddy.github.io/2013/07/02/HBase-Add-Backup-M
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
-      
+
       @iptables
         header: 'HBase Master # IPTables'
         rules: [
@@ -48,7 +48,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 Install the "hbase-master" service, symlink the rc.d startup script inside
 "/etc/init.d" and activate it on startup.
-      
+
       @call header: 'HBase Master # Service', timeout: -1, handler: ->
         @service
           name: 'hbase-master'
@@ -104,9 +104,9 @@ Environment passed to the Master before it starts.
         @render
           source: "#{__dirname}/../resources/hbase-env.sh"
           destination: "#{hbase.master.conf_dir}/hbase-env.sh"
-          backup: true  
+          backup: true
           local_source: true
-          eof: true  
+          eof: true
           context: @config
           uid: hbase.user.name
           gid: hbase.group.name

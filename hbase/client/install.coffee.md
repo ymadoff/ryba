@@ -63,7 +63,6 @@ Environment passed to the Master before it starts.
           append:true
         ]
 
-
 ## HBase Cluster Replication
 
     module.exports.push 'ryba/hbase/master/wait'
