@@ -153,19 +153,6 @@ Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
           zookeeper.env['SERVER_JVMFLAGS'] = "-Dzookeeper.DigestAuthenticationProvider.superDigest=#{digest} #{zookeeper.env['SERVER_JVMFLAGS']}"
           callback()
 
-## Auth to local
-
-    module.exports.push
-      header: 'ZooKeeper Server # Auth to local'
-      unless: -> @config.ryba.zookeeper.env['SERVER_JVMFLAGS'].indexOf('-Dzookeeper.security.auth_to_local') > -1
-      handler: (_, callback) ->
-        {zookeeper} = @config.ryba
-        auth_to_local = zookeeper.auth_to_local.trim()
-        auth_to_local = auth_to_local.replace /[\n\r]/g, '' # remove carriage return
-        auth_to_local = auth_to_local.replace /\$/g, '\\$' # properly escape bash special char
-        zookeeper.env['SERVER_JVMFLAGS'] += " -Dzookeeper.security.auth_to_local=#{auth_to_local}"
-        callback()
-
 ## Environment
 
     module.exports.push header: 'ZooKeeper Server # Environment', handler: ->
