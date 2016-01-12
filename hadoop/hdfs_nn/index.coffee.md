@@ -121,6 +121,13 @@ service's TCP port.
         hdfs_ctx.config.ryba.hdfs.nn.site ?= {}
         hdfs_ctx.config.ryba.hdfs.nn.site['dfs.http.policy'] ?= ctx.config.ryba.hdfs.nn.site['dfs.http.policy']
 
+## Configuration for Log4J
+
+      ryba.hdfs.log4j ?= {}
+      ryba.hdfs.log4j[k] ?= v for k, v of ctx.config.log4j
+      ryba.hdfs.log4j.extra_appender = "socket_client" if ryba.hdfs.log4j.remote_host? && ryba.hdfs.log4j.remote_port?
+
+
 ## Export configuration
 
       for dn_ctx in dn_ctxs

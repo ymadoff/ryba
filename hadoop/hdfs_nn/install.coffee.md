@@ -140,10 +140,32 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
         mode: 0o755
         backup: true
         eof: true
+
+      writes = []
+      if hdfs.log4j.extra_appender == "socket_client"
+        writes.push
+          match: /^hdfs.audit.logger=.*/m
+          replace: """
+          hdfs.audit.logger=INFO,NullAppender,SOCKET
+          """
+          append: true
+        ,
+          match: "//m"
+          replace: """
+            
+            log4j.appender.SOCKET=org.apache.log4j.net.SocketAppender
+            log4j.appender.SOCKET.Application=HDFS_AUDIT
+            log4j.appender.SOCKET.RemoteHost=#{hdfs.log4j.remote_host}
+            log4j.appender.SOCKET.Port=#{hdfs.log4j.remote_port}
+            log4j.appender.SOCKET.ReconnectionDelay=10000
+            """
+          append: true
+
       @write
         header: 'Log4j'
         destination: "#{hdfs.nn.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
+        write: writes
         local_source: true
 
 ## Hadoop Metrics
