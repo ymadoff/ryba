@@ -98,11 +98,8 @@ to its associated Scheduler. Host the WebUI.
         'zeppelin-servers': ctx.hosts_with_module 'ryba/zeppelin'
         'zookeeper-clients': ctx.hosts_with_module 'ryba/zookeeper/client'
         'zookeeper-servers': ctx.hosts_with_module 'ryba/zookeeper/server'
-      shinken.config.servicegroups ?= ['ambari','elasticsearch','falcon', 'flume',
-        'hadoop', 'hdfs', 'hbase', 'hive', 'hue', 'kafka', 'mapreduce', 'mongodb',
-        'oozie', 'phoenix', 'rexster', 'shinken', 'solr', 'storm', 'spark', 'titan',
-        'yarn', 'zeppelin', 'zookeeper'
-      ]
+      # Servicegroups
+      require('../lib/configure_servicegroups').call ctx
 
 ## Commands
 
