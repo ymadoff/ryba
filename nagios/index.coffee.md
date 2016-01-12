@@ -56,7 +56,6 @@ Example
       require('../ganglia/collector').configure ctx
       require('../oozie/server').configure ctx
       require('../hue/index').configure ctx
-      require('../huedocker/index').configure ctx
       nagios = ctx.config.ryba.nagios ?= {}
       nagios.overwrite ?= false
       nagios.log_dir = '/var/log/nagios'
@@ -114,7 +113,6 @@ Example
         'oozie-server': ctx.hosts_with_module 'ryba/oozie/server'
         'webhcat-server': ctx.hosts_with_module 'ryba/hive/webhcat'
         'hue-server': ctx.hosts_with_module 'ryba/hue/install'
-        'hue-server-docker': ctx.hosts_with_module 'ryba/huedocker/install'
         'resourcemanager': ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
         'nodemanagers': ctx.hosts_with_module 'ryba/hadoop/yarn_nm'
         'historyserver2': ctx.hosts_with_module 'ryba/hadoop/servers'
@@ -126,6 +124,7 @@ Example
         'storm_rest_api': [] # ctx.hosts_with_module 'ryba/storm/rest'
         'falcon-server': [] # ctx.hosts_with_module 'ryba/falcon'
         'ats-servers': ctx.hosts_with_module 'ryba/ats'
+      nagios.hostsgroups.push 'hue-server-docker': ctx.hosts_with_module 'ryba/huedocker/install' if ctx.hosts_with_module('ryba/huedocker').length > 0
 
 ## Commands
 
@@ -144,6 +143,3 @@ Example
     # module.exports.push commands: 'status', modules: 'ryba/nagios/status'
 
     module.exports.push commands: 'stop', modules: 'ryba/nagios/stop'
-
-
-

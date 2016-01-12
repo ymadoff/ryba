@@ -237,7 +237,9 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
 
     module.exports.push header: 'Nagios # Services', handler: ->
       {nagios, force_check, active_nn_host, core_site, hdfs, zookeeper,
-        hbase, oozie, webhcat, ganglia, hue, hue_docker} = @config.ryba
+        hbase, oozie, webhcat, ganglia, hue} = @config.ryba
+      [hue_docker_ctx] = @contexts 'ryba/huedocker'
+      hue_docker_port = if hue_docker_ctx then parseInt(hue_docker_ctx.config.ryba.hue_docker.ini.desktop['http_port']) else 0
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       # HDFS NameNode
       nn_hosts = @hosts_with_module 'ryba/hadoop/hdfs_nn'
@@ -351,7 +353,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           falcon_port: 0 # TODO
           ahs_port: 0 # TODO
           hue_port: parseInt hue.ini.desktop['http_port']
-          hue_docker_port: parseInt hue_docker.ini.desktop['http_port']
+          hue_docker_port: hue_docker_port
 
     module.exports.push header: 'Nagios # Commands', handler: ->
       @write
