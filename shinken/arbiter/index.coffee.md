@@ -100,6 +100,10 @@ to its associated Scheduler. Host the WebUI.
         'zookeeper-servers': ctx.hosts_with_module 'ryba/zookeeper/server'
       # Servicegroups
       require('../lib/configure_servicegroups').call ctx
+      # realms: must at least contain the 'All' realm
+      shinken.config.realms ?= {}
+      shinken.config.realms.All ?= {}
+      shinken.config.realms.All.members ?= for k in Object.keys(shinken.config.realms) then k unless k is 'All'
 
 ## Commands
 
