@@ -42,12 +42,15 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push header: 'ZooKeeper Server # IPTables', handler: ->
       {zookeeper} = @config.ryba
-      @iptables
-        rules: [
+      rules = [
           { chain: 'INPUT', jump: 'ACCEPT', dport: zookeeper.port, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Client" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: 2888, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Peer" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: 3888, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Leader" }
-        ]
+      ]
+
+      rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: parseInt(zookeeper.env["JMXPORT"],10), protocol: 'tcp', state: 'NEW', comment: "Zookeeper JMX" } if zookeeper.env["JMXPORT"]?
+      @iptables
+        rules: rules
         if: @config.iptables.action is 'start'
 
 ## Install
