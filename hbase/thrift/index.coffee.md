@@ -40,7 +40,7 @@ Follows [cloudera hbase setup in secure mode][hbase-configuration]
       # auth-int - authentication and integrity checking
       # auth - authentication checking only
       hbase.site['hbase.thrift.security.qop'] ?= "auth"
-      m_ctxs = ctx.contexts 'ryba/hbase/master'
+      m_ctxs = ctx.contexts 'ryba/hbase/master', require('../master').configure 
       hbase.site['hbase.master.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.site['hbase.master.kerberos.principal']
       hbase.site['hbase.regionserver.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.site['hbase.regionserver.kerberos.principal']
 
