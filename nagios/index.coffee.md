@@ -124,7 +124,6 @@ Example
         'storm_rest_api': [] # ctx.hosts_with_module 'ryba/storm/rest'
         'falcon-server': [] # ctx.hosts_with_module 'ryba/falcon'
         'ats-servers': ctx.hosts_with_module 'ryba/ats'
-      nagios.hostsgroups.push 'hue-server-docker': ctx.hosts_with_module 'ryba/huedocker/install' if ctx.hosts_with_module('ryba/huedocker').length > 0
 
 ## Commands
 

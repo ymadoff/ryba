@@ -254,7 +254,7 @@ Compares local/remote hash to check if docker_load is needed.
 
     module.exports.push header: 'Hue Docker # Container', timeout: -1, handler: (options)  ->
       {hue_docker} = @config.ryba
-      tmp = hue_docker.tmp ?= '/tmp'
+      tmp = hue_docker.image_dir
       current_checksum = ''
       # check if remote image exists (store the checkusm)
       # force status to false when only reading files

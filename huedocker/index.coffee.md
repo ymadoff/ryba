@@ -89,6 +89,7 @@ Example:
       hue_docker.prod ?= {}
       hue_docker.prod.directory ?= "#{__dirname}/cache/prod"
       hue_docker.port ?= '8888'
+      hue_docker.image_dir ?= '/tmp'
       blacklisted_app = []
       # User
       hue_docker.user ?= {}
