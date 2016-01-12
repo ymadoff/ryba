@@ -114,11 +114,11 @@ to its associated Scheduler. Host the WebUI.
     module.exports.push commands: 'install', modules: [
       'ryba/shinken/arbiter/install'
       'ryba/shinken/arbiter/start'
-      # 'ryba/shinken/arbiter/check'
+      'ryba/shinken/arbiter/check'
     ]
 
     module.exports.push commands: 'start', modules: 'ryba/shinken/arbiter/start'
 
-    # module.exports.push commands: 'status', modules: 'ryba/shinken/arbiter/status'
+    module.exports.push commands: 'status', modules: 'ryba/shinken/arbiter/status'
 
     module.exports.push commands: 'stop', modules: 'ryba/shinken/arbiter/stop'

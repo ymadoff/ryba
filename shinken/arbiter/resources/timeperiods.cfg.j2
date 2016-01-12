@@ -1,0 +1,6 @@
+{% for name, time in timeperiods %}
+define timeperiod{
+  timeperiod_name  {{ name }}
+  alias            {% if time.alias %}{{ time.alias }}{% else %}{{ name }}{% endif %}{% for prop, value in time %}{% if not prop == "alias" %}
+  {{ prop }}       {{ value }}{% endif %}{% endfor %}
+}{% endfor %}
