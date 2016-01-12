@@ -54,7 +54,7 @@ Example :
       zookeeper.env['JAVA'] ?= '$JAVA_HOME/bin/java'
       zookeeper.env['CLASSPATH'] ?= '$CLASSPATH:/usr/share/zookeeper/*'
       zookeeper.env['ZOO_LOG4J_PROP'] ?= 'INFO,CONSOLE,ROLLINGFILE'
-      zoookeeper.env['SERVER_JVMFLAGS'] = "#{zoookeeper.env['SERVER_JVMFLAGS']} -Dcom.sun.management.jmxremote.rmi.port=$JMXPORT" if zookeeper.env['JMXPORT']?
+      zookeeper.env['SERVER_JVMFLAGS'] = "#{zookeeper.env['SERVER_JVMFLAGS']} -Dcom.sun.management.jmxremote.rmi.port=$JMXPORT" if zookeeper.env['JMXPORT']?
       zookeeper.log4j ?= {}
       zookeeper.log4j[k] ?= v for k, v of ctx.config.log4j
       if zookeeper.log4j.server_port? then zookeeper.env['ZOO_LOG4J_PROP'] = "#{zookeeper.env['ZOO_LOG4J_PROP']},SOCKETHUB"
