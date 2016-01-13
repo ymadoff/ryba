@@ -99,6 +99,12 @@ service's TCP port.
         for jn_ctx in jn_ctxs
           ryba.hdfs.nn.site['dfs.journalnode.kerberos.principal'] ?= jn_ctx.config.ryba.hdfs.site['dfs.journalnode.kerberos.principal']
         ryba.hdfs.nn.site['dfs.nameservices'] = ryba.nameservice
+
+Since [HDFS-6376](https://issues.apache.org/jira/browse/HDFS-6376), 
+Nameservice must be explicitely set as internal to provide other nameservices, 
+for distcp purpose.
+
+        ryba.hdfs.nn.site['dfs.internal.nameservices'] ?= ryba.nameservice
         ryba.hdfs.nn.site["dfs.ha.namenodes.#{ryba.nameservice}"] = (for nn_ctx in nn_ctxs then nn_ctx.config.shortname).join ','
         for nn_ctx in nn_ctxs
           ryba.hdfs.nn.site['dfs.namenode.http-address'] = null
@@ -127,7 +133,6 @@ service's TCP port.
       ryba.hdfs.log4j[k] ?= v for k, v of ctx.config.log4j
       ryba.hdfs.log4j.extra_appender = "socket_client" if ryba.hdfs.log4j.remote_host? && ryba.hdfs.log4j.remote_port?
 
-
 ## Export configuration
 
       for dn_ctx in dn_ctxs
@@ -148,6 +153,7 @@ service's TCP port.
         'dfs.web.authentication.kerberos.principal'
         'dfs.ha.automatic-failover.enabled'
         'dfs.nameservices'
+        'dfs.internal.nameservices'
       ]
       for property in properties
         ryba.hdfs.site[property] ?= nn_ctx.config.ryba.hdfs.nn.site[property]

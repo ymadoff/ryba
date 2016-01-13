@@ -56,12 +56,6 @@ Example:
       # Comma separated list of paths. Use the list of directories from $DFS_DATA_DIR.
       # For example, /grid/hadoop/hdfs/dn,/grid1/hadoop/hdfs/dn.
       ryba.hdfs.site['dfs.http.policy'] ?= 'HTTPS_ONLY'
-
-Since [HDFS-6376](https://issues.apache.org/jira/browse/HDFS-6376), 
-Nameservice must be explicitely set as internal to provide other nameservices, 
-for distcp purpose.
-
-      ryba.hdfs.site['dfs.internal.nameservices'] ?= ryba.nameservice
       ryba.hdfs.site['dfs.datanode.data.dir'] ?= ['file:///var/hdfs/data']
       ryba.hdfs.site['dfs.datanode.data.dir'] = ryba.hdfs.site['dfs.datanode.data.dir'].join ',' if Array.isArray ryba.hdfs.site['dfs.datanode.data.dir']
       # ctx.config.ryba.hdfs.site['dfs.datanode.data.dir.perm'] ?= '750'
