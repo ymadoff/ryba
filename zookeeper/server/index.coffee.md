@@ -42,7 +42,7 @@ Example :
       zookeeper.env ?= {}
       zookeeper.env['JAVA_HOME'] ?= "#{java.java_home}"
       zookeeper.env['ZOOKEEPER_HOME'] ?= "/usr/hdp/current/zookeeper-client"
-      zookeeper.env['ZOO_AUTH_TO_LOCAL'] ?= "RULE:[1:$1]RULE:[2:$1]"
+      zookeeper.env['ZOO_AUTH_TO_LOCAL'] ?= "RULE:[1:\\$1]RULE:[2:\\$1]"
       zookeeper.env['ZOO_LOG_DIR'] ?= "#{zookeeper.log_dir}"
       zookeeper.env['ZOOPIDFILE'] ?= "#{zookeeper.pid_dir}/zookeeper_server.pid"
       zookeeper.env['SERVER_JVMFLAGS'] ?= "-Xmx1024m -Djava.security.auth.login.config=#{zookeeper.conf_dir}/zookeeper-server.jaas"
@@ -50,12 +50,16 @@ Example :
       zookeeper.env['JAVA'] ?= '$JAVA_HOME/bin/java'
       zookeeper.env['CLASSPATH'] ?= '$CLASSPATH:/usr/share/zookeeper/*'
       zookeeper.env['ZOO_LOG4J_PROP'] ?= 'INFO,CONSOLE,ROLLINGFILE'
-      zookeeper.env['SERVER_JVMFLAGS'] = "#{zookeeper.env['SERVER_JVMFLAGS']} -Dzookeeper.security.auth_to_local=$ZOO_AUTH_TO_LOCAL"
-      zookeeper.env['SERVER_JVMFLAGS'] = "#{zookeeper.env['SERVER_JVMFLAGS']} -Dcom.sun.management.jmxremote.rmi.port=$JMXPORT" if zookeeper.env['JMXPORT']?
+      if zookeeper.env['SERVER_JVMFLAGS'].indexOf('-Dzookeeper.security.auth_to_local') is -1
+        zookeeper.env['SERVER_JVMFLAGS'] = "#{zookeeper.env['SERVER_JVMFLAGS']} -Dzookeeper.security.auth_to_local=$ZOO_AUTH_TO_LOCAL"
+      if zookeeper.env['JMXPORT']? and zookeeper.env['SERVER_JVMFLAGS'].indexOf('-Dcom.sun.management.jmxremote.rmi.port') is -1
+        zookeeper.env['SERVER_JVMFLAGS'] = "#{zookeeper.env['SERVER_JVMFLAGS']} -Dcom.sun.management.jmxremote.rmi.port=$JMXPORT"
       zookeeper.log4j ?= {}
       zookeeper.log4j[k] ?= v for k, v of ctx.config.log4j
-      if zookeeper.log4j.server_port? then zookeeper.env['ZOO_LOG4J_PROP'] = "#{zookeeper.env['ZOO_LOG4J_PROP']},SOCKETHUB"
-      if zookeeper.log4j.remote_host? && zookeeper.log4j.remote_port? then zookeeper.env['ZOO_LOG4J_PROP'] = "#{zookeeper.env['ZOO_LOG4J_PROP']},SOCKET"
+      if zookeeper.log4j.remote_host? and zookeeper.log4j.remote_port? and zookeeper.env['ZOO_LOG4J_PROP'].indexOf('SOCKET') is -1
+        zookeeper.env['ZOO_LOG4J_PROP'] = "#{zookeeper.env['ZOO_LOG4J_PROP']},SOCKET"
+      if zookeeper.log4j.server_port? and zookeeper.env['ZOO_LOG4J_PROP'].indexOf('SOCKETHUB') is -1
+        zookeeper.env['ZOO_LOG4J_PROP'] = "#{zookeeper.env['ZOO_LOG4J_PROP']},SOCKETHUB"
       # Configuration
       hosts = ctx.hosts_with_module 'ryba/zookeeper/server'
       zookeeper.config ?= {}
