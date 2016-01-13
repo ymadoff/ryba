@@ -25,7 +25,7 @@ The file storing the PID is "/var/run/zookeeper/zookeeper_server.pid".
 ## Stop Clean Logs
 
     module.exports.push header: 'ZooKeeper Server # Stop Clean Logs', label_true: 'CLEANED', handler: ->
-      return next() unless @config.ryba.clean_logs
+      return unless @config.ryba.clean_logs
       @execute
         cmd: 'rm /var/log/zookeeper/*'
         code_skipped: 1
