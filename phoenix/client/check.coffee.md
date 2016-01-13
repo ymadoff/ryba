@@ -23,7 +23,7 @@ Phoenix table are automatically converted to uppercase.
 Refer to the [sqlline] documentation for a complete list of supported command
 instructions.
 
-    module.exports.push header: 'Phoenix Client # Check', handler: ->
+    module.exports.push header: 'Phoenix Client # Check', label_true: 'CHECKED', handler: ->
       {force_check, user, hbase} = @config.ryba
       zk_path = "#{hbase.site['hbase.zookeeper.quorum']}"
       zk_path += ":#{hbase.site['hbase.zookeeper.property.clientPort']}"

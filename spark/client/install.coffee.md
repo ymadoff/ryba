@@ -27,7 +27,7 @@ cat /etc/group | grep spark
 spark:x:494:
 ```
 
-    module.exports.push header: 'Spark HS # Users & Groups', handler: ->
+    module.exports.push header: 'Spark Client # Users & Groups', handler: ->
       {spark} = @config.ryba
       @group spark.group
       @user spark.user
