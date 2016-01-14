@@ -65,6 +65,7 @@ supported contexts are "hbase", "jvm" and "rpc".
         hbase.metrics.config['rpc.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
       if hbase.metrics.sinks.graphite
         hbase.metrics.config["*.sink.graphite.#{k}"] ?= v for k, v of sinks.graphite
+        hbase.metrics.config['*.sink.graphite.metrics_prefix'] ?= if sinks.graphite.metrics_prefix then "#{sinks.graphite.metrics_prefix}.hbase" else "hbase"
         hbase.metrics.config['hbase.sink.graphite.class'] ?= sinks.graphite.class
         hbase.metrics.config['jvm.sink.graphite.class'] ?= sinks.graphite.class
         hbase.metrics.config['rpc.sink.graphite.class'] ?= sinks.graphite.class
