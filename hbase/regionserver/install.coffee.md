@@ -129,12 +129,9 @@ Enable stats collection in Ganglia and Graphite
 
     module.exports.push header: 'HBase RegionServer # Metrics', handler: ->
       {hbase} = @config.ryba
-      content = ""
-      for k, v of hbase.metrics
-        content += "#{k}=#{v}\n" if v?
-      @write
+      @write_properties
         destination: "#{hbase.conf_dir}/hadoop-metrics2-hbase.properties"
-        content: content
+        content: hbase.metrics.config
         backup: true
 
 ## Start
