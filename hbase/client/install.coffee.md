@@ -44,12 +44,12 @@ Note, we left the permission mode as default, Master and RegionServer need to
 
 ## HBase Cluster Replication
 
-    module.exports.push 'ryba/hbase/master/wait'
+    # module.exports.push 'ryba/hbase/master/wait'
 
 Deploy HBase replication to point slave cluster.
 This module can be runned on one node, so it is runned on the first hbase-master.
 
-    module.exports.push header: 'HBase Client # Replication', handler: ->
+    module.exports.push header: 'HBase Client # Replication', skip: true, handler: ->
       {hbase} = @config.ryba
       for k, cluster of hbase.replicated_clusters
         peer_key = parseInt(k) + 1
