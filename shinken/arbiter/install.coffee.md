@@ -28,16 +28,27 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Packages
 
     module.exports.push header: 'Shinken Arbiter # Packages', handler: ->
+      @service name: 'shinken-arbiter'
+
+## Layout
+
+    module.exports.push header: 'Shinken Arbiter # Layout', handler: ->
       {shinken} = @config.ryba
-      @service
-        name: 'shinken-arbiter'
+      @mkdir
+        destination: "#{shinken.user.home}/share"
+        uid: shinken.user.name
+        gid: shinken.group.name
+      @mkdir
+        destination: "#{shinken.user.home}/doc"
+        uid: shinken.user.name
+        gid: shinken.group.name
       @chown
         destination: shinken.log_dir
         uid: shinken.user.name
         gid: shinken.group.name
       @execute
-        cmd: "shinken --init"
-        unless_exists: ".shinken.ini"
+        cmd: 'shinken --init'
+        unless_exists: '.shinken.ini'
 
 ## Additional Modules
 
@@ -58,6 +69,17 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             cmd: "shinken install --local #{mod.archive}"
             unless_exec: "shinken inventory | grep #{name}"
         else throw Error "Missing parameter: archive for arbiter.modules.#{name}"
+
+## Remove default config files
+
+Some default files in the configuration define properties that are configured elsewhere.
+Conflicts can appear.
+
+    module.exports.push header: 'Shinken Arbiter # Clean Config', handler: ->
+      @remove destination: '/etc/shinken/realms/all.cfg'
+      @remove destination: '/etc/shinken/contacts/nagiosadmin.cfg'
+      #TODO remove default modules conf with a non predictive name
+      #@remove destination: '/etc/shinken/modules/TODO'
 
 ## Configuration
 
@@ -251,7 +273,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           local_source: true
           context: mod.config
           if: fs.existsSync "#{__dirname}/../#{service}/resources/modules/#{name}.cfg.j2"
-        for sub_name, sub_mod of mod.modules then config_mod service, sub_name, sub_mod 
+        if mod.modules? then for sub_name, sub_mod of mod.modules then config_mod service, sub_name, sub_mod 
       # Loop on all services
       for service in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
         [ctx] = @contexts "ryba/shinken/#{service}"

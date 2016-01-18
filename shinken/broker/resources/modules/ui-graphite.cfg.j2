@@ -8,7 +8,7 @@ define module {
    module_name             ui-graphite
    module_type             graphite-webui
 
-   uri                     {% if uri %}{{ uri }}{% else %}http://YOURSERVERNAME/{% endif %}
+   uri                     {% if uri %}{{ uri }}{% else %}http://localhost:3080/{% endif %}
 
    # Specify the path where to search for template files
    templates_path          /var/lib/shinken/share/templates/graphite/

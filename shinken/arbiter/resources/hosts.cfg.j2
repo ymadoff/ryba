@@ -4,8 +4,8 @@ define host {
   alias                     {% if host.alias %}{{ host.alias }}{% else %}{{ name }}{% endif %}{% if display_name %}
   display_name              {{ host.display_name}}{% endif %}
   address                   {{ host.ip }}{% if host.parents %}
-  parents                   {% if host.parents | isArray %}{{ host.parents | join(',') }}{% else %}{{ host.parents }}{% endif %}{% if host.hostgroups %}
-  hostgroups                {% if host.hostgroups | isArray %}{{ host.hostgroups | join(',') }}{% else %}{{ host.hostgroups }}{% endif %}{% if host.check_command %}
+  parents                   {% if host.parents | isArray %}{{ host.parents | join(',') }}{% else %}{{ host.parents }}{% endif %}{% endif %}{% if host.hostgroups %}
+  hostgroups                {% if host.hostgroups | isArray %}{{ host.hostgroups | join(',') }}{% else %}{{ host.hostgroups }}{% endif %}{% endif %}{% if host.check_command %}
   check_command             {{ host.check_command }}{% endif %}{% if host.initial_state %}
   initial_state             {{ host.initial_state }}{% endif %}
   max_check_attempts        {% if host.max_check_attempts %}{{ host.max_check_attempts }}{% else %}3{% endif %}{% if host.check_interval %}
@@ -26,7 +26,7 @@ define host {
   process_perf_data         {{ host.process_perf_data }}{% endif %}{% if host.retain_status_information %}
   retain_status_information {{ host.retain_status_information }}{% endif %}{% if host.retain_nonstatus_information %}
   retain_nonstatus_information {{ host.retain_nonstatus_information }}{% endif %}{% if host.contacts %}
-  contacts                  {% if host.contacts | isArray %}{{ host.contacts | join(',') }}{% else %}{{ host.contacts }}{% endif %}
+  contacts                  {% if host.contacts | isArray %}{{ host.contacts | join(',') }}{% else %}{{ host.contacts }}{% endif %}{% endif %}
   contact_groups            {% if host.contact_groups | isArray %}{{ host.contact_groups | join(',') }}{% elif host.contact_groups %}{{ host.contact_groups }}{% else %}admin{% endif %}
   notification_interval     {% if host.notification_interval %}{{ host.notification_interval }}{% else %}1440{% endif %}{% if host.first_notification_delay %}
   first_notification_delay  {{ host.first_notification_delay }}{% endif %}{% if host.notification_period %}

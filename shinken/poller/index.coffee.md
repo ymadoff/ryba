@@ -62,11 +62,11 @@ is approximatively 1000 checks/s
     module.exports.push commands: 'install', modules: [
       'ryba/shinken/poller/install'
       'ryba/shinken/poller/start'
-      # 'ryba/shinken/poller/check' # Must be executed before start
+      'ryba/shinken/poller/check'
     ]
 
     module.exports.push commands: 'start', modules: 'ryba/shinken/poller/start'
 
-    # module.exports.push commands: 'status', modules: 'ryba/shinken/poller/status'
+    module.exports.push commands: 'status', modules: 'ryba/shinken/poller/status'
 
     module.exports.push commands: 'stop', modules: 'ryba/shinken/poller/stop'

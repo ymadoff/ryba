@@ -21,7 +21,7 @@ RUN sed -i 's/Defaults.*requiretty/# Defaults requiretty/g' /etc/sudoers
 RUN curl -L http://cpanmin.us | perl - --sudo App::cpanminus
 WORKDIR /opt
 # Downloading harisekhon nagios-plugins
-RUN git clone https://github.com/harisekhon/nagios-plugins
+RUN git clone https://github.com/pierrotws/shinken-plugins
 WORKDIR /opt/nagios-plugins
 RUN git submodule init
 RUN git submodule update

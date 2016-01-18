@@ -30,11 +30,11 @@ and sends the results to the scheduler.
     module.exports.push commands: 'install', modules: [
       'ryba/shinken/reactionner/install'
       'ryba/shinken/reactionner/start'
-    # 'ryba/shinken/reactionner/check' # Must be executed before start
+      'ryba/shinken/reactionner/check'
     ]
 
     module.exports.push commands: 'start', modules: 'ryba/shinken/reactionner/start'
 
-    # module.exports.push commands: 'status', modules: 'ryba/shinken/reactionner/status'
+    module.exports.push commands: 'status', modules: 'ryba/shinken/reactionner/status'
 
     module.exports.push commands: 'stop', modules: 'ryba/shinken/reactionner/stop'

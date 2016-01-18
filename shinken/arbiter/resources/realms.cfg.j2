@@ -1,6 +1,6 @@
 {% for name, realm in realms %}
 define realm {
-    realm_name      {name}}
+    realm_name      {{name}}
     realm_members   {% if realm.members | isArray %}{{ realm.members | join(',') }}{% elif realm.members %}{{ realm.members }}{% endif %}
 }
 {% endfor %}

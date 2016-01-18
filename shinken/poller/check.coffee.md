@@ -3,13 +3,15 @@
 
     module.exports = []
     module.exports.push 'masson/bootstrap/'
-    # module.exports.push require('./').configure
 
 ## Check
 
     module.exports.push header: 'Shinken Poller # Check TCP', label_true: 'CHECKED', handler: ->
-      {poller} = ctx.config.ryba.shinken
+      {poller} = @config.ryba.shinken
       @execute
-        cmd: "echo > /dev/tcp/#{ctx.config.host}/#{poller.port}"
+        cmd: "echo > /dev/tcp/#{@config.host}/#{poller.config.port}"
+
+    module.exports.push header: 'Shinken Poller # Check HTTP', label_true: 'CHECKED', handler: ->
+      {poller} = @config.ryba.shinken
       @execute
-        cmd: "curl http://#{ctx.config.host}:#{poller.config.port} | grep OK"
+        cmd: "curl http://#{@config.host}:#{poller.config.port} | grep OK"

@@ -42,6 +42,11 @@ Some of the modules are:
       graphite.version ?= '2.1.0'
       graphite.source ?= "https://github.com/shinken-monitoring/mod-graphite/archive/#{graphite.version}.zip"
       graphite.archive ?= "mod-graphite-#{graphite.version}"
+      livestatus = broker.modules['livestatus'] ?= {}
+      livestatus.version ?= '1.4.1'
+      livestatus.modules ?= {}
+      logstore = livestatus.modules['logstore-null'] ?= {}
+      logstore.version ?= '1.4.1'
       ## Auto discovery
       configmod = (name, mod) =>
         if mod.version?
@@ -69,11 +74,11 @@ Some of the modules are:
     module.exports.push commands: 'install', modules: [
       'ryba/shinken/broker/install'
       'ryba/shinken/broker/start'
-      # 'ryba/shinken/broker/check'
+      'ryba/shinken/broker/check'
     ]
 
     module.exports.push commands: 'start', modules: 'ryba/shinken/broker/start'
 
-    # module.exports.push commands: 'status', modules: 'ryba/shinken/broker/status'
+    module.exports.push commands: 'status', modules: 'ryba/shinken/broker/status'
 
     module.exports.push commands: 'stop', modules: 'ryba/shinken/broker/stop'

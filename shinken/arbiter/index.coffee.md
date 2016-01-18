@@ -14,23 +14,32 @@ to its associated Scheduler. Host the WebUI.
     module.exports.configure = (ctx) ->
       require('../').configure ctx
       {shinken} = ctx.config.ryba
-      shinken.overwrite ?= false
       # Arbiter specific configuration
-      shinken.arbiter ?= {}
-      # Additionnal modules to install
-      shinken.arbiter.modules ?= {}
+      arbiter = shinken.arbiter ?= {}
+      # Auto-discovery of Modules
+      arbiter.modules ?= {}
+      configmod = (name, mod) =>
+        if mod.version?
+          mod.source ?= "https://github.com/shinken-monitoring/mod-#{name}/archive/#{mod.version}.zip"
+          mod.archive ?= "mod-#{name}-#{mod.version}"
+        mod.modules ?= {}
+        mod.config ?= {}
+        mod.config.modules = [mod.config.modules] if typeof mod.config.modules is 'string'
+        mod.config.modules ?= Object.keys mod.modules
+        for subname, submod of mod.modules then configmod subname, submod
+      for name, mod of arbiter.modules then configmod name, mod
       # Config
-      config = shinken.arbiter.config ?= {}
-      config.port ?= 7770
-      config.modules = [config.modules] if typeof config.modules is 'string'
-      config.modules ?= []
-      config.distributed ?= ctx.hosts_with_module('ryba/shinken/arbiter').length > 1
-      config.hostname ?= ctx.config.host
-      config.user = shinken.user.name
-      config.group = shinken.group.name
-      config.host ?= '0.0.0.0'
-      config.use_ssl ?= shinken.config.use_ssl
-      config.hard_ssl_name_check ?= shinken.config.hard_ssl_name_check
+      arbiter.config ?= {}
+      arbiter.config.port ?= 7770
+      arbiter.config.modules = [arbiter.config.modules] if typeof arbiter.config.modules is 'string'
+      arbiter.config.modules ?= Object.keys arbiter.modules
+      arbiter.config.distributed ?= ctx.hosts_with_module('ryba/shinken/arbiter').length > 1
+      arbiter.config.hostname ?= ctx.config.host
+      arbiter.config.user = shinken.user.name
+      arbiter.config.group = shinken.group.name
+      arbiter.config.host ?= '0.0.0.0'
+      arbiter.config.use_ssl ?= shinken.config.use_ssl
+      arbiter.config.hard_ssl_name_check ?= shinken.config.hard_ssl_name_check
       # Kerberos
       #shinken.keytab ?= '/etc/security/keytabs/shinken.service.keytab'
       #shinken.principal ?= "shinken/#{ctx.config.host}@#{ctx.config.ryba.realm}"
@@ -48,60 +57,14 @@ to its associated Scheduler. Host the WebUI.
         shinken.config.groups.admins =
           alias: 'Shinken Administrators'
           members: ['shinken']
-      shinken.config.hostgroups ?=
-        'ambari-agents': ctx.hosts_with_module 'ryba/shinken/ambari/agent'
-        'ambari-servers': ctx.hosts_with_module 'ryba/shinken/ambari/server'
-        'elasticsearch-servers': ctx.hosts_with_module 'ryba/elasticsearch'
-        'falcon-servers': ctx.hosts_with_module 'ryba/falcon'
-        'hdfs-clients': ctx.hosts_with_module 'ryba/hadoop/hdfs_client'
-        'hdfs-datanodes': ctx.hosts_with_module 'ryba/hadoop/hdfs_dn'
-        'hdfs-journalnodes': ctx.hosts_with_module 'ryba/hadoop/hdfs_jn'
-        'hdfs-namenodes': ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
-        'hdfs-zkfcs': ctx.hosts_with_module 'ryba/hadoop/zkfc'
-        'mapreduce-clients': ctx.hosts_with_module 'ryba/hadoop/mapred_client'
-        'mapreduce-jhs': ctx.hosts_with_module 'ryba/hadoop/mapred_jhs'
-        'yarn-clients': ctx.hosts_with_module 'ryba/hadoop/yarn_client'
-        'yarn-nodemanagers': ctx.hosts_with_module 'ryba/hadoop/yarn_nm'
-        'yarn-resourcemanagers': ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
-        'yarn-timeline-servers': ctx.hosts_with_module 'ryba/hadoop/yarn_ts'
-        'hbase-clients': ctx.hosts_with_module 'ryba/hbase/client'
-        'hbase-masters': ctx.hosts_with_module 'ryba/hbase/master'
-        'hbase-regionservers': ctx.hosts_with_module 'ryba/hbase/regionserver'
-        'hbase-rest-servers': ctx.hosts_with_module 'ryba/hbase/rest'
-        'hbase-thrift-servers': ctx.hosts_with_module 'ryba/hbase/thrift'
-        'hive-clients': ctx.hosts_with_module 'ryba/hive/client'
-        'hive-hcatalog-servers': ctx.hosts_with_module 'ryba/hive/hcatalog'
-        'hive-servers': ctx.hosts_with_module 'ryba/hive/server2'
-        'hive-webhcat-servers': ctx.hosts_with_module 'ryba/hive/webhcat'
-        'hue-servers': ctx.hosts_with_module 'ryba/hue'
-        'kafka-brokers': ctx.hosts_with_module 'ryba/kafka/broker'
-        'kafka-consumers': ctx.hosts_with_module 'ryba/kafka/consumer'
-        'kafka-producers': ctx.hosts_with_module 'ryba/kafka/producer'
-        'mongodb-servers': ctx.hosts_with_module 'ryba/mongodb'
-        'mongodb-configservers': ctx.hosts_with_module 'ryba/mongodb/configsrv'
-        'mongodb-routers': ctx.hosts_with_module 'ryba/mongodb/router'
-        'mongodb-shards': ctx.hosts_with_module 'ryba/mongodb/shard'
-        'oozie-clients': ctx.hosts_with_module 'ryba/oozie/client'
-        'oozie-servers': ctx.hosts_with_module 'ryba/oozie/servers'
-        'phoenix-clients': ctx.host_with_module 'ryba/phoenix/client'
-        'rexster-servers': ctx.host_with_module 'ryba/rexster'
-        'shinken-arbiters': ctx.hosts_with_module 'ryba/shinken/arbiter'
-        'shinken-brokers': ctx.hosts_with_module 'ryba/shinken/broker'
-        'shinken-pollers': ctx.hosts_with_module 'ryba/shinken/poller'
-        'shinken-reactionners': ctx.hosts_with_module 'ryba/shinken/reactionner'
-        'shinken-receivers': ctx.hosts_with_module 'ryba/shinken/receiver'
-        'shinken-schedulers': ctx.hosts_with_module 'ryba/shinken/scheduler'
-        'solr-servers': ctx.hosts_with_module 'ryba/solr'
-        'spark-clients': ctx.hosts_with_module 'ryba/spark/client'
-        'spark-history-servers': ctx.hosts_with_module 'ryba/spark/history_server'
-        'titan-servers': ctx.hosts_with_module 'ryba/titan'
-        'zeppelin-servers': ctx.hosts_with_module 'ryba/zeppelin'
-        'zookeeper-clients': ctx.hosts_with_module 'ryba/zookeeper/client'
-        'zookeeper-servers': ctx.hosts_with_module 'ryba/zookeeper/server'
-      # Servicegroups
-      require('../lib/configure_servicegroups').call ctx
-      # realms: must at least contain the 'All' realm
+      shinken.config.hostgroups ?= {}
+      shinken.config.servicegroups ?= {}
+      shinken.config.hosts ?= {}
       shinken.config.realms ?= {}
+      # Servicegroups
+      require('./lib/configure_servicegroups').call ctx
+      require('./lib/configure_from_exports').call ctx
+      # realms: must at least contain the 'All' realm
       shinken.config.realms.All ?= {}
       shinken.config.realms.All.members ?= for k in Object.keys(shinken.config.realms) then k unless k is 'All'
 

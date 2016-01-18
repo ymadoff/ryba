@@ -2,7 +2,7 @@
 # Configuration for Servicegroups
 
     module.exports = ->
-      servicegroups = @config.ryba.shinken.config.servicegroups ?= {}
+      {servicegroups} = @config.ryba.shinken.config
 
 Function to create a group
 
@@ -251,7 +251,7 @@ Titan DB Service Group
 
 Rexster WebUI Service Group
 
-      initgroup 'rexster' 'Rexster Services'
+      initgroup 'rexster'
 
 ## Pig
 

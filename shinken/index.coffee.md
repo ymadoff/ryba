@@ -31,6 +31,7 @@ Example
       ctx.config.ryba.shinken ?= {}
       {shinken, realm} = ctx.config.ryba
       shinken.log_dir = '/var/log/shinken'
+      shinken.overwrite ?= false
       # User
       shinken.user = name: shinken.user if typeof shinken.user is 'string'
       shinken.user ?= {}
@@ -40,18 +41,17 @@ Example
       shinken.user.home ?= '/var/lib/shinken'
       shinken.user.shell ?= '/bin/sh'
       shinken.plugin_dir ?= '/usr/lib64/nagios/plugins'
-      # Config
-      shinken.config ?= {}
-      shinken.config.use_ssl ?= false
-      shinken.config.hard_ssl_name_check ?= false
-      shinken.config.hosts ?= ctx.config.servers
       # Groups
       shinken.group = name: shinken.group if typeof shinken.group is 'string'
       shinken.group ?= {}
       shinken.group.name ?= 'nagios'
       shinken.group.system ?= true
       shinken.user.gid = shinken.group.name
-
+      # Config
+      shinken.config ?= {}
+      shinken.config.use_ssl ?= false
+      shinken.config.hard_ssl_name_check ?= false
+      shinken.config.hosts ?= ctx.config.servers
 
 ## Users & Groups
 

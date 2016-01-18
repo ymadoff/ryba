@@ -1,8 +1,8 @@
 {% for name, user in contacts %}
 define contact{
   contact_name      {{ name }}
-  alias             {% if user.alias %}{{ user.alias }}{% else %}{{ name }}{% endif %}{% if user.contactgroups %}{% if user.contactgroups %}
-  contactgroups     {% if user.contactgroups | isArray %}{{ user.contactgroups | join(',') }}{% else %}{{ user.contactgroups }}{% endif %}
+  alias             {% if user.alias %}{{ user.alias }}{% else %}{{ name }}{% endif %}{% if user.contactgroups %}
+  contactgroups     {% if user.contactgroups | isArray %}{{ user.contactgroups | join(',') }}{% else %}{{ user.contactgroups }}{% endif %}{% endif %}
   host_notifications_enabled {% if user.host_notifications_enabled %}{{ user.host_notifications_enabled }}{% else %}1{% endif %}
   service_notifications_enabled {% if user.service_notifications_enabled %}{{ user.service_notifications_enabled }}{% else %}1{% endif %}
   host_notifications_period {% if user.host_notifications_period %}{{ user.host_notifications_period }}{% else %}24x7{% endif %}

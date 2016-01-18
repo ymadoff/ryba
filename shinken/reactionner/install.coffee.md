@@ -28,16 +28,27 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Packages
 
     module.exports.push header: 'Shinken Reactionner # Packages', handler: ->
+      @service name: 'shinken-reactionner'
+
+## Layout
+
+    module.exports.push header: 'Shinken Reactionner # Layout', handler: ->
       {shinken} = @config.ryba
-      @service
-        name: 'shinken-reactionner'
+      @mkdir
+        destination: "#{shinken.user.home}/share"
+        uid: shinken.user.name
+        gid: shinken.group.name
+      @mkdir
+        destination: "#{shinken.user.home}/doc"
+        uid: shinken.user.name
+        gid: shinken.group.name
       @chown
-        destination: path.join shinken.log_dir
+        destination: shinken.log_dir
         uid: shinken.user.name
         gid: shinken.group.name
       @execute
-        cmd: "su -l #{shinken.user.name} -c 'shinken --init'"
-        unless_exists: "#{shinken.home}/.shinken.ini"
+        cmd: 'shinken --init'
+        unless_exists: '.shinken.ini'
 
 ## Additional Modules
 
