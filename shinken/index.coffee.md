@@ -51,7 +51,6 @@ Example
       shinken.config ?= {}
       shinken.config.use_ssl ?= false
       shinken.config.hard_ssl_name_check ?= false
-      shinken.config.hosts ?= ctx.config.servers
 
 ## Users & Groups
 
