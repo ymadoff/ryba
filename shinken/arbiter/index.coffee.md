@@ -67,6 +67,11 @@ to its associated Scheduler. Host the WebUI.
       # realms: must at least contain the 'All' realm
       shinken.config.realms.All ?= {}
       shinken.config.realms.All.members ?= for k in Object.keys(shinken.config.realms) then k unless k is 'All'
+      default_realm = false
+      for k, v of shinken.config.realms then if v.default is '1'
+        throw Error 'Multiples default Realm detected. Please fix the configuration' if default_realm
+        default_realm = true
+      shinken.config.realms.All.default = '1' unless default_realm
 
 ## Commands
 
