@@ -6,5 +6,5 @@
 
 ## Status
 
-    module.exports.push name: 'MongoDB Server # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
+    module.exports.push header: 'MongoDB Server # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       @service_status name: 'mongod'

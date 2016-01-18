@@ -4,7 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
 
-    module.exports.push name: 'MongoDB # Wait', label_true: 'READY', timeout: -1, handler: ->
+    module.exports.push header: 'MongoDB # Wait', label_true: 'READY', timeout: -1, handler: ->
       @wait_connect
         servers:
           host: @config.host
