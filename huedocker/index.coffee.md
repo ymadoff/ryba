@@ -68,8 +68,7 @@ Example:
       require('../hadoop/hdfs_client').configure ctx
       require('../hadoop/yarn_client').configure ctx
       require('../hive/client').configure ctx
-      ryba = ctx.config.ryba ?= {}
-      {hadoop_conf_dir, webhcat, db_admin, core_site, hdfs, yarn, hbase} = ryba
+      {ssl, hadoop_conf_dir, webhcat, db_admin, core_site, hdfs, yarn, hbase} = ctx.config.ryba
       nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn').configure
       hue_docker = ctx.config.ryba.hue_docker ?= {}
       # Layout
@@ -114,8 +113,7 @@ Example:
       # throw new Error 'WebHDFS not active' if ryba.hdfs.site['dfs.webhdfs.enabled'] isnt 'true'
       hue_docker.ca_bundle ?= "#{hue_docker.conf_dir}/trust.pem"
       hue_docker.ssl ?= {}
-      hue_docker.ssl.client_ca ?= null
-      throw Error "Property 'hue_docker.ssl.client_ca' required in HA with HTTPS" if nn_ctxs.length > 1 and ryba.hdfs.site['dfs.http.policy'] is 'HTTPS_ONLY' and not hue_docker.ssl.client_ca
+      hue_docker.ssl.client_ca ?= ssl.cacert
       # HDFS & YARN url
       # NOTE: default to unencrypted HTTP
       # error is "SSL routines:SSL3_GET_SERVER_CERTIFICATE:certificate verify failed"
