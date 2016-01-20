@@ -56,6 +56,8 @@ Example:
       ryba.hdfs.nn.site['dfs.hosts.exclude'] ?= "#{ryba.hdfs.nn.conf_dir}/dfs.exclude"
       ryba.hdfs.exclude ?= []
       ryba.hdfs.exclude = string.lines ryba.hdfs.exclude if typeof ryba.hdfs.exclude is 'string'
+      ryba.hdfs.nn.heapsize ?= '1024m'
+      ryba.hdfs.nn.newsize ?= '200m'
       ryba.hdfs.namenode_opts ?= ''
       ryba.hdfs.nn.site['fs.permissions.umask-mode'] ?= '027' # 0750
       # If "true", access tokens are used as capabilities
