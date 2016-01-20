@@ -148,7 +148,7 @@ Example:
       hue_docker.ini['hadoop']['yarn_clusters']['default'] ?= {}
       rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
       rm_hosts = ctx.hosts_with_module 'ryba/hadoop/yarn_rm'
-      rm_host = if rm_hosts.length > 1 then ryba.yarn.active_rm_host else  rm_hosts[0]
+      rm_host = if rm_hosts.length > 1 then ctx.config.ryba.yarn.active_rm_host else  rm_hosts[0]
       throw Error "No YARN ResourceManager configured" unless rm_ctxs.length
       yarn_api_url = []
       # Support for RM HA was added in Hue 3.7
@@ -268,7 +268,7 @@ Example:
       # Kerberos
       hue_docker.ini.desktop.kerberos ?= {}
       hue_docker.ini.desktop.kerberos.hue_keytab ?= "#{hue_docker.conf_dir}/hue.service.keytab" # was /etc/hue/conf/hue.server.keytab
-      hue_docker.ini.desktop.kerberos.hue_principal ?= "#{hue_docker.user.name}/#{ctx.config.host}@#{ryba.realm}" # was hue_docker/#{ctx.config.host}@#{ryba.realm}
+      hue_docker.ini.desktop.kerberos.hue_principal ?= "#{hue_docker.user.name}/#{ctx.config.host}@#{ctx.config.ryba.realm}" # was hue_docker/#{ctx.config.host}@#{ryba.realm}
       # Path to kinit
       # For RHEL/CentOS 5.x, kinit_path is /usr/kerberos/bin/kinit
       # For RHEL/CentOS 6.x, kinit_path is /usr/bin/kinit
