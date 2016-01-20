@@ -202,14 +202,15 @@ Configuration][web]. The "hue" service is restarted if there was any
 changes.
 
     module.exports.push header: 'Hue Docker # SSL Server', handler: ->
-      {hue_docker} = @config.ryba
+      {hue_docker, ssl} = @config.ryba
+      return unless hue_docker.ssl
       @upload
-        source: hue_docker.ssl.certificate
+        source: ssl.cert
         destination: "#{hue_docker.conf_dir}/cert.pem"
         uid: hue_docker.user.name
         gid: hue_docker.group.name
       @upload
-        source: hue_docker.ssl.private_key
+        source: ssl.key
         destination: "#{hue_docker.conf_dir}/key.pem"
         uid: hue_docker.user.name
         gid: hue_docker.group.name
