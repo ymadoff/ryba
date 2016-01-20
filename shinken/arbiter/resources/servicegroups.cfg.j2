@@ -7,4 +7,5 @@ define servicegroups {
   notes                {{ group.notes }}{% endif %}{% if group.notes_url %}
   notes_url            {{ group.notes_url }}{% endif %}{% if group.action_url %}
   action_url           {{ group.action_url }}{% endif %}
-}{% endfor %}
+}
+{% endfor %}

@@ -7,7 +7,7 @@
 
 Default "shinken object" (servicegroups, hosts, etc) configuration.
 
-      default: ->
+      servicegroups: ->
         {servicegroups} = @config.ryba.shinken.config
         initgroup = (name, alias) ->
           servicegroups[name] ?= {}
@@ -128,26 +128,26 @@ by shinken to autoconfigure monitoring of the cluster.
 This function is called at the end to normalize values
 
       normalize: ->
-        {hostgroups, hosts,servicegroups, services, realms, contactgroups, contacts} = @config.ryba.shinken.config
+        {shinken} = @config.ryba
         # HostGroups
-        for name, group of hostgroups
+        for name, group of shinken.config.hostgroups
           group.alias ?= name
           group.members = [group.members] unless Array.isArray group.members
           group.hostgroup_members = [group.hostgroup_members] unless Array.isArray group.hostgroup_members
         # Hosts
-        for name, host of hosts
+        for name, host of shinken.config.hosts
           host.alias ?= name
         # ServiceGroups
-        for name, group of servicegroups
+        for name, group of shinken.config.servicegroups
           group.alias ?= "#{name.charAt(0).toUpperCase()}#{name.slice 1} Services"
           group.members = [group.members] unless Array.isArray group.members
           group.servicegroup_members = [group.servicegroup_members] unless Array.isArray group.servicegroup_members
         # Services
-        #for name, service of services
+        #for name, service of shinken.config.services
         
         # Realm
         default_realm = false
-        for name, realm of realms
+        for name, realm of shinken.config.realms
           realm.members ?= []
           realm.members = [realm.members] unless Array.isArray realm.members
           if realm.default is '1'
@@ -157,15 +157,17 @@ This function is called at the end to normalize values
         realms.All.default = '1' unless default_realm
         realms.All.members ?= k unless k is 'All' for k in Object.keys realms
         # ContactGroups
-        for name, group of contactgroups
+        for name, group of shinken.config.contactgroups
           group.alias ?= name
           group.members ?= []
           group.members = [group.members] unless Array.isArray group.members
           group.contactgroup_members ?= []
           group.contactgroup_members = [group.contactgroup_members] unless Array.isArray group.contactgroup_members
         # Contacts
-        for name, contact of contacts
+        for name, contact of shinken.config.contacts
           contact.alias ?= name
+          contact.contactgroups ?= []
+          contact.contactgroups = [contact.contactgroups] unless Array.isArray contact.contactgroups
           contact.host_notifications_enabled ?= '1'
           contact.service_notifications_enabled ?= '1'
           contact.host_notifications_period ?= '24x7'
@@ -174,6 +176,26 @@ This function is called at the end to normalize values
           contact.service_notifications_options ?= 'w,u,c,r'
           contact.host_notifications_command ?= 'notify-host-by-email'
           contact.service_notifications_command ?= 'notify-service-by-email'
+        for name, dep of shinken.config.dependencies
+          throw Error "Unvalid dependency #{name}, please provide hosts or hostsgroups" unless dep.hosts? or dep.hostgroups?
+          throw Error "Unvalid dependency #{name}, please provide dependent_hosts or dependent_hostsgroups" unless dep.dependent_hosts? or dep.dependent_hostgroups?
+          throw Error "Unvalid dependency #{name}, please provide service" unless dep.service?
+          throw Error "Unvalid dependency #{name}, please provide dependent_service" unless dep.dependent_service?
+          dep.hosts = [dep.hosts] unless Array.isArray dep.hosts
+          dep.hostgroups = [dep.hostgroups] unless Array.isArray dep.hostgroups
+          dep.dependent_hosts = [dep.dependent_hosts] unless Array.isArray dep.dependent_hosts
+          dep.dependent_hostgroups = [dep.dependent_hostgroups] unless Array.isArray dep.dependent_hostgroups
+        for name, esc of shinken.config.escalations
+          throw Error "Unvalid escalation #{name}, please provide hosts or hostsgroups" unless esc.hosts? or esc.hostgroups?
+          throw Error "Unvalid escalation #{name}, please provide contacts or contactgroups" unless esc.contacts? or esc.contactgroups?
+          esc.hosts = [esc.hosts] unless Array.isArray esc.hosts
+          esc.hostgroups = [esc.hostgroups] unless Array.isArray esc.hostgroups
+          esc.contacts = [esc.contacts] unless Array.isArray esc.contacts
+          esc.contactgroups = [esc.contactgroups] unless Array.isArray esc.contactgroups
+          
+        for name, period of shinken.config.timeperiods
+          period.alias ?= name
+          period.time ?= {}
 
 ## Dependencies
 

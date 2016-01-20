@@ -4,4 +4,5 @@ define contactgroup {
   alias                {{ group.alias }}{% if not group.members | isEmpty %}
   members              {{ group.members | join(',') }}{% endif %}{% if not group.contactgroup_members | isEmpty %}
   contactgroup_members {{ group.contactgroup_members | join(',') }}{% endif %}
-}{% endfor %}
+}
+{% endfor %}
