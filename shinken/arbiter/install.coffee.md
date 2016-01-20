@@ -78,6 +78,8 @@ Conflicts can appear.
     module.exports.push header: 'Shinken Arbiter # Clean Config', handler: ->
       @remove destination: '/etc/shinken/realms/all.cfg'
       @remove destination: '/etc/shinken/contacts/nagiosadmin.cfg'
+      @remove destination: '/etc/shinken/services/linux_disks.cfg'
+      @remove destination: '/etc/shinken/hosts/localhost.cfg'
       #TODO remove default modules conf with a non predictive name
       #@remove destination: '/etc/shinken/modules/TODO'
 
@@ -98,160 +100,18 @@ Conflicts can appear.
 
 ## Services
 
-    module.exports.push header: 'Shinken Arbiter # Services Config', skip: true, handler: ->
-      # {shinken, force_check, active_nn_host, core_site, hdfs, zookeeper,
-      #  hbase, oozie, webhcat, ganglia, hue} = @config.ryba
-      [shinken] = @contexts 'ryba/shinken/arbiter', require('../../shinken/arbiter').configure
-      require('../broker').configure shinken
-      require('../poller').configure shinken
-      require('../reactionner').configure shinken
-      require('../receiver').configure shinken
-      require('../scheduler').configure shinken
-      shinken = shinken.config.ryba.shinken
-      [hbase] = @contexts 'ryba/hbase/master', require('../../hbase/master').configure
-      require('../../hbase/client').configure hbase
-      require('../../hbase/regionserver').configure hbase
-      require('../../hbase/rest').configure hbase
-      require('../../hbase/thrift').configure hbase
-      hbase = hbase.config.ryba.hbase
-      [hdfs] = @contexts 'ryba/hadoop/hdfs_nn', require('../../hadoop/hdfs_nn').configure
-      require('../../hadoop/hdfs_dn').configure hdfs
-      require('../../hadoop/hdfs_jn').configure hdfs
-      is_ha = @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      nameservice = if is_ha then "#{hdfs.config.ryba.hdfs.site['dfs.nameservices']}" else ''
-      shortname = if is_ha then "#{hdfs.config.shortname}" else ''
-      hdfs = hdfs.config.ryba.hdfs
-      hdfs.ssl = hdfs.site['dfs.http.policy'] isnt 'HTTP_ONLY'
-      protocol = "http#{if hdfs.ssl then 's' else ''}"
-      hdfs.nn_info_port = hdfs.site["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')[1]
-      hdfs.dn_info_port = hdfs.site["dfs.datanode.#{protocol}.address"].split(':')[1]
-      hdfs.jn_info_port = hdfs.site["dfs.journalnode.#{protocol}-address"].split(':')[1]
-      # HDFS NameNode
-      # nn_hosts = @hosts_with_module 'ryba/hadoop/hdfs_nn'
-      # nn_hosts_map = {} # fqdn to port
-      # active_nn_port = null
-      # unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      #   u = url.parse core_site['fs.defaultFS']
-      #   nn_hosts_map[u.hostname] = u.port
-      #   active_nn_port = u.port
-      # else
-      #   for nn_host in nn_hosts
-      #     nn_ctx = ctx.hosts[nn_host]
-      #     require('../../hadoop/hdfs_nn').configure nn_ctx
-      #     protocol = if nn_ctx.config.ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      #     shortname = nn_ctx.config.shortname
-      #     nameservice = nn_ctx.config.ryba.nameservice
-      #     nn_host = ctx.config.ryba.hdfs.site["dfs.namenode.#{protocol}-address.#{nameservice}.#{shortname}"].split(':')
-      #     nn_hosts_map[nn_host[0]] = nn_host[1]
-      #     active_nn_port = nn_host[1] if nn_ctx.config.host is active_nn_host
-      # # HDFS Secondary NameNode
-      # [snn_ctx] = ctx.contexts 'ryba/hadoop/hdfs_snn', require('../../hadoop/hdfs_snn').configure
-      # # YARN ResourceManager
-      # rm_ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../../hadoop/yarn_rm').configure
-      # rm_hosts = rm_ctxs.map (rm_ctx) -> rm_ctx.config.host
-      # # Get RM UI port for both HA and non-HA
-      # rm_site = rm_ctxs[0].config.ryba.yarn.site
-      # unless rm_ctxs.length > 1
-      #   rm_webapp_port = if rm_site['yarn.http.policy'] is 'HTTP_ONLY'
-      #   then rm_site['yarn.resourcemanager.webapp.address'].split(':')[1]
-      #   else rm_site['yarn.resourcemanager.webapp.https.address'].split(':')[1]
-      # else
-      #   shortname = rm_ctxs[0].config.shortname
-      #   rm_webapp_port = if rm_site['yarn.http.policy'] is 'HTTP_ONLY'
-      #   then rm_site["yarn.resourcemanager.webapp.address.#{shortname}"].split(':')[1]
-      #   else rm_site["yarn.resourcemanager.webapp.https.address.#{shortname}"].split(':')[1]
-      # # YARN NodeManager
-      # nm_ctxs = ctx.contexts 'ryba/hadoop/yarn_nm', require('../../hadoop/yarn_nm').configure
-      # if nm_ctxs.length
-      #   nm_webapp_port = if nm_ctxs[0].config.ryba.yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
-      #   then nm_ctxs[0].config.ryba.yarn.site['yarn.nodemanager.webapp.address'].split(':')[1]
-      #   else nm_ctxs[0].config.ryba.yarn.site['yarn.nodemanager.webapp.https.address'].split(':')[1]
-      # # MapReduce JobHistoryServer
-      # jhs_ctxs = ctx.contexts 'ryba/hadoop/mapred_jhs', require('../../hadoop/mapred_jhs').configure
-      # if jhs_ctxs.length
-      #   hs_webapp_port = jhs_ctxs[0].config.ryba.mapred.site['mapreduce.jobhistory.webapp.address'].split(':')[1]
-      # # HDFS JournalNodes
-      # jn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_jn', require('../../hadoop/hdfs_jn').configure
-      # if jn_ctxs.length
-      #   journalnode_port = jn_ctxs[0].config.ryba.hdfs.site["dfs.journalnode.#{protocol}-address"].split(':')[1]
-      # # HDFS Datanodes
-      # [dn_ctx] = ctx.contexts 'ryba/hadoop/hdfs_dn', require('../../hadoop/hdfs_dn').configure
-      # dn_protocol = if dn_ctx.config.ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      # dn_port = dn_ctx.config.ryba.hdfs.site["dfs.datanode.#{protocol}.address"].split(':')[1]
-      # # HBase
-      # hm_hosts = ctx.hosts_with_module 'ryba/hbase/master'
-      # # Hive
-      # hcat_ctxs = ctx.contexts 'ryba/hive/hcatalog', require('../../hive/hcatalog').configure
-      # hs2_ctxs = ctx.contexts 'ryba/hive/server2', require('../../hive/server2').configure
-      # hs2_port = if hs2_ctxs[0].config.ryba.hive.site['hive.server2.transport.mode'] is 'binary'
-      # then 'hive.server2.thrift.port'
-      # else 'hive.server2.thrift.http.port'
-      # hs2_port = hs2_ctxs[0].config.ryba.hive.site[hs2_port]
-      @render
-        source: "#{__dirname}/resources/hadoop-services.cfg.j2"
-        local_source: true
-        destination: '/etc/shinken/services/hadoop-services.cfg'
-        context:
-          shinken: shinken
-          hbase: hbase
-          hdfs: hdfs
-          # shinken_lookup_daemon_str: '/usr/sbin/shinken'
-          # namenode_port: active_nn_port
-          # dfs_ha_enabled: not ctx.host_with_module 'ryba/hadoop/hdfs_snn'
-          # all_ping_ports: null # Ambari agent ports
-          # ganglia_port: ganglia.collector_port
-          # ganglia_collector_namenode_port: ganglia.nn_port
-          # ganglia_collector_hbase_port: ganglia.hm_port
-          # ganglia_collector_rm_port: ganglia.rm_port
-          # ganglia_collector_hs_port: ganglia.jhs_port
-          # snamenode_port: snn_ctx?.config.ryba.hdfs.site['dfs.namenode.secondary.http-address'].split(':')[1]
-          # storm_ui_port: 0 # TODO Storm
-          # nimbus_port: 0 # TODO Storm
-          # drpc_port: 0 # TODO Storm
-          # storm_rest_api_port: 0 # TODO Storm
-          # supervisor_port: 0 # TODO Storm
-          # hadoop_ssl_enabled: protocol is 'https'
-          # shinken_keytab_path: shinken.keytab
-          # shinken_principal_name: shinken.principal
-          # kinit_path_local: shinken.kinit
-          # security_enabled: true
-          # nn_ha_host_port_map: nn_hosts_map
-          # namenode_host: nn_hosts
-          # nn_hosts_string: nn_hosts.join ' '
-          # dfs_namenode_checkpoint_period: hdfs.site['dfs.namenode.checkpoint.period'] or 21600
-          # dfs_namenode_checkpoint_txns: hdfs.site['dfs.namenode.checkpoint.txns'] or 1000000
-          # nn_metrics_property: 'FSNamesystem'
-          # rm_hosts_in_str: rm_hosts.join ','
-          # rm_port: rm_webapp_port
-          # nm_port: nm_webapp_port
-          # hs_port: hs_webapp_port
-          # journalnode_port: journalnode_port
-          # datanode_port: dn_port
-          # clientPort: zookeeper.port
-          # hbase_rs_port: hbase.site['hbase.regionserver.info.port']
-          # hbase_master_port: hbase.site['hbase.master.info.port']
-          # hbase_master_hosts_in_str: hm_hosts.join ','
-          # hbase_master_hosts: hm_hosts
-          # hbase_master_rpc_port: hbase.site['hbase.master.port']
-          # hive_metastore_port: url.parse(hcat_ctxs[0].config.ryba.hive.site['hive.metastore.uris']).port
-          # hive_server_port: hs2_port
-          # oozie_url: oozie.site['oozie.base.url']
-          # java64_home: ctx.config.java.java_home # Used by check_oozie_status.sh
-          # templeton_port: webhcat.site['templeton.port']
-          # falcon_port: 0 # TODO
-          # ahs_port: 0 # TODO
-          # hue_port: parseInt hue.ini.desktop['http_port']
+TODO
+
+## Shinken Global Config
 
     module.exports.push header: 'Shinken Arbiter # Shinken Config', handler: ->
       {shinken} = @config.ryba
-      render_ctx = {}
-      for service in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']  
-        render_ctx["#{service}s"] = @contexts("ryba/shinken/#{service}")
+      for service in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
         @render
           destination: "/etc/shinken/#{service}s/#{service}-master.cfg"
           source: "#{__dirname}/resources/#{service}-master.cfg.j2"
           local_source: true
-          context: render_ctx
+          context: "#{service}s": @contexts "ryba/shinken/#{service}"
       @write
         destination: '/etc/shinken/shinken.cfg'
         write: for k, v of {
@@ -263,26 +123,27 @@ Conflicts can appear.
             append: true
         eof: true
 
-### Configure
+### Modules Config
 
     module.exports.push header: 'Shinken Arbiter # Modules Config', handler: ->
-      config_mod = (service, name, mod) =>
+      config_mod = (name, mod) =>
         @render
           destination: "/etc/shinken/modules/#{name}.cfg"
-          source: "#{__dirname}/../#{service}/resources/modules/#{name}.cfg.j2"
+          source: "#{__dirname}/resources/module.cfg.j2"
           local_source: true
-          context: mod.config
-          if: fs.existsSync "#{__dirname}/../#{service}/resources/modules/#{name}.cfg.j2"
-        if mod.modules? then for sub_name, sub_mod of mod.modules then config_mod service, sub_name, sub_mod 
+          context:
+            name: name
+            type: mod.type or name
+            config: mod.config
+        if mod.modules?
+          config_mod sub_name, sub_mod for sub_name, sub_mod of mod.modules
       # Loop on all services
       for service in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
         [ctx] = @contexts "ryba/shinken/#{service}"
         for name, mod of ctx.config.ryba.shinken[service].modules
-          config_mod service, name, mod
+          config_mod name, mod
 
 ## Dependencies
 
     fs = require 'fs'
-    glob = require 'glob'
-    path = require 'path'
     url = require 'url'

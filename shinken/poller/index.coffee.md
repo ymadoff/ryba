@@ -29,10 +29,6 @@ is approximatively 1000 checks/s
       poller.krb5_user ?= {}
       poller.krb5_user.principal ?= "#{shinken.user.name}/#{ctx.config.host}@#{ctx.config.ryba.realm}"
       poller.krb5_user.keytab ?= "/etc/security/keytabs/shinken-poller.service.keytab"
-      # Python
-      poller.python ?= {}
-      poller.python.archive ?= 'Python-2.7.9'
-      poller.python.source ?= 'https://www.python.org/ftp/python/2.7.9/Python-2.7.9.tgz'
       # Python modules to install
       poller.python_modules ?= {}
       poller.python_modules.requests ?= {}
@@ -49,9 +45,14 @@ is approximatively 1000 checks/s
       # Config
       poller.config ?= {}
       poller.config.port ?= 7771
+      poller.config.spare ?= '0'
       poller.config.realm ?= 'All'
       poller.config.modules = [poller.config.modules] if typeof poller.config.modules is 'string'
       poller.config.modules ?= Object.keys poller.modules
+      poller.config.tags = [poller.config.tags] if typeof poller.config.tags is 'string'
+      poller.config.tags ?= []
+      poller.config.use_ssl ?= shinken.config.use_ssl
+      poller.config.hard_ssl_name_check ?= shinken.config.hard_ssl_name_check
 
 ## Commands
 

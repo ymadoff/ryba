@@ -1,0 +1,7 @@
+
+define module {
+   module_name     {{ name }}
+   module_type     {{ type }}
+   {% for prop, value in config %}
+   {{ prop }}      {% if value | isArray %}{{ value | join (',') }}{% else %}{{ value }}{% endif %}{% endfor %}
+}

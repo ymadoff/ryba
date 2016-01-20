@@ -1,7 +1,7 @@
 {% for name, host in hosts %}
 define host {
   host_name                 {{ name }}
-  alias                     {% if host.alias %}{{ host.alias }}{% else %}{{ name }}{% endif %}{% if display_name %}
+  alias                     {{ host.alias }}{% if display_name %}
   display_name              {{ host.display_name}}{% endif %}
   address                   {{ host.ip }}{% if host.parents %}
   parents                   {% if host.parents | isArray %}{{ host.parents | join(',') }}{% else %}{{ host.parents }}{% endif %}{% endif %}{% if host.hostgroups %}
@@ -67,4 +67,5 @@ define host {
   snapshot_criteria         {{ host.snapshot_criteria }}{% endif %}{% if host.trigger_name %}
   trigger_name              {{ host.trigger_name }}{% endif %}{% if host.trigger_broker_raise_enabled %}
   trigger_broker_raise_enabled {{ host.trigger_broker_raise_enabled }}{% endif %}
-}{% endfor %}
+}
+{% endfor %}

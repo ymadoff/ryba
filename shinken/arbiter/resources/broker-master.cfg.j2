@@ -1,33 +1,15 @@
-{#
-# Licensed to the Apache Software Foundation (ASF) under one
-# or more contributor license agreements.  See the NOTICE file
-# distributed with this work for additional information
-# regarding copyright ownership.  The ASF licenses this file
-# to you under the Apache License, Version 2.0 (the
-# "License"); you may not use this file except in compliance
-# with the License.  You may obtain a copy of the License at
-#
-#   http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#}
 {% for b in brokers %}
 define broker {
-    broker_name     broker_{{b.config.shortname}}
-    address         {{b.config.host}}
-    port            {{b.config.ryba.shinken.broker.config.port}}
-    spare           {% if b.config.ryba.shinken.broker.config.spare %}1{% else %}0{% endif %}
-    manage_arbiters     1   {# Take data from Arbiter. There should be only one broker for the arbiter.#}
+    broker_name         broker_{{ b.config.shortname }}
+    address             {{ b.config.host }}
+    port                {{ b.config.ryba.shinken.broker.config.port }}
+    spare               {{ b.config.ryba.shinken.broker.config.spare }}
+    manage_arbiters     {{ b.config.ryba.shinken.broker.config.manage_arbiters }}
     manage_sub_realms   1   {# Does it take jobs from schedulers of sub-Realms?#}
     timeout             3   {# Ping timeout#}
     data_timeout        120 {# Data send timeout#}
     max_check_attempts  3   {# If ping fails N or more, then the node is dead#}
     check_interval      60  {# Ping node every N seconds#}
-
     {# Modules
     # Default: None
     # Interesting modules that can be used:
@@ -39,9 +21,9 @@ define broker {
     # - webui                   = Shinken Web interface
     # - glpidb                  = Save data in GLPI MySQL database
     #}
-    modules {{ b.config.ryba.shinken.broker.config.modules | join (',') }}
-    use_ssl	          {% if b.config.ryba.shinken.broker.config.use_ssl %}1{% else %}0{% endif %}
-    hard_ssl_name_check   {% if b.config.ryba.shinken.broker.config.hard_ssl_name_check %}1{% else %}0{% endif %}
-    realm      {% if b.config.ryba.shinken.broker.config.realm %}{{ b.config.ryba.shinken.broker.config.realm }}{% else %}All{% endif %}
+    modules             {{ b.config.ryba.shinken.broker.config.modules | join (',') }}
+    use_ssl	            {{ b.config.ryba.shinken.broker.config.use_ssl }}
+    hard_ssl_name_check {{ b.config.ryba.shinken.broker.config.hard_ssl_name_check }}
+    realm               {{ b.config.ryba.shinken.broker.config.realm }}
 }
 {% endfor %}

@@ -29,8 +29,45 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push header: 'Shinken Broker # Packages', handler: ->
       @service name: 'shinken-broker'
+      @service name: 'python-pip'
       @service name: 'python-requests'
       @service name: 'python-arrow'
+
+    module.exports.push header: 'Shinken Broker # Install Bottle', unless_exec: 'pip list | grep bottle', handler: ->
+      return unless 'webui2' in @config.ryba.shinken.broker.config.modules
+      # Bottle
+      @download
+        source: 'https://pypi.python.org/packages/source/b/bottle/bottle-0.12.8.tar.gz'
+        destination: 'bottle-0.12.8.tar.gz'
+        md5: '13132c0a8f607bf860810a6ee9064c5b'
+      @extract
+        source: 'bottle-0.12.8.tar.gz'
+      @execute
+        cmd:"""
+        cd bottle-0.12.8
+        python setup.py build
+        python setup.py install
+        """
+      @remove destination: 'bottle-0.12.8.tar.gz'
+      @remove destination: 'bottle-0.12.8'
+
+    module.exports.push header: 'Shinken Broker # Install Pymongo 3', unless_exec: 'pip list | grep pymongo', handler: ->
+      return unless 'webui2' in @config.ryba.shinken.broker.config.modules
+      # Bottle
+      @download
+        source: 'https://pypi.python.org/packages/source/p/pymongo/pymongo-3.0.3.tar.gz'
+        destination: 'pymongo-3.0.3.tar.gz'
+        md5: '0425d99c2a453144b9c95cb37dbc46e9'
+      @extract
+        source: 'pymongo-3.0.3.tar.gz'
+      @execute
+        cmd:"""
+        cd pymongo-3.0.3
+        python setup.py build
+        python setup.py install
+        """
+      @remove destination: 'pymongo-3.0.3.tar.gz'
+      @remove destination: 'pymongo-3.0.3'
 
 ## Layout
 

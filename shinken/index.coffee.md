@@ -28,10 +28,8 @@ Example
 ```
 
     module.exports.configure = (ctx) ->
-      ctx.config.ryba.shinken ?= {}
-      {shinken, realm} = ctx.config.ryba
+      shinken = ctx.config.ryba.shinken ?= {}
       shinken.log_dir = '/var/log/shinken'
-      shinken.overwrite ?= false
       # User
       shinken.user = name: shinken.user if typeof shinken.user is 'string'
       shinken.user ?= {}
@@ -49,8 +47,8 @@ Example
       shinken.user.gid = shinken.group.name
       # Config
       shinken.config ?= {}
-      shinken.config.use_ssl ?= false
-      shinken.config.hard_ssl_name_check ?= false
+      shinken.config.use_ssl ?= '0'
+      shinken.config.hard_ssl_name_check ?= '0'
 
 ## Users & Groups
 

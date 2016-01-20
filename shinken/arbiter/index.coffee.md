@@ -31,6 +31,7 @@ to its associated Scheduler. Host the WebUI.
       # Config
       arbiter.config ?= {}
       arbiter.config.port ?= 7770
+      arbiter.config.spare ?= '0'
       arbiter.config.modules = [arbiter.config.modules] if typeof arbiter.config.modules is 'string'
       arbiter.config.modules ?= Object.keys arbiter.modules
       arbiter.config.distributed ?= ctx.hosts_with_module('ryba/shinken/arbiter').length > 1
@@ -57,21 +58,22 @@ to its associated Scheduler. Host the WebUI.
         shinken.config.groups.admins =
           alias: 'Shinken Administrators'
           members: ['shinken']
+
+Monitoring Configuration
+
       shinken.config.hostgroups ?= {}
       shinken.config.servicegroups ?= {}
       shinken.config.hosts ?= {}
+      shinken.config.services ?= {}
       shinken.config.realms ?= {}
+      shinken.config.contacts ?= {}
+      shinken.config.contactgroups ?= {}
+      shinken.config.dependencies ?= {}
+      shinken.config.escalations ?= {}
       # Servicegroups
-      require('./lib/configure_servicegroups').call ctx
-      require('./lib/configure_from_exports').call ctx
-      # realms: must at least contain the 'All' realm
-      shinken.config.realms.All ?= {}
-      shinken.config.realms.All.members ?= for k in Object.keys(shinken.config.realms) then k unless k is 'All'
-      default_realm = false
-      for k, v of shinken.config.realms then if v.default is '1'
-        throw Error 'Multiples default Realm detected. Please fix the configuration' if default_realm
-        default_realm = true
-      shinken.config.realms.All.default = '1' unless default_realm
+      configure.default.call ctx
+      configure.from_exports.call ctx
+      configure.normalize.call ctx
 
 ## Commands
 
@@ -90,3 +92,7 @@ to its associated Scheduler. Host the WebUI.
     module.exports.push commands: 'status', modules: 'ryba/shinken/arbiter/status'
 
     module.exports.push commands: 'stop', modules: 'ryba/shinken/arbiter/stop'
+
+## Dependencies
+
+    configure = require './lib/configure'
