@@ -30,8 +30,8 @@ define arbiter {
     # - ip-tag			= Tag an host based on it's IP range
     # - FileTag			= Tag an host if it's on a flat file
     # - CSVTag			= Tag an host from the content of a CSV file
-    #}
-    modules             {{ a.config.ryba.shinken.arbiter.config.modules | join (",") }}
+    #}{% if not a.config.ryba.shinken.arbiter.config.modules | isEmpty %}
+    modules             {{ a.config.ryba.shinken.arbiter.config.modules | join(',') }}{% endif %}
     use_ssl             {{ a.config.ryba.shinken.arbiter.config.use_ssl }}
     hard_ssl_name_check {{ a.config.ryba.shinken.arbiter.config.hard_ssl_name_check }}
 }

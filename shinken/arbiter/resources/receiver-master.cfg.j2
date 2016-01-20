@@ -15,8 +15,8 @@ define receiver {
     # - TSCA                    = TSCA server
     # - ws-arbiter              = WebService for pushing results to the arbiter
     # - Collectd                = Receive collectd perfdata
-    #}
-    modules             {{ r.config.ryba.shinken.receiver.config.modules | join (',') }}
+    #}{% if not r.config.ryba.shinken.receiver.config.modules | isEmpty %}
+    modules             {{ r.config.ryba.shinken.receiver.config.modules | join(',') }}{% endif %}
 
     use_ssl	            {{ r.config.ryba.shinken.receiver.config.use_ssl }}
     hard_ssl_name_check {{ r.config.ryba.shinken.receiver.config.hard_ssl_name_check }}

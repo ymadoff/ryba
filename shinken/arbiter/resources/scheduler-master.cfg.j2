@@ -19,8 +19,8 @@ define scheduler {
     # - NagiosRetention     = Read retention info from a Nagios retention file
     #                         (does not save, only read)
     # - SnmpBooster             = Snmp bulk polling module
-    #}
-    modules             {{ s.config.ryba.shinken.scheduler.config.modules | join (',') }}
+    #}{% if not s.config.ryba.shinken.scheduler.config.modules | isEmpty %}
+    modules             {{ s.config.ryba.shinken.scheduler.config.modules | join(',') }}{% endif %}
 
     {# Skip initial broks creation. Boot fast, but some broker modules won't work with it!#}
     skip_initial_broks  0

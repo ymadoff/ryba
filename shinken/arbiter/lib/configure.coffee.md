@@ -166,6 +166,7 @@ This function is called at the end to normalize values
           group.contactgroup_members = [group.contactgroup_members] unless Array.isArray group.contactgroup_members
         # Contacts
         for name, contact of contacts
+          contact.alias ?= name
           contact.host_notifications_enabled ?= '1'
           contact.service_notifications_enabled ?= '1'
           contact.host_notifications_period ?= '24x7'

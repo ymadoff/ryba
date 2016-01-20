@@ -13,8 +13,8 @@ define reactionner {
     data_timeout        120 {# Data send timeout#}
     max_check_attempts  3   {# If ping fails N or more, then the node is dead#}
     check_interval      60  {# Ping node every N seconds#}
-
-    modules             {{ r.config.ryba.shinken.reactionner.config.modules | join (',') }}
+    {% if not r.config.ryba.shinken.reactionner.config.modules | isEmpty %}
+    modules             {{ r.config.ryba.shinken.reactionner.config.modules | join(',') }}{% endif %}
     {# Reactionner tags are the tag that the reactionner will manage. Use None as tag name to manage
     # untaggued notification/event handlers #}
     reactionner_tags    {% if r.config.ryba.shinken.reactionner.config.tags | isEmpty %}None{% else %}{{ r.config.ryba.shinken.reactionner.config.tags | join (',') }}{% endif %}

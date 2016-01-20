@@ -20,8 +20,8 @@ define broker {
     # - graphite                = Use a Graphite time series DB for perfdata
     # - webui                   = Shinken Web interface
     # - glpidb                  = Save data in GLPI MySQL database
-    #}
-    modules             {{ b.config.ryba.shinken.broker.config.modules | join (',') }}
+    #}{% if not b.config.ryba.shinken.broker.config.modules | isEmpty %}
+    modules             {{ b.config.ryba.shinken.broker.config.modules | join(',') }}{% endif %}
     use_ssl	            {{ b.config.ryba.shinken.broker.config.use_ssl }}
     hard_ssl_name_check {{ b.config.ryba.shinken.broker.config.hard_ssl_name_check }}
     realm               {{ b.config.ryba.shinken.broker.config.realm }}
