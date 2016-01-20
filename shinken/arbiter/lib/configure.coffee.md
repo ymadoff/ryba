@@ -108,8 +108,7 @@ by shinken to autoconfigure monitoring of the cluster.
       from_exports: ->
         {shinken} = @config.ryba
         {hostgroups, hosts, realms} = shinken.config
-        if shinken.exports_dir? then for file in fs.readdirSync shinken.exports_dir
-          continue unless fs.statSync(file).isFile()
+        if shinken.exports_dir? then for file in glob.sync "#{shinken.exports_dir}/*.coffee"
           name = path.basename file
           {servers} = require file
           realms[name] ?= {}
@@ -176,3 +175,7 @@ This function is called at the end to normalize values
           contact.host_notifications_command ?= 'notify-host-by-email'
           contact.service_notifications_command ?= 'notify-service-by-email'
 
+## Dependencies
+
+    glob = require 'glob'
+    path = require 'path'
