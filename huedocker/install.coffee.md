@@ -263,7 +263,7 @@ Compares local/remote hash to check if docker_load is needed.
         @fs.exists "#{tmp}/hue_docker.tar", (err, exists) =>
           return callback err if err?.code != 'ENOENT' and err
           return callback null, false if err?.code == 'ENOENT' or !exists
-          @fs.readFile "#{tmp}/checksum", 'ascii', (err, content) ->
+          @fs.readFile "#{tmp}/hue_docker_checksum", 'ascii', (err, content) ->
             return callback err if err?.code != 'ENOENT' and err
             return callback null, exists if err?.code == 'ENOENT'
             current_checksum = content
@@ -275,13 +275,11 @@ Compares local/remote hash to check if docker_load is needed.
         destination: "#{tmp}/hue_docker.tar"
         binary: true
         md5: true
-        if: -> (current_checksum.length == 0)
       @upload
         source: "#{__dirname}/cache/prod/checksum"
-        destination: "#{tmp}/checksum"
+        destination: "#{tmp}/hue_docker_checksum"
         binary: true
         md5: true
-        if: -> (current_checksum.length == 0)
       @call ->
         @docker_load
           input: "#{tmp}/hue_docker.tar"
