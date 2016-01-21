@@ -253,7 +253,7 @@ The image can be uploaded by an other bin/ryba install (e.g. by a team mate), or
 from local (needs local container to exist e.g. after bin/ryba prepare).
 Compares local/remote hash to check if docker_load is needed.
 
-    module.exports.push header: 'Hue Docker # Container', timeout: -1, handler: (options)  ->
+    module.exports.push header: 'Hue Docker # Container', timeout: -1, retry:3, handler: (options)  ->
       {hue_docker} = @config.ryba
       tmp = hue_docker.image_dir
       current_checksum = ''

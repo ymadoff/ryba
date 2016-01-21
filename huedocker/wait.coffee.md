@@ -10,6 +10,5 @@ be released soon.
 
     module.exports.push header: 'Hue Docker # Wait', timeout: -1, label_true: 'READY', handler: ->
       @wait_connect
-        servers: for hue_ in @contexts 'ryba/huedocker', require('./index').configure
-          host: hue_.config.host
-          port: hue_.config.ryba.hue_docker.port
+          host: @config.host
+          port: @config.ryba.hue_docker.port
