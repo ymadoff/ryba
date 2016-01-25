@@ -85,24 +85,7 @@ Conflicts can appear.
 
 ## Configuration
 
-    module.exports.push header: 'Shinken Arbiter # Commons Config', handler: ->
-      {shinken} = @config.ryba
-      for obj in ['commands', 'contactgroups', 'contacts', 'hostgroups', 'hosts', 'servicegroups', 'realms', 'templates']
-        @render
-          destination: "/etc/shinken/#{obj}/#{obj}.cfg"
-          source: "#{__dirname}/resources/#{obj}.cfg.j2"
-          local_source: true
-          context: shinken.config
-      @write
-        destination: '/etc/shinken/resource.d/path.cfg'
-        match: /^\$PLUGINSDIR\$=.*$/mg
-        replace: "$PLUGINSDIR$=#{shinken.plugin_dir}"
-
-## Services
-
-TODO
-
-## Shinken Global Config
+### Shinken Config
 
     module.exports.push header: 'Shinken Arbiter # Shinken Config', handler: ->
       {shinken} = @config.ryba
@@ -112,6 +95,10 @@ TODO
           source: "#{__dirname}/resources/#{service}-master.cfg.j2"
           local_source: true
           context: "#{service}s": @contexts "ryba/shinken/#{service}"
+      @write
+        destination: '/etc/shinken/resource.d/path.cfg'
+        match: /^\$PLUGINSDIR\$=.*$/mg
+        replace: "$PLUGINSDIR$=#{shinken.plugin_dir}"
       @write
         destination: '/etc/shinken/shinken.cfg'
         write: for k, v of {
@@ -142,6 +129,29 @@ TODO
         [ctx] = @contexts "ryba/shinken/#{service}"
         for name, mod of ctx.config.ryba.shinken[service].modules
           config_mod name, mod
+
+### Objects Config
+
+Objects config, except services
+
+    module.exports.push header: 'Shinken Arbiter # Objects Config', handler: ->
+      {shinken} = @config.ryba
+      for obj in ['commands', 'contactgroups', 'contacts', 'hostgroups', 'hosts', 'servicegroups', 'realms', 'dependencies', 'escalations', 'timeperiods']
+        @render
+          destination: "/etc/shinken/#{obj}/#{obj}.cfg"
+          source: "#{__dirname}/resources/#{obj}.cfg.j2"
+          local_source: true
+          context: "#{obj}": shinken.config[obj]
+
+### Services Config
+
+    module.exports.push header: 'Shinken Arbiter # Services Config', handler: ->
+      {shinken} = @config.ryba
+      @render
+        destination: "/etc/shinken/services/services.cfg"
+        source: "#{__dirname}/resources/services.cfg.j2"
+        local_source: true
+        context: shinken.exports
 
 ## Dependencies
 
