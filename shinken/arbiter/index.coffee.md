@@ -59,35 +59,11 @@ to its associated Scheduler. Host the WebUI.
           alias: 'Shinken Administrators'
           members: ['shinken']
 
-Monitoring Configuration
+Object Configuration
 
-      shinken.config.servicegroups ?= {}
-      shinken.config.services ?= {}
-      shinken.config.hostgroups ?= {}
-      shinken.config.hosts ?= {}
-      shinken.config.realms ?= {}
-      shinken.config.contactgroups ?= {}
-      shinken.config.contacts ?= {}
-      shinken.config.dependencies ?= {}
-      shinken.config.escalations ?= {}
-      timeperiods = shinken.config.timeperiods ?= {}
-      # Servicegroups
-      configure.servicegroups.call ctx
-      # From exports files (HostGroups, Host, Realms)
+      configure.init.call ctx
+      configure.from_ryba.call ctx
       configure.from_exports.call ctx
-      # ContactGroups
-      
-      # Contacts
-      # Time period
-      timeperiods['24x7'] ?= {}
-      timeperiods['24x7'].alias ?= 'Everytime'
-      timeperiods['24x7'].time ?= {}
-      for day in ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']
-        timeperiods['24x7'].time[day] ?= '00:00-24:00'
-      timeperiods.none ?= {}
-      timeperiods.none.alias ?= 'Never'
-      timeperiods.none.time = {}
-      # Normalize
       configure.normalize.call ctx
 
 ## Commands
@@ -110,4 +86,4 @@ Monitoring Configuration
 
 ## Dependencies
 
-    configure = require './lib/configure'
+    configure = require './lib/configure_objects'

@@ -6,11 +6,6 @@
 
 ## Check
 
-    module.exports.push header: 'Shinken Arbiter # Check Status', label_true: 'CHECKED', handler: ->
-      @service
-        srv_name: 'shinken'
-        action: 'check'
-
     module.exports.push header: 'Shinken Arbiter # Check TCP', label_true: 'CHECKED', handler: ->
       {arbiter} = @config.ryba.shinken
       @execute

@@ -2,7 +2,8 @@
 define contact{
   contact_name                  {{ name }}
   alias                         {{ contact.alias }}{% if not contact.contactgroups | isEmpty %}
-  contactgroups                 {{ contact.contactgroups | join(',') }}{% endif %}
+  contactgroups                 {{ contact.contactgroups | join(',') }}{% endif %}{% if not contact.password | isEmpty %}
+  password                      {{ contact.password }}{% endif %}
   host_notifications_enabled    {{ contact.host_notifications_enabled }}
   service_notifications_enabled {{ contact.service_notifications_enabled }}
   host_notifications_period     {{ contact.host_notifications_period }}

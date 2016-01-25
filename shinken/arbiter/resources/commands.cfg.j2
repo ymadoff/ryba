@@ -1,3 +1,16 @@
+define command {
+  command_name    check_host
+  command_line    $PLUGINSDIR$/check_ping -H $HOSTADDRESS$ -w 3000.0,80% -c 5000.0,100% -p 5
+}
+
+{# YARN #}
+{## YARN RM ##}
+
+define command {
+  command_name    check_yarn_nodemanagers
+  command_line    $PLUGINSDIR$/check_yarn_nodemanagers.pl -H $HOSTADDRESS$ -P $ARG1$
+}
+
 ## Default commands
 define command {
   command_name    check_shinken

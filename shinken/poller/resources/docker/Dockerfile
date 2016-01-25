@@ -2,6 +2,12 @@
 # `docker build -t ryba/shinken-poller-executor .`
 FROM centos:latest
 
+#inserer dans /usr/local/lib64/perl5/NetAddr/IP/InetBase.pm, 3eme ligne (avant use strict) :
+#```
+#use Socket;
+#```
+#Puis, installer Socket6 CPAN 
+
 # add epel repo
 RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
 
@@ -30,3 +36,6 @@ RUN touch lib/.use_net_ssl
 RUN touch .use_net_ssl
 # Build it
 RUN make
+RUN sed -i 's/use strict;/use Socket;\nuse strict;/' /usr/local/lib64/perl5/NetAddr/IP/InetBase.pm
+RUN cpan Module::Socket6
+ENV PERL_LWP_SSL_VERIFY_HOSTNAME 0

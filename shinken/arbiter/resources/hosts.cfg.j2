@@ -3,12 +3,13 @@ define host {
   host_name                 {{ name }}
   alias                     {{ host.alias }}{% if display_name %}
   display_name              {{ host.display_name}}{% endif %}
-  address                   {{ host.ip }}{% if host.parents %}
-  parents                   {% if host.parents | isArray %}{{ host.parents | join(',') }}{% else %}{{ host.parents }}{% endif %}{% endif %}{% if host.hostgroups %}
-  hostgroups                {% if host.hostgroups | isArray %}{{ host.hostgroups | join(',') }}{% else %}{{ host.hostgroups }}{% endif %}{% endif %}{% if host.check_command %}
+  address                   {{ host.ip }}{% if host.use %}
+  use                       {{ host.use }}{% endif %}{% if not host.parents | isEmpty %}
+  parents                   {{ host.parents | join(',') }}{% endif %}{% if not host.hostgroups | isEmpty %}
+  hostgroups                {{ host.hostgroups | join(',') }}{% endif %}{% if host.check_command %}
   check_command             {{ host.check_command }}{% endif %}{% if host.initial_state %}
-  initial_state             {{ host.initial_state }}{% endif %}
-  max_check_attempts        {% if host.max_check_attempts %}{{ host.max_check_attempts }}{% else %}3{% endif %}{% if host.check_interval %}
+  initial_state             {{ host.initial_state }}{% endif %}{% if host.max_check_attempts %}
+  max_check_attempts        {{ host.max_check_attempts }}{% endif %}{% if host.check_interval %}
   check_interval            {{ host.check_interval }}{% endif %}{% if host.retry_interval %}
   retry_interval            {{ host.retry_interval }}{% endif %}{% if host.active_checks_enabled %}
   active_checks_enabled     {{ host.active_checks_enabled }}{% endif %}{% if host.passive_checks_enabled %}
@@ -25,10 +26,10 @@ define host {
   flap_detection_options    {{ host.flap_detection_options }}{% endif %}{% if host.process_perf_data %}
   process_perf_data         {{ host.process_perf_data }}{% endif %}{% if host.retain_status_information %}
   retain_status_information {{ host.retain_status_information }}{% endif %}{% if host.retain_nonstatus_information %}
-  retain_nonstatus_information {{ host.retain_nonstatus_information }}{% endif %}{% if host.contacts %}
-  contacts                  {% if host.contacts | isArray %}{{ host.contacts | join(',') }}{% else %}{{ host.contacts }}{% endif %}{% endif %}
-  contact_groups            {% if host.contact_groups | isArray %}{{ host.contact_groups | join(',') }}{% elif host.contact_groups %}{{ host.contact_groups }}{% else %}admin{% endif %}
-  notification_interval     {% if host.notification_interval %}{{ host.notification_interval }}{% else %}1440{% endif %}{% if host.first_notification_delay %}
+  retain_nonstatus_information {{ host.retain_nonstatus_information }}{% endif %}{% if not host.contacts | isEmpty %}
+  contacts                  {{ host.contacts | join(',') }}{% endif %}{% if not host.contact_groups | isEmpty %}
+  contact_groups            {{ host.contactgroups | join(',') }}{% endif %}{% if host.notification_interval %}
+  notification_interval     {{ host.notification_interval }}{% endif %}{% if host.first_notification_delay %}
   first_notification_delay  {{ host.first_notification_delay }}{% endif %}{% if host.notification_period %}
   notification_period       {{ host.notification_period }}{% endif %}{% if host.notification_options %}
   notification_options      {{ host.notification_options }}{% endif %}{% if host.notification_enabled %}
