@@ -35,9 +35,11 @@ They must have register set to 0 to not be instanciated
 
         # Hosts
         hosts['generic-host'] ?= {}
+        hosts['generic-host'].use ?= ''
         hosts['generic-host'].check_command ?= 'check_host'
         hosts['generic-host'].max_check_attempts ?= '2'
         hosts['generic-host'].check_interval ?= '1'
+        hosts['generic-host'].retry_interval ?= '1'
         hosts['generic-host'].active_checks_enabled ?= '1'
         hosts['generic-host'].check_period ?= '24x7'
         hosts['generic-host'].event_handler_enabled ?= '0'
@@ -57,6 +59,7 @@ They must have register set to 0 to not be instanciated
         hosts['linux-server'].register = '0'
         # Services
         services['generic-service'] ?= {}
+        services['generic-service'].use ?= ''
         services['generic-service'].active_checks_enabled ?= '1'
         services['generic-service'].passive_checks_enabled ?= '1'
         services['generic-service'].parallelize_check ?= '1'
@@ -90,8 +93,11 @@ They must have register set to 0 to not be instanciated
         services['hadoop-functional-service'].use ?= 'hadoop-service'
         services['hadoop-functional-service'].register = '0'
         # ContactGroups
+        contactgroups['admins'] ?= {}
+        contactgroups['admins'].alias ?= 'Shinken Administrators'
         # Contacts
         contacts['generic-contact'] ?= {}
+        contacts['generic-contact'].use ?= ''
         contacts['generic-contact'].service_notification_period ?= '24x7'
         contacts['generic-contact'].host_notification_period ?= '24x7'
         contacts['generic-contact'].service_notification_options ?= 'w,u,c,r,f'
@@ -101,6 +107,9 @@ They must have register set to 0 to not be instanciated
         contacts['generic-contact'].host_notifications_enabled ?= '1'
         contacts['generic-contact'].service_notifications_enabled ?= '1'
         contacts['generic-contact'].register = '0'
+        contacts['shinken'] ?= {}
+        contacts['shinken'].contactgroups ?= []
+        contacts['shinken'].contactgroups.push 'admins' unless 'admins' in contacts['shinken'].contactgroups
         # Timeperiods
         timeperiods['24x7'] ?= {}
         timeperiods['24x7'].alias ?= 'Everytime'
@@ -111,8 +120,8 @@ They must have register set to 0 to not be instanciated
         timeperiods.none.alias ?= 'Never'
         timeperiods.none.time = {}
         # Commands
-        commands['notify-host-by-email'] ?= '/usr/bin/printf "%b" "Shinken Notification\\n\\nType:$NOTIFICATIONTYPE$\\nHost: $HOSTNAME$\\nState:$HOSTSTATE$\\nAddress: $HOSTADDRESS$\\nInfo: $HOSTOUTPUT$\\nDate/Time: $DATE$\\n" | mailx -s "Host $HOSTSTATE$ alert for $HOSTNAME$!" $CONTACTEMAIL$'
-        commands['notify-service-by-email'] ?= '/usr/bin/printf "%b" "Shinken Notification\\n\\Type: $NOTIFICATIONTYPE$\\n\\nService: $SERVICEDESC$\\nHost:$HOSTALIAS$\\nAddress: $HOSTADDRESS$\\nState: $SERVICESTATE$\\n\\nDate/Time: $DATE$ Additional Info : $SERVICEOUTPUT$" | mailx -s "** $NOTIFICATIONTYPE$ Service Alert: $HOSTALIAS$/$SERVICEDESC$ is $SERVICESTATE$ **"  $CONTACTEMAIL$'
+        commands['notify-host-by-email'] ?= '/usr/bin/printf "%b" "Shinken Notification\\n\\nType: $NOTIFICATIONTYPE$\\nHost: $HOSTNAME$\\nState: $HOSTSTATE$\\nAddress: $HOSTADDRESS$\\nDate: $SHORTDATETIME$\\nInfo: $HOSTOUTPUT$" | mailx -s "Host $NOTIFICATIONTYPE$: $HOSTNAME$ is $HOSTSTATE$" $CONTACTEMAIL$'
+        commands['notify-service-by-email'] ?= '/usr/bin/printf "%b" "Shinken Notification\\n\\nNotification Type: $NOTIFICATIONTYPE$\\n\\nService: $SERVICEDESC$\\nHost:$HOSTALIAS$\\nAddress: $HOSTADDRESS$\\nState: $SERVICESTATE$\\nDate: $SHORTDATETIME$\\nInfo : $SERVICEOUTPUT$" | mailx -s "Service $NOTIFICATIONTYPE$: $SERVICEDESC$ ($HOSTALIAS$) is $SERVICESTATE$"  $CONTACTEMAIL$'
 
 ## Object from Ryba
 
@@ -238,6 +247,7 @@ This function is called at the end to normalize values
         # Hosts
         for name, host of shinken.config.hosts
           host.alias ?= name
+          host.use ?= 'generic-host'
         # ServiceGroups
         for name, group of shinken.config.servicegroups
           group.alias ?= "#{name.charAt(0).toUpperCase()}#{name.slice 1}"
@@ -270,15 +280,8 @@ This function is called at the end to normalize values
         for name, contact of shinken.config.contacts
           contact.alias ?= name
           contact.contactgroups ?= []
+          contact.use ?= 'generic-contact'
           contact.contactgroups = [contact.contactgroups] unless Array.isArray contact.contactgroups
-          contact.host_notifications_enabled ?= '1'
-          contact.service_notifications_enabled ?= '1'
-          contact.host_notifications_period ?= '24x7'
-          contact.service_notifications_period ?= '24x7'
-          contact.host_notifications_options ?= 'd,u,r'
-          contact.service_notifications_options ?= 'w,u,c,r'
-          contact.host_notifications_command ?= 'notify-host-by-email'
-          contact.service_notifications_command ?= 'notify-service-by-email'
         # Dependencies
         for name, dep of shinken.config.dependencies
           throw Error "Unvalid dependency #{name}, please provide hosts or hostsgroups" unless dep.hosts? or dep.hostgroups?
