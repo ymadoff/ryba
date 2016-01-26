@@ -1,6 +1,6 @@
 define command {
   command_name    check_host
-  command_line    $PLUGINSDIR$/check_ping -H $HOSTADDRESS$ -w 3000.0,80% -c 5000.0,100% -p 5
+  command_line    docker exec poller-unprivileged-executor ./check_ping -H $HOSTADDRESS$ -w 3000.0,80% -c 5000.0,100% -p 5
 }
 
 {# YARN #}
@@ -8,147 +8,147 @@ define command {
 
 define command {
   command_name    check_yarn_nodemanagers
-  command_line    $PLUGINSDIR$/check_yarn_nodemanagers.pl -H $HOSTADDRESS$ -P $ARG1$
+  command_line    docker exec poller-unprivileged-executor ./check_yarn_nodemanagers.pl -H $HOSTADDRESS$ -P $ARG1$
 }
 
 ## Default commands
 define command {
   command_name    check_shinken
-  command_line    $PLUGINSDIR$/check_shinken.py -a $HOSTADDRESS$ -d $ARG1$ -p $ARG2$ {% if use_ssl %}-s SSL{% endif %}
+  command_line    docker exec poller-unprivileged-executor ./check_shinken.py -a $HOSTADDRESS$ -d $ARG1$ -p $ARG2$ {% if use_ssl %}-s SSL{% endif %}
 }
 define command {
   command_name    check_tcp
-  command_line    $PLUGINSDIR$/check_tcp -H $HOSTADDRESS$ -p $ARG1$ -w 0.5 -c 1
+  command_line    docker exec poller-unprivileged-executor ./check_tcp -H $HOSTADDRESS$ -p $ARG1$ -w 0.5 -c 1
 }
 define command {
   command_name    check_rest
-  command_line    $PLUGINSDIR$/check_rest.py -H $HOSTADDRESS$ -p $ARG1$ $ARG2$
+  command_line    docker exec poller-unprivileged-executor ./check_rest.py -H $HOSTADDRESS$ -p $ARG1$ $ARG2$
 }
 define command {
   command_name    query_hbase_rs_jmx
-  command_line    $PLUGINSDIR$/check_rest.py -H $HOSTADDRESS$ -p $ARG1$ -P "/jmx?qry=Hadoop:service=HBase,name=RegionServer,sub=Server" --co '"tag.Hostname" : "$HOSTADDRESS$"' $ARG2$
+  command_line    docker exec poller-unprivileged-executor ./check_rest.py -H $HOSTADDRESS$ -p $ARG1$ -P "/jmx?qry=Hadoop:service=HBase,name=RegionServer,sub=Server" --co '"tag.Hostname" : "$HOSTADDRESS$"' $ARG2$
 }
 define command {
   command_name    check_hdfs_disk_capacity
-  command_line    $PLUGINSDIR$/check_hdfs_disk_capacity.py -H $HOSTADDRESS$ -p $ARG1$ -w $ARG2$ -c $ARG3$ $ARG4$
+  command_line    docker exec poller-unprivileged-executor ./check_hdfs_disk_capacity.py -H $HOSTADDRESS$ -p $ARG1$ -w $ARG2$ -c $ARG3$ $ARG4$
 }
 define command {
   command_name    check_cpu
-  command_line    $PLUGINSDIR$/check_wrapper.sh php $PLUGINSDIR$/check_cpu.php -h $HOSTADDRESS$ -p $ARG1$ -w $ARG2$ -c $ARG3$ -e $ARG4$ -k $ARG5$ -r $ARG6$ -t $ARG7$ -u $ARG8$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh php $PLUGINSDIR$/check_cpu.php -h $HOSTADDRESS$ -p $ARG1$ -w $ARG2$ -c $ARG3$ -e $ARG4$ -k $ARG5$ -r $ARG6$ -t $ARG7$ -u $ARG8$
 }
 define command {
   command_name    check_cpu_ha
-  command_line    $PLUGINSDIR$/check_wrapper.sh php $PLUGINSDIR$/check_cpu_ha.php -h $ARG1$ -p $ARG2$ -w $ARG3$ -c $ARG4$ -e $ARG5$ -k $ARG6$ -r $ARG7$ -t $ARG8$ -u $ARG9$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh php $PLUGINSDIR$/check_cpu_ha.php -h $ARG1$ -p $ARG2$ -w $ARG3$ -c $ARG4$ -e $ARG5$ -k $ARG6$ -r $ARG7$ -t $ARG8$ -u $ARG9$
 }
 # Check data node storage full
 define command {
   command_name    check_datanode_storage
-  command_line    $PLUGINSDIR$/check_wrapper.sh php $PLUGINSDIR$/check_datanode_storage.php -h $HOSTADDRESS$ -p $ARG1$ -w $ARG2$ -c $ARG3$ -e $ARG4$ -k $ARG5$ -r $ARG6$ -t $ARG7$ -s $ARG8$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh php $PLUGINSDIR$/check_datanode_storage.php -h $HOSTADDRESS$ -p $ARG1$ -w $ARG2$ -c $ARG3$ -e $ARG4$ -k $ARG5$ -r $ARG6$ -t $ARG7$ -s $ARG8$
 }
 
 define command{
   command_name    check_hdfs_blocks
-  command_line    $PLUGINSDIR$/check_wrapper.sh php $PLUGINSDIR$/check_hdfs_blocks.php -h $ARG1$ -p $ARG2$ -s $ARG3$ -e $ARG4$ -k $ARG5$ -r $ARG6$ -t $ARG7$ -u $ARG8$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh php $PLUGINSDIR$/check_hdfs_blocks.php -h $ARG1$ -p $ARG2$ -s $ARG3$ -e $ARG4$ -k $ARG5$ -r $ARG6$ -t $ARG7$ -u $ARG8$
 }
 
 define command{
   command_name    check_hdfs_capacity
-  command_line    $PLUGINSDIR$/check_wrapper.sh php $PLUGINSDIR$/check_hdfs_capacity.php -h $ARG1$ -p $ARG2$ -w $ARG3$ -c $ARG4$ -e $ARG5$ -k $ARG6$ -r $ARG7$ -t $ARG8$ -s $ARG9$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh php $PLUGINSDIR$/check_hdfs_capacity.php -h $ARG1$ -p $ARG2$ -w $ARG3$ -c $ARG4$ -e $ARG5$ -k $ARG6$ -r $ARG7$ -t $ARG8$ -s $ARG9$
 }
 
 define command{
   command_name    check_aggregate
-  command_line    $PLUGINSDIR$/check_wrapper.sh php $PLUGINSDIR$/check_aggregate.php -f /var/shinken/status.dat -s 1 -t service -n $ARG1$ -w $ARG2$ -c $ARG3$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh php $PLUGINSDIR$/check_aggregate.php -f /var/shinken/status.dat -s 1 -t service -n $ARG1$ -w $ARG2$ -c $ARG3$
 }
 
 define command{
   command_name    check_rpcq_latency
-  command_line    $PLUGINSDIR$/check_wrapper.sh php $PLUGINSDIR$/check_rpcq_latency.php -h $HOSTADDRESS$ -p $ARG2$ -n $ARG1$ -w $ARG3$ -c $ARG4$ -e $ARG5$ -k $ARG6$ -r $ARG7$ -t $ARG8$ -s $ARG9$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh php $PLUGINSDIR$/check_rpcq_latency.php -h $HOSTADDRESS$ -p $ARG2$ -n $ARG1$ -w $ARG3$ -c $ARG4$ -e $ARG5$ -k $ARG6$ -r $ARG7$ -t $ARG8$ -s $ARG9$
 }
 
 define command{
   command_name    check_rpcq_latency_ha
-  command_line    $PLUGINSDIR$/check_wrapper.sh php $PLUGINSDIR$/check_rpcq_latency_ha.php -h $ARG1$ -p $ARG3$ -n $ARG2$ -w $ARG4$ -c $ARG5$ -e $ARG6$ -k $ARG7$ -r $ARG8$ -t $ARG9$ -s $ARG10$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh php $PLUGINSDIR$/check_rpcq_latency_ha.php -h $ARG1$ -p $ARG3$ -n $ARG2$ -w $ARG4$ -c $ARG5$ -e $ARG6$ -k $ARG7$ -r $ARG8$ -t $ARG9$ -s $ARG10$
 }
 
 define command{
   command_name    check_webui
-  command_line    $PLUGINSDIR$/check_wrapper.sh $PLUGINSDIR$/check_webui.sh $ARG1$ $HOSTADDRESS$ $ARG2$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh $PLUGINSDIR$/check_webui.sh $ARG1$ $HOSTADDRESS$ $ARG2$
 }
 
 define command{
   command_name    check_webui_ha
-  command_line    $PLUGINSDIR$/check_wrapper.sh $PLUGINSDIR$/check_webui_ha.sh $ARG1$ $ARG2$ $ARG3$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh $PLUGINSDIR$/check_webui_ha.sh $ARG1$ $ARG2$ $ARG3$
 }
 
 define command{
   command_name    check_name_dir_status
-  command_line    $PLUGINSDIR$/check_wrapper.sh php $PLUGINSDIR$/check_name_dir_status.php -h $HOSTADDRESS$ -p $ARG1$ -e $ARG2$ -k $ARG3$ -r $ARG4$ -t $ARG5$ -s $ARG6$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh php $PLUGINSDIR$/check_name_dir_status.php -h $HOSTADDRESS$ -p $ARG1$ -e $ARG2$ -k $ARG3$ -r $ARG4$ -t $ARG5$ -s $ARG6$
 }
 
 define command{
   command_name    check_oozie_status
-  command_line    $PLUGINSDIR$/check_wrapper.sh $PLUGINSDIR$/check_oozie_status.sh $ARG1$ $ARG2$ $ARG3$ $ARG4$ $ARG5$ $ARG6$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh $PLUGINSDIR$/check_oozie_status.sh $ARG1$ $ARG2$ $ARG3$ $ARG4$ $ARG5$ $ARG6$
 }
 
 define command{
   command_name    check_templeton_status
-  command_line    $PLUGINSDIR$/check_wrapper.sh $PLUGINSDIR$/check_templeton_status.sh $HOSTADDRESS$ $ARG1$ $ARG2$ $ARG3$ $ARG4$ $ARG5$ $ARG6$ $ARG7$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh $PLUGINSDIR$/check_templeton_status.sh $HOSTADDRESS$ $ARG1$ $ARG2$ $ARG3$ $ARG4$ $ARG5$ $ARG6$ $ARG7$
 }
 
 define command{
   command_name    check_hive_metastore_status
-  command_line    $PLUGINSDIR$/check_wrapper.sh $PLUGINSDIR$/check_hive_metastore_status.sh $HOSTADDRESS$ $ARG1$ $ARG2$ $ARG3$ $ARG4$ $ARG5$ $ARG6$ $ARG7$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh $PLUGINSDIR$/check_hive_metastore_status.sh $HOSTADDRESS$ $ARG1$ $ARG2$ $ARG3$ $ARG4$ $ARG5$ $ARG6$ $ARG7$
 }
 
 define command{
   command_name    check_hue_status
-  command_line    $PLUGINSDIR$/check_wrapper.sh $PLUGINSDIR$/check_hue_status.sh
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh $PLUGINSDIR$/check_hue_status.sh
 }
 
 define command{
   command_name    check_mapred_local_dir_used_space
-  command_line    $PLUGINSDIR$/check_wrapper.sh $PLUGINSDIR$/check_mapred_local_dir_used.sh $ARG1$ $ARG2$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh $PLUGINSDIR$/check_mapred_local_dir_used.sh $ARG1$ $ARG2$
 }
 
 define command{
   command_name    check_namenodes_ha
-  command_line    $PLUGINSDIR$/check_wrapper.sh $PLUGINSDIR$/check_namenodes_ha.sh $ARG1$ $ARG2$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh $PLUGINSDIR$/check_namenodes_ha.sh $ARG1$ $ARG2$
 }
 
 define command{
   command_name    check_nodemanager_health
-  command_line    $PLUGINSDIR$/check_wrapper.sh $PLUGINSDIR$/check_nodemanager_health.sh $HOSTADDRESS$ $ARG1$ $ARG2$ $ARG3$ $ARG4$ $ARG5$ $ARG6$ $ARG7$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh $PLUGINSDIR$/check_nodemanager_health.sh $HOSTADDRESS$ $ARG1$ $ARG2$ $ARG3$ $ARG4$ $ARG5$ $ARG6$ $ARG7$
 }
 
 define command{
   command_name    host_sys_logger
-  command_line    $PLUGINSDIR$/sys_logger.py $HOSTSTATETYPE$ $HOSTATTEMPT$ $HOSTSTATE$ "Host::Ping" "Event Host=$HOSTADDRESS$($HOSTSTATE$), $HOSTOUTPUT$ $LONGHOSTOUTPUT$"
+  command_line    docker exec poller-unprivileged-executor ./sys_logger.py $HOSTSTATETYPE$ $HOSTATTEMPT$ $HOSTSTATE$ "Host::Ping" "Event Host=$HOSTADDRESS$($HOSTSTATE$), $HOSTOUTPUT$ $LONGHOSTOUTPUT$"
 }
 
 define command{
   command_name    service_sys_logger
-  command_line    $PLUGINSDIR$/sys_logger.py $SERVICESTATETYPE$ $SERVICEATTEMPT$ $SERVICESTATE$ "$SERVICEDESC$" "Event Host=$HOSTADDRESS$ Service Description=$SERVICEDESC$($SERVICESTATE$), $SERVICEOUTPUT$ $LONGSERVICEOUTPUT$"
+  command_line    docker exec poller-unprivileged-executor ./sys_logger.py $SERVICESTATETYPE$ $SERVICEATTEMPT$ $SERVICESTATE$ "$SERVICEDESC$" "Event Host=$HOSTADDRESS$ Service Description=$SERVICEDESC$($SERVICESTATE$), $SERVICEOUTPUT$ $LONGSERVICEOUTPUT$"
 }
 
 define command{
   command_name    check_tcp_wrapper
-  command_line    $PLUGINSDIR$/check_wrapper.sh $PLUGINSDIR$/check_tcp -H $HOSTADDRESS$ -p $ARG1$ $ARG2$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh $PLUGINSDIR$/check_tcp -H $HOSTADDRESS$ -p $ARG1$ $ARG2$
 }
 
 define command{
   command_name    check_checkpoint_time
-  command_line    $PLUGINSDIR$/check_wrapper.sh php $PLUGINSDIR$/check_checkpoint_time.php -h "$ARG1$" -p $ARG2$ -w $ARG3$ -c $ARG4$ -d $ARG5$ -x $ARG6$ -e $ARG7$ -k $ARG8$ -r $ARG9$ -t $ARG10$ -u $ARG11$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh php $PLUGINSDIR$/check_checkpoint_time.php -h "$ARG1$" -p $ARG2$ -w $ARG3$ -c $ARG4$ -d $ARG5$ -x $ARG6$ -e $ARG7$ -k $ARG8$ -r $ARG9$ -t $ARG10$ -u $ARG11$
 }
 
 define command{
   command_name    check_tcp_wrapper_sasl
-  command_line    $PLUGINSDIR$/check_wrapper.sh $PLUGINSDIR$/check_tcp -H $HOSTADDRESS$ -p $ARG1$ $ARG2$ -s \"$ARG3$\"
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh $PLUGINSDIR$/check_tcp -H $HOSTADDRESS$ -p $ARG1$ $ARG2$ -s \"$ARG3$\"
 }
 
 define command{
   command_name    check_ambari
-  command_line    $PLUGINSDIR$/check_wrapper.sh /var/lib/ambari-agent/ambari-python-wrap $PLUGINSDIR$/check_ambari_alerts.py -H $HOSTADDRESS$ -f $ARG1$ -n $ARG2$
+  command_line    docker exec poller-unprivileged-executor ./check_wrapper.sh /var/lib/ambari-agent/ambari-python-wrap $PLUGINSDIR$/check_ambari_alerts.py -H $HOSTADDRESS$ -f $ARG1$ -n $ARG2$
 }
 ## User/ryba-defined commands
 {% for name, command in commands %}

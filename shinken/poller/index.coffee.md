@@ -25,10 +25,15 @@ is approximatively 1000 checks/s
       require('../').configure ctx
       {shinken} = ctx.config.ryba
       poller = shinken.poller ?= {}
-      # Kerberos
-      poller.krb5_user ?= {}
-      poller.krb5_user.principal ?= "#{shinken.user.name}/#{ctx.config.host}@#{ctx.config.ryba.realm}"
-      poller.krb5_user.keytab ?= "/etc/security/keytabs/shinken-poller.service.keytab"
+      # Executor
+      poller.executor ?= {}
+      poller.executor.krb5 ?= {}
+      # poller.executor.krb5.privileged ?= {}
+      # poller.executor.krb5.privileged.principal ?= "#{shinken.user.name}_admin/#{ctx.config.host}@#{ctx.config.ryba.realm}"
+      # poller.executor.krb5.privileged.keytab ?= "/etc/security/keytabs/shinken-poller.privileged.keytab"
+      poller.executor.krb5.unprivileged ?= {}
+      poller.executor.krb5.unprivileged.principal ?= "#{shinken.user.name}/#{ctx.config.host}@#{ctx.config.ryba.realm}"
+      poller.executor.krb5.unprivileged.keytab ?= "/etc/security/keytabs/shinken-poller.unprivileged.keytab"
       # Python modules to install
       poller.python_modules ?= {}
       poller.python_modules.requests ?= {}
@@ -71,3 +76,5 @@ is approximatively 1000 checks/s
     module.exports.push commands: 'status', modules: 'ryba/shinken/poller/status'
 
     module.exports.push commands: 'stop', modules: 'ryba/shinken/poller/stop'
+
+    module.exports.push commands: 'prepare', modules: 'ryba/shinken/poller/prepare'

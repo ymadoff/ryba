@@ -28,7 +28,7 @@ RUN curl -L http://cpanmin.us | perl - --sudo App::cpanminus
 WORKDIR /opt
 # Downloading harisekhon nagios-plugins
 RUN git clone https://github.com/pierrotws/shinken-plugins
-WORKDIR /opt/nagios-plugins
+WORKDIR /opt/shinken-plugins
 RUN git submodule init
 RUN git submodule update
 # If ssl doesn't work with self-signed CA, please uncomment following lines
@@ -38,4 +38,9 @@ RUN touch .use_net_ssl
 RUN make
 RUN sed -i 's/use strict;/use Socket;\nuse strict;/' /usr/local/lib64/perl5/NetAddr/IP/InetBase.pm
 RUN cpan Module::Socket6
+# SSL insecure
 ENV PERL_LWP_SSL_VERIFY_HOSTNAME 0
+# Install CRON
+RUN yum install -y cronie
+RUN echo '0 */9 * * * /usr/bin/kinit $KRB5_PRINCIPAL /etc/security/keytabs/crond.keytab' > /etc/cron.d/1keytab
+CMD crond -n

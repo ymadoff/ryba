@@ -115,19 +115,45 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Kerberos
 
-    module.exports.push header: 'Shinken Poller # Kerberos', skip: true, handler: ->
+    module.exports.push header: 'Shinken Poller Executor # Kerberos', handler: ->
       {shinken, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
-        principal: shinken.poller.krb5_user.principal
+        principal: shinken.poller.executor.krb5.unprivileged.principal
         randkey: true
-        keytab: shinken.poller.krb5_user.keytab
-        uid: shinken.user.name
-        gid: shinken.group.name
+        keytab: shinken.poller.executor.krb5.unprivileged.keytab
         mode: 0o600
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
+      # @krb5_addprinc
+      #   principal: shinken.poller.executor.krb5.privileged.principal
+      #   randkey: true
+      #   keytab: shinken.poller.executor.krb5.privileged.keytab
+      #   mode: 0o600
+      #   kadmin_principal: kadmin_principal
+      #   kadmin_password: kadmin_password
+      #   kadmin_server: admin_server
+
+    module.exports.push header: 'Shinken Poller Executor # Docker', handler: ->
+      {shinken} = @config.ryba
+      @upload
+        source: "#{@config.mecano.cache_dir or '.'}/shinken-poller-executor.tar"
+        destination: '/var/lib/docker_images/shinken-poller-executor.tar'
+      @docker_load
+        source: '/var/lib/docker_images/shinken-poller-executor.tar'
+      @docker_run
+        name: 'poller-unprivileged-executor'
+        image: 'ryba/shinken-poller-executor'
+        env: "KRB5_PRINCIPAL=#{shinken.poller.executor.krb5.unprivileged.principal}"
+        volume: "#{shinken.poller.executor.krb5.unprivileged.keytab}:/etc/security/keytabs/crond.keytab"
+        service: true
+      # @docker_run
+      #   name: 'poller-privileged-executor'
+      #   image: 'ryba/shinken-poller-executor'
+      #   env: "KRB5_PRINCIPAL=#{shinken.poller.executor.krb5.privileged.principal}"
+      #   volume: "#{shinken.poller.executor.krb5.privileged.keytab}:/etc/security/keytabs/crond.keytab"
+      #   service: true
 
 ## Dependencies
 
