@@ -1,29 +1,32 @@
 {% for name, contact in contacts %}
 define contact{
   contact_name                  {{ name }}
-  alias                         {{ contact.alias }}{% if not contact.contactgroups | isEmpty %}
+  name                          {{ name }}
+  alias                         {{ contact.alias }}{% if not contact.use | isEmpty %}
+  use                           {{ contact.use }}{% endif %}{% if not contact.contactgroups | isEmpty %}
   contactgroups                 {{ contact.contactgroups | join(',') }}{% endif %}{% if not contact.password | isEmpty %}
-  password                      {{ contact.password }}{% endif %}
-  host_notifications_enabled    {{ contact.host_notifications_enabled }}
-  service_notifications_enabled {{ contact.service_notifications_enabled }}
-  host_notifications_period     {{ contact.host_notifications_period }}
-  service_notifications_period  {{ contact.service_notifications_period }}
-  host_notifications_options    {{ contact.host_notifications_options }}
-  service_notifications_options {{ contact.service_notifications_options }}
-  host_notifications_command    {{ contact.host_notifications_command }}
-  service_notifications_command {{ contact.service_notifications_command }}{% if contact.email %}
-  email                         {{ contact.email }}{% endif %}{% if contact.pager %}
-  pager                         {{ contact.pager }}{% endif %}{% if contact.address1 %}
-  address1                      {{ contact.address1 }}{% endif %}{% if contact.address2 %}
-  address2                      {{ contact.address2 }}{% endif %}{% if contact.address3 %}
-  address3                      {{ contact.address3 }}{% endif %}{% if contact.address4 %}
-  address4                      {{ contact.address4 }}{% endif %}{% if contact.address5 %}
-  address5                      {{ contact.address5 }}{% endif %}{% if contact.address6 %}
-  address6                      {{ contact.address6 }}{% endif %}{% if contact.can_submit_commands %}
-  can_submit_commands           {{ contact.can_submit_commands }}{% endif %}{% if contact.is_admin %}
-  is_admin                      {{ contact.is_admin }}{% endif %}{% if contact.retain_status_information %}
-  retain_status_information     {{ contact.retain_status_information }}{% endif %}{% if contact.retain_nonstatus_information %}
-  retain_nonstatus_information  {{ contact.retain_nonstatus_information }}{% endif %}{% if contact.min_business_impact %}
-  min_business_impact           {{ contact.min_business_impact }}{% endif %}
+  password                      {{ contact.password }}{% endif %}{% if not contact.host_notifications_enabled | isEmpty %}
+  host_notifications_enabled    {{ contact.host_notifications_enabled }}{% endif %}{% if not contact.service_notifications_enabled | isEmpty %}
+  service_notifications_enabled {{ contact.service_notifications_enabled }}{% endif %}{% if not contact.host_notification_period | isEmpty %}
+  host_notification_period      {{ contact.host_notification_period }}{% endif %}{% if not contact.service_notification_period | isEmpty %}
+  service_notification_period   {{ contact.service_notification_period }}{% endif %}{% if not contact.host_notification_options | isEmpty %}
+  host_notification_options     {{ contact.host_notification_options }}{% endif %}{% if not contact.service_notification_options | isEmpty %}
+  service_notification_options  {{ contact.service_notification_options }}{% endif %}{% if not contact.host_notification_commands | isEmpty %}
+  host_notification_commands    {{ contact.host_notification_commands }}{% endif %}{% if not contact.service_notification_commands | isEmpty %}
+  service_notification_commands {{ contact.service_notification_commands }}{% endif %}{% if not contact.email | isEmpty %}
+  email                         {{ contact.email }}{% endif %}{% if not contact.pager | isEmpty %}
+  pager                         {{ contact.pager }}{% endif %}{% if not contact.address1 | isEmpty %}
+  address1                      {{ contact.address1 }}{% endif %}{% if not contact.address2 | isEmpty %}
+  address2                      {{ contact.address2 }}{% endif %}{% if not contact.address3 | isEmpty %}
+  address3                      {{ contact.address3 }}{% endif %}{% if not contact.address4 | isEmpty %}
+  address4                      {{ contact.address4 }}{% endif %}{% if not contact.address5 | isEmpty %}
+  address5                      {{ contact.address5 }}{% endif %}{% if not contact.address6 | isEmpty %}
+  address6                      {{ contact.address6 }}{% endif %}{% if not contact.can_submit_commands | isEmpty %}
+  can_submit_commands           {{ contact.can_submit_commands }}{% endif %}{% if not contact.is_admin | isEmpty %}
+  is_admin                      {{ contact.is_admin }}{% endif %}{% if not contact.retain_status_information | isEmpty %}
+  retain_status_information     {{ contact.retain_status_information }}{% endif %}{% if not contact.retain_nonstatus_information | isEmpty %}
+  retain_nonstatus_information  {{ contact.retain_nonstatus_information }}{% endif %}{% if not contact.min_business_impact | isEmpty %}
+  min_business_impact           {{ contact.min_business_impact }}{% endif %}{% if not contact.register | isEmpty %}
+  register                      {{ contact.register }}{% endif %}
 }
 {% endfor %}
