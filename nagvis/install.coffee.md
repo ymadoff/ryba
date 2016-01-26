@@ -16,20 +16,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push header: 'NagVis # IPTables', handler: ->
       {nagvis} = @config.ryba
-      #rules = [{ chain: 'INPUT', jump: 'ACCEPT', dport: broker.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Broker" }]
-      #for name, mod of broker.modules
-      #  if mod.config?.port?
-      #    rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: mod.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Broker #{name}" }
-      #@iptables
-      #  rules: rules
-      #  if: @config.iptables.action is 'start'
-
-## Users & Groups
-
-    module.exports.push header: 'NagVis # Users & Groups', handler: ->
-      {nagvis} = @config.ryba
-      @group nagvis.group
-      @user nagvis.user
+      rules = [{ chain: 'INPUT', jump: 'ACCEPT', dport: nagvis.port, protocol: 'tcp', state: 'NEW', comment: "NagVis" }]
+      @iptables
+       rules: rules
+       if: @config.iptables.action is 'start'
 
 ## Packages
 
@@ -60,8 +50,9 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         unless_exists: "#{nagvis.install_dir}/COPYING"
       @execute
         cmd: """
-        /tmp/nagvis-#{nagvis.version}/install.sh -n #{shinken.user.home} -p #{nagvis.install_dir} \
-        -l 'tcp:127.0.0.1:50000' -b mklivestatus -u #{nagvis.user.name} -g #{nagvis.group.name} -w /etc/httpd/conf.d -a y
+        cd /tmp/nagvis-#{nagvis.version}
+        ./install.sh -n #{shinken.user.home} -p #{nagvis.install_dir} \
+        -l 'tcp:127.0.0.1:#{nagvis.port}' -b mklivestatus -u apache -g apache -w /etc/httpd/conf.d -a y -q
         """
         unless_exists: "#{nagvis.install_dir}/COPYING"
       @remove destination: "/tmp/nagvis-#{nagvis.version}.tar.gz"
