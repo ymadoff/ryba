@@ -42,5 +42,5 @@ RUN cpan Module::Socket6
 ENV PERL_LWP_SSL_VERIFY_HOSTNAME 0
 # Install CRON
 RUN yum install -y cronie
-RUN echo '0 */9 * * * /usr/bin/kinit $KRB5_PRINCIPAL /etc/security/keytabs/crond.keytab' > /etc/cron.d/1keytab
+RUN echo '0 */9 * * * /usr/bin/kinit $KRB5_PRINCIPAL -kt /etc/security/keytabs/crond.keytab' > /etc/cron.d/1keytab
 CMD crond -n

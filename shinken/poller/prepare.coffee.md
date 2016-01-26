@@ -1,6 +1,8 @@
 
 # Poller Executor Build
 
+    module.exports = []
+
     module.exports.push header: 'Shinken Poller Executor # Build Prepare', timeout: -1,  handler: ->
       {poller} = @config.ryba.shinken
       @docker_build

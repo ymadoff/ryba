@@ -4,6 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/yum'
+    module.exports.push 'masson/core/krb5_client'
     module.exports.push 'ryba/shinken'
 
 ## IPTables
@@ -135,18 +136,22 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       #   kadmin_password: kadmin_password
       #   kadmin_server: admin_server
 
-    module.exports.push header: 'Shinken Poller Executor # Docker', handler: ->
+    module.exports.push header: 'Shinken Poller Executor # Docker', timeout: -1, handler: ->
       {shinken} = @config.ryba
       @upload
         source: "#{@config.mecano.cache_dir or '.'}/shinken-poller-executor.tar"
         destination: '/var/lib/docker_images/shinken-poller-executor.tar'
+        binary: true
       @docker_load
         source: '/var/lib/docker_images/shinken-poller-executor.tar'
       @docker_run
         name: 'poller-unprivileged-executor'
         image: 'ryba/shinken-poller-executor'
         env: "KRB5_PRINCIPAL=#{shinken.poller.executor.krb5.unprivileged.principal}"
-        volume: "#{shinken.poller.executor.krb5.unprivileged.keytab}:/etc/security/keytabs/crond.keytab"
+        volume: [
+          "/etc/krb5.conf:/etc/krb5.conf"
+          "#{shinken.poller.executor.krb5.unprivileged.keytab}:/etc/security/keytabs/crond.keytab"
+        ]
         service: true
       # @docker_run
       #   name: 'poller-privileged-executor'
