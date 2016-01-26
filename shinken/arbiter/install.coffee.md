@@ -80,6 +80,7 @@ Conflicts can appear.
       @remove destination: '/etc/shinken/contacts/nagiosadmin.cfg'
       @remove destination: '/etc/shinken/services/linux_disks.cfg'
       @remove destination: '/etc/shinken/hosts/localhost.cfg'
+      @remove destination: '/etc/shinken/templates/templates.cfg'
       #TODO remove default modules conf with a non predictive name
       #@remove destination: '/etc/shinken/modules/TODO'
 
@@ -136,20 +137,38 @@ Objects config, except services
 
     module.exports.push header: 'Shinken Arbiter # Objects Config', handler: ->
       {shinken} = @config.ryba
-      for obj in ['commands', 'contactgroups', 'contacts', 'hostgroups', 'hosts', 'servicegroups', 'realms', 'dependencies', 'escalations', 'timeperiods']
+      # Un-templated objects
+      for obj in ['hostgroups', 'servicegroups', 'contactgroups', 'commands', 'realms', 'dependencies', 'escalations', 'timeperiods']
         @render
           destination: "/etc/shinken/#{obj}/#{obj}.cfg"
           source: "#{__dirname}/resources/#{obj}.cfg.j2"
           local_source: true
           context: "#{obj}": shinken.config[obj]
+      # Templated objects
+      for obj in ['hosts', 'services', 'contacts']
+        real = {}
+        templated = {}
+        for k, v of shinken.config[obj]
+          if parseInt(v.register) is 0 then templated[k] = v
+          else real[k] = v
+        @render
+          destination: "/etc/shinken/templates/#{obj}.cfg"
+          source: "#{__dirname}/resources/#{obj}.cfg.j2"
+          local_source: true
+          context: "#{obj}": templated
+        @render
+          destination: "/etc/shinken/#{obj}/#{obj}.cfg"
+          source: "#{__dirname}/resources/#{obj}.cfg.j2"
+          local_source: true
+          context: "#{obj}": real
 
 ### Services Config
 
     module.exports.push header: 'Shinken Arbiter # Services Config', handler: ->
       {shinken} = @config.ryba
       @render
-        destination: "/etc/shinken/services/services.cfg"
-        source: "#{__dirname}/resources/services.cfg.j2"
+        destination: "/etc/shinken/services/hadoop-services.cfg"
+        source: "#{__dirname}/resources/hadoop-services.cfg.j2"
         local_source: true
         context: shinken.exports
 
