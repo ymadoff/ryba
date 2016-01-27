@@ -147,7 +147,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @docker_run
         name: 'poller-unprivileged-executor'
         image: 'ryba/shinken-poller-executor'
-        env: "KRB5_PRINCIPAL=#{shinken.poller.executor.krb5.unprivileged.principal}"
+        env: [
+          "PERL_LWP_SSL_VERIFY_HOSTNAME=0"
+          "KRB5_PRINCIPAL=#{shinken.poller.executor.krb5.unprivileged.principal}"
+        ]
         volume: [
           "/etc/krb5.conf:/etc/krb5.conf"
           "#{shinken.poller.executor.krb5.unprivileged.keytab}:/etc/security/keytabs/crond.keytab"

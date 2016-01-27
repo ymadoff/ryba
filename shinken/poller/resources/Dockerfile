@@ -14,9 +14,11 @@ RUN rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.n
 RUN yum clean all && yum swap fakesystemd systemd
 RUN yum -y update
 # Install additionnal tools
-RUN yum -y install sudo krb5-workstation wget libev libev-devel jwhois
+RUN yum -y install sudo krb5-workstation wget libev libev-devel jwhois cronie
 # Install dev tools
 RUN yum -y install git gcc gcc-c++ make snappy-devel openssl-devel expat-devel cyrus-sasl-devel mysql-devel
+# Install php
+RUN yum -y install php
 # Install PERL
 RUN yum -y install perl perl-devel perl-CPAN perl-libwww-perl perl-DBD-MySQL
 # Install python
@@ -26,7 +28,7 @@ RUN sed -i 's/Defaults.*requiretty/# Defaults requiretty/g' /etc/sudoers
 # Install CPANM
 RUN curl -L http://cpanmin.us | perl - --sudo App::cpanminus
 WORKDIR /opt
-# Downloading harisekhon nagios-plugins
+# Downloading shinken-plugins
 RUN git clone https://github.com/pierrotws/shinken-plugins
 WORKDIR /opt/shinken-plugins
 RUN git submodule init
@@ -38,9 +40,6 @@ RUN touch .use_net_ssl
 RUN make
 RUN sed -i 's/use strict;/use Socket;\nuse strict;/' /usr/local/lib64/perl5/NetAddr/IP/InetBase.pm
 RUN cpan Module::Socket6
-# SSL insecure
-ENV PERL_LWP_SSL_VERIFY_HOSTNAME 0
 # Install CRON
-RUN yum install -y cronie
 RUN echo '0 */9 * * * /usr/bin/kinit $KRB5_PRINCIPAL -kt /etc/security/keytabs/crond.keytab' > /etc/cron.d/1keytab
 CMD crond -n
