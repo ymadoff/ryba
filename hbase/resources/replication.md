@@ -1,23 +1,27 @@
 # HBase Cluster Replication Strategy
 
 Apache HBase provide replication feature to copy data between different HBase
-Clusters. It can be used to recover data after disaster, or to increase HBase availability.
+Clusters. It can be used to recover data after a natural disaster, or to increase HBase availability.
 
-How it works ?
+Master:
+Slave: The HBase cluster where data are copied to.
 
-Each HBase region server 
+## Types of Replication
 
-Three strategies are available to deploy HBase replication:
+Three architectures are available to deploy HBase replication:
 - Master-Slave
 - Master-Master
 - Cyclic
 
-Definition
-
-Master: HBase cluster whose data are from
-Slave: HBase cluster where data are copied to
-
+In thoses architecture Master designates the HBase cluster whose data are from (source) and
+Slave designates the HBase cluster where data are copied to (destination).
 
 ## Master Slave Replication
 
-In a Master- Slave configuration, the data are copied from the master HBAse
+In a Master- Slave configuration, the data are copied from the master cluster to the slave cluster.
+The relation is uni-directional.
+It makes available the master's cluster data on the slave cluster, in case the master cluster is not online.
+Whoever the data are only available on reading, no writing is possible.
+
+## Master Master Replication
+if
