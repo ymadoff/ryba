@@ -57,6 +57,10 @@ They must have register set to 0 to not be instanciated
         hosts['linux-server'].use ?= 'generic-host'
         hosts['linux-server'].check_interval ?= '5'
         hosts['linux-server'].register = '0'
+        hosts['aggregates'] ?= {}
+        hosts['aggregates'].use ?= 'generic-host'
+        hosts['aggregates'].check_command ?= 'ok'
+        hosts['aggregates'].register = '0'
         # Services
         services['generic-service'] ?= {}
         services['generic-service'].use ?= ''
@@ -219,6 +223,12 @@ For now masson modules are not available.
           hostgroups[name].hostgroup_members ?= []
           hostgroups[name].hostgroup_members = [hostgroups[name].hostgroup_members] unless Array.isArray hostgroups[name].hostgroup_members
           hostgroups.by_topology.hostgroup_members.push name unless name in hostgroups.by_topology.hostgroup_members
+          hostgroups[name].members.push "#{name}_aggregates"
+          hosts["#{name}_aggregates"] ?= {}
+          hosts["#{name}_aggregates"].ip = '0.0.0.0'
+          hosts["#{name}_aggregates"].alias = "#{name} Aggregates"
+          hosts["#{name}_aggregates"].hostgroups = []
+          hosts["#{name}_aggregates"].use = 'aggregates'
           for hostname, srv of servers
             hostgroups[name].members.push hostname
             hosts[hostname] ?= {}

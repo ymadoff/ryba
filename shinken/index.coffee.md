@@ -30,6 +30,7 @@ Example
     module.exports.configure = (ctx) ->
       shinken = ctx.config.ryba.shinken ?= {}
       shinken.log_dir = '/var/log/shinken'
+      shinken.plugin_dir ?= '/usr/lib64/nagios/plugins'
       # User
       shinken.user = name: shinken.user if typeof shinken.user is 'string'
       shinken.user ?= {}
@@ -38,7 +39,7 @@ Example
       shinken.user.comment ?= 'Nagios/Shinken User'
       shinken.user.home ?= '/var/lib/shinken'
       shinken.user.shell ?= '/bin/sh'
-      shinken.plugin_dir ?= '/usr/lib64/nagios/plugins'
+      shinken.user.groups ?= ['docker']
       # Groups
       shinken.group = name: shinken.group if typeof shinken.group is 'string'
       shinken.group ?= {}

@@ -153,6 +153,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ]
         volume: [
           "/etc/krb5.conf:/etc/krb5.conf"
+          "/usr/lib64/nagios/plugins:/usr/lib64/nagios/plugins"
           "#{shinken.poller.executor.krb5.unprivileged.keytab}:/etc/security/keytabs/crond.keytab"
         ]
         service: true
