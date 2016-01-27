@@ -5,6 +5,7 @@
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/yum'
     module.exports.push 'ryba/mongodb'
+    module.exports.push 'ryba/shinken'
 
 ## IPTables
 

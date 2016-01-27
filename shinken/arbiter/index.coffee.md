@@ -7,7 +7,6 @@ failovers if an error is detected. Can route check result events from a Receiver
 to its associated Scheduler. Host the WebUI.
 
     module.exports = []
-    module.exports.push 'ryba/shinken'
 
 ## Configure
 

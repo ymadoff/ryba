@@ -17,7 +17,6 @@ is approximatively 1000 checks/s
 ## Dependencies
 
     module.exports = []
-    module.exports.push 'ryba/shinken'
 
 ## Configure
 
