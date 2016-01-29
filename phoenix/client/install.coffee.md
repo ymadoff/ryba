@@ -13,6 +13,7 @@ deployment is heavily inspired by [Anil Gupta instruction][agi].
     # module.exports.push require('../../hbase/client').configure
     # module.exports.push require('./index').configure
     module.exports.push 'ryba/lib/hconfigure'
+    module.exports.push 'ryba/lib/write_jaas'
     module.exports.push 'ryba/lib/hdp_select'
 
 ## Packages
@@ -44,15 +45,10 @@ for its instructions.
 
     module.exports.push header: 'Phoenix Client # Kerberos', handler: ->
       {hadoop_conf_dir, hbase, phoenix} = @config.ryba
-      @write
+      @write_jaas
         destination: "#{phoenix.conf_dir}/phoenix-client.jaas"
-        content: """
-        Client {
-          com.sun.security.auth.module.Krb5LoginModule required
-          useKeyTab=false
-          useTicketCache=true;
-        };
-        """
+        content: Client:
+          useTicketCache: 'true'
       @write
         destination: '/usr/hdp/current/phoenix-client/bin/psql.py'
         write: [
