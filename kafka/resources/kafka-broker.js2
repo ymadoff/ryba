@@ -1,0 +1,129 @@
+#! /bin/bash
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# This file is used to run multiple instances of certain HBase daemons using init scripts.
+# It replaces the local-regionserver.sh and local-master.sh scripts for Bigtop packages.
+# By default, this script runs a single daemon normally. If offsets are provided, additional
+# daemons are run, identified by the offset in log and pid files, and listening on the default
+# port + the offset. Offsets can be provided as arguments when invoking init scripts directly:
+#
+#     /etc/init.d/kafka-broker start 1 2 3 4
+#
+# or you can list the offsets to run in /etc/init.d/regionserver_offsets:
+#
+#    echo "regionserver_OFFSETS='1 2 3 4' >> /etc/default/hbase"
+#    sudo service hbase-$HBASE_DAEMON@ start
+#
+# Offsets specified on the command-line always override the offsets file. If no offsets are
+# specified on the command-line when stopping or restarting daemons, all running instances of the
+# daemon are stopped (regardless of the contents of the offsets file).
+
+# chkconfig: 345 87 13
+# description: Summary: HBase is the Hadoop database. Use it when you need random, realtime read/write access to your Big Data. This project's goal is the hosting of very large tables -- billions of rows X millions of columns -- atop clusters of commodity hardware.
+# processname: HBase
+#
+### BEGIN INIT INFO
+# Provides:          kafka-broker
+# Required-Start:    $network $local_fs $remote_fs
+# Required-Stop:     $remote_fs
+# Should-Start:      $named
+# Should-Stop:
+# Default-Start:     3 4 5
+# Default-Stop:      0 1 2 6
+# Short-Description: Hadoop HBase regionserver daemon
+### END INIT INFO
+
+NAME='Kafka Broker'
+USER={{ryba.kafka.user.name}}
+CONF_DIR={{ryba.kafka.broker.conf_dir}}
+PID_FILE='/var/run/kafka/kafka.pid'
+CMD="su - $USER -c \"/usr/hdp/current/kafka-broker/bin/kafka start\""
+KILL_FORCE=0
+KILL_SLEEP=10
+
+function start {
+  if [ -f $PID_FILE ]; then
+    pid=`cat $PID_FILE`
+    if kill -0 $pid >/dev/null 2>&1 $pid; then
+       echo "$NAME already running [$pid]"
+       exit 0
+    else
+      rm -rf $PID_FILE
+    fi
+  fi
+  eval $CMD
+  echo "$NAME running [`cat $PID_FILE`]"
+}
+
+function stop {
+  if [ ! -f $PID_FILE ]; then
+    echo "$NAME already stopped"
+    return
+  fi
+  pid=$(<$PID_FILE)
+  kill $pid 2>/dev/null
+  i=0
+  while kill -0 $pid 2>dev/null && [ $i -lt $KILL_SLEEP ]; do
+    (( i++ ))
+    sleep 1
+  done
+  if ! kill -0 $pid 2>dev/null; then
+    rm $PID_FILE || true
+    echo "$NAME stopped"
+    return
+  fi
+  force_stop
+}
+
+function force_stop {
+  pid=$(<$PID_FILE)
+  kill -9 $pid 2>/dev/null
+  sleep 1
+  if kill -0 $pid; then
+    echo "$NAME failed to stop"
+    exit 1
+  fi
+  rm $PID_FILE
+  echo "$NAME forced stopped after ${KILL_SLEEP}s"
+}
+
+function status {
+  if [ -f $PID_FILE ]; then
+    pid=`cat $PID_FILE`
+    if kill -0 >/dev/null 2>&1 $pid; then
+       echo "$NAME started [$pid]"
+       exit 0
+    fi
+  fi
+  echo "$NAME stopped"
+  exit 3
+}
+
+if [[ $1 == "start" ]]; then
+  start "$@"
+elif [[ $1 == "stop" ]]; then
+  stop "$@"
+elif [[ $1 == "restart" ]]; then
+  stop "$@"
+  sleep 1
+  start "$@"
+elif [[ $1 == "status" ]]; then
+  status "$@"
+else
+  N=/etc/init.d/$NAME
+  echo "Usage: $N {start|stop|restart|status}" >&2
+fi

@@ -7,16 +7,18 @@
 
 ## Check Messages
 
-Make sure the broker is listening. The default port is "9092".
+Check Message by writing to a test topic on the PLAINTEXT channel.
 
     module.exports.push
-      header: 'Kafka Consumer # Check Messages'
+      header: 'Kafka Consumer # Check PLAINTEXT'
       label_true: 'CHECKED'
       if: -> @has_module 'ryba/kafka/producer'
       handler: ->
+        ks_ctxs = @contexts 'ryba/kafka/broker'
+        return if ks_ctxs[0].config.ryba.kafka.broker.protocols.indexOf('PLAINTEXT') == -1
         {kafka} = @config.ryba
-        brokers = @contexts('ryba/kafka/broker').map( (ctx) => #, require('../broker').configure
-          "#{ctx.config.host}:#{ctx.config.ryba.kafka.broker.config['port']}"
+        brokers = ks_ctxs.map( (ctx) => #, require('../broker').configure
+          "#{ctx.config.host}:#{ctx.config.ryba.kafka.ports['PLAINTEXT']}"
         ).join ','
         @execute
           cmd: """

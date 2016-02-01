@@ -4,6 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'ryba/lib/hdp_select'
+    module.exports.push 'ryba/lib/write_jaas'
 
 ## Users & Groups
 
@@ -41,7 +42,7 @@ Update the file "consumer.properties" with the properties defined by the
     module.exports.push header: 'Kafka Consumer # Configure', handler: ->
       {kafka} = @config.ryba
       @write
-        destination: "#{kafka.conf_dir}/consumer.properties"
+        destination: "#{kafka.consumer.conf_dir}/consumer.properties"
         write: for k, v of kafka.consumer.config
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
@@ -49,13 +50,51 @@ Update the file "consumer.properties" with the properties defined by the
         backup: true
         eof: true
       @write
-        destination: "#{kafka.conf_dir}/tools-log4j.properties"
+        destination: "#{kafka.consumer.conf_dir}/tools-log4j.properties"
         write: for k, v of kafka.consumer.log4j
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
           append: true
         backup: true
         eof: true
+
+## Kerberos
+
+    module.exports.push header: 'Kafka Consumer # Kerberos', handler: ->
+      {kafka} = @config.ryba
+      @write_jaas
+        destination: "#{kafka.consumer.conf_dir}/kafka-client.jaas"
+        content:
+          KafkaClient:
+            useTicketCache = true
+        uid: kafka.user.name
+        gid: kafka.group.name
+## Env
+
+ Exports JAAS configuration to consumer JVM properties.
+
+    module.exports.push header: 'Kafka Consumer # Env', handler: ->
+      {kafka} = @config.ryba
+      @write
+        destination: "#{kafka.consumer.conf_dir}/kafka-env.sh"
+        write: for k, v of kafka.consumer.env
+          match: RegExp "export #{k}=.*", 'm'
+          replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
+          append: true
+        backup: true
+        eof: true
+## SSL
+
+  Imports broker's CA to trustore
+
+    module.exports.push header: 'Kafka Consumer # SSL Client', handler: ->
+      {kafka, ssl} = @config.ryba
+      @java_keystore_add
+        keystore:   kafka.consumer.config['ssl.truststore.location']
+        storepass:   kafka.consumer.config['ssl.truststore.password']
+        caname: "hadoop_root_ca"
+        cacert: "#{ssl.cacert}"
+        local_source: true
 
 ## Dependencies
 

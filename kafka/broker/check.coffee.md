@@ -11,5 +11,6 @@ Make sure the broker is listening. The default port is "9092".
 
     module.exports.push header: 'Kafka Broker # Check TCP', label_true: 'CHECKED', handler: ->
       {kafka} = @config.ryba
-      @execute
-        cmd: "echo > /dev/tcp/#{@config.host}/#{kafka.broker.config['port']}"
+      for protocol in kafka.broker.protocols
+        @execute
+          cmd: "echo > /dev/tcp/#{@config.host}/#{kafka.ports[protocol]}"
