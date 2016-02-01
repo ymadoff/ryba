@@ -47,7 +47,7 @@ log. It is fast, scalable, durable and distributed by design.
 ## Kerberos
 
       kafka.producer.env ?= {}
-      kafka.producer.env['KAFKA_KERBEROS_PARAMS'] ?= "-Djava.security.auth.login.config=#{kafka.conf_dir}/kafka-client.jaas"
+      kafka.producer.env['KAFKA_KERBEROS_PARAMS'] ?= "-Djava.security.auth.login.config=#{kafka.producer.conf_dir}/kafka-client.jaas"
 
     module.exports.push commands: 'check', modules: 'ryba/kafka/producer/check'
 

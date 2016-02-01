@@ -67,7 +67,9 @@ Update the file "server.properties" with the properties defined by the
         destination: "#{kafka.producer.conf_dir}/kafka-client.jaas"
         content:
           KafkaClient:
-            useTicketCache=true
+            useTicketCache: 'true'
+          Client:
+            useTicketCache: 'true'
         uid: kafka.user.name
         gid: kafka.group.name
 
