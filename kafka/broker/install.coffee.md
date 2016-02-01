@@ -37,13 +37,32 @@ kafka:x:496:kafka
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push header: 'Kafka Broker # IPTables', handler: ->
-      {kafka} = @config.ryba
-      @iptables
-        rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: kafka.broker.config['port'], protocol: 'tcp', state: 'NEW', comment: "Kafka Broker" }
-        ]
-        if: @config.iptables.action is 'start'
+    module.exports.push
+      header: 'Kafka Broker # IPTables',
+      handler: ->
+        {kafka} = @config.ryba
+        return unless @config.iptables.action is 'start'
+        @iptables
+          if: kafka.broker.protocols.indexOf('PLAINTEXT') != -1
+          rules: [
+            { chain: 'INPUT', jump: 'ACCEPT', dport: kafka.ports['PLAINTEXT'], protocol: 'tcp', state: 'NEW', comment: "Kafka Broker PLAINTEXT" }
+          ]
+        @iptables
+          if: kafka.broker.protocols.indexOf('SASL_PLAINTEXT') != -1
+          rules: [
+            { chain: 'INPUT', jump: 'ACCEPT', dport: kafka.ports['SASL_PLAINTEXT'], protocol: 'tcp', state: 'NEW', comment: "Kafka Broker SASL_PLAINTEXT" }
+          ]
+        @iptables
+          if: kafka.broker.protocols.indexOf('SSL') != -1
+          rules: [
+            { chain: 'INPUT', jump: 'ACCEPT', dport: kafka.ports['SSL'], protocol: 'tcp', state: 'NEW', comment: "Kafka Broker SSL" }
+          ]
+        @iptables
+          if: kafka.broker.protocols.indexOf('SASL_SSL') != -1
+          rules: [
+            { chain: 'INPUT', jump: 'ACCEPT', dport: kafka.ports['SASL_SSL'], protocol: 'tcp', state: 'NEW', comment: "Kafka Broker SASL_SSL" }
+          ]
+
 
 ## Package
 
