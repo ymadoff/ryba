@@ -375,9 +375,9 @@
 		<property>
       <name>yarn.nodemanager.resource.percentage-physical-cpu-limit</name>
       <value>TODO-CALCULATE-MEMORY-SETTINGS</value>
-    -->
-    </property>
 
+    </property>
+    -->
     <!-- Memory/CPU settings end -->
 
     <property>
