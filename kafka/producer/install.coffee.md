@@ -39,11 +39,19 @@ directories.
 Update the file "server.properties" with the properties defined by the
 "ryba.kafka.server" configuration.
 
-    module.exports.push header: 'Kafka Producer # Configure', handler: (options, next) ->
+    module.exports.push header: 'Kafka Producer # Configure', handler:  ->
       {kafka} = @config.ryba
       @write
         destination: "#{kafka.producer.conf_dir}/producer.properties"
         write: for k, v of kafka.producer.config
+          match: RegExp "^#{quote k}=.*$", 'mg'
+          replace: "#{k}=#{v}"
+          append: true
+        backup: true
+        eof: true
+      @write
+        destination: "#{kafka.consumer.conf_dir}/log4j.properties"
+        write: for k, v of kafka.consumer.log4j
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
           append: true
@@ -57,7 +65,7 @@ Update the file "server.properties" with the properties defined by the
           append: true
         backup: true
         eof: true
-      @then next
+
 
 ## Kerberos
 
@@ -67,9 +75,9 @@ Update the file "server.properties" with the properties defined by the
         destination: "#{kafka.producer.conf_dir}/kafka-client.jaas"
         content:
           KafkaClient:
-            useTicketCache: 'true'
+            useTicketCache: true
           Client:
-            useTicketCache: 'true'
+            useTicketCache: true
         uid: kafka.user.name
         gid: kafka.group.name
 
@@ -92,7 +100,7 @@ Update the file "server.properties" with the properties defined by the
 
   Imports broker's CA to trustore.
 
-    module.exports.push header: 'Kafka Consumer # SSL Client', handler: ->
+    module.exports.push header: 'Kafka Producer # SSL Client', handler: ->
       {kafka, ssl} = @config.ryba
       [ks_ctx] = @contexts 'ryba/kafka/broker'
       @java_keystore_add

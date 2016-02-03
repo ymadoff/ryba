@@ -19,3 +19,10 @@ exports.test = (ctx, cmd) ->
   # then "kinit -kt /etc/security/keytabs/test.headless.keytab test && {\n#{cmd}\n}"
   then "echo #{krb5_user.password} | kinit #{krb5_user.principal} >/dev/null && {\n#{cmd}\n}"
   else "su -l #{user.name} -c \"#{cmd}\""
+
+exports.kafka = (ctx, cmd) ->
+  {security, kafka, realm} = ctx.config.ryba
+  if security is 'kerberos'
+  then "echo '#{kafka.admin.password}' | kinit #{kafka.admin.principal} >/dev/null && {\n#{cmd}\n}"
+  else "su -l #{kafka.user.name} -c \"#{cmd}\""
+  # else "kinit -kt /etc/security/keytabs/hdfs.headless.keytab hdfs && {\n#{cmd}\n}"

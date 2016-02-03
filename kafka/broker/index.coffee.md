@@ -41,6 +41,11 @@ Example:
       zoo_ctxs = ctx.contexts 'ryba/zookeeper/server', require('../../zookeeper/server').configure
       zookeeper_quorum = for zoo_ctx in zoo_ctxs
         "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
+      kafka.admin ?= {}
+      kafka.admin.principal ?= kafka.user.name
+      kafka.admin.password ?= 'kafka123'
+      #list of kafka superusers
+      kafka.superusers ?= ["#{kafka.admin.principal}"]
 
 # Configuration
 
@@ -53,6 +58,7 @@ Example:
       kafka.broker.config['log.dirs'] = kafka.broker['log.dirs'].join ',' if Array.isArray kafka.broker['log.dirs']
       kafka.broker.config['zookeeper.connect'] ?= zookeeper_quorum
       kafka.broker.config['log.retention.hours'] ?= '168'
+      kafka.broker.config['super.users'] ?= kafka.superusers.map( (user) -> "User:#{user}").join(',')
       hosts = ctx.contexts('ryba/kafka/broker').map (ctx) -> ctx.config.host
       kafka.broker.config['num.partitions'] ?= hosts.length # Default number of log partitions per topic, default is "2"
       for host, i in hosts
@@ -82,7 +88,10 @@ Example:
 Sarting from 0.9, kafka broker supports multiple secured and un-secured protocols when
 broadcasting messages for broker/broker and client/broker communications.
 They are PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL.
-By default it is set to SASL_SSL. Needed protocols can be set to config:
+By default it set at least to SSL for broker/broker and client/broker.
+For broker/client communication all protocols are supported.
+For broker/broker communication we allow only SSL or SASL_SSL.
+Needed protocols can be set at cluster config level.
 
 Example only PLAINTEXT:
 {
@@ -139,29 +148,13 @@ Example PLAINTEXT and SSL:
 
 # Listeners Protocols
 
-      listeners = []
-      for protocol in kafka.broker.protocols
-        listeners.push "#{protocol}://#{@config.host}:#{kafka.ports[protocol]}"
-      kafka.broker.config['listeners'] = listeners.join(',')
+      kafka.broker.config['listeners'] ?= kafka.broker.protocols.map( (protocol) => 
+        "#{protocol}://#{@config.host}:#{kafka.ports[protocol]}").join(',')
 
 # Brokers internal communication
 
-      protocols = kafka.broker.protocols
-      ssl_enabled = if kafka.broker.config['ssl.keystore.location'] then true else false
-      sasl_enabled = if kafka.broker.kerberos then true else false
-      if protocols.length == 1
-        kafka.broker.config['security.inter.broker.protocol'] ?= protocols[0]
-      else
-        if sasl_enabled
-          kafka.broker.config['security.inter.broker.protocol'] ?= 'SASL_PLAINTEXT'
-          if ssl_enabled
-            kafka.broker.config['security.inter.broker.protocol'] = 'SASL_SSL'
-        else
-          if ssl_enabled
-            kafka.broker.config['security.inter.broker.protocol'] ?= 'SSL'
-          else
-            kafka.broker.config['security.inter.broker.protocol'] ?= 'PLAINTEXT'
-      kafka.broker.config['replication.security.protocol'] ?= kafka.broker.config['security.inter.broker.protocol']
+      kafka.broker.config['replication.security.protocol'] = if @config.ryba.security is 'kerberos' then 'SASL_SSL' else 'SSL'
+
 
     module.exports.push commands: 'check', modules: 'ryba/kafka/broker/check'
 
@@ -176,5 +169,6 @@ Example PLAINTEXT and SSL:
     module.exports.push commands: 'status', modules: 'ryba/kafka/broker/status'
 
     module.exports.push commands: 'stop', modules: 'ryba/kafka/broker/stop'
-#http://kafka.apache.org/documentation.html#security
-#https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.4/bk_Security_Guide/content/ch_wire-kafka.html
+
+[kafka-security]:(http://kafka.apache.org/documentation.html#security)
+[hdp-security-kafka]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.4/bk_Security_Guide/content/ch_wire-kafka.html)

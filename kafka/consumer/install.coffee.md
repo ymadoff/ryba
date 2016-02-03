@@ -57,6 +57,14 @@ Update the file "consumer.properties" with the properties defined by the
           append: true
         backup: true
         eof: true
+      @write
+        destination: "#{kafka.consumer.conf_dir}/log4j.properties"
+        write: for k, v of kafka.consumer.log4j
+          match: RegExp "^#{quote k}=.*$", 'mg'
+          replace: "#{k}=#{v}"
+          append: true
+        backup: true
+        eof: true
 
 ## Kerberos
 
@@ -66,9 +74,9 @@ Update the file "consumer.properties" with the properties defined by the
         destination: "#{kafka.consumer.conf_dir}/kafka-client.jaas"
         content:
           KafkaClient:
-            useTicketCache: 'true'
+            useTicketCache: true
           Client:
-            useTicketCache: 'true'
+            useTicketCache: true
         uid: kafka.user.name
         gid: kafka.group.name
 ## Env

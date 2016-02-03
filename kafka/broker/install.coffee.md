@@ -211,14 +211,23 @@ Replace KAFKA_BROKER_CMD kafka-broker conf directory path
         uid: kafka.user.name
         gid: kafka.group.name
 
+    module.exports.push header: 'Kafka Broker # Admin ', handler: ->
+      {kafka, realm} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      @krb5_addprinc
+        principal: kafka.admin.principal
+        password: kafka.admin.password
+        kadmin_principal: kadmin_principal
+        kadmin_password: kadmin_password
+        kadmin_server: admin_server
+
 # SSL Server
 
 Upload and register the SSL certificate and private key.
+SSL is enabled at least for inter broker communication
 
     module.exports.push header: 'Kafka Broker # SSL', handler: ->
       {kafka, ssl} = @config.ryba
-      protocols = kafka.broker.protocols
-      return unless protocols.indexOf 'SSL' > 0 or protocols.indexOf 'SASL_SSL' > 0
       @java_keystore_add
         keystore: kafka.broker.config['ssl.keystore.location']
         storepass: kafka.broker.config['ssl.keystore.password']

@@ -41,7 +41,6 @@ module.exports.push required: true, handler: ->
     return callback Error "Required option 'content'" unless options.content
     for type, properties of options.content
       # type = "#{type.charAt(0).toUpperCase()}#{type.slice 1}"
-      throw Error 'Invalid property type' unless type in ['Client', 'Server'] or options.no_entry_check
       content_jaas += "#{type} {\n"
       # Validation and Normalization
       throw Error 'Invalid keytab option' if properties.keyTab and typeof properties.keyTab isnt 'string'
