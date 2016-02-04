@@ -96,6 +96,15 @@ restrict it but not the thrift server.
         gid: hbase.group.name
         backup: true
 
+# User limits
+
+    module.exports.push header: 'HBase Thrift # Limits', handler: ->
+      {hbase} = @config.ryba
+      @system_limits
+        user: hbase.user.name
+        nofile: hbase.user.limits.nofile
+        nproc: hbase.user.limits.nproc
+
 ## Hbase-Thrift Service
 
     module.exports.push header: 'HBase Thrift # Service', handler: ->

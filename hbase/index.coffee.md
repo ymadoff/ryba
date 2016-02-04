@@ -55,6 +55,9 @@ Example
       hbase.user.comment ?= 'HBase User'
       hbase.user.home ?= '/var/run/hbase'
       hbase.user.groups ?= 'hadoop'
+      hbase.user.limits ?= {}
+      hbase.user.limits.nofile ?= 64000
+      hbase.user.limits.nproc ?= true
       hbase.admin ?= {}
       hbase.admin.name ?= hbase.user.name
       hbase.admin.principal ?= "#{hbase.admin.name}@#{realm}"

@@ -186,6 +186,14 @@ principal.
         @execute
           cmd: "su -l #{hbase.user.name} -c 'test -r /etc/security/keytabs/spnego.service.keytab'"
 
+# User limits
+
+      @call header: 'HBase Master # Limits', handler: ->
+        @system_limits
+          user: hbase.user.name
+          nofile: hbase.user.limits.nofile
+          nproc: hbase.user.limits.nproc
+
 # Dependencies
 
     path = require 'path'

@@ -83,3 +83,12 @@ restrict it but not the rest server.
         uid: hbase.user.name
         gid: hbase.group.name
         backup: true
+
+# User limits
+
+    module.exports.push header: 'HBase Rest # Limits', handler: ->
+      {hbase} = @config.ryba
+      @system_limits
+        user: hbase.user.name
+        nofile: hbase.user.limits.nofile
+        nproc: hbase.user.limits.nproc

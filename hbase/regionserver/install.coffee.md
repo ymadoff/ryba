@@ -134,6 +134,15 @@ Enable stats collection in Ganglia and Graphite
         content: hbase.metrics.config
         backup: true
 
+# User limits
+
+    module.exports.push header: 'HBase RegionServer # Limits', handler: ->
+      {hbase} = @config.ryba
+      @system_limits
+        user: hbase.user.name
+        nofile: hbase.user.limits.nofile
+        nproc: hbase.user.limits.nproc
+
 ## Start
 
 Execute the "ryba/hbase/regionserver/start" module to start the RegionServer.
