@@ -91,7 +91,7 @@ Update the "hive-site.xml" with the hive/server2 kerberos principal.
 
 Update the "hbase-site.xml" with the hbase/thrift kerberos principal.
 
-    module.exports.push header: 'Hue Docker # Hbase', handler: ->
+    module.exports.push header: 'Hue Docker # HBase', handler: ->
       [hbase_ctx] = @contexts 'ryba/hbase/thrift'
       if hbase_ctx?
         {hbase} = hbase_ctx.config.ryba
