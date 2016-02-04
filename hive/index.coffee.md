@@ -117,7 +117,7 @@ Instructions to [install the Hive and HCatalog RPMs](http://docs.hortonworks.com
       @service
         name: 'hive'
       @hdp_select
-        name: 'hive-webhcat' # HIVE_AUX_JARS_PATH fix
+        name: 'hive-webhcat'
 
 ## Environment
 
@@ -139,5 +139,5 @@ present on a fresh install.
           replace: "export JAVA_HOME=#{java_home}"
         ,
           match: /^export HIVE_AUX_JARS_PATH=.*$/m
-          replace: 'export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar,/usr/hdp/current/phoenix-client/phoenix-client.jar} # RYBA FIX'
+          replace: 'export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar:/usr/hdp/current/phoenix-client/phoenix-client.jar} # RYBA FIX'
         ]
