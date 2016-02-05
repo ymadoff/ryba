@@ -120,7 +120,7 @@ Example PLAINTEXT and SSL:
       kafka.ports['PLAINTEXT'] ?= '9092'
       kafka.ports['SSL'] ?= '9093'
       kafka.ports['SASL_PLAINTEXT'] ?= '9094'
-      kafka.ports['SASL_SSL'] ?= '9095'
+      kafka.ports['SASL_SSL'] ?= '9096'
 
 # Security SSL
 

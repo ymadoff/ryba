@@ -32,7 +32,7 @@ kafka:x:496:kafka
 | Kafka Broker | 9092  | http        | port               |
 | Kafka Broker | 9093  | https       | port               |
 | Kafka Broker | 9094  | sasl_http   | port               |
-| Kafka Broker | 9095  | sasl_https  | port               |
+| Kafka Broker | 9096  | sasl_https  | port               |
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
