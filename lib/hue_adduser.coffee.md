@@ -32,7 +32,7 @@ Options include:
 
       admin = params.admin
       groups = params.groups
-
+      hue_url = params.url
       delete params.admin
       delete params.groups
       delete params.url
@@ -46,7 +46,7 @@ Options include:
 
       @execute
         cmd: """
-        URL="#{params.url}"
+        URL="#{hue_url}"
         LOGIN_URL=$URL/accounts/login/?next=/
         POST_URL=$URL/useradmin/users/new
 
