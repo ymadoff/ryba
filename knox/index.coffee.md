@@ -47,11 +47,15 @@ with Hadoop clusters.
       throw Error 'Required property "ryba.ssl.cacert" or "ryba.knox.ssl.cacert"' unless ctx.config.ryba.ssl?.cacert? or knox.ssl.cacert?
       throw Error 'Required property "ryba.ssl.cert"' unless ctx.config.ryba.ssl?.cert? or knox.ssl.cert?
       throw Error 'Required property "ryba.ssl.key"' unless ctx.config.ryba.ssl?.key? or knox.ssl.key?
+      throw Error 'Required property "dsp.clients.cafile"' unless ctx.config.dsp.clients?.cafile? or knox.ssl.cafile?
+      throw Error 'Required property "dsp.clients.caname"' unless ctx.config.dsp.clients?.caname? or knox.ssl.caname?
       knox.ssl ?= {}
       knox.ssl.storepass ?= 'knox_master_secret_123'
       knox.ssl.cacert ?= ctx.config.ryba.ssl.cacert
       knox.ssl.cert ?= ctx.config.ryba.ssl.cert
       knox.ssl.key ?= ctx.config.ryba.ssl.key
+      knox.ssl.cafile ?= ctx.config.dsp.clients.cafile
+      knox.ssl.caname ?= ctx.config.dsp.clients.caname
 
 ## Configuration for Proxy Users
 
@@ -79,98 +83,129 @@ with Hadoop clusters.
 
 ## Configure topology
 
-      topology = knox.topologies[ctx.config.ryba.nameservice] ?= {}
-      # Configure providers
-      topology.providers ?= {}
-
 LDAP authentication is configured by adding a "ShiroProvider" authentication 
 provider to the cluster's topology file. When enabled, the Knox Gateway uses 
 Apache Shiro (org.apache.shiro.realm.ldap.JndiLdapRealm) to authenticate users 
 against the configured LDAP store.
+      
+      for nameservice,value of knox.topologies
+        topology = knox.topologies[nameservice] ?= {}
+        # Configure providers
+        topology.providers ?= {}
 
-      ldap = topology.providers['authentication'] ?= {}
-      ldap.name ?= 'ShiroProvider'
-      ldap.config ?= {}
-      ldap.config['sessionTimeout'] ?= 30
-      ldap.config['main.ldapRealm'] ?= 'org.apache.hadoop.gateway.shirorealm.KnoxLdapRealm' # OpenLDAP implementation
-      # ldap.config['main.ldapRealm'] ?= 'org.apache.shiro.realm.ldap.JndiLdapRealm' # AD implementation
-      ldap.config['main.ldapContextFactory'] ?= 'org.apache.hadoop.gateway.shirorealm.KnoxLdapContextFactory'
-      ldap.config['main.ldapRealm.contextFactory'] ?= '$ldapContextFactory'
-      ctxs = ctx.contexts 'masson/core/openldap_server'
-      if ctxs.length
-        openldap_server = ctxs[0].config.openldap_server
-        ldap.config['main.ldapRealm.userDnTemplate'] ?= "uid={0},#{openldap_server.users_dn}" if openldap_server.users_dn? #ou=people,dc=hadoop,dc=apache,dc=org'
-        ldap.config['main.ldapRealm.contextFactory.url'] ?= "#{openldap_server.uri}:389" if openldap_server.uri?
-      ldap.config['main.ldapRealm.contextFactory.authenticationMechanism'] ?= 'simple'
-      ldap.config['urls./**'] ?= 'authcBasic'
+        ldap = topology.providers['authentication'] ?= {}
+        ldap.name ?= 'ShiroProvider'
+        ldap.config ?= {}
+        ldap.config['sessionTimeout'] ?= 30
+        realms = ['ldapRealm']
+        realm_config = {}
+        realm_config['ldapRealm'] = topology
+      
+        if topology.group?
+          throw Error 'Required property lookup' unless topology.group.lookup?
+          realms.push 'ldapGroupRealm'
+          realm_config['ldapGroupRealm'] = ctx.config.sssd.config[topology.group.lookup]
+
+        
+
+        for realm in realms
+
+          ldap.config["main.#{realm}"] ?= 'org.apache.hadoop.gateway.shirorealm.KnoxLdapRealm' # OpenLDAP implementation
+          # ldap.config['main.ldapRealm'] ?= 'org.apache.shiro.realm.ldap.JndiLdapRealm' # AD implementation
+          ldap.config["main.#{realm}".replace('Realm','')+"ContextFactory"] ?= 'org.apache.hadoop.gateway.shirorealm.KnoxLdapContextFactory'
+          ldap.config["main.#{realm}.contextFactory"] ?= '$'+"#{realm}".replace('Realm','')+'ContextFactory'
+        # ctxs = ctx.contexts 'masson/core/openldap_server'
+        
+          throw Error 'Required property ldap_uri' unless realm_config[realm]['ldap_uri']?
+          throw Error 'Required property ldap_default_bind_dn' unless realm_config[realm]['ldap_default_bind_dn']?
+          throw Error 'Required property ldap_default_authtok' unless realm_config[realm]['ldap_default_authtok']?
+          throw Error 'Required property ldap_search_base' unless realm_config[realm]['ldap_search_base']?
+
+          ldap.config["main.#{realm}.contextFactory.userDnTemplate"] = realm_config[realm]['userDnTemplate'] if realm_config[realm]['userDnTemplate']?
+          ldap.config["main.#{realm}.contextFactory.url"] = realm_config[realm]['ldap_uri']
+          ldap.config["main.#{realm}.contextFactory.systemUsername"] = realm_config[realm]['ldap_default_bind_dn']
+          ldap.config["main.#{realm}.contextFactory.systemPassword"] = realm_config[realm]['ldap_default_authtok']
+          ldap.config["main.#{realm}.contextFactory.searchBase"] = realm_config[realm]['ldap_search_base']
+
+
+          ldap.config["main.#{realm}.contextFactory.authenticationMechanism"] ?= 'simple'
+      
+      # we redo the test here, so that this params are rendered at the end of the authentication provider section 
+        if topology.group?
+          ldap.config['main.ldapGroupRealm.groupObjectClass'] = realm_config["ldapRealm"].group.groupObjectClass ?= "posixGroup"
+          ldap.config['main.ldapGroupRealm.memberAttribute'] = realm_config["ldapRealm"].group.memberAttribute ?= "memberUid"
+          ldap.config['main.ldapGroupRealm.memberAttributeValueTemplate'] = 'uid={0},' + realm_config["ldapRealm"]['ldap_search_base']
+
+        ldap.config['urls./**'] ?= 'authcBasic'
+        ldap.config['main.securityManager.realms'] = ["$"+realm for realm in realms].join "," if topology.group?
 
 The Knox Gateway identity-assertion provider maps an authenticated user to an 
 internal cluster user and/or group. This allows the Knox Gateway accept requests
 from external users without requiring internal cluster user names to be exposed. 
-
-      topology.providers['identity-assertion'] ?= name: 'Pseudo'
-      topology.providers['authorization'] ?= name: 'AclsAuthz'
-      ## Services
-      topology.services ?= {}
-      topology.services.knox ?= ''
-      # Namenode & WebHDFS
-      nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn').configure
-      fs_ctxs = ctx.contexts 'ryba/hadoop/httpfs', require('../hadoop/httpfs').configure
-      if nn_ctxs.length  
-        # Namenode
-        topology.services['namenode'] ?= nn_ctxs[0].config.ryba.core_site['fs.defaultFS']
-        if fs_ctxs.length
-          if fs_ctxs.length > 1
+        
+        topology.providers['identity-assertion'] ?= name: 'Pseudo'
+        topology.providers['authorization'] ?= name: 'AclsAuthz'
+        ## Services
+        topology.services ?= {}
+        topology.services.knox ?= ''
+        # Namenode & WebHDFS
+        nn_ctxs = ctx.contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn').configure
+        fs_ctxs = ctx.contexts 'ryba/hadoop/httpfs', require('../hadoop/httpfs').configure
+        if nn_ctxs.length  
+          # Namenode
+          topology.services['namenode'] ?= nn_ctxs[0].config.ryba.core_site['fs.defaultFS']
+          if fs_ctxs.length
+            if fs_ctxs.length > 1
+              topology.providers['ha'] ?= name: 'HaProvider'
+              topology.providers['ha'].config ?= {}
+              topology.providers['ha'].config['WEBHDFS'] ?= 'maxFailoverAttempts=3;failoverSleep=1000;maxRetryAttempts=300;retrySleep=1000;enabled=true'
+            topology.services['webhdfs'] ?= fs_ctxs.map (ctx) -> "http#{if ctx.config.ryba.httpfs.env.HTTPFS_SSL_ENABLED is 'true' then 's' else ''}://#{ctx.config.host}:#{ctx.config.ryba.httpfs.http_port}/webhdfs/v1"
+          else if nn_ctxs.length > 1
             topology.providers['ha'] ?= name: 'HaProvider'
             topology.providers['ha'].config ?= {}
             topology.providers['ha'].config['WEBHDFS'] ?= 'maxFailoverAttempts=3;failoverSleep=1000;maxRetryAttempts=300;retrySleep=1000;enabled=true'
-          topology.services['webhdfs'] ?= fs_ctxs.map (ctx) -> "http#{if ctx.config.ryba.httpfs.env.HTTPFS_SSL_ENABLED is 'true' then 's' else ''}://#{ctx.config.host}:#{ctx.config.ryba.httpfs.http_port}/webhdfs/v1"
-        else if nn_ctxs.length > 1
-          topology.providers['ha'] ?= name: 'HaProvider'
-          topology.providers['ha'].config ?= {}
-          topology.providers['ha'].config['WEBHDFS'] ?= 'maxFailoverAttempts=3;failoverSleep=1000;maxRetryAttempts=300;retrySleep=1000;enabled=true'
-          topology.services['webhdfs'] ?= []
-          for nn_ctx in ctxs
-            protocol = if nn_ctx.config.ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-            host = nn_ctx.config.host
-            shortname = nn_ctx.config.shortname
-            port = nn_ctx.config.ryba.hdfs.site["dfs.namenode.#{protocol}-address.#{nn_ctx.config.ryba.nameservice}.#{shortname}"].split(':')[1]
-            action = if host is nn_ctx.config.ryba.active_nn_host then 'unshift' else 'push'
-            topology.services['webhdfs'][action] "#{protocol}://#{host}:#{port}/webhdfs/v1"
-        else
-          protocol = if ctxs[0].config.ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+            topology.services['webhdfs'] ?= []
+            for nn_ctx in ctxs
+              protocol = if nn_ctx.config.ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+              host = nn_ctx.config.host
+              shortname = nn_ctx.config.shortname
+              port = nn_ctx.config.ryba.hdfs.site["dfs.namenode.#{protocol}-address.#{nn_ctx.config.ryba.nameservice}.#{shortname}"].split(':')[1]
+              action = if host is nn_ctx.config.ryba.active_nn_host then 'unshift' else 'push'
+              topology.services['webhdfs'][action] "#{protocol}://#{host}:#{port}/webhdfs/v1"
+          else
+            protocol = if ctxs[0].config.ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+            host = ctxs[0].config.host
+            port = ctxs[0].config.ryba.hdfs.site["dfs.namenode.#{protocol}-address"].split(':')[1]
+            topology.services['webhdfs'] ?= "#{protocol}://#{host}:#{port}/webhdfs/v1"
+        # Jobtracker
+        ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
+        if ctxs.length
+          rm_shortname = if ctxs.length > 1 then ".#{ctxs[0].config.shortname}" else ''    
+          rm_address = ctxs[0].config.ryba.yarn.site["yarn.resourcemanager.address#{rm_shortname}"]
+          topology.services['jobtracker'] ?= "rpc://#{rm_address}" if rm_address?
+        # Hive
+        ctxs = ctx.contexts 'ryba/hive/server2', require('../hive/server2').configure
+        if ctxs.length
           host = ctxs[0].config.host
-          port = ctxs[0].config.ryba.hdfs.site["dfs.namenode.#{protocol}-address"].split(':')[1]
-          topology.services['webhdfs'] ?= "#{protocol}://#{host}:#{port}/webhdfs/v1"
-      # Jobtracker
-      ctxs = ctx.contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
-      if ctxs.length
-        rm_shortname = if ctxs.length > 1 then ".#{ctxs[0].config.shortname}" else ''    
-        rm_address = ctxs[0].config.ryba.yarn.site["yarn.resourcemanager.address#{rm_shortname}"]
-        topology.services['jobtracker'] ?= "rpc://#{rm_address}" if rm_address?
-      # Hive
-      ctxs = ctx.contexts 'ryba/hive/server2', require('../hive/server2').configure
-      if ctxs.length
-        host = ctxs[0].config.host
-        port = ctxs[0].config.ryba.hive.site['hive.server2.thrift.http.port']
-        topology.services['hive'] ?= "http://#{host}:#{port}/cliservice"
-      # Hive WebHCat
-      ctxs = ctx.contexts 'ryba/hive/webhcat', require('../hive/webhcat').configure
-      if ctxs.length
-        host = ctxs[0].config.host
-        port = ctxs[0].config.ryba.webhcat.site['templeton.port']
-        topology.services['webhcat'] ?= "http://#{host}:#{port}/templeton"
-      # Oozie
-      ctxs = ctx.contexts 'ryba/oozie/server', require('../oozie/server').configure
-      if ctxs.length
-        topology.services['oozie'] ?= ctxs[0].config.ryba.oozie.site['oozie.base.url']
-      # WebHBase
-      ctxs = ctx.contexts 'ryba/hbase/rest', require('../hbase/rest').configure
-      if ctxs.length
-        protocol = if ctxs[0].config.ryba.hbase.site['hbase.rest.ssl.enabled'] is 'true' then 'https' else 'http'
-        host = ctxs[0].config.host
-        port = ctxs[0].config.ryba.hbase.site['hbase.rest.port']
-        topology.services['webhbase'] ?= "#{protocol}://#{host}:#{port}"
+          port = ctxs[0].config.ryba.hive.site['hive.server2.thrift.http.port']
+          topology.services['hive'] ?= "http://#{host}:#{port}/cliservice"
+        # Hive WebHCat
+        ctxs = ctx.contexts 'ryba/hive/webhcat', require('../hive/webhcat').configure
+        if ctxs.length
+          host = ctxs[0].config.host
+          port = ctxs[0].config.ryba.webhcat.site['templeton.port']
+          topology.services['webhcat'] ?= "http://#{host}:#{port}/templeton"
+        # Oozie
+        ctxs = ctx.contexts 'ryba/oozie/server', require('../oozie/server').configure
+        if ctxs.length
+          topology.services['oozie'] ?= ctxs[0].config.ryba.oozie.site['oozie.base.url']
+        # WebHBase
+        ctxs = ctx.contexts 'ryba/hbase/rest', require('../hbase/rest').configure
+        if ctxs.length
+          protocol = if ctxs[0].config.ryba.hbase.site['hbase.rest.ssl.enabled'] is 'true' then 'https' else 'http'
+          host = ctxs[0].config.host
+          port = ctxs[0].config.ryba.hbase.site['hbase.rest.port']
+          topology.services['webhbase'] ?= "#{protocol}://#{host}:#{port}"
   
     module.exports.push commands: 'check', modules: 'ryba/knox/check'
 
