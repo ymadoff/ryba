@@ -20,7 +20,17 @@ Check Message by writing to a test topic on the PLAINTEXT channel.
         "#{ctx.config.host}:#{ctx.config.ryba.kafka.ports['PLAINTEXT']}"
       ).join ','
       test_topic = "check-#{@config.host}-producer-plaintext-topic"
-      zookeeper_quorum = @contexts('ryba/kafka/consumer')[0].config.ryba.kafka.consumer.config['zookeeper.connect']
+      zoo_connect = ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect']
+      @execute
+        cmd: mkcmd.kafka @, """
+          /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
+            --zookeeper #{zoo_connect} --partitions 1 --replication-factor 3 \
+            --topic #{test_topic}
+          """
+        unless_exec: mkcmd.kafka @, """
+          /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
+          --zookeeper #{zoo_connect} | grep #{test_topic}
+          """
       @execute
         cmd: """
         (
@@ -30,7 +40,7 @@ Check Message by writing to a test topic on the PLAINTEXT channel.
         )&
         /usr/hdp/current/kafka-broker/bin/kafka-console-consumer.sh \
           --topic #{test_topic} \
-          --zookeeper #{zookeeper_quorum} --from-beginning --max-messages 1 | grep 'hello front1'
+          --zookeeper #{zoo_connect} --from-beginning --max-messages 1 | grep 'hello front1'
         """
 
 ## Check Messages SSL
@@ -152,6 +162,16 @@ Specifying also the trustore location and password because if executed before co
         ).join ','
         test_topic = "check-#{@config.host}-producer-sasl-ssl-topic"
         zoo_connect = ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect']
+        @execute
+          cmd: mkcmd.kafka @, """
+            /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
+              --zookeeper #{zoo_connect} --partitions 1 --replication-factor 3 \
+              --topic #{test_topic}
+            """
+          unless_exec: mkcmd.kafka @, """
+            /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
+            --zookeeper #{zoo_connect} | grep #{test_topic}
+            """
         @execute
           cmd: mkcmd.kafka @, """
             (

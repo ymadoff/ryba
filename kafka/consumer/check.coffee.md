@@ -98,6 +98,16 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
         zoo_connect = ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect']
         @execute
           cmd: mkcmd.kafka @, """
+            /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
+              --zookeeper #{zoo_connect} --partitions 1 --replication-factor 3 \
+              --topic #{test_topic}
+            """
+          unless_exec: mkcmd.kafka @, """
+            /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
+            --zookeeper #{zoo_connect} | grep #{test_topic}
+            """
+        @execute
+          cmd: mkcmd.kafka @, """
             (
             /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
               --add --allow-principal User:#{user.name}  \
@@ -152,6 +162,16 @@ Trustore location and password given to line command because if executed before 
         ).join ','
         test_topic = "check-#{@config.host}-consumer-sasl-ssl-topic"
         zoo_connect = ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect']
+        @execute
+          cmd: mkcmd.kafka @, """
+            /usr/hdp/current/kafka-broker/bin/bin/kafka-topics.sh --create \
+              --zookeeper #{zoo_connect} --partitions 1 --replication-factor 3 \
+              --topic #{test_topic}
+            """
+          unless_exec: mkcmd.kafka @, """
+            /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
+            --zookeeper #{zoo_connect} | grep #{test_topic}
+            """
         @execute
           cmd: mkcmd.kafka @, """
             (

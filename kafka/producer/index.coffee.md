@@ -22,7 +22,7 @@ log. It is fast, scalable, durable and distributed by design.
       kafka.producer.conf_dir ?= '/etc/kafka/conf'
       kafka.producer.config ?= {}
       kafka.producer.config['compression.codec'] ?= 'snappy'
-
+      kafka.admin ?= ks_ctxs[0].config.ryba.kafka.admin
       # for now the prop 'sasl.kerberos.service.name' has to be unset because of
       # https://issues.apache.org/jira/browse/KAFKA-2974
       # http://mail-archives.apache.org/mod_mbox/kafka-commits/201512.mbox/%3Cacb73f26d3bd440ab8a9f33686db0020@git.apache.org%3E

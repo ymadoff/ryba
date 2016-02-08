@@ -58,6 +58,7 @@ Example:
       kafka.broker.config['log.dirs'] = kafka.broker['log.dirs'].join ',' if Array.isArray kafka.broker['log.dirs']
       kafka.broker.config['zookeeper.connect'] ?= zookeeper_quorum
       kafka.broker.config['log.retention.hours'] ?= '168'
+      kafka.broker.config['delete.topic.enable'] ?= 'true'
       kafka.broker.config['super.users'] ?= kafka.superusers.map( (user) -> "User:#{user}").join(',')
       hosts = ctx.contexts('ryba/kafka/broker').map (ctx) -> ctx.config.host
       kafka.broker.config['num.partitions'] ?= hosts.length # Default number of log partitions per topic, default is "2"
