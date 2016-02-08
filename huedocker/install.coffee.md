@@ -300,7 +300,7 @@ ryba/hue:3.9
 ```
 
       {hadoop_group,hadoop_conf_dir, hdfs, hive, hbase} = @config.ryba
-      @docker_run
+      @docker_service
         header: 'Hue Docker # Run'
         label_true: 'RUNNED'
         force: -> @status -1
