@@ -120,15 +120,17 @@ against the configured LDAP store.
           throw Error 'Required property ldap_default_bind_dn' unless realm_config[realm]['ldap_default_bind_dn']?
           throw Error 'Required property ldap_default_authtok' unless realm_config[realm]['ldap_default_authtok']?
           throw Error 'Required property ldap_search_base' unless realm_config[realm]['ldap_search_base']?
+          if realm == 'ldapGroupRealm' then throw Error 'Required property ldap_search_base' unless realm_config[realm]['ldap_group_search_base']?
 
-          ldap.config["main.#{realm}.contextFactory.userDnTemplate"] = realm_config[realm]['userDnTemplate'] if realm_config[realm]['userDnTemplate']?
-          ldap.config["main.#{realm}.contextFactory.url"] = realm_config[realm]['ldap_uri']
+          ldap.config["main.#{realm}.userDnTemplate"] = realm_config[realm]['userDnTemplate'] if realm_config[realm]['userDnTemplate']?
+          ldap.config["main.#{realm}.contextFactory.url"] = realm_config[realm]['ldap_uri'].split(',')[0]
           ldap.config["main.#{realm}.contextFactory.systemUsername"] = realm_config[realm]['ldap_default_bind_dn']
           ldap.config["main.#{realm}.contextFactory.systemPassword"] = realm_config[realm]['ldap_default_authtok']
-          ldap.config["main.#{realm}.contextFactory.searchBase"] = realm_config[realm]['ldap_search_base']
+          ldap.config["main.#{realm}.searchBase"] = if realm == 'ldapGroupRealm' then realm_config[realm]['ldap_group_search_base'] else realm_config[realm]['ldap_search_base']
 
 
           ldap.config["main.#{realm}.contextFactory.authenticationMechanism"] ?= 'simple'
+          ldap.config["main.#{realm}.authorizationEnabled"] ?= 'true'
       
       # we redo the test here, so that this params are rendered at the end of the authentication provider section 
         if topology.group?
