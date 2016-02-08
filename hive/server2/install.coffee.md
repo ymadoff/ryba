@@ -71,6 +71,7 @@ isnt yet started.
 
     module.exports.push header: 'Hive Server2 # Configure', handler: ->
       {hive} = @config.ryba
+      
       @hconfigure
         destination: "#{hive.server2.conf_dir}/hive-site.xml"
         default: "#{__dirname}/../../resources/hive/hive-site.xml"
@@ -79,15 +80,36 @@ isnt yet started.
         merge: true
         backup: true
       @render
-        source: "#{__dirname}/../resources/hive-log4j.properties"
-        local_source: true
-        destination: '/etc/hive/conf/hive-log4j.properties'
-        context: @config
-      @render
         source: "#{__dirname}/../resources/hive-exec-log4j.properties"
         local_source: true
         destination: '/etc/hive/conf/hive-exec-log4j.properties'
         context: @config
+      writes = []
+      writes.push
+        match: /^hive.root.logger=.*/m
+        replace: """
+          hive.root.logger=INFO,RFAS
+          """
+        append: true
+      ,
+        match: "//m"
+        replace: """
+            
+            log4j.appender.RFAS=org.apache.log4j.RollingFileAppender
+            log4j.appender.RFAS.File=${hive.log.dir}/${hive.log.file}
+            log4j.appender.RFAS.MaxFileSize=200MB
+            log4j.appender.RFAS.MaxBackupIndex=10
+            log4j.appender.RFAS.layout=org.apache.log4j.PatternLayout
+            log4j.appender.RFAS.layout.ConversionPattern=%d{ISO8601} %-5p %c{2} - %m%n
+            """
+        append: true
+      console.log writes
+      @write
+        header: 'Log4j'
+        destination: "/etc/hive/conf/hive-log4j.properties"
+        source: "#{__dirname}/../resources/hive-log4j.properties"
+        write: writes
+        local_source: true
 
 ## Env
 
