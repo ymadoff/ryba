@@ -88,8 +88,8 @@ provider to the cluster's topology file. When enabled, the Knox Gateway uses
 Apache Shiro (org.apache.shiro.realm.ldap.JndiLdapRealm) to authenticate users 
 against the configured LDAP store.
       
-      for nameservice,value of knox.topologies
-        topology = knox.topologies[nameservice] ?= {}
+      for nameservice,topology of knox.topologies
+        topology ?= {}
         # Configure providers
         topology.providers ?= {}
 
