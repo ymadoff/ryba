@@ -164,7 +164,7 @@ Trustore location and password given to line command because if executed before 
         zoo_connect = ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect']
         @execute
           cmd: mkcmd.kafka @, """
-            /usr/hdp/current/kafka-broker/bin/bin/kafka-topics.sh --create \
+            /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
               --zookeeper #{zoo_connect} --partitions 1 --replication-factor 3 \
               --topic #{test_topic}
             """
