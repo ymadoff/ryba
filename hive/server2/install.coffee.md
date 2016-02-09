@@ -103,7 +103,6 @@ isnt yet started.
             log4j.appender.RFAS.layout.ConversionPattern=%d{ISO8601} %-5p %c{2} - %m%n
             """
         append: true
-      console.log writes
       @write
         header: 'Log4j'
         destination: "/etc/hive/conf/hive-log4j.properties"
