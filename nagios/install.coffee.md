@@ -338,11 +338,11 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           journalnode_port: journalnode_port
           datanode_port: dn_port
           clientPort: zookeeper.port
-          hbase_rs_port: hbase.site['hbase.regionserver.info.port']
-          hbase_master_port: hbase.site['hbase.master.info.port']
+          hbase_rs_port: hbase.rs.site['hbase.regionserver.info.port']
+          hbase_master_port: hbase.master.site['hbase.master.info.port']
           hbase_master_hosts_in_str: hm_hosts.join ','
           hbase_master_hosts: hm_hosts
-          hbase_master_rpc_port: hbase.site['hbase.master.port']
+          hbase_master_rpc_port: hbase.master.site['hbase.master.port']
           hive_metastore_port: url.parse(hcat_ctxs[0].config.ryba.hive.site['hive.metastore.uris'].split(',')[0]).port
           hive_server_port: hs2_port
           oozie_url: oozie.site['oozie.base.url']

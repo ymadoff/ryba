@@ -12,15 +12,15 @@ running of those scans to produce regular JDBC result sets.
 ## Configuration
 
     module.exports.configure = (ctx) ->
-      require('../../hbase').configure ctx
+      require('../../hbase/master').configure ctx
       {hbase} = ctx.config.ryba
       # Avoid message "Class org.apache.hadoop.hbase.regionserver.LocalIndexSplitter
       # cannot be loaded Set hbase.table.sanity.checks to false at conf or table
       # descriptor if you want to bypass sanity checks"
-      hbase.site['hbase.table.sanity.checks'] = 'true'
-      hbase.site['hbase.defaults.for.version.skip'] = 'true'
-      hbase.site['phoenix.functions.allowUserDefinedFunctions'] = 'true'
-      hbase.site['hbase.rpc.controllerfactory.class'] = 'org.apache.hadoop.hbase.ipc.controller.ServerRpcControllerFactory'
+      hbase.master.site['hbase.table.sanity.checks'] = 'true'
+      hbase.master.site['hbase.defaults.for.version.skip'] = 'true'
+      hbase.master.site['phoenix.functions.allowUserDefinedFunctions'] = 'true'
+      hbase.master.site['hbase.rpc.controllerfactory.class'] = 'org.apache.hadoop.hbase.ipc.controller.ServerRpcControllerFactory'
       # [Local Indexing](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.2/bk_installing_manually_book/content/configuring-hbase-for-phoenix.html)
       # The local indexing feature is a technical preview and considered under development.
       # As of dec 2015, dont activate or it will prevent permission from working, displaying a message like

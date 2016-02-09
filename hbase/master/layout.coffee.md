@@ -4,7 +4,7 @@
       @wait_execute
         cmd: mkcmd.hdfs @, "hdfs dfs -test -d /apps"
       @call ->
-        dirs = hbase.site['hbase.bulkload.staging.dir'].split '/'
+        dirs = hbase.master.site['hbase.bulkload.staging.dir'].split '/'
         throw err "Invalid property \"hbase.bulkload.staging.dir\"" unless dirs.length > 2 and path.join('/', dirs[0], '/', dirs[1]) is '/apps'
         for dir, index in dirs.slice 2
           dir = dirs.slice(0, 3 + index).join '/'

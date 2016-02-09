@@ -103,13 +103,13 @@ Update the "hbase-site.xml" with the hbase/thrift kerberos principal.
         @hconfigure
           destination: "#{hbase.conf_dir}/hbase-site.xml"
           properties: {
-            'hbase.thrift.port': "#{hbase.site['hbase.thrift.port']}"
-            'hbase.thrift.info.port': "#{hbase.site['hbase.thrift.info.port']}"
-            'hbase.thrift.support.proxyuser': "#{hbase.site['hbase.thrift.support.proxyuser']}"
-            'hbase.thrift.security.qop': "#{hbase.site['hbase.thrift.security.qop']}"
-            'hbase.thrift.authentication.type': "#{hbase.site['hbase.thrift.authentication.type']}"
-            'hbase.thrift.kerberos.principal': "#{hbase.site['hbase.thrift.kerberos.principal']}"
-            'hbase.thrift.ssl.enabled': "#{hbase.site['hbase.thrift.ssl.enabled']}"
+            'hbase.thrift.port': "#{hbase.thrift.site['hbase.thrift.port']}"
+            'hbase.thrift.info.port': "#{hbase.thrift.site['hbase.thrift.info.port']}"
+            'hbase.thrift.support.proxyuser': "#{hbase.thrift.site['hbase.thrift.support.proxyuser']}"
+            'hbase.thrift.security.qop': "#{hbase.site['hbase.thrift.thrift.security.qop']}"
+            'hbase.thrift.authentication.type': "#{hbase.thrift.site['hbase.thrift.authentication.type']}"
+            'hbase.thrift.kerberos.principal': "#{hbase.thrift.site['hbase.thrift.kerberos.principal']}"
+            'hbase.thrift.ssl.enabled': "#{hbase.thrift.site['hbase.thrift.ssl.enabled']}"
           }
           backup: true
           merge: true
@@ -253,7 +253,7 @@ The image can be uploaded by an other bin/ryba install (e.g. by a team mate), or
 from local (needs local container to exist e.g. after bin/ryba prepare).
 Compares local/remote hash to check if docker_load is needed.
 
-    module.exports.push header: 'Hue Docker # Container', timeout: -1, handler: (options)  ->
+    module.exports.push header: 'Hue Docker # Container', timeout: -1, retry:3, handler: (options)  ->
       {hue_docker} = @config.ryba
       tmp = hue_docker.image_dir
       current_checksum = ''

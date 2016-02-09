@@ -18,14 +18,14 @@
       encode = (data) -> (new Buffer data, 'utf8').toString 'base64'
       decode = (data) -> (new Buffer data, 'base64').toString 'utf8'
       curl = 'curl -s '
-      curl += '-k ' if hbase.site['hbase.rest.ssl.enabled'] is 'true'
-      curl += '--negotiate -u: ' if hbase.site['hbase.rest.authentication.type'] is 'kerberos'
+      curl += '-k ' if hbase.rest.site['hbase.rest.ssl.enabled'] is 'true'
+      curl += '--negotiate -u: ' if hbase.rest.site['hbase.rest.authentication.type'] is 'kerberos'
       curl += '-H "Accept: application/json" '
       curl += '-H "Content-Type: application/json" '
-      protocol = if hbase.site['hbase.rest.ssl.enabled'] is 'true' then 'https' else 'http'
+      protocol = if hbase.rest.site['hbase.rest.ssl.enabled'] is 'true' then 'https' else 'http'
       host = @config.host
       shortname = @config.shortname
-      port = hbase.site['hbase.rest.port']
+      port = hbase.rest.site['hbase.rest.port']
       schema = JSON.stringify ColumnSchema: [name: "#{shortname}_rest"]
       rows = JSON.stringify Row: [ key: encode('my_row_rest'), Cell: [column: encode("#{shortname}_rest:my_column"), $: encode('my rest value')]]
       @execute

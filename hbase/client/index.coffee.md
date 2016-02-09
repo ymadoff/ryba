@@ -13,12 +13,30 @@ Client code accessing a cluster finds the cluster by querying ZooKeeper.
       require('../').configure ctx
       hbase = ctx.config.ryba.hbase ?= {}
       hbase.site ?= {}
-      hbase.site['hbase.security.authentication'] ?= 'kerberos'
-      hbase.site['hbase.rpc.engine'] ?= 'org.apache.hadoop.hbase.ipc.SecureRpcEngine'
-      [hm_ctx] = ctx.contexts 'ryba/hbase/master', require('../master').configure
-      throw Error "No HBase Master" unless hm_ctx
-      hbase.site['hbase.master.kerberos.principal'] = hm_ctx.config.ryba.hbase.site['hbase.master.kerberos.principal']
-      hbase.site['hbase.regionserver.kerberos.principal'] = hm_ctx.config.ryba.hbase.site['hbase.regionserver.kerberos.principal']
+      hm_ctxs = ctx.contexts 'ryba/hbase/master', require('../master').configure
+      throw Error "No HBase Master" unless hm_ctxs.length >= 1
+      hbase.site ?= {}
+      ## Configuration HBase Replication
+      hbase.site['hbase.replication'] ?= hm_ctxs[0].config.ryba.hbase.master.site['hbase.replication']
+
+## Configure Security
+
+      hbase.site['hbase.security.authentication'] = hm_ctxs[0].config.ryba.hbase.master.site['hbase.security.authentication']
+      hbase.site['hbase.security.authorization'] = hm_ctxs[0].config.ryba.hbase.master.site['hbase.security.authorization']
+      hbase.site['hbase.superuser'] = hm_ctxs[0].config.ryba.hbase.master.site['hbase.superuser']
+      hbase.site['hbase.rpc.engine'] ?= hm_ctxs[0].config.ryba.hbase.master.site['org.apache.hadoop.hbase.ipc.SecureRpcEngine']
+      hbase.site['hbase.bulkload.staging.dir'] = hm_ctxs[0].config.ryba.hbase.master.site['hbase.bulkload.staging.dir']
+      hbase.site['hbase.master.kerberos.principal'] = hm_ctxs[0].config.ryba.hbase.master.site['hbase.master.kerberos.principal']
+      hbase.site['hbase.regionserver.kerberos.principal'] = hm_ctxs[0].config.ryba.hbase.master.site['hbase.regionserver.kerberos.principal']
+
+## Client Configuration HA
+
+      if hm_ctxs.length > 1
+        hbase.site['hbase.ipc.client.specificThreadForWriting'] ?= 'true'
+        hbase.site['hbase.client.primaryCallTimeout.get'] ?= '10000'
+        hbase.site['hbase.client.primaryCallTimeout. multiget'] ?= '10000'
+        hbase.site['hbase.client.primaryCallTimeout.scan'] ?= '1000000'
+        hbase.site['hbase.meta.replicas.use'] ?= 'true'
 
 ## Commands
 

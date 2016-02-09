@@ -9,7 +9,7 @@
     module.exports.push header: 'HBase Thrift # Check TCP', label_true: 'CHECKED', handler: ->
       {hbase} = @config.ryba
       @execute
-        cmd: "echo > /dev/tcp/#{@config.host}/#{hbase.site['hbase.thrift.port']}"
+        cmd: "echo > /dev/tcp/#{@config.host}/#{hbase.thrift.site['hbase.thrift.port']}"
 
 # TODO: Novembre 2015 check Thrift  server by interacting with hbase
 
