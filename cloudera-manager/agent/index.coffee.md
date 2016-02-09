@@ -25,13 +25,15 @@ cloudera_manager:
 
     module.exports.configure = (ctx) ->
       require('../../lib/base').configure ctx
-      [srv_ctx] = ctx.contexts 'ryba/cloudera-manager/server', require('../server').configure
-      {agent} = ctx.config.ryba.cloudera_manager
+      cdm_ctxs = ctx.contexts 'ryba/cloudera-manager/server', require('../server').configure
+      return Error 'Need at least one cloudera manager server' unless cdm_ctxs.length > 0
+      cloudera_manager = ctx.config.ryba.cloudera_manager ?= {}
+      agent = ctx.config.ryba.cloudera_manager.agent ?= {}
       agent.conf_dir ?= '/etc/cloudera-scm-agent/'
       agent.ini ?= {}
       agent.ini.server ?= {}
-      agent.ini.server['hostname'] ?= "#{srv_ctx.config.host}"
-      agent.ini.server['url_port'] ?= "7182"
+      agent.ini.server['hostname'] ?= "#{cdm_ctxs[0].config.host}"
+      agent.ini.server['url_port'] ?= "#{cdm_ctxs[0].config.ryba.cloudera_manager.server.port}"
 
     module.exports.push commands: 'install', modules: [
       'ryba/cloudera-manager/agent/install'

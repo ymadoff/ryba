@@ -8,7 +8,7 @@ This commands checks the status of Cloudera Manager Agent (STARTED, STOPPED)
 
 ## Status
 
-    module.exports.push name: 'Cloudera Manager Agent # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
+    module.exports.push header: 'Cloudera Manager Agent # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       @execute
         cmd: 'service cloudera-scm-agent status'
         code_skipped: 3

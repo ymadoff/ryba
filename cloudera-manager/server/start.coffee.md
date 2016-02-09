@@ -3,10 +3,10 @@
 Cloudera Manager Agent is started with the service's syntax command.
 
     module.exports = []
+    module.exports.push 'masson/bootstrap'
 
 ## Start
 
-    module.exports.push name: 'Cloudera Manager Server # Start', timeout: -1, label_true: 'STARTED', handler: ->
-      @execute
-        cmd: 'service cloudera-scm-server start'
-        # not_if_exists: '/var/run/ambari-agent/ambari-agent.pid'
+    module.exports.push header: 'Cloudera Manager Server # Start', label_true: 'STARTED', handler: ->
+      @service_start
+        name: 'cloudera-scm-server'

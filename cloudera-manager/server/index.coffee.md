@@ -39,20 +39,15 @@ cloudera_manager:
 
     module.exports.configure = (ctx) ->
       require('../../lib/base').configure ctx
-      {server} = ctx.config.ryba.cloudera_manager
-
+      cloudera_manager = ctx.config.ryba.cloudera_manager ?= {}
+      server = ctx.config.ryba.cloudera_manager.server ?= {}
+      server.port ?= '7182'
       server.db ?= {}
-
-      server.db.type ?= "mysql"
-      server.db.port ?= 3306
-      server.db.host ?= "localhost"
-      server.db.root_password ?= ""
-
+      server.db.type ?= 'mysql'
       server.db.main_account ?= {}
       server.db.main_account.user ?= "cloudera"
       server.db.main_account.password ?= "cloudera123"
       server.db.main_account.db_name ?= "cloudera"
-
       server.db.accounts ?= {}
 
     module.exports.push commands: 'install', modules: [

@@ -8,7 +8,7 @@
 
 Instal the packages cloudera-scm-agent and cloudera-scm-daemons
 
-    module.exports.push name: 'Cloudera Manager Agent # Packages', timeout: -1, handler: ->
+    module.exports.push header: 'Cloudera Manager Agent # Packages', timeout: -1, handler: ->
       @service
         name: 'cloudera-manager-daemons'
         # startup: true
@@ -20,7 +20,7 @@ Instal the packages cloudera-scm-agent and cloudera-scm-daemons
 
 Set the server's hostname in the agent's configuration
 
-    module.exports.push name: 'Cloudera Manager Agent # Configuration', timeout: -1, handler: ->
+    module.exports.push header: 'Cloudera Manager Agent # Configuration', timeout: -1, handler: ->
       {agent} = @config.ryba.cloudera_manager
       @write
         destination: "#{agent.conf_dir}config.ini"
