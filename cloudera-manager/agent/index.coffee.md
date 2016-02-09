@@ -33,7 +33,7 @@ cloudera_manager:
       agent.ini ?= {}
       agent.ini.server ?= {}
       agent.ini.server['hostname'] ?= "#{cdm_ctxs[0].config.host}"
-      agent.ini.server['url_port'] ?= "#{cdm_ctxs[0].config.ryba.cloudera_manager.server.port}"
+      agent.ini.server['url_port'] ?= "#{cdm_ctxs[0].config.ryba.cloudera_manager.server.admin_port}"
 
     module.exports.push commands: 'install', modules: [
       'ryba/cloudera-manager/agent/install'

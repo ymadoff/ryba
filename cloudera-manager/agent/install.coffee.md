@@ -30,3 +30,16 @@ Set the server's hostname in the agent's configuration
           # append: true
         ],
         backup: true
+
+## Env
+
+    module.exports.push header: 'Cloudera Manager Agent # Env', timeout: -1, handler: ->
+      {java} = @config
+      @write
+        destination: '/etc/default/cloudera-scm-agent'
+        write: [
+          match: RegExp '^export JAVA_HOME=*'
+          replace: "export JAVA_HOME=#{java.java_home} # Ryba, don't OVERWRITE"
+          append: true
+        ]
+        backup:true

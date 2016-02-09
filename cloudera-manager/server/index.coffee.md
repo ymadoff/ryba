@@ -41,7 +41,8 @@ cloudera_manager:
       require('../../lib/base').configure ctx
       cloudera_manager = ctx.config.ryba.cloudera_manager ?= {}
       server = ctx.config.ryba.cloudera_manager.server ?= {}
-      server.port ?= '7182'
+      server.admin_port ?= '7182'
+      server.ui_port ?= '7180'
       server.db ?= {}
       server.db.type ?= 'mysql'
       server.db.main_account ?= {}
@@ -52,7 +53,7 @@ cloudera_manager:
 
     module.exports.push commands: 'install', modules: [
       'ryba/cloudera-manager/server/install'
-      # 'ryba/cloudera-manager/server/start'
+      'ryba/cloudera-manager/server/start'
     ]
 
     module.exports.push commands: 'start', modules: 'ryba/cloudera-manager/server/start'

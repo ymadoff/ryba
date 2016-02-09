@@ -6,13 +6,26 @@
 
 ## Packages
 
-Instal the packages cloudera-scm-agent and cloudera-scm-daemons
+Install the packages cloudera-scm-agent and cloudera-scm-daemons
 
     module.exports.push header: 'Cloudera Manager Server # Packages', timeout: -1, handler: ->
       @service
         name: 'cloudera-manager-daemons'
       @service
         name: 'cloudera-manager-server'
+
+## Env
+
+    module.exports.push header: 'Cloudera Manager Server # Env', timeout: -1, handler: ->
+      {java} = @config
+      @write
+        destination: '/etc/default/cloudera-scm-server'
+        write: [
+          match: RegExp '^export JAVA_HOME=*'
+          replace: "export JAVA_HOME=#{java.java_home} # Ryba, don't OVERWRITE"
+          append: true
+        ]
+        backup:true
 
 ## Configure
 
