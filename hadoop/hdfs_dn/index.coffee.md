@@ -97,8 +97,7 @@ Example:
       ryba.hdfs.site['dfs.datanode.available-space-volume-choosing-policy.balanced-space-preference-fraction'] ?= '1.0'
       # Note, maybe do a better estimation of du.reserved inside capacity
       # currently, 50GB throw DataXceiver exception inside vagrant vm
-      # ryba.hdfs.site['dfs.datanode.du.reserved'] ?= '53687091200' # 50GB
-      ryba.hdfs.site['dfs.datanode.du.reserved'] ?= '1073741824' # 1GB
+      ryba.hdfs.site['dfs.datanode.du.reserved'] ?= '1073741824' # 1GB, also default in ambari
       # dfs.datanode.fsdataset.volume.choosing.policy:AvailableSpace 
       # dfs.datanode.available-space-volume-choosing-policy.balanced-space-preference-fraction:1.0
 
