@@ -16,12 +16,12 @@ Version:
 Intermetiate container to build zeppelin from source. Builds ryba/zeppelin-build
 image.
 
-    module.exports.push header: 'Zeppelin # Prepare Build', retry: 1, timeout: -1, handler: ->
+    module.exports.push header: 'Zeppelin # Prepare Build', ssh: null, retry: 1, timeout: -1, handler: ->
       {zeppelin} = @config.ryba
       machine = 'ryba'
       @docker_build
         machine: machine
-        tag: zeppelin.build.tag
+        image: zeppelin.build.tag
         cwd: zeppelin.build.cwd
       @docker_run
         machine: machine
