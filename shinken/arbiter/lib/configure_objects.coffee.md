@@ -15,18 +15,22 @@ Default "shinken object" (servicegroups, hosts, etc) configuration.
         services = shinken.config.services ?= {}
         commands = shinken.config.commands ?= {}
         realms = shinken.config.realms ?= {}
+        realms.All ?= {}
         contactgroups = shinken.config.contactgroups ?= {}
         contacts = shinken.config.contacts ?= {}
         dependencies = shinken.config.dependencies ?= {}
         escalations = shinken.config.escalations ?= {}
         timeperiods = shinken.config.timeperiods ?= {}
         # Hostgroups
-        hostgroups.by_roles ?= {}
-        hostgroups.by_roles.alias ?= 'Role View'
-        hostgroups.by_roles.hostgroup_members ?= []
-        hostgroups.by_topology ?= {}
-        hostgroups.by_topology.alias ?= 'Topological View'
-        hostgroups.by_topology.hostgroup_members ?= []
+        hostgroups['by_roles'] ?= {}
+        hostgroups['by_roles'].alias ?= 'Role View'
+        hostgroups['by_roles'].hostgroup_members ?= []
+        hostgroups['by_topology'] ?= {}
+        hostgroups['by_topology'].alias ?= 'Topological View'
+        hostgroups['by_topology'].hostgroup_members ?= []
+        hostgroups['watcher'] ?= {}
+        hostgroups['watcher'].alias ?= 'Cluster Watchers'
+        hostgroups['watcher'].hostgroup_members ?= []
 
 ### Templates
 
@@ -38,8 +42,8 @@ They must have register set to 0 to not be instanciated
         hosts['generic-host'].use ?= ''
         hosts['generic-host'].check_command ?= 'check_host'
         hosts['generic-host'].max_check_attempts ?= '2'
-        hosts['generic-host'].check_interval ?= '1'
-        hosts['generic-host'].retry_interval ?= '1'
+        hosts['generic-host'].check_interval ?= '300'
+        hosts['generic-host'].retry_interval ?= '60'
         hosts['generic-host'].active_checks_enabled ?= '1'
         hosts['generic-host'].check_period ?= '24x7'
         hosts['generic-host'].event_handler_enabled ?= '0'
@@ -48,14 +52,15 @@ They must have register set to 0 to not be instanciated
         hosts['generic-host'].retain_status_information ?= '1'
         hosts['generic-host'].retain_nonstatus_information ?= '1'
         hosts['generic-host'].contactgroups ?= ['admins']
-        hosts['generic-host'].notification_interval ?= '60'
+        hosts['generic-host'].notification_interval ?= '3600'
         hosts['generic-host'].notification_period ?= '24x7'
         hosts['generic-host'].notification_options ?= 'd,u,r,f'
         hosts['generic-host'].notification_enabled ?= '1'
         hosts['generic-host'].register = '0' # IT'S A TEMPLATE !
         hosts['linux-server'] ?= {}
         hosts['linux-server'].use ?= 'generic-host'
-        hosts['linux-server'].check_interval ?= '5'
+        hosts['linux-server'].check_interval ?= '60'
+        hosts['linux-server'].retry_interval ?= '20'
         hosts['linux-server'].register = '0'
         hosts['aggregates'] ?= {}
         hosts['aggregates'].use ?= 'generic-host'
@@ -80,11 +85,11 @@ They must have register set to 0 to not be instanciated
         services['generic-service'].is_volatile ?= '0'
         services['generic-service'].check_period ?= '24x7'
         services['generic-service'].max_check_attempts ?= '2'
-        services['generic-service'].check_interval ?= '5'
-        services['generic-service'].retry_interval ?= '1'
+        services['generic-service'].check_interval ?= '300'
+        services['generic-service'].retry_interval ?= '60'
         services['generic-service'].contactgroups ?= 'admins'
         services['generic-service'].notifications_options ?= 'w,u,c,r'
-        services['generic-service'].notification_interval ?= '60'
+        services['generic-service'].notification_interval ?= '3600'
         services['generic-service'].notification_period ?= '24x7'
         services['generic-service'].register = '0'
         services['hadoop-service'] ?= {}
@@ -93,6 +98,8 @@ They must have register set to 0 to not be instanciated
         services['hadoop-unit-service'] ?= {}
         services['hadoop-unit-service'].use ?= 'hadoop-service'
         services['hadoop-unit-service'].register = '0'
+        services['hadoop-unit-service'].check_interval = '30'
+        services['hadoop-unit-service'].retry_interval = '10'
         services['hadoop-functional-service'] ?= {}
         services['hadoop-functional-service'].use ?= 'hadoop-service'
         services['hadoop-functional-service'].register = '0'
@@ -223,21 +230,22 @@ For now masson modules are not available.
           hostgroups[name].hostgroup_members ?= []
           hostgroups[name].hostgroup_members = [hostgroups[name].hostgroup_members] unless Array.isArray hostgroups[name].hostgroup_members
           hostgroups.by_topology.hostgroup_members.push name unless name in hostgroups.by_topology.hostgroup_members
-          hostgroups[name].members.push "#{name}_aggregates"
-          hosts["#{name}_aggregates"] ?= {}
-          hosts["#{name}_aggregates"].ip = '0.0.0.0'
-          hosts["#{name}_aggregates"].alias = "#{name} Aggregates"
-          hosts["#{name}_aggregates"].hostgroups = []
-          hosts["#{name}_aggregates"].use = 'aggregates'
+          hostgroups[name].members.push name
+          hosts[name] ?= {}
+          hosts[name].ip = '0.0.0.0'
+          hosts[name].alias = "#{name} Watcher"
+          hosts[name].hostgroups = ['watcher']
+          hosts[name].use = 'aggregates'
           for hostname, srv of servers
             hostgroups[name].members.push hostname
             hosts[hostname] ?= {}
             hosts[hostname].ip ?= srv.ip
             hosts[hostname].hostgroups ?= []
             hosts[hostname].use ?= 'linux-server'
+            hosts[hostname].config ?= srv
+            hosts[hostname].cluster ?= name
             for mod in srv.modules
               hosts[hostname].hostgroups.push modules_list[mod] if modules_list[mod]?
-          shinken.exports = merge.apply @, (srv for _, srv of servers)
 
 ## Normalize
 
