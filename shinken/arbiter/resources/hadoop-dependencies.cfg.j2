@@ -1,0 +1,154 @@
+{% for hostname, host in hosts %}{% if host.hostgroups %}
+{% if host.hostgroups | contains('watcher') %}
+define service {
+  service_description           Zookeeper Server: Quorum
+  dependent_service_description HDFS NN: Active Node
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define service {
+  service_description           Zookeeper Server: Quorum
+  dependent_service_description YARN RM: Active Node
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define service {
+  service_description           Zookeeper Server: Quorum
+  dependent_service_description HBase Master: HA
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define service {
+  service_description           YARN RM: Active Node
+  dependent_service_description YARN RM: TCP
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define service {
+  service_description           YARN RM: Active Node
+  dependent_service_description YARN RM: Scheduler TCP
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define service {
+  service_description           YARN RM: Active Node
+  dependent_service_description YARN RM: Tracker TCP
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define service {
+  service_description           YARN RM: Active Node
+  dependent_service_description YARN RM: RPC latency
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+{% endif %}
+{% if host.hostgroups | contains('zookeeper_server') %}
+define servicedependency {
+  service_description           Zookeeper Server: TCP
+  dependent_service_description Zookeeper Server: State
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define servicedependency {
+  service_description           Zookeeper Server: TCP
+  dependent_service_description Zookeeper Server: Connections
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+{% endif %}
+{% if host.hostgroups | contains('hdfs_nn')%}
+define servicedependency {
+  service_description           HDFS NN: TCP
+  dependent_service_description HDFS NN: RPC latency
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define servicedependency {
+  service_description           HDFS NN: TCP
+  dependent_service_description HDFS NN: Last Checkpoint
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define servicedependency {
+  service_description           HDFS NN: TCP
+  dependent_service_description HDFS NN: Name Dir status
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define servicedependency {
+  service_description           HDFS NN: TCP
+  dependent_service_description HDFS NN: Utilization
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define servicedependency {
+  service_description           HDFS NN: TCP
+  dependent_service_description WebHDFS: WebService
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+{% endif %}
+{% if host.hostgroups | contains('hdfs_dn')%}
+define servicedependency {
+  service_description           HDFS NN: Active Node
+  dependent_service_description HDFS DN: TCP
+  host_name                     {{ host.cluster }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define servicedependency {
+  service_description           HDFS DN: TCP
+  dependent_service_description HDFS DN: Available space
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+{% endif %}
+{% endif %}{% endfor %}
