@@ -81,6 +81,7 @@ Conflicts can appear.
       @remove destination: '/etc/shinken/services/linux_disks.cfg'
       @remove destination: '/etc/shinken/hosts/localhost.cfg'
       @remove destination: '/etc/shinken/templates/templates.cfg'
+      @remove destination: '/etc/shinken/resource.d/path.cfg'
       #TODO remove default modules conf with a non predictive name
       #@remove destination: '/etc/shinken/modules/TODO'
 
@@ -96,16 +97,18 @@ Conflicts can appear.
           source: "#{__dirname}/resources/#{service}-master.cfg.j2"
           local_source: true
           context: "#{service}s": @contexts "ryba/shinken/#{service}"
-      @write
-        destination: '/etc/shinken/resource.d/path.cfg'
-        match: /^\$PLUGINSDIR\$=.*$/mg
-        replace: "$PLUGINSDIR$=#{shinken.plugin_dir}"
+      @write_properties
+        destination: '/etc/shinken/resource.d/resources.cfg'
+        content:
+          "$PLUGINSDIR$": shinken.plugin_dir
+          "$DOCKER_EXEC$": 'docker exec poller-executor'
       @write
         destination: '/etc/shinken/shinken.cfg'
         write: for k, v of {
           'date_format': 'iso8601'
           'shinken_user': shinken.user.name
-          'shinken_group': shinken.group.name }
+          'shinken_group': shinken.group.name
+          'interval_length': '1' }
             match: ///^#{k}=.*$///mg
             replace: "#{k}=#{v}"
             append: true
@@ -170,7 +173,12 @@ Objects config, except services
         destination: "/etc/shinken/services/hadoop-services.cfg"
         source: "#{__dirname}/resources/hadoop-services.cfg.j2"
         local_source: true
-        context: shinken.exports
+        context: hosts: shinken.config.hosts
+      @render
+        destination: "/etc/shinken/dependencies/hadoop-dependencies.cfg"
+        source: "#{__dirname}/resources/hadoop-dependencies.cfg.j2"
+        local_source: true
+        context: hosts: shinken.config.hosts
 
 ## Dependencies
 
