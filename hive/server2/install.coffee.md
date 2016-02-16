@@ -101,6 +101,8 @@ isnt yet started.
             log4j.appender.RFAS.MaxBackupIndex=10
             log4j.appender.RFAS.layout=org.apache.log4j.PatternLayout
             log4j.appender.RFAS.layout.ConversionPattern=%d{ISO8601} %-5p %c{2} - %m%n
+
+            log4j.logger.server.AsyncHttpConnection = OFF
             """
         append: true
       @write
