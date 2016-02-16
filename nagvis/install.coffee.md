@@ -26,11 +26,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
     module.exports.push header: 'NagVis # Packages', handler: ->
       @service name: 'httpd'
       @service name: 'php'
+      @service name: 'php-common'
       @service name: 'php-pdo'
       @service name: 'php-gd'
       @service name: 'php-mbstring'
       @service name: 'php-mysql'
-      @service name: 'php-php-gettext'
+      # @service name: 'php-php-gettext'
       @service name: 'graphviz-php'
 
 ## Install
