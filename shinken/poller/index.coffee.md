@@ -27,9 +27,9 @@ is approximatively 1000 checks/s
       # Executor
       poller.executor ?= {}
       poller.executor.krb5 ?= {}
-      # poller.executor.krb5.privileged ?= {}
-      # poller.executor.krb5.privileged.principal ?= "#{shinken.user.name}_admin/#{ctx.config.host}@#{ctx.config.ryba.realm}"
-      # poller.executor.krb5.privileged.keytab ?= "/etc/security/keytabs/shinken-poller.privileged.keytab"
+      poller.executor.krb5.privileged ?= {}
+      poller.executor.krb5.privileged.principal ?= "#{shinken.user.name}_admin/#{ctx.config.host}@#{ctx.config.ryba.realm}"
+      poller.executor.krb5.privileged.keytab ?= "/etc/security/keytabs/shinken-poller.privileged.keytab"
       poller.executor.krb5.unprivileged ?= {}
       poller.executor.krb5.unprivileged.principal ?= "#{shinken.user.name}/#{ctx.config.host}@#{ctx.config.ryba.realm}"
       poller.executor.krb5.unprivileged.keytab ?= "/etc/security/keytabs/shinken-poller.unprivileged.keytab"

@@ -16,5 +16,4 @@ Start the Shinken Poller service.
 Start the docker executors (normal and admin)
 
     module.exports.push header: 'Shinken Poller # Start Executor', label_true: 'STARTED', handler: ->
-      @docker_start container: 'poller-unprivileged-executor'
-      #@docker_start container: 'poller-privileged-executor'
+      @docker_start container: 'poller-executor'
