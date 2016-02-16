@@ -1,16 +1,16 @@
 {% for name, esc in escalations %}
 define serviceescalation {
-    service_description     {{ esc.service }}
-    first_notification      {{ esc.first_notification }}
-    last_notification       {{ esc.last_notification }}
-    notification_interval   {{ esc.notification_interval }}{% if not esc.hosts | isEmpty %}
-    host_name               {{ esc.hosts | join(',') }}{% endif %}{% if not esc.hostgroups | isEmpty %}
-    hostgroup_name          {{ esc.hostgroups | join(',') }}{% endif %}{% if not esc.contacts | isEmpty %}
-    contacts                {{ esc.contacts | join(',') }}{% endif %}{% if not esc.contactgroups | isEmpty %}
-    contact_groups          {{ esc.contactgroups | join(',') }}{% endif %}{% if not esc.escalation_period | isEmpty %}
-    escalation_period       {{ esc.escalation_period }}{% endif %}{% if not esc.escalation_period | isEmpty %}
-    escalation_options      {{ esc.escalation_options }}{% endif %}{% if not esc.first_notification_time | isEmpty %}
-    first_notification_time {{ esc.first_notification_time }}{% endif %}{% if not esc.last_notification_time | isEmpty %}
-    last_notification_time  {{ esc.last_notification_time }}{% endif %}
+  service_description     {{ esc.service }}
+  first_notification      {{ esc.first_notification }}
+  last_notification       {{ esc.last_notification }}
+  notification_interval   {{ esc.notification_interval }}{% if not esc.hosts | isEmpty %}
+  host_name               {{ esc.hosts | join(',') }}{% endif %}{% if not esc.hostgroups | isEmpty %}
+  hostgroup_name          {{ esc.hostgroups | join(',') }}{% endif %}{% if not esc.contacts | isEmpty %}
+  contacts                {{ esc.contacts | join(',') }}{% endif %}{% if not esc.contactgroups | isEmpty %}
+  contact_groups          {{ esc.contactgroups | join(',') }}{% endif %}{% if not esc.escalation_period | isEmpty %}
+  escalation_period       {{ esc.escalation_period }}{% endif %}{% if not esc.escalation_period | isEmpty %}
+  escalation_options      {{ esc.escalation_options }}{% endif %}{% if not esc.first_notification_time | isEmpty %}
+  first_notification_time {{ esc.first_notification_time }}{% endif %}{% if not esc.last_notification_time | isEmpty %}
+  last_notification_time  {{ esc.last_notification_time }}{% endif %}
 }
 {% endfor %}
