@@ -236,6 +236,7 @@ For now masson modules are not available.
           hosts[name].alias = "#{name} Watcher"
           hosts[name].hostgroups = ['watcher']
           hosts[name].use = 'aggregates'
+          hosts[name].modules = []
           for hostname, srv of servers
             hostgroups[name].members.push hostname
             hosts[hostname] ?= {}
@@ -245,6 +246,7 @@ For now masson modules are not available.
             hosts[hostname].config ?= srv
             hosts[hostname].cluster ?= name
             for mod in srv.modules
+              hosts[name].modules.push modules_list[mod] if modules_list[mod]? and modules_list[mod] not in hosts[name].modules
               hosts[hostname].hostgroups.push modules_list[mod] if modules_list[mod]?
 
 ## Normalize
