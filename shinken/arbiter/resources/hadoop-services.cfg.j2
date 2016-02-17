@@ -1,5 +1,6 @@
 {% for hostname, host in hosts %}{% if host.hostgroups %}
 {% if host.hostgroups | contains('watcher') %}
+{% if host.modules | contains('zookeeper_server')%}
 define service {
   service_description   Zookeeper Server: Quorum
   host_name             {{ hostname }}
@@ -7,8 +8,10 @@ define service {
   use                   hadoop-unit-service
   check_command         has_quorum!'Zookeeper Server: TCP'
 }
+{% endif %}
+{% if host.modules | contains('hdfs_nn') %}
 define service {
-  service_description   HDFS NN: HA
+  service_description   HDFS NN: Available
   host_name             {{ hostname }}
   servicegroups         hdfs_nn
   use                   hadoop-unit-service
@@ -22,12 +25,23 @@ define service {
   check_command         check_active_nn!50470!-s
 }
 define service {
+  service_description   HDFS NN: Auto Failover
+  host_name             {{ hostname }}
+  servicegroups         hdfs_nn
+  use                   hadoop-unit-service
+  check_command         has_all!'ZKFC: TCP'
+}
+{% endif %}
+{% if host.modules | contains('hdfs_jn') %}
+define service {
   service_description   HDFS JN: Quorum
   host_name             {{ hostname }}
   servicegroups         zookeeper_server
   use                   hadoop-unit-service
-  check_command         has_quorum!'HDFS JN: TCP'
+  check_command         has_quorum!'HDFS JN: TCP SSL'
 }
+{% endif %}
+{% if host.modules | contains('yarn_rm') %}
 define service {
   service_description   YARN RM: Active Node
   host_name             {{ hostname }}
@@ -36,25 +50,25 @@ define service {
   check_command         check_active_rm!8090!-s
 }
 define service {
-  service_description   YARN RM: TCP
+  service_description   YARN RM: TCP SSL
   host_name             {{ hostname }}
   servicegroups         yarn_rm
   use                   hadoop-unit-service
-  check_command         check_tcp_ha!'YARN RM: Active Node'!8050!1!1
+  check_command         check_tcp_ha!'YARN RM: Active Node'!8050
 }
 define service {
   service_description   YARN RM: Scheduler TCP
   host_name             {{ hostname }}
   servicegroups         yarn_rm
   use                   hadoop-unit-service
-  check_command         check_tcp_ha!'YARN RM: Active Node'!8030!1!1
+  check_command         check_tcp_ha!'YARN RM: Active Node'!8030
 }
 define service {
   service_description   YARN RM: Tracker TCP
   host_name             {{ hostname }}
   servicegroups         yarn_rm
   use                   hadoop-unit-service
-  check_command         check_tcp_ha!'YARN RM: Active Node'!8025!1!1
+  check_command         check_tcp_ha!'YARN RM: Active Node'!8025
 }
 define service {
   service_description   YARN RM: RPC latency
@@ -63,13 +77,34 @@ define service {
   use                   hadoop-unit-service
   check_command         check_rpc_latency_ha!'YARN RM: Active Node'!ResourceManager!8090!3000!5000!-s
 }
+{% endif %}
+{% if host.modules | contains('hbase_master') %}
 define service {
-  service_description   HBase Master: HA
+  service_description   HBase Master: Available
   host_name             {{ hostname }}
   servicegroups         hbase_master
   use                   hadoop-unit-service
   check_command         has_one!'HBase Master: TCP'
 }
+{% endif %}
+{% if host.modules | contains('hiveserver2') %}
+define service {
+  service_description   Hiveserver2: Available
+  host_name             {{ hostname }}
+  servicegroups         hiveserver2
+  use                   hadoop-unit-service
+  check_command         has_one!'Hiveserver2: TCP SSL'
+}
+{% endif %}
+{% if host.modules | contains('knox') %}
+define service {
+  service_description   Knox: Available
+  host_name             {{ hostname }}
+  servicegroups         knox
+  use                   hadoop-unit-service
+  check_command         has_one!'Knox: WebService'
+}
+{% endif %}
 {% endif %}
 {% if host.hostgroups | contains('zookeeper_server') %}
 define service {
@@ -77,7 +112,7 @@ define service {
   host_name             {{ hostname }}
   servicegroups         zookeeper_server
   use                   hadoop-unit-service
-  check_command         check_tcp!{{ host.config.ryba.zookeeper.port }}!1!1
+  check_command         check_tcp!{{ host.config.ryba.zookeeper.port }}
 }
 define service {
   service_description   Zookeeper Server: State
@@ -101,7 +136,21 @@ define service {
   host_name             {{ hostname }}
   servicegroups         hdfs_nn
   use                   hadoop-unit-service
-  check_command         check_tcp!8020!1!1
+  check_command         check_tcp!8020
+}
+define service {
+  service_description   HDFS NN: WebService
+  host_name             {{ hostname }}
+  servicegroups         hdfs_nn
+  use                   hadoop-unit-service
+  check_command         check_tcp!50470!-S
+}
+define service {
+  service_description   HDFS NN: Certificate
+  host_name             {{ hostname }}
+  servicegroups         hdfs_nn
+  use                   hadoop-unit-service
+  check_command         check_cert!50470!120!60
 }
 define service {
   service_description   HDFS NN: RPC latency
@@ -131,23 +180,21 @@ define service {
   use                   hadoop-unit-service
   check_command         check_hdfs_capacity!50470!80%!90%!-s
 }
-{### WebHDFS ###}
-define service {
-  service_description   WebHDFS: WebService
-  host_name             {{ hostname }}
-  servicegroups         hdfs_nn
-  use                   hadoop-unit-service
-  check_command         check_webservice!50470!'/webhdfs/v1/?op=GETHOMEDIRECTORY'!'\{"Path":.*'!-s
-}
 {% endif %}
-{### HDFS JN ###}
 {% if host.hostgroups | contains('hdfs_jn') %}
 define service {
-  service_description   HDFS JN: TCP
+  service_description   HDFS JN: TCP SSL
   host_name             {{ hostname }}
   servicegroups         hdfs_jn
   use                   hadoop-unit-service
-  check_command         check_tcp!{{ host.config.ryba.hdfs.site['dfs.journalnode.https-address'].split(':')[1] }}!1!1
+  check_command         check_tcp!{{ host.config.ryba.hdfs.site['dfs.journalnode.https-address'].split(':')[1] }}!-S
+}
+define service {
+  service_description   HDFS JN: Certificate
+  host_name             {{ hostname }}
+  servicegroups         hdfs_jn
+  use                   hadoop-unit-service
+  check_command         check_cert!{{ host.config.ryba.hdfs.site['dfs.journalnode.https-address'].split(':')[1] }}!120!60
 }
 {% endif %}
 {### HDFS DN ###}
@@ -157,7 +204,7 @@ define service {
   host_name             {{ hostname }}
   servicegroups         hdfs_dn
   use                   hadoop-unit-service
-  check_command         check_tcp!{{ host.config.ryba.hdfs.site['dfs.datanode.https.address'].split(':')[1] }}!1!1
+  check_command         check_tcp!{{ host.config.ryba.hdfs.site['dfs.datanode.https.address'].split(':')[1] }}
 }
 define service {
   service_description   HDFS DN: Available space
@@ -173,7 +220,7 @@ define service {
   host_name             {{ hostname }}
   servicegroups         zkfc
   use                   hadoop-unit-service
-  check_command         check_tcp!{{ host.config.ryba.hdfs.nn.site['dfs.ha.zkfc.port'] }}!1!1
+  check_command         check_tcp!{{ host.config.ryba.hdfs.nn.site['dfs.ha.zkfc.port'] }}
 }
 {% endif %}
 {% if host.hostgroups | contains('httpfs') %}
@@ -182,25 +229,31 @@ define service {
   host_name             {{ hostname }}
   servicegroups         httpfs
   use                   hadoop-unit-service
-  check_command         check_webservice!14000!'/webhdfs/v1/?op=GETHOMEDIRECTORY'!'\{"Path":.*'!-s
+  check_command         check_tcp!14000!-S
+}
+define service {
+  service_description   HttpFS: Certificate
+  host_name             {{ hostname }}
+  servicegroups         httpfs
+  use                   hadoop-unit-service
+  check_command         check_cert!14000!120!60
 }
 {% endif %}
 {% if host.hostgroups | contains('hdfs_client') %}{% endif %}
-{### YARN ResourceManager ###}
 {% if host.hostgroups | contains('yarn_rm') %}
 define service {
   service_description   YARN RM: Admin TCP
   host_name             {{ hostname }}
   servicegroups         yarn_rm
   use                   hadoop-unit-service
-  check_command         check_tcp!8141!1!1
+  check_command         check_tcp!8141
 }
 define service {
-  service_description   YARN RM: WebUI
+  service_description   YARN RM: WebService
   host_name             {{ hostname }}
   servicegroups         yarn_rm
   use                   hadoop-unit-service
-  check_command         check_webui!8090!-s
+  check_command         check_tcp!8090!-S
 }
 {% endif %}
 {% if host.hostgroups | contains('yarn_nm') %}
@@ -209,14 +262,14 @@ define service {
   host_name             {{ hostname }}
   servicegroups         yarn_nm
   use                   hadoop-unit-service
-  check_command         check_tcp!45454!1!1
+  check_command         check_tcp!45454
 }
 define service {
-  service_description   YARN NM: WebUI
+  service_description   YARN NM: WebService
   host_name             {{ hostname }}
   servicegroups         yarn_nm
   use                   hadoop-unit-service
-  check_command         check_webui!8044!-s
+  check_command         check_tcp!8044!-S
 }
 define service {
   service_description   YARN NM: Health
@@ -232,14 +285,21 @@ define service {
   host_name             {{ hostname }}
   servicegroups         yarn_ts
   use                   hadoop-unit-service
-  check_command         check_tcp!10200!1!1
+  check_command         check_tcp!10200
 }
 define service {
   service_description   YARN TS: WebService
   host_name             {{ hostname }}
   servicegroups         yarn_ts
   use                   hadoop-unit-service
-  check_command         check_webservice!8190!'/jmx?qry=Hadoop:service=ApplicationHistoryServer,name=JvmMetrics'!'\{.*"beans" :'!-s
+  check_command         check_tcp!8190!-S
+}
+define service {
+  service_description   YARN TS: Certificate
+  host_name             {{ hostname }}
+  servicegroups         yarn_ts
+  use                   hadoop-unit-service
+  check_command         check_cert!8190!120!60
 }
 {% endif %}
 {% if host.hostgroups | contains('yarn_client') %}{% endif %}
@@ -252,14 +312,21 @@ define service {
   host_name             {{ hostname }}
   servicegroups         hbase_master
   use                   hadoop-unit-service
-  check_command         check_tcp!{{ host.config.ryba.hbase.site['hbase.master.port'] }}!1!1
+  check_command         check_tcp!{{ host.config.ryba.hbase.site['hbase.master.port'] }}
 }
 define service {
   service_description   HBase Master: WebUI
   host_name             {{ hostname }}
   servicegroups         hbase_master
   use                   hadoop-unit-service
-  check_command         check_webui!{{ host.config.ryba.hbase.site['hbase.master.info.port'] }}
+  check_command         check_tcp!{{ host.config.ryba.hbase.site['hbase.master.info.port'] }}!-S
+}
+define service {
+  service_description   HBase Master: Certificate
+  host_name             {{ hostname }}
+  servicegroups         hbase_master
+  use                   hadoop-unit-service
+  check_command         check_cert!{{ host.config.ryba.hbase.site['hbase.master.info.port'] }}!120!60
 }
 {% endif %}
 {% if host.hostgroups | contains('hbase_regionserver') %}
@@ -268,41 +335,55 @@ define service {
   host_name             {{ hostname }}
   servicegroups         hbase_regionserver
   use                   hadoop-unit-service
-  check_command         check_tcp!{{ host.config.ryba.hbase.site['hbase.regionserver.port'] }}!1!1
+  check_command         check_tcp!{{ host.config.ryba.hbase.site['hbase.regionserver.port'] }}
 }
 define service {
   service_description   HBase RegionServer: WebUI
   host_name             {{ hostname }}
   servicegroups         hbase_regionserver
   use                   hadoop-unit-service
-  check_command         check_webui!{{ host.config.ryba.hbase.site['hbase.regionserver.info.port'] }}!-s
+  check_command         check_tcp!{{ host.config.ryba.hbase.site['hbase.regionserver.info.port'] }}!-S
 }
 {% endif %}
 {% if host.hostgroups | contains('hbase_rest') %}
 define service {
-  service_description   HBase REST: TCP
+  service_description   HBase REST: TCP SSL
   host_name             {{ hostname }}
   servicegroups         hbase_rest
   use                   hadoop-unit-service
-  check_command         check_tcp!{{ host.config.ryba.hbase.site['hbase.rest.port'] }}!1!1
+  check_command         check_tcp!{{ host.config.ryba.hbase.site['hbase.rest.port'] }}!-S
 }
 define service {
   service_description   HBase REST: WebUI
   host_name             {{ hostname }}
   servicegroups         hbase_rest
   use                   hadoop-unit-service
-  check_command         check_webui!{{ host.config.ryba.hbase.site['hbase.rest.info.port'] }}
+  check_command         check_tcp!{{ host.config.ryba.hbase.site['hbase.rest.info.port'] }}!-S
+}
+define service {
+  service_description   HBase REST: Certificate
+  host_name             {{ hostname }}
+  servicegroups         hbase_rest
+  use                   hadoop-unit-service
+  check_command         check_cert!{{ host.config.ryba.hbase.site['hbase.rest.port'] }}!120!60
 }
 {% endif %}
 {% if host.hostgroups | contains('hbase_thrift') %}{% endif %}
 {% if host.hostgroups | contains('hbase_client') %}{% endif %}
 {% if host.hostgroups | contains('hiveserver2') %}
 define service {
-  service_description   Hiveserver2: TCP
+  service_description   Hiveserver2: TCP SSL
   host_name             {{ hostname }}
   servicegroups         hiveserver2
   use                   hadoop-unit-service
-  check_command         check_tcp!{{ host.config.ryba.hive.site['hive.server2.thrift.port'] }}!1!1
+  check_command         check_tcp!{{ host.config.ryba.hive.site['hive.server2.thrift.port'] }}!-S
+}
+define service {
+  service_description   Hiveserver2: Certificate
+  host_name             {{ hostname }}
+  servicegroups         hiveserver2
+  use                   hadoop-unit-service
+  check_command         check_cert!{{ host.config.ryba.hive.site['hive.server2.thrift.port'] }}!120!60
 }
 {% endif %}
 {% if host.hostgroups | contains('hcatalog') %}
@@ -311,7 +392,7 @@ define service {
   host_name             {{ hostname }}
   servicegroups         hcatalog
   use                   hadoop-unit-service
-  check_command         check_tcp!{{ host.config.ryba.hive.site['hive.metastore.uris'].split(',')[0].split(':')[2] }}!1!1
+  check_command         check_tcp!{{ host.config.ryba.hive.site['hive.metastore.uris'].split(',')[0].split(':')[2] }}
 }
 {% endif %}
 {% if host.hostgroups | contains('webhcat') %}
@@ -329,7 +410,14 @@ define service {
   host_name             {{ hostname }}
   servicegroups         oozie_server
   use                   hadoop-unit-service
-  check_command         check_webui!{{ host.config.ryba.oozie.http_port }}!-u /oozie -s
+  check_command         check_tcp!{{ host.config.ryba.oozie.http_port }}!-S
+}
+define service {
+  service_description   Oozie Server: Certificate
+  host_name             {{ hostname }}
+  servicegroups         oozie_server
+  use                   hadoop-unit-service
+  check_command         check_cert!{{ host.config.ryba.oozie.http_port }}!120!60
 }
 {% endif %}
 {% if host.hostgroups | contains('oozie_client') %}{% endif %}
@@ -339,7 +427,7 @@ define service {
   host_name             {{ hostname }}
   servicegroups         kafka_broker
   use                   hadoop-unit-service
-  check_command         check_tcp!{{ host.config.ryba.kafka.broker.config.port }}!1!1
+  check_command         check_tcp!{{ host.config.ryba.kafka.broker.config.port }}
 }
 {% endif %}
 {### Kafka Producer ###}
@@ -351,7 +439,15 @@ define service {
 {### Phoenix Master ###}
 {### Phoenix RegionServer ###}
 {### Phoenix Client ###}
-{## OpenTSDB ##}
+{% if host.hostgroups | contains('opentsdb') %}
+define service {
+  service_description   OpenTSDB: WebService
+  host_name             {{ hostname }}
+  servicegroups         opentsdb
+  use                   hadoop-unit-service
+  check_command         check_tcp!{{ host.config.ryba.opentsdb.config['tsd.network.port'] }}
+}
+{% endif %}
 {## Titan DB ##}
 {## Tez ##}
 {## ElasticSearch ##}
@@ -367,9 +463,29 @@ define service {
   host_name             {{ hostname }}
   servicegroups         hue
   use                   hadoop-unit-service
-  check_command         check_webui!{{ host.config.ryba.hue_docker.ini.desktop.http_port }}!-s
+  check_command         check_tcp!{{ host.config.ryba.hue_docker.ini.desktop.http_port }}!-S
+}
+define service {
+  service_description   Hue: Certificate
+  host_name             {{ hostname }}
+  servicegroups         hue
+  use                   hadoop-unit-service
+  check_command         check_cert!{{ host.config.ryba.hue_docker.ini.desktop.http_port }}!120!60
 }
 {% endif %}
-{## Knox ##}
+{% if host.hostgroups | contains('knox') %}
+define service {
+  service_description   Knox: WebService
+  host_name             {{ hostname }}
+  servicegroups         knox
+  check_command         check_tcp!{{ host.config.ryba.knox.site['gateway.port'] }}!-S
+}
+define service {
+  service_description   Knox: Certificate
+  host_name             {{ hostname }}
+  servicegroups         knox
+  check_command         check_cert!{{ host.config.ryba.knox.site['gateway.port'] }}!120!60
+}
+{% endif %}
 {## Zeppelin ##}
 {% endif %}{% endfor %}

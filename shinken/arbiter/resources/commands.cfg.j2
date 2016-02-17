@@ -21,15 +21,15 @@ define command {
 }
 define command {
   command_name    check_tcp
-  command_line    $PLUGINSDIR$/check_tcp -H $HOSTADDRESS$ -p $ARG1$ -w $ARG2$ -c $ARG3$ $ARG4$
+  command_line    $PLUGINSDIR$/check_tcp -H $HOSTADDRESS$ -p $ARG1$ -w 1 -c 1 $ARG2$
+}
+define command {
+  command_name    check_cert
+  command_line    $PLUGINSDIR$/check_tcp -H $HOSTADDRESS$ -p $ARG1$ -D $ARG2$,$ARG3$ -S
 }
 define command {
   command_name    check_socket
   command_line    $DOCKER_EXEC$ ./check_socket.php -H $HOSTADDRESS$ -p $ARG1$ -m $ARG2$ -r $ARG3$ $ARG4$
-}
-define command {
-  command_name    check_webui
-  command_line    $DOCKER_EXEC$ ./check_http.sh -H $HOSTNAME$ -p $ARG1$ $ARG2$ 
 }
 define command {
   command_name    check_webservice
@@ -50,7 +50,7 @@ define command {
 ## Multi Service commands
 define command {
   command_name    check_tcp_ha
-  command_line    $DOCKER_EXEC$ ./service_status.php -H localhost -p 50000 -d $ARG1$ -f "host_groups >= $HOSTNAME$" -u | xargs -I % $PLUGINSDIR$/check_tcp -H % -p $ARG2$ -w $ARG3$ -c $ARG4$ $ARG5$
+  command_line    $DOCKER_EXEC$ ./service_status.php -H localhost -p 50000 -d $ARG1$ -f "host_groups >= $HOSTNAME$" -u | xargs -I % $PLUGINSDIR$/check_tcp -H % -p $ARG2$ -w 1 -c 1 $ARG3$
 }
 define command {
   command_name    check_rpc_latency

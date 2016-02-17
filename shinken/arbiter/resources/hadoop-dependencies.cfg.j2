@@ -1,6 +1,6 @@
 {% for hostname, host in hosts %}{% if host.hostgroups %}
 {% if host.hostgroups | contains('watcher') %}
-define service {
+define servicedependency {
   service_description           Zookeeper Server: Quorum
   dependent_service_description HDFS NN: Active Node
   host_name                     {{ hostname }}
@@ -9,7 +9,16 @@ define service {
   execution_failure_criteria    c,u,p
   notification_failure_criteria c,u,p
 }
-define service {
+define servicedependency {
+  service_description           Zookeeper Server: Quorum
+  dependent_service_description Hiveserver2: Available
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define servicedependency {
   service_description           Zookeeper Server: Quorum
   dependent_service_description YARN RM: Active Node
   host_name                     {{ hostname }}
@@ -18,25 +27,25 @@ define service {
   execution_failure_criteria    c,u,p
   notification_failure_criteria c,u,p
 }
-define service {
+define servicedependency {
   service_description           Zookeeper Server: Quorum
-  dependent_service_description HBase Master: HA
+  dependent_service_description HBase Master: Available
   host_name                     {{ hostname }}
   dependent_host_name           {{ hostname }}
   inherits_parent               1
   execution_failure_criteria    c,u,p
   notification_failure_criteria c,u,p
 }
-define service {
+define servicedependency {
   service_description           YARN RM: Active Node
-  dependent_service_description YARN RM: TCP
+  dependent_service_description YARN RM: TCP SSL
   host_name                     {{ hostname }}
   dependent_host_name           {{ hostname }}
   inherits_parent               1
   execution_failure_criteria    c,u,p
   notification_failure_criteria c,u,p
 }
-define service {
+define servicedependency {
   service_description           YARN RM: Active Node
   dependent_service_description YARN RM: Scheduler TCP
   host_name                     {{ hostname }}
@@ -45,7 +54,7 @@ define service {
   execution_failure_criteria    c,u,p
   notification_failure_criteria c,u,p
 }
-define service {
+define servicedependency {
   service_description           YARN RM: Active Node
   dependent_service_description YARN RM: Tracker TCP
   host_name                     {{ hostname }}
@@ -54,7 +63,7 @@ define service {
   execution_failure_criteria    c,u,p
   notification_failure_criteria c,u,p
 }
-define service {
+define servicedependency {
   service_description           YARN RM: Active Node
   dependent_service_description YARN RM: RPC latency
   host_name                     {{ hostname }}
@@ -86,7 +95,7 @@ define servicedependency {
 {% endif %}
 {% if host.hostgroups | contains('hdfs_nn')%}
 define servicedependency {
-  service_description           HDFS NN: TCP
+  service_description           HDFS NN: WebService
   dependent_service_description HDFS NN: RPC latency
   host_name                     {{ hostname }}
   dependent_host_name           {{ hostname }}
@@ -95,7 +104,16 @@ define servicedependency {
   notification_failure_criteria c,u,p
 }
 define servicedependency {
-  service_description           HDFS NN: TCP
+  service_description           HDFS NN: WebService
+  dependent_service_description HDFS NN: Certificate
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define servicedependency {
+  service_description           HDFS NN: WebService
   dependent_service_description HDFS NN: Last Checkpoint
   host_name                     {{ hostname }}
   dependent_host_name           {{ hostname }}
@@ -104,7 +122,7 @@ define servicedependency {
   notification_failure_criteria c,u,p
 }
 define servicedependency {
-  service_description           HDFS NN: TCP
+  service_description           HDFS NN: WebService
   dependent_service_description HDFS NN: Name Dir status
   host_name                     {{ hostname }}
   dependent_host_name           {{ hostname }}
@@ -113,7 +131,7 @@ define servicedependency {
   notification_failure_criteria c,u,p
 }
 define servicedependency {
-  service_description           HDFS NN: TCP
+  service_description           HDFS NN: WebService
   dependent_service_description HDFS NN: Utilization
   host_name                     {{ hostname }}
   dependent_host_name           {{ hostname }}
@@ -121,9 +139,22 @@ define servicedependency {
   execution_failure_criteria    c,u,p
   notification_failure_criteria c,u,p
 }
+{% endif %}
+{% if host.hostgroups | contains('zkfc') %}
 define servicedependency {
-  service_description           HDFS NN: TCP
-  dependent_service_description WebHDFS: WebService
+  service_description           Zookeeper Server: Quorum
+  dependent_service_description ZKFC: TCP
+  host_name                     {{ host.cluster }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+{% endif %}
+{% if host.hostgroups | contains('hdfs_jn') %}
+define servicedependency {
+  service_description           HDFS JN: TCP SSL
+  dependent_service_description HDFS JN: Certificate
   host_name                     {{ hostname }}
   dependent_host_name           {{ hostname }}
   inherits_parent               1
@@ -131,7 +162,7 @@ define servicedependency {
   notification_failure_criteria c,u,p
 }
 {% endif %}
-{% if host.hostgroups | contains('hdfs_dn')%}
+{% if host.hostgroups | contains('hdfs_dn') %}
 define servicedependency {
   service_description           HDFS NN: Active Node
   dependent_service_description HDFS DN: TCP
@@ -144,6 +175,83 @@ define servicedependency {
 define servicedependency {
   service_description           HDFS DN: TCP
   dependent_service_description HDFS DN: Available space
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+{% endif %}
+{% if host.hostgroups | contains('hbase_master') %}
+define servicedependency {
+  service_description           HBase Master: WebUI
+  dependent_service_description HBase Master: Certificate
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+{% endif %}
+{% if host.hostgroups | contains('hbase_rest') %}
+define servicedependency {
+  service_description           HBase REST: TCP SSL
+  dependent_service_description HBase REST: Certificate
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+{% endif %}
+{% if host.hostgroups | contains('hiveserver2') %}
+define servicedependency {
+  service_description           Hiveserver2: TCP SSL
+  dependent_service_description Hiveserver2: Certificate
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+{% endif %}
+{% if host.hostgroups | contains('oozie_server') %}
+define servicedependency {
+  service_description           Oozie Server: WebUI
+  dependent_service_description Oozie Server: Certificate
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+{% endif %}
+{% if host.hostgroups | contains('opentsdb') %}
+define servicedependency {
+  service_description           HBase Master: Available
+  dependent_service_description OpenTSDB: WebService
+  host_name                     {{ host.cluster }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+{% endif %}
+{% if host.hostgroups | contains('hue') %}
+define servicedependency {
+  service_description           Hue: WebUI
+  dependent_service_description Hue: Certificate
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+{% endif %}
+{% if host.hostgroups | contains('knox') %}
+define servicedependency {
+  service_description           Knox: WebService
+  dependent_service_description Knox: Certificate
   host_name                     {{ hostname }}
   dependent_host_name           {{ hostname }}
   inherits_parent               1
