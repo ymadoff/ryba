@@ -6,6 +6,33 @@
     module.exports.push 'masson/core/yum'
     module.exports.push 'ryba/shinken'
 
+## SSH
+
+    module.exports.push
+      header: 'Shinken Reactionner # SSH'
+      if: -> @config.ryba.shinken.user.ssh?.private_key? and @config.ryba.shinken.user.ssh?.public_key?
+      handler: ->
+        {user} = @config.ryba.shinken
+        @mkdir
+          destination: "#{user.home}/.ssh"
+          mode: 0o700
+          uid: user.name
+          gid: user.gid
+        @write
+          destination: "#{user.home}/.ssh/id_rsa"
+          content: user.ssh.private_key
+          eof: true
+          mode: 0o600
+          uid: user.name
+          gid: user.gid
+        @write
+          destination: "#{user.home}/.ssh/id_rsa.pub"
+          content: user.ssh.public_key
+          eof: true
+          mode: 0o644
+          uid: user.name
+          gid: user.gid
+
 ## IPTables
 
 | Service             | Port  | Proto | Parameter        |
