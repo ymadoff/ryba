@@ -92,17 +92,14 @@ They must have register set to 0 to not be instanciated
         services['generic-service'].notification_interval ?= '3600'
         services['generic-service'].notification_period ?= '24x7'
         services['generic-service'].register = '0'
-        services['hadoop-service'] ?= {}
-        services['hadoop-service'].use ?= 'generic-service'
-        services['hadoop-service'].register ?= '0'
-        services['hadoop-unit-service'] ?= {}
-        services['hadoop-unit-service'].use ?= 'hadoop-service'
-        services['hadoop-unit-service'].register = '0'
-        services['hadoop-unit-service'].check_interval = '30'
-        services['hadoop-unit-service'].retry_interval = '10'
-        services['hadoop-functional-service'] ?= {}
-        services['hadoop-functional-service'].use ?= 'hadoop-service'
-        services['hadoop-functional-service'].register = '0'
+        services['unit-service'] ?= {}
+        services['unit-service'].use ?= 'generic-service'
+        services['unit-service'].register = '0'
+        services['unit-service'].check_interval = '30'
+        services['unit-service'].retry_interval = '10'
+        services['functional-service'] ?= {}
+        services['functional-service'].use ?= 'generic-service'
+        services['functional-service'].register = '0'
         # ContactGroups
         contactgroups['admins'] ?= {}
         contactgroups['admins'].alias ?= 'Shinken Administrators'
@@ -141,14 +138,15 @@ This function creates hostgroups and servicegroups from ryba (sub)modules
       from_ryba: ->
         {servicegroups, hostgroups} = @config.ryba.shinken.config
         initgroup = (name, parent, alias) ->
+          alias ?= "#{name.charAt(0).toUpperCase()}#{name.slice 1}"
           servicegroups[name] ?= {}
-          servicegroups[name].alias ?= (if alias then alias else "#{name.charAt(0).toUpperCase()}#{name.slice 1}") + ' Services'
+          servicegroups[name].alias ?= "#{alias} Services"
           servicegroups[name].members ?= []
           servicegroups[name].servicegroup_members ?= []
           servicegroups[name].servicegroup_members = [servicegroups[name].servicegroup_members] unless Array.isArray servicegroups[name].servicegroup_members
           servicegroups[parent].servicegroup_members.push name if parent? and name not in servicegroups[parent].servicegroup_members
           hostgroups[name] ?= {}
-          hostgroups[name].alias ?= (if alias then alias else "#{name.charAt(0).toUpperCase()}#{name.slice 1}") + ' Hosts'
+          hostgroups[name].alias ?= "#{alias} Hosts"
           hostgroups[name].members ?= []
           hostgroups[name].hostgroup_members ?= []
           parent ?= 'by_roles'
@@ -236,12 +234,14 @@ For now masson modules are not available.
           hosts[name].alias = "#{name} Watcher"
           hosts[name].hostgroups = ['watcher']
           hosts[name].use = 'aggregates'
-          hosts[name].modules = []
+          hosts[name].modules ?= []
+          hosts[name].modules = [hosts[name].modules] unless Array.isArray hosts[name].modules
           for hostname, srv of servers
             hostgroups[name].members.push hostname
             hosts[hostname] ?= {}
             hosts[hostname].ip ?= srv.ip
             hosts[hostname].hostgroups ?= []
+            hosts[hostname].hostgroups = [hosts[hostname].hostgroups] unless Array.isArray hosts[hostname].hostgroups
             hosts[hostname].use ?= 'linux-server'
             hosts[hostname].config ?= srv
             hosts[hostname].cluster ?= name
