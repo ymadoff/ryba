@@ -32,10 +32,6 @@ define command {
   command_line    $DOCKER_EXEC$ ./check_socket.php -H $HOSTADDRESS$ -p $ARG1$ -m $ARG2$ -r $ARG3$ $ARG4$
 }
 define command {
-  command_name    check_webservice
-  command_line    $DOCKER_EXEC$ ./check_http.sh -H $HOSTNAME$ -p $ARG1$ -u $ARG2$ -r $ARG3$ $ARG4$ 
-}
-define command {
   command_name    has_quorum
   command_line    $DOCKER_EXEC$ ./check_aggregate.php -H localhost -p 50000 -d $ARG1$ -f "host_groups >= $HOSTNAME$" -w 1% -c 50% $ARG2$ 
 }
@@ -46,6 +42,10 @@ define command {
 define command {
   command_name    has_all
   command_line    $DOCKER_EXEC$ ./check_aggregate.php -H localhost -p 50000 -d $ARG1$ -f "host_groups >= $HOSTNAME$" -w 1% -c 1% $ARG2$ 
+}
+define command {
+  command_name    has_percent
+  command_line    $DOCKER_EXEC$ ./check_aggregate.php -H localhost -p 50000 -d $ARG1$ -f "host_groups >= $HOSTNAME$" -w $ARG2$ -c $ARG3$ $ARG4$
 }
 ## Multi Service commands
 define command {
@@ -64,6 +64,10 @@ define command {
 define command {
   command_name    check_zk_stat
   command_line    $DOCKER_EXEC$ ./check_zk_stat.php -H $HOSTADDRESS$ -p $ARG1$ -f $ARG2$ -w $ARG3$ -c $ARG4$ $ARG5$
+}
+define command {
+  command_name    check_hdfs_state
+  command_line    $DOCKER_EXEC$ ./check_hdfs_state.php -H $HOSTNAME$ -p $ARG1$ -f $ARG2$ -w $ARG3$ -c $ARG4$ $ARG5$
 }
 define command {
   command_name    check_active_nn
@@ -88,6 +92,10 @@ define command {
 define command {
   command_name    check_active_rm
   command_line    $DOCKER_EXEC$ ./check_active_rm.php -H localhost -p 50000 -C $HOSTNAME$ -P $ARG1$ $ARG2$
+}
+define command {
+  command_name    check_nm_info
+  command_line    $DOCKER_EXEC$ ./check_nm_info.php -H $HOSTNAME$ -p $ARG1$ -f $ARG2$ -r $ARG3$ $ARG4$
 }
 ## User/ryba-defined commands
 {% for name, command in commands %}

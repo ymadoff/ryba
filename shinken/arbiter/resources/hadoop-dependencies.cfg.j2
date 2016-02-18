@@ -1,5 +1,6 @@
 {% for hostname, host in hosts %}{% if host.hostgroups %}
 {% if host.hostgroups | contains('watcher') %}
+{% if host.modules | contains('zookeeper_server') %}
 define servicedependency {
   service_description           Zookeeper Server: Quorum
   dependent_service_description HDFS NN: Active Node
@@ -36,6 +37,8 @@ define servicedependency {
   execution_failure_criteria    c,u,p
   notification_failure_criteria c,u,p
 }
+{% endif %}
+{% if host.modules | contains('yarn_rm') %}
 define servicedependency {
   service_description           YARN RM: Active Node
   dependent_service_description YARN RM: TCP SSL
@@ -72,6 +75,7 @@ define servicedependency {
   execution_failure_criteria    c,u,p
   notification_failure_criteria c,u,p
 }
+{% endif %}
 {% endif %}
 {% if host.hostgroups | contains('zookeeper_server') %}
 define servicedependency {
@@ -139,6 +143,15 @@ define servicedependency {
   execution_failure_criteria    c,u,p
   notification_failure_criteria c,u,p
 }
+define servicedependency {
+  service_description           HDFS NN: WebService
+  dependent_service_description HDFS NN: Under-Replicated Blocks
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
 {% endif %}
 {% if host.hostgroups | contains('zkfc') %}
 define servicedependency {
@@ -165,7 +178,7 @@ define servicedependency {
 {% if host.hostgroups | contains('hdfs_dn') %}
 define servicedependency {
   service_description           HDFS NN: Active Node
-  dependent_service_description HDFS DN: TCP
+  dependent_service_description HDFS DN: TCP SSL
   host_name                     {{ host.cluster }}
   dependent_host_name           {{ hostname }}
   inherits_parent               1
@@ -173,7 +186,16 @@ define servicedependency {
   notification_failure_criteria c,u,p
 }
 define servicedependency {
-  service_description           HDFS DN: TCP
+  service_description           HDFS DN: TCP SSL
+  dependent_service_description HDFS DN: Certificate
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define servicedependency {
+  service_description           HDFS DN: TCP SSL
   dependent_service_description HDFS DN: Available space
   host_name                     {{ hostname }}
   dependent_host_name           {{ hostname }}
