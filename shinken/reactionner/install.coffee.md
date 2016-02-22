@@ -10,9 +10,9 @@
 
     module.exports.push
       header: 'Shinken Reactionner # SSH'
-      if: -> @config.ryba.shinken.user.ssh?.private_key? and @config.ryba.shinken.user.ssh?.public_key?
+      if: -> @config.ryba.shinken.reactionner.ssh?.private_key? and @config.ryba.shinken.reactionner.ssh?.public_key?
       handler: ->
-        {user} = @config.ryba.shinken
+        {user, reactionner} = @config.ryba.shinken
         @mkdir
           destination: "#{user.home}/.ssh"
           mode: 0o700
@@ -20,14 +20,14 @@
           gid: user.gid
         @write
           destination: "#{user.home}/.ssh/id_rsa"
-          content: user.ssh.private_key
+          content: reactionner.ssh.private_key
           eof: true
           mode: 0o600
           uid: user.name
           gid: user.gid
         @write
           destination: "#{user.home}/.ssh/id_rsa.pub"
-          content: user.ssh.public_key
+          content: reactionner.ssh.public_key
           eof: true
           mode: 0o644
           uid: user.name
