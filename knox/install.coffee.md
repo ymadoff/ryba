@@ -6,6 +6,7 @@
     module.exports.push 'masson/core/iptables'
     module.exports.push 'masson/core/yum'
     module.exports.push 'ryba/lib/hconfigure'
+    module.exports.push 'ryba/lib/hdp_select'
     module.exports.push 'ryba/lib/write_jaas'
 
 ## Users & Groups
