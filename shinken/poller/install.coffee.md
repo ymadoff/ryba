@@ -165,10 +165,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         #   container: 'poller-executor'
         #   cmd: "sudo kinit #{shinken.poller.executor.krb5.privileged.principal} -kt /etc/security/keytabs/crond.privileged.keytab"
       # WORKAROUND
-      @docker_exec
-        container: 'poller-executor'
-        cmd: "kinit #{shinken.poller.executor.krb5.unprivileged.principal} -kt /etc/security/keytabs/crond.unprivileged.keytab"
-        shy: true
 
 ## Dependencies
 
