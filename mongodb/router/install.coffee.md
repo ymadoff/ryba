@@ -1,49 +1,119 @@
 
-# MongoDB Router Install
+# MongoDB Config Server Install
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/core/yum'
-    module.exports.push 'masson/core/iptables'
+    module.exports =  header: 'MongoDB Router Server Install', handler: ->
+      {mongodb, realm, ssl} = @config.ryba
+      {router} = mongodb
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## IPTables
 
 | Service       | Port  | Proto | Parameter       |
 |---------------|-------|-------|-----------------|
-| Mongod        | 27017 |  tcp  |  config.port    |
+| Mongod        | 27018 |  tcp  |  configsrv.port |
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push header: 'MongoDB Router # IPTables', handler: ->
-      {router} = @config.ryba.mongodb
-      @iptables
-        rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: router.config.port, protocol: 'tcp', state: 'NEW', comment: "MongoDB port" }
-        ]
-        if: @config.iptables.action is 'start'
+      @call header: 'MongoDB Router Server # IPTables', handler: ->
+        @iptables
+          rules: [
+            { chain: 'INPUT', jump: 'ACCEPT', dport: router.config.net.port, protocol: 'tcp', state: 'NEW', comment: "MongoDB Router Server port" }
+          ]
+          if: @config.iptables.action is 'start'
 
 ## Users & Groups
 
-    module.exports.push header: 'MongoDB # Users & Groups', handler: ->
-      {mongodb} = @config.ryba
-      @group mongodb.group
-      @user mongodb.user
+      @call header: 'MongoDB Router Server # Users & Groups', handler: ->
+        @group mongodb.group
+        @user mongodb.user
 
 ## Packages
 
-    module.exports.push header: 'MongoDB Router # Packages', timeout: -1, handler: ->
-      @service name: 'mongodb-org-mongos'
+Install mongodb-org-server containing packages for a mongod service. We render the init scripts
+in order to rendered configuration file with custom properties.
+
+      @call header: 'MongoDB Router Server # Packages', timeout: -1, handler: ->
+        @service name: 'mongodb-org-mongos'
+        @service name: 'mongodb-org-shell'
+        @render
+          source: "#{__dirname}/../resources/mongod-router-server.js2"
+          destination: '/etc/init.d/mongodb-router-server'
+          context: @config
+          unlink: true
+          mode: 0o0750
+          local_source: true
+          eof: true
+
+## Layout
+
+Create dir where the mongodb-config-server stores its metadata
+
+      @call header: 'MongoDB Router Server # Layout',  handler: ->
+        @mkdir
+          destination: '/var/lib/mongodb'
+          uid: mongodb.user.name
+          gid: mongodb.group.name
+
 
 ## Configure
 
-    module.exports.push header: 'MongoDB Router # Configure', handler: ->
-      {router} = @config.ryba.mongodb
-      @write
-        destination: '/etc/mongodb/mongos.conf'
-        write: for k, v of router.config
-          match: RegExp "^#{quote k}=.*$", 'mg'
-          replace: "#{k}=#{v}"
+Configuration file for mongodb config server.
+
+      @call header: 'MongoDB Router Server # Configure', handler: ->
+        @yaml
+          destination: "#{mongodb.router.conf_dir}/mongos.conf"
+          content: mongodb.router.config
+          merge: false
+          uid: mongodb.user.name
+          gid: mongodb.group.name
+          mode: 0o0750
+          backup: true
+        @service_stop
+          if: -> @status -1
+          name: 'mongodb-router-server'
+
+## SSL
+
+Mongod service requires to have in a single file the private key and the certificate
+with pem file. So we append to the file the private key and certficate.
+
+      @call header: 'MongoDB Router Server # SSL', handler: ->
+        @upload
+          source: ssl.cacert
+          destination: "#{mongodb.router.conf_dir}/cacert.pem"
+          uid: mongodb.user.name
+          gid: mongodb.group.name
+        @upload
+          source: ssl.key
+          destination: "#{mongodb.router.conf_dir}/key_file.pem"
+          uid: mongodb.user.name
+          gid: mongodb.group.name
+        @upload
+          source: ssl.cert
+          destination: "#{mongodb.router.conf_dir}/cert_file.pem"
+          uid: mongodb.user.name
+          gid: mongodb.group.name
+        @write
+          source: "#{mongodb.router.conf_dir}/cert_file.pem"
+          destination: "#{mongodb.router.conf_dir}/key.pem"
           append: true
-        backup: true
-        eof: true
+          backup: true
+          eof: true
+          uid: mongodb.user.name
+          gid: mongodb.group.name
+        @write
+          source: "#{mongodb.router.conf_dir}/key_file.pem"
+          destination: "#{mongodb.router.conf_dir}/key.pem"
+          eof: true
+          append: true
+          uid: mongodb.user.name
+          gid: mongodb.group.name
+
+# User limits
+
+      @call header: 'MongoDB Router Server # User Limits', handler: ->
+        @system_limits
+          user: mongodb.user.name
+          nofile: mongodb.user.limits.nofile
+          nproc: mongodb.user.limits.nproc

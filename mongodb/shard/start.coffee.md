@@ -1,16 +1,11 @@
 
-# MongoDB Shard Start
+# MongoDB Shard Server Start
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
+    module.exports = header: 'MongoDB Shard Server # Start', label_true: 'STARTED', handler: ->
 
 ## Start
 
-    module.exports.push name: 'MongoDB Shard # Start', label_true: 'STARTED', handler: ->
-      {mongodb} = @config.ryba
-      mongos_hosts = @hosts_with_module('ryba/mongodb/router').join ','
-      @execute
-        cmd: "mongod --shardsrv #{mongos_hosts} --logappend"
+      @service_start name: 'mongodb-shard-server'
 
 ## Dependencies
 

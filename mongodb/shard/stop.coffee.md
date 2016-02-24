@@ -1,21 +1,22 @@
 
-# MongoDB Shard Stop
+# MongoDB Config Server Stop
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    
+    module.exports = header: 'MongoDB Shard Server # Stop', label_true: 'STOPPED', handler: ->
+      {shard} = @config.ryba.mongodb
+
 ## Stop
 
-Stop the MongoDB services.
+Stop the MongoDB Config Server service.
 
-    module.exports.push name: 'MongoDB Shard # Stop', label_true: 'STOPPED', handler: ->
-      @service_stop name: "mongod" ## "mongod --shardsrv #{mongos_hosts} --logappend"
-      
+      @service_stop name: 'mongodb-shard-server'
+
 ## Clean Logs
 
-    module.exports.push name: 'MongoDB Shard # Clean Logs', label_true: 'CLEANED', handler: ->
-      return unless @config.ryba.clean_logs
-      {mongodb} = @config.ryba
-      @execute
-        cmd: "rm #{mongodb.log_dir}/*"
-        code_skipped: 1
+      @call
+        if:  @config.ryba.clean_logs
+        header: 'MongoDB Shard Server # Clean Logs'
+        label_true: 'CLEANED'
+        handler: ->
+          @execute
+            cmd: "rm #{shard.config.systemLog.path}"
+            code_skipped: 1

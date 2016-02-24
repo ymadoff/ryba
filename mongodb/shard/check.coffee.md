@@ -9,4 +9,4 @@
     module.exports.push header: 'MongoDB Shard # Check TCP', label_true: 'CHECKED', handler: ->
       {mongodb} = @config.ryba
       @execute
-        cmd: "echo > /dev/tcp/#{@config.host}/#{shard.port}"
+        cmd: "echo > /dev/tcp/#{@config.host}/#{mongodb.shard.config.net.port}"

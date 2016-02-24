@@ -1,10 +1,28 @@
 
 # MongoDB Routing Server Start
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
+Waits the replica set of config server to be initialized and ready before starting any mongos instance.
+For this we wait to be able to execute a rs.status() on  the first initiated
+replica set primary server.
 
-## Start
-
-    module.exports.push header: 'MongoDB Routing Server # Start', label_true: 'STARTED', handler: ->
-      @service_start name: 'mongos'
+    module.exports = header: 'MongoDB Router Server # Start', label_true: 'READY', timeout: -1, handler: ->
+      {mongodb, realm, ssl} = @config.ryba
+      {router} = mongodb
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      mongo_shell_exec =  ""
+      mongo_shell_admin_exec =  "#{mongo_shell_exec} -u #{mongodb.admin.name} --password  #{mongodb.admin.password}"
+      cfsrv_ctxs = @contexts 'ryba/mongodb/configsrv', require('../configsrv').configure
+      [replica_master_ctx] = cfsrv_ctxs.filter (ctx) =>
+        srv = ctx.config.ryba.mongodb.configsrv
+        srv.config.replication.replSetName is router.my_cfgsrv_repl_set and !srv.is_master
+      # we wait for the replica set to be ready before starting the router server
+      mongo_shell_root_exec =  "mongo admin "
+      mongo_shell_root_exec +=  "-h #{replica_master_ctx.config.host} "
+      mongo_shell_root_exec += "--port #{replica_master_ctx.config.ryba.mongodb.configsrv.config.net.port} "
+      mongo_shell_root_exec += "-u #{replica_master_ctx.config.ryba.mongodb.root.name} "
+      mongo_shell_root_exec += "-p #{replica_master_ctx.config.ryba.mongodb.root.password} "
+      cmd = " --eval 'rs.status().ok ' | grep -v 'MongoDB shell version' | grep -v 'connecting to:' | grep 1 "
+      @wait_execute
+        cmd: "#{mongo_shell_root_exec} #{cmd}"
+      # TODO check if all config server are available
+      @service_start name: 'mongodb-router-server'

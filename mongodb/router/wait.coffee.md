@@ -1,13 +1,11 @@
 
 # MongoDB Routing Server Wait
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
+    module.exports.push = header: 'MongoDB Routing Server # Wait', label_true: 'READY', timeout: -1, handler: ->
 
 ## Wait
 
-    module.exports.push header: 'MongoDB Routing Server # Wait', label_true: 'READY', timeout: -1, handler: ->
       @wait_connect
         servers: for ctx in @contexts 'ryba/mongodb/router'
-          host: ctx.config.host
-          port: ctx.config.ryba.mongodb.srv_config.port
+          host: @config.host
+          port: @config.ryba.mongodb.router.config.net.port
