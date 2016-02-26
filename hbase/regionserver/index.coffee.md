@@ -31,7 +31,10 @@ It is responsible for serving and managing regions. In a distributed cluster, a 
       # http://blog.sematext.com/2012/07/16/hbase-memstore-what-you-should-know/
       # Keep hbase.regionserver.hlog.blocksize * hbase.regionserver.maxlogs just
       # a bit above hbase.regionserver.global.memstore.lowerLimit * HBASE_HEAPSIZE
-      hbase.rs.opts ?= "-Xmn200m -Xms4096m -Xmx4096m -Djava.security.auth.login.config=#{hbase.rs.conf_dir}/hbase-regionserver.jaas"
+      hbase.rs.opts ?= "-Xmn128m -Xms4096m -Xmx4096m"
+      if   hbase.rs.opts.indexOf('-Djava.security.auth.login.config') is -1
+        hbase.rs.opts += " -Djava.security.auth.login.config=#{hbase.rs.conf_dir}/hbase-regionserver.jaas"
+      
 
 ## Configuration for Kerberos
       

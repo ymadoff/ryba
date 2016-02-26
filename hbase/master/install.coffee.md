@@ -95,12 +95,6 @@ Environment passed to the Master before it starts.
           match: RegExp "export #{k}=.*", 'm'
           replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
           append: true
-        # HBase master opts
-        if hbase.master.opts
-          writes.push
-            match: /^export HBASE_MASTER_OPTS="(.*)" # RYBA(.*)$/m
-            replace: "export HBASE_MASTER_OPTS=\"#{hbase.master.opts} ${HBASE_MASTER_OPTS}\" # RYBA CONF \"ryba.hbase.master.opts\", DONT OVERWRITE"
-            before: /^export HBASE_MASTER_OPTS=".*"$/m
         @render
           source: "#{__dirname}/../resources/hbase-env.sh"
           destination: "#{hbase.master.conf_dir}/hbase-env.sh"

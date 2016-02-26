@@ -50,12 +50,15 @@ See [REST Gateway Impersonation Configuration][impersonation].
       for hbase_ctx in hbase_ctxs
         match = /^(.+?)[@\/]/.exec hbase.rest.site['hbase.rest.kerberos.principal']
         throw Error 'Invalid HBase Rest principal' unless match
-        # hbase_ctx.config.ryba.hbase ?= {}
-        # hbase_ctx.config.ryba.hbase.site ?= {}
+        hbase_ctx.config.ryba.hbase ?= {}
+        hbase_ctx.config.ryba.hbase.master ?= {}
+        hbase_ctx.config.ryba.hbase.master.site ?= {}
         hbase_ctx.config.ryba.hbase.master?.site["hadoop.proxyuser.#{match[1]}.groups"] ?= '*'
         hbase_ctx.config.ryba.hbase.master?.site["hadoop.proxyuser.#{match[1]}.hosts"] ?= '*'
-        hbase_ctx.config.ryba.hbase.rs?.site["hadoop.proxyuser.#{match[1]}.groups"] ?= '*'
-        hbase_ctx.config.ryba.hbase.rs?.site["hadoop.proxyuser.#{match[1]}.hosts"] ?= '*'
+        hbase_ctx.config.ryba.hbase.rs ?= {}
+        hbase_ctx.config.ryba.hbase.rs.site ?= {}
+        hbase_ctx.config.ryba.hbase.rs.site["hadoop.proxyuser.#{match[1]}.groups"] ?= '*'
+        hbase_ctx.config.ryba.hbase.rs.site["hadoop.proxyuser.#{match[1]}.hosts"] ?= '*'
 
 ## Distributed mode
 
