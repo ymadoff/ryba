@@ -59,6 +59,7 @@ Example:
       kafka.broker.config['zookeeper.connect'] ?= zookeeper_quorum
       kafka.broker.config['log.retention.hours'] ?= '168'
       kafka.broker.config['delete.topic.enable'] ?= 'true'
+      kafka.broker.config['zookeeper.set.acl'] ?= 'true'
       kafka.broker.config['super.users'] ?= kafka.superusers.map( (user) -> "User:#{user}").join(',')
       hosts = ctx.contexts('ryba/kafka/broker').map (ctx) -> ctx.config.host
       kafka.broker.config['num.partitions'] ?= hosts.length # Default number of log partitions per topic, default is "2"
@@ -76,6 +77,7 @@ Example:
       kafka.broker.env['KAFKA_LOG4J_OPTS'] ?= "-Dlog4j.configuration=file:$base_dir/../config/log4j.properties"
       kafka.broker.log4j ?= {}
       kafka.broker.log4j['log4j.rootLogger'] ?= 'INFO, kafkaAppender'
+      # kafka.broker.log4j['log4j.logger.kafka.authorizer.logger'] ?= 'DEBUG, authorizerAppender'
       kafka.broker.log4j['log4j.additivity.kafka'] ?= "false"
       # Push user and group configuration to consumer and producer
       # for csm_ctx in ctx.contexts ['ryba/kafka/consumer', 'ryba/kafka/producer']
@@ -125,36 +127,44 @@ Example PLAINTEXT and SSL:
 
 # Security SSL
 
-      for protocol in kafka.broker.protocols
-        continue unless ['SASL_SSL','SSL'].indexOf protocol > -1
-        kafka.broker.config['ssl.keystore.location'] ?= "#{kafka.broker.conf_dir}/keystore"
-        kafka.broker.config['ssl.keystore.password'] ?= 'ryba123'
-        kafka.broker.config['ssl.key.password'] ?= 'ryba123'
-        kafka.broker.config['ssl.truststore.location'] ?= "#{kafka.broker.conf_dir}/truststore"
-        kafka.broker.config['ssl.truststore.password'] ?= 'ryba123'
+      # for protocol in kafka.broker.protocols
+      #   continue unless ['SASL_SSL','SSL'].indexOf(protocol) > -1
+      kafka.broker.config['ssl.keystore.location'] ?= "#{kafka.broker.conf_dir}/keystore"
+      kafka.broker.config['ssl.keystore.password'] ?= 'ryba123'
+      kafka.broker.config['ssl.key.password'] ?= 'ryba123'
+      kafka.broker.config['ssl.truststore.location'] ?= "#{kafka.broker.conf_dir}/truststore"
+      kafka.broker.config['ssl.truststore.password'] ?= 'ryba123'
 
 # Security Kerberos & ACL
 
-      for protocol in kafka.broker.protocols
-        continue unless ['SASL_PLAINTEXT','SASL_SSL'].indexOf protocol > -1
+      secure_cluster = false
+      if kafka.broker.config['zookeeper.set.acl'] is 'true'
+        secure_cluster = true
         kafka.broker.kerberos ?= {}
         kafka.broker.kerberos['principal'] ?= "#{kafka.user.name}/#{@config.host}@#{@config.ryba.realm}"
         kafka.broker.kerberos['keyTab'] ?= '/etc/security/keytabs/kafka.service.keytab'
         match = /^(.+?)[@\/]/.exec kafka.broker.kerberos['principal']
         kafka.broker.config['sasl.kerberos.service.name'] = "#{match[1]}"
+        # set to true to be able to use 9092 if PLAINTEXT only mode is enabled
         kafka.broker.config['allow.everyone.if.no.acl.found'] ?= 'true'
-        kafka.broker.config['zookeeper.set.acl'] ?= true
+        kafka.broker.config['authorizer.class.name'] = 'kafka.security.auth.SimpleAclAuthorizer'
         kafka.broker.env['KAFKA_KERBEROS_PARAMS'] ?= "-Djava.security.auth.login.config=#{kafka.broker.conf_dir}/kafka-server.jaas"
+
+# Brokers internal communication
+
+        kafka.broker.config['replication.security.protocol'] ?= 'SASL_SSL'
+      else
+        kafka.broker.config['replication.security.protocol'] ?= 'SSL'
+      for prot in kafka.broker.protocols
+          throw Error 'ACL must be activated' if ( prot.indexOf('SASL') > -1 and not secure_cluster)
 
 
 # Listeners Protocols
 
-      kafka.broker.config['listeners'] ?= kafka.broker.protocols.map( (protocol) => 
+      kafka.broker.config['listeners'] ?= kafka.broker.protocols.map( (protocol) =>
         "#{protocol}://#{@config.host}:#{kafka.ports[protocol]}").join(',')
 
-# Brokers internal communication
 
-      kafka.broker.config['replication.security.protocol'] = if @config.ryba.security is 'kerberos' then 'SASL_SSL' else 'SSL'
 
 
     module.exports.push commands: 'check', modules: 'ryba/kafka/broker/check'

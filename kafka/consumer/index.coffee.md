@@ -63,7 +63,7 @@ log. It is fast, scalable, durable and distributed by design.
 
       ssl_enabled = false
       for protocol in ks_ctxs[0].config.ryba.kafka.broker.protocols
-        continue unless ['SASL_SSL','SSL'].indexOf protocol > -1
+        continue unless ['SASL_SSL','SSL'].indexOf(protocol) > -1
         ssl_enabled = true
       if ssl_enabled
         kafka.consumer.config['ssl.truststore.location'] ?= "#{kafka.consumer.conf_dir}/truststore"
@@ -76,7 +76,8 @@ log. It is fast, scalable, durable and distributed by design.
 ## Kerberos
 
       kafka.consumer.env ?= {}
-      kafka.consumer.env['KAFKA_KERBEROS_PARAMS'] ?= "-Djava.security.auth.login.config=#{kafka.consumer.conf_dir}/kafka-client.jaas"
+      if ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.set.acl'] is 'true'
+        kafka.consumer.env['KAFKA_KERBEROS_PARAMS'] ?= "-Djava.security.auth.login.config=#{kafka.consumer.conf_dir}/kafka-client.jaas"
 
     module.exports.push commands: 'check', modules: 'ryba/kafka/consumer/check'
 

@@ -58,7 +58,7 @@ log. It is fast, scalable, durable and distributed by design.
 
       ssl_enabled = false
       for protocol in ks_ctxs[0].config.ryba.kafka.broker.protocols
-        continue unless ['SASL_SSL','SSL'].indexOf protocol > -1
+        continue unless ['SASL_SSL','SSL'].indexOf(protocol) > -1
         ssl_enabled = true
       if ssl_enabled
         kafka.producer.config['ssl.truststore.location'] ?= "#{kafka.producer.conf_dir}/truststore"
@@ -71,7 +71,8 @@ log. It is fast, scalable, durable and distributed by design.
 ## Kerberos
 
       kafka.producer.env ?= {}
-      kafka.producer.env['KAFKA_KERBEROS_PARAMS'] ?= "-Djava.security.auth.login.config=#{kafka.producer.conf_dir}/kafka-client.jaas"
+      if ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.set.acl'] is 'true'
+        kafka.producer.env['KAFKA_KERBEROS_PARAMS'] ?= "-Djava.security.auth.login.config=#{kafka.producer.conf_dir}/kafka-client.jaas"
 
     module.exports.push commands: 'check', modules: 'ryba/kafka/producer/check'
 

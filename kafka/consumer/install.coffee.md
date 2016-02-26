@@ -65,11 +65,20 @@ Update the file "consumer.properties" with the properties defined by the
           append: true
         backup: true
         eof: true
+      @write
+        destination: "#{kafka.consumer.conf_dir}/test-log4j.properties"
+        write: for k, v of kafka.consumer.log4j
+          match: RegExp "^#{quote k}=.*$", 'mg'
+          replace: "#{k}=#{v}"
+          append: true
+        backup: true
+        eof: true
 
 ## Kerberos
 
     module.exports.push header: 'Kafka Consumer # Kerberos', handler: ->
       {kafka} = @config.ryba
+      return unless kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
       @write_jaas
         destination: "#{kafka.consumer.conf_dir}/kafka-client.jaas"
         content:
@@ -99,6 +108,7 @@ Update the file "consumer.properties" with the properties defined by the
 
     module.exports.push header: 'Kafka Consumer # SSL Client', handler: ->
       {kafka, ssl} = @config.ryba
+      return unless kafka.consumer.config['ssl.truststore.location']?
       @java_keystore_add
         keystore:   kafka.consumer.config['ssl.truststore.location']
         storepass:   kafka.consumer.config['ssl.truststore.password']

@@ -21,15 +21,35 @@ Check Message by writing to a test topic on the PLAINTEXT channel.
         brokers = ks_ctxs.map( (ctx) => #, require('../broker').configure
           "#{ctx.config.host}:#{ctx.config.ryba.kafka.ports['PLAINTEXT']}"
         ).join ','
+        zoo_connect = ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect']
+        @execute
+          cmd: mkcmd.kafka @, """
+            /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
+              --zookeeper #{zoo_connect} --partitions 1 --replication-factor 3 \
+              --topic #{test_topic}
+            """
+          unless_exec: mkcmd.kafka @, """
+            /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
+            --zookeeper #{zoo_connect} | grep #{test_topic}
+            """
         @execute
           cmd: """
           (
             echo 'hello front1' | /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh \
+              --new-producer \
+              --producer-property security.protocol=PLAINTEXT \
               --broker-list #{brokers} \
+              --security-protocol PLAINTEXT \
+              --producer.config #{kafka.producer.conf_dir}/producer.properties \
               --topic #{test_topic}
           )&
           /usr/hdp/current/kafka-broker/bin/kafka-console-consumer.sh \
+            --new-consumer \
+            --bootstrap-server #{brokers} \
             --topic #{test_topic} \
+            --security-protocol PLAINTEXT \
+            --property security.protocol=PLAINTEXT \
+            --consumer.config #{kafka.consumer.conf_dir}/consumer.properties \
             --zookeeper #{kafka.consumer.config['zookeeper.connect']} --from-beginning --max-messages 1 | grep 'hello front1'
           """
 
@@ -52,6 +72,16 @@ Trustore location and password given to line command because if executed before 
         ).join ','
         test_topic = "check-#{@config.host}-consumer-ssl-topic"
         zoo_connect = ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect']
+        @execute
+          cmd: mkcmd.kafka @, """
+            /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
+              --zookeeper #{zoo_connect} --partitions 1 --replication-factor 3 \
+              --topic #{test_topic}
+            """
+          unless_exec: mkcmd.kafka @, """
+            /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
+            --zookeeper #{zoo_connect} | grep #{test_topic}
+            """
         @execute
           cmd:  """
             echo 'hello front1' | /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh \
