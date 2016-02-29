@@ -5,7 +5,7 @@ The ambari server must be set in the configuration file.
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/commons/java'
-    module.exports.push 'ryba/ambari/server/wait'
+    # module.exports.push 'ryba/ambari/server/wait'
     # module.exports.push require('./index').configure
 
     # module.exports.push header: '', handler: ->
