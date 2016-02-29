@@ -32,6 +32,11 @@ The ambari server must be set in the configuration file.
     #       modified = true if written
     #       next()
 
+    module.exports.push header: 'Ambari Agent # Startup', timeout: -1, handler: ->
+      @service
+        name: 'ambari-agent'
+        startup: true
+
     module.exports.push header: 'Ambari Agent # Configure', timeout: -1, handler: ->
       {ambari_agent} = @config.ryba
       @ini
@@ -56,10 +61,5 @@ The ambari server must be set in the configuration file.
       #     match: /^secured_url_port=(.*)/m
       #     replace: "secured_url_port=#{ambari_agent.config.server['secured_url_port']}"
       #   ]
- 
-    module.exports.push header: 'Ambari Agent # Startup', timeout: -1, handler: ->
-      @service
-        name: 'ambari-agent'
-        startup: true
 
     misc = require 'mecano/lib/misc'
