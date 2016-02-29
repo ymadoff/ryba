@@ -44,6 +44,9 @@ in order to rendered configuration file with custom properties.
           mode: 0o0750
           local_source: true
           eof: true
+        @remove
+          destination: '/etc/init.d/mongod'
+          
 
 ## Layout
 
