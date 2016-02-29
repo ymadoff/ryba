@@ -4,7 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/core/yum'
-    module.exports.push 'masson/core/krb5_client'
+    # module.exports.push 'masson/core/krb5_client'
     module.exports.push 'ryba/shinken'
 
 ## IPTables
@@ -123,7 +123,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         principal: shinken.poller.executor.krb5.unprivileged.principal
         randkey: true
         keytab: shinken.poller.executor.krb5.unprivileged.keytab
-        mode: 0o600
+        mode: 0o644
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
@@ -131,7 +131,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       #   principal: shinken.poller.executor.krb5.privileged.principal
       #   randkey: true
       #   keytab: shinken.poller.executor.krb5.privileged.keytab
-      #   mode: 0o600
+      #   mode: 0o644
       #   kadmin_principal: kadmin_principal
       #   kadmin_password: kadmin_password
       #   kadmin_server: admin_server
@@ -142,27 +142,29 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         source: "#{@config.mecano.cache_dir or '.'}/shinken-poller-executor.tar"
         destination: '/var/lib/docker_images/shinken-poller-executor.tar'
         binary: true
+        md5: true
       @docker_load
         source: '/var/lib/docker_images/shinken-poller-executor.tar'
-      @docker_run
-        name: 'poller-unprivileged-executor'
+        if: -> @status -1
+      @docker_service
+        name: 'poller-executor'
         image: 'ryba/shinken-poller-executor'
-        env: [
-          "PERL_LWP_SSL_VERIFY_HOSTNAME=0"
-          "KRB5_PRINCIPAL=#{shinken.poller.executor.krb5.unprivileged.principal}"
-        ]
+        net: 'host'
         volume: [
           "/etc/krb5.conf:/etc/krb5.conf"
-          "/usr/lib64/nagios/plugins:/usr/lib64/nagios/plugins"
-          "#{shinken.poller.executor.krb5.unprivileged.keytab}:/etc/security/keytabs/crond.keytab"
+          #"/usr/lib64/nagios/plugins:/usr/lib64/nagios/plugins"
+          #"#{shinken.poller.executor.krb5.privileged.keytab}:/etc/security/keytabs/crond.privileged.keytab"
+          "#{shinken.poller.executor.krb5.unprivileged.keytab}:/etc/security/keytabs/crond.unprivileged.keytab"
         ]
-        service: true
-      # @docker_run
-      #   name: 'poller-privileged-executor'
-      #   image: 'ryba/shinken-poller-executor'
-      #   env: "KRB5_PRINCIPAL=#{shinken.poller.executor.krb5.privileged.principal}"
-      #   volume: "#{shinken.poller.executor.krb5.privileged.keytab}:/etc/security/keytabs/crond.keytab"
-      #   service: true
+      # Best solution but not working...
+      # @call if: -> @status -1, handler: ->
+      #   @docker_exec
+      #     container: 'poller-executor'
+      #     cmd: "kinit #{shinken.poller.executor.krb5.unprivileged.principal} -kt /etc/security/keytabs/crond.unprivileged.keytab"
+        # @docker_exec
+        #   container: 'poller-executor'
+        #   cmd: "sudo kinit #{shinken.poller.executor.krb5.privileged.principal} -kt /etc/security/keytabs/crond.privileged.keytab"
+      # WORKAROUND
 
 ## Dependencies
 

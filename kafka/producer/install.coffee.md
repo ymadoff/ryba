@@ -71,6 +71,7 @@ Update the file "server.properties" with the properties defined by the
 
     module.exports.push header: 'Kafka Producer # Kerberos', handler: ->
       {kafka} = @config.ryba
+      return unless kafka.producer.env['KAFKA_KERBEROS_PARAMS']?
       @write_jaas
         destination: "#{kafka.producer.conf_dir}/kafka-client.jaas"
         content:
@@ -102,7 +103,7 @@ Update the file "server.properties" with the properties defined by the
 
     module.exports.push header: 'Kafka Producer # SSL Client', handler: ->
       {kafka, ssl} = @config.ryba
-      [ks_ctx] = @contexts 'ryba/kafka/broker'
+      return unless kafka.producer.config['ssl.truststore.location']?
       @java_keystore_add
         keystore: kafka.producer.config['ssl.truststore.location']
         storepass: kafka.producer.config['ssl.truststore.password']

@@ -57,6 +57,11 @@ Example:
       hive.group.name ?= 'hive'
       hive.group.system ?= true
       hive.user.gid = hive.group.name
+      hive.aux_jars ?= []
+      aux_jars = ['/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar']
+      # phoenix-client jar contains incompatible additionnal jars. Take phoenix-server instead
+      aux_jars.push '/usr/hdp/current/phoenix-server.jar' if ctx.has_any_modules 'ryba/phoenix/client' 
+      for jar in aux_jars then hive.aux_jars.push jar unless jar in hive.aux_jars
       # Configuration
       hive.site ?= {}
       hive.site[' hive.metastore.uris '] = null # Clean up HDP mess
@@ -128,7 +133,7 @@ present on a fresh install.
       {java_home} = @config.java
       {hive} = @config.ryba
       @write
-        source: "#{__dirname}/../resources/hive/hive-env.sh"
+        source: "#{__dirname}/resources/hive-env.sh"
         destination: "#{hive.conf_dir}/hive-env.sh"
         local_source: true
         unless_exists: true
@@ -139,5 +144,5 @@ present on a fresh install.
           replace: "export JAVA_HOME=#{java_home}"
         ,
           match: /^export HIVE_AUX_JARS_PATH=.*$/m
-          replace: 'export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar:/usr/hdp/current/phoenix-client/phoenix-client.jar} # RYBA FIX'
+          replace: "export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-#{hive.aux_jars.join ':'}} # RYBA FIX"
         ]

@@ -1,13 +1,11 @@
 
 # MongoDB Config Server Start
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
+    module.exports = header: 'MongoDB Config Server # Start', label_true: 'STARTED', handler: ->
 
 ## Start
 
-    module.exports.push header: 'MongoDB ConfigSrv # Start', label_true: 'STARTED', handler: ->
-      @service_start name: 'mongod-configsrv'
+      @service_start name: 'mongodb-config-server'
 
 ## Dependencies
 

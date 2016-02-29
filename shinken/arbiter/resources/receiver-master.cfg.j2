@@ -1,29 +1,29 @@
 {% for r in receivers %}
 define receiver {
-    receiver_name       receiver_{{ r.config.shortname }}
-    address             {{ r.config.host }}
-    port                {{ r.config.ryba.shinken.receiver.config.port }}
-    spare               {{ r.config.ryba.shinken.receiver.config.spare }}
+  receiver_name       receiver_{{ r.config.shortname }}
+  address             {{ r.config.host }}
+  port                {{ r.config.ryba.shinken.receiver.config.port }}
+  spare               {{ r.config.ryba.shinken.receiver.config.spare }}
 
-    timeout             3   {# Ping timeout#}
-    data_timeout        120 {# Data send timeout#}
-    max_check_attempts  3   {# If ping fails N or more, then the node is dead#}
-    check_interval      60  {# Ping node every N seconds#}
-    {# Modules for Receiver
-    # - named-pipe             = Open the named pipe nagios.cmd
-    # - nsca                    = NSCA server
-    # - TSCA                    = TSCA server
-    # - ws-arbiter              = WebService for pushing results to the arbiter
-    # - Collectd                = Receive collectd perfdata
-    #}{% if not r.config.ryba.shinken.receiver.config.modules | isEmpty %}
-    modules             {{ r.config.ryba.shinken.receiver.config.modules | join(',') }}{% endif %}
+  timeout             3   {# Ping timeout#}
+  data_timeout        120 {# Data send timeout#}
+  max_check_attempts  3   {# If ping fails N or more, then the node is dead#}
+  check_interval      60  {# Ping node every N seconds#}
+  {# Modules for Receiver
+  # - named-pipe             = Open the named pipe nagios.cmd
+  # - nsca                    = NSCA server
+  # - TSCA                    = TSCA server
+  # - ws-arbiter              = WebService for pushing results to the arbiter
+  # - Collectd                = Receive collectd perfdata
+  #}{% if not r.config.ryba.shinken.receiver.config.modules | isEmpty %}
+  modules             {{ r.config.ryba.shinken.receiver.config.modules | join(',') }}{% endif %}
 
-    use_ssl	            {{ r.config.ryba.shinken.receiver.config.use_ssl }}
-    hard_ssl_name_check {{ r.config.ryba.shinken.receiver.config.hard_ssl_name_check }}
-    direct_routing      0  {# If enabled, it will directly send commands to the
-                            # schedulers if it know about the hostname in the
-                            # command.
-                            #}
-    realm               {{ r.config.ryba.shinken.receiver.config.realm }}
+  use_ssl	            {{ r.config.ryba.shinken.receiver.config.use_ssl }}
+  hard_ssl_name_check {{ r.config.ryba.shinken.receiver.config.hard_ssl_name_check }}
+  direct_routing      0  {# If enabled, it will directly send commands to the
+                          # schedulers if it know about the hostname in the
+                          # command.
+                          #}
+  realm               {{ r.config.ryba.shinken.receiver.config.realm }}
 }
 {% endfor %}

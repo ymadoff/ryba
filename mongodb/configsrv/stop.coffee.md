@@ -1,21 +1,22 @@
 
 # MongoDB Config Server Stop
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    
+    module.exports = header: 'MongoDB Config Server # Stop', label_true: 'STOPPED', handler: ->
+      {configsrv} = @config.ryba.mongodb
+
 ## Stop
 
 Stop the MongoDB Config Server service.
 
-    module.exports.push header: 'MongoDB ConfigSrv # Stop', label_true: 'STOPPED', handler: ->
-      @service_stop name: 'mongodb-configsrv'
+      @service_stop name: 'mongodb-config-server'
 
 ## Clean Logs
 
-    module.exports.push header: 'MongoDB ConfigSrv # Clean Logs', label_true: 'CLEANED', handler: ->
-      return unless @config.ryba.clean_logs
-      {configsrv} = @config.ryba.mongodb
-      @execute
-        cmd: "rm #{configsrv.config.logpath}"
-        code_skipped: 1
+      @call
+        if:  @config.ryba.clean_logs
+        header: 'MongoDB Config Server # Clean Logs'
+        label_true: 'CLEANED'
+        handler: ->
+          @execute
+            cmd: "rm #{configsrv.config.systemLog.path}"
+            code_skipped: 1

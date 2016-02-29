@@ -1,10 +1,8 @@
 
-# MongoDB Shard Status
+# MongoDB Shard Server Status
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports = header: 'MongoDB Shard Server # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
 
 ## Status
 
-    module.exports.push name: 'MongoDB Shard # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
-      @service_status name: 'mongod'
+      @service_status name: 'mongodb-shard-server'

@@ -71,7 +71,10 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
       hbase.master.site['hbase.rpc.engine'] ?= hbase.site['org.apache.hadoop.hbase.ipc.SecureRpcEngine']
       hbase.master.site['hbase.superuser'] ?= hbase.admin.name
       hbase.master.site['hbase.bulkload.staging.dir'] ?= '/apps/hbase/staging'
-      hbase.master.env['HBASE_MASTER_OPTS'] ?= "-Xmx2048m -Djava.security.auth.login.config=#{hbase.master.conf_dir}/hbase-master.jaas"
+      hbase.master.opts ?= "-Xmx2048m "
+      if hbase.master.opts.indexOf('-Djava.security.auth.login.config') is -1
+        hbase.master.opts += " -Djava.security.auth.login.config=#{hbase.master.conf_dir}/hbase-master.jaas"
+       
 
 ## Configuration for Proxy Users
 

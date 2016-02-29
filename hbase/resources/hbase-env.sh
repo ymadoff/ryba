@@ -45,8 +45,8 @@ export SERVER_GC_OPTS="-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -X
 # More details at: http://java.sun.com/javase/6/docs/technotes/guides/management/agent.html
 #
 # export HBASE_JMX_BASE="-Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
-export HBASE_MASTER_OPTS="-Xmx2048m"
-export HBASE_REGIONSERVER_OPTS="-Xmn200m -Xms4096m -Xmx4096m"
+export HBASE_MASTER_OPTS="${HBASE_MASTER_OPTS} {{ryba.hbase.master.opts}}"
+export HBASE_REGIONSERVER_OPTS="${HBASE_REGIONSERVER_OPTS} {{ryba.hbase.rs.opts}}"
 # export HBASE_THRIFT_OPTS="$HBASE_JMX_BASE -Dcom.sun.management.jmxremote.port=10103"
 # export HBASE_ZOOKEEPER_OPTS="$HBASE_JMX_BASE -Dcom.sun.management.jmxremote.port=10104"
 

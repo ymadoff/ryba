@@ -47,15 +47,13 @@ with Hadoop clusters.
       throw Error 'Required property "ryba.ssl.cacert" or "ryba.knox.ssl.cacert"' unless ctx.config.ryba.ssl?.cacert? or knox.ssl.cacert?
       throw Error 'Required property "ryba.ssl.cert"' unless ctx.config.ryba.ssl?.cert? or knox.ssl.cert?
       throw Error 'Required property "ryba.ssl.key"' unless ctx.config.ryba.ssl?.key? or knox.ssl.key?
-      throw Error 'Required property "dsp.clients.cafile"' unless ctx.config.dsp.clients?.cafile? or knox.ssl.cafile?
-      throw Error 'Required property "dsp.clients.caname"' unless ctx.config.dsp.clients?.caname? or knox.ssl.caname?
+      
       knox.ssl ?= {}
       knox.ssl.storepass ?= 'knox_master_secret_123'
       knox.ssl.cacert ?= ctx.config.ryba.ssl.cacert
       knox.ssl.cert ?= ctx.config.ryba.ssl.cert
       knox.ssl.key ?= ctx.config.ryba.ssl.key
-      knox.ssl.cafile ?= ctx.config.dsp.clients.cafile
-      knox.ssl.caname ?= ctx.config.dsp.clients.caname
+      
 
 ## Configuration for Proxy Users
 

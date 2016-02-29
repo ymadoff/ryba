@@ -1,21 +1,22 @@
 
 # MongoDB Routing Server Stop
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    
+    module.exports = header: 'MongoDB Routing Server # Stop', label_true: 'STOPPED', handler: ->
+      {router} = @config.ryba.mongodb
+
 ## Stop
 
 Stop the MongoDB Routing Server service.
 
-    module.exports.push header: 'MongoDB Routing Server # Stop', label_true: 'STOPPED', handler: ->
-      @service_stop name: 'mongos'
+      @service_stop name: 'mongodb-router-server'
 
 ## Clean Logs
 
-    module.exports.push header: 'MongoDB Routing Server # Clean Logs', label_true: 'CLEANED', handler: ->
-      return unless @config.ryba.clean_logs
-      {router} = @config.ryba.mongodb
-      @execute
-        cmd: "rm #{router.config.logpath}"
-        code_skipped: 1
+      @call ->
+        header: 'MongoDB Routing Server # Clean Logs'
+        label_true: 'CLEANED'
+        if: @config.ryba.clean_logs
+        handler: ->
+          @execute
+            cmd: "rm #{router.config.logpath}"
+            code_skipped: 1

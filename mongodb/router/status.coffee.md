@@ -1,10 +1,8 @@
 
 # MongoDB Routing Server Status
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports = header: 'MongoDB Routing Server # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
 
 ## Status
 
-    module.exports.push header: 'MongoDB Routing Server # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
-      @service_status name: 'mongos'
+      @service_status name: 'mongodb-router-server'

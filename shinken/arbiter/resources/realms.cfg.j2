@@ -1,7 +1,7 @@
 {% for name, realm in realms %}
 define realm {
-    realm_name      {{ name }}{% if not realm.members| isEmpty %}
-    realm_members   {{ realm.members | join(',') }}{% endif %}
-    default         {{ realm.default }}
+  realm_name      {{ name }}{% if not realm.members| isEmpty %}
+  realm_members   {{ realm.members | join(',') }}{% endif %}
+  default         {{ realm.default }}
 }
 {% endfor %}

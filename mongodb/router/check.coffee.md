@@ -1,12 +1,10 @@
 
 # MongoDB Routing Server Check
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap/'
+    module.exports = header: 'MongoDB Router Server # Check TCP', label_true: 'CHECKED', handler: ->
+      {mongodb} = @config.ryba
 
 ## Check
 
-    module.exports.push header: 'MongoDB Routing Server # Check TCP', label_true: 'CHECKED', handler: ->
-      {mongodb} = @config.ryba
       @execute
-        cmd: "echo > /dev/tcp/#{ctx.config.host}/#{mongodb.config.port}"
+        cmd: "echo > /dev/tcp/#{@config.host}/#{mongodb.router.config.net.port}"

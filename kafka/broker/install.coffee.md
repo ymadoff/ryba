@@ -152,6 +152,14 @@ Update the kafka-env.sh file (/etc/kafka-broker/conf/kafka-enh.sh)
           append: true
         backup: true
         eof: true
+      @write
+        destination: "/etc/kafka/conf/log4j.properties"
+        write: for k, v of kafka.broker.log4j
+          match: RegExp "^#{quote k}=.*$", 'mg'
+          replace: "#{k}=#{v}"
+          append: true
+        backup: true
+        eof: true
 
 
 Modify bin scripts to set $KAFKA_HOME variable to match /etc/kafka-broker/conf.
@@ -183,8 +191,7 @@ Replace KAFKA_BROKER_CMD kafka-broker conf directory path
 
     module.exports.push header: 'Kafka Broker # Kerberos', timeout: -1, handler: ->
       {kafka, hadoop_group, realm} = @config.ryba
-      protocols = kafka.broker.protocols
-      return unless protocols.indexOf 'SASL_PLAINTEXT' > 0 or protocols.indexOf 'SASL_SSL' > 0
+      return unless kafka.broker.config['zookeeper.set.acl'] is 'true'
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
         principal: kafka.broker.kerberos['principal']

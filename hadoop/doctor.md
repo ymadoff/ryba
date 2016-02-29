@@ -159,3 +159,15 @@ Troubleshoot:
 *   Verify hdfs-site.xml has dfs.namenode.http(s)-address.<nameservice>.<namenodeid>.
 *   Verify data.dir permission on datanodes
 *   Verify that du.datanode.reserved is lower than available space
+
+## Namenode Not Loading during Initialization
+
+message (or freeze):
+ERROR org.mortbay.log: Error for /jmx
+java.lang.OutOfMemoryError: Java heap space
+
+cause:
+The required memory needed by the Namenode increase with higher inodes.
+Check heapsize memory settings: [HDP settings][namenode-java]
+
+[namenode-java]:(http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.2/bk_installing_manually_book/content/ref-80953924-1cbf-4655-9953-1e744290a6c3.1.html)
