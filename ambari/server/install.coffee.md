@@ -11,7 +11,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/commons/java'
-    module.exports.push 'masson/commons/mysql_client'
+    # module.exports.push 'masson/commons/mysql_client'
     # module.exports.push require('./index').configure
  
 See the documentation about [Software Requirements][sr].
