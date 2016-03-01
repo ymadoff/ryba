@@ -1,16 +1,8 @@
 
 # Zookeeper Server Install
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/bootstrap/utils'
-    module.exports.push 'masson/core/yum'
-    module.exports.push 'masson/core/iptables'
-    module.exports.push 'masson/commons/java'
-    module.exports.push 'ryba/lib/base'
-    module.exports.push 'ryba/lib/hdp_select'
-    module.exports.push 'ryba/lib/write_jaas'
-    # module.exports.push require('./index').configure
+    module.exports = header: 'ZooKeeper Server Install', handler: ->
+      {zookeeper, hadoop_group} = @config.ryba
 
 ## Users & Groups
 
@@ -23,8 +15,6 @@ cat /etc/group | grep hadoop
 hadoop:x:498:hdfs
 ```
 
-    module.exports.push header: 'ZooKeeper Server # Users & Groups', handler: ->
-      {zookeeper, hadoop_group} = @config.ryba
       @group zookeeper.group
       @group hadoop_group
       @user zookeeper.user
@@ -40,90 +30,85 @@ hadoop:x:498:hdfs
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push header: 'ZooKeeper Server # IPTables', handler: ->
-      {zookeeper} = @config.ryba
       rules = [
           { chain: 'INPUT', jump: 'ACCEPT', dport: zookeeper.port, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Client" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: 2888, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Peer" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: 3888, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Leader" }
       ]
-
       rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: parseInt(zookeeper.env["JMXPORT"],10), protocol: 'tcp', state: 'NEW', comment: "Zookeeper JMX" } if zookeeper.env["JMXPORT"]?
       @iptables
+        header: 'IPTables'
         rules: rules
         if: @config.iptables.action is 'start'
 
-## Install
+## Packages
 
 Follow the [HDP recommandations][install] to install the "zookeeper" package
 which has no dependency.
 
-    module.exports.push header: 'ZooKeeper Server # Install', timeout: -1, handler: ->
-      @service
-        name: 'telnet' # Used by check
-      @service
-        name: 'zookeeper-server'
-      @hdp_select
-        name: 'zookeeper-server'
-      @hdp_select
-        name: 'zookeeper-client'
-      @upload
-        source: "#{__dirname}/resources/zookeeper"
-        destination: '/etc/init.d/zookeeper-server'
-        mode: 0o0755
-        unlink: true
+      @call header: 'Packages', timeout: -1, handler: ->
+        @service
+          name: 'telnet' # Used by check
+        @service
+          name: 'zookeeper-server'
+        @hdp_select
+          name: 'zookeeper-server'
+        @hdp_select
+          name: 'zookeeper-client'
+        @upload
+          source: "#{__dirname}/resources/zookeeper"
+          destination: '/etc/init.d/zookeeper-server'
+          mode: 0o0755
+          unlink: true
 
 ## Kerberos
 
-    module.exports.push 'masson/core/krb5_client/wait'
-
-    module.exports.push header: 'ZooKeeper Server # Kerberos', timeout: -1, handler: ->
-      {zookeeper, hadoop_group, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
-      @krb5_addprinc
-        principal: "zookeeper/#{@config.host}@#{realm}"
-        randkey: true
-        keytab: '/etc/security/keytabs/zookeeper.service.keytab'
-        uid: zookeeper.user.name
-        gid: hadoop_group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
-      @write_jaas
-        destination: '/etc/zookeeper/conf/zookeeper-server.jaas'
-        content: Server:
+      @call header: 'ZooKeeper Server # Kerberos', handler: ->
+        {realm} = @config.ryba
+        {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+        @krb5_addprinc
           principal: "zookeeper/#{@config.host}@#{realm}"
-          keyTab: '/etc/security/keytabs/zookeeper.service.keytab'
-        uid: zookeeper.user.name
-        gid: hadoop_group.name
-      @write_jaas
-        destination: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
-        content: Client:
-          useTicketCache: true
-        mode: 0o0644
+          randkey: true
+          keytab: '/etc/security/keytabs/zookeeper.service.keytab'
+          uid: zookeeper.user.name
+          gid: hadoop_group.name
+          kadmin_principal: kadmin_principal
+          kadmin_password: kadmin_password
+          kadmin_server: admin_server
+        @write_jaas
+          destination: '/etc/zookeeper/conf/zookeeper-server.jaas'
+          content: Server:
+            principal: "zookeeper/#{@config.host}@#{realm}"
+            keyTab: '/etc/security/keytabs/zookeeper.service.keytab'
+          uid: zookeeper.user.name
+          gid: hadoop_group.name
+        @write_jaas
+          destination: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
+          content: Client:
+            useTicketCache: true
+          mode: 0o0644
 
 ## Layout
 
 Create the data, pid and log directories with the correct permissions and
 ownerships.
 
-    module.exports.push header: 'ZooKeeper Server # Layout', handler: ->
-      {zookeeper, hadoop_group} = @config.ryba
-      @mkdir
-        destination: zookeeper.config['dataDir']
-        uid: zookeeper.user.name
-        gid: hadoop_group.name
-        mode: 0o755
-      @mkdir
-        destination: zookeeper.pid_dir
-        uid: zookeeper.user.name
-        gid: zookeeper.group.name
-        mode: 0o755
-      @mkdir
-        destination: zookeeper.log_dir
-        uid: zookeeper.user.name
-        gid: hadoop_group.name
-        mode: 0o755
+      @call header: 'Layout', handler: ->
+        @mkdir
+          destination: zookeeper.config['dataDir']
+          uid: zookeeper.user.name
+          gid: hadoop_group.name
+          mode: 0o755
+        @mkdir
+          destination: zookeeper.pid_dir
+          uid: zookeeper.user.name
+          gid: zookeeper.group.name
+          mode: 0o755
+        @mkdir
+          destination: zookeeper.log_dir
+          uid: zookeeper.user.name
+          gid: hadoop_group.name
+          mode: 0o755
 
 ## Super User
 
@@ -137,27 +122,25 @@ only on localhost (not over the network) or over an encrypted connection.
 
 Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
 
-    module.exports.push
-      header: 'ZooKeeper Server # Generate Super User'
-      if: -> @config.ryba.zookeeper.superuser.password
-      handler: (_, callback) ->
-        {zookeeper} = @config.ryba
-        @execute
-          cmd: """
-          ZK_HOME=/usr/hdp/current/zookeeper-client/
-          java -cp $ZK_HOME/lib/*:$ZK_HOME/zookeeper.jar org.apache.zookeeper.server.auth.DigestAuthenticationProvider super:#{zookeeper.superuser.password}
-          """
-        , (err, _, stdout) ->
-          digest = match[1] if match = /\->(.*)/.exec(stdout)
-          return callback Error "Failed to get digest" unless digest
-          zookeeper.env['SERVER_JVMFLAGS'] = "-Dzookeeper.DigestAuthenticationProvider.superDigest=#{digest} #{zookeeper.env['SERVER_JVMFLAGS']}"
-          callback()
+      @execute
+        header: 'Generate Super User'
+        if: zookeeper.superuser.password
+        cmd: """
+        ZK_HOME=/usr/hdp/current/zookeeper-client/
+        java -cp $ZK_HOME/lib/*:$ZK_HOME/zookeeper.jar org.apache.zookeeper.server.auth.DigestAuthenticationProvider super:#{zookeeper.superuser.password}
+        """
+      , (err, _, stdout) ->
+        digest = match[1] if match = /\->(.*)/.exec(stdout)
+        throw Error "Failed to get digest" unless digest
+        zookeeper.env['SERVER_JVMFLAGS'] = "-Dzookeeper.DigestAuthenticationProvider.superDigest=#{digest} #{zookeeper.env['SERVER_JVMFLAGS']}"
 
 ## Environment
 
-    module.exports.push header: 'ZooKeeper Server # Environment', handler: ->
-      {zookeeper} = @config.ryba
-      @write
+Note, environment is enriched at runtime if a super user is generated
+(see above).
+
+      @call -> @write
+        header: 'Environment'
         destination: "#{zookeeper.conf_dir}/zookeeper-env.sh"
         content: ("export #{k}=\"#{v}\"" for k, v of zookeeper.env).join '\n'
         backup: true
@@ -168,9 +151,8 @@ Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
 Update the file "zoo.cfg" with the properties defined by the
 "ryba.zookeeper.config" configuration.
 
-    module.exports.push header: 'ZooKeeper Server # Configure', handler: ->
-      {zookeeper} = @config.ryba
       @write
+        header: 'Configure'
         destination: "#{zookeeper.conf_dir}/zoo.cfg"
         write: for k, v of zookeeper.config
           match: RegExp "^#{quote k}=.*$", 'mg'
@@ -183,8 +165,6 @@ Update the file "zoo.cfg" with the properties defined by the
 
 Upload the ZooKeeper loging configuration file.
 
-    module.exports.push header: 'ZooKeeper Server # Log4J', handler: ->
-      {zookeeper} = @config.ryba
       writes = [
         match: /log4j\.rootLogger=.*/g
         replace: "log4j.rootLogger=#{zookeeper.env['ZOO_LOG4J_PROP']}"
@@ -238,6 +218,7 @@ Upload the ZooKeeper loging configuration file.
           replace: "log4j.appender.SOCKET.ReconnectionDelay=10000"
           append: true
       @write
+        header: 'Log4J'
         destination: "#{zookeeper.conf_dir}/log4j.properties"
         source: "#{__dirname}/resources/log4j.properties"
         local_source: true
@@ -262,10 +243,9 @@ parameters autopurge.snapRetainCount and autopurge.purgeInterval.
   org.apache.zookeeper.server.PurgeTxnLog  /var/zookeeper/data/ -n 3
 ```
 
-    module.exports.push header: "ZooKeeper Server # Schedule Purge", handler: ->
-      {zookeeper} = @config.ryba
-      return unless zookeeper.purge
       @cron_add
+        header: 'Schedule Purge'
+        if: zookeeper.purge
         cmd: """
         /usr/bin/java -cp /usr/hdp/current/zookeeper-server/zookeeper.jar:/usr/hdp/current/zookeeper-server/lib/*:/usr/hdp/current/zookeeper-server/conf \
           org.apache.zookeeper.server.PurgeTxnLog \
@@ -278,14 +258,13 @@ parameters autopurge.snapRetainCount and autopurge.purgeInterval.
 
 myid is a unique id that must be generated for each node of the zookeeper cluster
 
-    module.exports.push header: 'ZooKeeper Server # Write myid', handler: ->
-      {zookeeper, hadoop_group} = @config.ryba
-      hosts = @hosts_with_module 'ryba/zookeeper/server'
-      return if hosts.length is 1
+      zk_ctxs = @contexts 'ryba/zookeeper/server'
+      return if zk_ctxs.length is 1
       unless zookeeper.myid
-        for host, i in hosts
-          zookeeper.myid = i+1 if host is @config.host
+        for zk_ctx, i in zk_ctxs
+          zookeeper.myid = i+1 if zk_ctx.config.host is @config.host
       @write
+        header: 'Write myid'
         content: zookeeper.myid
         destination: "#{zookeeper.config['dataDir']}/myid"
         uid: zookeeper.user.name

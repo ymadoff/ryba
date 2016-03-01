@@ -1,21 +1,18 @@
 
-# Zookeeper Check
+# Zookeeper Server Check
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    # module.exports.push require('./index').configure
-    module.exports.push 'ryba/zookeeper/server/wait'
-
+    module.exports = header: 'ZooKeeper Server Check', label_true: 'CHECKED', handler: ->
+      {zookeeper} = @config.ryba
+      zoo_ctxs = @contexts 'ryba/zookeeper/server'
+    
 ## Check Registration
 
 Execute these commands on the ZooKeeper host machine(s).
 
-    module.exports.push header: 'ZooKeeper Server # Check Registration', label_true: 'CHECKED', handler: ->
-      {zookeeper} = @config.ryba
-      zoo_ctxs = @contexts 'ryba/zookeeper/server', require('./').configure
       cmds = for zoo_ctx in zoo_ctxs
         "{ echo conf; sleep 1; } | telnet #{zoo_ctx.config.host} #{zoo_ctx.config.ryba.zookeeper.port} 2>/dev/null | sed -n 's/.*serverId=\\(.*\\)/\\1/p'"
       @execute
+        header: 'Registration'
         cmd: cmds.join ';'
       , (err, _, stdout) ->
         return if err

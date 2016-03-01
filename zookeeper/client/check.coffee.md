@@ -3,6 +3,5 @@
 
 TODO: Cloudera provides some interesting [tests](http://www.cloudera.com/content/cloudera/en/documentation/cloudera-manager/v5-latest/Cloudera-Manager-Health-Tests/ht_zookeeper.html).
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/zookeeper/server/wait'
+    module.exports = handler: 'Zookeeper Client Check', label_true: 'CHECKED', handler: ->
+      console.log 'TODO: Zookeeper Client Check'

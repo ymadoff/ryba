@@ -1,16 +1,8 @@
 
 # Zookeeper Client Install
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/bootstrap/utils'
-    module.exports.push 'masson/core/yum'
-    module.exports.push 'masson/core/iptables'
-    module.exports.push 'masson/commons/java'
-    module.exports.push 'ryba/lib/base'
-    # module.exports.push require('./index').configure
-    module.exports.push 'ryba/lib/hdp_select'
-    module.exports.push 'ryba/lib/write_jaas'
+    module.exports = header: 'ZooKeeper Client Install', handler: ->
+      {zookeeper, hadoop_group} = @config.ryba
 
 ## Users & Groups
 
@@ -23,39 +15,39 @@ cat /etc/group | grep hadoop
 hadoop:x:498:hdfs
 ```
 
-    module.exports.push header: 'ZooKeeper Client # Users & Groups', handler: ->
-      {zookeeper, hadoop_group} = @config.ryba
       @group zookeeper.group
       @group hadoop_group
       @user zookeeper.user
 
-## Install
+## Packages
 
 Follow the [HDP recommandations][install] to install the "zookeeper" package
 which has no dependency.
 
-    module.exports.push header: 'ZooKeeper Client # Install', timeout: -1, handler: ->
-      @service
-        name: 'zookeeper'
-      @hdp_select
-        name: 'zookeeper-client'
+      @call header: 'ZooKeeper Client # Packages', timeout: -1, handler: ->
+        @service
+          name: 'zookeeper'
+        @hdp_select
+          name: 'zookeeper-client'
 
-    module.exports.push header: 'ZooKeeper Client # Kerberos', timeout: -1, handler: ->
-      {zookeeper} = @config.ryba
+## Kerberos
+
+Create the JAAS client configuration file.
+
       @write_jaas
+        header: 'ZooKeeper Client # Kerberos'
         destination: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
         content: Client:
           useTicketCache: 'true'
         mode: 0o644
 
-    module.exports.push header: 'ZooKeeper Client # Environment', handler: ->
-      {zookeeper} = @config.ryba
+## Environment
+
+Generate the "zookeeper-env.sh" file.
+
       @write
+        header: 'Environment'
         destination: "#{zookeeper.conf_dir}/zookeeper-env.sh"
         content: ("export #{k}=\"#{v}\"" for k, v of zookeeper.env).join '\n'
         backup: true
         eof: true
-
-## Dependencies
-
-    quote = require 'regexp-quote'

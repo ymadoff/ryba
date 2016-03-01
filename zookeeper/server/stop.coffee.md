@@ -1,12 +1,6 @@
 
 # Zookeeper Server Stop
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    # module.exports.push require('./index').configure
-
-## Stop
-
 Stop the Zookeeper server. You can also stop the server manually with one of
 the following two commands:
 
@@ -17,13 +11,18 @@ su - zookeeper -c "export ZOOCFGDIR=/usr/hdp/current/zookeeper-server/conf; expo
 
 The file storing the PID is "/var/run/zookeeper/zookeeper_server.pid".
 
-    module.exports.push header: 'ZooKeeper Server # Stop', label_true: 'STOPPED', handler: ->
-      @service_stop name: 'zookeeper-server'
+    module.exports = header: 'ZooKeeper Server Stop', label_true: 'STOPPED', handler: ->
+      
+      @service_stop
+        header: 'ZooKeeper Server Stop'
+        label_true: 'STOPPED'
+        name: 'zookeeper-server'
 
-## Stop Clean Logs
+## Clean Logs
 
-    module.exports.push header: 'ZooKeeper Server # Stop Clean Logs', label_true: 'CLEANED', handler: ->
-      return unless @config.ryba.clean_logs
       @execute
+        header: 'ZooKeeper Server Clean Logs'
+        label_true: 'CLEANED'
+        if: @config.ryba.clean_logs
         cmd: 'rm /var/log/zookeeper/*'
         code_skipped: 1
