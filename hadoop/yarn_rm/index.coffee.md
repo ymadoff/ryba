@@ -9,6 +9,9 @@
         'ryba/hadoop/yarn_rm/wait'
         'ryba/hadoop/yarn_rm/check'
       ]
+      'configure': [
+        'ryba/hadoop/yarn_rm/configure'
+      ]
       'report': [
         'masson/bootstrap/report'
         'ryba/hadoop/yarn_rm/report'
