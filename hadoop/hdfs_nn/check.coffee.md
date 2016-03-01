@@ -61,6 +61,7 @@ Additionnal information may be found on the [CentOS HowTos site][corblk].
       @execute
         header: 'FSCK'
         retry: 3
+        wait: 60000
         timeout: -1
         cmd: mkcmd.hdfs @, "exec 5>&1; hdfs fsck / | tee /dev/fd/5 | tail -1 | grep HEALTHY 1>/dev/null"
         if: force_check or check_hdfs_fsck
