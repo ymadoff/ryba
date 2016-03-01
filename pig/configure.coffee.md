@@ -32,7 +32,7 @@ Example:
 }
 ```
 
-    module.configure = handler: ->
+    module.exports = handler: ->
       # require('masson/commons/java').configure ctx
       # require('../../hadoop/hdfs').configure ctx
       pig = @config.ryba.pig ?= {}

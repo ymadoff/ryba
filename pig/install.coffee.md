@@ -3,7 +3,7 @@
 
 Learn more about Pig optimization by reading ["Making Pig Fly"][fly].
 
-    module.exports = header: 'Pig # Install', handler: ->
+    module.exports = header: 'Pig Install', handler: ->
       {hadoop_group, pig} = @config.ryba
       {java_home} = @config.java
       
