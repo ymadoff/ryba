@@ -14,6 +14,9 @@ Now the jobHistory Server tends to be replace by the Yarn timeline server.
         'ryba/hadoop/mapred_jhs/wait'
         'ryba/hadoop/mapred_jhs/check'
       ]
+      'configure': [
+        'ryba/hadoop/mapred_jhs/configure'
+      ]
       'install': [
         'masson/core/iptables'
         'ryba/hadoop/hdfs_nn/wait'
