@@ -15,8 +15,10 @@ watching them for changes to the edit log.
     module.exports = ->
       # 'backup':
       #   'ryba/hadoop/hdfs_jn_backup'
-      'check':
+      'check':[
+        'ryba/hadoop/hdfs_jn/wait'
         'ryba/hadoop/hdfs_jn/check'
+      ]
       'configure': [
         'ryba/hadoop/core'
         'ryba/hadoop/hdfs_jn/configure'
@@ -26,6 +28,7 @@ watching them for changes to the edit log.
         'ryba/hadoop/core'
         'ryba/hadoop/hdfs_jn/install'
         'ryba/hadoop/hdfs_jn/start'
+        'ryba/hadoop/hdfs_jn/wait'
         'ryba/hadoop/hdfs_jn/check'
       ]
       'start': [
