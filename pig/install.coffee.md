@@ -3,15 +3,10 @@
 
 Learn more about Pig optimization by reading ["Making Pig Fly"][fly].
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/bootstrap/utils'
-    module.exports.push 'ryba/hadoop/mapred_client'
-    module.exports.push 'ryba/hadoop/yarn_client'
-    module.exports.push 'ryba/hive/client' # In case pig is run through hcat
-    module.exports.push 'ryba/lib/hdp_select'
-    # module.exports.push require('./index').configure
-
+    module.exports = header: 'Pig # Install', handler: ->
+      {hadoop_group, pig} = @config.ryba
+      {java_home} = @config.java
+      
 ## Users & Groups
 
 By default, the "pig" package create the following entries:
@@ -23,73 +18,67 @@ cat /etc/group | grep hadoop
 hadoop:x:502:yarn,mapred,hdfs,hue
 ```
 
-    module.exports.push header: 'Pig # Users & Groups', handler: ->
-      {hadoop_group, pig} = @config.ryba
-      @group hadoop_group
-      @user pig.user
+      @call header: 'Pig # Users & Groups', handler: ->
+        @group hadoop_group
+        @user pig.user
 
 ## Install
 
 The pig package is install.
 
-    module.exports.push header: 'Pig # Install', timeout: -1, handler: ->
-      @service
-        name: 'pig'
-      console.log 'TODO: pig-client not registered in hdp-select'
-      # pig-client not registered in hdp-select
-      # need to see if hadoop-client will switch pig as well
-      # @hdp_select
-      #   name: 'pig-client'
-
-    module.exports.push header: 'Pig # Users', handler: ->
-      # 6th feb 2014: pig user isnt created by YUM, might change in a future HDP release
-      {hadoop_group} = @config.ryba
-      @execute
-        cmd: "useradd pig -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Pig service\""
-        code: 0
-        code_skipped: 9
+      @call header: 'Pig # Service', timeout: -1, handler: ->
+        @service
+          header: 'Pig # Service'
+          name: 'pig'
+        console.log 'TODO: pig-client not registered in hdp-select'
+        # pig-client not registered in hdp-select
+        # need to see if hadoop-client will switch pig as well
+        # @hdp_select
+        #   name: 'pig-client'
+        # 6th feb 2014: pig user isnt created by YUM, might change in a future HDP release
+        @execute
+          header: 'Pig # Users'
+          cmd: "useradd pig -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Pig service\""
+          code: 0
+          code_skipped: 9
 
 ## Configure
 
 TODO: Generate the "pig.properties" file dynamically, be carefull, the HDP
 companion file defines no properties while the YUM package does.
 
-    module.exports.push header: 'Pig # Configure', handler: ->
-      {pig} = @config.ryba
-      @ini
-        destination: "#{pig.conf_dir}/pig.properties"
-        content: pig.config
-        separator: '='
-        merge: true
-        backup: true
-
-    module.exports.push header: 'Pig # Env', handler: ->
-      {java_home} = @config.java
-      {hadoop_group, pig} = @config.ryba
-      @write
-        source: "#{__dirname}/resources/pig-env.sh"
-        destination: "#{pig.conf_dir}/pig-env.sh"
-        local_source: true
-        write: [
-          match: /^JAVA_HOME=.*$/mg
-          replace: "JAVA_HOME=#{java_home}"
-        ]
-        uid: pig.user.name
-        gid: hadoop_group.name
-        mode: 0o755
-        backup: true
-
-    module.exports.push header: 'Pig # Fix Pig', handler: ->
-      @write
-        write: [
-          match: /^(\s)*slfJarVersion=.*/mg
-          replace: "$1slfJarVersion=''"
-        ,
-          match: new RegExp quote('/usr/lib/hcatalog'), 'g'
-          replace: '/usr/lib/hive-hcatalog'
-        ]
-        destination: '/usr/lib/pig/bin/pig'
-        backup: true
+      @call header: 'Pig # Configure', handler: ->
+        @ini
+          header: 'Pig # Properties'
+          destination: "#{pig.conf_dir}/pig.properties"
+          content: pig.config
+          separator: '='
+          merge: true
+          backup: true
+        @write
+          header: 'Pig # Env'
+          source: "#{__dirname}/resources/pig-env.sh"
+          destination: "#{pig.conf_dir}/pig-env.sh"
+          local_source: true
+          write: [
+            match: /^JAVA_HOME=.*$/mg
+            replace: "JAVA_HOME=#{java_home}"
+          ]
+          uid: pig.user.name
+          gid: hadoop_group.name
+          mode: 0o755
+          backup: true
+        @write
+          header: 'Pig # Fix Pig'
+          write: [
+            match: /^(\s)*slfJarVersion=.*/mg
+            replace: "$1slfJarVersion=''"
+          ,
+            match: new RegExp quote('/usr/lib/hcatalog'), 'g'
+            replace: '/usr/lib/hive-hcatalog'
+          ]
+          destination: '/usr/lib/pig/bin/pig'
+          backup: true
 
 ## Dependencies
 
