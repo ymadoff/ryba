@@ -24,6 +24,9 @@ Example:
 ```
 
     module.exports = handler: ->
+      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
+      jn_ctxs = @contexts 'ryba/hadoop/hdfs_jn', require('../hdfs_jn/configure').handler
+      dn_ctxs = @contexts 'ryba/hadoop/hdfs_dn'
       {ryba} = @config
       ryba.hdfs.nn ?= {}
       ryba.hdfs.nn.conf_dir ?= '/etc/hadoop-hdfs-namenode/conf'
@@ -63,9 +66,6 @@ Example:
       # Activate ACLs
       ryba.hdfs.nn.site['dfs.namenode.acls.enabled'] ?= 'true'
       ryba.hdfs.nn.site['dfs.namenode.accesstime.precision'] ?= null
-      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
-      jn_ctxs = @contexts 'ryba/hadoop/hdfs_jn', require('../hdfs_jn').configure
-      dn_ctxs = @contexts 'ryba/hadoop/hdfs_dn'
 
 ## Configuration for HDFS High Availability (HA)
 

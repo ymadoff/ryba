@@ -2,7 +2,7 @@
 
 # MapReduce JHS Check
 
-    module.exports = header: 'MapReduce JHS Check ', , label_true: 'CHECKED', handler: ->
+    module.exports = header: 'MapReduce JHS Check ', label_true: 'CHECKED', handler: ->
       {mapred} = @config.ryba
       
 

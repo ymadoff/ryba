@@ -21,8 +21,8 @@ Example:
 ```
 
     module.exports = handler: ->
-      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hdfs_nn/configure').handler
-      throw Error "HDFS not configured for HA" unless nn_ctxs.length is 2
+      # nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hdfs_nn/configure').handler
+      # throw Error "HDFS not configured for HA" unless nn_ctxs.length is 2
       {ryba} = @config
       ryba.hdfs.jn ?= {}
       ryba.hdfs.jn.conf_dir ?= '/etc/hadoop-hdfs-journalnode/conf'
@@ -39,4 +39,4 @@ Example:
       # ryba.hdfs.site['dfs.journalnode.edits.dir'] ?= ['file:///var/hdfs/edits']
       ryba.hdfs.site['dfs.journalnode.edits.dir'] ?= ['/var/hdfs/edits']
       ryba.hdfs.site['dfs.journalnode.edits.dir'] = ryba.hdfs.site['dfs.journalnode.edits.dir'].join ',' if Array.isArray ryba.hdfs.site['dfs.journalnode.edits.dir']
-      ryba.hdfs.site['dfs.namenode.shared.edits.dir'] ?= nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.namenode.shared.edits.dir']
+      # ryba.hdfs.site['dfs.namenode.shared.edits.dir'] ?= nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.namenode.shared.edits.dir']

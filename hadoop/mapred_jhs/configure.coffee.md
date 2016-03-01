@@ -2,7 +2,7 @@
 # MapReduce JobHistoryServer (JHS) Configure
 
     module.exports = handler: ->
-      rm_ctxs = @contexts modules: 'ryba/hadoop/yarn_rm', require('../yarn_rm/configure').handler
+      # rm_ctxs = @contexts modules: 'ryba/hadoop/yarn_rm', require('../yarn_rm/configure').handler
       {ryba} = @config
       ryba.mapred ?= {}
       ryba.mapred.jhs ?= {}
@@ -24,7 +24,8 @@ Note: As of version "2.4.0", the property "mapreduce.jobhistory.http.policy"
 isn't honored. Instead, the property "yarn.http.policy" is used.
 
       # ryba.yarn.site['yarn.http.policy'] ?= rm_ctxs[0].config.ryba.yarn.site['yarn.http.policy']
-      ryba.mapred.site['mapreduce.jobhistory.http.policy'] ?= rm_ctxs[0].config.ryba.yarn.rm.site['yarn.http.policy']
+      # ryba.mapred.site['mapreduce.jobhistory.http.policy'] ?= rm_ctxs[0].config.ryba.yarn.rm.site['yarn.http.policy']
+      ryba.mapred.site['mapreduce.jobhistory.http.policy'] ?= 'HTTPS_ONLY'
       # See './hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-common/src/main/java/org/apache/hadoop/mapreduce/v2/jobhistory/JHAdminConfig.java#158'
       # yarn.site['mapreduce.jobhistory.webapp.spnego-principal']
       # yarn.site['mapreduce.jobhistory.webapp.spnego-keytab-file']

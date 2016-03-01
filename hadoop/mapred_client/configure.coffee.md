@@ -1,6 +1,6 @@
 
     module.exports = handler: ->
-      rm_contexts = @contexts 'ryba/hadoop/yarn_rm', require('../yarn_rm').configure
+      rm_contexts = @contexts 'ryba/hadoop/yarn_rm', require('../yarn_rm/configure').handler
       {static_host, realm, mapred} = @config.ryba
       # Layout
       mapred.log_dir ?= '/var/log/hadoop-mapreduce' # Default to "/var/log/hadoop-mapreduce/$USER"
