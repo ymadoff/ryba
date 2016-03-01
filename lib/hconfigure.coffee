@@ -1,20 +1,7 @@
 
-each = require 'each'
-{EventEmitter} = require 'events'
-
 properties = require './properties'
 
-module.exports = []
-
-###
-sept 2nd, 2013: need the [patched version](https://github.com/wdavidw/xmlbuilder-js/)
-to handle empty strings
-Options includes:
-*   `merge`: Merge with destination file
-*   `default`: Path to a file or object of properties used as default values.   
-*   `local_default`: Read the default file from the local filesystem (only apply if `default` is a string).   
-###
-module.exports.push required: true, handler: ->
+module.exports = required: true, handler: ->
   return if @registered 'hconfigure'
   @register 'hconfigure', (options) ->
     fnl_props = {}
