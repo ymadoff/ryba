@@ -20,6 +20,9 @@ applications.
         # 'ryba/hadoop/yarn_rm/wait'
         'ryba/hadoop/yarn_nm/check'
       ]
+      'configure': [
+        'ryba/hadoop/yarn_nm/configure'
+      ]
       'install': [
         'masson/core/iptables'
         'masson/core/info'
