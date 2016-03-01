@@ -463,7 +463,6 @@ keytool -list -v -keystore keystore -alias hadoop
       ssl_server['ssl.server.truststore.password'] ?= 'ryba123'
       ssl_server['ssl.server.truststore.type'] ?= 'jks'
 
-
 ## Dependencies
 
     path = require 'path'

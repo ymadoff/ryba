@@ -13,16 +13,11 @@ only uses Memory while DominantResourceCalculator uses Dominant-resource to
 compare multi-dimensional resources such as Memory, CPU etc. A Java
 ResourceCalculator class name is expected.
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/lib/hconfigure'
-    
-    module.exports.push
-      header: 'YARN RM # Capacity Scheduler',
-      if: -> @config.ryba.yarn.rm.site['yarn.resourcemanager.scheduler.class'] is 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
-      handler: ->
+    module.exports = header: 'YARN RM Sheduler', handler: ->
         {yarn, capacity_scheduler} = @config.ryba
         @hconfigure
+          header: 'Capacity Scheduler'
+          if: yarn.rm.site['yarn.resourcemanager.scheduler.class'] is 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
           destination: "#{yarn.rm.conf_dir}/capacity-scheduler.xml"
           default: "#{__dirname}/../../resources/core_hadoop/capacity-scheduler.xml"
           local_default: true

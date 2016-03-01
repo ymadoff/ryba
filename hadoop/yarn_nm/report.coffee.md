@@ -1,14 +1,11 @@
 
-# Yarn ResourceManager Info
+# Yarn ResourceManager Report
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/bootstrap/report'
-    # module.exports.push require('./index').configure
+The following values are reported:   
+*   Physical memory in MB allocated for containers.   
+*   Ratio between virtual memory to physical memory.
 
-## Info Memory
-
-    module.exports.push header: 'YARN NM # Info Memory', timeout: -1, label_true: 'INFO', handler: (_, next) ->
+    module.exports = header: 'YARN NM Report', label_true: 'INFO', handler: (_, next) ->
       {hadoop_conf_dir} = @config.ryba
       properties.read @ssh, "#{hadoop_conf_dir}/yarn-site.xml", (err, config) =>
         return next err if err
@@ -27,6 +24,5 @@
 
 ## Dependencies
 
-    # mkcmd = require '../../lib/mkcmd'
     properties = require '../../lib/properties'
     prink = require 'prink'

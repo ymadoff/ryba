@@ -1,14 +1,8 @@
 
-# Yarn ResourceManager Info
+# Yarn ResourceManager Report
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/bootstrap/report'
-    # module.exports.push require('./index').configure
 
-## Info Memory
-
-    module.exports.push header: 'YARN Client # Info Memory', timeout: -1, label_true: 'INFO', handler: (_, next) ->
+    module.exports = header: 'YARN Client Report', timeout: -1, label_true: 'INFO', handler: (_, next) ->
       {hadoop_conf_dir} = @config.ryba
       properties.read @ssh, "#{hadoop_conf_dir}/yarn-site.xml", (err, config) ->
         return next err if err

@@ -1,16 +1,9 @@
 
 # MapReduce Install
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/core/yum'
-    module.exports.push 'ryba/hadoop/hdfs_client/install'
-    module.exports.push 'ryba/hadoop/yarn_client/install'
-    module.exports.push 'ryba/hadoop/hdfs_dn/wait'
-    module.exports.push 'ryba/lib/hconfigure'
-    module.exports.push 'ryba/lib/hdp_select'
-    module.exports.push require '../../lib/hdfs_upload'
-    module.exports.push require('./index').configure
+    module.exports = header: 'MapReduce Client Install', handler: ->
+      {iptables} = @config
+      {hadoop_group, hadoop_conf_dir, mapred} = @config.ryba
 
 ## IPTables
 
@@ -22,34 +15,30 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push header: 'MapReduce Client # IPTables', handler: ->
-      {mapred} = @config.ryba
       jobclient = mapred.site['yarn.app.mapreduce.am.job.client.port-range']
       jobclient = jobclient.replace '-', ':'
       @iptables
+        header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: jobclient, protocol: 'tcp', state: 'NEW', comment: "MapRed Client Range" }
         ]
-        if: @config.iptables.action is 'start'
+        if: iptables.action is 'start'
 
 ## Users & Groups
 
-    module.exports.push header: 'MapReduce Client # Users & Groups', handler: ->
-      {mapred, hadoop_group} = @config.ryba
-      @group hadoop_group
-      @user mapred.user
+      @group header: 'Group', hadoop_group
+      @user header: 'User', mapred.user
 
 ## Service
 
-    module.exports.push header: 'MapReduce # Service', timeout: -1, handler: ->
-      @service
-        name: 'hadoop-mapreduce'
-      @hdp_select
-        name: 'hadoop-client'
+      @call header: 'MapReduce # Packages', timeout: -1, handler: ->
+        @service
+          name: 'hadoop-mapreduce'
+        @hdp_select
+          name: 'hadoop-client'
 
-    module.exports.push header: 'MapReduce Client # Configuration', handler: ->
-      {mapred, hadoop_conf_dir} = @config.ryba
       @hconfigure
+        header: 'Configuration'
         destination: "#{hadoop_conf_dir}/mapred-site.xml"
         default: "#{__dirname}/../resources/mapred-site.xml"
         local_default: true
@@ -64,8 +53,10 @@ Upload the MapReduce tarball inside the "/hdp/apps/$version/mapreduce"
 HDFS directory. Note, the parent directories are created by the
 "ryba/hadoop/hdfs_dn/layout" module.
 
-    module.exports.push header: 'MapReduce Client # HDFS Tarballs', wait: 60*1000, timeout: -1, handler: ->
       @hdfs_upload
+        header: 'HDFS Tarballs'
+        wait: 60*1000
+        timeout: -1
         source: '/usr/hdp/current/hadoop-client/mapreduce.tar.gz'
         target: '/hdp/apps/$version/mapreduce/mapreduce.tar.gz'
         lock: '/tmp/ryba-mapreduce.lock'
@@ -84,9 +75,8 @@ mapred    - nproc  65536
 Note, a user must re-login for those changes to be taken into account. See
 the "ryba/hadoop/hdfs" module for additional information.
 
-    module.exports.push header: 'MapReduce # Ulimit', handler: ->
-      {mapred} = @config.ryba
       @system_limits
+        header: 'Ulimit'
         user: mapred.user.name
         nofile: mapred.user.limits.nofile
         nproc: mapred.user.limits.nproc

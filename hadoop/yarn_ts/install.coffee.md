@@ -4,14 +4,10 @@
 The Timeline Server is a stand-alone server daemon and doesn't need to be
 co-located with any other service.
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/core/krb5_client/wait'
-    module.exports.push 'ryba/hadoop/hdfs_client'
-    # module.exports.push 'ryba/hadoop/yarn_client/install'
-    module.exports.push 'ryba/lib/hconfigure'
-    module.exports.push 'ryba/lib/hdp_select'
-    # module.exports.push require('./index').configure
+    module.exports = header: 'YARN ATS Install', handler: ->
+      {realm, hadoop_group, hadoop_metrics, core_site, hdfs, yarn} = @config.ryba
+      {ssl, ssl_server, ssl_client, yarn} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## IPTables
 
@@ -24,12 +20,11 @@ co-located with any other service.
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push header: 'YARN ATS # IPTables', handler: ->
-      {yarn} = @config.ryba
       [_, rpc_port] = yarn.site['yarn.timeline-service.address'].split ':'
       [_, http_port] = yarn.site['yarn.timeline-service.webapp.address'].split ':'
       [_, https_port] = yarn.site['yarn.timeline-service.webapp.https.address'].split ':'
       @iptables
+        header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: rpc_port, protocol: 'tcp', state: 'NEW', comment: "Yarn Timeserver RPC" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: http_port, protocol: 'tcp', state: 'NEW', comment: "Yarn Timeserver HTTP" }
@@ -42,53 +37,49 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-yarn-timelineserver" service, symlink the rc.d startup script
 in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 
-    module.exports.push header: 'YARN ATS # Service', handler: ->
-      @service
-        name: 'hadoop-yarn-timelineserver'
-      @hdp_select
-        name: 'hadoop-yarn-client' # Not checked
-        name: 'hadoop-yarn-timelineserver'
-      @render
-        destination: '/etc/init.d/hadoop-yarn-timelineserver'
-        source: "#{__dirname}/../resources/hadoop-yarn-timelineserver"
-        local_source: true
-        context: @config
-        mode: 0o0755
-        unlink: true
-      @execute
-        cmd: "service hadoop-yarn-timelineserver restart"
-        if: -> @status -3
+      @call header: 'Service', handler: ->
+        @service
+          name: 'hadoop-yarn-timelineserver'
+        @hdp_select
+          name: 'hadoop-yarn-client' # Not checked
+          name: 'hadoop-yarn-timelineserver'
+        @render
+          destination: '/etc/init.d/hadoop-yarn-timelineserver'
+          source: "#{__dirname}/../resources/hadoop-yarn-timelineserver"
+          local_source: true
+          context: @config
+          mode: 0o0755
+          unlink: true
+        @execute
+          cmd: "service hadoop-yarn-timelineserver restart"
+          if: -> @status -3
 
 # Layout
 
-    module.exports.push header: 'YARN ATS # Layout', handler: ->
-      {yarn, hadoop_group} = @config.ryba
-      @mkdir
-        destination: "#{yarn.ats.conf_dir}"
-      @mkdir
-        destination: "#{yarn.pid_dir}"
-        uid: yarn.user.name
-        gid: hadoop_group.name
-        mode: 0o755
-      @mkdir
-        destination: "#{yarn.log_dir}"
-        uid: yarn.user.name
-        gid: yarn.group.name
-        parent: true
-      @mkdir
-        destination: yarn.site['yarn.timeline-service.leveldb-timeline-store.path']
-        uid: yarn.user.name
-        gid: hadoop_group.name
-        mode: 0o0750
-        parent: true
+      @call header: 'Layout', handler: ->
+        @mkdir
+          destination: "#{yarn.ats.conf_dir}"
+        @mkdir
+          destination: "#{yarn.pid_dir}"
+          uid: yarn.user.name
+          gid: hadoop_group.name
+          mode: 0o755
+        @mkdir
+          destination: "#{yarn.log_dir}"
+          uid: yarn.user.name
+          gid: yarn.group.name
+          parent: true
+        @mkdir
+          destination: yarn.site['yarn.timeline-service.leveldb-timeline-store.path']
+          uid: yarn.user.name
+          gid: hadoop_group.name
+          mode: 0o0750
+          parent: true
 
 ## Configuration
 
 Update the "yarn-site.xml" configuration file.
 
-    module.exports.push header: 'YARN ATS # Configuration', handler: ->
-      return unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      {yarn, hdfs, core_site, hadoop_group, hadoop_metrics} = @config.ryba
       @hconfigure
         header: 'Core Site'
         destination: "#{yarn.ats.conf_dir}/core-site.xml"
@@ -138,57 +129,55 @@ See:
 
 Note, this is not documented anywhere and might not be considered as a best practice.
 
-    module.exports.push header: 'YARN ATS # HDFS layout', timeout: -1, handler: ->
-      {yarn} = @config.ryba
-      return next() unless yarn.site['yarn.timeline-service.generic-application-history.store-class'] is "org.apache.hadoop.yarn.server.applicationhistoryservice.FileSystemApplicationHistoryStore"
-      dir = yarn.site['yarn.timeline-service.fs-history-store.uri']
-      @wait_execute
-        cmd: mkcmd.hdfs @, "hdfs dfs -test -d #{path.dirname dir}"
-      @execute
-        cmd: mkcmd.hdfs @, """
-        hdfs dfs -mkdir -p #{dir}
-        hdfs dfs -chown #{yarn.user.name} #{dir}
-        hdfs dfs -chmod 1777 #{dir}
-        """
-        unless_exec: "[[ hdfs dfs -d #{dir} ]]"
+      @call header: 'HDFS layout', timeout: -1, handler: ->
+        return unless yarn.site['yarn.timeline-service.generic-application-history.store-class'] is "org.apache.hadoop.yarn.server.applicationhistoryservice.FileSystemApplicationHistoryStore"
+        dir = yarn.site['yarn.timeline-service.fs-history-store.uri']
+        @wait_execute
+          cmd: mkcmd.hdfs @, "hdfs dfs -test -d #{path.dirname dir}"
+        @execute
+          cmd: mkcmd.hdfs @, """
+          hdfs dfs -mkdir -p #{dir}
+          hdfs dfs -chown #{yarn.user.name} #{dir}
+          hdfs dfs -chmod 1777 #{dir}
+          """
+          unless_exec: "[[ hdfs dfs -d #{dir} ]]"
 
 ## SSL
 
-    module.exports.push header: 'YARN ATS # SSL', retry: 0, handler: ->
-      {ssl, ssl_server, ssl_client, yarn} = @config.ryba
-      ssl_client['ssl.client.truststore.location'] = "#{yarn.ats.conf_dir}/truststore"
-      ssl_server['ssl.server.keystore.location'] = "#{yarn.ats.conf_dir}/keystore"
-      ssl_server['ssl.server.truststore.location'] = "#{yarn.ats.conf_dir}/truststore"
-      @hconfigure
-        destination: "#{yarn.ats.conf_dir}/ssl-server.xml"
-        properties: ssl_server
-      @hconfigure
-        destination: "#{yarn.ats.conf_dir}/ssl-client.xml"
-        properties: ssl_client
-      # Client: import certificate to all hosts
-      @java_keystore_add
-        keystore: ssl_client['ssl.client.truststore.location']
-        storepass: ssl_client['ssl.client.truststore.password']
-        caname: "hadoop_root_ca"
-        cacert: "#{ssl.cacert}"
-        local_source: true
-      # Server: import certificates, private and public keys to hosts with a server
-      @java_keystore_add
-        keystore: ssl_server['ssl.server.keystore.location']
-        storepass: ssl_server['ssl.server.keystore.password']
-        caname: "hadoop_root_ca"
-        cacert: "#{ssl.cacert}"
-        key: "#{ssl.key}"
-        cert: "#{ssl.cert}"
-        keypass: ssl_server['ssl.server.keystore.keypassword']
-        name: @config.shortname
-        local_source: true
-      @java_keystore_add
-        keystore: ssl_server['ssl.server.keystore.location']
-        storepass: ssl_server['ssl.server.keystore.password']
-        caname: "hadoop_root_ca"
-        cacert: "#{ssl.cacert}"
-        local_source: true
+      @call header: 'SSL', retry: 0, handler: ->
+        ssl_client['ssl.client.truststore.location'] = "#{yarn.ats.conf_dir}/truststore"
+        ssl_server['ssl.server.keystore.location'] = "#{yarn.ats.conf_dir}/keystore"
+        ssl_server['ssl.server.truststore.location'] = "#{yarn.ats.conf_dir}/truststore"
+        @hconfigure
+          destination: "#{yarn.ats.conf_dir}/ssl-server.xml"
+          properties: ssl_server
+        @hconfigure
+          destination: "#{yarn.ats.conf_dir}/ssl-client.xml"
+          properties: ssl_client
+        # Client: import certificate to all hosts
+        @java_keystore_add
+          keystore: ssl_client['ssl.client.truststore.location']
+          storepass: ssl_client['ssl.client.truststore.password']
+          caname: "hadoop_root_ca"
+          cacert: "#{ssl.cacert}"
+          local_source: true
+        # Server: import certificates, private and public keys to hosts with a server
+        @java_keystore_add
+          keystore: ssl_server['ssl.server.keystore.location']
+          storepass: ssl_server['ssl.server.keystore.password']
+          caname: "hadoop_root_ca"
+          cacert: "#{ssl.cacert}"
+          key: "#{ssl.key}"
+          cert: "#{ssl.cert}"
+          keypass: ssl_server['ssl.server.keystore.keypassword']
+          name: @config.shortname
+          local_source: true
+        @java_keystore_add
+          keystore: ssl_server['ssl.server.keystore.location']
+          storepass: ssl_server['ssl.server.keystore.password']
+          caname: "hadoop_root_ca"
+          cacert: "#{ssl.cacert}"
+          local_source: true
 
 yarn.site['yarn.timeline-service.fs-history-store.uri']
 
@@ -199,12 +188,10 @@ Create the Kerberos service principal by default in the form of
 "/etc/security/keytabs/ats.service.keytab" with ownerships set to
 "mapred:hadoop" and permissions set to "0600".
 
-    module.exports.push 'ryba/hadoop/hdfs_nn/wait'
-    module.exports.push 'ryba/hadoop/hdfs_client/install'
-    module.exports.push header: 'YARN ATS # Kerberos', timeout: -1, handler: ->
-      {yarn, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      # module.exports.push 'ryba/hadoop/hdfs_nn/wait'
+      # module.exports.push 'ryba/hadoop/hdfs_client/install'
       @krb5_addprinc
+        header: 'Kerberos'
         principal: yarn.site['yarn.timeline-service.principal'].replace '_HOST', @config.host
         randkey: true
         keytab: yarn.site['yarn.timeline-service.keytab']

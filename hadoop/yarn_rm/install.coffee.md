@@ -1,14 +1,24 @@
 
 # Hadoop YARN ResourceManager Install
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/yarn_client/install'
-    module.exports.push 'ryba/lib/hconfigure'
-    # module.exports.push require '../../lib/hdp_service'
-    module.exports.push 'ryba/lib/hdp_select'
-    module.exports.push 'ryba/lib/write_jaas'
-    # module.exports.push require('./index').configure
+    module.exports = header: 'YARN RM Install', handler: ->
+      {realm, core_site, hdfs, yarn, mapred, hadoop_group, hadoop_metrics} = @config.ryba
+      {ssl, ssl_server, ssl_client} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      
+## Users & Groups
+
+By default, the "zookeeper" package create the following entries:
+
+```bash
+cat /etc/passwd | grep yarn
+yarn:x:2403:2403:Hadoop YARN User:/var/lib/hadoop-yarn:/bin/bash
+cat /etc/group | grep hadoop
+hadoop:x:498:hdfs
+```
+
+      @group header: 'Group', hadoop_group
+      @user header: 'User', yarn.user
       
 ## IPTables
 
@@ -24,8 +34,6 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push header: 'YARN RM # IPTables', handler: ->
-      {yarn} = @config.ryba
       id = if yarn.rm.site['yarn.resourcemanager.ha.enabled'] is 'true' then ".#{yarn.rm.site['yarn.resourcemanager.ha.id']}" else ''
       rules = []
       # Application
@@ -49,6 +57,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       rt_port = yarn.rm.site["yarn.resourcemanager.resource-tracker.address#{id}"].split(':')[1]
       rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: rt_port, protocol: 'tcp', state: 'NEW', comment: "YARN RM Application Submissions" }
       @iptables
+        header: 'IPTables'
         rules: rules
         if: @config.iptables.action is 'start'
 
@@ -57,47 +66,45 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-yarn-resourcemanager" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push header: 'YARN RM # Service', handler: ->
-      {yarn} = @config.ryba
-      @service
-        name: 'hadoop-yarn-resourcemanager'
-      @hdp_select
-        name: 'hadoop-yarn-client' # Not checked
-        name: 'hadoop-yarn-resourcemanager'
-      @render
-        destination: '/etc/init.d/hadoop-yarn-resourcemanager'
-        source: "#{__dirname}/../resources/hadoop-yarn-resourcemanager"
-        local_source: true
-        context: @config
-        mode: 0o0755
-        unlink: true
-      @execute
-        cmd: "service hadoop-yarn-resourcemanager restart"
-        if: -> @status -3
+      @call header: 'Service', handler: ->
+        {yarn} = @config.ryba
+        @service
+          name: 'hadoop-yarn-resourcemanager'
+        @hdp_select
+          name: 'hadoop-yarn-client' # Not checked
+          name: 'hadoop-yarn-resourcemanager'
+        @render
+          destination: '/etc/init.d/hadoop-yarn-resourcemanager'
+          source: "#{__dirname}/../resources/hadoop-yarn-resourcemanager"
+          local_source: true
+          context: @config
+          mode: 0o0755
+          unlink: true
+        @execute
+          cmd: "service hadoop-yarn-resourcemanager restart"
+          if: -> @status -3
 
-    module.exports.push header: 'YARN RM # Layout', timeout: -1, handler: ->
-      {yarn, hadoop_group} = @config.ryba
-      @mkdir
-        destination: "#{yarn.rm.conf_dir}"
-      @mkdir
-        destination: "#{yarn.pid_dir}"
-        uid: yarn.user.name
-        gid: hadoop_group.name
-        mode: 0o755
-      @mkdir
-        destination: "#{yarn.log_dir}"
-        uid: yarn.user.name
-        gid: yarn.group.name
-        parent: true
-      @touch
-        destination: "#{yarn.rm.site['yarn.resourcemanager.nodes.include-path']}"
-      @touch
-        destination: "#{yarn.rm.site['yarn.resourcemanager.nodes.exclude-path']}"
+      @call header: 'Layout', handler: ->
+        {yarn, hadoop_group} = @config.ryba
+        @mkdir
+          destination: "#{yarn.rm.conf_dir}"
+        @mkdir
+          destination: "#{yarn.pid_dir}"
+          uid: yarn.user.name
+          gid: hadoop_group.name
+          mode: 0o755
+        @mkdir
+          destination: "#{yarn.log_dir}"
+          uid: yarn.user.name
+          gid: yarn.group.name
+          parent: true
+        @touch
+          destination: "#{yarn.rm.site['yarn.resourcemanager.nodes.include-path']}"
+        @touch
+          destination: "#{yarn.rm.site['yarn.resourcemanager.nodes.exclude-path']}"
 
 ## Configure
 
-    module.exports.push header: 'YARN RM # Configure', handler: ->
-      {core_site, hdfs, yarn, mapred, hadoop_group, hadoop_metrics} = @config.ryba
       @hconfigure
         header: 'Core Site'
         destination: "#{yarn.rm.conf_dir}/core-site.xml"
@@ -123,6 +130,7 @@ inside "/etc/init.d" and activate it on startup.
         source: "#{__dirname}/../resources/log4j.properties"
         local_source: true
       @render
+        header: 'YARN Env'
         source: "#{__dirname}/../resources/yarn-env.sh"
         destination: "#{yarn.rm.conf_dir}/yarn-env.sh"
         local_source: true
@@ -143,54 +151,52 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 ## MapRed Site
 
       @hconfigure # Ideally placed inside a mapred_jhs_client module
+        header: 'MapRed Site'
         destination: "#{yarn.rm.conf_dir}/mapred-site.xml"
         properties: mapred.site
         backup: true
 
 ## SSL
 
-    module.exports.push header: 'YARN RM # SSL', retry: 0, handler: ->
-      {ssl, ssl_server, ssl_client, yarn} = @config.ryba
-      ssl_client['ssl.client.truststore.location'] = "#{yarn.rm.conf_dir}/truststore"
-      ssl_server['ssl.server.keystore.location'] = "#{yarn.rm.conf_dir}/keystore"
-      ssl_server['ssl.server.truststore.location'] = "#{yarn.rm.conf_dir}/truststore"
-      @hconfigure
-        destination: "#{yarn.rm.conf_dir}/ssl-server.xml"
-        properties: ssl_server
-      @hconfigure
-        destination: "#{yarn.rm.conf_dir}/ssl-client.xml"
-        properties: ssl_client
-      # Client: import certificate to all hosts
-      @java_keystore_add
-        keystore: ssl_client['ssl.client.truststore.location']
-        storepass: ssl_client['ssl.client.truststore.password']
-        caname: "hadoop_root_ca"
-        cacert: "#{ssl.cacert}"
-        local_source: true
-      # Server: import certificates, private and public keys to hosts with a server
-      @java_keystore_add
-        keystore: ssl_server['ssl.server.keystore.location']
-        storepass: ssl_server['ssl.server.keystore.password']
-        caname: "hadoop_root_ca"
-        cacert: "#{ssl.cacert}"
-        key: "#{ssl.key}"
-        cert: "#{ssl.cert}"
-        keypass: ssl_server['ssl.server.keystore.keypassword']
-        name: @config.shortname
-        local_source: true
-      @java_keystore_add
-        keystore: ssl_server['ssl.server.keystore.location']
-        storepass: ssl_server['ssl.server.keystore.password']
-        caname: "hadoop_root_ca"
-        cacert: "#{ssl.cacert}"
-        local_source: true
+      @call header: 'SSL', retry: 0, handler: ->
+        ssl_client['ssl.client.truststore.location'] = "#{yarn.rm.conf_dir}/truststore"
+        ssl_server['ssl.server.keystore.location'] = "#{yarn.rm.conf_dir}/keystore"
+        ssl_server['ssl.server.truststore.location'] = "#{yarn.rm.conf_dir}/truststore"
+        @hconfigure
+          destination: "#{yarn.rm.conf_dir}/ssl-server.xml"
+          properties: ssl_server
+        @hconfigure
+          destination: "#{yarn.rm.conf_dir}/ssl-client.xml"
+          properties: ssl_client
+        # Client: import certificate to all hosts
+        @java_keystore_add
+          keystore: ssl_client['ssl.client.truststore.location']
+          storepass: ssl_client['ssl.client.truststore.password']
+          caname: "hadoop_root_ca"
+          cacert: "#{ssl.cacert}"
+          local_source: true
+        # Server: import certificates, private and public keys to hosts with a server
+        @java_keystore_add
+          keystore: ssl_server['ssl.server.keystore.location']
+          storepass: ssl_server['ssl.server.keystore.password']
+          caname: "hadoop_root_ca"
+          cacert: "#{ssl.cacert}"
+          key: "#{ssl.key}"
+          cert: "#{ssl.cert}"
+          keypass: ssl_server['ssl.server.keystore.keypassword']
+          name: @config.shortname
+          local_source: true
+        @java_keystore_add
+          keystore: ssl_server['ssl.server.keystore.location']
+          storepass: ssl_server['ssl.server.keystore.password']
+          caname: "hadoop_root_ca"
+          cacert: "#{ssl.cacert}"
+          local_source: true
 
 ## Kerberos
 
-    module.exports.push header: 'YARN RM # Kerberos', handler: ->
-      {yarn, hadoop_group, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
+        header: 'Kerberos'
         principal: yarn.rm.site['yarn.resourcemanager.principal'].replace '_HOST', @config.host
         randkey: true
         keytab: yarn.rm.site['yarn.resourcemanager.keytab']
@@ -205,9 +211,8 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 The JAAS file is used by the ResourceManager to initiate a secure connection 
 with Zookeeper.
 
-    module.exports.push header: 'YARN RM # Kerberos JAAS', handler: ->
-      {yarn, hadoop_group, realm} = @config.ryba
       @write_jaas
+        header: 'Kerberos JAAS'
         destination: "#{yarn.rm.conf_dir}/yarn-rm.jaas"
         content: Client:
           principal: yarn.rm.site['yarn.resourcemanager.principal'].replace '_HOST', @config.host
@@ -229,14 +234,11 @@ yarn   - nproc  65536
 Note, a user must re-login for those changes to be taken into account. See
 the "ryba/hadoop/hdfs" module for additional information.
 
-    module.exports.push header: 'YARN RM # Ulimit', handler: ->
-      {yarn} = @config.ryba
       @system_limits
+        header: 'Ulimit'
         user: yarn.user.name
         nofile: yarn.user.limits.nofile
         nproc: yarn.user.limits.nproc
-
-    module.exports.push 'ryba/hadoop/yarn_rm/capacity'
 
 ## Dependencies
 

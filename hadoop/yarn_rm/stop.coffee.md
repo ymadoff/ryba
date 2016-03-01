@@ -1,10 +1,9 @@
 
 # Hadoop YARN ResourceManager Stop
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    # module.exports.push require('./index').configure
-
+    module.exports = header: 'Yarn RM Stop', label_true: 'STOPPED', handler: ->
+      {clean_logs, yarn} = @config.ryba
+    
 ## Stop
 
 Stop the Hive HCatalog server. You can also stop the server manually with one of
@@ -17,14 +16,15 @@ su -l yarn -c "/usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/con
 
 The file storing the PID is "/var/run/hadoop-yarn/yarn/yarn-yarn-resourcemanager.pid".
 
-    module.exports.push header: 'Yarn RM # Stop', label_true: 'STOPPED', handler: ->
       @service_stop
+        header: 'Yarn RM # Stop'
+        label_true: 'STOPPED'
         name: 'hadoop-yarn-resourcemanager'
         if_exists: '/etc/init.d/hadoop-yarn-resourcemanager'
 
-    module.exports.push header: 'Yarn RM # Stop Clean Logs', label_true: 'CLEANED', handler: ->
-      {clean_logs, yarn} = @config.ryba
-      return unless clean_logs
       @execute
+        header: 'Yarn RM # Stop Clean Logs'
+        label_true: 'CLEANED'
+        if: clean_logs
         cmd: 'rm #{yarn.log_dir}/*/*-resourcemanager-*'
         code_skipped: 1

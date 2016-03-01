@@ -3,10 +3,7 @@
 
 Wait for the NodeManagers HTTP ports. It supports HTTPS and HA.
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-
-    module.exports.push header: 'YARN NM # Wait', timeout: -1, label_true: 'READY', handler:  ->
+    module.exports = header: 'YARN NM # Wait', timeout: -1, label_true: 'READY', handler:  ->
       @wait_connect
         quorum: true
         servers: for nm_ctx in @contexts 'ryba/hadoop/yarn_nm'

@@ -8,6 +8,7 @@
         'ryba/graphite/carbon'
         'ryba/lib/hconfigure'
         'ryba/lib/hdp_select'
+        'ryba/lib/hdfs_upload'
         'ryba/hadoop/core/configure'
       ]
       'install': [
