@@ -1,13 +1,13 @@
 
 # Hadoop HDFS NameNode Wait
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    # module.exports.push require('../hdfs').configure
+    module.exports = header: 'HDFS NN Wait', timeout: -1, label_true: 'READY', handler:  ->
+      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
 
-    module.exports.push header: 'HDFS NN # Wait', timeout: -1, label_true: 'READY', handler:  ->
-      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'#, require('./index').configure
+## Wait HTTP ports
+
       @wait_connect
+        header: 'HTTP'
         servers: for nn_ctx in nn_ctxs
           {nameservice} = nn_ctx.config.ryba
           protocol = if nn_ctx.config.ryba.hdfs.nn.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
@@ -21,7 +21,6 @@
 Wait for HDFS safemode to exit. It is not enough to start the NameNodes but the
 majority of DataNodes also need to be running.
 
-    module.exports.push header: 'HDFS NN # Wait Safemode', timeout: -1, label_true: 'READY', handler:  ->
       # TODO: there are much better solutions, for exemple
       # if 'ryba/hadoop/hdfs_client', then `hdfs dfsadmin`
       # else use curl
@@ -32,6 +31,7 @@ majority of DataNodes also need to be running.
       else if @has_module 'ryba/hadoop/hdfs_client' then conf_dir = "#{hadoop_conf_dir}"
       else throw Error 'Invalid configuration'
       @wait_execute
+        header: 'Safemode'
         cmd: mkcmd.hdfs @, "hdfs --config '#{conf_dir}' dfsadmin -safemode get | grep OFF"
         interval: 3000
 

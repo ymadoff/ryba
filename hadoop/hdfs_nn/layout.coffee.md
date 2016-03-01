@@ -1,11 +1,7 @@
 # HDFS Datanode Layout
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/hdfs'
-    # module.exports.push require('../hdfs').configure
-    module.exports.push 'ryba/hadoop/hdfs_dn/wait'
-    module.exports.push 'ryba/hadoop/hdfs_nn/wait'
+    module.exports = header: 'HDFS NN layout', timeout: -1, handler: ->
+      {user, group, hdfs, hadoop_group} = @config.ryba
 
 ## HDFS layout
 
@@ -21,53 +17,52 @@ drwxr-xr-x   - hdfs   hadoop      /user
 drwxr-xr-x   - hdfs   hadoop      /user/hdfs
 ```
 
-    module.exports.push header: 'HDFS NN # HDFS layout', timeout: -1, handler: ->
-      {hdfs, hadoop_group} = @config.ryba
-      @wait_execute
-        cmd: mkcmd.hdfs @, "hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -d /"
-      @execute
-        cmd: mkcmd.hdfs @, """
-        hdfs --config '#{hdfs.nn.conf_dir}' dfs -chmod 755 /
-        """
-      @execute
-        cmd: mkcmd.hdfs @, """
-        if hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -d /tmp; then exit 2; fi
-        hdfs --config '#{hdfs.nn.conf_dir}' dfs -mkdir /tmp
-        hdfs --config '#{hdfs.nn.conf_dir}' dfs -chown #{hdfs.user.name}:#{hadoop_group.name} /tmp
-        hdfs --config '#{hdfs.nn.conf_dir}' dfs -chmod 1777 /tmp
-        """
-        code_skipped: 2
-      , (err, executed, stdout) ->
-        @log? 'Directory "/tmp" prepared' and modified = true if executed
-      @execute
-        cmd: mkcmd.hdfs @, """
-        if hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -d /user; then exit 2; fi
-        hdfs --config '#{hdfs.nn.conf_dir}' dfs -mkdir /user
-        hdfs --config '#{hdfs.nn.conf_dir}' dfs -chown #{hdfs.user.name}:#{hadoop_group.name} /user
-        hdfs --config '#{hdfs.nn.conf_dir}' dfs -chmod 755 /user
-        hdfs --config '#{hdfs.nn.conf_dir}' dfs -mkdir /user/#{hdfs.user.name}
-        hdfs --config '#{hdfs.nn.conf_dir}' dfs -chown #{hdfs.user.name}:#{hadoop_group.name} /user/#{hdfs.user.name}
-        hdfs --config '#{hdfs.nn.conf_dir}' dfs -chmod 755 /user/#{hdfs.user.name}
-        """
-        code_skipped: 2
-      , (err, executed, stdout) ->
-        @log? 'Directory "/user" prepared' and modified = true if executed
-      @execute
-        cmd: mkcmd.hdfs @, """
-        if hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -d /apps; then exit 2; fi
-        hdfs --config '#{hdfs.nn.conf_dir}' dfs -mkdir /apps
-        hdfs --config '#{hdfs.nn.conf_dir}' dfs -chown #{hdfs.user.name}:#{hadoop_group.name} /apps
-        hdfs --config '#{hdfs.nn.conf_dir}' dfs -chmod 755 /apps
-        """
-        code_skipped: 2
-      , (err, executed, stdout) ->
-        @log? 'Directory "/apps" prepared' and modified = true if executed
+      @call header: 'HDFS layout', timeout: -1, handler: ->
+        @wait_execute
+          cmd: mkcmd.hdfs @, "hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -d /"
+        @execute
+          cmd: mkcmd.hdfs @, """
+          hdfs --config '#{hdfs.nn.conf_dir}' dfs -chmod 755 /
+          """
+        @execute
+          cmd: mkcmd.hdfs @, """
+          if hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -d /tmp; then exit 2; fi
+          hdfs --config '#{hdfs.nn.conf_dir}' dfs -mkdir /tmp
+          hdfs --config '#{hdfs.nn.conf_dir}' dfs -chown #{hdfs.user.name}:#{hadoop_group.name} /tmp
+          hdfs --config '#{hdfs.nn.conf_dir}' dfs -chmod 1777 /tmp
+          """
+          code_skipped: 2
+        , (err, executed, stdout) ->
+          @log? 'Directory "/tmp" prepared' and modified = true if executed
+        @execute
+          cmd: mkcmd.hdfs @, """
+          if hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -d /user; then exit 2; fi
+          hdfs --config '#{hdfs.nn.conf_dir}' dfs -mkdir /user
+          hdfs --config '#{hdfs.nn.conf_dir}' dfs -chown #{hdfs.user.name}:#{hadoop_group.name} /user
+          hdfs --config '#{hdfs.nn.conf_dir}' dfs -chmod 755 /user
+          hdfs --config '#{hdfs.nn.conf_dir}' dfs -mkdir /user/#{hdfs.user.name}
+          hdfs --config '#{hdfs.nn.conf_dir}' dfs -chown #{hdfs.user.name}:#{hadoop_group.name} /user/#{hdfs.user.name}
+          hdfs --config '#{hdfs.nn.conf_dir}' dfs -chmod 755 /user/#{hdfs.user.name}
+          """
+          code_skipped: 2
+        , (err, executed, stdout) ->
+          @log? 'Directory "/user" prepared' and modified = true if executed
+        @execute
+          cmd: mkcmd.hdfs @, """
+          if hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -d /apps; then exit 2; fi
+          hdfs --config '#{hdfs.nn.conf_dir}' dfs -mkdir /apps
+          hdfs --config '#{hdfs.nn.conf_dir}' dfs -chown #{hdfs.user.name}:#{hadoop_group.name} /apps
+          hdfs --config '#{hdfs.nn.conf_dir}' dfs -chmod 755 /apps
+          """
+          code_skipped: 2
+        , (err, executed, stdout) ->
+          @log? 'Directory "/apps" prepared' and modified = true if executed
 
 ## HDP Layout
 
-    module.exports.push header: 'HDFS NN # HDP Layout', timeout: -1, handler: ->
-      {hdfs, hadoop_group} = @config.ryba
       @execute
+        header: 'HDP Layout'
+        timeout: -1
         cmd: mkcmd.hdfs @, """
         version=`readlink /usr/hdp/current/hadoop-client | sed 's/.*\\/\\(.*\\)\\/hadoop/\\1/'`
         hdfs --config '#{hdfs.nn.conf_dir}' dfs -mkdir -p /hdp/apps/$version
@@ -88,9 +83,8 @@ Create a Unix and Kerberos test user, by default "test" and execute simple HDFS 
 the NameNode is properly working. Note, those commands are NameNode specific, meaning they only
 afect HDFS metadata.
 
-    module.exports.push header: 'HDFS NN # HDFS Layout User Test', timeout: -1, handler: ->
-      {user, group, hdfs} = @config.ryba
       @execute
+        header: 'User Test'
         cmd: mkcmd.hdfs @, """
         if hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -d /user/#{user.name}; then exit 2; fi
         hdfs --config '#{hdfs.nn.conf_dir}' dfs -mkdir /user/#{user.name}

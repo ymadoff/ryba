@@ -29,29 +29,21 @@ dfsadmin -fetchImage
 
 ### Local Backup
 
-    module.exports = []
+    module.exports = header: 'HDFS NN # Backup', timeout: -1, label_true: 'BACKUPED', handler: ->
+      {hdfs} = @config.ryba
 
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/bootstrap/utils'
-    # module.exports.push require('./index').configure
-
-    # isRelative = () ->
-    #   filepath = path.join.apply path, arguments
-    #   return path.resolve(filepath) isnt filepath.replace(/[\/\\]+$/, ''\
-
-    module.exports.push header: 'HDFS NN # Backup HDFS LS output', timeout: -1, label_true: 'BACKUPED', handler: ->
       @backup
+        header: 'HDFS LS output'
         name: 'ls'
         cmd: 'hdfs dfs -ls -R / '
         destination: "/var/backups/nn_#{@config.host}/"
         interval: month: 1
         retention: count: 2
 
-    module.exports.push header: 'HDFS NN # Backup FSimages & edits', timeout: -1, label_true: 'BACKUPED', handler: ->
-      {hdfs} = @config.ryba
       any_dfs_name_dir = hdfs.nn.site['dfs.namenode.name.dir'].split(',')[0]
       any_dfs_name_dir = any_dfs_name_dir.substr(7) if any_dfs_name_dir.indexOf('file://') is 0
       @backup
+        header: 'FSimages & edits'
         name: 'fs'
         source: path.join any_dfs_name_dir, 'current'
         filter: ['fsimage_*','edits_0*']
@@ -73,5 +65,4 @@ tar -xzf /var/backups/nn_$HOSTNAME/<backup_date>.tar.gz
 
 ## Dependencies
 
-    util = require 'util'
     path = require 'path'

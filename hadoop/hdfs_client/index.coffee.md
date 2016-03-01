@@ -1,30 +1,22 @@
 
 # Hadoop HDFS Client
 
-[Clients](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HdfsUserGuide.html) contact NameNode for file metadata or file modifications and perform actual file I/O directly with the DataNodes.
+[Clients][hdfs_client] contact NameNode for file metadata or file modifications
+and perform actual file I/O directly with the DataNodes.
 
-    module.exports = []
+[hdfs_client]: http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HdfsUserGuide.html
 
-    module.exports.configure = (ctx) ->
-      require('../core').configure ctx
-      {ryba} = ctx.config
-      ryba.hdfs.site['dfs.http.policy'] ?= 'HTTPS_ONLY'
-
-Since Hadoop 2.6, [SaslRpcClient](https://issues.apache.org/jira/browse/HDFS-7546) check
-that targetted server principal matches configured server principal.
-To configure cross-realm communication (with distcp) you need to force a bash-like pattern
-to match. By default any principal ('*') will be authorized, as cross-realm trust
-is already handled by kerberos
-
-      ryba.hdfs.site['dfs.namenode.kerberos.principal.pattern'] ?= '*'
-      require('../hdfs_nn').client_config ctx
-      require('../hdfs_dn').client_config ctx
-
-## Commands
-
-    module.exports.push commands: 'check', modules: 'ryba/hadoop/hdfs_client/check'
-
-    module.exports.push commands: 'install', modules: [
-      'ryba/hadoop/hdfs_client/install'
-      'ryba/hadoop/hdfs_client/check'
-    ]
+    module.exports = ->
+      'check': [
+        'ryba/hadoop/hdfs_dn/wait'
+        'ryba/hadoop/hdfs_client/check'
+      ]
+      'configure': [
+        'ryba/hadoop/core'
+        'ryba/hadoop/hdfs_client/configure'
+      ]
+      'install': [
+        'ryba/hadoop/core'
+        'ryba/hadoop/hdfs_client/install'
+        'ryba/hadoop/hdfs_client/check'
+      ]

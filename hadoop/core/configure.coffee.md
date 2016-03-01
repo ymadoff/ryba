@@ -1,27 +1,5 @@
 
-# Hadoop Core
-
-The [Hadoop distribution](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.2.4/bk_getting-started-guide/content/ch_hdp1_getting_started_chp2_1.html) used is the Hortonwork distribution named HDP. The
-installation is leveraging the Yum repositories. [Individual tarballs][tar]
-are also available as an alternative with the benefit of including the source
-code.
-
-
-*   http://bigdataprocessing.wordpress.com/2013/07/30/hadoop-rack-awareness-and-configuration/
-
-[tar]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.9.1/bk_installing_manually_book/content/rpm-chap13.html
-
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/core/yum'
-    # Install kerberos clients to create/test new HDFS and Yarn principals
-    module.exports.push 'masson/core/krb5_client'
-    module.exports.push 'masson/commons/java'
-    module.exports.push 'ryba/lib/base'
-    module.exports.push 'ryba/lib/hconfigure'
-    module.exports.push 'ryba/lib/hdp_select'
-
-## Configuration
+# Hadoop Core Configuration
 
 *   `ryba.static_host` (boolean)
     Write the host name of the server instead of the Hadoop "_HOST"
@@ -91,16 +69,9 @@ Default configuration:
 }
 ```
 
-    module.exports.configure = (ctx) ->
-      require('../ganglia/collector').configure ctx
-      require('../graphite/carbon').configure ctx
-      return if ctx.core_configured
-      ctx.core_configured = true
-      require('masson/commons/java').configure ctx
-      require('masson/core/krb5_client').configure ctx
-      require('../lib/base').configure ctx
-      {realm, ganglia, graphite} = ctx.config.ryba
-      ryba = ctx.config.ryba ?= {}
+    module.exports = handler: ->
+      {realm, ganglia, graphite} = @config.ryba
+      ryba = @config.ryba ?= {}
       ryba.yarn ?= {}
       ryba.mapred ?= {}
 
@@ -122,10 +93,6 @@ Default configuration:
       ryba.hdfs.user.limits ?= {}
       ryba.hdfs.user.limits.nofile ?= 64000
       ryba.hdfs.user.limits.nproc ?= true
-      # Kerberos user for hdfs
-      ryba.hdfs.krb5_user ?= {}
-      ryba.hdfs.krb5_user.principal ?= "#{ryba.hdfs.user.name}@#{realm}"
-      ryba.hdfs.krb5_user.password ?= 'password'
       # Unix user for yarn
       ryba.yarn.user ?= {}
       ryba.yarn.user = name: ryba.yarn.user if typeof ryba.yarn.user is 'string'
@@ -179,27 +146,27 @@ Default configuration:
       ryba.nameservice ?= null
       ryba.active_nn ?= false
       throw new Error "Invalid Service Name" unless ryba.nameservice
-      namenodes = ctx.hosts_with_module 'ryba/hadoop/hdfs_nn'
+      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
       # throw new Error "Need at least 2 namenodes" if namenodes.length < 2
-      # active_nn_hosts = ctx.config.servers.filter( (server) -> server.ryba?.active_nn ).map( (server) -> server.host )
-      # standby_nn_hosts = ctx.config.servers.filter( (server) -> ! server.ryba?.active_nn ).map( (server) -> server.host )
-      standby_nn_hosts = namenodes.filter( (server) -> ! ctx.config.servers[server].ryba?.active_nn )
-      # throw new Error "Invalid Number of Passive NameNodes: #{standby_nn_hosts.length}" unless standby_nn_hosts.length is 1
-      ryba.standby_nn_host = standby_nn_hosts[0]
+      # active_nn_hosts = @config.servers.filter( (server) -> server.ryba?.active_nn ).map( (server) -> server.host )
+      # standby_nn_hosts = @config.servers.filter( (server) -> ! server.ryba?.active_nn ).map( (server) -> server.host )
+      standby_nn_ctxs = nn_ctxs.filter( (nn_ctx) => ! @config.servers[nn_ctx.config.host].ryba?.active_nn )
+      # throw new Error "Invalid Number of Passive NameNodes: #{standby_nn_ctxs.length}" unless standby_nn_ctxs.length is 1
+      ryba.standby_nn_host = standby_nn_ctxs[0].config.host
       ryba.static_host =
         if ryba.static_host and ryba.static_host isnt '_HOST'
-        then ctx.config.host
+        then @config.host
         else '_HOST'
       # Configuration
       core_site = ryba.core_site ?= {}
       core_site['io.compression.codecs'] ?= "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.SnappyCodec"
-      unless ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-        core_site['fs.defaultFS'] ?= "hdfs://#{namenodes[0]}:8020"
+      unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+        core_site['fs.defaultFS'] ?= "hdfs://#{nn_ctxs.config.host[0]}:8020"
       else
         core_site['fs.defaultFS'] ?= "hdfs://#{ryba.nameservice}:8020"
-        active_nn_hosts = namenodes.filter( (server) -> ctx.config.servers[server].ryba?.active_nn )
-        throw new Error "Invalid Number of Active NameNodes: #{active_nn_hosts.length}" unless active_nn_hosts.length is 1
-        ryba.active_nn_host = active_nn_hosts[0]
+        active_nn_ctxs = nn_ctxs.filter( (nn_ctx) => @config.servers[nn_ctx.config.host].ryba?.active_nn )
+        throw new Error "Invalid Number of Active NameNodes: #{active_nn_ctxs.length}" unless active_nn_ctxs.length is 1
+        ryba.active_nn_host = active_nn_ctxs[0].config.host
       # Set the authentication for the cluster. Valid values are: simple or kerberos
       core_site['hadoop.security.authentication'] ?= 'kerberos'
       # Enable authorization for different protocols.
@@ -215,19 +182,25 @@ Default configuration:
       # Default group mapping
       core_site['hadoop.security.group.mapping'] ?= 'org.apache.hadoop.security.JniBasedUnixGroupsMappingWithFallback'
       # Core Jars
-      core_jars = ctx.config.ryba.core_jars ?= {}
+      core_jars = @config.ryba.core_jars ?= {}
       for k, v of core_jars
         throw Error 'Invalid core_jars source' unless v.source
         v.match ?= "#{k}-*.jar"
         v.filename = path.basename v.source
       # Get ZooKeeper Quorum
-      zoo_ctxs = ctx.contexts 'ryba/zookeeper/server', require('../zookeeper/server').configure
+      zoo_ctxs = @contexts 'ryba/zookeeper/server', require('../../zookeeper/server/configure').handler
       zookeeper_quorum = for zoo_ctx in zoo_ctxs
         "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
       core_site['ha.zookeeper.quorum'] ?= zookeeper_quorum
       # Topology
       # http://ofirm.wordpress.com/2014/01/09/exploring-the-hadoop-network-topology/
       core_site['net.topology.script.file.name'] ?= "#{ryba.hadoop_conf_dir}/rack_topology.sh"
+
+Kerberos user for hdfs
+
+      ryba.hdfs.krb5_user ?= {}
+      ryba.hdfs.krb5_user.principal ?= "#{ryba.hdfs.user.name}@#{realm}"
+      ryba.hdfs.krb5_user.password ?= 'password'
 
 Configuration for HTTP
 
@@ -240,7 +213,7 @@ Configuration for HTTP
       core_site['hadoop.http.authentication.kerberos.keytab'] ?= '/etc/security/keytabs/spnego.service.keytab'
       # Cluster domain
       unless core_site['hadoop.http.authentication.cookie.domain']
-        domains = ctx.hosts_with_module('ryba/hadoop/core').map( (host) -> host.split('.').slice(1).join('.') ).filter( (el, pos, self) -> self.indexOf(el) is pos )
+        domains = @contexts('ryba/hadoop/core').map( (ctx) -> ctx.config.host.split('.').slice(1).join('.') ).filter( (el, pos, self) -> self.indexOf(el) is pos )
         throw Error "Multiple domains, set 'hadoop.http.authentication.cookie.domain' manually" if domains.length isnt 1
         core_site['hadoop.http.authentication.cookie.domain'] = domains[0]
 
@@ -351,7 +324,7 @@ source code, the list of supported prefixes is: "namenode", "resourcemanager",
 "datanode", "nodemanager", "maptask", "reducetask", "journalnode",
 "historyserver", "nimbus", "supervisor".
 
-      sinks = ctx.config.metrics_sinks ?= {}
+      sinks = @config.metrics_sinks ?= {}
       # File sink
       sinks.file ?= {}
       sinks.file.class ?= 'org.apache.hadoop.metrics2.sink.FileSink'
@@ -368,7 +341,7 @@ source code, the list of supported prefixes is: "namenode", "resourcemanager",
       sinks.graphite.class ?= 'org.apache.hadoop.metrics2.sink.GraphiteSink'
       sinks.graphite.period ?= '10'
       # Hadoop metrics
-      hadoop_metrics = ctx.config.ryba.hadoop_metrics ?= {}
+      hadoop_metrics = @config.ryba.hadoop_metrics ?= {}
       hadoop_metrics.sinks ?= {}
       hadoop_metrics.sinks.file ?= true
       hadoop_metrics.sinks.ganglia ?= false
@@ -387,35 +360,35 @@ source code, the list of supported prefixes is: "namenode", "resourcemanager",
         hadoop_metrics.config['jobhistoryserver.sink.file.filename'] ?= 'jobhistoryserver-metrics.out'
       # Ganglia sink, accepted properties are "servers" and "supportsparse"
       if hadoop_metrics.sinks.ganglia
-        [ganglia_ctx] =  ctx.contexts 'ryba/ganglia/collector'
+        [ganglia_ctx] =  @contexts 'ryba/ganglia/collector'
         hadoop_metrics.config["*.sink.ganglia.#{k}"] ?= v for k, v of sinks.ganglia
-        if ctx.has_module 'ryba/hadoop/hdfs_nn'
+        if @has_module 'ryba/hadoop/hdfs_nn'
           hadoop_metrics.config['namenode.sink.ganglia.class'] ?= sinks.ganglia.class
           hadoop_metrics.config['namenode.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
-        if ctx.has_module 'ryba/hadoop/yarn_rm'
+        if @has_module 'ryba/hadoop/yarn_rm'
           hadoop_metrics.config['resourcemanager.sink.ganglia.class'] ?= sinks.ganglia.class
           hadoop_metrics.config['resourcemanager.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.rm_port}"
-        if ctx.has_module 'ryba/hadoop/hdfs_dn'
+        if @has_module 'ryba/hadoop/hdfs_dn'
           hadoop_metrics.config['datanode.sink.ganglia.class'] ?= sinks.ganglia.class
           hadoop_metrics.config['datanode.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
-        if ctx.has_module 'ryba/hadoop/yarn_nm'
+        if @has_module 'ryba/hadoop/yarn_nm'
           hadoop_metrics.config['nodemanager.sink.ganglia.class'] ?= sinks.ganglia.class
           hadoop_metrics.config['nodemanager.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
           hadoop_metrics.config['maptask.sink.ganglia.class'] ?= sinks.ganglia.class
           hadoop_metrics.config['maptask.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
           hadoop_metrics.config['reducetask.sink.ganglia.class'] ?= sinks.ganglia.class
           hadoop_metrics.config['reducetask.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
-        # if ctx.has_module 'ryba/hadoop/hdfs_jn'
+        # if @has_module 'ryba/hadoop/hdfs_jn'
         #   hadoop_metrics['journalnode.sink.ganglia.servers']
-        # if ctx.has_module 'ryba/hadoop/mapred_jhs'
+        # if @has_module 'ryba/hadoop/mapred_jhs'
         #   hadoop_metrics['historyserver.sink.ganglia.servers']
-        # if ctx.has_module 'ryba/storm/nimbus'
+        # if @has_module 'ryba/storm/nimbus'
         #   hadoop_metrics['nimbus.sink.ganglia.servers']
-        # if ctx.has_module 'ryba/storm/supervisor'
+        # if @has_module 'ryba/storm/supervisor'
         #   hadoop_metrics['supervisor.sink.ganglia.servers']
       # Graphite sink, accepted properties are "server_host", "server_port" and "metrics_prefix"
       if hadoop_metrics.sinks.graphite
-        throw Error 'Unvalid metrics sink, please provide ctx.config.metrics_sinks.graphite.server_host and server_port' unless sinks.graphite.server_host? and sinks.graphite.server_port?
+        throw Error 'Unvalid metrics sink, please provide @config.metrics_sinks.graphite.server_host and server_port' unless sinks.graphite.server_host? and sinks.graphite.server_port?
         hadoop_metrics.config["*.sink.graphite.#{k}"] ?= v for k, v of sinks.graphite
         for mod, modlist of {
           'ryba/hadoop/hdfs_nn': ['namenode']
@@ -425,144 +398,73 @@ source code, the list of supported prefixes is: "namenode", "resourcemanager",
           'ryba/hadoop/hdfs_jn': ['journalnode']
           'ryba/hadoop/mapred_jhs': ['historyserver']
         }
-        then if ctx.has_module mod
+        then if @has_module mod
         then for k in modlist
-          hadoop_metrics.config["#{k}.sink.graphite.class"] ?= sinks.graphite.class 
+          hadoop_metrics.config["#{k}.sink.graphite.class"] ?= sinks.graphite.class
 
-## Users & Groups
+# SSL
 
-By default, the "hadoop-client" package rely on the "hadoop", "hadoop-hdfs",
-"hadoop-mapreduce" and "hadoop-yarn" dependencies and create the following
-entries:
+Hortonworks mentions 2 strategies to [configure SSL][hdp_ssl], the first one
+involves Self-Signed Certificate while the second one use a Certificate
+Authority.
 
-```bash
-cat /etc/passwd | grep hadoop
-hdfs:x:496:497:Hadoop HDFS:/var/lib/hadoop-hdfs:/bin/bash
-yarn:x:495:495:Hadoop Yarn:/var/lib/hadoop-yarn:/bin/bash
-mapred:x:494:494:Hadoop MapReduce:/var/lib/hadoop-mapreduce:/bin/bash
-cat /etc/group | egrep "hdfs|yarn|mapred"
-hadoop:x:498:hdfs,yarn,mapred
-hdfs:x:497:
-yarn:x:495:
-mapred:x:494:
+For now, only the second approach has been tested and is supported. For this, 
+you are responsible for creating your own Private Key and Certificate Authority
+(see bellow instructions) and for declaring with the 
+"hdp.private\_key\_location" and "hdp.cacert\_location" property.
+
+It is also recommendate to configure the 
+"hdp.core\_site['ssl.server.truststore.password']" and 
+"hdp.core\_site['ssl.server.keystore.password']" passwords or they will default to
+"ryba123".
+
+Here's how to generate your own Private Key and Certificate Authority:
+
+```
+openssl genrsa -out hadoop.key 2048
+openssl req -x509 -new -key hadoop.key -days 300 -out hadoop.pem -subj "/C=FR/ST=IDF/L=Paris/O=Adaltas/CN=adaltas.com/emailAddress=david@adaltas.com"
 ```
 
-Note, the package "hadoop" will also install the "dbus" user and group which are
-not handled here.
+You can see the content of the root CA certificate with the command:
 
-    module.exports.push header: 'Hadoop Core # Users & Groups', handler: ->
-      {hadoop_group, hdfs, yarn, mapred} = @config.ryba
-      @group [hadoop_group, hdfs.group, yarn.group, mapred.group]
-      @user [hdfs.user, yarn.user, mapred.user]
+```
+openssl x509 -text -noout -in hadoop.pem
+```
 
-    module.exports.push header: 'Hadoop Core # Topology', handler: ->
-      {hdfs, hadoop_conf_dir, hadoop_group} = @config.ryba
-      h_ctxs = @contexts modules: ['ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm']
-      topology = []
-      for h_ctx in h_ctxs
-        rack = if h_ctx.config.ryba?.rack? then h_ctx.config.ryba.rack else ''
-        # topology.push "#{host}  #{rack}"
-        topology.push "#{h_ctx.config.ip}  #{rack}"
-      topology = topology.join("\n")
-      @upload
-        destination: "#{hadoop_conf_dir}/rack_topology.sh"
-        source: "#{__dirname}/../resources/rack_topology.sh"
-        uid: hdfs.user.name
-        gid: hadoop_group.name
-        mode: 0o755
-        backup: true
-      @write
-        destination: "#{hadoop_conf_dir}/rack_topology.data"
-        content: topology
-        uid: hdfs.user.name
-        gid: hadoop_group.name
-        mode: 0o755
-        backup: true
-        eof: true
+You can list the content of the keystore with the command:
 
-## Test User
+```
+keytool -list -v -keystore truststore
+keytool -list -v -keystore keystore -alias hadoop
+```
 
-Create a Unix and Kerberos test user, by default "ryba". Its HDFS home directory
-will be created by one of the datanode.
+[hdp_ssl]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.1-latest/bk_reference/content/ch_wire-https.html
 
-    module.exports.push header: 'Hadoop Core # User Test', timeout: -1, handler: ->
-      {krb5_user, user, group, security, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
-      # ryba group and user may already exist in "/etc/passwd" or in any sssd backend
-      @group group
-      @user user
-      @krb5_addprinc merge
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
-      , krb5_user
+      @config.ryba.ssl ?= {}
+      ssl_client = @config.ryba.ssl_client ?= {}
+      ssl_server = @config.ryba.ssl_server ?= {}
+      throw new Error 'Required property "ryba.ssl.cacert"' unless @config.ryba.ssl.cacert
+      throw new Error 'Required property "ryba.ssl.cert"' unless @config.ryba.ssl.cert
+      throw new Error 'Required property "ryba.ssl.key"' unless @config.ryba.ssl.key
+      # SSL for HTTPS connection and RPC Encryption
+      core_site['hadoop.ssl.require.client.cert'] ?= 'false'
+      core_site['hadoop.ssl.hostname.verifier'] ?= 'DEFAULT'
+      core_site['hadoop.ssl.keystores.factory.class'] ?= 'org.apache.hadoop.security.ssl.FileBasedKeyStoresFactory'
+      core_site['hadoop.ssl.server.conf'] ?= 'ssl-server.xml'
+      core_site['hadoop.ssl.client.conf'] ?= 'ssl-client.xml'
+      ssl_client['ssl.client.truststore.location'] ?= "#{ryba.hadoop_conf_dir}/truststore"
+      ssl_client['ssl.client.truststore.password'] ?= 'ryba123'
+      ssl_client['ssl.client.truststore.type'] ?= 'jks'
+      ssl_server['ssl.server.keystore.location'] ?= "#{ryba.hadoop_conf_dir}/keystore"
+      ssl_server['ssl.server.keystore.password'] ?= 'ryba123'
+      ssl_server['ssl.server.keystore.type'] ?= 'jks'
+      ssl_server['ssl.server.keystore.keypassword'] ?= 'ryba123'
+      ssl_server['ssl.server.truststore.location'] ?= "#{ryba.hadoop_conf_dir}/truststore"
+      ssl_server['ssl.server.truststore.password'] ?= 'ryba123'
+      ssl_server['ssl.server.truststore.type'] ?= 'jks'
 
-## SPNEGO
-
-Create the SPNEGO service principal in the form of "HTTP/{host}@{realm}" and place its
-keytab inside "/etc/security/keytabs/spnego.service.keytab" with ownerships set to "hdfs:hadoop"
-and permissions set to "0660". We had to give read/write permission to the group because the
-same keytab file is for now shared between hdfs and yarn services.
-
-    module.exports.push header: 'Hadoop Core # SPNEGO', handler: module.exports.spnego = ->
-      {hdfs, hadoop_group, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
-      @krb5_addprinc
-        principal: "HTTP/#{@config.host}@#{realm}"
-        randkey: true
-        keytab: '/etc/security/keytabs/spnego.service.keytab'
-        uid: hdfs.user.name
-        gid: hadoop_group.name
-        mode: 0o660 # need rw access for hadoop and mapred users
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
-      @execute # Validate keytab access by the hdfs user
-        cmd: "su -l #{hdfs.user.name} -c \"klist -kt /etc/security/keytabs/spnego.service.keytab\""
-        if: -> @status -1
-
-    module.exports.push header: 'Hadoop Core # Keytabs', timeout: -1, handler: ->
-      {hadoop_group} = @config.ryba
-      @mkdir
-        destination: '/etc/security/keytabs'
-        uid: 'root'
-        gid: hadoop_group.name
-        mode: 0o0755
-
-    module.exports.push header: 'Hadoop Core # Compression', timeout: -1, handler: ->
-      { hadoop_conf_dir } = @config.ryba
-      @service name: 'snappy'
-      @service name: 'snappy-devel'
-      @execute
-        cmd: 'ln -sf /usr/lib64/libsnappy.so /usr/lib/hadoop/lib/native/.'
-        if: -> @status(-1) or @status(-2)
-      @service
-        name: 'lzo'
-      @service
-        name: 'lzo-devel'
-      @service
-        name: 'hadoop-lzo'
-      @service
-        name: 'hadoop-lzo-native'
-
-## Web UI
-
-This action follow the ["Authentication for Hadoop HTTP web-consoles"
-recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
-
-    module.exports.push header: 'Hadoop Core # Web UI', handler: ->
-      {core_site, realm} = @config.ryba
-      @execute
-        cmd: 'dd if=/dev/urandom of=/etc/hadoop/hadoop-http-auth-signature-secret bs=1024 count=1'
-        unless_exists: '/etc/hadoop/hadoop-http-auth-signature-secret'
-
-    module.exports.push 'ryba/hadoop/core_ssl'
 
 ## Dependencies
 
-    fs = require 'ssh2-fs'
-    {merge} = require 'mecano/lib/misc'
-    mkcmd = require '../lib/mkcmd'
-    multimatch = require 'multimatch'
     path = require 'path'
     quote = require 'regexp-quote'

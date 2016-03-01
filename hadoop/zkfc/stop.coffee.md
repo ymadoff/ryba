@@ -1,9 +1,8 @@
 
 # Hadoop ZKFC Stop
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    # module.exports.push require('./index').configure
+    module.exports = header: 'HDFS ZKFC Stop', label_true: 'STOPPED', handler: ->
+      {clean_logs} = @config.ryba
 
 ## Stop
 
@@ -17,13 +16,15 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
 
 The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-zkfc.pid".
 
-    module.exports.push header: 'HDFS ZKFC # Stop', label_true: 'STOPPED', handler: ->
       @service_stop
+        header: 'HDFS ZKFC Stop'
+        label_true: 'STOPPED'
         name: 'hadoop-hdfs-zkfc'
         if_exists: '/etc/init.d/hadoop-hdfs-zkfc'
 
-    module.exports.push header: 'HDFS ZKFC # Stop Clean Logs', label_true: 'CLEANED', handler: ->
-      return unless @config.ryba.clean_logs
       @execute
+        header: 'HDFS ZKFC Clean Logs'
+        label_true: 'CLEANED'
+        if: clean_logs
         cmd: 'rm /var/log/hadoop-hdfs/*/*-zkfc-*'
         code_skipped: 1

@@ -7,15 +7,11 @@ In HA mode, we need to ensure both NameNodes are installed before testing SSH
 Fencing. Otherwise, a race condition may occur if a host attempt to connect
 through SSH over another one where the public key isn't yet deployed.
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/hdfs_nn/wait'
-    # module.exports.push require('../hdfs').configure
+    module.exports = header: 'HDFS NN Check', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+      {user, hdfs, active_nn_host, nameservice, force_check, check_hdfs_fsck} = @config.ryba
 
 ## Check HTTP
 
-    module.exports.push header: 'HDFS NN # Check HTTP', timeout: -1, label_true: 'CHECKED', handler: ->
-      {hdfs, active_nn_host} = @config.ryba
       is_ha = @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
       # state = if not is_ha or active_nn_host is @config.host then 'active' else 'standby'
       protocol = if hdfs.nn.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
@@ -25,6 +21,7 @@ through SSH over another one where the public key isn't yet deployed.
       [_, port] = address.split ':'
       securityEnabled = protocol is 'https'
       @execute
+        header: 'HTTP'
         cmd: mkcmd.hdfs @, "curl --negotiate -k -u : #{protocol}://#{@config.host}:#{port}/jmx?qry=Hadoop:service=NameNode,name=NameNodeStatus"
       , (err, executed, stdout) ->
         throw err if err
@@ -44,15 +41,10 @@ non-zero otherwise. One might use this command for monitoring purposes.
 Checkhealth return result is not completely implemented
 See More http://hadoop.apache.org/docs/r2.0.2-alpha/hadoop-yarn/hadoop-yarn-site/HDFSHighAvailability.html#Administrative_commands
 
-    module.exports.push
-      header: 'HDFS NN # Check HA Health'
-      label_true: 'CHECKED',
-      if: -> @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      handler: ->
-        # return next() unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-        {hdfs} = @config.ryba
-        @execute
-          cmd: mkcmd.hdfs @, "hdfs --config '#{hdfs.nn.conf_dir}' haadmin -checkHealth #{@config.shortname}"
+      @execute
+        header: 'HDFS NN # Check HA Health'
+        if: -> @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+        cmd: mkcmd.hdfs @, "hdfs --config '#{hdfs.nn.conf_dir}' haadmin -checkHealth #{@config.shortname}"
 
 ## Check FSCK
 
@@ -65,10 +57,11 @@ Additionnal information may be found on the [CentOS HowTos site][corblk].
 
 [corblk]: http://centoshowtos.org/hadoop/fix-corrupt-blocks-on-hdfs/
 
-    module.exports.push header: 'HDFS NN # Check FSCK', label_true: 'CHECKED', timeout: -1, retry: 3, wait: 60000, handler: ->
-      {force_check, check_hdfs_fsck} = @config.ryba
       check_hdfs_fsck = if check_hdfs_fsck? then !!check_hdfs_fsck else true
       @execute
+        header: 'FSCK'
+        retry: 3
+        timeout: -1
         cmd: mkcmd.hdfs @, "exec 5>&1; hdfs fsck / | tee /dev/fd/5 | tail -1 | grep HEALTHY 1>/dev/null"
         if: force_check or check_hdfs_fsck
 
@@ -77,9 +70,8 @@ Additionnal information may be found on the [CentOS HowTos site][corblk].
 Attemp to place a file inside HDFS. the file "/etc/passwd" will be placed at
 "/user/{test\_user}/#{@config.host}\_dn".
 
-    module.exports.push header: 'HDFS NN # Check HDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
-      {user, hdfs} = @config.ryba
       @execute
+        header: 'HDFS'
         cmd: mkcmd.test @, """
         if hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -f /user/#{user.name}/#{@config.host}-nn; then exit 2; fi
         echo 'Upload file to HDFS'
@@ -96,43 +88,22 @@ is not present on HDFS.
 Read [Delegation Tokens in Hadoop Security](http://www.kodkast.com/blogs/hadoop/delegation-tokens-in-hadoop-security)
 for more information.
 
-    module.exports.push header: 'HDFS DN # Check WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
-      {hdfs, nameservice, user, active_nn_host} = @config.ryba
-      is_ha = @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      protocol = if hdfs.nn.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
-      nameservice = if is_ha then ".#{@config.ryba.hdfs.nn.site['dfs.nameservices']}" else ''
-      shortname = if is_ha then ".#{@contexts(hosts: active_nn_host)[0].config.shortname}" else ''
-      address = hdfs.nn.site["dfs.namenode.#{protocol}-address#{nameservice}#{shortname}"]
-      @execute
-        cmd: mkcmd.test @, """
-        hdfs --config '#{hdfs.nn.conf_dir}' dfs -touchz check-#{@config.shortname}-webhdfs
-        kdestroy
-        """
-        code_skipped: 2
-      @execute
-        cmd: mkcmd.test @, """
-        curl -s --negotiate --insecure -u : "#{protocol}://#{address}/webhdfs/v1/user/#{user.name}?op=LISTSTATUS"
-        kdestroy
-        """
-      , (err, executed, stdout) ->
-        throw err if err
-        try
-          count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) => e.pathSuffix is "check-#{@config.shortname}-webhdfs").length
-        catch e then throw Error e
-        throw Error "Invalid result" unless count
-      @execute
-        cmd: mkcmd.test @, """
-        curl -s --negotiate --insecure -u : "#{protocol}://#{address}/webhdfs/v1/?op=GETDELEGATIONTOKEN"
-        kdestroy
-        """
-      , (err, executed, stdout) ->
-        throw err if err
-        json = JSON.parse(stdout)
-        return setTimeout do_tocken, 3000 if json.exception is 'RetriableException'
-        token = json.Token.urlString
+      @call header: 'HDFS DN # Check WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+        is_ha = @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+        protocol = if hdfs.nn.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+        nameservice = if is_ha then ".#{@config.ryba.hdfs.nn.site['dfs.nameservices']}" else ''
+        shortname = if is_ha then ".#{@contexts(hosts: active_nn_host)[0].config.shortname}" else ''
+        address = hdfs.nn.site["dfs.namenode.#{protocol}-address#{nameservice}#{shortname}"]
         @execute
-          cmd: """
-          curl -s --insecure "#{protocol}://#{address}/webhdfs/v1/user/#{user.name}?delegation=#{token}&op=LISTSTATUS"
+          cmd: mkcmd.test @, """
+          hdfs --config '#{hdfs.nn.conf_dir}' dfs -touchz check-#{@config.shortname}-webhdfs
+          kdestroy
+          """
+          code_skipped: 2
+        @execute
+          cmd: mkcmd.test @, """
+          curl -s --negotiate --insecure -u : "#{protocol}://#{address}/webhdfs/v1/user/#{user.name}?op=LISTSTATUS"
+          kdestroy
           """
         , (err, executed, stdout) ->
           throw err if err
@@ -140,6 +111,26 @@ for more information.
             count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) => e.pathSuffix is "check-#{@config.shortname}-webhdfs").length
           catch e then throw Error e
           throw Error "Invalid result" unless count
+        @execute
+          cmd: mkcmd.test @, """
+          curl -s --negotiate --insecure -u : "#{protocol}://#{address}/webhdfs/v1/?op=GETDELEGATIONTOKEN"
+          kdestroy
+          """
+        , (err, executed, stdout) ->
+          throw err if err
+          json = JSON.parse(stdout)
+          return setTimeout do_tocken, 3000 if json.exception is 'RetriableException'
+          token = json.Token.urlString
+          @execute
+            cmd: """
+            curl -s --insecure "#{protocol}://#{address}/webhdfs/v1/user/#{user.name}?delegation=#{token}&op=LISTSTATUS"
+            """
+          , (err, executed, stdout) ->
+            throw err if err
+            try
+              count = JSON.parse(stdout).FileStatuses.FileStatus.filter((e) => e.pathSuffix is "check-#{@config.shortname}-webhdfs").length
+            catch e then throw Error e
+            throw Error "Invalid result" unless count
 
 ## Dependencies
 

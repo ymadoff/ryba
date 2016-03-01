@@ -1,9 +1,8 @@
 
 # Hadoop HDFS NameNode Stop
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    # module.exports.push require('./index').configure
+
+    module.exports = header: 'HDFS NN Stop', label_true: 'STOPPED', handler: ->
 
 ## Stop Service
 
@@ -17,10 +16,10 @@ su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-namenode/../hadoop/sbin/hadoop-daemo
 
 The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-namenode.pid".
 
-    module.exports.push header: 'HDFS NN # Stop', label_true: 'STOPPED', handler: ->
-      @service
-        srv_name: 'hadoop-hdfs-namenode'
-        action: 'stop'
+      @service_stop
+        header: 'HDFS NN Stop'
+        label_true: 'STOPPED'
+        name: 'hadoop-hdfs-namenode'
         if_exists: '/etc/init.d/hadoop-hdfs-namenode'
 
 ## Stop Clean Logs
@@ -28,8 +27,9 @@ The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-namenode.pid".
 Remove the "\*-namenode-\*" log files if the property "ryba.clean_logs" is
 activated.
 
-    module.exports.push header: 'HDFS NN # Stop Clean Logs', label_true: 'CLEANED', handler: ->
       @execute
+        header: 'Clean Logs'
+        label_true: 'CLEANED'
         cmd: 'rm /var/log/hadoop-hdfs/*-namenode-*'
         code_skipped: 1
         if: @config.ryba.clean_logs

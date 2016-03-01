@@ -14,15 +14,10 @@ information regarding the location of blocks in the cluster. In order
 to achieve this, the DataNodes are configured with the location of both
 NameNodes, and send block location information and heartbeats to both.
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/core/iptables'
-    module.exports.push 'ryba/hadoop/hdfs'
-    # module.exports.push require('./index').configure
-    module.exports.push 'ryba/lib/hconfigure'
-    # module.exports.push require '../../lib/hdp_service'
-    module.exports.push 'ryba/lib/hdp_select'
-
+    module.exports = header: 'HDFS DN', handler: ->
+      {realm, core_site, hdfs, hadoop_group, hadoop_metrics} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+    
 ## IPTables
 
 | Service   | Port       | Proto     | Parameter                  |
@@ -38,13 +33,12 @@ mode, it must be set to a value below "1024" and default to "1004".
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push header: 'HDFS DN # IPTables', handler: ->
-      {hdfs} = @config.ryba
       [_, dn_address] = hdfs.site['dfs.datanode.address'].split ':'
       [_, dn_http_address] = hdfs.site['dfs.datanode.http.address'].split ':'
       [_, dn_https_address] = hdfs.site['dfs.datanode.https.address'].split ':'
       [_, dn_ipc_address] = hdfs.site['dfs.datanode.ipc.address'].split ':'
       @iptables
+        header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: dn_address, protocol: 'tcp', state: 'NEW', comment: "HDFS DN Data" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: dn_http_address, protocol: 'tcp', state: 'NEW', comment: "HDFS DN HTTP" }
@@ -53,27 +47,27 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ]
         if: @config.iptables.action is 'start'
 
-## Service
+## Packages
 
 Install the "hadoop-hdfs-datanode" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-    module.exports.push header: 'HDFS DN # Service', timeout: -1, handler: ->
-      @service
-        name: 'hadoop-hdfs-datanode'
-      @hdp_select
-        name: 'hadoop-hdfs-client' # Not checked
-        name: 'hadoop-hdfs-datanode'
-      @render
-        destination: '/etc/init.d/hadoop-hdfs-datanode'
-        source: "#{__dirname}/../resources/hadoop-hdfs-datanode"
-        local_source: true
-        context: @config
-        mode: 0o0755
-        unlink: true
-      @execute
-        cmd: "service hadoop-hdfs-datanode restart"
-        if: -> @status -3
+      @call header: 'Packages', timeout: -1, handler: ->
+        @service
+          name: 'hadoop-hdfs-datanode'
+        @hdp_select
+          name: 'hadoop-hdfs-client' # Not checked
+          name: 'hadoop-hdfs-datanode'
+        @render
+          destination: '/etc/init.d/hadoop-hdfs-datanode'
+          source: "#{__dirname}/../resources/hadoop-hdfs-datanode"
+          local_source: true
+          context: @config
+          mode: 0o0755
+          unlink: true
+        @execute
+          cmd: "service hadoop-hdfs-datanode restart"
+          if: -> @status -3
 
 ## Layout
 
@@ -81,41 +75,35 @@ Create the DataNode data and pid directories. The data directory is set by the
 "hdp.hdfs.site['dfs.datanode.data.dir']" and default to "/var/hdfs/data". The
 pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdfs"
 
-    module.exports.push header: 'HDFS DN # Layout', timeout: -1, handler: ->
-      {hdfs, hadoop_group} = @config.ryba
-      # no need to restrict parent directory and yarn will complain if not accessible by everyone
-      pid_dir = hdfs.secure_dn_pid_dir
-      pid_dir = pid_dir.replace '$USER', hdfs.user.name
-      pid_dir = pid_dir.replace '$HADOOP_SECURE_DN_USER', hdfs.user.name
-      pid_dir = pid_dir.replace '$HADOOP_IDENT_STRING', hdfs.user.name
-      # TODO, in HDP 2.1, datanode are started as root but in HDP 2.2, we should
-      # start it as HDFS and use JAAS
-      @mkdir
-        destination: "#{hdfs.dn.conf_dir}"
-      @mkdir
-        destination: for dir in hdfs.site['dfs.datanode.data.dir'].split ','
-          if dir.indexOf('file://') is 0
-          then dir.substr(7) else dir
-        uid: hdfs.user.name
-        gid: hadoop_group.name
-        mode: 0o0750
-        parent: true
-      @mkdir
-        destination: "#{pid_dir}"
-        uid: hdfs.user.name
-        gid: hadoop_group.name
-        mode: 0o0755
-        parent: true
-      @mkdir
-        destination: "#{hdfs.log_dir}" #/#{hdfs.user.name}
-        uid: hdfs.user.name
-        gid: hdfs.group.name
-        parent: true
-
-## Configure
-
-    module.exports.push header: 'HDFS DN', handler: ->
-      {core_site, hdfs, hadoop_group, hadoop_metrics} = @config.ryba
+      @call header: 'Layout', handler: ->
+        # no need to restrict parent directory and yarn will complain if not accessible by everyone
+        pid_dir = hdfs.secure_dn_pid_dir
+        pid_dir = pid_dir.replace '$USER', hdfs.user.name
+        pid_dir = pid_dir.replace '$HADOOP_SECURE_DN_USER', hdfs.user.name
+        pid_dir = pid_dir.replace '$HADOOP_IDENT_STRING', hdfs.user.name
+        # TODO, in HDP 2.1, datanode are started as root but in HDP 2.2, we should
+        # start it as HDFS and use JAAS
+        @mkdir
+          destination: "#{hdfs.dn.conf_dir}"
+        @mkdir
+          destination: for dir in hdfs.site['dfs.datanode.data.dir'].split ','
+            if dir.indexOf('file://') is 0
+            then dir.substr(7) else dir
+          uid: hdfs.user.name
+          gid: hadoop_group.name
+          mode: 0o0750
+          parent: true
+        @mkdir
+          destination: "#{pid_dir}"
+          uid: hdfs.user.name
+          gid: hadoop_group.name
+          mode: 0o0755
+          parent: true
+        @mkdir
+          destination: "#{hdfs.log_dir}" #/#{hdfs.user.name}
+          uid: hdfs.user.name
+          gid: hdfs.group.name
+          parent: true
 
 ## Core Site
 
@@ -203,41 +191,41 @@ Also some [interesting info about snn](http://blog.cloudera.com/blog/2009/02/mul
 
 ## SSL
 
-    module.exports.push header: 'HDFS DN # SSL', retry: 0, handler: ->
-      {ssl, ssl_server, ssl_client, hdfs} = @config.ryba
-      ssl_client['ssl.client.truststore.location'] = "#{hdfs.dn.conf_dir}/truststore"
-      ssl_server['ssl.server.keystore.location'] = "#{hdfs.dn.conf_dir}/keystore"
-      ssl_server['ssl.server.truststore.location'] = "#{hdfs.dn.conf_dir}/truststore"
-      @hconfigure
-        destination: "#{hdfs.dn.conf_dir}/ssl-server.xml"
-        properties: ssl_server
-      @hconfigure
-        destination: "#{hdfs.dn.conf_dir}/ssl-client.xml"
-        properties: ssl_client
-      # Client: import certificate to all hosts
-      @java_keystore_add
-        keystore: ssl_client['ssl.client.truststore.location']
-        storepass: ssl_client['ssl.client.truststore.password']
-        caname: "hadoop_root_ca"
-        cacert: "#{ssl.cacert}"
-        local_source: true
-      # Server: import certificates, private and public keys to hosts with a server
-      @java_keystore_add
-        keystore: ssl_server['ssl.server.keystore.location']
-        storepass: ssl_server['ssl.server.keystore.password']
-        caname: "hadoop_root_ca"
-        cacert: "#{ssl.cacert}"
-        key: "#{ssl.key}"
-        cert: "#{ssl.cert}"
-        keypass: ssl_server['ssl.server.keystore.keypassword']
-        name: @config.shortname
-        local_source: true
-      @java_keystore_add
-        keystore: ssl_server['ssl.server.keystore.location']
-        storepass: ssl_server['ssl.server.keystore.password']
-        caname: "hadoop_root_ca"
-        cacert: "#{ssl.cacert}"
-        local_source: true
+      @call header: 'SSL', retry: 0, handler: ->
+        {ssl, ssl_server, ssl_client, hdfs} = @config.ryba
+        ssl_client['ssl.client.truststore.location'] = "#{hdfs.dn.conf_dir}/truststore"
+        ssl_server['ssl.server.keystore.location'] = "#{hdfs.dn.conf_dir}/keystore"
+        ssl_server['ssl.server.truststore.location'] = "#{hdfs.dn.conf_dir}/truststore"
+        @hconfigure
+          destination: "#{hdfs.dn.conf_dir}/ssl-server.xml"
+          properties: ssl_server
+        @hconfigure
+          destination: "#{hdfs.dn.conf_dir}/ssl-client.xml"
+          properties: ssl_client
+        # Client: import certificate to all hosts
+        @java_keystore_add
+          keystore: ssl_client['ssl.client.truststore.location']
+          storepass: ssl_client['ssl.client.truststore.password']
+          caname: "hadoop_root_ca"
+          cacert: "#{ssl.cacert}"
+          local_source: true
+        # Server: import certificates, private and public keys to hosts with a server
+        @java_keystore_add
+          keystore: ssl_server['ssl.server.keystore.location']
+          storepass: ssl_server['ssl.server.keystore.password']
+          caname: "hadoop_root_ca"
+          cacert: "#{ssl.cacert}"
+          key: "#{ssl.key}"
+          cert: "#{ssl.cert}"
+          keypass: ssl_server['ssl.server.keystore.keypassword']
+          name: @config.shortname
+          local_source: true
+        @java_keystore_add
+          keystore: ssl_server['ssl.server.keystore.location']
+          storepass: ssl_server['ssl.server.keystore.password']
+          caname: "hadoop_root_ca"
+          cacert: "#{ssl.cacert}"
+          local_source: true
 
 ## Kerberos
 
@@ -245,19 +233,17 @@ Create the DataNode service principal in the form of "dn/{host}@{realm}" and pla
 keytab inside "/etc/security/keytabs/dn.service.keytab" with ownerships set to "hdfs:hadoop"
 and permissions set to "0600".
 
-    module.exports.push header: 'HDFS DN # Kerberos', timeout: -1, handler: ->
-      {hdfs, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
-      @krb5_addprinc
-        principal: "dn/#{@config.host}@#{realm}"
-        randkey: true
-        keytab: "/etc/security/keytabs/dn.service.keytab"
-        uid: hdfs.user.name
-        gid: hdfs.group.name
-        mode: 0o0600
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
+        @krb5_addprinc
+          header: 'Kerberos'
+          principal: "dn/#{@config.host}@#{realm}"
+          randkey: true
+          keytab: "/etc/security/keytabs/dn.service.keytab"
+          uid: hdfs.user.name
+          gid: hdfs.group.name
+          mode: 0o0600
+          kadmin_principal: kadmin_principal
+          kadmin_password: kadmin_password
+          kadmin_server: admin_server
 
 # Kernel
 
@@ -272,10 +258,9 @@ suggest:
 
 Note, we might move this middleware to Masson.
 
-    module.exports.push header: 'HDFS DN # Kernel', handler: (_, next) ->
-      {hdfs} = @config.ryba
-      return next() unless Object.keys(hdfs.sysctl).length
       @execute
+        header: 'Kernel'
+        if: Object.keys(hdfs.sysctl).length
         cmd: 'sysctl -a'
         stdout: null
       , (err, _, content) ->
@@ -322,13 +307,11 @@ Also worth of interest are the [Pivotal recommandations][hawq] as well as the
 
 Note, a user must re-login for those changes to be taken into account.
 
-    module.exports.push header: 'HDFS DN # Ulimit', handler: ->
-      {hdfs} = @config.ryba
       @system_limits
+        header: 'Ulimit'
         user: hdfs.user.name
         nofile: hdfs.user.limits.nofile
         nproc: hdfs.user.limits.nproc
-
 
 ## Dependencies
 

@@ -7,22 +7,16 @@ interface.
 Run the command `./bin/ryba check -m ryba/hadoop/hdfs_dn` to check all the
 DataNodes.
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/hdfs_dn/wait'
 
-    module.exports.configure = (ctx) ->
-      require('../core').configure ctx
-      require('../core_ssl').configure ctx
-      require('../core').configure ctx
+    module.exports = header: 'HDFS DN Check', timeout: -1, label_true: 'CHECKED', handler: ->
+      {hdfs} = @config.ryba
 
 ## Check Disk Capacity
 
-    module.exports.push header: 'HDFS DN # Check Disk Capacity', timeout: -1, label_true: 'CHECKED', handler: ->
-      {hdfs} = @config.ryba
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       port = hdfs.site["dfs.datanode.#{protocol}.address"].split(':')[1]
       @execute
+        header: 'SPNEGO'
         cmd: mkcmd.hdfs @, "curl --negotiate -k -u : #{protocol}://#{@config.host}:#{port}/jmx?qry=Hadoop:service=DataNode,name=DataNodeInfo"
       , (err, executed, stdout) ->
         throw err if err

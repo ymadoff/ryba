@@ -1,12 +1,9 @@
 
 # HDFS HttpFS Install
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/core/iptables'
-    module.exports.push 'ryba/hadoop/hdfs_client'
-    module.exports.push 'ryba/lib/hconfigure'
-    module.exports.push 'ryba/lib/hdp_select'
+    module.exports = header: 'HDFS HttpFS Install', handler: ->
+      {httpfs, realm, core_site} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Users & Groups
 
@@ -19,10 +16,10 @@ cat /etc/group | grep httpfs
 httpfs:x:494:httpfs
 ```
 
-    module.exports.push header: 'HDFS HttpFS # Users & Groups', handler: ->
-      {httpfs} = @config.ryba
-      @group httpfs.group
-      @user httpfs.user
+      @call header: 'Users & Groups', handler: ->
+        {httpfs} = @config.ryba
+        @group httpfs.group
+        @user httpfs.user
 
 ## IPTables
 
@@ -37,155 +34,147 @@ mode, it must be set to a value below "1024" and default to "1004".
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push header: 'HDFS HttpFS # IPTables', handler: ->
-      {httpfs} = @config.ryba
       @iptables
+        header: 'IPTables'
+        if: @config.iptables.action is 'start'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: httpfs.http_port, protocol: 'tcp', state: 'NEW', comment: "HDFS HttpFS" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: httpfs.http_admin_port, protocol: 'tcp', state: 'NEW', comment: "HDFS HttpFS" }
         ]
-        if: @config.iptables.action is 'start'
 
 ## Package
 
-    module.exports.push header: 'HDFS HttpFS # Package', timeout: -1, handler: ->
-      @service
-        name: 'hadoop-httpfs'
-      @hdp_select
-        name: 'hadoop-httpfs'
-      @render
-        destination: "/etc/init.d/hadoop-httpfs"
-        source: "#{__dirname}/../resources/hadoop-httpfs"
-        local_source: true
-        context: @config
-        mode: 0o0755
+      @call header: 'Package', timeout: -1, handler: ->
+        @service
+          name: 'hadoop-httpfs'
+        @hdp_select
+          name: 'hadoop-httpfs'
+        @render
+          destination: "/etc/init.d/hadoop-httpfs"
+          source: "#{__dirname}/../resources/hadoop-httpfs"
+          local_source: true
+          context: @config
+          mode: 0o0755
 
 ## Kerberos
 
-    module.exports.push header: 'HDFS HttpFS # Kerberos', timeout: -1, handler: ->
-      {httpfs, realm, core_site} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
-      @copy # SPNEGO Keytab
-        source: core_site['hadoop.http.authentication.kerberos.keytab']
-        destination: httpfs.site['httpfs.authentication.kerberos.keytab']
-        if: core_site['hadoop.http.authentication.kerberos.keytab'] isnt httpfs.site['httpfs.authentication.kerberos.keytab']
-        if_exists: core_site['hadoop.http.authentication.kerberos.keytab']
-        uid: httpfs.user.name
-        gid: httpfs.group.name
-        mode: 0o0600
-      @krb5_addprinc # Service Keytab
-        principal: httpfs.site['httpfs.hadoop.authentication.kerberos.principal']
-        randkey: true
-        keytab: httpfs.site['httpfs.hadoop.authentication.kerberos.keytab']
-        uid: httpfs.user.name
-        gid: httpfs.group.name
-        mode: 0o0600
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
+      @call header: 'Kerberos', timeout: -1, handler: ->
+        @copy # SPNEGO Keytab
+          source: core_site['hadoop.http.authentication.kerberos.keytab']
+          destination: httpfs.site['httpfs.authentication.kerberos.keytab']
+          if: core_site['hadoop.http.authentication.kerberos.keytab'] isnt httpfs.site['httpfs.authentication.kerberos.keytab']
+          if_exists: core_site['hadoop.http.authentication.kerberos.keytab']
+          uid: httpfs.user.name
+          gid: httpfs.group.name
+          mode: 0o0600
+        @krb5_addprinc # Service Keytab
+          principal: httpfs.site['httpfs.hadoop.authentication.kerberos.principal']
+          randkey: true
+          keytab: httpfs.site['httpfs.hadoop.authentication.kerberos.keytab']
+          uid: httpfs.user.name
+          gid: httpfs.group.name
+          mode: 0o0600
+          kadmin_principal: kadmin_principal
+          kadmin_password: kadmin_password
+          kadmin_server: admin_server
 
 ## Environment
 
-    module.exports.push header: 'HDFS HttpFS # Environment', timeout: -1, handler: ->
-      {httpfs} = @config.ryba
-      @mkdir
-        destination: "#{httpfs.pid_dir}"
-        uid: httpfs.user.name
-        gid: httpfs.group.name
-        mode: 0o0755
-      @mkdir
-        destination: "#{httpfs.tmp_dir}"
-        uid: httpfs.user.name
-        gid: httpfs.group.name
-        mode: 0o0755
-      @mkdir
-        destination: "#{httpfs.log_dir}" #/#{hdfs.user.name}
-        uid: httpfs.user.name
-        gid: httpfs.group.name
-        parent: true
-      @render
-        destination: "#{httpfs.conf_dir}/httpfs-env.sh"
-        source: "#{__dirname}/../resources/httpfs-env.sh"
-        local_source: true
-        context: @config
-        backup: true
-      @link
-        source: '/usr/hdp/current/hadoop-httpfs/webapps'
-        destination: "#{httpfs.catalina_home}/webapps"
-      @mkdir # CATALINA_TMPDIR
-        destination: "#{httpfs.catalina_home}/temp"
-        uid: httpfs.user.name
-        gid: httpfs.group.name
-        mode: 0o0750
-      @mkdir
-        destination: "#{httpfs.catalina_home}/work"
-        uid: httpfs.user.name
-        gid: httpfs.group.name
-        mode: 0o0750
-      @copy # Copie original server.xml for no-SSL environments
-        source: "#{httpfs.catalina_home}/conf/server.xml"
-        destination: "#{httpfs.catalina_home}/conf/nossl-server.xml"
-        unless_exists: true
-      @copy
-        source: "#{httpfs.catalina_home}/conf/nossl-server.xml"
-        destination: "#{httpfs.catalina_home}/conf/server.xml"
-        unless: @config.ryba.httpfs.env.HTTPFS_SSL_ENABLED is 'true'
-      @copy
-        source: "#{httpfs.catalina_home}/conf/ssl-server.xml"
-        destination: "#{httpfs.catalina_home}/conf/server.xml"
-        if: @config.ryba.httpfs.env.HTTPFS_SSL_ENABLED is 'true'
+      @call header: 'Environment', handler: ->
+        @mkdir
+          destination: "#{httpfs.pid_dir}"
+          uid: httpfs.user.name
+          gid: httpfs.group.name
+          mode: 0o0755
+        @mkdir
+          destination: "#{httpfs.tmp_dir}"
+          uid: httpfs.user.name
+          gid: httpfs.group.name
+          mode: 0o0755
+        @mkdir
+          destination: "#{httpfs.log_dir}" #/#{hdfs.user.name}
+          uid: httpfs.user.name
+          gid: httpfs.group.name
+          parent: true
+        @render
+          destination: "#{httpfs.conf_dir}/httpfs-env.sh"
+          source: "#{__dirname}/../resources/httpfs-env.sh"
+          local_source: true
+          context: @config
+          backup: true
+        @link
+          source: '/usr/hdp/current/hadoop-httpfs/webapps'
+          destination: "#{httpfs.catalina_home}/webapps"
+        @mkdir # CATALINA_TMPDIR
+          destination: "#{httpfs.catalina_home}/temp"
+          uid: httpfs.user.name
+          gid: httpfs.group.name
+          mode: 0o0750
+        @mkdir
+          destination: "#{httpfs.catalina_home}/work"
+          uid: httpfs.user.name
+          gid: httpfs.group.name
+          mode: 0o0750
+        @copy # Copie original server.xml for no-SSL environments
+          source: "#{httpfs.catalina_home}/conf/server.xml"
+          destination: "#{httpfs.catalina_home}/conf/nossl-server.xml"
+          unless_exists: true
+        @copy
+          source: "#{httpfs.catalina_home}/conf/nossl-server.xml"
+          destination: "#{httpfs.catalina_home}/conf/server.xml"
+          unless: httpfs.env.HTTPFS_SSL_ENABLED is 'true'
+        @copy
+          source: "#{httpfs.catalina_home}/conf/ssl-server.xml"
+          destination: "#{httpfs.catalina_home}/conf/server.xml"
+          if: httpfs.env.HTTPFS_SSL_ENABLED is 'true'
         
 ## SSL
 
-    module.exports.push
-      header: 'HDFS HttpFS # SSL'
-      if: -> @config.ryba.httpfs.env.HTTPFS_SSL_ENABLED is 'true'
-      handler: ->
-          {ssl, ssl_server, ssl_client} = @config.ryba
-          tmp_location = "/var/tmp/ryba/ssl"
-          {httpfs} = @config.ryba
-          @upload
-            source: ssl.cacert
-            destination: "#{tmp_location}/#{path.basename ssl.cacert}"
-            mode: 0o0600
-            shy: true
-          @upload
-            source: ssl.cert
-            destination: "#{tmp_location}/#{path.basename ssl.cert}"
-            mode: 0o0600
-            shy: true
-          @upload
-            source: ssl.key
-            destination: "#{tmp_location}/#{path.basename ssl.key}"
-            mode: 0o0600
-            shy: true
-          @java_keystore_add
-            keystore: httpfs.env.HTTPFS_SSL_KEYSTORE_FILE
-            storepass: httpfs.env.HTTPFS_SSL_KEYSTORE_PASS
-            caname: "httpfs_root_ca"
-            cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
-            key: "#{tmp_location}/#{path.basename ssl.key}"
-            cert: "#{tmp_location}/#{path.basename ssl.cert}"
-            keypass: ssl_server['ssl.server.keystore.keypassword']
-            name: @config.shortname
-            uid: httpfs.user.name
-            gid: httpfs.group.name
-            mode: 0o0640
-          @remove
-            destination: "#{tmp_location}/#{path.basename ssl.cacert}"
-            shy: true
-          @remove
-            destination: "#{tmp_location}/#{path.basename ssl.cert}"
-            shy: true
-          @remove
-            destination: "#{tmp_location}/#{path.basename ssl.key}"
-            shy: true
+      @call header: 'SSL', if: httpfs.env.HTTPFS_SSL_ENABLED is 'true', handler: ->
+        {ssl, ssl_server, ssl_client} = @config.ryba
+        tmp_location = "/var/tmp/ryba/ssl"
+        {httpfs} = @config.ryba
+        @upload
+          source: ssl.cacert
+          destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+          mode: 0o0600
+          shy: true
+        @upload
+          source: ssl.cert
+          destination: "#{tmp_location}/#{path.basename ssl.cert}"
+          mode: 0o0600
+          shy: true
+        @upload
+          source: ssl.key
+          destination: "#{tmp_location}/#{path.basename ssl.key}"
+          mode: 0o0600
+          shy: true
+        @java_keystore_add
+          keystore: httpfs.env.HTTPFS_SSL_KEYSTORE_FILE
+          storepass: httpfs.env.HTTPFS_SSL_KEYSTORE_PASS
+          caname: "httpfs_root_ca"
+          cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
+          key: "#{tmp_location}/#{path.basename ssl.key}"
+          cert: "#{tmp_location}/#{path.basename ssl.cert}"
+          keypass: ssl_server['ssl.server.keystore.keypassword']
+          name: @config.shortname
+          uid: httpfs.user.name
+          gid: httpfs.group.name
+          mode: 0o0640
+        @remove
+          destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+          shy: true
+        @remove
+          destination: "#{tmp_location}/#{path.basename ssl.cert}"
+          shy: true
+        @remove
+          destination: "#{tmp_location}/#{path.basename ssl.key}"
+          shy: true
       
 ## Configuration
 
-    module.exports.push header: 'HDFS HttpFS # Configuration', timeout: -1, handler: ->
-      {httpfs} = @config.ryba
       @hconfigure
+        header: 'Configuration'
         destination: "#{httpfs.conf_dir}/httpfs-site.xml"
         properties: httpfs.site
         uid: httpfs.user.name

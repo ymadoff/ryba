@@ -45,20 +45,6 @@ Example:
       throw new Error "Missing value for 'hdfs.krb5_user.password'" unless ctx.config.ryba.hdfs.krb5_user.password?
       throw new Error "Missing value for 'krb5_user.password'" unless ctx.config.ryba.krb5_user.password?
 
-## Kerberos User
-
-Create the HDFS user principal. This will be the super administrator for the HDFS
-filesystem. Note, we do not create a principal with a keytab to allow HDFS login
-from multiple sessions with braking an active session.
-
-    module.exports.push header: 'HDFS # Kerberos User', handler: ->
-      {hdfs, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
-      @krb5_addprinc merge
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
-      , hdfs.krb5_user
 
 ## Dependencies
 

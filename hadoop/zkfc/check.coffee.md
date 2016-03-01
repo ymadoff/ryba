@@ -5,6 +5,11 @@
     module.exports.push 'masson/bootstrap'
     # module.exports.push require('./index').configure
 
+
+    module.exports = header: 'HDFS ZKFC Check', label_true: 'CHECKED', handler: ->
+        {hdfs} = @config.ryba
+        nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
+
 ## Test SSH Fencing
 
 The sshfence option SSHes to the target node and uses fuser to kill the process
@@ -16,16 +21,11 @@ is a comma-separated list of SSH private key files.
 Strict host key checking is disabled during this check with the
 "StrictHostKeyChecking" argument set to "no".
 
-    module.exports.push
-      header: 'HDFS ZKFC # Check SSH Fencing'
-      retry: 100
-      label_true: 'CHECKED'
-      if: -> @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
-      handler: ->
-        {hdfs} = @config.ryba
-        nn_hosts = @hosts_with_module 'ryba/hadoop/hdfs_nn'
-        for host in nn_hosts
-          source = host if host is @config.host
-          target = host if host isnt @config.host
+        for nn_ctx in nn_ctxs
+          source = nn_ctx.config.host if nn_ctx.config.host is @config.host
+          target = nn_ctx.config.host if nn_ctx.config.host isnt @config.host
         @execute
+          header: 'SSH Fencing'
+          if: -> nn_ctxs.length > 1
+          retry: 100
           cmd: "su -l #{hdfs.user.name} -c \"ssh -q -o StrictHostKeyChecking=no #{hdfs.user.name}@#{target} hostname\""
