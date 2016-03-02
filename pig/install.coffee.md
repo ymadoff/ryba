@@ -18,17 +18,16 @@ cat /etc/group | grep hadoop
 hadoop:x:502:yarn,mapred,hdfs,hue
 ```
 
-      @call header: 'Pig # Users & Groups', handler: ->
-        @group hadoop_group
-        @user pig.user
+      @group hadoop_group
+      @user pig.user
 
 ## Install
 
 The pig package is install.
 
-      @call header: 'Pig # Service', timeout: -1, handler: ->
+      @call header: 'Pig Service', timeout: -1, handler: ->
         @service
-          header: 'Pig # Service'
+          header: 'Service'
           name: 'pig'
         console.log 'TODO: pig-client not registered in hdp-select'
         # pig-client not registered in hdp-select
@@ -37,7 +36,7 @@ The pig package is install.
         #   name: 'pig-client'
         # 6th feb 2014: pig user isnt created by YUM, might change in a future HDP release
         @execute
-          header: 'Pig # Users'
+          header: 'Users'
           cmd: "useradd pig -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Pig service\""
           code: 0
           code_skipped: 9
@@ -47,38 +46,38 @@ The pig package is install.
 TODO: Generate the "pig.properties" file dynamically, be carefull, the HDP
 companion file defines no properties while the YUM package does.
 
-      @call header: 'Pig # Configure', handler: ->
-        @ini
-          header: 'Pig # Properties'
-          destination: "#{pig.conf_dir}/pig.properties"
-          content: pig.config
-          separator: '='
-          merge: true
-          backup: true
-        @write
-          header: 'Pig # Env'
-          source: "#{__dirname}/resources/pig-env.sh"
-          destination: "#{pig.conf_dir}/pig-env.sh"
-          local_source: true
-          write: [
-            match: /^JAVA_HOME=.*$/mg
-            replace: "JAVA_HOME=#{java_home}"
-          ]
-          uid: pig.user.name
-          gid: hadoop_group.name
-          mode: 0o755
-          backup: true
-        @write
-          header: 'Pig # Fix Pig'
-          write: [
-            match: /^(\s)*slfJarVersion=.*/mg
-            replace: "$1slfJarVersion=''"
-          ,
-            match: new RegExp quote('/usr/lib/hcatalog'), 'g'
-            replace: '/usr/lib/hive-hcatalog'
-          ]
-          destination: '/usr/lib/pig/bin/pig'
-          backup: true
+
+      @ini
+        header: 'Properties'
+        destination: "#{pig.conf_dir}/pig.properties"
+        content: pig.config
+        separator: '='
+        merge: true
+        backup: true
+      @write
+        header: 'Env'
+        source: "#{__dirname}/resources/pig-env.sh"
+        destination: "#{pig.conf_dir}/pig-env.sh"
+        local_source: true
+        write: [
+          match: /^JAVA_HOME=.*$/mg
+          replace: "JAVA_HOME=#{java_home}"
+        ]
+        uid: pig.user.name
+        gid: hadoop_group.name
+        mode: 0o755
+        backup: true
+      @write
+        header: 'Fix Pig'
+        write: [
+          match: /^(\s)*slfJarVersion=.*/mg
+          replace: "$1slfJarVersion=''"
+        ,
+          match: new RegExp quote('/usr/lib/hcatalog'), 'g'
+          replace: '/usr/lib/hive-hcatalog'
+        ]
+        destination: '/usr/lib/pig/bin/pig'
+        backup: true
 
 ## Dependencies
 

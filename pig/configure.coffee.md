@@ -33,8 +33,6 @@ Example:
 ```
 
     module.exports = handler: ->
-      # require('masson/commons/java').configure ctx
-      # require('../../hadoop/hdfs').configure ctx
       pig = @config.ryba.pig ?= {}
       # User
       pig.user = name: pig.user if typeof pig.user is 'string'
