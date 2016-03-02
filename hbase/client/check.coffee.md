@@ -10,6 +10,43 @@ scanning the table.
       hbase_ctxs = @contexts 'ryba/hbase/master'
       {admin} = hbase_ctxs[0].config.ryba.hbase
 
+## Shell
+
+Create a "ryba" namespace and set full permission to the "ryba" user. This
+namespace is used by other modules as a testing environment.  
+Namespace and permissions are implemented and illustrated in [HBASE-8409].
+  
+      @call header: 'Grant Permissions', timeout:-1 , label_true: 'CHECKED', handler: ->
+        @execute
+          cmd: mkcmd.hbase @, """
+          if hbase shell 2>/dev/null <<< "user_permission '#{hbase.test.default_table}'" | egrep '[1-9][0-9]* row'; then exit 2; fi
+          hbase shell 2>/dev/null <<-CMD
+            create '#{hbase.test.default_table}', 'family1'
+            grant 'ryba', 'RWC', '#{hbase.test.default_table}'
+          CMD
+          hbase shell 2>/dev/null <<< "user_permission '#{hbase.test.default_table}'" | egrep '[1-9][0-9]* row'
+          """
+          code_skipped: 2
+        , (err, executed, stdout) ->
+          hasCreatedTable = ///create '#{hbase.test.default_table}', 'family1'\n0 row///.test stdout
+          hasGrantedAccess = ///grant '#{hbase.test.default_table}', 'RWC', 'ryba'\n0 row///.test stdout
+          throw Error 'Invalid command output' if executed and (not hasCreatedTable or not hasGrantedAccess)
+        # Note: apply this when namespace are functional
+        # @execute
+        #   cmd: mkcmd.hbase @, """
+        #   if hbase shell 2>/dev/null <<< "list_namespace_tables '#{hbase.test.default_table}'" | egrep '[0-9]+ row'; then exit 2; fi
+        #   hbase shell 2>/dev/null <<-CMD
+        #     create_namespace '#{hbase.test.default_table}'
+        #     grant '#{hbase.test.default_table}', 'RWC', '@ryba'
+        #   CMD
+        #   """
+        #   code_skipped: 2
+        # , (err, executed, stdout) ->
+        #   hasCreatedNamespace = /create_namespace '#{hbase.test.default_table}'\n0 row/.test stdout
+        #   hasGrantedAccess = /grant '#{hbase.test.default_table}', 'RWC', '@ryba'\n0 row/.test stdout
+        #   return  Error 'Invalid command output' if executed and ( not hasCreatedNamespace or not hasGrantedAccess)
+        #    err, executed
+
 ## Check Shell
   
       @call header: 'Shell', timeout: -1, label_true: 'CHECKED', handler: ->
@@ -79,6 +116,7 @@ scanning the table.
       #     isRowCreated = /column=family1:my_column10, timestamp=\d+, value=10/.test stdout
       #     return  Error 'Invalid command output' if executed and not isRowCreated
       #     return  err, executed
+  
 
 ## Check HA
 
@@ -103,3 +141,6 @@ This check is only executed if more than two HBase Master are declared.
 
     mkcmd = require '../../lib/mkcmd'
     string = require 'mecano/lib/misc/string'
+
+
+[HBASE-8409]: https://issues.apache.org/jira/browse/HBASE-8409

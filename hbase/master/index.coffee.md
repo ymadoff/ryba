@@ -8,7 +8,6 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
     module.exports = ->
       'configure': [
         'ryba/hadoop/core'
-        'ryba/hbase/common'
         'ryba/hbase/master/configure'
       ]
       'check': [
@@ -22,11 +21,11 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
         'ryba/lib/hdp_select'
         'ryba/lib/write_jaas'
         'ryba/hadoop/hdfs_client'
-        'ryba/hbase/common'
         'ryba/hbase/master/install'
         'ryba/hadoop/hdfs_nn/wait'
         'ryba/hbase/master/layout'
         'ryba/hbase/master/start'
+        'ryba/hbase/master/wait'
         'ryba/hbase/master/check'
       ]
       'start':[ 

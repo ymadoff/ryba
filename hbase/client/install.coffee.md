@@ -5,12 +5,26 @@ Install the HBase client package and configure it with secured access.
     
     module.exports =  header: 'HBase Client Install', handler: ->
       {hbase} = @config.ryba
+      
+## Users & Groups
 
+By default, the "hbase" package create the following entries:
+
+```bash
+cat /etc/passwd | grep hbase
+hbase:x:492:492:HBase:/var/run/hbase:/bin/bash
+cat /etc/group | grep hbase
+hbase:x:492:
+```
+      
+      @group hbase.group
+      @user hbase.user
+            
 ## Zookeeper JAAS
 
 JAAS configuration files for zookeeper to be deployed on the HBase Master,
 RegionServer, and HBase client host machines.
-
+      
       @write_jaas
         timeout: -1
         header: 'Zookeeper JAAS'
@@ -25,25 +39,25 @@ RegionServer, and HBase client host machines.
 
 Note, we left the permission mode as default, Master and RegionServer need to
 
-      @call header: 'Configure', handler: ->
-        @hconfigure
-          header: 'Site'
-          destination: "#{hbase.conf_dir}/hbase-site.xml"
-          default: "#{__dirname}/../resources/hbase-site.xml"
-          local_default: true
-          properties: hbase.site
-          mode: 0o0644
-          merge: false
-          uid: hbase.user.name
-          gid: hbase.group.name
-          backup: true
+    
+      @hconfigure
+        header: 'HBase Client Site'
+        destination: "#{hbase.conf_dir}/hbase-site.xml"
+        default: "#{__dirname}/../resources/hbase-site.xml"
+        local_default: true
+        properties: hbase.site
+        mode: 0o0644
+        merge: false
+        uid: hbase.user.name
+        gid: hbase.group.name
+        backup: true
 
 # Opts
 
 Environment passed to the Master before it starts.
 
       @render
-        header: 'Opts'
+        header: 'HBase Client Env'
         source: "#{__dirname}/../resources/hbase-env.sh"
         destination: "#{hbase.conf_dir}/hbase-env.sh"
         context: @config

@@ -5,11 +5,41 @@
       # require('../../ganglia/collector').configure ctx
       # require('../../graphite/carbon').configure ctx
       # require('../../hadoop/hdfs').configure ctx
-      require('..//common/configure').handler.call @
       require('../lib/configure_metrics.coffee.md').call
+      ryba = @config.ryba ?= {}
       {realm, hbase, ganglia, graphite} = @config.ryba
+      {java_home} = @config.java
+      hbase = @config.ryba.hbase ?= {}
       m_ctxs = @contexts 'ryba/hbase/master', require('../master/configure').handler
       throw Error "No Configured Master" unless m_ctxs.length
+
+# Users and Groups
+
+      hbase.test ?= {}
+      hbase.test.default_table ?= m_ctxs[0].config.ryba.hbase.test.default_table
+      hbase.user ?= {}
+      hbase.user = name: ryba.hbase.user if typeof ryba.hbase.user is 'string'
+      hbase.user.name ?= m_ctxs[0].config.ryba.hbase.user.name
+      hbase.user.system ?= m_ctxs[0].config.ryba.hbase.user.system
+      hbase.user.comment ?= m_ctxs[0].config.ryba.hbase.user.comment
+      hbase.user.home ?= m_ctxs[0].config.ryba.hbase.user.home
+      hbase.user.groups ?= m_ctxs[0].config.ryba.hbase.user.groups
+      hbase.user.limits ?= {}
+      hbase.user.limits.nofile ?= m_ctxs[0].config.ryba.hbase.user.limits.nofile
+      hbase.user.limits.nproc ?= m_ctxs[0].config.ryba.hbase.user.limits.nproc
+      hbase.admin ?= {}
+      hbase.admin.name ?= hbase.user.name
+      hbase.admin.principal ?=m_ctxs[0].config.ryba.hbase.admin.principal
+      hbase.admin.password ?=m_ctxs[0].config.ryba.hbase.admin.password
+      # Group
+      hbase.group ?= {}
+      hbase.group = name: hbase.group if typeof hbase.group is 'string'
+      hbase.group.name ?= m_ctxs[0].config.ryba.hbase.group.name
+      hbase.group.system ?= m_ctxs[0].config.ryba.hbase.group.system
+      hbase.user.gid = hbase.group.name
+
+# Regionserver Layout
+
       hbase.rs ?= {}
       hbase.rs.conf_dir ?= '/etc/hbase-regionserver/conf'
       hbase.rs.log_dir ?= '/var/log/hbase'
@@ -20,7 +50,7 @@
       hbase.rs.site['hbase.ssl.enabled'] ?= 'true'
       hbase.rs.site['hbase.regionserver.handler.count'] ?= 60 # HDP default
       hbase.rs.env ?= {}
-      hbase.rs.env['JAVA_HOME'] ?= hbase.env['JAVA_HOME']
+      hbase.rs.env['JAVA_HOME'] ?= "#{java_home}"
       # http://blog.sematext.com/2012/07/16/hbase-memstore-what-you-should-know/
       # Keep hbase.regionserver.hlog.blocksize * hbase.regionserver.maxlogs just
       # a bit above hbase.regionserver.global.memstore.lowerLimit * HBASE_HEAPSIZE
@@ -42,20 +72,19 @@
         'org.apache.hadoop.hbase.security.access.SecureBulkLoadEndpoint'
         'org.apache.hadoop.hbase.security.access.AccessController'
       ]
-      if @has_module 'ryba/hbase/master' and hbase.master.site['hbase.master.kerberos.principal'] isnt hbase.rs.site['hbase.regionserver.kerberos.principal']
+      if @has_module 'ryba/hbase/master' and m_ctxs[0].config.ryba.hbase.master.site['hbase.master.kerberos.principal'] isnt hbase.rs.site['hbase.regionserver.kerberos.principal']
         throw Error "HBase principals must match in single node"
 
 ## Configuration Distributed mode
 
-      properties = [
+      for property in [
         'zookeeper.znode.parent'
         'hbase.cluster.distributed'
         'hbase.rootdir'
         'hbase.zookeeper.quorum'
         'hbase.zookeeper.property.clientPort'
         'dfs.domain.socket.path'
-      ]
-      for property in properties then hbase.rs.site[property] ?= m_ctxs[0].config.ryba.hbase.master.site[property]
+      ] then hbase.rs.site[property] ?= m_ctxs[0].config.ryba.hbase.master.site[property]
 
 ## Configuration for HA
 

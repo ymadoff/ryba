@@ -2,9 +2,40 @@
 # HBase Thrit Server Configuration
 
     module.exports = handler: ->
-      require('../../hbase/common/configure').handler.call @
       require('../../hadoop/core/configure').handler.call @
+      ryba = @config.ryba ?= {}
       {realm, core_site, ssl_server, hbase} = @config.ryba
+      hbase = @config.ryba.hbase ?= {}
+      m_ctxs = @contexts 'ryba/hbase/master', require('../master/configure').handler
+      throw Error 'No HBase Master configured' unless m_ctxs.length > 1
+
+# Users and Groups
+
+      hbase.test ?= {}
+      hbase.test.default_table ?= m_ctxs[0].config.ryba.hbase.test.default_table
+      hbase.user ?= {}
+      hbase.user = name: ryba.hbase.user if typeof ryba.hbase.user is 'string'
+      hbase.user.name ?= m_ctxs[0].config.ryba.hbase.user.name
+      hbase.user.system ?= m_ctxs[0].config.ryba.hbase.user.system
+      hbase.user.comment ?= m_ctxs[0].config.ryba.hbase.user.comment
+      hbase.user.home ?= m_ctxs[0].config.ryba.hbase.user.home
+      hbase.user.groups ?= m_ctxs[0].config.ryba.hbase.user.groups
+      hbase.user.limits ?= {}
+      hbase.user.limits.nofile ?= m_ctxs[0].config.ryba.hbase.user.limits.nofile
+      hbase.user.limits.nproc ?= m_ctxs[0].config.ryba.hbase.user.limits.nproc
+      hbase.admin ?= {}
+      hbase.admin.name ?= hbase.user.name
+      hbase.admin.principal ?=m_ctxs[0].config.ryba.hbase.admin.principal
+      hbase.admin.password ?=m_ctxs[0].config.ryba.hbase.admin.password
+      # Group
+      hbase.group ?= {}
+      hbase.group = name: hbase.group if typeof hbase.group is 'string'
+      hbase.group.name ?= m_ctxs[0].config.ryba.hbase.group.name
+      hbase.group.system ?= m_ctxs[0].config.ryba.hbase.group.system
+      hbase.user.gid = hbase.group.name
+
+# Thrift Server Configuration  
+
       hbase.thrift ?= {}
       hbase.thrift.conf_dir ?= '/etc/hbase-thrift/conf'
       hbase.thrift.log_dir ?= '/var/log/hbase'
@@ -24,7 +55,7 @@
       # auth - authentication checking only
       hbase.thrift.site['hbase.thrift.security.qop'] ?= "auth"
       hbase.thrift.env ?= {}
-      hbase.thrift.env['JAVA_HOME'] ?= hbase.env['JAVA_HOME']
+      hbase.thrift.env['JAVA_HOME'] ?= m_ctxs[0].config.ryba.hbase.master.env['JAVA_HOME']
 
 ## Kerberos
 
@@ -37,8 +68,6 @@
 [hbase-impersonation-mode]: http://hbase.apache.org/book.html#security.gateway.thrift
 [hbase-configuration-cloudera]:(http://www.cloudera.com/content/www/en-us/documentation/enterprise/latest/topics/cdh_sg_hbase_authentication.html/)
 
-      m_ctxs = @contexts 'ryba/hbase/master', require('../master/configure').handler
-      throw Error 'No HBase Master configured' unless m_ctxs.length > 1
       hbase.thrift.site['hbase.security.authentication'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.security.authentication']
       hbase.thrift.site['hbase.security.authorization'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.security.authorization']
       hbase.thrift.site['hbase.rpc.engine'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.rpc.engine']
@@ -78,12 +107,11 @@
 
 ## Distributed Mode
 
-      properties = [
+      for property in [
         'zookeeper.znode.parent'
         'hbase.cluster.distributed'
         'hbase.rootdir'
         'hbase.zookeeper.quorum'
         'hbase.zookeeper.property.clientPort'
         'dfs.domain.socket.path'
-      ]
-      for property in properties then hbase.thrift.site[property] ?= m_ctxs[0].config.ryba.hbase.master.site[property]
+      ] then hbase.thrift.site[property] ?= m_ctxs[0].config.ryba.hbase.master.site[property]

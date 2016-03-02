@@ -7,12 +7,10 @@ Client code accessing a cluster finds the cluster by querying ZooKeeper.
 
     module.exports = ->
       'configure': [
-        'ryba/hbase/common'
         'ryba/hbase/client/configure'
       ]
       'install': [
         'ryba/hadoop/mapred_client/install' 
-        'ryba/hbase/common'
         'ryba/lib/hconfigure'
         'ryba/lib/write_jaas'
         'ryba/hbase/client/install'

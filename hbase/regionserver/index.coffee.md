@@ -18,15 +18,17 @@ It is responsible for serving and managing regions. In a distributed cluster, a 
         'ryba/lib/hdp_select'
         'ryba/lib/write_jaas'
         'ryba/hadoop/hdfs_client'
-        'ryba/hbase/common'
         'ryba/hbase/regionserver/install'
+        'ryba/hbase/master/wait'
         'ryba/hbase/regionserver/start'
+        'ryba/hbase/regionserver/wait'
         'ryba/hbase/regionserver/check'
       ]
       'start':[
         'masson/core/krb5_client/wait'
         'ryba/zookeeper/server/wait'
         'ryba/hadoop/hdfs_nn/start'
+        'ryba/hbase/master/wait'
         'ryba/hbase/regionserver/start'
       ]
       'status':

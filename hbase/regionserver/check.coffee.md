@@ -47,49 +47,8 @@ is added membership to the group hadoop to gain read access.
         host=`curl -s -k --negotiate -u : #{url} | grep tag.Hostname | sed 's/^.*:.*"\\(.*\\)".*$/\\1/g'`
         if [ "$host" != '#{@config.host}' ] ; then exit 1; fi
         """
-
-## Shell
-
-Create a "ryba" namespace and set full permission to the "ryba" user. This
-namespace is used by other modules as a testing environment.
-
-Namespace and permissions are implemented and illustrated in [HBASE-8409].
-
-TODO: move to install
-
-      @call header: 'Shell', timeout:-1, label_true: 'CHECKED', handler: ->
-        @execute
-          cmd: mkcmd.hbase @, """
-          if hbase shell 2>/dev/null <<< "user_permission '#{hbase.test.default_table}'" | egrep '[1-9][0-9]* row'; then exit 2; fi
-          hbase shell 2>/dev/null <<-CMD
-            create '#{hbase.test.default_table}', 'family1'
-            grant 'ryba', 'RWC', '#{hbase.test.default_table}'
-          CMD
-          hbase shell 2>/dev/null <<< "user_permission '#{hbase.test.default_table}'" | egrep '[1-9][0-9]* row'
-          """
-          code_skipped: 2
-        , (err, executed, stdout) ->
-          hasCreatedTable = ///create '#{hbase.test.default_table}', 'family1'\n0 row///.test stdout
-          hasGrantedAccess = ///grant '#{hbase.test.default_table}', 'RWC', 'ryba'\n0 row///.test stdout
-          throw Error 'Invalid command output' if executed and (not hasCreatedTable or not hasGrantedAccess)
-        # Note: apply this when namespace are functional
-        # @execute
-        #   cmd: mkcmd.hbase @, """
-        #   if hbase shell 2>/dev/null <<< "list_namespace_tables '#{hbase.test.default_table}'" | egrep '[0-9]+ row'; then exit 2; fi
-        #   hbase shell 2>/dev/null <<-CMD
-        #     create_namespace '#{hbase.test.default_table}'
-        #     grant '#{hbase.test.default_table}', 'RWC', '@ryba'
-        #   CMD
-        #   """
-        #   code_skipped: 2
-        # , (err, executed, stdout) ->
-        #   hasCreatedNamespace = /create_namespace '#{hbase.test.default_table}'\n0 row/.test stdout
-        #   hasGrantedAccess = /grant '#{hbase.test.default_table}', 'RWC', '@ryba'\n0 row/.test stdout
-        #   return  Error 'Invalid command output' if executed and ( not hasCreatedNamespace or not hasGrantedAccess)
-        #    err, executed
+      
 
 ## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
-
-[HBASE-8409]: https://issues.apache.org/jira/browse/HBASE-8409
