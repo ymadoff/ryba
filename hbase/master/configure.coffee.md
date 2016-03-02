@@ -28,18 +28,16 @@
       hbase.master.env['HBASE_LOG_DIR'] ?= "#{hbase.master.log_dir}"
       hbase.master.env['HBASE_OPTS'] ?= '-ea -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode' # Default in HDP companion file
 
-
 ## Configuration Distributed mode
 
-      properties = [
+      for property in [
         'zookeeper.znode.parent'
         'hbase.cluster.distributed'
         'hbase.rootdir'
         'hbase.zookeeper.quorum'
         'hbase.zookeeper.property.clientPort'
         'dfs.domain.socket.path'
-      ]
-      for property in properties then hbase.master.site[property] ?= hbase.site[property]
+      ] then hbase.master.site[property] ?= hbase.site[property]
 
 ## Configuration for Kerberos
 
