@@ -82,23 +82,22 @@ RegionServer, and HBase client host machines.
 
 ## Kerberos
       
-      @call header: 'Kerberos',  timeout: -1, handler: ->
-        if @has_module 'ryba/hbase/master'
-          if hbase.master.site['hbase.master.kerberos.principal'] isnt hbase.rs.site['hbase.regionserver.kerberos.principal']
-            return throw Error "HBase principals must match in single node"
-          @copy
-            source: hbase.master.site['hbase.master.keytab.file']
-            destination: hbase.rs.site['hbase.regionserver.keytab.file']
-        else
-          @krb5_addprinc
-            principal: hbase.rs.site['hbase.regionserver.kerberos.principal'].replace '_HOST', @config.host
-            randkey: true
-            keytab: hbase.rs.site['hbase.regionserver.keytab.file']
-            uid: hbase.user.name
-            gid: hadoop_group.name
-            kadmin_principal: kadmin_principal
-            kadmin_password: kadmin_password
-            kadmin_server: admin_server
+      @copy
+        header: 'Copy Keytab'
+        if: @has_module 'ryba/hbase/master'
+        source: hbase.master.site['hbase.master.keytab.file']
+        destination: hbase.rs.site['hbase.regionserver.keytab.file']
+      @krb5_addprinc
+        header: 'Kerberos'
+        unless: @has_module 'ryba/hbase/master'
+        principal: hbase.rs.site['hbase.regionserver.kerberos.principal'].replace '_HOST', @config.host
+        randkey: true
+        keytab: hbase.rs.site['hbase.regionserver.keytab.file']
+        uid: hbase.user.name
+        gid: hadoop_group.name
+        kadmin_principal: kadmin_principal
+        kadmin_password: kadmin_password
+        kadmin_server: admin_server
 
 ## Configure
 

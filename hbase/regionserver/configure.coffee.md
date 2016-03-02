@@ -42,6 +42,8 @@
         'org.apache.hadoop.hbase.security.access.SecureBulkLoadEndpoint'
         'org.apache.hadoop.hbase.security.access.AccessController'
       ]
+      if @has_module 'ryba/hbase/master' and hbase.master.site['hbase.master.kerberos.principal'] isnt hbase.rs.site['hbase.regionserver.kerberos.principal']
+        throw Error "HBase principals must match in single node"
 
 ## Configuration Distributed mode
 
