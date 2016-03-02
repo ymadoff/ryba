@@ -1,12 +1,6 @@
 
 # HBase RegionServer Stop
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    # module.exports.push require('./index').configure
-
-## Stop
-
 Stop the RegionServer server. You can also stop the server manually with one of
 the following two commands:
 
@@ -17,7 +11,8 @@ su -l hbase -c "/usr/hdp/current/hbase-regionserver/bin/hbase-daemon.sh --config
 
 The file storing the PID is "/var/run/hbase/yarn/hbase-hbase-regionserver.pid".
 
-    module.exports.push header: 'HBase RegionServer # Stop', label_true: 'STOPPED', handler: ->
+    module.exports = header: 'HBase RegionServer Stop', label_true: 'STOPPED', handler: ->
+      {hbase} = @config.ryba
       @service_stop
         name: 'hbase-regionserver'
         if_exists: '/etc/init.d/hbase-regionserver'
@@ -30,15 +25,14 @@ The file storing the PID is "/var/run/hbase/yarn/hbase-hbase-regionserver.pid".
 
 ## Stop Clean Logs
 
-    module.exports.push
-      header: 'HBase RegionServer # Stop Clean Logs'
-      label_true: 'CLEANED'
-      if: -> @config.ryba.clean_logs
-      handler: ->
-        {hbase} = @config.ryba
-        @execute
-          cmd: "rm #{hbase.rs.log_dir}/*-regionserver-*"
-          code_skipped: 1
-        @execute
-          cmd: "rm #{hbase.rs.log_dir}/gc.log-*"
-          code_skipped: 1
+      @call
+        header: 'HBase RegionServer # Stop Clean Logs'
+        label_true: 'CLEANED'
+        if: -> @config.ryba.clean_logs
+        handler: ->
+          @execute
+            cmd: "rm #{hbase.rs.log_dir}/*-regionserver-*"
+            code_skipped: 1
+          @execute
+            cmd: "rm #{hbase.rs.log_dir}/gc.log-*"
+            code_skipped: 1

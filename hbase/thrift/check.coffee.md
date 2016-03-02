@@ -1,14 +1,10 @@
 
 ## Hbase Thrift server check
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-
-## Check TCP
-
-    module.exports.push header: 'HBase Thrift # Check TCP', label_true: 'CHECKED', handler: ->
+    module.exports = header: 'HBase Thrift Check', label_true: 'CHECKED', handler: ->
       {hbase} = @config.ryba
       @execute
+        header: 'TCP'
         cmd: "echo > /dev/tcp/#{@config.host}/#{hbase.thrift.site['hbase.thrift.port']}"
 
 # TODO: Novembre 2015 check Thrift  server by interacting with hbase

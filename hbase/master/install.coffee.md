@@ -18,7 +18,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
       @iptables
-        header: 'HBase Master # IPTables'
+        header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.master.site['hbase.master.port'], protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.master.site['hbase.master.info.port'], protocol: 'tcp', state: 'NEW', comment: "HMaster Info Web UI" }
@@ -27,7 +27,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## HBase Master Layout
 
-      @call header: 'HBase Master # Layout', timeout: -1, handler: ->
+      @call header: 'Layout', timeout: -1, handler: ->
         @mkdir
           destination: hbase.master.pid_dir
           uid: hbase.user.name
@@ -49,7 +49,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hbase-master" service, symlink the rc.d startup script inside
 "/etc/init.d" and activate it on startup.
 
-      @call header: 'HBase Master # Service', timeout: -1, handler: ->
+      @call header: 'Service', timeout: -1, handler: ->
         @service
           name: 'hbase-master'
         @hdp_select
@@ -57,6 +57,7 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
         @hdp_select
           name: 'hbase-master'
         @render
+          header: 'Init Script'
           source: "#{__dirname}/../resources/hbase-master"
           local_source: true
           context: @config

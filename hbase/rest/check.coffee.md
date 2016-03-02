@@ -1,20 +1,11 @@
 
 # HBase Rest Gateway Check
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hbase/regionserver/wait'
-    # module.exports.push 'ryba/hbase/client' # Using `hbase shell` to wait before running the checks
-    # module.exports.push require('./index').configure
 
-## Check Shell
 
-    module.exports.push header: 'HBase Rest # Check', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports =  header: 'HBase Rest Check', timeout: -1, label_true: 'CHECKED', handler: ->
       {shortname} = @config
       {force_check, jaas_client, hbase} = @config.ryba
-      # cmd = mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists 'ryba'\" | grep 'Table ryba does exist'"
-      # @waitForExecution cmd, (err) ->
-      #   return  err if err
       encode = (data) -> (new Buffer data, 'utf8').toString 'base64'
       decode = (data) -> (new Buffer data, 'base64').toString 'utf8'
       curl = 'curl -s '
@@ -28,6 +19,10 @@
       port = hbase.rest.site['hbase.rest.port']
       schema = JSON.stringify ColumnSchema: [name: "#{shortname}_rest"]
       rows = JSON.stringify Row: [ key: encode('my_row_rest'), Cell: [column: encode("#{shortname}_rest:my_column"), $: encode('my rest value')]]
+
+
+## Check Shell
+
       @execute
         cmd: mkcmd.test @, """
         #{curl} -X POST --data '#{schema}' #{protocol}://#{host}:#{port}/#{hbase.test.default_table}/schema

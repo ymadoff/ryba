@@ -3,67 +3,63 @@
 
 Check the HBase client installation by creating a table, inserting a cell and
 scanning the table.
-
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hbase/master/wait'
-    # module.exports.push require('./index').configure
-
-## Check Shell
-
-    module.exports.push header: 'HBase Client # Check Shell', timeout: -1, label_true: 'CHECKED', handler: ->
+    
+    module.exports =  header: 'HBase Client Check', label_true: 'CHECKED', handler: ->
       {shortname} = @config
       {force_check, hbase} = @config.ryba
-      @wait_execute
-        cmd: mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists '#{hbase.test.default_table}'\" | grep 'Table ryba does exist'"
-      @execute
-        cmd: mkcmd.test @, """
-        hbase shell 2>/dev/null <<-CMD
-          alter '#{hbase.test.default_table}', {NAME => '#{shortname}'}
-          put '#{hbase.test.default_table}', 'my_row', '#{shortname}:my_column', 10
-          scan '#{hbase.test.default_table}',  {COLUMNS => '#{shortname}'}
-        CMD
-        """
-        unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"scan '#{hbase.test.default_table}', {COLUMNS => '#{shortname}'}\" | egrep '[0-9]+ row'"
-      , (err, executed, stdout) ->
-        isRowCreated = RegExp("column=#{shortname}:my_column, timestamp=\\d+, value=10").test stdout
-        throw Error 'Invalid command output' if executed and not isRowCreated
+      hbase_ctxs = @contexts 'ryba/hbase/master'
+      {admin} = hbase_ctxs[0].config.ryba.hbase
+
+## Check Shell
+  
+      @call header: 'Shell', timeout: -1, label_true: 'CHECKED', handler: ->
+        @wait_execute
+          cmd: mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists '#{hbase.test.default_table}'\" | grep 'Table ryba does exist'"
+        @execute
+          cmd: mkcmd.test @, """
+          hbase shell 2>/dev/null <<-CMD
+            alter '#{hbase.test.default_table}', {NAME => '#{shortname}'}
+            put '#{hbase.test.default_table}', 'my_row', '#{shortname}:my_column', 10
+            scan '#{hbase.test.default_table}',  {COLUMNS => '#{shortname}'}
+          CMD
+          """
+          unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"scan '#{hbase.test.default_table}', {COLUMNS => '#{shortname}'}\" | egrep '[0-9]+ row'"
+        , (err, executed, stdout) ->
+          isRowCreated = RegExp("column=#{shortname}:my_column, timestamp=\\d+, value=10").test stdout
+          throw Error 'Invalid command output' if executed and not isRowCreated
 
 ## Check MapReduce
 
-    module.exports.push header: 'HBase Client # Check MapReduce', timeout: -1, label_true: 'CHECKED', handler: ->
-      {force_check} = @config.ryba
-      @execute
-        cmd: mkcmd.test @, """
-          hdfs dfs -rm -skipTrash check-#{@config.host}-hbase-mapred
-          echo -e '1,toto\\n2,tata\\n3,titi\\n4,tutu' | hdfs dfs -put -f - /user/ryba/test_import.csv
-          hbase org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.separator=, -Dimporttsv.columns=HBASE_ROW_KEY,family1:value ryba /user/ryba/test_import.csv
-          hdfs dfs -touchz check-#{@config.host}-hbase-mapred
-          """
-        unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.host}-hbase-mapred"
+      @call header: 'MapReduce', timeout: -1, label_true: 'CHECKED', handler: ->
+        @execute
+          cmd: mkcmd.test @, """
+            hdfs dfs -rm -skipTrash check-#{@config.host}-hbase-mapred
+            echo -e '1,toto\\n2,tata\\n3,titi\\n4,tutu' | hdfs dfs -put -f - /user/ryba/test_import.csv
+            hbase org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.separator=, -Dimporttsv.columns=HBASE_ROW_KEY,family1:value ryba /user/ryba/test_import.csv
+            hdfs dfs -touchz check-#{@config.host}-hbase-mapred
+            """
+          unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.host}-hbase-mapred"
 
 ## Check Splits
 
-    module.exports.push header: 'HBase Client # Check Splits', timeout: -1, label_true: 'CHECKED', handler: ->
-      {force_check} = @config.ryba
-      hbase_ctxs = @contexts 'ryba/hbase/master'#, require('../master').configure
-      {admin} = hbase_ctxs[0].config.ryba.hbase
-      @execute
-        cmd: mkcmd.hbase @, """
-          #if hbase shell 2>/dev/null <<< "list" | grep 'test_splits'; then echo "disable 'test_splits'; drop 'test_splits'" | hbase shell 2>/dev/null; fi
-          echo "disable 'test_splits'; drop 'test_splits'" | hbase shell 2>/dev/null
-          echo "create 'test_splits', 'cf1', SPLITS => ['1', '2', '3']" | hbase shell 2>/dev/null;
-          echo "scan 'hbase:meta',  {COLUMNS => 'info:regioninfo', FILTER => \\"PrefixFilter ('test_split')\\"}" | hbase shell 2>/dev/null
-          """
-        unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"list 'test_splits'\" | grep -w 'test_splits'"
-      , (err, executed, stdout) ->
-        throw err if err
-        return unless executed
-        lines = string.lines stdout
-        count = 0
-        for line in lines
-          count++ if /^ test_splits,/.test line
-        throw Error 'Invalid Splits Count' unless count is 4
+      @call header: 'Splits', timeout: -1, label_true: 'CHECKED', handler: ->
+        {force_check} = @config.ryba
+        @execute
+          cmd: mkcmd.hbase @, """
+            #if hbase shell 2>/dev/null <<< "list" | grep 'test_splits'; then echo "disable 'test_splits'; drop 'test_splits'" | hbase shell 2>/dev/null; fi
+            echo "disable 'test_splits'; drop 'test_splits'" | hbase shell 2>/dev/null
+            echo "create 'test_splits', 'cf1', SPLITS => ['1', '2', '3']" | hbase shell 2>/dev/null;
+            echo "scan 'hbase:meta',  {COLUMNS => 'info:regioninfo', FILTER => \\"PrefixFilter ('test_split')\\"}" | hbase shell 2>/dev/null
+            """
+          unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"list 'test_splits'\" | grep -w 'test_splits'"
+        , (err, executed, stdout) ->
+          throw err if err
+          return unless executed
+          lines = string.lines stdout
+          count = 0
+          for line in lines
+            count++ if /^ test_splits,/.test line
+          throw Error 'Invalid Splits Count' unless count is 4
 
       # Note: inspiration for when namespace are functional
       # cmd = mkcmd.test @, "hbase shell 2>/dev/null <<< \"list_namespace_tables 'ryba'\" | egrep '[0-9]+ row'"
@@ -88,23 +84,20 @@ scanning the table.
 
 This check is only executed if more than two HBase Master are declared.
 
-    module.exports.push header: 'HBase Client # Check HA', timeout: -1, label_true: 'CHECKED', handler: ->
-      {force_check} = @config.ryba
-      hbase_ctxs = @contexts 'ryba/hbase/master', require('../master').configure
-      return unless hbase_ctxs.length > 1
-      {admin} = hbase_ctxs[0].config.ryba.hbase
-      table = "check_#{@config.shortname}_ha"
-      @execute
-        cmd: mkcmd.hbase @, """
-          # Create new table
-          echo "disable '#{table}'; drop '#{table}'" | hbase shell 2>/dev/null
-          echo "create '#{table}', 'cf1', {REGION_REPLICATION => 2}" | hbase shell 2>/dev/null;
-          # Insert records
-          echo "put '#{table}', 'my_row', 'cf1:my_column', 10" | hbase shell 2>/dev/null
-          echo "scan '#{table}',  { CONSISTENCY => 'STRONG' }" | hbase shell 2>/dev/null
-          echo "scan '#{table}',  { CONSISTENCY => 'TIMELINE' }" | hbase shell 2>/dev/null
-          """
-        # unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"list '#{table}'\" | grep -w '#{table}'"
+      @call header: 'HBase Client # Check HA', timeout: -1, label_true: 'CHECKED', handler: ->
+        return unless hbase_ctxs.length > 1
+        table = "check_#{@config.shortname}_ha"
+        @execute
+          cmd: mkcmd.hbase @, """
+            # Create new table
+            echo "disable '#{table}'; drop '#{table}'" | hbase shell 2>/dev/null
+            echo "create '#{table}', 'cf1', {REGION_REPLICATION => 2}" | hbase shell 2>/dev/null;
+            # Insert records
+            echo "put '#{table}', 'my_row', 'cf1:my_column', 10" | hbase shell 2>/dev/null
+            echo "scan '#{table}',  { CONSISTENCY => 'STRONG' }" | hbase shell 2>/dev/null
+            echo "scan '#{table}',  { CONSISTENCY => 'TIMELINE' }" | hbase shell 2>/dev/null
+            """
+          # unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"list '#{table}'\" | grep -w '#{table}'"
 
 ## Dependencies
 
