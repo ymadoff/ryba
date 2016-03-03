@@ -1,9 +1,8 @@
 
 # DB Administration
 
-    module.exports = ->
-      'configure': required: true, handler: ->
-        ryba = @config.ryba ?= {}
+    module.exports = handler: ->
+        {ryba} = @config ?= {}
         # Database administration
         # todo: `require('masson/commons/mysql_server').configure ctx` and use returned values as default values
         ryba.db_admin ?= {}
