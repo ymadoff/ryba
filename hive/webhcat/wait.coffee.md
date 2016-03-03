@@ -1,11 +1,7 @@
 
 # WebHCat Wait
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    # module.exports.push require('../hdfs').configure
-
-    module.exports.push header: 'WebHCat # Wait', timeout: -1, label_true: 'READY', handler:  ->
+    module.exports = header: 'WebHCat Wait', timeout: -1, label_true: 'READY', handler:  ->
       webhcat_ctxs = @contexts 'ryba/hive/webhcat'
       @wait_connect
         servers: for webhcat_ctx in webhcat_ctxs

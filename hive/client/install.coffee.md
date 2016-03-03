@@ -1,28 +1,24 @@
 
 # Hive & HCatalog Client
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/core_ssl'
-    module.exports.push 'ryba/hadoop/hdfs_client/install'
-    module.exports.push 'ryba/hadoop/yarn_client/install'
-    module.exports.push 'ryba/hadoop/mapred_client/install'
-    module.exports.push 'ryba/tez'
-    module.exports.push 'ryba/hive/index'
-    module.exports.push 'ryba/lib/hconfigure'
-    # module.exports.push require('./index').configure
+    module.exports = header: 'Hive Client Install', handler: ->
+      {hive, hadoop_group} = @config.ryba
+      {ssl, ssl_server, ssl_client, hadoop_conf_dir} = @config.ryba
+      tmp_location = "/var/tmp/ryba/ssl"
 
-    module.exports.push header: 'Hive Client # Service', handler: ->
+## Service
+      
       @service
-        name: 'hive-hcatalog'
+        name: 'hive'
+      @hdp_select
+        name: 'hive-webhcat'
 
 ## Configure
 
 See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.2/bk_installing_manually_book/content/rpm-chap6-3.html)
 
-    module.exports.push header: 'Hive Client # Configure', handler: ->
-      {hive, hadoop_group} = @config.ryba
       @hconfigure
+        header: 'Hive Site'
         destination: "#{hive.conf_dir}/hive-site.xml"
         default: "#{__dirname}/../../resources/hive/hive-site.xml"
         local_default: true
@@ -30,6 +26,7 @@ See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments
         merge: true
         backup: true
       @execute
+        header: 'Permissions'
         cmd: """
         chown -R #{hive.user.name}:#{hadoop_group.name} #{hive.conf_dir}
         chmod -R 755 #{hive.conf_dir}
@@ -47,9 +44,8 @@ Using this functionnality, a user may for example raise the heap size of Hive
 Client to 4Gb by either setting a "opts" value equal to "-Xmx4096m" or the 
 by setting a "heapsize" value equal to "4096".
 
-    module.exports.push header: 'Hive Client # Env', handler: ->
-      {hive} = @config.ryba
       @write
+        header: 'Hive Env'
         destination: "#{hive.conf_dir}/hive-env.sh"
         replace: """
         if [ "$SERVICE" = "cli" ]; then
@@ -66,23 +62,20 @@ by setting a "heapsize" value equal to "4096".
 
 ## SSL
 
-    module.exports.push header: 'Hive Client # SSL', handler: ->
-      {ssl, ssl_server, ssl_client, hadoop_conf_dir} = @config.ryba
-      tmp_location = "/var/tmp/ryba/ssl"
-      {hive} = @config.ryba
-      @upload
-        source: ssl.cacert
-        destination: "#{tmp_location}/#{path.basename ssl.cacert}"
-        mode: 0o0600
-        shy: true
-      @java_keystore_add
-        keystore: hive.client.truststore_location
-        storepass: hive.client.truststore_password
-        caname: "hive_root_ca"
-        cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
-      @remove
-        destination: "#{tmp_location}/#{path.basename ssl.cacert}"
-        shy: true
+      @call header: 'Client SSL', handler: ->
+        @upload
+          source: ssl.cacert
+          destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+          mode: 0o0600
+          shy: true
+        @java_keystore_add
+          keystore: hive.client.truststore_location
+          storepass: hive.client.truststore_password
+          caname: "hive_root_ca"
+          cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
+        @remove
+          destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+          shy: true
       
 ## Dependencies
 

@@ -1,17 +1,13 @@
 
 # Tez Install
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/yarn_client'
-    module.exports.push 'ryba/lib/hconfigure'
-    module.exports.push require '../lib/hdfs_upload'
-    # module.exports.push require('./index').configure
-
+    module.exports = header: 'Tez Install', timeout: -1, handler: ->
+      {tez, hadoop_conf_dir} = @config.ryba
+      
 ## Packages
 
-    module.exports.push header: 'Tez # Packages', timeout: -1, handler: ->
       @service
+        header: 'Tez Packages'
         name: 'tez'
 
 ## HDFS Tarballs
@@ -20,17 +16,16 @@ Upload the Tez tarball inside the "/hdp/apps/$version/tez"
 HDFS directory. Note, the parent directories are created by the 
 "ryba/hadoop/hdfs_dn/layout" module.
 
-    module.exports.push header: 'Tez # HDFS Layout', timeout: -1, handler: ->
       @hdfs_upload
+        header: 'HDFS Layout'
         source: '/usr/hdp/current/tez-client/lib/tez.tar.gz'
         target: '/hdp/apps/$version/tez/tez.tar.gz'
         lock: '/tmp/ryba-tez.lock'
 
 ## Configuration
 
-    module.exports.push header: 'Tez # Configuration', timeout: -1, handler: ->
-      {tez} = @config.ryba
       @hconfigure
+        header: 'Tez Site'
         destination: "#{tez.env['TEZ_CONF_DIR']}/tez-site.xml"
         default: "#{__dirname}/resources/tez-site.xml"
         local_default: true
@@ -41,12 +36,11 @@ HDFS directory. Note, the parent directories are created by the
 
 Environment passed to Hadoop.   
 
-    module.exports.push header: 'Tez # Environment', handler: ->
-      {hadoop_conf_dir, tez} = @config.ryba
       env = for k, v of tez.env
         "export #{k}=#{v}"
       classpath = "#{tez.env['TEZ_CONF_DIR']}:#{tez.env['TEZ_JARS']}"
       @write
+        header: 'Environment'
         destination: '/etc/profile.d/tez.sh'
         content: env.join '\n'
         mode: 0o0644
