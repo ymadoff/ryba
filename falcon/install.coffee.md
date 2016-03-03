@@ -5,14 +5,13 @@ This procedure only support 1 Oozie server. If Falcon must interact with
 multiple servers, then each Oozie server must be updated. The property
 "oozie.service.HadoopAccessorService.hadoop.configurations" shall define
 each HDFS cluster.
-
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/core/iptables'
-    # module.exports.push require('masson/core/iptables').configure
-    module.exports.push 'ryba/lib/hdp_select'
-    # module.exports.push require('./index').configure
-
+      
+    module.exports = header: 'Falcon Install', handler: ->
+      {falcon, realm} = @config.ryba
+      {user, group, startup, conf_dir} = @config.ryba.falcon
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      {hostname, port} = url.parse falcon.startup['prism.falcon.local.endpoint']
+      
 ## IPTables
 
 | Service   | Port       | Proto     | Parameter                   |
@@ -21,10 +20,8 @@ each HDFS cluster.
 
 Note, this hasnt been verified.
 
-    module.exports.push header: 'Falcon # IPTables', handler: ->
-      {falcon} = @config.ryba
-      {hostname, port} = url.parse falcon.startup['prism.falcon.local.endpoint']
       @iptables
+        header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "Falcon Prism Local EndPoint" }
         ]
@@ -41,40 +38,38 @@ cat /etc/group | grep falcon
 falcon:x:498:falcon
 ```
 
-    module.exports.push header: 'Falcon # Users & Groups', handler: ->
-      {falcon} = @config.ryba
       @group falcon.group
       @user falcon.user
 
 ## Packages
 
-    module.exports.push header: 'Falcon # Packages', timeout: -1, handler: ->
-      @service
-        name: 'falcon'
-      @hdp_select
-        name: 'falcon-server'
-      @write
-        source: "#{__dirname}/resources/falcon"
-        local_source: true
-        destination: '/etc/init.d/falcon'
-        mode: 0o0755
-        unlink: true
-      @execute
-        cmd: "service falcon restart"
-        if: -> @status -3
+      @call header: 'Packages', timeout: -1, handler: ->
+        @service
+          name: 'falcon'
+        @hdp_select
+          name: 'falcon-server'
+        @write
+          header: 'Init Script'
+          source: "#{__dirname}/resources/falcon"
+          local_source: true
+          destination: '/etc/init.d/falcon'
+          mode: 0o0755
+          unlink: true
+        @execute
+          cmd: "service falcon restart"
+          if: -> @status -3
 
-    module.exports.push header: 'Falcon # Layout', handler: ->
-      {falcon} = @config.ryba
-      @mkdir
-        destination: falcon.log_dir
-        uid: falcon.user
-        gid: falcon.group
-        parent: true
-      @mkdir
-        destination: falcon.pid_dir
-        uid: falcon.user.name
-        gid: falcon.group.name
-        parent: true
+      @call header: 'Layout', handler: ->
+        @mkdir
+          destination: falcon.log_dir
+          uid: falcon.user
+          gid: falcon.group
+          parent: true
+        @mkdir
+          destination: falcon.pid_dir
+          uid: falcon.user.name
+          gid: falcon.group.name
+          parent: true
 
 ## Environnement
 
@@ -83,9 +78,8 @@ directory with the location of the directory storing the process pid.
 
 Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
-    module.exports.push header: 'Falcon # Environnement', handler: ->
-      {falcon} = @config.ryba
       @render
+        header: 'Falcon Env'
         destination: "#{falcon.conf_dir}/falcon-env.sh"
         source: "#{__dirname}/resources/falcon-env.sh"
         context: @config
@@ -94,11 +88,8 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
 ## Kerberos
 
-    module.exports.push header: 'Falcon # Kerberos', handler: ->
-      {realm} = @config.ryba
-      {user, group, startup} = @config.ryba.falcon
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
+        header: 'Kerberos'
         principal: startup['*.falcon.service.authentication.kerberos.principal']#.replace '_HOST', @config.host
         randkey: true
         keytab: startup['*.falcon.service.authentication.kerberos.keytab']
@@ -110,26 +101,25 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
 ## HFDS Layout
 
-    module.exports.push header: 'Falcon # HFDS Layout', handler: ->
-      {user, group} = @config.ryba.falcon
-      status = user_owner = group_owner = null
-      @execute
-        cmd: mkcmd.hdfs @, "hdfs dfs -stat '%g;%u;%n' /apps/falcon"
-        code_skipped: 1
-      , (err, exists, stdout) ->
-        return next err if err
-        status = exists
-        [user_owner, group_owner, filename] = stdout.trim().split ';' if exists
-      @call ->
+      @call header: 'HFDS Layout', handler: ->
+        status = user_owner = group_owner = null
         @execute
-          cmd: mkcmd.hdfs @, 'hdfs dfs -mkdir /apps/falcon'
-          unless: -> status
-        @execute
-          cmd: mkcmd.hdfs @, "hdfs dfs -chown #{user.name} /apps/falcon"
-          if: not status or user.name isnt user_owner
-        @execute
-          cmd: mkcmd.hdfs @, 'hdfs dfs -chgrp #{group.name} /apps/falcon'
-          if: not status or group.name isnt group_owner
+          cmd: mkcmd.hdfs @, "hdfs dfs -stat '%g;%u;%n' /apps/falcon"
+          code_skipped: 1
+        , (err, exists, stdout) ->
+          return next err if err
+          status = exists
+          [user_owner, group_owner, filename] = stdout.trim().split ';' if exists
+        @call ->
+          @execute
+            cmd: mkcmd.hdfs @, 'hdfs dfs -mkdir /apps/falcon'
+            unless: -> status
+          @execute
+            cmd: mkcmd.hdfs @, "hdfs dfs -chown #{user.name} /apps/falcon"
+            if: not status or user.name isnt user_owner
+          @execute
+            cmd: mkcmd.hdfs @, "hdfs dfs -chgrp #{group.name} /apps/falcon"
+            if: not status or group.name isnt group_owner
 
 ## Runtime
 
@@ -155,9 +145,8 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
 ## Startup
 
-    module.exports.push header: 'Falcon # Startup', handler: ->
-      {conf_dir, startup} = @config.ryba.falcon
       @write
+        header: 'Startup'
         destination: "#{conf_dir}/startup.properties"
         write: for k, v of startup
           match: RegExp "^#{quote k}=.*$", 'mg'

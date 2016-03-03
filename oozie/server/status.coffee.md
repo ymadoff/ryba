@@ -7,15 +7,9 @@ of the Oozie server using Ryba.
 By default, the pid of the running server is stored in
 "/var/run/oozie/oozie.pid".
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    # module.exports.push require('./index').configure
-
-## Status
-
 Discover the server status.
 
-    module.exports.push header: 'Oozie Server # Status', label_true: 'STARTED', label_false: 'STOPPED', timeout: -1, handler: ->
+    module.exports = header: 'Oozie Server Status', label_true: 'STARTED', label_false: 'STOPPED', timeout: -1, handler: ->
       {oozie} = @config.ryba
       @execute
         cmd: """
