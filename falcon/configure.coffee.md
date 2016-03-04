@@ -38,7 +38,7 @@ associated processing and management tasks on Hadoop clusters.
       falcon.runtime ?= {}
       # Runtime (http://falcon.incubator.apache.org/Security.html)
       nn_contexts = @contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn/configure').handler
-      hcat_contexts = @contexts 'ryba/hive/hcatalog', require('../hive/hcatalog/configure').handler
+      hcat_contexts = @contexts 'ryba/hive/hcatalog', [ require('ryba/commons/db_admin').handler, require('../hive/hcatalog/configure').handler]
       # nn_rcp = nn_contexts[0].config.ryba.core_site['fs.defaultFS']
       # nn_protocol = if nn_contexts[0].config.ryba.hdfs.site['HTTP_ONLY'] then 'http' else 'https'
       # nn_nameservice = if nn_contexts[0].config.ryba.hdfs.site['dfs.nameservices'] then ".#{nn_contexts[0].config.ryba.hdfs.site['dfs.nameservices']}" else ''

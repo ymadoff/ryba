@@ -81,11 +81,11 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           header: 'Init Script'
           source: "#{__dirname}/../resources/oozie"
           local_source: true
-          destination: '/etc/init.d/oozie-server'
+          destination: '/etc/init.d/oozie'
           mode: 0o0755
           unlink: true
         @execute
-          cmd: "service oozie-server restart"
+          cmd: "service oozie restart"
           if: -> @status -4
 
       @call header: 'Layout Directories', handler: ->

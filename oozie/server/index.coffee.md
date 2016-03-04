@@ -8,13 +8,13 @@ Please check Oozie page
     module.exports = -> 
       'configure': [
         'ryba/hadoop/core'
+        'ryba/commons/db_admin'
         'ryba/oozie/server/configure'
       ]
       'install': [
          'masson/core/iptables'
          'masson/commons/java'
          'masson/commons/mysql_client'
-         'masson/commons/java'
          'ryba/commons/krb5_user'
          'ryba/commons/db_admin'
          'ryba/hadoop/core'
