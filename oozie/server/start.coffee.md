@@ -19,4 +19,4 @@ Note, there is no need to clean a zombie pid file before starting the server.
     
     module.exports = header: 'Oozie Server Start', label_true: 'STARTED', timeout: -1, handler: ->
       @service_start
-        name: 'oozie'
+        name: 'oozie-server'

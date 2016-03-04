@@ -10,7 +10,6 @@ failover and Oozie must target the active node.
     module.exports = header: 'Oozie Server Install', handler: ->
       {oozie, hadoop_group, hadoop_conf_dir, yarn, realm, db_admin, core_site} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
-      {java_home} = @config.java
       is_falcon_installed = @contexts('ryba/falcon').length isnt 0
       port = url.parse(oozie.site['oozie.base.url']).port
       
@@ -82,7 +81,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           header: 'Init Script'
           source: "#{__dirname}/../resources/oozie"
           local_source: true
-          destination: '/etc/init.d/oozie'
+          destination: '/etc/init.d/oozie-server'
           mode: 0o0755
           unlink: true
         @execute
@@ -164,14 +163,6 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
         ,
           match: /^export OOZIE_HTTPS_KEYSTORE_PASS=.*$/mg
           replace: "export OOZIE_HTTPS_KEYSTORE_PASS=#{oozie.keystore_pass}"
-          append: true
-        ,
-          match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.extra_appender=(.*)/m
-          replace: "export CATALINA_OPTS=\"${CATALINA_OPTS} -Djavax.net.ssl.trustStore=/etc/hadoop/conf/truststore\""
-          append: true
-        ,
-          match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.extra_appender=(.*)/m
-          replace: "export CATALINA_OPTS=\"${CATALINA_OPTS} -Djavax.net.ssl.trustStorePassword=ryba123\""
           append: true
         ]
       # Append the Log4J configuration

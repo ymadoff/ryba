@@ -14,6 +14,7 @@ Please check Oozie page
          'masson/core/iptables'
          'masson/commons/java'
          'masson/commons/mysql_client'
+         'masson/commons/java'
          'ryba/commons/krb5_user'
          'ryba/commons/db_admin'
          'ryba/hadoop/core'
