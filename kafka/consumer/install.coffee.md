@@ -1,13 +1,9 @@
 
 # Kafka Consumer Install
-
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/lib/hdp_select'
-    module.exports.push 'ryba/lib/write_jaas'
-
-## Users & Groups
-
+    
+    module.exports = header: 'Kafka Consumer Install', handler: ->
+      {kafka, ssl} = @config.ryba
+      
 By default, the "kafka" package create the following entries:
 
 ```bash
@@ -17,8 +13,6 @@ cat /etc/group | grep kafka
 kafka:x:496:kafka
 ```
 
-    module.exports.push header: 'Kafka Consumer # Users & Groups', handler: ->
-      {kafka} = @config.ryba
       @group kafka.group
       @user kafka.user
 
@@ -28,7 +22,6 @@ Install the Kafka consumer package and set it to the latest version. Note, we
 select the "kafka-broker" hdp directory. There is no "kafka-consumer"
 directories.
 
-    module.exports.push header: 'Kafka Consumer # Package', handler: ->
       @service
         name: 'kafka'
       @hdp_select
@@ -39,9 +32,8 @@ directories.
 Update the file "consumer.properties" with the properties defined by the
 "ryba.kafka.consumer" configuration.
 
-    module.exports.push header: 'Kafka Consumer # Configure', handler: ->
-      {kafka} = @config.ryba
       @write
+        header: 'Consumer Properties'
         destination: "#{kafka.consumer.conf_dir}/consumer.properties"
         write: for k, v of kafka.consumer.config
           match: RegExp "^#{quote k}=.*$", 'mg'
@@ -49,7 +41,13 @@ Update the file "consumer.properties" with the properties defined by the
           append: true
         backup: true
         eof: true
+
+## Logging
+
+Update the different log4j properties files
+    
       @write
+        header: 'Tools Log4j'
         destination: "#{kafka.consumer.conf_dir}/tools-log4j.properties"
         write: for k, v of kafka.consumer.log4j
           match: RegExp "^#{quote k}=.*$", 'mg'
@@ -58,6 +56,7 @@ Update the file "consumer.properties" with the properties defined by the
         backup: true
         eof: true
       @write
+        header: 'Log4j'
         destination: "#{kafka.consumer.conf_dir}/log4j.properties"
         write: for k, v of kafka.consumer.log4j
           match: RegExp "^#{quote k}=.*$", 'mg'
@@ -66,6 +65,7 @@ Update the file "consumer.properties" with the properties defined by the
         backup: true
         eof: true
       @write
+        header: 'Test Log4j'
         destination: "#{kafka.consumer.conf_dir}/test-log4j.properties"
         write: for k, v of kafka.consumer.log4j
           match: RegExp "^#{quote k}=.*$", 'mg'
@@ -76,10 +76,11 @@ Update the file "consumer.properties" with the properties defined by the
 
 ## Kerberos
 
-    module.exports.push header: 'Kafka Consumer # Kerberos', handler: ->
-      {kafka} = @config.ryba
-      return unless kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
+Write JAAS File for client configuration
+
       @write_jaas
+        header: 'Consumer JAAS'
+        if: kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
         destination: "#{kafka.consumer.conf_dir}/kafka-client.jaas"
         content:
           KafkaClient:
@@ -88,13 +89,13 @@ Update the file "consumer.properties" with the properties defined by the
             useTicketCache: true
         uid: kafka.user.name
         gid: kafka.group.name
-## Env
+        
+## Environment
 
  Exports JAAS configuration to consumer JVM properties.
 
-    module.exports.push header: 'Kafka Consumer # Env', handler: ->
-      {kafka} = @config.ryba
       @write
+        header: 'Environment'
         destination: "#{kafka.consumer.conf_dir}/kafka-env.sh"
         write: for k, v of kafka.consumer.env
           match: RegExp "export #{k}=.*", 'm'
@@ -106,10 +107,9 @@ Update the file "consumer.properties" with the properties defined by the
 
   Imports broker's CA to trustore
 
-    module.exports.push header: 'Kafka Consumer # SSL Client', handler: ->
-      {kafka, ssl} = @config.ryba
-      return unless kafka.consumer.config['ssl.truststore.location']?
       @java_keystore_add
+        if: kafka.consumer.config['ssl.truststore.location']?
+        header: 'SSL Client'
         keystore:   kafka.consumer.config['ssl.truststore.location']
         storepass:   kafka.consumer.config['ssl.truststore.password']
         caname: "hadoop_root_ca"
