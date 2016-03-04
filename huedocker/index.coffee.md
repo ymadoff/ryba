@@ -70,6 +70,9 @@ beloaded to the target server
       'status': [
         'ryba/huedocker/status'
       ]
+      'prepare': [
+        'ryba/huedocker/prepare'
+      ]
 
 
 [home]: http://gethue.com

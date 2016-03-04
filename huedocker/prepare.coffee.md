@@ -81,37 +81,37 @@ for hue to be able to communicate with the hadoop cluster in secure mode.
 
 This production container running as hue service
 
-    @call header: 'Production Container', timeout: -1, handler: ->
-      @render
-        source: "#{__dirname}/resources/prod/Dockerfile"
-        destination: "#{hue_docker.prod.directory}/Dockerfile"
-        context: {
-          user : hue_docker.user.name
-          uid : hue_docker.user.uid
-          gid : hue_docker.user.uid
-        }
-      @render
-        source: "#{__dirname}/resources/hue_init.sh"
-        destination: "#{hue_docker.prod.directory}/hue_init.sh"
-        context: {
-          pid_file: hue_docker.pid_file
-        }
-      # docker build -t "ryba/hue-build:3.9" .
-      @call (_, callback) ->
-        @docker_build
-          tag: "#{hue_docker.image}:#{hue_docker.version}"
-          machine: 'dev'
-          path: "#{hue_docker.prod.directory}/Dockerfile"
-        , (err, _, checksum) =>
-          return err if err
-          @write
-            content: "#{checksum}"
-            destination: "#{hue_docker.prod.directory}/checksum"
-          , (err, done) -> callback err, done
-      @docker_save
-        image: "#{hue_docker.image}:#{hue_docker.version}"
-        machine: machine
-        output: "#{hue_docker.prod.directory}/hue_docker.tar"
+      @call header: 'Production Container', timeout: -1, handler: ->
+        @render
+          source: "#{__dirname}/resources/prod/Dockerfile"
+          destination: "#{hue_docker.prod.directory}/Dockerfile"
+          context: {
+            user : hue_docker.user.name
+            uid : hue_docker.user.uid
+            gid : hue_docker.user.uid
+          }
+        @render
+          source: "#{__dirname}/resources/hue_init.sh"
+          destination: "#{hue_docker.prod.directory}/hue_init.sh"
+          context: {
+            pid_file: hue_docker.pid_file
+          }
+        # docker build -t "ryba/hue-build:3.9" .
+        @call (_, callback) ->
+          @docker_build
+            tag: "#{hue_docker.image}:#{hue_docker.version}"
+            machine: 'dev'
+            path: "#{hue_docker.prod.directory}/Dockerfile"
+          , (err, _, checksum) =>
+            return err if err
+            @write
+              content: "#{checksum}"
+              destination: "#{hue_docker.prod.directory}/checksum"
+            , (err, done) -> callback err, done
+        @docker_save
+          image: "#{hue_docker.image}:#{hue_docker.version}"
+          machine: machine
+          output: "#{hue_docker.prod.directory}/hue_docker.tar"
 
 ## Instructions
 
