@@ -1,20 +1,9 @@
 
 # Hue Stop
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-
-## Clean Logs dir
-
-Clens the log directory
-
-    module.exports.push header: 'Hue Docker # Clean Log', handler: ->
+    module.exports = header: 'Hue Docker Stop', handler: ->
       {hue_docker} = @config.ryba
-      @execute
-        cmd: "rm #{hue_docker.log_dir}/*.log"
-        code_skipped: 1
 
-## Stop Server
 
 Stops the Hue 'hue_server' container. You can also stop the server manually with the following
 command:
@@ -23,11 +12,17 @@ command:
 docker stop hue_server
 ```
 
-
-    module.exports.push header: 'Hue Docker # Stop', label_true: 'STOPPED', handler: ->
-      {hue_docker} = @config.ryba
-      # @docker_stop
-      #   container: hue_docker.container
       @service_stop
         name: hue_docker.service
         if_exists: "/etc/init.d/#{hue_docker.service}"
+
+## Clean Logs dir
+
+      @call
+        header: 'Stop Clean Logs'
+        label_true: 'CLEANED'
+        if: -> @config.ryba.clean_logs
+        handler: ->
+          @execute
+            cmd: "rm #{hue_docker.log_dir}/*.log"
+            code_skipped: 1

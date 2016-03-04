@@ -4,6 +4,7 @@
     module.exports = header: 'HBase RegionServer Install', handler: ->
       {hadoop_group, hbase, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      regionservers = @contexts('ryba/hbase/regionserver').map( (ctx) -> ctx.config.host).join '\n'
 
 ## IPTables
 
@@ -158,7 +159,7 @@ Upload the list of registered RegionServers.
     
       @write
         header: 'Registered RegionServers'
-        content: @hosts_with_module('ryba/hbase/regionserver').join '\n'
+        content: regionservers
         destination: "#{hbase.rs.conf_dir}/regionservers"
         uid: hbase.user.name
         gid: hadoop_group.name

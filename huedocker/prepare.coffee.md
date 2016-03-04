@@ -23,6 +23,11 @@ eval "$(docker-machine env dev)" && docker build -t "ryba/hue-build" .
 Builds Hue from source
 
 
+    module.exports = header: 'Hue Docker Prepare', timeout: -1,  handler: ->
+      machine = @config.mecano.machine ?= null
+      {hue_docker} = @config.ryba
+
+
 # Hue compiling build from Dockerfile
 
 Builds Hue in two steps:
@@ -34,50 +39,49 @@ It's the install middleware which takes care about mounting the differents volum
 for hue to be able to communicate with the hadoop cluster in secure mode.
 
 
-# Hue Build dockerfile execution
 
-    module.exports.push header: 'Hue Docker # Build Prepare', timeout: -1,  handler: ->
-      machine = 'dev'
-      {hue_docker} = @config.ryba
-      @mkdir
-        destination: "#{hue_docker.build.directory}/"
-      @git
-        source: 'https://github.com/cloudera/hue.git'
-        destination: "#{hue_docker.build.directory}/hue"
-      @render
-        source: hue_docker.build.dockerfile
-        destination: "#{hue_docker.build.directory}/Dockerfile"
-        context: { git_source: 'hue' }
-      # docker build -t "ryba/hue-build" .
-      @docker_build
-        tag: hue_docker.build.name
-        path: "#{hue_docker.build.directory}/Dockerfile"
-        machine: machine
-      @docker_rm
-        machine: machine
-        container: 'extractor'
-        force: true
-      @docker_run
-        image: hue_docker.build.name
-        name: 'extractor'
-        entrypoint: '/bin/bash'
-        machine: machine
-        service: true
-      @mkdir
-        destination: "#{hue_docker.prod.directory}"
-      @docker_cp
-        source: 'extractor:/hue-build.tar.gz'
-        destination: hue_docker.prod.directory
-        machine: machine
-        container: 'extractor'
+# Hue Build dockerfile execution
+      
+      @call header: 'Build Prepare', timeout: -1,  handler: ->
+        @mkdir
+          destination: "#{@config.mecano.cache_dir}/huedocker"
+        @mkdir
+          destination: "#{hue_docker.build.directory}/"
+        @git
+          source: 'https://github.com/cloudera/hue.git'
+          destination: "#{hue_docker.build.directory}/hue"
+        @render
+          source: hue_docker.build.dockerfile
+          destination: "#{hue_docker.build.directory}/Dockerfile"
+          context: { git_source: 'hue' }
+        # docker build -t "ryba/hue-build" .
+        @docker_build
+          tag: hue_docker.build.name
+          path: "#{hue_docker.build.directory}/Dockerfile"
+          machine: machine
+        @docker_rm
+          machine: machine
+          container: 'extractor'
+          force: true
+        @docker_run
+          image: hue_docker.build.name
+          name: 'extractor'
+          entrypoint: '/bin/bash'
+          machine: machine
+          service: true
+        @mkdir
+          destination: "#{hue_docker.prod.directory}"
+        @docker_cp
+          source: 'extractor:/hue-build.tar.gz'
+          destination: hue_docker.prod.directory
+          machine: machine
+          container: 'extractor'
 
 # Hue Production dockerfile execution
 
 This production container running as hue service
 
-    module.exports.push header: 'Hue Docker # Production Container', timeout: -1, handler: ->
-      {hue_docker} = @config.ryba
-      machine = 'dev'
+    @call header: 'Production Container', timeout: -1, handler: ->
       @render
         source: "#{__dirname}/resources/prod/Dockerfile"
         destination: "#{hue_docker.prod.directory}/Dockerfile"
@@ -104,10 +108,10 @@ This production container running as hue service
             content: "#{checksum}"
             destination: "#{hue_docker.prod.directory}/checksum"
           , (err, done) -> callback err, done
-      # @docker_save
-      #   image: "#{hue_docker.image}:#{hue_docker.version}"
-      #   machine: machine
-      #   output: "#{__dirname}/cache/hue_docker.tar"
+      @docker_save
+        image: "#{hue_docker.image}:#{hue_docker.version}"
+        machine: machine
+        output: "#{hue_docker.prod.directory}/hue_docker.tar"
 
 ## Instructions
 
