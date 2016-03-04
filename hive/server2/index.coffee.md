@@ -37,7 +37,7 @@ open API clients like JDBC and ODBC.
         'ryba/zookeeper/server/wait'
         'ryba/hadoop/hdfs_nn/wait'
         'ryba/hive/hcatalog/wait'
-        'ryba/hive/server2/wait'
+        'ryba/hive/server2/start'
       ]
       'check': [
         'ryba/hive/server2/wait'
