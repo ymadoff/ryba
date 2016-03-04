@@ -9,7 +9,8 @@ open API clients like JDBC and ODBC.
 
     module.exports = ->
       'configure': [
-        'ryba/commons/db_admin'
+         'ryba/commons/db_admin'
+         'ryba/hadoop/core'
          'ryba/hive/client'
          'ryba/hive/server2/configure'
       ]

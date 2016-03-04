@@ -28,8 +28,6 @@ Example:
 ```
 
     module.exports = handler: ->
-      require('masson/commons/mysql_server/configure').handler.call @
-      require('../../hadoop/core/configure').handler.call @
       {core_site, hive, static_host, realm} = @config.ryba ?= {}
       hcat_ctxs = @contexts 'ryba/hive/hcatalog', require('../hcatalog/configure').handler
       # Layout and environment

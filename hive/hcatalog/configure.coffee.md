@@ -33,7 +33,6 @@ Example:
 
     module.exports = handler: ->
       hive = @config.ryba.hive ?= {}
-      require('ryba/commons/db_admin').handler.call @
       {db_admin, realm} = @config.ryba
       
 ## Users and Groups
