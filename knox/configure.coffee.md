@@ -156,7 +156,7 @@ This mechanism can be used to configure a specific gateway without having to dec
 (that may change over time).
 
         # Namenode & WebHDFS
-        nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn').configure
+        nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn/configure').handler
         if topology.services['namenode'] is true
           if nn_ctxs.length
             topology.services['namenode'] = nn_ctxs[0].config.ryba.core_site['fs.defaultFS']
@@ -167,7 +167,7 @@ This mechanism can be used to configure a specific gateway without having to dec
           # If we have HttpFS module (specific implementation of WebHDFS), we provide it by default and configure HA.
           # Else, we provide namenode WebHDFS (default implementation, embedded in namenode)
           # We also configure HA for WebHDFS if namenodes are in HA-mode
-          fs_ctxs = @contexts 'ryba/hadoop/httpfs', require('../hadoop/httpfs').configure
+          fs_ctxs = @contexts 'ryba/hadoop/httpfs', require('../hadoop/httpfs/configure').handler
           if fs_ctxs.length
             if fs_ctxs.length > 1
               topology.providers['ha'] ?= name: 'HaProvider'
@@ -194,7 +194,7 @@ This mechanism can be used to configure a specific gateway without having to dec
             topology.services['webhdfs'] = "#{protocol}://#{host}:#{port}/webhdfs/v1" 
         # Jobtracker
         if topology.services['jobtracker'] is true
-          ctxs = @contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
+          ctxs = @contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm/configure').handler
           if ctxs.length
             rm_shortname = if ctxs.length > 1 then ".#{ctxs[0].config.shortname}" else ''    
             rm_address = ctxs[0].config.ryba.yarn.site["yarn.resourcemanager.address#{rm_shortname}"]
@@ -202,7 +202,7 @@ This mechanism can be used to configure a specific gateway without having to dec
           else throw Error 'Cannot autoconfigure KNOX jobtracker service, no resourcemanager declared'
         # Hive
         if topology.services['hive'] is true
-          ctxs = @contexts 'ryba/hive/server2', require('../hive/server2').configure
+          ctxs = @contexts 'ryba/hive/server2', require('../hive/server2/configure').handler
           if ctxs.length
             host = ctxs[0].config.host
             port = ctxs[0].config.ryba.hive.site['hive.server2.thrift.http.port']
@@ -210,7 +210,7 @@ This mechanism can be used to configure a specific gateway without having to dec
           else throw Error 'Cannot autoconfigure KNOX hive service, no hiveserver2 declared'
         # Hive WebHCat
         if topology.services['webhcat'] is true
-          ctxs = @contexts 'ryba/hive/webhcat', require('../hive/webhcat').configure
+          ctxs = @contexts 'ryba/hive/webhcat', require('../hive/webhcat/configure').handler
           if ctxs.length
             host = ctxs[0].config.host
             port = ctxs[0].config.ryba.webhcat.site['templeton.port']
@@ -218,13 +218,13 @@ This mechanism can be used to configure a specific gateway without having to dec
           else throw Error 'Cannot autoconfigure KNOX webhcat service, no webhcat declared'
         # Oozie
         if topology.services['oozie'] is true
-          ctxs = @contexts 'ryba/oozie/server', require('../oozie/server').configure
+          ctxs = @contexts 'ryba/oozie/server', [ require('ryba/commons/db_admin').handler, require('../oozie/server/configure').handler]
           if ctxs.length
             topology.services['oozie'] ?= ctxs[0].config.ryba.oozie.site['oozie.base.url']
           else throw Error 'Cannot autoconfigure KNOX oozie service, no oozie declared'
         # WebHBase
         if topology.services['webhbase'] is true
-          ctxs = @contexts 'ryba/hbase/rest', require('../hbase/rest').configure
+          ctxs = @contexts 'ryba/hbase/rest', require('../hbase/rest/configure').handler
           if ctxs.length
             protocol = if ctxs[0].config.ryba.hbase.site['hbase.rest.ssl.enabled'] is 'true' then 'https' else 'http'
             host = ctxs[0].config.host
