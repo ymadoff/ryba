@@ -110,11 +110,10 @@ Creates a configuration file. Always load this file in Gremlin REPL !
 ## HBase Configuration
 
       @call
-        skip: true, header: 'Create HBase Namespace'
+        header: 'Create HBase Namespace'
         if: -> @config.ryba.titan.config['storage.backend'] is 'hbase'
         handler: (options) ->
-          return
-          options.log "Titan: HBase namespace not yet ready"
+          # options.log "Titan: HBase namespace not yet ready"
           @execute
             cmd: mkcmd.hbase @, """
             if hbase shell -n 2>/dev/null <<< "list_namespace 'titan'" | grep '1 row(s)'; then exit 3; fi
@@ -126,7 +125,6 @@ Creates a configuration file. Always load this file in Gremlin REPL !
         header: 'Create HBase table'
         if: -> @config.ryba.titan.config['storage.backend'] is 'hbase'
         handler: ->
-          return
           table = titan.config['storage.hbase.table']
           @execute
             cmd: mkcmd.hbase @, """

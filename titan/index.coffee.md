@@ -25,7 +25,3 @@ Titan is a distributed graph database. It is an hadoop-friendly implementation o
 [Blueprints]: https://github.com/tinkerpop/blueprints/wiki
 [Gremlin]: https://github.com/tinkerpop/gremlin/wiki
 [Rexster]: https://github.com/tinkerpop/rexster/wiki
-
-## Dependencies
-
-    path = require 'path'
