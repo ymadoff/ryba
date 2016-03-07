@@ -1,13 +1,9 @@
 
 # Mahout
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/lib/hdp_select'
-
 http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.1/bk_installing_manually_book/content/rpm-chap5-1.html
 
-    module.exports.push header: 'Hadoop Mahout # Install', timeout: -1, handler: ->
+    module.exports = header: 'Hadoop Mahout Install', timeout: -1, handler: ->
       @service
         name: 'mahout'
       @hdp_select
