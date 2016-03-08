@@ -1,12 +1,8 @@
 
 # MongoDB Shard Check
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap/'
-
-## Check
-
-    module.exports.push header: 'MongoDB Shard # Check TCP', label_true: 'CHECKED', handler: ->
+    module.exports = header: 'MongoDB Shard Check', label_true: 'CHECKED', handler: ->
       {mongodb} = @config.ryba
       @execute
+        header: 'Check TCP'
         cmd: "echo > /dev/tcp/#{@config.host}/#{mongodb.shard.config.net.port}"
