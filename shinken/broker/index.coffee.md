@@ -20,7 +20,7 @@ and a type if different from the name.
 
     module.exports = ->
       'configure': [
-        'ryba/shinken/configure'
+        'ryba/shinken/lib/configure'
         'ryba/shinken/broker/configure'
       ]
       'check':
@@ -28,7 +28,7 @@ and a type if different from the name.
       'install': [
         'masson/core/yum'
         'masson/core/iptables'
-        'ryba/shinken/commons'
+        'ryba/shinken/lib/commons'
         #'ryba/mongodb'
         'ryba/shinken/broker/install'
         'ryba/shinken/broker/start'

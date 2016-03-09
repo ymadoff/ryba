@@ -16,7 +16,7 @@ is approximatively 1000 checks/s
 
     module.exports = ->
       'configure': [
-        'ryba/shinken/configure'
+        'ryba/shinken/lib/configure'
         'ryba/shinken/poller/configure'
       ]
       'check':
@@ -24,7 +24,7 @@ is approximatively 1000 checks/s
       'install': [
         'masson/core/yum'
         'masson/core/iptables'
-        'ryba/shinken/commons'
+        'ryba/shinken/lib/commons'
         #'ryba/mongodb'
         'ryba/shinken/poller/install'
         'ryba/shinken/poller/start'

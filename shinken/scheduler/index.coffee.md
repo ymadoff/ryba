@@ -11,7 +11,7 @@ Sends broks (internal events of any kind) to the broker(s)
 
     module.exports = ->
       'configure': [
-        'ryba/shinken/configure'
+        'ryba/shinken/lib/configure'
         'ryba/shinken/scheduler/configure'
       ]
       'check':
@@ -19,7 +19,7 @@ Sends broks (internal events of any kind) to the broker(s)
       'install': [
         'masson/core/yum'
         'masson/core/iptables'
-        'ryba/shinken/commons'
+        'ryba/shinken/lib/commons'
         'ryba/shinken/scheduler/install'
         'ryba/shinken/scheduler/start'
         'ryba/shinken/scheduler/check'

@@ -8,7 +8,7 @@ to its associated Scheduler.
 
     module.exports = ->
       'configure': [
-        'ryba/shinken/configure'
+        'ryba/shinken/lib/configure'
         'ryba/shinken/arbiter/configure'
       ]
       'check':
@@ -16,7 +16,7 @@ to its associated Scheduler.
       'install': [
         'masson/core/yum'
         'masson/core/iptables'
-        'ryba/shinken/commons'
+        'ryba/shinken/lib/commons'
         'ryba/shinken/arbiter/install'
         'ryba/shinken/arbiter/start'
         'ryba/shinken/arbiter/check'

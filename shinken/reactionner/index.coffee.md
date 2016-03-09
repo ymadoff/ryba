@@ -6,7 +6,7 @@ and sends the results to the scheduler.
 
     module.exports = ->
       'configure': [
-        'ryba/shinken/configure'
+        'ryba/shinken/lib/configure'
         'ryba/shinken/reactionner/configure'
       ]
       'check':
@@ -14,7 +14,7 @@ and sends the results to the scheduler.
       'install': [
         'masson/core/yum'
         'masson/core/iptables'
-        'ryba/shinken/commons'
+        'ryba/shinken/lib/commons'
         'ryba/shinken/reactionner/install'
         'ryba/shinken/reactionner/start'
         'ryba/shinken/reactionner/check'
