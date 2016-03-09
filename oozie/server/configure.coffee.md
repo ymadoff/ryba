@@ -1,5 +1,5 @@
 
-## Configure
+# Oozie Server Configure
 
 *   `oozie.user` (object|string)
     The Unix Oozie login name or a user object (see Mecano User documentation).
