@@ -1,17 +1,17 @@
 
 # Shinken Poller Check
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap/'
-
-## Check
-
-    module.exports.push header: 'Shinken Poller # Check TCP', label_true: 'CHECKED', handler: ->
+    module.exports = header: 'Shinken Poller Check', label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
       {poller} = @config.ryba.shinken
+
+## TCP
+
       @execute
+        header: 'TCP'
         cmd: "echo > /dev/tcp/#{@config.host}/#{poller.config.port}"
 
-    module.exports.push header: 'Shinken Poller # Check HTTP', label_true: 'CHECKED', handler: ->
-      {poller} = @config.ryba.shinken
+## HTTP
+
       @execute
+        header: 'HTTP'
         cmd: "curl http://#{@config.host}:#{poller.config.port} | grep OK"

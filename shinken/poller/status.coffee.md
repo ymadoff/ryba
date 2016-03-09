@@ -1,11 +1,5 @@
 
 # Shinken Poller Status
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap/'
-
-## Status
-
-    module.exports.push header: 'Shinken Poller # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
-      plugins = null
-      # TODO
+    module.exports =  header: 'Shinken Poller # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
+      @service_status name: 'shinken-poller'

@@ -1,17 +1,17 @@
 
 # Shinken Scheduler Check
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap/'
-
-## Check
-
-    module.exports.push header: 'Shinken Scheduler # Check TCP', label_true: 'CHECKED', handler: ->
+    module.exports = header: 'Shinken Scheduler Check', label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
       {scheduler} = @config.ryba.shinken
+
+## TCP
+
       @execute
+        header: 'TCP'
         cmd: "echo > /dev/tcp/#{@config.host}/#{scheduler.config.port}"
-      
-    module.exports.push header: 'Shinken Scheduler # Check HTTP', label_true: 'CHECKED', handler: ->
-      {scheduler} = @config.ryba.shinken
+
+## HTTP
+
       @execute
+        header: 'HTTP'
         cmd: "curl http://#{@config.host}:#{scheduler.config.port} | grep OK"
