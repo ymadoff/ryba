@@ -9,33 +9,27 @@ environmental variable "OOZIE_URL" to connect to the server.
 Additionnal oozie properties may be defined inside the "OOZIE_CLIENT_OPTS"
 environmental variables. For example, HDP declare its version as
 "-Dhdp.version=${HDP_VERSION}".
-
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/bootstrap/utils'
-    module.exports.push 'masson/commons/java'
-    module.exports.push 'ryba/hadoop/mapred_client/install'
-    module.exports.push 'ryba/hadoop/yarn_client/install'
-    module.exports.push 'ryba/lib/hdp_select'
-    # module.exports.push require('./index').configure
+  
+    module.exports = header: 'Oozie Client Install', timeout: -1, handler: ->
+      {oozie, hadoop_conf_dir, yarn, ssl} = @config.ryba
+      {java_home, jre_home} = @config.java
 
 ## Install
 
 Install the oozie client package. This package doesn't create any user and group.
 
-    module.exports.push header: 'Oozie Client # Install', timeout: -1, handler: ->
-      @service
-        name: 'oozie-client'
-      @hdp_select
-        name: 'oozie-client'
+      @call header: 'Packages', timeout: -1, handler: ->
+        @service
+          name: 'oozie-client'
+        @hdp_select
+          name: 'oozie-client'
 
 ## Profile
 
 Expose the "OOZIE_URL" environmental variable to every users.
 
-    module.exports.push header: 'Oozie Client # Profile', handler: ->
-      {oozie} = @config.ryba
       @write
+        header: 'Profile Env'
         destination: '/etc/profile.d/oozie.sh'
         # export OOZIE_CLIENT_OPTS='-Djavax.net.ssl.trustStore=/etc/hadoop/conf/truststore'
         content: """
@@ -46,9 +40,8 @@ Expose the "OOZIE_URL" environmental variable to every users.
 
 ## Configuration
 
-    module.exports.push header: 'Oozie Client # Configuration', handler: ->
-      {hadoop_conf_dir, yarn, oozie} = @config.ryba
       @hconfigure
+        header: 'Oozie site'
         destination: "#{oozie.conf_dir}/oozie-site.xml"
         default: "#{__dirname}/../resources/oozie-site.xml"
         local_default: true
@@ -75,19 +68,17 @@ keytool -keystore ${JAVA_HOME}/jre/lib/security/cacerts -delete -noprompt -alias
 keytool -keystore ${JAVA_HOME}/jre/lib/security/cacerts -import -alias tomcat -file master3_cert.pem
 ```
 
-    module.exports.push header: 'Oozie Client # SSL', handler: ->
-      {java_home, jre_home} = @config.java
-      {ssl, oozie} = @config.ryba
-      tmp_location = "/tmp/ryba_oozie_client_#{Date.now()}"
-      @upload
-        source: ssl.cacert
-        destination: "#{tmp_location}_cacert"
-        shy: true
-      @java_keystore_add
-        keystore: "#{jre_home or java_home}/lib/security/cacerts"
-        storepass: "changeit"
-        caname: "ryba_cluster" # was tomcat
-        cacert: "#{tmp_location}_cacert"
-      @remove
-        destination: "#{tmp_location}_cacert"
-        shy: true
+      @call header: 'Client SSL', handler: ->
+        tmp_location = "/tmp/ryba_oozie_client_#{Date.now()}"
+        @upload
+          source: ssl.cacert
+          destination: "#{tmp_location}_cacert"
+          shy: true
+        @java_keystore_add
+          keystore: "#{jre_home or java_home}/lib/security/cacerts"
+          storepass: "changeit"
+          caname: "ryba_cluster" # was tomcat
+          cacert: "#{tmp_location}_cacert"
+        @remove
+          destination: "#{tmp_location}_cacert"
+          shy: true

@@ -1,11 +1,5 @@
 
-# Shinken Arbiter Status
+# Shinken Reactionner Status
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap/'
-
-## Status
-
-    module.exports.push header: 'Shinken Arbiter # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
-      plugin = null
-      # TODO
+    module.exports =  header: 'Shinken Reactionner # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
+      @service_status name: 'shinken-reactionner'

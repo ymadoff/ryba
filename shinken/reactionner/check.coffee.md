@@ -1,17 +1,17 @@
 
 # Shinken Reactionner Check
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap/'
-
-## Check
-
-    module.exports.push header: 'Shinken Reactionner # Check TCP', label_true: 'CHECKED', handler: ->
+    module.exports = header: 'Shinken Reactionner Check', label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
       {reactionner} = @config.ryba.shinken
+
+## TCP
+
       @execute
+        header: 'TCP'
         cmd: "echo > /dev/tcp/#{@config.host}/#{reactionner.config.port}"
 
-    module.exports.push header: 'Shinken Reactionner # Check HTTP', label_true: 'CHECKED', handler: ->
-      {reactionner} = @config.ryba.shinken
+## HTTP
+
       @execute
+        header: 'HTTP'
         cmd: "curl http://#{@config.host}:#{reactionner.config.port} | grep OK"

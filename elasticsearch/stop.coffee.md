@@ -3,11 +3,6 @@
 
 This commands stops ElasticSearch service.
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-
-## Stop
-
-    module.exports.push header: 'ES # Stop', label_true: 'STOPPED', handler: ->
+    module.exports = header: 'ES Stop', label_true: 'STOPPED', handler: ->
       @service_stop
         name: 'elasticsearch'

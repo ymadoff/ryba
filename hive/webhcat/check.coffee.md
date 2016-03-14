@@ -1,11 +1,7 @@
 
 # WebHCat Check
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    # module.exports.push require('./index').configure
-
-    module.exports.push header: 'WebHCat # Check Status', label_true: 'CHECKED', handler: ->
+    module.exports =  header: 'WebHCat Check Status', label_true: 'CHECKED', handler: ->
       # TODO, maybe we could test hive:
       # curl --negotiate -u : -d execute="show+databases;" -d statusdir="test_webhcat" http://front1.hadoop:50111/templeton/v1/hive
       {webhcat} = @config.ryba

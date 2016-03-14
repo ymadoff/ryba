@@ -1,11 +1,9 @@
 
 # Flume
-
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/hadoop/hdfs' # Users and groups created by "zookeeper" and "hadoop-hdfs" dependencies
-    module.exports.push 'ryba/lib/hdp_select'
-    # module.exports.push require('./index').configure
+    
+    module.exports = header: 'Flume Install', handler: ->
+      {flume, realm} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Users & Groups
 
@@ -21,7 +19,6 @@ flume:x:496:
 Note, the "flume" package rely on the "zookeeper" and "hadoop-hdfs" dependencies
 creating the "zookeeper" and "hdfs" users and the "hadoop" and "hdfs" group.
 
-    module.exports.push header: 'Flume # Users & Groups', handler: ->
       @group @config.ryba.flume.group
       @user @config.ryba.flume.user
 
@@ -29,7 +26,6 @@ creating the "zookeeper" and "hdfs" users and the "hadoop" and "hdfs" group.
 
 The package "flume" is installed.
 
-    module.exports.push header: 'Flume # Install', timeout: -1, handler: ->
       @service
         name: 'flume'
       @hdp_select
@@ -42,10 +38,8 @@ later usage. It is placed inside the flume configuration directory, by default
 "/etc/flume/conf/flume.service.keytab" with restrictive permissions set to
 "0600".
 
-    module.exports.push header: 'Flume # Kerberos', handler: ->
-      {flume, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
+        header: 'Kerberos'
         principal: "#{flume.user.name}/#{@config.host}@#{realm}"
         randkey: true
         keytab: "#{flume.conf_dir}/flume.service.keytab"

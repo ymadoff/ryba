@@ -7,8 +7,39 @@ See [REST Gateway Impersonation Configuration][impersonation].
 [impersonation]: http://hbase.apache.org/book.html#security.rest.gateway
 
     module.exports = handler: ->
-      require('../common/configure').handler.call @
+      require('../../hadoop/core/configure').handler.call @
+      ryba = @config.ryba ?= {}
       {realm, core_site, ssl_server, hbase} = @config.ryba
+      {java_home} = @config.java
+      hbase = @config.ryba.hbase ?= {}
+
+# Users and Groups
+
+      hbase.test ?= {}
+      hbase.test.default_table ?= m_ctxs[0].config.ryba.hbase.test.default_table
+      hbase.user ?= {}
+      hbase.user = name: ryba.hbase.user if typeof ryba.hbase.user is 'string'
+      hbase.user.name ?= m_ctxs[0].config.ryba.hbase.user.name
+      hbase.user.system ?= m_ctxs[0].config.ryba.hbase.user.system
+      hbase.user.comment ?= m_ctxs[0].config.ryba.hbase.user.comment
+      hbase.user.home ?= m_ctxs[0].config.ryba.hbase.user.home
+      hbase.user.groups ?= m_ctxs[0].config.ryba.hbase.user.groups
+      hbase.user.limits ?= {}
+      hbase.user.limits.nofile ?= m_ctxs[0].config.ryba.hbase.user.limits.nofile
+      hbase.user.limits.nproc ?= m_ctxs[0].config.ryba.hbase.user.limits.nproc
+      hbase.admin ?= {}
+      hbase.admin.name ?= hbase.user.name
+      hbase.admin.principal ?=m_ctxs[0].config.ryba.hbase.admin.principal
+      hbase.admin.password ?=m_ctxs[0].config.ryba.hbase.admin.password
+      # Group
+      hbase.group ?= {}
+      hbase.group = name: hbase.group if typeof hbase.group is 'string'
+      hbase.group.name ?= m_ctxs[0].config.ryba.hbase.group.name
+      hbase.group.system ?= m_ctxs[0].config.ryba.hbase.group.system
+      hbase.user.gid = hbase.group.name
+      
+## Rest Server Configuration
+
       hbase.rest ?= {}
       hbase.rest.conf_dir ?= '/etc/hbase-rest/conf'
       hbase.rest.log_dir ?= '/var/log/hbase'
@@ -34,7 +65,7 @@ See [REST Gateway Impersonation Configuration][impersonation].
       hbase.rest.site['hbase.regionserver.kerberos.principal'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.regionserver.kerberos.principal']
       hbase.rest.site['hbase.rpc.engine'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.rpc.engine']
       hbase.rest.env ?= {}
-      hbase.rest.env['JAVA_HOME'] ?= hbase.env['JAVA_HOME']
+      hbase.rest.env['JAVA_HOME'] ?= m_ctxs[0].config.ryba.hbase.master.env['JAVA_HOME']
 
 ## Proxy Users
 
@@ -54,12 +85,11 @@ See [REST Gateway Impersonation Configuration][impersonation].
 
 ## Distributed mode
 
-      properties = [
+      for property in [
         'zookeeper.znode.parent'
         'hbase.cluster.distributed'
         'hbase.rootdir'
         'hbase.zookeeper.quorum'
         'hbase.zookeeper.property.clientPort'
         'dfs.domain.socket.path'
-      ]
-      for property in properties then hbase.rest.site[property] ?=  m_ctxs[0].config.ryba.hbase.master.site[property]
+      ] then hbase.rest.site[property] ?= m_ctxs[0].config.ryba.hbase.master.site[property]

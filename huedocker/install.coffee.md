@@ -5,27 +5,14 @@ Install  dockerized hue 3.8 container. The container can be build by ./bin/prepa
 script or directly downloaded (from local computer only for now,
 no images available on dockerhub).
 
-
-
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/core/iptables'
-    # Install the mysql connector
-    module.exports.push 'masson/commons/mysql_client'
-    # Install kerberos clients to create/test new Hive principal
-    module.exports.push 'masson/core/krb5_client'
-    # Needs docker to run container
-    module.exports.push 'masson/commons/docker'
-    # Set java_home in "hadoop-env.sh"
-    module.exports.push 'ryba/oozie/client/install'
-    module.exports.push 'ryba/hadoop/hdfs_client/install'
-    module.exports.push 'ryba/hadoop/yarn_client/install'
-    module.exports.push 'ryba/hadoop/mapred_client/install'
-    module.exports.push 'ryba/hbase/client/install'
-    module.exports.push 'ryba/hive/client/install' # Hue reference hive conf dir
-    module.exports.push 'ryba/pig/install'
-    module.exports.push 'ryba/lib/hconfigure'
-    # module.exports.push require('./index').configure
+    module.exports = header: 'Hue Docker Install', handler: ->
+      {hue_docker, db_admin, realm, ssl} = @config.ryba
+      {hadoop_group, hdfs, hive, hbase} = @config.ryba
+      hadoop_conf_dir = hue_docker.ini['hadoop']['hdfs_clusters']['default']['hadoop_conf_dir']
+      hive_conf_dir = hue_docker.ini['beeswax']['hive_conf_dir'] 
+      hbase_conf_dir = hue_docker.ini['hbase']['hbase_conf_dir']
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      machine = @config.mecano.machine
 
 To import container after bin prepare...
 
@@ -41,8 +28,6 @@ cat /etc/group | grep hue
 hue:x:494:
 ```
 
-    module.exports.push header: 'Hue Docker # Users & Groups', handler: ->
-      {hue_docker} = @config.ryba
       @group hue_docker.group
       @user hue_docker.user
 
@@ -56,9 +41,8 @@ hue:x:494:
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push header: 'Hue Docker # IPTables', handler: ->
-      {hue_docker} = @config.ryba
       @iptables
+        header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: hue_docker.ini.desktop.http_port, protocol: 'tcp', state: 'NEW', comment: "Hue Web UI" }
         ]
@@ -68,60 +52,59 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 Update the "hive-site.xml" with the hive/server2 kerberos principal.
 
-    module.exports.push header: 'Hue Docker # Hive', handler: ->
-      [hive_ctx] = @contexts 'ryba/hive/server2'
-      if hive_ctx?
-        {hive} = hive_ctx.config.ryba
-        @hconfigure
-          destination: "#{hive.conf_dir}/hive-site.xml"
-          properties: {
-            'hive.server2.authentication.kerberos.principal': "#{hive.site['hive.server2.authentication.kerberos.principal']}"
-            'hive.server2.authentication': "#{hive.site['hive.server2.authentication']}"
-            # Properties in client which are not synced
-            'hive.server2.transport.mode': "#{hive.site['hive.server2.transport.mode']}"
-            'hive.server2.use.SSL' : "#{hive.site['hive.server2.use.SSL']}"
-            'hive.server2.thrift.sasl.qop' : "#{hive.site['hive.server2.thrift.sasl.qop']}"
-            'hive.server2.thrift.http.port' : "#{hive.site['hive.server2.thrift.http.port']}"
-            'hive.server2.thrift.port' : "#{hive.site['hive.server2.thrift.port']}"
-          }
-          merge: true
-          backup: true
+      @call header: 'Hive Site', handler: ->
+        [hive_ctx] = @contexts 'ryba/hive/server2'
+        if hive_ctx?
+          {hive} = hive_ctx.config.ryba
+          @hconfigure
+            destination: "#{hive.conf_dir}/hive-site.xml"
+            properties: {
+              'hive.server2.authentication.kerberos.principal': "#{hive.site['hive.server2.authentication.kerberos.principal']}"
+              'hive.server2.authentication': "#{hive.site['hive.server2.authentication']}"
+              # Properties in client which are not synced
+              'hive.server2.transport.mode': "#{hive.site['hive.server2.transport.mode']}"
+              'hive.server2.use.SSL' : "#{hive.site['hive.server2.use.SSL']}"
+              'hive.server2.thrift.sasl.qop' : "#{hive.site['hive.server2.thrift.sasl.qop']}"
+              'hive.server2.thrift.http.port' : "#{hive.site['hive.server2.thrift.http.port']}"
+              'hive.server2.thrift.port' : "#{hive.site['hive.server2.thrift.port']}"
+            }
+            merge: true
+            backup: true
 
 ## HBase
 
 Update the "hbase-site.xml" with the hbase/thrift kerberos principal.
 
-    module.exports.push header: 'Hue Docker # HBase', handler: ->
-      [hbase_ctx] = @contexts 'ryba/hbase/thrift'
-      if hbase_ctx?
-        {hbase} = hbase_ctx.config.ryba
-        # props = {}
-        # props['hbase.security.authentication'] = hbase.site['hbase.security.authentication']
-        # props['hbase.security.authorization'] = hbase.site['hbase.security.authorization']
-        # for k, v of hbase.site
-        #   props[k] = v if  k.indexOf('thrift') isnt  -1
-        @hconfigure
-          destination: "#{hbase.conf_dir}/hbase-site.xml"
-          properties: {
-            'hbase.thrift.port': "#{hbase.thrift.site['hbase.thrift.port']}"
-            'hbase.thrift.info.port': "#{hbase.thrift.site['hbase.thrift.info.port']}"
-            'hbase.thrift.support.proxyuser': "#{hbase.thrift.site['hbase.thrift.support.proxyuser']}"
-            'hbase.thrift.security.qop': "#{hbase.site['hbase.thrift.thrift.security.qop']}"
-            'hbase.thrift.authentication.type': "#{hbase.thrift.site['hbase.thrift.authentication.type']}"
-            'hbase.thrift.kerberos.principal': "#{hbase.thrift.site['hbase.thrift.kerberos.principal']}"
-            'hbase.thrift.ssl.enabled': "#{hbase.thrift.site['hbase.thrift.ssl.enabled']}"
-          }
-          backup: true
-          merge: true
+      @call header: 'HBase Site', handler: ->
+        [hbase_ctx] = @contexts 'ryba/hbase/thrift'
+        if hbase_ctx?
+          {hbase} = hbase_ctx.config.ryba
+          # props = {}
+          # props['hbase.security.authentication'] = hbase.site['hbase.security.authentication']
+          # props['hbase.security.authorization'] = hbase.site['hbase.security.authorization']
+          # for k, v of hbase.site
+          #   props[k] = v if  k.indexOf('thrift') isnt  -1
+          @hconfigure
+            destination: "#{hbase.conf_dir}/hbase-site.xml"
+            properties: {
+              'hbase.thrift.port': "#{hbase.thrift.site['hbase.thrift.port']}"
+              'hbase.thrift.info.port': "#{hbase.thrift.site['hbase.thrift.info.port']}"
+              'hbase.thrift.support.proxyuser': "#{hbase.thrift.site['hbase.thrift.support.proxyuser']}"
+              'hbase.thrift.security.qop': "#{hbase.site['hbase.thrift.thrift.security.qop']}"
+              'hbase.thrift.authentication.type': "#{hbase.thrift.site['hbase.thrift.authentication.type']}"
+              'hbase.thrift.kerberos.principal': "#{hbase.thrift.site['hbase.thrift.kerberos.principal']}"
+              'hbase.thrift.ssl.enabled': "#{hbase.thrift.site['hbase.thrift.ssl.enabled']}"
+            }
+            backup: true
+            merge: true
 
 ## Configure
 
 Configure the "/etc/hue/conf" file following the [HortonWorks](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue-5-2.html)
 recommandations. Merge the configuration object from "pseudo-distributed.ini" with the properties of the destination file.
 
-    module.exports.push header: 'Hue Docker # Configure', handler: ->
-      {hue_docker} = @config.ryba
       @ini
+        header: 'hue ini'
         destination: "#{hue_docker.conf_dir}/hue_docker.ini"
         content: hue_docker.ini
         backup: true
@@ -139,24 +122,23 @@ Setup the database hosting the Hue data. Currently two database providers are
 implemented but Hue supports MySQL, PostgreSQL, and Oracle. Note, sqlite is
 the default database while mysql is the recommanded choice.
 
-    module.exports.push header: 'Hue Docker # Database', handler: ->
-      {hue_docker, db_admin} = @config.ryba
-      switch hue_docker.ini.desktop.database.engine
-        when 'mysql'
-          {user, password, name} = hue_docker.ini.desktop.database
-          escape = (text) -> text.replace(/[\\"]/g, "\\$&")
-          mysql_exec = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
-          @execute
-            cmd: """
-            #{mysql_exec} "
-            create database #{name};
-            grant all privileges on #{name}.* to '#{user}'@'localhost' identified by '#{password}';
-            grant all privileges on #{name}.* to '#{user}'@'%' identified by '#{password}';
-            flush privileges;
-            "
-            """
-            unless_exec: "#{mysql_exec} 'use #{name}'"
-        else throw Error 'Hue database engine not supported'
+      @call header: 'Hue Docker # Database', handler: ->
+        switch hue_docker.ini.desktop.database.engine
+          when 'mysql'
+            {user, password, name} = hue_docker.ini.desktop.database
+            escape = (text) -> text.replace(/[\\"]/g, "\\$&")
+            mysql_exec = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
+            @execute
+              cmd: """
+              #{mysql_exec} "
+              create database #{name};
+              grant all privileges on #{name}.* to '#{user}'@'localhost' identified by '#{password}';
+              grant all privileges on #{name}.* to '#{user}'@'%' identified by '#{password}';
+              flush privileges;
+              "
+              """
+              unless_exec: "#{mysql_exec} 'use #{name}'"
+          else throw Error 'Hue database engine not supported'
 
 ## Kerberos
 
@@ -164,10 +146,8 @@ The principal for the Hue service is created and named after "hue/{host}@{realm}
 the "/etc/hue/conf/hue_docker.ini" configuration file, all the composants myst be tagged with
 the "security_enabled" property set to "true".
 
-    module.exports.push header: 'Hue Docker # Kerberos', handler: ->
-      {hue_docker, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc
+        header: 'Kerberos'
         principal: hue_docker.ini.desktop.kerberos.hue_principal
         randkey: true
         keytab: hue_docker.ini.desktop.kerberos.hue_keytab
@@ -183,10 +163,9 @@ Write trustore into /etc/hue/conf folder for hue to be able to connect as a
 client over ssl. Then the REQUESTS_CA_BUNDLE environment variable is set to the
 path  during docker run.
 
-    module.exports.push header: 'Hue Docker # SSL Client', handler: ->
-      {hue_docker} = @config.ryba
-      hue_docker.ca_bundle = '' unless hue_docker.ssl.client_ca
+      # hue_docker.ca_bundle = '' unless hue_docker.ssl.client_ca
       @write
+        header: 'SSL Client'
         destination: "#{hue_docker.ca_bundle}"
         source: "#{hue_docker.ssl.client_ca}"
         local_source: true
@@ -201,49 +180,48 @@ configuration properties. It follows the [official Hue Web Server
 Configuration][web]. The "hue" service is restarted if there was any
 changes.
 
-    module.exports.push header: 'Hue Docker # SSL Server', handler: ->
-      {hue_docker, ssl} = @config.ryba
-      return unless hue_docker.ssl
-      @upload
-        source: ssl.cert
-        destination: "#{hue_docker.conf_dir}/cert.pem"
-        uid: hue_docker.user.name
-        gid: hue_docker.group.name
-      @upload
-        source: ssl.key
-        destination: "#{hue_docker.conf_dir}/key.pem"
-        uid: hue_docker.user.name
-        gid: hue_docker.group.name
-      @ini
-        destination: "#{hue_docker.conf_dir}/hue_docker.ini"
-        content: desktop:
-          ssl_certificate: "#{hue_docker.conf_dir}/cert.pem"
-          ssl_private_key: "#{hue_docker.conf_dir}/key.pem"
-        merge: true
-        parse: misc.ini.parse_multi_brackets
-        stringify: misc.ini.stringify_multi_brackets
-        separator: '='
-        comment: '#'
-        backup: true
-      @docker_stop
-        if: -> @status -1
-        container: hue_docker.container
+      @call header: 'SSL Server', handler: ->
+        return unless hue_docker.ssl
+        @upload
+          source: ssl.cert
+          destination: "#{hue_docker.conf_dir}/cert.pem"
+          uid: hue_docker.user.name
+          gid: hue_docker.group.name
+        @upload
+          source: ssl.key
+          destination: "#{hue_docker.conf_dir}/key.pem"
+          uid: hue_docker.user.name
+          gid: hue_docker.group.name
+        @ini
+          destination: "#{hue_docker.conf_dir}/hue_docker.ini"
+          content: desktop:
+            ssl_certificate: "#{hue_docker.conf_dir}/cert.pem"
+            ssl_private_key: "#{hue_docker.conf_dir}/key.pem"
+          merge: true
+          parse: misc.ini.parse_multi_brackets
+          stringify: misc.ini.stringify_multi_brackets
+          separator: '='
+          comment: '#'
+          backup: true
+        @docker_stop
+          machine: machine
+          if: -> @status -1
+          container: hue_docker.container
 
 ## Layout log Hue
 
-    module.exports.push header: 'Hue Docker # Layout', timeout: -1, handler:  ->
-      {hue_docker} = @config.ryba
-      @mkdir
-        destination: hue_docker.log_dir
-        uid: hue_docker.user.name
-        gid: hue_docker.group.name
-        mode: 0o755
-        parent: true
-      @mkdir
-        destination: '/tmp/hue_docker'
-        uid: hue_docker.user.name
-        gid: hue_docker.group.name
-        mode: 0o755
+      @call header: 'Layout', timeout: -1, handler:  ->
+        @mkdir
+          destination: hue_docker.log_dir
+          uid: hue_docker.user.name
+          gid: hue_docker.group.name
+          mode: 0o755
+          parent: true
+        @mkdir
+          destination: '/tmp/hue_docker'
+          uid: hue_docker.user.name
+          gid: hue_docker.group.name
+          mode: 0o755
 
 ## Install Hue container
 
@@ -253,37 +231,37 @@ The image can be uploaded by an other bin/ryba install (e.g. by a team mate), or
 from local (needs local container to exist e.g. after bin/ryba prepare).
 Compares local/remote hash to check if docker_load is needed.
 
-    module.exports.push header: 'Hue Docker # Container', timeout: -1, retry:3, handler: (options)  ->
-      {hue_docker} = @config.ryba
-      tmp = hue_docker.image_dir
-      current_checksum = ''
-      # check if remote image exists (store the checkusm)
-      # force status to false when only reading files
-      @call (options, callback) =>
-        @fs.exists "#{tmp}/hue_docker.tar", (err, exists) =>
-          return callback err if err?.code != 'ENOENT' and err
-          return callback null, false if err?.code == 'ENOENT' or !exists
-          @fs.readFile "#{tmp}/hue_docker_checksum", 'ascii', (err, content) ->
+      @call header: 'Upload Container', timeout: -1, retry:3, handler: (options)  ->
+        tmp = hue_docker.image_dir
+        current_checksum = ''
+        # check if remote image exists (store the checkusm)
+        # force status to false when only reading files
+        @call (options, callback) =>
+          @fs.exists "#{tmp}/hue_docker.tar", (err, exists) =>
             return callback err if err?.code != 'ENOENT' and err
-            return callback null, exists if err?.code == 'ENOENT'
-            current_checksum = content
-            # return false because we don't want modified status (just reading)
-            return callback null, false
-      # upload image and its checksum if remote  do not exists
-      @upload
-        source: "#{__dirname}/cache/hue_docker.tar"
-        destination: "#{tmp}/hue_docker.tar"
-        binary: true
-        md5: true
-      @upload
-        source: "#{__dirname}/cache/prod/checksum"
-        destination: "#{tmp}/hue_docker_checksum"
-        binary: true
-        md5: true
-      @call ->
-        @docker_load
-          input: "#{tmp}/hue_docker.tar"
-          checksum: current_checksum
+            return callback null, false if err?.code == 'ENOENT' or !exists
+            @fs.readFile "#{tmp}/hue_docker_checksum", 'ascii', (err, content) ->
+              return callback err if err?.code != 'ENOENT' and err
+              return callback null, exists if err?.code == 'ENOENT'
+              current_checksum = content
+              # return false because we don't want modified status (just reading)
+              return callback null, false
+        # upload image and its checksum if remote  do not exists
+        @upload
+          source: "#{hue_docker.prod.directory}/hue_docker.tar"
+          destination: "#{tmp}/hue_docker.tar"
+          binary: true
+          md5: true
+        @upload
+          source: "#{hue_docker.prod.directory}/checksum"
+          destination: "#{tmp}/hue_docker_checksum"
+          binary: true
+          md5: true
+        @call ->
+          @docker_load
+            machine: machine
+            input: "#{tmp}/hue_docker.tar"
+            checksum: current_checksum
 
 ## Run Hue Server Container
 
@@ -298,9 +276,9 @@ docker run --name hue_server --net host -d -v /etc/hadoop/conf:/etc/hadoop/conf
 ryba/hue:3.9
 
 ```
-
-      {hadoop_group,hadoop_conf_dir, hdfs, hive, hbase} = @config.ryba
+      
       @docker_service
+        machine: machine
         header: 'Hue Docker # Run'
         label_true: 'RUNNED'
         force: -> @status -1
@@ -308,9 +286,9 @@ ryba/hue:3.9
         volume: [
           "#{hue_docker.conf_dir}/hue_docker.ini:/var/lib/hue/desktop/conf/pseudo-distributed.ini"
           "#{hadoop_conf_dir}:#{hadoop_conf_dir}"
-          "#{hive.conf_dir}:#{hive.conf_dir}"
+          "#{hive_conf_dir}:#{hive_conf_dir}"
           "#{hue_docker.conf_dir}:#{hue_docker.conf_dir}"
-          "#{hbase.conf_dir}:#{hbase.conf_dir}"
+          "#{hbase_conf_dir}:#{hbase_conf_dir}"
           "#{hue_docker.log_dir}:/var/lib/hue/logs"
           '/etc/krb5.conf:/etc/krb5.conf'
           '/etc/security/keytabs:/etc/security/keytabs'
@@ -331,16 +309,15 @@ ryba/hue:3.9
 
 Write startup script to /etc/init.d/service-hue-docker
 
-    module.exports.push header: 'Hue Docker # Startup Script', handler:  ->
-      {hue_docker} = @config.ryba
-      @render
-        source: "#{__dirname}/resources/#{hue_docker.service}"
-        local_source: true
-        destination: "/etc/init.d/#{hue_docker.service}"
-        context: hue_docker
-      @chmod
-        destination: "/etc/init.d/#{hue_docker.service}"
-        mode: 0o755
+      @call header: 'Startup Script', handler:  ->
+        @render
+          source: "#{__dirname}/resources/#{hue_docker.service}"
+          local_source: true
+          destination: "/etc/init.d/#{hue_docker.service}"
+          context: hue_docker
+        @chmod
+          destination: "/etc/init.d/#{hue_docker.service}"
+          mode: 0o755
 
 ## Dependencies
 

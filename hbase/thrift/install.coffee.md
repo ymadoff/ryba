@@ -27,6 +27,21 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: @config.iptables.action is 'start'
 
 
+## Users & Groups
+
+By default, the "hbase" package create the following entries:
+
+```bash
+cat /etc/passwd | grep hbase
+hbase:x:492:492:HBase:/var/run/hbase:/bin/bash
+cat /etc/group | grep hbase
+hbase:x:492:
+```
+      
+      @group hbase.group
+      @user hbase.user
+
+
 ### Kerberos
 #
 #    module.exports.push header: 'HBase Thrift # Kerberos', handler: ->
@@ -78,36 +93,34 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Note, we left the permission mode as default, Master and RegionServer need to
 restrict it but not the thrift server.
 
-      @call header: 'Configure', handler: ->
-        @hconfigure
-          header: 'Site'
-          destination: "#{hbase.thrift.conf_dir}/hbase-site.xml"
-          default: "#{__dirname}/../resources/hbase-site.xml"
-          local_default: true
-          properties: hbase.thrift.site
-          merge: false
-          uid: hbase.user.name
-          gid: hbase.group.name
-          backup: true
+      @hconfigure
+        header: 'HBase Site'
+        destination: "#{hbase.thrift.conf_dir}/hbase-site.xml"
+        default: "#{__dirname}/../resources/hbase-site.xml"
+        local_default: true
+        properties: hbase.thrift.site
+        merge: false
+        uid: hbase.user.name
+        gid: hbase.group.name
+        backup: true
 
 ## Opts
 
 Environment passed to the HBase Rest Server before it starts.
 
-        writes = for k, v of hbase.thrift.env
+      @render
+        header: 'HBase Env'
+        source: "#{__dirname}/../resources/hbase-env.sh"
+        destination: "#{hbase.thrift.conf_dir}/hbase-env.sh"
+        local_source: true
+        context: @config
+        uid: hbase.user.name
+        gid: hbase.group.name
+        mode: 0o0755
+        unlink: true
+        write: for k, v of hbase.thrift.env
           match: RegExp "export #{k}=.*", 'm'
-          replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
-        @render
-          header: 'Opts'
-          source: "#{__dirname}/../resources/hbase-env.sh"
-          destination: "#{hbase.thrift.conf_dir}/hbase-env.sh"
-          local_source: true
-          context: @config
-          uid: hbase.user.name
-          gid: hbase.group.name
-          mode: 0o0755
-          unlink: true
-          write: writes  
+          replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"  
 
 # User limits
 

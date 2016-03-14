@@ -1,12 +1,5 @@
 
-# Shinken
-
-Shinken is the distributed, fault-tolerant successor of Nagios.
-Nagios plugins and configuration are fully compatible with Shinken.
-
-    module.exports = []
-
-## Configure
+# Shinken Configure
 
 *   `shinken.user` (object|string)
     The Unix Shinken login name or a user object (see Mecano User documentation).
@@ -27,8 +20,8 @@ Example
     }
 ```
 
-    module.exports.configure = (ctx) ->
-      shinken = ctx.config.ryba.shinken ?= {}
+    module.exports = handler: ->
+      shinken = @config.ryba.shinken ?= {}
       shinken.log_dir = '/var/log/shinken'
       shinken.plugin_dir ?= '/usr/lib64/nagios/plugins'
       # User
@@ -50,25 +43,3 @@ Example
       shinken.config ?= {}
       shinken.config.use_ssl ?= '0'
       shinken.config.hard_ssl_name_check ?= '0'
-
-## Users & Groups
-
-    module.exports.push header: 'Shinken # Users & Groups', handler: ->
-      {shinken} = @config.ryba
-      @group shinken.group
-      @user shinken.user
-
-## Commons Packages
-
-    module.exports.push header: 'Shinken # Commons Packages', handler: ->
-      @service name: 'python'
-      @service name: 'python-pycurl'
-
-## Startup Sequence
-
-*   shinken-scheduler
-*   shinken-poller
-*   shinken-receiver
-*   shinken-reactionner
-*   shinken-broker
-*   shinken-arbiter

@@ -6,20 +6,7 @@ server using Ryba.
 
 By default, the pid of the running server is stored in
 "/var/run/oozie/oozie.pid".
-
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/core/krb5_client/wait'
-    module.exports.push 'ryba/zookeeper/server/wait'
-    module.exports.push 'ryba/hadoop/hdfs_nn/wait'
-    module.exports.push 'ryba/hbase/master/wait'
-    module.exports.push 'ryba/hive/hcatalog/wait'
-    module.exports.push 'ryba/hive/server2/wait'
-    module.exports.push 'ryba/hive/webhcat/wait'
-    # module.exports.push require('./index').configure
-
-## Start
-
+    
 Start the Oozie server. You can also start the server manually with the
 following command:
 
@@ -29,8 +16,7 @@ su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozied.sh start"
 ```
 
 Note, there is no need to clean a zombie pid file before starting the server.
-
-    module.exports.push header: 'Oozie Server # Start', label_true: 'STARTED', timeout: -1, handler: ->
-      {oozie} = @config.ryba
+    
+    module.exports = header: 'Oozie Server Start', label_true: 'STARTED', timeout: -1, handler: ->
       @service_start
         name: 'oozie'

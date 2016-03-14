@@ -2,19 +2,17 @@
 # Hive HCatalog Info
 
 Retrieve various info about the HCatalog Server and the Hive Server2.
-
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/bootstrap/report'
-    module.exports.push 'ryba/hive/hcatalog/wait'
-    # module.exports.push require('./index').configure
-
+  
+    module.exports = header: 'Hive HCatalog Report', timeout: -1, label_true: 'INFO', handler: ->
+      
 ## Info FS Roots
 
 List the current FS root locations for the Hive databases.
 
-    module.exports.push header: 'Hive HCatalog # Info FS Roots', timeout: -1, label_true: 'INFO', handler: ->
       @execute
+        header: 'Info FS Roots'
+        timeout: -1
+        label_true: 'INFO'
         cmd: mkcmd.hdfs , "hive --service metatool -listFSRoot 2>/dev/nul"
       , (err, _, stdout) ->
         return if err

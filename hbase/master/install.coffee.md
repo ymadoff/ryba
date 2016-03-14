@@ -25,6 +25,21 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ]
         if: @config.iptables.action is 'start'
 
+## Users & Groups
+
+By default, the "hbase" package create the following entries:
+
+```bash
+cat /etc/passwd | grep hbase
+hbase:x:492:492:HBase:/var/run/hbase:/bin/bash
+cat /etc/group | grep hbase
+hbase:x:492:
+```
+      
+      @group hbase.group
+      @user hbase.user
+
+
 ## HBase Master Layout
 
       @call header: 'Layout', timeout: -1, handler: ->
@@ -75,7 +90,7 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
 [secop]: http://fr.slideshare.net/HBaseCon/features-session-2
 
       @hconfigure
-        header: 'HBase Master # Configure'
+        header: 'HBase Site'
         destination: "#{hbase.master.conf_dir}/hbase-site.xml"
         default: "#{__dirname}/../resources/hbase-site.xml"
         local_default: true
@@ -90,22 +105,20 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
 
 Environment passed to the Master before it starts.
 
-      @call header: 'HBase Master # Opts', handler: ->
-        {hbase} = @config.ryba
-        writes = for k, v of hbase.master.env
+      @render
+        header: 'HBase Env'
+        source: "#{__dirname}/../resources/hbase-env.sh"
+        destination: "#{hbase.master.conf_dir}/hbase-env.sh"
+        backup: true
+        local_source: true
+        eof: true
+        context: @config
+        uid: hbase.user.name
+        gid: hbase.group.name
+        write: for k, v of hbase.master.env
           match: RegExp "export #{k}=.*", 'm'
           replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
           append: true
-        @render
-          source: "#{__dirname}/../resources/hbase-env.sh"
-          destination: "#{hbase.master.conf_dir}/hbase-env.sh"
-          backup: true
-          local_source: true
-          eof: true
-          context: @config
-          uid: hbase.user.name
-          gid: hbase.group.name
-          write: writes
         #  match: /^export HBASE_ROOT_LOGGER=.*$/mg
         #  replace: "export HBASE_ROOT_LOGGER=#{hbase.master.log4j.root_logger}"
         #  append: true
@@ -117,14 +130,13 @@ Environment passed to the Master before it starts.
 
 Upload the list of registered RegionServers.
 
-      @call header: 'HBase Master # RegionServers', timeout: -1, handler: ->
-        {hbase, hadoop_group} = @config.ryba
-        @write
-          content: @hosts_with_module('ryba/hbase/regionserver').join '\n'
-          destination: "#{hbase.master.conf_dir}/regionservers"
-          uid: hbase.user.name
-          gid: hadoop_group.name
-          eof: true
+      @write
+        header: 'Registered RegionServers'
+        content: @hosts_with_module('ryba/hbase/regionserver').join '\n'
+        destination: "#{hbase.master.conf_dir}/regionservers"
+        uid: hbase.user.name
+        gid: hadoop_group.name
+        eof: true
 
 
 ## Zookeeper JAAS
@@ -134,55 +146,57 @@ RegionServer, and HBase client host machines.
 
 Environment file is enriched by "ryba/hbase" # HBase # Env".
 
-      @call header: 'HBase Master # Zookeeper JAAS', timeout: -1, handler: ->
-        @write_jaas
-          destination: "#{hbase.master.conf_dir}/hbase-master.jaas"
-          content: Client:
-            principal: hbase.master.site['hbase.master.kerberos.principal'].replace '_HOST', @config.host
-            keyTab: hbase.master.site['hbase.master.keytab.file']
-          uid: hbase.user.name
-          gid: hbase.group.name
-          mode: 0o700
+      @write_jaas
+        header: 'Zookeeper JAAS'
+        destination: "#{hbase.master.conf_dir}/hbase-master.jaas"
+        content: Client:
+          principal: hbase.master.site['hbase.master.kerberos.principal'].replace '_HOST', @config.host
+          keyTab: hbase.master.site['hbase.master.keytab.file']
+        uid: hbase.user.name
+        gid: hbase.group.name
+        mode: 0o700
 
 ## Kerberos
 
 https://blogs.apache.org/hbase/entry/hbase_cell_security
 https://hbase.apache.org/book/security.html
 
-      @call header: 'HBase Master # Kerberos', handler: ->
-        @krb5_addprinc
-          principal: hbase.master.site['hbase.master.kerberos.principal'].replace '_HOST', @config.host
-          randkey: true
-          keytab: hbase.master.site['hbase.master.keytab.file']
-          uid: hbase.user.name
-          gid: hadoop_group.name
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
 
-      @call header: 'HBase Master # Kerberos Admin', handler: ->
-        @krb5_addprinc
-          principal: hbase.admin.principal
-          password: hbase.admin.password
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
+      @krb5_addprinc
+        header: 'Kerberos Master User'
+        principal: hbase.master.site['hbase.master.kerberos.principal'].replace '_HOST', @config.host
+        randkey: true
+        keytab: hbase.master.site['hbase.master.keytab.file']
+        uid: hbase.user.name
+        gid: hadoop_group.name
+        kadmin_principal: kadmin_principal
+        kadmin_password: kadmin_password
+        kadmin_server: admin_server
+        
+      @krb5_addprinc
+        header: 'Kerberos Admin User'
+        principal: hbase.admin.principal
+        password: hbase.admin.password
+        kadmin_principal: kadmin_principal
+        kadmin_password: kadmin_password
+        kadmin_server: admin_server
 
-      @call header: 'HBase Master # Log4J', handler: ->
-        @write
-          destination: "#{hbase.master.conf_dir}/log4j.properties"
-          source: "#{__dirname}/../resources/log4j.properties"
-          local_source: true
+      
+      @write
+        header: 'Log4J Properties'
+        destination: "#{hbase.master.conf_dir}/log4j.properties"
+        source: "#{__dirname}/../resources/log4j.properties"
+        local_source: true
 
 ## Metrics
 
 Enable stats collection in Ganglia and Graphite
 
-      @call header: 'HBase Master # Metrics', handler: ->
-        @write_properties
-          destination: "#{hbase.master.conf_dir}/hadoop-metrics2-hbase.properties"
-          content: hbase.metrics.config
-          backup: true
+      @write_properties
+        header: 'Metrics Properties'
+        destination: "#{hbase.master.conf_dir}/hadoop-metrics2-hbase.properties"
+        content: hbase.metrics.config
+        backup: true
 
       # @call header: 'HBase Master # SSL', retry: 0, handler: ->
       #   {ssl, ssl_server, ssl_client, hdfs} = @config.ryba
@@ -225,17 +239,17 @@ Enable stats collection in Ganglia and Graphite
 Ensure we have read access to the spnego keytab soring the server HTTP
 principal.
 
-      @call header: 'HBase Master # SPNEGO', handler: ->
-        @execute
-          cmd: "su -l #{hbase.user.name} -c 'test -r /etc/security/keytabs/spnego.service.keytab'"
+
+      @execute
+        header: 'SPNEGO'
+        cmd: "su -l #{hbase.user.name} -c 'test -r /etc/security/keytabs/spnego.service.keytab'"
 
 # User limits
 
-      @call header: 'HBase Master # Limits', handler: ->
-        @system_limits
-          user: hbase.user.name
-          nofile: hbase.user.limits.nofile
-          nproc: hbase.user.limits.nproc
+      @system_limits
+        user: hbase.user.name
+        nofile: hbase.user.limits.nofile
+        nproc: hbase.user.limits.nproc
 
 # Dependencies
 

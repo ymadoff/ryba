@@ -1,16 +1,14 @@
 
 # Tez Check
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    # module.exports.push require('./index').configure
+    module.exports = header: 'Tez Check', timeout: -1, label_true: 'CHECKED', handler: ->
+      {force_check, user} = @config.ryba
 
 ## Check HDFS
 
-    module.exports.push header: 'Tez # Check HDFS', timeout: -1, label_true: 'CHECKED', handler: ->
-      {force_check, user} = @config.ryba
       remote_dir = "check-#{@config.shortname}-tez-hdfs"
       @execute
+        header: 'Check HDFS'
         cmd: mkcmd.test @, """
         hdfs dfs -rm -r -skipTrash #{remote_dir} 2>/dev/null
         hdfs dfs -mkdir #{remote_dir}

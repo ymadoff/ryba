@@ -7,18 +7,12 @@ The current version of Oozie doesnt supported automatic failover of the Yarn
 Resource Manager. RM HA (High Availability) must be configure with manual
 failover and Oozie must target the active node.
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/core/iptables'
-    module.exports.push 'masson/commons/mysql_client'
-    module.exports.push 'ryba/hadoop/core'
-    module.exports.push 'ryba/hadoop/hdfs' # SPNEGO need access to the principal HTTP/$HOST@$REALM's keytab
-    module.exports.push 'ryba/hadoop/hdfs_dn/wait' # Create directories inside HDFS
-    module.exports.push 'ryba/lib/hconfigure'
-    module.exports.push 'ryba/lib/hdp_select'
-    module.exports.push require('../../lib/hdfs_mkdir').register
-    # module.exports.push require('./index').configure
-
+    module.exports = header: 'Oozie Server Install', handler: ->
+      {oozie, hadoop_group, hadoop_conf_dir, yarn, realm, db_admin, core_site} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      is_falcon_installed = @contexts('ryba/falcon').length isnt 0
+      port = url.parse(oozie.site['oozie.base.url']).port
+      
 ## Users & Groups
 
 By default, the "oozie" package create the following entries:
@@ -30,8 +24,6 @@ cat /etc/group | grep oozie
 oozie:x:493:
 ```
 
-    module.exports.push header: 'Oozie Server # Users & Groups', handler: ->
-      {oozie} = @config.ryba
       @group oozie.group
       @user oozie.user
 
@@ -45,98 +37,97 @@ oozie:x:493:
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push header: 'Oozie Server # IPTables', handler: ->
-      {oozie} = @config.ryba
-      port = url.parse(oozie.site['oozie.base.url']).port
       @iptables
+        header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "Oozie HTTP Server" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: oozie.admin_port, protocol: 'tcp', state: 'NEW', comment: "Oozie HTTP Server" }
         ]
         if: @config.iptables.action is 'start'
 
-    module.exports.push header: 'Oozie Server # Install', timeout: -1, handler: ->
-      # Upgrading oozie failed, tested versions are hdp 2.1.2 -> 2.1.5 -> 2.1.7
-      @execute
-        cmd: "rm -rf /usr/lib/oozie && yum remove -y oozie oozie-client"
-        if: @retry > 0
-      @service
-        name: 'falcon'
-        if: @hosts_with_module('ryba/falcon').length
-      @service
-        name: 'unzip' # Required by the "prepare-war" command
-      @service
-        name: 'zip' # Required by the "prepare-war" command
-      @service
-        name: 'extjs-2.2-1'
-      # @call if: @contexts('ryba/falcon').length, ->
-      #   @service
-      #     name: 'falcon'
-      #   @hdp_select
-      #     name: 'falcon-client'
-      @service
-        name: 'falcon'
-        if: @contexts('ryba/falcon').length
-      @hdp_select
-        name: 'falcon-client'
-        if: @contexts('ryba/falcon').length
-      @service
-        name: 'oozie' # Also install oozie-client and bigtop-tomcat
-      @hdp_select
-        name: 'oozie-server'
-      @hdp_select
-        name: 'oozie-client'
-      @write
-        source: "#{__dirname}/../resources/oozie"
-        local_source: true
-        destination: '/etc/init.d/oozie'
-        mode: 0o0755
-        unlink: true
-      @execute
-        cmd: "service oozie-server restart"
-        if: -> @status -4
+    
+      @call header: 'Packages', timeout: -1, handler: ->
+        # Upgrading oozie failed, tested versions are hdp 2.1.2 -> 2.1.5 -> 2.1.7
+        @execute
+          cmd: "rm -rf /usr/lib/oozie && yum remove -y oozie oozie-client"
+          if: @retry > 0
+        @service
+          name: 'falcon'
+          if: is_falcon_installed
+        @service
+          name: 'unzip' # Required by the "prepare-war" command
+        @service
+          name: 'zip' # Required by the "prepare-war" command
+        @service
+          name: 'extjs-2.2-1'
+        # @call if: @contexts('ryba/falcon').length, ->
+        #   @service
+        #     name: 'falcon'
+        #   @hdp_select
+        #     name: 'falcon-client'
+        @service
+          name: 'falcon'
+          if: @contexts('ryba/falcon').length
+        @hdp_select
+          name: 'falcon-client'
+          if: @contexts('ryba/falcon').length
+        @service
+          name: 'oozie' # Also install oozie-client and bigtop-tomcat
+        @hdp_select
+          name: 'oozie-server'
+        @hdp_select
+          name: 'oozie-client'
+        @write
+          header: 'Init Script'
+          source: "#{__dirname}/../resources/oozie"
+          local_source: true
+          destination: '/etc/init.d/oozie'
+          mode: 0o0755
+          unlink: true
+        @execute
+          cmd: "service oozie restart"
+          if: -> @status -4
 
-    module.exports.push header: 'Oozie Server # Directories', handler: ->
-      {hadoop_group, oozie} = @config.ryba
-      @mkdir
-        destination: oozie.data
-        uid: oozie.user.name
-        gid: hadoop_group.name
-        mode: 0o0755
-      @mkdir
-        destination: oozie.log_dir
-        uid: oozie.user.name
-        gid: hadoop_group.name
-        mode: 0o0755
-      @mkdir
-        destination: oozie.pid_dir
-        uid: oozie.user.name
-        gid: hadoop_group.name
-        mode: 0o0755
-      @mkdir
-        destination: oozie.tmp_dir
-        uid: oozie.user.name
-        gid: hadoop_group.name
-        mode: 0o0755
-      @mkdir
-        destination: "#{oozie.conf_dir}/action-conf"
-        uid: oozie.user.name
-        gid: hadoop_group.name
-        mode: 0o0755
-      # Set permission to action conf
-      @execute
-        cmd: """
-        chown -R #{oozie.user.name}:#{hadoop_group.name} #{oozie.conf_dir}/action-conf
-        """
-        shy: true
-      # Waiting for recursivity in @mkdir
-      # @execute
-      #   cmd: """
-      #   chown -R #{oozie.user.name}:#{hadoop_group.name} /usr/lib/oozie
-      #   chown -R #{oozie.user.name}:#{hadoop_group.name} #{oozie.data}
-      #   chown -R #{oozie.user.name}:#{hadoop_group.name} #{oozie.conf_dir} #/..
-      #   chmod -R 755 #{oozie.conf_dir} #/..
-      #   """
+      @call header: 'Layout Directories', handler: ->
+        @mkdir
+          destination: oozie.data
+          uid: oozie.user.name
+          gid: hadoop_group.name
+          mode: 0o0755
+        @mkdir
+          destination: oozie.log_dir
+          uid: oozie.user.name
+          gid: hadoop_group.name
+          mode: 0o0755
+        @mkdir
+          destination: oozie.pid_dir
+          uid: oozie.user.name
+          gid: hadoop_group.name
+          mode: 0o0755
+        @mkdir
+          destination: oozie.tmp_dir
+          uid: oozie.user.name
+          gid: hadoop_group.name
+          mode: 0o0755
+        @mkdir
+          destination: "#{oozie.conf_dir}/action-conf"
+          uid: oozie.user.name
+          gid: hadoop_group.name
+          mode: 0o0755
+        # Set permission to action conf
+        @execute
+          cmd: """
+          chown -R #{oozie.user.name}:#{hadoop_group.name} #{oozie.conf_dir}/action-conf
+          """
+          shy: true
+        # Waiting for recursivity in @mkdir
+        # @execute
+        #   cmd: """
+        #   chown -R #{oozie.user.name}:#{hadoop_group.name} /usr/lib/oozie
+        #   chown -R #{oozie.user.name}:#{hadoop_group.name} #{oozie.data}
+        #   chown -R #{oozie.user.name}:#{hadoop_group.name} #{oozie.conf_dir} #/..
+        #   chmod -R 755 #{oozie.conf_dir} #/..
+        #   """
 
 ## Environment
 
@@ -165,9 +156,6 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.file=${OOZIE_HTTPS_KEYSTO
 catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTORE_PASS}";
 ```
 
-    module.exports.push header: 'Oozie Server # Environment', handler: ->
-      {java_home} = @config.java
-      {oozie} = @config.ryba
       writes = [
           match: /^export OOZIE_HTTPS_KEYSTORE_FILE=.*$/mg
           replace: "export OOZIE_HTTPS_KEYSTORE_FILE=#{oozie.keystore_file}"
@@ -223,6 +211,7 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
             match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.extra_appender=(.*)/m
             replace: ""
       @render
+        header: 'Oozie Environment'
         source: "#{__dirname}/../resources/oozie-env.sh.j2"
         local_source: true
         destination: "#{oozie.conf_dir}/oozie-env.sh"
@@ -237,8 +226,8 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
 
 Install the ExtJS Javascript library as part of enabling the Oozie Web Console.
 
-    module.exports.push header: 'Oozie Server # ExtJS', handler: ->
       @copy
+        header: 'ExtJS Library'
         source: '/usr/share/HDP-oozie/ext-2.2.zip'
         destination: '/usr/hdp/current/oozie-client/libext/'
 
@@ -246,8 +235,8 @@ Install the ExtJS Javascript library as part of enabling the Oozie Web Console.
 
 Install the HBase Libs as part of enabling the Oozie Unified Credentials with HBase.
 
-    module.exports.push header: 'Oozie Server # HBase Libs', handler: ->
       @copy
+        header: 'HBase Libs'
         source: '/usr/hdp/current/hbase-client/lib/hbase-common.jar'
         destination: '/usr/hdp/current/oozie-client/libserver/'
 
@@ -255,55 +244,54 @@ Install the HBase Libs as part of enabling the Oozie Unified Credentials with HB
 
 Install the LZO compression library as part of enabling the Oozie Web Console.
 
-    module.exports.push header: 'Oozie Server # LZO', handler: ->
-      lzo_jar = null
-      @execute
-        cmd: 'ls /usr/hdp/current/share/lzo/*/lib/hadoop-lzo-*.jar'
-      , (err, _, stdout) ->
-        return if err
-        lzo_jar = stdout.trim()
-      @call ->
+      @call header: 'LZO', handler: ->
+        lzo_jar = null
         @execute
-          cmd: """
-          # Remove any previously installed version
-          rm /usr/hdp/current/oozie-client/libext/hadoop-lzo-*.jar
-          # Copy lzo
-          cp #{lzo_jar} /usr/hdp/current/oozie-client/libext/
-          """
-          unless_exists: "/usr/hdp/current/oozie-client/libext/#{path.basename lzo_jar}"
+          cmd: 'ls /usr/hdp/current/share/lzo/*/lib/hadoop-lzo-*.jar'
+        , (err, _, stdout) ->
+          return if err
+          lzo_jar = stdout.trim()
+        @call ->
+          @execute
+            cmd: """
+            # Remove any previously installed version
+            rm /usr/hdp/current/oozie-client/libext/hadoop-lzo-*.jar
+            # Copy lzo
+            cp #{lzo_jar} /usr/hdp/current/oozie-client/libext/
+            """
+            unless_exists: "/usr/hdp/current/oozie-client/libext/#{path.basename lzo_jar}"
 
     # Note
     # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.0/HDP_Man_Install_v22/index.html#Item1.12.4.3
     # Copy or symlink the MySQL JDBC driver JAR into the /var/lib/oozie/ directory.
-    module.exports.push header: 'Oozie Server # Mysql Driver', handler: ->
       @link
+        header: 'Mysql Driver'
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/hdp/current/oozie-client/libext/mysql-connector-java.jar'
 
-    module.exports.push header: 'Oozie Server # Configuration', handler: ->
-      {hadoop_conf_dir, yarn, oozie} = @config.ryba
-      @hconfigure
-        destination: "#{oozie.conf_dir}/oozie-site.xml"
-        default: "#{__dirname}/../resources/oozie-site.xml"
-        local_default: true
-        properties: oozie.site
-        uid: oozie.user.name
-        gid: oozie.group.name
-        mode: 0o0755
-        merge: true
-        backup: true
-      @upload
-        destination: "#{oozie.conf_dir}/oozie-default.xml"
-        source: "#{__dirname}/../resources/oozie-default.xml"
-        backup: true
-      @hconfigure
-        destination: "#{oozie.conf_dir}/hadoop-conf/core-site.xml"
-        local_default: true
-        properties: oozie.hadoop_config
-        uid: oozie.user.name
-        gid: oozie.group.name
-        mode: 0o0755
-        backup: true
+      @call header: 'Configuration', handler: ->
+        @hconfigure
+          destination: "#{oozie.conf_dir}/oozie-site.xml"
+          default: "#{__dirname}/../resources/oozie-site.xml"
+          local_default: true
+          properties: oozie.site
+          uid: oozie.user.name
+          gid: oozie.group.name
+          mode: 0o0755
+          merge: true
+          backup: true
+        @upload
+          destination: "#{oozie.conf_dir}/oozie-default.xml"
+          source: "#{__dirname}/../resources/oozie-default.xml"
+          backup: true
+        @hconfigure
+          destination: "#{oozie.conf_dir}/hadoop-conf/core-site.xml"
+          local_default: true
+          properties: oozie.hadoop_config
+          uid: oozie.user.name
+          gid: oozie.group.name
+          mode: 0o0755
+          backup: true
 
     # module.exports.push header: 'Oozie Server # SSL', handler: ->
     #   {java_home, jre_home} = @config.java
@@ -316,41 +304,39 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
     #     cmd: "su -l oozie -c 'keytool -import -alias tomcat -file #{tmp_location}_cacert'"
     #   @remove
     #     destination: "#{tmp_location}_cacert"
-
-    module.exports.push header: 'Oozie Server # War', handler: ->
-      {oozie} = @config.ryba
-      falcon_ctxs = @contexts 'ryba/falcon', require('../../falcon').configure
-      @call
-        if: falcon_ctxs.length
-        handler: ->
-          @service
-            name: 'falcon'
-          @mkdir
-            destination: '/tmp/falcon-oozie-jars'
-          # Note, the documentation mentions using "-d" option but it doesnt
-          # seem to work. Instead, we deploy the jar where "-d" default.
-          @execute
-            # cmd: """
-            # rm -rf /tmp/falcon-oozie-jars/*
-            # cp  /usr/lib/falcon/oozie/ext/falcon-oozie-el-extension-*.jar \
-            #   /tmp/falcon-oozie-jars
-            # """, (err) ->
-            cmd: """
-            falconext=`ls /usr/hdp/current/falcon-client/oozie/ext/falcon-oozie-el-extension-*.jar`
-            if [ -f /usr/hdp/current/oozie-client/libext/`basename $falconext` ]; then exit 3; fi
-            rm -rf /tmp/falcon-oozie-jars/*
-            cp  /usr/hdp/current/falcon-client/oozie/ext/falcon-oozie-el-extension-*.jar \
-              /usr/hdp/current/oozie-client/libext
-            """
-            code_skipped: 3
-          @execute
-            cmd: """
-            if [ ! -f #{oozie.pid_dir}/oozie.pid ]; then exit 3; fi
-            if ! kill -0 >/dev/null 2>&1 `cat #{oozie.pid_dir}/oozie.pid`; then exit 3; fi
-            su -l #{oozie.user.name} -c "/usr/hdp/current/oozie-server/bin/oozied.sh stop 20 -force"
-            rm -rf cat #{oozie.pid_dir}/oozie.pid
-            """
-            code_skipped: 3
+      @call header: 'War', handler: ->
+        @call
+          header: 'Falcon Package'
+          if: is_falcon_installed
+          handler: ->
+            @service
+              name: 'falcon'
+            @mkdir
+              destination: '/tmp/falcon-oozie-jars'
+            # Note, the documentation mentions using "-d" option but it doesnt
+            # seem to work. Instead, we deploy the jar where "-d" default.
+            @execute
+              # cmd: """
+              # rm -rf /tmp/falcon-oozie-jars/*
+              # cp  /usr/lib/falcon/oozie/ext/falcon-oozie-el-extension-*.jar \
+              #   /tmp/falcon-oozie-jars
+              # """, (err) ->
+              cmd: """
+              falconext=`ls /usr/hdp/current/falcon-client/oozie/ext/falcon-oozie-el-extension-*.jar`
+              if [ -f /usr/hdp/current/oozie-client/libext/`basename $falconext` ]; then exit 3; fi
+              rm -rf /tmp/falcon-oozie-jars/*
+              cp  /usr/hdp/current/falcon-client/oozie/ext/falcon-oozie-el-extension-*.jar \
+                /usr/hdp/current/oozie-client/libext
+              """
+              code_skipped: 3
+            @execute
+              cmd: """
+              if [ ! -f #{oozie.pid_dir}/oozie.pid ]; then exit 3; fi
+              if ! kill -0 >/dev/null 2>&1 `cat #{oozie.pid_dir}/oozie.pid`; then exit 3; fi
+              su -l #{oozie.user.name} -c "/usr/hdp/current/oozie-server/bin/oozied.sh stop 20 -force"
+              rm -rf cat #{oozie.pid_dir}/oozie.pid
+              """
+              code_skipped: 3
       # The script `ooziedb.sh` must be done as the oozie Unix user, otherwise
       # Oozie may fail to start or work properly because of incorrect file permissions.
       # There is already a "oozie.war" file inside /var/lib/oozie/oozie-server/webapps/.
@@ -367,10 +353,10 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         """
         code_skipped: 255 # Oozie already started, war is expected to be installed
 
-    module.exports.push header: 'Oozie Server # Kerberos', handler: ->
-      {oozie, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+## Kerberos
+
       @krb5_addprinc
+        header: 'Kerberos'
         principal: oozie.site['oozie.service.HadoopAccessorService.kerberos.principal'] #.replace '_HOST', @config.host
         randkey: true
         keytab: oozie.site['oozie.service.HadoopAccessorService.keytab.file']
@@ -380,44 +366,42 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         kadmin_password: kadmin_password
         kadmin_server: admin_server
 
-    module.exports.push header: 'Oozie Server # SPNEGO', handler: ->
-      {oozie} = @config.ryba
       @copy
+        header: 'SPNEGO'
         source: '/etc/security/keytabs/spnego.service.keytab'
         destination: "#{oozie.site['oozie.authentication.kerberos.keytab']}"
         uid: oozie.user.name
         gid: oozie.group.name
         mode: 0o0600
 
-    module.exports.push header: 'Oozie Server # MySQL', handler: ->
-      {db_admin, oozie} = @config.ryba
-      username = oozie.site['oozie.service.JPAService.jdbc.username']
-      password = oozie.site['oozie.service.JPAService.jdbc.password']
-      {engine, db} = parse_jdbc oozie.site['oozie.service.JPAService.jdbc.url']
-      switch engine
-        when 'mysql'
-          escape = (text) -> text.replace(/[\\"]/g, "\\$&")
-          cmd = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
-          version_local = "#{cmd} \"use #{db}; select data from OOZIE_SYS where name='oozie.version'\" | tail -1"
-          version_remote = "ls /usr/hdp/current/oozie-server/lib/oozie-client-*.jar | sed 's/.*client\\-\\(.*\\).jar/\\1/'"
-          @execute
-            cmd: """
-            if #{cmd} "use #{db}"; then exit 2; fi
-            #{cmd} "
-            create database #{db};
-            grant all privileges on #{db}.* to '#{username}'@'localhost' identified by '#{password}';
-            grant all privileges on #{db}.* to '#{username}'@'%' identified by '#{password}';
-            flush privileges;
-            "
-            """
-            code_skipped: 2
-          @execute
-             cmd: "su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-client/bin/ooziedb.sh create -sqlfile /tmp/oozie.sql -run Validate DB Connection'"
-             unless_exec: "#{cmd} \"use #{db}; select data from OOZIE_SYS where name='oozie.version'\""
-          @execute
-             cmd: "su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-server/bin/ooziedb.sh upgrade -run'"
-             unless_exec: "[[ `#{version_local}` == `#{version_remote}` ]]"
-        else throw Error 'Database engine not supported'
+      @call header: 'MySQL Database Creation', handler: ->
+        username = oozie.site['oozie.service.JPAService.jdbc.username']
+        password = oozie.site['oozie.service.JPAService.jdbc.password']
+        {engine, db} = parse_jdbc oozie.site['oozie.service.JPAService.jdbc.url']
+        switch engine
+          when 'mysql'
+            escape = (text) -> text.replace(/[\\"]/g, "\\$&")
+            cmd = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
+            version_local = "#{cmd} \"use #{db}; select data from OOZIE_SYS where name='oozie.version'\" | tail -1"
+            version_remote = "ls /usr/hdp/current/oozie-server/lib/oozie-client-*.jar | sed 's/.*client\\-\\(.*\\).jar/\\1/'"
+            @execute
+              cmd: """
+              if #{cmd} "use #{db}"; then exit 2; fi
+              #{cmd} "
+              create database #{db};
+              grant all privileges on #{db}.* to '#{username}'@'localhost' identified by '#{password}';
+              grant all privileges on #{db}.* to '#{username}'@'%' identified by '#{password}';
+              flush privileges;
+              "
+              """
+              code_skipped: 2
+            @execute
+               cmd: "su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-client/bin/ooziedb.sh create -sqlfile /tmp/oozie.sql -run Validate DB Connection'"
+               unless_exec: "#{cmd} \"use #{db}; select data from OOZIE_SYS where name='oozie.version'\""
+            @execute
+               cmd: "su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-server/bin/ooziedb.sh upgrade -run'"
+               unless_exec: "[[ `#{version_local}` == `#{version_remote}` ]]"
+          else throw Error 'Database engine not supported'
 
     # module.exports.push header: 'Oozie Server # Database', handler: ->
     #   {oozie} = @config.ryba
@@ -447,50 +431,43 @@ upload the files.
 The `oozie admin -shareliblist` command can be used by the final user to list
 the ShareLib contents without having to go into HDFS.
 
-    module.exports.push header: 'Oozie Server # Share lib', timeout: 600000, handler: ->
-      {core_site, oozie} = @config.ryba
-      @hdfs_mkdir
-        destination: "/user/#{oozie.user.name}/share/lib"
-        user: "#{oozie.user.name}"
-        group:  "#{oozie.group.name}"
-        mode: 0o0755
-        krb5_user: @config.ryba.hdfs.krb5_user
-      @execute
-        cmd: mkcmd.hdfs @, """
-        if hdfs dfs -test -d /user/#{oozie.user.name}/share/lib; then
-          echo 'Upgrade sharelib'
-          su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib upgrade -fs #{core_site['fs.defaultFS']} /usr/hdp/current/oozie-client/oozie-sharelib.tar.gz"
-        else
-          #hdfs dfs -mkdir -p /user/#{oozie.user.name}/share/lib || true
-          #hdfs dfs -chown -R #{oozie.user.name}:#{oozie.group.name} /user/#{oozie.user.name}
-          echo 'Create sharelib'
-          su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib create -fs #{core_site['fs.defaultFS']} /usr/hdp/current/oozie-client/oozie-sharelib.tar.gz"
-        fi
-        hdfs dfs -chmod -R 755 /user/#{oozie.user.name}
-        """
-        trap_on_error: true
-        unless_exec: mkcmd.hdfs @, """
-        version=`ls /usr/hdp/current/oozie-client/lib | grep oozie-client | sed 's/^oozie-client-\\(.*\\)\\.jar$/\\1/g'`
-        hdfs dfs -cat /user/oozie/share/lib/*/sharelib.properties | grep build.version | grep $version
-        """
+      @call header: 'Share lib', timeout: 600000, handler: ->
+        @hdfs_mkdir
+          destination: "/user/#{oozie.user.name}/share/lib"
+          user: "#{oozie.user.name}"
+          group:  "#{oozie.group.name}"
+          mode: 0o0755
+          krb5_user: @config.ryba.hdfs.krb5_user
+        @execute
+          cmd: mkcmd.hdfs @, """
+          if hdfs dfs -test -d /user/#{oozie.user.name}/share/lib; then
+            echo 'Upgrade sharelib'
+            su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib upgrade -fs #{core_site['fs.defaultFS']} /usr/hdp/current/oozie-client/oozie-sharelib.tar.gz"
+          else
+            #hdfs dfs -mkdir -p /user/#{oozie.user.name}/share/lib || true
+            #hdfs dfs -chown -R #{oozie.user.name}:#{oozie.group.name} /user/#{oozie.user.name}
+            echo 'Create sharelib'
+            su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib create -fs #{core_site['fs.defaultFS']} /usr/hdp/current/oozie-client/oozie-sharelib.tar.gz"
+          fi
+          hdfs dfs -chmod -R 755 /user/#{oozie.user.name}
+          """
+          trap_on_error: true
+          unless_exec: mkcmd.hdfs @, """
+          version=`ls /usr/hdp/current/oozie-client/lib | grep oozie-client | sed 's/^oozie-client-\\(.*\\)\\.jar$/\\1/g'`
+          hdfs dfs -cat /user/oozie/share/lib/*/sharelib.properties | grep build.version | grep $version
+          """
 
-    module.exports.push header: 'Oozie Server # Hive', handler: ->
-      {oozie} = @config.ryba
-      properties = {}
-      if falcon_ctxs = @contexts 'ryba/falcon'#, require('../../falcon').configure
-        properties['hive.metastore.execute.setugi'] ?= 'true'
-      # Note: hdp2.2 falcon docs mentions "hive-site.xml" but only "hive.xml"
-      # exists
-      @hconfigure
+      @hconfigure 
+        header: 'Hive Xml'
+        if: is_falcon_installed
         destination: "#{oozie.conf_dir}/action-conf/hive.xml"
-        properties: properties
+        properties: 'hive.metastore.execute.setugi': 'true'
         merge: true
 
-    module.exports.push header: 'Oozie Server # Log4J', handler: ->
       # Instructions mention updating convertion pattern to the same value as
       # default, skip for now
-      {oozie} = @config.ryba
       @write
+        header: 'Log4J properties'
         destination: "#{oozie.conf_dir}/oozie-log4j.properties"
         source: "#{__dirname}/../resources/oozie-log4j.properties"
         local_source: true

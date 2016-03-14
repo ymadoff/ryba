@@ -1,21 +1,19 @@
 
 # NagVis
 
-    module.exports = []
+NagVis is a visualization addon for the well known network managment system Nagios.
 
-## Configure
+NagVis can be used to visualize Nagios Data, e.g. to display IT processes like a
+mail system or a network infrastructure.
 
-    module.exports.configure = (ctx) ->
-      nagvis = ctx.config.ryba.nagvis ?= {}
-      nagvis.install_dir ?= '/usr/local/nagvis'
-      nagvis.version ?= '1.9-nightly'
-      nagvis.source ?= "https://www.nagvis.org/share/nagvis-#{nagvis.version}.tar.gz"
-      nagvis.port ?= 50000
+NagVis is also compliant with shinken.
 
-    module.exports.push commands: 'install', modules: 'ryba/nagvis/install'
-
-    # module.exports.push commands: 'start', modules: 'ryba/nagvis/start'
-
-    # module.exports.push commands: 'stop', modules: 'ryba/nagvis/stop'
-
-    # module.exports.push commands: 'status', modules: 'ryba/nagvis/status'
+    module.exports = ->
+      'configure':
+        'ryba/nagvis/configure'
+      'install': [
+        'masson/core/yum'
+        'masson/core/iptables'
+        'masson/commons/httpd'
+        'ryba/nagvis/install'
+      ]

@@ -1,10 +1,7 @@
 
 # ElasticSearch Prepared
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    
-    module.exports.push header: 'ES Prepared', handler: ->
+    module.exports = header: 'ES Prepared', handler: ->
       {elasticsearch, realm} = @config.ryba
       @cache
         ssh: null

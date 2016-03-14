@@ -4,21 +4,21 @@
 The backup script dump the content of the hive database as well as the
 configuration.
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    # module.exports.push require('./index').configure
-
-## Backup Database
-
-    module.exports.push header: 'Hive HCatalog # Backup Database', label_true: 'BACKUPED', handler: ->
+    module.exports =  header: 'Hive HCatalog Backup', label_true: 'BACKUPED', timeout: -1, handler: ->
       {hive} = @config.ryba
       user = hive.site['javax.jdo.option.ConnectionUserName']
       password = hive.site['javax.jdo.option.ConnectionPassword']
       {engine, db, hostname, port} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
+
+## Backup Database
+
       engines_cmd =
         mysql: "mysqldump -u#{user} -p#{password} -h#{hostname} -P#{port} #{db}"
       throw Error 'Database engine not supported' unless engines_cmd[engine]
       @backup
+        timeout: -1
+        label_true: 'BACKUPED'
+        header: 'Backup Database'
         name: 'db'
         cmd: engines_cmd[engine]
         destination: "/var/backups/hive/"
@@ -29,9 +29,9 @@ configuration.
 
 Backup the active Hive configuration.
 
-    module.exports.push header: 'Hive HCatalog # Backup Configuration', label_true: 'BACKUPED', handler: ->
-      {hive} = @config.ryba
       @backup
+        header: 'Configuration'
+        label_true: 'BACKUPED'
         name: 'conf'
         source: hive.conf_dir
         destination: "/var/backups/hive/"

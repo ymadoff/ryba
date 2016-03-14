@@ -1,11 +1,8 @@
 
 # Kafka Producer Install
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/lib/hdp_select'
-    module.exports.push 'ryba/lib/write_jaas'
-
+    module.exports = header: 'Kafka Producer Install', handler: ->
+      {kafka, ssl} = @config.ryba
 ## Users & Groups
 
 By default, the "kafka" package create the following entries:
@@ -17,8 +14,6 @@ cat /etc/group | grep kafka
 kafka:x:496:kafka
 ```
 
-    module.exports.push header: 'Kafka Producer # Users & Groups', handler: ->
-      {kafka} = @config.ryba
       @group kafka.group
       @user kafka.user
 
@@ -28,7 +23,6 @@ Install the Kafka producer package and set it to the latest version. Note, we
 select the "kafka-broker" HDP directory. There is no "kafka-producer"
 directories.
 
-    module.exports.push header: 'Kafka Producer # Package', handler: ->
       @service
         name: 'kafka'
       @hdp_select
@@ -39,9 +33,8 @@ directories.
 Update the file "server.properties" with the properties defined by the
 "ryba.kafka.server" configuration.
 
-    module.exports.push header: 'Kafka Producer # Configure', handler:  ->
-      {kafka} = @config.ryba
-      @write
+      @write 
+        header: 'Producer Properties'
         destination: "#{kafka.producer.conf_dir}/producer.properties"
         write: for k, v of kafka.producer.config
           match: RegExp "^#{quote k}=.*$", 'mg'
@@ -49,7 +42,11 @@ Update the file "server.properties" with the properties defined by the
           append: true
         backup: true
         eof: true
+
+## Logging
+
       @write
+        header: 'Log4j'
         destination: "#{kafka.consumer.conf_dir}/log4j.properties"
         write: for k, v of kafka.consumer.log4j
           match: RegExp "^#{quote k}=.*$", 'mg'
@@ -58,6 +55,7 @@ Update the file "server.properties" with the properties defined by the
         backup: true
         eof: true
       @write
+        header: 'Tools Log4j'
         destination: "#{kafka.producer.conf_dir}/tools-log4j.properties"
         write: for k, v of kafka.producer.log4j
           match: RegExp "^#{quote k}=.*$", 'mg'
@@ -69,10 +67,9 @@ Update the file "server.properties" with the properties defined by the
 
 ## Kerberos
 
-    module.exports.push header: 'Kafka Producer # Kerberos', handler: ->
-      {kafka} = @config.ryba
-      return unless kafka.producer.env['KAFKA_KERBEROS_PARAMS']?
       @write_jaas
+        header: 'Producer JAAS'
+        if: -> kafka.producer.env['KAFKA_KERBEROS_PARAMS']?
         destination: "#{kafka.producer.conf_dir}/kafka-client.jaas"
         content:
           KafkaClient:
@@ -86,9 +83,8 @@ Update the file "server.properties" with the properties defined by the
 
  Exports JAAS configuration to producer JVM properties.
 
-    module.exports.push header: 'Kafka Producer # Kerberos', handler: ->
-      {kafka} = @config.ryba
       @write
+        header: 'Environment'
         destination: "#{kafka.producer.conf_dir}/kafka-env.sh"
         write: for k, v of kafka.producer.env
           match: RegExp "export #{k}=.*", 'm'
@@ -101,10 +97,9 @@ Update the file "server.properties" with the properties defined by the
 
   Imports broker's CA to trustore.
 
-    module.exports.push header: 'Kafka Producer # SSL Client', handler: ->
-      {kafka, ssl} = @config.ryba
-      return unless kafka.producer.config['ssl.truststore.location']?
       @java_keystore_add
+        header: 'SSL Client'
+        if: -> kafka.producer.config['ssl.truststore.location']?
         keystore: kafka.producer.config['ssl.truststore.location']
         storepass: kafka.producer.config['ssl.truststore.password']
         caname: "hadoop_root_ca"

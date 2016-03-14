@@ -1,17 +1,17 @@
 
 # Shinken Receiver Check
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap/'
-
-## Check
-
-    module.exports.push header: 'Shinken Receiver # Check TCP', label_true: 'CHECKED', handler: ->
+    module.exports = header: 'Shinken Receiver Check', label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
       {receiver} = @config.ryba.shinken
+
+## TCP
+
       @execute
+        header: 'TCP'
         cmd: "echo > /dev/tcp/#{@config.host}/#{receiver.config.port}"
 
-    module.exports.push header: 'Shinken Receiver # Check HTTP', label_true: 'CHECKED', handler: ->
-      {receiver} = @config.ryba.shinken
+## HTTP
+
       @execute
+        header: 'HTTP'
         cmd: "curl http://#{@config.host}:#{receiver.config.port} | grep OK"

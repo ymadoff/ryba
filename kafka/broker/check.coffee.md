@@ -1,16 +1,14 @@
 
 # Kafka Broker Check
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'ryba/kafka/broker/wait'
-
+    module.exports = header: 'Kafka Broker Check', label_true: 'CHECKED', handler: ->
+      {kafka} = @config.ryba
+      
 ## Check TCP
 
 Make sure the broker is listening. The default port is "9092".
 
-    module.exports.push header: 'Kafka Broker # Check TCP', label_true: 'CHECKED', handler: ->
-      {kafka} = @config.ryba
-      for protocol in kafka.broker.protocols
-        @execute
-          cmd: "echo > /dev/tcp/#{@config.host}/#{kafka.ports[protocol]}"
+      @call header: 'Check TCP', label_true: 'CHECKED', handler: ->
+        for protocol in kafka.broker.protocols
+          @execute
+            cmd: "echo > /dev/tcp/#{@config.host}/#{kafka.ports[protocol]}"

@@ -12,42 +12,26 @@ Modules for receivers:
 * TSCA - Apache Thrift interface to send check results using a high rate buffered TCP connection directly from programs
 * Web Service - A web service that accepts http posts of check results (beta)
 
-## Dependencies
+This module is only needed when enabling passive checks
 
-    module.exports = []
-
-## Configure
-
-    module.exports.configure = (ctx) ->
-      require('../').configure ctx
-      {shinken} = ctx.config.ryba
-      receiver = shinken.receiver ?= {}
-      # Additionnal Modules to install
-      receiver.modules ?= {}
-      # Config
-      receiver.config ?= {}
-      receiver.config.port ?= 7773
-      receiver.config.spare ?= '0'
-      receiver.config.realm ?= 'All'
-      receiver.config.modules = [receiver.config.modules] if typeof receiver.config.modules is 'string'
-      receiver.config.modules ?= Object.keys receiver.modules
-      receiver.config.use_ssl ?= shinken.config.use_ssl
-      receiver.config.hard_ssl_name_check ?= shinken.config.hard_ssl_name_check
-
-## Commands
-
-    # module.exports.push commands: 'backup', modules: 'ryba/shinken/receiver/backup'
-
-    module.exports.push commands: 'check', modules: 'ryba/shinken/receiver/check'
-
-    module.exports.push commands: 'install', modules: [
-      'ryba/shinken/receiver/install'
-      'ryba/shinken/receiver/start'
-      # 'ryba/shinken/receiver/check' # Must be executed before start
-    ]
-
-    module.exports.push commands: 'start', modules: 'ryba/shinken/receiver/start'
-
-    # module.exports.push commands: 'status', modules: 'ryba/shinken/receiver/status'
-
-    module.exports.push commands: 'stop', modules: 'ryba/shinken/receiver/stop'
+    module.exports = ->
+      'configure': [
+        'ryba/shinken/lib/configure'
+        'ryba/shinken/receiver/configure'
+      ]
+      'check':
+        'ryba/shinken/receiver/check'
+      'install': [
+        'masson/core/yum'
+        'masson/core/iptables'
+        'ryba/shinken/lib/commons'
+        'ryba/shinken/receiver/install'
+        'ryba/shinken/receiver/start'
+        'ryba/shinken/receiver/check'
+      ]
+      'start':
+        'ryba/shinken/receiver/start'        
+      'status':
+        'ryba/shinken/receiver/status'
+      'stop':
+        'ryba/shinken/receiver/stop'

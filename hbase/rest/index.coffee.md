@@ -15,9 +15,10 @@ Of course we deploy the secured version of the configuration of this API.
         'ryba/lib/hdp_select'
         'ryba/lib/write_jaas'
         'ryba/hadoop/hdfs_client'
-        'ryba/hbase/common'
+        'ryba/hbase/client/'
         'ryba/hbase/rest/install'
         'ryba/hbase/rest/start'
+        'ryba/hbase/rest/wait'
         'ryba/hbase/rest/check'
       ]
       'start':[

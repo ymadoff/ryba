@@ -15,14 +15,17 @@ Follows [cloudera hbase setup in secure mode][hbase-configuration]
       'install': [
          'masson/core/iptables'
          'ryba/hadoop/core'
-         'ryba/hbase/common'
          'ryba/lib/hconfigure'
          'ryba/lib/hdp_select'
+         'ryba/hbase/client'
          'ryba/hbase/thrift/install'
+         'ryba/hbase/master/wait'
          'ryba/hbase/thrift/start'
+         'ryba/hbase/thrift/wait'
          'ryba/hbase/thrift/check'
       ]
       'start': [
+        'ryba/hbase/master/wait'
         'ryba/hbase/thrift/start'
       ]
       'status': [

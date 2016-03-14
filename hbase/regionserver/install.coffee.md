@@ -4,6 +4,7 @@
     module.exports = header: 'HBase RegionServer Install', handler: ->
       {hadoop_group, hbase, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      regionservers = @contexts('ryba/hbase/regionserver').map( (ctx) -> ctx.config.host).join '\n'
 
 ## IPTables
 
@@ -22,6 +23,21 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.rs.site['hbase.regionserver.info.port'], protocol: 'tcp', state: 'NEW', comment: "HBase RegionServer Info Web UI" }
         ]
         if: @config.iptables.action is 'start'
+
+## Users & Groups
+
+By default, the "hbase" package create the following entries:
+
+```bash
+cat /etc/passwd | grep hbase
+hbase:x:492:492:HBase:/var/run/hbase:/bin/bash
+cat /etc/group | grep hbase
+hbase:x:492:
+```
+  
+      @group hbase.group
+      @user hbase.user
+
 
 ## HBase Regionserver Layout
 
@@ -105,39 +121,37 @@ RegionServer, and HBase client host machines.
 
 [secop]: http://fr.slideshare.net/HBaseCon/features-session-2
   
-      @call header: 'Configure', handler: ->
-        @hconfigure
-          header: 'Site'
-          destination: "#{hbase.rs.conf_dir}/hbase-site.xml"
-          default: "#{__dirname}/../resources/hbase-site.xml"
-          local_default: true
-          properties: hbase.rs.site
-          merge: false
-          uid: hbase.user.name
-          gid: hbase.group.name
-          mode: 0o0600 # See slide 33 from [Operator's Guide][secop]
-          backup: true
+      @hconfigure
+        header: 'HBase Site'
+        destination: "#{hbase.rs.conf_dir}/hbase-site.xml"
+        default: "#{__dirname}/../resources/hbase-site.xml"
+        local_default: true
+        properties: hbase.rs.site
+        merge: false
+        uid: hbase.user.name
+        gid: hbase.group.name
+        mode: 0o0600 # See slide 33 from [Operator's Guide][secop]
+        backup: true
 
 ## Opts
 
 Environment passed to the RegionServer before it starts.
 
-        writes = for k, v of hbase.rs.env
-          match: RegExp "export #{k}=.*", 'm'
-          replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
-          append: true
-        @render
-          header: 'Opts'
-          source: "#{__dirname}/../resources/hbase-env.sh"
-          destination: "#{hbase.rs.conf_dir}/hbase-env.sh"
-          backup: true
-          uid: hbase.user.name
-          gid: hbase.group.name
-          local_source: true
-          context: @config
-          write: writes
-          unlink: true
-          eof: true
+      @render
+        header: 'HBase Env'
+        source: "#{__dirname}/../resources/hbase-env.sh"
+        destination: "#{hbase.rs.conf_dir}/hbase-env.sh"
+        backup: true
+        uid: hbase.user.name
+        gid: hbase.group.name
+        local_source: true
+        context: @config
+        write: for k, v of hbase.rs.env
+            match: RegExp "export #{k}=.*", 'm'
+            replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
+            append: true
+        unlink: true
+        eof: true
 
 ## RegionServers
 
@@ -145,7 +159,7 @@ Upload the list of registered RegionServers.
     
       @write
         header: 'Registered RegionServers'
-        content: @hosts_with_module('ryba/hbase/regionserver').join '\n'
+        content: regionservers
         destination: "#{hbase.rs.conf_dir}/regionservers"
         uid: hbase.user.name
         gid: hadoop_group.name
