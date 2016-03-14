@@ -179,8 +179,6 @@ Note, this is not documented anywhere and might not be considered as a best prac
           cacert: "#{ssl.cacert}"
           local_source: true
 
-yarn.site['yarn.timeline-service.fs-history-store.uri']
-
 ## Kerberos
 
 Create the Kerberos service principal by default in the form of
