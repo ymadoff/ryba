@@ -144,15 +144,9 @@ Default configuration:
       ryba.hdfs.secure_dn_user ?= ryba.hdfs.user.name
       # HA Configuration
       ryba.nameservice ?= null
-      ryba.active_nn ?= false
+      # ryba.active_nn ?= false
       throw new Error "Invalid Service Name" unless ryba.nameservice
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
-      # throw new Error "Need at least 2 namenodes" if namenodes.length < 2
-      # active_nn_hosts = @config.servers.filter( (server) -> server.ryba?.active_nn ).map( (server) -> server.host )
-      # standby_nn_hosts = @config.servers.filter( (server) -> ! server.ryba?.active_nn ).map( (server) -> server.host )
-      standby_nn_ctxs = nn_ctxs.filter( (nn_ctx) => ! @config.servers[nn_ctx.config.host].ryba?.active_nn )
-      # throw new Error "Invalid Number of Passive NameNodes: #{standby_nn_ctxs.length}" unless standby_nn_ctxs.length is 1
-      ryba.standby_nn_host = standby_nn_ctxs[0].config.host
       ryba.static_host =
         if ryba.static_host and ryba.static_host isnt '_HOST'
         then @config.host
@@ -160,13 +154,16 @@ Default configuration:
       # Configuration
       core_site = ryba.core_site ?= {}
       core_site['io.compression.codecs'] ?= "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.SnappyCodec"
-      unless @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+      if nn_ctxs.length is 1
         core_site['fs.defaultFS'] ?= "hdfs://#{nn_ctxs.config.host[0]}:8020"
-      else
+      else if nn_ctxs.length is 2
         core_site['fs.defaultFS'] ?= "hdfs://#{ryba.nameservice}:8020"
-        active_nn_ctxs = nn_ctxs.filter( (nn_ctx) => @config.servers[nn_ctx.config.host].ryba?.active_nn )
-        throw new Error "Invalid Number of Active NameNodes: #{active_nn_ctxs.length}" unless active_nn_ctxs.length is 1
-        ryba.active_nn_host = active_nn_ctxs[0].config.host
+        ryba.active_nn_host ?= nn_ctxs[0].config.host
+        # [active_nn_ctxs] = nn_ctxs.filter( (nn_ctx) => nn_ctx.config.host is ryba.active_nn_host )
+        [standby_nn_ctxs] = nn_ctxs.filter( (nn_ctx) => nn_ctx.config.host isnt ryba.active_nn_host )
+        ryba.standby_nn_host = standby_nn_ctxs.config.host
+      else throw Error "Invalid number of NanodeNodes, got #{nn_ctxs.length}, expecting 2"
+        
       # Set the authentication for the cluster. Valid values are: simple or kerberos
       core_site['hadoop.security.authentication'] ?= 'kerberos'
       # Enable authorization for different protocols.
