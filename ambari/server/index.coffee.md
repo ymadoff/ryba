@@ -12,19 +12,20 @@ manage and monitor a Hadoop cluster.
 Exemple:
  
 ```json
-ambari:
-  name: 'big'
-  username: process.env['HADOOP_USERNAME']
-  password: process.env['HADOOP_PASSWORD']
-  config: 
-    'client.security': 'ldap'
-    'authentication.ldap.useSSL': true
-    'authentication.ldap.primaryUrl': 'master3.ryba:636'
-    'authentication.ldap.baseDn': 'ou=users,dc=ryba'
-    'authentication.ldap.bindAnonymously': false
-    'authentication.ldap.managerDn': 'cn=admin,ou=users,dc=ryba'
-    'authentication.ldap.managerPassword': 'XXX'
-    'authentication.ldap.usernameAttribute': 'cn'
+{ "ambari": {
+  "name": "big",
+  "username": process.env["HADOOP_USERNAME"],
+  "password": process.env["HADOOP_PASSWORD"],
+  "config": {
+    "client.security": "ldap",
+    "authentication.ldap.useSSL": true,
+    "authentication.ldap.primaryUrl": "master3.ryba:636",
+    "authentication.ldap.baseDn": "ou=users,dc=ryba",
+    "authentication.ldap.bindAnonymously": false,
+    "authentication.ldap.managerDn": "cn=admin,ou=users,dc=ryba",
+    "authentication.ldap.managerPassword": "XXX",
+    "authentication.ldap.usernameAttribute": "cn"
+} } }
 ```
  
     
