@@ -1,4 +1,4 @@
-Wrappwe for HBase shell commands
+Wrapper for HBase shell commands
 
     module.exports = (cmd) ->
       cmd = [cmd] unless Array.isArray cmd
