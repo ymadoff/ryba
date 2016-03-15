@@ -59,7 +59,7 @@ Example:
       hive.aux_jars ?= []
       aux_jars = ['/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar']
       # phoenix-client jar contains incompatible additionnal jars. Take phoenix-server instead
-      aux_jars.push '/usr/hdp/current/phoenix-server.jar' if @.has_any_modules 'ryba/phoenix/client' 
+      aux_jars.push '/usr/hdp/current/phoenix-server.jar' if @has_any_modules 'ryba/phoenix/client' 
       for jar in aux_jars then hive.aux_jars.push jar unless jar in hive.aux_jars
       # Layout and environment
       hive.hcatalog ?= {}
