@@ -6,6 +6,6 @@
         'ryba/mahout/configure'
       ]
       'install': [
-        ryba/lib/hdp_select
+        'ryba/lib/hdp_select'
         'ryba/mahout/install'
       ]
