@@ -17,7 +17,7 @@ Example:
 ```
 
     module.exports = handler: ->
-      [hcat_ctx] = @contexts 'ryba/hive/hcatalog', [ require('ryba/commons/db_admin').handler, require('../hcatalog/configure').handler]
+      [hcat_ctx] = @contexts 'ryba/hive/hcatalog', [ require('../../commons/db_admin').handler, require('../hcatalog/configure').handler]
       throw Error "No HCatalog server declared" unless hcat_ctx
       # require('../../tez/configure').handler.call @
       {mapred, tez} = @config.ryba 
