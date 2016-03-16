@@ -8,6 +8,7 @@ See [REST Gateway Impersonation Configuration][impersonation].
 
     module.exports = handler: ->
       require('../../hadoop/core/configure').handler.call @
+      m_ctxs = @contexts 'ryba/hbase/master', require('../master/configure').handler
       ryba = @config.ryba ?= {}
       {realm, core_site, ssl_server, hbase} = @config.ryba
       {java_home} = @config.java
@@ -58,7 +59,6 @@ See [REST Gateway Impersonation Configuration][impersonation].
       hbase.rest.site['hbase.rest.authentication.kerberos.principal'] ?= "HTTP/_HOST@#{realm}"
       # hbase.site['hbase.rest.authentication.kerberos.keytab'] ?= "#{hbase.conf_dir}/hbase.service.keytab"
       hbase.rest.site['hbase.rest.authentication.kerberos.keytab'] ?= core_site['hadoop.http.authentication.kerberos.keytab']
-      m_ctxs = @contexts 'ryba/hbase/master', require('../master/configure').handler
       hbase.rest.site['hbase.security.authentication'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.security.authentication']
       hbase.rest.site['hbase.security.authorization'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.security.authorization']
       hbase.rest.site['hbase.master.kerberos.principal'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.master.kerberos.principal']
