@@ -15,7 +15,8 @@ define service {
   retry_interval        {{ service.retry_interval }}{% endif %}{% if not service.active_checks_enabled | isEmpty %}
   active_checks_enabled {{ service.active_checks_enabled }}{% endif %}{% if not service.passive_checks_enabled | isEmpty %}
   passive_checks_enabled {{ service.passive_checks_enabled }}{% endif %}{% if not service.check_period | isEmpty %}
-  check_period          {{ service.check_period }}{% endif %}{% if not service.obsess_over_service | isEmpty %}
+  check_period          {{ service.check_period }}{% endif %}{% if not service.escalations | isEmpty %}
+  escalations           {{ service.escalations | join(',') }}{% endif %}{% if not service.obsess_over_service | isEmpty %}
   obsess_over_service   {{ service.obsess_over_service }}{% endif %}{% if not service.check_freshness | isEmpty %}
   check_freshness       {{ service.check_freshness }}{% endif %}{% if not service.freshness_threshold | isEmpty %}
   freshness_threshold   {{ service.freshness_threshold }}{% endif %}{% if not service.event_handler | isEmpty %}

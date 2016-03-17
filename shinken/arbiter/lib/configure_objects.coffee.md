@@ -20,6 +20,7 @@ Default "shinken object" (servicegroups, hosts, etc) configuration.
         contacts = shinken.config.contacts ?= {}
         dependencies = shinken.config.dependencies ?= {}
         escalations = shinken.config.escalations ?= {}
+        serviceescalations = shinken.config.serviceescalations ?= {}
         timeperiods = shinken.config.timeperiods ?= {}
         # Hostgroups
         hostgroups['by_roles'] ?= {}
@@ -275,9 +276,8 @@ This function is called at the end to normalize values
           group.members = [group.members] unless Array.isArray group.members
           group.servicegroup_members ?= []
           group.servicegroup_members = [group.servicegroup_members] unless Array.isArray group.servicegroup_members
-        #
-        #for name, service of shinken.config.services
-        
+        for name, service of shinken.config.services
+          service.escalations = [service.escalations] if service.escalations? and not Array.isArray service.escalations
         # Realm
         default_realm = false
         for name, realm of shinken.config.realms
@@ -313,11 +313,19 @@ This function is called at the end to normalize values
           dep.dependent_hosts = [dep.dependent_hosts] unless Array.isArray dep.dependent_hosts
           dep.dependent_hostgroups = [dep.dependent_hostgroups] unless Array.isArray dep.dependent_hostgroups
         # Escalations
-        for name, esc of shinken.config.escalations
+        for name, esc of shinken.config.serviceescalations
           throw Error "Unvalid escalation #{name}, please provide hosts or hostsgroups" unless esc.hosts? or esc.hostgroups?
           throw Error "Unvalid escalation #{name}, please provide contacts or contactgroups" unless esc.contacts? or esc.contactgroups?
+          throw Error "Unvalid escalation #{name}, please provide first_notification or first_notification_time" unless esc.first_notification? or esc.first_notification_time?
+          throw Error "Unvalid escalation #{name}, please provide last_notification or last_notification_time" unless esc.last_notification? or esc.last_notification_time?
           esc.hosts = [esc.hosts] unless Array.isArray esc.hosts
           esc.hostgroups = [esc.hostgroups] unless Array.isArray esc.hostgroups
+          esc.contacts = [esc.contacts] unless Array.isArray esc.contacts
+          esc.contactgroups = [esc.contactgroups] unless Array.isArray esc.contactgroups
+        for name, esc of shinken.config.escalations
+          throw Error "Unvalid escalation #{name}, please provide contacts or contactgroups" unless esc.contacts? or esc.contactgroups?
+          throw Error "Unvalid escalation #{name}, please provide first_notification or first_notification_time" unless esc.first_notification? or esc.first_notification_time?
+          throw Error "Unvalid escalation #{name}, please provide last_notification or last_notification_time" unless esc.last_notification? or esc.last_notification_time?
           esc.contacts = [esc.contacts] unless Array.isArray esc.contacts
           esc.contactgroups = [esc.contactgroups] unless Array.isArray esc.contactgroups
         # Timeperiods

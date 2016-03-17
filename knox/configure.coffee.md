@@ -9,10 +9,7 @@ Configuration like address and port will be then enriched by the configure which
 loop on topologies to provide missing values
 
     configure_default = () ->
-      topology = {}
-      topology.providers = {}
-      #Activate service
-      topology.services = {}
+      services = {}
       for service, mod of {
         'namenode': 'ryba/hadoop/hdfs_nn'
         'webhdfs': 'ryba/hadoop/hdfs_nn'
@@ -21,8 +18,9 @@ loop on topologies to provide missing values
         'webhcat': 'ryba/hive/webhcat'
         'oozie': 'ryba/oozie/server'
         'webhbase': 'ryba/hbase/rest'
-      } then topology.services[service] = @contexts(mod).length > 0
-      return "#{@config.ryba.nameservice}": topology
+      } then if @contexts(mod).length > 0
+        services[service] = true 
+      return "#{@config.ryba.nameservice}": services: services
 
 ## Configure
 
@@ -59,9 +57,9 @@ loop on topologies to provide missing values
       knox.site['sun.security.krb5.debug'] ?= 'true'
       knox.ssl ?= {}
       knox.ssl.storepass ?= 'knox_master_secret_123'
-      knox.ssl.cacert ?= @config.ryba.ssl?.cacert
-      knox.ssl.cert ?= @config.ryba.ssl?.cert
-      knox.ssl.key ?= @config.ryba.ssl?.key
+      knox.ssl.cacert ?= ctx.config.ryba.ssl?.cacert
+      knox.ssl.cert ?= ctx.config.ryba.ssl?.cert
+      knox.ssl.key ?= ctx.config.ryba.ssl?.key
       knox.ssl.keypass ?= 'knox_master_secret_123'
       # Knox SSL
       throw Error 'Required property "ryba.knox.ssl.cacert"' unless knox.ssl.cacert?
@@ -108,38 +106,35 @@ against the configured LDAP store.
         ldap.name ?= 'ShiroProvider'
         ldap.config ?= {}
         ldap.config['sessionTimeout'] ?= 30
-        realms = ['ldapRealm']
-        realm_config = {}
-        realm_config['ldapRealm'] = topology
-        if topology.group?
-          throw Error 'Required property lookup' unless topology.group.lookup?
-          realms.push 'ldapGroupRealm'
-          realm_config['ldapGroupRealm'] = @config.sssd.config[topology.group.lookup]
-        for realm in realms
+        # By default, we only configure a simple LDAP Binding (user only)
+        realms = 'ldapRealm': topology
+        if topology.group
+          realms['ldapGroupRealm'] = if topology.group.lookup? then ctx.config.sssd.config[topology.group.lookup] else topology.group
+        for realm, realm_config in realms
           ldap.config["main.#{realm}"] ?= 'org.apache.hadoop.gateway.shirorealm.KnoxLdapRealm' # OpenLDAP implementation
           # ldap.config['main.ldapRealm'] ?= 'org.apache.shiro.realm.ldap.JndiLdapRealm' # AD implementation
           ldap.config["main.#{realm}".replace('Realm','')+"ContextFactory"] ?= 'org.apache.hadoop.gateway.shirorealm.KnoxLdapContextFactory'
           ldap.config["main.#{realm}.contextFactory"] ?= '$'+"#{realm}".replace('Realm','')+'ContextFactory'
-          # ctxs = @contexts 'masson/core/openldap_server'
-          throw Error 'Required property ldap_uri' unless realm_config[realm]['ldap_uri']?
-          throw Error 'Required property ldap_default_bind_dn' unless realm_config[realm]['ldap_default_bind_dn']?
-          throw Error 'Required property ldap_default_authtok' unless realm_config[realm]['ldap_default_authtok']?
-          throw Error 'Required property ldap_search_base' unless realm_config[realm]['ldap_search_base']?
-          if realm == 'ldapGroupRealm' then throw Error 'Required property ldap_search_base' unless realm_config[realm]['ldap_group_search_base']?
-          ldap.config["main.#{realm}.userDnTemplate"] = realm_config[realm]['userDnTemplate'] if realm_config[realm]['userDnTemplate']?
-          ldap.config["main.#{realm}.contextFactory.url"] = realm_config[realm]['ldap_uri'].split(',')[0]
-          ldap.config["main.#{realm}.contextFactory.systemUsername"] = realm_config[realm]['ldap_default_bind_dn']
-          ldap.config["main.#{realm}.contextFactory.systemPassword"] = realm_config[realm]['ldap_default_authtok']
-          ldap.config["main.#{realm}.searchBase"] = if realm == 'ldapGroupRealm' then realm_config[realm]['ldap_group_search_base'] else realm_config[realm]['ldap_search_base']
+          # ctxs = ctx.contexts 'masson/core/openldap_server'
+          throw Error 'Required property ldap_uri' unless realm_config['ldap_uri']?
+          throw Error 'Required property ldap_default_bind_dn' unless realm_config['ldap_default_bind_dn']?
+          throw Error 'Required property ldap_default_authtok' unless realm_config['ldap_default_authtok']?
+          throw Error 'Required property ldap_search_base' unless realm_config['ldap_search_base']?
+          throw Error 'Required property ldap_search_base' if realm is 'ldapGroupRealm' and not realm_config['ldap_group_search_base']?
+          ldap.config["main.#{realm}.userDnTemplate"] = realm_config['userDnTemplate'] if realm_config['userDnTemplate']?
+          ldap.config["main.#{realm}.contextFactory.url"] = realm_config['ldap_uri'].split(',')[0]
+          ldap.config["main.#{realm}.contextFactory.systemUsername"] = realm_config['ldap_default_bind_dn']
+          ldap.config["main.#{realm}.contextFactory.systemPassword"] = realm_config['ldap_default_authtok']
+          ldap.config["main.#{realm}.searchBase"] = realm_config["ldap#{if realm == 'ldapGroupRealm' then '_group' else ''}_search_base"]
           ldap.config["main.#{realm}.contextFactory.authenticationMechanism"] ?= 'simple'
           ldap.config["main.#{realm}.authorizationEnabled"] ?= 'true'
-        # we redo the test here, so that this params are rendered at the end of the authentication provider section 
+        # we redo the test here, so that these params are rendered at the end of the authentication provider section 
         if topology.group?
-          ldap.config['main.ldapGroupRealm.groupObjectClass'] = realm_config["ldapRealm"].group.groupObjectClass ?= "posixGroup"
-          ldap.config['main.ldapGroupRealm.memberAttribute'] = realm_config["ldapRealm"].group.memberAttribute ?= "memberUid"
-          ldap.config['main.ldapGroupRealm.memberAttributeValueTemplate'] = 'uid={0},' + realm_config["ldapRealm"]['ldap_search_base']
+          ldap.config['main.ldapGroupRealm.groupObjectClass'] = topology.group['groupObjectClass'] ?= "posixGroup"
+          ldap.config['main.ldapGroupRealm.memberAttribute'] = topology.group['memberAttribute'] ?= "memberUid"
+          ldap.config['main.ldapGroupRealm.memberAttributeValueTemplate'] = 'uid={0},' + topology['ldap_search_base']
         ldap.config['urls./**'] ?= 'authcBasic'
-        ldap.config['main.securityManager.realms'] = ["$"+realm for realm in realms].join "," if topology.group?
+        ldap.config['main.securityManager.realms'] = ["$"+realm for realm, _ of realms].join "," if topology.group?
 
 The Knox Gateway identity-assertion provider maps an authenticated user to an
 internal cluster user and/or group. This allows the Knox Gateway accept requests
@@ -196,7 +191,7 @@ This mechanism can be used to configure a specific gateway without having to dec
         if topology.services['jobtracker'] is true
           ctxs = @contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm/configure').handler
           if ctxs.length
-            rm_shortname = if ctxs.length > 1 then ".#{ctxs[0].config.shortname}" else ''    
+            rm_shortname = if ctxs.length > 1 then ".#{ctxs[0].config.shortname}" else ''
             rm_address = ctxs[0].config.ryba.yarn.site["yarn.resourcemanager.address#{rm_shortname}"]
             topology.services['jobtracker'] = "rpc://#{rm_address}"
           else throw Error 'Cannot autoconfigure KNOX jobtracker service, no resourcemanager declared'
