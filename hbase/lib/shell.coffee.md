@@ -1,3 +1,4 @@
+
 Wrapper for HBase shell commands
 
     module.exports = (cmd) ->
