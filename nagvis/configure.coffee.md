@@ -13,7 +13,7 @@
 Example
 
 ```json
-    "nagis": {
+    "nagvis": {
       "install_dir": "/usr/local/nagvis",
       "version": "1.9"
       "livestatus_address": "host.mydomain:50000"
