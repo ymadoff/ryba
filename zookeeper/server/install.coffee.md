@@ -2,7 +2,8 @@
 # Zookeeper Server Install
 
     module.exports = header: 'ZooKeeper Server Install', handler: ->
-      {zookeeper, hadoop_group} = @config.ryba
+      {zookeeper, hadoop_group, realm} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Users & Groups
 
@@ -23,7 +24,7 @@ hadoop:x:498:hdfs
 
 | Service    | Port | Proto  | Parameter          |
 |------------|------|--------|--------------------|
-| zookeeper  | 2181 | tcp    | hdp.zookeeper_port |
+| zookeeper  | 2181 | tcp    | zookeeper.port     |
 | zookeeper  | 2888 | tcp    | -                  |
 | zookeeper  | 3888 | tcp    | -                  |
 
@@ -129,9 +130,11 @@ Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
         ZK_HOME=/usr/hdp/current/zookeeper-client/
         java -cp $ZK_HOME/lib/*:$ZK_HOME/zookeeper.jar org.apache.zookeeper.server.auth.DigestAuthenticationProvider super:#{zookeeper.superuser.password}
         """
-      , (err, _, stdout) ->
+      , (err, generated, stdout) ->
+        throw err if err
+        return unless generated # probably because password not set
         digest = match[1] if match = /\->(.*)/.exec(stdout)
-        throw Error "Failed to get digest" unless digest
+        throw Error "Failed to get digest: bad output" unless digest
         zookeeper.env['SERVER_JVMFLAGS'] = "-Dzookeeper.DigestAuthenticationProvider.superDigest=#{digest} #{zookeeper.env['SERVER_JVMFLAGS']}"
 
 ## Environment
@@ -139,7 +142,7 @@ Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
 Note, environment is enriched at runtime if a super user is generated
 (see above).
 
-      @call -> @write
+      @write
         header: 'Environment'
         destination: "#{zookeeper.conf_dir}/zookeeper-env.sh"
         content: ("export #{k}=\"#{v}\"" for k, v of zookeeper.env).join '\n'
@@ -151,78 +154,21 @@ Note, environment is enriched at runtime if a super user is generated
 Update the file "zoo.cfg" with the properties defined by the
 "ryba.zookeeper.config" configuration.
 
-      @write
+      @write_properties
         header: 'Configure'
         destination: "#{zookeeper.conf_dir}/zoo.cfg"
-        write: for k, v of zookeeper.config
-          match: RegExp "^#{quote k}=.*$", 'mg'
-          replace: "#{k}=#{v}"
-          append: true
+        content: zookeeper.config
         backup: true
-        eof: true
 
 ## Log4J
 
-Upload the ZooKeeper loging configuration file.
+Write the ZooKeeper logging configuration file.
 
-      writes = [
-        match: /log4j\.rootLogger=.*/g
-        replace: "log4j.rootLogger=#{zookeeper.env['ZOO_LOG4J_PROP']}"
-      ]
-      # Append the configuration of the SocketHubAppender
-      if zookeeper.log4j.server_port
-        writes.push
-          match: /^# Add SOCKET to rootLogger to serve logs to the remote Logstash TCP Client(.*)/m
-          replace: "\n#\n# Add SOCKET to rootLogger to serve logs to the remote Logstash TCP Client\n#"
-          append: true
-        ,
-          match: /^log4j.appender.SOCKETHUB=(.*)/m
-          replace: "log4j.appender.SOCKETHUB=org.apache.log4j.net.SocketHubAppender"
-          append: true
-        ,
-          match: /^log4j.appender.SOCKETHUB.Application=(.*)/m
-          replace: "log4j.appender.SOCKETHUB.Application=zookeeper"
-          append: true
-        ,
-          match: /^log4j.appender.SOCKETHUB.Port=(.*)/m
-          replace: "log4j.appender.SOCKETHUB.Port=#{zookeeper.log4j.server_port}"
-          append: true
-        ,
-          match: /^log4j.appender.SOCKETHUB.BufferSize=(.*)/m
-          replace: "log4j.appender.SOCKETHUB.BufferSize=100"
-          append: true
-      # Append the configuration of the SocketAppender
-      if zookeeper.log4j.remote_host && zookeeper.log4j.remote_port
-        writes.push
-          match: /^# Add SOCKET to rootLogger to send logs to the remote Logstash TCP Server(.*)/m
-          replace: "\n#\n# Add SOCKET to rootLogger to send logs to the remote Logstash TCP Server\n#"
-          append: true
-        ,
-          match: /^log4j.appender.SOCKET=(.*)/m
-          replace: "log4j.appender.SOCKET=org.apache.log4j.net.SocketAppender"
-          append: true
-        ,
-          match: /^log4j.appender.SOCKET.Application=(.*)/m
-          replace: "log4j.appender.SOCKET.Application=zookeeper"
-          append: true
-        ,
-          match: /^log4j.appender.SOCKET.RemoteHost=(.*)/m
-          replace: "log4j.appender.SOCKET.RemoteHost=#{zookeeper.log4j.remote_host}"
-          append: true
-        ,
-          match: /^log4j.appender.SOCKET.Port=(.*)/m
-          replace: "log4j.appender.SOCKET.Port=#{zookeeper.log4j.remote_port}"
-          append: true
-        ,
-          match: /^log4j.appender.SOCKET.ReconnectionDelay(.*)/m
-          replace: "log4j.appender.SOCKET.ReconnectionDelay=10000"
-          append: true
-      @write
+      @write_properties
         header: 'Log4J'
         destination: "#{zookeeper.conf_dir}/log4j.properties"
-        source: "#{__dirname}/resources/log4j.properties"
-        local_source: true
-        write: writes
+        content: zookeeper.log4j.config
+        backup: true
 
 ## Schedule Purge Transaction Logs
 

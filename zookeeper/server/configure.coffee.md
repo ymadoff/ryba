@@ -29,9 +29,9 @@ Example :
       zookeeper = @config.ryba.zookeeper ?= {}
       # Layout
       zookeeper.pid_dir ?= '/var/run/zookeeper'
+      zookeeper.port ?= 2181
       # Environnment
       zookeeper.env ?= {}
-      zookeeper.env['JAVA_HOME'] ?= "#{java.java_home}"
       zookeeper.env['ZOOKEEPER_HOME'] ?= "/usr/hdp/current/zookeeper-client"
       zookeeper.env['ZOO_AUTH_TO_LOCAL'] ?= "RULE:[1:\\$1]RULE:[2:\\$1]"
       zookeeper.env['ZOO_LOG_DIR'] ?= "#{zookeeper.log_dir}"
@@ -45,23 +45,17 @@ Example :
         zookeeper.env['SERVER_JVMFLAGS'] = "#{zookeeper.env['SERVER_JVMFLAGS']} -Dzookeeper.security.auth_to_local=$ZOO_AUTH_TO_LOCAL"
       if zookeeper.env['JMXPORT']? and zookeeper.env['SERVER_JVMFLAGS'].indexOf('-Dcom.sun.management.jmxremote.rmi.port') is -1
         zookeeper.env['SERVER_JVMFLAGS'] = "#{zookeeper.env['SERVER_JVMFLAGS']} -Dcom.sun.management.jmxremote.rmi.port=$JMXPORT"
-      zookeeper.log4j ?= {}
-      zookeeper.log4j[k] ?= v for k, v of @config.log4j
-      if zookeeper.log4j.remote_host? and zookeeper.log4j.remote_port? and zookeeper.env['ZOO_LOG4J_PROP'].indexOf('SOCKET') is -1
-        zookeeper.env['ZOO_LOG4J_PROP'] = "#{zookeeper.env['ZOO_LOG4J_PROP']},SOCKET"
-      if zookeeper.log4j.server_port? and zookeeper.env['ZOO_LOG4J_PROP'].indexOf('SOCKETHUB') is -1
-        zookeeper.env['ZOO_LOG4J_PROP'] = "#{zookeeper.env['ZOO_LOG4J_PROP']},SOCKETHUB"
       # Configuration
       zookeeper.config ?= {}
       zookeeper.config['maxClientCnxns'] ?= '200'
       # The number of milliseconds of each tick
-      zookeeper.config['tickTime'] ?= "2000"
+      zookeeper.config['tickTime'] ?= '2000'
       # The number of ticks that the initial synchronization phase can take
-      zookeeper.config['initLimit'] ?= "10"
-      zookeeper.config['tickTime'] ?= "2000"
+      zookeeper.config['initLimit'] ?= '10'
+      zookeeper.config['tickTime'] ?= '2000'
       # The number of ticks that can pass between
       # sending a request and getting an acknowledgement
-      zookeeper.config['syncLimit'] ?= "5"
+      zookeeper.config['syncLimit'] ?= '5'
       # the directory where the snapshot is stored.
       zookeeper.config['dataDir'] ?= '/var/zookeeper/data/'
       # the port at which the clients will connect
@@ -81,3 +75,39 @@ Example :
       # Superuser
       zookeeper.superuser ?= {}
       # zookeeper.superuser.password ?= 'ryba123'
+      # Log4J
+      zookeeper.log4j ?= {}
+      zookeeper.log4j[k] ?= v for k, v of @config.log4j
+      if zookeeper.log4j.remote_host? and zookeeper.log4j.remote_port? and zookeeper.env['ZOO_LOG4J_PROP'].indexOf('SOCKET') is -1
+        zookeeper.env['ZOO_LOG4J_PROP'] = "#{zookeeper.env['ZOO_LOG4J_PROP']},SOCKET"
+      if zookeeper.log4j.server_port? and zookeeper.env['ZOO_LOG4J_PROP'].indexOf('SOCKETHUB') is -1
+        zookeeper.env['ZOO_LOG4J_PROP'] = "#{zookeeper.env['ZOO_LOG4J_PROP']},SOCKETHUB"
+      config = zookeeper.log4j.config ?= {}
+      config['log4j.rootLogger'] ?= zookeeper.env['ZOO_LOG4J_PROP']
+      config['log4j.appender.CONSOLE'] ?= 'org.apache.log4j.ConsoleAppender'
+      config['log4j.appender.CONSOLE.Threshold'] ?= 'INFO'
+      config['log4j.appender.CONSOLE.layout'] ?= 'org.apache.log4j.PatternLayout'
+      config['log4j.appender.CONSOLE.layout.ConversionPattern'] ?= '%d{ISO8601} - %-5p [%t:%C{1}@%L] - %m%n'
+      config['log4j.appender.ROLLINGFILE'] ?= 'org.apache.log4j.RollingFileAppender'
+      config['log4j.appender.ROLLINGFILE.Threshold'] ?= 'DEBUG'
+      config['log4j.appender.ROLLINGFILE.File'] ?= "#{zookeeper.log_dir}/zookeeper.log"
+      config['log4j.appender.ROLLINGFILE.MaxFileSize'] ?= '10MB'
+      config['log4j.appender.ROLLINGFILE.MaxBackupIndex'] ?= '10'
+      config['log4j.appender.ROLLINGFILE.layout'] ?= 'org.apache.log4j.PatternLayout'
+      config['log4j.appender.ROLLINGFILE.layout.ConversionPattern'] ?= '%d{ISO8601} - %-5p [%t:%C{1}@%L] - %m%n'
+      config['log4j.appender.TRACEFILE'] ?= 'org.apache.log4j.FileAppender'
+      config['log4j.appender.TRACEFILE.Threshold'] ?= 'TRACE'
+      config['log4j.appender.TRACEFILE.File'] ?= "#{zookeeper.log_dir}/zookeeper_trace.log"
+      config['log4j.appender.TRACEFILE.layout'] = 'org.apache.log4j.PatternLayout'
+      config['log4j.appender.TRACEFILE.layout.ConversionPattern'] ?= '%d{ISO8601} - %-5p [%t:%C{1}@%L][%x] - %m%n'
+      if zookeeper.log4j.server_port
+        config['log4j.appender.SOCKETHUB'] ?= 'org.apache.log4j.net.SocketHubAppender'
+        config['log4j.appender.SOCKETHUB.Application'] ?= 'zookeeper'
+        config['log4j.appender.SOCKETHUB.Port'] ?= zookeeper.log4j.server_port
+        config['log4j.appender.SOCKETHUB.BufferSize'] ?= '100'
+      if zookeeper.log4j.remote_host and zookeeper.log4j.remote_port
+        config['log4j.appender.SOCKET'] ?= 'org.apache.log4j.net.SocketAppender'
+        config['log4j.appender.SOCKET.Application'] ?= 'zookeeper'
+        config['log4j.appender.SOCKET.RemoteHost'] ?= zookeeper.log4j.remote_host
+        config['log4j.appender.SOCKET.Port'] ?= zookeeper.log4j.remote_port
+        config['log4j.appender.SOCKET.ReconnectionDelay'] ?= '10000'
