@@ -25,6 +25,10 @@ directories.
 
       @service
         name: 'kafka'
+      @mkdir
+        destination: '/var/lib/kafka'
+        uid: kafka.user.name
+        gid: kafka.user.name
       @hdp_select
         name: 'kafka-broker'
 

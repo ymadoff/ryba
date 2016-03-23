@@ -66,6 +66,10 @@ directories.
           name: 'kafka'
         @hdp_select
           name: 'kafka-broker'
+        @mkdir
+          destination: '/var/lib/kafka'
+          uid: kafka.user.name
+          gid: kafka.user.name
         @render
           header: 'Init Script'
           destination: '/etc/init.d/kafka-broker'
@@ -188,7 +192,6 @@ Broker Server principal, keytab and JAAS
         header: 'Kerberos'
         if: kafka.broker.config['zookeeper.set.acl'] is 'true'
         handler: ->
-          
           @krb5_addprinc
             header: 'Broker Server Kerberos'
             principal: kafka.broker.kerberos['principal']
@@ -218,43 +221,46 @@ Broker Server principal, keytab and JAAS
 
 Kafka Superuser principal generation
 
-      @krb5_addprinc
-        header: 'Kafka Superuser kerberos'
-        principal: kafka.admin.principal
-        password: kafka.admin.password
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
+          @krb5_addprinc
+            header: 'Kafka Superuser kerberos'
+            principal: kafka.admin.principal
+            password: kafka.admin.password
+            kadmin_principal: kadmin_principal
+            kadmin_password: kadmin_password
+            kadmin_server: admin_server
 
 # SSL Server
 
 Upload and register the SSL certificate and private key.
 SSL is enabled at least for inter broker communication
 
-      @call header: 'SSL', handler: ->
-        @java_keystore_add
-          keystore: kafka.broker.config['ssl.keystore.location']
-          storepass: kafka.broker.config['ssl.keystore.password']
-          caname: "hadoop_root_ca"
-          cacert: "#{ssl.cacert}"
-          key: "#{ssl.key}"
-          cert: "#{ssl.cert}"
-          keypass: kafka.broker.config['ssl.key.password']
-          name: @config.shortname
-          local_source: true
-        @java_keystore_add
-          keystore: kafka.broker.config['ssl.keystore.location']
-          storepass: kafka.broker.config['ssl.keystore.password']
-          caname: "hadoop_root_ca"
-          cacert: "#{ssl.cacert}"
-          local_source: true
-        # imports kafka broker server hadoop_root_ca CA trustore
-        @java_keystore_add
-          keystore: kafka.broker.config['ssl.truststore.location']
-          storepass: kafka.broker.config['ssl.truststore.password']
-          caname: "hadoop_root_ca"
-          cacert: "#{ssl.cacert}"
-          local_source: true
+      @call 
+        header: 'SSL'
+        handler: ->
+          return if kafka.broker.config['replication.security.protocol'] is 'PLAINTEXT'
+          @java_keystore_add
+            keystore: kafka.broker.config['ssl.keystore.location']
+            storepass: kafka.broker.config['ssl.keystore.password']
+            caname: "hadoop_root_ca"
+            cacert: "#{ssl.cacert}"
+            key: "#{ssl.key}"
+            cert: "#{ssl.cert}"
+            keypass: kafka.broker.config['ssl.key.password']
+            name: @config.shortname
+            local_source: true
+          @java_keystore_add
+            keystore: kafka.broker.config['ssl.keystore.location']
+            storepass: kafka.broker.config['ssl.keystore.password']
+            caname: "hadoop_root_ca"
+            cacert: "#{ssl.cacert}"
+            local_source: true
+          # imports kafka broker server hadoop_root_ca CA trustore
+          @java_keystore_add
+            keystore: kafka.broker.config['ssl.truststore.location']
+            storepass: kafka.broker.config['ssl.truststore.password']
+            caname: "hadoop_root_ca"
+            cacert: "#{ssl.cacert}"
+            local_source: true
 
 
 ## Layout

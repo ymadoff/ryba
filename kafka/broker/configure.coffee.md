@@ -32,7 +32,7 @@ Example:
       kafka.user.gid = kafka.group.name
       # ZooKeeper Quorun
       zoo_ctxs = @contexts 'ryba/zookeeper/server', require('../../zookeeper/server/configure').configure
-      zookeeper_quorum = for zoo_ctx in zoo_ctxs
+      zookeeper_quorum = kafka.zookeeper_quorum ?= for zoo_ctx in zoo_ctxs
         "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
       kafka.admin ?= {}
       kafka.admin.principal ?= kafka.user.name
