@@ -15,10 +15,17 @@ cat /etc/passwd | grep hbase
 hbase:x:492:492:HBase:/var/run/hbase:/bin/bash
 cat /etc/group | grep hbase
 hbase:x:492:
-```
+``` 
       
       @group hbase.group
       @user hbase.user
+      
+## Packages
+
+      @service
+        name: 'hbase'
+      @hdp_select
+        name: 'hbase-client'
             
 ## Zookeeper JAAS
 
