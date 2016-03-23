@@ -1,12 +1,10 @@
-#  Hue  build
+
+#  Hue Prepare
 
 Follows Cloudera   [build-instruction][cloudera-hue] for Hue 3.7 and later versionz.
 An internet Connection is needed to be able to download.
 Becareful when used with docker-machine mecano might exit before finishing
 the execution. you can resume build by executing again prepare
-
-    module.exports = []
-    module.exports.push 'masson/bootstrap/log'
 
 First container
 ```
@@ -24,7 +22,6 @@ Builds Hue from source
 
 
     module.exports = header: 'Hue Docker Prepare', timeout: -1,  handler: ->
-      machine = @config.mecano.machine ?= null
       {hue_docker} = @config.ryba
 
 
@@ -53,29 +50,24 @@ for hue to be able to communicate with the hadoop cluster in secure mode.
         @render
           source: hue_docker.build.dockerfile
           destination: "#{hue_docker.build.directory}/Dockerfile"
-          context: { git_source: 'hue' }
+          context: git_source: 'hue'
         # docker build -t "ryba/hue-build" .
         @docker_build
           tag: hue_docker.build.name
           path: "#{hue_docker.build.directory}/Dockerfile"
-          machine: machine
-        @docker_rm
-          machine: machine
-          container: 'extractor'
-          force: true
         @docker_run
           image: hue_docker.build.name
-          name: 'extractor'
+          name: 'ryba_hue_extractor'
           entrypoint: '/bin/bash'
-          machine: machine
-          service: true
         @mkdir
           destination: "#{hue_docker.prod.directory}"
         @docker_cp
+          container: 'extractor'
           source: 'extractor:/hue-build.tar.gz'
           destination: hue_docker.prod.directory
-          machine: machine
-          container: 'extractor'
+        @docker_rm
+          container: 'ryba_hue_extractor'
+          force: true
 
 # Hue Production dockerfile execution
 
@@ -85,32 +77,26 @@ This production container running as hue service
         @render
           source: "#{__dirname}/resources/prod/Dockerfile"
           destination: "#{hue_docker.prod.directory}/Dockerfile"
-          context: {
-            user : hue_docker.user.name
-            uid : hue_docker.user.uid
-            gid : hue_docker.user.uid
-          }
+          context:
+            user: hue_docker.user.name
+            uid: hue_docker.user.uid
+            gid: hue_docker.user.uid
         @render
           source: "#{__dirname}/resources/hue_init.sh"
           destination: "#{hue_docker.prod.directory}/hue_init.sh"
-          context: {
+          context:
             pid_file: hue_docker.pid_file
-          }
         # docker build -t "ryba/hue-build:3.9" .
-        @call (_, callback) ->
-          @docker_build
-            tag: "#{hue_docker.image}:#{hue_docker.version}"
-            machine: 'dev'
-            path: "#{hue_docker.prod.directory}/Dockerfile"
-          , (err, _, checksum) =>
-            return err if err
-            @write
-              content: "#{checksum}"
-              destination: "#{hue_docker.prod.directory}/checksum"
-            , (err, done) -> callback err, done
+        @docker_build
+          tag: "#{hue_docker.image}:#{hue_docker.version}"
+          path: "#{hue_docker.prod.directory}/Dockerfile"
+        , (err, _, checksum) ->
+          throw err if err
+          @write
+            content: "#{checksum}"
+            destination: "#{hue_docker.prod.directory}/checksum"
         @docker_save
           image: "#{hue_docker.image}:#{hue_docker.version}"
-          machine: machine
           output: "#{hue_docker.prod.directory}/hue_docker.tar"
 
 ## Instructions
