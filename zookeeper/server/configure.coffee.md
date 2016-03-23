@@ -67,6 +67,9 @@ Example :
       zookeeper.config['jaasLoginRenew'] ?= '3600000'
       zookeeper.config['kerberos.removeHostFromPrincipal'] ?= 'true'
       zookeeper.config['kerberos.removeRealmFromPrincipal'] ?= 'true'
+      #http://zookeeper.apache.org/doc/trunk/zookeeperAdmin.html#sc_advancedConfiguration
+      zookeeper.config['autopurge.snapRetainCount'] ?= '5'
+      zookeeper.config['autopurge.purgeInterval'] ?= 4
       # Internal
       zookeeper.myid ?= null
       zookeeper.retention ?= 3 # Used to clean data dir
