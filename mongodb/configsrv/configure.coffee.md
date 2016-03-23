@@ -1,3 +1,4 @@
+
 ## Configure
 
     module.exports = handler: ->
@@ -83,7 +84,6 @@ Of course if no shard Cluster is configured, ryba uses all available Sharding se
 one replica set Shard Cluster. That's why we need the `ryba/mongodb/shard` module to be configured before
 `ryba/mongodb/configsrv` module.
 
-
       shards_replica_sets = shardsrv_ctxs[0].config.ryba.mongodb.shard.replica_sets
       config.replication ?= {}
       mongodb.configsrv.replica_sets ?=
@@ -107,7 +107,7 @@ one replica set Shard Cluster. That's why we need the `ryba/mongodb/shard` modul
       for host in mongodb.configsrv.replica_sets[config.replication.replSetName].hosts
         mongodb.configsrv.replica_master ?= host if @context(host).config.ryba.mongo_config_replica_master?
       throw Error ' No master configured for replica set' unless mongodb.configsrv.replica_master?
-      mongodb.configsrv.is_master ?= if mongodb.configsrv.replica_master is @config.host then true else false
+      mongodb.configsrv.is_master ?= mongodb.configsrv.replica_master is @config.host
       # now the host knows which server is the replica primary server and know if its him.
       # we  check if shard Cluster is not attributed to different config replica set
       checkShards = {}
