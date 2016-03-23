@@ -1,11 +1,6 @@
 
 # Hadoop ZKFC Check
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    # module.exports.push require('./index').configure
-
-
     module.exports = header: 'HDFS ZKFC Check', label_true: 'CHECKED', handler: ->
         {hdfs} = @config.ryba
         nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'

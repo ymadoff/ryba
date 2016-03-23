@@ -13,6 +13,7 @@
       [jhs_ctx] = @contexts 'ryba/hadoop/mapred_jhs', require('../mapred_jhs/configure').handler
       [ats_ctx] = @contexts 'ryba/hadoop/yarn_ts', require('../yarn_ts/configure').handler
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
+      ats_ctx.config.ryba.yarn.site['yarn.admin.acl'] ?= "#{@config.ryba.yarn.user.name}"
       {ryba} = @config
       ryba.yarn.home ?= '/usr/hdp/current/hadoop-yarn-client'
       ryba.yarn.log_dir ?= '/var/log/hadoop-yarn'
@@ -31,7 +32,7 @@
       ryba.yarn.rm.site['yarn.resourcemanager.nodes.include-path'] ?= "#{ryba.yarn.rm.conf_dir}/yarn.include"
       ryba.yarn.rm.site['yarn.resourcemanager.nodes.exclude-path'] ?= "#{ryba.yarn.rm.conf_dir}/yarn.exclude"
       ryba.yarn.rm.site['yarn.resourcemanager.keytab'] ?= '/etc/security/keytabs/rm.service.keytab'
-      ryba.yarn.rm.site['yarn.resourcemanager.principal'] ?= "rm/#{ryba.static_host}@#{ryba.realm}"
+      ryba.yarn.rm.site['yarn.resourcemanager.principal'] ?= "rm/_HOST@#{ryba.realm}"
       ryba.yarn.rm.site['yarn.resourcemanager.scheduler.class'] ?= 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
 
 ## Configuration for Memory and CPU

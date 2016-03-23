@@ -155,7 +155,7 @@ Default configuration:
       core_site = ryba.core_site ?= {}
       core_site['io.compression.codecs'] ?= "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.SnappyCodec"
       if nn_ctxs.length is 1
-        core_site['fs.defaultFS'] ?= "hdfs://#{nn_ctxs.config.host[0]}:8020"
+        core_site['fs.defaultFS'] ?= "hdfs://#{nn_ctxs[0].config.host}:8020"
       else if nn_ctxs.length is 2
         core_site['fs.defaultFS'] ?= "hdfs://#{ryba.nameservice}:8020"
         ryba.active_nn_host ?= nn_ctxs[0].config.host

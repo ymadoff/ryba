@@ -258,34 +258,37 @@ suggest:
 
 Note, we might move this middleware to Masson.
 
-      @execute
+      @call 
         header: 'Kernel'
-        if: Object.keys(hdfs.sysctl).length
-        cmd: 'sysctl -a'
-        stdout: null
-      , (err, _, content) ->
-        throw err if err
-        content = misc.ini.parse content
-        properties = {}
-        for k, v of hdfs.sysctl
-          v = "#{v}"
-          properties[k] = v if content[k] isnt v
-        return next null, false unless Object.keys(properties).length
-        @write
-          destination: '/etc/sysctl.conf'
-          write: for k, v of properties
-            match: ///^#{misc.regexp.escape k}?\s+=\s*.*?\s///mg
-            replace: "#{k} = #{v}"
-            append: true
-          backup: true
-          eof: true
-        , (err) ->
-          throw err if err
-          properties = for k, v of properties then "#{k}=#{v}"
-          properties = properties.join ' '
-          @execute
-            cmd: "sysctl #{properties}"
-          , next
+        handler: (_, next) ->  
+          @execute        
+            if: Object.keys(hdfs.sysctl).length
+            cmd: 'sysctl -a'
+            stdout: null
+            shy: true
+          , (err, _, content) ->
+            throw err if err
+            content = misc.ini.parse content
+            properties = {}
+            for k, v of hdfs.sysctl
+              v = "#{v}"
+              properties[k] = v if content[k] isnt v
+            return next null, false unless Object.keys(properties).length
+            @write
+              destination: '/etc/sysctl.conf'
+              write: for k, v of properties
+                match: ///^#{misc.regexp.escape k}?\s+=\s*.*?\s///mg
+                replace: "#{k} = #{v}"
+                append: true
+              backup: true
+              eof: true
+            , (err) ->
+              throw err if err
+              properties = for k, v of properties then "#{k}=#{v}"
+              properties = properties.join ' '
+              @execute
+                cmd: "sysctl #{properties}"
+              , next
 
 ## Ulimit
 

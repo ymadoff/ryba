@@ -20,6 +20,7 @@
         'masson/core/iptables'
         'ryba/hadoop/yarn_client/install'
         'ryba/hadoop/yarn_rm/install'
+        'ryba/hadoop/yarn_rm/scheduler'
         'masson/core/krb5_client/wait'
         'ryba/zookeeper/server/wait'
         'ryba/hadoop/hdfs_dn/wait'
@@ -28,7 +29,7 @@
         'ryba/hadoop/yarn_rm/start'
         'ryba/hadoop/yarn_rm/wait'
         'ryba/hadoop/yarn_rm/check'
-        'ryba/hadoop/yarn_rm/scheduler'
+        
       ]
       'start': [
         'masson/core/krb5_client/wait'

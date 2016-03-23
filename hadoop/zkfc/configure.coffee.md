@@ -24,7 +24,7 @@ Optional, activate digest type access to zookeeper to manage the zkfc znode:
       ryba.zkfc ?= {}
       ryba.zkfc.conf_dir ?= '/etc/hadoop-hdfs-zkfc/conf'
       # Validation
-      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hdfs_nn').configure
+      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hdfs_nn/configure').handler
       throw Error "Require 2 NameNodes" unless nn_ctxs.length is 2
       ryba.zkfc.principal ?= ryba.hdfs.nn.site['dfs.namenode.kerberos.principal']
       ryba.zkfc.keytab ?= ryba.hdfs.nn.site['dfs.namenode.keytab.file']

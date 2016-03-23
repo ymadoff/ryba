@@ -55,7 +55,8 @@
       yarn.site['yarn.timeline-service.http-authentication.kerberos.keytab'] ?= core_site['hadoop.http.authentication.kerberos.keytab']
       # Timeline Server Authorization (ACLs)
       yarn.site['yarn.acl.enable'] ?= "true"
-      yarn.site['yarn.admin.acl'] ?= "#{yarn.user.name}" # List of users separated by commas
+      # yarn.site['yarn.admin.acl'] ?= "#{yarn.user.name}"
+       # List of users separated by commas
       # SSL, must be added to "core-site.xml"
       # yarn.site['hadoop.ssl.require.client.cert'] ?= "false"
       # yarn.site['hadoop.ssl.hostname.verifier'] ?= "DEFAULT"
