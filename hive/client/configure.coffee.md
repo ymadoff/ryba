@@ -50,6 +50,11 @@ Example:
 
       hive.aux_jars = hcat_ctx.config.ryba.hive.aux_jars ?= []
       hive.site ?= {}
+      aux_jars = ['/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar']
+      if @contexts('ryba/hbase/master').length and @config.host in @contexts('ryba/hbase/client').map((ctx) -> ctx.config.host)
+        aux_jars.push ['/usr/hdp/current/hbase-client/lib/hbase-server.jar', '/usr/hdp/current/hbase-client/lib/hbase-client.jar', '/usr/hdp/current/hbase-client/lib/hbase-common.jar'] # Default value
+        aux_jars.push '/usr/hdp/current/hbase-client/lib/phoenix-server.jar' if @contexts('ryba/phoenix/client').length
+      for k in aux_jars then hive.aux_jars.push k unless k in hive.aux_jars
       # Tuning
       # [Christian Prokopp comments](http://www.quora.com/What-are-the-best-practices-for-using-Hive-What-settings-should-we-enable-most-of-the-time)
       # [David Streever](https://streever.atlassian.net/wiki/display/HADOOP/Hive+Performance+Tips)
