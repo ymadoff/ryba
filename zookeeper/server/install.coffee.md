@@ -64,9 +64,7 @@ which has no dependency.
 
 ## Kerberos
 
-      @call header: 'ZooKeeper Server # Kerberos', handler: ->
-        {realm} = @config.ryba
-        {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      @call header: 'Kerberos', handler: ->
         @krb5_addprinc
           principal: "zookeeper/#{@config.host}@#{realm}"
           randkey: true
