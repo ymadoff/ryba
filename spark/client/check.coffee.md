@@ -15,7 +15,7 @@ Validate Spark installation with Pi-example in yarn-cluster mode.
 The yarn cluster mode makes the driver part of the spark submitted program to run inside yarn.
 In this mode the driver is the yarn application master (running inside yarn).
 
-      @call header: 'Check Yarn Cluster', timeout: -1, label_true: 'CHECKED', handler: ->
+      @call header: 'Check Yarn Cluster', timeout: -1, label_true: 'CHECKED', handler:(_, next)->
         file_check = "check-#{@config.shortname}-spark-cluster"
         applicationId = null
         @execute
@@ -30,24 +30,29 @@ In this mode the driver is the yarn application master (running inside yarn).
           """
           unless_exec : unless force_check then mkcmd.test @, "hdfs dfs -test -f #{file_check}"
         , (err, executed, stdout, stderr) ->
-          return err if err
+          return next err if err
+          return unless executed
           tracking_url_result = stdout.trim().split("/")
           applicationId = tracking_url_result[tracking_url_result.length - 2]
-          @execute
-            cmd: mkcmd.test @, """
-              yarn logs -applicationId #{applicationId} 2>&1 /dev/null | grep -m 1 "Pi is roughly";
-              """
-          , (err, executed, stdout, stderr) ->
-            return err if err
-            log_result = stdout.split(" ")
-            pi = parseFloat(log_result[log_result.length - 1])
-            return Error 'Invalid Output' unless pi > 3.00 and pi < 3.20
-            return
+        @call 
+          if: -> @status -1
+          handler:->
+            @execute
+              cmd: mkcmd.test @, """
+                yarn logs -applicationId #{applicationId} 2>&1 /dev/null | grep -m 1 "Pi is roughly";
+                """
+            , (err, executed, stdout, stderr) ->
+              return next err if err
+              return unless executed
+              log_result = stdout.split(" ")
+              pi = parseFloat(log_result[log_result.length - 1])
+              return Error 'Invalid Output' unless pi > 3.00 and pi < 3.20
         @execute
           cmd: mkcmd.test @, """
           hdfs dfs -touchz #{file_check}
           """
-          if: -> @status -1
+          if: -> @status -2
+        @then next
 
 ## Check Client Mode
 
@@ -76,6 +81,7 @@ driver does not copy metrics.properties file as it should. This is fixed in vers
           unless_exec : unless force_check then mkcmd.test @, "hdfs dfs -test -f #{file_check}"
         , (err, executed, stdout, stderr) ->
           return err if err
+          return unless executed
           log_result = stdout.split(" ")
           pi = parseFloat(log_result[log_result.length - 1])
           return Error 'Invalid Output' unless pi > 3.00 and pi < 3.20
@@ -102,8 +108,8 @@ yarn-client mode, not yarn-cluster.
           unless_exec : unless force_check then mkcmd.test @, "hdfs dfs -test -f #{file_check}"
         , (err, executed, stdout) ->
           return err if err
+          return unless executed
           return Error 'Invalid Output' unless stdout.indexOf 'spark_shell_scala' > -1
-          return
         @execute
           cmd: mkcmd.test @, """
           hdfs dfs -touchz #{file_check}
@@ -157,8 +163,8 @@ Creating database from SparkSql is not supported for now.
           unless_exec : unless force_check then mkcmd.test @, "hdfs dfs -test -f #{file_check}"
         , (err, executed, stdout) ->
           return err if err
+          return unless executed
           return Error 'Invalid Output' unless stdout.indexOf 'spark_shell_python' > -1
-          return
         @execute
           cmd: mkcmd.test @, """
           hdfs dfs -touchz #{file_check}
