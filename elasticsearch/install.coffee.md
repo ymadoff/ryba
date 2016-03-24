@@ -46,9 +46,9 @@ ElasticSearch archive comes with an RPM
 ## Env
 
       @call header: 'Environment', handler: ->
-        @yaml  
+        @write_yaml
           destination: '/etc/elasticsearch/elasticsearch.yml'
-          content: 
+          content:
             'cluster.name': "#{elasticsearch.cluster.name}"
             'index.number_of_shards': "#{elasticsearch.number_of_shards}"
             'index.number_of_replicas': "#{elasticsearch.number_of_replicas}"

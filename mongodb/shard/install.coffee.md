@@ -74,7 +74,7 @@ Create dir where the mongodb-shard-server stores its metadata
 Configuration file for mongodb sharding server.
 
       @call header: 'MongoDB Shard Server # Configure', handler: ->
-        @yaml
+        @write_yaml
           destination: "#{mongodb.shard.conf_dir}/mongod.conf"
           content: mongodb.shard.config
           merge: false

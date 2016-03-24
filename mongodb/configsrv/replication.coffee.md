@@ -37,7 +37,7 @@ The root user is needed for replication and has role `root`
         handler: ->
           @service_stop
             name: 'mongodb-config-server'
-          @yaml
+          @write_yaml
             destination: "#{mongodb.configsrv.conf_dir}/mongod.conf"
             content:
               replication: null
@@ -73,7 +73,7 @@ The root user is needed for replication and has role `root`
             """
             unless_exec: "echo exit | #{mongo_shell_admin_exec} -u #{mongodb.root.name} --password  #{mongodb.root.password}"
             code_skipped: 252
-          @yaml
+          @write_yaml
             destination: "#{mongodb.configsrv.conf_dir}/mongod.conf"
             content: mongodb.configsrv.config
             merge: true

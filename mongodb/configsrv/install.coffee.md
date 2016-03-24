@@ -75,7 +75,7 @@ Create dir where the mongodb-config-server stores its metadata
 Configuration file for mongodb config server.
 
       @call header: 'MongoDB Config Server # Configure', handler: ->
-        @yaml
+        @write_yaml
           destination: "#{mongodb.configsrv.conf_dir}/mongod.conf"
           content: mongodb.configsrv.config
           merge: false

@@ -63,7 +63,7 @@ Create dir where the mongodb-config-server stores its metadata
 Configuration file for mongodb config server.
 
       @call header: 'MongoDB Router Server # Configure', handler: ->
-        @yaml
+        @write_yaml
           destination: "#{mongodb.router.conf_dir}/mongos.conf"
           content: mongodb.router.config
           merge: false
