@@ -1,5 +1,5 @@
 
-## Configuration
+# HBase Master Configuration
 
     module.exports = handler: ->
       # if ctx.hbase_master_configured then return else ctx.hbase_master_configured = null

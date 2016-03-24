@@ -1,4 +1,6 @@
 
+# HBase Master Layout
+
     module.exports = header: 'HBase Master Layout', timeout: -1, handler: ->
       {hbase} = @config.ryba
       @wait_execute

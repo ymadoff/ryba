@@ -1,5 +1,6 @@
 
 # HBase Master
+
 [HMaster](http://hbase.apache.org/book.html#_master) is the implementation of the Master Server.
 The Master server is responsible for monitoring all RegionServer instances in the cluster, and is the interface for all metadata changes.
 In a distributed cluster, the Master typically runs on the NameNode.
