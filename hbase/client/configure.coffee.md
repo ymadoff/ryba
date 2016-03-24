@@ -1,7 +1,5 @@
 
-
 # HBase Client Configuration
-
 
     module.exports = handler: ->
       ryba = @config.ryba ?= {}

@@ -2,10 +2,10 @@
 # HBase Client Install
 
 Install the HBase client package and configure it with secured access.
-    
+
     module.exports =  header: 'HBase Client Install', handler: ->
       {hbase} = @config.ryba
-      
+
 ## Users & Groups
 
 By default, the "hbase" package create the following entries:
@@ -16,22 +16,22 @@ hbase:x:492:492:HBase:/var/run/hbase:/bin/bash
 cat /etc/group | grep hbase
 hbase:x:492:
 ``` 
-      
+
       @group hbase.group
       @user hbase.user
-      
+
 ## Packages
 
       @service
         name: 'hbase'
       @hdp_select
         name: 'hbase-client'
-            
+
 ## Zookeeper JAAS
 
 JAAS configuration files for zookeeper to be deployed on the HBase Master,
 RegionServer, and HBase client host machines.
-      
+
       @write_jaas
         timeout: -1
         header: 'Zookeeper JAAS'
@@ -46,7 +46,6 @@ RegionServer, and HBase client host machines.
 
 Note, we left the permission mode as default, Master and RegionServer need to
 
-    
       @hconfigure
         header: 'HBase Client Site'
         destination: "#{hbase.conf_dir}/hbase-site.xml"

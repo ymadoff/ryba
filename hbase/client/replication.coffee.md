@@ -2,7 +2,7 @@
 ## HBase Cluster Replication
 
 Deploy HBase replication to point slave cluster.
-  
+
     module.exports =  header: 'HBase Client Replication', handler: ->
       {hbase} = @config.ryba
       for k, cluster of hbase.replicated_clusters

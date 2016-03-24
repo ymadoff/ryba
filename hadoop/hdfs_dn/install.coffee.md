@@ -258,10 +258,10 @@ suggest:
 
 Note, we might move this middleware to Masson.
 
-      @call 
+      @call
         header: 'Kernel'
-        handler: (_, next) ->  
-          @execute        
+        handler: (_, next) ->
+          @execute
             if: Object.keys(hdfs.sysctl).length
             cmd: 'sysctl -a'
             stdout: null
