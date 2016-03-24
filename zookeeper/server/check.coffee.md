@@ -4,13 +4,19 @@
     module.exports = header: 'ZooKeeper Server Check', label_true: 'CHECKED', handler: ->
       {zookeeper} = @config.ryba
       zoo_ctxs = @contexts 'ryba/zookeeper/server'
-    
+
+## Check state
+
+      @execute
+        header: 'Healthy'
+        cmd: "nc #{@config.host} #{zookeeper.port} <<< ruok | grep imok"
+
 ## Check Registration
 
 Execute these commands on the ZooKeeper host machine(s).
 
       cmds = for zoo_ctx in zoo_ctxs
-        "{ echo conf; sleep 1; } | telnet #{zoo_ctx.config.host} #{zoo_ctx.config.ryba.zookeeper.port} 2>/dev/null | sed -n 's/.*serverId=\\(.*\\)/\\1/p'"
+        "nc #{zoo_ctx.config.host} #{zoo_ctx.config.ryba.zookeeper.port} <<< conf | sed -n 's/.*serverId=\\(.*\\)/\\1/p'"
       @execute
         header: 'Registration'
         cmd: cmds.join ';'
