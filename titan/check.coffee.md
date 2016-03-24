@@ -15,7 +15,7 @@ Check the configuration file (current.properties).
         config[k] = v for k, v of titan.config
         config['storage.hbase.table'] = 'titan-test'
         check = false
-        @ini
+        @write_properties
           destination: path.join titan.home, "titan-#{titan.config['storage.backend']}-#{titan.config['index.search.backend']}-test.properties"
           content: config
           separator: '='

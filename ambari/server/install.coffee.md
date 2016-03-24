@@ -177,7 +177,7 @@ LDAP or Active Directory Authentication.
       #   server.jdbc.database=postgres
       #   server.jdbc.database_name=ambari
       #   """
-      @ini
+      @write_ini
         destination: "#{ambari_server.conf_dir}/ambari.properties"
         content: ambari_server.config
         merge: true

@@ -103,7 +103,7 @@ Update the "hbase-site.xml" with the hbase/thrift kerberos principal.
 Configure the "/etc/hue/conf" file following the [HortonWorks](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue-5-2.html)
 recommandations. Merge the configuration object from "pseudo-distributed.ini" with the properties of the destination file.
 
-      @ini
+      @write_ini
         header: 'hue ini'
         destination: "#{hue_docker.conf_dir}/hue_docker.ini"
         content: hue_docker.ini
@@ -192,7 +192,7 @@ changes.
           destination: "#{hue_docker.conf_dir}/key.pem"
           uid: hue_docker.user.name
           gid: hue_docker.group.name
-        @ini
+        @write_ini
           destination: "#{hue_docker.conf_dir}/hue_docker.ini"
           content: desktop:
             ssl_certificate: "#{hue_docker.conf_dir}/cert.pem"

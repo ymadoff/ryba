@@ -176,7 +176,7 @@ but is owned by 2401"
         @mkdir
           destination: "#{hadoop_conf_dir}"
           uid: 'root'
-        @ini
+        @write_ini
           destination: "#{hadoop_conf_dir}/container-executor.cfg"
           content: container_executor
           uid: 'root'

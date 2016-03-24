@@ -39,7 +39,7 @@ The ambari server must be set in the configuration file.
 
     module.exports.push header: 'Ambari Agent # Configure', timeout: -1, handler: ->
       {ambari_agent} = @config.ryba
-      @ini
+      @write_ini
         destination: "#{ambari_agent.conf_dir}/ambari-agent.ini"
         content: ambari_agent.ini
         parse: misc.ini.parse_multi_brackets_multi_lines

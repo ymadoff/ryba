@@ -47,7 +47,7 @@ TODO: Generate the "pig.properties" file dynamically, be carefull, the HDP
 companion file defines no properties while the YUM package does.
 
 
-      @ini
+      @write_ini
         header: 'Properties'
         destination: "#{pig.conf_dir}/pig.properties"
         content: pig.config

@@ -126,7 +126,7 @@ recommandations. Merge the configuration object from "hdp.hue.ini" with the prop
 
     module.exports.push header: 'Hue # Configure', handler: ->
       {hue} = @config.ryba
-      @ini
+      @write_ini
         destination: "#{hue.conf_dir}/hue.ini"
         content: hue.ini
         merge: true
@@ -224,7 +224,7 @@ changes.
         destination: "#{hue.conf_dir}/key.pem"
         uid: hue.user.name
         gid: hue.group.name
-      @ini
+      @write_ini
         destination: "#{hue.conf_dir}/hue.ini"
         content: desktop:
           ssl_certificate: "#{hue.conf_dir}/cert.pem"

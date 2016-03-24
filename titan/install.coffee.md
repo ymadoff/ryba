@@ -85,10 +85,9 @@ Creates a configuration file. Always load this file in Gremlin REPL !
       @call header: 'Gremlin Properties', handler: ->
         storage = titan.config['storage.backend']
         index = titan.config['index.search.backend']
-        @ini
+        @write_properties
           destination: path.join titan.home, "titan-#{storage}-#{index}.properties"
           content: titan.config
-          separator: '='
           merge: true
 
 # ## Configure Test
@@ -101,10 +100,9 @@ Creates a configuration file. Always load this file in Gremlin REPL !
 #       config = {}
 #       config[k] = v for k, v of titan.config
 #       config['storage.hbase.table'] = 'titan-test'
-#       @ini
+#       @write_properties
 #         destination: path.join titan.home, "titan-hbase-#{titan.config['index.search.backend']}-test.properties"
 #         content: config
-#         separator: '='
 #         merge: true
 
 ## HBase Configuration
