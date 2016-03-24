@@ -21,12 +21,24 @@ Check Message by writing to a test topic on the PLAINTEXT channel.
           ).join ','
           zoo_connect = ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect']
           @execute
+            if: kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
             cmd: mkcmd.kafka @, """
               /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
                 --zookeeper #{zoo_connect} --partitions 1 --replication-factor 3 \
                 --topic #{test_topic}
               """
             unless_exec: mkcmd.kafka @, """
+              /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
+              --zookeeper #{zoo_connect} | grep #{test_topic}
+              """
+          @execute
+            unless: kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
+            cmd: """
+              /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
+                --zookeeper #{zoo_connect} --partitions 1 --replication-factor 3 \
+                --topic #{test_topic}
+              """
+            unless_exec: """
               /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
               --zookeeper #{zoo_connect} | grep #{test_topic}
               """
