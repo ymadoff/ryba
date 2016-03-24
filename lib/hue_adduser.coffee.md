@@ -77,7 +77,7 @@ Options include:
         echo " LOGOUT"
 
         """
-        trap_on_error: true
+        trap: true
       @remove
         source: COOKIES
 

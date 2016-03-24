@@ -119,7 +119,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           hdp-select set zookeeper-server 2.3.4.0-3485
           service zookeeper-server restart
           """
-          trap_on_error: true
+          trap: true
         @wait_connect
           host: @config.host
           port: @config.ryba.zookeeper?.port
@@ -133,7 +133,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           hdp-select set hadoop-hdfs-journalnode 2.3.4.0-3485
           service hadoop-hdfs-journalnode restart
           """
-          trap_on_error: true
+          trap: true
         @wait_connect
           host: @config.host
           port: @config.ryba.hdfs.site['dfs.journalnode.rpc-address']?.split(':')[1]
@@ -149,7 +149,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           hdp-select set hadoop-hdfs-zkfc 2.3.4.0-3485
           service hadoop-hdfs-zkfc restart
           """
-          trap_on_error: true
+          trap: true
 
     exports.steps.push
       header: 'Upgrade standby NameNode'
@@ -167,7 +167,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-namenode/../hadoop/sbin/hadoop-daemon.sh --config #{@config.ryba.hdfs.nn.conf_dir} --script hdfs start namenode -rollingUpgrade started"
           hdfs haadmin -failover #{active} #{standby}
           """
-          trap_on_error: true
+          trap: true
 
     exports.steps.push
       header: 'Upgrade active NameNode'
@@ -185,7 +185,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-namenode/../hadoop/sbin/hadoop-daemon.sh --config #{@config.ryba.hdfs.nn.conf_dir} --script hdfs start namenode -rollingUpgrade started"
           hdfs --config #{@config.ryba.hdfs.nn.conf_dir} haadmin -failover #{standby} #{active}
           """
-          trap_on_error: true
+          trap: true
 
     exports.steps.push
       header: 'Upgrade DataNode'
@@ -198,7 +198,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           hdp-select set hadoop-hdfs-datanode 2.3.4.0-3485
           HADOOP_SECURE_DN_USER=hdfs /usr/hdp/current/hadoop-hdfs-datanode/../hadoop/sbin/hadoop-daemon.sh --config #{@config.ryba.hdfs.dn.conf_dir} --script hdfs start datanode
           """
-          trap_on_error: true
+          trap: true
 
     exports.steps.push
       header: 'Finalize'

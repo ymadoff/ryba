@@ -80,9 +80,9 @@ Options include:
             "#{options.group or ''}"
           """
           code_skipped: 3
-          trap_on_error: true
+          trap: true
         .then callback
-            
+
 ## Dependecies
 
     {mode} = require 'mecano/src/misc'

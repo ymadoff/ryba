@@ -76,7 +76,7 @@
           hdfs dfs -test -f $target
           hdfs dfs -rm -r $lock
           """
-          trap_on_error: true
+          trap: true
           code_skipped: 3
           unless_exec: mkcmd.hdfs @, """
           source=#{options.source}

@@ -96,7 +96,7 @@ isnt yet started.
               "
               """
               unless: -> @status -1
-              trap_on_error: true
+              trap: true
             @execute
               cmd: """
               cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql # Required for sql sources
@@ -117,7 +117,7 @@ isnt yet started.
               fi
               """
               unless: -> @status -2
-              trap_on_error: true
+              trap: true
             @execute
               cmd: """
               cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql # Required for sql sources
@@ -143,7 +143,7 @@ isnt yet started.
               #if test -f $trnx; then #{mysql_client} #{db} < $trnx; fi
               """
               code_skipped: 3
-              trap_on_error: true
+              trap: true
               unless: -> @status -3
           else throw new Error 'Database engine not supported'
 

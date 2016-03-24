@@ -28,7 +28,7 @@ unless the "hdp.force_check" configuration property is set to "true".
           hdfs dfs -test -d /user/#{user.name}/#{@config.shortname}-pig
           """
           unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -d #{@config.shortname}-pig"
-          trap_on_error: true
+          trap: true
 
 ## HCat
 
@@ -59,7 +59,7 @@ unless the "hdp.force_check" configuration property is set to "true".
           hdfs dfs -test -d #{@config.shortname}-pig_hcat
           """
           unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -d #{@config.shortname}-pig_hcat"
-          trap_on_error: true
+          trap: true
 
 ## Dependencies
 

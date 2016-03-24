@@ -23,7 +23,7 @@ to re-execute the check.
         hadoop jar /usr/hdp/current/hadoop-mapreduce-client/hadoop-mapreduce-examples-2*.jar terasort check-#{shortname}-mapred/input check-#{shortname}-mapred/output
         """
         unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -d check-#{shortname}-mapred/output"
-        trap_on_error: true
+        trap: true
 
       @execute
         header: 'Uploaded files'

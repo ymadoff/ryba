@@ -71,7 +71,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
         hdfs --config '#{hdfs.nn.conf_dir}' dfs -chmod 555 /hdp/apps
         hdfs --config '#{hdfs.nn.conf_dir}' dfs -chmod -R 555 /hdp/apps/$version
         """
-        trap_on_error: true
+        trap: true
         unless_exec: mkcmd.hdfs @, """
         version=`readlink /usr/hdp/current/hadoop-client | sed 's/.*\\/\\(.*\\)\\/hadoop/\\1/'`
         hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -d /hdp/apps/$version

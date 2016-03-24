@@ -190,7 +190,7 @@
           do ((i++)); sleep 1; done
           oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
           """
-          trap_on_error: false # or while loop will exit on first run
+          trap: false # or while loop will exit on first run
           unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.shortname}-oozie-mr/output/_SUCCESS"
 
 ## Check Pig Workflow
@@ -285,7 +285,7 @@
           do ((i++)); sleep 1; done
           oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
           """
-          trap_on_error: false # or while loop will exit on first run
+          trap: false # or while loop will exit on first run
           unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.shortname}-oozie-pig/output/_SUCCESS"
 
 ## Check HCat Workflow
@@ -432,7 +432,7 @@
           do ((i++)); sleep 1; done
           oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
           """
-          trap_on_error: false # or while loop will exit on first run
+          trap: false # or while loop will exit on first run
           unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -d check-#{@config.shortname}-oozie-pig/output"
 
 # Module Dependencies

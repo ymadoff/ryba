@@ -451,7 +451,7 @@ the ShareLib contents without having to go into HDFS.
           fi
           hdfs dfs -chmod -R 755 /user/#{oozie.user.name}
           """
-          trap_on_error: true
+          trap: true
           unless_exec: mkcmd.hdfs @, """
           version=`ls /usr/hdp/current/oozie-client/lib | grep oozie-client | sed 's/^oozie-client-\\(.*\\)\\.jar$/\\1/g'`
           hdfs dfs -cat /user/oozie/share/lib/*/sharelib.properties | grep build.version | grep $version

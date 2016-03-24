@@ -39,7 +39,7 @@ engine.
             hive -e "DROP TABLE #{db}.my_table; DROP DATABASE #{db};"
             """
             unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
-            trap_on_error: true
+            trap: true
 
 ## Check HCatalog Tez
 
@@ -64,7 +64,7 @@ Use the [Hive CLI][hivecli] client to execute SQL queries using the Tez engine.
             hive -e "DROP TABLE #{db}.my_table; DROP DATABASE #{db};"
             """
             unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
-            trap_on_error: true
+            trap: true
 
 ## Check Server2
 
@@ -116,7 +116,7 @@ directive once you enter the beeline shell.
               -e "DROP DATABASE #{db};"
               """
               unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
-              trap_on_error: true
+              trap: true
 
       @call
         header: 'Check Server2 (with ZK)'
@@ -163,7 +163,7 @@ directive once you enter the beeline shell.
               -e "DROP DATABASE #{db};"
               """
               unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
-              trap_on_error: true
+              trap: true
 
 ## Dependencies
 
