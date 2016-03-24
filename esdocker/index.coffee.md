@@ -7,6 +7,7 @@
     module.exports.configure = (ctx) ->
       {docker_es} = @config.ryba
 
+      docker_es.es_clusters ?= {}
       docker_es.ssl ?= {}
       throw Error 'Required property "ryba.ssl.cacert" or "ryba.docker_es.ssl.cacert"' unless ctx.config.ryba.ssl?.cacert? or docker_es.ssl.cacert?
       throw Error 'Required property "ryba.ssl.cert"' unless ctx.config.ryba.ssl?.cert? or docker_es.ssl.cert?
