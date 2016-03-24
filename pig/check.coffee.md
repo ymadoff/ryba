@@ -3,7 +3,6 @@
     
     module.exports = header: 'Pig Check', label_true: 'CHECKED', handler: ->
       {force_check, user} = @config.ryba
-      force_check = true
 
 ## Pig Script
 

@@ -12,6 +12,8 @@
         name: 'hive'
       @hdp_select
         name: 'hive-webhcat'
+      @service
+        name: 'hive-hcatalog'
 
 ## Configure
 
