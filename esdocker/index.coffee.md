@@ -5,7 +5,7 @@
     module.exports.push 'masson/bootstrap'
 
     module.exports.configure = (ctx) ->
-      {docker_es} = @config.ryba
+      docker_es = @config.ryba.docker_es ?= {}
 
       docker_es.es_clusters ?= {}
       docker_es.ssl ?= {}
