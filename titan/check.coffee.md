@@ -19,7 +19,6 @@ Check the configuration file (current.properties).
           destination: path.join titan.home, "titan-#{titan.config['storage.backend']}-#{titan.config['index.search.backend']}-test.properties"
           content: config
           separator: '='
-          merge: true
         @execute
           cmd: mkcmd.hbase @, """
           cd #{titan.home}

@@ -88,7 +88,8 @@ Creates a configuration file. Always load this file in Gremlin REPL !
         @write_properties
           destination: path.join titan.home, "titan-#{storage}-#{index}.properties"
           content: titan.config
-          merge: true
+          backup: true
+          eof: true
 
 # ## Configure Test
 
