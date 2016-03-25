@@ -22,6 +22,12 @@ Example
 
     module.exports = handler: ->
       shinken = @config.ryba.shinken ?= {}
+      throw Error 'Cannot install Shinken: no scheduler provided' unless @contexts('ryba/shinken/scheduler').length
+      throw Error 'Cannot install Shinken: no poller provided' unless @contexts('ryba/shinken/poller').length
+      throw Error 'Cannot install Shinken: no receiver provided' unless @contexts('ryba/shinken/receiver').length
+      throw Error 'Cannot install Shinken: no reactionner provided' unless @contexts('ryba/shinken/reactionner').length
+      throw Error 'Cannot install Shinken: no broker provided' unless @contexts('ryba/shinken/broker').length
+      throw Error 'Cannot install Shinken: no arbiter provided' unless @contexts('ryba/shinken/arbiter').length
       shinken.log_dir = '/var/log/shinken'
       shinken.plugin_dir ?= '/usr/lib64/nagios/plugins'
       # User
