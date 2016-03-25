@@ -1,7 +1,7 @@
 
 # MongoDB Config Server Install
 
-    module.exports =  header: 'MongoDB Router Server Install', handler: ->
+    module.exports =  header: 'MongoDB Router Install', handler: ->
       {mongodb, realm, ssl} = @config.ryba
       {router} = mongodb
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
@@ -15,25 +15,23 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @call header: 'MongoDB Router Server # IPTables', handler: ->
-        @iptables
-          rules: [
-            { chain: 'INPUT', jump: 'ACCEPT', dport: router.config.net.port, protocol: 'tcp', state: 'NEW', comment: "MongoDB Router Server port" }
-          ]
-          if: @config.iptables.action is 'start'
+      @iptables
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: router.config.net.port, protocol: 'tcp', state: 'NEW', comment: "MongoDB Router Server port" }
+        ]
+        if: @config.iptables.action is 'start'
 
 ## Users & Groups
 
-      @call header: 'MongoDB Router Server # Users & Groups', handler: ->
-        @group mongodb.group
-        @user mongodb.user
+      @group header: 'Users', mongodb.group
+      @user header: 'Groups', mongodb.user
 
 ## Packages
 
 Install mongodb-org-server containing packages for a mongod service. We render the init scripts
 in order to rendered configuration file with custom properties.
 
-      @call header: 'MongoDB Router Server # Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, handler: ->
         @service name: 'mongodb-org-mongos'
         @service name: 'mongodb-org-shell'
         @render
@@ -51,18 +49,18 @@ in order to rendered configuration file with custom properties.
 
 Create dir where the mongodb-config-server stores its metadata
 
-      @call header: 'MongoDB Router Server # Layout',  handler: ->
-        @mkdir
-          destination: '/var/lib/mongodb'
-          uid: mongodb.user.name
-          gid: mongodb.group.name
+      @mkdir
+        header: 'Layout'
+        destination: '/var/lib/mongodb'
+        uid: mongodb.user.name
+        gid: mongodb.group.name
 
 
 ## Configure
 
 Configuration file for mongodb config server.
 
-      @call header: 'MongoDB Router Server # Configure', handler: ->
+      @call header: 'Configure', handler: ->
         @write_yaml
           destination: "#{mongodb.router.conf_dir}/mongos.conf"
           content: mongodb.router.config
@@ -80,7 +78,7 @@ Configuration file for mongodb config server.
 Mongod service requires to have in a single file the private key and the certificate
 with pem file. So we append to the file the private key and certficate.
 
-      @call header: 'MongoDB Router Server # SSL', handler: ->
+      @call header: 'SSL', handler: ->
         @upload
           source: ssl.cacert
           destination: "#{mongodb.router.conf_dir}/cacert.pem"
@@ -114,8 +112,8 @@ with pem file. So we append to the file the private key and certficate.
 
 # User limits
 
-      @call header: 'MongoDB Router Server # User Limits', handler: ->
-        @system_limits
-          user: mongodb.user.name
-          nofile: mongodb.user.limits.nofile
-          nproc: mongodb.user.limits.nproc
+      @system_limits
+        header: 'User Limits'
+        user: mongodb.user.name
+        nofile: mongodb.user.limits.nofile
+        nproc: mongodb.user.limits.nproc
