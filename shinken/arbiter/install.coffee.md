@@ -156,12 +156,17 @@ Objects config
 
       @call header: 'Ryba Services Config', handler: ->
         @render
-          destination: "/etc/shinken/services/hadoop-services.cfg"
+          destination: '/etc/shinken/services/hadoop-services.cfg'
           source: "#{__dirname}/resources/hadoop-services.cfg.j2"
           local_source: true
           context: hosts: shinken.config.hosts
         @render
-          destination: "/etc/shinken/dependencies/hadoop-dependencies.cfg"
+          destination: '/etc/shinken/services/business-rules-services.cfg'
+          source: "#{__dirname}/resources/business-rules-services.cfg.j2"
+          local_source: true
+          context: hosts: shinken.config.hosts
+        @render
+          destination: '/etc/shinken/dependencies/hadoop-dependencies.cfg'
           source: "#{__dirname}/resources/hadoop-dependencies.cfg.j2"
           local_source: true
           context: hosts: shinken.config.hosts

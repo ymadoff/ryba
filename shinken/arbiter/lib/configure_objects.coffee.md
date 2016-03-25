@@ -98,6 +98,9 @@ They must have register set to 0 to not be instanciated
         services['unit-service'].register = '0'
         services['unit-service'].check_interval = '30'
         services['unit-service'].retry_interval = '10'
+        services['process-service'] ?= {}
+        services['process-service'].use ?= 'unit-service'
+        services['process-service'].register = '0'
         services['functional-service'] ?= {}
         services['functional-service'].use ?= 'generic-service'
         services['functional-service'].register = '0'
@@ -235,6 +238,8 @@ For now masson modules are not available.
           hosts[name].alias = "#{name} Watcher"
           hosts[name].hostgroups = ['watcher']
           hosts[name].use = 'aggregates'
+          hosts[name].custom_properties ?= {}
+          hosts[name].custom_properties.cluster ?= name
           hosts[name].modules ?= []
           hosts[name].modules = [hosts[name].modules] unless Array.isArray hosts[name].modules
           for hostname, srv of servers
@@ -245,7 +250,8 @@ For now masson modules are not available.
             hosts[hostname].hostgroups = [hosts[hostname].hostgroups] unless Array.isArray hosts[hostname].hostgroups
             hosts[hostname].use ?= 'linux-server'
             hosts[hostname].config ?= srv
-            hosts[hostname].cluster ?= name
+            hosts[hostname].custom_properties ?= {}
+            hosts[hostname].custom_properties.cluster ?= name
             for mod in srv.modules
               hosts[name].modules.push modules_list[mod] if modules_list[mod]? and modules_list[mod] not in hosts[name].modules
               hosts[hostname].hostgroups.push modules_list[mod] if modules_list[mod]?

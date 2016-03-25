@@ -1,145 +1,4 @@
 {% for hostname, host in hosts %}{% if host.hostgroups %}
-{% if host.hostgroups | contains('watcher') %}
-{% if host.modules | contains('zookeeper_server') %}
-define service {
-  service_description   Zookeeper Server: Quorum
-  host_name             {{ hostname }}
-  servicegroups         zookeeper_server
-  use                   unit-service
-  check_command         has_quorum!'Zookeeper Server: TCP'
-}
-{% endif %}
-{% if host.modules | contains('hdfs_nn') %}
-define service {
-  service_description   HDFS NN: Available
-  host_name             {{ hostname }}
-  servicegroups         hdfs_nn
-  use                   unit-service
-  check_command         has_one!'HDFS NN: TCP'
-}
-define service {
-  service_description   HDFS NN: Active Node
-  host_name             {{ hostname }}
-  servicegroups         hdfs_nn
-  use                   unit-service
-  check_command         check_active_nn!50470!-S
-}
-define service {
-  service_description   HDFS NN: Auto Failover
-  host_name             {{ hostname }}
-  servicegroups         hdfs_nn
-  use                   unit-service
-  check_command         has_all!'ZKFC: TCP'
-}
-{% endif %}
-{% if host.modules | contains('hdfs_jn') %}
-define service {
-  service_description   HDFS JN: Quorum
-  host_name             {{ hostname }}
-  servicegroups         hdfs_jn
-  use                   unit-service
-  check_command         has_quorum!'HDFS JN: TCP SSL'
-}
-{% endif %}
-{% if host.modules | contains('hdfs_dn') %}
-define service {
-  service_description   HDFS DN: Available
-  host_name             {{ hostname }}
-  servicegroups         hdfs_dn
-  use                   unit-service
-  check_command         has_percent!'HDFS DN: TCP SSL'!90%!80%
-}
-define service {
-  service_description   HDFS DN: Nodes w/ Available space
-  host_name             {{ hostname }}
-  servicegroups         hdfs_dn
-  use                   unit-service
-  check_command         has_percent!'HDFS DN: Available space'!90%!80%
-}
-{% endif %}
-{% if host.modules | contains('yarn_rm') %}
-define service {
-  service_description   YARN RM: Active Node
-  host_name             {{ hostname }}
-  servicegroups         yarn_rm
-  use                   unit-service
-  check_command         check_active_rm!8090!-S
-}
-define service {
-  service_description   YARN RM: TCP SSL
-  host_name             {{ hostname }}
-  servicegroups         yarn_rm
-  use                   unit-service
-  check_command         check_tcp_ha!'YARN RM: Active Node'!8050
-}
-define service {
-  service_description   YARN RM: Scheduler TCP
-  host_name             {{ hostname }}
-  servicegroups         yarn_rm
-  use                   unit-service
-  check_command         check_tcp_ha!'YARN RM: Active Node'!8030
-}
-define service {
-  service_description   YARN RM: Tracker TCP
-  host_name             {{ hostname }}
-  servicegroups         yarn_rm
-  use                   unit-service
-  check_command         check_tcp_ha!'YARN RM: Active Node'!8025
-}
-define service {
-  service_description   YARN RM: RPC latency
-  host_name             {{ hostname }}
-  servicegroups         yarn_rm
-  use                   unit-service
-  check_command         check_rpc_latency_ha!'YARN RM: Active Node'!ResourceManager!8090!3000!5000!-S
-}
-{% endif %}
-{% if host.modules | contains('hbase_master') %}
-define service {
-  service_description   HBase Master: Available
-  host_name             {{ hostname }}
-  servicegroups         hbase_master
-  use                   unit-service
-  check_command         has_one!'HBase Master: TCP'
-}
-{% endif %}
-{% if host.modules | contains('hiveserver2') %}
-define service {
-  service_description   Hiveserver2: Available
-  host_name             {{ hostname }}
-  servicegroups         hiveserver2
-  use                   unit-service
-  check_command         has_one!'Hiveserver2: TCP SSL'
-}
-{% endif %}
-{% if host.modules | contains('oozie_server') %}
-define service {
-  service_description   Oozie Server: Available
-  host_name             {{ hostname }}
-  servicegroups         oozie_server
-  use                   unit-service
-  check_command         has_one!'Oozie Server: WebUI'
-}
-{% endif %}
-{% if host.modules | contains('elasticsearch') %}
-define service {
-  service_description   ElasticSearch: Quorum
-  host_name             {{ hostname }}
-  servicegroups         elasticsearch
-  use                   unit-service
-  check_command         has_quorum!'ElasticSearch: TCP'
-}
-{% endif %}
-{% if host.modules | contains('knox') %}
-define service {
-  service_description   Knox: Available
-  host_name             {{ hostname }}
-  servicegroups         knox
-  use                   unit-service
-  check_command         has_one!'Knox: WebService'
-}
-{% endif %}
-{% endif %}
 {% if host.hostgroups | contains('zookeeper_server') %}
 define service {
   service_description   Zookeeper Server: TCP
@@ -163,7 +22,6 @@ define service {
   check_command         check_zk_stat!{{ host.config.ryba.zookeeper.port }}!connections!300!350
 }
 {% endif %}
-{% if host.hostgroups | contains('zookeeper_server') %}{% endif %}
 {% if host.hostgroups | contains('hdfs_nn') %}
 define service {
   service_description   HDFS NN: TCP
@@ -360,21 +218,21 @@ define service {
   host_name             {{ hostname }}
   servicegroups         hbase_master
   use                   unit-service
-  check_command         check_tcp!{{ host.config.ryba.hbase.site['hbase.master.port'] }}
+  check_command         check_tcp!{{ host.config.ryba.hbase.master.site['hbase.master.port'] }}
 }
 define service {
   service_description   HBase Master: WebUI
   host_name             {{ hostname }}
   servicegroups         hbase_master
   use                   unit-service
-  check_command         check_tcp!{{ host.config.ryba.hbase.site['hbase.master.info.port'] }}!-S
+  check_command         check_tcp!{{ host.config.ryba.hbase.master.site['hbase.master.info.port'] }}!-S
 }
 define service {
   service_description   HBase Master: Certificate
   host_name             {{ hostname }}
   servicegroups         hbase_master
   use                   unit-service
-  check_command         check_cert!{{ host.config.ryba.hbase.site['hbase.master.info.port'] }}!120!60
+  check_command         check_cert!{{ host.config.ryba.hbase.master.site['hbase.master.info.port'] }}!120!60
 }
 {% endif %}
 {% if host.hostgroups | contains('hbase_regionserver') %}
@@ -383,14 +241,14 @@ define service {
   host_name             {{ hostname }}
   servicegroups         hbase_regionserver
   use                   unit-service
-  check_command         check_tcp!{{ host.config.ryba.hbase.site['hbase.regionserver.port'] }}
+  check_command         check_tcp!{{ host.config.ryba.hbase.rs.site['hbase.regionserver.port'] }}
 }
 define service {
   service_description   HBase RegionServer: WebUI
   host_name             {{ hostname }}
   servicegroups         hbase_regionserver
   use                   unit-service
-  check_command         check_tcp!{{ host.config.ryba.hbase.site['hbase.regionserver.info.port'] }}!-S
+  check_command         check_tcp!{{ host.config.ryba.hbase.rs.site['hbase.regionserver.info.port'] }}!-S
 }
 {% endif %}
 {% if host.hostgroups | contains('hbase_rest') %}
@@ -399,25 +257,49 @@ define service {
   host_name             {{ hostname }}
   servicegroups         hbase_rest
   use                   unit-service
-  check_command         check_tcp!{{ host.config.ryba.hbase.site['hbase.rest.port'] }}!-S
+  check_command         check_tcp!{{ host.config.ryba.hbase.rest.site['hbase.rest.port'] }}!-S
 }
 define service {
   service_description   HBase REST: WebUI
   host_name             {{ hostname }}
   servicegroups         hbase_rest
   use                   unit-service
-  check_command         check_tcp!{{ host.config.ryba.hbase.site['hbase.rest.info.port'] }}!-S
+  check_command         check_tcp!{{ host.config.ryba.hbase.rest.site['hbase.rest.info.port'] }}!-S
 }
 define service {
   service_description   HBase REST: Certificate
   host_name             {{ hostname }}
   servicegroups         hbase_rest
   use                   unit-service
-  check_command         check_cert!{{ host.config.ryba.hbase.site['hbase.rest.port'] }}!120!60
+  check_command         check_cert!{{ host.config.ryba.hbase.rest.site['hbase.rest.port'] }}!120!60
 }
 {% endif %}
-{% if host.hostgroups | contains('hbase_thrift') %}{% endif %}
+{% if host.hostgroups | contains('hbase_thrift') %}
+define service {
+  service_description   HBase Thrift: TCP SSL
+  host_name             {{ hostname }}
+  servicegroups         hbase_thrift
+  use                   unit-service
+  check_command         check_tcp!{{ host.config.ryba.hbase.thrift.site['hbase.thrift.port'] }}!-S
+}
+define service {
+  service_description   HBase Thrift: Certificate
+  host_name             {{ hostname }}
+  servicegroups         hbase_thrift
+  use                   unit-service
+  check_command         check_cert!{{ host.config.ryba.hbase.thrift.site['hbase.thrift.port'] }}!120!60
+}
+{% endif %}
 {% if host.hostgroups | contains('hbase_client') %}{% endif %}
+{% if host.hostgroups | contains('hcatalog') %}
+define service {
+  service_description   Hcatalog: TCP
+  host_name             {{ hostname }}
+  servicegroups         hcatalog
+  use                   unit-service
+  check_command         check_tcp!{{ host.config.ryba.hive.site['hive.metastore.uris'].split(',')[0].split(':')[2] }}
+}
+{% endif %}
 {% if host.hostgroups | contains('hiveserver2') %}
 define service {
   service_description   Hiveserver2: TCP SSL
@@ -432,15 +314,6 @@ define service {
   servicegroups         hiveserver2
   use                   unit-service
   check_command         check_cert!{{ host.config.ryba.hive.site['hive.server2.thrift.port'] }}!120!60
-}
-{% endif %}
-{% if host.hostgroups | contains('hcatalog') %}
-define service {
-  service_description   Hcatalog: TCP
-  host_name             {{ hostname }}
-  servicegroups         hcatalog
-  use                   unit-service
-  check_command         check_tcp!{{ host.config.ryba.hive.site['hive.metastore.uris'].split(',')[0].split(':')[2] }}
 }
 {% endif %}
 {% if host.hostgroups | contains('webhcat') %}

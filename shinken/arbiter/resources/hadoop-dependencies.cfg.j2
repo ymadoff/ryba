@@ -1,17 +1,20 @@
 {% for hostname, host in hosts %}{% if host.hostgroups %}
 {% if host.hostgroups | contains('watcher') %}
 {% if host.modules | contains('zookeeper_server') %}
+{% if host.modules | contains('hdfs_nn') %}
 define servicedependency {
-  service_description           Zookeeper Server: Quorum
-  dependent_service_description HDFS NN: Active Node
+  service_description           Zookeeper Server: Available
+  dependent_service_description HDFS NN: Available
   host_name                     {{ hostname }}
   dependent_host_name           {{ hostname }}
   inherits_parent               1
   execution_failure_criteria    c,u,p
   notification_failure_criteria c,u,p
 }
+{% endif %}
+{% if host.modules | contains('hiveserver2') %}
 define servicedependency {
-  service_description           Zookeeper Server: Quorum
+  service_description           Zookeeper Server: Available
   dependent_service_description Hiveserver2: Available
   host_name                     {{ hostname }}
   dependent_host_name           {{ hostname }}
@@ -19,17 +22,21 @@ define servicedependency {
   execution_failure_criteria    c,u,p
   notification_failure_criteria c,u,p
 }
+{% endif %}
+{% if host.modules | contains('yarn_rm') %}
 define servicedependency {
-  service_description           Zookeeper Server: Quorum
-  dependent_service_description YARN RM: Active Node
+  service_description           Zookeeper Server: Available
+  dependent_service_description YARN RM: Available
   host_name                     {{ hostname }}
   dependent_host_name           {{ hostname }}
   inherits_parent               1
   execution_failure_criteria    c,u,p
   notification_failure_criteria c,u,p
 }
+{% endif %}
+{% if host.modules | contains('hbase_master') %}
 define servicedependency {
-  service_description           Zookeeper Server: Quorum
+  service_description           Zookeeper Server: Available
   dependent_service_description HBase Master: Available
   host_name                     {{ hostname }}
   dependent_host_name           {{ hostname }}
@@ -38,6 +45,8 @@ define servicedependency {
   notification_failure_criteria c,u,p
 }
 {% endif %}
+{% endif %}
+
 {% if host.modules | contains('yarn_rm') %}
 define servicedependency {
   service_description           YARN RM: Active Node
@@ -77,6 +86,7 @@ define servicedependency {
 }
 {% endif %}
 {% endif %}
+
 {% if host.hostgroups | contains('zookeeper_server') %}
 define servicedependency {
   service_description           Zookeeper Server: TCP
@@ -155,9 +165,9 @@ define servicedependency {
 {% endif %}
 {% if host.hostgroups | contains('zkfc') %}
 define servicedependency {
-  service_description           Zookeeper Server: Quorum
+  service_description           Zookeeper Server: Available
   dependent_service_description ZKFC: TCP
-  host_name                     {{ host.cluster }}
+  host_name                     {{ host.custom_properties.cluster }}
   dependent_host_name           {{ hostname }}
   inherits_parent               1
   execution_failure_criteria    c,u,p
@@ -177,9 +187,9 @@ define servicedependency {
 {% endif %}
 {% if host.hostgroups | contains('hdfs_dn') %}
 define servicedependency {
-  service_description           HDFS NN: Active Node
+  service_description           HDFS NN: Available
   dependent_service_description HDFS DN: TCP SSL
-  host_name                     {{ host.cluster }}
+  host_name                     {{ host.custom_properties.cluster }}
   dependent_host_name           {{ hostname }}
   inherits_parent               1
   execution_failure_criteria    c,u,p
@@ -228,6 +238,15 @@ define servicedependency {
 {% endif %}
 {% if host.hostgroups | contains('hiveserver2') %}
 define servicedependency {
+  service_description           Hcatalog: Available
+  dependent_service_description Hiveserver2: TCP SSL
+  host_name                     {{ host.custom_properties.cluster }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define servicedependency {
   service_description           Hiveserver2: TCP SSL
   dependent_service_description Hiveserver2: Certificate
   host_name                     {{ hostname }}
@@ -252,7 +271,7 @@ define servicedependency {
 define servicedependency {
   service_description           HBase Master: Available
   dependent_service_description OpenTSDB: WebService
-  host_name                     {{ host.cluster }}
+  host_name                     {{ host.custom_properties.cluster }}
   dependent_host_name           {{ hostname }}
   inherits_parent               1
   execution_failure_criteria    c,u,p

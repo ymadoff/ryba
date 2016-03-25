@@ -31,22 +31,6 @@ define command {
   command_name    check_socket
   command_line    $DOCKER_EXEC$ ./check_socket.php -H $HOSTADDRESS$ -p $ARG1$ -m $ARG2$ -r $ARG3$ $ARG4$
 }
-define command {
-  command_name    has_quorum
-  command_line    $DOCKER_EXEC$ ./check_aggregate.php -H localhost -p 50000 -d $ARG1$ -f "host_groups >= $HOSTNAME$" -w 1% -c 50% $ARG2$ 
-}
-define command {
-  command_name    has_one
-  command_line    $DOCKER_EXEC$ ./check_aggregate.php -H localhost -p 50000 -d $ARG1$ -f "host_groups >= $HOSTNAME$" -w 1% -c 100% $ARG2$ 
-}
-define command {
-  command_name    has_all
-  command_line    $DOCKER_EXEC$ ./check_aggregate.php -H localhost -p 50000 -d $ARG1$ -f "host_groups >= $HOSTNAME$" -w 1% -c 1% $ARG2$ 
-}
-define command {
-  command_name    has_percent
-  command_line    $DOCKER_EXEC$ ./check_aggregate.php -H localhost -p 50000 -d $ARG1$ -f "host_groups >= $HOSTNAME$" -w $ARG2$ -c $ARG3$ $ARG4$
-}
 ## Multi Service commands
 define command {
   command_name    check_tcp_ha
