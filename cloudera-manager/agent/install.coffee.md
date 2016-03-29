@@ -1,14 +1,13 @@
 # Cloudera Manager Agent install
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/commons/java'
-
+    module.exports = header: 'Cloudera Manager Agent Install', timeout: -1, handler: ->
+      {agent} = @config.ryba.cloudera_manager
+      {java} = @config
+      
 ## Packages
 
 Instal the packages cloudera-scm-agent and cloudera-scm-daemons
 
-    module.exports.push header: 'Cloudera Manager Agent # Packages', timeout: -1, handler: ->
       @service
         name: 'cloudera-manager-daemons'
         # startup: true
@@ -19,10 +18,9 @@ Instal the packages cloudera-scm-agent and cloudera-scm-daemons
 ## Configure
 
 Set the server's hostname in the agent's configuration
-
-    module.exports.push header: 'Cloudera Manager Agent # Configuration', timeout: -1, handler: ->
-      {agent} = @config.ryba.cloudera_manager
+      
       @write
+        header: 'Configuration'
         destination: "#{agent.conf_dir}config.ini"
         write: [
           match: /^server_host=.*$/m
@@ -33,9 +31,8 @@ Set the server's hostname in the agent's configuration
 
 ## Env
 
-    module.exports.push header: 'Cloudera Manager Agent # Env', timeout: -1, handler: ->
-      {java} = @config
       @write
+        header: 'Env'
         destination: '/etc/default/cloudera-scm-agent'
         write: [
           match: RegExp '^export JAVA_HOME=*'

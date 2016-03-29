@@ -7,42 +7,21 @@ You must have configured yum to use the [cloudera manager repo][Cloudera-manager
 or the [cloudera cdh repo][Cloudera-cdh-repo].
 
 
-    module.exports = []
-
-## Configuration
-
-Example:
-
-```json
-cloudera_manager:
-  agent:
-    conf_dir: '/etc/cloudera-scm-agent/'
-    ini:
-      server:
-        hostname: 'server-hostname'
-        port: '7182'
-```
-
-    module.exports.configure = (ctx) ->
-      require('../../lib/base').configure ctx
-      cdm_ctxs = ctx.contexts 'ryba/cloudera-manager/server', require('../server').configure
-      return Error 'Need at least one cloudera manager server' unless cdm_ctxs.length > 0
-      cloudera_manager = ctx.config.ryba.cloudera_manager ?= {}
-      agent = ctx.config.ryba.cloudera_manager.agent ?= {}
-      agent.conf_dir ?= '/etc/cloudera-scm-agent/'
-      agent.ini ?= {}
-      agent.ini.server ?= {}
-      agent.ini.server['hostname'] ?= "#{cdm_ctxs[0].config.host}"
-      agent.ini.server['url_port'] ?= "#{cdm_ctxs[0].config.ryba.cloudera_manager.server.admin_port}"
-
-    module.exports.push commands: 'install', modules: [
-      'ryba/cloudera-manager/agent/install'
-      'ryba/cloudera-manager/agent/start'
-    ]
-
-    module.exports.push commands: 'start', modules: 'ryba/cloudera-manager/agent/start'
-
-    module.exports.push commands: 'stop', modules: 'ryba/cloudera-manager/agent/stop'
+    module.exports = ->
+      'configure' : [
+        'ryba/cloudera-manager/agent/configure'
+      ]
+      'install' : [
+        'ryba/cloudera-manager/agent/install'
+        'ryba/cloudera-manager/server/wait'
+        'ryba/cloudera-manager/agent/start'
+      ]
+      'stop' : [
+        'ryba/cloudera-manager/agent/stop'
+      ]
+      'start' : [
+        'ryba/cloudera-manager/agent/start'
+      ]
 
 [Cloudera-agent-install]: http://www.cloudera.com/content/www/en-us/documentation/enterprise/5-2-x/topics/cm_ig_install_path_b.html#cmig_topic_6_6_3_unique_1
 [Cloudera-manager-repo]: http://archive.cloudera.com/cm5/redhat/6/x86_64/cm/cloudera-manager.repo
