@@ -49,7 +49,7 @@ which has no dependency.
 
       @call header: 'Packages', timeout: -1, handler: ->
         @service
-          name: 'telnet' # Used by check
+          name: 'nc' # Used by check
         @service
           name: 'zookeeper-server'
         @hdp_select
