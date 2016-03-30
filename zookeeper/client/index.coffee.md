@@ -19,6 +19,7 @@
         'masson/commons/java'
         'ryba/commons/repos'
         'ryba/commons/krb5_user'
+        'ryba/zookeeper/server/wait'
         'ryba/zookeeper/client/install'
         'ryba/zookeeper/client/check'
       ]
