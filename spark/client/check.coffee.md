@@ -15,7 +15,7 @@ Validate Spark installation with Pi-example in yarn-cluster mode.
 The yarn cluster mode makes the driver part of the spark submitted program to run inside yarn.
 In this mode the driver is the yarn application master (running inside yarn).
 
-      @call header: 'Check Yarn Cluster', timeout: -1, label_true: 'CHECKED', handler:(_, next)->
+      @call header: 'Check Yarn Cluster', timeout: -1, label_true: 'CHECKED', handler:->
         file_check = "check-#{@config.shortname}-spark-cluster"
         applicationId = null
         @execute
@@ -30,7 +30,7 @@ In this mode the driver is the yarn application master (running inside yarn).
           """
           unless_exec : unless force_check then mkcmd.test @, "hdfs dfs -test -f #{file_check}"
         , (err, executed, stdout, stderr) ->
-          return next err if err
+          return err if err
           return unless executed
           tracking_url_result = stdout.trim().split("/")
           applicationId = tracking_url_result[tracking_url_result.length - 2]
@@ -42,7 +42,7 @@ In this mode the driver is the yarn application master (running inside yarn).
                 yarn logs -applicationId #{applicationId} 2>&1 /dev/null | grep -m 1 "Pi is roughly";
                 """
             , (err, executed, stdout, stderr) ->
-              return next err if err
+              return err if err
               return unless executed
               log_result = stdout.split(" ")
               pi = parseFloat(log_result[log_result.length - 1])
@@ -52,7 +52,6 @@ In this mode the driver is the yarn application master (running inside yarn).
           hdfs dfs -touchz #{file_check}
           """
           if: -> @status -2
-        @then next
 
 ## Check Client Mode
 

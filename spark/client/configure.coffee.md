@@ -28,12 +28,17 @@
       # For [Spark on YARN deployments][[secu]], configuring spark.authenticate to true
       # will automatically handle generating and distributing the shared secret.
       # Each application will use a unique shared secret. 
-      # wdavidw: not tested, work without it on spark 1.3
+      # http://spark.apache.org/docs/1.6.0/configuration.html#security
       spark.conf['spark.authenticate'] ?= "true"
+      if spark.conf['spark.authenticate']
+        spark.conf['spark.authenticate.secret'] ?= 'my-secret-key' 
+        throw Error 'spark.authenticate.secret is needed when spark.authenticate is true' unless spark.conf['spark.authenticate.secret']
       # This causes Spark applications running on this client to write their history to the directory that the history server reads.
       spark.conf['spark.eventLog.enabled'] ?= "true"
       spark.conf['spark.yarn.services'] ?= "org.apache.spark.deploy.yarn.history.YarnHistoryService"
-      spark.conf['spark.history.provider'] ?= "org.apache.spark.deploy.yarn.history.YarnHistoryProvider"
+      # set to only supported one http://spark.apache.org/docs/1.6.0/monitoring.html#viewing-after-the-fact
+      spark.conf['spark.history.provider'] ?= 'org.apache.spark.deploy.history.FsHistoryProvider'
+      
       # Base directory in which Spark events are logged, if spark.eventLog.enabled is true.
       # Within this base directory, Spark creates a sub-directory for each application, and logs the events specific to the application in this directory.
       # Users may want to set this to a unified location like an HDFS directory so history files can be read by the history server.
@@ -77,8 +82,9 @@ See ryba/spark/history_server/install.coffee.md doc for detailed information on 
 In addition, if you want the YARN ResourceManager to link directly to the Spark History Server, 
 you can set the spark.yarn.historyServer.address property in /etc/spark/conf/spark-defaults.conf:
 
-      [shs_ctx] = @contexts 'ryba/spark/history_server', require('../history_server/index').configure
+      [shs_ctx] = @contexts 'ryba/spark/history_server', require('../history_server/configure').handler
       if shs_ctx
+        shs_ctx.config.ryba.spark.conf['spark.history.provider'] ?= spark.conf['spark.history.provider']
         spark.conf['spark.yarn.historyServer.address'] ?= "#{shs_ctx.config.host}:#{shs_ctx.config.ryba.spark.conf['spark.history.ui.port']}"
       else
         # HDP 2.3 sandbox set it to SHS address. If we do this here
