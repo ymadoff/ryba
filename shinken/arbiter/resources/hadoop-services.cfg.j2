@@ -343,12 +343,21 @@ define service {
 {% endif %}
 {% if host.hostgroups | contains('oozie_client') %}{% endif %}
 {% if host.hostgroups | contains('kafka_broker') %}
+{% for prot in host.config.ryba.kafka.broker.protocols %}
+define service {
+  service_description   Kafka Broker - TCP {{ prot }}
+  host_name             {{ hostname }}
+  servicegroups         kafka_broker
+  use                   unit-service
+  check_command         check_tcp!{{ host.config.ryba.kafka.broker.ports[prot] }}
+}
+{% endfor %}
 define service {
   service_description   Kafka Broker - TCP
   host_name             {{ hostname }}
   servicegroups         kafka_broker
   use                   unit-service
-  check_command         check_tcp!{{ host.config.ryba.kafka.broker.config.port }}
+  check_command         bp_rule!({% set sep = joiner(' & ') %}{% for prot in host.config.ryba.kafka.broker.protocols %}{{ sep() }}{{ hostname }},Kafka Broker - TCP {{ prot }}{% endfor %})
 }
 {% endif %}
 {### Kafka Producer ###}

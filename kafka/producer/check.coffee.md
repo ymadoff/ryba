@@ -14,7 +14,7 @@ Check Message by writing to a test topic on the PLAINTEXT channel.
         ks_ctxs = @contexts 'ryba/kafka/broker'
         return if ks_ctxs[0].config.ryba.kafka.broker.protocols.indexOf('PLAINTEXT') == -1
         brokers = ks_ctxs.map( (ctx) => #, require('../broker').configure
-          "#{ctx.config.host}:#{ctx.config.ryba.kafka.ports['PLAINTEXT']}"
+          "#{ctx.config.host}:#{ctx.config.ryba.kafka.broker.ports['PLAINTEXT']}"
         ).join ','
         test_topic = "check-#{@config.host}-producer-plaintext-topic"
         zoo_connect = ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect']
@@ -75,7 +75,7 @@ We specify the trustore location and password because if executed before consume
           ks_ctxs = @contexts 'ryba/kafka/broker'
           return if ks_ctxs[0].config.ryba.kafka.broker.protocols.indexOf('SSL') == -1
           brokers = ks_ctxs.map( (ctx) => #, require('../broker').configure
-            "#{ctx.config.host}:#{ctx.config.ryba.kafka.ports['SSL']}"
+            "#{ctx.config.host}:#{ctx.config.ryba.kafka.broker.ports['SSL']}"
           ).join ','
           test_topic = "check-#{@config.host}-producer-ssl-topic"
           zoo_connect = ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect']
@@ -118,7 +118,7 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
           ks_ctxs = @contexts 'ryba/kafka/broker'
           return if ks_ctxs[0].config.ryba.kafka.broker.protocols.indexOf('SASL_PLAINTEXT') == -1
           brokers = ks_ctxs.map( (ctx) => #, require('../broker').configure
-            "#{ctx.config.host}:#{ctx.config.ryba.kafka.ports['SASL_PLAINTEXT']}"
+            "#{ctx.config.host}:#{ctx.config.ryba.kafka.broker.ports['SASL_PLAINTEXT']}"
           ).join ','
           test_topic = "check-#{@config.host}-producer-sasl-plaintext-topic"
           zoo_connect = ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect']
@@ -183,7 +183,7 @@ Specifying also the trustore location and password because if executed before co
           ks_ctxs = @contexts 'ryba/kafka/broker'
           return if ks_ctxs[0].config.ryba.kafka.broker.protocols.indexOf('SASL_SSL') == -1
           brokers = ks_ctxs.map( (ctx) => #, require('../broker').configure
-            "#{ctx.config.host}:#{ctx.config.ryba.kafka.ports['SASL_SSL']}"
+            "#{ctx.config.host}:#{ctx.config.ryba.kafka.broker.ports['SASL_SSL']}"
           ).join ','
           test_topic = "check-#{@config.host}-producer-sasl-ssl-topic"
           zoo_connect = ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect']

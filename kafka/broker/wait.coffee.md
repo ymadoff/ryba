@@ -7,4 +7,4 @@
           for ks_ctx in @contexts 'ryba/kafka/broker'
             for protocol in ks_ctx.config.ryba.kafka.broker.protocols
               host: ks_ctx.config.host
-              port: ks_ctx.config.ryba.kafka.ports[protocol]
+              port: ks_ctx.config.ryba.kafka.broker.ports[protocol]

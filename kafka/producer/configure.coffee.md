@@ -35,7 +35,7 @@
         else
           protocol = 'PLAINTEXT'
       brokers = for ks_ctx in ks_ctxs
-        "#{ks_ctx.config.host}:#{ks_ctx.config.ryba.kafka.ports[protocol]}"
+        "#{ks_ctx.config.host}:#{ks_ctx.config.ryba.kafka.broker.ports[protocol]}"
       kafka.producer.config['security.protocol'] ?= protocol
       kafka.producer.config['metadata.broker.list'] ?= brokers.join ','
       kafka.producer.log4j ?= {}
