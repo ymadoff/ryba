@@ -224,7 +224,7 @@ define service {
   host_name             {{ hostname }}
   servicegroups         opentsdb
   use                   unit-service
-  check_command         check_tcp!{{ has_one('OpenTSDB - WebService', hostname) }}
+  check_command         {{ has_one('OpenTSDB - WebService', hostname) }}
 }
 {% endif %}
 {% if host.modules | contains('elasticsearch') %}
