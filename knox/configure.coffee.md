@@ -213,7 +213,7 @@ This mechanism can be used to configure a specific gateway without having to dec
           else throw Error 'Cannot autoconfigure KNOX webhcat service, no webhcat declared'
         # Oozie
         if topology.services['oozie'] is true
-          ctxs = @contexts 'ryba/oozie/server', [ require('ryba/commons/db_admin').handler, require('../oozie/server/configure').handler]
+          ctxs = @contexts 'ryba/oozie/server', [ require('../commons/db_admin').handler, require('../oozie/server/configure').handler]
           if ctxs.length
             topology.services['oozie'] ?= ctxs[0].config.ryba.oozie.site['oozie.base.url']
           else throw Error 'Cannot autoconfigure KNOX oozie service, no oozie declared'
