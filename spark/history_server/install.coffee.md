@@ -6,14 +6,13 @@ We does not recommand using the spark WEB UI because it does not support SSL. Mo
 redirect the tracking URL to the WEBUI which prevents the user to see the log after the job has finished
 in the resource Manager web interface.
 
-
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/commons/java'
-    module.exports.push 'ryba/hadoop/hdfs_client'
-    # module.exports.push require('./index').configure
-    module.exports.push 'ryba/spark/default'
-
+    module.exports =  header: 'Spark History Server Install', handler: ->
+      {spark, realm} = @config.ryba
+      {spark} = (@contexts 'ryba/spark/history_server', require('./configure').handler)[0].config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      {java_home} = @config.java
+          
+          
 ## IPTables
 
 | Service              | Port  | Proto | Info              |
@@ -23,31 +22,27 @@ in the resource Manager web interface.
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push header: 'Spark Server # IPTables', handler: ->
-      {spark} = @config.ryba
       @iptables
+        header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: spark.conf['spark.history.ui.port'], protocol: 'tcp', state: 'NEW', comment: "Oozie HTTP Server" }
         ]
         if: @config.iptables.action is 'start'
 
-    module.exports.push header: 'Spark HS # Layout', handler: ->
-      {spark} = @config.ryba
-      @mkdir
-        destination: spark.pid_dir
-        uid: spark.user.name
-        gid: spark.group.name
-      @mkdir
-        destination: spark.log_dir
-        uid: spark.user.name
-        gid: spark.group.name
+      @call header: 'Layout', handler: ->
+        @mkdir
+          destination: spark.pid_dir
+          uid: spark.user.name
+          gid: spark.group.name
+        @mkdir
+          destination: spark.log_dir
+          uid: spark.user.name
+          gid: spark.group.name
 
 ## Spark History Server Configure
 
-    module.exports.push header: 'Spark HS # Configuration',  handler: ->
-      {java_home} = @config.java
-      {spark} = @config.ryba
       @write
+        header: 'Spark env'
         destination : "#{spark.conf_dir}/spark-env.sh"
         # See "/usr/hdp/current/spark-historyserver/sbin/spark-daemon.sh" for
         # additionnal environmental variables.
@@ -70,6 +65,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           append: true
         ]
       @write
+        header: 'Spark Defaults'
         destination: "#{spark.conf_dir}/spark-defaults.conf"
         write: for k, v of spark.conf
           match: ///^#{quote k}\ .*$///mg
@@ -78,11 +74,9 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         backup: true
 
 ## Kerberos
-
-    module.exports.push header: 'Spark HS # Kerberos', handler: ->
-      {spark, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      
       @krb5_addprinc
+        header: 'Kerberos'
         principal: spark.conf['spark.history.kerberos.principal']
         keytab: spark.conf['spark.history.kerberos.keytab']
         randkey: true

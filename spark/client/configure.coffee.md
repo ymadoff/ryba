@@ -37,6 +37,7 @@
       spark.conf['spark.eventLog.enabled'] ?= "true"
       spark.conf['spark.yarn.services'] ?= "org.apache.spark.deploy.yarn.history.YarnHistoryService"
       # set to only supported one http://spark.apache.org/docs/1.6.0/monitoring.html#viewing-after-the-fact
+      # https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_upgrading_hdp_manually/content/upgrade-spark-23.html
       spark.conf['spark.history.provider'] ?= 'org.apache.spark.deploy.history.FsHistoryProvider'
       
       # Base directory in which Spark events are logged, if spark.eventLog.enabled is true.
