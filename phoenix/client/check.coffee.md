@@ -4,14 +4,6 @@
 CSV data can be bulk loaded with built in utility named "psql.py". A shell is
 available with the utility named "sqlline.py"
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    # module.exports.push 'ryba/hadoop/yarn_rm/wait'
-    module.exports.push 'ryba/hbase/master/wait'
-    module.exports.push 'ryba/hbase/regionserver/wait'
-    # module.exports.push require('../../hbase/client').configure
-    # module.exports.push require('./index').configure
-
 ## Check Import and Select
 
 Phoenix requires "RWXCA" permissions on the HBase table. Permission "execute" is
@@ -23,7 +15,7 @@ Phoenix table are automatically converted to uppercase.
 Refer to the [sqlline] documentation for a complete list of supported command
 instructions.
 
-    module.exports.push header: 'Phoenix Client # Check', label_true: 'CHECKED', handler: ->
+    module.exports = header: 'Phoenix Client Check', label_true: 'CHECKED', handler: ->
       {force_check, user, hbase} = @config.ryba
       zk_path = "#{hbase.site['hbase.zookeeper.quorum']}"
       zk_path += ":#{hbase.site['hbase.zookeeper.property.clientPort']}"

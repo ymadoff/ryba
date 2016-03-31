@@ -7,25 +7,26 @@ your SQL query, compiles it into a series of HBase scans, and orchestrates the
 running of those scans to produce regular JDBC result sets.
 
 
-    module.exports = []
-    # module.exports.push require('../../hbase').configure
-
-## Configuration
-
-    module.exports.configure = (ctx) ->
-      {hbase} = ctx.config.ryba
-      phoenix = ctx.config.ryba.phoenix ?= {}
-      phoenix.conf_dir ?= '/etc/phoenix/conf'
-
-## Commands
-
-    module.exports.push commands: 'check', modules: 'ryba/phoenix/client/check'
-
-    module.exports.push commands: 'install', modules: [
-      'ryba/phoenix/client/install'
-      'ryba/phoenix/client/check'
-    ]
-
-## Optimisation
-
-Set "hbase.bucketcache.ioengine" to "offheap".
+    module.exports = ->
+      'configure':[
+        'ryba/phoenix/client/configure'
+      ]
+      'install': [
+        'masson/core/yum'
+        'masson/commons/java'
+        'ryba/hadoop/core'
+        'ryba/hbase/client'
+        'ryba/lib/hconfigure'
+        'ryba/lib/write_jaas'
+        'ryba/lib/hdp_select'
+        'ryba/phoenix/client/install'
+        'ryba/hbase/regionserver/wait'
+        'ryba/hbase/master/wait'
+        'ryba/phoenix/client/init'
+        'ryba/phoenix/client/check'
+        ]
+      'check': [
+        'ryba/hbase/master/wait'
+        'ryba/hbase/regionserver/wait'
+        'ryba/phoenix/client/check'
+        ]
