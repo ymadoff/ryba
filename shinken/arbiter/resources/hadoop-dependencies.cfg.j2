@@ -12,17 +12,6 @@ define servicedependency {
   notification_failure_criteria c,u,p
 }
 {% endif %}
-{% if host.modules | contains('hiveserver2') %}
-define servicedependency {
-  service_description           Zookeeper Server - Available
-  dependent_service_description Hiveserver2 - Available
-  host_name                     {{ hostname }}
-  dependent_host_name           {{ hostname }}
-  inherits_parent               1
-  execution_failure_criteria    c,u,p
-  notification_failure_criteria c,u,p
-}
-{% endif %}
 {% if host.modules | contains('yarn_rm') %}
 define servicedependency {
   service_description           Zookeeper Server - Available
@@ -34,16 +23,28 @@ define servicedependency {
   notification_failure_criteria c,u,p
 }
 {% endif %}
-{% if host.modules | contains('hbase_master') %}
+{% if host.modules | contains('hiveserver2') %}
 define servicedependency {
   service_description           Zookeeper Server - Available
-  dependent_service_description HBase Master - Available
+  dependent_service_description Hiveserver2 - Available
   host_name                     {{ hostname }}
   dependent_host_name           {{ hostname }}
   inherits_parent               1
   execution_failure_criteria    c,u,p
   notification_failure_criteria c,u,p
 }
+{% endif %}
+{% if host.hostgroups | contains('kafka_broker') %}
+define servicedependency {
+  service_description           Zookeeper Server - Available
+  dependent_service_description Kafka Broker - Available
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+{% endif %}
 {% endif %}
 {% endif %}
 
@@ -108,6 +109,15 @@ define servicedependency {
 }
 {% endif %}
 {% if host.hostgroups | contains('hdfs_nn')%}
+define servicedependency {
+  service_description           HDFS JN - Available
+  dependent_service_description HDFS NN - TCP
+  host_name                     {{ host.custom_properties.cluster }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
 define servicedependency {
   service_description           HDFS NN - WebService
   dependent_service_description HDFS NN - RPC latency
@@ -214,11 +224,42 @@ define servicedependency {
   notification_failure_criteria c,u,p
 }
 {% endif %}
+{% if host.hostgroups | contains('httpfs') %}
+define servicedependency {
+  service_description           HDFS - Available
+  dependent_service_description HttpFS - WebService
+  host_name                     {{ host.custom_properties.cluster }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+{% endif %}
 {% if host.hostgroups | contains('hbase_master') %}
+define servicedependency {
+  service_description           Zookeeper Server - Available
+  dependent_service_description HBase Master - WebUI
+  host_name                     {{ host.custom_properties.cluster }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
 define servicedependency {
   service_description           HBase Master - WebUI
   dependent_service_description HBase Master - Certificate
   host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+{% endif %}
+{% if host.hostgroups | contains('hbase_regionserver') %}
+define servicedependency {
+  service_description           HDFS - Available
+  dependent_service_description HBase RegionServer - TCP
+  host_name                     {{ host.custom_properties.cluster }}
   dependent_host_name           {{ hostname }}
   inherits_parent               1
   execution_failure_criteria    c,u,p
@@ -247,9 +288,38 @@ define servicedependency {
   notification_failure_criteria c,u,p
 }
 define servicedependency {
+  service_description           HDFS - Available
+  dependent_service_description Hiveserver2 - TCP SSL
+  host_name                     {{ host.custom_properties.cluster }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define servicedependency {
+  service_description           YARN - Available
+  dependent_service_description Hiveserver2 - TCP SSL
+  host_name                     {{ host.custom_properties.cluster }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define servicedependency {
   service_description           Hiveserver2 - TCP SSL
   dependent_service_description Hiveserver2 - Certificate
   host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+{% endif %}
+{% if host.hostgroups | contains('webhcat') %}
+define servicedependency {
+  service_description           Hcatalog - Available
+  dependent_service_description WebHCat - WebService
+  host_name                     {{ host.custom_properties.cluster }}
   dependent_host_name           {{ hostname }}
   inherits_parent               1
   execution_failure_criteria    c,u,p
@@ -269,7 +339,7 @@ define servicedependency {
 {% endif %}
 {% if host.hostgroups | contains('opentsdb') %}
 define servicedependency {
-  service_description           HBase Master - Available
+  service_description           HBase - Available
   dependent_service_description OpenTSDB - WebService
   host_name                     {{ host.custom_properties.cluster }}
   dependent_host_name           {{ hostname }}
