@@ -112,11 +112,11 @@ Example PLAINTEXT and SSL:
 
       kafka.broker.protocols ?= if @config.ryba.security is 'kerberos' then ['SASL_SSL'] else ['SSL']
       return Error 'No protocol specified' unless kafka.broker.protocols.length > 0
-      kafka.ports ?= {}
-      kafka.ports['PLAINTEXT'] ?= '9092'
-      kafka.ports['SSL'] ?= '9093'
-      kafka.ports['SASL_PLAINTEXT'] ?= '9094'
-      kafka.ports['SASL_SSL'] ?= '9096'
+      kafka.broker.ports ?= {}
+      kafka.broker.ports['PLAINTEXT'] ?= '9092'
+      kafka.broker.ports['SSL'] ?= '9093'
+      kafka.broker.ports['SASL_PLAINTEXT'] ?= '9094'
+      kafka.broker.ports['SASL_SSL'] ?= '9096'
 
 # Security SSL
 
@@ -155,7 +155,7 @@ Example PLAINTEXT and SSL:
 # Listeners Protocols
 
       kafka.broker.config['listeners'] ?= kafka.broker.protocols.map( (protocol) =>
-        "#{protocol}://#{@config.host}:#{kafka.ports[protocol]}").join(',')
+        "#{protocol}://#{@config.host}:#{kafka.broker.ports[protocol]}").join(',')
 
 
 [kafka-security]:(http://kafka.apache.org/documentation.html#security)
