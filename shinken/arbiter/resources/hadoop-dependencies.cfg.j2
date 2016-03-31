@@ -46,8 +46,6 @@ define servicedependency {
 }
 {% endif %}
 {% endif %}
-{% endif %}
-
 {% if host.modules | contains('yarn_rm') %}
 define servicedependency {
   service_description           YARN RM - Active Node
