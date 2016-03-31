@@ -2,8 +2,8 @@
 define servicegroups {
   servicegroup_name    {{ name }}
   alias                {{ group.alias }}{% if not group.members | isEmpty %}
-  members              {{ group.members | join(',') }}{% endif %}{% if not group.hostgroup_members | isEmpty %}
-  servicegroup_members {{ group.hostgroup_members | join(',') }}{% endif %}{% if group.notes %}
+  members              {{ group.members | join(',') }}{% endif %}{% if not group.servicegroup_members | isEmpty %}
+  servicegroup_members {{ group.servicegroup_members | join(',') }}{% endif %}{% if group.notes %}
   notes                {{ group.notes }}{% endif %}{% if group.notes_url %}
   notes_url            {{ group.notes_url }}{% endif %}{% if group.action_url %}
   action_url           {{ group.action_url }}{% endif %}
