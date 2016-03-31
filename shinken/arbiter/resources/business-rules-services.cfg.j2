@@ -1,28 +1,49 @@
-{% macro has_quorum(name) %}bp_rule!(100%,1,50% of: *,r:^{{ name }}?){% endmacro %}
-{% macro has_one(name) %}bp_rule!(100%,1,100% of: *,r:^{{ name }}?){% endmacro %}
-{% macro has_all(name) %}bp_rule!(100%,1,1 of: *,r:^{{ name }}?){% endmacro %}
-{% macro has_percent(name, warn, crit) %}bp_rule!(100%,{{warn}},{{ crit }} of: *,r:^{{ name }}?){% endmacro %}
+{% macro has_quorum(name,g='*') %}bp_rule!(100%,1,50% of: {{ g }},r:^{{ name }}?){% endmacro %}
+{% macro has_one(name,g='*') %}bp_rule!(100%,1,100% of: {{ g }},r:^{{ name }}?){% endmacro %}
+{% macro has_all(name,g='*') %}bp_rule!(100%,1,1 of: {{ g }},r:^{{ name }}?){% endmacro %}
+{% macro has_percent(name, warn, crit,g='*') %}bp_rule!(100%,{{warn}},{{ crit }} of: {{ g }},r:^{{ name }}?){% endmacro %}
 {% for hostname, host in hosts %}{% if host.hostgroups %}
 {% if host.hostgroups | contains('watcher') %}
+define service {
+  service_description   HDFS - Available
+  host_name             {{ hostname }}
+  servicegroups         hdfs
+  use                   unit-service
+  check_command         bp_rule!({{ hostname }},HDFS NN - Available & {{ hostname }},HDFS DN - Available & {{ hostname }},HDFS JN - Available)
+}
+define service {
+  service_description   YARN - Available
+  host_name             {{ hostname }}
+  servicegroups         yarn
+  use                   unit-service
+  check_command         bp_rule!({{ hostname }},YARN RM - Available & {{ hostname }},YARN NM - Available)
+}
+define service {
+  service_description   HBase - Available
+  host_name             {{ hostname }}
+  servicegroups         hbase
+  use                   unit-service
+  check_command         bp_rule!({{ hostname }},HBase Master - Available & {{ hostname }},HBase RegionServer - Available)
+}
 {% if host.modules | contains('zookeeper_server') %}
 define service {
-  service_description   Zookeeper Server: Available
+  service_description   Zookeeper Server - Available
   host_name             {{ hostname }}
   servicegroups         zookeeper_server
   use                   unit-service
-  check_command         {{ has_quorum('Zookeeper Server: TCP') }}
+  check_command         {{ has_quorum('Zookeeper Server - TCP') }}
 }
 {% endif %}
 {% if host.modules | contains('hdfs_nn') %}
 define service {
-  service_description   HDFS NN: Available
+  service_description   HDFS NN - Available
   host_name             {{ hostname }}
   servicegroups         hdfs_nn
   use                   unit-service
-  check_command         {{ has_one('HDFS NN: TCP') }}
+  check_command         {{ has_one('HDFS NN - TCP') }}
 }
 define service {
-  service_description   HDFS NN: Active Node
+  service_description   HDFS NN - Active Node
   host_name             {{ hostname }}
   servicegroups         hdfs_nn
   use                   unit-service
@@ -31,197 +52,206 @@ define service {
 {% endif %}
 {% if host.modules | contains('zkfc') %}
 define service {
-  service_description   ZKFC: Available
+  service_description   ZKFC - Available
   host_name             {{ hostname }}
   servicegroups         zkfc
   use                   unit-service
-  check_command         {{ has_all('ZKFC: TCP')}}
+  check_command         {{ has_all('ZKFC - TCP')}}
 }
 {% endif %}
 {% if host.modules | contains('hdfs_jn') %}
 define service {
-  service_description   HDFS JN: Available
+  service_description   HDFS JN - Available
   host_name             {{ hostname }}
   servicegroups         hdfs_jn
   use                   unit-service
-  check_command         {{ has_quorum('HDFS JN: TCP SSL') }}
+  check_command         {{ has_quorum('HDFS JN - TCP SSL') }}
 }
 {% endif %}
 {% if host.modules | contains('hdfs_dn') %}
 define service {
-  service_description   HDFS DN: Available
+  service_description   HDFS DN - Available
   host_name             {{ hostname }}
   servicegroups         hdfs_dn
   use                   unit-service
-  check_command         {{ has_percent('HDFS DN: TCP SSL', '90%', '80%') }}
+  check_command         {{ has_percent('HDFS DN - TCP SSL', '90%', '80%') }}
 }
 define service {
-  service_description   HDFS DN: Nodes w/ Available space
+  service_description   HDFS DN - Nodes w/ Available space
   host_name             {{ hostname }}
   servicegroups         hdfs_dn
   use                   unit-service
-  check_command         {{ has_percent('HDFS DN: Available space', '90%', '80%') }}
+  check_command         {{ has_percent('HDFS DN - Available space', '90%', '80%') }}
 }
 {% endif %}
 {% if host.modules | contains('httpfs') %}
 define service {
-  service_description   HttpFS: Available
+  service_description   HttpFS - Available
   host_name             {{ hostname }}
   servicegroups         httpfs
   use                   unit-service
-  check_command         {{ has_one('HttpFS: WebService') }}
+  check_command         {{ has_one('HttpFS - WebService') }}
 }
 {% endif %}
 {% if host.modules | contains('yarn_rm') %}
 define service {
-  service_description   YARN RM: Available
+  service_description   YARN RM - Available
   host_name             {{ hostname }}
   servicegroups         yarn_rm
   use                   unit-service
-  check_command         {{ has_one('YARN RM: WebService') }}
+  check_command         {{ has_one('YARN RM - WebService') }}
 }
 define service {
-  service_description   YARN RM: Active Node
+  service_description   YARN RM - Active Node
   host_name             {{ hostname }}
   servicegroups         yarn_rm
   use                   unit-service
   check_command         check_active_rm!8090!-S
 }
 define service {
-  service_description   YARN RM: TCP SSL
+  service_description   YARN RM - TCP SSL
   host_name             {{ hostname }}
   servicegroups         yarn_rm
   use                   unit-service
-  check_command         check_tcp_ha!'YARN RM: Active Node'!8050
+  check_command         check_tcp_ha!'YARN RM - Active Node'!8050
 }
 define service {
-  service_description   YARN RM: Scheduler TCP
+  service_description   YARN RM - Scheduler TCP
   host_name             {{ hostname }}
   servicegroups         yarn_rm
   use                   unit-service
-  check_command         check_tcp_ha!'YARN RM: Active Node'!8030
+  check_command         check_tcp_ha!'YARN RM - Active Node'!8030
 }
 define service {
-  service_description   YARN RM: Tracker TCP
+  service_description   YARN RM - Tracker TCP
   host_name             {{ hostname }}
   servicegroups         yarn_rm
   use                   unit-service
-  check_command         check_tcp_ha!'YARN RM: Active Node'!8025
+  check_command         check_tcp_ha!'YARN RM - Active Node'!8025
 }
 define service {
-  service_description   YARN RM: RPC latency
+  service_description   YARN RM - RPC latency
   host_name             {{ hostname }}
   servicegroups         yarn_rm
   use                   unit-service
-  check_command         check_rpc_latency_ha!'YARN RM: Active Node'!ResourceManager!8090!3000!5000!-S
+  check_command         check_rpc_latency_ha!'YARN RM - Active Node'!ResourceManager!8090!3000!5000!-S
+}
+{% endif %}
+{% if host.modules | contains('yarn_nm') %}
+define service {
+  service_description   YARN NM - Available
+  host_name             {{ hostname }}
+  servicegroups         yarn_nm
+  use                   unit-service
+  check_command         {{ has_percent('YARN NM - TCP', '90%', '80%') }}
 }
 {% endif %}
 {% if host.modules | contains('hbase_master') %}
 define service {
-  service_description   HBase Master: Available
+  service_description   HBase Master - Available
   host_name             {{ hostname }}
   servicegroups         hbase_master
   use                   unit-service
-  check_command         {{ has_one('HBase Master: TCP') }}
+  check_command         {{ has_one('HBase Master - TCP') }}
 }
 {% endif %}
 {% if host.modules | contains('hbase_regionserver') %}
 define service {
-  service_description   HBase RegionServer: Available
+  service_description   HBase RegionServer - Available
   host_name             {{ hostname }}
   servicegroups         hbase_regionserver
   use                   unit-service
-  check_command         {{ has_percent('HBase RegionServer: TCP', '90%', '80%') }}
+  check_command         {{ has_percent('HBase RegionServer - TCP', '90%', '80%') }}
 }
 {% endif %}
 {% if host.modules | contains('hbase_rest') %}
 define service {
-  service_description   HBase REST: Available
+  service_description   HBase REST - Available
   host_name             {{ hostname }}
   servicegroups         hbase_rest
   use                   unit-service
-  check_command         {{ has_one('HBase REST: TCP SSL') }}
+  check_command         {{ has_one('HBase REST - TCP SSL') }}
 }
 {% endif %}
 {% if host.modules | contains('hbase_thrift') %}
 define service {
-  service_description   HBase Thrift: Available
+  service_description   HBase Thrift - Available
   host_name             {{ hostname }}
   servicegroups         hbase_thrift
   use                   unit-service
-  check_command         {{ has_one('HBase Thrift: TCP SSL') }}
+  check_command         {{ has_one('HBase Thrift - TCP SSL') }}
 }
 {% endif %}
 {% if host.modules | contains('hcatalog') %}
 define service {
-  service_description   Hcatalog: Available
+  service_description   Hcatalog - Available
   host_name             {{ hostname }}
   servicegroups         hcatalog
   use                   unit-service
-  check_command         {{ has_one('Hcatalog: TCP') }}
+  check_command         {{ has_one('Hcatalog - TCP') }}
 }
 {% endif %}
 {% if host.modules | contains('hiveserver2') %}
 define service {
-  service_description   Hiveserver2: Available
+  service_description   Hiveserver2 - Available
   host_name             {{ hostname }}
   servicegroups         hiveserver2
   use                   unit-service
-  check_command         {{ has_one('Hiveserver2: TCP SSL') }}
+  check_command         {{ has_one('Hiveserver2 - TCP SSL') }}
 }
 {% endif %}
 {% if host.modules | contains('oozie_server') %}
 define service {
-  service_description   Oozie Server: Available
+  service_description   Oozie Server - Available
   host_name             {{ hostname }}
   servicegroups         oozie_server
   use                   unit-service
-  check_command         {{ has_one('Oozie Server: WebUI') }}
+  check_command         {{ has_one('Oozie Server - WebUI') }}
 }
 {% endif %}
 {% if host.modules | contains('kafka_broker') %}
 define service {
-  service_description   Kafka Broker: Available
+  service_description   Kafka Broker - Available
   host_name             {{ hostname }}
   servicegroups         kafka_broker
   use                   unit-service
-  check_command         {{ has_one('Kafka Broker: TCP') }}
+  check_command         {{ has_one('Kafka Broker - TCP') }}
 }
 {% endif %}
 {% if host.modules | contains('opentsdb') %}
 define service {
-  service_description   OpenTSDB: Available
+  service_description   OpenTSDB - Available
   host_name             {{ hostname }}
   servicegroups         opentsdb
   use                   unit-service
-  check_command         check_tcp!{{ has_one('OpenTSDB: WebService') }}
+  check_command         check_tcp!{{ has_one('OpenTSDB - WebService') }}
 }
 {% endif %}
 {% if host.modules | contains('elasticsearch') %}
 define service {
-  service_description   ElasticSearch: Available
+  service_description   ElasticSearch - Available
   host_name             {{ hostname }}
   servicegroups         elasticsearch
   use                   unit-service
-  check_command         {{ has_quorum('ElasticSearch: TCP') }}
+  check_command         {{ has_quorum('ElasticSearch - TCP') }}
 }
 {% endif %}
 {% if host.modules | contains('knox') %}
 define service {
-  service_description   Knox: Available
+  service_description   Knox - Available
   host_name             {{ hostname }}
   servicegroups         knox
   use                   unit-service
-  check_command         {{ has_one('Knox: WebService') }}
+  check_command         {{ has_one('Knox - WebService') }}
 }
 {% endif %}
 {% if host.modules | contains('hue') %}
 define service {
-  service_description   Hue: Available
+  service_description   Hue - Available
   host_name             {{ hostname }}
   servicegroups         hue
   use                   unit-service
-  check_command         {{ has_one('Hue: WebUI') }}
+  check_command         {{ has_one('Hue - WebUI') }}
 }
 {% endif %}
 
