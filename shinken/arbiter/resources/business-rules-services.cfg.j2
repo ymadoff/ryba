@@ -33,7 +33,7 @@ define service {
 define service {
   service_description   ZKFC: Available
   host_name             {{ hostname }}
-  servicegroups         hdfs_nn
+  servicegroups         zkfc
   use                   unit-service
   check_command         {{ has_all('ZKFC: TCP')}}
 }
@@ -76,7 +76,7 @@ define service {
 define service {
   service_description   YARN RM: Available
   host_name             {{ hostname }}
-  servicegroups         hdfs_nn
+  servicegroups         yarn_rm
   use                   unit-service
   check_command         {{ has_one('YARN RM: WebService') }}
 }
