@@ -57,9 +57,9 @@ loop on topologies to provide missing values
       knox.site['sun.security.krb5.debug'] ?= 'true'
       knox.ssl ?= {}
       knox.ssl.storepass ?= 'knox_master_secret_123'
-      knox.ssl.cacert ?= ctx.config.ryba.ssl?.cacert
-      knox.ssl.cert ?= ctx.config.ryba.ssl?.cert
-      knox.ssl.key ?= ctx.config.ryba.ssl?.key
+      knox.ssl.cacert ?= @config.ryba.ssl?.cacert
+      knox.ssl.cert ?= @config.ryba.ssl?.cert
+      knox.ssl.key ?= @config.ryba.ssl?.key
       knox.ssl.keypass ?= 'knox_master_secret_123'
       # Knox SSL
       throw Error 'Required property "ryba.knox.ssl.cacert"' unless knox.ssl.cacert?
