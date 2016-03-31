@@ -51,7 +51,7 @@ define command {
 }
 define command {
   command_name    check_hdfs_state
-  command_line    $DOCKER_EXEC$ ./check_hdfs_state.php -H $HOSTNAME$ -p $ARG1$ -f $ARG2$ -w $ARG3$ -c $ARG4$ $ARG5$
+  command_line    $DOCKER_EXEC$ ./check_hdfs_state.php -H $HOSTNAME$ -p $ARG1$ -j $ARG2$ -f $ARG3$ -w $ARG4$ -c $ARG5$ $ARG6$
 }
 define command {
   command_name    check_active_nn

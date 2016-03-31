@@ -77,7 +77,7 @@ define service {
   host_name             {{ hostname }}
   servicegroups         hdfs_nn
   use                   unit-service
-  check_command         check_hdfs_state!50470!UnderReplicatedBlocks!500!1000!-S
+  check_command         check_hdfs_state!50470!FSNamesystemState!UnderReplicatedBlocks!500!1000!-S
 }
 {% endif %}
 {% if host.hostgroups | contains('hdfs_jn') %}
