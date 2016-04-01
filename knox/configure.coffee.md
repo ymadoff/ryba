@@ -109,13 +109,13 @@ against the configured LDAP store.
         # By default, we only configure a simple LDAP Binding (user only)
         realms = 'ldapRealm': topology
         if topology.group
-          realms['ldapGroupRealm'] = if topology.group.lookup? then ctx.config.sssd.config[topology.group.lookup] else topology.group
+          realms['ldapGroupRealm'] = if topology.group.lookup? then @config.sssd.config[topology.group.lookup] else topology.group
         for realm, realm_config in realms
           ldap.config["main.#{realm}"] ?= 'org.apache.hadoop.gateway.shirorealm.KnoxLdapRealm' # OpenLDAP implementation
           # ldap.config['main.ldapRealm'] ?= 'org.apache.shiro.realm.ldap.JndiLdapRealm' # AD implementation
           ldap.config["main.#{realm}".replace('Realm','')+"ContextFactory"] ?= 'org.apache.hadoop.gateway.shirorealm.KnoxLdapContextFactory'
           ldap.config["main.#{realm}.contextFactory"] ?= '$'+"#{realm}".replace('Realm','')+'ContextFactory'
-          # ctxs = ctx.contexts 'masson/core/openldap_server'
+          # ctxs = @contexts 'masson/core/openldap_server'
           throw Error 'Required property ldap_uri' unless realm_config['ldap_uri']?
           throw Error 'Required property ldap_default_bind_dn' unless realm_config['ldap_default_bind_dn']?
           throw Error 'Required property ldap_default_authtok' unless realm_config['ldap_default_authtok']?
@@ -221,7 +221,7 @@ This mechanism can be used to configure a specific gateway without having to dec
         if topology.services['webhbase'] is true
           ctxs = @contexts 'ryba/hbase/rest', require('../hbase/rest/configure').handler
           if ctxs.length
-            protocol = if ctxs[0].config.ryba.hbase.site['hbase.rest.ssl.enabled'] is 'true' then 'https' else 'http'
+            protocol = if ctxs[0].config.ryba.hbase.rest.site['hbase.rest.ssl.enabled'] is 'true' then 'https' else 'http'
             host = ctxs[0].config.host
             port = ctxs[0].config.ryba.hbase.rest.site['hbase.rest.port']
             topology.services['webhbase'] = "#{protocol}://#{host}:#{port}"
