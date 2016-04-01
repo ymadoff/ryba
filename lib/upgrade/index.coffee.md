@@ -1,5 +1,5 @@
 
-# Upgrade from HDP 2.2 to 2.3
+# Upgrade from HDP 2.3 to 2.4
 
 ## Procedure in pseudo-code
 
@@ -46,11 +46,11 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       exports.contexts params, config, (err, contexts) ->
         return callback err if err
         each exports.steps
-        .run (middleware, i, next) ->
+        .call (middleware, i, next) ->
           return next() if params.start? and i < params.start
           process.stdout.write "[#{i}] #{middleware.header}\n"
           each contexts
-          .run (context, j, next) ->
+          .call (context, j, next) ->
             sign = if j+1 < contexts.length then '├' else '└'
             process.stdout.write " #{sign}  #{context.config.host}: "
             context.call middleware, (err, changed) ->
@@ -101,14 +101,20 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       header: 'Prepare Rolling Upgrade'
       if: -> @config.ryba.active_nn_host is @config.host
       handler: ->
-        @register 'kexecute', require '../kexecute'
-        # @kexecute
-        #   krb5_user: @config.ryba.hdfs.krb5_user
-        #   cmd: "hdfs dfsadmin -rollingUpgrade prepare"
         @execute
-          cmd: mkcmd.hdfs @, 'hdfs dfsadmin -rollingUpgrade prepare'
-        @wait_execute
           cmd: mkcmd.hdfs @, 'hdfs dfsadmin -rollingUpgrade query | grep "Proceed with rolling upgrade"'
+          code_skipped: 1
+        @call 
+          unless: -> @status -1
+          handler: =>
+            @register 'kexecute', require '../kexecute'
+            # @kexecute
+            #   krb5_user: @config.ryba.hdfs.krb5_user
+            #   cmd: "hdfs dfsadmin -rollingUpgrade prepare"
+            @execute
+              cmd: mkcmd.hdfs @, 'hdfs dfsadmin -rollingUpgrade prepare'
+            @wait_execute
+              cmd: mkcmd.hdfs @, 'hdfs dfsadmin -rollingUpgrade query | grep "Proceed with rolling upgrade"'
 
     exports.steps.push
       header: 'Upgrade Zookeeper'
@@ -116,7 +122,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       handler: ->
         @execute
           cmd: """
-          hdp-select set zookeeper-server 2.3.4.0-3485
+          hdp-select set zookeeper-server 2.4.0.0-169
           service zookeeper-server restart
           """
           trap: true
@@ -130,7 +136,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       handler: ->
         @execute
           cmd: """
-          hdp-select set hadoop-hdfs-journalnode 2.3.4.0-3485
+          hdp-select set hadoop-hdfs-journalnode 2.4.0.0-169
           service hadoop-hdfs-journalnode restart
           """
           trap: true
@@ -146,7 +152,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       handler: ->
         @execute
           cmd: """
-          hdp-select set hadoop-hdfs-zkfc 2.3.4.0-3485
+          hdp-select set hadoop-hdfs-zkfc 2.4.0.0-169
           service hadoop-hdfs-zkfc restart
           """
           trap: true
@@ -163,9 +169,9 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
         @execute
           cmd: mkcmd.hdfs @, """
           service hadoop-hdfs-namenode stop
-          hdp-select set hadoop-hdfs-namenode 2.3.4.0-3485
-          su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-namenode/../hadoop/sbin/hadoop-daemon.sh --config #{@config.ryba.hdfs.nn.conf_dir} --script hdfs start namenode -rollingUpgrade started"
-          hdfs haadmin -failover #{active} #{standby}
+          hdp-select set hadoop-hdfs-namenode 2.4.0.0-169
+          su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-namenode/../hadoop/sbin/hadoop-daemon.sh --config #{@config.ryba.hdfs.nn.conf_dir}  --script hdfs start namenode -rollingUpgrade started"
+          hdfs haadmin -ns #{@config.ryba.nameservice} -failover #{active} #{standby}
           """
           trap: true
 
@@ -181,9 +187,9 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
         @execute
           cmd: mkcmd.hdfs @, """
           service hadoop-hdfs-namenode stop
-          hdp-select set hadoop-hdfs-namenode 2.3.4.0-3485
+          hdp-select set hadoop-hdfs-namenode 2.4.0.0-169
           su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-namenode/../hadoop/sbin/hadoop-daemon.sh --config #{@config.ryba.hdfs.nn.conf_dir} --script hdfs start namenode -rollingUpgrade started"
-          hdfs --config #{@config.ryba.hdfs.nn.conf_dir} haadmin -failover #{standby} #{active}
+          hdfs --config #{@config.ryba.hdfs.nn.conf_dir} haadmin -ns #{@config.ryba.nameservice} -failover #{standby} #{active}
           """
           trap: true
 
@@ -195,7 +201,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           cmd: mkcmd.hdfs @, """
           hdfs dfsadmin -shutdownDatanode `hostname`:50020 upgrade
           while hdfs dfsadmin -D ipc.client.connect.max.retries=1 -getDatanodeInfo `hostname`:50020; do sleep 1; done
-          hdp-select set hadoop-hdfs-datanode 2.3.4.0-3485
+          hdp-select set hadoop-hdfs-datanode 2.4.0.0-169
           HADOOP_SECURE_DN_USER=hdfs /usr/hdp/current/hadoop-hdfs-datanode/../hadoop/sbin/hadoop-daemon.sh --config #{@config.ryba.hdfs.dn.conf_dir} --script hdfs start datanode
           """
           trap: true
