@@ -57,7 +57,7 @@ be executed on the same server as ZKFC.
         # if: nn_ctxs.length > 1
         cmd: mkcmd.hdfs @, """
         if hdfs --config #{hdfs.nn.conf_dir} haadmin -getServiceState #{active_shortname} | grep standby;
-        then hdfs --config #{hdfs.nn.conf_dir} haadmin -failover #{standby_shortname} #{active_shortname};
+        then hdfs --config #{hdfs.nn.conf_dir} haadmin -ns #{@config.ryba.nameservice} -failover #{standby_shortname} #{active_shortname};
         else exit 2; fi
         """
         code_skipped: 2
