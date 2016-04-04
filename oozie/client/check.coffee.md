@@ -364,7 +364,7 @@
               <credential name='hive_credentials' type='hcat'>
                 <property>
                   <name>hcat.metastore.uri</name>
-                  <value>thrift://master3.ryba:9083</value>
+                  <value>thrift://#{hcat_ctxs[0].config.host}:9083</value>
                 </property>
                 <property>
                   <name>hcat.metastore.principal</name>
