@@ -3,6 +3,7 @@
 
     module.exports = header: 'Hive Client Install', handler: ->
       {hive, hadoop_group} = @config.ryba
+      {java_home} =@config.java
       {ssl, ssl_server, ssl_client, hadoop_conf_dir} = @config.ryba
       tmp_location = "/var/tmp/ryba/ssl"
 
@@ -61,6 +62,13 @@ by setting a "heapsize" value equal to "4096".
         append: true
         eof: true
         backup: true
+        write: [
+          match: /^export JAVA_HOME=.*$/m
+          replace: "export JAVA_HOME=#{java_home}"
+        ,
+          match: /^export HIVE_AUX_JARS_PATH=.*$/m
+          replace: "export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-#{hive.aux_jars.join ':'}} # RYBA FIX"
+        ]
 
 ## SSL
 

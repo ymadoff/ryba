@@ -52,7 +52,7 @@ Example:
       hive.site ?= {}
       aux_jars = ['/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar']
       if @contexts('ryba/hbase/master').length and @config.host in @contexts('ryba/hbase/client').map((ctx) -> ctx.config.host)
-        aux_jars.push ['/usr/hdp/current/hbase-client/lib/hbase-server.jar', '/usr/hdp/current/hbase-client/lib/hbase-client.jar', '/usr/hdp/current/hbase-client/lib/hbase-common.jar'] # Default value
+        aux_jars.push (['/usr/hdp/current/hbase-client/lib/hbase-server.jar', '/usr/hdp/current/hbase-client/lib/hbase-client.jar', '/usr/hdp/current/hbase-client/lib/hbase-common.jar'])... # Default value
         aux_jars.push '/usr/hdp/current/hbase-client/lib/phoenix-server.jar' if @contexts('ryba/phoenix/client').length
       for k in aux_jars then hive.aux_jars.push k unless k in hive.aux_jars
       # Tuning

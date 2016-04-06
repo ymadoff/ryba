@@ -29,7 +29,7 @@ Example:
 
     module.exports = handler: ->
       {core_site, hive, static_host, realm} = @config.ryba ?= {}
-      hcat_ctxs = @contexts 'ryba/hive/hcatalog', require('../hcatalog/configure').handler
+      hcat_ctxs = @contexts 'ryba/hive/hcatalog', [require('../../commons/db_admin').handler, require('../hcatalog/configure').handler]
       # Layout and environment
       hive.server2 ?= {}
       hive.server2.conf_dir ?= '/etc/hive/conf'

@@ -3,7 +3,7 @@
 
     module.exports = handler: ->
       {ryba} = @config
-      [hcat_ctx] = @contexts 'ryba/hive/hcatalog', require('../hcatalog/configure').handler
+      [hcat_ctx] = @contexts 'ryba/hive/hcatalog', [ require('../../commons/db_admin').handler, require('../hcatalog/configure').handler]
       throw Error "No Hive HCatalog Server Found" unless hcat_ctx
       webhcat = @config.ryba.webhcat ?= {}
       webhcat.conf_dir ?= '/etc/hive-webhcat/conf'
