@@ -24,4 +24,4 @@
       , ->
         @service name: 'phoenix'
         @hdp_select name: 'phoenix-client'
-        @call require '../lib/hbase_enrich'
+        @call require '../lib/hbase_restart'
