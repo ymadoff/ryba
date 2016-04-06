@@ -24,6 +24,7 @@ Example:
 ```
 
     module.exports = handler: ->
+      require('../core/configure').handler.call @
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
       jn_ctxs = @contexts 'ryba/hadoop/hdfs_jn', require('../hdfs_jn/configure').handler
       dn_ctxs = @contexts 'ryba/hadoop/hdfs_dn'
@@ -54,6 +55,7 @@ Example:
       # for accessing datanodes. If "false", no access tokens are checked on
       # accessing datanodes.
       ryba.hdfs.nn.site['dfs.block.access.token.enable'] ?= if ryba.core_site['hadoop.security.authentication'] is 'kerberos' then 'true' else 'false'
+      ryba.hdfs.nn.site['dfs.block.local-path-access.user'] ?= ''
       # Kerberos
       ryba.hdfs.nn.site['dfs.namenode.kerberos.principal'] ?= "nn/_HOST@#{ryba.realm}"
       ryba.hdfs.nn.site['dfs.namenode.keytab.file'] ?= '/etc/security/keytabs/nn.service.keytab'

@@ -140,6 +140,28 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
         hadoop_ctx.config.ryba.core_site["hadoop.proxyuser.#{hbase.user.name}.hosts"] ?= '*'
         hadoop_ctx.config.ryba.core_site["hadoop.proxyuser.#{hbase.user.name}.groups"] ?= '*'
 
+## Configuration for Local Access
+
+      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
+      for nn_ctx in nn_ctxs
+        nn_ctx.config.ryba ?= {}
+        nn_ctx.config.ryba.hdfs ?= {}
+        nn_ctx.config.ryba.hdfs.nn ?= {}
+        nn_ctx.config.ryba.hdfs.nn.site ?= {}
+        nn_ctx.config.ryba.hdfs.nn.site['dfs.block.local-path-access.user'] ?= ''
+        users = nn_ctx.config.ryba.hdfs.nn.site['dfs.block.local-path-access.user'].split(',').filter((str) -> str isnt '')
+        users.push 'hbase' unless 'hbase' in users
+        nn_ctx.config.ryba.hdfs.nn.site['dfs.block.local-path-access.user'] = users.sort().join ','
+      dn_ctxs = @contexts 'ryba/hadoop/hdfs_dn'
+      for dn_ctx in dn_ctxs
+        dn_ctx.config.ryba ?= {}
+        dn_ctx.config.ryba.hdfs ?= {}
+        dn_ctx.config.ryba.hdfs.site ?= {}
+        dn_ctx.config.ryba.hdfs.site['dfs.block.local-path-access.user'] ?= ''
+        users = dn_ctx.config.ryba.hdfs.site['dfs.block.local-path-access.user'].split(',').filter((str) -> str isnt '')
+        users.push 'hbase' unless 'hbase' in users
+        dn_ctx.config.ryba.hdfs.site['dfs.block.local-path-access.user'] = users.sort().join ','
+
 ## Configuration for Log4J
 
 
