@@ -140,3 +140,10 @@ Different type of properties has to be set:
       properties['nifi.web.war.directory'] ?= "#{nifi.node.latest_dir}/lib"
       properties['nifi.web.jetty.working.directory'] ?= "#{nifi.user.home}/work/jetty"
       
+
+## JAVA Opts
+
+      nifi.java ?= {}
+      nifi.java.opts ?= {}
+      nifi.java.opts['permsize'] ?= '128M'
+      nifi.java.opts['maxpermsize'] ?= '256M'

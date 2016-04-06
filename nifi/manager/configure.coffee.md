@@ -199,7 +199,14 @@ Different type of properties has to be set:
       # web properties #
       properties['nifi.web.war.directory'] ?= "#{nifi.manager.latest_dir}/lib"
       properties['nifi.web.jetty.working.directory'] ?= "#{nifi.user.home}/work/jetty"
-        
+    
+## JAVA Opts
+      
+      #nifi-0.6.0/docs/html/administration-guide.html#bootstrap_properties
+      nifi.java ?= {}
+      nifi.java.opts ?= {}
+      nifi.java.opts['permsize'] ?= '128M'
+      nifi.java.opts['maxpermsize'] ?= '256M'    
 
 
 [hdp-nifi]:(https://docs.hortonworks.com/HDPDocuments/HDF1/HDF-1.1.0/bk_AdminGuide/content/ch_AdminGuide.html)
