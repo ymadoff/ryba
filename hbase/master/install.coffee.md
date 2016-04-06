@@ -107,8 +107,8 @@ Environment passed to the Master before it starts.
 
       @render
         header: 'HBase Env'
-        source: "#{__dirname}/../resources/hbase-env.sh"
         destination: "#{hbase.master.conf_dir}/hbase-env.sh"
+        source: "#{__dirname}/../resources/hbase-env.sh.j2"
         backup: true
         local_source: true
         eof: true

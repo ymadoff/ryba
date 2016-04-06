@@ -64,8 +64,8 @@ Environment passed to the Master before it starts.
 
       @render
         header: 'HBase Client Env'
-        source: "#{__dirname}/../resources/hbase-env.sh"
         destination: "#{hbase.conf_dir}/hbase-env.sh"
+        source: "#{__dirname}/../resources/hbase-env.sh.j2"
         context: @config
         uid: hbase.user.name
         gid: hbase.group.name

@@ -64,7 +64,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
         @render
           header: 'Environment'
           destination: "#{zkfc.conf_dir}/hadoop-env.sh"
-          source: "#{__dirname}/../resources/hadoop-env.sh"
+          source: "#{__dirname}/../resources/hadoop-env.sh.j2"
           local_source: true
           context: @config
           uid: hdfs.user.name

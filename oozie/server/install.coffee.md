@@ -212,9 +212,9 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
             replace: ""
       @render
         header: 'Oozie Environment'
+        destination: "#{oozie.conf_dir}/oozie-env.sh"
         source: "#{__dirname}/../resources/oozie-env.sh.j2"
         local_source: true
-        destination: "#{oozie.conf_dir}/oozie-env.sh"
         context: @config
         write: writes
         uid: oozie.user.name

@@ -144,7 +144,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
       @render
         header: 'Environment'
         destination: "#{hdfs.dn.conf_dir}/hadoop-env.sh"
-        source: "#{__dirname}/../resources/hadoop-env.sh"
+        source: "#{__dirname}/../resources/hadoop-env.sh.j2"
         local_source: true
         context: @config
         uid: hdfs.user.name

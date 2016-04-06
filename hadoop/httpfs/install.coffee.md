@@ -98,7 +98,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           parent: true
         @render
           destination: "#{httpfs.conf_dir}/httpfs-env.sh"
-          source: "#{__dirname}/../resources/httpfs-env.sh"
+          source: "#{__dirname}/../resources/httpfs-env.sh.j2"
           local_source: true
           context: @config
           backup: true

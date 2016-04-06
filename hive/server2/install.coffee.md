@@ -133,8 +133,8 @@ Server2 to 4Gb by setting a value equal to "-Xmx4096m".
 
       @write
         header: 'Hive Env Write'
-        source: "#{__dirname}/resources/hive-env.sh"
         destination: "#{hive.server2.conf_dir}/hive-env.sh"
+        source: "#{__dirname}/resources/hive-env.sh"
         local_source: true
         unless_exists: true
       @write

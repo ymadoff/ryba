@@ -32,10 +32,10 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
       @render
         header: 'Env'
-        source: "#{__dirname}/../resources/hadoop-env.sh"
+        destination: "#{hadoop_conf_dir}/hadoop-env.sh"
+        source: "#{__dirname}/../resources/hadoop-env.sh.j2"
         local_source: true
         context: @config
-        destination: "#{hadoop_conf_dir}/hadoop-env.sh"
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755

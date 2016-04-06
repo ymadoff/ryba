@@ -24,11 +24,11 @@ hadoop:x:502:yarn,mapred,hdfs,hue
 ## Environment
 
 Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
-      
+
       @write
         header:'Sqoop Environment'
-        source: "#{__dirname}/resources/sqoop-env.sh"
         destination: "#{sqoop.conf_dir}/sqoop-env.sh"
+        source: "#{__dirname}/resources/sqoop-env.sh"
         local_source: true
         write: [
            match: /^export HADOOP_HOME=.*$/m # Sqoop default is "/usr/lib/hadoop"

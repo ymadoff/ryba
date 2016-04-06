@@ -136,8 +136,8 @@ SSH connection to the node to gather the memory and CPU informations.
         local_source: true
       @render
         header: 'YARN Env'
-        source: "#{__dirname}/../resources/yarn-env.sh"
         destination: "#{yarn.nm.conf_dir}/yarn-env.sh"
+        source: "#{__dirname}/../resources/yarn-env.sh.j2"
         local_source: true
         context: @config
         uid: yarn.user.name

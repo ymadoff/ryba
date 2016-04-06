@@ -102,8 +102,8 @@ Environment passed to the HBase Rest Server before it starts.
 
       @render
         header: 'Hbase Env'
-        source: "#{__dirname}/../resources/hbase-env.sh"
         destination: "#{hbase.rest.conf_dir}/hbase-env.sh"
+        source: "#{__dirname}/../resources/hbase-env.sh.j2"
         local_source: true
         context: @config
         mode: 0o0755

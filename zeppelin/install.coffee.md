@@ -117,8 +117,8 @@ Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
         destination: "#{zeppelin.conf_dir}"
         mode: 0o0750
       @download
-        source: "#{__dirname}/resources/zeppelin-env.sh"
         destination: "#{zeppelin.conf_dir}/zeppelin-env.sh"
+        source: "#{__dirname}/resources/zeppelin-env.sh"
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o755

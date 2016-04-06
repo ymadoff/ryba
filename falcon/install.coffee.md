@@ -81,7 +81,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
       @render
         header: 'Falcon Env'
         destination: "#{falcon.conf_dir}/falcon-env.sh"
-        source: "#{__dirname}/resources/falcon-env.sh"
+        source: "#{__dirname}/resources/falcon-env.sh.j2"
         context: @config
         local_source: true
         backup: true

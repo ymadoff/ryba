@@ -131,8 +131,8 @@ inside "/etc/init.d" and activate it on startup.
         local_source: true
       @render
         header: 'YARN Env'
-        source: "#{__dirname}/../resources/yarn-env.sh"
         destination: "#{yarn.rm.conf_dir}/yarn-env.sh"
+        source: "#{__dirname}/../resources/yarn-env.sh.j2"
         local_source: true
         context: @config
         uid: yarn.user.name

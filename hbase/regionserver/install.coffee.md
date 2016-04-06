@@ -139,8 +139,8 @@ Environment passed to the RegionServer before it starts.
 
       @render
         header: 'HBase Env'
-        source: "#{__dirname}/../resources/hbase-env.sh"
         destination: "#{hbase.rs.conf_dir}/hbase-env.sh"
+        source: "#{__dirname}/../resources/hbase-env.sh.j2"
         backup: true
         uid: hbase.user.name
         gid: hbase.group.name

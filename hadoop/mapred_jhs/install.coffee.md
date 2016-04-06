@@ -125,14 +125,14 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
       @render
         header: 'Mapred Env'
         destination: "#{mapred.jhs.conf_dir}/mapred-env.sh"
-        source: "#{__dirname}/../resources/mapred-env.sh"
+        source: "#{__dirname}/../resources/mapred-env.sh.j2"
         context: @config
         local_source: true
         backup: true
       @render
         header: 'Hadoop Env'
-        source: "#{__dirname}/../resources/hadoop-env.sh"
         destination: "#{mapred.jhs.conf_dir}/hadoop-env.sh"
+        source: "#{__dirname}/../resources/hadoop-env.sh.j2"
         local_source: true
         context: @config
         uid: mapred.user.name
@@ -141,8 +141,8 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
         backup: true
       @render
         header: 'MapRed Env'
-        source: "#{__dirname}/../resources/mapred-env.sh"
         destination: "#{mapred.jhs.conf_dir}/mapred-env.sh"
+        source: "#{__dirname}/../resources/mapred-env.sh.j2"
         local_source: true
         context: @config
         uid: mapred.user.name

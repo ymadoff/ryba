@@ -150,9 +150,9 @@ has finished (logs are only available in yarn-cluster mode).
             merge: true
             backup: true
           @render
-            source: "#{__dirname}/../resources/spark-env.sh"
-            local_source: true
             destination : "#{spark.conf_dir}/spark-env.sh"
+            source: "#{__dirname}/../resources/spark-env.sh.j2"
+            local_source: true
             context: @config
             backup: true
           @write_properties

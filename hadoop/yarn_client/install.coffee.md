@@ -46,8 +46,8 @@ Properties accepted by the template are: `ryba.yarn.rm_opts`
 
       @render
         header: 'Yarn OPTS'
-        source: "#{__dirname}/../resources/yarn-env.sh"
         destination: "#{hadoop_conf_dir}/yarn-env.sh"
+        source: "#{__dirname}/../resources/yarn-env.sh.j2"
         local_source: true
         context: @config
         uid: yarn.user.name
