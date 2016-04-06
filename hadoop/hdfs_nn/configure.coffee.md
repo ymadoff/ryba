@@ -112,9 +112,8 @@ for distcp purpose.
       for hdfs_ctx in hdfs_ctxs
         hdfs_ctx.config ?= {}
         hdfs_ctx.config.ryba.hdfs ?= {}
-        hdfs_ctx.config.ryba.hdfs.nn ?= {}
-        hdfs_ctx.config.ryba.hdfs.nn.site ?= {}
-        hdfs_ctx.config.ryba.hdfs.nn.site['dfs.http.policy'] ?= @config.ryba.hdfs.nn.site['dfs.http.policy']
+        hdfs_ctx.config.ryba.hdfs.site ?= {}
+        hdfs_ctx.config.ryba.hdfs.site['dfs.http.policy'] ?= @config.ryba.hdfs.nn.site['dfs.http.policy']
 
 ## Configuration for Log4J
 
@@ -127,9 +126,9 @@ for distcp purpose.
       for dn_ctx in dn_ctxs
         dn_ctx.config ?= {}
         dn_ctx.config.ryba.hdfs ?= {}
-        dn_ctx.config.ryba.hdfs.nn.site ?= {}
-        dn_ctx.config.ryba.hdfs.nn.site['fs.permissions.umask-mode'] ?= ryba.hdfs.nn.site['fs.permissions.umask-mode']
-        dn_ctx.config.ryba.hdfs.nn.site['dfs.block.access.token.enable'] ?= ryba.hdfs.nn.site['dfs.block.access.token.enable']
+        dn_ctx.config.ryba.hdfs.site ?= {}
+        dn_ctx.config.ryba.hdfs.site['fs.permissions.umask-mode'] ?= ryba.hdfs.nn.site['fs.permissions.umask-mode']
+        dn_ctx.config.ryba.hdfs.site['dfs.block.access.token.enable'] ?= ryba.hdfs.nn.site['dfs.block.access.token.enable']
 
     module.exports.client_config = (ctx) ->
       {ryba} = @config
