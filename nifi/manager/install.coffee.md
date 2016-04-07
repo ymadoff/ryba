@@ -145,11 +145,7 @@ Describe where to get the user athentication onformation from.
           krb_node.ele 'property', name: 'Default Realm', krb5_provider['realm']
           krb_node.ele 'property', name: 'Kerberos Config File', krb5_provider['file']
           krb_node.ele 'property', name: 'Authentication Expiration', '12 hours'
-        content = providers.end {
-          pretty:true
-          indent: ' '
-          offset: 1
-        }
+        content = providers.end pretty: true
         @write
           header: 'Login Identity Provider'
           # source: "#{__dirname}/../resources/login-identity-providers.xml.j2"
@@ -173,11 +169,7 @@ Set up different users to be able to access the NiFi Web ui
           user.att 'dn', a_user['dn']
           for a_role in a_user['roles']
             role = user.ele 'role', 'name': "#{a_role}"
-        content = users.end {
-          pretty:true
-          indent: ' '
-          offset: 1
-        }
+        content = users.end pretty:true
         @write
           destination: "#{nifi.manager.conf_dir}/authorized-users.xml"
           local_source: true

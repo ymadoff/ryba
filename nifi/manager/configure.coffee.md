@@ -117,6 +117,8 @@ The clients request access to nifi, and admin accepts/denies request to webui
                 roles: ['ROLE_ADMIN']
               ]
           when 'kerberos-provider'
+            [a,b] = nifi.version.split('.')
+            throw Error 'kerberos Provider only support from 0.6.0 version ' if  a is '0' and parseInt(b) < 6
             # /nifi-0.6.0/docs/html/administration-guide.html#kerberos_properties
             krb5_provider = config.providers['krb5_provider'] ?= {}
             krb5_provider['file'] ?= '/etc/krb5.conf'
