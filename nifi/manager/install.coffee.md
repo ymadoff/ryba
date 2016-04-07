@@ -111,17 +111,55 @@
 ## Login Identity Providers
 
 Describe where to get the user athentication onformation from.
-      
-      @render
-        header: 'Login Identity Provider'
-        source: "#{__dirname}/../resources/login-identity-providers.xml.j2"
-        destination: "#{nifi.manager.conf_dir}/login-identity-providers.xml"
-        context: nifi.manager.config
-        local_source: true
-        uid: nifi.user.name
-        gid: nifi.group.name
-        backup: true
-        mode: 0o0755
+
+      @call header: 'Login identity provider', handler: ->
+        providers = builder.create('loginIdentityProviders').dec '1.0', 'UTF-8', true 
+        {ldap_provider, krb5_provider} = nifi.manager.config.providers
+        if ldap_provider?
+          ldap_node = providers.ele 'provider'
+          ldap_node.ele 'identifier', 'ldap-provider'
+          ldap_node.ele 'class', 'org.apache.nifi.ldap.LdapProvider'
+          ldap_node.ele 'property', name: 'Authentication Strategy', ldap_provider.auth_strategy
+          ldap_node.ele 'property', name: 'Manager DN', ldap_provider.manager_dn
+          ldap_node.ele 'property', name: 'Manager Password', ldap_provider.manager_pwd
+          ldap_node.ele 'property', name: 'TLS - Keystore', ldap_provider.tls_keystore
+          ldap_node.ele 'property', name: 'TLS - Keystore Password', ldap_provider.tls_keystore_pwd
+          ldap_node.ele 'property', name: 'TLS - Keystore Type', ldap_provider.tls_keystore_type
+          ldap_node.ele 'property', name: 'TLS - Truststore', ldap_provider.tls_truststore
+          ldap_node.ele 'property', name: 'TLS - Truststore Password', ldap_provider.tls_truststore_pwd
+          ldap_node.ele 'property', name: 'TLS - Truststore Type', ldap_provider.tls_truststore_type
+          ldap_node.ele 'property', name: 'TLS - Client Auth', ldap_provider.tls_client_auth
+          ldap_node.ele 'property', name: 'TLS - Protocol', ldap_provider.tls_truststore_protocol
+          ldap_node.ele 'property', name: 'TLS - Shutdown Gracefully', 'false'
+          ldap_node.ele 'property', name: 'Referral Strategy', ldap_provider.ref_strategy
+          ldap_node.ele 'property', name: 'Connect Timeout', '10 secs'
+          ldap_node.ele 'property', name: 'Read Timeout', '10 secs'
+          ldap_node.ele 'property', name: 'Url', ldap_provider.url
+          ldap_node.ele 'property', name: 'User Search Base', ldap_provider.usr_search_base
+          ldap_node.ele 'property', name: 'User Search Filter', ldap_provider.usr_search_filter
+          ldap_node.ele 'property', name: 'Authentication Expiration', '12 hours'
+        if krb5_provider?
+          krb_node = providers.ele 'provider'
+          krb_node.ele 'identifier', 'kerberos-provider'
+          krb_node.ele 'class', 'org.apache.nifi.kerberos.KerberosProvider'
+          krb_node.ele 'property', name: 'Default Realm', krb5_provider['realm']
+          krb_node.ele 'property', name: 'Kerberos Config File', krb5_provider['file']
+          krb_node.ele 'property', name: 'Authentication Expiration', '12 hours'
+        content = providers.end {
+          pretty:true
+          indent: ' '
+          offset: 1
+        }
+        @write
+          header: 'Login Identity Provider'
+          # source: "#{__dirname}/../resources/login-identity-providers.xml.j2"
+          destination: "#{nifi.manager.conf_dir}/login-identity-providers.xml"
+          content: content
+          local_source: true
+          uid: nifi.user.name
+          gid: nifi.group.name
+          backup: true
+          mode: 0o0755
 
 
 ## Authorized Users
@@ -129,21 +167,21 @@ Describe where to get the user athentication onformation from.
 Set up different users to be able to access the NiFi Web ui
 
       @call header: 'Authorized Users', handler: ->
-        users = builder.create('users').dec('1.0', 'UTF-8', true)
+        users = builder.create('users').dec '1.0', 'UTF-8', true 
         for a_user in nifi.manager.config.authorized_users
           user = users.ele 'user'
           user.att 'dn', a_user['dn']
           for a_role in a_user['roles']
             role = user.ele 'role', 'name': "#{a_role}"
-        users.end 
+        content = users.end {
           pretty:true
           indent: ' '
           offset: 1
-        @write #render
-          # source: "#{__dirname}/../resources/authorized-users.xml.j2"
+        }
+        @write
           destination: "#{nifi.manager.conf_dir}/authorized-users.xml"
           local_source: true
-          content: users.toString()
+          content: content
           uid: nifi.user.name
           gid: nifi.group.name
           backup: true
