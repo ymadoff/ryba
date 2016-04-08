@@ -2,6 +2,10 @@
 # HBase Master Configuration
 
     module.exports = handler: ->
+      zk_ctxs = @contexts 'ryba/zookeeper/server', require('../../zookeeper/server/configure').handler
+      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
+      hadoop_ctxs = @contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
+      hbase_ctxs = @contexts 'ryba/hbase/master'
       # if ctx.hbase_master_configured then return else ctx.hbase_master_configured = null
       # require('../../lib/hconfigure').call ctx
       # require('../../libmodule.exports.push 'ryba/lib/hdp_select'').call ctx
@@ -78,7 +82,6 @@ Example
 
 ## Configuration Distributed mode
 
-      zk_ctxs = @contexts 'ryba/zookeeper/server', require('../../zookeeper/server/configure').handler
       zk_hosts = zk_ctxs.map( (ctx) -> ctx.config.host).join ','
       zk_port = zk_ctxs[0].config.ryba.zookeeper.port
       hbase.master.site ?= {}
@@ -89,7 +92,6 @@ Example
       hbase.master.site['hbase.cluster.distributed'] = 'true'
       # Enter the HBase NameNode server hostname
       # http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/latest/CDH4-High-Availability-Guide/cdh4hag_topic_2_6.html
-      nn_ctxs = @contexts('ryba/hadoop/hdfs_nn')
       nn_host = if nn_ctxs.length > 1 then ryba.nameservice else nn_ctxs[0].config.host
       hbase.master.site['hbase.rootdir'] ?= "hdfs://#{nn_host}:8020/apps/hbase/data"
       # Comma separated list of Zookeeper servers (match to
@@ -133,7 +135,6 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
 
 ## Configuration for Proxy Users
 
-      hadoop_ctxs = @contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
       for hadoop_ctx in hadoop_ctxs
         hadoop_ctx.config.ryba ?= {}
         hadoop_ctx.config.ryba.core_site ?= {}
@@ -184,7 +185,7 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
 [hdp23]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.0/bk_hadoop-ha/content/ch_HA-HBase.html
 [HBASE-12259]: https://issues.apache.org/jira/browse/HBASE-12259
 
-      if @contexts('ryba/hbase/master').length > 1 # HA enabled
+      if hbase_ctxs.length > 1 # HA enabled
           # StoreFile Refresher
           hbase.master.site['hbase.regionserver.storefile.refresh.all'] ?= 'true'
           # Store File TTL
