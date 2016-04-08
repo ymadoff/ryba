@@ -77,15 +77,15 @@ in communication using the particular protocol.
         if: -> @config.ryba.spark.conf['spark.ssl.enabled'] is 'true'
         handler: ->
          tmp_location = "/tmp/ryba_hdp_ssl_#{Date.now()}"
-         @upload
+         @download
             source: ssl.cacert
             destination: "#{tmp_location}_cacert"
             shy: true
-         @upload
+         @download
             source: ssl.cert
             destination: "#{tmp_location}_cert"
             shy: true
-         @upload
+         @download
             source: ssl.key
             destination: "#{tmp_location}_key"
             shy: true

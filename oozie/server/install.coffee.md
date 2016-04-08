@@ -280,9 +280,10 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           mode: 0o0755
           merge: true
           backup: true
-        @upload
+        @write
           destination: "#{oozie.conf_dir}/oozie-default.xml"
           source: "#{__dirname}/../resources/oozie-default.xml"
+          local_source: true
           backup: true
         @hconfigure
           destination: "#{oozie.conf_dir}/hadoop-conf/core-site.xml"
@@ -297,7 +298,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
     #   {java_home, jre_home} = @config.java
     #   {ssl, oozie} = @config.ryba
     #   tmp_location = "/tmp/ryba_oozie_client_#{Date.now()}"
-    #   @upload
+    #   @download
     #     source: ssl.cacert
     #     destination: "#{tmp_location}_cacert"
     #   @execute

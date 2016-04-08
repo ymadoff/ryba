@@ -31,11 +31,11 @@ Copy the object files provided in the HDP companion files into the
         handler: (_, callback) ->
           glob "#{__dirname}/../resources/objects/*.*", (err, files) =>
             return callback err if err
-            for file in files
-              @upload
-                source: file
-                destination: "/usr/libexec/hdp/ganglia"
-                mode: 0o0744
+            @download (
+              source: file
+              destination: "/usr/libexec/hdp/ganglia"
+              mode: 0o0744
+            ) for file in files
             @then callback
 
 ## Init Script

@@ -10,6 +10,7 @@ The output list can then be saved to the distributed filesystem, and the reducer
     module.exports = ->
       'configure': [
         'ryba/hadoop/yarn_client'
+        'ryba/hadoop/hdfs_client/install'
         'ryba/hadoop/mapred_client/configure'
       ]
       'check': [
@@ -28,6 +29,7 @@ The output list can then be saved to the distributed filesystem, and the reducer
         # 'ryba/hadoop/hdfs_client/install'
         # 'ryba/hadoop/yarn_client/install'
         'ryba/hadoop/hdfs_nn/wait'
+        'ryba/hadoop/hdfs_client/install'
         'ryba/hadoop/mapred_client/install'
         'ryba/hadoop/mapred_jhs/wait'
         'ryba/hadoop/yarn_ts/wait'

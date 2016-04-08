@@ -79,18 +79,17 @@ Update the "core-site.xml" configuration file with properties from the
             remove_files.push (filtered_files.filter (file) -> file isnt jar.filename)...
             continue if jar.filename in remote_files
             jar
-          # Remove jar if already uploaded
-          for file in remove_files
-            @remove destination: path.join '/usr/hdp/current/hadoop-hdfs-client/lib', file
-          for jar in core_jars
-            @upload
-              source: jar.source
-              destination: path.join '/usr/hdp/current/hadoop-hdfs-client/lib', "#{jar.filename}"
-              binary: true
-            @upload
-              source: jar.source
-              destination: path.join '/usr/hdp/current/hadoop-yarn-client/lib', "#{jar.filename}"
-              binary: true
+          @remove ( # Remove jar if already uploaded
+            destination: path.join '/usr/hdp/current/hadoop-hdfs-client/lib', file
+          ) for file in remove_files
+          @download (
+            source: jar.source
+            destination: path.join '/usr/hdp/current/hadoop-hdfs-client/lib', "#{jar.filename}"
+          ) for jar in core_jars
+          @download (
+            source: jar.source
+            destination: path.join '/usr/hdp/current/hadoop-yarn-client/lib', "#{jar.filename}"
+          ) for jar in core_jars
 
 ## SSL
 

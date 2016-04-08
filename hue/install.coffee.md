@@ -61,26 +61,6 @@ The packages "extjs-2.2-1" and "hue" are installed.
     module.exports.push header: 'Hue # Packages', timeout: -1, handler: ->
       @service name: 'hue'
 
-# ## Core
-
-# Update the "core-site.xml" to allow impersonnation through the "hue" and "hcat" 
-# users.
-
-# Todo: We are currently only modifying the "core-site.xml" locally while it should 
-# be deployed on all the master and worker nodes. This is currently achieved through
-# the configuration picked up by the "ryba/hadoop/core" module.
-
-#     module.exports.push header: 'Hue # Core', handler: ->
-#       {hadoop_conf_dir} = @config.ryba
-#       @hconfigure
-#         destination: "#{hadoop_conf_dir}/core-site.xml"
-#         properties:
-#           'hadoop.proxyuser.hue.hosts': '*'
-#           'hadoop.proxyuser.hue.groups': '*'
-#           'hadoop.proxyuser.hcat.groups': '*'
-#           'hadoop.proxyuser.hcat.hosts': '*'
-#         merge: true
-
 ## WebHCat
 
 
@@ -214,12 +194,12 @@ changes.
 
     module.exports.push header: 'Hue # SSL Server', handler: ->
       {hue} = @config.ryba
-      @upload
+      @download
         source: hue.ssl.certificate
         destination: "#{hue.conf_dir}/cert.pem"
         uid: hue.user.name
         gid: hue.group.name
-      @upload
+      @download
         source: hue.ssl.private_key
         destination: "#{hue.conf_dir}/key.pem"
         uid: hue.user.name

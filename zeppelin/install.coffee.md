@@ -42,15 +42,15 @@ SSL only required for the server
     #  {ssl, ssl_server, ssl_client, zeppelin} = @config.ryba
     #  tmp_location = "/tmp/ryba_hdp_ssl_#{Date.now()}"
     #  modified = false
-    #  @upload
+    #  @download
     #     source: ssl.cacert
     #     destination: "#{tmp_location}_cacert"
     #     shy: true
-    #  @upload
+    #  @download
     #     source: ssl.cert
     #     destination: "#{tmp_location}_cert"
     #     shy: true
-    #  @upload
+    #  @download
     #     source: ssl.key
     #     destination: "#{tmp_location}_key"
     #     shy: true

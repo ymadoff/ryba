@@ -182,12 +182,12 @@ changes.
 
       @call header: 'SSL Server', handler: ->
         return unless hue_docker.ssl
-        @upload
+        @download
           source: ssl.cert
           destination: "#{hue_docker.conf_dir}/cert.pem"
           uid: hue_docker.user.name
           gid: hue_docker.group.name
-        @upload
+        @download
           source: ssl.key
           destination: "#{hue_docker.conf_dir}/key.pem"
           uid: hue_docker.user.name
@@ -247,12 +247,12 @@ Compares local/remote hash to check if docker_load is needed.
               # return false because we don't want modified status (just reading)
               return callback null, false
         # upload image and its checksum if remote  do not exists
-        @upload
+        @download
           source: "#{hue_docker.prod.directory}/hue_docker.tar"
           destination: "#{tmp}/hue_docker.tar"
           binary: true
           md5: true
-        @upload
+        @download
           source: "#{hue_docker.prod.directory}/checksum"
           destination: "#{tmp}/hue_docker_checksum"
           binary: true

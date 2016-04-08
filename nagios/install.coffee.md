@@ -76,12 +76,13 @@ nagiocmd:x:2419:apache
         'hadoop-commands', 'hadoop-hosts'
         'nagios'
       ]
-      @upload (
+      @write (
         for object in objects
           source = if object is 'nagios'
           then 'nagios.cfg-centos'
           else "#{object}.cfg"
           source: "#{__dirname}/resources/objects/#{source}"
+          local_source: true
           destination: "/etc/nagios/objects/#{object}.cfg"
           uid: user.name
           gid: group.name
@@ -95,10 +96,11 @@ nagiocmd:x:2419:apache
       {user, group, plugin_dir} = @config.ryba.nagios
       glob "#{__dirname}/resources/plugins/*", (err, plugins) =>
         return callback err if err
-        @upload (
+        @write (
           for plugin in plugins
             plugin = path.basename plugin
             source: "#{__dirname}/resources/plugins/#{plugin}"
+            local_source: true
             destination: "#{plugin_dir}/#{plugin}"
             uid: user.name
             gid: group.name

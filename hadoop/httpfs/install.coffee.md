@@ -134,21 +134,18 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         {ssl, ssl_server, ssl_client} = @config.ryba
         tmp_location = "/var/tmp/ryba/ssl"
         {httpfs} = @config.ryba
-        @upload
+        @download
           source: ssl.cacert
           destination: "#{tmp_location}/#{path.basename ssl.cacert}"
           mode: 0o0600
-          shy: true
-        @upload
+        @download
           source: ssl.cert
           destination: "#{tmp_location}/#{path.basename ssl.cert}"
           mode: 0o0600
-          shy: true
-        @upload
+        @download
           source: ssl.key
           destination: "#{tmp_location}/#{path.basename ssl.key}"
           mode: 0o0600
-          shy: true
         @java_keystore_add
           keystore: httpfs.env.HTTPFS_SSL_KEYSTORE_FILE
           storepass: httpfs.env.HTTPFS_SSL_KEYSTORE_PASS

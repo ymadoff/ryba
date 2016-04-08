@@ -94,9 +94,10 @@ Upload configuration inside '/etc/hive-webhcat/conf/webhcat-site.xml'.
 
 Update environnmental variables inside '/etc/hive-webhcat/conf/webhcat-env.sh'.
 
-      @upload
+      @write
         header: 'Webhcat Env'
         source: "#{__dirname}/../../resources/hive-webhcat/webhcat-env.sh"
+        local_source: true
         destination: "#{webhcat.conf_dir}/webhcat-env.sh"
         uid: hive.user.name
         gid: hadoop_group.name

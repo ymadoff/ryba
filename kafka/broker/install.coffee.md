@@ -85,21 +85,25 @@ Upload *.properties files in /etc/kafka-broker/conf directory.
           glob "#{__dirname}/../resources/*.properties", (err, files) =>
             for file in files
               continue if /^\./.test path.basename file
-              @upload
+              @write
                 source: file
+                local_source: true
                 destination: "#{kafka.broker.conf_dir}/#{path.basename file}"
                 binary: true
             @then callback
-        @upload
+        @write
           source: "#{__dirname}/../resources/connect-console-sink.properties"
+          local_source: true
           destination: "#{kafka.broker.conf_dir}/connect-console-sink.properties"
           binary: true
-        @upload
+        @write
           source: "#{__dirname}/../resources/connect-console-sink.properties"
+          local_source: true
           destination: "#{kafka.broker.conf_dir}/connect-console-sink.properties"
           binary: true
-        @upload
+        @write
           source: "#{__dirname}/../resources/connect-console-sink.properties"
+          local_source: true
           destination: "#{kafka.broker.conf_dir}/connect-console-sink.properties"
           binary: true
 

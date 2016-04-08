@@ -43,9 +43,10 @@ Configure the topology script to enable rack awareness to Hadoop.
           # topology.push "#{host}  #{rack}"
           topology.push "#{h_ctx.config.ip}  #{rack}"
         topology = topology.join("\n")
-        @upload
+        @write
           destination: "#{hadoop_conf_dir}/rack_topology.sh"
           source: "#{__dirname}/../resources/rack_topology.sh"
+          local_source: true
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o755

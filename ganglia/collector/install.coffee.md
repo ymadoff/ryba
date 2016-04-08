@@ -92,11 +92,11 @@ Copy the object files provided in the HDP companion files into the
 
       @call header: 'Objects', timeout: -1, handler: (_, callback) ->
         glob "#{__dirname}/../resources/objects/*.*", (err, files) =>
-          for file in files
-            @upload
-              source: file
-              destination: "/usr/libexec/hdp/ganglia"
-              mode: 0o744
+          @download (
+            source: file
+            destination: "/usr/libexec/hdp/ganglia"
+            mode: 0o744
+          ) for file in files
           @then callback
 
 ## Fix User

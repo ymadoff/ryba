@@ -56,8 +56,9 @@ which has no dependency.
           name: 'zookeeper-server'
         @hdp_select
           name: 'zookeeper-client'
-        @upload
+        @write
           source: "#{__dirname}/resources/zookeeper"
+          local_source: true
           destination: '/etc/init.d/zookeeper-server'
           mode: 0o0755
           unlink: true

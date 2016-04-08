@@ -207,16 +207,13 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
 
       @call
         header: 'Upload Libs'
-        if: -> @config.ryba.hive.libs.length
+        if: -> hive.libs.length
         handler: ->
-          {hive} = @config.ryba
-          @upload (
-            for lib in hive.libs
-              source: lib
-              destination: "/usr/hdp/current/hive-metastore/lib/#{path.basename lib}"
-          )
+          @download (
+            source: lib
+            destination: "/usr/hdp/current/hive-metastore/lib/#{path.basename lib}"
+          ) for lib in hive.libs
 
-    
       @link
         header: 'Link Driver'
         source: '/usr/share/java/mysql-connector-java.jar'

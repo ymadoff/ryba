@@ -73,7 +73,7 @@ by setting a "heapsize" value equal to "4096".
 ## SSL
 
       @call header: 'Client SSL', handler: ->
-        @upload
+        @download
           source: ssl.cacert
           destination: "#{tmp_location}/#{path.basename ssl.cacert}"
           mode: 0o0600
