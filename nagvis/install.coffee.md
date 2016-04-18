@@ -80,10 +80,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
         @call header: 'Configure', handler: ->
           for cluster in shinken.config.hostgroups.by_topology
-          @render
-            source: "#{__dirname}/resources/cluster.cfg.j2"
-            local_source: true
-            destination: 
+            @render
+              source: "#{__dirname}/resources/cluster.cfg.j2"
+              local_source: true
+              destination: "#{nagvis.install_dir}/etc/maps/#{cluster}.cfg"
 
 ## Dependencies
 
