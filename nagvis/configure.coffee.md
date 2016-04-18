@@ -29,3 +29,4 @@ Example
       throw Error 'Must declare shinken broker module, or manually specify nagvis.base_dir and nagvis.livestatus_address' unless nagvis.base_dir? and nagvis.livestatus_address?
       nagvis.version ?= '1.9-nightly'
       nagvis.source ?= "https://www.nagvis.org/share/nagvis-#{nagvis.version}.tar.gz"
+      nagvis.shinken_integrate ?= false
