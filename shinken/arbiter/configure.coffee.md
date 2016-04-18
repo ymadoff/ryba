@@ -44,10 +44,7 @@
 
 Object Configuration
 
-      configure.init.call @
-      configure.from_ryba.call @
-      configure.from_exports.call @
-      configure.normalize.call @
+      configure.call @
 
 ## Dependencies
 

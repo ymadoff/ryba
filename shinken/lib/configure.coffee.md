@@ -49,3 +49,5 @@ Example
       shinken.config ?= {}
       shinken.config.use_ssl ?= '0'
       shinken.config.hard_ssl_name_check ?= '0'
+      shinken.import_config ?= false
+
