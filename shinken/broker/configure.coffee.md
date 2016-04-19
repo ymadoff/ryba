@@ -8,7 +8,7 @@
       broker.modules ?= {}
       # WebUI
       webui = broker.modules['webui2'] ?= {}
-      webui.version ?= "2.0.1"
+      webui.version ?= "2.3.2"
       webui.source ?= "https://github.com/shinken-monitoring/mod-webui/archive/#{webui.version}.zip"
       webui.archive ?= "mod-webui-#{webui.version}"
       webui.modules ?= {}
@@ -19,7 +19,7 @@
       webui.config.htpasswd_file ?= '/etc/shinken/htpasswd.users'
       uigraphite = webui.modules['ui-graphite'] ?= {}
       uigraphite.type ?= 'graphite-webui'
-      uigraphite.version ?= "2.1.1"
+      uigraphite.version ?= "2.1.2"
       uigraphite.source ?= "https://github.com/shinken-monitoring/mod-ui-graphite/archive/#{uigraphite.version}.zip"
       uigraphite.archive ?= "mod-ui-graphite-#{uigraphite.version}"
       uigraphite.config ?= {}
@@ -37,12 +37,12 @@
       uigraphite.config.color_max ?= 'blue'
       # Logs
       logs =  broker.modules['mongo-logs'] ?= {}
-      logs.version ?= '1.1.0'
+      logs.version ?= '1.2.0'
       logs.config ?= {}
       logs.config.services_filter ?= 'bi:>0'
       # Graphite
       graphite = broker.modules['graphite2'] ?= {}
-      graphite.version ?= '2.1.0'
+      graphite.version ?= '2.1.4'
       graphite.source ?= "https://github.com/shinken-monitoring/mod-graphite/archive/#{graphite.version}.zip"
       graphite.archive ?= "mod-graphite-#{graphite.version}"
       graphite.type ?= 'graphite_perfdata'
