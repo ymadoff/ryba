@@ -200,13 +200,13 @@ inserted if ALL users or the HDFS user access is denied.
             mode: 0o700
           @download
             source: "#{ssh_fencing.private_key}"
-            destination: "#{hdfs.user.home}/.ssh"
+            destination: "#{hdfs.user.home}/.ssh/id_rsa"
             uid: hdfs.user.name
             gid: hadoop_group.name
             mode: 0o600
           @download
             source: "#{ssh_fencing.public_key}"
-            destination: "#{hdfs.user.home}/.ssh"
+            destination: "#{hdfs.user.home}/.ssh/id_rsa.pub"
             uid: hdfs.user.name
             gid: hadoop_group.name
             mode: 0o644
