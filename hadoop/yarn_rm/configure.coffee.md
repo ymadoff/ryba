@@ -73,6 +73,7 @@ information inside "yarn.resourcemanager.zk-state-store.parent-path" (default to
         jhs_protocol_key = if jhs_protocol is 'http' then '' else '.https'
         jhs_address = jhs_ctx.config.ryba.mapred.site["mapreduce.jobhistory.webapp#{jhs_protocol_key}.address"]
         ryba.yarn.site['yarn.log.server.url'] ?= "#{jhs_protocol}://#{jhs_address}/jobhistory/logs/"
+        ryba.yarn.rm.site['yarn.log.server.url'] ?= "#{jhs_protocol}://#{jhs_address}/jobhistory/logs/"
 
 ## High Availability with Manual Failover
 
@@ -213,7 +214,19 @@ rmr /rmstore/ZKRMStateRoot
       ryba.capacity_scheduler['yarn.scheduler.capacity.queue-mappings'] ?= '' # Introduce by hadoop 2.7
       ryba.capacity_scheduler['yarn.scheduler.capacity.queue-mappings-override.enable'] ?= 'false' # Introduce by hadoop 2.7
       
-      # ryba.yarn.rm.site['yarn.log-aggregation-enable'] ?= 'true'
+
+## Logs Aggregation
+            
+      ryba.yarn.rm.site['yarn.nodemanager.remote-app-log-dir'] ?= '/app-logs'
+      ryba.yarn.rm.site['yarn.nodemanager.remote-app-log-dir-suffix'] ?= 'logs'
+      ryba.yarn.rm.site['yarn.log-aggregation-enable'] ?= 'true'
+      ats_ctx.config.ryba.yarn ?= {}
+      ats_ctx.config.ryba.yarn ?= {}
+      ats_ctx.config.ryba.yarn.site ?= {}
+      ats_ctx.config.ryba.yarn.site['yarn.nodemanager.remote-app-log-dir'] ?= ryba.yarn.rm.site['yarn.nodemanager.remote-app-log-dir']
+      ats_ctx.config.ryba.yarn.site['yarn.nodemanager.remote-app-log-dir-suffix'] ?= ryba.yarn.rm.site['yarn.nodemanager.remote-app-log-dir-suffix']
+      ats_ctx.config.ryba.yarn.site['yarn.log-aggregation-enable'] ?= ryba.yarn.rm.site['yarn.log-aggregation-enable']
+      
       # ryba.yarn.rm.site['yarn.log-aggregation.retain-seconds'] ?= '2592000' #  30 days, how long to keep aggregation logs before deleting them. -1 disables. Be careful, set this too small and you will spam the name node.
       # ryba.yarn.rm.site['yarn.log-aggregation.retain-check-interval-seconds'] ?= '-1' # Time between checks for aggregated log retention. If set to 0 or a negative value then the value is computed as one-tenth of the aggregated log retention time. Be careful, set this too small and you will spam the name node.
       
