@@ -145,5 +145,7 @@ Different type of properties has to be set:
 
       nifi.java ?= {}
       nifi.java.opts ?= {}
-      nifi.java.opts['permsize'] ?= '128M'
-      nifi.java.opts['maxpermsize'] ?= '256M'
+      nifi.java.opts['ReservedCodeCacheSize'] ?= '256m'
+      nifi.java.opts['CodeCacheFlushingMinimumFreeSpace'] ?= '10m'
+      nifi.java.opts['permsize'] ?= '512m'
+      nifi.java.opts['maxpermsize'] ?= '512m'
