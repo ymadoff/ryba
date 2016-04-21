@@ -1,46 +1,20 @@
 
-## Configure
+# Nifi Manager Configure
 
     module.exports = handler: ->
-      nifi = @config.ryba.nifi ?= {}
-      {realm} = @config.ryba
-      nifi.version ?= '0.6.0'
-      nifi.root_dir ?= '/usr'
-      nifi.install_dir ?= "#{nifi.root_dir}/nifi/#{nifi.version}"
-      nifi.latest_dir ?= "#{nifi.root_dir}/nifi/current"
-      nifi.source ?= "https://archive.apache.org/dist/nifi/#{nifi.version}/nifi-#{nifi.version}-bin.tar.gz"
+      require('../lib/configure').handler.call @
+      {nifi, realm} = @config.ryba
       nifi.manager  ?= {}
-      nifi.manager.latest_dir ?= "#{nifi.root_dir}/nifi/current/nifi-manager"
-      nifi.manager.install_dir ?= "#{nifi.install_dir}/nifi-manager"
+      nifi.manager.install_dir ?= "#{nifi.root_dir}/nifi-manager"
       nifi.manager.conf_dir ?= '/etc/nifi-manager/conf'
       nifi.manager.log_dir ?= '/var/log/nifi'
-
-## User and Groups
-
-      # User
-      nifi.user = name: nifi.user if typeof nifi.user is 'string'
-      nifi.user ?= {}
-      nifi.user.name ?= 'nifi'
-      nifi.user.system ?= true
-      nifi.user.comment ?= 'NiFi User'
-      nifi.user.home ?= '/var/lib/nifi'
-      # Group
-      nifi.group = name: nifi.group if typeof nifi.group is 'string'
-      nifi.group ?= {}
-      nifi.group.name ?= 'nifi'
-      nifi.group.system ?= true
-      nifi.user.limits ?= {}
-      nifi.user.limits.nofile ?= 64000
-      nifi.user.limits.nproc ?= true
-      nifi.user.gid = nifi.group.name 
       config = nifi.manager.config ?= {}
       properties = config.properties ?= {}
       #version
       properties['nifi.version'] ?= "#{nifi.version}"
 
-          
 ## Security
-      
+
       properties['nifi.kerberos.krb5.file'] ?= '/etc/krb5.conf' if @config.ryba.security is 'kerberos'
       properties['nifi.cluster.protocol.is.secure'] ?= 'true'
       properties['nifi.web.http.port'] ?= '9750'
@@ -65,9 +39,9 @@
         properties['nifi.security.anonymous.authorities'] ?= '' # no role given to anonymous
         # secure inner connection and remote
         properties['nifi.remote.input.secure'] ?= 'true'
-      
+
 ## User Authentication And Authorization
-      
+
 Starting from 0.6.0
 NiFi has three native way for prividing user authentication.
 - Client certificates
@@ -126,16 +100,17 @@ The clients request access to nifi, and admin accepts/denies request to webui
             properties['nifi.kerberos.krb5.file'] ?= krb5_provider['file']
             properties['nifi.kerberos.service.principal'] ?= "HTTP/#{@config.host}@#{realm}"
             properties['nifi.kerberos.keytab.location'] ?= '/etc/security/keytabs/spnego.service.keytab'
-            nifi.web_ui_admin_principal ?= "#{nifi.user.name}@#{realm}"
-            nifi.web_ui_admin_pwd ?= 'nifi123'
+            nifi.webui ?= {}
+            nifi.webui.krb5_principal ?= "#{nifi.user.name}@#{realm}"
+            nifi.webui.krb5_password ?= 'nifi123'
             config.authorized_users ?= [
-              dn: "#{nifi.web_ui_admin_principal}"
+              dn: "#{nifi.webui.krb5_principal}"
               roles: ['ROLE_ADMIN']
             ]
           else
             throw Error 'login provider is not supported'
-        throw Error 'No admin user configured for NiFi webui' unless config.authorized_users?
-            
+        throw Error 'No admin user configured for NiFi webUI' unless config.authorized_users?
+
 ## Cluster Configuration  
 
 Different type of properties has to be set:
@@ -177,39 +152,34 @@ Different type of properties has to be set:
             nifi.manager.krb5_keytab ?=  '/etc/security/keytabs/nifi.manager.service.keytab'
         else
           throw Error 'No other cluster state provider is supported for now'
-  
+
 # Core Properties #
 
       properties['nifi.flow.configuration.file'] ?= "#{nifi.user.home}/flow.xml.gz"
       properties['nifi.flow.configuration.archive.dir'] ?= "#{nifi.user.home}/archive/"
       properties['nifi.flowfile.repository.directory'] ?= "#{nifi.user.home}/flowfile_repository"
-      
       properties['nifi.templates.directory'] ?= "#{nifi.user.home}/templates"
-      properties['nifi.nar.library.directory'] ?= "#{nifi.manager.latest_dir}/lib"
+      properties['nifi.nar.library.directory'] ?= "#{nifi.manager.install_dir}/current/lib"
       properties['nifi.nar.working.directory'] ?= "#{nifi.user.home}/work/nar/"
       properties['nifi.documentation.working.directory'] ?= "#{nifi.user.home}/work/docs/components"
-      
       # H2 Settings
       properties['nifi.database.directory'] ?= "#{nifi.user.home}/database_repository"
-      
       # Content Repository
       properties['nifi.content.repository.directory.default'] ?= "#{nifi.user.home}/content_repository"
-      
       # Persistent Provenance Repository Properties
       properties['nifi.provenance.repository.directory.default'] ?= "#{nifi.user.home}/provenance_repository"
-      
       # web properties #
-      properties['nifi.web.war.directory'] ?= "#{nifi.manager.latest_dir}/lib"
+      properties['nifi.web.war.directory'] ?= "#{nifi.manager.install_dir}/current/lib"
       properties['nifi.web.jetty.working.directory'] ?= "#{nifi.user.home}/work/jetty"
-    
-## JAVA Opts
-      
-      #nifi-0.6.0/docs/html/administration-guide.html#bootstrap_properties
-      nifi.java ?= {}
-      nifi.java.opts ?= {}
-      nifi.java.opts['permsize'] ?= '128M'
-      nifi.java.opts['maxpermsize'] ?= '256M'    
 
+## JAVA Opts
+
+      #nifi-0.6.0/docs/html/administration-guide.html#bootstrap_properties
+      nifi.manager.java_opts ?= {}
+      nifi.manager.java_opts['ReservedCodeCacheSize'] ?= '256m'
+      nifi.manager.java_opts['CodeCacheFlushingMinimumFreeSpace'] ?= '10m'
+      nifi.manager.java_opts['permsize'] ?= '128m'
+      nifi.manager.java_opts['maxpermsize'] ?= '256m'
 
 [hdp-nifi]:(https://docs.hortonworks.com/HDPDocuments/HDF1/HDF-1.1.0/bk_AdminGuide/content/ch_AdminGuide.html)
 [cluster-migration]:(https://community.hortonworks.com/articles/9203/how-to-migrate-a-standalone-nifi-into-a-nifi-clust.html)                  

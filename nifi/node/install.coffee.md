@@ -1,9 +1,11 @@
+
 # NiFi Manager Install
 
     module.exports = header: 'NiFi Node Install', handler: ->
       {nifi, hadoop_group} = @config.ryba
       {ssl, ssl_server, ssl_client, hadoop_conf_dir, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      {java} = @config
       tmp_ssl_location = "/var/tmp/ryba/ssl"
       tmp_archive_location = "/var/tmp/ryba/nifi.tar.gz"
       protocol = if nifi.node.config.properties['nifi.cluster.protocol.is.secure'] is 'true' then 'https' else 'http'
@@ -12,7 +14,7 @@
 
       @group nifi.group
       @user nifi.user
-                
+
 # IPTables
 
   | Service    | Port  | Proto  | Parameter                                   |
@@ -27,103 +29,90 @@
           { chain: 'INPUT', jump: 'ACCEPT', dport: nifi.node.config.properties["nifi.web.#{protocol}.port"], protocol: 'tcp', state: 'NEW', comment: "NiFi Web ui port" }
         ]
     
-      @call header: 'Layout', handler: ->
-          @mkdir
-            destination: nifi.node.conf_dir
-          @mkdir
-            destination: nifi.node.log_dir    
-        
-      @call 
-        header: 'Packages'
-        timeout:-1
-        unless_exec: "grep 'nifi.version=#{nifi.version}' #{nifi.node.install_dir}/conf/nifi.properties"
-        handler: ->
+      @call header: 'Preinstall Layout', handler: ->
           @mkdir
             destination: nifi.node.install_dir
           @mkdir
-            destination: nifi.user.home
+            destination: nifi.node.conf_dir
+          @mkdir
+            destination: nifi.node.log_dir
             uid: nifi.user.name
             gid: nifi.group.name
+
+      @call 
+        header: 'Packages'
+        timeout:-1
+        unless_exec: "grep 'nifi.version=#{nifi.version}' #{nifi.node.install_dir}/#{nifi.version}/conf/nifi.properties"
+        handler: ->
+          @mkdir
+            destination: "#{nifi.node.install_dir}/#{nifi.version}"
           @download
             source: nifi.source
             destination: tmp_archive_location
           @extract
             source: tmp_archive_location
-            destination: nifi.node.install_dir
+            destination: "#{nifi.node.install_dir}/#{nifi.version}"
             preserve_owner: false
             strip: 1
-        
-      @call 
-        header: 'Layout'
+          @remove
+            destination: tmp_archive_location
+
+      @call
+        header: 'Postinstall Layout'
         timeout:-1
-        # unless_exec: 'service nifi-node status'
         handler: ->
           @link
-            source: nifi.install_dir
-            destination: nifi.latest_dir
-          @link
-            source: nifi.node.latest_dir
-            destination: "#{nifi.node.install_dir}"
+            source: "#{nifi.node.install_dir}/#{nifi.version}"
+            destination: "#{nifi.node.install_dir}/current"
           # set current version to downloaded version (to support upgrades)
           @remove 
-            destination: "#{nifi.node.latest_dir}/conf"
-          @remove 
-            destination: "#{nifi.node.latest_dir}/logs"
-          @link 
-            destination: "#{nifi.node.latest_dir}"
-            source: "#{nifi.node.install_dir}"
-          # needs to have read/write privileges to load Nar bundles
-          @execute
-            cmd: "chmod 777 -R  #{nifi.node.install_dir}/lib"
+            destination: "#{nifi.node.install_dir}/current/conf"
+            if_exec: "test -d #{nifi.node.install_dir}/current/conf"
           @link
             source: nifi.node.conf_dir
-            destination: "#{nifi.node.latest_dir}/conf"
-          @mkdir
-            destination: nifi.node.log_dir
-            uid: nifi.user.name
-            gid: nifi.group.name
-          @link
-            source: nifi.node.log_dir
-            destination: "#{nifi.node.latest_dir}/logs"
+            destination: "#{nifi.node.install_dir}/current/conf"
+          @remove 
+            destination: "#{nifi.node.install_dir}/current/logs"
+          # needs to have read/write privileges to load Nar bundles
+          @execute
+            cmd: "chmod 777 -R #{nifi.node.install_dir}/current/lib"
           @render
-            header: 'Service Script'
-            source: "#{__dirname}/../resources/nifi-node.j2"
+            source: "#{__dirname}/resources/nifi-node.j2"
             destination: '/etc/init.d/nifi-node'
             local_source: true
-            context: @
+            context: @config
             mode: 0o0755
           # https://github.com/apache/nifi/blob/master/nifi-bootstrap/src/main/java/org/apache/nifi/bootstrap/RunNiFi.java#L335
           # enable nifi to create pid file in nifi.home/bin directory
           @chown
-            destination: "#{nifi.node.latest_dir}/bin"
+            destination: "#{nifi.node.install_dir}/current/bin"
             uid: nifi.user.name
             gid: nifi.group.name
 
 # Notifications
 
-      @upload
+      @download
         header: 'Services Notifications'
-        source: "#{__dirname}/../resources/bootstrap-notification-services.xml"
         destination: "#{nifi.node.conf_dir}/bootstrap-notification-services.xml"
-        local_source: true
+        source: "#{__dirname}/../resources/bootstrap-notification-services.xml"
 
-# Logs      
+# Log Configuration
 
-      @upload
-        header: 'Logging'
-        source: "#{__dirname}/../resources/logback.xml"
+      @render
+        header: 'Log Configuration'
         destination: "#{nifi.node.conf_dir}/logback.xml"
+        source: "#{__dirname}/../resources/logback.xml.j2"
         local_source: true
-            
+        context: nifi.node
 
 ## Cluster Manager authority provider
-      
+
       @render
         header: 'Authority Providers'
-        source: "#{__dirname}/../resources/authority-providers.xml.j2"
         destination: "#{nifi.node.conf_dir}/authority-providers.xml"
-        context: nifi.node
+        source: "#{__dirname}/../resources/authority-providers.xml.j2"
         local_source: true
+        context: nifi.node
         uid: nifi.user.name
         gid: nifi.group.name
         backup: true
@@ -134,9 +123,9 @@
 
 Describes where the NiFi server store its internal states.
 By default it is a local file, but in cluster mode, it uses zookeeper.
-          
+
       @render
-        header: 'State Provider '
+        header: 'State Provider'
         source: "#{__dirname}/../resources/state-management.xml.j2"
         destination: "#{nifi.node.conf_dir}/state-management.xml"
         context: @config.ryba
@@ -147,7 +136,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
         mode: 0o0755
 
       @krb5_addprinc
-        header: 'Kerberos NiFi Node'
+        header: 'Kerberos'
         principal: nifi.node.krb5_principal
         randkey: true
         keytab: nifi.node.krb5_keytab
@@ -156,9 +145,9 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-    
+
 ## Zookeeper JAAS  
-    
+
       @write_jaas
         header: 'Zookeeper JAAS'
         destination: "#{nifi.node.conf_dir}/nifi-zookeeper.jaas"
@@ -174,19 +163,15 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
         destination: "#{nifi.node.conf_dir}/bootstrap.conf"
         eof: true
         backup: true
-        context: nifi
+        context:
+          java_opts: nifi.node.java_opts
+          user: nifi.user
+          conf_dir: nifi.node.conf_dir
+          install_dir: nifi.node.install_dir
         local_source: true
-      @write
-        header: 'JAAS ENV'
-        write:    [
-          match: RegExp "java.arg.15=.*", 'm'
-          replace: "java.arg.15=-Djava.security.auth.login.config=./conf/nifi-zookeeper.jaas"
-          append: true
-        ]
-        destination: "#{nifi.node.conf_dir}/bootstrap.conf"
-          
+
 ## Configuration  
-      
+
       @render
         header: 'Server properties'
         source: "#{__dirname}/../resources/nifi.properties"
@@ -199,7 +184,6 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
         backup: true
         eof: true
 
-    
       @call header: 'SSL', retry: 0, handler: ->
         # Client: import certificate to all hosts
         @java_keystore_add
@@ -225,14 +209,23 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
           local_source: true
-  
+
+## Additional Libs
+
+      @call header: 'Additional Libs', handler: ->
+        for lib in nifi.node.additional_libs
+          @download
+            source: lib
+            destination: "#{nifi.node.install_dir}/current/lib/extras/#{path.basename lib}"
+            mode: 0o644
+
 # User limits
 
       @system_limits
         user: nifi.user.name
         nofile: nifi.user.limits.nofile
         nproc: nifi.user.limits.nproc
-        
+
 ## Dependencies
 
     glob = require 'glob'

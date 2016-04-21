@@ -1,17 +1,20 @@
+
 # NiFi Manager Install
 
     module.exports = header: 'NiFi Manager Install', handler: ->
       {nifi, hadoop_group} = @config.ryba
       {ssl, ssl_server, ssl_client, hadoop_conf_dir, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      {java} = @config
       tmp_ssl_location = "/var/tmp/ryba/ssl"
       tmp_archive_location = "/var/tmp/ryba/nifi.tar.gz"
       protocol = if nifi.manager.config.properties['nifi.cluster.protocol.is.secure'] is 'true' then 'https' else 'http'
-      
+
+## Users
+
       @group nifi.group
       @user nifi.user
 
-                
 # IPTables
 
   | Service    | Port  | Proto  | Parameter                                   |
@@ -30,84 +33,70 @@
           { chain: 'INPUT', jump: 'ACCEPT', dport: nifi.manager.config.authority_providers.ncm_port, protocol: 'tcp', state: 'NEW', comment: "NiFi manager auth port" }
         ]
     
-      @call header: 'Layout', handler: ->
-          @mkdir
-            destination: nifi.manager.conf_dir
-          @mkdir
-            destination: nifi.manager.log_dir    
-        
-      @call 
-        header: 'Packages'
-        timeout:-1
-        unless_exec: "grep 'nifi.version=#{nifi.version}' #{nifi.manager.install_dir}/conf/nifi.properties"
-        handler: ->
+      @call header: 'Preinstall Layout', handler: ->
           @mkdir
             destination: nifi.manager.install_dir
           @mkdir
-            destination: nifi.user.home
+            destination: nifi.manager.conf_dir
+          @mkdir
+            destination: nifi.manager.log_dir
             uid: nifi.user.name
             gid: nifi.group.name
+
+      @call 
+        header: 'Packages'
+        timeout:-1
+        unless_exec: "grep 'nifi.version=#{nifi.version}' #{nifi.manager.install_dir}/#{nifi.version}/conf/nifi.properties"
+        handler: ->
+          @mkdir
+            destination: "#{nifi.manager.install_dir}/#{nifi.version}"
           @download
             source: nifi.source
             destination: tmp_archive_location
           @extract
             source: tmp_archive_location
-            destination: nifi.manager.install_dir
+            destination: "#{nifi.manager.install_dir}/#{nifi.version}"
             preserve_owner: false
             strip: 1
-            
+          @remove
+            destination: tmp_archive_location
+
       @call 
-        header: 'Layout'
+        header: 'Postinstall Layout'
         timeout:-1
         handler: ->
           @link
-            source: nifi.install_dir
-            destination: nifi.latest_dir
-          @link
-            source: nifi.manager.latest_dir
-            destination: "#{nifi.manager.install_dir}"
+            source: "#{nifi.manager.install_dir}/#{nifi.version}"
+            destination: "#{nifi.manager.install_dir}/current"
           # set current version to downloaded version (to support upgrades)
           @remove 
-            destination: "#{nifi.manager.latest_dir}/conf"
+            destination: "#{nifi.manager.install_dir}/current/conf"
+            if_exec: "test -d #{nifi.manager.install_dir}/current/conf"
+          @link
+            source: nifi.manager.conf_dir
+            destination: "#{nifi.manager.install_dir}/current/conf"
           @remove 
-            destination: "#{nifi.manager.latest_dir}/logs"
-          @link 
-            destination: "#{nifi.manager.latest_dir}"
-            source: "/usr/nifi/#{nifi.version}/nifi-manager"
-          @chmod
-            mode: 0o0755
-            destination: "#{nifi.install_dir}"
+            destination: "#{nifi.manager.install_dir}/current/logs"
+            if_exec: "test -d #{nifi.manager.install_dir}/current/logs"
+          @link
+            source: nifi.manager.log_dir
+            destination: "#{nifi.user.home}/logs"
           # needs to have read/write privileges to load Nar bundles
           @execute
-            cmd: "chmod 777 -R  #{nifi.manager.install_dir}/lib"
+            cmd: "chmod 777 -R  #{nifi.manager.install_dir}/current/lib"
+          @render
+            destination: '/etc/init.d/nifi-manager'
+            source: "#{__dirname}/resources/nifi-manager.j2"
+            local_source: true
+            context: @config
+            mode: 0o0755
           # https://github.com/apache/nifi/blob/master/nifi-bootstrap/src/main/java/org/apache/nifi/bootstrap/RunNiFi.java#L335
           # enable nifi to create pid file in nifi.home/bin directory
           @chown
-            destination: "#{nifi.manager.latest_dir}/bin"
+            destination: "#{nifi.manager.install_dir}/current/bin"
             uid: nifi.user.name
             gid: nifi.group.name
-          @link
-            source: nifi.manager.conf_dir
-            destination: "#{nifi.manager.latest_dir}/conf"
-          @mkdir
-            destination: nifi.manager.log_dir
-            uid: nifi.user.name
-            gid: nifi.group.name
-          @link
-            source: nifi.manager.log_dir
-            destination: "#{nifi.manager.latest_dir}/logs"
-          @render
-            header: 'Service Script'
-            source: "#{__dirname}/../resources/nifi-manager.j2"
-            destination: '/etc/init.d/nifi-manager'
-            local_source: true
-            context: @
-            mode: 0o0755
-          
-      
 
-            
-            
 ## Login Identity Providers
 
 Describe where to get the user athentication onformation from.
@@ -202,7 +191,7 @@ Describes where the NiFi server store its internal states.
 By default it is a local file, but in cluster mode, it uses zookeeper.
           
       @render
-        header: 'State Provider '
+        header: 'State Provider'
         source: "#{__dirname}/../resources/state-management.xml.j2"
         destination: "#{nifi.manager.conf_dir}/state-management.xml"
         context: @config.ryba
@@ -213,7 +202,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
         mode: 0o0755
 
       @krb5_addprinc
-        header: 'Kerberos NiFi Cluster Manager'
+        header: 'Kerberos'
         principal: nifi.manager.krb5_principal
         randkey: true
         keytab: nifi.manager.krb5_keytab
@@ -226,8 +215,8 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
       @krb5_addprinc
         if: nifi.manager.config.properties['nifi.security.user.login.identity.provider'] is 'kerberos-provider'
         header: 'Kerberos NiFi Web UI Manager'
-        principal: nifi.web_ui_admin_principal
-        password: nifi.web_ui_admin_pwd
+        principal: nifi.webui.krb5_principal
+        password: nifi.webui.krb5_password
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
@@ -244,19 +233,15 @@ by sending request to ldaps server
         destination: "#{nifi.manager.conf_dir}/bootstrap.conf"
         eof: true
         backup: true
-        context: nifi
+        context:
+          java_opts: nifi.manager.java_opts
+          user: nifi.user
+          conf_dir: nifi.manager.conf_dir
+          install_dir: nifi.manager.install_dir
         local_source: true
-      @write
-        header: 'JAAS ENV'
-        write: [
-          match: RegExp "java.arg.15=.*", 'm'
-          replace: "java.arg.15=-Djava.security.auth.login.config=./conf/nifi-zookeeper.jaas"
-          append: true
-        ]
-        destination: "#{nifi.manager.conf_dir}/bootstrap.conf"
 
-## JAAS  
-    
+## JAAS
+
       @write_jaas
         header: 'Zookeeper JAAS'
         destination: "#{nifi.manager.conf_dir}/nifi-zookeeper.jaas"
@@ -266,10 +251,9 @@ by sending request to ldaps server
         uid: nifi.user.name
         gid: nifi.group.name
         mode: 0o700
-      
-          
+
 ## Configuration  
-      
+
       @render
         header: 'Server properties'
         source: "#{__dirname}/../resources/nifi.properties"
@@ -282,7 +266,6 @@ by sending request to ldaps server
         backup: true
         eof: true
 
-    
       @call header: 'SSL', retry: 0, handler: ->
         # Client: import certificate to all hosts
         @java_keystore_add
@@ -311,17 +294,19 @@ by sending request to ldaps server
 
 # Notifications
 
-      @upload
-        source: "#{__dirname}/../resources/bootstrap-notification-services.xml"
+      @download
+        header: 'Services Notifications'
         destination: "#{nifi.manager.conf_dir}/bootstrap-notification-services.xml"
-        local_source: true
+        source: "#{__dirname}/../resources/bootstrap-notification-services.xml"
 
-# Logs     
+# Logs
  
-      @upload
-        source: "#{__dirname}/../resources/logback.xml"
+      @render
+        header: 'Log Configuration'
         destination: "#{nifi.manager.conf_dir}/logback.xml"
+        source: "#{__dirname}/../resources/logback.xml.j2"
         local_source: true
+        context: nifi.manager
 
 # User limits
 
@@ -329,7 +314,7 @@ by sending request to ldaps server
         user: nifi.user.name
         nofile: nifi.user.limits.nofile
         nproc: nifi.user.limits.nproc
-        
+
 ## Dependencies
 
     glob = require 'glob'

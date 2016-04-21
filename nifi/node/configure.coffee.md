@@ -1,38 +1,13 @@
 
-## Configure
+# Nifi Node Configure
 
     module.exports = handler: ->
-      nifi = @config.ryba.nifi ?= {}
-      {realm} = @config.ryba
-      nifi.version ?= '0.6.0'
-      nifi.root_dir ?= '/usr'
-      nifi.install_dir ?= "#{nifi.root_dir}/nifi/#{nifi.version}"
-      nifi.latest_dir ?= "#{nifi.root_dir}/nifi/current"
-      nifi.source ?= "https://archive.apache.org/dist/nifi/#{nifi.version}/nifi-#{nifi.version}-bin.tar.gz"
+      require('../lib/configure').handler.call @
+      {nifi, realm} = @config.ryba
       nifi.node  ?= {}
-      nifi.node.latest_dir ?= "#{nifi.root_dir}/nifi/current/nifi-node"
-      nifi.node.install_dir ?= "#{nifi.install_dir}/nifi-node"
+      nifi.node.install_dir ?= "#{nifi.root_dir}/nifi-node"
       nifi.node.conf_dir ?= '/etc/nifi-node/conf'
       nifi.node.log_dir ?= '/var/log/nifi'
-
-## User and Groups
-
-      # User
-      nifi.user = name: nifi.user if typeof nifi.user is 'string'
-      nifi.user ?= {}
-      nifi.user.name ?= 'nifi'
-      nifi.user.system ?= true
-      nifi.user.comment ?= 'NiFi User'
-      nifi.user.home ?= '/var/lib/nifi'
-      # Group
-      nifi.group = name: nifi.group if typeof nifi.group is 'string'
-      nifi.group ?= {}
-      nifi.group.name ?= 'nifi'
-      nifi.group.system ?= true
-      nifi.user.limits ?= {}
-      nifi.user.limits.nofile ?= 64000
-      nifi.user.limits.nproc ?= true
-      nifi.user.gid = nifi.group.name 
       config = nifi.node.config ?= {}
       properties = config.properties ?= {}
       [ncm_ctx] = @contexts 'ryba/nifi/manager', require('../manager/configure').handler
@@ -42,15 +17,15 @@
       properties['nifi.version'] ?= "#{nifi.version}"
 
 ## Security
-      
+
       properties['nifi.web.http.host'] ?= "#{@config.host}"
       properties['nifi.web.http.port'] ?= '9850'
       properties['nifi.web.https.host'] ?= "#{@config.host}"
       properties['nifi.web.https.port'] ?= '9860'
       properties['nifi.cluster.protocol.is.secure'] ?= manager.config.properties['nifi.cluster.protocol.is.secure']
       if properties['nifi.cluster.protocol.is.secure'] is 'true'
-        properties['nifi.web.http.port'] = ''          
-        properties['nifi.web.http.host'] = ''          
+        properties['nifi.web.http.port'] = ''
+        properties['nifi.web.http.host'] = ''
         properties['nifi.security.keystore'] ?= "#{nifi.node.conf_dir}/keystore"
         properties['nifi.security.keystoreType'] ?= 'JKS'
         properties['nifi.security.keystorePasswd'] ?= 'nifi123'
@@ -90,7 +65,6 @@ Different type of properties has to be set:
       config.authority_providers ?= {}
       config.authority_providers.ncm_port ?= manager.config.authority_providers.ncm_port
       config.authority_providers.node_port ?= manager.config.authority_providers.ncm_port
-      
       # State provider
       # Defines how and where niFi servers stores states about nodes.
       properties['nifi.state.management.provider.local'] ?= 'local-provider' # present by default
@@ -110,42 +84,43 @@ Different type of properties has to be set:
           throw Error 'No other cluster state provider is supported for now'
       #Login Provider
       properties['nifi.login.identity.provider.configuration.file'] ?= "#{nifi.node.conf_dir}/login-identity-providers.xml"
-
       # secure inner connection and remote
       properties['nifi.remote.input.secure'] ?= 'true'
       properties['nifi.remote.input.socket.port'] ?= '9890'
       properties['nifi.remote.input.socket.host'] ?= "#{@config.host}"
-      
+
 # Core Properties #
 
       properties['nifi.flow.configuration.file'] ?= "#{nifi.user.home}/flow.xml.gz"
       properties['nifi.flow.configuration.archive.dir'] ?= "#{nifi.user.home}/archive/"
       properties['nifi.flowfile.repository.directory'] ?= "#{nifi.user.home}/flowfile_repository"
-      
       properties['nifi.templates.directory'] ?= "#{nifi.user.home}/templates"
-      properties['nifi.nar.library.directory'] ?= "#{nifi.node.latest_dir}/lib"
+      properties['nifi.nar.library.directory'] ?= "#{nifi.node.install_dir}/current/lib"
       properties['nifi.nar.working.directory'] ?= "#{nifi.user.home}/work/nar/"
       properties['nifi.documentation.working.directory'] ?= "#{nifi.user.home}/work/docs/components"
-      
       # H2 Settings
       properties['nifi.database.directory'] ?= "#{nifi.user.home}/database_repository"
-      
       # Content Repository
       properties['nifi.content.repository.directory.default'] ?= "#{nifi.user.home}/content_repository"
-      
       # Persistent Provenance Repository Properties
       properties['nifi.provenance.repository.directory.default'] ?= "#{nifi.user.home}/provenance_repository"
-      
-      # web properties #
-      properties['nifi.web.war.directory'] ?= "#{nifi.node.latest_dir}/lib"
+      # web properties
+      properties['nifi.web.war.directory'] ?= "#{nifi.node.install_dir}/current/lib"
       properties['nifi.web.jetty.working.directory'] ?= "#{nifi.user.home}/work/jetty"
-      
 
 ## JAVA Opts
 
-      nifi.java ?= {}
-      nifi.java.opts ?= {}
-      nifi.java.opts['ReservedCodeCacheSize'] ?= '256m'
-      nifi.java.opts['CodeCacheFlushingMinimumFreeSpace'] ?= '10m'
-      nifi.java.opts['permsize'] ?= '512m'
-      nifi.java.opts['maxpermsize'] ?= '512m'
+      nifi.node.java_opts ?= {}
+      nifi.node.java_opts['ReservedCodeCacheSize'] ?= '256m'
+      nifi.node.java_opts['CodeCacheFlushingMinimumFreeSpace'] ?= '10m'
+      nifi.node.java_opts['permsize'] ?= '512m'
+      nifi.node.java_opts['maxpermsize'] ?= '512m'
+
+## Additional libs
+
+      nifi.node.additional_libs ?= []
+      nifi.node.additional_libs = [nifi.node.additional_libs] unless Array.isArray nifi.node.additional_libs
+      for k in [
+        "#{__dirname}/resources/driver-ojdbc-oracle-7.jar"
+      ]
+        nifi.node.additional_libs.push k unless k in nifi.node.additional_libs
