@@ -1,5 +1,5 @@
 
-# NiFi Manager Install
+# NiFi Node Install
 
     module.exports = header: 'NiFi Node Install', handler: ->
       {nifi, hadoop_group} = @config.ryba

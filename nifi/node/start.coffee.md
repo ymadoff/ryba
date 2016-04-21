@@ -1,3 +1,4 @@
+
 # NiFi Node Agent Start
 
     module.exports = header: 'NiFi Node Start', label_true: 'STARTED', handler: ->

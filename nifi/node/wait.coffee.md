@@ -1,3 +1,4 @@
+
 # NiFi Node Server Wait
 
     module.exports = header: 'NiFi Node Server Wait', label_true: 'READY', timeout: -1, handler: ->
