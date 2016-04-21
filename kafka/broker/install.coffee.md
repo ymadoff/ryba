@@ -153,19 +153,24 @@ Replace KAFKA_BROKER_CMD kafka-broker conf directory path
 This Fixs are needed to be able to isolate confs betwwen broker and client
 
       @call header: 'Fix Startup Script', handler: ->
-        @write
-          destination: "/usr/hdp/current/kafka-broker/bin/kafka"
-          write: [
-            match: /^KAFKA_BROKER_CMD=(.*)/m
-            replace: "KAFKA_BROKER_CMD=\"$KAFKA_HOME/bin/kafka-server-start.sh #{kafka.broker.conf_dir}/server.properties\""
-          ]
-          backup: true
-          eof: true
+        # @write
+        #   destination: "/usr/hdp/current/kafka-broker/bin/kafka"
+        #   write: [
+        #     match: /^KAFKA_BROKER_CMD=(.*)/m
+        #     replace: "KAFKA_BROKER_CMD=\"$KAFKA_HOME/bin/kafka-server-broker-start.sh #{kafka.broker.conf_dir}/server.properties\""
+        #   ]
+        #   backup: true
+        #   eof: true
+        @copy
+          source: '/usr/hdp/current/kafka-broker/bin/kafka-run-class.sh'
+          destination: '/usr/hdp/current/kafka-broker/bin/kafka-run-broker-class.sh'
+          mode: 0o0755
         @write
           destination: "/usr/hdp/current/kafka-broker/bin/kafka-server-start.sh"
           write: [
             match: RegExp "^exec.*\\$@$", 'm'
-            replace: ". /etc/kafka-broker/conf/kafka-env.sh # RYBA, don't overwrite\nexec /usr/hdp/current/kafka-broker/bin/kafka-run-class.sh $EXTRA_ARGS kafka.Kafka $@ # RYBA, don't overwrite"
+            replace: "exec /usr/hdp/current/kafka-broker/bin/kafka-run-broker-class.sh $EXTRA_ARGS kafka.Kafka $@ # RYBA, don't overwrite"
+            # replace: ". /etc/kafka-broker/conf/kafka-env.sh # RYBA, don't overwrite\nexec /usr/hdp/current/kafka-broker/bin/kafka-run-broker.class.sh $EXTRA_ARGS kafka.Kafka $@ # RYBA, don't overwrite"
           ]
           backup: true
           eof: true
