@@ -3,7 +3,7 @@
 
     module.exports = handler: ->
       nifi = @config.ryba.nifi ?= {}
-      nifi.version ?= '0.6.0'
+      nifi.version ?= '0.6.1'
       nifi.source ?= "https://archive.apache.org/dist/nifi/#{nifi.version}/nifi-#{nifi.version}-bin.tar.gz"
       nifi.root_dir ?= '/opt'
 
