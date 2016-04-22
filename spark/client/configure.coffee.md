@@ -4,21 +4,21 @@
     module.exports = handler: ->
       {core_site, hadoop_conf_dir} = @config.ryba
       spark = @config.ryba.spark ?= {}
-      spark  = @config.ryba.spark ?= {}
       spark.conf ?= {}
-      # Group
-      spark.group ?= {}
-      spark.group = name: spark.group if typeof spark.group is 'string'
-      spark.group.name ?= 'spark'
-      spark.group.system ?= true
       # User
       spark.user ?= {}
       spark.user = name: spark.user if typeof spark.user is 'string'
       spark.user.name ?= 'spark'
       spark.user.system ?= true
       spark.user.comment ?= 'Spark User'
-      spark.user.home ?= '/var/run/spark'
+      spark.user.home ?= '/var/lib/spark'
       spark.user.groups ?= 'hadoop'
+      # Group
+      spark.group ?= {}
+      spark.group = name: spark.group if typeof spark.group is 'string'
+      spark.group.name ?= 'spark'
+      spark.group.system ?= true
+      
       spark.user.gid ?= spark.group.name
 
       
