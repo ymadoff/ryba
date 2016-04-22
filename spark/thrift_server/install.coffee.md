@@ -33,7 +33,7 @@
 
 | Service              | Port  | Proto | Info              |
 |----------------------|-------|-------|-------------------|
-| spark history server | 18080 | http  | Spark HTTP server |
+| spark history server | 10015 | http  | Spark HTTP server |
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
