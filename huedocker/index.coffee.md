@@ -29,50 +29,29 @@ beloaded to the target server
         'masson/core/krb5_client' # kerberos clients to create/test new Hive principal
         'masson/commons/docker'
         'ryba/oozie/client'
-        'ryba/hadoop/hdfs_client/'
-        'ryba/hadoop/yarn_client/install'
-        'ryba/hadoop/mapred_client/install'
-        'ryba/hbase/client/install'
-        'ryba/hive/client/install' # Hue reference hive conf dir
+        'ryba/hadoop/hdfs_client'
+        'ryba/hadoop/yarn_client'
+        'ryba/hadoop/mapred_client'
+        'ryba/hbase/client'
+        'ryba/hive/client' # Hue reference hive conf dir
         'ryba/pig/install'
         'ryba/lib/hconfigure'
         'ryba/huedocker/install'
-        'ryba/hadoop/yarn_rm/wait'
-        'ryba/hadoop/hdfs_nn/wait'
-        'ryba/hbase/thrift/wait'
-        'ryba/oozie/server/wait'
-        'ryba/hive/server2/wait'
-        'ryba/hive/hcatalog/wait'
-        'ryba/huedocker/start'    
-        'ryba/huedocker/wait'
-        'ryba/huedocker/check'
-      ]
-      'start': [
-        'ryba/hadoop/yarn_rm/wait'
-        'ryba/hadoop/hdfs_nn/wait'
-        'ryba/hbase/thrift/wait'
-        'ryba/oozie/server/wait'
-        'ryba/hive/server2/wait'
-        'ryba/hive/hcatalog/wait'
         'ryba/huedocker/start'
-
-      ]
-      'check': [
-        'ryba/huedocker/wait'
         'ryba/huedocker/check'
       ]
-      'wait': [
+      'start':
+        'ryba/huedocker/start'
+      'check':
+        'ryba/huedocker/check'
+      'wait':
         'ryba/huedocker/wait'
-      ]
-      'stop': [
+      'stop':
         'ryba/huedocker/stop'
-      ]
-      'status': [
+      'status':
         'ryba/huedocker/status'
-      ]
-      'prepare': [
+      'prepare':
         'ryba/huedocker/prepare'
-      ]
 
 
 [home]: http://gethue.com

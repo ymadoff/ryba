@@ -5,34 +5,23 @@ The [REST Server](http://wiki.apache.org/hadoop/Hbase/Stargate) is a daemon whic
 Of course we deploy the secured version of the configuration of this API.
 
     module.exports = ->
+      'check':
+        'ryba/hbase/rest/check'
       'configure': [
         'masson/core/iptables'
         'ryba/hbase/rest/configure'
       ]
       'install': [
         'masson/core/iptables'
-        'ryba/lib/hconfigure'
-        'ryba/lib/hdp_select'
-        'ryba/lib/write_jaas'
         'ryba/hadoop/hdfs_client'
-        'ryba/hbase/client/'
+        'ryba/hbase/client'
         'ryba/hbase/rest/install'
         'ryba/hbase/rest/start'
-        'ryba/hbase/rest/wait'
         'ryba/hbase/rest/check'
       ]
-      'start':[
-        'masson/core/krb5_client/wait'
-        'ryba/zookeeper/server/wait'
-        'ryba/hadoop/hdfs_nn/wait'
-        'ryba/hbase/master/wait'
+      'start':
         'ryba/hbase/rest/start'
-      ]
       'status':
         'ryba/hbase/rest/status'
       'stop':
         'ryba/hbase/rest/stop'
-      'check': [
-        'ryba/hbase/regionserver/wait'
-        'ryba/hbase/rest/check'
-      ]

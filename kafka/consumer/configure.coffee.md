@@ -13,7 +13,6 @@
       kafka.user[k] ?= v for k, v of ks_ctxs[0].config.ryba.kafka.user
       kafka.group ?= {}
       kafka.group[k] ?= v for k, v of ks_ctxs[0].config.ryba.kafka.group
-      # console.log 'consumer', ks_ctxs[0].config.ryba.kafka, kafka.user
       # Configuration
       kafka.consumer ?= {}
       kafka.consumer.conf_dir ?= '/etc/kafka/conf'

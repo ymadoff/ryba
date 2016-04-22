@@ -11,9 +11,8 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
         'ryba/hadoop/core'
         'ryba/hbase/master/configure'
       ]
-      'check': [
+      'check':
         'ryba/hbase/master/check'
-      ]
       'install': [
         'masson/core/iptables'
         'masson/core/yum'
@@ -23,22 +22,11 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
         'ryba/lib/write_jaas'
         'ryba/hadoop/hdfs_client'
         'ryba/hbase/master/install'
-        'ryba/hadoop/hdfs_nn/wait'
         'ryba/hbase/master/layout'
         'ryba/hbase/master/start'
-        'ryba/hbase/master/wait'
         'ryba/hbase/master/check'
       ]
-      'start':[ 
-        'masson/core/krb5_client/wait'
-        'ryba/zookeeper/server/wait'
-        'ryba/hadoop/hdfs_nn/wait'
+      'start':
         'ryba/hbase/master/start'
-      ]
-      'stop':[
+      'stop':
         'ryba/hbase/master/stop'
-      ]
-      'wait': [
-        'ryba/hadoop/hdfs_nn/wait'
-        'ryba/hbase/master/wait'
-      ]

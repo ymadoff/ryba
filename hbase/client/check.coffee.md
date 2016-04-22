@@ -10,11 +10,26 @@ scanning the table.
       hbase_ctxs = @contexts 'ryba/hbase/master'
       {admin} = hbase_ctxs[0].config.ryba.hbase
 
+## Wait
+
+Wait for the HBase master to be started.
+
+      @call once: true, 'ryba/hbase/master/wait'
+
 ## Shell
 
 Create a "ryba" namespace and set full permission to the "ryba" user. This
 namespace is used by other modules as a testing environment.  
 Namespace and permissions are implemented and illustrated in [HBASE-8409].
+
+Permissions is either zero or more letters from the set READ('R'), WRITE('W'), 
+EXEC('X'), CREATE('C'), ADMIN('A'). Create and admin only apply to tables.
+
+`grant <user|@group> <permissions> <table> [ <column family> [ <column qualifier> ] ]`
+
+Groups and users access are revoked in the same way, but groups are prefixed 
+with an '@' character. In the same way, tables and namespaces are specified, but
+namespaces are prefixed with an '@' character.
   
       @call header: 'Grant Permissions', timeout:-1 , label_true: 'CHECKED', handler: ->
         @execute

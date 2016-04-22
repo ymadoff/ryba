@@ -122,7 +122,6 @@ Note, at the moment, only MySQL is supported.
       
       if hive.site['javax.jdo.option.ConnectionURL']
         # Ensure the url host is the same as the one configured in config.ryba.db_admin
-        # console.log parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
         {engine, addresses, port} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
         switch engine
           when 'mysql'

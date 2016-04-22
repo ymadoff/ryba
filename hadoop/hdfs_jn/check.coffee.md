@@ -5,6 +5,13 @@ Check if the JournalNode is running as expected.
 
     module.exports = header: 'HDFS JN # Check SPNEGO', label_true: 'CHECKED', handler: ->
       {hdfs} = @config.ryba
+
+Wait for the JournalNodes.
+
+      @call once: true, 'ryba/hadoop/hdfs_jn/wait'
+
+Test the HTTP server with a JMX request.
+
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       port = hdfs.site["dfs.journalnode.#{protocol}-address"].split(':')[1]
       @execute

@@ -32,6 +32,7 @@ The pig package is install.
         console.log 'TODO: pig-client not registered in hdp-select'
         # pig-client not registered in hdp-select
         # need to see if hadoop-client will switch pig as well
+        # @call once: true, 'ryba/lib/hdp_select'
         # @hdp_select
         #   name: 'pig-client'
         # 6th feb 2014: pig user isnt created by YUM, might change in a future HDP release

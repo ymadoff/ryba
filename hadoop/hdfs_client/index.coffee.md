@@ -8,7 +8,6 @@ and perform actual file I/O directly with the DataNodes.
 
     module.exports = ->
       'check': [
-        'ryba/hadoop/hdfs_dn/wait'
         'ryba/hadoop/hdfs_client/check'
       ]
       'configure': [

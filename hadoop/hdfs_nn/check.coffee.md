@@ -10,6 +10,12 @@ through SSH over another one where the public key isn't yet deployed.
     module.exports = header: 'HDFS NN Check', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
       {user, hdfs, active_nn_host, nameservice, force_check, check_hdfs_fsck} = @config.ryba
 
+## Wait
+
+Wait for the HDFS NameNode to be started.
+
+      @call once: true, 'ryba/hadoop/hdfs_nn/wait'
+
 ## Check HTTP
 
       is_ha = @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1

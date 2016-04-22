@@ -16,14 +16,8 @@ Once installed you can type hive in a prompt and the hive client shell wil launc
         'ryba/hadoop/yarn_client'
         'ryba/hadoop/mapred_client'
         'ryba/tez'
-        'ryba/lib/hconfigure'
         'ryba/hive/client/install'
-        'ryba/hive/hcatalog/wait'
-        'ryba/hive/server2/wait'
         'ryba/hive/client/check'
       ]
-      'check': [    
-        'ryba/hive/hcatalog/wait'
-        'ryba/hive/server2/wait'
+      'check':
         'ryba/hive/client/check'
-    ]

@@ -4,7 +4,16 @@
     module.exports = header: 'Kafka Broker Install', handler: ->
       {kafka, hadoop_group, realm, ssl} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
-      
+
+## Register
+
+      @call once: true, 'ryba/lib/hdp_select'
+      @call once: true, 'ryba/lib/write_jaas'
+
+## Wait
+
+      @call once: true, 'masson/core/krb5_client/wait'
+
 ## Users & Groups
 
 By default, the "kafka" package create the following entries:

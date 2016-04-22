@@ -15,25 +15,17 @@ Follows [cloudera hbase setup in secure mode][hbase-configuration]
       'install': [
          'masson/core/iptables'
          'ryba/hadoop/core'
-         'ryba/lib/hconfigure'
-         'ryba/lib/hdp_select'
          'ryba/hbase/client'
          'ryba/hbase/thrift/install'
-         'ryba/hbase/master/wait'
          'ryba/hbase/thrift/start'
-         'ryba/hbase/thrift/wait'
          'ryba/hbase/thrift/check'
       ]
-      'start': [
-        'ryba/hbase/master/wait'
+      'start':
         'ryba/hbase/thrift/start'
-      ]
-      'status': [
+      'status':
         'ryba/hbase/thrift/status'
-      ]
-      'stop': [
+      'stop':
         'ryba/hbase/thrift/stop'
-      ]
 
   [hue-hbase-impersonation]:(http://gethue.com/hbase-browsing-with-doas-impersonation-and-kerberos/)
   [hbase-configuration]:(http://www.cloudera.com/content/www/en-us/documentation/enterprise/latest/topics/cdh_sg_hbase_authentication.html/)

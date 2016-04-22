@@ -2,7 +2,11 @@
 
     module.exports = header: 'NiFI Node Check', label_true: 'CHECKED', handler: ->
       {nifi} = @config.ryba
+
+## Wait
       
+      @call once true, 'ryba/nifi/node/wait'
+
 ## Check TCP
 
       @execute

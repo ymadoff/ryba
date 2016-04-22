@@ -3,7 +3,11 @@
 
     module.exports = header: 'Oozie Client Check', timeout: -1, label_true: 'CHECKED', handler: ->
       {force_check, user, core_site, yarn, oozie} = @config.ryba
-      
+
+## Wait
+
+      @call once: true, 'ryba/oozie/server/wait'
+
 ## Check Client
 
       @execute

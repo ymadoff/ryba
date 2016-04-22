@@ -6,7 +6,11 @@
       port = if hive.site['hive.server2.transport.mode'] is 'http'
       then hive.site['hive.server2.thrift.http.port']
       else hive.site['hive.server2.thrift.port']
-      
+
+## Wait
+
+      @call once: true, 'ryba/hive/server2/wait'
+
 ## Check Thrift Port
 
 Check if the Hive Server2 server is listening.

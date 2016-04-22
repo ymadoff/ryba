@@ -5,13 +5,10 @@
 
     module.exports = ->
       # 'backup': 'ryba/hadoop/yarn_rm/backup'
-      'check': [
-        'ryba/hadoop/yarn_rm/wait'
+      'check':
         'ryba/hadoop/yarn_rm/check'
-      ]
-      'configure': [
+      'configure':
         'ryba/hadoop/yarn_rm/configure'
-      ]
       'report': [
         'masson/bootstrap/report'
         'ryba/hadoop/yarn_rm/report'
@@ -21,26 +18,15 @@
         'ryba/hadoop/yarn_client/install'
         'ryba/hadoop/yarn_rm/install'
         'ryba/hadoop/yarn_rm/scheduler'
-        'masson/core/krb5_client/wait'
-        'ryba/zookeeper/server/wait'
-        'ryba/hadoop/hdfs_dn/wait'
-        'ryba/hadoop/yarn_ts/wait'
-        'ryba/hadoop/mapred_jhs/wait'
         'ryba/hadoop/yarn_rm/start'
-        'ryba/hadoop/yarn_rm/wait'
         'ryba/hadoop/yarn_rm/check'
-        
       ]
-      'start': [
-        'masson/core/krb5_client/wait'
-        'ryba/zookeeper/server/wait'
-        'ryba/hadoop/hdfs_dn/wait'
-        'ryba/hadoop/yarn_ts/wait'
-        'ryba/hadoop/mapred_jhs/wait'
+      'start':
         'ryba/hadoop/yarn_rm/start'
-      ]
-      'status': 'ryba/hadoop/yarn_rm/status'
-      'stop': 'ryba/hadoop/yarn_rm/stop'
+      'status':
+        'ryba/hadoop/yarn_rm/status'
+      'stop':
+        'ryba/hadoop/yarn_rm/stop'
 
 
 [restart]: http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/ResourceManagerRestart.html

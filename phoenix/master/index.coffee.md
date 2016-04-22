@@ -8,6 +8,5 @@ running of those scans to produce regular JDBC result sets.
 
 
     module.exports = ->
-      'configure' : [
+      'configure' :
         'ryba/phoenix/master/configure'
-      ]

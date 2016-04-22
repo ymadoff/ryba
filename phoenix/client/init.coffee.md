@@ -7,6 +7,14 @@ Independently, if 'ryba' hasn't CREATE right on these 4 tables, it will be grant
 
     module.exports = header: 'Phoenix Client Init', timeout: 200000, handler: ->
       {hbase} = @config.ryba
+
+Wait for HBase to be started.
+
+      @call once: true, 'ryba/hbase/regionserver/wait'
+      @call once: true, 'ryba/hbase/master/wait'
+
+Trigger Phoenix tables creation.
+
       zk_path = "#{hbase.site['hbase.zookeeper.quorum']}"
       zk_path += ":#{hbase.site['hbase.zookeeper.property.clientPort']}"
       zk_path += "#{hbase.site['zookeeper.znode.parent']}"

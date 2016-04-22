@@ -4,7 +4,12 @@
 
     module.exports = header: 'MapReduce JHS Check ', label_true: 'CHECKED', handler: ->
       {mapred} = @config.ryba
-      
+
+## Wait
+
+Wait for the server to be started before executing the tests.
+
+      @call once: true, 'ryba/hadoop/mapred_jhs/wait'
 
 ## Check HTTP
 

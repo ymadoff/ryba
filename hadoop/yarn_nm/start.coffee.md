@@ -10,4 +10,13 @@ su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec 
 ```
 
     module.exports = header: 'YARN NM # Start', label_true: 'STARTED', handler: ->
+
+Wait for Kerberos, ZooKeeper and HDFS to be started.
+
+      @call once: true, 'masson/core/krb5_client/wait'
+      @call once: true, 'ryba/zookeeper/server/wait'
+      @call once: true, 'ryba/hadoop/hdfs_nn/wait'
+
+Start the service.
+
       @service_start name: 'hadoop-yarn-nodemanager'

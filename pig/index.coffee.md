@@ -10,20 +10,15 @@ which in turns enables them to handle very large data sets.
     module.exports = ->
       'configure': [
         'masson/commons/java'
-        'ryba/lib/hdp_select'
         'ryba/pig/configure'
       ]
-      'check': [
-        'ryba/hadoop/yarn_rm/wait'
+      'check':
         'ryba/pig/check'
-      ]
       'install': [
          'masson/commons/java'
          'ryba/hadoop/mapred_client'
          'ryba/hadoop/yarn_client'
          'ryba/hive/client' # In case pig is run through hcat
-         'ryba/lib/hdp_select'
          'ryba/pig/install'
-         'ryba/hadoop/yarn_rm/wait'
          'ryba/pig/check'
       ]

@@ -8,6 +8,12 @@ deployment is heavily inspired by [Anil Gupta instruction][agi].
       {hadoop_conf_dir, phoenix} = @config.ryba
       {hbase} = @config.ryba
 
+## Register
+
+      @call once: true, 'ryba/lib/hconfigure'
+      @call once: true, 'ryba/lib/write_jaas'
+      @call once: true, 'ryba/lib/hdp_select'
+
 ## Packages
 
       @service name: 'phoenix'

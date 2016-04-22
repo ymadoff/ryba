@@ -5,6 +5,10 @@
       {zookeeper} = @config.ryba
       zoo_ctxs = @contexts 'ryba/zookeeper/server'
 
+## Wait
+
+      @call once: true, 'ryba/zookeeper/server/wait'
+
 ## Check state
 
       @execute

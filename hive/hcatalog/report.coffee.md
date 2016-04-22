@@ -4,7 +4,12 @@
 Retrieve various info about the HCatalog Server and the Hive Server2.
   
     module.exports = header: 'Hive HCatalog Report', timeout: -1, label_true: 'INFO', handler: ->
-      
+
+
+## Wait
+
+      @call once: true, 'ryba/hive/hcatalog/wait'
+
 ## Info FS Roots
 
 List the current FS root locations for the Hive databases.

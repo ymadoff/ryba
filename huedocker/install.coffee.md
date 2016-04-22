@@ -5,6 +5,8 @@ Install  dockerized hue 3.8 container. The container can be build by ./bin/prepa
 script or directly downloaded (from local computer only for now,
 no images available on dockerhub).
 
+Run `ryba prepare` to create the Docker container.
+
     module.exports = header: 'Hue Docker Install', handler: ->
       {hue_docker, db_admin, realm, ssl} = @config.ryba
       {hadoop_group, hdfs, hive, hbase} = @config.ryba
@@ -14,8 +16,14 @@ no images available on dockerhub).
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       machine = @config.mecano.machine
 
-To import container after bin prepare...
-
+## Wait
+    
+      @call once: true, 'ryba/hadoop/yarn_rm/wait'
+      @call once: true, 'ryba/hadoop/hdfs_nn/wait'
+      @call once: true, 'ryba/hbase/thrift/wait'
+      @call once: true, 'ryba/oozie/server/wait'
+      @call once: true, 'ryba/hive/server2/wait'
+      @call once: true, 'ryba/hive/hcatalog/wait'
 
 ## Users & Groups
 
@@ -30,7 +38,6 @@ hue:x:494:
 
       @group hue_docker.group
       @user hue_docker.user
-
 
 ## IPTables
 

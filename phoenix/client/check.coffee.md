@@ -20,6 +20,14 @@ instructions.
       zk_path = "#{hbase.site['hbase.zookeeper.quorum']}"
       zk_path += ":#{hbase.site['hbase.zookeeper.property.clientPort']}"
       zk_path += "#{hbase.site['zookeeper.znode.parent']}"
+
+## Wait
+
+      @call once: true, 'ryba/hbase/master/wait'
+      @call once: true, 'ryba/hbase/regionserver/wait'
+
+## Check SQL Query
+
       # ../doc/examples/WEB_STAT_QUERIES.sql
       table = "ryba_check_phoenix_#{@config.shortname}".toUpperCase()
       check = false

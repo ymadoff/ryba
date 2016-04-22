@@ -20,6 +20,9 @@
       schema = JSON.stringify ColumnSchema: [name: "#{shortname}_rest"]
       rows = JSON.stringify Row: [ key: encode('my_row_rest'), Cell: [column: encode("#{shortname}_rest:my_column"), $: encode('my rest value')]]
 
+## Wait
+
+      @wait once: true, 'ryba/hbase/rest/wait'
 
 ## Check Shell
 

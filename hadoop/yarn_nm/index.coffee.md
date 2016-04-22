@@ -16,29 +16,19 @@ applications.
         'masson/bootstrap/report'
         'ryba/hadoop/yarn_nm/report'
       ]
-      'check': [
-        # 'ryba/hadoop/yarn_rm/wait'
+      'check':
         'ryba/hadoop/yarn_nm/check'
-      ]
-      'configure': [
+      'configure':
         'ryba/hadoop/yarn_nm/configure'
-      ]
       'install': [
         'masson/core/iptables'
-        # 'masson/core/info'
-        'masson/core/krb5_client/wait'
-        'ryba/hadoop/hdfs_nn/wait'
         'ryba/hadoop/yarn_nm/install'
         'ryba/hadoop/yarn_nm/start'
         'ryba/hadoop/yarn_nm/check'
-        'ryba/zookeeper/server/wait'
-        'ryba/hadoop/yarn_nm/start'
       ]
-      'start': [
-        'masson/core/krb5_client/wait'
-        'ryba/zookeeper/server/wait'
-        'ryba/hadoop/hdfs_nn/wait'
+      'start':
         'ryba/hadoop/yarn_nm/start'
-      ]
-      'status': 'ryba/hadoop/yarn_nm/status'
-      'stop': 'ryba/hadoop/yarn_nm/stop'
+      'status':
+        'ryba/hadoop/yarn_nm/status'
+      'stop':
+        'ryba/hadoop/yarn_nm/stop'

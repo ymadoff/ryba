@@ -10,6 +10,11 @@ have usecase for it yet.
       {hadoop_group, hbase, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
 
+## Register
+
+      @call once: true, 'ryba/lib/hconfigure'
+      @call once: true, 'ryba/lib/hdp_select'
+
 ## IPTables
 
 | Service                    | Port  | Proto | Info                   |

@@ -10,32 +10,23 @@ does not store the data of these files itself. It’s important that this metada
     module.exports = ->
       'backup':
         'ryba/hadoop/hdfs_nn/backup'
-      'check': [
-        'ryba/hadoop/hdfs_nn/wait'
+      'check':
         'ryba/hadoop/hdfs_nn/check'
-      ]
       'configure': [
         'ryba/hadoop/core'
         'ryba/hadoop/hdfs_nn/configure'
       ]
       'install': [
         'masson/core/iptables'
-        'ryba/hadoop/hdfs_jn/wait'
         'ryba/hadoop/hdfs_nn/install'
         'ryba/hadoop/hdfs_nn/start'
         'ryba/hadoop/zkfc/install'
         'ryba/hadoop/zkfc/start'
-        'ryba/hadoop/hdfs_dn/wait'
-        'ryba/hadoop/hdfs_nn/wait'
         'ryba/hadoop/hdfs_nn/layout'
         'ryba/hadoop/hdfs_nn/check'
       ]
-      'start': [
-        'ryba/zookeeper/server/wait'
-        'ryba/hadoop/hdfs_jn/wait'
+      'start':
         'ryba/hadoop/hdfs_nn/start'
-        'ryba/hadoop/hdfs_nn/wait'
-      ]
       'status':
         'ryba/hadoop/hdfs_nn/status'
       'stop':

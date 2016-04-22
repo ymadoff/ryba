@@ -7,6 +7,10 @@
       password = hive.site['javax.jdo.option.ConnectionPassword']
       {engine, db} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
 
+## Wait
+      
+      @call once: true, 'ryba/hive/hcatalog/wait'
+
 ## Check Database
 
 Check if Hive can authenticate and run a basic query to the database.

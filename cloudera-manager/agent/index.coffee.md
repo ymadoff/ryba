@@ -13,7 +13,6 @@ or the [cloudera cdh repo][Cloudera-cdh-repo].
       ]
       'install' : [
         'ryba/cloudera-manager/agent/install'
-        'ryba/cloudera-manager/server/wait'
         'ryba/cloudera-manager/agent/start'
       ]
       'stop' : [

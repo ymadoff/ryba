@@ -10,23 +10,17 @@ HTTP API.
         'ryba/hadoop/core'
         'ryba/hadoop/httpfs/configure'
       ]
-      'check': [
-        'ryba/hadoop/httpfs/wait'
+      'check':
         'ryba/hadoop/httpfs/check'
-      ]
       'install': [
         'masson/core/iptables'
         'ryba/hadoop/core'
         'ryba/hadoop/hdfs_client'
         'ryba/hadoop/httpfs/install'
         'ryba/hadoop/httpfs/start'
-        'ryba/hadoop/httpfs/wait'
         'ryba/hadoop/httpfs/check'
       ]
-      'start': [
-        'masson/core/krb5_client/wait'
-        'ryba/hadoop/hdfs_nn/wait'
+      'start':
         'ryba/hadoop/httpfs/start'
-      ]
       'stop': 'ryba/hadoop/httpfs/stop'
       'status': 'ryba/hadoop/httpfs/status'

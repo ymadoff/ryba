@@ -1,5 +1,5 @@
 
-## Configure
+## NiFi Manager Configure
 
     module.exports = handler: ->
       nifi = @config.ryba.nifi ?= {}

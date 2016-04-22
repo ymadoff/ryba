@@ -20,22 +20,18 @@ differences.
       #   'ryba/zookeeper/server/backup'
       'check': [
         'ryba/commons/krb5_user'
-        'ryba/zookeeper/server/wait'
         'ryba/zookeeper/server/check'
       ]
       'install': [
         'masson/core/iptables'
         'masson/commons/java'
         'ryba/commons/repos'
-        'masson/core/krb5_client/wait'
         'ryba/zookeeper/server/install'
         'ryba/zookeeper/server/start'
         'ryba/zookeeper/server/check'
       ]
-      'start': [
-        'masson/core/krb5_client/wait'
+      'start':
         'ryba/zookeeper/server/start'
-      ]
       'status':
         'ryba/zookeeper/server/status'
       'stop':

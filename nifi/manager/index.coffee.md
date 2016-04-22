@@ -1,5 +1,5 @@
 
-# Apache Nifi
+# Apache Nifi Manager
 
 Apache nifi supports powerful and scalable directed graphs of data routing, transformation,
 and system mediation logic. Some of the high-level capabilities and objectives of Apache NiFi includes:
@@ -13,28 +13,21 @@ and system mediation logic. Some of the high-level capabilities and objectives o
   It communicates dataflow changes to the nodes and receives health and status information from the nodes
   
       module.exports = -> 
-        'prepare': [
+        'prepare':
           'ryba/nifi/manager/prepare'
-        ]
-        'configure': [
+        'configure':
           'ryba/nifi/manager/configure'
-        ]
         'install': [
           'ryba/hadoop/core'
           'ryba/nifi/manager/install'
           'ryba/nifi/manager/start'
-          'ryba/nifi/manager/wait'
           'ryba/nifi/manager/check'
         ]
-        'check': [
+        'check':
           'ryba/nifi/manager/check'
-        ]
-        'status': [
+        'status':
           'ryba/nifi/manager/status'
-        ]
-        'start': [
+        'start':
           'ryba/nifi/manager/start'
-        ]
-        'stop': [
+        'stop':
           'ryba/nifi/manager/stop'
-        ]

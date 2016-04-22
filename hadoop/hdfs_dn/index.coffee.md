@@ -16,7 +16,6 @@ information and heartbeats to both.
 
     module.exports = ->
       'check': [
-        'ryba/hadoop/hdfs_dn/wait'
         'ryba/hadoop/hdfs_dn/check'
       ]
       'configure': [
@@ -28,14 +27,10 @@ information and heartbeats to both.
         'ryba/hadoop/core'
         'ryba/hadoop/hdfs_dn/install'
         'ryba/hadoop/hdfs_dn/start'
-        'ryba/hadoop/hdfs_dn/wait'
         'ryba/hadoop/hdfs_dn/check'
       ]
-      'start':[
-        'masson/core/krb5_client/wait'
-        'ryba/zookeeper/server/wait'
+      'start':
         'ryba/hadoop/hdfs_dn/start'
-      ]
       'status':
         'ryba/hadoop/hdfs_dn/status'
       'stop':

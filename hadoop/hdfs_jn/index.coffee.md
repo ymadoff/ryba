@@ -15,10 +15,8 @@ watching them for changes to the edit log.
     module.exports = ->
       # 'backup':
       #   'ryba/hadoop/hdfs_jn_backup'
-      'check':[
-        'ryba/hadoop/hdfs_jn/wait'
+      'check':
         'ryba/hadoop/hdfs_jn/check'
-      ]
       'configure': [
         'ryba/hadoop/core'
         'ryba/hadoop/hdfs_jn/configure'
@@ -28,12 +26,9 @@ watching them for changes to the edit log.
         'ryba/hadoop/core'
         'ryba/hadoop/hdfs_jn/install'
         'ryba/hadoop/hdfs_jn/start'
-        'ryba/hadoop/hdfs_jn/wait'
         'ryba/hadoop/hdfs_jn/check'
       ]
       'start': [
-        'masson/core/krb5_client/wait'
-        'ryba/zookeeper/server/wait'
         'ryba/hadoop/hdfs_jn/start'
       ]
       'status':

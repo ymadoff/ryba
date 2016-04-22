@@ -13,27 +13,19 @@ and system mediation logic. Some of the high-level capabilities and objectives o
   It communicates dataflow changes to the nodes and receives health and status information from the nodes
   
       module.exports = -> 
-        'prepare': [
+        'prepare':
           'ryba/nifi/manager/prepare'
-        ]
-        'configure': [
+        'configure':
           'ryba/nifi/node/configure'
-        ]
         'install': [
           'ryba/hadoop/core'
           'ryba/nifi/node/install'
-          'ryba/nifi/manager/wait'
           'ryba/nifi/node/start'
-          'ryba/nifi/node/wait'
           'ryba/nifi/node/check'
         ]
-        'check': [
+        'check':
           'ryba/nifi/node/check'
-        ]
-        'stop': [
+        'stop':
           'ryba/nifi/node/stop'
-        ]
-        'start': [
-          'ryba/nifi/manager/wait'
+        'start':
           'ryba/nifi/node/start'
-        ]

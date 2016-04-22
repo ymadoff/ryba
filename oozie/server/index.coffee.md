@@ -19,42 +19,19 @@ Please check Oozie page
         'ryba/commons/db_admin'
         'ryba/hadoop/core'
         #'ryba/hadoop/hdfs' # SPNEGO need access to the principal HTTP/$HOST@$REALM's keytab
-        'ryba/hadoop/hdfs_dn/wait' # Create directories inside HDFS
-        'ryba/lib/hconfigure'
-        'ryba/lib/hdp_select'
-        'ryba/lib/hdfs_mkdir'
         'ryba/hadoop/yarn_client'
         'ryba/oozie/server/install'
-        'masson/core/krb5_client/wait'
-        'ryba/zookeeper/server/wait'
-        'ryba/hadoop/hdfs_nn/wait'
-        'ryba/hbase/master/wait'
-        'ryba/hive/hcatalog/wait'
-        'ryba/hive/server2/wait'
-        'ryba/hive/webhcat/wait'
         'ryba/oozie/server/start'
       ]
-      'start': [
-        'masson/core/krb5_client/wait'
-        'ryba/zookeeper/server/wait'
-        'ryba/hadoop/hdfs_nn/wait'
-        'ryba/hbase/master/wait'
-        'ryba/hive/hcatalog/wait'
-        'ryba/hive/server2/wait'
-        'ryba/hive/webhcat/wait'
+      'start':
         'ryba/oozie/server/start'
-      ]
-      'status': [
+      'status':
         'ryba/oozie/server/status'
-      ]
-      'stop': [
+      'stop':
         'ryba/oozie/server/stop'
-      ]
-      'wait': [
+      'wait':
         'ryba/oozie/server/wait'
-      ]
-      'backup': [
+      'backup':
         'ryba/oozie/server/backup'
-      ]
 
 [Oozie]: https://oozie.apache.org/docs/3.1.3-incubating/index.html

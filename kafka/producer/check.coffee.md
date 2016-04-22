@@ -4,7 +4,12 @@
 
     module.exports = header: 'Kafka Producer Check', label_true: 'CHECKED', handler: ->
       {kafka, user} = @config.ryba
-      
+
+## Wait
+
+      @call once: true, 'ryba/zookeeper/server/wait'
+      @call once: true, 'ryba/kafka/broker/wait'
+
 ## Check Messages PLAINTEXT
 
 Check Message by writing to a test topic on the PLAINTEXT channel.

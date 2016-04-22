@@ -3,6 +3,13 @@
     module.exports = header: 'HDFS NN layout', timeout: -1, handler: ->
       {user, group, hdfs, hadoop_group} = @config.ryba
 
+## Wait
+
+Wait for the DataNodes and NameNodes to be started.
+
+      @call once: true, 'ryba/hadoop/hdfs_dn/wait'
+      @call once: true, 'ryba/hadoop/hdfs_nn/wait'
+
 ## HDFS layout
 
 Set up the directories and permissions inside the HDFS filesytem. The layout is inspired by the

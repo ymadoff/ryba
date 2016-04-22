@@ -7,5 +7,5 @@ be released soon.
 
     module.exports = header: 'Hue Docker Wait', timeout: -1, label_true: 'READY', handler: ->
       @wait_connect
-          host: @config.host
-          port: @config.ryba.hue_docker.port
+        host: @config.host
+        port: @config.ryba.hue_docker.port

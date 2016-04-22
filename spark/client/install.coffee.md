@@ -10,6 +10,10 @@ Resources:
     module.exports = header: 'Spark Client Install', handler: ->
       {ssl, ssl_server, ssl_client, spark, hadoop_group, hadoop_conf_dir, hive} = @config.ryba
 
+## Register
+
+      @call once: true, 'ryba/lib/hconfigure'
+
 ## Spark Users And Group
 
 By default, the "spark" package create the following entries:

@@ -14,5 +14,15 @@ su -l hive -c 'nohup /usr/hdp/current/hive/bin/hiveserver2 >/var/log/hive/hivese
 ```
 
     module.exports = header: 'Hive Server2 Start', timeout: -1, label_true: 'STARTED', handler: ->
+
+Wait for Kerberos, Zookeeper, Hadoop and Hive.
+
+      @call once: true, 'masson/core/krb5_client/wait'
+      @call once: true, 'ryba/zookeeper/server/wait'
+      @call once: true, 'ryba/hadoop/hdfs_nn/wait'
+      @call once: true, 'ryba/hive/hcatalog/wait'
+
+Start the service
+
       @service_start
         name: 'hive-server2'

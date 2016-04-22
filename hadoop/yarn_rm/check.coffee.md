@@ -6,6 +6,12 @@ Check the health of the ResourceManager(s).
     module.exports = header: 'YARN RM Check', label_true: 'CHECKED', handler: ->
       {yarn} = @config.ryba
 
+## Wait
+
+Wait for the ResourceManager.
+
+      @call once: true, 'ryba/hadoop/yarn_rm/wait'
+
 ## Check Health
 
 Connect to the provided ResourceManager to check its health. This command

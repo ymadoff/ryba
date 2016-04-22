@@ -13,7 +13,12 @@ hive -hiveconf hive.root.logger=DEBUG,console
 
     module.exports =  header: 'Hive Client Check', label_true: 'CHECKED', timeout: -1, handler: ->
       {force_check, realm, user, hive} = @config.ryba
-      
+
+## Wait
+
+      @call once: true, 'ryba/hive/hcatalog/wait'
+      @call once: true, 'ryba/hive/server2/wait'
+
 ## Check HCatalog MapReduce
 
 Use the [Hive CLI][hivecli] client to execute SQL queries using the MapReduce

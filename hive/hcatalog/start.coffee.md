@@ -15,6 +15,12 @@ su -l hive -c 'nohup hive --service metastore >/var/log/hive-hcatalog/hcat.out 2
     module.exports =  header: 'Hive HCatalog Start', timeout: -1, label_true: 'STARTED', handler: ->
       {hive} = @config.ryba
       {engine, addresses, port} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
+      
+## Wait
+      
+      @call once: true, 'masson/core/krb5_client/wait'
+      @call once: true, 'ryba/hadoop/hdfs_nn/wait'
+      @call once: true, 'ryba/zookeeper/server/wait'
 
 ## Wait Database
 

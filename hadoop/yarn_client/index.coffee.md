@@ -5,11 +5,8 @@ The [Hadoop YARN Client](http://hadoop.apache.org/docs/current/hadoop-yarn/hadoo
 The URI resources are grouped into APIs based on the type of information returned. Some URI resources return collections while others return singletons.
 
     module.exports = ->
-      'check': [
-        'ryba/hadoop/yarn_ts/wait'
-        'ryba/hadoop/yarn_rm/wait'
+      'check':
         'ryba/hadoop/yarn_client/check'
-      ]
       'configure': [
         'ryba/hadoop/hdfs_client'
         'ryba/hadoop/yarn_client/configure'

@@ -7,6 +7,10 @@
       {ssl, ssl_server, ssl_client, hadoop_conf_dir} = @config.ryba
       tmp_location = "/var/tmp/ryba/ssl"
 
+## Register
+
+      @call once: true, 'ryba/lib/hconfigure'
+
 ## Service
       
       @service

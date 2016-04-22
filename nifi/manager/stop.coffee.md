@@ -1,4 +1,4 @@
-# NiFi Master Stop
+# NiFi Master Manager Stop
 
     module.exports = header: 'NiFi Manager Stop', label_true: 'STOPPED', handler: ->
       @execute

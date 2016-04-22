@@ -4,6 +4,12 @@
     module.exports = header: 'Kafka Consumer Check', label_true: 'CHECKED', handler: ->
       {kafka, ssl, user} = @config.ryba
 
+## Wait
+
+      @call once: true, 'masson/core/krb5_client/wait'
+      @call once: true, 'ryba/zookeeper/server/wait'
+      @call once: true, 'ryba/kafka/broker/wait'
+
 ## Check Messages PLAINTEXT
 
 Check Message by writing to a test topic on the PLAINTEXT channel.

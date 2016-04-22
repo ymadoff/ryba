@@ -7,6 +7,5 @@ your SQL query, compiles it into a series of HBase scans, and orchestrates the
 running of those scans to produce regular JDBC result sets.
 
     module.exports = ->
-      'configure': [
+      'configure':
         'ryba/phoenix/regionserver/configure'
-      ]

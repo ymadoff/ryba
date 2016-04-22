@@ -6,6 +6,11 @@ Check the access to the HDFS cluster.
     module.exports = header: 'HDFS Client Check', timeout: -1, label_true: 'CHECKED', handler: ->
       {core_site, user, krb5_user} = @config.ryba
 
+Wait for the DataNode and NameNode.
+
+      @call once: true, 'ryba/hadoop/hdfs_dn/wait'
+      @call once: true, 'ryba/hadoop/hdfs_nn/wait'
+
 Run an HDFS command requiring a NameNode.
 
       @wait_execute

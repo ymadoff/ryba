@@ -8,6 +8,11 @@ have usecase for it yet.
     module.exports =  header: 'HBase Thrift Install',  handler: ->
       {hbase} = @config.ryba
 
+## Register
+
+      @call once: true, 'ryba/lib/hconfigure'
+      @call once: true, 'ryba/lib/hdp_select'
+      
 ## IPTables
 
 | Service                    | Port | Proto | Info                   |

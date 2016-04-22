@@ -14,6 +14,10 @@ environmental variables. For example, HDP declare its version as
       {oozie, hadoop_conf_dir, yarn, ssl} = @config.ryba
       {java_home, jre_home} = @config.java
 
+## Register
+
+      @call once: true, 'ryba/lib/hdp_select'
+
 ## Install
 
 Install the oozie client package. This package doesn't create any user and group.

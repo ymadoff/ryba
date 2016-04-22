@@ -1,10 +1,15 @@
+
 # NiFi Manager Check
 
     module.exports = header: 'NiFI Manager Check', label_true: 'CHECKED', handler: ->
       {nifi} = @config.ryba
       protocol = if nifi.manager.config.properties['nifi.cluster.protocol.is.secure'] is 'true' then 'https' else 'http'
       webui = nifi.manager.config.properties["nifi.web.#{protocol}.port"]
+
+## Wait
       
+      @call once: true, 'ryba/nifi/manager/wait'
+
 ## Check TCP
 
 Check if all Manager's port are opened

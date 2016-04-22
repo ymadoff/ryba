@@ -28,10 +28,10 @@
         ]
     
       @call header: 'Layout', handler: ->
-          @mkdir
-            destination: nifi.node.conf_dir
-          @mkdir
-            destination: nifi.node.log_dir    
+        @mkdir
+          destination: nifi.node.conf_dir
+        @mkdir
+          destination: nifi.node.log_dir    
         
       @call 
         header: 'Packages'

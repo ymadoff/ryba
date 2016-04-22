@@ -5,6 +5,13 @@
       # TODO, maybe we could test hive:
       # curl --negotiate -u : -d execute="show+databases;" -d statusdir="test_webhcat" http://front1.hadoop:50111/templeton/v1/hive
       {webhcat} = @config.ryba
+
+## Wait
+      
+      @call once: true, 'ryba/hive/webhcat/wait'
+
+## Check status
+
       port = webhcat.site['templeton.port']
       @execute
         cmd: mkcmd.test @, """
@@ -17,6 +24,6 @@
         return if err
         throw Error "WebHCat not started" if executed and stdout.trim() isnt '{"status":"ok","version":"v1"}'
 
-# Dependencies
+## Dependencies
 
     mkcmd = require '../../lib/mkcmd'

@@ -5,6 +5,13 @@ Check the Timeline Server.
 
     module.exports = header: 'YARN ATS # Check HTTP', timeout: -1, label_true: 'CHECKED', handler: ->
       {yarn} = @config.ryba
+
+Wait for the server to be started.
+
+      @call once: true, 'ryba/hadoop/yarn_ts/wait'
+
+Check the HTTP server with a JMX request.
+
       protocol = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       address_key = if protocol is 'http' then "address" else "https.address"
       address = yarn.site["yarn.timeline-service.webapp.#{address_key}"]

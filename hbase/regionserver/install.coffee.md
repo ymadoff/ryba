@@ -6,6 +6,12 @@
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       regionservers = @contexts('ryba/hbase/regionserver').map( (ctx) -> ctx.config.host).join '\n'
 
+## Register
+
+      @call once: true, 'ryba/lib/hconfigure'
+      @call once: true, 'ryba/lib/hdp_select'
+      @call once: true, 'ryba/lib/write_jaas'
+
 ## IPTables
 
 | Service                      | Port  | Proto | Info                         |

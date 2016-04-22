@@ -9,29 +9,22 @@ and graphable.
 OpenTSDB does not seem to work without the hbase rights
     
     module.exports = ->
-      'configure': [
+      'configure':
         'ryba/opentsdb/configure'
-      ]
       'install': [
         'ryba/hbase/client'
-        'ryba/hbase/master/wait'
-        'ryba/lib/write_jaas'
         'ryba/opentsdb/install'
         'ryba/opentsdb/start'
         'ryba/opentsdb/check'
       ]
-      'start': [
+      'start':
         'ryba/opentsdb/start'
-      ]
-      'check': [
+      'check':
         'ryba/opentsdb/check'
-      ]
-      'status': [
+      'status':
         'ryba/opentsdb/status'
-      ]
-      'stop': [
+      'stop':
         'ryba/opentsdb/stop'
-      ]
       
 
 ## Resources

@@ -20,6 +20,10 @@
         pwd: "#{mongodb.root.password}"
         roles: [ { role: "root", db: "admin" } ]
 
+## Wait
+      
+      @call once: true, 'ryba/mongodb/configsrv/wait'
+
 # Admin Users
 
 Create the admin user and root user as specified. It uses the LocalHost Exception to

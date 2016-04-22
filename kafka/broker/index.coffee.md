@@ -12,34 +12,18 @@ log. It is fast, scalable, durable and distributed by design.
       'install': [
         'masson/core/iptables'
         'masson/core/krb5_client'
-        'ryba/lib/hdp_select'
-        'ryba/lib/write_jaas'
         'ryba/commons/krb5_user'
-        'masson/core/krb5_client/wait'
         'ryba/kafka/broker/install'
-        'ryba/zookeeper/server/wait'
         'ryba/kafka/broker/start'
-        'ryba/hadoop/hdfs_nn/wait'
-        'ryba/kafka/broker/wait'
         'ryba/kafka/broker/check'
       ]
-      'check': [
-        'ryba/hadoop/hdfs_nn/wait'
-        'ryba/kafka/broker/wait'
+      'check':
         'ryba/kafka/broker/check'
-      ]
-      'start': [
-        'masson/core/krb5_client/wait'
-        'ryba/zookeeper/server/wait'
+      'start':
         'ryba/kafka/broker/start'
-      ]
-      'stop': [
+      'stop':
         'ryba/kafka/broker/stop'
-      ]
-      'status': [
+      'status':
         'ryba/kafka/broker/status'
-      ]
-      'wait': [
-        'ryba/hadoop/hdfs_nn/wait'
+      'wait':
         'ryba/kafka/broker/wait'
-      ]

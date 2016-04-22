@@ -1,3 +1,4 @@
+
 # NiFi Manager Install
 
     module.exports = header: 'NiFi Manager Install', handler: ->

@@ -5,6 +5,15 @@
       {zookeeper, hadoop_group, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
 
+## Register
+
+      @call once: true, 'ryba/lib/hdp_select'
+      @call once: true, 'ryba/lib/write_jaas'
+
+## Wait
+    
+      @call once: true, 'masson/core/krb5_client/wait'
+
 ## Users & Groups
 
 By default, the "zookeeper" package create the following entries:
@@ -65,6 +74,7 @@ which has no dependency.
 
 ## Kerberos
 
+      @call once: true, 'masson/core/krb5_client/wait'
       @call header: 'Kerberos', handler: ->
         @krb5_addprinc
           principal: "zookeeper/#{@config.host}@#{realm}"

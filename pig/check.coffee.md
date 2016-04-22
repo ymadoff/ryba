@@ -4,6 +4,10 @@
     module.exports = header: 'Pig Check', label_true: 'CHECKED', handler: ->
       {force_check, user} = @config.ryba
 
+## Wait
+
+      @call once: true, 'ryba/hadoop/yarn_rm/wait'
+
 ## Pig Script
 
 Run a Pig script to test the installation once the ResourceManager is

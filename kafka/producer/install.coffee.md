@@ -3,6 +3,12 @@
 
     module.exports = header: 'Kafka Producer Install', handler: ->
       {kafka, ssl} = @config.ryba
+
+## Register
+
+      @call once: true, 'ryba/lib/hdp_select'
+      @call once: true, 'ryba/lib/write_jaas'
+
 ## Users & Groups
 
 By default, the "kafka" package create the following entries:

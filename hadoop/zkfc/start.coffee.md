@@ -15,6 +15,15 @@ active NameNode to start first.
       active_shortname = @contexts(hosts: active_nn_host)[0].config.shortname
       standby_shortname = @contexts(hosts: standby_nn_host)[0].config.shortname
 
+## Wait
+
+Wait for Kerberos, ZooKeeper and HDFS to be started.
+
+      @call once: true, 'masson/core/krb5_client/wait'
+      @call once: true, 'ryba/zookeeper/server/wait'
+      @call once: true, 'ryba/hadoop/hdfs_jn/wait'
+      @call once: true, 'ryba/hadoop/hdfs_nn/wait'
+
 ## Wait Active NN
 
       @wait_execute

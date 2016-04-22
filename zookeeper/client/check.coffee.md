@@ -5,7 +5,11 @@ TODO: Cloudera provides some interesting [tests](http://www.cloudera.com/content
 
     module.exports = handler: 'Zookeeper Client Check', label_true: 'CHECKED', handler: ->
 
-# Telnet
+## Wait
+
+      @call once: true, 'ryba/zookeeper/server/wait'
+
+## Telnet
 
       zk_cxns = @contexts('ryba/zookeeper/server').map((ctx) -> "#{ctx.config.host}:#{ctx.config.ryba.zookeeper.port}").join ','
       @execute

@@ -8,6 +8,10 @@ The driver program manages the executors task.
     module.exports = header: 'Spark Client Check', timeout: -1, label_true: 'CHECKED', handler: ->
       {spark, force_check,  user, core_site} = @config.ryba
       
+## Wait
+      
+      @call once: true, 'ryba/hadoop/yarn_rm/wait'
+      
 ## Check Cluster Mode
 
 Validate Spark installation with Pi-example in yarn-cluster mode.

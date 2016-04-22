@@ -9,6 +9,13 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       tez_is_installed = if @contexts('ryba/tez').length >= 1 then true else false
 
+## Register
+
+      @call once: true, 'ryba/commons/db_admin'
+      @call once: true, 'ryba/lib/hconfigure'
+      @call once: true, 'ryba/lib/hdfs_upload'
+      @call once: true, 'ryba/lib/hdp_select'
+
 ## IPTables
 
 | Service        | Port  | Proto | Parameter            |

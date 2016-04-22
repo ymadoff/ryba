@@ -17,15 +17,10 @@ be installed in remote machines only.
         'ryba/hadoop/core'
         'ryba/hadoop/mapred_client'
         'ryba/hadoop/yarn_client'
-        'ryba/lib/hdp_select'
         'ryba/oozie/client/install'
-        'ryba/oozie/server/wait'
         'ryba/oozie/client/check'
       ]
-      'check': [
-        'ryba/hadoop/core/configure'
-        'ryba/oozie/server/wait'
+      'check':
         'ryba/oozie/client/check'
-      ]
 
   

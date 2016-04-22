@@ -15,18 +15,12 @@ The [ZKFailoverController (ZKFC)](https://hadoop.apache.org/docs/r2.3.0/hadoop-y
         'ryba/hadoop/zkfc/check'
       'install': [
         'masson/core/iptables'
-        'ryba/zookeeper/server/wait'
         'ryba/hadoop/zkfc/install'
         'ryba/hadoop/zkfc/start'
         'ryba/hadoop/zkfc/check'
       ]
-      'start': [
-        'masson/core/krb5_client/wait'
-        'ryba/zookeeper/server/wait'
-        'ryba/hadoop/hdfs_jn/wait'
-        'ryba/hadoop/hdfs_nn/wait'
+      'start':
         'ryba/hadoop/zkfc/start'
-      ]
       'stop':
         'ryba/hadoop/zkfc/stop'
       'status':

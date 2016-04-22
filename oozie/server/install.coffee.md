@@ -12,7 +12,13 @@ failover and Oozie must target the active node.
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       is_falcon_installed = @contexts('ryba/falcon').length isnt 0
       port = url.parse(oozie.site['oozie.base.url']).port
-      
+
+## Register
+
+      @call once: true, 'ryba/lib/hconfigure'
+      @call once: true, 'ryba/lib/hdp_select'
+      @call once: true, 'ryba/lib/hdfs_mkdir'
+
 ## Users & Groups
 
 By default, the "oozie" package create the following entries:
@@ -305,6 +311,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
     #     cmd: "su -l oozie -c 'keytool -import -alias tomcat -file #{tmp_location}_cacert'"
     #   @remove
     #     destination: "#{tmp_location}_cacert"
+    
       @call header: 'War', handler: ->
         @call
           header: 'Falcon Package'
@@ -366,7 +373,6 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-
       @copy
         header: 'SPNEGO'
         source: '/etc/security/keytabs/spnego.service.keytab'
@@ -374,6 +380,8 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         uid: oozie.user.name
         gid: oozie.group.name
         mode: 0o0600
+
+## MySQL Database Creation
 
       @call header: 'MySQL Database Creation', handler: ->
         username = oozie.site['oozie.service.JPAService.jdbc.username']
@@ -432,6 +440,7 @@ upload the files.
 The `oozie admin -shareliblist` command can be used by the final user to list
 the ShareLib contents without having to go into HDFS.
 
+      @call once: true, 'ryba/hadoop/hdfs_nn/wait'
       @call header: 'Share lib', timeout: 600000, handler: ->
         @hdfs_mkdir
           destination: "/user/#{oozie.user.name}/share/lib"
@@ -457,13 +466,16 @@ the ShareLib contents without having to go into HDFS.
           version=`ls /usr/hdp/current/oozie-client/lib | grep oozie-client | sed 's/^oozie-client-\\(.*\\)\\.jar$/\\1/g'`
           hdfs dfs -cat /user/oozie/share/lib/*/sharelib.properties | grep build.version | grep $version
           """
+## Hive Site
 
       @hconfigure 
-        header: 'Hive Xml'
+        header: 'Hive Site'
         if: is_falcon_installed
         destination: "#{oozie.conf_dir}/action-conf/hive.xml"
         properties: 'hive.metastore.execute.setugi': 'true'
         merge: true
+
+## Log4J properties
 
       # Instructions mention updating convertion pattern to the same value as
       # default, skip for now

@@ -46,19 +46,13 @@ of your cluster.
         'ryba/hadoop/core'
         'ryba/spark/client/configure'
       ]
-      'install' : [
-        'ryba/lib/hdp_select'
-        'ryba/lib/hconfigure'
+      'install': [
         'ryba/hadoop/hdfs_client'
         'ryba/hive/client'
         'ryba/spark/client/install'
-        'ryba/hadoop/yarn_rm/wait'
         'ryba/spark/client/check'
       ]
-      'check': [
-        'ryba/hadoop/core'
-        'ryba/hadoop/yarn_rm/wait'
+      'check':
         'ryba/spark/client/check'
-      ]
 
 [tips]: https://www.altiscale.com/hadoop-blog/spark-on-hadoop/

@@ -7,6 +7,10 @@ the server to start...
     module.exports = header: 'Hue Docker Check', label_true: 'CHECKED', handler: ->
       {hue_docker} = @config.ryba
 
+## Wait
+
+      @call once: true, 'ryba/huedocker/wait'
+
 ## Check status of Hue server
 
       @execute

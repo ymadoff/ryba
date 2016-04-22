@@ -7,6 +7,12 @@
       port = hbase.master.site['hbase.master.info.port']
       url = "#{protocol}://#{@config.host}:#{port}/jmx?qry=Hadoop:service=HBase,name=Master,sub=Server"
 
+## Wait
+
+Wait for the service to be started.
+
+      @call once: true, 'ryba/hbase/master/wait'
+
 ## Check SPNEGO
 
 Check if keytab file exists and if read permission is granted to the HBase user.

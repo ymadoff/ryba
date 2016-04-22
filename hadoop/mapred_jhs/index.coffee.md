@@ -10,26 +10,19 @@ Now the jobHistory Server tends to be replace by the Yarn timeline server.
     module.exports = ->
       # 'backup':
       #   'ryba/hadoop/mapred_jhs/backup'
-      'check': [
-        'ryba/hadoop/mapred_jhs/wait'
+      'check':
         'ryba/hadoop/mapred_jhs/check'
-      ]
-      'configure': [
+      'configure':
         'ryba/hadoop/mapred_jhs/configure'
-      ]
       'install': [
         'masson/core/iptables'
-        'ryba/hadoop/hdfs_nn/wait'
         'ryba/hadoop/hdfs_client/install'
         'ryba/hadoop/mapred_jhs/install'
         'ryba/hadoop/mapred_jhs/start'
-        'ryba/hadoop/mapred_jhs/wait'
         'ryba/hadoop/mapred_jhs/check'
       ]
-      'start': [
-        'ryba/hadoop/hdfs_nn/wait'
+      'start':
         'ryba/hadoop/mapred_jhs/start'
-      ]
       'status':
         'ryba/hadoop/mapred_jhs/status'
       'stop':

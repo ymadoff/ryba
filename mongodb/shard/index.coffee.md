@@ -3,33 +3,24 @@
 
 MongoDB is a document-oriented database. Distributed Version
 
-
 Config servers are special mongod instances that store the metadata for a
 sharded cluster.
 All config servers must be available to deploy a sharded cluster or to make any
 changes to cluster metadata.
 
     module.exports = ->
-      'configure': [
+      'configure':
         'ryba/mongodb/shard/configure'
-      ]
       'install': [
-        'masson/core/yum'
-        'masson/core/locale'
-        'masson/core/iptables'
         'masson/core/locale'
         'ryba/mongodb/shard/install'
         'ryba/mongodb/shard/start'
-        'ryba/mongodb/shard/wait'
         'ryba/mongodb/shard/replication'
         'ryba/mongodb/shard/check'
       ]
-      'start': [
+      'start':
         'ryba/mongodb/shard/start'
-      ]
-      'stop': [
+      'stop':
         'ryba/mongodb/shard/stop'
-      ]
-      'status': [
+      'status':
         'ryba/mongodb/shard/status'
-      ]

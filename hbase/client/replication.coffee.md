@@ -5,6 +5,17 @@ Deploy HBase replication to point slave cluster.
 
     module.exports =  header: 'HBase Client Replication', handler: ->
       {hbase} = @config.ryba
+
+## Wait
+
+Wait for the Master to be started.
+
+      @call once: true, 'ryba/hbase/master/wait'
+
+## Add Peer
+
+Run the `add_peer` command to register each replicated cluster.
+
       for k, cluster of hbase.replicated_clusters
         peer_key = parseInt(k) + 1
         peer_value = "#{cluster.zookeeper_quorum}:#{cluster.zookeeper_port}:#{cluster.zookeeper_node}"

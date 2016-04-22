@@ -250,6 +250,7 @@ The action start by enabling automatic failover in "hdfs-site.xml" and configuri
 If this is an active NameNode, we format ZooKeeper and start the ZKFC daemon. If this is a standby
 NameNode, we wait for the active NameNode to take leadership and start the ZKFC daemon.
 
+      @call once: true, 'ryba/zookeeper/server/wait'
       @execute
         header: 'Format ZK'
         timeout: -1

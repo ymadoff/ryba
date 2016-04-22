@@ -3,8 +3,19 @@
 
     module.exports = header: 'HBase Master Layout', timeout: -1, handler: ->
       {hbase} = @config.ryba
+
+## Wait
+
+Wait for HFDS to be started.
+
+      @call once: true, 'ryba/hadoop/hdfs_nn/wait'
       @wait_execute
         cmd: mkcmd.hdfs @, "hdfs dfs -test -d /apps"
+
+## HDFS
+
+Create the directory structure with correct ownerships and permissions.
+
       @call ->
         dirs = hbase.master.site['hbase.bulkload.staging.dir'].split '/'
         throw err "Invalid property \"hbase.bulkload.staging.dir\"" unless dirs.length > 2 and path.join('/', dirs[0], '/', dirs[1]) is '/apps'

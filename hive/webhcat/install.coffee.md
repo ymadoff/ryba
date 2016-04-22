@@ -4,7 +4,19 @@
     module.exports =  header: 'WebHCat Install', handler: ->
       {webhcat, hive, hadoop_group} = @config.ryba
       port = webhcat.site['templeton.port']
-      
+
+## Register
+
+      @call once: true, 'ryba/lib/hconfigure'
+      @call once: true, 'ryba/lib/hdfs_upload'
+      @call once: true, 'ryba/lib/hdp_select'
+
+## Wait
+
+      @call once: true, 'ryba/zookeeper/server/wait'
+      @call once: true, 'ryba/hadoop/hdfs_nn/wait'
+      @call once: true, 'ryba/hive/hcatalog/wait'
+      @call once: true, 'masson/core/krb5_client/wait'
       
 ## IPTables
 
@@ -148,6 +160,7 @@ Copy the spnego keytab with restricitive permissions
 
 ## TODO: Check Hive
 
+```
 hdfs dfs -mkdir -p front1-webhcat/mytable
 echo -e 'a,1\nb,2\nc,3' | hdfs dfs -put - front1-webhcat/mytable/data
 hive
@@ -156,3 +169,4 @@ hive
 curl --negotiate -u : -d execute="use+testhcat;select+*+from+mytable;" -d statusdir="testhcat1" http://front1.hadoop:50111/templeton/v1/hive
 hdfs dfs -cat testhcat1/stderr
 hdfs dfs -cat testhcat1/stdout
+```

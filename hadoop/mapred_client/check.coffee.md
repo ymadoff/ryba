@@ -4,7 +4,17 @@
     module.exports = header: 'MapReduce Client # Check', label_true: 'CHECKED', handler: ->
       {shortname} = @config
       {force_check} = @config.ryba
-    
+
+## Wait
+
+Wait for the MapReduce History Server as well as all YARN services to be 
+started.
+
+      @call once: true, 'ryba/hadoop/mapred_jhs/wait'
+      @call once: true, 'ryba/hadoop/yarn_ts/wait'
+      @call once: true, 'ryba/hadoop/yarn_nm/wait'
+      @call once: true, 'ryba/hadoop/yarn_rm/wait'
+  
 ## Check
 
 Run the "teragen" and "terasort" hadoop examples. Will only

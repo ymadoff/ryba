@@ -4,6 +4,14 @@
     module.exports = header: 'Titan Check', timeout: -1, label_true: 'CHECKED', handler: ->
       {force_check, hbase, titan} = @config.ryba
       {shortname} = @config
+
+## register
+
+      @call once: true, 'ryba/lib/write_jaas'
+
+## Wait
+
+      @call once: true, 'ryba/hbase/master/wait'
       
 ## Check Configuration
 

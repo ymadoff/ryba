@@ -7,7 +7,11 @@
       protocol = if hbase.rs.site['hbase.ssl.enabled'] is 'true' then 'https' else 'http'
       port = hbase.rs.site['hbase.regionserver.info.port']
       url = "#{protocol}://#{@config.host}:#{port}/jmx?qry=Hadoop:service=HBase,name=RegionServer,sub=Server"
-      
+
+## Wait
+
+      @call once: true, 'ryba/hbase/regionserver/wait'
+
 ## Check FSCK
 
 It is possible that HBase fail to started because of currupted WAL files.

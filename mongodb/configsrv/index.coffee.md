@@ -14,23 +14,16 @@ changes to cluster metadata.
       ]
       'install': [
         'masson/core/locale'
-        'masson/core/yum'
-        'masson/core/iptables'
         'ryba/mongodb/configsrv/install'
         'ryba/mongodb/configsrv/start'
-        'ryba/mongodb/configsrv/wait'
         'ryba/mongodb/configsrv/replication'
         'ryba/mongodb/configsrv/check'
       ]
-      'check': [
+      'check':
         'ryba/mongodb/configsrv/check'
-      ]
-      'start': [
+      'start':
         'ryba/mongodb/configsrv/start'
-      ]
-      'stop': [
+      'stop':
         'ryba/mongodb/configsrv/stop'
-      ]
-      'status': [
+      'status':
         'ryba/mongodb/configsrv/status'
-      ]

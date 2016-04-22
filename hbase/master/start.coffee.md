@@ -10,6 +10,19 @@ su -l hbase -c "/usr/hdp/current/hbase-regionserver/bin/hbase-daemon.sh --config
 ```
 
     module.exports = header: 'HBase Master Start', label_true: 'STARTED', handler: ->
+
+## Wait
+
+Wait for Kerberos, ZooKeeper and HDFS to be started.
+    
+      @call once: true, 'masson/core/krb5_client/wait'
+      @call once: true, 'ryba/zookeeper/server/wait'
+      @call once: true, 'ryba/hadoop/hdfs_nn/wait'
+
+## Run
+
+Start the service.
+
       @service_start
         name: 'hbase-master'
         if_exists: '/etc/init.d/hbase-master'

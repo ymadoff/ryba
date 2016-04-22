@@ -12,6 +12,16 @@ su -l hbase -c "/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config /etc/
 The file storing the PID is "/var/run/hbase/hbase-hbase-rest.pid".
 
     module.exports = header: 'HBase Rest Start', label_true: 'STARTED', handler: ->
+    
+Wait for Kerberos, ZooKeeper, HDFS and Hbase Master to be started.
+    
+      @call once: true, 'masson/core/krb5_client/wait'
+      @call once: true, 'ryba/zookeeper/server/wait'
+      @call once: true, 'ryba/hadoop/hdfs_nn/wait'
+      @call once: true, 'ryba/hbase/master/wait'
+
+Start the service.
+
       @service_start
         name: 'hbase-rest'
         if_exists: '/etc/init.d/hbase-rest'

@@ -18,17 +18,15 @@ associated processing and management tasks on Hadoop clusters.
         'ryba/hadoop/core/configure'
         'ryba/commons/krb5_user'
         'ryba/falcon/install'
-        'masson/core/krb5_client/wait'
-        'ryba/falcon/start' 
-        # 'ryba/falcon/check'
-      ]
-      'check': [
-        'masson/core/krb5_client/wait'
         'ryba/falcon/start' 
         'ryba/falcon/check'
       ]
+      'check': [
+        # 'masson/core/krb5_client/wait'
+        # 'ryba/falcon/start' 
+        'ryba/falcon/check'
+      ]
       'start': [
-        'masson/core/krb5_client/wait'
         'ryba/falcon/start' 
       ]
       'stop': [
