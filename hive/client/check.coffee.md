@@ -165,6 +165,50 @@ directive once you enter the beeline shell.
               unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
               trap: true
 
+## Check Sparl SQL Thrift Server
+      
+      @call once: true, if: (@contexts('ryba/spark/thrift_server').length > 0), 'ryba/spark/thrift_server'
+      @call
+        header: 'Check Spark SQL Thrift Server'
+        label_true: 'CHECKED'
+        timeout: -1
+        handler: ->
+          for sts_ctx in @contexts 'ryba/spark/thrift_server'
+            {hive} = sts_ctx.config.ryba
+            directory = "check-#{@config.shortname}-spark-sql-server-#{sts_ctx.config.shortname}"
+            db = "check_#{@config.shortname}_spark_sql_server_#{sts_ctx.config.shortname}"
+            port = if hive.site['hive.server2.transport.mode'] is 'http'
+            then hive.site['hive.server2.thrift.http.port']
+            else hive.site['hive.server2.thrift.port']
+            principal = hive.site['hive.server2.authentication.kerberos.principal']
+            url = "jdbc:hive2://#{sts_ctx.config.host}:#{port}/default;principal=#{principal}"
+            if hive.site['hive.server2.use.SSL'] is 'true'
+              url += ";ssl=true"
+              url += ";sslTrustStore=#{@config.ryba.hive.client.truststore_location}"
+              url += ";trustStorePassword=#{@config.ryba.hive.client.truststore_password}"
+            if hive.site['hive.server2.transport.mode'] is 'http'
+              url += ";transportMode=#{hive.site['hive.server2.transport.mode']}"
+              url += ";httpPath=#{hive.site['hive.server2.thrift.http.path']}"
+            beeline = "beeline -u \"#{url}\" --silent=true "
+            @execute
+              cmd: mkcmd.test @, """
+              hdfs dfs -rm -r -f -skipTrash #{directory} || true
+              hdfs dfs -mkdir -p #{directory}/my_db/my_table || true
+              echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - #{directory}/my_db/my_table/data
+              #{beeline} \
+              -e "DROP TABLE IF EXISTS #{db}.my_table;" \
+              -e "DROP DATABASE IF EXISTS #{db};" \
+              -e "CREATE DATABASE IF NOT EXISTS #{db} LOCATION '/user/#{user.name}/#{directory}/my_db'" \
+              -e "CREATE TABLE IF NOT EXISTS #{db}.my_table(col1 STRING, col2 INT) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',';"
+              #{beeline} \
+              -e "SELECT SUM(col2) FROM #{db}.my_table;" | hdfs dfs -put - #{directory}/result
+              #{beeline} \
+              -e "DROP TABLE #{db}.my_table;" \
+              -e "DROP DATABASE #{db};"
+              """
+              unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
+              trap: true
+              
 ## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
