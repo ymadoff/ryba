@@ -26,6 +26,7 @@ applications.
       'install': [
         'masson/core/iptables'
         # 'masson/core/info'
+        'ryba/hadoop/yarn_client/install'
         'masson/core/krb5_client/wait'
         'ryba/hadoop/hdfs_nn/wait'
         'ryba/hadoop/yarn_nm/install'
