@@ -19,6 +19,7 @@ in order to make the data accessible to hive clients.
         'ryba/hadoop/hdfs_client'
         'ryba/spark/thrift_server/install'
         'ryba/spark/thrift_server/start'
+        'ryba/spark/thrift_server/check'
       ]
       'check': [
         'ryba/spark/thrift_server/check'

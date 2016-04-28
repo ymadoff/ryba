@@ -3,7 +3,7 @@
 
     module.exports = handler: ->
       {realm, core_site} = @config.ryba
-      [hcli_ctx] = @contexts 'ryba/hive/server2'
+      [hcli_ctx] = @contexts 'ryba/hive/server2', require('../../hive/server2/configure').handler
       [sc_ctx] = @contexts 'ryba/spark/client', require('../client/configure').handler
       [ynm_ctx] = @contexts 'ryba/hadoop/yarn_nm', require('../../hadoop/yarn_nm/configure').handler #needed for hdfs client trustore on nodemanager
       hs_hosts = (@contexts 'ryba/hive/server2').map( (ctx)-> ctx.config.host)
@@ -112,6 +112,20 @@ Spark SQL thrift server is runned as the hive server user, and must use the hive
       spark.thrift.conf['spark.yarn.keytab'] ?= @config.ryba.hive.site['hive.server2.authentication.kerberos.keytab']
       match = /^(.+?)[@\/]/.exec spark.thrift.conf['spark.yarn.principal']
       throw Error 'SQL Thrift Server principal must mach thrift user name' unless match[1] is spark.thrift.user_name
+      
+### Enable Yarn Job submission
+      
+      wk_ctxs = @contexts 'ryba/hadoop/yarn_nm'
+      for wk_ctx in wk_ctxs
+        wk_ctx.before
+          type: 'service'
+          name: 'hadoop-yarn-nodemanager'
+          handler: -> 
+            @group hcli_ctx.config.ryba.hive.group
+            @user hcli_ctx.config.ryba.hive.user
+            @mkdir
+              destination: hcli_ctx.config.ryba.hive.user.home
+            
 
 [hdp-spark-sql]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/starting_sts.html)
       

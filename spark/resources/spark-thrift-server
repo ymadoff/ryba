@@ -54,11 +54,10 @@ function stop {
 
   pid=`cat $PID_FILE`
   echo "Stopping Spark SQL Thrift Server"
-  eval "/bin/su --login  $USER -c \"$BIN_PATH/stop-thriftserver.sh \""
-  # pid=$(<$PID_FILE)
   i=0
   while kill -0 $pid 2>/dev/null && [ $i -lt $KILL_SLEEP ]; do
     (( i++ ))
+    eval "/bin/su --login  $USER -c \"$BIN_PATH/stop-thriftserver.sh \""
     sleep 1
   done
   if ! kill -0 $pid 2>/dev/null; then

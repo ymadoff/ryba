@@ -138,7 +138,57 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
           uid: spark.user.name
           gid: @config.ryba.hadoop_group.gid
           mode: 0o0750
-        
+          
+## Spark SQL Thrift SSL Conf      
+
+      @call
+        header: 'SSL'
+        if: -> spark.thrift.hive_site['hive.server2.use.SSL'] is 'true'
+        handler: ->
+          tmp_location = "/var/tmp/ryba/ssl"
+          @download
+            source: ssl.cacert
+            destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+            mode: 0o0600
+            shy: true
+          @download
+            source: ssl.cert
+            destination: "#{tmp_location}/#{path.basename ssl.cert}"
+            mode: 0o0600
+            shy: true
+          @download
+            source: ssl.key
+            destination: "#{tmp_location}/#{path.basename ssl.key}"
+            mode: 0o0600
+            shy: true
+          @java_keystore_add
+            keystore: spark.thrift.hive_site['hive.server2.keystore.path']
+            storepass: spark.thrift.hive_site['hive.server2.keystore.password']
+            caname: "hive_root_ca"
+            cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
+            key: "#{tmp_location}/#{path.basename ssl.key}"
+            cert: "#{tmp_location}/#{path.basename ssl.cert}"
+            keypass: spark.thrift.hive_site['hive.server2.keystore.password']
+            name: @config.shortname
+          # @java_keystore_add
+          #   keystore: hive.site['hive.server2.keystore.path']
+          #   storepass: hive.site['hive.server2.keystore.password']
+          #   caname: "hadoop_root_ca"
+          #   cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
+          @remove
+            destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+            shy: true
+          @remove
+            destination: "#{tmp_location}/#{path.basename ssl.cert}"
+            shy: true
+          @remove
+            destination: "#{tmp_location}/#{path.basename ssl.key}"
+            shy: true
+          @service
+            srv_name: 'spark-thrift-server'
+            action: 'restart'
+            if: -> @status()
+
 ## Log4j 
 
       @write_properties
