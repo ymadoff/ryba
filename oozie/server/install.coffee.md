@@ -472,6 +472,10 @@ the ShareLib contents without having to go into HDFS.
         destination: "#{oozie.conf_dir}/oozie-log4j.properties"
         source: "#{__dirname}/../resources/oozie-log4j.properties"
         local_source: true
+        write: for k, v of oozie.log4j
+          match: RegExp "^#{quote k}=.*$", 'mg'
+          replace: "#{k}=#{v}"
+          append: true
 
 ## Dependencies
 
@@ -479,3 +483,4 @@ the ShareLib contents without having to go into HDFS.
     path = require 'path'
     mkcmd = require '../../lib/mkcmd'
     parse_jdbc = require '../../lib/parse_jdbc'
+    quote = require 'regexp-quote'
