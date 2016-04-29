@@ -15,6 +15,7 @@ scanning the table.
 Wait for the HBase master to be started.
 
       @call once: true, 'ryba/hbase/master/wait'
+      @call once: true, 'ryba/hbase/regionserver/wait'
 
 ## Shell
 
