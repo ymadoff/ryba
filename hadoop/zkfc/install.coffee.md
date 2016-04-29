@@ -36,7 +36,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
         @service
           name: 'hadoop-hdfs-zkfc'
         @hdp_select
-          name: 'hadoop-hdfs-client' # Not checked
+          # name: 'hadoop-hdfs-client' # Not checked
           name: 'hadoop-hdfs-namenode'
         @render
           destination: '/etc/init.d/hadoop-hdfs-zkfc'

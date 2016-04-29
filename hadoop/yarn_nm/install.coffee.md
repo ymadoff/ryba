@@ -50,7 +50,7 @@ inside "/etc/init.d" and activate it on startup.
         @service
           name: 'hadoop-yarn-nodemanager'
         @hdp_select
-          name: 'hadoop-yarn-client' # Not checked
+          # name: 'hadoop-yarn-client' # Not checked
           name: 'hadoop-yarn-nodemanager'
         @render
           destination: '/etc/init.d/hadoop-yarn-nodemanager'
