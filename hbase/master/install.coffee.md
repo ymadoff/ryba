@@ -7,6 +7,12 @@ TODO: [HBase backup node](http://willddy.github.io/2013/07/02/HBase-Add-Backup-M
       {hadoop_group, hbase, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
 
+## Register
+
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
+      @register 'write_jaas', 'ryba/lib/write_jaas'
+
 ## IPTables
 
 | Service             | Port  | Proto | Info                   |

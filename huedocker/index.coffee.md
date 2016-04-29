@@ -35,7 +35,6 @@ beloaded to the target server
         'ryba/hbase/client'
         'ryba/hive/client' # Hue reference hive conf dir
         'ryba/pig/install'
-        'ryba/lib/hconfigure'
         'ryba/huedocker/install'
         'ryba/huedocker/start'
         'ryba/huedocker/check'

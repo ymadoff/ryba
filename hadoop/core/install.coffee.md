@@ -5,7 +5,11 @@
       {realm, hadoop_group, hdfs, yarn, mapred} = @config.ryba
       {ssl, ssl_server, ssl_client, hadoop_conf_dir} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
-    
+
+## Register
+
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+
 ## Users & Groups
 
 By default, the "hadoop-client" package rely on the "hadoop", "hadoop-hdfs",

@@ -8,19 +8,15 @@ built atop Apache Hadoop YARN.
 ## Commands
     
     module.exports = ->
-      'configure': [
+      'configure':
         'ryba/tez/configure'
-      ]
       'install': [
         'ryba/hadoop/yarn_client'
-        'ryba/lib/hconfigure'
-        'ryba/lib/hdfs_upload'
         'ryba/tez/install'
         'ryba/tez/check'
       ]
-      'check':[
+      'check':
         'ryba/tez/check'
-      ]
     
 [tez]: http://tez.apache.org/
 [instructions]: (http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.0/HDP_Man_Install_v22/index.html#Item1.8.4)

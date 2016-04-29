@@ -10,8 +10,8 @@ have usecase for it yet.
 
 ## Register
 
-      @call once: true, 'ryba/lib/hconfigure'
-      @call once: true, 'ryba/lib/hdp_select'
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
       
 ## IPTables
 

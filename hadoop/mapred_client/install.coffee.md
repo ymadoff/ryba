@@ -5,6 +5,12 @@
       {iptables} = @config
       {hadoop_group, hadoop_conf_dir, mapred} = @config.ryba
 
+## Register
+
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
+      @register 'hdfs_upload', 'ryba/lib/hdfs_upload'
+
 ## IPTables
 
 | Service    | Port        | Proto | Parameter                                   |

@@ -23,8 +23,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Users & Groups
 
-      @group header: 'Users', mongodb.group
-      @user header: 'Groups', mongodb.user
+      @group header: 'Group', mongodb.group
+      @user header: 'User', mongodb.user
 
 ## Packages
 

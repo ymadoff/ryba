@@ -10,9 +10,8 @@ deployment is heavily inspired by [Anil Gupta instruction][agi].
 
 ## Register
 
-      @call once: true, 'ryba/lib/hconfigure'
-      @call once: true, 'ryba/lib/write_jaas'
-      @call once: true, 'ryba/lib/hdp_select'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
+      @register 'write_jaas', 'ryba/lib/write_jaas'
 
 ## Packages
 

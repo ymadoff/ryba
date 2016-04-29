@@ -14,6 +14,11 @@ most (N - 1) / 2 failures to continue to function normally.
     module.exports = header: 'HDFS JN', handler: ->
       {hdfs, hadoop_group, core_site, hadoop_metrics} = @config.ryba
 
+## Register
+
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
+
 ## IPTables
 
 | Service     | Port | Proto  | Parameter                                      |

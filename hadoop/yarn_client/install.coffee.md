@@ -4,6 +4,10 @@
     module.exports = header: 'YARN Client Install', handler: ->
       {yarn, hadoop_group, hadoop_conf_dir} = @config.ryba
 
+## Register
+
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+
       # @call
       #   header: 'Users & Groups'
       #   if: -> @config.ryba.resourcemanager or @config.ryba.nodemanager

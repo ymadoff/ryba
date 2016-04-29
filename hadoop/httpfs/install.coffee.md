@@ -5,6 +5,11 @@
       {httpfs, realm, core_site} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
 
+## Register
+
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
+
 ## Users & Groups
 
 By default, the package create the following entries:

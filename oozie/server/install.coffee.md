@@ -15,9 +15,9 @@ failover and Oozie must target the active node.
 
 ## Register
 
-      @call once: true, 'ryba/lib/hconfigure'
-      @call once: true, 'ryba/lib/hdp_select'
-      @call once: true, 'ryba/lib/hdfs_mkdir'
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
+      @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
 
 ## Users & Groups
 

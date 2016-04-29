@@ -7,8 +7,9 @@
 
 ## Register
 
-      @call once: true, 'ryba/lib/hdp_select'
-      @call once: true, 'ryba/lib/write_jaas'
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
+      @register 'write_jaas', 'ryba/lib/write_jaas'
 
 ## Wait
     

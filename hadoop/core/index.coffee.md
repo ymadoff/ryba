@@ -6,9 +6,6 @@
         'ryba/commons/krb5_user'
         'ryba/ganglia/collector'
         'ryba/graphite/carbon'
-        'ryba/lib/hconfigure'
-        'ryba/lib/hdp_select'
-        'ryba/lib/hdfs_upload'
         'ryba/hadoop/core/configure'
       ]
       'install': [

@@ -4,6 +4,11 @@
     module.exports = header: 'HDFS Client Install', handler: ->
       {hadoop_conf_dir, core_site, hdfs, hadoop_group} = @config.ryba
 
+## Register
+
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
+
 ## Packages
 
 Install the "hadoop-client" and "openssl" packages as well as their

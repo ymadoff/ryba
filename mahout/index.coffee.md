@@ -2,10 +2,7 @@
 # Mahout
 
     module.exports = ->
-      'configure': [
+      'configure':
         'ryba/mahout/configure'
-      ]
-      'install': [
-        'ryba/lib/hdp_select'
+      'install':
         'ryba/mahout/install'
-      ]

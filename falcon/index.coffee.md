@@ -14,7 +14,6 @@ associated processing and management tasks on Hadoop clusters.
       ]
       'install': [
         'masson/core/iptables'
-        'ryba/lib/hdp_select'
         'ryba/hadoop/core/configure'
         'ryba/commons/krb5_user'
         'ryba/falcon/install'

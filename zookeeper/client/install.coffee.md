@@ -4,6 +4,11 @@
     module.exports = header: 'ZooKeeper Client Install', handler: ->
       {zookeeper, hadoop_group} = @config.ryba
 
+## Register
+
+      @register 'hdp_select', 'ryba/lib/hdp_select'
+      @register 'write_jaas', 'ryba/lib/write_jaas'
+
 ## Users & Groups
 
 By default, the "zookeeper" package create the following entries:

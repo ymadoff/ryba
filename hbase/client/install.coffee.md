@@ -6,6 +6,10 @@ Install the HBase client package and configure it with secured access.
     module.exports =  header: 'HBase Client Install', handler: ->
       {hbase} = @config.ryba
 
+## Register
+
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+
 ## Users & Groups
 
 By default, the "hbase" package create the following entries:

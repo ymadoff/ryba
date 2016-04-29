@@ -6,14 +6,6 @@
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
       hadoop_ctxs = @contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
       hbase_ctxs = @contexts 'ryba/hbase/master'
-      # if ctx.hbase_master_configured then return else ctx.hbase_master_configured = null
-      # require('../../lib/hconfigure').call ctx
-      # require('../../libmodule.exports.push 'ryba/lib/hdp_select'').call ctx
-      # require('../../lib/write_jaas').call ctx
-      # require('../../ganglia/collector').configure ctx
-      # require('../../graphite/carbon').configure ctx
-      # require('../../hadoop/hdfs').configure ctx
-      # require('../').configure ctx
       require('../lib/configure_metrics.coffee.md').call
       ryba = @config.ryba ?= {}
       {realm, hbase, ganglia, graphite} = @config.ryba

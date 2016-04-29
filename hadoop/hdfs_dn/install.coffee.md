@@ -17,6 +17,11 @@ NameNodes, and send block location information and heartbeats to both.
     module.exports = header: 'HDFS DN', handler: ->
       {realm, core_site, hdfs, hadoop_group, hadoop_metrics} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+
+## Register
+
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
     
 ## IPTables
 

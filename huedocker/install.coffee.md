@@ -16,6 +16,10 @@ Run `ryba prepare` to create the Docker container.
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       machine = @config.mecano.machine
 
+## Register
+
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+
 ## Wait
     
       @call once: true, 'ryba/hadoop/yarn_rm/wait'

@@ -12,7 +12,7 @@ Resources:
 
 ## Register
 
-      @call once: true, 'ryba/lib/hconfigure'
+      @register 'hconfigure', 'ryba/lib/hconfigure'
 
 ## Spark Users And Group
 

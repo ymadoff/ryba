@@ -16,7 +16,8 @@ environmental variables. For example, HDP declare its version as
 
 ## Register
 
-      @call once: true, 'ryba/lib/hdp_select'
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
 
 ## Install
 

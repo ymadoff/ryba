@@ -9,7 +9,8 @@
 
 ## Register
 
-      @call once: true, 'ryba/lib/hconfigure'
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
 
 ## Service
       

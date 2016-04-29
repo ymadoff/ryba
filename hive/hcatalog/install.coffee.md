@@ -11,10 +11,13 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
 
 ## Register
 
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
+      @register 'hdfs_upload', 'ryba/lib/hdfs_upload'
+
+## Register
+
       @call once: true, 'ryba/commons/db_admin'
-      @call once: true, 'ryba/lib/hconfigure'
-      @call once: true, 'ryba/lib/hdfs_upload'
-      @call once: true, 'ryba/lib/hdp_select'
 
 ## IPTables
 

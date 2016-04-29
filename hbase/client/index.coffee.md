@@ -9,9 +9,7 @@ Client code accessing a cluster finds the cluster by querying ZooKeeper.
       'configure':
         'ryba/hbase/client/configure'
       'install': [
-        'ryba/hadoop/mapred_client/install' 
-        'ryba/lib/hconfigure'
-        'ryba/lib/write_jaas'
+        'ryba/hadoop/mapred_client/install'
         'ryba/hbase/client/install'
         'ryba/hbase/client/replication'
         'ryba/hbase/client/check'

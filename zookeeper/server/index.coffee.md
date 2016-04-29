@@ -11,8 +11,6 @@ differences.
     module.exports = ->
       'configure': [
         'masson/commons/java'
-        'ryba/lib/hdp_select'
-        'ryba/lib/write_jaas'
         'ryba/zookeeper/client/configure'
         'ryba/zookeeper/server/configure'
       ]

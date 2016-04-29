@@ -9,6 +9,11 @@
       {hdfs, core_site, zkfc} = @config.ryba
       {hdfs, ssh_fencing, hadoop_group} = @config.ryba
 
+## Register
+
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
+
 ## IPTables
 
 | Service   | Port | Proto  | Parameter                  |

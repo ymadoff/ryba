@@ -23,5 +23,6 @@
         name: 'hbase-regionserver'
       , ->
         @service name: 'phoenix'
+        @register 'hdp_select', 'ryba/lib/hdp_select'
         @hdp_select name: 'phoenix-client'
         @call require '../lib/hbase_restart'

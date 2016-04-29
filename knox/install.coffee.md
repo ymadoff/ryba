@@ -5,6 +5,12 @@
       {knox, realm} = @config.ryba
       {java_home, jre_home} = @config.java
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+
+## Register
+
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
+      @register 'write_jaas', 'ryba/lib/write_jaas'
     
 ## Users & Groups
 

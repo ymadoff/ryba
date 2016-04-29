@@ -3,6 +3,11 @@
 
     module.exports = header: 'Tez Install', timeout: -1, handler: ->
       {tez, hadoop_conf_dir} = @config.ryba
+
+## Register
+
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdfs_upload', 'ryba/lib/hdfs_upload'
       
 ## Packages
 

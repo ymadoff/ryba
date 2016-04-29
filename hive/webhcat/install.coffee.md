@@ -7,9 +7,9 @@
 
 ## Register
 
-      @call once: true, 'ryba/lib/hconfigure'
-      @call once: true, 'ryba/lib/hdfs_upload'
-      @call once: true, 'ryba/lib/hdp_select'
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
+      @register 'hdfs_upload', 'ryba/lib/hdfs_upload'
 
 ## Wait
 

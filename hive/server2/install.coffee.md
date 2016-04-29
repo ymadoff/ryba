@@ -20,11 +20,10 @@ Resources:
       then hive.site['hive.server2.thrift.port']
       else hive.site['hive.server2.thrift.http.port']
 
-## register
+## Register
 
-      @call once: true, 'ryba/commons/krb5_user'
-      @call once: true, 'ryba/lib/hconfigure'
-      @call once: true, 'ryba/lib/hdp_select'
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
 
 ## Wait
 
@@ -89,6 +88,7 @@ isnt yet started.
           cmd: "service hive-server2 restart"
           if: -> @status -3
 
+## Configuration
 
       @hconfigure
         header: 'Hive Site'

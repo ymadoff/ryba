@@ -13,6 +13,5 @@ mechanisms.
       ]
       'install': [
         'ryba/hadoop/core' # Users and groups created by "zookeeper" and "hadoop-hdfs" dependencies
-        'ryba/lib/hdp_select'
         'ryba/flume/install'
       ]

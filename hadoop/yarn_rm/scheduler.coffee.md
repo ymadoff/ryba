@@ -14,19 +14,24 @@ compare multi-dimensional resources such as Memory, CPU etc. A Java
 ResourceCalculator class name is expected.
 
     module.exports = header: 'YARN RM Sheduler', handler: ->
-        {yarn, capacity_scheduler} = @config.ryba
-        @hconfigure
-          header: 'Capacity Scheduler'
-          if: yarn.rm.site['yarn.resourcemanager.scheduler.class'] is 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
-          destination: "#{yarn.rm.conf_dir}/capacity-scheduler.xml"
-          default: "#{__dirname}/../../resources/core_hadoop/capacity-scheduler.xml"
-          local_default: true
-          properties: capacity_scheduler
-          merge: false
-          backup: true
-        @execute
-          cmd: mkcmd.hdfs @, 'service hadoop-yarn-resourcemanager status && yarn rmadmin -refreshQueues || exit 0'
-          if: -> @status -1
+      {yarn, capacity_scheduler} = @config.ryba
+
+## Register
+
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+    
+      @hconfigure
+        header: 'Capacity Scheduler'
+        if: yarn.rm.site['yarn.resourcemanager.scheduler.class'] is 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
+        destination: "#{yarn.rm.conf_dir}/capacity-scheduler.xml"
+        default: "#{__dirname}/../../resources/core_hadoop/capacity-scheduler.xml"
+        local_default: true
+        properties: capacity_scheduler
+        merge: false
+        backup: true
+      @execute
+        cmd: mkcmd.hdfs @, 'service hadoop-yarn-resourcemanager status && yarn rmadmin -refreshQueues || exit 0'
+        if: -> @status -1
 
 ## Dependencies
 

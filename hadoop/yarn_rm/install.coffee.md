@@ -5,6 +5,11 @@
       {realm, core_site, hdfs, yarn, mapred, hadoop_group, hadoop_metrics} = @config.ryba
       {ssl, ssl_server, ssl_client} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+
+## Register
+
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
       
 ## Users & Groups
 

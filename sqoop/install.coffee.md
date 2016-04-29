@@ -7,6 +7,11 @@ driver used by Sqoop.
     module.exports = header: 'Sqoop Install', handler: ->
       {sqoop, hadoop_group} = @config.ryba
 
+## Register
+
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdp_select', 'ryba/lib/hdp_select'
+
 ## Users & Groups
 
 By default, the "sqoop" package create the following entries:
