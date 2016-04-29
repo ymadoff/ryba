@@ -49,29 +49,32 @@ OpenTSDB archive comes with an RPM
 
 ## Kerberos
 
-      @call header: 'Kerberos', handler: ->
-        return unless opentsdb.config['hbase.security.authentication'] is 'kerberos'
-        @krb5_addprinc
-          principal: "#{opentsdb.user.name}/#{@config.host}@#{realm}"
-          randkey: true
-          keytab: '/etc/security/keytabs/opentsdb.service.keytab'
-          uid: opentsdb.user.name
-          gid: opentsdb.group.name
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
-        @write_jaas
-          destination: '/etc/opentsdb/opentsdb.jaas'
-          content: "#{opentsdb.config['hbase.sasl.clientconfig']}":
+      @call
+        header: 'Kerberos'
+        if: opentsdb.config['hbase.security.authentication'] is 'kerberos'
+        handler: ->
+          @krb5_addprinc
             principal: "#{opentsdb.user.name}/#{@config.host}@#{realm}"
-            useTicketCache: true
-          uid: opentsdb.user.name
-          gid: opentsdb.group.name
-        @cron_add
-          cmd: "/usr/bin/kinit #{opentsdb.user.name}/#{@config.host}@#{realm} -k -t /etc/security/keytabs/opentsdb.service.keytab"
-          when: '0 */9 * * *'
-          user: opentsdb.user.name
-          exec: true
+            randkey: true
+            keytab: '/etc/security/keytabs/opentsdb.service.keytab'
+            uid: opentsdb.user.name
+            gid: opentsdb.group.name
+            kadmin_principal: kadmin_principal
+            kadmin_password: kadmin_password
+            kadmin_server: admin_server
+          @call once: true, 'ryba/lib/write_jaas'
+          @write_jaas
+            destination: '/etc/opentsdb/opentsdb.jaas'
+            content: "#{opentsdb.config['hbase.sasl.clientconfig']}":
+              principal: "#{opentsdb.user.name}/#{@config.host}@#{realm}"
+              useTicketCache: true
+            uid: opentsdb.user.name
+            gid: opentsdb.group.name
+          @cron_add
+            cmd: "/usr/bin/kinit #{opentsdb.user.name}/#{@config.host}@#{realm} -k -t /etc/security/keytabs/opentsdb.service.keytab"
+            when: '0 */9 * * *'
+            user: opentsdb.user.name
+            exec: true
 
 ## Fix Service
 
@@ -98,35 +101,36 @@ OpenTSDB archive comes with an RPM
 
 ## HBase Table
 
-      @call header: 'Create HBase table', handler: ->
-        t_data = opentsdb.config['tsd.storage.hbase.data_table']
-        t_uid = opentsdb.config['tsd.storage.hbase.uid_table']
-        t_tree = opentsdb.config['tsd.storage.hbase.tree_table']
-        t_meta = opentsdb.config['tsd.storage.hbase.meta_table']
-        @execute
-          # hbase shell -n : quit on ERROR with non-zero status
-          cmd: mkcmd.hbase @, """
-          hbase shell -n <<EOF
-          create '#{t_uid}',
-            {NAME => 'id', COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'},
-            {NAME => 'name', COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'}
-          create '#{t_data}',
-            {NAME => 't', VERSIONS => 1, COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'}
-          create '#{t_tree}',
-            {NAME => 't', VERSIONS => 1, COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'}    
-          create '#{t_meta}',
-            {NAME => 'name', COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'}
-          EOF
-          """
-          # OpenTSDB is not working without the hbase admin rights ! So we map its principal on hbase user for now (2.2.0 RC3)
-          # TODO: Retest it for next versions
-          # grant 'opentsdb', 'RWXCA', '#{t_data}'
-          # grant 'opentsdb', 'RWXCA', '#{t_uid}'
-          # grant 'opentsdb', 'RWXCA', '#{t_meta}'
-          # grant 'opentsdb', 'RWXCA', '#{t_tree}'
-          # EOF
-          # """
-          unless_exec: mkcmd.hbase @, "[ `hbase shell -n <<< 'list' | egrep '^(#{t_data}|#{t_uid}|#{t_tree}|#{t_meta})' | sort | uniq | wc -l` -eq 4 ]"
+      @call once: true, 'ryba/hbase/master/wait'
+      t_data = opentsdb.config['tsd.storage.hbase.data_table']
+      t_uid = opentsdb.config['tsd.storage.hbase.uid_table']
+      t_tree = opentsdb.config['tsd.storage.hbase.tree_table']
+      t_meta = opentsdb.config['tsd.storage.hbase.meta_table']
+      @execute
+        header: 'Create HBase table'
+        # hbase shell -n : quit on ERROR with non-zero status
+        cmd: mkcmd.hbase @, """
+        hbase shell -n <<EOF
+        create '#{t_uid}',
+          {NAME => 'id', COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'},
+          {NAME => 'name', COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'}
+        create '#{t_data}',
+          {NAME => 't', VERSIONS => 1, COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'}
+        create '#{t_tree}',
+          {NAME => 't', VERSIONS => 1, COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'}    
+        create '#{t_meta}',
+          {NAME => 'name', COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'}
+        EOF
+        """
+        # OpenTSDB is not working without the hbase admin rights ! So we map its principal on hbase user for now (2.2.0 RC3)
+        # TODO: Retest it for next versions
+        # grant 'opentsdb', 'RWXCA', '#{t_data}'
+        # grant 'opentsdb', 'RWXCA', '#{t_uid}'
+        # grant 'opentsdb', 'RWXCA', '#{t_meta}'
+        # grant 'opentsdb', 'RWXCA', '#{t_tree}'
+        # EOF
+        # """
+        unless_exec: mkcmd.hbase @, "[ `hbase shell -n <<< 'list' | egrep '^(#{t_data}|#{t_uid}|#{t_tree}|#{t_meta})' | sort | uniq | wc -l` -eq 4 ]"
 
 ## Dependencies
 
