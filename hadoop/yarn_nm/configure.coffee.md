@@ -68,6 +68,7 @@
           'yarn.resourcemanager.principal'
           'yarn.resourcemanager.cluster-id'
           'yarn.nodemanager.remote-app-log-dir'
+          'yarn.nodemanager.remote-app-log-dir-suffix'
           'yarn.resourcemanager.ha.enabled'
           'yarn.resourcemanager.ha.rm-ids'
           'yarn.resourcemanager.webapp.delegation-token-auth-filter.enabled'

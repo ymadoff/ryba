@@ -23,9 +23,9 @@
 
 SCRIPT_DIR=$(dirname "$0")
 SCRIPT_NAME=$(basename "$0")
-NIFI_HOME={{config.ryba.nifi.manager.latest_dir}}
+NIFI_HOME={{ryba.nifi.node.install_dir}}/current
 PROGNAME=nifi.sh
-JAVA_HOME={{config.java.java_home}}
+JAVA_HOME={{java.java_home}}
 
 warn() {
     echo "${PROGNAME}: $*"
@@ -169,16 +169,10 @@ run() {
     # run 'start' in the background because the process will continue to run, monitoring NiFi.
     # all other commands will terminate quickly so want to just wait for them
     if [ "$1" = "start" ]; then
-       su -l {{config.ryba.nifi.user.name}} -c "\"${JAVA}\" -cp \"${NIFI_HOME}\"/conf/:\"${NIFI_HOME}\"/lib/bootstrap/* -Xms12m -Xmx24m -Dorg.apache.nifi.bootstrap.config.file=\"${BOOTSTRAP_CONF}\" org.apache.nifi.bootstrap.RunNiFi $@ >/dev/null &"
+       su -l {{ryba.nifi.user.name}} -c "\"${JAVA}\" -cp \"${NIFI_HOME}\"/conf/:\"${NIFI_HOME}\"/lib/bootstrap/* -Xms12m -Xmx24m -Dorg.apache.nifi.bootstrap.config.file=\"${BOOTSTRAP_CONF}\" org.apache.nifi.bootstrap.RunNiFi $@ >/dev/null &"
     else
-       su -l {{config.ryba.nifi.user.name}} -c "\"${JAVA}\" -cp \"${NIFI_HOME}\"/conf/:\"${NIFI_HOME}\"/lib/bootstrap/* -Xms12m -Xmx24m -Dorg.apache.nifi.bootstrap.config.file=\"${BOOTSTRAP_CONF}\" org.apache.nifi.bootstrap.RunNiFi $@"
+       su -l {{ryba.nifi.user.name}} -c "\"${JAVA}\" -cp \"${NIFI_HOME}\"/conf/:\"${NIFI_HOME}\"/lib/bootstrap/* -Xms12m -Xmx24m -Dorg.apache.nifi.bootstrap.config.file=\"${BOOTSTRAP_CONF}\" org.apache.nifi.bootstrap.RunNiFi $@"
     fi
-
-    # Wait just a bit (3 secs) to wait for the logging to finish and then echo a new-line.
-    # We do this to avoid having logs spewed on the console after running the command and then not giving
-    # control back to the user
-    sleep 3
-    echo
 }
 
 main() {

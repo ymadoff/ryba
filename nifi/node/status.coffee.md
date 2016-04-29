@@ -1,4 +1,5 @@
-# NiFi Node Status
+
+# Apache NiFi Node Status
 
     module.exports = header: 'NiFi Node Status', label_true: 'STARTED',label_true: 'STOPPED', handler: ->
       @execute

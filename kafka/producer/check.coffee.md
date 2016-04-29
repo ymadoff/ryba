@@ -27,7 +27,7 @@ Check Message by writing to a test topic on the PLAINTEXT channel.
           if: kafka.producer.env['KAFKA_KERBEROS_PARAMS']?
           cmd: mkcmd.kafka @, """
             /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
-              --zookeeper #{zoo_connect} --partitions 1 --replication-factor 2 \
+              --zookeeper #{zoo_connect} --partitions 1 --replication-factor 3 \
               --topic #{test_topic}
             """
           unless_exec: mkcmd.kafka @, """
@@ -38,7 +38,7 @@ Check Message by writing to a test topic on the PLAINTEXT channel.
           unless: kafka.producer.env['KAFKA_KERBEROS_PARAMS']?
           cmd: """
             /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
-              --zookeeper #{zoo_connect} --partitions 1 --replication-factor 2 \
+              --zookeeper #{zoo_connect} --partitions 1 --replication-factor 3 \
               --topic #{test_topic}
             """
           unless_exec: mkcmd.kafka @, """
@@ -142,7 +142,7 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
               (
               /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
                 --add --allow-principal User:#{user.name}  \
-                --operation Write --topic #{test_topic}
+                --operation Read --operation Write --topic #{test_topic}
               )&
               (
               /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \

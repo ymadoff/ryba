@@ -31,9 +31,9 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         @service name: 'python-requests'
         @service name: 'python-arrow'
 
-## Webui Dependencies
+## WebUI Dependencies
   
-      if 'webui2' in broker.config.modules
+      @call header: 'Install WebUI Dependencies', if: 'webui2' in broker.config.modules, handler: ->
 
         @call header: 'Install Bottle', unless_exec: 'pip list | grep bottle', handler: ->
           @download
@@ -94,18 +94,21 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           cmd: 'shinken --init'
           unless_exists: '.shinken.ini'
         installmod = (name, mod) =>
-          if mod.archive?
-            @call unless_exec: "shinken inventory | grep #{name}", handler: ->
-              @download
-                destination: "#{mod.archive}.zip"
-                source: mod.source
-                cache_file: "#{mod.archive}.zip"
-                unless_exec: "shinken inventory | grep #{name}"
-              @extract
-                source: "#{mod.archive}.zip"
-              @execute
-                cmd: "shinken install --local #{mod.archive}"
-          else throw Error "Missing parameter: archive for broker.modules.#{name}"
+          @call unless_exec: "shinken inventory | grep #{name}", handler: ->
+            @download
+              destination: "/var/tmp/shinken/#{mod.archive}.zip"
+              source: mod.source
+              cache_file: "#{mod.archive}.zip"
+              unless_exec: "shinken inventory | grep #{name}"
+              shy: true
+            @extract
+              source: "/var/tmp/shinken/#{mod.archive}.zip"
+              shy: true
+            @execute
+              cmd: "shinken install --local /var/tmp/shinken/#{mod.archive}"
+            @execute
+              cmd: "rm -rf /var/tmp/shinken"
+              shy: true
           for subname, submod of mod.modules then installmod subname, submod
         for name, mod of broker.modules then installmod name, mod
 

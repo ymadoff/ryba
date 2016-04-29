@@ -67,7 +67,7 @@ Example:
       kafka.broker.env['KAFKA_HEAP_OPTS'] ?= "-Xmx#{kafka.broker['heapsize']}m -Xms#{kafka.broker['heapsize']}m"
       # Avoid console verbose ouput in a non-rotated kafka.out file
       # kafka.broker.env['KAFKA_LOG4J_OPTS'] ?= "-Dlog4j.configuration=file:$base_dir/../config/log4j.properties -Dkafka.root.logger=INFO, kafkaAppender"
-      kafka.broker.env['KAFKA_LOG4J_OPTS'] ?= "-Dlog4j.configuration=file:$base_dir/../config/log4j.properties"
+      kafka.broker.env['KAFKA_LOG4J_OPTS'] ?= "-Dlog4j.configuration=file:#{kafka.broker.conf_dir}/log4j.properties"
       kafka.broker.log4j ?= {}
       kafka.broker.log4j['log4j.rootLogger'] ?= 'INFO, kafkaAppender'
       # kafka.broker.log4j['log4j.logger.kafka.authorizer.logger'] ?= 'DEBUG, authorizerAppender'

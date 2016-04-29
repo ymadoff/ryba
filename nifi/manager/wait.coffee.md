@@ -1,5 +1,5 @@
 
-# NiFi Manager Wait
+# Apache NiFi Manager Wait
 
     module.exports = header: 'NiFI Manager Wait', label_true: 'CHECKED', handler: ->
       [m_ctx] = @contexts 'ryba/nifi/manager'

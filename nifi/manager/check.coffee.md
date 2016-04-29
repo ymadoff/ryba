@@ -1,5 +1,5 @@
 
-# NiFi Manager Check
+# Apache NiFi Manager Check
 
     module.exports = header: 'NiFI Manager Check', label_true: 'CHECKED', handler: ->
       {nifi} = @config.ryba
