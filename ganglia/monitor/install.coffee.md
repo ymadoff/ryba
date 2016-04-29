@@ -43,18 +43,18 @@ Copy the object files provided in the HDP companion files into the
 Upload the "hdp-gmond" service file into "/etc/init.d".
 
       @call header: 'Ganglia Monitor # Init Script', timeout: -1, handler: ->
-          @write
-            destination: '/etc/init.d/hdp-gmond'
-            source: "#{__dirname}/../resources/scripts/hdp-gmond"
-            local_source: true
-            match: /# chkconfig: .*/mg
-            replace: '# chkconfig: 2345 70 40'
-            append: '#!/bin/sh'
-            mode: 0o755
-          @execute
-            # cmd: "service gmond start; chkconfig --add gmond; chkconfig --add hdp-gmond"
-            cmd: "service gmond start; chkconfig --add hdp-gmond"
-            if: -> @status -1
+        @write
+          destination: '/etc/init.d/hdp-gmond'
+          source: "#{__dirname}/../resources/scripts/hdp-gmond"
+          local_source: true
+          match: /# chkconfig: .*/mg
+          replace: '# chkconfig: 2345 70 40'
+          append: '#!/bin/sh'
+          mode: 0o755
+        @execute
+          # cmd: "service gmond start; chkconfig --add gmond; chkconfig --add hdp-gmond"
+          cmd: "service gmond start; chkconfig --add hdp-gmond"
+          if: -> @status -1
 
       @service_startup
         header: 'Ganglia Monitor # Fix Gmond'

@@ -7,6 +7,8 @@ host by the Ganglia Monitor agents.
     module.exports = ->
       # 'backup':
       #   'ryba/ganglia/collector/backup'
+      'configure':
+        'ryba/ganglia/collector/configure'
       'check':
         'ryba/ganglia/collector/check'
       'install':[
