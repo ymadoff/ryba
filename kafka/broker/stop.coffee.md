@@ -12,8 +12,9 @@ su -l kafka -c '/usr/hdp/current/kafka-broker/bin/kafka stop'
 The file storing the PID is "/var/run/kafka/kafka.pid".
 
     module.exports = header: 'Kafka Broker Stop', label_true: 'STOPPED', handler: ->
-    
-      @service_stop name: 'kafka-broker'
+      @service_stop
+        name: 'kafka-broker'
+        if_exists: '/etc/init.d/kafka-broker'
 
 ## Clean Logs
 

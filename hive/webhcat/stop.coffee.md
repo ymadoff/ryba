@@ -17,6 +17,7 @@ The file storing the PID is "/var/run/webhcat/webhcat.pid".
     module.exports = header: 'WebHCat # Stop', label_true: 'STOPPED', handler: ->
       @service_stop
         name: 'hive-webhcat-server'
+        if_exists: '/etc/init.d/hive-webhcat-server'
 
 ## Stop Clean Logs
 

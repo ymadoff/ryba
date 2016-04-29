@@ -15,3 +15,4 @@ The files storing the PIDs are "/var/run/ganglia/hdp/gmetad.pid" and
       @service_stop
         name: 'hdp-gmetad'
         code_stopped: 1
+        if_exists: '/etc/init.d/hdp-gmetad'

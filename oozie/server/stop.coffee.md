@@ -18,6 +18,7 @@ The file storing the PID is "/var/run/oozie/oozie.pid".
       {oozie} = @config.ryba
       @service_stop
         name: 'oozie'
+        if_exists: '/etc/init.d/oozie'
 
 ## Stop Clean Logs
 

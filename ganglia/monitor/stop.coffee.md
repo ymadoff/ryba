@@ -21,3 +21,4 @@ The files storing the PIDs are "/var/run/ganglia/hdp/HDPHBaseMaster/gmond.pid",
       @service_stop
         name: 'hdp-gmond'
         code_stopped: 1
+        if_exists: '/etc/init.d/hdp-gmond'
