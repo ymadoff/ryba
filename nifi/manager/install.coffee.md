@@ -199,13 +199,8 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
         backup: true
         mode: 0o0755
 
-<<<<<<< HEAD
       @krb5_addprinc krb5,
-        header: 'Kerberos NiFi Cluster Manager'
-=======
-      @krb5_addprinc
         header: 'Kerberos'
->>>>>>> 047745daf2c0704555d213068c6259409087af02
         principal: nifi.manager.krb5_principal
         randkey: true
         keytab: nifi.manager.krb5_keytab
@@ -215,16 +210,8 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
       @krb5_addprinc krb5,
         if: nifi.manager.config.properties['nifi.security.user.login.identity.provider'] is 'kerberos-provider'
         header: 'Kerberos NiFi Web UI Manager'
-<<<<<<< HEAD
-        principal: nifi.web_ui_admin_principal
-        password: nifi.web_ui_admin_pwd
-=======
         principal: nifi.webui.krb5_principal
         password: nifi.webui.krb5_password
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
->>>>>>> 047745daf2c0704555d213068c6259409087af02
     
 ## Environment
 
