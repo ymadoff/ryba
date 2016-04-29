@@ -1,3 +1,4 @@
+
 # Cloudera Manager Agent install
 
     module.exports = header: 'Cloudera Manager Agent Install', timeout: -1, handler: ->
@@ -21,7 +22,7 @@ Set the server's hostname in the agent's configuration
       
       @write
         header: 'Configuration'
-        destination: "#{agent.conf_dir}config.ini"
+        destination: "#{agent.conf_dir}/config.ini"
         write: [
           match: /^server_host=.*$/m
           replace: "server_host=#{agent.ini.server['hostname']}"

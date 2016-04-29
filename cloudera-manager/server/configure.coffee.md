@@ -1,4 +1,5 @@
-## Configuration
+
+# Cloudera Manager Server Configuration
 
 Example:
 

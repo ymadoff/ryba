@@ -1,4 +1,5 @@
-## Configuration
+
+# Cloudera Manager Agent Configuration
 
 Example:
 
@@ -17,7 +18,7 @@ cloudera_manager:
       return Error 'Need at least one cloudera manager server' unless cdm_ctxs.length > 0
       cloudera_manager = @config.ryba.cloudera_manager ?= {}
       agent = @config.ryba.cloudera_manager.agent ?= {}
-      agent.conf_dir ?= '/etc/cloudera-scm-agent/'
+      agent.conf_dir ?= '/etc/cloudera-scm-agent'
       agent.ini ?= {}
       agent.ini.server ?= {}
       agent.ini.server['hostname'] ?= "#{cdm_ctxs[0].config.host}"
