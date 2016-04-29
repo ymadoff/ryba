@@ -1,15 +1,17 @@
-# Zeppelin install
+
+# Zeppelin Install
 
 Install Zeppelin with build dockerized image.
 Configured for a YARN  cluster, running with spark 1.2.1.
 Spark comes with 1.2.1 in HDP 2.2.4.
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap/'
-    module.exports.push 'masson/commons/docker'
-    module.exports.push 'ryba/spark/client'
-    module.exports.push 'ryba/hive/client'
-    module.exports.push 'ryba/lib/hconfigure'
+    module.exports = header: 'Zeppelin Install', handler: ->
+      {zeppelin, core_site, spark} = @config.ryba
+      {hadoop_group, hadoop_conf_dir, hdfs} = @config.ryba
+
+## Register
+
+      @register 'hconfigure', 'ryba/lib/hconfigure'
 
 ## IPTables
 
@@ -20,14 +22,12 @@ Spark comes with 1.2.1 in HDP 2.2.4.
 | Zeppelin Websocket      | 9091  | tcp   | env[ZEPPELIN_PORT] +  1  |
 | Zeppelin Websocket      | 10000 | tcp   | env[ZEPPELIN_PORT] +  1  |
 
-
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 It's the  host' port server map from the container
 
-    module.exports.push header: 'Zeppelin Install # IPTables', handler: ->
-      {zeppelin} = @config.ryba
       # @iptables
+      #   header: 'IPTables'
       #   rules: [
       #     { chain: 'INPUT', jump: 'ACCEPT', dport: zeppelin.env.ZEPPELIN_PORT, protocol: 'tcp', state: 'NEW', comment: "Zeppelin Server" }
       #   ]
@@ -87,10 +87,9 @@ SSL only required for the server
 
 ## HDP select status
 
-    module.exports.push header: 'Zeppelin Install # HDP Version',  handler: ->
-      {zeppelin} = @config.ryba
       @execute
-          cmd:  "hdp-select versions | tail -1"
+        header: 'Zeppelin Install # HDP Version'
+        cmd:  "hdp-select versions | tail -1"
       , (err, executed, stdout, stderr) ->
         throw err if err
         hdp_select_version = stdout.trim() if executed
@@ -100,9 +99,8 @@ SSL only required for the server
 
 Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
 
-    module.exports.push header: 'Zeppelin Install # Spark',  handler: ->
-      {zeppelin, core_site, spark} = @config.ryba
       @execute
+        header: 'Zeppelin Install # Spark'
         cmd: 'ls -l /usr/hdp/current/spark-client/lib/ | grep -m 1 assembly | awk {\'print $9\'}'
       , (err, _, stdout) ->
         throw err if err
@@ -111,26 +109,31 @@ Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
 
 ## Zeppelin properties configuration
     
-    module.exports.push header: 'Zeppelin Install # Configure',  handler: ->
-      {hadoop_group,hadoop_conf_dir, hdfs, zeppelin} = @config.ryba
       @mkdir
+        header: 'Directory'
         destination: "#{zeppelin.conf_dir}"
         mode: 0o0750
-      @download
-        destination: "#{zeppelin.conf_dir}/zeppelin-env.sh"
-        source: "#{__dirname}/resources/zeppelin-env.sh"
-        uid: hdfs.user.name
-        gid: hadoop_group.name
-        mode: 0o755
-        unless_exists: true
       @hconfigure
+        header: 'Configuration'
         destination: "#{zeppelin.conf_dir}/zeppelin-site.xml"
         default: "#{__dirname}/resources/zeppelin-site.xml"
         local_default: true
         properties: zeppelin.site
         merge: true
         backup: true
+
+TODO: remove download and write and replace it with a template
+
+      @download
+        header: 'Download Environment'
+        destination: "#{zeppelin.conf_dir}/zeppelin-env.sh"
+        source: "#{__dirname}/resources/zeppelin-env.sh"
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+        mode: 0o755
+        unless_exists: true
       @write
+        header: 'Update Environment'
         destination: "#{zeppelin.conf_dir}/zeppelin-env.sh"
         write: for k, v of zeppelin.env
           match: RegExp "^export\\s+(#{quote k})(.*)$", 'm'
@@ -143,21 +146,19 @@ Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
 
 Load Zeppelin docker image from local host
 
-    module.exports.push header: 'Zeppelin Install # Import', timeout: -1, handler: ->
-      {zeppelin} = @config.ryba
-      @download
-        source: "#{@config.mecano.cache_dir}/zeppelin.tar"
-        destination: "/tmp/zeppelin.tar" # add versioning
-      @docker_load
-        machine: 'ryba'
-        source: "/tmp/zeppelin.tar"
+      @call header: 'Import', timeout: -1, handler: ->
+        @download
+          source: "#{@config.mecano.cache_dir}/zeppelin.tar"
+          destination: "/tmp/zeppelin.tar" # add versioning
+        @docker_load
+          machine: 'ryba'
+          source: "/tmp/zeppelin.tar"
 
 ## Runs Zeppelin container 
 
-    module.exports.push header: 'Zeppelin Install # Run',  handler: ->
-      {hadoop_group,hadoop_conf_dir, hdfs, zeppelin} = @config.ryba
       websocket = parseInt(zeppelin.site['zeppelin.server.port'])+1
       @docker_run
+        header: 'Run'
         image: "#{zeppelin.prod.tag}"
         volume: [
           "#{hadoop_conf_dir}:#{hadoop_conf_dir}"

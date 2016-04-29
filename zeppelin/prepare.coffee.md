@@ -1,4 +1,5 @@
-# Apache Zeppelin build
+
+# Zeppelin Prepare
 
 Builds Zeppelin from as [required][zeppelin-build]. For now it's the single way to get Zeppelin.
 It uses several containers. One to build zeppelin and an other for deploying zeppelin.
