@@ -14,6 +14,10 @@ co-located with any other service.
       @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdp_select', 'ryba/lib/hdp_select'
 
+## Wait
+
+      @call once: true, 'masson/core/krb5_client/wait'
+
 ## IPTables
 
 | Service   | Port       | Proto     | Parameter                                  |
