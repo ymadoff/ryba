@@ -14,7 +14,7 @@ Resources:
       {hive} = @config.ryba
       {java_home} = @config.java
       {ssl, ssl_server, ssl_client, hadoop_conf_dir, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       tmp_location = "/var/tmp/ryba/ssl"
       hive_server_port = if hive.site['hive.server2.transport.mode'] is 'binary'
       then hive.site['hive.server2.thrift.port']
@@ -239,16 +239,13 @@ Create the directories to store the logs and pid information. The properties
 
 ## Kerberos
 
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         header: 'Kerberos'
         principal: hive.site['hive.server2.authentication.kerberos.principal'].replace '_HOST', @config.host
         randkey: true
         keytab: hive.site['hive.server2.authentication.kerberos.keytab']
         uid: hive.user.name
         gid: hive.group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
         unless: @has_module('ryba/hive/hcatalog') and hive.site['hive.metastore.kerberos.principal'] is hive.site['hive.server2.authentication.kerberos.principal']
 
 ## Ulimit

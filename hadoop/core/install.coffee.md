@@ -4,7 +4,7 @@
     module.exports = header: 'Hadoop Core Install', retry: 0, handler: ->
       {realm, hadoop_group, hdfs, yarn, mapred} = @config.ryba
       {ssl, ssl_server, ssl_client, hadoop_conf_dir} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Register
 
@@ -70,12 +70,8 @@ Create the HDFS user principal. This will be the super administrator for the HDF
 filesystem. Note, we do not create a principal with a keytab to allow HDFS login
 from multiple sessions with braking an active session.
 
-      @call header: 'HDFS Client # Kerberos User', handler: ->
-        @krb5_addprinc merge
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
-        , hdfs.krb5_user
+      @krb5_addprinc krb5, hdfs.krb5_user,
+        header: 'HDFS Client # Kerberos User'
 
 ## Test User
 
@@ -87,11 +83,7 @@ will be created by one of the datanode.
         {group, user, krb5_user} = @config.ryba
         @group group
         @user user
-        @krb5_addprinc merge
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
-        , krb5_user
+        @krb5_addprinc krb5, krb5_user
 
       @mkdir
         header: 'Keytabs'
@@ -108,16 +100,13 @@ and permissions set to "0660". We had to give read/write permission to the group
 same keytab file is for now shared between hdfs and yarn services.
 
       @call header: 'SPNEGO', handler: ->
-        @krb5_addprinc
+        @krb5_addprinc krb5,
           principal: "HTTP/#{@config.host}@#{realm}"
           randkey: true
           keytab: '/etc/security/keytabs/spnego.service.keytab'
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o660 # need rw access for hadoop and mapred users
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
         @execute # Validate keytab access by the hdfs user
           cmd: "su -l #{hdfs.user.name} -c \"klist -kt /etc/security/keytabs/spnego.service.keytab\""
           if: -> @status -1

@@ -3,7 +3,7 @@
 
     module.exports = header: 'Solr Install', handler: ->
       {solr, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Users and Groups
 
@@ -28,16 +28,13 @@
 
 ## Kerberos
 
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         header: 'Kerberos'
         principal: solr.principal
         randkey: true
         keytab: solr.keytab
         uid: solr.user.name
         gid: solr.group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
 
 ## Install
 

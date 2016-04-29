@@ -3,7 +3,7 @@
 
     module.exports = header: 'HBase RegionServer Install', handler: ->
       {hadoop_group, hbase, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       regionservers = @contexts('ryba/hbase/regionserver').map( (ctx) -> ctx.config.host).join '\n'
 
 ## Register
@@ -117,9 +117,6 @@ RegionServer, and HBase client host machines.
         keytab: hbase.rs.site['hbase.regionserver.keytab.file']
         uid: hbase.user.name
         gid: hadoop_group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
 
 ## Configure
 

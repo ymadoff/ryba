@@ -4,7 +4,7 @@
     module.exports =  header: 'MongoDB Config Server Install', handler: ->
       {mongodb, realm, ssl} = @config.ryba
       {configsrv} = mongodb
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## IPTables
 
@@ -128,12 +128,9 @@ with pem file. So we append to the file the private key and certficate.
 ## Kerberos
 
       @call header: 'MongoDB Config Server # Kerberos Admin', handler: ->
-        @krb5_addprinc
+        @krb5_addprinc krb5,
           principal: "#{mongodb.configsrv.config.security.sasl.serviceName}"#/#{@config.host}@#{realm}"
           password: mongodb.configsrv.sasl_password
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
 
 # User limits
 

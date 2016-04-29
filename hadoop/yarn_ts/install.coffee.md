@@ -7,7 +7,7 @@ co-located with any other service.
     module.exports = header: 'YARN ATS Install', handler: ->
       {realm, hadoop_group, hadoop_metrics, core_site, hdfs, yarn} = @config.ryba
       {ssl, ssl_server, ssl_client, yarn} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Register
 
@@ -195,9 +195,7 @@ Create the Kerberos service principal by default in the form of
 "/etc/security/keytabs/ats.service.keytab" with ownerships set to
 "mapred:hadoop" and permissions set to "0600".
 
-      # module.exports.push 'ryba/hadoop/hdfs_nn/wait'
-      # module.exports.push 'ryba/hadoop/hdfs_client/install'
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         header: 'Kerberos'
         principal: yarn.site['yarn.timeline-service.principal'].replace '_HOST', @config.host
         randkey: true
@@ -205,9 +203,6 @@ Create the Kerberos service principal by default in the form of
         uid: yarn.user.name
         gid: yarn.group.name
         mode: 0o0600
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
 
 ## Dependencies
 

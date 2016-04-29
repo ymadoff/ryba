@@ -4,7 +4,7 @@
     module.exports = header: 'HDFS SNN', handler: ->
       {host} = @config
       {realm, hdfs, hadoop_group} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Register
 
@@ -74,16 +74,13 @@ script inside "/etc/init.d" and activate it on startup.
           gid: hdfs.group.name
           parent: true
 
-      @call header: 'HDFS SNN # Kerberos', handler: ->
-        @krb5_addprinc
-          principal: "nn/#{host}@#{realm}"
-          randkey: true
-          keytab: hdfs.site['dfs.secondary.namenode.keytab.file']
-          uid: 'hdfs'
-          gid: 'hadoop'
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
+      @krb5_addprinc krb5,
+        header: 'HDFS SNN # Kerberos'
+        principal: "nn/#{host}@#{realm}"
+        randkey: true
+        keytab: hdfs.site['dfs.secondary.namenode.keytab.file']
+        uid: 'hdfs'
+        gid: 'hadoop'
 
 # Configure
 

@@ -157,16 +157,13 @@ the "security_enabled" property set to "true".
 
     module.exports.push header: 'Hue # Kerberos', handler: ->
       {hue, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
-      @krb5_addprinc 
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
+      @krb5_addprinc krb5,
         principal: hue.ini.desktop.kerberos.hue_principal
         randkey: true
         keytab: "/etc/hue/conf/hue.service.keytab"
         uid: hue.user.name
         gid: hue.group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
 
 ## SSL Client
 

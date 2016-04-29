@@ -4,7 +4,7 @@
     module.exports = header: 'YARN RM Install', handler: ->
       {realm, core_site, hdfs, yarn, mapred, hadoop_group, hadoop_metrics} = @config.ryba
       {ssl, ssl_server, ssl_client} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Register
 
@@ -200,16 +200,13 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 
 ## Kerberos
 
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         header: 'Kerberos'
         principal: yarn.rm.site['yarn.resourcemanager.principal'].replace '_HOST', @config.host
         randkey: true
         keytab: yarn.rm.site['yarn.resourcemanager.keytab']
         uid: yarn.user.name
         gid: hadoop_group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
 
 ## Kerberos JAAS
 

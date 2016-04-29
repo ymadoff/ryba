@@ -10,7 +10,7 @@ Job History Server.
       {yarn, mapred} = @config.ryba
       {ssl, ssl_server, ssl_client, mapred} = @config.ryba
       {mapred, hadoop_group, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Register
 
@@ -207,16 +207,13 @@ Create the Kerberos service principal by default in the form of
 "/etc/security/keytabs/jhs.service.keytab" with ownerships set to
 "mapred:hadoop" and permissions set to "0600".
 
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         header: 'Kerberos'
         principal: "jhs/#{@config.host}@#{realm}"
         randkey: true
         keytab: "/etc/security/keytabs/jhs.service.keytab"
         uid: mapred.user.name
         gid: hadoop_group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
         mode: 0o0600
 
 ## HDFS Layout

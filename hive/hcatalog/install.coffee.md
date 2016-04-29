@@ -6,7 +6,7 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
 
     module.exports =  header: 'Hive HCatalog Install', handler: -> 
       {hive, realm, active_nn_host, hdfs, hadoop_group} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       tez_is_installed = if @contexts('ryba/tez').length >= 1 then true else false
 
 ## Register
@@ -231,7 +231,7 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
 
 ## Kerberos
 
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         header: 'Kerberos'
         principal: hive.site['hive.metastore.kerberos.principal'].replace '_HOST', @config.host
         randkey: true
@@ -239,9 +239,6 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
         uid: hive.user.name
         gid: hive.group.name
         mode: 0o0600
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
 
 ## Layout
 

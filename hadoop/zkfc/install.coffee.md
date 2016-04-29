@@ -5,7 +5,7 @@
       {hdfs, zkfc, active_nn_host} = @config.ryba
       {hdfs, zkfc, core_site, hadoop_group} = @config.ryba
       {realm, hadoop_group, hdfs, zkfc} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       {hdfs, core_site, zkfc} = @config.ryba
       {hdfs, ssh_fencing, hadoop_group} = @config.ryba
 
@@ -95,25 +95,19 @@ stored as "/etc/hadoop/conf/zkfc.jaas"
       @call header: 'Kerberos', handler: ->
         zkfc_principal = zkfc.principal.replace '_HOST', @config.host
         nn_principal = hdfs.nn.site['dfs.namenode.kerberos.principal'].replace '_HOST', @config.host
-        @krb5_addprinc
+        @krb5_addprinc krb5,
           principal: zkfc_principal
           keytab: zkfc.keytab
           randkey: true
           uid: hdfs.user.name
           gid: hadoop_group.name
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
           if: zkfc_principal isnt nn_principal
-        @krb5_addprinc
+        @krb5_addprinc krb5,
           principal: nn_principal
           keytab: hdfs.nn.site['dfs.namenode.keytab.file']
           randkey: true
           uid: hdfs.user.name
           gid: hadoop_group.name
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
         @write_jaas
           destination: zkfc.jaas_file
           content: Client:

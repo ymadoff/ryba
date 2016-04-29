@@ -9,7 +9,7 @@ in the resource Manager web interface.
     module.exports =  header: 'Spark History Server Install', handler: ->
       {spark, realm} = @config.ryba
       {spark} = (@contexts 'ryba/spark/history_server', require('./configure').handler)[0].config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       {java_home} = @config.java
           
           
@@ -75,7 +75,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Kerberos
       
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         header: 'Kerberos'
         principal: spark.conf['spark.history.kerberos.principal']
         keytab: spark.conf['spark.history.kerberos.keytab']

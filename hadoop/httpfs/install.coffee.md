@@ -3,7 +3,7 @@
 
     module.exports = header: 'HDFS HttpFS Install', handler: ->
       {httpfs, realm, core_site} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Register
 
@@ -72,16 +72,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           uid: httpfs.user.name
           gid: httpfs.group.name
           mode: 0o0600
-        @krb5_addprinc # Service Keytab
+        @krb5_addprinc krb5, # Service Keytab
           principal: httpfs.site['httpfs.hadoop.authentication.kerberos.principal']
           randkey: true
           keytab: httpfs.site['httpfs.hadoop.authentication.kerberos.keytab']
           uid: httpfs.user.name
           gid: httpfs.group.name
           mode: 0o0600
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
 
 ## Environment
 

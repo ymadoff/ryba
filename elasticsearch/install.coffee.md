@@ -7,14 +7,14 @@ of Elastics Search from rpm repositories and the configuration of Elastic Search
     
     module.exports = header: 'ES Install', handler: ->
       {elasticsearch ,realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      # krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       
       @group elasticsearch.group
       @user elasticsearch.user
 
 ## Kerberos
 
-      # @krb5_addprinc
+      # @krb5_addprinc krb5,
       #   skip: true
       #   header: 'Kerberos'
       #   principal: elasticsearch.principal
@@ -22,9 +22,6 @@ of Elastics Search from rpm repositories and the configuration of Elastic Search
       #   keytab: elasticsearch.keytab
       #   uid: elasticsearch.user.name
       #   gid: elasticsearch.group.name
-      #   kadmin_principal: kadmin_principal
-      #   kadmin_password: kadmin_password
-      #   kadmin_server: admin_server
 
 ## Install
 

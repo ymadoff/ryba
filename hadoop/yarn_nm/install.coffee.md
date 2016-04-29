@@ -4,7 +4,7 @@
     module.exports = header: 'YARN NM Install', handler: ->
       {realm, hadoop_group, hadoop_metrics, hadoop_conf_dir, core_site, hdfs, yarn, container_executor} = @config.ryba
       {ssl, ssl_server, ssl_client} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Register
 
@@ -234,16 +234,13 @@ but is owned by 2401"
 Create the Kerberos user to the Node Manager service. By default, it takes the
 form of "rm/{fqdn}@{realm}"
 
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         header: 'Kerberos'
         principal: yarn.site['yarn.nodemanager.principal'].replace '_HOST', @config.host
         randkey: true
         keytab: yarn.site['yarn.nodemanager.keytab']
         uid: yarn.user.name
         gid: hadoop_group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
 
       @call
         header: 'CGroup'
@@ -292,6 +289,7 @@ drwxrwxrwt   - yarn   hadoop            0 2014-05-26 11:01 /app-logs
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
       remote_app_log_dir = yarn.site['yarn.nodemanager.remote-app-log-dir']
+      @wait once: true, 'ryba/hadoop/hdfs_nn/wait'
       @execute
         header: 'HDFS layout'
         cmd: mkcmd.hdfs @, """

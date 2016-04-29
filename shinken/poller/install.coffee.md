@@ -5,7 +5,7 @@
       {shinken} = @config.ryba
       {poller} = @config.ryba.shinken
       {realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## IPTables
 
@@ -92,23 +92,17 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Executor
 
       @call header: 'Executor', handler: ->
-        @krb5_addprinc
+        @krb5_addprinc krb5,
           header: 'Kerberos'
           principal: shinken.poller.executor.krb5.unprivileged.principal
           randkey: true
           keytab: shinken.poller.executor.krb5.unprivileged.keytab
           mode: 0o644
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
-        # @krb5_addprinc
+        # @krb5_addprinc krb5,
         #   principal: shinken.poller.executor.krb5.privileged.principal
         #   randkey: true
         #   keytab: shinken.poller.executor.krb5.privileged.keytab
         #   mode: 0o644
-        #   kadmin_principal: kadmin_principal
-        #   kadmin_password: kadmin_password
-        #   kadmin_server: admin_server
 
         @call header: 'Docker', timeout: -1, handler: ->
           @download

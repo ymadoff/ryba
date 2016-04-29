@@ -13,7 +13,7 @@ Run `ryba prepare` to create the Docker container.
       hadoop_conf_dir = hue_docker.ini['hadoop']['hdfs_clusters']['default']['hadoop_conf_dir']
       hive_conf_dir = hue_docker.ini['beeswax']['hive_conf_dir'] 
       hbase_conf_dir = hue_docker.ini['hbase']['hbase_conf_dir']
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       machine = @config.mecano.machine
 
 ## Register
@@ -21,7 +21,7 @@ Run `ryba prepare` to create the Docker container.
       @register 'hconfigure', 'ryba/lib/hconfigure'
 
 ## Wait
-    
+
       @call once: true, 'ryba/hadoop/yarn_rm/wait'
       @call once: true, 'ryba/hadoop/hdfs_nn/wait'
       @call once: true, 'ryba/hbase/thrift/wait'
@@ -157,16 +157,13 @@ The principal for the Hue service is created and named after "hue/{host}@{realm}
 the "/etc/hue/conf/hue_docker.ini" configuration file, all the composants myst be tagged with
 the "security_enabled" property set to "true".
 
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         header: 'Kerberos'
         principal: hue_docker.ini.desktop.kerberos.hue_principal
         randkey: true
         keytab: hue_docker.ini.desktop.kerberos.hue_keytab
         uid: hue_docker.user.name
         gid: hue_docker.group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
 
 ## SSL Client
 

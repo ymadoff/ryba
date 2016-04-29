@@ -9,7 +9,7 @@ each HDFS cluster.
     module.exports = header: 'Falcon Install', handler: ->
       {falcon, realm} = @config.ryba
       {user, group, startup, conf_dir} = @config.ryba.falcon
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       {hostname, port} = url.parse falcon.startup['prism.falcon.local.endpoint']
       
 ## IPTables
@@ -88,16 +88,13 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
 ## Kerberos
 
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         header: 'Kerberos'
         principal: startup['*.falcon.service.authentication.kerberos.principal']#.replace '_HOST', @config.host
         randkey: true
         keytab: startup['*.falcon.service.authentication.kerberos.keytab']
         uid: user.name
         gid: group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
 
 ## HFDS Layout
 

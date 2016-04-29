@@ -3,7 +3,7 @@
 
     module.exports = header: 'Kafka Broker Install', handler: ->
       {kafka, hadoop_group, realm, ssl} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Register
 
@@ -187,16 +187,13 @@ Broker Server principal, keytab and JAAS
         header: 'Kerberos'
         if: kafka.broker.config['zookeeper.set.acl'] is 'true'
         handler: ->
-          @krb5_addprinc
+          @krb5_addprinc krb5,
             header: 'Broker Server Kerberos'
             principal: kafka.broker.kerberos['principal']
             randkey: true
             keytab: kafka.broker.kerberos['keyTab']
             uid: kafka.user.name
             gid: kafka.group.name
-            kadmin_principal: kadmin_principal
-            kadmin_password: kadmin_password
-            kadmin_server: admin_server
           @write_jaas
             header: 'Broker JAAS'
             destination: "#{kafka.broker.conf_dir}/kafka-server.jaas"
@@ -216,13 +213,10 @@ Broker Server principal, keytab and JAAS
 
 Kafka Superuser principal generation
 
-          @krb5_addprinc
+          @krb5_addprinc krb5,
             header: 'Kafka Superuser kerberos'
             principal: kafka.admin.principal
             password: kafka.admin.password
-            kadmin_principal: kadmin_principal
-            kadmin_password: kadmin_password
-            kadmin_server: admin_server
 
 # SSL Server
 

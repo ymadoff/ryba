@@ -3,7 +3,7 @@
 
     module.exports = header: 'ZooKeeper Server Install', handler: ->
       {zookeeper, hadoop_group, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Register
 
@@ -77,15 +77,12 @@ which has no dependency.
 
       @call once: true, 'masson/core/krb5_client/wait'
       @call header: 'Kerberos', handler: ->
-        @krb5_addprinc
+        @krb5_addprinc krb5,
           principal: "zookeeper/#{@config.host}@#{realm}"
           randkey: true
           keytab: '/etc/security/keytabs/zookeeper.service.keytab'
           uid: zookeeper.user.name
           gid: hadoop_group.name
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
         @write_jaas
           destination: '/etc/zookeeper/conf/zookeeper-server.jaas'
           content: Server:

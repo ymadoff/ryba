@@ -4,7 +4,7 @@
     module.exports = header: 'NiFi Manager Install', handler: ->
       {nifi, hadoop_group} = @config.ryba
       {ssl, ssl_server, ssl_client, hadoop_conf_dir, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       tmp_ssl_location = "/var/tmp/ryba/ssl"
       tmp_archive_location = "/var/tmp/ryba/nifi.tar.gz"
       protocol = if nifi.manager.config.properties['nifi.cluster.protocol.is.secure'] is 'true' then 'https' else 'http'
@@ -213,25 +213,19 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
         backup: true
         mode: 0o0755
 
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         header: 'Kerberos NiFi Cluster Manager'
         principal: nifi.manager.krb5_principal
         randkey: true
         keytab: nifi.manager.krb5_keytab
         uid: nifi.user.name
         gid: nifi.group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
         
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         if: nifi.manager.config.properties['nifi.security.user.login.identity.provider'] is 'kerberos-provider'
         header: 'Kerberos NiFi Web UI Manager'
         principal: nifi.web_ui_admin_principal
         password: nifi.web_ui_admin_pwd
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
     
 ## Environment
 

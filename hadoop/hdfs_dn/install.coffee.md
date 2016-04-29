@@ -16,7 +16,7 @@ NameNodes, and send block location information and heartbeats to both.
 
     module.exports = header: 'HDFS DN', handler: ->
       {realm, core_site, hdfs, hadoop_group, hadoop_metrics} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Register
 
@@ -238,7 +238,7 @@ Create the DataNode service principal in the form of "dn/{host}@{realm}" and pla
 keytab inside "/etc/security/keytabs/dn.service.keytab" with ownerships set to "hdfs:hadoop"
 and permissions set to "0600".
 
-        @krb5_addprinc
+        @krb5_addprinc krb5,
           header: 'Kerberos'
           principal: "dn/#{@config.host}@#{realm}"
           randkey: true
@@ -246,9 +246,6 @@ and permissions set to "0600".
           uid: hdfs.user.name
           gid: hdfs.group.name
           mode: 0o0600
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
 
 # Kernel
 

@@ -8,7 +8,7 @@ have usecase for it yet.
     
     module.exports =  header: 'HBase Rest Install', handler: ->
       {hadoop_group, hbase, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Register
 
@@ -123,16 +123,13 @@ Environment passed to the HBase Rest Server before it starts.
 
 Create the Kerberos keytab for the service principal.
 
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         header: 'Kerberos'
         principal: hbase.rest.site['hbase.rest.kerberos.principal'].replace '_HOST', @config.host
         randkey: true
         keytab: hbase.rest.site['hbase.rest.keytab.file']
         uid: hbase.user.name
         gid: hadoop_group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
 
 # User limits
 

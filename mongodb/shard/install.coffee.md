@@ -4,7 +4,7 @@
     module.exports =  header: 'MongoDB Shard Server Install', handler: ->
       {mongodb, realm, ssl} = @config.ryba
       {shard} = mongodb
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## IPTables
 
@@ -127,12 +127,9 @@ with pem file. So we append to the file the private key and certficate.
 ## Kerberos
 
       @call header: 'MongoDB Shard Server # Kerberos Admin', handler: ->
-        @krb5_addprinc
+        @krb5_addprinc krb5,
           principal: "#{mongodb.shard.config.security.sasl.serviceName}"#/#{@config.host}@#{realm}"
           password: mongodb.shard.sasl_password
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
 
 # User limits
 

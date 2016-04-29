@@ -9,7 +9,7 @@ failover and Oozie must target the active node.
 
     module.exports = header: 'Oozie Server Install', handler: ->
       {oozie, hadoop_group, hadoop_conf_dir, yarn, realm, db_admin, core_site} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       is_falcon_installed = @contexts('ryba/falcon').length isnt 0
       port = url.parse(oozie.site['oozie.base.url']).port
 
@@ -363,16 +363,13 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
 
 ## Kerberos
 
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         header: 'Kerberos'
         principal: oozie.site['oozie.service.HadoopAccessorService.kerberos.principal'] #.replace '_HOST', @config.host
         randkey: true
         keytab: oozie.site['oozie.service.HadoopAccessorService.keytab.file']
         uid: oozie.user.name
         gid: oozie.group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
       @copy
         header: 'SPNEGO'
         source: '/etc/security/keytabs/spnego.service.keytab'

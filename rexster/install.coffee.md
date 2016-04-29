@@ -3,7 +3,7 @@
 
     module.exports = header: 'Rexster Install', handler: ->
       {titan, rexster, hadoop_conf_dir, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Users & Groups
 
@@ -74,16 +74,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Kerberos JAAS for ZooKeeper
 
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         header: 'Kerberos'
         principal: rexster.krb5_user.principal
         randkey: true
         keytab: rexster.krb5_user.keytab
         uid: rexster.user.name
         gid: rexster.group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
 
 ## Kerberos JAAS for ZooKeeper
 

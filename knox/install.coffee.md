@@ -4,7 +4,7 @@
     module.exports = header: 'Knox Install', handler: ->
       {knox, realm} = @config.ryba
       {java_home, jre_home} = @config.java
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Register
 
@@ -79,15 +79,12 @@ in the gateway.sh service script.
 ## Kerberos
 
       @call header: 'Kerberos', handler: ->
-        @krb5_addprinc
+        @krb5_addprinc krb5,
           principal: knox.krb5_user.principal
           randkey: true
           keytab: knox.krb5_user.keytab
           uid: knox.user.name
           gid: knox.group.name
-          kadmin_principal: kadmin_principal
-          kadmin_password: kadmin_password
-          kadmin_server: admin_server
         @write_jaas
           destination: knox.site['java.security.auth.login.config']
           content: 'com.sun.security.jgss.initiate':

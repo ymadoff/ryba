@@ -11,17 +11,14 @@
 
     module.exports.push header: 'Nagios # Kerberos', handler: ->
       {nagios, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
-      @krb5_addprinc
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
+      @krb5_addprinc krb5,
         principal: nagios.principal
         randkey: true
         keytab: nagios.keytab
         uid: nagios.user.name
         gid: nagios.user.group
         mode: 0o600
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
 
 ## Users & Groups
 

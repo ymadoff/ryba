@@ -5,7 +5,7 @@ TODO: [HBase backup node](http://willddy.github.io/2013/07/02/HBase-Add-Backup-M
 
     module.exports =  header: 'HBase Master Install', handler: ->
       {hadoop_group, hbase, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Register
 
@@ -168,25 +168,18 @@ https://blogs.apache.org/hbase/entry/hbase_cell_security
 https://hbase.apache.org/book/security.html
 
 
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         header: 'Kerberos Master User'
         principal: hbase.master.site['hbase.master.kerberos.principal'].replace '_HOST', @config.host
         randkey: true
         keytab: hbase.master.site['hbase.master.keytab.file']
         uid: hbase.user.name
         gid: hadoop_group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
         
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         header: 'Kerberos Admin User'
         principal: hbase.admin.principal
         password: hbase.admin.password
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
-
       
       @write
         header: 'Log4J Properties'

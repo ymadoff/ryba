@@ -3,7 +3,7 @@
     
     module.exports = header: 'Flume Install', handler: ->
       {flume, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Users & Groups
 
@@ -38,16 +38,13 @@ later usage. It is placed inside the flume configuration directory, by default
 "/etc/flume/conf/flume.service.keytab" with restrictive permissions set to
 "0600".
 
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         header: 'Kerberos'
         principal: "#{flume.user.name}/#{@config.host}@#{realm}"
         randkey: true
         keytab: "#{flume.conf_dir}/flume.service.keytab"
         uid: flume.user.name
         gid: flume.group.name
-        kadmin_principal: kadmin_principal
-        kadmin_password: kadmin_password
-        kadmin_server: admin_server
 
 ## Flume inside a Kerberos environment
 

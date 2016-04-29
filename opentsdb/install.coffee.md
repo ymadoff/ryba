@@ -3,7 +3,11 @@
 
     module.exports = header: 'OpenTSDB Install', handler: -> 
       {opentsdb, realm} = @config.ryba
-      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm] 
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm] 
+
+## Register
+
+      @register 'write_jaas', 'ryba/lib/write_jaas'
 
 ## Users & Groups
 
@@ -53,16 +57,12 @@ OpenTSDB archive comes with an RPM
         header: 'Kerberos'
         if: opentsdb.config['hbase.security.authentication'] is 'kerberos'
         handler: ->
-          @krb5_addprinc
+          @krb5_addprinc krb5,
             principal: "#{opentsdb.user.name}/#{@config.host}@#{realm}"
             randkey: true
             keytab: '/etc/security/keytabs/opentsdb.service.keytab'
             uid: opentsdb.user.name
             gid: opentsdb.group.name
-            kadmin_principal: kadmin_principal
-            kadmin_password: kadmin_password
-            kadmin_server: admin_server
-          @call once: true, 'ryba/lib/write_jaas'
           @write_jaas
             destination: '/etc/opentsdb/opentsdb.jaas'
             content: "#{opentsdb.config['hbase.sasl.clientconfig']}":
