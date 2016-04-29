@@ -23,6 +23,7 @@ data processing tools — Pig, MapReduce — to more easily read and write data 
         'ryba/tez'
         'ryba/hbase/client'
         'ryba/hive/hcatalog/install'
+        'ryba/hive/hcatalog/start'
         'ryba/hive/hcatalog/check'
       ]
       'check': [
