@@ -10,7 +10,7 @@ following two commands:
 
 ```
 service hive-server2 start
-su -l hive -c 'nohup /usr/hdp/current/hive/bin/hiveserver2 >/var/log/hive/hiveserver2.out 2>/var/log/hive/hiveserver2.log & echo $! >/var/run/hive-server2/hive-server2.pid'
+su -l hive -c 'nohup /usr/hdp/current/hive-server2/bin/hiveserver2 >/var/log/hive/hiveserver2.out 2>/var/log/hive/hiveserver2.log & echo $! >/var/run/hive-server2/hive-server2.pid'
 ```
 
     module.exports = header: 'Hive Server2 Start', timeout: -1, label_true: 'STARTED', handler: ->

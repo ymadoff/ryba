@@ -25,5 +25,5 @@ The file storing the PID is "/var/run/hive-server2/hive-server2.pid".
         handler: ->
           # TODO: get path from config
           @execute
-            cmd: 'rm /var/log/hive-hcatalog/*'
+            cmd: "rm #{hive.hcatalog.log_dir}/*"
             code_skipped: 1

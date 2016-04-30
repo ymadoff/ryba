@@ -12,6 +12,7 @@ su -l hive -c "kill `cat /var/run/hive-server2/hive-server2.pid`"
     module.exports = header: 'Hive Server2 Stop', label_true: 'STOPPED', handler: ->
       @service_stop
         name: 'hive-server2'
+        if_exists: '/etc/init.d/hive-server2'
 
 ## Stop Clean Logs
 
@@ -20,7 +21,6 @@ su -l hive -c "kill `cat /var/run/hive-server2/hive-server2.pid`"
         label_true: 'CLEANED'
         if: -> @config.ryba.clean_logs
         handler: ->
-          # TODO: get path from config
           @execute
-            cmd: 'rm /var/log/hive/*'
+            cmd: "rm #{hive.server2.log_dir}/*"
             code_skipped: 1
