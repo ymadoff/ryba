@@ -17,7 +17,6 @@ data processing tools — Pig, MapReduce — to more easily read and write data 
         'masson/core/krb5_client'
         'masson/core/iptables'
         'masson/commons/java'
-        'masson/commons/mysql_client'
         'ryba/commons/krb5_user'
         'ryba/hadoop/mapred_client/install'
         'ryba/tez'

@@ -8,6 +8,10 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
       {hive, realm, active_nn_host, hdfs, hadoop_group} = @config.ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       tez_is_installed = if @contexts('ryba/tez').length >= 1 then true else false
+      {hive, db_admin} = @config.ryba
+      username = hive.site['javax.jdo.option.ConnectionUserName']
+      password = hive.site['javax.jdo.option.ConnectionPassword']
+      {engine, _, db} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
 
 ## Register
 
@@ -64,6 +68,9 @@ isnt yet started.
 
       @call header: 'Service', handler: ->
         @service
+          name: 'mysql'
+          if: engine is 'mysql'
+        @service
           name: 'hive'
         @hdp_select
           name: 'hive-webhcat'
@@ -83,10 +90,6 @@ isnt yet started.
           if: -> @status -3
 
       @call header: 'Metastore Database', timeout:-1, handler: ->
-        {hive, db_admin} = @config.ryba
-        username = hive.site['javax.jdo.option.ConnectionUserName']
-        password = hive.site['javax.jdo.option.ConnectionPassword']
-        {engine, _, db} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
         switch engine
           when 'mysql'
             mysql_admin = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port}"
