@@ -14,6 +14,7 @@
 ## Wait
 
       @call once: true, 'masson/core/krb5_client/wait'
+      @wait once: true, 'ryba/hadoop/hdfs_nn/wait'
 
 ## IPTables
 
@@ -289,7 +290,6 @@ drwxrwxrwt   - yarn   hadoop            0 2014-05-26 11:01 /app-logs
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
       remote_app_log_dir = yarn.site['yarn.nodemanager.remote-app-log-dir']
-      @wait once: true, 'ryba/hadoop/hdfs_nn/wait'
       @execute
         header: 'HDFS layout'
         cmd: mkcmd.hdfs @, """
