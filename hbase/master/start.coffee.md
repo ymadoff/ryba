@@ -6,7 +6,7 @@ of the following two commands:
 
 ```
 service hbase-master start
-su -l hbase -c "/usr/hdp/current/hbase-regionserver/bin/hbase-daemon.sh --config /etc/hbase/conf start master"
+su -l hbase -c "/usr/hdp/current/hbase-regionserver/bin/hbase-daemon.sh --config /etc/hbase-master/conf start master"
 ```
 
     module.exports = header: 'HBase Master Start', label_true: 'STARTED', handler: ->

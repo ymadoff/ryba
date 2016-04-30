@@ -109,7 +109,7 @@ RegionServer, and HBase client host machines.
         if: @has_module 'ryba/hbase/master'
         source: hbase.master.site['hbase.master.keytab.file']
         destination: hbase.rs.site['hbase.regionserver.keytab.file']
-      @krb5_addprinc
+      @krb5_addprinc krb5,
         header: 'Kerberos'
         unless: @has_module 'ryba/hbase/master'
         principal: hbase.rs.site['hbase.regionserver.kerberos.principal'].replace '_HOST', @config.host
@@ -150,9 +150,9 @@ Environment passed to the RegionServer before it starts.
         local_source: true
         context: @config
         write: for k, v of hbase.rs.env
-            match: RegExp "export #{k}=.*", 'm'
-            replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
-            append: true
+          match: RegExp "export #{k}=.*", 'm'
+          replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
+          append: true
         unlink: true
         eof: true
 
