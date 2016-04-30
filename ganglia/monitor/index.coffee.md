@@ -13,6 +13,8 @@ Monitor is the agent to be deployed on each of the hosts.
         'ryba/ganglia/monitor/install'
         'ryba/ganglia/monitor/start'
       ]
-      'start': 'ryba/ganglia/monitor/start'
+      'start':
+        'ryba/ganglia/monitor/start'
       # 'status': 'ryba/ganglia/monitor/status'
-      'stop': 'ryba/ganglia/monitor/stop'
+      'stop':
+        'ryba/ganglia/monitor/stop'

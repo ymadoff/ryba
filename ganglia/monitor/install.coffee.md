@@ -1,14 +1,14 @@
 
 # Ganglia Monitor Install
 
-    module.exports = handler: ->
+    module.exports = header: 'Ganglia Monitor', handler: ->
 
 ## Service
 
 The package "ganglia-gmond-3.5.0-99" is installed.
 
       @service
-        header: 'Ganglia Monitor # Service'
+        header: 'Service'
         name: 'ganglia-gmond-3.5.0-99'
         timeout: -1
 
@@ -18,7 +18,7 @@ We prepare the directory "/usr/libexec/hdp/ganglia" in which we later upload
 the objects files and generate the hosts configuration.
 
       @mkdir
-        header: 'Ganglia Monitor # Layout'
+        header: 'Layout'
         destination: '/usr/libexec/hdp/ganglia'
 
 ## Objects
@@ -27,7 +27,7 @@ Copy the object files provided in the HDP companion files into the
 "/usr/libexec/hdp/ganglia" folder. Permissions on those file are set to "0o744".
 
       @call
-        header: 'Ganglia Monitor # Objects'
+        header: 'Objects'
         handler: (_, callback) ->
           glob "#{__dirname}/../resources/objects/*.*", (err, files) =>
             return callback err if err
@@ -42,7 +42,7 @@ Copy the object files provided in the HDP companion files into the
 
 Upload the "hdp-gmond" service file into "/etc/init.d".
 
-      @call header: 'Ganglia Monitor # Init Script', timeout: -1, handler: ->
+      @call header: 'Init Script', timeout: -1, handler: ->
         @write
           destination: '/etc/init.d/hdp-gmond'
           source: "#{__dirname}/../resources/scripts/hdp-gmond"
@@ -57,7 +57,7 @@ Upload the "hdp-gmond" service file into "/etc/init.d".
           if: -> @status -1
 
       @service_startup
-        header: 'Ganglia Monitor # Fix Gmond'
+        header: 'Fix Gmond'
         name: 'gmond'
         startup: false
         if_exec: '[[ rpm -qa | grep gmond ]]' # Saw a single node (front) without it on hdp 2.2.4
@@ -69,7 +69,7 @@ Ganglia) from starting. The variable "RRDCACHED_BASE_DIR" should point to
 "/var/lib/ganglia/rrds".
 
       @write
-        header: 'Ganglia Monitor # Fix RRD'
+        header: 'Fix RRD'
         destination: '/usr/libexec/hdp/ganglia/gangliaLib.sh'
         match: /^RRDCACHED_BASE_DIR=.*$/mg
         replace: 'RRDCACHED_BASE_DIR=/var/lib/ganglia/rrds;'
@@ -80,7 +80,7 @@ Ganglia) from starting. The variable "RRDCACHED_BASE_DIR" should point to
 Setup the Ganglia hosts. Categories are "HDPNameNode", "HDPResourceManager",
 "HDPSlaves" and "HDPHBaseMaster".
 
-      @call header: 'Ganglia Monitor # Host', timeout: -1, handler: ->
+      @call header: 'Host', timeout: -1, handler: ->
         cmds = []
         # On the NameNode and SecondaryNameNode servers, to configure the gmond emitters
         if @has_any_modules 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_snn'
@@ -103,8 +103,11 @@ Setup the Ganglia hosts. Categories are "HDPNameNode", "HDPResourceManager",
 
 Update the files generated in the "host" action with the host of the Ganglia Collector.
 
-      @call header: 'Ganglia Monitor # Configuration', handler: ->
-        collector = @host_with_module 'ryba/ganglia/collector'
+      @call header: 'Configuration', handler: ->
+        collectors = @contexts 'ryba/ganglia/collector'
+        console.log 'Ganglia Collectors Count:', collectors.length
+        throw Error "invalid colectors count #{collectors.length}" unless collectors.length is 1
+        [collector] = collectors
         @write
           destination: "/etc/ganglia/hdp/HDPNameNode/conf.d/gmond.slave.conf"
           match: /^(.*)host = (.*)$/mg
