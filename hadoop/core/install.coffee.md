@@ -111,22 +111,6 @@ same keytab file is for now shared between hdfs and yarn services.
           cmd: "su -l #{hdfs.user.name} -c \"klist -kt /etc/security/keytabs/spnego.service.keytab\""
           if: -> @status -1
 
-      @call header: 'Compression', timeout: -1, handler: ->
-        { hadoop_conf_dir } = @config.ryba
-        @service name: 'snappy'
-        @service name: 'snappy-devel'
-        @execute
-          cmd: 'ln -sf /usr/lib64/libsnappy.so /usr/lib/hadoop/lib/native/.'
-          if: -> @status(-1) or @status(-2)
-        @service
-          name: 'lzo'
-        @service
-          name: 'lzo-devel'
-        @service
-          name: 'hadoop-lzo'
-        @service
-          name: 'hadoop-lzo-native'
-
 ## Web UI
 
 This action follow the ["Authentication for Hadoop HTTP web-consoles"

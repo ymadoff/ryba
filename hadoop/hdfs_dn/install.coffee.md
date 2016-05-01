@@ -73,6 +73,22 @@ inside "/etc/init.d" and activate it on startup.
         @execute
           cmd: "service hadoop-hdfs-datanode restart"
           if: -> @status -3
+          
+      @call header: 'Compression', timeout: -1, handler: ->
+        { hadoop_conf_dir } = @config.ryba
+        @service name: 'snappy'
+        @service name: 'snappy-devel'
+        @link
+          source: '/usr/lib64/libsnappy.so'
+          destination: '/usr/hdp/current/hadoop-client/lib/native/.'
+        @service
+          name: 'lzo'
+        @service
+          name: 'lzo-devel'
+        @service
+          name: 'hadoop-lzo'
+        @service
+          name: 'hadoop-lzo-native'
 
 ## Layout
 
