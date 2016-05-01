@@ -4,8 +4,8 @@
         'masson/commons/java'
         'masson/core/krb5_client'
         'ryba/commons/krb5_user'
-        'ryba/ganglia/collector'
-        'ryba/graphite/carbon'
+        # 'ryba/ganglia/collector'
+        # 'ryba/graphite/carbon'
         'ryba/hadoop/core/configure'
       ]
       'install': [
