@@ -8,7 +8,10 @@
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       {java_home} = @config.java
 
-
+      @register 'hdp_select', 'ryba/lib/hdp_select'
+      @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
+      @register 'hconfigure', 'ryba/lib/hconfigure'
+      
 # Users and Groups   
 
       @group spark.group
