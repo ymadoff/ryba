@@ -34,7 +34,7 @@
       ryba.yarn.site['yarn.nodemanager.webapp.https.address'] ?= "#{host}:8044"
       ryba.yarn.site['yarn.nodemanager.remote-app-log-dir'] ?= "/app-logs"
       ryba.yarn.site['yarn.nodemanager.keytab'] ?= '/etc/security/keytabs/nm.service.keytab'
-      ryba.yarn.site['yarn.nodemanager.principal'] ?= "nm/#{ryba.static_host}@#{ryba.realm}"
+      ryba.yarn.site['yarn.nodemanager.principal'] ?= "nm/_HOST@#{ryba.realm}"
       ryba.yarn.site['yarn.nodemanager.vmem-pmem-ratio'] ?= '2.1'
       ryba.yarn.site['yarn.nodemanager.resource.percentage-physical-cpu-limit'] ?= '100'
       ryba.yarn.site['yarn.nodemanager.container-executor.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.LinuxContainerExecutor'
