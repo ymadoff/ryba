@@ -12,6 +12,8 @@ su -l hive -c "kill `cat /var/lib/hive-hcatalog/hcat.pid`"
 The file storing the PID is "/var/run/hive-server2/hive-server2.pid".
 
     module.exports = header: 'Hive HCatalog Stop Hive Metastore', label_true: 'STOPPED', handler: ->
+      {hive} = @config.ryba
+      
       @service_stop
         name: 'hive-hcatalog-server'
         if_exists: '/etc/init.d/hive-hcatalog-server'

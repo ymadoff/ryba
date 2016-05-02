@@ -172,7 +172,7 @@ directive once you enter the beeline shell.
 
 ## Check Sparl SQL Thrift Server
       
-      @call once: true, if: (@contexts('ryba/spark/thrift_server').length > 0), 'ryba/spark/thrift_server'
+      @call once: true, if: (@contexts('ryba/spark/thrift_server').length > 0), 'ryba/spark/thrift_server/wait'
       @call
         header: 'Check Spark SQL Thrift Server'
         label_true: 'CHECKED'
