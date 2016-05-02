@@ -6,7 +6,7 @@ the following two commands:
 
 ```
 service hbase-master stop
-su -l hbase -c "/usr/hdp/current/hbase-regionserver/bin/hbase-daemon.sh --config /etc/hbase/conf stop regionserver"
+su -l hbase -c "/usr/hdp/current/hbase-master/bin/hbase-daemon.sh --config /etc/hbase/conf stop master"
 ```
 
 The file storing the PID is "/var/run/hbase/yarn/hbase-hbase-master.pid".
