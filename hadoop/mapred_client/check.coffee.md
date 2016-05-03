@@ -35,11 +35,6 @@ to re-execute the check.
         unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -d check-#{shortname}-mapred/output"
         trap: true
 
-      @execute
-        header: 'Uploaded files'
-        # Referenced by "mapred_site['mapreduce.application.classpath']"
-        cmd: '[ -f /usr/hdp/current/share/lzo/0.6.0/lib/hadoop-lzo-0.6.0.jar ]'
-
 ## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
