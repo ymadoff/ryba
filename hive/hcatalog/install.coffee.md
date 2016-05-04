@@ -67,9 +67,13 @@ Note, the server is not activated on startup but they endup as zombies if HDFS
 isnt yet started.
 
       @call header: 'Service', handler: ->
-        @service
-          name: 'mysql'
+        @call 
           if: engine is 'mysql'
+          handler: ->
+            @service
+              name: 'mysql'
+            @service
+              name: 'mysql-connector-java'
         @service
           name: 'hive'
         @hdp_select

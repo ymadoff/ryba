@@ -28,7 +28,7 @@ Example:
 ```
 
     module.exports = handler: ->
-      {core_site, hive, static_host, realm} = @config.ryba ?= {}
+      {core_site, hive, realm} = @config.ryba ?= {}
       hcat_ctxs = @contexts 'ryba/hive/hcatalog', [require('../../commons/db_admin').handler, require('../hcatalog/configure').handler]
       # Layout and environment
       hive.server2 ?= {}
@@ -103,7 +103,7 @@ Example:
       # The service principal for the HiveServer2. If _HOST
       # is used as the hostname portion, it will be replaced.
       # with the actual hostname of the running instance.
-      hive.site['hive.server2.authentication.kerberos.principal'] ?= "hive/#{static_host}@#{realm}"
+      hive.site['hive.server2.authentication.kerberos.principal'] ?= "hive/_HOST@#{realm}"
       # SPNEGO
       hive.site['hive.server2.authentication.spnego.principal'] ?= core_site['hadoop.http.authentication.kerberos.principal']
       hive.site['hive.server2.authentication.spnego.keytab'] ?= core_site['hadoop.http.authentication.kerberos.keytab']
