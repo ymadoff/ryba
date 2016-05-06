@@ -3,6 +3,8 @@
 
     module.exports = handler: ->
       {shinken} = @config.ryba
+      # Add shinken to docker group
+      shinken.user.groups ?= ['docker']
       poller = shinken.poller ?= {}
       # Executor
       poller.executor ?= {}

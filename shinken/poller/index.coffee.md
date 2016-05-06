@@ -24,6 +24,7 @@ is approximatively 1000 checks/s
       'install': [
         'masson/core/yum'
         'masson/core/iptables'
+        'masson/commons/docker'
         'ryba/shinken/lib/commons'
         #'ryba/mongodb'
         'ryba/shinken/poller/install'
