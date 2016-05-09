@@ -397,13 +397,16 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
 
 ## Kerberos
 
-      @krb5_addprinc krb5,
+      @krb5_addprinc
         header: 'Kerberos'
         principal: oozie.site['oozie.service.HadoopAccessorService.kerberos.principal'] #.replace '_HOST', @config.host
         randkey: true
         keytab: oozie.site['oozie.service.HadoopAccessorService.keytab.file']
         uid: oozie.user.name
         gid: oozie.group.name
+        kadmin_principal: kadmin_principal
+        kadmin_password: kadmin_password
+        kadmin_server: admin_server
       @copy
         header: 'SPNEGO'
         source: '/etc/security/keytabs/spnego.service.keytab'
