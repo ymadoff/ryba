@@ -24,8 +24,8 @@ default setting for Yarn and its client application such as MapReduce or Tez.
           'mapred_client', 'tez_client'
           'hive_client', 'kafka_broker'
           'remote' ]
-        .run (handler, next) ->
-          console.log 'ok'
+        .call (handler, next) ->
+          console.log "#{handler}: ok"
           handler = exports[handler]
           if handler.length is 2
             handler contexts, next
@@ -45,7 +45,7 @@ default setting for Yarn and its client application such as MapReduce or Tez.
       params = merge {}, config.params
       params.end = false
       params.hosts = null
-      params.modules = ['masson/bootstrap/connection']
+      params.modules = ['masson/bootstrap/connection','masson/core/info']
       config.log ?= {}
       config.log.disabled ?= true
       # config.connection.end = false
@@ -61,7 +61,6 @@ default setting for Yarn and its client application such as MapReduce or Tez.
 Normalize configuration.
 
     exports.configure = (ctxs) ->
-      info = require 'masson/core/info'
       for ctx in ctxs
         ctx.config.capacity ?= {}
         ctx.config.capacity.total_memory ?= null
@@ -341,7 +340,7 @@ This behavior may be altered with the "hdfs_nn_name_dir" parameter.
         continue unless ctx.has_any_modules 'ryba/hbase/regionserver'
         {memory_hbase} = ctx.config.capacity
         memory_hbase_mb = Math.floor memory_hbase / 1024 / 1024
-        ctx.config.capacity['regionserver_opts'] ?= "-Xmx#{memory_hbase_mb}m"
+        ctx.config.capacity.regionserver_opts ?= "-Xmx#{memory_hbase_mb}m"
 
 ## MapReduce Client
 
@@ -446,7 +445,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
     exports.remote = (ctxs, next) ->
       each(ctxs)
       .parallel(true)
-      .run (ctx, next) ->
+      .call (ctx, next) ->
         do_hdfs = ->
           return do_yarn_capacity_scheduler() unless ctx.has_any_modules 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn'
           properties.read ctx.ssh, '/etc/hadoop/conf/hdfs-site.xml', (err, hdfs_site) ->
@@ -728,6 +727,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
         print_yarn_rm = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/yarn_rm').length
         if ctx.has_any_modules('ryba/hadoop/yarn_rm') and print_yarn_rm
           server.ryba.yarn ?= {}
+          server.ryba.yarn.rm ?= {}
           server.ryba.yarn.rm.site = capacity.rm_yarn_site
           server.ryba.yarn.capacity_scheduler = capacity.capacity_scheduler
         print_yarn_nm = not config.params.modules or multimatch(config.params.modules, 'ryba/hadoop/yarn_nm').length
@@ -749,7 +749,8 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
         print_hbase_regionserver = not config.params.modules or multimatch(config.params.modules, 'ryba/hbase/regionserver').length
         if ctx.has_any_modules('ryba/hbase/regionserver') and print_hbase_regionserver
           server.ryba.hbase ?= {}
-          server.ryba.hbase.regionserver_opts = capacity.regionserver_opts
+          server.ryba.hbase.rs ?= {}
+          server.ryba.hbase.rs.opts ?= capacity.regionserver_opts
         servers[ctx.config.host] = server
         print_kafka_broker = not config.params.modules or multimatch(config.params.modules, 'ryba/kafka/broker').length
         if ctx.has_any_modules('ryba/kafka/broker') and print_hbase_regionserver
