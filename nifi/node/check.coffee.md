@@ -6,7 +6,7 @@
 
 ## Wait
       
-      @call once true, 'ryba/nifi/node/wait'
+      @call once: true, 'ryba/nifi/node/wait'
 
 ## Check TCP
 

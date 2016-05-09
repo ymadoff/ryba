@@ -7,6 +7,8 @@
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       tmp_archive_location = "/var/tmp/ryba/nifi.tar.gz"
       protocol = if nifi.manager.config.properties['nifi.cluster.protocol.is.secure'] is 'true' then 'https' else 'http'
+      
+      @register 'write_jaas', 'ryba/lib/write_jaas'
 
 ## Users
 
@@ -38,6 +40,10 @@
             destination: nifi.manager.conf_dir
           @mkdir
             destination: nifi.manager.log_dir
+            uid: nifi.user.name
+            gid: nifi.group.name
+          @mkdir
+            destination: nifi.user.home 
             uid: nifi.user.name
             gid: nifi.group.name
 

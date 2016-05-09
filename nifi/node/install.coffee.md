@@ -8,7 +8,9 @@
       tmp_ssl_location = "/var/tmp/ryba/ssl"
       tmp_archive_location = "/var/tmp/ryba/nifi.tar.gz"
       protocol = if nifi.node.config.properties['nifi.cluster.protocol.is.secure'] is 'true' then 'https' else 'http'
-
+      
+      @register 'write_jaas', 'ryba/lib/write_jaas'
+      
 # Users
 
       @group nifi.group
@@ -36,6 +38,10 @@
             destination: nifi.node.conf_dir
           @mkdir
             destination: nifi.node.log_dir
+            uid: nifi.user.name
+            gid: nifi.group.name
+          @mkdir
+            destination: nifi.user.home 
             uid: nifi.user.name
             gid: nifi.group.name
 
