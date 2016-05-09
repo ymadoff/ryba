@@ -256,7 +256,7 @@ and permissions set to "0600".
 
         @krb5_addprinc krb5,
           header: 'Kerberos'
-          principal: "dn/#{@config.host}@#{realm}"
+          principal: hdfs.site['dfs.datanode.kerberos.principal'].replace '_HOST', @config.host
           randkey: true
           keytab: "/etc/security/keytabs/dn.service.keytab"
           uid: hdfs.user.name

@@ -8,7 +8,7 @@
       nm_ctxs = @contexts 'ryba/hadoop/yarn_nm', require('../yarn_nm/configure').handler
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm', require('../yarn_rm/configure').handler
       {ryba} = @config
-      {static_host, realm} = ryba
+      {realm} = ryba
       # Grab the host(s) for each roles
       ryba.yarn.log_dir ?= '/var/log/hadoop-yarn'
       ryba.yarn.pid_dir ?= '/var/run/hadoop-yarn'

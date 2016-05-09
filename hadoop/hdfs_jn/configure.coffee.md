@@ -33,8 +33,8 @@ Example:
       # Kerberos
       # TODO: Principal should be "jn/{host}@{realm}", however, there is
       # no properties to have a separated keytab between jn and spnego principals
-      ryba.hdfs.site['dfs.journalnode.kerberos.internal.spnego.principal'] = "HTTP/#{ryba.static_host}@#{ryba.realm}"
-      ryba.hdfs.site['dfs.journalnode.kerberos.principal'] = "HTTP/#{ryba.static_host}@#{ryba.realm}"
+      ryba.hdfs.site['dfs.journalnode.kerberos.internal.spnego.principal'] = "HTTP/_HOST@#{ryba.realm}"
+      ryba.hdfs.site['dfs.journalnode.kerberos.principal'] = "HTTP/_HOST@#{ryba.realm}"
       ryba.hdfs.site['dfs.journalnode.keytab.file'] = '/etc/security/keytabs/spnego.service.keytab'
       # ryba.hdfs.site['dfs.journalnode.edits.dir'] ?= ['file:///var/hdfs/edits']
       ryba.hdfs.site['dfs.journalnode.edits.dir'] ?= ['/var/hdfs/edits']

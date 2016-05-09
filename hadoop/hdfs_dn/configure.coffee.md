@@ -57,7 +57,7 @@ Example:
         ryba.hdfs.site['dfs.datanode.http.address'] ?= '0.0.0.0:50075'
         ryba.hdfs.site['dfs.datanode.https.address'] ?= '0.0.0.0:50475'
       # Kerberos
-      ryba.hdfs.site['dfs.datanode.kerberos.principal'] ?= "dn/#{ryba.static_host}@#{ryba.realm}"
+      ryba.hdfs.site['dfs.datanode.kerberos.principal'] ?= "dn/_HOST@#{ryba.realm}"
       ryba.hdfs.site['dfs.datanode.keytab.file'] ?= '/etc/security/keytabs/dn.service.keytab'
       # Tuning
       dataDirs = ryba.hdfs.site['dfs.datanode.data.dir'].split(',')

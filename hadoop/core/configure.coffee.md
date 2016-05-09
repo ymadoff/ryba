@@ -1,9 +1,6 @@
 
 # Hadoop Core Configuration
 
-*   `ryba.static_host` (boolean)
-    Write the host name of the server instead of the Hadoop "_HOST"
-    placeholder accross all the configuration files, default to false.
 *   `hdfs.user` (object|string)
     The Unix HDFS login name or a user object (see Mecano User documentation).
 *   `yarn.user` (object|string)
@@ -147,10 +144,6 @@ Default configuration:
       # ryba.active_nn ?= false
       throw new Error "Invalid Service Name" unless ryba.nameservice
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
-      ryba.static_host =
-        if ryba.static_host and ryba.static_host isnt '_HOST'
-        then @config.host
-        else '_HOST'
       # Configuration
       core_site = ryba.core_site ?= {}
       core_site['io.compression.codecs'] ?= "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.SnappyCodec"
@@ -206,7 +199,7 @@ Configuration for HTTP
       core_site['hadoop.http.authentication.token.validity'] ?= '36000'
       core_site['hadoop.http.authentication.signature.secret.file'] ?= '/etc/hadoop/hadoop-http-auth-signature-secret'
       core_site['hadoop.http.authentication.simple.anonymous.allowed'] ?= 'false'
-      core_site['hadoop.http.authentication.kerberos.principal'] ?= "HTTP/#{ryba.static_host}@#{ryba.realm}"
+      core_site['hadoop.http.authentication.kerberos.principal'] ?= "HTTP/_HOST@#{ryba.realm}"
       core_site['hadoop.http.authentication.kerberos.keytab'] ?= '/etc/security/keytabs/spnego.service.keytab'
       # Cluster domain
       unless core_site['hadoop.http.authentication.cookie.domain']
