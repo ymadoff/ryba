@@ -262,7 +262,15 @@ Install the HBase Libs as part of enabling the Oozie Unified Credentials with HB
 
 Install the LZO compression library as part of enabling the Oozie Web Console.
 
-      @call header: 'LZO', handler: ->
+      @call header: 'LZO', timeout: -1, handler: ->
+        @service
+          name: 'lzo'
+        @service
+          name: 'lzo-devel'
+        @service
+          name: 'hadoop-lzo'
+        @service
+          name: 'hadoop-lzo-native'
         lzo_jar = null
         @execute
           cmd: 'ls /usr/hdp/current/share/lzo/*/lib/hadoop-lzo-*.jar'
