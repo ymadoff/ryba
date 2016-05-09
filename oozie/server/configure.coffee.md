@@ -48,10 +48,11 @@ Example
       # SSL
       oozie.secure ?= true
       # see comment in ../resources/oozie-env.sh.j2
-      # oozie.trustore_location = '/etc/hadoop/conf/truststore'
-      # oozie.trustore_password = 'ryba123'
-      oozie.keystore_file ?= ryba.ssl_server['ssl.server.keystore.location'] or ''
-      oozie.keystore_pass ?= ryba.ssl_server['ssl.server.keystore.password'] or ''
+      
+      oozie.keystore_file ?= "#{oozie.conf_dir}/keystore"
+      oozie.keystore_pass ?= 'oozie123'
+      oozie.truststore_file ?= "#{oozie.conf_dir}/trustore"
+      oozie.truststore_pass ?= 'oozie123'
       # Configuration
       oozie.site ?= {}
       ryba.oozie.http_port ?= if oozie.secure then 11443 else 11000

@@ -8,8 +8,8 @@ Resource Manager. RM HA (High Availability) must be configure with manual
 failover and Oozie must target the active node.
 
     module.exports = header: 'Oozie Server Install', handler: ->
-      {oozie, hadoop_group, hadoop_conf_dir, yarn, realm, db_admin, core_site} = @config.ryba
-      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
+      {oozie, hadoop_group, hadoop_conf_dir, yarn, realm, db_admin, core_site, ssl_client,ssl} = @config.ryba
+      {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       is_falcon_installed = @contexts('ryba/falcon').length isnt 0
       port = url.parse(oozie.site['oozie.base.url']).port
 
@@ -170,6 +170,18 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
           match: /^export OOZIE_HTTPS_KEYSTORE_PASS=.*$/mg
           replace: "export OOZIE_HTTPS_KEYSTORE_PASS=#{oozie.keystore_pass}"
           append: true
+        ,
+          match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Djavax.net.ssl.trustStore=(.*)/m
+          replace: """
+          export CATALINA_OPTS="${CATALINA_OPTS} -Djavax.net.ssl.trustStore=#{oozie.truststore_file}"
+          """
+          append: true
+        ,
+          match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Djavax.net.ssl.trustStorePassword=(.*)/m
+          replace: """
+          export CATALINA_OPTS="${CATALINA_OPTS} -Djavax.net.ssl.trustStorePassword=#{oozie.truststore_pass}"
+          """
+          append: true
         ]
       # Append the Log4J configuration
       if oozie.log4j.extra_appender
@@ -300,18 +312,32 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           mode: 0o0755
           backup: true
 
-    # module.exports.push header: 'Oozie Server # SSL', handler: ->
-    #   {java_home, jre_home} = @config.java
-    #   {ssl, oozie} = @config.ryba
-    #   tmp_location = "/tmp/ryba_oozie_client_#{Date.now()}"
-    #   @download
-    #     source: ssl.cacert
-    #     destination: "#{tmp_location}_cacert"
-    #   @execute
-    #     cmd: "su -l oozie -c 'keytool -import -alias tomcat -file #{tmp_location}_cacert'"
-    #   @remove
-    #     destination: "#{tmp_location}_cacert"
-    
+      @call header: 'SSL Server', handler: ->
+        @java_keystore_add
+          header: 'SSL'
+          keystore: oozie.keystore_file
+          storepass: oozie.keystore_pass
+          caname: 'hadoop_root_ca'
+          cacert: "#{ssl.cacert}"
+          key: "#{ssl.key}"
+          cert: "#{ssl.cert}"
+          keypass: oozie.keystore_pass
+          name: @config.shortname
+          local_source: true
+        @java_keystore_add
+          keystore: oozie.keystore_file
+          storepass: oozie.keystore_pass
+          caname: 'hadoop_root_ca'
+          cacert: "#{ssl.cacert}"
+          local_source: true
+        # fix oozie pkix build exceptionm when oozie server connects to hadoop mr
+        @java_keystore_add
+          keystore: oozie.truststore_file
+          storepass: oozie.truststore_pass
+          caname: 'hadoop_root_ca'
+          cacert: "#{ssl.cacert}"
+          local_source: true
+      
       @call header: 'War', handler: ->
         @call
           header: 'Falcon Package'
@@ -476,11 +502,13 @@ the ShareLib contents without having to go into HDFS.
 
       # Instructions mention updating convertion pattern to the same value as
       # default, skip for now
+      #TODO: Declare all properties during configure and use write_properties
       @write
         header: 'Log4J properties'
         destination: "#{oozie.conf_dir}/oozie-log4j.properties"
         source: "#{__dirname}/../resources/oozie-log4j.properties"
         local_source: true
+        backup: true
         write: for k, v of oozie.log4j
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"

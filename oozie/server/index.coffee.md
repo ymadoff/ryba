@@ -8,7 +8,6 @@ Please check Oozie page
     module.exports = -> 
       'configure': [
         'ryba/hadoop/core'
-        'ryba/commons/db_admin'
         'ryba/oozie/server/configure'
       ]
       'install': [
@@ -27,8 +26,9 @@ Please check Oozie page
         'ryba/oozie/server/start'
       'status':
         'ryba/oozie/server/status'
-      'stop':
+      'stop': [
         'ryba/oozie/server/stop'
+        ]
       'wait':
         'ryba/oozie/server/wait'
       'backup':
