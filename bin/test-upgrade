@@ -1,0 +1,164 @@
+#!/bin/bash
+
+# 0    black     COLOR_BLACK     0,0,0
+# 1    red       COLOR_RED       1,0,0
+# 2    green     COLOR_GREEN     0,1,0
+# 3    yellow    COLOR_YELLOW    1,1,0
+# 4    blue      COLOR_BLUE      0,0,1
+# 5    magenta   COLOR_MAGENTA   1,0,1
+# 6    cyan      COLOR_CYAN      0,1,1
+# 7    white     COLOR_WHITE     1,1,1
+
+function pause(){
+   read -p "$*"
+}
+function pro(){
+  read -r -p "$1:? [y/N] " response
+  case $response in
+      [yY][eE][sS]|[yY])
+          printf "%-50s" "$1:Continuing...."
+          echo ''
+          return 0
+          ;;
+      *)
+          printf "%s\n" "Exiting"
+          exit 1
+          ;;
+   esac
+}
+
+# function check_dependences(service,services){
+function check_dependences(){
+   services=$1[@]
+   length=${#services[@]}
+   for (( j=0; j<${length}+1; j++ )); do
+     service=${services[$i-1]}
+     case service in
+       'yarn')
+         for (( i=0; i<${length}+1; i++ )); do
+           if [ "${services[$i-1]}" != "hdfs" ] ;
+            then
+              echo 'YARN must be upgraded after HDFS'
+              exit 1
+            fi
+          done;
+            ;;
+        'hbase')
+          for (( i=0; i<${length}+1; i++ )); do
+            if [ "${services[$i-1]}" != "hdfs" ] ;
+             then
+               echo 'HBase must be upgraded after HDFS'
+               exit 1
+             fi
+           done;
+            ;;
+        'hdfs')
+          for (( i=0; i<${length}+1; i++ )); do
+            if [ "${services[$i-1]}" == "yarn" ] ;
+             then
+               echo 'HDFS must be uptaded first'
+               exit 1
+             fi
+             if [ "${$1[$i-1]}" == "hbase" ] ;
+              then
+                echo 'heed to be uptaded first'
+                exit 1
+              fi
+           done;
+            ;;
+      esac
+    done;
+}
+# ---- command line parsing ----
+conf_args=""
+services_args=""
+declare -a services
+all_services=true
+skip_masson=false
+skip_ryba=false
+args=( "$@" )
+arraylength=${#args[@]}
+
+for (( i=1; i<${arraylength}+1; i++ )); do
+   if [ "${args[$i-1]}" == "-c" ] ; then conf_args="$conf_args -c ${args[$i]}"; fi
+   if [ "${args[$i-1]}" == "-s" ] ; 
+    then 
+      services=("${services[@]}" "${args[$i]}");  
+   fi
+   if [ "${args[$i-1]}" == "-skip" ] ; then skip_masson=true; fi
+done;
+
+if [ "${#services[@]}" -eq "0" ] ; 
+  then services=("hdfs" "yarn" "hbase"); 
+
+fi
+
+# ---- masson upgrade ----
+
+
+if ! $skip_masson ; 
+then
+  echo 'Yum Update: Started'
+  if ./bin/ryba $conf_args install -m 'masson/core/yum' ;
+    then echo 'Masson Install: Done'
+  else
+    echo 'Yum Update: FAILURE'
+    pro "Start RYBA Rolling Upgrade?"
+  fi
+else
+  echo 'Skipping Yum Update'
+fi
+
+function upgrade(){
+  pause "Press [Enter] key to start Rolling Upgrade for $1 "
+  echo " ••• Rolling Upgrade $1: Started" 
+  if  ./bin/upgrade ${conf_args} -s $1 
+    then
+       echo " ••• Rolling Upgrade $1 : Done"
+       if [ "$i" -eq "${#services}" ] ; then pause 'Press [Enter] key to continue...'; fi  
+    else
+      echo " ••• Rolling Upgrade $1 : FAILED"
+      pro 'Upgrade Next Service?'
+  fi
+}
+# ---- ryba upgrade ----
+if ! $skip_ryba ;
+then
+  arraylength=${#services[@]}
+  for (( i=1; i<${arraylength}+1; i++ )); 
+  do
+    service="${services[$i-1]}";
+    
+    case "$service" in
+      'hdfs')
+        #  ./bin/ryba ${conf_args} install -m 'ryba/hadoop/core/*';
+         pro "Make Sure master 1 is the active NameNode";
+         upgrade $service;
+         pro "Finalize With HDFS Client install"
+         ./bin/ryba ${conf_args} install -m 'ryba/hadoop/core/*' -m 'ryba/hadoop/hdfs_client/*';
+         ;;
+      'yarn')
+        upgrade $service
+        pro "Finalize With YARN Client install"
+        ./bin/ryba ${conf_args} install -m 'ryba/hadoop/yarn_client/*'
+         ;;
+      'hbase')
+        upgrade $service
+        pro "Finalize With HBase Client install"
+         ./bin/ryba ${conf_args} install -m 'ryba/hbase/client/*'
+         ;;
+      'hive')
+        #  ./bin/ryba ${conf_args} install -m  'ryba/falcon/install' -m 'ryba/pig/install' -m 'ryba/tez/install' -m 'ryba/hive/hcatalog/install' -m 'ryba/hive/hcatalog/server2' -m 'ryba/hive/webhcat/install' -m 'ryba/hive/client/install';
+         ;;
+      *)
+         printf "Usage: $0 [-skip] [-s| --service] hdfs \n"
+         ;;
+   esac  
+
+  #  echo " ••• Rolling Upgrade ${service}: Started"
+
+  
+  done;
+else
+  echo 'Skipping Ryba Upgrade'
+fi
