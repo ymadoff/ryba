@@ -478,7 +478,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
             do_kafka_broker()
         do_kafka_broker = ->
           return do_end() unless ctx.has_any_modules 'ryba/kafka/broker'
-          ssh2fs.readFile ctx.ssh, '/etc/kafka/conf/broker.properties', 'ascii', (err, content) ->
+          ssh2fs.readFile ctx.ssh, '/etc/kafka-broker/conf/broker.properties', 'ascii', (err, content) ->
             return do_end() if err
             properties = {}
             for line in string.lines content
