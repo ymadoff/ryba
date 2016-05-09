@@ -137,25 +137,16 @@ Update the kafka-env.sh file (/etc/kafka-broker/conf/kafka-enh.sh)
 
 Set Log4j properties
 
-      @write
+      @write_properties
         header: 'Broker Log4j'
         destination: "#{kafka.broker.conf_dir}/log4j.properties"
-        write: for k, v of kafka.broker.log4j
-          match: RegExp "^#{quote k}=.*$", 'mg'
-          replace: "#{k}=#{v}"
-          append: true
+        content: kafka.broker.log4j.config
         backup: true
-        eof: true
-      @write
-        header: 'Commun Log4j'
+      @write_properties
+        header: 'Common Log4j'
         destination: "/etc/kafka/conf/log4j.properties"
-        write: for k, v of kafka.broker.log4j
-          match: RegExp "^#{quote k}=.*$", 'mg'
-          replace: "#{k}=#{v}"
-          append: true
+        content: kafka.broker.log4j.config
         backup: true
-        eof: true
-
 
 Modify bin scripts to set $KAFKA_HOME variable to match /etc/kafka-broker/conf.
 Replace KAFKA_BROKER_CMD kafka-broker conf directory path

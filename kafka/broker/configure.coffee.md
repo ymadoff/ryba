@@ -65,13 +65,85 @@ Example:
       # A more agressive configuration for production is provided here:
       # http://docs.confluent.io/1.0.1/kafka-rest/docs/deployment.html#jvm
       kafka.broker.env['KAFKA_HEAP_OPTS'] ?= "-Xmx#{kafka.broker['heapsize']}m -Xms#{kafka.broker['heapsize']}m"
+      
+      # Log4J
       # Avoid console verbose ouput in a non-rotated kafka.out file
       # kafka.broker.env['KAFKA_LOG4J_OPTS'] ?= "-Dlog4j.configuration=file:$base_dir/../config/log4j.properties -Dkafka.root.logger=INFO, kafkaAppender"
       kafka.broker.env['KAFKA_LOG4J_OPTS'] ?= "-Dlog4j.configuration=file:#{kafka.broker.conf_dir}/log4j.properties"
       kafka.broker.log4j ?= {}
-      kafka.broker.log4j['log4j.rootLogger'] ?= 'INFO, kafkaAppender'
-      # kafka.broker.log4j['log4j.logger.kafka.authorizer.logger'] ?= 'DEBUG, authorizerAppender'
-      kafka.broker.log4j['log4j.additivity.kafka'] ?= "false"
+      kafka.broker.log4j[k] ?= v for k, v of @config.log4j
+      config = kafka.broker.log4j.config ?= {}
+      config['log4j.appender.stdout'] ?= 'org.apache.log4j.ConsoleAppender'
+      config['log4j.appender.stdout.layout'] ?= 'org.apache.log4j.PatternLayout'
+      config['log4j.appender.stdout.layout.ConversionPattern'] ?= '[%d] %p %m (%c)%n'
+      config['log4j.appender.kafkaAppender'] ?= 'org.apache.log4j.RollingFileAppender'
+      config['log4j.appender.kafkaAppender.MaxFileSize'] ?= '10MB'
+      config['log4j.appender.kafkaAppender.MaxBackupIndex'] ?= '1'
+      config['log4j.appender.kafkaAppender.File'] ?= '${kafka.logs.dir}/server.log'
+      config['log4j.appender.kafkaAppender.layout'] ?= 'org.apache.log4j.PatternLayout'
+      config['log4j.appender.kafkaAppender.layout.ConversionPattern'] ?= '[%d] %p %m (%c)%n'
+      config['log4j.appender.stateChangeAppender'] ?= 'org.apache.log4j.RollingFileAppender'
+      config['log4j.appender.stateChangeAppender.MaxFileSize'] ?= '10MB'
+      config['log4j.appender.stateChangeAppender.MaxBackupIndex'] ?= '1'
+      config['log4j.appender.stateChangeAppender.File'] ?= '${kafka.logs.dir}/state-change.log'
+      config['log4j.appender.stateChangeAppender.layout'] ?= 'org.apache.log4j.PatternLayout'
+      config['log4j.appender.stateChangeAppender.layout.ConversionPattern'] ?= '[%d] %p %m (%c)%n'
+      config['log4j.appender.requestAppender'] ?= 'org.apache.log4j.RollingFileAppender'
+      config['log4j.appender.requestAppender.MaxFileSize'] ?= '10MB'
+      config['log4j.appender.requestAppender.MaxBackupIndex'] ?= '1'
+      config['log4j.appender.requestAppender.File'] ?= '${kafka.logs.dir}/kafka-request.log'
+      config['log4j.appender.requestAppender.layout'] ?= 'org.apache.log4j.PatternLayout'
+      config['log4j.appender.requestAppender.layout.ConversionPattern'] ?= '[%d] %p %m (%c)%n'
+      config['log4j.appender.cleanerAppender'] ?= 'org.apache.log4j.RollingFileAppender'
+      config['log4j.appender.cleanerAppender.MaxFileSize'] ?= '10MB'
+      config['log4j.appender.cleanerAppender.MaxBackupIndex'] ?= '1'
+      config['log4j.appender.cleanerAppender.File'] ?= '${kafka.logs.dir}/log-cleaner.log'
+      config['log4j.appender.cleanerAppender.layout'] ?= 'org.apache.log4j.PatternLayout'
+      config['log4j.appender.cleanerAppender.layout.ConversionPattern'] ?= '[%d] %p %m (%c)%n'
+      config['log4j.appender.controllerAppender'] ?= 'org.apache.log4j.RollingFileAppender'
+      config['log4j.appender.controllerAppender.MaxFileSize'] ?= '10MB'
+      config['log4j.appender.controllerAppender.MaxBackupIndex'] ?= '1'
+      config['log4j.appender.controllerAppender.File'] ?= '${kafka.logs.dir}/controller.log'
+      config['log4j.appender.controllerAppender.layout'] ?= 'org.apache.log4j.PatternLayout'
+      config['log4j.appender.controllerAppender.layout.ConversionPattern'] ?= '[%d] %p %m (%c)%n'
+      config['log4j.appender.authorizerAppender'] ?= 'org.apache.log4j.RollingFileAppender'
+      config['log4j.appender.authorizerAppender.MaxFileSize'] ?= '10MB'
+      config['log4j.appender.authorizerAppender.MaxBackupIndex'] ?= '1'
+      config['log4j.appender.authorizerAppender.File'] ?= '${kafka.logs.dir}/kafka-authorizer.log'
+      config['log4j.appender.authorizerAppender.layout'] ?= 'org.apache.log4j.PatternLayout'
+      config['log4j.appender.authorizerAppender.layout.ConversionPattern'] ?= '[%d] %p %m (%c)%n'
+      kafka.broker.log4j.extra_appender = ''
+      if kafka.broker.log4j.remote_host and kafka.broker.log4j.remote_port
+        kafka.broker.log4j.extra_appender = ',socketAppender'
+        config['log4j.appender.socketAppender'] ?= 'org.apache.log4j.net.SocketAppender'
+        config['log4j.appender.socketAppender.Application'] ?= 'kafka'
+        config['log4j.appender.socketAppender.RemoteHost'] ?= kafka.broker.log4j.remote_host
+        config['log4j.appender.socketAppender.Port'] ?= kafka.broker.log4j.remote_port
+        config['log4j.appender.socketAppender.ReconnectionDelay'] ?= '10000'
+      #config['log4j.logger.kafka.producer.async.DefaultEventHandler'] ?= 'DEBUG, kafkaAppender' + kafka.broker.log4j.extra_appender
+      #config['log4j.logger.kafka.client.ClientUtils'] ?= 'DEBUG, kafkaAppender' + kafka.broker.log4j.extra_appender
+      #config['log4j.logger.kafka.perf'] ?= 'DEBUG, kafkaAppender' + ' socketAppender' + kafka.broker.log4j.extra_appender
+      #config['log4j.logger.kafka.perf.ProducerPerformance$ProducerThread'] ?= 'DEBUG, kafkaAppender' + kafka.broker.log4j.extra_appender
+      #config['log4j.logger.org.I0Itec.zkclient.ZkClient'] ?= 'DEBUG'
+      #config['log4j.logger.kafka.network.Processor'] ?= 'TRACE, requestAppender' + kafka.broker.log4j.extra_appender
+      #config['log4j.logger.kafka.server.KafkaApis'] ?= 'TRACE, requestAppender' + kafka.broker.log4j.extra_appender
+      #config['log4j.additivity.kafka.server.KafkaApis'] ?= 'false'
+      config['log4j.rootLogger'] ?= 'INFO, kafkaAppender' + kafka.broker.log4j.extra_appender
+      config['log4j.logger.kafka'] ?= 'INFO, kafkaAppender' + kafka.broker.log4j.extra_appender
+      config['log4j.additivity.kafka'] ?= 'false'
+      config['log4j.logger.kafka.network.RequestChannel$'] ?= 'WARN, requestAppender' + kafka.broker.log4j.extra_appender
+      config['log4j.additivity.kafka.network.RequestChannel$'] ?= 'false'
+      config['log4j.logger.kafka.request.logger'] ?= 'WARN, requestAppender' + kafka.broker.log4j.extra_appender
+      config['log4j.additivity.kafka.request.logger'] ?= 'false'
+      config['log4j.logger.kafka.controller'] ?= 'TRACE, controllerAppender' + kafka.broker.log4j.extra_appender
+      config['log4j.additivity.kafka.controller'] ?= 'false'
+      config['log4j.logger.kafka.log.LogCleaner'] ?= 'INFO, cleanerAppender' + kafka.broker.log4j.extra_appender
+      config['log4j.additivity.kafka.log.LogCleaner'] ?= 'false'
+      config['log4j.logger.state.change.logger'] ?= 'TRACE, stateChangeAppender' + kafka.broker.log4j.extra_appender
+      config['log4j.additivity.state.change.logger'] ?= 'false'
+      config['log4j.logger.kafka.authorizer.logger'] ?= 'WARN, authorizerAppender' + kafka.broker.log4j.extra_appender
+      config['log4j.additivity.kafka.authorizer.logger'] ?= 'false'
+
       # Push user and group configuration to consumer and producer
       # for csm_ctx in ctx.contexts ['ryba/kafka/consumer', 'ryba/kafka/producer']
       #   csm_ctx.config.ryba ?= {}
