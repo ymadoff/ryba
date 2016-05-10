@@ -51,7 +51,7 @@ supported contexts are "hbase", "jvm" and "rpc".
       hbase.metrics.config['*.source.filter.class'] ?= 'org.apache.hadoop.metrics2.filter.GlobFilter'
       hbase.metrics.config['hbase.*.source.filter.exclude'] ?= '*Regions*'
       hbase.metrics.config['hbase.extendedperiod'] ?= '3600'
-      sinks = @config.metrics_sinks
+      sinks = @config.metrics_sinks ?= {}
       sinks.ganglia ?= {}
       sinks.ganglia.class ?= 'org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31'
       sinks.ganglia.period ?= '10'
