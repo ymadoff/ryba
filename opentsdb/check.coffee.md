@@ -15,12 +15,12 @@
       
       @call header: 'Check HTTP API', label_true: 'CHECKED', handler: (_, callback) ->
         date = Date.now()
-        put =
+        put = JSON.stringify
           metric: 'ryba.test'
           timestamp: date
           value: 42
           tags: api: 'http', host: @config.host
-        get =
+        get = JSON.stringify
           start: date-100
           # set end time manually to not have the opentsdb'server default time
           end: date+100
@@ -29,17 +29,15 @@
             metric: 'ryba.test'
             tags: api: 'http', host: @config.host
           ]
-        @execute
-        
         @execute 
           cmd: """
-          curl --fail -X POST -d '#{JSON.stringify put}' http://#{@config.host}:#{opentsdb.config['tsd.network.port']}/api/put
+          curl --fail -X POST -d '#{put}' http://#{@config.host}:#{opentsdb.config['tsd.network.port']}/api/put
           """
         # Waiting 2 secs. Opentsdb is not consistent
         @execute
           cmd: """
           sleep 2;
-          curl --fail -X POST -d '#{JSON.stringify get}' http://#{@config.host}:#{opentsdb.config['tsd.network.port']}/api/query
+          curl --fail -X POST -d '#{get}' http://#{@config.host}:#{opentsdb.config['tsd.network.port']}/api/query
           """
         , (err, executed, stdout, stderr) ->
           [result] = JSON.parse stdout

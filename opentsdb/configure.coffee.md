@@ -25,6 +25,7 @@
       opentsdb.source ?= "https://github.com/OpenTSDB/opentsdb/releases/download/v#{opentsdb.version}/opentsdb-#{opentsdb.version}.noarch.rpm"
       # opentsdb.hbase
       opentsdb.hbase ?= {}
+      opentsdb.hbase.default_namespace ?= "opentsdb"
       opentsdb.hbase.bloomfilter ?= 'ROW'
       opentsdb.hbase.compression ?= 'SNAPPY'
       throw Error "Invalid opentsdb.hbase.bloomfilter '#{opentsdb.hbase.bloomfilter}' (NONE|ROW|ROWCOL)" unless opentsdb.hbase.bloomfilter in ['NONE', 'ROW', 'ROWCOL']
@@ -41,11 +42,12 @@
       # zookeeper...
       zoo_ctxs = @contexts 'ryba/zookeeper/server'
       opentsdb.config['tsd.storage.hbase.zk_quorum'] ?= zoo_ctxs.map((ctx) -> "#{ctx.config.host}:#{ctx.config.ryba.zookeeper.port}").join ','
-      opentsdb.config['tsd.storage.hbase.zk_basedir'] ?= hbase.rs.site['zookeeper.znode.parent']
-      opentsdb.config['tsd.storage.hbase.data_table'] ?= 'tsdb'
-      opentsdb.config['tsd.storage.hbase.uid_table'] ?= 'tsdb-uid'
-      opentsdb.config['tsd.storage.hbase.tree_table'] ?= 'tsdb-tree'
-      opentsdb.config['tsd.storage.hbase.meta_table'] ?= 'tsdb-meta'
+      opentsdb.config['tsd.storage.hbase.zk_ basedir'] ?= hbase.rs.site['zookeeper.znode.parent']
+      ns = -> if opentsdb.hbase.default_namespace? then "#{opentsdb.hbase.default_namespace}:" else ''
+      opentsdb.config['tsd.storage.hbase.data_table'] ?= ns() + 'tsdb'
+      opentsdb.config['tsd.storage.hbase.uid_table'] ?= ns() + 'tsdb-uid'
+      opentsdb.config['tsd.storage.hbase.tree_table'] ?= ns() + 'tsdb-tree'
+      opentsdb.config['tsd.storage.hbase.meta_table'] ?= ns() + 'tsdb-meta'
       opentsdb.config['tsd.query.allow_simultaneous_duplicates'] ?= 'true'
       opentsdb.config['hbase.security.authentication'] ?= hbase.rs.site['hbase.security.authentication']
       if opentsdb.config['hbase.security.authentication'] is 'kerberos'
