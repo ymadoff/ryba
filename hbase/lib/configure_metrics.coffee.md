@@ -48,7 +48,7 @@ supported contexts are "hbase", "jvm" and "rpc".
       hbase.metrics.sinks.graphite ?= false
       hbase.metrics.config ?= {}
       hbase.metrics.config['*.period'] ?= '60'
-      sinks = @config.metrics_sinks
+      sinks = @config.metrics_sinks ?= {}
       # File sink
       if hbase.metrics.sinks.file
         hbase.metrics.config["*.sink.file.#{k}"] ?= v for k, v of sinks.file
