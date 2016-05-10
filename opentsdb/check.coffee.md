@@ -33,8 +33,8 @@
           cmd: """
           curl --fail -X POST -d '#{put}' http://#{@config.host}:#{opentsdb.config['tsd.network.port']}/api/put
           """
-        # Waiting 2 secs. Opentsdb is not consistent
         @execute
+          # Waiting 2 secs. Opentsdb is not consistent
           cmd: """
           sleep 2;
           curl --fail -X POST -d '#{get}' http://#{@config.host}:#{opentsdb.config['tsd.network.port']}/api/query
