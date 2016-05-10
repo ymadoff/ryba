@@ -10,8 +10,8 @@ su -l httpfs -c '/usr/hdp/current/hadoop-httpfs/sbin/httpfs.sh start'
 ```
 
     module.exports = header: 'HDFS HttpFS # Start', handler: ->
-      @call once: true, 'masson/core/krb5_client/wait'
-      @call once: true, 'ryba/hadoop/hdfs_nn/wait'
+      @call 'masson/core/krb5_client/wait'
+      @call 'ryba/hadoop/hdfs_nn/wait'
       @service_start
         name: 'hadoop-httpfs'
         if_exists: '/etc/init.d/hadoop-httpfs'

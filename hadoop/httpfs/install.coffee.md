@@ -9,6 +9,7 @@
 
       @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdp_select', 'ryba/lib/hdp_select'
+      @call 'ryba/hadoop/hdfs_nn/wait'
 
 ## Users & Groups
 
