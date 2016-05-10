@@ -92,7 +92,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           host: @config.host
           port: @config.ryba.hdfs.site['dfs.journalnode.rpc-address']?.split(':')[1]
         @call (_, callback) ->
-          setTimeout callback, 10000
+          setTimeout callback, 30000
 
     exports.push
       header: 'Upgrade ZKFC'
@@ -163,7 +163,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           for nn_ctx in nn_ctxs
             @wait_execute
               cmd: mkcmd.hdfs @, "hdfs dfsadmin -safemode get | grep OFF | grep #{nn_ctx.config.host}"
-              interval: 3000
+              interval: 5000
         @execute
           cmd: mkcmd.hdfs @, "hdfs dfsadmin -rollingUpgrade finalize"
           
@@ -181,7 +181,9 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       handler: ->
         @call 'ryba/hadoop/hdfs_dn/install'
         @call 'ryba/hadoop/hdfs_dn/stop'
-        @call 'ryba/hadoop/hdfs_dn/start'     
+        @call 'ryba/hadoop/hdfs_dn/start'   
+        @call (_, callback) ->
+          setTimeout callback, 45000  
            
     exports.push
       header: 'Configure JournalNode'
@@ -190,13 +192,14 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
         @call 'ryba/hadoop/hdfs_jn/install'
         @call 'ryba/hadoop/hdfs_jn/stop'
         @call 'ryba/hadoop/hdfs_jn/start'
+        @call (_, callback) ->
+          setTimeout callback, 30000
         
 
     exports.push
       header: 'Configure standby NameNode'
       if: -> @has_module('ryba/hadoop/hdfs_nn') and @config.ryba.active_nn_host isnt @config.host
       handler: ->
-        @call 'ryba/hadoop/zkfc/wait'
         nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
         for nn_ctx in nn_ctxs
           if nn_ctx.config.host is nn_ctx.config.ryba.active_nn_host
@@ -217,7 +220,6 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       header: 'Upgrade active NameNode'
       if: -> @has_module('ryba/hadoop/hdfs_nn') and @config.ryba.active_nn_host is @config.host
       handler: ->
-        @call 'ryba/hadoop/zkfc/wait'
         nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
         for nn_ctx in nn_ctxs
           if nn_ctx.config.host is nn_ctx.config.ryba.active_nn_host

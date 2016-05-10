@@ -39,6 +39,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       header: 'Upgrade Yarn TS'
       if: -> @has_module 'ryba/hadoop/yarn_ts'
       handler: ->
+        @register 'hdp_select', 'ryba/lib/hdp_select'
         @hdp_select
           name: 'hadoop-yarn-timelineserver'
         @call 'ryba/hadoop/yarn_ts/stop'
@@ -49,6 +50,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       header: 'Upgrade Mapred JHS'
       if: -> @has_module 'ryba/hadoop/mapred_jhs'
       handler: ->
+        @register 'hdp_select', 'ryba/lib/hdp_select'
         @hdp_select
           name: 'hadoop-mapreduce-historyserver'
         @call 'ryba/hadoop/mapred_jhs/stop'
@@ -90,12 +92,13 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       header: 'Upgrade NodeManager'
       if: -> @has_module 'ryba/hadoop/yarn_nm'
       handler: ->
+        @register 'hdp_select', 'ryba/lib/hdp_select'
         @hdp_select
           name: 'hadoop-yarn-nodemanager'
         @call 'ryba/hadoop/yarn_nm/stop'
         @call 'ryba/hadoop/yarn_nm/start'
         @call (_, callback) ->
-          setTimeout callback, 30000   
+          setTimeout callback, 60000   
 
     exports.push
       header: 'Configure Yarn TS'

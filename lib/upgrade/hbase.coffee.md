@@ -48,6 +48,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
             zookeeper-client -server #{zk_connect} ls /hbase/backup-masters | grep '#{@config.host}'
           """
           handler: ->
+            @register 'hdp_select', 'ryba/lib/hdp_select'
             @hdp_select
               name: 'hbase-master'
             @call 'ryba/hbase/master/stop'
@@ -65,6 +66,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
             zookeeper-client -server #{zk_connect} ls /hbase/backup-masters | grep '#{@config.host}'
           """
           handler: ->
+            @register 'hdp_select', 'ryba/lib/hdp_select'
             @hdp_select
               name: 'hbase-master'
             @call 'ryba/hbase/master/stop'
@@ -76,6 +78,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       if: -> @has_module 'ryba/hbase/regionserver'
       handler: ->
         @call 'ryba/hbase/master/wait'
+        @register 'hdp_select', 'ryba/lib/hdp_select'
         @hdp_select
           name: 'hbase-client'
         @hdp_select
@@ -84,12 +87,15 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           cmd: """
             service hbase-regionserver restart
           """
+        @call (_, callback) ->
+          setTimeout callback, 30000
             
     exports.push
       header: 'Upgrade HBase Thrift Server'
       if: -> @has_module 'ryba/hbase/thrift'
       handler: ->
         @call 'ryba/hbase/master/wait'
+        @register 'hdp_select', 'ryba/lib/hdp_select'
         @hdp_select
           name: 'hbase-client'
         @execute
@@ -101,6 +107,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       if: -> @has_module 'ryba/hbase/rest'
       handler: ->
         @call 'ryba/hbase/master/wait'
+        @register 'hdp_select', 'ryba/lib/hdp_select'
         @hdp_select
           name: 'hbase-client'
         @execute
