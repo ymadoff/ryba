@@ -152,7 +152,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
           replace: """
             
             log4j.appender.SOCKET=org.apache.log4j.net.SocketAppender
-            log4j.appender.SOCKET.Application=HDFS_AUDIT
+            log4j.appender.SOCKET.Application=hdfs_audit
             log4j.appender.SOCKET.RemoteHost=#{hdfs.log4j.remote_host}
             log4j.appender.SOCKET.Port=#{hdfs.log4j.remote_port}
             log4j.appender.SOCKET.ReconnectionDelay=10000
