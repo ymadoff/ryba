@@ -51,12 +51,12 @@ NAME='Kafka Broker'
 USER={{ryba.kafka.user.name}}
 CONF_DIR={{ryba.kafka.broker.conf_dir}}
 PID_FILE='/var/run/kafka/kafka.pid'
-CMD="su - $USER -c \"/usr/hdp/current/kafka-broker/bin/kafka start\""
 KILL_FORCE=0
 KILL_SLEEP=10
 
+
 function start {
-  if [ -f $PID_FILE ]; then
+  if [ -f "$PID_FILE" ]; then
     pid=`cat $PID_FILE`
     if kill -0 $pid >/dev/null 2>&1 $pid; then
        echo "$NAME already running [$pid]"
@@ -65,24 +65,27 @@ function start {
       rm -rf $PID_FILE
     fi
   fi
+  CMD="su - $USER -c \"/usr/hdp/current/kafka-broker/bin/kafka start\""
   eval $CMD
   echo "$NAME running [`cat $PID_FILE`]"
 }
 
 function stop {
-  if [ ! -f $PID_FILE ]; then
+  if [ ! -f "$PID_FILE" ]; then
     echo "$NAME already stopped"
     return
   fi
   pid=$(<$PID_FILE)
   kill $pid 2>/dev/null
   i=0
+  CMD="su - $USER -c \"/usr/hdp/current/kafka-broker/bin/kafka stop\""
+  eval $CMD
   while kill -0 $pid 2>dev/null && [ $i -lt $KILL_SLEEP ]; do
     (( i++ ))
     sleep 1
   done
   if ! kill -0 $pid 2>dev/null; then
-    rm $PID_FILE || true
+    rm $PID_FILE 2>/dev/null || true
     echo "$NAME stopped"
     return
   fi
@@ -97,12 +100,12 @@ function force_stop {
     echo "$NAME failed to stop"
     exit 1
   fi
-  rm $PID_FILE
+  rm $PID_FILE 2>/dev/null || true
   echo "$NAME forced stopped after ${KILL_SLEEP}s"
 }
 
 function status {
-  if [ -f $PID_FILE ]; then
+  if [ -f "$PID_FILE" ]; then
     pid=`cat $PID_FILE`
     if kill -0 >/dev/null 2>&1 $pid; then
        echo "$NAME started [$pid]"

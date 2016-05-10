@@ -64,7 +64,7 @@ directories.
         @render
           header: 'Init Script'
           destination: '/etc/init.d/kafka-broker'
-          source: "#{__dirname}/../resources/kafka-broker.js2"
+          source: "#{__dirname}/../resources/kafka-broker.j2"
           local_source: true
           mode: 0o0755
           context: @config
