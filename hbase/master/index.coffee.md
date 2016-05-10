@@ -9,6 +9,7 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
     module.exports = ->
       'configure': [
         'ryba/hadoop/core'
+        'ryba/hbase/lib/configure_metrics'
         'ryba/hbase/master/configure'
       ]
       'check':
