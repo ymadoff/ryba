@@ -137,24 +137,29 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
               /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
               --zookeeper #{zoo_connect} | grep #{test_topic}
               """
-          @execute
-            cmd: mkcmd.kafka @, """
-              (
-              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
-                --add --allow-principal User:#{user.name}  \
-                --operation Read --operation Write --topic #{test_topic}
-              )&
-              (
-              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
-                --add \
-                --allow-principal User:#{user.name} --consumer --group #{user.name} --topic #{test_topic}
-              )
+          @call  header: "SASL_PLAINTEXT Topic ACL", handler: ->
+            @execute
+              cmd: mkcmd.kafka @, """
+                /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+                  --add --allow-principal User:#{user.name}  \
+                  --operation Read --operation Write --topic #{test_topic}
               """
-            unless_exec: mkcmd.kafka @, """
-              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \
-                --authorizer-properties zookeeper.connect=#{zoo_connect}  \
-                --topic #{test_topic} | grep 'User:#{user.name} has Allow permission for operations: Write from hosts: *'
-              """
+              unless_exec: mkcmd.kafka @, """
+                /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \
+                  --authorizer-properties zookeeper.connect=#{zoo_connect}  \
+                  --topic #{test_topic} | grep 'User:#{user.name} has Allow permission for operations: Write from hosts: *'
+                """
+            @execute
+              cmd: mkcmd.kafka @, """
+                /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+                  --add \
+                  --allow-principal User:#{user.name} --consumer --group #{user.name} --topic #{test_topic}
+                """
+              unless_exec: mkcmd.kafka @, """
+                /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \
+                  --authorizer-properties zookeeper.connect=#{zoo_connect}  \
+                  --topic #{test_topic} | grep 'User:#{user.name} has Allow permission for operations: Read from hosts: *'
+                """
           @execute
             cmd:  mkcmd.test @, """
               (
@@ -204,21 +209,25 @@ Specifying also the trustore location and password because if executed before co
               """
           @execute
             cmd: mkcmd.kafka @, """
-              (
               /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
                 --add --allow-principal User:#{user.name}  \
                 --operation Read --operation Write --topic #{test_topic}
-              )&
-              (
-              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
-                --add \
-                --allow-principal User:#{user.name} --consumer --group #{user.name} --topic #{test_topic}
-              )
               """
             unless_exec: mkcmd.kafka @, """
               /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \
                 --authorizer-properties zookeeper.connect=#{zoo_connect}  \
                 --topic #{test_topic} | grep 'User:#{user.name} has Allow permission for operations: Write from hosts: *'
+              """
+          @execute
+            cmd: mkcmd.kafka @, """
+              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+                --add \
+                --allow-principal User:#{user.name} --consumer --group #{user.name} --topic #{test_topic}
+              """
+            unless_exec: mkcmd.kafka @, """
+              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \
+                --authorizer-properties zookeeper.connect=#{zoo_connect}  \
+                --topic #{test_topic} | grep 'User:#{user.name} has Allow permission for operations: Read from hosts: *'
               """
           @execute
             cmd:  mkcmd.test @, """
