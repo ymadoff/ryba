@@ -125,9 +125,10 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           if_exec: mkcmd.hbase @, """
             zookeeper-client -server #{zk_connect} ls /hbase/backup-masters | grep '#{@config.host}'
           """
-        @call 'ryba/hbase/master/install'
-        @call 'ryba/hbase/master/stop'
-        @call 'ryba/hbase/master/start'
+          handler: ->
+            @call 'ryba/hbase/master/install'
+            @call 'ryba/hbase/master/stop'
+            @call 'ryba/hbase/master/start'
 
     exports.push
       header: 'Configure active HBase Master'
@@ -139,11 +140,12 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           unless_exec: mkcmd.hbase @, """
             zookeeper-client -server #{zk_connect} ls /hbase/backup-masters | grep '#{@config.host}'
           """
-        @call 'ryba/hbase/master/wait'
-        @call 'ryba/hbase/master/install'
-        @call 'ryba/hbase/master/stop'
-        @call 'ryba/hbase/master/start'
-        
+          handler: ->
+            @call 'ryba/hbase/master/wait'
+            @call 'ryba/hbase/master/install'
+            @call 'ryba/hbase/master/stop'
+            @call 'ryba/hbase/master/start'
+            
 
     exports.push
       header: 'Configure HBase regionservers '
@@ -155,12 +157,13 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           unless_exec: mkcmd.hbase @, """
             zookeeper-client -server #{zk_connect} ls /hbase/backup-masters | grep '#{@config.host}'
           """
-        @call 'ryba/hbase/regionserver/wait'
-        @call 'ryba/hbase/regionserver/install'
-        @call 'ryba/hbase/regionserver/stop'
-        @call 'ryba/hbase/regionserver/start'
-        @call (_, callback) ->
-          setTimeout callback, 10000
+          handler: ->
+            @call 'ryba/hbase/regionserver/wait'
+            @call 'ryba/hbase/regionserver/install'
+            @call 'ryba/hbase/regionserver/stop'
+            @call 'ryba/hbase/regionserver/start'
+            @call (_, callback) ->
+              setTimeout callback, 10000
   
     exports.push
       header: 'Configure HBase Rest Server '
