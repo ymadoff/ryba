@@ -1,0 +1,115 @@
+#!/bin/bash
+#
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# Starts a WEBHCat server
+#
+# chkconfig: 345 85 15
+# description: WEBHCat server
+#
+### BEGIN INIT INFO
+# Provides:          hive-webhcat-server
+# Short-Description: WEBHCat server
+# Default-Start:     3 4 5
+# Default-Stop:      0 1 2 6
+# Required-Start:    $syslog $remote_fs
+# Required-Stop:     $syslog $remote_fs
+# Should-Start:
+# Should-Stop:
+### END INIT INFO
+
+NAME='Hive Webhcat Server'
+USER='hive'
+PID_FILE='/var/run/webhcat/webhcat.pid'
+CMD="su -l $USER -c \"/usr/hdp/current/hive-webhcat/sbin/webhcat_server.sh start\""
+
+KILL_FORCE=0
+KILL_SLEEP=10
+
+function start {
+  if [ -f "${PID_FILE}" ]; then
+    pid=`cat $PID_FILE 2>/dev/null`
+    if kill -0 $pid >/dev/null 2>&1 $pid; then
+       echo "$NAME already running [$pid]"
+       exit 0
+    else
+      rm -rf $PID_FILE 2>/dev/null
+    fi
+  fi
+  eval $CMD
+  echo "$NAME running [`cat $PID_FILE`]"
+}
+
+function stop {
+  if [ ! -f "${PID_FILE}" ]; then
+    echo "$NAME already stopped"
+    return
+  fi
+  pid=$(<$PID_FILE)
+  kill -15 $pid 2>/dev/null
+  i=0
+  while kill -0 $pid 2>/dev/null && [ $i -lt $KILL_SLEEP ]; do
+    (( i++ ))
+    sleep 1
+  done
+  if ! kill -0 $pid 2>/dev/null; then
+    rm $PID_FILE 2>/dev/null || true
+    echo "$NAME stopped"
+    return
+  fi
+  force_stop
+}
+
+function force_stop {
+  pid=$(<$PID_FILE)
+  kill -9 $pid 2>/dev/null
+  sleep 1
+  if kill -0 $pid 2>/dev/null; then
+    echo "$NAME failed to stop"
+    exit 1
+  fi
+  rm $PID_FILE 2>/dev/null
+  echo "$NAME forced stopped after ${KILL_SLEEP}s"
+}
+
+function status {
+  if [ -f "${PID_FILE}" ]; then
+    pid=`cat $PID_FILE`
+    if kill -0 $pid >/dev/null 2>&1; then
+       echo "$NAME started [$pid]"
+       exit 0
+    fi
+  else
+    echo "$NAME stopped"
+    exit 3
+  fi
+}
+
+
+if [[ $1 == "start" ]]; then
+  start "$@"
+elif [[ $1 == "stop" ]]; then
+  stop "$@"
+elif [[ $1 == "restart" ]]; then
+  stop "$@"
+  sleep 1
+  start "$@"
+elif [[ $1 == "status" ]]; then
+  status "$@"
+else
+  N=/etc/init.d/$NAME
+  echo "Usage: $N {start|stop|restart|status}" >&2
+fi

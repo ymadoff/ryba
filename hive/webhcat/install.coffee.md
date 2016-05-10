@@ -64,7 +64,7 @@ inside "/etc/init.d" and activate it on startup.
           header: 'Init Script'
           source: "#{__dirname}/../resources/hive-webhcat-server"
           local_source: true
-          destination: '/etc/init.d/hive-webhcat-server'
+          destination: '/etc/init.d/hive-webhcat-server.j2'
           mode: 0o0755
           unlink: true
         @execute

@@ -86,7 +86,7 @@ isnt yet started.
           header: 'Init Script'
           source: "#{__dirname}/../resources/hive-hcatalog-server"
           local_source: true
-          destination: '/etc/init.d/hive-hcatalog-server'
+          destination: '/etc/init.d/hive-hcatalog-server.j2'
           mode: 0o0755
           unlink: true
         @execute

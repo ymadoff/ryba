@@ -79,7 +79,7 @@ isnt yet started.
           name: 'hive-server2'
         @write
           header: 'Init Script'
-          source: "#{__dirname}/../resources/hive-server2"
+          source: "#{__dirname}/../resources/hive-server2.j2"
           local_source: true
           destination: '/etc/init.d/hive-server2'
           mode: 0o0755
