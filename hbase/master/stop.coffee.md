@@ -17,11 +17,6 @@ The file storing the PID is "/var/run/hbase/yarn/hbase-hbase-master.pid".
         @service_stop
           name: 'hbase-master'
           if_exists: '/etc/init.d/hbase-master'
-          if: @retry is 0
-        @execute
-          cmd: 'service hbase-master force-stop'
-          if_exists: '/etc/init.d/hbase-master'
-          if: @retry > 0
 
 ## Stop Clean Logs
 
