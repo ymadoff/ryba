@@ -27,39 +27,24 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         header: 'Packages'
         name: 'shinken-scheduler'
 
-## Layout
-
-      @call header: 'Layout', handler: ->
-        @mkdir
-          destination: "#{shinken.user.home}/share"
-          uid: shinken.user.name
-          gid: shinken.group.name
-        @mkdir
-          destination: "#{shinken.user.home}/doc"
-          uid: shinken.user.name
-          gid: shinken.group.name
-        @chown
-          destination: shinken.log_dir
-          uid: shinken.user.name
-          gid: shinken.group.name
-        @execute
-          cmd: 'shinken --init'
-          unless_exists: '.shinken.ini'
-
 ## Additional Modules
 
       @call header: 'Modules', handler: ->
-        for name, mod of scheduler.modules
-          if mod.archive?
+        installmod = (name, mod) =>
+          @call unless_exec: "shinken inventory | grep #{name}", handler: ->
             @download
-              destination: "#{mod.archive}.zip"
+              destination: "/var/tmp/shinken/#{mod.archive}.zip"
               source: mod.source
               cache_file: "#{mod.archive}.zip"
               unless_exec: "shinken inventory | grep #{name}"
+              shy: true
             @extract
-              source: "#{mod.archive}.zip"
-              unless_exec: "shinken inventory | grep #{name}"
+              source: "/var/tmp/shinken/#{mod.archive}.zip"
+              shy: true
             @execute
-              cmd: "shinken install --local #{mod.archive}"
-              unless_exec: "shinken inventory | grep #{name}"
-          else throw Error "Missing parameter: archive for scheduler.modules.#{name}"
+              cmd: "shinken install --local /var/tmp/shinken/#{mod.archive}"
+            @execute
+              cmd: "rm -rf /var/tmp/shinken"
+              shy: true
+          for subname, submod of mod.modules then installmod subname, submod
+        for name, mod of scheduler.modules then installmod name, mod
