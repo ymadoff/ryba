@@ -5,6 +5,18 @@
 {% for hostname, host in hosts %}{% if host.hostgroups %}
 {% if host.hostgroups | contains('watcher') %}
 define service {
+   service_description   Hadoop - CORE
+   host_name             {{ hostname }}
+   use                   unit-service
+   check_command         bp_rule!(100%,1,1 of: {{ hostname }},YARN - Available & {{ hostname }},HDFS - Available & {{ hostname }},Zookeeper Server - Available)
+}
+define service {
+   service_description   Hadoop - Aggregation 
+   host_name             {{ hostname }}
+   use                   unit-service
+   check_command         bp_rule!(100%,1,1 of: g:{{ hostname }},r:.*Available?)
+ }
+define service {
   service_description   HDFS - Available
   host_name             {{ hostname }}
   servicegroups         hdfs
@@ -77,11 +89,11 @@ define service {
   check_command         {{ has_percent('HDFS DN - TCP SSL', '90%', '80%', hostname) }}
 }
 define service {
-  service_description   HDFS DN - Nodes w/ Available space
+  service_description   HDFS DN - Nodes w/ Free space
   host_name             {{ hostname }}
   servicegroups         hdfs_dn
   use                   unit-service
-  check_command         {{ has_percent('HDFS DN - Available space', '90%', '80%', hostname) }}
+  check_command         {{ has_percent('HDFS DN - Free space', '90%', '80%', hostname) }}
 }
 {% endif %}
 {% if host.modules | contains('httpfs') %}
@@ -254,6 +266,5 @@ define service {
   check_command         {{ has_one('Hue - WebUI', hostname) }}
 }
 {% endif %}
-
 {% endif %}
 {% endif %}{% endfor %}

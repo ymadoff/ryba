@@ -113,7 +113,7 @@ define service {
   check_command         check_cert!{{ host.config.ryba.hdfs.site['dfs.datanode.https.address'].split(':')[1] }}!120!60
 }
 define service {
-  service_description   HDFS DN - Available space
+  service_description   HDFS DN - Free space
   host_name             {{ hostname }}
   servicegroups         hdfs_dn
   use                   unit-service
