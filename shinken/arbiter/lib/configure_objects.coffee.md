@@ -14,6 +14,7 @@ Default "shinken object" (servicegroups, hosts, etc) configuration.
       commands = shinken.config.commands ?= {}
       realms = shinken.config.realms ?= {}
       realms.All ?= {}
+      clusters = shinken.config.clusters ?= {}
       contactgroups = shinken.config.contactgroups ?= {}
       contacts = shinken.config.contacts ?= {}
       dependencies = shinken.config.dependencies ?= {}
@@ -221,7 +222,8 @@ An external configuration can be obtained with a different instance of ryba usin
       servers ?= @contexts().map( (ctx) -> ctx.config )
       name ?= @config.ryba.nameservice or 'default'
       {shinken} = @config.ryba
-      {hostgroups, hosts} = shinken.config
+      {hostgroups, hosts, clusters} = shinken.config
+      clusters[name] ?= {}
       hostgroups[name] ?= {}
       hostgroups[name].members ?= []
       hostgroups[name].members = [hostgroups[name].members] unless Array.isArray hostgroups[name].members
@@ -234,23 +236,23 @@ An external configuration can be obtained with a different instance of ryba usin
       hosts[name].alias = "#{name} Watcher"
       hosts[name].hostgroups = ['watcher']
       hosts[name].use = 'aggregates'
-      hosts[name].custom_properties ?= {}
-      hosts[name].custom_properties.cluster ?= name
+      hosts[name].cluster ?= name
+      hosts[name].realm = clusters[name].realm if clusters[name].realm?
       hosts[name].modules ?= []
       hosts[name].modules = [hosts[name].modules] unless Array.isArray hosts[name].modules
-      for hostname, srv of servers
-        hostgroups[name].members.push hostname
-        hosts[hostname] ?= {}
-        hosts[hostname].ip ?= srv.ip
-        hosts[hostname].hostgroups ?= []
-        hosts[hostname].hostgroups = [hosts[hostname].hostgroups] unless Array.isArray hosts[hostname].hostgroups
-        hosts[hostname].use ?= 'linux-server'
-        hosts[hostname].config ?= srv
-        hosts[hostname].custom_properties ?= {}
-        hosts[hostname].custom_properties.cluster ?= name
+      for srv in servers
+        hostgroups[name].members.push srv.host
+        hosts[srv.host] ?= {}
+        hosts[srv.host].ip ?= srv.ip
+        hosts[srv.host].hostgroups ?= []
+        hosts[srv.host].hostgroups = [hosts[srv.host].hostgroups] unless Array.isArray hosts[srv.host].hostgroups
+        hosts[srv.host].use ?= 'linux-server'
+        hosts[srv.host].config ?= srv
+        hosts[srv.host].realm ?= clusters[name].realm if clusters[name].realm?
+        hosts[srv.host].cluster ?= name
         for mod in srv.modules
           hosts[name].modules.push modules_list[mod] if modules_list[mod]? and modules_list[mod] not in hosts[name].modules
-          hosts[hostname].hostgroups.push modules_list[mod] if modules_list[mod]?
+          hosts[srv.host].hostgroups.push modules_list[mod] if modules_list[mod]?
 
 ## Normalize
 
@@ -341,16 +343,17 @@ This function is called at the end to normalize values
       {shinken} = @config.ryba
       init.call @
       from_ryba.call @
-      if shinken.import_config
-        throw Error 'Invalid parameter: import_config should be false or a path' unless typeof shinken.import_config is 'string'
-        stat = fs.statSync shinken.import_config
-        clustername = path.parse(shinken.import_config).name
-        if stat.isFile()
-          servers = require shinken.import_config
-        else
-          servers = {}
-          servers[path.parse(k).name] = require k for k in glob.sync "#{shinken.import_config}/*"
-        from_contexts.call @, servers, clustername
+      if shinken.exports_dir
+        throw Error 'Invalid parameter: exports_dir should be false or a path' unless typeof shinken.exports_dir is 'string'
+        for exp in glob.sync "#{shinken.exports_dir}/*"
+          stat = fs.statSync exp
+          clustername = path.parse(exp).name
+          servers = []
+          if stat.isFile()
+            servers.push require exp
+          else
+            servers.push require k for k in glob.sync "#{exp}/*"
+          from_contexts.call @, servers, clustername
       else
         from_contexts.call @
       normalize.call @
