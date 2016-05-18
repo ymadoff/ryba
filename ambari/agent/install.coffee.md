@@ -2,9 +2,8 @@
 
 The ambari server must be set in the configuration file.
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/commons/java'
+    module.exports = header: 'Ambari Agent Install', timeout: -1, handler: ->
+      {ambari_agent} = @config.ryba
     # module.exports.push 'ryba/ambari/server/wait'
     # module.exports.push require('./index').configure
 
@@ -31,15 +30,13 @@ The ambari server must be set in the configuration file.
     #       return next err if err
     #       modified = true if written
     #       next()
-
-    module.exports.push header: 'Ambari Agent # Startup', timeout: -1, handler: ->
       @service
+        header: 'Ambari Agent Startup'
         name: 'ambari-agent'
         startup: true
 
-    module.exports.push header: 'Ambari Agent # Configure', timeout: -1, handler: ->
-      {ambari_agent} = @config.ryba
       @write_ini
+        header: 'Ambari Agent Configure'
         destination: "#{ambari_agent.conf_dir}/ambari-agent.ini"
         content: ambari_agent.ini
         parse: misc.ini.parse_multi_brackets_multi_lines
