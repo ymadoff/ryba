@@ -264,7 +264,7 @@ define service {
   host_name             {{ hostname }}
   servicegroups         hbase_rest
   use                   unit-service
-  check_command         check_tcp!{{ host.config.ryba.hbase.rest.site['hbase.rest.info.port'] }}!-S
+  check_command         check_tcp!{{ host.config.ryba.hbase.rest.site['hbase.rest.info.port'] }}
 }
 define service {
   service_description   HBase REST - Certificate
