@@ -32,22 +32,23 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## WebUI Dependencies
 
       @call header: 'Install WebUI Dependencies', if: 'webui2' in broker.config.modules, handler: ->
-        for k, v of broker.modules['webui2'].pip_modules
+        install_dep = (k, v) => 
           @call unless_exec: "pip list | grep #{k}", handler: ->
             @download
               source: v.url
-              destination: "/var/tmp/shinken/#{k}-#{v.version}.tar.gz"
+              destination: "/var/tmp/shinken/##{v.archive}.tar.gz"
               md5: v.md5
             @extract
-              source: "/var/tmp/shinken/#{k}-#{v.version}.tar.gz"
+              source: "/var/tmp/shinken/##{v.archive}.tar.gz"
             @execute
               cmd:"""
-              cd /var/tmp/shinken/#{k}-#{v.version}
+              cd /var/tmp/shinken/#{v.archive}
               python setup.py build
               python setup.py install
               """
             @remove destination: "/var/tmp/shinken/#{k}-#{v.version}.tar.gz"
             @remove destination: "/var/tmp/shinken/#{k}-#{v.version}"
+        for k, v of broker.modules['webui2'].pip_modules then install_dep k, v
 
 ## Additional Shinken Modules
 
