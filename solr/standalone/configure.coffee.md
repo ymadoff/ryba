@@ -23,6 +23,7 @@ Example:
       solr.install_dir ?= "/usr/solr/#{solr.version}"
       solr.var_dir ?= '/var/solr'
       solr.log_dir ?= '/var/log/solr'
+      solr.conf_dir ?= '/etc/solr/conf'
       solr.user ?= {}
       solr.user = name: solr.user if typeof solr.user is 'string'
       solr.user.name ?= 'solr'
@@ -44,7 +45,7 @@ Example:
       solr.principal ?= "solr/#{@config.host}@#{@config.ryba.realm}"
       solr.keytab ?= '/etc/security/keytabs/solr.service.keytab'
       if solr.mode is 'cloud'
-        zk_hosts = @contexts 'ryba/zookeeper/server', require('../zookeeper/server/configure').handler
+        zk_hosts = @contexts 'ryba/zookeeper/server', require('../../zookeeper/server/configure').handler
         zk_connect = zk_hosts.map( (ctx) -> "#{ctx.config.host}:#{ctx.config.ryba.zookeeper.port}").join ','
         solr.zkhosts = "#{zk_connect}/solr"
 
