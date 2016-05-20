@@ -57,7 +57,7 @@ HADOOP_JOBTRACKER_OPTS="-server -XX:ParallelGCThreads=8 -XX:+UseConcMarkSweepGC 
 
 HADOOP_TASKTRACKER_OPTS="-server -Xmx1024m -Dhadoop.security.logger=ERROR,console -Dmapred.audit.logger=ERROR,console ${HADOOP_TASKTRACKER_OPTS}"
 HADOOP_DATANODE_OPTS="{{ryba.hdfs.datanode_opts}} ${HADOOP_DATANODE_OPTS}" # RYBA CONF "ryba.hdfs.datanode_opts", DONT OVERWRITE"
-export HADOOP_DATANODE_OPTS="-server -XX:ParallelGCThreads=4 -XX:+UseConcMarkSweepGC -XX:ErrorFile=${HADOOP_LOG_DIR}/hs_err_pid%p.log -XX:NewSize=200m -XX:MaxNewSize=200m -XX:PermSize=128m -XX:MaxPermSize=256m -Xloggc:${HADOOP_LOG_DIR}/gc.log-`date +'%Y%m%d%H%M'` -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xms1024m -Xmx1024m -Dhadoop.security.logger=INFO,DRFAS -Dhdfs.audit.logger=INFO,DRFAAUDIT ${HADOOP_DATANODE_OPTS}"
+export HADOOP_DATANODE_OPTS="-server -XX:ParallelGCThreads=4 -XX:+UseConcMarkSweepGC -XX:ErrorFile=${HADOOP_LOG_DIR}/hs_err_pid%p.log -XX:NewSize={{ryba.hdfs.dn.newsize}} -XX:MaxNewSize={{ryba.hdfs.dn.newsize}} -XX:PermSize=128m -XX:MaxPermSize=256m -Xloggc:${HADOOP_LOG_DIR}/gc.log-`date +'%Y%m%d%H%M'` -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xms{{ryba.hdfs.dn.heapsize}} -Xmx{{ryba.hdfs.dn.heapsize}} -Dhadoop.security.logger=INFO,DRFAS -Dhdfs.audit.logger=INFO,DRFAAUDIT ${HADOOP_DATANODE_OPTS}"
 HADOOP_BALANCER_OPTS="-server -Xmx1024m ${HADOOP_BALANCER_OPTS}"
 
 export HADOOP_SECONDARYNAMENODE_OPTS=$HADOOP_NAMENODE_OPTS

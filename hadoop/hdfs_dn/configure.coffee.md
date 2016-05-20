@@ -81,6 +81,14 @@ Example:
       # dfs.datanode.fsdataset.volume.choosing.policy:AvailableSpace 
       # dfs.datanode.available-space-volume-choosing-policy.balanced-space-preference-fraction:1.0
 
+## Env
+Set up jave heap size linke in `ryba/hadoop/hdfs_nn`.
+
+      ryba.hdfs.dn ?= {}
+      ryba.hdfs.datanode_opts ?= ''
+      ryba.hdfs.dn.newsize ?= '200m'
+      ryba.hdfs.dn.heapsize ?= '1024m'
+
 ## HDFS Short-Circuit Local Reads
 
 [Short Circuit] need to be configured on the DataNode and the client.
