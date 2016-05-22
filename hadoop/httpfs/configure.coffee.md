@@ -15,8 +15,10 @@ The default configuration is located inside the source code in the location
       httpfs.tmp_dir ?= '/var/tmp/hadoop-httpfs'
       httpfs.http_port ?= '14000'
       httpfs.http_admin_port ?= '14001'
+      httpfs.catalina ?= {}
       httpfs.catalina_home ?= '/etc/hadoop-httpfs/tomcat-deployment'
       httpfs.catalina_opts ?= ''
+      httpfs.catalina.opts ?= {}
       # Group
       httpfs.group = name: httpfs.group if typeof httpfs.group is 'string'
       httpfs.group ?= {}
@@ -53,3 +55,9 @@ The default configuration is located inside the source code in the location
         hdfs_ctx.config.ryba.core_site ?= {}
         hdfs_ctx.config.ryba.core_site["hadoop.proxyuser.#{httpfs.user.name}.hosts"] ?= @contexts('ryba/hadoop/httpfs').map((ctx) -> ctx.config.host).join ','
         hdfs_ctx.config.ryba.core_site["hadoop.proxyuser.#{httpfs.user.name}.groups"] ?= '*'
+      # Log4J
+      if @config.log4j?.remote_host? && @config.log4j?.remote_port?
+        httpfs.catalina.opts['httpfs.log.server.logger'] = 'INFO,httpfs,socket'
+        httpfs.catalina.opts['httpfs.log.audit.logger'] = 'INFO,httpfsaudit,socket'
+        httpfs.catalina.opts['httpfs.log.remote_host'] = @config.log4j.remote_host
+        httpfs.catalina.opts['httpfs.log.remote_port'] = @config.log4j.remote_port

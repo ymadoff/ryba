@@ -99,9 +99,19 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           uid: httpfs.user.name
           gid: httpfs.group.name
           parent: true
+        @call header: 'HttpFS Env', handler: ->
+          httpfs.catalina_opts += " -D#{k}=#{v}" for k, v of httpfs.catalina.opts
+          @render
+            destination: "#{httpfs.conf_dir}/httpfs-env.sh"
+            source: "#{__dirname}/../resources/httpfs-env.sh.j2"
+            local_source: true
+            context: @config
+            uid: httpfs.user.name
+            gid: httpfs.group.name
+            backup: true
         @render
-          destination: "#{httpfs.conf_dir}/httpfs-env.sh"
-          source: "#{__dirname}/../resources/httpfs-env.sh.j2"
+          destination: "#{httpfs.conf_dir}/httpfs-log4j.properties"
+          source: "#{__dirname}/../resources/httpfs-log4j.properties"
           local_source: true
           context: @config
           backup: true
