@@ -170,13 +170,23 @@ and its value is the server "host:port".
       config['log4j.appender.DAILY.rollingPolicy.FileNamePattern'] ?= '${hive.log.dir}/${hive.log.file}.%d{yyyy-MM-dd}'
       config['log4j.appender.DAILY.layout'] ?= 'org.apache.log4j.PatternLayout'
       config['log4j.appender.DAILY.layout.ConversionPattern'] ?= '%d{dd MMM yyyy HH:mm:ss,SSS} %-5p [%t] (%C.%M:%L) %x - %m%n'
+      config['log4j.appender.AUDIT'] ?= 'org.apache.log4j.RollingFileAppender'
+      config['log4j.appender.AUDIT.File'] ?= '${hive.log.dir}/hive_audit.log'
+      config['log4j.appender.AUDIT.MaxFileSize'] ?= '20MB'
+      config['log4j.appender.AUDIT.MaxBackupIndex'] ?= '10'
+      config['log4j.appender.AUDIT.layout'] ?= 'org.apache.log4j.PatternLayout'
+      config['log4j.appender.AUDIT.layout.ConversionPattern'] ?= '%d{ISO8601} %-5p %c{2} (%F:%M(%L)) - %m%n'
+
       hive.server.log4j.appenders = ',RFAS'
+      hive.server.log4j.audit_appenders = ',AUDIT'
       if hive.server.log4j.remote_host and hive.server.log4j.remote_port
         hive.server.log4j.appenders = hive.server.log4j.appenders + ',SOCKET'
+        hive.server.log4j.audit_appenders = hive.server.log4j.audit_appenders + ',SOCKET'
         config['log4j.appender.SOCKET'] ?= 'org.apache.log4j.net.SocketAppender'
         config['log4j.appender.SOCKET.Application'] ?= 'hiveserver'
         config['log4j.appender.SOCKET.RemoteHost'] ?= hive.server.log4j.remote_host
         config['log4j.appender.SOCKET.Port'] ?= hive.server.log4j.remote_port
+
       config['log4j.category.DataNucleus'] ?= 'ERROR' + hive.server.log4j.appenders
       config['log4j.category.Datastore'] ?= 'ERROR' + hive.server.log4j.appenders
       config['log4j.category.Datastore.Schema'] ?= 'ERROR' + hive.server.log4j.appenders
@@ -199,6 +209,8 @@ and its value is the server "host:port".
       config['log4j.logger.org.apache.hadoop.hive.metastore.ObjectStore'] ?= 'INFO' + hive.server.log4j.appenders
       config['log4j.logger.org.apache.hadoop.hive.metastore.MetaStore'] ?= 'INFO' + hive.server.log4j.appenders
       config['log4j.logger.org.apache.hadoop.hive.metastore.HiveMetaStore'] ?= 'INFO' + hive.server.log4j.appenders
+      config['log4j.logger.org.apache.hadoop.hive.metastore.HiveMetaStore.audit'] ?= 'INFO' + hive.server.log4j.audit_appenders
+      config['log4j.additivity.org.apache.hadoop.hive.metastore.HiveMetaStore.audit'] ?= false
       config['log4j.logger.server.AsyncHttpConnection'] ?= 'OFF'
       config['hive.log.threshold'] ?= 'ALL'
       config['hive.root.logger'] ?= 'INFO' + hive.server.log4j.appenders
