@@ -6,7 +6,6 @@
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
       hadoop_ctxs = @contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
       hbase_ctxs = @contexts 'ryba/hbase/master'
-      require('../lib/configure_metrics.coffee.md').call
       ryba = @config.ryba ?= {}
       {realm, hbase, ganglia, graphite} = @config.ryba
       {java_home} = @config.java

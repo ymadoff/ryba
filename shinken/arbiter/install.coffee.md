@@ -40,39 +40,27 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         @remove destination: '/etc/shinken/templates/templates.cfg'
         @remove destination: '/etc/shinken/resource.d/path.cfg'
 
-## Layout
-
-      @call header: 'Layout', handler: ->
-        @mkdir
-          destination: "#{shinken.user.home}/share"
-          uid: shinken.user.name
-          gid: shinken.group.name
-        @mkdir
-          destination: "#{shinken.user.home}/doc"
-          uid: shinken.user.name
-          gid: shinken.group.name
-        @chown
-          destination: shinken.log_dir
-          uid: shinken.user.name
-          gid: shinken.group.name
-        @execute
-          cmd: 'shinken --init'
-          unless_exists: '.shinken.ini'
-
 ## Additional Modules
 
       @call header: 'Modules', handler: ->
-        for name, mod of arbiter.modules
+        installmod = (name, mod) =>
           @call unless_exec: "shinken inventory | grep #{name}", handler: ->
             @download
-              destination: "#{mod.archive}.zip"
+              destination: "/var/tmp/shinken/#{mod.archive}.zip"
               source: mod.source
+              cache_file: "#{mod.archive}.zip"
+              unless_exec: "shinken inventory | grep #{name}"
+              shy: true
             @extract
-              source: "#{mod.archive}.zip"
+              source: "/var/tmp/shinken/#{mod.archive}.zip"
+              shy: true
             @execute
-              cmd: "shinken install --local #{mod.archive}"
-            @remove destination: mod.archive
-            @remove destination: "#{mod.archive}.zip"
+              cmd: "shinken install --local /var/tmp/shinken/#{mod.archive}"
+            @execute
+              cmd: "rm -rf /var/tmp/shinken"
+              shy: true
+          for subname, submod of mod.modules then installmod subname, submod
+        for name, mod of arbiter.modules then installmod name, mod
 
 ## Configuration
 
@@ -96,7 +84,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             'date_format': 'iso8601'
             'shinken_user': shinken.user.name
             'shinken_group': shinken.group.name
-            'interval_length': '1' }
+            'interval_length': '1'
+            'no_event_handlers_during_downtimes': '1' }
               match: ///^#{k}=.*$///mg
               replace: "#{k}=#{v}"
               append: true

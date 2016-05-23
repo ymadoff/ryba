@@ -48,7 +48,16 @@ supported contexts are "hbase", "jvm" and "rpc".
       hbase.metrics.sinks.graphite ?= false
       hbase.metrics.config ?= {}
       hbase.metrics.config['*.period'] ?= '60'
-      sinks = @config.metrics_sinks
+      hbase.metrics.config['*.source.filter.class'] ?= 'org.apache.hadoop.metrics2.filter.GlobFilter'
+      hbase.metrics.config['hbase.*.source.filter.exclude'] ?= '*Regions*'
+      hbase.metrics.config['hbase.extendedperiod'] ?= '3600'
+      sinks = @config.metrics_sinks ?= {}
+      sinks.ganglia ?= {}
+      sinks.ganglia.class ?= 'org.apache.hadoop.metrics2.sink.ganglia.GangliaSink31'
+      sinks.ganglia.period ?= '10'
+      sinks.graphite ?= {}
+      sinks.graphite.class ?= 'org.apache.hadoop.metrics2.sink.GraphiteSink'
+      sinks.graphite.period ?= '10'
       # File sink
       if hbase.metrics.sinks.file
         hbase.metrics.config["*.sink.file.#{k}"] ?= v for k, v of sinks.file
@@ -63,6 +72,7 @@ supported contexts are "hbase", "jvm" and "rpc".
         hbase.metrics.config['hbase.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
         hbase.metrics.config['jvm.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
         hbase.metrics.config['rpc.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
+      # Graphite sink
       if hbase.metrics.sinks.graphite
         hbase.metrics.config['*.sink.graphite.metrics_prefix'] ?= if sinks.graphite.metrics_prefix? then "#{sinks.graphite.metrics_prefix}.hbase" else "hbase"
         hbase.metrics.config["*.sink.graphite.#{k}"] ?= v for k, v of sinks.graphite

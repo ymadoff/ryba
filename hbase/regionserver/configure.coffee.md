@@ -5,7 +5,6 @@
       # require('../../ganglia/collector').configure ctx
       # require('../../graphite/carbon').configure ctx
       # require('../../hadoop/hdfs').configure ctx
-      require('../lib/configure_metrics.coffee.md').call
       ryba = @config.ryba ?= {}
       {realm, hbase, ganglia, graphite} = @config.ryba
       {java_home} = @config.java

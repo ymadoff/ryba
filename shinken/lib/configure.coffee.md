@@ -37,7 +37,7 @@ Example
       shinken.user.system ?= true
       shinken.user.comment ?= 'Nagios/Shinken User'
       shinken.user.home ?= '/var/lib/shinken'
-      shinken.user.shell ?= '/bin/sh'
+      shinken.user.shell ?= '/bin/bash'
       # Groups
       shinken.group = name: shinken.group if typeof shinken.group is 'string'
       shinken.group ?= {}

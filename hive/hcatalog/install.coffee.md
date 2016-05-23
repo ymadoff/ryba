@@ -84,7 +84,7 @@ isnt yet started.
           name: 'hive-metastore'
         @write
           header: 'Init Script'
-          source: "#{__dirname}/../resources/hive-hcatalog-server"
+          source: "#{__dirname}/../resources/hive-hcatalog-server.j2"
           local_source: true
           destination: '/etc/init.d/hive-hcatalog-server'
           mode: 0o0755

@@ -3,11 +3,7 @@
 
 Ambari Agent is started with the service's syntax command.
 
-    module.exports = []
-
-## Start
-
-    module.exports.push header: 'Ambari Agent # Start', timeout: -1, label_true: 'STARTED', handler: ->
+    module.exports = header: 'Ambari Agent Start', timeout: -1, label_true: 'STARTED', handler: ->
       @execute
         cmd: 'service ambari-agent start'
         unless_exists: '/var/run/ambari-agent/ambari-agent.pid'

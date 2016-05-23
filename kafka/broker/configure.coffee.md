@@ -1,5 +1,4 @@
 
-
 ## Configure Kafka Broker
 Example:
 
@@ -222,7 +221,6 @@ Example PLAINTEXT and SSL:
         kafka.broker.config['replication.security.protocol'] ?= 'SSL'
       for prot in kafka.broker.protocols
           throw Error 'ACL must be activated' if ( prot.indexOf('SASL') > -1 and not secure_cluster)
-
 
 # Listeners Protocols
 

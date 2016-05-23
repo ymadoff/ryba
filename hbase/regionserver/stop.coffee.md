@@ -16,12 +16,6 @@ The file storing the PID is "/var/run/hbase/yarn/hbase-hbase-regionserver.pid".
       @service_stop
         name: 'hbase-regionserver'
         if_exists: '/etc/init.d/hbase-regionserver'
-        # relax: true
-        if: @retry is 0
-      @execute
-        cmd: 'service hbase-regionserver force-stop'
-        # if: -> @error -1
-        if: @retry > 0
 
 ## Stop Clean Logs
 

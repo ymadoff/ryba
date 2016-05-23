@@ -780,7 +780,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
 *   [12 key steps to keep your Hadoop Cluster running strong and performing optimum](https://cloudcelebrity.wordpress.com/2013/08/14/12-key-steps-to-keep-your-hadoop-cluster-running-strong-and-performing-optimum/)
 *   [Commonly Used Yarn Memory Settings](http://blogs.msdn.com/b/bigdatasupport/archive/2014/11/11/some-commonly-used-yarn-memory-settings.aspx)
 *   [How to Plan and Configure YARN and MapReduce](http://hortonworks.com/blog/how-to-plan-and-configure-yarn-in-hdp-2-0/)
-*   [Avoiding 6 Time-Consuming "Gotchas"](blog.cloudera.com/blog/2014/04/apache-hadoop-yarn-avoiding-6-time-consuming-gotchas/)
+*   [Avoiding 6 Time-Consuming "Gotchas"](http://blog.cloudera.com/blog/2014/04/apache-hadoop-yarn-avoiding-6-time-consuming-gotchas/)
 
 
 ## Dependencies

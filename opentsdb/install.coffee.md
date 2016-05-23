@@ -102,35 +102,49 @@ OpenTSDB archive comes with an RPM
 ## HBase Table
 
       @call once: true, 'ryba/hbase/master/wait'
-      t_data = opentsdb.config['tsd.storage.hbase.data_table']
-      t_uid = opentsdb.config['tsd.storage.hbase.uid_table']
-      t_tree = opentsdb.config['tsd.storage.hbase.tree_table']
-      t_meta = opentsdb.config['tsd.storage.hbase.meta_table']
+      namespaces = []
+      tables = {}
+      for table in ['data', 'uid', 'tree', 'meta']
+        tables[table] = opentsdb.config["tsd.storage.hbase.#{table}_table"]
+        split = tables[table].split ':'
+        genericErr = new Error "Incorrect table name for table '#{table}': must be [<ns>:]<table>"
+        if split.length > 2
+          throw genericErr
+        else if split.length is 2
+          namespaces.push split[0]
+      @call if: namespaces.length > 0, header: 'Create HBase namespaces', handler: ->
+        for ns in namespaces
+          @execute
+            cmd: mkcmd.hbase @, """
+            hbase shell -n <<< "create_namespace '#{ns}'"
+            """
+            unless_exec: mkcmd.hbase @, "hbase shell -n <<< 'list_namespace' | grep '#{ns}'"
+          @execute
+            cmd: mkcmd.hbase @, """
+            hbase shell -n <<< "grant '#{opentsdb.user.name}', 'RWXCA', '@#{ns}'"
+            """
+            shy: true
       @execute
-        header: 'Create HBase table'
+        header: 'Create HBase tables'
         # hbase shell -n : quit on ERROR with non-zero status
         cmd: mkcmd.hbase @, """
-        hbase shell -n <<EOF
-        create '#{t_uid}',
-          {NAME => 'id', COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'},
-          {NAME => 'name', COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'}
-        create '#{t_data}',
-          {NAME => 't', VERSIONS => 1, COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'}
-        create '#{t_tree}',
-          {NAME => 't', VERSIONS => 1, COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'}    
-        create '#{t_meta}',
-          {NAME => 'name', COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'}
-        EOF
+        hbase shell -n <<CMD
+          create '#{tables['uid']}',
+            {NAME => 'id', COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'},
+            {NAME => 'name', COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'}
+          create '#{tables['data']}',
+            {NAME => 't', VERSIONS => 1, COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'}
+          create '#{tables['tree']}',
+            {NAME => 't', VERSIONS => 1, COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'}    
+          create '#{tables['meta']}',
+            {NAME => 'name', COMPRESSION => '#{opentsdb.hbase.compression}', BLOOMFILTER => '#{opentsdb.hbase.bloomfilter}'}
+          grant '#{opentsdb.user.name}', 'RWXCA', '#{tables['uid']}'
+          grant '#{opentsdb.user.name}', 'RWXCA', '#{tables['data']}'
+          grant '#{opentsdb.user.name}', 'RWXCA', '#{tables['tree']}'
+          grant '#{opentsdb.user.name}', 'RWXCA', '#{tables['meta']}'
+        CMD
         """
-        # OpenTSDB is not working without the hbase admin rights ! So we map its principal on hbase user for now (2.2.0 RC3)
-        # TODO: Retest it for next versions
-        # grant 'opentsdb', 'RWXCA', '#{t_data}'
-        # grant 'opentsdb', 'RWXCA', '#{t_uid}'
-        # grant 'opentsdb', 'RWXCA', '#{t_meta}'
-        # grant 'opentsdb', 'RWXCA', '#{t_tree}'
-        # EOF
-        # """
-        unless_exec: mkcmd.hbase @, "[ `hbase shell -n <<< 'list' | egrep '^(#{t_data}|#{t_uid}|#{t_tree}|#{t_meta})' | sort | uniq | wc -l` -eq 4 ]"
+        unless_exec: mkcmd.hbase @, "[ `hbase shell -n <<< 'list' | egrep '^(#{tables['uid']}|#{tables['data']}|#{tables['tree']}|#{tables['meta']})' | sort | uniq | wc -l` -eq 4 ]"
 
 ## Dependencies
 
