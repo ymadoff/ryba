@@ -14,7 +14,7 @@ su -l hbase -c "/usr/hdp/current/hbase-master/bin/hbase-daemon.sh --config /etc/
 ## Wait
 
 Wait for Kerberos, ZooKeeper and HDFS to be started.
-    
+
       @call once: true, 'masson/core/krb5_client/wait'
       @call once: true, 'ryba/zookeeper/server/wait'
       @call once: true, 'ryba/hadoop/hdfs_nn/wait'

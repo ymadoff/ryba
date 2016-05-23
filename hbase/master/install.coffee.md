@@ -144,7 +144,6 @@ Upload the list of registered RegionServers.
         gid: hadoop_group.name
         eof: true
 
-
 ## Zookeeper JAAS
 
 JAAS configuration files for zookeeper to be deployed on the HBase Master,
@@ -166,7 +165,6 @@ Environment file is enriched by "ryba/hbase" # HBase # Env".
 
 https://blogs.apache.org/hbase/entry/hbase_cell_security
 https://hbase.apache.org/book/security.html
-
 
       @krb5_addprinc krb5,
         header: 'Kerberos Master User'
