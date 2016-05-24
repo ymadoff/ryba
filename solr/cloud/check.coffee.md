@@ -7,7 +7,6 @@
       {ssl, ssl_server, ssl_client, hadoop_conf_dir, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       protocol = if solr.ssl.enabled then 'https' else 'http'
-      force_check = true
       
       @call 'ryba/zookeeper/server/wait'
       @call 'ryba/solr/cloud/wait'

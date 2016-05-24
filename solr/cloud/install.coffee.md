@@ -163,15 +163,17 @@ Create HDFS solr user and its home directory
 ## Kerberos
 
       @krb5_addprinc
+        unless_exists: solr.spnego.keytab
         header: 'Kerberos SPNEGO'
         principal: solr.spnego.principal
         randkey: true
         keytab: solr.spnego.keytab
-        uid: solr.user.name
-        gid: solr.group.name
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
+      @execute
+        header: 'SPNEGO'
+        cmd: "su -l #{solr.user.name} -c 'test -r #{solr.spnego.keytab}'"
       @krb5_addprinc
         header: 'Solr Super User'
         principal: solr.admin_principal
