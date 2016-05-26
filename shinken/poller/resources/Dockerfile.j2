@@ -26,17 +26,14 @@ RUN wget http://nodejs.org/dist/latest/node-v6.2.0-linux-x64.tar.xz
 RUN sudo tar --strip-components 1 -xJf node-v* -C /usr/local
 
 ### LAYOUT ###
-ARG user=shinken
-RUN useradd -ms /bin/bash $user
-RUN echo "$user        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
+RUN useradd -ms /bin/bash {{ shinken.user.name }}
+RUN echo "{{ shinken.user.name }}        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
 
-ARG unprivileged_krb5_principal
-ARG privileged_krb5_principal
-RUN echo "01 */9 * * * root /usr/bin/kinit $privileged_krb5_principal -kt /etc/security/keytabs/crond.privileged.keytab" > /etc/cron.d/1kinit
-RUN echo "01 */9 * * * $user /usr/bin/kinit $unprivileged_krb5_principal -kt /etc/security/keytabs/crond.unprivileged.keytab" >> /etc/cron.d/1kinit
+RUN echo "01 */9 * * * root /usr/bin/kinit {{ shinken.poller.executor.krb5.privileged.principal }} -kt {{ shinken.poller.executor.krb5.privileged.keytab }}" > /etc/cron.d/1kinit
+RUN echo "01 */9 * * * {{ shinken.user.name }} /usr/bin/kinit {{ shinken.poller.executor.krb5.unprivileged.principal }} -kt {{ shinken.poller.executor.krb5.unprivileged.keytab }}" >> /etc/cron.d/1kinit
 
-USER $user
-WORKDIR /home/$user
+USER {{ shinken.user.name }}
+WORKDIR /home/{{ shinken.user.name }}
 # Downloading shinken-plugins
 RUN git clone https://github.com/pierrotws/shinken-plugins plugins
 WORKDIR plugins
