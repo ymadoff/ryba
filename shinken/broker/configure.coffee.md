@@ -11,28 +11,28 @@
       webui.version ?= "2.3.2"
       webui.source ?= "https://github.com/shinken-monitoring/mod-webui/archive/#{webui.version}.zip"
       webui.archive ?= "mod-webui-#{webui.version}"
-      webui.pip_modules = {}
-      webui.pip_modules.bottle = {}
-      webui.pip_modules.bottle.version = '0.12.8'
-      webui.pip_modules.bottle.url = 'https://pypi.python.org/packages/source/b/bottle/bottle-0.12.8.tar.gz'
-      webui.pip_modules.bottle.md5 = '13132c0a8f607bf860810a6ee9064c5b'
-      webui.pip_modules.pymongo = {}
-      webui.pip_modules.pymongo.version = '3.0.3'
-      webui.pip_modules.pymongo.url = 'https://pypi.python.org/packages/source/p/pymongo/pymongo-3.0.3.tar.gz'
-      webui.pip_modules.pymongo.md5 = '0425d99c2a453144b9c95cb37dbc46e9'
-      webui.pip_modules.importlib = {}
-      webui.pip_modules.importlib.version = '1.0.3'
-      webui.pip_modules.importlib.url = 'https://pypi.python.org/packages/0e/9c/daad476c540c4c36e7b35cf367331f0acf10d09d112cc5083c3e16a77347/importlib-1.0.3.tar.gz'
-      webui.pip_modules.importlib.md5 = '3ddefaed1eea78525b9bd4ccf194881d'
-      webui.pip_modules['alignak-backend-client'] = {}
-      webui.pip_modules['alignak-backend-client'].version = '0.3.0'
-      webui.pip_modules['alignak-backend-client'].archive = 'alignak_backend_client-0.3.0'
-      webui.pip_modules['alignak-backend-client'].url = 'https://pypi.python.org/packages/75/71/9794e301f803e5de6ab07e916a28b9218d2e1f6b46d4e8c1078f29b72d7b/alignak_backend_client-0.3.0.tar.gz'
-      webui.pip_modules['alignak-backend-client'].md5 = 'ae5ff7cb631a9b08451acc7629934db6'
-      # webui.pip_modules.pycurl = {}
-      # webui.pip_modules.pycurl.version = '7.21.5'
-      # webui.pip_modules.pycurl.url = 'https://pypi.python.org/packages/74/fa/37bc18e2f60100d9833cf008dca0861f6815cd1743c3b31a419bc6576ee3/pycurl-7.21.5.tar.gz'
-      # webui.pip_modules.pycurl.md5 = 'bca7bf47320082588db544ced2ba8717'
+      webui.pip_modules ?= {}
+      webui.pip_modules.bottle ?= {}
+      webui.pip_modules.bottle.version ?= '0.12.8'
+      webui.pip_modules.bottle.url ?= 'https://pypi.python.org/packages/source/b/bottle/bottle-0.12.8.tar.gz'
+      webui.pip_modules.bottle.md5 ?= '13132c0a8f607bf860810a6ee9064c5b'
+      webui.pip_modules.pymongo ?= {}
+      webui.pip_modules.pymongo.version ?= '3.0.3'
+      webui.pip_modules.pymongo.url ?= 'https://pypi.python.org/packages/source/p/pymongo/pymongo-3.0.3.tar.gz'
+      webui.pip_modules.pymongo.md5 ?= '0425d99c2a453144b9c95cb37dbc46e9'
+      webui.pip_modules.importlib ?= {}
+      webui.pip_modules.importlib.version ?= '1.0.3'
+      webui.pip_modules.importlib.url ?= 'https://pypi.python.org/packages/0e/9c/daad476c540c4c36e7b35cf367331f0acf10d09d112cc5083c3e16a77347/importlib-1.0.3.tar.gz'
+      webui.pip_modules.importlib.md5 ?= '3ddefaed1eea78525b9bd4ccf194881d'
+      webui.pip_modules['alignak-backend-client'] ?= {}
+      webui.pip_modules['alignak-backend-client'].version ?= '0.3.0'
+      webui.pip_modules['alignak-backend-client'].archive ?= 'alignak_backend_client-0.3.0'
+      webui.pip_modules['alignak-backend-client'].url ?= 'https://pypi.python.org/packages/75/71/9794e301f803e5de6ab07e916a28b9218d2e1f6b46d4e8c1078f29b72d7b/alignak_backend_client-0.3.0.tar.gz'
+      webui.pip_modules['alignak-backend-client'].md5 ?= 'ae5ff7cb631a9b08451acc7629934db6'
+      webui.pip_modules.passlib ?= {}
+      webui.pip_modules.passlib.version ?= '1.6.5'
+      webui.pip_modules.passlib.url ?= 'https://pypi.python.org/packages/1e/59/d1a50836b29c87a1bde9442e1846aa11e1548491cbee719e51b45a623e75/passlib-1.6.5.tar.gz#md5=d2edd6c42cde136a538b48d90a06ad67'
+      webui.pip_modules.passlib.md5 ?= 'd2edd6c42cde136a538b48d90a06ad67'
       v.archive ?= "#{k}-#{v.version}" for k, v of webui.pip_modules
       webui.modules ?= {}
       webui.config ?= {}
@@ -79,11 +79,14 @@
       logstore = livestatus.modules['logstore-null'] ?= {}
       logstore.version ?= '1.4.1'
       logstore.type ?= 'logstore_null'
+      logstore.config_file ?= 'logstore_null.cfg'
       ## Auto discovery
+      
       configmod = (name, mod) =>
         if mod.version?
           mod.source ?= "https://github.com/shinken-monitoring/mod-#{name}/archive/#{mod.version}.zip"
           mod.archive ?= "mod-#{name}-#{mod.version}"
+          mod.config_file ?= "#{name}.cfg"
         mod.modules ?= {}
         mod.config ?= {}
         mod.config.modules = [mod.config.modules] if typeof mod.config.modules is 'string'

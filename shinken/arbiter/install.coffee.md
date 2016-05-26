@@ -96,7 +96,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @call header: 'Modules Config', handler: ->
         config_mod = (name, mod) =>
           @render
-            destination: "/etc/shinken/modules/#{name}.cfg"
+            destination: "/etc/shinken/modules/#{mod.config_file}"
             source: "#{__dirname}/resources/module.cfg.j2"
             local_source: true
             context:
