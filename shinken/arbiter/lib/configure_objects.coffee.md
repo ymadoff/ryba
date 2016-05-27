@@ -118,6 +118,12 @@ They must have register set to 0 to not be instanciated
       contacts['generic-contact'].host_notifications_enabled ?= '1'
       contacts['generic-contact'].service_notifications_enabled ?= '1'
       contacts['generic-contact'].register = '0'
+      contacts['admin-contact'] ?= {}
+      contacts['admin-contact'].use ?= 'generic-contact'
+      contacts['admin-contact'].can_submit_commands ?= '1'
+      contacts['admin-contact'].is_admin ?= '1'
+      contacts['admin-contact'].contactgroups ?= ['admins']
+      contacts['admin-contact'].register = '0'
       contacts['shinken'] ?= {}
       contacts['shinken'].contactgroups ?= []
       contacts['shinken'].contactgroups.push 'admins' unless 'admins' in contacts['shinken'].contactgroups
