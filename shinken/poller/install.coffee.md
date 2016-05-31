@@ -104,8 +104,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             volume: [
               "/etc/krb5.conf:/etc/krb5.conf"
               #"/usr/lib64/nagios/plugins:/usr/lib64/nagios/plugins"
-              #"#{shinken.poller.executor.krb5.privileged.keytab}:/etc/security/keytabs/crond.privileged.keytab"
-              "#{shinken.poller.executor.krb5.unprivileged.keytab}:/etc/security/keytabs/crond.unprivileged.keytab"
+              #"#{shinken.poller.executor.krb5.privileged.keytab}:#{shinken.poller.executor.krb5.privileged.keytab}"
+              "#{shinken.poller.executor.krb5.unprivileged.keytab}:#{shinken.poller.executor.krb5.unprivileged.keytab}"
             ]
 
 ## Dependencies

@@ -11,6 +11,7 @@
         if mod.version?
           mod.source ?= "https://github.com/shinken-monitoring/mod-#{name}/archive/#{mod.version}.zip"
           mod.archive ?= "mod-#{name}-#{mod.version}"
+          mod.config_file ?= "#{name}.cfg"
         mod.modules ?= {}
         mod.config ?= {}
         mod.config.modules = [mod.config.modules] if typeof mod.config.modules is 'string'

@@ -43,6 +43,7 @@ ryba:
       solr.user.home ?= "#{path.join '/var/solr', 'data'}"
       solr.user.system ?= true
       solr.user.comment ?= 'Solr User'
+      solr.user.groups ?= 'hadoop'
       # Group
       solr.group ?= {}
       solr.group = name: solr.group if typeof solr.group is 'string'

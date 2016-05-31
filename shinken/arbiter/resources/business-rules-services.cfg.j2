@@ -5,16 +5,17 @@
 {% for hostname, host in hosts %}{% if host.hostgroups %}
 {% if host.hostgroups | contains('watcher') %}
 define service {
-   service_description   Hadoop - CORE
-   host_name             {{ hostname }}
-   use                   unit-service
-   check_command         bp_rule!(100%,1,1 of: {{ hostname }},YARN - Available & {{ hostname }},HDFS - Available & {{ hostname }},Zookeeper Server - Available)
+  service_description   Hadoop - CORE
+  host_name             {{ hostname }}
+  use                   unit-service
+  check_command         bp_rule!(100%,1,1 of: {{ hostname }},YARN - Available & {{ hostname }},HDFS - Available & {{ hostname }},Zookeeper Server - Available)
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 define service {
-   service_description   Hadoop - Aggregation 
-   host_name             {{ hostname }}
-   use                   unit-service
-   check_command         bp_rule!(100%,1,1 of: g:{{ hostname }},r:.*Available?)
+  service_description   Hadoop - Aggregation 
+  host_name             {{ hostname }}
+  use                   unit-service
+  check_command         bp_rule!(100%,1,1 of: g:{{ hostname }},r:.*Available?)
  }
 define service {
   service_description   HDFS - Available
@@ -22,6 +23,7 @@ define service {
   servicegroups         hdfs
   use                   unit-service
   check_command         bp_rule!({{ hostname }},HDFS NN - Available & {{ hostname }},HDFS DN - Available & {{ hostname }},HDFS JN - Available)
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 define service {
   service_description   YARN - Available
@@ -29,6 +31,7 @@ define service {
   servicegroups         yarn
   use                   unit-service
   check_command         bp_rule!({{ hostname }},YARN RM - Available & {{ hostname }},YARN NM - Available)
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 define service {
   service_description   HBase - Available
@@ -36,6 +39,7 @@ define service {
   servicegroups         hbase
   use                   unit-service
   check_command         bp_rule!({{ hostname }},HBase Master - Available & {{ hostname }},HBase RegionServer - Available)
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% if host.modules | contains('zookeeper_server') %}
 define service {
@@ -44,6 +48,7 @@ define service {
   servicegroups         zookeeper_server
   use                   unit-service
   check_command         {{ has_quorum('Zookeeper Server - TCP', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('hdfs_nn') %}
@@ -53,6 +58,7 @@ define service {
   servicegroups         hdfs_nn
   use                   unit-service
   check_command         {{ has_one('HDFS NN - TCP', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 define service {
   service_description   HDFS NN - Active Node
@@ -60,6 +66,7 @@ define service {
   servicegroups         hdfs_nn
   use                   unit-service
   check_command         check_active_nn!50470!-S
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('zkfc') %}
@@ -69,6 +76,7 @@ define service {
   servicegroups         zkfc
   use                   unit-service
   check_command         {{ has_all('ZKFC - TCP', hostname)}}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('hdfs_jn') %}
@@ -78,6 +86,7 @@ define service {
   servicegroups         hdfs_jn
   use                   unit-service
   check_command         {{ has_quorum('HDFS JN - TCP SSL', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('hdfs_dn') %}
@@ -87,6 +96,7 @@ define service {
   servicegroups         hdfs_dn
   use                   unit-service
   check_command         {{ has_percent('HDFS DN - TCP SSL', '90%', '80%', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 define service {
   service_description   HDFS DN - Nodes w/ Free space
@@ -94,6 +104,7 @@ define service {
   servicegroups         hdfs_dn
   use                   unit-service
   check_command         {{ has_percent('HDFS DN - Free space', '90%', '80%', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('httpfs') %}
@@ -103,6 +114,7 @@ define service {
   servicegroups         httpfs
   use                   unit-service
   check_command         {{ has_one('HttpFS - WebService', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('yarn_rm') %}
@@ -112,6 +124,7 @@ define service {
   servicegroups         yarn_rm
   use                   unit-service
   check_command         {{ has_one('YARN RM - WebService', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 define service {
   service_description   YARN RM - Active Node
@@ -119,6 +132,7 @@ define service {
   servicegroups         yarn_rm
   use                   unit-service
   check_command         check_active_rm!8090!-S
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 define service {
   service_description   YARN RM - TCP SSL
@@ -126,6 +140,7 @@ define service {
   servicegroups         yarn_rm
   use                   unit-service
   check_command         check_tcp_ha!'YARN RM - Active Node'!8050
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 define service {
   service_description   YARN RM - Scheduler TCP
@@ -133,6 +148,7 @@ define service {
   servicegroups         yarn_rm
   use                   unit-service
   check_command         check_tcp_ha!'YARN RM - Active Node'!8030
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 define service {
   service_description   YARN RM - Tracker TCP
@@ -140,6 +156,7 @@ define service {
   servicegroups         yarn_rm
   use                   unit-service
   check_command         check_tcp_ha!'YARN RM - Active Node'!8025
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 define service {
   service_description   YARN RM - RPC latency
@@ -147,6 +164,7 @@ define service {
   servicegroups         yarn_rm
   use                   unit-service
   check_command         check_rpc_latency_ha!'YARN RM - Active Node'!ResourceManager!8090!3000!5000!-S
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('yarn_nm') %}
@@ -156,6 +174,7 @@ define service {
   servicegroups         yarn_nm
   use                   unit-service
   check_command         {{ has_percent('YARN NM - TCP', '90%', '80%', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('hbase_master') %}
@@ -165,6 +184,7 @@ define service {
   servicegroups         hbase_master
   use                   unit-service
   check_command         {{ has_one('HBase Master - TCP', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('hbase_regionserver') %}
@@ -174,6 +194,7 @@ define service {
   servicegroups         hbase_regionserver
   use                   unit-service
   check_command         {{ has_percent('HBase RegionServer - TCP', '90%', '80%', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('hbase_rest') %}
@@ -183,6 +204,7 @@ define service {
   servicegroups         hbase_rest
   use                   unit-service
   check_command         {{ has_one('HBase REST - TCP SSL', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('hbase_thrift') %}
@@ -192,6 +214,7 @@ define service {
   servicegroups         hbase_thrift
   use                   unit-service
   check_command         {{ has_one('HBase Thrift - TCP SSL', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('hcatalog') %}
@@ -201,6 +224,7 @@ define service {
   servicegroups         hcatalog
   use                   unit-service
   check_command         {{ has_one('Hcatalog - TCP', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('hiveserver2') %}
@@ -210,6 +234,7 @@ define service {
   servicegroups         hiveserver2
   use                   unit-service
   check_command         {{ has_one('Hiveserver2 - TCP SSL', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('oozie_server') %}
@@ -219,6 +244,7 @@ define service {
   servicegroups         oozie_server
   use                   unit-service
   check_command         {{ has_one('Oozie Server - WebUI', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('kafka_broker') %}
@@ -228,6 +254,7 @@ define service {
   servicegroups         kafka_broker
   use                   unit-service
   check_command         {{ has_one('Kafka Broker - TCP', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('opentsdb') %}
@@ -237,6 +264,7 @@ define service {
   servicegroups         opentsdb
   use                   unit-service
   check_command         {{ has_one('OpenTSDB - WebService', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('elasticsearch') %}
@@ -246,6 +274,7 @@ define service {
   servicegroups         elasticsearch
   use                   unit-service
   check_command         {{ has_quorum('ElasticSearch - TCP', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('knox') %}
@@ -255,6 +284,7 @@ define service {
   servicegroups         knox
   use                   unit-service
   check_command         {{ has_one('Knox - WebService', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% if host.modules | contains('hue') %}
@@ -264,6 +294,7 @@ define service {
   servicegroups         hue
   use                   unit-service
   check_command         {{ has_one('Hue - WebUI', hostname) }}
+  business_rule_output_template  $($HOSTNAME$: $SERVICEDESC$)$
 }
 {% endif %}
 {% endif %}
