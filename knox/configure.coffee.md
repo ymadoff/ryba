@@ -110,7 +110,7 @@ against the configured LDAP store.
         realms = 'ldapRealm': topology
         if topology.group
           realms['ldapGroupRealm'] = if topology.group.lookup? then @config.sssd.config[topology.group.lookup] else topology.group
-        for realm, realm_config in realms
+        for realm, realm_config of realms
           ldap.config["main.#{realm}"] ?= 'org.apache.hadoop.gateway.shirorealm.KnoxLdapRealm' # OpenLDAP implementation
           # ldap.config['main.ldapRealm'] ?= 'org.apache.shiro.realm.ldap.JndiLdapRealm' # AD implementation
           ldap.config["main.#{realm}".replace('Realm','')+"ContextFactory"] ?= 'org.apache.hadoop.gateway.shirorealm.KnoxLdapContextFactory'
