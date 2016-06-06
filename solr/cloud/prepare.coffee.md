@@ -6,5 +6,5 @@
       handler: ->
         @cache
           ssh: null
-          source: @config.ryba.solr.source
+          source: @config.ryba.solr.cloud.source
           location: true

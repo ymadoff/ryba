@@ -5,4 +5,4 @@
       @wait_connect
         servers: for ctx in @contexts 'ryba/solr/cloud'
           host: ctx.config.host
-          port: ctx.config.ryba.solr.port
+          port: ctx.config.ryba.solr.cloud.port

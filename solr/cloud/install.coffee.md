@@ -3,10 +3,10 @@
 
     module.exports = header: 'Solr Cloud Install', handler: ->
       {solr, realm} = @config.ryba
-      {ssl, ssl_server, ssl_client, hadoop_conf_dir, realm} = @config.ryba
+      {ssl, ssl_server, ssl_client, hadoop_conf_dir, realm, hadoop_group} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       tmp_archive_location = "/var/tmp/ryba/solr.tar.gz"
-      protocol = if solr.ssl.enabled then 'https' else 'http'
+      protocol = if solr.cloud.ssl.enabled then 'https' else 'http'
 
 ## Dependencies
 
@@ -15,6 +15,17 @@
       @call 'ryba/zookeeper/server/wait'
       @register 'write_jaas', 'ryba/lib/write_jaas'
       @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
+      
+## Layout
+
+      @mkdir
+        destination: solr.user.home
+        uid: solr.user.name
+        gid: solr.group.name
+      @mkdir
+        directory: solr.cloud.conf_dir
+        uid: solr.user.name
+        gid: solr.group.name
       
 ## Users and Groups
 
@@ -26,57 +37,49 @@ Ryba support installing solr from apache official release or HDP Search repos.
 
       @call header: 'Packages', timeout: -1, handler: ->          
         @call 
-          if:  solr.source is 'HDP'
+          if:  solr.cloud.source is 'HDP'
           handler: ->
             @service
               name: 'lucidworks-hdpsearch'
             @chown
-              if: solr.source is 'HDP'
+              if: solr.cloud.source is 'HDP'
               destination: '/opt/lucidworks-hdpsearch'
               uid: solr.user.name
               gid: solr.group.name
         @call
-          if: solr.source isnt 'HDP'
+          if: solr.cloud.source isnt 'HDP'
           handler: ->
             @download
-              source: solr.source
+              source: solr.cloud.source
               destination: tmp_archive_location
             @mkdir 
-              destination: solr.install_dir
+              destination: solr.cloud.install_dir
             @extract
               source: tmp_archive_location
-              destination: solr.install_dir
+              destination: solr.cloud.install_dir
               preserve_owner: false
               strip: 1
             @link 
-              source: solr.install_dir
-              destination: solr.latest_dir
+              source: solr.cloud.install_dir
+              destination: solr.cloud.latest_dir
               
 
-      @call header: 'Layout', handler: ->
-        @mkdir
-          destination: solr.user.home
-          uid: solr.user.name
-          gid: solr.group.name
-        @mkdir
-          directory: solr.conf_dir
-          uid: solr.user.name
-          gid: solr.group.name
+      @call header: 'Configuration', handler: ->
         @link 
-          source: "#{solr.latest_dir}/conf"
-          destination: solr.conf_dir
+          source: "#{solr.cloud.latest_dir}/conf"
+          destination: solr.cloud.conf_dir
         @remove
           shy: true
-          destination: "#{solr.latest_dir}/bin/solr.in.sh"
+          destination: "#{solr.cloud.latest_dir}/bin/solr.in.sh"
         @link 
-          source: "#{solr.conf_dir}/solr.in.sh"
-          destination: "#{solr.latest_dir}/bin/solr.in.sh"
+          source: "#{solr.cloud.conf_dir}/solr.in.sh"
+          destination: "#{solr.cloud.latest_dir}/bin/solr.in.sh"
         @render
           header: 'Init Script'
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
-          source: "#{__dirname}/../resources/solr.j2"
+          source: "#{__dirname}/../resources/cloud/solr.j2"
           destination: '/etc/init.d/solr'
           local_source: true
           context: @config
@@ -88,10 +91,10 @@ has to be fixe to use jdk 1.8.
 
       @write
         header: 'Fix zKcli script'
-        destination: "#{solr.latest_dir}/server/scripts/cloud-scripts/zkcli.sh"
+        destination: "#{solr.cloud.latest_dir}/server/scripts/cloud-scripts/zkcli.sh"
         write: [
           match: RegExp "^JVM=.*$", 'm'
-          replace: "JVM=\"#{solr.jre_home}/bin/java\""
+          replace: "JVM=\"#{solr.cloud.jre_home}/bin/java\""
         ]
         backup: false
 
@@ -99,12 +102,12 @@ has to be fixe to use jdk 1.8.
 
       @call header: 'Solr Layout', timeout: -1, handler: ->
         @mkdir
-          destination: solr.pid_dir
+          destination: solr.cloud.pid_dir
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
         @mkdir
-          destination: solr.log_dir
+          destination: solr.cloud.log_dir
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
@@ -119,7 +122,8 @@ has to be fixe to use jdk 1.8.
 Create HDFS solr user and its home directory
 
       @hdfs_mkdir
-        if: solr.hdfs?
+        if: solr.cloud.hdfs?
+        if: @config.host is @contexts('ryba/solr/cloud')[0].config.host
         header: 'HDFS Layout'
         destination: "/user/#{solr.user.name}"
         user: solr.user.name
@@ -130,16 +134,16 @@ Create HDFS solr user and its home directory
 ## Config
     
       @call header: 'Configure', handler: ->
-        solr.env['SOLR_AUTHENTICATION_OPTS'] ?= ''
-        solr.env['SOLR_AUTHENTICATION_OPTS'] += " -D#{k}=#{v} "  for k, v of solr.auth_opts
-        writes = for k,v of solr.env
+        solr.cloud.env['SOLR_AUTHENTICATION_OPTS'] ?= ''
+        solr.cloud.env['SOLR_AUTHENTICATION_OPTS'] += " -D#{k}=#{v} "  for k, v of solr.cloud.auth_opts
+        writes = for k,v of solr.cloud.env
           match: RegExp "^.*#{k}=.*$", 'mg'
           replace: "#{k}=\"#{v}\" # RYBA DON'T OVERWRITE"
           append: true
         @render
           header: 'Solr Environment'
-          source: "#{__dirname}/../resources/solr.ini.sh.j2"
-          destination: "#{solr.conf_dir}/solr.in.sh"
+          source: "#{__dirname}/../resources/cloud/solr.ini.sh.j2"
+          destination: "#{solr.cloud.conf_dir}/solr.in.sh"
           context: @config
           write: writes
           local_source: true
@@ -147,8 +151,8 @@ Create HDFS solr user and its home directory
           eof: true
         @render
           header: 'Solr Config'
-          source: solr.conf_source
-          destination: "#{solr.conf_dir}/solr.xml"
+          source: solr.cloud.conf_source
+          destination: "#{solr.cloud.conf_dir}/solr.xml"
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
@@ -157,27 +161,29 @@ Create HDFS solr user and its home directory
           backup: true
           eof: true
         @link
-          source: "#{solr.conf_dir}/solr.xml"
+          source: "#{solr.cloud.conf_dir}/solr.xml"
           destination: "#{solr.user.home}/solr.xml"
 
 ## Kerberos
 
       @krb5_addprinc
-        unless_exists: solr.spnego.keytab
+        unless_exists: solr.cloud.spnego.keytab
         header: 'Kerberos SPNEGO'
-        principal: solr.spnego.principal
+        principal: solr.cloud.spnego.principal
         randkey: true
-        keytab: solr.spnego.keytab
+        keytab: solr.cloud.spnego.keytab
+        uid: solr.user.name
+        gid: hadoop_group.name
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
       @execute
         header: 'SPNEGO'
-        cmd: "su -l #{solr.user.name} -c 'test -r #{solr.spnego.keytab}'"
+        cmd: "su -l #{solr.user.name} -c 'test -r #{solr.cloud.spnego.keytab}'"
       @krb5_addprinc
         header: 'Solr Super User'
-        principal: solr.admin_principal
-        password: solr.admin_password
+        principal: solr.cloud.admin_principal
+        password: solr.cloud.admin_password
         randkey: true
         uid: solr.user.name
         gid: solr.group.name
@@ -186,11 +192,11 @@ Create HDFS solr user and its home directory
         kadmin_server: admin_server
       @write_jaas
         header: 'Solr JAAS'
-        destination: "#{solr.conf_dir}/solr-server.jaas"
+        destination: "#{solr.cloud.conf_dir}/solr-server.jaas"
         content:
           Client:
-            principal: solr.spnego.principal
-            keyTab: solr.spnego.keytab
+            principal: solr.cloud.spnego.principal
+            keyTab: solr.cloud.spnego.keytab
             useKeyTab: true
             storeKey: true
             useTicketCache: true
@@ -198,8 +204,8 @@ Create HDFS solr user and its home directory
         gid: solr.group.name
       @krb5_addprinc
         header: 'Solr Server User'
-        principal: solr.principal
-        keytab: solr.keytab
+        principal: solr.cloud.principal
+        keytab: solr.cloud.keytab
         randkey: true
         uid: solr.user.name
         gid: solr.group.name
@@ -212,40 +218,39 @@ Create HDFS solr user and its home directory
       @execute
         header: 'Zookeeper bootstrap'
         cmd: """
-          cd #{solr.latest_dir}
-          server/scripts/cloud-scripts/zkcli.sh -zkhost #{solr.zkhosts} \ 
+          cd #{solr.cloud.latest_dir}
+          server/scripts/cloud-scripts/zkcli.sh -zkhost #{solr.cloud.zkhosts} \ 
           -cmd bootstrap -solrhome #{solr.user.home}
         """
-        unless_exec: "zookeeper-client -server #{solr.zk_connect} ls / | grep solr"
+        unless_exec: "zookeeper-client -server #{solr.cloud.zk_connect} ls / | grep solr"
 
 ## Enable Authentication and ACLs
 For now we skip security configuration to solr when source is 'HDP'.
 HDP has version 5.2.1 of solr, and security plugins are included from 5.3.0
 
       @execute
-        
         header: "Upload Security conf"
         cmd: """
-          cd #{solr.latest_dir}
-          server/scripts/cloud-scripts/zkcli.sh -zkhost #{solr.zk_connect} \
-          -cmd put /solr/security.json '#{JSON.stringify solr.security}'
+          cd #{solr.cloud.latest_dir}
+          server/scripts/cloud-scripts/zkcli.sh -zkhost #{solr.cloud.zk_connect} \
+          -cmd put /solr/security.json '#{JSON.stringify solr.cloud.security}'
         """
-      
+        
 ## SSL
 
       @java_keystore_add
-        keystore: solr.ssl_keystore_path
-        storepass: solr.ssl_keystore_pwd
+        keystore: solr.cloud.ssl_keystore_path
+        storepass: solr.cloud.ssl_keystore_pwd
         caname: "hadoop_root_ca"
         cacert: "#{ssl.cacert}"
         key: "#{ssl.key}"
         cert: "#{ssl.cert}"
-        keypass: solr.ssl_keystore_pwd
+        keypass: solr.cloud.ssl_keystore_pwd
         name: @config.shortname
         local_source: true
       @java_keystore_add
-        keystore: solr.ssl_trustore_path
-        storepass: solr.ssl_keystore_pwd
+        keystore: solr.cloud.ssl_trustore_path
+        storepass: solr.cloud.ssl_keystore_pwd
         caname: "hadoop_root_ca"
         cacert: "#{ssl.cacert}"
         local_source: true
@@ -253,11 +258,11 @@ HDP has version 5.2.1 of solr, and security plugins are included from 5.3.0
       @execute
         header: "Enable SSL Scheme"
         cmd: """
-          cd #{solr.latest_dir}
-          server/scripts/cloud-scripts/zkcli.sh -zkhost #{solr.zkhosts} \
+          cd #{solr.cloud.latest_dir}
+          server/scripts/cloud-scripts/zkcli.sh -zkhost #{solr.cloud.zkhosts} \
           -cmd clusterprop -name urlScheme -val #{protocol}
         """
-        
+      
 ## Dependencies
 
     path = require 'path'

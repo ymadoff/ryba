@@ -1,196 +1,187 @@
 
 # Solr Install
 
-    module.exports = header: 'Solr Install', handler: ->
+    module.exports = header: 'Solr Standalone Install', handler: ->
       {solr, realm} = @config.ryba
+      {ssl, ssl_server, ssl_client, hadoop_conf_dir, realm, hadoop_group} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
+      tmp_archive_location = "/var/tmp/ryba/solr.tar.gz"
+      protocol = if solr.single.ssl.enabled then 'https' else 'http'
 
+## Dependencies
+
+      @call once:true, 'masson/commons/java'
+      @call 'masson/core/krb5_client/wait'
+      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
+      
+## Layout
+
+      @mkdir
+        destination: solr.user.home
+        uid: solr.user.name
+        gid: solr.group.name
+      @mkdir
+        directory: solr.single.conf_dir
+        uid: solr.user.name
+        gid: solr.group.name
+      
 ## Users and Groups
 
       @group solr.group
       @user solr.user
 
 ## Packages
+Ryba support installing solr from apache official release or HDP Search repos.
 
-      @call header: 'Packages', timeout: -1, handler: ->
-        @mkdir 
-          destination: solr.install_dir
+      @call header: 'Packages', timeout: -1, handler: ->          
+        @call 
+          if:  solr.single.source is 'HDP'
+          handler: ->
+            @service
+              name: 'lucidworks-hdpsearch'
+            @chown
+              if: solr.single.source is 'HDP'
+              destination: '/opt/lucidworks-hdpsearch'
+              uid: solr.user.name
+              gid: solr.group.name
+        @call
+          if: solr.single.source isnt 'HDP'
+          handler: ->
+            @download
+              source: solr.single.source
+              destination: tmp_archive_location
+            @mkdir 
+              destination: solr.single.install_dir
+            @extract
+              source: tmp_archive_location
+              destination: solr.single.install_dir
+              preserve_owner: false
+              strip: 1
+            @link 
+              source: solr.single.install_dir
+              destination: solr.single.latest_dir
+              
+
+      @call header: 'Configuration', handler: ->
         @link 
-          source: solr.install_dir
-          destination: '/usr/solr/current'
-        @download
-          destination : '/var/tmp/ryba/solr.tar.gz'
-          source: solr.source
-        @extract
-          source: '/var/tmp/ryba/solr.tar.gz'
-          destination: solr.install_dir
-          strip: 1
-        @mkdir
-          directory: solr.conf_dir
+          source: "#{solr.single.latest_dir}/conf"
+          destination: solr.single.conf_dir
+        @remove
+          shy: true
+          destination: "#{solr.single.latest_dir}/bin/solr.in.sh"
         @link 
-          source: '/usr/solr/current/conf'
-          destination: solr.conf_dir
+          source: "#{solr.single.conf_dir}/solr.in.sh"
+          destination: "#{solr.single.latest_dir}/bin/solr.in.sh"
+        @render
+          header: 'Init Script'
+          uid: solr.user.name
+          gid: solr.group.name
+          mode: 0o0755
+          source: "#{__dirname}/../resources/standalone/solr.j2"
+          destination: '/etc/init.d/solr'
+          local_source: true
+          context: @config
+
+
 ## Layout
 
-      # @call header: 'Solr Layout', timeout: -1, handler: ->
-      #   @mkdir
-      #     destination: solr.install_dir
-      #   @mkdir
-      #     destination: solr.var_dir
-      #     uid: solr.user.name
-      #     gid: solr.group.name
-      #     mode: 0o0755
-      #   @mkdir
-      #     destination: solr.log_dir
-      #     uid: solr.user.name
-      #     gid: solr.group.name
-      #     mode: 0o0755
+      @call header: 'Solr Layout', timeout: -1, handler: ->
+        @mkdir
+          destination: solr.single.pid_dir
+          uid: solr.user.name
+          gid: solr.group.name
+          mode: 0o0755
+        @mkdir
+          destination: solr.single.log_dir
+          uid: solr.user.name
+          gid: solr.group.name
+          mode: 0o0755
+        @mkdir
+          destination: solr.user.home
+          uid: solr.user.name
+          gid: solr.group.name
+          mode: 0o0755
+        
+
+## SOLR HDFS Layout
+Create HDFS solr user and its home directory
+
+      @hdfs_mkdir
+        if: solr.single.hdfs?
+        header: 'HDFS Layout'
+        destination: "/user/#{solr.user.name}"
+        user: solr.user.name
+        group: solr.user.name
+        mode: 0o0775
+        krb5_user: @config.ryba.hdfs.krb5_user
+
+## Config
+    
+      @call header: 'Configure', handler: ->
+        solr.single.env['SOLR_AUTHENTICATION_OPTS'] ?= ''
+        solr.single.env['SOLR_AUTHENTICATION_OPTS'] += " -D#{k}=#{v} "  for k, v of solr.single.auth_opts
+        writes = for k,v of solr.single.env
+          match: RegExp "^.*#{k}=.*$", 'mg'
+          replace: "#{k}=\"#{v}\" # RYBA DON'T OVERWRITE"
+          append: true
+        @render
+          header: 'Solr Environment'
+          source: "#{__dirname}/../resources/standalone/solr.ini.sh.j2"
+          destination: "#{solr.single.conf_dir}/solr.in.sh"
+          context: @config
+          write: writes
+          local_source: true
+          backup: true
+          eof: true
+        @render
+          header: 'Solr Config'
+          source: solr.single.conf_source
+          destination: "#{solr.single.conf_dir}/solr.xml"
+          uid: solr.user.name
+          gid: solr.group.name
+          mode: 0o0755
+          context: @
+          local_source: true
+          backup: true
+          eof: true
+        @link
+          source: "#{solr.single.conf_dir}/solr.xml"
+          destination: "#{solr.user.home}/solr.xml"
 
 ## Kerberos
 
-      # @krb5_addprinc
-      #   header: 'Kerberos'
-      #   principal: solr.principal
-      #   randkey: true
-      #   keytab: solr.keytab
-      #   uid: solr.user.name
-      #   gid: solr.group.name
-      #   kadmin_principal: kadmin_principal
-      #   kadmin_password: kadmin_password
-      #   kadmin_server: admin_server
+      @krb5_addprinc
+        header: 'Solr Server User'
+        principal: solr.single.principal
+        keytab: solr.single.keytab
+        randkey: true
+        uid: solr.user.name
+        gid: solr.group.name
+        kadmin_principal: kadmin_principal
+        kadmin_password: kadmin_password
+        kadmin_server: admin_server
+        
+## SSL
 
-## Install
-
-Solr archive comes with an install scripts which creates and sets directories, env vars & scripts.
-Ryba execute this scripts then customize installation
-
-      # @call header: 'Solr Packages', timeout: -1, handler: ->
-      #   archive_name = path.basename solr.source
-      #   archive_path = path.join solr.install_dir, archive_name
-      #   @download
-      #     source: solr.source
-      #     destination: archive_path
-      #   # Extracting is skipped if the script already exists and the download was skipped
-      #   # We assume that the script is the same, and was already executed,
-      #   #if not : forced is send by previous routine
-      #   @execute
-      #     cmd:"""
-      #     tar xzf #{solr.install_dir}/solr-#{solr.version}.tgz solr-#{solr.version}/bin/install_solr_service.sh --strip-components=2
-      #     """
-      #     unless_exists: './install_solr_service.sh'
-      #   @write
-      #     destination: './install_solr_service.sh'
-      #     match: /\nservice \$SOLR_SERVICE start(.*)(\n|.)*status\n/m
-      #     replace: '\n'
-      #   @execute
-      #     cmd:"""
-      #     rm -f /etc/init.d/solr
-      #     ./install_solr_service.sh #{solr.install_dir}/solr-#{solr.version}.tgz -i #{solr.install_dir} -d #{solr.var_dir} -u #{solr.user.name} -p #{solr.port}
-      #     kinit /#{solr.principal} -k -t #{solr.keytab}
-      #     #{solr.install_dir}/solr/server/scripts/cloud-scripts/zkcli.sh -zkhost "#{solr.zkhosts}" -cmd bootstrap -solrhome #{solr.user.home}
-      #     """
-      #     if: -> @status -1
+      @java_keystore_add
+        keystore: solr.single.ssl_keystore_path
+        storepass: solr.single.ssl_keystore_pwd
+        caname: "hadoop_root_ca"
+        cacert: "#{ssl.cacert}"
+        key: "#{ssl.key}"
+        cert: "#{ssl.cert}"
+        keypass: solr.single.ssl_keystore_pwd
+        name: @config.shortname
+        local_source: true
+      @java_keystore_add
+        keystore: solr.single.ssl_trustore_path
+        storepass: solr.single.ssl_keystore_pwd
+        caname: "hadoop_root_ca"
+        cacert: "#{ssl.cacert}"
+        local_source: true
       
-      # @call header: 'Environment', timeout: -1, handler: ->
-      #   write = [
-      #     match: /^SOLR_PID_DIR=.*/m
-      #     replace: "SOLR_PID_DIR=#{solr.var_dir} # RYBA CONF `solr.var_dir`, DON'T OVERWRITE"
-      #   ,
-      #     match: /^SOLR_HOME=.*/m
-      #     replace: "SOLR_HOME=#{solr.user.home} # RYBA CONF `solr.user.home`, DON'T OVERWRITE"
-      #   ,
-      #     match: /^LOG4J_PROPS=.*/m
-      #     replace: "LOG4J_PROPS=#{path.join solr.var_dir, 'log4j.properties'} # RYBA CONF `solr.var_dir`/log4j.properties, DON'T OVERWRITE"
-      #   ,
-      #     match: /^SOLR_LOGS_DIR=.*/m
-      #     replace: "SOLR_LOGS_DIR=#{solr.log_dir} # RYBA CONF `solr.log_dir`, DON'T OVERWRITE"
-      #   ,
-      #     match: /^SOLR_PORT=.*/m
-      #     replace: "SOLR_PORT=#{solr.port} # RYBA CONF `solr.port`, DON'T OVERWRITE"
-      #   ]
-      #   if solr.mode is 'cloud'
-      #     write.unshift
-      #       match: /^SOLR_MODE=.*/m
-      #       replace: "SOLR_MODE=solrcloud # RYBA CONF, DON'T OVERWRITE"
-      #       before: /^(.*)ZK_HOST=.*/m
-      #     write.unshift
-      #       match: /^(.*)ZK_HOST=.*/m
-      #       replace: "ZK_HOST=#{solr.zkhosts} # RYBA CONF, DON'T OVERWRITE"
-      #   @write
-      #     destination: path.join solr.var_dir, 'solr.in.sh'
-      #     write: write
-
-## Config Set
-      # 
-      # @mkdir
-      #   header: 'Config Set Pool'
-      #   destination: path.join solr.user.home, 'configsets'
-      #   uid: solr.user.name
-      #   gid: solr.group.name
-      #   mode: 0o0755
-
-# ## Titan
-#
-# ### Titan Config Set
-#
-#     module.exports.push header: 'Solr # Titan Config Set', handler: ->
-#       titan_ctxs = @contexts 'ryba/titan', require('../titan').configure
-#       return next() if titan_ctxs.length is 0
-#       {solr} = @config.ryba
-#       modified = false
-#       titan_set = path.join solr.user.home, 'configsets', 'titan'
-#       conf_sample = path.join solr.install_dir, 'solr/server/solr/configsets/data_driven_schema_configs/conf/'
-#       do_mkdir = () ->
-#         @copy
-#           destination: titan_set
-#           source: conf_sample
-#           uid: solr.user.name
-#           gid: solr.group.name
-#           unless_exists: titan_set
-#           mode: 0o0755
-#         , (err, changed) ->
-#           return next err if err
-#           modified ||= changed
-#           do_write()
-#       do_write = () ->
-#         @write [
-#           destination: path.join titan_set, 'solrconfig.xml'
-#           source: "#{__dirname}/../resources/solr/solrconfig.xml"
-#           local_source: true
-#           mode: 0o0644
-#           backup: true
-#           uid: solr.user.name
-#           gid: solr.user.name
-#         ,
-#           destination: path.join titan_set, 'schema.xml'
-#           source: "#{__dirname}/../resources/titan/solr_schema.xml"
-#           local_source: true
-#           mode: 0o0644
-#           backup: true
-#           uid: solr.user.name
-#           gid: solr.user.name
-#         ], (err, written) ->
-#           return next err if err
-#           return if modified then do_create()
-#           else next null, modified
-#       do_create = () ->
-#         #@exec
-#         #  cmd: "#{solr.install_dir}/solr/bin/solr create_collection -c titan -d #{solr.user.home}/configsets/titan"
-#         #, (err, executed, stdout, stderr) ->
-#         #  ## TODO
-#         return next null, 'UNFINISHED'
-#       do_mkdir()
-#
-# ### Solr Collection
-#
-#     module.exports.push header: 'Solr # Titan Collection', handler: ->
-#       return next() unless @config.ryba.titan.config['index.search.backend'] is 'solr'
-#       next()
-#
-      # @call header: 'Solr Tuning', handler: ->
-      #   return
-      #next null, 'TODO'
-
 ## Dependencies
 
     path = require 'path'
+    mkcmd  = require '../../lib/mkcmd'

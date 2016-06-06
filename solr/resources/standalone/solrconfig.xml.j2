@@ -116,7 +116,7 @@
        persistent, and doesn't work with replication.
     -->
     <directoryFactory name="DirectoryFactory"
-                    class="{{ryba.solr.dir_factory}}">
+                    class="{{ryba.solr.single.dir_factory}}">
 
     <!-- These will be used if you are using the solr.HdfsDirectoryFactory,
          otherwise they will be ignored. If you don't plan on using hdfs,
@@ -140,6 +140,9 @@
     <bool name="solr.hdfs.nrtcachingdirectory.enable">{{solr.hdfs.nrtcachingdirectory_enable}}</bool>
     <int name="solr.hdfs.nrtcachingdirectory.maxmergesizemb">{{solr.hdfs.nrtcachingdirectory_maxmergesizemb}}</int>
     <int name="solr.hdfs.nrtcachingdirectory.maxcachedmb">{{solr.hdfs.nrtcachingdirectory_maxcachedmb}}</int>
+    <bool name="solr.hdfs.security.kerberos.enabled">{{solr.hdfs.security_kerberos_enabled}}</bool>
+    <str name="solr.hdfs.security.kerberos.keytabfile">{{solr.hdfs.security_kerberos_keytabfile}}</str>
+    <str name="solr.hdfs.security.kerberos.principal">{{solr.hdfs.security_kerberos_principal}}</str>
 
   </directoryFactory>
 

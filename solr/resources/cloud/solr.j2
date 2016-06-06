@@ -33,9 +33,9 @@
 #   update-rc.d solr enable
 
 # Where you extracted the Solr distribution bundle
-SOLR_INSTALL_DIR={{ryba.solr.latest_dir}}
-SOLR_CONF_DIR="{{ryba.solr.conf_dir}}"
-SOLR_ENV="{{ryba.solr.conf_dir}}/solr.in.sh"
+SOLR_INSTALL_DIR={{ryba.solr.cloud.latest_dir}}
+SOLR_CONF_DIR={{ryba.solr.cloud.conf_dir}}
+SOLR_ENV={{ryba.solr.cloud.conf_dir}}/solr.in.sh
 RUNAS={{ryba.solr.user.name}}
 
 if [ ! -d "$SOLR_INSTALL_DIR" ]; then
@@ -75,7 +75,7 @@ case "$1" in
 esac
 
 if [ -n "$RUNAS" ]; then
-  su -c "SOLR_INCLUDE=\"$SOLR_ENV\" \"$SOLR_INSTALL_DIR/bin/solr\" $SOLR_CMD -c -z {{ryba.solr.zk_connect}}{{ryba.solr.zk_node}} -s /var/solr/data" - "$RUNAS"
+  su -c "SOLR_INCLUDE=\"$SOLR_ENV\" \"$SOLR_INSTALL_DIR/bin/solr\" $SOLR_CMD -c -z {{ryba.solr.cloud.zk_connect}}{{ryba.solr.cloud.zk_node}} -s /var/solr/data" - "$RUNAS"
 else
-  SOLR_INCLUDE="$SOLR_ENV" "$SOLR_INSTALL_DIR/bin/solr -c -z {{ryba.solr.zk_connect}}{{ryba.solr.zk_node}} -s /var/solr/data" "$SOLR_CMD"
+  SOLR_INCLUDE="$SOLR_ENV" "$SOLR_INSTALL_DIR/bin/solr -c -z {{ryba.solr.zk_connect}}{{ryba.solr.cloud.zk_node}} -s /var/solr/data" "$SOLR_CMD"
 fi

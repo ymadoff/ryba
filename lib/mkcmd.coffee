@@ -30,6 +30,6 @@ exports.kafka = (ctx, cmd) ->
 exports.solr = (ctx, cmd) ->
   {security, solr, realm} = ctx.config.ryba
   if security is 'kerberos'
-  then "echo '#{solr.admin_password}' | kinit #{solr.admin_principal} >/dev/null && {\n#{cmd}\n}"
+  then "echo '#{solr.cloud.admin_password}' | kinit #{solr.cloud.admin_principal} >/dev/null && {\n#{cmd}\n}"
   else "su -l #{solr.user.name} -c \"#{cmd}\""
   # else "kinit -kt /etc/security/keytabs/hdfs.headless.keytab hdfs && {\n#{cmd}\n}"
