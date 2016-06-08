@@ -1,5 +1,6 @@
 # Dockerfile for running shinken test scripts
-# `docker build -t ryba/shinken-poller-executor .`
+# DO NOT BUILD IT BY YOURSELF, USE 
+#`ryba prepare -m 'ryba/shinken/poller/*'`
 FROM centos:latest
 
 ### PACKAGES ###
@@ -28,9 +29,6 @@ RUN sudo tar --strip-components 1 -xJf node-v* -C /usr/local
 ### LAYOUT ###
 RUN useradd -ms /bin/bash {{ shinken.user.name }}
 RUN echo "{{ shinken.user.name }}        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
-
-RUN echo "01 */9 * * * root /usr/bin/kinit {{ shinken.poller.executor.krb5.privileged.principal }} -kt {{ shinken.poller.executor.krb5.privileged.keytab }}" > /etc/cron.d/1kinit
-RUN echo "01 */9 * * * {{ shinken.user.name }} /usr/bin/kinit {{ shinken.poller.executor.krb5.unprivileged.principal }} -kt {{ shinken.poller.executor.krb5.unprivileged.keytab }}" >> /etc/cron.d/1kinit
 
 USER {{ shinken.user.name }}
 WORKDIR /home/{{ shinken.user.name }}

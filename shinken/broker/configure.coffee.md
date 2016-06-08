@@ -31,7 +31,7 @@
       webui.pip_modules['alignak-backend-client'].md5 ?= 'ae5ff7cb631a9b08451acc7629934db6'
       webui.pip_modules.passlib ?= {}
       webui.pip_modules.passlib.version ?= '1.6.5'
-      webui.pip_modules.passlib.url ?= 'https://pypi.python.org/packages/1e/59/d1a50836b29c87a1bde9442e1846aa11e1548491cbee719e51b45a623e75/passlib-1.6.5.tar.gz#md5=d2edd6c42cde136a538b48d90a06ad67'
+      webui.pip_modules.passlib.url ?= 'https://pypi.python.org/packages/1e/59/d1a50836b29c87a1bde9442e1846aa11e1548491cbee719e51b45a623e75/passlib-1.6.5.tar.gz'
       webui.pip_modules.passlib.md5 ?= 'd2edd6c42cde136a538b48d90a06ad67'
       v.archive ?= "#{k}-#{v.version}" for k, v of webui.pip_modules
       webui.modules ?= {}

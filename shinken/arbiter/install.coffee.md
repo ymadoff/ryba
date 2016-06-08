@@ -117,12 +117,16 @@ Objects config
 
       @call header: 'Objects Config', handler: ->
         # Un-templated objects
+        ## Some commands need the lists of brokers (for their livestatus module)
+        brokers = @contexts('ryba/shinken/broker').map( (ctx) -> ctx.config.host ).join ','
         for obj in ['hostgroups', 'servicegroups', 'contactgroups', 'commands', 'realms', 'dependencies', 'escalations', 'timeperiods']
           @render
             destination: "/etc/shinken/#{obj}/#{obj}.cfg"
             source: "#{__dirname}/resources/#{obj}.cfg.j2"
             local_source: true
-            context: "#{obj}": shinken.config[obj]
+            context:
+              "#{obj}": shinken.config[obj]
+              brokers: brokers
         # Templated objects
         for obj in ['hosts', 'services', 'contacts']
           real = {}

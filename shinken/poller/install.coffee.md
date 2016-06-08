@@ -97,14 +97,22 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           @docker_load
             source: '/var/lib/docker_images/shinken-poller-executor.tar'
             if: -> @status -1
+          @write
+            destination: shinken.poller.executor.cronfile
+            content: """
+            01 */9 * * * #{shinken.user.name} /usr/bin/kinit #{shinken.poller.executor.krb5.unprivileged.principal} -kt #{shinken.poller.executor.krb5.unprivileged.keytab}
+            """
+            eof: true
           @docker_service
             name: 'poller-executor'
             image: 'ryba/shinken-poller-executor'
             net: 'host'
             volume: [
-              "/etc/krb5.conf:/etc/krb5.conf"
+              "/etc/krb5.conf:/etc/krb5.conf:ro"
+              "/etc/localtime:/etc/localtime:ro"
               #"/usr/lib64/nagios/plugins:/usr/lib64/nagios/plugins"
               #"#{shinken.poller.executor.krb5.privileged.keytab}:#{shinken.poller.executor.krb5.privileged.keytab}"
+              "#{shinken.poller.executor.cronfile}:/etc/cron.d/1cron"
               "#{shinken.poller.executor.krb5.unprivileged.keytab}:#{shinken.poller.executor.krb5.unprivileged.keytab}"
             ]
 

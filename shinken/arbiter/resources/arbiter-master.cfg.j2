@@ -1,7 +1,7 @@
 {% for a in arbiters %}
 define arbiter {
   arbiter_name        arbiter_{{ a.config.shortname }}
-  {# host_name           {{a.config.shortname}} ### WARNING SHOULD BE SET FOR DISTRIBUTED MODE !!! #}
+  host_name           {{ a.config.host }}{# WARNING SHOULD BE SET FOR DISTRIBUTED MODE !!! #}
   address             {{ a.config.host }}
   port                {{ a.config.ryba.shinken.arbiter.config.port }}
   spare               {{ a.config.ryba.shinken.arbiter.config.spare }}

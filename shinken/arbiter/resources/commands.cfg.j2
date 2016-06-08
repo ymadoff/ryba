@@ -34,7 +34,7 @@ define command {
 ## Multi Service commands
 define command {
   command_name    check_tcp_ha
-  command_line    $DOCKER_EXEC$ ./service_status.php -H localhost -p 50000 -d $ARG1$ -f "host_groups >= $HOSTNAME$" -u | xargs -I % $PLUGINSDIR$/check_tcp -H % -p $ARG2$ -w 1 -c 1 $ARG3$
+  command_line    $DOCKER_EXEC$ ./service_status.php -H {{ brokers }} -p 50000 -d $ARG1$ -f "host_groups >= $HOSTNAME$" -u | xargs -I % $PLUGINSDIR$/check_tcp -H % -p $ARG2$ -w 1 -c 1 $ARG3$
 }
 define command {
   command_name    check_rpc_latency
@@ -42,7 +42,7 @@ define command {
 }
 define command {
   command_name    check_rpc_latency_ha
-  command_line    $DOCKER_EXEC$ ./service_status.php -H localhost -p 50000 -d $ARG1$ -f "host_groups >= $HOSTNAME$" -u | xargs -I % $DOCKER_EXEC$ ./check_rpc_latency.php -H % -n $ARG2$ -p $ARG3$ -w $ARG4$ -c $ARG5$ $ARG6$
+  command_line    $DOCKER_EXEC$ ./service_status.php -H {{ brokers }} -p 50000 -d $ARG1$ -f "host_groups >= $HOSTNAME$" -u | xargs -I % $DOCKER_EXEC$ ./check_rpc_latency.php -H % -n $ARG2$ -p $ARG3$ -w $ARG4$ -c $ARG5$ $ARG6$
 }
 ## Service-Specific commands
 define command {
@@ -55,7 +55,7 @@ define command {
 }
 define command {
   command_name    check_active_nn
-  command_line    $DOCKER_EXEC$ ./check_active_nn.php -H localhost -p 50000 -C $HOSTNAME$ -P $ARG1$ $ARG2$
+  command_line    $DOCKER_EXEC$ ./check_active_nn.php -H {{ brokers }} -p 50000 -C $HOSTNAME$ -P $ARG1$ $ARG2$
 }
 define command {
   command_name    check_nn_last_checkpoint
@@ -75,7 +75,7 @@ define command {
 }
 define command {
   command_name    check_active_rm
-  command_line    $DOCKER_EXEC$ ./check_active_rm.php -H localhost -p 50000 -C $HOSTNAME$ -P $ARG1$ $ARG2$
+  command_line    $DOCKER_EXEC$ ./check_active_rm.php -H {{ brokers }} -p 50000 -C $HOSTNAME$ -P $ARG1$ $ARG2$
 }
 define command {
   command_name    check_nm_info

@@ -19,6 +19,7 @@ Default "shinken object" (servicegroups, hosts, etc) configuration.
       contacts = shinken.config.contacts ?= {}
       dependencies = shinken.config.dependencies ?= {}
       escalations = shinken.config.escalations ?= {}
+      hostescalations = shinken.config.hostescalations ?= {}
       serviceescalations = shinken.config.serviceescalations ?= {}
       timeperiods = shinken.config.timeperiods ?= {}
       # Hostgroups
@@ -97,6 +98,9 @@ They must have register set to 0 to not be instanciated
       services['unit-service'].register = '0'
       services['unit-service'].check_interval = '30'
       services['unit-service'].retry_interval = '10'
+      services['bp-service'] ?= {}
+      services['bp-service'].use ?= 'unit-service'
+      services['bp-service'].register ?= '0'
       services['process-service'] ?= {}
       services['process-service'].use ?= 'unit-service'
       services['process-service'].register = '0'
@@ -243,6 +247,7 @@ An external configuration can be obtained with a different instance of ryba usin
       hosts[name].hostgroups = ['watcher']
       hosts[name].use = 'aggregates'
       hosts[name].cluster ?= name
+      hosts[name].notes ?= name
       hosts[name].realm = clusters[name].realm if clusters[name].realm?
       hosts[name].modules ?= []
       hosts[name].modules = [hosts[name].modules] unless Array.isArray hosts[name].modules
@@ -256,6 +261,7 @@ An external configuration can be obtained with a different instance of ryba usin
         hosts[srv.host].config ?= srv
         hosts[srv.host].realm ?= clusters[name].realm if clusters[name].realm?
         hosts[srv.host].cluster ?= name
+        hosts[srv.host].notes ?= name
         for mod in srv.modules
           hosts[name].modules.push modules_list[mod] if modules_list[mod]? and modules_list[mod] not in hosts[name].modules
           hosts[srv.host].hostgroups.push modules_list[mod] if modules_list[mod]?

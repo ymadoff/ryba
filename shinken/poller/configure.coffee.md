@@ -15,6 +15,7 @@
       poller.executor.krb5.unprivileged ?= {}
       poller.executor.krb5.unprivileged.principal ?= "#{shinken.user.name}/#{@config.host}@#{@config.ryba.realm}"
       poller.executor.krb5.unprivileged.keytab ?= "/etc/security/keytabs/shinken-poller.unprivileged.keytab"
+      poller.executor.cronfile ?= "#{shinken.user.home}/cronfile"
       # Python modules to install
       poller.python_modules ?= {}
       poller.python_modules.requests ?= {}

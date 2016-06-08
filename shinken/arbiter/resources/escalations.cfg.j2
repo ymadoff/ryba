@@ -26,4 +26,18 @@ define serviceescalation {
   last_notification_time  {{ esc.last_notification_time }}{% endif %}{% if not esc.notification_interval | isEmpty %}
   notification_interval   {{ esc.notification_interval }}{% endif %}
 }
+{% endfor %}{% for name, esc in hostescalations %}
+define hostescalation {
+  host_name               {{ esc.hosts | join(',') }}{% if not esc.hostgroups | isEmpty %}
+  hostgroup_name          {{ esc.hostgroups | join(',') }}{% endif %}{% if not esc.first_notification | isEmpty %}
+  first_notification      {{ esc.first_notification }}{% endif %}{% if not esc.last_notification | isEmpty %}
+  last_notification       {{ esc.last_notification }}{% endif %}{% if not esc.contacts | isEmpty %}
+  contacts                {{ esc.contacts | join(',') }}{% endif %}{% if not esc.contactgroups | isEmpty %}
+  contact_groups          {{ esc.contactgroups | join(',') }}{% endif %}{% if not esc.escalation_period | isEmpty %}
+  escalation_period       {{ esc.escalation_period }}{% endif %}{% if not esc.escalation_period | isEmpty %}
+  escalation_options      {{ esc.escalation_options }}{% endif %}{% if not esc.first_notification_time | isEmpty %}
+  first_notification_time {{ esc.first_notification_time }}{% endif %}{% if not esc.last_notification_time | isEmpty %}
+  last_notification_time  {{ esc.last_notification_time }}{% endif %}{% if not esc.notification_interval | isEmpty %}
+  notification_interval   {{ esc.notification_interval }}{% endif %}
+}
 {% endfor %}
