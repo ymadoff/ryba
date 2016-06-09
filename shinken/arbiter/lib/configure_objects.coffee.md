@@ -285,6 +285,7 @@ This function is called at the end to normalize values
       for name, host of shinken.config.hosts
         host.alias ?= name
         host.use ?= 'generic-host'
+        host.hostgroups = [host.hostgroups] unless Array.isArray host.hostgroups
       # ServiceGroups
       for name, group of shinken.config.servicegroups
         group.alias ?= "#{name.charAt(0).toUpperCase()}#{name.slice 1}"
