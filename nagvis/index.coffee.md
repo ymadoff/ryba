@@ -14,6 +14,5 @@ NagVis is also compliant with shinken.
       'install': [
         'masson/core/yum'
         'masson/core/iptables'
-        'masson/commons/httpd'
         'ryba/nagvis/install'
       ]

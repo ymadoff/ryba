@@ -38,15 +38,15 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @call unless_exec: "[ `cat #{nagvis.install_dir}/version` = #{nagvis.version} ]", header: 'Archive', handler: ->
         @download
           source: nagvis.source
-          destination: "/tmp/nagvis-#{nagvis.version}.tar.gz"
+          destination: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"
         @extract
-          source: "/tmp/nagvis-#{nagvis.version}.tar.gz"
+          source: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"
         @chmod
-          destination: "/tmp/nagvis-#{nagvis.version}/install.sh"
+          destination: "/var/tmp/nagvis-#{nagvis.version}/install.sh"
           mode: 0o755
         @execute
           cmd: """
-          cd /tmp/nagvis-#{nagvis.version};
+          cd /var/tmp/nagvis-#{nagvis.version};
           ./install.sh -n #{nagvis.base_dir} -p #{nagvis.install_dir} \
           -l 'tcp:#{nagvis.livestatus_address}' -b mklivestatus -u #{httpd.user.name} -g #{httpd.group.name} -w /etc/httpd/conf.d -a y -q
           """
@@ -55,36 +55,19 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         @write
           destination: "#{nagvis.install_dir}/version"
           content: "#{nagvis.version}"
-        @remove destination: "/tmp/nagvis-#{nagvis.version}.tar.gz"
-        @remove destination: "/tmp/nagvis-#{nagvis.version}"
-      
-## Shinken Integration
+        @remove destination: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"
+        @remove destination: "/var/tmp/nagvis-#{nagvis.version}"
 
-      @call if: nagvis.shinken_integrate, header: 'Shinken Integration', handler: ->
-        sh_ctxs = @contexts 'ryba/shinken/arbiter'
-        throw Error 'Cannot configure nagvis for shinken, shinken arbiter not found' unless sh_ctx.length
-        {shinken} = sh_ctxs[0].config.ryba
-
-### Layout
-        
-        @call header: 'Layout', handler: ->
-          for file in glob.sync "#{__dirname}/resources/shapes/*"
-            @download
-              source: file
-              destination: "/usr/local/nagvis/share/userfiles/images/shapes/#{path.basename file}"
-          for file in glob.sync "#{__dirname}/resources/maps/*"
-            @download
-              source: file
-              destination: "/usr/local/nagvis/share/userfiles/images/maps/#{path.basename file}"
-
-### Configuration
-
-        @call header: 'Configure', handler: ->
-          for cluster in shinken.config.hostgroups.by_topology
-            @render
-              source: "#{__dirname}/resources/cluster.cfg.j2"
-              local_source: true
-              destination: "#{nagvis.install_dir}/etc/maps/#{cluster}.cfg"
+      write = ""
+      for k, v of nagvis.config
+        write += "[#{k}]\n"
+        for sk, sv of v
+          write += "#{sk}=" + if typeof sv is 'string' then "\"#{sv}\"\n" else "#{sv}\n"
+        write += "\n"
+      @write
+        destination: "#{nagvis.install_dir}/etc/nagvis.ini.php"
+        content: write
+        backup: true
 
 ## Dependencies
 
