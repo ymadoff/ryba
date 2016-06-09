@@ -21,7 +21,7 @@ define command {
 }
 define command {
   command_name    check_tcp
-  command_line    $PLUGINSDIR$/check_tcp -H $HOSTADDRESS$ -p $ARG1$ -w 1 -c 1 $ARG2$
+  command_line    $PLUGINSDIR$/check_tcp -H $HOSTADDRESS$ -p $ARG1$ -w 7 -c 10 -t 20 $ARG2$
 }
 define command {
   command_name    check_cert
