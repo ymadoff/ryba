@@ -220,7 +220,7 @@ This mechanism can be used to configure a specific gateway without having to dec
         if topology.services['oozie'] is true
           ctxs = @contexts 'ryba/oozie/server', [ require('../commons/db_admin').handler, require('../oozie/server/configure').handler]
           if ctxs.length
-            topology.services['oozie'] ?= ctxs[0].config.ryba.oozie.site['oozie.base.url']
+            topology.services['oozie'] = ctxs[0].config.ryba.oozie.site['oozie.base.url']
           else throw Error 'Cannot autoconfigure KNOX oozie service, no oozie declared'
         # WebHBase
         if topology.services['webhbase'] is true
@@ -231,3 +231,4 @@ This mechanism can be used to configure a specific gateway without having to dec
             port = ctxs[0].config.ryba.hbase.rest.site['hbase.rest.port']
             topology.services['webhbase'] = "#{protocol}://#{host}:#{port}"
           else throw Error 'Cannot autoconfigure KNOX webhbase service, no webhbase declared'
+        console.log(topology.services)
