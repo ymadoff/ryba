@@ -231,4 +231,3 @@ This mechanism can be used to configure a specific gateway without having to dec
             port = ctxs[0].config.ryba.hbase.rest.site['hbase.rest.port']
             topology.services['webhbase'] = "#{protocol}://#{host}:#{port}"
           else throw Error 'Cannot autoconfigure KNOX webhbase service, no webhbase declared'
-        console.log(topology.services)
