@@ -157,7 +157,7 @@ This mechanism can be used to configure a specific gateway without having to dec
 
         # Namenode & WebHDFS
         nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn/configure').handler
-        if services['namenode'] is true
+        if topology.services['namenode'] is true
           if nn_ctxs.length
             topology.services['namenode'] = nn_ctxs[0].config.ryba.core_site['fs.defaultFS']
           else throw Error 'Cannot autoconfigure KNOX namenode service, no namenode declared'  
@@ -193,7 +193,7 @@ This mechanism can be used to configure a specific gateway without having to dec
             port = nn_ctxs[0].config.ryba.hdfs.site["dfs.namenode.#{protocol}-address"].split(':')[1]
             topology.services['webhdfs'] = "#{protocol}://#{host}:#{port}/webhdfs/v1" 
         # Jobtracker
-        if services['jobtracker'] is true
+        if topology.services['jobtracker'] is true
           ctxs = @contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm/configure').handler
           if ctxs.length
             rm_shortname = if ctxs.length > 1 then ".#{ctxs[0].config.shortname}" else ''
@@ -201,7 +201,7 @@ This mechanism can be used to configure a specific gateway without having to dec
             topology.services['jobtracker'] = "rpc://#{rm_address}"
           else throw Error 'Cannot autoconfigure KNOX jobtracker service, no resourcemanager declared'
         # Hive
-        if services['hive'] is true
+        if topology.services['hive'] is true
           ctxs = @contexts 'ryba/hive/server2', require('../hive/server2/configure').handler
           if ctxs.length
             host = ctxs[0].config.host
@@ -209,7 +209,7 @@ This mechanism can be used to configure a specific gateway without having to dec
             topology.services['hive'] = "http://#{host}:#{port}/cliservice"
           else throw Error 'Cannot autoconfigure KNOX hive service, no hiveserver2 declared'
         # Hive WebHCat
-        if services['webhcat'] is true
+        if topology.services['webhcat'] is true
           ctxs = @contexts 'ryba/hive/webhcat', require('../hive/webhcat/configure').handler
           if ctxs.length
             host = ctxs[0].config.host
@@ -217,13 +217,13 @@ This mechanism can be used to configure a specific gateway without having to dec
             topology.services['webhcat'] = "http://#{host}:#{port}/templeton"
           else throw Error 'Cannot autoconfigure KNOX webhcat service, no webhcat declared'
         # Oozie
-        if services['oozie'] is true
+        if topology.services['oozie'] is true
           ctxs = @contexts 'ryba/oozie/server', [ require('../commons/db_admin').handler, require('../oozie/server/configure').handler]
           if ctxs.length
             topology.services['oozie'] ?= ctxs[0].config.ryba.oozie.site['oozie.base.url']
           else throw Error 'Cannot autoconfigure KNOX oozie service, no oozie declared'
         # WebHBase
-        if services['webhbase'] is true
+        if topology.services['webhbase'] is true
           ctxs = @contexts 'ryba/hbase/rest', require('../hbase/rest/configure').handler
           if ctxs.length
             protocol = if ctxs[0].config.ryba.hbase.rest.site['hbase.rest.ssl.enabled'] is 'true' then 'https' else 'http'
