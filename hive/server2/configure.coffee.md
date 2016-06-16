@@ -29,6 +29,7 @@ Example:
 
     module.exports = handler: ->
       {core_site, hive, realm} = @config.ryba ?= {}
+      {java_home} = @config.java
       hcat_ctxs = @contexts 'ryba/hive/hcatalog', [require('../../commons/db_admin').handler, require('../hcatalog/configure').handler]
       # Layout and environment
       hive.server2 ?= {}
@@ -58,7 +59,7 @@ Example:
       hive.group.name = hcat_ctxs[0].config.ryba.hive.group.name ?= 'hive'
       hive.group.system = hcat_ctxs[0].config.ryba.hive.group.system ?= true
       hive.user.gid = hive.group.name
-
+      
 ## Configuration
 
       hive.aux_jars = hcat_ctxs[0].config.ryba.hive.aux_jars ?= []
@@ -91,6 +92,30 @@ Example:
       hive.site['hive.server2.tez.default.queues'] ?= 'default'
       hive.site['hive.server2.tez.sessions.per.default.queue'] ?= '1'
       hive.site['hive.server2.tez.initialize.default.sessions'] ?= 'false'
+
+## Hive Server2 Environment
+      
+      hive.server2.env ?= {}
+      hive.server2.env.write ?= if @has_module('ryba/hive/hcatalog') then hive.hcatalog.env.write else []
+      hive.server2.env.write.push {
+        replace: """
+        if [ "$SERVICE" = "hiveserver2" ]; then
+          export HADOOP_HEAPSIZE="#{hive.server2.heapsize}"
+          export HADOOP_CLIENT_OPTS="-Xmx${HADOOP_HEAPSIZE}m #{hive.server2.opts} ${HADOOP_CLIENT_OPTS}"
+        fi
+        """
+        from: '# RYBA HIVE SERVER2 START'
+        to: '# RYBA HIVE SERVER2 END'
+        append: true
+        }
+      hive.server2.env.write.push ([
+        match: /^export JAVA_HOME=.*$/m
+        replace: "export JAVA_HOME=#{java_home}"
+      ,
+        match: /^export HIVE_AUX_JARS_PATH=.*$/m
+        replace: "export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-#{hive.aux_jars.join ':'}} # RYBA FIX"
+      ])...
+      
 
 ## Configure Kerberos
 

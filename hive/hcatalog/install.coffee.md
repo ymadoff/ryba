@@ -206,19 +206,12 @@ by setting a "heapsize" value equal to "4096".
 Note, the startup script found in "hive-hcatalog/bin/hcat_server.sh" references
 the Hive Metastore service and execute "./bin/hive --service metastore"
 
-      @write
+      @render
         header: 'Hive Env'
+        source: "#{__dirname}/../resources/hive-env.sh"
         destination: "#{hive.conf_dir}/hive-env.sh"
-        replace: """
-        if [ "$SERVICE" = "metastore" ]; then
-          # export HADOOP_CLIENT_OPTS="-Dcom.sun.management.jmxremote -Djava.rmi.server.hostname=130.98.196.54 -Dcom.sun.management.jmxremote.rmi.port=9526 -Dcom.sun.management.jmxremote.port=9526 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false  $HADOOP_CLIENT_OPTS"
-          export HADOOP_HEAPSIZE="#{hive.hcatalog.heapsize}"
-          export HADOOP_CLIENT_OPTS="-Xmx${HADOOP_HEAPSIZE}m #{hive.hcatalog.opts} $HADOOP_CLIENT_OPTS"
-        fi
-        """
-        from: '# RYBA HIVE HCATALOG START'
-        to: '# RYBA HIVE HCATALOG END'
-        append: true
+        local_source: true
+        write: hive.hcatalog.env.write
         eof: true
         backup: true
 

@@ -17,10 +17,11 @@ Example:
 ```
 
     module.exports = handler: ->
-      [hcat_ctx] = @contexts 'ryba/hive/hcatalog', [ require('../../commons/db_admin').handler, require('../hcatalog/configure').handler]
-      throw Error "No HCatalog server declared" unless hcat_ctx
+      hcat_ctxs = @contexts 'ryba/hive/hcatalog', [ require('../../commons/db_admin').handler, require('../hcatalog/configure').handler]
+      throw Error "No HCatalog server declared" unless hcat_ctxs[0]
       # require('../../tez/configure').handler.call @
       {mapred, tez} = @config.ryba 
+      {java_home} = @config.java
       hive = @config.ryba.hive ?= {}
       hive.client ?= {}
       hive.client.opts = ""
@@ -31,24 +32,24 @@ Example:
       # User
       hive.user ?= {}
       hive.user = name: hive.user if typeof hive.user is 'string'
-      hive.user.name  = hcat_ctx.config.ryba.hive.user.name ?= 'hive'
-      hive.user.system =  hcat_ctx.config.ryba.hive.user.system ?= true
-      hive.user.groups = hcat_ctx.config.ryba.hive.user.groups ?= 'hadoop'
-      hive.user.comment = hcat_ctx.config.ryba.hive.user.comment ?= 'Hive User'
-      hive.user.home = hcat_ctx.config.ryba.hive.user.home ?= '/var/lib/hive'
+      hive.user.name  = hcat_ctxs[0].config.ryba.hive.user.name ?= 'hive'
+      hive.user.system =  hcat_ctxs[0].config.ryba.hive.user.system ?= true
+      hive.user.groups = hcat_ctxs[0].config.ryba.hive.user.groups ?= 'hadoop'
+      hive.user.comment = hcat_ctxs[0].config.ryba.hive.user.comment ?= 'Hive User'
+      hive.user.home = hcat_ctxs[0].config.ryba.hive.user.home ?= '/var/lib/hive'
       hive.user.limits ?= {}
-      hive.user.limits.nofile = hcat_ctx.config.ryba.hive.user.limits.nofile ?= 64000
-      hive.user.limits.nproc = hcat_ctx.config.ryba.hive.user.limits.nproc ?= true
+      hive.user.limits.nofile = hcat_ctxs[0].config.ryba.hive.user.limits.nofile ?= 64000
+      hive.user.limits.nproc = hcat_ctxs[0].config.ryba.hive.user.limits.nproc ?= true
       # Group
       hive.group ?= {}
       hive.group = name: hive.group if typeof hive.group is 'string'
-      hive.group.name = hcat_ctx.config.ryba.hive.group.name ?= 'hive'
-      hive.group.system = hcat_ctx.config.ryba.hive.group.system ?= true
+      hive.group.name = hcat_ctxs[0].config.ryba.hive.group.name ?= 'hive'
+      hive.group.system = hcat_ctxs[0].config.ryba.hive.group.system ?= true
       hive.user.gid = hive.group.name
 
 ## Configuration
 
-      hive.aux_jars = hcat_ctx.config.ryba.hive.aux_jars ?= []
+      hive.aux_jars = hcat_ctxs[0].config.ryba.hive.aux_jars ?= []
       hive.site ?= {}
       aux_jars = ['/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar']
       if @contexts('ryba/hbase/master').length and @config.host in @contexts('ryba/hbase/client').map((ctx) -> ctx.config.host)
@@ -95,7 +96,30 @@ Example:
       #   'hive.cluster.delegation.token.store.class'
       # ]
       # 
-      # for property in properties then hive.site[property] ?= hcat_ctx.config.ryba.hive.site[property]
+      # for property in properties then hive.site[property] ?= hcat_ctxs[0].config.ryba.hive.site[property]
+
+## Environment
+
+      hive.client.env ?= {}
+      hive.client.env.write ?= if @has_module('ryba/hive/hcatalog') then hive.hcatalog.env.write else []
+      hive.client.env.write.push {
+        replace: """
+        if [ "$SERVICE" = "cli" ]; then
+          export HADOOP_HEAPSIZE="#{hive.client.heapsize}"
+          export HADOOP_CLIENT_OPTS="-Xmx${HADOOP_HEAPSIZE}m #{hive.client.opts} $HADOOP_CLIENT_OPTS"
+        fi
+        """
+        from: '# RYBA HIVE CLIENT START'
+        to: '# RYBA HIVE CLIENT END'
+        append: true
+      }
+      hive.client.env.write.push ([
+        match: /^export JAVA_HOME=.*$/m
+        replace: "export JAVA_HOME=#{java_home}"
+      ,
+        match: /^export HIVE_AUX_JARS_PATH=.*$/m
+        replace: "export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-#{hive.aux_jars.join ':'}} # RYBA FIX"
+      ])...
       
 ## Client Metastore Configuration
 
@@ -136,7 +160,7 @@ Example:
         # 'hive.security.metastore.authorization.manager'
         # 'hive.security.authenticator.manager'
         # Transaction, read/write locks
-      ] then hive.site[property] ?= hcat_ctx.config.ryba.hive.site[property]
+      ] then hive.site[property] ?= hcat_ctxs[0].config.ryba.hive.site[property]
       # Remove password from client configuration
       unless @has_module 'ryba/hive/hcatalog' or @has_module 'ryba/hive/server2'
         hive.site['javax.jdo.option.ConnectionUserName']= null

@@ -58,8 +58,6 @@ Example:
       
       hive.aux_jars ?= []
       aux_jars = ['/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar']
-      # phoenix-client jar contains incompatible additionnal jars. Take phoenix-server instead
-      aux_jars.push '/usr/hdp/current/phoenix-server.jar' if @has_any_modules 'ryba/phoenix/client' 
       for jar in aux_jars then hive.aux_jars.push jar unless jar in hive.aux_jars
       # Layout and environment
       hive.hcatalog ?= {}
@@ -69,8 +67,25 @@ Example:
       hive.hcatalog.heapsize ?= 1024
       hive.libs ?= []
 
-# Configuration
+## Environment
 
+      hive.hcatalog.env ?=  {}
+      hive.hcatalog.env.write ?= []
+      hive.hcatalog.env.write.push {
+        replace: """
+        if [ "$SERVICE" = "metastore" ]; then
+          export HADOOP_HEAPSIZE="#{hive.hcatalog.heapsize}"
+          export HADOOP_CLIENT_OPTS="-Xmx${HADOOP_HEAPSIZE}m #{hive.hcatalog.opts} $HADOOP_CLIENT_OPTS"
+        fi
+        """
+        from: '# RYBA HIVE HCATALOG START'
+        to: '# RYBA HIVE HCATALOG END'
+        append: true
+      }
+    
+# Configuration
+      
+      
       hive.site ?= {}
       hive.site['hive.metastore.uris'] ?= null
       unless hive.site['hive.metastore.uris']

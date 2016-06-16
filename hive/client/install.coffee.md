@@ -52,29 +52,15 @@ Using this functionnality, a user may for example raise the heap size of Hive
 Client to 4Gb by either setting a "opts" value equal to "-Xmx4096m" or the 
 by setting a "heapsize" value equal to "4096".
 
-      @write
+      @render
         header: 'Hive Env'
-        destination: "#{hive.conf_dir}/hive-env.sh"
-        replace: """
-        if [ "$SERVICE" = "cli" ]; then
-          # export HADOOP_CLIENT_OPTS="-Dcom.sun.management.jmxremote -Djava.rmi.server.hostname=130.98.196.54 -Dcom.sun.management.jmxremote.rmi.port=9526 -Dcom.sun.management.jmxremote.port=9526 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false  $HADOOP_CLIENT_OPTS"
-          export HADOOP_HEAPSIZE="#{hive.client.heapsize}"
-          export HADOOP_CLIENT_OPTS="-Xmx${HADOOP_HEAPSIZE}m #{hive.client.opts} $HADOOP_CLIENT_OPTS"
-        fi
-        """
-        from: '# RYBA HIVE CLIENT START'
-        to: '# RYBA HIVE CLIENT END'
-        append: true
+        destination: "#{hive.server2.conf_dir}/hive-env.sh"
+        source: "#{__dirname}/../resources/hive-env.sh"
+        local_source: true
+        write: hive.client.env.write
         eof: true
         backup: true
-        write: [
-          match: /^export JAVA_HOME=.*$/m
-          replace: "export JAVA_HOME=#{java_home}"
-        ,
-          match: /^export HIVE_AUX_JARS_PATH=.*$/m
-          replace: "export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-#{hive.aux_jars.join ':'}} # RYBA FIX"
-        ]
-
+          
 ## SSL
 
       @call header: 'Client SSL', handler: ->

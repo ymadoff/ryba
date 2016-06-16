@@ -12,7 +12,6 @@ Resources:
     
     module.exports =  header: 'Hive Server2 Install', handler: ->
       {hive} = @config.ryba
-      {java_home} = @config.java
       {ssl, ssl_server, ssl_client, hadoop_conf_dir, realm} = @config.ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       tmp_location = "/var/tmp/ryba/ssl"
@@ -119,35 +118,15 @@ Enrich the "hive-env.sh" file with the value of the configuration property
 Using this functionnality, a user may for example raise the heap size of Hive
 Server2 to 4Gb by setting a value equal to "-Xmx4096m".
 
-      @write
-        header: 'Hive Env Write'
-        destination: "#{hive.server2.conf_dir}/hive-env.sh"
-        source: "#{__dirname}/resources/hive-env.sh"
-        local_source: true
-        unless_exists: true
-      @write
+      
+      @render
         header: 'Hive Env'
         destination: "#{hive.server2.conf_dir}/hive-env.sh"
-        replace: """
-        if [ "$SERVICE" = "hiveserver2" ]; then
-          # export HADOOP_CLIENT_OPTS="-Dcom.sun.management.jmxremote -Djava.rmi.server.hostname=130.98.196.54 -Dcom.sun.management.jmxremote.rmi.port=9526 -Dcom.sun.management.jmxremote.port=9526 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false  $HADOOP_CLIENT_OPTS"
-          export HADOOP_HEAPSIZE="#{hive.server2.heapsize}"
-          export HADOOP_CLIENT_OPTS="-Xmx${HADOOP_HEAPSIZE}m #{hive.server2.opts} ${HADOOP_CLIENT_OPTS}"
-        fi
-        """
-        from: '# RYBA HIVE SERVER2 START'
-        to: '# RYBA HIVE SERVER2 END'
-        append: true
+        source: "#{__dirname}/../resources/hive-env.sh"
+        local_source: true
+        write: hive.server2.env.write
         eof: true
         backup: true
-        write: [
-          match: /^export JAVA_HOME=.*$/m
-          replace: "export JAVA_HOME=#{java_home}"
-        ,
-          match: /^export HIVE_AUX_JARS_PATH=.*$/m
-          replace: "export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-#{hive.aux_jars.join ':'}} # RYBA FIX"
-        ]
-        
 
 ## Layout
 
