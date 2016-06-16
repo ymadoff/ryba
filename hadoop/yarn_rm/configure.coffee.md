@@ -63,17 +63,6 @@ information inside "yarn.resourcemanager.zk-state-store.parent-path" (default to
         "#{zk_ctx.config.host}:#{zk_ctx.config.ryba.zookeeper.config['clientPort']}"
       ryba.yarn.rm.site['yarn.resourcemanager.zk-address'] ?= quorum.join ','
       
-## MapReduce JobHistory Server
-      
-      if jhs_ctx
-        ryba.yarn.rm.site['mapreduce.jobhistory.principal'] ?= jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.principal']
-        ryba.yarn.rm.site['yarn.resourcemanager.bind-host'] ?= '0.0.0.0'
-        # TODO: detect https and port, see "../mapred_jhs/check"
-        jhs_protocol = if jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.address'] is 'HTTP_ONLY' then 'http' else 'https'
-        jhs_protocol_key = if jhs_protocol is 'http' then '' else '.https'
-        jhs_address = jhs_ctx.config.ryba.mapred.site["mapreduce.jobhistory.webapp#{jhs_protocol_key}.address"]
-        ryba.yarn.site['yarn.log.server.url'] ?= "#{jhs_protocol}://#{jhs_address}/jobhistory/logs/"
-        ryba.yarn.rm.site['yarn.log.server.url'] ?= "#{jhs_protocol}://#{jhs_address}/jobhistory/logs/"
 
 ## High Availability with Manual Failover
 
@@ -108,6 +97,19 @@ inside the configuration.
       ryba.yarn.rm.site['yarn.resourcemanager.ha.automatic-failover.enabled'] ?= 'true'
       ryba.yarn.rm.site['yarn.resourcemanager.ha.automatic-failover.embedded'] ?= 'true'
       ryba.yarn.rm.site['yarn.resourcemanager.ha.automatic-failover.zk-base-path'] ?= '/yarn-leader-election'
+
+## MapReduce JobHistory Server
+      
+      if jhs_ctx
+        ryba.yarn.rm.site['mapreduce.jobhistory.principal'] ?= jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.principal']
+        ryba.yarn.rm.site['yarn.resourcemanager.bind-host'] ?= '0.0.0.0'
+        jhs_ctx.config.ryba.yarn.site['yarn.log-aggregation-enable'] ?= ryba.yarn.rm.site['yarn.log-aggregation-enable']
+        # TODO: detect https and port, see "../mapred_jhs/check"
+        jhs_protocol = if jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.address'] is 'HTTP_ONLY' then 'http' else 'https'
+        jhs_protocol_key = if jhs_protocol is 'http' then '' else '.https'
+        jhs_address = jhs_ctx.config.ryba.mapred.site["mapreduce.jobhistory.webapp#{jhs_protocol_key}.address"]
+        ryba.yarn.site['yarn.log.server.url'] ?= "#{jhs_protocol}://#{jhs_address}/jobhistory/logs/"
+        ryba.yarn.rm.site['yarn.log.server.url'] ?= "#{jhs_protocol}://#{jhs_address}/jobhistory/logs/"
 
 ## Preemption
 
