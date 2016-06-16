@@ -175,7 +175,15 @@ another reads from the same partition without interfering with each other.
       hive.site['hive.txn.manager'] ?= 'org.apache.hadoop.hive.ql.lockmgr.DbTxnManager'
       hive.site['hive.txn.timeout'] ?= '300'
       hive.site['hive.txn.max.open.batch'] ?= '1000'
-      hive.site['hive.compactor.initiator.on'] ?= 'true' # Required
+
+hive.compactor.initiator.on can be activated on only one node !
+[hive compactor initiator][initiator]
+So we provide true by default on the 1st hive-hcatalog-server, but we force false elsewhere
+
+      if @contexts('ryba/hive/hcatalog')[0].config.host is @config.host
+        hive.site['hive.compactor.initiator.on'] ?= 'true'
+      else
+        hive.site['hive.compactor.initiator.on'] = 'false'
       hive.site['hive.compactor.worker.threads'] ?= '1' # Required > 0
       hive.site['hive.compactor.worker.timeout'] ?= '86400L'
       hive.site['hive.compactor.cleaner.run.interval'] ?= '5000'
@@ -229,3 +237,4 @@ default to the [DBTokenStore]. Also worth of interest is the
 [MemoryTokenStore]: https://github.com/apache/hive/blob/trunk/shims/common/src/main/java/org/apache/hadoop/hive/thrift/MemoryTokenStore.java
 [DBTokenStore]: https://github.com/apache/hive/blob/trunk/shims/common/src/main/java/org/apache/hadoop/hive/thrift/DBTokenStore.java
 [ZooKeeperTokenStore]: https://github.com/apache/hive/blob/trunk/shims/common/src/main/java/org/apache/hadoop/hive/thrift/ZooKeeperTokenStore.java
+[initiator]: https://cwiki.apache.org/confluence/display/Hive/Configuration+Properties#ConfigurationProperties-hive.compactor.initiator.on
