@@ -164,17 +164,17 @@ This mechanism can be used to configure a specific gateway without having to dec
         if topology.services['webhdfs'] is true
           throw Error 'Cannot autoconfigure KNOX webhdfs service, no namenode declared' unless nn_ctxs.length
           # WebHDFS auto configuration rules:
-          # If we have HttpFS module (specific implementation of WebHDFS), we provide it by default and configure HA.
-          # Else, we provide namenode WebHDFS (default implementation, embedded in namenode)
+          # We provide by default namenode WebHDFS (default implementation, embedded in namenode) instead of httpfs. Httpfs put request through knox create empty files.
           # We also configure HA for WebHDFS if namenodes are in HA-mode
-          fs_ctxs = @contexts 'ryba/hadoop/httpfs', require('../hadoop/httpfs/configure').handler
-          if fs_ctxs.length
-            if fs_ctxs.length > 1
-              topology.providers['ha'] ?= name: 'HaProvider'
-              topology.providers['ha'].config ?= {}
-              topology.providers['ha'].config['WEBHDFS'] ?= 'maxFailoverAttempts=3;failoverSleep=1000;maxRetryAttempts=300;retrySleep=1000;enabled=true'
-            topology.services['webhdfs'] = fs_ctxs.map (ctx) -> "http#{if ctx.config.ryba.httpfs.env.HTTPFS_SSL_ENABLED is 'true' then 's' else ''}://#{ctx.config.host}:#{ctx.config.ryba.httpfs.http_port}/webhdfs/v1"
-          else if nn_ctxs.length > 1
+          
+          # fs_ctxs = @contexts 'ryba/hadoop/httpfs', require('../hadoop/httpfs/configure').handler
+          # if fs_ctxs.length
+          #   if fs_ctxs.length > 1
+          #     topology.providers['ha'] ?= name: 'HaProvider'
+          #     topology.providers['ha'].config ?= {}
+          #     topology.providers['ha'].config['WEBHDFS'] ?= 'maxFailoverAttempts=3;failoverSleep=1000;maxRetryAttempts=300;retrySleep=1000;enabled=true'
+          #   topology.services['webhdfs'] = fs_ctxs.map (ctx) -> "http#{if ctx.config.ryba.httpfs.env.HTTPFS_SSL_ENABLED is 'true' then 's' else ''}://#{ctx.config.host}:#{ctx.config.ryba.httpfs.http_port}/webhdfs/v1"
+          if nn_ctxs.length > 1
             topology.providers['ha'] ?= name: 'HaProvider'
             topology.providers['ha'].config ?= {}
             topology.providers['ha'].config['WEBHDFS'] ?= 'maxFailoverAttempts=3;failoverSleep=1000;maxRetryAttempts=300;retrySleep=1000;enabled=true'
@@ -186,12 +186,12 @@ This mechanism can be used to configure a specific gateway without having to dec
               port = nn_ctx.config.ryba.hdfs.site["dfs.namenode.#{protocol}-address.#{nn_ctx.config.ryba.nameservice}.#{shortname}"].split(':')[1]
               # We ensure that the default active namenode is first in the list !
               action = if host is nn_ctx.config.ryba.active_nn_host then 'unshift' else 'push'
-              topology.services['webhdfs'][action] "#{protocol}://#{host}:#{port}/webhdfs/v1"
+              topology.services['webhdfs'][action] "#{protocol}://#{host}:#{port}/webhdfs"
           else
             protocol = if nn_ctxs[0].config.ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
             host = nn_ctxs[0].config.host
             port = nn_ctxs[0].config.ryba.hdfs.site["dfs.namenode.#{protocol}-address"].split(':')[1]
-            topology.services['webhdfs'] = "#{protocol}://#{host}:#{port}/webhdfs/v1" 
+            topology.services['webhdfs'] = "#{protocol}://#{host}:#{port}/webhdfs" 
         # Jobtracker
         if topology.services['jobtracker'] is true
           ctxs = @contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm/configure').handler
