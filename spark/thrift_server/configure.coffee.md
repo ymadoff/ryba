@@ -39,9 +39,6 @@ Only port, execution engine and dynamic discovery change (not supported).
       spark.thrift.hive_site['hive.execution.engine'] = 'mr'
       # Do not modify this property, hive server2 spark instance does not support zookeeper dynamic discovery
       spark.thrift.hive_site['hive.server2.support.dynamic.service.discovery'] = 'false' 
-      
-      
-
     
 ### Spark Defaults
 Inherits some of the basic spark yarn-cluster based installation

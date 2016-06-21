@@ -18,10 +18,8 @@
       spark.group = name: spark.group if typeof spark.group is 'string'
       spark.group.name ?= 'spark'
       spark.group.system ?= true
-      
       spark.user.gid ?= spark.group.name
 
-      
       # Configuration
       spark.conf = {}
       spark.conf['spark.master'] ?= "local[*]"
@@ -39,7 +37,6 @@
       # set to only supported one http://spark.apache.org/docs/1.6.0/monitoring.html#viewing-after-the-fact
       # https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_upgrading_hdp_manually/content/upgrade-spark-23.html
       spark.conf['spark.history.provider'] ?= 'org.apache.spark.deploy.history.FsHistoryProvider'
-      
       # Base directory in which Spark events are logged, if spark.eventLog.enabled is true.
       # Within this base directory, Spark creates a sub-directory for each application, and logs the events specific to the application in this directory.
       # Users may want to set this to a unified location like an HDFS directory so history files can be read by the history server.
@@ -75,22 +72,6 @@
 
 [secu]: http://spark.apache.org/docs/latest/security.html
 
-## Spark History Server Configure
-
-We set by default the address and port of the spark web ui server
-Those properties are not set by default to enable user to access log trought Yarn RM WEB UI
-See ryba/spark/history_server/install.coffee.md doc for detailed information on history server.
-In addition, if you want the YARN ResourceManager to link directly to the Spark History Server, 
-you can set the spark.yarn.historyServer.address property in /etc/spark/conf/spark-defaults.conf:
-
-      [shs_ctx] = @contexts 'ryba/spark/history_server', require('../history_server/configure').handler
-      if shs_ctx
-        shs_ctx.config.ryba.spark.conf['spark.history.provider'] ?= spark.conf['spark.history.provider']
-        spark.conf['spark.yarn.historyServer.address'] ?= "#{shs_ctx.config.host}:#{shs_ctx.config.ryba.spark.conf['spark.history.ui.port']}"
-      else
-        # HDP 2.3 sandbox set it to SHS address. If we do this here
-        spark.conf['spark.yarn.historyServer.address'] ?= null
-
 ## Spark Client Metrics
 
 Configure the "metrics.properties" to connect Spark to a metrics collector like Ganglia or Graphite.
@@ -99,7 +80,8 @@ and spark.metrics.conf=metrics.properties will tell all executors to load that f
 
       # spark.conf['spark.metrics.conf'] ?= 'metrics.properties'
       spark.conf['spark.metrics.conf'] ?= null # Error, spark complain it cant find if value is 'metrics.properties'    
-      spark.conf['spark.yarn.dist.files'] ?= "file://#{spark.conf_dir}/metrics.properties"
+      spark.dist_files ?= ["file://#{spark.conf_dir}/metrics.properties"]
+      spark.conf['spark.yarn.dist.files'] ?= spark.dist_files.join(',') if spark.dist_files.length > 0
 
       spark.metrics =
         'master.source.jvm.class':'org.apache.spark.metrics.source.JvmSource'

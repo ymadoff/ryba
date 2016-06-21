@@ -30,6 +30,10 @@ SPARK_IDENT_STRING=$USER
 
 # The scheduling priority for daemons. (Default: 0)
 SPARK_NICENESS=0
+# Workaround SPARK-12279
+export HBASE_HOME=/usr/hdp/current/hbase-client
+export HBASE_CONF_DIR=/etc/hbase/conf
+export SPARK_CLASSPATH=${HBASE_HOME}/lib/hbase-hadoop2-compat.jar:${HBASE_HOME}/lib/hbase-hadoop-compat.jar:${HBASE_HOME}/lib/hbase-common.jar:${HBASE_HOME}/lib/hbase-server.jar:${HBASE_HOME}/lib/hbase-client.jar:${HBASE_HOME}/lib/hbase-protocol.jar:${HBASE_HOME}/lib/protobuf-java-2.5.0.jar:${HBASE_HOME}/lib/htrace-core-3.1.0-incubating.jar:${HBASE_HOME}/lib/hbase-annotations.jar:${HBASE_HOME}/lib/guava-12.0.1.jar:${HADOOP_HOME}/hadoop-common.jar
 
 export HADOOP_HOME=${HADOOP_HOME:-/usr/hdp/current/hadoop-client}
 export HADOOP_CONF_DIR=${HADOOP_CONF_DIR:-{{ryba.hadoop_conf_dir}}}

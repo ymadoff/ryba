@@ -9,6 +9,7 @@ Resources:
   
     module.exports = header: 'Spark Client Install', handler: ->
       {ssl, ssl_server, ssl_client, spark, hadoop_group, hadoop_conf_dir, hive} = @config.ryba
+      fs_log_dir = spark.conf['spark.eventLog.dir']
 
 ## Register
 
@@ -55,16 +56,21 @@ Install the spark and python packages.
 
 ## Spark Worker events log dir
 
-      @call header: 'Logdir HDFS Permissions', handler: ->
-        fs_log_dir = spark.conf['spark.eventLog.dir']
-        @execute
-          cmd: mkcmd.hdfs @, """
-            hdfs dfs -mkdir -p /user/#{spark.user.name}
+      @execute
+        header: 'HDFS Layout'
+        cmd: mkcmd.hdfs @, """
+          hdfs dfs -mkdir -p /user/#{spark.user.name}
+          hdfs dfs -chmod -R 755 /user/#{spark.user.name}
+          hdfs dfs -chown -R #{spark.user.name}:#{spark.group.name} /user/#{spark.user.name}
+          """
+      @execute
+        header: 'HDFS Log Directory'
+        cmd: mkcmd.hdfs @, """
             hdfs dfs -mkdir -p #{fs_log_dir}
-            hdfs dfs -chown -R #{spark.user.name}:#{spark.group.name} /user/#{spark.user.name}
-            hdfs dfs -chmod -R 755 /user/#{spark.user.name}
-            hdfs dfs -chmod 1777 #{fs_log_dir}
-            """
+            hdfs dfs -chown -R  #{spark.user.name}:#{hadoop_group.name} #{fs_log_dir}
+            hdfs dfs -chmod -R 1777 #{fs_log_dir}
+          """
+
 
 ## Spark SSL
 
@@ -165,6 +171,7 @@ has finished (logs are only available in yarn-cluster mode).
             merge: true
             separator: ' '
           @write
+            if: spark.conf['spark.metrics.conf']
             destination: "#{spark.conf_dir}/metrics.properties"
             write: for k, v of spark.metrics
               match: ///^#{quote k}=.*$///mg
