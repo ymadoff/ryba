@@ -54,7 +54,7 @@ by setting a "heapsize" value equal to "4096".
 
       @render
         header: 'Hive Env'
-        destination: "#{hive.server2.conf_dir}/hive-env.sh"
+        destination: "#{hive.conf_dir}/hive-env.sh"
         source: "#{__dirname}/../resources/hive-env.sh"
         local_source: true
         write: hive.client.env.write
