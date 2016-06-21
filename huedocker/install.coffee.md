@@ -234,42 +234,18 @@ changes.
 ## Install Hue container
 
 Install Hue server docker container.
-Assumes that the hue docker image exists in the remote temporary directory.
-The image can be uploaded by an other bin/ryba install (e.g. by a team mate), or it will be uploaded
-from local (needs local container to exist e.g. after bin/ryba prepare).
-Compares local/remote hash to check if docker_load is needed.
+It uses local checksum if provided to upload or not.
 
       @call header: 'Upload Container', timeout: -1, retry:3, handler: (options)  ->
         tmp = hue_docker.image_dir
-        current_checksum = ''
-        # check if remote image exists (store the checkusm)
-        # force status to false when only reading files
-        @call (options, callback) =>
-          @fs.exists "#{tmp}/hue_docker.tar", (err, exists) =>
-            return callback err if err?.code != 'ENOENT' and err
-            return callback null, false if err?.code == 'ENOENT' or !exists
-            @fs.readFile "#{tmp}/hue_docker_checksum", 'ascii', (err, content) ->
-              return callback err if err?.code != 'ENOENT' and err
-              return callback null, exists if err?.code == 'ENOENT'
-              current_checksum = content
-              # return false because we don't want modified status (just reading)
-              return callback null, false
-        # upload image and its checksum if remote  do not exists
+        md5 = hue_docker.md5 ?= true
         @download
-          source: "#{hue_docker.prod.directory}/hue_docker.tar"
-          destination: "#{tmp}/hue_docker.tar"
+          source: "#{hue_docker.prod.directory}/#{hue_docker.prod.tar}"
+          destination: "#{tmp}/#{hue_docker.prod.tar}"
           binary: true
-          md5: true
-        @download
-          source: "#{hue_docker.prod.directory}/checksum"
-          destination: "#{tmp}/hue_docker_checksum"
-          binary: true
-          md5: true
-        @call ->
-          @docker_load
-            machine: machine
-            input: "#{tmp}/hue_docker.tar"
-            checksum: current_checksum
+          md5: md5
+        @docker_load
+          input: "#{tmp}/#{hue_docker.prod.tar}"
 
 ## Run Hue Server Container
 
@@ -308,6 +284,7 @@ ryba/hue:3.9
         env: [
           "REQUESTS_CA_BUNDLE=#{hue_docker.ca_bundle}"
           "KRB5CCNAME=FILE:/tmp/krb5cc_#{hue_docker.user.uid}"
+          "DESKTOP_LOG_DIR=/var/lib/hue/logs"
         ]
         net: 'host'
         service: true

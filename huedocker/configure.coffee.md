@@ -59,11 +59,15 @@ Example:
       # Huedocker service name has to match nagios hue_docker_check_status.sh file in ryba/nagios/resources/plugins
       hue_docker.service ?= 'hue-server-docker'
       hue_docker.build ?= {}
+      hue_docker.build.source ?= 'https://github.com/cloudera/hue.git'
       hue_docker.build.name ?= 'ryba/hue-build'
+      hue_docker.build.version ?= 'latest'
       hue_docker.build.dockerfile ?= "#{__dirname}/resources/build/Dockerfile"
       hue_docker.build.directory ?= "#{@config.mecano.cache_dir}/huedocker/cache/build" # was '/tmp/ryba/hue-build'
       hue_docker.prod ?= {}
       hue_docker.prod.directory ?= "#{@config.mecano.cache_dir}/huedocker/cache/prod"
+      hue_docker.prod.file ?= "#{hue_docker.prod.directory}/Dockerfile"
+      hue_docker.prod.tar ?= 'hue_docker.tar'
       hue_docker.port ?= '8888'
       hue_docker.image_dir ?= '/tmp'
       blacklisted_app = []

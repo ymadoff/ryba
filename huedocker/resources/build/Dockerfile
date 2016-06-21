@@ -51,7 +51,7 @@ RUN export CLASSPATH=.
 #    HUE BUILD   #
 
 WORKDIR /var/lib/hue
-COPY {{git_source}} /var/lib/hue
+COPY {{source}} /var/lib/hue
 WORKDIR /var/lib/hue
 RUN make -Wno-error -k apps || true
 WORKDIR /var/lib/

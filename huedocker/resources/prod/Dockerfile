@@ -37,7 +37,6 @@ RUN mkdir -p /var/lib/hue/ssl
 
 # Fix hue request verify path: setting the ca bundle path as global env variable
 
-
 USER {{user}}
 
 #  Hue INSTALL   #
