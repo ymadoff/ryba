@@ -121,15 +121,17 @@ has to be fixe to use jdk 1.8.
 ## SOLR HDFS Layout
 Create HDFS solr user and its home directory
 
-      @hdfs_mkdir
+      @call 
         if: solr.cloud.hdfs?
-        if: @config.host is @contexts('ryba/solr/cloud')[0].config.host
-        header: 'HDFS Layout'
-        destination: "/user/#{solr.user.name}"
-        user: solr.user.name
-        group: solr.user.name
-        mode: 0o0775
-        krb5_user: @config.ryba.hdfs.krb5_user
+        handler: ->
+          @hdfs_mkdir
+            if: @config.host is @contexts('ryba/solr/cloud')[0].config.host
+            header: 'HDFS Layout'
+            destination: "/user/#{solr.user.name}"
+            user: solr.user.name
+            group: solr.user.name
+            mode: 0o0775
+            krb5_user: @config.ryba.hdfs.krb5_user
 
 ## Config
     
