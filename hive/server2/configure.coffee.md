@@ -93,15 +93,30 @@ Example:
       hive.site['hive.server2.tez.sessions.per.default.queue'] ?= '1'
       hive.site['hive.server2.tez.initialize.default.sessions'] ?= 'false'
 
+
 ## Hive Server2 Environment
       
       hive.server2.env ?= {}
+      #JMX Config
+      hive.server2.env["JMX_OPTS"] ?= ''
+
+      if hive.server2.env["JMXPORT"]? and hive.server2.env["JMX_OPTS"].indexOf('-Dcom.sun.management.jmxremote.rmi.port') is -1
+        hive.server2.env["$JMXSSL"] ?= false
+        hive.server2.env["$JMXAUTH"] ?= false
+        hive.server2.env["JMX_OPTS"] += """
+          -Dcom.sun.management.jmxremote \
+          -Dcom.sun.management.jmxremote.authenticate=#{hive.server2.env["$JMXAUTH"]} \
+          -Dcom.sun.management.jmxremote.ssl=#{hive.server2.env["$JMXSSL"]} \
+          -Dcom.sun.management.jmxremote.port=#{hive.server2.env["JMXPORT"]} \
+          -Dcom.sun.management.jmxremote.rmi.port=#{hive.server2.env["JMXPORT"]} \
+          """
+
       hive.server2.env.write ?= if @has_module('ryba/hive/hcatalog') then hive.hcatalog.env.write else []
       hive.server2.env.write.push {
         replace: """
         if [ "$SERVICE" = "hiveserver2" ]; then
           export HADOOP_HEAPSIZE="#{hive.server2.heapsize}"
-          export HADOOP_CLIENT_OPTS="-Xmx${HADOOP_HEAPSIZE}m #{hive.server2.opts} ${HADOOP_CLIENT_OPTS}"
+          export HADOOP_CLIENT_OPTS=" #{hive.server2.env.JMX_OPTS} -Xmx${HADOOP_HEAPSIZE}m #{hive.server2.opts} ${HADOOP_CLIENT_OPTS}"
         fi
         """
         from: '# RYBA HIVE SERVER2 START'
