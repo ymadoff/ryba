@@ -11,10 +11,11 @@ replica set primary server.
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       mongo_shell_exec =  ""
       mongo_shell_admin_exec =  "#{mongo_shell_exec} -u #{mongodb.admin.name} --password  #{mongodb.admin.password}"
-      cfsrv_ctxs = @contexts 'ryba/mongodb/configsrv', require('../configsrv').configure
+      cfsrv_ctxs = @contexts 'ryba/mongodb/configsrv', require('../configsrv/configure').handler
+      # find master of the config server's replica set
       [replica_master_ctx] = cfsrv_ctxs.filter (ctx) =>
-        srv = ctx.config.ryba.mongodb.configsrv
-        srv.config.replication.replSetName is router.my_cfgsrv_repl_set and !srv.is_master
+        configsrv = ctx.config.ryba.mongodb.configsrv
+        configsrv.config.replication.replSetName is router.my_cfgsrv_repl_set and configsrv.is_master
       # we wait for the replica set to be ready before starting the router server
       mongo_shell_root_exec =  "mongo admin "
       mongo_shell_root_exec +=  "-h #{replica_master_ctx.config.host} "
