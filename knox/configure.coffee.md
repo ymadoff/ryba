@@ -90,10 +90,11 @@ loop on topologies to provide missing values
         oozie_ctx.config.ryba.oozie.site ?= {}
         oozie_ctx.config.ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{knox.user.name}.hosts"] ?= knox_hosts
         oozie_ctx.config.ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{knox.user.name}.groups"] ?= '*'
-      hbase_rest_ctxs = @contexts 'ryba/hbase/rest', require('../hbase/rest/configure').handler
-      for key, hbase_ctx of hbase_rest_ctxs
+      hbase_rest_ctxs = @contexts 'ryba/hbase/rest'
+      for hbase_ctx in hbase_rest_ctxs
+        hbase_ctx.config.ryba ?= {}
         hbase_ctx.config.ryba.core_site ?= {}
-        hbase_ctx.config.ryba.core_site["hadoop.proxyuser.#{knox.user.name}.hosts"] ?= '*'
+        hbase_ctx.config.ryba.core_site["hadoop.proxyuser.#{knox.user.name}.hosts"] ?= knox_hosts
         hbase_ctx.config.ryba.core_site["hadoop.proxyuser.#{knox.user.name}.groups"] ?= '*'
 
 ## Configure topology
