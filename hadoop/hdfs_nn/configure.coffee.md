@@ -32,6 +32,8 @@ Example:
       ryba.hdfs.nn ?= {}
       ryba.hdfs.nn.conf_dir ?= '/etc/hadoop-hdfs-namenode/conf'
       ryba.hdfs.nn.core_site ?= {}
+      #Number of minutes after which the checkpoint gets deleted
+      ryba.hdfs.nn.core_site['fs.trash.interval'] ?= '10080'
       ryba.hdfs.nn.site ?= {}
       ryba.hdfs.nn.site['dfs.http.policy'] ?= 'HTTPS_ONLY' # HTTP_ONLY or HTTPS_ONLY or HTTP_AND_HTTPS
       # throw Error "Missing \"ryba.zkfc_password\" property" unless ryba.zkfc_password
