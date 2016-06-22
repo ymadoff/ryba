@@ -207,6 +207,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
 
       @krb5_addprinc krb5,
         header: 'Kerberos'
+        if: nifi.manager.config.properties['nifi.security.user.login.identity.provider'] is 'kerberos-provider'
         principal: nifi.manager.krb5_principal
         randkey: true
         keytab: nifi.manager.krb5_keytab

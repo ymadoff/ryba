@@ -8,6 +8,7 @@
       nifi.manager.install_dir ?= "#{nifi.root_dir}/nifi-manager"
       nifi.manager.conf_dir ?= '/etc/nifi-manager/conf'
       nifi.manager.log_dir ?= '/var/log/nifi'
+      nifi.webui ?= {}
       config = nifi.manager.config ?= {}
       properties = config.properties ?= {}
       #version
@@ -100,7 +101,6 @@ The clients request access to nifi, and admin accepts/denies request to webui
             properties['nifi.kerberos.krb5.file'] ?= krb5_provider['file']
             properties['nifi.kerberos.service.principal'] ?= "HTTP/#{@config.host}@#{realm}"
             properties['nifi.kerberos.keytab.location'] ?= '/etc/security/keytabs/spnego.service.keytab'
-            nifi.webui ?= {}
             nifi.webui.krb5_principal ?= "#{nifi.user.name}@#{realm}"
             nifi.webui.krb5_password ?= 'nifi123'
             config.authorized_users ?= [
