@@ -60,7 +60,7 @@ by setting a "heapsize" value equal to "4096".
         write: hive.client.env.write
         eof: true
         backup: true
-          
+
 ## SSL
 
       @call header: 'Client SSL', handler: ->
@@ -77,8 +77,7 @@ by setting a "heapsize" value equal to "4096".
         @remove
           destination: "#{tmp_location}/#{path.basename ssl.cacert}"
           shy: true
-      
+
 ## Dependencies
 
     path = require 'path'
-  

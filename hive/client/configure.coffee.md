@@ -120,7 +120,7 @@ Example:
         match: /^export HIVE_AUX_JARS_PATH=.*$/m
         replace: "export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-#{hive.aux_jars.join ':'}} # RYBA FIX"
       ])...
-      
+
 ## Client Metastore Configuration
 
       for property in  [
