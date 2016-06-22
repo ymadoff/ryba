@@ -33,13 +33,15 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
-
-      @iptables
-        header: 'IPTables'
-        rules: [
+      
+      rules =  [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 9083, protocol: 'tcp', state: 'NEW', comment: "Hive Metastore" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: 9999, protocol: 'tcp', state: 'NEW', comment: "Hive Web UI" }
         ]
+      rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: parseInt(hive.hcatalog.env["JMXPORT"],10), protocol: 'tcp', state: 'NEW', comment: "Metastore JMX" } if hive.hcatalog.env["JMXPORT"]?
+      @iptables
+        header: 'IPTables'
+        rules: rules
         if: @config.iptables.action is 'start'
 
 

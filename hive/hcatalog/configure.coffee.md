@@ -70,12 +70,25 @@ Example:
 ## Environment
 
       hive.hcatalog.env ?=  {}
+      #JMX Config
+      hive.hcatalog.env["JMX_OPTS"] ?= ''
+
+      if hive.hcatalog.env["JMXPORT"]? and hive.hcatalog.env["JMX_OPTS"].indexOf('-Dcom.sun.management.jmxremote.rmi.port') is -1
+        hive.hcatalog.env["$JMXSSL"] ?= false
+        hive.hcatalog.env["$JMXAUTH"] ?= false
+        hive.hcatalog.env["JMX_OPTS"] += """
+          -Dcom.sun.management.jmxremote \
+          -Dcom.sun.management.jmxremote.authenticate=#{hive.hcatalog.env["$JMXAUTH"]} \
+          -Dcom.sun.management.jmxremote.ssl=#{hive.hcatalog.env["$JMXSSL"]} \
+          -Dcom.sun.management.jmxremote.port=#{hive.hcatalog.env["JMXPORT"]} \
+          -Dcom.sun.management.jmxremote.rmi.port=#{hive.hcatalog.env["JMXPORT"]} \
+          """
       hive.hcatalog.env.write ?= []
       hive.hcatalog.env.write.push {
         replace: """
         if [ "$SERVICE" = "metastore" ]; then
           export HADOOP_HEAPSIZE="#{hive.hcatalog.heapsize}"
-          export HADOOP_CLIENT_OPTS="-Xmx${HADOOP_HEAPSIZE}m #{hive.hcatalog.opts} $HADOOP_CLIENT_OPTS"
+          export HADOOP_CLIENT_OPTS="#{hive.hcatalog.env.JMX_OPTS} -Xmx${HADOOP_HEAPSIZE}m #{hive.hcatalog.opts} $HADOOP_CLIENT_OPTS"
         fi
         """
         from: '# RYBA HIVE HCATALOG START'
