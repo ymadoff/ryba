@@ -1,7 +1,7 @@
 
 #  Hue Prepare
 
-Follows Cloudera   [build-instruction][cloudera-hue] for Hue 3.7 and later versionz.
+Follows Cloudera   [build-instruction][cloudera-hue] for Hue 3.7 and later version.
 An internet Connection is needed to be able to download.
 Becareful when used with docker-machine mecano might exit before finishing
 the execution. you can resume build by executing again prepare
