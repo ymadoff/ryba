@@ -1,11 +1,6 @@
 
 # Hue Start
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-
-## Start Server
-
 Start the Hue server. You can also start the server manually with the following
 command:
 
@@ -13,5 +8,5 @@ command:
 service hue start
 ```
 
-    module.exports.push header: 'Hue # Start', label_true: 'STARTED', handler: ->
+    module.exports = header: 'Hue # Start', label_true: 'STARTED', handler: ->
       @service_start name: 'hue'

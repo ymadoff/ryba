@@ -5,21 +5,13 @@ Here's how to uninstall Hue: `rpm -qa | grep hue | xargs sudo rpm -e`. This
 article from december 2014 describe how to 
 [install the latest version of hue on HDP](http://gethue.com/how-to-deploy-hue-on-hdp/).
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/core/iptables'
-    # Install the mysql connector
-    module.exports.push 'masson/commons/mysql_client'
-    # Install kerberos clients to create/test new Hive principal
-    module.exports.push 'masson/core/krb5_client'
-    # Set java_home in "hadoop-env.sh"
-    module.exports.push 'ryba/hadoop/hdfs_client/install'
-    module.exports.push 'ryba/hadoop/yarn_client/install'
-    module.exports.push 'ryba/hadoop/mapred_client/install'
-    module.exports.push 'ryba/hive/client/install' # Hue reference hive conf dir
-    module.exports.push 'ryba/pig/install'
-    module.exports.push 'ryba/lib/hconfigure'
-    # module.exports.push require('./index').configure
+    module.exports = header: 'Hue', handler: ->
+      {realm, hue} = @config.ryba
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
+
+## Register
+
+      @register 'hconfigure', 'ryba/lib/hconfigure'
 
 ## Users & Groups
 
@@ -32,10 +24,8 @@ cat /etc/group | grep hue
 hue:x:494:
 ```
 
-    module.exports.push header: 'Hue # Users & Groups', handler: ->
-      {hue} = @config.ryba
-      @group hue.group
-      @user hue.user
+      @group header: 'Group', hue.group
+      @user header: 'User', hue.user
 
 ## IPTables
 
@@ -46,9 +36,8 @@ hue:x:494:
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-    module.exports.push header: 'Hue # IPTables', handler: ->
-      {hue} = @config.ryba
       @iptables
+        header: 'Hue # IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: hue.ini.desktop.http_port, protocol: 'tcp', state: 'NEW', comment: "Hue Web UI" }
         ]
@@ -58,8 +47,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 The packages "extjs-2.2-1" and "hue" are installed.
 
-    module.exports.push header: 'Hue # Packages', timeout: -1, handler: ->
-      @service name: 'hue'
+      @service header: 'Packages', name: 'hue'
 
 ## WebHCat
 
@@ -69,11 +57,11 @@ to allow impersonnation through the "hue" user.
 
 TODO: only work if WebHCat is running on the same server as Hue
 
-    module.exports.push header: 'Hue # WebHCat', handler: ->
       {webhcat} = @config.ryba
       webhcat_server = @host_with_module 'ryba/hive/webhcat'
-      return Error "WebHCat shall be on the same server as Hue" unless webhcat_server is @config.host
+      throw Error "WebHCat shall be on the same server as Hue" unless webhcat_server is @config.host
       @hconfigure
+        header: 'Hue # WebHCat'
         destination: "#{webhcat.conf_dir}/webhcat-site.xml"
         properties: 
           'webhcat.proxyuser.hue.hosts': '*'
@@ -88,11 +76,11 @@ to allow impersonnation through the "hue" user.
 
 TODO: only work if Oozie is running on the same server as Hue
 
-    module.exports.push header: 'Hue # Oozie', handler: ->
       {oozie} = @config.ryba
       oozie_server = @host_with_module 'ryba/oozie/server'
       return Error "Oozie shall be on the same server as Hue" unless oozie_server is @config.host
       @hconfigure
+        header: 'Hue # Oozie'
         destination: "#{oozie.conf_dir}/oozie-site.xml"
         properties: 
           'oozie.service.ProxyUserService.proxyuser.hue.hosts': '*'
@@ -104,9 +92,8 @@ TODO: only work if Oozie is running on the same server as Hue
 Configure the "/etc/hue/conf" file following the [HortonWorks](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue-5-2.html) 
 recommandations. Merge the configuration object from "hdp.hue.ini" with the properties of the destination file. 
 
-    module.exports.push header: 'Hue # Configure', handler: ->
-      {hue} = @config.ryba
       @write_ini
+        header: 'Configure'
         destination: "#{hue.conf_dir}/hue.ini"
         content: hue.ini
         merge: true
@@ -124,30 +111,30 @@ Setup the database hosting the Hue data. Currently two database providers are
 implemented but Hue supports MySQL, PostgreSQL, and Oracle. Note, sqlite is 
 the default database while mysql is the recommanded choice.
 
-    module.exports.push header: 'Hue # Database', handler: ->
-      {hue, db_admin} = @config.ryba
-      switch hue.ini.desktop.database.engine
-        when 'mysql'
-          {host, port, user, password, name} = hue.ini.desktop.database
-          escape = (text) -> text.replace(/[\\"]/g, "\\$&")
-          mysql_exec = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
-          @execute
-            cmd: """
-            #{mysql_exec} "
-            create database #{name};
-            grant all privileges on #{name}.* to '#{user}'@'localhost' identified by '#{password}';
-            grant all privileges on #{name}.* to '#{user}'@'%' identified by '#{password}';
-            flush privileges;
-            "
-            """
-            unless_exec: "#{mysql_exec} 'use #{name}'"
-          @execute
-            # TODO: handle updates
-            cmd: """
-            su -l #{hue.user.name} -c "/usr/lib/hue/build/env/bin/hue syncdb --noinput"
-            """
-            unless_exec: "#{mysql_exec} 'show tables from #{name};' | grep auth"
-        else throw Error 'Hue database engine not supported'
+      @call header: 'Hue # Database', handler: ->
+        {hue, db_admin} = @config.ryba
+        switch hue.ini.desktop.database.engine
+          when 'mysql'
+            {host, port, user, password, name} = hue.ini.desktop.database
+            escape = (text) -> text.replace(/[\\"]/g, "\\$&")
+            mysql_exec = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
+            @execute
+              cmd: """
+              #{mysql_exec} "
+              create database #{name};
+              grant all privileges on #{name}.* to '#{user}'@'localhost' identified by '#{password}';
+              grant all privileges on #{name}.* to '#{user}'@'%' identified by '#{password}';
+              flush privileges;
+              "
+              """
+              unless_exec: "#{mysql_exec} 'use #{name}'"
+            @execute
+              # TODO: handle updates
+              cmd: """
+              su -l #{hue.user.name} -c "/usr/lib/hue/build/env/bin/hue syncdb --noinput"
+              """
+              unless_exec: "#{mysql_exec} 'show tables from #{name};' | grep auth"
+          else throw Error 'Hue database engine not supported'
 
 ## Kerberos
 
@@ -155,10 +142,8 @@ The principal for the Hue service is created and named after "hue/{host}@{realm}
 the "/etc/hue/conf/hue.ini" configuration file, all the composants myst be tagged with
 the "security_enabled" property set to "true".
 
-    module.exports.push header: 'Hue # Kerberos', handler: ->
-      {hue, realm} = @config.ryba
-      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       @krb5_addprinc krb5,
+        header: 'Hue # Kerberos'
         principal: hue.ini.desktop.kerberos.hue_principal
         randkey: true
         keytab: "/etc/hue/conf/hue.service.keytab"
@@ -167,19 +152,18 @@ the "security_enabled" property set to "true".
 
 ## SSL Client
 
-    module.exports.push header: 'Hue # SSL Client', handler: ->
-      {hue} = @config.ryba
-      hue.ca_bundle = '' unless hue.ssl.client_ca
-      @write
-        destination: "#{hue.ca_bundle}"
-        source: "#{hue.ssl.client_ca}"
-        local_source: true
-        if: !!hue.ssl.client_ca
-      @write
-        destination: '/etc/init.d/hue'
-        match: /^DAEMON="export REQUESTS_CA_BUNDLE='.*';\$DAEMON"$/m
-        replace: "DAEMON=\"export REQUESTS_CA_BUNDLE='#{hue.ca_bundle}';$DAEMON\""
-        append: /^DAEMON=.*$/m
+      @call header: 'Hue # SSL Client', handler: ->
+        hue.ca_bundle = '' unless hue.ssl.client_ca
+        @write
+          destination: "#{hue.ca_bundle}"
+          source: "#{hue.ssl.client_ca}"
+          local_source: true
+          if: !!hue.ssl.client_ca
+        @write
+          destination: '/etc/init.d/hue'
+          match: /^DAEMON="export REQUESTS_CA_BUNDLE='.*';\$DAEMON"$/m
+          replace: "DAEMON=\"export REQUESTS_CA_BUNDLE='#{hue.ca_bundle}';$DAEMON\""
+          append: /^DAEMON=.*$/m
 
 ## SSL Server
 
@@ -189,76 +173,68 @@ configuration properties. It follows the [official Hue Web Server
 Configuration][web]. The "hue" service is restarted if there was any 
 changes.
 
-    module.exports.push header: 'Hue # SSL Server', handler: ->
-      {hue} = @config.ryba
-      @download
-        source: hue.ssl.certificate
-        destination: "#{hue.conf_dir}/cert.pem"
-        uid: hue.user.name
-        gid: hue.group.name
-      @download
-        source: hue.ssl.private_key
-        destination: "#{hue.conf_dir}/key.pem"
-        uid: hue.user.name
-        gid: hue.group.name
-      @write_ini
-        destination: "#{hue.conf_dir}/hue.ini"
-        content: desktop:
-          ssl_certificate: "#{hue.conf_dir}/cert.pem"
-          ssl_private_key: "#{hue.conf_dir}/key.pem"
-        merge: true
-        parse: misc.ini.parse_multi_brackets 
-        stringify: misc.ini.stringify_multi_brackets
-        separator: '='
-        comment: '#'
-      @service
-        name: 'hue'
-        action: 'restart'
-        if: -> @status -1
+      @call header: 'Hue # SSL Server', handler: ->
+        @download
+          source: hue.ssl.certificate
+          destination: "#{hue.conf_dir}/cert.pem"
+          uid: hue.user.name
+          gid: hue.group.name
+        @download
+          source: hue.ssl.private_key
+          destination: "#{hue.conf_dir}/key.pem"
+          uid: hue.user.name
+          gid: hue.group.name
+        @write_ini
+          destination: "#{hue.conf_dir}/hue.ini"
+          content: desktop:
+            ssl_certificate: "#{hue.conf_dir}/cert.pem"
+            ssl_private_key: "#{hue.conf_dir}/key.pem"
+          merge: true
+          parse: misc.ini.parse_multi_brackets 
+          stringify: misc.ini.stringify_multi_brackets
+          separator: '='
+          comment: '#'
+        @service
+          name: 'hue'
+          action: 'restart'
+          if: -> @status -1
+
 ## Fix Banner
 
 In the current version "2.5.1", the HTML of the banner is escaped.
 
-    module.exports.push header: 'Hue # Fix Banner', handler: ->
-      {hue} = @config.ryba
-      @write
-        destination: '/usr/lib/hue/desktop/core/src/desktop/templates/login.mako'
-        match: '${conf.CUSTOM.BANNER_TOP_HTML.get()}'
-        replace: '${ conf.CUSTOM.BANNER_TOP_HTML.get() | n,unicode }'
-        bck: true
-      @write
-        destination: '/usr/lib/hue/desktop/core/src/desktop/templates/common_header.mako'
-        write: [
+      @call header: 'Hue # Fix Banner', handler: ->
+        @write
+          destination: '/usr/lib/hue/desktop/core/src/desktop/templates/login.mako'
           match: '${conf.CUSTOM.BANNER_TOP_HTML.get()}'
           replace: '${ conf.CUSTOM.BANNER_TOP_HTML.get() | n,unicode }'
           bck: true
-          ,
-          match: /\.banner \{([\s\S]*?)\}/
-          replace: ".banner {#{hue.banner_style}}"
-          bck: true
-          if: hue.banner_style
-        ]
+        @write
+          destination: '/usr/lib/hue/desktop/core/src/desktop/templates/common_header.mako'
+          write: [
+            match: '${conf.CUSTOM.BANNER_TOP_HTML.get()}'
+            replace: '${ conf.CUSTOM.BANNER_TOP_HTML.get() | n,unicode }'
+            bck: true
+            ,
+            match: /\.banner \{([\s\S]*?)\}/
+            replace: ".banner {#{hue.banner_style}}"
+            bck: true
+            if: hue.banner_style
+          ]
 
 ## Clean Temp Files
 
 Clean up the "/tmp" from temporary Hue directories. All the directories which
 modified time are older than 10 days will be removed.
 
-    module.exports.push header: 'Hue # Clean Temp Files', handler: ->
-      {hue} = @config.ryba
       @cron_add
+        header: 'Clean Temp Files'
         cmd: "find /tmp -maxdepth 1 -type d -mtime +10 -user #{hue.user.name} -exec rm {} \\;",
         when: '0 */19 * * *'
         user: "#{hue.user.name}"
         match: "\\/tmp .*-user #{hue.user.name}"
         exec: true
         if: hue.clean_tmp
-
-## Start
-
-Use the "ryba/hue/start" module to start the Hue server.
-
-    module.exports.push "ryba/hue/start"
 
 ## Dependencies
 
