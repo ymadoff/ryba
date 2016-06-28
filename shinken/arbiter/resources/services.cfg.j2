@@ -3,9 +3,9 @@ define service {
   name                  {{ name }}
   service_description   {{ name }}{% if not service.display_name | isEmpty %}
   display_name          {{ service.display_name }}{% endif %}{% if not service.use | isEmpty %}
-  use                   {{ service.use }}{% endif %}{% if not hosts | isEmpty %}
-  host_name             {{ service.hosts | join(',') }}{% endif %}{% if not hostgroups | isEmpty %}
-  hostgroup_name        {{ service.hostgroups | join(',') }}{% endif %}{% if not servicegroups | isEmpty %}
+  use                   {{ service.use }}{% endif %}{% if not service.hosts | isEmpty %}
+  host_name             {{ service.hosts | join(',') }}{% endif %}{% if not service.hostgroups | isEmpty %}
+  hostgroup_name        {{ service.hostgroups | join(',') }}{% endif %}{% if not service.servicegroups | isEmpty %}
   servicegroups         {{ service.servicegroups | join(',') }}{% endif %}{% if not service.command | isEmpty %}
   check_command         {{ service.command }}{% endif %}{% if not service.is_volatile | isEmpty %}
   is_volatile           {{ service.is_volatile }}{% endif %}{% if not service.initial_state | isEmpty %}
