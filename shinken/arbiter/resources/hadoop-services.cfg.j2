@@ -361,6 +361,20 @@ define service {
   use                   unit-service
   check_command         check_tcp!{{ host.config.ryba.webhcat.site['templeton.port'] }}
 }
+define service {
+  service_description   WebHCat - Status
+  host_name             {{ hostname }}
+  servicegroups         webhcat
+  use                   unit-service
+  check_command         check_webhcat_status!{{ host.config.ryba.webhcat.site['templeton.port'] }}
+}
+define service {
+  service_description   WebHCat - Database
+  host_name             {{ hostname }}
+  servicegroups         webhcat
+  use                   unit-service
+  check_command         check_webhcat_database!{{ host.config.ryba.webhcat.site['templeton.port'] }}
+}
 {% endif %}
 {% if host.hostgroups | contains('oozie_server') %}
 define service {

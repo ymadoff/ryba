@@ -361,6 +361,24 @@ define servicedependency {
   execution_failure_criteria    c,u,p
   notification_failure_criteria c,u,p
 }
+define servicedependency {
+  service_description           WebHCat - WebService
+  dependent_service_description WebHCat - Status
+  host_name                     {{ host.cluster }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define servicedependency {
+  service_description           WebHCat - WebService
+  dependent_service_description WebHCat - Database
+  host_name                     {{ host.cluster }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
 {% endif %}
 {% if host.hostgroups | contains('oozie_server') %}
 define servicedependency {
