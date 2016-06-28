@@ -85,6 +85,14 @@ define command {
   command_name    check_nm_info
   command_line    $DOCKER_EXEC$ ./check_nm_info.php -H $HOSTNAME$ -p $ARG1$ -f $ARG2$ -r $ARG3$ $ARG4$
 }
+define command {
+  command_name    check_webhcat_status
+  command_line    $DOCKER_EXEC$ ./check_webhcat_status.sh $HOSTNAME$ $ARG1$
+}
+define command {
+  command_name    check_webhcat_database
+  command_line    $DOCKER_EXEC$ ./check_webhcat_database.sh $HOSTNAME$ $ARG1$
+}
 ## User/ryba-defined commands
 {% for name, command in commands %}
 define command{
