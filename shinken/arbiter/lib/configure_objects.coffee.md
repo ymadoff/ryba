@@ -100,6 +100,7 @@ They must have register set to 0 to not be instanciated
       services['unit-service'].retry_interval = '10'
       services['bp-service'] ?= {}
       services['bp-service'].use ?= 'unit-service'
+      services['bp-service'].business_rule_output_template ?= '$($HOSTNAME$: $SERVICEDESC$ )$'
       services['bp-service'].register ?= '0'
       services['process-service'] ?= {}
       services['process-service'].use ?= 'unit-service'
