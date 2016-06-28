@@ -85,7 +85,45 @@ define servicedependency {
 }
 {% endif %}
 {% endif %}
-
+{#### END OF WATCHERS DEPENDENCIES ####}
+{% if host.hostgroups | contains('mysql_server') %}
+define servicedependency {
+  service_description           MySQL - Connection time
+  dependent_service_description MySQL - Slow queries
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define servicedependency {
+  service_description           MySQL - Connection time
+  dependent_service_description MySQL - Slave lag
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define servicedependency {
+  service_description           MySQL - Connection time
+  dependent_service_description MySQL - Slave IO running
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define servicedependency {
+  service_description           MySQL - Connection time
+  dependent_service_description MySQL - Connected Threads
+  host_name                     {{ hostname }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+{% endif %}
 {% if host.hostgroups | contains('zookeeper_server') %}
 define servicedependency {
   service_description           Zookeeper Server - TCP
