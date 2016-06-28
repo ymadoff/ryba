@@ -46,6 +46,12 @@ Example:
       kafka.broker.conf_dir ?= '/etc/kafka-broker/conf'
       kafka.broker['heapsize'] ?= '1024'
       kafka.broker.config ?= {}
+      if @config.metric_sinks?.graphite?
+        kafka.broker.config['kafka.metrics.reporters'] ?= 'com.criteo.kafka.KafkaGraphiteMetricsReporter'
+        kafka.broker.config['kafka.graphite.metrics.reporter.enabled'] ?= 'true'
+        kafka.broker.config['kafka.graphite.metrics.host'] ?= @config.metric_sinks.graphite.server_host
+        kafka.broker.config['kafka.graphite.metrics.port'] ?= @config.metric_sinks.graphite.server_port
+        kafka.broker.config['kafka.graphite.metrics.group'] ?= "#{@config.metric_sinks.graphite.metrics_prefix}.#{@config.host}"
       kafka.broker.config['log.dirs'] ?= '/var/kafka'  # Comma-separated, default is "/tmp/kafka-logs"
       kafka.broker.config['log.dirs'] = kafka.broker['log.dirs'].join ',' if Array.isArray kafka.broker['log.dirs']
       kafka.broker.config['zookeeper.connect'] ?= zookeeper_quorum
