@@ -4,7 +4,6 @@
     module.exports = header: 'Shinken Arbiter Install', handler: ->
       {shinken} = @config.ryba
       {arbiter} = @config.ryba.shinken
-      
 
 ## IPTables
 
