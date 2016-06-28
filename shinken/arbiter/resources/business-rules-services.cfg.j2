@@ -4,6 +4,15 @@
 {% macro has_percent(name, warn, crit,g) %}bp_rule!(100%,{{warn}},{{ crit }} of: {% if g %}g:{{ g }}{% else %}*{% endif %},r:^{{ name }}?){% endmacro %}
 {% for hostname, host in hosts %}{% if host.hostgroups %}
 {% if host.hostgroups | contains('watcher') %}
+{% if host.modules | contains('mysql_server') %}
+define service {
+  service_description   MySQL - Available
+  host_name             {{ hostname }}
+  servicegroups         mysql_server
+  use                   bp-service
+  check_command         {{ has_one('MySQL - Connection-time', hostname) }}
+}
+{% endif %}
 define service {
   service_description   Hadoop - CORE
   host_name             {{ hostname }}

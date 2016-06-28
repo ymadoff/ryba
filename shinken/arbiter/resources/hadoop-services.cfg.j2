@@ -1,4 +1,41 @@
 {% for hostname, host in hosts %}{% if host.hostgroups %}
+{% if host.hostgroups | contains('mysql_server') %}
+define service {
+  service_description   MySQL - Connection time
+  host_name             {{ hostname }}
+  servicegroups         mysql_server
+  use                   unit-service
+  check_command         check_mysql!{{ host.config.ryba.db_admin.port }}!connection-time!3!10!{{ host.config.ryba.db_admin.username }}!{{ host.config.ryba.db_admin.password }}
+}
+define service {
+  service_description   MySQL - Slow queries
+  host_name             {{ hostname }}
+  servicegroups         mysql_server
+  use                   unit-service
+  check_command         check_mysql!{{ host.config.ryba.db_admin.port }}!slow-queries!0,25!1!{{ host.config.ryba.db_admin.username }}!{{ host.config.ryba.db_admin.password }}
+}
+define service {
+  service_description   MySQL - Slave lag
+  host_name             {{ hostname }}
+  servicegroups         mysql_server
+  use                   unit-service
+  check_command         check_mysql!{{ host.config.ryba.db_admin.port }}!slave-lag!3!10!{{ host.config.ryba.db_admin.username }}!{{ host.config.ryba.db_admin.password }}
+}
+define service {
+  service_description   MySQL - Slave IO running
+  host_name             {{ hostname }}
+  servicegroups         mysql_server
+  use                   unit-service
+  check_command         check_mysql!{{ host.config.ryba.db_admin.port }}!slave-io-running!1!1!{{ host.config.ryba.db_admin.username }}!{{ host.config.ryba.db_admin.password }}
+}
+define service {
+  service_description   MySQL - Connected Threads
+  host_name             {{ hostname }}
+  servicegroups         mysql_server
+  use                   unit-service
+  check_command         check_mysql!{{ host.config.ryba.db_admin.port }}!threads-connected!10!20!{{ host.config.ryba.db_admin.username }}!{{ host.config.ryba.db_admin.password }}
+}
+{% endif %}
 {% if host.hostgroups | contains('zookeeper_server') %}
 define service {
   service_description   Zookeeper Server - TCP

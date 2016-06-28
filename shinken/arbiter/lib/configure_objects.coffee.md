@@ -107,6 +107,8 @@ They must have register set to 0 to not be instanciated
       services['process-service'].register = '0'
       services['functional-service'] ?= {}
       services['functional-service'].use ?= 'generic-service'
+      services['functional-service'].check_interval = '600'
+      services['functional-service'].retry_interval = '30'
       services['functional-service'].register = '0'
       # ContactGroups
       contactgroups['admins'] ?= {}
@@ -165,6 +167,8 @@ This function creates hostgroups and servicegroups from ryba (sub)modules
         hostgroups[name].hostgroup_members ?= []
         parent ?= 'by_roles'
         hostgroups[parent].hostgroup_members.push name unless name in hostgroups[parent].hostgroup_members
+      initgroup 'mysql'
+      initgroup 'mysql_server', 'mysql', 'MySQL Server'
       initgroup 'zookeeper'
       initgroup 'zookeeper_server', 'zookeeper', 'Zookeeper Server'
       initgroup 'zookeeper_client', 'zookeeper', 'Zookeeper Client'
@@ -377,7 +381,6 @@ This function is called at the end to normalize values
 For now, masson are ignored
 
 'masson/commons/docker'
-'masson/commons/mysql_server'
 'masson/commons/phpldapadmin'
 'masson/core/bind_server'
 'masson/core/fstab'
@@ -401,6 +404,7 @@ For now, masson are ignored
 'masson/core/yum'
 
     modules_list =
+      'masson/commons/mysql_server': 'mysql_server'
       'ryba/elasticsearch': 'elasticsearch'
       'ryba/falcon': 'falcon'
       'ryba/flume': 'flume'

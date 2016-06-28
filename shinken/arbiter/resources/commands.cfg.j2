@@ -45,6 +45,10 @@ define command {
   command_line    $DOCKER_EXEC$ ./service_status.php -H {{ brokers }} -p 50000 -d $ARG1$ -f "host_groups >= $HOSTNAME$" -u | xargs -I % $DOCKER_EXEC$ ./check_rpc_latency.php -H % -n $ARG2$ -p $ARG3$ -w $ARG4$ -c $ARG5$ $ARG6$
 }
 ## Service-Specific commands
+define command{
+  command_name    check_mysql
+  command_line    $DOCKER_EXEC$ ./check_mysql_health --hostname $HOSTNAME$:$ARG1$ --username $ARG5$ --password $ARG6$ --mode $ARG2$ --warning $ARG3$ --critical $ARG4$
+}
 define command {
   command_name    check_zk_stat
   command_line    $DOCKER_EXEC$ ./check_zk_stat.php -H $HOSTADDRESS$ -p $ARG1$ -f $ARG2$ -w $ARG3$ -c $ARG4$ $ARG5$
