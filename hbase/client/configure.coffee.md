@@ -8,6 +8,7 @@
       throw Error "No HBase Master" unless hm_ctxs.length >= 1
       hbase.test ?= {}
       hbase.test.default_table ?= hm_ctxs[0].config.ryba.hbase.test.default_table
+      hbase.test.default_namespace ?= hm_ctxs[0].config.ryba.hbase.test.default_namespace
       hbase.user ?= {}
       hbase.user = name: ryba.hbase.user if typeof ryba.hbase.user is 'string'
       hbase.user.name ?= hm_ctxs[0].config.ryba.hbase.user.name

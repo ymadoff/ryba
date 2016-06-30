@@ -28,11 +28,11 @@
 
       @execute
         cmd: mkcmd.test @, """
-        #{curl} -X POST --data '#{schema}' #{protocol}://#{host}:#{port}/#{hbase.test.default_table}/schema
-        #{curl} --data '#{rows}' #{protocol}://#{host}:#{port}/#{hbase.test.default_table}/___false-row-key___/#{shortname}_rest%3A
-        #{curl} #{protocol}://#{host}:#{port}/#{hbase.test.default_table}/my_row_rest
+        #{curl} -X POST --data '#{schema}' #{protocol}://#{host}:#{port}/#{hbase.test.default_namespace}:#{hbase.test.default_table}/schema
+        #{curl} --data '#{rows}' #{protocol}://#{host}:#{port}/#{hbase.test.default_namespace}:#{hbase.test.default_table}/___false-row-key___/#{shortname}_rest%3A
+        #{curl} #{protocol}://#{host}:#{port}/#{hbase.test.default_namespace}:#{hbase.test.default_table}/my_row_rest
         """
-        unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"scan '#{hbase.test.default_table}', {COLUMNS => '#{shortname}_rest'}\" | egrep '[0-9]+ row'"
+        unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"scan '#{hbase.test.default_namespace}:#{hbase.test.default_table}', {COLUMNS => '#{shortname}_rest'}\" | egrep '[0-9]+ row'"
       , (err, executed, stdout) ->
         return if err or not executed
         try

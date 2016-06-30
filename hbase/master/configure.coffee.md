@@ -34,6 +34,7 @@ Example
 
       hbase.test ?= {}
       hbase.test.default_table ?= 'ryba'
+      hbase.test.default_namespace ?= 'ryba_namespace'
       hbase.user ?= {}
       hbase.user = name: ryba.hbase.user if typeof ryba.hbase.user is 'string'
       hbase.user.name ?= 'hbase'

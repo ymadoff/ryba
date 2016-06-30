@@ -6,7 +6,7 @@ scanning the table.
     
     module.exports =  header: 'HBase Client Check', label_true: 'CHECKED', handler: ->
       {shortname} = @config
-      {force_check, hbase} = @config.ryba
+      {force_check, hbase, user} = @config.ryba
       hbase_ctxs = @contexts 'ryba/hbase/master'
       {admin} = hbase_ctxs[0].config.ryba.hbase
 
@@ -34,49 +34,49 @@ namespaces are prefixed with an '@' character.
   
       @call header: 'Grant Permissions', timeout:-1 , label_true: 'CHECKED', handler: ->
         @execute
+          header: 'Namespace Level'
           cmd: mkcmd.hbase @, """
-          if hbase shell 2>/dev/null <<< "user_permission '#{hbase.test.default_table}'" | egrep '[1-9][0-9]* row'; then exit 2; fi
+          if hbase shell 2>/dev/null <<< "list_namespace_tables '#{hbase.test.default_namespace}'" | egrep '[0-9]+ row'; then exit 2; fi
           hbase shell 2>/dev/null <<-CMD
-            create '#{hbase.test.default_table}', 'family1'
-            grant 'ryba', 'RWC', '#{hbase.test.default_table}'
+            create_namespace '#{hbase.test.default_namespace}'
+            grant '#{user.name}', 'RWC', '@#{hbase.test.default_namespace}'
           CMD
-          hbase shell 2>/dev/null <<< "user_permission '#{hbase.test.default_table}'" | egrep '[1-9][0-9]* row'
           """
           code_skipped: 2
         , (err, executed, stdout) ->
-          hasCreatedTable = ///create '#{hbase.test.default_table}', 'family1'\n0 row///.test stdout
-          hasGrantedAccess = ///grant '#{hbase.test.default_table}', 'RWC', 'ryba'\n0 row///.test stdout
+          hasCreatedNamespace = ///create_namespace '#{hbase.test.default_namespace}'\n0 row///.test stdout
+          hasGrantedAccess = ///grant '@#{hbase.test.default_namespace}', 'RWC', '#{user.name}'\n0 row///.test stdout
+          throw Error 'Invalid command output' if executed and (not hasCreatedNamespace or not hasGrantedAccess)
+        @execute
+          header: 'Table Level'
+          cmd: mkcmd.hbase @, """
+          if hbase shell 2>/dev/null <<< "user_permission '#{hbase.test.default_namespace}:#{hbase.test.default_table}'" | egrep '[1-9][0-9]* row'; then exit 2; fi
+          hbase shell 2>/dev/null <<-CMD
+            create '#{hbase.test.default_namespace}:#{hbase.test.default_table}', 'family1'
+            grant '#{user.name}', 'RWC', '#{hbase.test.default_namespace}:#{hbase.test.default_table}'
+          CMD
+          hbase shell 2>/dev/null <<< "user_permission '#{hbase.test.default_namespace}:#{hbase.test.default_table}'" | egrep '[1-9][0-9]* row'
+          """
+          code_skipped: 2
+        , (err, executed, stdout) ->
+          hasCreatedTable = ///create '#{hbase.test.default_namespace}:#{hbase.test.default_table}', 'family1'\n0 row///.test stdout
+          hasGrantedAccess = ///grant '#{user.name}', 'RWC', '#{hbase.test.default_namespace}:#{hbase.test.default_table}'\n0 row///.test stdout
           throw Error 'Invalid command output' if executed and (not hasCreatedTable or not hasGrantedAccess)
-        # Note: apply this when namespace are functional
-        # @execute
-        #   cmd: mkcmd.hbase @, """
-        #   if hbase shell 2>/dev/null <<< "list_namespace_tables '#{hbase.test.default_table}'" | egrep '[0-9]+ row'; then exit 2; fi
-        #   hbase shell 2>/dev/null <<-CMD
-        #     create_namespace '#{hbase.test.default_table}'
-        #     grant '#{hbase.test.default_table}', 'RWC', '@ryba'
-        #   CMD
-        #   """
-        #   code_skipped: 2
-        # , (err, executed, stdout) ->
-        #   hasCreatedNamespace = /create_namespace '#{hbase.test.default_table}'\n0 row/.test stdout
-        #   hasGrantedAccess = /grant '#{hbase.test.default_table}', 'RWC', '@ryba'\n0 row/.test stdout
-        #   return  Error 'Invalid command output' if executed and ( not hasCreatedNamespace or not hasGrantedAccess)
-        #    err, executed
 
 ## Check Shell
   
       @call header: 'Shell', timeout: -1, label_true: 'CHECKED', handler: ->
         @wait_execute
-          cmd: mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists '#{hbase.test.default_table}'\" | grep 'Table ryba does exist'"
+          cmd: mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists '#{hbase.test.default_namespace}:#{hbase.test.default_table}'\" | grep 'Table #{hbase.test.default_namespace}:#{hbase.test.default_table} does exist'"
         @execute
           cmd: mkcmd.test @, """
           hbase shell 2>/dev/null <<-CMD
-            alter '#{hbase.test.default_table}', {NAME => '#{shortname}'}
-            put '#{hbase.test.default_table}', 'my_row', '#{shortname}:my_column', 10
-            scan '#{hbase.test.default_table}',  {COLUMNS => '#{shortname}'}
+            alter '#{hbase.test.default_namespace}:#{hbase.test.default_table}', {NAME => '#{shortname}'}
+            put '#{hbase.test.default_namespace}:#{hbase.test.default_table}', 'my_row', '#{shortname}:my_column', 10
+            scan '#{hbase.test.default_namespace}:#{hbase.test.default_table}',  {COLUMNS => '#{shortname}'}
           CMD
           """
-          unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"scan '#{hbase.test.default_table}', {COLUMNS => '#{shortname}'}\" | egrep '[0-9]+ row'"
+          unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"scan '#{hbase.test.default_namespace}:#{hbase.test.default_table}', {COLUMNS => '#{shortname}'}\" | egrep '[0-9]+ row'"
         , (err, executed, stdout) ->
           isRowCreated = RegExp("column=#{shortname}:my_column, timestamp=\\d+, value=10").test stdout
           throw Error 'Invalid command output' if executed and not isRowCreated
