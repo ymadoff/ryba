@@ -72,7 +72,6 @@ Example:
       hive.hcatalog.env ?=  {}
       #JMX Config
       hive.hcatalog.env["JMX_OPTS"] ?= ''
-
       if hive.hcatalog.env["JMXPORT"]? and hive.hcatalog.env["JMX_OPTS"].indexOf('-Dcom.sun.management.jmxremote.rmi.port') is -1
         hive.hcatalog.env["$JMXSSL"] ?= false
         hive.hcatalog.env["$JMXAUTH"] ?= false
@@ -100,6 +99,8 @@ Example:
       
       
       hive.site ?= {}
+      # by default BONECP could lead to BLOCKED thread for class reading from DB
+      hive.site['datanucleus.connectionPoolingType'] ?= 'DBCP'
       hive.site['hive.metastore.uris'] ?= null
       unless hive.site['hive.metastore.uris']
         hive.site['hive.metastore.uris'] = []
