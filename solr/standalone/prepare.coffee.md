@@ -2,7 +2,7 @@
     module.exports = 
       header: 'Solr Download'
       timeout: -1
-      if: -> @contexts('ryba/solr')[0]?.config.host is @config.host
+      if: -> @contexts('ryba/solr/standalone')[0]?.config.host is @config.host
       handler: ->
         @cache
           ssh: null
