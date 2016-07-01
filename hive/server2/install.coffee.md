@@ -106,7 +106,7 @@ isnt yet started.
       @write_properties
         header: 'Hive server Log4j properties'
         destination: "/etc/hive/conf/hive-log4j.properties"
-        content: hive.server.log4j.config
+        content: hive.server2.log4j.config
         backup: true
 
 ## Env
