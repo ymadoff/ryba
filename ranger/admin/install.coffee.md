@@ -16,6 +16,10 @@
       @call once: true, 'masson/core/krb5_client'
       @call once: true, 'masson/commons/mysql_client'
       @call once: true, 'masson/commons/java'
+      @call once: true, 'ryba/hadoop/hdfs_client'
+      @call once: true, 'ryba/hbase/client'
+      @call once: true, 'ryba/hive/client'
+      @call once: true, 'ryba/kafka/consumer'
   
 ## Users & Groups
       
@@ -169,17 +173,25 @@ Update the file "install.properties" with the properties defined by the
 
 ## Java env
 This part of the setup is not documented. Deduce from launch scripts.
+ 
       
       writes = [
         match: RegExp "JAVA_OPTS=.*", 'm'
         replace: "JAVA_OPTS=\"${JAVA_OPTS} -XX:MaxPermSize=256m -Xmx#{ranger.admin.heap_size} -Xms#{ranger.admin.heap_size} \""
         append: true
+      ,
+        
+        match: RegExp "export CLASSPATH=.*", 'mg'
+        replace: "export CLASSPATH=\"$CLASSPATH:/etc/hadoop/conf:/etc/hbase/conf:/etc/hive/conf\" Ryba Fix conf resources"
+        append:true
+        
       ]
       for k,v of ranger.admin.opts
         writes.push
           match: RegExp "^JAVA_OPTS=.*#{k}", 'm'
           replace: "JAVA_OPTS=\"${JAVA_OPTS} -D#{k}=#{v}\" # RYBA, DONT OVERWRITE"
           append: true
+      
       @write
         header: 'Admin Env'
         destination: '/etc/ranger/admin/conf/ranger-admin-env-1.sh'
