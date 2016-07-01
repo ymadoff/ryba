@@ -88,7 +88,7 @@ Example:
         replace: """
         if [ "$SERVICE" = "metastore" ]; then
           export HADOOP_HEAPSIZE="#{hive.hcatalog.heapsize}"
-          export HADOOP_CLIENT_OPTS="#{hive.hcatalog.env.JMX_OPTS} -Xmx${HADOOP_HEAPSIZE}m #{hive.hcatalog.opts} $HADOOP_CLIENT_OPTS"
+          export HADOOP_CLIENT_OPTS="-Dhive.log.dir=#{hive.hcatalog.log_dir} #{hive.hcatalog.env.JMX_OPTS} -Xmx${HADOOP_HEAPSIZE}m #{hive.hcatalog.opts} $HADOOP_CLIENT_OPTS"
         fi
         """
         from: '# RYBA HIVE HCATALOG START'

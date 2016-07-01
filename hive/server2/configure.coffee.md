@@ -113,7 +113,7 @@ Example:
         replace: """
         if [ "$SERVICE" = "hiveserver2" ]; then
           export HADOOP_HEAPSIZE="#{hive.server2.heapsize}"
-          export HADOOP_CLIENT_OPTS=" #{hive.server2.env.JMX_OPTS} -Xmx${HADOOP_HEAPSIZE}m #{hive.server2.opts} ${HADOOP_CLIENT_OPTS}"
+          export HADOOP_CLIENT_OPTS="-Dhive.log.dir=#{hive.server2.log_dir} #{hive.server2.env.JMX_OPTS} -Xmx${HADOOP_HEAPSIZE}m #{hive.server2.opts} ${HADOOP_CLIENT_OPTS}"
         fi
         """
         from: '# RYBA HIVE SERVER2 START'
