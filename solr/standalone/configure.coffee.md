@@ -57,9 +57,7 @@ However, once installed, the user can start easily several instances for
 differents cores ( and so with different ports).
 
       # Layout
-      solr.single.port ?= 8983
       solr.single.env ?= {}
-        
       solr.single.dir_factory ?= "${solr.directoryFactory:solr.NRTCachingDirectoryFactory}"
       solr.single.lock_type = 'native'
 
@@ -82,6 +80,7 @@ The property `zkCredentialsProvider` is named `zkCredientialsProvider`
 
       solr.single.ssl ?= {}
       solr.single.ssl.enabled ?= true
+      solr.single.port ?= if solr.single.ssl.enabled then 9983 else 8983
       solr.single.ssl_trustore_path ?= "#{solr.single.conf_dir}/trustore"
       solr.single.ssl_trustore_pwd ?= 'solr123'
       solr.single.ssl_keystore_path ?= "#{solr.single.conf_dir}/keystore"
@@ -92,6 +91,7 @@ The property `zkCredentialsProvider` is named `zkCredientialsProvider`
       solr.single.env['SOLR_JAVA_HOME'] ?= java.java_home
       solr.single.env['SOLR_HOST'] ?= @config.host
       solr.single.env['SOLR_HEAP'] ?= "512m"
+      solr.single.env['SOLR_PORT'] ?= "#{solr.single.port}"
       solr.single.env['ENABLE_REMOTE_JMX_OPTS'] ?= 'false'
       if solr.single.ssl.enabled
         solr.single.env['SOLR_SSL_KEY_STORE'] ?= solr.single.ssl_keystore_path

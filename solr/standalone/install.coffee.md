@@ -31,6 +31,23 @@
       @group solr.group
       @user solr.user
 
+## IPTables
+
+| Service      | Port  | Proto       | Parameter          |
+|--------------|-------|-------------|--------------------|
+| Solr Server  | 8983  | http        | port               |
+| Solr Server  | 9983  | https       | port               |
+
+IPTables rules are only inserted if the parameter "iptables.action" is set to
+"start" (default value).
+
+      @call header: 'IPTables', handler: ->
+        return unless @config.iptables.action is 'start'
+        @iptables
+          rules: [
+            { chain: 'INPUT', jump: 'ACCEPT', dport: solr.single.port, protocol: 'tcp', state: 'NEW', comment: "Solr Server #{protocol}" }
+          ]
+            
 ## Packages
 Ryba support installing solr from apache official release or HDP Search repos.
 
