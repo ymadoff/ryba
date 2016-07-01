@@ -207,7 +207,7 @@ by setting a "heapsize" value equal to "4096".
 
 Note, the startup script found in "hive-hcatalog/bin/hcat_server.sh" references
 the Hive Metastore service and execute "./bin/hive --service metastore"
-
+      
       @render
         header: 'Hive Env'
         source: "#{__dirname}/../resources/hive-env.sh"

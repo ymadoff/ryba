@@ -62,7 +62,6 @@ Example:
       
 ## Configuration
 
-      hive.aux_jars = hcat_ctxs[0].config.ryba.hive.aux_jars ?= []
       hive.site ?= {}
       # properties = [ # Duplicate client, might remove
       #   'hive.metastore.uris'
@@ -92,14 +91,13 @@ Example:
       hive.site['hive.server2.tez.default.queues'] ?= 'default'
       hive.site['hive.server2.tez.sessions.per.default.queue'] ?= '1'
       hive.site['hive.server2.tez.initialize.default.sessions'] ?= 'false'
-
+      hive.server2.aux_jars ?=  if @has_module('ryba/hive/hcatalog') then hive.hcatalog.aux_jars else []
 
 ## Hive Server2 Environment
       
-      hive.server2.env ?= {}
+      hive.server2.env ?= {}  
       #JMX Config
       hive.server2.env["JMX_OPTS"] ?= ''
-
       if hive.server2.env["JMXPORT"]? and hive.server2.env["JMX_OPTS"].indexOf('-Dcom.sun.management.jmxremote.rmi.port') is -1
         hive.server2.env["$JMXSSL"] ?= false
         hive.server2.env["$JMXAUTH"] ?= false
@@ -110,7 +108,6 @@ Example:
           -Dcom.sun.management.jmxremote.port=#{hive.server2.env["JMXPORT"]} \
           -Dcom.sun.management.jmxremote.rmi.port=#{hive.server2.env["JMXPORT"]} \
           """
-
       hive.server2.env.write ?= if @has_module('ryba/hive/hcatalog') then hive.hcatalog.env.write else []
       hive.server2.env.write.push {
         replace: """
@@ -128,9 +125,8 @@ Example:
         replace: "export JAVA_HOME=#{java_home}"
       ,
         match: /^export HIVE_AUX_JARS_PATH=.*$/m
-        replace: "export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-#{hive.aux_jars.join ':'}} # RYBA FIX"
+        replace: "export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-#{hive.server2.aux_jars.join ':'}} # RYBA FIX"
       ])...
-      
 
 ## Configure Kerberos
 
@@ -256,3 +252,11 @@ and its value is the server "host:port".
       config['hive.root.logger'] ?= 'INFO' + hive.server.log4j.appenders
       config['log4j.rootLogger'] ?= '${hive.root.logger}, EventCounter'
       config['log4j.threshold'] ?= '${hive.log.threshold}'
+
+# Hive On HBase
+Add Hive user as proxyuser    
+
+      for key, hbase_ctx of @contexts 'ryba/hbase/thrift'
+        hbase_ctx.config.ryba.core_site ?= {}
+        hbase_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.hosts"] ?= '*'
+        hbase_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'

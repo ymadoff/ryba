@@ -49,13 +49,13 @@ Example:
 
 ## Configuration
 
-      hive.aux_jars = hcat_ctxs[0].config.ryba.hive.aux_jars ?= []
+      hive.client.aux_jars ?=  if @has_module('ryba/hive/hcatalog') then hive.hcatalog.aux_jars else []
       hive.site ?= {}
       aux_jars = ['/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar']
       if @contexts('ryba/hbase/master').length and @config.host in @contexts('ryba/hbase/client').map((ctx) -> ctx.config.host)
         aux_jars.push (['/usr/hdp/current/hbase-client/lib/hbase-server.jar', '/usr/hdp/current/hbase-client/lib/hbase-client.jar', '/usr/hdp/current/hbase-client/lib/hbase-common.jar'])... # Default value
-        aux_jars.push '/usr/hdp/current/hbase-client/lib/phoenix-server.jar' if @contexts('ryba/phoenix/client').length
-      for k in aux_jars then hive.aux_jars.push k unless k in hive.aux_jars
+        aux_jars.push '/usr/hdp/current/hbase-client/lib/phoenix-server.jar' if @has_module('ryba/phoenix/client')
+      for k in aux_jars then hive.client.aux_jars.push k unless k in hive.client.aux_jars
       # Tuning
       # [Christian Prokopp comments](http://www.quora.com/What-are-the-best-practices-for-using-Hive-What-settings-should-we-enable-most-of-the-time)
       # [David Streever](https://streever.atlassian.net/wiki/display/HADOOP/Hive+Performance+Tips)
@@ -99,7 +99,7 @@ Example:
       # for property in properties then hive.site[property] ?= hcat_ctxs[0].config.ryba.hive.site[property]
 
 ## Environment
-
+      
       hive.client.env ?= {}
       hive.client.env.write ?= if @has_module('ryba/hive/hcatalog') then hive.hcatalog.env.write else []
       hive.client.env.write.push {
@@ -118,7 +118,7 @@ Example:
         replace: "export JAVA_HOME=#{java_home}"
       ,
         match: /^export HIVE_AUX_JARS_PATH=.*$/m
-        replace: "export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-#{hive.aux_jars.join ':'}} # RYBA FIX"
+        replace: "export HIVE_AUX_JARS_PATH=${HIVE_AUX_JARS_PATH:-#{hive.client.aux_jars.join ':'}} # RYBA FIX"
       ])...
 
 ## Client Metastore Configuration

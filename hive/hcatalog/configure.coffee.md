@@ -56,9 +56,7 @@ Example:
       hive.group.system ?= true
       hive.user.gid = hive.group.name
       
-      hive.aux_jars ?= []
-      aux_jars = ['/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar']
-      for jar in aux_jars then hive.aux_jars.push jar unless jar in hive.aux_jars
+
       # Layout and environment
       hive.hcatalog ?= {}
       hive.hcatalog.log_dir ?= '/var/log/hive-hcatalog'
@@ -66,6 +64,9 @@ Example:
       hive.hcatalog.opts ?= ''
       hive.hcatalog.heapsize ?= 1024
       hive.libs ?= []
+      hive.hcatalog.aux_jars ?= []
+      aux_jars = ['/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar']
+      for jar in aux_jars then hive.hcatalog.aux_jars.push jar unless jar in hive.hcatalog.aux_jars
 
 ## Environment
 
@@ -96,7 +97,6 @@ Example:
       }
     
 # Configuration
-      
       
       hive.site ?= {}
       # by default BONECP could lead to BLOCKED thread for class reading from DB
