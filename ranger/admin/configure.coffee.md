@@ -434,7 +434,7 @@ The repository name should match the reposity name in web ui.
           # AUDIT TO HDFS
           yarn_plugin.install['XAAUDIT.HDFS.ENABLE'] ?= 'true'
           yarn_plugin.install['XAAUDIT.HDFS.HDFS_DIR'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit"
-          yarn_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/yarn/audit/yarn/spool'
+          yarn_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/yarn/audit/hdfs/spool'
 
 ### YARN Audit (database storage)
         
