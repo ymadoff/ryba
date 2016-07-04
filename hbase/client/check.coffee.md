@@ -9,6 +9,50 @@ scanning the table.
       {force_check, hbase, user} = @config.ryba
       hbase_ctxs = @contexts 'ryba/hbase/master'
       {admin} = hbase_ctxs[0].config.ryba.hbase
+      [ranger_ctx] = @contexts('ryba/ranger/admin')
+      if ranger_ctx?
+        {install} = @config.ryba.ranger.hbase_plugin
+        hbase_policy =
+          "name": "Ranger-Ryba-HBase-Policy"
+          "service": "#{install['REPOSITORY_NAME']}"
+          "resources": 
+            "column": 
+              "values": ["*"]
+              "isExcludes": false
+              "isRecursive": false
+            "column-family": 
+              "values": ["*"]
+              "isExcludes": false
+              "isRecursive": false
+            "table": 
+              "values": ["#{hbase.test.default_namespace}:#{hbase.test.default_table}"]
+              "isExcludes": false
+              "isRecursive": false              	
+          "repositoryName": "#{install['REPOSITORY_NAME']}"
+          "repositoryType": "hbase"
+          "isEnabled": "true",
+          "isAuditEnabled": true,
+          'tableType': 'Inclusion',
+          'columnType': 'Inclusion',
+          'policyItems': [
+          		"accesses": [
+          			'type': 'read'
+          			'isAllowed': true
+              ,
+          			'type': 'write'
+          			'isAllowed': true
+          		,
+          			'type': 'create'
+          			'isAllowed': true
+          		,
+          			'type': 'admin'
+          			'isAllowed': true
+          		],
+          		'users': ['hbase', "#{user.name}"]
+          		'groups': []
+          		'conditions': []
+          		'delegateAdmin': true
+            ]
 
 ## Wait
 
@@ -16,6 +60,25 @@ Wait for the HBase master to be started.
 
       @call once: true, 'ryba/hbase/master/wait'
       @call once: true, 'ryba/hbase/regionserver/wait'
+
+## Ranger Policy
+[Ranger HBase plugin][ranger-hbase] try to mimics grant/revoke by shell.
+
+      @execute
+        header: 'Create Ranger Policy'
+        if: ranger_ctx?
+        header: 'Ranger Ryba Policy'
+        cmd: """
+          curl --fail -H "Content-Type: application/json" -k -X POST \
+          -d '#{JSON.stringify hbase_policy}' \
+          -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
+          \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
+        """
+        unless_exec: """
+          curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
+          -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
+          \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/Ranger-Ryba-HBase-Policy\"
+        """
 
 ## Shell
 
@@ -160,3 +223,4 @@ This check is only executed if more than two HBase Master are declared.
 
 
 [HBASE-8409]: https://issues.apache.org/jira/browse/HBASE-8409
+[ranger-hbase]: https://cwiki.apache.org/confluence/display/RANGER/HBase+Plugin#HBasePlugin-Grantandrevoke
