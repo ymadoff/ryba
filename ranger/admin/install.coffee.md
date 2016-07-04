@@ -197,7 +197,14 @@ This part of the setup is not documented. Deduce from launch scripts.
         destination: '/etc/ranger/admin/conf/ranger-admin-env-1.sh'
         write: writes
         backup: true      
+        
+## Log4j
 
+      @write_properties
+        destination: '/etc/ranger/admin/conf/log4j.properties'
+        header: 'ranger Log4properties'
+        content: ranger.admin.log4j
+        
 ## Dependencies
 
     glob = require 'glob'
