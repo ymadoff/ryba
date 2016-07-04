@@ -33,6 +33,11 @@
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0755
+      @mkdir
+        destination: '/var/log/hadoop/yarn/audit/hdfs/'
+        uid: yarn.user.name
+        gid: hadoop_group.name
+        mode: 0o0755
 
 # YARN Service Repository creation
 Matchs step 1 in [hdfs plugin configuration][yarn-plugin]. Instead of using the web ui

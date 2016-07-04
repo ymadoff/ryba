@@ -119,12 +119,16 @@ we execute this task using the rest api.
             else exit 1 ; 
             fi;
           """
-        @execute
-          header: "Fix repository "
-          cmd: """
-            chown #{kafka.user.name}:#{hadoop_group.name} #{kafka.broker.conf_dir}/ranger*
-            chown -R #{kafka.user.name}:#{hadoop_group.name} /etc/ranger/#{ranger.kafka_plugin.install['REPOSITORY_NAME']}
-          """
+        @chmod
+          header: "Fix Kafka Conf Permission"
+          destination: kafka.broker.conf_dir
+          uid: kafka.user.name
+          gid: hadoop_group.name
+        @chmod
+          header: "Fix Ranger Repo Permission"
+          destination: "/etc/ranger/#{ranger.kafka_plugin.install['REPOSITORY_NAME']}"
+          uid: kafka.user.name
+          gid: hadoop_group.name
         @hconfigure
           header: 'Fix ranger-kafka-security conf'
           destination: "#{kafka.broker.conf_dir}/ranger-kafka-security.xml"
