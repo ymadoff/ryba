@@ -117,9 +117,9 @@ Enrich the "hive-env.sh" file with the value of the configuration property
 
 Using this functionnality, a user may for example raise the heap size of Hive
 Server2 to 4Gb by setting a value equal to "-Xmx4096m".
-
+      
       @render
-        header: 'Hive Env'
+        header: 'Hive Server2 Env' # dot not modify
         destination: "#{hive.server2.conf_dir}/hive-env.sh"
         source: "#{__dirname}/../resources/hive-env.sh"
         local_source: true

@@ -13,12 +13,58 @@ hive -hiveconf hive.root.logger=DEBUG,console
 
     module.exports =  header: 'Hive Client Check', label_true: 'CHECKED', timeout: -1, handler: ->
       {force_check, realm, user, hive} = @config.ryba
+      [ranger_ctx] = @contexts('ryba/ranger/admin')
+      {install} = ranger_ctx.config.ryba.ranger.hive_plugin
+      dbs = []
+      for h_ctx in @contexts 'ryba/hive/hcatalog'
+        dbs.push "check_#{@config.shortname}_hive_hcatalog_mr_#{h_ctx.config.shortname}"
+        dbs.push "check_#{@config.shortname}_hive_hcatalog_tez_#{h_ctx.config.shortname}"
+      for hs2_ctx in @contexts 'ryba/hive/server2'
+        dbs.push "check_#{@config.shortname}_server2_#{hs2_ctx.config.shortname}"
+        dbs.push "check_#{@config.shortname}_hs2_zoo_#{hs2_ctx.config.ryba.hive.site['hive.server2.zookeeper.namespace']}"
+      for hs_ctx  in @contexts 'ryba/spark/thrift_server'
+        dbs.push "check_#{@config.shortname}_spark_sql_server_#{hs_ctx.config.shortname}"
 
 ## Wait
 
       @call once: true, 'ryba/hive/hcatalog/wait'
       @call once: true, 'ryba/hive/server2/wait'
 
+## Add Ranger Policy 
+      
+      @call header: 'Add Hive Policy', if:ranger_ctx?, handler: ->
+        # use v1 policy api from ranger
+        hive_policy =
+          "policyName": "Ranger-Ryba-HIVE-Policy"
+          "repositoryName": "#{install['REPOSITORY_NAME']}"
+          "repositoryType":"hive"
+          "description": 'Ryba check hive policy'
+          "databases": "#{dbs.join ','}"
+          'tables': '*'
+          "columns": "*"
+          "udfs": ""
+          'tableType': 'Exclusion'
+          'columnType': 'Inclusion'
+          'isEnabled': true
+          'isAuditEnabled': true
+          "permMapList": [{
+          		"userList": ["#{user.name}"],
+          		"permList": ["all"]
+          	}]
+        @execute
+          cmd: """
+            curl --fail -H "Content-Type: application/json" -k -X POST \
+            -d '#{JSON.stringify hive_policy}' \
+            -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/api/policy\"
+          """
+          unless_exec: """
+            curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
+            -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/api/service/#{install['REPOSITORY_NAME']}/policy/Ranger-Ryba-HIVE-Policy\"
+          """
+          code_skippe: 22
+          
 ## Check HCatalog MapReduce
 
 Use the [Hive CLI][hivecli] client to execute SQL queries using the MapReduce
@@ -43,7 +89,8 @@ engine.
             hive -S -e "SET hive.execution.engine=mr; SELECT SUM(col2) FROM #{db}.my_table;" | hdfs dfs -put - #{directory}/result
             hive -e "DROP TABLE #{db}.my_table; DROP DATABASE #{db};"
             """
-            unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
+            if: true
+            # unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
             trap: true
 
 ## Check HCatalog Tez
