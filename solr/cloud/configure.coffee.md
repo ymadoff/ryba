@@ -45,8 +45,8 @@ ryba:
       solr.cloud.version ?= '5.5.0'
       solr.cloud.source ?= "http://apache.mirrors.ovh.net/ftp.apache.org/dist/lucene/solr/#{solr.cloud.version}/solr-#{solr.cloud.version}.tgz"
       solr.cloud.root_dir ?= '/usr'
-      solr.cloud.install_dir ?= "#{solr.cloud.root_dir}/solr/#{solr.cloud.version}"
-      solr.cloud.latest_dir ?= "#{solr.cloud.root_dir}/solr/current"
+      solr.cloud.install_dir ?= "#{solr.cloud.root_dir}/solr-cloud/#{solr.cloud.version}"
+      solr.cloud.latest_dir ?= "#{solr.cloud.root_dir}/solr-cloud/current"
       solr.cloud.latest_dir = '/opt/lucidworks-hdpsearch/solr' if solr.cloud.source is 'HDP'
       solr.cloud.pid_dir ?= '/var/run/solr'
       solr.cloud.log_dir ?= '/var/log/solr'
@@ -102,18 +102,21 @@ The property `zkCredentialsProvider` is named `zkCredientialsProvider`
         #Acls
         #https://cwiki.apache.org/confluence/display/solr/Rule-Based+Authorization+Plugin
         # ACL are available from solr 5.3 version (HDP verseion has 5.2 (June-2016))
-        if solr.cloud.source isnt 'HDP'
-          if not /^[0-5].[0-2]/.test solr.cloud.version # version < 5.3
-            solr.cloud.security["authorization"] ?= {}
-            solr.cloud.security["authorization"]['class'] ?= 'solr.RuleBasedAuthorizationPlugin'
-            solr.cloud.security["authorization"]['permissions'] ?= []
-            solr.cloud.security["authorization"]['permissions'].push name: 'security-edit' , role: 'admin' #define new role
-            solr.cloud.security["authorization"]['permissions'].push name: 'read' , role: 'reader' #define new role
-            solr.cloud.security["authorization"]['permissions'].push name: 'all' , role: 'manager' #define new role
-            solr.cloud.security["authorization"]['user-role'] ?= {}
-            solr.cloud.security["authorization"]['user-role']["#{solr.cloud.principal}"] ?= 'manager'
-            solr.cloud.security["authorization"]['user-role']["#{solr.cloud.spnego.principal}"] ?= 'manager'
-            solr.cloud.security["authorization"]['user-role']["#{solr.cloud.admin_principal}"] ?= 'manager'
+        # Configure roles & acl only on one host
+        if @contexts('ryba/solr/cloud')[0].config.host is @config.host
+          if solr.cloud.source isnt 'HDP'
+            if not /^[0-5].[0-2]/.test solr.cloud.version # version < 5.3
+              solr.cloud.security["authorization"] ?= {}
+              solr.cloud.security["authorization"]['class'] ?= 'solr.RuleBasedAuthorizationPlugin'
+              solr.cloud.security["authorization"]['permissions'] ?= []
+              solr.cloud.security["authorization"]['permissions'].push name: 'security-edit' , role: 'admin' #define new role
+              solr.cloud.security["authorization"]['permissions'].push name: 'read' , role: 'reader' #define new role
+              solr.cloud.security["authorization"]['permissions'].push name: 'all' , role: 'manager' #define new role
+              solr.cloud.security["authorization"]['user-role'] ?= {}
+              solr.cloud.security["authorization"]['user-role']["#{solr.cloud.admin_principal}"] ?= 'manager'
+              for host in @contexts('ryba/solr/cloud').map( (c)->c.config.host)
+                solr.cloud.security["authorization"]['user-role']["#{solr.user.name}/#{host}@#{@config.ryba.realm}"] ?= 'manager'
+                solr.cloud.security["authorization"]['user-role']["HTTP/#{host}@#{@config.ryba.realm}"] ?= 'manager'
 
 ## SSL
 

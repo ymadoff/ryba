@@ -232,6 +232,7 @@ HDP has version 5.2.1 of solr, and security plugins are included from 5.3.0
 
       @execute
         header: "Upload Security conf"
+        if: (@contexts('ryba/solr/cloud')[0].config.host is @config.host)
         cmd: """
           cd #{solr.cloud.latest_dir}
           server/scripts/cloud-scripts/zkcli.sh -zkhost #{solr.cloud.zk_connect} \
