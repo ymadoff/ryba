@@ -60,6 +60,7 @@ Wait for the HBase master to be started.
 
       @call once: true, 'ryba/hbase/master/wait'
       @call once: true, 'ryba/hbase/regionserver/wait'
+      @call if:ranger_ctx?, once: true, 'ryba/ranger/admin/wait'
 
 ## Ranger Policy
 [Ranger HBase plugin][ranger-hbase] try to mimics grant/revoke by shell.
