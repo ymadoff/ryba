@@ -13,8 +13,6 @@ hive -hiveconf hive.root.logger=DEBUG,console
 
     module.exports =  header: 'Hive Client Check', label_true: 'CHECKED', timeout: -1, handler: ->
       {force_check, realm, user, hive} = @config.ryba
-      [ranger_ctx] = @contexts('ryba/ranger/admin')
-      {install} = ranger_ctx.config.ryba.ranger.hive_plugin
       dbs = []
       for h_ctx in @contexts 'ryba/hive/hcatalog'
         dbs.push "check_#{@config.shortname}_hive_hcatalog_mr_#{h_ctx.config.shortname}"
@@ -29,10 +27,13 @@ hive -hiveconf hive.root.logger=DEBUG,console
 
       @call once: true, 'ryba/hive/hcatalog/wait'
       @call once: true, 'ryba/hive/server2/wait'
+      @call if:ranger_ctx?, once: true, 'ryba/ranger/admin/wait'
 
 ## Add Ranger Policy 
       
       @call header: 'Add Hive Policy', if:ranger_ctx?, handler: ->
+        [ranger_ctx] = @contexts('ryba/ranger/admin')
+        {install} = ranger_ctx.config.ryba.ranger.hive_plugin
         # use v1 policy api from ranger
         hive_policy =
           "policyName": "Ranger-Ryba-HIVE-Policy"
