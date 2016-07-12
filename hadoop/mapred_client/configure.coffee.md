@@ -46,6 +46,10 @@
       # Deprecated properties
       mapred.site['mapreduce.cluster.local.dir'] = null # Now "yarn.nodemanager.local-dirs"
       mapred.site['mapreduce.jobtracker.system.dir'] = null # JobTracker no longer used
+      # The replication level for submitted job files should be around the square root of the number of nodes.
+      # see https://issues.apache.org/jira/browse/MAPREDUCE-2845
+      dn_sqrt = Math.round Math.sqrt @contexts('ryba/hadoop/hdfs_dn').length
+      mapred.site['mapreduce.client.submit.file.replication'] ?= Math.min dn_sqrt, 10
 
 # Configuration for Resource Allocation
 
