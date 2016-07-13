@@ -25,15 +25,41 @@ RUN sed -i 's/Defaults.*requiretty/# Defaults requiretty/g' /etc/sudoers
 #RUN curl -L http://cpanmin.us | perl - --sudo App::cpanminus
 RUN wget http://nodejs.org/dist/latest/node-v6.2.0-linux-x64.tar.xz
 RUN sudo tar --strip-components 1 -xJf node-v* -C /usr/local
-
+# Install HDP repo
+RUN wget {{ shinken.poller.executor.hdp_repo }} -O /etc/yum.repos.d/hdp.repo --no-check-certificate 
+RUN sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/hdp.repo
+RUN yum -y update
+RUN yum -y install hive
+# Install JAVA
+COPY {{ shinken.poller.executor.java.jdk.location }} /tmp/ryba-java/java.tar.gz
+RUN tar xzf /tmp/ryba-java/java.tar.gz -C /tmp/ryba-java
+RUN rm /tmp/ryba-java/java.tar.gz
+RUN mkdir /usr/java
+RUN mv /tmp/ryba-java/jdk{{ shinken.poller.executor.java.jdk.version }} /usr/java/{{ shinken.poller.executor.java.jdk.version }}
+RUN ln -sf /usr/java/{{ shinken.poller.executor.java.jdk.version }} /usr/java/latest
+RUN ln -sf /usr/java/{{ shinken.poller.executor.java.jdk.version }} /usr/java/default
+COPY java.sh /etc/profile.d/java.sh
+# Install JAVA Policy
+COPY jce_policy-7/local_policy.jar /usr/java/default/jre/lib/security/local_policy.jar
+COPY jce_policy-7/US_export_policy.jar /usr/java/default/jre/lib/security/US_export_policy.jar
 ### LAYOUT ###
 RUN useradd -ms /bin/bash {{ shinken.user.name }}
 RUN echo "{{ shinken.user.name }}        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
 
 USER {{ shinken.user.name }}
 WORKDIR /home/{{ shinken.user.name }}
+RUN wget https://labs.consol.de/assets/downloads/nagios/check_mysql_health-2.2.2.tar.gz -O check_mysql.tar.gz
+RUN tar xzvf check_mysql.tar.gz
+RUN rm check_mysql.tar.gz
+WORKDIR check_mysql_health-2.2.2
+RUN ./configure --prefix=/home/{{ shinken.user.name }}
+RUN make
+RUN make install
+RUN rm -rf check_mysql_health-2.2.2
+WORKDIR /home/{{ shinken.user.name }}
 # Downloading shinken-plugins
 RUN git clone https://github.com/pierrotws/shinken-plugins plugins
-WORKDIR plugins
-RUN rm -rf .git*
+RUN rm -rf plugins/.git*
+RUN mv libexec/* plugins/
+WORKDIR /home/{{ shinken.user.name }}/plugins
 CMD sudo crond -n

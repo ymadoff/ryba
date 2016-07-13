@@ -9,15 +9,24 @@
 
         @render
           header: 'Render Dockerfile'
-          destination: "#{@config.mecano.cache_dir or '.'}/Dockerfile"
+          destination: "#{@config.mecano.cache_dir or '.'}/build/Dockerfile"
           source: "#{__dirname}/resources/Dockerfile.j2"
           local_source: true
           context: @config.ryba
 
+        @write
+          header: 'Write Java Profile'
+          destination: "#{@config.mecano.cache_dir or '.'}/build/java.sh"
+          content: """
+          export JAVA_HOME=/usr/java/default
+          export PATH=/usr/java/default/bin:$PATH
+          """
+
         @docker_build
           header: 'Build Container'
           image: 'ryba/shinken-poller-executor'
-          file: "#{@config.mecano.cache_dir or '.'}/Dockerfile"
+          file: "#{@config.mecano.cache_dir or '.'}/build/Dockerfile"
+          cwd: shinken.poller.executor.build_dir
 
 ## Save image
 
