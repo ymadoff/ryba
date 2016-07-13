@@ -1,5 +1,5 @@
 {% for name, group in servicegroups %}
-define servicegroups {
+define servicegroup {
   servicegroup_name    {{ name }}
   alias                {{ group.alias }}{% if not group.members | isEmpty %}
   members              {{ group.members | join(',') }}{% endif %}{% if not group.servicegroup_members | isEmpty %}
