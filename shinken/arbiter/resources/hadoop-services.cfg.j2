@@ -11,7 +11,7 @@ define service {
   service_description   MySQL - Slow queries
   host_name             {{ hostname }}
   servicegroups         mysql_server
-  use                   unit-service
+  use                   functional-service
   check_command         check_mysql!{{ host.config.ryba.db_admin.port }}!slow-queries!0,25!1!{{ host.config.ryba.db_admin.username }}!{{ host.config.ryba.db_admin.password }}
 }
 define service {
