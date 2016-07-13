@@ -375,7 +375,7 @@ define servicedependency {
 define servicedependency {
   service_description           WebHCat - WebService
   dependent_service_description WebHCat - Status
-  host_name                     {{ host.cluster }}
+  host_name                     {{ hostname }}
   dependent_host_name           {{ hostname }}
   inherits_parent               1
   execution_failure_criteria    c,u,p
@@ -384,7 +384,7 @@ define servicedependency {
 define servicedependency {
   service_description           WebHCat - WebService
   dependent_service_description WebHCat - Database
-  host_name                     {{ host.cluster }}
+  host_name                     {{ hostname }}
   dependent_host_name           {{ hostname }}
   inherits_parent               1
   execution_failure_criteria    c,u,p
