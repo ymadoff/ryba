@@ -41,7 +41,8 @@ define service {
   service_description   Zookeeper Server - TCP
   host_name             {{ hostname }}
   servicegroups         zookeeper_server
-  use                   unit-service
+  use                   process-service
+  _process_name         zookeeper-server
   check_command         check_tcp!{{ host.config.ryba.zookeeper.port }}
 }
 define service {
@@ -64,7 +65,8 @@ define service {
   service_description   HDFS NN - TCP
   host_name             {{ hostname }}
   servicegroups         hdfs_nn
-  use                   unit-service
+  use                   process-service
+  _process_name         hadoop-hdfs-namenode
   check_command         check_tcp!8020
 }
 define service {
@@ -122,7 +124,8 @@ define service {
   service_description   HDFS JN - TCP SSL
   host_name             {{ hostname }}
   servicegroups         hdfs_jn
-  use                   unit-service
+  use                   process-service
+  _process_name         hadoop-hdfs-journalnode
   check_command         check_tcp!{{ host.config.ryba.hdfs.site['dfs.journalnode.https-address'].split(':')[1] }}!-S
 }
 define service {
@@ -139,7 +142,8 @@ define service {
   service_description   HDFS DN - TCP SSL
   host_name             {{ hostname }}
   servicegroups         hdfs_dn
-  use                   unit-service
+  use                   process-service
+  _process_name         hadoop-hdfs-datanode
   check_command         check_tcp!{{ host.config.ryba.hdfs.site['dfs.datanode.https.address'].split(':')[1] }}!-S
 }
 define service {
@@ -162,7 +166,8 @@ define service {
   service_description   ZKFC - TCP
   host_name             {{ hostname }}
   servicegroups         zkfc
-  use                   unit-service
+  use                   process-service
+  _process_name         hadoop-hdfs-zkfc
   check_command         check_tcp!{{ host.config.ryba.hdfs.nn.site['dfs.ha.zkfc.port'] }}
 }
 {% endif %}
@@ -171,7 +176,8 @@ define service {
   service_description   HttpFS - WebService
   host_name             {{ hostname }}
   servicegroups         httpfs
-  use                   unit-service
+  use                   process-service
+  _process_name         hadoop-httpfs
   check_command         check_tcp!14000!-S
 }
 define service {
@@ -188,7 +194,8 @@ define service {
   service_description   YARN RM - Admin TCP
   host_name             {{ hostname }}
   servicegroups         yarn_rm
-  use                   unit-service
+  use                   process-service
+  _process_name         hadoop-yarn-resourcemanager
   check_command         check_tcp!8141
 }
 define service {
@@ -204,7 +211,8 @@ define service {
   service_description   YARN NM - TCP
   host_name             {{ hostname }}
   servicegroups         yarn_nm
-  use                   unit-service
+  use                   process-service
+  _process_name         hadoop-yarn-nodemanager
   check_command         check_tcp!45454
 }
 define service {
@@ -254,7 +262,8 @@ define service {
   service_description   HBase Master - TCP
   host_name             {{ hostname }}
   servicegroups         hbase_master
-  use                   unit-service
+  use                   process-service
+  _process_name         hbase-master
   check_command         check_tcp!{{ host.config.ryba.hbase.master.site['hbase.master.port'] }}
 }
 define service {
@@ -277,7 +286,8 @@ define service {
   service_description   HBase RegionServer - TCP
   host_name             {{ hostname }}
   servicegroups         hbase_regionserver
-  use                   unit-service
+  use                   process-service
+  _process_name         hbase-regionserver
   check_command         check_tcp!{{ host.config.ryba.hbase.rs.site['hbase.regionserver.port'] }}
 }
 define service {
@@ -293,7 +303,8 @@ define service {
   service_description   HBase REST - TCP SSL
   host_name             {{ hostname }}
   servicegroups         hbase_rest
-  use                   unit-service
+  use                   process-service
+  _process_name         hbase-rest
   check_command         check_tcp!{{ host.config.ryba.hbase.rest.site['hbase.rest.port'] }}!-S
 }
 define service {
@@ -381,7 +392,8 @@ define service {
   service_description   Oozie Server - WebUI
   host_name             {{ hostname }}
   servicegroups         oozie_server
-  use                   unit-service
+  use                   process-service
+  _process_name         oozie
   check_command         check_tcp!{{ host.config.ryba.oozie.http_port }}!-S
 }
 define service {
@@ -404,10 +416,11 @@ define service {
 }
 {% endfor %}
 define service {
-  service_description   Kafka Broker - TCP
+  service_description   Kafka Broker - TCPs
   host_name             {{ hostname }}
   servicegroups         kafka_broker
-  use                   unit-service
+  use                   process-service
+  _process_name         kafka-broker
   check_command         bp_rule!({% set sep = joiner(' & ') %}{% for prot in host.config.ryba.kafka.broker.protocols %}{{ sep() }}{{ hostname }},Kafka Broker - TCP {{ prot }}{% endfor %})
 }
 {% endif %}
@@ -425,7 +438,8 @@ define service {
   service_description   OpenTSDB - WebService
   host_name             {{ hostname }}
   servicegroups         opentsdb
-  use                   unit-service
+  use                   process-service
+  _process_name         opentsdb
   check_command         check_tcp!{{ host.config.ryba.opentsdb.config['tsd.network.port'] }}
 }
 {% endif %}
@@ -459,7 +473,8 @@ define service {
   service_description   Hue - WebUI
   host_name             {{ hostname }}
   servicegroups         hue
-  use                   unit-service
+  use                   process-service
+  _process_name         hue-server-docker
   check_command         check_tcp!{{ host.config.ryba.hue_docker.ini.desktop.http_port }}!-S
 }
 define service {
@@ -475,7 +490,8 @@ define service {
   service_description   Knox - WebService
   host_name             {{ hostname }}
   servicegroups         knox
-  use                   unit-service
+  use                   process-service
+  _process_name         knox-server
   check_command         check_tcp!{{ host.config.ryba.knox.site['gateway.port'] }}!-S
 }
 define service {

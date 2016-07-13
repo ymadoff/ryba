@@ -10,7 +10,7 @@ define service {
   host_name             {{ hostname }}
   servicegroups         mysql_server
   use                   bp-service
-  check_command         {{ has_one('MySQL - Connection-time', hostname) }}
+  check_command         {{ has_one('MySQL - Connection time', hostname) }}
 }
 {% endif %}
 define service {

@@ -92,6 +92,7 @@ They must have register set to 0 to not be instanciated
       services['generic-service'].notifications_options ?= 'w,u,c,r'
       services['generic-service'].notification_interval ?= '3600'
       services['generic-service'].notification_period ?= '24x7'
+      services['generic-service'].business_rule_output_template ?= '$($HOSTNAME$: $SERVICEDESC$ )$'
       services['generic-service'].register = '0'
       services['unit-service'] ?= {}
       services['unit-service'].use ?= 'generic-service'
@@ -100,10 +101,11 @@ They must have register set to 0 to not be instanciated
       services['unit-service'].retry_interval = '10'
       services['bp-service'] ?= {}
       services['bp-service'].use ?= 'unit-service'
-      services['bp-service'].business_rule_output_template ?= '$($HOSTNAME$: $SERVICEDESC$ )$'
       services['bp-service'].register ?= '0'
       services['process-service'] ?= {}
       services['process-service'].use ?= 'unit-service'
+      services['process-service'].event_handler_enabled ?= '1'
+      services['process-service'].event_handler ?= "service_start!$_SERVICEPROCESS_NAME$"
       services['process-service'].register = '0'
       services['functional-service'] ?= {}
       services['functional-service'].use ?= 'generic-service'

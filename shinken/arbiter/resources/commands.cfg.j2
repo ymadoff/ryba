@@ -31,6 +31,14 @@ define command {
   command_name    check_socket
   command_line    $DOCKER_EXEC$ ./check_socket.php -H $HOSTADDRESS$ -p $ARG1$ -m $ARG2$ -r $ARG3$ $ARG4$
 }
+define command {
+  command_name    ssh
+  command_line    $DOCKER_EXEC$ sudo ./ssh_exec.sh $ARG1$
+}
+define command {
+  command_name    service_start
+  command_line    $DOCKER_EXEC$ sudo ./service_start.sh $HOSTNAME$ $SERVICESTATE$ $SERVICEATTEMPTS$ start $ARG1$
+}
 ## Multi Service commands
 define command {
   command_name    check_tcp_ha
