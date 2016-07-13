@@ -8,7 +8,7 @@
       broker.modules ?= {}
       # WebUI
       webui = broker.modules['webui2'] ?= {}
-      webui.version ?= "2.3.2"
+      webui.version ?= "2.4.2c"
       webui.source ?= "https://github.com/shinken-monitoring/mod-webui/archive/#{webui.version}.zip"
       webui.archive ?= "mod-webui-#{webui.version}"
       webui.pip_modules ?= {}
