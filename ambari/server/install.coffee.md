@@ -1,16 +1,11 @@
 
 # Ambari Server Install
 
+See the Ambari documentation relative to [Software Requirements][sr] before
+executing this module.
+
     module.exports = header: 'Ambari Server Install', timeout: -1, handler: ->
       {ambari_server, db_admin} = @config.ryba
-    # util = require 'util'
-    # misc = require 'mecano/lib/misc'
-    # each = require 'each'
-    # ini = require 'ini'
-    # url = require 'url'
-    # builder = require 'xmlbuilder'
- 
-See the documentation about [Software Requirements][sr].
 
 ## Package & Repository
 
@@ -184,3 +179,5 @@ LDAP or Active Directory Authentication.
               --databasepassword=#{db.password} \
               --cluster-name=#{@config.cluster.name}
             """
+
+[sr]: http://docs.hortonworks.com/HDPDocuments/Ambari-2.2.2.0/bk_Installing_HDP_AMB/content/_meet_minimum_system_requirements.html

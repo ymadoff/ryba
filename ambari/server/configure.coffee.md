@@ -24,13 +24,6 @@ Exemple:
     module.exports  = handler: ->
       # Servers onfiguration
       ambari_server = @config.ryba.ambari_server ?= {}
-      # Install 1.2.0 with rpm (http://incubator.apache.org/ambari/1.2.0/installing-hadoop-using-ambari/content/ambari-chap2-1.html)
-      # http://public-repo-1.hortonworks.com/AMBARI-1.x/repos/centos6/AMBARI-1.x-1.el6.noarch.rpm
-      # Upgrading from 1.2 to 1.2.1 by replacing repo file (http://incubator.apache.org/ambari/1.2.1/installing-hadoop-using-ambari/content/ambari-chap7.html)
-      # http://public-repo-1.hortonworks.com/ambari/centos6/1.x/GA/ambari.repo
-      # Install 1.2.1 with rpm (http://incubator.apache.org/ambari/1.2.1/installing-hadoop-using-ambari/content/ambari-chap2-1.html)
-      # http://public-repo-1.hortonworks.com/ambari/centos6/1.x/GA/ambari-1.2.0.1-1.el6.noarch.rpm
-      # ambari.proxy ?= proxy.http_proxy
       ambari_server.http ?= '/var/www/html'
       ambari_server.repo ?= 'http://public-repo-1.hortonworks.com/ambari/centos6/2.x/updates/2.1.2/ambari.repo'
       ambari_server.conf_dir ?= '/etc/ambari-server/conf'
