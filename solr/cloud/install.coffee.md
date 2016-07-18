@@ -16,6 +16,23 @@
       @register 'write_jaas', 'ryba/lib/write_jaas'
       @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
 
+## IPTables
+
+| Service      | Port  | Proto       | Parameter          |
+|--------------|-------|-------------|--------------------|
+| Solr Server  | 8983  | http        | port               |
+| Solr Server  | 9983  | https       | port               |
+
+IPTables rules are only inserted if the parameter "iptables.action" is set to
+"start" (default value).
+
+      @call header: 'IPTables', handler: ->
+        return unless @config.iptables.action is 'start'
+        @iptables
+          rules: [
+            { chain: 'INPUT', jump: 'ACCEPT', dport: solr.cloud.port, protocol: 'tcp', state: 'NEW', comment: "Solr Server #{protocol}" }
+          ]
+
 ## Layout
 
       @mkdir
