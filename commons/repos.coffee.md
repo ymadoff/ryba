@@ -6,7 +6,7 @@ Declare the HDP repository.
     module.exports = ->
       'configure': ->
         ryba = @config.ryba ?= {}
-        ryba.hdp_repo ?= 'http://public-repo-1.hortonworks.com/HDP/centos6/2.x/updates/2.3.4.0/hdp.repo'
+        ryba.hdp_repo ?= 'http://public-repo-1.hortonworks.com/HDP/centos6/2.x/updates/2.4.2.0/hdp.repo'
       'install': 
         header: 'Ryba # Repository'
         timeout: -1
