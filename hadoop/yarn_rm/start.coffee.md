@@ -9,7 +9,7 @@ service hadoop-yarn-resourcemanager start
 su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec && /usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/conf start resourcemanager"
 ```
 
-    module.exports = header: 'Yarn RM Start', label_true: 'STARTED', handler: ->
+    module.exports = header: 'Yarn RM Start', label_true: 'STARTED', retry: 3, handler: (options) ->
       {yarn} = @config.ryba
 
 ## Wait
@@ -28,13 +28,9 @@ the history of MR jobs from there.
 
 Ensure the service pid is removed on retry.
 
-TODO: retry is temporary disable
-TODO: seems like removing the pid is no longer required after the rewrite of the
-startup script.s
-
       @remove
         destination: "#{yarn.pid_dir}/yarn-#{yarn.user.name}-resourcemanager.pid"
-        if: @retry > 0
+        if: options.attempt > 0
 
 ## Run
 
