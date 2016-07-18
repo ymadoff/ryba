@@ -1,6 +1,6 @@
 # HDFS Datanode Layout
 
-    module.exports = header: 'HDFS NN layout', timeout: -1, handler: ->
+    module.exports = header: 'HDFS NN layout', timeout: -1, handler: (options) ->
       {user, group, hdfs, hadoop_group} = @config.ryba
 
 ## Wait
@@ -40,7 +40,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
           """
           code_skipped: 2
         , (err, executed, stdout) ->
-          @log? 'Directory "/tmp" prepared' if executed
+          options.log? 'Directory "/tmp" prepared' if executed
         @execute
           cmd: mkcmd.hdfs @, """
           if hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -d /user; then exit 2; fi
@@ -53,7 +53,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
           """
           code_skipped: 2
         , (err, executed, stdout) ->
-          @log? 'Directory "/user" prepared' if executed
+          options.log? 'Directory "/user" prepared' if executed
         @execute
           cmd: mkcmd.hdfs @, """
           if hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -d /apps; then exit 2; fi
@@ -63,7 +63,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
           """
           code_skipped: 2
         , (err, executed, stdout) ->
-          @log? 'Directory "/apps" prepared' if executed
+          options.log? 'Directory "/apps" prepared' if executed
 
 ## HDP Layout
 
