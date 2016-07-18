@@ -69,6 +69,7 @@
         if [ -n "#{options.clean}" ]; then
           for file in `hdfs dfs -find '#{options.clean}'`; do echo hdfs dfs -rm $file; done
         fi
+        echo "Copy $source to directory $(dirname $target)"
         hdfs dfs -copyFromLocal $source $(dirname $target)
         hdfs dfs -chmod -R 444 $target
         hdfs dfs -test -f $target
