@@ -9,8 +9,19 @@ scanning the table.
       {force_check, hbase, user} = @config.ryba
       hbase_ctxs = @contexts 'ryba/hbase/master'
       {admin} = hbase_ctxs[0].config.ryba.hbase
-      [ranger_ctx] = @contexts('ryba/ranger/admin')
-      if ranger_ctx?
+      [ranger_ctx] = @contexts 'ryba/ranger/admin'
+
+## Wait
+
+Wait for the HBase master to be started.
+
+      @call once: true, 'ryba/hbase/master/wait'
+      @call once: true, 'ryba/hbase/regionserver/wait'
+
+## Ranger Policy
+[Ranger HBase plugin][ranger-hbase] try to mimics grant/revoke by shell.
+
+      @call if: ranger_ctx, ->
         {install} = @config.ryba.ranger.hbase_plugin
         hbase_policy =
           "name": "Ranger-Ryba-HBase-Policy"
@@ -53,33 +64,21 @@ scanning the table.
           		'conditions': []
           		'delegateAdmin': true
             ]
-
-## Wait
-
-Wait for the HBase master to be started.
-
-      @call once: true, 'ryba/hbase/master/wait'
-      @call once: true, 'ryba/hbase/regionserver/wait'
-      @call if:ranger_ctx?, once: true, 'ryba/ranger/admin/wait'
-
-## Ranger Policy
-[Ranger HBase plugin][ranger-hbase] try to mimics grant/revoke by shell.
-
-      @execute
-        header: 'Create Ranger Policy'
-        if: ranger_ctx?
-        header: 'Ranger Ryba Policy'
-        cmd: """
-          curl --fail -H "Content-Type: application/json" -k -X POST \
-          -d '#{JSON.stringify hbase_policy}' \
-          -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
-          \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
-        """
-        unless_exec: """
-          curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
-          -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
-          \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/Ranger-Ryba-HBase-Policy\"
-        """
+        @call once: true, 'ryba/ranger/admin/wait'
+        @execute
+          header: 'Create Ranger Policy'
+          header: 'Ranger Ryba Policy'
+          cmd: """
+            curl --fail -H "Content-Type: application/json" -k -X POST \
+            -d '#{JSON.stringify hbase_policy}' \
+            -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
+          """
+          unless_exec: """
+            curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
+            -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/Ranger-Ryba-HBase-Policy\"
+          """
 
 ## Shell
 
@@ -96,7 +95,8 @@ Groups and users access are revoked in the same way, but groups are prefixed
 with an '@' character. In the same way, tables and namespaces are specified, but
 namespaces are prefixed with an '@' character.
   
-      @call header: 'Grant Permissions', timeout:-1 , label_true: 'CHECKED', handler: ->
+      @call header: 'Grant Permissions', label_true: 'CHECKED', timeout:-1 , retry: 2, handler: ->
+        # Retry is set to 2 because the table creation is subject to a racing condition.
         @execute
           header: 'Namespace Level'
           cmd: mkcmd.hbase @, """
