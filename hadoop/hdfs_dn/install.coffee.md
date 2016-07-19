@@ -109,7 +109,11 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
         @mkdir
           destination: for dir in hdfs.site['dfs.datanode.data.dir'].split ','
             if dir.indexOf('file://') is 0
-            then dir.substr(7) else dir.substr(dir.indexOf('file://')+7)
+              dir.substr(7) 
+            else if dir.indexOf('file://') is -1
+              dir
+            else 
+              dir.substr(dir.indexOf('file://')+7)
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o0750
