@@ -28,7 +28,8 @@ Example
       throw Error 'Cannot install Shinken: no reactionner provided' unless @contexts('ryba/shinken/reactionner').length
       throw Error 'Cannot install Shinken: no broker provided' unless @contexts('ryba/shinken/broker').length
       throw Error 'Cannot install Shinken: no arbiter provided' unless @contexts('ryba/shinken/arbiter').length
-      shinken.log_dir = '/var/log/shinken'
+      shinken.build_dir ?= '/var/tmp/ryba/shinken'
+      shinken.log_dir ?= '/var/log/shinken'
       shinken.plugin_dir ?= '/usr/lib64/nagios/plugins'
       # User
       shinken.user = name: shinken.user if typeof shinken.user is 'string'

@@ -447,7 +447,7 @@ define service {
 {## Tez ##}
 {% if host.hostgroups | contains('elasticsearch') %}
 define service {
-  service_description   ElasticSearch - TCP
+  service_description   ElasticSearch - WebService
   host_name             {{ hostname }}
   servicegroups         elasticsearch
   use                   unit-service
