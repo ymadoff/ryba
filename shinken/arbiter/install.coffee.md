@@ -155,8 +155,8 @@ Objects config
           local_source: true
           context: hosts: shinken.config.hosts
         @render
-          destination: '/etc/shinken/services/business-rules-services.cfg'
-          source: "#{__dirname}/resources/business-rules-services.cfg.j2"
+          destination: '/etc/shinken/services/watchers-services.cfg'
+          source: "#{__dirname}/resources/watchers-services.cfg.j2"
           local_source: true
           context: hosts: shinken.config.hosts
         @render

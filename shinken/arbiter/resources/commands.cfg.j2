@@ -62,6 +62,10 @@ define command {
   command_line    $DOCKER_EXEC$ zookeeper/check_stat.php -H $HOSTADDRESS$ -p $ARG1$ -f $ARG2$ -w $ARG3$ -c $ARG4$ $ARG5$
 }
 define command {
+  command_name    check_hdfs_content_summary
+  command_line    $DOCKER_EXEC$ ./service_status.php -H {{ brokers }} -p 50000 -d 'HDFS NN - Active Node' -f "host_groups >= $HOSTNAME$" -u | xargs -I % $DOCKER_EXEC$ hdfs/check_content_summary.php -H % -p $ARG1$ -P $ARG2$ -f $ARG3$ -w $ARG4$ -c $ARG5$ $ARG6$
+}
+define command {
   command_name    check_hdfs_state
   command_line    $DOCKER_EXEC$ hdfs/check_state.php -H $HOSTNAME$ -p $ARG1$ -j $ARG2$ -f $ARG3$ -w $ARG4$ -c $ARG5$ $ARG6$
 }

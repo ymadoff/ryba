@@ -175,6 +175,13 @@ define service {
   use                   bp-service
   check_command         {{ has_one('HBase Master - TCP', hostname) }}
 }
+define service {
+  service_description   HBase - Replication Logs
+  host_name             {{ hostname }}
+  servicegroups         hbase
+  use                   bp-service
+  check_command         check_hdfs_content_summary!50470!/apps/hbase/data/oldWALs!spaceConsumed!53687091200!107374182400!-S
+}
 {% endif %}
 {% if host.modules | contains('hbase_regionserver') %}
 define service {
