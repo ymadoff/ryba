@@ -1,5 +1,5 @@
 
-# Hue
+# Hue (Dockerized)
 
 [Hue][home] features a File Browser for HDFS, a Job Browser for MapReduce/YARN,
 an HBase Browser, query editors for Hive, Pig, Cloudera Impala and Sqoop2.
