@@ -21,6 +21,6 @@
             ryba.db_admin.port ?= '3306'
             ryba.db_admin.username ?= 'root'
             ryba.db_admin.password ?= mysql_conf.password
-            
-            
+
+
           else throw new Error "Database engine not supported: #{ryba.engine}"

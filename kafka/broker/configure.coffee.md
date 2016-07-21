@@ -70,7 +70,7 @@ Example:
       # A more agressive configuration for production is provided here:
       # http://docs.confluent.io/1.0.1/kafka-rest/docs/deployment.html#jvm
       kafka.broker.env['KAFKA_HEAP_OPTS'] ?= "-Xmx#{kafka.broker['heapsize']}m -Xms#{kafka.broker['heapsize']}m"
-      
+
       # Log4J
       # Avoid console verbose ouput in a non-rotated kafka.out file
       # kafka.broker.env['KAFKA_LOG4J_OPTS'] ?= "-Dlog4j.configuration=file:$base_dir/../config/log4j.properties -Dkafka.root.logger=INFO, kafkaAppender"

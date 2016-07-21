@@ -1,4 +1,4 @@
-  
+
 ## Configure
 This modules configures every hadoop plugin needed to enable Ranger. It configures
 variables but also inject some function to be executed.
@@ -95,7 +95,7 @@ We do not advice to use DB Storage as it is not efficient to query when it grows
 Hortonworks recommandations are to enable SOLR and HDFS Storage.
 
       ranger.admin.install['audit_store'] ?= 'solr'
-      
+
 ## Solr Audit Database Configuration
 Here SOLR configuration is discovered and ranger admin is set.
 Ryba support both Solr Cloud mode and Solr Standalone installation. 
@@ -217,7 +217,7 @@ only users created within the webui are allowed.
           throw new Error 'selected authentication_method is not supported by Ranger'
 
 ## Ranger Environment
-    
+
       ranger.admin.heap_size ?= '256m'
       ranger.admin.opts ?= {}
       # ranger.admin.opts['javax.net.ssl.trustStore'] ?= '/etc/hadoop/conf/truststore'
@@ -238,9 +238,9 @@ Ryba injects function to the different contexts.
       ranger.plugins ?= {}      
       ranger.plugins.principal ?= "#{ranger.user.name}@#{realm}"
       ranger.plugins.password ?= 'ranger123'
-      
+
 ## HDFS Plugin
-  
+
       ranger.plugins.hdfs_enabled ?= if nn_ctxs.length > 0 then true else false
       if ranger.plugins.hdfs_enabled 
         throw Error 'Need HDFS to enable ranger HDFS Plugin' unless nn_ctxs.length > 1
@@ -261,7 +261,7 @@ Ryba injects function to the different contexts.
           hdfs_plugin.password ?= ''
           hdfs_plugin.install ?= {}
           hdfs_plugin.install['PYTHON_COMMAND_INVOKER'] ?= 'python'
-        
+
 ### HDFS Plugin Policy Admin Tool
 The repository name should match the reposity name in web ui.
 The properties can be found [here][hdfs-repository]
@@ -286,7 +286,7 @@ The properties can be found [here][hdfs-repository]
             'type': 'hdfs'
 
 ### HDFS Plugin Audit (database storage)
-        
+
           hdfs_plugin.install['XAAUDIT.DB.IS_ENABLED'] ?= 'true'
           if hdfs_plugin.install['XAAUDIT.DB.IS_ENABLED'] is 'true'
             hdfs_plugin.install['XAAUDIT.DB.FLAVOUR'] ?= 'MYSQL'
@@ -304,12 +304,12 @@ The properties can be found [here][hdfs-repository]
 
 ### HDFS Plugin Audit (HDFS Storage)
 Configure Audit to HDFS
-          
+
           # V3 configuration
           hdfs_plugin.install['XAAUDIT.HDFS.ENABLE'] ?= 'true'
           hdfs_plugin.install['XAAUDIT.HDFS.HDFS_DIR'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit"
           hdfs_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/hdfs/audit/hdfs/spool'
-        
+
           hdfs_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] ?= 'true'
           if hdfs_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
             hdfs_plugin.install['XAAUDIT.HDFS.DESTINATION_DIRECTORY'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/%app-type%/%time:yyyyMMdd%"
@@ -326,7 +326,7 @@ Configure Audit to HDFS
 
 ### HDFS Plugin Audit (SOLR Storage)
 Configure Audit to SOLR
-          
+
           if ranger.admin.install['audit_store'] is 'solr'
             hdfs_plugin.install['XAAUDIT.SOLR.IS_ENABLED'] ?= 'true'
             hdfs_plugin.install['XAAUDIT.SOLR.ENABLE'] ?= 'true'
@@ -335,7 +335,7 @@ Configure Audit to SOLR
             hdfs_plugin.install['XAAUDIT.SOLR.ZOOKEEPER'] ?= ranger.admin.install['audit_solr_zookeepers']
             hdfs_plugin.install['XAAUDIT.SOLR.PASSWORD'] ?= ranger.admin.install['audit_solr_password']
             hdfs_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/hdfs/audit/solr/spool'
-            
+
 
 ### HDFS Plugin SSL
 
@@ -344,7 +344,7 @@ Configure Audit to SOLR
             hdfs_plugin.install['SSL_KEYSTORE_PASSWORD'] ?= nn_ctx.config.ryba.ssl_server['ssl.server.keystore.password']
             hdfs_plugin.install['SSL_TRUSTSTORE_FILE_PATH'] ?= nn_ctx.config.ryba.ssl_server['ssl.server.truststore.location']
             hdfs_plugin.install['SSL_TRUSTSTORE_PASSWORD'] ?= nn_ctx.config.ryba.ssl_server['ssl.server.truststore.password']
-          
+
           nn_ctx
           .after
             type: 'render'
@@ -366,7 +366,7 @@ Configure Audit to SOLR
                 header: 'Ranger scheduled HDFS NameNode restart'
                 name: 'hadoop-hdfs-namenode'
                 if_exists: '/etc/init.d/hadoop-hdfs-namenode'
-              
+
 
 ## YARN Plugin
 
@@ -395,7 +395,7 @@ Configure Audit to SOLR
           yarn_plugin.password ?= ranger.plugins.password        
           yarn_plugin.install ?= {}
           yarn_plugin.install['PYTHON_COMMAND_INVOKER'] ?= 'python'
- 
+
 ### YARN Policy Admin Tool
 The repository name should match the reposity name in web ui.
 
@@ -431,14 +431,14 @@ The repository name should match the reposity name in web ui.
             yarn_plugin.install['XAAUDIT.HDFS.LOCAL_ARCHIVE _MAX_FILE_COUNT'] ?= '5'
 
 ### YARN Audit (HDFS Storage)
-          
+
           # AUDIT TO HDFS
           yarn_plugin.install['XAAUDIT.HDFS.ENABLE'] ?= 'true'
           yarn_plugin.install['XAAUDIT.HDFS.HDFS_DIR'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit"
           yarn_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/yarn/audit/hdfs/spool'
 
 ### YARN Audit (database storage)
-        
+
           yarn_plugin.install['XAAUDIT.DB.IS_ENABLED'] ?= 'true'
           if yarn_plugin.install['XAAUDIT.DB.IS_ENABLED'] is 'true'
             yarn_plugin.install['XAAUDIT.DB.FLAVOUR'] ?= 'MYSQL'
@@ -464,7 +464,7 @@ The repository name should match the reposity name in web ui.
             yarn_plugin.install['XAAUDIT.SOLR.ZOOKEEPER'] ?= ranger.admin.install['audit_solr_zookeepers']
             yarn_plugin.install['XAAUDIT.SOLR.PASSWORD'] ?= ranger.admin.install['audit_solr_password']
             yarn_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/yarn/audit/solr/spool'
-            
+
 ### YARN Plugin SSL
 Used only if SSL is enabled between Policy Admin Tool and Plugin
 
@@ -501,7 +501,7 @@ Used only if SSL is enabled between Policy Admin Tool and Plugin
                 name: 'hadoop-yarn-resourcemanager'
 
 ### YARN NodeManager Enable
-          
+
         for nm_ctx in nm_ctxs
           nm_ctx
           .before
@@ -519,7 +519,7 @@ Used only if SSL is enabled between Policy Admin Tool and Plugin
                 name: 'hadoop-yarn-nodemanager'
 
 ## HBase Plugin
-    
+
       ranger.plugins.hbase_enabled ?= if hm_ctxs.length > 0 then true else false
       if ranger.plugins.hbase_enabled 
         throw Error 'Need HBase to enable ranger HBase Plugin' unless rm_ctxs.length > 1
@@ -576,9 +576,9 @@ The repository name should match the reposity name in web ui.
             'type': 'hbase'
           hbase_plugin.install['XAAUDIT.SUMMARY.ENABLE'] ?= 'true'
           hbase_plugin.install['UPDATE_XAPOLICIES_ON_GRANT_REVOKE'] ?= 'true'
-            
+
 ### HBase Audit (HDFS V3 properties)
-          
+
           # V3 Configuration
           hbase_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] ?= 'true'
           if hbase_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
@@ -595,14 +595,14 @@ The repository name should match the reposity name in web ui.
             hbase_plugin.install['XAAUDIT.HDFS.LOCAL_ARCHIVE _MAX_FILE_COUNT'] ?= '5'
 
 ### HBase Audit (HDFS Storage)
-          
+
           # AUDIT TO HDFS
           hbase_plugin.install['XAAUDIT.HDFS.ENABLE'] ?= 'true'
           hbase_plugin.install['XAAUDIT.HDFS.HDFS_DIR'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit"
           hbase_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/hbase/audit/hdfs/spool'
 
 ### HBase Audit (database storage)
-        
+
           hbase_plugin.install['XAAUDIT.DB.IS_ENABLED'] ?= 'true'
           if hbase_plugin.install['XAAUDIT.DB.IS_ENABLED'] is 'true'
             hbase_plugin.install['XAAUDIT.DB.FLAVOUR'] ?= 'MYSQL'
@@ -630,7 +630,7 @@ The repository name should match the reposity name in web ui.
             hbase_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/hbase/audit/solr/spool'
 
 ### HBase Plugin Execution
-    
+
         # Master Servers
         for hm_ctx in hm_ctxs
           if ranger.admin.site['ranger.service.https.attrib.ssl.enabled'] is 'true'
@@ -662,7 +662,7 @@ The repository name should match the reposity name in web ui.
                 header: 'Ranger scheduled HBase Master restart'
                 if_exec: 'service hbase-master status'
                 name: 'hbase-master'
-        
+
         # Regionservers
         for rs_ctx in rs_ctxs
           if ranger.admin.site['ranger.service.https.attrib.ssl.enabled'] is 'true'
@@ -694,7 +694,7 @@ The repository name should match the reposity name in web ui.
                 name: 'hbase-regionserver'
 
 ## Kafka Plugin
-      
+
       #de-activating now 
       #https://mail-archives.apache.org/mod_mbox/incubator-ranger-user/201605.mbox/%3C363AE5BD-D796-425B-89C9-D481F6E74BAF@apache.org%3E
       ranger.plugins.kafka_enabled = true
@@ -713,7 +713,7 @@ The repository name should match the reposity name in web ui.
           kafka_plugin.password ?= ranger.plugins.password        
           kafka_plugin.install ?= {}
           kafka_plugin.install['PYTHON_COMMAND_INVOKER'] ?= 'python'
-        
+
 ### Kafka Policy Admin Tool
 The repository name should match the reposity name in web ui.
 The properties can be found [here][kafka-repository]
@@ -733,7 +733,7 @@ The properties can be found [here][kafka-repository]
             'type': 'kafka'
 
 ### Kafka Audit (database storage)
-        
+
           #Should audit be summarized at source
           kafka_plugin.install['XAAUDIT.SUMMARY.ENABLE'] ?= 'true'
           kafka_plugin.install['XAAUDIT.DB.IS_ENABLED'] ?= 'true'
@@ -752,12 +752,12 @@ The properties can be found [here][kafka-repository]
                 throw Error "Apache Ranger does not support chosen DB FLAVOUR"
 
 ### Kafka Audit (HDFS Storage)
-          
+
           # V3 configuration
           kafka_plugin.install['XAAUDIT.HDFS.ENABLE'] ?= 'true'
           kafka_plugin.install['XAAUDIT.HDFS.HDFS_DIR'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit"
           kafka_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/hdfs/audit/kafka/spool'
-        
+
           kafka_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] ?= 'true'
           if kafka_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
             kafka_plugin.install['XAAUDIT.HDFS.DESTINATION_DIRECTORY'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/%app-type%/%time:yyyyMMdd%"
@@ -792,14 +792,14 @@ The properties can be found [here][kafka-repository]
             kafka_plugin.install['SSL_TRUSTSTORE_PASSWORD'] ?= kb_ctx.config.ryba.ssl_client['ssl.client.truststore.password']
 
 ### Kafka Plugin Execution   
-     
+
           kb_ctx
           .after
             type: 'write'
             destination: "#{kb_ctx.config.ryba.kafka.broker.conf_dir}/server.properties"
             handler: -> 
               @call 'ryba/ranger/admin/plugin_kafka'
-              
+
           kb_ctx
           .before
             type: 'service_start'
@@ -816,7 +816,7 @@ The properties can be found [here][kafka-repository]
                 header: 'Ranger scheduled Kafka Broker restart'
                 if_exec: 'service kafka-broker status'
                 name: 'kafka-broker'
-                
+
 ## Ranger HIVE Plugin
 Ranger Hive plugin runs inside Hiveserver JVM
 
@@ -834,7 +834,7 @@ Ranger Hive plugin runs inside Hiveserver JVM
             'userRoleList': ['ROLE_USER']
             'groups': []
             'status': 1
-        
+
         port = if hive_ctxs[0].config.ryba.hive.site['hive.server2.transport.mode'] is 'http'
         then hive_ctxs[0].config.ryba.hive.site['hive.server2.thrift.http.port']
         else hive_ctxs[0].config.ryba.hive.site['hive.server2.thrift.port']
@@ -863,7 +863,7 @@ Ranger Hive plugin runs inside Hiveserver JVM
           hive_plugin.install['UPDATE_XAPOLICIES_ON_GRANT_REVOKE'] ?= 'true'
           hive_plugin.install['CUSTOM_USER'] ?= "#{hive_ctxs[0].config.ryba.hive.user.name}"
           hive_plugin.install['CUSTOM_GROUP'] ?= "#{hadoop_group.name}"
- 
+
 ### HIVE Policy Admin Tool
 The repository name should match the reposity name in web ui.
 
@@ -898,14 +898,14 @@ The repository name should match the reposity name in web ui.
             hive_plugin.install['XAAUDIT.HDFS.LOCAL_ARCHIVE _MAX_FILE_COUNT'] ?= '5'
 
 ### HIVE Audit (HDFS Storage)
-          
+
           # AUDIT TO HDFS
           hive_plugin.install['XAAUDIT.HDFS.ENABLE'] ?= 'true'
           hive_plugin.install['XAAUDIT.HDFS.HDFS_DIR'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit"
           hive_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/hive/audit/hdfs/spool'
 
 ### HIVE Audit (database storage)
-        
+
           hive_plugin.install['XAAUDIT.DB.IS_ENABLED'] ?= 'true'
           if hive_plugin.install['XAAUDIT.DB.IS_ENABLED'] is 'true'
             hive_plugin.install['XAAUDIT.DB.FLAVOUR'] ?= 'MYSQL'
@@ -931,7 +931,7 @@ The repository name should match the reposity name in web ui.
             hive_plugin.install['XAAUDIT.SOLR.ZOOKEEPER'] ?= ranger.admin.install['audit_solr_zookeepers']
             hive_plugin.install['XAAUDIT.SOLR.PASSWORD'] ?= ranger.admin.install['audit_solr_password']
             hive_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/hive/audit/solr/spool'
-            
+
 ### HIVE Plugin SSL
 Used only if SSL is enabled between Policy Admin Tool and Plugin
 
@@ -967,11 +967,11 @@ Used only if SSL is enabled between Policy Admin Tool and Plugin
                 header: 'Ranger scheduled Hive Server2 restart'
                 if_exec: 'service hive-server2 status'
                 name: 'hive-server2'
-                      
+
 ## Dependencies
 
     quote = require 'regexp-quote'
-                
+
 
 [ranger-2.4.0]:(http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/configure-the-ranger-policy-administration-authentication-moades.html)
 [ranger-ssl]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_Security_Guide/content/configure_non_ambari_ranger_ssl.html) 

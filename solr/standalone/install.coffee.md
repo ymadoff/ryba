@@ -14,7 +14,7 @@
       @call 'masson/core/krb5_client/wait'
       @register 'write_jaas', 'ryba/lib/write_jaas'
       @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
-      
+
 ## Layout
 
       @mkdir
@@ -25,7 +25,7 @@
         directory: solr.single.conf_dir
         uid: solr.user.name
         gid: solr.group.name
-      
+
 ## Users and Groups
 
       @group solr.group
@@ -47,7 +47,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           rules: [
             { chain: 'INPUT', jump: 'ACCEPT', dport: solr.single.port, protocol: 'tcp', state: 'NEW', comment: "Solr Server #{protocol}" }
           ]
-            
+
 ## Packages
 Ryba support installing solr from apache official release or HDP Search repos.
 
@@ -78,7 +78,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
             @link 
               source: solr.single.install_dir
               destination: solr.single.latest_dir
-              
+
 
       @call header: 'Configuration', handler: ->
         @link 
@@ -119,7 +119,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
-        
+
 
 ## SOLR HDFS Layout
 Create HDFS solr user and its home directory
@@ -134,7 +134,7 @@ Create HDFS solr user and its home directory
         krb5_user: @config.ryba.hdfs.krb5_user
 
 ## Config
-    
+
       @call header: 'Configure', handler: ->
         solr.single.env['SOLR_AUTHENTICATION_OPTS'] ?= ''
         solr.single.env['SOLR_AUTHENTICATION_OPTS'] += " -D#{k}=#{v} "  for k, v of solr.single.auth_opts
@@ -178,7 +178,7 @@ Create HDFS solr user and its home directory
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-        
+
 ## SSL
 
       @java_keystore_add
@@ -197,7 +197,7 @@ Create HDFS solr user and its home directory
         caname: "hadoop_root_ca"
         cacert: "#{ssl.cacert}"
         local_source: true
-      
+
 ## Dependencies
 
     path = require 'path'

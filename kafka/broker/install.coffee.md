@@ -132,7 +132,7 @@ Update the kafka-env.sh file (/etc/kafka-broker/conf/kafka-enh.sh)
         mode:0o0750
         uid: kafka.user.name
         gid: kafka.group.name
-        
+
 ## Logging
 
 Set Log4j properties

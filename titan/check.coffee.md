@@ -12,7 +12,7 @@
 ## Wait
 
       @call once: true, 'ryba/hbase/master/wait'
-      
+
 ## Check Configuration
 
 Creates a configuration file. Always load this file in Gremlin REPL !

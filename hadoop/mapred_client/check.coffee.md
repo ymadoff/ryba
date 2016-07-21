@@ -14,7 +14,7 @@ started.
       @call once: true, 'ryba/hadoop/yarn_ts/wait'
       @call once: true, 'ryba/hadoop/yarn_nm/wait'
       @call once: true, 'ryba/hadoop/yarn_rm/wait'
-  
+
 ## Check
 
 Run the "teragen" and "terasort" hadoop examples. Will only

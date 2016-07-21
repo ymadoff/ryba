@@ -41,7 +41,7 @@ hbase:x:492:492:HBase:/var/run/hbase:/bin/bash
 cat /etc/group | grep hbase
 hbase:x:492:
 ```
-      
+
       @group hbase.group
       @user hbase.user
 
@@ -173,12 +173,12 @@ https://hbase.apache.org/book/security.html
         keytab: hbase.master.site['hbase.master.keytab.file']
         uid: hbase.user.name
         gid: hadoop_group.name
-        
+
       @krb5_addprinc krb5,
         header: 'Kerberos Admin User'
         principal: hbase.admin.principal
         password: hbase.admin.password
-      
+
       @write
         header: 'Log4J Properties'
         destination: "#{hbase.master.conf_dir}/log4j.properties"

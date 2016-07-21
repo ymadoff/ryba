@@ -4,7 +4,7 @@
     module.exports = header: 'Cloudera Manager Agent Install', timeout: -1, handler: ->
       {agent} = @config.ryba.cloudera_manager
       {java} = @config
-      
+
 ## Packages
 
 Instal the packages cloudera-scm-agent and cloudera-scm-daemons
@@ -19,7 +19,7 @@ Instal the packages cloudera-scm-agent and cloudera-scm-daemons
 ## Configure
 
 Set the server's hostname in the agent's configuration
-      
+
       @write
         header: 'Configuration'
         destination: "#{agent.conf_dir}/config.ini"

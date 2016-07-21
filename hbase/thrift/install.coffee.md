@@ -4,7 +4,7 @@ Note, Hortonworks recommand to grant administrative access to the _acl_ table
 for the service princial define by "hbase.thirft.kerberos.principal". For example,
 run the command `grant '$USER', 'RWCA'`. Ryba isnt doing it because we didn't
 have usecase for it yet.
-    
+
     module.exports =  header: 'HBase Thrift Install',  handler: ->
       {hbase} = @config.ryba
 
@@ -12,7 +12,7 @@ have usecase for it yet.
 
       @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdp_select', 'ryba/lib/hdp_select'
-      
+
 ## IPTables
 
 | Service                    | Port | Proto | Info                   |
@@ -42,7 +42,7 @@ hbase:x:492:492:HBase:/var/run/hbase:/bin/bash
 cat /etc/group | grep hbase
 hbase:x:492:
 ```
-      
+
       @group hbase.group
       @user hbase.user
 

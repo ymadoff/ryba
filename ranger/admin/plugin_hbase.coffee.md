@@ -7,12 +7,12 @@
       version=null
       conf_dir = if @contexts('ryba/hbase/master').map( (ctx) -> ctx.config.host)
         .indexOf(@config.host) > -1 then hbase.master.conf_dir else hbase.rs.conf_dir
-        
+
 ## Dependencies
-    
+
       @call once: true, 'ryba/ranger/admin/wait'
       @register 'hconfigure', 'ryba/lib/hconfigure'
-      
+
 ## Packages
 
       @call header: 'Packages', handler: ->
@@ -29,7 +29,7 @@
           name: "ranger-hbase-plugin"
 
 ## Layout
-      
+
       @mkdir
         destination: '/var/log/hadoop/hbase/audit/solr/'
         uid: hbase.user.name
@@ -39,7 +39,7 @@
 ## HBase Service Repository creation
 Matchs step 1 in [hdfs plugin configuration][hbase-plugin]. Instead of using the web ui
 we execute this task using the rest api.
-      
+
       @call 
         if: @contexts('ryba/hbase/master')[0].config.host is @config.host 
         header: 'Ranger HBase Repository'
@@ -71,7 +71,7 @@ we execute this task using the rest api.
             """
 
 ## Plugin Scripts 
-  
+
       @call ->
         @render
           header: 'Scripts rendering'
@@ -109,7 +109,7 @@ we execute this task using the rest api.
           properties:
             'ranger.plugin.hbase.policy.rest.ssl.config.file': "#{conf_dir}/ranger-policymgr-ssl.xml"
 
-          
+
 ## Dependencies
 
     quote = require 'regexp-quote'

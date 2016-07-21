@@ -5,7 +5,7 @@ Note, Hortonworks recommand to grant administrative access to the _acl_ table
 for the service princial define by "hbase.rest.kerberos.principal". For example,
 run the command `grant '$USER', 'RWCA'`. Ryba isnt doing it because we didn't
 have usecase for it yet.
-    
+
     module.exports =  header: 'HBase Rest Install', handler: ->
       {hadoop_group, hbase, realm} = @config.ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
@@ -43,7 +43,7 @@ hbase:x:492:492:HBase:/var/run/hbase:/bin/bash
 cat /etc/group | grep hbase
 hbase:x:492:
 ```
-      
+
       @group hbase.group
       @user hbase.user
 
@@ -100,7 +100,7 @@ restrict it but not the rest server.
         uid: hbase.user.name
         gid: hbase.group.name
         backup: true
-        
+
 ## Env
 
 Environment passed to the HBase Rest Server before it starts.

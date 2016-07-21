@@ -11,4 +11,4 @@ Wait for the ResourceManager RPC and HTTP ports. It supports HTTPS and HA.
           protocol = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY' then '' else 'https.'
           [host, port] = yarn.site["yarn.timeline-service.webapp.#{protocol}address"].split ':'
           host: host, port: port
-          
+

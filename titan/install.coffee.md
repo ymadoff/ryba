@@ -10,9 +10,9 @@ please see ryba/rexster
 
     module.exports = header: 'Titan Install', timeout: -1, handler: ->
       {titan, hbase} = @config.ryba
-      
+
       @register 'write_jaas', 'ryba/lib/write_jaas'
-      
+
 ## Install
 
 Download and extract a ZIP Archive

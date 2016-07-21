@@ -12,7 +12,7 @@
       @register 'write_jaas', 'ryba/lib/write_jaas'
 
 ## Wait
-    
+
       @call once: true, 'masson/core/krb5_client/wait'
 
 ## Users & Groups

@@ -19,7 +19,7 @@ Run an HDFS command requiring a NameNode.
         cmd: mkcmd.test @, "hdfs dfs -test -d /user/#{user.name}"
 
 Run an HDFS command requiring a DataNode.
-      
+
       @execute
         header: 'DataNode'
         label_true: 'CHECKED',

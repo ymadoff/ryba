@@ -74,7 +74,7 @@ Normalize configuration.
           ctx.config.capacity[conf] ?= {}
           ctx.config.capacity.remote[conf] ?= {}
         ctx.config.capacity.capacity_scheduler['yarn.scheduler.capacity.resource-calculator'] ?= 'org.apache.hadoop.yarn.util.resource.DominantResourceCalculator'
-        
+
 
 ## Capacity Planning for Disks
 
@@ -178,13 +178,13 @@ depending on the total amout of memory.
         else if memory_yarn <= 8*1024*1024*1024 then 512*1024*1024 # 512 MB
         else if memory_yarn <= 24*1024*1024*1024 then 1024*1024*1024 # 1 GB
         else 2*1024*1024*1024 # 2 GB
-        
+
         # min (2*CORES, 1.8*DISKS, (Total available RAM / MIN_CONTAINER_SIZE) )
         unless max_number_of_containers = ctx.config.capacity.max_number_of_containers
           # Possible incoherence, here we multiply number of cores by 2 while
           # NodeManager vcores is set to number of cores only
           max_number_of_containers = Math.floor Math.min cores * 2, disks.length * 1.8, (memory_yarn / minimum_container_size)
-        
+
         # Amount of RAM per container
         # max(MIN_CONTAINER_SIZE, (Total Available RAM) / containers))
         unless memory_per_container = ctx.config.capacity.memory_per_container
@@ -226,7 +226,7 @@ memory.
         yarn_site['yarn.nodemanager.vmem-pmem-ratio'] ?= '2.1'
 
 Number of Virtual Cores dedicated by the node and that can be allocated for containers.
-        
+
         yarn_site['yarn.nodemanager.resource.cpu-vcores'] ?= cores
 
 The property "yarn.nodemanager.local-dirs" defines multiple disks for
@@ -253,7 +253,7 @@ Raise the number of vcores later allocated for the ResourceManager.
         continue unless ctx.has_any_modules 'ryba/hadoop/yarn_nm'
         ctx.config.capacity.memory_per_container
       memory_per_container_mean = Math.round memory_per_container_mean.reduce( (a, b) -> a + b ) / memory_per_container_mean.length
-      
+
       for ctx in ctxs
         ctx.config.capacity.memory_per_container_mean = memory_per_container_mean
         ctx.config.capacity.minimum_allocation_mb = minimum_allocation_mb

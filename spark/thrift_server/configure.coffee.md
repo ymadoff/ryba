@@ -21,7 +21,7 @@ than the hive-server2 (available on the same host). We inherits from almost ever
 Only port, execution engine and dynamic discovery change (not supported).
 
 ## Configuration                    
-                    
+
       spark.thrift ?= {}
       spark.thrift.user_name ?= @config.ryba.hive.user.name
       spark.thrift.log_dir ?= '/var/log/spark'
@@ -39,7 +39,7 @@ Only port, execution engine and dynamic discovery change (not supported).
       spark.thrift.hive_site['hive.execution.engine'] = 'mr'
       # Do not modify this property, hive server2 spark instance does not support zookeeper dynamic discovery
       spark.thrift.hive_site['hive.server2.support.dynamic.service.discovery'] = 'false' 
-    
+
 ### Spark Defaults
 Inherits some of the basic spark yarn-cluster based installation
 
@@ -47,7 +47,7 @@ Inherits some of the basic spark yarn-cluster based installation
       spark.thrift.conf['spark.master'] ?= 'yarn-client'
       spark.thrift.conf['spark.executor.memory'] ?= '512m'
       spark.thrift.conf['spark.driver.memory'] ?= '512m'
-      
+
       for prop in [
         'spark.authenticate'
         'spark.authenticate.secret'
@@ -71,10 +71,10 @@ Inherits some of the basic spark yarn-cluster based installation
         'spark.yarn.services'
         'spark.yarn.submit.file.replication'
       ] then spark.thrift.conf[prop] ?= sc_ctx.config.ryba.spark.conf[prop]
-      
-            
+
+
 ### Log4j Properties
-      
+
       spark.thrift.log4j ?= {}
       spark.thrift.log4j['log4j.rootCategory'] ?= 'INFO, console'
       spark.thrift.log4j['log4j.appender.console'] ?= 'org.apache.log4j.ConsoleAppender'
@@ -82,7 +82,7 @@ Inherits some of the basic spark yarn-cluster based installation
       spark.thrift.log4j['log4j.appender.console.layout'] ?= 'org.apache.log4j.PatternLayout'
       spark.thrift.log4j['log4j.appender.console.layout.ConversionPattern'] ?= '%d{yy/MM/dd HH:mm:ss} %p %c{1}: %m%n'
 
-      
+
       # Settings to quiet third party logs that are too verbose
       spark.thrift.log4j['log4j.logger.org.spark-project.jetty'] ?= 'WARN'
       spark.thrift.log4j['log4j.logger.org.spark-project.jetty.util.component.AbstractLifeCycle'] ?= 'ERROR'
@@ -94,9 +94,9 @@ Inherits some of the basic spark yarn-cluster based installation
       # SPARK-9183: Settings to avoid annoying messages when looking up nonexistent UDFs in SparkSQL with Hive support
       spark.thrift.log4j['log4j.logger.org.apache.hadoop.hive.metastore.RetryingHMSHandler'] ?= 'FATAL'
       spark.thrift.log4j['log4j.logger.org.apache.hadoop.hive.ql.exec.FunctionRegistry'] ?= 'ERROR'
-        
+
 ### SSL
-      
+
       spark.thrift.conf['spark.ssl.enabled'] ?= 'true'
       spark.thrift.conf['spark.ssl.protocol'] ?= 'SSLv3'
       spark.thrift.conf['spark.ssl.trustStore'] ?= ssl_client['ssl.client.truststore.location']
@@ -109,9 +109,9 @@ Spark SQL thrift server is runned as the hive server user, and must use the hive
       spark.thrift.conf['spark.yarn.keytab'] ?= @config.ryba.hive.site['hive.server2.authentication.kerberos.keytab']
       match = /^(.+?)[@\/]/.exec spark.thrift.conf['spark.yarn.principal']
       throw Error 'SQL Thrift Server principal must mach thrift user name' unless match[1] is spark.thrift.user_name
-      
+
 ### Enable Yarn Job submission
-      
+
       wk_ctxs = @contexts 'ryba/hadoop/yarn_nm'
       for wk_ctx in wk_ctxs
         wk_ctx.before
@@ -122,7 +122,7 @@ Spark SQL thrift server is runned as the hive server user, and must use the hive
             @user hcli_ctx.config.ryba.hive.user
             @mkdir
               destination: hcli_ctx.config.ryba.hive.user.home
-            
+
 
 [hdp-spark-sql]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/starting_sts.html)
-      
+

@@ -1,9 +1,9 @@
 
 # Hue Start
-    
+
     module.exports = header: 'Hue Docker Start', label_true: 'STARTED', timeout: -1, handler: ->
       {hue_docker} = @config.ryba
-      
+
 ## Wait
 
       @call once: true, 'ryba/hadoop/yarn_rm/wait'

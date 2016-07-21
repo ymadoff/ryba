@@ -35,4 +35,4 @@ Create the directory structure with correct ownerships and permissions.
 
     path = require 'path'
     mkcmd = require '../../lib/mkcmd'
-      
+

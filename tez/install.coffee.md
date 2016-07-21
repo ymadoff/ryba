@@ -8,7 +8,7 @@
 
       @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdfs_upload', 'ryba/lib/hdfs_upload'
-      
+
 ## Packages
 
       @service

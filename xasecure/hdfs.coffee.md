@@ -61,7 +61,7 @@
     module.exports.push header: 'XASecure HDFS # Fix', handler: ->
       @remove
         destination: '/usr/lib/hadoop/lib/jersey-bundle-1.17.1.jar'
-    
+
     module.exports.push header: 'XASecure HDFS # Register', timeout: -1, handler: ->
       # POST http://front1.hadoop:6080/service/assets/assets
       body = 
@@ -106,4 +106,4 @@
     each = require 'each'
     quote = require 'regexp-quote'
     lifecycle = require '../lib/lifecycle'
-      
+

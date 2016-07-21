@@ -56,10 +56,10 @@
       hbase.rs.opts ?= "-Xmn128m -Xms4096m -Xmx4096m"
       if   hbase.rs.opts.indexOf('-Djava.security.auth.login.config') is -1
         hbase.rs.opts += " -Djava.security.auth.login.config=#{hbase.rs.conf_dir}/hbase-regionserver.jaas"
-      
+
 
 ## Configuration for Kerberos
-      
+
       hbase.rs.site['hbase.security.authentication'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.security.authentication']
       hbase.rs.site['hbase.master.kerberos.principal'] = m_ctxs[0].config.ryba.hbase.master.site['hbase.master.kerberos.principal'] #.replace '_HOST', m_ctxs[0].config.host
       hbase.rs.site['hbase.regionserver.kerberos.principal'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.regionserver.kerberos.principal']

@@ -10,7 +10,7 @@
       @call once: true, 'ryba/hadoop/yarn_client/install'
       @call once: true, 'ryba/ranger/admin/wait'
       @register 'hconfigure', 'ryba/lib/hconfigure'
-      
+
 # Packages
 
       @call header: 'Packages', handler: ->
@@ -27,7 +27,7 @@
           name: "ranger-yarn-plugin"
 
 # Layout
-      
+
       @mkdir
         destination: '/var/log/hadoop/yarn/audit/solr/'
         uid: yarn.user.name
@@ -42,7 +42,7 @@
 # YARN Service Repository creation
 Matchs step 1 in [hdfs plugin configuration][yarn-plugin]. Instead of using the web ui
 we execute this task using the rest api.
-      
+
       @call 
         if: @contexts('ryba/hadoop/yarn_rm')[0].config.host is @config.host 
         header: 'Ranger YARN Repository'
@@ -71,7 +71,7 @@ we execute this task using the rest api.
             """
 
 # Plugin Scripts 
-  
+
       @call ->
         @render
           header: 'Scripts rendering'
@@ -112,8 +112,8 @@ we execute this task using the rest api.
           merge: true
           properties:
             'ranger.plugin.yarn.policy.rest.ssl.config.file': "#{yarn.rm.conf_dir}/ranger-policymgr-ssl.xml"
-        
-          
+
+
 ## Dependencies
 
     quote = require 'regexp-quote'

@@ -33,7 +33,7 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
-      
+
       rules =  [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 9083, protocol: 'tcp', state: 'NEW', comment: "Hive Metastore" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: 9999, protocol: 'tcp', state: 'NEW', comment: "Hive Web UI" }
@@ -207,7 +207,7 @@ by setting a "heapsize" value equal to "4096".
 
 Note, the startup script found in "hive-hcatalog/bin/hcat_server.sh" references
 the Hive Metastore service and execute "./bin/hive --service metastore"
-      
+
       @render
         header: 'Hive Env'
         source: "#{__dirname}/../resources/hive-env.sh"

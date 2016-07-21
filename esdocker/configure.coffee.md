@@ -81,6 +81,6 @@
           es.config["metrics.graphite.port"] = es_docker.graphite.port
           es.config["metrics.graphite.every"] = es_docker.graphite.every ?= "10s"
           es.config["metrics.graphite.prefix"] = "es.#{es_name}.${HOSTNAME}"
-          
-          
+
+
 

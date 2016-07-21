@@ -10,7 +10,7 @@ su - zookeeper -c "export ZOOCFGDIR=/usr/hdp/current/zookeeper-server/conf; expo
 ```
 
     module.exports = header: 'ZooKeeper Server # Start', label_true: 'STARTED', handler: ->
-    
+
 Wait for Kerberos to be started.
 
       @call once: true, 'masson/core/krb5_client/wait'

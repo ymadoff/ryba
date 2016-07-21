@@ -39,9 +39,9 @@ Example:
       hive.server2.opts ?= ''
       hive.server2.heapsize ?= 1024
       hive.conf_dir ?= '/etc/hive/conf'
-      
+
 ## Users & Groups
-      
+
       # User
       hive.user ?= {}
       hive.user = name: hive.user if typeof hive.user is 'string'
@@ -59,7 +59,7 @@ Example:
       hive.group.name = hcat_ctxs[0].config.ryba.hive.group.name ?= 'hive'
       hive.group.system = hcat_ctxs[0].config.ryba.hive.group.system ?= true
       hive.user.gid = hive.group.name
-      
+
 ## Configuration
 
       hive.site ?= {}
@@ -94,7 +94,7 @@ Example:
       hive.server2.aux_jars ?=  if @has_module('ryba/hive/hcatalog') then hive.hcatalog.aux_jars else []
 
 ## Hive Server2 Environment
-      
+
       hive.server2.env ?= {}  
       #JMX Config
       hive.server2.env["JMX_OPTS"] ?= ''
@@ -149,7 +149,7 @@ Example:
       hive.site['hive.server2.use.SSL'] ?= 'true'
       hive.site['hive.server2.keystore.path'] ?= "#{hive.server2.conf_dir}/keystore"
       hive.site['hive.server2.keystore.password'] ?= "ryba123"
-  
+
 
 ## HS2 High Availability & Rolling Upgrade
 

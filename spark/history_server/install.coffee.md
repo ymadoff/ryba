@@ -12,18 +12,18 @@ in the resource Manager web interface.
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       {java_home} = @config.java
-          
+
       @register 'hdp_select', 'ryba/lib/hdp_select'
       @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
       @register 'hconfigure', 'ryba/lib/hconfigure'
-      
+
 # Users and Groups   
 
       @group spark.group
       @user spark.user
 
 # Packages
-      
+
       @service
         name: 'spark'
       @hdp_select
@@ -37,9 +37,9 @@ in the resource Manager web interface.
         mode: 0o0755
 
 # Layout
-      
-      
-      
+
+
+
 ## IPTables
 
 | Service              | Port  | Proto | Info              |
@@ -69,7 +69,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           destination: spark.history.conf_dir
           uid: spark.user.name
           gid: spark.group.name
-          
+
 ## Spark History Server Configure
 
       @write
@@ -108,23 +108,23 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         destination: '/usr/hdp/current/spark-history-server'
 
 ## Clients Configuration
-      
+
       @hconfigure
         header: 'Hive Site'
         destination: "#{spark.history.conf_dir}/hive-site.xml"
         default: "/etc/hive/conf/hive-site.xml"
         merge: true
         backup: true
-        
+
       @hconfigure
         header: 'Core Site'
         destination: "#{spark.history.conf_dir}/core-site.xml"
         default: "/etc/hadoop/conf/core-site.xml"
         merge: true
         backup: true
-  
+
 ## Kerberos
-      
+
       @krb5_addprinc krb5,
         header: 'Kerberos'
         principal: spark.history.conf['spark.history.kerberos.principal']

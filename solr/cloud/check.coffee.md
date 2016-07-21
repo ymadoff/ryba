@@ -7,7 +7,7 @@
       {ssl, ssl_server, ssl_client, hadoop_conf_dir, realm} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       protocol = if solr.cloud.ssl.enabled then 'https' else 'http'
-      
+
       @call 'ryba/zookeeper/server/wait'
       @call 'ryba/solr/cloud/wait'
       @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
@@ -63,9 +63,9 @@ Check if hadoop connector works and re-activate jar execution.
               cmd: """
                 touch /tmp/#{check_dir}/checked
               """
-          
-        
-        
+
+
+
 ## Create Collection with Local dir based index
 This check is inspired [from HDP][search-hdp].
 
@@ -105,8 +105,8 @@ This check is inspired [from HDP][search-hdp].
               """          
 
 ## Dependencies
-    
+
     mkcmd = require '../../lib/mkcmd'
     path = require 'path'
-        
+
 [search-hdp]:(http://fr.hortonworks.com/hadoop-tutorial/searching-data-solr/)

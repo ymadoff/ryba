@@ -3,7 +3,7 @@
 
     module.exports = header: 'OpenTSDB Check', label_true: 'CHECKED', handler: ->
       {opentsdb} = @config.ryba
-      
+
 ## Check HTTP
 
       @execute 
@@ -12,7 +12,7 @@
         cmd: "curl http://#{@config.host}:#{opentsdb.config['tsd.network.port']}"
 
 ## Check HTTP API
-      
+
       @call header: 'Check HTTP API', label_true: 'CHECKED', handler: (_, callback) ->
         date = Date.now()
         put = JSON.stringify

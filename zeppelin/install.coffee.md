@@ -108,7 +108,7 @@ Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
         zeppelin.env['SPARK_YARN_JAR'] ?= "#{core_site['fs.defaultFS']}/user/#{spark.user.name}/share/lib/#{spark_jar}"
 
 ## Zeppelin properties configuration
-    
+
       @mkdir
         header: 'Directory'
         destination: "#{zeppelin.conf_dir}"

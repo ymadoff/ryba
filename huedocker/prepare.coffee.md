@@ -38,7 +38,7 @@ for hue to be able to communicate with the hadoop cluster in secure mode.
 
 
 # Hue Build dockerfile execution
-      
+
       @call header: 'Build Prepare', timeout: -1,  handler: ->
         @mkdir
           destination: "#{@config.mecano.cache_dir}/huedocker"

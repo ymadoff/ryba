@@ -22,7 +22,7 @@ NameNodes, and send block location information and heartbeats to both.
 
       @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdp_select', 'ryba/lib/hdp_select'
-    
+
 ## IPTables
 
 | Service   | Port       | Proto     | Parameter                  |
@@ -73,7 +73,7 @@ inside "/etc/init.d" and activate it on startup.
         @execute
           cmd: "service hadoop-hdfs-datanode restart"
           if: -> @status -3
-          
+
       @call header: 'Compression', timeout: -1, handler: ->
         { hadoop_conf_dir } = @config.ryba
         @service name: 'snappy'
@@ -161,7 +161,7 @@ Maintain the "hadoop-env.sh" file present in the HDP companion File.
 The location for JSVC depends on the platform. The Hortonworks documentation
 mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
 correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
-      
+
       @render
         header: 'Environment'
         destination: "#{hdfs.dn.conf_dir}/hadoop-env.sh"

@@ -11,7 +11,7 @@
       @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdp_select', 'ryba/lib/hdp_select'
       @register 'write_jaas', 'ryba/lib/write_jaas'
-      
+
 ## Users & Groups
 
 By default, the "zookeeper" package create the following entries:
@@ -25,7 +25,7 @@ hadoop:x:498:hdfs
 
       @group header: 'Group', hadoop_group
       @user header: 'User', yarn.user
-      
+
 ## IPTables
 
 | Service         | Port  | Proto  | Parameter                                     |

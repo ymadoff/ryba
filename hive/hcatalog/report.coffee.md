@@ -2,7 +2,7 @@
 # Hive HCatalog Info
 
 Retrieve various info about the HCatalog Server and the Hive Server2.
-  
+
     module.exports = header: 'Hive HCatalog Report', timeout: -1, label_true: 'INFO', handler: ->
 
 

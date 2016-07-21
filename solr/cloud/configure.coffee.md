@@ -153,7 +153,7 @@ solr zkCli script
 
 ### Configure HDFS
 [Configure][solr-hdfs] Solr to index document using hdfs, and document stored in HDFS.
-      
+
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn' , require('../../hadoop/hdfs_nn/configure').handler
       if nn_ctxs.length > 0
         solr.cloud.hdfs ?= {}
@@ -173,9 +173,9 @@ solr zkCli script
         # instruct solr to use hdfs as home dir
         solr.cloud.dir_factory = 'solr.HdfsDirectoryFactory'
         solr.cloud.lock_type = 'hdfs'
-        
-        
-  
+
+
+
 
 ## Dependencies
 

@@ -1,5 +1,5 @@
-    
-    
+
+
     module.exports = handler: ->
       [srv_ctx] = @contexts 'ryba/ambari/server', require('../server').configure
       ambari_agent = @config.ryba.ambari_agent ?= {}

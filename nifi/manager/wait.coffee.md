@@ -5,7 +5,7 @@
       [m_ctx] = @contexts 'ryba/nifi/manager'
       protocol = if m_ctx.config.ryba.nifi.manager.config.properties['nifi.cluster.protocol.is.secure'] is 'true' then 'https' else 'http'
       webui = m_ctx.config.ryba.nifi.manager.config.properties["nifi.web.#{protocol}.port"]
-      
+
 ## Check TCP
 
 Check if all Manager's port are opened

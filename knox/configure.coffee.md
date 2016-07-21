@@ -167,7 +167,7 @@ This mechanism can be used to configure a specific gateway without having to dec
           # WebHDFS auto configuration rules:
           # We provide by default namenode WebHDFS (default implementation, embedded in namenode) instead of httpfs. Httpfs put request through knox create empty files.
           # We also configure HA for WebHDFS if namenodes are in HA-mode
-          
+
           # fs_ctxs = @contexts 'ryba/hadoop/httpfs', require('../hadoop/httpfs/configure').handler
           # if fs_ctxs.length
           #   if fs_ctxs.length > 1

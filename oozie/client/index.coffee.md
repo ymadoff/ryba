@@ -23,4 +23,4 @@ be installed in remote machines only.
       'check':
         'ryba/oozie/client/check'
 
-  
+

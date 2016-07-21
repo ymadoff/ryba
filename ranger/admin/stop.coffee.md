@@ -10,7 +10,7 @@ service ranger-admin stop
     module.exports = header: 'Ranger Admin Stop', label_true: 'STOPPED', handler: ->
       @service_start
         name: 'ranger-admin'
-        
+
 ## Clean Logs
 
       @call header: 'Clean Logs', label_true: 'CLEANED', handler: ->

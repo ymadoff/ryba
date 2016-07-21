@@ -5,7 +5,7 @@
       {nifi} = @config.ryba
 
 ## Wait
-      
+
       @call once: true, 'ryba/nifi/node/wait'
 
 ## Check TCP

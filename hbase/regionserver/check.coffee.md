@@ -1,6 +1,6 @@
 
 # HBase RegionServer Check
-  
+
     module.exports = header: 'HBase RegionServer Check', label_true: 'CHECKED', handler: ->
       {core_site, hbase} = @config.ryba
       rootdir = @contexts('ryba/hbase/master')[0].config.ryba.hbase.master.site['hbase.rootdir']
@@ -51,7 +51,7 @@ is added membership to the group hadoop to gain read access.
         host=`curl -s -k --negotiate -u : #{url} | grep tag.Hostname | sed 's/^.*:.*"\\(.*\\)".*$/\\1/g'`
         if [ "$host" != '#{@config.host}' ] ; then exit 1; fi
         """
-      
+
 
 ## Dependencies
 

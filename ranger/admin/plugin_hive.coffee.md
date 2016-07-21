@@ -10,7 +10,7 @@
 
       @call once: true, 'ryba/ranger/admin/wait'
       @register 'hconfigure', 'ryba/lib/hconfigure'
-            
+
 # Packages
 
       @call header: 'Packages', handler: ->
@@ -27,7 +27,7 @@
           name: "ranger-hive-plugin"
 
 # Layout
-        
+
       @mkdir
         destination: '/var/log/hadoop/hive/audit/hdfs/'
         uid: hive.user.name
@@ -73,7 +73,7 @@ we execute this task using the rest api.
             """
 
 # Plugin Scripts 
-  
+
       @call ->
         @render
           header: 'Scripts rendering'
@@ -102,7 +102,7 @@ we execute this task using the rest api.
             # , 
             #   match: RegExp "^HCOMPONENT_NAME=.*$", 'mg'
             #   replace: "HCOMPONENT_NAME=kafka-broker"
-              
+
           ]
           backup: true
         # @write
@@ -142,12 +142,12 @@ we execute this task using the rest api.
         @remove
           header: 'Remove useless file'
           destination: "#{hive.server2.conf_dir}/hiveserver2-site.xml"
-          
+
 ## Dependencies
 
     quote = require 'regexp-quote'
     path = require 'path'
     mkcmd = require '../../lib/mkcmd'
-    
+
 
 [hive-plugin]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/installing_ranger_plugins.html#installing_ranger_hive_plugin)

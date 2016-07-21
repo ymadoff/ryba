@@ -1,4 +1,4 @@
-  
+
 ## HBase Cluster Replication
 
 Deploy HBase replication to point slave cluster.

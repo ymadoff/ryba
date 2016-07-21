@@ -10,7 +10,7 @@
       {realm, hbase, ganglia, graphite} = @config.ryba
       {java_home} = @config.java
       hbase = @config.ryba.hbase ?= {}
-      
+
 # Users & Groups
 
 *   `hbase.user` (object|string)
@@ -55,7 +55,7 @@ Example
       hbase.group.name ?= 'hbase'
       hbase.group.system ?= true
       hbase.user.gid = hbase.group.name
-      
+
 ## Master Configuration
 
       hbase.master ?= {}
@@ -123,7 +123,7 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
       hbase.master.opts ?= "-Xmx2048m "
       if hbase.master.opts.indexOf('-Djava.security.auth.login.config') is -1
         hbase.master.opts += " -Djava.security.auth.login.config=#{hbase.master.conf_dir}/hbase-master.jaas"
-       
+
 
 ## Configuration for Proxy Users
 

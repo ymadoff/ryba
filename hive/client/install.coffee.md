@@ -13,7 +13,7 @@
       @register 'hdp_select', 'ryba/lib/hdp_select'
 
 ## Service
-      
+
       @service
         name: 'hive'
       @hdp_select

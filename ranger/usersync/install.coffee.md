@@ -3,12 +3,12 @@
 
     module.exports = header: 'Ranger UserSync Install', handler: ->
       {ranger,ssl} = @config.ryba
-      
+
       @register 'hdp_select', 'ryba/lib/hdp_select'
       @register 'hconfigure', 'ryba/lib/hconfigure'
-      
+
 ## Users & Groups
-      
+
       @group ranger.group
       @user ranger.user
 
@@ -32,7 +32,7 @@ directories.
             name: "ranger_#{hdp_current_version}-usersync"
         @hdp_select
           name: 'ranger-usersync'
-      
+
       @call header: 'Layout', handler: ->
         @mkdir
           destination: ranger.usersync.conf_dir
@@ -76,7 +76,7 @@ directories.
 
 Update the file "install.properties" with the properties defined by the
 "ryba.ranger.usersync.install" configuration.
-      
+
       @render
         header: 'Configure Install Scripts'
         destination: "/usr/hdp/current/ranger-usersync/install.properties"
@@ -88,7 +88,7 @@ Update the file "install.properties" with the properties defined by the
           append: true
         eof: true
         backup: true
-      
+
       @write
         header: 'Configure Setup Scripts'
         destination: '/usr/hdp/current/ranger-usersync/setup.py'
@@ -105,7 +105,7 @@ Update the file "install.properties" with the properties defined by the
           cd /usr/hdp/current/ranger-usersync/
           ./setup.sh
         """
-    
+
       # the setup scripts already render an init.d script but it does not respect 
       # the convention exit code 3 when service is stopped on the status code
       @render
@@ -115,7 +115,7 @@ Update the file "install.properties" with the properties defined by the
         mode: 0o0755
         context: @config.ryba
         unlink: true
-      
+
       writes = [
         match: RegExp "JAVA_OPTS=.*", 'm'
         replace: "JAVA_OPTS=\"${JAVA_OPTS} -XX:MaxPermSize=256m -Xmx#{ranger.usersync.heap_size} -Xms#{ranger.usersync.heap_size} \""
@@ -130,7 +130,7 @@ Update the file "install.properties" with the properties defined by the
         header: 'Usersync Env'
         destination: '/etc/ranger/usersync/conf/ranger-usersync-env-1.sh'
         write: writes
-          
+
       @hconfigure
         header: 'Usersync site'
         destination: "/etc/ranger/usersync/conf/ranger-ugsync-site.xml"

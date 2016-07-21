@@ -7,7 +7,7 @@
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       tmp_archive_location = "/var/tmp/ryba/nifi.tar.gz"
       protocol = if nifi.manager.config.properties['nifi.cluster.protocol.is.secure'] is 'true' then 'https' else 'http'
-      
+
       @register 'write_jaas', 'ryba/lib/write_jaas'
 
 ## Users
@@ -23,7 +23,7 @@
   | manager    | 9760  | tcp    | nifi.web.https.port                         |
   | manager    | 9770  | tcp    | nifi.cluster.manager.protocol.port          |
   | manager    | 9780  | tcp    | config.authority_providers.cluster_node.port|
-      
+
       @iptables
         header: 'IPTables'
         if: @config.iptables.action is 'start'
@@ -32,7 +32,7 @@
           { chain: 'INPUT', jump: 'ACCEPT', dport: nifi.manager.config.properties['nifi.cluster.manager.protocol.port'], protocol: 'tcp', state: 'NEW', comment: "NiFi admin port" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: nifi.manager.config.authority_providers.ncm_port, protocol: 'tcp', state: 'NEW', comment: "NiFi manager auth port" }
         ]
-    
+
       @call header: 'Preinstall Layout', handler: ->
           @mkdir
             destination: nifi.manager.install_dir
@@ -176,7 +176,7 @@ Set up different users to be able to access the NiFi Web ui
 
 Sets niFi server to get credentials from the cluster manager
 Not sure we need it on the Manager.
-      
+
       @render
         header: 'Authority Providers'
         source: "#{__dirname}/../resources/authority-providers.xml.j2"
@@ -193,7 +193,7 @@ Not sure we need it on the Manager.
 
 Describes where the NiFi server store its internal states.
 By default it is a local file, but in cluster mode, it uses zookeeper.
-          
+
       @render
         header: 'State Provider'
         source: "#{__dirname}/../resources/state-management.xml.j2"
@@ -213,13 +213,13 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
         keytab: nifi.manager.krb5_keytab
         uid: nifi.user.name
         gid: nifi.group.name
-        
+
       @krb5_addprinc krb5,
         if: nifi.manager.config.properties['nifi.security.user.login.identity.provider'] is 'kerberos-provider'
         header: 'Kerberos NiFi Web UI Manager'
         principal: nifi.webui.krb5_principal
         password: nifi.webui.krb5_password
-    
+
 ## Environment
 
 Need to manually set `-Djavax.net.ssl.trustStore` and `-Djavax.net.ssl.trustStorePassword`
@@ -299,7 +299,7 @@ by sending request to ldaps server
         source: "#{__dirname}/../resources/bootstrap-notification-services.xml"
 
 # Logs
- 
+
       @render
         header: 'Log Configuration'
         destination: "#{nifi.manager.conf_dir}/logback.xml"

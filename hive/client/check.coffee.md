@@ -1,4 +1,4 @@
-  
+
 # Hive Client Check
 
 This module check both the HCatalog and Hive Server2 servers respectively using
@@ -30,7 +30,7 @@ hive -hiveconf hive.root.logger=DEBUG,console
       @call if:ranger_ctx?, once: true, 'ryba/ranger/admin/wait'
 
 ## Add Ranger Policy 
-      
+
       @call header: 'Add Hive Policy', if:ranger_ctx?, handler: ->
         [ranger_ctx] = @contexts('ryba/ranger/admin')
         {install} = ranger_ctx.config.ryba.ranger.hive_plugin
@@ -65,7 +65,7 @@ hive -hiveconf hive.root.logger=DEBUG,console
             \"#{install['POLICY_MGR_URL']}/service/public/api/service/#{install['REPOSITORY_NAME']}/policy/Ranger-Ryba-HIVE-Policy\"
           """
           code_skippe: 22
-          
+
 ## Check HCatalog MapReduce
 
 Use the [Hive CLI][hivecli] client to execute SQL queries using the MapReduce
@@ -219,7 +219,7 @@ directive once you enter the beeline shell.
               trap: true
 
 ## Check Sparl SQL Thrift Server
-      
+
       @call once: true, if: (@contexts('ryba/spark/thrift_server').length > 0), 'ryba/spark/thrift_server/wait'
       @call
         header: 'Check Spark SQL Thrift Server'

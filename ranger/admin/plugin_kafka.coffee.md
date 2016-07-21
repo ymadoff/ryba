@@ -10,7 +10,7 @@
 
       @call once: true, 'ryba/ranger/admin/wait'
       @register 'hconfigure', 'ryba/lib/hconfigure'
-            
+
 # Packages
 
       @call header: 'Packages', handler: ->
@@ -27,7 +27,7 @@
           name: "ranger-kafka-plugin"
 
 # Layout
-        
+
       @mkdir
         destination: '/var/log/hadoop/kafka/audit/solr/'
         uid: kafka.user.name
@@ -66,7 +66,7 @@ we execute this task using the rest api.
             """
 
 # Plugin Scripts 
-  
+
       @call ->
         @render
           header: 'Scripts rendering'
@@ -95,7 +95,7 @@ we execute this task using the rest api.
             , 
               match: RegExp "^HCOMPONENT_NAME=.*$", 'mg'
               replace: "HCOMPONENT_NAME=kafka-broker"
-              
+
           ]
           backup: true
         @write
@@ -135,12 +135,12 @@ we execute this task using the rest api.
           merge: true
           properties:
             'ranger.plugin.kafka.policy.rest.ssl.config.file': "#{kafka.broker.conf_dir}/ranger-policymgr-ssl.xml"
-          
+
 ## Dependencies
 
     quote = require 'regexp-quote'
     path = require 'path'
     mkcmd = require '../../lib/mkcmd'
-    
+
 
 [hdfs-plugin]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/installing_ranger_plugins.html#installing_ranger_hdfs_plugin)

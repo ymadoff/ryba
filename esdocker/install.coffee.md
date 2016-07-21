@@ -28,7 +28,7 @@
         @mkdir directory:"#{es.logs_path}/#{es_name}/logstash",uid:'elasticsearch'
 
 ## SSL Certificate
-        
+
         @download
           source: ssl.cacert
           destination: ssl.dest_cacert
@@ -46,7 +46,7 @@
           shy: true
 
 ## Generate compose file
-      
+
         if @config.host is es_servers[es_servers.length-1]
           #TODO create overlay network if the network does not exist
           docker_networks["#{es.network.name}"] = external: es.network.external

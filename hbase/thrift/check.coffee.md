@@ -3,7 +3,7 @@
 
     module.exports = header: 'HBase Thrift Check', label_true: 'CHECKED', handler: ->
       {hbase} = @config.ryba
-      
+
 ## Wait
 
       @wait once: true, 'ryba/hbase/thrift/wait'

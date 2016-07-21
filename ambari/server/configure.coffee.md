@@ -1,8 +1,8 @@
 
 ## Configuration
- 
+
 Exemple:
- 
+
 ```json
 { "ambari": {
   "name": "big",
@@ -19,8 +19,8 @@ Exemple:
     "authentication.ldap.usernameAttribute": "cn"
 } } }
 ```
- 
-    
+
+
     module.exports  = handler: ->
       # Servers onfiguration
       ambari_server = @config.ryba.ambari_server ?= {}

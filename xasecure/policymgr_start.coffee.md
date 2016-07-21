@@ -8,4 +8,4 @@
     module.exports.push header: 'XASecure PolicyMgr # Start', label_true: 'STARTED', timeout: -1, handler: ->
       ctx.service_start
         name: 'xapolicymgr'
-      
+

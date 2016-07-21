@@ -9,7 +9,7 @@ Wait for all YARN services to be started.
 
       @call once: true, 'ryba/hadoop/yarn_ts/wait'
       @call once: true, 'ryba/hadoop/yarn_rm/wait'
-      
+
 ## Check CLI
 
       @execute

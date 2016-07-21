@@ -6,7 +6,7 @@ Spark requires HDFS and Yarn. Install spark in Yarn cluster mode.
 Resources:
 
 [Tips and Tricks from Altic Scale][https://www.altiscale.com/blog/tips-and-tricks-for-running-spark-on-hadoop-part-2-2/)   
-  
+
     module.exports = header: 'Spark Client Install', handler: ->
       {ssl, ssl_server, ssl_client, spark, hadoop_group, hadoop_conf_dir, hive} = @config.ryba
       fs_log_dir = spark.conf['spark.eventLog.dir']
@@ -39,8 +39,8 @@ Install the spark and python packages.
         name: 'spark-python'
 
 ## HFDS Layout
-      
-      
+
+
       @call header: 'HFDS Layout', timeout: -1, handler: ->
         status = user_owner = group_owner = null
         spark_yarn_jar = spark.conf['spark.yarn.jar']

@@ -7,11 +7,11 @@
       version=null
 
 ## HDFS Dependencies
-      
+
       @call once: true, 'ryba/hadoop/hdfs_client/install'
       @call once: true, 'ryba/ranger/admin/wait'
       @register 'hconfigure', 'ryba/lib/hconfigure'
-      
+
 ## Packages
 
       @call header: 'Packages', handler: ->        
@@ -26,9 +26,9 @@
             version = stdout.trim() if executed
         @service
           name: "ranger-hdfs-plugin"
-          
+
 ## Layout
-      
+
       @mkdir
         destination: '/var/log/hadoop/hdfs/audit/hdfs/'
         uid: hdfs.user.name
@@ -41,7 +41,7 @@
         gid: hdfs.name
         mode: 0o0755
         if: ranger.hdfs_plugin.install['XAAUDIT.SOLR.IS_ENABLED'] is 'true'
-          
+
 ## HDFS Service Repository creation
 Matchs step 1 in [hdfs plugin configuration][hdfs-plugin]. Instead of using the web ui
 we execute this task using the rest api.
@@ -67,7 +67,7 @@ we execute this task using the rest api.
             password: ranger.hdfs_plugin.password
 
 ## Plugin Scripts 
-  
+
       @call ->
         @render
           header: 'Scripts rendering'
@@ -124,11 +124,11 @@ we execute this task using the rest api.
           # mode:0o0750
           # uid: hdfs.user.name
           # gid: hdfs.group.name
-          
+
 ## Dependencies
 
     quote = require 'regexp-quote'
     path = require 'path'
-    
+
 
 [hdfs-plugin]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/installing_ranger_plugins.html#installing_ranger_hdfs_plugin)
