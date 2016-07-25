@@ -52,11 +52,11 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: @config.iptables.action is 'start'
 
     
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, handler: (options) ->
         # Upgrading oozie failed, tested versions are hdp 2.1.2 -> 2.1.5 -> 2.1.7
         @execute
           cmd: "rm -rf /usr/lib/oozie && yum remove -y oozie oozie-client"
-          if: @retry > 0
+          if: options.retry > 0
         @service
           name: 'falcon'
           if: is_falcon_installed
