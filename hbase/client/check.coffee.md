@@ -64,21 +64,35 @@ Wait for the HBase master to be started.
           		'conditions': []
           		'delegateAdmin': true
             ]
-        @call once: true, 'ryba/ranger/admin/wait'
-        @execute
-          header: 'Create Ranger Policy'
-          header: 'Ranger Ryba Policy'
-          cmd: """
-            curl --fail -H "Content-Type: application/json" -k -X POST \
-            -d '#{JSON.stringify hbase_policy}' \
-            -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
-            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
-          """
-          unless_exec: """
-            curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
-            -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
-            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/Ranger-Ryba-HBase-Policy\"
-          """
+            
+## Wait
+
+Wait for the HBase master to be started.
+
+      @call once: true, 'ryba/hbase/master/wait'
+      @call once: true, 'ryba/hbase/regionserver/wait'
+      @call if:ranger_ctx?, once: true, 'ryba/ranger/admin/wait'
+
+## Ranger Policy
+[Ranger HBase plugin][ranger-hbase] try to mimics grant/revoke by shell.
+      
+      @call
+        if: ranger_ctx?
+        header:  'Create Ranger Policy'
+        handler: ->
+          @execute
+            header: 'Ranger Ryba Policy'
+            cmd: """
+              curl --fail -H "Content-Type: application/json" -k -X POST \
+              -d '#{JSON.stringify hbase_policy}' \
+              -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
+              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
+            """
+            unless_exec: """
+              curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
+              -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
+              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/Ranger-Ryba-HBase-Policy\"
+            """
 
 ## Shell
 
