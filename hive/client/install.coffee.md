@@ -13,7 +13,13 @@
       @register 'hdp_select', 'ryba/lib/hdp_select'
 
 ## Service
-      
+
+The phoenix server jar is reference inside the HIVE_AUX_JARS_PATH is phoenix
+is installed on the host.
+
+      @service
+        name: 'phoenix'
+        if: @has_module 'ryba/phoenix/client'
       @service
         name: 'hive'
       @hdp_select

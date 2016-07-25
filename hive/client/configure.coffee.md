@@ -29,6 +29,7 @@ Example:
       hive.conf_dir ?= '/etc/hive/conf'
 
 ## Users & Groups
+
       # User
       hive.user ?= {}
       hive.user = name: hive.user if typeof hive.user is 'string'
@@ -53,8 +54,8 @@ Example:
       hive.site ?= {}
       aux_jars = ['/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar']
       if @contexts('ryba/hbase/master').length and @config.host in @contexts('ryba/hbase/client').map((ctx) -> ctx.config.host)
-        aux_jars.push (['/usr/hdp/current/hbase-client/lib/hbase-server.jar', '/usr/hdp/current/hbase-client/lib/hbase-client.jar', '/usr/hdp/current/hbase-client/lib/hbase-common.jar'])... # Default value
-        aux_jars.push '/usr/hdp/current/hbase-client/lib/phoenix-server.jar' if @has_module('ryba/phoenix/client')
+        aux_jars.push ['/usr/hdp/current/hbase-client/lib/hbase-server.jar', '/usr/hdp/current/hbase-client/lib/hbase-client.jar', '/usr/hdp/current/hbase-client/lib/hbase-common.jar']... # Default value
+        aux_jars.push '/usr/hdp/current/hbase-client/lib/phoenix-server.jar' if @has_module 'ryba/phoenix/client'
       for k in aux_jars then hive.client.aux_jars.push k unless k in hive.client.aux_jars
       # Tuning
       # [Christian Prokopp comments](http://www.quora.com/What-are-the-best-practices-for-using-Hive-What-settings-should-we-enable-most-of-the-time)
