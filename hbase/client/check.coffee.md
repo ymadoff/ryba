@@ -121,6 +121,7 @@ namespaces are prefixed with an '@' character.
           CMD
           hbase shell 2>/dev/null <<< "user_permission '#{hbase.test.default_namespace}:#{hbase.test.default_table}'" | egrep '[1-9][0-9]* row'
           """
+          retry: 2 # Prevent racing condition in table creation
           code_skipped: 2
         , (err, executed, stdout) ->
           hasCreatedTable = ///create '#{hbase.test.default_namespace}:#{hbase.test.default_table}', 'family1'\n0 row///.test stdout
