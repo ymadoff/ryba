@@ -31,7 +31,8 @@ HDFS server to answer queries.
       @call header: 'Wait DB', timeout: -1, label_true: 'READY', handler: ->
         @wait_connect addresses
 
-      @service_start 
+      @service_start
+        header: 'Start service'
         label_true: 'STARTED'
         timeout: -1
         name: 'hive-hcatalog-server'
