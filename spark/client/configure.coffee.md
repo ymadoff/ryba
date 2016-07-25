@@ -80,9 +80,8 @@ and spark.metrics.conf=metrics.properties will tell all executors to load that f
 
       # spark.conf['spark.metrics.conf'] ?= 'metrics.properties'
       spark.conf['spark.metrics.conf'] ?= null # Error, spark complain it cant find if value is 'metrics.properties'    
-      spark.dist_files ?= ["file://#{spark.conf_dir}/metrics.properties"]
+      spark.dist_files ?= ["file://#{spark.conf_dir}/metrics.properties"] if spark.conf['spark.metrics.conf']?
       spark.conf['spark.yarn.dist.files'] ?= spark.dist_files.join(',') if spark.dist_files.length > 0
-
       spark.metrics =
         'master.source.jvm.class':'org.apache.spark.metrics.source.JvmSource'
         'worker.source.jvm.class':'org.apache.spark.metrics.source.JvmSource'
