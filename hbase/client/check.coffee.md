@@ -167,7 +167,7 @@ namespaces are prefixed with an '@' character.
           cmd: mkcmd.test @, """
             hdfs dfs -rm -skipTrash check-#{@config.host}-hbase-mapred
             echo -e '1,toto\\n2,tata\\n3,titi\\n4,tutu' | hdfs dfs -put -f - /user/ryba/test_import.csv
-            hbase org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.separator=, -Dimporttsv.columns=HBASE_ROW_KEY,family1:value ryba /user/ryba/test_import.csv
+            hbase org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.separator=, -Dimporttsv.columns=HBASE_ROW_KEY,family1:value #{hbase.test.default_namespace}:#{hbase.test.default_table} /user/ryba/test_import.csv
             hdfs dfs -touchz check-#{@config.host}-hbase-mapred
             """
           unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.host}-hbase-mapred"
