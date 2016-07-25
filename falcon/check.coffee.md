@@ -5,7 +5,7 @@ This commands checks if falcons works as required.
 
     module.exports = header: 'Falcon Check', timeout: -1, label_true: 'CHECKED', handler: ->
       {user} = @config.ryba
-      
+
 ## Check Data Pipelines
 
 Follow the [Hortonworks Data Pipelines example][dpe].

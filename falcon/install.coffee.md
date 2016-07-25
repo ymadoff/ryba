@@ -5,13 +5,13 @@ This procedure only support 1 Oozie server. If Falcon must interact with
 multiple servers, then each Oozie server must be updated. The property
 "oozie.service.HadoopAccessorService.hadoop.configurations" shall define
 each HDFS cluster.
-      
+
     module.exports = header: 'Falcon Install', handler: ->
       {falcon, realm} = @config.ryba
       {user, group, startup, conf_dir} = @config.ryba.falcon
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       {hostname, port} = url.parse falcon.startup['prism.falcon.local.endpoint']
-      
+
 ## IPTables
 
 | Service   | Port       | Proto     | Parameter                   |

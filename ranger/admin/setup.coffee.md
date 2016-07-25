@@ -3,7 +3,7 @@
 
     module.exports =  header: 'Ranger Admin Setup', handler: ->
       {ranger} = @config.ryba
-  
+
 ## Web UI Admin Account
 Modify admin account password. By default the login:pwd  is `admin:admin`.
 
@@ -23,7 +23,7 @@ Modify admin account password. By default the login:pwd  is `admin:admin`.
             curl -H \"Content-Type: application/json\" --fail -k -X POST -d '#{JSON.stringify oldPassword:ranger.admin.current_password, updPassword:ranger.admin.password}'  \ 
             -u admin:#{ranger.admin.current_password} \"#{ranger.admin.install['policymgr_external_url']}/service/users/1/passwordchange\"
           """
-          
+
 ## User Accounts
 Deploying some user accounts. This middleware is here to serve
 as an example of adding a user,and giving it some permission.
@@ -52,5 +52,5 @@ Requires `admin` user to have `ROLE_SYS_ADMIN`.
         .then (err) -> callback err, if done > 0 then true else false
 
 ## Dependencies
-    
+
     each = require 'each'

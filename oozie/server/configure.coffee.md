@@ -48,7 +48,7 @@ Example
       # SSL
       oozie.secure ?= true
       # see comment in ../resources/oozie-env.sh.j2
-      
+
       oozie.keystore_file ?= "#{oozie.conf_dir}/keystore"
       oozie.keystore_pass ?= 'oozie123'
       oozie.truststore_file ?= "#{oozie.conf_dir}/trustore"

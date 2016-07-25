@@ -16,7 +16,8 @@
 # Generic options for the daemons used in the standalone deploy mode
 
 # Alternate conf dir. (Default: ${SPARK_HOME}/conf)
-export SPARK_CONF_DIR=${SPARK_HOME:-/usr/hdp/current/spark-client}/conf
+export SPARK_HOME=${SPARK_HOME:-/usr/hdp/current/spark-client}
+export SPARK_CONF_DIR=${SPARK_HOME}/conf
 
 # Where log files are stored.(Default:${SPARK_HOME}/logs)
 #export SPARK_LOG_DIR=${SPARK_HOME:-/usr/hdp/current/spark-client}/logs
@@ -30,16 +31,18 @@ SPARK_IDENT_STRING=$USER
 
 # The scheduling priority for daemons. (Default: 0)
 SPARK_NICENESS=0
-# Workaround SPARK-12279
-export HBASE_HOME=/usr/hdp/current/hbase-client
-export HBASE_CONF_DIR=/etc/hbase/conf
-export SPARK_CLASSPATH=${HBASE_HOME}/lib/hbase-hadoop2-compat.jar:${HBASE_HOME}/lib/hbase-hadoop-compat.jar:${HBASE_HOME}/lib/hbase-common.jar:${HBASE_HOME}/lib/hbase-server.jar:${HBASE_HOME}/lib/hbase-client.jar:${HBASE_HOME}/lib/hbase-protocol.jar:${HBASE_HOME}/lib/protobuf-java-2.5.0.jar:${HBASE_HOME}/lib/htrace-core-3.1.0-incubating.jar:${HBASE_HOME}/lib/hbase-annotations.jar:${HBASE_HOME}/lib/guava-12.0.1.jar:${HADOOP_HOME}/hadoop-common.jar
 
 export HADOOP_HOME=${HADOOP_HOME:-/usr/hdp/current/hadoop-client}
-export HADOOP_CONF_DIR=${HADOOP_CONF_DIR:-{{ryba.hadoop_conf_dir}}}
+export HADOOP_CONF_DIR=${HADOOP_CONF_DIR:-/etc/hadoop/conf}
+# Workaround SPARK-12279
+export HBASE_HOME=${HBASE_HOME:-/usr/hdp/current/hbase-client}
+export HBASE_CONF_DIR=/etc/hbase/conf
+# Phoenix
+export PHOENIX_HOME=/usr/hdp/current/phoenix-client
 
+export SPARK_CLASSPATH=${SPARK_HOME}/lib/*:${HADOOP_HOME}/lib/*:${HBASE_HOME}/lib/hbase-hadoop2-compat.jar:${HBASE_HOME}/lib/hbase-hadoop-compat.jar:${HBASE_HOME}/lib/hbase-common.jar:${HBASE_HOME}/lib/hbase-server.jar:${HBASE_HOME}/lib/hbase-client.jar:${HBASE_HOME}/lib/hbase-protocol.jar:${HBASE_HOME}/lib/protobuf-java-2.5.0.jar:${HBASE_HOME}/lib/htrace-core-3.1.0-incubating.jar:${HBASE_HOME}/lib/hbase-annotations.jar:${HBASE_HOME}/lib/guava-12.0.1.jar:${HADOOP_HOME}/hadoop-common.jar:${PHOENIX_HOME}/phoenix-client.jar
 # The java implementation to use.
-export JAVA_HOME={{java.java_home}}
+export JAVA_HOME=/usr/java/default/
 
 if [ -d "{{ryba.tez.env['TEZ_CONF_DIR']}}" ]; then
   export TEZ_CONF_DIR={{ryba.tez.env['TEZ_CONF_DIR']}}

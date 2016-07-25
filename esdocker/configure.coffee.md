@@ -2,34 +2,34 @@
 # Elastic Search Config
 
     module.exports = handler: ->
-      docker_es = @config.ryba.docker_es ?= {}
+      es_docker = @config.ryba.es_docker ?= {}
 
-      docker_es.es_clusters ?= {}
-      docker_es.ssl ?= {}
-      throw Error 'Required property "ryba.ssl.cacert" or "ryba.docker_es.ssl.cacert"' unless @config.ryba.ssl?.cacert? or docker_es.ssl.cacert?
-      throw Error 'Required property "ryba.ssl.cert"' unless @config.ryba.ssl?.cert? or docker_es.ssl.cert?
-      throw Error 'Required property "ryba.ssl.key"' unless @config.ryba.ssl?.key? or docker_es.ssl.key?
+      es_docker.clusters ?= {}
+      es_docker.ssl ?= {}
+      throw Error 'Required property "ryba.ssl.cacert" or "ryba.es_docker.ssl.cacert"' unless @config.ryba.ssl?.cacert? or es_docker.ssl.cacert?
+      throw Error 'Required property "ryba.ssl.cert"' unless @config.ryba.ssl?.cert? or es_docker.ssl.cert?
+      throw Error 'Required property "ryba.ssl.key"' unless @config.ryba.ssl?.key? or es_docker.ssl.key?
 
-      docker_es.ssl.cacert ?= @config.ryba.ssl.cacert
-      docker_es.ssl.cert ?= @config.ryba.ssl.cert
-      docker_es.ssl.key ?= @config.ryba.ssl.key
+      es_docker.ssl.cacert ?= @config.ryba.ssl.cacert
+      es_docker.ssl.cert ?= @config.ryba.ssl.cert
+      es_docker.ssl.key ?= @config.ryba.ssl.key
 
-      docker_es.ssl.dest_dir ?= "/etc/docker/certs.d"
-      docker_es.ssl.dest_cacert = "#{docker_es.ssl.dest_dir}/ca.pem"
-      docker_es.ssl.dest_cert = "#{docker_es.ssl.dest_dir}/cert.pem"
-      docker_es.ssl.dest_key = "#{docker_es.ssl.dest_dir}/key.pem"
+      es_docker.ssl.dest_dir ?= "/etc/docker/certs.d"
+      es_docker.ssl.dest_cacert = "#{es_docker.ssl.dest_dir}/ca.pem"
+      es_docker.ssl.dest_cert = "#{es_docker.ssl.dest_dir}/cert.pem"
+      es_docker.ssl.dest_key = "#{es_docker.ssl.dest_dir}/key.pem"
 
-      docker_es.graphite ?= @config.metrics_sinks.graphite = {}
+      es_docker.graphite ?= @config.metrics_sinks.graphite = {}
 
-      for es_name,es of docker_es.es_clusters 
-      	delete docker_es.es_clusters[es_name] unless es.only
+      for es_name,es of es_docker.clusters 
+      	delete es_docker.clusters[es_name] unless es.only
 
-      # console.log docker_es.es_clusters
-      for es_name,es of docker_es.es_clusters
+      # console.log es_docker.clusters
+      for es_name,es of es_docker.clusters
         #Docker:
-        es.docker_es_image ?= "elasticsearch"
-        es.docker_kibana_image ?= "kibana"
-        es.docker_logstash_image ?= "logstash"
+        es.es_image ?= "elasticsearch"
+        es.kibana_image ?= "kibana"
+        es.logstash_image ?= "logstash"
         #Cluster
         es.number_of_containers ?= @hosts_with_module('ryba/docker-es').length
         es.number_of_shards ?= es.number_of_containers
@@ -74,13 +74,13 @@
         es.config["path.data"] = "#{es.data_path}"
         es.config["path.logs"] = "/var/log/elasticsearch"
         if es.graphite?
-          throw Error 'Required property "graphite.host"' unless docker_es.graphite.host?
-          throw Error 'Required property "graphite.port"' unless docker_es.graphite.port?
+          throw Error 'Required property "graphite.host"' unless es_docker.graphite.host?
+          throw Error 'Required property "graphite.port"' unless es_docker.graphite.port?
 
-          es.config["metrics.graphite.host"] = docker_es.graphite.host
-          es.config["metrics.graphite.port"] = docker_es.graphite.port
-          es.config["metrics.graphite.every"] = docker_es.graphite.every ?= "10s"
+          es.config["metrics.graphite.host"] = es_docker.graphite.host
+          es.config["metrics.graphite.port"] = es_docker.graphite.port
+          es.config["metrics.graphite.every"] = es_docker.graphite.every ?= "10s"
           es.config["metrics.graphite.prefix"] = "es.#{es_name}.${HOSTNAME}"
-          
-          
+
+
 

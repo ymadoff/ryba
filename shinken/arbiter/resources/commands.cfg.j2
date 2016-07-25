@@ -37,7 +37,7 @@ define command {
 }
 define command {
   command_name    service_start
-  command_line    $DOCKER_EXEC$ sudo ./service_start.sh $HOSTNAME$ $SERVICESTATE$ $SERVICEATTEMPTS$ start $ARG1$
+  command_line    $DOCKER_EXEC$ sudo ./ssh_service.sh $HOSTNAME$ $SERVICESTATE$ $SERVICEATTEMPT$ start $ARG1$
 }
 ## Multi Service commands
 define command {
@@ -55,51 +55,55 @@ define command {
 ## Service-Specific commands
 define command{
   command_name    check_mysql
-  command_line    $DOCKER_EXEC$ ./check_mysql_health --hostname $HOSTNAME$:$ARG1$ --username $ARG5$ --password $ARG6$ --mode $ARG2$ --warning $ARG3$ --critical $ARG4$
+  command_line    $DOCKER_EXEC$ mysql/check_mysql_health --hostname $HOSTNAME$:$ARG1$ --username $ARG5$ --password $ARG6$ --mode $ARG2$ --warning $ARG3$ --critical $ARG4$
 }
 define command {
   command_name    check_zk_stat
-  command_line    $DOCKER_EXEC$ ./check_zk_stat.php -H $HOSTADDRESS$ -p $ARG1$ -f $ARG2$ -w $ARG3$ -c $ARG4$ $ARG5$
+  command_line    $DOCKER_EXEC$ zookeeper/check_stat.php -H $HOSTADDRESS$ -p $ARG1$ -f $ARG2$ -w $ARG3$ -c $ARG4$ $ARG5$
+}
+define command {
+  command_name    check_hdfs_content_summary
+  command_line    $DOCKER_EXEC$ ./service_status.php -H {{ brokers }} -p 50000 -d 'HDFS NN - Active Node' -f "host_groups >= $HOSTNAME$" -u | xargs -I % $DOCKER_EXEC$ hdfs/check_content_summary.php -H % -p $ARG1$ -P $ARG2$ -f $ARG3$ -w $ARG4$ -c $ARG5$ $ARG6$
 }
 define command {
   command_name    check_hdfs_state
-  command_line    $DOCKER_EXEC$ ./check_hdfs_state.php -H $HOSTNAME$ -p $ARG1$ -j $ARG2$ -f $ARG3$ -w $ARG4$ -c $ARG5$ $ARG6$
+  command_line    $DOCKER_EXEC$ hdfs/check_state.php -H $HOSTNAME$ -p $ARG1$ -j $ARG2$ -f $ARG3$ -w $ARG4$ -c $ARG5$ $ARG6$
 }
 define command {
   command_name    check_active_nn
-  command_line    $DOCKER_EXEC$ ./check_active_nn.php -H {{ brokers }} -p 50000 -C $HOSTNAME$ -P $ARG1$ $ARG2$
+  command_line    $DOCKER_EXEC$ hdfs/check_active_nn.php -H {{ brokers }} -p 50000 -C $HOSTNAME$ -P $ARG1$ $ARG2$
 }
 define command {
   command_name    check_nn_last_checkpoint
-  command_line    $DOCKER_EXEC$ ./check_nn_last_checkpoint.php -H $HOSTNAME$ -p $ARG1$ -d $ARG2$ -x $ARG3$ -w $ARG4$ -c $ARG5$ $ARG6$
+  command_line    $DOCKER_EXEC$ hdfs/check_nn_last_checkpoint.php -H $HOSTNAME$ -p $ARG1$ -d $ARG2$ -x $ARG3$ -w $ARG4$ -c $ARG5$ $ARG6$
 }
 define command {
   command_name    check_nn_namedirs_status
-  command_line    $DOCKER_EXEC$ ./check_nn_namedirs_status.php -H $HOSTNAME$ -p $ARG1$ $ARG2$
+  command_line    $DOCKER_EXEC$ hdfs/check_nn_namedirs_status.php -H $HOSTNAME$ -p $ARG1$ $ARG2$
 }
 define command {
   command_name    check_hdfs_capacity
-  command_line    $DOCKER_EXEC$ ./check_hdfs_capacity.php -H $HOSTNAME$ -p $ARG1$ -w $ARG2$ -c $ARG3$ $ARG4$
+  command_line    $DOCKER_EXEC$ hdfs/check_capacity.php -H $HOSTNAME$ -p $ARG1$ -w $ARG2$ -c $ARG3$ $ARG4$
 }
 define command {
   command_name    check_dn_storage
-  command_line    $DOCKER_EXEC$ ./check_dn_storage.php -H $HOSTNAME$ -p $ARG1$ -w $ARG2$ -c $ARG3$ $ARG4$
+  command_line    $DOCKER_EXEC$ hdfs/check_dn_storage.php -H $HOSTNAME$ -p $ARG1$ -w $ARG2$ -c $ARG3$ $ARG4$
 }
 define command {
   command_name    check_active_rm
-  command_line    $DOCKER_EXEC$ ./check_active_rm.php -H {{ brokers }} -p 50000 -C $HOSTNAME$ -P $ARG1$ $ARG2$
+  command_line    $DOCKER_EXEC$ yarn/check_active_rm.php -H {{ brokers }} -p 50000 -C $HOSTNAME$ -P $ARG1$ $ARG2$
 }
 define command {
   command_name    check_nm_info
-  command_line    $DOCKER_EXEC$ ./check_nm_info.php -H $HOSTNAME$ -p $ARG1$ -f $ARG2$ -r $ARG3$ $ARG4$
+  command_line    $DOCKER_EXEC$ yarn/check_nm_info.php -H $HOSTNAME$ -p $ARG1$ -f $ARG2$ -r $ARG3$ $ARG4$
 }
 define command {
   command_name    check_webhcat_status
-  command_line    $DOCKER_EXEC$ ./check_webhcat_status.sh $HOSTNAME$ $ARG1$
+  command_line    $DOCKER_EXEC$ hive/check_webhcat_status.sh $HOSTNAME$ $ARG1$
 }
 define command {
   command_name    check_webhcat_database
-  command_line    $DOCKER_EXEC$ ./check_webhcat_database.sh $HOSTNAME$ $ARG1$
+  command_line    $DOCKER_EXEC$ hive/check_webhcat_database.sh $HOSTNAME$ $ARG1$
 }
 ## User/ryba-defined commands
 {% for name, command in commands %}

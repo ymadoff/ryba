@@ -24,7 +24,7 @@ deployment is heavily inspired by [Anil Gupta instruction][agi].
         ln -sf #{path.join hadoop_conf_dir, 'core-site.xml'} /usr/hdp/current/phoenix-client/bin/core-site.xml
         """
         unless_exists: '/usr/hdp/current/phoenix-client/bin/core-site.xml'
-        
+
       @execute
         header: 'HBase Configuration'
         cmd:"""

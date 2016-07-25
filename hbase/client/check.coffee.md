@@ -3,7 +3,7 @@
 
 Check the HBase client installation by creating a table, inserting a cell and
 scanning the table.
-    
+
     module.exports =  header: 'HBase Client Check', label_true: 'CHECKED', handler: ->
       {shortname} = @config
       {force_check, hbase, user} = @config.ryba
@@ -94,7 +94,7 @@ EXEC('X'), CREATE('C'), ADMIN('A'). Create and admin only apply to tables.
 Groups and users access are revoked in the same way, but groups are prefixed 
 with an '@' character. In the same way, tables and namespaces are specified, but
 namespaces are prefixed with an '@' character.
-  
+
       @call header: 'Grant Permissions', label_true: 'CHECKED', timeout:-1 , retry: 2, handler: ->
         # Retry is set to 2 because the table creation is subject to a racing condition.
         @execute
@@ -129,7 +129,7 @@ namespaces are prefixed with an '@' character.
           throw Error 'Invalid command output' if executed and (not hasCreatedTable or not hasGrantedAccess)
 
 ## Check Shell
-  
+
       @call header: 'Shell', timeout: -1, label_true: 'CHECKED', handler: ->
         @wait_execute
           cmd: mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists '#{hbase.test.default_namespace}:#{hbase.test.default_table}'\" | grep 'Table #{hbase.test.default_namespace}:#{hbase.test.default_table} does exist'"
@@ -197,7 +197,7 @@ namespaces are prefixed with an '@' character.
       #     isRowCreated = /column=family1:my_column10, timestamp=\d+, value=10/.test stdout
       #     return  Error 'Invalid command output' if executed and not isRowCreated
       #     return  err, executed
-  
+
 
 ## Check HA
 

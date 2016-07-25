@@ -105,7 +105,7 @@ They must have register set to 0 to not be instanciated
       services['process-service'] ?= {}
       services['process-service'].use ?= 'unit-service'
       services['process-service'].event_handler_enabled ?= '1'
-      services['process-service'].event_handler ?= "service_start!$_SERVICEPROCESS_NAME$"
+      services['process-service'].event_handler ?= 'service_start!$_SERVICEPROCESS_NAME$'
       services['process-service'].register = '0'
       services['functional-service'] ?= {}
       services['functional-service'].use ?= 'generic-service'

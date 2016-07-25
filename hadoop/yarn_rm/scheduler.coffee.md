@@ -19,7 +19,7 @@ ResourceCalculator class name is expected.
 ## Register
 
       @register 'hconfigure', 'ryba/lib/hconfigure'
-    
+
       @hconfigure
         header: 'Capacity Scheduler'
         if: yarn.rm.site['yarn.resourcemanager.scheduler.class'] is 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'

@@ -11,7 +11,7 @@ Solr can be found [here](http://wwwftp.ciril.fr/pub/apache/lucene/solr/standalon
       'install': [
         'masson/commons/java'
         'ryba/solr/standalone/install'
-            
+
       ]
       'start': [
         'ryba/solr/standalone/start'

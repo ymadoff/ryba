@@ -1,6 +1,6 @@
 
 # Kafka Consumer Install
-    
+
     module.exports = header: 'Kafka Consumer Install', handler: ->
       {kafka, ssl} = @config.ryba
 
@@ -56,7 +56,7 @@ Update the file "consumer.properties" with the properties defined by the
 ## Logging
 
 Update the different log4j properties files
-    
+
       @write
         header: 'Tools Log4j'
         destination: "#{kafka.consumer.conf_dir}/tools-log4j.properties"
@@ -100,7 +100,7 @@ Write JAAS File for client configuration
             useTicketCache: true
         uid: kafka.user.name
         gid: kafka.group.name
-        
+
 ## Environment
 
  Exports JAAS configuration to consumer JVM properties.

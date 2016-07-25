@@ -7,7 +7,7 @@ and serve metrics collected from computer systems (network gear, operating
 systems, applications) at a large scale, and make this data easily accessible
 and graphable.
 OpenTSDB does not seem to work without the hbase rights
-    
+
     module.exports = ->
       'configure':
         'ryba/opentsdb/configure'
@@ -25,7 +25,7 @@ OpenTSDB does not seem to work without the hbase rights
         'ryba/opentsdb/status'
       'stop':
         'ryba/opentsdb/stop'
-      
+
 
 ## Resources
 

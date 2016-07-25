@@ -29,7 +29,7 @@
       # see http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.8/bk_HDP_RelNotes/content/behav-changes-228.html
       default_save_am_info = if yc_ctxs.length > 100 then 'false' else 'true'
       ryba.yarn.site['yarn.generic-application-history.save-non-am-container-meta-info'] ?= "#{default_save_am_info}"
-  
+
 ## Yarn Timeline Server
 
       for property in [
@@ -51,7 +51,7 @@
           'yarn.nodemanager.remote-app-log-dir'
         ]
           ryba.yarn.site[property] ?= nm_ctx.config.ryba.yarn.site[property]    
-      
+
       for rm_ctx in rm_ctxs
         id = if rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.enabled'] is 'true' then ".#{rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id']}" else ''
         for property in [
@@ -70,7 +70,7 @@
           "yarn.resourcemanager.webapp.https.address#{id}"
         ]
           ryba.yarn.site[property] ?= rm_ctx.config.ryba.yarn.rm.site[property]
-    
+
 ## FIX Companion Files
 
 The "yarn-site.xml" file provided inside the companion files set some some

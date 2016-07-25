@@ -1,6 +1,6 @@
 
 # Flume
-    
+
     module.exports = header: 'Flume Install', handler: ->
       {flume, realm} = @config.ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]

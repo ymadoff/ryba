@@ -11,7 +11,7 @@
       @register 'hconfigure', 'ryba/lib/hconfigure'
 
 ## Dependencies
-      
+
       @call once: true, 'masson/core/iptables'
       @call once: true, 'masson/core/krb5_client'
       @call once: true, 'masson/commons/mysql_client'
@@ -20,9 +20,9 @@
       @call once: true, 'ryba/hbase/client'
       @call once: true, 'ryba/hive/client'
       @call once: true, 'ryba/kafka/consumer'
-  
+
 ## Users & Groups
-      
+
       @group ranger.group
       @user ranger.user
 
@@ -116,7 +116,7 @@ Update the file "install.properties" with the properties defined by the
           cd /usr/hdp/current/ranger-admin/
           ./setup.sh
         """
-      
+
       # the setup scripts already render an init.d script but it does not respect 
       # the convention exit code 3 when service is stopped on the status code
       @render
@@ -126,8 +126,8 @@ Update the file "install.properties" with the properties defined by the
         mode: 0o0755
         context: @config.ryba
         unlink: true
-      
-    
+
+
       @call
         header: 'Configure SSL'
         if: (ranger.admin.site['ranger.service.https.attrib.ssl.enabled'] is 'true')
@@ -173,38 +173,38 @@ Update the file "install.properties" with the properties defined by the
 
 ## Java env
 This part of the setup is not documented. Deduce from launch scripts.
- 
-      
+
+
       writes = [
         match: RegExp "JAVA_OPTS=.*", 'm'
         replace: "JAVA_OPTS=\"${JAVA_OPTS} -XX:MaxPermSize=256m -Xmx#{ranger.admin.heap_size} -Xms#{ranger.admin.heap_size} \""
         append: true
       ,
-        
+
         match: RegExp "export CLASSPATH=.*", 'mg'
         replace: "export CLASSPATH=\"$CLASSPATH:/etc/hadoop/conf:/etc/hbase/conf:/etc/hive/conf\" Ryba Fix conf resources"
         append:true
-        
+
       ]
       for k,v of ranger.admin.opts
         writes.push
           match: RegExp "^JAVA_OPTS=.*#{k}", 'm'
           replace: "JAVA_OPTS=\"${JAVA_OPTS} -D#{k}=#{v}\" # RYBA, DONT OVERWRITE"
           append: true
-      
+
       @write
         header: 'Admin Env'
         destination: '/etc/ranger/admin/conf/ranger-admin-env-1.sh'
         write: writes
         backup: true      
-        
+
 ## Log4j
 
       @write_properties
         destination: '/etc/ranger/admin/conf/log4j.properties'
         header: 'ranger Log4properties'
         content: ranger.admin.log4j
-        
+
 ## Dependencies
 
     glob = require 'glob'

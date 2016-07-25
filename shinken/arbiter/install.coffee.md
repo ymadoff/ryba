@@ -45,18 +45,18 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         installmod = (name, mod) =>
           @call unless_exec: "shinken inventory | grep #{name}", handler: ->
             @download
-              destination: "/var/tmp/shinken/#{mod.archive}.zip"
+              destination: "#{shinken.build_dir}/#{mod.archive}.zip"
               source: mod.source
               cache_file: "#{mod.archive}.zip"
               unless_exec: "shinken inventory | grep #{name}"
               shy: true
             @extract
-              source: "/var/tmp/shinken/#{mod.archive}.zip"
+              source: "#{shinken.build_dir}/#{mod.archive}.zip"
               shy: true
             @execute
-              cmd: "shinken install --local /var/tmp/shinken/#{mod.archive}"
+              cmd: "shinken install --local #{shinken.build_dir}/#{mod.archive}"
             @execute
-              cmd: "rm -rf /var/tmp/shinken"
+              cmd: "rm -rf #{shinken.build_dir}"
               shy: true
           for subname, submod of mod.modules then installmod subname, submod
         for name, mod of arbiter.modules then installmod name, mod
@@ -119,7 +119,8 @@ Objects config
         # Un-templated objects
         ## Some commands need the lists of brokers (for their livestatus module)
         brokers = @contexts('ryba/shinken/broker').map( (ctx) -> ctx.config.host ).join ','
-        for obj in ['hostgroups', 'servicegroups', 'contactgroups', 'commands', 'realms', 'dependencies', 'escalations', 'timeperiods']
+        #for obj in ['hostgroups', 'servicegroups', 'contactgroups', 'commands', 'realms', 'dependencies', 'escalations', 'timeperiods']
+        for obj in ['hostgroups', 'contactgroups', 'commands', 'realms', 'dependencies', 'escalations', 'timeperiods']
           @render
             destination: "/etc/shinken/#{obj}/#{obj}.cfg"
             source: "#{__dirname}/resources/#{obj}.cfg.j2"
@@ -154,8 +155,8 @@ Objects config
           local_source: true
           context: hosts: shinken.config.hosts
         @render
-          destination: '/etc/shinken/services/business-rules-services.cfg'
-          source: "#{__dirname}/resources/business-rules-services.cfg.j2"
+          destination: '/etc/shinken/services/watchers-services.cfg'
+          source: "#{__dirname}/resources/watchers-services.cfg.j2"
           local_source: true
           context: hosts: shinken.config.hosts
         @render

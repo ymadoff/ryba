@@ -6,7 +6,7 @@
 #Wait
 
 Wait for the NiFi Manager to be started.
-      
+
       @wait once: true, 'ryba/nifi/manager/wait'
 
 ## Start

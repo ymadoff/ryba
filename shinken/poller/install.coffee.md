@@ -47,18 +47,18 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         installmod = (name, mod) =>
           @call unless_exec: "shinken inventory | grep #{name}", handler: ->
             @download
-              destination: "/var/tmp/shinken/#{mod.archive}.zip"
+              destination: "#{shinken.build_dir}/#{mod.archive}.zip"
               source: mod.source
               cache_file: "#{mod.archive}.zip"
               unless_exec: "shinken inventory | grep #{name}"
               shy: true
             @extract
-              source: "/var/tmp/shinken/#{mod.archive}.zip"
+              source: "#{shinken.build_dir}/#{mod.archive}.zip"
               shy: true
             @execute
-              cmd: "shinken install --local /var/tmp/shinken/#{mod.archive}"
+              cmd: "shinken install --local #{shinken.build_dir}/#{mod.archive}"
             @execute
-              cmd: "rm -rf /var/tmp/shinken"
+              cmd: "rm -rf #{shinken.build_dir}"
               shy: true
           for subname, submod of mod.modules then installmod subname, submod
         for name, mod of poller.modules then installmod name, mod

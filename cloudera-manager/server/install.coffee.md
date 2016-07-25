@@ -5,7 +5,7 @@
       {cloudera_manager, db_admin} = @config.ryba
       {server} = cloudera_manager
       {java} = @config
-      
+
 ## Packages
 
 Install the packages cloudera-scm-agent and cloudera-scm-daemons

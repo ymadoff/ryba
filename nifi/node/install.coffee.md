@@ -8,9 +8,9 @@
       tmp_ssl_location = "/var/tmp/ryba/ssl"
       tmp_archive_location = "/var/tmp/ryba/nifi.tar.gz"
       protocol = if nifi.node.config.properties['nifi.cluster.protocol.is.secure'] is 'true' then 'https' else 'http'
-      
+
       @register 'write_jaas', 'ryba/lib/write_jaas'
-      
+
 # Users
 
       @group nifi.group
@@ -22,14 +22,14 @@
   |------------|-------|--------|---------------------------------------------|
   | node       | 9850  | tcp    | nifi.web.http.port                          |
   | node       | 9860  | tcp    | nifi.web.https.port                         |
-  
+
       @iptables
         header: 'IPTables'
         if: @config.iptables.action is 'start'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: nifi.node.config.properties["nifi.web.#{protocol}.port"], protocol: 'tcp', state: 'NEW', comment: "NiFi Web ui port" }
         ]
-    
+
 
       @call header: 'Preinstall Layout', handler: ->
           @mkdir

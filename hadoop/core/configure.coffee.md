@@ -156,7 +156,7 @@ Default configuration:
         [standby_nn_ctxs] = nn_ctxs.filter( (nn_ctx) => nn_ctx.config.host isnt ryba.active_nn_host )
         ryba.standby_nn_host = standby_nn_ctxs.config.host
       else throw Error "Invalid number of NanodeNodes, got #{nn_ctxs.length}, expecting 2"
-        
+
       # Set the authentication for the cluster. Valid values are: simple or kerberos
       core_site['hadoop.security.authentication'] ?= 'kerberos'
       # Enable authorization for different protocols.

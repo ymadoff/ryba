@@ -9,7 +9,7 @@ environmental variable "OOZIE_URL" to connect to the server.
 Additionnal oozie properties may be defined inside the "OOZIE_CLIENT_OPTS"
 environmental variables. For example, HDP declare its version as
 "-Dhdp.version=${HDP_VERSION}".
-  
+
     module.exports = header: 'Oozie Client Install', timeout: -1, handler: ->
       {oozie, hadoop_conf_dir, yarn, ssl} = @config.ryba
       {java_home, jre_home} = @config.java

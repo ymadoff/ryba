@@ -282,6 +282,15 @@ define servicedependency {
   notification_failure_criteria c,u,p
 }
 define servicedependency {
+  service_description           HDFS NN - Active Node
+  dependent_service_description HBase - Replication Logs
+  host_name                     {{ host.cluster }}
+  dependent_host_name           {{ hostname }}
+  inherits_parent               1
+  execution_failure_criteria    c,u,p
+  notification_failure_criteria c,u,p
+}
+define servicedependency {
   service_description           HBase Master - WebUI
   dependent_service_description HBase Master - Certificate
   host_name                     {{ hostname }}

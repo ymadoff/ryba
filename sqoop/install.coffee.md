@@ -22,7 +22,7 @@ sqoop:x:491:502:Sqoop:/var/lib/sqoop:/bin/bash
 cat /etc/group | grep hadoop
 hadoop:x:502:yarn,mapred,hdfs,hue
 ```
-      
+
       @group hadoop_group
       @user sqoop.user
 
@@ -83,7 +83,7 @@ Install the Sqoop package following the [HDP instructions][install].
 MySQL is by default usable by Sqoop. The driver installed after running the
 "masson/commons/mysql_client" is copied into the Sqoop library folder.
 
-    
+
       # @copy
       #   source: '/usr/share/java/mysql-connector-java.jar'
       #   destination: '/usr/hdp/current/sqoop-client/lib/'

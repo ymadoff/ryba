@@ -6,7 +6,7 @@
 ## Dependencies
 
       @call 'ryba/zookeeper/server/wait'
-      
+
       @wait_connect
         unless: (@contexts('ryba/solr/cloud')[0].config.host is @config.host)
         host: @contexts('ryba/solr/cloud')[0].config.host
@@ -16,4 +16,4 @@
         cmd: 'service solr start'
         unless_exec: 'service solr status | grep \'running on port\''
         code_skipped: 1
-        
+

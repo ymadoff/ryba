@@ -34,7 +34,7 @@ Example:
     module.exports = handler: ->
       hive = @config.ryba.hive ?= {}
       {db_admin, realm} = @config.ryba
-      
+
 ## Users and Groups
 
       hive.conf_dir ?= '/etc/hive/conf'
@@ -55,7 +55,7 @@ Example:
       hive.group.name ?= 'hive'
       hive.group.system ?= true
       hive.user.gid = hive.group.name
-      
+
 
       # Layout and environment
       hive.hcatalog ?= {}
@@ -95,9 +95,9 @@ Example:
         to: '# RYBA HIVE HCATALOG END'
         append: true
       }
-    
+
 # Configuration
-      
+
       hive.site ?= {}
       # by default BONECP could lead to BLOCKED thread for class reading from DB
       hive.site['datanucleus.connectionPoolingType'] ?= 'DBCP'
@@ -144,11 +144,11 @@ Example:
       # The service principal for the metastore thrift server. The
       # special string _HOST will be replaced automatically with the correct  hostname.
       hive.site['hive.metastore.kerberos.principal'] ?= "hive/_HOST@#{realm}"
-      
+
 ## Configure Database
 
 Note, at the moment, only MySQL is supported.
-      
+
       if hive.site['javax.jdo.option.ConnectionURL']
         # Ensure the url host is the same as the one configured in config.ryba.db_admin
         {engine, addresses, port} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']

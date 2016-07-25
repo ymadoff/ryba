@@ -1,4 +1,4 @@
-  
+
     module.exports = 
       header: 'Solr Cloud Download'
       timeout: -1

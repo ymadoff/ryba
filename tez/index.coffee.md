@@ -6,7 +6,7 @@ a complex directed-acyclic-graph of tasks for processing data. It is currently
 built atop Apache Hadoop YARN.
 
 ## Commands
-    
+
     module.exports = ->
       'configure':
         'ryba/tez/configure'
@@ -17,6 +17,6 @@ built atop Apache Hadoop YARN.
       ]
       'check':
         'ryba/tez/check'
-    
+
 [tez]: http://tez.apache.org/
 [instructions]: (http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.0/HDP_Man_Install_v22/index.html#Item1.8.4)

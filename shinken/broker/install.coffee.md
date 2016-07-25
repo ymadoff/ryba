@@ -36,18 +36,18 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           @call unless_exec: "pip list | grep #{k}", handler: ->
             @download
               source: v.url
-              destination: "/var/tmp/shinken/##{v.archive}.tar.gz"
+              destination: "#{shinken.build_dir}/##{v.archive}.tar.gz"
               md5: v.md5
             @extract
-              source: "/var/tmp/shinken/##{v.archive}.tar.gz"
+              source: "#{shinken.build_dir}/##{v.archive}.tar.gz"
             @execute
               cmd:"""
-              cd /var/tmp/shinken/#{v.archive}
+              cd #{shinken.build_dir}/#{v.archive}
               python setup.py build
               python setup.py install
               """
-            @remove destination: "/var/tmp/shinken/#{k}-#{v.version}.tar.gz"
-            @remove destination: "/var/tmp/shinken/#{k}-#{v.version}"
+            @remove destination: "#{shinken.build_dir}/#{k}-#{v.version}.tar.gz"
+            @remove destination: "#{shinken.build_dir}/#{k}-#{v.version}"
         for k, v of broker.modules['webui2'].pip_modules then install_dep k, v
 
 ## Additional Shinken Modules
@@ -56,18 +56,18 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         installmod = (name, mod) =>
           @call unless_exec: "shinken inventory | grep #{name}", handler: ->
             @download
-              destination: "/var/tmp/shinken/#{mod.archive}.zip"
+              destination: "#{shinken.build_dir}/#{mod.archive}.zip"
               source: mod.source
               cache_file: "#{mod.archive}.zip"
               unless_exec: "shinken inventory | grep #{name}"
               shy: true
             @extract
-              source: "/var/tmp/shinken/#{mod.archive}.zip"
+              source: "#{shinken.build_dir}/#{mod.archive}.zip"
               shy: true
             @execute
-              cmd: "shinken install --local /var/tmp/shinken/#{mod.archive}"
+              cmd: "shinken install --local #{shinken.build_dir}/#{mod.archive}"
             @execute
-              cmd: "rm -rf /var/tmp/shinken"
+              cmd: "rm -rf #{shinken.build_dir}"
               shy: true
           for subname, submod of mod.modules then installmod subname, submod
         for name, mod of broker.modules then installmod name, mod

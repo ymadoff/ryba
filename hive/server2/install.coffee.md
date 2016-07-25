@@ -9,7 +9,7 @@ HDP 2.1 and 2.2 dont support secured Hive metastore in HA mode, see
 
 Resources:
 *   [Cloudera security instruction for CDH5](http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/cdh_sg_hiveserver2_security.html)
-    
+
     module.exports =  header: 'Hive Server2 Install', handler: ->
       {hive} = @config.ryba
       {ssl, ssl_server, ssl_client, hadoop_conf_dir, realm} = @config.ryba
@@ -59,8 +59,8 @@ hive:x:493:
 
       @group hive.group
       @user hive.user
-      
-      
+
+
 ## Startup
 
 Install the "hive-server2" service, symlink the rc.d startup script
@@ -117,7 +117,7 @@ Enrich the "hive-env.sh" file with the value of the configuration property
 
 Using this functionnality, a user may for example raise the heap size of Hive
 Server2 to 4Gb by setting a value equal to "-Xmx4096m".
-      
+
       @render
         header: 'Hive Server2 Env' # dot not modify
         destination: "#{hive.server2.conf_dir}/hive-env.sh"
@@ -210,7 +210,7 @@ Create the directories to store the logs and pid information. The properties
         user: hive.user.name
         nofile: hive.user.limits.nofile
         nproc: hive.user.limits.nproc
-      
+
 ## Dependencies
 
     path = require 'path'

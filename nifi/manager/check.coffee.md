@@ -7,7 +7,7 @@
       webui = nifi.manager.config.properties["nifi.web.#{protocol}.port"]
 
 ## Wait
-      
+
       @call once: true, 'ryba/nifi/manager/wait'
 
 ## Check TCP
@@ -29,7 +29,7 @@ Check if all Manager's port are opened
         header: 'Check admin port'
         label_true: 'CHECKED'
         cmd: "echo > /dev/tcp/#{@config.host}/#{nifi.manager.config.authority_providers.ncm_port}"
-      
+
 ## Check Rest Api
 Executes a series of job to test NiFi functionning
 curl -H "Content-Type: application/json" --negotiate -k  -X POST -d '[#{JSON.stringify pic}]' -u: https://

@@ -60,6 +60,9 @@ WORKDIR /home/{{ shinken.user.name }}
 # Downloading shinken-plugins
 RUN git clone https://github.com/pierrotws/shinken-plugins plugins
 RUN rm -rf plugins/.git*
-RUN mv libexec/* plugins/
+RUN mkdir plugins/mysql
+RUN mv libexec/* plugins/mysql/
+RUN rm -rf check_mysql_health*
+RUN rm -r libexec
 WORKDIR /home/{{ shinken.user.name }}/plugins
 CMD sudo crond -n

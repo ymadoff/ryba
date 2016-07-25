@@ -74,7 +74,7 @@ The property `zkCredentialsProvider` is named `zkCredientialsProvider`
       if  @config.ryba.security is 'kerberos'
         solr.single.principal ?= "#{solr.user.name}/#{@config.host}@#{realm}"
         solr.single.keytab ?= '/etc/security/keytabs/solr.single.service.keytab'
-        
+
 
 ## SSL
 
@@ -112,7 +112,7 @@ solr zkCli script
 
 ### Configure HDFS
 [Configure][solr-hdfs] Solr to index document using hdfs, and document stored in HDFS.
-      
+
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn' , require('../../hadoop/hdfs_nn/configure').handler
       if nn_ctxs.length > 0
         solr.single.hdfs ?= {}
@@ -132,9 +132,9 @@ solr zkCli script
         # instruct solr to use hdfs as home dir
         solr.single.dir_factory = 'solr.HdfsDirectoryFactory'
         solr.single.lock_type = 'hdfs'
-        
-        
-  
+
+
+
 
 ## Dependencies
 

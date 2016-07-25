@@ -62,7 +62,7 @@ information inside "yarn.resourcemanager.zk-state-store.parent-path" (default to
       quorum = for zk_ctx in zk_ctxs
         "#{zk_ctx.config.host}:#{zk_ctx.config.ryba.zookeeper.config['clientPort']}"
       ryba.yarn.rm.site['yarn.resourcemanager.zk-address'] ?= quorum.join ','
-      
+
 
 ## High Availability with Manual Failover
 
@@ -99,7 +99,7 @@ inside the configuration.
       ryba.yarn.rm.site['yarn.resourcemanager.ha.automatic-failover.zk-base-path'] ?= '/yarn-leader-election'
 
 ## MapReduce JobHistory Server
-      
+
       if jhs_ctx
         ryba.yarn.rm.site['mapreduce.jobhistory.principal'] ?= jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.principal']
         ryba.yarn.rm.site['yarn.resourcemanager.bind-host'] ?= '0.0.0.0'
@@ -215,10 +215,10 @@ rmr /rmstore/ZKRMStateRoot
       ryba.capacity_scheduler['yarn.scheduler.capacity.root.queues'] ?= 'default'
       ryba.capacity_scheduler['yarn.scheduler.capacity.queue-mappings'] ?= '' # Introduce by hadoop 2.7
       ryba.capacity_scheduler['yarn.scheduler.capacity.queue-mappings-override.enable'] ?= 'false' # Introduce by hadoop 2.7
-      
+
 
 ## Logs Aggregation
-            
+
       ryba.yarn.rm.site['yarn.nodemanager.remote-app-log-dir'] ?= '/app-logs'
       ryba.yarn.rm.site['yarn.nodemanager.remote-app-log-dir-suffix'] ?= 'logs'
       ryba.yarn.rm.site['yarn.log-aggregation-enable'] ?= 'true'
@@ -228,10 +228,10 @@ rmr /rmstore/ZKRMStateRoot
       ats_ctx.config.ryba.yarn.site['yarn.nodemanager.remote-app-log-dir'] ?= ryba.yarn.rm.site['yarn.nodemanager.remote-app-log-dir']
       ats_ctx.config.ryba.yarn.site['yarn.nodemanager.remote-app-log-dir-suffix'] ?= ryba.yarn.rm.site['yarn.nodemanager.remote-app-log-dir-suffix']
       ats_ctx.config.ryba.yarn.site['yarn.log-aggregation-enable'] ?= ryba.yarn.rm.site['yarn.log-aggregation-enable']
-      
+
       # ryba.yarn.rm.site['yarn.log-aggregation.retain-seconds'] ?= '2592000' #  30 days, how long to keep aggregation logs before deleting them. -1 disables. Be careful, set this too small and you will spam the name node.
       # ryba.yarn.rm.site['yarn.log-aggregation.retain-check-interval-seconds'] ?= '-1' # Time between checks for aggregated log retention. If set to 0 or a negative value then the value is computed as one-tenth of the aggregated log retention time. Be careful, set this too small and you will spam the name node.
-      
+
 ## Yarn Timeline Server
 
       for property in [

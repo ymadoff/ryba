@@ -11,12 +11,12 @@
       @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdp_select', 'ryba/lib/hdp_select'
       @register 'write_jaas', 'ryba/lib/write_jaas'
-    
+
 ## Users & Groups
 
       @group knox.group
       @user knox.user
-      
+
 ## IPTables
 
 | Service        | Port  | Proto | Parameter       |
@@ -67,7 +67,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 We do not edit knox-env.sh because environnement variables are directly set
 in the gateway.sh service script.
-  
+
       @write
         header: 'Env'
         destination: "#{knox.conf_dir}/gateway.sh"

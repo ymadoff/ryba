@@ -11,14 +11,14 @@
       @register 'hdp_select', 'ryba/lib/hdp_select'
       @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
       @register 'hconfigure', 'ryba/lib/hconfigure'
-      
+
 # Users and Groups   
 
       @group spark.group
       @user spark.user
 
 # Packages
-      
+
       @service
         name: 'spark'
       @hdp_select
@@ -30,8 +30,8 @@
         context: @config.ryba
         backup: true
         mode: 0o0755
-      
-          
+
+
 ## IPTables
 
 | Service              | Port  | Proto | Info              |
@@ -74,7 +74,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
           source: spark.thrift.conf_dir
 
 ## HDFS Layout
-      
+
       @hdfs_mkdir
         destination: "/user/#{spark.thrift.user_name}"
         user: spark.thrift.user_name
@@ -83,7 +83,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
         krb5_user: @config.ryba.hdfs.krb5_user
 
 ## Spark Conf
-      
+
       @call header: 'Spark Configuration', handler: ->
         @render
           destination : "#{spark.thrift.conf_dir}/spark-env.sh"
@@ -133,7 +133,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
         @copy
           destination: "#{spark.thrift.conf_dir}/hive-site.xml"
           source: '/etc/hive/conf/hive-site.xml'
-        
+
         @hconfigure
           destination: "#{spark.thrift.conf_dir}/hive-site.xml"
           properties: spark.thrift.hive_site
@@ -141,7 +141,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
           uid: spark.user.name
           gid: @config.ryba.hadoop_group.gid
           mode: 0o0750
-          
+
 ## Spark SQL Thrift SSL Conf      
 
       @call

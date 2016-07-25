@@ -27,4 +27,4 @@
         'ryba/hive/webhcat/stop'
       'wait':
         'ryba/hive/webhcat/wait'
-      
+

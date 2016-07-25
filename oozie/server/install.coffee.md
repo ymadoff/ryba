@@ -51,7 +51,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ]
         if: @config.iptables.action is 'start'
 
-    
       @call header: 'Packages', timeout: -1, handler: (options) ->
         # Upgrading oozie failed, tested versions are hdp 2.1.2 -> 2.1.5 -> 2.1.7
         @execute
@@ -345,7 +344,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           caname: 'hadoop_root_ca'
           cacert: "#{ssl.cacert}"
           local_source: true
-      
+
       @call header: 'War', handler: ->
         @call
           header: 'Falcon Package'

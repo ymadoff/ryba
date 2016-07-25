@@ -7,7 +7,7 @@
       {webhcat} = @config.ryba
 
 ## Wait
-      
+
       @call once: true, 'ryba/hive/webhcat/wait'
 
 ## Check status

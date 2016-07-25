@@ -140,7 +140,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           source: "#{httpfs.catalina_home}/conf/ssl-server.xml"
           destination: "#{httpfs.catalina_home}/conf/server.xml"
           if: httpfs.env.HTTPFS_SSL_ENABLED is 'true'
-        
+
 ## SSL
 
       @call header: 'SSL', if: httpfs.env.HTTPFS_SSL_ENABLED is 'true', handler: ->
@@ -180,7 +180,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         @remove
           destination: "#{tmp_location}/#{path.basename ssl.key}"
           shy: true
-      
+
 ## Configuration
 
       @hconfigure

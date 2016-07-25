@@ -38,7 +38,7 @@ Setup process creates files in `/etc/ranger/usersync/conf` dir and outputs final
 ## Policy Admin Tool
 
       ranger.usersync.install['POLICY_MGR_URL'] ?= ranger_admin_ctx.config.ryba.ranger.admin.install['policymgr_external_url']
-      
+
 
 ## User Group Source Information
 Specifies where the user/group information is extracted to be put into Ranger 
@@ -86,7 +86,7 @@ database:
 
 Nonetheless some of the properties are hard coded to `/usr/hdp/current/ranger-usersync/setup.py`
 file. Administrators can override following properties.
-    
+
       setup = ranger.usersync.setup ?= {}
       setup['pidFolderName'] ?= ranger.usersync.pid_dir
       setup['logFolderName'] ?= ranger.usersync.log_dir
@@ -95,14 +95,14 @@ file. Administrators can override following properties.
 SSl properties are not documented, they are extracted from setup.py scripts.
 
 ## SSL
-      
+
       ranger.usersync.default ?= {}
       ranger.usersync.default['ranger.usersync.ssl'] ?= 'true'
       ranger.usersync.default['ranger.usersync.keystore.file'] ?= "#{ranger.usersync.conf_dir}/keystore"
       ranger.usersync.default['ranger.usersync.keystore.password'] ?= 'ranger123'
       ranger.usersync.default['ranger.usersync.truststore.file'] ?= "#{ranger.usersync.conf_dir}/truststore"
       ranger.usersync.default['ranger.usersync.truststore.password'] ?= 'ranger123'
-      
+
 
 ## Env
 
@@ -110,10 +110,10 @@ SSl properties are not documented, they are extracted from setup.py scripts.
       ranger.usersync.opts ?= {}
       ranger.usersync.opts['javax.net.ssl.trustStore'] ?= '/etc/hadoop/conf/truststore'
       ranger.usersync.opts['javax.net.ssl.trustStorePassword'] ?= 'ryba123'    
-      
+
 ## Dependencies 
 
     path = require 'path'
-    
+
 [ambari-conf-example]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.0/bk_Ranger_Install_Guide/content/ranger-usersync_settings.html)
 [ranger-usersync]:(http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/install_and_start_user_sync_ranger.html)

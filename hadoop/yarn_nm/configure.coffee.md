@@ -47,7 +47,7 @@
       ryba.yarn.site['yarn.log-aggregation-enable'] ?= 'true'
       ryba.yarn.site['yarn.log-aggregation.retain-seconds'] ?= '2592000' #  30 days, how long to keep aggregation logs before deleting them. -1 disables. Be careful, set this too small and you will spam the name node.
       ryba.yarn.site['yarn.log-aggregation.retain-check-interval-seconds'] ?= '-1' # Time between checks for aggregated log retention. If set to 0 or a negative value then the value is computed as one-tenth of the aggregated log retention time. Be careful, set this too small and you will spam the name node.
-      
+
       # See '~/www/src/hadoop/hadoop-common/hadoop-yarn-project/hadoop-yarn/hadoop-yarn-api/src/main/java/org/apache/hadoop/yarn/conf/YarnConfiguration.java#263'
       # ryba.yarn.site['yarn.nodemanager.webapp.spnego-principal']
       # ryba.yarn.site['yarn.nodemanager.webapp.spnego-keytab-file']
@@ -80,7 +80,7 @@
           "yarn.resourcemanager.resource-tracker.address#{id}"
         ]
           @config.ryba.yarn.site[property] ?= rm_ctx.config.ryba.yarn.rm.site[property]
-          
+
 ## Yarn Timeline Server
 
       for property in [

@@ -3,7 +3,7 @@
 
     module.exports = header: 'Yarn RM Stop', label_true: 'STOPPED', handler: ->
       {clean_logs, yarn} = @config.ryba
-    
+
 ## Stop
 
 Stop the Hive HCatalog server. You can also stop the server manually with one of

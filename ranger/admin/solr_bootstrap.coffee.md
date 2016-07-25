@@ -1,4 +1,4 @@
-    
+
     module.exports = header: 'Ranger Solr Audit Log Bootstrap Plugin install', handler: ->
       {ranger, hdfs, yarn, realm, hadoop_group, core_site, solr} = @config.ryba 
       {password} = @contexts('ryba/ranger/admin')[0].config.ryba.ranger.admin
@@ -12,7 +12,7 @@
       @call once: true, "ryba/solr/#{mode}/wait"
       @call once: true, 'ryba/ranger/admin/wait'
       @register 'hconfigure', 'ryba/lib/hconfigure'
-      
+
 ## Layout
 
       @mkdir
@@ -38,7 +38,7 @@
       @download
         source: "#{__dirname}/../resources/solr/managed-schema"
         destination: "#{solr.user.home}/ranger_audits/managed-schema"
-        
+
 ## Create ranger_audits Collection/Core
 The solrconfig.xml file corresponding to ranger_audits coll/core is rendered from
 the resources, as it is not distributed in the apache community version.
@@ -68,5 +68,5 @@ the resources, as it is not distributed in the apache community version.
           #{solr["#{ranger.admin.solr_type}"]['latest_dir']}/bin/solr create_collection -c ranger_audits \
           -d  #{solr.user.home}/ranger_audits
           """
-      
+
 [ranger-solr-script]:(https://community.hortonworks.com/questions/29291/ranger-solr-script-create-ranger-audits-collection.html)

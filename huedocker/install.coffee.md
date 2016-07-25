@@ -260,7 +260,7 @@ docker run --name hue_server --net host -d -v /etc/hadoop/conf:/etc/hadoop/conf
 ryba/hue:3.9
 
 ```
-      
+
       @docker_service
         machine: machine
         header: 'Hue Docker # Run'

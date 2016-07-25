@@ -17,7 +17,7 @@
       @call once: true, 'ryba/hadoop/hdfs_nn/wait'
       @call once: true, 'ryba/hive/hcatalog/wait'
       @call once: true, 'masson/core/krb5_client/wait'
-      
+
 ## IPTables
 
 | Service | Port  | Proto | Info                |
@@ -33,7 +33,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "WebHCat HTTP Server" }
         ]
         if: @config.iptables.action is 'start'
-        
+
 ## Users & Groups
 
 By default, the "hive" and "hive-hcatalog" packages create the following
@@ -131,7 +131,7 @@ HDFS directory. Note, the parent directories are created by the
 
         # Avoid HTTP response
         # Permission denied: user=ryba, access=EXECUTE, inode=\"/tmp/hadoop-hcat\":HTTP:hadoop:drwxr-x---
-        
+
       @execute
         header: 'Fix HDFS tmp'
         cmd: mkcmd.hdfs @, """

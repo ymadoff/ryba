@@ -28,7 +28,7 @@ Options include:
       throw Error "Required option 'admin'" unless params.admin
 
       COOKIES = "cookies.txt"
-      
+
 
       admin = params.admin
       groups = params.groups

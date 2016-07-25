@@ -3,9 +3,9 @@
 
     module.exports = header: 'YARN NM Check', label_true: 'CHECKED', handler: ->
       {yarn} = @config.ryba
-      
+
       @call once: true, 'ryba/hadoop/yarn_nm/wait'
-      
+
       @call header: 'YARN NM # FS Permissions', handler: ->
         log_dirs = yarn.site['yarn.nodemanager.log-dirs'].split ','
         local_dirs = yarn.site['yarn.nodemanager.local-dirs'].split ','

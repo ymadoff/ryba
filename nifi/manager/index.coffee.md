@@ -8,10 +8,10 @@ and system mediation logic. Some of the high-level capabilities and objectives o
   * Data Provenance
   * Designed for extension
   * SSL, SSH, HTTPS, encrypted content, etc...
-  
+
   The NiFi Cluster Manager is an instance of NiFi that provides the sole management point for the cluster. 
   It communicates dataflow changes to the nodes and receives health and status information from the nodes
-  
+
       module.exports = -> 
         'prepare':
           'ryba/nifi/manager/prepare'

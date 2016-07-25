@@ -100,7 +100,7 @@ Example:
       # for property in properties then hive.site[property] ?= hcat_ctxs[0].config.ryba.hive.site[property]
 
 ## Environment
-      
+
       hive.client.env ?= {}
       hive.client.env.write ?= if @has_module('ryba/hive/hcatalog') then hive.hcatalog.env.write else []
       hive.client.env.write.push {

@@ -21,7 +21,7 @@
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
-      
+
       @iptables
         header: 'IPTables'
         rules: [
@@ -40,7 +40,7 @@ hbase:x:492:492:HBase:/var/run/hbase:/bin/bash
 cat /etc/group | grep hbase
 hbase:x:492:
 ```
-  
+
       @group hbase.group
       @user hbase.user
 
@@ -103,7 +103,7 @@ RegionServer, and HBase client host machines.
         gid: hbase.group.name
 
 ## Kerberos
-      
+
       @copy
         header: 'Copy Keytab'
         if: @has_module 'ryba/hbase/master'
@@ -123,7 +123,7 @@ RegionServer, and HBase client host machines.
 *   [New Security Features in Apache HBase 0.98: An Operator's Guide][secop].
 
 [secop]: http://fr.slideshare.net/HBaseCon/features-session-2
-  
+
       @hconfigure
         header: 'HBase Site'
         destination: "#{hbase.rs.conf_dir}/hbase-site.xml"
@@ -159,7 +159,7 @@ Environment passed to the RegionServer before it starts.
 ## RegionServers
 
 Upload the list of registered RegionServers.
-    
+
       @write
         header: 'Registered RegionServers'
         content: regionservers

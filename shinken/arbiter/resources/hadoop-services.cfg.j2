@@ -33,7 +33,7 @@ define service {
   host_name             {{ hostname }}
   servicegroups         mysql_server
   use                   unit-service
-  check_command         check_mysql!{{ host.config.ryba.db_admin.port }}!threads-connected!10!20!{{ host.config.ryba.db_admin.username }}!{{ host.config.ryba.db_admin.password }}
+  check_command         check_mysql!{{ host.config.ryba.db_admin.port }}!threads-connected!50!80!{{ host.config.ryba.db_admin.username }}!{{ host.config.ryba.db_admin.password }}
 }
 {% endif %}
 {% if host.hostgroups | contains('zookeeper_server') %}
@@ -116,7 +116,7 @@ define service {
   host_name             {{ hostname }}
   servicegroups         hdfs_nn
   use                   unit-service
-  check_command         check_hdfs_state!50470!FSNamesystemState!UnderReplicatedBlocks!500!1000!-S
+  check_command         check_hdfs_state!50470!FSNamesystemState!UnderReplicatedBlocks!1000!2000!-S
 }
 {% endif %}
 {% if host.hostgroups | contains('hdfs_jn') %}
@@ -447,11 +447,18 @@ define service {
 {## Tez ##}
 {% if host.hostgroups | contains('elasticsearch') %}
 define service {
-  service_description   ElasticSearch - TCP
+  service_description   ElasticSearch - WebService
   host_name             {{ hostname }}
   servicegroups         elasticsearch
   use                   unit-service
   check_command         check_tcp!9200
+}
+define service {
+  service_description   ElasticSearch - TCP
+  host_name             {{ hostname }}
+  servicegroups         elasticsearch
+  use                   unit-service
+  check_command         check_tcp!9300
 }
 {% endif %}
 {## SolR ##}
@@ -461,7 +468,7 @@ define service {
   host_name             {{ hostname }}
   servicegroups         rexster
   use                   unit-service
-  check_command         check_tcp!{{ config.http['server-port'] }}
+  check_command         check_tcp!{{ host.config.ryba.rexster.config.http['server-port'] }}
 }
 {% endif %}
 {## Pig ##}

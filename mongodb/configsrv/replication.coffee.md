@@ -21,7 +21,7 @@
         roles: [ { role: "root", db: "admin" } ]
 
 ## Wait
-      
+
       @call once: true, 'ryba/mongodb/configsrv/wait'
 
 # Admin Users

@@ -47,7 +47,7 @@ in order to rendered configuration file with custom properties.
           eof: true
         @remove
           destination: '/etc/init.d/mongod'
-          
+
 
 ## Layout
 

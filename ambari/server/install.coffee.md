@@ -64,7 +64,7 @@ Load the database with initial data
           #{mysql_exec} #{db.name} < /var/lib/ambari-server/resources/Ambari-DDL-MySQL-CREATE.sql
           """
           if_exec: "[ `#{mysql_exec} -B -N -e 'use #{db.name}; show tables' | wc -l` == '0' ]"
-   
+
 ## Configuration
 
 Merge used defined configuration. This could be used to set up 

@@ -95,14 +95,14 @@ define service {
   host_name             {{ hostname }}
   servicegroups         hdfs_dn
   use                   bp-service
-  check_command         {{ has_percent('HDFS DN - TCP SSL', '90%', '80%', hostname) }}
+  check_command         {{ has_quorum('HDFS DN - TCP SSL') }}
 }
 define service {
   service_description   HDFS DN - Nodes w/ Free space
   host_name             {{ hostname }}
   servicegroups         hdfs_dn
   use                   bp-service
-  check_command         {{ has_percent('HDFS DN - Free space', '90%', '80%', hostname) }}
+  check_command         {{ has_one('HDFS DN - Free space') }}
 }
 {% endif %}
 {% if host.modules | contains('httpfs') %}
@@ -175,6 +175,13 @@ define service {
   use                   bp-service
   check_command         {{ has_one('HBase Master - TCP', hostname) }}
 }
+define service {
+  service_description   HBase - Replication Logs
+  host_name             {{ hostname }}
+  servicegroups         hbase
+  use                   bp-service
+  check_command         check_hdfs_content_summary!50470!/apps/hbase/data/oldWALs!spaceConsumed!53687091200!107374182400!-S
+}
 {% endif %}
 {% if host.modules | contains('hbase_regionserver') %}
 define service {
@@ -182,7 +189,7 @@ define service {
   host_name             {{ hostname }}
   servicegroups         hbase_regionserver
   use                   bp-service
-  check_command         {{ has_percent('HBase RegionServer - TCP', '90%', '80%', hostname) }}
+  check_command         {{ has_quorum('HBase RegionServer - TCP') }}
 }
 {% endif %}
 {% if host.modules | contains('hbase_rest') %}

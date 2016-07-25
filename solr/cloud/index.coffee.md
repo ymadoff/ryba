@@ -4,7 +4,7 @@
 [Solr](http://lucene.apache.org/solr/standalone/) is highly reliable, scalable and fault tolerant, providing distributed indexing, replication and load-balanced querying, automated failover and recovery, centralized configuration and more.
 Solr powers the search and navigation features of many of the world's largest internet sites'. 
 Solr can be found [here](http://wwwftp.ciril.fr/pub/apache/lucene/solr/standalone/)
-    
+
     module.exports = ->
       'configure': [
         'ryba/solr/cloud/configure'
@@ -22,4 +22,4 @@ Solr can be found [here](http://wwwftp.ciril.fr/pub/apache/lucene/solr/standalon
       ]
       'stop':  'ryba/solr/cloud/stop'
       'check':  'ryba/solr/cloud/check'
-      
+

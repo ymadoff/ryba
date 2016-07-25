@@ -28,4 +28,4 @@ mode.
 
     mkcmd = require '../../lib/mkcmd'
 
-    
+

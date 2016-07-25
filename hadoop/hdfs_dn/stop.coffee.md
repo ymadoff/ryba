@@ -14,7 +14,7 @@ service hadoop-hdfs-datanode stop
 The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-datanode.pid".
 
     module.exports = header: 'HDFS DN # Stop', label_true: 'STOPPED', handler: ->
-    
+
       @service_stop
         header: 'HDFS DN Stop'
         label_true: 'STOPPED'

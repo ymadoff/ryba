@@ -131,7 +131,7 @@ Maintain the "hadoop-env.sh" file present in the HDP companion File.
 The location for JSVC depends on the platform. The Hortonworks documentation
 mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
 correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
-      
+
         @render
           header: 'Environment'
           destination: "#{hdfs.jn.conf_dir}/hadoop-env.sh"

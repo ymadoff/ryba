@@ -1,40 +1,34 @@
 # Docker ElasticSearch Install
 
     module.exports =  header: 'Docker ES # Install', handler: ->
-      {swarm_manager,es_clusters,ssl} = @config.ryba.docker_es
+      {swarm_manager,clusters,ssl} = @config.ryba.es_docker
 
       es_servers =  @hosts_with_module 'ryba/esdocker'
-      for es_name,es of es_clusters then do (es_name,es) =>
-  
+      for es_name,es of clusters then do (es_name,es) =>
         docker_services = {}
         docker_networks = {}
-        
         @write_yaml
           header: 'elasticsearch'
           destination: "/etc/elasticsearch/#{es_name}/conf/elasticsearch.yml"
           content:es.config
-
         @write
           header: 'elasticsearch logging'
           destination: "/etc/elasticsearch/#{es_name}/conf/logging.yml"
           source: "#{__dirname}/resources/logging.yml"
           local_source: true
-
-
         @write
           header: 'logstash'
           destination: "/etc/elasticsearch/#{es_name}/logstash_config/logstash.conf"
           source: "#{__dirname}/resources/logstash.conf"
           local_source: true
           if: -> es.logstash?
-
         @mkdir directory:"#{path}/#{es_name}",uid:'elasticsearch' for path in es.data_path
         @mkdir directory:"/etc/elasticsearch/plugins",uid:'elasticsearch'
         @mkdir directory:"#{es.logs_path}/#{es_name}",uid:'elasticsearch'
         @mkdir directory:"#{es.logs_path}/#{es_name}/logstash",uid:'elasticsearch'
 
 ## SSL Certificate
-        
+
         @download
           source: ssl.cacert
           destination: ssl.dest_cacert
@@ -52,10 +46,9 @@
           shy: true
 
 ## Generate compose file
-      
+
         if @config.host is es_servers[es_servers.length-1]
           #TODO create overlay network if the network does not exist
-
           docker_networks["#{es.network.name}"] = external: es.network.external
           volume = [
             "/etc/elasticsearch/#{es_name}/conf/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml",
@@ -64,7 +57,6 @@
             "#{es.logs_path}/#{es_name}:#{es.config['path.logs']}"
           ]
           volume.push "#{path}/#{es_name}/:#{path}" for path in es.data_path
-
           for es_node in es.nodes
             command = if es_node.master is true
               node_entity = "#{es_name}_master"
@@ -74,9 +66,8 @@
               node_entity = "node"
               docker_services[node_entity] = {'environment' : es.environment }
               "elasticsearch -Des.discovery.zen.ping.unicast.hosts=#{es_name}_master -Des.node.master=false -Des.node.data=true"
-
             service_def = 
-              image : es.docker_es_image
+              image : es.es_image
               restart: "always"
               command: command
               networks: [es.network.name]
@@ -86,14 +77,12 @@
               mem_limit: if es_node.mem_limit? then es_node.mem_limit else es.default_mem
               cpu_shares: if es_node.cpu_shares? then es_node.cpu_shares else es.default_cpu_shares
               cpu_quota: if es_node.cpu_quota? then es_node.cpu_quota * 1000 else es.default_cpu_quota
-
             if es_node.cpuset? then service_def["cpuset"] = es_node.cpuset
-
             misc.merge docker_services[node_entity], service_def
 
           if es.kibana is true
             docker_services["#{es_name}_kibana"] = 
-              image: es.docker_kibana_image
+              image: es.kibana_image
               container_name: "#{es_name}_kibana"
               environment: ["ELASTICSEARCH_URL=http://#{es_name}_master:9200"]
               ports: ["5601"]
@@ -102,10 +91,9 @@
           if es.logstash?
             # send events only to dedicated data nodes
             es_hosts = []
-            es_hosts.push "\"#{es_name.replace('_','')}_node_#{i}:9200\"" for i in [1..es.number_of_containers - 1]
-            
+            es_hosts.push "\"#{es_name.replace('_','')}_node_#{i}:9200\"" for i in [1..es.number_of_containers - 1]            
             docker_services["#{es_name}_logstash"] = 
-              image: es.docker_logstash_image
+              image: es.logstash_image
               container_name: "#{es_name}_logstash"
               command: "logstash -f /config-dir/logstash.conf --log /log-dir"
               environment: [
@@ -122,7 +110,7 @@
                 "/etc/elasticsearch/#{es_name}/logstash_config:/config-dir",
                 "#{es.logs_path}/#{es_name}/logstash:/log-dir"
                 ]
-          
+
           yaml_data = {version:'2',services:docker_services,networks:docker_networks}
           @write_yaml
             header: 'docker-compose'
@@ -135,9 +123,9 @@
             {host:swarm_manager,tlsverify:" ",tlscacert:ssl.dest_cacert,tlscert:ssl.dest_cert,tlskey:ssl.dest_key},
             "export DOCKER_HOST=#{swarm_manager};export DOCKER_CERT_PATH=#{ssl.dest_dir};export DOCKER_TLS_VERIFY=1"
             ]
-        
+
           @docker_status container:"#{es_name}_master", docker:docker_args
-          
+
           @execute
             cmd:"""
               #{export_vars}
@@ -169,10 +157,7 @@
               docker-compose --verbose up -d #{es_name}_logstash
             """
             if: -> es.logstash? and @status (-2)
-          
-
 
 ## Dependencies
 
     misc = require 'mecano/lib/misc'
-  

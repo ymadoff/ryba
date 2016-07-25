@@ -38,7 +38,7 @@ See [REST Gateway Impersonation Configuration][impersonation].
       hbase.group.name ?= m_ctxs[0].config.ryba.hbase.group.name
       hbase.group.system ?= m_ctxs[0].config.ryba.hbase.group.system
       hbase.user.gid = hbase.group.name
-      
+
 ## Rest Server Configuration
 
       hbase.rest ?= {}

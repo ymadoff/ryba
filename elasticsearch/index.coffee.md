@@ -31,4 +31,4 @@ Elastic search configuration for hadoop can be found at [Hortonworks Section](ho
       'stop': [
         'ryba/elasticsearch/stop'
       ]
-      
+

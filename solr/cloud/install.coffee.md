@@ -15,7 +15,7 @@
       @call 'ryba/zookeeper/server/wait'
       @register 'write_jaas', 'ryba/lib/write_jaas'
       @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
-      
+
 ## Layout
 
       @mkdir
@@ -26,7 +26,7 @@
         directory: solr.cloud.conf_dir
         uid: solr.user.name
         gid: solr.group.name
-      
+
 ## Users and Groups
 
       @group solr.group
@@ -62,7 +62,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
             @link 
               source: solr.cloud.install_dir
               destination: solr.cloud.latest_dir
-              
+
 
       @call header: 'Configuration', handler: ->
         @link 
@@ -116,7 +116,7 @@ has to be fixe to use jdk 1.8.
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
-        
+
 
 ## SOLR HDFS Layout
 Create HDFS solr user and its home directory
@@ -134,7 +134,7 @@ Create HDFS solr user and its home directory
             krb5_user: @config.ryba.hdfs.krb5_user
 
 ## Config
-    
+
       @call header: 'Configure', handler: ->
         solr.cloud.env['SOLR_AUTHENTICATION_OPTS'] ?= ''
         solr.cloud.env['SOLR_AUTHENTICATION_OPTS'] += " -D#{k}=#{v} "  for k, v of solr.cloud.auth_opts
@@ -216,7 +216,7 @@ Create HDFS solr user and its home directory
         kadmin_server: admin_server
 
 ## Bootstrap Zookeeper
-    
+
       @execute
         header: 'Zookeeper bootstrap'
         cmd: """
@@ -238,7 +238,7 @@ HDP has version 5.2.1 of solr, and security plugins are included from 5.3.0
           server/scripts/cloud-scripts/zkcli.sh -zkhost #{solr.cloud.zk_connect} \
           -cmd put /solr/security.json '#{JSON.stringify solr.cloud.security}'
         """
-        
+
 ## SSL
 
       @java_keystore_add
@@ -265,7 +265,7 @@ HDP has version 5.2.1 of solr, and security plugins are included from 5.3.0
           server/scripts/cloud-scripts/zkcli.sh -zkhost #{solr.cloud.zkhosts} \
           -cmd clusterprop -name urlScheme -val #{protocol}
         """
-      
+
 ## Dependencies
 
     path = require 'path'
