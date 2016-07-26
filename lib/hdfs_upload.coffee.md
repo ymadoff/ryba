@@ -71,8 +71,10 @@
         fi
         echo "Copy $source to directory $(dirname $target)"
         hdfs dfs -copyFromLocal $source $(dirname $target)
+        echo "Update target permissions"
         hdfs dfs -chmod -R 444 $target
         hdfs dfs -test -f $target
+        echo "Release lock"
         hdfs dfs -rm -r $lock
         """
         trap: true
