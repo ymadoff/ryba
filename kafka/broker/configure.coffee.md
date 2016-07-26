@@ -156,7 +156,7 @@ Example:
       #   csm_ctx.config.ryba.kafka.user ?= kafka.user
       #   csm_ctx.config.ryba.kafka.group ?= kafka.group
 
-# Kafka Broker Protocols
+## Kafka Broker Protocols
 
 Sarting from 0.9, kafka broker supports multiple secured and un-secured protocols when
 broadcasting messages for broker/broker and client/broker communications.
@@ -195,7 +195,13 @@ Example PLAINTEXT and SSL:
       kafka.broker.ports['SASL_PLAINTEXT'] ?= '9094'
       kafka.broker.ports['SASL_SSL'] ?= '9096'
 
-# Security SSL
+## Security protocol used to communicate between brokers
+
+Valid values are: PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL.
+
+      kafka.broker.config['security.inter.broker.protocol'] ?= if @config.ryba.security is 'kerberos' then ['SASL_SSL'] else ['SSL']
+
+## Security SSL
 
       # for protocol in kafka.broker.protocols
       #   continue unless ['SASL_SSL','SSL'].indexOf(protocol) > -1
@@ -205,7 +211,7 @@ Example PLAINTEXT and SSL:
       kafka.broker.config['ssl.truststore.location'] ?= "#{kafka.broker.conf_dir}/truststore"
       kafka.broker.config['ssl.truststore.password'] ?= 'ryba123'
 
-# Security Kerberos & ACL
+## Security Kerberos & ACL
 
       secure_cluster = false
       if kafka.broker.config['zookeeper.set.acl'] is 'true'
@@ -220,7 +226,7 @@ Example PLAINTEXT and SSL:
         kafka.broker.config['authorizer.class.name'] ?= 'kafka.security.auth.SimpleAclAuthorizer'
         kafka.broker.env['KAFKA_KERBEROS_PARAMS'] ?= "-Djava.security.auth.login.config=#{kafka.broker.conf_dir}/kafka-server.jaas"
 
-# Brokers internal communication
+## Brokers internal communication
 
         kafka.broker.config['replication.security.protocol'] ?= 'SASL_SSL'
       else
@@ -228,7 +234,7 @@ Example PLAINTEXT and SSL:
       for prot in kafka.broker.protocols
           throw Error 'ACL must be activated' if ( prot.indexOf('SASL') > -1 and not secure_cluster)
 
-# Listeners Protocols
+## Listeners Protocols
 
       kafka.broker.config['listeners'] ?= kafka.broker.protocols.map( (protocol) =>
         "#{protocol}://#{@config.host}:#{kafka.broker.ports[protocol]}").join(',')
