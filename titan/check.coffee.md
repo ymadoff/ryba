@@ -7,7 +7,7 @@
 
 ## register
 
-      @call once: true, 'ryba/lib/write_jaas'
+      @register 'write_jaas', 'ryba/lib/write_jaas'
 
 ## Wait
 
