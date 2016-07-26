@@ -1,5 +1,5 @@
 
-# Falcon
+# Falcon Server
 
 [Apache Falcon](http://falcon.apache.org) is a data processing and management solution for Hadoop designed
 for data motion, coordination of data pipelines, lifecycle management, and data
@@ -36,9 +36,10 @@ associated processing and management tasks on Hadoop clusters.
       falcon.user.gid = falcon.group.name
       # Runtime
       falcon.runtime ?= {}
+      falcon.runtime['prism.falcon.local.endpoint'] ?= "https://#{@config.host}:15443/"
       # Runtime (http://falcon.incubator.apache.org/Security.html)
-      nn_contexts = @contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn/configure').handler
-      hcat_contexts = @contexts 'ryba/hive/hcatalog', [ require('../commons/db_admin').handler, require('../hive/hcatalog/configure').handler]
+      nn_contexts = @contexts 'ryba/hadoop/hdfs_nn', require('../../hadoop/hdfs_nn/configure').handler
+      hcat_contexts = @contexts 'ryba/hive/hcatalog', [ require('../../commons/db_admin').handler, require('../../hive/hcatalog/configure').handler]
       # nn_rcp = nn_contexts[0].config.ryba.core_site['fs.defaultFS']
       # nn_protocol = if nn_contexts[0].config.ryba.hdfs.site['HTTP_ONLY'] then 'http' else 'https'
       # nn_nameservice = if nn_contexts[0].config.ryba.hdfs.site['dfs.nameservices'] then ".#{nn_contexts[0].config.ryba.hdfs.site['dfs.nameservices']}" else ''
@@ -46,7 +47,6 @@ associated processing and management tasks on Hadoop clusters.
       # nn_http = ctx.config.ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address#{nn_nameservice}#{nn_shortname}"]
       nn_principal = nn_contexts[0].config.ryba.hdfs.site['dfs.namenode.kerberos.principal']
       falcon.startup ?= {}
-      falcon.startup['prism.falcon.local.endpoint'] ?= "http://#{@config.host}:16000/"
       falcon.startup['*.falcon.authentication.type'] ?= 'kerberos'
       falcon.startup['*.falcon.service.authentication.kerberos.principal'] ?= "#{falcon.user.name}/#{@config.host}@#{realm}"
       falcon.startup['*.falcon.service.authentication.kerberos.keytab'] ?= '/etc/security/keytabs/falcon.service.keytab'

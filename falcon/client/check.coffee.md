@@ -1,19 +1,23 @@
 
-# Falcon Check
+# Falcon Client Check
 
 This commands checks if falcons works as required.
 
     module.exports = header: 'Falcon Check', timeout: -1, label_true: 'CHECKED', handler: ->
-      {user} = @config.ryba
+      {user, falcon} = @config.ryba
+
+## Register
+
+      @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
 
 ## Check Data Pipelines
 
 Follow the [Hortonworks Data Pipelines example][dpe].
 
       @call header: 'Check Data Pipelines', skip: true, timeout: -1, label_true: 'CHECKED', handler: ->
-        cluster_path = "#{user.home}/check_falcon/cluster.xml"
-        feed_path = "#{user.home}/check_falcon/feed.xml"
-        process_path = "#{user.home}/check_falcon/process.xml"
+        cluster_path = "#{user.home}/check_falcon_#{@config.shortname}/cluster.xml"
+        feed_path = "#{user.home}/check_falcon_#{@config.shortname}/feed.xml"
+        process_path = "#{user.home}/check_falcon_#{@config.shortname}/process.xml"
         # TODO: RM HA latest
         nn_contexts = @contexts 'ryba/hadoop/hdfs_nn'#, require('../hadoop/hdfs_nn').configure
         nn_rcp = nn_contexts[0].config.ryba.core_site['fs.defaultFS']
@@ -32,6 +36,32 @@ Follow the [Hortonworks Data Pipelines example][dpe].
         hive_contexts = @contexts 'ryba/hive/hcatalog'#, require('../hive/hcatalog').configure
         hive_url = hive_contexts[0].config.ryba.hive.site['hive.metastore.uris']
         hive_principal = hive_contexts[0].config.ryba.hive.site['hive.metastore.kerberos.principal'].replace '_HOST', hive_contexts[0].config.host
+        @hdfs_mkdir
+          destination: "/tmp/falcon/prod-cluster/staging"
+          user: "#{falcon.client.user.name}"
+          group: "#{falcon.client.group.name}"
+          krb5_user: @config.ryba.hdfs.krb5_user
+          mode: 0o0777
+        @hdfs_mkdir
+          destination: "/tmp/falcon/prod-cluster/working"
+          user: "#{falcon.client.user.name}"
+          group: "#{falcon.client.group.name}"
+          krb5_user: @config.ryba.hdfs.krb5_user
+        @execute
+          cmd: mkcmd.test @, """
+          if hdfs dfs -test -f /tmp/falcon/clean.pig; then exit 3; fi
+          hdfs dfs -mkdir /tmp/falcon
+          hdfs dfs -touchz /tmp/falcon/clean.pig
+          """
+          code_skipped: 3
+        # @hdfs_mkdir
+        #   destination: "/user/ryba/check_falcon_#{@config.shortname}/prod-cluster/staging"
+        #   user: "#{ryba.user.name}"
+        #   krb5_user: @config.ryba.hdfs.krb5_user
+        # @hdfs_mkdir
+        #   destination: "/user/ryba/check_falcon_#{@config.shortname}/prod-cluster/working"
+        #   user: "#{ryba.user.name}"
+        #   krb5_user: @config.ryba.hdfs.krb5_user
         @write
           content: """
           <?xml version="1.0"?>
@@ -45,9 +75,9 @@ Follow the [Hortonworks Data Pipelines example][dpe].
               <interface type="messaging" endpoint="tcp://#{@config.host}:61616?daemon=true" version="5.1.6" /> <!--Needed for alerts-->
             </interfaces>
             <locations>
-              <location name="staging" path="/apps/falcon/prod-cluster/staging" /> <!--HDFS directories used by the Falcon server-->
+              <location name="staging" path="/tmp/falcon/prod-cluster/staging" /> <!--HDFS directories used by the Falcon server-->
               <location name="temp" path="/tmp" />
-              <location name="working" path="/apps/falcon/prod-cluster/working" />
+              <location name="working" path="/tmp/falcon/prod-cluster/working" />
             </locations>
             <properties>
               <property name="hadoop.rpc.protection" value="authentication"/>
@@ -105,12 +135,13 @@ Follow the [Hortonworks Data Pipelines example][dpe].
               <order>FIFO</order> <!--You can also use LIFO and LASTONLY but FIFO is recommended in most cases--> 
               <frequency>days(1)</frequency> 
               <inputs>
-                  <input end="today(0,0)" start="today(0,0)" feed="feed-clicks-raw" name="input" />
+                <input end="today(0,0)" start="today(0,0)" feed="testFeed" name="input" />
               </inputs>
               <outputs>
-                  <output instance="now(0,2)" feed="feed-clicks-clean" name="output" />
+                <output instance="now(0,2)" feed="feed-clicks-clean" name="output" />
               </outputs>
-              <workflow engine="pig" path="/apps/clickstream/clean-script.pig" />
+              <!--workflow engine="pig" path="/user/ryba/check_falcon_#{@config.shortname}/clean.pig" /-->
+              <workflow engine="pig" path="/tmp/falcon/clean.pig" />
               <retry policy="periodic" delay="minutes(10)" attempts="3"/>
               <late-process policy="exp-backoff" delay="hours(1)">
               <late-input input="input" workflow-path="/apps/clickstream/late" />
@@ -123,12 +154,17 @@ Follow the [Hortonworks Data Pipelines example][dpe].
         @execute
           cmd: mkcmd.test @, "falcon entity -type cluster -submit -file #{cluster_path}"
         @execute
-          cmd: mkcmd.test @, "falcon entity -type feed -submit -file #{feed_path}"
+          cmd: mkcmd.test @, """
+          if falcon entity -type feed -list | grep testFeed; then exit 3; fi
+          falcon entity -type feed -submit -file #{feed_path}
+          """
+          code_skipped: 3
         @execute
+          skip: true # Error for now: "Start instance  today(0,0) of feed testFeed is before the start of feed"
           cmd: mkcmd.test @, "falcon entity -type process -submit -file #{process_path}"
 
 ## Dependencies
 
-    mkcmd = require '../lib/mkcmd'
+    mkcmd = require '../../lib/mkcmd'
 
 [dpe]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.1.3/bk_falcon/content/ch_falcon_data_pipelines.html

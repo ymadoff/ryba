@@ -1,5 +1,5 @@
 
-# Falcon
+# Falcon Server
 
 [Apache Falcon](http://falcon.apache.org) is a data processing and management solution for Hadoop designed
 for data motion, coordination of data pipelines, lifecycle management, and data
@@ -10,29 +10,24 @@ associated processing and management tasks on Hadoop clusters.
       'configure': [
         'ryba/hadoop/core'
         'ryba/commons/krb5_user'
-        'ryba/falcon/configure'  
+        'ryba/falcon/server/configure'  
       ]
       'install': [
         'masson/core/iptables'
         'ryba/hadoop/core/configure'
         'ryba/commons/krb5_user'
-        'ryba/falcon/install'
-        'ryba/falcon/start' 
-        'ryba/falcon/check'
+        'ryba/falcon/server/install'
+        'ryba/falcon/server/start'
+        'ryba/falcon/server/wait'
+        'ryba/falcon/server/check'
       ]
-      'check': [
-        # 'masson/core/krb5_client/wait'
-        # 'ryba/falcon/start' 
-        'ryba/falcon/check'
-      ]
-      'start': [
-        'ryba/falcon/start' 
-      ]
-      'stop': [
-        'ryba/falcon/stop'
-      ]
-      'status': [
-        'ryba/falcon/status'
-      ]
+      'check':
+        'ryba/falcon/server/check'
+      'start':
+        'ryba/falcon/server/start'
+      'stop':
+        'ryba/falcon/server/stop'
+      'status':
+        'ryba/falcon/server/status'
 
 [falcon]: http://falcon.incubator.apache.org/

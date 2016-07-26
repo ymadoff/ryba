@@ -1,16 +1,21 @@
 
-# Falcon Install
+# Falcon Server Install
 
 This procedure only support 1 Oozie server. If Falcon must interact with
 multiple servers, then each Oozie server must be updated. The property
 "oozie.service.HadoopAccessorService.hadoop.configurations" shall define
 each HDFS cluster.
 
-    module.exports = header: 'Falcon Install', handler: ->
+    module.exports = header: 'Falcon Server Install', handler: ->
       {falcon, realm} = @config.ryba
-      {user, group, startup, conf_dir} = @config.ryba.falcon
+      {user, group, startup, runtime, conf_dir} = @config.ryba.falcon
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
-      {hostname, port} = url.parse falcon.startup['prism.falcon.local.endpoint']
+      {hostname, port} = url.parse falcon.runtime['prism.falcon.local.endpoint']
+
+## Register
+
+      @register 'hdp_select', 'ryba/lib/hdp_select'
+      @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
 
 ## IPTables
 
@@ -50,7 +55,7 @@ falcon:x:498:falcon
           name: 'falcon-server'
         @write
           header: 'Init Script'
-          source: "#{__dirname}/resources/falcon"
+          source: "#{__dirname}/../resources/falcon"
           local_source: true
           destination: '/etc/init.d/falcon'
           mode: 0o0755
@@ -81,7 +86,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
       @render
         header: 'Falcon Env'
         destination: "#{falcon.conf_dir}/falcon-env.sh"
-        source: "#{__dirname}/resources/falcon-env.sh.j2"
+        source: "#{__dirname}/../resources/falcon-env.sh.j2"
         context: @config
         local_source: true
         backup: true
@@ -99,24 +104,42 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 ## HFDS Layout
 
       @call header: 'HFDS Layout', handler: ->
-        status = user_owner = group_owner = null
+        # status = user_owner = group_owner = null
+        # @execute
+        #   cmd: mkcmd.hdfs @, "hdfs dfs -stat '%g;%u;%n' /apps/falcon"
+        #   code_skipped: 1
+        # , (err, exists, stdout) ->
+        #   return next err if err
+        #   status = exists
+        #   [user_owner, group_owner, filename] = stdout.trim().split ';' if exists
+        # @call ->
+        #   @execute
+        #     cmd: mkcmd.hdfs @, 'hdfs dfs -mkdir /apps/falcon'
+        #     unless: -> status
+        #   @execute
+        #     cmd: mkcmd.hdfs @, "hdfs dfs -chown #{user.name} /apps/falcon"
+        #     if: not status or user.name isnt user_owner
+        #   @execute
+        #     cmd: mkcmd.hdfs @, "hdfs dfs -chgrp #{group.name} /apps/falcon"
+        #     if: not status or group.name isnt group_owner
+        @hdfs_mkdir
+          destination: '/apps/falcon'
+          user: "#{user.name}"
+          group: "#{group.name}"
+          mode: 0o1777
+          krb5_user: @config.ryba.hdfs.krb5_user
+        @hdfs_mkdir
+          destination: '/apps/data-mirroring'
+          user: "#{user.name}"
+          group: "#{group.name}"
+          mode: 0o0770
+          krb5_user: @config.ryba.hdfs.krb5_user
         @execute
-          cmd: mkcmd.hdfs @, "hdfs dfs -stat '%g;%u;%n' /apps/falcon"
-          code_skipped: 1
-        , (err, exists, stdout) ->
-          return next err if err
-          status = exists
-          [user_owner, group_owner, filename] = stdout.trim().split ';' if exists
-        @call ->
-          @execute
-            cmd: mkcmd.hdfs @, 'hdfs dfs -mkdir /apps/falcon'
-            unless: -> status
-          @execute
-            cmd: mkcmd.hdfs @, "hdfs dfs -chown #{user.name} /apps/falcon"
-            if: not status or user.name isnt user_owner
-          @execute
-            cmd: mkcmd.hdfs @, "hdfs dfs -chgrp #{group.name} /apps/falcon"
-            if: not status or group.name isnt group_owner
+          shy: true
+          cmd: """
+          hdfs dfs -copyFromLocal -f /usr/hdp/current/falcon-server/data-mirroring /apps
+          hdfs dfs -chown -R #{user.name}:#{group.name} /apps/data-mirroring
+          """
 
 ## Runtime
 
@@ -140,12 +163,20 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
     #     eof: true
     #   , next
 
-## Startup
+## Configuration
 
       @write
-        header: 'Startup'
+        header: 'Configuration startup'
         destination: "#{conf_dir}/startup.properties"
         write: for k, v of startup
+          match: RegExp "^#{quote k}=.*$", 'mg'
+          replace: "#{k}=#{v}"
+        backup: true
+        eof: true
+      @write
+        header: 'Configuration runtime'
+        destination: "#{conf_dir}/runtime.properties"
+        write: for k, v of runtime
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
         backup: true
@@ -165,4 +196,4 @@ App logs  ${cluster.staging-location}/workflows/{entity}/{entity-name}/logs   fa
 
     url = require 'url'
     quote = require 'regexp-quote'
-    mkcmd = require '../lib/mkcmd'
+    mkcmd = require '../../lib/mkcmd'
