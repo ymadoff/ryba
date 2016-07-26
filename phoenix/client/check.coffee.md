@@ -28,9 +28,7 @@ instructions.
 
 ## Check SQL Query
 
-      # ../doc/examples/WEB_STAT_QUERIES.sql
       table = "ryba_check_phoenix_#{@config.shortname}".toUpperCase()
-      check = false
       @execute
         cmd: mkcmd.hbase @, """
         hdfs dfs -rm -skipTrash check-#{@config.host}-phoenix
@@ -40,10 +38,7 @@ instructions.
         # Create table with dummy column family and grant access to ryba
         echo "create '#{table}', 'cf1'; grant 'ryba', 'RWXCA', '#{table}'" | hbase shell 2>/dev/null;
         """
-        # unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"list\" | grep -w '#{table}'"
         unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.host}-phoenix"
-      , (err, status) ->
-        check = status unless err
       @write
         destination: "#{user.home}/check_phoenix/create.sql"
         uid: user.name
@@ -72,6 +67,7 @@ instructions.
         ORDER BY DOMAIN DESC;
         """
       @execute
+        if: -> @status 0
         cmd: mkcmd.test @, """
         cd /usr/hdp/current/phoenix-client/bin
         ./psql.py -t #{table} #{zk_path} \
@@ -83,7 +79,6 @@ instructions.
         | egrep "^'" | tail -n+2
         hdfs dfs -touchz check-#{@config.host}-phoenix
         """
-        if: -> check
         trap_on_error: true
       , (err, check, data) ->
         throw err if err
