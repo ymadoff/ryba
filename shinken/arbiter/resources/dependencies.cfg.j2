@@ -5,8 +5,8 @@ define servicedependency {
   host_name                     {{ dep.hosts | join(',') }}{% endif %}{% if not dep.hostgroups | isEmpty %}
   hostgroup_name                {{ dep.hostgroups | join(',') }}{% endif %}{% if not dep.dependent_hosts | isEmpty %}
   dependent_host_name           {{ dep.dependent_hosts }}{% endif %}{% if not dep.dependent_hostgroups | isEmpty %}
-  dependent_hostgroup_name      {{ dep.dependent_hostgroups }}{% endif %}
-  inherits_parent               {{ dep.inherits }}{% if dep.execution_failure_criteria %}
+  dependent_hostgroup_name      {{ dep.dependent_hostgroups }}{% endif %}{% if not dep.inherits_parent | isEmpty %}
+  inherits_parent               {{ dep.inherits_parent }}{% endif %}{% if dep.execution_failure_criteria %}
   execution_failure_criteria    {{ dep.execution_failure_criteria }}{% endif %}{% if dep.notification_failure_criteria %}
   notification_failure_criteria {{ dep.notification_failure_criteria }}{% endif %}{% if dep.timeperiod %}
   dependency_period             {{ dep.timeperiod }}{% endif %}

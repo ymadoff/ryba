@@ -22,6 +22,16 @@
           export PATH=/usr/java/default/bin:$PATH
           """
 
+        @write
+          header: 'Write RSA Private Key'
+          destination: "#{@config.mecano.cache_dir or '.'}/build/id_rsa"
+          content: @config.connection.private_key
+
+        @write
+          header: 'Write RSA Public Key'
+          destination: "#{@config.mecano.cache_dir or '.'}/build/id_rsa.pub"
+          content: @config.connection.public_key
+
         @docker_build
           header: 'Build Container'
           image: 'ryba/shinken-poller-executor'

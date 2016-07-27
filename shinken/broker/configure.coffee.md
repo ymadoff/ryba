@@ -81,7 +81,7 @@
       logstore.type ?= 'logstore_null'
       logstore.config_file ?= 'logstore_null.cfg'
       ## Auto discovery
-      
+
       configmod = (name, mod) =>
         if mod.version?
           mod.source ?= "https://github.com/shinken-monitoring/mod-#{name}/archive/#{mod.version}.zip"

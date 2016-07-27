@@ -42,7 +42,7 @@ define command {
 ## Multi Service commands
 define command {
   command_name    check_tcp_ha
-  command_line    $DOCKER_EXEC$ ./service_status.php -H {{ brokers }} -p 50000 -d $ARG1$ -f "host_groups >= $HOSTNAME$" -u | xargs -I % $PLUGINSDIR$/check_tcp -H % -p $ARG2$ -w 1 -c 1 $ARG3$
+  command_line    $PLUGINSDIR$/check_tcp -H `$DOCKER_EXEC$ ./service_status.php -H {{ brokers }} -p 50000 -d $ARG1$ -f "host_groups >= $HOSTNAME$" -u` -p $ARG2$ -w 1 -c 1 $ARG3$
 }
 define command {
   command_name    check_rpc_latency
@@ -50,12 +50,12 @@ define command {
 }
 define command {
   command_name    check_rpc_latency_ha
-  command_line    $DOCKER_EXEC$ ./service_status.php -H {{ brokers }} -p 50000 -d $ARG1$ -f "host_groups >= $HOSTNAME$" -u | xargs -I % $DOCKER_EXEC$ ./check_rpc_latency.php -H % -n $ARG2$ -p $ARG3$ -w $ARG4$ -c $ARG5$ $ARG6$
+  command_line    $DOCKER_EXEC$ ./check_rpc_latency.php -H `$DOCKER_EXEC$ ./service_status.php -H {{ brokers }} -p 50000 -d $ARG1$ -f "host_groups >= $HOSTNAME$" -u` -n $ARG2$ -p $ARG3$ -w $ARG4$ -c $ARG5$ $ARG6$
 }
 ## Service-Specific commands
 define command{
   command_name    check_mysql
-  command_line    $DOCKER_EXEC$ mysql/check_mysql_health --hostname $HOSTNAME$:$ARG1$ --username $ARG5$ --password $ARG6$ --mode $ARG2$ --warning $ARG3$ --critical $ARG4$
+  command_line    $DOCKER_EXEC$ mysql/check_health --hostname $HOSTNAME$:$ARG1$ --username $ARG5$ --password $ARG6$ --mode $ARG2$ --warning $ARG3$ --critical $ARG4$
 }
 define command {
   command_name    check_zk_stat
@@ -63,6 +63,10 @@ define command {
 }
 define command {
   command_name    check_hdfs_content_summary
+  command_line    $DOCKER_EXEC$ hdfs/check_content_summary.php -H `$DOCKER_EXEC$ ./service_status.php -H {{ brokers }} -p 50000 -d 'HDFS NN - Active Node' -f "host_groups >= $HOSTNAME$" -u` -p $ARG1$ -P $ARG2$ -f $ARG3$ -w $ARG4$ -c $ARG5$ $ARG6$
+}
+define command {
+  command_name    check_hdfs_content_summary_old
   command_line    $DOCKER_EXEC$ ./service_status.php -H {{ brokers }} -p 50000 -d 'HDFS NN - Active Node' -f "host_groups >= $HOSTNAME$" -u | xargs -I % $DOCKER_EXEC$ hdfs/check_content_summary.php -H % -p $ARG1$ -P $ARG2$ -f $ARG3$ -w $ARG4$ -c $ARG5$ $ARG6$
 }
 define command {
@@ -104,6 +108,14 @@ define command {
 define command {
   command_name    check_webhcat_database
   command_line    $DOCKER_EXEC$ hive/check_webhcat_database.sh $HOSTNAME$ $ARG1$
+}
+define command {
+  command_name    check_es_containers
+  command_line    $DOCKER_EXEC$ elasticsearch/check_containers_tcps.php -H $ARG1$ -p $ARG2$ -c $ARG3$ -k $ARG4$ $ARG5$
+}
+define command {
+  command_name    check_es_containers_cluster
+  command_line    $DOCKER_EXEC$ elasticsearch/check_containers_tcps.php -H $ARG1$ -p $ARG2$ -c $ARG3$ -k $ARG4$ -C $ARG5$ $ARG6$
 }
 ## User/ryba-defined commands
 {% for name, command in commands %}

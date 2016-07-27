@@ -98,7 +98,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             source: '/var/lib/docker_images/shinken-poller-executor.tar'
             if: -> @status -1
           @write
-            destination: shinken.poller.executor.cronfile
+            destination: "#{shinken.poller.executor.resources_dir}/cronfile"
             content: """
             01 */9 * * * #{shinken.user.name} /usr/bin/kinit #{shinken.poller.executor.krb5.unprivileged.principal} -kt #{shinken.poller.executor.krb5.unprivileged.keytab}
             """
@@ -112,7 +112,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
               "/etc/localtime:/etc/localtime:ro"
               #"/usr/lib64/nagios/plugins:/usr/lib64/nagios/plugins"
               #"#{shinken.poller.executor.krb5.privileged.keytab}:#{shinken.poller.executor.krb5.privileged.keytab}"
-              "#{shinken.poller.executor.cronfile}:/etc/cron.d/1cron"
+              "#{shinken.poller.executor.resources_dir}:/home/#{shinken.user.name}/plugins/resources"
+              "#{shinken.poller.executor.resources_dir}/cronfile:/etc/cron.d/1cron"
               "#{shinken.poller.executor.krb5.unprivileged.keytab}:#{shinken.poller.executor.krb5.unprivileged.keytab}"
             ]
 

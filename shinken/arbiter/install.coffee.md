@@ -133,7 +133,7 @@ Objects config
           real = {}
           templated = {}
           for k, v of shinken.config[obj]
-            if parseInt(v.register) is 0 then templated[k] = v
+            if v.register is '0' then templated[k] = v
             else real[k] = v
           @render
             destination: "/etc/shinken/templates/#{obj}.cfg"
@@ -149,18 +149,18 @@ Objects config
 ### Services Config
 
       @call header: 'Ryba Services Config', handler: ->
-        @render
-          destination: '/etc/shinken/services/hadoop-services.cfg'
-          source: "#{__dirname}/resources/hadoop-services.cfg.j2"
-          local_source: true
-          context: hosts: shinken.config.hosts
-        @render
-          destination: '/etc/shinken/services/watchers-services.cfg'
-          source: "#{__dirname}/resources/watchers-services.cfg.j2"
-          local_source: true
-          context: hosts: shinken.config.hosts
-        @render
-          destination: '/etc/shinken/dependencies/hadoop-dependencies.cfg'
-          source: "#{__dirname}/resources/hadoop-dependencies.cfg.j2"
-          local_source: true
-          context: hosts: shinken.config.hosts
+        # @render
+        #   destination: '/etc/shinken/services/hadoop-services.cfg'
+        #   source: "#{__dirname}/resources/hadoop-services.cfg.j2"
+        #   local_source: true
+        #   context: hosts: shinken.config.hosts
+        # @render
+        #   destination: '/etc/shinken/services/watchers-services.cfg'
+        #   source: "#{__dirname}/resources/watchers-services.cfg.j2"
+        #   local_source: true
+        #   context: hosts: shinken.config.hosts
+        # @render
+        #   destination: '/etc/shinken/dependencies/hadoop-dependencies.cfg'
+        #   source: "#{__dirname}/resources/hadoop-dependencies.cfg.j2"
+        #   local_source: true
+        #   context: hosts: shinken.config.hosts

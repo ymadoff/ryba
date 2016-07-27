@@ -26,22 +26,25 @@ RUN sed -i 's/Defaults.*requiretty/# Defaults requiretty/g' /etc/sudoers
 RUN wget http://nodejs.org/dist/latest/node-v6.2.0-linux-x64.tar.xz
 RUN sudo tar --strip-components 1 -xJf node-v* -C /usr/local
 # Install HDP repo
-RUN wget {{ shinken.poller.executor.hdp_repo }} -O /etc/yum.repos.d/hdp.repo --no-check-certificate 
-RUN sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/hdp.repo
-RUN yum -y update
-RUN yum -y install hive
+# RUN wget {{ shinken.poller.executor.hdp_repo }} -O /etc/yum.repos.d/hdp.repo --no-check-certificate 
+# RUN sed -i 's/gpgcheck=1/gpgcheck=0/g' /etc/yum.repos.d/hdp.repo
+# RUN yum -y update
+# RUN yum -y install hive
 # Install JAVA
-COPY {{ shinken.poller.executor.java.jdk.location }} /tmp/ryba-java/java.tar.gz
-RUN tar xzf /tmp/ryba-java/java.tar.gz -C /tmp/ryba-java
-RUN rm /tmp/ryba-java/java.tar.gz
-RUN mkdir /usr/java
-RUN mv /tmp/ryba-java/jdk{{ shinken.poller.executor.java.jdk.version }} /usr/java/{{ shinken.poller.executor.java.jdk.version }}
-RUN ln -sf /usr/java/{{ shinken.poller.executor.java.jdk.version }} /usr/java/latest
-RUN ln -sf /usr/java/{{ shinken.poller.executor.java.jdk.version }} /usr/java/default
-COPY java.sh /etc/profile.d/java.sh
+# COPY {{ shinken.poller.executor.java.jdk.location }} /tmp/ryba-java/java.tar.gz
+# RUN tar xzf /tmp/ryba-java/java.tar.gz -C /tmp/ryba-java
+# RUN rm /tmp/ryba-java/java.tar.gz
+# RUN mkdir /usr/java
+# RUN mv /tmp/ryba-java/jdk{{ shinken.poller.executor.java.jdk.version }} /usr/java/{{ shinken.poller.executor.java.jdk.version }}
+# RUN ln -sf /usr/java/{{ shinken.poller.executor.java.jdk.version }} /usr/java/latest
+# RUN ln -sf /usr/java/{{ shinken.poller.executor.java.jdk.version }} /usr/java/default
+# COPY java.sh /etc/profile.d/java.sh
 # Install JAVA Policy
-COPY jce_policy-7/local_policy.jar /usr/java/default/jre/lib/security/local_policy.jar
-COPY jce_policy-7/US_export_policy.jar /usr/java/default/jre/lib/security/US_export_policy.jar
+# COPY jce_policy-7/local_policy.jar /usr/java/default/jre/lib/security/local_policy.jar
+# COPY jce_policy-7/US_export_policy.jar /usr/java/default/jre/lib/security/US_export_policy.jar
+COPY id_rsa /root/.ssh/id_rsa
+COPY id_rsa.pub /root/.ssh/id_rsa.pub
+RUN chmod 600 /root/.ssh/id_rsa*
 ### LAYOUT ###
 RUN useradd -ms /bin/bash {{ shinken.user.name }}
 RUN echo "{{ shinken.user.name }}        ALL=(ALL)       NOPASSWD: ALL" >> /etc/sudoers
@@ -58,10 +61,10 @@ RUN make install
 RUN rm -rf check_mysql_health-2.2.2
 WORKDIR /home/{{ shinken.user.name }}
 # Downloading shinken-plugins
-RUN git clone https://github.com/pierrotws/shinken-plugins plugins
+RUN git clone https://github.com/Pierrotws/shinken-plugins plugins
 RUN rm -rf plugins/.git*
 RUN mkdir plugins/mysql
-RUN mv libexec/* plugins/mysql/
+RUN mv libexec/check_mysql_health plugins/mysql/check_health
 RUN rm -rf check_mysql_health*
 RUN rm -r libexec
 WORKDIR /home/{{ shinken.user.name }}/plugins

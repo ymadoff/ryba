@@ -1,68 +1,17 @@
-{% for name, service in services %}
+{% for name, svc in services %}{% if svc.hosts %}{% for host in svc.hosts %}
 define service {
   name                  {{ name }}
-  service_description   {{ name }}{% if not service.display_name | isEmpty %}
-  display_name          {{ service.display_name }}{% endif %}{% if not service.use | isEmpty %}
-  use                   {{ service.use }}{% endif %}{% if not service.hosts | isEmpty %}
-  host_name             {{ service.hosts | join(',') }}{% endif %}{% if not service.hostgroups | isEmpty %}
-  hostgroup_name        {{ service.hostgroups | join(',') }}{% endif %}{% if not service.servicegroups | isEmpty %}
-  servicegroups         {{ service.servicegroups | join(',') }}{% endif %}{% if not service.command | isEmpty %}
-  check_command         {{ service.command }}{% endif %}{% if not service.is_volatile | isEmpty %}
-  is_volatile           {{ service.is_volatile }}{% endif %}{% if not service.initial_state | isEmpty %}
-  initial_state         {{ service.initial_state }}{% endif %}{% if not service.max_check_attempts | isEmpty %}
-  max_check_attempts    {{ service.max_check_attempts }}{% endif %}{% if not service.check_interval | isEmpty %}
-  check_interval        {{ service.check_interval }}{% endif %}{% if not service.retry_interval | isEmpty %}
-  retry_interval        {{ service.retry_interval }}{% endif %}{% if not service.active_checks_enabled | isEmpty %}
-  active_checks_enabled {{ service.active_checks_enabled }}{% endif %}{% if not service.passive_checks_enabled | isEmpty %}
-  passive_checks_enabled {{ service.passive_checks_enabled }}{% endif %}{% if not service.check_period | isEmpty %}
-  check_period          {{ service.check_period }}{% endif %}{% if not service.escalations | isEmpty %}
-  escalations           {{ service.escalations | join(',') }}{% endif %}{% if not service.obsess_over_service | isEmpty %}
-  obsess_over_service   {{ service.obsess_over_service }}{% endif %}{% if not service.check_freshness | isEmpty %}
-  check_freshness       {{ service.check_freshness }}{% endif %}{% if not service.freshness_threshold | isEmpty %}
-  freshness_threshold   {{ service.freshness_threshold }}{% endif %}{% if not service.event_handler | isEmpty %}
-  event_handler         {{ service.event_handler }}{% endif %}{% if not service.event_handler_enabled | isEmpty %}
-  event_handler_enabled {{ service.event_handler_enabled }}{% endif %}{% if not service.low_flap_threshold | isEmpty %}
-  low_flap_threshold    {{ service.low_flap_threshold }}{% endif %}{% if not service.high_flap_threshold | isEmpty %}
-  high_flap_threshold   {{ service.high_flap_threshold }}{% endif %}{% if not service.flap_detection_enabled | isEmpty %}
-  flap_detection_enabled {{ service.flap_detection_enabled }}{% endif %}{% if not service.flap_detection_options | isEmpty %}
-  flap_detection_options {{ service.flap_detection_options }}{% endif %}{% if not service.process_perf_data | isEmpty %}
-  process_perf_data     {{ service.process_perf_data }}{% endif %}{% if not service.retain_status_information | isEmpty %}
-  retain_status_information {{ service.retain_status_information }}{% endif %}{% if not service.retain_nonstatus_information | isEmpty %}
-  retain_nonstatus_information {{ service.retain_nonstatus_information }}{% endif %}{% if not service.notification_interval | isEmpty %}
-  notification_interval {{ service.notification_interval }}{% endif %}{% if not service.first_notification_delay | isEmpty %}
-  first_notification_delay {{ service.first_notification_delay }}{% endif %}{% if not service.notification_period | isEmpty %}
-  notification_period   {{ service.notification_period }}{% endif %}{% if not service.notification_options | isEmpty %}
-  notification_options  {{ service.notification_options }}{% endif %}{% if not service.notifications_enabled | isEmpty %}
-  notifications_enabled {{ service.notifications_enabled }}{% endif %}{% if not service.contacts | isEmpty %}
-  contacts              {{ service.contacts | join(',') }}{% endif %}{% if not service.contact_groups | isEmpty %}
-  contact_groups        {{ service.contactgroups | join(',') }}{% endif %}{% if not service.stalking_options | isEmpty %}
-  stalking_options      {{ service.stalking_options }}{% endif %}{% if not service.notes | isEmpty %}
-  notes                 {{ service.notes }}{% endif %}{% if not service.notes_url | isEmpty %}
-  notes_url             {{ service.notes_url }}{% endif %}{% if not service.action_url | isEmpty %}
-  action_url            {{ service.action_url }}{% endif %}{% if not service.icon_image | isEmpty %}
-  icon_image            {{ service.icon_image }}{% endif %}{% if not service.icon_image_alt | isEmpty %}
-  icon_image_alt        {{ service.icon_image_alt }}{% endif %}{% if not service.poller_tag | isEmpty %}
-  poller_tag            {{ service.poller_tag }}{% endif %}{% if not service.reactionner_tag | isEmpty %}
-  reactionner_tag       {{ service.reactionner_tag }}{% endif %}{% if not service.duplicate_foreach | isEmpty %}
-  duplicate_foreach     {{ service.duplicate_foreach }}{% endif %}{% if not service.service_dependencies | isEmpty %}
-  service_dependencies  {{ service.service_dependencies }}{% endif %}{% if not service.business_impact | isEmpty %}
-  business_impact       {{ service.business_impact }}{% endif %}{% if not service.icon_set | isEmpty %}
-  icon_set              {{ service.icon_set }}{% endif %}{% if not service.maintenance_period | isEmpty %}
-  maintenance_period    {{ service.maintenance_period }}{% endif %}{% if not service.host_dependency_enabled | isEmpty %}
-  host_dependency_enabled {{ service.host_dependency_enabled }}{% endif %}{% if not service.labels | isEmpty %}
-  labels                {{ service.labels }}{% endif %}{% if not service.business_rule_output_template | isEmpty %}
-  business_rule_output_template {{ service.business_rule_output_template }}{% endif %}{% if not service.business_rule_smart_notifications | isEmpty %}
-  business_rule_smart_notifications {{ service.business_rule_smart_notifications }}{% endif %}{% if not service.business_rule_downtime_as_ack | isEmpty %}
-  business_rule_downtime_as_ack {{ service.business_rule_downtime_as_ack }}{% endif %}{% if not service.business_rule_host_notification_options | isEmpty %}
-  business_rule_host_notification_options {{ service.business_rule_host_notification_options }}{% endif %}{% if not service.business_rule_service_notification_options | isEmpty %}
-  business_rule_service_notification_options {{ service.business_rule_service_notification_options }}{% endif %}{% if not service.snapshot_enabled | isEmpty %}
-  snapshot_enabled      {{ service.snapshot_enabled }}{% endif %}{% if not service.snapshot_command | isEmpty %}
-  snapshot_command      {{ service.snapshot_command }}{% endif %}{% if not service.snapshot_period | isEmpty %}
-  snapshot_period       {{ service.snapshot_period }}{% endif %}{% if not service.snapshot_criteria | isEmpty %}
-  snapshot_criteria     {{ service.snapshot_criteria }}{% endif %}{% if not service.snapshot_interval | isEmpty %}
-  snapshot_interval     {{ service.snapshot_interval }}{% endif %}{% if not service.trigger_name | isEmpty %}
-  trigger_name          {{ service.trigger_name }}{% endif %}{% if not service.trigger_broker_raise_enabled | isEmpty %}
-  trigger_broker_raise_enabled {{ service.trigger_broker_raise_enabled }}{% endif %}{% if not service.register | isEmpty %}
-  register              {{ service.register }}{% endif %}
-}
-{% endfor %}
+  service_description   {{ name }}
+  host_name             {{ host }}{% for s, val in svc %}{% if s == 'hosts' %}{% elif s == 'hostgroups' %}
+  hostgroup_name        {% if val | isArray %}{{ val | join(",") }}{% else %}{{ val }}{% endif %}{% elif s == 'contactgroups' %}
+  contact_groups        {% if val | isArray %}{{ val | join(",") }}{% else %}{{ val }}{% endif %}{% elif s == 'check_command' %}
+  check_command         {{ val | replace('$HOSTNAME$', host) }}{% else %}
+  {{s}}                 {% if val | isArray %}{{ val | join(",")}}{% else %}{{ val }}{% endif %}{% endif %}{% endfor %}
+}{% endfor %}{% else %}
+define service {
+  name                  {{ name }}
+  service_description   {{ name }}{% for s, val in svc %}{% if s == 'hostgroups' %}
+  hostgroup_name        {% if val | isArray %}{{ val | join(",") }}{% else %}{{ val }}{% endif %}{% elif s == 'contactgroups' %}
+  contact_groups        {% if val | isArray %}{{ val | join(",") }}{% else %}{{ val }}{% endif %}{% else %}
+  {{s}}                 {% if val | isArray %}{{ val | join(",")}}{% else %}{{ val }}{% endif %}{% endif %}{% endfor %}
+}{% endif %}{% endfor %}
