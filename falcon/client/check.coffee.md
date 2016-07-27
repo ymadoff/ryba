@@ -159,9 +159,9 @@ Follow the [Hortonworks Data Pipelines example][dpe].
           falcon entity -type feed -submit -file #{feed_path}
           """
           code_skipped: 3
-        @execute
-          skip: true # Error for now: "Start instance  today(0,0) of feed testFeed is before the start of feed"
-          cmd: mkcmd.test @, "falcon entity -type process -submit -file #{process_path}"
+        # Error for now: "Start instance  today(0,0) of feed testFeed is before the start of feed"
+        # @execute
+        #   cmd: mkcmd.test @, "falcon entity -type process -submit -file #{process_path}"
 
 ## Dependencies
 
