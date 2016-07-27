@@ -17,6 +17,8 @@ OpenTSDB does not seem to work without the hbase rights
         'ryba/opentsdb/start'
         'ryba/opentsdb/check'
       ]
+      'prepare':
+        'ryba/opentsdb/prepare'
       'start':
         'ryba/opentsdb/start'
       'check':
