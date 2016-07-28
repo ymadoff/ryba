@@ -1,7 +1,7 @@
 # Ranger HDFS Plugin Install
 
     module.exports = header: 'Ranger HDFS Plugin install', handler: ->
-      {ranger, hdfs, realm, solr, ssl_server} = @config.ryba 
+      {ranger, hdfs, realm, ssl_server} = @config.ryba
       {password} = @contexts('ryba/ranger/admin')[0].config.ryba.ranger.admin
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       version=null

@@ -19,6 +19,7 @@ Ranger permit access
         'ryba/ranger/admin/install'
         'ryba/ranger/admin/start'
         'ryba/ranger/admin/setup'
+        'ryba/ranger/admin/solr_bootstrap'
       ]
       'start': [
         'ryba/ranger/admin/start'

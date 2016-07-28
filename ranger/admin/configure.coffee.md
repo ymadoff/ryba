@@ -16,6 +16,7 @@ variables but also inject some function to be executed.
       kb_ctxs = @contexts 'ryba/kafka/broker', require('../../kafka/broker/configure').handler
       sc_ctxs = @contexts 'ryba/solr/cloud', require('../../solr/cloud/configure').handler
       st_ctxs = @contexts 'ryba/solr/standalone', require('../../solr/standalone/configure').handler
+      scd_ctxs = @contexts 'ryba/solr/cloud_docker', require('../../solr/cloud_docker/configure').handler
       hive_ctxs = @contexts 'ryba/hive/server2', require('../../hive/server2/configure').handler
       {ryba} = @config
       {realm, db_admin, ssl, core_site, hdfs, hadoop_group} = ryba
@@ -101,44 +102,100 @@ Here SOLR configuration is discovered and ranger admin is set.
 Ryba support both Solr Cloud mode and Solr Standalone installation. 
 The `ranger.admin.solr_type` designated the type of solr used for Ranger.
 The type requires differents instruction for configuring Plugins audit.
+There are three types available:
+- Solr Standalone
+- Solr Cloud
+- Solr Cloud on docker
+When SolrCloud on docker is configured (`ranger.admin.solr_type` to `cloud_docker`),
+Ryba configures Ranger by using one of the cluster available
+in `config.ryba.solr.cloud_docker.clusters` properties, base on the instance name
+set in the following variable `ranger.admin.cluster_name`
+  
+Note July 2016:
+The previous properties works only with (HDP 2.4) `solr.BasicAuthPlugin` (in solr cluster config).
+And it is configured by Ryba only in ryba/solr/cloud_docker installation.
 
-      ranger.admin.solr_type  ?= 'single'
+      ranger.admin.solr_type ?= 'single'
       solr = {}
       solrs_urls = ''
       solr_ctx = {}
       switch ranger.admin.solr_type
         when 'single'
-          throw Error 'No Solr Standalone Server configure' unless st_ctxs.length
+          throw Error 'No Solr Standalone Server configure' unless st_ctxs.length > 0
           solr_ctx = st_ctxs[0]
           solr = solr_ctx.config.ryba.solr
+          ranger.admin.install['audit_solr_port'] ?= ctx.config.ryba.solr.single.port
           solrs_urls = st_ctxs.map( (ctx) -> 
            "#{if solr.single.ssl.enabled  then 'https://'  else 'http://'}#{ctx.config.host}:#{ctx.config.ryba.solr.single.port}")
             .map( (url) -> if ranger.admin.solr_type is 'single' then "#{url}/solr/ranger_audits" else "#{url}")
             .join(',')
+          solr_ctx
+          .after
+            type: 'java_keystore_add'
+            keystore: solr["#{ranger.admin.solr_type}"]['ssl_trustore_path']
+            storepass: solr["#{ranger.admin.solr_type}"]['ssl_keystore_pwd']
+            caname: "hadoop_root_ca"
+            handler: -> @call 'ryba/ranger/admin/solr_bootstrap'
         when 'cloud'
-          throw Error 'No Solr Standalone Server configure' unless sc_ctxs.length
+          throw Error 'No Solr Cloud Server configure' unless sc_ctxs.length > 0
           solr_ctx = sc_ctxs[0]
           solr = sc_ctxs[0].config.ryba.solr
+          ranger.admin.install['audit_solr_port'] ?= ctx.config.ryba.solr.cloud.port
           solrs_urls = sc_ctxs.map( (ctx) -> 
            "#{if solr.cloud.ssl.enabled  then 'https://'  else 'http://'}#{ctx.config.host}:#{ctx.config.ryba.solr.cloud.port}")
             .map( (url) -> if ranger.admin.solr_type is 'single' then "#{url}/solr/ranger_audits" else "#{url}")
             .join(',')
+          solr_ctx
+          .after
+            type: 'java_keystore_add'
+            keystore: solr["#{ranger.admin.solr_type}"]['ssl_trustore_path']
+            storepass: solr["#{ranger.admin.solr_type}"]['ssl_keystore_pwd']
+            caname: "hadoop_root_ca"
+            handler: -> @call 'ryba/ranger/admin/solr_bootstrap'
+        when 'cloud_docker'
+          throw Error 'No Solr Cloud Server configure' unless scd_ctxs.length > 0 or ranger.admin.cluster_name ?
+          solr_ctx = scd_ctxs[0]
+          solr = if scd_ctxs[0]? then scd_ctxs[0].config.ryba.solr else @config.ryba.solr
+          cluster_name = ranger.admin.cluster_name ?= 'ryba_ranger_cluster'
+          cluster_config = ranger.admin.cluster_config = solr.cloud_docker.clusters[cluster_name] ?= {}
+          cluster_config.ranger ?= {}
+          ranger.admin.install['audit_solr_port'] ?= cluster_config.port
+          #Search for a cloud_docker cluster find in solr.cloud_docker.clusters
+          solrs_urls = cluster_config.hosts.map( (host) ->
+           "#{if solr.cloud_docker.ssl.enabled  then 'https://'  else 'http://'}#{host}:#{cluster_config.port}").join(',')
+          if (@contexts 'ryba/ranger/admin').map( (ctx) -> ctx.config.host)[0] is @config.host
+            @after
+              type: 'service_start'
+              name: 'ranger-admin'
+              handler: -> 'ryba/ranger/admin/solr_bootstrap'
 
 ## Solr Audit Database Bootstrap
 Create the `ranger_audits`  collection('cloud')/core('standalone').
 
       if ranger.admin.install['audit_store'] is 'solr'
         ranger.admin.install['audit_solr_urls'] ?= solrs_urls
-        ranger.admin.install['audit_solr_user'] ?= solr.user.name
-        ranger.admin.install['audit_solr_password'] ?= 'NONE'
+        ranger.admin.install['audit_solr_user'] ?= 'ranger'
+        ranger.admin.install['audit_solr_password'] ?= 'ranger123'
+
+When Basic authentication is used, the following property can be set to add 
+users to solr `ranger.admin.cluster_config.ranger.solr_users`:
+  -  An object describing all the users used by the different plugins which will
+  write audit to solr.
+  - By default if no user are provided, Ryba configure only one user named ranger
+  to audit to solr.
+Example:
+```cson
+  ranger.admin.cluster_config.ranger.solr_users =
+    name: 'my_plugin_user'
+    secret: 'my_plugin_password'
+
+        ranger.admin.cluster_config.ranger.solr_users ?= []
+        if ranger.admin.cluster_config.ranger.solr_users.length is 0
+          ranger.admin.cluster_confif.ranger.solr_users.push {
+            name: "#{ranger.admin.install['audit_solr_user']}"
+            secret:"#{ranger.admin.install['audit_solr_password']}"
+          }
         ranger.admin.install['audit_solr_zookeepers'] ?=  if ranger.admin.solr_type is 'single' then 'NONE' else solr["#{ranger.admin.solr_type}"]['zkhosts']
-        solr_ctx
-        .after
-          type: 'java_keystore_add'
-          keystore: solr["#{ranger.admin.solr_type}"]['ssl_trustore_path']
-          storepass: solr["#{ranger.admin.solr_type}"]['ssl_keystore_pwd']
-          caname: "hadoop_root_ca"
-          handler: -> @call 'ryba/ranger/admin/solr_bootstrap'
 
 ## Ranger Admin SSL
 Configure SSL for Ranger policymanager (webui).
@@ -249,7 +306,6 @@ Ryba injects function to the different contexts.
           nn_ctx.config.ryba.ranger ?= {}
           nn_ctx.config.ryba.ranger.user = ranger.user
           nn_ctx.config.ryba.ranger.group = ranger.group
-          nn_ctx.config.ryba.solr = solr_ctx.config.ryba.solr
           nn_ctx.config.ryba.hdfs.namenode_opts += " -Djavax.net.ssl.trustStore=#{nn_ctx.config.ryba.ssl_server['ssl.server.truststore.location']} "
           nn_ctx.config.ryba.hdfs.namenode_opts += " -Djavax.net.ssl.trustStorePassword=#{nn_ctx.config.ryba.ssl_server['ssl.server.truststore.password']}"
           # HDFS Plugin configuration
