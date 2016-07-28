@@ -84,7 +84,7 @@ Example:
         oozie_ctx.config.ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{hue.user.name}.hosts"] ?= '*'
         oozie_ctx.config.ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{hue.user.name}.groups"] ?= '*'
       {hadoop_conf_dir, webhcat, hue, db_admin, core_site, hdfs, yarn} = ryba
-      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn').configure
+      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn/configure').handler
       hue ?= {}
       hue.ini ?= {}
       # todo, this might not work as expected after ha migration
@@ -133,7 +133,7 @@ Example:
       #   then "http://#{yarn.site['yarn.resourcemanager.webapp.address']}"
       #   else "https://#{yarn.site['yarn.resourcemanager.webapp.https.address']}"
       # YARN ResourceManager
-      rm_ctxs = @contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm').configure
+      rm_ctxs = @contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm/configure').handler
       throw Error "No YARN ResourceManager configured" unless rm_ctxs.length
       is_yarn_ha = rm_ctxs.length > 1
       rm_ctx = rm_ctxs[0]
@@ -148,12 +148,12 @@ Example:
       then "http://#{yarn.site['yarn.resourcemanager.webapp.address']}"
       else "https://#{yarn.site['yarn.resourcemanager.webapp.https.address']}"
       # NodeManager
-      [nm_ctx] = @contexts 'ryba/hadoop/yarn_nm', require('../hadoop/yarn_nm').configure
+      [nm_ctx] = @contexts 'ryba/hadoop/yarn_nm', require('../hadoop/yarn_nm/configure').handler
       node_manager_api_url = if @config.ryba.yarn.site['yarn.http.policy'] is 'HTTP_ONLY'
       then "http://#{nm_ctx.config.ryba.yarn.site['yarn.nodemanager.webapp.address']}"
       else "https://#{nm_ctx.config.ryba.yarn.site['yarn.nodemanager.webapp.https.address']}"
       # WebHcat
-      [webhcat_ctx] = @contexts 'ryba/hive/webhcat', require('../hive/webhcat').configure
+      [webhcat_ctx] = @contexts 'ryba/hive/webhcat', require('../hive/webhcat/configure').handler
       if webhcat_ctx
         webhcat_port = webhcat_ctx.config.ryba.webhcat.site['templeton.port']
         templeton_url = "http://#{webhcat_ctx.config.host}:#{webhcat_port}/templeton/v1/"
@@ -181,7 +181,7 @@ Example:
       hue.ini['hadoop']['yarn_clusters']['default']['proxy_api_url'] ?= yarn_api_url
       hue.ini['hadoop']['yarn_clusters']['default']['node_manager_api_url'] ?= node_manager_api_url
       # JHS
-      jhs_ctx = @contexts('ryba/hadoop/mapred_jhs')[0]
+      [jhs_ctx] = @contexts 'ryba/hadoop/mapred_jhs', require('ryba/hadoop/mapred_jhs/configure').handler
       jhs_protocol = if jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.http.policy'] is 'HTTP' then 'http' else 'https'
       jhs_port = if jhs_protocol is 'http'
       then jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.webapp.address'].split(':')[1]
@@ -194,7 +194,7 @@ Example:
       hue.ini['hcatalog']['templeton_url'] ?= templeton_url
       hue.ini['beeswax'] ?= {}
       # HCatalog
-      [hs2_ctx] = @contexts 'ryba/hive/server2', require('../hive/server2').configure
+      [hs2_ctx] = @contexts 'ryba/hive/server2', require('../hive/server2/configure').handler
       throw Error "No Hive HCatalog Server configured" unless hs2_ctx
       hue.ini['beeswax']['hive_server_host'] ?= "#{hs2_ctx.config.host}"
       hue.ini['beeswax']['hive_server_port'] ?= if hs2_ctx.config.ryba.hive.site['hive.server2.transport.mode'] is 'binary'
