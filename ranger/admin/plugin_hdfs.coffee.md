@@ -112,18 +112,18 @@ we execute this task using the rest api.
             'ranger.plugin.hdfs.policy.rest.ssl.config.file': "#{hdfs.nn.conf_dir}/ranger-policymgr-ssl.xml"
         @write
           header: 'Fix Ranger HDFS Plugin Env'
-          target: "#{hdfs.nn.conf_dir}/hadoop-env.sh"
+          destination: "#{hdfs.nn.conf_dir}/hadoop-env.sh"
           write: [
             match: RegExp "^export HADOOP_OPTS=.*", 'mg'
             replace: "export HADOOP_OPTS=\"-Dhdp.version=$HDP_VERSION $HADOOP_OPTS -Djavax.net.ssl.trustStore=#{ssl_server['ssl.server.truststore.location']} -Djavax.net.ssl.trustStorePassword=#{ssl_server['ssl.server.truststore.password']} \" # RYBA, DONT OVERWRITE"
             append: true
           ]
-          # 
-          # backup: true
-          # eof: true
-          # mode:0o0750
-          # uid: hdfs.user.name
-          # gid: hdfs.group.name
+          
+          backup: true
+          eof: true
+          mode:0o0750
+          uid: hdfs.user.name
+          gid: hdfs.group.name
 
 ## Dependencies
 
