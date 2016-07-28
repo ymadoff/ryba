@@ -149,7 +149,7 @@ Example:
 
 Note, at the moment, only MySQL and PostgreSQL are supported.
       
-      hive.hcatalog.engine ?= 'postgresql'
+      hive.hcatalog.engine ?= 'mysql'
       if hive.site['javax.jdo.option.ConnectionURL']
         # Ensure the url host is the same as the one configured in config.ryba.db_admin
         {engine, addresses, port} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
