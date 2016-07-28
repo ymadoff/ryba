@@ -169,7 +169,7 @@ Note, at the moment, only MySQL and PostgreSQL are supported.
           when 'mysql'
             hive.site['javax.jdo.option.ConnectionURL'] ?= "jdbc:mysql://#{db_admin.mysql.host}:#{db_admin.mysql.port}/hive?createDatabaseIfNotExist=true"
             hive.site['javax.jdo.option.ConnectionDriverName'] ?= 'com.mysql.jdbc.Driver'
-          when 'postgres'
+          when 'postgresql'
             hive.site['javax.jdo.option.ConnectionURL'] ?= "jdbc:postgresql://#{db_admin.postgres.host}:#{db_admin.postgres.port}/hive?createDatabaseIfNotExist=true"
             hive.site['javax.jdo.option.ConnectionDriverName'] ?= 'org.postgresql.Driver'
           else throw new Error 'Unsupported database engine'
