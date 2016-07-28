@@ -147,21 +147,31 @@ Example:
 
 ## Configure Database
 
-Note, at the moment, only MySQL is supported.
-
+Note, at the moment, only MySQL and PostgreSQL are supported.
+      
+      hive.hcatalog.engine ?= 'postgresql'
       if hive.site['javax.jdo.option.ConnectionURL']
         # Ensure the url host is the same as the one configured in config.ryba.db_admin
         {engine, addresses, port} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
         switch engine
           when 'mysql'
             admin = addresses.filter (address) ->
-              address.host is db_admin.host and address.port is db_admin.port
+              address.host is db_admin.mysql.host and "#{address.port}" is "#{db_admin.mysql.port}"
+            throw new Error "Invalid host configuration" unless admin.length
+          when 'postgresql'
+            admin = addresses.filter (address) ->
+              address.host is db_admin.postgres.host and"#{address.port}" is "#{db_admin.postgres.port}"
             throw new Error "Invalid host configuration" unless admin.length
           else throw new Error 'Unsupported database engine'
       else
-        switch db_admin.engine
+        # do not base the default engine on db_admin, but on hive property.
+        switch hive.hcatalog.engine
           when 'mysql'
-            hive.site['javax.jdo.option.ConnectionURL'] ?= "jdbc:mysql://#{db_admin.host}:#{db_admin.port}/hive?createDatabaseIfNotExist=true"
+            hive.site['javax.jdo.option.ConnectionURL'] ?= "jdbc:mysql://#{db_admin.mysql.host}:#{db_admin.mysql.port}/hive?createDatabaseIfNotExist=true"
+            hive.site['javax.jdo.option.ConnectionDriverName'] ?= 'com.mysql.jdbc.Driver'
+          when 'postgres'
+            hive.site['javax.jdo.option.ConnectionURL'] ?= "jdbc:postgresql://#{db_admin.postgres.host}:#{db_admin.postgres.port}/hive?createDatabaseIfNotExist=true"
+            hive.site['javax.jdo.option.ConnectionDriverName'] ?= 'org.postgresql.Driver'
           else throw new Error 'Unsupported database engine'
       throw new Error "Hive database username is required" unless hive.site['javax.jdo.option.ConnectionUserName']
       throw new Error "Hive database password is required" unless hive.site['javax.jdo.option.ConnectionPassword']
@@ -252,3 +262,4 @@ default to the [DBTokenStore]. Also worth of interest is the
 [DBTokenStore]: https://github.com/apache/hive/blob/trunk/shims/common/src/main/java/org/apache/hadoop/hive/thrift/DBTokenStore.java
 [ZooKeeperTokenStore]: https://github.com/apache/hive/blob/trunk/shims/common/src/main/java/org/apache/hadoop/hive/thrift/ZooKeeperTokenStore.java
 [initiator]: https://cwiki.apache.org/confluence/display/Hive/Configuration+Properties#ConfigurationProperties-hive.compactor.initiator.on
+[hive-postgresql]: http://docs.hortonworks.com/HDPDocuments/Ambari-2.1.0.0/bk_ambari_reference_guide/content/_using_hive_with_postgresql.html

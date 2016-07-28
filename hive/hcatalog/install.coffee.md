@@ -69,13 +69,20 @@ Note, the server is not activated on startup but they endup as zombies if HDFS
 isnt yet started.
 
       @call header: 'Service', handler: ->
-        @call 
+        @call
           if: engine is 'mysql'
           handler: ->
             @service
               name: 'mysql'
             @service
               name: 'mysql-connector-java'
+        @call 
+          if: engine is 'postgresql'
+          handler: ->
+            @service
+              name: 'postgresql'
+            @service
+              name: 'postgresql-jdbc'
         @service
           name: 'hive'
         @hdp_select
@@ -98,72 +105,175 @@ isnt yet started.
       @call header: 'Metastore Database', timeout:-1, handler: ->
         switch engine
           when 'mysql'
-            mysql_admin = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port}"
-            mysql_client = "#{db_admin.path} -u#{username} -p#{password} -h#{db_admin.host} -P#{db_admin.port}"
+            mysql_admin = "#{db_admin.mysql.path} -u#{db_admin.mysql.username} -p#{db_admin.mysql.password} -h#{db_admin.mysql.host} -P#{db_admin.mysql.port}"
+            mysql_client = "#{db_admin.mysql.path} -u#{username} -p#{password} -h#{db_admin.mysql.host} -P#{db_admin.mysql.port}"
             target_version = 'ls /usr/hdp/current/hive-metastore/lib | grep hive-common- | sed \'s/^hive-common-\\([0-9]\\+.[0-9]\\+.[0-9]\\+\\).*\\.jar$/\\1/g\''
             current_version = "#{mysql_client} -e 'select SCHEMA_VERSION from hive.VERSION' --skip-column-names"
-            @execute
+            @wait_execute
               cmd: "if ! #{mysql_client} -e \"USE #{db};\"; then exit 3; fi"
+              unless: @contexts('ryba/hive/hcatalog')[0].config.host is @config.host 
               code_skipped: 3
-            @execute
-              cmd: """
-              #{mysql_admin} -e "
-              create database if not exists #{db};
-              grant all privileges on #{db}.* to '#{username}'@'localhost' identified by '#{password}';
-              grant all privileges on #{db}.* to '#{username}'@'%' identified by '#{password}';
-              flush privileges;
-              "
-              """
-              unless: -> @status -1
-              trap: true
-            @execute
-              cmd: """
-              cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql # Required for sql sources
-              target_version=`#{target_version}`
-              echo Target Version: "$target_version"
-              target=hive-schema-${target_version}.mysql.sql
-              target_major_version=`echo $target_version | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2.0/g\'`
-              echo Target Version: "$target_major_version"
-              target_major=hive-schema-${target_major_version}.mysql.sql
-              if ! test -f $target && ! test -f $target_major; then exit 1; fi
-              # Create schema
-              if test -f $target; then
-                echo Importing $target
-                #{mysql_client} #{db} < $target;
-              elif test -f $target_major; then
-                echo Importing $target_major
-                #{mysql_client} #{db} < $target_major;
-              fi
-              """
-              unless: -> @status -2
-              trap: true
-            @execute
-              cmd: """
-              cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql # Required for sql sources
-              current=`#{current_version}`
-              echo Current Version: "$current"
-              target=`#{target_version}`
-              echo Target Version: "$target"
-              if [ "$current" == "$target" ]; then exit 3; fi
-              # Upgrade schema
-              upgrade=upgrade-${current}-to-${target}.mysql.sql
-              if ! test -f $upgrade; then
-                echo 'Upgrade script does not exists'
-                current_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
-                target_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
-                echo Target Major Version: "$target_major"
-                if [ $current_major == $target_major ]; then exit 0; fi
-                exit 1;
-              fi
-              cd `dirname $upgrade`
-              #{mysql_client} #{db} < $upgrade
-              # Import transaction schema (now created with 0.13.1)
-              #trnx=hive-txn-schema-${target}.mysql.sql
-              #if test -f $trnx; then #{mysql_client} #{db} < $trnx; fi
-              """
-              code_skipped: 3
-              trap: true
-              unless: -> @status -3
+            @call
+              if: @contexts('ryba/hive/hcatalog')[0].config.host is @config.host 
+              header: 'Configure Hive with MySQL'
+              handler: ->
+                @execute
+                  cmd: "if ! #{mysql_client} -e \"USE #{db};\"; then exit 3; fi"
+                  code_skipped: 3
+                @execute
+                  cmd: """
+                  #{mysql_admin} -e "
+                  create database if not exists #{db};
+                  grant all privileges on #{db}.* to '#{username}'@'localhost' identified by '#{password}';
+                  grant all privileges on #{db}.* to '#{username}'@'%' identified by '#{password}';
+                  flush privileges;
+                  "
+                  """
+                  unless: -> @status -1
+                  trap: true
+                @execute
+                  cmd: """
+                  cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql # Required for sql sources
+                  target_version=`#{target_version}`
+                  echo Target Version: "$target_version"
+                  target=hive-schema-${target_version}.mysql.sql
+                  target_major_version=`echo $target_version | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2.0/g\'`
+                  echo Target Version: "$target_major_version"
+                  target_major=hive-schema-${target_major_version}.mysql.sql
+                  if ! test -f $target && ! test -f $target_major; then exit 1; fi
+                  # Create schema
+                  if test -f $target; then
+                    echo Importing $target
+                    #{mysql_client} #{db} < $target;
+                  elif test -f $target_major; then
+                    echo Importing $target_major
+                    #{mysql_client} #{db} < $target_major;
+                  fi
+                  """
+                  unless: -> @status -2
+                  trap: true
+                @execute
+                  cmd: """
+                  cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/mysql # Required for sql sources
+                  current=`#{current_version}`
+                  echo Current Version: "$current"
+                  target=`#{target_version}`
+                  echo Target Version: "$target"
+                  if [ "$current" == "$target" ]; then exit 3; fi
+                  # Upgrade schema
+                  upgrade=upgrade-${current}-to-${target}.mysql.sql
+                  if ! test -f $upgrade; then
+                    echo 'Upgrade script does not exists'
+                    current_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
+                    target_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
+                    echo Target Major Version: "$target_major"
+                    if [ $current_major == $target_major ]; then exit 0; fi
+                    exit 1;
+                  fi
+                  cd `dirname $upgrade`
+                  #{mysql_client} #{db} < $upgrade
+                  # Import transaction schema (now created with 0.13.1)
+                  #trnx=hive-txn-schema-${target}.mysql.sql
+                  #if test -f $trnx; then #{mysql_client} #{db} < $trnx; fi
+                  """
+                  code_skipped: 3
+                  trap: true
+                  unless: -> @status -3
+          when 'postgresql'
+            opts =
+              host: db_admin.postgres.host
+              port: db_admin.postgres.port
+              name: username
+              password: password
+            postgres_client = "#{database.wrap opts}"
+            target_version = 'ls /usr/hdp/current/hive-metastore/lib | grep hive-common- | sed \'s/^hive-common-\\([0-9]\\+.[0-9]\\+.[0-9]\\+\\).*\\.jar$/\\1/g\''
+            current_version = "#{postgres_client} -d #{db} -tAc 'select SCHEMA_VERSION from \"VERSION\"' "
+            @wait_execute
+              cmd: "#{postgres_client} -d #{db} -tAc 'select \"SCHEMA_VERSION\" from \"VERSION\"'"
+              unless: @contexts('ryba/hive/hcatalog')[0].config.host is @config.host
+              code_skipped: [1,2]
+            @call
+              header: 'Configure Hive with MySQL'
+              retry: 2
+              if: @contexts('ryba/hive/hcatalog')[0].config.host is @config.host
+              handler: ->
+                @database.user.add
+                  header: 'Create Hive User'
+                  host: db_admin.postgres.host
+                  port: db_admin.postgres.port
+                  admin_name: db_admin.postgres.username
+                  admin_password: db_admin.postgres.password
+                  name: username
+                  password: password
+                  engine: 'postgres'
+                @database.db.add
+                  header: 'Create Hive DB'
+                  database: db
+                  host: db_admin.postgres.host
+                  port: db_admin.postgres.port
+                  admin_name: db_admin.postgres.username
+                  admin_password: db_admin.postgres.password
+                  user: username
+                  engine: 'postgres'
+                @database.schema.add
+                  header: 'Create Hive Schema'
+                  database: db
+                  host: db_admin.postgres.host
+                  port: db_admin.postgres.port
+                  admin_name: db_admin.postgres.username
+                  admin_password: db_admin.postgres.password
+                  schema: db
+                  owner: username
+                  engine: 'postgres'
+                @execute
+                  cmd: """
+                  cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/postgres # Required for sql sources
+                  target_version=`#{target_version}`
+                  echo Target Version: "$target_version"
+                  target=hive-schema-${target_version}.postgres.sql
+                  target_major_version=`echo $target_version | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2.0/g\'`
+                  echo Target Version: "$target_major_version"
+                  target_major=hive-schema-${target_major_version}.postgres.sql
+                  if ! test -f $target && ! test -f $target_major; then exit 1; fi
+                  # Create schema
+                  if test -f $target; then
+                    echo Importing $target
+                    #{postgres_client} -d #{db} < $target;
+                  elif test -f $target_major; then
+                    echo Importing $target_major
+                    #{postgres_client} -d #{db} < $target_major;
+                  fi
+                  """
+                  if: -> @status(-1) or @status(-2) or @status(-3)
+                  code_skipped: 1
+                  trap: true
+                @execute
+                  cmd: """
+                  cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/postgres # Required for sql sources
+                  current=`#{current_version}`
+                  echo Current Version: "$current"
+                  target=`#{target_version}`
+                  echo Target Version: "$target"
+                  if [ "$current" == "$target" ]; then exit 3; fi
+                  # Upgrade schema
+                  upgrade=upgrade-${current}-to-${target}.postgres.sql
+                  if ! test -f $upgrade; then
+                    echo 'Upgrade script does not exists'
+                    current_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
+                    target_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
+                    echo Target Major Version: "$target_major"
+                    if [ $current_major == $target_major ]; then exit 0; fi
+                    exit 1;
+                  fi
+                  cd `dirname $upgrade`
+                  #{postgres_client} -d #{db} < $upgrade
+                  # Import transaction schema (now created with 0.13.1)
+                  #trnx=hive-txn-schema-${target}.postgres.sql
+                  #if test -f $trnx; then #{postgres_client} -d #{db} < $trnx; fi
+                  """
+                  if: -> @status(-2) or @status(-3) or @status(-4)
+                  code_skipped: [1,3]
+                  trap: true
           else throw new Error 'Database engine not supported'
 
       @hconfigure
@@ -227,9 +337,15 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
           ) for lib in hive.libs
 
       @link
-        header: 'Link Driver'
+        if: engine is 'mysql'
+        header: 'Link MySQL Driver'
         source: '/usr/share/java/mysql-connector-java.jar'
         destination: '/usr/hdp/current/hive-metastore/lib/mysql-connector-java.jar'
+      @link
+        if: engine is 'postgresql'
+        header: 'Link PostgreSQL Driver'
+        source: '/usr/share/java/postgresql-jdbc.jar'
+        destination: '/usr/hdp/current/hive-metastore/lib/postgresql-jdbc.jar'
 
 ## Kerberos
 
@@ -329,5 +445,6 @@ Create the directories to store the logs and pid information. The properties
 # Module Dependencies
 
     path = require 'path'
+    database = require 'mecano/lib/misc/database'
     parse_jdbc = require '../../lib/parse_jdbc'
     mkcmd = require '../../lib/mkcmd'
