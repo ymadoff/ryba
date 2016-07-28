@@ -1,4 +1,7 @@
   
+# Solr Cloud Docker Prepare
+Build container and save it.
+  
     module.exports = 
       header: 'Solr Cloud Docker Prepare'
       timeout: -1

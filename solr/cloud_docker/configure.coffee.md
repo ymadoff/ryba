@@ -1,4 +1,17 @@
-## Configure
+## Configure Solr Cloud cluster on docker 
+
+This module configures the servers to be able to run different solrCloud cluster in 
+docker containers. The configuration is made in two steps:
+- The first is to create host level configuration as we would do without docker
+The host level configuration will be shared by the different containers running 
+on the same host.
+- The second step consists to configure each SolrCloud cluster  on the container level
+by looping through each on of it and configuring the different properties.
+These properties are unique to each container, depending on the cluster/host it 
+belongs to.
+For now we supports only (at the cluster level) only one container by host.
+
+
 Solr accepts differents sources:
  - HDP to use HDP lucidworks repos
 
@@ -58,7 +71,6 @@ ryba:
 ## Core Conf
 
       # Layout
-  
       solr.cloud_docker.env ?= {}
       zk_hosts = @contexts 'ryba/zookeeper/server', require("#{__dirname}/../../zookeeper/server/configure").handler
       solr.cloud_docker.zk_connect = zk_hosts.map( (ctx) -> "#{ctx.config.host}:#{ctx.config.ryba.zookeeper.port}").join ','
@@ -69,7 +81,7 @@ ryba:
 
 ## Fix Conf
 Before 6.0 version, solr.xml'<solrCloud> section has a mistake:
-The property `zkCredentialsProvider` is named `zkCredientialsProvider`
+The property `zkCredentialsProvider` was named `zkCredientialsProvider`
 
       solr.cloud_docker.conf_source = if (solr.cloud_docker.version.split('.')[0] < 6) or (solr.cloud_docker.source is 'HDP')
       then "#{__dirname}/../resources/cloud/solr_5.xml.j2"
@@ -154,7 +166,7 @@ network_mode: host (port collision).
     zk_node: 'my_cluster'
     only: true    
 ```
-      
+
       for name,config of solr.cloud_docker.clusters
         config.hosts ?= @contexts('ryba/solr/cloud_docker').map((c)->c.config.host)
         throw Error "Malformed Master for cluster: #{name}" unless config.hosts.indexOf config['master'] > -1
@@ -188,14 +200,18 @@ network_mode: host (port collision).
         for node in [1..config.containers]
           command = "/docker_entrypoint.sh --zk_node #{config.zk_node} " # --port #{config.port}"
           environment = []
-          # --bootstrap args in commands enable master to create the zookeeper node for the current cluster
-          # for host in (@contexts('ryba/solr/cloud_docker')).map((c)->c.config.host)
-          #   environment.push "constraint:container!=#{name}_node*" if config.hosts.indexOf(host) == -1 
+          # `affinity:container` enables docker to start a new container on a host 
+          # where no other container belonging to the cluster is already running.
           environment.push "affinity:container!=*#{name.split('_').join('')}_node*"
+          # We need to set master property to now which server will launch bootstrap
+          # command and get it's node name (solr node inside a container for a cluster).
           if config['master'] is @config.host and not config.master_configured
+            # --bootstrap args in commands enable master to create the zookeeper 
+            # node for the current cluster. Check docker_entrypoint.sh file for more infos.
             command += " --bootstrap"
             config.master_node = node
             config.master_configured = true
+          #docker-compose.yml container specific properties
           config.service_def["node_#{node}"]=
             'image' : "#{solr.cloud_docker.build.image}:#{solr.cloud_docker.build.version}"
             'restart': "always"
@@ -207,17 +223,18 @@ network_mode: host (port collision).
             'cpu_shares': config.cpu_shares
             'cpu_quota': config.cpu_quota
           config.service_def["node_#{node}"]['environment'] = environment if  environment.length > 0
+        # solr.in.sh node specific properties
         # Custom Host config (a container for a host)
         config_hosts = config.config_hosts = {}
         for host in config.hosts
           if host is @config.host
             config_host = config_hosts["#{host}"] ?= {}
+            # Configure host environment config
             config_host['env'] ?= {}
             config_host['env']['SOLR_HOME'] ?= "#{solr.user.home}"
             config_host['env']['SOLR_PORT'] ?= "#{config.port}"
             config_host['env']['SOLR_AUTHENTICATION_OPTS'] ?= "-Djetty.port=#{config.port}" #backward compatibility
             config_host['env']['ZK_HOST'] ?= "#{solr.cloud_docker.zk_connect}/#{config.zk_node}"
-            
             for prop in [
               'SOLR_JAVA_HOME'
               'ENABLE_REMOTE_JMX_OPTS'
@@ -229,7 +246,6 @@ network_mode: host (port collision).
               'SOLR_HOST'
               'SOLR_PID_DIR'
             ] then config_host['env'][prop] ?= config_host['env'][prop] ?= config['env'][prop] ?= solr.cloud_docker['env'][prop] 
-          
             # Authentication & Authorization
             config_host.security = config.security ?= {}
             config_host.security["authentication"] ?= {}
@@ -243,7 +259,7 @@ network_mode: host (port collision).
             config_host.security["authorization"]['permissions'] ?= []
             # config_host.security["authorization"]['permissions'].push name: 'security-edit' , role: 'admin' unless config_host.security["authorization"]['permissions'].indexOf({name: 'security-edit' , role: 'admin'}) > -1 #define new role 
             # config_host.security["authorization"]['permissions'].push name: 'read' , role: 'reader' unless config_host.security["authorization"]['permissions'].indexOf({name: 'read' , role: 'reader' }) > -1  #define new role
-            # config_host.security["authorization"]['permissions'].push name: 'all' , role: 'manager' unless config_host.security["authorization"]['permissions'].indexOf({name: 'all' , role: 'manager' }) > -1  #define new role
+            config_host.security["authorization"]['permissions'].push name: 'all' , role: 'manager' unless config_host.security["authorization"]['permissions'].indexOf({name: 'all' , role: 'manager' }) > -1  #define new role
             config_host.security["authorization"]['user-role'] ?= {}
             if config_host.security["authentication"]['class'] is 'org.apache.solr.security.KerberosPlugin'
               config_host['env']['SOLR_AUTHENTICATION_CLIENT_CONFIGURER'] ?= 'org.apache.solr.client.solrj.impl.Krb5HttpClientConfigurer' 
@@ -264,5 +280,3 @@ network_mode: host (port collision).
             config_host.auth_opts['solr.kerberos.principal'] ?= solr.cloud_docker.spnego.principal
             config_host.auth_opts['solr.kerberos.keytab'] ?= solr.cloud_docker.spnego.keytab
             config_host.auth_opts['solr.kerberos.name.rules'] ?= "RULE:[1:\\$1]RULE:[2:\\$1]"
-
-            # curl -k --user solr:SolrRocks https://noeyy8m0.noe.edf.fr:10000/solr/admin/authentication -H 'Content-type:application/json' -d '{  "set-user": {"admin" : "admin123"}}'
