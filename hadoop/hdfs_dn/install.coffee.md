@@ -14,7 +14,7 @@ information regarding the location of blocks in the cluster. In order
 to achieve this, the DataNodes are configured with the location of both
 NameNodes, and send block location information and heartbeats to both.
 
-    module.exports = header: 'HDFS DN', handler: ->
+    module.exports = header: 'HDFS DN Install', handler: ->
       {realm, core_site, hdfs, hadoop_group, hadoop_metrics} = @config.ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 

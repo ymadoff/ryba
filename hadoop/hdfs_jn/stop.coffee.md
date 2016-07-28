@@ -13,7 +13,7 @@ su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-journalnode/../hadoop/sbin/hadoop-da
 
 The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-journalnode.pid".
 
-    module.exports = header: 'HDFS JN # Stop', label_true: 'STOPPED', handler: ->
+    module.exports = header: 'HDFS JN Stop', label_true: 'STOPPED', handler: ->
 
       @service_stop
         header: 'HDFS JN # Stop'
