@@ -83,7 +83,7 @@ associated processing and management tasks on Hadoop clusters.
 
 ## Configuration for Proxy Users
 
-      falcon_hosts = @contexts('ryba/falcon').map((ctx) -> ctx.config.host).join ','
+      falcon_hosts = @contexts('ryba/falcon/server').map((ctx) -> ctx.config.host).join ','
       hadoop_ctxs = @contexts ['ryba/hadoop/hdfs_nn','ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
       for hadoop_ctx in hadoop_ctxs
         hadoop_ctx.config.ryba ?= {}
