@@ -36,7 +36,7 @@ Wait for the HBase master to be started.
               "isExcludes": false
               "isRecursive": false
             "table": 
-              "values": ["#{hbase.test.default_namespace}:#{hbase.test.default_table}"]
+              "values": ["#{hbase.test.namespace}:#{hbase.test.table}"]
               "isExcludes": false
               "isRecursive": false              	
           "repositoryName": "#{install['REPOSITORY_NAME']}"
@@ -109,53 +109,52 @@ Groups and users access are revoked in the same way, but groups are prefixed
 with an '@' character. In the same way, tables and namespaces are specified, but
 namespaces are prefixed with an '@' character.
 
-      @call header: 'Grant Permissions', label_true: 'CHECKED', timeout:-1 , retry: 2, handler: ->
-        # Retry is set to 2 because the table creation is subject to a racing condition.
-        @execute
-          header: 'Namespace Level'
-          cmd: mkcmd.hbase @, """
-          if hbase shell 2>/dev/null <<< "list_namespace_tables '#{hbase.test.default_namespace}'" | egrep '[0-9]+ row'; then exit 2; fi
-          hbase shell 2>/dev/null <<-CMD
-            create_namespace '#{hbase.test.default_namespace}'
-            grant '#{user.name}', 'RWC', '@#{hbase.test.default_namespace}'
-          CMD
-          """
-          code_skipped: 2
-        , (err, executed, stdout) ->
-          hasCreatedNamespace = ///create_namespace '#{hbase.test.default_namespace}'\n0 row///.test stdout
-          hasGrantedAccess = ///grant '@#{hbase.test.default_namespace}', 'RWC', '#{user.name}'\n0 row///.test stdout
-          throw Error 'Invalid command output' if executed and (not hasCreatedNamespace or not hasGrantedAccess)
-        @execute
-          header: 'Table Level'
-          cmd: mkcmd.hbase @, """
-          if hbase shell 2>/dev/null <<< "user_permission '#{hbase.test.default_namespace}:#{hbase.test.default_table}'" | egrep '[1-9][0-9]* row'; then exit 2; fi
-          hbase shell 2>/dev/null <<-CMD
-            create '#{hbase.test.default_namespace}:#{hbase.test.default_table}', 'family1'
-            grant '#{user.name}', 'RWC', '#{hbase.test.default_namespace}:#{hbase.test.default_table}'
-          CMD
-          hbase shell 2>/dev/null <<< "user_permission '#{hbase.test.default_namespace}:#{hbase.test.default_table}'" | egrep '[1-9][0-9]* row'
-          """
-          retry: 2 # Prevent racing condition in table creation
-          code_skipped: 2
-        , (err, executed, stdout) ->
-          hasCreatedTable = ///create '#{hbase.test.default_namespace}:#{hbase.test.default_table}', 'family1'\n0 row///.test stdout
-          hasGrantedAccess = ///grant '#{user.name}', 'RWC', '#{hbase.test.default_namespace}:#{hbase.test.default_table}'\n0 row///.test stdout
-          throw Error 'Invalid command output' if executed and (not hasCreatedTable or not hasGrantedAccess)
+      @execute
+        header: 'Grant Permissions'
+        cmd: mkcmd.hbase @, """
+        if hbase shell 2>/dev/null <<< "list_namespace_tables '#{hbase.test.namespace}'" | egrep '[0-9]+ row'; then
+          if [ ! -z '#{force_check or ''}' ]; then
+            echo [DEBUG] Cleanup existing table and namespace
+            hbase shell 2>/dev/null << '    CMD' | sed -e 's/^    //';
+              disable '#{hbase.test.namespace}:#{hbase.test.table}'
+              drop '#{hbase.test.namespace}:#{hbase.test.table}'
+              drop_namespace '#{hbase.test.namespace}'
+            CMD
+          else
+            echo [INFO] Test is skipped
+            exit 2;
+          fi
+        fi
+        echo '[DEBUG] Namespace level'
+        hbase shell 2>/dev/null <<-CMD
+          create_namespace '#{hbase.test.namespace}'
+          grant '#{user.name}', 'RWC', '@#{hbase.test.namespace}'
+        CMD
+        echo '[DEBUG] Table Level'
+        hbase shell 2>/dev/null <<-CMD
+          create '#{hbase.test.namespace}:#{hbase.test.table}', 'family1'
+          grant '#{user.name}', 'RWC', '#{hbase.test.namespace}:#{hbase.test.table}'
+        CMD
+        """
+        code_skipped: 2
+        trap: true
 
 ## Check Shell
 
+Note, we are re-using the namespace created above.
+
       @call header: 'Shell', timeout: -1, label_true: 'CHECKED', handler: ->
         @wait_execute
-          cmd: mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists '#{hbase.test.default_namespace}:#{hbase.test.default_table}'\" | grep 'Table #{hbase.test.default_namespace}:#{hbase.test.default_table} does exist'"
+          cmd: mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists '#{hbase.test.namespace}:#{hbase.test.table}'\" | grep 'Table #{hbase.test.namespace}:#{hbase.test.table} does exist'"
         @execute
           cmd: mkcmd.test @, """
           hbase shell 2>/dev/null <<-CMD
-            alter '#{hbase.test.default_namespace}:#{hbase.test.default_table}', {NAME => '#{shortname}'}
-            put '#{hbase.test.default_namespace}:#{hbase.test.default_table}', 'my_row', '#{shortname}:my_column', 10
-            scan '#{hbase.test.default_namespace}:#{hbase.test.default_table}',  {COLUMNS => '#{shortname}'}
+            alter '#{hbase.test.namespace}:#{hbase.test.table}', {NAME => '#{shortname}'}
+            put '#{hbase.test.namespace}:#{hbase.test.table}', 'my_row', '#{shortname}:my_column', 10
+            scan '#{hbase.test.namespace}:#{hbase.test.table}',  {COLUMNS => '#{shortname}'}
           CMD
           """
-          unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"scan '#{hbase.test.default_namespace}:#{hbase.test.default_table}', {COLUMNS => '#{shortname}'}\" | egrep '[0-9]+ row'"
+          unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"scan '#{hbase.test.namespace}:#{hbase.test.table}', {COLUMNS => '#{shortname}'}\" | egrep '[0-9]+ row'"
         , (err, executed, stdout) ->
           isRowCreated = RegExp("column=#{shortname}:my_column, timestamp=\\d+, value=10").test stdout
           throw Error 'Invalid command output' if executed and not isRowCreated
@@ -167,7 +166,7 @@ namespaces are prefixed with an '@' character.
           cmd: mkcmd.test @, """
             hdfs dfs -rm -skipTrash check-#{@config.host}-hbase-mapred
             echo -e '1,toto\\n2,tata\\n3,titi\\n4,tutu' | hdfs dfs -put -f - /user/ryba/test_import.csv
-            hbase org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.separator=, -Dimporttsv.columns=HBASE_ROW_KEY,family1:value #{hbase.test.default_namespace}:#{hbase.test.default_table} /user/ryba/test_import.csv
+            hbase org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.separator=, -Dimporttsv.columns=HBASE_ROW_KEY,family1:value #{hbase.test.namespace}:#{hbase.test.table} /user/ryba/test_import.csv
             hdfs dfs -touchz check-#{@config.host}-hbase-mapred
             """
           unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.host}-hbase-mapred"
