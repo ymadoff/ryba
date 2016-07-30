@@ -42,13 +42,12 @@ OpenTSDB archive comes with an RPM
         @execute
           cmd: "yum localinstall -y --nogpgcheck /var/tmp/opentsdb-#{opentsdb.version}.noarch.rpm"
           unless_exec: "rpm -q --queryformat '%{VERSION}' opentsdb | grep '#{opentsdb.version}'"
-        # Dont want to clean to speed this up
-        # @remove
-        #   skip: true
-        #   destination: "/var/tmp/opentsdb-#{opentsdb.version}.noarch.rpm"
-        # Mecano shall detect the change in mecano.link
-        # @remove
-        #   destination: "#{opentsdb.user.home}/lib/zookeeper-3.3.6.jar"
+        @execute
+          cmd: """
+          if ! ls #{opentsdb.user.home}/lib/zookeeper-*.jar | wc -l; then exit 3; fi
+          rm -f #{opentsdb.user.home}/lib/zookeeper-*.jar
+          """
+          code_skipped: 3
         @link
           source: '/usr/hdp/current/zookeeper-client/zookeeper.jar'
           destination: "#{opentsdb.user.home}/lib/zookeeper.jar"
