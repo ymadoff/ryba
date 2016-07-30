@@ -220,9 +220,9 @@ Example:
       hue.ini['desktop']['time_zone'] ?= 'ETC/UTC'
       # Desktop database
       hue.ini['desktop']['database'] ?= {}
-      hue.ini['desktop']['database']['engine'] ?= db_admin.engine
-      hue.ini['desktop']['database']['host'] ?= db_admin.host
-      hue.ini['desktop']['database']['port'] ?= db_admin.port
+      hue.ini['desktop']['database']['engine'] ?= db_admin.mysql.engine
+      hue.ini['desktop']['database']['host'] ?= db_admin.mysql.host
+      hue.ini['desktop']['database']['port'] ?= db_admin.mysql.port
       hue.ini['desktop']['database']['user'] ?= 'hue'
       hue.ini['desktop']['database']['password'] ?= 'hue123'
       hue.ini['desktop']['database']['name'] ?= 'hue'
