@@ -166,15 +166,17 @@ pointing to the Ganglia master hostname.
 
 ## HTTPD Restart
 
-      @service
-        header: 'HTTPD Restart'
-        srv_name: 'httpd'
-        action: ['start', 'restart']
-        unless: (options, callback) ->
-          @execute
-            cmd: "curl -s http://#{@config.host}/ganglia/"
-          , (err, _, stdout) ->
-            callback null, !err and /Ganglia Web Frontend/.test stdout
+      @call header: 'HTTPD Restart', handler: ->
+        @execute
+          cmd: """
+          curl -s http://#{@config.host}/ganglia/ | grep 'Ganglia Web Frontend'
+          """
+          shy: true
+          code_skipped: 1
+        @service
+          srv_name: 'httpd'
+          action: ['start', 'restart']
+          if: -> @status -1
 
 ## Dependencies
 
