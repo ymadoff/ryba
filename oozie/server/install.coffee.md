@@ -10,7 +10,7 @@ failover and Oozie must target the active node.
     module.exports = header: 'Oozie Server Install', handler: ->
       {oozie, hadoop_group, hadoop_conf_dir, yarn, realm, db_admin, core_site, ssl_client,ssl} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
-      is_falcon_installed = @contexts('ryba/falcon').length isnt 0
+      is_falcon_installed = @contexts('ryba/falcon/server').length isnt 0
       port = url.parse(oozie.site['oozie.base.url']).port
 
 ## Register
