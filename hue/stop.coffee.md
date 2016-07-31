@@ -12,6 +12,7 @@ service hue stop
       {hue} = @config.ryba
       @service_stop
         name: 'hue'
+        if_exists: '/etc/init.d/hue'
 
 ## Stop Clean Logs
 
