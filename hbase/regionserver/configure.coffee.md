@@ -14,8 +14,6 @@
 
 # Users and Groups
 
-      hbase.test ?= {}
-      hbase.test.default_table ?= m_ctxs[0].config.ryba.hbase.test.default_table
       hbase.user ?= {}
       hbase.user = name: ryba.hbase.user if typeof ryba.hbase.user is 'string'
       hbase.user.name ?= m_ctxs[0].config.ryba.hbase.user.name

@@ -6,7 +6,7 @@
 
 ## Wait
 
-      @wait once: true, 'ryba/hbase/thrift/wait'
+      @call once: true, 'ryba/hbase/thrift/wait'
 
 ## Check Shell
 

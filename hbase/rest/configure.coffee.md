@@ -13,11 +13,10 @@ See [REST Gateway Impersonation Configuration][impersonation].
       {realm, core_site, ssl_server, hbase} = @config.ryba
       {java_home} = @config.java
       hbase = @config.ryba.hbase ?= {}
+      hbase.rest ?= {}
 
 # Users and Groups
 
-      hbase.test ?= {}
-      hbase.test.default_table ?= m_ctxs[0].config.ryba.hbase.test.default_table
       hbase.user ?= {}
       hbase.user = name: ryba.hbase.user if typeof ryba.hbase.user is 'string'
       hbase.user.name ?= m_ctxs[0].config.ryba.hbase.user.name
@@ -39,9 +38,14 @@ See [REST Gateway Impersonation Configuration][impersonation].
       hbase.group.system ?= m_ctxs[0].config.ryba.hbase.group.system
       hbase.user.gid = hbase.group.name
 
+## Test
+
+      hbase.rest.test ?= {}
+      hbase.rest.test.namespace ?= "ryba_check_rest_#{@config.shortname}"
+      hbase.rest.test.table ?= 'a_table'
+
 ## Rest Server Configuration
 
-      hbase.rest ?= {}
       hbase.rest.conf_dir ?= '/etc/hbase-rest/conf'
       hbase.rest.log_dir ?= '/var/log/hbase'
       hbase.rest.pid_dir ?= '/var/run/hbase'

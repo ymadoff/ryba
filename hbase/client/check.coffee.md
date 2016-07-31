@@ -36,7 +36,7 @@ Wait for the HBase master to be started.
               "isExcludes": false
               "isRecursive": false
             "table": 
-              "values": ["#{hbase.test.namespace}:#{hbase.test.table}"]
+              "values": ["#{hbase.client.test.namespace}:#{hbase.client.test.table}"]
               "isExcludes": false
               "isRecursive": false              	
           "repositoryName": "#{install['REPOSITORY_NAME']}"
@@ -112,13 +112,13 @@ namespaces are prefixed with an '@' character.
       @execute
         header: 'Grant Permissions'
         cmd: mkcmd.hbase @, """
-        if hbase shell 2>/dev/null <<< "list_namespace_tables '#{hbase.test.namespace}'" | egrep '[0-9]+ row'; then
+        if hbase shell 2>/dev/null <<< "list_namespace_tables '#{hbase.client.test.namespace}'" | egrep '[0-9]+ row'; then
           if [ ! -z '#{force_check or ''}' ]; then
             echo [DEBUG] Cleanup existing table and namespace
             hbase shell 2>/dev/null << '    CMD' | sed -e 's/^    //';
-              disable '#{hbase.test.namespace}:#{hbase.test.table}'
-              drop '#{hbase.test.namespace}:#{hbase.test.table}'
-              drop_namespace '#{hbase.test.namespace}'
+              disable '#{hbase.client.test.namespace}:#{hbase.client.test.table}'
+              drop '#{hbase.client.test.namespace}:#{hbase.client.test.table}'
+              drop_namespace '#{hbase.client.test.namespace}'
             CMD
           else
             echo [INFO] Test is skipped
@@ -127,13 +127,13 @@ namespaces are prefixed with an '@' character.
         fi
         echo '[DEBUG] Namespace level'
         hbase shell 2>/dev/null <<-CMD
-          create_namespace '#{hbase.test.namespace}'
-          grant '#{user.name}', 'RWC', '@#{hbase.test.namespace}'
+          create_namespace '#{hbase.client.test.namespace}'
+          grant '#{user.name}', 'RWC', '@#{hbase.client.test.namespace}'
         CMD
         echo '[DEBUG] Table Level'
         hbase shell 2>/dev/null <<-CMD
-          create '#{hbase.test.namespace}:#{hbase.test.table}', 'family1'
-          grant '#{user.name}', 'RWC', '#{hbase.test.namespace}:#{hbase.test.table}'
+          create '#{hbase.client.test.namespace}:#{hbase.client.test.table}', 'family1'
+          grant '#{user.name}', 'RWC', '#{hbase.client.test.namespace}:#{hbase.client.test.table}'
         CMD
         """
         code_skipped: 2
@@ -145,16 +145,16 @@ Note, we are re-using the namespace created above.
 
       @call header: 'Shell', timeout: -1, label_true: 'CHECKED', handler: ->
         @wait_execute
-          cmd: mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists '#{hbase.test.namespace}:#{hbase.test.table}'\" | grep 'Table #{hbase.test.namespace}:#{hbase.test.table} does exist'"
+          cmd: mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists '#{hbase.client.test.namespace}:#{hbase.client.test.table}'\" | grep 'Table #{hbase.client.test.namespace}:#{hbase.client.test.table} does exist'"
         @execute
           cmd: mkcmd.test @, """
           hbase shell 2>/dev/null <<-CMD
-            alter '#{hbase.test.namespace}:#{hbase.test.table}', {NAME => '#{shortname}'}
-            put '#{hbase.test.namespace}:#{hbase.test.table}', 'my_row', '#{shortname}:my_column', 10
-            scan '#{hbase.test.namespace}:#{hbase.test.table}',  {COLUMNS => '#{shortname}'}
+            alter '#{hbase.client.test.namespace}:#{hbase.client.test.table}', {NAME => '#{shortname}'}
+            put '#{hbase.client.test.namespace}:#{hbase.client.test.table}', 'my_row', '#{shortname}:my_column', 10
+            scan '#{hbase.client.test.namespace}:#{hbase.client.test.table}',  {COLUMNS => '#{shortname}'}
           CMD
           """
-          unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"scan '#{hbase.test.namespace}:#{hbase.test.table}', {COLUMNS => '#{shortname}'}\" | egrep '[0-9]+ row'"
+          unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"scan '#{hbase.client.test.namespace}:#{hbase.client.test.table}', {COLUMNS => '#{shortname}'}\" | egrep '[0-9]+ row'"
         , (err, executed, stdout) ->
           isRowCreated = RegExp("column=#{shortname}:my_column, timestamp=\\d+, value=10").test stdout
           throw Error 'Invalid command output' if executed and not isRowCreated
@@ -166,7 +166,7 @@ Note, we are re-using the namespace created above.
           cmd: mkcmd.test @, """
             hdfs dfs -rm -skipTrash check-#{@config.host}-hbase-mapred
             echo -e '1,toto\\n2,tata\\n3,titi\\n4,tutu' | hdfs dfs -put -f - /user/ryba/test_import.csv
-            hbase org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.separator=, -Dimporttsv.columns=HBASE_ROW_KEY,family1:value #{hbase.test.namespace}:#{hbase.test.table} /user/ryba/test_import.csv
+            hbase org.apache.hadoop.hbase.mapreduce.ImportTsv -Dimporttsv.separator=, -Dimporttsv.columns=HBASE_ROW_KEY,family1:value #{hbase.client.test.namespace}:#{hbase.client.test.table} /user/ryba/test_import.csv
             hdfs dfs -touchz check-#{@config.host}-hbase-mapred
             """
           unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.host}-hbase-mapred"
