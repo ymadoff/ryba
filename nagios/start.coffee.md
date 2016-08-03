@@ -1,19 +1,7 @@
 
 # Nagios Start
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
-
-## Start
-
-Start the Nagios server. You can also start the server
-manually with the following command:
-
-```
-service nagios start
-```
-
-    module.exports.push header: 'Nagios # Start', label_true: 'STARTED', handler: ->
+    module.exports = header: 'Nagios Start', label_true: 'STARTED', handler: ->
       @service_start
         name: 'nagios'
         code_stopped: 1

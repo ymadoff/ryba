@@ -1,8 +1,7 @@
 
 # Nagios Stop
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap'
+    module.exports = header: 'Nagios Stop', label_true: 'STOPPED', handler: ->
 
 ## Stop
 
@@ -16,15 +15,14 @@ service nagios stop
 
 The file storing the PID is "/var/run/nagios.pid".
 
-    module.exports.push header: 'Nagios # Stop', label_true: 'STOPPED', handler: ->
       @service_stop
         name: 'nagios'
         code_stopped: 1
 
 ## Stop Clean Logs
 
-    module.exports.push header: 'Nagios # Stop Clean Logs', label_true: 'CLEANED', handler: ->
-      return unless @config.ryba.clean_logs
       @execute
+        header: Clean Logs
         cmd: 'rm /var/log/nagios/*'
         code_skipped: 1
+        if: @config.ryba.clean_logs
