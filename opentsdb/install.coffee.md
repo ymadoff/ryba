@@ -37,7 +37,7 @@ OpenTSDB archive comes with an RPM
       @call header: 'Packages', handler: ->
         @download
           source: opentsdb.source
-          destination: "/var/tmp/opentsdb-#{opentsdb.version}.noarch.rpm"
+          target: "/var/tmp/opentsdb-#{opentsdb.version}.noarch.rpm"
           unless_exec: "rpm -q --queryformat '%{VERSION}' opentsdb | grep '#{opentsdb.version}'"
         @execute
           cmd: "yum localinstall -y --nogpgcheck /var/tmp/opentsdb-#{opentsdb.version}.noarch.rpm"
@@ -50,7 +50,7 @@ OpenTSDB archive comes with an RPM
           code_skipped: 3
         @link
           source: '/usr/hdp/current/zookeeper-client/zookeeper.jar'
-          destination: "#{opentsdb.user.home}/lib/zookeeper.jar"
+          target: "#{opentsdb.user.home}/lib/zookeeper.jar"
 
 ## Kerberos
 
@@ -65,7 +65,7 @@ OpenTSDB archive comes with an RPM
             uid: opentsdb.user.name
             gid: opentsdb.group.name
           @write_jaas
-            destination: '/etc/opentsdb/opentsdb.jaas'
+            target: '/etc/opentsdb/opentsdb.jaas'
             content: "#{opentsdb.config['hbase.sasl.clientconfig']}":
               principal: "#{opentsdb.user.name}/#{@config.host}@#{realm}"
               useTicketCache: true
@@ -105,7 +105,7 @@ Starting opentsdb: /etc/init.d/opentsdb: line 69: ulimit: open files: cannot mod
       # Some config properties aren't honored, force JVM Arguments
       @write
         header: 'Fix Service Init Script'
-        destination: '/etc/init.d/opentsdb'
+        target: '/etc/init.d/opentsdb'
         write: [
           match: /^USER=.*$/mg
           replace: "USER=#{opentsdb.user.name} # RYBA CONF `user`, DON'T OVERWRITE"
@@ -119,7 +119,7 @@ Starting opentsdb: /etc/init.d/opentsdb: line 69: ulimit: open files: cannot mod
 
       @write_properties
         header: 'opentsdb conf'
-        destination: '/etc/opentsdb/opentsdb.conf'
+        target: '/etc/opentsdb/opentsdb.conf'
         content: opentsdb.config
         backup: true
 

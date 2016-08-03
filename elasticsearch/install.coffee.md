@@ -30,7 +30,7 @@ ElasticSearch archive comes with an RPM
       @call header: 'Packages', timeout: -1, handler: ->
         @download
           source: elasticsearch.source
-          destination: "/var/tmp/elasticsearch-#{elasticsearch.version}.noarch.rpm"
+          target: "/var/tmp/elasticsearch-#{elasticsearch.version}.noarch.rpm"
           # unless_exec: "rpm -q --queryformat '%{VERSION}' elasticsearch | grep '#{elasticsearch.version}'"
           unless_exists: true
         @execute
@@ -44,7 +44,7 @@ ElasticSearch archive comes with an RPM
 
       @call header: 'Environment', handler: ->
         @write_yaml
-          destination: '/etc/elasticsearch/elasticsearch.yml'
+          target: '/etc/elasticsearch/elasticsearch.yml'
           content:
             'cluster.name': "#{elasticsearch.cluster.name}"
             'index.number_of_shards': "#{elasticsearch.number_of_shards}"
@@ -75,5 +75,5 @@ ElasticSearch archive comes with an RPM
         #     replace: "node.data: #{elasticsearch.node.data} # RYBA CONF `elasticsearch.node.data`, DON'T OVERWRITE"
         #     append: true
         # @write
-        #   destination: 
+        #   target: 
         #   write: write
