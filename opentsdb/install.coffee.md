@@ -77,6 +77,29 @@ OpenTSDB archive comes with an RPM
             user: opentsdb.user.name
             exec: true
 
+## Ulimit
+
+Increase ulimit for the OpenTSDB user. By default, ryba will create the file:
+
+```bash
+cat /etc/security/limits.d/opentsdb.conf
+opentsdb   - nofile 65535
+opentsdb   - nproc  24576
+```
+
+If not configured, the following message appear on startup:
+
+```
+Starting opentsdb: /etc/init.d/opentsdb: line 69: ulimit: open files: cannot modify limit: Operation not permitted
+'ulimit -n' must be greater than or equal to 65535, is 1024
+```
+
+      @system_limits
+        header: 'Ulimit'
+        user: opentsdb.user.name
+        nofile: opentsdb.user.limits.nofile
+        nproc: opentsdb.user.limits.nproc
+
 ## Fix Service
 
       # Some config properties aren't honored, force JVM Arguments

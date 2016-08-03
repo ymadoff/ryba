@@ -6,6 +6,7 @@
       rs_ctxs = @contexts 'ryba/hbase/regionserver', require('../hbase/regionserver/configure').handler
       throw Error 'No HBase regionservers configured' unless rs_ctxs.length > 0
       {hbase} = rs_ctxs[0].config.ryba
+      @config.ryba ?= {}
       opentsdb = @config.ryba.opentsdb ?= {}
       # User
       opentsdb.user = name: opentsdb.user if typeof opentsdb.user is 'string'
@@ -14,6 +15,9 @@
       opentsdb.user.system ?= true
       opentsdb.user.comment ?= 'OpenTSDB User'
       opentsdb.user.home = '/usr/share/opentsdb'
+      opentsdb.user.limits ?= {}
+      opentsdb.user.limits.nofile ?= 65535
+      opentsdb.user.limits.nproc ?= true
       # Groups
       opentsdb.group = name: opentsdb.group if typeof opentsdb.group is 'string'
       opentsdb.group ?= {}

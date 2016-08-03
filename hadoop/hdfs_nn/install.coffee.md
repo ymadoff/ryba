@@ -139,6 +139,8 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
         backup: true
         eof: true
 
+## Log4j
+
       writes = []
       if hdfs.log4j.extra_appender == "socket_client"
         writes.push
@@ -158,7 +160,6 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
             log4j.appender.SOCKET.ReconnectionDelay=10000
             """
           append: true
-
       @write
         header: 'Log4j'
         destination: "#{hdfs.nn.conf_dir}/log4j.properties"
