@@ -27,7 +27,10 @@ Example:
 ```
 
     module.exports = handler: ->
-      {titan, realm} = @config.ryba
+      {realm} = @config.ryba
+      titan_ctxs = @contexts 'ryba/titan'
+      throw Error "Cannot install Rexster without titan" unless titan_ctxs.length
+      {titan} = titan_ctxs[0].config.ryba
       rexster = @config.ryba.rexster ?= {}
       rexster.user ?= {}
       rexster.user = name: rexster.user if typeof rexster.user is 'string'

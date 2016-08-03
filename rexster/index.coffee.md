@@ -16,20 +16,17 @@ graphs inside of a Rexster Server.
 
     module.exports = ->
       'configure':[
-        'ryba/titan/configure'
         'ryba/rexster/configure'
         ]
       'install': [
         'masson/core/iptables'
         'masson/core/yum'
         'masson/commons/java'
-        'ryba/titan'
         'ryba/rexster/install'
         'ryba/rexster/start'
         'ryba/rexster/check'
       ]
       'check': [
-        'ryba/titan/check'
         'ryba/rexster/check'
       ]
       'start':

@@ -22,22 +22,22 @@ Download and extract a ZIP Archive
         unzip_dir = path.join titan.install_dir, path.basename archive_name, path.extname archive_name
         archive_path = path.join titan.install_dir, archive_name
         @mkdir
-          destination: titan.install_dir
+          target: titan.install_dir
         @download
           source: titan.source
-          destination: archive_path
+          target: archive_path
         @remove
-          destination: unzip_dir
+          target: unzip_dir
           if: -> @status -1
         @extract
           source: archive_path,
-          destination: titan.install_dir
+          target: titan.install_dir
         @remove
-          destination: titan.home
+          target: titan.home
           if: -> @status -1
         @link
           source: unzip_dir
-          destination: titan.home
+          target: titan.home
           if: -> @status -2
 
 ## Env
@@ -66,16 +66,40 @@ Modify envvars in the gremlin scripts.
           replace: "CP=\"$CP:#{@config.ryba.hbase.conf_dir}\" # RYBA CONF hbase-env, DON'T OVERWRITE"
           append: /^CP=`abs_path`.*/m
         @write
-          destination: path.join titan.home, 'bin/gremlin.sh'
+          target: path.join titan.home, 'bin/gremlin.sh'
           write: write
 
 ## Kerberos
 
 Secure the Zookeeper connection with JAAS
 
+      @call
+        header: 'Kerberos'
+        handler: ->
+          @krb5_addprinc krb5,
+            principal: "#{opentsdb.user.name}/#{@config.host}@#{realm}"
+            randkey: true
+            keytab: '/etc/security/keytabs/opentsdb.service.keytab'
+            uid: opentsdb.user.name
+            gid: opentsdb.group.name
+          @write_jaas
+            target: '/etc/opentsdb/opentsdb.jaas'
+            content: "#{opentsdb.config['hbase.sasl.clientconfig']}":
+              principal: "#{opentsdb.user.name}/#{@config.host}@#{realm}"
+              useTicketCache: true
+            uid: opentsdb.user.name
+            gid: opentsdb.group.name
+          @cron_add
+            cmd: "/usr/bin/kinit #{opentsdb.user.name}/#{@config.host}@#{realm} -k -t /etc/security/keytabs/opentsdb.service.keytab"
+            when: '0 */9 * * *'
+            user: opentsdb.user.name
+            exec: true
+
+
+
       @write_jaas
         header: 'Kerberos JAAS'
-        destination: path.join titan.home, 'titan.jaas'
+        target: path.join titan.home, 'titan.jaas'
         content: Client:
           useTicketCache: 'true'
         mode: 0o644
@@ -88,7 +112,7 @@ Creates a configuration file. Always load this file in Gremlin REPL !
         storage = titan.config['storage.backend']
         index = titan.config['index.search.backend']
         @write_properties
-          destination: path.join titan.home, "titan-#{storage}-#{index}.properties"
+          target: path.join titan.home, "titan-#{storage}-#{index}.properties"
           content: titan.config
           backup: true
           eof: true
@@ -104,7 +128,7 @@ Creates a configuration file. Always load this file in Gremlin REPL !
 #       config[k] = v for k, v of titan.config
 #       config['storage.hbase.table'] = 'titan-test'
 #       @write_properties
-#         destination: path.join titan.home, "titan-hbase-#{titan.config['index.search.backend']}-test.properties"
+#         target: path.join titan.home, "titan-hbase-#{titan.config['index.search.backend']}-test.properties"
 #         content: config
 #         merge: true
 
