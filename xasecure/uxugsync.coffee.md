@@ -48,7 +48,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       {uxugsync_url} = @config.xasecure
       @download
         source: uxugsync_url
-        destination: '/var/tmp'
+        target: '/var/tmp'
         binary: true
         unless_exists: "/var/tmp/#{path.basename uxugsync_url, '.tar'}"
       @extract
@@ -58,7 +58,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
     module.exports.push header: 'XASecure Sync # Install', timeout: -1, handler: ->
       {uxugsync, uxugsync_url} = @config.xasecure
       @write
-        destination: "/var/tmp/#{path.basename uxugsync_url, '.tar'}/install.properties"
+        target: "/var/tmp/#{path.basename uxugsync_url, '.tar'}/install.properties"
         write: for k, v of uxugsync
           match: RegExp "^#{k} = .*$", 'mg'
           replace: "#{k} = #{v}"

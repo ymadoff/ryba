@@ -62,7 +62,7 @@ TODO: only work if WebHCat is running on the same server as Hue
       throw Error "WebHCat shall be on the same server as Hue" unless webhcat_server is @config.host
       @hconfigure
         header: 'Hue # WebHCat'
-        destination: "#{webhcat.conf_dir}/webhcat-site.xml"
+        target: "#{webhcat.conf_dir}/webhcat-site.xml"
         properties: 
           'webhcat.proxyuser.hue.hosts': '*'
           'webhcat.proxyuser.hue.groups': '*'
@@ -81,7 +81,7 @@ TODO: only work if Oozie is running on the same server as Hue
       return Error "Oozie shall be on the same server as Hue" unless oozie_server is @config.host
       @hconfigure
         header: 'Hue # Oozie'
-        destination: "#{oozie.conf_dir}/oozie-site.xml"
+        target: "#{oozie.conf_dir}/oozie-site.xml"
         properties: 
           'oozie.service.ProxyUserService.proxyuser.hue.hosts': '*'
           'oozie.service.ProxyUserService.proxyuser.hue.groups': '*'
@@ -94,7 +94,7 @@ recommandations. Merge the configuration object from "hdp.hue.ini" with the prop
 
       @write_ini
         header: 'Configure'
-        destination: "#{hue.conf_dir}/hue.ini"
+        target: "#{hue.conf_dir}/hue.ini"
         content: hue.ini
         merge: true
         parse: misc.ini.parse_multi_brackets 
@@ -155,12 +155,12 @@ the "security_enabled" property set to "true".
       @call header: 'Hue # SSL Client', handler: ->
         hue.ca_bundle = '' unless hue.ssl.client_ca
         @write
-          destination: "#{hue.ca_bundle}"
+          target: "#{hue.ca_bundle}"
           source: "#{hue.ssl.client_ca}"
           local_source: true
           if: !!hue.ssl.client_ca
         @write
-          destination: '/etc/init.d/hue'
+          target: '/etc/init.d/hue'
           match: /^DAEMON="export REQUESTS_CA_BUNDLE='.*';\$DAEMON"$/m
           replace: "DAEMON=\"export REQUESTS_CA_BUNDLE='#{hue.ca_bundle}';$DAEMON\""
           append: /^DAEMON=.*$/m
@@ -176,16 +176,16 @@ changes.
       @call header: 'Hue # SSL Server', handler: ->
         @download
           source: hue.ssl.certificate
-          destination: "#{hue.conf_dir}/cert.pem"
+          target: "#{hue.conf_dir}/cert.pem"
           uid: hue.user.name
           gid: hue.group.name
         @download
           source: hue.ssl.private_key
-          destination: "#{hue.conf_dir}/key.pem"
+          target: "#{hue.conf_dir}/key.pem"
           uid: hue.user.name
           gid: hue.group.name
         @write_ini
-          destination: "#{hue.conf_dir}/hue.ini"
+          target: "#{hue.conf_dir}/hue.ini"
           content: desktop:
             ssl_certificate: "#{hue.conf_dir}/cert.pem"
             ssl_private_key: "#{hue.conf_dir}/key.pem"
@@ -205,12 +205,12 @@ In the current version "2.5.1", the HTML of the banner is escaped.
 
       @call header: 'Hue # Fix Banner', handler: ->
         @write
-          destination: '/usr/lib/hue/desktop/core/src/desktop/templates/login.mako'
+          target: '/usr/lib/hue/desktop/core/src/desktop/templates/login.mako'
           match: '${conf.CUSTOM.BANNER_TOP_HTML.get()}'
           replace: '${ conf.CUSTOM.BANNER_TOP_HTML.get() | n,unicode }'
           bck: true
         @write
-          destination: '/usr/lib/hue/desktop/core/src/desktop/templates/common_header.mako'
+          target: '/usr/lib/hue/desktop/core/src/desktop/templates/common_header.mako'
           write: [
             match: '${conf.CUSTOM.BANNER_TOP_HTML.get()}'
             replace: '${ conf.CUSTOM.BANNER_TOP_HTML.get() | n,unicode }'

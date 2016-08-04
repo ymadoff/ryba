@@ -61,7 +61,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @link
         header: 'DB Driver'
         source: '/usr/share/java/mysql-connector-java.jar'
-        destination: ranger.admin.install['SQL_CONNECTOR_JAR']
+        target: ranger.admin.install['SQL_CONNECTOR_JAR']
 
 ## Ranger Databases
 
@@ -98,7 +98,7 @@ Update the file "install.properties" with the properties defined by the
       @render
         header: 'Setup Scripts'
         source: "#{__dirname}/../resources/admin-install.properties.j2"
-        destination: '/usr/hdp/current/ranger-admin/install.properties'
+        target: '/usr/hdp/current/ranger-admin/install.properties'
         local_source: true
         eof: true
         backup: true
@@ -120,7 +120,7 @@ Update the file "install.properties" with the properties defined by the
       # the setup scripts already render an init.d script but it does not respect 
       # the convention exit code 3 when service is stopped on the status code
       @render
-        destination: '/etc/init.d/ranger-admin'
+        target: '/etc/init.d/ranger-admin'
         source: "#{__dirname}/../resources/ranger-admin"
         local_source: true
         mode: 0o0755
@@ -157,7 +157,7 @@ Update the file "install.properties" with the properties defined by the
             local_source: true
           @hconfigure
             header: 'Admin site'
-            destination: '/etc/ranger/admin/conf/ranger-admin-site.xml'
+            target: '/etc/ranger/admin/conf/ranger-admin-site.xml'
             properties: ranger.admin.site
             merge: true
             backup: true
@@ -194,14 +194,14 @@ This part of the setup is not documented. Deduce from launch scripts.
 
       @write
         header: 'Admin Env'
-        destination: '/etc/ranger/admin/conf/ranger-admin-env-1.sh'
+        target: '/etc/ranger/admin/conf/ranger-admin-env-1.sh'
         write: writes
         backup: true      
 
 ## Log4j
 
       @write_properties
-        destination: '/etc/ranger/admin/conf/log4j.properties'
+        target: '/etc/ranger/admin/conf/log4j.properties'
         header: 'ranger Log4properties'
         content: ranger.admin.log4j
 

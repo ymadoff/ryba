@@ -39,14 +39,14 @@ in order to rendered configuration file with custom properties.
         @service name: 'mongodb-org-shell'
         @render
           source: "#{__dirname}/../resources/mongod-shard-server.js2"
-          destination: '/etc/init.d/mongodb-shard-server'
+          target: '/etc/init.d/mongodb-shard-server'
           context: @config
           backup: true
           mode: 0o0750
           local_source: true
           eof: true
         @remove
-          destination: '/etc/init.d/mongod'
+          target: '/etc/init.d/mongod'
 
 ## Layout
 
@@ -54,19 +54,19 @@ Create dir where the mongodb-shard-server stores its metadata
 
       @call header: 'MongoDB Shard Server # Layout',  handler: ->
         @mkdir
-          destination: '/var/lib/mongodb'
+          target: '/var/lib/mongodb'
           uid: mongodb.user.name
           gid: mongodb.group.name
         @mkdir
-          destination: mongodb.shard.config.storage.dbPath
+          target: mongodb.shard.config.storage.dbPath
           uid: mongodb.user.name
           gid: mongodb.group.name
         @mkdir
-          destination: mongodb.shard.config.storage.repairPath
+          target: mongodb.shard.config.storage.repairPath
           uid: mongodb.user.name
           gid: mongodb.group.name
         @mkdir
-          destination: mongodb.shard.config.net.unixDomainSocket.pathPrefix
+          target: mongodb.shard.config.net.unixDomainSocket.pathPrefix
           uid: mongodb.user.name
           gid: mongodb.group.name
 
@@ -76,7 +76,7 @@ Configuration file for mongodb sharding server.
 
       @call header: 'MongoDB Shard Server # Configure', handler: ->
         @write_yaml
-          destination: "#{mongodb.shard.conf_dir}/mongod.conf"
+          target: "#{mongodb.shard.conf_dir}/mongod.conf"
           content: mongodb.shard.config
           merge: false
           uid: mongodb.user.name
@@ -95,22 +95,22 @@ with pem file. So we append to the file the private key and certficate.
       @call header: 'MongoDB Shard Server # SSL', handler: ->
         @download
           source: ssl.cacert
-          destination: "#{mongodb.shard.conf_dir}/cacert.pem"
+          target: "#{mongodb.shard.conf_dir}/cacert.pem"
           uid: mongodb.user.name
           gid: mongodb.group.name
         @download
           source: ssl.key
-          destination: "#{mongodb.shard.conf_dir}/key_file.pem"
+          target: "#{mongodb.shard.conf_dir}/key_file.pem"
           uid: mongodb.user.name
           gid: mongodb.group.name
         @download
           source: ssl.cert
-          destination: "#{mongodb.shard.conf_dir}/cert_file.pem"
+          target: "#{mongodb.shard.conf_dir}/cert_file.pem"
           uid: mongodb.user.name
           gid: mongodb.group.name
         @write
           source: "#{mongodb.shard.conf_dir}/cert_file.pem"
-          destination: "#{mongodb.shard.conf_dir}/key.pem"
+          target: "#{mongodb.shard.conf_dir}/key.pem"
           append: true
           backup: true
           eof: true
@@ -118,7 +118,7 @@ with pem file. So we append to the file the private key and certficate.
           gid: mongodb.group.name
         @write
           source: "#{mongodb.shard.conf_dir}/key_file.pem"
-          destination: "#{mongodb.shard.conf_dir}/key.pem"
+          target: "#{mongodb.shard.conf_dir}/key.pem"
           eof: true
           append: true
           uid: mongodb.user.name

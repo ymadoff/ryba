@@ -26,7 +26,7 @@ Shell script to be executed inside one or multiple YARN containers.
         appname = "ryba_check_#{@config.shortname}_distributed_cache_#{Date.now()}"
         scriptpath = "#{user.home}/check_distributed_shell.sh"
         @write
-          destination: "#{scriptpath}"
+          target: "#{scriptpath}"
           content: """
           #!/usr/bin/env bash
           echo Ryba Ryba NM hostname: `hostname`

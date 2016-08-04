@@ -15,7 +15,7 @@ Declare the HDP repository.
           {proxy, hdp_repo} = @config.ryba
           @download
             source: hdp_repo
-            destination: '/etc/yum.repos.d/hdp.repo'
+            target: '/etc/yum.repos.d/hdp.repo'
             proxy: proxy
           @execute
             cmd: "yum clean metadata; yum update -y"

@@ -14,7 +14,7 @@ describe 'hdfs mkdir', ->
     .hdfs_mkdir
       # stdout: process.stdout
       # stderr: process.stderr
-      destination: "/user/ryba/mecano/a/dir"
+      target: "/user/ryba/mecano/a/dir"
     .kexecute cmd: """
       hdfs dfs -test -d /user/ryba/mecano/a/dir
       hdfs dfs -stat '%g;%u;%n' /user/ryba/mecano/a/dir
@@ -36,11 +36,11 @@ describe 'hdfs mkdir', ->
       if hdfs dfs -test -d $dir; then hdfs dfs -rm -r -skipTrash $dir; fi
       """
     .hdfs_mkdir
-      destination: "/user/ryba/mecano/dir"
+      target: "/user/ryba/mecano/dir"
     , (err, status) ->
       status.should.be.true() unless err
     .hdfs_mkdir
-      destination: "/user/ryba/mecano/dir"
+      target: "/user/ryba/mecano/dir"
     , (err, status) ->
       status.should.be.false() unless err
     .then next

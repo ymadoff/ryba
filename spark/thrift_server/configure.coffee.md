@@ -121,7 +121,7 @@ Spark SQL thrift server is runned as the hive server user, and must use the hive
             @group hcli_ctx.config.ryba.hive.group
             @user hcli_ctx.config.ryba.hive.user
             @mkdir
-              destination: hcli_ctx.config.ryba.hive.user.home
+              target: hcli_ctx.config.ryba.hive.user.home
 
 
 [hdp-spark-sql]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/starting_sts.html)

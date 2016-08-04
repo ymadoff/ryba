@@ -51,21 +51,21 @@ The JournalNode data are stored inside the directory defined by the
 
       @call header: 'Layout', handler: ->
         @mkdir
-          destination: "#{hdfs.jn.conf_dir}"
+          target: "#{hdfs.jn.conf_dir}"
         @mkdir
-          destination: for dir in hdfs.site['dfs.journalnode.edits.dir'].split ','
+          target: for dir in hdfs.site['dfs.journalnode.edits.dir'].split ','
             if dir.indexOf('file://') is 0
             then dir.substr(7) else dir
           uid: hdfs.user.name
           gid: hadoop_group.name
         @mkdir
-          destination: "#{hdfs.pid_dir}"
+          target: "#{hdfs.pid_dir}"
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o0755
           parent: true
         @mkdir
-          destination: "#{hdfs.log_dir}" #/#{hdfs.user.name}
+          target: "#{hdfs.log_dir}" #/#{hdfs.user.name}
           uid: hdfs.user.name
           gid: hdfs.group.name
           parent: true
@@ -82,7 +82,7 @@ inside "/etc/init.d" and activate it on startup.
           name: 'hadoop-hdfs-client' # Not checked
           name: 'hadoop-hdfs-journalnode'
         @render
-          destination: '/etc/init.d/hadoop-hdfs-journalnode'
+          target: '/etc/init.d/hadoop-hdfs-journalnode'
           source: "#{__dirname}/../resources/hadoop-hdfs-journalnode"
           local_source: true
           context: @config
@@ -107,13 +107,13 @@ NodeManagers.
       @call header: 'HDFS JN # Configure', handler: ->
         @hconfigure
           header: 'Core Site'
-          destination: "#{hdfs.jn.conf_dir}/core-site.xml"
+          target: "#{hdfs.jn.conf_dir}/core-site.xml"
           default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
           local_default: true
           properties: core_site
           backup: true
         @hconfigure
-          destination: "#{hdfs.jn.conf_dir}/hdfs-site.xml"
+          target: "#{hdfs.jn.conf_dir}/hdfs-site.xml"
           default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
           local_default: true
           properties: hdfs.site
@@ -122,7 +122,7 @@ NodeManagers.
           backup: true
         @write
           header: 'Log4j'
-          destination: "#{hdfs.jn.conf_dir}/log4j.properties"
+          target: "#{hdfs.jn.conf_dir}/log4j.properties"
           source: "#{__dirname}/../resources/log4j.properties"
           local_source: true
 
@@ -134,7 +134,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
         @render
           header: 'Environment'
-          destination: "#{hdfs.jn.conf_dir}/hadoop-env.sh"
+          target: "#{hdfs.jn.conf_dir}/hadoop-env.sh"
           source: "#{__dirname}/../resources/hadoop-env.sh.j2"
           local_source: true
           context: @config
@@ -148,7 +148,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 
         @write_properties
           header: 'Metrics'
-          destination: "#{hdfs.jn.conf_dir}/hadoop-metrics2.properties"
+          target: "#{hdfs.jn.conf_dir}/hadoop-metrics2.properties"
           content: hadoop_metrics.config
           backup: true
 
@@ -160,10 +160,10 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
         ssl_server['ssl.server.keystore.location'] = "#{hdfs.jn.conf_dir}/keystore"
         ssl_server['ssl.server.truststore.location'] = "#{hdfs.jn.conf_dir}/truststore"
         @hconfigure
-          destination: "#{hdfs.jn.conf_dir}/ssl-server.xml"
+          target: "#{hdfs.jn.conf_dir}/ssl-server.xml"
           properties: ssl_server
         @hconfigure
-          destination: "#{hdfs.jn.conf_dir}/ssl-client.xml"
+          target: "#{hdfs.jn.conf_dir}/ssl-client.xml"
           properties: ssl_client
         # Client: import certificate to all hosts
         @java_keystore_add

@@ -55,14 +55,14 @@ nagiocmd:x:2419:apache
 
       @call header: 'Layout', ->
         @mkdir
-          destination: [
+          target: [
             '/var/nagios', '/var/log/nagios',
             '/var/log/nagios/spool/checkresults', '/var/run/nagios'
           ]
           uid: nagios.user.name
           gid: nagios.group.name
         @mkdir
-          destination: '/var/nagios/rw'
+          target: '/var/nagios/rw'
           uid: nagios.user.name
           gid: nagios.groupcmd.name
           mode: 0o2770
@@ -77,7 +77,7 @@ nagiocmd:x:2419:apache
             else "#{object}.cfg"
             source: "#{__dirname}/resources/objects/#{source}"
             local_source: true
-            destination: "/etc/nagios/objects/#{object}.cfg"
+            target: "/etc/nagios/objects/#{object}.cfg"
             uid: nagios.user.name
             gid: nagios.group.name
             mode: 0o0644
@@ -95,7 +95,7 @@ nagiocmd:x:2419:apache
               plugin = path.basename plugin
               source: "#{__dirname}/resources/plugins/#{plugin}"
               local_source: true
-              destination: "#{plugin_dir}/#{plugin}"
+              target: "#{plugin_dir}/#{plugin}"
               uid: user.name
               gid: group.name
               mode: 0o0775
@@ -134,7 +134,7 @@ nagiocmd:x:2419:apache
         @render
           source: "#{__dirname}/resources/templates/contacts.cfg.j2"
           local_source: true
-          destination: '/etc/nagios/objects/contacts.cfg'
+          target: '/etc/nagios/objects/contacts.cfg'
           context:
             users: users
             groups: groups
@@ -167,11 +167,11 @@ nagiocmd:x:2419:apache
             replace: "#{k}=#{v}"
             append: true
         @write
-          destination: '/etc/nagios/nagios.cfg'
+          target: '/etc/nagios/nagios.cfg'
           write: write
           eof: true
         @write
-          destination: '/etc/nagios/resource.cfg'
+          target: '/etc/nagios/resource.cfg'
           match: /^\$USER1\$=.*$/mg
           replace: "$USER1$=#{plugin_dir}"
 
@@ -194,7 +194,7 @@ nagiocmd:x:2419:apache
           }
           """
         @write
-          destination: '/etc/nagios/objects/hadoop-hosts.cfg'
+          target: '/etc/nagios/objects/hadoop-hosts.cfg'
           content: content.join '\n'
           eof: true
 
@@ -214,7 +214,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
         @render
           source: "#{__dirname}/resources/templates/hadoop-hostgroups.cfg.j2"
           local_source: true
-          destination: '/etc/nagios/objects/hadoop-hostgroups.cfg'
+          target: '/etc/nagios/objects/hadoop-hostgroups.cfg'
           context:
             all_hosts: Object.keys @config.servers
             hostgroup_defs: hostgroup_defs
@@ -227,7 +227,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
         @render
           source: "#{__dirname}/resources/templates/hadoop-servicegroups.cfg.j2"
           local_source: true
-          destination: '/etc/nagios/objects/hadoop-servicegroups.cfg'
+          target: '/etc/nagios/objects/hadoop-servicegroups.cfg'
           context:
             hostgroup_defs: hostgroup_defs
 
@@ -298,7 +298,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
           header: 'Services'
           source: "#{__dirname}/resources/templates/hadoop-services.cfg.j2"
           local_source: true
-          destination: '/etc/nagios/objects/hadoop-services.cfg'
+          target: '/etc/nagios/objects/hadoop-services.cfg'
           context:
             hostgroup_defs: hostgroup_defs
             all_hosts: [] # Ambari agents
@@ -355,7 +355,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
         header: 'Commands'
         source: "#{__dirname}/resources/objects/hadoop-commands.cfg"
         local_source: true
-        destination: '/etc/nagios/objects/hadoop-commands.cfg'
+        target: '/etc/nagios/objects/hadoop-commands.cfg'
         write: [
           match: '@STATUS_DAT@'
           replace: '/var/nagios/status.dat'

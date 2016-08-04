@@ -39,11 +39,11 @@ for its instructions.
 
       @call header: 'Kerberos', handler: ->
         @write_jaas
-          destination: "#{phoenix.conf_dir}/phoenix-client.jaas"
+          target: "#{phoenix.conf_dir}/phoenix-client.jaas"
           content: Client:
             useTicketCache: 'true'
         @write
-          destination: '/usr/hdp/current/phoenix-client/bin/psql.py'
+          target: '/usr/hdp/current/phoenix-client/bin/psql.py'
           write: [
             replace: "    os.pathsep + '#{hadoop_conf_dir}' + os.pathsep + '#{hbase.conf_dir}' + os.pathsep + '/usr/hdp/current/hadoop-client/hadoop-auth-*.jar' + \\"
             match: ///^.*#{quote '/usr/hdp/current/hadoop-client/hadoop-auth'}.*$///m
@@ -55,7 +55,7 @@ for its instructions.
           ]
           backup: true
         @write
-          destination: '/usr/hdp/current/phoenix-client/bin/sqlline.py'
+          target: '/usr/hdp/current/phoenix-client/bin/sqlline.py'
           write: [
             replace: "    os.pathsep + '#{hadoop_conf_dir}' + os.pathsep + '#{hbase.conf_dir}' + os.pathsep + '/usr/hdp/current/hadoop-client/hadoop-auth-*.jar' + \\"
             match: ///^.*#{quote '/usr/hdp/current/hadoop-client/hadoop-auth'}.*$///m

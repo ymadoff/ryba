@@ -99,7 +99,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       {policymgr_url} = config.xasecure
       @download
         source: policymgr_url
-        destination: '/var/tmp'
+        target: '/var/tmp'
         binary: true
         unless_exists: "/var/tmp/#{path.basename policymgr_url, '.tar'}"
       @extract
@@ -112,7 +112,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       modified = false
       do_fix_mysql_root = ->
         ctx.write
-          destination: "/var/tmp/#{path.basename policymgr_url, '.tar'}/install.sh"
+          target: "/var/tmp/#{path.basename policymgr_url, '.tar'}/install.sh"
           match: "-u root"
           replace: "-u #{db_admin.username}"
         , (err) ->
@@ -123,7 +123,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           match: RegExp "^#{k}=.*$", 'mg'
           replace: "#{k}=#{v}"
         ctx.write
-          destination: "/var/tmp/#{path.basename policymgr_url, '.tar'}/install.properties"
+          target: "/var/tmp/#{path.basename policymgr_url, '.tar'}/install.properties"
           write: write
           backup: true
           eof: true

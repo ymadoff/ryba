@@ -80,7 +80,7 @@ isnt yet started.
           header: 'Init Script'
           source: "#{__dirname}/../resources/hive-server2.j2"
           local_source: true
-          destination: '/etc/init.d/hive-server2'
+          target: '/etc/init.d/hive-server2'
           mode: 0o0755
           unlink: true
         @execute
@@ -91,7 +91,7 @@ isnt yet started.
 
       @hconfigure
         header: 'Hive Site'
-        destination: "#{hive.server2.conf_dir}/hive-site.xml"
+        target: "#{hive.server2.conf_dir}/hive-site.xml"
         default: "#{__dirname}/../../resources/hive/hive-site.xml"
         local_default: true
         properties: hive.site
@@ -101,11 +101,11 @@ isnt yet started.
         header: 'Hive Log4j properties'
         source: "#{__dirname}/../resources/hive-exec-log4j.properties"
         local_source: true
-        destination: '/etc/hive/conf/hive-exec-log4j.properties'
+        target: '/etc/hive/conf/hive-exec-log4j.properties'
         context: @config
       @write_properties
         header: 'Hive server Log4j properties'
-        destination: "/etc/hive/conf/hive-log4j.properties"
+        target: "/etc/hive/conf/hive-log4j.properties"
         content: hive.server2.log4j.config
         backup: true
 
@@ -120,7 +120,7 @@ Server2 to 4Gb by setting a value equal to "-Xmx4096m".
 
       @render
         header: 'Hive Server2 Env' # dot not modify
-        destination: "#{hive.server2.conf_dir}/hive-env.sh"
+        target: "#{hive.server2.conf_dir}/hive-env.sh"
         source: "#{__dirname}/../resources/hive-env.sh"
         local_source: true
         write: hive.server2.env.write
@@ -134,12 +134,12 @@ Create the directories to store the logs and pid information. The properties
 
       @call header: 'Layout', timeout: -1, handler: ->
         @mkdir
-          destination: hive.server2.log_dir
+          target: hive.server2.log_dir
           uid: hive.user.name
           gid: hive.group.name
           parent: true
         @mkdir
-          destination: hive.server2.pid_dir
+          target: hive.server2.pid_dir
           uid: hive.user.name
           gid: hive.group.name
           parent: true
@@ -152,17 +152,17 @@ Create the directories to store the logs and pid information. The properties
         handler: ->
           @download
             source: ssl.cacert
-            destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+            target: "#{tmp_location}/#{path.basename ssl.cacert}"
             mode: 0o0600
             shy: true
           @download
             source: ssl.cert
-            destination: "#{tmp_location}/#{path.basename ssl.cert}"
+            target: "#{tmp_location}/#{path.basename ssl.cert}"
             mode: 0o0600
             shy: true
           @download
             source: ssl.key
-            destination: "#{tmp_location}/#{path.basename ssl.key}"
+            target: "#{tmp_location}/#{path.basename ssl.key}"
             mode: 0o0600
             shy: true
           @java_keystore_add
@@ -180,13 +180,13 @@ Create the directories to store the logs and pid information. The properties
           #   caname: "hadoop_root_ca"
           #   cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
           @remove
-            destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+            target: "#{tmp_location}/#{path.basename ssl.cacert}"
             shy: true
           @remove
-            destination: "#{tmp_location}/#{path.basename ssl.cert}"
+            target: "#{tmp_location}/#{path.basename ssl.cert}"
             shy: true
           @remove
-            destination: "#{tmp_location}/#{path.basename ssl.key}"
+            target: "#{tmp_location}/#{path.basename ssl.key}"
             shy: true
           @service
             srv_name: 'hive-server2'

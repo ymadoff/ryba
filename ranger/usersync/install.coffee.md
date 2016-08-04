@@ -35,11 +35,11 @@ directories.
 
       @call header: 'Layout', handler: ->
         @mkdir
-          destination: ranger.usersync.conf_dir
+          target: ranger.usersync.conf_dir
         @mkdir
-          destination: ranger.usersync.log_dir
+          target: ranger.usersync.log_dir
         @mkdir
-          destination: ranger.usersync.pid_dir 
+          target: ranger.usersync.pid_dir 
 
 
 # ## IPTables
@@ -69,7 +69,7 @@ directories.
 #       {ranger} = @config.ryba
 #       @link
 #         source: '/usr/share/java/mysql-connector-java.jar'
-#         destination: ranger.admin.install['SQL_CONNECTOR_JAR']
+#         target: ranger.admin.install['SQL_CONNECTOR_JAR']
 
 
 ## Setup Scripts
@@ -79,7 +79,7 @@ Update the file "install.properties" with the properties defined by the
 
       @render
         header: 'Configure Install Scripts'
-        destination: "/usr/hdp/current/ranger-usersync/install.properties"
+        target: "/usr/hdp/current/ranger-usersync/install.properties"
         source: "#{__dirname}/../resources/usersync-install.properties.js2"
         local_source: true
         write: for k, v of ranger.usersync.install
@@ -91,7 +91,7 @@ Update the file "install.properties" with the properties defined by the
 
       @write
         header: 'Configure Setup Scripts'
-        destination: '/usr/hdp/current/ranger-usersync/setup.py'
+        target: '/usr/hdp/current/ranger-usersync/setup.py'
         write : for k, v of ranger.usersync.setup
           match: RegExp "^#{quote k} =.*$", 'mg'
           replace: "#{k} = '#{v}'"
@@ -109,7 +109,7 @@ Update the file "install.properties" with the properties defined by the
       # the setup scripts already render an init.d script but it does not respect 
       # the convention exit code 3 when service is stopped on the status code
       @render
-        destination: '/etc/init.d/ranger-usersync'
+        target: '/etc/init.d/ranger-usersync'
         source: "#{__dirname}/../resources/ranger-usersync"
         local_source: true
         mode: 0o0755
@@ -128,12 +128,12 @@ Update the file "install.properties" with the properties defined by the
           append: true
       @write
         header: 'Usersync Env'
-        destination: '/etc/ranger/usersync/conf/ranger-usersync-env-1.sh'
+        target: '/etc/ranger/usersync/conf/ranger-usersync-env-1.sh'
         write: writes
 
       @hconfigure
         header: 'Usersync site'
-        destination: "/etc/ranger/usersync/conf/ranger-ugsync-site.xml"
+        target: "/etc/ranger/usersync/conf/ranger-ugsync-site.xml"
         properties: ranger.usersync.site
         merge: true
         backup: true

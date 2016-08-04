@@ -50,7 +50,7 @@
             basedir=${nameNode}/user/#{user.name}/check-#{@config.shortname}-oozie-fs
             oozie.wf.application.path=${basedir}
           """
-          destination: "#{user.home}/check_oozie_fs/job.properties"
+          target: "#{user.home}/check_oozie_fs/job.properties"
           uid: user.name
           gid: user.group
           eof: true
@@ -71,7 +71,7 @@
             <end name="end"/>
           </workflow-app>
           """
-          destination: "#{user.home}/check_oozie_fs/workflow.xml"
+          target: "#{user.home}/check_oozie_fs/workflow.xml"
           uid: user.name
           gid: user.group
           eof: true
@@ -118,7 +118,7 @@
             oozie.wf.application.path=${basedir}
             oozie.use.system.libpath=true
           """
-          destination: "#{user.home}/check_oozie_mr/job.properties"
+          target: "#{user.home}/check_oozie_mr/job.properties"
           uid: user.name
           gid: user.group
           eof: true
@@ -166,7 +166,7 @@
             <end name='end' />
           </workflow-app>
           """
-          destination: "#{user.home}/check_oozie_mr/workflow.xml"
+          target: "#{user.home}/check_oozie_mr/workflow.xml"
           uid: user.name
           gid: user.group
           eof: true
@@ -222,7 +222,7 @@
           oozie.wf.application.path=${basedir}
           oozie.use.system.libpath=true
           """
-          destination: "#{user.home}/check_oozie_pig/job.properties"
+          target: "#{user.home}/check_oozie_pig/job.properties"
           uid: user.name
           gid: user.group
           eof: true
@@ -257,7 +257,7 @@
             <end name='end' />
           </workflow-app>
           """
-          destination: "#{user.home}/check_oozie_pig/workflow.xml"
+          target: "#{user.home}/check_oozie_pig/workflow.xml"
           uid: user.name
           gid: user.group
           eof: true
@@ -269,7 +269,7 @@
           D = foreach C generate COUNT(B), group;
           store D into '$OUTPUT' USING PigStorage();
           """
-          destination: "#{user.home}/check_oozie_pig/wordcount.pig"
+          target: "#{user.home}/check_oozie_pig/wordcount.pig"
           uid: user.name
           gid: user.group
           eof: true
@@ -357,7 +357,7 @@
           oozie.wf.application.path=${basedir}
           oozie.use.system.libpath=true
           """
-          destination: "#{user.home}/check_oozie_pig/job.properties"
+          target: "#{user.home}/check_oozie_pig/job.properties"
           uid: user.name
           gid: user.group
           eof: true
@@ -404,7 +404,7 @@
             <end name='end' />
           </workflow-app>
           """
-          destination: "#{user.home}/check_oozie_pig/workflow.xml"
+          target: "#{user.home}/check_oozie_pig/workflow.xml"
           uid: user.name
           gid: user.group
           eof: true
@@ -416,7 +416,7 @@
           D = foreach C generate COUNT(B), group;
           store D into '$OUTPUT' USING PigStorage();
           """
-          destination: "#{user.home}/check_oozie_pig/wordcount.pig"
+          target: "#{user.home}/check_oozie_pig/wordcount.pig"
           uid: user.name
           gid: user.group
           eof: true

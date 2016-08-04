@@ -37,13 +37,13 @@ Follow the [Hortonworks Data Pipelines example][dpe].
         hive_url = hive_contexts[0].config.ryba.hive.site['hive.metastore.uris']
         hive_principal = hive_contexts[0].config.ryba.hive.site['hive.metastore.kerberos.principal'].replace '_HOST', hive_contexts[0].config.host
         @hdfs_mkdir
-          destination: "/tmp/falcon/prod-cluster/staging"
+          target: "/tmp/falcon/prod-cluster/staging"
           user: "#{falcon.client.user.name}"
           group: "#{falcon.client.group.name}"
           krb5_user: @config.ryba.hdfs.krb5_user
           mode: 0o0777
         @hdfs_mkdir
-          destination: "/tmp/falcon/prod-cluster/working"
+          target: "/tmp/falcon/prod-cluster/working"
           user: "#{falcon.client.user.name}"
           group: "#{falcon.client.group.name}"
           krb5_user: @config.ryba.hdfs.krb5_user
@@ -55,11 +55,11 @@ Follow the [Hortonworks Data Pipelines example][dpe].
           """
           code_skipped: 3
         # @hdfs_mkdir
-        #   destination: "/user/ryba/check_falcon_#{@config.shortname}/prod-cluster/staging"
+        #   target: "/user/ryba/check_falcon_#{@config.shortname}/prod-cluster/staging"
         #   user: "#{ryba.user.name}"
         #   krb5_user: @config.ryba.hdfs.krb5_user
         # @hdfs_mkdir
-        #   destination: "/user/ryba/check_falcon_#{@config.shortname}/prod-cluster/working"
+        #   target: "/user/ryba/check_falcon_#{@config.shortname}/prod-cluster/working"
         #   user: "#{ryba.user.name}"
         #   krb5_user: @config.ryba.hdfs.krb5_user
         @write
@@ -88,7 +88,7 @@ Follow the [Hortonworks Data Pipelines example][dpe].
             </properties>
           </cluster>
           """
-          destination: "#{cluster_path}"
+          target: "#{cluster_path}"
           uid: user.name
           eof: true
         @write
@@ -119,7 +119,7 @@ Follow the [Hortonworks Data Pipelines example][dpe].
             <schema location="/none" provider="none"/> <!-- Required for HDFS. -->
           </feed>
           """
-          destination: "#{feed_path}"
+          target: "#{feed_path}"
           uid: user.name
           eof: true
         @write
@@ -148,7 +148,7 @@ Follow the [Hortonworks Data Pipelines example][dpe].
               </late-process>
           </process>
           """
-          destination: "#{process_path}"
+          target: "#{process_path}"
           uid: user.name
           eof: true
         @execute

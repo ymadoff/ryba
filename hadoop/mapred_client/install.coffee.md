@@ -45,7 +45,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       @hconfigure
         header: 'Configuration'
-        destination: "#{hadoop_conf_dir}/mapred-site.xml"
+        target: "#{hadoop_conf_dir}/mapred-site.xml"
         default: "#{__dirname}/../resources/mapred-site.xml"
         local_default: true
         properties: mapred.site

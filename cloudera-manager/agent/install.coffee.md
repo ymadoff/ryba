@@ -22,7 +22,7 @@ Set the server's hostname in the agent's configuration
 
       @write
         header: 'Configuration'
-        destination: "#{agent.conf_dir}/config.ini"
+        target: "#{agent.conf_dir}/config.ini"
         write: [
           match: /^server_host=.*$/m
           replace: "server_host=#{agent.ini.server['hostname']}"
@@ -34,7 +34,7 @@ Set the server's hostname in the agent's configuration
 
       @write
         header: 'Env'
-        destination: '/etc/default/cloudera-scm-agent'
+        target: '/etc/default/cloudera-scm-agent'
         write: [
           match: RegExp '^export JAVA_HOME=*'
           replace: "export JAVA_HOME=#{java.java_home} # Ryba, don't OVERWRITE"

@@ -22,7 +22,7 @@ The file storing the PID is "/var/run/nagios.pid".
 ## Stop Clean Logs
 
       @execute
-        header: Clean Logs
+        header: 'Clean Logs'
         cmd: 'rm /var/log/nagios/*'
         code_skipped: 1
         if: @config.ryba.clean_logs

@@ -12,19 +12,19 @@
         if: -> @config.ryba.shinken.reactionner.ssh?.private_key? and @config.ryba.shinken.reactionner.ssh?.public_key?
         handler: ->
           @mkdir
-            destination: "#{user.home}/.ssh"
+            target: "#{user.home}/.ssh"
             mode: 0o700
             uid: user.name
             gid: user.gid
           @write
-            destination: "#{user.home}/.ssh/id_rsa"
+            target: "#{user.home}/.ssh/id_rsa"
             content: reactionner.ssh.private_key
             eof: true
             mode: 0o600
             uid: user.name
             gid: user.gid
           @write
-            destination: "#{user.home}/.ssh/id_rsa.pub"
+            target: "#{user.home}/.ssh/id_rsa.pub"
             content: reactionner.ssh.public_key
             eof: true
             mode: 0o644
@@ -61,7 +61,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         installmod = (name, mod) =>
           @call unless_exec: "shinken inventory | grep #{name}", handler: ->
             @download
-              destination: "#{shinken.build_dir}/#{mod.archive}.zip"
+              target: "#{shinken.build_dir}/#{mod.archive}.zip"
               source: mod.source
               cache_file: "#{mod.archive}.zip"
               unless_exec: "shinken inventory | grep #{name}"

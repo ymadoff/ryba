@@ -30,13 +30,13 @@ image.
         rm: true
         volume: "#{@config.mecano.cache_dir}:/target"
       @mkdir
-        destination: "#{@config.mecano.cache_dir}/zeppelin"
+        target: "#{@config.mecano.cache_dir}/zeppelin"
       @copy
         source: "#{zeppelin.prod.cwd}/Dockerfile"
-        destination: "#{@config.mecano.cache_dir}/zeppelin"
+        target: "#{@config.mecano.cache_dir}/zeppelin"
       @copy
         source: "#{@config.mecano.cache_dir}/zeppelin-build.tar.gz"
-        destination: "#{@config.mecano.cache_dir}/zeppelin"
+        target: "#{@config.mecano.cache_dir}/zeppelin"
 
 ## Prepare Container
 
@@ -52,7 +52,7 @@ Build the Docker container and place it inside the cache directory.
       @docker_save
         image: "#{zeppelin.prod.tag}"
         machine: machine
-        destination: "#{@config.mecano.cache_dir}/zeppelin.tar"
+        target: "#{@config.mecano.cache_dir}/zeppelin.tar"
 
 ## Instructions
 

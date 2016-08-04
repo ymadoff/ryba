@@ -9,14 +9,14 @@
 
         @render
           header: 'Render Dockerfile'
-          destination: "#{@config.mecano.cache_dir or '.'}/build/Dockerfile"
+          target: "#{@config.mecano.cache_dir or '.'}/build/Dockerfile"
           source: "#{__dirname}/resources/Dockerfile.j2"
           local_source: true
           context: @config.ryba
 
         @write
           header: 'Write Java Profile'
-          destination: "#{@config.mecano.cache_dir or '.'}/build/java.sh"
+          target: "#{@config.mecano.cache_dir or '.'}/build/java.sh"
           content: """
           export JAVA_HOME=/usr/java/default
           export PATH=/usr/java/default/bin:$PATH
@@ -24,12 +24,12 @@
 
         @write
           header: 'Write RSA Private Key'
-          destination: "#{@config.mecano.cache_dir or '.'}/build/id_rsa"
+          target: "#{@config.mecano.cache_dir or '.'}/build/id_rsa"
           content: @config.connection.private_key
 
         @write
           header: 'Write RSA Public Key'
-          destination: "#{@config.mecano.cache_dir or '.'}/build/id_rsa.pub"
+          target: "#{@config.mecano.cache_dir or '.'}/build/id_rsa.pub"
           content: @config.connection.public_key
 
         @docker_build
@@ -43,4 +43,4 @@
         @docker_save
           header: 'Save Container'
           image: 'ryba/shinken-poller-executor'
-          destination: "#{@config.mecano.cache_dir or '.'}/shinken-poller-executor.tar"
+          target: "#{@config.mecano.cache_dir or '.'}/shinken-poller-executor.tar"

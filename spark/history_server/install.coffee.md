@@ -58,15 +58,15 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       @call header: 'Layout', handler: ->
         @mkdir
-          destination: spark.history.pid_dir
+          target: spark.history.pid_dir
           uid: spark.user.name
           gid: spark.group.name
         @mkdir
-          destination: spark.history.log_dir
+          target: spark.history.log_dir
           uid: spark.user.name
           gid: spark.group.name
         @mkdir
-          destination: spark.history.conf_dir
+          target: spark.history.conf_dir
           uid: spark.user.name
           gid: spark.group.name
 
@@ -97,7 +97,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ]
       @write
         header: 'Spark Defaults'
-        destination: "#{spark.history.conf_dir}/spark-defaults.conf"
+        target: "#{spark.history.conf_dir}/spark-defaults.conf"
         write: for k, v of spark.history.conf
           match: ///^#{quote k}\ .*$///mg
           replace: if v is null then "" else "#{k} #{v}"
@@ -105,20 +105,20 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         backup: true
       @link
         source: spark.history.conf_dir
-        destination: '/usr/hdp/current/spark-history-server'
+        target: '/usr/hdp/current/spark-history-server'
 
 ## Clients Configuration
 
       @hconfigure
         header: 'Hive Site'
-        destination: "#{spark.history.conf_dir}/hive-site.xml"
+        target: "#{spark.history.conf_dir}/hive-site.xml"
         default: "/etc/hive/conf/hive-site.xml"
         merge: true
         backup: true
 
       @hconfigure
         header: 'Core Site'
-        destination: "#{spark.history.conf_dir}/core-site.xml"
+        target: "#{spark.history.conf_dir}/core-site.xml"
         default: "/etc/hadoop/conf/core-site.xml"
         merge: true
         backup: true

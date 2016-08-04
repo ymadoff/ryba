@@ -9,16 +9,16 @@
         docker_networks = {}
         @write_yaml
           header: 'elasticsearch'
-          destination: "/etc/elasticsearch/#{es_name}/conf/elasticsearch.yml"
+          target: "/etc/elasticsearch/#{es_name}/conf/elasticsearch.yml"
           content:es.config
         @write
           header: 'elasticsearch logging'
-          destination: "/etc/elasticsearch/#{es_name}/conf/logging.yml"
+          target: "/etc/elasticsearch/#{es_name}/conf/logging.yml"
           source: "#{__dirname}/resources/logging.yml"
           local_source: true
         @write
           header: 'logstash'
-          destination: "/etc/elasticsearch/#{es_name}/logstash_config/logstash.conf"
+          target: "/etc/elasticsearch/#{es_name}/logstash_config/logstash.conf"
           source: "#{__dirname}/resources/logstash.conf"
           local_source: true
           if: -> es.logstash?
@@ -31,17 +31,17 @@
 
         @download
           source: ssl.cacert
-          destination: ssl.dest_cacert
+          target: ssl.dest_cacert
           mode: 0o0640
           shy: true
         @download
           source: ssl.cert
-          destination: ssl.dest_cert
+          target: ssl.dest_cert
           mode: 0o0640
           shy: true
         @download
           source: ssl.key
-          destination: ssl.dest_key
+          target: ssl.dest_key
           mode: 0o0640
           shy: true
 
@@ -114,7 +114,7 @@
           yaml_data = {version:'2',services:docker_services,networks:docker_networks}
           @write_yaml
             header: 'docker-compose'
-            destination: "/etc/elasticsearch/#{es_name}/docker-compose.yml"
+            target: "/etc/elasticsearch/#{es_name}/docker-compose.yml"
             content:yaml_data
 
 ## Run docker compose file

@@ -32,7 +32,7 @@ Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
 
       @write
         header:'Sqoop Environment'
-        destination: "#{sqoop.conf_dir}/sqoop-env.sh"
+        target: "#{sqoop.conf_dir}/sqoop-env.sh"
         source: "#{__dirname}/resources/sqoop-env.sh"
         local_source: true
         write: [
@@ -59,7 +59,7 @@ Upload the "sqoop-site.xml" files into the "/etc/sqoop/conf" folder.
 
       @hconfigure
         header: 'Sqoop Site'
-        destination: "#{sqoop.conf_dir}/sqoop-site.xml"
+        target: "#{sqoop.conf_dir}/sqoop-site.xml"
         default: "#{__dirname}/resources/sqoop-site.xml"
         local_default: true
         properties: sqoop.site
@@ -86,12 +86,12 @@ MySQL is by default usable by Sqoop. The driver installed after running the
 
       # @copy
       #   source: '/usr/share/java/mysql-connector-java.jar'
-      #   destination: '/usr/hdp/current/sqoop-client/lib/'
+      #   target: '/usr/hdp/current/sqoop-client/lib/'
       # , next
       @link
         header: 'MySQL Connector'
         source: '/usr/share/java/mysql-connector-java.jar'
-        destination: '/usr/hdp/current/sqoop-client/lib/mysql-connector-java.jar'
+        target: '/usr/hdp/current/sqoop-client/lib/mysql-connector-java.jar'
 
 ## Libs
 
@@ -105,7 +105,7 @@ the Sqoop library folder.
           for lib in  @config.ryba.sqoop.libs
             @download
               source: lib
-              destination: "/usr/hdp/current/sqoop-client/lib/#{path.basename lib}"
+              target: "/usr/hdp/current/sqoop-client/lib/#{path.basename lib}"
 
 ## Check
 

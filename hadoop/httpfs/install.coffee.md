@@ -56,7 +56,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         @hdp_select
           name: 'hadoop-httpfs'
         @render
-          destination: "/etc/init.d/hadoop-httpfs"
+          target: "/etc/init.d/hadoop-httpfs"
           source: "#{__dirname}/../resources/hadoop-httpfs"
           local_source: true
           context: @config
@@ -67,7 +67,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @call header: 'Kerberos', timeout: -1, handler: ->
         @copy # SPNEGO Keytab
           source: core_site['hadoop.http.authentication.kerberos.keytab']
-          destination: httpfs.site['httpfs.authentication.kerberos.keytab']
+          target: httpfs.site['httpfs.authentication.kerberos.keytab']
           if: core_site['hadoop.http.authentication.kerberos.keytab'] isnt httpfs.site['httpfs.authentication.kerberos.keytab']
           if_exists: core_site['hadoop.http.authentication.kerberos.keytab']
           uid: httpfs.user.name
@@ -85,24 +85,24 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       @call header: 'Environment', handler: ->
         @mkdir
-          destination: "#{httpfs.pid_dir}"
+          target: "#{httpfs.pid_dir}"
           uid: httpfs.user.name
           gid: httpfs.group.name
           mode: 0o0755
         @mkdir
-          destination: "#{httpfs.tmp_dir}"
+          target: "#{httpfs.tmp_dir}"
           uid: httpfs.user.name
           gid: httpfs.group.name
           mode: 0o0755
         @mkdir
-          destination: "#{httpfs.log_dir}" #/#{hdfs.user.name}
+          target: "#{httpfs.log_dir}" #/#{hdfs.user.name}
           uid: httpfs.user.name
           gid: httpfs.group.name
           parent: true
         @call header: 'HttpFS Env', handler: ->
           httpfs.catalina_opts += " -D#{k}=#{v}" for k, v of httpfs.catalina.opts
           @render
-            destination: "#{httpfs.conf_dir}/httpfs-env.sh"
+            target: "#{httpfs.conf_dir}/httpfs-env.sh"
             source: "#{__dirname}/../resources/httpfs-env.sh.j2"
             local_source: true
             context: @config
@@ -110,35 +110,35 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             gid: httpfs.group.name
             backup: true
         @render
-          destination: "#{httpfs.conf_dir}/httpfs-log4j.properties"
+          target: "#{httpfs.conf_dir}/httpfs-log4j.properties"
           source: "#{__dirname}/../resources/httpfs-log4j.properties"
           local_source: true
           context: @config
           backup: true
         @link
           source: '/usr/hdp/current/hadoop-httpfs/webapps'
-          destination: "#{httpfs.catalina_home}/webapps"
+          target: "#{httpfs.catalina_home}/webapps"
         @mkdir # CATALINA_TMPDIR
-          destination: "#{httpfs.catalina_home}/temp"
+          target: "#{httpfs.catalina_home}/temp"
           uid: httpfs.user.name
           gid: httpfs.group.name
           mode: 0o0750
         @mkdir
-          destination: "#{httpfs.catalina_home}/work"
+          target: "#{httpfs.catalina_home}/work"
           uid: httpfs.user.name
           gid: httpfs.group.name
           mode: 0o0750
         @copy # Copie original server.xml for no-SSL environments
           source: "#{httpfs.catalina_home}/conf/server.xml"
-          destination: "#{httpfs.catalina_home}/conf/nossl-server.xml"
+          target: "#{httpfs.catalina_home}/conf/nossl-server.xml"
           unless_exists: true
         @copy
           source: "#{httpfs.catalina_home}/conf/nossl-server.xml"
-          destination: "#{httpfs.catalina_home}/conf/server.xml"
+          target: "#{httpfs.catalina_home}/conf/server.xml"
           unless: httpfs.env.HTTPFS_SSL_ENABLED is 'true'
         @copy
           source: "#{httpfs.catalina_home}/conf/ssl-server.xml"
-          destination: "#{httpfs.catalina_home}/conf/server.xml"
+          target: "#{httpfs.catalina_home}/conf/server.xml"
           if: httpfs.env.HTTPFS_SSL_ENABLED is 'true'
 
 ## SSL
@@ -149,15 +149,15 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         {httpfs} = @config.ryba
         @download
           source: ssl.cacert
-          destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+          target: "#{tmp_location}/#{path.basename ssl.cacert}"
           mode: 0o0600
         @download
           source: ssl.cert
-          destination: "#{tmp_location}/#{path.basename ssl.cert}"
+          target: "#{tmp_location}/#{path.basename ssl.cert}"
           mode: 0o0600
         @download
           source: ssl.key
-          destination: "#{tmp_location}/#{path.basename ssl.key}"
+          target: "#{tmp_location}/#{path.basename ssl.key}"
           mode: 0o0600
         @java_keystore_add
           keystore: httpfs.env.HTTPFS_SSL_KEYSTORE_FILE
@@ -172,20 +172,20 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           gid: httpfs.group.name
           mode: 0o0640
         @remove
-          destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+          target: "#{tmp_location}/#{path.basename ssl.cacert}"
           shy: true
         @remove
-          destination: "#{tmp_location}/#{path.basename ssl.cert}"
+          target: "#{tmp_location}/#{path.basename ssl.cert}"
           shy: true
         @remove
-          destination: "#{tmp_location}/#{path.basename ssl.key}"
+          target: "#{tmp_location}/#{path.basename ssl.key}"
           shy: true
 
 ## Configuration
 
       @hconfigure
         header: 'Configuration'
-        destination: "#{httpfs.conf_dir}/httpfs-site.xml"
+        target: "#{httpfs.conf_dir}/httpfs-site.xml"
         properties: httpfs.site
         uid: httpfs.user.name
         gid: httpfs.group.name

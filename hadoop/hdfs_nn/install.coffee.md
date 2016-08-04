@@ -61,7 +61,7 @@ inside "/etc/init.d" and activate it on startup.
           name: 'hadoop-hdfs-client' # Not checked
           name: 'hadoop-hdfs-namenode'
         @render
-          destination: '/etc/init.d/hadoop-hdfs-namenode'
+          target: '/etc/init.d/hadoop-hdfs-namenode'
           source: "#{__dirname}/../resources/hadoop-hfds-namenode"
           local_source: true
           context: @config
@@ -80,9 +80,9 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
       @call header: 'Layout', timeout: -1, handler: ->
         {hdfs, hadoop_group} = @config.ryba
         @mkdir
-          destination: "#{hdfs.nn.conf_dir}"
+          target: "#{hdfs.nn.conf_dir}"
         @mkdir
-          destination: for dir in hdfs.nn.site['dfs.namenode.name.dir'].split ','
+          target: for dir in hdfs.nn.site['dfs.namenode.name.dir'].split ','
             if dir.indexOf('file://') is 0
             then dir.substr(7) else dir
           uid: hdfs.user.name
@@ -90,12 +90,12 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
           mode: 0o755
           parent: true
         @mkdir
-          destination: "#{hdfs.pid_dir.replace '$USER', hdfs.user.name}"
+          target: "#{hdfs.pid_dir.replace '$USER', hdfs.user.name}"
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o755
         @mkdir
-          destination: "#{hdfs.log_dir}" #/#{hdfs.user.name}
+          target: "#{hdfs.log_dir}" #/#{hdfs.user.name}
           uid: hdfs.user.name
           gid: hdfs.group.name
           parent: true
@@ -104,14 +104,14 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
 
       @hconfigure
         header: 'Core Site'
-        destination: "#{hdfs.nn.conf_dir}/core-site.xml"
+        target: "#{hdfs.nn.conf_dir}/core-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
         local_default: true
         properties: merge {}, core_site, hdfs.nn.core_site
         backup: true
       @hconfigure
         header: 'HDFS Site'
-        destination: "#{hdfs.nn.conf_dir}/hdfs-site.xml"
+        target: "#{hdfs.nn.conf_dir}/hdfs-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
         local_default: true
         properties: hdfs.nn.site
@@ -129,7 +129,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
       @render
         header: 'Environment'
-        destination: "#{hdfs.nn.conf_dir}/hadoop-env.sh"
+        target: "#{hdfs.nn.conf_dir}/hadoop-env.sh"
         source: "#{__dirname}/../resources/hadoop-env.sh.j2"
         local_source: true
         context: @config
@@ -162,7 +162,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
           append: true
       @write
         header: 'Log4j'
-        destination: "#{hdfs.nn.conf_dir}/log4j.properties"
+        target: "#{hdfs.nn.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
         write: writes
         local_source: true
@@ -173,7 +173,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 
       @write_properties
         header: 'Metrics'
-        destination: "#{hdfs.nn.conf_dir}/hadoop-metrics2.properties"
+        target: "#{hdfs.nn.conf_dir}/hadoop-metrics2.properties"
         content: hadoop_metrics.config
         backup: true
 
@@ -185,10 +185,10 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
         ssl_server['ssl.server.keystore.location'] = "#{hdfs.nn.conf_dir}/keystore"
         ssl_server['ssl.server.truststore.location'] = "#{hdfs.nn.conf_dir}/truststore"
         @hconfigure
-          destination: "#{hdfs.nn.conf_dir}/ssl-server.xml"
+          target: "#{hdfs.nn.conf_dir}/ssl-server.xml"
           properties: ssl_server
         @hconfigure
-          destination: "#{hdfs.nn.conf_dir}/ssl-client.xml"
+          target: "#{hdfs.nn.conf_dir}/ssl-client.xml"
           properties: ssl_client
         # Client: import certificate to all hosts
         @java_keystore_add
@@ -268,13 +268,13 @@ the file must be specified.  If the value is empty, no hosts are excluded.
       @write
         header: 'Include'
         content: "#{hdfs.include.join '\n'}"
-        destination: "#{hdfs.nn.site['dfs.hosts']}"
+        target: "#{hdfs.nn.site['dfs.hosts']}"
         eof: true
         backup: true
       @write
         header: 'Exclude'
         content: "#{hdfs.exclude.join '\n'}"
-        destination: "#{hdfs.nn.site['dfs.hosts.exclude']}"
+        target: "#{hdfs.nn.site['dfs.hosts.exclude']}"
         eof: true
         backup: true
 
@@ -291,7 +291,7 @@ must be established for the accounts used to run Hadoop.
       @write
         header: 'Slaves'
         content: @contexts('ryba/hadoop/hdfs_dn').map((ctx) -> ctx.config.host).join '\n'
-        destination: "#{hdfs.nn.conf_dir}/slaves"
+        target: "#{hdfs.nn.conf_dir}/slaves"
         eof: true
 
 ## Format
@@ -344,7 +344,7 @@ ${HADOOP_CONF_DIR}/core-site.xml
 
       @hconfigure
         header: 'Policy'
-        destination: "#{hdfs.nn.conf_dir}/hadoop-policy.xml"
+        target: "#{hdfs.nn.conf_dir}/hadoop-policy.xml"
         default: "#{__dirname}/../../resources/core_hadoop/hadoop-policy.xml"
         local_default: true
         properties: hadoop_policy

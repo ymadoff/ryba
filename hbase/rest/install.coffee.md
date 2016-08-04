@@ -51,17 +51,17 @@ hbase:x:492:
 
       @call header: 'HBase Rest # Layout', timeout: -1, handler: ->
         @mkdir
-          destination: hbase.rest.pid_dir
+          target: hbase.rest.pid_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
         @mkdir
-          destination: hbase.rest.log_dir
+          target: hbase.rest.log_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
         @mkdir
-          destination: hbase.rest.conf_dir
+          target: hbase.rest.conf_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
@@ -78,7 +78,7 @@ hbase:x:492:
           source: "#{__dirname}/../resources/hbase-rest"
           local_source: true
           context: @config
-          destination: '/etc/init.d/hbase-rest'
+          target: '/etc/init.d/hbase-rest'
           mode: 0o0755
           unlink: true
         @execute
@@ -92,7 +92,7 @@ restrict it but not the rest server.
 
       @hconfigure
         header: 'HBase Site'
-        destination: "#{hbase.rest.conf_dir}/hbase-site.xml"
+        target: "#{hbase.rest.conf_dir}/hbase-site.xml"
         default: "#{__dirname}/../resources/hbase-site.xml"
         local_default: true
         properties: hbase.rest.site
@@ -107,7 +107,7 @@ Environment passed to the HBase Rest Server before it starts.
 
       @render
         header: 'Hbase Env'
-        destination: "#{hbase.rest.conf_dir}/hbase-env.sh"
+        target: "#{hbase.rest.conf_dir}/hbase-env.sh"
         source: "#{__dirname}/../resources/hbase-env.sh.j2"
         local_source: true
         context: @config
@@ -142,6 +142,6 @@ Create the Kerberos keytab for the service principal.
 
       @write
         header: 'Log4J'
-        destination: "#{hbase.rest.conf_dir}/log4j.properties"
+        target: "#{hbase.rest.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
         local_source: true

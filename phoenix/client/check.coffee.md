@@ -40,7 +40,7 @@ instructions.
         """
         unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.host}-phoenix"
       @write
-        destination: "#{user.home}/check_phoenix/create.sql"
+        target: "#{user.home}/check_phoenix/create.sql"
         uid: user.name
         gid: user.group
         content: """
@@ -56,7 +56,7 @@ instructions.
         );
         """
       @write
-        destination: "#{user.home}/check_phoenix/select.sql"
+        target: "#{user.home}/check_phoenix/select.sql"
         uid: user.name
         gid: user.group
         content: """

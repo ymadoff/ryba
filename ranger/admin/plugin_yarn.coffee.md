@@ -29,12 +29,12 @@
 # Layout
 
       @mkdir
-        destination: '/var/log/hadoop/yarn/audit/solr/'
+        target: '/var/log/hadoop/yarn/audit/solr/'
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0755
       @mkdir
-        destination: '/var/log/hadoop/yarn/audit/hdfs/'
+        target: '/var/log/hadoop/yarn/audit/hdfs/'
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0755
@@ -77,7 +77,7 @@ we execute this task using the rest api.
           header: 'Scripts rendering'
           if: -> version?
           source: "#{__dirname}/../resources/plugin-install.properties.j2"
-          destination: "/usr/hdp/#{version}/ranger-yarn-plugin/install.properties"
+          target: "/usr/hdp/#{version}/ranger-yarn-plugin/install.properties"
           local_source: true
           eof: true
           backup: true
@@ -87,7 +87,7 @@ we execute this task using the rest api.
             append: true
         @write
           header: 'Script Fix'
-          destination: "/usr/hdp/#{version}/ranger-yarn-plugin/enable-yarn-plugin.sh"
+          target: "/usr/hdp/#{version}/ranger-yarn-plugin/enable-yarn-plugin.sh"
           write:[
               match: RegExp "^HCOMPONENT_CONF_DIR=.*$", 'mg'
               replace: "HCOMPONENT_CONF_DIR=#{yarn.rm.conf_dir}"
@@ -108,7 +108,7 @@ we execute this task using the rest api.
           cmd: "chown -R #{yarn.user.name}:#{hadoop_group.name} /etc/ranger/#{ranger.yarn_plugin.install['REPOSITORY_NAME']}"
         @hconfigure
           header: 'Fix ranger-yarn-security conf'
-          destination: "#{yarn.rm.conf_dir}/ranger-yarn-security.xml"
+          target: "#{yarn.rm.conf_dir}/ranger-yarn-security.xml"
           merge: true
           properties:
             'ranger.plugin.yarn.policy.rest.ssl.config.file': "#{yarn.rm.conf_dir}/ranger-policymgr-ssl.xml"

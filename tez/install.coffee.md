@@ -31,7 +31,7 @@ HDFS directory. Note, the parent directories are created by the
 
       @hconfigure
         header: 'Tez Site'
-        destination: "#{tez.env['TEZ_CONF_DIR']}/tez-site.xml"
+        target: "#{tez.env['TEZ_CONF_DIR']}/tez-site.xml"
         default: "#{__dirname}/resources/tez-site.xml"
         local_default: true
         properties: tez.site
@@ -46,12 +46,12 @@ Environment passed to Hadoop.
       classpath = "#{tez.env['TEZ_CONF_DIR']}:#{tez.env['TEZ_JARS']}"
       @write
         header: 'Environment'
-        destination: '/etc/profile.d/tez.sh'
+        target: '/etc/profile.d/tez.sh'
         content: env.join '\n'
         mode: 0o0644
         eof: true
       # .write
-      #   destination: "#{hadoop_conf_dir}/hadoop-env.sh"
+      #   target: "#{hadoop_conf_dir}/hadoop-env.sh"
       #   match: /^export HADOOP_CLASSPATH="(.*):\$\{HADOOP_CLASSPATH\}" # RYBA TEZ CLASSPATH, DONT OVEWRITE/mg
       #   replace: "export HADOOP_CLASSPATH=\"#{classpath}:${HADOOP_CLASSPATH}\" # RYBA TEZ CLASSPATH, DONT OVEWRITE"
       #   before: /^export HADOOP_CLASSPATH=.*$/mg

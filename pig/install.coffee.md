@@ -50,7 +50,7 @@ companion file defines no properties while the YUM package does.
 
       @write_ini
         header: 'Properties'
-        destination: "#{pig.conf_dir}/pig.properties"
+        target: "#{pig.conf_dir}/pig.properties"
         content: pig.config
         separator: '='
         merge: true
@@ -58,7 +58,7 @@ companion file defines no properties while the YUM package does.
       @write
         header: 'Env'
         source: "#{__dirname}/resources/pig-env.sh"
-        destination: "#{pig.conf_dir}/pig-env.sh"
+        target: "#{pig.conf_dir}/pig-env.sh"
         local_source: true
         write: [
           match: /^JAVA_HOME=.*$/mg
@@ -77,7 +77,7 @@ companion file defines no properties while the YUM package does.
           match: new RegExp quote('/usr/lib/hcatalog'), 'g'
           replace: '/usr/lib/hive-hcatalog'
         ]
-        destination: '/usr/lib/pig/bin/pig'
+        target: '/usr/lib/pig/bin/pig'
         backup: true
 
 ## Dependencies

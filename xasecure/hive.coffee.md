@@ -29,7 +29,7 @@
       {hive_url} = ctx.config.xasecure
       @download
         source: hive_url
-        destination: '/var/tmp'
+        target: '/var/tmp'
         binary: true
         unless_exists: "/var/tmp/#{path.basename hive_url, '.tar'}"
       @extract
@@ -40,7 +40,7 @@
       {conf_dir} = ctx.config.ryba.hive
       {hive, hive_url} = ctx.config.xasecure
       @write
-        destination: "/var/tmp/#{path.basename hive_url, '.tar'}/install.properties"
+        target: "/var/tmp/#{path.basename hive_url, '.tar'}/install.properties"
         write: for k, v of hive
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
@@ -49,7 +49,7 @@
         cmd: "cd /var/tmp/#{path.basename hive_url, '.tar'} && ./install.sh"
       # TODO, need to merge properties "hive.exec.pre.hooks", "hive.exec.post.hooks"
       @hconfigure
-        destination: "#{conf_dir}/hive-site.xml"
+        target: "#{conf_dir}/hive-site.xml"
         properties: 
           'hive.exec.pre.hooks': 'com.xasecure.authorization.hive.hooks.XaSecureHivePreExecuteRunHook'
           'hive.exec.post.hooks': 'com.xasecure.authorization.hive.hooks.XaSecureHivePostExecuteRunHook'

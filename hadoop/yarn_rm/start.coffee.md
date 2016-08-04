@@ -29,7 +29,7 @@ the history of MR jobs from there.
 Ensure the service pid is removed on retry.
 
       @remove
-        destination: "#{yarn.pid_dir}/yarn-#{yarn.user.name}-resourcemanager.pid"
+        target: "#{yarn.pid_dir}/yarn-#{yarn.user.name}-resourcemanager.pid"
         if: options.attempt > 0
 
 ## Run

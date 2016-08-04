@@ -36,7 +36,7 @@ dfsadmin -fetchImage
         header: 'HDFS LS output'
         name: 'ls'
         cmd: 'hdfs dfs -ls -R / '
-        destination: "/var/backups/nn_#{@config.host}/"
+        target: "/var/backups/nn_#{@config.host}/"
         interval: month: 1
         retention: count: 2
 
@@ -47,7 +47,7 @@ dfsadmin -fetchImage
         name: 'fs'
         source: path.join any_dfs_name_dir, 'current'
         filter: ['fsimage_*','edits_0*']
-        destination: "/var/backups/nn_#{@config.host}/"
+        target: "/var/backups/nn_#{@config.host}/"
         interval: month: 1
         retention: count: 2
 

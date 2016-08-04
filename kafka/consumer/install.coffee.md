@@ -32,7 +32,7 @@ directories.
       @service
         name: 'kafka'
       @mkdir
-        destination: '/var/lib/kafka'
+        target: '/var/lib/kafka'
         uid: kafka.user.name
         gid: kafka.user.name
       @hdp_select
@@ -45,7 +45,7 @@ Update the file "consumer.properties" with the properties defined by the
 
       @write
         header: 'Consumer Properties'
-        destination: "#{kafka.consumer.conf_dir}/consumer.properties"
+        target: "#{kafka.consumer.conf_dir}/consumer.properties"
         write: for k, v of kafka.consumer.config
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
@@ -59,7 +59,7 @@ Update the different log4j properties files
 
       @write
         header: 'Tools Log4j'
-        destination: "#{kafka.consumer.conf_dir}/tools-log4j.properties"
+        target: "#{kafka.consumer.conf_dir}/tools-log4j.properties"
         write: for k, v of kafka.consumer.log4j
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
@@ -68,7 +68,7 @@ Update the different log4j properties files
         eof: true
       @write
         header: 'Log4j'
-        destination: "#{kafka.consumer.conf_dir}/log4j.properties"
+        target: "#{kafka.consumer.conf_dir}/log4j.properties"
         write: for k, v of kafka.consumer.log4j
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
@@ -77,7 +77,7 @@ Update the different log4j properties files
         eof: true
       @write
         header: 'Test Log4j'
-        destination: "#{kafka.consumer.conf_dir}/test-log4j.properties"
+        target: "#{kafka.consumer.conf_dir}/test-log4j.properties"
         write: for k, v of kafka.consumer.log4j
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
@@ -92,7 +92,7 @@ Write JAAS File for client configuration
       @write_jaas
         header: 'Consumer JAAS'
         if: kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
-        destination: "#{kafka.consumer.conf_dir}/kafka-client.jaas"
+        target: "#{kafka.consumer.conf_dir}/kafka-client.jaas"
         content:
           KafkaClient:
             useTicketCache: true
@@ -107,7 +107,7 @@ Write JAAS File for client configuration
 
       @write
         header: 'Environment'
-        destination: "#{kafka.consumer.conf_dir}/kafka-env.sh"
+        target: "#{kafka.consumer.conf_dir}/kafka-env.sh"
         write: for k, v of kafka.consumer.env
           match: RegExp "export #{k}=.*", 'm'
           replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"

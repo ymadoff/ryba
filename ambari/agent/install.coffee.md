@@ -9,7 +9,7 @@ The ambari server must be set in the configuration file.
 
     # module.exports.push header: '', handler: ->
     #   @mkdir 
-    #     destination: "/root/.ssh"
+    #     target: "/root/.ssh"
     #     uid: 'root'
     #     gid: null
     #     mode: 0o700 # was "permissions: 16832"
@@ -20,7 +20,7 @@ The ambari server must be set in the configuration file.
     #       replace: key
     #       append: true
     #     @write
-    #       destination: "#{user.home or '/home/'+user.name}/.ssh/authorized_keys"
+    #       target: "#{user.home or '/home/'+user.name}/.ssh/authorized_keys"
     #       write: write
     #       uid: user.name
     #       gid: null
@@ -37,7 +37,7 @@ The ambari server must be set in the configuration file.
 
       @write_ini
         header: 'Ambari Agent Configure'
-        destination: "#{ambari_agent.conf_dir}/ambari-agent.ini"
+        target: "#{ambari_agent.conf_dir}/ambari-agent.ini"
         content: ambari_agent.ini
         parse: misc.ini.parse_multi_brackets_multi_lines
         stringify: misc.ini.stringify_multi_brackets
@@ -47,7 +47,7 @@ The ambari server must be set in the configuration file.
         backup: true
 
       # @write
-      #   destination: "#{ambari_agent.conf_dir}/ambari-agent.ini"
+      #   target: "#{ambari_agent.conf_dir}/ambari-agent.ini"
       #   write: [
       #     match: /^hostname=(.*)/m
       #     replace: "hostname=#{ambari_agent.config.server['hostname']}"

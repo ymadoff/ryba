@@ -21,7 +21,7 @@ configuration.
         header: 'Backup Database'
         name: 'db'
         cmd: engines_cmd[engine]
-        destination: "/var/backups/hive/"
+        target: "/var/backups/hive/"
         interval: month: 1
         retention: count: 2
 
@@ -34,7 +34,7 @@ Backup the active Hive configuration.
         label_true: 'BACKUPED'
         name: 'conf'
         source: hive.conf_dir
-        destination: "/var/backups/hive/"
+        target: "/var/backups/hive/"
         interval: month: 1
         retention: count: 2
 

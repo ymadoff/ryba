@@ -40,7 +40,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
           # name: 'hadoop-hdfs-client' # Not checked
           name: 'hadoop-hdfs-namenode'
         @render
-          destination: '/etc/init.d/hadoop-hdfs-zkfc'
+          target: '/etc/init.d/hadoop-hdfs-zkfc'
           source: "#{__dirname}/../resources/hadoop-hdfs-zkfc"
           local_source: true
           context: @config
@@ -54,13 +54,13 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 
       @call header: 'Configure', timeout: -1, handler: ->
         @mkdir
-          destination: "#{zkfc.conf_dir}"
+          target: "#{zkfc.conf_dir}"
         @hconfigure
-          destination: "#{zkfc.conf_dir}/core-site.xml"
+          target: "#{zkfc.conf_dir}/core-site.xml"
           properties: core_site
           backup: true
         @hconfigure
-          destination: "#{zkfc.conf_dir}/hdfs-site.xml"
+          target: "#{zkfc.conf_dir}/hdfs-site.xml"
           default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
           local_default: true
           properties: hdfs.nn.site
@@ -69,7 +69,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
           backup: true
         @render
           header: 'Environment'
-          destination: "#{zkfc.conf_dir}/hadoop-env.sh"
+          target: "#{zkfc.conf_dir}/hadoop-env.sh"
           source: "#{__dirname}/../resources/hadoop-env.sh.j2"
           local_source: true
           context: @config
@@ -80,7 +80,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
           eof: true
         @write
           header: 'Log4j'
-          destination: "#{zkfc.conf_dir}/log4j.properties"
+          target: "#{zkfc.conf_dir}/log4j.properties"
           source: "#{__dirname}/../resources/log4j.properties"
           local_source: true
 
@@ -110,7 +110,7 @@ stored as "/etc/hadoop/conf/zkfc.jaas"
           uid: hdfs.user.name
           gid: hadoop_group.name
         @write_jaas
-          destination: zkfc.jaas_file
+          target: zkfc.jaas_file
           content: Client:
             principal: zkfc_principal
             keyTab: zkfc.keytab
@@ -148,7 +148,7 @@ setAcl /hadoop-ha sasl:zkfc:cdrwa,sasl:nn:cdrwa,digest:zkfc:ePBwNWc34ehcTu1FTNI7
         jaas_user = /^(.*?)[@\/]/.exec(zkfc.principal)?[1]
         acls.push "sasl:#{jaas_user}:cdrwa" if core_site['hadoop.security.authentication'] is 'kerberos'
         @write
-          destination: "#{zkfc.conf_dir}/zk-auth.txt"
+          target: "#{zkfc.conf_dir}/zk-auth.txt"
           content: if zkfc.digest.password then "digest:#{zkfc.digest.name}:#{zkfc.digest.password}" else ""
           uid: hdfs.user.name
           gid: hdfs.group.name
@@ -168,7 +168,7 @@ setAcl /hadoop-ha sasl:zkfc:cdrwa,sasl:nn:cdrwa,digest:zkfc:ePBwNWc34ehcTu1FTNI7
           acls.push "digest:#{digest}:cdrwa"
         @call ->
           @write
-            destination: "#{zkfc.conf_dir}/zk-acl.txt"
+            target: "#{zkfc.conf_dir}/zk-acl.txt"
             content: acls.join ','
             uid: hdfs.user.name
             gid: hdfs.group.name
@@ -194,19 +194,19 @@ inserted if ALL users or the HDFS user access is denied.
         # if: -> @contexts('ryba/hadoop/hdfs_nn').length > 1
         handler: ->
           @mkdir
-            destination: "#{hdfs.user.home}/.ssh"
+            target: "#{hdfs.user.home}/.ssh"
             uid: hdfs.user.name
             gid: hadoop_group.name
             mode: 0o700
           @download
             source: "#{ssh_fencing.private_key}"
-            destination: "#{hdfs.user.home}/.ssh/id_rsa"
+            target: "#{hdfs.user.home}/.ssh/id_rsa"
             uid: hdfs.user.name
             gid: hadoop_group.name
             mode: 0o600
           @download
             source: "#{ssh_fencing.public_key}"
-            destination: "#{hdfs.user.home}/.ssh/id_rsa.pub"
+            target: "#{hdfs.user.home}/.ssh/id_rsa.pub"
             uid: hdfs.user.name
             gid: hadoop_group.name
             mode: 0o644
@@ -214,7 +214,7 @@ inserted if ALL users or the HDFS user access is denied.
             fs.readFile "#{ssh_fencing.public_key}", (err, content) =>
               return callback err if err
               @write
-                destination: "#{hdfs.user.home}/.ssh/authorized_keys"
+                target: "#{hdfs.user.home}/.ssh/authorized_keys"
                 content: content
                 append: true
                 uid: hdfs.user.name
@@ -237,7 +237,7 @@ inserted if ALL users or the HDFS user access is denied.
                     content.push line
                   return callback null, false if content.length is source.length
                   @write
-                    destination: '/etc/security/access.conf'
+                    target: '/etc/security/access.conf'
                     content: content.join '\n'
                   .then callback
 

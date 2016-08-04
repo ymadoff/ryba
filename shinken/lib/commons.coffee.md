@@ -22,17 +22,17 @@
 
       @call header: 'Layout', handler: ->
         @mkdir
-          destination: '/etc/shinken/packs'
+          target: '/etc/shinken/packs'
         @mkdir
-          destination: "#{shinken.user.home}/share"
+          target: "#{shinken.user.home}/share"
           uid: shinken.user.name
           gid: shinken.group.name
         @mkdir
-          destination: "#{shinken.user.home}/doc"
+          target: "#{shinken.user.home}/doc"
           uid: shinken.user.name
           gid: shinken.group.name
         @chown
-          destination: shinken.log_dir
+          target: shinken.log_dir
           uid: shinken.user.name
           gid: shinken.group.name
         @execute

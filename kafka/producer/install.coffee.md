@@ -32,7 +32,7 @@ directories.
       @service
         name: 'kafka'
       @mkdir
-        destination: '/var/lib/kafka'
+        target: '/var/lib/kafka'
         uid: kafka.user.name
         gid: kafka.user.name
       @hdp_select
@@ -45,7 +45,7 @@ Update the file "server.properties" with the properties defined by the
 
       @write 
         header: 'Producer Properties'
-        destination: "#{kafka.producer.conf_dir}/producer.properties"
+        target: "#{kafka.producer.conf_dir}/producer.properties"
         write: for k, v of kafka.producer.config
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
@@ -57,7 +57,7 @@ Update the file "server.properties" with the properties defined by the
 
       @write
         header: 'Log4j'
-        destination: "#{kafka.consumer.conf_dir}/log4j.properties"
+        target: "#{kafka.consumer.conf_dir}/log4j.properties"
         write: for k, v of kafka.consumer.log4j
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
@@ -66,7 +66,7 @@ Update the file "server.properties" with the properties defined by the
         eof: true
       @write
         header: 'Tools Log4j'
-        destination: "#{kafka.producer.conf_dir}/tools-log4j.properties"
+        target: "#{kafka.producer.conf_dir}/tools-log4j.properties"
         write: for k, v of kafka.producer.log4j
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
@@ -80,7 +80,7 @@ Update the file "server.properties" with the properties defined by the
       @write_jaas
         header: 'Producer JAAS'
         if: -> kafka.producer.env['KAFKA_KERBEROS_PARAMS']?
-        destination: "#{kafka.producer.conf_dir}/kafka-client.jaas"
+        target: "#{kafka.producer.conf_dir}/kafka-client.jaas"
         content:
           KafkaClient:
             useTicketCache: true
@@ -95,7 +95,7 @@ Update the file "server.properties" with the properties defined by the
 
       @write
         header: 'Environment'
-        destination: "#{kafka.producer.conf_dir}/kafka-env.sh"
+        target: "#{kafka.producer.conf_dir}/kafka-env.sh"
         write: for k, v of kafka.producer.env
           match: RegExp "export #{k}=.*", 'm'
           replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"

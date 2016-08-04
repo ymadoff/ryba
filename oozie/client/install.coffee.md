@@ -35,7 +35,7 @@ Expose the "OOZIE_URL" environmental variable to every users.
 
       @write
         header: 'Profile Env'
-        destination: '/etc/profile.d/oozie.sh'
+        target: '/etc/profile.d/oozie.sh'
         # export OOZIE_CLIENT_OPTS='-Djavax.net.ssl.trustStore=/etc/hadoop/conf/truststore'
         content: """
         #!/bin/bash
@@ -47,7 +47,7 @@ Expose the "OOZIE_URL" environmental variable to every users.
 
       @hconfigure
         header: 'Oozie site'
-        destination: "#{oozie.conf_dir}/oozie-site.xml"
+        target: "#{oozie.conf_dir}/oozie-site.xml"
         default: "#{__dirname}/../resources/oozie-site.xml"
         local_default: true
         properties: oozie.site
@@ -77,7 +77,7 @@ keytool -keystore ${JAVA_HOME}/jre/lib/security/cacerts -import -alias tomcat -f
         tmp_location = "/tmp/ryba_oozie_client_#{Date.now()}"
         @download
           source: ssl.cacert
-          destination: "#{tmp_location}_cacert"
+          target: "#{tmp_location}_cacert"
           shy: true
         @java_keystore_add
           keystore: "#{jre_home or java_home}/lib/security/cacerts"
@@ -85,5 +85,5 @@ keytool -keystore ${JAVA_HOME}/jre/lib/security/cacerts -import -alias tomcat -f
           caname: "ryba_cluster" # was tomcat
           cacert: "#{tmp_location}_cacert"
         @remove
-          destination: "#{tmp_location}_cacert"
+          target: "#{tmp_location}_cacert"
           shy: true

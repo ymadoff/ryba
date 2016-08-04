@@ -35,7 +35,7 @@ Check if hadoop connector works and re-activate jar execution.
             @render
               header: 'Solrconfig'
               source: "#{__dirname}/../resources/cloud/solrconfig.xml.j2"
-              destination: "/tmp/#{check_dir}/solrconfig.xml"
+              target: "/tmp/#{check_dir}/solrconfig.xml"
               local_source: true
               context: @config.ryba
               eof: true
@@ -88,7 +88,7 @@ This check is inspired [from HDP][search-hdp].
             @render
               header: 'Solrconfig'
               source: "#{__dirname}/../resources/cloud/solrconfig.xml.j2"
-              destination: "/tmp/#{check_dir}/solrconfig.xml"
+              target: "/tmp/#{check_dir}/solrconfig.xml"
               local_source: true
               context: @config.ryba   
               eof: true

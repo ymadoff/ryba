@@ -38,11 +38,11 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @call unless_exec: "[ `cat #{nagvis.install_dir}/version` = #{nagvis.version} ]", header: 'Archive', handler: ->
         @download
           source: nagvis.source
-          destination: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"
+          target: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"
         @extract
           source: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"
         @chmod
-          destination: "/var/tmp/nagvis-#{nagvis.version}/install.sh"
+          target: "/var/tmp/nagvis-#{nagvis.version}/install.sh"
           mode: 0o755
         @execute
           cmd: """
@@ -53,10 +53,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         @service_restart
           name: 'httpd'
         @write
-          destination: "#{nagvis.install_dir}/version"
+          target: "#{nagvis.install_dir}/version"
           content: "#{nagvis.version}"
-        @remove destination: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"
-        @remove destination: "/var/tmp/nagvis-#{nagvis.version}"
+        @remove target: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"
+        @remove target: "/var/tmp/nagvis-#{nagvis.version}"
 
       write = ""
       for k, v of nagvis.config
@@ -65,7 +65,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           write += "#{sk}=" + if typeof sv is 'string' then "\"#{sv}\"\n" else "#{sv}\n"
         write += "\n"
       @write
-        destination: "#{nagvis.install_dir}/etc/nagvis.ini.php"
+        target: "#{nagvis.install_dir}/etc/nagvis.ini.php"
         content: write
         backup: true
 

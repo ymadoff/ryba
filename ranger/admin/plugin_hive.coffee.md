@@ -29,13 +29,13 @@
 # Layout
 
       @mkdir
-        destination: '/var/log/hadoop/hive/audit/hdfs/'
+        target: '/var/log/hadoop/hive/audit/hdfs/'
         uid: hive.user.name
         gid: hive.name
         mode: 0o0755
         if: ranger.hive_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
       @mkdir
-        destination: '/var/log/hadoop/hive/audit/solr/'
+        target: '/var/log/hadoop/hive/audit/solr/'
         uid: hive.user.name
         gid: hive.name
         mode: 0o0755
@@ -79,7 +79,7 @@ we execute this task using the rest api.
           header: 'Scripts rendering'
           if: -> version?
           source: "#{__dirname}/../resources/plugin-install.properties.j2"
-          destination: "/usr/hdp/#{version}/ranger-hive-plugin/install.properties"
+          target: "/usr/hdp/#{version}/ranger-hive-plugin/install.properties"
           local_source: true
           eof: true
           backup: true
@@ -89,7 +89,7 @@ we execute this task using the rest api.
             append: true
         @write
           header: 'Script Fix'
-          destination: "/usr/hdp/#{version}/ranger-hive-plugin/enable-hive-plugin.sh"
+          target: "/usr/hdp/#{version}/ranger-hive-plugin/enable-hive-plugin.sh"
           write: [
               match: RegExp "^HCOMPONENT_CONF_DIR=.*$", 'mg'
               replace: "HCOMPONENT_CONF_DIR=#{hive.server2.conf_dir}"
@@ -107,7 +107,7 @@ we execute this task using the rest api.
           backup: true
         # @write
         #   header: 'Fix Hive Server2 classpath'
-        #   destination: "#{kafka.broker.conf_dir}/kafka-env.sh"
+        #   target: "#{kafka.broker.conf_dir}/kafka-env.sh"
         #   write: [
         #     match: RegExp "^export CLASSPATH=\"$CLASSPATH.*", 'm'
         #     replace: "export CLASSPATH=\"$CLASSPATH:${script_dir}:/usr/hdp/#{version}/ranger-hive-plugin/lib/ranger-hive-plugin-impl:#{kafka.broker.conf_dir}:/usr/hdp/current/hadoop-hdfs-client/*:/usr/hdp/current/hadoop-hdfs-client/lib/*:/etc/hadoop/conf\" # RYBA, DONT OVERWRITE"
@@ -128,20 +128,20 @@ we execute this task using the rest api.
           """
         @hconfigure
           header: 'Fix hiveserver2 hive-site'
-          destination: "#{hive.server2.conf_dir}/hive-site.xml"
+          target: "#{hive.server2.conf_dir}/hive-site.xml"
           merge: true
           properties:
             'hive.security.authorization.manager':'org.apache.ranger.authorization.hive.authorizer.RangerHiveAuthorizerFactory'
             'hive.security.authenticator.manager':'org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator'
         @hconfigure
           header: 'Fix ranger-hive-security conf'
-          destination: "#{hive.server2.conf_dir}/ranger-hive-security.xml"
+          target: "#{hive.server2.conf_dir}/ranger-hive-security.xml"
           merge: true
           properties:
             'ranger.plugin.hive.policy.rest.ssl.config.file': "#{hive.server2.conf_dir}/ranger-policymgr-ssl.xml"
         @remove
           header: 'Remove useless file'
-          destination: "#{hive.server2.conf_dir}/hiveserver2-site.xml"
+          target: "#{hive.server2.conf_dir}/hiveserver2-site.xml"
 
 ## Dependencies
 

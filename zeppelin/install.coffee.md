@@ -44,15 +44,15 @@ SSL only required for the server
     #  modified = false
     #  @download
     #     source: ssl.cacert
-    #     destination: "#{tmp_location}_cacert"
+    #     target: "#{tmp_location}_cacert"
     #     shy: true
     #  @download
     #     source: ssl.cert
-    #     destination: "#{tmp_location}_cert"
+    #     target: "#{tmp_location}_cert"
     #     shy: true
     #  @download
     #     source: ssl.key
-    #     destination: "#{tmp_location}_key"
+    #     target: "#{tmp_location}_key"
     #     shy: true
     #  # Client: import certificate to all hosts
     #  @java_keystore_add
@@ -76,13 +76,13 @@ SSL only required for the server
     #     caname: "hadoop_spark_ca"
     #     cacert: "#{tmp_location}_cacert"
     #  @remove
-    #     destination: "#{tmp_location}_cacert"
+    #     target: "#{tmp_location}_cacert"
     #     shy: true
     #  @remove
-    #     destination: "#{tmp_location}_cert"
+    #     target: "#{tmp_location}_cert"
     #     shy: true
     #  @remove
-    #     destination: "#{tmp_location}_key"
+    #     target: "#{tmp_location}_key"
     #     shy: true
 
 ## HDP select status
@@ -111,11 +111,11 @@ Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
 
       @mkdir
         header: 'Directory'
-        destination: "#{zeppelin.conf_dir}"
+        target: "#{zeppelin.conf_dir}"
         mode: 0o0750
       @hconfigure
         header: 'Configuration'
-        destination: "#{zeppelin.conf_dir}/zeppelin-site.xml"
+        target: "#{zeppelin.conf_dir}/zeppelin-site.xml"
         default: "#{__dirname}/resources/zeppelin-site.xml"
         local_default: true
         properties: zeppelin.site
@@ -126,7 +126,7 @@ TODO: remove download and write and replace it with a template
 
       @download
         header: 'Download Environment'
-        destination: "#{zeppelin.conf_dir}/zeppelin-env.sh"
+        target: "#{zeppelin.conf_dir}/zeppelin-env.sh"
         source: "#{__dirname}/resources/zeppelin-env.sh"
         uid: hdfs.user.name
         gid: hadoop_group.name
@@ -134,7 +134,7 @@ TODO: remove download and write and replace it with a template
         unless_exists: true
       @write
         header: 'Update Environment'
-        destination: "#{zeppelin.conf_dir}/zeppelin-env.sh"
+        target: "#{zeppelin.conf_dir}/zeppelin-env.sh"
         write: for k, v of zeppelin.env
           match: RegExp "^export\\s+(#{quote k})(.*)$", 'm'
           replace: "export #{k}=#{v}"
@@ -149,7 +149,7 @@ Load Zeppelin docker image from local host
       @call header: 'Import', timeout: -1, handler: ->
         @download
           source: "#{@config.mecano.cache_dir}/zeppelin.tar"
-          destination: "/tmp/zeppelin.tar" # add versioning
+          target: "/tmp/zeppelin.tar" # add versioning
         @docker_load
           machine: 'ryba'
           source: "/tmp/zeppelin.tar"

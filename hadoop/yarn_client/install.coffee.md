@@ -29,13 +29,13 @@
       @call header: 'Layout', timeout: -1, handler: ->
         pid_dir = yarn.pid_dir.replace '$USER', yarn.user.name
         @mkdir
-          destination: "#{yarn.log_dir}/#{yarn.user.name}"
+          target: "#{yarn.log_dir}/#{yarn.user.name}"
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o0755
           parent: true
         @mkdir
-          destination: "#{pid_dir}"
+          target: "#{pid_dir}"
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o0755
@@ -50,7 +50,7 @@ Properties accepted by the template are: `ryba.yarn.rm_opts`
 
       @render
         header: 'Yarn OPTS'
-        destination: "#{hadoop_conf_dir}/yarn-env.sh"
+        target: "#{hadoop_conf_dir}/yarn-env.sh"
         source: "#{__dirname}/../resources/yarn-env.sh.j2"
         local_source: true
         context: @config
@@ -63,7 +63,7 @@ Properties accepted by the template are: `ryba.yarn.rm_opts`
 
       @hconfigure
         header: 'Configuration'
-        destination: "#{hadoop_conf_dir}/yarn-site.xml"
+        target: "#{hadoop_conf_dir}/yarn-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
         local_default: true
         properties: yarn.site

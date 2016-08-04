@@ -95,7 +95,7 @@ isnt yet started.
           header: 'Init Script'
           source: "#{__dirname}/../resources/hive-hcatalog-server.j2"
           local_source: true
-          destination: '/etc/init.d/hive-hcatalog-server'
+          target: '/etc/init.d/hive-hcatalog-server'
           mode: 0o0755
           unlink: true
         @execute
@@ -278,7 +278,7 @@ isnt yet started.
 
       @hconfigure
         header: 'Hive Site'
-        destination: "#{hive.conf_dir}/hive-site.xml"
+        target: "#{hive.conf_dir}/hive-site.xml"
         default: "#{__dirname}/../../resources/hive/hive-site.xml"
         local_default: true
         properties: hive.site
@@ -286,13 +286,13 @@ isnt yet started.
         backup: true
       @render
         header: 'Log4j Properties'
-        destination: "#{hive.conf_dir}/hive-log4j.properties"
+        target: "#{hive.conf_dir}/hive-log4j.properties"
         source: "#{__dirname}/../resources/hive-log4j.properties"
         local_source: true
         context: @config
       @render
         header: 'Exec Log4j'
-        destination: "#{hive.conf_dir}/hive-exec-log4j.properties"
+        target: "#{hive.conf_dir}/hive-exec-log4j.properties"
         source: "#{__dirname}/../resources/hive-exec-log4j.properties"
         local_source: true
         context: @config
@@ -321,7 +321,7 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
       @render
         header: 'Hive Env'
         source: "#{__dirname}/../resources/hive-env.sh"
-        destination: "#{hive.conf_dir}/hive-env.sh"
+        target: "#{hive.conf_dir}/hive-env.sh"
         local_source: true
         write: hive.hcatalog.env.write
         eof: true
@@ -333,19 +333,19 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
         handler: ->
           @download (
             source: lib
-            destination: "/usr/hdp/current/hive-metastore/lib/#{path.basename lib}"
+            target: "/usr/hdp/current/hive-metastore/lib/#{path.basename lib}"
           ) for lib in hive.libs
 
       @link
         if: engine is 'mysql'
         header: 'Link MySQL Driver'
         source: '/usr/share/java/mysql-connector-java.jar'
-        destination: '/usr/hdp/current/hive-metastore/lib/mysql-connector-java.jar'
+        target: '/usr/hdp/current/hive-metastore/lib/mysql-connector-java.jar'
       @link
         if: engine is 'postgresql'
         header: 'Link PostgreSQL Driver'
         source: '/usr/share/java/postgresql-jdbc.jar'
-        destination: '/usr/hdp/current/hive-metastore/lib/postgresql-jdbc.jar'
+        target: '/usr/hdp/current/hive-metastore/lib/postgresql-jdbc.jar'
 
 ## Kerberos
 
@@ -365,12 +365,12 @@ Create the directories to store the logs and pid information. The properties
 
       @call header: 'Layout', timeout: -1, handler: ->
         @mkdir
-          destination: hive.hcatalog.log_dir
+          target: hive.hcatalog.log_dir
           uid: hive.user.name
           gid: hive.group.name
           parent: true
         @mkdir
-          destination: hive.hcatalog.pid_dir
+          target: hive.hcatalog.pid_dir
           uid: hive.user.name
           gid: hive.group.name
           parent: true

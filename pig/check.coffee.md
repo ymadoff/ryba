@@ -21,7 +21,7 @@ unless the "hdp.force_check" configuration property is set to "true".
           result = foreach data generate UPPER(text), number+2;
           STORE result INTO '/user/#{user.name}/#{@config.shortname}-pig' USING PigStorage();
           """
-          destination: '/tmp/ryba-test.pig'
+          target: '/tmp/ryba-test.pig'
         @execute
           cmd: mkcmd.test @, """
           hdfs dfs -rm -r -skipTrash #{@config.shortname}-pig_tmp || true
@@ -46,7 +46,7 @@ unless the "hdp.force_check" configuration property is set to "true".
           asum = foreach agroup GENERATE SUM(data.col2);
           STORE asum INTO '/user/#{user.name}/#{@config.shortname}-pig_hcat' USING PigStorage();
           """
-          destination: "/tmp/ryba-pig_hcat.pig"
+          target: "/tmp/ryba-pig_hcat.pig"
           eof: true
         @execute
           cmd: mkcmd.test @, """

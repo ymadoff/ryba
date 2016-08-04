@@ -64,7 +64,7 @@ inside "/etc/init.d" and activate it on startup.
           header: 'Init Script'
           source: "#{__dirname}/../resources/hive-webhcat-server.j2"
           local_source: true
-          destination: '/etc/init.d/hive-webhcat-server'
+          target: '/etc/init.d/hive-webhcat-server'
           mode: 0o0755
           unlink: true
         @execute
@@ -77,12 +77,12 @@ Create file system directories for log and pid.
 
       @call header: 'Layout', handler: ->
         @mkdir
-          destination: webhcat.log_dir
+          target: webhcat.log_dir
           uid: hive.user.name
           gid: hadoop_group.name
           mode: 0o755
         @mkdir
-          destination: webhcat.pid_dir
+          target: webhcat.pid_dir
           uid: hive.user.name
           gid: hadoop_group.name
           mode: 0o755
@@ -93,7 +93,7 @@ Upload configuration inside '/etc/hive-webhcat/conf/webhcat-site.xml'.
 
       @hconfigure
         header: 'Webhcat Site'
-        destination: "#{webhcat.conf_dir}/webhcat-site.xml"
+        target: "#{webhcat.conf_dir}/webhcat-site.xml"
         default: "#{__dirname}/../../resources/hive-webhcat/webhcat-site.xml"
         local_default: true
         properties: webhcat.site
@@ -110,7 +110,7 @@ Update environnmental variables inside '/etc/hive-webhcat/conf/webhcat-env.sh'.
         header: 'Webhcat Env'
         source: "#{__dirname}/../../resources/hive-webhcat/webhcat-env.sh"
         local_source: true
-        destination: "#{webhcat.conf_dir}/webhcat-env.sh"
+        target: "#{webhcat.conf_dir}/webhcat-env.sh"
         uid: hive.user.name
         gid: hadoop_group.name
         mode: 0o0755
@@ -149,7 +149,7 @@ Copy the spnego keytab with restricitive permissions
       @copy
         header: 'SPNEGO'
         source: '/etc/security/keytabs/spnego.service.keytab'
-        destination: webhcat.site['templeton.kerberos.keytab']
+        target: webhcat.site['templeton.kerberos.keytab']
         uid: hive.user.name
         gid: hadoop_group.name
         mode: 0o0660

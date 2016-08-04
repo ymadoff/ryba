@@ -35,15 +35,15 @@
 
       @call header: 'Preinstall Layout', handler: ->
           @mkdir
-            destination: nifi.manager.install_dir
+            target: nifi.manager.install_dir
           @mkdir
-            destination: nifi.manager.conf_dir
+            target: nifi.manager.conf_dir
           @mkdir
-            destination: nifi.manager.log_dir
+            target: nifi.manager.log_dir
             uid: nifi.user.name
             gid: nifi.group.name
           @mkdir
-            destination: nifi.user.home 
+            target: nifi.user.home 
             uid: nifi.user.name
             gid: nifi.group.name
 
@@ -53,17 +53,17 @@
         unless_exec: "grep 'nifi.version=#{nifi.version}' #{nifi.manager.install_dir}/#{nifi.version}/conf/nifi.properties"
         handler: ->
           @mkdir
-            destination: "#{nifi.manager.install_dir}/#{nifi.version}"
+            target: "#{nifi.manager.install_dir}/#{nifi.version}"
           @download
             source: nifi.source
-            destination: tmp_archive_location
+            target: tmp_archive_location
           @extract
             source: tmp_archive_location
-            destination: "#{nifi.manager.install_dir}/#{nifi.version}"
+            target: "#{nifi.manager.install_dir}/#{nifi.version}"
             preserve_owner: false
             strip: 1
           @remove
-            destination: tmp_archive_location
+            target: tmp_archive_location
 
       @call 
         header: 'Postinstall Layout'
@@ -71,25 +71,25 @@
         handler: ->
           @link
             source: "#{nifi.manager.install_dir}/#{nifi.version}"
-            destination: "#{nifi.manager.install_dir}/current"
+            target: "#{nifi.manager.install_dir}/current"
           # set current version to downloaded version (to support upgrades)
           @remove 
-            destination: "#{nifi.manager.install_dir}/current/conf"
+            target: "#{nifi.manager.install_dir}/current/conf"
             if_exec: "test -d #{nifi.manager.install_dir}/current/conf"
           @link
             source: nifi.manager.conf_dir
-            destination: "#{nifi.manager.install_dir}/current/conf"
+            target: "#{nifi.manager.install_dir}/current/conf"
           @remove 
-            destination: "#{nifi.manager.install_dir}/current/logs"
+            target: "#{nifi.manager.install_dir}/current/logs"
             if_exec: "test -d #{nifi.manager.install_dir}/current/logs"
           @link
             source: nifi.manager.log_dir
-            destination: "#{nifi.user.home}/logs"
+            target: "#{nifi.user.home}/logs"
           # needs to have read/write privileges to load Nar bundles
           @execute
             cmd: "chmod 777 -R  #{nifi.manager.install_dir}/current/lib"
           @render
-            destination: '/etc/init.d/nifi-manager'
+            target: '/etc/init.d/nifi-manager'
             source: "#{__dirname}/resources/nifi-manager.j2"
             local_source: true
             context: @config
@@ -97,7 +97,7 @@
           # https://github.com/apache/nifi/blob/master/nifi-bootstrap/src/main/java/org/apache/nifi/bootstrap/RunNiFi.java#L335
           # enable nifi to create pid file in nifi.home/bin directory
           @chown
-            destination: "#{nifi.manager.install_dir}/current/bin"
+            target: "#{nifi.manager.install_dir}/current/bin"
             uid: nifi.user.name
             gid: nifi.group.name
 
@@ -142,7 +142,7 @@ Describe where to get the user athentication onformation from.
         @write
           header: 'Login Identity Provider'
           # source: "#{__dirname}/../resources/login-identity-providers.xml.j2"
-          destination: "#{nifi.manager.conf_dir}/login-identity-providers.xml"
+          target: "#{nifi.manager.conf_dir}/login-identity-providers.xml"
           content: content
           local_source: true
           uid: nifi.user.name
@@ -164,7 +164,7 @@ Set up different users to be able to access the NiFi Web ui
             role = user.ele 'role', 'name': "#{a_role}"
         content = users.end pretty:true
         @write
-          destination: "#{nifi.manager.conf_dir}/authorized-users.xml"
+          target: "#{nifi.manager.conf_dir}/authorized-users.xml"
           local_source: true
           content: content
           uid: nifi.user.name
@@ -180,7 +180,7 @@ Not sure we need it on the Manager.
       @render
         header: 'Authority Providers'
         source: "#{__dirname}/../resources/authority-providers.xml.j2"
-        destination: "#{nifi.manager.conf_dir}/authority-providers.xml"
+        target: "#{nifi.manager.conf_dir}/authority-providers.xml"
         context: nifi.manager
         local_source: true
         uid: nifi.user.name
@@ -197,7 +197,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
       @render
         header: 'State Provider'
         source: "#{__dirname}/../resources/state-management.xml.j2"
-        destination: "#{nifi.manager.conf_dir}/state-management.xml"
+        target: "#{nifi.manager.conf_dir}/state-management.xml"
         context: @config.ryba
         local_source: true
         uid: nifi.user.name
@@ -229,7 +229,7 @@ by sending request to ldaps server
       @render
         header: 'Bootstrap Conf'
         source: "#{__dirname}/../resources/bootstrap.conf.j2"
-        destination: "#{nifi.manager.conf_dir}/bootstrap.conf"
+        target: "#{nifi.manager.conf_dir}/bootstrap.conf"
         eof: true
         backup: true
         context:
@@ -243,7 +243,7 @@ by sending request to ldaps server
 
       @write_jaas
         header: 'Zookeeper JAAS'
-        destination: "#{nifi.manager.conf_dir}/nifi-zookeeper.jaas"
+        target: "#{nifi.manager.conf_dir}/nifi-zookeeper.jaas"
         content: Client:
           principal: nifi.manager.krb5_principal
           keyTab: nifi.manager.krb5_keytab
@@ -256,7 +256,7 @@ by sending request to ldaps server
       @render
         header: 'Server properties'
         source: "#{__dirname}/../resources/nifi.properties"
-        destination: "#{nifi.manager.conf_dir}/nifi.properties"
+        target: "#{nifi.manager.conf_dir}/nifi.properties"
         local_source: true
         write: for k, v of nifi.manager.config.properties
           match: RegExp "^#{quote k}=.*$", 'mg'
@@ -295,14 +295,14 @@ by sending request to ldaps server
 
       @download
         header: 'Services Notifications'
-        destination: "#{nifi.manager.conf_dir}/bootstrap-notification-services.xml"
+        target: "#{nifi.manager.conf_dir}/bootstrap-notification-services.xml"
         source: "#{__dirname}/../resources/bootstrap-notification-services.xml"
 
 # Logs
 
       @render
         header: 'Log Configuration'
-        destination: "#{nifi.manager.conf_dir}/logback.xml"
+        target: "#{nifi.manager.conf_dir}/logback.xml"
         source: "#{__dirname}/../resources/logback.xml.j2"
         local_source: true
         context: nifi.manager

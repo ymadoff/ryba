@@ -29,7 +29,7 @@
 # Layout
 
       @mkdir
-        destination: '/var/log/hadoop/kafka/audit/solr/'
+        target: '/var/log/hadoop/kafka/audit/solr/'
         uid: kafka.user.name
         gid: hadoop_group.name
         mode: 0o0755
@@ -72,7 +72,7 @@ we execute this task using the rest api.
           header: 'Scripts rendering'
           if: -> version?
           source: "#{__dirname}/../resources/plugin-install.properties.j2"
-          destination: "/usr/hdp/#{version}/ranger-kafka-plugin/install.properties"
+          target: "/usr/hdp/#{version}/ranger-kafka-plugin/install.properties"
           local_source: true
           eof: true
           backup: true
@@ -82,7 +82,7 @@ we execute this task using the rest api.
             append: true
         @write
           header: 'Script Fix'
-          destination: "/usr/hdp/#{version}/ranger-kafka-plugin/enable-kafka-plugin.sh"
+          target: "/usr/hdp/#{version}/ranger-kafka-plugin/enable-kafka-plugin.sh"
           write: [
               match: RegExp "^HCOMPONENT_CONF_DIR=.*$", 'mg'
               replace: "HCOMPONENT_CONF_DIR=#{kafka.broker.conf_dir}"
@@ -100,7 +100,7 @@ we execute this task using the rest api.
           backup: true
         @write
           header: 'Fix Kafka Broker classpath'
-          destination: "#{kafka.broker.conf_dir}/kafka-env.sh"
+          target: "#{kafka.broker.conf_dir}/kafka-env.sh"
           write: [
             match: RegExp "^export CLASSPATH=\"$CLASSPATH.*", 'm'
             replace: "export CLASSPATH=\"$CLASSPATH:${script_dir}:/usr/hdp/#{version}/ranger-kafka-plugin/lib/ranger-kafka-plugin-impl:#{kafka.broker.conf_dir}:/usr/hdp/current/hadoop-hdfs-client/*:/usr/hdp/current/hadoop-hdfs-client/lib/*:/etc/hadoop/conf\" # RYBA, DONT OVERWRITE"
@@ -121,17 +121,17 @@ we execute this task using the rest api.
           """
         @chmod
           header: "Fix Kafka Conf Permission"
-          destination: kafka.broker.conf_dir
+          target: kafka.broker.conf_dir
           uid: kafka.user.name
           gid: hadoop_group.name
         @chmod
           header: "Fix Ranger Repo Permission"
-          destination: "/etc/ranger/#{ranger.kafka_plugin.install['REPOSITORY_NAME']}"
+          target: "/etc/ranger/#{ranger.kafka_plugin.install['REPOSITORY_NAME']}"
           uid: kafka.user.name
           gid: hadoop_group.name
         @hconfigure
           header: 'Fix ranger-kafka-security conf'
-          destination: "#{kafka.broker.conf_dir}/ranger-kafka-security.xml"
+          target: "#{kafka.broker.conf_dir}/ranger-kafka-security.xml"
           merge: true
           properties:
             'ranger.plugin.kafka.policy.rest.ssl.config.file': "#{kafka.broker.conf_dir}/ranger-policymgr-ssl.xml"

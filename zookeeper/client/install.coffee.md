@@ -41,7 +41,7 @@ Create the JAAS client configuration file.
 
       @write_jaas
         header: 'ZooKeeper Client # Kerberos'
-        destination: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
+        target: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
         content: Client:
           useTicketCache: 'true'
         mode: 0o644
@@ -52,7 +52,7 @@ Generate the "zookeeper-env.sh" file.
 
       @write
         header: 'Environment'
-        destination: "#{zookeeper.conf_dir}/zookeeper-env.sh"
+        target: "#{zookeeper.conf_dir}/zookeeper-env.sh"
         content: ("export #{k}=\"#{v}\"" for k, v of zookeeper.env).join '\n'
         backup: true
         eof: true

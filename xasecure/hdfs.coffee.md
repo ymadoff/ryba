@@ -29,7 +29,7 @@
       {hdfs_url} = ctx.config.xasecure
       @download
         source: hdfs_url
-        destination: '/var/tmp'
+        target: '/var/tmp'
         binary: true
         unless_exists: "/var/tmp/#{path.basename hdfs_url, '.tar'}"
       @extract
@@ -39,7 +39,7 @@
     module.exports.push header: 'XASecure HDFS # Configure', timeout: -1, handler: ->
       {hdfs_url} = @config.xasecure
       @write
-        destination: "/var/tmp/#{path.basename hdfs_url, '.tar'}/install.properties"
+        target: "/var/tmp/#{path.basename hdfs_url, '.tar'}/install.properties"
         write: for k, v of hdfs
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
@@ -47,7 +47,7 @@
       @execute
         cmd: "cd /var/tmp/#{path.basename hdfs_url, '.tar'} && ./install.sh"
       @write
-        destination: '/usr/lib/hadoop/libexec/hadoop-config.sh'
+        target: '/usr/lib/hadoop/libexec/hadoop-config.sh'
         match: /.*xasecure\-hadoop\-env\.sh.*/mg
         replace: """
         if [ -f  ${HADOOP_CONF_DIR}/xasecure-hadoop-env.sh ]; then . ${HADOOP_CONF_DIR}/xasecure-hadoop-env.sh; fi
@@ -60,7 +60,7 @@
 
     module.exports.push header: 'XASecure HDFS # Fix', handler: ->
       @remove
-        destination: '/usr/lib/hadoop/lib/jersey-bundle-1.17.1.jar'
+        target: '/usr/lib/hadoop/lib/jersey-bundle-1.17.1.jar'
 
     module.exports.push header: 'XASecure HDFS # Register', timeout: -1, handler: ->
       # POST http://front1.hadoop:6080/service/assets/assets

@@ -39,14 +39,14 @@ in order to rendered configuration file with custom properties.
         @service name: 'mongodb-org-shell'
         @render
           source: "#{__dirname}/../resources/mongod-config-server.js2"
-          destination: '/etc/init.d/mongodb-config-server'
+          target: '/etc/init.d/mongodb-config-server'
           context: @config
           unlink: true
           mode: 0o0750
           local_source: true
           eof: true
         @remove
-          destination: '/etc/init.d/mongod'
+          target: '/etc/init.d/mongod'
 
 
 ## Layout
@@ -55,19 +55,19 @@ Create dir where the mongodb-config-server stores its metadata
 
       @call header: 'MongoDB Config Server # Layout',  handler: ->
         @mkdir
-          destination: '/var/lib/mongodb'
+          target: '/var/lib/mongodb'
           uid: mongodb.user.name
           gid: mongodb.group.name
         @mkdir
-          destination: mongodb.configsrv.config.storage.dbPath
+          target: mongodb.configsrv.config.storage.dbPath
           uid: mongodb.user.name
           gid: mongodb.group.name
         @mkdir
-          destination: mongodb.configsrv.config.storage.repairPath
+          target: mongodb.configsrv.config.storage.repairPath
           uid: mongodb.user.name
           gid: mongodb.group.name
         @mkdir
-          destination: mongodb.configsrv.config.net.unixDomainSocket.pathPrefix
+          target: mongodb.configsrv.config.net.unixDomainSocket.pathPrefix
           uid: mongodb.user.name
           gid: mongodb.group.name
 
@@ -77,7 +77,7 @@ Configuration file for mongodb config server.
 
       @call header: 'MongoDB Config Server # Configure', handler: ->
         @write_yaml
-          destination: "#{mongodb.configsrv.conf_dir}/mongod.conf"
+          target: "#{mongodb.configsrv.conf_dir}/mongod.conf"
           content: mongodb.configsrv.config
           merge: false
           uid: mongodb.user.name
@@ -96,22 +96,22 @@ with pem file. So we append to the file the private key and certficate.
       @call header: 'MongoDB Config Server # SSL', handler: ->
         @download
           source: ssl.cacert
-          destination: "#{mongodb.configsrv.conf_dir}/cacert.pem"
+          target: "#{mongodb.configsrv.conf_dir}/cacert.pem"
           uid: mongodb.user.name
           gid: mongodb.group.name
         @download
           source: ssl.key
-          destination: "#{mongodb.configsrv.conf_dir}/key_file.pem"
+          target: "#{mongodb.configsrv.conf_dir}/key_file.pem"
           uid: mongodb.user.name
           gid: mongodb.group.name
         @download
           source: ssl.cert
-          destination: "#{mongodb.configsrv.conf_dir}/cert_file.pem"
+          target: "#{mongodb.configsrv.conf_dir}/cert_file.pem"
           uid: mongodb.user.name
           gid: mongodb.group.name
         @write
           source: "#{mongodb.configsrv.conf_dir}/cert_file.pem"
-          destination: "#{mongodb.configsrv.conf_dir}/key.pem"
+          target: "#{mongodb.configsrv.conf_dir}/key.pem"
           append: true
           backup: true
           eof: true
@@ -119,7 +119,7 @@ with pem file. So we append to the file the private key and certficate.
           gid: mongodb.group.name
         @write
           source: "#{mongodb.configsrv.conf_dir}/key_file.pem"
-          destination: "#{mongodb.configsrv.conf_dir}/key.pem"
+          target: "#{mongodb.configsrv.conf_dir}/key.pem"
           eof: true
           append: true
           uid: mongodb.user.name

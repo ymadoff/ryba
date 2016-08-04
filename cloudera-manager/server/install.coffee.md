@@ -22,7 +22,7 @@ Install the packages cloudera-scm-agent and cloudera-scm-daemons
 
       @write
         header: 'Environment'
-        destination: '/etc/default/cloudera-scm-server'
+        target: '/etc/default/cloudera-scm-server'
         write: [
           match: RegExp '^export JAVA_HOME=*'
           replace: "export JAVA_HOME=#{java.java_home} # Ryba, don't OVERWRITE"

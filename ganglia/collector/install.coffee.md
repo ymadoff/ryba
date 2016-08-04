@@ -63,7 +63,7 @@ Upload the "hdp-gmetad" service file into "/etc/init.d".
 
       @call header: 'Init Script', timeout: -1, handler: ->
         @write
-          destination: '/etc/init.d/hdp-gmetad'
+          target: '/etc/init.d/hdp-gmetad'
           source: "#{__dirname}/../resources/scripts/hdp-gmetad"
           local_source: true
           match: /# chkconfig: .*/mg
@@ -82,7 +82,7 @@ the objects files and generate the hosts configuration.
 
       @mkdir
         header: 'Layout'
-        destination: '/usr/libexec/hdp/ganglia'
+        target: '/usr/libexec/hdp/ganglia'
 
 ## Objects
 
@@ -93,7 +93,7 @@ Copy the object files provided in the HDP companion files into the
         glob "#{__dirname}/../resources/objects/*.*", (err, files) =>
           @download (
             source: file
-            destination: "/usr/libexec/hdp/ganglia"
+            target: "/usr/libexec/hdp/ganglia"
             mode: 0o744
           ) for file in files
           @then callback
@@ -140,27 +140,27 @@ pointing to the Ganglia master hostname.
 
       @call header: 'Configuration', handler: ->
         @write
-          destination: "/etc/ganglia/hdp/HDPNameNode/conf.d/gmond.master.conf"
+          target: "/etc/ganglia/hdp/HDPNameNode/conf.d/gmond.master.conf"
           match: /^(.*)bind = (.*)$/mg
           replace: "$1bind = #{@config.host}"
         @write
-          destination: "/etc/ganglia/hdp/HDPHistoryServer/conf.d/gmond.master.conf"
+          target: "/etc/ganglia/hdp/HDPHistoryServer/conf.d/gmond.master.conf"
           match: /^(.*)bind = (.*)$/mg
           replace: "$1bind = #{@config.host}"
         @write
-          destination: "/etc/ganglia/hdp/HDPResourceManager/conf.d/gmond.master.conf"
+          target: "/etc/ganglia/hdp/HDPResourceManager/conf.d/gmond.master.conf"
           match: /^(.*)bind = (.*)$/mg
           replace: "$1bind = #{@config.host}"
         @write
-          destination: "/etc/ganglia/hdp/HDPSlaves/conf.d/gmond.master.conf"
+          target: "/etc/ganglia/hdp/HDPSlaves/conf.d/gmond.master.conf"
           match: /^(.*)bind = (.*)$/mg
           replace: "$1bind = #{@config.host}"
         @write
-          destination: "/etc/ganglia/hdp/HDPHBaseMaster/conf.d/gmond.master.conf"
+          target: "/etc/ganglia/hdp/HDPHBaseMaster/conf.d/gmond.master.conf"
           match: /^(.*)bind = (.*)$/mg
           replace: "$1bind = #{@config.host}"
         @write
-          destination: "/etc/ganglia/hdp/gmetad.conf"
+          target: "/etc/ganglia/hdp/gmetad.conf"
           match: /^(data_source.* )(.*):(\d+)$/mg
           replace: "$1#{@config.host}:$3"
 

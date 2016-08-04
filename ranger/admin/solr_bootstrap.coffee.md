@@ -20,7 +20,7 @@
 ## Layout
 
       @mkdir
-        destination: "#{solr.user.home}/ranger_audits"
+        target: "#{solr.user.home}/ranger_audits"
         uid: solr.user.name
         gid: solr.group.name
         mode: 0o0755
@@ -36,42 +36,42 @@ solr apache version.
         handler: ->
           @download
             source: "#{__dirname}/../resources/solr/admin-extra.html"
-            destination: "#{tmp_dir}/ranger_audits/admin-extra.html"
+            target: "#{tmp_dir}/ranger_audits/admin-extra.html"
           @download
             source: "#{__dirname}/../resources/solr/admin-extra.menu-bottom.html"
-            destination: "#{tmp_dir}/ranger_audits/admin-extra.menu-bottom.html"
+            target: "#{tmp_dir}/ranger_audits/admin-extra.menu-bottom.html"
           @download
             source: "#{__dirname}/../resources/solr/admin-extra.menu-top.html"
-            destination: "#{tmp_dir}/ranger_audits/admin-extra.menu-top.html"
+            target: "#{tmp_dir}/ranger_audits/admin-extra.menu-top.html"
           @download
             source: "#{__dirname}/../resources/solr/elevate.xml"
-            destination: "#{tmp_dir}/ranger_audits/conf/elevate.xml" #remove conf if solr/cloud
+            target: "#{tmp_dir}/ranger_audits/conf/elevate.xml" #remove conf if solr/cloud
           @download
             source: "#{__dirname}/../resources/solr/managed-schema"
-            destination: "#{tmp_dir}/ranger_audits/managed-schema"
+            target: "#{tmp_dir}/ranger_audits/managed-schema"
           @download
             source: "#{__dirname}/../resources/solr/solrconfig.xml"
-            destination: "#{tmp_dir}/ranger_audits/solrconfig.xml"
+            target: "#{tmp_dir}/ranger_audits/solrconfig.xml"
         if: -> (mode is 'cloud_docker') or (mode is 'cloud')
         handler: ->
           @download
             source: "#{__dirname}/../resources/solr/admin-extra.html"
-            destination: "#{tmp_dir}/ranger_audits/conf/admin-extra.html"
+            target: "#{tmp_dir}/ranger_audits/conf/admin-extra.html"
           @download
             source: "#{__dirname}/../resources/solr/admin-extra.menu-bottom.html"
-            destination: "#{tmp_dir}/ranger_audits/conf/admin-extra.menu-bottom.html"
+            target: "#{tmp_dir}/ranger_audits/conf/admin-extra.menu-bottom.html"
           @download
             source: "#{__dirname}/../resources/solr/admin-extra.menu-top.html"
-            destination: "#{tmp_dir}/ranger_audits/conf/admin-extra.menu-top.html"
+            target: "#{tmp_dir}/ranger_audits/conf/admin-extra.menu-top.html"
           @download
             source: "#{__dirname}/../resources/solr/elevate.xml"
-            destination: "#{tmp_dir}/ranger_audits/conf/elevate.xml" #remove conf if solr/cloud
+            target: "#{tmp_dir}/ranger_audits/conf/elevate.xml" #remove conf if solr/cloud
           @download
             source: "#{__dirname}/../resources/solr/managed-schema"
-            destination: "#{tmp_dir}/ranger_audits/conf/managed-schema"
+            target: "#{tmp_dir}/ranger_audits/conf/managed-schema"
           @download
             source: "#{__dirname}/../resources/solr/solrconfig.xml"
-            destination: "#{tmp_dir}/ranger_audits/conf/solrconfig.xml"
+            target: "#{tmp_dir}/ranger_audits/conf/solrconfig.xml"
         
 ## Create ranger_audits Collection/Core
 The solrconfig.xml file corresponding to ranger_audits coll/core is rendered from

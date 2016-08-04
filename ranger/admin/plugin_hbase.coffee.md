@@ -31,7 +31,7 @@
 ## Layout
 
       @mkdir
-        destination: '/var/log/hadoop/hbase/audit/solr/'
+        target: '/var/log/hadoop/hbase/audit/solr/'
         uid: hbase.user.name
         gid: hadoop_group.name
         mode: 0o0755
@@ -77,7 +77,7 @@ we execute this task using the rest api.
           header: 'Scripts rendering'
           if: -> version?
           source: "#{__dirname}/../resources/plugin-install.properties.j2"
-          destination: "/usr/hdp/#{version}/ranger-hbase-plugin/install.properties"
+          target: "/usr/hdp/#{version}/ranger-hbase-plugin/install.properties"
           local_source: true
           eof: true
           backup: true
@@ -87,7 +87,7 @@ we execute this task using the rest api.
             append: true
         @write
           header: 'Script Fix'
-          destination: "/usr/hdp/#{version}/ranger-hbase-plugin/enable-hbase-plugin.sh"
+          target: "/usr/hdp/#{version}/ranger-hbase-plugin/enable-hbase-plugin.sh"
           write:[
               match: RegExp "^HCOMPONENT_CONF_DIR=.*$", 'mg'
               replace: "HCOMPONENT_CONF_DIR=#{conf_dir}"
@@ -104,7 +104,7 @@ we execute this task using the rest api.
           cmd: "chown -R #{hbase.user.name}:#{hadoop_group.name} /etc/ranger/#{ranger.hbase_plugin.install['REPOSITORY_NAME']}"
         @hconfigure
           header: 'Fix Plugin security conf'
-          destination: "#{conf_dir}/ranger-hbase-security.xml"
+          target: "#{conf_dir}/ranger-hbase-security.xml"
           merge: true
           properties:
             'ranger.plugin.hbase.policy.rest.ssl.config.file': "#{conf_dir}/ranger-policymgr-ssl.xml"

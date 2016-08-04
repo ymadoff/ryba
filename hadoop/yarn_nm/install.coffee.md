@@ -54,7 +54,7 @@ inside "/etc/init.d" and activate it on startup.
           # name: 'hadoop-yarn-client' # Not checked
           name: 'hadoop-yarn-nodemanager'
         @render
-          destination: '/etc/init.d/hadoop-yarn-nodemanager'
+          target: '/etc/init.d/hadoop-yarn-nodemanager'
           source: "#{__dirname}/../resources/hadoop-yarn-nodemanager"
           local_source: true
           context: @config
@@ -70,31 +70,31 @@ inside "/etc/init.d" and activate it on startup.
 
       @call header: 'Layout', handler: ->
         @mkdir
-          destination: "#{yarn.nm.conf_dir}"
+          target: "#{yarn.nm.conf_dir}"
         @mkdir
-          destination: "#{yarn.pid_dir}"
+          target: "#{yarn.pid_dir}"
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o0755
         @mkdir
-          destination: "#{yarn.log_dir}"
+          target: "#{yarn.log_dir}"
           uid: yarn.user.name
           gid: yarn.group.name
           parent: true
         @mkdir
-          destination: yarn.site['yarn.nodemanager.log-dirs'].split ','
+          target: yarn.site['yarn.nodemanager.log-dirs'].split ','
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o0755
           parent: true
         @mkdir
-          destination: yarn.site['yarn.nodemanager.local-dirs'].split ','
+          target: yarn.site['yarn.nodemanager.local-dirs'].split ','
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o0755
           parent: true
         @mkdir
-          destination: yarn.site['yarn.nodemanager.recovery.dir'] 
+          target: yarn.site['yarn.nodemanager.recovery.dir'] 
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o0750
@@ -122,31 +122,31 @@ SSH connection to the node to gather the memory and CPU informations.
 
       @hconfigure
         header: 'Core Site'
-        destination: "#{yarn.nm.conf_dir}/core-site.xml"
+        target: "#{yarn.nm.conf_dir}/core-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
         local_default: true
         properties: core_site
         backup: true
       @hconfigure
         header: 'HDFS Site'
-        destination: "#{yarn.nm.conf_dir}/hdfs-site.xml"
+        target: "#{yarn.nm.conf_dir}/hdfs-site.xml"
         properties: hdfs.site
         backup: true
       @hconfigure
         header: 'YARN Site'
-        destination: "#{yarn.nm.conf_dir}/yarn-site.xml"
+        target: "#{yarn.nm.conf_dir}/yarn-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
         local_default: true
         properties: yarn.site
         backup: true
       @write
         header: 'Log4j'
-        destination: "#{yarn.nm.conf_dir}/log4j.properties"
+        target: "#{yarn.nm.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
         local_source: true
       @render
         header: 'YARN Env'
-        destination: "#{yarn.nm.conf_dir}/yarn-env.sh"
+        target: "#{yarn.nm.conf_dir}/yarn-env.sh"
         source: "#{__dirname}/../resources/yarn-env.sh.j2"
         local_source: true
         context: @config
@@ -159,7 +159,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 
       @write_properties
         header: 'Metrics'
-        destination: "#{yarn.nm.conf_dir}/hadoop-metrics2.properties"
+        target: "#{yarn.nm.conf_dir}/hadoop-metrics2.properties"
         content: hadoop_metrics.config
         backup: true
 
@@ -177,17 +177,17 @@ but is owned by 2401"
         ce_group = container_executor['yarn.nodemanager.linux-container-executor.group']
         ce = '/usr/hdp/current/hadoop-yarn-nodemanager/bin/container-executor'
         @chown
-          destination: ce
+          target: ce
           uid: 'root'
           gid: ce_group
         @chmod
-          destination: ce
+          target: ce
           mode: 0o6050
         @mkdir
-          destination: "#{hadoop_conf_dir}"
+          target: "#{hadoop_conf_dir}"
           uid: 'root'
         @write_ini
-          destination: "#{hadoop_conf_dir}/container-executor.cfg"
+          target: "#{hadoop_conf_dir}/container-executor.cfg"
           content: container_executor
           uid: 'root'
           gid: ce_group
@@ -202,10 +202,10 @@ but is owned by 2401"
         ssl_server['ssl.server.keystore.location'] = "#{yarn.nm.conf_dir}/keystore"
         ssl_server['ssl.server.truststore.location'] = "#{yarn.nm.conf_dir}/truststore"
         @hconfigure
-          destination: "#{yarn.nm.conf_dir}/ssl-server.xml"
+          target: "#{yarn.nm.conf_dir}/ssl-server.xml"
           properties: ssl_server
         @hconfigure
-          destination: "#{yarn.nm.conf_dir}/ssl-client.xml"
+          target: "#{yarn.nm.conf_dir}/ssl-client.xml"
           properties: ssl_client
         # Client: import certificate to all hosts
         @java_keystore_add
@@ -253,7 +253,7 @@ form of "rm/{fqdn}@{realm}"
           #   cmd: 'mount -t cgroup -o cpu cpu /cgroup'
           #   code_skipped: 32
           @mkdir
-            destination: "#{yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path']}/cpu"
+            target: "#{yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path']}/cpu"
             mode: 0o1777
             parent: true
 

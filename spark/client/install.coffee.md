@@ -89,15 +89,15 @@ in communication using the particular protocol.
          tmp_location = "/tmp/ryba_hdp_ssl_#{Date.now()}"
          @download
             source: ssl.cacert
-            destination: "#{tmp_location}_cacert"
+            target: "#{tmp_location}_cacert"
             shy: true
          @download
             source: ssl.cert
-            destination: "#{tmp_location}_cert"
+            target: "#{tmp_location}_cert"
             shy: true
          @download
             source: ssl.key
-            destination: "#{tmp_location}_key"
+            target: "#{tmp_location}_key"
             shy: true
          # Client: import certificate to all hosts
          @java_keystore_add
@@ -121,13 +121,13 @@ in communication using the particular protocol.
             caname: "hadoop_spark_ca"
             cacert: "#{tmp_location}_cacert"
          @remove
-            destination: "#{tmp_location}_cacert"
+            target: "#{tmp_location}_cacert"
             shy: true
          @remove
-            destination: "#{tmp_location}_cert"
+            target: "#{tmp_location}_cert"
             shy: true
          @remove
-            destination: "#{tmp_location}_key"
+            target: "#{tmp_location}_key"
             shy: true
 
 ## Spark Configuration files
@@ -154,7 +154,7 @@ has finished (logs are only available in yarn-cluster mode).
             content: "-Dhdp.version=#{hdp_current_version}"
           @hconfigure
             header: 'Hive Site'
-            destination: "#{spark.conf_dir}/hive-site.xml"
+            target: "#{spark.conf_dir}/hive-site.xml"
             default: "/etc/hive/conf/hive-site.xml"
             properties: 'hive.execution.engine': 'mr'
             merge: true
@@ -166,13 +166,13 @@ has finished (logs are only available in yarn-cluster mode).
             context: @config
             backup: true
           @write_properties
-            destination: "#{spark.conf_dir}/spark-defaults.conf"
+            target: "#{spark.conf_dir}/spark-defaults.conf"
             content: spark.conf
             merge: true
             separator: ' '
           @write
             if: spark.conf['spark.metrics.conf']
-            destination: "#{spark.conf_dir}/metrics.properties"
+            target: "#{spark.conf_dir}/metrics.properties"
             write: for k, v of spark.metrics
               match: ///^#{quote k}=.*$///mg
               replace: if v is null then "" else "#{k}=#{v}"

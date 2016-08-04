@@ -57,7 +57,7 @@ falcon:x:498:falcon
           header: 'Init Script'
           source: "#{__dirname}/../resources/falcon"
           local_source: true
-          destination: '/etc/init.d/falcon'
+          target: '/etc/init.d/falcon'
           mode: 0o0755
           unlink: true
         @execute
@@ -66,12 +66,12 @@ falcon:x:498:falcon
 
       @call header: 'Layout', handler: ->
         @mkdir
-          destination: falcon.log_dir
+          target: falcon.log_dir
           uid: falcon.user
           gid: falcon.group
           parent: true
         @mkdir
-          destination: falcon.pid_dir
+          target: falcon.pid_dir
           uid: falcon.user.name
           gid: falcon.group.name
           parent: true
@@ -85,7 +85,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
       @render
         header: 'Falcon Env'
-        destination: "#{falcon.conf_dir}/falcon-env.sh"
+        target: "#{falcon.conf_dir}/falcon-env.sh"
         source: "#{__dirname}/../resources/falcon-env.sh.j2"
         context: @config
         local_source: true
@@ -123,13 +123,13 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
         #     cmd: mkcmd.hdfs @, "hdfs dfs -chgrp #{group.name} /apps/falcon"
         #     if: not status or group.name isnt group_owner
         @hdfs_mkdir
-          destination: '/apps/falcon'
+          target: '/apps/falcon'
           user: "#{user.name}"
           group: "#{group.name}"
           mode: 0o1777
           krb5_user: @config.ryba.hdfs.krb5_user
         @hdfs_mkdir
-          destination: '/apps/data-mirroring'
+          target: '/apps/data-mirroring'
           user: "#{user.name}"
           group: "#{group.name}"
           mode: 0o0770
@@ -146,7 +146,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
     # module.exports.push header: 'Falcon # Runtime', handler: ->
     #   # {conf_dir, runtime} = @config.ryba.falcon
     #   # @write_ini
-    #   #   destination: "#{conf_dir}/runtime.properties"
+    #   #   target: "#{conf_dir}/runtime.properties"
     #   #   content: runtime
     #   #   separator: '='
     #   #   merge: true
@@ -157,7 +157,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
     #     match: RegExp "^#{quote k}=.*$", 'mg'
     #     replace: "#{k}=#{v}"
     #   @write
-    #     destination: "#{conf_dir}/runtime.properties"
+    #     target: "#{conf_dir}/runtime.properties"
     #     write: write
     #     backup: true
     #     eof: true
@@ -167,7 +167,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
       @write
         header: 'Configuration startup'
-        destination: "#{conf_dir}/startup.properties"
+        target: "#{conf_dir}/startup.properties"
         write: for k, v of startup
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
@@ -175,7 +175,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
         eof: true
       @write
         header: 'Configuration runtime'
-        destination: "#{conf_dir}/runtime.properties"
+        target: "#{conf_dir}/runtime.properties"
         write: for k, v of runtime
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"

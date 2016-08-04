@@ -18,7 +18,7 @@
 ## Layout
 
       @mkdir
-        destination: solr.user.home
+        target: solr.user.home
         uid: solr.user.name
         gid: solr.group.name
       @mkdir
@@ -59,7 +59,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
               name: 'lucidworks-hdpsearch'
             @chown
               if: solr.single.source is 'HDP'
-              destination: '/opt/lucidworks-hdpsearch'
+              target: '/opt/lucidworks-hdpsearch'
               uid: solr.user.name
               gid: solr.group.name
         @call
@@ -67,36 +67,36 @@ Ryba support installing solr from apache official release or HDP Search repos.
           handler: ->
             @download
               source: solr.single.source
-              destination: tmp_archive_location
+              target: tmp_archive_location
             @mkdir 
-              destination: solr.single.install_dir
+              target: solr.single.install_dir
             @extract
               source: tmp_archive_location
-              destination: solr.single.install_dir
+              target: solr.single.install_dir
               preserve_owner: false
               strip: 1
             @link 
               source: solr.single.install_dir
-              destination: solr.single.latest_dir
+              target: solr.single.latest_dir
 
 
       @call header: 'Configuration', handler: ->
         @link 
           source: "#{solr.single.latest_dir}/conf"
-          destination: solr.single.conf_dir
+          target: solr.single.conf_dir
         @remove
           shy: true
-          destination: "#{solr.single.latest_dir}/bin/solr.in.sh"
+          target: "#{solr.single.latest_dir}/bin/solr.in.sh"
         @link 
           source: "#{solr.single.conf_dir}/solr.in.sh"
-          destination: "#{solr.single.latest_dir}/bin/solr.in.sh"
+          target: "#{solr.single.latest_dir}/bin/solr.in.sh"
         @render
           header: 'Init Script'
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
           source: "#{__dirname}/../resources/standalone/solr.j2"
-          destination: '/etc/init.d/solr'
+          target: '/etc/init.d/solr'
           local_source: true
           context: @config
 
@@ -105,17 +105,17 @@ Ryba support installing solr from apache official release or HDP Search repos.
 
       @call header: 'Solr Layout', timeout: -1, handler: ->
         @mkdir
-          destination: solr.single.pid_dir
+          target: solr.single.pid_dir
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
         @mkdir
-          destination: solr.single.log_dir
+          target: solr.single.log_dir
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
         @mkdir
-          destination: solr.user.home
+          target: solr.user.home
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
@@ -127,7 +127,7 @@ Create HDFS solr user and its home directory
       @hdfs_mkdir
         if: solr.single.hdfs?
         header: 'HDFS Layout'
-        destination: "/user/#{solr.user.name}"
+        target: "/user/#{solr.user.name}"
         user: solr.user.name
         group: solr.user.name
         mode: 0o0775
@@ -145,7 +145,7 @@ Create HDFS solr user and its home directory
         @render
           header: 'Solr Environment'
           source: "#{__dirname}/../resources/standalone/solr.ini.sh.j2"
-          destination: "#{solr.single.conf_dir}/solr.in.sh"
+          target: "#{solr.single.conf_dir}/solr.in.sh"
           context: @config
           write: writes
           local_source: true
@@ -154,7 +154,7 @@ Create HDFS solr user and its home directory
         @render
           header: 'Solr Config'
           source: solr.single.conf_source
-          destination: "#{solr.single.conf_dir}/solr.xml"
+          target: "#{solr.single.conf_dir}/solr.xml"
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
@@ -164,7 +164,7 @@ Create HDFS solr user and its home directory
           eof: true
         @link
           source: "#{solr.single.conf_dir}/solr.xml"
-          destination: "#{solr.user.home}/solr.xml"
+          target: "#{solr.user.home}/solr.xml"
 
 ## Kerberos
 

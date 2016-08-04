@@ -50,17 +50,17 @@ hbase:x:492:
 
       @call header: 'Layout', timeout: -1, handler: ->
         @mkdir
-          destination: hbase.master.pid_dir
+          target: hbase.master.pid_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
         @mkdir
-          destination: hbase.master.log_dir
+          target: hbase.master.log_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
         @mkdir
-          destination: hbase.master.conf_dir
+          target: hbase.master.conf_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
@@ -82,7 +82,7 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
           source: "#{__dirname}/../resources/hbase-master"
           local_source: true
           context: @config
-          destination: '/etc/init.d/hbase-master'
+          target: '/etc/init.d/hbase-master'
           mode: 0o0755
           unlink: true
         @service_restart
@@ -97,7 +97,7 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
 
       @hconfigure
         header: 'HBase Site'
-        destination: "#{hbase.master.conf_dir}/hbase-site.xml"
+        target: "#{hbase.master.conf_dir}/hbase-site.xml"
         default: "#{__dirname}/../resources/hbase-site.xml"
         local_default: true
         properties: hbase.master.site
@@ -113,7 +113,7 @@ Environment passed to the Master before it starts.
 
       @render
         header: 'HBase Env'
-        destination: "#{hbase.master.conf_dir}/hbase-env.sh"
+        target: "#{hbase.master.conf_dir}/hbase-env.sh"
         source: "#{__dirname}/../resources/hbase-env.sh.j2"
         backup: true
         local_source: true
@@ -139,7 +139,7 @@ Upload the list of registered RegionServers.
       @write
         header: 'Registered RegionServers'
         content: @hosts_with_module('ryba/hbase/regionserver').join '\n'
-        destination: "#{hbase.master.conf_dir}/regionservers"
+        target: "#{hbase.master.conf_dir}/regionservers"
         uid: hbase.user.name
         gid: hadoop_group.name
         eof: true
@@ -153,7 +153,7 @@ Environment file is enriched by "ryba/hbase" # HBase # Env".
 
       @write_jaas
         header: 'Zookeeper JAAS'
-        destination: "#{hbase.master.conf_dir}/hbase-master.jaas"
+        target: "#{hbase.master.conf_dir}/hbase-master.jaas"
         content: Client:
           principal: hbase.master.site['hbase.master.kerberos.principal'].replace '_HOST', @config.host
           keyTab: hbase.master.site['hbase.master.keytab.file']
@@ -181,7 +181,7 @@ https://hbase.apache.org/book/security.html
 
       @write
         header: 'Log4J Properties'
-        destination: "#{hbase.master.conf_dir}/log4j.properties"
+        target: "#{hbase.master.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
         local_source: true
 
@@ -191,7 +191,7 @@ Enable stats collection in Ganglia and Graphite
 
       @write_properties
         header: 'Metrics Properties'
-        destination: "#{hbase.master.conf_dir}/hadoop-metrics2-hbase.properties"
+        target: "#{hbase.master.conf_dir}/hadoop-metrics2-hbase.properties"
         content: hbase.metrics.config
         backup: true
 
@@ -201,10 +201,10 @@ Enable stats collection in Ganglia and Graphite
       #   ssl_server['ssl.server.keystore.location'] = "#{hbase.conf_dir}/keystore"
       #   ssl_server['ssl.server.truststore.location'] = "#{hbase.conf_dir}/truststore"
       #   @hconfigure
-      #     destination: "#{hbase.conf_dir}/ssl-server.xml"
+      #     target: "#{hbase.conf_dir}/ssl-server.xml"
       #     properties: ssl_server
       #   @hconfigure
-      #     destination: "#{hbase.conf_dir}/ssl-client.xml"
+      #     target: "#{hbase.conf_dir}/ssl-client.xml"
       #     properties: ssl_client
       #   # Client: import certificate to all hosts
       #   @java_keystore_add

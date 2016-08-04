@@ -33,7 +33,7 @@ See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments
 
       @hconfigure
         header: 'Hive Site'
-        destination: "#{hive.conf_dir}/hive-site.xml"
+        target: "#{hive.conf_dir}/hive-site.xml"
         default: "#{__dirname}/../../resources/hive/hive-site.xml"
         local_default: true
         properties: hive.site
@@ -60,7 +60,7 @@ by setting a "heapsize" value equal to "4096".
 
       @render
         header: 'Hive Env'
-        destination: "#{hive.conf_dir}/hive-env.sh"
+        target: "#{hive.conf_dir}/hive-env.sh"
         source: "#{__dirname}/../resources/hive-env.sh"
         local_source: true
         write: hive.client.env.write
@@ -72,7 +72,7 @@ by setting a "heapsize" value equal to "4096".
       @call header: 'Client SSL', handler: ->
         @download
           source: ssl.cacert
-          destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+          target: "#{tmp_location}/#{path.basename ssl.cacert}"
           mode: 0o0600
           shy: true
         @java_keystore_add
@@ -81,7 +81,7 @@ by setting a "heapsize" value equal to "4096".
           caname: "hive_root_ca"
           cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
         @remove
-          destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+          target: "#{tmp_location}/#{path.basename ssl.cacert}"
           shy: true
 
 ## Dependencies

@@ -58,7 +58,7 @@ script inside "/etc/init.d" and activate it on startup.
           name: 'hadoop-mapreduce-client' # Not checked
           name: 'hadoop-mapreduce-historyserver'
         @render
-          destination: '/etc/init.d/hadoop-mapreduce-historyserver'
+          target: '/etc/init.d/hadoop-mapreduce-historyserver'
           source: "#{__dirname}/../resources/hadoop-mapreduce-historyserver"
           local_source: true
           context: @config
@@ -75,17 +75,17 @@ Create the log and pid directories.
       @call header: 'Layout', timeout: -1, handler: ->
         {mapred, hadoop_group} = @config.ryba
         @mkdir
-          destination: "#{mapred.log_dir}"
+          target: "#{mapred.log_dir}"
           uid: mapred.user.name
           gid: hadoop_group.name
           mode: 0o0755
         @mkdir
-          destination: "#{mapred.pid_dir}"
+          target: "#{mapred.pid_dir}"
           uid: mapred.user.name
           gid: hadoop_group.name
           mode: 0o0755
         @mkdir
-          destination: mapred.site['mapreduce.jobhistory.recovery.store.leveldb.path']
+          target: mapred.site['mapreduce.jobhistory.recovery.store.leveldb.path']
           uid: mapred.user.name
           gid: hadoop_group.name
           mode: 0o0750
@@ -102,41 +102,41 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
       {core_site, mapred, hdfs, yarn, hadoop_metrics, hadoop_group} = @config.ryba
       @hconfigure
         header: 'Core Site'
-        destination: "#{mapred.jhs.conf_dir}/core-site.xml"
+        target: "#{mapred.jhs.conf_dir}/core-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
         local_default: true
         properties: core_site
         backup: true
       @hconfigure
         header: 'HDFS Site'
-        destination: "#{mapred.jhs.conf_dir}/hdfs-site.xml"
+        target: "#{mapred.jhs.conf_dir}/hdfs-site.xml"
         properties: hdfs.site
         backup: true
       @hconfigure
         header: 'YARN Site'
-        destination: "#{mapred.jhs.conf_dir}/yarn-site.xml"
+        target: "#{mapred.jhs.conf_dir}/yarn-site.xml"
         properties: yarn.site
         backup: true
       @hconfigure
         header: 'MapRed Site'
-        destination: "#{mapred.jhs.conf_dir}/mapred-site.xml"
+        target: "#{mapred.jhs.conf_dir}/mapred-site.xml"
         properties: mapred.site
         backup: true
       @write
         header: 'Log4j'
-        destination: "#{mapred.jhs.conf_dir}/log4j.properties"
+        target: "#{mapred.jhs.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
         local_source: true
       @render
         header: 'Mapred Env'
-        destination: "#{mapred.jhs.conf_dir}/mapred-env.sh"
+        target: "#{mapred.jhs.conf_dir}/mapred-env.sh"
         source: "#{__dirname}/../resources/mapred-env.sh.j2"
         context: @config
         local_source: true
         backup: true
       @render
         header: 'Hadoop Env'
-        destination: "#{mapred.jhs.conf_dir}/hadoop-env.sh"
+        target: "#{mapred.jhs.conf_dir}/hadoop-env.sh"
         source: "#{__dirname}/../resources/hadoop-env.sh.j2"
         local_source: true
         context: @config
@@ -146,7 +146,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
         backup: true
       @render
         header: 'MapRed Env'
-        destination: "#{mapred.jhs.conf_dir}/mapred-env.sh"
+        target: "#{mapred.jhs.conf_dir}/mapred-env.sh"
         source: "#{__dirname}/../resources/mapred-env.sh.j2"
         local_source: true
         context: @config
@@ -159,7 +159,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 
       @write_properties
         header: 'Metrics'
-        destination: "#{mapred.jhs.conf_dir}/hadoop-metrics2.properties"
+        target: "#{mapred.jhs.conf_dir}/hadoop-metrics2.properties"
         content: hadoop_metrics.config
         backup: true
 
@@ -170,10 +170,10 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
         ssl_server['ssl.server.keystore.location'] = "#{mapred.jhs.conf_dir}/keystore"
         ssl_server['ssl.server.truststore.location'] = "#{mapred.jhs.conf_dir}/truststore"
         @hconfigure
-          destination: "#{mapred.jhs.conf_dir}/ssl-server.xml"
+          target: "#{mapred.jhs.conf_dir}/ssl-server.xml"
           properties: ssl_server
         @hconfigure
-          destination: "#{mapred.jhs.conf_dir}/ssl-client.xml"
+          target: "#{mapred.jhs.conf_dir}/ssl-client.xml"
           properties: ssl_client
         # Client: import certificate to all hosts
         @java_keystore_add

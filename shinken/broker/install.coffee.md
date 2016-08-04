@@ -36,7 +36,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           @call unless_exec: "pip list | grep #{k}", handler: ->
             @download
               source: v.url
-              destination: "#{shinken.build_dir}/##{v.archive}.tar.gz"
+              target: "#{shinken.build_dir}/##{v.archive}.tar.gz"
               md5: v.md5
             @extract
               source: "#{shinken.build_dir}/##{v.archive}.tar.gz"
@@ -46,8 +46,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
               python setup.py build
               python setup.py install
               """
-            @remove destination: "#{shinken.build_dir}/#{k}-#{v.version}.tar.gz"
-            @remove destination: "#{shinken.build_dir}/#{k}-#{v.version}"
+            @remove target: "#{shinken.build_dir}/#{k}-#{v.version}.tar.gz"
+            @remove target: "#{shinken.build_dir}/#{k}-#{v.version}"
         for k, v of broker.modules['webui2'].pip_modules then install_dep k, v
 
 ## Additional Shinken Modules
@@ -56,7 +56,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         installmod = (name, mod) =>
           @call unless_exec: "shinken inventory | grep #{name}", handler: ->
             @download
-              destination: "#{shinken.build_dir}/#{mod.archive}.zip"
+              target: "#{shinken.build_dir}/#{mod.archive}.zip"
               source: mod.source
               cache_file: "#{mod.archive}.zip"
               unless_exec: "shinken inventory | grep #{name}"
@@ -80,7 +80,7 @@ Could also be natively corrected in the next shinken version. (actually 2.4)
       @call header: 'Fix Groups View', handler: ->
         for object in  ['host', 'service']
           @write
-            destination: "/usr/lib/python2.7/site-packages/shinken/objects/#{object}group.py"
+            target: "/usr/lib/python2.7/site-packages/shinken/objects/#{object}group.py"
             write: [
               match: new RegExp "'#{object}group_name': StringProp.*,$", 'm'
               replace:  "'#{object}group_name': StringProp(fill_brok=['full_status']), # RYBA\n        '#{object}group_members': StringProp(fill_brok=['full_status']),"

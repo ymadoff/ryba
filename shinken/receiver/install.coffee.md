@@ -33,7 +33,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         installmod = (name, mod) =>
           @call unless_exec: "shinken inventory | grep #{name}", handler: ->
             @download
-              destination: "#{shinken.build_dir}/#{mod.archive}.zip"
+              target: "#{shinken.build_dir}/#{mod.archive}.zip"
               source: mod.source
               cache_file: "#{mod.archive}.zip"
               unless_exec: "shinken inventory | grep #{name}"

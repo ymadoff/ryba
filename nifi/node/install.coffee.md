@@ -33,15 +33,15 @@
 
       @call header: 'Preinstall Layout', handler: ->
           @mkdir
-            destination: nifi.node.install_dir
+            target: nifi.node.install_dir
           @mkdir
-            destination: nifi.node.conf_dir
+            target: nifi.node.conf_dir
           @mkdir
-            destination: nifi.node.log_dir
+            target: nifi.node.log_dir
             uid: nifi.user.name
             gid: nifi.group.name
           @mkdir
-            destination: nifi.user.home 
+            target: nifi.user.home 
             uid: nifi.user.name
             gid: nifi.group.name
 
@@ -51,17 +51,17 @@
         unless_exec: "grep 'nifi.version=#{nifi.version}' #{nifi.node.install_dir}/#{nifi.version}/conf/nifi.properties"
         handler: ->
           @mkdir
-            destination: "#{nifi.node.install_dir}/#{nifi.version}"
+            target: "#{nifi.node.install_dir}/#{nifi.version}"
           @download
             source: nifi.source
-            destination: tmp_archive_location
+            target: tmp_archive_location
           @extract
             source: tmp_archive_location
-            destination: "#{nifi.node.install_dir}/#{nifi.version}"
+            target: "#{nifi.node.install_dir}/#{nifi.version}"
             preserve_owner: false
             strip: 1
           @remove
-            destination: tmp_archive_location
+            target: tmp_archive_location
 
       @call
         header: 'Postinstall Layout'
@@ -69,29 +69,29 @@
         handler: ->
           @link
             source: "#{nifi.node.install_dir}/#{nifi.version}"
-            destination: "#{nifi.node.install_dir}/current"
+            target: "#{nifi.node.install_dir}/current"
           # set current version to downloaded version (to support upgrades)
           @remove 
-            destination: "#{nifi.node.install_dir}/current/conf"
+            target: "#{nifi.node.install_dir}/current/conf"
             if_exec: "test -d #{nifi.node.install_dir}/current/conf"
           @link
             source: nifi.node.conf_dir
-            destination: "#{nifi.node.install_dir}/current/conf"
+            target: "#{nifi.node.install_dir}/current/conf"
           @remove 
-            destination: "#{nifi.node.install_dir}/current/logs"
+            target: "#{nifi.node.install_dir}/current/logs"
           # needs to have read/write privileges to load Nar bundles
           @execute
             cmd: "chmod 777 -R #{nifi.node.install_dir}/current/lib"
           @render
             source: "#{__dirname}/resources/nifi-node.j2"
-            destination: '/etc/init.d/nifi-node'
+            target: '/etc/init.d/nifi-node'
             local_source: true
             context: @config
             mode: 0o0755
           # https://github.com/apache/nifi/blob/master/nifi-bootstrap/src/main/java/org/apache/nifi/bootstrap/RunNiFi.java#L335
           # enable nifi to create pid file in nifi.home/bin directory
           @chown
-            destination: "#{nifi.node.install_dir}/current/bin"
+            target: "#{nifi.node.install_dir}/current/bin"
             uid: nifi.user.name
             gid: nifi.group.name
 
@@ -99,14 +99,14 @@
 
       @download
         header: 'Services Notifications'
-        destination: "#{nifi.node.conf_dir}/bootstrap-notification-services.xml"
+        target: "#{nifi.node.conf_dir}/bootstrap-notification-services.xml"
         source: "#{__dirname}/../resources/bootstrap-notification-services.xml"
 
 # Log Configuration
 
       @render
         header: 'Log Configuration'
-        destination: "#{nifi.node.conf_dir}/logback.xml"
+        target: "#{nifi.node.conf_dir}/logback.xml"
         source: "#{__dirname}/../resources/logback.xml.j2"
         local_source: true
         context: nifi.node
@@ -115,7 +115,7 @@
 
       @render
         header: 'Authority Providers'
-        destination: "#{nifi.node.conf_dir}/authority-providers.xml"
+        target: "#{nifi.node.conf_dir}/authority-providers.xml"
         source: "#{__dirname}/../resources/authority-providers.xml.j2"
         local_source: true
         context: nifi.node
@@ -133,7 +133,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
       @render
         header: 'State Provider'
         source: "#{__dirname}/../resources/state-management.xml.j2"
-        destination: "#{nifi.node.conf_dir}/state-management.xml"
+        target: "#{nifi.node.conf_dir}/state-management.xml"
         context: @config.ryba
         local_source: true
         uid: nifi.user.name
@@ -153,7 +153,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
 
       @write_jaas
         header: 'Zookeeper JAAS'
-        destination: "#{nifi.node.conf_dir}/nifi-zookeeper.jaas"
+        target: "#{nifi.node.conf_dir}/nifi-zookeeper.jaas"
         content: Client:
           principal: nifi.node.krb5_principal
           keyTab: nifi.node.krb5_keytab
@@ -163,7 +163,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
       @render
         header: 'Bootstrap Conf'
         source: "#{__dirname}/../resources/bootstrap.conf.j2"
-        destination: "#{nifi.node.conf_dir}/bootstrap.conf"
+        target: "#{nifi.node.conf_dir}/bootstrap.conf"
         eof: true
         backup: true
         context:
@@ -178,7 +178,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
       @render
         header: 'Server properties'
         source: "#{__dirname}/../resources/nifi.properties"
-        destination: "#{nifi.node.conf_dir}/nifi.properties"
+        target: "#{nifi.node.conf_dir}/nifi.properties"
         local_source: true
         write: for k, v of nifi.node.config.properties
           match: RegExp "^#{quote k}=.*$", 'mg'
@@ -219,7 +219,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
         for lib in nifi.node.additional_libs
           @download
             source: lib
-            destination: "#{nifi.node.install_dir}/current/lib/extras/#{path.basename lib}"
+            target: "#{nifi.node.install_dir}/current/lib/extras/#{path.basename lib}"
             mode: 0o644
 
 # User limits

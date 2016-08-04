@@ -54,29 +54,29 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
 
       @call header: 'Layout', handler: ->
         @mkdir
-          destination: spark.thrift.pid_dir
+          target: spark.thrift.pid_dir
           uid: spark.user.name
           gid: @config.ryba.hadoop_group.gid
           mode: 0o0770
         @mkdir
-          destination: spark.thrift.log_dir
+          target: spark.thrift.log_dir
           uid: spark.user.name
           gid: @config.ryba.hadoop_group.gid
           mode: 0o0770
         @mkdir
-          destination: spark.thrift.conf_dir
+          target: spark.thrift.conf_dir
           uid: spark.user.name
           gid: @config.ryba.hadoop_group.gid
         @remove
-          destination: '/usr/hdp/current/spark-thriftserver/conf'
+          target: '/usr/hdp/current/spark-thriftserver/conf'
         @link
-          destination: '/usr/hdp/current/spark-thriftserver/conf'
+          target: '/usr/hdp/current/spark-thriftserver/conf'
           source: spark.thrift.conf_dir
 
 ## HDFS Layout
 
       @hdfs_mkdir
-        destination: "/user/#{spark.thrift.user_name}"
+        target: "/user/#{spark.thrift.user_name}"
         user: spark.thrift.user_name
         group: spark.thrift.user_name
         mode: 0o0775
@@ -96,7 +96,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
           mode: 0o0750
         @write_properties
           header: 'Spark Defaults'
-          destination: "#{spark.thrift.conf_dir}/spark-defaults.conf"
+          target: "#{spark.thrift.conf_dir}/spark-defaults.conf"
           content: spark.thrift.conf
           backup: true
           uid: spark.user.name
@@ -131,11 +131,11 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
 
       @call header:'Hive Client Conf', handler: ->
         @copy
-          destination: "#{spark.thrift.conf_dir}/hive-site.xml"
+          target: "#{spark.thrift.conf_dir}/hive-site.xml"
           source: '/etc/hive/conf/hive-site.xml'
 
         @hconfigure
-          destination: "#{spark.thrift.conf_dir}/hive-site.xml"
+          target: "#{spark.thrift.conf_dir}/hive-site.xml"
           properties: spark.thrift.hive_site
           merge: true
           uid: spark.user.name
@@ -151,17 +151,17 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
           tmp_location = "/var/tmp/ryba/ssl"
           @download
             source: ssl.cacert
-            destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+            target: "#{tmp_location}/#{path.basename ssl.cacert}"
             mode: 0o0600
             shy: true
           @download
             source: ssl.cert
-            destination: "#{tmp_location}/#{path.basename ssl.cert}"
+            target: "#{tmp_location}/#{path.basename ssl.cert}"
             mode: 0o0600
             shy: true
           @download
             source: ssl.key
-            destination: "#{tmp_location}/#{path.basename ssl.key}"
+            target: "#{tmp_location}/#{path.basename ssl.key}"
             mode: 0o0600
             shy: true
           @java_keystore_add
@@ -179,13 +179,13 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
           #   caname: "hadoop_root_ca"
           #   cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
           @remove
-            destination: "#{tmp_location}/#{path.basename ssl.cacert}"
+            target: "#{tmp_location}/#{path.basename ssl.cacert}"
             shy: true
           @remove
-            destination: "#{tmp_location}/#{path.basename ssl.cert}"
+            target: "#{tmp_location}/#{path.basename ssl.cert}"
             shy: true
           @remove
-            destination: "#{tmp_location}/#{path.basename ssl.key}"
+            target: "#{tmp_location}/#{path.basename ssl.key}"
             shy: true
           @service
             srv_name: 'spark-thrift-server'
@@ -196,7 +196,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
 
       @write_properties
         header: 'log4j Properties'
-        destination: "#{spark.thrift.conf_dir}/log4j.properties"
+        target: "#{spark.thrift.conf_dir}/log4j.properties"
         content: spark.thrift.log4j
         backup: true
 

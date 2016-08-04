@@ -45,7 +45,7 @@ script inside "/etc/init.d" and activate it on startup.
           name: 'hadoop-hdfs-client' # Not checked
           name: 'hadoop-hdfs-secondarynamenode'
         @render
-          destination: '/etc/init.d/hadoop-hdfs-secondarynamenode'
+          target: '/etc/init.d/hadoop-hdfs-secondarynamenode'
           source: "#{__dirname}/../resources/secondarynamenode"
           local_source: true
           context: @config
@@ -57,19 +57,19 @@ script inside "/etc/init.d" and activate it on startup.
 
       @call header: 'HDFS SNN # Layout', timeout: -1, handler: ->
         @mkdir
-          destination: for dir in hdfs.site['dfs.namenode.checkpoint.dir'].split ','
+          target: for dir in hdfs.site['dfs.namenode.checkpoint.dir'].split ','
             if dir.indexOf('file://') is 0
             then dir.substr(7) else dir
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o755
         @mkdir
-          destination: "#{hdfs.pid_dir.replace '$USER', hdfs.user.name}"
+          target: "#{hdfs.pid_dir.replace '$USER', hdfs.user.name}"
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o755
         @mkdir
-          destination: "#{hdfs.log_dir}" #/#{hdfs.user.name}
+          target: "#{hdfs.log_dir}" #/#{hdfs.user.name}
           uid: hdfs.user.name
           gid: hdfs.group.name
           parent: true
@@ -86,7 +86,7 @@ script inside "/etc/init.d" and activate it on startup.
 
       @hconfigure
          header: 'Configuration'
-        destination: "#{hdfs.snn.conf_dir}/hdfs-site.xml"
+        target: "#{hdfs.snn.conf_dir}/hdfs-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
         local_default: true
         properties: hdfs.site

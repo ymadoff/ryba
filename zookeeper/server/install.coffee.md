@@ -69,7 +69,7 @@ which has no dependency.
         @write
           source: "#{__dirname}/resources/zookeeper"
           local_source: true
-          destination: '/etc/init.d/zookeeper-server'
+          target: '/etc/init.d/zookeeper-server'
           mode: 0o0755
           unlink: true
 
@@ -84,14 +84,14 @@ which has no dependency.
           uid: zookeeper.user.name
           gid: hadoop_group.name
         @write_jaas
-          destination: '/etc/zookeeper/conf/zookeeper-server.jaas'
+          target: '/etc/zookeeper/conf/zookeeper-server.jaas'
           content: Server:
             principal: "zookeeper/#{@config.host}@#{realm}"
             keyTab: '/etc/security/keytabs/zookeeper.service.keytab'
           uid: zookeeper.user.name
           gid: hadoop_group.name
         @write_jaas
-          destination: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
+          target: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
           content: Client:
             useTicketCache: true
           mode: 0o0644
@@ -103,17 +103,17 @@ ownerships.
 
       @call header: 'Layout', handler: ->
         @mkdir
-          destination: zookeeper.config['dataDir']
+          target: zookeeper.config['dataDir']
           uid: zookeeper.user.name
           gid: hadoop_group.name
           mode: 0o755
         @mkdir
-          destination: zookeeper.pid_dir
+          target: zookeeper.pid_dir
           uid: zookeeper.user.name
           gid: zookeeper.group.name
           mode: 0o755
         @mkdir
-          destination: zookeeper.log_dir
+          target: zookeeper.log_dir
           uid: zookeeper.user.name
           gid: hadoop_group.name
           mode: 0o755
@@ -151,7 +151,7 @@ Note, environment is enriched at runtime if a super user is generated
 
       @write
         header: 'Environment'
-        destination: "#{zookeeper.conf_dir}/zookeeper-env.sh"
+        target: "#{zookeeper.conf_dir}/zookeeper-env.sh"
         content: ("export #{k}=\"#{v}\"" for k, v of zookeeper.env).join '\n'
         backup: true
         eof: true
@@ -163,7 +163,7 @@ Update the file "zoo.cfg" with the properties defined by the
 
       @write_properties
         header: 'Configure'
-        destination: "#{zookeeper.conf_dir}/zoo.cfg"
+        target: "#{zookeeper.conf_dir}/zoo.cfg"
         content: zookeeper.config
         backup: true
 
@@ -173,7 +173,7 @@ Write the ZooKeeper logging configuration file.
 
       @write_properties
         header: 'Log4J'
-        destination: "#{zookeeper.conf_dir}/log4j.properties"
+        target: "#{zookeeper.conf_dir}/log4j.properties"
         content: zookeeper.log4j.config
         backup: true
 
@@ -219,7 +219,7 @@ myid is a unique id that must be generated for each node of the zookeeper cluste
       @write
         header: 'Write myid'
         content: zookeeper.myid
-        destination: "#{zookeeper.config['dataDir']}/myid"
+        target: "#{zookeeper.config['dataDir']}/myid"
         uid: zookeeper.user.name
         gid: hadoop_group.name
 

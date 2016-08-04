@@ -53,7 +53,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
           name: 'hadoop-yarn-client' # Not checked
           name: 'hadoop-yarn-timelineserver'
         @render
-          destination: '/etc/init.d/hadoop-yarn-timelineserver'
+          target: '/etc/init.d/hadoop-yarn-timelineserver'
           source: "#{__dirname}/../resources/hadoop-yarn-timelineserver"
           local_source: true
           context: @config
@@ -67,19 +67,19 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 
       @call header: 'Layout', handler: ->
         @mkdir
-          destination: "#{yarn.ats.conf_dir}"
+          target: "#{yarn.ats.conf_dir}"
         @mkdir
-          destination: "#{yarn.pid_dir}"
+          target: "#{yarn.pid_dir}"
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o755
         @mkdir
-          destination: "#{yarn.log_dir}"
+          target: "#{yarn.log_dir}"
           uid: yarn.user.name
           gid: yarn.group.name
           parent: true
         @mkdir
-          destination: yarn.site['yarn.timeline-service.leveldb-timeline-store.path']
+          target: yarn.site['yarn.timeline-service.leveldb-timeline-store.path']
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o0750
@@ -91,28 +91,28 @@ Update the "yarn-site.xml" configuration file.
 
       @hconfigure
         header: 'Core Site'
-        destination: "#{yarn.ats.conf_dir}/core-site.xml"
+        target: "#{yarn.ats.conf_dir}/core-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
         local_default: true
         properties: core_site
         backup: true
       @hconfigure
         header: 'HDFS Site'
-        destination: "#{yarn.ats.conf_dir}/hdfs-site.xml"
+        target: "#{yarn.ats.conf_dir}/hdfs-site.xml"
         properties: hdfs.site
         backup: true
       @hconfigure
         header: 'YARN Site'
-        destination: "#{yarn.ats.conf_dir}/yarn-site.xml"
+        target: "#{yarn.ats.conf_dir}/yarn-site.xml"
         properties: yarn.site
         backup: true
       @write
         header: 'Log4j'
-        destination: "#{yarn.ats.conf_dir}/log4j.properties"
+        target: "#{yarn.ats.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
         local_source: true
       @render
-        destination: "#{yarn.ats.conf_dir}/yarn-env.sh"
+        target: "#{yarn.ats.conf_dir}/yarn-env.sh"
         source: "#{__dirname}/../resources/yarn-env.sh.j2"
         local_source: true
         context: @config
@@ -125,7 +125,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 
       @write_properties
         header: 'Metrics'
-        destination: "#{yarn.ats.conf_dir}/hadoop-metrics2.properties"
+        target: "#{yarn.ats.conf_dir}/hadoop-metrics2.properties"
         content: hadoop_metrics.config
         backup: true
 
@@ -158,10 +158,10 @@ Note, this is not documented anywhere and might not be considered as a best prac
         ssl_server['ssl.server.keystore.location'] = "#{yarn.ats.conf_dir}/keystore"
         ssl_server['ssl.server.truststore.location'] = "#{yarn.ats.conf_dir}/truststore"
         @hconfigure
-          destination: "#{yarn.ats.conf_dir}/ssl-server.xml"
+          target: "#{yarn.ats.conf_dir}/ssl-server.xml"
           properties: ssl_server
         @hconfigure
-          destination: "#{yarn.ats.conf_dir}/ssl-client.xml"
+          target: "#{yarn.ats.conf_dir}/ssl-client.xml"
           properties: ssl_client
         # Client: import certificate to all hosts
         @java_keystore_add

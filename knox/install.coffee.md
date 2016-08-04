@@ -41,7 +41,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         @hdp_select name: 'knox-server'
         # Fix autogen of master secret
         @remove
-          destination: [
+          target: [
             '/usr/hdp/current/knox-server/data/security/master'
             '/usr/hdp/current/knox-server/data/security/keystores'
             '/usr/hdp/current/knox-server/conf/topologies/admin.xml'
@@ -49,7 +49,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           ] 
           if: @status -2
         @render
-          destination: '/etc/init.d/knox-server'
+          target: '/etc/init.d/knox-server'
           source: "#{__dirname}/resources/knox-server.j2"
           local_source: true
           context: @config.ryba.knox
@@ -59,7 +59,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       @hconfigure
         header: 'Configure'
-        destination: "#{knox.conf_dir}/gateway-site.xml"
+        target: "#{knox.conf_dir}/gateway-site.xml"
         properties: knox.site
         merge: true
 
@@ -70,7 +70,7 @@ in the gateway.sh service script.
 
       @write
         header: 'Env'
-        destination: "#{knox.conf_dir}/gateway.sh"
+        target: "#{knox.conf_dir}/gateway.sh"
         write: for k, v of knox.env
           match: new RegExp "^#{k}=.*$", 'i'
           replace: "#{k.toUpperCase()}=#{v}"
@@ -86,7 +86,7 @@ in the gateway.sh service script.
           uid: knox.user.name
           gid: knox.group.name
         @write_jaas
-          destination: knox.site['java.security.auth.login.config']
+          target: knox.site['java.security.auth.login.config']
           content: 'com.sun.security.jgss.initiate':
             principal: knox.krb5_user.principal
             keyTab: knox.krb5_user.keytab
@@ -125,7 +125,7 @@ in the gateway.sh service script.
                 service.ele 'url', u
               else if url not in [null, ''] then service.ele 'url', url
           @write
-            destination: "#{knox.conf_dir}/topologies/#{nameservice}.xml"
+            target: "#{knox.conf_dir}/topologies/#{nameservice}.xml"
             content: doc.end pretty: true
             eof: true
 
@@ -149,17 +149,17 @@ in the gateway.sh service script.
         tmp_location = "/var/tmp/ryba/knox_ssl"
         @download
           source: knox.ssl.cacert
-          destination: "#{tmp_location}/cacert"
+          target: "#{tmp_location}/cacert"
           mode: 0o0600
           shy: true
         @download
           source: knox.ssl.cert
-          destination: "#{tmp_location}/cert"
+          target: "#{tmp_location}/cert"
           mode: 0o0600
           shy: true
         @download
           source: knox.ssl.key
-          destination: "#{tmp_location}/key"
+          target: "#{tmp_location}/key"
           mode: 0o0600
           shy: true
         @java_keystore_add
@@ -186,13 +186,13 @@ client to connect to openldap.
           caname: 'hadoop_root_ca'
           cacert: "#{tmp_location}/cacert"
         @remove
-          destination: "#{tmp_location}/cacert"
+          target: "#{tmp_location}/cacert"
           shy: true
         @remove
-          destination: "#{tmp_location}/cert"
+          target: "#{tmp_location}/cert"
           shy: true
         @remove
-          destination: "#{tmp_location}/key"
+          target: "#{tmp_location}/key"
           shy: true
 
 ## Dependencies

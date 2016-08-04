@@ -80,7 +80,7 @@ inside "/etc/init.d" and activate it on startup.
           name: 'hadoop-yarn-client' # Not checked
           name: 'hadoop-yarn-resourcemanager'
         @render
-          destination: '/etc/init.d/hadoop-yarn-resourcemanager'
+          target: '/etc/init.d/hadoop-yarn-resourcemanager'
           source: "#{__dirname}/../resources/hadoop-yarn-resourcemanager"
           local_source: true
           context: @config
@@ -93,51 +93,51 @@ inside "/etc/init.d" and activate it on startup.
       @call header: 'Layout', handler: ->
         {yarn, hadoop_group} = @config.ryba
         @mkdir
-          destination: "#{yarn.rm.conf_dir}"
+          target: "#{yarn.rm.conf_dir}"
         @mkdir
-          destination: "#{yarn.pid_dir}"
+          target: "#{yarn.pid_dir}"
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o755
         @mkdir
-          destination: "#{yarn.log_dir}"
+          target: "#{yarn.log_dir}"
           uid: yarn.user.name
           gid: yarn.group.name
           parent: true
         @touch
-          destination: "#{yarn.rm.site['yarn.resourcemanager.nodes.include-path']}"
+          target: "#{yarn.rm.site['yarn.resourcemanager.nodes.include-path']}"
         @touch
-          destination: "#{yarn.rm.site['yarn.resourcemanager.nodes.exclude-path']}"
+          target: "#{yarn.rm.site['yarn.resourcemanager.nodes.exclude-path']}"
 
 ## Configure
 
       @hconfigure
         header: 'Core Site'
-        destination: "#{yarn.rm.conf_dir}/core-site.xml"
+        target: "#{yarn.rm.conf_dir}/core-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
         local_default: true
         properties: merge {}, core_site, yarn.rm.core_site
         backup: true
       @hconfigure
         header: 'HDFS Site'
-        destination: "#{yarn.rm.conf_dir}/hdfs-site.xml"
+        target: "#{yarn.rm.conf_dir}/hdfs-site.xml"
         properties: hdfs.site
         backup: true
       @hconfigure
         label: 'YARN Site'
-        destination: "#{yarn.rm.conf_dir}/yarn-site.xml"
+        target: "#{yarn.rm.conf_dir}/yarn-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
         local_default: true
         properties: yarn.rm.site
         backup: true
       @write
         header: 'Log4j'
-        destination: "#{yarn.rm.conf_dir}/log4j.properties"
+        target: "#{yarn.rm.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
         local_source: true
       @render
         header: 'YARN Env'
-        destination: "#{yarn.rm.conf_dir}/yarn-env.sh"
+        target: "#{yarn.rm.conf_dir}/yarn-env.sh"
         source: "#{__dirname}/../resources/yarn-env.sh.j2"
         local_source: true
         context: @config
@@ -150,7 +150,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 
       @write_properties
         header: 'Metrics'
-        destination: "#{yarn.rm.conf_dir}/hadoop-metrics2.properties"
+        target: "#{yarn.rm.conf_dir}/hadoop-metrics2.properties"
         content: hadoop_metrics.config
         backup: true
 
@@ -158,7 +158,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 
       @hconfigure # Ideally placed inside a mapred_jhs_client module
         header: 'MapRed Site'
-        destination: "#{yarn.rm.conf_dir}/mapred-site.xml"
+        target: "#{yarn.rm.conf_dir}/mapred-site.xml"
         properties: mapred.site
         backup: true
 
@@ -169,10 +169,10 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
         ssl_server['ssl.server.keystore.location'] = "#{yarn.rm.conf_dir}/keystore"
         ssl_server['ssl.server.truststore.location'] = "#{yarn.rm.conf_dir}/truststore"
         @hconfigure
-          destination: "#{yarn.rm.conf_dir}/ssl-server.xml"
+          target: "#{yarn.rm.conf_dir}/ssl-server.xml"
           properties: ssl_server
         @hconfigure
-          destination: "#{yarn.rm.conf_dir}/ssl-client.xml"
+          target: "#{yarn.rm.conf_dir}/ssl-client.xml"
           properties: ssl_client
         # Client: import certificate to all hosts
         @java_keystore_add
@@ -216,7 +216,7 @@ with Zookeeper.
 
       @write_jaas
         header: 'Kerberos JAAS'
-        destination: "#{yarn.rm.conf_dir}/yarn-rm.jaas"
+        target: "#{yarn.rm.conf_dir}/yarn-rm.jaas"
         content: Client:
           principal: yarn.rm.site['yarn.resourcemanager.principal'].replace '_HOST', @config.host
           keyTab: yarn.rm.site['yarn.resourcemanager.keytab']

@@ -5,7 +5,7 @@ Create an HDFS directory.
 
 Options include:
 
-*   `destination`   
+*   `target`   
 *   `krb5_user`   
 *   `mode`   
 *   `user`   
@@ -18,7 +18,7 @@ Options include:
 ## Source Code
 
     module.exports = (options, callback) ->
-      throw callback Error "Required option: 'destination'" unless options.destination
+      throw callback Error "Required option: 'target'" unless options.target
       options.mode ?= ''
       options.mode = mode.stringify options.mode
       options.user ?= ''
@@ -33,7 +33,7 @@ Options include:
         "echo '#{options.krb5_user.password}' | kinit #{options.krb5_user.principal} >/dev/null && {\n#{cmd}\n}"
       @execute
         cmd: wrap """
-        target="#{options.destination}"
+        target="#{options.target}"
         if hdfs dfs -test -d $target; then
           # TODO: compare permissions and ownership
           exit 3;

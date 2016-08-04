@@ -64,17 +64,17 @@ hbase:x:492:
 
       @call header: 'Layout', timeout: -1, handler: ->
         @mkdir
-          destination: hbase.thrift.pid_dir
+          target: hbase.thrift.pid_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
         @mkdir
-          destination: hbase.thrift.log_dir
+          target: hbase.thrift.log_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
         @mkdir
-          destination: hbase.thrift.conf_dir
+          target: hbase.thrift.conf_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
@@ -97,7 +97,7 @@ restrict it but not the thrift server.
 
       @hconfigure
         header: 'HBase Site'
-        destination: "#{hbase.thrift.conf_dir}/hbase-site.xml"
+        target: "#{hbase.thrift.conf_dir}/hbase-site.xml"
         default: "#{__dirname}/../resources/hbase-site.xml"
         local_default: true
         properties: hbase.thrift.site
@@ -112,7 +112,7 @@ Environment passed to the HBase Rest Server before it starts.
 
       @render
         header: 'HBase Env'
-        destination: "#{hbase.thrift.conf_dir}/hbase-env.sh"
+        target: "#{hbase.thrift.conf_dir}/hbase-env.sh"
         source: "#{__dirname}/../resources/hbase-env.sh.j2"
         local_source: true
         context: @config
@@ -143,7 +143,7 @@ Environment passed to the HBase Rest Server before it starts.
           source: "#{__dirname}/../resources/hbase-thrift"
           local_source: true
           context: @config
-          destination: '/etc/init.d/hbase-thrift'
+          target: '/etc/init.d/hbase-thrift'
           mode: 0o0755
           unlink: true
         @execute
@@ -154,7 +154,7 @@ Environment passed to the HBase Rest Server before it starts.
 
       @write
         header: 'Log4J'
-        destination: "#{hbase.thrift.conf_dir}/log4j.properties"
+        target: "#{hbase.thrift.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
         local_source: true
 

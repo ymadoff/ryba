@@ -41,7 +41,7 @@ RegionServer, and HBase client host machines.
       @write_jaas
         timeout: -1
         header: 'Zookeeper JAAS'
-        destination: "#{hbase.conf_dir}/hbase-client.jaas"
+        target: "#{hbase.conf_dir}/hbase-client.jaas"
         content: Client:
           useTicketCache: 'true'
         uid: hbase.user.name
@@ -54,7 +54,7 @@ Note, we left the permission mode as default, Master and RegionServer need to
 
       @hconfigure
         header: 'HBase Client Site'
-        destination: "#{hbase.conf_dir}/hbase-site.xml"
+        target: "#{hbase.conf_dir}/hbase-site.xml"
         default: "#{__dirname}/../resources/hbase-site.xml"
         local_default: true
         properties: hbase.site
@@ -70,7 +70,7 @@ Environment passed to the Master before it starts.
 
       @render
         header: 'HBase Client Env'
-        destination: "#{hbase.conf_dir}/hbase-env.sh"
+        target: "#{hbase.conf_dir}/hbase-env.sh"
         source: "#{__dirname}/../resources/hbase-env.sh.j2"
         context: @config
         uid: hbase.user.name

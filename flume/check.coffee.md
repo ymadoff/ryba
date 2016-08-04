@@ -26,7 +26,7 @@ user and one using interpolation.
     #     a1.sinks.k2.hdfs.kerberosKeytab = /etc/flume/conf/flume.keytab
     #     a1.sinks.k2.hdfs.proxyUser = hdfs
     #     """
-    #     destination: '/tmp/flume.conf'
+    #     target: '/tmp/flume.conf'
     #   , (err, written) ->
     #     return next err if written
     #     next null, true

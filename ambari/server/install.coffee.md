@@ -15,7 +15,7 @@ Install Ambari server package.
       @download
         header: 'Ambari Server Repo'
         source: ambari_server.repo
-        destination: '/etc/yum.repos.d/ambari.repo'
+        target: '/etc/yum.repos.d/ambari.repo'
       @execute
         cmd: "yum clean metadata; yum update -y"
         if: -> @status -1
@@ -39,7 +39,7 @@ Password is stored inside a file which location is referenced by the property
 "server.jdbc.user.passwd" in the configuration file.
 
         @write
-          destination: ambari_server.config['server.jdbc.user.passwd']
+          target: ambari_server.config['server.jdbc.user.passwd']
           content: ambari_server.database_password
           backup: true
           mode: 0o0660
@@ -76,7 +76,7 @@ LDAP or Active Directory Authentication.
             user: ambari_server.config['server.jdbc.user.name']
             password: ambari_server.database_password
           # @write
-          #   destination: '/etc/ambari-server/conf/ambari.properties'
+          #   target: '/etc/ambari-server/conf/ambari.properties'
           #   content: """
           #   server.jdbc.rca.driver=org.postgresql.Driver
           #   jdk1.7.dest-file=jdk-7u67-linux-x64.tar.gz
@@ -162,7 +162,7 @@ LDAP or Active Directory Authentication.
           #   server.jdbc.database_name=ambari
           #   """
           @write_ini
-            destination: "#{ambari_server.conf_dir}/ambari.properties"
+            target: "#{ambari_server.conf_dir}/ambari.properties"
             content: ambari_server.config
             merge: true
             backup: true

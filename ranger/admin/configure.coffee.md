@@ -404,7 +404,7 @@ Configure Audit to SOLR
           nn_ctx
           .after
             type: 'render'
-            destination: "#{nn_ctx.config.ryba.hdfs.nn.conf_dir}/hadoop-env.sh"
+            target: "#{nn_ctx.config.ryba.hdfs.nn.conf_dir}/hadoop-env.sh"
             handler: -> 
               @call 'ryba/ranger/admin/plugin_hdfs'
           .before
@@ -537,7 +537,7 @@ Used only if SSL is enabled between Policy Admin Tool and Plugin
           rm_ctx
           .after
             type: 'hconfigure'
-            destination: "#{rm_ctx.config.ryba.yarn.rm.conf_dir}/yarn-site.xml"
+            target: "#{rm_ctx.config.ryba.yarn.rm.conf_dir}/yarn-site.xml"
             handler: -> 
               @call 'ryba/ranger/admin/plugin_yarn'
           .before
@@ -697,7 +697,7 @@ The repository name should match the reposity name in web ui.
           hm_ctx
           .after
             type: 'hconfigure'
-            destination: "#{hm_ctx.config.ryba.hbase.master.conf_dir}/hbase-site.xml"
+            target: "#{hm_ctx.config.ryba.hbase.master.conf_dir}/hbase-site.xml"
             handler: -> 
               @call 'ryba/ranger/admin/plugin_hbase'
           hm_ctx
@@ -729,7 +729,7 @@ The repository name should match the reposity name in web ui.
           rs_ctx
           .after
             type: 'hconfigure'
-            destination: "#{rs_ctx.config.ryba.hbase.rs.conf_dir}/hbase-site.xml"
+            target: "#{rs_ctx.config.ryba.hbase.rs.conf_dir}/hbase-site.xml"
             handler: -> 
               @call 'ryba/ranger/admin/plugin_hbase'
           .before
@@ -852,7 +852,7 @@ The properties can be found [here][kafka-repository]
           kb_ctx
           .after
             type: 'write'
-            destination: "#{kb_ctx.config.ryba.kafka.broker.conf_dir}/server.properties"
+            target: "#{kb_ctx.config.ryba.kafka.broker.conf_dir}/server.properties"
             handler: -> 
               @call 'ryba/ranger/admin/plugin_kafka'
 
@@ -1005,7 +1005,7 @@ Used only if SSL is enabled between Policy Admin Tool and Plugin
           .after
             type: 'render'
             header: 'Hive Server2 Env'
-            destination: "#{hive_ctx.config.ryba.hive.server2.conf_dir}/hive-env.sh"
+            target: "#{hive_ctx.config.ryba.hive.server2.conf_dir}/hive-env.sh"
             handler: -> 
               @call 'ryba/ranger/admin/plugin_hive'
           .before

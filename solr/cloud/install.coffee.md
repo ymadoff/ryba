@@ -36,7 +36,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Layout
 
       @mkdir
-        destination: solr.user.home
+        target: solr.user.home
         uid: solr.user.name
         gid: solr.group.name
       @mkdir
@@ -60,7 +60,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
               name: 'lucidworks-hdpsearch'
             @chown
               if: solr.cloud.source is 'HDP'
-              destination: '/opt/lucidworks-hdpsearch'
+              target: '/opt/lucidworks-hdpsearch'
               uid: solr.user.name
               gid: solr.group.name
         @call
@@ -68,36 +68,36 @@ Ryba support installing solr from apache official release or HDP Search repos.
           handler: ->
             @download
               source: solr.cloud.source
-              destination: tmp_archive_location
+              target: tmp_archive_location
             @mkdir 
-              destination: solr.cloud.install_dir
+              target: solr.cloud.install_dir
             @extract
               source: tmp_archive_location
-              destination: solr.cloud.install_dir
+              target: solr.cloud.install_dir
               preserve_owner: false
               strip: 1
             @link 
               source: solr.cloud.install_dir
-              destination: solr.cloud.latest_dir
+              target: solr.cloud.latest_dir
 
 
       @call header: 'Configuration', handler: ->
         @link 
           source: "#{solr.cloud.latest_dir}/conf"
-          destination: solr.cloud.conf_dir
+          target: solr.cloud.conf_dir
         @remove
           shy: true
-          destination: "#{solr.cloud.latest_dir}/bin/solr.in.sh"
+          target: "#{solr.cloud.latest_dir}/bin/solr.in.sh"
         @link 
           source: "#{solr.cloud.conf_dir}/solr.in.sh"
-          destination: "#{solr.cloud.latest_dir}/bin/solr.in.sh"
+          target: "#{solr.cloud.latest_dir}/bin/solr.in.sh"
         @render
           header: 'Init Script'
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
           source: "#{__dirname}/../resources/cloud/solr.j2"
-          destination: '/etc/init.d/solr'
+          target: '/etc/init.d/solr'
           local_source: true
           context: @config
 
@@ -108,7 +108,7 @@ has to be fixe to use jdk 1.8.
 
       @write
         header: 'Fix zKcli script'
-        destination: "#{solr.cloud.latest_dir}/server/scripts/cloud-scripts/zkcli.sh"
+        target: "#{solr.cloud.latest_dir}/server/scripts/cloud-scripts/zkcli.sh"
         write: [
           match: RegExp "^JVM=.*$", 'm'
           replace: "JVM=\"#{solr.cloud.jre_home}/bin/java\""
@@ -119,17 +119,17 @@ has to be fixe to use jdk 1.8.
 
       @call header: 'Solr Layout', timeout: -1, handler: ->
         @mkdir
-          destination: solr.cloud.pid_dir
+          target: solr.cloud.pid_dir
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
         @mkdir
-          destination: solr.cloud.log_dir
+          target: solr.cloud.log_dir
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
         @mkdir
-          destination: solr.user.home
+          target: solr.user.home
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
@@ -144,7 +144,7 @@ Create HDFS solr user and its home directory
           @hdfs_mkdir
             if: @config.host is @contexts('ryba/solr/cloud')[0].config.host
             header: 'HDFS Layout'
-            destination: "/user/#{solr.user.name}"
+            target: "/user/#{solr.user.name}"
             user: solr.user.name
             group: solr.user.name
             mode: 0o0775
@@ -162,7 +162,7 @@ Create HDFS solr user and its home directory
         @render
           header: 'Solr Environment'
           source: "#{__dirname}/../resources/cloud/solr.ini.sh.j2"
-          destination: "#{solr.cloud.conf_dir}/solr.in.sh"
+          target: "#{solr.cloud.conf_dir}/solr.in.sh"
           context: @config
           write: writes
           local_source: true
@@ -171,7 +171,7 @@ Create HDFS solr user and its home directory
         @render
           header: 'Solr Config'
           source: solr.cloud.conf_source
-          destination: "#{solr.cloud.conf_dir}/solr.xml"
+          target: "#{solr.cloud.conf_dir}/solr.xml"
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
@@ -181,7 +181,7 @@ Create HDFS solr user and its home directory
           eof: true
         @link
           source: "#{solr.cloud.conf_dir}/solr.xml"
-          destination: "#{solr.user.home}/solr.xml"
+          target: "#{solr.user.home}/solr.xml"
 
 ## Kerberos
 
@@ -211,7 +211,7 @@ Create HDFS solr user and its home directory
         kadmin_server: admin_server
       @write_jaas
         header: 'Solr JAAS'
-        destination: "#{solr.cloud.conf_dir}/solr-server.jaas"
+        target: "#{solr.cloud.conf_dir}/solr-server.jaas"
         content:
           Client:
             principal: solr.cloud.spnego.principal

@@ -49,17 +49,17 @@ hbase:x:492:
 
       @call header: 'Layout', timeout: -1, handler: ->
         @mkdir
-          destination: hbase.rs.pid_dir
+          target: hbase.rs.pid_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
         @mkdir
-          destination: hbase.rs.log_dir
+          target: hbase.rs.log_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
         @mkdir
-          destination: hbase.rs.conf_dir
+          target: hbase.rs.conf_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
@@ -81,7 +81,7 @@ inside "/etc/init.d" and activate it on startup.
           source: "#{__dirname}/../resources/hbase-regionserver"
           local_source: true
           context: @config
-          destination: '/etc/init.d/hbase-regionserver'
+          target: '/etc/init.d/hbase-regionserver'
           mode: 0o0755
           unlink: true
         @execute
@@ -95,7 +95,7 @@ RegionServer, and HBase client host machines.
 
       @write_jaas
         header: 'Zookeeper JAAS'
-        destination: "#{hbase.rs.conf_dir}/hbase-regionserver.jaas"
+        target: "#{hbase.rs.conf_dir}/hbase-regionserver.jaas"
         content: Client:
           principal: hbase.rs.site['hbase.regionserver.kerberos.principal'].replace '_HOST', @config.host
           keyTab: hbase.rs.site['hbase.regionserver.keytab.file']
@@ -108,7 +108,7 @@ RegionServer, and HBase client host machines.
         header: 'Copy Keytab'
         if: @has_module 'ryba/hbase/master'
         source: hbase.master.site['hbase.master.keytab.file']
-        destination: hbase.rs.site['hbase.regionserver.keytab.file']
+        target: hbase.rs.site['hbase.regionserver.keytab.file']
       @krb5_addprinc krb5,
         header: 'Kerberos'
         unless: @has_module 'ryba/hbase/master'
@@ -126,7 +126,7 @@ RegionServer, and HBase client host machines.
 
       @hconfigure
         header: 'HBase Site'
-        destination: "#{hbase.rs.conf_dir}/hbase-site.xml"
+        target: "#{hbase.rs.conf_dir}/hbase-site.xml"
         default: "#{__dirname}/../resources/hbase-site.xml"
         local_default: true
         properties: hbase.rs.site
@@ -142,7 +142,7 @@ Environment passed to the RegionServer before it starts.
 
       @render
         header: 'HBase Env'
-        destination: "#{hbase.rs.conf_dir}/hbase-env.sh"
+        target: "#{hbase.rs.conf_dir}/hbase-env.sh"
         source: "#{__dirname}/../resources/hbase-env.sh.j2"
         backup: true
         uid: hbase.user.name
@@ -163,7 +163,7 @@ Upload the list of registered RegionServers.
       @write
         header: 'Registered RegionServers'
         content: regionservers
-        destination: "#{hbase.rs.conf_dir}/regionservers"
+        target: "#{hbase.rs.conf_dir}/regionservers"
         uid: hbase.user.name
         gid: hadoop_group.name
         eof: true
@@ -174,7 +174,7 @@ Enable stats collection in Ganglia and Graphite
 
       @write_properties
         header: 'Metrics'
-        destination: "#{hbase.rs.conf_dir}/hadoop-metrics2-hbase.properties"
+        target: "#{hbase.rs.conf_dir}/hadoop-metrics2-hbase.properties"
         content: hbase.metrics.config
         backup: true
 
@@ -189,7 +189,7 @@ Enable stats collection in Ganglia and Graphite
 
       @write
         header: 'Log4J'
-        destination: "#{hbase.rs.conf_dir}/log4j.properties"
+        target: "#{hbase.rs.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
         local_source: true
 

@@ -30,13 +30,13 @@
 ## Layout
 
       @mkdir
-        destination: '/var/log/hadoop/hdfs/audit/hdfs/'
+        target: '/var/log/hadoop/hdfs/audit/hdfs/'
         uid: hdfs.user.name
         gid: hdfs.name
         mode: 0o0755
         if: ranger.hdfs_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
       @mkdir
-        destination: '/var/log/hadoop/hdfs/audit/solr/'
+        target: '/var/log/hadoop/hdfs/audit/solr/'
         uid: hdfs.user.name
         gid: hdfs.name
         mode: 0o0755
@@ -73,7 +73,7 @@ we execute this task using the rest api.
           header: 'Scripts rendering'
           if: -> version?
           source: "#{__dirname}/../resources/plugin-install.properties.j2"
-          destination: "/usr/hdp/#{version}/ranger-hdfs-plugin/install.properties"
+          target: "/usr/hdp/#{version}/ranger-hdfs-plugin/install.properties"
           local_source: true
           eof: true
           backup: true
@@ -83,7 +83,7 @@ we execute this task using the rest api.
             append: true
         @write
           header: 'Script Fix'
-          destination: "/usr/hdp/#{version}/ranger-hdfs-plugin/enable-hdfs-plugin.sh"
+          target: "/usr/hdp/#{version}/ranger-hdfs-plugin/enable-hdfs-plugin.sh"
           write: [
               match: RegExp "^HCOMPONENT_CONF_DIR=.*$", 'mg'
               replace: "HCOMPONENT_CONF_DIR=#{hdfs.nn.conf_dir}"
@@ -106,13 +106,13 @@ we execute this task using the rest api.
           """
         @hconfigure
           header: 'Fix ranger-hdfs-security conf'
-          destination: "#{hdfs.nn.conf_dir}/ranger-hdfs-security.xml"
+          target: "#{hdfs.nn.conf_dir}/ranger-hdfs-security.xml"
           merge: true
           properties:
             'ranger.plugin.hdfs.policy.rest.ssl.config.file': "#{hdfs.nn.conf_dir}/ranger-policymgr-ssl.xml"
         @write
           header: 'Fix Ranger HDFS Plugin Env'
-          destination: "#{hdfs.nn.conf_dir}/hadoop-env.sh"
+          target: "#{hdfs.nn.conf_dir}/hadoop-env.sh"
           write: [
             match: RegExp "^export HADOOP_OPTS=.*", 'mg'
             replace: "export HADOOP_OPTS=\"-Dhdp.version=$HDP_VERSION $HADOOP_OPTS -Djavax.net.ssl.trustStore=#{ssl_server['ssl.server.truststore.location']} -Djavax.net.ssl.trustStorePassword=#{ssl_server['ssl.server.truststore.password']} \" # RYBA, DONT OVERWRITE"

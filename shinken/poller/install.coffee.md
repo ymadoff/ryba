@@ -47,7 +47,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         installmod = (name, mod) =>
           @call unless_exec: "shinken inventory | grep #{name}", handler: ->
             @download
-              destination: "#{shinken.build_dir}/#{mod.archive}.zip"
+              target: "#{shinken.build_dir}/#{mod.archive}.zip"
               source: mod.source
               cache_file: "#{mod.archive}.zip"
               unless_exec: "shinken inventory | grep #{name}"
@@ -68,7 +68,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @call header: 'Plugins', timeout: -1, handler: ->
       for plugin in glob.sync "#{__dirname}/resources/plugins/*"
         @download
-          destination: "#{shinken.plugin_dir}/#{path.basename plugin}"
+          target: "#{shinken.plugin_dir}/#{path.basename plugin}"
           source: plugin
           uid: shinken.user.name
           gid: shinken.group.name
@@ -92,13 +92,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         @call header: 'Docker', timeout: -1, handler: ->
           @download
             source: "#{@config.mecano.cache_dir or '.'}/shinken-poller-executor.tar"
-            destination: '/var/lib/docker_images/shinken-poller-executor.tar'
+            target: '/var/lib/docker_images/shinken-poller-executor.tar'
             md5: true
           @docker_load
             source: '/var/lib/docker_images/shinken-poller-executor.tar'
             if: -> @status -1
           @write
-            destination: "#{shinken.poller.executor.resources_dir}/cronfile"
+            target: "#{shinken.poller.executor.resources_dir}/cronfile"
             content: """
             01 */9 * * * #{shinken.user.name} /usr/bin/kinit #{shinken.poller.executor.krb5.unprivileged.principal} -kt #{shinken.poller.executor.krb5.unprivileged.keytab}
             """

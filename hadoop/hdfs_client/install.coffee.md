@@ -37,7 +37,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
       @render
         header: 'Env'
-        destination: "#{hadoop_conf_dir}/hadoop-env.sh"
+        target: "#{hadoop_conf_dir}/hadoop-env.sh"
         source: "#{__dirname}/../resources/hadoop-env.sh.j2"
         local_source: true
         context: @config
@@ -54,14 +54,14 @@ Update the "core-site.xml" configuration file with properties from the
 
       @hconfigure
         header: 'Core Configuration'
-        destination: "#{hadoop_conf_dir}/core-site.xml"
+        target: "#{hadoop_conf_dir}/core-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
         local_default: true
         properties: core_site
         backup: true
       @hconfigure
         header: 'HDFS Configuration'
-        destination: "#{hadoop_conf_dir}/hdfs-site.xml"
+        target: "#{hadoop_conf_dir}/hdfs-site.xml"
         default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
         local_default: true
         properties: hdfs.site
@@ -85,15 +85,15 @@ Update the "core-site.xml" configuration file with properties from the
             continue if jar.filename in remote_files
             jar
           @remove ( # Remove jar if already uploaded
-            destination: path.join '/usr/hdp/current/hadoop-hdfs-client/lib', file
+            target: path.join '/usr/hdp/current/hadoop-hdfs-client/lib', file
           ) for file in remove_files
           @download (
             source: jar.source
-            destination: path.join '/usr/hdp/current/hadoop-hdfs-client/lib', "#{jar.filename}"
+            target: path.join '/usr/hdp/current/hadoop-hdfs-client/lib', "#{jar.filename}"
           ) for jar in core_jars
           @download (
             source: jar.source
-            destination: path.join '/usr/hdp/current/hadoop-yarn-client/lib', "#{jar.filename}"
+            target: path.join '/usr/hdp/current/hadoop-yarn-client/lib', "#{jar.filename}"
           ) for jar in core_jars
 
 ## SSL
@@ -102,7 +102,7 @@ Update the "core-site.xml" configuration file with properties from the
         {hadoop_conf_dir, ssl, ssl_server, ssl_client} = @config.ryba
         ssl_client['ssl.client.truststore.location'] = "#{hadoop_conf_dir}/truststore"
         @hconfigure
-          destination: "#{hadoop_conf_dir}/ssl-client.xml"
+          target: "#{hadoop_conf_dir}/ssl-client.xml"
           properties: ssl_client
         @java_keystore_add
           keystore: ssl_client['ssl.client.truststore.location']

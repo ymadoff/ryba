@@ -68,7 +68,7 @@ Update the "hive-site.xml" with the hive/server2 kerberos principal.
         if hive_ctx?
           {hive} = hive_ctx.config.ryba
           @hconfigure
-            destination: "#{hive.conf_dir}/hive-site.xml"
+            target: "#{hive.conf_dir}/hive-site.xml"
             properties: {
               'hive.server2.authentication.kerberos.principal': "#{hive.site['hive.server2.authentication.kerberos.principal']}"
               'hive.server2.authentication': "#{hive.site['hive.server2.authentication']}"
@@ -96,7 +96,7 @@ Update the "hbase-site.xml" with the hbase/thrift kerberos principal.
           # for k, v of hbase.site
           #   props[k] = v if  k.indexOf('thrift') isnt  -1
           @hconfigure
-            destination: "#{hbase.conf_dir}/hbase-site.xml"
+            target: "#{hbase.conf_dir}/hbase-site.xml"
             properties: {
               'hbase.thrift.port': "#{hbase.thrift.site['hbase.thrift.port']}"
               'hbase.thrift.info.port': "#{hbase.thrift.site['hbase.thrift.info.port']}"
@@ -116,7 +116,7 @@ recommandations. Merge the configuration object from "pseudo-distributed.ini" wi
 
       @write_ini
         header: 'hue ini'
-        destination: "#{hue_docker.conf_dir}/hue_docker.ini"
+        target: "#{hue_docker.conf_dir}/hue_docker.ini"
         content: hue_docker.ini
         backup: true
         parse: misc.ini.parse_multi_brackets
@@ -174,7 +174,7 @@ path  during docker run.
       # hue_docker.ca_bundle = '' unless hue_docker.ssl.client_ca
       @write
         header: 'SSL Client'
-        destination: "#{hue_docker.ca_bundle}"
+        target: "#{hue_docker.ca_bundle}"
         source: "#{hue_docker.ssl.client_ca}"
         local_source: true
         if: !!hue_docker.ssl.client_ca
@@ -192,16 +192,16 @@ changes.
         return unless hue_docker.ssl
         @download
           source: ssl.cert
-          destination: "#{hue_docker.conf_dir}/cert.pem"
+          target: "#{hue_docker.conf_dir}/cert.pem"
           uid: hue_docker.user.name
           gid: hue_docker.group.name
         @download
           source: ssl.key
-          destination: "#{hue_docker.conf_dir}/key.pem"
+          target: "#{hue_docker.conf_dir}/key.pem"
           uid: hue_docker.user.name
           gid: hue_docker.group.name
         @write_ini
-          destination: "#{hue_docker.conf_dir}/hue_docker.ini"
+          target: "#{hue_docker.conf_dir}/hue_docker.ini"
           content: desktop:
             ssl_certificate: "#{hue_docker.conf_dir}/cert.pem"
             ssl_private_key: "#{hue_docker.conf_dir}/key.pem"
@@ -220,13 +220,13 @@ changes.
 
       @call header: 'Layout', timeout: -1, handler:  ->
         @mkdir
-          destination: hue_docker.log_dir
+          target: hue_docker.log_dir
           uid: hue_docker.user.name
           gid: hue_docker.group.name
           mode: 0o755
           parent: true
         @mkdir
-          destination: '/tmp/hue_docker'
+          target: '/tmp/hue_docker'
           uid: hue_docker.user.name
           gid: hue_docker.group.name
           mode: 0o755
@@ -241,7 +241,7 @@ It uses local checksum if provided to upload or not.
         md5 = hue_docker.md5 ?= true
         @download
           source: "#{hue_docker.prod.directory}/#{hue_docker.prod.tar}"
-          destination: "#{tmp}/#{hue_docker.prod.tar}"
+          target: "#{tmp}/#{hue_docker.prod.tar}"
           binary: true
           md5: md5
         @docker_load
@@ -298,10 +298,10 @@ Write startup script to /etc/init.d/service-hue-docker
         @render
           source: "#{__dirname}/resources/#{hue_docker.service}"
           local_source: true
-          destination: "/etc/init.d/#{hue_docker.service}"
+          target: "/etc/init.d/#{hue_docker.service}"
           context: hue_docker
         @chmod
-          destination: "/etc/init.d/#{hue_docker.service}"
+          target: "/etc/init.d/#{hue_docker.service}"
           mode: 0o755
 
 ## Dependencies

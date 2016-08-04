@@ -86,7 +86,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           header: 'Init Script'
           source: "#{__dirname}/../resources/oozie"
           local_source: true
-          destination: '/etc/init.d/oozie'
+          target: '/etc/init.d/oozie'
           mode: 0o0755
           unlink: true
         @execute
@@ -95,27 +95,27 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       @call header: 'Layout Directories', handler: ->
         @mkdir
-          destination: oozie.data
+          target: oozie.data
           uid: oozie.user.name
           gid: hadoop_group.name
           mode: 0o0755
         @mkdir
-          destination: oozie.log_dir
+          target: oozie.log_dir
           uid: oozie.user.name
           gid: hadoop_group.name
           mode: 0o0755
         @mkdir
-          destination: oozie.pid_dir
+          target: oozie.pid_dir
           uid: oozie.user.name
           gid: hadoop_group.name
           mode: 0o0755
         @mkdir
-          destination: oozie.tmp_dir
+          target: oozie.tmp_dir
           uid: oozie.user.name
           gid: hadoop_group.name
           mode: 0o0755
         @mkdir
-          destination: "#{oozie.conf_dir}/action-conf"
+          target: "#{oozie.conf_dir}/action-conf"
           uid: oozie.user.name
           gid: hadoop_group.name
           mode: 0o0755
@@ -229,7 +229,7 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
             replace: ""
       @render
         header: 'Oozie Environment'
-        destination: "#{oozie.conf_dir}/oozie-env.sh"
+        target: "#{oozie.conf_dir}/oozie-env.sh"
         source: "#{__dirname}/../resources/oozie-env.sh.j2"
         local_source: true
         context: @config
@@ -246,7 +246,7 @@ Install the ExtJS Javascript library as part of enabling the Oozie Web Console.
       @copy
         header: 'ExtJS Library'
         source: '/usr/share/HDP-oozie/ext-2.2.zip'
-        destination: '/usr/hdp/current/oozie-client/libext/'
+        target: '/usr/hdp/current/oozie-client/libext/'
 
 # HBase credentials
 
@@ -255,7 +255,7 @@ Install the HBase Libs as part of enabling the Oozie Unified Credentials with HB
       @copy
         header: 'HBase Libs'
         source: '/usr/hdp/current/hbase-client/lib/hbase-common.jar'
-        destination: '/usr/hdp/current/oozie-client/libserver/'
+        target: '/usr/hdp/current/oozie-client/libserver/'
 
 # LZO
 
@@ -292,11 +292,11 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
       @link
         header: 'Mysql Driver'
         source: '/usr/share/java/mysql-connector-java.jar'
-        destination: '/usr/hdp/current/oozie-client/libext/mysql-connector-java.jar'
+        target: '/usr/hdp/current/oozie-client/libext/mysql-connector-java.jar'
 
       @call header: 'Configuration', handler: ->
         @hconfigure
-          destination: "#{oozie.conf_dir}/oozie-site.xml"
+          target: "#{oozie.conf_dir}/oozie-site.xml"
           default: "#{__dirname}/../resources/oozie-site.xml"
           local_default: true
           properties: oozie.site
@@ -306,12 +306,12 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           merge: true
           backup: true
         @write
-          destination: "#{oozie.conf_dir}/oozie-default.xml"
+          target: "#{oozie.conf_dir}/oozie-default.xml"
           source: "#{__dirname}/../resources/oozie-default.xml"
           local_source: true
           backup: true
         @hconfigure
-          destination: "#{oozie.conf_dir}/hadoop-conf/core-site.xml"
+          target: "#{oozie.conf_dir}/hadoop-conf/core-site.xml"
           local_default: true
           properties: oozie.hadoop_config
           uid: oozie.user.name
@@ -353,7 +353,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
             @service
               name: 'falcon'
             @mkdir
-              destination: '/tmp/falcon-oozie-jars'
+              target: '/tmp/falcon-oozie-jars'
             # Note, the documentation mentions using "-d" option but it doesnt
             # seem to work. Instead, we deploy the jar where "-d" default.
             @execute
@@ -409,7 +409,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
       @copy
         header: 'SPNEGO'
         source: '/etc/security/keytabs/spnego.service.keytab'
-        destination: "#{oozie.site['oozie.authentication.kerberos.keytab']}"
+        target: "#{oozie.site['oozie.authentication.kerberos.keytab']}"
         uid: oozie.user.name
         gid: oozie.group.name
         mode: 0o0600
@@ -476,7 +476,7 @@ the ShareLib contents without having to go into HDFS.
       @call once: true, 'ryba/hadoop/hdfs_nn/wait'
       @call header: 'Share lib', timeout: 600000, handler: ->
         @hdfs_mkdir
-          destination: "/user/#{oozie.user.name}/share/lib"
+          target: "/user/#{oozie.user.name}/share/lib"
           user: "#{oozie.user.name}"
           group:  "#{oozie.group.name}"
           mode: 0o0755
@@ -504,7 +504,7 @@ the ShareLib contents without having to go into HDFS.
       @hconfigure 
         header: 'Hive Site'
         if: is_falcon_installed
-        destination: "#{oozie.conf_dir}/action-conf/hive.xml"
+        target: "#{oozie.conf_dir}/action-conf/hive.xml"
         properties: 'hive.metastore.execute.setugi': 'true'
         merge: true
 
@@ -515,7 +515,7 @@ the ShareLib contents without having to go into HDFS.
       #TODO: Declare all properties during configure and use write_properties
       @write
         header: 'Log4J properties'
-        destination: "#{oozie.conf_dir}/oozie-log4j.properties"
+        target: "#{oozie.conf_dir}/oozie-log4j.properties"
         source: "#{__dirname}/../resources/oozie-log4j.properties"
         local_source: true
         backup: true
