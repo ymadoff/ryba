@@ -11,17 +11,6 @@
 
 ## Kerberos
 
-      console.log '----------'
-      console.log krb5, nagios
-      console.log '----------'
-      console.log
-        header: 'Kerberos'
-        principal: nagios.principal
-        randkey: true
-        keytab: nagios.keytab
-        uid: nagios.user.name
-        gid: nagios.user.group
-        mode: 0o600
       @krb5_addprinc krb5,
         header: 'Kerberos'
         principal: nagios.principal
