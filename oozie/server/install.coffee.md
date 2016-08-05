@@ -246,7 +246,7 @@ Install the ExtJS Javascript library as part of enabling the Oozie Web Console.
       @copy
         header: 'ExtJS Library'
         source: '/usr/share/HDP-oozie/ext-2.2.zip'
-        destination: '/usr/hdp/current/oozie-client/libext/'
+        destination: '/usr/hdp/current/oozie-server/libext/'
 
 # HBase credentials
 
@@ -255,7 +255,7 @@ Install the HBase Libs as part of enabling the Oozie Unified Credentials with HB
       @copy
         header: 'HBase Libs'
         source: '/usr/hdp/current/hbase-client/lib/hbase-common.jar'
-        destination: '/usr/hdp/current/oozie-client/libserver/'
+        destination: '/usr/hdp/current/oozie-server/libserver/'
 
 # LZO
 
@@ -280,19 +280,19 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           @execute
             cmd: """
             # Remove any previously installed version
-            rm /usr/hdp/current/oozie-client/libext/hadoop-lzo-*.jar
+            rm /usr/hdp/current/oozie-server/libext/hadoop-lzo-*.jar
             # Copy lzo
-            cp #{lzo_jar} /usr/hdp/current/oozie-client/libext/
+            cp #{lzo_jar} /usr/hdp/current/oozie-server/libext/
             """
-            unless_exists: "/usr/hdp/current/oozie-client/libext/#{path.basename lzo_jar}"
+            unless_exists: "/usr/hdp/current/oozie-server/libext/#{path.basename lzo_jar}"
 
     # Note
     # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.0/HDP_Man_Install_v22/index.html#Item1.12.4.3
     # Copy or symlink the MySQL JDBC driver JAR into the /var/lib/oozie/ directory.
       @link
-        header: 'Mysql Driver'
+        header: 'MySQL Driver'
         source: '/usr/share/java/mysql-connector-java.jar'
-        destination: '/usr/hdp/current/oozie-client/libext/mysql-connector-java.jar'
+        destination: '/usr/hdp/current/oozie-server/libext/mysql-connector-java.jar'
 
       @call header: 'Configuration', handler: ->
         @hconfigure
@@ -346,8 +346,13 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           local_source: true
 
       @call header: 'War', handler: ->
+        @call header: 'HBase', handler: ->
+          @copy
+            header: 'HBase Libs'
+            source: '/usr/hdp/current/hbase-client/lib/hbase-common.jar'
+            destination: '/usr/hdp/current/oozie-server/libserver/'
         @call
-          header: 'Falcon Package'
+          header: 'Falcon'
           if: is_falcon_installed
           handler: ->
             @service
@@ -364,10 +369,10 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
               # """, (err) ->
               cmd: """
               falconext=`ls /usr/hdp/current/falcon-client/oozie/ext/falcon-oozie-el-extension-*.jar`
-              if [ -f /usr/hdp/current/oozie-client/libext/`basename $falconext` ]; then exit 3; fi
+              if [ -f /usr/hdp/current/oozie-server/libext/`basename $falconext` ]; then exit 3; fi
               rm -rf /tmp/falcon-oozie-jars/*
               cp  /usr/hdp/current/falcon-client/oozie/ext/falcon-oozie-el-extension-*.jar \
-                /usr/hdp/current/oozie-client/libext
+                /usr/hdp/current/oozie-server/libext
               """
               code_skipped: 3
             @execute
@@ -378,21 +383,22 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
               rm -rf cat #{oozie.pid_dir}/oozie.pid
               """
               code_skipped: 3
-      # The script `ooziedb.sh` must be done as the oozie Unix user, otherwise
-      # Oozie may fail to start or work properly because of incorrect file permissions.
-      # There is already a "oozie.war" file inside /var/lib/oozie/oozie-server/webapps/.
-      # The "prepare-war" command generate the file "/var/lib/oozie/oozie-server/webapps/oozie.war".
-      # The directory being served by the web server is "prepare-war".
-      # See note 20 lines above about "-d" option
-      # falcon_opts = if falcon_ctxs.length then " –d /tmp/falcon-oozie-jars" else ''
-      secure_opt = if oozie.secure then '-secure' else ''
-      falcon_opts = ''
-      @execute
-        cmd: """
-        chown #{oozie.user.name} /usr/hdp/current/oozie-client/oozie-server/conf/server.xml
-        su -l #{oozie.user.name} -c 'cd /usr/hdp/current/oozie-client; ./bin/oozie-setup.sh prepare-war #{secure_opt} #{falcon_opts}'
-        """
-        code_skipped: 255 # Oozie already started, war is expected to be installed
+        # The script `ooziedb.sh` must be done as the oozie Unix user, otherwise
+        # Oozie may fail to start or work properly because of incorrect file permissions.
+        # There is already a "oozie.war" file inside /var/lib/oozie/oozie-server/webapps/.
+        # The "prepare-war" command generate the file "/var/lib/oozie/oozie-server/webapps/oozie.war".
+        # The directory being served by the web server is "prepare-war".
+        # See note 20 lines above about "-d" option
+        # falcon_opts = if falcon_ctxs.length then " –d /tmp/falcon-oozie-jars" else ''
+        secure_opt = if oozie.secure then '-secure' else ''
+        falcon_opts = ''
+        @execute
+          header: 'Prepare WAR'
+          cmd: """
+          chown #{oozie.user.name} /usr/hdp/current/oozie-server/oozie-server/conf/server.xml
+          su -l #{oozie.user.name} -c 'cd /usr/hdp/current/oozie-server; ./bin/oozie-setup.sh prepare-war #{secure_opt} #{falcon_opts}'
+          """
+          code_skipped: 255 # Oozie already started, war is expected to be installed
 
 ## Kerberos
 
@@ -438,7 +444,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
               """
               code_skipped: 2
             @execute
-               cmd: "su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-client/bin/ooziedb.sh create -sqlfile /tmp/oozie.sql -run Validate DB Connection'"
+               cmd: "su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-server/bin/ooziedb.sh create -sqlfile /tmp/oozie.sql -run Validate DB Connection'"
                unless_exec: "#{cmd} \"use #{db}; select data from OOZIE_SYS where name='oozie.version'\""
             @execute
                cmd: "su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-server/bin/ooziedb.sh upgrade -run'"
@@ -449,7 +455,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
     #   {oozie} = @config.ryba
     #   @execute
     #     cmd: """
-    #     su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-client/bin/ooziedb.sh create -sqlfile oozie.sql -run Validate DB Connection'
+    #     su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-server/bin/ooziedb.sh create -sqlfile oozie.sql -run Validate DB Connection'
     #     """
     #   , (err, executed, stdout, stderr) ->
     #     err = null if err and /DB schema exists/.test stderr
@@ -485,18 +491,18 @@ the ShareLib contents without having to go into HDFS.
           cmd: mkcmd.hdfs @, """
           if hdfs dfs -test -d /user/#{oozie.user.name}/share/lib; then
             echo 'Upgrade sharelib'
-            su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib upgrade -fs #{core_site['fs.defaultFS']} /usr/hdp/current/oozie-client/oozie-sharelib.tar.gz"
+            su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib upgrade -fs #{core_site['fs.defaultFS']} /usr/hdp/current/oozie-server/oozie-sharelib.tar.gz"
           else
             #hdfs dfs -mkdir -p /user/#{oozie.user.name}/share/lib || true
             #hdfs dfs -chown -R #{oozie.user.name}:#{oozie.group.name} /user/#{oozie.user.name}
             echo 'Create sharelib'
-            su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib create -fs #{core_site['fs.defaultFS']} /usr/hdp/current/oozie-client/oozie-sharelib.tar.gz"
+            su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib create -fs #{core_site['fs.defaultFS']} /usr/hdp/current/oozie-server/oozie-sharelib.tar.gz"
           fi
           hdfs dfs -chmod -R 755 /user/#{oozie.user.name}
           """
           trap: true
           unless_exec: mkcmd.hdfs @, """
-          version=`ls /usr/hdp/current/oozie-client/lib | grep oozie-client | sed 's/^oozie-client-\\(.*\\)\\.jar$/\\1/g'`
+          version=`ls /usr/hdp/current/oozie-server/lib | grep oozie-client | sed 's/^oozie-client-\\(.*\\)\\.jar$/\\1/g'`
           hdfs dfs -cat /user/oozie/share/lib/*/sharelib.properties | grep build.version | grep $version
           """
 ## Hive Site
