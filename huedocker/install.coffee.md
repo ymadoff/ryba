@@ -112,7 +112,7 @@ Update the "hbase-site.xml" with the hbase/thrift kerberos principal.
 ## Configure
 
 Configure the "/etc/hue/conf" file following the [HortonWorks](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue-5-2.html)
-recommandations. Merge the configuration object from "pseudo-distributed.ini" with the properties of the destination file.
+recommandations. Merge the configuration object from "pseudo-distributed.ini" with the properties of the target file.
 
       @write_ini
         header: 'hue ini'

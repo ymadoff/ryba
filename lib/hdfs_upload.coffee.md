@@ -8,7 +8,7 @@
 -   `source` (string)   
     Local file to upload, can be a globing expression referencing a single file.   
 -   `target` (string)   
-    HDFS file of the destination.   
+    HDFS file of the target.   
 -   `clean` [string | boolean]   
     Removing files before uploading. Expect a lobbing expression or boolean true
     corresponding to the "source" option.   

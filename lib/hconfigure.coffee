@@ -5,7 +5,7 @@ module.exports = (options) ->
   fnl_props = {}
   org_props = {}
   updated = 0
-  options.source ?= options.destination
+  options.source ?= options.target
   @call (_, callback) ->
     options.log? message: "Read source properties from '#{options.source}'", level: 'DEBUG', module: 'ryba/lib/hconfigure'
     # Populate org_props and, if merge, fnl_props

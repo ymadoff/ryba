@@ -5,7 +5,7 @@ Create an HDFS directory.
 
 Options include:
 
-*   `destination`   
+*   `target`   
 *   `krb5_user`   
 *   `mode`   
 *   `user`   

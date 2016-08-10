@@ -14,7 +14,7 @@ Three architectures are available to deploy HBase replication:
 - Cyclic
 
 In thoses architecture Master designates the HBase cluster whose data are from (source) and
-Slave designates the HBase cluster where data are copied to (destination).
+Slave designates the HBase cluster where data are copied to (target).
 
 ## Master Slave Replication
 
