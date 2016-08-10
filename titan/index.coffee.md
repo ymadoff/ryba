@@ -5,6 +5,8 @@ Titan is a distributed graph database. It is an hadoop-friendly implementation o
 [Blueprints]. Therefore it also use ThinkerPop REPL [Gremlin], and Front server [Rexster]
 
     module.exports = ->
+      'prepare':
+        'ryba/titan/prepare'
       'configure':
         'ryba/titan/configure'
       'install': [

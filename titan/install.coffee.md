@@ -73,30 +73,6 @@ Modify envvars in the gremlin scripts.
 
 Secure the Zookeeper connection with JAAS
 
-      @call
-        header: 'Kerberos'
-        handler: ->
-          @krb5_addprinc krb5,
-            principal: "#{opentsdb.user.name}/#{@config.host}@#{realm}"
-            randkey: true
-            keytab: '/etc/security/keytabs/opentsdb.service.keytab'
-            uid: opentsdb.user.name
-            gid: opentsdb.group.name
-          @write_jaas
-            target: '/etc/opentsdb/opentsdb.jaas'
-            content: "#{opentsdb.config['hbase.sasl.clientconfig']}":
-              principal: "#{opentsdb.user.name}/#{@config.host}@#{realm}"
-              useTicketCache: true
-            uid: opentsdb.user.name
-            gid: opentsdb.group.name
-          @cron_add
-            cmd: "/usr/bin/kinit #{opentsdb.user.name}/#{@config.host}@#{realm} -k -t /etc/security/keytabs/opentsdb.service.keytab"
-            when: '0 */9 * * *'
-            user: opentsdb.user.name
-            exec: true
-
-
-
       @write_jaas
         header: 'Kerberos JAAS'
         target: path.join titan.home, 'titan.jaas'

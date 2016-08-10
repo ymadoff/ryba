@@ -47,11 +47,12 @@ Install the spark and python packages.
         @execute
           cmd: mkcmd.hdfs @, """
             hdfs dfs -mkdir -p /apps/#{spark.user.name}
-            hdfs dfs -chown -R #{spark.user.name}:#{spark.group.name} /apps/#{spark.user.name}
             hdfs dfs -chmod 755 /apps/#{spark.user.name}
             hdfs dfs -put -f /usr/hdp/current/spark-client/lib/spark-assembly-*.jar #{spark_yarn_jar}
             hdfs dfs -chown #{spark.user.name}:#{spark.group.name} #{spark_yarn_jar}
             hdfs dfs -chmod 644 #{spark_yarn_jar}
+            hdfs dfs -put /usr/hdp/current/spark-client/lib/spark-examples-*.jar /apps/#{spark.user.name}/spark-examples.jar
+            hdfs dfs -chown -R #{spark.user.name}:#{spark.group.name} /apps/#{spark.user.name}
             """
 
 ## Spark Worker events log dir
