@@ -17,7 +17,7 @@ data store.
       ]
       'start':
         'ryba/druid/broker/start'
-      # 'status':
-      #   'ryba/druid/status'
-      # 'stop':
-      #   'ryba/druid/stop'
+      'status':
+        'ryba/druid/broker/status'
+      'stop':
+        'ryba/druid/broker/stop'

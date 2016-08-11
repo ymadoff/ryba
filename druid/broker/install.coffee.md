@@ -9,7 +9,7 @@
 
 | Service      | Port | Proto    | Parameter                   |
 |--------------|------|----------|-----------------------------|
-| druid Broker | 8082 | tcp/http |                             |
+| Druid Broker | 8082 | tcp/http |                             |
 
       @iptables
         header: 'IPTables'

@@ -17,7 +17,7 @@ data store.
       ]
       'start':
         'ryba/druid/historical/start'
-      # 'status':
-      #   'ryba/druid/status'
-      # 'stop':
-      #   'ryba/druid/stop'
+      'status':
+        'ryba/druid/historical/status'
+      'stop':
+        'ryba/druid/historical/stop'

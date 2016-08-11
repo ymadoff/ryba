@@ -17,7 +17,7 @@ data store.
       ]
       'start':
         'ryba/druid/coordinator/start'
-      # 'status':
-      #   'ryba/druid/status'
-      # 'stop':
-      #   'ryba/druid/stop'
+      'status':
+        'ryba/druid/coordinator/status'
+      'stop':
+        'ryba/druid/coordinator/stop'

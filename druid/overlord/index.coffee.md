@@ -17,7 +17,7 @@ data store.
       ]
       'start':
         'ryba/druid/overlord/start'
-      # 'status':
-      #   'ryba/druid/status'
-      # 'stop':
-      #   'ryba/druid/stop'
+      'status':
+        'ryba/druid/overlord/status'
+      'stop':
+        'ryba/druid/overlord/stop'

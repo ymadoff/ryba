@@ -14,9 +14,8 @@
 
 | Service   | Port       | Proto     | Parameter                   |
 |-----------|------------|-----------|-----------------------------|
-| druid Standalone Realtime    | 8084      | tcp/http  |  |
-| druid Router    | 8088      | tcp/http  |  |
-| druid Tranquility Server    | 8200      | tcp/http  |  |
+| Druid Standalone Realtime    | 8084      | tcp/http  |  |
+| Druid Router    | 8088      | tcp/http  |  |
 
 Note, this hasnt been verified.
 
@@ -33,9 +32,9 @@ By default, the "zookeeper" package create the following entries:
 
 ```bash
 cat /etc/passwd | grep druid
-falcon:x:496:498:Falcon:/var/lib/falcon:/bin/bash
+druid:x:2435:2435:druid User:/var/lib/druid:/bin/bash
 cat /etc/group | grep druid
-falcon:x:498:falcon
+druid:x:2435:
 ```
 
       @group druid.group
@@ -162,122 +161,6 @@ Configure deep storage.
         mode: 0o0640
         krb5_user: @config.ryba.hdfs.krb5_user
 
-#       @call header: 'Layout', handler: ->
-#         @mkdir
-#           target: falcon.log_dir
-#           uid: falcon.user
-#           gid: falcon.group
-#           parent: true
-# 
-# ## Environnement
-# 
-# Enrich the file "mapred-env.sh" present inside the Hadoop configuration
-# directory with the location of the directory storing the process pid.
-# 
-# Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
-# 
-#       @render
-#         header: 'Falcon Env'
-#         target: "#{falcon.conf_dir}/falcon-env.sh"
-#         source: "#{__dirname}/../resources/falcon-env.sh.j2"
-#         context: @config
-#         local_source: true
-#         backup: true
-# 
-# ## Kerberos
-# 
-#       @krb5_addprinc krb5,
-#         header: 'Kerberos'
-#         principal: startup['*.falcon.service.authentication.kerberos.principal']#.replace '_HOST', @config.host
-#         randkey: true
-#         keytab: startup['*.falcon.service.authentication.kerberos.keytab']
-#         uid: user.name
-#         gid: group.name
-# 
-# ## HFDS Layout
-# 
-#       @call header: 'HFDS Layout', handler: ->
-#         # status = user_owner = group_owner = null
-#         # @execute
-#         #   cmd: mkcmd.hdfs @, "hdfs dfs -stat '%g;%u;%n' /apps/falcon"
-#         #   code_skipped: 1
-#         # , (err, exists, stdout) ->
-#         #   return next err if err
-#         #   status = exists
-#         #   [user_owner, group_owner, filename] = stdout.trim().split ';' if exists
-#         # @call ->
-#         #   @execute
-#         #     cmd: mkcmd.hdfs @, 'hdfs dfs -mkdir /apps/falcon'
-#         #     unless: -> status
-#         #   @execute
-#         #     cmd: mkcmd.hdfs @, "hdfs dfs -chown #{user.name} /apps/falcon"
-#         #     if: not status or user.name isnt user_owner
-#         #   @execute
-#         #     cmd: mkcmd.hdfs @, "hdfs dfs -chgrp #{group.name} /apps/falcon"
-#         #     if: not status or group.name isnt group_owner
-#         @hdfs_mkdir
-#           target: '/apps/falcon'
-#           user: "#{user.name}"
-#           group: "#{group.name}"
-#           mode: 0o1777
-#           krb5_user: @config.ryba.hdfs.krb5_user
-#         @hdfs_mkdir
-#           target: '/apps/data-mirroring'
-#           user: "#{user.name}"
-#           group: "#{group.name}"
-#           mode: 0o0770
-#           krb5_user: @config.ryba.hdfs.krb5_user
-#         @execute
-#           shy: true
-#           cmd: """
-#           hdfs dfs -copyFromLocal -f /usr/hdp/current/falcon-server/data-mirroring /apps
-#           hdfs dfs -chown -R #{user.name}:#{group.name} /apps/data-mirroring
-#           """
-# 
-# ## Runtime
-# 
-#     # module.exports.push header: 'Falcon # Runtime', handler: ->
-#     #   # {conf_dir, runtime} = @config.ryba.falcon
-#     #   # @write_ini
-#     #   #   target: "#{conf_dir}/runtime.properties"
-#     #   #   content: runtime
-#     #   #   separator: '='
-#     #   #   merge: true
-#     #   #   backup: true
-#     #   # , next
-#     #   {conf_dir, runtime} = @config.ryba.falcon
-#     #   write = for k, v of runtime
-#     #     match: RegExp "^#{quote k}=.*$", 'mg'
-#     #     replace: "#{k}=#{v}"
-#     #   @write
-#     #     target: "#{conf_dir}/runtime.properties"
-#     #     write: write
-#     #     backup: true
-#     #     eof: true
-#     #   , next
-# 
-# ## Configuration
-# 
-#       @write
-#         header: 'Configuration startup'
-#         target: "#{conf_dir}/startup.properties"
-#         write: for k, v of startup
-#           match: RegExp "^#{quote k}=.*$", 'mg'
-#           replace: "#{k}=#{v}"
-#         backup: true
-#         eof: true
-#       @write
-#         header: 'Configuration runtime'
-#         target: "#{conf_dir}/runtime.properties"
-#         write: for k, v of runtime
-#           match: RegExp "^#{quote k}=.*$", 'mg'
-#           replace: "#{k}=#{v}"
-#         backup: true
-#         eof: true
-
 ## Dependencies
 
     path = require 'path'
-    # url = require 'url'
-    # quote = require 'regexp-quote'
-    # mkcmd = require '../lib/mkcmd'

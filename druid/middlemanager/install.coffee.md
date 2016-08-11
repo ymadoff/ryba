@@ -8,7 +8,7 @@
 
 | Service             | Port | Proto    | Parameter                   |
 |---------------------|------|----------|-----------------------------|
-| druid MiddleManager | 8091, 8100–8199 | tcp/http |                             |
+| Druid MiddleManager | 8091, 8100–8199 | tcp/http |                             |
 
       @iptables
         header: 'IPTables'

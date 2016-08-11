@@ -8,7 +8,7 @@
 
 | Service           | Port | Proto    | Parameter                   |
 |-------------------|------|----------|-----------------------------|
-| druid Historical  | 8083 | tcp/http |                             |
+| Druid Historical  | 8083 | tcp/http |                             |
 
       @iptables
         header: 'IPTables'

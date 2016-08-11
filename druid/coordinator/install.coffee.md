@@ -8,7 +8,7 @@
 
 | Service           | Port | Proto    | Parameter                   |
 |-------------------|------|----------|-----------------------------|
-| druid Coordinator | 8081 | tcp/http |                             |
+| Druid Coordinator | 8081 | tcp/http |                             |
 
       @iptables
         header: 'IPTables'

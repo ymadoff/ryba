@@ -18,7 +18,7 @@ Example:
 
     module.exports  = handler: ->
       require('../configure').handler.call @
-      druid = @config.ryba.druid ?= {}
+      {druid} = @config.ryba
       druid.broker ?= {}
       druid.broker.jvm ?= {}
       druid.broker.jvm.xms ?= '24g'

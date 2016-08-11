@@ -17,7 +17,7 @@ data store.
       ]
       'start':
         'ryba/druid/middlemanager/start'
-      # 'status':
-      #   'ryba/druid/status'
-      # 'stop':
-      #   'ryba/druid/stop'
+      'status':
+        'ryba/druid/middlemanager/status'
+      'stop':
+        'ryba/druid/middlemanager/stop'
