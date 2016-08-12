@@ -9,7 +9,7 @@ Apache Hadoop and structured datastores such as relational databases.
           'ryba/sqoop/configure'
         ]
         'install': [
-          'masson/commons/mysql_client'
+          'masson/commons/mysql/client'
           'ryba/hadoop/hdfs_client/install'
           'ryba/hadoop/yarn_client/install'
           'ryba/sqoop/install'

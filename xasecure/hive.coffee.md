@@ -4,7 +4,7 @@
     module.exports = []
     module.exports.push 'masson/bootstrap'
     module.exports.push 'masson/commons/java'
-    module.exports.push 'masson/commons/mysql_client'
+    module.exports.push 'masson/commons/mysql/client'
     module.exports.push 'ryba/lib/hconfigure'
 
 ## Configuration

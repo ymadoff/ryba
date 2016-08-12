@@ -13,7 +13,7 @@ Please check Oozie page
       'install': [
         'masson/core/iptables'
         'masson/commons/java'
-        'masson/commons/mysql_client'
+        'masson/commons/mysql/client'
         'ryba/commons/krb5_user'
         'ryba/commons/db_admin'
         'ryba/hadoop/core'

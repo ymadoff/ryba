@@ -13,7 +13,7 @@ importing user/groups from different sources (LDAP, AD, UNIX).
         'ryba/ranger/usersync/configure'
       ]
       'install': [
-        'masson/commons/mysql_client'
+        'masson/commons/mysql/client'
         'masson/commons/java'
         'ryba/ranger/admin/wait'
         'ryba/ranger/usersync/install'

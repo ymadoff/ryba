@@ -20,7 +20,7 @@ Link to configure [hive hue configuration][hive-hue-ssl] over ssl.
       ]
       'install': [
         'masson/core/iptables'
-        'masson/commons/mysql_client' # Install the mysql connector
+        'masson/commons/mysql/client' # Install the mysql connector
         'masson/core/krb5_client' # Install kerberos clients to create/test new Hive principal
         'ryba/hadoop/hdfs_client/install' #Set java_home in "hadoop-env.sh"
         'ryba/hadoop/yarn_client/install'

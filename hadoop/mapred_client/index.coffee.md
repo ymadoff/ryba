@@ -20,7 +20,7 @@ The output list can then be saved to the distributed filesystem, and the reducer
         'ryba/hadoop/mapred_client/report'
       ]
       'install': [
-        # 'masson/commons/mysql_client'
+        # 'masson/commons/mysql/client'
         'ryba/hadoop/core'
         'ryba/hadoop/hdfs_client/install'
         'ryba/hadoop/yarn_client/install'

@@ -5,7 +5,7 @@ Upon installation, the Policy Manager is by default available on port "6080".
 
     module.exports = []
     module.exports.push 'masson/bootstrap'
-    module.exports.push 'masson/commons/mysql_client'
+    module.exports.push 'masson/commons/mysql/client'
     module.exports.push 'masson/commons/java'
     # module.exports.push 'ryba/hadoop/hdfs_client'
 

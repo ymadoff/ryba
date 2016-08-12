@@ -25,7 +25,7 @@ beloaded to the target server
         'ryba/commons/db_admin'
         'masson/core/iptables'
         'masson/commons/java'
-        'masson/commons/mysql_client' # Install the mysql connector    
+        'masson/commons/mysql/client' # Install the mysql connector    
         'masson/core/krb5_client' # kerberos clients to create/test new Hive principal
         'masson/commons/docker'
         'ryba/oozie/client'

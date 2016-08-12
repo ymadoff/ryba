@@ -1135,7 +1135,7 @@ For now, masson are ignored
 'masson/core/yum'
 
     modules_list =
-      'masson/commons/mysql_server': 'mysql_server'
+      'masson/commons/mysql/server': 'mysql_server'
       'ryba/elasticsearch': 'elasticsearch'
       'ryba/falcon': 'falcon'
       'ryba/flume': 'flume'

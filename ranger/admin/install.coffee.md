@@ -14,7 +14,7 @@
 
       @call once: true, 'masson/core/iptables'
       @call once: true, 'masson/core/krb5_client'
-      @call once: true, 'masson/commons/mysql_client'
+      @call once: true, 'masson/commons/mysql/client'
       @call once: true, 'masson/commons/java'
       @call once: true, 'ryba/hadoop/hdfs_client'
       @call once: true, 'ryba/hbase/client'
