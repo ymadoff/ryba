@@ -11,25 +11,25 @@ parse 'jdbc:mysql://host1:3306,host2:3306/hive?createDatabaseIfNotExist=true'
   addresses: 
    [ { host: 'host1', port: '3306' },
      { host: 'host2', port: '3306' } ],
-  db: 'hive' }
+  database: 'hive' }
 ```
 
     module.exports = (jdbc) ->
       if /^jdbc:mysql:/.test jdbc
-        [_, engine, addresses, db] = /^jdbc:(.*?):\/+(.*?)\/(.*?)(\?(.*)|$)/.exec jdbc
+        [_, engine, addresses, database] = /^jdbc:(.*?):\/+(.*?)\/(.*?)(\?(.*)|$)/.exec jdbc
         addresses = addresses.split(',').map (address) ->
           [host, port] = address.split ':'
           host: host, port: port
         engine: 'mysql'
         addresses: addresses
-        db: db
+        database: database
       else if /^jdbc:postgresql:/.test jdbc
-        [_, engine, addresses, db] = /^jdbc:(.*?):\/+(.*?)\/(.*?)(\?(.*)|$)/.exec jdbc
+        [_, engine, addresses, database] = /^jdbc:(.*?):\/+(.*?)\/(.*?)(\?(.*)|$)/.exec jdbc
         addresses = addresses.split(',').map (address) ->
           [host, port] = address.split ':'
           host: host, port: port
-        engine: 'postgresql'
+        engine: 'postgres'
         addresses: addresses
-        db: db
+        database: database
       else
         throw Error 'Invalid JDBC URL'

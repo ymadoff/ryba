@@ -425,27 +425,27 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
       @call header: 'MySQL Database Creation', handler: ->
         username = oozie.site['oozie.service.JPAService.jdbc.username']
         password = oozie.site['oozie.service.JPAService.jdbc.password']
-        {engine, db} = parse_jdbc oozie.site['oozie.service.JPAService.jdbc.url']
+        {engine, database} = parse_jdbc oozie.site['oozie.service.JPAService.jdbc.url']
         switch engine
           when 'mysql'
             escape = (text) -> text.replace(/[\\"]/g, "\\$&")
             cmd = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
-            version_local = "#{cmd} \"use #{db}; select data from OOZIE_SYS where name='oozie.version'\" | tail -1"
+            version_local = "#{cmd} \"use #{database}; select data from OOZIE_SYS where name='oozie.version'\" | tail -1"
             version_remote = "ls /usr/hdp/current/oozie-server/lib/oozie-client-*.jar | sed 's/.*client\\-\\(.*\\).jar/\\1/'"
             @execute
               cmd: """
-              if #{cmd} "use #{db}"; then exit 2; fi
+              if #{cmd} "use #{database}"; then exit 2; fi
               #{cmd} "
-              create database #{db};
-              grant all privileges on #{db}.* to '#{username}'@'localhost' identified by '#{password}';
-              grant all privileges on #{db}.* to '#{username}'@'%' identified by '#{password}';
+              create database #{database};
+              grant all privileges on #{database}.* to '#{username}'@'localhost' identified by '#{password}';
+              grant all privileges on #{database}.* to '#{username}'@'%' identified by '#{password}';
               flush privileges;
               "
               """
               code_skipped: 2
             @execute
                cmd: "su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-server/bin/ooziedb.sh create -sqlfile /tmp/oozie.sql -run Validate DB Connection'"
-               unless_exec: "#{cmd} \"use #{db}; select data from OOZIE_SYS where name='oozie.version'\""
+               unless_exec: "#{cmd} \"use #{databases}; select data from OOZIE_SYS where name='oozie.version'\""
             @execute
                cmd: "su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-server/bin/ooziedb.sh upgrade -run'"
                unless_exec: "[[ `#{version_local}` == `#{version_remote}` ]]"

@@ -223,4 +223,3 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
     {merge} = require 'mecano/lib/misc'
     run = require 'masson/lib/run'
     mkcmd = require '../mkcmd'
-    # parse_jdbc = require '../parse_jdbc'

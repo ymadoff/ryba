@@ -8,12 +8,12 @@ configuration.
       {hive} = @config.ryba
       user = hive.site['javax.jdo.option.ConnectionUserName']
       password = hive.site['javax.jdo.option.ConnectionPassword']
-      {engine, db, hostname, port} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
+      {engine, database, hostname, port} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
 
 ## Backup Database
 
       engines_cmd =
-        mysql: "mysqldump -u#{user} -p#{password} -h#{hostname} -P#{port} #{db}"
+        mysql: "mysqldump -u#{user} -p#{password} -h#{hostname} -P#{port} #{database}"
       throw Error 'Database engine not supported' unless engines_cmd[engine]
       @backup
         timeout: -1
