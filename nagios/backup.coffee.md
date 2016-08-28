@@ -12,7 +12,7 @@ The backup script dump the content and the logs of Nagios
     #   {nagios} = @config.ryba
     #   username = hive.site['javax.jdo.option.ConnectionUserName']
     #   password = hive.site['javax.jdo.option.ConnectionPassword']
-    #   {engine, db, hostname, port} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
+    #   {engine, db, hostname, port} = db.jdbc hive.site['javax.jdo.option.ConnectionURL']
     #   engines = 
     #     mysql: ->
     #       escape = (text) -> text.replace(/[\\"]/g, "\\$&")
