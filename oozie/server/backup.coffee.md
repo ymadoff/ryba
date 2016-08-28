@@ -3,6 +3,7 @@
 
     module.exports = header: 'Oozie Server Backup', timeout: -1, label_true: 'BACKUPED', handler: ->
       {db_admin, oozie} = @config.ryba
+
 ## Database
 
 Note: to backup the oozie database in oozie, we must add the "hex-blob" option or
@@ -15,15 +16,15 @@ mysqldump -uroot -ppassword --hex-blob oozie > /data/1/oozie.sql
 ```
 
       @call header: 'Backup Database', timeout: -1, label_true: 'BACKUPED', handler: ->
-        {engine, addresses, database} = parse_jdbc oozie.site['oozie.service.JPAService.jdbc.url']
+        jdbc = db.jdbc oozie.site['oozie.service.JPAService.jdbc.url']
         user = oozie.site['oozie.service.JPAService.jdbc.username']
         password = oozie.site['oozie.service.JPAService.jdbc.password']
         engines_cmd =
-          mysql: "mysqldump -u#{user} -p#{password} --hex-blob -h#{addresses[0].host} -P#{addresses[0].port} #{database}"
-        throw Error 'Database engine not supported' unless engines_cmd[engine]
+          mysql: "mysqldump -u#{user} -p#{password} --hex-blob -h#{jdbc.addresses[0].host} -P#{jdbc.addresses[0].port} #{jdbc.database}"
+        throw Error 'Database engine not supported' unless engines_cmd[jdbc.engine]
         @backup
           name: 'oozie-db'
-          cmd: engines_cmd[engine]
+          cmd: engines_cmd[jdbc.engine]
 
 
 ## Logs
@@ -49,4 +50,4 @@ Backup the active Oozie configuration.
 
 ## Dependencies
 
-    parse_jdbc = require '../../lib/parse_jdbc'
+    db = require 'mecano/lib/misc/db'
