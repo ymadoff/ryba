@@ -152,14 +152,14 @@ Note, at the moment, only MySQL and PostgreSQL are supported.
       hive.hcatalog.engine ?= 'mysql'
       if hive.site['javax.jdo.option.ConnectionURL']
         # Ensure the url host is the same as the one configured in config.ryba.db_admin
-        {engine, addresses, port} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
-        switch engine
+        jdbc = db.jdbc hive.site['javax.jdo.option.ConnectionURL']
+        switch jdbc.engine
           when 'mysql'
-            admin = addresses.filter (address) ->
+            admin = jdbc.addresses.filter (address) ->
               address.host is db_admin.mysql.host and "#{address.port}" is "#{db_admin.mysql.port}"
             throw new Error "Invalid host configuration" unless admin.length
           when 'postgresql'
-            admin = addresses.filter (address) ->
+            admin = jdbc.addresses.filter (address) ->
               address.host is db_admin.postgres.host and"#{address.port}" is "#{db_admin.postgres.port}"
             throw new Error "Invalid host configuration" unless admin.length
           else throw new Error 'Unsupported database engine'
@@ -251,7 +251,7 @@ default to the [DBTokenStore]. Also worth of interest is the
 
 # Module Dependencies
 
-    parse_jdbc = require '../../lib/parse_jdbc'
+    db = require 'mecano/lib/misc/db'
 
 [HIVE-7935]: https://issues.apache.org/jira/browse/HIVE-7935
 [ha_hdp_2.2]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.0/Hadoop_HA_v22/ha_hive_metastore/index.html#Item1.1.2

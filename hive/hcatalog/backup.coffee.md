@@ -8,19 +8,19 @@ configuration.
       {hive} = @config.ryba
       user = hive.site['javax.jdo.option.ConnectionUserName']
       password = hive.site['javax.jdo.option.ConnectionPassword']
-      {engine, database, hostname, port} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
+      jdbc = db.jdbc hive.site['javax.jdo.option.ConnectionURL']
 
 ## Backup Database
 
       engines_cmd =
-        mysql: "mysqldump -u#{user} -p#{password} -h#{hostname} -P#{port} #{database}"
-      throw Error 'Database engine not supported' unless engines_cmd[engine]
+        mysql: "mysqldump -u#{user} -p#{password} -h#{jdbc.hostname} -P#{jdbc.port} #{jdbc.database}"
+      throw Error 'Database engine not supported' unless engines_cmd[jdbc.engine]
       @backup
         timeout: -1
         label_true: 'BACKUPED'
         header: 'Backup Database'
         name: 'db'
-        cmd: engines_cmd[engine]
+        cmd: engines_cmd[jdbc.engine]
         target: "/var/backups/hive/"
         interval: month: 1
         retention: count: 2
@@ -40,4 +40,4 @@ Backup the active Hive configuration.
 
 ## Dependencies
 
-    parse_jdbc = require '../../lib/parse_jdbc'
+    db = require 'mecano/lib/misc/db'

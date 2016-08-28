@@ -5,7 +5,7 @@
       {hive, db_admin} = @config.ryba
       username = hive.site['javax.jdo.option.ConnectionUserName']
       password = hive.site['javax.jdo.option.ConnectionPassword']
-      {engine, database} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
+      jdbc = db.jdbc hive.site['javax.jdo.option.ConnectionURL']
 
 ## Wait
 
@@ -16,12 +16,12 @@
 Check if Hive can authenticate and run a basic query to the database.
 
       @call header: 'Check Database', label_true: 'CHECKED', handler: ->  
-        switch engine
+        switch jdbc.engine
           when 'mysql'
             escape = (text) -> text.replace(/[\\"]/g, "\\$&")
             @execute
               cmd: """
-              #{db_admin.mysql.path} -u#{db_admin.mysql.username} -p#{db_admin.mysql.password} -h#{db_admin.mysql.host} -P#{db_admin.mysql.port} -e "USE #{database}; SHOW TABLES"
+              #{db_admin.mysql.path} -u#{db_admin.mysql.username} -p#{db_admin.mysql.password} -h#{db_admin.mysql.host} -P#{db_admin.mysql.port} -e "USE #{jdbc.database}; SHOW TABLES"
               """
           when 'postgresql'
             escape = (text) -> text.replace(/[\\"]/g, "\\$&")
@@ -30,10 +30,10 @@ Check if Hive can authenticate and run a basic query to the database.
               port: db_admin.postgres.port
               name: db_admin.postgres.username
               password: db_admin.postgres.password
-              database: database
+              database: jdbc.database
             @execute
               cmd: db.cmd opts, '\\dt'
-          else throw Error 'Database engine not supported' unless engines[engine]
+          else throw Error 'Database engine not supported' unless engines[jdbc.engine]
 
 ## Check Port
 
@@ -52,5 +52,4 @@ Check if the Hive HCatalog (Metastore) server is listening.
 # Module Dependencies
 
     url = require 'url'
-    parse_jdbc = require '../../lib/parse_jdbc'
     db = require 'mecano/lib/misc/db'

@@ -11,7 +11,7 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
       {hive, db_admin} = @config.ryba
       username = hive.site['javax.jdo.option.ConnectionUserName']
       password = hive.site['javax.jdo.option.ConnectionPassword']
-      {engine, database} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
+      jdbc = db.jdbc hive.site['javax.jdo.option.ConnectionURL']
 
 ## Register
 
@@ -70,14 +70,14 @@ isnt yet started.
 
       @call header: 'Service', handler: ->
         @call
-          if: engine is 'mysql'
+          if: jdbc.engine is 'mysql'
           handler: ->
             @service
               name: 'mysql'
             @service
               name: 'mysql-connector-java'
         @call 
-          if: engine is 'postgresql'
+          if: jdbc.engine is 'postgresql'
           handler: ->
             @service
               name: 'postgresql'
@@ -104,14 +104,14 @@ isnt yet started.
 
       @call header: 'Metastore Database', timeout:-1, handler: ->
         options_admin =
-          engine: engine
-          host: db_admin[engine].host
-          port: db_admin[engine].port
-          admin_username: db_admin[engine].username
-          admin_password: db_admin[engine].password
+          engine: jdbc.engine
+          host: db_admin[jdbc.engine].host
+          port: db_admin[jdbc.engine].port
+          admin_username: db_admin[jdbc.engine].username
+          admin_password: db_admin[jdbc.engine].password
           username: username
           password: password
-          database: database
+          database: jdbc.database
           mysql_options: '--skip-column-names'
         options_client = {}
         for k, v of options_admin
@@ -124,19 +124,19 @@ isnt yet started.
           if: @contexts('ryba/hive/hcatalog')[0].config.host is @config.host 
           header: 'Configure Hive'
           handler: ->
-            switch engine
+            switch jdbc.engine
               when 'mysql'
                 mysql_admin = "#{db_admin.mysql.path} -u#{db_admin.mysql.username} -p#{db_admin.mysql.password} -h#{db_admin.mysql.host} -P#{db_admin.mysql.port}"
                 mysql_client = "#{db_admin.mysql.path} -u#{username} -p#{password} -h#{db_admin.mysql.host} -P#{db_admin.mysql.port}"
                 @execute
-                  cmd: "if ! #{mysql_client} -e \"USE #{database};\"; then exit 3; fi"
+                  cmd: "if ! #{mysql_client} -e \"USE #{jdbc.database};\"; then exit 3; fi"
                   code_skipped: 3
                 @execute
                   cmd: """
                   #{mysql_admin} -e "
-                  create database if not exists #{database};
-                  grant all privileges on #{database}.* to '#{username}'@'localhost' identified by '#{password}';
-                  grant all privileges on #{database}.* to '#{username}'@'%' identified by '#{password}';
+                  create database if not exists #{jdbc.database};
+                  grant all privileges on #{jdbc.database}.* to '#{username}'@'localhost' identified by '#{password}';
+                  grant all privileges on #{jdbc.database}.* to '#{username}'@'%' identified by '#{password}';
                   flush privileges;
                   "
                   """
@@ -152,7 +152,7 @@ isnt yet started.
                   user: "#{username}"
                 @database.schema.add
                   header: 'Create Hive Schema'
-                  schema: "#{database}"
+                  schema: "#{jdbc.database}"
                   owner: "#{username}"
                   engine: 'postgres'
               else throw new Error 'Database engine not supported'
@@ -161,7 +161,7 @@ isnt yet started.
             current_version = db.cmd options_client, 'select SCHEMA_VERSION from \"VERSION\"'
             @execute
               cmd: """
-              engine="#{engine}"
+              engine="#{jdbc.engine}"
               cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/${engine} # Required for sql sources
               target_version=`#{target_version}`
               echo Target Version: "$target_version"
@@ -183,7 +183,7 @@ isnt yet started.
               trap: true
             @execute
               cmd: """
-              engine="#{engine}"
+              engine="#{jdbc.engine}"
               cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/${engine} # Required for sql sources
               current=`#{current_version}`
               echo Current Version: "$current"
@@ -271,12 +271,12 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
           ) for lib in hive.libs
 
       @link
-        if: engine is 'mysql'
+        if: jdbc.engine is 'mysql'
         header: 'Link MySQL Driver'
         source: '/usr/share/java/mysql-connector-java.jar'
         target: '/usr/hdp/current/hive-metastore/lib/mysql-connector-java.jar'
       @link
-        if: engine is 'postgresql'
+        if: jdbc.engine is 'postgresql'
         header: 'Link PostgreSQL Driver'
         source: '/usr/share/java/postgresql-jdbc.jar'
         target: '/usr/hdp/current/hive-metastore/lib/postgresql-jdbc.jar'
@@ -380,5 +380,4 @@ Create the directories to store the logs and pid information. The properties
 
     path = require 'path'
     db = require 'mecano/lib/misc/db'
-    parse_jdbc = require '../../lib/parse_jdbc'
     mkcmd = require '../../lib/mkcmd'

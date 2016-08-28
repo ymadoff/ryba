@@ -14,7 +14,7 @@ su -l hive -c 'nohup hive --service metastore >/var/log/hive-hcatalog/hcat.out 2
 
     module.exports =  header: 'Hive HCatalog Start', timeout: -1, label_true: 'STARTED', handler: ->
       {hive} = @config.ryba
-      {engine, addresses, port} = parse_jdbc hive.site['javax.jdo.option.ConnectionURL']
+      jdbc = db.jdbc hive.site['javax.jdo.option.ConnectionURL']
 
 ## Wait
 
@@ -29,7 +29,7 @@ require the HFDS Namenode to be started. Both of them will need to functionnal
 HDFS server to answer queries.
 
       @call header: 'Wait DB', timeout: -1, label_true: 'READY', handler: ->
-        @wait_connect addresses
+        @wait_connect jdbc.addresses
 
       @service_start
         header: 'Start service'
@@ -39,4 +39,4 @@ HDFS server to answer queries.
 
 # Module Dependencies
 
-    parse_jdbc = require '../../lib/parse_jdbc'
+    db = require 'mecano/lib/misc/db'
