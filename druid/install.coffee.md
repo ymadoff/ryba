@@ -2,13 +2,14 @@
 # Druid Install
 
     module.exports = header: 'Druid Install', handler: ->
-      {druid, realm} = @config.ryba
+      {druid, realm, db_admin} = @config.ryba
       # krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
-## Register
+## Register and load
 
       # @register 'hdp_select', 'ryba/lib/hdp_select'
       @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
+      @call once: true, 'ryba/commons/db_admin'
 
 ## IPTables
 
@@ -28,7 +29,7 @@ Note, this hasnt been verified.
 
 ## Users & Groups
 
-By default, the "zookeeper" package create the following entries:
+By default, the "druid" package create the following entries:
 
 ```bash
 cat /etc/passwd | grep druid
@@ -91,50 +92,31 @@ Log files are stored inside "/var/log/druid" by default.
 
 Configure deep storage.
 
-      # Get ZooKeeper Quorum
-      zoo_ctxs = @contexts 'ryba/zookeeper/server', require('../zookeeper/server/configure').handler
-      zookeeper_quorum = for zoo_ctx in zoo_ctxs
-        "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
+      console.log druid.runtime['druid.metadata.storage.type']
+      console.log druid.runtime['druid.metadata.storage.connector.connectURI']
+      jdbc = db.jdbc druid.runtime['druid.metadata.storage.connector.connectURI']
+      console.log 'db_admin', db_admin
+      console.log 'jdbc', jdbc
+      # engine = druid.runtime['druid.metadata.storage.type']
+      # engine = 'postgres' if engine is 'postgresql'
+      @db.user
+        if: jdbc.engine in ['mysql', 'postgres']
+        host: db_admin[jdbc.engine].host
+        port: db_admin[jdbc.engine].port
+        admin_username: db_admin[jdbc.engine].username
+        admin_password: db_admin[jdbc.engine].password
+        username: druid.runtime['druid.metadata.storage.connector.user']
+        passord: druid.runtime['druid.metadata.storage.connector.password']
+      @db.database
+        if: jdbc.engine in ['mysql', 'postgres']
+        host: db_admin[jdbc.engine].host
+        port: db_admin[jdbc.engine].port
+        admin_username: db_admin[jdbc.engine].username
+        admin_password: db_admin[jdbc.engine].password
+        database: jdbc.database
       @write.properties
         target: "/opt/druid-#{druid.version}/conf/druid/_common/common.runtime.properties"
-        content:
-          # Extensions
-          # Note, Mysql extension isnt natively supported due to licensing issues
-          'druid.extensions.loadList': '["druid-kafka-eight", "druid-s3-extensions", "druid-histogram", "druid-datasketches", "druid-lookups-cached-global"]' # "mysql-metadata-storage"
-          # Logging
-          'druid.startup.logging.logProperties': 'true'
-          # Zookeeper
-          'druid.zk.service.host': "#{zookeeper_quorum.join ','}"
-          'druid.zk.paths.base': '/druid'
-          # Metadata storage
-          'druid.metadata.storage.type': 'derby'
-          'druid.metadata.storage.connector.connectURI': "jdbc:derby://#{@config.host}:1527/var/druid/metadata.db;create=true"
-          'druid.metadata.storage.connector.host': "#{@config.host}"
-          'druid.metadata.storage.connector.port': '1527'
-          # For MySQL:
-          #druid.metadata.storage.type=mysql
-          #druid.metadata.storage.connector.connectURI=jdbc:mysql://db.example.com:3306/druid
-          #druid.metadata.storage.connector.user=...
-          #druid.metadata.storage.connector.password=...
-          # For PostgreSQL (make sure to additionally include the Postgres extension):
-          #druid.metadata.storage.type=postgresql
-          #druid.metadata.storage.connector.connectURI=jdbc:postgresql://db.example.com:5432/druid
-          #druid.metadata.storage.connector.user=...
-          #druid.metadata.storage.connector.password=...
-          # Deep storage
-          # Extension "druid-hdfs-storage" added to "loadList"
-          'druid.storage.type': 'hdfs'
-          'druid.storage.storageDirectory': '/apps/druid/segments'
-          # Indexing service logs
-          'druid.indexer.logs.type': 'hdfs'
-          'druid.indexer.logs.directory': '/apps/druid/indexing-logs'
-          # Service discovery
-          'druid.selectors.indexing.serviceName': 'druid/overlord'
-          'druid.selectors.coordinator.serviceName': 'druid/coordinator'
-          # Monitoring
-          'druid.monitoring.monitors': '["com.metamx.metrics.JvmMonitor"]'
-          'druid.emitter': 'logging'
-          'druid.emitter.logging.logLevel': 'info'
+        content: druid.runtime
         backup: true
       @link
         source: '/etc/hadoop/conf/core-site.xml'
@@ -163,4 +145,5 @@ Configure deep storage.
 
 ## Dependencies
 
+    db = require 'mecano/lib/misc/db'
     path = require 'path'

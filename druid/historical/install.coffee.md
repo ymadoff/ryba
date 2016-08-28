@@ -13,7 +13,7 @@
       @iptables
         header: 'IPTables'
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 8082, protocol: 'tcp', state: 'NEW', comment: "Druid Broker" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: 8083, protocol: 'tcp', state: 'NEW', comment: "Druid Historical" }
         ]
         if: @config.iptables.action is 'start'
 
