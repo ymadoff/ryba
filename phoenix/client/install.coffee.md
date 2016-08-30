@@ -47,11 +47,11 @@ for its instructions.
           write: [
             replace: "    os.pathsep + '#{hadoop_conf_dir}' + os.pathsep + '#{hbase.conf_dir}' + os.pathsep + '/usr/hdp/current/hadoop-client/hadoop-auth-*.jar' + \\"
             match: ///^.*#{quote '/usr/hdp/current/hadoop-client/hadoop-auth'}.*$///m
-            before: 'log4j.configuration'
+            place_before: 'log4j.configuration'
           ,
             replace: "    \" -Djava.security.auth.login.config=\'#{phoenix.conf_dir}/phoenix-client.jaas\'\" + \\"
             match: ///^.*#{quote '-Djava.security.auth.login.config='}.*$///m
-            before: 'org.apache.phoenix.util.PhoenixRuntime'
+            place_before: 'org.apache.phoenix.util.PhoenixRuntime'
           ]
           backup: true
         @write
@@ -59,11 +59,11 @@ for its instructions.
           write: [
             replace: "    os.pathsep + '#{hadoop_conf_dir}' + os.pathsep + '#{hbase.conf_dir}' + os.pathsep + '/usr/hdp/current/hadoop-client/hadoop-auth-*.jar' + \\"
             match: ///^.*#{quote '/usr/hdp/current/hadoop-client/hadoop-auth'}.*$///m
-            before: 'log4j.configuration'
+            place_before: 'log4j.configuration'
           ,
             replace: "    \" -Djava.security.auth.login.config=\'#{phoenix.conf_dir}/phoenix-client.jaas\'\" + \\"
             match: ///^.*#{quote '-Djava.security.auth.login.config='}.*$///m
-            before: 'sqlline.SqlLine'
+            place_before: 'sqlline.SqlLine'
           ]
           backup: true
 

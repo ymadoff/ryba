@@ -112,7 +112,7 @@ Starting opentsdb: /etc/init.d/opentsdb: line 69: ulimit: open files: cannot mod
         ,
           match: /^.*# RYBA CONF `env` and `java_opts`, DON'T OVERWRITE$/m
           replace: "  JVMARGS=\"${JVMARGS}#{" -D#{k}=#{v}" for k, v of opentsdb.env} #{opentsdb.java_opts}\" # RYBA CONF `env` and `java_opts`, DON'T OVERWRITE"
-          before: /^( *)export JVMARGS$/m
+          place_before: /^( *)export JVMARGS$/m
         ]
 
 ## Configure

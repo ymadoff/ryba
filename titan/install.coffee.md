@@ -59,7 +59,7 @@ Modify envvars in the gremlin scripts.
         ,
           match: /^(.*)# RYBA SET HADOOP-ENV, DON'T OVERWRITE/m
           replace: "HADOOP_HOME=/usr/hdp/current/hadoop-client # RYBA SET HADOOP-ENV, DON'T OVERWRITE"
-          before: /^CP=`abs_path`.*/m
+          place_before: /^CP=`abs_path`.*/m
         ]
         if titan.config['storage.backend'] is 'hbase' then write.unshift
           match: /^.*# RYBA CONF hbase-env, DON'T OVERWRITE/m

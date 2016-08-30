@@ -48,15 +48,15 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ,
           match: /^(.*)# RYBA CONF LOG, DON'T OVERWRITE/m
           replace: "JAVA_OPTIONS=\"$JAVA_OPTIONS -Dlog4j.configuration=file:#{path.join rexster.user.home, 'log4j.properties'}\" # RYBA CONF LOG, DON'T OVERWRITE"
-          before: /^(.*)com.tinkerpop.rexster.Application.*/m
+          place_before: /^(.*)com.tinkerpop.rexster.Application.*/m
         ,
           match: /^(.*)-Djava.security.auth.login.config=.*/m
           replace: "JAVA_OPTIONS=\"$JAVA_OPTIONS -Djava.security.auth.login.config=#{path.join rexster.user.home, 'rexster.jaas'}\" # RYBA CONF jaas, DON'T OVERWRITE"
-          before: /^(.*)com.tinkerpop.rexster.Application.*/m
+          place_before: /^(.*)com.tinkerpop.rexster.Application.*/m
         ,
           match: /^(.*)-Djava.library.path.*/m
           replace: "JAVA_OPTIONS=\"$JAVA_OPTIONS -Djava.library.path=/usr/hdp/current/hadoop-client/lib/native\" # RYBA CONF hadoop native libs, DON'T OVERWRITE"
-          before: /^(.*)com.tinkerpop.rexster.Application.*/m
+          place_before: /^(.*)com.tinkerpop.rexster.Application.*/m
         ]
         if titan.config['storage.backend'] is 'hbase'
           # require('../hbase/client').configure @
