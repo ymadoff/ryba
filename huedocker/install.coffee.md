@@ -132,23 +132,29 @@ recommandations. Merge the configuration object from "pseudo-distributed.ini" wi
 Setup the database hosting the Hue data. Currently two database providers are
 implemented but Hue supports MySQL, PostgreSQL, and Oracle. Note, sqlite is
 the default database while mysql is the recommanded choice.
-
-      @call header: 'Hue Docker # Database', handler: ->
+      
+      @call header: 'Hue Docker Database', handler: ->
         switch hue_docker.ini.desktop.database.engine
           when 'mysql'
             {user, password, name} = hue_docker.ini.desktop.database
             escape = (text) -> text.replace(/[\\"]/g, "\\$&")
-            mysql_exec = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
+            properties = 
+              'engine': hue_docker.ini.desktop.database.engine
+              'host': db_admin.host
+              'admin_username': db_admin.username
+              'admin_password': db_admin.password
+              'username': user
+              'password': password
+              'database': name
+            @db.database.exists properties
             @execute
-              cmd: """
-              #{mysql_exec} "
+              cmd: db.cmd properties, """
               create database #{name};
               grant all privileges on #{name}.* to '#{user}'@'localhost' identified by '#{password}';
               grant all privileges on #{name}.* to '#{user}'@'%' identified by '#{password}';
               flush privileges;
-              "
               """
-              unless_exec: "#{mysql_exec} 'use #{name}'"
+              unless: -> @status -1 # true if exists
           else throw Error 'Hue database engine not supported'
 
 ## Kerberos
@@ -176,7 +182,7 @@ path  during docker run.
         header: 'SSL Client'
         target: "#{hue_docker.ca_bundle}"
         source: "#{hue_docker.ssl.client_ca}"
-        local_source: true
+        local: true
         if: !!hue_docker.ssl.client_ca
         backup: true
 
@@ -297,7 +303,7 @@ Write startup script to /etc/init.d/service-hue-docker
       @call header: 'Startup Script', handler:  ->
         @render
           source: "#{__dirname}/resources/#{hue_docker.service}"
-          local_source: true
+          local: true
           target: "/etc/init.d/#{hue_docker.service}"
           context: hue_docker
         @chmod
@@ -308,6 +314,7 @@ Write startup script to /etc/init.d/service-hue-docker
 
     misc = require 'mecano/lib/misc'
     fs = require 'fs'
+    db = require 'mecano/lib/misc/db'
 
 ## Resources:
 

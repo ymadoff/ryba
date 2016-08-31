@@ -35,8 +35,6 @@ Builds Hue in two steps:
 It's the install middleware which takes care about mounting the differents volumes
 for hue to be able to communicate with the hadoop cluster in secure mode.
 
-
-
 # Hue Build dockerfile execution
 
       @call header: 'Build Prepare', timeout: -1,  handler: ->
@@ -65,7 +63,7 @@ for hue to be able to communicate with the hadoop cluster in secure mode.
           image: "#{hue_docker.build.name}:#{hue_docker.build.version}"
           file: "#{hue_docker.build.directory}/Dockerfile"
         @docker_service
-          image: hue_docker.build.name
+          image: "#{hue_docker.build.name}:#{hue_docker.build.version}"
           name: 'ryba_hue_extractor'
           entrypoint: '/bin/bash'
         @mkdir
