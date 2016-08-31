@@ -116,38 +116,38 @@
 ## Container
 Ryba support installing solr from apache official release or HDP Search repos.
       
-      # @download
-      #   binary: true
-      #   header: 'Download docker container'
-      #   source: "#{solr.cloud_docker.build.dir}/#{solr.cloud_docker.build.tar}"
-      #   target: "#{tmp_dir}/solr.tar"
-      # @call 
-      #   header: 'Check container', handler: (opts, callback) =>
-      #     checksum  = ''
-      #     @docker_checksum
-      #       docker:
-      #         host: "tcp://#{@config.host}:#{solr.cloud_docker.port ? 2376}"
-      #         tlsverify:" "
-      #         tlscacert: "/etc/docker/certs.d/ca.pem"
-      #         tlscert: "/etc/docker/certs.d/cert.pem"
-      #         tlskey: "/etc/docker/certs.d/key.pem"
-      #       image: solr.cloud_docker.build.image
-      #       tag: solr.cloud_docker.build.version
-      #     , (err, status, chk) ->
-      #       return callback err if err
-      #       checksum = chk
-      #       opts.log "Found image with checksum: #{checksum}" unless !checksum
-      #       if !checksum then callback null, true else callback null, false
-      # @docker_load
-      #   header: 'Load container to docker'
-      #   if: -> @status -1 or @status -2
-      #   source: "#{tmp_dir}/solr.tar"
-      #   docker:
-      #     host: "tcp://#{@config.host}:#{solr.cloud_docker.port ? 2376}"
-      #     tlsverify:" "
-      #     tlscacert: "/etc/docker/certs.d/ca.pem"
-      #     tlscert: "/etc/docker/certs.d/cert.pem"
-      #     tlskey: "/etc/docker/certs.d/key.pem"
+      @download
+        binary: true
+        header: 'Download docker container'
+        source: "#{solr.cloud_docker.build.dir}/#{solr.cloud_docker.build.tar}"
+        target: "#{tmp_dir}/solr.tar"
+      @call 
+        header: 'Check container', handler: (opts, callback) =>
+          checksum  = ''
+          @docker_checksum
+            docker:
+              host: "tcp://#{@config.host}:#{solr.cloud_docker.port ? 2376}"
+              tlsverify:" "
+              tlscacert: "/etc/docker/certs.d/ca.pem"
+              tlscert: "/etc/docker/certs.d/cert.pem"
+              tlskey: "/etc/docker/certs.d/key.pem"
+            image: solr.cloud_docker.build.image
+            tag: solr.cloud_docker.build.version
+          , (err, status, chk) ->
+            return callback err if err
+            checksum = chk
+            opts.log "Found image with checksum: #{checksum}" unless !checksum
+            if !checksum then callback null, true else callback null, false
+      @docker_load
+        header: 'Load container to docker'
+        if: -> @status -1 or @status -2
+        source: "#{tmp_dir}/solr.tar"
+        docker:
+          host: "tcp://#{@config.host}:#{solr.cloud_docker.port ? 2376}"
+          tlsverify:" "
+          tlscacert: "/etc/docker/certs.d/ca.pem"
+          tlscert: "/etc/docker/certs.d/cert.pem"
+          tlskey: "/etc/docker/certs.d/key.pem"
  
 ## SSL
 
