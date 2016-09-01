@@ -45,6 +45,12 @@ druid:x:2435:
 
 Download and unpack the release archive.
 
+      @service
+        name: 'postgresql'
+        if: druid.db.engine is 'postgres'
+      @service
+        name: 'mysql'
+        if: druid.db.engine is 'mysql'
       @download
         header: 'Packages'
         source: "#{druid.source}"
@@ -92,28 +98,11 @@ Log files are stored inside "/var/log/druid" by default.
 
 Configure deep storage.
 
-      console.log druid.runtime['druid.metadata.storage.type']
-      console.log druid.runtime['druid.metadata.storage.connector.connectURI']
-      jdbc = db.jdbc druid.runtime['druid.metadata.storage.connector.connectURI']
-      console.log 'db_admin', db_admin
-      console.log 'jdbc', jdbc
-      # engine = druid.runtime['druid.metadata.storage.type']
-      # engine = 'postgres' if engine is 'postgresql'
-      @db.user
-        if: jdbc.engine in ['mysql', 'postgres']
-        host: db_admin[jdbc.engine].host
-        port: db_admin[jdbc.engine].port
-        admin_username: db_admin[jdbc.engine].username
-        admin_password: db_admin[jdbc.engine].password
-        username: druid.runtime['druid.metadata.storage.connector.user']
-        passord: druid.runtime['druid.metadata.storage.connector.password']
-      @db.database
-        if: jdbc.engine in ['mysql', 'postgres']
-        host: db_admin[jdbc.engine].host
-        port: db_admin[jdbc.engine].port
-        admin_username: db_admin[jdbc.engine].username
-        admin_password: db_admin[jdbc.engine].password
-        database: jdbc.database
+      @db.user druid.db,
+        if: druid.db.engine in ['mysql', 'postgres']
+      @db.database druid.db,
+        if: druid.db.engine in ['mysql', 'postgres']
+        user: druid.db.username
       @write.properties
         target: "/opt/druid-#{druid.version}/conf/druid/_common/common.runtime.properties"
         content: druid.runtime

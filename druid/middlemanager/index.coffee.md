@@ -7,8 +7,10 @@ data store.
     module.exports = ->
       'prepare':
         'ryba/druid/prepare'
-      'configure':
+      'configure':[
         'ryba/druid/configure'
+        'ryba/druid/middlemanager/configure'
+      ]
       'install': [
         'masson/commons/java'
         'ryba/hadoop/hdfs_client'

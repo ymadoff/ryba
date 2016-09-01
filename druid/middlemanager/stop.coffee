@@ -6,3 +6,12 @@
       @service_stop
         name: 'druid-middlemanager'
         if_exists: '/etc/init.d/druid-middlemanager'
+
+## Clean Logs
+
+      @execute
+        header: 'Clean Logs'
+        label_true: 'CLEANED'
+        if: -> clean_logs
+        cmd: "rm #{druid.log_dir}/middleManager.log"
+        code_skipped: 1

@@ -48,31 +48,40 @@ Example:
       druid.runtime ?= {}
       # Extensions
       # Note, Mysql extension isnt natively supported due to licensing issues
-      druid.runtime['druid.extensions.loadList'] ?= '["druid-kafka-eight", "druid-s3-extensions", "druid-histogram", "druid-datasketches", "druid-lookups-cached-global"]' # "mysql-metadata-storage"
+      druid.runtime['druid.extensions.loadList'] ?= '["druid-kafka-eight", "druid-s3-extensions", "druid-histogram", "druid-datasketches", "druid-lookups-cached-global", "postgresql-metadata-storage", "druid-hdfs-storage"]' # "mysql-metadata-storage"
       # Logging
       druid.runtime['druid.startup.logging.logProperties'] ?= 'true'
       # Zookeeper
       druid.runtime['druid.zk.service.host'] ?= "#{zookeeper_quorum.join ','}"
       druid.runtime['druid.zk.paths.base'] ?= '/druid'
       # Metadata storage
-      if pg_ctx then druid.runtime['druid.metadata.storage.type'] ?= 'postgresql'
-      else if my_ctx then druid.runtime['druid.metadata.storage.type'] ?= 'mysql'
-      else druid.runtime['druid.metadata.storage.type'] ?= 'derby'
-      switch druid.runtime['druid.metadata.storage.type']
-        when 'postgresql'
-          druid.runtime['druid.metadata.storage.connector.connectURI'] ?= "jdbc:postgresql://#{pg_ctx.config.host}:#{pg_ctx.config.postgres.server.port}/druid"
-          druid.runtime['druid.metadata.storage.connector.host'] ?= "#{pg_ctx.config.host}"
-          druid.runtime['druid.metadata.storage.connector.port'] ?= "#{pg_ctx.config.postgres.server.port}"
+      druid.db ?= {}
+      require('../commons/db_admin').handler.call @
+      if pg_ctx then druid.db.engine ?= 'postgres'
+      else if my_ctx then druid.db.engine ?= 'mysql'
+      else druid.db.engine ?= 'derby'
+      druid.db[k] ?= v for k, v of @config.ryba.db_admin[druid.db.engine]
+      druid.db.database ?= 'druid'
+      druid.db.username ?= 'druid'
+      druid.db.password ?= 'druid123'
+      switch druid.db.engine
+        when 'postgres'
+          druid.runtime['druid.metadata.storage.type'] ?= 'postgresql'
+          druid.runtime['druid.metadata.storage.connector.connectURI'] ?= "jdbc:postgresql://#{druid.db.host}:#{druid.db.port}/#{druid.db.database}"
+          druid.runtime['druid.metadata.storage.connector.host'] ?= "#{druid.db.host}"
+          druid.runtime['druid.metadata.storage.connector.port'] ?= "#{druid.db.port}"
         when 'mysql'
-          druid.runtime['druid.metadata.storage.connector.connectURI'] ?= "jdbc:mysql://db.example.com:3306/druid"
+          druid.runtime['druid.metadata.storage.type'] ?= 'mysql'
+          druid.runtime['druid.metadata.storage.connector.connectURI'] ?= "jdbc:mysql://#{druid.db.host}:#{druid.db.port}/#{druid.db.database}"
           druid.runtime['druid.metadata.storage.connector.host'] ?= "#{my_ctx.config.host}"
           druid.runtime['druid.metadata.storage.connector.port'] ?= "#{my_ctx.config.postgres.server.port}"
         when 'derby'
+          druid.runtime['druid.metadata.storage.type'] ?= 'derby'
           druid.runtime['druid.metadata.storage.connector.connectURI'] ?= "jdbc:derby://#{@config.host}:1527/var/druid/metadata.db;create=true"
           druid.runtime['druid.metadata.storage.connector.host'] ?= "#{@config.host}"
           druid.runtime['druid.metadata.storage.connector.port'] ?= '1527'
-      druid.runtime['druid.metadata.storage.connector.user'] ?= "#{druid.user.name}"
-      druid.runtime['druid.metadata.storage.connector.password'] ?= "diurd123"
+      druid.runtime['druid.metadata.storage.connector.user'] ?= "#{druid.db.username}"
+      druid.runtime['druid.metadata.storage.connector.password'] ?= "#{druid.db.password}"
       # For MySQL:
       #druid.runtime[druid.metadata.storage.type=mysql
       #druid.runtime[druid.metadata.storage.connector.connectURI=jdbc:mysql://db.example.com:3306/druid
