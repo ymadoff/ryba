@@ -47,6 +47,9 @@ Example:
     module.exports = handler: ->
       {ssl, hadoop_conf_dir, db_admin} = @config.ryba
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn/configure').handler
+      [sls_ctx] = @contexts 'ryba/spark/livy_server', require('../spark/livy_server/configure').handler
+      [sts_ctx] = @contexts 'ryba/spark/thrift_server', require('../spark/thrift_server/configure').handler
+      [shs_ctx] = @contexts 'ryba/spark/history_server', require('../spark/history_server/configure').handler
       hue_docker = @config.ryba.hue_docker ?= {}
       # Layout
       hue_docker.conf_dir ?= '/etc/hue_docker/conf'
@@ -259,6 +262,8 @@ Example:
       blacklisted_app.push 'impala'
       blacklisted_app.push 'sqoop'
       blacklisted_app.push 'sentry'
+      blacklisted_app.push 'search'
+      blacklisted_app.push 'solr'
       # Sqoop
       sqoop_hosts = @hosts_with_module 'ryba/sqoop'
 
@@ -296,7 +301,27 @@ Example:
         hue_docker.ini['hbase']['thrift_transport'] =  hbase_ctx.config.ryba.hbase.thrift.site['hbase.regionserver.thrift.framed']
       else
         blacklisted_app.push 'hbase'
-
+        
+      # Spark 
+      # For now Hue does not support livy on kerberized cluster and ssl protocol
+      blacklisted_app.push 'spark'
+      # if sls_ctx? and sts_ctx?
+      #   {hive_site} = sts_ctx.config.ryba.spark.thrift
+      #   port = if hive_site['hive.server2.transport.mode'] is 'http'
+      #   then hive_site['hive.server2.thrift.http.port']
+      #   else hive_site['hive.server2.thrift.port']
+      #   # 
+      #   hue_docker.ini['spark'] ?= {}
+      #   hue_docker.ini['spark']['livy_server_host'] ?= sls_ctx.config.host
+      #   hue_docker.ini['spark']['livy_server_port'] ?= sls_ctx.config.ryba.spark.livy.conf['livy.server.port']
+      #   hue_docker.ini['spark']['livy_server_session_kind'] ?= 'yarn'
+      #   hue_docker.ini['spark']['sql_server_host'] ?= sts_ctx.config.host
+      #   hue_docker.ini['spark']['sql_server_port'] ?= port
+      #   if shs_ctx?
+      #     hue_docker.ini['hadoop']['yarn_clusters']['default']['spark_history_server_url'] ?= "http://#{shs_ctx.config.host}:#{shs_ctx.config.ryba.spark.history.conf['spark.history.ui.port']}"
+      # else 
+      #   blacklisted_app.push 'spark'
+      
       # Zookeeper
       # for now we do not support zookeeper rest interface
       # zookeeper_ctxs = ctx.contexts ['ryba/zookeeper/server']
@@ -308,7 +333,6 @@ Example:
       # else
       #   blacklisted_app.push 'zookeeper'
       blacklisted_app.push 'zookeeper'
-      blacklisted_app.push 'spark'
       # Uncomment all security_enabled settings and set them to true
       hue_docker.ini.hadoop ?= {}
       hue_docker.ini.hadoop.hdfs_clusters ?= {}
@@ -329,6 +353,29 @@ Example:
       hue_docker.ini.hcatalog.security_enabled = 'true'
       hue_docker.ini['desktop']['app_blacklist'] ?= blacklisted_app.join()
 
+## Configure notebooks
+      
+      hue_docker.ini['notebook'] ?= {}
+      hue_docker.ini['notebook']['show_notebooks'] ?= true
+      # Set up some interpreters settings
+      hue_docker.ini['notebook']['interpreters'] ?= {}
+      hue_docker.ini['notebook']['interpreters']['hive'] ?= {}
+      hue_docker.ini['notebook']['interpreters']['hive']['name'] ?= 'Hive'
+      hue_docker.ini['notebook']['interpreters']['hive']['interface'] ?= 'hiveserver2'
+      if  blacklisted_app.indexOf 'spark' is -1
+        hue_docker.ini['notebook']['interpreters']['sparksql'] ?= {}
+        hue_docker.ini['notebook']['interpreters']['sparksql']['name'] ?= 'SparkSql'
+        hue_docker.ini['notebook']['interpreters']['sparksql']['interface'] ?= 'hiveserver2'
+        hue_docker.ini['notebook']['interpreters']['spark'] ?= {}
+        hue_docker.ini['notebook']['interpreters']['spark']['name'] ?= 'Scala'
+        hue_docker.ini['notebook']['interpreters']['spark']['interface'] ?= 'livy'
+        hue_docker.ini['notebook']['interpreters']['pyspark'] ?= {}
+        hue_docker.ini['notebook']['interpreters']['pyspark']['name'] ?= 'PySpark'
+        hue_docker.ini['notebook']['interpreters']['pyspark']['interface'] ?= 'livy'
+        hue_docker.ini['notebook']['interpreters']['r'] ?= {}
+        hue_docker.ini['notebook']['interpreters']['r']['name'] ?= 'r'
+        hue_docker.ini['notebook']['interpreters']['r']['interface'] ?= 'livy-batch'
+      
 ## Configuration for Proxy Users
 
       hadoop_ctxs = @contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
