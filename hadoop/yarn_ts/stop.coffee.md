@@ -12,7 +12,7 @@ su -l yarn -c "/usr/hdp/current/hadoop-yarn-timelineserver/sbin/yarn-daemon.sh -
 The file storing the PID is "/var/run/hadoop-yarn/yarn/yarn-yarn-timelineserver.pid".
 
     module.exports = header: 'YARN ATS Stop', label_true: 'STOPPED', handler: ->
-      @service_stop
+      @service.stop
         name: 'hadoop-yarn-timelineserver'
         if_exists: '/etc/init.d/hadoop-yarn-timelineserver'
 

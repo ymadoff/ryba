@@ -16,7 +16,7 @@ su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-namenode/../hadoop/sbin/hadoop-daemo
 
 The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-namenode.pid".
 
-      @service_stop
+      @service.stop
         header: 'HDFS NN Stop'
         label_true: 'STOPPED'
         name: 'hadoop-hdfs-namenode'

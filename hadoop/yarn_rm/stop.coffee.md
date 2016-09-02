@@ -16,7 +16,7 @@ su -l yarn -c "/usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/con
 
 The file storing the PID is "/var/run/hadoop-yarn/yarn/yarn-yarn-resourcemanager.pid".
 
-      @service_stop
+      @service.stop
         header: 'Yarn RM # Stop'
         label_true: 'STOPPED'
         name: 'hadoop-yarn-resourcemanager'

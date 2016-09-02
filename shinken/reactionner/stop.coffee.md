@@ -2,7 +2,7 @@
 # Shinken Reactionner Stop
 
     module.exports = header: 'Shinken Reactionner Stop', label_true: 'STOPPED', handler: ->
-      @service_stop name: 'shinken-reactionner'
+      @service.stop name: 'shinken-reactionner'
 
 ## Clean Logs
 

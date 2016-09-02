@@ -2,4 +2,4 @@
 # Apache NiFi Manager Start
 
     module.exports = header: 'NiFi Manager Start', label_true: 'STARTED', handler: ->
-      @service_start name: 'nifi-manager'
+      @service.start name: 'nifi-manager'

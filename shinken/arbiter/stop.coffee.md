@@ -2,7 +2,7 @@
 # Shinken Arbiter Stop
 
     module.exports = header: 'Shinken Arbiter Stop', label_true: 'STOPPED', handler: ->
-      @service_stop name: 'shinken-arbiter'
+      @service.stop name: 'shinken-arbiter'
 
 ## Clean Logs
 

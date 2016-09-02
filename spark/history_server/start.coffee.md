@@ -13,7 +13,7 @@ su -l spark -c '/usr/hdp/current/spark-historyserver/sbin/start-history-server.s
         cmd: mkcmd.hdfs @, """
           hdfs dfs -stat \"%u:%g\" #{spark.history.conf['spark.eventLog.dir']} | grep #{spark.user.name}:#{hadoop_group.name}
         """
-      @service_start
+      @service.start
         name: 'spark-history-server'
         if_exists: '/etc/init.d/spark-history-server'
 

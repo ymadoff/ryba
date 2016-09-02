@@ -8,7 +8,7 @@
 
 Stop the MongoDB Routing Server service.
 
-      @service_stop name: 'mongodb-router-server'
+      @service.stop name: 'mongodb-router-server'
 
 ## Clean Logs
 

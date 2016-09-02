@@ -19,4 +19,4 @@ Wait for Kerberos, ZooKeeper and HDFS to be started.
 
 Start the service.
 
-      @service_start name: 'hadoop-yarn-nodemanager'
+      @service.start name: 'hadoop-yarn-nodemanager'

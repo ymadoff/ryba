@@ -18,4 +18,4 @@ Wait for Kerberos and ZooKeeper.
 
 Start the service.
 
-      @service_start name: 'kafka-broker'
+      @service.start name: 'kafka-broker'

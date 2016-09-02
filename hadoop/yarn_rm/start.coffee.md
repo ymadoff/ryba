@@ -36,6 +36,6 @@ Ensure the service pid is removed on retry.
 
 Start the service.
 
-      @service_start
+      @service.start
         name: 'hadoop-yarn-resourcemanager'
         if_exists: '/etc/init.d/hadoop-yarn-resourcemanager'

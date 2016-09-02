@@ -2,7 +2,7 @@
 # Shinken Receiver Stop
 
     module.exports = header: 'Shinken Receiver Stop', label_true: 'STOPPED', handler: ->
-      @service_stop name: 'shinken-receiver'
+      @service.stop name: 'shinken-receiver'
 
 ## Clean Logs
 

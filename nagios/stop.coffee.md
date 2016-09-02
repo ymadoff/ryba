@@ -15,7 +15,7 @@ service nagios stop
 
 The file storing the PID is "/var/run/nagios.pid".
 
-      @service_stop
+      @service.stop
         name: 'nagios'
         code_stopped: 1
 

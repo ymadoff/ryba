@@ -6,5 +6,5 @@
     module.exports.push 'masson/bootstrap'
 
     module.exports.push header: 'XASecure Sync # Start', timeout: -1, label_true: 'STARTED', handler: ->
-      @service_start
+      @service.start
         name: 'uxugsync'

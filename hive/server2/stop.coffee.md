@@ -12,7 +12,7 @@ su -l hive -c "kill `cat /var/run/hive-server2/hive-server2.pid`"
     module.exports = header: 'Hive Server2 Stop', label_true: 'STOPPED', handler: ->
       {hive} = @config.ryba
 
-      @service_stop
+      @service.stop
         name: 'hive-server2'
         if_exists: '/etc/init.d/hive-server2'
 

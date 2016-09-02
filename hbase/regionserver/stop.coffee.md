@@ -13,7 +13,7 @@ The file storing the PID is "/var/run/hbase/yarn/hbase-hbase-regionserver.pid".
 
     module.exports = header: 'HBase RegionServer Stop', label_true: 'STOPPED', handler: ->
       {hbase} = @config.ryba
-      @service_stop
+      @service.stop
         name: 'hbase-regionserver'
         if_exists: '/etc/init.d/hbase-regionserver'
 

@@ -12,6 +12,6 @@ service hdp-gmetad start
 ```
 
     module.exports = header: 'Ganglia Collector # Start', label_true: 'STARTED', handler: ->
-      @service_start
+      @service.start
         name: 'hdp-gmetad'
         code_stopped: 1

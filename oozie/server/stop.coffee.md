@@ -16,7 +16,7 @@ The file storing the PID is "/var/run/oozie/oozie.pid".
 
     module.exports = header: 'Oozie Server Stop', label_true: 'STOPPED', timeout: -1, handler: ->
       {oozie} = @config.ryba
-      @service_stop
+      @service.stop
         name: 'oozie'
         if_exists: '/etc/init.d/oozie'
 

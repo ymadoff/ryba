@@ -50,7 +50,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           ./install.sh -n #{nagvis.base_dir} -p #{nagvis.install_dir} \
           -l 'tcp:#{nagvis.livestatus_address}' -b mklivestatus -u #{httpd.user.name} -g #{httpd.group.name} -w /etc/httpd/conf.d -a y -q
           """
-        @service_restart
+        @service.restart
           name: 'httpd'
         @file
           target: "#{nagvis.install_dir}/version"

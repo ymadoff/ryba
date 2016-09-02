@@ -2,7 +2,7 @@
 # Shinken Broker Stop
 
     module.exports = header: 'Shinken Broker Stop', label_true: 'STOPPED', handler: ->
-      @service_stop name: 'shinken-broker'
+      @service.stop name: 'shinken-broker'
 
 ## Clean Logs
 

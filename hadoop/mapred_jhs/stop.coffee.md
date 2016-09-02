@@ -12,6 +12,6 @@ su -l mapred -c "export HADOOP_LIBEXEC_DIR=/usr/lib/hadoop/libexec/ && /usr/lib/
 The file storing the PID is "/var/run/hadoop-mapreduce/mapred-mapred-historyserver.pid".
 
     module.exports = header: 'MapReduce JHS Stop', label_true: 'STOPPED', handler: ->
-      @service_stop
+      @service.stop
         name: 'hadoop-mapreduce-historyserver'
         if_exists: '/etc/init.d/hadoop-mapreduce-historyserver'

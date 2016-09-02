@@ -27,4 +27,4 @@ Wait for Kerberos, Zookeeper, Hadoop and Hive HCatalog.
 
 Start the WebHCat service.
 
-      @service_start name: 'hive-webhcat-server'
+      @service.start name: 'hive-webhcat-server'

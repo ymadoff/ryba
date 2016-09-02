@@ -10,7 +10,7 @@ service hue stop
 
     module.exports = header: 'Hue # Stop', label_true: 'STOPPED', handler: ->
       {hue} = @config.ryba
-      @service_stop
+      @service.stop
         name: 'hue'
         if_exists: '/etc/init.d/hue'
 

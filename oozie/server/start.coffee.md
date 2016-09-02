@@ -31,5 +31,5 @@ Wait for all the dependencies.
 
 Start the service
 
-      @service_start
+      @service.start
         name: 'oozie'

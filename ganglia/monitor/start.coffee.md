@@ -9,7 +9,7 @@ service hdp-gmond start
 ```
 
     module.exports = header: 'Ganglia Monitor # Start', label_true: 'STARTED', handler: ->
-      @service_start
+      @service.start
         name: 'hdp-gmond'
         code_stopped: 1
       # On error, it is often necessary to remove pid files

@@ -26,4 +26,4 @@ replica set primary server.
       @wait_execute
         cmd: "#{mongo_shell_root_exec} #{cmd}"
       # TODO check if all config server are available
-      @service_start name: 'mongodb-router-server'
+      @service.start name: 'mongodb-router-server'

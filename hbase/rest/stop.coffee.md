@@ -11,7 +11,7 @@ su -l hbase -c "/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config /etc/
 
     module.exports =  header: 'HBase Rest # Stop', label_true: 'STOPPED', handler: ->
       {hbase, clean_logs} = @config.ryba
-      @service_stop
+      @service.stop
         name: 'hbase-rest'
         if_exists: '/etc/init.d/hbase-rest'
 

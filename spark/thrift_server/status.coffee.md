@@ -10,5 +10,5 @@ service spark-thrift-server status
 
     module.exports = header: 'Spark SQL Thrift Server Status', label_true: 'STARTED', handler: ->
       {spark} = @config.ryba
-      @service_status
+      @service.status
         name: 'spark-thrift-server'

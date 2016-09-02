@@ -8,7 +8,7 @@
 
 Stop the MongoDB Config Server service.
 
-      @service_stop name: 'mongodb-shard-server'
+      @service.stop name: 'mongodb-shard-server'
 
 ## Clean Logs
 

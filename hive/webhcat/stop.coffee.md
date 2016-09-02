@@ -15,7 +15,7 @@ su -l hive -c "/usr/hdp/current/hive-webhcat/sbin/webhcat_server.sh stop"
 The file storing the PID is "/var/run/webhcat/webhcat.pid".
 
     module.exports = header: 'WebHCat # Stop', label_true: 'STOPPED', handler: ->
-      @service_stop
+      @service.stop
         name: 'hive-webhcat-server'
         if_exists: '/etc/init.d/hive-webhcat-server'
 

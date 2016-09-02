@@ -15,7 +15,7 @@ The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-journalnode.pid".
 
     module.exports = header: 'HDFS JN Stop', label_true: 'STOPPED', handler: ->
 
-      @service_stop
+      @service.stop
         header: 'HDFS JN # Stop'
         label_true: 'STOPPED'
         name: 'hadoop-hdfs-journalnode'

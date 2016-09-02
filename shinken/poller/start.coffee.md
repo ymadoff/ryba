@@ -5,7 +5,7 @@ Start the Shinken Poller service.
 
     module.exports = header: 'Shinken Poller # Start', label_true: 'STARTED', handler: ->
       {shinken} = @config.ryba
-      @service_start name: 'shinken-poller'
+      @service.start name: 'shinken-poller'
 
 ## Start Executor
 

@@ -20,6 +20,6 @@ Wait for Kerberos, ZooKeeper, HDFS and HBase Master to be started.
 
 Start the service.
 
-      @service_start
+      @service.start
         name: 'hbase-regionserver'
         if_exists: '/etc/init.d/hbase-regionserver'

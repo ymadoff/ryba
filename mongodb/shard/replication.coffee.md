@@ -39,7 +39,7 @@ The root user is needed for replication and has role `root`
           echo exit | #{mongo_shell_root_exec}
         """
         handler: ->
-          @service_stop
+          @service.stop
             name: 'mongodb-shard-server'
           @file.yaml
             target: "#{mongodb.shard.conf_dir}/mongod.conf"
@@ -50,7 +50,7 @@ The root user is needed for replication and has role `root`
             gid: mongodb.group.name
             mode: 0o0750
             backup: true
-          @service_start
+          @service.start
             name: 'mongodb-shard-server'
           @wait_connect
             host: @config.host
@@ -85,10 +85,10 @@ The root user is needed for replication and has role `root`
             gid: mongodb.group.name
             mode: 0o0750
             backup: true
-          @service_stop
+          @service.stop
             if: -> @status -1
             name: 'mongodb-shard-server'
-          @service_start
+          @service.start
             if: -> @status -1
             name: 'mongodb-shard-server'
           @wait_connect

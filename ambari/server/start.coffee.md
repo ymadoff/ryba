@@ -7,5 +7,5 @@ Ambari server is started with the service's syntax command.
       @execute
         cmd: 'service ambari-server start'
         unless_exists: '/var/run/ambari-server/ambari-server.pid'
-      # @service_start
+      # @service.start
       #   name: 'ambari-server'

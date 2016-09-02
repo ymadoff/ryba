@@ -16,7 +16,7 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
 ```
 
     module.exports.push header: 'HDFS SNN # Stop', label_true: 'STOPPED', handler: ->
-      @service_stop
+      @service.stop
         name: 'hadoop-hdfs-secondarynamenode'
         if_exists: '/etc/init.d/hadoop-hdfs-secondarynamenode'
 

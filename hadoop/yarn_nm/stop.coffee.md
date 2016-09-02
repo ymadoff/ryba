@@ -14,7 +14,7 @@ The file storing the PID is "/var/run/hadoop-yarn/yarn/yarn-yarn-nodemanager.pid
     module.exports = header: 'YARN NM Stop', label_true: 'STOPPED', handler: ->
       {clean_logs, yarn} = @config.ryba
 
-      @service_stop
+      @service.stop
         header: 'YARN NM Stop'
         label_true: 'STOPPED'
         name: 'hadoop-yarn-nodemanager'

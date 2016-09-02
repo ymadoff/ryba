@@ -9,5 +9,5 @@ service ranger-usersync start
 ```
 
     module.exports = header: 'Rander Usersync Start', label_true: 'STARTED', handler: ->
-      @service_start
+      @service.start
         name: 'ranger-usersync'

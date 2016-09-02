@@ -2,7 +2,7 @@
 # Shinken Poller Stop
 
     module.exports = header: 'Shinken Poller Stop', label_true: 'STOPPED', handler: ->
-      @service_stop name: 'shinken-poller'
+      @service.stop name: 'shinken-poller'
 
 ## Clean Logs
 

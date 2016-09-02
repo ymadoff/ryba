@@ -8,7 +8,7 @@ Exit code is "3" if server not runnig or "1" if server not running but pid file
 still exists.
 
     module.exports = header: 'Hive Server2 Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
-      @service_status
+      @service.status
         name: 'hive-server2'
         code_stopped: [1, 3]
         if_exists: '/etc/init.d/hive-server2'

@@ -10,7 +10,7 @@ service spark-thrift-server start
 
     module.exports = header: 'Spark SQL Thrift Server Stop', label_true: 'STOPPED', handler: ->
       {spark} = @config.ryba
-      @service_stop
+      @service.stop
         name: 'spark-thrift-server'
 
 ## Clean Logs

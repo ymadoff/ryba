@@ -24,5 +24,5 @@ Wait for Kerberos, Zookeeper, Hadoop and Hive.
 
 Start the service
 
-      @service_start
+      @service.start
         name: 'hive-server2'

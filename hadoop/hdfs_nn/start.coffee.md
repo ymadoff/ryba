@@ -14,6 +14,6 @@ su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-namenode/../hadoop/sbin/hadoop-daemo
     module.exports = header: 'HDFS NN Start', timeout: -1, label_true: 'STARTED', handler: ->
       @call once: true, 'ryba/zookeeper/server/wait'
       @call once: true, 'ryba/hadoop/hdfs_jn/wait'
-      @service_start
+      @service.start
         name: 'hadoop-hdfs-namenode'
         if_exists: '/etc/init.d/hadoop-hdfs-namenode'

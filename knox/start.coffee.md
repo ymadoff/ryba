@@ -9,4 +9,4 @@ su -l knox -c "/usr/hdp/current/knox-server/bin/gateway.sh start"
 ```
 
     module.exports = header: 'Knox # Start', label_true: 'STARTED', handler: ->
-      @service_start name: 'knox-server'
+      @service.start name: 'knox-server'

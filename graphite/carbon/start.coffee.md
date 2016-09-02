@@ -9,6 +9,6 @@ Execute these commands on the Ganglia server host machine.
 
     # /opt/graphite/bin/carbon-cache.py start
     module.exports.push header: 'Graphite Carbon # Start', label_true: 'STARTED', handler: ->
-      @service_start
+      @service.start
         name: 'carbon-cache'
         if_exists: '/etc/init.d/carbon-cache'

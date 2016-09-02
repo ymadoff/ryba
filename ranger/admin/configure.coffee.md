@@ -417,7 +417,7 @@ Configure Audit to SOLR
                   \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{hdfs_plugin.install['REPOSITORY_NAME']}\"
                 """
                 code_skipped: 22
-              @service_restart
+              @service.restart
                 header: 'Ranger scheduled HDFS NameNode restart'
                 name: 'hadoop-hdfs-namenode'
                 if_exists: '/etc/init.d/hadoop-hdfs-namenode'
@@ -550,7 +550,7 @@ Used only if SSL is enabled between Policy Admin Tool and Plugin
                   \"#{yarn_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{yarn_plugin.install['REPOSITORY_NAME']}\"
                 """
                 code_skipped: 22
-              @service_restart 
+              @service.restart 
                 header: 'Ranger scheduled ResourceManager restart'
                 if_exec: 'service hadoop-yarn-resourcemanager status'
                 name: 'hadoop-yarn-resourcemanager'
@@ -570,7 +570,7 @@ Used only if SSL is enabled between Policy Admin Tool and Plugin
                   \"#{yarn_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{yarn_plugin.install['REPOSITORY_NAME']}\"
                 """
                 code_skipped: [22,7]
-              @service_restart
+              @service.restart
                 name: 'hadoop-yarn-nodemanager'
 
 ## HBase Plugin
@@ -708,7 +708,7 @@ The repository name should match the reposity name in web ui.
                   \"#{hbase_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{hbase_plugin.install['REPOSITORY_NAME']}\"
                 """
                 code_skipped: 22
-              @service_restart
+              @service.restart
                 header: 'Ranger scheduled HBase Master restart'
                 if_exec: 'service hbase-master status'
                 name: 'hbase-master'
@@ -738,7 +738,7 @@ The repository name should match the reposity name in web ui.
                   \"#{hbase_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{hbase_plugin.install['REPOSITORY_NAME']}\"
                 """
                 code_skipped: [22,7]
-              @service_restart
+              @service.restart
                 header: 'Ranger scheduled HBase Regionserver restart'
                 if_exec: 'service hbase-regionserver status'
                 name: 'hbase-regionserver'
@@ -860,7 +860,7 @@ The properties can be found [here][kafka-repository]
                   \"#{kafka_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{kafka_plugin.install['REPOSITORY_NAME']}\"
                 """
                 code_skipped: [22,7]
-              @service_restart 
+              @service.restart 
                 header: 'Ranger scheduled Kafka Broker restart'
                 if_exec: 'service kafka-broker status'
                 name: 'kafka-broker'
@@ -1009,7 +1009,7 @@ Used only if SSL is enabled between Policy Admin Tool and Plugin
                   \"#{hive_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{hive_plugin.install['REPOSITORY_NAME']}\"
                 """
                 code_skipped: 22
-              @service_restart 
+              @service.restart 
                 header: 'Ranger scheduled Hive Server2 restart'
                 if_exec: 'service hive-server2 status'
                 name: 'hive-server2'

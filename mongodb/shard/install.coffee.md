@@ -83,7 +83,7 @@ Configuration file for mongodb sharding server.
           gid: mongodb.group.name
           mode: 0o0750
           backup: true
-        @service_stop
+        @service.stop
           if: -> @status -1
           name: 'mongodb-shard-server'
 

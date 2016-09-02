@@ -12,7 +12,7 @@ command:
 docker stop hue_server
 ```
 
-      @service_stop
+      @service.stop
         name: hue_docker.service
         if_exists: "/etc/init.d/#{hue_docker.service}"
 

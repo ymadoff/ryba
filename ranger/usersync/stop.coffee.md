@@ -8,7 +8,7 @@ service ranger-usersync stop
 ```
 
     module.exports = header: 'Ranger Usersync Stop', label_true: 'STOPPED', handler: ->
-      @service_start
+      @service.start
         name: 'ranger-usersync'
 
 ## Clean Logs

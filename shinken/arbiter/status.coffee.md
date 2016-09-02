@@ -2,4 +2,4 @@
 # Shinken Arbiter Status
 
     module.exports = header: 'Shinken Arbiter # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
-      @service_status name: 'shinken-arbiter'
+      @service.status name: 'shinken-arbiter'

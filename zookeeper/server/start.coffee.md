@@ -17,4 +17,4 @@ Wait for Kerberos to be started.
 
 Start the service.
 
-      @service_start name: 'zookeeper-server'
+      @service.start name: 'zookeeper-server'

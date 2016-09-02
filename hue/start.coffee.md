@@ -9,4 +9,4 @@ service hue start
 ```
 
     module.exports = header: 'Hue # Start', label_true: 'STARTED', handler: ->
-      @service_start name: 'hue'
+      @service.start name: 'hue'

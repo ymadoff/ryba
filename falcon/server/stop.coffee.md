@@ -12,7 +12,7 @@ su -l falcon -c "/usr/hdp/current/falcon-server/bin/service-stop.sh falcon"
       {clean_logs, falcon} = @config.ryba
       throw Error "Invalid log dir" unless falcon.log_dir
       
-      @service_stop
+      @service.stop
         name: 'falcon'
         if_exists: '/etc/init.d/falcon'
 

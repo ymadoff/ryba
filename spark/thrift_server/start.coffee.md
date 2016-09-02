@@ -11,5 +11,5 @@ service spark-thrift-server start
     module.exports = header: 'Spark SQL Thrift Server Start', label_true: 'STARTED', handler: ->
       {spark} = @config.ryba
       @call once:true, 'ryba/hive/hcatalog/wait'
-      @service_start
+      @service.start
         name: 'spark-thrift-server'

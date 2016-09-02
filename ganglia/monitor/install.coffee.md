@@ -57,7 +57,7 @@ Upload the "hdp-gmond" service file into "/etc/init.d".
           cmd: "service gmond start; chkconfig --add hdp-gmond"
           if: -> @status -1
 
-      @service_startup
+      @service.startup
         header: 'Fix Gmond'
         name: 'gmond'
         startup: false

@@ -31,7 +31,7 @@ HDFS server to answer queries.
       @call header: 'Wait DB', timeout: -1, label_true: 'READY', handler: ->
         @wait_connect jdbc.addresses
 
-      @service_start
+      @service.start
         header: 'Start service'
         label_true: 'STARTED'
         timeout: -1

@@ -25,6 +25,6 @@ Wait for Kerberos and the HDFS NameNode.
 
 Start the service.
 
-      @service_start
+      @service.start
         name: 'hadoop-yarn-timelineserver'
         if_exists: '/etc/init.d/hadoop-yarn-timelineserver'

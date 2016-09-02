@@ -7,5 +7,5 @@ Ambari Agent is started with the service's syntax command.
       @execute
         cmd: 'service ambari-agent start'
         unless_exists: '/var/run/ambari-agent/ambari-agent.pid'
-      # @service_start
+      # @service.start
       #   name: 'ambari-agent'

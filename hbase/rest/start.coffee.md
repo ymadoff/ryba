@@ -22,6 +22,6 @@ Wait for Kerberos, ZooKeeper, HDFS and Hbase Master to be started.
 
 Start the service.
 
-      @service_start
+      @service.start
         name: 'hbase-rest'
         if_exists: '/etc/init.d/hbase-rest'

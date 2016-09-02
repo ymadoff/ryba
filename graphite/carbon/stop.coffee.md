@@ -9,6 +9,6 @@ Execute these commands on the Ganglia server host machine.
 
     # /opt/graphite/bin/carbon-cache.py stop
     module.exports.push header: 'Graphite Carbon # Stop', label_true: 'STOPPED', handler: ->
-      @service_stop
+      @service.stop
         name: 'carbon-cache'
         if_exists: '/etc/init.d/carbon-cache'

@@ -10,7 +10,7 @@ su -l httpfs -c '/usr/hdp/current/hadoop-httpfs/sbin/httpfs.sh stop'
 ```
 
     module.exports = header: 'HDFS HttpFS # Stop Server', label_true: 'STOPPED', handler: ->
-      @service_stop
+      @service.stop
         name: 'hadoop-httpfs'
         if_exists: '/etc/init.d/hadoop-httpfs'
 

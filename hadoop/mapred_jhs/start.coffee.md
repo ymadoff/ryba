@@ -21,6 +21,6 @@ Wait for the DataNode and NameNode to be started to fetch all history.
 
 Start the service.
 
-      @service_start
+      @service.start
         name: 'hadoop-mapreduce-historyserver'
         if_exists: '/etc/init.d/hadoop-mapreduce-historyserver'

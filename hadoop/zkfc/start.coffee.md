@@ -48,7 +48,7 @@ service hadoop-hdfs-zkfc start
 su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs start zkfc"
 ```
 
-      @service_start
+      @service.start
         header: 'HDFS ZKFC # Start', label_true: 'STARTED'
         name: 'hadoop-hdfs-zkfc'
         # if: nn_ctxs.length > 1

@@ -5,7 +5,7 @@
 
 ## Start
 
-      @service_start name: 'mongodb-shard-server'
+      @service.start name: 'mongodb-shard-server'
 
 ## Dependencies
 

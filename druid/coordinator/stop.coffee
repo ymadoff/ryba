@@ -3,7 +3,7 @@
 
     module.exports = header: 'Druid Coordinator # Stop', label_true: 'STOPPED', handler: ->
       {druid, clean_logs} = @config.ryba
-      @service_stop
+      @service.stop
         name: 'druid-coordinator'
         if_exists: '/etc/init.d/druid-coordinator'
 

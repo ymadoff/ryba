@@ -85,7 +85,7 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
           target: '/etc/init.d/hbase-master'
           mode: 0o0755
           unlink: true
-        @service_restart
+        @service.restart
           name: 'hbase-master'
           if: -> @status -4
 

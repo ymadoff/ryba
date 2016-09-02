@@ -5,4 +5,4 @@
 
 ## Status
 
-      @service_status name: 'mongodb-shard-server'
+      @service.status name: 'mongodb-shard-server'

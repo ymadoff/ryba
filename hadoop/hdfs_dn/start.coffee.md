@@ -16,4 +16,4 @@ HADOOP_SECURE_DN_USER=hdfs /usr/hdp/current/hadoop-hdfs-datanode/../hadoop/sbin/
     module.exports = header: 'HDFS DN Start', label_true: 'STARTED', handler: ->
       @call once: true, 'masson/core/krb5_client/wait'
       @call once: true, 'ryba/zookeeper/server/wait'
-      @service_start name: 'hadoop-hdfs-datanode'
+      @service.start name: 'hadoop-hdfs-datanode'

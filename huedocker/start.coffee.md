@@ -23,5 +23,5 @@ command:
 service hue-server-docker start
 ```
 
-      @service_start
+      @service.start
         name: hue_docker.service
