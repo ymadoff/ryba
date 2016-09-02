@@ -321,7 +321,7 @@ Example:
       #     hue_docker.ini['hadoop']['yarn_clusters']['default']['spark_history_server_url'] ?= "http://#{shs_ctx.config.host}:#{shs_ctx.config.ryba.spark.history.conf['spark.history.ui.port']}"
       # else 
       #   blacklisted_app.push 'spark'
-      
+
       # Zookeeper
       # for now we do not support zookeeper rest interface
       # zookeeper_ctxs = ctx.contexts ['ryba/zookeeper/server']
@@ -375,7 +375,7 @@ Example:
         hue_docker.ini['notebook']['interpreters']['r'] ?= {}
         hue_docker.ini['notebook']['interpreters']['r']['name'] ?= 'r'
         hue_docker.ini['notebook']['interpreters']['r']['interface'] ?= 'livy-batch'
-      
+
 ## Configuration for Proxy Users
 
       hadoop_ctxs = @contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']

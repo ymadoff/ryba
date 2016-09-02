@@ -145,7 +145,7 @@ the default database while mysql is the recommanded choice.
               'admin_password': db_admin.password
               'username': user
               'password': password
-            @db.database.exists 
+            @db.database.exists
               'engine': hue_docker.ini.desktop.database.engine
               'host': db_admin.host
               'admin_username': db_admin.username
