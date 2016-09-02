@@ -36,13 +36,14 @@
 
       @render
         header: 'Solr Config'
-        source: solr.cloud_docker.conf_source
         target: "#{solr.cloud_docker.conf_dir}/solr.xml"
+        source: solr.cloud_docker.conf_source
+        local_source: true
         uid: solr.user.name
         gid: solr.group.name
+        context: @config
         mode: 0o0755
-        context: @
-        local: true
+        unlink: true
         backup: true
         eof: true
 

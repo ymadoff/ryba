@@ -257,9 +257,9 @@ network_mode: host (port collision).
             config_host.security["authorization"] ?= {}
             config_host.security["authorization"]['class'] ?= 'solr.RuleBasedAuthorizationPlugin'
             config_host.security["authorization"]['permissions'] ?= []
-            # config_host.security["authorization"]['permissions'].push name: 'security-edit' , role: 'admin' unless config_host.security["authorization"]['permissions'].indexOf({name: 'security-edit' , role: 'admin'}) > -1 #define new role 
+            config_host.security["authorization"]['permissions'].push name: 'security-edit' , role: 'admin' unless config_host.security["authorization"]['permissions'].filter( (perm) -> return perm if perm['name']?).length > 0 #define new role 
             # config_host.security["authorization"]['permissions'].push name: 'read' , role: 'reader' unless config_host.security["authorization"]['permissions'].indexOf({name: 'read' , role: 'reader' }) > -1  #define new role
-            config_host.security["authorization"]['permissions'].push name: 'all' , role: 'manager' unless config_host.security["authorization"]['permissions'].indexOf({name: 'all' , role: 'manager' }) > -1  #define new role
+            # config_host.security["authorization"]['permissions'].push name: 'all' , role: 'manager' unless config_host.security["authorization"]['permissions'].indexOf({name: 'all' , role: 'manager' }) > -1  #define new role
             config_host.security["authorization"]['user-role'] ?= {}
             if config_host.security["authentication"]['class'] is 'org.apache.solr.security.KerberosPlugin'
               config_host['env']['SOLR_AUTHENTICATION_CLIENT_CONFIGURER'] ?= 'org.apache.solr.client.solrj.impl.Krb5HttpClientConfigurer' 
