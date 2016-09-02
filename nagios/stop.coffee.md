@@ -18,6 +18,7 @@ The file storing the PID is "/var/run/nagios.pid".
       @service.stop
         name: 'nagios'
         code_stopped: 1
+        if_exists: '/etc/init.d/nagios'
 
 ## Stop Clean Logs
 
