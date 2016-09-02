@@ -162,7 +162,7 @@ And it is configured by Ryba only in ryba/solr/cloud_docker installation.
           ranger.admin.install['audit_solr_port'] ?= cluster_config.port
           #Search for a cloud_docker cluster find in solr.cloud_docker.clusters
           solrs_urls = cluster_config.hosts.map( (host) ->
-           "#{if solr.cloud_docker.ssl.enabled  then 'https://'  else 'http://'}#{host}:#{cluster_config.port}").join(',')
+           "#{if solr.cloud_docker.ssl.enabled  then 'https://'  else 'http://'}#{host}:#{cluster_config.port}/solr/ranger_audits").join(',')
           if (@contexts 'ryba/ranger/admin').map( (ctx) -> ctx.config.host)[0] is @config.host
             @after
               type: 'service_start'
@@ -195,7 +195,7 @@ Example:
             name: "#{ranger.admin.install['audit_solr_user']}"
             secret:"#{ranger.admin.install['audit_solr_password']}"
           }
-        ranger.admin.install['audit_solr_zookeepers'] ?=  if ranger.admin.solr_type is 'single' then 'NONE' else solr["#{ranger.admin.solr_type}"]['zkhosts']
+        ranger.admin.install['audit_solr_zookeepers'] ?= if ranger.admin.solr_type is 'single' then 'NONE' else solr["#{ranger.admin.solr_type}"]['zkhosts']
 
 ## Ranger Admin SSL
 Configure SSL for Ranger policymanager (webui).
