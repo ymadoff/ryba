@@ -61,17 +61,19 @@ ranger config and ryba will create them.
 User can be External and Internal. Only Internal users can be created from the ranger webui.
 
       # Ranger Manager Users
-      ranger.xusers = [
-          "name": 'ryba'
-          "firstName": 'ryba'
-          "lastName": 'hadoop'
-          "emailAddress": 'ryba@hadoop.ryba'
-          "password": 'ryba123'
-          'userSource': 0
-          'userRoleList': ['ROLE_USER']
-          'groups': []
-          'status': 1
-        ]
+      # Dictionnary containing as a key the name of the ranger admin webui users
+      # and value and user properties.
+      ranger.users ?= {}
+      ranger.users['ryba'] ?=
+        "name": 'ryba'
+        "firstName": 'ryba'
+        "lastName": 'hadoop'
+        "emailAddress": 'ryba@hadoop.ryba'
+        "password": 'ryba123'
+        'userSource': 1
+        'userRoleList': ['ROLE_USER']
+        'groups': []
+        'status': 1
       ranger.lock = "/etc/ranger/#{Date.now()}"
       # Ranger Admin configuration
       ranger.admin ?= {}
@@ -297,6 +299,8 @@ Ryba injects function to the different contexts.
       ranger.plugins.password ?= 'ranger123'
 
 ## HDFS Plugin
+For the HDFS plugin, the executed script already create the hdfs user to ranger admin
+as external.
 
       ranger.plugins.hdfs_enabled ?= if nn_ctxs.length > 0 then true else false
       if ranger.plugins.hdfs_enabled 
@@ -430,16 +434,16 @@ Configure Audit to SOLR
       if ranger.plugins.yarn_enabled 
         throw Error 'Need YARN to enable ranger YARN Plugin' unless rm_ctxs.length > 1
         # Ranger Yarn User
-        ranger.xusers.push 
-            "name": 'yarn'
-            "firstName": 'yarn'
-            "lastName": 'hadoop'
-            "emailAddress": 'yarn@hadoop.ryba'
-            "password": 'yarn123'
-            'userSource': 0
-            'userRoleList': ['ROLE_USER']
-            'groups': []
-            'status': 1
+        ranger.users['yarn'] ?= 
+          "name": 'yarn'
+          "firstName": 'yarn'
+          "lastName": 'hadoop'
+          "emailAddress": 'yarn@hadoop.ryba'
+          "password": 'yarn123'
+          'userSource': 1
+          'userRoleList': ['ROLE_USER']
+          'groups': []
+          'status': 1
         for rm_ctx in rm_ctxs
           # Commun Configuration
           rm_ctx.config.ryba.ranger ?= {}
@@ -580,13 +584,13 @@ Used only if SSL is enabled between Policy Admin Tool and Plugin
       if ranger.plugins.hbase_enabled 
         throw Error 'Need HBase to enable ranger HBase Plugin' unless rm_ctxs.length > 1
         # Ranger HBase Webui xuser
-        ranger.xusers.push 
+        ranger.users['hbase'] ?=
           "name": 'hbase'
           "firstName": ''
           "lastName": 'hadoop'
           "emailAddress": 'hbase@hadoop.ryba'
           "password": 'hbase123'
-          'userSource': 0
+          'userSource': 1
           'userRoleList': ['ROLE_USER']
           'groups': []
           'status': 1
@@ -880,17 +884,15 @@ Ranger Hive plugin runs inside Hiveserver JVM
       if ranger.plugins.hive_enabled 
         throw Error 'Need Hive Server2 to enable ranger Hive Plugin' unless hive_ctxs.length > 1
         # Ranger Yarn User
-        ranger.xusers.push 
-            "name": 'hive'
-            "firstName": 'hive'
-            "lastName": 'hadoop'
-            "emailAddress": 'hive@hadoop.ryba'
-            "password": 'hive123'
-            'userSource': 0
-            'userRoleList': ['ROLE_USER']
-            'groups': []
-            'status': 1
-
+        ranger.users['hive'] ?=
+          "name": 'hive'
+          "firstName": 'hive'
+          "lastName": 'hadoop'
+          "emailAddress": 'hive@hadoop.ryba'
+          'userSource': 1
+          'userRoleList': ['ROLE_USER']
+          'groups': []
+          'status': 1
         port = if hive_ctxs[0].config.ryba.hive.site['hive.server2.transport.mode'] is 'http'
         then hive_ctxs[0].config.ryba.hive.site['hive.server2.thrift.http.port']
         else hive_ctxs[0].config.ryba.hive.site['hive.server2.thrift.port']

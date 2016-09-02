@@ -28,29 +28,32 @@ Modify admin account password. By default the login:pwd  is `admin:admin`.
 Deploying some user accounts. This middleware is here to serve
 as an example of adding a user,and giving it some permission.
 Requires `admin` user to have `ROLE_SYS_ADMIN`.
+Method to check is user account already exit is not identical base on user source.
+Indeed usersource to 1 means external user and so unknown password.
 
-      @call header: 'Ranger X Users Accounts', handler: (_, callback) ->
-        done = 0
-        each ranger.xusers
-        .call (xuser, _, next) =>
+      @call header: 'Ranger Admin Manager Users Accounts', handler: ->
+        for name, user of ranger.users
           @execute
+            if: user.userSource is 0
             cmd: """
               curl --fail -H "Content-Type: application/json"   -k -X POST \ 
-              -d '#{JSON.stringify xuser}' -u admin:#{ranger.admin.password} \
+              -d '#{JSON.stringify user}' -u admin:#{ranger.admin.password} \
               \"#{ranger.admin.install['policymgr_external_url']}/service/xusers/secure/users\"
             """
             unless_exec: """
               curl --fail -H "Content-Type: application/json"   -k -X GET \ 
-              -u #{xuser.name}:#{xuser.password} \
+              -u #{name}:#{user.password} \
               \"#{ranger.admin.install['policymgr_external_url']}/service/users/profile\"
             """
-          @call 
-            if: -> @status -1
-            handler: ->
-              done++
-          @then next
-        .then (err) -> callback err, if done > 0 then true else false
-
-## Dependencies
-
-    each = require 'each'
+          @execute
+            if: user.userSource is 1 
+            cmd: """
+              curl --fail -H "Content-Type: application/json"   -k -X POST \ 
+              -d '#{JSON.stringify user}' -u admin:#{ranger.admin.password} \
+              \"#{ranger.admin.install['policymgr_external_url']}/service/xusers/secure/users\"
+            """
+            unless_exec: """
+              curl --fail -H "Content-Type: application/json"   -k -X GET \ 
+              -u admin:#{ranger.admin.password} \
+              \"#{ranger.admin.install['policymgr_external_url']}/service/xusers/users\" | grep '#{name}'
+            """
