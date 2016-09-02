@@ -611,8 +611,8 @@ The repository name should match the reposity name in web ui.
           hbase_plugin.install['REPOSITORY_NAME'] ?= 'hadoop-ryba-hbase'
           hbase_plugin.service_repo ?=
             'configs': 
-              'password': hm_ctxs[0].config.ryba.hbase.admin.principal
-              'username': hm_ctxs[0].config.ryba.hbase.admin.password
+              'username': hm_ctxs[0].config.ryba.hbase.admin.principal
+              'password': hm_ctxs[0].config.ryba.hbase.admin.passord
               'hadoop.security.authorization': core_site['hadoop.security.authorization']
               'hbase.master.kerberos.principal': hm_ctxs[0].config.ryba.hbase.master.site['hbase.master.kerberos.principal']
               'hadoop.security.authentication': core_site['hadoop.security.authentication']
