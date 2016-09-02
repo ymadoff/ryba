@@ -8,7 +8,7 @@ variables but also inject some function to be executed.
       require('../../commons/db_admin').handler.call @
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../../hadoop/hdfs_nn/configure').handler
       dn_ctxs = @contexts 'ryba/hadoop/hdfs_dn', require('../../hadoop/hdfs_dn/configure').handler
-      nm_ctxs = @contexts 'ryba/hadoop/hdfs_dn', require('../../hadoop/hdfs_dn/configure').handler
+      nm_ctxs = @contexts 'ryba/hadoop/yarn_nm', require('../../hadoop/yarn_nm/configure').handler
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm', require('../../hadoop/yarn_rm/configure').handler
       hm_ctxs = @contexts 'ryba/hbase/master',  require('../../hbase/master/configure').handler
       rs_ctxs = @contexts 'ryba/hbase/regionserver', require('../../hbase/regionserver/configure').handler
@@ -313,12 +313,7 @@ as external.
           nn_ctx.config.ryba.hdfs.namenode_opts += " -Djavax.net.ssl.trustStore=#{nn_ctx.config.ryba.ssl_server['ssl.server.truststore.location']} "
           nn_ctx.config.ryba.hdfs.namenode_opts += " -Djavax.net.ssl.trustStorePassword=#{nn_ctx.config.ryba.ssl_server['ssl.server.truststore.password']}"
           # HDFS Plugin configuration
-          hdfs_plugin = nn_ctx.config.ryba.ranger.hdfs_plugin ?= {} 
-          if ryba.security is 'kerberos' 
-            hdfs_plugin.principal = 'hdfs'
-            hdfs_plugin.password = hdfs.krb5_user.password
-          hdfs_plugin.principal ?= 'hdfs'
-          hdfs_plugin.password ?= ''
+          hdfs_plugin = nn_ctx.config.ryba.ranger.hdfs_plugin ?= {}
           hdfs_plugin.install ?= {}
           hdfs_plugin.install['PYTHON_COMMAND_INVOKER'] ?= 'python'
 
@@ -330,8 +325,8 @@ The properties can be found [here][hdfs-repository]
           hdfs_plugin.install['REPOSITORY_NAME'] ?= 'hadoop-ryba-hdfs'
           hdfs_plugin.service_repo ?=
             'configs': 
-              'password': hdfs_plugin.password
-              'username': hdfs_plugin.principal
+              'password': hdfs.krb5_user.principal
+              'username': hdfs.krb5_user.password
               'fs.default.name': core_site['fs.defaultFS']
               'hadoop.security.authentication': core_site['hadoop.security.authentication']
               'dfs.namenode.kerberos.principal': nn_ctxs[0].config.ryba.hdfs.site['dfs.namenode.kerberos.principal']
@@ -466,8 +461,8 @@ The repository name should match the reposity name in web ui.
           yarn_plugin.install['REPOSITORY_NAME'] ?= 'hadoop-ryba-yarn'
           yarn_plugin.service_repo ?=
             'configs': 
-              'password': yarn_plugin.password
-              'username': yarn_plugin.principal     
+              'password': hdfs.krb5_user.principal
+              'username': hdfs.krb5_user.principal
               'yarn.url': yarn_url
             'description': 'YARN Repo'
             'isEnabled': true
@@ -606,11 +601,6 @@ Used only if SSL is enabled between Policy Admin Tool and Plugin
           # HBase Plugin configuration
           hbase_plugin = ctx.config.ryba.ranger.hbase_plugin ?= {}
           hbase_plugin.policy_name ?= "Ranger-Ryba-HBase-Policy"
-          if ryba.security is 'kerberos' 
-            hbase_plugin.principal = 'hbase'
-            hbase_plugin.password = hm_ctxs[0].config.ryba.hbase.admin.password
-          hbase_plugin.principal ?= 'hbase'
-          hbase_plugin.password ?= ''
           hbase_plugin.install ?= {}
           hbase_plugin.install['PYTHON_COMMAND_INVOKER'] ?= 'python'
 
@@ -621,8 +611,8 @@ The repository name should match the reposity name in web ui.
           hbase_plugin.install['REPOSITORY_NAME'] ?= 'hadoop-ryba-hbase'
           hbase_plugin.service_repo ?=
             'configs': 
-              'password': hbase_plugin.password
-              'username': hbase_plugin.principal   
+              'password': hm_ctxs[0].config.ryba.hbase.admin.principal
+              'username': hm_ctxs[0].config.ryba.hbase.admin.password
               'hadoop.security.authorization': core_site['hadoop.security.authorization']
               'hbase.master.kerberos.principal': hm_ctxs[0].config.ryba.hbase.master.site['hbase.master.kerberos.principal']
               'hadoop.security.authentication': core_site['hadoop.security.authentication']
@@ -768,9 +758,7 @@ The repository name should match the reposity name in web ui.
           kb_ctx.config.ryba.ranger.group = ranger.group
           # HDFS Plugin configuration
           kafka_plugin = kb_ctx.config.ryba.ranger.kafka_plugin ?= {}
-          kb_ctx.config.ryba.kafka.broker.config['authorizer.class.name'] = 'org.apache.ranger.authorization.kafka.authorizer.RangerKafkaAuthorizer'  
-          kafka_plugin.principal ?= ranger.plugins.principal
-          kafka_plugin.password ?= ranger.plugins.password        
+          kb_ctx.config.ryba.kafka.broker.config['authorizer.class.name'] = 'org.apache.ranger.authorization.kafka.authorizer.RangerKafkaAuthorizer'
           kafka_plugin.install ?= {}
           kafka_plugin.install['PYTHON_COMMAND_INVOKER'] ?= 'python'
 
@@ -782,8 +770,8 @@ The properties can be found [here][kafka-repository]
           kafka_plugin.install['REPOSITORY_NAME'] ?= 'hadoop-ryba-kafka'
           kafka_plugin.service_repo ?=
             'configs': 
-              'password': kafka_plugin.password
-              'username': kafka_plugin.principal
+              'password': kb_ctxs[0].config.ryba.kafka.admin.password
+              'username': kb_ctxs[0].config.ryba.kafka.admin.principal
               'hadoop.security.authentication': core_site['hadoop.security.authentication']
               'zookeeper.connect': kb_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect'].join(',')
               'commonNameForCertificate': ''           
@@ -897,7 +885,7 @@ Ranger Hive plugin runs inside Hiveserver JVM
         then hive_ctxs[0].config.ryba.hive.site['hive.server2.thrift.http.port']
         else hive_ctxs[0].config.ryba.hive.site['hive.server2.thrift.port']
         hive_url = 'jdbc:hive2://'
-        hive_url += "#{hive_ctxs[0].config.host}:#{port}"
+        hive_url += "#{hive_ctxs[0].config.host}:#{port}/"
         hive_url += ";principal=#{hive_ctxs[0].config.ryba.hive.site['hive.server2.authentication.kerberos.principal']}" if @config.ryba.security is 'kerberos'
         if hive_ctxs[0].config.ryba.hive.site['hive.server2.use.SSL'] is 'true'
           hive_url += ";ssl=true"
@@ -1029,7 +1017,6 @@ Used only if SSL is enabled between Policy Admin Tool and Plugin
 ## Dependencies
 
     quote = require 'regexp-quote'
-
 
 [ranger-2.4.0]:(http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/configure-the-ranger-policy-administration-authentication-moades.html)
 [ranger-ssl]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_Security_Guide/content/configure_non_ambari_ranger_ssl.html) 

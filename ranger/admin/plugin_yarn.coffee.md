@@ -112,6 +112,14 @@ we execute this task using the rest api.
           merge: true
           properties:
             'ranger.plugin.yarn.policy.rest.ssl.config.file': "#{yarn.rm.conf_dir}/ranger-policymgr-ssl.xml"
+        @write
+          header: 'Fix Ranger YARN Plugin Env'
+          destination: "#{hdfs.rm.conf_dir}/hadoop-env.sh"
+          write: [
+            match: RegExp "^export YARN_OPTS=.*", 'mg'
+            replace: "export YARN_OPTS=\"-Dhdp.version=$HDP_VERSION $YARN_OPTS -Djavax.net.ssl.trustStore=#{ssl_server['ssl.server.truststore.location']} -Djavax.net.ssl.trustStorePassword=#{ssl_server['ssl.server.truststore.password']} \" # RYBA, DONT OVERWRITE"
+            append: true
+          ]
 
 
 ## Dependencies

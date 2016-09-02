@@ -70,6 +70,9 @@ we execute this task using the rest api.
               hdfs dfs -mkdir -p #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hive
               hdfs dfs -chown -R #{hive.user.name}:#{hive.user.name} #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hive
               hdfs dfs -chmod 750 #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hive
+              hdfs dfs -mkdir -p #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hiveServer2
+              hdfs dfs -chown -R #{hive.user.name}:#{hive.user.name} #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hiveServer2
+              hdfs dfs -chmod 750 #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hiveserver2
             """
 
 # Plugin Scripts 
