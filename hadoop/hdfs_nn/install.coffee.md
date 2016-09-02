@@ -160,7 +160,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
             log4j.appender.SOCKET.ReconnectionDelay=10000
             """
           append: true
-      @write
+      @file
         header: 'Log4j'
         target: "#{hdfs.nn.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
@@ -171,7 +171,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
 Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collector like Ganglia or Graphite.
 
-      @write_properties
+      @file.properties
         header: 'Metrics'
         target: "#{hdfs.nn.conf_dir}/hadoop-metrics2.properties"
         content: hadoop_metrics.config
@@ -265,13 +265,13 @@ The "dfs.hosts.exclude" property specifies the file that contains a list of
 hosts that are not permitted to connect to the namenode.  The full pathname of
 the file must be specified.  If the value is empty, no hosts are excluded.
 
-      @write
+      @file
         header: 'Include'
         content: "#{hdfs.include.join '\n'}"
         target: "#{hdfs.nn.site['dfs.hosts']}"
         eof: true
         backup: true
-      @write
+      @file
         header: 'Exclude'
         content: "#{hdfs.exclude.join '\n'}"
         target: "#{hdfs.nn.site['dfs.hosts.exclude']}"
@@ -288,7 +288,7 @@ to run commands on many hosts at once. In order to use this functionality, ssh
 trusts (via either passphraseless ssh or some other means, such as Kerberos)
 must be established for the accounts used to run Hadoop.
 
-      @write
+      @file
         header: 'Slaves'
         content: @contexts('ryba/hadoop/hdfs_dn').map((ctx) -> ctx.config.host).join '\n'
         target: "#{hdfs.nn.conf_dir}/slaves"

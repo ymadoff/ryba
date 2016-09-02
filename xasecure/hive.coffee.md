@@ -39,7 +39,7 @@
     module.exports.push header: 'XASecure Hive # Install', timeout: -1, handler: ->
       {conf_dir} = ctx.config.ryba.hive
       {hive, hive_url} = ctx.config.xasecure
-      @write
+      @file
         target: "/var/tmp/#{path.basename hive_url, '.tar'}/install.properties"
         write: for k, v of hive
           match: RegExp "^#{quote k}=.*$", 'mg'

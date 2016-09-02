@@ -5,10 +5,6 @@
       {force_check, hbase, titan} = @config.ryba
       {shortname} = @config
 
-## register
-
-      @register 'write_jaas', 'ryba/lib/write_jaas'
-
 ## Wait
 
       @call once: true, 'ryba/hbase/master/wait'
@@ -23,7 +19,7 @@ Check the configuration file (current.properties).
         config[k] = v for k, v of titan.config
         config['storage.hbase.table'] = 'titan-test'
         check = false
-        @write_properties
+        @file.properties
           target: path.join titan.home, "titan-#{titan.config['storage.backend']}-#{titan.config['index.search.backend']}-test.properties"
           content: config
           separator: '='

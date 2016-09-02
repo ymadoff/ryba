@@ -60,7 +60,7 @@ inside "/etc/init.d" and activate it on startup.
           name: 'hive-webhcat-server'
         @hdp_select
           name: 'hive-webhcat'
-        @write
+        @file
           header: 'Init Script'
           source: "#{__dirname}/../resources/hive-webhcat-server.j2"
           local_source: true
@@ -106,7 +106,7 @@ Upload configuration inside '/etc/hive-webhcat/conf/webhcat-site.xml'.
 
 Update environnmental variables inside '/etc/hive-webhcat/conf/webhcat-env.sh'.
 
-      @write
+      @file
         header: 'Webhcat Env'
         source: "#{__dirname}/../../resources/hive-webhcat/webhcat-env.sh"
         local_source: true

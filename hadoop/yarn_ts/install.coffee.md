@@ -106,7 +106,7 @@ Update the "yarn-site.xml" configuration file.
         target: "#{yarn.ats.conf_dir}/yarn-site.xml"
         properties: yarn.site
         backup: true
-      @write
+      @file
         header: 'Log4j'
         target: "#{yarn.ats.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
@@ -123,7 +123,7 @@ Update the "yarn-site.xml" configuration file.
 
 Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collector like Ganglia or Graphite.
 
-      @write_properties
+      @file.properties
         header: 'Metrics'
         target: "#{yarn.ats.conf_dir}/hadoop-metrics2.properties"
         content: hadoop_metrics.config

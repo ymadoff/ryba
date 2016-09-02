@@ -44,7 +44,7 @@ Environment passed to Hadoop.
       env = for k, v of tez.env
         "export #{k}=#{v}"
       classpath = "#{tez.env['TEZ_CONF_DIR']}:#{tez.env['TEZ_JARS']}"
-      @write
+      @file
         header: 'Environment'
         target: '/etc/profile.d/tez.sh'
         content: env.join '\n'

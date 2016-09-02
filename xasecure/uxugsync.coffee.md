@@ -57,7 +57,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push header: 'XASecure Sync # Install', timeout: -1, handler: ->
       {uxugsync, uxugsync_url} = @config.xasecure
-      @write
+      @file
         target: "/var/tmp/#{path.basename uxugsync_url, '.tar'}/install.properties"
         write: for k, v of uxugsync
           match: RegExp "^#{k} = .*$", 'mg'
@@ -71,4 +71,3 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
     url = require 'url'
     path = require 'path'
     each = require 'each'
-

@@ -79,7 +79,7 @@ Could also be natively corrected in the next shinken version. (actually 2.4)
 
       @call header: 'Fix Groups View', handler: ->
         for object in  ['host', 'service']
-          @write
+          @file
             target: "/usr/lib/python2.7/site-packages/shinken/objects/#{object}group.py"
             write: [
               match: new RegExp "'#{object}group_name': StringProp.*,$", 'm'

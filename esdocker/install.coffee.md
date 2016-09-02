@@ -7,16 +7,16 @@
       for es_name,es of clusters then do (es_name,es) =>
         docker_services = {}
         docker_networks = {}
-        @write_yaml
+        @file.yaml
           header: 'elasticsearch'
           target: "/etc/elasticsearch/#{es_name}/conf/elasticsearch.yml"
           content:es.config
-        @write
+        @file
           header: 'elasticsearch logging'
           target: "/etc/elasticsearch/#{es_name}/conf/logging.yml"
           source: "#{__dirname}/resources/logging.yml"
           local_source: true
-        @write
+        @file
           header: 'logstash'
           target: "/etc/elasticsearch/#{es_name}/logstash_config/logstash.conf"
           source: "#{__dirname}/resources/logstash.conf"
@@ -112,7 +112,7 @@
                 ]
 
           yaml_data = {version:'2',services:docker_services,networks:docker_networks}
-          @write_yaml
+          @file.yaml
             header: 'docker-compose'
             target: "/etc/elasticsearch/#{es_name}/docker-compose.yml"
             content:yaml_data

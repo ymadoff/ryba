@@ -10,7 +10,7 @@
 
       @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdp_select', 'ryba/lib/hdp_select'
-      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
 
 ## Users & Groups
 
@@ -130,7 +130,7 @@ inside "/etc/init.d" and activate it on startup.
         local_default: true
         properties: yarn.rm.site
         backup: true
-      @write
+      @file
         header: 'Log4j'
         target: "#{yarn.rm.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
@@ -148,7 +148,7 @@ inside "/etc/init.d" and activate it on startup.
 
 Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collector like Ganglia or Graphite.
 
-      @write_properties
+      @file.properties
         header: 'Metrics'
         target: "#{yarn.rm.conf_dir}/hadoop-metrics2.properties"
         content: hadoop_metrics.config
@@ -214,7 +214,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 The JAAS file is used by the ResourceManager to initiate a secure connection 
 with Zookeeper.
 
-      @write_jaas
+      @file.jaas
         header: 'Kerberos JAAS'
         target: "#{yarn.rm.conf_dir}/yarn-rm.jaas"
         content: Client:

@@ -192,7 +192,7 @@ This part of the setup is not documented. Deduce from launch scripts.
           replace: "JAVA_OPTS=\"${JAVA_OPTS} -D#{k}=#{v}\" # RYBA, DONT OVERWRITE"
           append: true
 
-      @write
+      @file
         header: 'Admin Env'
         target: '/etc/ranger/admin/conf/ranger-admin-env-1.sh'
         write: writes
@@ -200,7 +200,7 @@ This part of the setup is not documented. Deduce from launch scripts.
 
 ## Log4j
 
-      @write_properties
+      @file.properties
         target: '/etc/ranger/admin/conf/log4j.properties'
         header: 'ranger Log4properties'
         content: ranger.admin.log4j

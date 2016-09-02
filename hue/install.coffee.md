@@ -92,7 +92,7 @@ TODO: only work if Oozie is running on the same server as Hue
 Configure the "/etc/hue/conf" file following the [HortonWorks](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue-5-2.html) 
 recommandations. Merge the configuration object from "hdp.hue.ini" with the properties of the target file. 
 
-      @write_ini
+      @file.ini
         header: 'Configure'
         target: "#{hue.conf_dir}/hue.ini"
         content: hue.ini
@@ -154,12 +154,12 @@ the "security_enabled" property set to "true".
 
       @call header: 'Hue # SSL Client', handler: ->
         hue.ca_bundle = '' unless hue.ssl.client_ca
-        @write
+        @file
           target: "#{hue.ca_bundle}"
           source: "#{hue.ssl.client_ca}"
           local_source: true
           if: !!hue.ssl.client_ca
-        @write
+        @file
           target: '/etc/init.d/hue'
           match: /^DAEMON="export REQUESTS_CA_BUNDLE='.*';\$DAEMON"$/m
           replace: "DAEMON=\"export REQUESTS_CA_BUNDLE='#{hue.ca_bundle}';$DAEMON\""
@@ -184,7 +184,7 @@ changes.
           target: "#{hue.conf_dir}/key.pem"
           uid: hue.user.name
           gid: hue.group.name
-        @write_ini
+        @file.ini
           target: "#{hue.conf_dir}/hue.ini"
           content: desktop:
             ssl_certificate: "#{hue.conf_dir}/cert.pem"
@@ -204,12 +204,12 @@ changes.
 In the current version "2.5.1", the HTML of the banner is escaped.
 
       @call header: 'Hue # Fix Banner', handler: ->
-        @write
+        @file
           target: '/usr/lib/hue/desktop/core/src/desktop/templates/login.mako'
           match: '${conf.CUSTOM.BANNER_TOP_HTML.get()}'
           replace: '${ conf.CUSTOM.BANNER_TOP_HTML.get() | n,unicode }'
           bck: true
-        @write
+        @file
           target: '/usr/lib/hue/desktop/core/src/desktop/templates/common_header.mako'
           write: [
             match: '${conf.CUSTOM.BANNER_TOP_HTML.get()}'

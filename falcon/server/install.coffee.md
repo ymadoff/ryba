@@ -53,7 +53,7 @@ falcon:x:498:falcon
           name: 'falcon'
         @hdp_select
           name: 'falcon-server'
-        @write
+        @file
           header: 'Init Script'
           source: "#{__dirname}/../resources/falcon"
           local_source: true
@@ -145,7 +145,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
     # module.exports.push header: 'Falcon # Runtime', handler: ->
     #   # {conf_dir, runtime} = @config.ryba.falcon
-    #   # @write_ini
+    #   # @file.ini
     #   #   target: "#{conf_dir}/runtime.properties"
     #   #   content: runtime
     #   #   separator: '='
@@ -156,7 +156,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
     #   write = for k, v of runtime
     #     match: RegExp "^#{quote k}=.*$", 'mg'
     #     replace: "#{k}=#{v}"
-    #   @write
+    #   @file
     #     target: "#{conf_dir}/runtime.properties"
     #     write: write
     #     backup: true
@@ -165,7 +165,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
 ## Configuration
 
-      @write
+      @file
         header: 'Configuration startup'
         target: "#{conf_dir}/startup.properties"
         write: for k, v of startup
@@ -173,7 +173,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
           replace: "#{k}=#{v}"
         backup: true
         eof: true
-      @write
+      @file
         header: 'Configuration runtime'
         target: "#{conf_dir}/runtime.properties"
         write: for k, v of runtime

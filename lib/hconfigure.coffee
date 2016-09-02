@@ -58,4 +58,4 @@ module.exports = (options) ->
   @call ->
     options.content = properties.stringify fnl_props
     options.source = null
-    @write options
+    @file options

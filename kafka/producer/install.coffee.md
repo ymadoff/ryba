@@ -7,7 +7,7 @@
 ## Register
 
       @register 'hdp_select', 'ryba/lib/hdp_select'
-      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
 
 ## Users & Groups
 
@@ -43,7 +43,7 @@ directories.
 Update the file "server.properties" with the properties defined by the
 "ryba.kafka.server" configuration.
 
-      @write 
+      @file 
         header: 'Producer Properties'
         target: "#{kafka.producer.conf_dir}/producer.properties"
         write: for k, v of kafka.producer.config
@@ -55,7 +55,7 @@ Update the file "server.properties" with the properties defined by the
 
 ## Logging
 
-      @write
+      @file
         header: 'Log4j'
         target: "#{kafka.consumer.conf_dir}/log4j.properties"
         write: for k, v of kafka.consumer.log4j
@@ -64,7 +64,7 @@ Update the file "server.properties" with the properties defined by the
           append: true
         backup: true
         eof: true
-      @write
+      @file
         header: 'Tools Log4j'
         target: "#{kafka.producer.conf_dir}/tools-log4j.properties"
         write: for k, v of kafka.producer.log4j
@@ -77,7 +77,7 @@ Update the file "server.properties" with the properties defined by the
 
 ## Kerberos
 
-      @write_jaas
+      @file.jaas
         header: 'Producer JAAS'
         if: -> kafka.producer.env['KAFKA_KERBEROS_PARAMS']?
         target: "#{kafka.producer.conf_dir}/kafka-client.jaas"
@@ -93,7 +93,7 @@ Update the file "server.properties" with the properties defined by the
 
  Exports JAAS configuration to producer JVM properties.
 
-      @write
+      @file
         header: 'Environment'
         target: "#{kafka.producer.conf_dir}/kafka-env.sh"
         write: for k, v of kafka.producer.env

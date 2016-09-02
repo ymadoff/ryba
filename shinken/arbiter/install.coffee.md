@@ -72,12 +72,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             source: "#{__dirname}/resources/#{service}-master.cfg.j2"
             local_source: true
             context: "#{service}s": @contexts "ryba/shinken/#{service}"
-        @write_properties
+        @file.properties
           target: '/etc/shinken/resource.d/resources.cfg'
           content:
             "$PLUGINSDIR$": shinken.plugin_dir
             "$DOCKER_EXEC$": 'docker exec poller-executor'
-        @write
+        @file
           target: '/etc/shinken/shinken.cfg'
           write: for k, v of {
             'date_format': 'iso8601'

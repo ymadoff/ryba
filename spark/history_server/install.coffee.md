@@ -72,7 +72,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Spark History Server Configure
 
-      @write
+      @file
         header: 'Spark env'
         destination : "#{spark.history.conf_dir}/spark-env.sh"
         # See "/usr/hdp/current/spark-historyserver/sbin/spark-daemon.sh" for
@@ -95,7 +95,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           replace:"export JAVA_HOME=#{java_home} # RYBA, DONT OVERWRITE"
           append: true
         ]
-      @write
+      @file
         header: 'Spark Defaults'
         target: "#{spark.history.conf_dir}/spark-defaults.conf"
         write: for k, v of spark.history.conf

@@ -33,7 +33,7 @@ Install the oozie client package. This package doesn't create any user and group
 
 Expose the "OOZIE_URL" environmental variable to every users.
 
-      @write
+      @file
         header: 'Profile Env'
         target: '/etc/profile.d/oozie.sh'
         # export OOZIE_CLIENT_OPTS='-Djavax.net.ssl.trustStore=/etc/hadoop/conf/truststore'

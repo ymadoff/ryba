@@ -7,7 +7,7 @@
 ## Register
 
       @register 'hdp_select', 'ryba/lib/hdp_select'
-      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
 
 ## Users & Groups
 
@@ -43,7 +43,7 @@ directories.
 Update the file "consumer.properties" with the properties defined by the
 "ryba.kafka.consumer" configuration.
 
-      @write
+      @file
         header: 'Consumer Properties'
         target: "#{kafka.consumer.conf_dir}/consumer.properties"
         write: for k, v of kafka.consumer.config
@@ -57,7 +57,7 @@ Update the file "consumer.properties" with the properties defined by the
 
 Update the different log4j properties files
 
-      @write
+      @file
         header: 'Tools Log4j'
         target: "#{kafka.consumer.conf_dir}/tools-log4j.properties"
         write: for k, v of kafka.consumer.log4j
@@ -66,7 +66,7 @@ Update the different log4j properties files
           append: true
         backup: true
         eof: true
-      @write
+      @file
         header: 'Log4j'
         target: "#{kafka.consumer.conf_dir}/log4j.properties"
         write: for k, v of kafka.consumer.log4j
@@ -75,7 +75,7 @@ Update the different log4j properties files
           append: true
         backup: true
         eof: true
-      @write
+      @file
         header: 'Test Log4j'
         target: "#{kafka.consumer.conf_dir}/test-log4j.properties"
         write: for k, v of kafka.consumer.log4j
@@ -89,7 +89,7 @@ Update the different log4j properties files
 
 Write JAAS File for client configuration
 
-      @write_jaas
+      @file.jaas
         header: 'Consumer JAAS'
         if: kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
         target: "#{kafka.consumer.conf_dir}/kafka-client.jaas"
@@ -105,7 +105,7 @@ Write JAAS File for client configuration
 
  Exports JAAS configuration to consumer JVM properties.
 
-      @write
+      @file
         header: 'Environment'
         target: "#{kafka.consumer.conf_dir}/kafka-env.sh"
         write: for k, v of kafka.consumer.env

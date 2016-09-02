@@ -48,14 +48,14 @@ TODO: Generate the "pig.properties" file dynamically, be carefull, the HDP
 companion file defines no properties while the YUM package does.
 
 
-      @write_ini
+      @file.ini
         header: 'Properties'
         target: "#{pig.conf_dir}/pig.properties"
         content: pig.config
         separator: '='
         merge: true
         backup: true
-      @write
+      @file
         header: 'Env'
         source: "#{__dirname}/resources/pig-env.sh"
         target: "#{pig.conf_dir}/pig-env.sh"
@@ -68,7 +68,7 @@ companion file defines no properties while the YUM package does.
         gid: hadoop_group.name
         mode: 0o755
         backup: true
-      @write
+      @file
         header: 'Fix Pig'
         write: [
           match: /^(\s)*slfJarVersion=.*/mg

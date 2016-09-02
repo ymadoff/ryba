@@ -89,7 +89,7 @@ Update the file "install.properties" with the properties defined by the
         eof: true
         backup: true
 
-      @write
+      @file
         header: 'Configure Setup Scripts'
         target: '/usr/hdp/current/ranger-usersync/setup.py'
         write : for k, v of ranger.usersync.setup
@@ -126,7 +126,7 @@ Update the file "install.properties" with the properties defined by the
           match: RegExp "^JAVA_OPTS=.*#{k}", 'm'
           replace: "JAVA_OPTS=\"${JAVA_OPTS} -D#{k}=#{v}\" # RYBA, DONT OVERWRITE 'ryba/ranger/usersync'"
           append: true
-      @write
+      @file
         header: 'Usersync Env'
         target: '/etc/ranger/usersync/conf/ranger-usersync-env-1.sh'
         write: writes

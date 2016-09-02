@@ -38,7 +38,7 @@
 
     module.exports.push header: 'XASecure HDFS # Configure', timeout: -1, handler: ->
       {hdfs_url} = @config.xasecure
-      @write
+      @file
         target: "/var/tmp/#{path.basename hdfs_url, '.tar'}/install.properties"
         write: for k, v of hdfs
           match: RegExp "^#{quote k}=.*$", 'mg'
@@ -46,7 +46,7 @@
         eof: true
       @execute
         cmd: "cd /var/tmp/#{path.basename hdfs_url, '.tar'} && ./install.sh"
-      @write
+      @file
         target: '/usr/lib/hadoop/libexec/hadoop-config.sh'
         match: /.*xasecure\-hadoop\-env\.sh.*/mg
         replace: """

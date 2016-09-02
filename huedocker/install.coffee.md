@@ -114,7 +114,7 @@ Update the "hbase-site.xml" with the hbase/thrift kerberos principal.
 Configure the "/etc/hue/conf" file following the [HortonWorks](http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.0.8.0/bk_installing_manually_book/content/rpm-chap-hue-5-2.html)
 recommandations. Merge the configuration object from "pseudo-distributed.ini" with the properties of the target file.
 
-      @write_ini
+      @file.ini
         header: 'hue ini'
         target: "#{hue_docker.conf_dir}/hue_docker.ini"
         content: hue_docker.ini
@@ -184,7 +184,7 @@ client over ssl. Then the REQUESTS_CA_BUNDLE environment variable is set to the
 path  during docker run.
 
       # hue_docker.ca_bundle = '' unless hue_docker.ssl.client_ca
-      @write
+      @file
         header: 'SSL Client'
         target: "#{hue_docker.ca_bundle}"
         source: "#{hue_docker.ssl.client_ca}"
@@ -212,7 +212,7 @@ changes.
           target: "#{hue_docker.conf_dir}/key.pem"
           uid: hue_docker.user.name
           gid: hue_docker.group.name
-        @write_ini
+        @file.ini
           target: "#{hue_docker.conf_dir}/hue_docker.ini"
           content: desktop:
             ssl_certificate: "#{hue_docker.conf_dir}/cert.pem"

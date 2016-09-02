@@ -15,7 +15,7 @@ installed. The script will only be executed the first time it is deployed
 unless the "hdp.force_check" configuration property is set to "true".
 
       @call header: 'Pig Check Client', label_true: 'CHECKED', timeout: -1, handler: ->
-        @write
+        @file
           content: """
           data = LOAD '/user/#{user.name}/#{@config.shortname}-pig_tmp/data' USING PigStorage(',') AS (text, number);
           result = foreach data generate UPPER(text), number+2;
@@ -39,7 +39,7 @@ unless the "hdp.force_check" configuration property is set to "true".
       @call header: 'Pig Check HCat', label_true: 'CHECKED', timeout: -1, handler: ->
         query = (query) -> "hcat -e \"#{query}\" "
         db = "check_#{@config.shortname}_pig_hcat"
-        @write
+        @file
           content: """
           data = LOAD '#{db}.check_tb' USING org.apache.hive.hcatalog.pig.HCatLoader();
           agroup = GROUP data ALL;

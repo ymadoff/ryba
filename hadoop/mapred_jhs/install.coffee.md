@@ -122,7 +122,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
         target: "#{mapred.jhs.conf_dir}/mapred-site.xml"
         properties: mapred.site
         backup: true
-      @write
+      @file
         header: 'Log4j'
         target: "#{mapred.jhs.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
@@ -157,7 +157,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
 Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collector like Ganglia or Graphite.
 
-      @write_properties
+      @file.properties
         header: 'Metrics'
         target: "#{mapred.jhs.conf_dir}/hadoop-metrics2.properties"
         content: hadoop_metrics.config

@@ -80,7 +80,7 @@ we execute this task using the rest api.
             match: RegExp "^#{quote k}=.*$", 'mg'
             replace: "#{k}=#{v}"
             append: true
-        @write
+        @file
           header: 'Script Fix'
           target: "/usr/hdp/#{version}/ranger-kafka-plugin/enable-kafka-plugin.sh"
           write: [
@@ -98,7 +98,7 @@ we execute this task using the rest api.
 
           ]
           backup: true
-        @write
+        @file
           header: 'Fix Kafka Broker classpath'
           target: "#{kafka.broker.conf_dir}/kafka-env.sh"
           write: [

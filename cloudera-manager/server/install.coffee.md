@@ -20,7 +20,7 @@ Install the packages cloudera-scm-agent and cloudera-scm-daemons
 
 ## Env
 
-      @write
+      @file
         header: 'Environment'
         target: '/etc/default/cloudera-scm-server'
         write: [

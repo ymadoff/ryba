@@ -61,7 +61,7 @@ Create dir where the mongodb-config-server stores its metadata
 Configuration file for mongodb config server.
 
       @call header: 'Configure', handler: ->
-        @write_yaml
+        @file.yaml
           target: "#{mongodb.router.conf_dir}/mongos.conf"
           content: mongodb.router.config
           merge: false
@@ -94,7 +94,7 @@ with pem file. So we append to the file the private key and certficate.
           target: "#{mongodb.router.conf_dir}/cert_file.pem"
           uid: mongodb.user.name
           gid: mongodb.group.name
-        @write
+        @file
           source: "#{mongodb.router.conf_dir}/cert_file.pem"
           target: "#{mongodb.router.conf_dir}/key.pem"
           append: true
@@ -102,7 +102,7 @@ with pem file. So we append to the file the private key and certficate.
           eof: true
           uid: mongodb.user.name
           gid: mongodb.group.name
-        @write
+        @file
           source: "#{mongodb.router.conf_dir}/key_file.pem"
           target: "#{mongodb.router.conf_dir}/key.pem"
           eof: true

@@ -75,7 +75,7 @@ Create dir where the mongodb-shard-server stores its metadata
 Configuration file for mongodb sharding server.
 
       @call header: 'MongoDB Shard Server # Configure', handler: ->
-        @write_yaml
+        @file.yaml
           target: "#{mongodb.shard.conf_dir}/mongod.conf"
           content: mongodb.shard.config
           merge: false
@@ -108,7 +108,7 @@ with pem file. So we append to the file the private key and certficate.
           target: "#{mongodb.shard.conf_dir}/cert_file.pem"
           uid: mongodb.user.name
           gid: mongodb.group.name
-        @write
+        @file
           source: "#{mongodb.shard.conf_dir}/cert_file.pem"
           target: "#{mongodb.shard.conf_dir}/key.pem"
           append: true
@@ -116,7 +116,7 @@ with pem file. So we append to the file the private key and certficate.
           eof: true
           uid: mongodb.user.name
           gid: mongodb.group.name
-        @write
+        @file
           source: "#{mongodb.shard.conf_dir}/key_file.pem"
           target: "#{mongodb.shard.conf_dir}/key.pem"
           eof: true

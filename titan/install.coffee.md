@@ -11,7 +11,7 @@ please see ryba/rexster
     module.exports = header: 'Titan Install', timeout: -1, handler: ->
       {titan, hbase} = @config.ryba
 
-      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
 
 ## Install
 
@@ -65,7 +65,7 @@ Modify envvars in the gremlin scripts.
           match: /^.*# RYBA CONF hbase-env, DON'T OVERWRITE/m
           replace: "CP=\"$CP:#{@config.ryba.hbase.conf_dir}\" # RYBA CONF hbase-env, DON'T OVERWRITE"
           append: /^CP=`abs_path`.*/m
-        @write
+        @file
           target: path.join titan.home, 'bin/gremlin.sh'
           write: write
 
@@ -73,7 +73,7 @@ Modify envvars in the gremlin scripts.
 
 Secure the Zookeeper connection with JAAS
 
-      @write_jaas
+      @file.jaas
         header: 'Kerberos JAAS'
         target: path.join titan.home, 'titan.jaas'
         content: Client:
@@ -87,7 +87,7 @@ Creates a configuration file. Always load this file in Gremlin REPL !
       @call header: 'Gremlin Properties', handler: ->
         storage = titan.config['storage.backend']
         index = titan.config['index.search.backend']
-        @write_properties
+        @file.properties
           target: path.join titan.home, "titan-#{storage}-#{index}.properties"
           content: titan.config
           backup: true
@@ -103,7 +103,7 @@ Creates a configuration file. Always load this file in Gremlin REPL !
 #       config = {}
 #       config[k] = v for k, v of titan.config
 #       config['storage.hbase.table'] = 'titan-test'
-#       @write_properties
+#       @file.properties
 #         target: path.join titan.home, "titan-hbase-#{titan.config['index.search.backend']}-test.properties"
 #         content: config
 #         merge: true

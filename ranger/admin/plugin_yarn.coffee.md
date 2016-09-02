@@ -85,7 +85,7 @@ we execute this task using the rest api.
             match: RegExp "^#{quote k}=.*$", 'mg'
             replace: "#{k}=#{v}"
             append: true
-        @write
+        @file
           header: 'Script Fix'
           target: "/usr/hdp/#{version}/ranger-yarn-plugin/enable-yarn-plugin.sh"
           write:[

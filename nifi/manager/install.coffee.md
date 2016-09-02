@@ -8,7 +8,7 @@
       tmp_archive_location = "/var/tmp/ryba/nifi.tar.gz"
       protocol = if nifi.manager.config.properties['nifi.cluster.protocol.is.secure'] is 'true' then 'https' else 'http'
 
-      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
 
 ## Users
 
@@ -139,7 +139,7 @@ Describe where to get the user athentication onformation from.
           krb_node.ele 'property', name: 'Kerberos Config File', krb5_provider['file']
           krb_node.ele 'property', name: 'Authentication Expiration', '12 hours'
         content = providers.end pretty: true
-        @write
+        @file
           header: 'Login Identity Provider'
           # source: "#{__dirname}/../resources/login-identity-providers.xml.j2"
           target: "#{nifi.manager.conf_dir}/login-identity-providers.xml"
@@ -163,7 +163,7 @@ Set up different users to be able to access the NiFi Web ui
           for a_role in a_user['roles']
             role = user.ele 'role', 'name': "#{a_role}"
         content = users.end pretty:true
-        @write
+        @file
           target: "#{nifi.manager.conf_dir}/authorized-users.xml"
           local_source: true
           content: content
@@ -241,7 +241,7 @@ by sending request to ldaps server
 
 ## JAAS
 
-      @write_jaas
+      @file.jaas
         header: 'Zookeeper JAAS'
         target: "#{nifi.manager.conf_dir}/nifi-zookeeper.jaas"
         content: Client:

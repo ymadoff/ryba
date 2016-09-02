@@ -100,7 +100,7 @@ This production container running as hue service
           file: "#{hue_docker.prod.directory}/Dockerfile"
         , (err, _, checksum) ->
           throw err if err
-          @write
+          @file
             content: "#{checksum}"
             target: "#{hue_docker.prod.directory}/checksum"
         @docker_save

@@ -81,7 +81,7 @@ we execute this task using the rest api.
             match: RegExp "^#{quote k}=.*$", 'mg'
             replace: "#{k}=#{v}"
             append: true
-        @write
+        @file
           header: 'Script Fix'
           target: "/usr/hdp/#{version}/ranger-hdfs-plugin/enable-hdfs-plugin.sh"
           write: [
@@ -110,7 +110,7 @@ we execute this task using the rest api.
           merge: true
           properties:
             'ranger.plugin.hdfs.policy.rest.ssl.config.file': "#{hdfs.nn.conf_dir}/ranger-policymgr-ssl.xml"
-        @write
+        @file
           header: 'Fix Ranger HDFS Plugin Env'
           destination: "#{hdfs.nn.conf_dir}/hadoop-env.sh"
           write: [

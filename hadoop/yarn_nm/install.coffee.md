@@ -139,7 +139,7 @@ SSH connection to the node to gather the memory and CPU informations.
         local_default: true
         properties: yarn.site
         backup: true
-      @write
+      @file
         header: 'Log4j'
         target: "#{yarn.nm.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
@@ -157,7 +157,7 @@ SSH connection to the node to gather the memory and CPU informations.
 
 Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collector like Ganglia or Graphite.
 
-      @write_properties
+      @file.properties
         header: 'Metrics'
         target: "#{yarn.nm.conf_dir}/hadoop-metrics2.properties"
         content: hadoop_metrics.config
@@ -186,7 +186,7 @@ but is owned by 2401"
         @mkdir
           target: "#{hadoop_conf_dir}"
           uid: 'root'
-        @write_ini
+        @file.ini
           target: "#{hadoop_conf_dir}/container-executor.cfg"
           content: container_executor
           uid: 'root'

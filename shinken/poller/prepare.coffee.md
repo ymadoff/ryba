@@ -13,25 +13,21 @@
           source: "#{__dirname}/resources/Dockerfile.j2"
           local_source: true
           context: @config.ryba
-
-        @write
+        @file
           header: 'Write Java Profile'
           target: "#{@config.mecano.cache_dir or '.'}/build/java.sh"
           content: """
           export JAVA_HOME=/usr/java/default
           export PATH=/usr/java/default/bin:$PATH
           """
-
-        @write
+        @file
           header: 'Write RSA Private Key'
           target: "#{@config.mecano.cache_dir or '.'}/build/id_rsa"
           content: @config.connection.private_key
-
-        @write
+        @file
           header: 'Write RSA Public Key'
           target: "#{@config.mecano.cache_dir or '.'}/build/id_rsa.pub"
           content: @config.connection.public_key
-
         @docker_build
           header: 'Build Container'
           image: 'ryba/shinken-poller-executor'

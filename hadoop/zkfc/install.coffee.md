@@ -13,7 +13,7 @@
 
       @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdp_select', 'ryba/lib/hdp_select'
-      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
 
 ## IPTables
 
@@ -78,7 +78,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
           mode: 0o755
           backup: true
           eof: true
-        @write
+        @file
           header: 'Log4j'
           target: "#{zkfc.conf_dir}/log4j.properties"
           source: "#{__dirname}/../resources/log4j.properties"
@@ -109,7 +109,7 @@ stored as "/etc/hadoop/conf/zkfc.jaas"
           randkey: true
           uid: hdfs.user.name
           gid: hadoop_group.name
-        @write_jaas
+        @file.jaas
           target: zkfc.jaas_file
           content: Client:
             principal: zkfc_principal
@@ -147,7 +147,7 @@ setAcl /hadoop-ha sasl:zkfc:cdrwa,sasl:nn:cdrwa,digest:zkfc:ePBwNWc34ehcTu1FTNI7
         # acls.push 'world:anyone:r'
         jaas_user = /^(.*?)[@\/]/.exec(zkfc.principal)?[1]
         acls.push "sasl:#{jaas_user}:cdrwa" if core_site['hadoop.security.authentication'] is 'kerberos'
-        @write
+        @file
           target: "#{zkfc.conf_dir}/zk-auth.txt"
           content: if zkfc.digest.password then "digest:#{zkfc.digest.name}:#{zkfc.digest.password}" else ""
           uid: hdfs.user.name
@@ -167,7 +167,7 @@ setAcl /hadoop-ha sasl:zkfc:cdrwa,sasl:nn:cdrwa,digest:zkfc:ePBwNWc34ehcTu1FTNI7
           throw Error "Failed to get digest" unless digest
           acls.push "digest:#{digest}:cdrwa"
         @call ->
-          @write
+          @file
             target: "#{zkfc.conf_dir}/zk-acl.txt"
             content: acls.join ','
             uid: hdfs.user.name
@@ -213,7 +213,7 @@ inserted if ALL users or the HDFS user access is denied.
           @call (_, callback) ->
             fs.readFile "#{ssh_fencing.public_key}", (err, content) =>
               return callback err if err
-              @write
+              @file
                 target: "#{hdfs.user.home}/.ssh/authorized_keys"
                 content: content
                 append: true
@@ -236,7 +236,7 @@ inserted if ALL users or the HDFS user access is denied.
                       content.push "+ : #{hdfs.user.name} : #{nn_hosts.join ','}"
                     content.push line
                   return callback null, false if content.length is source.length
-                  @write
+                  @file
                     target: '/etc/security/access.conf'
                     content: content.join '\n'
                   .then callback

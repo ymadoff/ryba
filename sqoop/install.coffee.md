@@ -30,7 +30,7 @@ hadoop:x:502:yarn,mapred,hdfs,hue
 
 Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
 
-      @write
+      @file
         header:'Sqoop Environment'
         target: "#{sqoop.conf_dir}/sqoop-env.sh"
         source: "#{__dirname}/resources/sqoop-env.sh"

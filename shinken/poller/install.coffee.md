@@ -97,7 +97,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           @docker_load
             source: '/var/lib/docker_images/shinken-poller-executor.tar'
             if: -> @status -1
-          @write
+          @file
             target: "#{shinken.poller.executor.resources_dir}/cronfile"
             content: """
             01 */9 * * * #{shinken.user.name} /usr/bin/kinit #{shinken.poller.executor.krb5.unprivileged.principal} -kt #{shinken.poller.executor.krb5.unprivileged.keytab}

@@ -7,7 +7,7 @@
 
 ## Register
 
-      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/file_jaas'
 
 ## Users & Groups
 
@@ -64,7 +64,7 @@ OpenTSDB archive comes with an RPM
             keytab: '/etc/security/keytabs/opentsdb.service.keytab'
             uid: opentsdb.user.name
             gid: opentsdb.group.name
-          @write_jaas
+          @file.jaas
             target: '/etc/opentsdb/opentsdb.jaas'
             content: "#{opentsdb.config['hbase.sasl.clientconfig']}":
               principal: "#{opentsdb.user.name}/#{@config.host}@#{realm}"
@@ -103,7 +103,7 @@ Starting opentsdb: /etc/init.d/opentsdb: line 69: ulimit: open files: cannot mod
 ## Fix Service
 
       # Some config properties aren't honored, force JVM Arguments
-      @write
+      @file
         header: 'Fix Service Init Script'
         target: '/etc/init.d/opentsdb'
         write: [
@@ -117,7 +117,7 @@ Starting opentsdb: /etc/init.d/opentsdb: line 69: ulimit: open files: cannot mod
 
 ## Configure
 
-      @write_properties
+      @file.properties
         header: 'opentsdb conf'
         target: '/etc/opentsdb/opentsdb.conf'
         content: opentsdb.config

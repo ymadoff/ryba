@@ -132,7 +132,7 @@ TODO: remove download and write and replace it with a template
         gid: hadoop_group.name
         mode: 0o755
         unless_exists: true
-      @write
+      @file
         header: 'Update Environment'
         target: "#{zeppelin.conf_dir}/zeppelin-env.sh"
         write: for k, v of zeppelin.env

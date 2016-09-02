@@ -180,7 +180,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
 ## Log4j
 
-      @write
+      @file
         header: 'Log4j'
         target: "#{hdfs.dn.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
@@ -190,7 +190,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
 Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collector like Ganglia or Graphite.
 
-      @write_properties
+      @file.properties
         header: 'Metrics'
         target: "#{hdfs.dn.conf_dir}/hadoop-metrics2.properties"
         content: hadoop_metrics.config
@@ -206,7 +206,7 @@ SecondaryNameNode service. It does not need to contain
 the hostname of the JobTracker/NameNode machine;
 Also some [interesting info about snn](http://blog.cloudera.com/blog/2009/02/multi-host-secondarynamenode-configuration/)
 
-      @write
+      @file
         header: 'SNN Master'
         if: (-> @host_with_module 'ryba/hadoop/hdfs_snn')
         content: "#{@host_with_module 'ryba/hadoop/hdfs_snn'}"
@@ -296,7 +296,7 @@ Note, we might move this middleware to Masson.
               v = "#{v}"
               properties[k] = v if content[k] isnt v
             return next null, false unless Object.keys(properties).length
-            @write
+            @file
               target: '/etc/sysctl.conf'
               write: for k, v of properties
                 match: ///^#{misc.regexp.escape k}?\s+=\s*.*?\s///mg

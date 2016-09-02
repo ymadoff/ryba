@@ -11,7 +11,7 @@ TODO: [HBase backup node](http://willddy.github.io/2013/07/02/HBase-Add-Backup-M
 
       @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdp_select', 'ryba/lib/hdp_select'
-      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
 
 ## IPTables
 
@@ -136,7 +136,7 @@ Environment passed to the Master before it starts.
 
 Upload the list of registered RegionServers.
 
-      @write
+      @file
         header: 'Registered RegionServers'
         content: @hosts_with_module('ryba/hbase/regionserver').join '\n'
         target: "#{hbase.master.conf_dir}/regionservers"
@@ -151,7 +151,7 @@ RegionServer, and HBase client host machines.
 
 Environment file is enriched by "ryba/hbase" # HBase # Env".
 
-      @write_jaas
+      @file.jaas
         header: 'Zookeeper JAAS'
         target: "#{hbase.master.conf_dir}/hbase-master.jaas"
         content: Client:
@@ -179,7 +179,7 @@ https://hbase.apache.org/book/security.html
         principal: hbase.admin.principal
         password: hbase.admin.password
 
-      @write
+      @file
         header: 'Log4J Properties'
         target: "#{hbase.master.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
@@ -189,7 +189,7 @@ https://hbase.apache.org/book/security.html
 
 Enable stats collection in Ganglia and Graphite
 
-      @write_properties
+      @file.properties
         header: 'Metrics Properties'
         target: "#{hbase.master.conf_dir}/hadoop-metrics2-hbase.properties"
         content: hbase.metrics.config

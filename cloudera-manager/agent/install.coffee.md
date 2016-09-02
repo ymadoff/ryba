@@ -20,7 +20,7 @@ Instal the packages cloudera-scm-agent and cloudera-scm-daemons
 
 Set the server's hostname in the agent's configuration
 
-      @write
+      @file
         header: 'Configuration'
         target: "#{agent.conf_dir}/config.ini"
         write: [
@@ -32,7 +32,7 @@ Set the server's hostname in the agent's configuration
 
 ## Env
 
-      @write
+      @file
         header: 'Env'
         target: '/etc/default/cloudera-scm-agent'
         write: [

@@ -11,7 +11,7 @@ deployment is heavily inspired by [Anil Gupta instruction][agi].
 ## Register
 
       @register 'hdp_select', 'ryba/lib/hdp_select'
-      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
 
 ## Packages
 
@@ -38,11 +38,11 @@ Thanks to [Anil Gupta](http://bigdatanoob.blogspot.fr/2013/09/connect-phoenix-to
 for its instructions.
 
       @call header: 'Kerberos', handler: ->
-        @write_jaas
+        @file.jaas
           target: "#{phoenix.conf_dir}/phoenix-client.jaas"
           content: Client:
             useTicketCache: 'true'
-        @write
+        @file
           target: '/usr/hdp/current/phoenix-client/bin/psql.py'
           write: [
             replace: "    os.pathsep + '#{hadoop_conf_dir}' + os.pathsep + '#{hbase.conf_dir}' + os.pathsep + '/usr/hdp/current/hadoop-client/hadoop-auth-*.jar' + \\"
@@ -54,7 +54,7 @@ for its instructions.
             place_before: 'org.apache.phoenix.util.PhoenixRuntime'
           ]
           backup: true
-        @write
+        @file
           target: '/usr/hdp/current/phoenix-client/bin/sqlline.py'
           write: [
             replace: "    os.pathsep + '#{hadoop_conf_dir}' + os.pathsep + '#{hbase.conf_dir}' + os.pathsep + '/usr/hdp/current/hadoop-client/hadoop-auth-*.jar' + \\"

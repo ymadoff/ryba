@@ -19,7 +19,7 @@ The ambari server must be set in the configuration file.
     #       match: new RegExp ".*#{misc.regexp.escape key}.*", 'mg'
     #       replace: key
     #       append: true
-    #     @write
+    #     @file
     #       target: "#{user.home or '/home/'+user.name}/.ssh/authorized_keys"
     #       write: write
     #       uid: user.name
@@ -35,7 +35,7 @@ The ambari server must be set in the configuration file.
         name: 'ambari-agent'
         startup: true
 
-      @write_ini
+      @file.ini
         header: 'Ambari Agent Configure'
         target: "#{ambari_agent.conf_dir}/ambari-agent.ini"
         content: ambari_agent.ini
@@ -46,7 +46,7 @@ The ambari server must be set in the configuration file.
         comment: '#'
         backup: true
 
-      # @write
+      # @file
       #   target: "#{ambari_agent.conf_dir}/ambari-agent.ini"
       #   write: [
       #     match: /^hostname=(.*)/m

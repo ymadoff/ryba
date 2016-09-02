@@ -38,7 +38,7 @@ Prepare the Ambari Database
 Password is stored inside a file which location is referenced by the property
 "server.jdbc.user.passwd" in the configuration file.
 
-        @write
+        @file
           target: ambari_server.config['server.jdbc.user.passwd']
           content: ambari_server.database_password
           backup: true
@@ -75,7 +75,7 @@ LDAP or Active Directory Authentication.
             name: ambari_server.config['server.jdbc.database_name']
             user: ambari_server.config['server.jdbc.user.name']
             password: ambari_server.database_password
-          # @write
+          # @file
           #   target: '/etc/ambari-server/conf/ambari.properties'
           #   content: """
           #   server.jdbc.rca.driver=org.postgresql.Driver
@@ -161,7 +161,7 @@ LDAP or Active Directory Authentication.
           #   server.jdbc.database=postgres
           #   server.jdbc.database_name=ambari
           #   """
-          @write_ini
+          @file.ini
             target: "#{ambari_server.conf_dir}/ambari.properties"
             content: ambari_server.config
             merge: true

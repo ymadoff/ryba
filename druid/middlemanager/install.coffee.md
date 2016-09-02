@@ -21,7 +21,7 @@
 
 ## Configuration
 
-      @write.properties
+      @file.properties
         target: "/opt/druid-#{druid.version}/conf/druid/_common/common.runtime.properties"
         content: druid.runtime
         backup: true

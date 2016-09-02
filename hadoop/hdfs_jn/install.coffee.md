@@ -120,7 +120,7 @@ NodeManagers.
           uid: hdfs.user.name
           gid: hadoop_group.name
           backup: true
-        @write
+        @file
           header: 'Log4j'
           target: "#{hdfs.jn.conf_dir}/log4j.properties"
           source: "#{__dirname}/../resources/log4j.properties"
@@ -146,7 +146,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
 Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collector like Ganglia or Graphite.
 
-        @write_properties
+        @file.properties
           header: 'Metrics'
           target: "#{hdfs.jn.conf_dir}/hadoop-metrics2.properties"
           content: hadoop_metrics.config

@@ -43,7 +43,7 @@ ElasticSearch archive comes with an RPM
 ## Env
 
       @call header: 'Environment', handler: ->
-        @write_yaml
+        @file.yaml
           target: '/etc/elasticsearch/elasticsearch.yml'
           content:
             'cluster.name': "#{elasticsearch.cluster.name}"
@@ -74,6 +74,6 @@ ElasticSearch archive comes with an RPM
         #     match: /^node.data: .*/m
         #     replace: "node.data: #{elasticsearch.node.data} # RYBA CONF `elasticsearch.node.data`, DON'T OVERWRITE"
         #     append: true
-        # @write
+        # @file
         #   target: 
         #   write: write

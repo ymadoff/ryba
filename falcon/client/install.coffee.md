@@ -34,7 +34,7 @@ falcon:x:498:falcon
 
 Update the configuration file in "/etc/falcon/conf/client.properties"
 
-      @write.ini
+      @file.ini
         header: 'Configuration'
         target: "#{falcon.client.conf_dir}/client.properties"
         content:

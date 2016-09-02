@@ -9,7 +9,7 @@
 
       @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdp_select', 'ryba/lib/hdp_select'
-      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
 
 ## Wait
 
@@ -66,7 +66,7 @@ which has no dependency.
           name: 'zookeeper-server'
         @hdp_select
           name: 'zookeeper-client'
-        @write
+        @file
           source: "#{__dirname}/resources/zookeeper"
           local_source: true
           target: '/etc/init.d/zookeeper-server'
@@ -83,14 +83,14 @@ which has no dependency.
           keytab: '/etc/security/keytabs/zookeeper.service.keytab'
           uid: zookeeper.user.name
           gid: hadoop_group.name
-        @write_jaas
+        @file.jaas
           target: '/etc/zookeeper/conf/zookeeper-server.jaas'
           content: Server:
             principal: "zookeeper/#{@config.host}@#{realm}"
             keyTab: '/etc/security/keytabs/zookeeper.service.keytab'
           uid: zookeeper.user.name
           gid: hadoop_group.name
-        @write_jaas
+        @file.jaas
           target: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
           content: Client:
             useTicketCache: true
@@ -149,7 +149,7 @@ Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
 Note, environment is enriched at runtime if a super user is generated
 (see above).
 
-      @write
+      @file
         header: 'Environment'
         target: "#{zookeeper.conf_dir}/zookeeper-env.sh"
         content: ("export #{k}=\"#{v}\"" for k, v of zookeeper.env).join '\n'
@@ -161,7 +161,7 @@ Note, environment is enriched at runtime if a super user is generated
 Update the file "zoo.cfg" with the properties defined by the
 "ryba.zookeeper.config" configuration.
 
-      @write_properties
+      @file.properties
         header: 'Configure'
         target: "#{zookeeper.conf_dir}/zoo.cfg"
         content: zookeeper.config
@@ -171,7 +171,7 @@ Update the file "zoo.cfg" with the properties defined by the
 
 Write the ZooKeeper logging configuration file.
 
-      @write_properties
+      @file.properties
         header: 'Log4J'
         target: "#{zookeeper.conf_dir}/log4j.properties"
         content: zookeeper.log4j.config
@@ -216,7 +216,7 @@ myid is a unique id that must be generated for each node of the zookeeper cluste
       unless zookeeper.myid
         for zk_ctx, i in zk_ctxs
           zookeeper.myid = i+1 if zk_ctx.config.host is @config.host
-      @write
+      @file
         header: 'Write myid'
         content: zookeeper.myid
         target: "#{zookeeper.config['dataDir']}/myid"

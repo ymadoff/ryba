@@ -10,7 +10,7 @@
 
       @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdp_select', 'ryba/lib/hdp_select'
-      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
 
 ## IPTables
 
@@ -93,7 +93,7 @@ inside "/etc/init.d" and activate it on startup.
 JAAS configuration files for zookeeper to be deployed on the HBase Master,
 RegionServer, and HBase client host machines.
 
-      @write_jaas
+      @file.jaas
         header: 'Zookeeper JAAS'
         target: "#{hbase.rs.conf_dir}/hbase-regionserver.jaas"
         content: Client:
@@ -160,7 +160,7 @@ Environment passed to the RegionServer before it starts.
 
 Upload the list of registered RegionServers.
 
-      @write
+      @file
         header: 'Registered RegionServers'
         content: regionservers
         target: "#{hbase.rs.conf_dir}/regionservers"
@@ -172,7 +172,7 @@ Upload the list of registered RegionServers.
 
 Enable stats collection in Ganglia and Graphite
 
-      @write_properties
+      @file.properties
         header: 'Metrics'
         target: "#{hbase.rs.conf_dir}/hadoop-metrics2-hbase.properties"
         content: hbase.metrics.config
@@ -187,7 +187,7 @@ Enable stats collection in Ganglia and Graphite
 
 ## Logging
 
-      @write
+      @file
         header: 'Log4J'
         target: "#{hbase.rs.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"

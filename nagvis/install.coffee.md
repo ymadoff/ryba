@@ -52,7 +52,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           """
         @service_restart
           name: 'httpd'
-        @write
+        @file
           target: "#{nagvis.install_dir}/version"
           content: "#{nagvis.version}"
         @remove target: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"
@@ -64,7 +64,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         for sk, sv of v
           write += "#{sk}=" + if typeof sv is 'string' then "\"#{sv}\"\n" else "#{sv}\n"
         write += "\n"
-      @write
+      @file
         target: "#{nagvis.install_dir}/etc/nagvis.ini.php"
         content: write
         backup: true

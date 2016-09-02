@@ -82,7 +82,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           name: 'oozie-server'
         @hdp_select
           name: 'oozie-client'
-        @write
+        @file
           header: 'Init Script'
           source: "#{__dirname}/../resources/oozie"
           local_source: true
@@ -305,7 +305,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           mode: 0o0755
           merge: true
           backup: true
-        @write
+        @file
           target: "#{oozie.conf_dir}/oozie-default.xml"
           source: "#{__dirname}/../resources/oozie-default.xml"
           local_source: true
@@ -516,7 +516,7 @@ the ShareLib contents without having to go into HDFS.
       # Instructions mention updating convertion pattern to the same value as
       # default, skip for now
       #TODO: Declare all properties during configure and use write_properties
-      @write
+      @file
         header: 'Log4J properties'
         target: "#{oozie.conf_dir}/oozie-log4j.properties"
         source: "#{__dirname}/../resources/oozie-log4j.properties"

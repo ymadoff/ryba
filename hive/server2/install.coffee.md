@@ -76,7 +76,7 @@ isnt yet started.
           name: 'hive-server2'
         @hdp_select
           name: 'hive-server2'
-        @write
+        @file
           header: 'Init Script'
           source: "#{__dirname}/../resources/hive-server2.j2"
           local_source: true
@@ -103,7 +103,7 @@ isnt yet started.
         local_source: true
         target: '/etc/hive/conf/hive-exec-log4j.properties'
         context: @config
-      @write_properties
+      @file.properties
         header: 'Hive server Log4j properties'
         target: "/etc/hive/conf/hive-log4j.properties"
         content: hive.server2.log4j.config

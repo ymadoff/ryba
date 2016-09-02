@@ -28,7 +28,7 @@
         local_source: true
         backup: true
         mode: 0o0755
-      @write
+      @file
         target: "#{druid.dir}/conf/druid/broker/jvm.config"
         write: [
           match: /^-Xms.*$/m

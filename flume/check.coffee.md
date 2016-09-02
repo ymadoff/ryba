@@ -7,7 +7,7 @@ user and one using interpolation.
 ## Check
 
     # module.exports.push header: 'Flume # Check', timeout: -1, handler: ->
-    #   @write
+    #   @file
     #     content: """
     #     # Name the components on this agent
     #     a1.sources = r1

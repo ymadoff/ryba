@@ -140,7 +140,7 @@ Create the Kerberos keytab for the service principal.
 
 ## Logging
 
-      @write
+      @file
         header: 'Log4J'
         target: "#{hbase.rest.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"

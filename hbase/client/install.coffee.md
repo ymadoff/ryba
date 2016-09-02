@@ -10,7 +10,7 @@ Install the HBase client package and configure it with secured access.
 
       @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdp_select', 'ryba/lib/hdp_select'
-      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
 
 ## Users & Groups
 
@@ -38,7 +38,7 @@ hbase:x:492:
 JAAS configuration files for zookeeper to be deployed on the HBase Master,
 RegionServer, and HBase client host machines.
 
-      @write_jaas
+      @file.jaas
         timeout: -1
         header: 'Zookeeper JAAS'
         target: "#{hbase.conf_dir}/hbase-client.jaas"

@@ -42,7 +42,7 @@
           rm_ctx = rm_ctxs[0]
           shortname = ''
         rm_address = rm_ctx.config.ryba.yarn.rm.site["yarn.resourcemanager.address#{shortname}"]
-        @write
+        @file
           content: """
             nameNode=#{core_site['fs.defaultFS']}
             jobTracker=#{rm_address}
@@ -54,7 +54,7 @@
           uid: user.name
           gid: user.group
           eof: true
-        @write
+        @file
           content: """
           <workflow-app xmlns="uri:oozie:workflow:0.2" name="test-oozie-wf">
             <start to="move"/>
@@ -108,7 +108,7 @@
         # Get the name of the user running the Oozie Server
         os_ctxs = @contexts 'ryba/oozie/server', require('../server/configure').handler
         {oozie} = os_ctxs[0].config.ryba
-        @write
+        @file
           content: """
             nameNode=#{core_site['fs.defaultFS']}
             jobTracker=#{rm_address}
@@ -122,7 +122,7 @@
           uid: user.name
           gid: user.group
           eof: true
-        @write
+        @file
           content: """
           <workflow-app name='check-#{@config.shortname}-oozie-mr' xmlns='uri:oozie:workflow:0.4'>
             <start to='test-mr' />
@@ -212,7 +212,7 @@
         # Get the name of the user running the Oozie Server
         os_ctxs = @contexts 'ryba/oozie/server', require('../server/configure').handler
         {oozie} = os_ctxs[0].config.ryba
-        @write
+        @file
           content: """
           nameNode=#{core_site['fs.defaultFS']}
           jobTracker=#{rm_address}
@@ -226,7 +226,7 @@
           uid: user.name
           gid: user.group
           eof: true
-        @write
+        @file
           content: """
           <workflow-app name='check-#{@config.shortname}-oozie-pig' xmlns='uri:oozie:workflow:0.4'>
             <start to='test-pig' />
@@ -261,7 +261,7 @@
           uid: user.name
           gid: user.group
           eof: true
-        @write
+        @file
           content: """
           A = load '$INPUT';
           B = foreach A generate flatten(TOKENIZE((chararray)$0)) as word;
@@ -347,7 +347,7 @@
         {oozie} = os_ctxs[0].config.ryba
         # Hive
         hcat_ctxs = @contexts 'ryba/hive/hcatalog'#, require('../../hive/hcatalog').configure
-        @write
+        @file
           content: """
           nameNode=#{core_site['fs.defaultFS']}
           jobTracker=#{rm_address}
@@ -361,7 +361,7 @@
           uid: user.name
           gid: user.group
           eof: true
-        @write
+        @file
           content: """
           <workflow-app name='check-#{@config.shortname}-oozie-pig' xmlns='uri:oozie:workflow:0.4'>
             <credentials>
@@ -408,7 +408,7 @@
           uid: user.name
           gid: user.group
           eof: true
-        @write
+        @file
           content: """
           A = load '$INPUT';
           B = foreach A generate flatten(TOKENIZE((chararray)$0)) as word;

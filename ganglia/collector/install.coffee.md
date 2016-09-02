@@ -62,7 +62,7 @@ The packages "ganglia-gmetad-3.5.0-99" and "ganglia-web-3.5.7-99" are installed.
 Upload the "hdp-gmetad" service file into "/etc/init.d".
 
       @call header: 'Init Script', timeout: -1, handler: ->
-        @write
+        @file
           target: '/etc/init.d/hdp-gmetad'
           source: "#{__dirname}/../resources/scripts/hdp-gmetad"
           local_source: true
@@ -139,27 +139,27 @@ In order to work properly, each cluster must be updated with the "bind" property
 pointing to the Ganglia master hostname.
 
       @call header: 'Configuration', handler: ->
-        @write
+        @file
           target: "/etc/ganglia/hdp/HDPNameNode/conf.d/gmond.master.conf"
           match: /^(.*)bind = (.*)$/mg
           replace: "$1bind = #{@config.host}"
-        @write
+        @file
           target: "/etc/ganglia/hdp/HDPHistoryServer/conf.d/gmond.master.conf"
           match: /^(.*)bind = (.*)$/mg
           replace: "$1bind = #{@config.host}"
-        @write
+        @file
           target: "/etc/ganglia/hdp/HDPResourceManager/conf.d/gmond.master.conf"
           match: /^(.*)bind = (.*)$/mg
           replace: "$1bind = #{@config.host}"
-        @write
+        @file
           target: "/etc/ganglia/hdp/HDPSlaves/conf.d/gmond.master.conf"
           match: /^(.*)bind = (.*)$/mg
           replace: "$1bind = #{@config.host}"
-        @write
+        @file
           target: "/etc/ganglia/hdp/HDPHBaseMaster/conf.d/gmond.master.conf"
           match: /^(.*)bind = (.*)$/mg
           replace: "$1bind = #{@config.host}"
-        @write
+        @file
           target: "/etc/ganglia/hdp/gmetad.conf"
           match: /^(data_source.* )(.*):(\d+)$/mg
           replace: "$1#{@config.host}:$3"

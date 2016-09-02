@@ -15,7 +15,7 @@ with a `kinit` command.
 Example:
 
 ```
-write_jaas
+file.jaas
   server:
     keyTab: '/path/to/keytab'
     principal: 'service/host@REALM'
@@ -27,15 +27,14 @@ write_jaas
 
 ###
 
-module.exports = (options, callback) ->
+module.exports = (options) ->
   # Quick fix
   # waiting for context registration of mecano actions as well as
   # waiting for uid_gid moved from wrap to their expected location
-  options.ssh ?= @ssh
   options.mode ?= 0o600
   options.backup ?= true
   content_jaas = ""
-  return callback Error "Required option 'content'" unless options.content
+  throw Error "Required option 'content'" unless options.content
   for type, properties of options.content
     # type = "#{type.charAt(0).toUpperCase()}#{type.slice 1}"
     content_jaas += "#{type} {\n"
@@ -63,4 +62,4 @@ module.exports = (options, callback) ->
       content_jaas = content_jaas.slice(0, -1) + ';\n'
     content_jaas += '};\n'
   options.content = content_jaas
-  @write options, callback
+  @file options

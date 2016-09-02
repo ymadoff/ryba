@@ -13,7 +13,7 @@
       @call once:true, 'masson/commons/java'
       @call 'masson/core/krb5_client/wait'
       @call 'ryba/zookeeper/server/wait'
-      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
       @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
 
 ## IPTables
@@ -106,7 +106,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
 The zkCli.sh file, which enable solr to communicate with zookeeper
 has to be fixe to use jdk 1.8.
 
-      @write
+      @file
         header: 'Fix zKcli script'
         target: "#{solr.cloud.latest_dir}/server/scripts/cloud-scripts/zkcli.sh"
         write: [
@@ -209,7 +209,7 @@ Create HDFS solr user and its home directory
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      @write_jaas
+      @file.jaas
         header: 'Solr JAAS'
         target: "#{solr.cloud.conf_dir}/solr-server.jaas"
         content:

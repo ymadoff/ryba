@@ -70,7 +70,7 @@ nagiocmd:x:2419:apache
 ## Objects
 
       @call header: 'Objects', ->
-        @write (
+        @file (
           for object in ['hadoop-commands', 'hadoop-hosts', 'nagios']
             source = if object is 'nagios'
             then 'nagios.cfg-centos'
@@ -90,7 +90,7 @@ nagiocmd:x:2419:apache
         {user, group, plugin_dir} = @config.ryba.nagios
         glob "#{__dirname}/resources/plugins/*", (err, plugins) =>
           return callback err if err
-          @write (
+          @file (
             for plugin in plugins
               plugin = path.basename plugin
               source: "#{__dirname}/resources/plugins/#{plugin}"
@@ -166,11 +166,11 @@ nagiocmd:x:2419:apache
             match: ///^#{k}=.*$///mg
             replace: "#{k}=#{v}"
             append: true
-        @write
+        @file
           target: '/etc/nagios/nagios.cfg'
           write: write
           eof: true
-        @write
+        @file
           target: '/etc/nagios/resource.cfg'
           match: /^\$USER1\$=.*$/mg
           replace: "$USER1$=#{plugin_dir}"
@@ -193,7 +193,7 @@ nagiocmd:x:2419:apache
                notification_options       d,u,r
           }
           """
-        @write
+        @file
           target: '/etc/nagios/objects/hadoop-hosts.cfg'
           content: content.join '\n'
           eof: true
@@ -351,7 +351,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
 
 ## Commands
 
-      @write
+      @file
         header: 'Commands'
         source: "#{__dirname}/resources/objects/hadoop-commands.cfg"
         local_source: true

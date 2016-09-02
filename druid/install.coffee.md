@@ -103,7 +103,7 @@ Configure deep storage.
       @db.database druid.db,
         if: druid.db.engine in ['mysql', 'postgres']
         user: druid.db.username
-      @write.properties
+      @file.properties
         target: "/opt/druid-#{druid.version}/conf/druid/_common/common.runtime.properties"
         content: druid.runtime
         backup: true

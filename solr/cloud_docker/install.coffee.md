@@ -13,7 +13,7 @@
       @call once:true, 'masson/commons/java'
       @call 'masson/core/krb5_client/wait'
       @call 'ryba/zookeeper/server/wait'
-      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
       @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
       
 ## Layout
@@ -73,7 +73,7 @@
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      @write_jaas
+      @file.jaas
         header: 'Solr JAAS'
         target: "#{solr.cloud_docker.conf_dir}/solr-server.jaas"
         content:
@@ -229,7 +229,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
             uid: solr.user.name
             gid: solr.group.name
             mode: 0o0755
-          @write
+          @file
             header: 'Security config'
             content: JSON.stringify config_host.security
             target: "#{config.data_dir}/security.json"
@@ -261,7 +261,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
           @call -> 
             for node in [1..config.containers]
               config.service_def["node_#{node}"]['depends_on'] = ["node_#{config.master_node}"] if node != config.master_node
-          @write_yaml
+          @file.yaml
             if: @config.host is config['master']
             header: 'Generation docker-compose'
             target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker-compose.yml"

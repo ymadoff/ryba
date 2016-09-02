@@ -5,7 +5,7 @@
       {titan, rexster, hadoop_conf_dir, realm} = @config.ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
-      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
 
 ## Users & Groups
 
@@ -64,7 +64,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             match: /^(.*)# RYBA CONF hbase-env, DON'T OVERWRITE/m
             replace: "\tCP=\"$CP:#{@config.ryba.hbase.conf_dir}\" # RYBA CONF hbase-env, DON'T OVERWRITE"
             append: /^(.*)CP="\$CP:(.*)/m
-        @write
+        @file
           target: path.join titan.home, 'bin', 'rexster.sh'
           write: write
         @mkdir
@@ -88,7 +88,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 Zookeeper use JAAS for authentication. We configure JAAS to make SASL authentication using Kerberos module.
 
-      @write_jaas
+      @file.jaas
         header: 'JAAS'
         target: path.join rexster.user.home, "rexster.jaas"
         content:
@@ -101,7 +101,7 @@ Zookeeper use JAAS for authentication. We configure JAAS to make SASL authentica
         uid: rexster.user.name
         gid: rexster.group.name
 
-      @write
+      @file
         header: 'Configure Titan Server'
         content: xml 'rexster': rexster.config
         target: path.join rexster.user.home, 'titan-server.xml'

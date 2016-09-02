@@ -91,7 +91,7 @@ isnt yet started.
           name: 'hive-hcatalog-server'
         @hdp_select
           name: 'hive-metastore'
-        @write
+        @file
           header: 'Init Script'
           source: "#{__dirname}/../resources/hive-hcatalog-server.j2"
           local_source: true

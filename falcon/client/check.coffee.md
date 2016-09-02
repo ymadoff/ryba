@@ -62,7 +62,7 @@ Follow the [Hortonworks Data Pipelines example][dpe].
         #   target: "/user/ryba/check_falcon_#{@config.shortname}/prod-cluster/working"
         #   user: "#{ryba.user.name}"
         #   krb5_user: @config.ryba.hdfs.krb5_user
-        @write
+        @file
           content: """
           <?xml version="1.0"?>
           <cluster colo="ryba-data-center" description="description" name="ryba-data-center" xmlns="uri:falcon:cluster:0.1">    
@@ -91,7 +91,7 @@ Follow the [Hortonworks Data Pipelines example][dpe].
           target: "#{cluster_path}"
           uid: user.name
           eof: true
-        @write
+        @file
           content: """
           <?xml version="1.0"?>
           <feed description="ryba-input-feed" name="testFeed" xmlns="uri:falcon:feed:0.1">
@@ -122,7 +122,7 @@ Follow the [Hortonworks Data Pipelines example][dpe].
           target: "#{feed_path}"
           uid: user.name
           eof: true
-        @write
+        @file
           content: """
           <?xml version="1.0"?>
           <process name="process-test" xmlns="uri:falcon:process:0.1">

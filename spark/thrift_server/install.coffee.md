@@ -94,7 +94,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
           uid: spark.user.name
           gid: @config.ryba.hadoop_group.gid
           mode: 0o0750
-        @write_properties
+        @file.properties
           header: 'Spark Defaults'
           target: "#{spark.thrift.conf_dir}/spark-defaults.conf"
           content: spark.thrift.conf
@@ -103,7 +103,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
           gid: @config.ryba.hadoop_group.gid
           mode: 0o0750
           separator: ' '
-        @write
+        @file
           header: 'Spark env'
           destination : "#{spark.thrift.conf_dir}/spark-env.sh"
           # See "/usr/hdp/current/spark-historyserver/sbin/spark-daemon.sh" for
@@ -194,7 +194,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
 
 ## Log4j 
 
-      @write_properties
+      @file.properties
         header: 'log4j Properties'
         target: "#{spark.thrift.conf_dir}/log4j.properties"
         content: spark.thrift.log4j

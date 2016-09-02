@@ -39,7 +39,7 @@ instructions.
         echo "create '#{table}', 'cf1'; grant 'ryba', 'RWXCA', '#{table}'" | hbase shell 2>/dev/null;
         """
         unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.host}-phoenix"
-      @write
+      @file
         target: "#{user.home}/check_phoenix/create.sql"
         uid: user.name
         gid: user.group
@@ -55,7 +55,7 @@ instructions.
           CONSTRAINT PK PRIMARY KEY (HOST, DOMAIN, FEATURE, DATE)
         );
         """
-      @write
+      @file
         target: "#{user.home}/check_phoenix/select.sql"
         uid: user.name
         gid: user.group

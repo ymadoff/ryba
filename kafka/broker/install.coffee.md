@@ -8,7 +8,7 @@
 ## Register
 
       @register 'hdp_select', 'ryba/lib/hdp_select'
-      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
 
 ## Wait
 
@@ -75,7 +75,7 @@ directories.
 Update the file "broker.properties" with the properties defined by the
 "ryba.kafka.broker" configuration.
 
-      @write
+      @file
         header: 'Server properties'
         target: "#{kafka.broker.conf_dir}/server.properties"
         write: for k, v of kafka.broker.config
@@ -94,23 +94,23 @@ Upload *.properties files in /etc/kafka-broker/conf directory.
           glob "#{__dirname}/../resources/*.properties", (err, files) =>
             for file in files
               continue if /^\./.test path.basename file
-              @write
+              @file
                 source: file
                 local_source: true
                 target: "#{kafka.broker.conf_dir}/#{path.basename file}"
                 binary: true
             @then callback
-        @write
+        @file
           source: "#{__dirname}/../resources/connect-console-sink.properties"
           local_source: true
           target: "#{kafka.broker.conf_dir}/connect-console-sink.properties"
           binary: true
-        @write
+        @file
           source: "#{__dirname}/../resources/connect-console-sink.properties"
           local_source: true
           target: "#{kafka.broker.conf_dir}/connect-console-sink.properties"
           binary: true
-        @write
+        @file
           source: "#{__dirname}/../resources/connect-console-sink.properties"
           local_source: true
           target: "#{kafka.broker.conf_dir}/connect-console-sink.properties"
@@ -120,7 +120,7 @@ Upload *.properties files in /etc/kafka-broker/conf directory.
 
 Update the kafka-env.sh file (/etc/kafka-broker/conf/kafka-enh.sh)
 
-      @write
+      @file
         header: 'Environment'
         target: "#{kafka.broker.conf_dir}/kafka-env.sh"
         write: for k, v of kafka.broker.env
@@ -137,12 +137,12 @@ Update the kafka-env.sh file (/etc/kafka-broker/conf/kafka-enh.sh)
 
 Set Log4j properties
 
-      @write_properties
+      @file.properties
         header: 'Broker Log4j'
         target: "#{kafka.broker.conf_dir}/log4j.properties"
         content: kafka.broker.log4j.config
         backup: true
-      @write_properties
+      @file.properties
         header: 'Common Log4j'
         target: "/etc/kafka/conf/log4j.properties"
         content: kafka.broker.log4j.config
@@ -153,7 +153,7 @@ Replace KAFKA_BROKER_CMD kafka-broker conf directory path
 This Fixs are needed to be able to isolate confs betwwen broker and client
 
       @call header: 'Fix Startup Script', handler: ->
-        # @write
+        # @file
         #   target: "/usr/hdp/current/kafka-broker/bin/kafka"
         #   write: [
         #     match: /^KAFKA_BROKER_CMD=(.*)/m
@@ -161,7 +161,7 @@ This Fixs are needed to be able to isolate confs betwwen broker and client
         #   ]
         #   backup: true
         #   eof: true
-        @write
+        @file
           target: '/usr/hdp/current/kafka-broker/bin/kafka-server-start.sh'
           write: [
                 match: RegExp "^exec.*$", 'mg'
@@ -173,7 +173,7 @@ This Fixs are needed to be able to isolate confs betwwen broker and client
           source: '/usr/hdp/current/kafka-broker/bin/kafka-run-class.sh'
           target: '/usr/hdp/current/kafka-broker/bin/kafka-run-broker-class.sh'
           mode: 0o0755
-        @write
+        @file
           target: '/usr/hdp/current/kafka-broker/bin/kafka-run-broker-class.sh'
           write: [
             match: RegExp "^KAFKA_ENV=.*$", 'mg'
@@ -197,7 +197,7 @@ Broker Server principal, keytab and JAAS
             keytab: kafka.broker.kerberos['keyTab']
             uid: kafka.user.name
             gid: kafka.group.name
-          @write_jaas
+          @file.jaas
             header: 'Broker JAAS'
             target: "#{kafka.broker.conf_dir}/kafka-server.jaas"
             content:

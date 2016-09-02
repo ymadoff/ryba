@@ -16,14 +16,14 @@
             mode: 0o700
             uid: user.name
             gid: user.gid
-          @write
+          @file
             target: "#{user.home}/.ssh/id_rsa"
             content: reactionner.ssh.private_key
             eof: true
             mode: 0o600
             uid: user.name
             gid: user.gid
-          @write
+          @file
             target: "#{user.home}/.ssh/id_rsa.pub"
             content: reactionner.ssh.public_key
             eof: true

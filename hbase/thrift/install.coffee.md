@@ -152,7 +152,7 @@ Environment passed to the HBase Rest Server before it starts.
 
 ## Logging
 
-      @write
+      @file
         header: 'Log4J'
         target: "#{hbase.thrift.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"

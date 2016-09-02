@@ -150,7 +150,7 @@ has finished (logs are only available in yarn-cluster mode).
           spark.conf['spark.driver.extraJavaOptions'] ?= "-Dhdp.version=#{hdp_current_version}"
           spark.conf['spark.yarn.am.extraJavaOptions'] ?= "-Dhdp.version=#{hdp_current_version}"
         @call ->
-          @write
+          @file
             destination : "#{spark.conf_dir}/java-opts"
             content: "-Dhdp.version=#{hdp_current_version}"
           @hconfigure
@@ -166,12 +166,12 @@ has finished (logs are only available in yarn-cluster mode).
             local_source: true
             context: @config
             backup: true
-          @write_properties
+          @file.properties
             target: "#{spark.conf_dir}/spark-defaults.conf"
             content: spark.conf
             merge: true
             separator: ' '
-          @write
+          @file
             if: spark.conf['spark.metrics.conf']
             target: "#{spark.conf_dir}/metrics.properties"
             write: for k, v of spark.metrics

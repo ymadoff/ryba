@@ -10,7 +10,7 @@
 
       @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdp_select', 'ryba/lib/hdp_select'
-      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
 
 ## Users & Groups
 
@@ -68,7 +68,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 We do not edit knox-env.sh because environnement variables are directly set
 in the gateway.sh service script.
 
-      @write
+      @file
         header: 'Env'
         target: "#{knox.conf_dir}/gateway.sh"
         write: for k, v of knox.env
@@ -85,7 +85,7 @@ in the gateway.sh service script.
           keytab: knox.krb5_user.keytab
           uid: knox.user.name
           gid: knox.group.name
-        @write_jaas
+        @file.jaas
           target: knox.site['java.security.auth.login.config']
           content: 'com.sun.security.jgss.initiate':
             principal: knox.krb5_user.principal
@@ -124,7 +124,7 @@ in the gateway.sh service script.
               if Array.isArray url then for u in url
                 service.ele 'url', u
               else if url not in [null, ''] then service.ele 'url', url
-          @write
+          @file
             target: "#{knox.conf_dir}/topologies/#{nameservice}.xml"
             content: doc.end pretty: true
             eof: true

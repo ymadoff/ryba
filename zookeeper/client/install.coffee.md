@@ -7,7 +7,7 @@
 ## Register
 
       @register 'hdp_select', 'ryba/lib/hdp_select'
-      @register 'write_jaas', 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
 
 ## Users & Groups
 
@@ -39,7 +39,7 @@ which has no dependency.
 
 Create the JAAS client configuration file.
 
-      @write_jaas
+      @file.jaas
         header: 'ZooKeeper Client # Kerberos'
         target: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
         content: Client:
@@ -50,7 +50,7 @@ Create the JAAS client configuration file.
 
 Generate the "zookeeper-env.sh" file.
 
-      @write
+      @file
         header: 'Environment'
         target: "#{zookeeper.conf_dir}/zookeeper-env.sh"
         content: ("export #{k}=\"#{v}\"" for k, v of zookeeper.env).join '\n'

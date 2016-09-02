@@ -85,7 +85,7 @@ we execute this task using the rest api.
             match: RegExp "^#{quote k}=.*$", 'mg'
             replace: "#{k}=#{v}"
             append: true
-        @write
+        @file
           header: 'Script Fix'
           target: "/usr/hdp/#{version}/ranger-hbase-plugin/enable-hbase-plugin.sh"
           write:[
