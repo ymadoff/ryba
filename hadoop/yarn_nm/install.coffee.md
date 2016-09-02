@@ -64,6 +64,28 @@ inside "/etc/init.d" and activate it on startup.
           name: 'hadoop-mapreduce'
         @hdp_select
           name: 'hadoop-client'
+        @call
+          if: yarn.site['spark.shuffle.service.enabled'] is 'true'
+          header: 'Spark Worker Shuffle Package'
+          handler: ->
+            @service
+              name: 'spark_*-yarn-shuffle'
+            @execute
+              cmd: """
+                file=`ls /usr/hdp/current/spark-client/lib/* | grep yarn-shuffle.jar`
+                name=`basename $file`
+                target="/usr/hdp/current/hadoop-yarn-nodemanager/lib/${name}"
+                source=`readlink $target`
+                if [ "$source" == "$file" ] ;
+                  then exit 3 ;
+                  else
+                    rm -f $target;
+                    ln -s $file $target;
+                    exit 0;
+                    fi;
+                fi;
+                """
+              code_skipped: 3
         @execute
           cmd: "service hadoop-yarn-nodemanager restart"
           if: -> @status -3

@@ -123,3 +123,8 @@ Resources:
       # ryba.yarn.site['yarn.nodemanager.container-executor.cgroups.mount'] ?= ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount']
       # ryba.yarn.site['yarn.nodemanager.container-executor.resources-handler.class'] ?= ryba.yarn.site['yarn.nodemanager.container-executor.resources-handler.class']
       # ryba.yarn.site['yarn.nodemanager.container-executor.group'] ?= 'hadoop'
+
+## List of Services
+
+      ryba.yarn.site['yarn.nodemanager.aux-services'] ?= 'mapreduce_shuffle'
+      ryba.yarn.site['yarn.nodemanager.aux-services.mapreduce_shuffle.class'] ?= 'org.apache.hadoop.mapred.ShuffleHandler'

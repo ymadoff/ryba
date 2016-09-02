@@ -3,6 +3,7 @@
 
     module.exports = handler: ->
       {core_site, hadoop_conf_dir} = @config.ryba
+      nm_ctxs = @contexts 'ryba/hadoop/yarn_nm', require('../../hadoop/yarn_nm/configure').handler
       spark = @config.ryba.spark ?= {}
       spark.conf ?= {}
       # User
@@ -102,3 +103,17 @@ and spark.metrics.conf=metrics.properties will tell all executors to load that f
         spark.metrics['*.sink.ganglia.class'] = 'org.apache.spark.metrics.sink.GangliaSink'
         spark.metrics['*.sink.ganglia.host'] = graphite_ctx.map( (ctx) -> ctx.config.host)
         spark.metrics['*.sink.ganglia.port'] = ganglia_ctx.spark_port
+
+## Dynamic Resource Allocation
+Spark mecanism to set up resources based on cluster availability
+
+      #http://spark.apache.org/docs/1.6.0/job-scheduling.html#dynamic-resource-allocation
+      spark.conf['spark.dynamicAllocation.enabled'] ?= 'true'
+      spark.conf['spark.shuffle.service.enabled'] ?= spark.conf['spark.dynamicAllocation.enabled']
+      if spark.conf['spark.dynamicAllocation.enabled'] is 'true'
+        for nm_ctx in nm_ctxs
+          aux_services  = nm_ctx.config.ryba.yarn.site['yarn.nodemanager.aux-services'].split ','
+          aux_services.push 'spark_shuffle' unless 'spark_shuffle' in aux_services
+          nm_ctx.config.ryba.yarn.site['yarn.nodemanager.aux-services'] = aux_services.join ','
+          nm_ctx.config.ryba.yarn.site['yarn.nodemanager.aux-services.spark_shuffle.class'] ?= 'org.apache.spark.network.yarn.YarnShuffleService'
+          nm_ctx.config.ryba.yarn.site['spark.shuffle.service.enabled'] ?= 'true'
