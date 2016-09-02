@@ -45,15 +45,15 @@ Example:
       druid.version ?= '0.9.1.1'
       druid.source ?= "http://static.druid.io/artifacts/releases/druid-#{druid.version}-bin.tar.gz"
       # Configuration
-      druid.runtime ?= {}
+      druid.common_runtime ?= {}
       # Extensions
       # Note, Mysql extension isnt natively supported due to licensing issues
-      druid.runtime['druid.extensions.loadList'] ?= '["druid-kafka-eight", "druid-s3-extensions", "druid-histogram", "druid-datasketches", "druid-lookups-cached-global", "postgresql-metadata-storage", "druid-hdfs-storage"]' # "mysql-metadata-storage"
+      druid.common_runtime['druid.extensions.loadList'] ?= '["druid-kafka-eight", "druid-s3-extensions", "druid-histogram", "druid-datasketches", "druid-lookups-cached-global", "postgresql-metadata-storage", "druid-hdfs-storage"]' # "mysql-metadata-storage"
       # Logging
-      druid.runtime['druid.startup.logging.logProperties'] ?= 'true'
+      druid.common_runtime['druid.startup.logging.logProperties'] ?= 'true'
       # Zookeeper
-      druid.runtime['druid.zk.service.host'] ?= "#{zookeeper_quorum.join ','}"
-      druid.runtime['druid.zk.paths.base'] ?= '/druid'
+      druid.common_runtime['druid.zk.service.host'] ?= "#{zookeeper_quorum.join ','}"
+      druid.common_runtime['druid.zk.paths.base'] ?= '/druid'
       # Metadata storage
       druid.db ?= {}
       require('../commons/db_admin').handler.call @
@@ -66,43 +66,43 @@ Example:
       druid.db.password ?= 'druid123'
       switch druid.db.engine
         when 'postgres'
-          druid.runtime['druid.metadata.storage.type'] ?= 'postgresql'
-          druid.runtime['druid.metadata.storage.connector.connectURI'] ?= "jdbc:postgresql://#{druid.db.host}:#{druid.db.port}/#{druid.db.database}"
-          druid.runtime['druid.metadata.storage.connector.host'] ?= "#{druid.db.host}"
-          druid.runtime['druid.metadata.storage.connector.port'] ?= "#{druid.db.port}"
+          druid.common_runtime['druid.metadata.storage.type'] ?= 'postgresql'
+          druid.common_runtime['druid.metadata.storage.connector.connectURI'] ?= "jdbc:postgresql://#{druid.db.host}:#{druid.db.port}/#{druid.db.database}"
+          druid.common_runtime['druid.metadata.storage.connector.host'] ?= "#{druid.db.host}"
+          druid.common_runtime['druid.metadata.storage.connector.port'] ?= "#{druid.db.port}"
         when 'mysql'
-          druid.runtime['druid.metadata.storage.type'] ?= 'mysql'
-          druid.runtime['druid.metadata.storage.connector.connectURI'] ?= "jdbc:mysql://#{druid.db.host}:#{druid.db.port}/#{druid.db.database}"
-          druid.runtime['druid.metadata.storage.connector.host'] ?= "#{my_ctx.config.host}"
-          druid.runtime['druid.metadata.storage.connector.port'] ?= "#{my_ctx.config.postgres.server.port}"
+          druid.common_runtime['druid.metadata.storage.type'] ?= 'mysql'
+          druid.common_runtime['druid.metadata.storage.connector.connectURI'] ?= "jdbc:mysql://#{druid.db.host}:#{druid.db.port}/#{druid.db.database}"
+          druid.common_runtime['druid.metadata.storage.connector.host'] ?= "#{my_ctx.config.host}"
+          druid.common_runtime['druid.metadata.storage.connector.port'] ?= "#{my_ctx.config.postgres.server.port}"
         when 'derby'
-          druid.runtime['druid.metadata.storage.type'] ?= 'derby'
-          druid.runtime['druid.metadata.storage.connector.connectURI'] ?= "jdbc:derby://#{@config.host}:1527/var/druid/metadata.db;create=true"
-          druid.runtime['druid.metadata.storage.connector.host'] ?= "#{@config.host}"
-          druid.runtime['druid.metadata.storage.connector.port'] ?= '1527'
-      druid.runtime['druid.metadata.storage.connector.user'] ?= "#{druid.db.username}"
-      druid.runtime['druid.metadata.storage.connector.password'] ?= "#{druid.db.password}"
+          druid.common_runtime['druid.metadata.storage.type'] ?= 'derby'
+          druid.common_runtime['druid.metadata.storage.connector.connectURI'] ?= "jdbc:derby://#{@config.host}:1527/var/druid/metadata.db;create=true"
+          druid.common_runtime['druid.metadata.storage.connector.host'] ?= "#{@config.host}"
+          druid.common_runtime['druid.metadata.storage.connector.port'] ?= '1527'
+      druid.common_runtime['druid.metadata.storage.connector.user'] ?= "#{druid.db.username}"
+      druid.common_runtime['druid.metadata.storage.connector.password'] ?= "#{druid.db.password}"
       # For MySQL:
-      #druid.runtime[druid.metadata.storage.type=mysql
-      #druid.runtime[druid.metadata.storage.connector.connectURI=jdbc:mysql://db.example.com:3306/druid
-      #druid.runtime[druid.metadata.storage.connector.user=...
-      #druid.runtime[druid.metadata.storage.connector.password=...
+      #druid.common_runtime[druid.metadata.storage.type=mysql
+      #druid.common_runtime[druid.metadata.storage.connector.connectURI=jdbc:mysql://db.example.com:3306/druid
+      #druid.common_runtime[druid.metadata.storage.connector.user=...
+      #druid.common_runtime[druid.metadata.storage.connector.password=...
       # For PostgreSQL (make sure to additionally include the Postgres extension):
-      #druid.runtime[druid.metadata.storage.type=postgresql
-      #druid.runtime[druid.metadata.storage.connector.connectURI=jdbc:postgresql://db.example.com:5432/druid
-      #druid.runtime[druid.metadata.storage.connector.user=...
-      #druid.runtime[druid.metadata.storage.connector.password=...
+      #druid.common_runtime[druid.metadata.storage.type=postgresql
+      #druid.common_runtime[druid.metadata.storage.connector.connectURI=jdbc:postgresql://db.example.com:5432/druid
+      #druid.common_runtime[druid.metadata.storage.connector.user=...
+      #druid.common_runtime[druid.metadata.storage.connector.password=...
       # Deep storage
       # Extension "druid-hdfs-storage" added to "loadList"
-      druid.runtime['druid.storage.type'] ?= 'hdfs'
-      druid.runtime['druid.storage.storageDirectory'] ?= '/apps/druid/segments'
+      druid.common_runtime['druid.storage.type'] ?= 'hdfs'
+      druid.common_runtime['druid.storage.storageDirectory'] ?= '/apps/druid/segments'
       # Indexing service logs
-      druid.runtime['druid.indexer.logs.type'] ?= 'hdfs'
-      druid.runtime['druid.indexer.logs.directory'] ?= '/apps/druid/indexing-logs'
+      druid.common_runtime['druid.indexer.logs.type'] ?= 'hdfs'
+      druid.common_runtime['druid.indexer.logs.directory'] ?= '/apps/druid/indexing-logs'
       # Service discovery
-      druid.runtime['druid.selectors.indexing.serviceName'] ?= 'druid/overlord'
-      druid.runtime['druid.selectors.coordinator.serviceName'] ?= 'druid/coordinator'
+      druid.common_runtime['druid.selectors.indexing.serviceName'] ?= 'druid/overlord'
+      druid.common_runtime['druid.selectors.coordinator.serviceName'] ?= 'druid/coordinator'
       # Monitoring
-      druid.runtime['druid.monitoring.monitors'] ?= '["com.metamx.metrics.JvmMonitor"]'
-      druid.runtime['druid.emitter'] ?= 'logging'
-      druid.runtime['druid.emitter.logging.logLevel'] ?= 'info'
+      druid.common_runtime['druid.monitoring.monitors'] ?= '["com.metamx.metrics.JvmMonitor"]'
+      druid.common_runtime['druid.emitter'] ?= 'logging'
+      druid.common_runtime['druid.emitter.logging.logLevel'] ?= 'info'

@@ -3,7 +3,7 @@
 
     module.exports = header: 'Druid Install', handler: ->
       {druid, realm, db_admin} = @config.ryba
-      # krb5 = @config.krb5.etc_krb5_conf.realms[realm]
+      krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Register and load
 
@@ -94,6 +94,20 @@ Log files are stored inside "/var/log/druid" by default.
           source: "#{druid.log_dir}"
           target: "#{druid.dir}/log"
 
+## Kerberos
+
+Create a service principal for this NameNode. The principal is named after
+"nn/#{@config.host}@#{realm}".
+
+      @krb5_addprinc krb5,
+        header: 'Kerberos'
+        principal: "druid/#{@config.host}@HADOOP.RYBA"
+        keytab: '/opt/druid/conf/druid/_common/druid.keytab'
+        randkey: true
+        uid: 'druid'
+        gid: 'druid'
+        mode: 0o0600
+
 ## Configuration
 
 Configure deep storage.
@@ -105,31 +119,31 @@ Configure deep storage.
         user: druid.db.username
       @file.properties
         target: "/opt/druid-#{druid.version}/conf/druid/_common/common.runtime.properties"
-        content: druid.runtime
+        content: druid.common_runtime
         backup: true
-      @link
+      @copy #link
         source: '/etc/hadoop/conf/core-site.xml'
         target: "/opt/druid-#{druid.version}/conf/druid/_common/core-site.xml"
-      @link
+      @copy #link
         source: '/etc/hadoop/conf/hdfs-site.xml'
         target: "/opt/druid-#{druid.version}/conf/druid/_common/hdfs-site.xml"
-      @link
+      @copy #link
         source: '/etc/hadoop/conf/yarn-site.xml'
         target: "/opt/druid-#{druid.version}/conf/druid/_common/yarn-site.xml"
-      @link
+      @copy #link
         source: '/etc/hadoop/conf/mapred-site.xml'
         target: "/opt/druid-#{druid.version}/conf/druid/_common/mapred-site.xml"
       @hdfs_mkdir
         target: '/apps/druid/segments'
         user: "#{druid.user.name}"
         group: "#{druid.group.name}"
-        mode: 0o0640
+        mode: 0o0750
         krb5_user: @config.ryba.hdfs.krb5_user
       @hdfs_mkdir
         target: '/apps/druid/indexing-logs'
         user: "#{druid.user.name}"
         group: "#{druid.group.name}"
-        mode: 0o0640
+        mode: 0o0750
         krb5_user: @config.ryba.hdfs.krb5_user
 
 ## Dependencies

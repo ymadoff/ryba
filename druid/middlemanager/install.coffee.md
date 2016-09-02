@@ -22,8 +22,8 @@
 ## Configuration
 
       @file.properties
-        target: "/opt/druid-#{druid.version}/conf/druid/_common/common.runtime.properties"
-        content: druid.runtime
+        target: "/opt/druid-#{druid.version}/conf/druid/middleManager/runtime.properties"
+        content: druid.middlemanager_runtime
         backup: true
       @render
         header: 'rc.d'

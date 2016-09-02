@@ -8,7 +8,7 @@
 
 | Service           | Port | Proto    | Parameter                   |
 |-------------------|------|----------|-----------------------------|
-| Druid Overlord  | 8090 | tcp/http |                             |
+| Druid Overlord    | 8090 | tcp/http |                             |
 
       @iptables
         header: 'IPTables'

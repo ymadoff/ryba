@@ -14,6 +14,7 @@ data store.
       'install': [
         'masson/commons/java'
         'ryba/hadoop/hdfs_client'
+        'ryba/hadoop/mapred_client'
         'ryba/druid/broker/install'
         'ryba/druid/broker/start'
       ]
