@@ -10,7 +10,7 @@
 
 ## Wait
 
-      @call once: true, 'ryba/hbase/regionserver/wait'
+      @call 'ryba/hbase/regionserver/wait'
 
 ## Check FSCK
 
