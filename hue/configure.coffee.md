@@ -181,7 +181,7 @@ Example:
       hue.ini['hadoop']['yarn_clusters']['default']['proxy_api_url'] ?= yarn_api_url
       hue.ini['hadoop']['yarn_clusters']['default']['node_manager_api_url'] ?= node_manager_api_url
       # JHS
-      [jhs_ctx] = @contexts 'ryba/hadoop/mapred_jhs', require('ryba/hadoop/mapred_jhs/configure').handler
+      [jhs_ctx] = @contexts 'ryba/hadoop/mapred_jhs', require('../hadoop/mapred_jhs/configure').handler
       jhs_protocol = if jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.http.policy'] is 'HTTP' then 'http' else 'https'
       jhs_port = if jhs_protocol is 'http'
       then jhs_ctx.config.ryba.mapred.site['mapreduce.jobhistory.webapp.address'].split(':')[1]
