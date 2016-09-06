@@ -21,7 +21,7 @@ Check if Hive can authenticate and run a basic query to the database.
             escape = (text) -> text.replace(/[\\"]/g, "\\$&")
             @execute
               cmd: """
-              #{db_admin.mysql.path} -u#{db_admin.mysql.username} -p#{db_admin.mysql.password} -h#{db_admin.mysql.host} -P#{db_admin.mysql.port} -e "USE #{jdbc.database}; SHOW TABLES"
+              #{db_admin.mysql.path} -u#{db_admin.mysql.admin_username} -p#{db_admin.mysql.admin_password} -h#{db_admin.mysql.host} -P#{db_admin.mysql.port} -e "USE #{jdbc.database}; SHOW TABLES"
               """
           when 'postgresql'
             escape = (text) -> text.replace(/[\\"]/g, "\\$&")

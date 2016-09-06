@@ -126,7 +126,7 @@ isnt yet started.
           handler: ->
             switch jdbc.engine
               when 'mysql'
-                mysql_admin = "#{db_admin.mysql.path} -u#{db_admin.mysql.username} -p#{db_admin.mysql.password} -h#{db_admin.mysql.host} -P#{db_admin.mysql.port}"
+                mysql_admin = "#{db_admin.mysql.path} -u#{db_admin.mysql.admin_username} -p#{db_admin.mysql.admin_password} -h#{db_admin.mysql.host} -P#{db_admin.mysql.port}"
                 mysql_client = "#{db_admin.mysql.path} -u#{username} -p#{password} -h#{db_admin.mysql.host} -P#{db_admin.mysql.port}"
                 @execute
                   cmd: "if ! #{mysql_client} -e \"USE #{jdbc.database};\"; then exit 3; fi"
