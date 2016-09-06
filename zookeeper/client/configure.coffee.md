@@ -1,7 +1,7 @@
 
 # Zookeeper Client Configure
 
-    module.exports = ->
+    module.exports = handler: ->
       {java} = @config
       # User
       zookeeper = @config.ryba.zookeeper ?= {}
