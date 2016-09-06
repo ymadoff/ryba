@@ -1,7 +1,7 @@
 ## Configuration
 
     module.exports = handler: ->
-      rs_ctxs = @contexts 'ryba/hbase/regionserver', require('../../hbase/regionserver/configure').handler
+      rs_ctxs = @contexts 'ryba/hbase/regionserver', [require('masson/commons/java/configure').handler, require('../../hbase/regionserver/configure').handler]
       for rs_ctx in rs_ctxs
         rs_ctx.config.ryba.hbase.rs.site['hbase.defaults.for.version.skip'] = 'true'
         rs_ctx.config.ryba.hbase.rs.site['phoenix.functions.allowUserDefinedFunctions'] = 'true'
