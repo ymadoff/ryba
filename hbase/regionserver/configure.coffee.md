@@ -6,8 +6,8 @@
       # require('../../graphite/carbon').configure ctx
       # require('../../hadoop/hdfs').configure ctx
       ryba = @config.ryba ?= {}
+      {java} = @config
       {realm, hbase, ganglia, graphite} = @config.ryba
-      {java_home} = @config.java
       hbase = @config.ryba.hbase ?= {}
       m_ctxs = @contexts 'ryba/hbase/master', require('../master/configure').handler
       throw Error "No Configured Master" unless m_ctxs.length
@@ -47,7 +47,7 @@
       hbase.rs.site['hbase.ssl.enabled'] ?= 'true'
       hbase.rs.site['hbase.regionserver.handler.count'] ?= 60 # HDP default
       hbase.rs.env ?= {}
-      hbase.rs.env['JAVA_HOME'] ?= "#{java_home}"
+      hbase.rs.env['JAVA_HOME'] ?= "#{java.java_home}"
       # http://blog.sematext.com/2012/07/16/hbase-memstore-what-you-should-know/
       # Keep hbase.regionserver.hlog.blocksize * hbase.regionserver.maxlogs just
       # a bit above hbase.regionserver.global.memstore.lowerLimit * HBASE_HEAPSIZE

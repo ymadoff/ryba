@@ -5,6 +5,7 @@ It is responsible for serving and managing regions. In a distributed cluster, a 
 
     module.exports = ->
       'configure': [
+        'masson/commons/java'
         'ryba/hadoop/core'
         'ryba/hbase/lib/configure_metrics'
         'ryba/hbase/regionserver/configure'
