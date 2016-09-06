@@ -28,6 +28,8 @@ Example :
       zk_ctxs = @contexts 'ryba/zookeeper/server'
       zookeeper = @config.ryba.zookeeper ?= {}
       # Layout
+      zookeeper.conf_dir ?= '/etc/zookeeper/conf'
+      zookeeper.log_dir ?= '/var/log/zookeeper'
       zookeeper.pid_dir ?= '/var/run/zookeeper'
       zookeeper.port ?= 2181
       # Environnment

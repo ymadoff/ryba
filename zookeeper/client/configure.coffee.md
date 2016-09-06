@@ -25,7 +25,6 @@
       @config.ryba.hadoop_group.system ?= true
       # Layout
       zookeeper.conf_dir ?= '/etc/zookeeper/conf'
-      zookeeper.log_dir ?= '/var/log/zookeeper'
       # Environnment
       zookeeper.env ?= {}
       zookeeper.env['JAVA_HOME'] ?= "#{java.java_home}"
