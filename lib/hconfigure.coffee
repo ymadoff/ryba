@@ -1,6 +1,17 @@
 
 properties = require './properties'
 
+###
+
+Options includes
+*   `merge`
+*   `target`
+*   `source` (alias of `target`)
+*   `default`
+*   `local_default`
+*   `properties`
+###
+
 module.exports = (options) ->
   fnl_props = {}
   org_props = {}
