@@ -10,7 +10,7 @@
 
       @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdp_select', 'ryba/lib/hdp_select'
-      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/file_jaas'
 
 ## Users & Groups
 

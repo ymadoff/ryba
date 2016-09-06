@@ -5,7 +5,7 @@
       {titan, rexster, hadoop_conf_dir, realm} = @config.ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
-      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/file_jaas'
 
 ## Users & Groups
 

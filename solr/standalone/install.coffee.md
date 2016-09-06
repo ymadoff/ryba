@@ -12,7 +12,7 @@
 
       @call once:true, 'masson/commons/java'
       @call 'masson/core/krb5_client/wait'
-      @register ['file', 'jaas'], 'ryba/lib/write_jaas'
+      @register ['file', 'jaas'], 'ryba/lib/file_jaas'
       @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
 
 ## Layout
