@@ -7,7 +7,7 @@
 
 ## Register and load
 
-      # @register 'hdp_select', 'ryba/lib/hdp_select'
+      @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
       @call once: true, 'ryba/commons/db_admin'
 
@@ -100,13 +100,33 @@ Create a service principal for this NameNode. The principal is named after
 "nn/#{@config.host}@#{realm}".
 
       @krb5_addprinc krb5,
-        header: 'Kerberos'
-        principal: "druid/#{@config.host}@HADOOP.RYBA"
-        keytab: '/opt/druid/conf/druid/_common/druid.keytab'
+        header: 'Kerberos Admin Principal'
+        principal: "#{druid.krb5_admin.principal}"
+        password: "#{druid.krb5_admin.password}"
         randkey: true
         uid: 'druid'
         gid: 'druid'
         mode: 0o0600
+      @krb5_addprinc krb5,
+        header: 'Kerberos Service Principal'
+        principal: "#{druid.krb5_service.principal}"
+        keytab: "#{druid.krb5_service.keytab}"
+        randkey: true
+        uid: "#{druid.user.name}"
+        gid: "#{druid.group.name}"
+        mode: 0o0600
+
+## Cron-ed Kinit
+
+Druid has no mechanism to renew its keytab. For that, we use a cron daemon
+We then ask a first TGT.
+
+      @cron.add
+        header: 'Cron-ed kinit'
+        cmd: "/usr/bin/kinit #{druid.krb5_service.principal} -kt #{druid.krb5_service.keytab}"
+        when: '0 */9 * * *'
+        user: 'druid'
+        exec: true
 
 ## Configuration
 
@@ -117,34 +137,6 @@ Configure deep storage.
       @db.database druid.db,
         if: druid.db.engine in ['mysql', 'postgres']
         user: druid.db.username
-      @file.properties
-        target: "/opt/druid-#{druid.version}/conf/druid/_common/common.runtime.properties"
-        content: druid.common_runtime
-        backup: true
-      @copy #link
-        source: '/etc/hadoop/conf/core-site.xml'
-        target: "/opt/druid-#{druid.version}/conf/druid/_common/core-site.xml"
-      @copy #link
-        source: '/etc/hadoop/conf/hdfs-site.xml'
-        target: "/opt/druid-#{druid.version}/conf/druid/_common/hdfs-site.xml"
-      @copy #link
-        source: '/etc/hadoop/conf/yarn-site.xml'
-        target: "/opt/druid-#{druid.version}/conf/druid/_common/yarn-site.xml"
-      @copy #link
-        source: '/etc/hadoop/conf/mapred-site.xml'
-        target: "/opt/druid-#{druid.version}/conf/druid/_common/mapred-site.xml"
-      @hdfs_mkdir
-        target: '/apps/druid/segments'
-        user: "#{druid.user.name}"
-        group: "#{druid.group.name}"
-        mode: 0o0750
-        krb5_user: @config.ryba.hdfs.krb5_user
-      @hdfs_mkdir
-        target: '/apps/druid/indexing-logs'
-        user: "#{druid.user.name}"
-        group: "#{druid.group.name}"
-        mode: 0o0750
-        krb5_user: @config.ryba.hdfs.krb5_user
 
 ## Dependencies
 

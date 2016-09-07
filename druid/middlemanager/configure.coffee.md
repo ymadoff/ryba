@@ -19,8 +19,10 @@ Example:
       # Number of tasks per middleManager
       druid.middlemanager_runtime['druid.worker.capacity'] ?= '3'
       # Task launch parameters
-      druid.middlemanager_runtime['druid.indexer.runner.javaOpts'] ?= '-server -Xmx2g -Duser.timezone=UTC -Dfile.encoding=UTF-8 -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager'
-      druid.middlemanager_runtime['druid.indexer.task.baseTaskDir'] ?= 'var/druid/task'
+      # Add "-Dhadoop.mapreduce.job.classloader=true" to avoid incompatible jackson versions
+      # see https://github.com/druid-io/druid/blob/master/docs/content/operations/other-hadoop.md
+      druid.middlemanager_runtime['druid.indexer.runner.javaOpts'] ?= '-server -Xmx2g -Duser.timezone=UTC -Dfile.encoding=UTF-8 -Djava.util.logging.manager=org.apache.logging.log4j.jul.LogManager -Dhadoop.mapreduce.job.classloader=true -Dhdp.version=2.4.2.0-258'
+      druid.middlemanager_runtime['druid.indexer.task.baseTaskDir'] ?= '/var/druid/task'
       # # HTTP server threads
       druid.middlemanager_runtime['druid.server.http.numThreads'] ?= '25'
       # Processing threads and buffers

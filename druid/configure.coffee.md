@@ -19,6 +19,7 @@ Example:
       zookeeper_quorum = for zoo_ctx in zoo_ctxs then "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
         
       @config.ryba ?= {}
+      {realm} = @config.ryba
       druid = @config.ryba.druid ?= {}
       # Layout
       druid.dir ?= '/opt/druid'
@@ -44,11 +45,19 @@ Example:
       # Package
       druid.version ?= '0.9.1.1'
       druid.source ?= "http://static.druid.io/artifacts/releases/druid-#{druid.version}-bin.tar.gz"
+      # Kerberos
+      druid.krb5_admin ?= {}
+      druid.krb5_admin.principal ?= "druid@#{realm}"
+      druid.krb5_admin.password ?= "druid123"
+      druid.krb5_service ?= {}
+      druid.krb5_service.principal ?= "druid/#{@config.host}@#{realm}"
+      druid.krb5_service.keytab ?= "#{druid.dir}/conf/druid/_common/druid.keytab"
       # Configuration
       druid.common_runtime ?= {}
       # Extensions
       # Note, Mysql extension isnt natively supported due to licensing issues
-      druid.common_runtime['druid.extensions.loadList'] ?= '["druid-kafka-eight", "druid-s3-extensions", "druid-histogram", "druid-datasketches", "druid-lookups-cached-global", "postgresql-metadata-storage", "druid-hdfs-storage"]' # "mysql-metadata-storage"
+      # "druid-s3-extensions", 
+      druid.common_runtime['druid.extensions.loadList'] ?= '["druid-kafka-eight", "druid-histogram", "druid-datasketches", "druid-lookups-cached-global", "postgresql-metadata-storage", "druid-hdfs-storage"]' # "mysql-metadata-storage"
       # Logging
       druid.common_runtime['druid.startup.logging.logProperties'] ?= 'true'
       # Zookeeper
