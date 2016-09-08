@@ -137,6 +137,34 @@ Configure deep storage.
       @db.database druid.db,
         if: druid.db.engine in ['mysql', 'postgres']
         user: druid.db.username
+      @file.properties
+        target: "/opt/druid-#{druid.version}/conf/druid/_common/common.runtime.properties"
+        content: druid.common_runtime
+        backup: true
+      @copy #link
+        source: '/etc/hadoop/conf/core-site.xml'
+        target: "/opt/druid-#{druid.version}/conf/druid/_common/core-site.xml"
+      @copy #link
+        source: '/etc/hadoop/conf/hdfs-site.xml'
+        target: "/opt/druid-#{druid.version}/conf/druid/_common/hdfs-site.xml"
+      @copy #link
+        source: '/etc/hadoop/conf/yarn-site.xml'
+        target: "/opt/druid-#{druid.version}/conf/druid/_common/yarn-site.xml"
+      @copy #link
+        source: '/etc/hadoop/conf/mapred-site.xml'
+        target: "/opt/druid-#{druid.version}/conf/druid/_common/mapred-site.xml"
+      @hdfs_mkdir
+        target: '/apps/druid/segments'
+        user: "#{druid.user.name}"
+        group: "#{druid.group.name}"
+        mode: 0o0750
+        krb5_user: @config.ryba.hdfs.krb5_user
+      @hdfs_mkdir
+        target: '/apps/druid/indexing-logs'
+        user: "#{druid.user.name}"
+        group: "#{druid.group.name}"
+        mode: 0o0750
+        krb5_user: @config.ryba.hdfs.krb5_user
 
 ## Dependencies
 
