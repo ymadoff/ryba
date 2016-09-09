@@ -173,7 +173,7 @@ in the gateway.sh service script.
           name: 'gateway-identity'
         @execute
           if: -> @status -1
-          cmd: "/usr/hdp/current/knox-server/bin/create-alias gateway-identity-passphrase --value #{knox.ssl.keypass}"
+          cmd: "/usr/hdp/current/knox-server/bin/knoxcli.sh create-alias gateway-identity-passphrase --value #{knox.ssl.keypass}"
 
 Knox use Shiro for LDAP authentication and Shiro cannot be configured for 
 unsecure SSL.
