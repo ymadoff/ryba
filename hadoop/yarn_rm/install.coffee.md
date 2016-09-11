@@ -114,8 +114,8 @@ inside "/etc/init.d" and activate it on startup.
       @hconfigure
         header: 'Core Site'
         target: "#{yarn.rm.conf_dir}/core-site.xml"
-        default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
-        local_default: true
+        source: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
+        local_source: true
         properties: merge {}, core_site, yarn.rm.core_site
         backup: true
       @hconfigure
@@ -126,8 +126,8 @@ inside "/etc/init.d" and activate it on startup.
       @hconfigure
         label: 'YARN Site'
         target: "#{yarn.rm.conf_dir}/yarn-site.xml"
-        default: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
-        local_default: true
+        source: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
+        local_source: true
         properties: yarn.rm.site
         backup: true
       @file

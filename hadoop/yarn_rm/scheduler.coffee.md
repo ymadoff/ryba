@@ -24,8 +24,8 @@ ResourceCalculator class name is expected.
         header: 'Capacity Scheduler'
         if: yarn.rm.site['yarn.resourcemanager.scheduler.class'] is 'org.apache.hadoop.yarn.server.resourcemanager.scheduler.capacity.CapacityScheduler'
         target: "#{yarn.rm.conf_dir}/capacity-scheduler.xml"
-        default: "#{__dirname}/../../resources/core_hadoop/capacity-scheduler.xml"
-        local_default: true
+        source: "#{__dirname}/../../resources/core_hadoop/capacity-scheduler.xml"
+        local_source: true
         properties: capacity_scheduler
         merge: false
         backup: true

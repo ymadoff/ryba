@@ -297,8 +297,8 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
       @call header: 'Configuration', handler: ->
         @hconfigure
           target: "#{oozie.conf_dir}/oozie-site.xml"
-          default: "#{__dirname}/../resources/oozie-site.xml"
-          local_default: true
+          source: "#{__dirname}/../resources/oozie-site.xml"
+          local_source: true
           properties: oozie.site
           uid: oozie.user.name
           gid: oozie.group.name
@@ -312,7 +312,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           backup: true
         @hconfigure
           target: "#{oozie.conf_dir}/hadoop-conf/core-site.xml"
-          local_default: true
+          # local_default: true
           properties: oozie.hadoop_config
           uid: oozie.user.name
           gid: oozie.group.name

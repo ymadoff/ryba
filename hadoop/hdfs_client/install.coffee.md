@@ -55,15 +55,15 @@ Update the "core-site.xml" configuration file with properties from the
       @hconfigure
         header: 'Core Configuration'
         target: "#{hadoop_conf_dir}/core-site.xml"
-        default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
-        local_default: true
+        source: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
+        local_source: true
         properties: core_site
         backup: true
       @hconfigure
         header: 'HDFS Configuration'
         target: "#{hadoop_conf_dir}/hdfs-site.xml"
-        default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
-        local_default: true
+        source: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
+        local_source: true
         properties: hdfs.site
         uid: hdfs.user.name
         gid: hadoop_group.name

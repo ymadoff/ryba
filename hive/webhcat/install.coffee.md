@@ -94,8 +94,8 @@ Upload configuration inside '/etc/hive-webhcat/conf/webhcat-site.xml'.
       @hconfigure
         header: 'Webhcat Site'
         target: "#{webhcat.conf_dir}/webhcat-site.xml"
-        default: "#{__dirname}/../../resources/hive-webhcat/webhcat-site.xml"
-        local_default: true
+        source: "#{__dirname}/../../resources/hive-webhcat/webhcat-site.xml"
+        local_source: true
         properties: webhcat.site
         uid: hive.user.name
         gid: hadoop_group.name

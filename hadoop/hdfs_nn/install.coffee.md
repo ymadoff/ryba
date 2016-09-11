@@ -105,15 +105,15 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
       @hconfigure
         header: 'Core Site'
         target: "#{hdfs.nn.conf_dir}/core-site.xml"
-        default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
-        local_default: true
+        source: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
+        local_source: true
         properties: merge {}, core_site, hdfs.nn.core_site
         backup: true
       @hconfigure
         header: 'HDFS Site'
         target: "#{hdfs.nn.conf_dir}/hdfs-site.xml"
-        default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
-        local_default: true
+        source: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
+        local_source: true
         properties: hdfs.nn.site
         uid: hdfs.user.name
         gid: hadoop_group.name
@@ -345,8 +345,8 @@ ${HADOOP_CONF_DIR}/core-site.xml
       @hconfigure
         header: 'Policy'
         target: "#{hdfs.nn.conf_dir}/hadoop-policy.xml"
-        default: "#{__dirname}/../../resources/core_hadoop/hadoop-policy.xml"
-        local_default: true
+        source: "#{__dirname}/../../resources/core_hadoop/hadoop-policy.xml"
+        local_source: true
         properties: hadoop_policy
         backup: true
         if: core_site['hadoop.security.authorization'] is 'true'

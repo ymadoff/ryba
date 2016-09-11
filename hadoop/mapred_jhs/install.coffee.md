@@ -103,8 +103,8 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
       @hconfigure
         header: 'Core Site'
         target: "#{mapred.jhs.conf_dir}/core-site.xml"
-        default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
-        local_default: true
+        source: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
+        local_source: true
         properties: core_site
         backup: true
       @hconfigure

@@ -64,8 +64,8 @@ Properties accepted by the template are: `ryba.yarn.rm_opts`
       @hconfigure
         header: 'Configuration'
         target: "#{hadoop_conf_dir}/yarn-site.xml"
-        default: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
-        local_default: true
+        source: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
+        local_source: true
         properties: yarn.site
         backup: true
         uid: yarn.user.name

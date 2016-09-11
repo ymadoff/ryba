@@ -35,20 +35,6 @@ module.exports = exports =
       return value if property and name is property and value?
       properties[name] = value if name and value?
     return properties
-    # doc = jsdom.jsdom markup, jsdom.level(1, "core")
-    # for configChild in doc.childNodes
-    #   continue unless configChild.tagName is 'CONFIGURATION'
-    #   for propertyChild in configChild.childNodes
-    #     continue unless propertyChild.tagName is 'PROPERTY'
-    #     name = value = null
-    #     for child in propertyChild.childNodes
-    #       if child.tagName is 'NAME'
-    #         name = child.innerHTML
-    #       if child.tagName is 'VALUE'
-    #         value = child.innerHTML
-    #     return value if property and name is property and value?
-    #     properties[name] = value if name and value?
-    # return properties
   ###
   `stringify(properties)`
   -----------------------
@@ -97,16 +83,6 @@ module.exports = exports =
     if typeof property is 'function'
       callback = property
       property = null
-
-    # args = Array.prototype.slice.call arguments, 0
-    # # I tried `if args[0] instanceof Connection` but it wasnt working
-    # ssh = if typeof args[0] isnt 'string' then args.shift() else null
-    # path = args[0]
-    # property = args[1]
-    # callback = args[2]
-    # if args.length is 2
-    #   callback = property
-    #   property = null
     fs.readFile ssh, path, 'utf8', (err, markup) ->
       return callback err if err
       callback null, exports.parse markup, property
@@ -129,7 +105,3 @@ module.exports = exports =
     fs.writeFile ssh, path, markup, (err) ->
       return callback err if err
       callback null, markup
-
-
-
-

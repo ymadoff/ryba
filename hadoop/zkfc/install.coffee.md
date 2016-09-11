@@ -61,8 +61,8 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
           backup: true
         @hconfigure
           target: "#{zkfc.conf_dir}/hdfs-site.xml"
-          default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
-          local_default: true
+          source: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
+          local_source: true
           properties: hdfs.nn.site
           uid: hdfs.user.name
           gid: hadoop_group.name

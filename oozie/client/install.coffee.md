@@ -48,8 +48,8 @@ Expose the "OOZIE_URL" environmental variable to every users.
       @hconfigure
         header: 'Oozie site'
         target: "#{oozie.conf_dir}/oozie-site.xml"
-        default: "#{__dirname}/../resources/oozie-site.xml"
-        local_default: true
+        source: "#{__dirname}/../resources/oozie-site.xml"
+        local_source: true
         properties: oozie.site
         uid: oozie.user.name
         gid: oozie.group.name

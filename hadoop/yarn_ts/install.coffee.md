@@ -92,8 +92,8 @@ Update the "yarn-site.xml" configuration file.
       @hconfigure
         header: 'Core Site'
         target: "#{yarn.ats.conf_dir}/core-site.xml"
-        default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
-        local_default: true
+        source: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
+        local_source: true
         properties: core_site
         backup: true
       @hconfigure

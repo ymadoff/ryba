@@ -112,14 +112,14 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @hconfigure
         header: 'Hive Site'
         target: "#{spark.history.conf_dir}/hive-site.xml"
-        default: "/etc/hive/conf/hive-site.xml"
+        source: "/etc/hive/conf/hive-site.xml"
         merge: true
         backup: true
 
       @hconfigure
         header: 'Core Site'
         target: "#{spark.history.conf_dir}/core-site.xml"
-        default: "/etc/hadoop/conf/core-site.xml"
+        source: "/etc/hadoop/conf/core-site.xml"
         merge: true
         backup: true
 

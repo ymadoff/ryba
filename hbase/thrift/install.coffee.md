@@ -98,8 +98,8 @@ restrict it but not the thrift server.
       @hconfigure
         header: 'HBase Site'
         target: "#{hbase.thrift.conf_dir}/hbase-site.xml"
-        default: "#{__dirname}/../resources/hbase-site.xml"
-        local_default: true
+        source: "#{__dirname}/../resources/hbase-site.xml"
+        local_source: true
         properties: hbase.thrift.site
         merge: false
         uid: hbase.user.name

@@ -60,8 +60,8 @@ Upload the "sqoop-site.xml" files into the "/etc/sqoop/conf" folder.
       @hconfigure
         header: 'Sqoop Site'
         target: "#{sqoop.conf_dir}/sqoop-site.xml"
-        default: "#{__dirname}/resources/sqoop-site.xml"
-        local_default: true
+        source: "#{__dirname}/resources/sqoop-site.xml"
+        local_source: true
         properties: sqoop.site
         uid: sqoop.user.name
         gid: hadoop_group.name

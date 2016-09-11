@@ -156,7 +156,7 @@ has finished (logs are only available in yarn-cluster mode).
           @hconfigure
             header: 'Hive Site'
             target: "#{spark.conf_dir}/hive-site.xml"
-            default: "/etc/hive/conf/hive-site.xml"
+            source: "/etc/hive/conf/hive-site.xml"
             properties: 'hive.execution.engine': 'mr'
             merge: true
             backup: true

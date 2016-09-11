@@ -34,8 +34,8 @@ See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments
       @hconfigure
         header: 'Hive Site'
         target: "#{hive.conf_dir}/hive-site.xml"
-        default: "#{__dirname}/../../resources/hive/hive-site.xml"
-        local_default: true
+        source: "#{__dirname}/../../resources/hive/hive-site.xml"
+        local_source: true
         properties: hive.site
         merge: true
         backup: true

@@ -55,8 +55,8 @@ Note, we left the permission mode as default, Master and RegionServer need to
       @hconfigure
         header: 'HBase Client Site'
         target: "#{hbase.conf_dir}/hbase-site.xml"
-        default: "#{__dirname}/../resources/hbase-site.xml"
-        local_default: true
+        source: "#{__dirname}/../resources/hbase-site.xml"
+        local_source: true
         properties: hbase.site
         mode: 0o0644
         merge: false

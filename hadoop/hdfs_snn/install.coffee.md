@@ -85,10 +85,10 @@ script inside "/etc/init.d" and activate it on startup.
 # Configure
 
       @hconfigure
-         header: 'Configuration'
+        header: 'Configuration'
         target: "#{hdfs.snn.conf_dir}/hdfs-site.xml"
-        default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
-        local_default: true
+        source: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
+        local_source: true
         properties: hdfs.site
         uid: hdfs.user
         gid: hadoop_group

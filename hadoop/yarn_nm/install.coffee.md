@@ -123,8 +123,8 @@ SSH connection to the node to gather the memory and CPU informations.
       @hconfigure
         header: 'Core Site'
         target: "#{yarn.nm.conf_dir}/core-site.xml"
-        default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
-        local_default: true
+        source: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
+        local_source: true
         properties: core_site
         backup: true
       @hconfigure
@@ -135,8 +135,8 @@ SSH connection to the node to gather the memory and CPU informations.
       @hconfigure
         header: 'YARN Site'
         target: "#{yarn.nm.conf_dir}/yarn-site.xml"
-        default: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
-        local_default: true
+        source: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
+        local_source: true
         properties: yarn.site
         backup: true
       @file

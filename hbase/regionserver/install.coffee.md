@@ -127,8 +127,8 @@ RegionServer, and HBase client host machines.
       @hconfigure
         header: 'HBase Site'
         target: "#{hbase.rs.conf_dir}/hbase-site.xml"
-        default: "#{__dirname}/../resources/hbase-site.xml"
-        local_default: true
+        source: "#{__dirname}/../resources/hbase-site.xml"
+        local_source: true
         properties: hbase.rs.site
         merge: false
         uid: hbase.user.name

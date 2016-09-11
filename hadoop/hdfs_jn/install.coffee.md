@@ -108,14 +108,14 @@ NodeManagers.
         @hconfigure
           header: 'Core Site'
           target: "#{hdfs.jn.conf_dir}/core-site.xml"
-          default: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
-          local_default: true
+          source: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
+          local_source: true
           properties: core_site
           backup: true
         @hconfigure
           target: "#{hdfs.jn.conf_dir}/hdfs-site.xml"
-          default: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
-          local_default: true
+          source: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
+          local_source: true
           properties: hdfs.site
           uid: hdfs.user.name
           gid: hadoop_group.name

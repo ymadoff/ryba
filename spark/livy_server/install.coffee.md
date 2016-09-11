@@ -11,10 +11,6 @@ Run `ryba prepare` to create the Docker container.
       {hadoop_group, hdfs, hive, hbase, hadoop_conf_dir, realm, ssl} = @config.ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       tmp_location = "/var/tmp/ryba/ssl"
-    
-## Register
-
-      @register 'hconfigure', 'ryba/lib/hconfigure'
 
 ## Wait
 
