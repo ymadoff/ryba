@@ -141,18 +141,29 @@ Configure deep storage.
         target: "/opt/druid-#{druid.version}/conf/druid/_common/common.runtime.properties"
         content: druid.common_runtime
         backup: true
-      @copy #link
-        source: '/etc/hadoop/conf/core-site.xml'
+      @copy
         target: "/opt/druid-#{druid.version}/conf/druid/_common/core-site.xml"
-      @copy #link
-        source: '/etc/hadoop/conf/hdfs-site.xml'
+        source: '/etc/hadoop/conf/core-site.xml'
+      @copy
         target: "/opt/druid-#{druid.version}/conf/druid/_common/hdfs-site.xml"
-      @copy #link
-        source: '/etc/hadoop/conf/yarn-site.xml'
+        source: '/etc/hadoop/conf/hdfs-site.xml'
+      @hconfigure
         target: "/opt/druid-#{druid.version}/conf/druid/_common/yarn-site.xml"
-      @copy #link
-        source: '/etc/hadoop/conf/mapred-site.xml'
+        source: '/etc/hadoop/conf/yarn-site.xml'
+        transform: (properties) ->
+          if properties['yarn.resourcemanager.ha.rm-ids']
+            [id] = properties['yarn.resourcemanager.ha.rm-ids'].split ','
+            properties['yarn.resourcemanager.address'] = properties["yarn.resourcemanager.address.#{id}"]
+          properties
+      @hconfigure
         target: "/opt/druid-#{druid.version}/conf/druid/_common/mapred-site.xml"
+        source: '/etc/hadoop/conf/mapred-site.xml'
+        transform: (properties) ->
+          classpath = properties['mapreduce.application.classpath'].split ','
+          jar_validation = "/opt/druid-#{druid.version}/lib/validation-api-1.1.0.Final.jar"
+          classpath.push jar_validation unless jar_validation in classpath
+          properties['mapreduce.application.classpath'] = classpath.join ','
+          properties
       @hdfs_mkdir
         target: '/apps/druid/segments'
         user: "#{druid.user.name}"
@@ -161,6 +172,12 @@ Configure deep storage.
         krb5_user: @config.ryba.hdfs.krb5_user
       @hdfs_mkdir
         target: '/apps/druid/indexing-logs'
+        user: "#{druid.user.name}"
+        group: "#{druid.group.name}"
+        mode: 0o0750
+        krb5_user: @config.ryba.hdfs.krb5_user
+      @hdfs_mkdir
+        target: "/user/#{druid.user.name}"
         user: "#{druid.user.name}"
         group: "#{druid.group.name}"
         mode: 0o0750
