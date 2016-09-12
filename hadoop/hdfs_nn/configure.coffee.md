@@ -134,31 +134,6 @@ for distcp purpose.
         dn_ctx.config.ryba.hdfs.site['fs.permissions.umask-mode'] ?= ryba.hdfs.nn.site['fs.permissions.umask-mode']
         dn_ctx.config.ryba.hdfs.site['dfs.block.access.token.enable'] ?= ryba.hdfs.nn.site['dfs.block.access.token.enable']
 
-    module.exports.client_config = (ctx) ->
-      {ryba} = @config
-      # Import properties from NameNode
-      [nn_ctx] = @contexts 'ryba/hadoop/hdfs_nn'
-      require('../core/configure').handler.call nn_ctx
-      module.exports.handler.call nn_ctx
-      properties = [
-        'dfs.namenode.kerberos.principal'
-        'dfs.namenode.kerberos.internal.spnego.principal'
-        'dfs.namenode.kerberos.https.principal'
-        'dfs.web.authentication.kerberos.principal'
-        'dfs.ha.automatic-failover.enabled'
-        'dfs.nameservices'
-        'dfs.internal.nameservices'
-      ]
-      for property in properties
-        ryba.hdfs.site[property] ?= nn_ctx.config.ryba.hdfs.nn.site[property]
-      for property of nn_ctx.config.ryba.hdfs.nn.site
-        ok = false
-        ok = true if /^dfs\.namenode\.\w+-address/.test property
-        ok = true if property.indexOf('dfs.client.failover.proxy.provider.') is 0
-        ok = true if property.indexOf('dfs.ha.namenodes.') is 0
-        continue unless ok
-        ryba.hdfs.site[property] ?= nn_ctx.config.ryba.hdfs.nn.site[property]
-
 ## Dependencies
 
     string = require 'mecano/lib/misc/string'

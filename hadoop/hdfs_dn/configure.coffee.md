@@ -32,7 +32,6 @@ Example:
       ryba.hdfs.dn ?= {}
       ryba.hdfs.dn.conf_dir ?= '/etc/hadoop-hdfs-datanode/conf'
       ryba.hdfs.sysctl ?= {}
-      require('../hdfs_nn/configure').client_config.call @
       # Comma separated list of paths. Use the list of directories from $DFS_DATA_DIR.
       # For example, /grid/hadoop/hdfs/dn,/grid1/hadoop/hdfs/dn.
       ryba.hdfs.site['dfs.http.policy'] ?= 'HTTPS_ONLY'
@@ -97,17 +96,3 @@ Set up jave heap size linke in `ryba/hadoop/hdfs_nn`.
 
       ryba.hdfs.site['dfs.client.read.shortcircuit'] ?= if @has_module 'ryba/hadoop/hdfs_dn' then 'true' else 'false'
       ryba.hdfs.site['dfs.domain.socket.path'] ?= '/var/lib/hadoop-hdfs/dn_socket'
-
-    module.exports.client_config = ->
-      {ryba} = @config
-      # Import properties from DataNode
-      [dn_ctx] = @contexts 'ryba/hadoop/hdfs_dn'
-      require('../core/configure').handler.call dn_ctx
-      module.exports.handler.call dn_ctx
-      properties = [
-        'dfs.datanode.kerberos.principal'
-        'dfs.client.read.shortcircuit'
-        'dfs.domain.socket.path'
-      ]
-      for property in properties
-        ryba.hdfs.site[property] ?= dn_ctx.config.ryba.hdfs.site[property]
