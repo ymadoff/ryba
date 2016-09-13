@@ -1,0 +1,114 @@
+#!/bin/sh
+#
+# hst-server   Start Hortonworks Smartsense Tool
+#
+# chkconfig: 2345 08 92
+# description:  Start, stops and edit Hortonworks Smartsense Tool infos
+#
+# config: /etc/hst/conf
+#
+### BEGIN INIT INFO
+# Provides: iptables
+# Required-Start:
+# Required-Stop:
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: start and stop smartsense tool
+# Description: Start, stop and save smartsense tool
+### END INIT INFO
+
+NAME='SmartSense Server'
+USER={{user}}
+PID_FILE='{{pid_dir}}/hst-server.pid'
+KILL_FORCE=0
+KILL_SLEEP=10
+HST_AGENT=hst-agent
+HST_SERVER=hst-server
+HST_PY_PATH=/usr/hdp/share/hst/hst-agent/lib
+HST_AGENT_SCRIPTS_PATH=/var/lib/smartsense/hst-agent/resources/scripts:/var/lib/smartsense/hst-agent/updates/download/patch
+PYTHONPATH=/var/lib/smartsense/hst-agent/resources/scripts:/var/lib/smartsense/hst-agent/updates/download/patch:/usr/hdp/share/hst/hst-agent/lib:/usr/hdp/share/hst/hst-agent/lib/hst_agent:$HST_AGENT_SCRIPTS_PATH:$HST_PY_PATH:$HST_PY_PATH/hst_agent:$PYTHONPATH
+
+function start {
+  if [ -f $PID_FILE ]; then
+    pid=`cat $PID_FILE`
+    if kill -0 $pid >/dev/null 2>&1 $pid; then
+       echo "$NAME already running [$pid]"
+       exit 0
+    else
+      rm -rf $PID_FILE
+    fi
+  fi
+  rm -rf  /var/lib/smartsense/hst-server/updates/upload/patch
+  /usr/sbin/hst start
+  # eval "su -l $USER -c \"export PYTHONPATH=$PYTHONPATH ;rm -f /var/lib/smartsense/hst-server/updates/upload/patch/etc/hst/conf/*;/usr/sbin/hst-server.py start\""
+  echo "$NAME running [`cat $PID_FILE`]"
+}
+
+function stop {
+  if [ ! -f $PID_FILE ]; then
+    echo "$NAME already stopped"
+    return
+  fi
+  pid=$(<$PID_FILE)
+  kill $pid 2>/dev/null
+  i=0
+  /usr/sbin/hst stop
+  # eval "su -l $USER -c \"export PYTHONPATH=$PYTHONPATH ;/usr/sbin/hst-server.py stop\""
+  # eval $CMD
+  while kill -0 $pid 2>dev/null && [ $i -lt $KILL_SLEEP ]; do
+    (( i++ ))
+    sleep 1
+  done
+  if ! kill -0 $pid 2>dev/null; then
+    rm $PID_FILE 2>/dev/null || true
+    echo "$NAME stopped"
+    return
+  fi
+  force_stop
+}
+
+function force_stop {
+  pid=$(<$PID_FILE)
+  kill -9 $pid 2>/dev/null
+  sleep 1
+  if kill -0 $pid; then
+    echo "$NAME failed to stop"
+    exit 1
+  fi
+  rm $PID_FILE
+  echo "$NAME forced stopped after ${KILL_SLEEP}s"
+}
+
+function status {
+  if [ -f $PID_FILE ]; then
+    pid=`cat $PID_FILE`
+    if kill -0 >/dev/null 2>&1 $pid; then
+       echo "$NAME started [$pid]"
+       exit 0
+    fi
+  fi
+  echo "$NAME stopped"
+  exit 3
+}
+
+case "$*" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  status)
+        status
+        exit $?
+        ;;
+  restart)
+        $0 stop
+        $0 start
+        ;;
+  *)
+        echo "Usage for HST Server: $0 {start|stop|status|restart}"
+        exit 1
+esac
+
+exit 0
