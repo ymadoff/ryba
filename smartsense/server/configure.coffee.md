@@ -1,6 +1,6 @@
 
 # Hortonworks Smartsense Server Configuration
-    
+
     module.exports = handler: ->
       {java, ryba} = @config
       {hadoop_conf_dir, core_site,realm} = ryba

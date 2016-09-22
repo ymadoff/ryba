@@ -1,6 +1,6 @@
 # The Hortonworks SmartSense Tool (HST)
 
-[The Hortonworks SmartSense Tool][hst] Collects cluster diagnostic information 
+[The Hortonworks SmartSense Tool][hst] Collects cluster diagnostic information
 to help you troubleshoot support cases.
 
     module.exports = ->

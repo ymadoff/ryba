@@ -1,6 +1,6 @@
 # The Hortonworks SmartSense Tool (HST)
 
-[The Hortonworks SmartSense Tool][hst] Collects cluster diagnostic information 
+[The Hortonworks SmartSense Tool][hst] Collects cluster diagnostic information
 to help you troubleshoot support cases.
 
     module.exports = ->
@@ -24,5 +24,5 @@ to help you troubleshoot support cases.
       'status': [
         'ryba/smartsense/server/status'
       ]
-          
+
 [hst]: (http://docs.hortonworks.com/HDPDocuments/SS1/SmartSense-1.3.0/bk_installation/content/architecture_overview.html)

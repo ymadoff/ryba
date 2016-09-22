@@ -1,27 +1,27 @@
 
 # Hortonworks Smartsense Install
-    
+
     module.exports = header:'HST Agent Install', handler: ->
       {smartsense, ssl} = @config.ryba
       {agent} = smartsense
 
 ## Wait Server
-      
+
       @call once:true, 'ryba/smartsense/server/wait'
-    
+
 ## User & Group
-      
+
       @group smartsense.group
       @user smartsense.user
 
-## Packages  
+## Packages
 Note rmp can only be download from the Hortonworks Support Web UI.
-      
+
       @download
         header: 'Download HST Package'
         source: smartsense.source
         target: "#{smartsense.agent.tmp_dir}/smartsense.rpm"
-        binary: true       
+        binary: true
       @execute
         header: 'Install HST Package'
         cmd: "rpm -Uvh #{smartsense.agent.tmp_dir}/smartsense.rpm"
@@ -47,7 +47,7 @@ Note rmp can only be download from the Hortonworks Support Web UI.
           mode: 0o0755
 
 ## Setup
-        
+
       @call header: 'Setup Execution', timeout: -1, handler: ->
         @file.ini
           header: 'HST Agent ini file'

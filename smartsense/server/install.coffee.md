@@ -10,7 +10,7 @@
       @group smartsense.group
       @user smartsense.user
 
-## Packages  
+## Packages
 Note rmp can only be download from the Hortonworks Support Web UI.
 
       @download
@@ -28,7 +28,7 @@ Note rmp can only be download from the Hortonworks Support Web UI.
         source: "#{__dirname}/../resources/hst-server.j2"
         local: true
         mode: 0o0755
-        context: 
+        context:
           'pid_dir': smartsense.server.pid_dir
           'user': smartsense.user.name
         unlink: true
@@ -54,7 +54,7 @@ Note rmp can only be download from the Hortonworks Support Web UI.
 
 ## SSL Download
 
-      @call 
+      @call
         header: 'SSL Server'
         if: server.ini['server']['ssl_enabled']
         handler: ->
@@ -87,7 +87,7 @@ Note rmp can only be download from the Hortonworks Support Web UI.
         """ if server.ini['server']['ssl_enabled']
         cmd += """
           --cluster=#{server.ini['cluster']['name']} \
-          #{if server.ini['cluster']['secured'] then '--secured --nostart' else '--nostart'} 
+          #{if server.ini['cluster']['secured'] then '--secured --nostart' else '--nostart'}
         """
         @execute
           cmd: cmd
