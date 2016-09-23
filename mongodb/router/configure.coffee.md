@@ -82,7 +82,7 @@ Each query router (mongos instance) is attributed to a config, and shard server 
 ## Logs
 
       config.systemLog ?= {}
-      config.systemLog.target ?= 'file'
+      config.systemLog.destination ?= 'file'
       config.systemLog.logAppend ?= true
       config.systemLog.path ?= "/var/log/mongodb/mongod-router-server-#{@config.host}.log"
 

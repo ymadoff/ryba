@@ -44,7 +44,7 @@
 ## Logs
 
       config.systemLog ?= {}
-      config.systemLog.target ?= 'file'
+      config.systemLog.destination ?= 'file'
       config.systemLog.logAppend ?= true
       config.systemLog.path ?= "/var/log/mongodb/mongod-shard-server-#{@config.host}.log"
 
