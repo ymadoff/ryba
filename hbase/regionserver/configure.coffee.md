@@ -1,6 +1,7 @@
 
 
     module.exports = handler: ->
+      require('masson/commons/java/configure').handler.call @
       # require('masson/core/iptables').configure ctx
       # require('../../ganglia/collector').configure ctx
       # require('../../graphite/carbon').configure ctx

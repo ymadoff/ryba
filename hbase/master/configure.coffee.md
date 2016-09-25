@@ -2,6 +2,7 @@
 # HBase Master Configuration
 
     module.exports = handler: ->
+      require('masson/commons/java/configure').handler.call @
       zk_ctxs = @contexts 'ryba/zookeeper/server', require('../../zookeeper/server/configure').handler
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
       hadoop_ctxs = @contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
