@@ -35,7 +35,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 OpenTSDB archive comes with an RPM
 
       @call header: 'Packages', handler: ->
-        @download
+        @file.download
           source: opentsdb.source
           target: "/var/tmp/opentsdb-#{opentsdb.version}.noarch.rpm"
           unless_exec: "rpm -q --queryformat '%{VERSION}' opentsdb | grep '#{opentsdb.version}'"

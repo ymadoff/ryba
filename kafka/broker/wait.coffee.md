@@ -2,7 +2,7 @@
 # HBase Master Wait
 
     module.exports =  header: 'Kafka Broker Wait', timeout: -1, label_true: 'READY', handler: ->
-      @wait_connect
+      @connection.wait
         servers:
           for ks_ctx in @contexts 'ryba/kafka/broker'
             for protocol in ks_ctx.config.ryba.kafka.broker.protocols

@@ -52,7 +52,7 @@ The root user is needed for replication and has role `root`
             backup: true
           @service.start
             name: 'mongodb-shard-server'
-          @wait_connect
+          @connection.wait
             host: @config.host
             port: mongodb.shard.config.net.port
           @execute
@@ -91,7 +91,7 @@ The root user is needed for replication and has role `root`
           @service.start
             if: -> @status -1
             name: 'mongodb-shard-server'
-          @wait_connect
+          @connection.wait
             host: @config.host
             port: mongodb.shard.config.net.port
 

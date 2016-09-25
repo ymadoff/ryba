@@ -202,12 +202,12 @@ changes.
 
       @call header: 'SSL Server', handler: ->
         return unless hue_docker.ssl
-        @download
+        @file.download
           source: ssl.cert
           target: "#{hue_docker.conf_dir}/cert.pem"
           uid: hue_docker.user.name
           gid: hue_docker.group.name
-        @download
+        @file.download
           source: ssl.key
           target: "#{hue_docker.conf_dir}/key.pem"
           uid: hue_docker.user.name
@@ -251,7 +251,7 @@ It uses local checksum if provided to upload or not.
       @call header: 'Upload Container', timeout: -1, retry:3, handler: (options)  ->
         tmp = hue_docker.image_dir
         md5 = hue_docker.md5 ?= true
-        @download
+        @file.download
           source: "#{hue_docker.prod.directory}/#{hue_docker.prod.tar}"
           target: "#{tmp}/#{hue_docker.prod.tar}"
           binary: true

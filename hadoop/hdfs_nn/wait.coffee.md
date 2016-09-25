@@ -6,7 +6,7 @@
 
 ## Wait HTTP ports
 
-      @wait_connect
+      @connection.wait
         header: 'HTTP'
         servers: for nn_ctx in nn_ctxs
           {nameservice} = nn_ctx.config.ryba

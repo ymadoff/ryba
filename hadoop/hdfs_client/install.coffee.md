@@ -87,11 +87,11 @@ Update the "core-site.xml" configuration file with properties from the
           @remove ( # Remove jar if already uploaded
             target: path.join '/usr/hdp/current/hadoop-hdfs-client/lib', file
           ) for file in remove_files
-          @download (
+          @file.download (
             source: jar.source
             target: path.join '/usr/hdp/current/hadoop-hdfs-client/lib', "#{jar.filename}"
           ) for jar in core_jars
-          @download (
+          @file.download (
             source: jar.source
             target: path.join '/usr/hdp/current/hadoop-yarn-client/lib', "#{jar.filename}"
           ) for jar in core_jars

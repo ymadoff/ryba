@@ -150,17 +150,17 @@ Create the directories to store the logs and pid information. The properties
         header: 'Client SSL'
         if: -> @config.ryba.hive.site['hive.server2.use.SSL'] is 'true'
         handler: ->
-          @download
+          @file.download
             source: ssl.cacert
             target: "#{tmp_location}/#{path.basename ssl.cacert}"
             mode: 0o0600
             shy: true
-          @download
+          @file.download
             source: ssl.cert
             target: "#{tmp_location}/#{path.basename ssl.cert}"
             mode: 0o0600
             shy: true
-          @download
+          @file.download
             source: ssl.key
             target: "#{tmp_location}/#{path.basename ssl.key}"
             mode: 0o0600

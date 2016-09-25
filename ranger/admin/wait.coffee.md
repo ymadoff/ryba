@@ -7,7 +7,7 @@ Wait for Ranger Admin Policy Manager to start.
       {ranger} = ranger_admin_ctx.config.ryba
       protocol = if ranger.admin.site['ranger.service.https.attrib.ssl.enabled'] is 'true' then 'https' else 'http'
       port = ranger.admin.site["ranger.service.#{protocol}.port"]
-      @wait_connect
+      @connection.wait
         host: ranger_admin_ctx.config.host
         port: port
       @wait_execute

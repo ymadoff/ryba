@@ -94,17 +94,17 @@ Mongod service requires to have in a single file the private key and the certifi
 with pem file. So we append to the file the private key and certficate.
 
       @call header: 'MongoDB Config Server # SSL', handler: ->
-        @download
+        @file.download
           source: ssl.cacert
           target: "#{mongodb.configsrv.conf_dir}/cacert.pem"
           uid: mongodb.user.name
           gid: mongodb.group.name
-        @download
+        @file.download
           source: ssl.key
           target: "#{mongodb.configsrv.conf_dir}/key_file.pem"
           uid: mongodb.user.name
           gid: mongodb.group.name
-        @download
+        @file.download
           source: ssl.cert
           target: "#{mongodb.configsrv.conf_dir}/cert_file.pem"
           uid: mongodb.user.name

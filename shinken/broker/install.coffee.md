@@ -34,7 +34,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @call header: 'Install WebUI Dependencies', if: 'webui2' in broker.config.modules, handler: ->
         install_dep = (k, v) => 
           @call unless_exec: "pip list | grep #{k}", handler: ->
-            @download
+            @file.download
               source: v.url
               target: "#{shinken.build_dir}/##{v.archive}.tar.gz"
               md5: v.md5
@@ -55,7 +55,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @call header: 'Modules', handler: ->
         installmod = (name, mod) =>
           @call unless_exec: "shinken inventory | grep #{name}", handler: ->
-            @download
+            @file.download
               target: "#{shinken.build_dir}/#{mod.archive}.zip"
               source: mod.source
               cache_file: "#{mod.archive}.zip"

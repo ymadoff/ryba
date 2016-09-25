@@ -66,7 +66,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
         @call
           if: solr.cloud.source isnt 'HDP'
           handler: ->
-            @download
+            @file.download
               source: solr.cloud.source
               target: tmp_archive_location
             @mkdir 

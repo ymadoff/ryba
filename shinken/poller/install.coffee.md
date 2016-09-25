@@ -46,7 +46,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @call header: 'Modules', handler: ->
         installmod = (name, mod) =>
           @call unless_exec: "shinken inventory | grep #{name}", handler: ->
-            @download
+            @file.download
               target: "#{shinken.build_dir}/#{mod.archive}.zip"
               source: mod.source
               cache_file: "#{mod.archive}.zip"
@@ -67,7 +67,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       @call header: 'Plugins', timeout: -1, handler: ->
       for plugin in glob.sync "#{__dirname}/resources/plugins/*"
-        @download
+        @file.download
           target: "#{shinken.plugin_dir}/#{path.basename plugin}"
           source: plugin
           uid: shinken.user.name
@@ -90,7 +90,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         #   mode: 0o644
 
         @call header: 'Docker', timeout: -1, handler: ->
-          @download
+          @file.download
             source: "#{@config.mecano.cache_dir or '.'}/shinken-poller-executor.tar"
             target: '/var/lib/docker_images/shinken-poller-executor.tar'
             md5: true

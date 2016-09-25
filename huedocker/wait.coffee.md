@@ -6,6 +6,6 @@ This script has been written to be able to wait several hue server. hue HA will
 be released soon.
 
     module.exports = header: 'Hue Docker Wait', timeout: -1, label_true: 'READY', handler: ->
-      @wait_connect
+      @connection.wait
         host: @config.host
         port: @config.ryba.hue_docker.port

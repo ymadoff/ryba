@@ -52,7 +52,7 @@
         handler: ->
           @mkdir
             target: "#{nifi.node.install_dir}/#{nifi.version}"
-          @download
+          @file.download
             source: nifi.source
             target: tmp_archive_location
           @extract
@@ -97,7 +97,7 @@
 
 # Notifications
 
-      @download
+      @file.download
         header: 'Services Notifications'
         target: "#{nifi.node.conf_dir}/bootstrap-notification-services.xml"
         source: "#{__dirname}/../resources/bootstrap-notification-services.xml"
@@ -217,7 +217,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
 
       @call header: 'Additional Libs', handler: ->
         for lib in nifi.node.additional_libs
-          @download
+          @file.download
             source: lib
             target: "#{nifi.node.install_dir}/current/lib/extras/#{path.basename lib}"
             mode: 0o644

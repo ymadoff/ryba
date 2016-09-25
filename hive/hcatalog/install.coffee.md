@@ -265,7 +265,7 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
         header: 'Upload Libs'
         if: -> hive.libs.length
         handler: ->
-          @download (
+          @file.download (
             source: lib
             target: "/usr/hdp/current/hive-metastore/lib/#{path.basename lib}"
           ) for lib in hive.libs

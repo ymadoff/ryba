@@ -28,7 +28,7 @@ of Elastics Search from rpm repositories and the configuration of Elastic Search
 ElasticSearch archive comes with an RPM
 
       @call header: 'Packages', timeout: -1, handler: ->
-        @download
+        @file.download
           source: elasticsearch.source
           target: "/var/tmp/elasticsearch-#{elasticsearch.version}.noarch.rpm"
           # unless_exec: "rpm -q --queryformat '%{VERSION}' elasticsearch | grep '#{elasticsearch.version}'"

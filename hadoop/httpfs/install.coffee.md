@@ -147,15 +147,15 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         {ssl, ssl_server, ssl_client} = @config.ryba
         tmp_location = "/var/tmp/ryba/ssl"
         {httpfs} = @config.ryba
-        @download
+        @file.download
           source: ssl.cacert
           target: "#{tmp_location}/#{path.basename ssl.cacert}"
           mode: 0o0600
-        @download
+        @file.download
           source: ssl.cert
           target: "#{tmp_location}/#{path.basename ssl.cert}"
           mode: 0o0600
-        @download
+        @file.download
           source: ssl.key
           target: "#{tmp_location}/#{path.basename ssl.key}"
           mode: 0o0600

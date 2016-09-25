@@ -36,7 +36,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Install
 
       @call unless_exec: "[ `cat #{nagvis.install_dir}/version` = #{nagvis.version} ]", header: 'Archive', handler: ->
-        @download
+        @file.download
           source: nagvis.source
           target: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"
         @extract

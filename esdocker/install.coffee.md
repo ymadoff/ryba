@@ -29,17 +29,17 @@
 
 ## SSL Certificate
 
-        @download
+        @file.download
           source: ssl.cacert
           target: ssl.dest_cacert
           mode: 0o0640
           shy: true
-        @download
+        @file.download
           source: ssl.cert
           target: ssl.dest_cert
           mode: 0o0640
           shy: true
-        @download
+        @file.download
           source: ssl.key
           target: ssl.dest_key
           mode: 0o0640

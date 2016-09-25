@@ -103,7 +103,7 @@ the Sqoop library folder.
         if: -> @config.ryba.sqoop.libs.length
         handler: ->
           for lib in  @config.ryba.sqoop.libs
-            @download
+            @file.download
               source: lib
               target: "/usr/hdp/current/sqoop-client/lib/#{path.basename lib}"
 

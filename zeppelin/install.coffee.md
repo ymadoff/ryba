@@ -42,15 +42,15 @@ SSL only required for the server
     #  {ssl, ssl_server, ssl_client, zeppelin} = @config.ryba
     #  tmp_location = "/tmp/ryba_hdp_ssl_#{Date.now()}"
     #  modified = false
-    #  @download
+    #  @file.download
     #     source: ssl.cacert
     #     target: "#{tmp_location}_cacert"
     #     shy: true
-    #  @download
+    #  @file.download
     #     source: ssl.cert
     #     target: "#{tmp_location}_cert"
     #     shy: true
-    #  @download
+    #  @file.download
     #     source: ssl.key
     #     target: "#{tmp_location}_key"
     #     shy: true
@@ -124,7 +124,7 @@ Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
 
 TODO: remove download and write and replace it with a template
 
-      @download
+      @file.download
         header: 'Download Environment'
         target: "#{zeppelin.conf_dir}/zeppelin-env.sh"
         source: "#{__dirname}/resources/zeppelin-env.sh"
@@ -147,7 +147,7 @@ TODO: remove download and write and replace it with a template
 Load Zeppelin docker image from local host
 
       @call header: 'Import', timeout: -1, handler: ->
-        @download
+        @file.download
           source: "#{@config.mecano.cache_dir}/zeppelin.tar"
           target: "/tmp/zeppelin.tar" # add versioning
         @docker_load

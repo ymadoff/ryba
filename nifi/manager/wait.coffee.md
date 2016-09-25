@@ -13,12 +13,12 @@ Check if all Manager's port are opened
 - broadcast port (port used to communicate with nodes)
 - admin port (port used by node to authenticate)
 
-      @wait_connect
+      @connection.wait
         host:  m_ctx.config.host
         port: webui
-      @wait_connect
+      @connection.wait
         host: m_ctx.config.host
         port: m_ctx.config.ryba.nifi.manager.config.properties['nifi.cluster.manager.protocol.port']
-      @wait_connect
+      @connection.wait
         host: m_ctx.config.host
         port: m_ctx.config.ryba.nifi.manager.config.authority_providers.ncm_port

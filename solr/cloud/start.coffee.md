@@ -7,7 +7,7 @@
 
       @call 'ryba/zookeeper/server/wait'
 
-      @wait_connect
+      @connection.wait
         unless: (@contexts('ryba/solr/cloud')[0].config.host is @config.host)
         host: @contexts('ryba/solr/cloud')[0].config.host
         port: @contexts('ryba/solr/cloud')[0].config.ryba.solr.cloud.port

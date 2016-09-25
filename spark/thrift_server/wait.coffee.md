@@ -11,6 +11,6 @@ Wait for the ResourceManager Thrift port (HTTP and BINARY).
         port = if hive_site['hive.server2.transport.mode'] is 'http'
         then hive_site['hive.server2.thrift.http.port']
         else hive_site['hive.server2.thrift.port']
-        @wait_connect
+        @connection.wait
           host: sts_ctx.config.host
           port: port

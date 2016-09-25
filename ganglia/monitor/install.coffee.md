@@ -32,7 +32,7 @@ Copy the object files provided in the HDP companion files into the
         handler: (_, callback) ->
           glob "#{__dirname}/../resources/objects/*.*", (err, files) =>
             return callback err if err
-            @download (
+            @file.download (
               source: file
               target: "/usr/libexec/hdp/ganglia"
               mode: 0o0744

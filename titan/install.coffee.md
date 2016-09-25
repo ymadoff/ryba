@@ -23,7 +23,7 @@ Download and extract a ZIP Archive
         archive_path = path.join titan.install_dir, archive_name
         @mkdir
           target: titan.install_dir
-        @download
+        @file.download
           source: titan.source
           target: archive_path
         @remove

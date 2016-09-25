@@ -98,17 +98,17 @@
 
 ## SSL Certificate
         
-      @download
+      @file.download
         source: ssl.cacert
         target: "/etc/docker/certs.d/ca.pem"
         mode: 0o0640
         shy: true
-      @download
+      @file.download
         source: ssl.cert
         target: "/etc/docker/certs.d/cert.pem"
         mode: 0o0640
         shy: true
-      @download
+      @file.download
         source: ssl.key
         target: "/etc/docker/certs.d/key.pem"
         mode: 0o0640
@@ -117,7 +117,7 @@
 ## Container
 Ryba support installing solr from apache official release or HDP Search repos.
       
-      @download
+      @file.download
         binary: true
         header: 'Download docker container'
         source: "#{solr.cloud_docker.build.dir}/#{solr.cloud_docker.build.tar}"

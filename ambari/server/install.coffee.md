@@ -12,7 +12,7 @@ executing this module.
 Declare the Ambari custom repository.
 Install Ambari server package.
 
-      @download
+      @file.download
         header: 'Ambari Server Repo'
         source: ambari_server.repo
         target: '/etc/yum.repos.d/ambari.repo'

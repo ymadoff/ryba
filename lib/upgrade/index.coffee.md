@@ -126,7 +126,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           service zookeeper-server restart
           """
           trap: true
-        @wait_connect
+        @connection.wait
           host: @config.host
           port: @config.ryba.zookeeper?.port
 
@@ -140,7 +140,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           service hadoop-hdfs-journalnode restart
           """
           trap: true
-        @wait_connect
+        @connection.wait
           host: @config.host
           port: @config.ryba.hdfs.site['dfs.journalnode.rpc-address']?.split(':')[1]
         @call (_, callback) ->

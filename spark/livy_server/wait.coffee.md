@@ -7,6 +7,6 @@ Wait for the Livy Server.
       sls_ctxs = @contexts modules: 'ryba/spark/livy_server'
 
       for sls_ctx in sls_ctxs
-        @wait_connect
+        @connection.wait
           host: sls_ctx.config.host
           port: sls_ctx.config.ryba.spark.livy.conf['livy.server.port']

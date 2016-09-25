@@ -29,7 +29,7 @@ We simply wait to connect to the shards
       @call header: 'MongoDB Router Server # Wait Sharding Server', handler: ->
         @call ->
           for ctx in shardsrv_ctxs
-            @wait_connect
+            @connection.wait
               if:  ctx.config.ryba.mongodb.shard.config.replication.replSetName in shards
               host: ctx.config.host
               port: ctx.config.ryba.mongodb.shard.config.net.port

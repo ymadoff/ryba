@@ -13,7 +13,7 @@ Declare the HDP repository.
         if: -> @config.ryba.hdp_repo
         handler: (options) ->
           {proxy, hdp_repo} = @config.ryba
-          @download
+          @file.download
             source: hdp_repo
             target: '/etc/yum.repos.d/hdp.repo'
             proxy: proxy
@@ -33,7 +33,7 @@ Declare the HDP repository.
                 keys = Object.keys keys
                 return callback null, true unless keys.length
                 for key in keys
-                  @execute # TODO, should use `@download`
+                  @execute # TODO, should use `@file.download`
                     cmd: """
                     curl #{key} -o /etc/pki/rpm-gpg/#{path.basename key}
                     rpm --import  /etc/pki/rpm-gpg/#{path.basename key}

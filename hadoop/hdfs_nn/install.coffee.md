@@ -329,7 +329,7 @@ is only executed on the standby NameNode.
         if: -> @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
         unless: -> @config.host is active_nn_host
         handler: ->
-          @wait_connect
+          @connection.wait
             host: active_nn_host
             port: 8020
           @execute

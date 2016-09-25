@@ -9,6 +9,6 @@ Wait for the Spark SQL Thrift Server port (HTTP or BINARY).
       then hive_site['hive.server2.thrift.http.port']
       else hive_site['hive.server2.thrift.port']
       @call once:true, 'ryba/spark/thrift_server/wait'
-      @wait_connect
+      @connection.wait
         host: @config.host
         port: port

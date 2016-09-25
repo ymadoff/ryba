@@ -9,7 +9,7 @@ server using Ryba.
 
 ## Wait TCP
 
-      @wait_connect
+      @connection.wait
         servers: for os_ctx in os_ctxs
           {hostname, port} = url.parse os_ctx.config.ryba.oozie.site['oozie.base.url']
           host: hostname, port: port

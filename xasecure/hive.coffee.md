@@ -27,7 +27,7 @@
 
     module.exports.push header: 'XASecure HDFS # Upload', timeout: -1, handler: ->
       {hive_url} = ctx.config.xasecure
-      @download
+      @file.download
         source: hive_url
         target: '/var/tmp'
         binary: true

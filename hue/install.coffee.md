@@ -174,12 +174,12 @@ Configuration][web]. The "hue" service is restarted if there was any
 changes.
 
       @call header: 'Hue # SSL Server', handler: ->
-        @download
+        @file.download
           source: hue.ssl.certificate
           target: "#{hue.conf_dir}/cert.pem"
           uid: hue.user.name
           gid: hue.group.name
-        @download
+        @file.download
           source: hue.ssl.private_key
           target: "#{hue.conf_dir}/key.pem"
           uid: hue.user.name

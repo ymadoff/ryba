@@ -97,7 +97,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push header: 'XASecure PolicyMgr # Upload', timeout: -1, handler: ->
       {policymgr_url} = config.xasecure
-      @download
+      @file.download
         source: policymgr_url
         target: '/var/tmp'
         binary: true

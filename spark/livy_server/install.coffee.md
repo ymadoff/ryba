@@ -100,7 +100,7 @@ Write startup script to /etc/init.d/service-hue-docker
       @call header: 'Download Container', timeout: -1, handler: ->
         tmp = spark.livy.image_dir
         md5 = spark.livy.md5 ?= true
-        @download
+        @file.download
           source: "#{spark.livy.build.directory}/#{spark.livy.build.tar}"
           target: "#{tmp}/#{spark.livy.build.tar}"
           binary: true
@@ -123,17 +123,17 @@ Write startup script to /etc/init.d/service-hue-docker
 ## SSL 
 
       @call if: spark.livy.ssl_enabled , handler: ->
-        @download
+        @file.download
           source: ssl.cacert
           target: "#{tmp_location}/#{path.basename ssl.cacert}"
           mode: 0o0600
           shy: true
-        @download
+        @file.download
           source: ssl.cert
           target: "#{tmp_location}/#{path.basename ssl.cert}"
           mode: 0o0600
           shy: true
-        @download
+        @file.download
           source: ssl.key
           target: "#{tmp_location}/#{path.basename ssl.key}"
           mode: 0o0600

@@ -60,7 +60,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @call header: 'Modules', handler: ->
         installmod = (name, mod) =>
           @call unless_exec: "shinken inventory | grep #{name}", handler: ->
-            @download
+            @file.download
               target: "#{shinken.build_dir}/#{mod.archive}.zip"
               source: mod.source
               cache_file: "#{mod.archive}.zip"

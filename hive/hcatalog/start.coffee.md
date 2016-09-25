@@ -29,7 +29,7 @@ require the HFDS Namenode to be started. Both of them will need to functionnal
 HDFS server to answer queries.
 
       @call header: 'Wait DB', timeout: -1, label_true: 'READY', handler: ->
-        @wait_connect jdbc.addresses
+        @connection.wait jdbc.addresses
 
       @service.start
         header: 'Start service'

@@ -27,7 +27,7 @@
 
     module.exports.push header: 'XASecure HDFS # Upload', timeout: -1, handler: ->
       {hdfs_url} = ctx.config.xasecure
-      @download
+      @file.download
         source: hdfs_url
         target: '/var/tmp'
         binary: true

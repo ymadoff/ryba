@@ -75,7 +75,7 @@ keytool -keystore ${JAVA_HOME}/jre/lib/security/cacerts -import -alias tomcat -f
 
       @call header: 'Client SSL', handler: ->
         tmp_location = "/tmp/ryba_oozie_client_#{Date.now()}"
-        @download
+        @file.download
           source: ssl.cacert
           target: "#{tmp_location}_cacert"
           shy: true

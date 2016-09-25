@@ -46,7 +46,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
     module.exports.push header: 'XASecure Sync # Upload', timeout: -1, handler: ->
       {uxugsync_url} = @config.xasecure
-      @download
+      @file.download
         source: uxugsync_url
         target: '/var/tmp'
         binary: true

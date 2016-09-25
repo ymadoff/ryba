@@ -151,17 +151,17 @@ in the gateway.sh service script.
 
       @call header: 'Knox # SSL Server', handler: ->
         tmp_location = "/var/tmp/ryba/knox_ssl"
-        @download
+        @file.download
           source: knox.ssl.cacert
           target: "#{tmp_location}/cacert"
           mode: 0o0600
           shy: true
-        @download
+        @file.download
           source: knox.ssl.cert
           target: "#{tmp_location}/cert"
           mode: 0o0600
           shy: true
-        @download
+        @file.download
           source: knox.ssl.key
           target: "#{tmp_location}/key"
           mode: 0o0600
