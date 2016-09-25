@@ -27,6 +27,7 @@ Example:
 ```
 
     module.exports = handler: ->
+      require('../titan/configure').handler.call @
       {realm} = @config.ryba
       titan_ctxs = @contexts 'ryba/titan'
       throw Error "Cannot install Rexster without titan" unless titan_ctxs.length

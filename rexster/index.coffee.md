@@ -15,9 +15,8 @@ graphs inside of a Rexster Server.
 
 
     module.exports = ->
-      'configure':[
+      'configure':
         'ryba/rexster/configure'
-        ]
       'install': [
         'masson/core/iptables'
         'masson/core/yum'
