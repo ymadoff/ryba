@@ -146,6 +146,11 @@ in the gateway.sh service script.
               if /Master secret is already present on disk/.test data then callback null, false
               else if /Master secret has been persisted to disk/.test data then callback null, true
             stream.on 'exit', -> callback Error 'Exit before end'
+          # Create alias to store password used in topology
+          for alias,password of knox.realm_passwords
+            nameservice=alias.split("-")[0]
+            @execute
+              cmd: "/usr/hdp/current/knox-server/bin/knoxcli.sh create-alias #{alias} --cluster #{nameservice} --value #{password}"
 
 ## SSL
 
@@ -178,6 +183,7 @@ in the gateway.sh service script.
         @execute
           if: -> @status -1
           cmd: "/usr/hdp/current/knox-server/bin/knoxcli.sh create-alias gateway-identity-passphrase --value #{knox.ssl.keypass}"
+        
 
 Knox use Shiro for LDAP authentication and Shiro cannot be configured for 
 unsecure SSL.

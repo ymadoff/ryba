@@ -66,6 +66,7 @@ loop on topologies to provide missing values
       throw Error 'Required property "ryba.knox.ssl.cert"' unless knox.ssl.cert?
       throw Error 'Required property "ryba.knox.ssl.key"' unless knox.ssl.key?
       knox.topologies ?= configure_default.call @
+      knox.realm_passwords = {}
 
 ## Configuration for Proxy Users
 
@@ -130,7 +131,10 @@ against the configured LDAP store.
           ldap.config["main.#{realm}.userDnTemplate"] = realm_config['userDnTemplate'] if realm_config['userDnTemplate']?
           ldap.config["main.#{realm}.contextFactory.url"] = realm_config['ldap_uri'].split(',')[0]
           ldap.config["main.#{realm}.contextFactory.systemUsername"] = realm_config['ldap_default_bind_dn']
-          ldap.config["main.#{realm}.contextFactory.systemPassword"] = realm_config['ldap_default_authtok']
+          ldap.config["main.#{realm}.contextFactory.systemPassword"] = "${ALIAS=#{nameservice}-#{realm}-password}"
+
+          knox.realm_passwords["#{nameservice}-#{realm}-password"] = realm_config['ldap_default_authtok']
+
           ldap.config["main.#{realm}.searchBase"] = realm_config["ldap#{if realm == 'ldapGroupRealm' then '_group' else ''}_search_base"]
           ldap.config["main.#{realm}.contextFactory.authenticationMechanism"] ?= 'simple'
           ldap.config["main.#{realm}.authorizationEnabled"] ?= 'true'
