@@ -84,6 +84,9 @@ Update the file "broker.properties" with the properties defined by the
           append: true
         backup: true
         eof: true
+        mode: 0o0750
+        uid: kafka.user.name
+        gid: kafka.group.name
 
 ## Metrics
 
