@@ -207,17 +207,6 @@
       <name>yarn.nodemanager.remote-app-log-dir-suffix</name>
       <value>logs</value>
     </property>
-
-    <property>
-      <name>yarn.resourcemanager.address</name>
-      <value>TODO-RESOURCEMANAGERNODE-HOSTNAME:8050</value>
-    </property>
-
-    <property>
-      <name>yarn.resourcemanager.admin.address</name>
-      <value>TODO-RESOURCEMANAGERNODE-HOSTNAME:8141</value>
-    </property>
-
     <property>
       <name>yarn.resourcemanager.am.max-attempts</name>
       <value>2</value>
@@ -243,10 +232,6 @@
       <value> </value>
     </property>
 
-    <property>
-      <name>yarn.resourcemanager.hostname</name>
-      <value>TODO-RESOURCEMANAGERNODE-HOSTNAME</value>
-    </property>
 
     <property>
       <name>yarn.resourcemanager.nodes.exclude-path</name>
@@ -258,15 +243,6 @@
       <value>false</value>
     </property>
 
-    <property>
-      <name>yarn.resourcemanager.resource-tracker.address</name>
-      <value>TODO-RESOURCEMANAGERNODE-HOSTNAME:8025</value>
-    </property>
-
-    <property>
-      <name>yarn.resourcemanager.scheduler.address</name>
-      <value>TODO-RESOURCEMANAGERNODE-HOSTNAME:8030</value>
-    </property>
 
     <property>
       <name>yarn.resourcemanager.scheduler.class</name>
@@ -293,10 +269,6 @@
       <value>true</value>
     </property>
 
-    <property>
-      <name>yarn.resourcemanager.webapp.address</name>
-      <value>TODO-RESOURCEMANAGERNODE-HOSTNAME:8088</value>
-    </property>
 
     <property>
       <name>yarn.resourcemanager.webapp.delegation-token-auth-filter.enabled</name>
