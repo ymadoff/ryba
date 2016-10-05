@@ -51,7 +51,7 @@ HADOOP_OPTS=${HADOOP_OPTS:-"{{ryba.hadoop_opts}}"} # RYBA CONF "ryba.hadoop_opts
 export HADOOP_OPTS="-Djava.net.preferIPv4Stack=true ${HADOOP_OPTS}"
 
 # Command specific options appended to HADOOP_OPTS when specified
-HADOOP_DATANODE_OPTS="{{hdfs.namenode_opts}} ${HADOOP_DATANODE_OPTS}" # RYBA CONF "ryba.hdfs.datanode_opts", DONT OVERWRITE"
+HADOOP_NAMENODE_OPTS="{{ryba.hdfs.namenode_opts}} ${HADOOP_NAMENODE_OPTS}" # RYBA CONF "ryba.hdfs.namenode_opts", DONT OVERWRITE"
 export HADOOP_NAMENODE_OPTS="-server -XX:ParallelGCThreads=8 -XX:+UseConcMarkSweepGC -XX:ErrorFile=${HADOOP_LOG_DIR}/hs_err_pid%p.log -XX:NewSize={{ryba.hdfs.nn.newsize}} -XX:MaxNewSize={{ryba.hdfs.nn.newsize}} -XX:PermSize=128m -XX:MaxPermSize=256m -Xloggc:${HADOOP_LOG_DIR}/gc.log-`date +'%Y%m%d%H%M'` -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xms{{ryba.hdfs.nn.heapsize}} -Xmx{{ryba.hdfs.nn.heapsize}} -Dhadoop.security.logger=INFO,DRFAS -Dhdfs.audit.logger=INFO,DRFAAUDIT ${HADOOP_NAMENODE_OPTS}"
 HADOOP_JOBTRACKER_OPTS="-server -XX:ParallelGCThreads=8 -XX:+UseConcMarkSweepGC -XX:ErrorFile=${HADOOP_LOG_DIR}/hs_err_pid%p.log -XX:NewSize=200m -XX:MaxNewSize=200m -Xloggc:${HADOOP_LOG_DIR}/gc.log-`date +'%Y%m%d%H%M'` -verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -Xmx1024m -Dhadoop.security.logger=INFO,DRFAS -Dmapred.audit.logger=INFO,MRAUDIT -Dhadoop.mapreduce.jobsummary.logger=INFO,JSA ${HADOOP_JOBTRACKER_OPTS}"
 
