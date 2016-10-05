@@ -52,7 +52,7 @@ We must connect to each server og the replica set manually and check if it is th
           @call
             unless_exec: """
                #{mongo_shell_exec} --host #{@config.host} --port #{mongos_port} \
-               -u #{shard_root.name} --password #{shard_root.password} \
+               -u #{shard_root.name} --password '#{shard_root.password}' \
                --eval 'sh.status()' | grep '.*#{shard}.*#{shard}/#{shard_quorum}'
               """
             handler: (_, callback)->
@@ -61,7 +61,7 @@ We must connect to each server og the replica set manually and check if it is th
                   code_skipped: 1
                   cmd: """
                       #{mongo_shell_exec} --host #{host} \
-                       --port #{shard_port} -u #{shard_root.name} --password #{shard_root.password} \
+                       --port #{shard_port} -u #{shard_root.name} --password '#{shard_root.password}' \
                        --eval 'db.isMaster().primary' | grep '#{host}:#{shard_port}' \
                         | grep -v 'MongoDB shell version' | grep -v 'connecting to:'
                     """
@@ -77,6 +77,6 @@ We must connect to each server og the replica set manually and check if it is th
                   @execute
                     cmd: """
                        #{mongo_shell_exec} --host #{@config.host} --port #{mongos_port} \
-                       -u #{shard_root.name} --password #{shard_root.password} \
+                       -u #{shard_root.name} --password '#{shard_root.password}' \
                        --eval 'sh.addShard(\"#{shard}/#{primary_host}:#{shard_port}\")'
                       """

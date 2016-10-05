@@ -10,7 +10,7 @@ replica set primary server.
       {router} = mongodb
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       mongo_shell_exec =  ""
-      mongo_shell_admin_exec =  "#{mongo_shell_exec} -u #{mongodb.admin.name} --password  #{mongodb.admin.password}"
+      mongo_shell_admin_exec =  "#{mongo_shell_exec} -u #{mongodb.admin.name} --password  '#{mongodb.admin.password}'"
       cfsrv_ctxs = @contexts 'ryba/mongodb/configsrv', require('../configsrv/configure').handler
       # find master of the config server's replica set
       [replica_master_ctx] = cfsrv_ctxs.filter (ctx) =>

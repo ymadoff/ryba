@@ -6,8 +6,8 @@
       {configsrv} = mongodb
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       mongo_shell_exec =  "mongo admin --port #{configsrv.config.net.port}"
-      mongo_shell_admin_exec =  "#{mongo_shell_exec} -u #{mongodb.admin.name} --password  #{mongodb.admin.password}"
-      mongo_shell_root_exec =  "#{mongo_shell_exec} -u #{mongodb.root.name} --password  #{mongodb.root.password}"
+      mongo_shell_admin_exec =  "#{mongo_shell_exec} -u #{mongodb.admin.name} --password  '#{mongodb.admin.password}'"
+      mongo_shell_root_exec =  "#{mongo_shell_exec} -u #{mongodb.root.name} --password  '#{mongodb.root.password}'"
       # the userAdminAnyDatabase role is the first account created thanks to locahost exception
       # it used to manage every other user and their roles, for the root user
       # having the right to deal with privileges does not give it the role of root (ie  manage replica sets)
@@ -64,7 +64,7 @@ The root user is needed for replication and has role `root`
               EOF
             """
             unless_exec: """
-              echo exit | #{mongo_shell_admin_exec} -u #{mongodb.admin.name} --password  #{mongodb.admin.password}
+              echo exit | #{mongo_shell_admin_exec} -u #{mongodb.admin.name} --password  '#{mongodb.admin.password}'
               """
             code_skipped: 252
           @execute
@@ -75,7 +75,7 @@ The root user is needed for replication and has role `root`
             ))'
             EOF
             """
-            unless_exec: "echo exit | #{mongo_shell_admin_exec} -u #{mongodb.root.name} --password  #{mongodb.root.password}"
+            unless_exec: "echo exit | #{mongo_shell_admin_exec} -u #{mongodb.root.name} --password  '#{mongodb.root.password}'"
             code_skipped: 252
           @file.yaml
             target: "#{mongodb.configsrv.conf_dir}/mongod.conf"
