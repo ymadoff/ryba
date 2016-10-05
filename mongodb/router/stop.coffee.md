@@ -1,7 +1,7 @@
 
 # MongoDB Routing Server Stop
 
-    module.exports = header: 'MongoDB Routing Server # Stop', label_true: 'STOPPED', handler: ->
+    module.exports = header: 'MongoDB Routing Server Stop', label_true: 'STOPPED', handler: ->
       {router} = @config.ryba.mongodb
 
 ## Stop

@@ -26,7 +26,7 @@
 
 We simply wait to connect to the shards
 
-      @call header: 'MongoDB Router Server # Wait Sharding Server', handler: ->
+      @call header: 'Wait Sharding Server', handler: ->
         @call ->
           for ctx in shardsrv_ctxs
             @connection.wait
@@ -42,7 +42,7 @@ So the primary server must be retrieved before applying this command. Because th
 We must connect to each server og the replica set manually and check if it is the primary one.
 
 
-      @call header: 'MongoDB Router Server # Add Shard Clusters ', retry: 3, handler: =>
+      @call header: 'Add Shard Clusters ', retry: 3, handler: =>
         for shard in shards
           primary_host = null
           shard_hosts = shardsrv_ctxs.map (ctx) ->

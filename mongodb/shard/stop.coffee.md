@@ -1,7 +1,7 @@
 
 # MongoDB Config Server Stop
 
-    module.exports = header: 'MongoDB Shard Server # Stop', label_true: 'STOPPED', handler: ->
+    module.exports = header: 'MongoDB Shard Server Stop', label_true: 'STOPPED', handler: ->
       {shard} = @config.ryba.mongodb
 
 ## Stop

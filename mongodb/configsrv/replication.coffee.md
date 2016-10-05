@@ -32,7 +32,7 @@ The admin user is need for account creation and has the role `userAdminAnyDataba
 The root user is needed for replication and has role `root`
 
       @call
-        header: 'MongoDB ConfigSrv # Roles Admin DB',
+        header: 'Roles Admin DB',
         if: @config.host is mongodb.configsrv.replica_master
         unless_exec: """
           echo exit | #{mongo_shell_admin_exec}

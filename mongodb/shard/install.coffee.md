@@ -25,7 +25,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Users & Groups
 
-      @call header: 'MongoDB # Users & Groups', handler: ->
+      @call header: 'Users & Groups', handler: ->
         @group mongodb.group
         @user mongodb.user
 
@@ -34,7 +34,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install mongodb-org-server containing packages for a mongod service. We render the init scripts
 in order to rendered configuration file with custom properties.
 
-      @call header: 'MongoDB Config Server # Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, handler: ->
         @service name: 'mongodb-org-server'
         @service name: 'mongodb-org-shell'
         @render
@@ -52,7 +52,7 @@ in order to rendered configuration file with custom properties.
 
 Create dir where the mongodb-shard-server stores its metadata
 
-      @call header: 'MongoDB Shard Server # Layout',  handler: ->
+      @call header: 'Layout',  handler: ->
         @mkdir
           target: '/var/lib/mongodb'
           uid: mongodb.user.name
@@ -74,7 +74,7 @@ Create dir where the mongodb-shard-server stores its metadata
 
 Configuration file for mongodb sharding server.
 
-      @call header: 'MongoDB Shard Server # Configure', handler: ->
+      @call header: 'Configure', handler: ->
         @file.yaml
           target: "#{mongodb.shard.conf_dir}/mongod.conf"
           content: mongodb.shard.config
@@ -92,7 +92,7 @@ Configuration file for mongodb sharding server.
 Mongod service requires to have in a single file the private key and the certificate
 with pem file. So we append to the file the private key and certficate.
 
-      @call header: 'MongoDB Shard Server # SSL', handler: ->
+      @call header: 'SSL', handler: ->
         @file.download
           source: ssl.cacert
           target: "#{mongodb.shard.conf_dir}/cacert.pem"
@@ -126,15 +126,15 @@ with pem file. So we append to the file the private key and certficate.
 
 ## Kerberos
 
-      @call header: 'MongoDB Shard Server # Kerberos Admin', handler: ->
+      @call header: 'Kerberos Admin', handler: ->
         @krb5_addprinc krb5,
           principal: "#{mongodb.shard.config.security.sasl.serviceName}"#/#{@config.host}@#{realm}"
           password: mongodb.shard.sasl_password
 
 # User limits
-
-      @call header: 'MongoDB Shard Server # User Limits', handler: ->
-        @system_limits
-          user: mongodb.user.name
-          nofile: mongodb.user.limits.nofile
-          nproc: mongodb.user.limits.nproc
+  
+      @system_limits
+        header: 'User Limits'
+        user: mongodb.user.name
+        nofile: mongodb.user.limits.nofile
+        nproc: mongodb.user.limits.nproc
