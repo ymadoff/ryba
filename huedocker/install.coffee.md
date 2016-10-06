@@ -308,7 +308,7 @@ Write startup script to /etc/init.d/service-hue-docker
 
       @call header: 'Startup Script', handler:  ->
         @render
-          source: "#{__dirname}/resources/#{hue_docker.service}"
+          source: "#{__dirname}/resources/hue-server-docker"
           local: true
           target: "/etc/init.d/#{hue_docker.service}"
           context: hue_docker

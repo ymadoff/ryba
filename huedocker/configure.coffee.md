@@ -46,6 +46,7 @@ Example:
 
     module.exports = handler: ->
       {ssl, hadoop_conf_dir, db_admin} = @config.ryba
+      require('../commons/db_admin').handler.call @
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn/configure').handler
       [sls_ctx] = @contexts 'ryba/spark/livy_server', require('../spark/livy_server/configure').handler
       [sts_ctx] = @contexts 'ryba/spark/thrift_server', require('../spark/thrift_server/configure').handler
