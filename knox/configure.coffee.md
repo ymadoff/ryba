@@ -25,6 +25,7 @@ loop on topologies to provide missing values
 ## Configure
 
     module.exports = handler: ->
+      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn/configure').handler
       knox = @config.ryba.knox ?= {}
       knox.conf_dir ?= '/etc/knox/conf'
       # User
@@ -161,7 +162,6 @@ This mechanism can be used to configure a specific gateway without having to dec
 (that may change over time).
 
         # Namenode & WebHDFS
-        nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn/configure').handler
         if topology.services['namenode'] is true
           if nn_ctxs.length
             topology.services['namenode'] = nn_ctxs[0].config.ryba.core_site['fs.defaultFS']
@@ -185,17 +185,17 @@ This mechanism can be used to configure a specific gateway without having to dec
             topology.providers['ha'].config['WEBHDFS'] ?= 'maxFailoverAttempts=3;failoverSleep=1000;maxRetryAttempts=300;retrySleep=1000;enabled=true'
             topology.services['webhdfs'] = []
             for nn_ctx in nn_ctxs
-              protocol = if nn_ctx.config.ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+              protocol = if nn_ctx.config.ryba.hdfs.nn.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
               host = nn_ctx.config.host
               shortname = nn_ctx.config.shortname
-              port = nn_ctx.config.ryba.hdfs.site["dfs.namenode.#{protocol}-address.#{nn_ctx.config.ryba.nameservice}.#{shortname}"].split(':')[1]
+              port = nn_ctx.config.ryba.hdfs.nn.site["dfs.namenode.#{protocol}-address.#{nn_ctx.config.ryba.nameservice}.#{shortname}"].split(':')[1]
               # We ensure that the default active namenode is first in the list !
               action = if host is nn_ctx.config.ryba.active_nn_host then 'unshift' else 'push'
               topology.services['webhdfs'][action] "#{protocol}://#{host}:#{port}/webhdfs"
           else
-            protocol = if nn_ctxs[0].config.ryba.hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
+            protocol = if nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
             host = nn_ctxs[0].config.host
-            port = nn_ctxs[0].config.ryba.hdfs.site["dfs.namenode.#{protocol}-address"].split(':')[1]
+            port = nn_ctxs[0].config.ryba.hdfs.nn.site["dfs.namenode.#{protocol}-address"].split(':')[1]
             topology.services['webhdfs'] = "#{protocol}://#{host}:#{port}/webhdfs" 
         # Jobtracker
         if topology.services['jobtracker'] is true
