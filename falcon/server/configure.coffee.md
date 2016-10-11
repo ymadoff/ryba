@@ -36,6 +36,7 @@ associated processing and management tasks on Hadoop clusters.
       falcon.user.gid = falcon.group.name
       # Runtime
       falcon.runtime ?= {}
+      # Note, prism serveur start on port 16443, see https://falcon.apache.org/Distributed-mode.html
       falcon.runtime['prism.falcon.local.endpoint'] ?= "https://#{@config.host}:15443/"
       # Runtime (http://falcon.incubator.apache.org/Security.html)
       nn_contexts = @contexts 'ryba/hadoop/hdfs_nn', require('../../hadoop/hdfs_nn/configure').handler
@@ -147,3 +148,7 @@ associated processing and management tasks on Hadoop clusters.
           instanceTime=org.apache.oozie.coord.CoordELFunctions#ph2_coord_nominalTime,
           user=org.apache.oozie.coord.CoordELFunctions#coord_user
           """
+
+## Graph Database Properties
+
+See https://github.com/apache/falcon/blob/master/src/conf/startup.properties

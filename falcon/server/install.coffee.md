@@ -21,7 +21,8 @@ each HDFS cluster.
 
 | Service   | Port       | Proto     | Parameter                   |
 |-----------|------------|-----------|-----------------------------|
-| falcon    | 15443      | tcp/http  | prism.falcon.local.endpoint |
+| Falcon Serveur    | 15443      | tcp/http  | prism.falcon.local.endpoint |
+| falcon Prism    | 16443      | tcp/http  | prism.falcon.local.endpoint |
 
 Note, this hasnt been verified.
 
