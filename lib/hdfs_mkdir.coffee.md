@@ -44,7 +44,8 @@ Options include:
           user=$3
           group=$4
           echo "Create dir $dir"
-          hdfs dfs -mkdir $dir
+          # Use -p to prevent race conditions
+          hdfs dfs -mkdir -p $dir
           if [ -n "$mode" ]; then
             echo "Change permissions to $mode"
             hdfs dfs -chmod $mode $dir
