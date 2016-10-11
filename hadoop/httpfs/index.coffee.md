@@ -5,22 +5,21 @@ HttpFS is a server that provides a REST HTTP gateway supporting all HDFS File
 System operations (read and write). And it is inteoperable with the webhdfs REST
 HTTP API.
 
-    module.exports = ->
-      'configure': [
-        'ryba/hadoop/core'
+    module.exports =
+      use:
+        iptables: implicit: true, module: 'masson/core/iptables'
+        hadoop_core: implicit: true, module: 'ryba/hadoop/core'
+        hdfs_client: implicit: true, module: 'ryba/hadoop/hdfs_client'
+      configure:
         'ryba/hadoop/httpfs/configure'
-      ]
-      'check':
-        'ryba/hadoop/httpfs/check'
-      'install': [
-        'masson/core/iptables'
-        'ryba/hadoop/core'
-        'ryba/hadoop/hdfs_client'
-        'ryba/hadoop/httpfs/install'
-        'ryba/hadoop/httpfs/start'
-        'ryba/hadoop/httpfs/check'
-      ]
-      'start':
-        'ryba/hadoop/httpfs/start'
-      'stop': 'ryba/hadoop/httpfs/stop'
-      'status': 'ryba/hadoop/httpfs/status'
+      commands:
+        'check':
+          'ryba/hadoop/httpfs/check'
+        'install': [
+          'ryba/hadoop/httpfs/install'
+          'ryba/hadoop/httpfs/start'
+          'ryba/hadoop/httpfs/check'
+        ]
+        'start': 'ryba/hadoop/httpfs/start'
+        'stop': 'ryba/hadoop/httpfs/stop'
+        'status': 'ryba/hadoop/httpfs/status'

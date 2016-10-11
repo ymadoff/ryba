@@ -4,7 +4,7 @@
 The default configuration is located inside the source code in the location
 "hadoop-hdfs-project/hadoop-hdfs-httpfs/src/main/resources/httpfs-default.xml".
 
-    module.exports = handler: ->
+    module.exports = ->
       {realm} = @config.ryba
       hdfs_ctxs = @contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn']
       httpfs = @config.ryba.httpfs ?= {}

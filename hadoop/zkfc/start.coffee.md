@@ -10,10 +10,8 @@ active NameNode to start first.
     module.exports = header: 'HDFS ZKFC # Start', label_true: 'STARTED', handler: ->
       {hdfs, active_nn_host, standby_nn_host} = @config.ryba
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
-      # active_nn_ctx = nn_ctxs.filter( (ctx) -> ctx.config.host is active_nn_host)[0]
-      # standby_nn_ctx = nn_ctxs.filter( (ctx) -> ctx.config.host isnt active_nn_host)[0]
-      active_shortname = @contexts(hosts: active_nn_host)[0].config.shortname
-      standby_shortname = @contexts(hosts: standby_nn_host)[0].config.shortname
+      active_shortname = nn_ctxs.filter( (nn) -> nn.config.host is active_nn_host )[0].config.shortname
+      standby_shortname = nn_ctxs.filter( (nn) -> nn.config.host is standby_nn_host )[0].config.shortname
 
 ## Wait
 
@@ -60,6 +58,8 @@ Ensure a given NameNode is always active and force the failover otherwise.
 In order to work properly, the ZKFC daemon must be running and the command must
 be executed on the same server as ZKFC.
 
+      # Note, probably we shall wait for the other NameNode to be started and running
+      # before attempting to activate it.
       @execute
         header: 'HDFS ZKFC # Start Failover'
         label_true: 'READY'

@@ -1,7 +1,7 @@
 
 # MapReduce JobHistoryServer (JHS) Configure
 
-    module.exports = handler: ->
+    module.exports = ->
       # rm_ctxs = @contexts modules: 'ryba/hadoop/yarn_rm', require('../yarn_rm/configure').handler
       {ryba} = @config
       ryba.mapred ?= {}

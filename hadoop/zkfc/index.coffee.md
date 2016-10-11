@@ -5,23 +5,25 @@ The [ZKFailoverController (ZKFC)](https://hadoop.apache.org/docs/r2.3.0/hadoop-y
  Each of the machines which runs a NameNode also runs a ZKFC, and that ZKFC is responsible for Health monitoring, ZooKeeper session management, ZooKeeper-based election.
 
 
-    module.exports = ->
-      'configure': [
-        'ryba/hadoop/core'
+    module.exports =
+      use:
+        iptables: implicit: true, module: 'masson/core/iptables'
+        hadoop_core: 'ryba/hadoop/core'
+        hdfs_nn: implicit: true, module: 'ryba/hadoop/hdfs_nn'
+      configure:
+        # 'ryba/hadoop/hdfs_nn/configure'
         'ryba/hadoop/zkfc/configure'
-        'ryba/hadoop/hdfs_nn/configure'
-      ]
-      'check':
-        'ryba/hadoop/zkfc/check'
-      'install': [
-        'masson/core/iptables'
-        'ryba/hadoop/zkfc/install'
-        'ryba/hadoop/zkfc/start'
-        'ryba/hadoop/zkfc/check'
-      ]
-      'start':
-        'ryba/hadoop/zkfc/start'
-      'stop':
-        'ryba/hadoop/zkfc/stop'
-      'status':
-        'ryba/hadoop/zkfc/status'
+      commands:
+        'check':
+          'ryba/hadoop/zkfc/check'
+        'install': [
+          'ryba/hadoop/zkfc/install'
+          'ryba/hadoop/zkfc/start'
+          'ryba/hadoop/zkfc/check'
+        ]
+        'start':
+          'ryba/hadoop/zkfc/start'
+        'stop':
+          'ryba/hadoop/zkfc/stop'
+        'status':
+          'ryba/hadoop/zkfc/status'

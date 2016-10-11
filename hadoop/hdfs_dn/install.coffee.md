@@ -208,8 +208,8 @@ Also some [interesting info about snn](http://blog.cloudera.com/blog/2009/02/mul
 
       @file
         header: 'SNN Master'
-        if: (-> @host_with_module 'ryba/hadoop/hdfs_snn')
-        content: "#{@host_with_module 'ryba/hadoop/hdfs_snn'}"
+        if: (-> @contexts('ryba/hadoop/hdfs_snn').length)
+        content: "#{@contexts('ryba/hadoop/hdfs_snn')?.config?.host}"
         target: "#{hdfs.dn.conf_dir}/masters"
         uid: hdfs.user.name
         gid: hadoop_group.name

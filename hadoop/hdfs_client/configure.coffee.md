@@ -1,9 +1,9 @@
 
 # Hadoop HDFS Client Configure
 
-    module.exports = handler: ->
-      [nn_ctx] = @contexts 'ryba/hadoop/hdfs_nn', [require('../core/configure').handler, require('../hdfs_nn/configure').handler]
-      [dn_ctx] = @contexts 'ryba/hadoop/hdfs_dn', [require('../core/configure').handler, require('../hdfs_dn/configure').handler]
+    module.exports = ->
+      [nn_ctx] = @contexts 'ryba/hadoop/hdfs_nn'
+      [dn_ctx] = @contexts 'ryba/hadoop/hdfs_dn'
       hdfs = @config.ryba.hdfs ?= {}
       hdfs.site['dfs.http.policy'] ?= 'HTTPS_ONLY'
 

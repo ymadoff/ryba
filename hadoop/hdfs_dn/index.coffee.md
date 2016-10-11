@@ -14,24 +14,24 @@ location of blocks in the cluster. In order to achieve this, the DataNodes are
 configured with the location of both NameNodes, and send block location
 information and heartbeats to both.
 
-    module.exports = ->
-      'check': [
-        'ryba/hadoop/hdfs_dn/check'
-      ]
-      'configure': [
-        'ryba/hadoop/core'
+    module.exports =
+      use:
+        iptables: implicit: true, module: 'masson/core/iptables'
+        hadoop_core: implicit: true, module: 'ryba/hadoop/core'
+        zoo_server: module: 'ryba/zookeeper/server'
+      configure:
         'ryba/hadoop/hdfs_dn/configure'
-      ]
-      'install': [
-        'masson/core/iptables'
-        'ryba/hadoop/core'
-        'ryba/hadoop/hdfs_dn/install'
-        'ryba/hadoop/hdfs_dn/start'
-        'ryba/hadoop/hdfs_dn/check'
-      ]
-      'start':
-        'ryba/hadoop/hdfs_dn/start'
-      'status':
-        'ryba/hadoop/hdfs_dn/status'
-      'stop':
-        'ryba/hadoop/hdfs_dn/stop'
+      commands:
+        'check':
+          'ryba/hadoop/hdfs_dn/check'
+        'install': [
+          'ryba/hadoop/hdfs_dn/install'
+          'ryba/hadoop/hdfs_dn/start'
+          'ryba/hadoop/hdfs_dn/check'
+        ]
+        'start':
+          'ryba/hadoop/hdfs_dn/start'
+        'status':
+          'ryba/hadoop/hdfs_dn/status'
+        'stop':
+          'ryba/hadoop/hdfs_dn/stop'

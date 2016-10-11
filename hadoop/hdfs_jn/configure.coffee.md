@@ -20,7 +20,7 @@ Example:
 }
 ```
 
-    module.exports = handler: ->
+    module.exports = ->
       # nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hdfs_nn/configure').handler
       # throw Error "HDFS not configured for HA" unless nn_ctxs.length is 2
       {ryba} = @config

@@ -66,7 +66,10 @@ Default configuration:
 }
 ```
 
-    module.exports = handler: ->
+    module.exports = ->
+      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
+      zoo_ctxs = @contexts 'ryba/zookeeper/server'
+      [ganglia_ctx] =  @contexts 'ryba/ganglia/collector'
       {realm, ganglia, graphite} = @config.ryba
       ryba = @config.ryba ?= {}
       ryba.yarn ?= {}
@@ -143,7 +146,6 @@ Default configuration:
       ryba.nameservice ?= null
       # ryba.active_nn ?= false
       throw new Error "Invalid Service Name" unless ryba.nameservice
-      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
       # Configuration
       core_site = ryba.core_site ?= {}
       core_site['io.compression.codecs'] ?= "org.apache.hadoop.io.compress.GzipCodec,org.apache.hadoop.io.compress.DefaultCodec,org.apache.hadoop.io.compress.SnappyCodec"
@@ -178,7 +180,6 @@ Default configuration:
         v.match ?= "#{k}-*.jar"
         v.filename = path.basename v.source
       # Get ZooKeeper Quorum
-      zoo_ctxs = @contexts 'ryba/zookeeper/server', require('../../zookeeper/server/configure').handler
       zookeeper_quorum = for zoo_ctx in zoo_ctxs
         "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
       core_site['ha.zookeeper.quorum'] ?= zookeeper_quorum
@@ -186,7 +187,7 @@ Default configuration:
       # http://ofirm.wordpress.com/2014/01/09/exploring-the-hadoop-network-topology/
       core_site['net.topology.script.file.name'] ?= "#{ryba.hadoop_conf_dir}/rack_topology.sh"
 
-Kerberos user for hdfs
+Kerberos user for HDFS
 
       ryba.hdfs.krb5_user ?= {}
       ryba.hdfs.krb5_user.principal ?= "#{ryba.hdfs.user.name}@#{realm}"
@@ -350,7 +351,6 @@ source code, the list of supported prefixes is: "namenode", "resourcemanager",
         hadoop_metrics.config['jobhistoryserver.sink.file.filename'] ?= 'jobhistoryserver-metrics.out'
       # Ganglia sink, accepted properties are "servers" and "supportsparse"
       if hadoop_metrics.sinks.ganglia
-        [ganglia_ctx] =  @contexts 'ryba/ganglia/collector'
         hadoop_metrics.config["*.sink.ganglia.#{k}"] ?= v for k, v of sinks.ganglia
         if @has_module 'ryba/hadoop/hdfs_nn'
           hadoop_metrics.config['namenode.sink.ganglia.class'] ?= sinks.ganglia.class

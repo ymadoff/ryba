@@ -1,21 +1,20 @@
 
 # Zookeeper Client
 
-    module.exports = ->
-      'check': [
-        'ryba/commons/krb5_user'
-        'ryba/zookeeper/client/check'
-      ]
-      'configure': [
-        'masson/commons/java'
-        'masson/core/krb5_client'
+    module.exports =
+      use:
+        java: implicit: true, module: 'masson/commons/java'
+        krb5_client: implicit: true, module: 'masson/core/krb5_client'
+        krb5_user: implicit: true, module: 'ryba/commons/krb5_user'
+        iptables: implicit: true, module: 'masson/core/iptables'
+        zoo_server: 'ryba/zookeeper/server'
+        hdp: 'ryba/hdp'
+      configure:
         'ryba/zookeeper/client/configure'
-      ]
-      'install': [
-        'masson/core/iptables'
-        'masson/commons/java'
-        'ryba/commons/repos'
-        'ryba/commons/krb5_user'
-        'ryba/zookeeper/client/install'
-        'ryba/zookeeper/client/check'
-      ]
+      commands:
+        'check':
+          'ryba/zookeeper/client/check'
+        'install': [
+          'ryba/zookeeper/client/install'
+          'ryba/zookeeper/client/check'
+        ]

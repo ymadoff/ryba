@@ -3,30 +3,35 @@
 
 [Yarn ResourceManager ](http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/ResourceManagerRestart.html) is the central authority that manages resources and schedules applications running atop of YARN.
 
-    module.exports = ->
-      # 'backup': 'ryba/hadoop/yarn_rm/backup'
-      'check':
-        'ryba/hadoop/yarn_rm/check'
-      'configure':
+    module.exports =
+      use:
+        iptables: implicit: true, module: 'masson/core/iptables'
+        # yarn_client: 'ryba/hadoop/yarn_client/install'
+        zoo_server: 'ryba/zookeeper/server'
+        mapred_jhs: 'ryba/hadoop/mapred_jhs'
+        yarn_ts: 'ryba/hadoop/yarn_ts'
+      configure:
         'ryba/hadoop/yarn_rm/configure'
-      'report': [
-        'masson/bootstrap/report'
-        'ryba/hadoop/yarn_rm/report'
-      ]
-      'install': [
-        'masson/core/iptables'
-        'ryba/hadoop/yarn_client/install'
-        'ryba/hadoop/yarn_rm/install'
-        'ryba/hadoop/yarn_rm/scheduler'
-        'ryba/hadoop/yarn_rm/start'
-        'ryba/hadoop/yarn_rm/check'
-      ]
-      'start':
-        'ryba/hadoop/yarn_rm/start'
-      'status':
-        'ryba/hadoop/yarn_rm/status'
-      'stop':
-        'ryba/hadoop/yarn_rm/stop'
+      commands:
+        # 'backup': 'ryba/hadoop/yarn_rm/backup'
+        'check':
+          'ryba/hadoop/yarn_rm/check'
+        'report': [
+          'masson/bootstrap/report'
+          'ryba/hadoop/yarn_rm/report'
+        ]
+        'install': [
+          'ryba/hadoop/yarn_rm/install'
+          'ryba/hadoop/yarn_rm/scheduler'
+          'ryba/hadoop/yarn_rm/start'
+          'ryba/hadoop/yarn_rm/check'
+        ]
+        'start':
+          'ryba/hadoop/yarn_rm/start'
+        'status':
+          'ryba/hadoop/yarn_rm/status'
+        'stop':
+          'ryba/hadoop/yarn_rm/stop'
 
 
 [restart]: http://hadoop.apache.org/docs/current/hadoop-yarn/hadoop-yarn-site/ResourceManagerRestart.html

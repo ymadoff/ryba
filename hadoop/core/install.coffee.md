@@ -40,7 +40,7 @@ not handled here.
 Configure the topology script to enable rack awareness to Hadoop.
 
       @call header: 'Topology', handler: ->
-        h_ctxs = @contexts modules: ['ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm']
+        h_ctxs = @contexts ['ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_nm']
         topology = []
         for h_ctx in h_ctxs
           rack = if h_ctx.config.ryba?.rack? then h_ctx.config.ryba.rack else ''

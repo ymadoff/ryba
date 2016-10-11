@@ -23,10 +23,9 @@ Example:
 }
 ```
 
-    module.exports = handler: ->
-      require('../core/configure').handler.call @
+    module.exports = ->
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
-      jn_ctxs = @contexts 'ryba/hadoop/hdfs_jn', require('../hdfs_jn/configure').handler
+      jn_ctxs = @contexts 'ryba/hadoop/hdfs_jn'
       dn_ctxs = @contexts 'ryba/hadoop/hdfs_dn'
       {ryba} = @config
       ryba.hdfs.nn ?= {}
@@ -44,7 +43,7 @@ Example:
       ryba.hdfs.nn.site['dfs.namenode.name.dir'] = ryba.hdfs.nn.site['dfs.namenode.name.dir'].join ',' if Array.isArray ryba.hdfs.nn.site['dfs.namenode.name.dir']
       # Network
       ryba.hdfs.nn.site['dfs.hosts'] ?= "#{ryba.hdfs.nn.conf_dir}/dfs.include"
-      ryba.hdfs.include ?= @hosts_with_module 'ryba/hadoop/hdfs_dn'
+      ryba.hdfs.include ?= dn_ctxs.map (context) -> context.config.host
       ryba.hdfs.include = string.lines ryba.hdfs.include if typeof ryba.hdfs.include is 'string'
       ryba.hdfs.nn.site['dfs.hosts.exclude'] ?= "#{ryba.hdfs.nn.conf_dir}/dfs.exclude"
       ryba.hdfs.exclude ?= []

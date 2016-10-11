@@ -1,16 +1,16 @@
 
-    module.exports = ->
-      'configure': [
-        'masson/commons/java'
-        'masson/core/krb5_client'
-        'ryba/commons/krb5_user'
-        # 'ryba/ganglia/collector'
-        # 'ryba/graphite/carbon'
+    module.exports =
+      use:
+        java: implicit: true, module: 'masson/commons/java'
+        krb5_client: implicit: true, module: 'masson/core/krb5_client'
+        krb5_user: implicit: true, module: 'ryba/commons/krb5_user'
+        # hdp_repo: 'ryba/commons/repos'
+        hdp: 'ryba/hdp'
+        ganglia: 'ryba/ganglia'
+        graphite: 'ryba/graphite'
+      configure:
         'ryba/hadoop/core/configure'
-      ]
-      'install': [
-        'masson/core/krb5_client'
-        'masson/commons/java'
-        'ryba/commons/repos'
-        'ryba/hadoop/core/install'
-      ]
+      commands:
+        'install': [
+          'ryba/hadoop/core/install'
+        ]

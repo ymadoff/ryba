@@ -8,10 +8,10 @@
 } } } }
 ```
 
-    module.exports = handler: ->
-      zk_ctxs = @contexts 'ryba/zookeeper/server', require('../../zookeeper/server/configure').handler
-      [jhs_ctx] = @contexts 'ryba/hadoop/mapred_jhs', require('../mapred_jhs/configure').handler
-      [ats_ctx] = @contexts 'ryba/hadoop/yarn_ts', require('../yarn_ts/configure').handler
+    module.exports = ->
+      zk_ctxs = @contexts 'ryba/zookeeper/server'
+      [jhs_ctx] = @contexts 'ryba/hadoop/mapred_jhs'
+      [ats_ctx] = @contexts 'ryba/hadoop/yarn_ts'
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
       ats_ctx.config.ryba.yarn.site['yarn.admin.acl'] ?= "#{@config.ryba.yarn.user.name}"
       {ryba} = @config
@@ -84,6 +84,10 @@ inside the configuration.
         # delegation tokens(fallback to kerberos if the tokens are missing)
         ryba.yarn.rm.site["yarn.resourcemanager.webapp.delegation-token-auth-filter.enabled"] ?= "true" # YARN default is "true"
         for rm_ctx in rm_ctxs
+          rm_ctx.config.ryba.yarn ?= {}
+          rm_ctx.config.ryba.yarn.rm ?= {}
+          rm_ctx.config.ryba.yarn.rm.site ?= {}
+          rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id'] ?= rm_ctx.config.shortname
           id = if ryba.yarn.rm.site['yarn.resourcemanager.ha.enabled'] is 'true' then ".#{rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id']}" else ''
           ryba.yarn.rm.site["yarn.resourcemanager.address#{id}"] ?= "#{rm_ctx.config.host}:8050"
           ryba.yarn.rm.site["yarn.resourcemanager.scheduler.address#{id}"] ?= "#{rm_ctx.config.host}:8030"

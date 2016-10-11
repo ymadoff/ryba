@@ -19,13 +19,13 @@ Optional, activate digest type access to zookeeper to manage the zkfc znode:
 }
 ```
 
-    module.exports = handler: ->
+    module.exports = ->
+      zkfc_ctxs = @contexts 'ryba/hadoop/zkfc'
+      throw Error "Require 2 ZKFCs" unless zkfc_ctxs.length is 2
       {ryba, host} = @config
       ryba.zkfc ?= {}
       ryba.zkfc.conf_dir ?= '/etc/hadoop-hdfs-zkfc/conf'
       # Validation
-      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hdfs_nn/configure').handler
-      throw Error "Require 2 NameNodes" unless nn_ctxs.length is 2
       ryba.zkfc.principal ?= ryba.hdfs.nn.site['dfs.namenode.kerberos.principal']
       ryba.zkfc.keytab ?= ryba.hdfs.nn.site['dfs.namenode.keytab.file']
       ryba.zkfc.jaas_file ?= "#{ryba.zkfc.conf_dir}/zkfc.jaas"

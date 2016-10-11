@@ -23,15 +23,37 @@ Example :
 }
 ```
 
-    module.exports = handler: ->
-      {java} = @config
+    module.exports = ->
       zk_ctxs = @contexts 'ryba/zookeeper/server'
+      {java} = @config
+      @config.ryba ?= {}
+      throw Error 'Missing configuration "ryba.realm"' unless @config.ryba?.realm
       zookeeper = @config.ryba.zookeeper ?= {}
       # Layout
       zookeeper.conf_dir ?= '/etc/zookeeper/conf'
       zookeeper.log_dir ?= '/var/log/zookeeper'
       zookeeper.pid_dir ?= '/var/run/zookeeper'
       zookeeper.port ?= 2181
+      zookeeper.conf_dir ?= '/etc/zookeeper/conf'
+      # User
+      zookeeper.user ?= {}
+      zookeeper.user = name: @config.ryba.zookeeper.user if typeof @config.ryba.zookeeper.user is 'string'
+      zookeeper.user.name ?= 'zookeeper'
+      zookeeper.user.system ?= true
+      zookeeper.user.gid ?= 'zookeeper'
+      zookeeper.user.groups ?= 'hadoop'
+      zookeeper.user.comment ?= 'Zookeeper User'
+      zookeeper.user.home ?= '/var/lib/zookeeper'
+      # Groups
+      zookeeper.group = name: @config.ryba.zookeeper.group if typeof @config.ryba.zookeeper.group is 'string'
+      zookeeper.group ?= {}
+      zookeeper.group.name ?= 'zookeeper'
+      zookeeper.group.system ?= true
+      # Hadoop Group is also defined in ryba/hadoop/core
+      @config.ryba.hadoop_group = name: @config.ryba.hadoop_group if typeof @config.ryba.hadoop_group is 'string'
+      @config.ryba.hadoop_group ?= {}
+      @config.ryba.hadoop_group.name ?= 'hadoop'
+      @config.ryba.hadoop_group.system ?= true
       # Environnment
       zookeeper.env ?= {}
       zookeeper.env['ZOOKEEPER_HOME'] ?= "/usr/hdp/current/zookeeper-client"
@@ -41,6 +63,7 @@ Example :
       zookeeper.env['SERVER_JVMFLAGS'] ?= "-Xmx1024m -Djava.security.auth.login.config=#{zookeeper.conf_dir}/zookeeper-server.jaas"
       zookeeper.env['CLIENT_JVMFLAGS'] ?= "-Djava.security.auth.login.config=#{zookeeper.conf_dir}/zookeeper-client.jaas"
       zookeeper.env['JAVA'] ?= '$JAVA_HOME/bin/java'
+      zookeeper.env['JAVA_HOME'] ?= "#{java.java_home}"
       zookeeper.env['CLASSPATH'] ?= '$CLASSPATH:/usr/share/zookeeper/*'
       zookeeper.env['ZOO_LOG4J_PROP'] ?= 'INFO,ROLLINGFILE' #was 'INFO,CONSOLE, ROLLINGFILE'
       if zookeeper.env['SERVER_JVMFLAGS'].indexOf('-Dzookeeper.security.auth_to_local') is -1

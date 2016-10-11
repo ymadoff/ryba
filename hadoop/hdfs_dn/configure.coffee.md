@@ -26,7 +26,7 @@ Example:
 }
 ```
 
-    module.exports = handler: ->
+    module.exports = ->
       {ryba} = @config
       ryba.hdfs ?= {}
       ryba.hdfs.dn ?= {}
@@ -94,5 +94,5 @@ Set up jave heap size linke in `ryba/hadoop/hdfs_nn`.
 
 [Short Circuit]: https://hadoop.apache.org/docs/r2.4.1/hadoop-project-dist/hadoop-hdfs/ShortCircuitLocalReads.html
 
-      ryba.hdfs.site['dfs.client.read.shortcircuit'] ?= if @has_module 'ryba/hadoop/hdfs_dn' then 'true' else 'false'
+      ryba.hdfs.site['dfs.client.read.shortcircuit'] ?= if @has_service 'ryba/hadoop/hdfs_dn' then 'true' else 'false'
       ryba.hdfs.site['dfs.domain.socket.path'] ?= '/var/lib/hadoop-hdfs/dn_socket'

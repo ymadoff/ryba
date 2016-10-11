@@ -305,7 +305,7 @@ if the NameNode was formated.
       @call header: 'Format', timeout: -1, handler: ->
         any_dfs_name_dir = hdfs.nn.site['dfs.namenode.name.dir'].split(',')[0]
         any_dfs_name_dir = any_dfs_name_dir.substr(7) if any_dfs_name_dir.indexOf('file://') is 0
-        is_hdfs_ha = @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+        is_hdfs_ha = @contexts('ryba/hadoop/hdfs_nn').length > 1
         # For non HA mode
         @execute
           cmd: "su -l #{hdfs.user.name} -c \"hdfs --config '#{hdfs.nn.conf_dir}' namenode -format\""
@@ -326,7 +326,7 @@ is only executed on the standby NameNode.
       @call
         header: 'HA Init Standby'
         timeout: -1
-        if: -> @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+        if: -> @contexts('ryba/hadoop/hdfs_nn').length > 1
         unless: -> @config.host is active_nn_host
         handler: ->
           @connection.wait

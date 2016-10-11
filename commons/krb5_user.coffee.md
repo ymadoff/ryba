@@ -3,8 +3,8 @@
 
 Create the Unix user and Kerberos principal used for testing.
 
-    module.exports = ->
-      'configure': required: true, handler: ->
+    module.exports =
+      'configure': ->
         ryba = @config.ryba ?= {}
         # Testing
         ryba.force_check ?= false

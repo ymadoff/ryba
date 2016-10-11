@@ -7,23 +7,21 @@ then the operation can be run in parallel on different keys and lists of data. O
 Rather than copy the data over the network to the program, you push out the program to the machines.
 The output list can then be saved to the distributed filesystem, and the reducers run to merge the results. Again, it may be possible to run these in parallel, each reducing different keys.
 
-    module.exports = ->
-      'configure': [
-        'ryba/hadoop/yarn_client'
-        'ryba/hadoop/hdfs_client/configure'
+    module.exports =
+      use:
+        hadoop_core: 'ryba/hadoop/core'
+        yarn_client: 'ryba/hadoop/yarn_client'
+        hdfs_client: 'ryba/hadoop/hdfs_client/configure'
+      configure:
         'ryba/hadoop/mapred_client/configure'
-      ]
-      'check':
-        'ryba/hadoop/mapred_client/check'
-      'report': [
-        'masson/bootstrap/report'
-        'ryba/hadoop/mapred_client/report'
-      ]
-      'install': [
-        # 'masson/commons/mysql/client'
-        'ryba/hadoop/core'
-        'ryba/hadoop/hdfs_client/install'
-        'ryba/hadoop/yarn_client/install'
-        'ryba/hadoop/mapred_client/install'
-        'ryba/hadoop/mapred_client/check'
-      ]
+      commands:
+        'check':
+          'ryba/hadoop/mapred_client/check'
+        'report': [
+          'masson/bootstrap/report'
+          'ryba/hadoop/mapred_client/report'
+        ]
+        'install': [
+          'ryba/hadoop/mapred_client/install'
+          'ryba/hadoop/mapred_client/check'
+        ]

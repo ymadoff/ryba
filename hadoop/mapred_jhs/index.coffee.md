@@ -7,26 +7,28 @@ replace master2.ryba by the address of the server where the server is installed,
 Now the jobHistory Server tends to be replace by the Yarn timeline server.
 
 
-    module.exports = ->
-      # 'backup':
-      #   'ryba/hadoop/mapred_jhs/backup'
-      'check':
-        'ryba/hadoop/mapred_jhs/check'
-      'configure':
+    module.exports =
+      use:
+        iptables: implicit: true, module: 'masson/core/iptables'
+        hdfs_client: 'ryba/hadoop/hdfs_client/install'
+      configure:
         'ryba/hadoop/mapred_jhs/configure'
-      'install': [
-        'masson/core/iptables'
-        'ryba/hadoop/hdfs_client/install'
-        'ryba/hadoop/mapred_jhs/install'
-        'ryba/hadoop/mapred_jhs/start'
-        'ryba/hadoop/mapred_jhs/check'
-      ]
-      'start':
-        'ryba/hadoop/mapred_jhs/start'
-      'status':
-        'ryba/hadoop/mapred_jhs/status'
-      'stop':
-        'ryba/hadoop/mapred_jhs/stop'
+      commands:
+        # 'backup':
+        #   'ryba/hadoop/mapred_jhs/backup'
+        'check':
+          'ryba/hadoop/mapred_jhs/check'
+        'install': [
+          'ryba/hadoop/mapred_jhs/install'
+          'ryba/hadoop/mapred_jhs/start'
+          'ryba/hadoop/mapred_jhs/check'
+        ]
+        'start':
+          'ryba/hadoop/mapred_jhs/start'
+        'status':
+          'ryba/hadoop/mapred_jhs/status'
+        'stop':
+          'ryba/hadoop/mapred_jhs/stop'
 
 [druid]: http://druid.io/docs/latest/configuration/hadoop.html
 [amb-mr-site]: https://github.com/apache/ambari/blob/trunk/ambari-server/src/main/resources/stacks/HDP/2.3/services/YARN/configuration-mapred/mapred-site.xml

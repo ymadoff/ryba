@@ -8,7 +8,7 @@
 } } } }
 ```
 
-    module.exports = handler: ->
+    module.exports = ->
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm', require('../yarn_rm/configure').handler
       [ats_ctx] = @contexts 'ryba/hadoop/yarn_ts', require('../yarn_ts/configure').handler
       {host, ryba} = @config

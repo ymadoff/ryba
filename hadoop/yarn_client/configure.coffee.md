@@ -2,11 +2,11 @@
 
 # YARN Client Configure
 
-    module.exports = handler: ->
-      [ats_ctx] = @contexts 'ryba/hadoop/yarn_ts', require('../yarn_ts/configure').handler
+    module.exports = ->
+      [ats_ctx] = @contexts 'ryba/hadoop/yarn_ts'
       yc_ctxs = @contexts 'ryba/hadoop/yarn_client'
-      nm_ctxs = @contexts 'ryba/hadoop/yarn_nm', require('../yarn_nm/configure').handler
-      rm_ctxs = @contexts 'ryba/hadoop/yarn_rm', require('../yarn_rm/configure').handler
+      nm_ctxs = @contexts 'ryba/hadoop/yarn_nm'
+      rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
       {ryba} = @config
       {realm} = ryba
       # Grab the host(s) for each roles
@@ -77,6 +77,6 @@ The "yarn-site.xml" file provided inside the companion files set some some
 values that shall be overwritten by the user. This middleware ensures those
 values don't get pushed to the cluster.
 
-      unless @has_any_modules 'ryba/hadoop/yarn_rm'
+      unless @has_service 'ryba/hadoop/yarn_rm'
         ryba.yarn.site['yarn.scheduler.minimum-allocation-mb'] ?= null # Make sure we erase hdp default value
         ryba.yarn.site['yarn.scheduler.maximum-allocation-mb'] ?= null # Make sure we erase hdp default value

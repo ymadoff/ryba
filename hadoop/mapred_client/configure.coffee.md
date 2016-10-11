@@ -1,5 +1,5 @@
 
-    module.exports = handler: ->
+    module.exports = ->
       rm_contexts = @contexts 'ryba/hadoop/yarn_rm', require('../yarn_rm/configure').handler
       {realm, mapred} = @config.ryba
       # Layout

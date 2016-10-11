@@ -9,6 +9,7 @@ through SSH over another one where the public key isn't yet deployed.
 
     module.exports = header: 'HDFS NN Check', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
       {user, hdfs, active_nn_host, nameservice, force_check, check_hdfs_fsck} = @config.ryba
+      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
 
 ## Wait
 
@@ -18,7 +19,7 @@ Wait for the HDFS NameNode to be started.
 
 ## Check HTTP
 
-      is_ha = @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+      is_ha = nn_ctxs.length > 1
       # state = if not is_ha or active_nn_host is @config.host then 'active' else 'standby'
       protocol = if hdfs.nn.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       nameservice = if is_ha then ".#{@config.ryba.hdfs.nn.site['dfs.nameservices']}" else ''
@@ -49,7 +50,7 @@ See More http://hadoop.apache.org/docs/r2.0.2-alpha/hadoop-yarn/hadoop-yarn-site
 
       @execute
         header: 'HDFS NN # Check HA Health'
-        if: -> @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+        if: -> nn_ctxs.length > 1
         cmd: mkcmd.hdfs @, "hdfs --config '#{hdfs.nn.conf_dir}' haadmin -checkHealth #{@config.shortname}"
 
 ## Check FSCK
@@ -96,10 +97,10 @@ Read [Delegation Tokens in Hadoop Security](http://www.kodkast.com/blogs/hadoop/
 for more information.
 
       @call header: 'HDFS DN # Check WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
-        is_ha = @hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+        is_ha = nn_ctxs.length > 1
         protocol = if hdfs.nn.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
         nameservice = if is_ha then ".#{@config.ryba.hdfs.nn.site['dfs.nameservices']}" else ''
-        shortname = if is_ha then ".#{@contexts(hosts: active_nn_host)[0].config.shortname}" else ''
+        shortname = if is_ha then ".#{nn_ctxs.filter( (ctx) -> ctx.config.host is active_nn_host )[0].config.shortname}" else ''
         address = hdfs.nn.site["dfs.namenode.#{protocol}-address#{nameservice}#{shortname}"]
         @execute
           cmd: mkcmd.test @, """
