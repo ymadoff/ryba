@@ -45,13 +45,13 @@ druid:x:2435:
 
 Download and unpack the release archive.
 
-      @service
-        name: 'postgresql'
-        if: druid.db.engine is 'postgres'
-      @service
-        name: 'mysql'
-        if: druid.db.engine is 'mysql'
-      @download
+      @call if: druid.db.engine is 'postgres', ->
+        # @call once: true, 'masson/commons/postgres/server/wait' # Not yet ready
+        @service 'postgresql'
+      @call if: druid.db.engine is 'mysql', ->
+        # @call once: true, 'ryba/commons/mysql/server/wait' # Not yet ready
+        @service 'mysql'
+      @file.download
         header: 'Packages'
         source: "#{druid.source}"
         target: "/var/tmp/#{path.basename druid.source}"
@@ -81,7 +81,6 @@ Log files are stored inside "/var/log/druid" by default.
           target: "#{druid.pid_dir}"
           uid: "#{druid.user.name}"
           gid: "#{druid.group.name}"
-          parent: true
         @link
           target: "#{druid.dir}/var/druid/pids"
           source: "#{druid.pid_dir}"
@@ -132,7 +131,7 @@ We then ask a first TGT.
 
 Configure deep storage.
 
-      @db.user druid.db,
+      @db.user druid.db, database: null,
         if: druid.db.engine in ['mysql', 'postgres']
       @db.database druid.db,
         if: druid.db.engine in ['mysql', 'postgres']
@@ -143,13 +142,13 @@ Configure deep storage.
         backup: true
       @copy
         target: "/opt/druid-#{druid.version}/conf/druid/_common/core-site.xml"
-        source: '/etc/hadoop/conf/core-site.xml'
+        source: "#{druid.hadoop_conf_dir}/core-site.xml"
       @copy
         target: "/opt/druid-#{druid.version}/conf/druid/_common/hdfs-site.xml"
-        source: '/etc/hadoop/conf/hdfs-site.xml'
+        source: "#{druid.hadoop_conf_dir}/hdfs-site.xml"
       @hconfigure
         target: "/opt/druid-#{druid.version}/conf/druid/_common/yarn-site.xml"
-        source: '/etc/hadoop/conf/yarn-site.xml'
+        source: "#{druid.hadoop_conf_dir}/yarn-site.xml"
         transform: (properties) ->
           if properties['yarn.resourcemanager.ha.rm-ids']
             [id] = properties['yarn.resourcemanager.ha.rm-ids'].split ','
@@ -157,7 +156,7 @@ Configure deep storage.
           properties
       @hconfigure
         target: "/opt/druid-#{druid.version}/conf/druid/_common/mapred-site.xml"
-        source: '/etc/hadoop/conf/mapred-site.xml'
+        source: "#{druid.hadoop_conf_dir}/mapred-site.xml"
         transform: (properties) ->
           classpath = properties['mapreduce.application.classpath'].split ','
           jar_validation = "/opt/druid-#{druid.version}/lib/validation-api-1.1.0.Final.jar"

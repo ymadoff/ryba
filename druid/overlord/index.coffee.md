@@ -1,22 +1,26 @@
 
-# Druid
+# Druid Overlord
 
-[Druid](http://www.druid.io) is a high-performance, column-oriented, distributed 
-data store.
+[Overlord] component manages task distribution to middle managers.
+
+The [overlord] node is responsible for accepting tasks, coordinating task 
+distribution, creating locks around tasks, and returning statuses to callers. 
+[Overlord] can be configured to run in one of two modes - local or remote (local 
+being default). In remote mode, the overlord and middle manager are run in 
+separate processes and you can run each on a different server.
+
+[overlord]: http://druid.io/docs/latest/design/indexing-service.html
 
     module.exports = ->
       'prepare':
         'ryba/druid/prepare'
-      'check':
-        'ryba/druid/overlord/check'
       'configure':
-        'ryba/druid/configure'
+        'ryba/druid/overlord/configure'
       'install': [
         'masson/commons/java'
         'ryba/hadoop/hdfs_client'
         'ryba/druid/overlord/install'
         'ryba/druid/overlord/start'
-        'ryba/druid/overlord/check'
       ]
       'start':
         'ryba/druid/overlord/start'

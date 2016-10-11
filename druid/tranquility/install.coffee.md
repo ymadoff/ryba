@@ -35,7 +35,7 @@ druid:x:2435:
 
 Download and unpack the release archive.
 
-      @download
+      @file.download
         header: 'Packages'
         source: "#{druid.tranquility.source}"
         target: "/var/tmp/#{path.basename druid.tranquility.source}"

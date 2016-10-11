@@ -2,6 +2,7 @@
 # Druid Overlord Install
 
     module.exports = header: 'Druid Overlord # Install', handler: ->
+      {druid} = @config.ryba
       @call once: true, handler: 'ryba/druid/install'
 
 ## IPTables
@@ -13,7 +14,7 @@
       @iptables
         header: 'IPTables'
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 8090, protocol: 'tcp', state: 'NEW', comment: "Druid Broker" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: druid.overlord.runtime['druid.port'], protocol: 'tcp', state: 'NEW', comment: "Druid Broker" }
         ]
         if: @config.iptables.action is 'start'
 
@@ -27,3 +28,16 @@
         local_source: true
         backup: true
         mode: 0o0755
+      @file.properties
+        target: "/opt/druid-#{druid.version}/conf/druid/overlord/runtime.properties"
+        content: druid.overlord.runtime
+        backup: true
+      @file
+        target: "#{druid.dir}/conf/druid/overlord/jvm.config"
+        write: [
+          match: /^-Xms.*$/m
+          replace: "-Xms#{druid.overlord.jvm.xms}"
+        ,
+          match: /^-Xmx.*$/m
+          replace: "-Xmx#{druid.overlord.jvm.xmx}"
+        ]

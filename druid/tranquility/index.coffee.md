@@ -26,8 +26,8 @@ For examples and more information, please see the [Tranquility README][readme].
         'ryba/druid/tranquility/install'
         'ryba/druid/tranquility/start'
       ]
-      'start':
-        'ryba/druid/tranquility/start'
+      # 'start':
+      #   'ryba/druid/tranquility/start'
       # 'status':
       #   'ryba/druid/tranquility/status'
       # 'stop':

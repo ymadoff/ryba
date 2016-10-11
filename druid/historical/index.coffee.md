@@ -8,7 +8,7 @@ data store.
       'prepare':
         'ryba/druid/prepare'
       'configure':
-        'ryba/druid/configure'
+        'ryba/druid/historical/configure'
       'install': [
         'masson/commons/java'
         'ryba/hadoop/hdfs_client'

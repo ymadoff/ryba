@@ -15,6 +15,7 @@ Example:
       [pg_ctx] = @contexts 'masson/commons/postgres/server', require('masson/commons/postgres/server').handler
       [my_ctx] = @contexts 'masson/commons/mysql/server', require('masson/commons/postgres/server').handler
       zoo_ctxs = @contexts 'ryba/zookeeper/server', require('../zookeeper/server/configure').handler
+      [hadoop_ctx] = @contexts 'ryba/hadoop/core', require('../hadoop/core/configure').handler
       # Get ZooKeeper Quorum
       zookeeper_quorum = for zoo_ctx in zoo_ctxs then "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
         
@@ -28,6 +29,7 @@ Example:
       druid.pid_dir ?= '/var/run/druid'
       druid.server_opts ?= ''
       druid.server_heap ?= ''
+      druid.hadoop_conf_dir ?= hadoop_ctx.config.ryba.hadoop_conf_dir
       # User
       druid.user = name: druid.user if typeof druid.user is 'string'
       druid.user ?= {}

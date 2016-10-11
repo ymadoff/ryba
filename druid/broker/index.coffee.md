@@ -1,10 +1,18 @@
 
 # Druid Broker Server
 
-[Druid](http://www.druid.io) is a high-performance, column-oriented, distributed 
-data store.
+The [Broker] is the node to route queries to if you want to run a distributed 
+cluster. It understands the metadata published to ZooKeeper about what segments 
+exist on what nodes and routes queries such that they hit the right nodes. This 
+node also merges the result sets from all of the individual nodes together. On 
+start up, Realtime nodes announce themselves and the segments they are serving 
+in Zookeeper. 
+
+broker: http://druid.io/docs/latest/design/broker.html
 
     module.exports = ->
+      'check':
+        'ryba/druid/broker/check'
       'prepare':
         'ryba/druid/prepare'
       'configure': [
@@ -17,6 +25,7 @@ data store.
         'ryba/hadoop/mapred_client'
         'ryba/druid/broker/install'
         'ryba/druid/broker/start'
+        'ryba/druid/broker/check'
       ]
       'start':
         'ryba/druid/broker/start'

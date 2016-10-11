@@ -2,6 +2,7 @@
 # Druid Coordinator Install
 
     module.exports = header: 'Druid Coordinator # Install', handler: ->
+      {druid} = @config.ryba
       @call once: true, handler: 'ryba/druid/install'
 
 ## IPTables
@@ -13,7 +14,7 @@
       @iptables
         header: 'IPTables'
         rules: [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 8081, protocol: 'tcp', state: 'NEW', comment: "Druid Coordinator" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: druid.coordinator.runtime['druid.port'], protocol: 'tcp', state: 'NEW', comment: "Druid Coordinator" }
         ]
         if: @config.iptables.action is 'start'
 
@@ -27,3 +28,16 @@
         local_source: true
         backup: true
         mode: 0o0755
+      @file.properties
+        target: "/opt/druid-#{druid.version}/conf/druid/coordinator/runtime.properties"
+        content: druid.coordinator.runtime
+        backup: true
+      @file
+        target: "#{druid.dir}/conf/druid/coordinator/jvm.config"
+        write: [
+          match: /^-Xms.*$/m
+          replace: "-Xms#{druid.coordinator.jvm.xms}"
+        ,
+          match: /^-Xmx.*$/m
+          replace: "-Xmx#{druid.coordinator.jvm.xmx}"
+        ]

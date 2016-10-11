@@ -15,14 +15,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# Starts a Tranquility server
+# Starts a Druid Broker
 #
 # chkconfig: 345 85 15
 # description: Druid Broker
 #
 ### BEGIN INIT INFO
-# Provides:          Tranquility
-# Short-Description: Tranquility
+# Provides:          Druid
+# Short-Description: Druid Broker
 # Default-Start:     3 4 5
 # Default-Stop:      0 1 2 6
 # Required-Start:    $syslog $remote_fs
@@ -31,11 +31,11 @@
 # Should-Stop:
 ### END INIT INFO
 
-NAME='Tranquility'
+NAME='Druid Broker'
 USER='{{ryba.druid.user.name}}'
 PID_FILE='{{ryba.druid.pid_dir}}/broker.pid'
 PWD='{{ryba.druid.dir}}'
-CMD="sudo -u $USER sh /opt/druid/bin/broker.sh start"
+CMD="sudo -u $USER sh /opt/tranquility/bin/tranquility server /opt/tranquility/conf-quickstart/tranquility/server.json"
 KILL_FORCE=0
 KILL_SLEEP=10
 
