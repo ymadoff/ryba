@@ -293,7 +293,7 @@ Note, we might move this middleware to Masson.
             content = misc.ini.parse content
             properties = {}
             for k, v of hdfs.sysctl
-              v = "#{v}"
+              v = "\"#{v}\""
               properties[k] = v if content[k] isnt v
             return next null, false unless Object.keys(properties).length
             @file
