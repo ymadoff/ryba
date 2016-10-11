@@ -8,6 +8,7 @@ See [REST Gateway Impersonation Configuration][impersonation].
 
     module.exports = handler: ->
       require('../../hadoop/core/configure').handler.call @
+      require('masson/commons/java/configure').handler.call @
       m_ctxs = @contexts 'ryba/hbase/master', require('../master/configure').handler
       ryba = @config.ryba ?= {}
       {realm, core_site, ssl_server, hbase} = @config.ryba
