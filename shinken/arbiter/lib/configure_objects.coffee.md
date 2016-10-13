@@ -360,7 +360,7 @@ This function is called at the end to normalize values
           services['MySQL - Connected Threads'].use ?= 'unit-service'
           services['MySQL - Connected Threads'].check_command ?= "check_mysql!#{host.config.ryba.db_admin.port or 3306}!threads-connected!50!80!#{host.config.ryba.db_admin.username }!#{host.config.ryba.db_admin.password}"
           create_dependency 'MySQL - Connected Threads', 'MySQL - TCP', name
-        if 'zookeeper_server' in host.hostgroups  
+        if 'zookeeper_server' in host.hostgroups
           services['Zookeeper Server - TCP'] ?= {}
           services['Zookeeper Server - TCP'].hosts ?= []
           services['Zookeeper Server - TCP'].hosts.push name
@@ -836,7 +836,7 @@ This function is called at the end to normalize values
             services['HDFS DN - Available'].hosts.push name
             services['HDFS DN - Available'].servicegroups ?= ['hdfs_dn']
             services['HDFS DN - Available'].use ?= 'bp-service'
-            services['HDFS DN - Available'].check_command ?= has_percent 'HDFS JN - TCP SSL', 1, 3, '$HOSTNAME$'
+            services['HDFS DN - Available'].check_command ?= has_percent 'HDFS DN - TCP SSL', 1, 3, '$HOSTNAME$'
             services['HDFS DN - Nodes w/ Free space'] ?= {}
             services['HDFS DN - Nodes w/ Free space'].hosts ?= []
             services['HDFS DN - Nodes w/ Free space'].hosts.push name
