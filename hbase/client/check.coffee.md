@@ -39,7 +39,11 @@ Wait for the HBase master to be started.
                 "isExcludes": false
                 "isRecursive": false
               "table":
-                "values": ["#{hbase.client.test.namespace}:#{hbase.client.test.table}"]
+                "values": [
+                  "#{hbase.client.test.namespace}:#{hbase.client.test.table}",
+                  "#{hbase.client.test.namespace}:check_#{@config.shortname}_test_splits",
+                  "#{hbase.client.test.namespace}:check_#{@config.shortname}_ha"
+                  ]
                 "isExcludes": false
                 "isRecursive": false
             "repositoryName": "#{install['REPOSITORY_NAME']}"
@@ -171,21 +175,22 @@ Note, we are re-using the namespace created above.
 
       @call header: 'Splits', timeout: -1, label_true: 'CHECKED', handler: ->
         {force_check} = @config.ryba
+        table = "#{hbase.client.test.namespace}:check_#{@config.shortname}_test_splits"
         @execute
           cmd: mkcmd.hbase @, """
-            #if hbase shell 2>/dev/null <<< "list" | grep 'test_splits'; then echo "disable 'test_splits'; drop 'test_splits'" | hbase shell 2>/dev/null; fi
-            echo "disable 'test_splits'; drop 'test_splits'" | hbase shell 2>/dev/null
-            echo "create 'test_splits', 'cf1', SPLITS => ['1', '2', '3']" | hbase shell 2>/dev/null;
-            echo "scan 'hbase:meta',  {COLUMNS => 'info:regioninfo', FILTER => \\"PrefixFilter ('test_split')\\"}" | hbase shell 2>/dev/null
+            if hbase shell 2>/dev/null <<< "list_namespace_tables '#{hbase.client.test.namespace}'" | grep 'test_splits'; then echo "disable '#{table}'; drop '#{table}'" | hbase shell 2>/dev/null; fi
+            echo "create '#{table}', 'cf1', SPLITS => ['1', '2', '3']" | hbase shell 2>/dev/null;
+            echo "scan 'hbase:meta',  {COLUMNS => 'info:regioninfo', FILTER => \\"PrefixFilter ('#{table}')\\"}" | hbase shell 2>/dev/null
             """
-          unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"list 'test_splits'\" | grep -w 'test_splits'"
+          unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"list '#{hbase.client.test.namespace}'\" | grep -w 'test_splits'"
         , (err, executed, stdout) ->
           throw err if err
           return unless executed
           lines = string.lines stdout
           count = 0
+          pattern = new RegExp "^ #{table},"
           for line in lines
-            count++ if /^ test_splits,/.test line
+            count++ if pattern.test line
           throw Error 'Invalid Splits Count' unless count is 4
 
       # Note: inspiration for when namespace are functional
@@ -214,7 +219,7 @@ This check is only executed if more than two HBase Master are declared.
 
       @call header: 'HBase Client # Check HA', timeout: -1, label_true: 'CHECKED', handler: ->
         return unless hbase_ctxs.length > 1
-        table = "check_#{@config.shortname}_ha"
+        table = "#{hbase.client.test.namespace}:check_#{@config.shortname}_ha"
         @execute
           cmd: mkcmd.hbase @, """
             # Create new table
