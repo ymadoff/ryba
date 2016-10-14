@@ -26,7 +26,7 @@ Backup the active Hive configuration.
       @backup
         header:'Backup Logs'
         name: 'conf'
-        source: hive.conf_dir
+        source: hive.server2.conf_dir
         target: "/var/backups/hive-server2/"
         interval: month: 1
         retention: count: 2

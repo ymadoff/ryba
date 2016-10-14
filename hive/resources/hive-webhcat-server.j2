@@ -34,7 +34,7 @@
 NAME='Hive Webhcat Server'
 USER='hive'
 PID_FILE='/var/run/webhcat/webhcat.pid'
-CMD="su -l $USER -c \"/usr/hdp/current/hive-webhcat/sbin/webhcat_server.sh start\""
+CMD="su -l $USER -c \"export WEBHCAT_CONF_DIR={{webhcat.conf_dir}}; /usr/hdp/current/hive-webhcat/sbin/webhcat_server.sh start\""
 
 KILL_FORCE=0
 KILL_SLEEP=10

@@ -34,7 +34,8 @@
 NAME='Hive HCatalog Server'
 USER='hive'
 PID_FILE='/var/run/hive-hcatalog/hcat.pid'
-CMD="su -l $USER -c \"nohup hive --service metastore >/var/log/hive-hcatalog/hcat.out 2>/var/log/hive-hcatalog/hcat.err & echo \\\$! >$PID_FILE\""
+CONF_DIR={{hive.hcatalog.conf_dir}}
+CMD="su -l $USER -c \"nohup hive --config ${CONF_DIR} --service metastore >{{hive.hcatalog.log_dir}}/hcatalog.out 2>{{hive.hcatalog.log_dir}}/hcatalog.err & echo \\\$! >$PID_FILE\""
 KILL_FORCE=0
 KILL_SLEEP=10
 

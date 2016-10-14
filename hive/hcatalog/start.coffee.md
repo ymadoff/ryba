@@ -14,7 +14,7 @@ su -l hive -c 'nohup hive --service metastore >/var/log/hive-hcatalog/hcat.out 2
 
     module.exports =  header: 'Hive HCatalog Start', timeout: -1, label_true: 'STARTED', handler: ->
       {hive} = @config.ryba
-      jdbc = db.jdbc hive.site['javax.jdo.option.ConnectionURL']
+      jdbc = db.jdbc hive.hcatalog.site['javax.jdo.option.ConnectionURL']
 
 ## Wait
 

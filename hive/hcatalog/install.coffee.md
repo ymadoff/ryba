@@ -5,13 +5,14 @@ TODO: Implement lock for Hive Server2
 http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-Installation-Guide/cdh4ig_topic_18_5.html
 
     module.exports =  header: 'Hive HCatalog Install', handler: -> 
-      {hive, realm, active_nn_host, hdfs, hadoop_group} = @config.ryba
+      {hive, realm, active_nn_host, hdfs, hadoop_group, ssl} = @config.ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       tez_is_installed = if @contexts('ryba/tez').length >= 1 then true else false
       {hive, db_admin} = @config.ryba
-      username = hive.site['javax.jdo.option.ConnectionUserName']
-      password = hive.site['javax.jdo.option.ConnectionPassword']
-      jdbc = db.jdbc hive.site['javax.jdo.option.ConnectionURL']
+      tmp_location = "/var/tmp/ryba/ssl"
+      username = hive.hcatalog.site['javax.jdo.option.ConnectionUserName']
+      password = hive.hcatalog.site['javax.jdo.option.ConnectionPassword']
+      jdbc = db.jdbc hive.hcatalog.site['javax.jdo.option.ConnectionURL']
 
 ## Register
 
@@ -91,11 +92,12 @@ isnt yet started.
           name: 'hive-hcatalog-server'
         @hdp_select
           name: 'hive-metastore'
-        @file
+        @render
           header: 'Init Script'
           source: "#{__dirname}/../resources/hive-hcatalog-server.j2"
           local_source: true
           target: '/etc/init.d/hive-hcatalog-server'
+          context: @config.ryba
           mode: 0o0755
           unlink: true
         @execute
@@ -212,29 +214,28 @@ isnt yet started.
 
       @hconfigure
         header: 'Hive Site'
-        target: "#{hive.conf_dir}/hive-site.xml"
+        target: "#{hive.hcatalog.conf_dir}/hive-site.xml"
         source: "#{__dirname}/../../resources/hive/hive-site.xml"
         local_source: true
-        properties: hive.site
+        properties: hive.hcatalog.site
         merge: true
         backup: true
-      @render
-        header: 'Log4j Properties'
-        target: "#{hive.conf_dir}/hive-log4j.properties"
-        source: "#{__dirname}/../resources/hive-log4j.properties"
-        local_source: true
-        context: @config
+      @file.properties
+        header: 'Hive server Log4j properties'
+        target: "#{hive.hcatalog.conf_dir}/hive-log4j.properties"
+        content: hive.hcatalog.log4j.config
+        backup: true
       @render
         header: 'Exec Log4j'
-        target: "#{hive.conf_dir}/hive-exec-log4j.properties"
+        target: "#{hive.hcatalog.conf_dir}/hive-exec-log4j.properties"
         source: "#{__dirname}/../resources/hive-exec-log4j.properties"
         local_source: true
         context: @config
       @execute
         header: 'Directory Permission'
         cmd: """
-        chown -R #{hive.user.name}:#{hive.group.name} #{hive.conf_dir}/
-        chmod -R 755 #{hive.conf_dir}
+        chown -R #{hive.user.name}:#{hive.group.name} #{hive.hcatalog.conf_dir}/
+        chmod -R 755 #{hive.hcatalog.conf_dir}
         """
         shy: true # TODO: idempotence by detecting ownerships and permissions
 
@@ -254,13 +255,17 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
 
       @render
         header: 'Hive Env'
-        source: "#{__dirname}/../resources/hive-env.sh"
-        target: "#{hive.conf_dir}/hive-env.sh"
+        source: "#{__dirname}/../resources/hive-env.sh.j2"
+        target: "#{hive.hcatalog.conf_dir}/hive-env.sh"
         local_source: true
-        write: hive.hcatalog.env.write
+        context: @config
         eof: true
+        mode: 0o750
         backup: true
-
+        write: [
+          match: RegExp "^export HIVE_CONF_DIR=.*$", 'mg'
+          replace: "export HIVE_CONF_DIR=#{hive.hcatalog.conf_dir}"
+        ]
       @call
         header: 'Upload Libs'
         if: -> hive.libs.length
@@ -285,9 +290,9 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
 
       @krb5_addprinc krb5,
         header: 'Kerberos'
-        principal: hive.site['hive.metastore.kerberos.principal'].replace '_HOST', @config.host
+        principal: hive.hcatalog.site['hive.metastore.kerberos.principal'].replace '_HOST', @config.host
         randkey: true
-        keytab: hive.site['hive.metastore.kerberos.keytab.file']
+        keytab: hive.hcatalog.site['hive.metastore.kerberos.keytab.file']
         uid: hive.user.name
         gid: hive.group.name
         mode: 0o0600
@@ -368,6 +373,23 @@ Create the directories to store the logs and pid information. The properties
               target: "/apps/hive/install/hive-exec-#{version}.jar"
               clean: "/apps/hive/install/hive-exec-*.jar"
               lock: "/tmp/hive-exec-#{version}.jar"
+
+## SSL
+
+      @call header: 'Client SSL', handler: ->
+        @download
+          source: ssl.cacert
+          target: "#{tmp_location}/#{path.basename ssl.cacert}"
+          mode: 0o0600
+          shy: true
+        @java_keystore_add
+          keystore: hive.hcatalog.truststore_location
+          storepass: hive.hcatalog.truststore_password
+          caname: "hive_root_ca"
+          cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
+        @remove
+          target: "#{tmp_location}/#{path.basename ssl.cacert}"
+          shy: true
 
 ## Ulimit
 

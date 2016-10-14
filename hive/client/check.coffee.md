@@ -138,18 +138,18 @@ directive once you enter the beeline shell.
             {hive} = hs2_ctx.config.ryba
             directory = "check-#{@config.shortname}-hive_server2-#{hs2_ctx.config.shortname}"
             db = "check_#{@config.shortname}_server2_#{hs2_ctx.config.shortname}"
-            port = if hive.site['hive.server2.transport.mode'] is 'http'
-            then hive.site['hive.server2.thrift.http.port']
-            else hive.site['hive.server2.thrift.port']
-            principal = hive.site['hive.server2.authentication.kerberos.principal']
+            port = if hive.server2.site['hive.server2.transport.mode'] is 'http'
+            then hive.server2.site['hive.server2.thrift.http.port']
+            else hive.server2.site['hive.server2.thrift.port']
+            principal = hive.server2.site['hive.server2.authentication.kerberos.principal']
             url = "jdbc:hive2://#{hs2_ctx.config.host}:#{port}/default;principal=#{principal}"
-            if hive.site['hive.server2.use.SSL'] is 'true'
+            if hive.server2.site['hive.server2.use.SSL'] is 'true'
               url += ";ssl=true"
               url += ";sslTrustStore=#{hive.client.truststore_location}"
               url += ";trustStorePassword=#{hive.client.truststore_password}"
-            if hive.site['hive.server2.transport.mode'] is 'http'
-              url += ";transportMode=#{hive.site['hive.server2.transport.mode']}"
-              url += ";httpPath=#{hive.site['hive.server2.thrift.http.path']}"
+            if hive.server2.site['hive.server2.transport.mode'] is 'http'
+              url += ";transportMode=#{hive.server2.site['hive.server2.transport.mode']}"
+              url += ";httpPath=#{hive.server2.site['hive.server2.thrift.http.path']}"
             beeline = "beeline -u \"#{url}\" --silent=true "
             @execute
               cmd: mkcmd.test @, """
@@ -178,17 +178,17 @@ directive once you enter the beeline shell.
           current = null;
           urls = @contexts 'ryba/hive/server2'
           .map (hs2_ctx) =>
-            quorum = hs2_ctx.config.ryba.hive.site['hive.zookeeper.quorum']
-            namespace = hs2_ctx.config.ryba.hive.site['hive.server2.zookeeper.namespace']
-            principal = hs2_ctx.config.ryba.hive.site['hive.server2.authentication.kerberos.principal']
+            quorum = hs2_ctx.config.ryba.hive.server2.site['hive.zookeeper.quorum']
+            namespace = hs2_ctx.config.ryba.hive.server2.site['hive.server2.zookeeper.namespace']
+            principal = hs2_ctx.config.ryba.hive.server2.site['hive.server2.authentication.kerberos.principal']
             url = "jdbc:hive2://#{quorum}/;principal=#{principal};serviceDiscoveryMode=zooKeeper;zooKeeperNamespace=#{namespace}"
-            if hive.site['hive.server2.use.SSL'] is 'true'
+            if hive.server2.site['hive.server2.use.SSL'] is 'true'
               url += ";ssl=true"
               url += ";sslTrustStore=#{hive.client.truststore_location}"
               url += ";trustStorePassword=#{hive.client.truststore_password}"
-            if hive.site['hive.server2.transport.mode'] is 'http'
-              url += ";transportMode=#{hive.site['hive.server2.transport.mode']}"
-              url += ";httpPath=#{hive.site['hive.server2.thrift.http.path']}"
+            if hive.server2.site['hive.server2.transport.mode'] is 'http'
+              url += ";transportMode=#{hive.server2.site['hive.server2.transport.mode']}"
+              url += ";httpPath=#{hive.server2.site['hive.server2.thrift.http.path']}"
             url
           .sort()
           .filter( (c) -> p = current; current = c; p isnt c )
@@ -228,18 +228,18 @@ directive once you enter the beeline shell.
             {hive} = sts_ctx.config.ryba
             directory = "check-#{@config.shortname}-spark-sql-server-#{sts_ctx.config.shortname}"
             db = "check_#{@config.shortname}_spark_sql_server_#{sts_ctx.config.shortname}"
-            port = if hive.site['hive.server2.transport.mode'] is 'http'
-            then hive.site['hive.server2.thrift.http.port']
-            else hive.site['hive.server2.thrift.port']
-            principal = hive.site['hive.server2.authentication.kerberos.principal']
+            port = if hive.server2.site['hive.server2.transport.mode'] is 'http'
+            then hive.server2.site['hive.server2.thrift.http.port']
+            else hive.server2.site['hive.server2.thrift.port']
+            principal = hive.server2.site['hive.server2.authentication.kerberos.principal']
             url = "jdbc:hive2://#{sts_ctx.config.host}:#{port}/default;principal=#{principal}"
-            if hive.site['hive.server2.use.SSL'] is 'true'
+            if hive.server2.site['hive.server2.use.SSL'] is 'true'
               url += ";ssl=true"
               url += ";sslTrustStore=#{@config.ryba.hive.client.truststore_location}"
               url += ";trustStorePassword=#{@config.ryba.hive.client.truststore_password}"
-            if hive.site['hive.server2.transport.mode'] is 'http'
-              url += ";transportMode=#{hive.site['hive.server2.transport.mode']}"
-              url += ";httpPath=#{hive.site['hive.server2.thrift.http.path']}"
+            if hive.server2.site['hive.server2.transport.mode'] is 'http'
+              url += ";transportMode=#{hive.server2.site['hive.server2.transport.mode']}"
+              url += ";httpPath=#{hive.server2.site['hive.server2.thrift.http.path']}"
             beeline = "beeline -u \"#{url}\" --silent=true "
             @execute
               cmd: mkcmd.test @, """

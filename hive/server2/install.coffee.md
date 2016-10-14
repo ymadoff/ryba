@@ -15,9 +15,9 @@ Resources:
       {ssl, ssl_server, ssl_client, hadoop_conf_dir, realm} = @config.ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       tmp_location = "/var/tmp/ryba/ssl"
-      hive_server_port = if hive.site['hive.server2.transport.mode'] is 'binary'
-      then hive.site['hive.server2.thrift.port']
-      else hive.site['hive.server2.thrift.http.port']
+      hive_server_port = if hive.server2.site['hive.server2.transport.mode'] is 'binary'
+      then hive.server2.site['hive.server2.thrift.port']
+      else hive.server2.site['hive.server2.thrift.http.port']
 
 ## Register
 
@@ -76,10 +76,11 @@ isnt yet started.
           name: 'hive-server2'
         @hdp_select
           name: 'hive-server2'
-        @file
+        @render
           header: 'Init Script'
           source: "#{__dirname}/../resources/hive-server2.j2"
           local_source: true
+          context: @config.ryba
           target: '/etc/init.d/hive-server2'
           mode: 0o0755
           unlink: true
@@ -94,18 +95,21 @@ isnt yet started.
         target: "#{hive.server2.conf_dir}/hive-site.xml"
         source: "#{__dirname}/../../resources/hive/hive-site.xml"
         local_source: true
-        properties: hive.site
+        properties: hive.server2.site
         merge: true
         backup: true
+        uid: hive.user.name
+        gid: hive.group.name
+        mode: 0o0750
       @render
         header: 'Hive Log4j properties'
         source: "#{__dirname}/../resources/hive-exec-log4j.properties"
         local_source: true
-        target: '/etc/hive/conf/hive-exec-log4j.properties'
+        target: "#{hive.server2.conf_dir}/hive-exec-log4j.properties"
         context: @config
       @file.properties
         header: 'Hive server Log4j properties'
-        target: "/etc/hive/conf/hive-log4j.properties"
+        target: "#{hive.server2.conf_dir}/hive-log4j.properties"
         content: hive.server2.log4j.config
         backup: true
 
@@ -119,13 +123,20 @@ Using this functionnality, a user may for example raise the heap size of Hive
 Server2 to 4Gb by setting a value equal to "-Xmx4096m".
 
       @render
-        header: 'Hive Server2 Env' # dot not modify
+        header: 'Hive Server2 Env'
+        source: "#{__dirname}/../resources/hive-env.sh.j2"
         target: "#{hive.server2.conf_dir}/hive-env.sh"
-        source: "#{__dirname}/../resources/hive-env.sh"
-        local_source: true
-        write: hive.server2.env.write
+        local: true
+        context: @config
         eof: true
         backup: true
+        mode: 0o0750
+        uid: hive.user.name
+        gid: hive.group.name
+        write: [
+          match: RegExp "^export HIVE_CONF_DIR=.*$", 'mg'
+          replace: "export HIVE_CONF_DIR=#{hive.server2.conf_dir}"
+        ]
 
 ## Layout
 
@@ -148,7 +159,7 @@ Create the directories to store the logs and pid information. The properties
 
       @call
         header: 'Client SSL'
-        if: -> @config.ryba.hive.site['hive.server2.use.SSL'] is 'true'
+        if: -> @config.ryba.hive.server2.site['hive.server2.use.SSL'] is 'true'
         handler: ->
           @file.download
             source: ssl.cacert
@@ -166,8 +177,8 @@ Create the directories to store the logs and pid information. The properties
             mode: 0o0600
             shy: true
           @java_keystore_add
-            keystore: hive.site['hive.server2.keystore.path']
-            storepass: hive.site['hive.server2.keystore.password']
+            keystore: hive.server2.site['hive.server2.keystore.path']
+            storepass: hive.server2.site['hive.server2.keystore.password']
             caname: "hive_root_ca"
             cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
             key: "#{tmp_location}/#{path.basename ssl.key}"
@@ -175,8 +186,8 @@ Create the directories to store the logs and pid information. The properties
             keypass: ssl_server['ssl.server.keystore.keypassword']
             name: @config.shortname
           # @java_keystore_add
-          #   keystore: hive.site['hive.server2.keystore.path']
-          #   storepass: hive.site['hive.server2.keystore.password']
+          #   keystore: hive.server2.site['hive.server2.keystore.path']
+          #   storepass: hive.server2.site['hive.server2.keystore.password']
           #   caname: "hadoop_root_ca"
           #   cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
           @remove
@@ -197,12 +208,12 @@ Create the directories to store the logs and pid information. The properties
 
       @krb5_addprinc krb5,
         header: 'Kerberos'
-        principal: hive.site['hive.server2.authentication.kerberos.principal'].replace '_HOST', @config.host
+        principal: hive.server2.site['hive.server2.authentication.kerberos.principal'].replace '_HOST', @config.host
         randkey: true
-        keytab: hive.site['hive.server2.authentication.kerberos.keytab']
+        keytab: hive.server2.site['hive.server2.authentication.kerberos.keytab']
         uid: hive.user.name
         gid: hive.group.name
-        unless: @has_module('ryba/hive/hcatalog') and hive.site['hive.metastore.kerberos.principal'] is hive.site['hive.server2.authentication.kerberos.principal']
+        unless: @has_module('ryba/hive/hcatalog') and hive.server2.site['hive.metastore.kerberos.principal'] is hive.server2.site['hive.server2.authentication.kerberos.principal']
 
 ## Ulimit
 

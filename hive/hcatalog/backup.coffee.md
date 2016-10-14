@@ -6,9 +6,9 @@ configuration.
 
     module.exports =  header: 'Hive HCatalog Backup', label_true: 'BACKUPED', timeout: -1, handler: ->
       {hive} = @config.ryba
-      user = hive.site['javax.jdo.option.ConnectionUserName']
-      password = hive.site['javax.jdo.option.ConnectionPassword']
-      jdbc = db.jdbc hive.site['javax.jdo.option.ConnectionURL']
+      user = hive.hcatalog.site['javax.jdo.option.ConnectionUserName']
+      password = hive.hcatalog.site['javax.jdo.option.ConnectionPassword']
+      jdbc = db.jdbc hive.hcatalog.site['javax.jdo.option.ConnectionURL']
 
 ## Backup Database
 
@@ -33,7 +33,7 @@ Backup the active Hive configuration.
         header: 'Configuration'
         label_true: 'BACKUPED'
         name: 'conf'
-        source: hive.conf_dir
+        source: hive.hcatalog.conf_dir
         target: "/var/backups/hive/"
         interval: month: 1
         retention: count: 2

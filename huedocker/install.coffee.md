@@ -68,16 +68,16 @@ Update the "hive-site.xml" with the hive/server2 kerberos principal.
         if hive_ctx?
           {hive} = hive_ctx.config.ryba
           @hconfigure
-            target: "#{hive.conf_dir}/hive-site.xml"
+            target: '/etc/hive/conf/hive-site.xml'
             properties: {
-              'hive.server2.authentication.kerberos.principal': "#{hive.site['hive.server2.authentication.kerberos.principal']}"
-              'hive.server2.authentication': "#{hive.site['hive.server2.authentication']}"
+              'hive.server2.authentication.kerberos.principal': "#{hive.server2.site['hive.server2.authentication.kerberos.principal']}"
+              'hive.server2.authentication': "#{hive.server2.site['hive.server2.authentication']}"
               # Properties in client which are not synced
-              'hive.server2.transport.mode': "#{hive.site['hive.server2.transport.mode']}"
-              'hive.server2.use.SSL' : "#{hive.site['hive.server2.use.SSL']}"
-              'hive.server2.thrift.sasl.qop' : "#{hive.site['hive.server2.thrift.sasl.qop']}"
-              'hive.server2.thrift.http.port' : "#{hive.site['hive.server2.thrift.http.port']}"
-              'hive.server2.thrift.port' : "#{hive.site['hive.server2.thrift.port']}"
+              'hive.server2.transport.mode': "#{hive.server2.site['hive.server2.transport.mode']}"
+              'hive.server2.use.SSL' : "#{hive.server2.site['hive.server2.use.SSL']}"
+              'hive.server2.thrift.sasl.qop' : "#{hive.server2.site['hive.server2.thrift.sasl.qop']}"
+              'hive.server2.thrift.http.port' : "#{hive.server2.site['hive.server2.thrift.http.port']}"
+              'hive.server2.thrift.port' : "#{hive.server2.site['hive.server2.thrift.port']}"
             }
             merge: true
             backup: true

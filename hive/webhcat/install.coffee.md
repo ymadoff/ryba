@@ -60,13 +60,14 @@ inside "/etc/init.d" and activate it on startup.
           name: 'hive-webhcat-server'
         @hdp_select
           name: 'hive-webhcat'
-        @file
+        @render
           header: 'Init Script'
           source: "#{__dirname}/../resources/hive-webhcat-server.j2"
           local_source: true
           target: '/etc/init.d/hive-webhcat-server'
           mode: 0o0755
           unlink: true
+          context: @config.ryba
         @execute
           cmd: "service hive-webhcat-server restart"
           if: -> @status -3

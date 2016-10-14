@@ -3,9 +3,9 @@
 
     module.exports =  header: 'Hive HCatalog Check', label_true: 'CHECKED', handler: ->
       {hive, db_admin} = @config.ryba
-      username = hive.site['javax.jdo.option.ConnectionUserName']
-      password = hive.site['javax.jdo.option.ConnectionPassword']
-      jdbc = db.jdbc hive.site['javax.jdo.option.ConnectionURL']
+      username = hive.hcatalog.site['javax.jdo.option.ConnectionUserName']
+      password = hive.hcatalog.site['javax.jdo.option.ConnectionPassword']
+      jdbc = db.jdbc hive.hcatalog.site['javax.jdo.option.ConnectionURL']
 
 ## Wait
 
@@ -40,7 +40,7 @@ Check if Hive can authenticate and run a basic query to the database.
 Check if the Hive HCatalog (Metastore) server is listening.
 
       @call header: 'Check Port', label_true: 'CHECKED', handler: ->
-        uris = hive.site['hive.metastore.uris'].split ','
+        uris = hive.hcatalog.site['hive.metastore.uris'].split ','
         [server] = for uri in uris
           {hostname, port} = url.parse uri
           continue unless hostname is @config.host
