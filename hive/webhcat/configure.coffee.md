@@ -15,13 +15,13 @@
       webhcat.site['templeton.jar'] ?= '/usr/lib/hive-hcatalog/share/webhcat/svr/lib/hive-webhcat-0.13.0.2.1.2.0-402.jar' # Fix default value distributed in companion files
       webhcat.site['templeton.hive.properties'] ?= [
         'hive.metastore.local=false'
-        "hive.metastore.uris=#{hcat_ctx.config.ryba.hive.site['hive.metastore.uris'] }"
+        "hive.metastore.uris=#{hcat_ctx.config.ryba.hive.hcatalog.site['hive.metastore.uris'] }"
         'hive.metastore.sasl.enabled=yes'
         'hive.metastore.execute.setugi=true'
         'hive.metastore.warehouse.dir=/apps/hive/warehouse'
-        "hive.metastore.kerberos.principal=HTTP/_HOST@#{hcat_ctx.config.ryba.hive.site['hive.metastore.kerberos.principal']}"
+        "hive.metastore.kerberos.principal=HTTP/_HOST@#{hcat_ctx.config.ryba.hive.hcatalog.site['hive.metastore.kerberos.principal']}"
       ].join ','
-      webhcat.site['templeton.zookeeper.hosts'] ?= hcat_ctx.config.ryba.hive.site['templeton.zookeeper.hosts']
+      webhcat.site['templeton.zookeeper.hosts'] ?= hcat_ctx.config.ryba.hive.hcatalog.site['templeton.zookeeper.hosts']
       webhcat.site['templeton.kerberos.principal'] ?= "HTTP/#{@config.host}@#{ryba.realm}" # "HTTP/#{ctx.config.host}@#{ryba.realm}"
       webhcat.site['templeton.kerberos.keytab'] ?= ryba.core_site['hadoop.http.authentication.kerberos.keytab']
       webhcat.site['templeton.kerberos.secret'] ?= 'secret'
