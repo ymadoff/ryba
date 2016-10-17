@@ -239,6 +239,10 @@ default to the [DBTokenStore]. Also worth of interest is the
         hadoop_ctx.config.ryba.core_site ?= {}
         hadoop_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'
         hadoop_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.hosts"] ?= '*'
+      #hive-hcatalog server's client core site also need to be set
+      @config.core_site ?= {}
+      @config.core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'
+      @config.core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'
 
 ## Configure Log4J Properties
 
