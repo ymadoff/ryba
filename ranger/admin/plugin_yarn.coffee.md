@@ -1,9 +1,9 @@
 
     module.exports = header: 'Ranger YARN Plugin install', handler: ->
-      {ranger, hdfs, yarn, realm, hadoop_group, core_site} = @config.ryba 
+      {ranger, yarn, realm, hadoop_group, core_site, ssl_server} = @config.ryba
       {password} = @contexts('ryba/ranger/admin')[0].config.ryba.ranger.admin
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
-      version=null
+      version = null
 
 # HDFS Dependencies
 
@@ -16,7 +16,7 @@
       @call header: 'Packages', handler: ->
         @execute
           header: 'Setup Execution'
-          shy:true
+          shy: true
           cmd: """
             hdp-select versions | tail -1
           """
@@ -29,15 +29,17 @@
 # Layout
 
       @mkdir
-        target: '/var/log/hadoop/yarn/audit/solr/'
+        target: ranger.yarn_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR']
         uid: yarn.user.name
         gid: hadoop_group.name
-        mode: 0o0755
+        mode: 0o0750
+        if: ranger.yarn_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
       @mkdir
-        target: '/var/log/hadoop/yarn/audit/hdfs/'
+        target: ranger.yarn_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR']
         uid: yarn.user.name
         gid: hadoop_group.name
-        mode: 0o0755
+        mode: 0o0750
+        if: ranger.yarn_plugin.install['XAAUDIT.SOLR.IS_ENABLED'] is 'true'
 
 # YARN Service Repository creation
 Matchs step 1 in [hdfs plugin configuration][yarn-plugin]. Instead of using the web ui
@@ -49,7 +51,7 @@ we execute this task using the rest api.
         handler:  ->
           @execute
             unless_exec: """
-              curl --fail -H \"Content-Type: application/json\"   -k -X GET  \ 
+              curl --fail -H \"Content-Type: application/json\" -k -X GET  \
               -u admin:#{password} \"#{ranger.yarn_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{ranger.yarn_plugin.install['REPOSITORY_NAME']}\"
             """
             cmd: """

@@ -1,7 +1,8 @@
 
-    module.exports = header: 'Ranger Kafka Plugin install', handler: ->
+    module.exports = header: 'Ranger Hive Plugin install', handler: ->
       {ranger, hive, realm, hadoop_group, core_site} = @config.ryba 
       {password} = @contexts('ryba/ranger/admin')[0].config.ryba.ranger.admin
+      hdfs_plugin = @contexts('ryba/hadoop/hdfs_nn')[0].config.ryba.ranger.hdfs_plugin
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       version=null
       #https://mail-archives.apache.org/mod_mbox/incubator-ranger-user/201605.mbox/%3C363AE5BD-D796-425B-89C9-D481F6E74BAF@apache.org%3E
@@ -10,6 +11,63 @@
 
       @call once: true, 'ryba/ranger/admin/wait'
       @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
+
+# Create Hive Policy for On HDFS Repo
+
+      @call
+        if: ranger.hive_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
+        header: 'Hive ranger plugin audit to HDFS'
+        handler: ->
+          @mkdir
+            target: ranger.hive_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR']
+            uid: hive.user.name
+            gid: hadoop_group.name
+            mode: 0o0750
+          @call
+            if: @contexts('ryba/ranger/admin')[0].config.ryba.ranger.plugins.hdfs_enabled
+          , ->
+            hive_policy =
+              name: "hive-ranger-plugin-audit"
+              service: "#{hdfs_plugin.install['REPOSITORY_NAME']}"
+              repositoryType:"hdfs"
+              description: 'Hive Ranger Plugin audit log policy'
+              isEnabled: true
+              isAuditEnabled: true
+              resources:
+                path:
+                  isRecursive: 'true'
+                  values: ['/ranger/audit/hiveServer2']
+                  isExcludes: false
+              policyItems: [{
+                users: ["#{hive.user.name}"]
+                groups: []
+                delegateAdmin: true
+                accesses:[
+                    "isAllowed": true
+                    "type": "read"
+                ,
+                    "isAllowed": true
+                    "type": "write"
+                ,
+                    "isAllowed": true
+                    "type": "execute"
+                ]
+                conditions: []
+                }]
+            @execute
+              cmd: """
+                curl --fail -H "Content-Type: application/json" -k -X POST \
+                -d '#{JSON.stringify hive_policy}' \
+                -u admin:#{password} \
+                \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
+              """
+              unless_exec: """
+                curl --fail -H \"Content-Type: application/json\" -k -X GET  \
+                -u admin:#{password} \
+                \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/#{hdfs_plugin.install['REPOSITORY_NAME']}/policy/hive-ranger-plugin-audit\"
+              """
+              code_skippe: 22
 
 # Packages
 
@@ -26,19 +84,13 @@
         @service
           name: "ranger-hive-plugin"
 
-# Layout
+# Hive ranger plugin audit to SOLR
 
       @mkdir
-        target: '/var/log/hadoop/hive/audit/hdfs/'
+        target: ranger.hive_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR']
         uid: hive.user.name
-        gid: hive.name
-        mode: 0o0755
-        if: ranger.hive_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
-      @mkdir
-        target: '/var/log/hadoop/hive/audit/solr/'
-        uid: hive.user.name
-        gid: hive.name
-        mode: 0o0755
+        gid: hadoop_group.name
+        mode: 0o0750
         if: ranger.hive_plugin.install['XAAUDIT.SOLR.IS_ENABLED'] is 'true'
 
 # HIVE Service Repository creation
@@ -64,16 +116,13 @@ we execute this task using the rest api.
             principal: ranger.hive_plugin.principal
             randkey: true
             password: ranger.hive_plugin.password
-          @execute
+          @hdfs_mkdir
             header: 'Ranger Audit HIVE Layout'
-            cmd: mkcmd.hdfs @, """
-              hdfs dfs -mkdir -p #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hive
-              hdfs dfs -chown -R #{hive.user.name}:#{hive.user.name} #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hive
-              hdfs dfs -chmod 750 #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hive
-              hdfs dfs -mkdir -p #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hiveServer2
-              hdfs dfs -chown -R #{hive.user.name}:#{hive.user.name} #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hiveServer2
-              hdfs dfs -chmod 750 #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hiveserver2
-            """
+            target: "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hiveServer2"
+            mode: 0o000
+            user: hive.user.name
+            group: hive.user.name
+            unless_exec: mkcmd.hdfs @, "hdfs dfs -test -d #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hiveServer2"
 
 # Plugin Scripts 
 

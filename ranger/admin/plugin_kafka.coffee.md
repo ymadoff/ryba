@@ -29,10 +29,17 @@
 # Layout
 
       @mkdir
-        target: '/var/log/hadoop/kafka/audit/solr/'
+        target: ranger.kafka_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR']
         uid: kafka.user.name
         gid: hadoop_group.name
-        mode: 0o0755
+        mode: 0o0750
+        if: ranger.kafka_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
+      @mkdir
+        target: ranger.kafka_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR']
+        uid: kafka.user.name
+        gid: hadoop_group.name
+        mode: 0o0750
+        if: ranger.kafka_plugin.install['XAAUDIT.SOLR.IS_ENABLED'] is 'true'
 
 # HDFS Service Repository creation
 Matchs step 1 in [hdfs plugin configuration][hdfs-plugin]. Instead of using the web ui

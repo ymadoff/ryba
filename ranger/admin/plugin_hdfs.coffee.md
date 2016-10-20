@@ -1,15 +1,15 @@
 # Ranger HDFS Plugin Install
 
     module.exports = header: 'Ranger HDFS Plugin install', handler: ->
-      {ranger, hdfs, realm, ssl_server} = @config.ryba
+      {ranger, hdfs, hadoop_group, realm, ssl_server} = @config.ryba
       {password} = @contexts('ryba/ranger/admin')[0].config.ryba.ranger.admin
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       version=null
 
 ## HDFS Dependencies
 
-      @call once: true, 'ryba/hadoop/hdfs_client/install'
-      @call once: true, 'ryba/ranger/admin/wait'
+      @call 'ryba/hadoop/hdfs_client/install'
+      @call 'ryba/ranger/admin/wait'
       @register 'hconfigure', 'ryba/lib/hconfigure'
 
 ## Packages
@@ -30,16 +30,16 @@
 ## Layout
 
       @mkdir
-        target: '/var/log/hadoop/hdfs/audit/hdfs/'
+        target: ranger.hdfs_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR']
         uid: hdfs.user.name
-        gid: hdfs.name
-        mode: 0o0755
+        gid: hadoop_group.name
+        mode: 0o0750
         if: ranger.hdfs_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
       @mkdir
-        target: '/var/log/hadoop/hdfs/audit/solr/'
+        target: ranger.hdfs_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR']
         uid: hdfs.user.name
-        gid: hdfs.name
-        mode: 0o0755
+        gid: hadoop_group.name
+        mode: 0o0750
         if: ranger.hdfs_plugin.install['XAAUDIT.SOLR.IS_ENABLED'] is 'true'
 
 ## HDFS Service Repository creation

@@ -363,8 +363,7 @@ Configure Audit to HDFS
           # V3 configuration
           hdfs_plugin.install['XAAUDIT.HDFS.ENABLE'] ?= 'true'
           hdfs_plugin.install['XAAUDIT.HDFS.HDFS_DIR'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit"
-          hdfs_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/hdfs/audit/hdfs/spool'
-
+          hdfs_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= "#{nn_ctx.config.ryba.hdfs.log_dir}/audit/hdfs/spool"
           hdfs_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] ?= 'true'
           if hdfs_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
             hdfs_plugin.install['XAAUDIT.HDFS.DESTINATION_DIRECTORY'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/%app-type%/%time:yyyyMMdd%"
@@ -389,8 +388,7 @@ Configure Audit to SOLR
             hdfs_plugin.install['XAAUDIT.SOLR.USER'] ?= ranger.admin.install['audit_solr_user']
             hdfs_plugin.install['XAAUDIT.SOLR.ZOOKEEPER'] ?= ranger.admin.install['audit_solr_zookeepers']
             hdfs_plugin.install['XAAUDIT.SOLR.PASSWORD'] ?= ranger.admin.install['audit_solr_password']
-            hdfs_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/hdfs/audit/solr/spool'
-
+            hdfs_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= "#{nn_ctx.config.ryba.hdfs.log_dir}/audit/solr/spool"
 
 ### HDFS Plugin SSL
 
@@ -490,7 +488,6 @@ The repository name should match the reposity name in web ui.
           # AUDIT TO HDFS
           yarn_plugin.install['XAAUDIT.HDFS.ENABLE'] ?= 'true'
           yarn_plugin.install['XAAUDIT.HDFS.HDFS_DIR'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit"
-          yarn_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/yarn/audit/hdfs/spool'
 
 ### YARN Audit (database storage)
 
@@ -508,6 +505,7 @@ The repository name should match the reposity name in web ui.
                 throw Error 'Ryba does not support ORACLE Based Ranger Installation'
               else
                 throw Error "Apache Ranger does not support chosen DB FLAVOUR"        
+          yarn_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= "#{rm_ctx.config.ryba.yarn.log_dir}/audit/hdfs/spool"
 
 ### YARN Audit (to SOLR)
 
@@ -518,7 +516,7 @@ The repository name should match the reposity name in web ui.
             yarn_plugin.install['XAAUDIT.SOLR.USER'] ?= ranger.admin.install['audit_solr_user']
             yarn_plugin.install['XAAUDIT.SOLR.ZOOKEEPER'] ?= ranger.admin.install['audit_solr_zookeepers']
             yarn_plugin.install['XAAUDIT.SOLR.PASSWORD'] ?= ranger.admin.install['audit_solr_password']
-            yarn_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/yarn/audit/solr/spool'
+            yarn_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= "#{rm_ctx.config.ryba.yarn.log_dir}/audit/solr/spool"
 
 ### YARN Plugin SSL
 Used only if SSL is enabled between Policy Admin Tool and Plugin
@@ -649,7 +647,6 @@ The repository name should match the reposity name in web ui.
           # AUDIT TO HDFS
           hbase_plugin.install['XAAUDIT.HDFS.ENABLE'] ?= 'true'
           hbase_plugin.install['XAAUDIT.HDFS.HDFS_DIR'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit"
-          hbase_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/hbase/audit/hdfs/spool'
 
 ### HBase Audit (database storage)
 
@@ -667,6 +664,7 @@ The repository name should match the reposity name in web ui.
                 throw Error 'Ryba does not support ORACLE Based Ranger Installation'
               else
                 throw Error "Apache Ranger does not support chosen DB FLAVOUR" 
+          hbase_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= "#{ctx.config.ryba.hbase.log_dir}/audit/hdfs/spool"
 
 ### HBase Audit (to SOLR)
 
@@ -677,7 +675,7 @@ The repository name should match the reposity name in web ui.
             hbase_plugin.install['XAAUDIT.SOLR.USER'] ?= ranger.admin.install['audit_solr_user']
             hbase_plugin.install['XAAUDIT.SOLR.ZOOKEEPER'] ?= ranger.admin.install['audit_solr_zookeepers']
             hbase_plugin.install['XAAUDIT.SOLR.PASSWORD'] ?= ranger.admin.install['audit_solr_password']
-            hbase_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/hbase/audit/solr/spool'
+            hbase_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= "#{ctx.config.ryba.hbase.log_dir}/audit/solr/spool"
 
 ### HBase Plugin Execution
 
@@ -948,7 +946,6 @@ The repository name should match the reposity name in web ui.
           # AUDIT TO HDFS
           hive_plugin.install['XAAUDIT.HDFS.ENABLE'] ?= 'true'
           hive_plugin.install['XAAUDIT.HDFS.HDFS_DIR'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit"
-          hive_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/hive/audit/hdfs/spool'
 
 ### HIVE Audit (database storage)
 
@@ -966,6 +963,7 @@ The repository name should match the reposity name in web ui.
                 throw Error 'Ryba does not support ORACLE Based Ranger Installation'
               else
                 throw Error "Apache Ranger does not support chosen DB FLAVOUR"        
+          hive_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= "#{hive_ctx.config.ryba.hive.server2.log_dir}/audit/hdfs/spool"
 
 ### HIVE Audit (to SOLR)
 
@@ -976,7 +974,6 @@ The repository name should match the reposity name in web ui.
             hive_plugin.install['XAAUDIT.SOLR.USER'] ?= ranger.admin.install['audit_solr_user']
             hive_plugin.install['XAAUDIT.SOLR.ZOOKEEPER'] ?= ranger.admin.install['audit_solr_zookeepers']
             hive_plugin.install['XAAUDIT.SOLR.PASSWORD'] ?= ranger.admin.install['audit_solr_password']
-            hive_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/hive/audit/solr/spool'
 
 ### HIVE Plugin SSL
 Used only if SSL is enabled between Policy Admin Tool and Plugin

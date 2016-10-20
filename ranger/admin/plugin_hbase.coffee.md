@@ -1,9 +1,10 @@
 # Ranger HBase Plugin Install
 
     module.exports = header: 'Ranger HBase Plugin install', handler: ->
-      {ranger, hdfs, hbase, realm, hadoop_group} = @config.ryba
+      {ranger, hdfs, hbase, realm, hadoop_group, ssl, core_site} = @config.ryba
       {password} = @contexts('ryba/ranger/admin')[0].config.ryba.ranger.admin
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
+      hdfs_plugin = @contexts('ryba/hadoop/hdfs_nn')[0].config.ryba.ranger.hdfs_plugin
       version=null
       conf_dir = if @contexts('ryba/hbase/master').map( (ctx) -> ctx.config.host)
         .indexOf(@config.host) > -1 then hbase.master.conf_dir else hbase.rs.conf_dir
@@ -12,6 +13,7 @@
 
       @call once: true, 'ryba/ranger/admin/wait'
       @register 'hconfigure', 'ryba/lib/hconfigure'
+      @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
 
 ## Packages
 
@@ -31,10 +33,17 @@
 ## Layout
 
       @mkdir
-        target: '/var/log/hadoop/hbase/audit/solr/'
+        target: ranger.hbase_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR']
         uid: hbase.user.name
         gid: hadoop_group.name
-        mode: 0o0755
+        mode: 0o0750
+        if: ranger.hbase_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
+      @mkdir
+        target: ranger.hbase_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR']
+        uid: hbase.user.name
+        gid: hadoop_group.name
+        mode: 0o0750
+        if: ranger.hbase_plugin.install['XAAUDIT.SOLR.IS_ENABLED'] is 'true'
 
 ## HBase Service Repository creation
 Matchs step 1 in [hdfs plugin configuration][hbase-plugin]. Instead of using the web ui
@@ -42,9 +51,66 @@ we execute this task using the rest api.
 
       @call 
         if: @contexts('ryba/hbase/master')[0].config.host is @config.host 
-        header: 'Ranger HBase Repository'
+        header: 'Ranger HBase Repository & audit policy'
         handler:  ->
+          hbase_policy =
+            name: "hbase-ranger-plugin-audit"
+            service: "#{hdfs_plugin.install['REPOSITORY_NAME']}"
+            repositoryType:"hdfs"
+            description: 'HBase Ranger Plugin audit log policy'
+            isEnabled: true
+            isAuditEnabled: true
+            resources:
+              path:
+                isRecursive: 'true'
+                values: ['/ranger/audit/hbaseRegional','/ranger/audit/hbaseMaster']
+                isExcludes: false
+            policyItems: [{
+              users: ["#{hbase.user.name}"]
+              groups: []
+              delegateAdmin: true
+              accesses:[
+                  "isAllowed": true
+                  "type": "read"
+              ,
+                  "isAllowed": true
+                  "type": "write"
+              ,
+                  "isAllowed": true
+                  "type": "execute"
+              ]
+              conditions: []
+              }]
+          @hdfs_mkdir
+            header: 'HBase Master plugin HDFS audit dir'
+            target: "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hbaseMaster"
+            mode: 0o000
+            user: hbase.user.name
+            group: hbase.group.name
+            unless_exec: mkcmd.hdfs @, "hdfs dfs -test -d #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hbaseMaster"
+          @hdfs_mkdir
+            header: 'HBase Regionserver plugin HDFS audit dir'
+            target: "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hbaseRegional"
+            mode: 0o000
+            user: hbase.user.name
+            group: hbase.group.name
+            unless_exec: mkcmd.hdfs @, "hdfs dfs -test -d #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hbaseRegional"
           @execute
+            header: 'Ranger Admin Policy'
+            cmd: """
+              curl --fail -H "Content-Type: application/json" -k -X POST \
+              -d '#{JSON.stringify hbase_policy}' \
+              -u admin:#{password} \
+              \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
+            """
+            unless_exec: """
+              curl --fail -H \"Content-Type: application/json\" -k -X GET  \
+              -u admin:#{password} \
+              \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/#{hdfs_plugin.install['REPOSITORY_NAME']}/policy/hbase-ranger-plugin-audit\"
+            """
+            code_skippe: 22
+          @execute
+            header: 'Ranger Admin Repository'
             unless_exec: """
               curl --fail -H \"Content-Type: application/json\"   -k -X GET  \ 
               -u admin:#{password} \"#{ranger.hbase_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{ranger.hbase_plugin.install['REPOSITORY_NAME']}\"
@@ -52,22 +118,6 @@ we execute this task using the rest api.
             cmd: """
               curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify ranger.hbase_plugin.service_repo}' \
               -u admin:#{password} \"#{ranger.hbase_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/\"
-            """
-          @krb5_addprinc krb5,
-            if: ranger.hbase_plugin.principal
-            header: 'Ranger HBase Principal'
-            principal: ranger.hbase_plugin.principal
-            randkey: true
-            password: ranger.hbase_plugin.password
-          @execute
-            header: 'Fix Plugin Audit to HDFS permission'
-            cmd: mkcmd.hdfs @, """
-              hdfs dfs -mkdir -p /ranger/audit/hbaseMaster
-              hdfs dfs -mkdir -p /ranger/audit/hbaseRegional
-              hdfs dfs -chown -R hbase:hbase /ranger/audit/hbaseMaster
-              hdfs dfs -chown -R hbase:hbase /ranger/audit/hbaseRegional
-              hdfs dfs -chmod -R 755 /ranger/audit/hbaseMaster
-              hdfs dfs -chmod -R 755 /ranger/audit/hbaseRegional
             """
 
 ## Plugin Scripts 
