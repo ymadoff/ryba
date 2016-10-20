@@ -13,6 +13,7 @@ http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-I
       username = hive.hcatalog.site['javax.jdo.option.ConnectionUserName']
       password = hive.hcatalog.site['javax.jdo.option.ConnectionPassword']
       jdbc = db.jdbc hive.hcatalog.site['javax.jdo.option.ConnectionURL']
+      mode = if @contexts('ryba/ranger/admin').length > 0 then '0000' else '1777'
 
 ## Register
 
@@ -121,9 +122,7 @@ isnt yet started.
           options_client[k] = v
         @db.database.wait
           db: options_admin
-          unless: @contexts('ryba/hive/hcatalog')[0].config.host is @config.host
         @call
-          if: @contexts('ryba/hive/hcatalog')[0].config.host is @config.host 
           header: 'Configure Hive'
           handler: ->
             switch jdbc.engine
@@ -338,9 +337,10 @@ Create the directories to store the logs and pid information. The properties
           hdfs dfs -mkdir /apps/#{hive_user}/warehouse
           hdfs dfs -chown -R #{hive_user}:#{hdfs.user.name} /apps/#{hive_user}
           hdfs dfs -chmod 755 /apps/#{hive_user}
-          hdfs dfs -chmod 1777 /apps/#{hive_user}/warehouse
           """
           code_skipped: 3
+        @execute
+          cmd: mkcmd.hdfs @, "hdfs dfs -chmod -R #{mode} /apps/#{hive_user}/warehouse"
         @execute
           cmd: mkcmd.hdfs @, """
           if hdfs dfs -ls /tmp/scratch &> /dev/null; then exit 1; fi

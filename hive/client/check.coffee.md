@@ -13,13 +13,14 @@ hive -hiveconf hive.root.logger=DEBUG,console
 
     module.exports =  header: 'Hive Client Check', label_true: 'CHECKED', timeout: -1, handler: ->
       {force_check, realm, user, hive} = @config.ryba
+      [ranger_ctx] = @contexts('ryba/ranger/admin')
       dbs = []
       for h_ctx in @contexts 'ryba/hive/hcatalog'
         dbs.push "check_#{@config.shortname}_hive_hcatalog_mr_#{h_ctx.config.shortname}"
         dbs.push "check_#{@config.shortname}_hive_hcatalog_tez_#{h_ctx.config.shortname}"
       for hs2_ctx in @contexts 'ryba/hive/server2'
         dbs.push "check_#{@config.shortname}_server2_#{hs2_ctx.config.shortname}"
-        dbs.push "check_#{@config.shortname}_hs2_zoo_#{hs2_ctx.config.ryba.hive.site['hive.server2.zookeeper.namespace']}"
+        dbs.push "check_#{@config.shortname}_hs2_zoo_#{hs2_ctx.config.ryba.hive.server2.site['hive.server2.zookeeper.namespace']}"
       for hs_ctx  in @contexts 'ryba/spark/thrift_server'
         dbs.push "check_#{@config.shortname}_spark_sql_server_#{hs_ctx.config.shortname}"
 
@@ -31,12 +32,11 @@ hive -hiveconf hive.root.logger=DEBUG,console
 
 ## Add Ranger Policy 
 
-      @call header: 'Add Hive Policy', if:ranger_ctx?, handler: ->
-        [ranger_ctx] = @contexts('ryba/ranger/admin')
+      @call header: 'Add Hive Policy', if: ranger_ctx?, handler: ->
         {install} = ranger_ctx.config.ryba.ranger.hive_plugin
-        # use v1 policy api from ranger
+        # use v1 policy api (old style) from ranger to have an example
         hive_policy =
-          "policyName": "Ranger-Ryba-HIVE-Policy"
+          "policyName": "Ranger-Ryba-HIVE-Policy-#{@config.host}"
           "repositoryName": "#{install['REPOSITORY_NAME']}"
           "repositoryType":"hive"
           "description": 'Ryba check hive policy'
@@ -44,7 +44,7 @@ hive -hiveconf hive.root.logger=DEBUG,console
           'tables': '*'
           "columns": "*"
           "udfs": ""
-          'tableType': 'Exclusion'
+          'tableType': 'Inclusion'
           'columnType': 'Inclusion'
           'isEnabled': true
           'isAuditEnabled': true
@@ -52,6 +52,13 @@ hive -hiveconf hive.root.logger=DEBUG,console
           		"userList": ["#{user.name}"],
           		"permList": ["all"]
           	}]
+        @wait_execute
+          cmd: """
+            curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
+            -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
+          """
+          code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
         @execute
           cmd: """
             curl --fail -H "Content-Type: application/json" -k -X POST \
@@ -62,7 +69,7 @@ hive -hiveconf hive.root.logger=DEBUG,console
           unless_exec: """
             curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
             -u admin:#{ranger_ctx.config.ryba.ranger.admin.password} \
-            \"#{install['POLICY_MGR_URL']}/service/public/api/service/#{install['REPOSITORY_NAME']}/policy/Ranger-Ryba-HIVE-Policy\"
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/Ranger-Ryba-HIVE-Policy-#{@config.host}\"
           """
           code_skippe: 22
 
