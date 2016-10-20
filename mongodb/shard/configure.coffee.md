@@ -54,7 +54,7 @@ From 3.2, config servers for sharded clusters can be deployed as a replica set.
 The replica set config servers must run the WiredTiger storage engine
 
       config.storage ?= {}
-      config.storage.dbPath ?= '/var/lib/mongodb/shard/db'
+      config.storage.dbPath ?= "#{mongodb.user.home}/shard/db"
       config.storage.repairPath ?= "#{config.storage.dbPath}/repair"
       config.storage.journal ?= {}
       config.storage.journal.enabled ?= true
