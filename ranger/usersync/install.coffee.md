@@ -81,7 +81,7 @@ Update the file "install.properties" with the properties defined by the
         header: 'Configure Install Scripts'
         target: "/usr/hdp/current/ranger-usersync/install.properties"
         source: "#{__dirname}/../resources/usersync-install.properties.js2"
-        local_source: true
+        local: true
         write: for k, v of ranger.usersync.install
           match: RegExp "^#{quote k}=.*$", 'mg'
           replace: "#{k}=#{v}"
@@ -111,7 +111,7 @@ Update the file "install.properties" with the properties defined by the
       @render
         target: '/etc/init.d/ranger-usersync'
         source: "#{__dirname}/../resources/ranger-usersync"
-        local_source: true
+        local: true
         mode: 0o0755
         context: @config.ryba
         unlink: true
@@ -143,7 +143,7 @@ Update the file "install.properties" with the properties defined by the
       #   storepass: 'ryba123'
       #   caname: "hadoop_root_ca"
       #   cacert: "#{ssl.cacert}"
-      #   local_source: true
+      #   local: true
       # @java_keystore_add
       #   keystore: ranger.admin.site['ranger.https.attrib.keystore.file']
       #   storepass: ranger.admin.site['ranger.service.https.attrib.keystore.pass']
@@ -153,13 +153,13 @@ Update the file "install.properties" with the properties defined by the
       #   cert: "#{ssl.cert}"
       #   keypass: 'ryba123'
       #   name: ranger.admin.site['ranger.service.https.attrib.keystore.keyalias']
-      #   local_source: true
+      #   local: true
       # @java_keystore_add
       #   keystore: ranger.admin.site['ranger.https.attrib.keystore.file']
       #   storepass: ranger.admin.site['ranger.service.https.attrib.keystore.pass']
       #   caname: "hadoop_root_ca"
       #   cacert: "#{ssl.cacert}"
-      #   local_source: true
+      #   local: true
 
 ## Dependencies
 
