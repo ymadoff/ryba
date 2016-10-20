@@ -27,7 +27,3 @@ Ranger permit access
       'stop': [
         'ryba/ranger/admin/stop'
       ]
-
-
-
-

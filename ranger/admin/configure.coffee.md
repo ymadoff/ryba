@@ -95,6 +95,23 @@ User can be External and Internal. Only Internal users can be created from the r
       ranger.admin.site['ranger.service.https.port'] ?= '6182'
       ranger.admin.install ?= {}
       ranger.admin.install['PYTHON_COMMAND_INVOKER'] ?= 'python'
+      # Needed starting from 2.5 version to not have problem during setup execution
+      ranger.admin.install['hadoop_conf'] ?= "#{hadoop_conf_dir}"
+      ranger.admin.install['RANGER_ADMIN_LOG_DIR'] ?= "#{ranger.admin.log_dir}"
+
+# Kerberos
+[Starting from 2.5][ranger-upgrade-24-25], Ranger supports Kerberos Authentication for secured cluster
+
+      if @config.ryba.security is 'kerberos'
+        ranger.admin.install['spnego_principal'] ?= "HTTP/#{@config.host}@#{realm}"
+        ranger.admin.install['spnego_keytab'] ?= '/etc/security/keytabs/spnego.service.keytab'
+        ranger.admin.install['token_valid'] ?= '30'
+        ranger.admin.install['cookie_domain'] ?= "#{@config.host}"
+        ranger.admin.install['cookie_path'] ?= '/'
+        ranger.admin.install['admin_principal'] ?= "rangeradmin/#{@config.host}@#{realm}"
+        ranger.admin.install['admin_keytab'] ?= '/etc/security/keytabs/ranger.admin.service.keytab'
+        ranger.admin.install['lookup_principal'] ?= "rangerlookup/#{@config.host}@#{realm}"
+        ranger.admin.install['lookup_keytab'] ?= "/etc/security/keytabs/ranger.lookup.service.keytab"
 
 # Audit Storage
 Ranger can store  audit to different storage type.
@@ -261,7 +278,7 @@ Configure SSL for Ranger policymanager (webui).
 
       ranger.admin.site['ranger.service.https.attrib.ssl.enabled'] ?= 'true'
       ranger.admin.site['ranger.service.https.attrib.clientAuth'] ?= 'false'
-      ranger.admin.site['ranger.https.attrib.keystore.file'] ?= '/etc/ranger/admin/conf/keystore'
+      ranger.admin.site['ranger.service.https.attrib.keystore.file'] ?= '/etc/ranger/admin/conf/keystore'
       ranger.admin.site['ranger.service.https.attrib.keystore.pass'] ?= 'ryba123'
       ranger.admin.site['ranger.service.https.attrib.keystore.keyalias'] ?= @config.shortname
 
@@ -273,17 +290,16 @@ Configures the Ranger WEBUi (policymanager) database. For now only mysql is supp
         when 'mysql'
           ranger.admin.install['SQL_CONNECTOR_JAR'] ?= '/usr/hdp/current/ranger-admin/lib/mysql-connector-java.jar'
           # not setting these properties on purpose, we manage manually databases inside mysql
-          ranger.admin.install['db_root_user'] = db_admin.username
-          ranger.admin.install['db_root_password'] ?= db_admin.password
+          ranger.admin.install['db_root_user'] = db_admin.mysql.admin_username
+          ranger.admin.install['db_root_password'] ?= db_admin.mysql.admin_password
           if not ranger.admin.install['db_root_user'] and not ranger.admin.install['db_root_password']
           then throw new Error "account with privileges for creating database schemas and users is required"
-          ranger.admin.install['db_host'] ?=  db_admin.host
+          ranger.admin.install['db_host'] ?=  db_admin.mysql.host
           #Ranger Policy Database
           throw new Error "mysql host not specified" unless ranger.admin.install['db_host']
           ranger.admin.install['db_name'] ?= 'ranger'
           ranger.admin.install['db_user'] ?= 'rangeradmin'
           ranger.admin.install['db_password'] ?= 'rangeradmin123'
-          #Ranger Audit Database
           ranger.admin.install['audit_db_name'] ?= 'ranger_audit'
           ranger.admin.install['audit_db_user'] ?= 'rangerlogger'
           ranger.admin.install['audit_db_password'] ?= 'rangerlogger123'
@@ -348,6 +364,7 @@ For now Ranger support policy management for:
 - KAFKA
 - Hive 
 - SOLR 
+
 Plugins should be configured before the service is started and/or configured.
 Ryba injects function to the different contexts.
 
@@ -394,7 +411,9 @@ The properties can be found [here][hdfs-repository]
               'hadoop.rpc.protection': core_site['hadoop.rpc.protection']
               'hadoop.security.authorization': core_site['hadoop.security.authorization']
               'hadoop.security.auth_to_local': core_site['hadoop.security.auth_to_local']   
-              'commonNameForCertificate': ''           
+              'commonNameForCertificate': ''
+              'policy.download.auth.users': "#{nn_ctxs[0].config.ryba.hdfs.user.name}" #from ranger 0.6
+              'tag.download.auth.users': "#{nn_ctxs[0].config.ryba.hdfs.user.name}"
             'description': 'HDFS Repo'
             'isEnabled': true
             'name': hdfs_plugin.install['REPOSITORY_NAME']
@@ -402,12 +421,13 @@ The properties can be found [here][hdfs-repository]
 
 ### HDFS Plugin Audit (database storage)
 
-          hdfs_plugin.install['XAAUDIT.DB.IS_ENABLED'] ?= 'true'
+          #Deprecated
+          hdfs_plugin.install['XAAUDIT.DB.IS_ENABLED'] ?= 'false'
+          hdfs_plugin.install['SQL_CONNECTOR_JAR'] ?= '/usr/share/java/mysql-connector-java.jar'
           if hdfs_plugin.install['XAAUDIT.DB.IS_ENABLED'] is 'true'
             hdfs_plugin.install['XAAUDIT.DB.FLAVOUR'] ?= 'MYSQL'
             switch hdfs_plugin.install['XAAUDIT.DB.FLAVOUR']
               when 'MYSQL'
-                hdfs_plugin.install['SQL_CONNECTOR_JAR'] ?= '/usr/share/java/mysql-connector-java.jar'
                 hdfs_plugin.install['XAAUDIT.DB.HOSTNAME'] ?= ranger.admin.install['db_host']
                 hdfs_plugin.install['XAAUDIT.DB.DATABASE_NAME'] ?= ranger.admin.install['audit_db_name']
                 hdfs_plugin.install['XAAUDIT.DB.USER_NAME'] ?= ranger.admin.install['audit_db_user']
@@ -416,10 +436,18 @@ The properties can be found [here][hdfs-repository]
                 throw Error 'Ryba does not support ORACLE Based Ranger Installation'
               else
                 throw Error "Apache Ranger does not support chosen DB FLAVOUR"
+          else
+              # This properties are needed even if they are not user
+              # We set it to NONE to let the script execute
+              hdfs_plugin.install['XAAUDIT.DB.HOSTNAME'] ?= 'NONE'
+              hdfs_plugin.install['XAAUDIT.DB.DATABASE_NAME'] ?= 'NONE'
+              hdfs_plugin.install['XAAUDIT.DB.USER_NAME'] ?= 'NONE'
+              hdfs_plugin.install['XAAUDIT.DB.PASSWORD'] ?= 'NONE'
 
 ### HDFS Plugin Audit (HDFS Storage)
 Configure Audit to HDFS
 
+          hdfs_plugin.audit ?= {}
           # V3 configuration
           hdfs_plugin.install['XAAUDIT.HDFS.ENABLE'] ?= 'true'
           hdfs_plugin.install['XAAUDIT.HDFS.HDFS_DIR'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit"
@@ -449,6 +477,17 @@ Configure Audit to SOLR
             hdfs_plugin.install['XAAUDIT.SOLR.ZOOKEEPER'] ?= ranger.admin.install['audit_solr_zookeepers']
             hdfs_plugin.install['XAAUDIT.SOLR.PASSWORD'] ?= ranger.admin.install['audit_solr_password']
             hdfs_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= "#{nn_ctx.config.ryba.hdfs.log_dir}/audit/solr/spool"
+            hdfs_plugin.audit['xasecure.audit.destination.solr.force.use.inmemory.jaas.config'] ?= 'true'
+            hdfs_plugin.audit['xasecure.audit.jaas.inmemory.loginModuleName'] ?= 'com.sun.security.auth.module.Krb5LoginModule'
+            hdfs_plugin.audit['xasecure.audit.jaas.inmemory.loginModuleControlFlag'] ?= 'required'
+            hdfs_plugin.audit['xasecure.audit.jaas.inmemory.Client.option.useKeyTab'] ?= 'true'
+            hdfs_plugin.audit['xasecure.audit.jaas.inmemory.Client.option.debug'] ?= 'true'
+            hdfs_plugin.audit['xasecure.audit.jaas.inmemory.Client.option.doNotPrompt'] ?= 'yes'
+            hdfs_plugin.audit['xasecure.audit.jaas.inmemory.Client.option.storeKey'] ?= 'yes'
+            hdfs_plugin.audit['xasecure.audit.jaas.inmemory.Client.option.serviceName'] ?= 'solr'
+            hdfs_plugin.audit['xasecure.audit.jaas.inmemory.Client.option.keyTab'] ?= nn_ctx.config.ryba.hdfs.nn.site['dfs.namenode.keytab.file']
+            nn_princ = nn_ctx.config.ryba.hdfs.nn.site['dfs.namenode.kerberos.principal'].replace '_HOST', nn_ctx.config.host
+            hdfs_plugin.audit['xasecure.audit.jaas.inmemory.Client.option.principal'] ?= nn_princ
 
 ### HDFS Plugin SSL
 
@@ -531,12 +570,14 @@ The repository name should match the reposity name in web ui.
               'password': hdfs.krb5_user.password
               'username': hdfs.krb5_user.principal
               'yarn.url': yarn_url
+              'policy.download.auth.users': "#{rm_ctxs[0].config.ryba.yarn.user.name}" #from ranger 0.6
+              'tag.download.auth.users': "#{rm_ctxs[0].config.ryba.yarn.user.name}"
             'description': 'YARN Repo'
             'isEnabled': true
             'name': yarn_plugin.install['REPOSITORY_NAME']
             'type': 'yarn'
 
-### YARN Plugin audit
+### YARN Plugin Audit (to HDFS)
 
           yarn_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] ?= 'true'
           if yarn_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
@@ -552,15 +593,15 @@ The repository name should match the reposity name in web ui.
             yarn_plugin.install['XAAUDIT.HDFS.LOCAL_BUFFER_ROLLOVER_INTERVAL_SECONDS'] ?= '600'
             yarn_plugin.install['XAAUDIT.HDFS.LOCAL_ARCHIVE _MAX_FILE_COUNT'] ?= '5'
 
-### YARN Audit (HDFS Storage)
-
           # AUDIT TO HDFS
           yarn_plugin.install['XAAUDIT.HDFS.ENABLE'] ?= 'true'
           yarn_plugin.install['XAAUDIT.HDFS.HDFS_DIR'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit"
+          yarn_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= "#{yarn_ctx.config.ryba.yarn.log_dir}/audit/hdfs/spool"
 
 ### YARN Audit (database storage)
 
-          yarn_plugin.install['XAAUDIT.DB.IS_ENABLED'] ?= 'true'
+          #Deprecated
+          yarn_plugin.install['XAAUDIT.DB.IS_ENABLED'] ?= 'false'
           if yarn_plugin.install['XAAUDIT.DB.IS_ENABLED'] is 'true'
             yarn_plugin.install['XAAUDIT.DB.FLAVOUR'] ?= 'MYSQL'
             switch yarn_plugin.install['XAAUDIT.DB.FLAVOUR']
@@ -573,8 +614,12 @@ The repository name should match the reposity name in web ui.
               when 'ORACLE'
                 throw Error 'Ryba does not support ORACLE Based Ranger Installation'
               else
-                throw Error "Apache Ranger does not support chosen DB FLAVOUR"        
-          yarn_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= "#{rm_ctx.config.ryba.yarn.log_dir}/audit/hdfs/spool"
+                throw Error "Apache Ranger does not support chosen DB FLAVOUR"
+          else
+              yarn_plugin.install['XAAUDIT.DB.HOSTNAME'] ?= 'NONE'
+              yarn_plugin.install['XAAUDIT.DB.DATABASE_NAME'] ?= 'NONE'
+              yarn_plugin.install['XAAUDIT.DB.USER_NAME'] ?= 'NONE'
+              yarn_plugin.install['XAAUDIT.DB.PASSWORD'] ?= 'NONE'
 
 ### YARN Audit (to SOLR)
 
@@ -585,16 +630,7 @@ The repository name should match the reposity name in web ui.
             yarn_plugin.install['XAAUDIT.SOLR.USER'] ?= ranger.admin.install['audit_solr_user']
             yarn_plugin.install['XAAUDIT.SOLR.ZOOKEEPER'] ?= ranger.admin.install['audit_solr_zookeepers']
             yarn_plugin.install['XAAUDIT.SOLR.PASSWORD'] ?= ranger.admin.install['audit_solr_password']
-            yarn_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= "#{rm_ctx.config.ryba.yarn.log_dir}/audit/solr/spool"
-
-### YARN Plugin SSL
-Used only if SSL is enabled between Policy Admin Tool and Plugin
-
-          if ranger.admin.site['ranger.service.https.attrib.ssl.enabled'] is 'true'
-            yarn_plugin.install['SSL_KEYSTORE_FILE_PATH'] ?= rm_ctx.config.ryba.ssl_server['ssl.server.keystore.location']
-            yarn_plugin.install['SSL_KEYSTORE_PASSWORD'] ?= rm_ctx.config.ryba.ssl_server['ssl.server.keystore.password']
-            yarn_plugin.install['SSL_TRUSTSTORE_FILE_PATH'] ?= rm_ctx.config.ryba.ssl_client['ssl.client.truststore.location']
-            yarn_plugin.install['SSL_TRUSTSTORE_PASSWORD'] ?= rm_ctx.config.ryba.ssl_client['ssl.client.truststore.password']
+            yarn_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= "#{yarn_ctx.config.ryba.yarn.log_dir}/audit/solr/spool"
 
 ### YARN ResourceManager Enable      
 Enable Yarn ResourceManager(s) plugin
@@ -701,6 +737,9 @@ The repository name should match the reposity name in web ui.
               'hbase.zookeeper.property.clientPort': hm_ctxs[0].config.ryba.hbase.master.site['hbase.zookeeper.property.clientPort']
               'hbase.zookeeper.quorum': hm_ctxs[0].config.ryba.hbase.master.site['hbase.zookeeper.quorum']
               'zookeeper.znode.parent': hm_ctxs[0].config.ryba.hbase.master.site['zookeeper.znode.parent']
+              'policy.download.auth.users': "#{hm_ctxs[0].config.ryba.hbase.user.name}" #from ranger 0.6
+              'tag.download.auth.users': "#{hm_ctxs[0].config.ryba.hbase.user.name}"
+              'policy.grantrevoke.auth.users': "#{hm_ctxs[0].config.ryba.hbase.user.name}"
             'description': 'HBase Repo'
             'isEnabled': true
             'name': hbase_plugin.install['REPOSITORY_NAME']
@@ -730,10 +769,12 @@ The repository name should match the reposity name in web ui.
           # AUDIT TO HDFS
           hbase_plugin.install['XAAUDIT.HDFS.ENABLE'] ?= 'true'
           hbase_plugin.install['XAAUDIT.HDFS.HDFS_DIR'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit"
+          hbase_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= "#{ctx.config.ryba.hbase.log_dir}/audit/hdfs/spool"
 
 ### HBase Audit (database storage)
 
-          hbase_plugin.install['XAAUDIT.DB.IS_ENABLED'] ?= 'true'
+          #Deprecated
+          hbase_plugin.install['XAAUDIT.DB.IS_ENABLED'] ?= 'false'
           if hbase_plugin.install['XAAUDIT.DB.IS_ENABLED'] is 'true'
             hbase_plugin.install['XAAUDIT.DB.FLAVOUR'] ?= 'MYSQL'
             switch hbase_plugin.install['XAAUDIT.DB.FLAVOUR']
@@ -746,8 +787,13 @@ The repository name should match the reposity name in web ui.
               when 'ORACLE'
                 throw Error 'Ryba does not support ORACLE Based Ranger Installation'
               else
-                throw Error "Apache Ranger does not support chosen DB FLAVOUR" 
-          hbase_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= "#{ctx.config.ryba.hbase.log_dir}/audit/hdfs/spool"
+                throw Error "Apache Ranger does not support chosen DB FLAVOUR"
+          else
+              hbase_plugin.install['XAAUDIT.DB.HOSTNAME'] ?= 'NONE'
+              hbase_plugin.install['XAAUDIT.DB.DATABASE_NAME'] ?= 'NONE'
+              hbase_plugin.install['XAAUDIT.DB.USER_NAME'] ?= 'NONE'
+              hbase_plugin.install['XAAUDIT.DB.PASSWORD'] ?= 'NONE'
+
 
 ### HBase Audit (to SOLR)
 
@@ -834,7 +880,7 @@ The repository name should match the reposity name in web ui.
       ranger.plugins.kafka_enabled = true
       ranger.plugins.kafka_enabled ?= if kb_ctxs.length > 0 then true else false
       if ranger.plugins.kafka_enabled 
-        throw Error 'Need at least one kafka broker to enable ranger kafka Plugin' unless kb_ctxs.length > 1
+        throw Error 'Need at least one kafka broker to enable ranger kafka Plugin' unless kb_ctxs.length > 0
         for kb_ctx in kb_ctxs
           # Commun Configuration
           kb_ctx.config.ryba.ranger ?= {}
@@ -860,6 +906,7 @@ The properties can be found [here][kafka-repository]
               'username': kb_ctxs[0].config.ryba.kafka.admin.principal
               'hadoop.security.authentication': core_site['hadoop.security.authentication']
               'zookeeper.connect': kb_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect'].join(',')
+              'policy.download.auth.users': "#{kb_ctxs[0].config.ryba.kafka.user.name}" #from ranger 0.6
               'commonNameForCertificate': ''           
             'description': 'kafka Repository'
             'isEnabled': true
@@ -868,14 +915,13 @@ The properties can be found [here][kafka-repository]
 
 ### Kafka Audit (database storage)
 
-          #Should audit be summarized at source
-          kafka_plugin.install['XAAUDIT.SUMMARY.ENABLE'] ?= 'true'
-          kafka_plugin.install['XAAUDIT.DB.IS_ENABLED'] ?= 'true'
+          #Deprecated
+          kafka_plugin.install['XAAUDIT.DB.IS_ENABLED'] ?= 'false'
+          kafka_plugin.install['SQL_CONNECTOR_JAR'] ?= '/usr/share/java/mysql-connector-java.jar'
           if kafka_plugin.install['XAAUDIT.DB.IS_ENABLED'] is 'true'
             kafka_plugin.install['XAAUDIT.DB.FLAVOUR'] ?= 'MYSQL'
             switch kafka_plugin.install['XAAUDIT.DB.FLAVOUR']
               when 'MYSQL'
-                kafka_plugin.install['SQL_CONNECTOR_JAR'] ?= '/usr/share/java/mysql-connector-java.jar'
                 kafka_plugin.install['XAAUDIT.DB.HOSTNAME'] ?= ranger.admin.install['db_host']
                 kafka_plugin.install['XAAUDIT.DB.DATABASE_NAME'] ?= ranger.admin.install['audit_db_name']
                 kafka_plugin.install['XAAUDIT.DB.USER_NAME'] ?= ranger.admin.install['audit_db_user']
@@ -884,6 +930,11 @@ The properties can be found [here][kafka-repository]
                 throw Error 'Ryba does not support ORACLE Based Ranger Installation'
               else
                 throw Error "Apache Ranger does not support chosen DB FLAVOUR"
+          else
+              kafka_plugin.install['XAAUDIT.DB.HOSTNAME'] ?= 'NONE'
+              kafka_plugin.install['XAAUDIT.DB.DATABASE_NAME'] ?= 'NONE'
+              kafka_plugin.install['XAAUDIT.DB.USER_NAME'] ?= 'NONE'
+              kafka_plugin.install['XAAUDIT.DB.PASSWORD'] ?= 'NONE'
 
 ### Kafka Audit (HDFS Storage)
 
@@ -966,25 +1017,30 @@ Ranger Hive plugin runs inside Hiveserver JVM
           'userRoleList': ['ROLE_USER']
           'groups': []
           'status': 1
-        port = if hive_ctxs[0].config.ryba.hive.site['hive.server2.transport.mode'] is 'http'
-        then hive_ctxs[0].config.ryba.hive.site['hive.server2.thrift.http.port']
-        else hive_ctxs[0].config.ryba.hive.site['hive.server2.thrift.port']
+        port = if hive_ctxs[0].config.ryba.hive.server2.site['hive.server2.transport.mode'] is 'http'
+        then hive_ctxs[0].config.ryba.hive.server2.site['hive.server2.thrift.http.port']
+        else hive_ctxs[0].config.ryba.hive.server2.site['hive.server2.thrift.port']
         hive_url = 'jdbc:hive2://'
         hive_url += "#{hive_ctxs[0].config.host}:#{port}/"
-        hive_url += ";principal=#{hive_ctxs[0].config.ryba.hive.site['hive.server2.authentication.kerberos.principal']}" if @config.ryba.security is 'kerberos'
-        if hive_ctxs[0].config.ryba.hive.site['hive.server2.use.SSL'] is 'true'
+        hive_url += ";principal=#{hive_ctxs[0].config.ryba.hive.server2.site['hive.server2.authentication.kerberos.principal']}" if @config.ryba.security is 'kerberos'
+        if hive_ctxs[0].config.ryba.hive.server2.site['hive.server2.use.SSL'] is 'true'
           hive_url += ";ssl=true"
           hive_url += ";sslTrustStore=#{@config.ryba.ssl_client['ssl.client.truststore.location']}"
           hive_url += ";trustStorePassword=#{@config.ryba.ssl_client['ssl.client.truststore.password']}"
-        if hive_ctxs[0].config.ryba.hive.site['hive.server2.transport.mode'] is 'http'
-          hive_url += ";transportMode=#{hive_ctxs[0].config.ryba.hive.site['hive.server2.transport.mode']}"
-          hive_url += ";httpPath=#{hive_ctxs[0].config.ryba.hive.site['hive.server2.thrift.http.path']}"
+        if hive_ctxs[0].config.ryba.hive.server2.site['hive.server2.transport.mode'] is 'http'
+          hive_url += ";transportMode=#{hive_ctxs[0].config.ryba.hive.server2.site['hive.server2.transport.mode']}"
+          hive_url += ";httpPath=#{hive_ctxs[0].config.ryba.hive.server2.site['hive.server2.thrift.http.path']}"
         for hive_ctx in hive_ctxs
           # Commun Configuration
           hive_ctx.config.ryba.ranger ?= {}
           hive_ctx.config.ryba.ranger.user ?= ranger.user
           hive_ctx.config.ryba.ranger.group ?= ranger.group
-          # YARN Plugin configuration
+          hive_ctx.config.ryba.hive.server2.site['hive.security.authorization.manager'] = 'org.apache.ranger.authorization.hive.authorizer.RangerHiveAuthorizerFactory'
+          hive_ctx.config.ryba.hive.server2.site['hive.security.authenticator.manager'] = 'org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator'
+          hive_ctx.config.ryba.hive.server2.opts ?= ''
+          hive_ctx.config.ryba.hive.server2.opts += " -Djavax.net.ssl.trustStore=#{hive_ctx.config.ryba.ssl_client['ssl.client.truststore.location']} "
+          hive_ctx.config.ryba.hive.server2.opts += " -Djavax.net.ssl.trustStorePassword=#{hive_ctx.config.ryba.ssl_client['ssl.server.truststore.password']}"
+          # HIVE Plugin configuration
           hive_plugin = hive_ctx.config.ryba.ranger.hive_plugin ?= {}  
           hive_plugin.principal ?= ranger.plugins.principal
           hive_plugin.password ?= ranger.plugins.password        
@@ -1011,6 +1067,8 @@ The repository name should match the reposity name in web ui.
               'jdbc.driverClassName': 'org.apache.hive.jdbc.HiveDriver'
               'jdbc.url': "#{hive_url}"
               "commonNameForCertificate": ''
+              'policy.download.auth.users': "#{hive_ctxs[0].config.ryba.hive.user.name}" #from ranger 0.6
+              'tag.download.auth.users': "#{hive_ctxs[0].config.ryba.hive.user.name}"
 
 ### HIVE Plugin audit
 
@@ -1033,10 +1091,12 @@ The repository name should match the reposity name in web ui.
           # AUDIT TO HDFS
           hive_plugin.install['XAAUDIT.HDFS.ENABLE'] ?= 'true'
           hive_plugin.install['XAAUDIT.HDFS.HDFS_DIR'] ?= "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit"
+          hive_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= "#{hive_ctx.config.ryba.hive.server2.log_dir}/audit/hdfs/spool"
 
 ### HIVE Audit (database storage)
 
-          hive_plugin.install['XAAUDIT.DB.IS_ENABLED'] ?= 'true'
+          #Deprecated
+          hive_plugin.install['XAAUDIT.DB.IS_ENABLED'] ?= 'false'
           if hive_plugin.install['XAAUDIT.DB.IS_ENABLED'] is 'true'
             hive_plugin.install['XAAUDIT.DB.FLAVOUR'] ?= 'MYSQL'
             switch hive_plugin.install['XAAUDIT.DB.FLAVOUR']
@@ -1049,18 +1109,35 @@ The repository name should match the reposity name in web ui.
               when 'ORACLE'
                 throw Error 'Ryba does not support ORACLE Based Ranger Installation'
               else
-                throw Error "Apache Ranger does not support chosen DB FLAVOUR"        
-          hive_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR'] ?= "#{hive_ctx.config.ryba.hive.server2.log_dir}/audit/hdfs/spool"
+                throw Error "Apache Ranger does not support chosen DB FLAVOUR"
+          else
+              hive_plugin.install['XAAUDIT.DB.HOSTNAME'] ?= 'NONE'
+              hive_plugin.install['XAAUDIT.DB.DATABASE_NAME'] ?= 'NONE'
+              hive_plugin.install['XAAUDIT.DB.USER_NAME'] ?= 'NONE'
+              hive_plugin.install['XAAUDIT.DB.PASSWORD'] ?= 'NONE'
 
 ### HIVE Audit (to SOLR)
 
           if ranger.admin.install['audit_store'] is 'solr'
+            hive_plugin.audit ?= {}
             hive_plugin.install['XAAUDIT.SOLR.IS_ENABLED'] ?= 'true'
             hive_plugin.install['XAAUDIT.SOLR.ENABLE'] ?= 'true'
             hive_plugin.install['XAAUDIT.SOLR.URL'] ?= ranger.admin.install['audit_solr_urls']
             hive_plugin.install['XAAUDIT.SOLR.USER'] ?= ranger.admin.install['audit_solr_user']
             hive_plugin.install['XAAUDIT.SOLR.ZOOKEEPER'] ?= ranger.admin.install['audit_solr_zookeepers']
             hive_plugin.install['XAAUDIT.SOLR.PASSWORD'] ?= ranger.admin.install['audit_solr_password']
+            hive_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= "#{hive_ctx.config.ryba.hive.server2.log_dir}/audit/solr/spool"
+            hive_plugin.audit['xasecure.audit.destination.solr.force.use.inmemory.jaas.config'] ?= 'true'
+            hive_plugin.audit['xasecure.audit.jaas.inmemory.loginModuleName'] ?= 'com.sun.security.auth.module.Krb5LoginModule'
+            hive_plugin.audit['xasecure.audit.jaas.inmemory.loginModuleControlFlag'] ?= 'required'
+            hive_plugin.audit['xasecure.audit.jaas.inmemory.Client.option.useKeyTab'] ?= 'true'
+            hive_plugin.audit['xasecure.audit.jaas.inmemory.Client.option.debug'] ?= 'true'
+            hive_plugin.audit['xasecure.audit.jaas.inmemory.Client.option.doNotPrompt'] ?= 'yes'
+            hive_plugin.audit['xasecure.audit.jaas.inmemory.Client.option.storeKey'] ?= 'yes'
+            hive_plugin.audit['xasecure.audit.jaas.inmemory.Client.option.serviceName'] ?= 'solr'
+            hive_princ = hive_ctx.config.ryba.hive.server2.site['hive.server2.authentication.kerberos.principal'].replace '_HOST', hive_ctx.config.host
+            hive_plugin.audit['xasecure.audit.jaas.inmemory.Client.option.principal'] ?= hive_princ
+            hive_plugin.audit['xasecure.audit.jaas.inmemory.Client.option.keyTab'] ?= hive_ctx.config.ryba.hive.server2.site['hive.server2.authentication.kerberos.keytab']
 
 ### HIVE Plugin SSL
 Used only if SSL is enabled between Policy Admin Tool and Plugin
@@ -1077,11 +1154,27 @@ Used only if SSL is enabled between Policy Admin Tool and Plugin
           hive_ctx.config.ryba.ranger.group = ranger.group
           hive_ctx
           .after
-            type: 'render'
-            header: 'Hive Server2 Env'
-            target: "#{hive_ctx.config.ryba.hive.server2.conf_dir}/hive-env.sh"
+            type: 'hconfigure'
+            target: "#{hive_ctx.config.ryba.hive.server2.conf_dir}/hive-site.xml"
             handler: -> 
               @call 'ryba/ranger/admin/plugin_hive'
+              @call
+                header: "Hive Server2 Scheduled Ranger Restart"
+                if: -> @status -1
+                handler: ->
+                  @wait_execute
+                    cmd: """
+                      curl --fail -H \"Content-Type: application/json\"   -k -X GET  \ 
+                      -u admin:#{ranger.admin.password} \
+                      \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{hive_plugin.install['REPOSITORY_NAME']}\"
+                    """
+                    code_skipped: 22
+                  @service.status
+                    name: 'hive-server2'
+                  @service.restart
+                    if: -> @status -1
+                    if_exec: 'service hive-server2 status'
+                    name: 'hive-server2'
 
 ## Knox Gateway Plugin
 For the Knox plugin, the executed script already create the hdfs user to ranger admin
@@ -1233,3 +1326,5 @@ Configure Audit to SOLR
 [hdfs-repository]: (http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_Ranger_User_Guide/content/hdfs_repository.html)
 [hdfs-repository-0.4.1]:(https://cwiki.apache.org/confluence/display/RANGER/REST+APIs+for+Policy+Management?src=contextnavpagetreemode)
 [user-guide-0.5]:(https://cwiki.apache.org/confluence/display/RANGER/Apache+Ranger+0.5+-+User+Guide)
+[ryba-cluster-conf]: https://github.com/ryba-io/ryba-cluster/blob/master/conf/config.coffee
+[ranger-upgrade-24-25]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.5.0/bk_command-line-upgrade/content/upgrade-ranger_24.html

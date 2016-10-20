@@ -7,12 +7,9 @@ Wait for Ranger Admin Policy Manager to start.
       {ranger} = ranger_admin_ctx.config.ryba
       protocol = if ranger.admin.site['ranger.service.https.attrib.ssl.enabled'] is 'true' then 'https' else 'http'
       port = ranger.admin.site["ranger.service.#{protocol}.port"]
-      @connection.wait
-        host: ranger_admin_ctx.config.host
-        port: port
       @wait_execute
         cmd: """
           curl --fail -H \"Content-Type: application/json\"  -k -X GET \ 
           -u admin:#{ranger.admin.password} \"#{ranger.admin.install['policymgr_external_url']}/service/users/1\"
         """
-        code_skipped: [1,22]
+        code_skipped: [1,7,22]
