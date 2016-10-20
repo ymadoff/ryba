@@ -105,8 +105,8 @@ Inherits some of the basic spark yarn-cluster based installation
 ### Kerberos
 Spark SQL thrift server is runned as the hive server user, and must use the hive-server2's keytab
 
-      spark.thrift.conf['spark.yarn.principal'] ?= @config.ryba.hive.site['hive.server2.authentication.kerberos.principal'].replace '_HOST', @config.host
-      spark.thrift.conf['spark.yarn.keytab'] ?= @config.ryba.hive.site['hive.server2.authentication.kerberos.keytab']
+      spark.thrift.conf['spark.yarn.principal'] ?= @config.ryba.hive.server2.site['hive.server2.authentication.kerberos.principal'].replace '_HOST', @config.host
+      spark.thrift.conf['spark.yarn.keytab'] ?= @config.ryba.hive.server2.site['hive.server2.authentication.kerberos.keytab']
       match = /^(.+?)[@\/]/.exec spark.thrift.conf['spark.yarn.principal']
       throw Error 'SQL Thrift Server principal must mach thrift user name' unless match[1] is spark.thrift.user_name
 
@@ -125,4 +125,3 @@ Spark SQL thrift server is runned as the hive server user, and must use the hive
 
 
 [hdp-spark-sql]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/starting_sts.html)
-
