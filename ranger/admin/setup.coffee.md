@@ -3,11 +3,16 @@
 
     module.exports =  header: 'Ranger Admin Setup', handler: ->
       {ranger} = @config.ryba
+      protocol = if ranger.admin.site['ranger.service.https.attrib.ssl.enabled'] is 'true' then 'https' else 'http'
+      port = ranger.admin.site["ranger.service.#{protocol}.port"]
 
 ## Web UI Admin Account
 Modify admin account password. By default the login:pwd  is `admin:admin`.
 
       @call header: 'Ranger Admin Account', handler:  ->
+        @wait_connect
+          host: @config.host
+          port: port
         @execute
           header: "Check admin password"
           cmd: """

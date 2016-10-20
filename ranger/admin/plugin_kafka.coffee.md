@@ -80,7 +80,7 @@ we execute this task using the rest api.
           if: -> version?
           source: "#{__dirname}/../resources/plugin-install.properties.j2"
           target: "/usr/hdp/#{version}/ranger-kafka-plugin/install.properties"
-          local_source: true
+          local: true
           eof: true
           backup: true
           write: for k, v of ranger.kafka_plugin.install
@@ -130,12 +130,14 @@ we execute this task using the rest api.
           header: "Fix Kafka Conf Permission"
           target: kafka.broker.conf_dir
           uid: kafka.user.name
-          gid: hadoop_group.name
+          gid: kafka.group.name
+          mode: 0o755
         @chmod
           header: "Fix Ranger Repo Permission"
           target: "/etc/ranger/#{ranger.kafka_plugin.install['REPOSITORY_NAME']}"
           uid: kafka.user.name
-          gid: hadoop_group.name
+          gid: kafka.group.name
+          mode: 0o750
         @hconfigure
           header: 'Fix ranger-kafka-security conf'
           target: "#{kafka.broker.conf_dir}/ranger-kafka-security.xml"

@@ -38,6 +38,14 @@ directories.
         @hdp_select
           name: 'ranger-admin'
 
+## Layout
+
+      @mkdir
+        target: '/var/run/ranger'
+        uid: ranger.user.name
+        gid: ranger.user.name
+        mode: 0o750
+
 ## IPTables
 
 | Service              | Port  | Proto       | Parameter          |
@@ -67,28 +75,29 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       @call header: 'DB Setup',  handler:  ->
         {db_admin} = @config.ryba
-        mysql_exec = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} "
-        @execute
-          cmd: """
-          #{mysql_exec} -e "
-          create database  ranger;
-          grant all privileges on ranger.* to rangeradmin@'localhost' identified by 'rangeradmin123';
-          grant all privileges on ranger.* to rangeradmin@'%' identified by 'rangeradmin123';
-          flush privileges;
-          "
-          """
-          unless_exec: "#{mysql_exec} -e 'use ranger'"
-        @execute
-          cmd: """
-          #{mysql_exec} -e "
-          create database  ranger_audit;
-          grant all privileges on ranger_audit.* to rangerlogger@'localhost' identified by 'rangerlogger123';
-          grant all privileges on ranger_audit.* to rangerlogger@'%' identified by 'rangerlogger123';
-          flush privileges;
-          "
-          """
-          unless_exec: "#{mysql_exec} -e 'use ranger_audit'"
-
+        switch ranger.admin.install['DB_FLAVOR'].toLowerCase()
+          when 'mysql'
+            mysql_exec = "mysql -u#{db_admin.mysql.admin_username} -p#{db_admin.mysql.admin_password} -h#{db_admin.mysql.host} -P#{db_admin.mysql.port} "
+            @execute
+              cmd: """
+              #{mysql_exec} -e "
+              create database  #{ranger.admin.install['db_name']};
+              grant all privileges on #{ranger.admin.install['db_name']}.* to #{ranger.admin.install['db_user']}@'localhost' identified by '#{ranger.admin.install['db_password']}';
+              grant all privileges on #{ranger.admin.install['db_name']}.* to #{ranger.admin.install['db_user']}@'%' identified by '#{ranger.admin.install['db_password']}';
+              flush privileges;
+              "
+              """
+              unless_exec: "#{mysql_exec} -e 'use #{ranger.admin.install['db_name']}'"
+            @execute
+              cmd: """
+              #{mysql_exec} -e "
+              create database  #{ranger.admin.install['audit_db_name']};
+              grant all privileges on #{ranger.admin.install['audit_db_name']}.* to #{ranger.admin.install['audit_db_user']}@'localhost' identified by '#{ranger.admin.install['audit_db_password']}';
+              grant all privileges on #{ranger.admin.install['audit_db_name']}.* to #{ranger.admin.install['audit_db_user']}@'%' identified by '#{ranger.admin.install['audit_db_password']}';
+              flush privileges;
+              "
+              """
+              unless_exec: "#{mysql_exec} -e 'use #{ranger.admin.install['audit_db_name']}'"
 
 ## Install Scripts
 
@@ -99,7 +108,7 @@ Update the file "install.properties" with the properties defined by the
         header: 'Setup Scripts'
         source: "#{__dirname}/../resources/admin-install.properties.j2"
         target: '/usr/hdp/current/ranger-admin/install.properties'
-        local_source: true
+        local: true
         eof: true
         backup: true
         write: for k, v of ranger.admin.install
@@ -107,7 +116,13 @@ Update the file "install.properties" with the properties defined by the
           replace: "#{k}=#{v}"
           append: true
 
-## Setup
+## Setup Ranger Admin 
+Follow [the instructions][instruction-24-25] for upgrade.
+Sometime you can fall on this error on mysql databse.
+This function has none of DETERMINISTIC, NO SQL, or READS SQL DATA in its declaration 
+and binary logging is enabled.
+To pass the setup script you have to set log_bin_trust_function_creators variable to 1
+to allow user to create none-determisitic functions.
 
       @execute
         header: 'Setup Execution'
@@ -116,17 +131,20 @@ Update the file "install.properties" with the properties defined by the
           cd /usr/hdp/current/ranger-admin/
           ./setup.sh
         """
-
+      @execute
+        header: 'Fix Setup Execution'
+        cmd: "chown -R #{ranger.user.name}:#{ranger.user.name} #{ranger.admin.conf_dir}"
       # the setup scripts already render an init.d script but it does not respect 
       # the convention exit code 3 when service is stopped on the status code
       @render
         target: '/etc/init.d/ranger-admin'
         source: "#{__dirname}/../resources/ranger-admin"
-        local_source: true
+        local: true
         mode: 0o0755
         context: @config.ryba
         unlink: true
 
+## SSL
 
       @call
         header: 'Configure SSL'
@@ -134,7 +152,7 @@ Update the file "install.properties" with the properties defined by the
         handler: ->
           @java_keystore_add
             header: 'SSL'
-            keystore: ranger.admin.site['ranger.https.attrib.keystore.file']
+            keystore: ranger.admin.site['ranger.service.https.attrib.keystore.file']
             storepass: ranger.admin.site['ranger.service.https.attrib.keystore.pass']
             caname: "hadoop_root_ca"
             cacert: "#{ssl.cacert}"
@@ -142,19 +160,19 @@ Update the file "install.properties" with the properties defined by the
             cert: "#{ssl.cert}"
             keypass: 'ryba123'
             name: ranger.admin.site['ranger.service.https.attrib.keystore.keyalias']
-            local_source: true
+            local: true
           @java_keystore_add
-            keystore: ranger.admin.site['ranger.https.attrib.keystore.file']
+            keystore: ranger.admin.site['ranger.service.https.attrib.keystore.file']
             storepass: ranger.admin.site['ranger.service.https.attrib.keystore.pass']
             caname: "hadoop_root_ca"
             cacert: "#{ssl.cacert}"
-            local_source: true
+            local: true
           @java_keystore_add
             keystore: '/usr/java/latest/jre/lib/security/cacerts'
             storepass: 'changeit'
             caname: "hadoop_root_ca"
             cacert: "#{ssl.cacert}"
-            local_source: true
+            local: true
           @hconfigure
             header: 'Admin site'
             target: '/etc/ranger/admin/conf/ranger-admin-site.xml'
@@ -162,7 +180,7 @@ Update the file "install.properties" with the properties defined by the
             merge: true
             backup: true
 
-## Ranger Plugins principal
+## Ranger Admin Principal
 
       @krb5_addprinc krb5,
         if: ranger.plugins.principal
@@ -170,33 +188,47 @@ Update the file "install.properties" with the properties defined by the
         principal: ranger.plugins.principal
         randkey: true
         password: ranger.plugins.password
+      @krb5_addprinc krb5,
+        header: 'Ranger Web UI'
+        principal: ranger.admin.install['admin_principal']
+        randkey: true
+        keytab: ranger.admin.install['admin_keytab']
+        uid: ranger.user.name
+        gid: ranger.user.name
+        mode: 0o600
+      @krb5_addprinc krb5,
+        header: 'Ranger Web UI'
+        principal: ranger.admin.install['lookup_principal']
+        randkey: true
+        keytab: ranger.admin.install['lookup_keytab']
+        uid: ranger.user.name
+        gid: ranger.user.name
+        mode: 0o600
 
 ## Java env
 This part of the setup is not documented. Deduce from launch scripts.
-
-
-      writes = [
-        match: RegExp "JAVA_OPTS=.*", 'm'
-        replace: "JAVA_OPTS=\"${JAVA_OPTS} -XX:MaxPermSize=256m -Xmx#{ranger.admin.heap_size} -Xms#{ranger.admin.heap_size} \""
-        append: true
-      ,
-
-        match: RegExp "export CLASSPATH=.*", 'mg'
-        replace: "export CLASSPATH=\"$CLASSPATH:/etc/hadoop/conf:/etc/hbase/conf:/etc/hive/conf\" Ryba Fix conf resources"
-        append:true
-
-      ]
-      for k,v of ranger.admin.opts
-        writes.push
-          match: RegExp "^JAVA_OPTS=.*#{k}", 'm'
-          replace: "JAVA_OPTS=\"${JAVA_OPTS} -D#{k}=#{v}\" # RYBA, DONT OVERWRITE"
+      
+      @call header: 'Ranger Admin Env', ->
+        writes = [
+          match: RegExp "JAVA_OPTS=.*", 'm'
+          replace: "JAVA_OPTS=\"${JAVA_OPTS} -XX:MaxPermSize=256m -Xmx#{ranger.admin.heap_size} -Xms#{ranger.admin.heap_size} \""
           append: true
+        ,
 
-      @file
-        header: 'Admin Env'
-        target: '/etc/ranger/admin/conf/ranger-admin-env-1.sh'
-        write: writes
-        backup: true      
+          match: RegExp "export CLASSPATH=.*", 'mg'
+          replace: "export CLASSPATH=\"$CLASSPATH:/etc/hadoop/conf:/etc/hbase/conf:/etc/hive/conf\" Ryba Fix conf resources"
+          append:true
+
+        ]
+        for k,v of ranger.admin.opts
+          writes.push
+            match: RegExp "^JAVA_OPTS=.*#{k}", 'm'
+            replace: "JAVA_OPTS=\"${JAVA_OPTS} -D#{k}=#{v}\" # RYBA, DONT OVERWRITE"
+            append: true
+        @file
+          target: '/etc/ranger/admin/conf/ranger-admin-env-1.sh'
+          write: writes
+          backup: true
 
 ## Log4j
 
@@ -205,8 +237,14 @@ This part of the setup is not documented. Deduce from launch scripts.
         header: 'ranger Log4properties'
         content: ranger.admin.log4j
 
+      @service.restart
+        name: 'ranger-admin'
+        if: -> @status()
+
 ## Dependencies
 
     glob = require 'glob'
     path = require 'path'
     quote = require 'regexp-quote'
+
+[instruction-24-25]:http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.5.0/bk_command-line-upgrade/content/upgrade-ranger_24.html

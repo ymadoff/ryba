@@ -4,6 +4,8 @@
       {password} = @contexts('ryba/ranger/admin')[0].config.ryba.ranger.admin
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       version = null
+      conf_dir = null
+      @call -> conf_dir = if @config.ryba.yarn_plugin_is_master? then yarn.rm.conf_dir else yarn.nm.conf_dir
 
 # HDFS Dependencies
 
@@ -74,55 +76,56 @@ we execute this task using the rest api.
 
 # Plugin Scripts 
 
-      @call ->
-        @render
-          header: 'Scripts rendering'
-          if: -> version?
-          source: "#{__dirname}/../resources/plugin-install.properties.j2"
-          target: "/usr/hdp/#{version}/ranger-yarn-plugin/install.properties"
-          local_source: true
-          eof: true
-          backup: true
-          write: for k, v of ranger.yarn_plugin.install
-            match: RegExp "^#{quote k}=.*$", 'mg'
-            replace: "#{k}=#{v}"
-            append: true
-        @file
-          header: 'Script Fix'
-          target: "/usr/hdp/#{version}/ranger-yarn-plugin/enable-yarn-plugin.sh"
-          write:[
-              match: RegExp "^HCOMPONENT_CONF_DIR=.*$", 'mg'
-              replace: "HCOMPONENT_CONF_DIR=#{yarn.rm.conf_dir}"
-            ,
-              match: RegExp "\\^HCOMPONENT_LIB_DIR=.*$", 'mg'
-              replace: "HCOMPONENT_LIB_DIR=/usr/hdp/current/hadoop-yarn-resourcemanager/lib"
-          ]
-          backup: true
-        @execute
-          header: 'Script Execution'
-          cmd: """
-            export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec
-            cd /usr/hdp/#{version}/ranger-yarn-plugin/
-            ./enable-yarn-plugin.sh
-          """
-        @execute
-          header: "Fix repository "
-          cmd: "chown -R #{yarn.user.name}:#{hadoop_group.name} /etc/ranger/#{ranger.yarn_plugin.install['REPOSITORY_NAME']}"
-        @hconfigure
-          header: 'Fix ranger-yarn-security conf'
-          target: "#{yarn.rm.conf_dir}/ranger-yarn-security.xml"
-          merge: true
-          properties:
-            'ranger.plugin.yarn.policy.rest.ssl.config.file': "#{yarn.rm.conf_dir}/ranger-policymgr-ssl.xml"
-        @write
-          header: 'Fix Ranger YARN Plugin Env'
-          destination: "#{hdfs.rm.conf_dir}/hadoop-env.sh"
-          write: [
-            match: RegExp "^export YARN_OPTS=.*", 'mg'
-            replace: "export YARN_OPTS=\"-Dhdp.version=$HDP_VERSION $YARN_OPTS -Djavax.net.ssl.trustStore=#{ssl_server['ssl.server.truststore.location']} -Djavax.net.ssl.trustStorePassword=#{ssl_server['ssl.server.truststore.password']} \" # RYBA, DONT OVERWRITE"
-            append: true
-          ]
-
+      @call 
+        header: 'Plugin Activation'
+        handler: ->
+          @render
+            header: 'Scripts rendering'
+            if: -> version?
+            source: "#{__dirname}/../resources/plugin-install.properties.j2"
+            target: "/usr/hdp/#{version}/ranger-yarn-plugin/install.properties"
+            local: true
+            eof: true
+            backup: true
+            write: for k, v of ranger.yarn_plugin.install
+              match: RegExp "^#{quote k}=.*$", 'mg'
+              replace: "#{k}=#{v}"
+              append: true
+          @file
+            header: 'Script Fix'
+            target: "/usr/hdp/#{version}/ranger-yarn-plugin/enable-yarn-plugin.sh"
+            write:[
+                match: RegExp "^HCOMPONENT_CONF_DIR=.*$", 'mg'
+                replace: "HCOMPONENT_CONF_DIR=#{conf_dir}"
+              ,
+                match: RegExp "\\^HCOMPONENT_LIB_DIR=.*$", 'mg'
+                replace: "HCOMPONENT_LIB_DIR=/usr/hdp/current/hadoop-yarn-resourcemanager/lib"
+            ]
+            backup: true
+          @execute
+            header: 'Script Execution'
+            cmd: """
+              export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec
+              cd /usr/hdp/#{version}/ranger-yarn-plugin/
+              ./enable-yarn-plugin.sh
+            """
+          @execute
+            header: "Fix repository "
+            cmd: "chown -R #{yarn.user.name}:#{hadoop_group.name} /etc/ranger/#{ranger.yarn_plugin.install['REPOSITORY_NAME']}"
+          @hconfigure
+            header: 'Fix ranger-yarn-security conf'
+            target: "#{conf_dir}/ranger-yarn-security.xml"
+            merge: true
+            properties:
+              'ranger.plugin.yarn.policy.rest.ssl.config.file': "#{conf_dir}/ranger-policymgr-ssl.xml"
+          @file
+            header: 'Fix Ranger YARN Plugin Env'
+            target: "#{conf_dir}/hadoop-env.sh"
+            write: [
+              match: RegExp "^export YARN_OPTS=.*", 'mg'
+              replace: "export YARN_OPTS=\"-Dhdp.version=$HDP_VERSION $YARN_OPTS -Djavax.net.ssl.trustStore=#{ssl_server['ssl.server.truststore.location']} -Djavax.net.ssl.trustStorePassword=#{ssl_server['ssl.server.truststore.password']} \" # RYBA, DONT OVERWRITE"
+              append: true
+            ]
 
 ## Dependencies
 

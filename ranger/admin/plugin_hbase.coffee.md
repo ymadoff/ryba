@@ -6,8 +6,8 @@
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       hdfs_plugin = @contexts('ryba/hadoop/hdfs_nn')[0].config.ryba.ranger.hdfs_plugin
       version=null
-      conf_dir = if @contexts('ryba/hbase/master').map( (ctx) -> ctx.config.host)
-        .indexOf(@config.host) > -1 then hbase.master.conf_dir else hbase.rs.conf_dir
+      conf_dir = null
+      @call -> conf_dir = if @config.ryba.hbase_plugin_is_master? then hbase.master.conf_dir else hbase.rs.conf_dir
 
 ## Dependencies
 
@@ -120,6 +120,26 @@ we execute this task using the rest api.
               -u admin:#{password} \"#{ranger.hbase_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/\"
             """
 
+## HBase  Plugin Principal
+
+        @krb5_addprinc krb5,
+          if: ranger.hbase_plugin.principal
+          header: 'Ranger HBase Principal'
+          principal: ranger.hbase_plugin.principal
+          randkey: true
+          password: ranger.hbase_plugin.password
+
+## SSL
+The Ranger Plugin does not use theire truststore configuration when using solrJClient.
+Must add certificate to JAVA Cacerts file manually.
+
+        @java_keystore_add
+          keystore: '/usr/java/default/jre/lib/security/cacerts'
+          storepass: 'changeit'
+          caname: "hadoop_root_ca"
+          cacert: "#{ssl.cacert}"
+          local_source: true
+
 ## Plugin Scripts 
 
       @call ->
@@ -128,7 +148,7 @@ we execute this task using the rest api.
           if: -> version?
           source: "#{__dirname}/../resources/plugin-install.properties.j2"
           target: "/usr/hdp/#{version}/ranger-hbase-plugin/install.properties"
-          local_source: true
+          local: true
           eof: true
           backup: true
           write: for k, v of ranger.hbase_plugin.install

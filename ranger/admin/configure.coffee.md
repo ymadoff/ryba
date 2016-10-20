@@ -19,7 +19,7 @@ variables but also inject some function to be executed.
       scd_ctxs = @contexts 'ryba/solr/cloud_docker', require('../../solr/cloud_docker/configure').handler
       hive_ctxs = @contexts 'ryba/hive/server2', require('../../hive/server2/configure').handler
       {ryba} = @config
-      {realm, db_admin, ssl, core_site, hdfs, hadoop_group} = ryba
+      {realm, db_admin, ssl, core_site, hdfs, hadoop_group, hadoop_conf_dir} = ryba
       ranger = @config.ryba.ranger ?= {}
 
 # Ranger user & group
@@ -37,6 +37,11 @@ variables but also inject some function to be executed.
       ranger.user.comment ?= 'Ranger User'
       ranger.user.home ?= "/var/lib/#{ranger.user.name}"
       ranger.user.gid ?= ranger.group.name
+      ranger.user.groups ?= 'hadoop'
+      ranger.admin ?= {}
+      ranger.admin.conf_dir ?= '/etc/ranger/admin/conf'
+      ranger.admin.pid_dir ?= '/var/run/ranger/admin'
+      ranger.admin.log_dir ?= '/var/log/ranger/admin'
 
 ## Log4j
 
@@ -82,6 +87,7 @@ User can be External and Internal. Only Internal users can be created from the r
       pass = ranger.admin.password
       if not (/^.*[a-zA-Z]/.test(pass) and /^.*[0-9]/.test(pass)  and pass.length > 8)
        throw Error "new passord's length must be > 8, must contain one alpha and numerical character at lest" 
+      ranger.admin.conf_dir ?= '/etc/ranger/admin'
       ranger.admin.site ?= {}
       ranger.admin.site ?= {}
       ranger.admin.site['ranger.service.http.port'] ?= '6080'
@@ -303,14 +309,17 @@ For the HDFS plugin, the executed script already create the hdfs user to ranger 
 as external.
 
       ranger.plugins.hdfs_enabled ?= if nn_ctxs.length > 0 then true else false
-      if ranger.plugins.hdfs_enabled 
-        throw Error 'Need HDFS to enable ranger HDFS Plugin' unless nn_ctxs.length > 1
+      ranger.plugins.hdfs_configured ?= false
+      if ranger.plugins.hdfs_enabled and not ranger.plugins.hdfs_configured
+        throw Error 'Need HDFS to enable ranger HDFS Plugin' unless nn_ctxs.length > 0
         for nn_ctx in nn_ctxs
           # Commun Configuration
+          nn_ctx.config.ryba.hdfs.nn.site['dfs.namenode.inode.attributes.provider.class'] = 'org.apache.ranger.authorization.hadoop.RangerHdfsAuthorizer'
           nn_ctx.config.ryba.ranger ?= {}
           nn_ctx.config.ryba.ranger.user = ranger.user
           nn_ctx.config.ryba.ranger.group = ranger.group
-          nn_ctx.config.ryba.hdfs.namenode_opts += " -Djavax.net.ssl.trustStore=#{nn_ctx.config.ryba.ssl_server['ssl.server.truststore.location']} "
+          nn_ctx.config.ryba.hdfs.namenode_opts ?= ''
+          nn_ctx.config.ryba.hdfs.namenode_opts += " -Djavax.net.ssl.trustStore=#{nn_ctx.config.ryba.hdfs.nn.conf_dir}/truststore "
           nn_ctx.config.ryba.hdfs.namenode_opts += " -Djavax.net.ssl.trustStorePassword=#{nn_ctx.config.ryba.ssl_server['ssl.server.truststore.password']}"
           # HDFS Plugin configuration
           hdfs_plugin = nn_ctx.config.ryba.ranger.hdfs_plugin ?= {}
@@ -325,8 +334,8 @@ The properties can be found [here][hdfs-repository]
           hdfs_plugin.install['REPOSITORY_NAME'] ?= 'hadoop-ryba-hdfs'
           hdfs_plugin.service_repo ?=
             'configs': 
-              'password': hdfs.krb5_user.principal
-              'username': hdfs.krb5_user.password
+              'password': hdfs.krb5_user.password
+              'username': hdfs.krb5_user.principal
               'fs.default.name': core_site['fs.defaultFS']
               'hadoop.security.authentication': core_site['hadoop.security.authentication']
               'dfs.namenode.kerberos.principal': nn_ctxs[0].config.ryba.hdfs.site['dfs.namenode.kerberos.principal']
@@ -393,39 +402,45 @@ Configure Audit to SOLR
 ### HDFS Plugin SSL
 
           if ranger.admin.site['ranger.service.https.attrib.ssl.enabled'] is 'true'
-            hdfs_plugin.install['SSL_KEYSTORE_FILE_PATH'] ?= nn_ctx.config.ryba.ssl_server['ssl.server.keystore.location']
+            hdfs_plugin.install['SSL_KEYSTORE_FILE_PATH'] ?= "#{nn_ctx.config.ryba.hdfs.nn.conf_dir}/keystore"
             hdfs_plugin.install['SSL_KEYSTORE_PASSWORD'] ?= nn_ctx.config.ryba.ssl_server['ssl.server.keystore.password']
-            hdfs_plugin.install['SSL_TRUSTSTORE_FILE_PATH'] ?= nn_ctx.config.ryba.ssl_server['ssl.server.truststore.location']
+            hdfs_plugin.install['SSL_TRUSTSTORE_FILE_PATH'] ?= "#{nn_ctx.config.ryba.hdfs.nn.conf_dir}/truststore"
             hdfs_plugin.install['SSL_TRUSTSTORE_PASSWORD'] ?= nn_ctx.config.ryba.ssl_server['ssl.server.truststore.password']
+
+### HDFS Plugin Activation
 
           nn_ctx
           .after
-            type: 'render'
-            target: "#{nn_ctx.config.ryba.hdfs.nn.conf_dir}/hadoop-env.sh"
+            type: 'hconfigure'
+            target: "#{nn_ctx.config.ryba.hdfs.nn.conf_dir}/hadoop-policy.xml"
             handler: -> 
               @call 'ryba/ranger/admin/plugin_hdfs'
-          .before
-            type: 'service_start'
-            name: 'hadoop-hdfs-namenode'
-            handler: -> 
-              @wait_execute
-                cmd: """
-                  curl --fail -H \"Content-Type: application/json\"   -k -X GET  \ 
-                  -u admin:#{ranger.admin.password} \
-                  \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{hdfs_plugin.install['REPOSITORY_NAME']}\"
-                """
-                code_skipped: 22
-              @service.restart
-                header: 'Ranger scheduled HDFS NameNode restart'
-                name: 'hadoop-hdfs-namenode'
-                if_exists: '/etc/init.d/hadoop-hdfs-namenode'
+              @call 
+                header: "Namenode Scheduled Ranger Restart"
+                if: -> @status -1
+                handler: ->
+                  @wait_execute
+                    cmd: """
+                      curl --fail -H \"Content-Type: application/json\"   -k -X GET  \ 
+                      -u admin:#{ranger.admin.password} \
+                      \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{hdfs_plugin.install['REPOSITORY_NAME']}\"
+                    """
+                    code_skipped: [1,7,22]
+                  @service.status
+                    name: 'hadoop-hdfs-namenode'
+                  @service.restart
+                    if: -> @status -1 #restart only if already started
+                    header: 'Ranger scheduled HDFS NameNode restart'
+                    name: 'hadoop-hdfs-namenode'
+                    if_exists: '/etc/init.d/hadoop-hdfs-namenode'          
+          ranger.plugins.hdfs_configured = true
 
 
 ## YARN Plugin
 
       ranger.plugins.yarn_enabled ?= if rm_ctxs.length > 0 then true else false
       if ranger.plugins.yarn_enabled 
-        throw Error 'Need YARN to enable ranger YARN Plugin' unless rm_ctxs.length > 1
+        throw Error 'Need YARN to enable ranger YARN Plugin' unless rm_ctxs.length > 0
         # Ranger Yarn User
         ranger.users['yarn'] ?= 
           "name": 'yarn'
@@ -437,13 +452,16 @@ Configure Audit to SOLR
           'userRoleList': ['ROLE_USER']
           'groups': []
           'status': 1
-        for rm_ctx in rm_ctxs
+        yarn_ctxs = []
+        yarn_ctxs.push rm_ctxs...
+        yarn_ctxs.push nm_ctxs...
+        for yarn_ctx in yarn_ctxs
           # Commun Configuration
-          rm_ctx.config.ryba.ranger ?= {}
-          rm_ctx.config.ryba.ranger.user ?= ranger.user
-          rm_ctx.config.ryba.ranger.group ?= ranger.group
+          yarn_ctx.config.ryba.ranger ?= {}
+          yarn_ctx.config.ryba.ranger.user ?= ranger.user
+          yarn_ctx.config.ryba.ranger.group ?= ranger.group
           # YARN Plugin configuration
-          yarn_plugin = rm_ctx.config.ryba.ranger.yarn_plugin ?= {}  
+          yarn_plugin = yarn_ctx.config.ryba.ranger.yarn_plugin ?= {}
           yarn_plugin.principal ?= ranger.plugins.principal
           yarn_plugin.password ?= ranger.plugins.password        
           yarn_plugin.install ?= {}
@@ -459,7 +477,7 @@ The repository name should match the reposity name in web ui.
           yarn_plugin.install['REPOSITORY_NAME'] ?= 'hadoop-ryba-yarn'
           yarn_plugin.service_repo ?=
             'configs': 
-              'password': hdfs.krb5_user.principal
+              'password': hdfs.krb5_user.password
               'username': hdfs.krb5_user.principal
               'yarn.url': yarn_url
             'description': 'YARN Repo'
@@ -528,22 +546,26 @@ Used only if SSL is enabled between Policy Admin Tool and Plugin
             yarn_plugin.install['SSL_TRUSTSTORE_PASSWORD'] ?= rm_ctx.config.ryba.ssl_client['ssl.client.truststore.password']
 
 ### YARN ResourceManager Enable      
+Enable Yarn ResourceManager(s) plugin
 
-          rm_ctx.config.ryba.ranger.user = ranger.user
-          rm_ctx.config.ryba.ranger.group = ranger.group
+        @each rm_ctxs, (options) ->
+          rm_ctx = options.key
           rm_ctx
           .after
             type: 'hconfigure'
             target: "#{rm_ctx.config.ryba.yarn.rm.conf_dir}/yarn-site.xml"
             handler: -> 
+              @call -> rm_ctx.config.ryba.yarn_plugin_is_master = true
               @call 'ryba/ranger/admin/plugin_yarn'
+              @call -> rm_ctx.config.ryba.yarn_plugin_is_master = false
           .before
-            type: 'service_start'
+            type: 'service.start'
             name: 'hadoop-yarn-resourcemanager'
+            if_exists: '/etc/init.d/hadoop-yarn-resourcemanager'
             handler: -> 
               @wait_execute
                 cmd: """
-                  curl --fail -H \"Content-Type: application/json\"   -k -X GET \ 
+                  curl --fail -H \"Content-Type: application/json\" -k -X GET \ 
                   -u admin:#{ranger.admin.password} \
                   \"#{yarn_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{yarn_plugin.install['REPOSITORY_NAME']}\"
                 """
@@ -554,20 +576,29 @@ Used only if SSL is enabled between Policy Admin Tool and Plugin
                 name: 'hadoop-yarn-resourcemanager'
 
 ### YARN NodeManager Enable
+Enable Yarn NodeManager(s) plugin
 
-        for nm_ctx in nm_ctxs
+        @each nm_ctxs, (options) ->
+          nm_ctx = options.key
           nm_ctx
+          .after
+            type: 'hconfigure'
+            target: "#{nm_ctx.config.ryba.yarn.nm.conf_dir}/yarn-site.xml"
+            handler: -> @call 'ryba/ranger/admin/plugin_yarn'
           .before
-            type: 'service_start'
+            type: 'service.start'
             name: 'hadoop-yarn-nodemanager'
             handler: ->
               @wait_execute
                 cmd: """
-                  curl --fail -H \"Content-Type: application/json\"   -k -X GET  \ 
+                  curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
                   -u admin:#{ranger.admin.password} \
                   \"#{yarn_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{yarn_plugin.install['REPOSITORY_NAME']}\"
                 """
-                code_skipped: [22,7]
+                code_skipped: [1,7,22]
+              @service.status
+                name: 'hadoop-yarn-nodemanager'
+                if: -> @status -1
               @service.restart
                 name: 'hadoop-yarn-nodemanager'
 
@@ -575,7 +606,7 @@ Used only if SSL is enabled between Policy Admin Tool and Plugin
 
       ranger.plugins.hbase_enabled ?= if hm_ctxs.length > 0 then true else false
       if ranger.plugins.hbase_enabled 
-        throw Error 'Need HBase to enable ranger HBase Plugin' unless rm_ctxs.length > 1
+        throw Error 'Need HBase to enable ranger HBase Plugin' unless hm_ctxs.length > 0
         # Ranger HBase Webui xuser
         ranger.users['hbase'] ?=
           "name": 'hbase'
@@ -601,6 +632,7 @@ Used only if SSL is enabled between Policy Admin Tool and Plugin
           hbase_plugin.policy_name ?= "Ranger-Ryba-HBase-Policy"
           hbase_plugin.install ?= {}
           hbase_plugin.install['PYTHON_COMMAND_INVOKER'] ?= 'python'
+          hbase_plugin.install['CUSTOM_USER'] ?= "#{hm_ctxs[0].config.ryba.hbase.user.name}"
 
 ### HBase Policy Admin Tool
 The repository name should match the reposity name in web ui.
@@ -610,7 +642,7 @@ The repository name should match the reposity name in web ui.
           hbase_plugin.service_repo ?=
             'configs': 
               'username': hm_ctxs[0].config.ryba.hbase.admin.principal
-              'password': hm_ctxs[0].config.ryba.hbase.admin.passord
+              'password': hm_ctxs[0].config.ryba.hbase.admin.password
               'hadoop.security.authorization': core_site['hadoop.security.authorization']
               'hbase.master.kerberos.principal': hm_ctxs[0].config.ryba.hbase.master.site['hbase.master.kerberos.principal']
               'hadoop.security.authentication': core_site['hadoop.security.authentication']
@@ -680,7 +712,8 @@ The repository name should match the reposity name in web ui.
 ### HBase Plugin Execution
 
         # Master Servers
-        for hm_ctx in hm_ctxs
+        @each hm_ctxs, (options) ->
+          hm_ctx = options.key
           if ranger.admin.site['ranger.service.https.attrib.ssl.enabled'] is 'true'
             hm_ctx.config.ryba.ranger.hbase_plugin.install['SSL_KEYSTORE_FILE_PATH'] ?= hm_ctx.config.ryba.ssl_server['ssl.server.keystore.location']
             hm_ctx.config.ryba.ranger.hbase_plugin.install['SSL_KEYSTORE_PASSWORD'] ?= hm_ctx.config.ryba.ssl_server['ssl.server.keystore.password']
@@ -691,10 +724,12 @@ The repository name should match the reposity name in web ui.
             type: 'hconfigure'
             target: "#{hm_ctx.config.ryba.hbase.master.conf_dir}/hbase-site.xml"
             handler: -> 
+              @call -> hm_ctx.config.ryba.hbase_plugin_is_master = true
               @call 'ryba/ranger/admin/plugin_hbase'
+              @call -> hm_ctx.config.ryba.hbase_plugin_is_master = false
           hm_ctx
           .before
-            type: 'service_start'
+            type: 'service.start'
             name: 'hbase-master'
             if_exists: '/etc/init.d/hbase-master'
             handler: ->
@@ -712,7 +747,8 @@ The repository name should match the reposity name in web ui.
                 name: 'hbase-master'
 
         # Regionservers
-        for rs_ctx in rs_ctxs
+        @each rs_ctxs, (options) ->
+          rs_ctx = options.key
           if ranger.admin.site['ranger.service.https.attrib.ssl.enabled'] is 'true'
             rs_ctx.config.ryba.ranger.hbase_plugin.install['SSL_KEYSTORE_FILE_PATH'] ?= rs_ctx.config.ryba?.ssl_server?['ssl.server.keystore.location']
             rs_ctx.config.ryba.ranger.hbase_plugin.install['SSL_KEYSTORE_PASSWORD'] ?= rs_ctx.config.ryba?.ssl_server?['ssl.server.keystore.password']
@@ -722,10 +758,9 @@ The repository name should match the reposity name in web ui.
           .after
             type: 'hconfigure'
             target: "#{rs_ctx.config.ryba.hbase.rs.conf_dir}/hbase-site.xml"
-            handler: -> 
-              @call 'ryba/ranger/admin/plugin_hbase'
+            handler: -> @call 'ryba/ranger/admin/plugin_hbase'
           .before
-            type: 'service_start'
+            type: 'service'
             name: 'hbase-regionserver'
             if_exists: '/etc/init.d/hbase-regionserver'
             handler: ->
@@ -759,6 +794,8 @@ The repository name should match the reposity name in web ui.
           kb_ctx.config.ryba.kafka.broker.config['authorizer.class.name'] = 'org.apache.ranger.authorization.kafka.authorizer.RangerKafkaAuthorizer'
           kafka_plugin.install ?= {}
           kafka_plugin.install['PYTHON_COMMAND_INVOKER'] ?= 'python'
+          kafka_plugin.install['CUSTOM_USER'] ?= "#{kb_ctx.config.ryba.kafka.user.name}"
+          kafka_plugin.install['XAAUDIT.SUMMARY.ENABLE'] ?= 'true'
 
 ### Kafka Policy Admin Tool
 The repository name should match the reposity name in web ui.
@@ -841,15 +878,14 @@ The properties can be found [here][kafka-repository]
 
           kb_ctx
           .after
-            type: 'write'
+            type: 'file'
             target: "#{kb_ctx.config.ryba.kafka.broker.conf_dir}/server.properties"
-            handler: -> 
-              @call 'ryba/ranger/admin/plugin_kafka'
-
+            handler: -> @call 'ryba/ranger/admin/plugin_kafka'
           kb_ctx
           .before
-            type: 'service_start'
+            type: 'service'
             name: 'kafka-broker'
+            if_exists: '/etc/init.d/kafka-broker'
           , handler: -> 
               @wait_execute
                 cmd: """
@@ -868,7 +904,7 @@ Ranger Hive plugin runs inside Hiveserver JVM
 
       ranger.plugins.hive_enabled ?= if hive_ctxs.length > 0 then true else false
       if ranger.plugins.hive_enabled 
-        throw Error 'Need Hive Server2 to enable ranger Hive Plugin' unless hive_ctxs.length > 1
+        throw Error 'Need Hive Server2 to enable ranger Hive Plugin' unless hive_ctxs.length > 0
         # Ranger Yarn User
         ranger.users['hive'] ?=
           "name": 'hive'

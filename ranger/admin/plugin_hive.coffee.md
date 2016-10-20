@@ -4,7 +4,7 @@
       {password} = @contexts('ryba/ranger/admin')[0].config.ryba.ranger.admin
       hdfs_plugin = @contexts('ryba/hadoop/hdfs_nn')[0].config.ryba.ranger.hdfs_plugin
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
-      version=null
+      version = null
       #https://mail-archives.apache.org/mod_mbox/incubator-ranger-user/201605.mbox/%3C363AE5BD-D796-425B-89C9-D481F6E74BAF@apache.org%3E
 
 # Dependencies
@@ -132,7 +132,7 @@ we execute this task using the rest api.
           if: -> version?
           source: "#{__dirname}/../resources/plugin-install.properties.j2"
           target: "/usr/hdp/#{version}/ranger-hive-plugin/install.properties"
-          local_source: true
+          local: true
           eof: true
           backup: true
           write: for k, v of ranger.hive_plugin.install
@@ -151,55 +151,86 @@ we execute this task using the rest api.
             ,
               match: RegExp "^HCOMPONENT_LIB_DIR=.*$", 'mg'
               replace: "HCOMPONENT_LIB_DIR=/usr/hdp/current/hive-server2/lib"
-            # , 
-            #   match: RegExp "^HCOMPONENT_NAME=.*$", 'mg'
-            #   replace: "HCOMPONENT_NAME=kafka-broker"
-
           ]
           backup: true
-        # @file
-        #   header: 'Fix Hive Server2 classpath'
-        #   target: "#{kafka.broker.conf_dir}/kafka-env.sh"
-        #   write: [
-        #     match: RegExp "^export CLASSPATH=\"$CLASSPATH.*", 'm'
-        #     replace: "export CLASSPATH=\"$CLASSPATH:${script_dir}:/usr/hdp/#{version}/ranger-hive-plugin/lib/ranger-hive-plugin-impl:#{kafka.broker.conf_dir}:/usr/hdp/current/hadoop-hdfs-client/*:/usr/hdp/current/hadoop-hdfs-client/lib/*:/etc/hadoop/conf\" # RYBA, DONT OVERWRITE"
-        #     append: true
-        #   ]
-        #   backup: true
-        #   eof: true
-        #   mode:0o0750
-        #   uid: kafka.user.name
-        #   gid: kafka.group.name
-        @execute
-          header: 'Script Execution'
-          cmd: """
-            if /usr/hdp/#{version}/ranger-hive-plugin/enable-hive-plugin.sh ;
-            then exit 0 ; 
-            else exit 1 ; 
-            fi;
-          """
-        @hconfigure
-          header: 'Fix hiveserver2 hive-site'
-          target: "#{hive.server2.conf_dir}/hive-site.xml"
-          merge: true
-          properties:
-            'hive.security.authorization.manager':'org.apache.ranger.authorization.hive.authorizer.RangerHiveAuthorizerFactory'
-            'hive.security.authenticator.manager':'org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator'
-        @hconfigure
-          header: 'Fix ranger-hive-security conf'
-          target: "#{hive.server2.conf_dir}/ranger-hive-security.xml"
-          merge: true
-          properties:
-            'ranger.plugin.hive.policy.rest.ssl.config.file': "#{hive.server2.conf_dir}/ranger-policymgr-ssl.xml"
-        @remove
-          header: 'Remove useless file'
-          target: "#{hive.server2.conf_dir}/hiveserver2-site.xml"
+        @call
+          header: 'Enable HDFS Plugin'
+          handler: (options, callback) ->
+            files = ['ranger-hive-audit.xml','ranger-hive-security.xml','ranger-policymgr-ssl.xml']
+            sources_props = {}
+            current_props = {}
+            files_exists = {}
+            @execute
+              cmd: """
+                echo '' | keytool -list \
+                -storetype jceks \
+                -keystore /etc/ranger/#{ranger.hive_plugin.install['REPOSITORY_NAME']}/cred.jceks | egrep '.*ssltruststore|auditdbcred|sslkeystore'
+              """
+              code_skipped: 1 
+            @call 
+              if: -> @status -1 #do not need this if the cred.jceks file is not provisioned
+              handler: ->
+                @each files, (options, cb) ->
+                  file = options.key
+                  target = "#{hive.server2.conf_dir}/#{file}"
+                  @fs.exists target, (err, exists) ->
+                    return cb err if err
+                    return cb() unless exists
+                    files_exists["#{file}"] = exists
+                    properties.read options.ssh, target , (err, props) ->
+                      return cb err if err
+                      sources_props["#{file}"] = props  
+                      cb()
+            @execute
+              header: 'Script Execution'
+              cmd: """
+                if /usr/hdp/#{version}/ranger-hive-plugin/enable-hive-plugin.sh ;
+                then exit 0 ;
+                else exit 1 ;
+                fi;
+              """
+            @hconfigure
+              header: 'Fix ranger-hive-security conf'
+              target: "#{hive.server2.conf_dir}/ranger-hive-security.xml"
+              merge: true
+              properties:
+                'ranger.plugin.hive.policy.rest.ssl.config.file': "#{hive.server2.conf_dir}/ranger-policymgr-ssl.xml"
+            @remove
+              header: 'Remove useless file'
+              target: "#{hive.server2.conf_dir}/hiveserver2-site.xml"
+              shy: true
+            @hconfigure
+              header: 'JAAS Properties for solr'
+              target: "#{hive.server2.conf_dir}/ranger-hive-audit.xml"
+              merge: true
+              properties: ranger.hive_plugin.audit
+            @each files, (options, cb) ->
+              file = options.key
+              target = "#{hive.server2.conf_dir}/#{file}"
+              @fs.exists target, (err, exists) ->
+                return callback err if err
+                properties.read options.ssh, target , (err, props) ->
+                  return cb err if err
+                  current_props["#{file}"] = props
+                  cb()                
+            @call
+              header: 'Compare Current Config Files'
+              shy: true
+              handler: ->
+                for file in files
+                  #do not need to go further if the file did not exist
+                  return callback null, true unless sources_props["#{file}"]?
+                  for prop, value of current_props["#{file}"]
+                    return callback null, true unless value is sources_props["#{file}"][prop]
+                  for prop, value of sources_props["#{file}"]
+                    return callback null, true unless value is current_props["#{file}"][prop]
+                  return callback null, false
 
 ## Dependencies
 
     quote = require 'regexp-quote'
     path = require 'path'
     mkcmd = require '../../lib/mkcmd'
-
+    properties = require '../../lib/properties'
 
 [hive-plugin]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/installing_ranger_plugins.html#installing_ranger_hive_plugin)
