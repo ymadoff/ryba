@@ -59,6 +59,26 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ]
         if: @config.iptables.action is 'start'
 
+## Layout log Hue
+
+      @call header: 'Layout', timeout: -1, handler:  ->
+        @mkdir
+          target: hue_docker.log_dir
+          uid: hue_docker.user.name
+          gid: hue_docker.group.name
+          mode: 0o755
+          parent: true
+        @mkdir
+          target: '/tmp/hue_docker'
+          uid: hue_docker.user.name
+          gid: hue_docker.group.name
+          mode: 0o755
+        @mkdir
+          target: "#{hue_docker.conf_dir}"
+          uid: hue_docker.user.name
+          gid: hue_docker.group.name
+          mode: 0o755
+
 ## Hive
 
 Update the "hive-site.xml" with the hive/server2 kerberos principal.
@@ -228,20 +248,6 @@ changes.
           if: -> @status -1
           container: hue_docker.container
 
-## Layout log Hue
-
-      @call header: 'Layout', timeout: -1, handler:  ->
-        @mkdir
-          target: hue_docker.log_dir
-          uid: hue_docker.user.name
-          gid: hue_docker.group.name
-          mode: 0o755
-          parent: true
-        @mkdir
-          target: '/tmp/hue_docker'
-          uid: hue_docker.user.name
-          gid: hue_docker.group.name
-          mode: 0o755
 
 ## Install Hue container
 
