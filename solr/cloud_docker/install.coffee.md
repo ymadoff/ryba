@@ -15,7 +15,7 @@
       @call 'ryba/zookeeper/server/wait'
       @register ['file', 'jaas'], 'ryba/lib/file_jaas'
       @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
-      
+
 ## Layout
 
       @mkdir
@@ -26,26 +26,11 @@
         directory: solr.cloud_docker.conf_dir
         uid: solr.user.name
         gid: solr.group.name
-      
+
 ## Users and Groups
 
       @group solr.group
       @user solr.user
-        
-## Config
-
-      @render
-        header: 'Solr Config'
-        target: "#{solr.cloud_docker.conf_dir}/solr.xml"
-        source: solr.cloud_docker.conf_source
-        local_source: true
-        uid: solr.user.name
-        gid: solr.group.name
-        context: @config
-        mode: 0o0755
-        unlink: true
-        backup: true
-        eof: true
 
 ## Kerberos
 
@@ -55,8 +40,8 @@
         principal: solr.cloud_docker.spnego.principal
         randkey: true
         keytab: solr.cloud_docker.spnego.keytab
-        uid: solr.user.name
         gid: hadoop_group.name
+        mode: 0o660
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
@@ -97,7 +82,7 @@
         kadmin_server: admin_server
 
 ## SSL Certificate
-        
+
       @file.download
         source: ssl.cacert
         target: "/etc/docker/certs.d/ca.pem"
@@ -116,22 +101,17 @@
 
 ## Container
 Ryba support installing solr from apache official release or HDP Search repos.
-      
+
       @file.download
         binary: true
         header: 'Download docker container'
-        source: "#{solr.cloud_docker.build.dir}/#{solr.cloud_docker.build.tar}"
+        source: solr.cloud_docker.build.source
         target: "#{tmp_dir}/solr.tar"
       @call 
         header: 'Check container', handler: (opts, callback) =>
           checksum  = ''
           @docker_checksum
-            docker:
-              host: "tcp://#{@config.host}:#{solr.cloud_docker.port ? 2376}"
-              tlsverify:" "
-              tlscacert: "/etc/docker/certs.d/ca.pem"
-              tlscert: "/etc/docker/certs.d/cert.pem"
-              tlskey: "/etc/docker/certs.d/key.pem"
+            docker: solr.cloud_docker.swarm_conf
             image: solr.cloud_docker.build.image
             tag: solr.cloud_docker.build.version
           , (err, status, chk) ->
@@ -143,13 +123,8 @@ Ryba support installing solr from apache official release or HDP Search repos.
         header: 'Load container to docker'
         if: -> @status -1 or @status -2
         source: "#{tmp_dir}/solr.tar"
-        docker:
-          host: "tcp://#{@config.host}:#{solr.cloud_docker.port ? 2376}"
-          tlsverify:" "
-          tlscacert: "/etc/docker/certs.d/ca.pem"
-          tlscert: "/etc/docker/certs.d/cert.pem"
-          tlskey: "/etc/docker/certs.d/key.pem"
- 
+        docker: solr.cloud_docker.swarm_conf
+
 ## SSL
 
       @java_keystore_add
@@ -184,95 +159,134 @@ Ryba support installing solr from apache official release or HDP Search repos.
         uid: solr.user.name
         gid: solr.group.name
         mode: 0o0755
+
+## Cluster Specific configuration
+Here we loop through the clusters definition to write container specific file
+configuration like solr.in.sh or solr.xml.
       
-      @call header: 'Cluster Configuration', handler: (_, callback) ->
+      @each solr.cloud_docker.clusters, (options, callback) ->
         counter = 0
-        each(Object.keys(solr.cloud_docker.clusters))
-        .parallel(false)
-        .call (name, i, next) =>
-          config = solr.cloud_docker.clusters[name] # get cluster config
-          config_host = config.config_hosts["#{@config.host}"] # get host config for the cluster
-          return next() unless config_host?
-          config_host.env['SOLR_AUTHENTICATION_OPTS'] ?= ''
-          config_host.env['SOLR_AUTHENTICATION_OPTS'] += " -D#{k}=#{v} "  for k, v of config_host.auth_opts
-          writes = for k,v of config_host.env
-            match: RegExp "^.*#{k}=.*$", 'mg'
-            replace: "#{k}=\"#{v}\" # RYBA DON'T OVERWRITE"
-            append: true
-          @call header: 'IPTables', handler: ->
-            return unless @config.iptables.action is 'start'
-            @iptables
-              rules: [
-                { chain: 'INPUT', jump: 'ACCEPT', dport: config.port, protocol: 'tcp', state: 'NEW', comment: "Solr Cluster #{name}" }
-              ]
-          @mkdir
-            header: 'Solr Cluster Configuration'
-            target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}"
-            uid: solr.user.name
-            gid: solr.group.name
-            mode: 0o0755
-          @mkdir
-            header: 'Solr Cluster Log dir'
-            target: config.log_dir
-            uid: solr.user.name
-            gid: solr.group.name
-            mode: 0o0755
-          @mkdir
-            header: 'Solr Cluster Pid dir'
-            target: config.pid_dir
-            uid: solr.user.name
-            gid: solr.group.name
-            mode: 0o0755
-          @mkdir
-            header: 'Solr Cluster Data dir'
-            target: config.data_dir
-            uid: solr.user.name
-            gid: solr.group.name
-            mode: 0o0755
-          @file
-            header: 'Security config'
-            content: JSON.stringify config_host.security
-            target: "#{config.data_dir}/security.json"
-            uid: solr.user.name
-            gid: solr.group.name
-            mode: 0o0755
-          @render
-            source:"#{__dirname}/../resources/cloud_docker/docker_entrypoint.sh"
-            target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker_entrypoint.sh"
-            context: @config
-            local: true
-            local: true
-            backup: true
-            uid: solr.user.name
-            gid: solr.group.name
-            mode: 0o0755
-          @render
-            header: 'Solr Environment'
-            source: "#{__dirname}/../resources/cloud/solr.ini.sh.j2"
-            target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/solr.in.sh"
-            context: @config
-            write: writes
-            local: true
-            backup: true
-            eof: true
-            uid: solr.user.name
-            gid: solr.group.name
-            mode: 0o0755
-          @call -> 
-            for node in [1..config.containers]
-              config.service_def["node_#{node}"]['depends_on'] = ["node_#{config.master_node}"] if node != config.master_node
-          @file.yaml
-            if: @config.host is config['master']
-            header: 'Generation docker-compose'
-            target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker-compose.yml"
-            content:  
-              version:'2'
-              services: config.service_def
-          @then next
-        .then (err) -> callback err 
-          
+        name = options.key
+        config = solr.cloud_docker.clusters[name] # get cluster config
+        config_host = config.config_hosts["#{@config.host}"] # get host config for the cluster
+        return next() unless config_host?
+        config_host.env['SOLR_AUTHENTICATION_OPTS'] ?= ''
+        config_host.env['SOLR_AUTHENTICATION_OPTS'] += " -D#{k}=#{v} "  for k, v of config_host.auth_opts
+        writes = for k,v of config_host.env
+          match: RegExp "^.*#{k}=.*$", 'mg'
+          replace: "#{k}=\"#{v}\" # RYBA DON'T OVERWRITE"
+          append: true
+        @call header: 'IPTables', handler: ->
+          return unless @config.iptables.action is 'start'
+          @iptables
+            rules: [
+              { chain: 'INPUT', jump: 'ACCEPT', dport: config.port, protocol: 'tcp', state: 'NEW', comment: "Solr Cluster #{name}" }
+            ]
+        @mkdir
+          header: 'Solr Cluster Configuration'
+          target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}"
+          uid: solr.user.name
+          gid: solr.group.name
+          mode: 0o0750
+        @mkdir
+          header: 'Solr Cluster Log dir'
+          target: config.log_dir
+          uid: solr.user.name
+          gid: solr.group.name
+          mode: 0o0750
+        @mkdir
+          header: 'Solr Cluster Pid dir'
+          target: config.pid_dir
+          uid: solr.user.name
+          gid: solr.group.name
+          mode: 0o0750
+        @mkdir
+          header: 'Solr Cluster Data dir'
+          target: config.data_dir
+          uid: solr.user.name
+          gid: solr.group.name
+          mode: 0o0750
+        @file
+          header: 'Security config'
+          content: JSON.stringify config_host.security
+          target: "#{config.data_dir}/security.json"
+          uid: solr.user.name
+          gid: solr.group.name
+          mode: 0o0750
+        @render
+          source:"#{__dirname}/../resources/cloud_docker/docker_entrypoint.sh"
+          target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker_entrypoint.sh"
+          context: @config
+          local: true
+          local: true
+          backup: true
+          uid: solr.user.name
+          gid: solr.group.name
+          mode: 0o0750
+        @render
+          header: 'Solr Environment'
+          source: "#{__dirname}/../resources/cloud/solr.ini.sh.j2"
+          target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/solr.in.sh"
+          context: @config
+          write: writes
+          local: true
+          backup: true
+          eof: true
+          uid: solr.user.name
+          gid: solr.group.name
+          mode: 0o0750
+        @call -> 
+          for node in [1..config.containers]
+            config.service_def["node_#{node}"]['depends_on'] = ["node_#{config.master_node}"] if node != config.master_node
+        @call 
+          header: 'Solr xml config'
+        , ->
+          for host in config.hosts
+            root = builder.create('solr').dec '1.0', 'UTF-8', true 
+            solrcloud = root.ele 'solrcloud'
+            solrcloud.ele 'str', {'name':'host'}, "#{@config.host}"
+            solrcloud.ele 'str', {'name':'hostPort'}, "#{config.port}"
+            solrcloud.ele 'str', {'name':'hostContext'}, '${hostContext:solr}'
+            solrcloud.ele 'bool', {'name':'genericCoreNodeNames'}, '${genericCoreNodeNames:true}'
+            solrcloud.ele 'str', {'name':'zkCredentialsProvider'}, "#{config_host.zk_opts.zkCredentialsProvider}"
+            solrcloud.ele 'str', {'name':'zkACLProvider'}, "#{config_host.zk_opts.zkACLProvider}"
+            solrcloud.ele 'int', {'name':'zkClientTimeout'}, '${zkClientTimeout:30000}'
+            solrcloud.ele 'int', {'name':'distribUpdateSoTimeout'}, '${distribUpdateSoTimeout:600000}'
+            solrcloud.ele 'int', {'name':'distribUpdateConnTimeout'}, '${distribUpdateConnTimeout:60000}'
+            solrcloud.ele 'str', {'name':'zkHost'}, "#{config_host['env']['ZK_HOST']}"
+            shardHandlerFactory = solrcloud.ele 'shardHandlerFactory', {'name':'shardHandlerFactory','class':'HttpShardHandlerFactory'}
+            shardHandlerFactory.ele 'int', {'name':'socketTimeout'}, '${socketTimeout:600000}'
+            shardHandlerFactory.ele 'int', {'name':'connTimeout'}, '${connTimeout:60000}'
+            @file
+              if: host is @config.host
+              header: 'Solr Config'
+              target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/solr.xml"
+              uid: solr.user.name
+              gid: solr.group.name
+              content: root.end pretty:true
+              mode: 0o0750
+              backup: true
+              eof: true
+        @file.yaml
+          if: @config.host is config['master']
+          header: 'Generation docker-compose'
+          target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker-compose.yml"
+          content:  
+            version:'2'
+            services: config.service_def
+        @then callback
+
+## User Limits
+
+      @system_limits
+        header: 'Ulimit'
+        user: solr.user.name
+        nofile: solr.user.limits.nofile
+        nproc: solr.user.limits.nproc
+
 ## Dependencies
 
     path = require 'path'
     mkcmd  = require '../../lib/mkcmd'
     each = require 'each'
+    builder = require 'xmlbuilder'

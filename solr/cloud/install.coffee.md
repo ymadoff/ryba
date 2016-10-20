@@ -159,6 +159,7 @@ Create HDFS solr user and its home directory
           match: RegExp "^.*#{k}=.*$", 'mg'
           replace: "#{k}=\"#{v}\" # RYBA DON'T OVERWRITE"
           append: true
+
         @render
           header: 'Solr Environment'
           source: "#{__dirname}/../resources/cloud/solr.ini.sh.j2"
@@ -170,15 +171,15 @@ Create HDFS solr user and its home directory
           eof: true
         @render
           header: 'Solr Config'
-          source: solr.cloud.conf_source
+          source: "#{solr.cloud.conf_source}"
           target: "#{solr.cloud.conf_dir}/solr.xml"
+          local: true
+          backup: true
+          eof: true
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
-          context: @
-          local_source: true
-          backup: true
-          eof: true
+          context: @config
         @link
           source: "#{solr.cloud.conf_dir}/solr.xml"
           target: "#{solr.user.home}/solr.xml"
@@ -253,7 +254,7 @@ HDP has version 5.2.1 of solr, and security plugins are included from 5.3.0
         cmd: """
           cd #{solr.cloud.latest_dir}
           server/scripts/cloud-scripts/zkcli.sh -zkhost #{solr.cloud.zk_connect} \
-          -cmd put /solr/security.json '#{JSON.stringify solr.cloud.security}'
+          -cmd put /solr/security.json '{}'
         """
 
 ## SSL

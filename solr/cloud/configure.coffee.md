@@ -43,6 +43,7 @@ ryba:
       solr.user.gid ?= solr.group.name
       solr.cloud ?= {}
       solr.cloud.version ?= '5.5.0'
+      solr.cloud.host ?= @config.host # need for rendering xml
       solr.cloud.source ?= "http://apache.mirrors.ovh.net/ftp.apache.org/dist/lucene/solr/#{solr.cloud.version}/solr-#{solr.cloud.version}.tgz"
       solr.cloud.root_dir ?= '/usr'
       solr.cloud.install_dir ?= "#{solr.cloud.root_dir}/solr-cloud/#{solr.cloud.version}"
@@ -109,8 +110,8 @@ The property `zkCredentialsProvider` is named `zkCredientialsProvider`
               solr.cloud.security["authorization"] ?= {}
               solr.cloud.security["authorization"]['class'] ?= 'solr.RuleBasedAuthorizationPlugin'
               solr.cloud.security["authorization"]['permissions'] ?= []
-              solr.cloud.security["authorization"]['permissions'].push name: 'security-edit' , role: 'admin' #define new role
-              solr.cloud.security["authorization"]['permissions'].push name: 'read' , role: 'reader' #define new role
+              # solr.cloud.security["authorization"]['permissions'].push name: 'security-edit' , role: 'admin' #define new role
+              # solr.cloud.security["authorization"]['permissions'].push name: 'read' , role: 'reader' #define new role
               solr.cloud.security["authorization"]['permissions'].push name: 'all' , role: 'manager' #define new role
               solr.cloud.security["authorization"]['user-role'] ?= {}
               solr.cloud.security["authorization"]['user-role']["#{solr.cloud.admin_principal}"] ?= 'manager'
@@ -127,8 +128,9 @@ The property `zkCredentialsProvider` is named `zkCredientialsProvider`
       solr.cloud.ssl_keystore_path ?= "#{solr.cloud.conf_dir}/keystore"
       solr.cloud.ssl_keystore_pwd ?= 'solr123'
 
-### Environment
-
+### Environment and Zookeeper ACL
+      
+      solr.cloud.zk_opts ?= {}
       solr.cloud.env['SOLR_JAVA_HOME'] ?= java.java_home
       solr.cloud.env['SOLR_HOST'] ?= @config.host
       solr.cloud.env['ZK_HOST'] ?= solr.cloud.zkhosts
@@ -142,6 +144,20 @@ The property `zkCredentialsProvider` is named `zkCredientialsProvider`
         solr.cloud.env['SOLR_SSL_NEED_CLIENT_AUTH'] ?= 'false'
       if ryba.security is 'kerberos'
         solr.cloud.env['SOLR_AUTHENTICATION_CLIENT_CONFIGURER'] ?= 'org.apache.solr.client.solrj.impl.Krb5HttpClientConfigurer'
+        # Zookeeper ACLs
+        # https://cwiki.apache.org/confluence/display/solr/ZooKeeper+Access+Control
+        # solr.cloud.zk_opts['zkCredentialsProvider'] ?= 'org.apache.solr.common.cloud.DefaultZkCredentialsProvider'
+        # solr.cloud.zk_opts['zkACLProvider'] ?= 'org.apache.solr.common.cloud.SaslZkACLProvider'
+        # solr.cloud.zk_opts['solr.authorization.superuser'] ?= solr.user.name #default to solr
+        # solr.cloud.env['SOLR_ZK_CREDS_AND_ACLS'] ?= 'org.apache.solr.common.cloud.SaslZkACLProvider'
+      else
+        #d
+      solr.cloud.zk_opts['zkCredentialsProvider'] ?= 'org.apache.solr.common.cloud.VMParamsSingleSetCredentialsDigestZkCredentialsProvider'
+      solr.cloud.zk_opts['zkACLProvider'] ?= 'org.apache.solr.common.cloud.VMParamsAllAndReadonlyDigestZkACLProvider'
+      solr.cloud.zk_opts['zkDigestUsername'] ?= solr.user.name
+      solr.cloud.zk_opts['zkDigestPassword'] ?= 'solr123'
+        # solr.cloud.zk_opts['zkDigestReadonlyUsername'] ?= auser
+        # solr.cloud.zk_opts['zkDigestReadonlyPassword'] ?= 'solr123'
 
 ### Java version
 Solr 6.0 is compiled with java 1.8.

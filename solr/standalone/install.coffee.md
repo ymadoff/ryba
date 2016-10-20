@@ -100,7 +100,6 @@ Ryba support installing solr from apache official release or HDP Search repos.
           local_source: true
           context: @config
 
-
 ## Layout
 
       @call header: 'Solr Layout', timeout: -1, handler: ->
@@ -119,7 +118,6 @@ Ryba support installing solr from apache official release or HDP Search repos.
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
-
 
 ## SOLR HDFS Layout
 Create HDFS solr user and its home directory
