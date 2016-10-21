@@ -221,7 +221,7 @@ Example:
       hue_docker.ini['beeswax']['hive_server_port'] ?= if hs2_ctx.config.ryba.hive.server2.site['hive.server2.transport.mode'] is 'binary'
       then hs2_ctx.config.ryba.hive.server2.site['hive.server2.thrift.port']
       else hs2_ctx.config.ryba.hive.server2.site['hive.server2.thrift.http.port']
-      hue_docker.ini['beeswax']['hive_conf_dir'] ?= "#{hs2_ctx.config.ryba.hive.server2.conf_dir}" # Hive client is a dependency of Hue
+      hue_docker.ini['beeswax']['hive_conf_dir'] ?= '/etc/hive/conf' # Hive client is a dependency of Hue
       hue_docker.ini['beeswax']['server_conn_timeout'] ?= "240"
       # Desktop
       hue_docker.ini['desktop'] ?= {}
