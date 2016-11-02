@@ -26,7 +26,9 @@ ryba:
 ```
 
     module.exports = handler: ->
-      {java, ryba} = @config
+      {ryba} = @config
+      [java_ctx] = @contexts 'masson/commons/java', require("#{__dirname}/../../node_modules/masson/commons/java/configure").handler
+      java = java_ctx.config.java
       {solr, realm} = ryba ?= {}
       solr.user ?= {}
       solr.user = name: solr.user if typeof solr.user is 'string'
@@ -64,8 +66,8 @@ differents cores ( and so with different ports).
       solr.cloud.env ?= {}
       zk_hosts = @contexts 'ryba/zookeeper/server', require("#{__dirname}/../../zookeeper/server/configure").handler
       solr.cloud.zk_connect = zk_hosts.map( (ctx) -> "#{ctx.config.host}:#{ctx.config.ryba.zookeeper.port}").join ','
-      solr.cloud.zkhosts = "#{solr.cloud.zk_connect}/solr"
-      solr.cloud.zk_node = "/solr"
+      solr.cloud.zk_node ?= 'solr'
+      solr.cloud.zkhosts = "#{solr.cloud.zk_connect}/#{solr.cloud.zk_node}"
       solr.cloud.dir_factory ?= "${solr.directoryFactory:solr.NRTCachingDirectoryFactory}"
       solr.cloud.lock_type = 'native'
 
@@ -131,7 +133,8 @@ The property `zkCredentialsProvider` is named `zkCredientialsProvider`
 ### Environment and Zookeeper ACL
       
       solr.cloud.zk_opts ?= {}
-      solr.cloud.env['SOLR_JAVA_HOME'] ?= java.java_home
+      if java?
+        solr.cloud.env['SOLR_JAVA_HOME'] ?= java.java_home
       solr.cloud.env['SOLR_HOST'] ?= @config.host
       solr.cloud.env['ZK_HOST'] ?= solr.cloud.zkhosts
       solr.cloud.env['SOLR_HEAP'] ?= "512m"
@@ -165,7 +168,7 @@ So it must be run with jdk 1.8.
 The `solr.cloud.jre_home` configuration allow a specific java version to be used by 
 solr zkCli script
 
-      solr.cloud.jre_home ?= java.jre_home
+      solr.cloud.jre_home ?= java.jre_home if java?
 
 ### Configure HDFS
 [Configure][solr-hdfs] Solr to index document using hdfs, and document stored in HDFS.

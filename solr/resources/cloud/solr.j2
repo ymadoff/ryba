@@ -75,7 +75,7 @@ case "$1" in
 esac
 
 if [ -n "$RUNAS" ]; then
-  su -c "SOLR_INCLUDE=\"$SOLR_ENV\" \"$SOLR_INSTALL_DIR/bin/solr\" $SOLR_CMD -c -z {{ryba.solr.cloud.zk_connect}}{{ryba.solr.cloud.zk_node}} -s /var/solr/data" - "$RUNAS"
+  su -c "SOLR_INCLUDE=\"$SOLR_ENV\" \"$SOLR_INSTALL_DIR/bin/solr\" $SOLR_CMD -c -z {{ryba.solr.cloud.zk_connect}}/{{ryba.solr.cloud.zk_node}} -s /var/solr/data" - "$RUNAS"
 else
   SOLR_INCLUDE="$SOLR_ENV" "$SOLR_INSTALL_DIR/bin/solr -c -z {{ryba.solr.zk_connect}}{{ryba.solr.cloud.zk_node}} -s /var/solr/data" "$SOLR_CMD"
 fi

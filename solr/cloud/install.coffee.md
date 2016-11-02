@@ -242,7 +242,7 @@ Create HDFS solr user and its home directory
           server/scripts/cloud-scripts/zkcli.sh -zkhost #{solr.cloud.zkhosts} \ 
           -cmd bootstrap -solrhome #{solr.user.home}
         """
-        unless_exec: "zookeeper-client -server #{solr.cloud.zk_connect} ls / | grep solr"
+        unless_exec: "zookeeper-client -server #{solr.cloud.zk_connect} ls /#{solr.cloud.zk_node} | grep '#{solr.cloud.zk_node}'"
 
 ## Enable Authentication and ACLs
 For now we skip security configuration to solr when source is 'HDP'.
@@ -254,7 +254,7 @@ HDP has version 5.2.1 of solr, and security plugins are included from 5.3.0
         cmd: """
           cd #{solr.cloud.latest_dir}
           server/scripts/cloud-scripts/zkcli.sh -zkhost #{solr.cloud.zk_connect} \
-          -cmd put /solr/security.json '{}'
+          -cmd put /solr/security.json '#{JSON.stringify solr.cloud.security}'
         """
 
 ## SSL
