@@ -18,8 +18,8 @@ RUN yum install -y cyrus-sasl-gssapi unzip
 # Java #
 
 WORKDIR /tmp
-RUN curl -L -O -H "Cookie: oraclelicense=accept-securebackup-cookie" -k "http://download.oracle.com/otn-pub/java/jdk/8u77-b03/jdk-8u77-linux-x64.rpm"
-RUN rpm -ivh jdk-8u77-linux-x64.rpm
+RUN curl -L -O -H "Cookie: oraclelicense=accept-securebackup-cookie" -k "http://download.oracle.com/otn-pub/java/jdk/8u101-b13/jdk-8u101-linux-x64.rpm"
+RUN rpm -ivh jdk-8u101-linux-x64.rpm
 ENV JAVA_HOME /usr/java/default
 
 RUN curl  -k  -o solr.tar.gz  "{{ryba.solr.cloud_docker.source}}"
@@ -57,19 +57,20 @@ RUN ln -s {{ryba.solr.cloud_docker.conf_dir}}/solr.xml {{ryba.solr.user.home}}/s
 
 
 RUN chown {{ryba.solr.user.name}}:{{ryba.solr.group.name}} -R {{ryba.solr.cloud_docker.install_dir}}
-#
-#COPY docker_entrypoint.sh {{ryba.solr.user.home}}/docker_entrypoint.sh
-#RUN chmod 755 {{ryba.solr.user.home}}/docker_entrypoint.sh
-#RUN chown {{ryba.solr.user.name}}:{{ryba.solr.group.name}} {{ryba.solr.user.home}}/docker_entrypoint.sh
+
+COPY docker_entrypoint.sh /docker_entrypoint.sh
+RUN chmod +x /docker_entrypoint.sh
+RUN chown {{ryba.solr.user.name}}:{{ryba.solr.group.name}} /docker_entrypoint.sh
 
 USER root
 RUN rm -f /tmp/solr.tar.gz
 
 RUN echo 'ZONE="Europe/Paris"'> /etc/sysconfig/clock
 RUN ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime
-RUN rm -f /jdk-8u77-linux-x64.rpm
+RUN rm -f /jdk-8u101-linux-x64.rpm
 
-USER {{ryba.solr.user.name}}
+# USER {{ryba.solr.user.name}}
 WORKDIR {{ryba.solr.user.home}}
+ENV TERM=xterm-256color
 
 CMD ["./docker_entrypoint.sh"]

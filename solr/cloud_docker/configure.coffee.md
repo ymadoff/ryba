@@ -46,12 +46,12 @@ ryba:
       solr.user.system ?= true
       solr.user.comment ?= 'Solr User'
       solr.user.groups ?= 'hadoop'
+      solr.user.gid ?= 'solr'
       # Group
       solr.group ?= {}
       solr.group = name: solr.group if typeof solr.group is 'string'
       solr.group.name ?= 'solr'
       solr.group.system ?= true
-      solr.user.gid ?= solr.group.name
       # User Limits
       solr.user.limits ?= {}
       solr.user.limits.nofile ?= 64000
@@ -69,9 +69,9 @@ ryba:
       solr.cloud_docker.build ?= {}
       solr.cloud_docker.build.dir ?= "#{@config.mecano.cache_dir}/solr"
       solr.cloud_docker.build.image ?= "ryba/solr"
-      solr.cloud_docker.build.version ?= "5.5"
       solr.cloud_docker.build.tar ?= "solr_image.tar"
       solr.cloud_docker.build.source ?= "#{solr.cloud_docker.build.dir}/#{solr.cloud_docker.build.tar}"
+      solr.cloud_docker.docker_compose_version ?= '1'
 
 ## Core Conf
 
@@ -143,7 +143,7 @@ The property `zkCredentialsProvider` was named `zkCredientialsProvider`
 
 ## Environment
 
-      solr.cloud_docker.env['SOLR_JAVA_HOME'] ?= java.java_home
+      solr.cloud_docker.env['SOLR_JAVA_HOME'] ?= java.java_home if java?
       solr.cloud_docker.env['SOLR_HOST'] ?= @config.host
       solr.cloud_docker.env['SOLR_PID_DIR'] ?= solr.cloud_docker.pid_dir
       solr.cloud_docker.env['SOLR_HEAP'] ?= "512m"
@@ -187,6 +187,7 @@ network_mode: host (port collision).
 ```
 
 Makes this method public to let other services use its configuration logic (ranger for example)
+You can check the [docker-compose file reference](https://docs.docker.com/compose/compose-file/)
 
       module.exports.configure_solr_cluster = (context, name, config={}) ->
         config.hosts ?= context.contexts('ryba/solr/cloud_docker').map((c)->c.config.host)
@@ -195,15 +196,17 @@ Makes this method public to let other services use its configuration logic (rang
         throw Error "Name should not contain -" if /-+/.test name
         # Cluster config 
         # Docker-compose config
+        config.docker_compose_version ?= solr.cloud_docker.docker_compose_version ?= '1'
         config.mem_limit ?= '1g'
         config.port ?= '8983'
         # config.cpu_shares ?= 5
         # config.cpu_quota ?= 50 * 1000
         config.heap_size ?= '1024m'
         config.data_dir ?= "#{solr.user.home}/#{name}"
-        config.log_dir ?= "#{solr.log_dir}/#{name}"
-        config.pid_dir ?= "#{solr.pid_dir}/#{name}"
+        config.log_dir ?= "#{solr.cloud_docker.log_dir}/#{name}"
+        config.pid_dir ?= "#{solr.cloud_docker.pid_dir}/#{name}"
         config.zk_node ?= "solr_#{name}"
+        config.zk_urls ?= "#{solr.cloud_docker.zk_connect}/#{config.zk_node}"
         config.service_def ?= {}
         config['env'] ?= {}
         volumes = [
@@ -219,6 +222,7 @@ Makes this method public to let other services use its configuration logic (rang
             "/etc/krb5.conf:/etc/krb5.conf" ] 
         volumes.push config.volumes...
         config.master_configured = false
+        config.node_names ?= {}
         for node in [1..config.containers]
           command = "/docker_entrypoint.sh --zk_node #{config.zk_node} " # --port #{config.port}"
           environment = []
@@ -239,17 +243,33 @@ Makes this method public to let other services use its configuration logic (rang
             config.master_container_name = container_name
           #docker-compose.yml container specific properties
           #be careful this property is used in `ryba/ranger/admin/solr_bootstrap` file
-          config.service_def[container_name]=
-            'image' : "#{solr.cloud_docker.build.image}:#{solr.cloud_docker.build.version}"
-            'restart': "always"
-            'command': command
-            'volumes': volumes
-            'ports': [config.port]
-            'network_mode': 'host'
-            'mem_limit': config.mem_limit
-            'cpu_shares': config.cpu_shares
-            'cpu_quota': config.cpu_quota
-          config.service_def[container_name]['environment'] = environment if  environment.length > 0
+          switch config.docker_compose_version
+            when '1'
+              config.service_def[container_name]=
+                'image' : "#{solr.cloud_docker.build.image}:#{solr.cloud_docker.version}"
+                'restart': "always"
+                'command': command
+                'volumes': volumes
+                'ports': [config.port]
+                'net': 'host'
+                'mem_limit': config.mem_limit
+                'cpu_shares': config.cpu_shares
+                'cpu_quota': config.cpu_quota
+              config.service_def[container_name]['environment'] = environment if  environment.length > 0
+            when '2'
+              config.service_def[container_name]=
+                'image' : "#{solr.cloud_docker.build.image}:#{solr.cloud_docker.version}"
+                'restart': "always"
+                'command': command
+                'volumes': volumes
+                'ports': [config.port]
+                'network_mode': 'host'
+                'mem_limit': config.mem_limit
+                'cpu_shares': config.cpu_shares
+                'cpu_quota': config.cpu_quota
+              config.service_def[container_name]['environment'] = environment if  environment.length > 0
+            else 
+              throw Error 'Docker compose version not supported'
         # solr.in.sh node specific properties
         # Custom Host config (a container for a host)
         config_hosts = config.config_hosts = {}
@@ -260,6 +280,7 @@ Makes this method public to let other services use its configuration logic (rang
             config_host['env'] ?= {}
             config_host['env']['SOLR_HOME'] ?= "#{solr.user.home}"
             config_host['env']['SOLR_PORT'] ?= "#{config.port}"
+            config_host['env']['SOLR_HOST'] ?= "#{host}"
             config_host['env']['SOLR_AUTHENTICATION_OPTS'] ?= "-Djetty.port=#{config.port}" #backward compatibility
             config_host['env']['ZK_HOST'] ?= "#{solr.cloud_docker.zk_connect}/#{config.zk_node}"
             for prop in [
@@ -270,7 +291,6 @@ Makes this method public to let other services use its configuration logic (rang
               'SOLR_SSL_TRUST_STORE'
               'SOLR_SSL_TRUST_STORE_PASSWORD'
               'SOLR_SSL_NEED_CLIENT_AUTH'
-              'SOLR_HOST'
               'SOLR_PID_DIR'
             ] then config_host['env'][prop] ?= config_host['env'][prop] ?= config['env'][prop] ?= solr.cloud_docker['env'][prop] 
             # Authentication & Authorization
@@ -317,7 +337,7 @@ Makes this method public to let other services use its configuration logic (rang
             config_host.auth_opts ?= {}
             config_host.auth_opts['solr.kerberos.cookie.domain'] ?= "#{context.config.host}"
             config_host.auth_opts['java.security.auth.login.config'] ?= "#{solr.cloud_docker.conf_dir}/solr-server.jaas"
-            config_host.auth_opts['solr.kerberos.principal'] ?= solr.cloud_docker.spnego.principal
+            config_host.auth_opts['solr.kerberos.principal'] ?= "HTTP/#{context.config.host}@#{context.config.ryba.realm}"
             config_host.auth_opts['solr.kerberos.keytab'] ?= solr.cloud_docker.spnego.keytab
             config_host.auth_opts['solr.kerberos.name.rules'] ?= "RULE:[1:\\$1]RULE:[2:\\$1]"
       # configure all cluster present in conf/config.coffee solr configuration

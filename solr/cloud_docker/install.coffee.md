@@ -6,15 +6,23 @@
       {ssl, ssl_server, ssl_client, hadoop_conf_dir, realm, hadoop_group} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       tmp_dir  = solr.cloud_docker.tmp_dir ?= "/var/tmp/ryba/solr"
-      protocol = if solr.cloud_docker.ssl.enabled then 'https' else 'http'
+      hosts = @contexts('ryba/solr/cloud_docker').map (ctx) -> ctx.config.host
+      solr.cloud_docker.build.dir = '/tmp/solr/build'
 
 ## Dependencies
 
-      @call once:true, 'masson/commons/java'
+      @call 'masson/commons/java'
       @call 'masson/core/krb5_client/wait'
       @call 'ryba/zookeeper/server/wait'
       @register ['file', 'jaas'], 'ryba/lib/file_jaas'
       @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
+
+
+## Users and Groups
+Create user and groups for solr user.
+
+      @group solr.group
+      @user solr.user
 
 ## Layout
 
@@ -26,11 +34,6 @@
         directory: solr.cloud_docker.conf_dir
         uid: solr.user.name
         gid: solr.group.name
-
-## Users and Groups
-
-      @group solr.group
-      @user solr.user
 
 ## Kerberos
 
@@ -101,16 +104,13 @@
 
 ## Container
 Ryba support installing solr from apache official release or HDP Search repos.
+Priority to docker pull function to get the solr container, else a tar should
+be prepared in the mecano cache dir.
 
-      @file.download
-        binary: true
-        header: 'Download docker container'
-        source: solr.cloud_docker.build.source
-        target: "#{tmp_dir}/solr.tar"
       @call 
         header: 'Check container', handler: (opts, callback) =>
           checksum  = ''
-          @docker_checksum
+          @docker.checksum
             docker: solr.cloud_docker.swarm_conf
             image: solr.cloud_docker.build.image
             tag: solr.cloud_docker.build.version
@@ -119,12 +119,32 @@ Ryba support installing solr from apache official release or HDP Search repos.
             checksum = chk
             opts.log "Found image with checksum: #{checksum}" unless !checksum
             if !checksum then callback null, true else callback null, false
-      @docker_load
+      @docker.pull
+        header: 'Pull container'
+        if: -> @status(-1)
+        tag: solr.cloud_docker.build.image
+        version: solr.cloud_docker.version
+        code_skipped: 1
+      @file.download
+        if: -> @status(-2)
+        binary: true
+        header: 'Download container'
+        source: solr.cloud_docker.build.source
+        target: "#{tmp_dir}/solr.tar"
+      @docker.load
         header: 'Load container to docker'
-        if: -> @status -1 or @status -2
+        if: -> @status()
+        if_exists: "#{tmp_dir}/solr.tar"
         source: "#{tmp_dir}/solr.tar"
         docker: solr.cloud_docker.swarm_conf
 
+## User Limits
+
+      @system_limits
+        header: 'Ulimit'
+        user: solr.user.name
+        nofile: solr.user.limits.nofile
+        nproc: solr.user.limits.nproc
 ## SSL
 
       @java_keystore_add
@@ -163,13 +183,26 @@ Ryba support installing solr from apache official release or HDP Search repos.
 ## Cluster Specific configuration
 Here we loop through the clusters definition to write container specific file
 configuration like solr.in.sh or solr.xml.
-      
+
+      @call
+        if: solr.cloud_docker.clusters?
+      , ->
       @each solr.cloud_docker.clusters, (options, callback) ->
         counter = 0
         name = options.key
         config = solr.cloud_docker.clusters[name] # get cluster config
         config_host = config.config_hosts["#{@config.host}"] # get host config for the cluster
-        return next() unless config_host?
+        dockerfile = null
+        return callback() unless config_host?
+        switch config.docker_compose_version
+          when '1' 
+            dockerfile = config.service_def
+            break;
+          when '2' 
+            dockerfile =
+              version:'2'
+              services: config.service_def
+            break;
         config_host.env['SOLR_AUTHENTICATION_OPTS'] ?= ''
         config_host.env['SOLR_AUTHENTICATION_OPTS'] += " -D#{k}=#{v} "  for k, v of config_host.auth_opts
         writes = for k,v of config_host.env
@@ -235,9 +268,12 @@ configuration like solr.in.sh or solr.xml.
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0750
-        @call -> 
-          for node in [1..config.containers]
-            config.service_def["node_#{node}"]['depends_on'] = ["node_#{config.master_node}"] if node != config.master_node
+        @call
+          unless: config.docker_compose_version is '1'
+          shy: true
+          handler: ->
+            for node in [1..config.containers]
+              config.service_def["node_#{node}"]['depends_on'] = ["node_#{config.master_node}"] if node != config.master_node
         @call 
           header: 'Solr xml config'
         , ->
@@ -268,25 +304,26 @@ configuration like solr.in.sh or solr.xml.
               backup: true
               eof: true
         @file.yaml
-          if: @config.host is config['master']
+          if: @config.host is config['master'] or not @config.docker.swarm
           header: 'Generation docker-compose'
           target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker-compose.yml"
-          content:  
-            version:'2'
-            services: config.service_def
+          content: dockerfile
+          uid: solr.user.name
+          gid: solr.group.name
+          mode: 0o0750
+        @docker.compose.up
+          header: 'Compose up through swarm'
+          if: @config.host is config['master'] and @config.docker.swarm?
+          target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker-compose.yml"
+        @docker.compose.up
+          header: 'Compose up without swarm'
+          unless: @config.docker.swarm?
+          services: "node_#{hosts.indexOf(@config.host)+1}"
+          target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker-compose.yml"
         @then callback
-
-## User Limits
-
-      @system_limits
-        header: 'Ulimit'
-        user: solr.user.name
-        nofile: solr.user.limits.nofile
-        nproc: solr.user.limits.nproc
 
 ## Dependencies
 
     path = require 'path'
     mkcmd  = require '../../lib/mkcmd'
-    each = require 'each'
     builder = require 'xmlbuilder'
