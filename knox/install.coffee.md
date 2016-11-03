@@ -40,14 +40,16 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         @service name: 'knox'
         @hdp_select name: 'knox-server'
         # Fix autogen of master secret
-        @remove
-          target: [
+        @call 
+          if: ->@status -2
+        , ->
+          @each  [
             '/usr/hdp/current/knox-server/data/security/master'
             '/usr/hdp/current/knox-server/data/security/keystores'
             '/usr/hdp/current/knox-server/conf/topologies/admin.xml'
             '/usr/hdp/current/knox-server/conf/topologies/sandbox.xml'
-          ] 
-          if: @status -2
+          ] , (options) ->
+              @remove  target: options.key
         @chown
           target: '/var/log/knox'
           uid: knox.user.name
@@ -183,7 +185,6 @@ in the gateway.sh service script.
         @execute
           if: -> @status -1
           cmd: "/usr/hdp/current/knox-server/bin/knoxcli.sh create-alias gateway-identity-passphrase --value #{knox.ssl.keypass}"
-        
 
 Knox use Shiro for LDAP authentication and Shiro cannot be configured for 
 unsecure SSL.
