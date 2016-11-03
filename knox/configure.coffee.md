@@ -210,7 +210,7 @@ This mechanism can be used to configure a specific gateway without having to dec
           ctxs = @contexts 'ryba/hive/server2', require('../hive/server2/configure').handler
           if ctxs.length
             host = ctxs[0].config.host
-            port = ctxs[0].config.ryba.hive.site['hive.server2.thrift.http.port']
+            port = ctxs[0].config.ryba.hive.server2.site['hive.server2.thrift.http.port']
             topology.services['hive'] = "http://#{host}:#{port}/cliservice"
           else throw Error 'Cannot autoconfigure KNOX hive service, no hiveserver2 declared'
         # Hive WebHCat
