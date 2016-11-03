@@ -431,9 +431,17 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
             escape = (text) -> text.replace(/[\\"]/g, "\\$&")
             version_local = db.cmd(oozie.db, "select data from OOZIE_SYS where name='oozie.version'") + "| tail -1"
             version_remote = "ls /usr/hdp/current/oozie-server/lib/oozie-client-*.jar | sed 's/.*client\\-\\(.*\\).jar/\\1/'"
+            properties =
+              'engine': oozie.db.engine
+              'host': oozie.db.host
+              'admin_username': oozie.db.admin_username
+              'admin_password': oozie.db.admin_password
+              'username': username
+              'password': password
+            @db.user properties
             @db.database.exists oozie.db
             @execute
-              cmd: db.cmd oozie.db, """
+              cmd: db.cmd properties, """
               create database #{oozie.db.database};
               grant all privileges on #{oozie.db.database}.* to '#{username}'@'localhost' identified by '#{password}';
               grant all privileges on #{oozie.db.database}.* to '#{username}'@'%' identified by '#{password}';
