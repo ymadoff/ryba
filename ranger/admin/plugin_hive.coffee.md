@@ -119,7 +119,7 @@ we execute this task using the rest api.
           @hdfs_mkdir
             header: 'Ranger Audit HIVE Layout'
             target: "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hiveServer2"
-            mode: 0o000
+            mode: 0o750
             user: hive.user.name
             group: hive.user.name
             unless_exec: mkcmd.hdfs @, "hdfs dfs -test -d #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hiveServer2"

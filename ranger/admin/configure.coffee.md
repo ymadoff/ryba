@@ -170,13 +170,14 @@ on the same host than `ryba/ranger/admin` module.
            "#{if solr.single.ssl.enabled  then 'https://'  else 'http://'}#{ctx.config.host}:#{ctx.config.ryba.solr.single.port}")
             .map( (url) -> if ranger.admin.solr_type is 'single' then "#{url}/solr/ranger_audits" else "#{url}")
             .join(',')
-          solr_ctx
-          .after
-            type: 'java_keystore_add'
-            keystore: solr["#{ranger.admin.solr_type}"]['ssl_trustore_path']
-            storepass: solr["#{ranger.admin.solr_type}"]['ssl_keystore_pwd']
-            caname: "hadoop_root_ca"
-            handler: -> @call 'ryba/ranger/admin/solr_bootstrap'
+          if @params.command is 'install'
+            solr_ctx
+            .after
+              type: 'java_keystore_add'
+              keystore: solr["#{ranger.admin.solr_type}"]['ssl_trustore_path']
+              storepass: solr["#{ranger.admin.solr_type}"]['ssl_keystore_pwd']
+              caname: "hadoop_root_ca"
+              handler: -> @call 'ryba/ranger/admin/solr_bootstrap'
           break;
         when 'cloud'
           throw Error 'No Solr Cloud Server configure' unless sc_ctxs.length > 0
@@ -187,18 +188,17 @@ on the same host than `ryba/ranger/admin` module.
            "#{if solr.cloud.ssl.enabled  then 'https://'  else 'http://'}#{ctx.config.host}:#{ctx.config.ryba.solr.cloud.port}")
             .map( (url) -> if ranger.admin.solr_type is 'single' then "#{url}/solr/ranger_audits" else "#{url}")
             .join(',')
-          ranger.admin.install['audit_solr_zookeepers'] ?= solr["#{ranger.admin.solr_type}"]['zkhosts']
-          solr_ctx
-          .after
-            type: 'java_keystore_add'
-            keystore: solr["#{ranger.admin.solr_type}"]['ssl_trustore_path']
-            storepass: solr["#{ranger.admin.solr_type}"]['ssl_keystore_pwd']
-            caname: "hadoop_root_ca"
-            handler: -> @call 'ryba/ranger/admin/solr_bootstrap'
+          ranger.admin.install['audit_solr_zookeepers'] ?= solr["#{ranger.admin.solr_type}"]['zkhosts']          
+          if @params.command is 'install'
+            solr_ctx
+            .after
+              type: ['service','start']
+              name: 'solr'
+              handler: -> @call 'ryba/ranger/admin/solr_bootstrap'
           break;
         when 'cloud_docker'
           throw Error 'No Solr Cloud Server configured' unless scd_ctxs.length > 0 or ranger.admin.cluster_name?
-          cluster_name = ranger.admin.cluster_name ?= 'ryba_ranger_cluster'
+          cluster_name = ranger.admin.cluster_name ?= 'ranger_cluster'
           ranger.admin.solr_admin_user ?= 'solr'
           ranger.admin.solr_admin_password ?= 'SolrRocks' #Default
           ranger.admin.solr_users ?= [
@@ -220,19 +220,22 @@ on the same host than `ryba/ranger/admin` module.
               # Configures one cluster if not in config
               solr.cloud_docker.clusters ?= {}
               cluster_config  = solr.cloud_docker.clusters[cluster_name] ?= {}
+              cluster_config.volumes ?= []
+              cluster_config.volumes.push '/tmp/ranger_audits:/ranger_audits'
               cluster_config['containers'] ?= scd_ctxs.length
               cluster_config['master'] ?= scd_ctxs[0].config.host
               cluster_config['heap_size'] ?= '256m'
               cluster_config['port'] ?= 10000
               cluster_config.zk_opts ?= {}
-              cluster_config['hosts'] ?= ['worker1.ryba','worker2.ryba']
+              cluster_config['hosts'] ?= scd_ctxs.map (ctx) -> ctx.config.host 
               configure_solr_cluster solr_ctx , cluster_name, cluster_config
             ranger.admin.cluster_config = scd_ctxs[0].config.ryba.solr.cloud_docker.clusters[cluster_name]
-            scd_ctxs[0]
-            .after
-              type: 'system_limits'
-              user: scd_ctxs[0].config.ryba.solr.user.name
-              handler: -> @call 'ryba/ranger/admin/solr_bootstrap'
+            if @params.command is 'install'
+              scd_ctxs[0]
+              .after
+                type: ['docker','compose','up']
+                target: "#{solr.cloud_docker.conf_dir}/clusters/#{cluster_name}/docker-compose.yml"
+                handler: -> @call 'ryba/ranger/admin/solr_bootstrap'
           else
             ranger.admin.cluster_config = solr.cloud_docker.clusters[cluster_name]
             #Search for a cloud_docker cluster find in solr.cloud_docker.clusters
@@ -253,6 +256,7 @@ Create the `ranger_audits` collection('cloud')/core('standalone').
         ranger.admin.install['audit_solr_urls'] ?= solrs_urls
         ranger.admin.install['audit_solr_user'] ?= 'ranger'
         ranger.admin.install['audit_solr_password'] ?= 'ranger123'
+        # ranger.admin.install['audit_solr_zookeepers'] = 'NONE'
 
 When Basic authentication is used, the following property can be set to add 
 users to solr `ranger.admin.cluster_config.ranger.solr_users`:
@@ -500,29 +504,21 @@ Configure Audit to SOLR
 ### HDFS Plugin Activation
 
           nn_ctx
-          .after
-            type: 'hconfigure'
-            target: "#{nn_ctx.config.ryba.hdfs.nn.conf_dir}/hadoop-policy.xml"
+          .before
+            type: ['service','start']
+            name: 'hadoop-hdfs-namenode'
             handler: -> 
-              @call 'ryba/ranger/admin/plugin_hdfs'
               @call 
-                header: "Namenode Scheduled Ranger Restart"
-                if: -> @status -1
-                handler: ->
-                  @wait_execute
-                    cmd: """
-                      curl --fail -H \"Content-Type: application/json\"   -k -X GET  \ 
-                      -u admin:#{ranger.admin.password} \
-                      \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{hdfs_plugin.install['REPOSITORY_NAME']}\"
-                    """
-                    code_skipped: [1,7,22]
+                if: -> @params.command is 'install'
+                header: 'Ranger HDFS NameNode Plugin'
+              , ->
+                  @call 'ryba/ranger/admin/plugin_hdfs'
                   @service.status
                     name: 'hadoop-hdfs-namenode'
                   @service.restart
-                    if: -> @status -1 #restart only if already started
+                    if: -> @status -1 and @status -2
                     header: 'Ranger scheduled HDFS NameNode restart'
                     name: 'hadoop-hdfs-namenode'
-                    if_exists: '/etc/init.d/hadoop-hdfs-namenode'          
           ranger.plugins.hdfs_configured = true
 
 
@@ -638,29 +634,23 @@ Enable Yarn ResourceManager(s) plugin
         @each rm_ctxs, (options) ->
           rm_ctx = options.key
           rm_ctx
-          .after
-            type: 'hconfigure'
-            target: "#{rm_ctx.config.ryba.yarn.rm.conf_dir}/yarn-site.xml"
-            handler: -> 
-              @call -> rm_ctx.config.ryba.yarn_plugin_is_master = true
-              @call 'ryba/ranger/admin/plugin_yarn'
-              @call -> rm_ctx.config.ryba.yarn_plugin_is_master = false
           .before
-            type: 'service.start'
+            type: ['service','start']
             name: 'hadoop-yarn-resourcemanager'
-            if_exists: '/etc/init.d/hadoop-yarn-resourcemanager'
-            handler: -> 
-              @wait_execute
-                cmd: """
-                  curl --fail -H \"Content-Type: application/json\" -k -X GET \ 
-                  -u admin:#{ranger.admin.password} \
-                  \"#{yarn_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{yarn_plugin.install['REPOSITORY_NAME']}\"
-                """
-                code_skipped: 22
-              @service.restart 
-                header: 'Ranger scheduled ResourceManager restart'
-                if_exec: 'service hadoop-yarn-resourcemanager status'
-                name: 'hadoop-yarn-resourcemanager'
+            handler: ->
+              @call 
+                if: -> @params.command is 'install'
+                header: 'Ranger YARN ResourceManager Plugin'
+              , ->  
+                @call -> rm_ctx.config.ryba.yarn_plugin_is_master = true
+                @call 'ryba/ranger/admin/plugin_yarn'
+                @call -> rm_ctx.config.ryba.yarn_plugin_is_master = false
+                @service.status
+                  name: 'hadoop-yarn-resourcemanager'
+                @service.restart
+                  header: 'Ranger Scheduled ResourceManager restart'
+                  if: -> @status(-3) and @status (-1)
+                  name: 'hadoop-yarn-resourcemanager'
 
 ### YARN NodeManager Enable
 Enable Yarn NodeManager(s) plugin
@@ -668,26 +658,21 @@ Enable Yarn NodeManager(s) plugin
         @each nm_ctxs, (options) ->
           nm_ctx = options.key
           nm_ctx
-          .after
-            type: 'hconfigure'
-            target: "#{nm_ctx.config.ryba.yarn.nm.conf_dir}/yarn-site.xml"
-            handler: -> @call 'ryba/ranger/admin/plugin_yarn'
           .before
-            type: 'service.start'
+            type: ['service','start']
             name: 'hadoop-yarn-nodemanager'
             handler: ->
-              @wait_execute
-                cmd: """
-                  curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
-                  -u admin:#{ranger.admin.password} \
-                  \"#{yarn_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{yarn_plugin.install['REPOSITORY_NAME']}\"
-                """
-                code_skipped: [1,7,22]
-              @service.status
-                name: 'hadoop-yarn-nodemanager'
-                if: -> @status -1
-              @service.restart
-                name: 'hadoop-yarn-nodemanager'
+              @call 
+                if: -> @params.command is 'install'
+                header: 'Ranger YARN NodeManager Plugin'
+              , ->
+                @call 'ryba/ranger/admin/plugin_yarn'
+                @service.status
+                  name: 'hadoop-yarn-nodemanager'
+                @service.restart
+                  if: -> @status(-1) and @status(-2)
+                  header: 'Ranger Scheduled NodeManager Restart'
+                  name: 'hadoop-yarn-nodemanager'
 
 ## HBase Plugin
 
@@ -817,31 +802,22 @@ The repository name should match the reposity name in web ui.
             hm_ctx.config.ryba.ranger.hbase_plugin.install['SSL_TRUSTSTORE_FILE_PATH'] ?= hm_ctx.config.ryba.ssl_client['ssl.client.truststore.location']
             hm_ctx.config.ryba.ranger.hbase_plugin.install['SSL_TRUSTSTORE_PASSWORD'] ?= hm_ctx.config.ryba.ssl_client['ssl.client.truststore.password']
           hm_ctx
-          .after
-            type: 'hconfigure'
-            target: "#{hm_ctx.config.ryba.hbase.master.conf_dir}/hbase-site.xml"
-            handler: -> 
-              @call -> hm_ctx.config.ryba.hbase_plugin_is_master = true
-              @call 'ryba/ranger/admin/plugin_hbase'
-              @call -> hm_ctx.config.ryba.hbase_plugin_is_master = false
-          hm_ctx
           .before
-            type: 'service.start'
+            type: ['service','start']
             name: 'hbase-master'
-            if_exists: '/etc/init.d/hbase-master'
-            handler: ->
-              @wait_execute
-                header: 'Wait HBase Ranger repository'
-                cmd: """
-                  curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
-                  -u admin:#{ranger.admin.password} \
-                  \"#{hbase_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{hbase_plugin.install['REPOSITORY_NAME']}\"
-                """
-                code_skipped: 22
-              @service.restart
-                header: 'Ranger scheduled HBase Master restart'
-                if_exec: 'service hbase-master status'
-                name: 'hbase-master'
+            handler: -> 
+              @call 
+                if: -> @params.command is 'install'
+                header: 'Ranger HBase Master Plugin'
+              , ->
+                @call -> hm_ctx.config.ryba.hbase_plugin_is_master = true
+                @call 'ryba/ranger/admin/plugin_hbase'
+                @call -> hm_ctx.config.ryba.hbase_plugin_is_master = false
+                @service.status 'hbase-master'
+                @service.restart
+                  header: 'Ranger scheduled HBase Master restart'
+                  if: -> @status(-1) and @status(-3)
+                  name: 'hbase-master'
 
         # Regionservers
         @each rs_ctxs, (options) ->
@@ -855,23 +831,21 @@ The repository name should match the reposity name in web ui.
           .after
             type: 'hconfigure'
             target: "#{rs_ctx.config.ryba.hbase.rs.conf_dir}/hbase-site.xml"
-            handler: -> @call 'ryba/ranger/admin/plugin_hbase'
+            handler: -> 
           .before
-            type: 'service'
+            type: ['service','start']
             name: 'hbase-regionserver'
-            if_exists: '/etc/init.d/hbase-regionserver'
             handler: ->
-              @wait_execute
-                cmd: """
-                  curl --fail -H \"Content-Type: application/json\"   -k -X GET  \ 
-                  -u admin:#{ranger.admin.password} \
-                  \"#{hbase_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{hbase_plugin.install['REPOSITORY_NAME']}\"
-                """
-                code_skipped: [22,7]
-              @service.restart
-                header: 'Ranger scheduled HBase Regionserver restart'
-                if_exec: 'service hbase-regionserver status'
-                name: 'hbase-regionserver'
+              @call 
+                if: -> @params.command is 'install'
+                header: 'Ranger HBase RegionServer Plugin'
+              , ->
+                @call 'ryba/ranger/admin/plugin_hbase'
+                @service.status 'hbase-regionserver'
+                @service.restart
+                  header: 'Ranger Scheduled HBase Regionserver restart'
+                  if: -> @status(-1) and @status(-2)
+                  name: 'hbase-regionserver'
 
 ## Kafka Plugin
 
@@ -979,27 +953,21 @@ The properties can be found [here][kafka-repository]
 ### Kafka Plugin Execution   
 
           kb_ctx
-          .after
-            type: 'file'
-            target: "#{kb_ctx.config.ryba.kafka.broker.conf_dir}/server.properties"
-            handler: -> @call 'ryba/ranger/admin/plugin_kafka'
-          kb_ctx
           .before
-            type: 'service'
+            type: ['service','start']
             name: 'kafka-broker'
-            if_exists: '/etc/init.d/kafka-broker'
-          , handler: -> 
-              @wait_execute
-                cmd: """
-                  curl --fail -H \"Content-Type: application/json\"   -k -X GET  \ 
-                  -u admin:#{ranger.admin.password} \
-                  \"#{kafka_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{kafka_plugin.install['REPOSITORY_NAME']}\"
-                """
-                code_skipped: [22,7]
-              @service.restart 
-                header: 'Ranger scheduled Kafka Broker restart'
-                if_exec: 'service kafka-broker status'
-                name: 'kafka-broker'
+            handler: ->
+              @call 
+                if: -> @params.command is 'install'
+                header: 'Ranger Kafka Broker Plugin'
+              , ->
+                @call 'ryba/ranger/admin/plugin_kafka'
+                @service.status
+                  name: 'kafka-broker'
+                @service.restart
+                  if: -> @status(-1) and @status(-2)
+                  header: 'Ranger Scheduled Kafka Broker Restart'
+                  name: 'kafka-broker'
 
 ## Ranger HIVE Plugin
 Ranger Hive plugin runs inside Hiveserver JVM
@@ -1148,33 +1116,26 @@ Used only if SSL is enabled between Policy Admin Tool and Plugin
             hive_plugin.install['SSL_TRUSTSTORE_FILE_PATH'] ?= hive_ctx.config.ryba.ssl_client['ssl.client.truststore.location']
             hive_plugin.install['SSL_TRUSTSTORE_PASSWORD'] ?= hive_ctx.config.ryba.ssl_client['ssl.client.truststore.password']
 
-### HIVE ResourceManager Enable      
+### HIVE ResourceManager Enable
 
           hive_ctx.config.ryba.ranger.user = ranger.user
           hive_ctx.config.ryba.ranger.group = ranger.group
           hive_ctx
-          .after
-            type: 'hconfigure'
-            target: "#{hive_ctx.config.ryba.hive.server2.conf_dir}/hive-site.xml"
-            handler: -> 
-              @call 'ryba/ranger/admin/plugin_hive'
-              @call
-                header: "Hive Server2 Scheduled Ranger Restart"
-                if: -> @status -1
-                handler: ->
-                  @wait_execute
-                    cmd: """
-                      curl --fail -H \"Content-Type: application/json\"   -k -X GET  \ 
-                      -u admin:#{ranger.admin.password} \
-                      \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{hive_plugin.install['REPOSITORY_NAME']}\"
-                    """
-                    code_skipped: 22
-                  @service.status
-                    name: 'hive-server2'
-                  @service.restart
-                    if: -> @status -1
-                    if_exec: 'service hive-server2 status'
-                    name: 'hive-server2'
+          .before
+            type: ['service','start']
+            name: 'hive-server2'
+            handler: ->
+              @call 
+                if: -> @params.command is 'install'
+                header: 'Ranger HiveServer2 Plugin '
+              , ->
+                @call 'ryba/ranger/admin/plugin_hive'
+                @service.status
+                  name: 'hive-server2'
+                @service.restart
+                  header: 'Ranger Scheduled HiveServer2 Restart'
+                  name: 'hive-server2'
+                  if: -> @status(-1) or @status(-2)
 
 ## Knox Gateway Plugin
 For the Knox plugin, the executed script already create the hdfs user to ranger admin
@@ -1291,28 +1252,21 @@ Configure Audit to SOLR
             knox_plugin.install['SSL_TRUSTSTORE_PASSWORD'] ?= knox_ctx.config.ryba.ssl_server['ssl.server.truststore.password']
 
           knox_ctx
-          .after
-            type: 'java_keystore_add'
-            keystore: '/usr/hdp/current/knox-server/data/security/keystores/gateway.jks'
-            name: 'gateway-identity'
-            handler: -> @call 'ryba/ranger/admin/plugin_knox'
           .before
-            type: 'service'
+            type: ['service','start']
             name: 'knox-server'
-            if_exists: '/etc/init.d/knox-server'
-            handler: -> 
-              @wait_execute
-                cmd: """
-                  curl --fail -H \"Content-Type: application/json\"   -k -X GET  \ 
-                  -u admin:#{ranger.admin.password} \
-                  \"#{knox_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{knox_plugin.install['REPOSITORY_NAME']}\"
-                """
-                code_skipped: 22
-              @service.restart
-                header: 'Ranger scheduled Knox Gateway restart'
-                name: 'knox-server'
-                if_exists: '/etc/init.d/knox-server'
-
+            handler: ->
+              @call 
+                if: -> @params.command is 'install'
+                header: 'Ranger Knox Plugin'
+              , ->
+                @call 'ryba/ranger/admin/plugin_knox'
+                @service.status
+                  name: 'knox-server'
+                @service.restart
+                  if: -> @status(-1) or @status(-2)
+                  header: 'Ranger Scheduled Kafka Broker Restart'
+                  name: 'knox-server'
 
 ## Dependencies
 

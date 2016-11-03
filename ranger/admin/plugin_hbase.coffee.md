@@ -84,14 +84,14 @@ we execute this task using the rest api.
           @hdfs_mkdir
             header: 'HBase Master plugin HDFS audit dir'
             target: "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hbaseMaster"
-            mode: 0o000
+            mode: 0o750
             user: hbase.user.name
             group: hbase.group.name
             unless_exec: mkcmd.hdfs @, "hdfs dfs -test -d #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hbaseMaster"
           @hdfs_mkdir
             header: 'HBase Regionserver plugin HDFS audit dir'
             target: "#{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hbaseRegional"
-            mode: 0o000
+            mode: 0o750
             user: hbase.user.name
             group: hbase.group.name
             unless_exec: mkcmd.hdfs @, "hdfs dfs -test -d #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hbaseRegional"
@@ -108,7 +108,6 @@ we execute this task using the rest api.
               -u admin:#{password} \
               \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/#{hdfs_plugin.install['REPOSITORY_NAME']}/policy/hbase-ranger-plugin-audit\"
             """
-            code_skippe: 22
           @execute
             header: 'Ranger Admin Repository'
             unless_exec: """
@@ -166,25 +165,79 @@ Must add certificate to JAVA Cacerts file manually.
               replace: "HCOMPONENT_LIB_DIR=/usr/hdp/current/hbase-client/lib"
           ]
           backup: true
-        @execute
-          header: 'Script Execution'
-          cmd: " /usr/hdp/#{version}/ranger-hbase-plugin/enable-hbase-plugin.sh"
-        @execute
-          header: "Fix Plugin repository permission"
-          cmd: "chown -R #{hbase.user.name}:#{hadoop_group.name} /etc/ranger/#{ranger.hbase_plugin.install['REPOSITORY_NAME']}"
-        @hconfigure
-          header: 'Fix Plugin security conf'
-          target: "#{conf_dir}/ranger-hbase-security.xml"
-          merge: true
-          properties:
-            'ranger.plugin.hbase.policy.rest.ssl.config.file': "#{conf_dir}/ranger-policymgr-ssl.xml"
-
+        @call
+          header: 'Enable HBase Plugin'
+          handler: (options, callback) ->
+            files = ['ranger-hbase-audit.xml','ranger-hbase-security.xml','ranger-policymgr-ssl.xml']
+            sources_props = {}
+            current_props = {}
+            files_exists = {}
+            @execute
+              cmd: """
+                echo '' | keytool -list \
+                -storetype jceks \
+                -keystore /etc/ranger/#{ranger.hbase_plugin.install['REPOSITORY_NAME']}/cred.jceks | egrep '.*ssltruststore|auditdbcred|sslkeystore'
+              """
+              code_skipped: 1 
+            @call 
+              if: -> @status -1 #do not need this if the cred.jceks file is not provisioned
+              handler: ->
+                @each files, (options, cb) ->
+                  file = options.key
+                  target = "#{conf_dir}/#{file}"
+                  @fs.exists target, (err, exists) ->
+                    return cb err if err
+                    return cb() unless exists
+                    files_exists["#{file}"] = exists
+                    properties.read options.ssh, target , (err, props) ->
+                      return cb err if err
+                      sources_props["#{file}"] = props  
+                      cb()
+            @execute
+              header: 'Script Execution'
+              cmd: """
+                if /usr/hdp/#{version}/ranger-hbase-plugin/enable-hbase-plugin.sh ;
+                then exit 0 ;
+                else exit 1 ;
+                fi;
+              """
+            @execute
+              header: "Fix Plugin repository permission"
+              cmd: "chown -R #{hbase.user.name}:#{hadoop_group.name} /etc/ranger/#{ranger.hbase_plugin.install['REPOSITORY_NAME']}"
+            @hconfigure
+              header: 'Fix Plugin security conf'
+              target: "#{conf_dir}/ranger-hbase-security.xml"
+              merge: true
+              properties:
+                'ranger.plugin.hbase.policy.rest.ssl.config.file': "#{conf_dir}/ranger-policymgr-ssl.xml"
+            @each files, (options, cb) ->
+              file = options.key
+              target = "#{conf_dir}/#{file}"
+              @fs.exists target, (err, exists) ->
+                return callback err if err
+                properties.read options.ssh, target , (err, props) ->
+                  return cb err if err
+                  current_props["#{file}"] = props
+                  cb()                
+            @call
+              header: 'Compare Current Config Files'
+              shy: true
+              handler: ->
+                for file in files
+                  #do not need to go further if the file did not exist
+                  return callback null, true unless sources_props["#{file}"]?
+                  for prop, value of current_props["#{file}"]
+                    return callback null, true unless value is sources_props["#{file}"][prop]
+                  for prop, value of sources_props["#{file}"]
+                    return callback null, true unless value is current_props["#{file}"][prop]
+                  return callback null, false
 
 ## Dependencies
 
     quote = require 'regexp-quote'
     path = require 'path'
     mkcmd = require '../../lib/mkcmd'
+    properties = require '../../lib/properties'
 
 [hbase-plugin]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/installing_ranger_plugins.html#installing_ranger_hbase_plugin)
 [perms-fix]https://community.hortonworks.com/questions/23717/ranger-solr-on-hdp-234-unable-to-refresh-policies.html

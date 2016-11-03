@@ -143,6 +143,9 @@ to allow user to create none-determisitic functions.
         mode: 0o0755
         context: @config.ryba
         unlink: true
+      @service
+        name: 'ranger-admin'
+        startup: true
 
 ## SSL
 

@@ -3,6 +3,8 @@
       {solr} = @config.ryba 
       ranger =  @contexts('ryba/ranger/admin')[0].config.ryba.ranger
       {password} = ranger.admin
+      cluster_config = ranger.admin.cluster_config
+      [zk_connect,zk_node] = cluster_config.zk_urls.split '/'
       mode = if ranger.admin.solr_type is 'single' then 'standalone' else ranger.admin.solr_type
       tmp_dir = if mode is 'standalone' then "#{solr.user.home}" else '/tmp'
       return unless ['standalone','cloud','cloud_docker'].indexOf ranger?.admin?.solr_type > -1
@@ -17,8 +19,8 @@
         if: mode is 'cloud_docker'
       , ->
           @wait_connect
-            servers: for host in ranger.admin.cluster_config.hosts
-              host: host, port: ranger.admin.cluster_config.port
+            servers: for host in cluster_config.hosts
+              host: host, port: cluster_config.port
 
 ## Layout
 
@@ -121,41 +123,39 @@ We manage creating the ranger_audits core/collection in the three modes.
            """
 
 ### Solr Cloud On Docker
-Note: Could not work based on the docker version you use.
+Mounth the ranger_audit collection folder to make it availble to the containers.
+Note: Compatible with every version of docker available at this time.
 
       @call
         if: ranger.admin.solr_type is 'cloud_docker'
         header:'Create Ranger Collection (cloud_docker)'
         handler: ->
           @wait_connect
-            host: ranger.admin.cluster_config['master']
-            port: ranger.admin.cluster_config['port']
-          @docker.cp
-            source: "#{tmp_dir}/ranger_audits"
-            target: "#{ranger.admin.cluster_config.master_container_name}:/ranger_audits"
+            host: cluster_config['master']
+            port: cluster_config['port']
           @docker.exec
-            container: ranger.admin.cluster_config.master_container_runtime_name
+            container: cluster_config.master_container_runtime_name
             cmd: "/usr/solr-cloud/current/bin/solr healthcheck -c ranger_audits | grep '\"status\":\"healthy\"'"
-            code_skipped: [1]
+            code_skipped: [1,126]
           @docker.exec
             unless: -> @status -1
-            container: ranger.admin.cluster_config.master_container_runtime_name
+            container: cluster_config.master_container_runtime_name
             cmd: """
               /usr/solr-cloud/current/bin/solr create_collection -c ranger_audits \
               -shards #{@contexts('ryba/solr/cloud_docker').length}  \
               -replicationFactor #{@contexts('ryba/solr/cloud_docker').length} \
-              -d #{tmp_dir}/ranger_audits
+              -d /ranger_audits
             """
           @call
             header: 'Create Users and Permissions'
-            if: ranger.admin.cluster_config.security.authentication['class'] is 'solr.BasicAuthPlugin'
+            if: cluster_config.security.authentication['class'] is 'solr.BasicAuthPlugin'
             handler: ->
               @call 
                 header: 'Create Users'
                 handler: ->
                   url = "#{ranger.admin.install['audit_solr_urls'].split(',')[0]}/solr/admin/authentication"
                   cmd = 'curl --fail --insecure'
-                  cmd += " --user #{ranger.admin.cluster_config.solr_admin_user}:#{ranger.admin.cluster_config.solr_admin_password} "
+                  cmd += " --user #{cluster_config.solr_admin_user}:#{cluster_config.solr_admin_password} "
                   for user in ranger.admin.solr_users
                     @execute
                       cmd: """
@@ -168,8 +168,8 @@ Note: Could not work based on the docker version you use.
                 handler: ->
                   url = "#{ranger.admin.install['audit_solr_urls'].split(',')[0]}/solr/admin/authorization"
                   cmd = 'curl --fail --insecure'
-                  cmd += " --user #{ranger.admin.cluster_config.solr_admin_user}:#{ranger.admin.cluster_config.solr_admin_password} "
-                  for user in ranger.admin.cluster_config.ranger.solr_users
+                  cmd += " --user #{cluster_config.solr_admin_user}:#{cluster_config.solr_admin_password} "
+                  for user in cluster_config.ranger.solr_users
                     new_role = "#{user.name}": ['read','update','admin']
                     @execute
                       cmd: """
@@ -177,5 +177,5 @@ Note: Could not work based on the docker version you use.
                         #{url} -H 'Content-type:application/json' \
                         -d '#{JSON.stringify('set-user-role': new_role )}'
                       """
-                      
+
 [ranger-solr-script]:(https://community.hortonworks.com/questions/29291/ranger-solr-script-create-ranger-audits-collection.html)
