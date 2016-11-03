@@ -66,8 +66,8 @@ Create user and groups for solr user.
         target: "#{solr.cloud_docker.conf_dir}/solr-server.jaas"
         content:
           Client:
-            principal: solr.cloud_docker.spnego.principal
-            keyTab: solr.cloud_docker.spnego.keytab
+            principal: solr.cloud_docker.principal
+            keyTab: solr.cloud_docker.keytab
             useKeyTab: true
             storeKey: true
             useTicketCache: true
@@ -116,9 +116,7 @@ be prepared in the mecano cache dir.
             tag: solr.cloud_docker.build.version
           , (err, status, chk) ->
             return callback err if err
-            checksum = chk
-            opts.log "Found image with checksum: #{checksum}" unless !checksum
-            if !checksum then callback null, true else callback null, false
+            if !status then callback null, true else callback null, false
       @docker.pull
         header: 'Pull container'
         if: -> @status(-1)
@@ -126,14 +124,13 @@ be prepared in the mecano cache dir.
         version: solr.cloud_docker.version
         code_skipped: 1
       @file.download
-        if: -> @status(-2)
+        if: -> @status -2
         binary: true
         header: 'Download container'
         source: solr.cloud_docker.build.source
         target: "#{tmp_dir}/solr.tar"
       @docker.load
         header: 'Load container to docker'
-        if: -> @status()
         if_exists: "#{tmp_dir}/solr.tar"
         source: "#{tmp_dir}/solr.tar"
         docker: solr.cloud_docker.swarm_conf
@@ -250,6 +247,16 @@ configuration like solr.in.sh or solr.xml.
           source:"#{__dirname}/../resources/cloud_docker/docker_entrypoint.sh"
           target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker_entrypoint.sh"
           context: @config
+          local: true
+          local: true
+          backup: true
+          uid: solr.user.name
+          gid: solr.group.name
+          mode: 0o0750
+        @render
+          source:"#{__dirname}/../resources/cloud_docker/zkCli.sh.j2"
+          target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/zkCli.sh"
+          context: @config.ryba
           local: true
           local: true
           backup: true

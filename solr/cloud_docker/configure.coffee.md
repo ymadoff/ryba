@@ -219,6 +219,7 @@ You can check the [docker-compose file reference](https://docs.docker.com/compos
             "#{config.data_dir}:/var/solr/data",
             "#{config.log_dir}:#{solr.cloud_docker.latest_dir}/server/logs",
             "/etc/security/keytabs:/etc/security/keytabs",
+            "#{solr.cloud_docker.conf_dir}/clusters/#{name}/zkCli.sh:/usr/solr-cloud/current/server/scripts/cloud-scripts/zkcli.sh",
             "/etc/krb5.conf:/etc/krb5.conf" ] 
         volumes.push config.volumes...
         config.master_configured = false
