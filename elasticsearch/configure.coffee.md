@@ -67,7 +67,7 @@ Example:
       elasticsearch.group.system ?= true
       elasticsearch.user.gid ?= elasticsearch.group.name
       # Layout
-      elasticsearch.version ?= '1.7.1'
+      elasticsearch.version ?= '5.0.0'
       # Kerberos
       elasticsearch.principal ?= "elasticsearch/#{@config.host}@#{@config.ryba.realm}"
       elasticsearch.keytab ?= '/etc/security/keytabs/elasticsearch.service.keytab'
@@ -76,6 +76,6 @@ Example:
       elasticsearch.number_of_shards ?= @hosts_with_module('ryba/elasticsearch').length
       elasticsearch.number_of_replicas ?= 1
 
-ElasticSearch can be found [here](https://www.elastic.co/downloads/elasticsearch)
+ElasticSearch can be found [here](https://www.elastic.co/downloads).
 
-      elasticsearch.source ?= "https://download.elasticsearch.org/elasticsearch/elasticsearch/elasticsearch-#{elasticsearch.version}.noarch.rpm"
+      elasticsearch.source ?= "https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-#{elasticsearch.version}.rpm"
