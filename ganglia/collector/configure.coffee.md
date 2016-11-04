@@ -30,7 +30,7 @@ Example:
       ganglia.rrdcached_user.system ?= true
       ganglia.rrdcached_user.gid = 'rrdcached'
       ganglia.rrdcached_user.shell = false
-      ganglia.rrdcached_user.comment ?= 'RRDtool User'
+      ganglia.rrdcached_user.comment ?= 'RRDtool Ganglia User'
       ganglia.rrdcached_user.home = '/var/rrdtool/rrdcached'
       # Group
       ganglia.rrdcached_group = name: @config.ryba.rrdcached_group if typeof @config.ryba.rrdcached_group is 'string'

@@ -35,8 +35,8 @@ Example:
       druid.user ?= {}
       druid.user.name ?= 'druid'
       druid.user.system ?= true
-      druid.user.comment ?= 'druid User'
-      druid.user.home ?= '/var/lib/druid'
+      druid.user.comment ?= 'Druid User'
+      druid.user.home ?= "/var/lib/#{druid.user.name}"
       druid.user.groups ?= ['hadoop']
       # Group
       druid.group = name: druid.group if typeof druid.group is 'string'

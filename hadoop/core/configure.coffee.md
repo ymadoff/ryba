@@ -82,6 +82,7 @@ Default configuration:
       ryba.hadoop_group ?= {}
       ryba.hadoop_group.name ?= 'hadoop'
       ryba.hadoop_group.system ?= true
+      ryba.hadoop_group.comment ?= 'Hadoop Group'
       # Unix user hdfs
       ryba.hdfs.user ?= {}
       ryba.hdfs.user = name: ryba.hdfs.user if typeof ryba.hdfs.user is 'string'

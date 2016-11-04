@@ -24,7 +24,7 @@ Example:
       },
       "user": {
         "name": "pig", "system": true, "gid": "hadoop",
-        "comment": "Pig User", "home": "/var/lib/sqoop"
+        "comment": "Pig User", "home": "/var/lib/pig"
       }
     },
     force_check: true
@@ -41,7 +41,7 @@ Example:
       pig.user.system ?= true
       pig.user.comment ?= 'Pig User'
       pig.user.gid ?= @config.ryba.hadoop_group
-      pig.user.home ?= '/home/pig'
+      pig.user.home ?= '/var/lib/pig'
       # Layout
       pig.conf_dir ?= '/etc/pig/conf'
       # Configuration

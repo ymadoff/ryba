@@ -15,22 +15,6 @@
       @register ['file', 'jaas'], 'ryba/lib/file_jaas'
       @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
 
-## Layout
-
-      @mkdir
-        target: solr.user.home
-        uid: solr.user.name
-        gid: solr.group.name
-      @mkdir
-        directory: solr.single.conf_dir
-        uid: solr.user.name
-        gid: solr.group.name
-
-## Users and Groups
-
-      @group solr.group
-      @user solr.user
-
 ## IPTables
 
 | Service      | Port  | Proto       | Parameter          |
@@ -47,6 +31,22 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           rules: [
             { chain: 'INPUT', jump: 'ACCEPT', dport: solr.single.port, protocol: 'tcp', state: 'NEW', comment: "Solr Server #{protocol}" }
           ]
+
+## Users and Groups
+
+      @group solr.group
+      @user solr.user
+
+## Layout
+
+      @mkdir
+        target: solr.user.home
+        uid: solr.user.name
+        gid: solr.group.name
+      @mkdir
+        directory: solr.single.conf_dir
+        uid: solr.user.name
+        gid: solr.group.name
 
 ## Packages
 Ryba support installing solr from apache official release or HDP Search repos.

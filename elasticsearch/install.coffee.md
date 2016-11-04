@@ -8,6 +8,16 @@ of Elastics Search from rpm repositories and the configuration of Elastic Search
     module.exports = header: 'ES Install', handler: ->
       {elasticsearch ,realm} = @config.ryba
       # krb5 = @config.krb5.etc_krb5_conf.realms[realm]
+## Users & Groups
+
+By default, the "zookeeper" package create the following entries:
+
+```bash
+cat /etc/passwd | grep elasticsearch
+elasticsearch:x:493:493:elasticsearch user:/home/elasticsearch:/sbin/nologin
+cat /etc/group | grep elasticsearch
+elasticsearch:x:493:
+```
 
       @group elasticsearch.group
       @user elasticsearch.user
