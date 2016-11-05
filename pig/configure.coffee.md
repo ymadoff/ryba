@@ -21,10 +21,6 @@ Example:
       "config": {
         "pig.cachedbag.memusage": "0.1",
         "pig.skewedjoin.reduce.memusage", "0.3"
-      },
-      "user": {
-        "name": "pig", "system": true, "gid": "hadoop",
-        "comment": "Pig User", "home": "/var/lib/pig"
       }
     },
     force_check: true
@@ -34,14 +30,6 @@ Example:
 
     module.exports = handler: ->
       pig = @config.ryba.pig ?= {}
-      # User
-      pig.user = name: pig.user if typeof pig.user is 'string'
-      pig.user ?= {}
-      pig.user.name ?= 'pig'
-      pig.user.system ?= true
-      pig.user.comment ?= 'Pig User'
-      pig.user.gid ?= @config.ryba.hadoop_group
-      pig.user.home ?= '/var/lib/pig'
       # Layout
       pig.conf_dir ?= '/etc/pig/conf'
       # Configuration

@@ -7,20 +7,6 @@ Learn more about Pig optimization by reading ["Making Pig Fly"][fly].
       {hadoop_group, pig} = @config.ryba
       {java_home} = @config.java
 
-## Users & Groups
-
-By default, the "pig" package create the following entries:
-
-```bash
-cat /etc/passwd | grep pig
-pig:x:490:502:Used by Pig service:/home/pig:/bin/bash
-cat /etc/group | grep hadoop
-hadoop:x:502:yarn,mapred,hdfs,hue
-```
-
-      @group hadoop_group
-      @user pig.user
-
 ## Install
 
 The pig package is install.
