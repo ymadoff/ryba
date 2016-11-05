@@ -14,7 +14,7 @@ Create the Unix user and Kerberos principal used for testing.
         ryba.user.password ?= 'password'
         ryba.user.system ?= true
         ryba.user.gid ?= 'ryba'
-        ryba.user.comment ?= 'ryba User'
+        ryba.user.comment ?= 'ryba Test User'
         ryba.user.home ?= '/home/ryba'
         ryba.krb5_user ?= {}
         ryba.krb5_user = principal: ryba.krb5_user if typeof ryba.krb5_user is 'string'
