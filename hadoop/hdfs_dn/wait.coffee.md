@@ -3,11 +3,21 @@
 
     module.exports = header: 'HDFS DN Wait', timeout: -1, label_true: 'READY', handler: ->
 
+## Wait for all datanode IPC Ports
+
+Port is defined in the "dfs.datanode.address" property of hdfs-site. The default
+value is 50020.
+
       @connection.wait
         header: 'IPC'
         servers: for context in @contexts 'ryba/hadoop/hdfs_dn'
           [_, port] = context.config.ryba.hdfs.site['dfs.datanode.address'].split ':'
           host: context.config.host, port: port
+
+## Wait for all datanode HTTP Ports
+
+Port is defined in the "dfs.datanode.https.address" property of hdfs-site. The default
+value is 50475.
 
       @connection.wait
         header: 'HTTP'
