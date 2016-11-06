@@ -12,6 +12,7 @@
       # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.0/bk_yarn_resource_mgt/content/ref-c2f35f55-fa15-4154-b80a-36df2db297d5.1.html
       {yarn, core_site, realm} = @config.ryba
       yarn.ats ?= {}
+      yarn.ats.home ?= '/usr/hdp/current/hadoop-yarn-timelineserver'
       yarn.ats.log_dir ?= '/var/log/hadoop-yarn'
       yarn.ats.pid_dir ?= '/var/run/hadoop-yarn'
       yarn.ats.conf_dir ?= '/etc/hadoop-yarn-timelineserver/conf'

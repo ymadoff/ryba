@@ -12,10 +12,11 @@
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm', require('../yarn_rm/configure').handler
       [ats_ctx] = @contexts 'ryba/hadoop/yarn_ts', require('../yarn_ts/configure').handler
       {host, ryba} = @config
-      ryba.yarn.log_dir ?= '/var/log/hadoop-yarn'
-      ryba.yarn.pid_dir ?= '/var/run/hadoop-yarn'
-      ryba.yarn.home ?= '/usr/hdp/current/hadoop-yarn-nodemanager'
+      ryba.yarn.libexec ?= '/usr/hdp/current/hadoop-client/libexec'
       ryba.yarn.nm ?= {}
+      ryba.yarn.nm.home ?= '/usr/hdp/current/hadoop-yarn-nodemanager'
+      ryba.yarn.nm.log_dir ?= '/var/log/hadoop-yarn'
+      ryba.yarn.nm.pid_dir ?= '/var/run/hadoop-yarn'
       ryba.yarn.nm.conf_dir ?= '/etc/hadoop-yarn-nodemanager/conf'
       ryba.yarn.nm.opts ?= ''
       ryba.yarn.nm.heapsize ?= '1024'

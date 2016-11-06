@@ -2,7 +2,8 @@
 # HADOOP YARN NodeManager Install
 
     module.exports = header: 'YARN NM Install', handler: ->
-      {realm, hadoop_group, hadoop_metrics, hadoop_conf_dir, core_site, hdfs, yarn, container_executor} = @config.ryba
+      {java} = @config
+      {realm, hadoop_group, hadoop_metrics, hadoop_conf_dir, core_site, hdfs, yarn, container_executor, hadoop_libexec_dir} = @config.ryba
       {ssl, ssl_server, ssl_client} = @config.ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
@@ -101,12 +102,12 @@ inside "/etc/init.d" and activate it on startup.
         @mkdir
           target: "#{yarn.nm.conf_dir}"
         @mkdir
-          target: "#{yarn.pid_dir}"
+          target: "#{yarn.nm.pid_dir}"
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o0755
         @mkdir
-          target: "#{yarn.log_dir}"
+          target: "#{yarn.nm.log_dir}"
           uid: yarn.user.name
           gid: yarn.group.name
           parent: true
@@ -178,7 +179,16 @@ SSH connection to the node to gather the memory and CPU informations.
         target: "#{yarn.nm.conf_dir}/yarn-env.sh"
         source: "#{__dirname}/../resources/yarn-env.sh.j2"
         local_source: true
-        context: @config
+        context: #@config
+          JAVA_HOME: java.java_home
+          HADOOP_YARN_HOME: yarn.nm.home
+          YARN_LOG_DIR: yarn.nm.log_dir
+          YARN_PID_DIR: yarn.nm.pid_dir
+          HADOOP_LIBEXEC_DIR: hadoop_libexec_dir
+          YARN_HEAPSIZE: yarn.heapsize
+          YARN_NODEMANAGER_HEAPSIZE: yarn.nm.heapsize
+          YARN_NODEMANAGER_OPTS: yarn.nm.opts
+          YARN_OPTS: yarn.opts
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0755

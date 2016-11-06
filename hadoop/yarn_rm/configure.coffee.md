@@ -15,10 +15,10 @@
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
       ats_ctx.config.ryba.yarn.site['yarn.admin.acl'] ?= "#{@config.ryba.yarn.user.name}"
       {ryba} = @config
-      ryba.yarn.home ?= '/usr/hdp/current/hadoop-yarn-client'
-      ryba.yarn.log_dir ?= '/var/log/hadoop-yarn'
-      ryba.yarn.pid_dir ?= '/var/run/hadoop-yarn'
       ryba.yarn.rm ?= {}
+      ryba.yarn.rm.home ?= '/usr/hdp/current/hadoop-yarn-client'
+      ryba.yarn.rm.log_dir ?= '/var/log/hadoop-yarn'
+      ryba.yarn.rm.pid_dir ?= '/var/run/hadoop-yarn'
       ryba.yarn.rm.conf_dir ?= '/etc/hadoop-yarn-resourcemanager/conf'
       ryba.yarn.rm.core_site ?= {}
       # Enable JAAS/Kerberos connection between YARN RM and ZooKeeper

@@ -1,9 +1,9 @@
 
-export HADOOP_YARN_HOME={{ryba.yarn.home}}
-export YARN_LOG_DIR={{ryba.yarn.log_dir}}
-export YARN_PID_DIR={{ryba.yarn.pid_dir}}
-export HADOOP_LIBEXEC_DIR={{ryba.hadoop_libexec_dir}}
-export JAVA_HOME={{java.java_home}}
+export HADOOP_YARN_HOME={{HADOOP_YARN_HOME}}
+export YARN_LOG_DIR={{YARN_LOG_DIR}}
+export YARN_PID_DIR={{YARN_PID_DIR}}
+export HADOOP_LIBEXEC_DIR={{HADOOP_LIBEXEC_DIR}}
+export JAVA_HOME={{JAVA_HOME}}
 
 # We need to add the EWMA appender for the yarn daemons only;
 # however, YARN_ROOT_LOGGER is shared by the yarn client and the
@@ -36,7 +36,7 @@ JAVA_HEAP_MAX=-Xmx1000m
 
 # For setting YARN specific HEAP sizes please use this
 # Parameter and set appropriately
-YARN_HEAPSIZE={{ryba.yarn.heapsize}}
+YARN_HEAPSIZE={{YARN_HEAPSIZE}}
 
 # check envvars which might override default args
 if [ "$YARN_HEAPSIZE" != "" ]; then
@@ -52,7 +52,7 @@ fi
 # and/or YARN_RESOURCEMANAGER_OPTS.
 # If not specified, the default value will be picked from either YARN_HEAPMAX
 # or JAVA_HEAP_MAX with YARN_HEAPMAX as the preferred option of the two.
-export YARN_RESOURCEMANAGER_HEAPSIZE={{ryba.yarn.rm.heapsize}}
+export YARN_RESOURCEMANAGER_HEAPSIZE={{YARN_RESOURCEMANAGER_HEAPSIZE}}
 
 # Specify the JVM options to be used when starting the ResourceManager.
 # These options will be appended to the options specified as YARN_OPTS
@@ -60,7 +60,7 @@ export YARN_RESOURCEMANAGER_HEAPSIZE={{ryba.yarn.rm.heapsize}}
 #export YARN_RESOURCEMANAGER_OPTS=
 
 # Ryba: user defined YARN RM options
-export YARN_RESOURCEMANAGER_OPTS="${YARN_RESOURCEMANAGER_OPTS} {{ryba.yarn.rm.opts}}" # RYBA CONF "ryba.yarn.rm.opts", DONT OVERWRITE"
+export YARN_RESOURCEMANAGER_OPTS="${YARN_RESOURCEMANAGER_OPTS} {{YARN_RESOURCEMANAGER_OPTS}}" # RYBA CONF "ryba.yarn.rm.opts", DONT OVERWRITE"
 
 # Node Manager specific parameters
 
@@ -71,7 +71,7 @@ export YARN_RESOURCEMANAGER_OPTS="${YARN_RESOURCEMANAGER_OPTS} {{ryba.yarn.rm.op
 # and/or YARN_NODEMANAGER_OPTS.
 # If not specified, the default value will be picked from either YARN_HEAPMAX
 # or JAVA_HEAP_MAX with YARN_HEAPMAX as the preferred option of the two.
-export YARN_NODEMANAGER_HEAPSIZE={{ryba.yarn.nm.heapsize}}
+export YARN_NODEMANAGER_HEAPSIZE={{YARN_NODEMANAGER_HEAPSIZE}}
 
 # Specify the max Heapsize for the HistoryManager using a numerical value
 # in the scale of MB. For example, to specify an jvm option of -Xmx1000m, set
@@ -80,9 +80,9 @@ export YARN_NODEMANAGER_HEAPSIZE={{ryba.yarn.nm.heapsize}}
 # and/or YARN_HISTORYSERVER_OPTS.
 # If not specified, the default value will be picked from either YARN_HEAPMAX
 # or JAVA_HEAP_MAX with YARN_HEAPMAX as the preferred option of the two.
-export YARN_HISTORYSERVER_HEAPSIZE={{ryba.yarn.ats.heapsize}}
+export YARN_HISTORYSERVER_HEAPSIZE={{YARN_HISTORYSERVER_HEAPSIZE}}
 # Ryba: user defined YARN RM options
-export YARN_HISTORYSERVER_OPTS="${YARN_HISTORYSERVER_OPTS} {{ryba.yarn.ats.opts}}" # RYBA CONF "ryba.yarn.ats.opts", DONT OVERWRITE"
+export YARN_HISTORYSERVER_OPTS="${YARN_HISTORYSERVER_OPTS} {{YARN_HISTORYSERVER_OPTS}}" # RYBA CONF "ryba.yarn.ats.opts", DONT OVERWRITE"
 
 # Specify the JVM options to be used when starting the NodeManager.
 # These options will be appended to the options specified as YARN_OPTS
@@ -90,7 +90,7 @@ export YARN_HISTORYSERVER_OPTS="${YARN_HISTORYSERVER_OPTS} {{ryba.yarn.ats.opts}
 #export YARN_NODEMANAGER_OPTS=
 
 # Ryba: user defined YARN RM options
-export YARN_NODEMANAGER_OPTS="${YARN_NODEMANAGER_OPTS} {{ryba.yarn.nm.opts}}" # RYBA CONF "ryba.yarn_nm.opts", DONT OVERWRITE"
+export YARN_NODEMANAGER_OPTS="${YARN_NODEMANAGER_OPTS} {{YARN_NODEMANAGER_OPTS}}" # RYBA CONF "ryba.yarn_nm.opts", DONT OVERWRITE"
 
 # so that filenames w/ spaces are handled correctly in loops below
 IFS=
@@ -129,4 +129,4 @@ fi
 YARN_OPTS="$YARN_OPTS -Dyarn.policy.file=$YARN_POLICYFILE"
 
 # Ryba: user defined YARN options
-export YARN_OPTS="${YARN_OPTS} {{ryba.yarn.opts}}" # RYBA CONF "ryba.yarn.opts", DONT OVERWRITE"
+export YARN_OPTS="${YARN_OPTS} {{YARN_OPTS}}" # RYBA CONF "ryba.yarn.opts", DONT OVERWRITE"

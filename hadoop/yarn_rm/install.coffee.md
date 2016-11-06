@@ -2,7 +2,8 @@
 # Hadoop YARN ResourceManager Install
 
     module.exports = header: 'YARN RM Install', handler: ->
-      {realm, core_site, hdfs, yarn, mapred, hadoop_group, hadoop_metrics} = @config.ryba
+      {java} = @config
+      {realm, core_site, hdfs, yarn, mapred, hadoop_group, hadoop_metrics, hadoop_libexec_dir} = @config.ryba
       {ssl, ssl_server, ssl_client} = @config.ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
@@ -95,12 +96,12 @@ inside "/etc/init.d" and activate it on startup.
         @mkdir
           target: "#{yarn.rm.conf_dir}"
         @mkdir
-          target: "#{yarn.pid_dir}"
+          target: "#{yarn.rm.pid_dir}"
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o755
         @mkdir
-          target: "#{yarn.log_dir}"
+          target: "#{yarn.rm.log_dir}"
           uid: yarn.user.name
           gid: yarn.group.name
           parent: true
@@ -140,7 +141,16 @@ inside "/etc/init.d" and activate it on startup.
         target: "#{yarn.rm.conf_dir}/yarn-env.sh"
         source: "#{__dirname}/../resources/yarn-env.sh.j2"
         local_source: true
-        context: @config
+        context: #@config
+          JAVA_HOME: java.java_home
+          HADOOP_YARN_HOME: yarn.rm.home
+          YARN_LOG_DIR: yarn.rm.log_dir
+          YARN_PID_DIR: yarn.rm.pid_dir
+          HADOOP_LIBEXEC_DIR: hadoop_libexec_dir
+          YARN_HEAPSIZE: yarn.heapsize
+          YARN_RESOURCEMANAGER_HEAPSIZE: yarn.rm.heapsize
+          YARN_RESOURCEMANAGER_OPTS: yarn.rm.opts
+          YARN_OPTS: yarn.opts
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0755

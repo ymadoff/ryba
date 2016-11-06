@@ -34,7 +34,7 @@
 NAME='Yarn Resource Manager'
 USER='yarn'
 CONF_DIR='{{ryba.yarn.rm.conf_dir}}'
-PID_FILE='/var/run/hadoop-yarn/yarn-yarn-resourcemanager.pid'
+PID_FILE='{{ryba.yarn.rm.pid_dir}}/yarn-yarn-resourcemanager.pid'
 CMD="su -l $USER -c \"/usr/hdp/current/hadoop-yarn-resourcemanager/sbin/yarn-daemon.sh --config $CONF_DIR start resourcemanager\""
 KILL_FORCE=0
 KILL_SLEEP=10

@@ -10,6 +10,7 @@
       {ryba} = @config
       {realm} = ryba
       # Grab the host(s) for each roles
+      ryba.yarn.libexec ?= '/usr/hdp/current/hadoop-client/libexec'
       ryba.yarn.log_dir ?= '/var/log/hadoop-yarn'
       ryba.yarn.pid_dir ?= '/var/run/hadoop-yarn'
       ryba.yarn.conf_dir ?= ryba.hadoop_conf_dir
