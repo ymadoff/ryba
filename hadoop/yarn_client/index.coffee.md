@@ -6,6 +6,7 @@ The URI resources are grouped into APIs based on the type of information returne
 
     module.exports =
       use:
+        java: implicit: true, module: 'masson/commons/java'
         hadoop_core: implicit: true, module: 'ryba/hadoop/core'
         hdfs_client: implicit: true, module: 'ryba/hadoop/hdfs_client'
         yarn_rm: 'ryba/hadoop/yarn_rm'

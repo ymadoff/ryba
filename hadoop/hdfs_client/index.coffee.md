@@ -8,6 +8,7 @@ and perform actual file I/O directly with the DataNodes.
 
     module.exports =
       use:
+        java: implicit: true, module: 'masson/commons/java'
         hadoop_core: implicit: true, module: 'ryba/hadoop/core'
         hdfs_nn: 'ryba/hadoop/hdfs_nn'
         hdfs_dn: 'ryba/hadoop/hdfs_dn'

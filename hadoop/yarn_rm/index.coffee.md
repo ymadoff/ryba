@@ -6,6 +6,7 @@
     module.exports =
       use:
         iptables: implicit: true, module: 'masson/core/iptables'
+        java: implicit: true, module: 'masson/commons/java'
         # yarn_client: 'ryba/hadoop/yarn_client/install'
         zoo_server: 'ryba/zookeeper/server'
         mapred_jhs: 'ryba/hadoop/mapred_jhs'

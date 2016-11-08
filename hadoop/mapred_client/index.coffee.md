@@ -9,6 +9,7 @@ The output list can then be saved to the distributed filesystem, and the reducer
 
     module.exports =
       use:
+        java: implicit: true, module: 'masson/commons/java'
         hadoop_core: 'ryba/hadoop/core'
         yarn_client: 'ryba/hadoop/yarn_client'
         hdfs_client: 'ryba/hadoop/hdfs_client/configure'

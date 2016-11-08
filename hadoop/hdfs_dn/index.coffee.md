@@ -17,6 +17,7 @@ information and heartbeats to both.
     module.exports =
       use:
         iptables: implicit: true, module: 'masson/core/iptables'
+        java: implicit: true, module: 'masson/commons/java'
         hadoop_core: implicit: true, module: 'ryba/hadoop/core'
         zoo_server: module: 'ryba/zookeeper/server'
       configure:

@@ -10,6 +10,7 @@ Now the jobHistory Server tends to be replace by the Yarn timeline server.
     module.exports =
       use:
         iptables: implicit: true, module: 'masson/core/iptables'
+        java: implicit: true, module: 'masson/commons/java'
         hdfs_client: 'ryba/hadoop/hdfs_client/install'
       configure:
         'ryba/hadoop/mapred_jhs/configure'

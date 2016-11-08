@@ -12,6 +12,7 @@ applications.
     module.exports =
       use:
         iptables: implicit: true, module: 'masson/core/iptables'
+        java: implicit: true, module: 'masson/commons/java'
         hdfs_client: implicit: true, module: 'ryba/hadoop/hdfs_client'
       configure:
         'ryba/hadoop/yarn_nm/configure'

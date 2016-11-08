@@ -8,6 +8,7 @@ HTTP API.
     module.exports =
       use:
         iptables: implicit: true, module: 'masson/core/iptables'
+        java: implicit: true, module: 'masson/commons/java'
         hadoop_core: implicit: true, module: 'ryba/hadoop/core'
         hdfs_client: implicit: true, module: 'ryba/hadoop/hdfs_client'
       configure:

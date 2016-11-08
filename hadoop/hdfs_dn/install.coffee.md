@@ -75,7 +75,6 @@ inside "/etc/init.d" and activate it on startup.
           if: -> @status -3
 
       @call header: 'Compression', timeout: -1, handler: ->
-        { hadoop_conf_dir } = @config.ryba
         @service name: 'snappy'
         @service name: 'snappy-devel'
         @link
