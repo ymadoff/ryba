@@ -74,4 +74,5 @@ module.exports = (options) ->
   @call ->
     options.content = properties.stringify fnl_props
     options.source = null
+    options.header = null
     @file options
