@@ -3,6 +3,7 @@
 # YARN Client Configure
 
     module.exports = ->
+      {java} = @config
       [ats_ctx] = @contexts 'ryba/hadoop/yarn_ts'
       yc_ctxs = @contexts 'ryba/hadoop/yarn_client'
       nm_ctxs = @contexts 'ryba/hadoop/yarn_nm'

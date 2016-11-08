@@ -1,6 +1,8 @@
 
     module.exports = ->
-      rm_contexts = @contexts 'ryba/hadoop/yarn_rm', require('../yarn_rm/configure').handler
+      yarn_rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
+      hdfs_dn_ctxs = @contexts 'ryba/hadoop/hdfs_dn'
+      [jhs_context] = @contexts 'ryba/hadoop/mapred_jhs'
       {realm, mapred} = @config.ryba
       # Layout
       mapred.log_dir ?= '/var/log/hadoop-mapreduce' # Default to "/var/log/hadoop-mapreduce/$USER"
@@ -20,7 +22,6 @@
       # [Configurations for MapReduce JobHistory Server](http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-common/ClusterSetup.html#Configuring_the_Hadoop_Daemons_in_Non-Secure_Mode)
       mapred.site['mapreduce.application.framework.path'] ?= "/hdp/apps/${hdp.version}/mapreduce/mapreduce.tar.gz#mr-framework"
       mapred.site['mapreduce.application.classpath'] ?= "$PWD/mr-framework/hadoop/share/hadoop/mapreduce/*:$PWD/mr-framework/hadoop/share/hadoop/mapreduce/lib/*:$PWD/mr-framework/hadoop/share/hadoop/common/*:$PWD/mr-framework/hadoop/share/hadoop/common/lib/*:$PWD/mr-framework/hadoop/share/hadoop/yarn/*:$PWD/mr-framework/hadoop/share/hadoop/yarn/lib/*:$PWD/mr-framework/hadoop/share/hadoop/hdfs/*:$PWD/mr-framework/hadoop/share/hadoop/hdfs/lib/*:/usr/hdp/current/share/lzo/0.6.0/lib/hadoop-lzo-0.6.0.jar:/etc/hadoop/conf/secure"
-      [jhs_context] = @contexts 'ryba/hadoop/mapred_jhs', require('../mapred_jhs/configure').handler
       if jhs_context
         for property in [
           'yarn.app.mapreduce.am.staging-dir'
@@ -48,7 +49,7 @@
       mapred.site['mapreduce.jobtracker.system.dir'] = null # JobTracker no longer used
       # The replication level for submitted job files should be around the square root of the number of nodes.
       # see https://issues.apache.org/jira/browse/MAPREDUCE-2845
-      dn_sqrt = Math.round Math.sqrt @contexts('ryba/hadoop/hdfs_dn').length
+      dn_sqrt = Math.round Math.sqrt hdfs_dn_ctxs.length
       mapred.site['mapreduce.client.submit.file.replication'] ?= Math.min dn_sqrt, 10
 
 # Configuration for Resource Allocation
@@ -74,10 +75,10 @@ Resources:
 *   [Understanding YARN MapReduce Memory Allocation](http://beadooper.com/?p=165)
 
       memory_per_container = 512
-      rm_memory_min_mb = rm_contexts[0].config.ryba.yarn.rm.site['yarn.scheduler.minimum-allocation-mb']
-      rm_memory_max_mb = rm_contexts[0].config.ryba.yarn.rm.site['yarn.scheduler.maximum-allocation-mb']
-      rm_cpu_min = rm_contexts[0].config.ryba.yarn.rm.site['yarn.scheduler.minimum-allocation-vcores']
-      rm_cpu_max = rm_contexts[0].config.ryba.yarn.rm.site['yarn.scheduler.maximum-allocation-mb']
+      rm_memory_min_mb = yarn_rm_ctxs[0].config.ryba.yarn.rm.site['yarn.scheduler.minimum-allocation-mb']
+      rm_memory_max_mb = yarn_rm_ctxs[0].config.ryba.yarn.rm.site['yarn.scheduler.maximum-allocation-mb']
+      rm_cpu_min = yarn_rm_ctxs[0].config.ryba.yarn.rm.site['yarn.scheduler.minimum-allocation-vcores']
+      rm_cpu_max = yarn_rm_ctxs[0].config.ryba.yarn.rm.site['yarn.scheduler.maximum-allocation-mb']
       yarn_mapred_am_memory_mb = mapred.site['yarn.app.mapreduce.am.resource.mb'] or if memory_per_container > 1024 then 2 * memory_per_container else memory_per_container
       yarn_mapred_am_memory_mb = Math.min rm_memory_max_mb, yarn_mapred_am_memory_mb
       mapred.site['yarn.app.mapreduce.am.resource.mb'] = "#{yarn_mapred_am_memory_mb}"

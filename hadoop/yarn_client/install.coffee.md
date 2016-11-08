@@ -2,6 +2,7 @@
 # YARN Client Install
 
     module.exports = header: 'YARN Client Install', handler: ->
+      {java} = @config
       {yarn, hadoop_group, hadoop_conf_dir} = @config.ryba
 
 ## Register
@@ -53,7 +54,11 @@ Properties accepted by the template are: `ryba.yarn.rm_opts`
         target: "#{hadoop_conf_dir}/yarn-env.sh"
         source: "#{__dirname}/../resources/yarn-env.sh.j2"
         local_source: true
-        context: @config
+        context: #@config
+          JAVA_HOME: java.java_home
+          HADOOP_YARN_HOME: yarn.home
+          YARN_HEAPSIZE: yarn.heapsize
+          YARN_OPTS: yarn.opts
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0755

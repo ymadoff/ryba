@@ -37,7 +37,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Service
 
-      @call header: 'MapReduce # Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, handler: ->
         @service
           name: 'hadoop-mapreduce'
         @hdp_select
