@@ -1,7 +1,7 @@
 
 # Druid Coordinator Install
 
-    module.exports = header: 'Druid Coordinator # Install', handler: ->
+    module.exports = header: 'Druid Coordinator Install', handler: ->
       {druid} = @config.ryba
       @call once: true, handler: 'ryba/druid/install'
 

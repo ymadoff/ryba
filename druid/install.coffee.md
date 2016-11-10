@@ -9,7 +9,6 @@
 
       @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
-      @call once: true, 'ryba/commons/db_admin'
 
 ## IPTables
 

@@ -8,20 +8,24 @@ The [middle manager] node is a worker node that executes submitted tasks. Middle
 [middle manager]: http://druid.io/docs/latest/design/middlemanager.html
 [peons]: http://druid.io/docs/latest/design/peons.html
 
-    module.exports = ->
-      'prepare':
-        'ryba/druid/prepare'
-      'configure':
+    module.exports =
+      use:
+        java: 'masson/commons/java'
+        hdfs_client: 'ryba/hadoop/hdfs_client'
+        mapred_client: 'ryba/hadoop/mapred_client'
+        druid_commons: implicit: true, module: 'ryba/druid'
+      configure:
         'ryba/druid/middlemanager/configure'
-      'install': [
-        'masson/commons/java'
-        'ryba/hadoop/hdfs_client'
-        'ryba/druid/middlemanager/install'
-        'ryba/druid/middlemanager/start'
-      ]
-      'start':
-        'ryba/druid/middlemanager/start'
-      'status':
-        'ryba/druid/middlemanager/status'
-      'stop':
-        'ryba/druid/middlemanager/stop'
+      commands:
+        'prepare':
+          'ryba/druid/prepare'
+        'install': [
+          'ryba/druid/middlemanager/install'
+          'ryba/druid/middlemanager/start'
+        ]
+        'start':
+          'ryba/druid/middlemanager/start'
+        'status':
+          'ryba/druid/middlemanager/status'
+        'stop':
+          'ryba/druid/middlemanager/stop'

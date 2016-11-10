@@ -9,20 +9,24 @@ managing segment replication, and balancing segment load.
 
 [coordinator]: http://druid.io/docs/latest/design/coordinator.html
 
-    module.exports = ->
-      'prepare':
-        'ryba/druid/prepare'
-      'configure':
+    module.exports =
+      use:
+        java: 'masson/commons/java'
+        hdfs_client: 'ryba/hadoop/hdfs_client'
+        druid_commons: implicit: true, module: 'ryba/druid'
+        druid_coordinator: 'ryba/druid/coordinator'
+      configure:
         'ryba/druid/coordinator/configure'
-      'install': [
-        'masson/commons/java'
-        'ryba/hadoop/hdfs_client'
-        'ryba/druid/coordinator/install'
-        'ryba/druid/coordinator/start'
-      ]
-      'start':
-        'ryba/druid/coordinator/start'
-      'status':
-        'ryba/druid/coordinator/status'
-      'stop':
-        'ryba/druid/coordinator/stop'
+      commands:
+        'prepare':
+          'ryba/druid/prepare'
+        'install': [
+          'ryba/druid/coordinator/install'
+          'ryba/druid/coordinator/start'
+        ]
+        'start':
+          'ryba/druid/coordinator/start'
+        'status':
+          'ryba/druid/coordinator/status'
+        'stop':
+          'ryba/druid/coordinator/stop'

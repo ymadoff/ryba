@@ -1,7 +1,7 @@
 
 # Druid Overlord Install
 
-    module.exports = header: 'Druid Overlord # Install', handler: ->
+    module.exports = header: 'Druid Overlord Install', handler: ->
       {druid} = @config.ryba
       @call once: true, handler: 'ryba/druid/install'
 

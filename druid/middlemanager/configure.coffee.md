@@ -11,8 +11,7 @@ Example:
 } } } }
 ```
 
-    module.exports  = irreversible: true, handler: ->
-      require('../configure').handler.call @
+    module.exports = ->
       {druid} = @config.ryba
       hdp_version = '2.5.0.0-1245' # TODO: disover hdp version
       druid.hadoop_mapreduce_dir ?= '/usr/hdp/current/hadoop-mapreduce-client'

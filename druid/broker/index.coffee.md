@@ -10,26 +10,29 @@ in Zookeeper.
 
 broker: http://druid.io/docs/latest/design/broker.html
 
-    module.exports = ->
-      'check':
-        'ryba/druid/broker/check'
-      'prepare':
-        'ryba/druid/prepare'
-      'configure': [
-        'ryba/commons/db_admin'
+    module.exports =
+      use:
+        java: 'masson/commons/java'
+        hdfs_client: 'ryba/hadoop/hdfs_client'
+        mapred_client: 'ryba/hadoop/mapred_client'
+        druid_commons: implicit: true, module: 'ryba/druid'
+        druid_overlord: 'ryba/druid/overlord'
+        druid_broker: 'ryba/druid/broker'
+      configure:
         'ryba/druid/broker/configure'
-      ]
-      'install': [
-        'masson/commons/java'
-        'ryba/hadoop/hdfs_client'
-        'ryba/hadoop/mapred_client'
-        'ryba/druid/broker/install'
-        'ryba/druid/broker/start'
-        'ryba/druid/broker/check'
-      ]
-      'start':
-        'ryba/druid/broker/start'
-      'status':
-        'ryba/druid/broker/status'
-      'stop':
-        'ryba/druid/broker/stop'
+      commands:
+        'check':
+          'ryba/druid/broker/check'
+        'prepare':
+          'ryba/druid/prepare'
+        'install': [
+          'ryba/druid/broker/install'
+          'ryba/druid/broker/start'
+          'ryba/druid/broker/check'
+        ]
+        'start':
+          'ryba/druid/broker/start'
+        'status':
+          'ryba/druid/broker/status'
+        'stop':
+          'ryba/druid/broker/stop'

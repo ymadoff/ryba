@@ -1,7 +1,7 @@
 
 # Druid Historical Install
 
-    module.exports = header: 'Druid Historical # Install', handler: ->
+    module.exports = header: 'Druid Historical Install', handler: ->
       {druid} = @config.ryba
       @call once: true, handler: 'ryba/druid/install'
 

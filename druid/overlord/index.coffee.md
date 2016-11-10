@@ -11,20 +11,23 @@ separate processes and you can run each on a different server.
 
 [overlord]: http://druid.io/docs/latest/design/indexing-service.html
 
-    module.exports = ->
-      'prepare':
-        'ryba/druid/prepare'
-      'configure':
+    module.exports =
+      use:
+        java: 'masson/commons/java'
+        hdfs_client: 'ryba/hadoop/hdfs_client'
+        druid_commons: implicit: true, module: 'ryba/druid'
+      configure:
         'ryba/druid/overlord/configure'
-      'install': [
-        'masson/commons/java'
-        'ryba/hadoop/hdfs_client'
-        'ryba/druid/overlord/install'
-        'ryba/druid/overlord/start'
-      ]
-      'start':
-        'ryba/druid/overlord/start'
-      'status':
-        'ryba/druid/overlord/status'
-      'stop':
-        'ryba/druid/overlord/stop'
+      commands:
+        'prepare':
+          'ryba/druid/prepare'
+        'install': [
+          'ryba/druid/overlord/install'
+          'ryba/druid/overlord/start'
+        ]
+        'start':
+          'ryba/druid/overlord/start'
+        'status':
+          'ryba/druid/overlord/status'
+        'stop':
+          'ryba/druid/overlord/stop'

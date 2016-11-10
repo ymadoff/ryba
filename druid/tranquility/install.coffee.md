@@ -1,7 +1,7 @@
 
 # Druid Tranquility Install
 
-    module.exports = header: 'Druid Tranquility # Install', handler: ->
+    module.exports = header: 'Druid Tranquility Install', handler: ->
       {druid} = @config.ryba
 
 ## IPTables

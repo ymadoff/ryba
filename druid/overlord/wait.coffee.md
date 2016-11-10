@@ -1,7 +1,7 @@
 
 # Druid Overlord Wait
 
-    module.exports = header: 'Druid Overlord # Wait', label_true: 'STOPPED', handler: ->
+    module.exports = header: 'Druid Overlord Wait', label_true: 'STOPPED', handler: ->
       {druid, clean_logs} = @config.ryba
       overlords = @contexts 'ryba/druid/overlord', require('./configure').handler
       @connection.wait

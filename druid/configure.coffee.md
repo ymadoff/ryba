@@ -11,14 +11,13 @@ Example:
 }
 ```
 
-    module.exports  = handler: ->
-      [pg_ctx] = @contexts 'masson/commons/postgres/server', require('masson/commons/postgres/server').handler
-      [my_ctx] = @contexts 'masson/commons/mysql/server', require('masson/commons/postgres/server').handler
-      zoo_ctxs = @contexts 'ryba/zookeeper/server', require('../zookeeper/server/configure').handler
-      [hadoop_ctx] = @contexts 'ryba/hadoop/core', require('../hadoop/core/configure').handler
+    module.exports = ->
+      [pg_ctx] = @contexts 'masson/commons/postgres/server'
+      [my_ctx] = @contexts 'masson/commons/mysql/server'
+      zoo_ctxs = @contexts 'ryba/zookeeper/server'
+      [hadoop_ctx] = @contexts 'ryba/hadoop/core'
       # Get ZooKeeper Quorum
       zookeeper_quorum = for zoo_ctx in zoo_ctxs then "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
-        
       @config.ryba ?= {}
       {realm} = @config.ryba
       druid = @config.ryba.druid ?= {}
@@ -67,7 +66,7 @@ Example:
       druid.common_runtime['druid.zk.paths.base'] ?= '/druid'
       # Metadata storage
       druid.db ?= {}
-      require('../commons/db_admin').handler.call @
+      # require('../commons/db_admin').handler.call @
       if pg_ctx then druid.db.engine ?= 'postgres'
       else if my_ctx then druid.db.engine ?= 'mysql'
       else druid.db.engine ?= 'derby'

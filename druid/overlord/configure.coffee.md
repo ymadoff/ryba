@@ -11,8 +11,7 @@ Example:
 } } } }
 ```
 
-    module.exports  = irreversible: true, handler: ->
-      require('../configure').handler.call @
+    module.exports = ->
       {druid} = @config.ryba
       druid.overlord ?= {}
       druid.overlord.runtime ?= {}

@@ -1,7 +1,7 @@
 
 # Druid Overlord Stop
 
-    module.exports = header: 'Druid Overlord # Stop', label_true: 'STOPPED', handler: ->
+    module.exports = header: 'Druid Overlord Stop', label_true: 'STOPPED', handler: ->
       {druid, clean_logs} = @config.ryba
       @service.stop
         name: 'druid-overlord'

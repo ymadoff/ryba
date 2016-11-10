@@ -1,7 +1,7 @@
 
 # Druid MiddleManager Install
 
-    module.exports = header: 'Druid MiddleManager # Install', handler: ->
+    module.exports = header: 'Druid MiddleManager Install', handler: ->
       {druid} = @config.ryba
       @call once: true, handler: 'ryba/druid/install'
 

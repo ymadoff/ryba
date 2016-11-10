@@ -1,7 +1,7 @@
 
 # Druid Broker Start
 
-    module.exports = header: 'Druid Broker # Start', label_true: 'STARTED', handler: ->
+    module.exports = header: 'Druid Broker Start', label_true: 'STARTED', handler: ->
       {druid} = @config.ryba
       @call once: true, 'ryba/zookeeper/server/wait'
       @call once: true, 'ryba/druid/coordinator/wait'

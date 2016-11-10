@@ -1,7 +1,7 @@
 
 # Druid Historical Stop
 
-    module.exports = header: 'Druid Historical # Stop', label_true: 'STOPPED', handler: ->
+    module.exports = header: 'Druid Historical Stop', label_true: 'STOPPED', handler: ->
       {druid, clean_logs} = @config.ryba
       @service.stop
         name: 'druid-historical'

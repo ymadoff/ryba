@@ -4,7 +4,7 @@
 Todo: move to a druid client module. Here because the broker service is the latest
 service to be started.
 
-    module.exports = header: 'Druid Broker # Check', handler: ->
+    module.exports = header: 'Druid Broker Check', handler: ->
       {force_check, druid} = @config.ryba
       [overlord] = @contexts 'ryba/druid/overlord'
       @register 'hdfs_upload', 'ryba/lib/hdfs_upload'

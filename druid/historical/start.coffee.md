@@ -1,7 +1,7 @@
 
 # Druid Historical Start
 
-    module.exports = header: 'Druid Historical # Start', label_true: 'STARTED', handler: ->
+    module.exports = header: 'Druid Historical Start', label_true: 'STARTED', handler: ->
       {druid} = @config.ryba
       @call once: true, 'masson/core/krb5_client/wait'
       @call once: true, 'ryba/zookeeper/server/wait'

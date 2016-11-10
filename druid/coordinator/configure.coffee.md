@@ -11,8 +11,7 @@ Example:
 } } } }
 ```
 
-    module.exports  = handler: ->
-      require('../configure').handler.call @
+    module.exports = ->
       {druid} = @config.ryba
       druid.coordinator ?= {}
       druid.coordinator.runtime ?= {}

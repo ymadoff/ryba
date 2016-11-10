@@ -1,9 +1,9 @@
 
 # Druid Coordinator Wait
 
-    module.exports = header: 'Druid Coordinator # Wait', label_true: 'STOPPED', handler: ->
+    module.exports = header: 'Druid Coordinator Wait', label_true: 'STOPPED', handler: ->
       {druid, clean_logs} = @config.ryba
-      coordinators = @contexts 'ryba/druid/coordinator', require('./configure').handler
+      coordinators = @contexts 'ryba/druid/coordinator'
       @connection.wait
         servers: for coordinator in coordinators
           host: coordinator.config.host

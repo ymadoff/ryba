@@ -1,7 +1,7 @@
 
 # Druid MiddleManager Stop
 
-    module.exports = header: 'Druid MiddleManager # Stop', label_true: 'STOPPED', handler: ->
+    module.exports = header: 'Druid MiddleManager Stop', label_true: 'STOPPED', handler: ->
       {druid, clean_logs} = @config.ryba
       @service.stop
         name: 'druid-middlemanager'

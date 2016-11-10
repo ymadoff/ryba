@@ -16,19 +16,23 @@ For examples and more information, please see the [Tranquility README][readme].
 [Tranquility]: http://druid.io/docs/0.9.1.1/ingestion/stream-ingestion.html#server
 [readme]: https://github.com/druid-io/tranquility
 
-    module.exports = ->
-      'prepare':
-        'ryba/druid/tranquility/prepare'
-      'configure':
+    module.exports =
+      use:
+        java: 'masson/commons/java'
+        hdfs_client: 'ryba/hadoop/hdfs_client'
+        druid_commons: implicit: true, module: 'ryba/druid'
+      configure:
         'ryba/druid/tranquility/configure'
-      'install': [
-        'masson/commons/java'
-        'ryba/druid/tranquility/install'
-        'ryba/druid/tranquility/start'
-      ]
-      # 'start':
-      #   'ryba/druid/tranquility/start'
-      # 'status':
-      #   'ryba/druid/tranquility/status'
-      # 'stop':
-      #   'ryba/druid/tranquility/stop'
+      commands:
+        'prepare':
+          'ryba/druid/tranquility/prepare'
+        'install': [
+          'ryba/druid/tranquility/install'
+          'ryba/druid/tranquility/start'
+        ]
+        # 'start':
+        #   'ryba/druid/tranquility/start'
+        # 'status':
+        #   'ryba/druid/tranquility/status'
+        # 'stop':
+        #   'ryba/druid/tranquility/stop'

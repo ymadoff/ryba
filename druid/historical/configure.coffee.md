@@ -33,8 +33,7 @@ your specific hardware. The most commonly adjusted configurations are:
 } } } }
 ```
 
-    module.exports  = handler: ->
-      require('../configure').handler.call @
+    module.exports = ->
       {druid} = @config.ryba
       druid.historical ?= {}
       druid.historical.runtime ?= {}
