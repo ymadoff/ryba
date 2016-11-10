@@ -24,6 +24,19 @@ Install Ambari server package.
         name: 'ambari-server'
         startup: true
 
+## Non-Root
+
+      @file
+        if: ambari_agent.sudo
+        target: '/etc/sudoers.d/ambari_server'
+        content: """
+        # Ambari Commands
+        ambari ALL=(ALL) NOPASSWD:SETENV: /bin/mkdir, /bin/cp, /bin/chmod, /bin/rm
+        Defaults exempt_group = ambari
+        Defaults !env_reset,env_delete-=PATH
+        Defaults: ambari !requiretty 
+        """
+
 ## Database
 
 Prepare the Ambari Database

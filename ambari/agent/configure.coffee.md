@@ -1,7 +1,7 @@
 
 
-    module.exports = handler: ->
-      [srv_ctx] = @contexts 'ryba/ambari/server', require('../server').configure
+    module.exports = ->
+      [srv_ctx] = @contexts 'ryba/ambari/server'
       ambari_agent = @config.ryba.ambari_agent ?= {}
       ambari_agent.conf_dir ?= '/etc/ambari-agent/conf'
       ambari_agent.ini ?= {}
