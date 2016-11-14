@@ -28,7 +28,7 @@ Example:
 }
 ```
 
-    module.exports = handler: ->
+    module.exports = ->
       pig = @config.ryba.pig ?= {}
       # Layout
       pig.conf_dir ?= '/etc/pig/conf'

@@ -50,8 +50,6 @@ companion file defines no properties while the YUM package does.
           match: /^JAVA_HOME=.*$/mg
           replace: "JAVA_HOME=#{java_home}"
         ]
-        uid: pig.user.name
-        gid: hadoop_group.name
         mode: 0o755
         backup: true
       @file
