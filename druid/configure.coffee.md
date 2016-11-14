@@ -64,9 +64,10 @@ Example:
       # Zookeeper
       druid.common_runtime['druid.zk.service.host'] ?= "#{zookeeper_quorum.join ','}"
       druid.common_runtime['druid.zk.paths.base'] ?= '/druid'
-      # Metadata storage
+
+## Metadata storage
+
       druid.db ?= {}
-      # require('../commons/db_admin').handler.call @
       if pg_ctx then druid.db.engine ?= 'postgres'
       else if my_ctx then druid.db.engine ?= 'mysql'
       else druid.db.engine ?= 'derby'
