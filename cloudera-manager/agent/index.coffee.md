@@ -8,17 +8,21 @@ You must have configured yum to use the [cloudera manager repo][Cloudera-manager
 or the [cloudera cdh repo][Cloudera-cdh-repo].
 
 
-    module.exports = ->
-      'configure' :
+    module.exports =
+      use:
+        java: implicit: true, module: 'masson/commons/java'
+        cm_server: 'ryba/cloudera-manager/server'
+      configure :
         'ryba/cloudera-manager/agent/configure'
-      'install' : [
-        'ryba/cloudera-manager/agent/install'
-        'ryba/cloudera-manager/agent/start'
-      ]
-      'stop' :
-        'ryba/cloudera-manager/agent/stop'
-      'start' :
-        'ryba/cloudera-manager/agent/start'
+      commands:
+        'install' : [
+          'ryba/cloudera-manager/agent/install'
+          'ryba/cloudera-manager/agent/start'
+        ]
+        'stop' :
+          'ryba/cloudera-manager/agent/stop'
+        'start' :
+          'ryba/cloudera-manager/agent/start'
 
 [Cloudera-agent-install]: http://www.cloudera.com/content/www/en-us/documentation/enterprise/5-2-x/topics/cm_ig_install_path_b.html#cmig_topic_6_6_3_unique_1
 [Cloudera-manager-repo]: http://archive.cloudera.com/cm5/redhat/6/x86_64/cm/cloudera-manager.repo

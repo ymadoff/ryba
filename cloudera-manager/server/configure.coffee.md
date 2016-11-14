@@ -26,15 +26,15 @@ cloudera_manager:
 ```
 
 
-    module.exports = handler: ->
+    module.exports = ->
       cloudera_manager = @config.ryba.cloudera_manager ?= {}
-      server = @config.ryba.cloudera_manager.server ?= {}
-      server.admin_port ?= '7182'
-      server.ui_port ?= '7180'
-      server.db ?= {}
-      server.db.type ?= 'mysql'
-      server.db.main_account ?= {}
-      server.db.main_account.user ?= "cloudera"
-      server.db.main_account.password ?= "cloudera123"
-      server.db.main_account.db_name ?= "cloudera"
-      server.db.accounts ?= {}
+      cloudera_manager.server ?= {}
+      cloudera_manager.server.admin_port ?= '7182'
+      cloudera_manager.server.ui_port ?= '7180'
+      cloudera_manager.server.db ?= {}
+      cloudera_manager.server.db.type ?= 'mysql'
+      cloudera_manager.server.db.main_account ?= {}
+      cloudera_manager.server.db.main_account.user ?= "cloudera"
+      cloudera_manager.server.db.main_account.password ?= "cloudera123"
+      cloudera_manager.server.db.main_account.db_name ?= "cloudera"
+      cloudera_manager.server.db.accounts ?= {}
