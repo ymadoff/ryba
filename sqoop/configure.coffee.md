@@ -29,7 +29,7 @@ Example:
 }
 ```
 
-    module.exports = handler: ->
+    module.exports = ->
       sqoop = @config.ryba.sqoop ?= {}
       # User
       sqoop.user = name: sqoop.user if typeof sqoop.user is 'string'

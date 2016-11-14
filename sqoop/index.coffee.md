@@ -4,13 +4,15 @@
 [Apache Sqoop](http://sqoop.apache.org/) is a tool designed for efficiently transferring bulk data between
 Apache Hadoop and structured datastores such as relational databases.
 
-      module.exports = ->
-        'configure': [
+      module.exports =
+        use:
+          java: implicit: true, module: 'masson/commons/java'
+          mysql_client: 'masson/commons/mysql/client'
+          hadoop_core: 'ryba/hadoop/core'
+          hdfs_client: 'ryba/hadoop/hdfs_client'
+          yarn_client: 'ryba/hadoop/yarn_client'
+        configure:
           'ryba/sqoop/configure'
-        ]
-        'install': [
-          'masson/commons/mysql/client'
-          'ryba/hadoop/hdfs_client/install'
-          'ryba/hadoop/yarn_client/install'
-          'ryba/sqoop/install'
-        ]
+        commands:
+          'install':
+            'ryba/sqoop/install'
