@@ -10,25 +10,21 @@ Ryba can deploy Elasticsearch in the  secured Hadoop cluster.
 
 Elastic search configuration for hadoop can be found at [Hortonworks Section](hortonworks.com/blog/configure-elastic-search-hadoop-hdp-2-0)
 
-    module.exports = ->
-      'prepare': [
-        'ryba/elasticsearch/prepare'
-      ]
-      'configure': [
+    module.exports =
+      use:
+        java: implicit: true, module: 'masson/commons/java'
+      configure:
         'ryba/elasticsearch/configure'
-      ]
-      'install': [
-        'masson/commons/java'
-        'ryba/elasticsearch/install'
-        'ryba/elasticsearch/start'
-      ]
-      'start': [
-        'ryba/elasticsearch/start'
-      ]
-      'status': [
-        'ryba/elasticsearch/status'
-      ]
-      'stop': [
-        'ryba/elasticsearch/stop'
-      ]
-
+      commands:
+        'prepare':
+          'ryba/elasticsearch/prepare'
+        'install': [
+          'ryba/elasticsearch/install'
+          'ryba/elasticsearch/start'
+        ]
+        'start':
+          'ryba/elasticsearch/start'
+        'status':
+          'ryba/elasticsearch/status'
+        'stop':
+          'ryba/elasticsearch/stop'

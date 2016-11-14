@@ -52,7 +52,8 @@ Example:
 }
 ```
 
-    module.exports  = handler: ->
+    module.exports  = ->
+      es_ctxs = @contexts 'ryba/elasticsearch'
       elasticsearch = @config.ryba.elasticsearch ?= {}
       elasticsearch.user ?= {}
       elasticsearch.user = name: elasticsearch.user if typeof elasticsearch.user is 'string'
@@ -73,7 +74,7 @@ Example:
       elasticsearch.keytab ?= '/etc/security/keytabs/elasticsearch.service.keytab'
       elasticsearch.cluster ?= {}
       elasticsearch.cluster.name ?= 'elasticsearch'
-      elasticsearch.number_of_shards ?= @hosts_with_module('ryba/elasticsearch').length
+      elasticsearch.number_of_shards ?= es_ctxs.length
       elasticsearch.number_of_replicas ?= 1
 
 ElasticSearch can be found [here](https://www.elastic.co/downloads).
