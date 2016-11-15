@@ -1,11 +1,11 @@
 
 # Spark History Server
 
-    module.exports = handler: ->
+    module.exports = ->
+      spark_ctxs = @contexts 'ryba/spark/client'
       {realm, core_site, hadoop_conf_dir, ssl, ssl_server, ssl_client} = @config.ryba
       spark = @config.ryba.spark ?= {}
       spark.history ?= {}
-      spark_ctxs = @contexts 'ryba/spark/client' , require('../client/configure').handler
       # Layout
       spark.history.pid_dir ?= '/var/run/spark'
       spark.history.conf_dir ?= '/etc/spark/conf'

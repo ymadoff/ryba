@@ -1,8 +1,9 @@
-## Configure
 
-  Configure Spark Livy Server and integrates it with the other components deployed by Ryba.
+# Livy Configure
+
+Configure Spark Livy Server and integrates it with the other components deployed by Ryba.
   
-    module.exports = handler: ->
+    module.exports = ->
       {hadoop_conf_dir, core_site,realm} = @config.ryba
       {spark} = @config.ryba ?= {}
       # User
@@ -19,7 +20,9 @@
       spark.group.name ?= 'spark'
       spark.group.system ?= true
       spark.user.gid ?= spark.group.name
-      
+
+## General
+
       livy = @config.ryba.spark.livy ?= {}
       # Layout
       livy.conf_dir ?= '/etc/spark-livy/conf'

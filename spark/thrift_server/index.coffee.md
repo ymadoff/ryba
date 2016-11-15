@@ -7,24 +7,24 @@ with more information about the structure of both the data and the computation b
 It starts a custom instance of hive-sever2 and enabled user to register spark based table
 in order to make the data accessible to hive clients.
 
-    module.exports = ->
-      'configure' : [
-        'ryba/hadoop/core'
+    module.exports =
+      use:
+        'java': implicit: true, module: 'masson/commons/java'
+        'hdfs': 'ryba/hadoop/hdfs_client'
+        'hive_server2': 'ryba/hive/server2'
+        'spark': 'ryba/spark/client'
+        'yarn_nm': 'ryba/hadoop/yarn_nm'
+      configure :
         'ryba/spark/thrift_server/configure'
-      ]
-      'install': [
-        'masson/commons/java'
-        'ryba/hadoop/hdfs_client'
-        'ryba/spark/thrift_server/install'
-        'ryba/spark/thrift_server/start'
-        'ryba/spark/thrift_server/check'
-      ]
-      'check': [
-        'ryba/spark/thrift_server/check'
-      ]
-      'stop': [
-        'ryba/spark/thrift_server/stop'
-      ]
-      'start': [
-        'ryba/spark/thrift_server/start'
-      ]
+      commands:
+        'install': [
+          'ryba/spark/thrift_server/install'
+          'ryba/spark/thrift_server/start'
+          'ryba/spark/thrift_server/check'
+        ]
+        'check':
+          'ryba/spark/thrift_server/check'
+        'stop':
+          'ryba/spark/thrift_server/stop'
+        'start':
+          'ryba/spark/thrift_server/start'

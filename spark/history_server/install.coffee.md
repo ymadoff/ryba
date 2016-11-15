@@ -1,14 +1,15 @@
 # Apache Spark History Server
 
-The history servers comes with the spark-client package. The single difference is in the configuration
-for  kerberos properties.
-We does not recommand using the spark WEB UI because it does not support SSL. Moreover it does make Yarn
-redirect the tracking URL to the WEBUI which prevents the user to see the log after the job has finished
-in the resource Manager web interface.
+The history servers comes with the spark-client package. The single difference 
+is in the configuration for  kerberos properties.
+
+We do not recommand using the spark WEB UI because it does not support SSL. 
+Moreover it does make Yarn redirect the tracking URL to the WEBUI which prevents
+the user to see the log after the job has finished in the YARN Resource Manager 
+web interface.
 
     module.exports =  header: 'Spark History Server Install', handler: ->
       {spark, realm, hadoop_group} = @config.ryba
-      {spark} = (@contexts 'ryba/spark/history_server', require('./configure').handler)[0].config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       {java_home} = @config.java

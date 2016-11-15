@@ -7,21 +7,10 @@
       @call  'ryba/spark/history_server/wait'
 
       # TODO Juin 2016: get https protocol when available (from 2.0 version)
-      @call
-        handler: (_, callback )->
-          url = "http://#{spark.history.conf['spark.yarn.historyServer.address']}/api/v1/applications"
-          @execute
-            cmd: "curl #{url}"
-          , (err, _, stdout) ->
-            return callback err if err
-            try
-              stdout = stdout.trim()
-              results = JSON.parse stdout
-              return callback null, true if results
-            catch err
-              return callback err
-
-
-
-
-
+      @execute
+        cmd: "curl http://#{spark.history.conf['spark.yarn.historyServer.address']}/api/v1/applications"
+      , (err, _, stdout) ->
+        throw err if err
+        stdout = stdout.trim()
+        results = JSON.parse stdout
+        return callback null, true if results

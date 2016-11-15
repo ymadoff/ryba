@@ -41,18 +41,21 @@ both “shells,” allow initial, exploratory development, local mode restricted
 the computing power of your laptop, client mode able to leverage the full power
 of your cluster.
 
-    module.exports = ->
-      'configure': [
-        'ryba/hadoop/core'
+    module.exports =
+      use:
+        hdfs: 'ryba/hadoop/hdfs_client'
+        yarn_nm: 'ryba/hadoop/yarn_nm'
+        hive: 'ryba/hive/client'
+        graphite: 'ryba/graphite/carbon'
+        ganglia: 'ryba/ganglia/collector'
+      configure:
         'ryba/spark/client/configure'
-      ]
-      'install': [
-        'ryba/hadoop/hdfs_client'
-        'ryba/hive/client'
-        'ryba/spark/client/install'
-        'ryba/spark/client/check'
-      ]
-      'check':
-        'ryba/spark/client/check'
+      commands:
+        'install': [
+          'ryba/spark/client/install'
+          'ryba/spark/client/check'
+        ]
+        'check':
+          'ryba/spark/client/check'
 
 [tips]: https://www.altiscale.com/hadoop-blog/spark-on-hadoop/

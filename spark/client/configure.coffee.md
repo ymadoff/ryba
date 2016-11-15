@@ -1,9 +1,11 @@
 
 # Configuration
 
-    module.exports = handler: ->
+    module.exports = ->
       {core_site, hadoop_conf_dir} = @config.ryba
-      nm_ctxs = @contexts 'ryba/hadoop/yarn_nm', require('../../hadoop/yarn_nm/configure').handler
+      nm_ctxs = @contexts 'ryba/hadoop/yarn_nm'
+      graphite_ctxs = @contexts 'ryba/graphite/carbon'
+      [ganglia_ctx] = @contexts 'ryba/ganglia/collector'
       spark = @config.ryba.spark ?= {}
       spark.conf ?= {}
       # User
@@ -20,7 +22,6 @@
       spark.group.name ?= 'spark'
       spark.group.system ?= true
       spark.user.gid ?= spark.group.name
-
       # Configuration
       spark.conf = {}
       spark.conf['spark.master'] ?= "local[*]"
@@ -90,7 +91,6 @@ and spark.metrics.conf=metrics.properties will tell all executors to load that f
         'driver.source.jvm.class':'org.apache.spark.metrics.source.JvmSource'
         'executor.source.jvm.class':'org.apache.spark.metrics.source.JvmSource'
 
-      graphite_ctxs = @contexts 'ryba/graphite/carbon', require('../../graphite/carbon/configure').handler
       if graphite_ctxs.length
         spark.metrics['*.sink.graphite.class'] = 'org.apache.spark.metrics.sink.GraphiteSink'
         spark.metrics['*.sink.graphite.host'] = graphite_ctxs.map( (ctx) -> ctx.config.host)
@@ -99,7 +99,7 @@ and spark.metrics.conf=metrics.properties will tell all executors to load that f
 
       # TODO : metrics.MetricsSystem: Sink class org.apache.spark.metrics.sink.GangliaSink cannot be instantialized
       if false #ctx.host_with_module 'ryba/ganglia/collector'
-        ganglia_ctx = @contexts('ryba/ganglia/collector', require('../../ganglia/collector/configure').handler)[0].config.ryba.ganglia
+        ganglia_ctx.config.ryba.ganglia
         spark.metrics['*.sink.ganglia.class'] = 'org.apache.spark.metrics.sink.GangliaSink'
         spark.metrics['*.sink.ganglia.host'] = graphite_ctx.map( (ctx) -> ctx.config.host)
         spark.metrics['*.sink.ganglia.port'] = ganglia_ctx.spark_port

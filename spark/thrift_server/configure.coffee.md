@@ -1,15 +1,14 @@
 
 # Spark Thrift Server
 
-    module.exports = handler: ->
+    module.exports = ->
       {realm, core_site} = @config.ryba
-      [hcli_ctx] = @contexts 'ryba/hive/server2', require('../../hive/server2/configure').handler
-      [sc_ctx] = @contexts 'ryba/spark/client', require('../client/configure').handler
-      [ynm_ctx] = @contexts 'ryba/hadoop/yarn_nm', require('../../hadoop/yarn_nm/configure').handler #needed for hdfs client trustore on nodemanager
-      hs_hosts = (@contexts 'ryba/hive/server2').map( (ctx)-> ctx.config.host)
+      [hcli_ctx] = @contexts 'ryba/hive/server2'
+      [sc_ctx] = @contexts 'ryba/spark/client'
+      [ynm_ctx] = @contexts 'ryba/hadoop/yarn_nm'
       {hadoop_conf_dir, ssl, ssl_server, ssl_client} = ynm_ctx.config.ryba
       throw Error 'Need Hive Metastore' unless @contexts( 'ryba/hive/hcatalog').length
-      throw Error 'Spark SQL Thrift Server must be installed on the same host than hive-server2' unless hs_hosts.indexOf(@config.host) > -1
+      throw Error 'Spark SQL Thrift Server must be installed on the same host than hive-server2' unless sc_ctx.map((ctx)-> ctx.config.host).indexOf(@config.host) > -1
       throw Error 'Spark SQL Thrift Server is useless without spark installed' unless sc_ctx?
       spark = @config.ryba.spark ?= {}
       spark.user = sc_ctx.config.ryba.spark.user
