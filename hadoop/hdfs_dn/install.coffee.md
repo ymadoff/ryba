@@ -74,7 +74,8 @@ inside "/etc/init.d" and activate it on startup.
           cmd: "service hadoop-hdfs-datanode restart"
           if: -> @status -3
 
-      @call header: 'Compression', timeout: -1, handler: ->
+      @call header: 'Compression', timeout: -1, retry: 1, handler: (options) ->
+        @service.remove 'snappy', if: options.attempt is 1
         @service name: 'snappy'
         @service name: 'snappy-devel'
         @link
