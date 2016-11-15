@@ -6,10 +6,9 @@ See [REST Gateway Impersonation Configuration][impersonation].
 
 [impersonation]: http://hbase.apache.org/book.html#security.rest.gateway
 
-    module.exports = handler: ->
-      require('../../hadoop/core/configure').handler.call @
-      require('masson/commons/java/configure').handler.call @
-      m_ctxs = @contexts 'ryba/hbase/master', require('../master/configure').handler
+    module.exports = ->
+      m_ctxs = @contexts 'ryba/hbase/master'
+      rs_ctxs = @contexts 'ryba/hbase/regionserver'
       ryba = @config.ryba ?= {}
       {realm, core_site, ssl_server, hbase} = @config.ryba
       {java_home} = @config.java
@@ -74,8 +73,7 @@ See [REST Gateway Impersonation Configuration][impersonation].
 
 ## Proxy Users
 
-      hbase_ctxs = @contexts modules: ['ryba/hbase/master', 'ryba/hbase/regionserver']
-      for hbase_ctx in hbase_ctxs
+      for hbase_ctx in [m_ctxs..., rs_ctxs...]
         match = /^(.+?)[@\/]/.exec hbase.rest.site['hbase.rest.kerberos.principal']
         throw Error 'Invalid HBase Rest principal' unless match
         hbase_ctx.config.ryba.hbase ?= {}

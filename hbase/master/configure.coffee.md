@@ -1,11 +1,11 @@
 
 # HBase Master Configuration
 
-    module.exports = handler: ->
-      require('masson/commons/java/configure').handler.call @
-      zk_ctxs = @contexts 'ryba/zookeeper/server', require('../../zookeeper/server/configure').handler
+    module.exports = ->
+      zk_ctxs = @contexts 'ryba/zookeeper/server'
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
-      hadoop_ctxs = @contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
+      dn_ctxs = @contexts 'ryba/hadoop/hdfs_dn'
+      hadoop_ctxs = @contexts ['ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
       hbase_ctxs = @contexts 'ryba/hbase/master'
       ryba = @config.ryba ?= {}
       {realm, hbase, ganglia, graphite} = @config.ryba
@@ -123,18 +123,8 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
       if hbase.master.opts.indexOf('-Djava.security.auth.login.config') is -1
         hbase.master.opts += " -Djava.security.auth.login.config=#{hbase.master.conf_dir}/hbase-master.jaas"
 
-
-## Configuration for Proxy Users
-
-      for hadoop_ctx in hadoop_ctxs
-        hadoop_ctx.config.ryba ?= {}
-        hadoop_ctx.config.ryba.core_site ?= {}
-        hadoop_ctx.config.ryba.core_site["hadoop.proxyuser.#{hbase.user.name}.hosts"] ?= '*'
-        hadoop_ctx.config.ryba.core_site["hadoop.proxyuser.#{hbase.user.name}.groups"] ?= '*'
-
 ## Configuration for Local Access
 
-      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
       for nn_ctx in nn_ctxs
         nn_ctx.config.ryba ?= {}
         nn_ctx.config.ryba.hdfs ?= {}
@@ -144,7 +134,6 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
         users = nn_ctx.config.ryba.hdfs.nn.site['dfs.block.local-path-access.user'].split(',').filter((str) -> str isnt '')
         users.push 'hbase' unless 'hbase' in users
         nn_ctx.config.ryba.hdfs.nn.site['dfs.block.local-path-access.user'] = users.sort().join ','
-      dn_ctxs = @contexts 'ryba/hadoop/hdfs_dn'
       for dn_ctx in dn_ctxs
         dn_ctx.config.ryba ?= {}
         dn_ctx.config.ryba.hdfs ?= {}

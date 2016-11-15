@@ -1,7 +1,7 @@
 
 # HBase Client Configuration
 
-    module.exports = handler: ->
+    module.exports = ->
       ryba = @config.ryba ?= {}
       hbase = @config.ryba.hbase ?= {}
       hm_ctxs = @contexts 'ryba/hbase/master', require('../master/configure').handler

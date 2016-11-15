@@ -40,6 +40,7 @@ According to the default "hadoop-metrics-hbase.properties", the list of
 supported contexts are "hbase", "jvm" and "rpc".
 
     module.exports = ->
+      [ganglia_ctx] =  @contexts 'ryba/ganglia/collector'
       hbase = @config.ryba.hbase
       hbase.metrics ?= {}
       hbase.metrics.sinks ?= {}
@@ -64,7 +65,6 @@ supported contexts are "hbase", "jvm" and "rpc".
         hbase.metrics.config['hbase.sink.file.filename'] ?= 'hbase-metrics.out'
       # Ganglia sink, accepted properties are "servers" and "supportsparse"
       if hbase.metrics.sinks.ganglia
-        [ganglia_ctx] =  @contexts 'ryba/ganglia/collector', require('../../ganglia/collector').configure
         hbase.metrics.config["*.sink.ganglia.#{k}"] ?= v for k, v of sinks.ganglia
         hbase.metrics.config['hbase.sink.ganglia.class'] ?= sinks.ganglia.class
         hbase.metrics.config['jvm.sink.ganglia.class'] ?= sinks.ganglia.class

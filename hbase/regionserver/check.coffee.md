@@ -2,8 +2,9 @@
 # HBase RegionServer Check
 
     module.exports = header: 'HBase RegionServer Check', label_true: 'CHECKED', handler: ->
+      [hbase_master] = @contexts 'ryba/hbase/master'
       {core_site, hbase} = @config.ryba
-      rootdir = @contexts('ryba/hbase/master')[0].config.ryba.hbase.master.site['hbase.rootdir']
+      rootdir = hbase_master.config.ryba.hbase.master.site['hbase.rootdir']
       protocol = if hbase.rs.site['hbase.ssl.enabled'] is 'true' then 'https' else 'http'
       port = hbase.rs.site['hbase.regionserver.info.port']
       url = "#{protocol}://#{@config.host}:#{port}/jmx?qry=Hadoop:service=HBase,name=RegionServer,sub=Server"

@@ -1,16 +1,13 @@
 
 
-    module.exports = handler: ->
-      require('masson/commons/java/configure').handler.call @
-      # require('masson/core/iptables').configure ctx
-      # require('../../ganglia/collector').configure ctx
-      # require('../../graphite/carbon').configure ctx
-      # require('../../hadoop/hdfs').configure ctx
+    module.exports = ->
+      m_ctxs = @contexts 'ryba/hbase/master'
+      thrift_ctxs = @contexts 'ryba/hbase/thrift'
+      rest_ctxs = @contexts 'ryba/hbase/rest'
       ryba = @config.ryba ?= {}
       {java} = @config
       {realm, hbase, ganglia, graphite} = @config.ryba
       hbase = @config.ryba.hbase ?= {}
-      m_ctxs = @contexts 'ryba/hbase/master', require('../master/configure').handler
       throw Error "No Configured Master" unless m_ctxs.length
 
 # Users and Groups
@@ -70,7 +67,7 @@
         'org.apache.hadoop.hbase.security.access.SecureBulkLoadEndpoint'
         'org.apache.hadoop.hbase.security.access.AccessController'
       ]
-      if @has_module 'ryba/hbase/master' and m_ctxs[0].config.ryba.hbase.master.site['hbase.master.kerberos.principal'] isnt hbase.rs.site['hbase.regionserver.kerberos.principal']
+      if @has_service('ryba/hbase/master') and m_ctxs[0].config.ryba.hbase.master.site['hbase.master.kerberos.principal'] isnt hbase.rs.site['hbase.regionserver.kerberos.principal']
         throw Error "HBase principals must match in single node"
 
 ## Configuration Distributed mode
@@ -108,18 +105,3 @@ HA properties must be available to masters and regionservers.
       hbase.rs.site['hbase.rpc.engine'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.rpc.engine']
       hbase.rs.site['hbase.superuser'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.superuser']
       hbase.rs.site['hbase.bulkload.staging.dir'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.bulkload.staging.dir']
-
-## Proxy Users
-
-      thrift_ctxs = @contexts 'ryba/hbase/thrift', require('../thrift/configure').handler
-      if thrift_ctxs.length
-        principal = thrift_ctxs[0].config.ryba.hbase.thrift.site['hbase.thrift.kerberos.principal']
-        throw Error 'Invalid HBase Thrift principal' unless match = /^(.+?)[@\/]/.exec principal
-        hbase.rs.site["hadoop.proxyuser.#{match[1]}.groups"] ?= '*'
-        hbase.rs.site["hadoop.proxyuser.#{match[1]}.hosts"] ?= '*'
-      rest_ctxs = @contexts 'ryba/hbase/rest', require('../rest/configure').handler
-      if rest_ctxs.length
-        principal = rest_ctxs[0].config.ryba.hbase.rest.site['hbase.rest.kerberos.principal']
-        throw Error 'Invalid HBase Rest principal' unless match = /^(.+?)[@\/]/.exec principal
-        hbase.rs.site["hadoop.proxyuser.#{match[1]}.groups"] ?= '*'
-        hbase.rs.site["hadoop.proxyuser.#{match[1]}.hosts"] ?= '*'

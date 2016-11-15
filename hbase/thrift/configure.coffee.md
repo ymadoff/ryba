@@ -1,12 +1,12 @@
 
 # HBase Thrit Server Configuration
 
-    module.exports = handler: ->
-      require('../../hadoop/core/configure').handler.call @
+    module.exports = ->
+      m_ctxs = @contexts 'ryba/hbase/master'
+      rs_ctxs = @contexts 'ryba/hbase/regionserver'
       ryba = @config.ryba ?= {}
       {realm, core_site, ssl_server, hbase} = @config.ryba
       hbase = @config.ryba.hbase ?= {}
-      m_ctxs = @contexts 'ryba/hbase/master', require('../master/configure').handler
       throw Error 'No HBase Master configured' unless m_ctxs.length > 1
 
 # Users and Groups
@@ -90,8 +90,7 @@
 
 ## Proxy Users
 
-      hbase_ctxs = @contexts modules: ['ryba/hbase/master', 'ryba/hbase/regionserver']
-      for hbase_ctx in hbase_ctxs
+      for hbase_ctx in [m_ctxs..., rs_ctxs...]
         match = /^(.+?)[@\/]/.exec hbase.thrift.site['hbase.thrift.kerberos.principal']
         throw Error 'Invalid HBase Thrift principal' unless match
         hbase_ctx.config.ryba.hbase ?= {}
@@ -103,7 +102,6 @@
         hbase_ctx.config.ryba.hbase.rs.site ?= {}
         hbase_ctx.config.ryba.hbase.rs.site["hadoop.proxyuser.#{match[1]}.groups"] ?= '*'
         hbase_ctx.config.ryba.hbase.rs.site["hadoop.proxyuser.#{match[1]}.hosts"] ?= '*'
-
 
 ## Distributed Mode
 

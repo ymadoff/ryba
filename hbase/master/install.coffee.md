@@ -4,6 +4,7 @@
 TODO: [HBase backup node](http://willddy.github.io/2013/07/02/HBase-Add-Backup-Master-Node.html)
 
     module.exports =  header: 'HBase Master Install', handler: ->
+      hbase_regionservers = @contexts 'ryba/hbase/regionserver'
       {hadoop_group, hbase, realm} = @config.ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
@@ -138,7 +139,7 @@ Upload the list of registered RegionServers.
 
       @file
         header: 'Registered RegionServers'
-        content: @hosts_with_module('ryba/hbase/regionserver').join '\n'
+        content: hbase_regionservers.map( (ctx) -> ctx.config.host ).join '\n'
         target: "#{hbase.master.conf_dir}/regionservers"
         uid: hbase.user.name
         gid: hadoop_group.name

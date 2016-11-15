@@ -2,9 +2,10 @@
 # HBase RegionServer Install
 
     module.exports = header: 'HBase RegionServer Install', handler: ->
+      hbase_regionserver = @contexts 'ryba/hbase/regionserver'
       {hadoop_group, hbase, realm} = @config.ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
-      regionservers = @contexts('ryba/hbase/regionserver').map( (ctx) -> ctx.config.host).join '\n'
+      regionservers = hbase_regionserver.map( (ctx) -> ctx.config.host).join '\n'
 
 ## Register
 
@@ -106,12 +107,12 @@ RegionServer, and HBase client host machines.
 
       @copy
         header: 'Copy Keytab'
-        if: @has_module 'ryba/hbase/master'
+        if: @has_service 'ryba/hbase/master'
         source: hbase.master.site['hbase.master.keytab.file']
         target: hbase.rs.site['hbase.regionserver.keytab.file']
       @krb5_addprinc krb5,
         header: 'Kerberos'
-        unless: @has_module 'ryba/hbase/master'
+        unless: @has_service 'ryba/hbase/master'
         principal: hbase.rs.site['hbase.regionserver.kerberos.principal'].replace '_HOST', @config.host
         randkey: true
         keytab: hbase.rs.site['hbase.regionserver.keytab.file']
