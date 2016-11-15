@@ -27,7 +27,7 @@ Example:
 }
 ```
 
-    module.exports = handler: ->
+    module.exports = ->
       # require('masson/core/krb5_client').configure ctx
       flume = @config.ryba.flume ?= {}
       # User

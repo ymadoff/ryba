@@ -7,11 +7,11 @@ and flexible architecture based on streaming data flows. It is robust and fault
 tolerant with tunable reliability mechanisms and many failover and recovery
 mechanisms.
 
-    module.exports = ->
-      'configure': [
+    module.exports =
+      use:
+        hadoop_core: implicit: true, module: 'ryba/hadoop/core'
+      configure:
         'ryba/flume/configure'
-      ]
-      'install': [
-        'ryba/hadoop/core' # Users and groups created by "zookeeper" and "hadoop-hdfs" dependencies
-        'ryba/flume/install'
-      ]
+      commands:
+        'install':
+          'ryba/flume/install'
