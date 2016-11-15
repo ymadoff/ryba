@@ -973,7 +973,7 @@ The properties can be found [here][kafka-repository]
 Ranger Hive plugin runs inside Hiveserver JVM
 
       ranger.plugins.hive_enabled ?= if hive_ctxs.length > 0 then true else false
-      if ranger.plugins.hive_enabled 
+      if ranger.plugins.hive_enabled
         throw Error 'Need Hive Server2 to enable ranger Hive Plugin' unless hive_ctxs.length > 0
         # Ranger Yarn User
         ranger.users['hive'] ?=
@@ -1004,6 +1004,8 @@ Ranger Hive plugin runs inside Hiveserver JVM
           hive_ctx.config.ryba.ranger.user ?= ranger.user
           hive_ctx.config.ryba.ranger.group ?= ranger.group
           hive_ctx.config.ryba.hive.server2.site['hive.security.authorization.manager'] = 'org.apache.ranger.authorization.hive.authorizer.RangerHiveAuthorizerFactory'
+          
+          hive_ctx.config.ryba.hive.warehouse_mode = '0000'
           hive_ctx.config.ryba.hive.server2.site['hive.security.authenticator.manager'] = 'org.apache.hadoop.hive.ql.security.SessionStateUserAuthenticator'
           hive_ctx.config.ryba.hive.server2.opts ?= ''
           hive_ctx.config.ryba.hive.server2.opts += " -Djavax.net.ssl.trustStore=#{hive_ctx.config.ryba.ssl_client['ssl.client.truststore.location']} "
