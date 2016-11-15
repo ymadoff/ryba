@@ -16,9 +16,9 @@ Example:
 }
 ```
 
-    module.exports = handler: ->
-      hcat_ctxs = @contexts 'ryba/hive/hcatalog', [require('../../commons/db_admin').handler, require('../hcatalog/configure').handler]
-      hs2_ctxs = @contexts 'ryba/hive/server2', [require('../../commons/db_admin').handler, require('../server2/configure').handler]
+    module.exports = ->
+      hcat_ctxs = @contexts 'ryba/hive/hcatalog'
+      hs2_ctxs = @contexts 'ryba/hive/server2'
       throw Error "No HCatalog server declared" unless hcat_ctxs[0]
       throw Error "No Hive Server2 server declared" unless hs2_ctxs[0]
       # require('../../tez/configure').handler.call @
@@ -53,7 +53,7 @@ Example:
 ## Configuration
 
       hive.site ?= {}
-      hive.client.aux_jars ?= if @has_module 'ryba/hive/hcatalog' then hive.hcatalog.aux_jars else ''
+      hive.client.aux_jars ?= if @has_service 'ryba/hive/hcatalog' then hive.hcatalog.aux_jars else ''
       # Tuning
       # [Christian Prokopp comments](http://www.quora.com/What-are-the-best-practices-for-using-Hive-What-settings-should-we-enable-most-of-the-time)
       # [David Streever](https://streever.atlassian.net/wiki/display/HADOOP/Hive+Performance+Tips)

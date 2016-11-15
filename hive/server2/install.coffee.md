@@ -213,7 +213,7 @@ Create the directories to store the logs and pid information. The properties
         keytab: hive.server2.site['hive.server2.authentication.kerberos.keytab']
         uid: hive.user.name
         gid: hive.group.name
-        unless: @has_module('ryba/hive/hcatalog') and hive.server2.site['hive.metastore.kerberos.principal'] is hive.server2.site['hive.server2.authentication.kerberos.principal']
+        unless: @has_service('ryba/hive/hcatalog') and hive.server2.site['hive.metastore.kerberos.principal'] is hive.server2.site['hive.server2.authentication.kerberos.principal']
 
 ## Ulimit
 

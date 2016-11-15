@@ -1,5 +1,5 @@
 
-## HiveServer2 Configuration
+# HiveServer2 Configuration
 
 The following properties are required by knox in secured mode:
 
@@ -12,8 +12,7 @@ The following properties are required by knox in secured mode:
 Example:
 
 ```json
-{
-  "ryba": {
+{ "ryba": {
     "hive": {
       "server2": {
         "heapsize": "4096",
@@ -23,14 +22,19 @@ Example:
         "hive.server2.thrift.port": "10001"
       }
     }
-  }
-}
+} }
 ```
 
-    module.exports = handler: ->
+    module.exports = ->
+      zoo_ctxs = @contexts 'ryba/zookeeper/server'
+      hadoop_ctxs = @contexts ['ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
+      hcat_ctxs = @contexts 'ryba/hive/hcatalog'
+      hs2_ctxs = @contexts 'ryba/hive/server2'
+      hbase_master = @contexts 'ryba/hbase/master'
+      hbase_client = @contexts 'ryba/hbase/client'
+      hbase_ctxs = @contexts 'ryba/hbase/thrift'
       {core_site, hive, realm} = @config.ryba ?= {}
       {java_home} = @config.java
-      hcat_ctxs = @contexts 'ryba/hive/hcatalog', [require('../../commons/db_admin').handler, require('../hcatalog/configure').handler]
       # Layout and environment
       hive.server2 ?= {}
       hive.server2.conf_dir ?= '/etc/hive-server2/conf'
@@ -121,9 +125,9 @@ Example:
           -Dcom.sun.management.jmxremote.rmi.port=#{hive.server2.env["JMXPORT"]} \
           """
       aux_jars = ['/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar']
-      if @contexts('ryba/hbase/master').length and @config.host in @contexts('ryba/hbase/client').map((ctx) -> ctx.config.host)
+      if hbase_master.length and @config.host in hbase_client.map((ctx) -> ctx.config.host)
         aux_jars.push ['/usr/hdp/current/hbase-client/lib/hbase-server.jar', '/usr/hdp/current/hbase-client/lib/hbase-client.jar', '/usr/hdp/current/hbase-client/lib/hbase-common.jar']... # Default value
-        aux_jars.push '/usr/hdp/current/hbase-client/lib/phoenix-server.jar' if @has_module 'ryba/phoenix/client'
+        aux_jars.push '/usr/hdp/current/hbase-client/lib/phoenix-server.jar' if @has_service 'ryba/phoenix/client'
       hive.server2.aux_jars ?= aux_jars.join ':'
 
 ## Configure Kerberos
@@ -156,18 +160,15 @@ HS2 use Zookeepper to track registered servers. The znode address is
 "/<hs2_namespace>/serverUri=<host:port>;version=<versionInfo>; sequence=<sequence_number>"
 and its value is the server "host:port".
 
-      zoo_ctxs = @contexts 'ryba/zookeeper/server', require('../../zookeeper/server/configure').handler
       zookeeper_quorum = for zoo_ctx in zoo_ctxs
         "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
       hive.server2.site['hive.zookeeper.quorum'] ?= zookeeper_quorum.join ','
-      hs2_ctxs = @contexts 'ryba/hive/server2'
       hive.server2.site['hive.server2.support.dynamic.service.discovery'] ?= if hs2_ctxs.length > 1 then 'true' else 'false'
       hive.server2.site['hive.zookeeper.session.timeout'] ?= '600000' # Default is "600000"
       hive.server2.site['hive.server2.zookeeper.namespace'] ?= 'hiveserver2' # Default is "hiveserver2"
 
 ## Configuration for Proxy users
 
-      hadoop_ctxs = @contexts ['ryba/hadoop/hdfs_nn','ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
       for hadoop_ctx in hadoop_ctxs
         hadoop_ctx.config.ryba ?= {}
         hadoop_ctx.config.ryba.core_site ?= {}
@@ -254,7 +255,7 @@ and its value is the server "host:port".
 # Hive On HBase
 Add Hive user as proxyuser    
 
-      for key, hbase_ctx of @contexts 'ryba/hbase/thrift'
+      for hbase_ctx in hbase_ctxs
         hbase_ctx.config.ryba.core_site ?= {}
         hbase_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.hosts"] ?= '*'
         hbase_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'

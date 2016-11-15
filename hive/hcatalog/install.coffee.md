@@ -4,26 +4,20 @@
 TODO: Implement lock for Hive Server2
 http://www.cloudera.com/content/cloudera-content/cloudera-docs/CDH4/4.2.0/CDH4-Installation-Guide/cdh4ig_topic_18_5.html
 
-    module.exports =  header: 'Hive HCatalog Install', handler: -> 
+    module.exports =  header: 'Hive HCatalog Install', handler: ->
+      tez_ctxs = @contexts 'ryba/tez'
+      ranger_admin = @contexts 'ryba/ranger/admin'
       {hive, realm, active_nn_host, hdfs, hadoop_group, ssl} = @config.ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
-      tez_is_installed = if @contexts('ryba/tez').length >= 1 then true else false
-      {hive, db_admin} = @config.ryba
+      tez_is_installed = if tez_ctxs.length >= 1 then true else false
+      {hive} = @config.ryba
       tmp_location = "/var/tmp/ryba/ssl"
-      username = hive.hcatalog.site['javax.jdo.option.ConnectionUserName']
-      password = hive.hcatalog.site['javax.jdo.option.ConnectionPassword']
-      jdbc = db.jdbc hive.hcatalog.site['javax.jdo.option.ConnectionURL']
-      mode = if @contexts('ryba/ranger/admin').length > 0 then '0000' else '1777'
 
 ## Register
 
       @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdp_select', 'ryba/lib/hdp_select'
       @register 'hdfs_upload', 'ryba/lib/hdfs_upload'
-
-## Register
-
-      @call once: true, 'ryba/commons/db_admin'
 
 ## IPTables
 
@@ -45,7 +39,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         header: 'IPTables'
         rules: rules
         if: @config.iptables.action is 'start'
-
 
 ## Users & Groups
 
@@ -70,17 +63,17 @@ inside "/etc/init.d" and activate it on startup.
 Note, the server is not activated on startup but they endup as zombies if HDFS
 isnt yet started.
 
-      @call header: 'Service', handler: ->
+      @call header: 'Service', ->
         @call
-          if: jdbc.engine is 'mysql'
-          handler: ->
+          if: hive.hcatalog.db.engine is 'mysql'
+        , ->
             @service
               name: 'mysql'
             @service
               name: 'mysql-connector-java'
         @call 
-          if: jdbc.engine is 'postgresql'
-          handler: ->
+          if: hive.hcatalog.db.engine is 'postgres'
+        , ->
             @service
               name: 'postgresql'
             @service
@@ -105,112 +98,72 @@ isnt yet started.
           cmd: "service hive-hcatalog-server restart"
           if: -> @status -3
 
-      @call header: 'Metastore Database', timeout:-1, handler: ->
-        options_admin =
-          engine: jdbc.engine
-          host: db_admin[jdbc.engine].host
-          port: db_admin[jdbc.engine].port
-          admin_username: db_admin[jdbc.engine].username
-          admin_password: db_admin[jdbc.engine].password
-          username: username
-          password: password
-          database: jdbc.database
-          mysql_options: '--skip-column-names'
-        options_client = {}
-        for k, v of options_admin
-          continue if k in ['admin_username', 'admin_password']
-          options_client[k] = v
-        @db.database.wait
-          db: options_admin
-        @call
-          header: 'Configure Hive'
-          handler: ->
-            switch jdbc.engine
-              when 'mysql'
-                mysql_admin = "#{db_admin.mysql.path} -u#{db_admin.mysql.admin_username} -p#{db_admin.mysql.admin_password} -h#{db_admin.mysql.host} -P#{db_admin.mysql.port}"
-                mysql_client = "#{db_admin.mysql.path} -u#{username} -p#{password} -h#{db_admin.mysql.host} -P#{db_admin.mysql.port}"
-                @execute
-                  cmd: "if ! #{mysql_client} -e \"USE #{jdbc.database};\"; then exit 3; fi"
-                  code_skipped: 3
-                @execute
-                  cmd: """
-                  #{mysql_admin} -e "
-                  create database if not exists #{jdbc.database};
-                  grant all privileges on #{jdbc.database}.* to '#{username}'@'localhost' identified by '#{password}';
-                  grant all privileges on #{jdbc.database}.* to '#{username}'@'%' identified by '#{password}';
-                  flush privileges;
-                  "
-                  """
-                  unless: -> @status -1
-                  trap: true
-              when 'postgres'
-                @database.user.add options_admin,
-                  header: 'Create Hive User'
-                  name: "#{username}"
-                  password: "#{password}"
-                @database.db.add
-                  header: 'Create Hive DB'
-                  user: "#{username}"
-                @database.schema.add
-                  header: 'Create Hive Schema'
-                  schema: "#{jdbc.database}"
-                  owner: "#{username}"
-                  engine: 'postgres'
-              else throw new Error 'Database engine not supported'
-            # Metastore schema migration
-            target_version = 'ls /usr/hdp/current/hive-metastore/lib | grep hive-common- | sed \'s/^hive-common-\\([0-9]\\+.[0-9]\\+.[0-9]\\+\\).*\\.jar$/\\1/g\''
-            current_version = db.cmd options_client, 'select SCHEMA_VERSION from \"VERSION\"'
-            @execute
-              cmd: """
-              engine="#{jdbc.engine}"
-              cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/${engine} # Required for sql sources
-              target_version=`#{target_version}`
-              echo Target Version: "$target_version"
-              target=hive-schema-${target_version}.${engine}.sql
-              target_major_version=`echo $target_version | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2.0/g\'`
-              echo Target Version: "$target_major_version"
-              target_major=hive-schema-${target_major_version}.${engine}.sql
-              if ! test -f $target && ! test -f $target_major; then exit 1; fi
-              # Create schema
-              if test -f $target; then
-                echo Importing $target
-                #{db.cmd options_client, null} < $target;
-              elif test -f $target_major; then
-                echo Importing $target_major
-                #{db.cmd options_client, null} < $target_major;
-              fi
-              """
-              unless: -> @status -2
-              trap: true
-            @execute
-              cmd: """
-              engine="#{jdbc.engine}"
-              cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/${engine} # Required for sql sources
-              current=`#{current_version}`
-              echo Current Version: "$current"
-              target=`#{target_version}`
-              echo Target Version: "$target"
-              if [ "$current" == "$target" ]; then exit 3; fi
-              # Upgrade schema
-              upgrade=upgrade-${current}-to-${target}.${engine}.sql
-              if ! test -f $upgrade; then
-                echo 'Upgrade script does not exists'
-                current_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
-                target_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
-                echo Target Major Version: "$target_major"
-                if [ $current_major == $target_major ]; then exit 0; fi
-                exit 1;
-              fi
-              cd `dirname $upgrade`
-              #{db.cmd options_client, null} < $upgrade
-              # Import transaction schema (now created with 0.13.1)
-              #trnx=hive-txn-schema-${target}.${engine}.sql
-              #if test -f $trnx; then #{db.cmd options_client, null} < $trnx; fi
-              """
-              code_skipped: 3
-              trap: true
-              unless: -> @status -3
-
+      @call header: 'Metastore DB', timeout:-1, ->
+        @db.user hive.hcatalog.db, database: null,
+          header: 'User'
+          if: hive.hcatalog.db.engine in ['mysql', 'postgres']
+        @db.database hive.hcatalog.db,
+          header: 'Database'
+          if: hive.hcatalog.db.engine in ['mysql', 'postgres']
+          user: hive.hcatalog.db.username
+        @db.schema hive.hcatalog.db,
+          header: 'Schema'
+          if: hive.hcatalog.db.engine is 'postgres'
+          schema: hive.hcatalog.db.schema or hive.hcatalog.db.database
+          database: hive.hcatalog.db.database
+          owner: hive.hcatalog.db.username
+        # Metastore schema migration
+        target_version = 'ls /usr/hdp/current/hive-metastore/lib | grep hive-common- | sed \'s/^hive-common-\\([0-9]\\+.[0-9]\\+.[0-9]\\+\\).*\\.jar$/\\1/g\''
+        current_version = db.cmd hive.hcatalog.db, admin_username: null, 'select \\"SCHEMA_VERSION\\" from \\"VERSION\\"'
+        @execute
+          cmd: """
+          engine="#{hive.hcatalog.db.engine}"
+          cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/${engine} # Required for sql sources
+          target_version=`#{target_version}`
+          echo Target Version: "$target_version"
+          target=hive-schema-${target_version}.${engine}.sql
+          target_major_version=`echo $target_version | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2.0/g\'`
+          echo Target Version: "$target_major_version"
+          target_major=hive-schema-${target_major_version}.${engine}.sql
+          if ! test -f $target && ! test -f $target_major; then exit 1; fi
+          # Create schema
+          if test -f $target; then
+            echo Importing $target
+            #{db.cmd hive.hcatalog.db, admin_username: null, null} < $target;
+          elif test -f $target_major; then
+            echo Importing $target_major
+            #{db.cmd hive.hcatalog.db, admin_username: null, null} < $target_major;
+          fi
+          """
+          trap: true
+        @execute
+          header: 'Upgrade'
+          cmd: """
+          engine="#{hive.hcatalog.db.engine}"
+          cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/${engine} # Required for sql sources
+          current=`#{current_version}`
+          echo Current Version: "$current"
+          target=`#{target_version}`
+          echo Target Version: "$target"
+          if [ "$current" == "$target" ]; then exit 3; fi
+          # Upgrade schema
+          upgrade=upgrade-${current}-to-${target}.${engine}.sql
+          if ! test -f $upgrade; then
+            echo 'Upgrade script does not exists'
+            current_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
+            target_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
+            echo Target Major Version: "$target_major"
+            if [ $current_major == $target_major ]; then exit 0; fi
+            exit 1;
+          fi
+          cd `dirname $upgrade`
+          #{db.cmd hive.hcatalog.db, admin_username: null, null} < $upgrade
+          # Import transaction schema (now created with 0.13.1)
+          #trnx=hive-txn-schema-${target}.${engine}.sql
+          #if test -f $trnx; then #{db.cmd hive.hcatalog.db, admin_username: null, null} < $trnx; fi
+          """
+          trap: true
+          code_skipped: 3
       @hconfigure
         header: 'Hive Site'
         target: "#{hive.hcatalog.conf_dir}/hive-site.xml"
@@ -268,19 +221,18 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
       @call
         header: 'Upload Libs'
         if: -> hive.libs.length
-        handler: ->
+      , ->
           @file.download (
             source: lib
             target: "/usr/hdp/current/hive-metastore/lib/#{path.basename lib}"
           ) for lib in hive.libs
-
       @link
-        if: jdbc.engine is 'mysql'
+        if: hive.hcatalog.db.engine is 'mysql'
         header: 'Link MySQL Driver'
         source: '/usr/share/java/mysql-connector-java.jar'
         target: '/usr/hdp/current/hive-metastore/lib/mysql-connector-java.jar'
       @link
-        if: jdbc.engine is 'postgresql'
+        if: hive.hcatalog.db.engine is 'postgres'
         header: 'Link PostgreSQL Driver'
         source: '/usr/share/java/postgresql-jdbc.jar'
         target: '/usr/hdp/current/hive-metastore/lib/postgresql-jdbc.jar'
@@ -301,7 +253,7 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
 Create the directories to store the logs and pid information. The properties
 "ryba.hive.hcatalog.log\_dir" and "ryba.hive.hcatalog.pid\_dir" may be modified.
 
-      @call header: 'Layout', timeout: -1, handler: ->
+      @call header: 'Layout', timeout: -1, ->
         @mkdir
           target: hive.hcatalog.log_dir
           uid: hive.user.name
@@ -313,7 +265,7 @@ Create the directories to store the logs and pid information. The properties
           gid: hive.group.name
           parent: true
 
-      @call header: 'HDFS Layout', timeout: -1, handler: ->
+      @call header: 'HDFS Layout', timeout: -1, ->
         # todo: this isnt pretty, ok that we need to execute hdfs command from an hadoop client
         # enabled environment, but there must be a better way
         hive_user = hive.user.name
@@ -340,7 +292,7 @@ Create the directories to store the logs and pid information. The properties
           """
           code_skipped: 3
         @execute
-          cmd: mkcmd.hdfs @, "hdfs dfs -chmod -R #{mode} /apps/#{hive_user}/warehouse"
+          cmd: mkcmd.hdfs @, "hdfs dfs -chmod -R #{hive.warehouse_mode or '1777'} /apps/#{hive_user}/warehouse"
         @execute
           cmd: mkcmd.hdfs @, """
           if hdfs dfs -ls /tmp/scratch &> /dev/null; then exit 1; fi
@@ -351,32 +303,29 @@ Create the directories to store the logs and pid information. The properties
           """
           code_skipped: 1
 
-      @call 
-        header: ' Tez Package'
-        timeout: -1
-        if: -> tez_is_installed
-        handler: ->
-          @service name: 'tez'
+## Tez
 
-      @call
+      @service
+        header: 'Tez Package'
+        name: 'tez'
+        if: -> tez_ctxs.length
+      @execute
         header: 'Tez Layout'
+        if: -> tez_ctxs.length
         timeout: -1
-        if: -> tez_is_installed
-        handler: ->
-          @execute
-            cmd: 'ls /usr/hdp/current/hive-metastore/lib | grep hive-exec- | sed \'s/^hive-exec-\\(.*\\)\\.jar$/\\1/g\''
-            shy: true
-          , (err, status, stdout) ->
-            version = stdout.trim() unless err
-            @hdfs_upload
-              source: "/usr/hdp/current/hive-metastore/lib/hive-exec-#{version}.jar"
-              target: "/apps/hive/install/hive-exec-#{version}.jar"
-              clean: "/apps/hive/install/hive-exec-*.jar"
-              lock: "/tmp/hive-exec-#{version}.jar"
+        cmd: 'ls /usr/hdp/current/hive-metastore/lib | grep hive-exec- | sed \'s/^hive-exec-\\(.*\\)\\.jar$/\\1/g\''
+        shy: true
+      , (err, status, stdout) ->
+        version = stdout.trim() unless err
+        @hdfs_upload
+          source: "/usr/hdp/current/hive-metastore/lib/hive-exec-#{version}.jar"
+          target: "/apps/hive/install/hive-exec-#{version}.jar"
+          clean: "/apps/hive/install/hive-exec-*.jar"
+          lock: "/tmp/hive-exec-#{version}.jar"
 
 ## SSL
 
-      @call header: 'Client SSL', handler: ->
+      @call header: 'Client SSL', ->
         @download
           source: ssl.cacert
           target: "#{tmp_location}/#{path.basename ssl.cacert}"

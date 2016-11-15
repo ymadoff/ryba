@@ -2,7 +2,7 @@
 # Hive HCatalog Check
 
     module.exports =  header: 'Hive HCatalog Check', label_true: 'CHECKED', handler: ->
-      {hive, db_admin} = @config.ryba
+      {hive} = @config.ryba
       username = hive.hcatalog.site['javax.jdo.option.ConnectionUserName']
       password = hive.hcatalog.site['javax.jdo.option.ConnectionPassword']
       jdbc = db.jdbc hive.hcatalog.site['javax.jdo.option.ConnectionURL']
@@ -16,24 +16,11 @@
 Check if Hive can authenticate and run a basic query to the database.
 
       @call header: 'Check Database', label_true: 'CHECKED', handler: ->  
-        switch jdbc.engine
-          when 'mysql'
-            escape = (text) -> text.replace(/[\\"]/g, "\\$&")
-            @execute
-              cmd: """
-              #{db_admin.mysql.path} -u#{db_admin.mysql.admin_username} -p#{db_admin.mysql.admin_password} -h#{db_admin.mysql.host} -P#{db_admin.mysql.port} -e "USE #{jdbc.database}; SHOW TABLES"
-              """
-          when 'postgresql'
-            escape = (text) -> text.replace(/[\\"]/g, "\\$&")
-            opts =
-              host: db_admin.postgres.host
-              port: db_admin.postgres.port
-              name: db_admin.postgres.username
-              password: db_admin.postgres.password
-              database: jdbc.database
-            @execute
-              cmd: db.cmd opts, '\\dt'
-          else throw Error 'Database engine not supported' unless engines[jdbc.engine]
+        cmd = switch hive.hcatalog.db.engine
+          when 'mysql' then 'SELECT * FROM "VERSION"'
+          when 'postgres' then '\\dt'
+        @execute
+          cmd: db.cmd hive.hcatalog.db, admin_username: null, cmd
 
 ## Check Port
 

@@ -31,7 +31,12 @@ Example:
 }
 ```
 
-    module.exports = handler: ->
+    module.exports = ->
+      [pg_ctx] = @contexts 'masson/commons/postgres/server'
+      [my_ctx] = @contexts 'masson/commons/mysql/server'
+      zookeeper_server = @contexts 'ryba/zookeeper/server'
+      hive_hcatalog = @contexts 'ryba/hive/hcatalog'
+      hadoop_ctxs = @contexts ['ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
       hive = @config.ryba.hive ?= {}
       {db_admin, realm} = @config.ryba
 
@@ -54,8 +59,6 @@ Example:
       hive.group.name ?= 'hive'
       hive.group.system ?= true
       hive.user.gid = hive.group.name
-
-
       # Layout and environment
       hive.hcatalog ?= {}
       hive.hcatalog.conf_dir ?= '/etc/hive-hcatalog/conf'
@@ -82,7 +85,11 @@ Example:
           """
       hive.hcatalog.aux_jars ?= '/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar'
 
-# Configuration
+## Warehouse directory
+
+      hive.warehouse_mode ?= null # let ranger overwrite to '0000' or use '1777'
+
+## Configuration
 
       hive.hcatalog.site ?= {}
       # by default BONECP could lead to BLOCKED thread for class reading from DB
@@ -90,7 +97,7 @@ Example:
       hive.hcatalog.site['hive.metastore.uris'] ?= null
       unless hive.hcatalog.site['hive.metastore.uris']
         hive.hcatalog.site['hive.metastore.uris'] = []
-        for host in @contexts('ryba/hive/hcatalog').map( (ctx) -> ctx.config.host)
+        for host in hive_hcatalog.map( (ctx) -> ctx.config.host)
           hive.hcatalog.site['hive.metastore.uris'].push "thrift://#{host}:9083"
         hive.hcatalog.site['hive.metastore.uris'] = hive.hcatalog.site['hive.metastore.uris'].join ','
       hive.hcatalog.site['datanucleus.autoCreateTables'] ?= 'true'
@@ -134,8 +141,9 @@ Example:
 ## Configure Database
 
 Note, at the moment, only MySQL and PostgreSQL are supported.
+
+      hive.hcatalog.db ?= {}
       
-      hive.hcatalog.engine ?= 'mysql'
       if hive.hcatalog.site['javax.jdo.option.ConnectionURL']
         # Ensure the url host is the same as the one configured in config.ryba.db_admin
         jdbc = db.jdbc hive.hcatalog.site['javax.jdo.option.ConnectionURL']
@@ -150,15 +158,24 @@ Note, at the moment, only MySQL and PostgreSQL are supported.
             throw new Error "Invalid host configuration" unless admin.length
           else throw new Error 'Unsupported database engine'
       else
+        if pg_ctx then hive.hcatalog.db.engine ?= 'postgres'
+        else if my_ctx then hive.hcatalog.db.engine ?= 'mysql'
+        else hive.hcatalog.db.engine ?= 'derby'
+        hive.hcatalog.db[k] ?= v for k, v of db_admin[hive.hcatalog.db.engine]
+        hive.hcatalog.db.database ?= 'hive'
+        hive.hcatalog.db.username ?= 'hive'
+        hive.hcatalog.db.password ?= 'hive123'
         # do not base the default engine on db_admin, but on hive property.
-        switch hive.hcatalog.engine
+        switch hive.hcatalog.db.engine
           when 'mysql'
-            hive.hcatalog.site['javax.jdo.option.ConnectionURL'] ?= "jdbc:mysql://#{db_admin.mysql.host}:#{db_admin.mysql.port}/hive?createDatabaseIfNotExist=true"
+            hive.hcatalog.site['javax.jdo.option.ConnectionURL'] ?= "jdbc:mysql://#{hive.hcatalog.db.host}:#{hive.hcatalog.db.port}/#{hive.hcatalog.db.database}?createDatabaseIfNotExist=true"
             hive.hcatalog.site['javax.jdo.option.ConnectionDriverName'] ?= 'com.mysql.jdbc.Driver'
-          when 'postgresql'
-            hive.hcatalog.site['javax.jdo.option.ConnectionURL'] ?= "jdbc:postgresql://#{db_admin.postgres.host}:#{db_admin.postgres.port}/hive?createDatabaseIfNotExist=true"
+          when 'postgres'
+            hive.hcatalog.site['javax.jdo.option.ConnectionURL'] ?= "jdbc:postgresql://#{hive.hcatalog.db.host}:#{hive.hcatalog.db.port}/#{hive.hcatalog.db.database}?createDatabaseIfNotExist=true"
             hive.hcatalog.site['javax.jdo.option.ConnectionDriverName'] ?= 'org.postgresql.Driver'
           else throw new Error 'Unsupported database engine'
+        hive.hcatalog.site['javax.jdo.option.ConnectionUserName'] ?= hive.hcatalog.db.username
+        hive.hcatalog.site['javax.jdo.option.ConnectionPassword'] ?= hive.hcatalog.db.password
       throw new Error "Hive database username is required" unless hive.hcatalog.site['javax.jdo.option.ConnectionUserName']
       throw new Error "Hive database password is required" unless hive.hcatalog.site['javax.jdo.option.ConnectionPassword']
 
@@ -169,8 +186,7 @@ full ACID semantics at the row level, so that one application can add rows while
 another reads from the same partition without interfering with each other.
 
       # Get ZooKeeper Quorum
-      zoo_ctxs = @contexts 'ryba/zookeeper/server', require('../../zookeeper/server/configure').handler
-      zookeeper_quorum = for zoo_ctx in zoo_ctxs
+      zookeeper_quorum = for zoo_ctx in zookeeper_server
         "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
       # Enable Table Lock Manager
       # Accoring to [Cloudera](http://www.cloudera.com/content/cloudera/en/documentation/cdh4/v4-2-0/CDH4-Installation-Guide/cdh4ig_topic_18_5.html),
@@ -190,7 +206,7 @@ hive.compactor.initiator.on can be activated on only one node !
 [hive compactor initiator][initiator]
 So we provide true by default on the 1st hive-hcatalog-server, but we force false elsewhere
 
-      if @contexts('ryba/hive/hcatalog')[0].config.host is @config.host
+      if hive_hcatalog[0].config.host is @config.host
         hive.hcatalog.site['hive.compactor.initiator.on'] ?= 'true'
       else
         hive.hcatalog.site['hive.compactor.initiator.on'] = 'false'
@@ -215,16 +231,15 @@ The [MemoryTokenStore] is used if there is only one HCatalog Server otherwise we
 default to the [DBTokenStore]. Also worth of interest is the
 [ZooKeeperTokenStore].
 
-      server_ctxs = @contexts modules: 'ryba/hive/hcatalog'
-      hive.hcatalog.site['hive.cluster.delegation.token.store.class'] ?= if server_ctxs.length > 1
-      # then 'org.apache.hadoop.hive.thrift.ZooKeeperTokenStore'
-      then 'org.apache.hadoop.hive.thrift.DBTokenStore'
-      else 'org.apache.hadoop.hive.thrift.MemoryTokenStore'
-      # hive.hcatalog.site['hive.cluster.delegation.token.store.class'] = 'org.apache.hadoop.hive.thrift.ZooKeeperTokenStore'
-      # hive.hcatalog.site['hive.cluster.delegation.token.store.zookeeper.connectString'] ?= zookeeper_quorum.join ','
-      # CDH instructions:
-      # hive.support.concurrency = 'true' # Required, default to false
-      # hive.zookeeper.quorum = list of zookeeper address
+      hive.hcatalog.site['hive.cluster.delegation.token.store.class'] ?= 'org.apache.hadoop.hive.thrift.ZooKeeperTokenStore'
+      # hive.hcatalog.site['hive.cluster.delegation.token.store.class'] ?= if hive_hcatalog.length > 1
+      # # then 'org.apache.hadoop.hive.thrift.ZooKeeperTokenStore'
+      # then 'org.apache.hadoop.hive.thrift.DBTokenStore'
+      # else 'org.apache.hadoop.hive.thrift.MemoryTokenStore'
+      switch hive.hcatalog.site['hive.cluster.delegation.token.store.class']
+        when 'org.apache.hadoop.hive.thrift.ZooKeeperTokenStore'
+          hive.hcatalog.site['hive.cluster.delegation.token.store.class'] = 'org.apache.hadoop.hive.thrift.ZooKeeperTokenStore'
+          hive.hcatalog.site['hive.cluster.delegation.token.store.zookeeper.connectString'] ?= zookeeper_quorum.join ','
 
 ## Configure SSL
 
@@ -233,7 +248,6 @@ default to the [DBTokenStore]. Also worth of interest is the
 
 ## Configuration for Proxy users
 
-      hadoop_ctxs = @contexts ['ryba/hadoop/hdfs_nn','ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
       for hadoop_ctx in hadoop_ctxs
         hadoop_ctx.config.ryba ?= {}
         hadoop_ctx.config.ryba.core_site ?= {}

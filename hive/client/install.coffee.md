@@ -19,7 +19,7 @@ is installed on the host.
 
       @service
         name: 'phoenix'
-        if: @has_module 'ryba/phoenix/client'
+        if: @has_service 'ryba/phoenix/client'
       @service
         name: 'hive'
       @hdp_select
