@@ -9,23 +9,20 @@ Version:
   - Spark: 1.3
   - Hadoop: 2.7 (HDP 2.3)
 
-    module.exports = []
-    module.exports.push 'masson/bootstrap/log'
+
+    module.exports = header: 'Zeppelin # Prepare', ssh: null, retry: 1, timeout: -1, handler: ->
+      {zeppelin} = @config.ryba
 
 ## Prepare Build
 
 Intermetiate container to build zeppelin from source. Builds ryba/zeppelin-build
 image.
 
-    module.exports.push header: 'Zeppelin # Prepare Build', ssh: null, retry: 1, timeout: -1, handler: ->
-      {zeppelin} = @config.ryba
-      machine = 'ryba'
       @docker_build
-        machine: machine
+        header: 'Build Image'
         image: zeppelin.build.tag
         cwd: zeppelin.build.cwd
       @docker_run
-        machine: machine
         image: zeppelin.build.tag
         rm: true
         volume: "#{@config.mecano.cache_dir}:/target"
@@ -42,16 +39,13 @@ image.
 
 Build the Docker container and place it inside the cache directory.
 
-    module.exports.push header: 'Zeppelin # Prepare Container', retry: 1, timeout: -1, handler: ->
-      {zeppelin} = @config.ryba
-      machine = 'ryba'
       @docker_build
-        machine: machine
+        header: 'Build Container'
         tag: "#{zeppelin.prod.tag}"
         cwd: "#{@config.mecano.cache_dir}/zeppelin"
       @docker_save
+        header: 'Export Container'
         image: "#{zeppelin.prod.tag}"
-        machine: machine
         target: "#{@config.mecano.cache_dir}/zeppelin.tar"
 
 ## Instructions

@@ -1,7 +1,7 @@
 
 # Zeppelin Configure
 
-    module.exports = handler: ->
+    module.exports = ->
       zeppelin = @config.ryba.zeppelin ?= {}
       zeppelin.repository = 'https://github.com/apache/incubator-zeppelin.git'
       zeppelin.source = "#{__dirname}/../resources/zeppelin-build.tar.gz"
