@@ -6,19 +6,19 @@ for data motion, coordination of data pipelines, lifecycle management, and data
 discovery. Falcon enables end consumers to quickly onboard their data and its
 associated processing and management tasks on Hadoop clusters.
 
-    module.exports = -> 
-      'configure': [
-        'ryba/hadoop/core'
-        'ryba/falcon/client/configure'  
-      ]
-      'install': [
-        'ryba/commons/krb5_user'
-        'ryba/falcon/client/install'
-        'ryba/falcon/client/check'
-      ]
-      'check': [
-        'ryba/falcon/server/wait'
-        'ryba/falcon/client/check'
-      ]
+    module.exports =
+      use:
+        hadoop_core: implicit: true, module: 'ryba/hadoop/core'
+        krb5_client: implicit: true, module: 'masson/core/krb5_client'
+        krb5_user: implicit: true, module: 'ryba/commons/krb5_user'
+      configure:
+        'ryba/falcon/client/configure'
+      commands:
+        'install': [
+          'ryba/falcon/client/install'
+          'ryba/falcon/client/check'
+        ]
+        'check':
+          'ryba/falcon/client/check'
 
 [falcon]: http://falcon.incubator.apache.org/

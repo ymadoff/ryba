@@ -10,6 +10,10 @@ This commands checks if falcons works as required.
 
       @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
 
+## Wait Falcon Server
+
+      @call once: true, 'ryba/falcon/server/wait'
+
 ## Check Data Pipelines
 
 Follow the [Hortonworks Data Pipelines example][dpe].

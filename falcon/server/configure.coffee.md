@@ -1,17 +1,18 @@
 
-# Falcon Server
+# Falcon Server Configure
 
 [Apache Falcon](http://falcon.apache.org) is a data processing and management solution for Hadoop designed
 for data motion, coordination of data pipelines, lifecycle management, and data
 discovery. Falcon enables end consumers to quickly onboard their data and its
 associated processing and management tasks on Hadoop clusters.
 
-
-    module.exports = []
-
-## Configure
-
-    module.exports = handler: ->
+    module.exports = ->
+      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
+      dn_ctxs = @contexts 'ryba/hadoop/hdfs_dn'
+      hcat_ctxs = @contexts 'ryba/hive/hcatalog'
+      falcon_ctxs = @contexts 'ryba/falcon/server'
+      oozie_ctxs = @contexts 'ryba/oozie/server'
+      hadoop_ctxs = [nn_ctxs..., dn_ctxs...]
       {realm} = @config.ryba
       falcon = @config.ryba.falcon ?= {}
       # Layout
@@ -39,14 +40,12 @@ associated processing and management tasks on Hadoop clusters.
       # Note, prism serveur start on port 16443, see https://falcon.apache.org/Distributed-mode.html
       falcon.runtime['prism.falcon.local.endpoint'] ?= "https://#{@config.host}:15443/"
       # Runtime (http://falcon.incubator.apache.org/Security.html)
-      nn_contexts = @contexts 'ryba/hadoop/hdfs_nn', require('../../hadoop/hdfs_nn/configure').handler
-      hcat_contexts = @contexts 'ryba/hive/hcatalog', [ require('../../commons/db_admin').handler, require('../../hive/hcatalog/configure').handler]
-      # nn_rcp = nn_contexts[0].config.ryba.core_site['fs.defaultFS']
-      # nn_protocol = if nn_contexts[0].config.ryba.hdfs.site['HTTP_ONLY'] then 'http' else 'https'
-      # nn_nameservice = if nn_contexts[0].config.ryba.hdfs.site['dfs.nameservices'] then ".#{nn_contexts[0].config.ryba.hdfs.site['dfs.nameservices']}" else ''
-      # nn_shortname = if nn_contexts.length then ".#{nn_contexts[0].config.shortname}" else ''
+      # nn_rcp = nn_ctxs[0].config.ryba.core_site['fs.defaultFS']
+      # nn_protocol = if nn_ctxs[0].config.ryba.hdfs.site['HTTP_ONLY'] then 'http' else 'https'
+      # nn_nameservice = if nn_ctxs[0].config.ryba.hdfs.site['dfs.nameservices'] then ".#{nn_ctxs[0].config.ryba.hdfs.site['dfs.nameservices']}" else ''
+      # nn_shortname = if nn_ctxs.length then ".#{nn_ctxs[0].config.shortname}" else ''
       # nn_http = ctx.config.ryba.hdfs.site["dfs.namenode.#{nn_protocol}-address#{nn_nameservice}#{nn_shortname}"]
-      nn_principal = nn_contexts[0].config.ryba.hdfs.site['dfs.namenode.kerberos.principal']
+      nn_principal = nn_ctxs[0].config.ryba.hdfs.site['dfs.namenode.kerberos.principal']
       falcon.startup ?= {}
       falcon.startup['*.falcon.authentication.type'] ?= 'kerberos'
       falcon.startup['*.falcon.service.authentication.kerberos.principal'] ?= "#{falcon.user.name}/#{@config.host}@#{realm}"
@@ -71,27 +70,25 @@ associated processing and management tasks on Hadoop clusters.
       # falcon.startup['*.keystore.password'] ?= 'password'
       # falcon.startup[''] ?= ''
       # Cluster values in check
-      # falcon.cluster['hadoop.rpc.protection'] ?= nn_contexts[0].config.ryba.core_site['hadoop.rpc.protection']
-      # falcon.cluster['dfs.namenode.kerberos.principal'] ?= nn_contexts[0].config.ryba.hdfs.site['dfs.namenode.kerberos.principal']
-      # falcon.cluster['hive.metastore.kerberos.principal'] ?= hcat_contexts[0].config.ryba.hive.site['hive.metastore.kerberos.principal']
-      # falcon.cluster['hive.metastore.sasl.enabled'] ?= hcat_contexts[0].config.ryba.hive.site['hive.metastore.sasl.enabled']
-      # falcon.cluster['hive.metastore.uris'] ?= hcat_contexts[0].config.ryba.hive.site['hive.metastore.uris']
+      # falcon.cluster['hadoop.rpc.protection'] ?= nn_ctxs[0].config.ryba.core_site['hadoop.rpc.protection']
+      # falcon.cluster['dfs.namenode.kerberos.principal'] ?= nn_ctxs[0].config.ryba.hdfs.site['dfs.namenode.kerberos.principal']
+      # falcon.cluster['hive.metastore.kerberos.principal'] ?= hcat_ctxs[0].config.ryba.hive.site['hive.metastore.kerberos.principal']
+      # falcon.cluster['hive.metastore.sasl.enabled'] ?= hcat_ctxs[0].config.ryba.hive.site['hive.metastore.sasl.enabled']
+      # falcon.cluster['hive.metastore.uris'] ?= hcat_ctxs[0].config.ryba.hive.site['hive.metastore.uris']
       # Entity values in check
-      # falcon.entity['dfs.namenode.kerberos.principal'] ?= nn_contexts[0].config.ryba.hdfs.site['dfs.namenode.kerberos.principal']
-      # falcon.entity['hive.metastore.kerberos.principal'] ?= hcat_contexts[0].config.ryba.hive.site['hive.metastore.kerberos.principal']
-      # falcon.entity['hive.metastore.sasl.enabled'] ?= hcat_contexts[0].config.ryba.hive.site['hive.metastore.sasl.enabled']
-      # falcon.entity['hive.metastore.uris'] ?= hcat_contexts[0].config.ryba.hive.site['hive.metastore.uris']
+      # falcon.entity['dfs.namenode.kerberos.principal'] ?= nn_ctxs[0].config.ryba.hdfs.site['dfs.namenode.kerberos.principal']
+      # falcon.entity['hive.metastore.kerberos.principal'] ?= hcat_ctxs[0].config.ryba.hive.site['hive.metastore.kerberos.principal']
+      # falcon.entity['hive.metastore.sasl.enabled'] ?= hcat_ctxs[0].config.ryba.hive.site['hive.metastore.sasl.enabled']
+      # falcon.entity['hive.metastore.uris'] ?= hcat_ctxs[0].config.ryba.hive.site['hive.metastore.uris']
 
 ## Configuration for Proxy Users
 
-      falcon_hosts = @contexts('ryba/falcon/server').map((ctx) -> ctx.config.host).join ','
-      hadoop_ctxs = @contexts ['ryba/hadoop/hdfs_nn','ryba/hadoop/hdfs_dn', 'ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
+      falcon_hosts = falcon_ctxs.map((ctx) -> ctx.config.host).join ','
       for hadoop_ctx in hadoop_ctxs
         hadoop_ctx.config.ryba ?= {}
         hadoop_ctx.config.ryba.core_site ?= {}
         hadoop_ctx.config.ryba.core_site["hadoop.proxyuser.#{falcon.user.name}.groups"] ?= '*'
         hadoop_ctx.config.ryba.core_site["hadoop.proxyuser.#{falcon.user.name}.hosts"] ?= falcon_hosts
-      oozie_ctxs = @contexts 'ryba/oozie/server'
       for oozie_ctx in oozie_ctxs
         oozie_ctx.config.ryba ?= {}
         oozie = oozie_ctx.config.ryba.oozie ?= {}
