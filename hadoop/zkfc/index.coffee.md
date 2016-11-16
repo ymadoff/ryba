@@ -18,6 +18,7 @@ The [ZKFailoverController (ZKFC)](https://hadoop.apache.org/docs/r2.3.0/hadoop-y
         'check':
           'ryba/hadoop/zkfc/check'
         'install': [
+          'masson/bootstrap/fs'
           'ryba/hadoop/zkfc/install'
           'ryba/hadoop/zkfc/start'
           'ryba/hadoop/zkfc/check'

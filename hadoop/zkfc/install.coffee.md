@@ -222,7 +222,7 @@ inserted if ALL users or the HDFS user access is denied.
                 mode: 0o600
               , (err, written) =>
                 return callback err if err
-                @fs.readFile '/etc/security/access.conf', (err, source) =>
+                @fs.readFile '/etc/security/access.conf', 'utf8', (err, source) =>
                   return callback err if err
                   content = []
                   exclude = ///^\-\s?:\s?(ALL|#{hdfs.user.name})\s?:\s?(.*?)\s*?(#.*)?$///
