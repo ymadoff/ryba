@@ -5,6 +5,9 @@ for the service princial define by "hbase.thirft.kerberos.principal". For exampl
 run the command `grant '$USER', 'RWCA'`. Ryba isnt doing it because we didn't
 have usecase for it yet.
 
+This installation also found inspiration from the 
+[cloudera hbase setup in secure mode][hbase-configuration].
+
     module.exports =  header: 'HBase Thrift Install',  handler: ->
       {hbase} = @config.ryba
 
@@ -31,7 +34,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         ]
         if: @config.iptables.action is 'start'
 
-
 ## Users & Groups
 
 By default, the "hbase" package create the following entries:
@@ -48,7 +50,7 @@ hbase:x:492:
 
 
 ### Kerberos
-#
+
 #    module.exports.push header: 'HBase Thrift # Kerberos', handler: ->
 #      {hadoop_group, hbase, realm} = @config.ryba
 #      krb5 = @config.krb5.etc_krb5_conf.realms[realm]

@@ -1,11 +1,13 @@
 
 # HBase ThriftServer
 
-[Apache Thrift](http://wiki.apache.org/hadoop/Hbase/ThriftApi) is a cross-platform, cross-language development framework.
-HBase includes a Thrift API and filter language. The Thrift API relies on client and server processes.
+[Apache Thrift](http://wiki.apache.org/hadoop/Hbase/ThriftApi) is a
+cross-platform, cross-language development framework. HBase includes a Thrift 
+API and filter language. The Thrift API relies on client and server processes.
 Thrift is both cross-platform and more lightweight than REST for many operations.
-From 1.0 thrift can enable impersonation for other service [like hue][hue-hbase-impersonation]
-Follows [cloudera hbase setup in secure mode][hbase-configuration]
+
+From 1.0 thrift can enable impersonation for other service 
+[like hue][hue-hbase-impersonation].
 
     module.exports =
       use:
@@ -14,12 +16,11 @@ Follows [cloudera hbase setup in secure mode][hbase-configuration]
         hadoop_core: 'ryba/hadoop/core'
         hbase_master: 'ryba/hbase/master'
         hbase_regionserver: 'ryba/hbase/regionserver'
+        hbase_client: implicit: true, module: 'ryba/hbase/client'
       configure:
         'ryba/hbase/thrift/configure'
       commands:
         'install': [
-           'ryba/hadoop/core'
-           'ryba/hbase/client'
            'ryba/hbase/thrift/install'
            'ryba/hbase/thrift/start'
            'ryba/hbase/thrift/check'
