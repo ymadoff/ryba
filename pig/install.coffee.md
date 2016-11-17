@@ -3,7 +3,7 @@
 
 Learn more about Pig optimization by reading ["Making Pig Fly"][fly].
 
-    module.exports = header: 'Pig Install', handler: ->
+    module.exports = header: 'Pig Install', handler: (options) ->
       {hadoop_group, pig} = @config.ryba
       {java_home} = @config.java
 
@@ -11,11 +11,11 @@ Learn more about Pig optimization by reading ["Making Pig Fly"][fly].
 
 The pig package is install.
 
-      @call header: 'Pig Service', timeout: -1, handler: ->
+      @call header: 'Pig Service', timeout: -1, ->
         @service
           header: 'Service'
           name: 'pig'
-        console.log 'TODO: pig-client not registered in hdp-select'
+        options.log 'TODO: pig-client not registered in hdp-select'
         # pig-client not registered in hdp-select
         # need to see if hadoop-client will switch pig as well
         # @call once: true, 'ryba/lib/hdp_select'
