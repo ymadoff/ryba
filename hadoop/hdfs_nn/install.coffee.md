@@ -13,6 +13,7 @@ Worth to investigate:
 [rollback]: http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.3/bk_Monitoring_Hadoop_Book/content/monitor-ha-undoing_2x.html
 
     module.exports = header: 'HDFS NN Install', handler: ->
+      {ssl, ssl_server, ssl_client} = @config.ryba
       {realm, core_site, hadoop_metrics, hadoop_group} = @config.ryba
       {hdfs, active_nn_host, nameservice, hadoop_policy} = @config.ryba
       # {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
@@ -180,10 +181,11 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 ## SSL
 
       @call header: 'SSL', retry: 0, handler: ->
-        {ssl, ssl_server, ssl_client, hdfs} = @config.ryba
-        ssl_client['ssl.client.truststore.location'] = "#{hdfs.nn.conf_dir}/truststore"
-        ssl_server['ssl.server.keystore.location'] = "#{hdfs.nn.conf_dir}/keystore"
-        ssl_server['ssl.server.truststore.location'] = "#{hdfs.nn.conf_dir}/truststore"
+        ssl_client = merge {}, ssl_client,
+          'ssl.client.truststore.location': "#{hdfs.nn.conf_dir}/truststore"
+        ssl_server = merge {}, ssl_server,
+          'ssl.server.keystore.location': "#{hdfs.nn.conf_dir}/keystore"
+          'ssl.server.truststore.location': "#{hdfs.nn.conf_dir}/truststore"
         @hconfigure
           target: "#{hdfs.nn.conf_dir}/ssl-server.xml"
           properties: ssl_server
