@@ -57,6 +57,7 @@ Example:
       # accessing datanodes.
       ryba.hdfs.nn.site['dfs.block.access.token.enable'] ?= if ryba.core_site['hadoop.security.authentication'] is 'kerberos' then 'true' else 'false'
       ryba.hdfs.nn.site['dfs.block.local-path-access.user'] ?= ''
+      ryba.hdfs.nn.site['dfs.namenode.safemode.threshold-pct'] ?= '0.99'
       # Kerberos
       ryba.hdfs.nn.site['dfs.namenode.kerberos.principal'] ?= "nn/_HOST@#{ryba.realm}"
       ryba.hdfs.nn.site['dfs.namenode.keytab.file'] ?= '/etc/security/keytabs/nn.service.keytab'
