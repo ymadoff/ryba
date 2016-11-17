@@ -9,7 +9,6 @@ built atop Apache Hadoop YARN.
 
     module.exports =
       use:
-        iptables: implicit: true, module: 'masson/core/iptables'
         java: implicit: true, module: 'masson/commons/java'
         hadoop_core: 'ryba/hadoop/core/configure'
         yarn_rm: 'ryba/hadoop/yarn_rm'

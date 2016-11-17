@@ -1,7 +1,7 @@
 
 ## Configuration
 
-    module.exports = (options) ->
+    module.exports = ->
       {ryba} = @config
       hdfs_url = ryba.core_site['fs.defaultFS']
       [rm_context] = @contexts 'ryba/hadoop/yarn_rm'
