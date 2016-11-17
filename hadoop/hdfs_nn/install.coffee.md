@@ -252,8 +252,7 @@ Note, a user must re-login for those changes to be taken into account.
       @system_limits
         header: 'Ulimit'
         user: hdfs.user.name
-        nofile: hdfs.user.limits.nofile
-        nproc: hdfs.user.limits.nproc
+      , hdfs.user.limits
 
 ## Include/Exclude
 

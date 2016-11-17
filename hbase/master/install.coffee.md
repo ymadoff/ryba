@@ -245,9 +245,9 @@ principal.
 # User limits
 
       @system_limits
+        header: 'Ulimit'
         user: hbase.user.name
-        nofile: hbase.user.limits.nofile
-        nproc: hbase.user.limits.nproc
+      , hbase.user.limits
 
 # Dependencies
 

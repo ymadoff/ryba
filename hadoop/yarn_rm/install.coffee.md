@@ -250,8 +250,7 @@ the "ryba/hadoop/hdfs" module for additional information.
       @system_limits
         header: 'Ulimit'
         user: yarn.user.name
-        nofile: yarn.user.limits.nofile
-        nproc: yarn.user.limits.nproc
+      , yarn.user.limits
 
 ## Dependencies
 

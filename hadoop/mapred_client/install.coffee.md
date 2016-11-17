@@ -84,8 +84,7 @@ the "ryba/hadoop/hdfs" module for additional information.
       @system_limits
         header: 'Ulimit'
         user: mapred.user.name
-        nofile: mapred.user.limits.nofile
-        nproc: mapred.user.limits.nproc
+      , mapred.user.limits
 
 ## Dependencies
 

@@ -129,9 +129,9 @@ Environment passed to the HBase Rest Server before it starts.
 # User limits
 
       @system_limits
+        header: 'Ulimit'
         user: hbase.user.name
-        nofile: hbase.user.limits.nofile
-        nproc: hbase.user.limits.nproc
+      , hbase.user.limits
 
 ##  Hbase-Thrift Service
 

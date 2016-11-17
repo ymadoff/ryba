@@ -140,8 +140,8 @@ be prepared in the mecano cache dir.
       @system_limits
         header: 'Ulimit'
         user: solr.user.name
-        nofile: solr.user.limits.nofile
-        nproc: solr.user.limits.nproc
+      , solr.user.limits
+
 ## SSL
 
       @java_keystore_add

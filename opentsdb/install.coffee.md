@@ -97,8 +97,7 @@ Starting opentsdb: /etc/init.d/opentsdb: line 69: ulimit: open files: cannot mod
       @system_limits
         header: 'Ulimit'
         user: opentsdb.user.name
-        nofile: opentsdb.user.limits.nofile
-        nproc: opentsdb.user.limits.nproc
+      , opentsdb.user.limits
 
 ## Fix Service
 

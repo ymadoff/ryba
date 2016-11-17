@@ -225,9 +225,9 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
 # User limits
 
       @system_limits
+        header: 'Ulimit'
         user: nifi.user.name
-        nofile: nifi.user.limits.nofile
-        nproc: nifi.user.limits.nproc
+      , nifi.user.limits
 
 ## Dependencies
 
