@@ -45,24 +45,8 @@ Example:
 
 ## Users & Groups
 
-      # User
-      hive.user ?= {}
-      hive.user = name: hive.user if typeof hive.user is 'string'
-      hive.user.name  = hcat_ctxs[0].config.ryba.hive.user.name ?= 'hive'
-      hive.user.system =  hcat_ctxs[0].config.ryba.hive.user.system ?= true
-      hive.user.groups = hcat_ctxs[0].config.ryba.hive.user.groups ?= 'hadoop'
-      hive.user.comment = hcat_ctxs[0].config.ryba.hive.user.comment ?= 'Hive User'
-      hive.user.home = hcat_ctxs[0].config.ryba.hive.user.home ?= '/var/lib/hive'
-      hive.user.limits ?= {}
-      hive.user.limits.nofile = hcat_ctxs[0].config.ryba.hive.user.limits.nofile ?= 64000
-      hive.user.limits.nproc = hcat_ctxs[0].config.ryba.hive.user.limits.nproc ?= true
-      # Group
-      hive.group ?= {}
-      hive.group = name: hive.group if typeof hive.group is 'string'
-      hive.group.name = hcat_ctxs[0].config.ryba.hive.group.name ?= 'hive'
-      hive.group.system = hcat_ctxs[0].config.ryba.hive.group.system ?= true
-      hive.user.gid = hive.group.name
-      hive.server2 ?= {}
+      hive.user = merge hive.user, hcat_ctxs[0].config.ryba.hive.user
+      hive.group = merge hive.group, hcat_ctxs[0].config.ryba.hive.group
 
 ## Configuration
 
@@ -71,7 +55,7 @@ Example:
         'hive.metastore.uris'
         'hive.metastore.sasl.enabled'
         'hive.security.authorization.enabled'
-        'hive.security.authorization.manager'
+        # 'hive.security.authorization.manager'
         'hive.security.metastore.authorization.manager'
         'hive.security.authenticator.manager'
         'hive.optimize.mapjoin.mapreduce'
@@ -83,8 +67,7 @@ Example:
         # Transaction, read/write locks
         'hive.support.concurrency'
         'hive.cluster.delegation.token.store.zookeeper.connectString'
-        'hive.cluster.delegation.token.store.zookeeper.znode'
-        
+        # 'hive.cluster.delegation.token.store.zookeeper.znode'
         'hive.heapsize'
         'hive.exec.max.created.files'
         'hive.auto.convert.sortmerge.join.noconditionaltask'
@@ -125,6 +108,8 @@ Example:
           -Dcom.sun.management.jmxremote.rmi.port=#{hive.server2.env["JMXPORT"]} \
           """
       aux_jars = ['/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar']
+      # fix bug where phoenix-server and phoenix-client do not contain same 
+      # version of class used.
       if hbase_master.length and @config.host in hbase_client.map((ctx) -> ctx.config.host)
         aux_jars.push ['/usr/hdp/current/hbase-client/lib/hbase-server.jar', '/usr/hdp/current/hbase-client/lib/hbase-client.jar', '/usr/hdp/current/hbase-client/lib/hbase-common.jar']... # Default value
         aux_jars.push '/usr/hdp/current/hbase-client/lib/phoenix-server.jar' if @has_service 'ryba/phoenix/client'
@@ -259,3 +244,7 @@ Add Hive user as proxyuser
         hbase_ctx.config.ryba.core_site ?= {}
         hbase_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.hosts"] ?= '*'
         hbase_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'
+
+## Dependencies
+
+    {merge} = require 'mecano/lib/misc'

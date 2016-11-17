@@ -12,20 +12,34 @@
       @register 'hconfigure', 'ryba/lib/hconfigure'
       @register 'hdp_select', 'ryba/lib/hdp_select'
 
+## Users & Groups
+
+By default, the "hive" and "hive-hcatalog" packages create the following
+entries:
+
+```bash
+cat /etc/passwd | grep hive
+hive:x:493:493:Hive:/var/lib/hive:/sbin/nologin
+cat /etc/group | grep hive
+hive:x:493:
+```
+
+      @group hive.group
+      @user hive.user
+
 ## Service
 
-The phoenix server jar is reference inside the HIVE_AUX_JARS_PATH is phoenix
+The phoenix server jar is reference inside the HIVE_AUX_JARS_PATH if phoenix
 is installed on the host.
 
       @service
         name: 'phoenix'
         if: @has_service 'ryba/phoenix/client'
-      @service
-        name: 'hive'
-      @hdp_select
-        name: 'hive-webhcat'
-      @service
-        name: 'hive-hcatalog'
+      @service 'hive'
+      @service 'hive-webhcat' # Install hcat command
+      @hdp_select 'hive-webhcat'
+      # @service
+      #   name: 'hive-hcatalog'
 
 ## Configure
 
@@ -69,20 +83,13 @@ by setting a "heapsize" value equal to "4096".
 
 ## SSL
 
-      @call header: 'Client SSL', handler: ->
-        @file.download
-          source: ssl.cacert
-          target: "#{tmp_location}/#{path.basename ssl.cacert}"
-          mode: 0o0600
-          shy: true
-        @java_keystore_add
-          keystore: hive.client.truststore_location
-          storepass: hive.client.truststore_password
-          caname: "hive_root_ca"
-          cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
-        @remove
-          target: "#{tmp_location}/#{path.basename ssl.cacert}"
-          shy: true
+      @java_keystore_add
+        header: 'Client SSL'
+        keystore: hive.client.truststore_location
+        storepass: hive.client.truststore_password
+        caname: "hive_root_ca"
+        cacert: ssl.cacert
+        local_source: true
 
 ## Dependencies
 

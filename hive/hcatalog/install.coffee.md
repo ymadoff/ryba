@@ -325,27 +325,20 @@ Create the directories to store the logs and pid information. The properties
 
 ## SSL
 
-      @call header: 'Client SSL', ->
-        @download
-          source: ssl.cacert
-          target: "#{tmp_location}/#{path.basename ssl.cacert}"
-          mode: 0o0600
-          shy: true
-        @java_keystore_add
-          keystore: hive.hcatalog.truststore_location
-          storepass: hive.hcatalog.truststore_password
-          caname: "hive_root_ca"
-          cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
-        @remove
-          target: "#{tmp_location}/#{path.basename ssl.cacert}"
-          shy: true
+      @java_keystore_add
+        header: 'Client SSL'
+        keystore: hive.hcatalog.truststore_location
+        storepass: hive.hcatalog.truststore_password
+        caname: "hive_root_ca"
+        cacert: ssl.cacert
+        local_source: true
 
 ## Ulimit
 
       @system_limits
+        header: 'Ulimit'
         user: hive.user.name
-        nofile: hive.user.limits.nofile
-        nproc: hive.user.limits.nproc
+      , hive.user.limits
 
 # Module Dependencies
 

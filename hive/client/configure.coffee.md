@@ -18,10 +18,7 @@ Example:
 
     module.exports = ->
       hcat_ctxs = @contexts 'ryba/hive/hcatalog'
-      hs2_ctxs = @contexts 'ryba/hive/server2'
       throw Error "No HCatalog server declared" unless hcat_ctxs[0]
-      throw Error "No Hive Server2 server declared" unless hs2_ctxs[0]
-      # require('../../tez/configure').handler.call @
       {mapred, tez} = @config.ryba 
       {java_home} = @config.java
       hive = @config.ryba.hive ?= {}
@@ -106,7 +103,7 @@ Example:
         'hive.metastore.uris'
         'hive.security.authorization.enabled'
         'hive.security.metastore.authorization.manager'
-        'hive.security.metastore.authenticator.manager'
+        # 'hive.security.metastore.authenticator.manager'
         # Transaction, read/write locks
         'hive.support.concurrency'
         'hive.enforce.bucketing'
@@ -115,35 +112,34 @@ Example:
         'hive.txn.timeout'
         'hive.txn.max.open.batch'
         'hive.cluster.delegation.token.store.zookeeper.connectString'
-        'hive.cluster.delegation.token.store.class'
-        'hive.metastore.local'
-        'fs.hdfs.impl.disable.cache'
+        # 'hive.cluster.delegation.token.store.class'
+        # 'hive.metastore.local'
+        # 'fs.hdfs.impl.disable.cache'
         'hive.metastore.sasl.enabled'
-        'hive.metastore.cache.pinobjtypes'
+        # 'hive.metastore.cache.pinobjtypes'
         # 'hive.metastore.kerberos.keytab.file'
-        'hive.metastore.kerberos.principal'
-        'hive.metastore.pre.event.listeners'
+        # 'hive.metastore.kerberos.principal'
+        # 'hive.metastore.pre.event.listeners'
         'hive.optimize.mapjoin.mapreduce'
         'hive.heapsize'
         'hive.auto.convert.sortmerge.join.noconditionaltask'
         'hive.exec.max.created.files'
-        'javax.jdo.option.ConnectionURL'
         # Transaction, read/write locks
       ] then hive.site[property] ?= hcat_ctxs[0].config.ryba.hive.hcatalog.site[property]
-
-## Client HiveServer2 Configuration
-
-      for property in [
-        'hive.server2.authentication'
-        # Transaction, read/write locks
-        'hive.execution.engine'
-        'hive.zookeeper.quorum'
-        'hive.server2.thrift.sasl.qop'
-        'hive.optimize.mapjoin.mapreduce'
-        'hive.heapsize'
-        'hive.auto.convert.sortmerge.join.noconditionaltask'
-        'hive.exec.max.created.files'
-      ] then hive.site[property] ?= hs2_ctxs[0].config.ryba.hive.server2.site[property]
+# 
+# ## Client HiveServer2 Configuration
+# 
+#       for property in [
+#         'hive.server2.authentication'
+#         # Transaction, read/write locks
+#         'hive.execution.engine'
+#         'hive.zookeeper.quorum'
+#         'hive.server2.thrift.sasl.qop'
+#         'hive.optimize.mapjoin.mapreduce'
+#         'hive.heapsize'
+#         'hive.auto.convert.sortmerge.join.noconditionaltask'
+#         'hive.exec.max.created.files'
+#       ] then hive.site[property] ?= hs2_ctxs[0].config.ryba.hive.server2.site[property]
 
 ## Configure SSL
 

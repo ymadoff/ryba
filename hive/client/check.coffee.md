@@ -1,8 +1,7 @@
 
 # Hive Client Check
 
-This module check both the HCatalog and Hive Server2 servers respectively using
-the commands "hive" and "beeline".
+This module check the HCatalog server using the `hive` command.
 
 Debug mode in the "hive" command is activated with the "hive.root.logger"
 parameter:
@@ -15,13 +14,10 @@ hive -hiveconf hive.root.logger=DEBUG,console
       {force_check, realm, user, hive} = @config.ryba
       [ranger_admin] = @contexts 'ryba/ranger/admin'
       hive_hcatalog = @contexts 'ryba/hive/hcatalog'
-      hive_server2 = @contexts 'ryba/hive/server2'
-      spark_thrift_server: @contexts 'ryba/spark/thrift_server'
 
 ## Wait
 
       @call once: true, 'ryba/hive/hcatalog/wait'
-      @call once: true, 'ryba/hive/server2/wait'
       @call if: ranger_admin, once: true, 'ryba/ranger/admin/wait'
 
 ## Add Ranger Policy 

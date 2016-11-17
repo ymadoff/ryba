@@ -60,7 +60,6 @@ hive:x:493:
       @group hive.group
       @user hive.user
 
-
 ## Startup
 
 Install the "hive-server2" service, symlink the rc.d startup script
@@ -161,44 +160,22 @@ Create the directories to store the logs and pid information. The properties
         header: 'Client SSL'
         if: -> @config.ryba.hive.server2.site['hive.server2.use.SSL'] is 'true'
         handler: ->
-          @file.download
-            source: ssl.cacert
-            target: "#{tmp_location}/#{path.basename ssl.cacert}"
-            mode: 0o0600
-            shy: true
-          @file.download
-            source: ssl.cert
-            target: "#{tmp_location}/#{path.basename ssl.cert}"
-            mode: 0o0600
-            shy: true
-          @file.download
-            source: ssl.key
-            target: "#{tmp_location}/#{path.basename ssl.key}"
-            mode: 0o0600
-            shy: true
           @java_keystore_add
             keystore: hive.server2.site['hive.server2.keystore.path']
             storepass: hive.server2.site['hive.server2.keystore.password']
             caname: "hive_root_ca"
-            cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
-            key: "#{tmp_location}/#{path.basename ssl.key}"
-            cert: "#{tmp_location}/#{path.basename ssl.cert}"
+            cacert: ssl.cacert
+            key: ssl.key
+            cert: ssl.cert
             keypass: ssl_server['ssl.server.keystore.keypassword']
             name: @config.shortname
+            local_source: true
           # @java_keystore_add
           #   keystore: hive.server2.site['hive.server2.keystore.path']
           #   storepass: hive.server2.site['hive.server2.keystore.password']
           #   caname: "hadoop_root_ca"
-          #   cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
-          @remove
-            target: "#{tmp_location}/#{path.basename ssl.cacert}"
-            shy: true
-          @remove
-            target: "#{tmp_location}/#{path.basename ssl.cert}"
-            shy: true
-          @remove
-            target: "#{tmp_location}/#{path.basename ssl.key}"
-            shy: true
+          #   cacert: ssl.cacert
+          #   local: true
           @service
             srv_name: 'hive-server2'
             action: 'restart'
@@ -218,9 +195,9 @@ Create the directories to store the logs and pid information. The properties
 ## Ulimit
 
       @system_limits
+        header: 'Ulimit'
         user: hive.user.name
-        nofile: hive.user.limits.nofile
-        nproc: hive.user.limits.nproc
+      , hive.user.limits
 
 ## Dependencies
 

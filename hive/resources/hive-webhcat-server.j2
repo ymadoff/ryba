@@ -92,10 +92,9 @@ function status {
        echo "$NAME started [$pid]"
        exit 0
     fi
-  else
-    echo "$NAME stopped"
-    exit 3
   fi
+  echo "$NAME stopped"
+  exit 3
 }
 
 

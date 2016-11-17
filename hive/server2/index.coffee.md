@@ -17,16 +17,13 @@ open API clients like JDBC and ODBC.
         # tez: implicit: true, module: 'ryba/tez'
         # db_admin: 'ryba/commons/db_admin'
         hadoop_core: 'ryba/hadoop/core'
-        # hive_client: 'ryba/hive/client'
+        hive_client: 'ryba/hive/client'
         hive_hcatalog: 'ryba/hive/hcatalog'
         # hbase_client: 'ryba/hbase/client'
-      configure:[
-        'ryba/hive/client/configure'
+      configure:
         'ryba/hive/server2/configure'
-      ]
       commands:
         'install': [
-          'ryba/hive/client/install'
           'ryba/hive/server2/install'
           'ryba/hive/server2/start'
           'ryba/hive/server2/check'
