@@ -126,15 +126,18 @@ We then ask a first TGT.
         user: 'druid'
         exec: true
 
+## Database
+
+      @db.user druid.db, database: null, header: 'DB User',
+        if: druid.db.engine in ['mysql', 'postgres']
+      @db.database druid.db, header: 'Database',
+        if: druid.db.engine in ['mysql', 'postgres']
+        user: druid.db.username
+
 ## Configuration
 
 Configure deep storage.
 
-      @db.user druid.db, database: null,
-        if: druid.db.engine in ['mysql', 'postgres']
-      @db.database druid.db,
-        if: druid.db.engine in ['mysql', 'postgres']
-        user: druid.db.username
       @file.properties
         target: "/opt/druid-#{druid.version}/conf/druid/_common/common.runtime.properties"
         content: druid.common_runtime
