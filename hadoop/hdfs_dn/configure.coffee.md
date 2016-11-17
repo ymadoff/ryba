@@ -55,10 +55,26 @@ Example:
         ryba.hdfs.site['dfs.datanode.ipc.address'] ?= '0.0.0.0:50020'
         ryba.hdfs.site['dfs.datanode.http.address'] ?= '0.0.0.0:50075'
         ryba.hdfs.site['dfs.datanode.https.address'] ?= '0.0.0.0:50475'
-      # Kerberos
+
+## Centralized Cache Management
+
+Centralized cache management in HDFS is an explicit caching mechanism that enables you to specify paths to directories or files that will be cached by HDFS.
+
+If you get the error "Cannot start datanode because the configured max locked 
+memory size... is more than the datanode's available RLIMIT_MEMLOCK ulimit," 
+that means that the operating system is imposing a lower limit on the amount of 
+memory that you can lock than what you have configured.
+
+      ryba.hdfs.site['dfs.datanode.max.locked.memory'] ?= '128000'
+      ryba.hdfs.user.limits.memlock ?= 130
+
+## Kerberos
+
       ryba.hdfs.site['dfs.datanode.kerberos.principal'] ?= "dn/_HOST@#{ryba.realm}"
       ryba.hdfs.site['dfs.datanode.keytab.file'] ?= '/etc/security/keytabs/dn.service.keytab'
-      # Tuning
+
+## Tuning
+
       dataDirs = ryba.hdfs.site['dfs.datanode.data.dir'].split(',')
       if dataDirs.length > 3
         ryba.hdfs.site['dfs.datanode.failed.volumes.tolerated'] ?= '1'
@@ -68,7 +84,9 @@ Example:
       if ryba.hdfs.site['dfs.datanode.failed.volumes.tolerated'] >= dataDirs.length
         throw Error 'Number of failed volumes must be less than total volumes'
       ryba.hdfs.datanode_opts ?= ''
-      # Configuring Storage-Balancing for DataNodes
+
+## Storage-Balancing Policy
+
       # http://gbif.blogspot.fr/2015/05/dont-fill-your-hdfs-disks-upgrading-to.html
       # http://www.cloudera.com/content/cloudera/en/documentation/core/latest/topics/admin_dn_storage_balancing.html
       ryba.hdfs.site['dfs.datanode.fsdataset.volume.choosing.policy'] ?= 'org.apache.hadoop.hdfs.server.datanode.fsdataset.AvailableSpaceVolumeChoosingPolicy'
@@ -81,6 +99,7 @@ Example:
       # dfs.datanode.available-space-volume-choosing-policy.balanced-space-preference-fraction:1.0
 
 ## Env
+
 Set up jave heap size linke in `ryba/hadoop/hdfs_nn`.
 
       ryba.hdfs.dn ?= {}
