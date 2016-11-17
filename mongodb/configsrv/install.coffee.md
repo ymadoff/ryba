@@ -127,10 +127,10 @@ with pem file. So we append to the file the private key and certficate.
 
 ## Kerberos
 
-      @call header: 'Kerberos Admin', handler: ->
-        @krb5_addprinc krb5,
-          principal: "#{mongodb.configsrv.config.security.sasl.serviceName}"#/#{@config.host}@#{realm}"
-          password: mongodb.configsrv.sasl_password
+      @krb5_addprinc krb5,
+        header: 'Kerberos Admin'
+        principal: "#{mongodb.configsrv.config.security.sasl.serviceName}"#/#{@config.host}@#{realm}"
+        password: mongodb.configsrv.sasl_password
 
 # User limits
 
