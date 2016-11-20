@@ -13,7 +13,7 @@ Worth to investigate:
 [rollback]: http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.3/bk_Monitoring_Hadoop_Book/content/monitor-ha-undoing_2x.html
 
     module.exports = header: 'HDFS NN Install', handler: ->
-      {ssl, ssl_server, ssl_client} = @config.ryba
+      {ssl} = @config.ryba
       {realm, core_site, hadoop_metrics, hadoop_group} = @config.ryba
       {hdfs, active_nn_host, nameservice, hadoop_policy} = @config.ryba
       # {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
@@ -181,38 +181,33 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 ## SSL
 
       @call header: 'SSL', retry: 0, handler: ->
-        ssl_client = merge {}, ssl_client,
-          'ssl.client.truststore.location': "#{hdfs.nn.conf_dir}/truststore"
-        ssl_server = merge {}, ssl_server,
-          'ssl.server.keystore.location': "#{hdfs.nn.conf_dir}/keystore"
-          'ssl.server.truststore.location': "#{hdfs.nn.conf_dir}/truststore"
         @hconfigure
           target: "#{hdfs.nn.conf_dir}/ssl-server.xml"
-          properties: ssl_server
+          properties: hdfs.nn.ssl_server
         @hconfigure
           target: "#{hdfs.nn.conf_dir}/ssl-client.xml"
-          properties: ssl_client
+          properties: hdfs.nn.ssl_client
         # Client: import certificate to all hosts
         @java_keystore_add
-          keystore: ssl_client['ssl.client.truststore.location']
-          storepass: ssl_client['ssl.client.truststore.password']
+          keystore: hdfs.nn.ssl_client['ssl.client.truststore.location']
+          storepass: hdfs.nn.ssl_client['ssl.client.truststore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
           local_source: true
         # Server: import certificates, private and public keys to hosts with a server
         @java_keystore_add
-          keystore: ssl_server['ssl.server.keystore.location']
-          storepass: ssl_server['ssl.server.keystore.password']
+          keystore: hdfs.nn.ssl_server['ssl.server.keystore.location']
+          storepass: hdfs.nn.ssl_server['ssl.server.keystore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
           key: "#{ssl.key}"
           cert: "#{ssl.cert}"
-          keypass: ssl_server['ssl.server.keystore.keypassword']
+          keypass: hdfs.nn.ssl_server['ssl.server.keystore.keypassword']
           name: @config.shortname
           local_source: true
         @java_keystore_add
-          keystore: ssl_server['ssl.server.keystore.location']
-          storepass: ssl_server['ssl.server.keystore.password']
+          keystore: hdfs.nn.ssl_server['ssl.server.keystore.location']
+          storepass: hdfs.nn.ssl_server['ssl.server.keystore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
           local_source: true

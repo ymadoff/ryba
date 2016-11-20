@@ -71,6 +71,14 @@ Example:
       ryba.hdfs.nn.site['dfs.namenode.acls.enabled'] ?= 'true'
       ryba.hdfs.nn.site['dfs.namenode.accesstime.precision'] ?= null
 
+## SSL
+
+      ryba.hdfs.nn.ssl_client = merge ryba.hdfs.nn.ssl_client, ryba.ssl_client,
+        'ssl.client.truststore.location': "#{ryba.hdfs.nn.conf_dir}/truststore"
+      ryba.hdfs.nn.ssl_server = merge ryba.hdfs.nn.ssl_server, ryba.ssl_server,
+        'ssl.server.keystore.location': "#{ryba.hdfs.nn.conf_dir}/keystore"
+        'ssl.server.truststore.location': "#{ryba.hdfs.nn.conf_dir}/truststore"
+
 ## Configuration for HDFS High Availability (HA)
 
 Add High Availability specific properties to the "hdfs-site.xml" file. The
@@ -137,3 +145,4 @@ for distcp purpose.
 ## Dependencies
 
     string = require 'mecano/lib/misc/string'
+    {merge} = require 'mecano/lib/misc'
