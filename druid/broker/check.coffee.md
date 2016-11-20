@@ -7,7 +7,7 @@ service to be started.
     module.exports = header: 'Druid Broker Check', handler: ->
       {force_check, druid} = @config.ryba
       [overlord] = @contexts 'ryba/druid/overlord'
-      @register 'hdfs_upload', 'ryba/lib/hdfs_upload'
+      @registry.register 'hdfs_upload', 'ryba/lib/hdfs_upload'
       @call
         unless_exec: unless force_check then """
         echo #{druid.krb5_admin.password} | kinit #{druid.krb5_admin.principal} && {

@@ -11,7 +11,7 @@ Spark comes with 1.2.1 in HDP 2.2.4.
 
 ## Register
 
-      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
 ## IPTables
 

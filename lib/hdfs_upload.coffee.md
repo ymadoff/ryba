@@ -22,7 +22,7 @@
 ## Exemple
 
 ```
-@register 'hdfs_upload', 'ryba/lib/hdfs_upload'
+@registry.register 'hdfs_upload', 'ryba/lib/hdfs_upload'
 @hdfs_upload
   source: "/usr/hdp/current/hive-metastore/lib/hive-exec-#{version}.jar"
   target: "/apps/hive/install/hive-exec-#{version}.jar"

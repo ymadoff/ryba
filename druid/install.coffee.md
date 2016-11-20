@@ -7,8 +7,8 @@
 
 ## Register and load
 
-      @register 'hconfigure', 'ryba/lib/hconfigure'
-      @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
+      @registry.register 'hconfigure', 'ryba/lib/hconfigure'
+      @registry.register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
 
 ## IPTables
 

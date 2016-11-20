@@ -18,7 +18,7 @@ Run `ryba prepare` to create the Docker container.
 
 ## Register
 
-      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
 ## Wait
 

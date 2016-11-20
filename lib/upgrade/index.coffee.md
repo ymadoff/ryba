@@ -107,7 +107,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
         @call 
           unless: -> @status -1
           handler: =>
-            @register 'kexecute', require '../kexecute'
+            @registry.register 'kexecute', require '../kexecute'
             # @kexecute
             #   krb5_user: @config.ryba.hdfs.krb5_user
             #   cmd: "hdfs dfsadmin -rollingUpgrade prepare"

@@ -14,8 +14,8 @@
       @call 'masson/commons/java'
       @call 'masson/core/krb5_client/wait'
       @call 'ryba/zookeeper/server/wait'
-      @register ['file', 'jaas'], 'ryba/lib/file_jaas'
-      @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
+      @registry.register ['file', 'jaas'], 'ryba/lib/file_jaas'
+      @registry.register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
 
 
 ## Users and Groups

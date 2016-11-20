@@ -13,7 +13,7 @@ Resources:
 
 ## Register
 
-      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
 ## Spark Users And Group
 

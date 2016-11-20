@@ -6,8 +6,8 @@
 
 ## Register
 
-      @register 'hconfigure', 'ryba/lib/hconfigure'
-      @register 'hdfs_upload', 'ryba/lib/hdfs_upload'
+      @registry.register 'hconfigure', 'ryba/lib/hconfigure'
+      @registry.register 'hdfs_upload', 'ryba/lib/hdfs_upload'
 
 ## Packages
 

@@ -10,8 +10,8 @@
 # Dependencies
 
       @call once: true, 'ryba/ranger/admin/wait'
-      @register 'hconfigure', 'ryba/lib/hconfigure'
-      @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
+      @registry.register 'hconfigure', 'ryba/lib/hconfigure'
+      @registry.register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
 
 # Create Hive Policy for On HDFS Repo
 

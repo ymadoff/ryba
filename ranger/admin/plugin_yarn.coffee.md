@@ -11,7 +11,7 @@
 
       @call once: true, 'ryba/hadoop/yarn_client/install'
       @call once: true, 'ryba/ranger/admin/wait'
-      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
 # Packages
 

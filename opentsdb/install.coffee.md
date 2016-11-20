@@ -7,7 +7,7 @@
 
 ## Register
 
-      @register ['file', 'jaas'], 'ryba/lib/file_jaas'
+      @registry.register ['file', 'jaas'], 'ryba/lib/file_jaas'
 
 ## Users & Groups
 

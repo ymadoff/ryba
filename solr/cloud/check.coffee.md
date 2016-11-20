@@ -10,7 +10,7 @@
 
       @call 'ryba/zookeeper/server/wait'
       @call 'ryba/solr/cloud/wait'
-      @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
+      @registry.register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
 
 ## Create Collection with HDFS based index
 This check is inspired [from HDP][search-hdp].

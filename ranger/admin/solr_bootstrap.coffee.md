@@ -11,7 +11,7 @@
       
 ## Dependencies
 
-      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @registry.register 'hconfigure', 'ryba/lib/hconfigure'
       @call once: true, "ryba/solr/#{mode}/start" unless mode is 'cloud_docker'
       @call once: true, "ryba/solr/#{mode}/wait" unless mode is 'cloud_docker'
       @call 

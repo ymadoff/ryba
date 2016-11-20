@@ -82,5 +82,5 @@ Options include:
         source: COOKIES
 
     module.exports.register = ->
-      @register 'hue_adduser', module.exports unless @registered 'hue_adduser'
+      @registry.register 'hue_adduser', module.exports unless @registry.registered 'hue_adduser'
 

@@ -8,7 +8,7 @@
       tmp_archive_location = "/var/tmp/ryba/nifi.tar.gz"
       protocol = if nifi.manager.config.properties['nifi.cluster.protocol.is.secure'] is 'true' then 'https' else 'http'
 
-      @register ['file', 'jaas'], 'ryba/lib/file_jaas'
+      @registry.register ['file', 'jaas'], 'ryba/lib/file_jaas'
 
 ## Users
 

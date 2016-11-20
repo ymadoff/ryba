@@ -7,7 +7,7 @@
 
 ## Register
 
-      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
       # @call
       #   header: 'Users & Groups'

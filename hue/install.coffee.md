@@ -11,7 +11,7 @@ article from december 2014 describe how to
 
 ## Register
 
-      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
 ## Users & Groups
 

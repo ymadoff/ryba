@@ -8,7 +8,7 @@ This commands checks if falcons works as required.
 
 ## Register
 
-      @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
+      @registry.register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
 
 ## Wait Falcon Server
 

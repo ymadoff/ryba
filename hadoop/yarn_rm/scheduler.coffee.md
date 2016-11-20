@@ -18,7 +18,7 @@ ResourceCalculator class name is expected.
 
 ## Register
 
-      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
       @hconfigure
         header: 'Capacity Scheduler'

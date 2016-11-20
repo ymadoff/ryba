@@ -10,7 +10,7 @@
 
       @call 'ryba/hadoop/hdfs_client/install'
       @call 'ryba/ranger/admin/wait'
-      @register 'hconfigure', 'ryba/lib/hconfigure'
+      @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
 ## Packages
 

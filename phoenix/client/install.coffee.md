@@ -10,8 +10,8 @@ deployment is heavily inspired by [Anil Gupta instruction][agi].
 
 ## Register
 
-      @register 'hdp_select', 'ryba/lib/hdp_select'
-      @register ['file', 'jaas'], 'ryba/lib/file_jaas'
+      @registry.register 'hdp_select', 'ryba/lib/hdp_select'
+      @registry.register ['file', 'jaas'], 'ryba/lib/file_jaas'
 
 ## Packages
 

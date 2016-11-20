@@ -7,7 +7,7 @@ http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.1/bk_installing_manually_b
 
 ## Register
 
-      @register 'hdp_select', 'ryba/lib/hdp_select'
+      @registry.register 'hdp_select', 'ryba/lib/hdp_select'
 
 ## Package
 

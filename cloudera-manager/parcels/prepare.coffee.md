@@ -22,7 +22,7 @@ Resources:
 ```coffee
 coffee -s <<COFFEE
 m = require 'mecano'
-m.register 'cm_prepare', 'ryba/cloudera-manager/parcels/prepare'
+m.registry.register 'cm_prepare', 'ryba/cloudera-manager/parcels/prepare'
 m.cm_prepare
   distrib: 'precise'
   cache_dir: './cache'

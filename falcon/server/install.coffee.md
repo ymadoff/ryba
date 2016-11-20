@@ -14,8 +14,8 @@ each HDFS cluster.
 
 ## Register
 
-      @register 'hdp_select', 'ryba/lib/hdp_select'
-      @register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
+      @registry.register 'hdp_select', 'ryba/lib/hdp_select'
+      @registry.register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
 
 ## IPTables
 

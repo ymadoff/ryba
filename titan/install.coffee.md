@@ -11,7 +11,7 @@ please see ryba/rexster
     module.exports = header: 'Titan Install', timeout: -1, handler: ->
       {titan, hbase} = @config.ryba
 
-      @register ['file', 'jaas'], 'ryba/lib/file_jaas'
+      @registry.register ['file', 'jaas'], 'ryba/lib/file_jaas'
 
 ## Install
 
