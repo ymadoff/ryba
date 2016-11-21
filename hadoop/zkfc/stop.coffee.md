@@ -17,13 +17,13 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
 The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-zkfc.pid".
 
       @service.stop
-        header: 'HDFS ZKFC Stop'
+        header: 'Daemon'
         label_true: 'STOPPED'
         name: 'hadoop-hdfs-zkfc'
         if_exists: '/etc/init.d/hadoop-hdfs-zkfc'
 
       @execute
-        header: 'HDFS ZKFC Clean Logs'
+        header: 'Clean Logs'
         label_true: 'CLEANED'
         if: clean_logs
         cmd: 'rm /var/log/hadoop-hdfs/*/*-zkfc-*'

@@ -7,7 +7,7 @@ In HA mode, to ensure that the leadership is assigned to the desired active
 NameNode, the ZKFC daemons on the standy NameNodes wait for the one on the
 active NameNode to start first.
 
-    module.exports = header: 'HDFS ZKFC # Start', label_true: 'STARTED', handler: ->
+    module.exports = header: 'HDFS ZKFC Start', label_true: 'STARTED', handler: ->
       {hdfs, active_nn_host, standby_nn_host} = @config.ryba
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
       active_shortname = nn_ctxs.filter( (nn) -> nn.config.host is active_nn_host )[0].config.shortname
@@ -47,7 +47,7 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
 ```
 
       @service.start
-        header: 'HDFS ZKFC # Start', label_true: 'STARTED'
+        header: 'Daemon', label_true: 'STARTED'
         name: 'hadoop-hdfs-zkfc'
         # if: nn_ctxs.length > 1
 
@@ -61,7 +61,7 @@ be executed on the same server as ZKFC.
       # Note, probably we shall wait for the other NameNode to be started and running
       # before attempting to activate it.
       @execute
-        header: 'HDFS ZKFC # Start Failover'
+        header: 'Failover'
         label_true: 'READY'
         # if: nn_ctxs.length > 1
         cmd: mkcmd.hdfs @, """
