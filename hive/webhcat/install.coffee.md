@@ -28,7 +28,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
       @iptables
-        header: 'IPTables' 
+        header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "WebHCat HTTP Server" }
         ]
@@ -56,8 +56,9 @@ Install the "hadoop-yarn-resourcemanager" service, symlink the rc.d startup scri
 inside "/etc/init.d" and activate it on startup.
 
       @call header: 'Service', handler: ->
-        @service
-          name: 'hive-webhcat-server'
+        @service 'hive-webhcat-server'
+        @service 'pig'   # Upload .tar.gz
+        @service 'sqoop' # Upload .tar.gz
         @hdp_select
           name: 'hive-webhcat'
         @render
@@ -74,7 +75,7 @@ inside "/etc/init.d" and activate it on startup.
 
 ## Directories
 
-Create file system directories for log and pid. 
+Create file system directories for log and pid.
 
       @call header: 'Layout', handler: ->
         @mkdir

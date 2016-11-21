@@ -22,7 +22,8 @@
         code_skipped: 2
       , (err, executed, stdout) ->
         return if err
-        throw Error "WebHCat not started" if executed and stdout.trim() isnt '{"status":"ok","version":"v1"}'
+        return unless executed
+        throw Error "WebHCat not started" if JSON.parse(stdout).status isnt 'ok'
 
 ## Dependencies
 
