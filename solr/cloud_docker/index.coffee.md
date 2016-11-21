@@ -8,15 +8,14 @@ This module enables adminstrator to manage severale solrcloud_docker instances r
 For now it writes docker-compose.yml file, download resource files, create layout direcoties
 but does not start the clusters.
 
-    module.exports = ->
-      'configure': [
+    module.exports =
+      use:
+        iptables: implicit: true, module: 'masson/core/iptables'
+        docker: implicit: true, module: 'masson/commons/docker'
+        hadoop_core: implicit: true, module: 'ryba/hadoop/core'
+        zoo_server: module: 'ryba/zookeeper/server'
+      configure:
         'ryba/solr/cloud_docker/configure'
-      ]
-      'prepare': [
-        'ryba/solr/cloud_docker/prepare'
-      ]
-      'install': [
-        'masson/commons/docker'
-        'ryba/hadoop/core/install'
-        'ryba/solr/cloud_docker/install'
-        ]
+      commands:
+        'prepare': 'ryba/solr/cloud_docker/prepare'
+        'install': 'ryba/solr/cloud_docker/install'

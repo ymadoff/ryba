@@ -1,5 +1,5 @@
 
-# Solr Install
+# Solr Cloud Docker Install
 
     module.exports = header: 'Solr Cloud Docker Install', handler: ->
       {solr, realm} = @config.ryba
@@ -11,12 +11,10 @@
 
 ## Dependencies
 
-      @call 'masson/commons/java'
       @call 'masson/core/krb5_client/wait'
       @call 'ryba/zookeeper/server/wait'
       @registry.register ['file', 'jaas'], 'ryba/lib/file_jaas'
       @registry.register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
-
 
 ## Users and Groups
 Create user and groups for solr user.
@@ -180,10 +178,7 @@ be prepared in the mecano cache dir.
 ## Cluster Specific configuration
 Here we loop through the clusters definition to write container specific file
 configuration like solr.in.sh or solr.xml.
-
-      @call
-        if: solr.cloud_docker.clusters?
-      , ->
+      
       @each solr.cloud_docker.clusters, (options, callback) ->
         counter = 0
         name = options.key
