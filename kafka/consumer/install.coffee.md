@@ -96,8 +96,10 @@ Write JAAS File for client configuration
         content:
           KafkaClient:
             useTicketCache: true
+            serviceName: kafka.user.name
           Client:
             useTicketCache: true
+            serviceName: kafka.user.name
         uid: kafka.user.name
         gid: kafka.group.name
 

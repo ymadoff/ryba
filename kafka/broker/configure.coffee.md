@@ -235,10 +235,12 @@ Valid values are: PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL.
           throw Error 'ACL must be activated' if ( prot.indexOf('SASL') > -1 and not secure_cluster)
 
 ## Listeners Protocols
-
+      
+      #HDP 2.5.0
+      error = 'security.inter.broker.protocol must be a protocol in the configured set of advertised.listeners'
+      throw Error error unless kafka.broker.config['replication.security.protocol'] in kafka.broker.protocols
       kafka.broker.config['listeners'] ?= kafka.broker.protocols.map( (protocol) =>
         "#{protocol}://#{@config.host}:#{kafka.broker.ports[protocol]}").join(',')
-
 
 [kafka-security]:(http://kafka.apache.org/documentation.html#security)
 [hdp-security-kafka]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.4/bk_Security_Guide/content/ch_wire-kafka.html)

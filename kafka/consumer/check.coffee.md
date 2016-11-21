@@ -52,7 +52,6 @@ Check Message by writing to a test topic on the PLAINTEXT channel.
             cmd: """
             (
               echo 'hello front1' | /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh \
-                --new-producer \
                 --producer-property security.protocol=PLAINTEXT \
                 --broker-list #{brokers} \
                 --security-protocol PLAINTEXT \
@@ -61,6 +60,7 @@ Check Message by writing to a test topic on the PLAINTEXT channel.
             )&
             /usr/hdp/current/kafka-broker/bin/kafka-console-consumer.sh \
               --new-consumer \
+              --delete-consumer-offsets \
               --bootstrap-server #{brokers} \
               --topic #{test_topic} \
               --security-protocol PLAINTEXT \
@@ -100,7 +100,6 @@ Trustore location and password given to line command because if executed before 
           @execute
             cmd:  """
               echo 'hello front1' | /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh \
-                --new-producer  \
                 --producer-property security.protocol=SSL \
                 --broker-list #{brokers} \
                 --security-protocol SSL \
@@ -113,6 +112,7 @@ Trustore location and password given to line command because if executed before 
             cmd: """
               /usr/hdp/current/kafka-broker/bin/kafka-console-consumer.sh \
                 --new-consumer  \
+                --delete-consumer-offsets \
                 --bootstrap-server #{brokers} \
                 --topic #{test_topic} \
                 --security-protocol SSL \
@@ -172,7 +172,6 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
             cmd:  mkcmd.test @, """
               (
                 echo 'hello front1' | /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh \
-                  --new-producer  \
                   --producer-property security.protocol=SASL_PLAINTEXT \
                   --broker-list #{brokers} \
                   --security-protocol SASL_PLAINTEXT \
@@ -181,6 +180,7 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
               )&
               /usr/hdp/current/kafka-broker/bin/kafka-console-consumer.sh \
                 --new-consumer \
+                --delete-consumer-offsets \
                 --bootstrap-server #{brokers} \
                 --topic #{test_topic} \
                 --security-protocol SASL_PLAINTEXT \
@@ -237,7 +237,6 @@ Trustore location and password given to line command because if executed before 
             cmd:  mkcmd.test @, """
               (
                 echo 'hello front1' | /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh \
-                  --new-producer  \
                   --producer-property security.protocol=SASL_SSL \
                   --broker-list #{brokers} \
                   --security-protocol SASL_SSL \
@@ -248,6 +247,7 @@ Trustore location and password given to line command because if executed before 
               )&
               /usr/hdp/current/kafka-broker/bin/kafka-console-consumer.sh \
                 --new-consumer \
+                --delete-consumer-offsets \
                 --bootstrap-server #{brokers} \
                 --topic #{test_topic} \
                 --security-protocol SASL_SSL \

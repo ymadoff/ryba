@@ -84,8 +84,10 @@ Update the file "server.properties" with the properties defined by the
         content:
           KafkaClient:
             useTicketCache: true
+            serviceName: kafka.user.name
           Client:
             useTicketCache: true
+            serviceName: kafka.user.name
         uid: kafka.user.name
         gid: kafka.group.name
 
