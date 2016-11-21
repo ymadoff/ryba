@@ -9,23 +9,29 @@ and system mediation logic. Some of the high-level capabilities and objectives o
   * Designed for extension
   * SSL, SSH, HTTPS, encrypted content, etc...
 
-  The NiFi Cluster Manager is an instance of NiFi that provides the sole management point for the cluster. 
+  The NiFi Cluster Manager is an instance of NiFi that provides the sole management point for the cluster.
   It communicates dataflow changes to the nodes and receives health and status information from the nodes
 
-      module.exports = -> 
-        'prepare':
-          'ryba/nifi/manager/prepare'
-        'configure':
+      module.exports =
+        use:
+          hadoop_core: 'ryba/hadoop/core'
+          nifi_managers: 'ryba/nifi/manager'
+          nifi_nodes: 'ryba/nifi/node'
+        configure: [
+          'ryba/nifi/lib/configure'
           'ryba/nifi/node/configure'
-        'install': [
-          'ryba/hadoop/core'
-          'ryba/nifi/node/install'
-          'ryba/nifi/node/start'
-          'ryba/nifi/node/check'
         ]
-        'check':
-          'ryba/nifi/node/check'
-        'stop':
-          'ryba/nifi/node/stop'
-        'start':
-          'ryba/nifi/node/start'
+        commands:
+          'prepare':
+            'ryba/nifi/manager/prepare'
+          'install': [
+            'ryba/nifi/node/install'
+            'ryba/nifi/node/start'
+            'ryba/nifi/node/check'
+          ]
+          'check':
+            'ryba/nifi/node/check'
+          'stop':
+            'ryba/nifi/node/stop'
+          'start':
+            'ryba/nifi/node/start'

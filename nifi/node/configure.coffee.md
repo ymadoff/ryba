@@ -1,8 +1,8 @@
 
 # Apache NiFi Node Configure
 
-    module.exports = handler: ->
-      require('../lib/configure').handler.call @
+    module.exports = ->
+      [ncm_ctx] = @contexts 'ryba/nifi/manager'
       {nifi, realm} = @config.ryba
       nifi.node  ?= {}
       nifi.node.install_dir ?= "#{nifi.root_dir}/nifi-node"
@@ -10,7 +10,6 @@
       nifi.node.log_dir ?= '/var/log/nifi'
       config = nifi.node.config ?= {}
       properties = config.properties ?= {}
-      [ncm_ctx] = @contexts 'ryba/nifi/manager', require('../manager/configure').handler
       throw Error 'No NiFi Manager configured' unless ncm_ctx?
       {manager} = ncm_ctx.config.ryba.nifi
       #version
@@ -41,7 +40,7 @@
           'nifi.security.anonymous.authorities'
         ] then properties[property] ?= manager.config.properties[property]
 
-## Cluster Configuration  
+## Cluster Configuration
 
 Different type of properties has to be set:
 - How NiFi Master(manager) and Slaves(nodes) communicates (port binding).

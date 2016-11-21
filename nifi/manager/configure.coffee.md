@@ -1,8 +1,9 @@
 
 ## Apache NiFi Manager Configure
 
-    module.exports = handler: ->
-      require('../lib/configure').handler.call @
+    module.exports = ->
+      openldap_servers = @contexts 'masson/core/openldap_server'
+      zk_hosts = @contexts 'ryba/zookeeper/server'
       {nifi, realm} = @config.ryba
       nifi.manager  ?= {}
       nifi.manager.install_dir ?= "#{nifi.root_dir}/nifi-manager"
@@ -50,7 +51,7 @@ NiFi has three native way for prividing user authentication.
 - Using a kerberos server
 Only the seconds and third methods provides a login/password method.
 
-When authentication is enabled NiFi requires to manually set up an auhtorized user to first connect 
+When authentication is enabled NiFi requires to manually set up an auhtorized user to first connect
 to the web ui and create the other users. This is done by providing authorized-user.xml file
 
 If ldap-provider is enabled Ryba will first check if ldap connection properties are defined cluster wide. In no props are found
@@ -77,9 +78,9 @@ The clients request access to nifi, and admin accepts/denies request to webui
             ldap_provider['tls_truststore_type'] ?= "#{properties['nifi.security.truststoreType']}"
             ldap_provider['tls_truststore_protocol'] ?= 'TLS'
             ldap_provider['tls_client_auth'] ?= 'NONE'
-            ldap_provider['ref_strategy'] ?= 'FOLLOW'  
+            ldap_provider['ref_strategy'] ?= 'FOLLOW'
             unless ldap_provider['manager_dn']?
-              [openldap_server_ctx] = @contexts 'masson/core/openldap_server', require("#{__dirname}/../../node_modules/masson/core/openldap_server/configure").handler
+              [openldap_server_ctx] = openldap_servers
               throw Error 'no openldap server configured' unless openldap_server_ctx?
               {openldap_server} = openldap_server_ctx.config
               ldap_provider['manager_dn'] ?= "#{openldap_server.root_dn}"
@@ -111,7 +112,7 @@ The clients request access to nifi, and admin accepts/denies request to webui
             throw Error 'login provider is not supported'
         throw Error 'No admin user configured for NiFi webUI' unless config.authorized_users?
 
-## Cluster Configuration  
+## Cluster Configuration
 
 Different type of properties has to be set:
 - How NiFi Master(manager) and Slaves(nodes) communicates (port binding).
@@ -142,7 +143,6 @@ Different type of properties has to be set:
       properties['nifi.state.management.provider.cluster'] ?= 'zk-provider'
       switch properties['nifi.state.management.provider.cluster']
         when 'zk-provider'
-          zk_hosts = @contexts 'ryba/zookeeper/server', require("#{__dirname}/../../zookeeper/server/configure").handler
           throw Error 'No zookeeper quorum configured' unless zk_hosts.length
           nifi.zk_connect ?= zk_hosts.map( (ctx) -> "#{ctx.config.host}:#{ctx.config.ryba.zookeeper.port}").join ','
           nifi.zk_node ?= '/nifi'
@@ -182,5 +182,5 @@ Different type of properties has to be set:
       nifi.manager.java_opts['maxpermsize'] ?= '256m'
 
 [hdp-nifi]:(https://docs.hortonworks.com/HDPDocuments/HDF1/HDF-1.1.0/bk_AdminGuide/content/ch_AdminGuide.html)
-[cluster-migration]:(https://community.hortonworks.com/articles/9203/how-to-migrate-a-standalone-nifi-into-a-nifi-clust.html)                  
+[cluster-migration]:(https://community.hortonworks.com/articles/9203/how-to-migrate-a-standalone-nifi-into-a-nifi-clust.html)
 [example-nifi]:(https://community.hortonworks.com/articles/7341/nifi-user-authentication-with-ldap.html)

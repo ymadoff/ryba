@@ -1,7 +1,7 @@
 
 # Commons Configure
 
-    module.exports = handler: ->
+    module.exports = ->
       nifi = @config.ryba.nifi ?= {}
       nifi.version ?= '0.6.1'
       nifi.source ?= "https://archive.apache.org/dist/nifi/#{nifi.version}/nifi-#{nifi.version}-bin.tar.gz"
@@ -24,4 +24,4 @@
       nifi.user.limits ?= {}
       nifi.user.limits.nofile ?= 64000
       nifi.user.limits.nproc ?= true
-      nifi.user.gid = nifi.group.name 
+      nifi.user.gid = nifi.group.name
