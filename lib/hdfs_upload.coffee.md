@@ -3,21 +3,21 @@
 
 ## Options
 
--   `cwd` (string)    
-    Current working directory relative to source file.   
--   `lock` (string)   
-    Temporary lock file.   
+-   `cwd` (string)
+    Current working directory relative to source file.
+-   `lock` (string)
+    Temporary lock file.
 -   `mode` (string).
     Permission of the file
--   `owner` (string)    
-    Username owning the file.   
--   `source` (string)   
-    Local file to upload, can be a globing expression referencing a single file.   
--   `target` (string)   
-    HDFS file of the target.   
--   `clean` [string | boolean]   
+-   `owner` (string)
+    Username owning the file.
+-   `source` (string)
+    Local file to upload, can be a globing expression referencing a single file.
+-   `target` (string)
+    HDFS file of the target.
+-   `clean` [string | boolean]
     Removing files before uploading. Expect a lobbing expression or boolean true
-    corresponding to the "source" option.   
+    corresponding to the "source" option.
 
 ## Exemple
 
@@ -45,6 +45,7 @@
       @execute
         cmd: mkcmd.hdfs @, """
         source=#{options.source}
+        if [ ! -f "$source" ]; exit 1; fi
         mode=#{options.mode}
         owner=#{options.owner}
         parent_mode=#{options.parent_mode}
