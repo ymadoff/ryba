@@ -15,7 +15,7 @@
 Check Message by writing to a test topic on the PLAINTEXT channel.
 
       @call header: 'Check PLAINTEXT', label_true: 'CHECKED', handler: ->
-        return unless @has_module 'ryba/kafka/consumer'
+        return unless @has_service  'ryba/kafka/consumer'
         ks_ctxs = @contexts 'ryba/kafka/broker'
         return if ks_ctxs[0].config.ryba.kafka.broker.protocols.indexOf('PLAINTEXT') == -1
         brokers = ks_ctxs.map( (ctx) => #, require('../broker').configure
@@ -75,7 +75,7 @@ We specify the trustore location and password because if executed before consume
       @call
         header: 'Check SSL'
         label_true: 'CHECKED'
-        if: -> @has_module 'ryba/kafka/consumer'
+        if: -> @has_service 'ryba/kafka/consumer'
         handler: ->
           ks_ctxs = @contexts 'ryba/kafka/broker'
           return if ks_ctxs[0].config.ryba.kafka.broker.protocols.indexOf('SSL') == -1
@@ -117,7 +117,7 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
       @call
         header: 'Check SASL_PLAINTEXT'
         label_true: 'CHECKED'
-        if: -> @has_module 'ryba/kafka/consumer'
+        if: -> @has_service 'ryba/kafka/consumer'
         # skip: true
         handler: ->
           ks_ctxs = @contexts 'ryba/kafka/broker'
@@ -188,7 +188,7 @@ Specifying also the trustore location and password because if executed before co
       @call
         header: 'Check SASL_SSL'
         label_true: 'CHECKED'
-        if: -> @has_module 'ryba/kafka/consumer'
+        if: -> @has_service 'ryba/kafka/consumer'
         handler: ->
           ks_ctxs = @contexts 'ryba/kafka/broker'
           return if ks_ctxs[0].config.ryba.kafka.broker.protocols.indexOf('SASL_SSL') == -1

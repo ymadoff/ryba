@@ -2,13 +2,13 @@
 
 ## Configure
 
-    module.exports = handler: ->
+    module.exports = ->
       {kafka} = @config.ryba ?= {}
       # ZooKeeper Quorun
-      zoo_ctxs = @contexts 'ryba/zookeeper/server', require('../../zookeeper/server/configure').handler
+      zoo_ctxs = @contexts 'ryba/zookeeper/server'
       zookeeper_quorum = for zoo_ctx in zoo_ctxs
         "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
-      ks_ctxs = @contexts 'ryba/kafka/broker', require('../broker/configure').handler
+      ks_ctxs = @contexts 'ryba/kafka/broker'
       throw Error 'Cannot configure kafka consumer without broker' unless ks_ctxs.length > 0
       kafka.user ?= {}
       kafka.user[k] ?= v for k, v of ks_ctxs[0].config.ryba.kafka.user

@@ -17,7 +17,7 @@ Check Message by writing to a test topic on the PLAINTEXT channel.
       @call
         header: 'Check PLAINTEXT'
         label_true: 'CHECKED'
-        if: -> @has_module 'ryba/kafka/producer'
+        if: -> @has_service 'ryba/kafka/producer'
         handler: ->
           ks_ctxs = @contexts 'ryba/kafka/broker'
           return if ks_ctxs[0].config.ryba.kafka.broker.protocols.indexOf('PLAINTEXT') == -1
@@ -78,7 +78,7 @@ Trustore location and password given to line command because if executed before 
       @call
         header: 'Check SSL'
         label_true: 'CHECKED'
-        if: -> @has_module 'ryba/kafka/producer'
+        if: -> @has_service 'ryba/kafka/producer'
         handler: ->
           ks_ctxs = @contexts 'ryba/kafka/broker'
           return if ks_ctxs[0].config.ryba.kafka.broker.protocols.indexOf('SSL') == -1
@@ -130,7 +130,7 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
       @call
         header: 'Check SASL_PLAINTEXT'
         label_true: 'CHECKED'
-        if: -> @has_module 'ryba/kafka/producer'
+        if: -> @has_service 'ryba/kafka/producer'
         # skip: true
         handler: ->
           ks_ctxs = @contexts 'ryba/kafka/broker'
@@ -196,7 +196,7 @@ Trustore location and password given to line command because if executed before 
       @call
         header: 'Check SASL_SSL'
         label_true: 'CHECKED'
-        if: -> @has_module 'ryba/kafka/producer'
+        if: -> @has_service 'ryba/kafka/producer'
         handler: ->
           ks_ctxs = @contexts 'ryba/kafka/broker'
           return if ks_ctxs[0].config.ryba.kafka.broker.protocols.indexOf('SASL_SSL') == -1

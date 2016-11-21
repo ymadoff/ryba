@@ -1,9 +1,9 @@
 
 ## Configure
 
-    module.exports = handler: ->
+    module.exports = ->
       {kafka} = @config.ryba ?= {}
-      ks_ctxs = @contexts 'ryba/kafka/broker', require('../broker/configure').handler
+      ks_ctxs = @contexts 'ryba/kafka/broker'
       kafka.user ?= {}
       kafka.user[k] ?= v for k, v of ks_ctxs[0].config.ryba.kafka.user
       kafka.group ?= {}
