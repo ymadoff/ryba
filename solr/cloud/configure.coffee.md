@@ -88,8 +88,10 @@ The property `zkCredentialsProvider` is named `zkCredientialsProvider`
       else 'solr.BasicAuthPlugin'
       if @config.ryba.security is 'kerberos'
         # Kerberos
-        solr.cloud.admin_principal ?= "#{solr.user.name}@#{realm}"
-        solr.cloud.admin_password ?= 'solr123'
+        solr.admin_principal ?= "#{solr.user.name}@#{realm}"
+        solr.admin_password ?= 'solr123'
+        solr.cloud.admin_principal ?= solr.admin_principal
+        solr.cloud.admin_password ?= solr.admin_password
         solr.cloud.principal ?= "#{solr.user.name}/#{@config.host}@#{realm}"
         solr.cloud.keytab ?= '/etc/security/keytabs/solr.service.keytab'
         solr.cloud.spnego ?= {}

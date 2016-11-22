@@ -228,6 +228,9 @@ configuration like solr.in.sh or solr.xml.
         @mkdir
           header: 'Solr Cluster Data dir'
           target: config.data_dir
+          mode: 0o0750
+        @chown
+          target: config.data_dir
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0750
