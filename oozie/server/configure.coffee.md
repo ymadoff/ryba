@@ -20,7 +20,7 @@ Example
     }
 ```
 
-    module.exports = handler: ->
+    module.exports = ->
       # Internal properties
       {ryba} = @config
       ryba.force_war ?= false
