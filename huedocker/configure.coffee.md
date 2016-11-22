@@ -44,20 +44,21 @@ Example:
 
 [hbase-configuration]:(http://gethue.com/hbase-browsing-with-doas-impersonation-and-kerberos/)
 
-    module.exports = handler: ->
+    module.exports = ->
       {ssl, hadoop_conf_dir, db_admin} = @config.ryba
-      require('../commons/db_admin').handler.call @
-      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn/configure').handler
-      [sls_ctx] = @contexts 'ryba/spark/livy_server', require('../spark/livy_server/configure').handler
-      [sts_ctx] = @contexts 'ryba/spark/thrift_server', require('../spark/thrift_server/configure').handler
-      [shs_ctx] = @contexts 'ryba/spark/history_server', require('../spark/history_server/configure').handler
+      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
+      [pg_ctx] = @contexts 'masson/commons/postgres/server'
+      [my_ctx] = @contexts 'masson/commons/mysql/server'
+      [sls_ctx] = @contexts 'ryba/spark/livy_server'
+      [sts_ctx] = @contexts 'ryba/spark/thrift_server'
+      [shs_ctx] = @contexts 'ryba/spark/history_server'
       hue_docker = @config.ryba.hue_docker ?= {}
       # Layout
       hue_docker.conf_dir ?= '/etc/hue_docker/conf'
       hue_docker.log_dir ?= '/var/log/hue_docker'
       hue_docker.pid_file ?= '/var/run/hue_docker'
       # Production container image name
-      hue_docker.version ?= '3.9'
+      hue_docker.version ?= '3.'
       hue_docker.image ?= 'ryba/hue'
       hue_docker.container ?= 'hue_server'
       # Huedocker service name has to match nagios hue_docker_check_status.sh file in ryba/nagios/resources/plugins
@@ -107,7 +108,7 @@ Example:
       hue_docker.ini['hadoop'] ?= {}
       # For HDFS HA deployments,  HttpFS is preferred over webhdfs.It should be installed
 
-      [httpfs_ctx] = @contexts 'ryba/hadoop/httpfs', require('../hadoop/httpfs/configure').handler
+      [httpfs_ctx] = @contexts 'ryba/hadoop/httpfs'
       if httpfs_ctx
         httpfs_protocol = if httpfs_ctx.config.ryba.httpfs.env.HTTPFS_SSL_ENABLED then 'https' else 'http'
         httpfs_port = httpfs_ctx.config.ryba.httpfs.http_port
@@ -129,8 +130,8 @@ Example:
       # YARN ResourceManager (MR2 Cluster)
       hue_docker.ini['hadoop']['yarn_clusters'] = {}
       hue_docker.ini['hadoop']['yarn_clusters']['default'] ?= {}
-      rm_ctxs = @contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm/configure').handler
-      rm_hosts = @hosts_with_module 'ryba/hadoop/yarn_rm'
+      rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
+      rm_hosts = rm_ctxs.map( (ctx) -> ctx.config.host)
       rm_host = if rm_hosts.length > 1 then @config.ryba.yarn.active_rm_host else  rm_hosts[0]
       throw Error "No YARN ResourceManager configured" unless rm_ctxs.length
       yarn_api_url = []
@@ -191,20 +192,21 @@ Example:
       hue_docker.ini['hadoop']['yarn_clusters']['default']['history_server_api_url'] ?= "#{jhs_protocol}://#{jhs_ctx.config.host}:#{jhs_port}"
 
       # Oozie
-      [oozie_ctx] = @contexts 'ryba/oozie/server', require('../oozie/server/configure').handler
+      [oozie_ctx] = @contexts 'ryba/oozie/server'
       if oozie_ctx
         hue_docker.ini['liboozie'] ?= {}
+        hue_docker.ini['liboozie']['security_enabled'] ?= 'true'
         hue_docker.ini['liboozie']['oozie_url'] ?= oozie_ctx.config.ryba.oozie.site['oozie.base.url']
-        hue_docker.ini['hcatalog'] ?= {}
-        hue_docker.ini['hcatalog']['templeton_url'] ?= templeton_url
-        hue_docker.ini['beeswax'] ?= {}
       else
         blacklisted_app.push 'oozie'
       # WebHcat
-      [webhcat_ctx] = @contexts 'ryba/hive/webhcat', require('../hive/webhcat/configure').handler
+      [webhcat_ctx] = @contexts 'ryba/hive/webhcat'
       if webhcat_ctx
         webhcat_port = webhcat_ctx.config.ryba.webhcat.site['templeton.port']
         templeton_url = "http://#{webhcat_ctx.config.host}:#{webhcat_port}/templeton/v1/"
+        hue_docker.ini['hcatalog'] ?= {}
+        hue_docker.ini['hcatalog']['templeton_url'] ?= templeton_url
+        hue_docker.ini['beeswax'] ?= {}
       webhcat_ctxs = @contexts 'ryba/hive/webhcat'
       if webhcat_ctxs.length
         for webhcat_ctx in webhcat_ctxs
@@ -215,7 +217,7 @@ Example:
         blacklisted_app.push 'webhcat'
 
       # HCatalog
-      [hs2_ctx] = @contexts 'ryba/hive/server2', require('../hive/server2/configure').handler
+      [hs2_ctx] = @contexts 'ryba/hive/server2'
       throw Error "No Hive HCatalog Server configured" unless hs2_ctx
       hue_docker.ini['beeswax']['hive_server_host'] ?= "#{hs2_ctx.config.host}"
       hue_docker.ini['beeswax']['hive_server_port'] ?= if hs2_ctx.config.ryba.hive.server2.site['hive.server2.transport.mode'] is 'binary'
@@ -242,9 +244,12 @@ Example:
       hue_docker.ini.desktop.database.name ?= 'hue3'
       # Desktop database
       hue_docker.ini['desktop']['database'] ?= {}
-      hue_docker.ini['desktop']['database']['engine'] ?= db_admin.engine
-      hue_docker.ini['desktop']['database']['host'] ?= db_admin.host
-      hue_docker.ini['desktop']['database']['port'] ?= db_admin.port
+      if pg_ctx then hue_docker.ini['desktop']['database']['engine'] ?= 'postgres'
+      else if my_ctx then hue_docker.ini['desktop']['database']['engine'] ?= 'mysql'
+      else hue_docker.ini['desktop']['database']['engine'] ?= 'derby'
+      engine = hue_docker.ini['desktop']['database']['engine']
+      hue_docker.ini['desktop']['database']['host'] ?= db_admin[engine]['host']
+      hue_docker.ini['desktop']['database']['port'] ?= db_admin[engine]['port']
       hue_docker.ini['desktop']['database']['user'] ?= hue_docker.ini.desktop.database.user
       hue_docker.ini['desktop']['database']['password'] ?= hue_docker.ini.desktop.database.password
       hue_docker.ini['desktop']['database']['name'] ?= hue_docker.ini.desktop.database.name
@@ -266,15 +271,15 @@ Example:
       blacklisted_app.push 'search'
       blacklisted_app.push 'solr'
       # Sqoop
-      sqoop_hosts = @hosts_with_module 'ryba/sqoop'
+      sqoop_hosts = @contexts('ryba/sqoop').map( (ctx) -> ctx.config.host)
 
       # HBase
       # Configuration for Hue version > 3.8.1 (July 2015)
       # Hue communicates with hbase throught the thrift server from Hue 3.7 version
       # Hbase has to be configured to offer impersonation
       # http://gethue.com/hbase-browsing-with-doas-impersonation-and-kerberos/
-      [hbase_cli_ctx] = @contexts 'ryba/hbase/client', require('../hbase/client/configure').handler
-      hbase_thrift_ctxs = @contexts 'ryba/hbase/thrift', require('../hbase/thrift/configure').handler
+      [hbase_cli_ctx] = @contexts 'ryba/hbase/client'
+      hbase_thrift_ctxs = @contexts 'ryba/hbase/thrift'
       if hbase_thrift_ctxs.length
         hbase_thrift_cluster = ''
         for key, hbase_ctx of hbase_thrift_ctxs
@@ -348,8 +353,6 @@ Example:
       hue_docker.ini.hadoop.yarn_clusters ?= {}
       hue_docker.ini.hadoop.yarn_clusters.default ?= {}
       hue_docker.ini.hadoop.yarn_clusters.default.security_enabled = 'true'
-      hue_docker.ini.liboozie ?= {}
-      hue_docker.ini.liboozie.security_enabled = 'true'
       hue_docker.ini.hcatalog ?= {}
       hue_docker.ini.hcatalog.security_enabled = 'true'
       hue_docker.ini['desktop']['app_blacklist'] ?= blacklisted_app.join()

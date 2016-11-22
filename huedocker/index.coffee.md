@@ -14,43 +14,49 @@ beloaded to the target server
 ./bin/prepare
 ```
 
-
-    module.exports = -> 
-      'configure': [
-        'ryba/hadoop/core'
-        'ryba/commons/db_admin'
-        'ryba/huedocker/configure'
-      ]
-      'install': [
-        'ryba/commons/db_admin'
-        'masson/core/iptables'
-        'masson/commons/java'
-        'masson/commons/mysql/client' # Install the mysql connector    
-        'masson/core/krb5_client' # kerberos clients to create/test new Hive principal
-        'masson/commons/docker'
-        'ryba/oozie/client'
-        'ryba/hadoop/hdfs_client'
-        'ryba/hadoop/yarn_client'
-        'ryba/hadoop/mapred_client'
-        'ryba/hbase/client'
-        'ryba/hive/client' # Hue reference hive conf dir
-        'ryba/pig/install'
-        'ryba/huedocker/install'
-        'ryba/huedocker/start'
-        'ryba/huedocker/check'
-      ]
-      'start':
-        'ryba/huedocker/start'
-      'check':
-        'ryba/huedocker/check'
-      'wait':
-        'ryba/huedocker/wait'
-      'stop':
-        'ryba/huedocker/stop'
-      'status':
-        'ryba/huedocker/status'
-      'prepare':
-        'ryba/huedocker/prepare'
+    module.exports =
+      use:
+        iptables: implicit: true, module: 'masson/core/iptables'
+        krb5_client: implicit: true, module: 'masson/core/krb5_client'
+        db_admin: implicit: true, module: 'ryba/commons/db_admin'
+        krb5_user: implicit: true, module: 'ryba/commons/krb5_user'
+        docker: implicit: true, module: 'masson/commons/docker'
+        mysql_server: 'masson/commons/mysql/server'
+        hdfs_client: implicit: true, module: 'ryba/hadoop/hdfs_client'
+        yarn_client: implicit: true, module: 'ryba/hadoop/yarn_client'
+        oozie_client: implicit: true, module: 'ryba/oozie/client'
+        hbase_client: implicit: true, module: 'ryba/hbase/client'
+        hive_client: implicit: true, module: 'ryba/hive/client'
+        hadoop_core: implicit:true, module: 'ryba/hadoop/core'
+        hdfs_nn: 'ryba/hadoop/hdfs_nn'
+        spark_livy_servers: 'ryba/spark/livy_server'
+        spark_thrift_server: 'ryba/spark/thrift_server'
+        spark_history_servers: 'ryba/spark/history_server'
+        mapred_jhs: 'ryba/hadoop/mapred_jhs'
+        httpfs: 'ryba/hadoop/httpfs'
+        yarn_rm: 'ryba/hadoop/yarn_rm'
+        oozie: 'ryba/oozie/server'
+        server2: 'ryba/hive/server2'
+        webhcat: 'ryba/hive/webhcat'
+      configure: 'ryba/huedocker/configure'
+      commands:
+        'install': [
+          'ryba/huedocker/install'
+          'ryba/huedocker/start'
+          'ryba/huedocker/check'
+        ]
+        'start':
+          'ryba/huedocker/start'
+        'check':
+          'ryba/huedocker/check'
+        'wait':
+          'ryba/huedocker/wait'
+        'stop':
+          'ryba/huedocker/stop'
+        'status':
+          'ryba/huedocker/status'
+        'prepare':
+          'ryba/huedocker/prepare'
 
 
 [home]: http://gethue.com

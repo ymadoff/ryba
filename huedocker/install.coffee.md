@@ -135,7 +135,6 @@ Configure the "/etc/hue/conf" file following the [HortonWorks](http://docs.horto
 recommandations. Merge the configuration object from "pseudo-distributed.ini" with the properties of the target file.
 
       @file.ini
-        header: 'hue ini'
         target: "#{hue_docker.conf_dir}/hue_docker.ini"
         content: hue_docker.ini
         backup: true
@@ -156,31 +155,26 @@ the default database while mysql is the recommanded choice.
       @call header: 'Hue Docker Database', handler: ->
         switch hue_docker.ini.desktop.database.engine
           when 'mysql'
-            {user, password, name} = hue_docker.ini.desktop.database
+            {engine, host, user, password, name} = hue_docker.ini.desktop.database
             escape = (text) -> text.replace(/[\\"]/g, "\\$&")
             properties = 
-              'engine': hue_docker.ini.desktop.database.engine
-              'host': db_admin.host
-              'admin_username': db_admin.username
-              'admin_password': db_admin.password
+              'engine': engine
+              'host': host
+              'admin_username': db_admin[engine]['admin_username']
+              'admin_password': db_admin[engine]['admin_password']
               'username': user
               'password': password
-            @db.database.exists
-              'engine': hue_docker.ini.desktop.database.engine
-              'host': db_admin.host
-              'admin_username': db_admin.username
-              'admin_password': db_admin.password
-              'username': user
-              'password': password
-              'database': name
-            @execute
+            @db.user properties,
+              header: 'User'
+            @db.database properties, database: name,
+              header: 'Database'
+            @execute 
               cmd: db.cmd properties, """
-              create database #{name};
-              grant all privileges on #{name}.* to '#{user}'@'localhost' identified by '#{password}';
-              grant all privileges on #{name}.* to '#{user}'@'%' identified by '#{password}';
-              flush privileges;
+                grant all privileges on #{name}.* to '#{user}'@'localhost' identified by '#{password}';
+                grant all privileges on #{name}.* to '#{user}'@'%' identified by '#{password}';
+                flush privileges;
               """
-              unless: -> @status -1 # true if exists
+              unless_exec: db.cmd properties, "select * from #{name}.axes_accessattempt limit 1;"
           else throw Error 'Hue database engine not supported'
 
 ## Kerberos
@@ -257,13 +251,28 @@ It uses local checksum if provided to upload or not.
       @call header: 'Upload Container', timeout: -1, retry:3, handler: (options)  ->
         tmp = hue_docker.image_dir
         md5 = hue_docker.md5 ?= true
+        @docker.checksum
+          docker: hue_docker.swarm_conf
+          image: hue_docker.image
+          tag: hue_docker.version
+        @docker.pull
+          header: 'Pull container'
+          unless: -> @status(-1)
+          tag: hue_docker.image
+          version: hue_docker.version
+          code_skipped: 1
         @file.download
+          unless: -> @status(-1) or @status(-2)
           source: "#{hue_docker.prod.directory}/#{hue_docker.prod.tar}"
           target: "#{tmp}/#{hue_docker.prod.tar}"
           binary: true
           md5: md5
-        @docker_load
-          input: "#{tmp}/#{hue_docker.prod.tar}"
+        @docker.load
+          header: 'Load container to docker'
+          unless: -> @status(-3)
+          if_exists: "#{tmp}/#{hue_docker.prod.tar}"
+          source:"#{tmp}/#{hue_docker.prod.tar}"
+          docker: hue_docker.swarm_conf
 
 ## Run Hue Server Container
 
