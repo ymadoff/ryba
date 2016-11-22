@@ -5,25 +5,38 @@ The Apache Knox Gateway is a REST API gateway for interacting with Apache Hadoop
 clusters. The gateway provides a single access point for all REST interactions
 with Hadoop clusters.
 
-    module.exports = ->
-      'configure':
+    module.exports = 
+      use:
+        'yum': implicit: true, module: 'masson/core/yum'
+        'iptables': implicit: true, module: 'masson/core/iptables'
+        'java': implicit: true, module: 'masson/commons/java'
+        'hadoop_core': implicit: true, module: 'ryba/hadoop/core'
+        'zoo_server': 'ryba/zookeeper/server'
+        'ranger_admin': 'ryba/ranger/admin'
+        'hdfs_nn': 'ryba/hadoop/hdfs_nn'
+        'yarn_rm': 'ryba/hadoop/yarn_rm'
+        'server2': 'ryba/hive/server2'
+        'webhcat': 'ryba/hive/webhcat'
+        'oozie': 'ryba/oozie/server'
+        'webhbase': 'ryba/hbase/rest'
+      configure: [
         'ryba/knox/configure'
-      'install': [
-        'masson/core/iptables'
-        'masson/core/yum'
-        'masson/commons/java'
-        'ryba/knox/install'
-        'ryba/knox/start'
-        'ryba/knox/check'
-      ]
-      'check':
-        'ryba/knox/check'
-      'start':
-        'ryba/knox/start'
-      'stop':
-        'ryba/knox/stop'
-      'status':
-        'ryba/knox/status'
+        'ryba/ranger/plugins/knox/configure'
+        ]
+      commands:
+        install: [
+          'ryba/knox/install'
+          'ryba/knox/start'
+          'ryba/knox/check'
+        ]
+        check:
+          'ryba/knox/check'
+        start:
+          'ryba/knox/start'
+        stop:
+          'ryba/knox/stop'
+        status:
+          'ryba/knox/status'
 
 # Knox Installation and configuration
 

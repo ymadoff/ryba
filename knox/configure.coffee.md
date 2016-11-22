@@ -24,8 +24,8 @@ loop on topologies to provide missing values
 
 ## Configure
 
-    module.exports = handler: ->
-      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn', require('../hadoop/hdfs_nn/configure').handler
+    module.exports = ->
+      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
       knox = @config.ryba.knox ?= {}
       knox.conf_dir ?= '/etc/knox/conf'
       # User
@@ -199,7 +199,7 @@ This mechanism can be used to configure a specific gateway without having to dec
             topology.services['webhdfs'] = "#{protocol}://#{host}:#{port}/webhdfs" 
         # Jobtracker
         if topology.services['jobtracker'] is true
-          ctxs = @contexts 'ryba/hadoop/yarn_rm', require('../hadoop/yarn_rm/configure').handler
+          ctxs = @contexts 'ryba/hadoop/yarn_rm'
           if ctxs.length
             rm_shortname = if ctxs.length > 1 then ".#{ctxs[0].config.shortname}" else ''
             rm_address = ctxs[0].config.ryba.yarn.site["yarn.resourcemanager.address#{rm_shortname}"]
@@ -207,7 +207,7 @@ This mechanism can be used to configure a specific gateway without having to dec
           else throw Error 'Cannot autoconfigure KNOX jobtracker service, no resourcemanager declared'
         # Hive
         if topology.services['hive'] is true
-          ctxs = @contexts 'ryba/hive/server2', require('../hive/server2/configure').handler
+          ctxs = @contexts 'ryba/hive/server2'
           if ctxs.length
             host = ctxs[0].config.host
             port = ctxs[0].config.ryba.hive.server2.site['hive.server2.thrift.http.port']
@@ -223,13 +223,13 @@ This mechanism can be used to configure a specific gateway without having to dec
           else throw Error 'Cannot autoconfigure KNOX webhcat service, no webhcat declared'
         # Oozie
         if topology.services['oozie'] is true
-          ctxs = @contexts 'ryba/oozie/server', [ require('../commons/db_admin').handler, require('../oozie/server/configure').handler]
+          ctxs = @contexts 'ryba/oozie/server'
           if ctxs.length
             topology.services['oozie'] = ctxs[0].config.ryba.oozie.site['oozie.base.url']
           else throw Error 'Cannot autoconfigure KNOX oozie service, no oozie declared'
         # WebHBase
         if topology.services['webhbase'] is true
-          ctxs = @contexts 'ryba/hbase/rest', require('../hbase/rest/configure').handler
+          ctxs = @contexts 'ryba/hbase/rest'
           if ctxs.length
             protocol = if ctxs[0].config.ryba.hbase.rest.site['hbase.rest.ssl.enabled'] is 'true' then 'https' else 'http'
             host = ctxs[0].config.host
