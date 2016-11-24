@@ -10,10 +10,12 @@ It is responsible for serving and managing regions. In a distributed cluster, a 
         hadoop_core: 'ryba/hadoop/core'
         hdfs_client: 'ryba/hadoop/hdfs_client'
         hbase_master: 'ryba/hbase/master'
+        ranger_admin: 'ryba/ranger/admin'
         ganglia: 'ryba/ganglia/collector'
       configure: [
         'ryba/hbase/lib/configure_metrics'
         'ryba/hbase/regionserver/configure'
+        'ryba/ranger/plugins/hbase/configure'
       ]
       commands:
         'check':

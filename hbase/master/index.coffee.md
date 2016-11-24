@@ -17,11 +17,13 @@ J Mohamed Zahoor goes into some more detail on the Master Architecture in this b
         hdfs_dn: 'ryba/hadoop/hdfs_dn'
         yarn_rm: 'ryba/hadoop/yarn_rm'
         yarn_nm: 'ryba/hadoop/yarn_nm'
+        ranger_admin: 'ryba/ranger/admin'
         hbase_master: 'ryba/hbase/master'
         ganglia: 'ryba/ganglia/collector'
       configure: [
         'ryba/hbase/lib/configure_metrics'
         'ryba/hbase/master/configure'
+        'ryba/ranger/plugins/hbase/configure'
       ]
       commands:
         'check':

@@ -24,7 +24,7 @@ Wait for the HBase master to be started.
       @call 
         if: -> ranger_ctx?
         handler: ->
-          {install} = @config.ryba.ranger.hbase_plugin
+          {install} = ranger_ctx.config.ryba.ranger.hbase_plugin
           policy_name = "Ranger-Ryba-HBase-Policy-#{@config.host}"
           hbase_policy =
             "name": "#{policy_name}"

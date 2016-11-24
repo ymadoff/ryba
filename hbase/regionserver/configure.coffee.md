@@ -105,3 +105,8 @@ HA properties must be available to masters and regionservers.
       hbase.rs.site['hbase.rpc.engine'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.rpc.engine']
       hbase.rs.site['hbase.superuser'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.superuser']
       hbase.rs.site['hbase.bulkload.staging.dir'] ?= m_ctxs[0].config.ryba.hbase.master.site['hbase.bulkload.staging.dir']
+
+## Ranger Plugin Configuration
+
+      @config.ryba.hbase_plugin_is_master = false
+      console.log 'I am a regionserer configure'

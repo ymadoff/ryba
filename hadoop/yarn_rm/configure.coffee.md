@@ -248,3 +248,7 @@ rmr /rmstore/ZKRMStateRoot
         'yarn.timeline-service.http-authentication.kerberos.principal'
       ]
         ryba.yarn.site[property] ?= if ats_ctx then ats_ctx.config.ryba.yarn.site[property] else null
+
+## Ranger Plugin Configuration
+
+      @config.ryba.yarn_plugin_is_master = true

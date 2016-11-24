@@ -129,3 +129,11 @@ Resources:
 
       ryba.yarn.site['yarn.nodemanager.aux-services'] ?= 'mapreduce_shuffle'
       ryba.yarn.site['yarn.nodemanager.aux-services.mapreduce_shuffle.class'] ?= 'org.apache.hadoop.mapred.ShuffleHandler'
+
+## Ranger Plugin Configuration
+
+      @config.ryba.yarn_plugin_is_master = false
+
+## Dependencies
+
+    {merge} = require 'mecano/lib/misc'

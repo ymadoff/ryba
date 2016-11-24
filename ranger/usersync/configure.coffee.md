@@ -5,7 +5,7 @@
       {ryba} = @config
       {ssl, ssl_client} = ryba ?= {}
       ranger = @config.ryba.ranger ?= {}
-      [ranger_admin_ctx] = (@contexts 'ryba/ranger/admin',[ require('../../commons/db_admin').handler, require('../admin/configure').handler ])
+      [ranger_admin_ctx] = @contexts 'ryba/ranger/admin'
       return throw new Error 'Needs Ranger Admin service' unless ranger_admin_ctx
       # Group
       ranger.group = name: ranger.group if typeof ranger.group is 'string'

@@ -1,4 +1,6 @@
 
+# Ranger HiveServer2 Plugin Install
+
     module.exports = header: 'Ranger Hive Plugin install', handler: ->
       {ranger, hive, realm, hadoop_group, core_site} = @config.ryba 
       {password} = @contexts('ryba/ranger/admin')[0].config.ryba.ranger.admin
@@ -130,7 +132,7 @@ we execute this task using the rest api.
         @render
           header: 'Scripts rendering'
           if: -> version?
-          source: "#{__dirname}/../resources/plugin-install.properties.j2"
+          source: "#{__dirname}/../../resources/plugin-install.properties.j2"
           target: "/usr/hdp/#{version}/ranger-hive-plugin/install.properties"
           local: true
           eof: true
@@ -154,7 +156,7 @@ we execute this task using the rest api.
           ]
           backup: true
         @call
-          header: 'Enable HDFS Plugin'
+          header: 'Enable Hive Plugin'
           handler: (options, callback) ->
             files = ['ranger-hive-audit.xml','ranger-hive-security.xml','ranger-policymgr-ssl.xml']
             sources_props = {}
@@ -230,7 +232,7 @@ we execute this task using the rest api.
 
     quote = require 'regexp-quote'
     path = require 'path'
-    mkcmd = require '../../lib/mkcmd'
-    properties = require '../../lib/properties'
+    mkcmd = require '../../../lib/mkcmd'
+    properties = require '../../../lib/properties'
 
 [hive-plugin]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/installing_ranger_plugins.html#installing_ranger_hive_plugin)

@@ -18,11 +18,11 @@ hive -hiveconf hive.root.logger=DEBUG,console
 ## Wait
 
       @call once: true, 'ryba/hive/hcatalog/wait'
-      @call if: ranger_admin, once: true, 'ryba/ranger/admin/wait'
+      @call if: ranger_admin?, once: true, 'ryba/ranger/admin/wait'
 
 ## Add Ranger Policy 
 
-      @call header: 'Add Hive Policy', if: ranger_admin, handler: ->
+      @call header: 'Add Hive Policy', if: ranger_admin?, handler: ->
         {install} = ranger_admin.config.ryba.ranger.hive_plugin
         dbs = []
         for h_ctx in hive_hcatalog

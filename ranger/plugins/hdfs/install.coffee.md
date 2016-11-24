@@ -8,7 +8,6 @@
 
 ## HDFS Dependencies
 
-      @call 'ryba/hadoop/hdfs_client/install'
       @call 'ryba/ranger/admin/wait'
       @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
@@ -42,30 +41,6 @@
         mode: 0o0750
         if: ranger.hdfs_plugin.install['XAAUDIT.SOLR.IS_ENABLED'] is 'true'
 
-## HDFS Service Repository creation
-Matchs step 1 in [hdfs plugin configuration][hdfs-plugin]. Instead of using the web ui
-we execute this task using the rest api.
-
-      @call 
-        if: @contexts('ryba/hadoop/hdfs_nn')[0].config.host is @config.host 
-        header: 'Ranger HDFS Repository'
-        handler:  ->
-          @execute
-            unless_exec: """
-              curl --fail -H  \"Content-Type: application/json\"   -k -X GET  \ 
-              -u admin:#{password} \"#{ranger.hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{ranger.hdfs_plugin.install['REPOSITORY_NAME']}\"
-            """
-            cmd: """
-              curl --fail -H "Content-Type: application/json" -k -X POST -d '#{JSON.stringify ranger.hdfs_plugin.service_repo}' \
-              -u admin:#{password} \"#{ranger.hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/\"
-            """
-          @krb5_addprinc krb5,
-            if: ranger.hdfs_plugin.principal
-            header: 'Ranger HDFS Principal'
-            principal: ranger.hdfs_plugin.principal
-            randkey: true
-            password: ranger.hdfs_plugin.password
-
 ## Plugin Scripts 
 From HDP 2.5 (Ranger 0.6) hdfs plugin need a Client JAAS configuration file to
 talk with kerberized component.
@@ -78,7 +53,7 @@ Not documented be taken from [github-source][hdfs-plugin-source]
         @render
           header: 'Scripts rendering'
           if: -> version?
-          source: "#{__dirname}/../resources/plugin-install.properties.j2"
+          source: "#{__dirname}/../../resources/plugin-install.properties.j2"
           target: "/usr/hdp/#{version}/ranger-hdfs-plugin/install.properties"
           local: true
           eof: true
@@ -176,7 +151,7 @@ Not documented be taken from [github-source][hdfs-plugin-source]
 
     quote = require 'regexp-quote'
     path = require 'path'
-    properties = require '../../lib/properties'
+    properties = require '../../../lib/properties'
 
 
 [hdfs-plugin]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/installing_ranger_plugins.html#installing_ranger_hdfs_plugin)

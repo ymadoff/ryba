@@ -129,6 +129,7 @@ Note: Compatible with every version of docker available at this time.
       @call
         if: ranger.admin.solr_type is 'cloud_docker'
         header:'Create Ranger Collection (cloud_docker)'
+        retry: 2 #needed whensolr node are slow to start
         handler: ->
           @wait_connect
             host: cluster_config['master']
@@ -150,7 +151,7 @@ Note: Compatible with every version of docker available at this time.
             header: 'Create Users and Permissions'
             if: cluster_config.security.authentication['class'] is 'solr.BasicAuthPlugin'
             handler: ->
-              @call 
+              @call
                 header: 'Create Users'
                 handler: ->
                   url = "#{ranger.admin.install['audit_solr_urls'].split(',')[0]}/solr/admin/authentication"
@@ -177,5 +178,20 @@ Note: Compatible with every version of docker available at this time.
                         #{url} -H 'Content-type:application/json' \
                         -d '#{JSON.stringify('set-user-role': new_role )}'
                       """
+
+## Zookeeper Znode ACL
+
+      @execute
+        header: 'Zookeeper SolrCloud Znode ACL'
+        unless_exec: mkcmd.solr @, """
+          zookeeper-client -server #{zk_connect} \
+          getAcl /#{zk_node} | grep \"'sasl,'#{solr.user.name}\"
+        """
+        cmd: mkcmd.solr @, """
+          zookeeper-client -server #{zk_connect} \
+          setAcl /#{zk_node} sasl:#{solr.user.name}:cdrwa
+        """
+
+    mkcmd = require '../../lib/mkcmd'
 
 [ranger-solr-script]:(https://community.hortonworks.com/questions/29291/ranger-solr-script-create-ranger-audits-collection.html)

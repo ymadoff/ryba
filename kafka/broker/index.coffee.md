@@ -14,6 +14,7 @@ log. It is fast, scalable, durable and distributed by design.
         ganglia: 'ryba/ganglia/collector'
       configure: [
         'ryba/kafka/broker/configure'
+        'ryba/ranger/plugins/kafka/configure'
       ]
       commands: 
         'install': [

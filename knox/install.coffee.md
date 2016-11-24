@@ -206,6 +206,12 @@ client to connect to openldap.
           target: "#{tmp_location}/key"
           shy: true
 
+## Ranger HBase Plugin Install
+
+      @call
+        if: -> @contexts('ryba/ranger/admin').length > 0
+        handler: 'ryba/ranger/plugins/knox/install'
+
 ## Dependencies
 
     builder = require 'xmlbuilder'

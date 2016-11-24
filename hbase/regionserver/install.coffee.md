@@ -194,6 +194,13 @@ Enable stats collection in Ganglia and Graphite
         source: "#{__dirname}/../resources/log4j.properties"
         local_source: true
 
+## Ranger HBase Plugin Install
+
+      @call
+        if: -> @contexts('ryba/ranger/admin').length > 0
+        handler: ->
+          @call -> @config.ryba.hbase_plugin_is_master = false
+          @call 'ryba/ranger/plugins/hbase/install'
 
 # Module dependencies
 

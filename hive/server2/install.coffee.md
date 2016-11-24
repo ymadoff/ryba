@@ -199,6 +199,13 @@ Create the directories to store the logs and pid information. The properties
         user: hive.user.name
       , hive.user.limits
 
+## Ranger Hive Plugin Install
+
+      @call
+        if: -> @contexts('ryba/ranger/admin').length > 0
+        handler: ->
+          @call 'ryba/ranger/plugins/hiveserver2/install'
+
 ## Dependencies
 
     path = require 'path'

@@ -352,6 +352,12 @@ ${HADOOP_CONF_DIR}/core-site.xml
         code_skipped: 3
         if: -> @status -1
 
+## Ranger HDFS Plugin Install
+
+      @call
+        if: -> @contexts('ryba/ranger/admin').length > 0
+        handler: 'ryba/ranger/plugins/hdfs/install'
+
 ## Dependencies
 
     mkcmd = require '../../lib/mkcmd'

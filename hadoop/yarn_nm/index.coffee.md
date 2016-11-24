@@ -14,8 +14,11 @@ applications.
         iptables: implicit: true, module: 'masson/core/iptables'
         java: implicit: true, module: 'masson/commons/java'
         hdfs_client: implicit: true, module: 'ryba/hadoop/hdfs_client'
-      configure:
+        ranger_admin: module: 'ryba/ranger/admin'
+      configure: [
         'ryba/hadoop/yarn_nm/configure'
+        'ryba/ranger/plugins/yarn/configure'
+        ]
       commands:
         # 'backup': 'ryba/hadoop/yarn_nm/backup'
         # 'check': 'ryba/hadoop/yarn_nm/check'

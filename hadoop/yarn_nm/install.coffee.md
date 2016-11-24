@@ -338,6 +338,14 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         unless_exec: "[[ hdfs dfs -d #{remote_app_log_dir} ]]"
         code_skipped: 2
 
+## Ranger YARN Plugin Install
+
+      @call
+        if: -> @contexts('ryba/ranger/admin').length > 0
+        handler: ->
+          @call -> @config.ryba.yarn_plugin_is_master = false
+          @call 'ryba/ranger/plugins/yarn/install'
+
 ## Dependencies
 
     mkcmd = require '../../lib/mkcmd'

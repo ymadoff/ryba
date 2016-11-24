@@ -12,10 +12,11 @@ This module check the Hive Server2 servers using the `beeline` command.
 ## Wait
 
       @call once: true, 'ryba/hive/server2/wait'
+      @call if: ranger_admin?, once: true, 'ryba/ranger/admin/wait'
 
 ## Add Ranger Policy 
 
-      @call header: 'Add Hive Policy', if: ranger_admin, handler: ->
+      @call header: 'Add Hive Policy', if: ranger_admin?, handler: ->
         {install} = ranger_admin.config.ryba.ranger.hive_plugin
         dbs = []
         for hs2_ctx in hive_server2
@@ -113,8 +114,7 @@ directive once you enter the beeline shell.
             """
             unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f #{directory}/result"
             trap: true
-          
-      console.log 'hive_server2.length', hive_server2.length  
+
       @call
         header: 'Check Server2 (with ZK)'
         label_true: 'CHECKED'

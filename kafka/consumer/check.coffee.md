@@ -3,12 +3,85 @@
 
     module.exports = header: 'Kafka Consumer Check', label_true: 'CHECKED', handler: ->
       {kafka, ssl, user} = @config.ryba
+      [ranger_admin] = @contexts 'ryba/ranger/admin'
+      protocols = kafka.broker.protocols
 
 ## Wait
 
       @call once: true, 'masson/core/krb5_client/wait'
       @call once: true, 'ryba/zookeeper/server/wait'
       @call once: true, 'ryba/kafka/broker/wait'
+      @call if: ranger_admin?, once: true, 'ryba/ranger/admin/wait'
+
+## Add Ranger Policy
+
+      @call header: 'Add Kafka Policy', if: ranger_admin?, handler: ->
+        {install} = ranger_admin.config.ryba.ranger.kafka_plugin
+        policy_name = "test-ryba-consumer-#{@config.host}"
+        topics = protocols.map (prot) =>
+          "check-#{@config.host}-consumer-#{prot.toLowerCase().split('_').join('-')}-topic"
+        users = ["#{user.name}"]
+        users.push 'ANONYMOUS' if ('PLAINTEXT' in protocols) or ('SSL' in protocols)
+        kafka_policy =
+          service: "#{install['REPOSITORY_NAME']}"
+          name: policy_name
+          description: "Policy for ryba kafka consumer test"
+          isAuditEnabled: true
+          resources:
+            topic:
+              values: topics
+              isExcludes: false
+              isRecursive: false
+          'policyItems': [
+              "accesses": [
+                'type': 'publish'
+                'isAllowed': true
+              ,
+                'type': 'consume'
+                'isAllowed': true
+              ,
+                'type': 'configure'
+                'isAllowed': true
+              ,
+                'type': 'describe'
+                'isAllowed': true
+              ,
+                'type': 'create'
+                'isAllowed': true
+              ,
+                'type': 'delete'
+                'isAllowed': true
+              ,
+                'type': 'kafka_admin'
+                'isAllowed': true
+              ],
+              'users': users
+              'groups': []
+              'conditions': []
+              'delegateAdmin': true
+            ]
+        @wait_execute
+          cmd: """
+            curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
+            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
+          """
+          code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
+        @execute
+          cmd: """
+            curl --fail -H "Content-Type: application/json" -k -X POST \
+            -d '#{JSON.stringify kafka_policy}' \
+            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
+          """
+          unless_exec: """
+            curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
+            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{policy_name}\"
+          """
+        @wait
+          time: 10000
+          if: -> @status -1
 
 ## Check Messages PLAINTEXT
 
@@ -18,6 +91,7 @@ Check Message by writing to a test topic on the PLAINTEXT channel.
         header: 'Check PLAINTEXT'
         label_true: 'CHECKED'
         if: -> @has_service 'ryba/kafka/producer'
+        retry: 3
         handler: ->
           ks_ctxs = @contexts 'ryba/kafka/broker'
           return if ks_ctxs[0].config.ryba.kafka.broker.protocols.indexOf('PLAINTEXT') == -1
@@ -78,6 +152,7 @@ Trustore location and password given to line command because if executed before 
       @call
         header: 'Check SSL'
         label_true: 'CHECKED'
+        retry: 3
         if: -> @has_service 'ryba/kafka/producer'
         handler: ->
           ks_ctxs = @contexts 'ryba/kafka/broker'
@@ -130,6 +205,7 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
       @call
         header: 'Check SASL_PLAINTEXT'
         label_true: 'CHECKED'
+        retry: 3
         if: -> @has_service 'ryba/kafka/producer'
         # skip: true
         handler: ->
@@ -196,6 +272,7 @@ Trustore location and password given to line command because if executed before 
       @call
         header: 'Check SASL_SSL'
         label_true: 'CHECKED'
+        retry: 3
         if: -> @has_service 'ryba/kafka/producer'
         handler: ->
           ks_ctxs = @contexts 'ryba/kafka/broker'

@@ -1,3 +1,4 @@
+
 # Ranger HBase Plugin Install
 
     module.exports = header: 'Ranger HBase Plugin install', handler: ->
@@ -5,9 +6,10 @@
       {password} = @contexts('ryba/ranger/admin')[0].config.ryba.ranger.admin
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       hdfs_plugin = @contexts('ryba/hadoop/hdfs_nn')[0].config.ryba.ranger.hdfs_plugin
-      version=null
+      version= null
       conf_dir = null
-      @call -> conf_dir = if @config.ryba.hbase_plugin_is_master? then hbase.master.conf_dir else hbase.rs.conf_dir
+      
+      @call -> conf_dir = if @config.ryba.hbase_plugin_is_master then hbase.master.conf_dir else hbase.rs.conf_dir
 
 ## Dependencies
 
@@ -145,7 +147,7 @@ Must add certificate to JAVA Cacerts file manually.
         @render
           header: 'Scripts rendering'
           if: -> version?
-          source: "#{__dirname}/../resources/plugin-install.properties.j2"
+          source: "#{__dirname}/../../resources/plugin-install.properties.j2"
           target: "/usr/hdp/#{version}/ranger-hbase-plugin/install.properties"
           local: true
           eof: true
@@ -236,8 +238,8 @@ Must add certificate to JAVA Cacerts file manually.
 
     quote = require 'regexp-quote'
     path = require 'path'
-    mkcmd = require '../../lib/mkcmd'
-    properties = require '../../lib/properties'
+    mkcmd = require '../../../lib/mkcmd'
+    properties = require '../../../lib/properties'
 
 [hbase-plugin]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/installing_ranger_plugins.html#installing_ranger_hbase_plugin)
 [perms-fix]https://community.hortonworks.com/questions/23717/ranger-solr-on-hdp-234-unable-to-refresh-policies.html

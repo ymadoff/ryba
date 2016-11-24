@@ -10,17 +10,6 @@
       @registry.register 'hdp_select', 'ryba/lib/hdp_select'   
       @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
-## Dependencies
-
-      @call once: true, 'masson/core/iptables'
-      @call once: true, 'masson/core/krb5_client'
-      @call once: true, 'masson/commons/mysql/client'
-      @call once: true, 'masson/commons/java'
-      @call once: true, 'ryba/hadoop/hdfs_client'
-      @call once: true, 'ryba/hbase/client'
-      @call once: true, 'ryba/hive/client'
-      @call once: true, 'ryba/kafka/consumer'
-
 ## Users & Groups
 
       @group ranger.group

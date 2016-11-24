@@ -249,6 +249,15 @@ principal.
         user: hbase.user.name
       , hbase.user.limits
 
+## Ranger HBase Plugin Install
+
+      @call
+        if: -> @contexts('ryba/ranger/admin').length > 0
+        handler: ->
+          @call -> @config.ryba.hbase_plugin_is_master = true
+          @call 'ryba/ranger/plugins/hbase/install'
+          @call -> @config.ryba.hbase_plugin_is_master = false
+
 # Dependencies
 
     path = require 'path'

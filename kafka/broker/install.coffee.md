@@ -272,6 +272,12 @@ will be placed in the directory which currently has the fewest partitions.
           parent: true
         ) for dir in kafka.broker.config['log.dirs'].split ','
 
+## Ranger Kafka Plugin Install
+
+      @call
+        if: -> @contexts('ryba/ranger/admin').length > 0
+        handler: 'ryba/ranger/plugins/kafka/install'
+
 ## Dependencies
 
     glob = require 'glob'

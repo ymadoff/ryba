@@ -5,7 +5,7 @@
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
       version = null
       conf_dir = null
-      @call -> conf_dir = if @config.ryba.yarn_plugin_is_master? then yarn.rm.conf_dir else yarn.nm.conf_dir
+      @call -> conf_dir = if @config.ryba.yarn_plugin_is_master then yarn.rm.conf_dir else yarn.nm.conf_dir
 
 # HDFS Dependencies
 
@@ -82,7 +82,7 @@ we execute this task using the rest api.
           @render
             header: 'Scripts rendering'
             if: -> version?
-            source: "#{__dirname}/../resources/plugin-install.properties.j2"
+            source: "#{__dirname}/../../resources/plugin-install.properties.j2"
             target: "/usr/hdp/#{version}/ranger-yarn-plugin/install.properties"
             local: true
             eof: true
@@ -131,6 +131,6 @@ we execute this task using the rest api.
 
     quote = require 'regexp-quote'
     path = require 'path'
-    mkcmd = require '../../lib/mkcmd'
+    mkcmd = require '../../../lib/mkcmd'
 
 [yarn-plugin]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/installing_ranger_plugins.html#installing_ranger_yarn_plugin)

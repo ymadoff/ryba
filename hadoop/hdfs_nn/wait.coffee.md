@@ -24,7 +24,7 @@ majority of DataNodes also need to be running.
       # TODO: there are much better solutions, for exemple
       # if 'ryba/hadoop/hdfs_client', then `hdfs dfsadmin`
       # else use curl
-      {hdfs, hadoop_conf_dir} = @config.ryba      
+      {hdfs, hadoop_conf_dir} = @config.ryba
       if @has_service 'ryba/hadoop/hdfs_nn' then conf_dir = "#{hdfs.nn.conf_dir}"
       else if @has_service 'ryba/hadoop/hdfs_dn' then conf_dir = "#{hdfs.dn.conf_dir}"
       else if @has_service 'ryba/hadoop/hdfs_snn' then conf_dir = "#{hdfs.snn.conf_dir}"

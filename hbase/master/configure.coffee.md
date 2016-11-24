@@ -184,6 +184,9 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
 
       hbase.master.site['hbase.replication'] ?= 'true' if hbase.replicated_clusters
 
+## Ranger Plugin Configuration
+
+      @config.ryba.hbase_plugin_is_master = true
 
 ## Resources
 

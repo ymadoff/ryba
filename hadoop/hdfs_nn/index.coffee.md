@@ -12,13 +12,16 @@ does not store the data of these files itself. It’s important that this metada
         iptables: implicit: true, module: 'masson/core/iptables'
         java: implicit: true, module: 'masson/commons/java'
         hadoop_core: implicit: true, module: 'ryba/hadoop/core'
+        ranger_admin: 'ryba/ranger/admin'
         zoo_server: module: 'ryba/zookeeper/server'
         # zkfc: 'ryba/hadoop/zkfc'
         # hdfs_nn: 'ryba/hadoop/hdfs_nn'
         hdfs_jn: 'ryba/hadoop/hdfs_jn'
         hdfs_dn: 'ryba/hadoop/hdfs_dn'
-      configure:
+      configure: [
         'ryba/hadoop/hdfs_nn/configure'
+        'ryba/ranger/plugins/hdfs/configure'
+        ]
       commands:
         'backup':
           'ryba/hadoop/hdfs_nn/backup'
@@ -32,6 +35,7 @@ does not store the data of these files itself. It’s important that this metada
           'ryba/hadoop/zkfc/start'
           'ryba/hadoop/hdfs_nn/layout'
           'ryba/hadoop/hdfs_nn/check'
+          'ryba/ranger/plugins/hdfs/setup'
         ]
         'start':
           'ryba/hadoop/hdfs_nn/start'

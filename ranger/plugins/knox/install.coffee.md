@@ -78,7 +78,7 @@ we execute this task using the rest api.
         @render
           header: 'Scripts rendering'
           if: -> version?
-          source: "#{__dirname}/../resources/plugin-install.properties.j2"
+          source: "#{__dirname}/../../resources/plugin-install.properties.j2"
           target: "/usr/hdp/#{version}/ranger-knox-plugin/install.properties"
           local: true
           eof: true
@@ -105,11 +105,17 @@ we execute this task using the rest api.
             fi;
           """
 
+## Ranger Knox Plugin Install
+
+      @call
+        if: -> @contexts('ryba/ranger/admin').length > 0
+        handler: ->
+          @call 'ryba/ranger/plugins/knox/install'
 
 ## Dependencies
 
     quote = require 'regexp-quote'
     path = require 'path'
-    mkcmd = require '../../lib/mkcmd'
+    mkcmd = require '../../../lib/mkcmd'
 
 [kafka-plugin]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/installing_ranger_plugins.html#installing_ranger_yarn_plugin)

@@ -11,8 +11,11 @@
         zoo_server: 'ryba/zookeeper/server'
         mapred_jhs: 'ryba/hadoop/mapred_jhs'
         yarn_ts: 'ryba/hadoop/yarn_ts'
-      configure:
+        ranger_admin: 'ryba/ranger/admin'
+      configure: [
         'ryba/hadoop/yarn_rm/configure'
+        'ryba/ranger/plugins/yarn/configure'
+        ]
       commands:
         # 'backup': 'ryba/hadoop/yarn_rm/backup'
         'check':

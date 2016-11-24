@@ -3,7 +3,7 @@
       {ranger, kafka, realm, hadoop_group, core_site} = @config.ryba 
       {password} = @contexts('ryba/ranger/admin')[0].config.ryba.ranger.admin
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
-      version=null
+      version= null
       #https://mail-archives.apache.org/mod_mbox/incubator-ranger-user/201605.mbox/%3C363AE5BD-D796-425B-89C9-D481F6E74BAF@apache.org%3E
 
 # Dependencies
@@ -78,7 +78,7 @@ we execute this task using the rest api.
         @render
           header: 'Scripts rendering'
           if: -> version?
-          source: "#{__dirname}/../resources/plugin-install.properties.j2"
+          source: "#{__dirname}/../../resources/plugin-install.properties.j2"
           target: "/usr/hdp/#{version}/ranger-kafka-plugin/install.properties"
           local: true
           eof: true
@@ -149,7 +149,7 @@ we execute this task using the rest api.
 
     quote = require 'regexp-quote'
     path = require 'path'
-    mkcmd = require '../../lib/mkcmd'
+    mkcmd = require '../../../lib/mkcmd'
 
 
 [hdfs-plugin]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/installing_ranger_plugins.html#installing_ranger_hdfs_plugin)
