@@ -11,9 +11,10 @@ be installed in remote machines only.
       use: 
         java: implicit: true, module: 'masson/commons/java'
         krb5_client: implicit: true, module: 'masson/core/krb5_client'
-        hadoop_core: implicit: true, module: 'ryba/oozie/server'
+        hadoop_core: implicit: true, module: 'ryba/hadoop/core'
+        oozie_server: module: 'ryba/oozie/server'
         mapred_client: implicit: true, module: 'ryba/hadoop/mapred_client'
-        oozie_server: 'ryba/hadoop/yarn_client'
+        yarn_client: 'ryba/hadoop/yarn_client'
       configure: 'ryba/oozie/client/configure'
       commands:
         'install': [
