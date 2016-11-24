@@ -109,4 +109,3 @@ HA properties must be available to masters and regionservers.
 ## Ranger Plugin Configuration
 
       @config.ryba.hbase_plugin_is_master = false
-      console.log 'I am a regionserer configure'
