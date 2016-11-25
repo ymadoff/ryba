@@ -53,23 +53,23 @@ Wait for the HBase master to be started.
             'tableType': 'Inclusion',
             'columnType': 'Inclusion',
             'policyItems': [
-            		"accesses": [
-            			'type': 'read'
-            			'isAllowed': true
+                "accesses": [
+                  'type': 'read'
+                  'isAllowed': true
                 ,
-            			'type': 'write'
-            			'isAllowed': true
-            		,
-            			'type': 'create'
-            			'isAllowed': true
-            		,
-            			'type': 'admin'
-            			'isAllowed': true
-            		],
-            		'users': ['hbase', "#{user.name}"]
-            		'groups': []
-            		'conditions': []
-            		'delegateAdmin': true
+                  'type': 'write'
+                  'isAllowed': true
+                ,
+                  'type': 'create'
+                  'isAllowed': true
+                ,
+                  'type': 'admin'
+                  'isAllowed': true
+                ],
+                'users': ['hbase', "#{user.name}"]
+                'groups': []
+                'conditions': []
+                'delegateAdmin': true
               ]
           @call once: true, 'ryba/ranger/admin/wait'
           @wait_execute
