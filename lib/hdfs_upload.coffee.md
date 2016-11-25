@@ -45,7 +45,7 @@
       @execute
         cmd: mkcmd.hdfs @, """
         source=#{options.source}
-        if [ ! -f "$source" ]; exit 1; fi
+        if [ ! -f "$source" ] ; then exit 1; fi
         mode=#{options.mode}
         owner=#{options.owner}
         parent_mode=#{options.parent_mode}
