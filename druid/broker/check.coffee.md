@@ -64,6 +64,7 @@ service to be started.
             #{@config.host}:#{@config.ryba.druid.broker.runtime['druid.port']}/druid/v2/?pretty \
             2>/dev/null \
             | wc -l`
+          if [ $count -lt 50 ]; then sleep 10; fi
           if [ $count -lt 50 ]; then exit 1; fi
           echo "Got $count results"
           echo #{druid.krb5_admin.password} | kinit #{druid.krb5_admin.principal} && {
@@ -78,4 +79,3 @@ service to be started.
       # http://master1.ryba:8082/druid/v2/datasources
       # Coordinator
       # http://worker2.ryba:8081/#/
-      

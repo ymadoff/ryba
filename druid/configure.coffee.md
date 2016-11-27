@@ -57,7 +57,7 @@ Example:
       druid.common_runtime ?= {}
       # Extensions
       # Note, Mysql extension isnt natively supported due to licensing issues
-      # "druid-s3-extensions", 
+      # "druid-s3-extensions",
       druid.common_runtime['druid.extensions.loadList'] ?= '["druid-kafka-eight", "druid-histogram", "druid-datasketches", "druid-lookups-cached-global", "postgresql-metadata-storage", "druid-hdfs-storage"]' # "mysql-metadata-storage"
       # Logging
       druid.common_runtime['druid.startup.logging.logProperties'] ?= 'true'
