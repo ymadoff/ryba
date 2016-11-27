@@ -90,15 +90,15 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           gid: httpfs.group.name
           mode: 0o0755
         @mkdir
-          target: "#{httpfs.tmp_dir}"
-          uid: httpfs.user.name
-          gid: httpfs.group.name
-          mode: 0o0755
-        @mkdir
           target: "#{httpfs.log_dir}" #/#{hdfs.user.name}
           uid: httpfs.user.name
           gid: httpfs.group.name
           parent: true
+        @mkdir
+          target: "#{httpfs.tmp_dir}"
+          uid: httpfs.user.name
+          gid: httpfs.group.name
+          mode: 0o0755
         @call header: 'HttpFS Env', handler: ->
           httpfs.catalina_opts += " -D#{k}=#{v}" for k, v of httpfs.catalina.opts
           @render

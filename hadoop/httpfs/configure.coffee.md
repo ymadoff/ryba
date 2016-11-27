@@ -8,11 +8,12 @@ The default configuration is located inside the source code in the location
       {realm} = @config.ryba
       hdfs_ctxs = @contexts ['ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn']
       httpfs = @config.ryba.httpfs ?= {}
-      # Environment, layout
+      # layout
       httpfs.pid_dir ?= '/var/run/httpfs'
       httpfs.conf_dir ?= '/etc/hadoop-httpfs/conf'
       httpfs.log_dir ?= '/var/log/hadoop-httpfs'
       httpfs.tmp_dir ?= '/var/tmp/hadoop-httpfs'
+      # Environment
       httpfs.http_port ?= '14000'
       httpfs.http_admin_port ?= '14001'
       httpfs.catalina ?= {}
