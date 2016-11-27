@@ -10,14 +10,14 @@ They can be installed and configured on their own.
       # User
       mongodb.user = name: mongodb.user if typeof mongodb.user is 'string'
       mongodb.user ?= {}
-      mongodb.user.name ?= 'mongod'
+      mongodb.user.name ?= 'mongodb'
       mongodb.user.system ?= true
       mongodb.user.comment ?= 'MongoDB User'
-      mongodb.user.home ?= '/var/lib/mongo'
+      mongodb.user.home ?= '/var/lib/mongodb'
       # Group
       mongodb.group = name: mongodb.group if typeof mongodb.group is 'string'
       mongodb.group ?= {}
-      mongodb.group.name ?= 'mongod'
+      mongodb.group.name ?= 'mongodb'
       mongodb.group.system ?= true
       mongodb.user.limits ?= {}
       mongodb.user.limits.nofile ?= 64000
