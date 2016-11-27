@@ -1,4 +1,6 @@
 
+# MapReduce Configure
+
     module.exports = ->
       yarn_rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
       hdfs_dn_ctxs = @contexts 'ryba/hadoop/hdfs_dn'
@@ -54,7 +56,7 @@
 
 # Configuration for Resource Allocation
 
-There are three aspects to consider:   
+There are three aspects to consider:
 *   Physical RAM limit for each Map And Reduce task
 *   The JVM heap size limit for each task
 *   The amount of virtual memory each task will get
@@ -71,7 +73,7 @@ inferior value, commonly 80% of the maximum available memory. The heap size
 parameter is defined inside the "mapreduce.map.java.opts" and
 "mapreduce.reduce.java.opts" properties.
 
-Resources:   
+Resources:
 *   [Understanding YARN MapReduce Memory Allocation](http://beadooper.com/?p=165)
 
       memory_per_container = 512
