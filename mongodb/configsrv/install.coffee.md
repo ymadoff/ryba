@@ -15,7 +15,6 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @call once: true, 'masson/core/iptables'
       @call header: 'IPTables', handler: ->
         @iptables
           rules: [
@@ -25,7 +24,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Users & Groups
 
-      @call header: 'MongoDB # Users & Groups', handler: ->
+      @call header: 'Users & Groups', handler: ->
         @group mongodb.group
         @user mongodb.user
 
@@ -37,6 +36,7 @@ in order to rendered configuration file with custom properties.
       @call header: 'Packages', timeout: -1, handler: ->
         @service name: 'mongodb-org-server'
         @service name: 'mongodb-org-shell'
+        @service name: 'mongodb-org-tools'
         @render
           source: "#{__dirname}/../resources/mongod-config-server.js2"
           target: '/etc/init.d/mongodb-config-server'

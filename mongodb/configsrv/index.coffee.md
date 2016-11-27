@@ -9,16 +9,13 @@ All config servers must be available to deploy a sharded cluster or to make any
 changes to cluster metadata.
 
     module.exports =
-      use:
-        mongodb_routers: 'ryba/mongodb/router'
-        mongodb_clients: 'ryba/mongodb/client'
-        mongodb_configsrvs: 'ryba/mongodb/configsrv'
-        mongodb_shards: 'ryba/mongodb/shard'
+      use: 
+        core_local: implicit: true, module: 'masson/core/locale'
+        iptables: implicit: true, module: 'masson/core/iptables'
       configure:
         'ryba/mongodb/configsrv/configure'
       commands:
         'install': [
-          'masson/core/locale'
           'ryba/mongodb/configsrv/install'
           'ryba/mongodb/configsrv/start'
           'ryba/mongodb/configsrv/replication'

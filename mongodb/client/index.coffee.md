@@ -2,7 +2,8 @@
 # MongoDB Client
 
     module.exports =
-      use:
+      use: 
+        core_local: implicit: true, module: 'masson/core/locale'
       configure:
         'ryba/mongodb/client/configure'
       commands:

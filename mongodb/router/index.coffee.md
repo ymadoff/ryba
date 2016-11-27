@@ -7,15 +7,14 @@ services
 
     module.exports =
       use:
+        core_local: implicit: true, module: 'masson/core/locale'
+        iptables: implicit: true, module: 'masson/core/iptables'
         mongodb_configsrvs: 'ryba/mongodb/configsrv'
         mongodb_shards: 'ryba/mongodb/shard'
       configure:
         'ryba/mongodb/router/configure'
       commands:
         'install': [
-          'masson/core/yum'
-          'masson/core/iptables'
-          'masson/core/locale'
           'ryba/mongodb/router/install'
           'ryba/mongodb/router/start'
           'ryba/mongodb/router/sharding'

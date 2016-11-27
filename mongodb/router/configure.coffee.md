@@ -3,6 +3,7 @@
 
     module.exports = ->
       mongodb_configsrvs = @contexts 'ryba/mongodb/configsrv'
+      mongodb_shards = @contexts 'ryba/mongodb/shard'
       mongodb = @config.ryba.mongodb ?= {}
       # User
       mongodb.user = name: mongodb.user if typeof mongodb.user is 'string'
@@ -78,6 +79,14 @@ Each query router (mongos instance) is attributed to a config, and shard server 
       config.sharding.configDB ?= "#{my_cfgsrv_repl_set}/#{cfsrv_connect}"
       # size of a chunk in MB
       config.sharding.chunkSize ?= 64
+
+## Shard to ConfigServer Mapping
+Get The Shard Server Replica Set to which the client request will be re-routed based
+on the Config Server Replica Set Name `ryba.mongo_router_for_configsrv`
+
+      mongodb.router.my_shards_repl_sets = []
+      for shardReplSetName, layout of mongodb_shards[0].config.ryba.mongodb.shard.replica_sets
+        mongodb.router.my_shards_repl_sets.push shardReplSetName if layout.configSrvReplSetName is my_cfgsrv_repl_set
 
 ## Logs
 

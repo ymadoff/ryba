@@ -15,7 +15,7 @@
       {mongodb} = @config.ryba
       {router} = mongodb
       {replica_sets} = mongodb_configsrv.config.ryba.mongodb.configsrv
-      shards = replica_sets[router.my_cfgsrv_repl_set].shards
+      shards = mongodb.router.my_shards_repl_sets
       mongo_shell_exec =  "mongo admin "
       shard_port = mongodb_shards[0].config.ryba.mongodb.shard.config.net.port
       shard_root = mongodb_shards[0].config.ryba.mongodb.root
@@ -41,8 +41,9 @@ So the primary server must be retrieved before applying this command. Because th
 We must connect to each server og the replica set manually and check if it is the primary one.
 
 
-      @call header: 'Add Shard Clusters ', retry: 3, handler: =>
-        for shard in shards
+      @call header: 'Add Shard Clusters ', retry: 3, handler: ->
+        @each shards, (options, next) ->
+          shard = options.key
           primary_host = null
           shard_hosts = mongodb_shards.map (ctx) ->
             if ctx.config.ryba.mongodb.shard.config.replication.replSetName is shard
@@ -54,8 +55,9 @@ We must connect to each server og the replica set manually and check if it is th
                -u #{shard_root.name} --password '#{shard_root.password}' \
                --eval 'sh.status()' | grep '.*#{shard}.*#{shard}/#{shard_quorum}'
               """
-            handler: (_, callback)->
-              for host in shard_hosts
+            handler: ->
+              @each shard_hosts, (options) ->
+                host = options.key
                 @execute
                   code_skipped: 1
                   cmd: """
@@ -64,18 +66,15 @@ We must connect to each server og the replica set manually and check if it is th
                        --eval 'db.isMaster().primary' | grep '#{host}:#{shard_port}' \
                         | grep -v 'MongoDB shell version' | grep -v 'connecting to:'
                     """
-                , (err, executed) ->
-                  return callback err if err
-                  if executed
-                    primary_host = host
-                    return callback null, true
-                  return
-              @call
-                if: -> primary_host
-                handler:->
-                  @execute
-                    cmd: """
-                       #{mongo_shell_exec} --host #{@config.host} --port #{mongos_port} \
-                       -u #{shard_root.name} --password '#{shard_root.password}' \
-                       --eval 'sh.addShard(\"#{shard}/#{primary_host}:#{shard_port}\")'
-                      """
+                @call 
+                  if: -> @status -1
+                  handler: -> primary_host = host
+              @call ->
+                @execute
+                  if: -> primary_host
+                  cmd: """
+                     #{mongo_shell_exec} --host #{@config.host} --port #{mongos_port} \
+                     -u #{shard_root.name} --password '#{shard_root.password}' \
+                     --eval 'sh.addShard(\"#{shard}/#{primary_host}:#{shard_port}\")'
+                    """
+          @then next

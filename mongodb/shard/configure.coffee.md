@@ -2,11 +2,8 @@
 ## Configure
 
     module.exports = ->
-      mongodb_routers = @contexts 'ryba/mongodb/router'
-      mongodb_clients = @contexts 'ryba/mongodb/client'
+      mongodb_configsrvs = @contexts 'ryba/mongodb/configsrv'
       mongodb_shards = @contexts 'ryba/mongodb/shard'
-      throw new Error 'No mongo routers configured (mongos)' unless mongodb_routers.length > 0
-      throw new Error 'No mongo shell configured ' unless mongodb_clients.length > 0
       mongodb = @config.ryba.mongodb ?= {}
       # User
       mongodb.user = name: mongodb.user if typeof mongodb.user is 'string'
@@ -66,16 +63,17 @@ The replica set config servers must run the WiredTiger storage engine
 
 Deploys shard server as replica set. You can configure a custom layout by giving
 an object containing a list of replica set  name and the associated hosts.
-By default Ryba deploys only one replica set for all the config server.
+By default Ryba deploys only one replica set for all the shard servers.
 
       config.replication ?= {}
-      mongodb.shard.replica_sets ?=  shardsrvRepSet1: mongodb_shards.map( (ctx)-> ctx.config.host)
+      mongodb.shard.replica_sets ?=  shardsrvRepSet1: 
+        hosts: mongodb_shards.map( (ctx)-> ctx.config.host)
       replSets = Object.keys(mongodb.shard.replica_sets)
       # we  check if every config server is maped to one and only one replica set.
       throw Error 'No replica sets found for shard server' unless replSets.length > 0
       checkMapping = 0
-      for replSet, hosts of mongodb.shard.replica_sets
-        for host in hosts
+      for replSet, layout of mongodb.shard.replica_sets
+        for host in layout.hosts
           if host is @config.host
             config.replication.replSetName ?= "#{replSet}"
             checkMapping++
@@ -83,11 +81,31 @@ By default Ryba deploys only one replica set for all the config server.
       throw Error 'No replica set configured for shard server ', @config.host unless config.replication.replSetName
       # now we are sure that the host belong to one and only one replica set
       # getting back the replica master for our replica set
-      for host in mongodb.shard.replica_sets[config.replication.replSetName]
-        mongodb.shard.replica_master ?= host if @context(host).config.ryba.mongo_shard_replica_master?
+      for host in mongodb.shard.replica_sets[config.replication.replSetName].hosts
+        [ctx] = mongodb_shards.filter( (ctx) -> ctx.config.host is host)
+        mongodb.shard.replica_master ?= host if ctx.config.ryba.mongo_shard_replica_master?
       throw Error ' No primary sharding server  configured for replica set' unless mongodb.shard.replica_master?
       mongodb.shard.is_master ?= if mongodb.shard.replica_master is @config.host then true else false
       # now the host knows which server is the replica master and know if its him.
+
+## ShardServer to ConfigServer Mapping
+Ryba tries to discover automatically mapping betwwen Shard server Replica Set and
+Config server Replica Set.
+
+Each Shard Cluster must be attributed to only one Config server Replica set.
+So in the configuration, the administrator must attribute to a config server replica set
+the list of Shard Cluster for whose it stores the metadata.
+
+The Mapping can be defined by the replicat_set variable available in `ryba.mongodb.shard.replica_sets`.
+
+      # we  check if shard Cluster is not attributed to different config replica set
+      #for now shard server only know to which shard server replica set it is attributed.
+      # lest attribute it to a config server replicat set if not one is defnied.
+      replSetName = config.replication.replSetName
+      configSrvReplSetNames = Object.keys(mongodb.configsrv.replica_sets)
+      mongodb.shard.replica_sets[replSetName].configSrvReplSetName ?= configSrvReplSetNames[0]
+      if configSrvReplSetNames.indexOf(mongodb.shard.replica_sets[replSetName].configSrvReplSetName) is -1
+        throw Error "Unknow Config Server Replicat Set #{mongodb.shard.replica_sets[replSetName].configSrvReplSetName}"
 
 ## Process
 

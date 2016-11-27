@@ -10,14 +10,13 @@ changes to cluster metadata.
 
     module.exports =
       use:
-        mongodb_routers: 'ryba/mongodb/router'
-        mongodb_clients: 'ryba/mongodb/client'
-        mongodb_shards: 'ryba/mongodb/shard'
+        core_local: implicit: true, module: 'masson/core/locale'
+        iptables: implicit: true, module: 'masson/core/iptables'
+        mongodb_configsrv: 'ryba/mongodb/confisrv'
       configure:
         'ryba/mongodb/shard/configure'
       commands:
         'install': [
-          'masson/core/locale'
           'ryba/mongodb/shard/install'
           'ryba/mongodb/shard/start'
           'ryba/mongodb/shard/replication'

@@ -15,7 +15,6 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @call once: true, 'masson/core/iptables'
       @call header: 'MongoDB Shard Server # IPTables', handler: ->
         @iptables
           rules: [
