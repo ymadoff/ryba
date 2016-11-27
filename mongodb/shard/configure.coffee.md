@@ -1,7 +1,12 @@
 
 ## Configure
 
-    module.exports = handler: ->
+    module.exports = ->
+      mongodb_routers = @contexts 'ryba/mongodb/router'
+      mongodb_clients = @contexts 'ryba/mongodb/client'
+      mongodb_shards = @contexts 'ryba/mongodb/shard'
+      throw new Error 'No mongo routers configured (mongos)' unless mongodb_routers.length > 0
+      throw new Error 'No mongo shell configured ' unless mongodb_clients.length > 0
       mongodb = @config.ryba.mongodb ?= {}
       # User
       mongodb.user = name: mongodb.user if typeof mongodb.user is 'string'
@@ -19,12 +24,6 @@
       mongodb.user.limits.nofile ?= 64000
       mongodb.user.limits.nproc ?= true
       mongodb.user.gid = mongodb.group.name
-      router_hosts = @contexts('ryba/mongodb/router').map( (ctx)-> ctx.config.host)
-      client_hosts = @contexts('ryba/mongodb/client').map( (ctx)-> ctx.config.host)
-      configsrv_hosts = @contexts('ryba/mongodb/configsrv').map( (ctx)-> ctx.config.host)
-      shardsrv_hosts = @contexts('ryba/mongodb/shard').map( (ctx)-> ctx.config.host)
-      throw new Error 'No mongo routers configured (mongos)' unless router_hosts.length > 0
-      throw new Error 'No mongo shell configured ' unless client_hosts.length > 0
       # Config
       mongodb.shard ?= {}
       mongodb.shard.conf_dir ?= '/etc/mongodb-shard-server/conf'
@@ -70,7 +69,7 @@ an object containing a list of replica set  name and the associated hosts.
 By default Ryba deploys only one replica set for all the config server.
 
       config.replication ?= {}
-      mongodb.shard.replica_sets ?=  shardsrvRepSet1: shardsrv_hosts
+      mongodb.shard.replica_sets ?=  shardsrvRepSet1: mongodb_shards.map( (ctx)-> ctx.config.host)
       replSets = Object.keys(mongodb.shard.replica_sets)
       # we  check if every config server is maped to one and only one replica set.
       throw Error 'No replica sets found for shard server' unless replSets.length > 0

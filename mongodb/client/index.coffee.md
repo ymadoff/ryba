@@ -1,10 +1,12 @@
 
 # MongoDB Client
 
-    module.exports = ->
-      'configure':
+    module.exports =
+      use:
+      configure:
         'ryba/mongodb/client/configure'
-      'install':
-        'ryba/mongodb/client/install'
-      'check':
-        'ryba/mongodb/client/check'
+      commands:
+        'install':
+          'ryba/mongodb/client/install'
+        'check':
+          'ryba/mongodb/client/check'

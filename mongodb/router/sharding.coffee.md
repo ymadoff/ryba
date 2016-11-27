@@ -10,17 +10,16 @@
  available does not mean used, the db admin has to manually add a shard to a database
 
     module.exports =  header: 'MongoDB Router Servers Shard Cluster', handler: ->
+      [mongodb_configsrv] = @contexts 'ryba/mongodb/configsrv'
+      mongodb_shards = @contexts 'ryba/mongodb/shard'
       {mongodb} = @config.ryba
       {router} = mongodb
-      shardsrv_ctxs = @contexts 'ryba/mongodb/shard', require('../shard').configure
-      [cfg_ctx] = @contexts 'ryba/mongodb/configsrv', require('../configsrv').configure
-      {replica_sets} = cfg_ctx.config.ryba.mongodb.configsrv
+      {replica_sets} = mongodb_configsrv.config.ryba.mongodb.configsrv
       shards = replica_sets[router.my_cfgsrv_repl_set].shards
       mongo_shell_exec =  "mongo admin "
-      shard_port = shardsrv_ctxs[0].config.ryba.mongodb.shard.config.net.port
-      shard_root = shardsrv_ctxs[0].config.ryba.mongodb.root
+      shard_port = mongodb_shards[0].config.ryba.mongodb.shard.config.net.port
+      shard_root = mongodb_shards[0].config.ryba.mongodb.root
       mongos_port =  router.config.net.port
-
 
 # Wait Shard to be available
 
@@ -28,7 +27,7 @@ We simply wait to connect to the shards
 
       @call header: 'Wait Sharding Server', handler: ->
         @call ->
-          for ctx in shardsrv_ctxs
+          for ctx in mongodb_shards
             @connection.wait
               if:  ctx.config.ryba.mongodb.shard.config.replication.replSetName in shards
               host: ctx.config.host
@@ -45,7 +44,7 @@ We must connect to each server og the replica set manually and check if it is th
       @call header: 'Add Shard Clusters ', retry: 3, handler: =>
         for shard in shards
           primary_host = null
-          shard_hosts = shardsrv_ctxs.map (ctx) ->
+          shard_hosts = mongodb_shards.map (ctx) ->
             if ctx.config.ryba.mongodb.shard.config.replication.replSetName is shard
               ctx.config.host
           shard_quorum = shard_hosts.map( (host) -> "#{host}:#{shard_port}").join(',')

@@ -1,7 +1,8 @@
 
 ## Configure
 
-    module.exports = handler: ->
+    module.exports = ->
+      mongodb_configsrvs = @contexts 'ryba/mongodb/configsrv'
       mongodb = @config.ryba.mongodb ?= {}
       # User
       mongodb.user = name: mongodb.user if typeof mongodb.user is 'string'
@@ -19,8 +20,7 @@
       mongodb.user.limits.nofile ?= 64000
       mongodb.user.limits.nproc ?= true
       mongodb.user.gid = mongodb.group.name
-      cfsrv_ctxs = @contexts 'ryba/mongodb/configsrv', require('../configsrv/configure').handler
-      throw new Error 'No mongo config server configured ' unless cfsrv_ctxs.length > 0
+      throw new Error 'No mongo config server configured ' unless mongodb_configsrvs.length > 0
       # Config
       mongodb.router ?= {}
       mongodb.router.conf_dir ?= '/etc/mongodb-router-server/conf'
@@ -59,9 +59,9 @@ Each query router (mongos instance) is attributed to a config, and shard server 
       # they need to know which shard are linked with the config server to be able to route the client
       # to the good shards
       # Config Server Replica Set Discovery
-      replSetNames = cfsrv_ctxs[0].config.ryba.mongodb.configsrv.replica_sets
+      replSetNames = mongodb_configsrvs[0].config.ryba.mongodb.configsrv.replica_sets
       throw Error 'No replica sets found for config servers ' unless replSetNames
-      replSetNames = Object.keys(replSetNames)
+      replSetNames = Object.keys replSetNames
       my_cfgsrv_repl_set = @config.ryba.mongo_router_for_configsrv
       my_cfgsrv_repl_set = @config.ryba.mongo_router_for_configsrv = replSetNames[0]  if replSetNames.length == 1 and not my_cfgsrv_repl_set?
       throw Error "No config server replica set attributed for router #{@config.host}"  unless my_cfgsrv_repl_set?
@@ -70,7 +70,7 @@ Each query router (mongos instance) is attributed to a config, and shard server 
       mongodb.router.my_cfgsrv_repl_set = my_cfgsrv_repl_set
       # we now exactly which config server is attributed to the router
       # building the quorum of mongodb config server belonging to the replica set attributed to router
-      cfsrv_connect = cfsrv_ctxs.filter( (ctx) ->
+      cfsrv_connect = mongodb_configsrvs.filter( (ctx) ->
         ctx.config.ryba.mongodb.configsrv.config.replication.replSetName is my_cfgsrv_repl_set
       ).map( (ctx) ->   "#{ctx.config.host}:#{ctx.config.ryba.mongodb.configsrv.config.net.port}" ).join(',')
       config.sharding ?= {}

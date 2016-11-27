@@ -2,5 +2,5 @@
 
 ## Configure
 
-    module.exports = handler: ->
+    module.exports = ->
       mongodb = @config.ryba.mongodb ?= {}

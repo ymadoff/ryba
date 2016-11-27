@@ -1,7 +1,11 @@
 
 ## Configure
 
-    module.exports = handler: ->
+    module.exports = ->
+      mongodb_routers = @contexts 'ryba/mongodb/router'
+      mongodb_clients = @contexts 'ryba/mongodb/client'
+      mongodb_configsrvs = @contexts 'ryba/mongodb/configsrv'
+      mongodb_shards = @contexts 'ryba/mongodb/shard'
       mongodb = @config.ryba.mongodb ?= {}
       # User
       mongodb.user = name: mongodb.user if typeof mongodb.user is 'string'
@@ -19,18 +23,16 @@
       mongodb.user.limits.nofile ?= 64000
       mongodb.user.limits.nproc ?= true
       mongodb.user.gid = mongodb.group.name
-      shardsrv_ctxs = @contexts 'ryba/mongodb/shard', require('../shard/configure').handler
-      throw new Error 'No mongo shards server configured ' unless shardsrv_ctxs.length > 0
-      router_hosts = @contexts('ryba/mongodb/router').map( (ctx)-> ctx.config.host)
-      client_hosts = @contexts('ryba/mongodb/client').map( (ctx)-> ctx.config.host)
-      configsrv_hosts = @contexts('ryba/mongodb/configsrv').map( (ctx)-> ctx.config.host)
+      throw new Error 'No mongo shards server configured ' unless mongodb_shards.length > 0
+      router_hosts = mongodb_routers.map( (ctx)-> ctx.config.host)
+      client_hosts = mongodb_clients.map( (ctx)-> ctx.config.host)
+      configsrv_hosts = mongodb_configsrvs.map( (ctx)-> ctx.config.host)
       throw new Error 'No mongo routers configured (mongos)' unless router_hosts.length > 0
       throw new Error 'No mongo shell configured ' unless client_hosts.length > 0
       # Config
       mongodb.configsrv ?= {}
       mongodb.configsrv.conf_dir ?= '/etc/mongodb-config-server/conf'
       mongodb.configsrv.pid_dir ?= '/var/run/mongodb'
-
       #mongo admin user
       mongodb.admin ?= {}
       mongodb.admin.name ?= 'admin'
@@ -84,7 +86,7 @@ Of course if no shard Cluster is configured, ryba uses all available Sharding se
 one replica set Shard Cluster. That's why we need the `ryba/mongodb/shard` module to be configured before
 `ryba/mongodb/configsrv` module.
 
-      shards_replica_sets = shardsrv_ctxs[0].config.ryba.mongodb.shard.replica_sets
+      shards_replica_sets = mongodb_shards[0].config.ryba.mongodb.shard.replica_sets
       config.replication ?= {}
       mongodb.configsrv.replica_sets ?=
         configsrvRepSet1:
