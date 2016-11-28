@@ -25,9 +25,9 @@ ryba:
     source: 'http://mirrors.ircam.fr/pub/apache/lucene/solr/6.0.0/solr-6.0.0.tgz'
 ```
 
-    module.exports = handler: ->
+    module.exports =  ->
       {ryba} = @config
-      [java_ctx] = @contexts 'masson/commons/java', require("#{__dirname}/../../node_modules/masson/commons/java/configure").handler
+      [java_ctx] = @contexts 'masson/commons/java'
       java = java_ctx.config.java
       {solr, realm} = ryba ?= {}
       solr.user ?= {}
@@ -64,7 +64,7 @@ differents cores ( and so with different ports).
       # Layout
       solr.cloud.port ?= 8983
       solr.cloud.env ?= {}
-      zk_hosts = @contexts 'ryba/zookeeper/server', require("#{__dirname}/../../zookeeper/server/configure").handler
+      zk_hosts = @contexts 'ryba/zookeeper/server'
       solr.cloud.zk_connect = zk_hosts.map( (ctx) -> "#{ctx.config.host}:#{ctx.config.ryba.zookeeper.port}").join ','
       solr.cloud.zk_node ?= 'solr'
       solr.cloud.zkhosts = "#{solr.cloud.zk_connect}/#{solr.cloud.zk_node}"
@@ -175,7 +175,7 @@ solr zkCli script
 ### Configure HDFS
 [Configure][solr-hdfs] Solr to index document using hdfs, and document stored in HDFS.
 
-      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn' , require('../../hadoop/hdfs_nn/configure').handler
+      nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
       if nn_ctxs.length > 0
         solr.cloud.hdfs ?= {}
         solr.cloud.hdfs.home ?=  "hdfs://#{nn_ctxs[0].config.ryba.core_site['fs.defaultFS']}/user/#{solr.user.name}"
