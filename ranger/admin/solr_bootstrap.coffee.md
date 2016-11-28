@@ -117,10 +117,7 @@ We manage creating the ranger_audits core/collection in the three modes.
             #{solr["#{ranger.admin.solr_type}"]['latest_dir']}/bin/solr create_collection -c ranger_audits \
             -d  #{tmp_dir}/ranger_audits
             """
-          unless_exec: """
-          #{solr[ranger.admin.solr_type]['latest_dir']}/bin/solr healthcheck -c ranger_audits \
-          | grep '\"status\":\"healthy\"'
-           """
+          unless_exec: "#{solr[ranger.admin.solr_type]['latest_dir']}/bin/solr healthcheck -c ranger_audits"
 
 ### Solr Cloud On Docker
 Mounth the ranger_audit collection folder to make it availble to the containers.
@@ -136,7 +133,7 @@ Note: Compatible with every version of docker available at this time.
             port: cluster_config['port']
           @docker.exec
             container: cluster_config.master_container_runtime_name
-            cmd: "/usr/solr-cloud/current/bin/solr healthcheck -c ranger_audits | grep '\"status\":\"healthy\"'"
+            cmd: "/usr/solr-cloud/current/bin/solr healthcheck -c ranger_audits"
             code_skipped: [1,126]
           @docker.exec
             unless: -> @status -1
