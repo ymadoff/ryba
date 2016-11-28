@@ -9,6 +9,7 @@
 ## HDFS Dependencies
 
       @call 'ryba/ranger/admin/wait'
+      @call 'ryba/hadoop/hdfs_client/install'
       @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
 ## Packages

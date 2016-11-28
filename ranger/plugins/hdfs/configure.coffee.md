@@ -6,7 +6,7 @@ as external.
     
     module.exports = ->
       nn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
-      dn_ctxs = @contexts 'ryba/hadoop/hdfs_nn'
+      dn_ctxs = @contexts 'ryba/hadoop/hdfs_dn'
       [ranger_admin_ctx] = @contexts 'ryba/ranger/admin'
       return unless ranger_admin_ctx?
       {ryba} = @config
@@ -42,7 +42,7 @@ The properties can be found [here][hdfs-repository]
             'username': hdfs.krb5_user.principal
             'fs.default.name': core_site['fs.defaultFS']
             'hadoop.security.authentication': core_site['hadoop.security.authentication']
-            'dfs.namenode.kerberos.principal': nn_ctxs[0].config.ryba.hdfs.site['dfs.namenode.kerberos.principal']
+            'dfs.namenode.kerberos.principal': nn_ctxs[0].config.ryba.hdfs.nn.site['dfs.namenode.kerberos.principal']
             'dfs.datanode.kerberos.principal': dn_ctxs[0].config.ryba.hdfs.site['dfs.datanode.kerberos.principal']
             'hadoop.rpc.protection': core_site['hadoop.rpc.protection']
             'hadoop.security.authorization': core_site['hadoop.security.authorization']
