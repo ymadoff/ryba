@@ -14,11 +14,14 @@
       @call 'masson/core/krb5_client/wait'
       @call 'ryba/zookeeper/server/wait'
       @registry.register ['file', 'jaas'], 'ryba/lib/file_jaas'
-      @registry.register 'hdfs_mkdir', 'ryba/lib/hdfs_mkdir'
 
 ## Users and Groups
 Create user and groups for solr user.
 
+      @mkdir
+        target: solr.user.home
+        uid: solr.user.name
+        gid: solr.group.name
       @group solr.group
       @user solr.user
 
@@ -105,33 +108,33 @@ Ryba support installing solr from apache official release or HDP Search repos.
 Priority to docker pull function to get the solr container, else a tar should
 be prepared in the mecano cache dir.
 
-      @call 
-        header: 'Check container', handler: (opts, callback) =>
-          checksum  = ''
-          @docker.checksum
-            docker: solr.cloud_docker.swarm_conf
-            image: solr.cloud_docker.build.image
-            tag: solr.cloud_docker.build.version
-          , (err, status, chk) ->
-            return callback err if err
-            if !status then callback null, true else callback null, false
-      @docker.pull
-        header: 'Pull container'
-        if: -> @status(-1)
-        tag: solr.cloud_docker.build.image
-        version: solr.cloud_docker.version
-        code_skipped: 1
-      @file.download
-        if: -> @status -2
-        binary: true
-        header: 'Download container'
-        source: solr.cloud_docker.build.source
-        target: "#{tmp_dir}/solr.tar"
-      @docker.load
-        header: 'Load container to docker'
-        if_exists: "#{tmp_dir}/solr.tar"
-        source: "#{tmp_dir}/solr.tar"
-        docker: solr.cloud_docker.swarm_conf
+      @call header: 'Load Container', handler: ->
+        exists = false
+        @docker.checksum
+          docker: solr.cloud_docker.swarm_conf
+          image: solr.cloud_docker.build.image
+          tag: solr.cloud_docker.build.version
+        , (err, status, checksum) ->
+          throw err if err
+          exists = checksum
+        @docker.pull
+          header: 'Pull container'
+          if: -> not exists
+          tag: solr.cloud_docker.build.image
+          version: solr.cloud_docker.version
+          code_skipped: 1
+        @file.download
+          unless: -> @status(-1) or @status(-2)
+          binary: true
+          header: 'Download container'
+          source: solr.cloud_docker.build.source
+          target: "#{tmp_dir}/solr.tar"
+        @docker.load
+          header: 'Load container to docker'
+          unless: -> @status(-3)
+          if_exists: "#{tmp_dir}/solr.tar"
+          source: "#{tmp_dir}/solr.tar"
+          docker: solr.cloud_docker.swarm_conf
 
 ## User Limits
 

@@ -13,13 +13,17 @@ Build container and save it.
         @mkdir
           target: "#{solr.cloud_docker.build.dir}/build"
         @render
+          source: "#{__dirname}/../resources/cloud_docker/docker_entrypoint.sh"
+          target: "#{solr.cloud_docker.build.dir}/build/docker_entrypoint.sh"
+          context: @config
+        @render
           source: "#{__dirname}/../resources/cloud_docker/Dockerfile"
           target: "#{solr.cloud_docker.build.dir}/build/Dockerfile"
           context: @config
-        @docker_build
+        @docker.build
           image: "#{solr.cloud_docker.build.image}:#{solr.cloud_docker.build.version}"
           file: "#{solr.cloud_docker.build.dir}/build/Dockerfile"
-        @docker_save
+        @docker.save
           image: "#{solr.cloud_docker.build.image}:#{solr.cloud_docker.build.version}"
           output: "#{solr.cloud_docker.build.dir}/#{solr.cloud_docker.build.tar}"
         

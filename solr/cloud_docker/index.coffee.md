@@ -12,7 +12,7 @@ but does not start the clusters.
       use:
         iptables: implicit: true, module: 'masson/core/iptables'
         docker: implicit: true, module: 'masson/commons/docker'
-        hadoop_core: implicit: true, module: 'ryba/hadoop/core'
+        hadoop_core: 'ryba/hadoop/core'
         zoo_server: module: 'ryba/zookeeper/server'
       configure:
         'ryba/solr/cloud_docker/configure'

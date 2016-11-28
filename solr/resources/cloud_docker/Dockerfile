@@ -69,7 +69,7 @@ RUN echo 'ZONE="Europe/Paris"'> /etc/sysconfig/clock
 RUN ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime
 RUN rm -f /jdk-8u101-linux-x64.rpm
 
-# USER {{ryba.solr.user.name}}
+USER {{ryba.solr.user.name}}
 WORKDIR {{ryba.solr.user.home}}
 ENV TERM=xterm-256color
 
