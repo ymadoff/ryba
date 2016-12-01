@@ -37,6 +37,17 @@ DataNodes.
       #   @log "WARNING: #{Math.round percent}" if percent > 90
       #  .then next
 
+      @execute
+        header: 'Native'
+        cmd: """
+        hadoop checknative | grep hadoop:
+        hadoop checknative | grep zlib:
+        hadoop checknative | grep snappy:
+        hadoop checknative | grep lz4:
+        hadoop checknative | grep bzip2:
+        hadoop checknative | grep openssl:
+        """
+
 ## Dependencies
 
     mkcmd = require '../../lib/mkcmd'
