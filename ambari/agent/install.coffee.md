@@ -4,9 +4,20 @@ The ambari server must be set in the configuration file.
 
     module.exports = header: 'Ambari Agent Install', timeout: -1, handler: ->
       {ambari_agent} = @config.ryba
+      {ambari_server} = @contexts('ryba/ambari/server')[0].config.ryba
 
-## Package installation
+## Package & Repository
 
+Declare the Ambari custom repository.
+Install Ambari server package.
+
+      @file.download
+        header: 'Ambari Server Repo'
+        source: ambari_server.repo
+        target: '/etc/yum.repos.d/ambari.repo'
+      @execute
+        cmd: "yum clean metadata; yum update -y"
+        if: -> @status -1
       @service
         header: 'Ambari Agent Startup'
         name: 'ambari-agent'
@@ -24,6 +35,15 @@ The ambari server must be set in the configuration file.
         merge: true
         comment: '#'
         backup: true
+      @file
+        header: 'Hostname Script'
+        target: ambari_agent.ini.agent['hostname_script']
+        content: """
+          #!/bin/sh
+          echo #{@config.host}
+        """
+        mode: 0o751
+
 
 ## Non-Root
 
