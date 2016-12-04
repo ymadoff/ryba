@@ -27,7 +27,7 @@ Install Ambari server package.
 ## Non-Root
 
       @file
-        if: ambari_agent.sudo
+        if: @config.ryba.ambari_agent.sudo
         target: '/etc/sudoers.d/ambari_server'
         content: """
         # Ambari Commands

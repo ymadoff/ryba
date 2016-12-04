@@ -12,8 +12,6 @@ manage and monitor a Hadoop cluster.
       configure: 'ryba/ambari/server/configure'
       commands:
         'install': [
-          'masson/commons/java'
-          'ryba/commons/db_admin'
           'ryba/ambari/server/install'
           'ryba/ambari/server/start'
         ]
