@@ -311,6 +311,12 @@ configuration like solr.in.sh or solr.xml.
               mode: 0o0750
               backup: true
               eof: true
+            @render
+              if: host is @config.host
+              header: 'Log4j'
+              source: "#{__dirname}/../resources/log4j.properties.j2"
+              target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/log4j.properties"
+              local_source: true
         @file.yaml
           if: @config.host is config['master'] or not @config.docker.swarm
           header: 'Generation docker-compose'

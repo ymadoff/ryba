@@ -135,4 +135,4 @@ fi
 
 
 
-  ${SOLR_INSTALL_DIR}/bin/solr start -c -z {{ryba.solr.cloud_docker.zk_connect}}/${ZK_NODE} -s /var/solr/data -f
+  ${SOLR_INSTALL_DIR}/bin/solr start -c -z {{ryba.solr.cloud_docker.zk_connect}}/${ZK_NODE} -s /var/solr/data -Dsolr.log.muteconsole -f
