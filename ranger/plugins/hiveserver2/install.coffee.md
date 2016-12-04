@@ -75,7 +75,7 @@
 
       @call header: 'Packages', handler: ->
         @execute
-          header: 'Setup Execution'
+          header: 'Setup Execution Version'
           shy:true
           cmd: """
             hdp-select versions | tail -1
@@ -155,6 +155,7 @@ we execute this task using the rest api.
               replace: "HCOMPONENT_LIB_DIR=/usr/hdp/current/hive-server2/lib"
           ]
           backup: true
+          mode: 0o750
         @call
           header: 'Enable Hive Plugin'
           handler: (options, callback) ->

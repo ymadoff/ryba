@@ -105,6 +105,7 @@ we execute this task using the rest api.
 
           ]
           backup: true
+          mode: 0o750
         @file
           header: 'Fix Kafka Broker classpath'
           target: "#{kafka.broker.conf_dir}/kafka-env.sh"
