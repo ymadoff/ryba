@@ -101,7 +101,7 @@ Check Message by writing to a test topic on the PLAINTEXT channel.
           if: kafka.producer.env['KAFKA_KERBEROS_PARAMS']?
           cmd: mkcmd.kafka @, """
             /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
-              --zookeeper #{zoo_connect} --partitions 1 --replication-factor 3 \
+              --zookeeper #{zoo_connect} --partitions #{ks_ctxs.length} --replication-factor #{ks_ctxs.length} \
               --topic #{test_topic}
             """
           unless_exec: mkcmd.kafka @, """
@@ -112,12 +112,30 @@ Check Message by writing to a test topic on the PLAINTEXT channel.
           unless: kafka.producer.env['KAFKA_KERBEROS_PARAMS']?
           cmd: """
             /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
-              --zookeeper #{zoo_connect} --partitions 1 --replication-factor 3 \
+              --zookeeper #{zoo_connect} --partitions #{ks_ctxs.length} --replication-factor #{ks_ctxs.length} \
               --topic #{test_topic}
             """
           unless_exec: mkcmd.kafka @, """
             /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
             --zookeeper #{zoo_connect} | grep #{test_topic}
+            """
+        @execute
+          cmd: mkcmd.kafka @, """
+            (
+            /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+              --add --allow-principal User:ANONYMOUS  \
+              --operation Read --operation Write --topic #{test_topic}
+            )&
+            (
+            /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+              --add \
+              --allow-principal User:ANONYMOUS --consumer --group #{kafka.consumer.config['group.id']} --topic #{test_topic}
+            )
+            """
+          unless_exec: mkcmd.kafka @, """
+            /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \
+              --authorizer-properties zookeeper.connect=#{zoo_connect}  \
+              --topic #{test_topic} | grep 'User:ANONYMOUS has Allow permission for operations: Write from hosts: *'
             """
         @execute
           cmd: """
@@ -150,7 +168,6 @@ We specify the trustore location and password because if executed before consume
         header: 'Check SSL'
         label_true: 'CHECKED'
         retry: 3
-        if: -> @has_service 'ryba/kafka/consumer'
         handler: ->
           ks_ctxs = @contexts 'ryba/kafka/broker'
           return if ks_ctxs[0].config.ryba.kafka.broker.protocols.indexOf('SSL') == -1
@@ -159,6 +176,34 @@ We specify the trustore location and password because if executed before consume
           ).join ','
           test_topic = "check-#{@config.host}-producer-ssl-topic"
           zoo_connect = ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect']
+          @execute
+            cmd: mkcmd.kafka @, """
+              /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
+                --zookeeper #{zoo_connect} --partitions #{ks_ctxs.length} --replication-factor #{ks_ctxs.length} \
+                --topic #{test_topic}
+              """
+            unless_exec: mkcmd.kafka @, """
+              /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
+              --zookeeper #{zoo_connect} | grep #{test_topic}
+              """
+          @execute
+            cmd: mkcmd.kafka @, """
+              (
+              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+                --add --allow-principal User:ANONYMOUS  \
+                --operation Read --operation Write --topic #{test_topic}
+              )&
+              (
+              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
+                --add \
+                --allow-principal User:ANONYMOUS --consumer --group #{kafka.consumer.config['group.id']} --topic #{test_topic}
+              )
+              """
+            unless_exec: mkcmd.kafka @, """
+              /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \
+                --authorizer-properties zookeeper.connect=#{zoo_connect}  \
+                --topic #{test_topic} | grep 'User:ANONYMOUS has Allow permission for operations: Write from hosts: *'
+              """
           @execute
             cmd:  """
               echo 'hello front1' | /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh \
@@ -205,14 +250,14 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
           @execute
             cmd: mkcmd.kafka @, """
               /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
-                --zookeeper #{zoo_connect} --partitions 1 --replication-factor 3 \
+                --zookeeper #{zoo_connect} --partitions #{ks_ctxs.length} --replication-factor #{ks_ctxs.length} \
                 --topic #{test_topic}
               """
             unless_exec: mkcmd.kafka @, """
               /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
               --zookeeper #{zoo_connect} | grep #{test_topic}
               """
-          @call  header: "SASL_PLAINTEXT Topic ACL", handler: ->
+          @call  header: "Topic ACL", handler: ->
             @execute
               cmd: mkcmd.kafka @, """
                 /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
@@ -228,7 +273,7 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
               cmd: mkcmd.kafka @, """
                 /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
                   --add \
-                  --allow-principal User:#{user.name} --consumer --group #{user.name} --topic #{test_topic}
+                  --allow-principal User:#{user.name} --consumer --group #{kafka.consumer.config['group.id']} --topic #{test_topic}
                 """
               unless_exec: mkcmd.kafka @, """
                 /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \
@@ -251,6 +296,7 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
                 --bootstrap-server #{brokers} \
                 --topic #{test_topic} \
                 --security-protocol SASL_PLAINTEXT \
+                --consumer.config #{kafka.consumer.conf_dir}/consumer.properties \
                 --zookeeper #{zoo_connect} --from-beginning --max-messages 1 | grep 'hello front1'
               """
 
@@ -276,7 +322,7 @@ Specifying also the trustore location and password because if executed before co
           @execute
             cmd: mkcmd.kafka @, """
               /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
-                --zookeeper #{zoo_connect} --partitions 1 --replication-factor 3 \
+                --zookeeper #{zoo_connect} --partitions #{ks_ctxs.length} --replication-factor #{ks_ctxs.length} \
                 --topic #{test_topic}
               """
             unless_exec: mkcmd.kafka @, """
@@ -298,7 +344,7 @@ Specifying also the trustore location and password because if executed before co
             cmd: mkcmd.kafka @, """
               /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
                 --add \
-                --allow-principal User:#{user.name} --consumer --group #{user.name} --topic #{test_topic}
+                --allow-principal User:#{user.name} --consumer --group #{kafka.consumer.config['group.id']} --topic #{test_topic}
               """
             unless_exec: mkcmd.kafka @, """
               /usr/hdp/current/kafka-broker/bin/kafka-acls.sh  --list \

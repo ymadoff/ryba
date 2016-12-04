@@ -132,7 +132,7 @@ Update the kafka-env.sh file (/etc/kafka-broker/conf/kafka-enh.sh)
           append: true
         backup: true
         eof: true
-        mode:0o0750
+        mode: 0o0750
         uid: kafka.user.name
         gid: kafka.group.name
 
@@ -172,6 +172,7 @@ This Fixs are needed to be able to isolate confs betwwen broker and client
             ]
           backup: true
           eof: true
+          mode: 0o755
         @copy
           source: '/usr/hdp/current/kafka-broker/bin/kafka-run-class.sh'
           target: '/usr/hdp/current/kafka-broker/bin/kafka-run-broker-class.sh'
@@ -184,6 +185,7 @@ This Fixs are needed to be able to isolate confs betwwen broker and client
           ]
           backup: true
           eof: true
+          mode: 0o755
 
 ## Kerberos
 

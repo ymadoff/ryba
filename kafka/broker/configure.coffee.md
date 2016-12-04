@@ -222,7 +222,7 @@ Valid values are: PLAINTEXT, SSL, SASL_PLAINTEXT, SASL_SSL.
         match = /^(.+?)[@\/]/.exec kafka.broker.kerberos['principal']
         kafka.broker.config['sasl.kerberos.service.name'] = "#{match[1]}"
         # set to true to be able to use 9092 if PLAINTEXT only mode is enabled
-        kafka.broker.config['allow.everyone.if.no.acl.found'] ?= 'true'
+        kafka.broker.config['allow.everyone.if.no.acl.found'] ?= 'false'
         kafka.broker.config['authorizer.class.name'] ?= 'kafka.security.auth.SimpleAclAuthorizer'
         kafka.broker.env['KAFKA_KERBEROS_PARAMS'] ?= "-Djava.security.auth.login.config=#{kafka.broker.conf_dir}/kafka-server.jaas"
 

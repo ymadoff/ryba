@@ -45,6 +45,10 @@
           protocol = 'SSL'
         else
           protocol = 'PLAINTEXT'
+      brokers = for ks_ctx in ks_ctxs
+        "#{ks_ctx.config.host}:#{ks_ctx.config.ryba.kafka.broker.ports[protocol]}"
+      kafka.producer.config['security.protocol'] ?= protocol
+      kafka.producer.config['bootstrap.servers'] ?= brokers.join ','
       kafka.consumer.config['security.protocol'] ?= protocol
       kafka.consumer.log4j ?= {}
       kafka.consumer.log4j['log4j.rootLogger'] ?= 'WARN, stdout'

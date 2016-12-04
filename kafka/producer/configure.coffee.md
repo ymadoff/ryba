@@ -38,6 +38,7 @@
         "#{ks_ctx.config.host}:#{ks_ctx.config.ryba.kafka.broker.ports[protocol]}"
       kafka.producer.config['security.protocol'] ?= protocol
       kafka.producer.config['metadata.broker.list'] ?= brokers.join ','
+      kafka.producer.config['bootstrap.servers'] ?= brokers.join ','
       kafka.producer.log4j ?= {}
       kafka.producer.log4j['log4j.rootLogger'] ?= 'WARN, stdout'
       kafka.producer.log4j['log4j.appender.stdout'] ?= 'org.apache.log4j.ConsoleAppender'
