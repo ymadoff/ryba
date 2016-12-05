@@ -167,6 +167,7 @@ Must add certificate to JAVA Cacerts file manually.
               replace: "HCOMPONENT_LIB_DIR=/usr/hdp/current/hbase-client/lib"
           ]
           backup: true
+          mode: 0o750
         @call
           header: 'Enable HBase Plugin'
           handler: (options, callback) ->
