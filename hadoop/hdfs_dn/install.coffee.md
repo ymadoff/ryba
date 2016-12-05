@@ -337,8 +337,20 @@ Note, a user must re-login for those changes to be taken into account.
         user: hdfs.user.name
       , hdfs.user.limits
 
+This is a dirty fix of [this bug][jsvc-192].
+When launched with -user parameter, jsvc downgrades user via setuid() system call,
+but the operating system limits (max number of open files, for example) remains the same.
+As jsvc is used by bigtop scripts to run hdfs via root, we also (in fact: only) 
+need to fix limits to root account, until Bigtop integrates jsvc 1.0.6
+
+      @system_limits
+        header: 'Ulimit to root'
+        user: 'root'
+      , hdfs.user.limits
+
 ## Dependencies
 
     misc = require 'mecano/lib/misc'
 
 [key_os]: http://fr.slideshare.net/vgogate/hadoop-configuration-performance-tuning
+[jsvc-192]: https://issues.apache.org/jira/browse/DAEMON-192
