@@ -57,7 +57,7 @@
       hbase.site['hbase.security.authentication'] = hm_ctxs[0].config.ryba.hbase.master.site['hbase.security.authentication']
       hbase.site['hbase.security.authorization'] = hm_ctxs[0].config.ryba.hbase.master.site['hbase.security.authorization']
       hbase.site['hbase.superuser'] = hm_ctxs[0].config.ryba.hbase.master.site['hbase.superuser']
-      hbase.site['hbase.rpc.engine'] ?= hm_ctxs[0].config.ryba.hbase.master.site['org.apache.hadoop.hbase.ipc.SecureRpcEngine']
+      hbase.site['hbase.rpc.engine'] ?= hm_ctxs[0].config.ryba.hbase.master.site['hbase.rpc.engine']
       hbase.site['hbase.bulkload.staging.dir'] = hm_ctxs[0].config.ryba.hbase.master.site['hbase.bulkload.staging.dir']
       hbase.site['hbase.master.kerberos.principal'] = hm_ctxs[0].config.ryba.hbase.master.site['hbase.master.kerberos.principal']
       hbase.site['hbase.regionserver.kerberos.principal'] = hm_ctxs[0].config.ryba.hbase.master.site['hbase.regionserver.kerberos.principal']
