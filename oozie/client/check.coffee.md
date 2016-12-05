@@ -95,7 +95,7 @@
 
 ## Check MapReduce Workflow
 
-      @call header: 'Oozie Client # Check MapReduce', skip: true, timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+      @call header: 'Check MapReduce', skip: true, timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
         rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
         if rm_ctxs.length > 1
           rm_ctx = rm_ctxs[0]
@@ -332,7 +332,7 @@
 #   <end name="end"/>
 # </workflow-app>
 
-      @call skip: true, header: 'Oozie Client # Check HCat Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+      @call skip: true, header: 'Check HCat Workflow', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
         rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'#, require('../../hadoop/yarn_rm').configure
         if rm_ctxs.length > 1
           rm_ctx = rm_ctxs[0]
