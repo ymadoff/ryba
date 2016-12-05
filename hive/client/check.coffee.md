@@ -21,54 +21,56 @@ hive -hiveconf hive.root.logger=DEBUG,console
       @call if: ranger_admin?, once: true, 'ryba/ranger/admin/wait'
 
 ## Add Ranger Policy 
+hive client is communicating directly with hcatalog, which means that on a ranger
+managed cluster, ACL must be set on HDFS an not on hive.
 
-      @call header: 'Add Hive Policy', if: ranger_admin?, handler: ->
-        {install} = ranger_admin.config.ryba.ranger.hive_plugin
+      @call header: 'Add HDFS Policy', if: ranger_admin?, handler: ->
+        {install} = ranger_admin.config.ryba.ranger.hdfs_plugin
+        name = "Ranger-Ryba-HDFS-Policy-#{@config.host}-client"
         dbs = []
+        directories = []
         for h_ctx in hive_hcatalog
-          dbs.push "check_#{@config.shortname}_hive_hcatalog_mr_#{h_ctx.config.shortname}"
-          dbs.push "check_#{@config.shortname}_hive_hcatalog_tez_#{h_ctx.config.shortname}"
-        # for hs2_ctx in hive_server2
-        #   dbs.push "check_#{@config.shortname}_server2_#{hs2_ctx.config.shortname}"
-        #   dbs.push "check_#{@config.shortname}_hs2_zoo_#{hs2_ctx.config.ryba.hive.server2.site['hive.server2.zookeeper.namespace']}"
-        # for hs_ctx in spark_thrift_server
-        #   dbs.push "check_#{@config.shortname}_spark_sql_server_#{hs_ctx.config.shortname}"
-        # use v1 policy api (old style) from ranger to have an example
-        hive_policy =
-          "policyName": "Ranger-Ryba-HIVE-Policy-#{@config.host}"
-          "repositoryName": "#{install['REPOSITORY_NAME']}"
-          "repositoryType":"hive"
-          "description": 'Ryba check hive policy'
-          "databases": "#{dbs.join ','}"
-          'tables': '*'
-          "columns": "*"
-          "udfs": ""
-          'tableType': 'Inclusion'
-          'columnType': 'Inclusion'
-          'isEnabled': true
-          'isAuditEnabled': true
-          "permMapList": [{
-          		"userList": ["#{user.name}"],
-          		"permList": ["all"]
-          	}]
-        @wait_execute
-          cmd: """
-            curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
-            -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
-          """
-          code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
+          directories.push "check-#{@config.shortname}-hive_hcatalog_mr-#{h_ctx.config.shortname}"
+          directories.push "check-#{@config.shortname}-hive_hcatalog_tez-#{h_ctx.config.shortname}"
+        hdfs_policy =
+          name: "#{name}"
+          service: "#{install['REPOSITORY_NAME']}"
+          repositoryType:"hdfs"
+          description: 'Hive Client Check'
+          isEnabled: true
+          isAuditEnabled: true
+          resources:
+            path:
+              isRecursive: 'true'
+              values: directories
+              isExcludes: false
+          policyItems: [{
+            users: ["#{user.name}"]
+            groups: []
+            delegateAdmin: true
+            accesses:[
+                "isAllowed": true
+                "type": "read"
+            ,
+                "isAllowed": true
+                "type": "write"
+            ,
+                "isAllowed": true
+                "type": "execute"
+            ]
+            conditions: []
+            }]
         @execute
           cmd: """
             curl --fail -H "Content-Type: application/json" -k -X POST \
-            -d '#{JSON.stringify hive_policy}' \
+            -d '#{JSON.stringify hdfs_policy}' \
             -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-            \"#{install['POLICY_MGR_URL']}/service/public/api/policy\"
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
           """
           unless_exec: """
-            curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
+            curl --fail -H \"Content-Type: application/json\" -k -X GET  \
             -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
-            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/Ranger-Ryba-HIVE-Policy-#{@config.host}\"
+            \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{hdfs_policy.name}"
           """
           code_skippe: 22
 
