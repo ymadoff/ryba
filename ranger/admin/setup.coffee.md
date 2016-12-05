@@ -25,7 +25,7 @@ Modify admin account password. By default the login:pwd  is `admin:admin`.
           unless: -> @status -1
           header: "Change admin password"
           cmd: """
-            curl -H \"Content-Type: application/json\" --fail -k -X POST -d '#{JSON.stringify oldPassword:ranger.admin.current_password, updPassword:ranger.admin.password}'  \ 
+            curl -H \"Content-Type: application/json\" --fail -k -X POST -d '#{JSON.stringify oldPassword:ranger.admin.current_password, updPassword:ranger.admin.password, loginId: 'admin'}'  \ 
             -u admin:#{ranger.admin.current_password} \"#{ranger.admin.install['policymgr_external_url']}/service/users/1/passwordchange\"
           """
 
