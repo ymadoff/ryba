@@ -105,6 +105,7 @@ Not documented be taken from [github-source][hdfs-plugin-source]
                   replace: "HCOMPONENT_LIB_DIR=/usr/hdp/current/hadoop-hdfs-namenode/lib"
               ]
               backup: true
+              mode: 0o750
             @execute
               header: 'Script Execution'
               shy: true

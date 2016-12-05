@@ -27,6 +27,7 @@ as external.
         @config.ryba.hdfs.namenode_opts += " -Djavax.net.ssl.trustStorePassword=#{@config.ryba.ssl_server['ssl.server.truststore.password']}"
         # HDFS Plugin configuration
         hdfs_plugin = @config.ryba.ranger.hdfs_plugin ?= {}
+        ranger_admin_ctx.config.ryba.ranger.hdfs_plugin = hdfs_plugin
         hdfs_plugin.install ?= {}
         hdfs_plugin.install['PYTHON_COMMAND_INVOKER'] ?= 'python'
 

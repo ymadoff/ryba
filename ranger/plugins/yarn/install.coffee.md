@@ -102,6 +102,7 @@ we execute this task using the rest api.
                 replace: "HCOMPONENT_LIB_DIR=/usr/hdp/current/hadoop-yarn-resourcemanager/lib"
             ]
             backup: true
+            mode: 0o750
           @execute
             header: 'Script Execution'
             cmd: """
