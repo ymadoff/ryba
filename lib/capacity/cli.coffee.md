@@ -29,9 +29,9 @@
 *   `memory_system` (int|string)   
     Total Memory allocated to the system.   
 *   `memory_hbase` (int|string)   
-    Total Memory allocated to the Yarn NodeManagers.   
-*   `memory_yarn` (int|string)   
     Total Memory allocated to the HBase RegionServers.   
+*   `memory_yarn` (int|string)   
+    Total Memory allocated to the Yarn NodeManagers.   
 *   `cores` (int)   
     Number of available cores to the Yarn NodeManagers.   
 *   `disks` (array)   

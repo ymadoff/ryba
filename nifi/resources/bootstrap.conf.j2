@@ -19,52 +19,22 @@
 java=java
 
 # Username to use when running NiFi. This value will be ignored on Windows.
-run.as={{user.name}}
+run.as={{ user.name }}
 
 # Configure where NiFi's lib and conf directories live
-lib.dir={{install_dir}}/current/lib
-conf.dir={{conf_dir}}
+lib.dir=/usr/hdf/current/nifi/lib
+conf.dir={{ conf_dir }}
 
 # How long to wait after telling NiFi to shutdown before explicitly killing the Process
 graceful.shutdown.seconds=20
 
-# Disable JSR 199 so that we can use JSP's without running a JDK
-java.arg.1=-Dorg.apache.jasper.compiler.disablejsr199=true
-
-# JVM memory settings
-java.arg.2=-Xms512m
-java.arg.3=-Xmx512m
-
-# Enable Remote Debugging
-#java.arg.debug=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8000
-
-java.arg.4=-Djava.net.preferIPv4Stack=true
-
-# allowRestrictedHeaders is required for Cluster/Node communications to work properly
-java.arg.5=-Dsun.net.http.allowRestrictedHeaders=true
-java.arg.6=-Djava.protocol.handler.pkgs=sun.net.www.protocol
-
-# Java 7 and below have issues with Code Cache. The following lines allow us to run well even with
-# many classes loaded in the JVM.
-java.arg.7=-XX:ReservedCodeCacheSize={{java_opts.ReservedCodeCacheSize}}
-java.arg.8=-XX:CodeCacheFlushingMinimumFreeSpace={{java_opts.CodeCacheFlushingMinimumFreeSpace}}
-java.arg.9=-XX:+UseCodeCacheFlushing
-java.arg.11=-XX:PermSize={{java_opts.permsize}}
-java.arg.12=-XX:MaxPermSize={{java_opts.maxpermsize}}
-
-# The G1GC is still considered experimental but has proven to be very advantageous in providing great
-# performance without significant "stop-the-world" delays.
-#java.arg.13=-XX:+UseG1GC
-
-#Set headless mode by default
-java.arg.14=-Djava.awt.headless=true
-
-###
-# Notification Services for notifying interested parties when NiFi is stopped, started, dies
-###
+# Java Opts
+{% for opt in java_opts %}
+java.arg.{{ loop.index }}={{ opt }}
+{% endfor %}
 
 # XML File that contains the definitions of the notification services
-notification.services.file={{conf_dir}}/bootstrap-notification-services.xml
+notification.services.file={{ conf_dir }}/bootstrap-notification-services.xml
 
 # In the case that we are unable to send a notification for an event, how many times should we retry?
 notification.max.attempts=5
@@ -77,5 +47,3 @@ notification.max.attempts=5
 
 # Comma-separated list of identifiers that are present in the notification.services.file; which services should be used to notify when NiFi dies?
 #nifi.dead.notification.services=email-notification
-
-java.arg.15=-Djava.security.auth.login.config={{conf_dir}}/nifi-zookeeper.jaas
