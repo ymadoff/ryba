@@ -117,9 +117,22 @@ for distcp purpose.
         ryba.hdfs.nn.site['dfs.ha.automatic-failover.enabled'] ?= 'true'
         ryba.hdfs.nn.site['dfs.namenode.shared.edits.dir'] = (for jn_ctx in jn_ctxs then "#{jn_ctx.config.host}:8485").join ';'
         ryba.hdfs.nn.site['dfs.namenode.shared.edits.dir'] = "qjournal://#{ryba.hdfs.nn.site['dfs.namenode.shared.edits.dir']}/#{ryba.hdfs.nn.site['dfs.nameservices']}"
-        # Fencing
-        ryba.hdfs.nn.site['dfs.ha.fencing.methods'] ?= "sshfence(#{ryba.hdfs.user.name})"
+
+### Fencing
+
+To prevent split-brain scenarii, in addition to the Journal Quorum Process for
+write, sshfence allow ssh connection to the previous disfunctioning active
+namenode from the new one to "shoot it in the head" (STONITH)
+If the previous master machine is dead, ssh connection will fail, so another
+fencing method should be configured to not block failover.
+
+        ryba.hdfs.nn.site['dfs.ha.fencing.methods'] ?= """
+        sshfence(#{ryba.hdfs.user.name})
+        shell(/bin/true)
+        """
+        ryba.hdfs.nn.site['dfs.ha.fencing.ssh.connect-timeout'] ?= '30000'
         ryba.hdfs.nn.site['dfs.ha.fencing.ssh.private-key-files'] ?= "#{ryba.hdfs.user.home}/.ssh/id_rsa"
+
       hdfs_ctxs = @contexts ['ryba/hadoop/hdfs_dn', 'ryba/hadoop/hdfs_snn', 'ryba/hadoop/httpfs']
       for hdfs_ctx in hdfs_ctxs
         hdfs_ctx.config ?= {}
