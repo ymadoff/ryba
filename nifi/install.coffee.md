@@ -160,8 +160,8 @@ Describe where to get the user authentication information from.
           krb_node.ele 'property', name: 'Authentication Expiration', '10 hours'
           @krb5_addprinc krb5,
             header: 'Kerberos SPNEGO'
-            principal: properties['nifi.kerberos.service.principal']
-            keytab: properties['nifi.kerberos.keytab.location']
+            principal: nifi.config.properties['nifi.kerberos.service.principal']
+            keytab: nifi.config.properties['nifi.kerberos.keytab.location']
           @krb5_addprinc krb5,
             header: 'Kerberos Admin'
             principal: nifi.admin.krb5_principal
