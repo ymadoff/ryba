@@ -352,29 +352,29 @@ source code, the list of supported prefixes is: "namenode", "resourcemanager",
       # Ganglia sink, accepted properties are "servers" and "supportsparse"
       if hadoop_metrics.sinks.ganglia
         hadoop_metrics.config["*.sink.ganglia.#{k}"] ?= v for k, v of sinks.ganglia
-        if @has_module 'ryba/hadoop/hdfs_nn'
+        if @has_service 'ryba/hadoop/hdfs_nn'
           hadoop_metrics.config['namenode.sink.ganglia.class'] ?= sinks.ganglia.class
           hadoop_metrics.config['namenode.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
-        if @has_module 'ryba/hadoop/yarn_rm'
+        if @has_service 'ryba/hadoop/yarn_rm'
           hadoop_metrics.config['resourcemanager.sink.ganglia.class'] ?= sinks.ganglia.class
           hadoop_metrics.config['resourcemanager.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.rm_port}"
-        if @has_module 'ryba/hadoop/hdfs_dn'
+        if @has_service 'ryba/hadoop/hdfs_dn'
           hadoop_metrics.config['datanode.sink.ganglia.class'] ?= sinks.ganglia.class
           hadoop_metrics.config['datanode.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
-        if @has_module 'ryba/hadoop/yarn_nm'
+        if @has_service 'ryba/hadoop/yarn_nm'
           hadoop_metrics.config['nodemanager.sink.ganglia.class'] ?= sinks.ganglia.class
           hadoop_metrics.config['nodemanager.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
           hadoop_metrics.config['maptask.sink.ganglia.class'] ?= sinks.ganglia.class
           hadoop_metrics.config['maptask.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
           hadoop_metrics.config['reducetask.sink.ganglia.class'] ?= sinks.ganglia.class
           hadoop_metrics.config['reducetask.sink.ganglia.servers'] ?= "#{ganglia_ctx.config.host}:#{ganglia_ctx.config.ryba.ganglia.nn_port}"
-        # if @has_module 'ryba/hadoop/hdfs_jn'
+        # if @has_service 'ryba/hadoop/hdfs_jn'
         #   hadoop_metrics['journalnode.sink.ganglia.servers']
-        # if @has_module 'ryba/hadoop/mapred_jhs'
+        # if @has_service 'ryba/hadoop/mapred_jhs'
         #   hadoop_metrics['historyserver.sink.ganglia.servers']
-        # if @has_module 'ryba/storm/nimbus'
+        # if @has_service 'ryba/storm/nimbus'
         #   hadoop_metrics['nimbus.sink.ganglia.servers']
-        # if @has_module 'ryba/storm/supervisor'
+        # if @has_service 'ryba/storm/supervisor'
         #   hadoop_metrics['supervisor.sink.ganglia.servers']
       # Graphite sink, accepted properties are "server_host", "server_port" and "metrics_prefix"
       if hadoop_metrics.sinks.graphite
@@ -388,7 +388,7 @@ source code, the list of supported prefixes is: "namenode", "resourcemanager",
           'ryba/hadoop/hdfs_jn': ['journalnode']
           'ryba/hadoop/mapred_jhs': ['historyserver']
         }
-        then if @has_module mod
+        then if @has_service mod
         then for k in modlist
           hadoop_metrics.config["#{k}.sink.graphite.class"] ?= sinks.graphite.class
 
