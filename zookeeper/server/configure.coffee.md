@@ -85,8 +85,13 @@ Example :
       zookeeper.config['dataDir'] ?= '/var/zookeeper/data/'
       # the port at which the clients will connect
       zookeeper.config['clientPort'] ?= "#{zookeeper.port}"
+      # If zookeeper node is participant (to election) or only observer
+      # Adding new observer nodes allow horizontal scaling without slowing write
+      zookeeper.config['peerType'] ?= 'participant'
       if zk_ctxs.length > 1 then for zk_ctx, i in zk_ctxs
         zookeeper.config["server.#{i+1}"] = "#{zk_ctx.config.host}:2888:3888"
+        if zk_ctx.config.ryba.zookeeper?.config?['peerType'] is 'observer'
+          zookeeper.config["server.#{i+1}"]  += ':observer'
       # SASL
       zookeeper.config['authProvider.1'] ?= 'org.apache.zookeeper.server.auth.SASLAuthenticationProvider'
       zookeeper.config['jaasLoginRenew'] ?= '3600000'
