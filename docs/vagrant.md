@@ -27,7 +27,7 @@ The vagrant configuration file Vagrantfile is located in the resources directory
 Now you need to download a vagrant box to get started.
 To download the box corresponding to our default working environment (CentOS 6.5) :
 ```bash
-vagrant add 'centos65-x86_64-50g' 'https://googledrive.com/host/0B4tZlTbOXHYWVGpHRWZuTThGVUE/centos65_virtualbox_50G.box'
+vagrant box add 'centos65-x86_64-50g' 'https://googledrive.com/host/0B4tZlTbOXHYWVGpHRWZuTThGVUE/centos65_virtualbox_50G.box'
 ```
 
 Please check in the resources/Vagrantfile that the 'box' corresponds to the name of the box you want to use.
