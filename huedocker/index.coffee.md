@@ -29,6 +29,7 @@ beloaded to the target server
         hive_client: implicit: true, module: 'ryba/hive/client'
         hadoop_core: implicit:true, module: 'ryba/hadoop/core'
         hdfs_nn: 'ryba/hadoop/hdfs_nn'
+        hbase_thrift: 'ryba/hbase/thrift'
         spark_livy_servers: 'ryba/spark/livy_server'
         spark_thrift_server: 'ryba/spark/thrift_server'
         spark_history_servers: 'ryba/spark/history_server'
