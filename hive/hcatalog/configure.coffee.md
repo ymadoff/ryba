@@ -143,7 +143,8 @@ Example:
 Note, at the moment, only MySQL and PostgreSQL are supported.
 
       hive.hcatalog.db ?= {}
-      
+      hive.hcatalog.db.username ?= 'hive'
+      hive.hcatalog.db.password ?= 'hive123'
       if hive.hcatalog.site['javax.jdo.option.ConnectionURL']
         # Ensure the url host is the same as the one configured in config.ryba.db_admin
         jdbc = db.jdbc hive.hcatalog.site['javax.jdo.option.ConnectionURL']
@@ -163,9 +164,6 @@ Note, at the moment, only MySQL and PostgreSQL are supported.
         else hive.hcatalog.db.engine ?= 'derby'
         hive.hcatalog.db[k] ?= v for k, v of db_admin[hive.hcatalog.db.engine]
         hive.hcatalog.db.database ?= 'hive'
-        hive.hcatalog.db.username ?= 'hive'
-        hive.hcatalog.db.password ?= 'hive123'
-        # do not base the default engine on db_admin, but on hive property.
         switch hive.hcatalog.db.engine
           when 'mysql'
             hive.hcatalog.site['javax.jdo.option.ConnectionURL'] ?= "jdbc:mysql://#{hive.hcatalog.db.host}:#{hive.hcatalog.db.port}/#{hive.hcatalog.db.database}?createDatabaseIfNotExist=true"
@@ -174,8 +172,8 @@ Note, at the moment, only MySQL and PostgreSQL are supported.
             hive.hcatalog.site['javax.jdo.option.ConnectionURL'] ?= "jdbc:postgresql://#{hive.hcatalog.db.host}:#{hive.hcatalog.db.port}/#{hive.hcatalog.db.database}?createDatabaseIfNotExist=true"
             hive.hcatalog.site['javax.jdo.option.ConnectionDriverName'] ?= 'org.postgresql.Driver'
           else throw new Error 'Unsupported database engine'
-        hive.hcatalog.site['javax.jdo.option.ConnectionUserName'] ?= hive.hcatalog.db.username
-        hive.hcatalog.site['javax.jdo.option.ConnectionPassword'] ?= hive.hcatalog.db.password
+      hive.hcatalog.site['javax.jdo.option.ConnectionUserName'] ?= hive.hcatalog.db.username
+      hive.hcatalog.site['javax.jdo.option.ConnectionPassword'] ?= hive.hcatalog.db.password
       throw new Error "Hive database username is required" unless hive.hcatalog.site['javax.jdo.option.ConnectionUserName']
       throw new Error "Hive database password is required" unless hive.hcatalog.site['javax.jdo.option.ConnectionPassword']
 
@@ -186,8 +184,7 @@ full ACID semantics at the row level, so that one application can add rows while
 another reads from the same partition without interfering with each other.
 
       # Get ZooKeeper Quorum
-      zookeeper_quorum = for zoo_ctx in zookeeper_server
-        "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
+      zookeeper_quorum = zookeeper_server.map((zoo_ctx) -> "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}")
       # Enable Table Lock Manager
       # Accoring to [Cloudera](http://www.cloudera.com/content/cloudera/en/documentation/cdh4/v4-2-0/CDH4-Installation-Guide/cdh4ig_topic_18_5.html),
       # enabling the Table Lock Manager without specifying a list of valid
@@ -238,8 +235,8 @@ default to the [DBTokenStore]. Also worth of interest is the
       # else 'org.apache.hadoop.hive.thrift.MemoryTokenStore'
       switch hive.hcatalog.site['hive.cluster.delegation.token.store.class']
         when 'org.apache.hadoop.hive.thrift.ZooKeeperTokenStore'
-          hive.hcatalog.site['hive.cluster.delegation.token.store.class'] = 'org.apache.hadoop.hive.thrift.ZooKeeperTokenStore'
           hive.hcatalog.site['hive.cluster.delegation.token.store.zookeeper.connectString'] ?= zookeeper_quorum.join ','
+          hive.hcatalog.site['hive.cluster.delegation.token.store.zookeeper.znode'] ?= '/hive/cluster/delegation'
 
 ## Configure SSL
 
