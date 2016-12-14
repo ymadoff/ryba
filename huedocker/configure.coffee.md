@@ -216,9 +216,10 @@ Example:
       else
         blacklisted_app.push 'webhcat'
 
-      # HCatalog
+      # HiveServer2
       [hs2_ctx] = @contexts 'ryba/hive/server2'
       throw Error "No Hive HCatalog Server configured" unless hs2_ctx
+      hue_docker.ini['beeswax'] ?= {}
       hue_docker.ini['beeswax']['hive_server_host'] ?= "#{hs2_ctx.config.host}"
       hue_docker.ini['beeswax']['hive_server_port'] ?= if hs2_ctx.config.ryba.hive.server2.site['hive.server2.transport.mode'] is 'binary'
       then hs2_ctx.config.ryba.hive.server2.site['hive.server2.thrift.port']
