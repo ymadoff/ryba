@@ -1,3 +1,43 @@
+## Config Example:
+
+```
+    es_docker:
+      swarm_manager: "tcp://noeyy6vf.noe.edf.fr:3376"
+      graphite:
+        host: "noeyy6z1.noe.edf.fr"
+        port: 2003
+        every: "10s"
+      clusters:
+        "es_re7":
+          es_version: "2.3.3"
+          number_of_shards: 1
+          number_of_replicas: 1
+          number_of_containers: 1
+          data_path: ["/data/1","/data/2","/data/3","/data/4","/data/5","/data/6"]
+          logs_path: "/var/hadoop_log/docker/es"
+          plugins_path: "/etc/elasticsearch/plugins"
+          ports: ["9200:9200","9200:9300"]
+          nodes:
+            master_data:
+              number: 2
+              cpuset: "1-8",
+              mem_limit: '56g'
+              heap_size: '20g'
+            data:
+              number: 3
+              cpuset: "1-8",
+              mem_limit: '56g'
+              heap_size: '20g'
+            master:
+              number: 2
+              cpuset: "1-8",
+              mem_limit: '56g'
+              heap_size: '20g'
+          network:
+            name: "dsp_re7"
+
+```
+
 
 # Elastic Search Config
 
