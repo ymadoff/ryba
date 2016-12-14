@@ -234,7 +234,7 @@
           ldap_provider['tls_client_auth'] ?= 'NONE'
           ldap_provider['ref_strategy'] ?= 'FOLLOW'
           unless ldap_provider['manager_dn']?
-            [openldap_server_ctx] = openldap_servers
+            [openldap_server_ctx] = @contexts 'masson/core/openldap_server'
             throw Error 'no openldap server configured' unless openldap_server_ctx?
             {openldap_server} = openldap_server_ctx.config
             ldap_provider['manager_dn'] ?= "#{openldap_server.root_dn}"
