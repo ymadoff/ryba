@@ -65,7 +65,7 @@
       for es_name,es of es_docker.clusters 
       	delete es_docker.clusters[es_name] unless es.only
 
-      console.log es_docker.clusters
+      # console.log es_docker.clusters
       for es_name,es of es_docker.clusters
         es.normalized_name="#{es_name.replace(/_/g,"")}"
         #Docker:
@@ -105,7 +105,6 @@
         if es.kibana?
           throw Error 'Required property "kibana.port"' unless es.kibana.port?
 
-        # console.log "cluseter #{es_name} ports: #{es.ports}"
         #TODO create overlay network if the network does not exist
         #For now We assume that the network is already created by docker network create
         es.network.external = true
@@ -227,4 +226,3 @@
             es.plugins_urls["#{repo}"].push "https://github.com/#{user}/#{repo}/archive/master.zip"
           
           
-

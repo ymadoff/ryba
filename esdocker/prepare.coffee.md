@@ -12,7 +12,6 @@ Download Elasticsearch Plugins.
         for es_name,es of clusters then do (es_name,es) =>
           @each es.plugins_urls, (plugins_options,plugins_callback) ->
             downloaded = false
-            console.log "#{plugins_options.key} --> #{plugins_options.value}"
             @each plugins_options.value, (plugin_options,callback) ->
               if !downloaded
                 console.log "Trying do download #{plugins_options.key} using #{plugin_options.key}.."
@@ -32,10 +31,5 @@ Download Elasticsearch Plugins.
                       downloaded=true
                     callback null
             @then (err) ->
-              console.log "finished"
               throw Error "failed to download #{plugins_options.key} out of all possible locations..." unless downloaded is true
               plugins_callback null
-            
-            
-
-
