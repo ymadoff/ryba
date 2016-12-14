@@ -215,7 +215,7 @@ This mechanism can be used to configure a specific gateway without having to dec
           else throw Error 'Cannot autoconfigure KNOX hive service, no hiveserver2 declared'
         # Hive WebHCat
         if topology.services['webhcat'] is true
-          ctxs = @contexts 'ryba/hive/webhcat', require('../hive/webhcat/configure').handler
+          ctxs = @contexts 'ryba/hive/webhcat'
           if ctxs.length
             host = ctxs[0].config.host
             port = ctxs[0].config.ryba.webhcat.site['templeton.port']
