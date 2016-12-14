@@ -5,27 +5,51 @@
 
       es_servers =  @hosts_with_module 'ryba/esdocker'
       for es_name,es of clusters then do (es_name,es) =>
+  
         docker_services = {}
         docker_networks = {}
-        @file.yaml
+        
+        
+        @write_yaml
           header: 'elasticsearch'
-          target: "/etc/elasticsearch/#{es_name}/conf/elasticsearch.yml"
+          destination: "/etc/elasticsearch/#{es_name}/conf/elasticsearch.yml"
           content:es.config
-        @file
+          backup: true
+
+        @write
           header: 'elasticsearch logging'
-          target: "/etc/elasticsearch/#{es_name}/conf/logging.yml"
+          destination: "/etc/elasticsearch/#{es_name}/conf/logging.yml"
           source: "#{__dirname}/resources/logging.yml"
           local_source: true
-        @file
-          header: 'logstash'
-          target: "/etc/elasticsearch/#{es_name}/logstash_config/logstash.conf"
-          source: "#{__dirname}/resources/logstash.conf"
-          local_source: true
-          if: -> es.logstash?
+          backup: true
+
+
         @mkdir directory:"#{path}/#{es_name}",uid:'elasticsearch' for path in es.data_path
-        @mkdir directory:"/etc/elasticsearch/plugins",uid:'elasticsearch'
+        @mkdir directory:"#{es.plugins_path}",uid:'elasticsearch'
+        @mkdir directory:"#{es.plugins_path}/#{es.es_version}",uid:'elasticsearch'
         @mkdir directory:"#{es.logs_path}/#{es_name}",uid:'elasticsearch'
         @mkdir directory:"#{es.logs_path}/#{es_name}/logstash",uid:'elasticsearch'
+        @mkdir directory:"/etc/elasticsearch/#{es_name}/scripts",uid:'elasticsearch'
+        @mkdir directory:"/etc/elasticsearch/keytabs",uid:'elasticsearch'
+
+        @each es.downloaded_urls,(options,callback) ->
+          extract_target  = if options.value.indexOf("github") != -1  then "#{es.plugins_path}/#{es.es_version}/" else "#{es.plugins_path}/#{es.es_version}/#{options.key}"
+          @call header: "Plugin #{options.key} installation...", ->
+            @file.download
+              cache_file: "/apps/Downloads/ryba/cache/#{options.key}.zip"
+              source: options.value
+              target: "#{es.plugins_path}/#{es.es_version}/#{options.key}.zip"
+              uid: "elasticsearch"
+              gid: "elasticsearch"
+              shy: true
+            @extract
+              format: "zip"
+              source: "#{es.plugins_path}/#{es.es_version}/#{options.key}.zip"
+              target: extract_target
+              shy: true
+            es.volumes.push "#{es.plugins_path}/#{es.es_version}/#{options.key}:/usr/share/elasticsearch/plugins/#{options.key}"
+            @remove "#{es.plugins_path}/#{es.es_version}/#{options.key}.zip", shy: true
+          @then callback
 
 ## SSL Certificate
 
@@ -49,73 +73,67 @@
 
         if @config.host is es_servers[es_servers.length-1]
           #TODO create overlay network if the network does not exist
+
           docker_networks["#{es.network.name}"] = external: es.network.external
-          volume = [
+
+          master_node = if es.master_nodes > 0
+            "#{es.normalized_name}_master"
+          else if es.master_data_nodes > 0
+            "#{es.normalized_name}_master_data"
+
+
+          es.volumes = [
             "/etc/elasticsearch/#{es_name}/conf/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml",
             "/etc/elasticsearch/#{es_name}/conf/logging.yml:/usr/share/elasticsearch/config/logging.yml",
-            "/etc/elasticsearch/plugins:/usr/share/elasticsearch/plugins",
+            "/etc/elasticsearch/#{es_name}/scripts:/usr/share/elasticsearch/config/scripts",
             "#{es.logs_path}/#{es_name}:#{es.config['path.logs']}"
-          ]
-          volume.push "#{path}/#{es_name}/:#{path}" for path in es.data_path
-          for es_node in es.nodes
-            command = if es_node.master is true
-              node_entity = "#{es_name}_master"
-              docker_services[node_entity] = {'container_name': node_entity,'environment': ["ES_HEAP_SIZE=#{es.heap_size}"]}
-              "elasticsearch -Des.node.master=true -Des.node.data=#{es_node.data}"
-            else
-              node_entity = "node"
-              docker_services[node_entity] = {'environment' : es.environment }
-              "elasticsearch -Des.discovery.zen.ping.unicast.hosts=#{es_name}_master -Des.node.master=false -Des.node.data=true"
+
+          ].concat es.volumes
+
+
+
+          es.volumes.push "#{path}/#{es_name}/:#{path}" for path in es.data_path
+
+          for type,es_node of es.nodes
+
+            command = switch type
+              when "master" then "elasticsearch -Des.discovery.zen.ping.unicast.hosts=#{master_node}_1 -Des.node.master=true -Des.node.data=false"
+              when "master_data" then "elasticsearch -Des.discovery.zen.ping.unicast.hosts=#{master_node}_1 -Des.node.master=true -Des.node.data=true"
+              when "data" then "elasticsearch -Des.discovery.zen.ping.unicast.hosts=#{master_node}_1 -Des.node.master=false -Des.node.data=true"
+
+
+            docker_services[type] = {'environment' : [es.environment,"ES_HEAP_SIZE=#{es_node.heap_size}"] }
             service_def = 
-              image : es.es_image
+              image : es.docker_es_image
               restart: "always"
               command: command
               networks: [es.network.name]
               user: "elasticsearch"
-              volumes: volume
+              volumes: es.volumes
               ports: es.ports
               mem_limit: if es_node.mem_limit? then es_node.mem_limit else es.default_mem
-              cpu_shares: if es_node.cpu_shares? then es_node.cpu_shares else es.default_cpu_shares
-              cpu_quota: if es_node.cpu_quota? then es_node.cpu_quota * 1000 else es.default_cpu_quota
-            if es_node.cpuset? then service_def["cpuset"] = es_node.cpuset
-            misc.merge docker_services[node_entity], service_def
+              # cpu_shares: if es_node.cpu_shares? then es_node.cpu_shares else es.default_cpu_shares
 
-          if es.kibana is true
+            if es_node.cpuset?
+              service_def["cpuset"] = es_node.cpuset
+            else 
+              service_def["cpu_quota"] = if es_node.cpu_quota? then es_node.cpu_quota * 1000 else es.default_cpu_quota
+
+            misc.merge docker_services[type], service_def
+
+          if es.kibana?
             docker_services["#{es_name}_kibana"] = 
               image: es.kibana_image
               container_name: "#{es_name}_kibana"
-              environment: ["ELASTICSEARCH_URL=http://#{es_name}_master:9200"]
-              ports: ["5601"]
+              environment: ["ELASTICSEARCH_URL=http://#{master_node}_1:9200"]
+              ports: ["#{es.kibana.port}:5601"]
               networks: [es.network.name]
-
-          if es.logstash?
-            # send events only to dedicated data nodes
-            es_hosts = []
-            es_hosts.push "\"#{es_name.replace('_','')}_node_#{i}:9200\"" for i in [1..es.number_of_containers - 1]            
-            docker_services["#{es_name}_logstash"] = 
-              image: es.logstash_image
-              container_name: "#{es_name}_logstash"
-              command: "logstash -f /config-dir/logstash.conf --log /log-dir"
-              environment: [
-                "TAG=#{es.logstash.tag}",
-                "PORT=#{es.logstash.port}",
-                "EVENT_TYPE=#{es.logstash.event_type}",
-                "INDEX=#{es.logstash.index}",
-                "DOC_TYPE=#{es.logstash.doc_type}",
-                "ES_HOSTS=[#{es_hosts}]"
-              ]
-              ports: ["#{es.logstash.port}"]
-              networks: [es.network.name]
-              volumes: [
-                "/etc/elasticsearch/#{es_name}/logstash_config:/config-dir",
-                "#{es.logs_path}/#{es_name}/logstash:/log-dir"
-                ]
-
-          yaml_data = {version:'2',services:docker_services,networks:docker_networks}
-          @file.yaml
+          
+          @write_yaml
             header: 'docker-compose'
-            target: "/etc/elasticsearch/#{es_name}/docker-compose.yml"
-            content:yaml_data
+            destination: "/etc/elasticsearch/#{es_name}/docker-compose.yml"
+            content: {version:'2',services:docker_services,networks:docker_networks}
+            backup: true
 
 ## Run docker compose file
 
@@ -123,24 +141,17 @@
             {host:swarm_manager,tlsverify:" ",tlscacert:ssl.dest_cacert,tlscert:ssl.dest_cert,tlskey:ssl.dest_key},
             "export DOCKER_HOST=#{swarm_manager};export DOCKER_CERT_PATH=#{ssl.dest_dir};export DOCKER_TLS_VERIFY=1"
             ]
-
-          @docker_status container:"#{es_name}_master", docker:docker_args
-
-          @execute
-            cmd:"""
-              #{export_vars}
-              pushd /etc/elasticsearch/#{es_name}
-              docker-compose --verbose up -d #{es_name}_master
-            """
-            unless: -> @status -1
-
-          @execute
-            cmd:"""
-              #{export_vars}
-              pushd /etc/elasticsearch/#{es_name}
-              docker-compose --verbose scale node=#{es.number_of_containers - 1}
-            """
-            if: -> @status -1
+        
+          @docker_status container:"#{master_node}_1", docker:docker_args
+          
+          for service,node of es.nodes then do (service,node) =>
+            @execute
+              cmd:"""
+                #{export_vars}
+                pushd /etc/elasticsearch/#{es_name}
+                docker-compose --verbose scale #{service}=#{node.number}
+              """
+              unless: -> @status -1
 
           @execute
             cmd:"""
@@ -150,13 +161,6 @@
             """
             if: -> es.kibana is true and @status (-1)
 
-          @execute
-            cmd:"""
-              #{export_vars}
-              pushd /etc/elasticsearch/#{es_name}
-              docker-compose --verbose up -d #{es_name}_logstash
-            """
-            if: -> es.logstash? and @status (-2)
 
 ## Dependencies
 

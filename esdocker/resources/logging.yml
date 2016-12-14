@@ -1,5 +1,5 @@
-s.logger.level: INFO
-rootLogger: ${es.logger.level}, console, file
+es.logger.level: INFO
+rootLogger: ${es.logger.level}, file
 logger:
   # log action execution errors for easier debugging
   action: DEBUG

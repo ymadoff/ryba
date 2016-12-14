@@ -21,27 +21,38 @@
 
       es_docker.graphite ?= @config.metrics_sinks.graphite = {}
 
+      # console.log @contexts('ryba/esdocker')[0]?.config.host is @config.host
       for es_name,es of es_docker.clusters 
       	delete es_docker.clusters[es_name] unless es.only
 
-      # console.log es_docker.clusters
+      console.log es_docker.clusters
       for es_name,es of es_docker.clusters
+        es.normalized_name="#{es_name.replace(/_/g,"")}"
         #Docker:
-        es.es_image ?= "elasticsearch"
-        es.kibana_image ?= "kibana"
-        es.logstash_image ?= "logstash"
+        es.es_version ?= "2.3.3"
+        es.docker_es_image = "dc-registry-bigdata.noe.edf.fr/elasticsearch:#{es.es_version}b"
+        es.docker_kibana_image ?= "kibana:4.5"
+        es.docker_logstash_image ?= "logstash"
+
         #Cluster
         es.number_of_containers ?= @hosts_with_module('ryba/docker-es').length
         es.number_of_shards ?= es.number_of_containers
         es.number_of_replicas ?= 1
         es.data_path ?= ["/data/1","/data/2","/data/3","/data/4","/data/5","/data/6","/data/7","/data/8"]
         es.logs_path ?= "/var/hadoop_log/docker/es"
+
+        es.plugins_path ?= "/etc/elasticsearch/plugins"
+        es.scripts_path ?= "/etc/elasticsearch/plugins"
+        es.plugins ?= ["royrusso/elasticsearch-HQ","delete-by-query","mobz/elasticsearch-head","karmi/elasticsearch-paramedic/2.0"]
+        es.volumes ?= []
+        es.downloaded_urls = {}
+
         es.default_mem = '2g'
-        # cpu quota 100% et 4 cpu cores
-        es.default_cpu_shares = 4
+        # cpu quota 100%
         es.default_cpu_quota = 100000
-        es.heap_size ?= '1g'
-        es.environment = ["affinity:container!=**#{es_name}_master","affinity:container!=*#{es_name}_node*","ES_HEAP_SIZE=#{es.heap_size}"]
+
+        es.environment = "affinity:container!=*#{es.normalized_name}*"
+
         throw Error 'Required property "ports"' unless es.ports?
        	if es.ports instanceof Array
           port_mapping = port.split(":").length > 1 for port in es.ports
@@ -51,11 +62,14 @@
 
         throw Error 'Required property "nodes"' unless es.nodes?
         throw Error 'Required property "network" and network.external' unless es.network?
+        if es.kibana?
+          throw Error 'Required property "kibana.port"' unless es.kibana.port?
 
         # console.log "cluseter #{es_name} ports: #{es.ports}"
         #TODO create overlay network if the network does not exist
         #For now We assume that the network is already created by docker network create
         es.network.external = true
+
         if es.logstash?
           throw Error 'Required property "logstash.port"' unless es.logstash.port?
           throw Error 'Required property "logstash.index"' unless es.logstash.index?
@@ -63,6 +77,25 @@
 
           es.logstash.tag ?= 'TAG1'
           es.logstash.event_type ?= 'app_logs'
+
+
+        es.total_nodes = 0
+        es.master_nodes = 0
+        es.data_nodes = 0
+        es.master_data_nodes = 0
+
+        for type,node of es.nodes
+          throw Error 'Please specify number property for each node type under nodes property' unless node.number?
+          node.mem_limit ?= es.default_mem
+          heap_size =  if node.mem_limit is '1g' then '512mb' else Math.floor(parseInt(node.mem_limit.replace(/(g|mb)/i,'')) / 2 )
+          node.heap_size ?= if node.mem_limit.indexOf('g') > -1 then heap_size+'g' else heap_size+'mb'
+          node.cpu_quota ?= es.default_cpu_quota
+          switch type
+            when "master" then es.master_nodes = node.number
+            when "data" then es.data_nodes =  node.number
+            when "master_data" then es.master_data_nodes = node.number
+        
+        es.total_nodes = es.master_nodes + es.data_nodes + es.master_data_nodes
 
         #ES Config file
         es.config = {}
@@ -73,14 +106,85 @@
         es.config["cluster.number_of_replicas"] = es.number_of_replicas
         es.config["path.data"] = "#{es.data_path}"
         es.config["path.logs"] = "/var/log/elasticsearch"
-        if es.graphite?
-          throw Error 'Required property "graphite.host"' unless es_docker.graphite.host?
-          throw Error 'Required property "graphite.port"' unless es_docker.graphite.port?
+        # reload scirpts every 12h
+        es.config["resource.reload.interval"] = "43200s" 
 
-          es.config["metrics.graphite.host"] = es_docker.graphite.host
-          es.config["metrics.graphite.port"] = es_docker.graphite.port
-          es.config["metrics.graphite.every"] = es_docker.graphite.every ?= "10s"
+        es.config["discovery.zen.minimum_master_nodes"] = Math.floor(es.total_nodes / 2) + 1
+        es.config["gateway.expected_nodes"] = es.total_nodes
+        es.config["gateway.recover_after_nodes"] = es.total_nodes - 1
+
+        if es.graphite?
+          throw Error 'Required property "graphite.host"' unless docker_es.graphite.host?
+          throw Error 'Required property "graphite.port"' unless docker_es.graphite.port?
+
+          es.config["metrics.graphite.host"] = docker_es.graphite.host
+          es.config["metrics.graphite.port"] = docker_es.graphite.port
+          es.config["metrics.graphite.every"] = docker_es.graphite.every ?= "10s"
           es.config["metrics.graphite.prefix"] = "es.#{es_name}.${HOSTNAME}"
 
+        if "elasticsearch-repository-hdfs" in es.plugins
+          es.config["security.manager.enabled"] = false
+          es.config["repositories.hdfs.uri"] = "hdfs://torval:8020/"
+          es.config["repositories.hdfs.path"] = "/backup/es"
+          es.config["repositories.hdfs.conf_location"] = "/hadoop-config/core-site.xml,/hadoop-config/hdfs-site.xml"
+          es.config["repositories.hdfs.user_keytab"] = "/hadoop-config/keytabs/dsp_app_adm.keytab"
+          es.config["repositories.hdfs.user_principal"] = "dsp_app_adm@HADOOP.EDF.FR"
+          es.volumes = [
+            "/etc/krb5.conf:/etc/krb5.conf",
+            "/etc/hadoop/conf/core-site.xml:/hadoop-config/core-site.xml",
+            "/etc/hadoop/conf/hdfs-site.xml:/hadoop-config/hdfs-site.xml",
+            "/etc/elasticsearch/keytabs:/hadoop-config/keytabs"
+          ].concat es.volumes
 
+        # es plugins urls
+        es.plugins_urls = {}
+        official_plugins = [
+          "analysis-icu",
+          "analysis-kuromoji",
+          "analysis-phonetic",
+          "analysis-smartcn",
+          "analysis-stempel",
+          "cloud-aws",
+          "cloud-azure",
+          "cloud-gce",
+          "delete-by-query",
+          "discovery-multicast",
+          "lang-javascript",
+          "lang-python",
+          "mapper-attachments",
+          "mapper-murmur3",
+          "mapper-size"
+        ]
+        for name in es.plugins
+          
+          
+          elements = name.split("/")
+          [user,repo,version] = if elements.length == 1
+            # plugin form: pluginName
+            [null,elements[0],null]
+          else if elements.length == 2
+            #plugin form: userName/pluginName
+            [elements[0],elements[1],null]
+          else if elements.length == 3
+            #plugin form: userName/pluginName/version
+            [elements[0],elements[1],elements[2]]
+
+          es.plugins_urls["#{repo}"] = []
+          console.log "user: #{user} repo: #{repo} version: #{version}"
+          if version is null && user is null && repo != null
+            throw Error " #{repo} is not an official plugin so you should install it using elasticsearch/#{repo}/latest naming form." unless repo in official_plugins
+            version = es.es_version
+          if version != null
+            if user is null
+              es.plugins_urls["#{repo}"].push "https://download.elastic.co/elasticsearch/release/org/elasticsearch/plugin/#{repo}/#{version}/#{repo}-#{version}.zip"
+            else
+              es.plugins_urls["#{repo}"].push "https://download.elastic.co/#{user}/#{repo}/#{repo}-#{version}.zip"
+              es.plugins_urls["#{repo}"].push "https://search.maven.org/remotecontent?filepath=#{user.replace('.','/')}/#{repo}/#{version}/#{repo}-#{version}.zip"
+              es.plugins_urls["#{repo}"].push "https://oss.sonatype.org/service/local/repositories/releases/content/#{user.replace('.','/')}/#{repo}/#{version}/#{repo}-#{version}.zip"
+              es.plugins_urls["#{repo}"].push "https://github.com/#{user}/#{repo}/archive/#{version}.zip"
+          
+          if user != null
+            es.plugins_urls["#{repo}"].push "https://github.com/#{user}/#{repo}/archive/master.zip"
+          
+          
 
