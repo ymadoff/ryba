@@ -148,8 +148,12 @@ in the gateway.sh service script.
               if /Master secret is already present on disk/.test data then callback null, false
               else if /Master secret has been persisted to disk/.test data then callback null, true
             stream.on 'exit', -> callback Error 'Exit before end'
+
+      @call
+        header: 'Store Password'
+        handler: ->
           # Create alias to store password used in topology
-          for alias,password of knox.realm_passwords
+          for alias,password of knox.realm_passwords then do (alias,password) => 
             nameservice=alias.split("-")[0]
             @execute
               cmd: "/usr/hdp/current/knox-server/bin/knoxcli.sh create-alias #{alias} --cluster #{nameservice} --value #{password}"
