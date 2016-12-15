@@ -31,19 +31,19 @@ hadoop:x:498:hdfs
 
 ## IPTables
 
-| Service    | Port | Proto  | Parameter          |
-|------------|------|--------|--------------------|
-| zookeeper  | 2181 | tcp    | zookeeper.port     |
-| zookeeper  | 2888 | tcp    | -                  |
-| zookeeper  | 3888 | tcp    | -                  |
+| Service    | Port | Proto  | Parameter             |
+|------------|------|--------|-----------------------|
+| zookeeper  | 2181 | tcp    | zookeeper.port        |
+| zookeeper  | 2888 | tcp    | zookeeper.peer_port   |
+| zookeeper  | 3888 | tcp    | zookeeper.leader_port |
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
       rules = [
           { chain: 'INPUT', jump: 'ACCEPT', dport: zookeeper.port, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Client" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 2888, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Peer" }
-          { chain: 'INPUT', jump: 'ACCEPT', dport: 3888, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Leader" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: zookeeper.peer_port, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Peer" }
+          { chain: 'INPUT', jump: 'ACCEPT', dport: zookeeper.leader_port, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Leader" }
       ]
       rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: parseInt(zookeeper.env["JMXPORT"],10), protocol: 'tcp', state: 'NEW', comment: "Zookeeper JMX" } if zookeeper.env["JMXPORT"]?
       @iptables
@@ -210,14 +210,9 @@ parameters autopurge.snapRetainCount and autopurge.purgeInterval.
 
 myid is a unique id that must be generated for each node of the zookeeper cluster
 
-      zk_ctxs = @contexts 'ryba/zookeeper/server'
-      return if zk_ctxs.length is 1
-      unless zookeeper.myid
-        for zk_ctx, i in zk_ctxs
-          zookeeper.myid = i+1 if zk_ctx.config.host is @config.host
       @file
-        header: 'Write myid'
-        content: zookeeper.myid
+        header: 'Write id'
+        content: zookeeper.id
         target: "#{zookeeper.config['dataDir']}/myid"
         uid: zookeeper.user.name
         gid: hadoop_group.name

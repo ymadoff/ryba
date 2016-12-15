@@ -70,6 +70,13 @@ Example :
         zookeeper.env['SERVER_JVMFLAGS'] = "#{zookeeper.env['SERVER_JVMFLAGS']} -Dzookeeper.security.auth_to_local=$ZOO_AUTH_TO_LOCAL"
       if zookeeper.env['JMXPORT']? and zookeeper.env['SERVER_JVMFLAGS'].indexOf('-Dcom.sun.management.jmxremote.rmi.port') is -1
         zookeeper.env['SERVER_JVMFLAGS'] = "#{zookeeper.env['SERVER_JVMFLAGS']} -Dcom.sun.management.jmxremote.rmi.port=$JMXPORT"
+      # Internal
+      zookeeper.id ?= zk_ctxs.map((ctx) -> ctx.config.host).indexOf(@config.host)+1
+      zookeeper.peer_port ?= 2888
+      zookeeper.leader_port ?= 3888
+      zookeeper.retention ?= 3 # Used to clean data dir
+      zookeeper.purge ?= '@weekly'
+      zookeeper.purge = '@weekly' if zookeeper.purge is true
       # Configuration
       zookeeper.config ?= {}
       zookeeper.config['maxClientCnxns'] ?= '200'
@@ -88,10 +95,14 @@ Example :
       # If zookeeper node is participant (to election) or only observer
       # Adding new observer nodes allow horizontal scaling without slowing write
       zookeeper.config['peerType'] ?= 'participant'
-      if zk_ctxs.length > 1 then for zk_ctx, i in zk_ctxs
-        zookeeper.config["server.#{i+1}"] = "#{zk_ctx.config.host}:2888:3888"
-        if zk_ctx.config.ryba.zookeeper?.config?['peerType'] is 'observer'
-          zookeeper.config["server.#{i+1}"]  += ':observer'
+      connect_string = "#{@config.host}:#{zookeeper.peer_port}:#{zookeeper.leader_port}"
+      connect_string += ":observer" if zookeeper.config['peerType'] is 'observer'
+      for zk_ctx in zk_ctxs
+        zk_ctx.config.ryba.zookeeper ?= {}
+        zk_ctx.config.ryba.zookeeper.config ?= {}
+        if zk_ctx.config.ryba.zookeeper.config["server.#{zookeeper.id}"]? and zk_ctx.config.ryba.zookeeper.config["server.#{zookeeper.id}"] isnt connect_string
+          throw Error "Zk Server id '#{zookeeper.id}' is already registered on #{zk_ctx.config.host}"
+        zk_ctx.config.ryba.zookeeper.config["server.#{zookeeper.id}"] = connect_string
       # SASL
       zookeeper.config['authProvider.1'] ?= 'org.apache.zookeeper.server.auth.SASLAuthenticationProvider'
       zookeeper.config['jaasLoginRenew'] ?= '3600000'
@@ -100,11 +111,6 @@ Example :
       #http://zookeeper.apache.org/doc/trunk/zookeeperAdmin.html#sc_advancedConfiguration
       zookeeper.config['autopurge.snapRetainCount'] ?= '5'
       zookeeper.config['autopurge.purgeInterval'] ?= 4
-      # Internal
-      zookeeper.myid ?= null
-      zookeeper.retention ?= 3 # Used to clean data dir
-      zookeeper.purge ?= '@weekly'
-      zookeeper.purge = '@weekly' if zookeeper.purge is true
       # Superuser
       zookeeper.superuser ?= {}
       # zookeeper.superuser.password ?= 'ryba123'
