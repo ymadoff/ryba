@@ -23,7 +23,7 @@
       spark.group.system ?= true
       spark.user.gid ?= spark.group.name
       # Configuration
-      spark.conf = {}
+      spark.conf ?= {}
       spark.conf['spark.master'] ?= "local[*]"
       # For [Spark on YARN deployments][[secu]], configuring spark.authenticate to true
       # will automatically handle generating and distributing the shared secret.
