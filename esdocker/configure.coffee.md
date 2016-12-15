@@ -75,7 +75,7 @@
         es.docker_logstash_image ?= "logstash"
 
         #Cluster
-        es.number_of_containers ?= @hosts_with_module('ryba/docker-es').length
+        es.number_of_containers ?= @contexts('ryba/docker-es').length
         es.number_of_shards ?= es.number_of_containers
         es.number_of_replicas ?= 1
         es.data_path ?= ["/data/1","/data/2","/data/3","/data/4","/data/5","/data/6","/data/7","/data/8"]

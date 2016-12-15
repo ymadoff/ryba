@@ -93,29 +93,29 @@ Example
       nagios.kinit ?= '/usr/bin/kinit'
       nagios.plugin_dir ?= '/usr/lib64/nagios/plugins'
       nagios.hostgroups ?=
-        'namenode': @hosts_with_module 'ryba/hadoop/hdfs_nn'
-        'snamenode': @hosts_with_module 'ryba/hadoop/hdfs_snn'
-        'slaves': @hosts_with_module 'ryba/hadoop/hdfs_dn'
-        'agent-servers': [] # @hosts_with_module 'ryba/ambari/agent'
-        'nagios-server': @hosts_with_module 'ryba/nagios/install'
+        'namenode': @contexts('ryba/hadoop/hdfs_nn').map((ctx) -> ctx.config.host)
+        'snamenode': @contexts('ryba/hadoop/hdfs_snn').map((ctx) -> ctx.config.host)
+        'slaves': @contexts('ryba/hadoop/hdfs_dn').map((ctx) -> ctx.config.host)
+        'agent-servers': [] # @contexts('ryba/ambari/agent'
+        'nagios-server': @contexts('ryba/nagios/install').map((ctx) -> ctx.config.host)
         # jobtracker
-        'ganglia-server': @hosts_with_module 'ryba/ganglia/collector'
-        'flume-servers': [] # @hosts_with_module 'ryba/flume/server'
-        'zookeeper-servers': @hosts_with_module 'ryba/zookeeeper/server'
-        'hbasemasters': @hosts_with_module 'ryba/hbase/master'
-        'hiveserver': @hosts_with_module 'ryba/hive/hcatalog'
-        'region-servers': @hosts_with_module 'ryba/hbase/regionserver'
-        'oozie-server': @hosts_with_module 'ryba/oozie/server'
-        'webhcat-server': @hosts_with_module 'ryba/hive/webhcat'
-        'hue-server': @hosts_with_module 'ryba/hue/install'
-        'resourcemanager': @hosts_with_module 'ryba/hadoop/yarn_rm'
-        'nodemanagers': @hosts_with_module 'ryba/hadoop/yarn_nm'
-        'historyserver2': @hosts_with_module 'ryba/hadoop/servers'
-        'journalnodes': @hosts_with_module 'ryba/hadoop/hdfs_jn'
-        'nimbus': [] # @hosts_with_module 'ryba/storm/nimbus'
-        'drpc-server': [] # @hosts_with_module 'ryba/storm/drpc'
-        'storm_ui': [] # @hosts_with_module 'ryba/storm/ui'
-        'supervisors': [] # @hosts_with_module 'ryba/storm/supervisors'
-        'storm_rest_api': [] # @hosts_with_module 'ryba/storm/rest'
-        'falcon-server': [] # @hosts_with_module 'ryba/falcon'
-        'ats-servers': @hosts_with_module 'ryba/ats'
+        'ganglia-server': @contexts('ryba/ganglia/collector').map((ctx) -> ctx.config.host)
+        'flume-servers': [] # @contexts('ryba/flume/server'
+        'zookeeper-servers': @contexts('ryba/zookeeeper/server').map((ctx) -> ctx.config.host)
+        'hbasemasters': @contexts('ryba/hbase/master').map((ctx) -> ctx.config.host)
+        'hiveserver': @contexts('ryba/hive/hcatalog').map((ctx) -> ctx.config.host)
+        'region-servers': @contexts('ryba/hbase/regionserver').map((ctx) -> ctx.config.host)
+        'oozie-server': @contexts('ryba/oozie/server').map((ctx) -> ctx.config.host)
+        'webhcat-server': @contexts('ryba/hive/webhcat').map((ctx) -> ctx.config.host)
+        'hue-server': @contexts('ryba/hue/install').map((ctx) -> ctx.config.host)
+        'resourcemanager': @contexts('ryba/hadoop/yarn_rm').map((ctx) -> ctx.config.host)
+        'nodemanagers': @contexts('ryba/hadoop/yarn_nm').map((ctx) -> ctx.config.host)
+        'historyserver2': @contexts('ryba/hadoop/servers').map((ctx) -> ctx.config.host)
+        'journalnodes': @contexts('ryba/hadoop/hdfs_jn').map((ctx) -> ctx.config.host)
+        'nimbus': [] # @contexts('ryba/storm/nimbus').map((ctx) -> ctx.config.host)
+        'drpc-server': [] # @contexts('ryba/storm/drpc').map((ctx) -> ctx.config.host)
+        'storm_ui': [] # @contexts('ryba/storm/ui').map((ctx) -> ctx.config.host)
+        'supervisors': [] # @contexts('ryba/storm/supervisors').map((ctx) -> ctx.config.host)
+        'storm_rest_api': [] # @contexts('ryba/storm/rest').map((ctx) -> ctx.config.host)
+        'falcon-server': [] # @contexts('ryba/falcon').map((ctx) -> ctx.config.host)
+        'ats-servers': @contexts('ryba/ats').map((ctx) -> ctx.config.host)

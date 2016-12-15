@@ -88,7 +88,7 @@ Example:
       hue ?= {}
       hue.ini ?= {}
       # todo, this might not work as expected after ha migration
-      nodemanagers = @hosts_with_module 'ryba/hadoop/yarn_nm'
+      nodemanagers = @contexts('ryba/hadoop/yarn_nm').map((ctx) -> ctx.config.host)
       # Webhdfs should be active on the NameNode, Secondary NameNode, and all the DataNodes
       # throw new Error 'WebHDFS not active' if ryba.hdfs.site['dfs.webhdfs.enabled'] isnt 'true'
       hue.ca_bundle ?= '/etc/hue/conf/trust.pem'
@@ -117,7 +117,7 @@ Example:
       # Support for RM HA was added in Hue 3.7
       # rm_protocol = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
 
-      # rm_hosts = @hosts_with_module 'ryba/hadoop/yarn_rm'
+      # rm_hosts = @contexts('ryba/hadoop/yarn_rm').map((ctx) -> ctx.config.host)
       # if rm_hosts.length > 1
       #   rm_host = ryba.yarn.active_rm_host
       #   rm_ctx = @context rm_host, require('../hadoop/yarn_rm').configure

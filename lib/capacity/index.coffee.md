@@ -286,7 +286,7 @@ the application (zombie state).
       for ctx in ctxs
         continue unless ctx.has_any_modules 'ryba/hadoop/hdfs_nn',  'ryba/hadoop/hdfs_dn',  'ryba/hadoop/hdfs_client'
         {hdfs_site} = ctx.config.capacity
-        hdfs_site['dfs.replication'] ?= Math.min 3, ctx.hosts_with_module('ryba/hadoop/hdfs_dn').length # Not sure if this really is a client property
+        hdfs_site['dfs.replication'] ?= Math.min 3, ctx.contexts('ryba/hadoop/hdfs_dn').length # Not sure if this really is a client property
 
 ## HDFS DataNode
 
@@ -319,7 +319,7 @@ This behavior may be altered with the "hdfs_nn_name_dir" parameter.
         if /^\//.test hdfs_nn_name_dir
           hdfs_site['dfs.namenode.name.dir'] ?= hdfs_nn_name_dir.split ','
         else
-          if ctx.hosts_with_module('ryba/hadoop/hdfs_nn').length > 1
+          if ctx.contexts('ryba/hadoop/hdfs_nn').length > 1
             hdfs_site['dfs.namenode.name.dir'] ?= ['file://' + path.resolve '/var', hdfs_nn_name_dir or './hdfs/name']
           else
             hdfs_site['dfs.namenode.name.dir'] ?= disks.map (disk) ->

@@ -98,7 +98,7 @@
       broker.config.port ?= 7772
       broker.config.spare ?= '0'
       broker.config.realm ?= 'All'
-      broker.config.manage_arbiters ?= if @hosts_with_module('ryba/shinken/broker').indexOf(@config.host) is 0 then '1' else '0'
+      broker.config.manage_arbiters ?= if @contexts('ryba/shinken/broker').map((ctx) -> ctx.config.host).indexOf(@config.host) is 0 then '1' else '0'
       broker.config.modules = [broker.config.modules] if typeof broker.config.modules is 'string'
       broker.config.modules ?= Object.keys broker.modules
       broker.config.use_ssl ?= shinken.config.use_ssl

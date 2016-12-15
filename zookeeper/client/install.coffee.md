@@ -30,7 +30,7 @@ hadoop:x:498:hdfs
 Follow the [HDP recommandations][install] to install the "zookeeper" package
 which has no dependency.
 
-      @call header: 'ZooKeeper Client # Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, handler: ->
         @service
           name: 'zookeeper'
         @hdp_select
@@ -41,7 +41,7 @@ which has no dependency.
 Create the JAAS client configuration file.
 
       @file.jaas
-        header: 'ZooKeeper Client # Kerberos'
+        header: 'Kerberos'
         target: "#{zookeeper.conf_dir}/zookeeper-client.jaas"
         content: Client:
           useTicketCache: 'true'

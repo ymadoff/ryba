@@ -125,7 +125,7 @@ Executes hive queries to check communication with Hive.
 Creating database from SparkSql is not supported for now.
 
       @call header: 'Check Shell (Hive SQL)', timeout: -1,label_true: 'CHECKED', handler: ->
-        return unless @hosts_with_module('ryba/hive/server2').length
+        return unless @contexts('ryba/hive/server2').length
         dir_check = "check-#{@config.shortname}-spark-shell-scala-sql"
         directory = "check-#{@config.shortname}-spark_shell_scala-sql"
         db = "check_#{@config.shortname}_spark_shell_hive_#{@config.shortname}"
