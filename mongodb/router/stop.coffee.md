@@ -8,12 +8,14 @@
 
 Stop the MongoDB Routing Server service.
 
-      @service.stop name: 'mongodb-router-server'
+      @service.stop
+        header: 'Stop service'
+        name: 'mongodb-router-server'
 
 ## Clean Logs
 
       @call ->
-        header: 'MongoDB Routing Server # Clean Logs'
+        header: 'Clean Logs'
         label_true: 'CLEANED'
         if: @config.ryba.clean_logs
         handler: ->

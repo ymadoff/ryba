@@ -4,7 +4,7 @@
 Download Elasticsearch Plugins.
 
     module.exports =
-      header: 'Elasticsearch # Plugins'
+      header: 'Elasticsearch Plugins'
       timeout: -1
       if: -> @contexts('ryba/esdocker')[0]?.config.host is @config.host
       handler: ->

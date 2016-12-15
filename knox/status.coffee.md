@@ -8,5 +8,5 @@ service knox-server status
 su -l knox -c "/usr/hdp/current/knox-server/bin/gateway.sh status"
 ```
 
-    module.exports = header: 'Knox # Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
+    module.exports = header: 'Knox Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       @service.status name: 'knox-server'

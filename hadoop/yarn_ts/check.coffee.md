@@ -3,7 +3,7 @@
 
 Check the Timeline Server.
 
-    module.exports = header: 'YARN ATS # Check HTTP', timeout: -1, label_true: 'CHECKED', handler: ->
+    module.exports = header: 'YARN ATS Check', timeout: -1, label_true: 'CHECKED', handler: ->
       {yarn} = @config.ryba
 
 Wait for the server to be started.
@@ -16,6 +16,7 @@ Check the HTTP server with a JMX request.
       address_key = if protocol is 'http' then "address" else "https.address"
       address = yarn.site["yarn.timeline-service.webapp.#{address_key}"]
       @execute
+        header: 'HTTP Port'
         cmd: mkcmd.hdfs @, "curl --negotiate -k -u : #{protocol}://#{address}/jmx?qry=Hadoop:service=ApplicationHistoryServer,name=JvmMetrics"
       , (err, executed, stdout) ->
         throw err if err

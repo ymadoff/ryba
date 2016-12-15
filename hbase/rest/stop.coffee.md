@@ -9,16 +9,17 @@ service hbase-rest start
 su -l hbase -c "/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config /etc/hbase/conf stop rest"
 ```
 
-    module.exports =  header: 'HBase Rest # Stop', label_true: 'STOPPED', handler: ->
+    module.exports =  header: 'HBase Rest Stop', label_true: 'STOPPED', handler: ->
       {hbase, clean_logs} = @config.ryba
       @service.stop
+        header: 'Stop service'
         name: 'hbase-rest'
         if_exists: '/etc/init.d/hbase-rest'
 
 ## Stop Clean Logs
 
       @call
-        header: 'HBase Rest # Stop Clean Logs'
+        header: 'Clean Logs'
         label_true: 'CLEANED'
         if: -> @config.ryba.clean_logs
         handler: ->

@@ -217,7 +217,7 @@ Note, we are re-using the namespace created above.
 
 This check is only executed if more than two HBase Master are declared.
 
-      @call header: 'HBase Client # Check HA', timeout: -1, label_true: 'CHECKED', handler: ->
+      @call header: 'Check HA', timeout: -1, label_true: 'CHECKED', handler: ->
         return unless hbase_ctxs.length > 1
         table = "#{hbase.client.test.namespace}:check_#{@config.shortname}_ha"
         @execute

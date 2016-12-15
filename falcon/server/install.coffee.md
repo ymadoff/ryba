@@ -144,7 +144,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
 ## Runtime
 
-    # module.exports.push header: 'Falcon # Runtime', handler: ->
+    # module.exports.push header: 'Falcon Runtime', handler: ->
     #   # {conf_dir, runtime} = @config.ryba.falcon
     #   # @file.ini
     #   #   target: "#{conf_dir}/runtime.properties"

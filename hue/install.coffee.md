@@ -5,7 +5,7 @@ Here's how to uninstall Hue: `rpm -qa | grep hue | xargs sudo rpm -e`. This
 article from december 2014 describe how to 
 [install the latest version of hue on HDP](http://gethue.com/how-to-deploy-hue-on-hdp/).
 
-    module.exports = header: 'Hue', handler: ->
+    module.exports = header: 'Hue Install', handler: ->
       {realm, hue} = @config.ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
@@ -37,7 +37,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
       @iptables
-        header: 'Hue # IPTables'
+        header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: hue.ini.desktop.http_port, protocol: 'tcp', state: 'NEW', comment: "Hue Web UI" }
         ]
@@ -61,7 +61,7 @@ TODO: only work if WebHCat is running on the same server as Hue
       webhcat_server = @host_with_module 'ryba/hive/webhcat'
       throw Error "WebHCat shall be on the same server as Hue" unless webhcat_server is @config.host
       @hconfigure
-        header: 'Hue # WebHCat'
+        header: 'WebHCat'
         target: "#{webhcat.conf_dir}/webhcat-site.xml"
         properties: 
           'webhcat.proxyuser.hue.hosts': '*'
@@ -80,7 +80,7 @@ TODO: only work if Oozie is running on the same server as Hue
       oozie_server = @host_with_module 'ryba/oozie/server'
       return Error "Oozie shall be on the same server as Hue" unless oozie_server is @config.host
       @hconfigure
-        header: 'Hue # Oozie'
+        header: 'Oozie'
         target: "#{oozie.conf_dir}/oozie-site.xml"
         properties: 
           'oozie.service.ProxyUserService.proxyuser.hue.hosts': '*'
@@ -111,7 +111,7 @@ Setup the database hosting the Hue data. Currently two database providers are
 implemented but Hue supports MySQL, PostgreSQL, and Oracle. Note, sqlite is 
 the default database while mysql is the recommanded choice.
 
-      @call header: 'Hue # Database', handler: ->
+      @call header: 'Database', handler: ->
         {hue, db_admin} = @config.ryba
         switch hue.ini.desktop.database.engine
           when 'mysql'
@@ -143,7 +143,7 @@ the "/etc/hue/conf/hue.ini" configuration file, all the composants myst be tagge
 the "security_enabled" property set to "true".
 
       @krb5_addprinc krb5,
-        header: 'Hue # Kerberos'
+        header: 'Kerberos'
         principal: hue.ini.desktop.kerberos.hue_principal
         randkey: true
         keytab: "/etc/hue/conf/hue.service.keytab"
@@ -152,7 +152,7 @@ the "security_enabled" property set to "true".
 
 ## SSL Client
 
-      @call header: 'Hue # SSL Client', handler: ->
+      @call header: 'SSL Client', handler: ->
         hue.ca_bundle = '' unless hue.ssl.client_ca
         @file
           target: "#{hue.ca_bundle}"
@@ -173,7 +173,7 @@ configuration properties. It follows the [official Hue Web Server
 Configuration][web]. The "hue" service is restarted if there was any 
 changes.
 
-      @call header: 'Hue # SSL Server', handler: ->
+      @call header: 'SSL Server', handler: ->
         @file.download
           source: hue.ssl.certificate
           target: "#{hue.conf_dir}/cert.pem"
@@ -203,7 +203,7 @@ changes.
 
 In the current version "2.5.1", the HTML of the banner is escaped.
 
-      @call header: 'Hue # Fix Banner', handler: ->
+      @call header: 'Fix Banner', handler: ->
         @file
           target: '/usr/lib/hue/desktop/core/src/desktop/templates/login.mako'
           match: '${conf.CUSTOM.BANNER_TOP_HTML.get()}'

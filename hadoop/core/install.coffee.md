@@ -71,7 +71,7 @@ filesystem. Note, we do not create a principal with a keytab to allow HDFS login
 from multiple sessions with braking an active session.
 
       @krb5_addprinc krb5, hdfs.krb5_user,
-        header: 'HDFS Client # Kerberos User'
+        header: 'HDFS Kerberos User'
 
 ## Test User
 

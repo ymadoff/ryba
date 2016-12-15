@@ -17,8 +17,9 @@ The files storing the PIDs are "/var/run/ganglia/hdp/HDPHBaseMaster/gmond.pid",
 "/var/run/ganglia/hdp/HDPHistoryServer/gmond.pid",  "/var/run/ganglia/hdp/HDPNameNode/gmond.pid",
 "/var/run/ganglia/hdp/HDPResourceManager/gmond.pid" and "/var/run/ganglia/hdp/HDPSlaves/gmond.pid".
 
-    module.exports = header: 'Ganglia Monitor # Stop', label_true: 'STOPPED', handler: ->
+    module.exports = header: 'Ganglia Monitor Stop', label_true: 'STOPPED', handler: ->
       @service.stop
+        header: 'Stop service'
         name: 'hdp-gmond'
         code_stopped: 1
         if_exists: '/etc/init.d/hdp-gmond'

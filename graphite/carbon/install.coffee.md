@@ -40,8 +40,9 @@ Example:
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-    module.exports.push header: 'Graphite Carbon # IPTables', handler: ->
+    module.exports.push header: 'Graphite Carbon', handler: ->
       @iptables
+        header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 2003, protocol: 'tcp', state: 'NEW', comment: "Graphite Carbon Daemon" }
         ]

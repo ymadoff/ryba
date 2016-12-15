@@ -49,7 +49,7 @@ hbase:x:492:
 
 ## HBase Rest Server Layout
 
-      @call header: 'HBase Rest # Layout', timeout: -1, handler: ->
+      @call header: 'Layout', timeout: -1, handler: ->
         @mkdir
           target: hbase.rest.pid_dir
           uid: hbase.user.name

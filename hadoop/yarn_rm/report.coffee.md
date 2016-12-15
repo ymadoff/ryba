@@ -3,7 +3,7 @@
 
 ## Info Memory
 
-    module.exports = header: 'YARN RM # Info Memory', label_true: 'INFO', handler: (_, callback) ->
+    module.exports = header: 'YARN RM Info Memory', label_true: 'INFO', handler: (_, callback) ->
       {yarn} = @config.ryba
       properties.read @ssh, "#{yarn.rm.conf_dir}/yarn-site.xml", (err, config) ->
         return callback err if err

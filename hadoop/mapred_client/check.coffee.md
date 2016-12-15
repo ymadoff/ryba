@@ -1,7 +1,7 @@
 
 # MapReduce Client Check
 
-    module.exports = header: 'MapReduce Client # Check', label_true: 'CHECKED', handler: ->
+    module.exports = header: 'MapReduce Client Check', label_true: 'CHECKED', handler: ->
       {shortname} = @config
       {force_check} = @config.ryba
 

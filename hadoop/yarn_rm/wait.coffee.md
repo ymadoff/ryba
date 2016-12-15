@@ -3,9 +3,10 @@
 
 Wait for the ResourceManagers RPC and HTTP ports. It supports HTTPS and HA.
 
-    module.exports = header: 'Yarn RM # Wait RM', timeout: -1, label_true: 'READY', handler: ->
+    module.exports = header: 'Yarn RM Wait', timeout: -1, label_true: 'READY', handler: ->
       rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
       @connection.wait
+        header: 'HTTP Port'
         servers: for rm_ctx in rm_ctxs
           {yarn} = rm_ctx.config.ryba
           protocol = if yarn.rm.site['yarn.http.policy'] is 'HTTP_ONLY' then '' else '.https'

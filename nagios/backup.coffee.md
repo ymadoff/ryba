@@ -8,7 +8,7 @@ The backup script dump the content and the logs of Nagios
 
 ## Database
 
-    # module.exports.push header: 'Nagios # Backup Database', handler: ->
+    # module.exports.push header: 'Database', handler: ->
     #   {nagios} = @config.ryba
     #   username = hive.site['javax.jdo.option.ConnectionUserName']
     #   password = hive.site['javax.jdo.option.ConnectionPassword']

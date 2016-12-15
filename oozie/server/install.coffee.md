@@ -420,9 +420,9 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         gid: oozie.group.name
         mode: 0o0600
 
-## MySQL Database Creation
+## SQL Database Creation
 
-      @call header: 'MySQL Database Creation', handler: ->
+      @call header: 'SQL Database Creation', handler: ->
         username = oozie.site['oozie.service.JPAService.jdbc.username']
         password = oozie.site['oozie.service.JPAService.jdbc.password']
         # jdbc = db.jdbc oozie.site['oozie.service.JPAService.jdbc.url']

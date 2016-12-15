@@ -6,5 +6,5 @@
 
 ## Check Services
 
-    module.exports.push header: 'Graphite Carbon # Check Services', skip: true, label_true: 'CHECKED', handler: ->
+    module.exports.push header: 'Graphite Carbon Check', skip: true, label_true: 'CHECKED', handler: ->
       # TODO

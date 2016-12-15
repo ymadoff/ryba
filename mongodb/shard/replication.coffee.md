@@ -32,7 +32,7 @@ The admin user is need for account creation and has the role `userAdminAnyDataba
 The root user is needed for replication and has role `root`
 
       @call
-        header: 'MongoDB Shard Server # Roles Admin DB',
+        header: 'Roles Admin DB',
         if: @config.host is mongodb.shard.replica_master
         unless_exec: """
           echo exit | #{mongo_shell_admin_exec}
@@ -102,7 +102,7 @@ Initializes the replica set by connecting to the designated primary shard server
 and launching the 'rs.initiate()' command.
 
       @call
-        header: 'MongoDB Shard Server # Replica Set Init Master'
+        header: 'Replica Set Init Master'
         if: @config.host is mongodb.shard.replica_master
         timeout: -1
         handler: ->
@@ -124,7 +124,7 @@ and launching the 'rs.initiate()' command.
 Adds the other shard servers members of the replica set.
 
       @call
-        header: 'MongoDB Shard Server # Replica Set Init Master'
+        header: 'Replica Set Members'
         if: @config.host is mongodb.shard.replica_master
         timeout: -1
         handler: ->

@@ -8,7 +8,7 @@ the following command:
 service hdp-gmond start
 ```
 
-    module.exports = header: 'Ganglia Monitor # Start', label_true: 'STARTED', handler: ->
+    module.exports = header: 'Ganglia Monitor Start', label_true: 'STARTED', handler: ->
       @service.start
         name: 'hdp-gmond'
         code_stopped: 1

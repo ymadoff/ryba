@@ -15,8 +15,9 @@ service hadoop-hdfs-secondarynamenode stop
 su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /etc/hadoop/conf --script hdfs stop secondarynamenode"
 ```
 
-    module.exports.push header: 'HDFS SNN # Stop', label_true: 'STOPPED', handler: ->
+    module.exports.push header: 'HDFS SNN Stop', label_true: 'STOPPED', handler: ->
       @service.stop
+        header: 'Stop service'
         name: 'hadoop-hdfs-secondarynamenode'
         if_exists: '/etc/init.d/hadoop-hdfs-secondarynamenode'
 
@@ -25,8 +26,8 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
 Remove the "\*-namenode-\*" log files if the property "ryba.clean_logs" is
 activated.
 
-    module.exports.push header: 'HDFS SNN # Stop Clean Logs', label_true: 'CLEANED', handler: ->
       @execute
+        header: 'Clean Logs'
         cmd: 'rm /var/log/hadoop-hdfs/*/*-secondarynamenode-*'
         code_skipped: 1
         if: @config.ryba.clean_logs

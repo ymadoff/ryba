@@ -9,7 +9,7 @@ service hadoop-yarn-nodemanager start
 su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec && /usr/hdp/current/hadoop-yarn-nodemanager/sbin/yarn-daemon.sh --config /etc/hadoop-yarn-resourcemanager/conf start nodemanager"
 ```
 
-    module.exports = header: 'YARN NM # Start', label_true: 'STARTED', handler: ->
+    module.exports = header: 'YARN NM Start', label_true: 'STARTED', handler: ->
 
 Wait for Kerberos, ZooKeeper and HDFS to be started.
 

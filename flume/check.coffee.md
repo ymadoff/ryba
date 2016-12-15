@@ -6,7 +6,7 @@ user and one using interpolation.
 
 ## Check
 
-    # module.exports.push header: 'Flume # Check', timeout: -1, handler: ->
+    # module.exports.push header: 'Flume Check', timeout: -1, handler: ->
     #   @file
     #     content: """
     #     # Name the components on this agent

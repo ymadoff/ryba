@@ -49,7 +49,7 @@ Checkhealth return result is not completely implemented
 See More http://hadoop.apache.org/docs/r2.0.2-alpha/hadoop-yarn/hadoop-yarn-site/HDFSHighAvailability.html#Administrative_commands
 
       @execute
-        header: 'HDFS NN # Check HA Health'
+        header: 'HA Health'
         if: -> nn_ctxs.length > 1
         cmd: mkcmd.hdfs @, "hdfs --config '#{hdfs.nn.conf_dir}' haadmin -checkHealth #{@config.shortname}"
 
@@ -96,7 +96,7 @@ is not present on HDFS.
 Read [Delegation Tokens in Hadoop Security](http://www.kodkast.com/blogs/hadoop/delegation-tokens-in-hadoop-security)
 for more information.
 
-      @call header: 'HDFS DN # Check WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+      @call header: 'WebHDFS', timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
         is_ha = nn_ctxs.length > 1
         protocol = if hdfs.nn.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
         nameservice = if is_ha then ".#{@config.ryba.hdfs.nn.site['dfs.nameservices']}" else ''

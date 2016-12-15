@@ -99,7 +99,7 @@ The root user is needed for replication and has role `root`
 # Replica Set Initialization
 
       @call
-        header: 'MongoDB ConfigSrv # Replica Set Init Master'
+        header: 'Init Master'
         if: @config.host is mongodb.configsrv.replica_master
         timeout: -1
         handler: ->
@@ -119,7 +119,7 @@ The root user is needed for replication and has role `root`
 # Replica Set Members
 
       @call
-        header: 'MongoDB ConfigSrv # Replica Set Init Master'
+        header: 'Set Members'
         if: @config.host is mongodb.configsrv.replica_master
         timeout: -1
         handler: ->

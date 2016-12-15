@@ -16,7 +16,6 @@ The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-journalnode.pid".
     module.exports = header: 'HDFS JN Stop', label_true: 'STOPPED', handler: ->
 
       @service.stop
-        header: 'HDFS JN # Stop'
         label_true: 'STOPPED'
         name: 'hadoop-hdfs-journalnode'
         if_exists: '/etc/init.d/hadoop-hdfs-journalnode'    
@@ -24,7 +23,7 @@ The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-journalnode.pid".
 Clean up the log files related to the JournalNode
 
       @execute
-        header: 'HDFS JN Clean Logs'
+        header: 'Clean Logs'
         label_true: 'CLEANED'
         if: @config.ryba.clean_logs
         cmd: 'rm /var/log/hadoop-hdfs/*/*-journalnode-*'

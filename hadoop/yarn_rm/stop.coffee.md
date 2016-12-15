@@ -17,13 +17,13 @@ su -l yarn -c "/usr/lib/hadoop-yarn/sbin/yarn-daemon.sh --config /etc/hadoop/con
 The file storing the PID is "/var/run/hadoop-yarn/yarn/yarn-yarn-resourcemanager.pid".
 
       @service.stop
-        header: 'Yarn RM # Stop'
+        header: 'Stop service'
         label_true: 'STOPPED'
         name: 'hadoop-yarn-resourcemanager'
         if_exists: '/etc/init.d/hadoop-yarn-resourcemanager'
 
       @execute
-        header: 'Yarn RM # Stop Clean Logs'
+        header: 'Clean Logs'
         label_true: 'CLEANED'
         if: clean_logs
         cmd: 'rm #{yarn.log_dir}/*/*-resourcemanager-*'

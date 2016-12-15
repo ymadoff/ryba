@@ -14,15 +14,16 @@ su -l hive -c "/usr/hdp/current/hive-webhcat/sbin/webhcat_server.sh stop"
 
 The file storing the PID is "/var/run/webhcat/webhcat.pid".
 
-    module.exports = header: 'WebHCat # Stop', label_true: 'STOPPED', handler: ->
+    module.exports = header: 'WebHCat Stop', label_true: 'STOPPED', handler: ->
       @service.stop
+        header: 'Stop service'
         name: 'hive-webhcat-server'
         if_exists: '/etc/init.d/hive-webhcat-server'
 
 ## Stop Clean Logs
 
       @call
-        header: 'Stop Clean Logs'
+        header: 'Clean Logs'
         label_true: 'CLEANED'
         if: -> @config.ryba.clean_logs
         handler: ->

@@ -104,7 +104,7 @@ SPNEGO tocken is stored inside the "/etc/security/keytabs/spnego.service.keytab"
 keytab, also used by the NameNodes, DataNodes, ResourceManagers and
 NodeManagers.
 
-      @call header: 'HDFS JN # Configure', handler: ->
+      @call header: 'Configure', handler: ->
         @hconfigure
           header: 'Core Site'
           target: "#{hdfs.jn.conf_dir}/core-site.xml"
@@ -154,7 +154,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
 
 ## SSL
 
-      @call header: 'HDFS JN # SSL', retry: 0, handler: ->
+      @call header: 'SSL', retry: 0, handler: ->
         {ssl, ssl_server, ssl_client, hdfs} = @config.ryba
         ssl_client['ssl.client.truststore.location'] = "#{hdfs.jn.conf_dir}/truststore"
         ssl_server['ssl.server.keystore.location'] = "#{hdfs.jn.conf_dir}/keystore"

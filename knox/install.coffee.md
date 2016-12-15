@@ -36,7 +36,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Packages
 
-      @call header: 'Knox # Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, handler: ->
         @service name: 'knox'
         @hdp_select name: 'knox-server'
         # Fix autogen of master secret
@@ -160,7 +160,7 @@ in the gateway.sh service script.
 
 ## SSL
 
-      @call header: 'Knox # SSL Server', handler: ->
+      @call header: 'SSL Server', handler: ->
         tmp_location = "/var/tmp/ryba/knox_ssl"
         @file.download
           source: knox.ssl.cacert

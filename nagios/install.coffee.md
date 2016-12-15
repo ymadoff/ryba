@@ -107,7 +107,7 @@ nagiocmd:x:2419:apache
 ### Password
 
       @call
-        header: 'Nagios # WebUI Users htpasswd'
+        header: 'WebUI Users htpasswd'
         if: -> Object.getOwnPropertyNames(@config.ryba.nagios.users).length > 0
         handler: ->
           for name, user of @config.ryba.nagios.users
@@ -206,7 +206,7 @@ The following command list all the referenced host groups:
 cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
 ```
 
-      @call header: 'Nagios # Host Groups', ->
+      @call header: 'Host Groups', ->
         {nagios} = @config.ryba
         hostgroup_defs = {}
         for group, hosts of nagios.hostgroups
@@ -219,7 +219,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
             all_hosts: Object.keys @config.servers
             hostgroup_defs: hostgroup_defs
 
-      @call header: 'Nagios # Services Groups', ->
+      @call header: 'Services Groups', ->
         {nagios} = @config.ryba
         hostgroup_defs = {}
         for group, hosts of nagios.hostgroups

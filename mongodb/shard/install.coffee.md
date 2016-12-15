@@ -15,7 +15,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @call header: 'MongoDB Shard Server # IPTables', handler: ->
+      @call header: 'IPTables', handler: ->
         @iptables
           rules: [
             { chain: 'INPUT', jump: 'ACCEPT', dport: shard.config.net.port, protocol: 'tcp', state: 'NEW', comment: "MongoDB Shard Server port" }
