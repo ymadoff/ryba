@@ -4,6 +4,10 @@
     module.exports = header: 'Flume Install', handler: ->
       {flume, realm} = @config.ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
+      
+## Register
+
+      @registry.register 'hdp_select', 'ryba/lib/hdp_select'
 
 ## Users & Groups
 
