@@ -50,7 +50,7 @@ Configure the topology script to enable rack awareness to Hadoop.
         @file
           target: "#{hadoop_conf_dir}/rack_topology.sh"
           source: "#{__dirname}/../resources/rack_topology.sh"
-          local_source: true
+          local: true
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o755
@@ -117,7 +117,7 @@ This action follow the ["Authentication for Hadoop HTTP web-consoles"
 recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 
       @execute
-        header: 'Web UI'
+        header: 'WebUI'
         cmd: 'dd if=/dev/urandom of=/etc/hadoop/hadoop-http-auth-signature-secret bs=1024 count=1'
         unless_exists: '/etc/hadoop/hadoop-http-auth-signature-secret'
 
@@ -136,7 +136,7 @@ recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
           storepass: ssl_client['ssl.client.truststore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
-          local_source: true
+          local: true
         # Server: import certificates, private and public keys to hosts with a server
         @java_keystore_add
           keystore: ssl_server['ssl.server.keystore.location']
@@ -147,13 +147,13 @@ recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
           cert: "#{ssl.cert}"
           keypass: ssl_server['ssl.server.keystore.keypassword']
           name: @config.shortname
-          local_source: true
+          local: true
         @java_keystore_add
           keystore: ssl_server['ssl.server.keystore.location']
           storepass: ssl_server['ssl.server.keystore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
-          local_source: true
+          local: true
 
 ## Dependencies
 
