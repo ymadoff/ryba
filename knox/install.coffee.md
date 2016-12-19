@@ -72,7 +72,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @render
         header: 'Knox Ldap Caching'
         target: "#{knox.conf_dir}/ehcache.xml"
-        source: "#{__dirname}/resources/ehcache.yml"
+        source: "#{__dirname}/resources/ehcache.xml"
         local_source: true
 
 ## Env
