@@ -162,6 +162,7 @@ Describe where to get the user authentication information from.
             header: 'Kerberos SPNEGO'
             principal: nifi.config.properties['nifi.kerberos.service.principal']
             keytab: nifi.config.properties['nifi.kerberos.keytab.location']
+            randkey: true
           @krb5_addprinc krb5,
             header: 'Kerberos Admin'
             principal: nifi.admin.krb5_principal
