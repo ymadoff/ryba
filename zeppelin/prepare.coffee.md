@@ -10,7 +10,7 @@ Version:
   - Hadoop: 2.7 (HDP 2.3)
 
 
-    module.exports = header: 'Zeppelin # Prepare', ssh: null, retry: 1, timeout: -1, handler: ->
+    module.exports = header: 'Zeppelin Prepare', ssh: null, retry: 1, timeout: -1, handler: ->
       {zeppelin} = @config.ryba
 
 ## Prepare Build

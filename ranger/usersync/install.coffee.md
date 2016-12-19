@@ -53,7 +53,7 @@ directories.
 # "start" (default value).
 #
 #     module.exports.push
-#       header: 'Ranger Admin # IPTables',
+#       header: 'Ranger Admin IPTables',
 #       handler: ->
 #         {ranger} = @config.ryba
 #         return unless @config.iptables.action is 'start'
@@ -65,7 +65,7 @@ directories.
 
 # ## Ranger ranger-usersync Driver
 #
-#     module.exports.push header: 'Ranger Admin # Driver', handler: ->
+#     module.exports.push header: 'Ranger Admin Driver', handler: ->
 #       {ranger} = @config.ryba
 #       @link
 #         source: '/usr/share/java/mysql-connector-java.jar'

@@ -11,7 +11,7 @@ su -l rexster -c "/opt/titan/current/bin/rexster.sh --start -c titan-server-site
 Note, there is no need to clean a zombie pid file before starting the server.
 
 
-    module.exports = header: 'Rexster # Start', label_true: 'STARTED', handler: ->
+    module.exports = header: 'Rexster Start', label_true: 'STARTED', handler: ->
       {titan, rexster} = @config.ryba
       @execute
         cmd: """

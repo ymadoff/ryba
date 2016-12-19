@@ -9,7 +9,7 @@ service zookeeper-server start
 su - zookeeper -c "export ZOOCFGDIR=/usr/hdp/current/zookeeper-server/conf; export ZOOCFG=/etc/zookeeper/conf/zoo.cfg; source /usr/hdp/current/zookeeper-server/conf/zookeeper-env.sh; /usr/hdp/current/zookeeper-server/bin/zkServer.sh start"
 ```
 
-    module.exports = header: 'ZooKeeper Server # Start', label_true: 'STARTED', handler: ->
+    module.exports = header: 'ZooKeeper Server Start', label_true: 'STARTED', handler: ->
 
 Wait for Kerberos to be started.
 

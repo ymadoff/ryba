@@ -9,7 +9,7 @@ earliest snapshot.
 
 Execute `./bin/ryba backup -m ryba/zookeeper/server` to run this module.
 
-    module.exports = header: 'ZooKeeper Server # Backup', handler: ->
+    module.exports = header: 'ZooKeeper Server Backup', handler: ->
       {zookeeper} = @config.ryba
       now = Math.floor Date.now() / 1000
 

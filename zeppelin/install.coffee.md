@@ -38,7 +38,7 @@ It's the  host' port server map from the container
 Installs SSL certificates for Zeppelin. Creates trustore et keystore
 SSL only required for the server
 
-    # module.exports.push header: 'Zeppelin Server # JKS stores', handler: ->
+    # module.exports.push header: 'JKS stores', handler: ->
     #  {ssl, ssl_server, ssl_client, zeppelin} = @config.ryba
     #  tmp_location = "/tmp/ryba_hdp_ssl_#{Date.now()}"
     #  modified = false
@@ -88,7 +88,7 @@ SSL only required for the server
 ## HDP select status
 
       @execute
-        header: 'Zeppelin Install # HDP Version'
+        header: 'HDP Version'
         cmd:  "hdp-select versions | tail -1"
       , (err, executed, stdout, stderr) ->
         throw err if err
@@ -100,7 +100,7 @@ SSL only required for the server
 Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
 
       @execute
-        header: 'Zeppelin Install # Spark'
+        header: 'Spark'
         cmd: 'ls -l /usr/hdp/current/spark-client/lib/ | grep -m 1 assembly | awk {\'print $9\'}'
       , (err, _, stdout) ->
         throw err if err

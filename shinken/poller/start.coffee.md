@@ -3,7 +3,7 @@
 
 Start the Shinken Poller service.
 
-    module.exports = header: 'Shinken Poller # Start', label_true: 'STARTED', handler: ->
+    module.exports = header: 'Shinken Poller Start', label_true: 'STARTED', handler: ->
       {shinken} = @config.ryba
       @service.start name: 'shinken-poller'
 
@@ -11,7 +11,7 @@ Start the Shinken Poller service.
 
 Start the docker executors (normal and admin)
 
-      @call header: 'Start Executor', handler: ->
+      @call header: 'Docker Executor', handler: ->
         @docker_start
           container: 'poller-executor'
         @docker_exec

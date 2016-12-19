@@ -97,7 +97,7 @@ Creates a configuration file. Always load this file in Gremlin REPL !
 
 # Creates a configuration file. Always load this file in Gremlin REPL !
 
-#     module.exports.push header: 'Titan # Gremlin Test Properties', handler: ->
+#     module.exports.push header: 'Gremlin Test Properties', handler: ->
 #       {titan} = @config.ryba
 #       storage = titan.config['storage.backend']
 #       config = {}

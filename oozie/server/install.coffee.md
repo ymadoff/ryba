@@ -456,7 +456,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
                unless_exec: "[[ `#{version_local}` == `#{version_remote}` ]]"
           else throw Error 'Database engine not supported'
 
-    # module.exports.push header: 'Oozie Server # Database', handler: ->
+    # module.exports.push header: 'Oozie Server Database', handler: ->
     #   {oozie} = @config.ryba
     #   @execute
     #     cmd: """

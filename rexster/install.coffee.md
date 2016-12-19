@@ -30,7 +30,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Env
 
-      @call header: 'Rexster # Env', handler: ->
+      @call header: 'Env', handler: ->
         @chown
           target: rexster.user.home
           uid: rexster.user.name
@@ -72,7 +72,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           uid: rexster.user.name
           gid: rexster.group.name
 
-    #@call header: 'Rexster # Tuning', skip: true, handler: ->  
+    #@call header: 'Tuning', skip: true, handler: ->
 
 ## Kerberos JAAS for ZooKeeper
 
