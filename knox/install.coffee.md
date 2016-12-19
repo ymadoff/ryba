@@ -69,6 +69,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         properties: knox.site
         merge: true
 
+      @render
+        header: 'Knox Ldap Caching'
+        target: "#{knox.conf_dir}/ehcache.xml"
+        source: "#{__dirname}/resources/ehcache.yml"
+        local_source: true
+
 ## Env
 
 We do not edit knox-env.sh because environnement variables are directly set
