@@ -221,6 +221,7 @@ This part of the setup is not documented. Deduce from launch scripts.
           target: '/etc/ranger/admin/conf/ranger-admin-env-1.sh'
           write: writes
           backup: true
+          mode: 0o750
 
 ## Log4j
 

@@ -95,6 +95,7 @@ we execute this task using the rest api.
               replace: "HCOMPONENT_CONF_DIR=#{knox.conf_dir}"
           ]
           backup: true
+          mode: 0o750
         @execute
           header: 'Script Execution'
           cmd: """
