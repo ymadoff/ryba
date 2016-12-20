@@ -80,13 +80,12 @@ inside "/etc/init.d" and activate it on startup.
         @hdp_select
           name: 'hadoop-yarn-client' # Not checked
           name: 'hadoop-yarn-resourcemanager'
-        @render
+        @service.init
           target: '/etc/init.d/hadoop-yarn-resourcemanager'
-          source: "#{__dirname}/../resources/hadoop-yarn-resourcemanager"
-          local_source: true
+          source: "#{__dirname}/../resources/hadoop-yarn-resourcemanager.j2"
+          local: true
           context: @config
           mode: 0o0755
-          unlink: true
         @execute
           cmd: "service hadoop-yarn-resourcemanager restart"
           if: -> @status -3

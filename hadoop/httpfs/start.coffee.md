@@ -14,4 +14,3 @@ su -l httpfs -c '/usr/hdp/current/hadoop-httpfs/sbin/httpfs.sh start'
       @call 'ryba/hadoop/hdfs_nn/wait'
       @service.start
         name: 'hadoop-httpfs'
-        if_exists: '/etc/init.d/hadoop-httpfs'

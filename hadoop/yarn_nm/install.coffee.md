@@ -54,13 +54,12 @@ inside "/etc/init.d" and activate it on startup.
         @hdp_select
           # name: 'hadoop-yarn-client' # Not checked
           name: 'hadoop-yarn-nodemanager'
-        @render
+        @service.init
           target: '/etc/init.d/hadoop-yarn-nodemanager'
-          source: "#{__dirname}/../resources/hadoop-yarn-nodemanager"
+          source: "#{__dirname}/../resources/hadoop-yarn-nodemanager.j2"
           local_source: true
           context: @config
           mode: 0o0755
-          unlink: true
         @service # Seems like NM complain with message "java.lang.ClassNotFoundException: Class org.apache.hadoop.mapred.ShuffleHandler not found"
           name: 'hadoop-mapreduce'
         @hdp_select

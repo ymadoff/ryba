@@ -35,10 +35,10 @@
           """
           trap: true
           code_skipped: 3
-        @render
+        @service.init
           target: "/etc/init.d/hadoop-kms"
           source: "#{__dirname}/../resources/hadoop-kms.j2"
-          local_source: true
+          local: true
           context: @config
           mode: 0o0755
 

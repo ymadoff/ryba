@@ -8,4 +8,3 @@ inside "/var/lib/hadoop-hdfs/hdfs/hadoop-hdfs-journalnode.pid".
     module.exports = header: 'HDFS JN Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       @service.status
         name: 'hadoop-hdfs-journalnode'
-        if_exists: '/etc/init.d/hadoop-hdfs-journalnode'

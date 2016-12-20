@@ -21,8 +21,8 @@
 # description: Hadoop datanode
 #
 ### BEGIN INIT INFO
-# Provides:          hadoop-kms
-# Short-Description: Hadoop kms
+# Provides:          hadoop-httpfs
+# Short-Description: Hadoop Httpfs
 # Default-Start:     3 4 5
 # Default-Stop:      0 1 2 6
 # Required-Start:    $syslog $remote_fs
@@ -31,13 +31,13 @@
 # Should-Stop:
 ### END INIT INFO
 
-NAME='Hadoop KMS'
-USER='{{ryba.kms.user.name}}'
-GROUP='{{ryba.kms.group.name}}'
-CONF_DIR='{{ryba.kms.conf_dir}}'
-RUN_DIR='{{ryba.kms.pid_dir}}'
-PID_FILE='{{ryba.kms.pid_dir}}/kms.pid'
-CMD="su - $USER -c \"export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec && export KMS_CONFIG=/etc/hadoop-kms/conf && export CATALINA_PID=/var/run/hadoop-kms && /usr/hdp/current/hadoop-kms/sbin/kms.sh start\""
+NAME='HDFS Httpfs'
+USER='{{ryba.httpfs.user.name}}'
+GROUP='{{ryba.httpfs.group.name}}'
+RUN_DIR='{{ryba.hdfs.pid_dir}}'
+PID_FILE="${RUN_DIR}/httpfs.pid"
+CONF_DIR='{{ryba.httpfs.conf_dir}}'
+CMD="su - $USER -c \"/usr/hdp/current/hadoop-httpfs/sbin/httpfs.sh start\""
 
 KILL_FORCE=0
 KILL_SLEEP=10

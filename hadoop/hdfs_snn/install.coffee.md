@@ -44,13 +44,12 @@ script inside "/etc/init.d" and activate it on startup.
         @hdp_select
           name: 'hadoop-hdfs-client' # Not checked
           name: 'hadoop-hdfs-secondarynamenode'
-        @render
+        @service.init
           target: '/etc/init.d/hadoop-hdfs-secondarynamenode'
-          source: "#{__dirname}/../resources/secondarynamenode"
+          source: "#{__dirname}/../resources/secondarynamenode.j2"
           local_source: true
           context: @config
           mode: 0o0755
-          unlink: true
         @execute
           cmd: "service hadoop-hdfs-secondarynamenode restart"
           if: -> @status -3

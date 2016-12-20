@@ -39,13 +39,12 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
         @hdp_select
           # name: 'hadoop-hdfs-client' # Not checked
           name: 'hadoop-hdfs-namenode'
-        @render
+        @service.init
           target: '/etc/init.d/hadoop-hdfs-zkfc'
-          source: "#{__dirname}/../resources/hadoop-hdfs-zkfc"
+          source: "#{__dirname}/../resources/hadoop-hdfs-zkfc.j2"
           local_source: true
           context: @config
           mode: 0o0755
-          unlink: true
         @execute
           cmd: "service hadoop-hdfs-zkfc restart"
           if: -> @status -3

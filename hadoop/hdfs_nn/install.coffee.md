@@ -61,13 +61,12 @@ inside "/etc/init.d" and activate it on startup.
         @hdp_select
           name: 'hadoop-hdfs-client' # Not checked
           name: 'hadoop-hdfs-namenode'
-        @render
+        @service.init
           target: '/etc/init.d/hadoop-hdfs-namenode'
-          source: "#{__dirname}/../resources/hadoop-hfds-namenode"
-          local_source: true
+          source: "#{__dirname}/../resources/hadoop-hfds-namenode.j2"
+          local: true
           context: @config
           mode: 0o0755
-          unlink: true
         @execute
           cmd: "service hadoop-hdfs-namenode restart"
           if: -> @status -3

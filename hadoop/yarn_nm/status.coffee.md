@@ -7,4 +7,3 @@ default inside "/var/run/hadoop-yarn/yarn-yarn-nodemanager.pid".
     module.exports = header: 'YARN NM Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       @service.status
         name: 'hadoop-yarn-nodemanager'
-        if_exists: '/etc/init.d/hadoop-yarn-nodemanager'

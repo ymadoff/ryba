@@ -19,7 +19,6 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
       @service.stop
         header: 'Stop service'
         name: 'hadoop-hdfs-secondarynamenode'
-        if_exists: '/etc/init.d/hadoop-hdfs-secondarynamenode'
 
 ## Stop Clean Logs
 

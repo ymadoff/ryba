@@ -13,7 +13,6 @@ su -l httpfs -c '/usr/hdp/current/hadoop-httpfs/sbin/httpfs.sh stop'
       @service.stop
         header: 'Stop service'
         name: 'hadoop-httpfs'
-        if_exists: '/etc/init.d/hadoop-httpfs'
 
     # module.exports.push header: 'Clean Logs', label_true: 'CLEANED', handler: ->
     #   {clean_logs, yarn} = @config.ryba

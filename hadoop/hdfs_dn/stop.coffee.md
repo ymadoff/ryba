@@ -19,7 +19,6 @@ The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-datanode.pid".
         header: 'HDFS DN Stop'
         label_true: 'STOPPED'
         name: 'hadoop-hdfs-datanode'
-        if_exists: '/etc/init.d/hadoop-hdfs-datanode'
 
 ## Stop Clean Logs
 

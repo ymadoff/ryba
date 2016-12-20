@@ -18,7 +18,6 @@ The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-journalnode.pid".
       @service.stop
         label_true: 'STOPPED'
         name: 'hadoop-hdfs-journalnode'
-        if_exists: '/etc/init.d/hadoop-hdfs-journalnode'    
 
 Clean up the log files related to the JournalNode
 

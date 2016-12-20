@@ -13,4 +13,3 @@ located by default inside "/var/run/hadoop-hdfs/hdfs/hadoop-hdfs-secondarynameno
     module.exports.push header: 'HDFS SNN Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       @service.status
         cmd: 'hadoop-hdfs-secondarynamenode'
-        if_exists: '/etc/init.d/hadoop-hdfs-secondarynamenode'

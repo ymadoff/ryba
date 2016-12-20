@@ -14,4 +14,3 @@ The file storing the PID is "/var/run/hadoop-mapreduce/mapred-mapred-historyserv
     module.exports = header: 'MapReduce JHS Stop', label_true: 'STOPPED', handler: ->
       @service.stop
         name: 'hadoop-mapreduce-historyserver'
-        if_exists: '/etc/init.d/hadoop-mapreduce-historyserver'

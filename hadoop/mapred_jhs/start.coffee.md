@@ -23,4 +23,3 @@ Start the service.
 
       @service.start
         name: 'hadoop-mapreduce-historyserver'
-        if_exists: '/etc/init.d/hadoop-mapreduce-historyserver'

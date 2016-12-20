@@ -16,4 +16,3 @@ su -l hdfs -c "/usr/hdp/current/hadoop-hdfs-namenode/../hadoop/sbin/hadoop-daemo
       @call once: true, 'ryba/hadoop/hdfs_jn/wait'
       @service.start
         name: 'hadoop-hdfs-namenode'
-        if_exists: '/etc/init.d/hadoop-hdfs-namenode'

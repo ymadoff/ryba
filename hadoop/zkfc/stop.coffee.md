@@ -20,7 +20,6 @@ The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-zkfc.pid".
         header: 'Daemon'
         label_true: 'STOPPED'
         name: 'hadoop-hdfs-zkfc'
-        if_exists: '/etc/init.d/hadoop-hdfs-zkfc'
 
       @execute
         header: 'Clean Logs'

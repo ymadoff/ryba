@@ -57,13 +57,12 @@ script inside "/etc/init.d" and activate it on startup.
         @hdp_select
           name: 'hadoop-mapreduce-client' # Not checked
           name: 'hadoop-mapreduce-historyserver'
-        @render
+        @service.init
           target: '/etc/init.d/hadoop-mapreduce-historyserver'
-          source: "#{__dirname}/../resources/hadoop-mapreduce-historyserver"
-          local_source: true
+          source: "#{__dirname}/../resources/hadoop-mapreduce-historyserver.j2"
+          local: true
           context: @config
           mode: 0o0755
-          unlink: true
         @execute
           cmd: "service hadoop-mapreduce-historyserver restart"
           if: -> @status -3

@@ -27,4 +27,3 @@ Start the service.
 
       @service.start
         name: 'hadoop-yarn-timelineserver'
-        if_exists: '/etc/init.d/hadoop-yarn-timelineserver'

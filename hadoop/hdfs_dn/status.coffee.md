@@ -9,4 +9,3 @@ inside "/var/run/hadoop-hdfs/hadoop-hdfs-datanode.pid".
     module.exports = header: 'HDFS NN Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       @service.status
         name: 'hadoop-hdfs-datanode'
-        if_exists: '/etc/init.d/hadoop-hdfs-datanode'

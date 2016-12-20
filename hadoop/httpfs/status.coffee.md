@@ -7,4 +7,3 @@ inside "/var/run/httpfs/httpfs.pid".
     module.exports = header: 'HDFS HttpFS Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       @service.status
         name: 'hadoop-httpfs'
-        if_exists: '/etc/init.d/hadoop-httpfs'

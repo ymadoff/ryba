@@ -18,7 +18,6 @@ The file storing the PID is "/var/run/hadoop-yarn/yarn/yarn-yarn-nodemanager.pid
         header: 'YARN NM Stop'
         label_true: 'STOPPED'
         name: 'hadoop-yarn-nodemanager'
-        if_exists: '/etc/init.d/hadoop-yarn-nodemanager'
 
       @execute
         header: 'YARN NM Clean Logs'

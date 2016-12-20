@@ -20,7 +20,6 @@ The file storing the PID is "/var/run/hadoop-yarn/yarn/yarn-yarn-resourcemanager
         header: 'Stop service'
         label_true: 'STOPPED'
         name: 'hadoop-yarn-resourcemanager'
-        if_exists: '/etc/init.d/hadoop-yarn-resourcemanager'
 
       @execute
         header: 'Clean Logs'

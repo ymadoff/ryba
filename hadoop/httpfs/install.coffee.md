@@ -55,10 +55,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           name: 'hadoop-httpfs'
         @hdp_select
           name: 'hadoop-httpfs'
-        @render
+        @service.init
           target: "/etc/init.d/hadoop-httpfs"
-          source: "#{__dirname}/../resources/hadoop-httpfs"
-          local_source: true
+          source: "#{__dirname}/../resources/hadoop-httpfs.j2"
+          local: true
           context: @config
           mode: 0o0755
 

@@ -38,4 +38,3 @@ Start the service.
 
       @service.start
         name: 'hadoop-yarn-resourcemanager'
-        if_exists: '/etc/init.d/hadoop-yarn-resourcemanager'
