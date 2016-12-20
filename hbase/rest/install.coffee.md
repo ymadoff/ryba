@@ -111,7 +111,7 @@ Environment passed to the HBase Rest Server before it starts.
         source: "#{__dirname}/../resources/hbase-env.sh.j2"
         local_source: true
         context: @config
-        mode: 0o0755
+        mode: 0o0750
         uid: hbase.user.name
         gid: hbase.group.name
         unlink: true

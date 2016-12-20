@@ -120,6 +120,7 @@ Environment passed to the Master before it starts.
         local_source: true
         eof: true
         context: @config
+        mode: 0o750
         uid: hbase.user.name
         gid: hbase.group.name
         write: for k, v of hbase.master.env
@@ -144,6 +145,7 @@ Upload the list of registered RegionServers.
         uid: hbase.user.name
         gid: hadoop_group.name
         eof: true
+        mode: 0o750
 
 ## Zookeeper JAAS
 
@@ -185,6 +187,7 @@ https://hbase.apache.org/book/security.html
         target: "#{hbase.master.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
         local_source: true
+        mode: 0o750
 
 ## Metrics
 
@@ -195,6 +198,7 @@ Enable stats collection in Ganglia and Graphite
         target: "#{hbase.master.conf_dir}/hadoop-metrics2-hbase.properties"
         content: hbase.metrics.config
         backup: true
+        mode: 0o750
 
       # @call header: 'SSL', retry: 0, handler: ->
       #   {ssl, ssl_server, ssl_client, hdfs} = @config.ryba

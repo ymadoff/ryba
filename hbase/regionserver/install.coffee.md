@@ -148,6 +148,7 @@ Environment passed to the RegionServer before it starts.
         backup: true
         uid: hbase.user.name
         gid: hbase.group.name
+        mode: 0o750
         local_source: true
         context: @config
         write: for k, v of hbase.rs.env
@@ -168,6 +169,7 @@ Upload the list of registered RegionServers.
         uid: hbase.user.name
         gid: hadoop_group.name
         eof: true
+        mode: 0o750
 
 ## Metrics
 
@@ -178,6 +180,7 @@ Enable stats collection in Ganglia and Graphite
         target: "#{hbase.rs.conf_dir}/hadoop-metrics2-hbase.properties"
         content: hbase.metrics.config
         backup: true
+        mode: 0o750
 
 # User limits
 
@@ -193,6 +196,7 @@ Enable stats collection in Ganglia and Graphite
         target: "#{hbase.rs.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
         local_source: true
+        mode: 0o750
 
 ## Ranger HBase Plugin Install
 
