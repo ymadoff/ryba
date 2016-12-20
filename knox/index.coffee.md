@@ -22,7 +22,7 @@ with Hadoop clusters.
       configure: [
         'ryba/knox/configure'
         'ryba/ranger/plugins/knox/configure'
-        ]
+      ]
       commands:
         install: [
           'ryba/knox/install'

@@ -23,7 +23,6 @@
 |----------------|-------|-------|-----------------|
 | Gateway        | 8443  | http  | gateway.port    |
 
-
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
