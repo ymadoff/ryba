@@ -1,6 +1,15 @@
 
 # Write your own middleware
 
+## Coding standard
+
+  - Indentation: 2 spaces, not more, NO TABS   
+  - No useless new lines   
+  - No trailing whitespaces, except list in markdown   
+  - First and last line empty   
+  - typo: snake_case (no camelCase)   
+  - Empty line must be EMPTY (no whitespaces)   
+
 ## Architecture
 
 Ryba installs hadoop on each server component by component

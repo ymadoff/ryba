@@ -1,24 +1,30 @@
 
-#Getting started standard mode
+# Getting started standard mode
 
-you should have executed previous commands and instructions from  README.md ( installing nodejs for example ) from ryba-cluster directory
+You should have executed previous commands and instructions from README.md 
+(installing nodejs for example) from ryba-cluster directory
 
 To get started with ryba in standard mode, you need  mainly two modules
 One module is the ryba itself, you can download the sources from https://github.com/ryba-io/ryba
 The second is the ryba cluster configuration module that you cn download from https://github.com/ryba-io/ryba-cluster
 Create a ryba directory for example and move the two downloaded directories in it.
 One is ryba it self with the component it's going to install
-The ryba cluster configuration contains the files which describe the cluster of server you have and which component you want on each server.
-The detail of each server and the component you want to install is placed in ryba-cluster/conf/servers.coffee
-If you want let the main configuration file you can give to ryba the -c argument and the path to the enhanced configuration file
+The ryba cluster configuration contains the files which describe the cluster of
+server you have and which component you want on each server.
+The detail of each server and the component you want to install is placed in
+ryba-cluster/conf/servers.coffee
+If you want let the main configuration file you can give to ryba the -c argument
+and the path to the enhanced configuration file
 Launch the install after having cd into the directory named ryba
 ```bash
 ./bin/ryba install
 ```
 
-#working environment in development mode (optional)
+## Working environment in development mode (optional)
+
 Check the Readme Page from ryba-cluster
-Working in development mode can be useful in order to test some configurations or commands on a cluster ( at least 1 master node )
+Working in development mode can be useful in order to test some configurations
+or commands on a cluster ( at least 1 master node )
 for this you can install Virtual machine on your computer and install haddop on it
 In order to manage the most easily possible a cluster we are going to use Vagrant
 
@@ -35,25 +41,30 @@ And if you work behind a proxy
 
 `vagrant plugin install vagrant-proxyconf`
 
-The vagrant configuration file VagrantFile is located in the resources directory. Vagrant MUST be executed from this directory. If you use a UNIX OS, you can use the vagrant script for this purpose.
+The vagrant configuration file VagrantFile is located in the resources directory.
+Vagrant MUST be executed from this directory. If you use a UNIX OS, you can use
+the vagrant script for this purpose.
 
-Configure proxy using the env var *VAGRANT\_HTTP\_PROXY*. If you use proxy please set this variable :
+Configure proxy using the env var *VAGRANT\_HTTP\_PROXY*.
+If you use proxy please set this variable :
 
 On linux :
 `export VAGRANT_HTTP_PROXY='http://user:password@proxyurl/'`
 
 On windows :
-
 `SET VAGRANT_HTTP_PROXY='http://user:password@proxyurl/'`
 
 You need an image of centos6 in order to build from it the virtual machine
 Be careful to indicate to vagrant the right name of the image in the folder resources/VagrantFile
 `box = 'centos65-x86_64'`
 
-VMs should have Vbox Guest Additions installed. The plugin vbguest is here to do the job. There is two ways to configure it :
+VMs should have Vbox Guest Additions installed. The plugin vbguest is here to do
+the job. There is two ways to configure it :
 #### local
 
-You have to have the addition iso file on your computer, corresponding to the version of Virtualbox. You can manually download it or if you are on Linux, you might let your package manager handle it for you.
+You have to have the addition iso file on your computer, corresponding to the
+version of Virtualbox. You can manually download it or if you are on Linux, you
+might let your package manager handle it for you.
 
 then modify VagrantFile :
 ```
@@ -63,23 +74,22 @@ config.no_remote=true
 
 #### Remote
 
-You can let vbguest handle it for you, but your VM have to have an internet connection. This is the default behaviour but here is the corresponding configuration.
+You can let vbguest handle it for you, but your VM have to have an internet
+connection. This is the default behaviour but here is the corresponding configuration.
 `config.no_remote=false`
 
 Now it is time to let Vagrant configure your VMs !
 `/project_path/bin/vagrant up`
 
+## Working environment in offline mode (optional)
 
-
-
-#Working environment in offline mode (optional)
 The option to work offline is to have the needed repositories available whithout passing by the Internet
 It's practical but also faster than working online
 The thing is we need repositories which are only available from centos repositories
 So we need Yum in order to get the good repositories
 The steps are to :
-   - download the repositories we will need from the yum one
-   - set up a web server to make the repositories available on the development environment's network
+  - download the repositories we will need from the yum one
+  - set up a web server to make the repositories available on the development environment's network
 
 To make this we are going to use docker.
 We launch one container to download the needed repositories
@@ -160,19 +170,21 @@ Download the installer from the offocial webpage and follow the instructions to 
    ./bin/ryba -c ./conf/users/offline.coffee install
    ```
 
-#Configuring ryba
+## Configuring ryba
+
 The default configuration works with 6 servers 3 master 1 front and 2 workers
 You can enhance the configuration , for this:
 
-##change the vagrant configuration
-Of course if you change the configuration of the cluster you have to tell to vagrant how much VM you want
-change the content of resources/VagrantFile to suit your needs
-take example from the set configuration
+### Change the vagrant configuration
 
-##change the component composition of each server
+Of course if you change the configuration of the cluster you have to tell to
+vagrant how much VM you want change the content of resources/VagrantFile to suit your needs
+Take example from the set configuration
+
+### Change the component composition of each server
+
 Ryba needs to know what component will be installed on each server
 You have to change the content of ryba-cluster/conf/servers.coffee in order to suit your needs
 Do not try change the order of component
-Be careful to let the security component for each server as it was written originally ( if you add server , add also the security component )
-take example from the set configuration
-
+Be careful to let the security component for each server as it was written originally
+(if you add server , add also the security component) take example from the set configuration
