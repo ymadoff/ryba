@@ -116,7 +116,7 @@ Resources:
       # ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] ?= 'true'
       # ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path'] ?= '/cgroup'
       ryba.yarn.site['yarn.nodemanager.linux-container-executor.resources-handler.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.util.CgroupsLCEResourcesHandler'
-      ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.hierarchy'] ?= '/yarn'
+      hierarchy = ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.hierarchy'] ?= "/#{ryba.yarn.user.name}"
       ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] ?= 'true'
       ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path'] ?= '/cgroup'
       # HDP doc, probably incorrect
@@ -124,6 +124,24 @@ Resources:
       # ryba.yarn.site['yarn.nodemanager.container-executor.cgroups.mount'] ?= ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount']
       # ryba.yarn.site['yarn.nodemanager.container-executor.resources-handler.class'] ?= ryba.yarn.site['yarn.nodemanager.container-executor.resources-handler.class']
       # ryba.yarn.site['yarn.nodemanager.container-executor.group'] ?= 'hadoop'
+      if ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] is 'false'
+        # default values
+        ryba.yarn.cgroup ?=
+          "#{ryba.yarn.user.name}":
+            perm:
+              task:
+                'uid': "#{ryba.yarn.user.name}"
+                'gid': "#{ryba.yarn.user.name}"
+              admin:
+                'uid': "#{ryba.yarn.user.name}"
+                'gid': "#{ryba.yarn.user.name}"
+            cpu:
+              'cpu.rt_period_us': "\"1000000\""
+              'cpu.rt_runtime_us': "\"0\""
+              'cpu.cfs_period_us': "\"100000\""
+              'cpu.cfs_quota_us': "\"-1\""
+              'cpu.shares': '\"1024\"'
+
 
 ## List of Services
 
@@ -137,3 +155,5 @@ Resources:
 ## Dependencies
 
     {merge} = require 'mecano/lib/misc'
+
+[yarn-cgroup-red7]:(https://issues.apache.org/jira/browse/YARN-2194)

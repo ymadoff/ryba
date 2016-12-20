@@ -13,6 +13,7 @@ applications.
       use:
         iptables: implicit: true, module: 'masson/core/iptables'
         java: implicit: true, module: 'masson/commons/java'
+        masson_cgroups: implicit: true, module: 'masson/core/cgroups'
         hdfs_client: implicit: true, module: 'ryba/hadoop/hdfs_client'
         ranger_admin: module: 'ryba/ranger/admin'
       configure: [

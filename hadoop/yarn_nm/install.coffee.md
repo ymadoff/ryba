@@ -281,8 +281,17 @@ form of "rm/{fqdn}@{realm}"
         uid: yarn.user.name
         gid: hadoop_group.name
 
+## Cgroups Configuration
+Yaryn Nodemanager can be configured to mount automatically the cgroup path on start.
+If `yarn.nodemanager.linux-container-executor.cgroups.mount` is set to true,
+Ryba just mkdirs the path.
+Is `yarn.nodemanager.linux-container-executor.cgroups.mount` is set to false,
+it creates and persist a cgroup for yarn by registering into the /etc/cgconfig configuration.
+Note: For now (December 2016 - HDP 2.5.3.0), yarn does not support `systemctl` cgroups
+on Centos/Redhat7 OS. Legacy cgconfig and cgroup-tools package must be used. (masson/core/cgroups)
+
       @call
-        header: 'CGroup'
+        header: 'Cgroups Layout Yarn Mounting'
         if: -> yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] is 'true'
         handler: ->
           @service
@@ -294,6 +303,27 @@ form of "rm/{fqdn}@{realm}"
             target: "#{yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path']}/cpu"
             mode: 0o1777
             parent: true
+      @call
+        header: 'Cgroups Layout Configuration'
+        unless: -> yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] is 'true'
+        handler: (options) ->
+          hierarchy = yarn.site['yarn.nodemanager.linux-container-executor.cgroups.hierarchy'] ?= "/#{ryba.yarn.user.name}"
+          @cgroups
+            target: '/etc/cgconfig.d/yarn.cgconfig.conf'
+            merge: false
+            groups: yarn.cgroup
+            backup: true
+          @service.restart
+            name: 'cgconfig'
+            if: -> @status -1
+          @call (options) ->
+            yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path'] = options.store['mecano:cgroups:mount']
+            @hconfigure
+              header: 'YARN Site'
+              target: "#{yarn.nm.conf_dir}/yarn-site.xml"
+              properties: yarn.site
+              merge: true
+              backup: true
 
 ## Ulimit
 
