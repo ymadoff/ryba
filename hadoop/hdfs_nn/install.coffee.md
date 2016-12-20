@@ -355,7 +355,9 @@ ${HADOOP_CONF_DIR}/core-site.xml
 
       @call
         if: -> @contexts('ryba/ranger/admin').length > 0
-        handler: 'ryba/ranger/plugins/hdfs/install'
+        handler: ->
+          @call 'ryba/ranger/plugins/hdfs/install'
+          @call 'ryba/ranger/plugins/hdfs/setup'
 
 ## Dependencies
 
