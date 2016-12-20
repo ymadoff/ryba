@@ -65,12 +65,10 @@ which has no dependency.
           name: 'zookeeper-server'
         @hdp_select
           name: 'zookeeper-client'
-        @file
-          target: '/etc/init.d/zookeeper-server'
+        @service.init
           source: "#{__dirname}/resources/zookeeper"
           local: true
-          mode: 0o0755
-          unlink: true
+          target: '/etc/init.d/zookeeper-server'
 
 ## Kerberos
 
