@@ -57,6 +57,45 @@ Environment passed to Hadoop.
       #   place_before: /^export HADOOP_CLASSPATH=.*$/mg
       #   backup: true
 
+## Tez UI
+
+Tez UI will be untared in the tez.ui.html_path directory. A WebServer must be configured
+to serve this directory.
+
+      @call header: 'UI', if: tez.ui.enabled, handler: ->
+        @mkdir
+          header: 'Layout'
+          target: tez.ui.html_path
+        @execute
+          header: 'Web Files'
+          cmd: """
+          target_file=`ls /usr/hdp/current/tez-client/ui/tez-ui*.war | sed 's/^.*tez/tez/g'`
+          cd #{tez.ui.html_path}
+          ls ${target_file} >/dev/null 2>&1
+          if [ $? -ne 0 ]; then
+            rm -rf *
+            cp /usr/hdp/current/tez-client/ui/tez-ui*.war .
+            jar xf tez-ui*.war
+          else
+            exit 3
+          fi
+          """
+          code_skipped: 3
+        @file
+          header: 'Env'
+          target: "#{tez.ui.html_path}/config/configs.env"
+          content: "ENV = #{JSON.stringify tez.ui.env, null, '  '};"
+          backup: true
+          eof: true
+        @file
+          header: 'Fix HTTPS'
+          target: "#{tez.ui.html_path}/assets/tez-ui.js"
+          write: [
+            match: "      url = this.correctProtocol(url);"
+            replace: "      //url = this.correctProtocol(url);"
+          ]
+          backup: true
+
 ## Dependencies
 
     mkcmd = require '../lib/mkcmd'
