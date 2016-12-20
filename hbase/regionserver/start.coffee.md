@@ -22,4 +22,3 @@ Start the service.
 
       @service.start
         name: 'hbase-regionserver'
-        if_exists: '/etc/init.d/hbase-regionserver'

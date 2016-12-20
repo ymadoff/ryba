@@ -24,4 +24,3 @@ Start the service.
 
       @service.start
         name: 'hbase-rest'
-        if_exists: '/etc/init.d/hbase-rest'

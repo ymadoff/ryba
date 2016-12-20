@@ -77,14 +77,13 @@ inside "/etc/init.d" and activate it on startup.
           name: 'hbase-client'
         @hdp_select
           name: 'hbase-regionserver'
-        @render
+        @service.init
           header: 'Init Script'
-          source: "#{__dirname}/../resources/hbase-regionserver"
-          local_source: true
+          source: "#{__dirname}/../resources/hbase-regionserver.j2"
+          local: true
           context: @config
           target: '/etc/init.d/hbase-regionserver'
           mode: 0o0755
-          unlink: true
         @execute
           cmd: "service hbase-regionserver restart"
           if: -> @status -4

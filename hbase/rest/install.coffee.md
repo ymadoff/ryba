@@ -73,9 +73,9 @@ hbase:x:492:
           name: 'hbase-rest'
         @hdp_select
           name: 'hbase-client'
-        @render
+        @service.init
           header: 'Init Script'
-          source: "#{__dirname}/../resources/hbase-rest"
+          source: "#{__dirname}/../resources/hbase-rest.j2"
           local_source: true
           context: @config
           target: '/etc/init.d/hbase-rest'

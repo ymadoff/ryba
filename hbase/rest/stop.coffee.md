@@ -14,7 +14,6 @@ su -l hbase -c "/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config /etc/
       @service.stop
         header: 'Stop service'
         name: 'hbase-rest'
-        if_exists: '/etc/init.d/hbase-rest'
 
 ## Stop Clean Logs
 

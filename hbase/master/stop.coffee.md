@@ -14,9 +14,7 @@ The file storing the PID is "/var/run/hbase/yarn/hbase-hbase-master.pid".
     module.exports = header: 'HBase Master Stop', label_true: 'STOPPED', handler: ->
       {hbase} = @config.ryba
       @call header: 'Service',  handler: ->
-        @service.stop
-          name: 'hbase-master'
-          if_exists: '/etc/init.d/hbase-master'
+        @service.stop 'hbase-master'
 
 ## Stop Clean Logs
 

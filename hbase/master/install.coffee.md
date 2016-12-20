@@ -78,14 +78,13 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
           name: 'hbase-client'
         @hdp_select
           name: 'hbase-master'
-        @render
+        @service.init
           header: 'Init Script'
-          source: "#{__dirname}/../resources/hbase-master"
-          local_source: true
+          source: "#{__dirname}/../resources/hbase-master.j2"
+          local: true
           context: @config
           target: '/etc/init.d/hbase-master'
           mode: 0o0755
-          unlink: true
         @service.restart
           name: 'hbase-master'
           if: -> @status -4

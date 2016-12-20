@@ -8,4 +8,3 @@ inside "/var/run/hbase/hbase-hbase-regionserver.pid".
       @service.status
         name: 'hbase-regionserver'
         code_stopped: [1, 3]
-        if_exists: '/etc/init.d/hbase-regionserver'

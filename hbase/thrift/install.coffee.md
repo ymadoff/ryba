@@ -140,14 +140,13 @@ Environment passed to the HBase Rest Server before it starts.
           name: 'hbase-thrift'
         @hdp_select
           name: 'hbase-client'
-        @render
+        @service.init
           header: 'Init Script'
-          source: "#{__dirname}/../resources/hbase-thrift"
+          source: "#{__dirname}/../resources/hbase-thrift.j2"
           local_source: true
           context: @config
           target: '/etc/init.d/hbase-thrift'
           mode: 0o0755
-          unlink: true
         @execute
           cmd: "service hbase-thrift restart"
           if: -> @status -3

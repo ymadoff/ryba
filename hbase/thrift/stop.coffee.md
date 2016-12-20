@@ -13,7 +13,6 @@ su -l hbase -c "/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config /etc/
       {hbase} = @config.ryba
       @service.stop
         name: 'hbase-thrift'
-        if_exists: '/etc/init.d/hbase-thrift'
 
 ## Stop Clean Logs
 
