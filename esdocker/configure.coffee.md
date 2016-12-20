@@ -1,3 +1,4 @@
+
 ## Config Example:
 
 ```
@@ -82,7 +83,7 @@
         es.default_cpu_quota = 100000
         es.environment = "affinity:container!=*#{es.normalized_name}*"
         throw Error 'Required property "ports"' unless es.ports?
-       	if es.ports instanceof Array
+        if es.ports instanceof Array
           port_mapping = port.split(":").length > 1 for port in es.ports
           throw Error 'property "ports" must be an array of ports mapping ["9200:port1","9300:port2"]' unless port_mapping is true
         else
