@@ -45,4 +45,3 @@ your specific hardware. The most commonly adjusted configurations are:
       druid.broker.jvm ?= {}
       druid.broker.jvm.xms ?= '24g'
       druid.broker.jvm.xmx ?= '24g'
-      

@@ -40,7 +40,7 @@
   $status = kinit_if_needed($security_enabled, $kinit_path_local, $keytab_path, $principal_name);
   $retcode = $status[0];
   $output = $status[1];
-  
+
   if ($output != 0) {
     echo "CRITICAL: Error doing kinit for nagios. $output";
     exit (2);

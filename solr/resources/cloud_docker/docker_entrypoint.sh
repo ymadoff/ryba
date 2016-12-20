@@ -120,7 +120,6 @@ do
   echo "Bootstraping Zookeeper node: $ZK_NODE"
   echo "Waiting 3 seconds...."
   sleep 3
-  
 done
 }
 

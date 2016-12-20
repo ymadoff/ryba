@@ -308,7 +308,7 @@ Example:
         hue_docker.ini['hbase']['thrift_transport'] =  hbase_ctx.config.ryba.hbase.thrift.site['hbase.regionserver.thrift.framed']
       else
         blacklisted_app.push 'hbase'
-        
+
       # Spark 
       # For now Hue does not support livy on kerberized cluster and ssl protocol
       blacklisted_app.push 'spark'
@@ -359,7 +359,7 @@ Example:
       hue_docker.ini['desktop']['app_blacklist'] ?= blacklisted_app.join()
 
 ## Configure notebooks
-      
+
       hue_docker.ini['notebook'] ?= {}
       hue_docker.ini['notebook']['show_notebooks'] ?= true
       # Set up some interpreters settings

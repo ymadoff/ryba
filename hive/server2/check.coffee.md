@@ -2,7 +2,7 @@
 # Hive HCatalog Check
 
     module.exports =  header: 'Hive Server2 Check Thrift', label_true: 'CHECKED', handler: (options) ->
-      {hive} = @config.ryba            
+      {hive} = @config.ryba
       port = if hive.server2.site['hive.server2.transport.mode'] is 'http'
       then hive.server2.site['hive.server2.thrift.http.port']
       else hive.server2.site['hive.server2.thrift.port']

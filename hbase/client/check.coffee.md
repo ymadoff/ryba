@@ -20,7 +20,7 @@ Wait for the HBase master to be started.
 
 ## Ranger Policy
 [Ranger HBase plugin][ranger-hbase] try to mimics grant/revoke by shell.
-    
+
       @call 
         if: -> ranger_ctx?
         handler: ->

@@ -2,7 +2,7 @@
 # Livy Configure
 
 Configure Spark Livy Server and integrates it with the other components deployed by Ryba.
-  
+
     module.exports = ->
       {hadoop_conf_dir, core_site,realm} = @config.ryba
       {spark} = @config.ryba ?= {}
@@ -63,7 +63,7 @@ Configure Spark Livy Server and integrates it with the other components deployed
       livy.conf['livy.impersonation.enabled'] ?= 'true'
 
 ## Kerberos && ACLs
-      
+
       if @config.ryba.security is 'kerberos'
         livy.conf['livy.server.auth.type'] ?= 'kerberos'
         livy.conf['livy.server.auth.kerberos.principal'] ?= "#{spark.user.name}/#{@config.host}@#{realm}"

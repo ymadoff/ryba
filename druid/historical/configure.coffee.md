@@ -47,4 +47,3 @@ your specific hardware. The most commonly adjusted configurations are:
       druid.historical.jvm ?= {}
       druid.historical.jvm.xms ?= '8g'
       druid.historical.jvm.xmx ?= '8g'
-      

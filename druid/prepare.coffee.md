@@ -8,4 +8,3 @@ Download the Druid package.
       @cache
         ssh: null
         source: "#{druid.source}"
-      

@@ -93,8 +93,8 @@ The property `zkCredentialsProvider` was named `zkCredientialsProvider`
 
       solr.cloud_docker.conf_source = if (solr.cloud_docker.version.split('.')[0] < 6) or (solr.cloud_docker.source is 'HDP')
       then "#{__dirname}/../resources/cloud/solr_5.xml.j2"
-      else "#{__dirname}/../resources/cloud/solr_6.xml.j2"      
-      
+      else "#{__dirname}/../resources/cloud/solr_6.xml.j2"
+
 ## Security
 
       solr.cloud_docker.security ?= {}
@@ -163,5 +163,5 @@ The property `zkCredentialsProvider` was named `zkCredientialsProvider`
         configure_solr_cluster @ , name,config
 
 ## Dependencies
-    
+
     configure_solr_cluster = require './clusterize'

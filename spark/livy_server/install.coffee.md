@@ -63,7 +63,7 @@ Write startup script to /etc/init.d/service-hue-docker
           mode: 0o755        
 
 ## Layout
-      
+
       @call header: 'Layout', handler: ->
         @mkdir
           target: spark.livy.pid_dir
@@ -81,7 +81,7 @@ Write startup script to /etc/init.d/service-hue-docker
           gid: spark.group.name
 
 ## Spark Configuration
-      
+
       @write_properties
         header: 'Livy Server Configuration'
         target: "#{spark.livy.conf_dir}/livy.conf"
@@ -96,7 +96,7 @@ Write startup script to /etc/init.d/service-hue-docker
           
 
 ## Download Container
-      
+
       @call header: 'Download Container', timeout: -1, handler: ->
         tmp = spark.livy.image_dir
         md5 = spark.livy.md5 ?= true
@@ -157,7 +157,6 @@ Write startup script to /etc/init.d/service-hue-docker
           target: "#{tmp_location}/#{path.basename ssl.key}"
           shy: true
 
-          
 ## Docker run
     
       @docker_service

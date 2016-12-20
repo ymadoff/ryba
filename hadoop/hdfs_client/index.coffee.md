@@ -4,8 +4,6 @@
 [Clients][hdfs_client] contact NameNode for file metadata or file modifications
 and perform actual file I/O directly with the DataNodes.
 
-[hdfs_client]: http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HdfsUserGuide.html
-
     module.exports =
       use:
         java: implicit: true, module: 'masson/commons/java'
@@ -22,3 +20,5 @@ and perform actual file I/O directly with the DataNodes.
           'ryba/hadoop/hdfs_client/install'
           'ryba/hadoop/hdfs_client/check'
         ]
+
+[hdfs_client]: http://hadoop.apache.org/docs/current/hadoop-project-dist/hadoop-hdfs/HdfsUserGuide.html

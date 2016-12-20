@@ -24,4 +24,3 @@ Example:
       # Package
       druid.tranquility.version ?= "0.8.0"
       druid.tranquility.source ?= "http://static.druid.io/tranquility/releases/tranquility-distribution-#{druid.tranquility.version}.tgz"
-      

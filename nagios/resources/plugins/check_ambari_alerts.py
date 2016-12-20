@@ -70,11 +70,10 @@ def main():
       else:
         print ", ".join(buf_list)
         exit(exit_code)
-      
+
   except Exception:
     traceback.print_exc()
     exit(3)
 
 if __name__ == "__main__":
   main()
-

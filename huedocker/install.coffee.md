@@ -151,7 +151,7 @@ recommandations. Merge the configuration object from "pseudo-distributed.ini" wi
 Setup the database hosting the Hue data. Currently two database providers are
 implemented but Hue supports MySQL, PostgreSQL, and Oracle. Note, sqlite is
 the default database while mysql is the recommanded choice.
-      
+
       @call header: 'Hue Docker Database', handler: ->
         switch hue_docker.ini.desktop.database.engine
           when 'mysql'

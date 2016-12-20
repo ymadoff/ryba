@@ -2,7 +2,7 @@
 mecano = require 'mecano'
 
 describe 'hdfs mkdir', ->
-  
+
   it 'create a dir with default permission and ownership', (next) ->
     mecano require './config.coffee'
     .register 'hdfs_mkdir', require '../lib/hdfs_mkdir'
@@ -26,7 +26,7 @@ describe 'hdfs mkdir', ->
         'drwxr-x---'
       ]
     .then next
-      
+
   it.only 'detect status', (next) ->
     mecano require './config.coffee'
     .register 'hdfs_mkdir', require '../lib/hdfs_mkdir'
@@ -44,5 +44,5 @@ describe 'hdfs mkdir', ->
     , (err, status) ->
       status.should.be.false() unless err
     .then next
-    
+
 string = require 'mecano/lib/misc/string'

@@ -1,12 +1,12 @@
 
 # Hadoop HDFS DataNode
 
-A [DataNode](http://wiki.apache.org/hadoop/DataNode) manages the storage attached to the node it run on. There are usually
-one DataNode per node in the cluster. HDFS exposes a file system namespace and
-allows user data to be stored in files. Internally, a file is split into one or
-more blocks and these blocks are stored in a set of DataNodes. The DataNodes
-also perform block creation, deletion, and replication upon instruction from the
-NameNode.
+A [DataNode](http://wiki.apache.org/hadoop/DataNode) manages the storage attached
+to the node it run on. There are usually one DataNode per node in the cluster.
+HDFS exposes a file system namespace and allows user data to be stored in files.
+Internally, a file is split into one or more blocks and these blocks are stored 
+in a set of DataNodes. The DataNodes also perform block creation, deletion, and 
+replication upon instruction from the NameNode.
 
 To provide a fast failover in a Higth Availabity (HA) enrironment, it is
 necessary that the Standby node have up-to-date information regarding the

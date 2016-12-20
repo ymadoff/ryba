@@ -70,7 +70,7 @@ module.exports = exports =
   ###
   `read([ssh], path, [property], callback)`
   ----------------------------------
-  
+
   Similar to `parse` but read the xml from a file instead of 
   expecting a XML markup.
   ###
@@ -89,7 +89,7 @@ module.exports = exports =
   ###
   `write([ssh], path, properties, callback)`
   ------------------------------------------
-  
+
   Similar to `stringify` but write the xml to a file instead of 
   returning an XML markup. The generated XML markup is also 
   provided as the second argument of the callback.

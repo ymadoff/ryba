@@ -4,7 +4,7 @@
     module.exports = header: 'Druid Broker Install', handler: ->
       {druid} = @config.ryba
       @call once: true, handler: 'ryba/druid/install'
- 
+
 ## IPTables
 
 | Service      | Port | Proto    | Parameter                   |

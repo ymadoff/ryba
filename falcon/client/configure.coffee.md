@@ -17,4 +17,3 @@ associated processing and management tasks on Hadoop clusters.
       falcon.client.user ?= f_context.config.ryba.falcon.user
       # Group
       falcon.client.group ?= f_context.config.ryba.falcon.group
-      

@@ -44,7 +44,7 @@
   $status = kinit_if_needed($security_enabled, $kinit_path_local, $keytab_path, $principal_name);
   $retcode = $status[0];
   $output = $status[1];
-  
+
   if ($output != 0) {
     echo "CRITICAL: Error doing kinit for nagios. $output";
     exit (2);
@@ -81,7 +81,7 @@
   $out_msg = "Capacity:[" . $cap_total . 
              "], Remaining Capacity:[" . $cap_remain . 
              "], percent_full:[" . $percent_full  . "]";
-  
+
   if ($percent_full > $crit) {
     echo "CRITICAL: " . $out_msg . "\n";
     exit (2);

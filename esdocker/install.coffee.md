@@ -75,7 +75,6 @@
             "#{es.normalized_name}_master"
           else if es.master_data_nodes > 0
             "#{es.normalized_name}_master_data"
-          
           es.volumes = [
             "/etc/elasticsearch/#{es_name}/conf/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml",
             "/etc/elasticsearch/#{es_name}/conf/logging.yml:/usr/share/elasticsearch/config/logging.yml",
@@ -125,9 +124,8 @@
             {host:swarm_manager,tlsverify:" ",tlscacert:ssl.dest_cacert,tlscert:ssl.dest_cert,tlskey:ssl.dest_key},
             "export DOCKER_HOST=#{swarm_manager};export DOCKER_CERT_PATH=#{ssl.dest_dir};export DOCKER_TLS_VERIFY=1"
             ]
-        
+
           @docker_status container:"#{master_node}_1", docker:docker_args
-          
           for service,node of es.nodes then do (service,node) =>
             @execute
               cmd:"""

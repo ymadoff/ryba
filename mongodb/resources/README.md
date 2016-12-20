@@ -109,7 +109,7 @@ for shards and config servers.
   * MongoDB Challenge and Response (MONGODB-CR)
   * x.509 Certificate Authentication.
   Ryba uses SCRAM-SHA-1
-  
+
 - Encryption
   However we can use SSL to encrypt internal data exchance betwwen the MongoDB processes
   which is done by set `net.ssl` property to preferSSL.

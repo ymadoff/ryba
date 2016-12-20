@@ -1,8 +1,9 @@
 
 # Apache NiFi
 
-Apache nifi supports powerful and scalable directed graphs of data routing, transformation,
-and system mediation logic. Some of the high-level capabilities and objectives of Apache NiFi includes:
+Apache NiFi supports powerful and scalable directed graphs of data routing,
+transformation, and system mediation logic. Some of the high-level capabilities 
+and objectives of Apache NiFi includes:
   * Web-based user interface
   * Highly configurable
   * Data Provenance

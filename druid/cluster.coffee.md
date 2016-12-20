@@ -40,7 +40,7 @@
         dependencies:
           java: 'masson/commons/java'
           hdfs: 'prod_hdfs_nn'
-          
+
     servers:
       "edge.ryba":
         tags:

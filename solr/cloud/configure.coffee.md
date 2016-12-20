@@ -133,7 +133,7 @@ The property `zkCredentialsProvider` is named `zkCredientialsProvider`
       solr.cloud.ssl_keystore_pwd ?= 'solr123'
 
 ### Environment and Zookeeper ACL
-      
+
       solr.cloud.zk_opts ?= {}
       if java?
         solr.cloud.env['SOLR_JAVA_HOME'] ?= java.java_home

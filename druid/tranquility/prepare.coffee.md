@@ -8,4 +8,3 @@ Download the Tranquility package.
       @cache
         ssh: null
         source: "#{druid.tranquility.source}"
-      
