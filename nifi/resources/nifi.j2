@@ -27,7 +27,7 @@ if [ "${PARAM}" = "status" ]; then
   ${NIFI_EXEC} status | grep 'currently running'
   if [ "$?" = "1" ]; then
     echo "nifi is not running..."
-    exit 1;
+    exit 3;
   fi
 else
   ${NIFI_EXEC} "$@"
