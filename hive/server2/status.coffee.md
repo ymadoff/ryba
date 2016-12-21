@@ -11,4 +11,3 @@ still exists.
       @service.status
         name: 'hive-server2'
         code_stopped: [1, 3]
-        if_exists: '/etc/init.d/hive-server2'

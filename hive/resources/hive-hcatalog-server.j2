@@ -32,14 +32,17 @@
 ### END INIT INFO
 
 NAME='Hive HCatalog Server'
-USER='hive'
-PID_FILE='/var/run/hive-hcatalog/hcat.pid'
+USER='{{ryba.hive.user.name}}'
+GROUP='{{ryba.hive.group.name}}'
+RUN_DIR='{{ryba.hive.hcatalog.pid_dir}}'
+PID_FILE="${RUN_DIR}/hive-hcatalog.pid"
 CONF_DIR={{hive.hcatalog.conf_dir}}
 CMD="su -l $USER -c \"nohup hive --config ${CONF_DIR} --service metastore >{{hive.hcatalog.log_dir}}/hcatalog.out 2>{{hive.hcatalog.log_dir}}/hcatalog.err & echo \\\$! >$PID_FILE\""
 KILL_FORCE=0
 KILL_SLEEP=10
 
 function start {
+  if [ ! -d "$RUN_DIR" ]; then install -d -o $USER -g $GROUP -m 0755 $RUN_DIR ; fi
   if [ -f "${PID_FILE}" ]; then
     pid=`cat $PID_FILE 2>/dev/null`
     if kill -0 $pid >/dev/null 2>&1 $pid; then

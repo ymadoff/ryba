@@ -18,7 +18,6 @@ The file storing the PID is "/var/run/webhcat/webhcat.pid".
       @service.stop
         header: 'Stop service'
         name: 'hive-webhcat-server'
-        if_exists: '/etc/init.d/hive-webhcat-server'
 
 ## Stop Clean Logs
 

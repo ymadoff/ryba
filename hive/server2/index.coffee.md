@@ -14,7 +14,7 @@ open API clients like JDBC and ODBC.
         krb5_client: implicit: true, module: 'masson/core/krb5_client'
         krb5_user: implicit: true, module: 'ryba/commons/krb5_user'
         # mapred_client: implicit: true, module: 'ryba/hadoop/mapred_client'
-        # tez: implicit: true, module: 'ryba/tez'
+        tez: implicit: true, module: 'ryba/tez'
         # db_admin: 'ryba/commons/db_admin'
         ranger_admin: 'ryba/ranger/admin'
         hadoop_core: 'ryba/hadoop/core'

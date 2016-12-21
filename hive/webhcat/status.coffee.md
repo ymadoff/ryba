@@ -7,4 +7,3 @@ inside "/var/run/webhcat/webhcat.pid".
     module.exports = header: 'WebHCat Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       @service.status
         name: 'hive-webhcat-server'
-        if_exists: '/etc/init.d/hive-webhcat-server'

@@ -61,13 +61,12 @@ inside "/etc/init.d" and activate it on startup.
         @service 'sqoop' # Upload .tar.gz
         @hdp_select
           name: 'hive-webhcat'
-        @render
+        @service.init
           header: 'Init Script'
           source: "#{__dirname}/../resources/hive-webhcat-server.j2"
-          local_source: true
+          local: true
           target: '/etc/init.d/hive-webhcat-server'
           mode: 0o0755
-          unlink: true
           context: @config.ryba
         @execute
           cmd: "service hive-webhcat-server restart"

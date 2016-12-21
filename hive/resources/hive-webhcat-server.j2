@@ -32,14 +32,17 @@
 ### END INIT INFO
 
 NAME='Hive Webhcat Server'
-USER='hive'
-PID_FILE='/var/run/webhcat/webhcat.pid'
+USER='{{ryba.hive.user.name}}'
+GROUP='{{ryba.hive.group.name}}'
+RUN_DIR='{{ryba.webhcat.pid_dir}}'
+PID_FILE="${RUN_DIR}/webhcat.pid"
 CMD="su -l $USER -c \"export WEBHCAT_CONF_DIR={{webhcat.conf_dir}}; /usr/hdp/current/hive-webhcat/sbin/webhcat_server.sh start\""
 
 KILL_FORCE=0
 KILL_SLEEP=10
 
 function start {
+  if [ ! -d "$RUN_DIR" ]; then install -d -o $USER -g $GROUP -m 0755 $RUN_DIR ; fi
   if [ -f "${PID_FILE}" ]; then
     pid=`cat $PID_FILE 2>/dev/null`
     if kill -0 $pid >/dev/null 2>&1 $pid; then

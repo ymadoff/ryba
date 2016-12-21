@@ -16,7 +16,6 @@ The file storing the PID is "/var/run/hive-server2/hive-server2.pid".
 
       @service.stop
         name: 'hive-hcatalog-server'
-        if_exists: '/etc/init.d/hive-hcatalog-server'
 
 ## Clean Logs
 

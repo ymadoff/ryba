@@ -75,14 +75,13 @@ isnt yet started.
           name: 'hive-server2'
         @hdp_select
           name: 'hive-server2'
-        @render
+        @service.init
           header: 'Init Script'
           source: "#{__dirname}/../resources/hive-server2.j2"
-          local_source: true
+          local: true
           context: @config.ryba
           target: '/etc/init.d/hive-server2'
           mode: 0o0755
-          unlink: true
         @execute
           cmd: "service hive-server2 restart"
           if: -> @status -3

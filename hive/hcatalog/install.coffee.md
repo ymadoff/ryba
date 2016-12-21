@@ -64,6 +64,14 @@ Note, the server is not activated on startup but they endup as zombies if HDFS
 isnt yet started.
 
       @call header: 'Service', ->
+        @service
+          name: 'hive'
+        @hdp_select
+          name: 'hive-webhcat'
+        @service
+          name: 'hive-hcatalog-server'
+        @hdp_select
+          name: 'hive-metastore'
         @call
           if: hive.hcatalog.db.engine is 'mysql'
         , ->
@@ -78,92 +86,17 @@ isnt yet started.
               name: 'postgresql'
             @service
               name: 'postgresql-jdbc'
-        @service
-          name: 'hive'
-        @hdp_select
-          name: 'hive-webhcat'
-        @service
-          name: 'hive-hcatalog-server'
-        @hdp_select
-          name: 'hive-metastore'
-        @render
+        @service.init
           header: 'Init Script'
           source: "#{__dirname}/../resources/hive-hcatalog-server.j2"
-          local_source: true
+          local: true
           target: '/etc/init.d/hive-hcatalog-server'
           context: @config.ryba
           mode: 0o0755
-          unlink: true
         @execute
           cmd: "service hive-hcatalog-server restart"
           if: -> @status -3
 
-      @call header: 'Metastore DB', timeout:-1, ->
-        @db.user hive.hcatalog.db, database: null,
-          header: 'User'
-          if: hive.hcatalog.db.engine in ['mysql', 'postgres']
-        @db.database hive.hcatalog.db,
-          header: 'Database'
-          if: hive.hcatalog.db.engine in ['mysql', 'postgres']
-          user: hive.hcatalog.db.username
-        @db.schema hive.hcatalog.db,
-          header: 'Schema'
-          if: hive.hcatalog.db.engine is 'postgres'
-          schema: hive.hcatalog.db.schema or hive.hcatalog.db.database
-          database: hive.hcatalog.db.database
-          owner: hive.hcatalog.db.username
-        # Metastore schema migration
-        target_version = 'ls /usr/hdp/current/hive-metastore/lib | grep hive-common- | sed \'s/^hive-common-\\([0-9]\\+.[0-9]\\+.[0-9]\\+\\).*\\.jar$/\\1/g\''
-        current_version = db.cmd hive.hcatalog.db, admin_username: null, 'select \\"SCHEMA_VERSION\\" from \\"VERSION\\"'
-        @execute
-          cmd: """
-          engine="#{hive.hcatalog.db.engine}"
-          cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/${engine} # Required for sql sources
-          target_version=`#{target_version}`
-          echo Target Version: "$target_version"
-          target=hive-schema-${target_version}.${engine}.sql
-          target_major_version=`echo $target_version | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2.0/g\'`
-          echo Target Version: "$target_major_version"
-          target_major=hive-schema-${target_major_version}.${engine}.sql
-          if ! test -f $target && ! test -f $target_major; then exit 1; fi
-          # Create schema
-          if test -f $target; then
-            echo Importing $target
-            #{db.cmd hive.hcatalog.db, admin_username: null, null} < $target;
-          elif test -f $target_major; then
-            echo Importing $target_major
-            #{db.cmd hive.hcatalog.db, admin_username: null, null} < $target_major;
-          fi
-          """
-          trap: true
-        @execute
-          header: 'Upgrade'
-          cmd: """
-          engine="#{hive.hcatalog.db.engine}"
-          cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/${engine} # Required for sql sources
-          current=`#{current_version}`
-          echo Current Version: "$current"
-          target=`#{target_version}`
-          echo Target Version: "$target"
-          if [ "$current" == "$target" ]; then exit 3; fi
-          # Upgrade schema
-          upgrade=upgrade-${current}-to-${target}.${engine}.sql
-          if ! test -f $upgrade; then
-            echo 'Upgrade script does not exists'
-            current_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
-            target_major=`echo $target | sed \'s/^\\([0-9]\\+\\).\\([0-9]\\+\\).\\([0-9]\\+\\)$/\\1.\\2/g\'`
-            echo Target Major Version: "$target_major"
-            if [ $current_major == $target_major ]; then exit 0; fi
-            exit 1;
-          fi
-          cd `dirname $upgrade`
-          #{db.cmd hive.hcatalog.db, admin_username: null, null} < $upgrade
-          # Import transaction schema (now created with 0.13.1)
-          #trnx=hive-txn-schema-${target}.${engine}.sql
-          #if test -f $trnx; then #{db.cmd hive.hcatalog.db, admin_username: null, null} < $trnx; fi
-          """
-          trap: true
-          code_skipped: 3
       @hconfigure
         header: 'Hive Site'
         target: "#{hive.hcatalog.conf_dir}/hive-site.xml"
@@ -236,6 +169,54 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
         header: 'Link PostgreSQL Driver'
         source: '/usr/share/java/postgresql-jdbc.jar'
         target: '/usr/hdp/current/hive-metastore/lib/postgresql-jdbc.jar'
+
+## Metastore DB
+      
+      @call header: 'Metastore DB', timeout:-1, ->
+        @db.user hive.hcatalog.db, database: null,
+          header: 'User'
+          if: hive.hcatalog.db.engine in ['mysql', 'postgres']
+        @db.database hive.hcatalog.db,
+          header: 'Database'
+          user: hive.hcatalog.db.username
+          if: hive.hcatalog.db.engine in ['mysql', 'postgres']
+        @db.schema hive.hcatalog.db,
+          header: 'Schema'
+          if: hive.hcatalog.db.engine is 'postgres'
+          schema: hive.hcatalog.db.schema or hive.hcatalog.db.database
+          database: hive.hcatalog.db.database
+          owner: hive.hcatalog.db.username
+        # Metastore schema migration
+        target_version = 'ls /usr/hdp/current/hive-metastore/lib | grep hive-common- | sed \'s/^hive-common-\\([0-9]\\+.[0-9]\\+.[0-9]\\+\\).*\\.jar$/\\1/g\''
+        current_version = db.cmd hive.hcatalog.db, admin_username: null, "select \"SCHEMA_VERSION\" from \"VERSION\""
+        info_cmd = "hive --config #{@config.ryba.hive.hcatalog.conf_dir} --service schemaTool -dbType #{hive.hcatalog.db.engine} -info"
+        @execute
+          unless_exec: info_cmd
+          header: 'Init Schema'
+          cmd: """
+              hive --config #{@config.ryba.hive.hcatalog.conf_dir} \
+              --service schemaTool -dbType #{hive.hcatalog.db.engine} -initSchema
+            """
+        @execute
+          header: 'Read Versions'
+          cmd: """
+              engine="#{hive.hcatalog.db.engine}"
+              cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/${engine} # Required for sql sources
+              target_version=`#{target_version}`
+              current_version=`#{current_version}`
+              if [ "$target_version" == "$current_version" ] ; then exit 0; else exit 1; fi
+            """
+          code_skipped: 1
+        @execute
+          if: -> !@status(-1) and !@status(-2)
+          cmd: """
+              engine="#{hive.hcatalog.db.engine}"
+              cd /usr/hdp/current/hive-metastore/scripts/metastore/upgrade/${engine} # Required for sql sources
+              current_version=`#{current_version}`
+              hive --config #{@config.ryba.hive.hcatalog.conf_dir} \
+              --service schemaTool -dbType #{hive.hcatalog.db.engine} -upgradeSchemaFrom $current_version
+            """
+
 
 ## Kerberos
 
