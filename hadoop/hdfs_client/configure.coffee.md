@@ -25,6 +25,7 @@ is already handled by kerberos
         'dfs.ha.automatic-failover.enabled'
         'dfs.nameservices'
         'dfs.internal.nameservices'
+        'fs.permissions.umask-mode'
       ] then hdfs.site[property] ?= nn_ctx.config.ryba.hdfs.nn.site[property]
       for property of nn_ctx.config.ryba.hdfs.nn.site
         ok = false

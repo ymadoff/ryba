@@ -51,7 +51,7 @@ Example:
       ryba.hdfs.nn.heapsize ?= '1024m'
       ryba.hdfs.nn.newsize ?= '200m'
       ryba.hdfs.namenode_opts ?= ''
-      ryba.hdfs.nn.site['fs.permissions.umask-mode'] ?= '027' # 0750
+      ryba.hdfs.nn.site['fs.permissions.umask-mode'] ?= '026' # 0750
       # If "true", access tokens are used as capabilities
       # for accessing datanodes. If "false", no access tokens are checked on
       # accessing datanodes.
