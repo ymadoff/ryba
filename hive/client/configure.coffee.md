@@ -50,7 +50,7 @@ Example:
 ## Configuration
 
       hive.site ?= {}
-      hive.client.aux_jars ?= if @has_service 'ryba/hive/hcatalog' then hive.hcatalog.aux_jars else ''
+      hive.client.aux_jars ?= hcat_ctxs[0].config.ryba.hive.hcatalog.aux_jars
       # Tuning
       # [Christian Prokopp comments](http://www.quora.com/What-are-the-best-practices-for-using-Hive-What-settings-should-we-enable-most-of-the-time)
       # [David Streever](https://streever.atlassian.net/wiki/display/HADOOP/Hive+Performance+Tips)

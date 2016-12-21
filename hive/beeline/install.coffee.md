@@ -19,6 +19,17 @@
         name: 'hive'
       @hdp_select 'hive-webhcat'
 
+## Env
+
+      @render
+        header: 'Hive Env'
+        source: "#{__dirname}/../resources/hive-env.sh.j2"
+        target: "#{hive.conf_dir}/hive-env.sh"
+        local_source: true
+        context: @config
+        eof: true
+        backup: true
+
 ## SSL
 
       @java_keystore_add

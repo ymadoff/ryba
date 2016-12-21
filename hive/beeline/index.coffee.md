@@ -4,7 +4,7 @@
     module.exports =
       use:
         java: implicit: true, module: 'masson/commons/java'
-        hive_server2: 'ryba/hive/server2'
+        hcat: 'ryba/hive/hcatalog'
         server2: 'ryba/hive/server2'
         ranger_admin: 'ryba/ranger/admin'
         spark_thrift_servers: 'ryba/spark/thrift_server'

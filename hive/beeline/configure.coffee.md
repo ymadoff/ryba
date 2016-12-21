@@ -18,12 +18,15 @@ Example:
 
     module.exports = ->
       hs2_ctxs = @contexts 'ryba/hive/server2'
+      hcat_ctxs = @contexts 'ryba/hive/hcatalog'
       throw Error "No Hive Server2 server declared" unless hs2_ctxs.length
+      throw Error "No Hive HCatalog declared" unless hcat_ctxs.length
       hive = @config.ryba.hive ?= {}
       hive.client ?= {}
       hive.client.opts = ""
       hive.client.heapsize = 1024
       hive.conf_dir ?= '/etc/hive/conf'
+      hive.client.aux_jars ?= hcat_ctxs[0].config.ryba.hive.hcatalog.aux_jars
 
 ## Users & Groups
 

@@ -239,7 +239,8 @@ and its value is the server "host:port".
       config['log4j.threshold'] ?= '${hive.log.threshold}'
 
 # Hive On HBase
-Add Hive user as proxyuser    
+
+Add Hive user as proxyuser
 
       for hbase_ctx in hbase_ctxs
         hbase_ctx.config.ryba.core_site ?= {}

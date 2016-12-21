@@ -77,7 +77,7 @@ by setting a "heapsize" value equal to "4096".
         source: "#{__dirname}/../resources/hive-env.sh.j2"
         target: "#{hive.conf_dir}/hive-env.sh"
         local_source: true
-        context: @config.ryba
+        context: @config
         eof: true
         backup: true
 
