@@ -34,7 +34,7 @@
 NAME='HDFS Httpfs'
 USER='{{ryba.httpfs.user.name}}'
 GROUP='{{ryba.httpfs.group.name}}'
-RUN_DIR='{{ryba.hdfs.pid_dir}}'
+RUN_DIR='{{ryba.httpfs.pid_dir}}'
 PID_FILE="${RUN_DIR}/httpfs.pid"
 CONF_DIR='{{ryba.httpfs.conf_dir}}'
 CMD="su - $USER -c \"/usr/hdp/current/hadoop-httpfs/sbin/httpfs.sh start\""

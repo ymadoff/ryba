@@ -109,6 +109,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             uid: httpfs.user.name
             gid: httpfs.group.name
             backup: true
+            mode: 0o755
         @render
           target: "#{httpfs.conf_dir}/httpfs-log4j.properties"
           source: "#{__dirname}/../resources/httpfs-log4j.properties"
