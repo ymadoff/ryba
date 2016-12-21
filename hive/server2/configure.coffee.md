@@ -95,7 +95,7 @@ Example:
 
 ## Hive Server2 Environment
 
-      hive.server2.env ?= {}  
+      hive.server2.env ?= {}
       #JMX Config
       hive.server2.env["JMX_OPTS"] ?= ''
       if hive.server2.env["JMXPORT"]? and hive.server2.env["JMX_OPTS"].indexOf('-Dcom.sun.management.jmxremote.rmi.port') is -1

@@ -38,10 +38,13 @@ OpenTSDB archive comes with an RPM
         @file.download
           source: opentsdb.source
           target: "/var/tmp/opentsdb-#{opentsdb.version}.noarch.rpm"
-          unless_exec: "rpm -q --queryformat '%{VERSION}' opentsdb | grep '#{opentsdb.version}'"
         @execute
           cmd: "yum localinstall -y --nogpgcheck /var/tmp/opentsdb-#{opentsdb.version}.noarch.rpm"
           unless_exec: "rpm -q --queryformat '%{VERSION}' opentsdb | grep '#{opentsdb.version}'"
+        @chmod
+          header: 'Fix permissions'
+          target: "#{opentsdb.user.home}/etc/init.d/opentsdb"
+          mode: 0o755
         @execute
           cmd: """
           if ! ls #{opentsdb.user.home}/lib/zookeeper-*.jar | wc -l; then exit 3; fi

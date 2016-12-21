@@ -1,9 +1,27 @@
 
+## OpenTSDB Configuration
 
-## Configuration
+*   `opentsdb.user` (object|string)   
+    The Unix OpenTSDB login name or a user object (see Mecano User documentation).   
+*   `opentsdb.group` (object|string)   
+    The Unix OpenTSDB group name or a group object (see Mecano Group documentation).   
 
-    module.exports = handler: ->
-      rs_ctxs = @contexts 'ryba/hbase/regionserver', require('../hbase/regionserver/configure').handler
+Example
+
+```json
+    "opentsdb": {
+      "user": {
+        "name": "opentsdb", "system": true, "gid": "opentsdb",
+        "comment": "OpenTSDB User", "home": "/usr/share/opentsdb"
+      },
+      "group": {
+        "name": "Opentsdb", "system": true
+      }
+    }
+```
+
+    module.exports = ->
+      rs_ctxs = @contexts 'ryba/hbase/regionserver'
       throw Error 'No HBase regionservers configured' unless rs_ctxs.length > 0
       {hbase} = rs_ctxs[0].config.ryba
       @config.ryba ?= {}
@@ -25,8 +43,8 @@
       opentsdb.group.system ?= true
       opentsdb.user.gid = opentsdb.group.name
       # Package
-      opentsdb.version ?= "2.2.0"
-      opentsdb.source ?= "https://github.com/OpenTSDB/opentsdb/releases/download/v#{opentsdb.version}/opentsdb-#{opentsdb.version}.noarch.rpm"
+      opentsdb.version ?= "2.2.1"
+      opentsdb.source ?= "https://github.com/OpenTSDB/opentsdb/releases/download/v#{opentsdb.version}/opentsdb-#{opentsdb.version}.rpm"
       # opentsdb.hbase
       opentsdb.hbase ?= {}
       opentsdb.hbase.default_namespace ?= "opentsdb"
@@ -46,12 +64,12 @@
       # zookeeper...
       zoo_ctxs = @contexts 'ryba/zookeeper/server'
       opentsdb.config['tsd.storage.hbase.zk_quorum'] ?= zoo_ctxs.map((ctx) -> "#{ctx.config.host}:#{ctx.config.ryba.zookeeper.port}").join ','
-      opentsdb.config['tsd.storage.hbase.zk_ basedir'] ?= hbase.rs.site['zookeeper.znode.parent']
-      ns = -> if opentsdb.hbase.default_namespace? then "#{opentsdb.hbase.default_namespace}:" else ''
-      opentsdb.config['tsd.storage.hbase.data_table'] ?= ns() + 'tsdb'
-      opentsdb.config['tsd.storage.hbase.uid_table'] ?= ns() + 'tsdb-uid'
-      opentsdb.config['tsd.storage.hbase.tree_table'] ?= ns() + 'tsdb-tree'
-      opentsdb.config['tsd.storage.hbase.meta_table'] ?= ns() + 'tsdb-meta'
+      opentsdb.config['tsd.storage.hbase.zk_basedir'] ?= hbase.rs.site['zookeeper.znode.parent']
+      ns = (table) -> if opentsdb.hbase.default_namespace? then "#{opentsdb.hbase.default_namespace}:#{table}" else table
+      opentsdb.config['tsd.storage.hbase.data_table'] ?= ns 'tsdb'
+      opentsdb.config['tsd.storage.hbase.uid_table'] ?= ns 'tsdb-uid'
+      opentsdb.config['tsd.storage.hbase.tree_table'] ?= ns 'tsdb-tree'
+      opentsdb.config['tsd.storage.hbase.meta_table'] ?= ns 'tsdb-meta'
       opentsdb.config['tsd.query.allow_simultaneous_duplicates'] ?= 'true'
       opentsdb.config['hbase.security.authentication'] ?= hbase.rs.site['hbase.security.authentication']
       if opentsdb.config['hbase.security.authentication'] is 'kerberos'

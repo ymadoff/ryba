@@ -8,26 +8,29 @@ systems, applications) at a large scale, and make this data easily accessible
 and graphable.
 OpenTSDB does not seem to work without the hbase rights
 
-    module.exports = ->
-      'configure':
+    module.exports =
+      use:
+        iptables: implicit: true, module: 'masson/core/iptables'
+        java: implicit: true, module: 'masson/commons/java'
+        hbase_client: implicit: true, module: 'ryba/hbase/client'
+      configure:
         'ryba/opentsdb/configure'
-      'install': [
-        'ryba/hbase/client'
-        'ryba/opentsdb/install'
-        'ryba/opentsdb/start'
-        'ryba/opentsdb/check'
-      ]
-      'prepare':
-        'ryba/opentsdb/prepare'
-      'start':
-        'ryba/opentsdb/start'
-      'check':
-        'ryba/opentsdb/check'
-      'status':
-        'ryba/opentsdb/status'
-      'stop':
-        'ryba/opentsdb/stop'
-
+      commands:
+        'install': [
+          'ryba/opentsdb/install'
+          'ryba/opentsdb/start'
+          'ryba/opentsdb/check'
+        ]
+        'prepare':
+          'ryba/opentsdb/prepare'
+        'start':
+          'ryba/opentsdb/start'
+        'check':
+          'ryba/opentsdb/check'
+        'status':
+          'ryba/opentsdb/status'
+        'stop':
+          'ryba/opentsdb/stop'
 
 ## Resources
 
