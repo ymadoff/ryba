@@ -119,9 +119,9 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
       hbase.master.site['hbase.rpc.engine'] ?= 'org.apache.hadoop.hbase.ipc.SecureRpcEngine'
       hbase.master.site['hbase.superuser'] ?= hbase.admin.name
       hbase.master.site['hbase.bulkload.staging.dir'] ?= '/apps/hbase/staging'
-      hbase.master.opts ?= "-Xmx2048m "
-      if hbase.master.opts.indexOf('-Djava.security.auth.login.config') is -1
-        hbase.master.opts += " -Djava.security.auth.login.config=#{hbase.master.conf_dir}/hbase-master.jaas"
+      hbase.master.opts ?= {}
+      hbase.master.opts['java.security.auth.login.config'] ?= "#{hbase.master.conf_dir}/hbase-master.jaas"
+      hbase.master_opts ?= "-Xmx2048m "
 
 ## Configuration for Local Access
 
@@ -145,15 +145,15 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
 
 ## Configuration for Log4J
 
-
-      hbase.master.log4j ?= {}
-      hbase.master.log4j[k] ?= v for k, v of @config.log4j
-      hbase.master.opts = "#{hbase.master.env['HBASE_MASTER_OPTS']}  -Dhbase.log4j.extra_appender=,socket_server -Dhbase.log4j.server_port=#{hbase.log4j.server_port}" if hbase.log4j?.server_port?
-      hbase.master.opts = "#{hbase.master.env['HBASE_MASTER_OPTS']}  -Dhbase.log4j.extra_appender=,socket_client -Dhbase.log4j.remote_host=#{hbase.log4j.remote_host} -Dhbase.log4j.remote_port=#{hbase.log4j.remote_port}" if hbase.log4j?.remote_host? && hbase.log4j?.remote_port?
-      #hbase.master.log4j.root_logger = "INFO,RFA,socket_server" if hbase.log4j.server_port?
-      #hbase.master.log4j.root_logger = "INFO,RFA,socket_client" if hbase.log4j.remote_host? && hbase.log4j.remote_port?
-      #hbase.master.log4j.security_logger = "INFO,RFAS,socket_server" if hbase.log4j.server_port?
-      #hbase.master.log4j.security_logger = "INFO,RFAS,socket_client" if hbase.log4j.remote_host? && hbase.log4j.remote_port?
+      hbase.master.opts['hbase.security.log.file'] ?= 'SecurityAuth-master.audit'
+      hbase.master.env['HBASE_ROOT_LOGGER'] ?= 'INFO,RFA'
+      hbase.master.env['HBASE_SECURITY_LOGGER'] ?= 'INFO,RFAS'
+      if @config.log4j?.remote_host? && @config.log4j?.remote_port?
+        hbase.master.env['HBASE_ROOT_LOGGER'] ?= 'INFO,RFA,SOCKET'
+        hbase.master.env['HBASE_SECURITY_LOGGER'] ?= 'INFO,RFAS,SOCKET'
+        hbase.master.opts['hbase.log.application'] = 'hbase-master'
+        hbase.master.opts['hbase.log.remote_host'] = @config.log4j.remote_host
+        hbase.master.opts['hbase.log.remote_port'] = @config.log4j.remote_port
 
 ## Configuration for High Availability (HA)
 

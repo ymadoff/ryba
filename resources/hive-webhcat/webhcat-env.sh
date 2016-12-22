@@ -33,3 +33,5 @@ CONSOLE_LOG=/var/log/webhcat/webhcat-console.log
 
 # Set HADOOP_HOME to point to a specific hadoop install directory
 export HADOOP_HOME=/usr/hdp/current/hadoop-client
+
+export HADOOP_OPTS="${HADOOP_OPTS} {{ryba.webhcat_opts}}"

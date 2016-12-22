@@ -50,6 +50,7 @@ Example:
       ryba.hdfs.exclude = string.lines ryba.hdfs.exclude if typeof ryba.hdfs.exclude is 'string'
       ryba.hdfs.nn.heapsize ?= '1024m'
       ryba.hdfs.nn.newsize ?= '200m'
+      ryba.hdfs.nn.opts ?= {}
       ryba.hdfs.namenode_opts ?= ''
       ryba.hdfs.nn.site['fs.permissions.umask-mode'] ?= '026' # 0750
       # If "true", access tokens are used as capabilities
@@ -142,9 +143,16 @@ fencing method should be configured to not block failover.
 
 ## Configuration for Log4J
 
-      ryba.hdfs.log4j ?= {}
-      ryba.hdfs.log4j[k] ?= v for k, v of @config.log4j
-      ryba.hdfs.log4j.extra_appender = "socket_client" if ryba.hdfs.log4j.remote_host? && ryba.hdfs.log4j.remote_port?
+      if @config.log4j?.remote_host? && @config.log4j?.remote_port?
+        ryba.hadoop_root_logger = 'INFO,RFA,SOCKET'
+        ryba.hadoop_security_logger = 'INFO,RFAS,SOCKET'
+        ryba.hdfs.audit_logger = 'INFO,RFAAUDIT,SOCKET'
+        #ryba.hdfs.nn.opts['hadoop.root.logger'] = 'INFO,RFA,SOCKET'
+        #ryba.hdfs.nn.opts['hadoop.security.logger'] = 'INFO,RFAS,SOCKET'
+        #ryba.hdfs.nn.opts['hdfs.audit.logger'] = 'INFO,RFAAUDIT,SOCKET'
+        ryba.hdfs.nn.opts['hadoop.log.application'] = 'namenode'
+        ryba.hdfs.nn.opts['hadoop.log.remote_host'] = @config.log4j.remote_host
+        ryba.hdfs.nn.opts['hadoop.log.remote_port'] = @config.log4j.remote_port
 
 ## Export configuration
 

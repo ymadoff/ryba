@@ -31,3 +31,11 @@
       webhcat.site['webhcat.proxyuser.knox.hosts'] ?= '*'
       webhcat.site['templeton.port'] ?= 50111
       webhcat.site['templeton.controller.map.mem'] = 1600 # Total virtual memory available to map tasks.
+      # WebHCat env options
+      webhcat.opts ?= {}
+      webhcat.opts['webhcat.root.logger'] = 'INFO, RFA'
+      if @config.log4j?.remote_host? && @config.log4j?.remote_port?
+        webhcat.opts['webhcat.root.logger'] = 'INFO, RFA, socket'
+        webhcat.opts['webhcat.log.remote_host'] = @config.log4j.remote_host
+        webhcat.opts['webhcat.log.remote_port'] = @config.log4j.remote_port
+

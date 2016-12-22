@@ -111,27 +111,29 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
 
 Environment passed to the Master before it starts.
 
-      @render
-        header: 'HBase Env'
-        target: "#{hbase.master.conf_dir}/hbase-env.sh"
-        source: "#{__dirname}/../resources/hbase-env.sh.j2"
-        backup: true
-        local_source: true
-        eof: true
-        context: @config
-        mode: 0o750
-        uid: hbase.user.name
-        gid: hbase.group.name
-        write: for k, v of hbase.master.env
-          match: RegExp "export #{k}=.*", 'm'
-          replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
-          append: true
-        #  match: /^export HBASE_ROOT_LOGGER=.*$/mg
-        #  replace: "export HBASE_ROOT_LOGGER=#{hbase.master.log4j.root_logger}"
-        #  append: true
-        #  match: /^export HBASE_SECURITY_LOGGER=.*$/mg
-        #  replace: "export HBASE_SECURITY_LOGGER=#{hbase.master.log4j.security_logger}"
-        #  append: true
+      @call header: 'HBase Env', handler: ->
+        hbase.master_opts += " -D#{k}=#{v}" for k, v of hbase.master.opts
+        @render
+          header: 'HBase Env'
+          target: "#{hbase.master.conf_dir}/hbase-env.sh"
+          source: "#{__dirname}/../resources/hbase-env.sh.j2"
+          backup: true
+          local_source: true
+          eof: true
+          context: @config
+          mode: 0o750
+          uid: hbase.user.name
+          gid: hbase.group.name
+          write: for k, v of hbase.master.env
+            match: RegExp "export #{k}=.*", 'm'
+            replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
+            append: true
+          #  match: /^export HBASE_ROOT_LOGGER=.*$/mg
+          #  replace: "export HBASE_ROOT_LOGGER=#{hbase.master.log4j.root_logger}"
+          #  append: true
+          #  match: /^export HBASE_SECURITY_LOGGER=.*$/mg
+          #  replace: "export HBASE_SECURITY_LOGGER=#{hbase.master.log4j.security_logger}"
+          #  append: true
 
 ## RegionServers
 

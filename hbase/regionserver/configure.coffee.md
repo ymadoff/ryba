@@ -46,13 +46,12 @@
       hbase.rs.site['hbase.regionserver.handler.count'] ?= 60 # HDP default
       hbase.rs.env ?= {}
       hbase.rs.env['JAVA_HOME'] ?= "#{java.java_home}"
+      hbase.rs.opts ?= {}
+      hbase.rs.opts['java.security.auth.login.config'] ?= "#{hbase.rs.conf_dir}/hbase-regionserver.jaas"
       # http://blog.sematext.com/2012/07/16/hbase-memstore-what-you-should-know/
       # Keep hbase.regionserver.hlog.blocksize * hbase.regionserver.maxlogs just
       # a bit above hbase.regionserver.global.memstore.lowerLimit * HBASE_HEAPSIZE
-      hbase.rs.opts ?= "-Xmn128m -Xms4096m -Xmx4096m"
-      if   hbase.rs.opts.indexOf('-Djava.security.auth.login.config') is -1
-        hbase.rs.opts += " -Djava.security.auth.login.config=#{hbase.rs.conf_dir}/hbase-regionserver.jaas"
-
+      hbase.rs_opts ?= "-Xmn128m -Xms4096m -Xmx4096m"
 
 ## Configuration for Kerberos
 
@@ -109,3 +108,30 @@ HA properties must be available to masters and regionservers.
 ## Ranger Plugin Configuration
 
       @config.ryba.hbase_plugin_is_master = false
+
+## Proxy Users
+
+      thrift_ctxs = @contexts 'ryba/hbase/thrift', require('../thrift/configure').handler
+      if thrift_ctxs.length
+        principal = thrift_ctxs[0].config.ryba.hbase.thrift.site['hbase.thrift.kerberos.principal']
+        throw Error 'Invalid HBase Thrift principal' unless match = /^(.+?)[@\/]/.exec principal
+        hbase.rs.site["hadoop.proxyuser.#{match[1]}.groups"] ?= '*'
+        hbase.rs.site["hadoop.proxyuser.#{match[1]}.hosts"] ?= '*'
+      rest_ctxs = @contexts 'ryba/hbase/rest', require('../rest/configure').handler
+      if rest_ctxs.length
+        principal = rest_ctxs[0].config.ryba.hbase.rest.site['hbase.rest.kerberos.principal']
+        throw Error 'Invalid HBase Rest principal' unless match = /^(.+?)[@\/]/.exec principal
+        hbase.rs.site["hadoop.proxyuser.#{match[1]}.groups"] ?= '*'
+        hbase.rs.site["hadoop.proxyuser.#{match[1]}.hosts"] ?= '*'
+
+## Configuration for Log4J
+
+      hbase.rs.opts['hbase.security.log.file'] ?= 'SecurityAuth-regionserver.audit'
+      hbase.rs.env['HBASE_ROOT_LOGGER'] ?= 'INFO,RFA'
+      hbase.rs.env['HBASE_SECURITY_LOGGER'] ?= 'INFO,RFAS'
+      if @config.log4j?.remote_host? && @config.log4j?.remote_port?
+        hbase.rs.env['HBASE_ROOT_LOGGER'] ?= 'INFO,RFA,SOCKET'
+        hbase.rs.env['HBASE_SECURITY_LOGGER'] ?= 'INFO,RFAS,SOCKET'
+        hbase.rs.opts['hbase.log.application'] = 'hbase-regionserver'
+        hbase.rs.opts['hbase.log.remote_host'] = @config.log4j.remote_host
+        hbase.rs.opts['hbase.log.remote_port'] = @config.log4j.remote_port

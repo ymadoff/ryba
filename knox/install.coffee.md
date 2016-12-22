@@ -86,6 +86,12 @@ in the gateway.sh service script.
           match: new RegExp "^#{k}=.*$", 'i'
           replace: "#{k.toUpperCase()}=#{v}"
           append: true
+      
+      @write
+        header: 'Log4J Properties'
+        target: "#{knox.conf_dir}/gateway-log4j.properties"
+        source: "#{__dirname}/resources/gateway-log4j.properties"
+        local_source: true
 
 ## Kerberos
 

@@ -107,14 +107,25 @@ Upload configuration inside '/etc/hive-webhcat/conf/webhcat-site.xml'.
 
 Update environnmental variables inside '/etc/hive-webhcat/conf/webhcat-env.sh'.
 
+      @call header: 'Webhcat Env', handler: ->
+        webhcat_opts += " -D#{k}=#{v}" for k, v of webhcat.opts
+        @render
+          source: "#{__dirname}/../../resources/hive-webhcat/webhcat-env.sh"
+          local_source: true
+          target: "#{webhcat.conf_dir}/webhcat-env.sh"
+          context: @config
+          uid: hive.user.name
+          gid: hadoop_group.name
+          mode: 0o0755
+          
       @file
-        header: 'Webhcat Env'
-        source: "#{__dirname}/../../resources/hive-webhcat/webhcat-env.sh"
+        header: 'Log4j'
+        target: "#{webhcat.conf_dir}/webhcat-log4j.properties"
+        source: "#{__dirname}/../resources/webhcat-log4j.properties"
         local_source: true
-        target: "#{webhcat.conf_dir}/webhcat-env.sh"
         uid: hive.user.name
         gid: hadoop_group.name
-        mode: 0o0755
+        mode: 0o0750
 
 ## HDFS Tarballs
 
