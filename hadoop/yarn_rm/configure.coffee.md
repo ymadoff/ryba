@@ -263,4 +263,3 @@ rmr /rmstore/ZKRMStateRoot
         ryba.yarn.rm.opts['hadoop.log.application'] = 'resourcemanager'
         ryba.yarn.rm.opts['hadoop.log.remote_host'] = @config.log4j.remote_host
         ryba.yarn.rm.opts['hadoop.log.remote_port'] = @config.log4j.remote_port
-

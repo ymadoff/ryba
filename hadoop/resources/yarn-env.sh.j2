@@ -1,10 +1,10 @@
 
-export HADOOP_YARN_HOME={{ryba.yarn.home}}
-export YARN_LOG_DIR={{ryba.yarn.log_dir}}
-export YARN_PID_DIR={{ryba.yarn.pid_dir}}
-export HADOOP_LIBEXEC_DIR={{ryba.hadoop_libexec_dir}}
-export JAVA_HOME={{java.java_home}}
-export YARN_ROOT_LOGGER="{{ryba.yarn.root_logger}}"
+export HADOOP_YARN_HOME={{HADOOP_YARN_HOME}}
+export YARN_LOG_DIR={{YARN_LOG_DIR}}
+export YARN_PID_DIR={{YARN_PID_DIR}}
+export HADOOP_LIBEXEC_DIR={{HADOOP_LIBEXEC_DIR}}
+export JAVA_HOME={{JAVA_HOME}}
+export YARN_ROOT_LOGGER="{{YARN_ROOT_LOGGER}}"
 
 # We need to add the EWMA appender for the yarn daemons only;
 # however, YARN_ROOT_LOGGER is shared by the yarn client and the
@@ -61,7 +61,7 @@ export YARN_RESOURCEMANAGER_HEAPSIZE={{YARN_RESOURCEMANAGER_HEAPSIZE}}
 #export YARN_RESOURCEMANAGER_OPTS=
 
 # Ryba: user defined YARN RM options
-export YARN_RESOURCEMANAGER_OPTS="${YARN_RESOURCEMANAGER_OPTS} {{ryba.yarn.rm_opts}}" # RYBA CONF "ryba.yarn.rm.opts", DONT OVERWRITE"
+export YARN_RESOURCEMANAGER_OPTS="${YARN_RESOURCEMANAGER_OPTS} {{YARN_RESOURCEMANAGER_OPTS}}" # RYBA CONF "ryba.yarn.rm.opts", DONT OVERWRITE"
 
 # Node Manager specific parameters
 
