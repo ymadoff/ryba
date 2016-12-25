@@ -1,0 +1,33 @@
+[Unit]
+Description=High-performance, schema-free document-oriented database
+After=network.target
+Documentation=https://docs.mongodb.org/manual
+
+[Service]
+User=mongod
+Group=mongod
+Environment="OPTIONS=--quiet -f {{ryba.mongodb.shard.conf_dir}}/mongod.conf"
+ExecStart=/usr/bin/mongod $OPTIONS run
+# ExecStartPre=/usr/bin/mkdir -p {{ryba.mongodb.shard.pid_dir}}
+# ExecStartPre=/usr/bin/chown {{ryba.mongodb.user.name}}:{{ryba.mongodb.group.name}} {{ryba.mongodb.shard.pid_dir}}
+# ExecStartPre=/usr/bin/chmod 0755 {{ryba.mongodb.shard.pid_dir}}
+PermissionsStartOnly=true
+PIDFile={{ryba.mongodb.shard.config.processManagement.pidFilePath}}
+# file size
+LimitFSIZE=infinity
+# cpu time
+LimitCPU=infinity
+# virtual memory size
+LimitAS=infinity
+# open files
+LimitNOFILE=64000
+# processes/threads
+LimitNPROC=64000
+# total threads (user+kernel)
+TasksMax=infinity
+TasksAccounting=false
+# Recommended limits for for mongod as specified in
+# http://docs.mongodb.org/manual/reference/ulimit/#recommended-settings
+
+[Install]
+WantedBy=multi-user.target

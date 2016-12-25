@@ -5,7 +5,7 @@
 
 ## Start
 
-      @service.start name: 'mongodb-config-server'
+      @service.start name: 'mongod-config-server'
 
 ## Dependencies
 

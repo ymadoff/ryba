@@ -40,7 +40,7 @@ The root user is needed for replication and has role `root`
         """
         handler: ->
           @service.stop
-            name: 'mongodb-config-server'
+            name: 'mongod-config-server'
           @file.yaml
             target: "#{mongodb.configsrv.conf_dir}/mongod.conf"
             content:
@@ -51,7 +51,7 @@ The root user is needed for replication and has role `root`
             mode: 0o0750
             backup: true
           @service.start
-            name: 'mongodb-config-server'
+            name: 'mongod-config-server'
           @connection.wait
             host: @config.host
             port: mongodb.configsrv.config.net.port
@@ -87,10 +87,10 @@ The root user is needed for replication and has role `root`
             backup: true
           @service.stop
             if: -> @status -1
-            name: 'mongodb-config-server'
+            name: 'mongod-config-server'
           @service.start
             if: -> @status -1
-            name: 'mongodb-config-server'
+            name: 'mongod-config-server'
           @connection.wait
             host: @config.host
             port: mongodb.configsrv.config.net.port
@@ -106,7 +106,7 @@ The root user is needed for replication and has role `root`
           message = {}
           @call (_, callback) ->
             @execute
-              cmd: " #{mongo_shell_root_exec}  --eval 'rs.status().ok' | grep -v 'MongoDB shell version' | grep -v 'connecting to:'"
+              cmd: " #{mongo_shell_root_exec}  --eval 'rs.status().ok' | grep -v 'MongoDB.*version' | grep -v 'connecting to:'"
             , (err, _, stdout) ->
               return callback err if err
               status =  parseInt(stdout)

@@ -28,26 +28,46 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Packages
 
-Install mongodb-org-server containing packages for a mongod service. We render the init scripts
+Install mongod-org-server containing packages for a mongod service. We render the init scripts
 in order to rendered configuration file with custom properties.
 
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, handler: (options) ->
         @service name: 'mongodb-org-mongos'
         @service name: 'mongodb-org-shell'
-        @render
-          source: "#{__dirname}/../resources/mongod-router-server.js2"
-          target: '/etc/init.d/mongodb-router-server'
-          context: @config
-          unlink: true
-          mode: 0o0750
-          local_source: true
-          eof: true
-        @remove
-          target: '/etc/init.d/mongod'
+        @service name: 'mongodb-org-tools'
+        @call 
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos'])
+          handler: ->
+            switch options.store['mecano:system:release'][0]
+              when '6'
+                @render
+                  source: "#{__dirname}/../resources/mongod-router-server.j2"
+                  target: '/etc/init.d/mongod-router-server'
+                  context: @config
+                  unlink: true
+                  mode: 0o0750
+                  local: true
+                  eof: true
+                break;
+              when '7'
+                @service.init
+                  source: "#{__dirname}/../resources/mongod-router-server-redhat-7.j2"
+                  target: '/usr/lib/systemd/system/mongod-router-server.service'
+                  context: @config
+                  mode: 0o0640
+                  local: true
+                  eof: true
+                @tmpfs
+                  mount: mongodb.router.pid_dir
+                  uid: mongodb.user.name
+                  gid: mongodb.group.name
+                  perm: '0750'
+                @service.startup
+                  name: 'mongod-config-server'
 
 ## Layout
 
-Create dir where the mongodb-config-server stores its metadata
+Create dir where the mongod-config-server stores its metadata
 
       @mkdir
         header: 'Layout'
@@ -71,7 +91,7 @@ Configuration file for mongodb config server.
           backup: true
         @service.stop
           if: -> @status -1
-          name: 'mongodb-router-server'
+          name: 'mongod-router-server'
 
 ## SSL
 

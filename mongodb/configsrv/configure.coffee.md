@@ -10,14 +10,14 @@ They can be installed and configured on their own.
       # User
       mongodb.user = name: mongodb.user if typeof mongodb.user is 'string'
       mongodb.user ?= {}
-      mongodb.user.name ?= 'mongodb'
+      mongodb.user.name ?= 'mongod'
       mongodb.user.system ?= true
       mongodb.user.comment ?= 'MongoDB User'
-      mongodb.user.home ?= '/var/lib/mongodb'
+      mongodb.user.home ?= '/var/lib/mongod'
       # Group
       mongodb.group = name: mongodb.group if typeof mongodb.group is 'string'
       mongodb.group ?= {}
-      mongodb.group.name ?= 'mongodb'
+      mongodb.group.name ?= 'mongod'
       mongodb.group.system ?= true
       mongodb.user.limits ?= {}
       mongodb.user.limits.nofile ?= 64000
@@ -26,8 +26,8 @@ They can be installed and configured on their own.
       configsrv_hosts = mongodb_configsrvs.map( (ctx)-> ctx.config.host)
       # Config
       mongodb.configsrv ?= {}
-      mongodb.configsrv.conf_dir ?= '/etc/mongodb-config-server/conf'
-      mongodb.configsrv.pid_dir ?= '/var/run/mongodb'
+      mongodb.configsrv.conf_dir ?= '/etc/mongod-config-server/conf'
+      mongodb.configsrv.pid_dir ?= '/var/run/mongod'
       #mongo admin user
       mongodb.admin ?= {}
       mongodb.admin.name ?= 'admin'
@@ -54,13 +54,13 @@ The replica set config servers must run the WiredTiger storage engine
 
       config.storage ?= {}
       config.storage.dbPath ?= "#{mongodb.user.home}/configsrv/db"
-      config.storage.repairPath ?= "#{config.storage.dbPath}/repair"
       config.storage.journal ?= {}
       config.storage.journal.enabled ?= true
-      if config.storage.repairPath.indexOf(config.storage.dbPath) is -1
-        throw Error 'Must use a repairpath that is a subdirectory of dbpath when using journaling' if config.storage.journal.enabled
       config.storage.engine ?= 'wiredTiger'
+      config.storage.repairPath ?= "#{config.storage.dbPath}/repair" unless config.storage.engine is 'wiredTiger'
       throw Error 'Need WiredTiger Storage for config server as replica set' unless config.storage.engine is 'wiredTiger'
+      if config.storage.repairPath?.indexOf(config.storage.dbPath) is -1
+        throw Error 'Must use a repairpath that is a subdirectory of dbpath when using journaling' if config.storage.journal.enabled
 
 ## Process
 
@@ -84,7 +84,7 @@ The replica set config servers must run the WiredTiger storage engine
       config.net.http.JSONPEnabled ?= false
       config.net.http.RESTInterfaceEnabled ?= false
       config.net.unixDomainSocket ?= {}
-      config.net.unixDomainSocket.pathPrefix ?= '/tmp/mongod-config-server'
+      config.net.unixDomainSocket.pathPrefix ?= "#{mongodb.configsrv.pid_dir}"
       config.security ?= {}
       config.security.clusterAuthMode ?= 'x509'
 

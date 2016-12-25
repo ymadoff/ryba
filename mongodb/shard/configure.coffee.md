@@ -8,14 +8,14 @@
       # User
       mongodb.user = name: mongodb.user if typeof mongodb.user is 'string'
       mongodb.user ?= {}
-      mongodb.user.name ?= 'mongodb'
+      mongodb.user.name ?= 'mongod'
       mongodb.user.system ?= true
       mongodb.user.comment ?= 'MongoDB User'
-      mongodb.user.home ?= '/var/lib/mongodb'
+      mongodb.user.home ?= '/var/lib/mongod'
       # Group
       mongodb.group = name: mongodb.group if typeof mongodb.group is 'string'
       mongodb.group ?= {}
-      mongodb.group.name ?= 'mongodb'
+      mongodb.group.name ?= 'mongod'
       mongodb.group.system ?= true
       mongodb.user.limits ?= {}
       mongodb.user.limits.nofile ?= 64000
@@ -23,8 +23,8 @@
       mongodb.user.gid = mongodb.group.name
       # Config
       mongodb.shard ?= {}
-      mongodb.shard.conf_dir ?= '/etc/mongodb-shard-server/conf'
-      mongodb.shard.pid_dir ?= '/var/run/mongodb'
+      mongodb.shard.conf_dir ?= '/etc/mongod-shard-server/conf'
+      mongodb.shard.pid_dir ?= '/var/run/mongod'
       #mongo admin user for mongod instances belonging to a replica set
       mongodb.admin ?= {}
       mongodb.admin.name ?= 'admin'
@@ -51,13 +51,14 @@ The replica set config servers must run the WiredTiger storage engine
 
       config.storage ?= {}
       config.storage.dbPath ?= "#{mongodb.user.home}/shard/db"
-      config.storage.repairPath ?= "#{config.storage.dbPath}/repair"
+      
       config.storage.journal ?= {}
       config.storage.journal.enabled ?= true
-      if config.storage.repairPath.indexOf(config.storage.dbPath) is -1
-        throw Error 'Must use a repairpath that is a subdirectory of dbpath when using journaling' if config.storage.journal.enabled
       config.storage.engine ?= 'wiredTiger'
+      config.storage.repairPath ?= "#{config.storage.dbPath}/repair" unless config.storage.engine is 'wiredTiger'
       throw Error 'Need WiredTiger Storage for shard server as replica set' unless config.storage.engine is 'wiredTiger'
+      if config.storage.repairPath?.indexOf(config.storage.dbPath) is -1
+        throw Error 'Must use a repairpath that is a subdirectory of dbpath when using journaling' if config.storage.journal.enabled
 
 ## Replica Set Sharding
 
@@ -121,7 +122,7 @@ The Mapping can be defined by the replicat_set variable available in `ryba.mongo
       config.net.port ?=  27019
       config.net.bindIp ?=  '0.0.0.0'
       config.net.unixDomainSocket ?= {}
-      config.net.unixDomainSocket.pathPrefix ?= '/tmp/mongod-config-server'
+      config.net.unixDomainSocket.pathPrefix ?= "#{mongodb.shard.pid_dir}"
 
 ## Security
 

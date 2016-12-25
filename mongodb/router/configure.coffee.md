@@ -5,17 +5,18 @@
       mongodb_configsrvs = @contexts 'ryba/mongodb/configsrv'
       mongodb_shards = @contexts 'ryba/mongodb/shard'
       mongodb = @config.ryba.mongodb ?= {}
+      mongodb.version ?= '3.4'
       # User
       mongodb.user = name: mongodb.user if typeof mongodb.user is 'string'
       mongodb.user ?= {}
-      mongodb.user.name ?= 'mongodb'
+      mongodb.user.name ?= 'mongod'
       mongodb.user.system ?= true
       mongodb.user.comment ?= 'MongoDB User'
-      mongodb.user.home ?= '/var/lib/mongodb'
+      mongodb.user.home ?= '/var/lib/mongod'
       # Group
       mongodb.group = name: mongodb.group if typeof mongodb.group is 'string'
       mongodb.group ?= {}
-      mongodb.group.name ?= 'mongodb'
+      mongodb.group.name ?= 'mongod'
       mongodb.group.system ?= true
       mongodb.user.limits ?= {}
       mongodb.user.limits.nofile ?= 64000
@@ -24,8 +25,8 @@
       throw new Error 'No mongo config server configured ' unless mongodb_configsrvs.length > 0
       # Config
       mongodb.router ?= {}
-      mongodb.router.conf_dir ?= '/etc/mongodb-router-server/conf'
-      mongodb.router.pid_dir ?= '/var/run/mongodb'
+      mongodb.router.conf_dir ?= '/etc/mongod-router-server/conf'
+      mongodb.router.pid_dir ?= '/var/run/mongod'
       config = mongodb.router.config ?= {}
 
 # Replica Set Discovery and Attribution
@@ -75,10 +76,17 @@ Each query router (mongos instance) is attributed to a config, and shard server 
         ctx.config.ryba.mongodb.configsrv.config.replication.replSetName is my_cfgsrv_repl_set
       ).map( (ctx) ->   "#{ctx.config.host}:#{ctx.config.ryba.mongodb.configsrv.config.net.port}" ).join(',')
       config.sharding ?= {}
-      config.sharding.autoSplit ?= true
+      #autosplit option remove since 3.4
+      #https://docs.mongodb.com/manual/reference/configuration-options/#mongos-only-options
+       
+      if (parseInt(mongodb.version[2]) < 4) and (parseInt(mongodb.version[0]) <= 3)
+        config.sharding.chunkSize ?= 64
+        config.sharding.autoSplit ?= true
+      else
+        throw Error 'option not supported' if config.sharding.autoSplit? or config.sharding.chunkSize?
       config.sharding.configDB ?= "#{my_cfgsrv_repl_set}/#{cfsrv_connect}"
       # size of a chunk in MB
-      config.sharding.chunkSize ?= 64
+      
 
 ## Shard to ConfigServer Mapping
 Get The Shard Server Replica Set to which the client request will be re-routed based
@@ -110,6 +118,8 @@ By changing the default port, we can allow different mongo service to run on the
       config.net ?= {}
       config.net.port ?=  27018
       config.net.bindIp ?=  '0.0.0.0'
+      config.net.unixDomainSocket ?= {}
+      config.net.unixDomainSocket.pathPrefix ?= "#{mongodb.router.pid_dir}"
 
 ## Security
 

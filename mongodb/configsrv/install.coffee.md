@@ -33,20 +33,38 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install mongodb-org-server containing packages for a mongod service. We render the init scripts
 in order to rendered configuration file with custom properties.
 
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, handler: (options) ->
         @service name: 'mongodb-org-server'
         @service name: 'mongodb-org-shell'
         @service name: 'mongodb-org-tools'
-        @render
-          source: "#{__dirname}/../resources/mongod-config-server.js2"
-          target: '/etc/init.d/mongodb-config-server'
-          context: @config
-          unlink: true
-          mode: 0o0750
-          local_source: true
-          eof: true
-        @remove
-          target: '/etc/init.d/mongod'
+        @call 
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos'])
+          handler: ->
+            switch options.store['mecano:system:release'][0]
+              when '6'
+                @service.init
+                  source: "#{__dirname}/../resources/mongod-config-server.j2"
+                  target: '/etc/init.d/mongod-config-server'
+                  context: @config
+                  mode: 0o0750
+                  local: true
+                  eof: true
+                break;
+              when '7'
+                @service.init
+                  source: "#{__dirname}/../resources/mongod-config-server-redhat-7.j2"
+                  target: '/usr/lib/systemd/system/mongod-config-server.service'
+                  context: @config
+                  mode: 0o0640
+                  local: true
+                  eof: true
+                @tmpfs
+                  mount: mongodb.configsrv.pid_dir
+                  uid: mongodb.user.name
+                  gid: mongodb.group.name
+                  perm: '0750'
+                @service.startup
+                  name: 'mongod-config-server'
 
 
 ## Layout
@@ -63,6 +81,7 @@ Create dir where the mongodb-config-server stores its metadata
           uid: mongodb.user.name
           gid: mongodb.group.name
         @mkdir
+          if: mongodb.configsrv.config.storage.repairPath?
           target: mongodb.configsrv.config.storage.repairPath
           uid: mongodb.user.name
           gid: mongodb.group.name
@@ -86,7 +105,7 @@ Configuration file for mongodb config server.
           backup: true
         @service.stop
           if: -> @status -1
-          name: 'mongodb-config-server'
+          name: 'mongod-config-server'
 
 ## SSL
 

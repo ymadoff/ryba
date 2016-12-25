@@ -10,7 +10,7 @@ Stop the MongoDB Config Server service.
 
       @service.stop
         header: 'Stop service'
-        name: 'mongodb-config-server'
+        name: 'mongod-config-server'
 
 ## Clean Logs
 

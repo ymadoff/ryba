@@ -10,7 +10,7 @@ Stop the MongoDB Routing Server service.
 
       @service.stop
         header: 'Stop service'
-        name: 'mongodb-router-server'
+        name: 'mongod-router-server'
 
 ## Clean Logs
 

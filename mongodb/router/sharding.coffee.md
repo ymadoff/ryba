@@ -64,7 +64,7 @@ We must connect to each server og the replica set manually and check if it is th
                       #{mongo_shell_exec} --host #{host} \
                        --port #{shard_port} -u #{shard_root.name} --password '#{shard_root.password}' \
                        --eval 'db.isMaster().primary' | grep '#{host}:#{shard_port}' \
-                        | grep -v 'MongoDB shell version' | grep -v 'connecting to:'
+                        | grep -v 'MongoDB.*version' | grep -v 'connecting to:'
                     """
                 @call 
                   if: -> @status -1

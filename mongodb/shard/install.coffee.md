@@ -30,26 +30,43 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Packages
 
-Install mongodb-org-server containing packages for a mongod service. We render the init scripts
+Install mongod-org-server containing packages for a mongod service. We render the init scripts
 in order to rendered configuration file with custom properties.
 
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, handler: (options) ->
         @service name: 'mongodb-org-server'
         @service name: 'mongodb-org-shell'
-        @render
-          source: "#{__dirname}/../resources/mongod-shard-server.js2"
-          target: '/etc/init.d/mongodb-shard-server'
-          context: @config
-          backup: true
-          mode: 0o0750
-          local_source: true
-          eof: true
-        @remove
-          target: '/etc/init.d/mongod'
+        @service name: 'mongodb-org-tools'
+        @call 
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos'])
+          handler: ->
+            switch options.store['mecano:system:release'][0]
+              when '6'
+                @service.init
+                  source: "#{__dirname}/../resources/mongod-shard-server.j2"
+                  target: '/etc/init.d/mongod-shard-server'
+                  context: @config
+                  mode: 0o0750
+                  local: true
+                  eof: true
+                break;
+              when '7'
+                @service.init
+                  source: "#{__dirname}/../resources/mongod-shard-server-redhat-7.j2"
+                  target: '/usr/lib/systemd/system/mongod-shard-server.service'
+                  context: @config
+                  mode: 0o0640
+                  local: true
+                  eof: true
+                @tmpfs
+                  mount: mongodb.shard.pid_dir
+                  uid: mongodb.user.name
+                  gid: mongodb.group.name
+                  perm: '0750'
 
 ## Layout
 
-Create dir where the mongodb-shard-server stores its metadata
+Create dir where the mongod-shard-server stores its metadata
 
       @call header: 'Layout',  handler: ->
         @mkdir
@@ -61,6 +78,7 @@ Create dir where the mongodb-shard-server stores its metadata
           uid: mongodb.user.name
           gid: mongodb.group.name
         @mkdir
+          if: mongodb.shard.config.storage.repairPath?
           target: mongodb.shard.config.storage.repairPath
           uid: mongodb.user.name
           gid: mongodb.group.name
@@ -84,7 +102,7 @@ Configuration file for mongodb sharding server.
           backup: true
         @service.stop
           if: -> @status -1
-          name: 'mongodb-shard-server'
+          name: 'mongod-shard-server'
 
 ## SSL
 

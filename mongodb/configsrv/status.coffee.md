@@ -5,4 +5,4 @@
 
 ## Status
 
-      @service.status name: 'mongodb-config-server'
+      @service.status name: 'mongod-config-server'
