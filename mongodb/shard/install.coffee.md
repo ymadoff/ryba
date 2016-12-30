@@ -37,7 +37,8 @@ in order to rendered configuration file with custom properties.
         @service name: 'mongodb-org-server'
         @service name: 'mongodb-org-shell'
         @service name: 'mongodb-org-tools'
-        @call 
+        @call
+          header: 'RPM'
           if: -> (options.store['mecano:system:type'] in ['redhat','centos'])
           handler: ->
             switch options.store['mecano:system:release'][0]

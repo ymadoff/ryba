@@ -1,7 +1,7 @@
 
 # Hadoop YARN ResourceManager Stop
 
-    module.exports = header: 'Yarn RM Stop', label_true: 'STOPPED', handler: ->
+    module.exports = header: 'YARN RM Stop', label_true: 'STOPPED', handler: ->
       {clean_logs, yarn} = @config.ryba
 
 ## Stop

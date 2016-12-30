@@ -88,7 +88,7 @@ Convert [deprecated values][dep] between HDP 2.1 and HDP 2.2.
         yarn_ts_ctxs = @contexts 'ryba/hadoop/yarn_ts'
         yarn_rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
         throw Error 'Cannot install Tez UI without Yarn TS' unless yarn_ts_ctxs.length
-        throw Error 'Cannot install Tez UI without Yarn RM' unless yarn_rm_ctxs.length
+        throw Error 'Cannot install Tez UI without YARN RM' unless yarn_rm_ctxs.length
         ats_ctx = yarn_ts_ctxs[0]
         rm_ctx = yarn_rm_ctxs[0]
         id = if rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.enabled'] is 'true' then ".#{rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id']}" else ''
