@@ -15,6 +15,8 @@ Options includes
 module.exports = (options) ->
   fnl_props = {}
   org_props = {}
+  # alias
+  options.local ?= options.local_source
   # options.source ?= options.target
   throw Error 'Deprecated option: default' if options.default
   throw Error 'Deprecated option: local_default' if options.local_default
@@ -35,7 +37,7 @@ module.exports = (options) ->
     return callback() unless typeof options.source is 'string'
     options.log? message: "Read source properties from #{options.source}", level: 'DEBUG', module: 'ryba/lib/hconfigure'
     # Populate options.source
-    ssh = if options.local_source then null else options.ssh
+    ssh = if options.local then null else options.ssh
     properties.read ssh, options.source, (err, dft) ->
       return callback err if err
       options.source = dft

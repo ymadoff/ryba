@@ -12,7 +12,6 @@
       @registry.register 'hconfigure', 'ryba/lib/hconfigure'
       @registry.register 'hdp_select', 'ryba/lib/hdp_select'
 
-
 ## Service
 
       @service
