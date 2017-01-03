@@ -162,6 +162,7 @@ Update the file "zoo.cfg" with the properties defined by the
         header: 'Configure'
         target: "#{zookeeper.conf_dir}/zoo.cfg"
         content: zookeeper.config
+        sort: true
         backup: true
 
 ## Log4J
