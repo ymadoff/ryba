@@ -99,7 +99,7 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
         header: 'HBase Site'
         target: "#{hbase.master.conf_dir}/hbase-site.xml"
         source: "#{__dirname}/../resources/hbase-site.xml"
-        local_source: true
+        local: true
         properties: hbase.master.site
         merge: false
         uid: hbase.user.name
@@ -117,9 +117,9 @@ Environment passed to the Master before it starts.
           header: 'HBase Env'
           target: "#{hbase.master.conf_dir}/hbase-env.sh"
           source: "#{__dirname}/../resources/hbase-env.sh.j2"
-          backup: true
-          local_source: true
+          local: true
           eof: true
+          backup: true
           context: @config
           mode: 0o750
           uid: hbase.user.name
@@ -146,7 +146,7 @@ Upload the list of registered RegionServers.
         uid: hbase.user.name
         gid: hadoop_group.name
         eof: true
-        mode: 0o750
+        mode: 0o640
 
 ## Zookeeper JAAS
 
@@ -163,7 +163,7 @@ Environment file is enriched by "ryba/hbase" # HBase # Env".
           keyTab: hbase.master.site['hbase.master.keytab.file']
         uid: hbase.user.name
         gid: hbase.group.name
-        mode: 0o700
+        mode: 0o600
 
 ## Kerberos
 
@@ -187,8 +187,7 @@ https://hbase.apache.org/book/security.html
         header: 'Log4J Properties'
         target: "#{hbase.master.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
-        local_source: true
-        mode: 0o750
+        local: true
 
 ## Metrics
 
@@ -199,7 +198,7 @@ Enable stats collection in Ganglia and Graphite
         target: "#{hbase.master.conf_dir}/hadoop-metrics2-hbase.properties"
         content: hbase.metrics.config
         backup: true
-        mode: 0o750
+        mode: 0o640
 
       # @call header: 'SSL', retry: 0, handler: ->
       #   {ssl, ssl_server, ssl_client, hdfs} = @config.ryba
@@ -218,7 +217,7 @@ Enable stats collection in Ganglia and Graphite
       #     storepass: ssl_client['ssl.client.truststore.password']
       #     caname: "hadoop_root_ca"
       #     cacert: "#{ssl.cacert}"
-      #     local_source: true
+      #     local: true
       #   # Server: import certificates, private and public keys to hosts with a server
       #   @java_keystore_add
       #     keystore: ssl_server['ssl.server.keystore.location']
@@ -229,13 +228,13 @@ Enable stats collection in Ganglia and Graphite
       #     cert: "#{ssl.cert}"
       #     keypass: ssl_server['ssl.server.keystore.keypassword']
       #     name: @config.shortname
-      #     local_source: true
+      #     local: true
       #   @java_keystore_add
       #     keystore: ssl_server['ssl.server.keystore.location']
       #     storepass: ssl_server['ssl.server.keystore.password']
       #     caname: "hadoop_root_ca"
       #     cacert: "#{ssl.cacert}"
-      #     local_source: true
+      #     local: true
 
 ## SPNEGO
 

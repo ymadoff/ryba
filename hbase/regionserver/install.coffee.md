@@ -128,7 +128,7 @@ RegionServer, and HBase client host machines.
         header: 'HBase Site'
         target: "#{hbase.rs.conf_dir}/hbase-site.xml"
         source: "#{__dirname}/../resources/hbase-site.xml"
-        local_source: true
+        local: true
         properties: hbase.rs.site
         merge: false
         uid: hbase.user.name
@@ -147,9 +147,7 @@ Environment passed to the RegionServer before it starts.
           target: "#{hbase.rs.conf_dir}/hbase-env.sh"
           source: "#{__dirname}/../resources/hbase-env.sh.j2"
           backup: true
-          uid: hbase.user.name
-          gid: hbase.group.name
-          local_source: true
+          local: true
           context: @config
           write: for k, v of hbase.rs.env
             match: RegExp "export #{k}=.*", 'm'
@@ -169,7 +167,7 @@ Upload the list of registered RegionServers.
         uid: hbase.user.name
         gid: hadoop_group.name
         eof: true
-        mode: 0o750
+        mode: 0o0640
 
 ## Metrics
 
@@ -180,7 +178,7 @@ Enable stats collection in Ganglia and Graphite
         target: "#{hbase.rs.conf_dir}/hadoop-metrics2-hbase.properties"
         content: hbase.metrics.config
         backup: true
-        mode: 0o750
+        mode: 0o0640
 
 # User limits
 
@@ -195,8 +193,8 @@ Enable stats collection in Ganglia and Graphite
         header: 'Log4J'
         target: "#{hbase.rs.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
-        local_source: true
-        mode: 0o750
+        local: true
+        mode: 0o640
 
 ## Ranger HBase Plugin Install
 

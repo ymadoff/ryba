@@ -81,8 +81,8 @@ hbase:x:492:
           target: '/etc/init.d/hbase-rest'
           mode: 0o0755
           unlink: true
-        @execute
-          cmd: "service hbase-rest restart"
+        @service.restart
+          name: 'hbase-rest'
           if: -> @status -3
 
 ## Configure
@@ -94,11 +94,11 @@ restrict it but not the rest server.
         header: 'HBase Site'
         target: "#{hbase.rest.conf_dir}/hbase-site.xml"
         source: "#{__dirname}/../resources/hbase-site.xml"
-        local_source: true
+        local: true
         properties: hbase.rest.site
-        merge: false
         uid: hbase.user.name
         gid: hbase.group.name
+        mode: 0o600
         backup: true
 
 ## Env
@@ -144,4 +144,4 @@ Create the Kerberos keytab for the service principal.
         header: 'Log4J'
         target: "#{hbase.rest.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
-        local_source: true
+        local: true

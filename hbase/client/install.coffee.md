@@ -56,12 +56,10 @@ Note, we left the permission mode as default, Master and RegionServer need to
         header: 'HBase Client Site'
         target: "#{hbase.conf_dir}/hbase-site.xml"
         source: "#{__dirname}/../resources/hbase-site.xml"
-        local_source: true
+        local: true
         properties: hbase.site
         mode: 0o0644
         merge: false
-        uid: hbase.user.name
-        gid: hbase.group.name
         backup: true
 
 # Opts
@@ -72,10 +70,9 @@ Environment passed to the Master before it starts.
         header: 'HBase Client Env'
         target: "#{hbase.conf_dir}/hbase-env.sh"
         source: "#{__dirname}/../resources/hbase-env.sh.j2"
+        local: true
         context: @config
-        uid: hbase.user.name
-        gid: hbase.group.name
-        local_source: true
+        mode: 0o644
         eof: true
         # Fix mapreduce looking for "mapreduce.tar.gz"
         write: [

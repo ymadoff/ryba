@@ -101,7 +101,7 @@ restrict it but not the thrift server.
         header: 'HBase Site'
         target: "#{hbase.thrift.conf_dir}/hbase-site.xml"
         source: "#{__dirname}/../resources/hbase-site.xml"
-        local_source: true
+        local: true
         properties: hbase.thrift.site
         merge: false
         uid: hbase.user.name
@@ -116,10 +116,8 @@ Environment passed to the HBase Rest Server before it starts.
         header: 'HBase Env'
         target: "#{hbase.thrift.conf_dir}/hbase-env.sh"
         source: "#{__dirname}/../resources/hbase-env.sh.j2"
-        local_source: true
+        local: true
         context: @config
-        uid: hbase.user.name
-        gid: hbase.group.name
         mode: 0o0755
         unlink: true
         write: for k, v of hbase.thrift.env
@@ -142,10 +140,10 @@ Environment passed to the HBase Rest Server before it starts.
           name: 'hbase-client'
         @service.init
           header: 'Init Script'
-          source: "#{__dirname}/../resources/hbase-thrift.j2"
-          local_source: true
-          context: @config
           target: '/etc/init.d/hbase-thrift'
+          source: "#{__dirname}/../resources/hbase-thrift.j2"
+          local: true
+          context: @config
           mode: 0o0755
         @execute
           cmd: "service hbase-thrift restart"
@@ -157,7 +155,7 @@ Environment passed to the HBase Rest Server before it starts.
         header: 'Log4J'
         target: "#{hbase.thrift.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
-        local_source: true
+        local: true
 
 ## Dependecies
 
