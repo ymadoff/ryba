@@ -11,9 +11,10 @@ built atop Apache Hadoop YARN.
       use:
         java: implicit: true, module: 'masson/commons/java'
         hadoop_core: 'ryba/hadoop/core/configure'
+        hdfs_client: implicit: true, module: 'ryba/hadoop/hdfs_client'
         yarn_rm: 'ryba/hadoop/yarn_rm'
         yarn_ts: 'ryba/hadoop/yarn_ts'
-        yarn_client: 'ryba/hadoop/yarn_client'
+        yarn_client: implicit: true, module: 'ryba/hadoop/yarn_client'
       configure:
         'ryba/tez/configure'
       commands:
