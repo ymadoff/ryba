@@ -282,7 +282,8 @@ form of "rm/{fqdn}@{realm}"
         gid: hadoop_group.name
 
 ## Cgroups Configuration
-Yaryn Nodemanager can be configured to mount automatically the cgroup path on start.
+
+YARN NodeManager can be configured to mount automatically the cgroup path on start.
 If `yarn.nodemanager.linux-container-executor.cgroups.mount` is set to true,
 Ryba just mkdirs the path.
 Is `yarn.nodemanager.linux-container-executor.cgroups.mount` is set to false,
@@ -291,7 +292,7 @@ Note: For now (December 2016 - HDP 2.5.3.0), yarn does not support `systemctl` c
 on Centos/Redhat7 OS. Legacy cgconfig and cgroup-tools package must be used. (masson/core/cgroups)
 
       @call
-        header: 'Cgroups Layout Yarn Mounting'
+        header: 'Cgroups Layout YARN Mounting'
         if: -> yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] is 'true'
         handler: ->
           @service

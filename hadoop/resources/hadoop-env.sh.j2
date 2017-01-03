@@ -24,7 +24,7 @@
 # remote nodes.
 
 # The java implementation to use.  Required.
-export JAVA_HOME=${JAVA_HOME:-"{{java.java_home}}"} # RYBA CONF \"java.java_home\", DONT OVEWRITE
+export JAVA_HOME=${JAVA_HOME:-"{{java.java_home}}"} # RYBA CONF "java.java_home", DONT OVERWRITE
 export HADOOP_HOME_WARN_SUPPRESS=1
 
 # Hadoop home directory
@@ -38,21 +38,21 @@ else
 fi
 
 # Where log files are stored.  $HADOOP_HOME/logs by default.
-export HADOOP_LOG_DIR=${HADOOP_LOG_DIR:-{{ryba.hdfs.log_dir}}} # RYBA CONF "ryba.hdfs.log_dir", DONT OVEWRITE
+export HADOOP_LOG_DIR=${HADOOP_LOG_DIR:-{{ryba.hdfs.log_dir}}} # RYBA CONF "ryba.hdfs.log_dir", DONT OVERWRITE
 
 
 # The maximum amount of heap to use, in MB. Default is 1000.
-export HADOOP_HEAPSIZE=${HADOOP_HEAPSIZE:-"{{ryba.hadoop_heap}}"} # RYBA CONF "ryba.hadoop_heap", DONT OVEWRITE
+export HADOOP_HEAPSIZE=${HADOOP_HEAPSIZE:-"{{ryba.hadoop_heap}}"} # RYBA CONF "ryba.hadoop_heap", DONT OVERWRITE
 
-export HADOOP_NAMENODE_INIT_HEAPSIZE=${HADOOP_NAMENODE_INIT_HEAPSIZE:-"{{ryba.hadoop_namenode_init_heap}}"} # RYBA CONF "ryba.hadoop_namenode_init_heap", DONT OVEWRITE
+export HADOOP_NAMENODE_INIT_HEAPSIZE=${HADOOP_NAMENODE_INIT_HEAPSIZE:-"{{ryba.hadoop_namenode_init_heap}}"} # RYBA CONF "ryba.hadoop_namenode_init_heap", DONT OVERWRITE
 
 # Extra Java runtime options.  Empty by default.
-HADOOP_OPTS=${HADOOP_OPTS:-"{{ryba.hadoop_opts}}"} # RYBA CONF "ryba.hadoop_opts", DONT OVEWRITE
+HADOOP_OPTS=${HADOOP_OPTS:-"{{ryba.hadoop_opts}}"} # RYBA CONF "ryba.hadoop_opts", DONT OVERWRITE
 export HADOOP_OPTS="-Djava.net.preferIPv4Stack=true ${HADOOP_OPTS}"
 
-HADOOP_ROOT_LOGGER=${HADOOP_ROOT_LOGGER:-"{{ryba.hadoop_root_logger}}"} # RYBA CONF "ryba.hadoop_root_logger", DONT OVEWRITE
-HADOOP_SECURITY_LOGGER=${HADOOP_SECURITY_LOGGER:-"{{ryba.hadoop_security_logger}}"} # RYBA CONF "ryba.hadoop_security_logger", DONT OVEWRITE
-HDFS_AUDIT_LOGGER=${HDFS_AUDIT_LOGGER:-"{{ryba.hdfs.audit_logger}}"} # RYBA CONF "ryba.hdfs.audit_logger", DONT OVEWRITE
+HADOOP_ROOT_LOGGER=${HADOOP_ROOT_LOGGER:-"{{ryba.hadoop_root_logger}}"} # RYBA CONF "ryba.hadoop_root_logger", DONT OVERWRITE
+HADOOP_SECURITY_LOGGER=${HADOOP_SECURITY_LOGGER:-"{{ryba.hadoop_security_logger}}"} # RYBA CONF "ryba.hadoop_security_logger", DONT OVERWRITE
+HDFS_AUDIT_LOGGER=${HDFS_AUDIT_LOGGER:-"{{ryba.hdfs.audit_logger}}"} # RYBA CONF "ryba.hdfs.audit_logger", DONT OVERWRITE
 
 # Command specific options appended to HADOOP_OPTS when specified
 HADOOP_NAMENODE_OPTS="{{ryba.hdfs.namenode_opts}} ${HADOOP_NAMENODE_OPTS}" # RYBA CONF "ryba.hdfs.namenode_opts", DONT OVERWRITE"
@@ -67,7 +67,7 @@ HADOOP_BALANCER_OPTS="-server -Xmx1024m ${HADOOP_BALANCER_OPTS}"
 export HADOOP_SECONDARYNAMENODE_OPTS=$HADOOP_NAMENODE_OPTS
 
 # The following applies to multiple commands (fs, dfs, fsck, distcp etc)
-HADOOP_CLIENT_OPTS=${HADOOP_CLIENT_OPTS:-"{{ryba.hadoop_client_opts}}"} # RYBA CONF "ryba.hadoop_client_opts", DONT OVEWRITE
+HADOOP_CLIENT_OPTS=${HADOOP_CLIENT_OPTS:-"{{ryba.hadoop_client_opts}}"} # RYBA CONF "ryba.hadoop_client_opts", DONT OVERWRITE
 export HADOOP_CLIENT_OPTS="-Xmx${HADOOP_HEAPSIZE}m -XX:MaxPermSize=512m $HADOOP_CLIENT_OPTS"
 
 # On secure datanodes, user to run the datanode as after dropping privileges
@@ -94,8 +94,8 @@ export HADOOP_SECURE_DN_LOG_DIR={{ryba.hdfs.log_dir}}
 # export HADOOP_SLAVE_SLEEP=0.1
 
 # The directory where pid files are stored. /tmp by default.
-export HADOOP_PID_DIR=${HADOOP_PID_DIR:-"{{ryba.hdfs.pid_dir}}"} # RYBA CONF "ryba.hdfs.pid_dir", DONT OVEWRITE
-export HADOOP_SECURE_DN_PID_DIR=${HADOOP_SECURE_DN_PID_DIR-"{{ryba.hdfs.secure_dn_pid_dir}}"} # RYBA CONF "ryba.hdfs.secure_dn_pid_dir", DONT OVEWRITE
+export HADOOP_PID_DIR=${HADOOP_PID_DIR:-"{{ryba.hdfs.pid_dir}}"} # RYBA CONF "ryba.hdfs.pid_dir", DONT OVERWRITE
+export HADOOP_SECURE_DN_PID_DIR=${HADOOP_SECURE_DN_PID_DIR-"{{ryba.hdfs.secure_dn_pid_dir}}"} # RYBA CONF "ryba.hdfs.secure_dn_pid_dir", DONT OVERWRITE
 
 # History server pid
 export HADOOP_MAPRED_PID_DIR=${HADOOP_MAPRED_PID_DIR:-{{ryba.mapred.pid_dir}}}
