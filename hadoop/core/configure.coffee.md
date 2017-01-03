@@ -279,9 +279,6 @@ Configuration for environment
       # Note, according to the doc, it apply to the NameNode and JobTracker
       # where JobTracker shall be understood as RerouceManager
       ryba.hadoop_policy ?= {}
-      ryba.hadoop_root_logger ?= ''
-      ryba.hadoop_security_logger ?= ''
-      ryba.yarn.root_logger ?= ''
 
 ## Configuration for metrics
 

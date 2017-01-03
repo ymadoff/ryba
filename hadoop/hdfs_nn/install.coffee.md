@@ -127,27 +127,45 @@ The location for JSVC depends on the platform. The Hortonworks documentation
 mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
 correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
-      @call header: 'Environment', handler: ->
-        hdfs.namenode_opts += " -D#{k}=#{v}" for k, v of hdfs.nn.opts
-        @render
-          header: 'Environment'
-          target: "#{hdfs.nn.conf_dir}/hadoop-env.sh"
-          source: "#{__dirname}/../resources/hadoop-env.sh.j2"
-          local_source: true
-          context: @config
-          uid: hdfs.user.name
-          gid: hadoop_group.name
-          mode: 0o755
-          backup: true
-          eof: true
+      @render
+        header: 'Environment'
+        target: "#{hdfs.nn.conf_dir}/hadoop-env.sh"
+        source: "#{__dirname}/../resources/hadoop-env.sh.j2"
+        local_source: true
+        context: @config
+        uid: hdfs.user.name
+        gid: hadoop_group.name
+        mode: 0o755
+        backup: true
+        eof: true
+
+## Log4j
+
+      writes = []
+      if hdfs.log4j.extra_appender == "socket_client"
+        writes.push
+          match: /^hdfs.audit.logger=.*/m
+          replace: """
+          hdfs.audit.logger=INFO,NullAppender,SOCKET
+          """
+          append: true
+        ,
+          match: "//m"
+          replace: """
+
+            log4j.appender.SOCKET=org.apache.log4j.net.SocketAppender
+            log4j.appender.SOCKET.Application=hdfs_audit
+            log4j.appender.SOCKET.RemoteHost=#{hdfs.log4j.remote_host}
+            log4j.appender.SOCKET.Port=#{hdfs.log4j.remote_port}
+            log4j.appender.SOCKET.ReconnectionDelay=10000
+            """
+          append: true
       @file
         header: 'Log4j'
         target: "#{hdfs.nn.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
+        write: writes
         local_source: true
-        uid: hdfs.user.name
-        gid: hadoop_group.name
-        mode: 0o750
 
 ## Hadoop Metrics
 

@@ -22,9 +22,8 @@
       ryba.yarn.rm.conf_dir ?= '/etc/hadoop-yarn-resourcemanager/conf'
       ryba.yarn.rm.core_site ?= {}
       # Enable JAAS/Kerberos connection between YARN RM and ZooKeeper
-      ryba.yarn.rm.opts ?= {}
-      ryba.yarn.rm.opts['java.security.auth.login.config'] = "#{ryba.yarn.rm.conf_dir}/yarn-rm.jaas"
-      ryba.yarn.rm_opts = ''
+      ryba.yarn.rm.opts ?= ''
+      ryba.yarn.rm.opts = "-Djava.security.auth.login.config=#{ryba.yarn.rm.conf_dir}/yarn-rm.jaas #{ryba.yarn.rm.opts}"
       ryba.yarn.rm.heapsize ?= '1024'
       ryba.yarn.rm.site ?= {}
       # Configuration
@@ -253,13 +252,3 @@ rmr /rmstore/ZKRMStateRoot
 ## Ranger Plugin Configuration
 
       @config.ryba.yarn_plugin_is_master = true
-
-## Configuration for Log4J
-
-      if @config.log4j?.remote_host? && @config.log4j?.remote_port?
-        ryba.yarn.root_logger = 'INFO,EWMA,RFA,SOCKET'
-        ryba.yarn.rm.opts['yarn.server.resourcemanager.appsummary.logger'] = 'INFO,RMSUMMARY,SOCKET'
-        ryba.yarn.rm.opts['yarn.server.resourcemanager.audit.logger'] = 'INFO,RMAUDIT,SOCKET'
-        ryba.yarn.rm.opts['hadoop.log.application'] = 'resourcemanager'
-        ryba.yarn.rm.opts['hadoop.log.remote_host'] = @config.log4j.remote_host
-        ryba.yarn.rm.opts['hadoop.log.remote_port'] = @config.log4j.remote_port

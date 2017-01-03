@@ -45,8 +45,8 @@ export SERVER_GC_OPTS="-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCDateStamps -X
 # More details at: http://java.sun.com/javase/6/docs/technotes/guides/management/agent.html
 #
 # export HBASE_JMX_BASE="-Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=false"
-export HBASE_MASTER_OPTS="${HBASE_MASTER_OPTS} {{ryba.hbase.master_opts}}"
-export HBASE_REGIONSERVER_OPTS="${HBASE_REGIONSERVER_OPTS} {{ryba.hbase.rs_opts}}"
+export HBASE_MASTER_OPTS="${HBASE_MASTER_OPTS} {{ryba.hbase.master.opts}}"
+export HBASE_REGIONSERVER_OPTS="${HBASE_REGIONSERVER_OPTS} {{ryba.hbase.rs.opts}}"
 # export HBASE_THRIFT_OPTS="$HBASE_JMX_BASE -Dcom.sun.management.jmxremote.port=10103"
 # export HBASE_ZOOKEEPER_OPTS="$HBASE_JMX_BASE -Dcom.sun.management.jmxremote.port=10104"
 
@@ -58,8 +58,6 @@ export HBASE_REGIONSERVERS=${HBASE_CONF_DIR}/regionservers
 
 # Where log files are stored. $HBASE_HOME/logs by default.
 export HBASE_LOG_DIR=/var/log/hbase
-export HBASE_ROOT_LOGGER=${HBASE_ROOT_LOGGER}
-export HBASE_SECURITY_LOGGER=${HBASE_SECURITY_LOGGER}
 
 # A string representing this instance of hbase. $USER by default.
 # export HBASE_IDENT_STRING=$USER

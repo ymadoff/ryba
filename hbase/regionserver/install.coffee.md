@@ -140,21 +140,22 @@ RegionServer, and HBase client host machines.
 
 Environment passed to the RegionServer before it starts.
 
-      @call header: 'HBase Env', handler: ->
-        hbase.rs_opts += " -D#{k}=#{v}" for k, v of hbase.rs.opts
-        @render
-          header: 'HBase Env'
-          target: "#{hbase.rs.conf_dir}/hbase-env.sh"
-          source: "#{__dirname}/../resources/hbase-env.sh.j2"
-          backup: true
-          local: true
-          context: @config
-          write: for k, v of hbase.rs.env
-            match: RegExp "export #{k}=.*", 'm'
-            replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
-            append: true
-          unlink: true
-          eof: true
+      @render
+        header: 'HBase Env'
+        target: "#{hbase.rs.conf_dir}/hbase-env.sh"
+        source: "#{__dirname}/../resources/hbase-env.sh.j2"
+        backup: true
+        uid: hbase.user.name
+        gid: hbase.group.name
+        mode: 0o750
+        local: true
+        context: @config
+        write: for k, v of hbase.rs.env
+          match: RegExp "export #{k}=.*", 'm'
+          replace: "export #{k}=\"#{v}\" # RYBA, DONT OVERWRITE"
+          append: true
+        unlink: true
+        eof: true
 
 ## RegionServers
 

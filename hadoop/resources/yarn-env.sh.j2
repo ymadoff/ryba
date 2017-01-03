@@ -4,9 +4,7 @@ export YARN_LOG_DIR={{YARN_LOG_DIR}}
 export YARN_PID_DIR={{YARN_PID_DIR}}
 export HADOOP_LIBEXEC_DIR={{HADOOP_LIBEXEC_DIR}}
 export JAVA_HOME={{JAVA_HOME}}
-{% if YARN_ROOT_LOGGER %}
-export YARN_ROOT_LOGGER="{{YARN_ROOT_LOGGER}}"
-{% endif %}
+
 # We need to add the EWMA appender for the yarn daemons only;
 # however, YARN_ROOT_LOGGER is shared by the yarn client and the
 # daemons. This is restrict the EWMA appender to daemons only.

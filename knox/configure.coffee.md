@@ -48,8 +48,6 @@ loop on topologies to provide missing values
       # Env
       knox.env ?= {}
       knox.env.app_mem_opts ?= '-Xmx8192m'
-      knox.env.app_log_opts ?= ''
-      knox.env.app_dbg_opts ?= ''
       # Configuration
       knox.site ?= {}
       knox.site['gateway.port'] ?= '8443'
@@ -70,19 +68,6 @@ loop on topologies to provide missing values
       throw Error 'Required property "ryba.knox.ssl.key"' unless knox.ssl.key?
       knox.topologies ?= configure_default.call @
       knox.realm_passwords = {}
-
-## Configuration for Log4J
-
-      knox.log4j ?= {}
-      knox.log4j[k] ?= v for k, v of @config.log4j
-      if knox.log4j?.remote_host? && knox.log4j?.remote_port?
-        log4jopts = [ 
-          " -Dlog4j.rootLogger=ERROR, drfa, socket"
-          " -Dlog4j.logger.audit=INFO, auditfile, socket"
-          " -Dapp.log.remote_host=#{knox.log4j.remote_host}"
-          " -Dapp.log.remote_port=#{knox.log4j.remote_port}"
-        ]
-        knox.env.app_log_opts = knox.env.app_log_opts + log4jopts.join ' '
 
 ## Configuration for Proxy Users
 
