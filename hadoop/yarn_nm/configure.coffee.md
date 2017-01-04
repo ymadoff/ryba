@@ -117,7 +117,7 @@ Resources:
       # ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path'] ?= '/cgroup'
       ryba.yarn.site['yarn.nodemanager.linux-container-executor.resources-handler.class'] ?= 'org.apache.hadoop.yarn.server.nodemanager.util.CgroupsLCEResourcesHandler'
       hierarchy = ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.hierarchy'] ?= "/#{ryba.yarn.user.name}"
-      ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] ?= 'true'
+      ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] ?= 'false'
       ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path'] ?= '/cgroup'
       # HDP doc, probably incorrect
       # ryba.yarn.site['yarn.nodemanager.container-executor.cgroups.hierarchy'] ?= ryba.yarn.site['yarn.nodemanager.linux-container-executor.cgroups.hierarchy']
