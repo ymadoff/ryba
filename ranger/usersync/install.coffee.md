@@ -33,11 +33,17 @@ directories.
         @hdp_select
           name: 'ranger-usersync'
 
-      @call header: 'Layout', handler: ->
+      @call header: 'Layout', handler: (options)->
         @mkdir
           target: ranger.usersync.conf_dir
         @mkdir
           target: ranger.usersync.log_dir
+        @tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: ranger.usersync.pid_dir
+          uid: ranger.user.name
+          gid: ranger.user.name
+          perm: '0750'
         @mkdir
           target: ranger.usersync.pid_dir 
 
@@ -108,13 +114,12 @@ Update the file "install.properties" with the properties defined by the
 
       # the setup scripts already render an init.d script but it does not respect 
       # the convention exit code 3 when service is stopped on the status code
-      @render
+      @service.init
         target: '/etc/init.d/ranger-usersync'
         source: "#{__dirname}/../resources/ranger-usersync"
         local: true
         mode: 0o0755
         context: @config.ryba
-        unlink: true
 
       writes = [
         match: RegExp "JAVA_OPTS=.*", 'm'

@@ -1,13 +1,13 @@
 
 # Ranger Admin Install
 
-    module.exports =  header: 'Ranger Admin Install', handler: ->
+    module.exports =  header: 'Ranger Admin Install', handler: (options) ->
       {ranger, ssl, realm} = @config.ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Register
 
-      @registry.register 'hdp_select', 'ryba/lib/hdp_select'   
+      @registry.register 'hdp_select', 'ryba/lib/hdp_select'
       @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
 ## Users & Groups
@@ -22,7 +22,7 @@ select the "kafka-broker" hdp directory. There is no "kafka-consumer"
 directories.
 
       @call header: 'Packages', handler: ->
-        @service
+        @service.install
           name: 'ranger-admin'
         @hdp_select
           name: 'ranger-admin'
@@ -70,6 +70,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             @execute
               cmd: """
               #{mysql_exec} -e "
+              SET GLOBAL log_bin_trust_function_creators = 1;
               create database  #{ranger.admin.install['db_name']};
               grant all privileges on #{ranger.admin.install['db_name']}.* to #{ranger.admin.install['db_user']}@'localhost' identified by '#{ranger.admin.install['db_password']}';
               grant all privileges on #{ranger.admin.install['db_name']}.* to #{ranger.admin.install['db_user']}@'%' identified by '#{ranger.admin.install['db_password']}';
@@ -125,13 +126,18 @@ to allow user to create none-determisitic functions.
         cmd: "chown -R #{ranger.user.name}:#{ranger.user.name} #{ranger.admin.conf_dir}"
       # the setup scripts already render an init.d script but it does not respect 
       # the convention exit code 3 when service is stopped on the status code
-      @render
+      @service.init
         target: '/etc/init.d/ranger-admin'
         source: "#{__dirname}/../resources/ranger-admin"
         local: true
         mode: 0o0755
         context: @config.ryba
-        unlink: true
+      @tmpfs
+        if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+        mount: '/var/run/ranger'
+        uid: ranger.user.name
+        gid: ranger.user.name
+        perm: '0750'
       @service
         name: 'ranger-admin'
         startup: true
