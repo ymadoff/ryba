@@ -9,7 +9,6 @@
 
 # HDFS Dependencies
 
-      @call once: true, 'ryba/hadoop/yarn_client/install'
       @call once: true, 'ryba/ranger/admin/wait'
       @registry.register 'hconfigure', 'ryba/lib/hconfigure'
 
