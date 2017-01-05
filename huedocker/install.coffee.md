@@ -321,15 +321,13 @@ ryba/hue:3.9
 
 Write startup script to /etc/init.d/service-hue-docker
 
-      @call header: 'Startup Script', handler:  ->
-        @render
-          source: "#{__dirname}/resources/hue-server-docker"
-          local: true
-          target: "/etc/init.d/#{hue_docker.service}"
-          context: hue_docker
-        @chmod
-          target: "/etc/init.d/#{hue_docker.service}"
-          mode: 0o755
+      @service.init
+        header: 'Startup Script'
+        source: "#{__dirname}/resources/hue-server-docker.j2"
+        local: true
+        target: "/etc/init.d/#{hue_docker.service}"
+        context: hue_docker
+        mode: 0o755
 
 ## Dependencies
 

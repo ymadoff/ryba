@@ -95,7 +95,7 @@ Create the DataNode data and pid directories. The data directory is set by the
 "hdp.hdfs.site['dfs.datanode.data.dir']" and default to "/var/hdfs/data". The
 pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdfs"
 
-      @call header: 'Layout', handler: ->
+      @call header: 'Layout', handler: (options) ->
         # no need to restrict parent directory and yarn will complain if not accessible by everyone
         pid_dir = hdfs.secure_dn_pid_dir
         pid_dir = pid_dir.replace '$USER', hdfs.user.name
@@ -117,6 +117,12 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
           gid: hadoop_group.name
           mode: 0o0750
           parent: true
+        @tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: pid_dir
+          uid: hdfs.user.name
+          gid: hadoop_group.name
+          perm: '0750'
         @mkdir
           target: "#{pid_dir}"
           uid: hdfs.user.name

@@ -8,7 +8,7 @@ Moreover it does make Yarn redirect the tracking URL to the WEBUI which prevents
 the user to see the log after the job has finished in the YARN Resource Manager 
 web interface.
 
-    module.exports =  header: 'Spark History Server Install', handler: ->
+    module.exports =  header: 'Spark History Server Install', handler: (options) ->
       {spark, realm, hadoop_group} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
@@ -29,17 +29,21 @@ web interface.
         name: 'spark'
       @hdp_select
         name: 'spark-historyserver'
-      @render
+      @service.init
         destination : "/etc/init.d/spark-history-server"
         source: "#{__dirname}/../resources/spark-history-server"
-        local_source: true
+        local: true
         context: @config.ryba
         backup: true
         mode: 0o0755
+      @tmpfs
+        if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+        mount: spark.history.pid_dir
+        uid: spark.user.name
+        gid: spark.group.name
+        perm: '0750'
 
 # Layout
-
-
 
 ## IPTables
 

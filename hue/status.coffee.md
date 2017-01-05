@@ -7,4 +7,3 @@ inside "/var/run/hue/supervisor.pid".
     module.exports = header: 'Hue Status', label_true: 'STARTED', label_false: 'STOPPED', handler: ->
       @service.status
         name: 'hue'
-        if_exists: '/etc/init.d/hue'

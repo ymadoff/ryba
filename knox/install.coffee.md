@@ -35,7 +35,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Packages
 
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, handler: (options) ->
         @service name: 'knox'
         @hdp_select name: 'knox-server'
         # Fix autogen of master secret
@@ -53,12 +53,18 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           target: '/var/log/knox'
           uid: knox.user.name
           gid: knox.user.gid
-        @render
+        @service.init
           target: '/etc/init.d/knox-server'
           source: "#{__dirname}/resources/knox-server.j2"
-          local_source: true
+          local: true
           context: @config.ryba.knox
           mode: 0o755
+        @tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: "/var/run/#{knox.user.name}"
+          uid: kafka.user.name
+          gid: kafka.group.name
+          perm: '0750'
 
 ## Configure
 

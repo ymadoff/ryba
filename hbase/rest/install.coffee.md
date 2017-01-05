@@ -68,7 +68,7 @@ hbase:x:492:
 
 ## HBase Rest Service
 
-      @call header: 'Service', handler: ->
+      @call header: 'Service', handler: (options) ->
         @service
           name: 'hbase-rest'
         @hdp_select
@@ -81,9 +81,15 @@ hbase:x:492:
           target: '/etc/init.d/hbase-rest'
           mode: 0o0755
           unlink: true
+        @tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: hbase.rest.pid_dir
+          uid: hbase.user.name
+          gid: hbase.group.name
+          perm: '0755'
         @service.restart
           name: 'hbase-rest'
-          if: -> @status -3
+          if: -> @status -4
 
 ## Configure
 

@@ -71,7 +71,7 @@ hbase:x:492:
 Install the "hbase-master" service, symlink the rc.d startup script inside
 "/etc/init.d" and activate it on startup.
 
-      @call header: 'Service', timeout: -1, handler: ->
+      @call header: 'Service', timeout: -1, handler: (options) ->
         @service
           name: 'hbase-master'
         @hdp_select
@@ -85,9 +85,15 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
           context: @config
           target: '/etc/init.d/hbase-master'
           mode: 0o0755
+        @tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: hbase.master.pid_dir
+          uid: hbase.user.name
+          gid: hbase.group.name
+          perm: '0755'
         @service.restart
           name: 'hbase-master'
-          if: -> @status -4
+          if: -> @status -5
 
 ## Configure
 

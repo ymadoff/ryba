@@ -56,7 +56,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Follow the [HDP recommandations][install] to install the "zookeeper" package
 which has no dependency.
 
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, handler: (options) ->
         @service
           name: 'nc' # Used by check
         @service
@@ -69,6 +69,13 @@ which has no dependency.
           source: "#{__dirname}/resources/zookeeper"
           local: true
           target: '/etc/init.d/zookeeper-server'
+        #TODO: Move pid creation dir to systemd startup scripts
+        @tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: zookeeper.pid_dir
+          uid: zookeeper.user.name
+          gid: zookeeper.group.name
+          perm: '0750'
 
 ## Kerberos
 

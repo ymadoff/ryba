@@ -1,7 +1,7 @@
 
 # Hortonworks Smartsense Server Install
 
-    module.exports = header:'HST Server Install', handler: ->
+    module.exports = header:'HST Server Install', handler: (options) ->
       {smartsense, ssl} = @config.ryba
       {server} = smartsense
 
@@ -22,7 +22,7 @@ Note rmp can only be download from the Hortonworks Support Web UI.
         header: 'Install HST Package'
         cmd: "rpm -Uvh #{smartsense.server.tmp_dir}/smartsense.rpm"
         if: -> @status -1
-      @render
+      @service.init
         header: 'Init Script'
         target: '/etc/init.d/hst-server'
         source: "#{__dirname}/../resources/hst-server.j2"
@@ -31,7 +31,12 @@ Note rmp can only be download from the Hortonworks Support Web UI.
         context:
           'pid_dir': smartsense.server.pid_dir
           'user': smartsense.user.name
-        unlink: true
+      @tmpfs
+        if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+        mount: smartsense.server.pid_dir
+        perm: '0750'
+        uid: smartsense.user.name
+        gid: smartsense.group.name
 
 ## Layout
 

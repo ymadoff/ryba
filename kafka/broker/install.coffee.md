@@ -52,7 +52,7 @@ Install the Kafka consumer package and set it to the latest version. Note, we
 select the "kafka-broker" hdp directory. There is no "kafka-consumer"
 directories.
 
-      @call header: 'Packages', handler: ->
+      @call header: 'Packages', handler: (options) ->
         @service
           name: 'kafka'
         @hdp_select
@@ -61,14 +61,19 @@ directories.
           target: '/var/lib/kafka'
           uid: kafka.user.name
           gid: kafka.user.name
-        @render
+        @service.init
           header: 'Init Script'
           target: '/etc/init.d/kafka-broker'
           source: "#{__dirname}/../resources/kafka-broker.j2"
-          local_source: true
+          local: true
           mode: 0o0755
           context: @config
-          unlink: true
+        @tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: '/var/run/kafka'
+          uid: kafka.user.name
+          gid: kafka.group.name
+          perm: '0750'
 
 ## Configure
 

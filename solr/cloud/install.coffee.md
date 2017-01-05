@@ -52,7 +52,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Packages
 Ryba support installing solr from apache official release or HDP Search repos.
 
-      @call header: 'Packages', timeout: -1, handler: ->          
+      @call header: 'Packages', timeout: -1, handler: ->
         @call 
           if:  solr.cloud.source is 'HDP'
           handler: ->
@@ -81,7 +81,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
               target: solr.cloud.latest_dir
 
 
-      @call header: 'Configuration', handler: ->
+      @call header: 'Configuration', handler: (options) ->
         @link 
           source: "#{solr.cloud.latest_dir}/conf"
           target: solr.cloud.conf_dir
@@ -91,15 +91,21 @@ Ryba support installing solr from apache official release or HDP Search repos.
         @link 
           source: "#{solr.cloud.conf_dir}/solr.in.sh"
           target: "#{solr.cloud.latest_dir}/bin/solr.in.sh"
-        @render
+        @service.init
           header: 'Init Script'
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
           source: "#{__dirname}/../resources/cloud/solr.j2"
           target: '/etc/init.d/solr'
-          local_source: true
+          local: true
           context: @config
+        @tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: solr.cloud.pid_dir
+          uid: solr.user.name
+          gid: solr.group.name
+          perm: '0750'
 
 
 ## Fix scripts

@@ -63,7 +63,7 @@ inside "/etc/init.d" and activate it on startup.
 Note, the server is not activated on startup but they endup as zombies if HDFS
 isnt yet started.
 
-      @call header: 'Service', ->
+      @call header: 'Service', (options) ->
         @service
           name: 'hive'
         @hdp_select
@@ -93,9 +93,15 @@ isnt yet started.
           target: '/etc/init.d/hive-hcatalog-server'
           context: @config.ryba
           mode: 0o0755
+        @tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: hive.hcatalog.pid_dir
+          uid: hive.user.name
+          gid: hive.group.name
+          perm: '0750'
         @execute
           cmd: "service hive-hcatalog-server restart"
-          if: -> @status -3
+          if: -> @status -4
 
       @hconfigure
         header: 'Hive Site'

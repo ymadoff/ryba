@@ -13,7 +13,6 @@ service hue stop
       @service.stop
         header: 'Stop service'
         name: 'hue'
-        if_exists: '/etc/init.d/hue'
 
 ## Stop Clean Logs
 

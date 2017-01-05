@@ -39,8 +39,6 @@ CMD="su - $USER -c \"export ZOOCFGDIR=$CONF_DIR; export ZOOCFG=zoo.cfg; source $
 KILL_SLEEP=10
 
 function start {
-  RUN_DIR=`dirname $PID_FILE`
-  if [ ! -d "$RUN_DIR" ]; then install -d -o $USER -g $GROUP -m 0755 $RUN_DIR ; fi
   if [ -f $PID_FILE ]; then
     pid=`cat $PID_FILE`
     if kill -0 $pid >/dev/null 2>&1 $pid; then

@@ -73,7 +73,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-yarn-resourcemanager" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-      @call header: 'Service', handler: ->
+      @call header: 'Service', handler: (options) ->
         {yarn} = @config.ryba
         @service
           name: 'hadoop-yarn-resourcemanager'
@@ -86,9 +86,15 @@ inside "/etc/init.d" and activate it on startup.
           local: true
           context: @config
           mode: 0o0755
+        @tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: "#{yarn.rm.pid_dir}"
+          uid: yarn.user.name
+          gid: hadoop_group.name
+          perm: '0755'
         @execute
           cmd: "service hadoop-yarn-resourcemanager restart"
-          if: -> @status -3
+          if: -> @status -4
 
       @call header: 'Layout', handler: ->
         {yarn, hadoop_group} = @config.ryba

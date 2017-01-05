@@ -50,7 +50,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Package
 
-      @call header: 'Package', timeout: -1, handler: ->
+      @call header: 'Package', timeout: -1, handler: (options) ->
         @service
           name: 'hadoop-httpfs'
         @hdp_select
@@ -61,6 +61,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           local: true
           context: @config
           mode: 0o0755
+        @tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: "#{httpfs.pid_dir}"
+          uid: httpfs.user.name
+          gid: httpfs.group.name
+          perm: '0755'
 
 ## Kerberos
 

@@ -69,7 +69,7 @@ So we must manually force install of hdf-select outside of yum to handle it
 
 ## Service
 
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, handler: (options) ->
         @service
           name: 'nifi'
         @execute
@@ -82,13 +82,19 @@ So we must manually force install of hdf-select outside of yum to handle it
           target: '/var/run/nifi'
           uid: nifi.user.name
           gid: nifi.group.name
-        @render
+        @service.init
           header: 'rc.d'
           target: '/etc/init.d/nifi'
           source: "#{__dirname}/resources/nifi.j2"
           context: @config
           local: true
           mode: 0o0755
+        @tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: '/var/run/nifi'
+          uid: nifi.user.name
+          gid: nifi.group.name
+          perm: '0750'
 
 ## Env
 

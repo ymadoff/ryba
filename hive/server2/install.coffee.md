@@ -68,7 +68,7 @@ inside "/etc/init.d" and activate it on startup.
 The server is not activated on startup because they endup as zombies if HDFS
 isnt yet started.
 
-      @call header: 'Service', handler: ->
+      @call header: 'Service', handler: (options) ->
         @service
           name: 'hive'
         @service
@@ -82,9 +82,15 @@ isnt yet started.
           context: @config.ryba
           target: '/etc/init.d/hive-server2'
           mode: 0o0755
+        @tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: hive.server2.pid_dir
+          uid: hive.user.name
+          gid: hive.group.name
+          perm: '0750'
         @execute
           cmd: "service hive-server2 restart"
-          if: -> @status -3
+          if: -> @status -4
 
 ## Configuration
 

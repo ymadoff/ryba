@@ -3,7 +3,7 @@
 
 
 
-    module.exports =  header: 'Spark SQL Thrift Server Install', handler: ->
+    module.exports =  header: 'Spark SQL Thrift Server Install', handler: (options) ->
       {spark, realm, ssl} = @config.ryba
       {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       {java_home} = @config.java
@@ -23,13 +23,19 @@
         name: 'spark'
       @hdp_select
         name: 'spark-thriftserver'
-      @render
+      @service.init
         destination : "/etc/init.d/spark-thrift-server"
         source: "#{__dirname}/../resources/spark-thrift-server"
         local_source: true
         context: @config.ryba
         backup: true
         mode: 0o0755
+      @tmpfs
+        if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+        mount: spark.thrift.pid_dir
+        uid: spark.user.name
+        gid: @config.ryba.hadoop_group.gid
+        perm: '0750'
 
 
 ## IPTables

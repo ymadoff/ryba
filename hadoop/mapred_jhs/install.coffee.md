@@ -51,7 +51,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-mapreduce-historyserver" service, symlink the rc.d startup
 script inside "/etc/init.d" and activate it on startup.
 
-      @call header: 'Service', handler: ->
+      @call header: 'Service', handler: (options) ->
         @service
           name: 'hadoop-mapreduce-historyserver'
         @hdp_select
@@ -63,6 +63,12 @@ script inside "/etc/init.d" and activate it on startup.
           local: true
           context: @config
           mode: 0o0755
+        @tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: "#{mapred.pid_dir}"
+          uid: mapred.user.name
+          gid: hadoop_group.name
+          perm: '0755'
         @execute
           cmd: "service hadoop-mapreduce-historyserver restart"
           if: -> @status -3

@@ -48,7 +48,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Install the "hadoop-yarn-nodemanager" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-      @call header: 'Packages', handler: ->
+      @call header: 'Packages', handler: (options) ->
         @service
           name: 'hadoop-yarn-nodemanager'
         @hdp_select
@@ -64,6 +64,12 @@ inside "/etc/init.d" and activate it on startup.
           name: 'hadoop-mapreduce'
         @hdp_select
           name: 'hadoop-client'
+        @tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: "#{yarn.nm.pid_dir}"
+          uid: yarn.user.name
+          gid: hadoop_group.name
+          perm: '0755'
         @call
           if: yarn.site['spark.shuffle.service.enabled'] is 'true'
           header: 'Spark Worker Shuffle Package'
@@ -313,7 +319,6 @@ on Centos/Redhat7 OS. Legacy cgconfig and cgroup-tools package must be used. (ma
             target: '/etc/cgconfig.d/yarn.cgconfig.conf'
             merge: false
             groups: yarn.cgroup
-            backup: true
           @service.restart
             name: 'cgconfig'
             if: -> @status -1

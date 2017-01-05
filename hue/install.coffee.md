@@ -159,11 +159,12 @@ the "security_enabled" property set to "true".
           source: "#{hue.ssl.client_ca}"
           local_source: true
           if: !!hue.ssl.client_ca
-        @file
+        @service.init
           target: '/etc/init.d/hue'
           match: /^DAEMON="export REQUESTS_CA_BUNDLE='.*';\$DAEMON"$/m
           replace: "DAEMON=\"export REQUESTS_CA_BUNDLE='#{hue.ca_bundle}';$DAEMON\""
           append: /^DAEMON=.*$/m
+          mode: 0o755
 
 ## SSL Server
 

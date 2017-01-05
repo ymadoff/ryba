@@ -70,7 +70,7 @@ hbase:x:492:
 Install the "hbase-regionserver" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-      @call header: 'Service', timeout: -1, handler: ->
+      @call header: 'Service', timeout: -1, handler: (options) ->
         @service
           name: 'hbase-regionserver'
         @hdp_select
@@ -84,9 +84,15 @@ inside "/etc/init.d" and activate it on startup.
           context: @config
           target: '/etc/init.d/hbase-regionserver'
           mode: 0o0755
+        @tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: hbase.rs.pid_dir
+          uid: hbase.user.name
+          gid: hbase.group.name
+          perm: '0755'
         @execute
           cmd: "service hbase-regionserver restart"
-          if: -> @status -4
+          if: -> @status -5
 
 ## Zookeeper JAAS
 

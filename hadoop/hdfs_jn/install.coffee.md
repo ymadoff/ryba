@@ -75,7 +75,7 @@ The JournalNode data are stored inside the directory defined by the
 Install the "hadoop-hdfs-journalnode" service, symlink the rc.d startup script
 inside "/etc/init.d" and activate it on startup.
 
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, handler: (options) ->
         @service
           name: 'hadoop-hdfs-journalnode'
         @hdp_select
@@ -87,9 +87,15 @@ inside "/etc/init.d" and activate it on startup.
           local: true
           context: @config
           mode: 0o0755
+        @tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: "#{hdfs.pid_dir}"
+          uid: hdfs.user.name
+          gid: hadoop_group.name
+          perm: '0755'
         @execute
           cmd: "service hadoop-hdfs-journalnode restart"
-          if: -> @status -3
+          if: -> @status -4
 
 ## Configure
 

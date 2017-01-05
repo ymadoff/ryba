@@ -14,7 +14,6 @@ docker stop hue_server
 
       @service.stop
         name: hue_docker.service
-        if_exists: "/etc/init.d/#{hue_docker.service}"
 
 ## Clean Logs dir
 

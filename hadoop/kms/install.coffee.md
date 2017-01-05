@@ -17,7 +17,7 @@
 
 ## Packages
 
-      @call header: 'Packages', timeout: -1, handler: ->
+      @call header: 'Packages', timeout: -1, handler: (options) ->
         @service
           name: 'hadoop-mapreduce'
         @hdp_select
@@ -41,6 +41,13 @@
           local: true
           context: @config
           mode: 0o0755
+        @tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: "#{kms.pid_dir}"
+          uid: kms.user.name
+          gid: kms.group.name
+          perm: '0755'
+        
 
 ## Layout
 
