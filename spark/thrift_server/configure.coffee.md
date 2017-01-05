@@ -3,12 +3,12 @@
 
     module.exports = ->
       {realm, core_site} = @config.ryba
-      [hcli_ctx] = @contexts 'ryba/hive/server2'
-      [sc_ctx] = @contexts 'ryba/spark/client'
+      hs2_ctxs = @contexts 'ryba/hive/server2'
+      sc_ctxs = @contexts 'ryba/spark/client'
+      sc_ctx = sc_ctxs[0]
       [ynm_ctx] = @contexts 'ryba/hadoop/yarn_nm'
       {hadoop_conf_dir, ssl, ssl_server, ssl_client} = ynm_ctx.config.ryba
-      throw Error 'Need Hive Metastore' unless @contexts( 'ryba/hive/hcatalog').length
-      throw Error 'Spark SQL Thrift Server must be installed on the same host than hive-server2' unless sc_ctx.map((ctx)-> ctx.config.host).indexOf(@config.host) > -1
+      throw Error 'Spark SQL Thrift Server must be installed on the same host than hive-server2' unless hs2_ctxs.map((ctx)-> ctx.config.host).indexOf(@config.host) > -1
       throw Error 'Spark SQL Thrift Server is useless without spark installed' unless sc_ctx?
       spark = @config.ryba.spark ?= {}
       spark.user = sc_ctx.config.ryba.spark.user
@@ -19,7 +19,7 @@ Spark SQL thrift server starts a custom instance of hive-server2, we use the sam
 than the hive-server2 (available on the same host). We inherits from almost every properties.
 Only port, execution engine and dynamic discovery change (not supported).
 
-## Configuration                    
+## Configuration
 
       spark.thrift ?= {}
       spark.thrift.user_name ?= @config.ryba.hive.user.name
@@ -29,7 +29,7 @@ Only port, execution engine and dynamic discovery change (not supported).
 
 ### Hive server2 Configuration
 
-      spark.thrift.hive_site ?= {}    
+      spark.thrift.hive_site ?= {}
       spark.thrift.hive_site['hive.server2.thrift.port'] ?= '10015'
       spark.thrift.hive_site['hive.server2.thrift.http.port'] ?= '10015'
       spark.thrift.hive_site['hive.server2.use.SSL'] ?= 'true'
@@ -102,8 +102,10 @@ Inherits some of the basic spark yarn-cluster based installation
       spark.thrift.conf['spark.ssl.trustStorePassword'] ?= ssl_client['ssl.client.truststore.password']
 
 ### Kerberos
-Spark SQL thrift server is runned as the hive server user, and must use the hive-server2's keytab
+Spark SQL thrift server is runned in yarn through the hive server user, and must use the hive-server2's keytab
 
+      spark.thrift.hive_site['hive.server2.authentication.kerberos.principal'] ?= @config.ryba.hive.server2.site['hive.server2.authentication.kerberos.principal']
+      spark.thrift.hive_site['hive.server2.authentication.kerberos.keytab'] ?= @config.ryba.hive.server2.site['hive.server2.authentication.kerberos.keytab']
       spark.thrift.conf['spark.yarn.principal'] ?= @config.ryba.hive.server2.site['hive.server2.authentication.kerberos.principal'].replace '_HOST', @config.host
       spark.thrift.conf['spark.yarn.keytab'] ?= @config.ryba.hive.server2.site['hive.server2.authentication.kerberos.keytab']
       match = /^(.+?)[@\/]/.exec spark.thrift.conf['spark.yarn.principal']
@@ -111,16 +113,16 @@ Spark SQL thrift server is runned as the hive server user, and must use the hive
 
 ### Enable Yarn Job submission
 
-      wk_ctxs = @contexts 'ryba/hadoop/yarn_nm'
-      for wk_ctx in wk_ctxs
-        wk_ctx.before
+      nm_ctxs = @contexts 'ryba/hadoop/yarn_nm'
+      for nm_ctx in nm_ctxs
+        nm_ctx.before
           type: 'service'
           name: 'hadoop-yarn-nodemanager'
           handler: -> 
-            @group hcli_ctx.config.ryba.hive.group
-            @user hcli_ctx.config.ryba.hive.user
+            @group hs2_ctxs[0].config.ryba.hive.group
+            @user hs2_ctxs[0].config.ryba.hive.user
             @mkdir
-              target: hcli_ctx.config.ryba.hive.user.home
+              target: hs2_ctxs[0].config.ryba.hive.user.home
 
 
 [hdp-spark-sql]:(https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.4.0/bk_installing_manually_book/content/starting_sts.html)
