@@ -28,6 +28,7 @@ Wait for the HDFS NameNode to be started.
       [_, port] = address.split ':'
       securityEnabled = protocol is 'https'
       @execute
+        retry: 2
         header: 'HTTP'
         cmd: mkcmd.hdfs @, "curl --negotiate -k -u : #{protocol}://#{@config.host}:#{port}/jmx?qry=Hadoop:service=NameNode,name=NameNodeStatus"
       , (err, executed, stdout) ->
