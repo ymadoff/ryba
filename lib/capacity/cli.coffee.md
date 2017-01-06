@@ -7,7 +7,7 @@
       # Parameters and Help
       params = parameters(exports.params)
       if params.parse().help
-        return util.print(params.help())
+        return console.log params.help()
       # Run
       params = params.parse()
       config params.config, (err, config) ->
@@ -91,4 +91,3 @@ node node_modules/ryba/bin/capacity \
     parameters = require 'parameters'
     config = require 'masson/lib/config'
     capacity = require './'
-    util = require 'util'
