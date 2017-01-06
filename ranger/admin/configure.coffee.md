@@ -142,7 +142,7 @@ The type requires differents instructions/configuration for ranger plugin audit 
       ranger with this cluster. 
     Ryba configures Ranger by using one of the cluster available
     You can configure it by using `config.ryba.solr.cloud_docker.clusters` property.
-    Ryba will search by default for an instance named `ryba_ranger_cluster` which is set
+    Ryba will search by default for an instance named `ranger_cluster` which is set
     by the property `ranger.admin.cluster_name`.
     An example is available in [the ryba-cluster config file][ryba-cluster-conf].
   
@@ -182,7 +182,7 @@ on the same host than `ryba/ranger/admin` module.
           solr_ctx = sc_ctxs[0]
           solr = sc_ctxs[0].config.ryba.solr
           ranger.admin.install['audit_solr_port'] ?= ctx.config.ryba.solr.cloud.port
-          solrs_urls = sc_ctxs.map( (ctx) -> 
+          solrs_urls = sc_ctxs.map( (ctx) ->
            "#{if solr.cloud.ssl.enabled  then 'https://'  else 'http://'}#{ctx.config.host}:#{ctx.config.ryba.solr.cloud.port}")
             .map( (url) -> if ranger.admin.solr_type is 'single' then "#{url}/solr/ranger_audits" else "#{url}")
             .join(',')
@@ -210,32 +210,29 @@ on the same host than `ryba/ranger/admin` module.
           {solr} = @config.ryba
           solr.cloud_docker ?= {}
           solr.cloud_docker.clusters ?= {}
-          if not solr.cloud_docker.clusters[cluster_name]?
-            cluster_config = {}
-            for solr_ctx in scd_ctxs
-              solr = solr_ctx.config.ryba.solr ?= {}
-              #By default Ryba search for a solr cloud cluster named ryba_ranger_cluster in config
-              # Configures one cluster if not in config
-              solr.cloud_docker.clusters ?= {}
-              cluster_config  = solr.cloud_docker.clusters[cluster_name] ?= {}
-              cluster_config.volumes ?= []
-              cluster_config.volumes.push '/tmp/ranger_audits:/ranger_audits'
-              cluster_config['containers'] ?= scd_ctxs.length
-              cluster_config['master'] ?= scd_ctxs[0].config.host
-              cluster_config['heap_size'] ?= '256m'
-              cluster_config['port'] ?= 10000
-              cluster_config.zk_opts ?= {}
-              cluster_config['hosts'] ?= scd_ctxs.map (ctx) -> ctx.config.host 
-              solr_clusterize solr_ctx , cluster_name, cluster_config
-            ranger.admin.cluster_config = scd_ctxs[0].config.ryba.solr.cloud_docker.clusters[cluster_name]
-            if @params.command is 'install'
-              scd_ctxs[0]
-              .after
-                type: ['docker','compose','up']
-                target: "#{solr.cloud_docker.conf_dir}/clusters/#{cluster_name}/docker-compose.yml"
-                handler: -> @call 'ryba/ranger/admin/solr_bootstrap'
-          else
-            ranger.admin.cluster_config = solr.cloud_docker.clusters[cluster_name]
+          cluster_config = ranger.admin.cluster_config = solr.cloud_docker.clusters[cluster_name] ?= {}
+          for solr_ctx in scd_ctxs
+            solr = solr_ctx.config.ryba.solr ?= {}
+            #By default Ryba search for a solr cloud cluster named ranger_cluster in config
+            # Configures one cluster if not in config
+            solr.cloud_docker.clusters ?= {}
+            cluster_config  = solr.cloud_docker.clusters[cluster_name] ?= {}
+            cluster_config.volumes ?= []
+            cluster_config.volumes.push '/tmp/ranger_audits:/ranger_audits'
+            cluster_config['containers'] ?= scd_ctxs.length
+            cluster_config['master'] ?= scd_ctxs[0].config.host
+            cluster_config['heap_size'] ?= '256m'
+            cluster_config['port'] ?= 10000
+            cluster_config.zk_opts ?= {}
+            cluster_config['hosts'] ?= scd_ctxs.map (ctx) -> ctx.config.host
+            solr_clusterize solr_ctx , cluster_name, cluster_config
+          ranger.admin.cluster_config = scd_ctxs[0].config.ryba.solr.cloud_docker.clusters[cluster_name]
+          if @params.command is 'install'
+            scd_ctxs[0]
+            .after
+              type: ['docker','compose','up']
+              target: "#{solr.cloud_docker.conf_dir}/clusters/#{cluster_name}/docker-compose.yml"
+              handler: -> @call 'ryba/ranger/admin/solr_bootstrap'
             #Search for a cloud_docker cluster find in solr.cloud_docker.clusters
           ranger.admin.install['audit_solr_port'] ?= ranger.admin.cluster_config.port
           ranger.admin.cluster_config['ranger'] ?= {}
