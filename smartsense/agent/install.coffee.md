@@ -1,7 +1,7 @@
 
 # Hortonworks Smartsense Install
 
-    module.exports = header:'HST Agent Install', handler: ->
+    module.exports = header: 'HST Agent Install', handler: ->
       {smartsense, ssl} = @config.ryba
       {agent} = smartsense
 

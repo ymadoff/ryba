@@ -1,12 +1,12 @@
 
 # Hortonworks Smartsense Agent Configuration
 
-    module.exports = handler: ->
+    module.exports = ->
       {java, ryba} = @config
       {hadoop_conf_dir, core_site,realm} = ryba
       {smartsense} = ryba ?= {}
       # User & Group
-      [srv_ctx] = @contexts 'ryba/smartsense/server', require('../server/configure').handler
+      [srv_ctx] = @contexts 'ryba/smartsense/server'
       smartsense.user = srv_ctx.config.ryba.smartsense.user
       smartsense.group = srv_ctx.config.ryba.smartsense.group
       # User
