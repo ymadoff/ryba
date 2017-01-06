@@ -60,14 +60,12 @@ instructions.
         uid: user.name
         gid: user.group
         content: """
-        !outputformat csv
         SELECT DOMAIN, AVG(CORE) Average_CPU_Usage, AVG(DB) Average_DB_Usage 
         FROM #{table} 
         GROUP BY DOMAIN 
         ORDER BY DOMAIN DESC;
         """
       @execute
-        if: -> @status 0
         cmd: mkcmd.test @, """
         cd /usr/hdp/current/phoenix-client/bin
         ./psql.py -t #{table} #{zk_path} \
@@ -76,7 +74,7 @@ instructions.
         >/dev/null 2>&1
         ./sqlline.py #{zk_path} \
           #{user.home}/check_phoenix/select.sql \
-        | egrep "^'" | tail -n+2
+        | grep "|" | tail -n+2
         hdfs dfs -touchz check-#{@config.host}-phoenix
         """
         trap_on_error: true
