@@ -53,7 +53,7 @@ RegionServer, and HBase client host machines.
 Note, we left the permission mode as default, Master and RegionServer need to
 
       @hconfigure
-        header: 'HBase Client Site'
+        header: 'HBase Site'
         target: "#{hbase.conf_dir}/hbase-site.xml"
         source: "#{__dirname}/../resources/hbase-site.xml"
         local: true
@@ -67,7 +67,7 @@ Note, we left the permission mode as default, Master and RegionServer need to
 Environment passed to the Master before it starts.
 
       @render
-        header: 'HBase Client Env'
+        header: 'Env'
         target: "#{hbase.conf_dir}/hbase-env.sh"
         source: "#{__dirname}/../resources/hbase-env.sh.j2"
         local: true
