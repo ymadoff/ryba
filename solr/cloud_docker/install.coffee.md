@@ -113,7 +113,7 @@ be prepared in the mecano cache dir.
         @docker.checksum
           docker: solr.cloud_docker.swarm_conf
           image: solr.cloud_docker.build.image
-          tag: solr.cloud_docker.build.version
+          tag: solr.cloud_docker.version
         , (err, status, checksum) ->
           throw err if err
           exists = checksum

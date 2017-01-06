@@ -21,9 +21,9 @@ Build container and save it.
           target: "#{solr.cloud_docker.build.dir}/build/Dockerfile"
           context: @config
         @docker.build
-          image: "#{solr.cloud_docker.build.image}:#{solr.cloud_docker.build.version}"
+          image: "#{solr.cloud_docker.build.image}:#{solr.cloud_docker.version }"
           file: "#{solr.cloud_docker.build.dir}/build/Dockerfile"
         @docker.save
-          image: "#{solr.cloud_docker.build.image}:#{solr.cloud_docker.build.version}"
+          image: "#{solr.cloud_docker.build.image}:#{solr.cloud_docker.version }"
           output: "#{solr.cloud_docker.build.dir}/#{solr.cloud_docker.build.tar}"
         
