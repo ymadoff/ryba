@@ -126,7 +126,7 @@ Environment passed to the HBase Rest Server before it starts.
 
 # User limits
 
-      @system_limits
+      @system.limits
         header: 'Ulimit'
         user: hbase.user.name
       , hbase.user.limits

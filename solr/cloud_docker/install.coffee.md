@@ -138,7 +138,7 @@ be prepared in the mecano cache dir.
 
 ## User Limits
 
-      @system_limits
+      @system.limits
         header: 'Ulimit'
         user: solr.user.name
       , solr.user.limits

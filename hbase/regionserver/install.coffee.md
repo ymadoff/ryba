@@ -189,7 +189,7 @@ Enable stats collection in Ganglia and Graphite
 
 # User limits
 
-      @system_limits
+      @system.limits
         header: 'Ulimit'
         user: hbase.user.name
       , hbase.user.limits

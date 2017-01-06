@@ -342,7 +342,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
 
 # User limits
 
-      @system_limits
+      @system.limits
         header: 'Ulimit'
         user: nifi.user.name
       , nifi.user.limits

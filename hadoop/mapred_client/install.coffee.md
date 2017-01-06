@@ -81,7 +81,7 @@ mapred    - nproc  65536
 Note, a user must re-login for those changes to be taken into account. See
 the "ryba/hadoop/hdfs" module for additional information.
 
-      @system_limits
+      @system.limits
         header: 'Ulimit'
         user: mapred.user.name
       , mapred.user.limits

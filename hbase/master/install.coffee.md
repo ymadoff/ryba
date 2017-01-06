@@ -252,7 +252,7 @@ principal.
 
 # User limits
 
-      @system_limits
+      @system.limits
         header: 'Ulimit'
         user: hbase.user.name
       , hbase.user.limits

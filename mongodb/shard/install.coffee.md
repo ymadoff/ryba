@@ -151,7 +151,7 @@ with pem file. So we append to the file the private key and certficate.
 
 # User limits
 
-      @system_limits
+      @system.limits
         header: 'User Limits'
         user: mongodb.user.name
       , mongodb.user.limits

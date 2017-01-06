@@ -97,7 +97,7 @@ Starting opentsdb: /etc/init.d/opentsdb: line 69: ulimit: open files: cannot mod
 'ulimit -n' must be greater than or equal to 65535, is 1024
 ```
 
-      @system_limits
+      @system.limits
         header: 'Ulimit'
         user: opentsdb.user.name
       , opentsdb.user.limits

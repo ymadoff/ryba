@@ -251,7 +251,7 @@ Also worth of interest are the [Pivotal recommandations][hawq] as well as the
 
 Note, a user must re-login for those changes to be taken into account.
 
-      @system_limits
+      @system.limits
         header: 'Ulimit'
         user: hdfs.user.name
       , hdfs.user.limits

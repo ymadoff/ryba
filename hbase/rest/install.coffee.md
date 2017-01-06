@@ -139,7 +139,7 @@ Create the Kerberos keytab for the service principal.
 
 # User limits
 
-      @system_limits
+      @system.limits
         header: 'Ulimit'
         user: hbase.user.name
       , hbase.user.limits

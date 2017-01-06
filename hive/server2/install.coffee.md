@@ -199,7 +199,7 @@ Create the directories to store the logs and pid information. The properties
 
 ## Ulimit
 
-      @system_limits
+      @system.limits
         header: 'Ulimit'
         user: hive.user.name
       , hive.user.limits

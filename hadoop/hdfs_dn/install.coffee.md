@@ -337,7 +337,7 @@ Also worth of interest are the [Pivotal recommandations][hawq] as well as the
 
 Note, a user must re-login for those changes to be taken into account.
 
-      @system_limits
+      @system.limits
         header: 'Ulimit'
         user: hdfs.user.name
       , hdfs.user.limits
@@ -348,7 +348,7 @@ but the operating system limits (max number of open files, for example) remains 
 As jsvc is used by bigtop scripts to run hdfs via root, we also (in fact: only) 
 need to fix limits to root account, until Bigtop integrates jsvc 1.0.6
 
-      @system_limits
+      @system.limits
         header: 'Ulimit to root'
         user: 'root'
       , hdfs.user.limits
