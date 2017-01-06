@@ -151,9 +151,6 @@ Environment passed to the HBase Rest Server before it starts.
           uid: hbase.user.name
           gid: hbase.group.name
           perm: '0755'
-        @execute
-          cmd: "service hbase-thrift restart"
-          if: -> @status -4
 
 ## Logging
 

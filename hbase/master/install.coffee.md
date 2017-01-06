@@ -91,9 +91,6 @@ Install the "hbase-master" service, symlink the rc.d startup script inside
           uid: hbase.user.name
           gid: hbase.group.name
           perm: '0755'
-        @service.restart
-          name: 'hbase-master'
-          if: -> @status -5
 
 ## Configure
 

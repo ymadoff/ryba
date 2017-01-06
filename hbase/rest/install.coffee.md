@@ -87,9 +87,6 @@ hbase:x:492:
           uid: hbase.user.name
           gid: hbase.group.name
           perm: '0755'
-        @service.restart
-          name: 'hbase-rest'
-          if: -> @status -4
 
 ## Configure
 

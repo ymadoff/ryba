@@ -90,9 +90,6 @@ inside "/etc/init.d" and activate it on startup.
           uid: hbase.user.name
           gid: hbase.group.name
           perm: '0755'
-        @execute
-          cmd: "service hbase-regionserver restart"
-          if: -> @status -5
 
 ## Zookeeper JAAS
 
