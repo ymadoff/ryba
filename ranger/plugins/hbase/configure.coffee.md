@@ -3,6 +3,7 @@
 
     module.exports = ->
       hm_ctxs = @contexts 'ryba/hbase/master'
+      rs_ctxs = @contexts 'ryba/hbase/regionserver'
       [ranger_admin_ctx] = @contexts 'ryba/ranger/admin'
       return unless ranger_admin_ctx?
       {ryba} = @config
@@ -35,6 +36,21 @@
         hbase_plugin.install ?= {}
         hbase_plugin.install['PYTHON_COMMAND_INVOKER'] ?= 'python'
         hbase_plugin.install['CUSTOM_USER'] ?= "#{@config.ryba.hbase.user.name}"
+
+### HBase regionserver env
+Some ranger plugins needs to have the configuration file on thei classpath to make 
+configuration separation complete.
+
+        #fix ranger hbase rs plugin
+        for ctx in rs_ctxs
+          ctx.config.ryba ?= {}
+          ctx.config.ryba.hbase ?= {}
+          ctx.config.ryba.hbase.rs ?= {}
+          ctx.config.ryba.hbase.rs.env ?= {}
+          if not ctx.config.ryba?.hbase?.rs?.env['HBASE_CLASSPATH']?
+            ctx.config.ryba.hbase.rs.env['HBASE_CLASSPATH'] = "$HBASE_CLASSPATH:/etc/hbase-regionserver/conf/core-site.xml"
+          else if (ctx.config.ryba.hbase.rs.env['HBASE_CLASSPATH'].indexOf(":/etc/hbase-regionserver/conf/core-site.xml") is -1)
+            ctx.config.ryba.hbase.rs.env['HBASE_CLASSPATH'] += ":/etc/hbase-regionserver/conf/core-site.xml"
 
 ### HBase Policy Admin Tool
 The repository name should match the reposity name in web ui.
