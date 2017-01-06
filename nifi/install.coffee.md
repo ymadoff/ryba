@@ -1,5 +1,5 @@
 
-# Apache NiFi Install
+# NiFi Install
 
     module.exports = header: 'NiFi Install', handler: ->
       {nifi} = @config.ryba

@@ -1,5 +1,6 @@
 
 # Oozie Server
+
 [Oozie Server][Oozie] is a server based Workflow Engine specialized in running workflow jobs.
 Workflows are basically collections of actions.
 These actions can be  Hadoop Map/Reduce jobs, Pig jobs arranged in a control dependency DAG (Direct Acyclic Graph).

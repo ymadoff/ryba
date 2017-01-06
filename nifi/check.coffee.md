@@ -1,5 +1,5 @@
 
-# Apache NiFi Check
+# NiFi Check
 
     module.exports = header: 'NiFi Check', label_true: 'CHECKED', handler: ->
       {nifi} = @config.ryba
