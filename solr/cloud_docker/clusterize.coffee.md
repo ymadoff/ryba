@@ -46,6 +46,7 @@ You can check the [docker-compose file reference](https://docs.docker.com/compos
         config.port ?= '8983'
         # config.cpu_shares ?= 5
         # config.cpu_quota ?= 50 * 1000
+        config.is_ssl_enabled ?= true
         config.heap_size ?= '1024m'
         config.data_dir ?= "#{solr.user.home}/#{name}"
         config.log_dir ?= "#{solr.cloud_docker.log_dir}/#{name}"
@@ -55,6 +56,8 @@ You can check the [docker-compose file reference](https://docs.docker.com/compos
         config.zk_urls ?= "#{solr.cloud_docker.zk_connect}/#{config.zk_node}"
         config.service_def ?= {}
         config['env'] ?= {}
+        ## allow administrators to disable ssl on solr cloud docker clusters.
+        config['env']['SSL_ENABLED'] = "#{config.is_ssl_enabled}"
         volumes = [
             "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker_entrypoint.sh:/docker_entrypoint.sh",
             "#{solr.cloud_docker.conf_dir}/keystore:#{solr.cloud_docker.conf_dir}/keystore",
@@ -130,16 +133,21 @@ You can check the [docker-compose file reference](https://docs.docker.com/compos
             config_host['env']['SOLR_HOST'] ?= "#{host}"
             config_host['env']['SOLR_AUTHENTICATION_OPTS'] ?= "-Djetty.port=#{config.port}" #backward compatibility
             config_host['env']['ZK_HOST'] ?= "#{solr.cloud_docker.zk_connect}/#{config.zk_node}"
-            for prop in [
+            props = [
               'SOLR_JAVA_HOME'
-              'ENABLE_REMOTE_JMX_OPTS'
-              'SOLR_SSL_KEY_STORE'
-              'SOLR_SSL_KEY_STORE_PASSWORD'
-              'SOLR_SSL_TRUST_STORE'
-              'SOLR_SSL_TRUST_STORE_PASSWORD'
-              'SOLR_SSL_NEED_CLIENT_AUTH'
               'SOLR_PID_DIR'
-            ] then config_host['env'][prop] ?= config_host['env'][prop] ?= config['env'][prop] ?= solr.cloud_docker['env'][prop] 
+              'ENABLE_REMOTE_JMX_OPTS'
+              'SSL_ENABLED'
+            ]
+            if config.is_ssl_enabled
+              props.push [
+                'SOLR_SSL_KEY_STORE'
+                'SOLR_SSL_KEY_STORE_PASSWORD'
+                'SOLR_SSL_TRUST_STORE'
+                'SOLR_SSL_TRUST_STORE_PASSWORD'
+                'SOLR_SSL_NEED_CLIENT_AUTH'
+              ]...
+            for prop in props then config_host['env'][prop] ?= config_host['env'][prop] ?= config['env'][prop] ?= solr.cloud_docker['env'][prop] 
             # Authentication & Authorization
             config_host.security = config.security ?= {}
             config_host.security["authentication"] ?= {}

@@ -105,8 +105,14 @@ if $EXEC_BOOTSTRAP;
       {{ryba.solr.cloud_docker.latest_dir}}/server/scripts/cloud-scripts/zkcli.sh -zkhost {{ryba.solr.cloud_docker.zk_connect}}/${ZK_NODE} -cmd bootstrap -solrhome {{ryba.solr.user.home}}
       echo "Uploading Security Configuration"
       {{ryba.solr.cloud_docker.latest_dir}}/server/scripts/cloud-scripts/zkcli.sh -zkhost {{ryba.solr.cloud_docker.zk_connect}} -cmd putfile /${ZK_NODE}/security.json {{ryba.solr.user.home}}/security.json
-      echo "Enable SSL Scheme in Zookeeper"
-      {{ryba.solr.cloud_docker.latest_dir}}/server/scripts/cloud-scripts/zkcli.sh -zkhost {{ryba.solr.cloud_docker.zk_connect}}/${ZK_NODE} -cmd clusterprop -name urlScheme -val https
+      if [ "$SSL_ENABLED" == "true"] ; 
+        then 
+          echo "Enable SSL Scheme in Zookeeper";
+          {{ryba.solr.cloud_docker.latest_dir}}/server/scripts/cloud-scripts/zkcli.sh -zkhost {{ryba.solr.cloud_docker.zk_connect}}/${ZK_NODE} -cmd clusterprop -name urlScheme -val https ;
+        else
+          echo "Disable SSL Scheme in Zookeeper";
+          {{ryba.solr.cloud_docker.latest_dir}}/server/scripts/cloud-scripts/zkcli.sh -zkhost {{ryba.solr.cloud_docker.zk_connect}}/${ZK_NODE} -cmd clusterprop -name urlScheme -val http ;
+      fi;
     fi;
 fi    
 
