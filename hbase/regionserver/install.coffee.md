@@ -195,7 +195,6 @@ Enable stats collection in Ganglia and Graphite
         target: "#{hbase.rs.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
         local: true
-        mode: 0o640
 
 ## Ranger HBase Plugin Install
 
