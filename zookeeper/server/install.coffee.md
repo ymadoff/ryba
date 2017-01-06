@@ -70,7 +70,7 @@ which has no dependency.
           local: true
           target: '/etc/init.d/zookeeper-server'
         #TODO: Move pid creation dir to systemd startup scripts
-        @tmpfs
+        @system.tmpfs
           if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
           mount: zookeeper.pid_dir
           uid: zookeeper.user.name

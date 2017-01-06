@@ -228,7 +228,7 @@ configuration like solr.in.sh or solr.xml.
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0750
-        @tmpfs
+        @system.tmpfs
           if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
           mount: config.pid_dir
           uid: solr.user.name

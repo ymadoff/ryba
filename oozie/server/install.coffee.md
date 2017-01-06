@@ -88,7 +88,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           local: true
           target: '/etc/init.d/oozie'
           mode: 0o0755
-        @tmpfs
+        @system.tmpfs
           if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
           mount: oozie.pid_dir
           uid: oozie.user.name

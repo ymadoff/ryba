@@ -58,7 +58,7 @@ in order to rendered configuration file with custom properties.
                   mode: 0o0640
                   local: true
                   eof: true
-                @tmpfs
+                @system.tmpfs
                   mount: mongodb.router.pid_dir
                   uid: mongodb.user.name
                   gid: mongodb.group.name

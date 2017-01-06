@@ -31,7 +31,7 @@ Note rmp can only be download from the Hortonworks Support Web UI.
         context:
           'pid_dir': smartsense.server.pid_dir
           'user': smartsense.user.name
-      @tmpfs
+      @system.tmpfs
         if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
         mount: smartsense.server.pid_dir
         perm: '0750'

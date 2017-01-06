@@ -82,7 +82,7 @@ isnt yet started.
           context: @config.ryba
           target: '/etc/init.d/hive-server2'
           mode: 0o0755
-        @tmpfs
+        @system.tmpfs
           if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
           mount: hive.server2.pid_dir
           uid: hive.user.name

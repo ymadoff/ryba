@@ -117,7 +117,7 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
           gid: hadoop_group.name
           mode: 0o0750
           parent: true
-        @tmpfs
+        @system.tmpfs
           if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
           mount: pid_dir
           uid: hdfs.user.name

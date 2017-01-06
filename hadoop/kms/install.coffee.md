@@ -41,7 +41,7 @@
           local: true
           context: @config
           mode: 0o0755
-        @tmpfs
+        @system.tmpfs
           if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
           mount: "#{kms.pid_dir}"
           uid: kms.user.name

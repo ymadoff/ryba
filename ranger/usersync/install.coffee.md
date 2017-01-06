@@ -38,7 +38,7 @@ directories.
           target: ranger.usersync.conf_dir
         @mkdir
           target: ranger.usersync.log_dir
-        @tmpfs
+        @system.tmpfs
           if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
           mount: ranger.usersync.pid_dir
           uid: ranger.user.name

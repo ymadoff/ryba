@@ -50,7 +50,7 @@ nagiocmd:x:2419:apache
         @service name: 'nagios', startup: true
         @service name: 'nagios-plugins'
         @service name: 'nagios-www'
-        @tmpfs
+        @system.tmpfs
           if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
           mount: '/var/run/nagios'
           uid: nagios.user.name

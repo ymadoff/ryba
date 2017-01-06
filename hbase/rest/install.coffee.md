@@ -81,7 +81,7 @@ hbase:x:492:
           target: '/etc/init.d/hbase-rest'
           mode: 0o0755
           unlink: true
-        @tmpfs
+        @system.tmpfs
           if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
           mount: hbase.rest.pid_dir
           uid: hbase.user.name

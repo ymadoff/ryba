@@ -68,7 +68,7 @@ directories.
           local: true
           mode: 0o0755
           context: @config
-        @tmpfs
+        @system.tmpfs
           if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
           mount: '/var/run/kafka'
           uid: kafka.user.name

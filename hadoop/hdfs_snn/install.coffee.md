@@ -50,7 +50,7 @@ script inside "/etc/init.d" and activate it on startup.
           local_source: true
           context: @config
           mode: 0o0755
-        @tmpfs
+        @system.tmpfs
           if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
           mount: "#{hdfs.pid_dir}"
           uid: hdfs.user.name
