@@ -228,6 +228,8 @@ This part of the setup is not documented. Deduce from launch scripts.
           write: writes
           backup: true
           mode: 0o750
+          uid: ranger.user.name
+          gid: ranger.group.name
 
 ## Log4j
 
