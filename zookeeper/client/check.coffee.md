@@ -13,6 +13,7 @@ TODO: Cloudera provides some interesting [tests](http://www.cloudera.com/content
 
       zk_cxns = @contexts('ryba/zookeeper/server').map((ctx) -> "#{ctx.config.host}:#{ctx.config.ryba.zookeeper.port}").join ','
       @execute
+        retry: 3
         header: 'Shell'
         cmd: """
         zookeeper-client -server #{zk_cxns} <<< 'ls /' | egrep '\\[.*zookeeper.*\\]'
