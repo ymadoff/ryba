@@ -79,6 +79,7 @@ You can check the [docker-compose file reference](https://docs.docker.com/compos
           # `affinity:container` enables docker to start a new container on a host 
           # where no other container belonging to the cluster is already running.
           environment.push "affinity:container!=*#{name.split('_').join('')}_node*"
+          environment.push "SSL_ENABLED=true" if config.is_ssl_enabled
           container_name = "node_#{node}"
           # We need to set master property to now which server will launch bootstrap
           # command and get it's node name (solr node inside a container for a cluster).
@@ -97,7 +98,7 @@ You can check the [docker-compose file reference](https://docs.docker.com/compos
             when '1'
               config.service_def[container_name]=
                 'image' : "#{solr.cloud_docker.build.image}:#{solr.cloud_docker.version}"
-                'restart': "always"
+                # 'restart': "always"
                 'command': command
                 'volumes': volumes
                 'ports': [config.port]
@@ -109,7 +110,7 @@ You can check the [docker-compose file reference](https://docs.docker.com/compos
             when '2'
               config.service_def[container_name]=
                 'image' : "#{solr.cloud_docker.build.image}:#{solr.cloud_docker.version}"
-                'restart': "always"
+                # 'restart': "always"
                 'command': command
                 'volumes': volumes
                 'ports': [config.port]
@@ -137,7 +138,6 @@ You can check the [docker-compose file reference](https://docs.docker.com/compos
               'SOLR_JAVA_HOME'
               'SOLR_PID_DIR'
               'ENABLE_REMOTE_JMX_OPTS'
-              'SSL_ENABLED'
             ]
             if config.is_ssl_enabled
               props.push [
