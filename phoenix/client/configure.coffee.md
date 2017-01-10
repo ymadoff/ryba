@@ -5,8 +5,6 @@
       {hbase} = @config.ryba
       hm_ctxs = @contexts 'ryba/hbase/master'
       rs_ctxs = @contexts 'ryba/hbase/regionserver'
-      phoenix = @config.ryba.phoenix ?= {}
-      phoenix.conf_dir ?= '/etc/phoenix/conf'
       # Avoid message "Class org.apache.hadoop.hbase.regionserver.LocalIndexSplitter
       # cannot be loaded Set hbase.table.sanity.checks to false at conf or table
       # descriptor if you want to bypass sanity checks"

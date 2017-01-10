@@ -20,14 +20,14 @@ Please refer to the Hortonworks [documentation][phoenix-doc].
       @execute
         header: 'Hadoop Configuration'
         cmd:"""
-        ln -sf #{path.join hadoop_conf_dir, 'core-site.xml'} /usr/hdp/current/phoenix-client/bin/core-site.xml
+        ln -sf #{hadoop_conf_dir}/core-site.xml /usr/hdp/current/phoenix-client/bin/core-site.xml
         """
         unless_exists: '/usr/hdp/current/phoenix-client/bin/core-site.xml'
 
       @execute
         header: 'HBase Configuration'
         cmd:"""
-        ln -sf #{path.join hbase.conf_dir, 'hbase-site.xml'} /usr/hdp/current/phoenix-client/bin/hbase-site.xml
+        ln -sf #{hadoop_conf_dir}/core-site.xml /usr/hdp/current/phoenix-client/bin/hbase-site.xml
         """
         unless_exists: '/usr/hdp/current/phoenix-client/bin/hbase-site.xml'
 
