@@ -82,6 +82,11 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           name: 'oozie-server'
         @hdp_select
           name: 'oozie-client'
+        @call if: oozie.db.engine is 'mysql', ->
+          @service
+            name: 'mysql'
+          @service
+            name: 'mysql-connector-java'
         @service.init
           header: 'Init Script'
           source: "#{__dirname}/../resources/oozie"
