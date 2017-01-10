@@ -26,9 +26,8 @@ Please check Oozie page
           'ryba/oozie/server/start'
         'status':
           'ryba/oozie/server/status'
-        'stop': [
+        'stop':
           'ryba/oozie/server/stop'
-          ]
         'wait':
           'ryba/oozie/server/wait'
         'backup':
