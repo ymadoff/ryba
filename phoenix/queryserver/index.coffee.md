@@ -9,6 +9,7 @@ running of those scans to produce regular JDBC result sets.
     module.exports =
       use:
         java: implicit: true, module: 'masson/commons/java'
+        hadoop: implicit: true, module: 'ryba/hadoop/core'
         hbase_client: implicit: true, module: 'ryba/hbase/client'
         phoenix_client: implicit: true, module: 'ryba/phoenix/client'
       configure:

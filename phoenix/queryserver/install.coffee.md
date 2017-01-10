@@ -31,14 +31,16 @@ Please refer to the Apache Phoenix QueryServer [documentation][phoenix-doc].
 
 ## Kerberos
 
-      @krb5_addprinc krb5,
-          header: 'Kerberos'
-          if: phoenix.queryserver.site['hbase.security.authentication'] is 'kerberos'
-          principal: phoenix.queryserver.site['phoenix.queryserver.kerberos.principal'].replace '_HOST', @config.host
-          randkey: true
-          keytab: phoenix.queryserver.site['phoenix.queryserver.keytab.file']
-          uid: phoenix.user.name
-          gid: phoenix.group.name
+We use the SPNEGO keytab, so we let hadoop/core handle principal & keytab
+
+      # @krb5_addprinc krb5,
+      #     header: 'Kerberos'
+      #     if: phoenix.queryserver.site['hbase.security.authentication'] is 'kerberos'
+      #     principal: phoenix.queryserver.site['phoenix.queryserver.kerberos.principal'].replace '_HOST', @config.host
+      #     randkey: true
+      #     keytab: phoenix.queryserver.site['phoenix.queryserver.keytab.file']
+      #     uid: phoenix.user.name
+      #     gid: phoenix.group.name
 
 ## Layout
 

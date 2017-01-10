@@ -34,8 +34,8 @@
       qs.site['phoenix.queryserver.http.port'] ?= '8765'
       qs.site['phoenix.queryserver.metafactory.class'] ?= 'org.apache.phoenix.queryserver.server.PhoenixMetaFactoryImpl'
       qs.site['phoenix.queryserver.serialization'] ?= 'PROTOBUF'
-      qs.site['phoenix.queryserver.keytab.file'] ?= '/etc/security/keytabs/phoenix-queryserver.service.keytab'
-      qs.site['phoenix.queryserver.kerberos.principal'] ?= "#{phoenix.user.name}/_HOST@#{realm}"
+      qs.site['phoenix.queryserver.keytab.file'] ?= '/etc/security/keytabs/spnego.service.keytab'
+      qs.site['phoenix.queryserver.kerberos.principal'] ?= "HTTP/_HOST@#{realm}"
       qs.site['avatica.connectioncache.concurrency'] ?= '10'
       qs.site['avatica.connectioncache.initialcapacity'] ?= '100'
       qs.site['avatica.connectioncache.maxcapacity'] ?= '1000'
