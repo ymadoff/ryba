@@ -194,7 +194,7 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
           owner: hive.hcatalog.db.username
         # Metastore schema migration
         target_version = 'ls /usr/hdp/current/hive-metastore/lib | grep hive-common- | sed \'s/^hive-common-\\([0-9]\\+.[0-9]\\+.[0-9]\\+\\).*\\.jar$/\\1/g\''
-        current_version = db.cmd hive.hcatalog.db, admin_username: null, "select \"SCHEMA_VERSION\" from \"VERSION\""
+        current_version = db.cmd hive.hcatalog.db, admin_username: null, "select SCHEMA_VERSION\ from VERSION"
         info_cmd = "hive --config #{@config.ryba.hive.hcatalog.conf_dir} --service schemaTool -dbType #{hive.hcatalog.db.engine} -info"
         @execute
           unless_exec: info_cmd
