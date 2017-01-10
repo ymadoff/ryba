@@ -20,7 +20,7 @@ PHOENIX_HOME=/usr/hdp/current/phoenix-server
 
 BIN_DIR=${PHOENIX_HOME}/bin
 
-PQS_EXEC=${BIN_DIR}/queryserver.py
+PQS_EXEC="HBASE_CONF_DIR={{ryba.phoenix.conf_dir}} ${BIN_DIR}/queryserver.py"
 
 PARAM="$@"
 
@@ -30,7 +30,7 @@ if [ "${PARAM}" = "status" ]; then
   if [ -f "${PID_FILE}" ]; then
     if ps -p $(<"${PID_FILE}") >/dev/null; then
       echo "Phoenix QueryServer is running"
-      exit 3
+      exit 0
     else
       echo "Phoenix QueryServer is not running but pidfile exists"
       exit 1
@@ -39,6 +39,9 @@ if [ "${PARAM}" = "status" ]; then
     echo "Phoenix is not running";
     exit 3
   fi
+elif [ "${PARAM}" = "restart" ]; then
+  su {{ryba.phoenix.user.name}} -c "${PQS_EXEC} stop"
+  su {{ryba.phoenix.user.name}} -c "${PQS_EXEC} start"
 else
-  su {{ryba.phoenix.user.name}} -c "HBASE_CONF_DIR={{ryba.phoenix.conf_dir}} ${PQS_EXEC} $@"
+  su {{ryba.phoenix.user.name}} -c "${PQS_EXEC} $@"
 fi
