@@ -22,12 +22,12 @@ Please refer to the Apache Phoenix QueryServer [documentation][phoenix-doc].
   |------------|-------|--------|-------------------------------|
   | nifi       | 8765  | HTTP   | phoenix.queryserver.http.port |
 
-      # @iptables
-      #   header: 'IPTables'
-      #   if: @config.iptables.action is 'start'
-      #   rules: [
-      #     { chain: 'INPUT', jump: 'ACCEPT', dport: phoenix.queryserver.site['phoenix.queryserver.http.port'], protocol: 'tcp', state: 'NEW', comment: "Phoenix QueryServer port" }
-      #   ]
+      @iptables
+        header: 'IPTables'
+        if: @config.iptables.action is 'start'
+        rules: [
+          { chain: 'INPUT', jump: 'ACCEPT', dport: phoenix.queryserver.site['phoenix.queryserver.http.port'], protocol: 'tcp', state: 'NEW', comment: "Phoenix QueryServer port" }
+        ]
 
 ## Kerberos
 
