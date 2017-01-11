@@ -67,7 +67,7 @@ Normalize configuration.
         ctx.config.ryba ?= {}
         ctx.config.capacity ?= {}
         ctx.config.capacity.remote ?= {}
-        for conf in ['hdfs_site', 'rm_yarn_site', 'yarn_site', 'mapred_site', 'tez_site', 'hive_site', 'capacity_scheduler', 'hbase_site', 'kafka_broker']
+        for conf in ['nn_hdfs_site', 'hdfs_site', 'rm_yarn_site', 'yarn_site', 'mapred_site', 'tez_site', 'hive_site', 'capacity_scheduler', 'hbase_site', 'kafka_broker']
           ctx.config.capacity[conf] ?= {}
           ctx.config.capacity.remote[conf] ?= {}
         ctx.config.capacity.capacity_scheduler['yarn.scheduler.capacity.resource-calculator'] ?= 'org.apache.hadoop.yarn.util.resource.DominantResourceCalculator'
@@ -310,15 +310,15 @@ This behavior may be altered with the "hdfs_nn_name_dir" parameter.
     exports.hdfs_nn = (ctxs) ->
       for ctx in ctxs
         continue unless ctx.has_service 'ryba/hadoop/hdfs_nn'
-        {disks, hdfs_site} = ctx.config.capacity
+        {disks, nn_hdfs_site} = ctx.config.capacity
         {hdfs_nn_name_dir} = ctx.params
         if /^\//.test hdfs_nn_name_dir
-          hdfs_site['dfs.namenode.name.dir'] ?= hdfs_nn_name_dir.split ','
+          nn_hdfs_site['dfs.namenode.name.dir'] ?= hdfs_nn_name_dir.split ','
         else
           if ctx.contexts('ryba/hadoop/hdfs_nn').length > 1
-            hdfs_site['dfs.namenode.name.dir'] ?= ['file://' + path.resolve '/var', hdfs_nn_name_dir or './hdfs/name']
+            nn_hdfs_site['dfs.namenode.name.dir'] ?= ['file://' + path.resolve '/var', hdfs_nn_name_dir or './hdfs/name']
           else
-            hdfs_site['dfs.namenode.name.dir'] ?= disks.map (disk) ->
+            nn_hdfs_site['dfs.namenode.name.dir'] ?= disks.map (disk) ->
               disk = '/var' if disk is '/'
               'file://' + path.resolve disk, hdfs_nn_name_dir or './hdfs/name'
 
@@ -582,7 +582,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           print_hdfs_nn = not params.modules or multimatch(params.modules, 'ryba/hadoop/hdfs_nn').length
           if ctx.has_service('ryba/hadoop/hdfs_nn') and print_hdfs_nn
             ws.write "  HDFS NameNode\n"
-            print 'hdfs_site', ['dfs.namenode.name.dir']
+            print 'nn_hdfs_site', ['dfs.namenode.name.dir']
           print_hdfs_dn = not params.modules or multimatch(params.modules, 'ryba/hadoop/hdfs_dn').length
           if ctx.has_service('ryba/hadoop/hdfs_dn') and print_hdfs_dn
             ws.write "  HDFS DataNode\n"
@@ -716,6 +716,10 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
         {capacity} = ctx.config
         node = config: ryba: {}
         print_hdfs = not params.modules or multimatch(params.modules, ['ryba/hadoop/hdfs_client', 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn']).length
+        if ctx.has_service('ryba/hadoop/hdfs_nn') and print_hdfs
+          node.config.ryba.hdfs ?= {}
+          node.config.ryba.hdfs.nn ?= {}
+          node.config.ryba.hdfs.nn.site ?= capacity.nn_hdfs_site
         if ctx.has_service('ryba/hadoop/hdfs_client', 'ryba/hadoop/hdfs_nn', 'ryba/hadoop/hdfs_dn') and print_hdfs
           node.config.ryba.hdfs ?= {}
           node.config.ryba.hdfs.site = capacity.hdfs_site
