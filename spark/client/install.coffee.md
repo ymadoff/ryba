@@ -149,7 +149,7 @@ has finished (logs are only available in yarn-cluster mode).
           spark.conf['spark.yarn.am.extraJavaOptions'] ?= "-Dhdp.version=#{hdp_current_version}"
         @call ->
           @file
-            destination : "#{spark.conf_dir}/java-opts"
+            target: "#{spark.conf_dir}/java-opts"
             content: "-Dhdp.version=#{hdp_current_version}"
           @hconfigure
             header: 'Hive Site'
@@ -161,7 +161,7 @@ has finished (logs are only available in yarn-cluster mode).
           @render
             destination : "#{spark.conf_dir}/spark-env.sh"
             source: "#{__dirname}/../resources/spark-env.sh.j2"
-            local_source: true
+            local: true
             context: @config
             backup: true
           @file.properties
