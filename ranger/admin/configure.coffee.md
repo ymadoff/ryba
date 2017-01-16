@@ -210,23 +210,24 @@ on the same host than `ryba/ranger/admin` module.
           {solr} = @config.ryba
           solr.cloud_docker ?= {}
           solr.cloud_docker.clusters ?= {}
-          cluster_config = ranger.admin.cluster_config = solr.cloud_docker.clusters[cluster_name] ?= {}
-          for solr_ctx in scd_ctxs
-            solr = solr_ctx.config.ryba.solr ?= {}
-            #By default Ryba search for a solr cloud cluster named ranger_cluster in config
-            # Configures one cluster if not in config
-            solr.cloud_docker.clusters ?= {}
-            cluster_config  = solr.cloud_docker.clusters[cluster_name] ?= {}
-            cluster_config.volumes ?= []
-            cluster_config.volumes.push '/tmp/ranger_audits:/ranger_audits'
-            cluster_config['containers'] ?= scd_ctxs.length
-            cluster_config['master'] ?= scd_ctxs[0].config.host
-            cluster_config['heap_size'] ?= '256m'
-            cluster_config['port'] ?= 10000
-            cluster_config.zk_opts ?= {}
-            cluster_config['hosts'] ?= scd_ctxs.map (ctx) -> ctx.config.host
-            solr_clusterize solr_ctx , cluster_name, cluster_config
-          ranger.admin.cluster_config = scd_ctxs[0].config.ryba.solr.cloud_docker.clusters[cluster_name]
+          cluster_config = ranger.admin.cluster_config = solr.cloud_docker.clusters[cluster_name]
+          if not cluster_config?
+            for solr_ctx in scd_ctxs
+              solr = solr_ctx.config.ryba.solr ?= {}
+              #By default Ryba search for a solr cloud cluster named ranger_cluster in config
+              # Configures one cluster if not in config
+              solr.cloud_docker.clusters ?= {}
+              cluster_config  = solr.cloud_docker.clusters[cluster_name] ?= {}
+              cluster_config.volumes ?= []
+              cluster_config.volumes.push '/tmp/ranger_audits:/ranger_audits'
+              cluster_config['containers'] ?= scd_ctxs.length
+              cluster_config['master'] ?= scd_ctxs[0].config.host
+              cluster_config['heap_size'] ?= '256m'
+              cluster_config['port'] ?= 10000
+              cluster_config.zk_opts ?= {}
+              cluster_config['hosts'] ?= scd_ctxs.map (ctx) -> ctx.config.host
+              solr_clusterize solr_ctx , cluster_name, cluster_config
+            ranger.admin.cluster_config = scd_ctxs[0].config.ryba.solr.cloud_docker.clusters[cluster_name]
           if @params.command is 'install'
             scd_ctxs[0]
             .after
