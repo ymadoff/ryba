@@ -38,12 +38,12 @@ Install the spark and python packages.
       @service
         name: 'spark-python'
 
-## HFDS Layout
+## HDFS Layout
 
       status = user_owner = group_owner = null
       spark_yarn_jar = spark.conf['spark.yarn.jar']
       @execute
-        header: 'HFDS Layout'
+        header: 'HDFS Layout'
         cmd: mkcmd.hdfs @, """
         hdfs dfs -mkdir -p /apps/#{spark.user.name}
         hdfs dfs -chmod 755 /apps/#{spark.user.name}
@@ -57,20 +57,19 @@ Install the spark and python packages.
 ## Spark Worker events log dir
 
       @execute
-        header: 'HDFS Layout'
+        header: 'HDFS Home'
         cmd: mkcmd.hdfs @, """
-          hdfs dfs -mkdir -p /user/#{spark.user.name}
-          hdfs dfs -chmod -R 755 /user/#{spark.user.name}
-          hdfs dfs -chown -R #{spark.user.name}:#{spark.group.name} /user/#{spark.user.name}
-          """
+        hdfs dfs -mkdir -p /user/#{spark.user.name}
+        hdfs dfs -chmod -R 755 /user/#{spark.user.name}
+        hdfs dfs -chown -R #{spark.user.name}:#{spark.group.name} /user/#{spark.user.name}
+        """
       @execute
         header: 'HDFS Log Directory'
         cmd: mkcmd.hdfs @, """
-            hdfs dfs -mkdir -p #{fs_log_dir}
-            hdfs dfs -chown -R  #{spark.user.name}:#{hadoop_group.name} #{fs_log_dir}
-            hdfs dfs -chmod -R 1777 #{fs_log_dir}
-          """
-
+        hdfs dfs -mkdir -p #{fs_log_dir}
+        hdfs dfs -chown -R  #{spark.user.name}:#{hadoop_group.name} #{fs_log_dir}
+        hdfs dfs -chmod -R 1777 #{fs_log_dir}
+        """
 
 ## Spark SSL
 

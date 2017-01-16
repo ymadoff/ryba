@@ -1,5 +1,5 @@
 
-# Hive Server
+# Hive HCatalog Configure
 
 [HCatalog](https://cwiki.apache.org/confluence/display/Hive/HCatalog+UsingHCat) 
 is a table and storage management layer for Hadoop that enables users with different 

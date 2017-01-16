@@ -7,7 +7,7 @@ Once installed you can type hive in a prompt and the hive client shell wil launc
       use:
         java: implicit: true, module: 'masson/commons/java'
         hadoop_core: 'ryba/hadoop/core/configure'
-        hfds_client: 'ryba/hadoop/hdfs_client'
+        hdfs_client: 'ryba/hadoop/hdfs_client'
         yarn_client: 'ryba/hadoop/yarn_client'
         mapred_client: 'ryba/hadoop/mapred_client'
         tez: implicity: true, module: 'ryba/tez/configure'

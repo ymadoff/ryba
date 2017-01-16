@@ -333,7 +333,7 @@ on Centos/Redhat7 OS. Legacy cgconfig and cgroup-tools package must be used. (ma
 
 ## Ulimit
 
-Increase ulimit for the HFDS user. The HDP package create the following
+Increase ulimit for the HDFS user. The HDP package create the following
 files:
 
 ```bash

@@ -6,7 +6,7 @@
 
 ## Wait
 
-Wait for HFDS to be started.
+Wait for HDFS to be started.
 
       @call once: true, 'ryba/hadoop/hdfs_nn/wait'
       @wait_execute
@@ -35,4 +35,3 @@ Create the directory structure with correct ownerships and permissions.
 
     path = require 'path'
     mkcmd = require '../../lib/mkcmd'
-

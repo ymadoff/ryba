@@ -2,7 +2,7 @@
 # Hive Server2 Start
 
 The Hive HCatalog require the database server to be started. The Hive Server2
-require the HFDS Namenode to be started. Both of them will need to functionnal
+require the HDFS Namenode to be started. Both of them will need to functionnal
 HDFS server to answer queries.
 
 Start the Hive Server2. You can also start the server manually with one of the

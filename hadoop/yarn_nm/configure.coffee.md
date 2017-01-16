@@ -59,7 +59,7 @@
       ryba.container_executor['yarn.nodemanager.local-dirs'] ?= ryba.yarn.site['yarn.nodemanager.local-dirs']
       ryba.container_executor['yarn.nodemanager.linux-container-executor.group'] ?= ryba.yarn.site['yarn.nodemanager.linux-container-executor.group']
       ryba.container_executor['yarn.nodemanager.log-dirs'] = ryba.yarn.site['yarn.nodemanager.log-dirs']
-      ryba.container_executor['banned.users'] ?= 'hfds,yarn,mapred,bin'
+      ryba.container_executor['banned.users'] ?= 'hdfs,yarn,mapred,bin'
       ryba.container_executor['min.user.id'] ?= '0'
       for rm_ctx in rm_ctxs
         id = if rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.enabled'] is 'true' then ".#{rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id']}" else ''

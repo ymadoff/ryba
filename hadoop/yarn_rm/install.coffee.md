@@ -240,7 +240,7 @@ with Zookeeper.
 
 ## Ulimit
 
-Increase ulimit for the HFDS user. The HDP package create the following
+Increase ulimit for the HDFS user. The HDP package create the following
 files:
 
 ```bash

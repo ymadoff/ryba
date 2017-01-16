@@ -63,7 +63,7 @@ inside "/etc/init.d" and activate it on startup.
           name: 'hadoop-hdfs-namenode'
         @service.init
           target: '/etc/init.d/hadoop-hdfs-namenode'
-          source: "#{__dirname}/../resources/hadoop-hfds-namenode.j2"
+          source: "#{__dirname}/../resources/hadoop-hdfs-namenode.j2"
           local: true
           context: @config
           mode: 0o0755
@@ -233,7 +233,7 @@ Create a service principal for this NameNode. The principal is named after
 
 ## Ulimit
 
-Increase ulimit for the HFDS user. The HDP package create the following
+Increase ulimit for the HDFS user. The HDP package create the following
 files:
 
 ```bash

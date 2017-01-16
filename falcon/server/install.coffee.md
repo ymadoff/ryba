@@ -102,9 +102,9 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
         uid: user.name
         gid: group.name
 
-## HFDS Layout
+## HDFS Layout
 
-      @call header: 'HFDS Layout', handler: ->
+      @call header: 'HDFS Layout', handler: ->
         # status = user_owner = group_owner = null
         # @execute
         #   cmd: mkcmd.hdfs @, "hdfs dfs -stat '%g;%u;%n' /apps/falcon"

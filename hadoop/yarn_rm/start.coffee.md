@@ -14,7 +14,7 @@ su -l yarn -c "export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec 
 
 ## Wait
 
-Wait for Kerberos, Zookeeper, HFDS, YARN and the MapReduce History Server. The
+Wait for Kerberos, Zookeeper, HDFS, YARN and the MapReduce History Server. The
 History Server must be started because the ResourceManager will try to load
 the history of MR jobs from there.
 

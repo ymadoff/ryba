@@ -8,7 +8,7 @@ org.apache.hadoop.ipc.RemoteException(java.io.IOException): File /user/ryba/.sta
 
 cause:
 
-HFDS DN saturation, logs were printing [DataXceiver errors](../hdfs_dn/doctor.md).
+HDFS DN saturation, logs were printing [DataXceiver errors](../hdfs_dn/doctor.md).
 
 ## Invalid Permissions on Staging Directories
 

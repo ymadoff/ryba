@@ -25,7 +25,7 @@ su -l hive -c 'nohup hive --service metastore >/var/log/hive-hcatalog/hcat.out 2
 ## Wait Database
 
 The Hive HCatalog require the database server to be started. The Hive Server2
-require the HFDS Namenode to be started. Both of them will need to functionnal
+require the HDFS Namenode to be started. Both of them will need to functionnal
 HDFS server to answer queries.
 
       @call header: 'Wait DB', timeout: -1, label_true: 'READY', handler: ->
