@@ -110,7 +110,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         backup: true
       @link
         source: spark.history.conf_dir
-        target: '/usr/hdp/current/spark-history-server'
+        target: '/usr/hdp/current/spark-historyserver/conf'
 
 ## Clients Configuration
 
@@ -127,6 +127,10 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         source: "/etc/hadoop/conf/core-site.xml"
         merge: true
         backup: true
+
+      @copy
+        target: "#{spark.history.conf_dir}/hdfs-site.xml"
+        source: "/etc/hadoop/conf/hdfs-site.xml"
 
 ## Kerberos
 

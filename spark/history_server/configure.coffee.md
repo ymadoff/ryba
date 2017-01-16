@@ -8,7 +8,7 @@
       spark.history ?= {}
       # Layout
       spark.history.pid_dir ?= '/var/run/spark'
-      spark.history.conf_dir ?= '/etc/spark/conf'
+      spark.history.conf_dir ?= '/etc/spark-history-server/conf'
       spark.history.log_dir ?= '/var/log/spark'
       # User
       spark.user ?= {}

@@ -13,4 +13,4 @@
         throw err if err
         stdout = stdout.trim()
         results = JSON.parse stdout
-        return callback null, true if results
+        throw Error unless results?
