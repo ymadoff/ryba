@@ -110,6 +110,18 @@ User can be External and Internal. Only Internal users can be created from the r
         ranger.admin.install['admin_keytab'] ?= '/etc/security/keytabs/ranger.admin.service.keytab'
         ranger.admin.install['lookup_principal'] ?= "rangerlookup/#{@config.host}@#{realm}"
         ranger.admin.install['lookup_keytab'] ?= "/etc/security/keytabs/ranger.lookup.service.keytab"
+        if ranger.admin.solr_type in ['cloud','cloud_docker']
+          #Configuring in memory jaas property for ranger to sol
+          ranger.admin.site['xasecure.audit.destination.solr.force.use.inmemory.jaas.config'] ?= 'true'
+          ranger.admin.site['xasecure.audit.jaas.inmemory.loginModuleName'] ?= 'com.sun.security.auth.module.Krb5LoginModule'
+          ranger.admin.site['xasecure.audit.jaas.inmemory.loginModuleControlFlag'] ?= 'required'
+          ranger.admin.site['xasecure.audit.jaas.inmemory.Client.option.useKeyTab'] ?= 'true'
+          ranger.admin.site['xasecure.audit.jaas.inmemory.Client.option.debug'] ?= 'true'
+          ranger.admin.site['xasecure.audit.jaas.inmemory.Client.option.doNotPrompt'] ?= 'yes'
+          ranger.admin.site['xasecure.audit.jaas.inmemory.Client.option.storeKey'] ?= 'yes'
+          ranger.admin.site['xasecure.audit.jaas.inmemory.Client.option.serviceName'] ?= 'solr'
+          ranger.admin.site['xasecure.audit.jaas.inmemory.Client.option.keyTab'] ?= ranger.admin.install['admin_keytab']
+          ranger.admin.site['xasecure.audit.jaas.inmemory.Client.option.principal'] ?= ranger.admin.install['admin_principal']
 
 # Audit Storage
 Ranger can store  audit to different storage type.
