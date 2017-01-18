@@ -106,13 +106,6 @@ we execute this task using the rest api.
             fi;
           """
 
-## Ranger Knox Plugin Install
-
-      @call
-        if: -> @contexts('ryba/ranger/admin').length > 0
-        handler: ->
-          @call 'ryba/ranger/plugins/knox/install'
-
 ## Dependencies
 
     quote = require 'regexp-quote'
