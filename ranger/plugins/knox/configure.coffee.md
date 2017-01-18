@@ -48,6 +48,8 @@ The properties can be found [here][hdfs-repository]
             'username': hdfs.krb5_user.principal
             'knox.url': "#{knox_url}"
             'commonNameForCertificate': ''
+            'policy.download.auth.users': "#{@config.ryba.knox.user.name}" #from ranger 0.6
+            'tag.download.auth.users': "#{@config.ryba.knox.user.name}"
           'description': 'Knox Repo'
           'isEnabled': true
           'name': knox_plugin.install['REPOSITORY_NAME']
