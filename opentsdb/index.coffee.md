@@ -13,6 +13,7 @@ OpenTSDB does not seem to work without the hbase rights
         iptables: implicit: true, module: 'masson/core/iptables'
         java: implicit: true, module: 'masson/commons/java'
         hbase_client: implicit: true, module: 'ryba/hbase/client'
+        ranger_admin: 'ryba/ranger/admin'
       configure:
         'ryba/opentsdb/configure'
       commands:

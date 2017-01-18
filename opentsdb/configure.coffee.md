@@ -22,6 +22,7 @@ Example
 
     module.exports = ->
       rs_ctxs = @contexts 'ryba/hbase/regionserver'
+      radmin_ctxs = @contexts 'ryba/ranger/admin'
       throw Error 'No HBase regionservers configured' unless rs_ctxs.length > 0
       {hbase} = rs_ctxs[0].config.ryba
       @config.ryba ?= {}
@@ -82,3 +83,21 @@ Example
       opentsdb.env['java.security.auth.login.config'] ?= opentsdb.config['java.security.auth.login.config']
       # Opts
       opentsdb.java_opts ?= ''
+
+## Ranger Configuration
+Create the opentsdb user if ranger hbase plugin is enabled.
+
+      if radmin_ctxs.length > 0
+        [ranger_admin_ctx] = radmin_ctxs
+        ranger = ranger_admin_ctx.config.ryba.ranger
+        if ranger.plugins.hbase_enabled
+          # Ranger HBase Webui xuser
+          ranger.users['opentsdb'] ?=
+            "name": 'opentsdb'
+            "firstName": ''
+            "lastName": 'hadoop'
+            "emailAddress": 'opentsdb@hadoop.ryba'
+            'userSource': 0
+            'userRoleList': ['ROLE_USER']
+            'groups': []
+            'status': 1
