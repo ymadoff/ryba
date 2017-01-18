@@ -96,8 +96,9 @@ Create the opentsdb user if ranger hbase plugin is enabled.
             "name": 'opentsdb'
             "firstName": ''
             "lastName": 'hadoop'
+            "password": 'opentsdb123'
             "emailAddress": 'opentsdb@hadoop.ryba'
-            'userSource': 0
+            'userSource': 1
             'userRoleList': ['ROLE_USER']
             'groups': []
             'status': 1
