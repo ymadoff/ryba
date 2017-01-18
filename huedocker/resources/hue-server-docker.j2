@@ -26,7 +26,6 @@ if ! service docker status;
 fi
 case "$1" in
 start)
-    if [ ! -d "$RUN_DIR" ]; then install -d -o $USER -g $GROUP -m 0755 $RUN_DIR ; f
     printf "%-50s" "Starting $NAME..."
     if [ "`docker ps | grep ${CONTAINER}`" ]; then
       printf "%s\n" "Service already running"

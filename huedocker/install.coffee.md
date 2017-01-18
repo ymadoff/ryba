@@ -320,14 +320,21 @@ ryba/hue:3.9
 ## Startup Script
 
 Write startup script to /etc/init.d/service-hue-docker
-
-      @service.init
-        header: 'Startup Script'
-        source: "#{__dirname}/resources/hue-server-docker.j2"
-        local: true
-        target: "/etc/init.d/#{hue_docker.service}"
-        context: hue_docker
-        mode: 0o755
+      
+      @call (options) ->
+        @service.init
+          header: 'Startup Script'
+          source: "#{__dirname}/resources/hue-server-docker.j2"
+          local: true
+          target: "/etc/init.d/#{hue_docker.service}"
+          context: hue_docker
+          mode: 0o755
+        @system.tmpfs
+          if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
+          mount: hue_docker.pid_file
+          uid: hue_docker.user.name
+          gid: hue_docker.group.name
+          perm: '0750'
 
 ## Dependencies
 
