@@ -4,7 +4,7 @@
     module.exports = header: 'Kafka Consumer Check', label_true: 'CHECKED', handler: ->
       {kafka, ssl, user} = @config.ryba
       [ranger_admin] = @contexts 'ryba/ranger/admin'
-      protocols = kafka.broker.protocols
+      protocols = kafka.consumer.protocols
 
 ## Wait
 

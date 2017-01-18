@@ -44,7 +44,7 @@
       kafka.producer.log4j['log4j.appender.stdout'] ?= 'org.apache.log4j.ConsoleAppender'
       kafka.producer.log4j['log4j.appender.stdout.layout'] ?= 'org.apache.log4j.PatternLayout'
       kafka.producer.log4j['log4j.appender.stdout.layout.ConversionPattern'] ?= '[%d] %p %m (%c)%n'
-
+      kafka.producer.protocols ?= protocols
 
 ## SSL
 

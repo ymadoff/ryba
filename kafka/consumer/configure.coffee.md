@@ -55,6 +55,7 @@
       kafka.consumer.log4j['log4j.appender.stdout'] ?= 'org.apache.log4j.ConsoleAppender'
       kafka.consumer.log4j['log4j.appender.stdout.layout'] ?= 'org.apache.log4j.PatternLayout'
       kafka.consumer.log4j['log4j.appender.stdout.layout.ConversionPattern'] ?= '[%d] %p %m (%c)%n'
+      kafka.producer.protocols ?= protocols
 
 ## SSL
 
@@ -68,7 +69,6 @@
         # kafka.consumer.config['ssl.keystore.location'] ?= "#{kafka.consumer.conf_dir}/keystore"
         # kafka.consumer.config['ssl.keystore.password'] ?= 'ryba123'
         # kafka.consumer.config['ssl.key.password'] ?= 'ryba123'
-
 
 ## Kerberos
 
