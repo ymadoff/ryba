@@ -151,7 +151,7 @@ against the configured LDAP store.
         ldap.config['main.cacheManager'] = "org.apache.shiro.cache.ehcache.EhCacheManager"
         ldap.config['main.securityManager.cacheManager'] = "$cacheManager"
         ldap.config['main.ldapRealm.authenticationCachingEnabled'] = true
-        ldap.config['main.cacheManager.cacheManagerConfigFile'] = "classpath:ehcache.xml"
+        ldap.config['main.cacheManager.cacheManagerConfigFile'] = "classpath:#{nameservice}-ehcache.xml"
 
 The Knox Gateway identity-assertion provider maps an authenticated user to an
 internal cluster user and/or group. This allows the Knox Gateway accept requests

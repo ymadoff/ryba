@@ -77,7 +77,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       @render
         header: 'Knox Ldap Caching'
         target: "#{knox.conf_dir}/ehcache.xml"
-        source: "#{__dirname}/resources/ehcache.xml"
+        source: "#{__dirname}/resources/ehcache.j2"
         local_source: true
 
 ## Env
@@ -145,6 +145,12 @@ in the gateway.sh service script.
             target: "#{knox.conf_dir}/topologies/#{nameservice}.xml"
             content: doc.end pretty: true
             eof: true
+
+          @render
+            target: "#{knox.conf_dir}/#{nameservice}-ehcache.xml"
+            source: "#{__dirname}/resources/ehcache.j2"
+            local_source: true
+            context: nameservice:nameservice
 
 ## Master Key
 
