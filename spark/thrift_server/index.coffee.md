@@ -12,7 +12,7 @@ in order to make the data accessible to hive clients.
         'java': implicit: true, module: 'masson/commons/java'
         'hdfs': 'ryba/hadoop/hdfs_client'
         'hive_server2': 'ryba/hive/server2'
-        'spark': 'ryba/spark/client'
+        'spark': implicit: true, module: 'ryba/spark/client'
         'yarn_nm': 'ryba/hadoop/yarn_nm'
       configure :
         'ryba/spark/thrift_server/configure'
