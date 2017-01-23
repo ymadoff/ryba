@@ -4,6 +4,7 @@
     module.exports = ->
       hdfs_url = @config.ryba.core_site['fs.defaultFS']
       [rm_context] = @contexts 'ryba/hadoop/yarn_rm'
+      nm_ctxs = @contexts 'ryba/hadoop/yarn_nm'
       tez = @config.ryba.tez ?= {}
       tez.env ?= {}
       tez.env['TEZ_CONF_DIR'] ?= '/etc/tez/conf'
@@ -81,6 +82,26 @@ Convert [deprecated values][dep] between HDP 2.1 and HDP 2.2.
         continue unless tez.site[previous]
         tez.site[current] = tez.site[previous]
         @log? "Deprecated property '#{previous}' [WARN]"
+
+## Tez Ports
+
+      # Range of ports that the AM can use when binding for client connections
+      tez.site['tez.am.client.am.port-range'] ?= '34816-36864'
+      for nm_ctx in nm_ctxs
+        nm_ctx
+        .after
+          type: ['hconfigure']
+          target: "#{nm_ctx.config.ryba.yarn.nm.conf_dir}/yarn-site.xml"
+          handler: (options, callback) ->
+            nm_ctx
+            .iptables
+              ssh: options.ssh
+              header: 'Tez AM Port Opening'
+              rules: [
+                { chain: 'INPUT', jump: 'ACCEPT', dport: tez.site['tez.am.client.am.port-range'].replace('-',':'), protocol: 'tcp', state: 'NEW', comment: "Tez AM Range" }
+              ]
+              if: nm_ctx.config.iptables.action is 'start'
+            .then callback
 
 ## Tez UI
 
