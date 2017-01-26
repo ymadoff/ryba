@@ -49,7 +49,6 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             { chain: 'INPUT', jump: 'ACCEPT', dport: atlas.application.properties["atlas.server.#{protocol}.port"], protocol: 'tcp', state: 'NEW', comment: "Atlas Server #{protocol}" }
           ]
 
-      
 ## Package & Repository
 
 Install Atlas packages
@@ -260,7 +259,7 @@ for atlas to able to open client connection to solr for its indexing backend.
             useTicketCache: false
             doNotPrompt: false
             keyTab: atlas.application.properties['atlas.authentication.keytab']
-            principal: atlas.application.properties['atlas.authentication.principal'].replace '_HOST', @config.host 
+            principal: atlas.application.properties['atlas.authentication.principal'].replace '_HOST', @config.host
       @krb5_addprinc
         header: 'Kerberos Atlas Service Admin Users'
         principal: atlas.admin_principal
