@@ -93,15 +93,14 @@ Convert [deprecated values][dep] between HDP 2.1 and HDP 2.2.
           type: ['hconfigure']
           target: "#{nm_ctx.config.ryba.yarn.nm.conf_dir}/yarn-site.xml"
           handler: (options, callback) ->
-            nm_ctx
-            .iptables
+            @iptables
               ssh: options.ssh
               header: 'Tez AM Port Opening'
               rules: [
                 { chain: 'INPUT', jump: 'ACCEPT', dport: tez.site['tez.am.client.am.port-range'].replace('-',':'), protocol: 'tcp', state: 'NEW', comment: "Tez AM Range" }
               ]
               if: nm_ctx.config.iptables.action is 'start'
-            .then callback
+            @then callback
 
 ## Tez UI
 
