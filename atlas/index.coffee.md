@@ -8,7 +8,6 @@ enterprise data ecosystem.
     module.exports = 
       use:
         java: implicit: true, module: 'masson/commons/java'
-        # ranger_admin: 'ryba/ranger/admin'
         # solr_cloud: 'ryba/solr/cloud'
         solr_cloud_docker: module: 'ryba/solr/cloud_docker'
         server2: 'ryba/hive/server2'

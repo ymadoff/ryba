@@ -13,7 +13,6 @@ a solr cluster for storing indexes and an HBase cluster as the data storage.
 Atlas needs also kafka as a bus to broadcats message betwwen the different components
 (e.g. Hive, Ranger).
 
-
     module.exports = ->
       # Servers onfiguration
       {realm, core_site} = @config.ryba
@@ -124,7 +123,6 @@ Atlas accepts only simple (file) or Ranger based [authorization](http://atlas.in
         atlas.application.properties['atlas.auth.policy.file'] ?= "#{atlas.conf_dir}/policy-store.txt"
         atlas.admin_users ?= []
         atlas.admin_users.push atlas.admin_users if atlas.admin_user? and atlas.admin_users.indexOf(atlas.admin_user) isnt -1
-        
 
 ## Automatic Check on start up
 Atlas server does take care of parallel executions of the setup steps.
@@ -153,13 +151,13 @@ Atlas SSL Encryption can be enabled by configuring following properties.
       atlas.application.properties['atlas.app.port'] ?= port
 
 ## REST Address
-      
+
       rest_address = "#{protocol}://#{@config.host}:#{port}"
       atlas.application.properties['atlas.rest.address'] ?= rest_address
       atlas.application.urls ?= "#{rest_address}"
 
 ## High Availability
-From 7.0 Atlas Metada server support high availability in an active/passive fashion.
+From 0.7.0 (hdp 2.5.3.0-37) Atlas Metada server support high availability in an active/passive fashion.
 Failover is configured automatically through zookeeper.
 The Quorum property is mandatory even if the HA is not enabled or the following error is thrown
 Error injecting constructor, java.lang.NullPointerException: connectionString cannot be null
@@ -172,7 +170,7 @@ Error injecting constructor, java.lang.NullPointerException: connectionString ca
 
 ### Zookeeper
 
-A zookeeper quorum is needed for HA. 
+A zookeeper quorum is needed for HA.
 
         atlas.application.properties['atlas.server.ha.zookeeper.acl'] ?= "sasl:#{atlas.user.name}@#{realm}"
         atlas.application.properties['atlas.server.ha.zookeeper.auth'] ?= "sasl:#{atlas.user.name}@#{realm}"
@@ -182,8 +180,7 @@ A zookeeper quorum is needed for HA.
 
 Using Official atlas [documentation](http://atlas.incubator.apache.org/HighAvailability.html) 
 for HA configuration, (not available on HDP website).
-Becareful, even if you can override it, ryba does configure atlas server with the same
-port.
+Ryba does configure atlas server with the same port for every instance.
 
       atlas_shortnames = for atlas_ctx in atlas_ctxs then atlas_ctx.config.shortname
       atlas.application.properties['atlas.server.ha.enabled'] ?= if atlas_ctxs.length > 1 then 'true' else 'false'
@@ -193,7 +190,7 @@ port.
 
 ##  Apache Kafka Notification
 Required for Ranger integration or anytime there is a consumer of entity change notifications.
-    
+
       [kafka_ctx] = kafka_ctxs
       if kafka_ctx?
         # Includes the required Atlas directories to the hadoop-env configuration export

@@ -26,6 +26,3 @@ You can stop the service with the following commands.
           @execute
             cmd: "rm -f #{@config.ryba.atlas.log_dir}/*"
             code_skipped: 1
-
-
-      

@@ -33,13 +33,6 @@ You can start the service with the following commands.
 ```
   systemctl start atlas-metadata-server
 ```
-      
+
       @service.start
         name: 'atlas-metadata-server'
-        
-        
-
-
-
-
-      

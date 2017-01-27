@@ -69,7 +69,7 @@ Install Atlas packages
         context: @config
 
 ## Layout && Directories
-      
+
       @call header: 'Layout Directories', handler: (options) ->
         @mkdir
           target: atlas.log_dir
@@ -107,7 +107,7 @@ Install Atlas packages
           perm: '0750'
 
 ## SSL 
-      
+
       # Server: import certificates, private and public keys to hosts with a server
       @java_keystore_add
         keystore: atlas.application.properties['keystore.file']
@@ -367,7 +367,7 @@ set to other than the default
 
 ## HBase Permission
 Grant Permission to atlas for its titan' tables through ranger or from hbase shell.
-    
+
       @call 
         if: -> ranger_admin?
         header: 'HBase Atlas Permissions'
@@ -479,7 +479,7 @@ credential based on file.
       password: 'juju123'
       group: 'user'
 ```
-      
+
       @call
         if: atlas.application.properties['atlas.authentication.method.file'] is 'true'
         header: 'Render Credentials file'
@@ -531,7 +531,7 @@ credential based on file.
 Create the kafka topics needed by Atlas, if the property `atlas.notification.create.topics`
 is false. Ryba create the topic base on the channel chosen for atlas. See configure options.
 kakfa client become an implicit dependance. Its properties can be used.
-      
+
       @call
         header: "Kafka Topic Layout"
         retry: 3
@@ -643,7 +643,7 @@ kakfa client become an implicit dependance. Its properties can be used.
               @wait
                 time: 10000
                 if: -> @status -1
-                
+
 ### Add Simple ACL
 Need to put ACL, even when Ranger is not configured.
 Atlas and Hive users needs Authorization to topics.
