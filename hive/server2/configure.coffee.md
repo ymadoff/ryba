@@ -93,7 +93,7 @@ Example:
       hive.server2.site['hive.server2.tez.default.queues'] ?= 'default'
       hive.server2.site['hive.server2.tez.sessions.per.default.queue'] ?= '1'
       hive.server2.site['hive.server2.tez.initialize.default.sessions'] ?= 'false'
-      hive.server2.site['hive.exec.post.hook'] ?= 'org.apache.hadoop.hive.ql.hooks.ATSHook'
+      hive.server2.site['hive.exec.post.hooks'] ?= 'org.apache.hadoop.hive.ql.hooks.ATSHook'
 
 ## Hive Server2 Environment
 
