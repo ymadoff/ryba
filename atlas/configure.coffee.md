@@ -96,6 +96,11 @@ from atlas-application.properties file.
 Several authentication method can be used (Kerberos, ldap, file).
 More that one method can be enabled. An admin user should exist for managinf other.
 
+Note: In HDP 2.5.x LDAP option in Atlas can't pass full DN parameters which resultat
+in impossibility to log in using LDAP: Logs can look like `[LDAP: error code 32 - No Such Object]`
+The solution is to escape all commas in the DNs used for LDAP configuration.
+Forexample, `'atlas.authentication.method.ldap.userDNpattern'`:`cn=users\,cn=accounts\,dc=field\,dc=hortonworks\,dc=com` 
+
       atlas.application.properties['atlas.authentication.method.ldap'] ?= 'false' #No custom configs
       atlas.application.properties['atlas.authentication.method.kerberos'] ?= "#{@config.ryba.security is 'kerberos'}"
       atlas.application.properties['atlas.authentication.method.file'] ?= 'true'
