@@ -55,9 +55,12 @@ solr apache version.
           @file.download
             source: "#{__dirname}/../resources/solr/managed-schema"
             target: "#{tmp_dir}/ranger_audits/managed-schema"
-          @file.download
+          @render
             source: "#{__dirname}/../resources/solr/solrconfig.xml"
             target: "#{tmp_dir}/ranger_audits/solrconfig.xml"
+            local: true
+            context:
+              retention_period: ranger.admin.retention
       @call
         if: -> (mode is 'cloud_docker') or (mode is 'cloud')
         handler: ->
@@ -73,9 +76,12 @@ solr apache version.
         @file.download
           source: "#{__dirname}/../resources/solr/managed-schema"
           target: "#{tmp_dir}/ranger_audits/conf/managed-schema"
-        @file.download
+        @render
           source: "#{__dirname}/../resources/solr/solrconfig.xml"
           target: "#{tmp_dir}/ranger_audits/conf/solrconfig.xml"
+          local: true
+          context:
+            retention_period: ranger.admin.retention
       @file.download
         if: -> (mode is 'cloud_docker')
         source: "#{__dirname}/../resources/solr/elevate.xml"

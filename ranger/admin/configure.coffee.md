@@ -169,6 +169,9 @@ on the same host than `ryba/ranger/admin` module.
       solr = {}
       solrs_urls = ''
       solr_ctx = {}
+      #retention period in day to keep audit logs
+      ranger.admin.audit_retention_period ?= '1095'#value in days. default to 3 years.
+      ranger.admin.retention ?=  "+#{ranger.admin.audit_retention_period}"
       switch ranger.admin.solr_type
         when 'single'
           throw Error 'No Solr Standalone Server configured' unless st_ctxs.length > 0
