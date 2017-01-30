@@ -165,7 +165,7 @@ And it is configured by Ryba only in ryba/solr/cloud_docker installation.
 If no `ryba/solr/*` is configured Ranger admin deploys a `ryba/solr/standalone` 
 on the same host than `ryba/ranger/admin` module.
 
-      ranger.admin.solr_type ?= 'single'
+      ranger.admin.solr_type ?= 'cloud_docker'
       solr = {}
       solrs_urls = ''
       solr_ctx = {}
@@ -226,7 +226,6 @@ on the same host than `ryba/ranger/admin` module.
           solr.cloud_docker ?= {}
           solr.cloud_docker.clusters ?= {}
           cluster_config = ranger.admin.cluster_config = solr.cloud_docker.clusters[cluster_name] ?= {}
-          throw Error 'No solr cloud on docker cluster defined' if Object.keys(cluster_config).length is 0
           for solr_ctx in scd_ctxs
             solr = solr_ctx.config.ryba.solr ?= {}
             #By default Ryba search for a solr cloud cluster named ranger_cluster in config
