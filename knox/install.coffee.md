@@ -144,6 +144,7 @@ in the gateway.sh service script.
           @file
             target: "#{knox.conf_dir}/topologies/#{nameservice}.xml"
             content: doc.end pretty: true
+            backup: true
             eof: true
 
           @render

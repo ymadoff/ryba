@@ -209,36 +209,67 @@ This mechanism can be used to configure a specific gateway without having to dec
           if ctxs.length
             rm_shortname = if ctxs.length > 1 then ".#{ctxs[0].config.shortname}" else ''
             rm_address = ctxs[0].config.ryba.yarn.site["yarn.resourcemanager.address#{rm_shortname}"]
+            rm_ws_address = ctxs[0].config.ryba.yarn.rm.site["yarn.resourcemanager.webapp.https.address#{rm_shortname}"]
             topology.services['jobtracker'] = "rpc://#{rm_address}"
+            topology.services['RESOURCEMANAGER'] = "https://#{rm_ws_address}/ws"
           else throw Error 'Cannot autoconfigure KNOX jobtracker service, no resourcemanager declared'
         # Hive
         if topology.services['hive'] is true
-          ctxs = @contexts 'ryba/hive/server2'
-          if ctxs.length
-            host = ctxs[0].config.host
-            port = ctxs[0].config.ryba.hive.server2.site['hive.server2.thrift.http.port']
-            topology.services['hive'] = "http://#{host}:#{port}/cliservice"
-          else throw Error 'Cannot autoconfigure KNOX hive service, no hiveserver2 declared'
+          hs2_ctxs = @contexts 'ryba/hive/server2'
+          if hs2_ctxs.length > 1 
+            topology.providers['ha'] ?= name: 'HaProvider'
+            topology.providers['ha'].config ?= {}
+            topology.providers['ha'].config['HIVE'] ?= 'maxFailoverAttempts=3;failoverSleep=1000;enabled=true;' + 
+            "zookeeperEnsemble=#{hs2_ctxs[0].config.ryba.hive.server2.site['hive.zookeeper.quorum']};zookeeperNamespace=#{hs2_ctxs[0].config.ryba.hive.server2.site['hive.server2.zookeeper.namespace']}"
+            
+            topology.services.hive = ''
+          else if hs2_ctxs.length == 1
+            host = hs2_ctxs[0].config.host
+            port = hs2_ctxs[0].config.ryba.hive.server2.site['hive.server2.thrift.http.port']
+            protocol = if hs2_ctxs[0].config.ryba.hive.server2.site['hive.server2.use.SSL'] is 'true' then 'https' else 'http'
+            topology.services['hive'] = "#{protocol}://#{host}:#{port}/cliservice"
+          else
+            throw Error 'Cannot autoconfigure KNOX hive service, no hiveserver2 declared'
         # Hive WebHCat
         if topology.services['webhcat'] is true
           ctxs = @contexts 'ryba/hive/webhcat'
-          if ctxs.length
-            host = ctxs[0].config.host
-            port = ctxs[0].config.ryba.webhcat.site['templeton.port']
-            topology.services['webhcat'] = "http://#{host}:#{port}/templeton"
+          if ctxs.length >= 1
+            topology.services['webhcat'] = []
+            for ctx in ctxs
+              host = ctx.config.host
+              port = ctx.config.ryba.webhcat.site['templeton.port']
+              topology.services['webhcat'].push "http://#{host}:#{port}/templeton"
+            if ctxs.length > 1
+              topology.providers['ha'] ?= name: 'HaProvider'
+              topology.providers['ha'].config ?= {}
+              topology.providers['ha'].config['webhcat'] ?= 'maxFailoverAttempts=3;failoverSleep=1000;enabled=true'
           else throw Error 'Cannot autoconfigure KNOX webhcat service, no webhcat declared'
         # Oozie
         if topology.services['oozie'] is true
           ctxs = @contexts 'ryba/oozie/server'
-          if ctxs.length
-            topology.services['oozie'] = ctxs[0].config.ryba.oozie.site['oozie.base.url']
+          if ctxs.length >= 1
+            topology.services['oozie'] = []
+            for ctx in ctxs
+              topology.services['oozie'].push ctx.config.ryba.oozie.site['oozie.base.url']
+
+            if ctxs.length > 1
+              topology.providers['ha'] ?= name: 'HaProvider'
+              topology.providers['ha'].config ?= {}
+              topology.providers['ha'].config['OOZIE'] ?= 'maxFailoverAttempts=3;failoverSleep=1000;enabled=true'
           else throw Error 'Cannot autoconfigure KNOX oozie service, no oozie declared'
         # WebHBase
         if topology.services['webhbase'] is true
           ctxs = @contexts 'ryba/hbase/rest'
-          if ctxs.length
-            protocol = if ctxs[0].config.ryba.hbase.rest.site['hbase.rest.ssl.enabled'] is 'true' then 'https' else 'http'
-            host = ctxs[0].config.host
-            port = ctxs[0].config.ryba.hbase.rest.site['hbase.rest.port']
-            topology.services['webhbase'] = "#{protocol}://#{host}:#{port}"
+          if ctxs.length >= 1
+            topology.services['webhbase'] = []
+            for ctx in ctxs
+              protocol = if ctx.config.ryba.hbase.rest.site['hbase.rest.ssl.enabled'] is 'true' then 'https' else 'http'
+              host = ctx.config.host
+              port = ctx.config.ryba.hbase.rest.site['hbase.rest.port']
+              topology.services['webhbase'].push "#{protocol}://#{host}:#{port}"
+
+            if ctxs.length > 1
+              topology.providers['ha'] ?= name: 'HaProvider'
+              topology.providers['ha'].config ?= {}
+              topology.providers['ha'].config['webhbase'] ?= 'maxFailoverAttempts=3;failoverSleep=1000;enabled=true'
           else throw Error 'Cannot autoconfigure KNOX webhbase service, no webhbase declared'
