@@ -128,6 +128,14 @@ Example
         'org.apache.oozie.service.JvmPauseMonitorService'
         'org.apache.oozie.service.SparkConfigurationService'
       ].join(',')
+      oozie.site['oozie.action.shell.setup.hadoop.conf.dir.log4j.content'] ?= '''
+      log4j.rootLogger=${hadoop.root.logger}
+      hadoop.root.logger=INFO,console
+      log4j.appender.console=org.apache.log4j.ConsoleAppender
+      log4j.appender.console.target=System.err
+      log4j.appender.console.layout=org.apache.log4j.PatternLayout
+      log4j.appender.console.layout.ConversionPattern=%d{yy/MM/dd HH:mm:ss} %p %c{2}: %m%n
+      '''
 
 ## Configuration for Proxy Users
 
