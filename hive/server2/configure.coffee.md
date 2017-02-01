@@ -30,9 +30,10 @@ Example:
       hadoop_ctxs = @contexts ['ryba/hadoop/yarn_rm', 'ryba/hadoop/yarn_nm']
       hcat_ctxs = @contexts 'ryba/hive/hcatalog'
       hs2_ctxs = @contexts 'ryba/hive/server2'
-      hbase_master = @contexts 'ryba/hbase/master'
+      hm_ctxs = @contexts 'ryba/hbase/master'
       hbase_client = @contexts 'ryba/hbase/client'
-      hbase_ctxs = @contexts 'ryba/hbase/thrift'
+      hthrift_ctxs = @contexts 'ryba/hbase/thrift'
+      phoenix_ctxs = @contexts 'ryba/phoenix/client'
       {core_site, hive, realm} = @config.ryba ?= {}
       {java_home} = @config.java
       # Layout and environment
@@ -88,6 +89,7 @@ Example:
       hive.server2.site['hive.server2.logging.operation.log.location'] ?= "/tmp/#{hive.user.name}/operation_logs"
       # Tez
       # https://streever.atlassian.net/wiki/pages/viewpage.action?pageId=4390918
+      hive.server2.site['hive.execution.engine'] ?= 'tez'
       hive.server2.site['hive.server2.tez.default.queues'] ?= 'default'
       hive.server2.site['hive.server2.tez.sessions.per.default.queue'] ?= '1'
       hive.server2.site['hive.server2.tez.initialize.default.sessions'] ?= 'false'
@@ -108,12 +110,14 @@ Example:
           -Dcom.sun.management.jmxremote.port=#{hive.server2.env["JMXPORT"]} \
           -Dcom.sun.management.jmxremote.rmi.port=#{hive.server2.env["JMXPORT"]} \
           """
-      aux_jars = ['/usr/hdp/current/hive-webhcat/share/hcatalog/hive-hcatalog-core.jar']
+      aux_jars = hcat_ctxs[0].config.ryba.hive.hcatalog.aux_jars.split ':'
       # fix bug where phoenix-server and phoenix-client do not contain same 
       # version of class used.
-      if hbase_master.length and @config.host in hbase_client.map((ctx) -> ctx.config.host)
+      if hm_ctxs.length and @has_service 'ryba/hbase/client'
         aux_jars.push ['/usr/hdp/current/hbase-client/lib/hbase-server.jar', '/usr/hdp/current/hbase-client/lib/hbase-client.jar', '/usr/hdp/current/hbase-client/lib/hbase-common.jar']... # Default value
-        aux_jars.push '/usr/hdp/current/hbase-client/lib/phoenix-server.jar' if @has_service 'ryba/phoenix/client'
+        if @has_service 'ryba/phoenix/client'
+          #aux_jars.push '/usr/hdp/current/phoenix-client/phoenix-server.jar' 
+          aux_jars.push '/usr/hdp/current/phoenix-client/phoenix-hive.jar'
       hive.server2.aux_jars ?= aux_jars.join ':'
 
 ## Configure Kerberos
@@ -242,10 +246,10 @@ and its value is the server "host:port".
 
 Add Hive user as proxyuser
 
-      for hbase_ctx in hbase_ctxs
-        hbase_ctx.config.ryba.core_site ?= {}
-        hbase_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.hosts"] ?= '*'
-        hbase_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'
+      for hthrift_ctx in hthrift_ctxs
+        hthrift_ctx.config.ryba.core_site ?= {}
+        hthrift_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.hosts"] ?= '*'
+        hthrift_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'
 
 ## Dependencies
 
