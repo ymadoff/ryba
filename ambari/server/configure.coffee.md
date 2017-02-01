@@ -27,7 +27,9 @@ Exemple:
       ambari_server.http ?= '/var/www/html'
       ambari_server.repo ?= 'http://public-repo-1.hortonworks.com/ambari/centos6/2.x/updates/2.4.2.0/ambari.repo'
       ambari_server.conf_dir ?= '/etc/ambari-server/conf'
-      ambari_server.database_password ?= 'ambari123'
+      ambari_server.database ?= {}
+      ambari_server.database.password ?= 'ambari123'
+      ambari_server.database.engine ?= @config.ryba.db_admin.engine
       @config.ryba.ambari_agent ?= {}
       @config.ryba.ambari_agent.sudo ?= false
       ambari_server.config ?= {}

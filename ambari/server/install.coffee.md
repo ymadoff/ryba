@@ -5,7 +5,8 @@ See the Ambari documentation relative to [Software Requirements][sr] before
 executing this module.
 
     module.exports = header: 'Ambari Server Install', timeout: -1, handler: ->
-      {ambari_server, db_admin} = @config.ryba
+      {ambari_server} = @config.ryba
+      db_admin = @config.ryba.db_admin[ambari_server.database.engine]
 
 ## Package & Repository
 
@@ -42,18 +43,18 @@ Install Ambari server package.
 Prepare the Ambari Database
 
       @call header: 'Ambari Server Database', handler: ->
-        mysql_exec = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} "
+        mysql_exec = "#{db_admin.path} -u#{db_admin.admin_username} -p#{db_admin.admin_password} -h#{db_admin.host} -P#{db_admin.port} "
         db =
           name: ambari_server.config['server.jdbc.database_name']
           user: ambari_server.config['server.jdbc.user.name']
-          password: ambari_server.database_password
+          password: ambari_server.database.password
 
 Password is stored inside a file which location is referenced by the property
 "server.jdbc.user.passwd" in the configuration file.
 
         @file
           target: ambari_server.config['server.jdbc.user.passwd']
-          content: ambari_server.database_password
+          content: ambari_server.database.password
           backup: true
           mode: 0o0660
 
