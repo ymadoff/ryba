@@ -120,7 +120,7 @@ we execute this task using the rest api.
               'ranger.plugin.yarn.policy.rest.ssl.config.file': "#{conf_dir}/ranger-policymgr-ssl.xml"
           @file
             header: 'Fix Ranger YARN Plugin Env'
-            target: "#{conf_dir}/hadoop-env.sh"
+            target: "#{conf_dir}/yarn-env.sh"
             write: [
               match: RegExp "^export YARN_OPTS=.*", 'mg'
               replace: "export YARN_OPTS=\"-Dhdp.version=$HDP_VERSION $YARN_OPTS -Djavax.net.ssl.trustStore=#{ssl_server['ssl.server.truststore.location']} -Djavax.net.ssl.trustStorePassword=#{ssl_server['ssl.server.truststore.password']} \" # RYBA, DONT OVERWRITE"
