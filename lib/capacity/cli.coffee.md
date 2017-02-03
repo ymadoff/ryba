@@ -36,6 +36,8 @@
     Number of available cores to the Yarn NodeManagers.   
 *   `disks` (array)   
     List of disk partitions available to the HDFS DataNodes and YARN NodeManagers.   
+*   `module` (String|Array)   
+    List of target services based on ryba available modules   
 
 ```bash
 node node_modules/ryba/bin/capacity \
