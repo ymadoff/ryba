@@ -33,7 +33,6 @@ Ranger Atlas plugin runs inside Atlas Metadata server's JVM
         atlas_plugin.install['UPDATE_XAPOLICIES_ON_GRANT_REVOKE'] ?= 'true'
         atlas_plugin.install['CUSTOM_USER'] ?= "#{@config.ryba.atlas.user.name}"
         atlas_plugin.install['CUSTOM_GROUP'] ?= "#{hadoop_group.name}"
-        user =
 
 ### Atlas Policy Admin Tool
 The repository name should match the reposity name in web ui.
