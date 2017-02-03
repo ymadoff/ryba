@@ -11,7 +11,7 @@ Ranger permit access
       use:
         iptables: implicit: true, module: 'masson/core/iptables'
         java: implicit: true, module: 'masson/commons/java'
-        mysql_client: implicit:true, module: 'masson/commons/mysql/client'
+        mysql_client: implicit: true, module: 'masson/commons/mysql/client'
         hadoop_core: module: 'ryba/hadoop/core'
         solr_cloud_docker: module: 'ryba/solr/cloud_docker'
         db_admin: implicit: true, module: 'ryba/commons/db_admin'

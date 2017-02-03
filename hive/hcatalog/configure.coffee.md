@@ -151,11 +151,11 @@ Note, at the moment, only MySQL and PostgreSQL are supported.
         switch jdbc.engine
           when 'mysql'
             admin = jdbc.addresses.filter (address) ->
-              address.host is db_admin.mysql.host and "#{address.port}" is "#{db_admin.mysql.port}"
+              address.host in db_admin.mysql.hosts and "#{address.port}" is "#{db_admin.mysql.port}"
             throw new Error "Invalid host configuration" unless admin.length
           when 'postgresql'
             admin = jdbc.addresses.filter (address) ->
-              address.host is db_admin.postgres.host and"#{address.port}" is "#{db_admin.postgres.port}"
+              address.host in db_admin.postgres.hosts and "#{address.port}" is "#{db_admin.postgres.port}"
             throw new Error "Invalid host configuration" unless admin.length
           else throw new Error 'Unsupported database engine'
       else
@@ -166,10 +166,10 @@ Note, at the moment, only MySQL and PostgreSQL are supported.
         hive.hcatalog.db.database ?= 'hive'
         switch hive.hcatalog.db.engine
           when 'mysql'
-            hive.hcatalog.site['javax.jdo.option.ConnectionURL'] ?= "jdbc:mysql://#{hive.hcatalog.db.host}:#{hive.hcatalog.db.port}/#{hive.hcatalog.db.database}?createDatabaseIfNotExist=true"
+            hive.hcatalog.site['javax.jdo.option.ConnectionURL'] ?= "#{db_admin[hive.hcatalog.db.engine].jdbc}/#{hive.hcatalog.db.database}?createDatabaseIfNotExist=true"
             hive.hcatalog.site['javax.jdo.option.ConnectionDriverName'] ?= 'com.mysql.jdbc.Driver'
           when 'postgres'
-            hive.hcatalog.site['javax.jdo.option.ConnectionURL'] ?= "jdbc:postgresql://#{hive.hcatalog.db.host}:#{hive.hcatalog.db.port}/#{hive.hcatalog.db.database}?createDatabaseIfNotExist=true"
+            hive.hcatalog.site['javax.jdo.option.ConnectionURL'] ?= "#{db_admin[hive.hcatalog.db.engine].jdbc}:#{hive.hcatalog.db.port}/#{hive.hcatalog.db.database}?createDatabaseIfNotExist=true"
             hive.hcatalog.site['javax.jdo.option.ConnectionDriverName'] ?= 'org.postgresql.Driver'
           else throw new Error 'Unsupported database engine'
       hive.hcatalog.site['javax.jdo.option.ConnectionUserName'] ?= hive.hcatalog.db.username
