@@ -85,13 +85,15 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 We do not edit knox-env.sh because environnement variables are directly set
 in the gateway.sh service script.
 
-      @file
-        header: 'Env'
-        target: "#{knox.conf_dir}/gateway.sh"
-        write: for k, v of knox.env
-          match: new RegExp "^#{k}=.*$", 'i'
-          replace: "#{k.toUpperCase()}=#{v}"
-          append: true
+      @call header: 'Env', handler: ->
+        knox.env.app_log_opts += "-D#{k}=#{v}" for k,v of knox.log4jopts
+        @file
+          header: 'Env'
+          target: "#{knox.conf_dir}/gateway.sh"
+          write: for k, v of knox.env
+            match: new RegExp "^#{k}=.*$", 'i'
+            replace: "#{k.toUpperCase()}=\"#{v}\""
+            append: true
 
 ## Kerberos
 
@@ -227,6 +229,18 @@ client to connect to openldap.
         @remove
           target: "#{tmp_location}/key"
           shy: true
+
+## Log4j
+
+      @file
+        header: 'Log4J Properties'
+        target: "#{knox.conf_dir}/gateway-log4j.properties"
+        source: "#{__dirname}/resources/gateway-log4j.properties"
+        local_source: true
+        write: for k, v of knox.log4j
+          match: RegExp "#{k}=.*", 'm'
+          replace: "#{k}=#{v}"
+          append: true
 
 ## Ranger HBase Plugin Install
 

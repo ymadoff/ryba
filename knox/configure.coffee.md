@@ -273,3 +273,41 @@ This mechanism can be used to configure a specific gateway without having to dec
               topology.providers['ha'].config ?= {}
               topology.providers['ha'].config['webhbase'] ?= 'maxFailoverAttempts=3;failoverSleep=1000;enabled=true'
           else throw Error 'Cannot autoconfigure KNOX webhbase service, no webhbase declared'
+
+## Java Options
+Knox read its own env variable to read configuration.
+
+      knox.opts ?= {}
+      knox.env.app_log_opts ?= ''
+
+## Configuration for Log4J
+
+      knox.log4j ?= {}
+      knox.log4jopts ?= {}
+      knox.log4jopts['log4j.rootLogger'] ?= 'ERROR, drfa'
+      if @config.log4j?.remote_host? and @config.log4j?.remote_port? and ('ryba/knox' in @config.log4j?.services)
+        knox.socket_client ?= 'SOCKET'
+        # Root logger
+        if knox.log4jopts['log4j.rootLogger'].indexOf(knox.socket_client) is -1
+        then knox.log4jopts['log4j.rootLogger'] += ",#{knox.socket_client}"
+
+        knox.log4jopts['app.log.application'] ?= 'knox'
+        knox.log4jopts['app.log.remote_host'] ?= @config.log4j.remote_host
+        knox.log4jopts['app.log.remote_port'] ?= @config.log4j.remote_port
+
+        knox.socket_opts ?=
+          Application: '${app.log.application}'
+          RemoteHost: '${app.log.remote_host}'
+          Port: '${app.log.remote_port}'
+          ReconnectionDelay: '10000'
+
+        knox.log4j = merge knox.log4j, appender
+          type: 'org.apache.log4j.net.SocketAppender'
+          name: knox.socket_client
+          logj4: knox.log4j
+          properties: knox.socket_opts
+
+## Dependencies
+
+    appender = require '../lib/appender'
+    {merge} = require 'mecano/lib/misc'
