@@ -453,6 +453,12 @@ keytool -list -v -keystore keystore -alias hadoop
       ssl_server['ssl.server.truststore.password'] ?= 'ryba123'
       ssl_server['ssl.server.truststore.type'] ?= 'jks'
 
+## Log4j
+
+      ryba.hadoop_root_logger ?= 'INFO,RFA'
+      ryba.hadoop_security_logger ?= 'INFO,RFAS'
+      ryba.hadoop_audit_logger ?= 'INFO,RFAAUDIT'
+
 ## Dependencies
 
     path = require 'path'

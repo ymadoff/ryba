@@ -10,7 +10,7 @@ export JAVA_HOME={{JAVA_HOME}}
 # daemons. This is restrict the EWMA appender to daemons only.
 INVOKER="${0##*/}"
 if [ "$INVOKER" == "yarn-daemon.sh" ]; then
-  export YARN_ROOT_LOGGER=${YARN_ROOT_LOGGER:-INFO,EWMA,RFA}
+  export YARN_ROOT_LOGGER=${YARN_ROOT_LOGGER:-{{YARN_ROOT_LOGGER}}}
 fi
 
 # User for YARN daemons

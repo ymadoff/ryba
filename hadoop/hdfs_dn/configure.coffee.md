@@ -6,8 +6,8 @@ The module extends the various settings set by the "ryba/hadoop/hdfs" module.
 Unless specified otherwise, the number of tolerated failed volumes is set to "1"
 if at least 4 disks are used for storage.
 
-*   `ryba.hdfs.datanode_opts` (string)
-    NameNode options.
+*   `ryba.hdfs.dn.java_opts` (string)
+    Datanode Java options.
 
 Example:
 
@@ -65,9 +65,6 @@ memory size... is more than the datanode's available RLIMIT_MEMLOCK ulimit,"
 that means that the operating system is imposing a lower limit on the amount of 
 memory that you can lock than what you have configured.
 
-      ryba.hdfs.site['dfs.datanode.max.locked.memory'] ?= '128000'
-      ryba.hdfs.user.limits.memlock ?= 130
-
 ## Kerberos
 
       ryba.hdfs.site['dfs.datanode.kerberos.principal'] ?= "dn/_HOST@#{ryba.realm}"
@@ -103,7 +100,8 @@ memory that you can lock than what you have configured.
 Set up jave heap size linke in `ryba/hadoop/hdfs_nn`.
 
       ryba.hdfs.dn ?= {}
-      ryba.hdfs.datanode_opts ?= ''
+      ryba.hdfs.dn.opts ?= {}
+      ryba.hdfs.dn.java_opts ?= ''
       ryba.hdfs.dn.newsize ?= '200m'
       ryba.hdfs.dn.heapsize ?= '1024m'
 
@@ -115,3 +113,43 @@ Set up jave heap size linke in `ryba/hadoop/hdfs_nn`.
 
       ryba.hdfs.site['dfs.client.read.shortcircuit'] ?= if @has_service 'ryba/hadoop/hdfs_dn' then 'true' else 'false'
       ryba.hdfs.site['dfs.domain.socket.path'] ?= '/var/lib/hadoop-hdfs/dn_socket'
+
+## Configuration for Log4J
+
+      ryba.hdfs.dn.log4j ?= {}
+      ryba.hdfs.dn.root_logger ?= 'INFO,RFA'
+      ryba.hdfs.dn.security_logger ?= 'INFO,RFAS'
+      ryba.hdfs.dn.audit_logger ?= 'INFO,RFAAUDIT'
+      if @config.log4j?.remote_host? && @config.log4j?.remote_port?
+        # Root logger
+        if ryba.hdfs.dn.root_logger.indexOf(ryba.hdfs.dn.socket_client) is -1
+        then ryba.hdfs.dn.root_logger += ",#{ryba.hdfs.dn.socket_client}"
+        # Security Logger
+        if ryba.hdfs.dn.security_logger.indexOf(ryba.hdfs.dn.socket_client) is -1
+        then ryba.hdfs.dn.security_logger += ",#{ryba.hdfs.dn.socket_client}"
+        # Audit Logger
+        if ryba.hdfs.dn.audit_logger.indexOf(ryba.hdfs.dn.socket_client) is -1
+        then ryba.hdfs.dn.audit_logger += ",#{ryba.hdfs.dn.socket_client}"
+        # adding SOCKET appender
+        ryba.hdfs.dn.socket_client ?= "SOCKET"
+        # Adding Application name, remote host and port values in namenode's opts
+        ryba.hdfs.dn.opts['hadoop.log.application'] ?= 'namenode'
+        ryba.hdfs.dn.opts['hadoop.log.remote_host'] ?= @config.log4j.remote_host
+        ryba.hdfs.dn.opts['hadoop.log.remote_port'] ?= @config.log4j.remote_port
+
+        ryba.hdfs.dn.socket_opts ?=
+          Application: '${hadoop.log.application}'
+          RemoteHost: '${hadoop.log.remote_host}'
+          Port: '${hadoop.log.remote_port}'
+          ReconnectionDelay: '10000'
+
+        ryba.hdfs.dn.log4j = merge ryba.hdfs.dn.log4j, appender
+          type: 'org.apache.log4j.net.SocketAppender'
+          name: ryba.hdfs.dn.socket_client
+          logj4: ryba.hdfs.dn.log4j
+          properties: ryba.hdfs.dn.socket_opts
+
+## Dependencies
+
+    appender = require '../../lib/appender'
+    {merge} = require 'mecano/lib/misc'

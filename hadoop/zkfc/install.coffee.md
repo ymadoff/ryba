@@ -2,12 +2,13 @@
 # Hadoop ZKFC Install
 
     module.exports = header: 'HDFS ZKFC Install', handler: ->
-      {hdfs, zkfc, active_nn_host} = @config.ryba
-      {hdfs, zkfc, core_site, hadoop_group} = @config.ryba
-      {realm, hadoop_group, hdfs, zkfc} = @config.ryba
+      {ryba} = @config
+      {hdfs, zkfc, active_nn_host} = ryba
+      {hdfs, zkfc, core_site, hadoop_group} = ryba
+      {realm, hadoop_group, hdfs, zkfc} = ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
-      {hdfs, core_site, zkfc} = @config.ryba
-      {hdfs, ssh_fencing, hadoop_group} = @config.ryba
+      {hdfs, core_site, zkfc} = ryba
+      {hdfs, ssh_fencing, hadoop_group} = ryba
 
 ## Register
 
@@ -71,7 +72,13 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
           target: "#{zkfc.conf_dir}/hadoop-env.sh"
           source: "#{__dirname}/../resources/hadoop-env.sh.j2"
           local_source: true
-          context: @config
+          context:
+            HADOOP_HEAPSIZE: ryba.hadoop_heap
+            HADOOP_LOG_DIR: ryba.hdfs.log_dir
+            HADOOP_PID_DIR: ryba.hdfs.pid_dir
+            HADOOP_OPTS: ryba.hadoop_opts
+            ZKFC_OPTS: ryba.zkfc.opts
+            java_home: @config.java.java_home
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o755

@@ -142,7 +142,13 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
           target: "#{hdfs.jn.conf_dir}/hadoop-env.sh"
           source: "#{__dirname}/../resources/hadoop-env.sh.j2"
           local_source: true
-          context: @config
+          context:
+            HADOOP_HEAPSIZE: @config.ryba.hadoop_heap
+            HADOOP_LOG_DIR: @config.ryba.hdfs.log_dir
+            HADOOP_PID_DIR: @config.ryba.hdfs.pid_dir
+            HADOOP_OPTS: @config.ryba.hadoop_opts
+            HADOOP_CLIENT_OPTS: @config.ryba.hadoop_client_opts
+            java_home: @config.java.java_home
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o755

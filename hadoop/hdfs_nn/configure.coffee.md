@@ -14,10 +14,11 @@ Example:
 ```json
 {
   "ryba": {
-    "hdfs": {
-      "namenode_opts": "-Xms1024m -Xmx1024m",
-      "include": ["in.my.cluster"],
-      "exclude": "not.in.my.cluster"
+    "hdfs": 
+      "nn": {
+        "java_opts": "-Xms1024m -Xmx1024m",
+        "include": ["in.my.cluster"],
+        "exclude": "not.in.my.cluster"
     }
   }
 }
@@ -50,7 +51,6 @@ Example:
       ryba.hdfs.exclude = string.lines ryba.hdfs.exclude if typeof ryba.hdfs.exclude is 'string'
       ryba.hdfs.nn.heapsize ?= '1024m'
       ryba.hdfs.nn.newsize ?= '200m'
-      ryba.hdfs.namenode_opts ?= ''
       ryba.hdfs.nn.site['fs.permissions.umask-mode'] ?= '026' # 0750
       # If "true", access tokens are used as capabilities
       # for accessing datanodes. If "false", no access tokens are checked on
@@ -140,11 +140,52 @@ fencing method should be configured to not block failover.
         hdfs_ctx.config.ryba.hdfs.site ?= {}
         hdfs_ctx.config.ryba.hdfs.site['dfs.http.policy'] ?= @config.ryba.hdfs.nn.site['dfs.http.policy']
 
+## Namenode JAVA Virtual Machine Options
+
+      ryba.hdfs.nn.heapsize ?= '1024m'
+      ryba.hdfs.nn.newsize ?= '200m'
+      ryba.hdfs.nn.java_opts ?= ""
+
+## Namenode Java Options
+
+      # opts will be rendered as -Dkey=value and appended to java_opts
+      ryba.hdfs.nn.opts ?= {}
+
 ## Configuration for Log4J
 
-      ryba.hdfs.log4j ?= {}
-      ryba.hdfs.log4j[k] ?= v for k, v of @config.log4j
-      ryba.hdfs.log4j.extra_appender = "socket_client" if ryba.hdfs.log4j.remote_host? && ryba.hdfs.log4j.remote_port?
+      ryba.hdfs.nn.log4j ?= {}
+      ryba.hdfs.nn.root_logger ?= 'INFO,RFA'
+      ryba.hdfs.nn.security_logger ?= 'INFO,DRFAS'
+      ryba.hdfs.nn.audit_logger ?= 'INFO,RFAAUDIT'
+      # adding SOCKET appender
+      if @config.log4j?.remote_host? and @config.log4j?.remote_port? and ('ryba/hadoop/hdfs_nn' in @config.log4j?.services)
+        # Root logger
+        if ryba.hdfs.nn.root_logger.indexOf(ryba.hdfs.nn.socket_client) is -1
+        then ryba.hdfs.nn.root_logger += ",#{ryba.hdfs.nn.socket_client}"
+        # Security Logger
+        if ryba.hdfs.nn.security_logger.indexOf(ryba.hdfs.nn.socket_client) is -1
+        then ryba.hdfs.nn.security_logger += ",#{ryba.hdfs.nn.socket_client}"
+        # Audit Logger
+        if ryba.hdfs.nn.audit_logger.indexOf(ryba.hdfs.nn.socket_client) is -1
+        then ryba.hdfs.nn.audit_logger += ",#{ryba.hdfs.nn.socket_client}"
+
+        ryba.hdfs.nn.socket_client ?= "SOCKET"
+        # Adding Application name, remote host and port values in namenode's opts
+        ryba.hdfs.nn.opts['hadoop.log.application'] ?= 'namenode'
+        ryba.hdfs.nn.opts['hadoop.log.remote_host'] ?= @config.log4j.remote_host
+        ryba.hdfs.nn.opts['hadoop.log.remote_port'] ?= @config.log4j.remote_port
+
+        ryba.hdfs.nn.socket_opts ?=
+          Application: '${hadoop.log.application}'
+          RemoteHost: '${hadoop.log.remote_host}'
+          Port: '${hadoop.log.remote_port}'
+          ReconnectionDelay: '10000'
+
+        ryba.hdfs.nn.log4j = merge ryba.hdfs.nn.log4j, appender
+          type: 'org.apache.log4j.net.SocketAppender'
+          name: ryba.hdfs.nn.socket_client
+          logj4: ryba.hdfs.nn.log4j
+          properties: ryba.hdfs.nn.socket_opts
 
 ## Export configuration
 
@@ -159,3 +200,4 @@ fencing method should be configured to not block failover.
 
     string = require 'mecano/lib/misc/string'
     {merge} = require 'mecano/lib/misc'
+    appender = require '../../lib/appender'

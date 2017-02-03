@@ -15,7 +15,8 @@ to achieve this, the DataNodes are configured with the location of both
 NameNodes, and send block location information and heartbeats to both.
 
     module.exports = header: 'HDFS DN Install', handler: ->
-      {realm, core_site, hdfs, hadoop_group, hadoop_metrics} = @config.ryba
+      {ryba} = @config
+      {realm, core_site, hdfs, hadoop_group, hadoop_metrics} = ryba
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
 ## Register
@@ -171,17 +172,34 @@ The location for JSVC depends on the platform. The Hortonworks documentation
 mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
 correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
-      @render
-        header: 'Environment'
-        target: "#{hdfs.dn.conf_dir}/hadoop-env.sh"
-        source: "#{__dirname}/../resources/hadoop-env.sh.j2"
-        local_source: true
-        context: @config
-        uid: hdfs.user.name
-        gid: hadoop_group.name
-        mode: 0o755
-        backup: true
-        eof: true
+      @call header: 'Environment', handler: ->
+        ryba.hdfs.dn.java_opts += " -D#{k}=#{v}" for k, v of ryba.hdfs.dn.opts 
+        @render
+          header: 'Environment'
+          target: "#{hdfs.dn.conf_dir}/hadoop-env.sh"
+          source: "#{__dirname}/../resources/hadoop-env.sh.j2"
+          local_source: true
+          context:
+            HADOOP_ROOT_LOGGER: ryba.hdfs.dn.root_logger
+            HADOOP_SECURITY_LOGGER: ryba.hdfs.dn.security_logger
+            HDFS_AUDIT_LOGGER: ryba.hdfs.dn.audit_logger
+            HADOOP_HEAPSIZE: ryba.hadoop_heap
+            HADOOP_DATANODE_OPTS: ryba.hdfs.dn.java_opts
+            HADOOP_LOG_DIR: ryba.hdfs.log_dir
+            HADOOP_PID_DIR: ryba.hdfs.pid_dir
+            HADOOP_OPTS: ryba.hadoop_opts
+            HADOOP_CLIENT_OPTS: ryba.hadoop_client_opts
+            HADOOP_SECURE_DN_USER: ryba.hdfs.user.name
+            HADOOP_SECURE_DN_LOG_DIR: ryba.hdfs.log_dir
+            HADOOP_SECURE_DN_PID_DIR: ryba.hdfs.secure_dn_pid_dir
+            datanode_heapsize: ryba.hdfs.dn.heapsize
+            datanode_newsize: ryba.hdfs.dn.newsize
+            java_home: @config.java.java_home
+          uid: hdfs.user.name
+          gid: hadoop_group.name
+          mode: 0o755
+          backup: true
+          eof: true
 
 ## Log4j
 
@@ -189,7 +207,11 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
         header: 'Log4j'
         target: "#{hdfs.dn.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
-        local_source: true
+        local: true
+        write: for k, v of hdfs.dn.log4j
+          match: RegExp "#{k}=.*", 'm'
+          replace: "#{k}=#{v}"
+          append: true
 
 ## Hadoop Metrics
 

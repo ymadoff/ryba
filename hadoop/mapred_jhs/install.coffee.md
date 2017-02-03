@@ -144,7 +144,15 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
         target: "#{mapred.jhs.conf_dir}/hadoop-env.sh"
         source: "#{__dirname}/../resources/hadoop-env.sh.j2"
         local_source: true
-        context: @config
+        context:
+          HADOOP_HEAPSIZE: @config.ryba.hadoop_heap
+          HADOOP_LOG_DIR: @config.ryba.hdfs.log_dir
+          HADOOP_PID_DIR: @config.ryba.hdfs.pid_dir
+          HADOOP_OPTS: @config.ryba.hadoop_opts
+          HADOOP_CLIENT_OPTS: @config.ryba.hadoop_client_opts
+          HADOOP_MAPRED_LOG_DIR: @config.ryba.mapred.log_dir
+          HADOOP_MAPRED_PID_DIR: @config.ryba.mapred.pid_dir
+          java_home: @config.java.java_home
         uid: mapred.user.name
         gid: hadoop_group.name
         mode: 0o0755

@@ -13,9 +13,10 @@ Worth to investigate:
 [rollback]: http://docs.hortonworks.com/HDPDocuments/HDP1/HDP-1.3.3/bk_Monitoring_Hadoop_Book/content/monitor-ha-undoing_2x.html
 
     module.exports = header: 'HDFS NN Install', handler: ->
-      {ssl} = @config.ryba
-      {realm, core_site, hadoop_metrics, hadoop_group} = @config.ryba
-      {hdfs, active_nn_host, nameservice, hadoop_policy} = @config.ryba
+      {ryba} = @config
+      {ssl} = ryba
+      {realm, core_site, hadoop_metrics, hadoop_group} = ryba
+      {hdfs, active_nn_host, nameservice, hadoop_policy} = ryba
       # {kadmin_principal, kadmin_password, admin_server} = @config.krb5.etc_krb5_conf.realms[realm]
       krb5 = @config.krb5.etc_krb5_conf.realms[realm]
 
@@ -133,44 +134,43 @@ The location for JSVC depends on the platform. The Hortonworks documentation
 mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
 correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
-      @render
-        header: 'Environment'
-        target: "#{hdfs.nn.conf_dir}/hadoop-env.sh"
-        source: "#{__dirname}/../resources/hadoop-env.sh.j2"
-        local_source: true
-        context: @config
-        uid: hdfs.user.name
-        gid: hadoop_group.name
-        mode: 0o755
-        backup: true
-        eof: true
+      @call header: 'Environment', handler: ->
+        ryba.hdfs.nn.java_opts += " -D#{k}=#{v}" for k, v of ryba.hdfs.nn.opts 
+        @render
+          header: 'Environment'
+          target: "#{hdfs.nn.conf_dir}/hadoop-env.sh"
+          source: "#{__dirname}/../resources/hadoop-env.sh.j2"
+          local_source: true
+          context:
+            HADOOP_ROOT_LOGGER: ryba.hdfs.nn.root_logger
+            HADOOP_SECURITY_LOGGER: ryba.hdfs.nn.security_logger
+            HDFS_AUDIT_LOGGER: ryba.hdfs.nn.audit_logger
+            HADOOP_HEAPSIZE: ryba.hadoop_heap
+            HADOOP_NAMENODE_OPTS: ryba.hdfs.nn.java_opts
+            HADOOP_NAMENODE_INIT_HEAPSIZE: ryba.hadoop_namenode_init_heap
+            HADOOP_LOG_DIR: ryba.hdfs.log_dir
+            HADOOP_PID_DIR: ryba.hdfs.pid_dir
+            HADOOP_OPTS: ryba.hadoop_opts
+            HADOOP_CLIENT_OPTS: ryba.hadoop_client_opts
+            namenode_heapsize: ryba.hdfs.nn.heapsize
+            namenode_newsize: ryba.hdfs.nn.newsize
+            java_home: @config.java.java_home
+          uid: hdfs.user.name
+          gid: hadoop_group.name
+          mode: 0o755
+          backup: true
+          eof: true
 
 ## Log4j
 
-      writes = []
-      if hdfs.log4j.extra_appender == "socket_client"
-        writes.push
-          match: /^hdfs.audit.logger=.*/m
-          replace: """
-          hdfs.audit.logger=INFO,NullAppender,SOCKET
-          """
-          append: true
-        ,
-          match: "//m"
-          replace: """
-
-            log4j.appender.SOCKET=org.apache.log4j.net.SocketAppender
-            log4j.appender.SOCKET.Application=hdfs_audit
-            log4j.appender.SOCKET.RemoteHost=#{hdfs.log4j.remote_host}
-            log4j.appender.SOCKET.Port=#{hdfs.log4j.remote_port}
-            log4j.appender.SOCKET.ReconnectionDelay=10000
-            """
-          append: true
       @file
         header: 'Log4j'
         target: "#{hdfs.nn.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
-        write: writes
+        write: for k, v of ryba.hdfs.nn.log4j
+          match: RegExp "#{k}=.*", 'm'
+          replace: "#{k}=#{v}"
+          append: true
         local_source: true
 
 ## Hadoop Metrics

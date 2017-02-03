@@ -18,7 +18,8 @@
       ryba.yarn.nm.log_dir ?= '/var/log/hadoop-yarn'
       ryba.yarn.nm.pid_dir ?= '/var/run/hadoop-yarn'
       ryba.yarn.nm.conf_dir ?= '/etc/hadoop-yarn-nodemanager/conf'
-      ryba.yarn.nm.opts ?= ''
+      ryba.yarn.nm.opts ?= {}
+      ryba.yarn.nm.java_opts ?= ''
       ryba.yarn.nm.heapsize ?= '1024'
       ryba.yarn.site['yarn.http.policy'] ?= 'HTTPS_ONLY' # HTTP_ONLY or HTTPS_ONLY or HTTP_AND_HTTPS
       # Working Directories (see capacity for server resource discovery)
