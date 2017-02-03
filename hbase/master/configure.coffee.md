@@ -119,9 +119,11 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
       hbase.master.site['hbase.rpc.engine'] ?= 'org.apache.hadoop.hbase.ipc.SecureRpcEngine'
       hbase.master.site['hbase.superuser'] ?= hbase.admin.name
       hbase.master.site['hbase.bulkload.staging.dir'] ?= '/apps/hbase/staging'
-      hbase.master.opts ?= "-Xmx2048m "
-      if hbase.master.opts.indexOf('-Djava.security.auth.login.config') is -1
-        hbase.master.opts += " -Djava.security.auth.login.config=#{hbase.master.conf_dir}/hbase-master.jaas"
+      # renderer
+      hbase.master.heapsize ?= "1024m"
+      hbase.master.java_opts ?= ""
+      hbase.master.opts ?= {}
+      hbase.master.opts['java.security.auth.login.config'] ?= "#{hbase.master.conf_dir}/hbase-master.jaas"
 
 ## Configuration for Local Access
 
@@ -142,18 +144,6 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
         users = dn_ctx.config.ryba.hdfs.site['dfs.block.local-path-access.user'].split(',').filter((str) -> str isnt '')
         users.push 'hbase' unless 'hbase' in users
         dn_ctx.config.ryba.hdfs.site['dfs.block.local-path-access.user'] = users.sort().join ','
-
-## Configuration for Log4J
-
-
-      hbase.master.log4j ?= {}
-      hbase.master.log4j[k] ?= v for k, v of @config.log4j
-      hbase.master.opts = "#{hbase.master.env['HBASE_MASTER_OPTS']}  -Dhbase.log4j.extra_appender=,socket_server -Dhbase.log4j.server_port=#{hbase.log4j.server_port}" if hbase.log4j?.server_port?
-      hbase.master.opts = "#{hbase.master.env['HBASE_MASTER_OPTS']}  -Dhbase.log4j.extra_appender=,socket_client -Dhbase.log4j.remote_host=#{hbase.log4j.remote_host} -Dhbase.log4j.remote_port=#{hbase.log4j.remote_port}" if hbase.log4j?.remote_host? && hbase.log4j?.remote_port?
-      #hbase.master.log4j.root_logger = "INFO,RFA,socket_server" if hbase.log4j.server_port?
-      #hbase.master.log4j.root_logger = "INFO,RFA,socket_client" if hbase.log4j.remote_host? && hbase.log4j.remote_port?
-      #hbase.master.log4j.security_logger = "INFO,RFAS,socket_server" if hbase.log4j.server_port?
-      #hbase.master.log4j.security_logger = "INFO,RFAS,socket_client" if hbase.log4j.remote_host? && hbase.log4j.remote_port?
 
 ## Configuration for High Availability (HA)
 
@@ -187,6 +177,44 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
 ## Ranger Plugin Configuration
 
       @config.ryba.hbase_plugin_is_master = true
+
+## Configuration for Log4J
+
+      hbase.master.log4j ?= {}
+      hbase.master.opts['hbase.security.log.file'] ?= 'SecurityAuth-master.audit'
+      #HBase bin script use directly environment bariables
+      hbase.master.env['HBASE_ROOT_LOGGER'] ?= 'INFO,RFA'
+      hbase.master.env['HBASE_SECURITY_LOGGER'] ?= 'INFO,RFAS'
+      if @config.log4j?.remote_host? and @config.log4j?.remote_port? and ('ryba/hbase/master' in @config.log4j?.services)
+        # adding SOCKET appender
+        hbase.master.socket_client ?= "SOCKET"
+        # Root logger
+        if hbase.master.env['HBASE_ROOT_LOGGER'].indexOf(hbase.master.socket_client) is -1
+        then hbase.master.env['HBASE_ROOT_LOGGER'] += ",#{hbase.master.socket_client}"
+        # Security Logger
+        if hbase.master.env['HBASE_SECURITY_LOGGER'].indexOf(hbase.master.socket_client) is -1
+        then hbase.master.env['HBASE_SECURITY_LOGGER']+= ",#{hbase.master.socket_client}"
+
+        hbase.master.opts['hbase.log.application'] = 'hbase-master'
+        hbase.master.opts['hbase.log.remote_host'] = @config.log4j.remote_host
+        hbase.master.opts['hbase.log.remote_port'] = @config.log4j.remote_port
+
+        hbase.master.socket_opts ?=
+          Application: '${hbase.log.application}'
+          RemoteHost: '${hbase.log.remote_host}'
+          Port: '${hbase.log.remote_port}'
+          ReconnectionDelay: '10000'
+
+        hbase.master.log4j = merge hbase.master.log4j, appender
+          type: 'org.apache.log4j.net.SocketAppender'
+          name: hbase.master.socket_client
+          logj4: hbase.master.log4j
+          properties: hbase.master.socket_opts
+
+## Dependencies
+
+    appender = require '../../lib/appender'
+    {merge} = require 'mecano/lib/misc'
 
 ## Resources
 

@@ -336,7 +336,7 @@ This behavior may be altered with the "hdfs_nn_name_dir" parameter.
         continue unless ctx.has_service 'ryba/hbase/regionserver'
         {memory_hbase} = ctx.config.capacity
         memory_hbase_mb = Math.floor memory_hbase / 1024 / 1024
-        ctx.config.capacity.regionserver_opts ?= "-Xmx#{memory_hbase_mb}m"
+        ctx.config.capacity.regionserver_opts ?= "#{memory_hbase_mb}m" #i.e. 256m
 
 ## MapReduce Client
 
@@ -617,7 +617,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
             ws.write "  Memory HBase: #{prink.filesize capacity.memory_hbase, 3}\n"
             ws.write "  HBase RegionServer\n"
             {regionserver_opts} = ctx.config.capacity
-            ws.write "    hbase-env: #{regionserver_opts}\n"
+            ws.write "    hbase-env: -Xms#{regionserver_opts} -Xmx#{regionserver_opts}\n"
           print_kafka_broker = not params.modules or multimatch(params.modules, 'ryba/kafka/broker').length
           if ctx.has_service('ryba/kafka/broker') and print_kafka_broker
             ws.write "  Kafka Broker\n"
@@ -749,7 +749,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
         if ctx.has_service('ryba/hbase/regionserver') and print_hbase_regionserver
           node.config.ryba.hbase ?= {}
           node.config.ryba.hbase.rs ?= {}
-          node.config.ryba.hbase.rs.opts ?= capacity.regionserver_opts
+          node.config.ryba.hbase.rs.heapsize ?= capacity.regionserver_opts
         nodes[ctx.config.host] = node
         print_kafka_broker = not params.modules or multimatch(params.modules, 'ryba/kafka/broker').length
         if ctx.has_service('ryba/kafka/broker') and print_hbase_regionserver

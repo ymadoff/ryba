@@ -48,11 +48,11 @@
       hbase.rs.env['JAVA_HOME'] ?= "#{java.java_home}"
       # http://blog.sematext.com/2012/07/16/hbase-memstore-what-you-should-know/
       # Keep hbase.regionserver.hlog.blocksize * hbase.regionserver.maxlogs just
+      hbase.rs.heapsize ?= "256m" #i.e. -Xmx256m
       # a bit above hbase.regionserver.global.memstore.lowerLimit * HBASE_HEAPSIZE
-      hbase.rs.opts ?= "-Xmn128m -Xms4096m -Xmx4096m"
-      if   hbase.rs.opts.indexOf('-Djava.security.auth.login.config') is -1
-        hbase.rs.opts += " -Djava.security.auth.login.config=#{hbase.rs.conf_dir}/hbase-regionserver.jaas"
-
+      hbase.rs.java_opts ?= "" #rs.java_opts is build at runtime from the rs.opts object
+      hbase.rs.opts ?= {} #represent the java options obect
+      hbase.rs.opts['java.security.auth.login.config'] ?= "#{hbase.rs.conf_dir}/hbase-regionserver.jaas"
 
 ## Configuration for Kerberos
 
@@ -109,3 +109,41 @@ HA properties must be available to masters and regionservers.
 ## Ranger Plugin Configuration
 
       @config.ryba.hbase_plugin_is_master = false
+
+## Configuration for Log4J
+
+      hbase.rs.log4j ?= {}
+      hbase.rs.opts['hbase.security.log.file'] ?= 'SecurityAuth-Regional.audit'
+      #HBase bin script use directly environment bariables
+      hbase.rs.env['HBASE_ROOT_LOGGER'] ?= 'INFO,RFA'
+      hbase.rs.env['HBASE_SECURITY_LOGGER'] ?= 'INFO,RFAS'
+      if @config.log4j?.remote_host? and @config.log4j?.remote_port? and ('ryba/hbase/regionserver' in @config.log4j?.services)
+        # adding SOCKET appender
+        hbase.rs.socket_client ?= "SOCKET"
+        # Root logger
+        if hbase.rs.env['HBASE_ROOT_LOGGER'].indexOf(hbase.rs.socket_client) is -1
+        then hbase.rs.env['HBASE_ROOT_LOGGER'] += ",#{hbase.rs.socket_client}"
+        # Security Logger
+        if hbase.rs.env['HBASE_SECURITY_LOGGER'].indexOf(hbase.rs.socket_client) is -1
+        then hbase.rs.env['HBASE_SECURITY_LOGGER']+= ",#{hbase.rs.socket_client}"
+
+        hbase.rs.opts['hbase.log.application'] = 'hbase-regionserver'
+        hbase.rs.opts['hbase.log.remote_host'] = @config.log4j.remote_host
+        hbase.rs.opts['hbase.log.remote_port'] = @config.log4j.remote_port
+
+        hbase.rs.socket_opts ?=
+          Application: '${hbase.log.application}'
+          RemoteHost: '${hbase.log.remote_host}'
+          Port: '${hbase.log.remote_port}'
+          ReconnectionDelay: '10000'
+
+        hbase.rs.log4j = merge hbase.rs.log4j, appender
+          type: 'org.apache.log4j.net.SocketAppender'
+          name: hbase.rs.socket_client
+          logj4: hbase.rs.log4j
+          properties: hbase.rs.socket_opts
+
+## Dependencies
+
+    appender = require '../../lib/appender'
+    {merge} = require 'mecano/lib/misc'
