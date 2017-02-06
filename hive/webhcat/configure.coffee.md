@@ -43,28 +43,29 @@
       webhcat.log4j ?= {}
       webhcat.log4j[k] ?= v for k, v of @config.log4j
       webhcat.opts['webhcat.root.logger'] = 'INFO, RFA'
-      if @config.log4j?.remote_host? and @config.log4j?.remote_port? and ('ryba/hive/webhcat' in @config.log4j?.services)
-        # adding SOCKET appender
-        ryba.webhcat.socket_client ?= "SOCKET"
-        # Root logger
-        if webhcat.opts['webhcat.root.logger'].indexOf(ryba.webhcat.socket_client) is -1
-        then webhcat.opts['webhcat.root.logger'] += ",#{ryba.webhcat.socket_client}"
+      if @config.log4j?.services?
+        if @config.log4j?.remote_host? and @config.log4j?.remote_port? and ('ryba/hive/webhcat' in @config.log4j?.services)
+          # adding SOCKET appender
+          ryba.webhcat.socket_client ?= "SOCKET"
+          # Root logger
+          if webhcat.opts['webhcat.root.logger'].indexOf(ryba.webhcat.socket_client) is -1
+          then webhcat.opts['webhcat.root.logger'] += ",#{ryba.webhcat.socket_client}"
 
-        webhcat.opts['webhcat.log.application'] ?= 'hive-webhcat'
-        webhcat.opts['webhcat.log.remote_host'] ?= @config.log4j.remote_host
-        webhcat.opts['webhcat.log.remote_port'] ?= @config.log4j.remote_port
+          webhcat.opts['webhcat.log.application'] ?= 'hive-webhcat'
+          webhcat.opts['webhcat.log.remote_host'] ?= @config.log4j.remote_host
+          webhcat.opts['webhcat.log.remote_port'] ?= @config.log4j.remote_port
 
-        ryba.webhcat.socket_opts ?=
-          Application: '${webhcat.log.application}'
-          RemoteHost: '${webhcat.log.remote_host}'
-          Port: '${webhcat.log.remote_port}'
-          ReconnectionDelay: '10000'
+          ryba.webhcat.socket_opts ?=
+            Application: '${webhcat.log.application}'
+            RemoteHost: '${webhcat.log.remote_host}'
+            Port: '${webhcat.log.remote_port}'
+            ReconnectionDelay: '10000'
 
-        appender
-          type: 'org.apache.log4j.net.SocketAppender'
-          name: ryba.webhcat.socket_client
-          logj4: ryba.webhcat.log4j
-          properties: ryba.webhcat.socket_opts
+          appender
+            type: 'org.apache.log4j.net.SocketAppender'
+            name: ryba.webhcat.socket_client
+            logj4: ryba.webhcat.log4j
+            properties: ryba.webhcat.socket_opts
 
 ## Dependencies
 

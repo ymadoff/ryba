@@ -117,31 +117,32 @@ HA properties must be available to masters and regionservers.
       #HBase bin script use directly environment bariables
       hbase.rs.env['HBASE_ROOT_LOGGER'] ?= 'INFO,RFA'
       hbase.rs.env['HBASE_SECURITY_LOGGER'] ?= 'INFO,RFAS'
-      if @config.log4j?.remote_host? and @config.log4j?.remote_port? and ('ryba/hbase/regionserver' in @config.log4j?.services)
-        # adding SOCKET appender
-        hbase.rs.socket_client ?= "SOCKET"
-        # Root logger
-        if hbase.rs.env['HBASE_ROOT_LOGGER'].indexOf(hbase.rs.socket_client) is -1
-        then hbase.rs.env['HBASE_ROOT_LOGGER'] += ",#{hbase.rs.socket_client}"
-        # Security Logger
-        if hbase.rs.env['HBASE_SECURITY_LOGGER'].indexOf(hbase.rs.socket_client) is -1
-        then hbase.rs.env['HBASE_SECURITY_LOGGER']+= ",#{hbase.rs.socket_client}"
+      if @config.log4j?.services?
+        if @config.log4j?.remote_host? and @config.log4j?.remote_port? and ('ryba/hbase/regionserver' in @config.log4j?.services)
+          # adding SOCKET appender
+          hbase.rs.socket_client ?= "SOCKET"
+          # Root logger
+          if hbase.rs.env['HBASE_ROOT_LOGGER'].indexOf(hbase.rs.socket_client) is -1
+          then hbase.rs.env['HBASE_ROOT_LOGGER'] += ",#{hbase.rs.socket_client}"
+          # Security Logger
+          if hbase.rs.env['HBASE_SECURITY_LOGGER'].indexOf(hbase.rs.socket_client) is -1
+          then hbase.rs.env['HBASE_SECURITY_LOGGER']+= ",#{hbase.rs.socket_client}"
 
-        hbase.rs.opts['hbase.log.application'] = 'hbase-regionserver'
-        hbase.rs.opts['hbase.log.remote_host'] = @config.log4j.remote_host
-        hbase.rs.opts['hbase.log.remote_port'] = @config.log4j.remote_port
+          hbase.rs.opts['hbase.log.application'] = 'hbase-regionserver'
+          hbase.rs.opts['hbase.log.remote_host'] = @config.log4j.remote_host
+          hbase.rs.opts['hbase.log.remote_port'] = @config.log4j.remote_port
 
-        hbase.rs.socket_opts ?=
-          Application: '${hbase.log.application}'
-          RemoteHost: '${hbase.log.remote_host}'
-          Port: '${hbase.log.remote_port}'
-          ReconnectionDelay: '10000'
+          hbase.rs.socket_opts ?=
+            Application: '${hbase.log.application}'
+            RemoteHost: '${hbase.log.remote_host}'
+            Port: '${hbase.log.remote_port}'
+            ReconnectionDelay: '10000'
 
-        hbase.rs.log4j = merge hbase.rs.log4j, appender
-          type: 'org.apache.log4j.net.SocketAppender'
-          name: hbase.rs.socket_client
-          logj4: hbase.rs.log4j
-          properties: hbase.rs.socket_opts
+          hbase.rs.log4j = merge hbase.rs.log4j, appender
+            type: 'org.apache.log4j.net.SocketAppender'
+            name: hbase.rs.socket_client
+            logj4: hbase.rs.log4j
+            properties: hbase.rs.socket_opts
 
 ## Dependencies
 

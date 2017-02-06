@@ -185,31 +185,32 @@ job to HBase. Secure bulk loading is implemented by a coprocessor, named
       #HBase bin script use directly environment bariables
       hbase.master.env['HBASE_ROOT_LOGGER'] ?= 'INFO,RFA'
       hbase.master.env['HBASE_SECURITY_LOGGER'] ?= 'INFO,RFAS'
-      if @config.log4j?.remote_host? and @config.log4j?.remote_port? and ('ryba/hbase/master' in @config.log4j?.services)
-        # adding SOCKET appender
-        hbase.master.socket_client ?= "SOCKET"
-        # Root logger
-        if hbase.master.env['HBASE_ROOT_LOGGER'].indexOf(hbase.master.socket_client) is -1
-        then hbase.master.env['HBASE_ROOT_LOGGER'] += ",#{hbase.master.socket_client}"
-        # Security Logger
-        if hbase.master.env['HBASE_SECURITY_LOGGER'].indexOf(hbase.master.socket_client) is -1
-        then hbase.master.env['HBASE_SECURITY_LOGGER']+= ",#{hbase.master.socket_client}"
+      if @config.log4j?.services?
+        if @config.log4j?.remote_host? and @config.log4j?.remote_port? and ('ryba/hbase/master' in @config.log4j?.services)
+          # adding SOCKET appender
+          hbase.master.socket_client ?= "SOCKET"
+          # Root logger
+          if hbase.master.env['HBASE_ROOT_LOGGER'].indexOf(hbase.master.socket_client) is -1
+          then hbase.master.env['HBASE_ROOT_LOGGER'] += ",#{hbase.master.socket_client}"
+          # Security Logger
+          if hbase.master.env['HBASE_SECURITY_LOGGER'].indexOf(hbase.master.socket_client) is -1
+          then hbase.master.env['HBASE_SECURITY_LOGGER']+= ",#{hbase.master.socket_client}"
 
-        hbase.master.opts['hbase.log.application'] = 'hbase-master'
-        hbase.master.opts['hbase.log.remote_host'] = @config.log4j.remote_host
-        hbase.master.opts['hbase.log.remote_port'] = @config.log4j.remote_port
+          hbase.master.opts['hbase.log.application'] = 'hbase-master'
+          hbase.master.opts['hbase.log.remote_host'] = @config.log4j.remote_host
+          hbase.master.opts['hbase.log.remote_port'] = @config.log4j.remote_port
 
-        hbase.master.socket_opts ?=
-          Application: '${hbase.log.application}'
-          RemoteHost: '${hbase.log.remote_host}'
-          Port: '${hbase.log.remote_port}'
-          ReconnectionDelay: '10000'
+          hbase.master.socket_opts ?=
+            Application: '${hbase.log.application}'
+            RemoteHost: '${hbase.log.remote_host}'
+            Port: '${hbase.log.remote_port}'
+            ReconnectionDelay: '10000'
 
-        hbase.master.log4j = merge hbase.master.log4j, appender
-          type: 'org.apache.log4j.net.SocketAppender'
-          name: hbase.master.socket_client
-          logj4: hbase.master.log4j
-          properties: hbase.master.socket_opts
+          hbase.master.log4j = merge hbase.master.log4j, appender
+            type: 'org.apache.log4j.net.SocketAppender'
+            name: hbase.master.socket_client
+            logj4: hbase.master.log4j
+            properties: hbase.master.socket_opts
 
 ## Dependencies
 

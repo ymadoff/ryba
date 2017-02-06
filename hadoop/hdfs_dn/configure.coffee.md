@@ -120,34 +120,35 @@ Set up jave heap size linke in `ryba/hadoop/hdfs_nn`.
       ryba.hdfs.dn.root_logger ?= 'INFO,RFA'
       ryba.hdfs.dn.security_logger ?= 'INFO,RFAS'
       ryba.hdfs.dn.audit_logger ?= 'INFO,RFAAUDIT'
-      if @config.log4j?.remote_host? && @config.log4j?.remote_port?
-        # Root logger
-        if ryba.hdfs.dn.root_logger.indexOf(ryba.hdfs.dn.socket_client) is -1
-        then ryba.hdfs.dn.root_logger += ",#{ryba.hdfs.dn.socket_client}"
-        # Security Logger
-        if ryba.hdfs.dn.security_logger.indexOf(ryba.hdfs.dn.socket_client) is -1
-        then ryba.hdfs.dn.security_logger += ",#{ryba.hdfs.dn.socket_client}"
-        # Audit Logger
-        if ryba.hdfs.dn.audit_logger.indexOf(ryba.hdfs.dn.socket_client) is -1
-        then ryba.hdfs.dn.audit_logger += ",#{ryba.hdfs.dn.socket_client}"
-        # adding SOCKET appender
-        ryba.hdfs.dn.socket_client ?= "SOCKET"
-        # Adding Application name, remote host and port values in namenode's opts
-        ryba.hdfs.dn.opts['hadoop.log.application'] ?= 'namenode'
-        ryba.hdfs.dn.opts['hadoop.log.remote_host'] ?= @config.log4j.remote_host
-        ryba.hdfs.dn.opts['hadoop.log.remote_port'] ?= @config.log4j.remote_port
+      if @config.log4j?.services?
+        if @config.log4j?.remote_host? && @config.log4j?.remote_port? && ('ryba/hadoop/hdfs_dn' in @config.log4j.services)
+          # Root logger
+          if ryba.hdfs.dn.root_logger.indexOf(ryba.hdfs.dn.socket_client) is -1
+          then ryba.hdfs.dn.root_logger += ",#{ryba.hdfs.dn.socket_client}"
+          # Security Logger
+          if ryba.hdfs.dn.security_logger.indexOf(ryba.hdfs.dn.socket_client) is -1
+          then ryba.hdfs.dn.security_logger += ",#{ryba.hdfs.dn.socket_client}"
+          # Audit Logger
+          if ryba.hdfs.dn.audit_logger.indexOf(ryba.hdfs.dn.socket_client) is -1
+          then ryba.hdfs.dn.audit_logger += ",#{ryba.hdfs.dn.socket_client}"
+          # adding SOCKET appender
+          ryba.hdfs.dn.socket_client ?= "SOCKET"
+          # Adding Application name, remote host and port values in namenode's opts
+          ryba.hdfs.dn.opts['hadoop.log.application'] ?= 'namenode'
+          ryba.hdfs.dn.opts['hadoop.log.remote_host'] ?= @config.log4j.remote_host
+          ryba.hdfs.dn.opts['hadoop.log.remote_port'] ?= @config.log4j.remote_port
 
-        ryba.hdfs.dn.socket_opts ?=
-          Application: '${hadoop.log.application}'
-          RemoteHost: '${hadoop.log.remote_host}'
-          Port: '${hadoop.log.remote_port}'
-          ReconnectionDelay: '10000'
+          ryba.hdfs.dn.socket_opts ?=
+            Application: '${hadoop.log.application}'
+            RemoteHost: '${hadoop.log.remote_host}'
+            Port: '${hadoop.log.remote_port}'
+            ReconnectionDelay: '10000'
 
-        ryba.hdfs.dn.log4j = merge ryba.hdfs.dn.log4j, appender
-          type: 'org.apache.log4j.net.SocketAppender'
-          name: ryba.hdfs.dn.socket_client
-          logj4: ryba.hdfs.dn.log4j
-          properties: ryba.hdfs.dn.socket_opts
+          ryba.hdfs.dn.log4j = merge ryba.hdfs.dn.log4j, appender
+            type: 'org.apache.log4j.net.SocketAppender'
+            name: ryba.hdfs.dn.socket_client
+            logj4: ryba.hdfs.dn.log4j
+            properties: ryba.hdfs.dn.socket_opts
 
 ## Dependencies
 

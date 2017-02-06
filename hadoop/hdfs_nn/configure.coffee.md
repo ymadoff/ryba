@@ -158,34 +158,35 @@ fencing method should be configured to not block failover.
       ryba.hdfs.nn.security_logger ?= 'INFO,DRFAS'
       ryba.hdfs.nn.audit_logger ?= 'INFO,RFAAUDIT'
       # adding SOCKET appender
-      if @config.log4j?.remote_host? and @config.log4j?.remote_port? and ('ryba/hadoop/hdfs_nn' in @config.log4j?.services)
-        # Root logger
-        if ryba.hdfs.nn.root_logger.indexOf(ryba.hdfs.nn.socket_client) is -1
-        then ryba.hdfs.nn.root_logger += ",#{ryba.hdfs.nn.socket_client}"
-        # Security Logger
-        if ryba.hdfs.nn.security_logger.indexOf(ryba.hdfs.nn.socket_client) is -1
-        then ryba.hdfs.nn.security_logger += ",#{ryba.hdfs.nn.socket_client}"
-        # Audit Logger
-        if ryba.hdfs.nn.audit_logger.indexOf(ryba.hdfs.nn.socket_client) is -1
-        then ryba.hdfs.nn.audit_logger += ",#{ryba.hdfs.nn.socket_client}"
+      if @config.log4j?.services?
+        if @config.log4j?.remote_host? and @config.log4j?.remote_port? and ('ryba/hadoop/hdfs_nn' in @config.log4j?.services)
+          # Root logger
+          if ryba.hdfs.nn.root_logger.indexOf(ryba.hdfs.nn.socket_client) is -1
+          then ryba.hdfs.nn.root_logger += ",#{ryba.hdfs.nn.socket_client}"
+          # Security Logger
+          if ryba.hdfs.nn.security_logger.indexOf(ryba.hdfs.nn.socket_client) is -1
+          then ryba.hdfs.nn.security_logger += ",#{ryba.hdfs.nn.socket_client}"
+          # Audit Logger
+          if ryba.hdfs.nn.audit_logger.indexOf(ryba.hdfs.nn.socket_client) is -1
+          then ryba.hdfs.nn.audit_logger += ",#{ryba.hdfs.nn.socket_client}"
 
-        ryba.hdfs.nn.socket_client ?= "SOCKET"
-        # Adding Application name, remote host and port values in namenode's opts
-        ryba.hdfs.nn.opts['hadoop.log.application'] ?= 'namenode'
-        ryba.hdfs.nn.opts['hadoop.log.remote_host'] ?= @config.log4j.remote_host
-        ryba.hdfs.nn.opts['hadoop.log.remote_port'] ?= @config.log4j.remote_port
+          ryba.hdfs.nn.socket_client ?= "SOCKET"
+          # Adding Application name, remote host and port values in namenode's opts
+          ryba.hdfs.nn.opts['hadoop.log.application'] ?= 'namenode'
+          ryba.hdfs.nn.opts['hadoop.log.remote_host'] ?= @config.log4j.remote_host
+          ryba.hdfs.nn.opts['hadoop.log.remote_port'] ?= @config.log4j.remote_port
 
-        ryba.hdfs.nn.socket_opts ?=
-          Application: '${hadoop.log.application}'
-          RemoteHost: '${hadoop.log.remote_host}'
-          Port: '${hadoop.log.remote_port}'
-          ReconnectionDelay: '10000'
+          ryba.hdfs.nn.socket_opts ?=
+            Application: '${hadoop.log.application}'
+            RemoteHost: '${hadoop.log.remote_host}'
+            Port: '${hadoop.log.remote_port}'
+            ReconnectionDelay: '10000'
 
-        ryba.hdfs.nn.log4j = merge ryba.hdfs.nn.log4j, appender
-          type: 'org.apache.log4j.net.SocketAppender'
-          name: ryba.hdfs.nn.socket_client
-          logj4: ryba.hdfs.nn.log4j
-          properties: ryba.hdfs.nn.socket_opts
+          ryba.hdfs.nn.log4j = merge ryba.hdfs.nn.log4j, appender
+            type: 'org.apache.log4j.net.SocketAppender'
+            name: ryba.hdfs.nn.socket_client
+            logj4: ryba.hdfs.nn.log4j
+            properties: ryba.hdfs.nn.socket_opts
 
 ## Export configuration
 

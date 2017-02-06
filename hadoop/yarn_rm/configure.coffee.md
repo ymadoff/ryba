@@ -261,33 +261,34 @@ rmr /rmstore/ZKRMStateRoot
       ryba.yarn.rm.opts['yarn.server.resourcemanager.appsummary.logger'] = 'INFO,RMSUMMARY'
       ryba.yarn.rm.opts['yarn.server.resourcemanager.audit.logger'] = 'INFO,RMAUDIT'
       # adding SOCKET appender
-      if @config.log4j?.remote_host? and @config.log4j?.remote_port? and ('ryba/hadoop/yarn_rm' in @config.log4j?.services)
-        ryba.yarn.rm.socket_client ?= "SOCKET"
-        # Root logger
-        if ryba.yarn.rm.root_logger.indexOf(ryba.yarn.rm.socket_client) is -1
-        then ryba.yarn.rm.root_logger += ",#{ryba.yarn.rm.socket_client}"
-        # Security Logger
-        if ryba.yarn.rm.opts['yarn.server.resourcemanager.appsummary.logger'].indexOf(ryba.yarn.rm.socket_client) is -1
-        then ryba.yarn.rm.opts['yarn.server.resourcemanager.appsummary.logger'] += ",#{ryba.yarn.rm.socket_client}"
-        # Audit Logger
-        if ryba.yarn.rm.opts['yarn.server.resourcemanager.audit.logger'].indexOf(ryba.yarn.rm.socket_client) is -1
-        then ryba.yarn.rm.opts['yarn.server.resourcemanager.audit.logger'] += ",#{ryba.yarn.rm.socket_client}"
+      if @config.log4j?.services?
+        if @config.log4j?.remote_host? and @config.log4j?.remote_port? and ('ryba/hadoop/yarn_rm' in @config.log4j?.services)
+          ryba.yarn.rm.socket_client ?= "SOCKET"
+          # Root logger
+          if ryba.yarn.rm.root_logger.indexOf(ryba.yarn.rm.socket_client) is -1
+          then ryba.yarn.rm.root_logger += ",#{ryba.yarn.rm.socket_client}"
+          # Security Logger
+          if ryba.yarn.rm.opts['yarn.server.resourcemanager.appsummary.logger'].indexOf(ryba.yarn.rm.socket_client) is -1
+          then ryba.yarn.rm.opts['yarn.server.resourcemanager.appsummary.logger'] += ",#{ryba.yarn.rm.socket_client}"
+          # Audit Logger
+          if ryba.yarn.rm.opts['yarn.server.resourcemanager.audit.logger'].indexOf(ryba.yarn.rm.socket_client) is -1
+          then ryba.yarn.rm.opts['yarn.server.resourcemanager.audit.logger'] += ",#{ryba.yarn.rm.socket_client}"
 
-        ryba.yarn.rm.opts['hadoop.log.application'] = 'resourcemanager'
-        ryba.yarn.rm.opts['hadoop.log.remote_host'] = @config.log4j.remote_host
-        ryba.yarn.rm.opts['hadoop.log.remote_port'] = @config.log4j.remote_port
+          ryba.yarn.rm.opts['hadoop.log.application'] = 'resourcemanager'
+          ryba.yarn.rm.opts['hadoop.log.remote_host'] = @config.log4j.remote_host
+          ryba.yarn.rm.opts['hadoop.log.remote_port'] = @config.log4j.remote_port
 
-        ryba.yarn.rm.socket_opts ?=
-          Application: '${hadoop.log.application}'
-          RemoteHost: '${hadoop.log.remote_host}'
-          Port: '${hadoop.log.remote_port}'
-          ReconnectionDelay: '10000'
+          ryba.yarn.rm.socket_opts ?=
+            Application: '${hadoop.log.application}'
+            RemoteHost: '${hadoop.log.remote_host}'
+            Port: '${hadoop.log.remote_port}'
+            ReconnectionDelay: '10000'
 
-        ryba.yarn.rm.log4j = merge ryba.yarn.rm.log4j, appender
-          type: 'org.apache.log4j.net.SocketAppender'
-          name: ryba.yarn.rm.socket_client
-          logj4: ryba.yarn.rm.log4j
-          properties: ryba.yarn.rm.socket_opts
+          ryba.yarn.rm.log4j = merge ryba.yarn.rm.log4j, appender
+            type: 'org.apache.log4j.net.SocketAppender'
+            name: ryba.yarn.rm.socket_client
+            logj4: ryba.yarn.rm.log4j
+            properties: ryba.yarn.rm.socket_opts
 
 ## Dependencies
 
