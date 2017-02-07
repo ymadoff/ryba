@@ -20,7 +20,7 @@ default setting for Yarn and its client application such as MapReduce or Tez.
           'yarn_nm', 'yarn_rm'
           'hdfs_client', 'hdfs_nn', 'hdfs_dn'
           'hbase_m', 'hbase_rs'
-          'mapred_client', 'tez_client'
+          'mapred_client', 'nifi','tez_client'
           'hive_client', 'kafka_broker'
           'remote' ]
         .call (handler, next) ->
@@ -67,7 +67,7 @@ Normalize configuration.
         ctx.config.ryba ?= {}
         ctx.config.capacity ?= {}
         ctx.config.capacity.remote ?= {}
-        for conf in ['nn_hdfs_site', 'hdfs_site', 'rm_yarn_site', 'yarn_site', 'mapred_site', 'tez_site', 'hive_site', 'capacity_scheduler', 'hbase_site', 'kafka_broker']
+        for conf in ['nn_hdfs_site', 'hdfs_site', 'rm_yarn_site', 'yarn_site', 'mapred_site', 'tez_site', 'hive_site', 'capacity_scheduler', 'hbase_site', 'kafka_broker','nifi_properties']
           ctx.config.capacity[conf] ?= {}
           ctx.config.capacity.remote[conf] ?= {}
         ctx.config.capacity.capacity_scheduler['yarn.scheduler.capacity.resource-calculator'] ?= 'org.apache.hadoop.yarn.util.resource.DominantResourceCalculator'
@@ -439,6 +439,37 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           kafka_broker['log.dirs'] ?= disks.map (disk) ->
             path.resolve disk, kafka_data_dir or './kafka'
 
+## Nifi
+
+    exports.nifi = (ctxs) ->
+      for ctx in ctxs
+        continue unless ctx.has_service 'ryba/nifi'
+        {disks, nifi_properties} = ctx.config.capacity
+        {nifi_content_dir,nifi_provenance_dir} = ctx.params
+        if (nifi_content_dir? and nifi_max_partition?) or (nifi_content_dir? and nifi_max_partition?)
+          throw Error 'Can not use conjointly nifi content/provenance dir and nifi_max_partition options'
+        nifi_max_partition = ctx.params.nifi_max_partition ?= disks.length
+        #Content Repository directories
+        if /^\//.test nifi_content_dir
+          for k,dir of nifi_content_dir.split ','
+            nifi_properties["nifi.content.repository.directory.cr#{k+1}"] = dir
+        else
+          target_dirs = disks.map (disk) ->
+            path.resolve disk, nifi_content_dir or './nifi/content_repository'
+          for k in [0..Math.min(target_dirs.length,nifi_max_partition-1)]
+            dir = target_dirs[k]
+            nifi_properties["nifi.content.repository.directory.cr#{k+1}"] = dir
+        #Provenance Repository directories
+        if /^\//.test nifi_provenance_dir
+          for k,dir of nifi_provenance_dir.split ','
+            nifi_properties["nifi.provenance.repository.directory.pr#{k+1}"] = dir
+        else
+          target_dirs = disks.map (disk) ->
+            path.resolve disk, nifi_provenance_dir or './nifi/provenance_repository'
+          for k in [0..Math.min(target_dirs.length,nifi_max_partition-1)]
+            dir = target_dirs[k]
+            nifi_properties["nifi.provenance.repository.directory.pr#{k+1}"] = dir
+
     exports.remote = (ctxs, next) ->
       each(ctxs)
       .parallel(true)
@@ -474,7 +505,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
             ctx.config.capacity.remote.hive_site = hive_site unless err
             do_kafka_broker()
         do_kafka_broker = ->
-          return do_end() unless ctx.has_service 'ryba/kafka/broker'
+          return do_nifi() unless ctx.has_service 'ryba/kafka/broker'
           ssh2fs.readFile ctx.ssh, '/etc/kafka-broker/conf/broker.properties', 'ascii', (err, content) ->
             return do_end() if err
             properties = {}
@@ -485,7 +516,19 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
               properties[key.trim()] = value.trim()
             properties
             ctx.config.capacity.remote.kafka_broker = properties
-            do_end()
+            do_nifi()
+        do_nifi = ->
+          return do_end() unless ctx.has_service 'ryba/nifi'
+          ssh2fs.readFile ctx.ssh, '/etc/nifi/conf/nifi.properties', 'ascii', (err, content) ->
+            return do_end() if err
+            properties = {}
+            for line in string.lines content
+              continue if /^#.*$/.test line
+              continue unless /.+=.+/.test line
+              [key, value] = line.split '='
+              properties[key.trim()] = value.trim()
+            properties
+            ctx.config.capacity.remote.nifi_properties = properties
         # do_hbase = ->
         #   return do_end() unless ctx.has_service 'ryba/hbase/regionserver'
         #   properties.read ctx.ssh, '/etc/hive/conf/hbase-site.xml', (err, hive_site) ->
@@ -623,6 +666,10 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           if ctx.has_service('ryba/kafka/broker') and print_kafka_broker
             ws.write "  Kafka Broker\n"
             print 'kafka_broker', ['log.dirs']
+          print_nifi = not params.modules or multimatch(params.modules, 'ryba/nifi').length
+          if ctx.has_service('ryba/nifi')
+            print 'nifi_properties', 'Content/Provenance Repositories'
+            ws.write "  Nifi\n", capacity.nifi_properties
         do_end ws
       do_end = (ws) ->
         ws.end() if params.output
@@ -753,9 +800,14 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           node.config.ryba.hbase.rs.heapsize ?= capacity.regionserver_opts
         nodes[ctx.config.host] = node
         print_kafka_broker = not params.modules or multimatch(params.modules, 'ryba/kafka/broker').length
-        if ctx.has_service('ryba/kafka/broker') and print_hbase_regionserver
+        if ctx.has_service('ryba/kafka/broker') and print_kafka_broker
           node.config.ryba.kafka ?= {}
           node.config.ryba.kafka.broker = capacity.kafka_broker
+        print_nifi = not params.modules or multimatch(params.modules, 'ryba/nifi').length
+        if ctx.has_service('ryba/nifi') and print_nifi
+          node.config.ryba.nifi ?= {}
+          node.config.ryba.nifi.config ?= {}
+          node.config.ryba.nifi.config.properties ?= capacity.nifi_properties
         nodes[ctx.config.host] = node
       nodes
 
