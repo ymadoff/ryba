@@ -397,7 +397,8 @@ options "-Xmx" and "-Xms". The values must be less than their
     exports.tez_client = (ctxs) ->
       for ctx in ctxs
         continue unless ctx.has_service 'ryba/tez' or ctx.has_service('ryba/hive/server2')
-        continue unless ctx.config.ryba.hive.server2?.site['hive.execution.engine'] is 'tez'
+        if ctx.config.ryba.hive.server2?.site['hive.execution.engine'] is 'tez' and not ctx.has_service('ryba/tez')
+        then continue
         {mapred_site, tez_site} = ctx.config.capacity
         # Memory allocated for the Application Master
         tez_site['tez.am.resource.memory.mb'] ?= mapred_site['yarn.app.mapreduce.am.resource.mb']
