@@ -24,9 +24,6 @@ Ranger permit access
           'ryba/ranger/admin/start'
           'ryba/ranger/admin/setup'
         ]
-        'start': [
-          'ryba/ranger/admin/start'
-        ]
-        'stop': [
-          'ryba/ranger/admin/stop'
-        ]
+        'start': 'ryba/ranger/admin/start'
+        'status': 'ryba/ranger/admin/status'
+        'stop': 'ryba/ranger/admin/stop'
