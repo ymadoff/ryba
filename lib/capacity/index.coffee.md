@@ -67,6 +67,18 @@ Normalize configuration.
         ctx.config.ryba ?= {}
         ctx.config.capacity ?= {}
         ctx.config.capacity.remote ?= {}
+        mapred_client_services = [
+          'ryba/hadoop/mapred_client'
+          'ryba/hadoop/yarn_nm'
+          'ryba/hbase/regionserver'
+          'ryba/hbase/client'
+          'ryba/hive/client'
+          'ryba/hive/server2'
+        ]
+        should_configure_mapred_client = false
+        for service in mapred_client_services
+          should_configure_mapred_client = should_configure_mapred_client or ctx.has_service(service)
+        ctx.should_configure_mapred_client =  should_configure_mapred_client
         for conf in ['nn_hdfs_site', 'hdfs_site', 'rm_yarn_site', 'yarn_site', 'mapred_site', 'tez_site', 'hive_site', 'capacity_scheduler', 'hbase_site', 'kafka_broker','nifi_properties']
           ctx.config.capacity[conf] ?= {}
           ctx.config.capacity.remote[conf] ?= {}
@@ -342,7 +354,7 @@ This behavior may be altered with the "hdfs_nn_name_dir" parameter.
 
     exports.mapred_client = (ctxs) ->
       for ctx in ctxs
-        continue unless ctx.has_service 'ryba/hadoop/mapred_client'
+        continue unless ctx.should_configure_mapred_client
         {memory_per_container_mean, minimum_allocation_mb, maximum_allocation_mb, mapred_site} = ctx.config.capacity
         memory_per_container_mean_mb = Math.round memory_per_container_mean / 1024 / 1024
 
@@ -491,7 +503,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
             ctx.config.capacity.remote.yarn_site = yarn_site unless err
             do_mapred()
         do_mapred = ->
-          return do_tez() unless ctx.has_service 'ryba/hadoop/mapred_client'
+          return do_tez() unless ctx.should_configure_mapred_client
           properties.read ctx.ssh, '/etc/hadoop/conf/mapred-site.xml', (err, mapred_site) ->
             ctx.config.capacity.remote.mapred_site = mapred_site unless err
             do_tez()
@@ -646,7 +658,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
             ws.write "  Memory per Containers: #{prink.filesize capacity.memory_per_container, 3}\n"
             print 'yarn_site', ['yarn.nodemanager.resource.memory-mb', 'yarn.nodemanager.vmem-pmem-ratio', 'yarn.nodemanager.resource.cpu-vcores', 'yarn.nodemanager.local-dirs', 'yarn.nodemanager.log-dirs']
           print_mapred_client = not params.modules or multimatch(params.modules, 'ryba/hadoop/mapred_client').length
-          if ctx.has_service('ryba/hadoop/mapred_client') and print_mapred_client
+          if ctx.should_configure_mapred_client and print_mapred_client
             ws.write "  MapReduce Client\n"
             print 'mapred_site', ['yarn.app.mapreduce.am.resource.mb', 'yarn.app.mapreduce.am.command-opts', 'mapreduce.map.memory.mb', 'mapreduce.map.java.opts', 'mapreduce.reduce.memory.mb', 'mapreduce.reduce.java.opts', 'mapreduce.task.io.sort.mb', 'mapreduce.map.cpu.vcores', 'mapreduce.reduce.cpu.vcores']
           print_tez_client = not params.modules or multimatch(params.modules, 'ryba/tez').length
@@ -783,7 +795,7 @@ opts settings (mapreduce.map.java.opts) will be used by default for map tasks.
           node.config.ryba.yarn ?= {}
           node.config.ryba.yarn.site = capacity.yarn_site
         print_mapred_client = not params.modules or multimatch(params.modules, 'ryba/hadoop/mapred_client').length
-        if ctx.has_service('ryba/hadoop/mapred_client') and print_mapred_client
+        if ctx.should_configure_mapred_client and print_mapred_client
           node.config.ryba.mapred ?= {}
           node.config.ryba.mapred.site = capacity.mapred_site
         print_tez_client = not params.modules or multimatch(params.modules, 'ryba/tez').length
