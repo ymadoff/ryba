@@ -30,6 +30,7 @@ enterprise data ecosystem.
           'ryba/atlas/check'
         ]
         'start': 'ryba/atlas/start'
+        'status': 'ryba/atlas/status'
         'check': 'ryba/atlas/check'
         'stop': 'ryba/atlas/stop'
 
