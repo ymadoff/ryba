@@ -180,19 +180,16 @@ depending on the total amout of memory.
       for ctx in ctxs
         continue unless ctx.has_service 'ryba/hadoop/yarn_nm'
         {cores, disks, cores_yarn, memory_yarn, rm_yarn_site, yarn_site} = ctx.config.capacity
-
         minimum_container_size = if memory_yarn <= 2*1024*1024*1024 then 128*1024*1024 # 128 MB
         else if memory_yarn <= 4*1024*1024*1024 then 256*1024*1024 # 256 MB
         else if memory_yarn <= 8*1024*1024*1024 then 512*1024*1024 # 512 MB
         else if memory_yarn <= 24*1024*1024*1024 then 1024*1024*1024 # 1 GB
         else 2*1024*1024*1024 # 2 GB
-
         # min (2*CORES, 1.8*DISKS, (Total available RAM / MIN_CONTAINER_SIZE) )
         unless max_number_of_containers = ctx.config.capacity.max_number_of_containers
           # Possible incoherence, here we multiply number of cores by 2 while
           # NodeManager vcores is set to number of cores only
-          max_number_of_containers = Math.floor Math.min cores * 2, disks.length * 1.8, (memory_yarn / minimum_container_size)
-
+          max_number_of_containers = Math.floor Math.min cores * 2, Math.ceil(disks.length * 1.8), (memory_yarn / minimum_container_size)
         # Amount of RAM per container
         # max(MIN_CONTAINER_SIZE, (Total Available RAM) / containers))
         unless memory_per_container = ctx.config.capacity.memory_per_container
@@ -207,7 +204,6 @@ depending on the total amout of memory.
 
         # Export number of containers
         ctx.config.capacity.max_number_of_containers = max_number_of_containers
-
         # Export RAM per container
         memory_per_container = exports.rounded_memory memory_per_container
         ctx.config.capacity.memory_per_container = memory_per_container
