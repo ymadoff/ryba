@@ -333,11 +333,11 @@ configuration like solr.in.sh or solr.xml.
           mode: 0o0750
         @docker.compose.up
           header: 'Compose up through swarm'
-          if: @config.host is config['master'] and @config.docker.swarm?
+          if: @config.host is config['master'] and @config.mecano.swarm?
           target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker-compose.yml"
         @docker.compose.up
           header: 'Compose up without swarm'
-          unless: @config.docker.swarm?
+          if: not @config.mecano.swarm?
           services: "node_#{hosts.indexOf(@config.host)+1}"
           target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker-compose.yml"
         @then callback
