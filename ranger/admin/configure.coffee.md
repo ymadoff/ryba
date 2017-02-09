@@ -241,7 +241,9 @@ on the same host than `ryba/ranger/admin` module.
             cluster_config.zk_opts ?= {}
             cluster_config['hosts'] ?= scd_ctxs.map (ctx) -> ctx.config.host
             solr_clusterize solr_ctx , cluster_name, cluster_config
-          ranger.admin.cluster_config = scd_ctxs[0].config.ryba.solr.cloud_docker.clusters[cluster_name]
+          ranger.admin.cluster_config = scd_ctxs.filter( (ctx) -> 
+            ctx.config.host is cluster_config['master']
+          ).pop().config.ryba.solr.cloud_docker.clusters[cluster_name]
           if @params.command is 'install'
             for ctx in scd_ctxs
               if cluster_config['master'] is ctx.config.host
