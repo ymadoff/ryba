@@ -243,11 +243,13 @@ on the same host than `ryba/ranger/admin` module.
             solr_clusterize solr_ctx , cluster_name, cluster_config
           ranger.admin.cluster_config = scd_ctxs[0].config.ryba.solr.cloud_docker.clusters[cluster_name]
           if @params.command is 'install'
-            scd_ctxs[0]
-            .after
-              type: ['docker','compose','up']
-              target: "#{solr.cloud_docker.conf_dir}/clusters/#{cluster_name}/docker-compose.yml"
-              handler: -> @call 'ryba/ranger/admin/solr_bootstrap'
+            for ctx in scd_ctxs
+              if cluster_config['master'] is ctx.config.host
+                ctx
+                .after
+                  type: ['docker','compose','up']
+                  target: "#{solr.cloud_docker.conf_dir}/clusters/#{cluster_name}/docker-compose.yml"
+                  handler: -> @call 'ryba/ranger/admin/solr_bootstrap'
             #Search for a cloud_docker cluster find in solr.cloud_docker.clusters
           ranger.admin.install['audit_solr_port'] ?= ranger.admin.cluster_config.port
           ranger.admin.cluster_config['ranger'] ?= {}
