@@ -324,7 +324,7 @@ configuration like solr.in.sh or solr.xml.
               target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/log4j.properties"
               local_source: true
         @file.yaml
-          if: @config.host is config['master'] or not @config.docker.swarm
+          if: @config.host is config['master'] or not @config.docker.swarm?
           header: 'Generation docker-compose'
           target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker-compose.yml"
           content: dockerfile
