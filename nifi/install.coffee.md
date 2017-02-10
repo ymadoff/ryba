@@ -354,7 +354,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
         target: nifi.config.data_dirs
         uid: nifi.user.name
         gid: nifi.group.name
-        mode: 0o640
+        mode: 0o751
 
 ## Dependencies
 
