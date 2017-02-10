@@ -25,7 +25,7 @@
       @call
         if: -> ranger_ctx?
         handler: ->
-          {install} = @config.ryba.ranger.hbase_plugin
+          {install} = ranger_ctx.config.ryba.ranger.hbase_plugin
           policy_name = "Ranger-Ryba-HBase-Rest-Policy-#{@config.host}"
           hbase_policy =
             "name": "#{policy_name}"
