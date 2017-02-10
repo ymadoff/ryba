@@ -34,7 +34,7 @@ Example:
       zookeeper_quorum = kafka.zookeeper_quorum ?= for zoo_ctx in zoo_ctxs
         "#{zoo_ctx.config.host}:#{zoo_ctx.config.ryba.zookeeper.port}"
       kafka.admin ?= {}
-      kafka.admin.principal ?= kafka.user.name
+      kafka.admin.principal ?= "#{kafka.user.name}@#{@config.ryba.realm}"
       kafka.admin.password ?= 'kafka123'
       #list of kafka superusers
       kafka.superusers ?= ["#{kafka.admin.principal}"]
