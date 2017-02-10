@@ -4,6 +4,7 @@
     module.exports = ->
       yarn_rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
       hdfs_dn_ctxs = @contexts 'ryba/hadoop/hdfs_dn'
+      nm_ctxs = @contexts 'ryba/hadoop/yarn_nm'
       [jhs_context] = @contexts 'ryba/hadoop/mapred_jhs'
       {realm, mapred} = @config.ryba
       # Layout
@@ -45,6 +46,20 @@
         # mapred.site['mapreduce.jobhistory.principal'] ?= "jhs/#{jhs_context.config.host}@#{realm}"
       # The value is set by the client app and the iptables are enforced on the worker nodes
       mapred.site['yarn.app.mapreduce.am.job.client.port-range'] ?= '59100-59200'
+      for nm_ctx in nm_ctxs
+        nm_ctx
+        .after
+          type: ['hconfigure']
+          target: "#{nm_ctx.config.ryba.yarn.nm.conf_dir}/yarn-site.xml"
+          handler: (options, callback) ->
+            @iptables
+              ssh: options.ssh
+              header: 'Hadoop Mapred Ranger openging'
+              rules: [
+                { chain: 'INPUT', jump: 'ACCEPT', dport: mapred.site['yarn.app.mapreduce.am.job.client.port-range'].replace('-',':'), protocol: 'tcp', state: 'NEW', comment: "Mapred client Port Range" }
+              ]
+              if: nm_ctx.config.iptables.action is 'start'
+            @then callback
       mapred.site['mapreduce.framework.name'] ?= 'yarn' # Execution framework set to Hadoop YARN.
       # Deprecated properties
       mapred.site['mapreduce.cluster.local.dir'] = null # Now "yarn.nodemanager.local-dirs"
