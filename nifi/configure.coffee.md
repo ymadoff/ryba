@@ -303,3 +303,10 @@
 Set local path of additional libs (for custom processors) in this array.
 
       nifi.additional_libs ?= []
+
+## Data Directories Layout
+
+      props = Object.keys(properties).filter (prop) ->
+       prop.indexOf('nifi.content.repository.directory') > -1 or prop.indexOf('nifi.provenance.repository.directory') > -1
+      nifi.config.data_dirs ?= []
+      nifi.config.data_dirs.push properties[prop] for prop in props
