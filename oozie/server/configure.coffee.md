@@ -67,7 +67,9 @@ Example
       oozie.db[k] ?= v for k, v of ryba.db_admin[oozie.db.engine]
       oozie.db.database ?= 'oozie'
       #jdbc provided by ryba/commons/db_admin
-      oozie.site['oozie.service.JPAService.jdbc.url'] ?= "#{oozie.db.jdbc}/#{oozie.db.database}?createDatabaseIfNotExist=true"
+      #for now only setting the first host as Oozie fails to parse jdbc url.
+      #JIRA: [OOZIE-2136]
+      oozie.site['oozie.service.JPAService.jdbc.url'] ?= "jdbc:mysql://#{oozie.db.host}:#{oozie.db.port}/#{oozie.db.database}?createDatabaseIfNotExist=true"
       oozie.site['oozie.service.JPAService.jdbc.driver'] ?= 'com.mysql.jdbc.Driver'
       oozie.site['oozie.service.JPAService.jdbc.username'] ?= 'oozie'
       oozie.site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
