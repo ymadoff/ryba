@@ -48,9 +48,9 @@ Ranger Hive plugin runs inside Hiveserver2's JVM
         @config.ryba.hive.server2.opts += " -Djavax.net.ssl.trustStore=#{@config.ryba.ssl_client['ssl.client.truststore.location']} "
         @config.ryba.hive.server2.opts += " -Djavax.net.ssl.trustStorePassword=#{@config.ryba.ssl_client['ssl.server.truststore.password']}"
         # HIVE Plugin configuration
-        hive_plugin = @config.ryba.ranger.hive_plugin ?= {}  
+        hive_plugin = @config.ryba.ranger.hive_plugin ?= {}
         hive_plugin.principal ?= ranger.plugins.principal
-        hive_plugin.password ?= ranger.plugins.password        
+        hive_plugin.password ?= ranger.plugins.password
         hive_plugin.install ?= {}
         hive_plugin.install['PYTHON_COMMAND_INVOKER'] ?= 'python'
         # Should Hive GRANT/REVOKE update XA policies?

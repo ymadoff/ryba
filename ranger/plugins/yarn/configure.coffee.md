@@ -123,3 +123,11 @@ SSL can be configured to use SSL if ranger admin has SSL enabled.
           @config.ryba.ranger.yarn_plugin.install['SSL_KEYSTORE_PASSWORD'] ?= @config.ryba.ssl_server['ssl.server.keystore.password']
           @config.ryba.ranger.yarn_plugin.install['SSL_TRUSTSTORE_FILE_PATH'] ?= @config.ryba.ssl_client['ssl.client.truststore.location']
           @config.ryba.ranger.yarn_plugin.install['SSL_TRUSTSTORE_PASSWORD'] ?= @config.ryba.ssl_client['ssl.client.truststore.password']
+
+## Merge yarn_plugin conf to ranger admin
+
+        ranger_admin_ctx.config.ryba.ranger.yarn_plugin = merge yarn_plugin
+
+## Dependencies
+
+    {merge} = require 'mecano/lib/misc'

@@ -110,7 +110,6 @@ Configure Audit to SOLR
           knox_plugin.install['XAAUDIT.SOLR.PASSWORD'] ?= ranger.admin.install['audit_solr_password']
           knox_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR'] ?= '/var/log/hadoop/knox/audit/solr/spool'
 
-
 ## Knox Plugin SSL
 
         if ranger.admin.site['ranger.service.https.attrib.ssl.enabled'] is 'true'
@@ -118,3 +117,11 @@ Configure Audit to SOLR
           knox_plugin.install['SSL_KEYSTORE_PASSWORD'] ?= @config.ryba.ssl_server['ssl.server.keystore.password']
           knox_plugin.install['SSL_TRUSTSTORE_FILE_PATH'] ?= @config.ryba.ssl_server['ssl.server.truststore.location']
           knox_plugin.install['SSL_TRUSTSTORE_PASSWORD'] ?= @config.ryba.ssl_server['ssl.server.truststore.password']
+
+## Merge knox_plugin conf to ranger admin
+
+        ranger_admin_ctx.config.ryba.ranger.knox_plugin = merge knox_plugin
+
+## Dependencies
+
+    {merge} = require 'mecano/lib/misc'

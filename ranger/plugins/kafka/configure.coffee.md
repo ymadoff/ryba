@@ -59,7 +59,7 @@ The properties can be found [here][kafka-repository]
             'hadoop.security.authentication': core_site['hadoop.security.authentication']
             'zookeeper.connect': kb_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect'].join(',')
             'policy.download.auth.users': "#{kb_ctxs[0].config.ryba.kafka.user.name}" #from ranger 0.6
-            'commonNameForCertificate': ''           
+            'commonNameForCertificate': ''
           'description': 'kafka Repository'
           'isEnabled': true
           'name': kafka_plugin.install['REPOSITORY_NAME']
@@ -127,3 +127,11 @@ The properties can be found [here][kafka-repository]
           kafka_plugin.install['SSL_KEYSTORE_PASSWORD'] ?= @config.ryba.ssl_server['ssl.server.keystore.password']
           kafka_plugin.install['SSL_TRUSTSTORE_FILE_PATH'] ?= @config.ryba.ssl_client['ssl.client.truststore.location']
           kafka_plugin.install['SSL_TRUSTSTORE_PASSWORD'] ?= @config.ryba.ssl_client['ssl.client.truststore.password']
+
+## Merge kafka_plugin conf to ranger admin
+
+        ranger_admin_ctx.config.ryba.ranger.kafka_plugin = merge kafka_plugin
+
+## Dependencies
+
+    {merge} = require 'mecano/lib/misc'
