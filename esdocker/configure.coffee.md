@@ -1,5 +1,7 @@
 
-## Config Example:
+# Elasticsearch (Docker) Configuration
+
+## Example
 
 ```
     es_docker:
@@ -39,7 +41,7 @@
 
 ```
 
-# Elastic Search Config
+## Source Code
 
     module.exports = handler: ->
       es_docker = @config.ryba.es_docker ?= {}

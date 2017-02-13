@@ -1,5 +1,5 @@
 
-# Elastic Search Configuration (Standalon Mode)
+# Elasticsearch Configuration (Standalon Mode)
 
 ### Global configuration
 

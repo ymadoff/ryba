@@ -1,5 +1,5 @@
 
-# ElasticSearch Install
+# Elasticsearch Install
 
 Installs ElasticSearch on the specified hosts. It's divided into four main steps.
 The configuration of the Elastics Search Users and Group, the configuration of Kerberos, the installation

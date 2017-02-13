@@ -1,4 +1,4 @@
-# Docker ElasticSearch Install
+# Elasticsearch (Docker) Install
 
     module.exports =  header: 'Docker ES Install', handler: ->
       {swarm_manager,clusters,ssl} = @config.ryba.es_docker

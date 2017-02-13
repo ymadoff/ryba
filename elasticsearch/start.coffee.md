@@ -1,5 +1,5 @@
 
-# ElasticSearch Start
+# Elasticsearch Start
 
 This commands starts Elastic Search using the default service command.
 

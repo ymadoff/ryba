@@ -1,5 +1,5 @@
 
-# Elastic Search (Dockerized)
+# Elasticsearch (Docker)
 
 [Elasticsearch](http://www.elastic.co) is a higly-available, distributed  and scalable search Engine.
 Elastic search is based on a restful api and indexes data with http Put requests.

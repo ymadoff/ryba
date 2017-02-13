@@ -1,5 +1,5 @@
 
-# Elasticsearch Prepare
+# Elasticsearch (Docker) Prepare
 
 Download Elasticsearch Plugins.
 

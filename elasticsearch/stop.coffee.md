@@ -1,7 +1,7 @@
 
-# ElasticSearch Stop
+# Elasticsearch Stop
 
-This commands stops ElasticSearch service.
+This commands stops Elasticsearch service.
 
     module.exports = header: 'ES Stop', label_true: 'STOPPED', handler: ->
       @service.stop

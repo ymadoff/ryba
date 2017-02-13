@@ -1,5 +1,5 @@
 
-# ElasticSearch Status
+# Elasticsearch Status
 
 This commands checks the status of ElasticSearch (STARTED, STOPPED)
 

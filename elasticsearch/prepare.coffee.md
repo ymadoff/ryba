@@ -1,5 +1,5 @@
 
-# ElasticSearch Prepared
+# Elasticsearch Prepared
 
     module.exports = header: 'ES Prepared', handler: ->
       {elasticsearch, realm} = @config.ryba
@@ -7,4 +7,3 @@
         ssh: null
         source: elasticsearch.source
         # target: "/var/tmp/elasticsearch-#{elasticsearch.version}.noarch.rpm"
-
