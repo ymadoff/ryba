@@ -31,11 +31,11 @@ Worth to investigate:
 
 ## IPTables
 
-| Service    | Port | Proto  | Parameter                  |
-|------------|------|--------|----------------------------|
-| namenode  | 50070 | tcp    | dfs.namdnode.http-address  |
-| namenode  | 50470 | tcp    | dfs.namenode.https-address |
-| namenode  | 8020  | tcp    | fs.defaultFS               |
+| Service  | Port  | Proto | Parameter                  |
+| -------- | ----- | ----- | -------------------------- |
+| namenode | 50070 | tcp   | dfs.namdnode.http-address  |
+| namenode | 50470 | tcp   | dfs.namenode.https-address |
+| namenode | 8020  | tcp   | fs.defaultFS               |
 
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
