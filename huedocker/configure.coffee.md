@@ -217,7 +217,8 @@ Example:
         blacklisted_app.push 'webhcat'
 
       # HiveServer2
-      [hs2_ctx] = @contexts 'ryba/hive/server2'
+      hs2_ctxs = @contexts 'ryba/hive/server2'
+      [hs2_ctx] = hs2_ctxs
       throw Error "No Hive HCatalog Server configured" unless hs2_ctx
       hue_docker.ini['beeswax'] ?= {}
       hue_docker.ini['beeswax']['hive_server_host'] ?= "#{hs2_ctx.config.host}"
@@ -403,6 +404,11 @@ Example:
         oozie_ctx.config.ryba.oozie.site ?= {}
         oozie_ctx.config.ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{hue_docker.user.name}.hosts"] ?= '*'
         oozie_ctx.config.ryba.oozie.site["oozie.service.ProxyUserService.proxyuser.#{hue_docker.user.name}.groups"] ?= '*'
+      for hive_ctx in hs2_ctxs
+        hive_ctx.config.ryba ?= {}
+        hive_ctx.config.ryba.core_site ?= {}
+        hive_ctx.config.ryba.core_site["hadoop.proxyuser.#{hue_docker.user.name}.hosts"] ?= '*'
+        hive_ctx.config.ryba.core_site["hadoop.proxyuser.#{hue_docker.user.name}.groups"] ?= '*'
 
 [home]: http://gethue.com
 [hdp-2.3.2.0-hue]:(http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.2/bk_installing_manually_book/content/prerequisites_hue.html)
