@@ -239,7 +239,7 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
         if ! hdfs dfs -test -d #{mapred.site['yarn.app.mapreduce.am.staging-dir']}/history; then
           hdfs dfs -mkdir -p #{mapred.site['yarn.app.mapreduce.am.staging-dir']}/history
           hdfs dfs -chmod 0755 #{mapred.site['yarn.app.mapreduce.am.staging-dir']}/history
-          hdfs dfs -chown #{mapred.user.name}:#{hadoop_group} #{mapred.site['yarn.app.mapreduce.am.staging-dir']}/history
+          hdfs dfs -chown #{mapred.user.name}:#{hadoop_group.name} #{mapred.site['yarn.app.mapreduce.am.staging-dir']}/history
           modified=1
         fi
         if ! hdfs dfs -test -d /app-logs; then
