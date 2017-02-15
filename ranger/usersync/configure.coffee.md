@@ -1,7 +1,7 @@
 
 # Configure
 
-    module.exports = handler: ->
+    module.exports = ->
       {ryba} = @config
       {ssl, ssl_client} = ryba ?= {}
       ranger = @config.ryba.ranger ?= {}
@@ -57,7 +57,7 @@ database:
           ranger.usersync.install['MIN_UNIX_USER_ID_TO_SYNC'] ?= '300'
         when 'ldap'
           if  !ranger.usersync.install['SYNC_LDAP_URL']?
-            [opldp_srv_ctx] = @contexts 'masson/core/openldap_server', require("#{__dirname}/../../node_modules/masson/core/openldap_server/configure").handler
+            [opldp_srv_ctx] = @contexts 'masson/core/openldap_server'
             throw Error 'No openldap server configured' unless opldp_srv_ctx?
             {openldap_server} = opldp_srv_ctx.config
             ranger.usersync.install['SYNC_LDAP_URL'] ?= "#{openldap_server.uri}"
@@ -82,7 +82,8 @@ database:
 
       ranger.usersync.install['unix_user'] ?= ranger.user.name
       ranger.usersync.install['unix_group'] ?= ranger.group.name
-      ranger.usersync.install['logdir'] ?= '/var/logs'
+      ranger.usersync.install['hadoop_conf'] ?= '/etc/hadoop/conf'
+      ranger.usersync.install['logdir'] ?= '/var/log/ranger/usersync'
 
 Nonetheless some of the properties are hard coded to `/usr/hdp/current/ranger-usersync/setup.py`
 file. Administrators can override following properties.
@@ -109,7 +110,7 @@ SSl properties are not documented, they are extracted from setup.py scripts.
       ranger.usersync.heap_size ?= '256m'
       ranger.usersync.opts ?= {}
       ranger.usersync.opts['javax.net.ssl.trustStore'] ?= '/etc/hadoop/conf/truststore'
-      ranger.usersync.opts['javax.net.ssl.trustStorePassword'] ?= 'ryba123'    
+      ranger.usersync.opts['javax.net.ssl.trustStorePassword'] ?= 'ryba123'
 
 ## Dependencies 
 

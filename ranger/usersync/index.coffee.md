@@ -10,12 +10,11 @@ importing user/groups from different sources (LDAP, AD, UNIX).
       use:
         java: implicit: true, module: 'masson/commons/java'
         ranger_admin: 'ryba/ranger/admin'
+        db_admin: implicit: true, module: 'ryba/commons/db_admin'
         hadoop_core: implicit: true, module: 'ryba/hadoop/core'
       configure: 'ryba/ranger/usersync/configure'
       commands:
         'install': [
-          'masson/commons/mysql/client'
-          'masson/commons/java'
           'ryba/ranger/admin/wait'
           'ryba/ranger/usersync/install'
           'ryba/ranger/usersync/start'

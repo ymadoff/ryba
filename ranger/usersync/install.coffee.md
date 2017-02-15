@@ -102,6 +102,7 @@ Update the file "install.properties" with the properties defined by the
           match: RegExp "^#{quote k} =.*$", 'mg'
           replace: "#{k} = '#{v}'"
           append: true
+        mode: 0o750
         eof: true
         backup: true
 
