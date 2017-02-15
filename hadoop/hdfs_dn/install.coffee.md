@@ -320,24 +320,27 @@ Note, we might move this middleware to Masson.
             content = misc.ini.parse content
             properties = {}
             for k, v of hdfs.sysctl
-              v = "\"#{v}\""
+              v = "#{v}"
               properties[k] = v if content[k] isnt v
             return next null, false unless Object.keys(properties).length
-            @file
-              target: '/etc/sysctl.conf'
-              write: for k, v of properties
-                match: ///^#{misc.regexp.escape k}?\s+=\s*.*?\s///mg
-                replace: "#{k} = #{v}"
-                append: true
-              backup: true
-              eof: true
-            , (err) ->
-              throw err if err
-              properties = for k, v of properties then "#{k}=#{v}"
-              properties = properties.join ' '
-              @execute
-                cmd: "sysctl #{properties}"
-              , next
+            @fs.readFile '/etc/sysctl.conf', 'ascii', (err, config) =>
+              current = misc.ini.parse config
+              #merge properties from current config
+              for k, v of current
+                properties[k] = v if hdfs.sysctl[k] isnt v
+              @file
+                header: 'Write Kernel Parameters'
+                target: '/etc/sysctl.conf'
+                content: misc.ini.stringify_single_key properties
+                backup: true
+                eof: true
+              , (err) ->
+                throw err if err
+                properties = for k, v of properties then "#{k}='#{v}'"
+                properties = properties.join ' '
+                @execute
+                  cmd: "sysctl #{properties}"
+                , next
 
 ## Ulimit
 
