@@ -333,11 +333,12 @@ configuration like solr.in.sh or solr.xml.
           mode: 0o0750
         @docker.compose.up
           header: 'Compose up through swarm'
-          if: @config.host is config['master'] and @config.mecano.swarm?
+          if: @config.host is config['master'] and (@has_service('ryba/swarm/agent') or @has_service('ryba/swarm/master'))
           target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker-compose.yml"
         @docker.compose.up
           header: 'Compose up without swarm'
-          if: not @config.mecano.swarm?
+          docker: @config.docker
+          unless: (@has_service('ryba/swarm/agent') or @has_service('ryba/swarm/master'))
           services: "node_#{hosts.indexOf(@config.host)+1}"
           target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker-compose.yml"
         @then callback

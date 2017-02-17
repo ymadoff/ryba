@@ -5,6 +5,7 @@
       docker = @config.docker ?= {}
       ryba = @config.ryba ?= {}
       [primary_ctx] = @contexts('ryba/swarm/manager').filter( (ctx) -> ctx.config.ryba.swarm_primary  is true )
+      throw Error 'No Swarm Manager is configured' unless primary_ctx?
       swarm = ryba.swarm ?= {}
       swarm.image ?= 'swarm'
       swarm.tag ?= 'latest'
