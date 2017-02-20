@@ -21,7 +21,7 @@ Waiting for docker to deliver an net=host option for docker build command !
           target: "#{@config.mecano.cache_dir}/spark_livy_server"
         @system.mkdir
           target: "#{spark.livy.build.directory}/"
-        @render
+        @file.render
           source: spark.livy.build.dockerfile
           target: "#{spark.livy.build.directory}/Dockerfile"
           context: 

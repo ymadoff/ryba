@@ -51,7 +51,7 @@ Not documented be taken from [github-source][hdfs-plugin-source]
 
       @call ->
         # wrap into call for version to be not null
-        @render
+        @file.render
           header: 'Scripts rendering'
           if: -> version?
           source: "#{__dirname}/../../resources/plugin-install.properties.j2"

@@ -74,7 +74,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         properties: knox.site
         merge: true
 
-      @render
+      @file.render
         header: 'Knox Ldap Caching'
         target: "#{knox.conf_dir}/ehcache.xml"
         source: "#{__dirname}/resources/ehcache.j2"
@@ -149,7 +149,7 @@ in the gateway.sh service script.
             backup: true
             eof: true
 
-          @render
+          @file.render
             target: "#{knox.conf_dir}/#{nameservice}-ehcache.xml"
             source: "#{__dirname}/resources/ehcache.j2"
             local_source: true

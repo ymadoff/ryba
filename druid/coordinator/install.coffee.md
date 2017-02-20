@@ -20,7 +20,7 @@
 
 ## Configuration
 
-      @render
+      @file.render
         header: 'rc.d'
         target: "/etc/init.d/druid-coordinator"
         source: "#{__dirname}/../resources/druid-coordinator.j2"

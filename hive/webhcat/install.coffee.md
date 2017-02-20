@@ -116,7 +116,7 @@ Update environnmental variables inside '/etc/hive-webhcat/conf/webhcat-env.sh'.
       @call header: 'Webhcat Env', handler: ->
         webhcat.java_opts = ''
         webhcat.java_opts += " -D#{k}=#{v}" for k, v of webhcat.opts
-        @render
+        @file.render
           source: "#{__dirname}/../../resources/hive-webhcat/webhcat-env.sh"
           local: true
           target: "#{webhcat.conf_dir}/webhcat-env.sh"

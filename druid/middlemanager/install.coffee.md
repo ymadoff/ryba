@@ -21,7 +21,7 @@
 
 ## Configuration
 
-      @render
+      @file.render
         header: 'rc.d'
         target: "/etc/init.d/druid-middlemanager"
         source: "#{__dirname}/../resources/druid-middlemanager.j2"

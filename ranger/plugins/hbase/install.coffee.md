@@ -144,7 +144,7 @@ Must add certificate to JAVA Cacerts file manually.
 ## Plugin Scripts 
 
       @call ->
-        @render
+        @file.render
           header: 'Scripts rendering'
           if: -> version?
           source: "#{__dirname}/../../resources/plugin-install.properties.j2"

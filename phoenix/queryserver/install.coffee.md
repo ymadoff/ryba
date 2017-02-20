@@ -88,7 +88,7 @@ We use the SPNEGO keytab, so we let hadoop/core handle principal & keytab
 
 ## Env
 
-      @render
+      @file.render
         header: 'Env'
         target: "#{phoenix.conf_dir}/hbase-env.sh"
         source: "#{__dirname}/../resources/hbase-env.sh.j2"

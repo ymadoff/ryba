@@ -78,7 +78,7 @@ we execute this task using the rest api.
       @call 
         header: 'Plugin Activation'
         handler: ->
-          @render
+          @file.render
             header: 'Scripts rendering'
             if: -> version?
             source: "#{__dirname}/../../resources/plugin-install.properties.j2"

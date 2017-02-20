@@ -41,7 +41,7 @@ in order to rendered configuration file with custom properties.
           handler: ->
             switch options.store['mecano:system:release'][0]
               when '6'
-                @render
+                @file.render
                   source: "#{__dirname}/../resources/mongod-router-server.j2"
                   target: '/etc/init.d/mongod-router-server'
                   context: @config

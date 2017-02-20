@@ -136,7 +136,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
       @call header: 'Environment', handler: ->
         ryba.hdfs.nn.java_opts += " -D#{k}=#{v}" for k, v of ryba.hdfs.nn.opts 
-        @render
+        @file.render
           header: 'Environment'
           target: "#{hdfs.nn.conf_dir}/hadoop-env.sh"
           source: "#{__dirname}/../resources/hadoop-env.sh.j2"

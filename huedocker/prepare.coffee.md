@@ -51,7 +51,7 @@ for hue to be able to communicate with the hadoop cluster in secure mode.
           source: hue_docker.build.source
           target: "#{hue_docker.build.directory}/hue"
           revision: hue_docker.build.revision
-        @render
+        @file.render
           source: hue_docker.build.dockerfile
           target: "#{hue_docker.build.directory}/Dockerfile"
           context: 
@@ -81,14 +81,14 @@ for hue to be able to communicate with the hadoop cluster in secure mode.
 This production container running as hue service
 
       @call header: 'Production Container', timeout: -1, handler: ->
-        @render
+        @file.render
           source: hue_docker.prod.dockerfile
           target: "#{hue_docker.prod.directory}/Dockerfile"
           context:
             user: hue_docker.user.name
             uid: hue_docker.user.uid
             gid: hue_docker.user.uid
-        @render
+        @file.render
           source: "#{__dirname}/resources/hue_init.sh"
           target: "#{hue_docker.prod.directory}/hue_init.sh"
           context:

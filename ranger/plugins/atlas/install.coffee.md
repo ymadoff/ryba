@@ -129,7 +129,7 @@ we execute this task using the rest api.
 # Plugin Scripts 
 
       @call ->
-        @render
+        @file.render
           header: 'Scripts rendering'
           if: -> version?
           source: "#{__dirname}/../../resources/plugin-install.properties.j2"

@@ -91,7 +91,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
 ## Spark Conf
 
       @call header: 'Spark Configuration', handler: ->
-        @render
+        @file.render
           destination : "#{spark.thrift.conf_dir}/spark-env.sh"
           source: "#{__dirname}/../resources/spark-env.sh.j2"
           local_source: true

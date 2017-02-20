@@ -98,7 +98,7 @@ So we must manually force install of hdf-select outside of yum to handle it
 
 ## Env
 
-      @render
+      @file.render
         header: 'Env'
         target: '/usr/hdf/current/nifi/bin/nifi-env.sh'
         source: "#{__dirname}/resources/nifi-env.sh.j2"
@@ -250,7 +250,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
 
 ## Environment
 
-      @render
+      @file.render
         header: 'Bootstrap Conf'
         target: "#{nifi.conf_dir}/bootstrap.conf"
         source: "#{__dirname}/resources/bootstrap.conf.j2"
@@ -324,7 +324,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
 
 # Logs
 
-      @render
+      @file.render
         header: 'Log Configuration'
         target: "#{nifi.conf_dir}/logback.xml"
         source: "#{__dirname}/resources/logback.xml.j2"

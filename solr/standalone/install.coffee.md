@@ -146,7 +146,7 @@ Create HDFS solr user and its home directory
           match: RegExp "^.*#{k}=.*$", 'mg'
           replace: "#{k}=\"#{v}\" # RYBA DON'T OVERWRITE"
           append: true
-        @render
+        @file.render
           header: 'Solr Environment'
           source: "#{__dirname}/../resources/standalone/solr.ini.sh.j2"
           target: "#{solr.single.conf_dir}/solr.in.sh"
@@ -155,7 +155,7 @@ Create HDFS solr user and its home directory
           local_source: true
           backup: true
           eof: true
-        @render
+        @file.render
           header: 'Solr Config'
           source: solr.single.conf_source
           target: "#{solr.single.conf_dir}/solr.xml"

@@ -178,7 +178,7 @@ SSH connection to the node to gather the memory and CPU informations.
         local_source: true
       @call header: 'YARN Env', handler: ->
         yarn.nm.java_opts += " -D#{k}=#{v}" for k, v of yarn.nm.opts 
-        @render
+        @file.render
           header: 'YARN Env'
           target: "#{yarn.nm.conf_dir}/yarn-env.sh"
           source: "#{__dirname}/../resources/yarn-env.sh.j2"

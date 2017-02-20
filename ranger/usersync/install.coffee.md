@@ -83,7 +83,7 @@ directories.
 Update the file "install.properties" with the properties defined by the
 "ryba.ranger.usersync.install" configuration.
 
-      @render
+      @file.render
         header: 'Configure Install Scripts'
         target: "/usr/hdp/current/ranger-usersync/install.properties"
         source: "#{__dirname}/../resources/usersync-install.properties.js2"

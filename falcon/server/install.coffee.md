@@ -84,7 +84,7 @@ directory with the location of the directory storing the process pid.
 
 Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
-      @render
+      @file.render
         header: 'Falcon Env'
         target: "#{falcon.conf_dir}/falcon-env.sh"
         source: "#{__dirname}/../resources/falcon-env.sh.j2"

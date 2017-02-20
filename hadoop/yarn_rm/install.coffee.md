@@ -147,7 +147,7 @@ inside "/etc/init.d" and activate it on startup.
           append: true
       @call header: 'YARN Env', handler: ->
         yarn.rm.java_opts += " -D#{k}=#{v}" for k, v of yarn.rm.opts 
-        @render
+        @file.render
           target: "#{yarn.rm.conf_dir}/yarn-env.sh"
           source: "#{__dirname}/../resources/yarn-env.sh.j2"
           local_source: true

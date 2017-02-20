@@ -116,7 +116,7 @@ Environment passed to the Master before it starts.
       
       @call header: 'HBase Env', handler: ->
         hbase.master.java_opts += " -D#{k}=#{v}" for k, v of hbase.master.opts
-        @render
+        @file.render
           target: "#{hbase.master.conf_dir}/hbase-env.sh"
           source: "#{__dirname}/../resources/hbase-env.sh.j2"
           backup: true

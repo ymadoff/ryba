@@ -250,7 +250,7 @@ configuration like solr.in.sh or solr.xml.
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0750
-        @render
+        @file.render
           source:"#{__dirname}/../resources/cloud_docker/docker_entrypoint.sh"
           target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker_entrypoint.sh"
           context: @config
@@ -260,7 +260,7 @@ configuration like solr.in.sh or solr.xml.
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0750
-        @render
+        @file.render
           source:"#{__dirname}/../resources/cloud_docker/zkCli.sh.j2"
           target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/zkCli.sh"
           context: @config.ryba
@@ -270,7 +270,7 @@ configuration like solr.in.sh or solr.xml.
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0750
-        @render
+        @file.render
           header: 'Solr Environment'
           source: "#{__dirname}/../resources/cloud/solr.ini.sh.j2"
           target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/solr.in.sh"
@@ -317,7 +317,7 @@ configuration like solr.in.sh or solr.xml.
               mode: 0o0750
               backup: true
               eof: true
-            @render
+            @file.render
               if: host is @config.host
               header: 'Log4j'
               source: "#{__dirname}/../resources/log4j.properties.j2"

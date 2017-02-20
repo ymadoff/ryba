@@ -20,7 +20,7 @@
 
 ## Configuration
 
-      @render
+      @file.render
         header: 'rc.d'
         target: "/etc/init.d/druid-historical"
         source: "#{__dirname}/../resources/druid-historical.j2"

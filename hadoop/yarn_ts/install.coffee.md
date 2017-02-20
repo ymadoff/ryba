@@ -117,7 +117,7 @@ Update the "yarn-site.xml" configuration file.
         target: "#{yarn.ats.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
         local_source: true
-      @render
+      @file.render
         target: "#{yarn.ats.conf_dir}/yarn-env.sh"
         source: "#{__dirname}/../resources/yarn-env.sh.j2"
         local_source: true

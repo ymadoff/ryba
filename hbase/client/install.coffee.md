@@ -66,7 +66,7 @@ Note, we left the permission mode as default, Master and RegionServer need to
 
 Environment passed to the Master before it starts.
 
-      @render
+      @file.render
         header: 'Env'
         target: "#{hbase.conf_dir}/hbase-env.sh"
         source: "#{__dirname}/../resources/hbase-env.sh.j2"

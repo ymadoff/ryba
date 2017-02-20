@@ -32,7 +32,7 @@ Check if hadoop connector works and re-activate jar execution.
           handler: ->
             @execute
               cmd: "cp -R #{solr.cloud.latest_dir}/server/solr/configsets/data_driven_schema_configs /tmp/#{check_dir}"
-            @render
+            @file.render
               header: 'Solrconfig'
               source: "#{__dirname}/../resources/cloud/solrconfig.xml.j2"
               target: "/tmp/#{check_dir}/solrconfig.xml"
@@ -85,7 +85,7 @@ This check is inspired [from HDP][search-hdp].
           handler: ->
             @execute
               cmd: "cp -R #{solr.cloud.latest_dir}/server/solr/configsets/data_driven_schema_configs /tmp/#{check_dir}"
-            @render
+            @file.render
               header: 'Solrconfig'
               source: "#{__dirname}/../resources/cloud/solrconfig.xml.j2"
               target: "/tmp/#{check_dir}/solrconfig.xml"

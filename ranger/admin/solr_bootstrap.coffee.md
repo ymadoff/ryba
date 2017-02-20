@@ -55,7 +55,7 @@ solr apache version.
           @file.download
             source: "#{__dirname}/../resources/solr/managed-schema"
             target: "#{tmp_dir}/ranger_audits/managed-schema"
-          @render
+          @file.render
             source: "#{__dirname}/../resources/solr/solrconfig.xml"
             target: "#{tmp_dir}/ranger_audits/solrconfig.xml"
             local: true
@@ -76,7 +76,7 @@ solr apache version.
         @file.download
           source: "#{__dirname}/../resources/solr/managed-schema"
           target: "#{tmp_dir}/ranger_audits/conf/managed-schema"
-        @render
+        @file.render
           source: "#{__dirname}/../resources/solr/solrconfig.xml"
           target: "#{tmp_dir}/ranger_audits/conf/solrconfig.xml"
           local: true

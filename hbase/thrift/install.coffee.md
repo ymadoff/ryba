@@ -112,7 +112,7 @@ restrict it but not the thrift server.
 
 Environment passed to the HBase Rest Server before it starts.
 
-      @render
+      @file.render
         header: 'HBase Env'
         target: "#{hbase.thrift.conf_dir}/hbase-env.sh"
         source: "#{__dirname}/../resources/hbase-env.sh.j2"

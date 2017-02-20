@@ -49,7 +49,7 @@ resourcemanager.
 
 Properties accepted by the template are: `ryba.yarn.rm_opts`   
 
-      @render
+      @file.render
         header: 'Yarn OPTS'
         target: "#{hadoop_conf_dir}/yarn-env.sh"
         source: "#{__dirname}/../resources/yarn-env.sh.j2"

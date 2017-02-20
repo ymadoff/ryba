@@ -7,7 +7,7 @@
 
 ## Build Container
 
-        @render
+        @file.render
           header: 'Render Dockerfile'
           target: "#{@config.mecano.cache_dir or '.'}/build/Dockerfile"
           source: "#{__dirname}/resources/Dockerfile.j2"

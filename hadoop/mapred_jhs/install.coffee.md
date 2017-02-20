@@ -132,14 +132,14 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
         target: "#{mapred.jhs.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
         local_source: true
-      @render
+      @file.render
         header: 'Mapred Env'
         target: "#{mapred.jhs.conf_dir}/mapred-env.sh"
         source: "#{__dirname}/../resources/mapred-env.sh.j2"
         context: @config
         local_source: true
         backup: true
-      @render
+      @file.render
         header: 'Hadoop Env'
         target: "#{mapred.jhs.conf_dir}/hadoop-env.sh"
         source: "#{__dirname}/../resources/hadoop-env.sh.j2"
@@ -157,7 +157,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
         gid: hadoop_group.name
         mode: 0o0755
         backup: true
-      @render
+      @file.render
         header: 'MapRed Env'
         target: "#{mapred.jhs.conf_dir}/mapred-env.sh"
         source: "#{__dirname}/../resources/mapred-env.sh.j2"

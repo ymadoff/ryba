@@ -304,7 +304,7 @@ Render the Atlas Environment file
           match: RegExp "^.*#{k}=.*$", 'mg'
           replace: "export #{k}=\"#{v}\" # RYBA DON'T OVERWRITE"
           append: true
-        @render
+        @file.render
           header: 'Atlas Env'
           target: "#{atlas.conf_dir}/atlas-env.sh"
           source: "#{__dirname}/resources/atlas-env.sh.j2"
@@ -337,7 +337,7 @@ set to other than the default
       #   header: 'HBase Client Env'
       #   source: "#{@config.ryba.hbase.conf_dir}/hbase-env.sh"
       #   target: "#{atlas.conf_dir}/hbase/hbase-env.sh"
-      @render
+      @file.render
         header: 'HBase Client Env'
         target: "#{atlas.conf_dir}/hbase/hbase-env.sh"
         source: "#{__dirname}/../hbase/resources/hbase-env.sh.j2"

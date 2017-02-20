@@ -166,7 +166,7 @@ Create HDFS solr user and its home directory
           replace: "#{k}=\"#{v}\" # RYBA DON'T OVERWRITE"
           append: true
 
-        @render
+        @file.render
           header: 'Solr Environment'
           source: "#{__dirname}/../resources/cloud/solr.ini.sh.j2"
           target: "#{solr.cloud.conf_dir}/solr.in.sh"
@@ -175,7 +175,7 @@ Create HDFS solr user and its home directory
           local_source: true
           backup: true
           eof: true
-        @render
+        @file.render
           header: 'Solr Config'
           source: "#{solr.cloud.conf_source}"
           target: "#{solr.cloud.conf_dir}/solr.xml"

@@ -116,7 +116,7 @@ isnt yet started.
         target: "#{hive.hcatalog.conf_dir}/hive-log4j.properties"
         content: hive.hcatalog.log4j.config
         backup: true
-      @render
+      @file.render
         header: 'Exec Log4j'
         target: "#{hive.hcatalog.conf_dir}/hive-exec-log4j.properties"
         source: "#{__dirname}/../resources/hive-exec-log4j.properties"
@@ -144,7 +144,7 @@ by setting a "heapsize" value equal to "4096".
 Note, the startup script found in "hive-hcatalog/bin/hcat_server.sh" references
 the Hive Metastore service and execute "./bin/hive --service metastore"
 
-      @render
+      @file.render
         header: 'Hive Env'
         source: "#{__dirname}/../resources/hive-env.sh.j2"
         target: "#{hive.hcatalog.conf_dir}/hive-env.sh"

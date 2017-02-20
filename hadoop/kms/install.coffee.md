@@ -68,7 +68,7 @@
 
 Maintain the "kms-env.sh" file.
 
-      @render
+      @file.render
         header: 'Environment'
         target: "#{kms.conf_dir}/kms-env.sh"
         source: "#{__dirname}/../resources/kms-env.sh.j2"

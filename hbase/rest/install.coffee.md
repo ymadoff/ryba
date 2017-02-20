@@ -108,7 +108,7 @@ restrict it but not the rest server.
 
 Environment passed to the HBase Rest Server before it starts.
 
-      @render
+      @file.render
         header: 'Hbase Env'
         target: "#{hbase.rest.conf_dir}/hbase-env.sh"
         source: "#{__dirname}/../resources/hbase-env.sh.j2"

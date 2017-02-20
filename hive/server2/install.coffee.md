@@ -105,7 +105,7 @@ isnt yet started.
         uid: hive.user.name
         gid: hive.group.name
         mode: 0o0750
-      @render
+      @file.render
         header: 'Hive Log4j properties'
         source: "#{__dirname}/../resources/hive-exec-log4j.properties"
         local_source: true
@@ -126,7 +126,7 @@ Enrich the "hive-env.sh" file with the value of the configuration property
 Using this functionnality, a user may for example raise the heap size of Hive
 Server2 to 4Gb by setting a value equal to "-Xmx4096m".
 
-      @render
+      @file.render
         header: 'Hive Server2 Env'
         source: "#{__dirname}/../resources/hive-env.sh.j2"
         target: "#{hive.server2.conf_dir}/hive-env.sh"

@@ -137,7 +137,7 @@ nagiocmd:x:2419:apache
 
       @call header: 'WebUI Users & Groups', ->
         {users, groups} = @config.ryba.nagios
-        @render
+        @file.render
           source: "#{__dirname}/resources/templates/contacts.cfg.j2"
           local_source: true
           target: '/etc/nagios/objects/contacts.cfg'
@@ -217,7 +217,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
         hostgroup_defs = {}
         for group, hosts of nagios.hostgroups
           hostgroup_defs[group] = if hosts.length then hosts else null
-        @render
+        @file.render
           source: "#{__dirname}/resources/templates/hadoop-hostgroups.cfg.j2"
           local_source: true
           target: '/etc/nagios/objects/hadoop-hostgroups.cfg'
@@ -230,7 +230,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
         hostgroup_defs = {}
         for group, hosts of nagios.hostgroups
           hostgroup_defs[group] = if hosts.length then hosts else null
-        @render
+        @file.render
           source: "#{__dirname}/resources/templates/hadoop-servicegroups.cfg.j2"
           local_source: true
           target: '/etc/nagios/objects/hadoop-servicegroups.cfg'
@@ -300,7 +300,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
         hostgroup_defs = {}
         for group, hosts of nagios.hostgroups
           hostgroup_defs[group] = if hosts.length then hosts else null
-        @render
+        @file.render
           header: 'Services'
           source: "#{__dirname}/resources/templates/hadoop-services.cfg.j2"
           local_source: true

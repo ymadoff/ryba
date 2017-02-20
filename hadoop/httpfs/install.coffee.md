@@ -107,7 +107,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           mode: 0o0755
         @call header: 'HttpFS Env', handler: ->
           httpfs.catalina_opts += " -D#{k}=#{v}" for k, v of httpfs.catalina.opts
-          @render
+          @file.render
             target: "#{httpfs.conf_dir}/httpfs-env.sh"
             source: "#{__dirname}/../resources/httpfs-env.sh.j2"
             local_source: true
@@ -116,7 +116,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             gid: httpfs.group.name
             backup: true
             mode: 0o755
-        @render
+        @file.render
           target: "#{httpfs.conf_dir}/httpfs-log4j.properties"
           source: "#{__dirname}/../resources/httpfs-log4j.properties"
           local_source: true

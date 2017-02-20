@@ -158,7 +158,7 @@ has finished (logs are only available in yarn-cluster mode).
             properties: 'hive.execution.engine': 'mr'
             merge: true
             backup: true
-          @render
+          @file.render
             destination : "#{spark.conf_dir}/spark-env.sh"
             source: "#{__dirname}/../resources/spark-env.sh.j2"
             local: true
