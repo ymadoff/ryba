@@ -31,7 +31,7 @@ oozie:x:493:
 ```
 
       @group oozie.group
-      @user oozie.user
+      @system.user oozie.user
 
 ## IPTables
 

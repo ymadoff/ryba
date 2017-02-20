@@ -20,7 +20,7 @@ elasticsearch:x:493:
 ```
 
       @group elasticsearch.group
-      @user elasticsearch.user
+      @system.user elasticsearch.user
 
 ## Kerberos
 

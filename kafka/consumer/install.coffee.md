@@ -21,7 +21,7 @@ kafka:x:496:kafka
 ```
 
       @group kafka.group
-      @user kafka.user
+      @system.user kafka.user
 
 ## Package
 

@@ -16,7 +16,7 @@ rrdcached:x:493:
 ```
 
       @group header: 'Group', ganglia.rrdcached_group
-      @user header: 'User', ganglia.rrdcached_user
+      @system.user header: 'User', ganglia.rrdcached_user
 
 ## IPTables
 
@@ -103,7 +103,7 @@ Copy the object files provided in the HDP companion files into the
 RRDtool is by default runing as "nobody". In order to work, nobody need a login shell
 in its user account definition.
 
-      @user
+      @system.user
         header: 'Fix User'
         name: 'nobody'
         shell: '/bin/bash'

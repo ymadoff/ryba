@@ -23,7 +23,7 @@ hadoop:x:498:hdfs
 
       @group zoo_server.config.ryba.zookeeper.group
       @group zoo_server.config.ryba.hadoop_group
-      @user zoo_server.config.ryba.zookeeper.user
+      @system.user zoo_server.config.ryba.zookeeper.user
 
 ## Packages
 

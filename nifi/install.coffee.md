@@ -13,7 +13,7 @@
 ## Users
 
       @group nifi.group
-      @user nifi.user
+      @system.user nifi.user
 
 ## HDP - HDF Cohabitation
 

@@ -25,7 +25,7 @@ hive:x:493:
 ```
 
       @group hive.group
-      @user hive.user
+      @system.user hive.user
 
 ## Service
 

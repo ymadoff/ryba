@@ -12,7 +12,7 @@
 ## User & Group
 
       @group smartsense.group
-      @user smartsense.user
+      @system.user smartsense.user
 
 ## Packages
 Note rmp can only be download from the Hortonworks Support Web UI.

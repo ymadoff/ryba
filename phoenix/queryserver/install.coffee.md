@@ -14,7 +14,7 @@ Please refer to the Apache Phoenix QueryServer [documentation][phoenix-doc].
 ## Users & Groups
 
       @group phoenix.group
-      @user phoenix.user
+      @system.user phoenix.user
 
 ## IPTables
 

@@ -30,7 +30,7 @@
 ## User/group
       
       @group atlas.group
-      @user atlas.user
+      @system.user atlas.user
 
 ## IPTables
 

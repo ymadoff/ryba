@@ -25,7 +25,7 @@ hadoop:x:498:hdfs
 ```
 
       @group header: 'Group', hadoop_group
-      @user header: 'User', yarn.user
+      @system.user header: 'User', yarn.user
 
 ## IPTables
 

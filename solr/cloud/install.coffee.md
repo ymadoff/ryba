@@ -47,7 +47,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Users and Groups
 
       @group solr.group
-      @user solr.user
+      @system.user solr.user
 
 ## Packages
 Ryba support installing solr from apache official release or HDP Search repos.

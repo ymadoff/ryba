@@ -41,7 +41,7 @@ hue:x:494:
 ```
 
       @group hue_docker.group
-      @user hue_docker.user
+      @system.user hue_docker.user
 
 ## IPTables
 

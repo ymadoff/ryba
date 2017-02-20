@@ -24,7 +24,7 @@ hadoop:x:502:yarn,mapred,hdfs,hue
 ```
 
       @group hadoop_group
-      @user sqoop.user
+      @system.user sqoop.user
 
 ## Environment
 

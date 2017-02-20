@@ -44,7 +44,7 @@ hbase:x:492:
 ```
 
       @group hbase.group
-      @user hbase.user
+      @system.user hbase.user
 
 
 ## HBase Master Layout

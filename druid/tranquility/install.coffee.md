@@ -29,7 +29,7 @@ druid:x:2435:
 ```
 
       @group druid.group
-      @user druid.user
+      @system.user druid.user
 
 ## Packages
 

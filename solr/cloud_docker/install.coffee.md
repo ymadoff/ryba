@@ -23,7 +23,7 @@ Create user and groups for solr user.
         uid: solr.user.name
         gid: solr.group.name
       @group solr.group
-      @user solr.user
+      @system.user solr.user
 
 ## Layout
 

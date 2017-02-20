@@ -22,7 +22,7 @@ falcon:x:498:falcon
 ```
 
       @group falcon.client.group
-      @user falcon.client.user
+      @system.user falcon.client.user
 
 ## Packages
 

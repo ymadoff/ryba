@@ -25,7 +25,7 @@ hue:x:494:
 ```
 
       @group header: 'Group', hue.group
-      @user header: 'User', hue.user
+      @system.user header: 'User', hue.user
 
 ## IPTables
 

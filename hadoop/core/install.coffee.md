@@ -33,7 +33,7 @@ not handled here.
 
       @call header: 'Users & Groups', handler: ->
         @group [hadoop_group, hdfs.group, yarn.group, mapred.group]
-        @user [hdfs.user, yarn.user, mapred.user]
+        @system.user [hdfs.user, yarn.user, mapred.user]
 
 ## Topology
 
@@ -82,7 +82,7 @@ will be created by one of the datanode.
         # ryba group and user may already exist in "/etc/passwd" or in any sssd backend
         {group, user, krb5_user} = @config.ryba
         @group group
-        @user user
+        @system.user user
         @krb5_addprinc krb5, krb5_user
 
       @mkdir

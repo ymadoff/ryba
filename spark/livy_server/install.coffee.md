@@ -46,7 +46,7 @@ spark:x:494:
 ```
 
       @group spark.group
-      @user spark.user
+      @system.user spark.user
 
 ## Startup Script
 

@@ -35,7 +35,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Users and Groups
 
       @group solr.group
-      @user solr.user
+      @system.user solr.user
 
 ## Layout
 

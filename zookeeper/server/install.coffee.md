@@ -27,7 +27,7 @@ hadoop:x:498:hdfs
 
       @group zookeeper.group
       @group hadoop_group
-      @user zookeeper.user
+      @system.user zookeeper.user
 
 ## IPTables
 

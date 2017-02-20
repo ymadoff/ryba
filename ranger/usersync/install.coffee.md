@@ -10,7 +10,7 @@
 ## Users & Groups
 
       @group ranger.group
-      @user ranger.user
+      @system.user ranger.user
 
 ## Package
 

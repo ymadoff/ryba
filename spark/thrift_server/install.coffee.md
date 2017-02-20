@@ -15,7 +15,7 @@
 # Users and Groups   
 
       @group spark.group
-      @user spark.user
+      @system.user spark.user
 
 # Packages
 

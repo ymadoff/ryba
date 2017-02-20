@@ -25,7 +25,7 @@ httpfs:x:494:httpfs
       @call header: 'Users & Groups', handler: ->
         {httpfs} = @config.ryba
         @group httpfs.group
-        @user httpfs.user
+        @system.user httpfs.user
 
 ## IPTables
 

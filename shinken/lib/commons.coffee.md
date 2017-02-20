@@ -7,7 +7,7 @@
 ## Users & Groups
 
       @group shinken.group
-      @user shinken.user
+      @system.user shinken.user
 
 ## Commons Packages
 

@@ -12,7 +12,7 @@
 ## Users & Groups
 
       @group opentsdb.group
-      @user opentsdb.user
+      @system.user opentsdb.user
 
 ## IPTables
 
