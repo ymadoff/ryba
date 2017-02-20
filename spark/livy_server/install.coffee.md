@@ -69,17 +69,17 @@ Write startup script to /etc/init.d/service-hue-docker
 ## Layout
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: spark.livy.pid_dir
           uid: spark.user.name
           gid: spark.group.name
           mode: 0o0770
-        @mkdir
+        @system.mkdir
           target: spark.livy.log_dir
           uid: spark.user.name
           gid: spark.group.name
           mode: 0o0770
-        @mkdir
+        @system.mkdir
           target: spark.livy.conf_dir
           uid: spark.user.name
           gid: spark.group.name

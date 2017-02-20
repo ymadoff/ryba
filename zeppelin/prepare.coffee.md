@@ -26,7 +26,7 @@ image.
         image: zeppelin.build.tag
         rm: true
         volume: "#{@config.mecano.cache_dir}:/target"
-      @mkdir
+      @system.mkdir
         target: "#{@config.mecano.cache_dir}/zeppelin"
       @copy
         source: "#{zeppelin.prod.cwd}/Dockerfile"

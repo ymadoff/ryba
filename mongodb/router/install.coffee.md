@@ -70,7 +70,7 @@ in order to rendered configuration file with custom properties.
 
 Create dir where the mongod-config-server stores its metadata
 
-      @mkdir
+      @system.mkdir
         header: 'Layout'
         target: '/var/lib/mongodb'
         uid: mongodb.user.name

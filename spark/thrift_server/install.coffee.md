@@ -59,17 +59,17 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log/spark
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: spark.thrift.pid_dir
           uid: spark.user.name
           gid: @config.ryba.hadoop_group.gid
           mode: 0o0770
-        @mkdir
+        @system.mkdir
           target: spark.thrift.log_dir
           uid: spark.user.name
           gid: @config.ryba.hadoop_group.gid
           mode: 0o0770
-        @mkdir
+        @system.mkdir
           target: spark.thrift.conf_dir
           uid: spark.user.name
           gid: @config.ryba.hadoop_group.gid

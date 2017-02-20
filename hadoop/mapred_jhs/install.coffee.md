@@ -79,17 +79,17 @@ Create the log and pid directories.
 
       @call header: 'Layout', timeout: -1, handler: ->
         {mapred, hadoop_group} = @config.ryba
-        @mkdir
+        @system.mkdir
           target: "#{mapred.log_dir}"
           uid: mapred.user.name
           gid: hadoop_group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: "#{mapred.pid_dir}"
           uid: mapred.user.name
           gid: hadoop_group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: mapred.site['mapreduce.jobhistory.recovery.store.leveldb.path']
           uid: mapred.user.name
           gid: hadoop_group.name

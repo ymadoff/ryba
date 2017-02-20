@@ -73,20 +73,20 @@ in order to rendered configuration file with custom properties.
 Create dir where the mongodb-config-server stores its metadata
 
       @call header: 'Layout',  handler: ->
-        @mkdir
+        @system.mkdir
           target: '/var/lib/mongodb'
           uid: mongodb.user.name
           gid: mongodb.group.name
-        @mkdir
+        @system.mkdir
           target: mongodb.configsrv.config.storage.dbPath
           uid: mongodb.user.name
           gid: mongodb.group.name
-        @mkdir
+        @system.mkdir
           if: mongodb.configsrv.config.storage.repairPath?
           target: mongodb.configsrv.config.storage.repairPath
           uid: mongodb.user.name
           gid: mongodb.group.name
-        @mkdir
+        @system.mkdir
           target: mongodb.configsrv.config.net.unixDomainSocket.pathPrefix
           uid: mongodb.user.name
           gid: mongodb.group.name

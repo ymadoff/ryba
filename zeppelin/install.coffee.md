@@ -109,7 +109,7 @@ Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
 
 ## Zeppelin properties configuration
 
-      @mkdir
+      @system.mkdir
         header: 'Directory'
         target: "#{zeppelin.conf_dir}"
         mode: 0o0750

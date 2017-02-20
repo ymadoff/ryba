@@ -71,27 +71,27 @@ Install Atlas packages
 ## Layout && Directories
 
       @call header: 'Layout Directories', handler: (options) ->
-        @mkdir
+        @system.mkdir
           target: atlas.log_dir
           uid: atlas.user.name
           gid: atlas.group.name
           mode: 0o0750
-        @mkdir
+        @system.mkdir
           target: atlas.pid_dir
           uid: atlas.user.name
           gid: atlas.group.name
           mode: 0o0750
-        @mkdir
+        @system.mkdir
           target: atlas.conf_dir
           uid: atlas.user.name
           gid: atlas.group.name
           mode: 0o0750
-        @mkdir
+        @system.mkdir
           target: atlas.env['ATLAS_DATA_DIR']
           uid: atlas.user.name
           gid: atlas.group.name
           mode: 0o0750
-        @mkdir
+        @system.mkdir
           target: atlas.env['ATLAS_EXPANDED_WEBAPP_DIR']
           uid: atlas.user.name
           gid: atlas.group.name

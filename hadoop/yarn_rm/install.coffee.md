@@ -98,14 +98,14 @@ inside "/etc/init.d" and activate it on startup.
 
       @call header: 'Layout', handler: ->
         {yarn, hadoop_group} = @config.ryba
-        @mkdir
+        @system.mkdir
           target: "#{yarn.rm.conf_dir}"
-        @mkdir
+        @system.mkdir
           target: "#{yarn.rm.pid_dir}"
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o755
-        @mkdir
+        @system.mkdir
           target: "#{yarn.rm.log_dir}"
           uid: yarn.user.name
           gid: yarn.group.name

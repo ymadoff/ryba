@@ -90,17 +90,17 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Environment
 
       @call header: 'Environment', handler: ->
-        @mkdir
+        @system.mkdir
           target: "#{httpfs.pid_dir}"
           uid: httpfs.user.name
           gid: httpfs.group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: "#{httpfs.log_dir}" #/#{hdfs.user.name}
           uid: httpfs.user.name
           gid: httpfs.group.name
           parent: true
-        @mkdir
+        @system.mkdir
           target: "#{httpfs.tmp_dir}"
           uid: httpfs.user.name
           gid: httpfs.group.name
@@ -125,12 +125,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         @link
           source: '/usr/hdp/current/hadoop-httpfs/webapps'
           target: "#{httpfs.catalina_home}/webapps"
-        @mkdir # CATALINA_TMPDIR
+        @system.mkdir # CATALINA_TMPDIR
           target: "#{httpfs.catalina_home}/temp"
           uid: httpfs.user.name
           gid: httpfs.group.name
           mode: 0o0750
-        @mkdir
+        @system.mkdir
           target: "#{httpfs.catalina_home}/work"
           uid: httpfs.user.name
           gid: httpfs.group.name

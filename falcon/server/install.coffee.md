@@ -66,12 +66,12 @@ falcon:x:498:falcon
           if: -> @status -3
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: falcon.log_dir
           uid: falcon.user
           gid: falcon.group
           parent: true
-        @mkdir
+        @system.mkdir
           target: falcon.pid_dir
           uid: falcon.user.name
           gid: falcon.group.name

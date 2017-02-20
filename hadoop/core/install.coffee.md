@@ -85,7 +85,7 @@ will be created by one of the datanode.
         @system.user user
         @krb5_addprinc krb5, krb5_user
 
-      @mkdir
+      @system.mkdir
         header: 'Keytabs'
         target: '/etc/security/keytabs'
         uid: 'root'

@@ -101,31 +101,31 @@ inside "/etc/init.d" and activate it on startup.
               code_skipped: 3
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: "#{yarn.nm.conf_dir}"
-        @mkdir
+        @system.mkdir
           target: "#{yarn.nm.pid_dir}"
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: "#{yarn.nm.log_dir}"
           uid: yarn.user.name
           gid: yarn.group.name
           parent: true
-        @mkdir
+        @system.mkdir
           target: yarn.site['yarn.nodemanager.log-dirs'].split ','
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o0755
           parent: true
-        @mkdir
+        @system.mkdir
           target: yarn.site['yarn.nodemanager.local-dirs'].split ','
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o0755
           parent: true
-        @mkdir
+        @system.mkdir
           target: yarn.site['yarn.nodemanager.recovery.dir'] 
           uid: yarn.user.name
           gid: hadoop_group.name
@@ -226,7 +226,7 @@ but is owned by 2401"
         @system.chmod
           target: ce
           mode: 0o6050
-        @mkdir
+        @system.mkdir
           target: "#{hadoop_conf_dir}"
           uid: 'root'
         @file.ini
@@ -305,7 +305,7 @@ on Centos/Redhat7 OS. Legacy cgconfig and cgroup-tools package must be used. (ma
           # .execute
           #   cmd: 'mount -t cgroup -o cpu cpu /cgroup'
           #   code_skipped: 32
-          @mkdir
+          @system.mkdir
             target: "#{yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path']}/cpu"
             mode: 0o1777
             parent: true

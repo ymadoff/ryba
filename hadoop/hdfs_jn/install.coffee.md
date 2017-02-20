@@ -50,21 +50,21 @@ The JournalNode data are stored inside the directory defined by the
 "dfs.journalnode.edits.dir" property.
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: "#{hdfs.jn.conf_dir}"
-        @mkdir
+        @system.mkdir
           target: for dir in hdfs.site['dfs.journalnode.edits.dir'].split ','
             if dir.indexOf('file://') is 0
             then dir.substr(7) else dir
           uid: hdfs.user.name
           gid: hadoop_group.name
-        @mkdir
+        @system.mkdir
           target: "#{hdfs.pid_dir}"
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o0755
           parent: true
-        @mkdir
+        @system.mkdir
           target: "#{hdfs.log_dir}" #/#{hdfs.user.name}
           uid: hdfs.user.name
           gid: hdfs.group.name

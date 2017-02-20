@@ -29,13 +29,13 @@
 
 # Layout
 
-      @mkdir
+      @system.mkdir
         target: ranger.yarn_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR']
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0750
         if: ranger.yarn_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
-      @mkdir
+      @system.mkdir
         target: ranger.yarn_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR']
         uid: yarn.user.name
         gid: hadoop_group.name

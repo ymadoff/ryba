@@ -32,11 +32,11 @@ So we must manually force install of hdf-select outside of yum to handle it
 ## Layout
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: nifi.log_dir
           uid: nifi.user.name
           gid: nifi.group.name
-        @mkdir
+        @system.mkdir
           target: '/var/run/nifi'
           uid: nifi.user.name
           gid: nifi.group.name
@@ -349,7 +349,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
 
 # Data Directories
 
-      @mkdir
+      @system.mkdir
         header: 'Data directories layout'
         target: nifi.config.data_dirs
         uid: nifi.user.name

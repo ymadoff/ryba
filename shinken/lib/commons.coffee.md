@@ -21,13 +21,13 @@
 ## Layout
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: '/etc/shinken/packs'
-        @mkdir
+        @system.mkdir
           target: "#{shinken.user.home}/share"
           uid: shinken.user.name
           gid: shinken.group.name
-        @mkdir
+        @system.mkdir
           target: "#{shinken.user.home}/doc"
           uid: shinken.user.name
           gid: shinken.group.name

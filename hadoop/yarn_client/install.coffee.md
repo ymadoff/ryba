@@ -29,13 +29,13 @@
 
       @call header: 'Layout', timeout: -1, handler: ->
         pid_dir = yarn.pid_dir.replace '$USER', yarn.user.name
-        @mkdir
+        @system.mkdir
           target: "#{yarn.log_dir}/#{yarn.user.name}"
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o0755
           parent: true
-        @mkdir
+        @system.mkdir
           target: "#{pid_dir}"
           uid: yarn.user.name
           gid: hadoop_group.name

@@ -38,9 +38,9 @@ for hue to be able to communicate with the hadoop cluster in secure mode.
 # Hue Build dockerfile execution
 
       @call header: 'Build Prepare', timeout: -1,  handler: ->
-        @mkdir
+        @system.mkdir
           target: "#{@config.mecano.cache_dir}/huedocker"
-        @mkdir
+        @system.mkdir
           target: "#{hue_docker.build.directory}/"
         @copy
           unless: hue_docker.build.source.indexOf('.git') > 0
@@ -66,7 +66,7 @@ for hue to be able to communicate with the hadoop cluster in secure mode.
           image: "#{hue_docker.build.name}:#{hue_docker.build.version}"
           name: 'ryba_hue_extractor'
           entrypoint: '/bin/bash'
-        @mkdir
+        @system.mkdir
           target: "#{hue_docker.prod.directory}"
         @docker_cp
           container: 'ryba_hue_extractor'

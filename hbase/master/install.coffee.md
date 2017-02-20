@@ -50,17 +50,17 @@ hbase:x:492:
 ## HBase Master Layout
 
       @call header: 'Layout', timeout: -1, handler: ->
-        @mkdir
+        @system.mkdir
           target: hbase.master.pid_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: hbase.master.log_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: hbase.master.conf_dir
           uid: hbase.user.name
           gid: hbase.group.name

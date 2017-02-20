@@ -62,18 +62,18 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Layout log Hue
 
       @call header: 'Layout', timeout: -1, handler:  ->
-        @mkdir
+        @system.mkdir
           target: hue_docker.log_dir
           uid: hue_docker.user.name
           gid: hue_docker.group.name
           mode: 0o755
           parent: true
-        @mkdir
+        @system.mkdir
           target: '/tmp/hue_docker'
           uid: hue_docker.user.name
           gid: hue_docker.group.name
           mode: 0o755
-        @mkdir
+        @system.mkdir
           target: "#{hue_docker.conf_dir}"
           uid: hue_docker.user.name
           gid: hue_docker.group.name

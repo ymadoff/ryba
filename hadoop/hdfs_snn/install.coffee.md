@@ -61,19 +61,19 @@ script inside "/etc/init.d" and activate it on startup.
           if: -> @status -4
 
       @call header: 'Layout', timeout: -1, handler: ->
-        @mkdir
+        @system.mkdir
           target: for dir in hdfs.site['dfs.namenode.checkpoint.dir'].split ','
             if dir.indexOf('file://') is 0
             then dir.substr(7) else dir
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o755
-        @mkdir
+        @system.mkdir
           target: "#{hdfs.pid_dir.replace '$USER', hdfs.user.name}"
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o755
-        @mkdir
+        @system.mkdir
           target: "#{hdfs.log_dir}" #/#{hdfs.user.name}
           uid: hdfs.user.name
           gid: hdfs.group.name

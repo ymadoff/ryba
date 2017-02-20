@@ -70,20 +70,20 @@ in order to rendered configuration file with custom properties.
 Create dir where the mongod-shard-server stores its metadata
 
       @call header: 'Layout',  handler: ->
-        @mkdir
+        @system.mkdir
           target: '/var/lib/mongodb'
           uid: mongodb.user.name
           gid: mongodb.group.name
-        @mkdir
+        @system.mkdir
           target: mongodb.shard.config.storage.dbPath
           uid: mongodb.user.name
           gid: mongodb.group.name
-        @mkdir
+        @system.mkdir
           if: mongodb.shard.config.storage.repairPath?
           target: mongodb.shard.config.storage.repairPath
           uid: mongodb.user.name
           gid: mongodb.group.name
-        @mkdir
+        @system.mkdir
           target: mongodb.shard.config.net.unixDomainSocket.pathPrefix
           uid: mongodb.user.name
           gid: mongodb.group.name

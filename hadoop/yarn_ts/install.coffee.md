@@ -72,19 +72,19 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 # Layout
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: "#{yarn.ats.conf_dir}"
-        @mkdir
+        @system.mkdir
           target: "#{yarn.ats.pid_dir}"
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o755
-        @mkdir
+        @system.mkdir
           target: "#{yarn.ats.log_dir}"
           uid: yarn.user.name
           gid: yarn.group.name
           parent: true
-        @mkdir
+        @system.mkdir
           target: yarn.site['yarn.timeline-service.leveldb-timeline-store.path']
           uid: yarn.user.name
           gid: hadoop_group.name

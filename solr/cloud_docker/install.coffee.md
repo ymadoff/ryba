@@ -18,7 +18,7 @@
 ## Users and Groups
 Create user and groups for solr user.
 
-      @mkdir
+      @system.mkdir
         target: solr.user.home
         uid: solr.user.name
         gid: solr.group.name
@@ -27,11 +27,11 @@ Create user and groups for solr user.
 
 ## Layout
 
-      @mkdir
+      @system.mkdir
         target: solr.user.home
         uid: solr.user.name
         gid: solr.group.name
-      @mkdir
+      @system.mkdir
         directory: solr.cloud_docker.conf_dir
         uid: solr.user.name
         gid: solr.group.name
@@ -210,19 +210,19 @@ configuration like solr.in.sh or solr.xml.
             rules: [
               { chain: 'INPUT', jump: 'ACCEPT', dport: config.port, protocol: 'tcp', state: 'NEW', comment: "Solr Cluster #{name}" }
             ]
-        @mkdir
+        @system.mkdir
           header: 'Solr Cluster Configuration'
           target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}"
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0750
-        @mkdir
+        @system.mkdir
           header: 'Solr Cluster Log dir'
           target: config.log_dir
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0750
-        @mkdir
+        @system.mkdir
           header: 'Solr Cluster Pid dir'
           target: config.pid_dir
           uid: solr.user.name
@@ -234,7 +234,7 @@ configuration like solr.in.sh or solr.xml.
           uid: solr.user.name
           gid: solr.group.name
           perm: '0750'
-        @mkdir
+        @system.mkdir
           header: 'Solr Cluster Data dir'
           target: config.data_dir
           mode: 0o0750

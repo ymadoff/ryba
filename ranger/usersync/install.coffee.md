@@ -34,9 +34,9 @@ directories.
           name: 'ranger-usersync'
 
       @call header: 'Layout', handler: (options)->
-        @mkdir
+        @system.mkdir
           target: ranger.usersync.conf_dir
-        @mkdir
+        @system.mkdir
           target: ranger.usersync.log_dir
         @system.tmpfs
           if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
@@ -44,7 +44,7 @@ directories.
           uid: ranger.user.name
           gid: ranger.user.name
           perm: '0750'
-        @mkdir
+        @system.mkdir
           target: ranger.usersync.pid_dir 
 
 

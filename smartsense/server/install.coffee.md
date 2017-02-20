@@ -41,17 +41,17 @@ Note rmp can only be download from the Hortonworks Support Web UI.
 ## Layout
 
       @call header: 'Layout Directories', handler: ->
-        @mkdir
+        @system.mkdir
           target: smartsense.server.log_dir
           uid: smartsense.user.name
           gid: smartsense.group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: smartsense.server.pid_dir
           uid: smartsense.user.name
           gid: smartsense.group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: smartsense.server.conf_dir
           uid: smartsense.user.name
           gid: smartsense.group.name

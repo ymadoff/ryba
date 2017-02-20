@@ -11,7 +11,7 @@
         header: 'SSH'
         if: -> @config.ryba.shinken.reactionner.ssh?.private_key? and @config.ryba.shinken.reactionner.ssh?.public_key?
         handler: ->
-          @mkdir
+          @system.mkdir
             target: "#{user.home}/.ssh"
             mode: 0o700
             uid: user.name

@@ -80,7 +80,7 @@ Upload the "hdp-gmetad" service file into "/etc/init.d".
 We prepare the directory "/usr/libexec/hdp/ganglia" in which we later upload
 the objects files and generate the hosts configuration.
 
-      @mkdir
+      @system.mkdir
         header: 'Layout'
         target: '/usr/libexec/hdp/ganglia'
 

@@ -106,17 +106,17 @@ Create the data, pid and log directories with the correct permissions and
 ownerships.
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: zookeeper.config['dataDir']
           uid: zookeeper.user.name
           gid: hadoop_group.name
           mode: 0o755
-        @mkdir
+        @system.mkdir
           target: zookeeper.pid_dir
           uid: zookeeper.user.name
           gid: zookeeper.group.name
           mode: 0o755
-        @mkdir
+        @system.mkdir
           target: zookeeper.log_dir
           uid: zookeeper.user.name
           gid: hadoop_group.name

@@ -53,7 +53,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
 ## Configure
 
       @call header: 'Configure', timeout: -1, handler: ->
-        @mkdir
+        @system.mkdir
           target: "#{zkfc.conf_dir}"
         @hconfigure
           target: "#{zkfc.conf_dir}/core-site.xml"
@@ -199,7 +199,7 @@ inserted if ALL users or the HDFS user access is denied.
         header: 'SSH Fencing'
         # if: -> @contexts('ryba/hadoop/hdfs_nn').length > 1
         handler: ->
-          @mkdir
+          @system.mkdir
             target: "#{hdfs.user.home}/.ssh"
             uid: hdfs.user.name
             gid: hadoop_group.name

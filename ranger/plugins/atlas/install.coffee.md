@@ -21,7 +21,7 @@
         if: ranger.atlas_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
         header: 'Atlas ranger plugin audit to HDFS'
         handler: ->
-          @mkdir
+          @system.mkdir
             target: ranger.atlas_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR']
             uid: atlas.user.name
             gid: hadoop_group.name
@@ -88,7 +88,7 @@
 
 # Atlas ranger plugin audit to SOLR
 
-      @mkdir
+      @system.mkdir
         target: ranger.atlas_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR']
         uid: atlas.user.name
         gid: hadoop_group.name

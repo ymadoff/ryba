@@ -51,13 +51,13 @@
 
 ## Layout
 
-      @mkdir
+      @system.mkdir
         header: 'Layout PID'
         target: "#{kms.pid_dir}"
         uid: kms.user.name
         gid: kms.group.name
         mode: 0o0755
-      @mkdir
+      @system.mkdir
         header: 'Layout Log'
         target: "#{kms.log_dir}" #/#{kms.user.name}
         uid: kms.user.name

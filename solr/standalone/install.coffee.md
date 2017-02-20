@@ -39,11 +39,11 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Layout
 
-      @mkdir
+      @system.mkdir
         target: solr.user.home
         uid: solr.user.name
         gid: solr.group.name
-      @mkdir
+      @system.mkdir
         directory: solr.single.conf_dir
         uid: solr.user.name
         gid: solr.group.name
@@ -68,7 +68,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
             @file.download
               source: solr.single.source
               target: tmp_archive_location
-            @mkdir 
+            @system.mkdir 
               target: solr.single.install_dir
             @extract
               source: tmp_archive_location
@@ -103,7 +103,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
 ## Layout
 
       @call header: 'Solr Layout', timeout: -1, handler: (options) ->
-        @mkdir
+        @system.mkdir
           target: solr.single.pid_dir
           uid: solr.user.name
           gid: solr.group.name
@@ -114,12 +114,12 @@ Ryba support installing solr from apache official release or HDP Search repos.
           uid: solr.user.name
           gid: solr.group.name
           perm: '0750'
-        @mkdir
+        @system.mkdir
           target: solr.single.log_dir
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: solr.user.home
           uid: solr.user.name
           gid: solr.group.name

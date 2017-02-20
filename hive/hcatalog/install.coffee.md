@@ -241,12 +241,12 @@ Create the directories to store the logs and pid information. The properties
 "ryba.hive.hcatalog.log\_dir" and "ryba.hive.hcatalog.pid\_dir" may be modified.
 
       @call header: 'Layout', timeout: -1, ->
-        @mkdir
+        @system.mkdir
           target: hive.hcatalog.log_dir
           uid: hive.user.name
           gid: hive.group.name
           parent: true
-        @mkdir
+        @system.mkdir
           target: hive.hcatalog.pid_dir
           uid: hive.user.name
           gid: hive.group.name

@@ -104,9 +104,9 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
         pid_dir = pid_dir.replace '$HADOOP_IDENT_STRING', hdfs.user.name
         # TODO, in HDP 2.1, datanode are started as root but in HDP 2.2, we should
         # start it as HDFS and use JAAS
-        @mkdir
+        @system.mkdir
           target: "#{hdfs.dn.conf_dir}"
-        @mkdir
+        @system.mkdir
           target: for dir in hdfs.site['dfs.datanode.data.dir'].split ','
             if dir.indexOf('file://') is 0
               dir.substr(7) 
@@ -124,13 +124,13 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
           uid: hdfs.user.name
           gid: hadoop_group.name
           perm: '0750'
-        @mkdir
+        @system.mkdir
           target: "#{pid_dir}"
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o0755
           parent: true
-        @mkdir
+        @system.mkdir
           target: "#{hdfs.log_dir}" #/#{hdfs.user.name}
           uid: hdfs.user.name
           gid: hdfs.group.name

@@ -29,7 +29,7 @@ directories.
 
 ## Layout
 
-      @mkdir
+      @system.mkdir
         target: '/var/run/ranger'
         uid: ranger.user.name
         gid: ranger.user.name

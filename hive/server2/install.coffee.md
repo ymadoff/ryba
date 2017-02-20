@@ -148,12 +148,12 @@ Create the directories to store the logs and pid information. The properties
 "ryba.hive.server2.log\_dir" and "ryba.hive.server2.pid\_dir" may be modified.
 
       @call header: 'Layout', timeout: -1, handler: ->
-        @mkdir
+        @system.mkdir
           target: hive.server2.log_dir
           uid: hive.user.name
           gid: hive.group.name
           parent: true
-        @mkdir
+        @system.mkdir
           target: hive.server2.pid_dir
           uid: hive.user.name
           gid: hive.group.name

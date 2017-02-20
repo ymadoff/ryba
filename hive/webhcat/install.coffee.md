@@ -83,12 +83,12 @@ inside "/etc/init.d" and activate it on startup.
 Create file system directories for log and pid.
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: webhcat.log_dir
           uid: hive.user.name
           gid: hadoop_group.name
           mode: 0o755
-        @mkdir
+        @system.mkdir
           target: webhcat.pid_dir
           uid: hive.user.name
           gid: hadoop_group.name

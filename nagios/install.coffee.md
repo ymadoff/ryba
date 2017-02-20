@@ -60,14 +60,14 @@ nagiocmd:x:2419:apache
 ## Layout
 
       @call header: 'Layout', ->
-        @mkdir
+        @system.mkdir
           target: [
             '/var/nagios', '/var/log/nagios',
             '/var/log/nagios/spool/checkresults', '/var/run/nagios'
           ]
           uid: nagios.user.name
           gid: nagios.group.name
-        @mkdir
+        @system.mkdir
           target: '/var/nagios/rw'
           uid: nagios.user.name
           gid: nagios.groupcmd.name

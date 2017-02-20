@@ -76,14 +76,14 @@ Pid files are stored inside "/var/run/druid" by default.
 Log files are stored inside "/var/log/druid" by default.
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: "#{druid.pid_dir}"
           uid: "#{druid.user.name}"
           gid: "#{druid.group.name}"
         @link
           target: "#{druid.dir}/var/druid/pids"
           source: "#{druid.pid_dir}"
-        @mkdir
+        @system.mkdir
           target: "#{druid.log_dir}"
           uid: "#{druid.user.name}"
           gid: "#{druid.group.name}"

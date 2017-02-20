@@ -57,7 +57,7 @@ directories.
           name: 'kafka'
         @hdp_select
           name: 'kafka-broker'
-        @mkdir
+        @system.mkdir
           target: '/var/lib/kafka'
           uid: kafka.user.name
           gid: kafka.user.name
@@ -271,7 +271,7 @@ Directories in which Kafka data is stored. Each new partition that is created
 will be placed in the directory which currently has the fewest partitions.
 
       @call header: 'Layout', handler: ->
-        @mkdir (
+        @system.mkdir (
           target: dir
           uid: kafka.user.name
           gid: kafka.group.name

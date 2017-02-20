@@ -67,7 +67,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         @file
           target: path.join titan.home, 'bin', 'rexster.sh'
           write: write
-        @mkdir
+        @system.mkdir
           target: rexster.log_dir
           uid: rexster.user.name
           gid: rexster.group.name

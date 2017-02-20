@@ -42,7 +42,7 @@
           match: /^-Xmx.*$/m
           replace: "-Xmx#{druid.middlemanager.jvm.xmx}"
         ]
-      @mkdir
+      @system.mkdir
         target: "#{druid.middlemanager.runtime['druid.indexer.task.baseTaskDir']}"
         uid: "#{druid.user.name}"
         gid: "#{druid.group.name}"

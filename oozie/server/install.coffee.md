@@ -104,27 +104,27 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           if: -> @status -4
 
       @call header: 'Layout Directories', handler: ->
-        @mkdir
+        @system.mkdir
           target: oozie.data
           uid: oozie.user.name
           gid: hadoop_group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: oozie.log_dir
           uid: oozie.user.name
           gid: hadoop_group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: oozie.pid_dir
           uid: oozie.user.name
           gid: hadoop_group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: oozie.tmp_dir
           uid: oozie.user.name
           gid: hadoop_group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: "#{oozie.conf_dir}/action-conf"
           uid: oozie.user.name
           gid: hadoop_group.name
@@ -135,7 +135,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           chown -R #{oozie.user.name}:#{hadoop_group.name} #{oozie.conf_dir}/action-conf
           """
           shy: true
-        # Waiting for recursivity in @mkdir
+        # Waiting for recursivity in @system.mkdir
         # @execute
         #   cmd: """
         #   chown -R #{oozie.user.name}:#{hadoop_group.name} /usr/lib/oozie
@@ -367,7 +367,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           handler: ->
             @service
               name: 'falcon'
-            @mkdir
+            @system.mkdir
               target: '/tmp/falcon-oozie-jars'
             # Note, the documentation mentions using "-d" option but it doesnt
             # seem to work. Instead, we deploy the jar where "-d" default.

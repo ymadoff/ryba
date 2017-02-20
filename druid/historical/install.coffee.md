@@ -41,7 +41,7 @@
           match: /^-Xmx.*$/m
           replace: "-Xmx#{druid.historical.jvm.xmx}"
         ]
-      @mkdir (
+      @system.mkdir (
         target: "#{path.resolve druid.dir, location.path}"
         uid: "#{druid.user.name}"
         gid: "#{druid.group.name}"

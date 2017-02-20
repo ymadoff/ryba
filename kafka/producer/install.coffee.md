@@ -31,7 +31,7 @@ directories.
 
       @service
         name: 'kafka'
-      @mkdir
+      @system.mkdir
         target: '/var/lib/kafka'
         uid: kafka.user.name
         gid: kafka.user.name

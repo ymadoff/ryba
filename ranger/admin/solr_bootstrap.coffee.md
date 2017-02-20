@@ -24,7 +24,7 @@
 
 ## Layout
 
-      @mkdir
+      @system.mkdir
         target: "#{solr.user.home}/ranger_audits"
         uid: solr.user.name
         gid: solr.group.name

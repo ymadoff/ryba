@@ -45,15 +45,15 @@ We use the SPNEGO keytab, so we let hadoop/core handle principal & keytab
 ## Layout
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: phoenix.pid_dir
           uid: phoenix.user.name
           gid: phoenix.user.name
-        @mkdir
+        @system.mkdir
           target: phoenix.conf_dir
           uid: phoenix.user.name
           gid: phoenix.group.name
-        @mkdir
+        @system.mkdir
           target: phoenix.log_dir
           uid: phoenix.user.name
           gid: phoenix.group.name

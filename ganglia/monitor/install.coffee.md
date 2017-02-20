@@ -18,7 +18,7 @@ The package "ganglia-gmond-3.5.0-99" is installed.
 We prepare the directory "/usr/libexec/hdp/ganglia" in which we later upload
 the objects files and generate the hosts configuration.
 
-      @mkdir
+      @system.mkdir
         header: 'Layout'
         target: '/usr/libexec/hdp/ganglia'
 

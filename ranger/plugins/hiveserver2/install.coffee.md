@@ -21,7 +21,7 @@
         if: ranger.hive_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
         header: 'Hive ranger plugin audit to HDFS'
         handler: ->
-          @mkdir
+          @system.mkdir
             target: ranger.hive_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR']
             uid: hive.user.name
             gid: hadoop_group.name
@@ -88,7 +88,7 @@
 
 # Hive ranger plugin audit to SOLR
 
-      @mkdir
+      @system.mkdir
         target: ranger.hive_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR']
         uid: hive.user.name
         gid: hadoop_group.name
