@@ -110,9 +110,9 @@ inside "/etc/init.d" and activate it on startup.
           uid: yarn.user.name
           gid: yarn.group.name
           parent: true
-        @touch
+        @file.touch
           target: "#{yarn.rm.site['yarn.resourcemanager.nodes.include-path']}"
-        @touch
+        @file.touch
           target: "#{yarn.rm.site['yarn.resourcemanager.nodes.exclude-path']}"
 
 ## Configure

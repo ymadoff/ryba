@@ -195,7 +195,7 @@ Describe where to get the user authentication information from.
           file_node.ele 'property', name: 'Initial Admin Identity', file_provider['initial_admin_identity']
           for node, i in file_provider['nodes_identities']
             file_node.ele 'property', name: "Node Identity #{i+1}", node
-          @touch
+          @file.touch
             target: file_provider['authorizations_file']
             uid: nifi.user.name
             gid: nifi.group.name
@@ -205,7 +205,7 @@ Describe where to get the user authentication information from.
             target: file_provider['authorizations_file']
             content: builder.create('authorizations').dec('1.0', 'UTF-8', true).end pretty: true
             eof: true
-          @touch
+          @file.touch
             target: file_provider['users_file']
             uid: nifi.user.name
             gid: nifi.group.name
