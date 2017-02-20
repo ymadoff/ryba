@@ -49,7 +49,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             '/usr/hdp/current/knox-server/conf/topologies/sandbox.xml'
           ] , (options) ->
               @remove  target: options.key
-        @chown
+        @system.chown
           target: '/var/log/knox'
           uid: knox.user.name
           gid: knox.user.gid

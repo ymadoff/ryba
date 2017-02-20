@@ -57,7 +57,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
           handler: ->
             @service
               name: 'lucidworks-hdpsearch'
-            @chown
+            @system.chown
               if: solr.single.source is 'HDP'
               target: '/opt/lucidworks-hdpsearch'
               uid: solr.user.name

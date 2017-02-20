@@ -31,7 +31,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Env
 
       @call header: 'Env', handler: ->
-        @chown
+        @system.chown
           target: rexster.user.home
           uid: rexster.user.name
           gid: rexster.group.name

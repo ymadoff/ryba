@@ -167,12 +167,12 @@ be prepared in the mecano cache dir.
         uid: solr.user.name
         gid: solr.group.name
         mode: 0o0755
-      @chown
+      @system.chown
         target: solr.cloud_docker.ssl_truststore_path
         uid: solr.user.name
         gid: solr.group.name
         mode: 0o0755
-      @chown
+      @system.chown
         target: solr.cloud_docker.ssl_keystore_path
         uid: solr.user.name
         gid: solr.group.name
@@ -238,7 +238,7 @@ configuration like solr.in.sh or solr.xml.
           header: 'Solr Cluster Data dir'
           target: config.data_dir
           mode: 0o0750
-        @chown
+        @system.chown
           target: config.data_dir
           uid: solr.user.name
           gid: solr.group.name

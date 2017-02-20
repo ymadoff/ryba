@@ -31,7 +31,7 @@
           target: "#{shinken.user.home}/doc"
           uid: shinken.user.name
           gid: shinken.group.name
-        @chown
+        @system.chown
           target: shinken.log_dir
           uid: shinken.user.name
           gid: shinken.group.name

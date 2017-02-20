@@ -198,7 +198,7 @@ we execute this task using the rest api.
               merge: true
               properties:
                 'ranger.plugin.atlas.policy.rest.ssl.config.file': "#{atlas.conf_dir}/ranger-policymgr-ssl.xml"
-            @chown
+            @system.chown
               header: 'Fix Permissions'
               target: "/etc/ranger/#{ranger.atlas_plugin.install['REPOSITORY_NAME']}/.cred.jceks.crc"
               uid: atlas.user.name

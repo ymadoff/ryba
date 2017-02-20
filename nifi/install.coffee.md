@@ -78,7 +78,7 @@ So we must manually force install of hdf-select outside of yum to handle it
           chown -R #{nifi.user.name}:#{nifi.group.name} /usr/hdf/current/nifi/lib
           """
           if: -> @status -1
-        @chown
+        @system.chown
           target: '/var/run/nifi'
           uid: nifi.user.name
           gid: nifi.group.name

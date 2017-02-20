@@ -125,12 +125,12 @@ Install Atlas packages
         caname: "hadoop_root_ca"
         cacert: "#{ssl.cacert}"
         local_source: true
-      @chown
+      @system.chown
         target: atlas.application.properties['keystore.file']
         uid: atlas.user.name
         gid: atlas.group.name
         mode: 0o0755
-      @chown
+      @system.chown
         target: atlas.application.properties['truststore.file']
         uid: atlas.user.name
         gid: atlas.group.name
@@ -197,12 +197,12 @@ Install Atlas packages
             stream.on 'exit', =>
               return callback error if error
               callback null, true
-      @chown
+      @system.chown
         target: "#{credential_dir}/#{credential_name}"
         uid: atlas.user.name
         gid: atlas.group.name
         mode: 0o770
-      @chown
+      @system.chown
         target: "#{credential_dir}/.#{credential_name}.crc"
         uid: atlas.user.name
         gid: atlas.group.name

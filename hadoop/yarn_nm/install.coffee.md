@@ -219,7 +219,7 @@ but is owned by 2401"
       @call header: 'Container Executor', handler: ->
         ce_group = container_executor['yarn.nodemanager.linux-container-executor.group']
         ce = '/usr/hdp/current/hadoop-yarn-nodemanager/bin/container-executor'
-        @chown
+        @system.chown
           target: ce
           uid: 'root'
           gid: ce_group
