@@ -314,7 +314,7 @@ on Centos/Redhat7 OS. Legacy cgconfig and cgroup-tools package must be used. (ma
         unless: -> yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] is 'true'
         handler: (options) ->
           hierarchy = yarn.site['yarn.nodemanager.linux-container-executor.cgroups.hierarchy'] ?= "/#{ryba.yarn.user.name}"
-          @cgroups
+          @system.cgroups
             target: '/etc/cgconfig.d/yarn.cgconfig.conf'
             merge: false
             groups: yarn.cgroup
