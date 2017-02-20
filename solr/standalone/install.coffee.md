@@ -75,19 +75,19 @@ Ryba support installing solr from apache official release or HDP Search repos.
               target: solr.single.install_dir
               preserve_owner: false
               strip: 1
-            @link 
+            @system.link 
               source: solr.single.install_dir
               target: solr.single.latest_dir
 
 
       @call header: 'Configuration', handler: ->
-        @link 
+        @system.link 
           source: "#{solr.single.latest_dir}/conf"
           target: solr.single.conf_dir
         @remove
           shy: true
           target: "#{solr.single.latest_dir}/bin/solr.in.sh"
-        @link 
+        @system.link 
           source: "#{solr.single.conf_dir}/solr.in.sh"
           target: "#{solr.single.latest_dir}/bin/solr.in.sh"
         @service.init
@@ -166,7 +166,7 @@ Create HDFS solr user and its home directory
           local_source: true
           backup: true
           eof: true
-        @link
+        @system.link
           source: "#{solr.single.conf_dir}/solr.xml"
           target: "#{solr.user.home}/solr.xml"
 

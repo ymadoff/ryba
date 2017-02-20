@@ -88,7 +88,7 @@ MySQL is by default usable by Sqoop. The driver installed after running the
       #   source: '/usr/share/java/mysql-connector-java.jar'
       #   target: '/usr/hdp/current/sqoop-client/lib/'
       # , next
-      @link
+      @system.link
         header: 'MySQL Connector'
         source: '/usr/share/java/mysql-connector-java.jar'
         target: '/usr/hdp/current/sqoop-client/lib/mysql-connector-java.jar'

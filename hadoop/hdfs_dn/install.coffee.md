@@ -78,7 +78,7 @@ inside "/etc/init.d" and activate it on startup.
         @service.remove 'snappy', if: options.attempt is 1
         @service name: 'snappy'
         @service name: 'snappy-devel'
-        @link
+        @system.link
           source: '/usr/lib64/libsnappy.so'
           target: '/usr/hdp/current/hadoop-client/lib/native/.'
         @service

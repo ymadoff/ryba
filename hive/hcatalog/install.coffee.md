@@ -165,12 +165,12 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
             source: lib
             target: "/usr/hdp/current/hive-metastore/lib/#{path.basename lib}"
           ) for lib in hive.libs
-      @link
+      @system.link
         if: hive.hcatalog.db.engine is 'mysql'
         header: 'Link MySQL Driver'
         source: '/usr/share/java/mysql-connector-java.jar'
         target: '/usr/hdp/current/hive-metastore/lib/mysql-connector-java.jar'
-      @link
+      @system.link
         if: hive.hcatalog.db.engine is 'postgres'
         header: 'Link PostgreSQL Driver'
         source: '/usr/share/java/postgresql-jdbc.jar'

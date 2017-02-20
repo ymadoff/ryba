@@ -122,7 +122,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           local_source: true
           context: @config
           backup: true
-        @link
+        @system.link
           source: '/usr/hdp/current/hadoop-httpfs/webapps'
           target: "#{httpfs.catalina_home}/webapps"
         @system.mkdir # CATALINA_TMPDIR

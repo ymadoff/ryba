@@ -55,7 +55,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Ranger Admin Driver
 
-      @link
+      @system.link
         header: 'DB Driver'
         source: '/usr/share/java/mysql-connector-java.jar'
         target: ranger.admin.install['SQL_CONNECTOR_JAR']

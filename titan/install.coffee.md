@@ -35,7 +35,7 @@ Download and extract a ZIP Archive
         @remove
           target: titan.home
           if: -> @status -1
-        @link
+        @system.link
           source: unzip_dir
           target: titan.home
           if: -> @status -2

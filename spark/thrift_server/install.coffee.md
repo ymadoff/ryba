@@ -75,7 +75,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
           gid: @config.ryba.hadoop_group.gid
         @remove
           target: '/usr/hdp/current/spark-thriftserver/conf'
-        @link
+        @system.link
           target: '/usr/hdp/current/spark-thriftserver/conf'
           source: spark.thrift.conf_dir
 

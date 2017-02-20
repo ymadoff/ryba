@@ -108,7 +108,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           replace: if v is null then "" else "#{k} #{v}"
           append: v isnt null
         backup: true
-      @link
+      @system.link
         source: spark.history.conf_dir
         target: '/usr/hdp/current/spark-historyserver/conf'
 

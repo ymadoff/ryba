@@ -76,19 +76,19 @@ Ryba support installing solr from apache official release or HDP Search repos.
               target: solr.cloud.install_dir
               preserve_owner: false
               strip: 1
-            @link 
+            @system.link 
               source: solr.cloud.install_dir
               target: solr.cloud.latest_dir
 
 
       @call header: 'Configuration', handler: (options) ->
-        @link 
+        @system.link 
           source: "#{solr.cloud.latest_dir}/conf"
           target: solr.cloud.conf_dir
         @remove
           shy: true
           target: "#{solr.cloud.latest_dir}/bin/solr.in.sh"
-        @link 
+        @system.link 
           source: "#{solr.cloud.conf_dir}/solr.in.sh"
           target: "#{solr.cloud.latest_dir}/bin/solr.in.sh"
         @service.init
@@ -186,7 +186,7 @@ Create HDFS solr user and its home directory
           gid: solr.group.name
           mode: 0o0755
           context: @config
-        @link
+        @system.link
           source: "#{solr.cloud.conf_dir}/solr.xml"
           target: "#{solr.user.home}/solr.xml"
 

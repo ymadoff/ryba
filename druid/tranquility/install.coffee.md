@@ -45,7 +45,7 @@ Download and unpack the release archive.
         source: "/var/tmp/#{path.basename druid.tranquility.source}"
         target: '/opt'
         if: -> @status -1
-      @link
+      @system.link
         source: "/opt/tranquility-distribution-#{druid.tranquility.version}"
         target: "#{druid.tranquility.dir}"
       @execute

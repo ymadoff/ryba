@@ -60,7 +60,7 @@ Download and unpack the release archive.
         source: "/var/tmp/#{path.basename druid.source}"
         target: '/opt'
         if: -> @status -1
-      @link
+      @system.link
         source: "/opt/druid-#{druid.version}"
         target: "#{druid.dir}"
       @execute
@@ -80,7 +80,7 @@ Log files are stored inside "/var/log/druid" by default.
           target: "#{druid.pid_dir}"
           uid: "#{druid.user.name}"
           gid: "#{druid.group.name}"
-        @link
+        @system.link
           target: "#{druid.dir}/var/druid/pids"
           source: "#{druid.pid_dir}"
         @system.mkdir
@@ -88,7 +88,7 @@ Log files are stored inside "/var/log/druid" by default.
           uid: "#{druid.user.name}"
           gid: "#{druid.group.name}"
           parent: true
-        @link
+        @system.link
           source: "#{druid.log_dir}"
           target: "#{druid.dir}/log"
 

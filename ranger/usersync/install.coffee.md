@@ -73,7 +73,7 @@ directories.
 #
 #     module.exports.push header: 'Ranger Admin Driver', handler: ->
 #       {ranger} = @config.ryba
-#       @link
+#       @system.link
 #         source: '/usr/share/java/mysql-connector-java.jar'
 #         target: ranger.admin.install['SQL_CONNECTOR_JAR']
 

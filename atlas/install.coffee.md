@@ -96,7 +96,7 @@ Install Atlas packages
           uid: atlas.user.name
           gid: atlas.group.name
           mode: 0o0750
-        @link
+        @system.link
           target: atlas.conf_dir
           source: '/usr/hdp/current/atlas-server/conf'
         @system.tmpfs

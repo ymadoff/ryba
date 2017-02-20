@@ -299,7 +299,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
     # Note
     # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.0/HDP_Man_Install_v22/index.html#Item1.12.4.3
     # Copy or symlink the MySQL JDBC driver JAR into the /var/lib/oozie/ directory.
-      @link
+      @system.link
         header: 'MySQL Driver'
         source: '/usr/share/java/mysql-connector-java.jar'
         target: '/usr/hdp/current/oozie-server/libext/mysql-connector-java.jar'

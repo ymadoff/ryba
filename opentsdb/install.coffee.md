@@ -51,7 +51,7 @@ OpenTSDB archive comes with an RPM
           rm -f #{opentsdb.user.home}/lib/zookeeper-*.jar
           """
           code_skipped: 3
-        @link
+        @system.link
           source: '/usr/hdp/current/zookeeper-client/zookeeper.jar'
           target: "#{opentsdb.user.home}/lib/zookeeper.jar"
 
