@@ -127,13 +127,13 @@ we execute this task using the rest api.
             else exit 1 ; 
             fi;
           """
-        @chmod
+        @system.chmod
           header: "Fix Kafka Conf Permission"
           target: kafka.broker.conf_dir
           uid: kafka.user.name
           gid: kafka.group.name
           mode: 0o755
-        @chmod
+        @system.chmod
           header: "Fix Ranger Repo Permission"
           target: "/etc/ranger/#{ranger.kafka_plugin.install['REPOSITORY_NAME']}"
           uid: kafka.user.name

@@ -41,7 +41,7 @@ OpenTSDB archive comes with an RPM
         @execute
           cmd: "yum localinstall -y --nogpgcheck /var/tmp/opentsdb-#{opentsdb.version}.noarch.rpm"
           unless_exec: "rpm -q --queryformat '%{VERSION}' opentsdb | grep '#{opentsdb.version}'"
-        @chmod
+        @system.chmod
           header: 'Fix permissions'
           target: "#{opentsdb.user.home}/etc/init.d/opentsdb"
           mode: 0o755

@@ -41,7 +41,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           target: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"
         @extract
           source: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"
-        @chmod
+        @system.chmod
           target: "/var/tmp/nagvis-#{nagvis.version}/install.sh"
           mode: 0o755
         @execute

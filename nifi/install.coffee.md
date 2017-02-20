@@ -114,7 +114,7 @@ NiFi service script use sudo to impersonate. Since, sudo must keep JAVA_HOME env
 var to work.
 
       @call header: 'sudo keep JAVA_HOME', handler: ->
-        @chmod
+        @system.chmod
           target: '/etc/sudoers'
           mode: 0o640
         @file

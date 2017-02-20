@@ -223,7 +223,7 @@ but is owned by 2401"
           target: ce
           uid: 'root'
           gid: ce_group
-        @chmod
+        @system.chmod
           target: ce
           mode: 0o6050
         @mkdir
