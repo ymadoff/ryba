@@ -32,7 +32,7 @@ Note, the package "hadoop" will also install the "dbus" user and group which are
 not handled here.
 
       @call header: 'Users & Groups', handler: ->
-        @group [hadoop_group, hdfs.group, yarn.group, mapred.group]
+        @system.group [hadoop_group, hdfs.group, yarn.group, mapred.group]
         @system.user [hdfs.user, yarn.user, mapred.user]
 
 ## Topology
@@ -81,7 +81,7 @@ will be created by one of the datanode.
       @call header: 'User Test', handler: ->
         # ryba group and user may already exist in "/etc/passwd" or in any sssd backend
         {group, user, krb5_user} = @config.ryba
-        @group group
+        @system.group group
         @system.user user
         @krb5_addprinc krb5, krb5_user
 

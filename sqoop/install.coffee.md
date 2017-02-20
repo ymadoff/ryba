@@ -23,7 +23,7 @@ cat /etc/group | grep hadoop
 hadoop:x:502:yarn,mapred,hdfs,hue
 ```
 
-      @group hadoop_group
+      @system.group hadoop_group
       @system.user sqoop.user
 
 ## Environment

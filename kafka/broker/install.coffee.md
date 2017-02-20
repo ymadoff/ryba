@@ -25,7 +25,7 @@ cat /etc/group | grep kafka
 kafka:x:496:kafka
 ```
 
-      @group kafka.group
+      @system.group kafka.group
       @system.user kafka.user
 
 ## IPTables

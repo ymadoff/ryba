@@ -24,7 +24,7 @@ cat /etc/group | grep hadoop
 hadoop:x:498:hdfs
 ```
 
-      @group header: 'Group', hadoop_group
+      @system.group header: 'Group', hadoop_group
       @system.user header: 'User', yarn.user
 
 ## IPTables

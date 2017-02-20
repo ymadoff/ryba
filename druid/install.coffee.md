@@ -37,7 +37,7 @@ cat /etc/group | grep druid
 druid:x:2435:
 ```
 
-      @group druid.group
+      @system.group druid.group
       @system.user druid.user
 
 ## Packages

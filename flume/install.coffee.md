@@ -23,7 +23,7 @@ flume:x:496:
 Note, the "flume" package rely on the "zookeeper" and "hadoop-hdfs" dependencies
 creating the "zookeeper" and "hdfs" users and the "hadoop" and "hdfs" group.
 
-      @group @config.ryba.flume.group
+      @system.group @config.ryba.flume.group
       @system.user @config.ryba.flume.user
 
 ## Install

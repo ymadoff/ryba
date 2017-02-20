@@ -46,7 +46,7 @@ cat /etc/group | grep hive
 hive:x:493:
 ```
 
-      @group hive.group
+      @system.group hive.group
       @system.user hive.user
 
 

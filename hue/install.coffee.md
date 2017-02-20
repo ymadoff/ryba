@@ -24,7 +24,7 @@ cat /etc/group | grep hue
 hue:x:494:
 ```
 
-      @group header: 'Group', hue.group
+      @system.group header: 'Group', hue.group
       @system.user header: 'User', hue.user
 
 ## IPTables

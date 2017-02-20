@@ -45,7 +45,7 @@ cat /etc/group | grep spark
 spark:x:494:
 ```
 
-      @group spark.group
+      @system.group spark.group
       @system.user spark.user
 
 ## Startup Script

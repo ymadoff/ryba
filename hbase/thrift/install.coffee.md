@@ -45,7 +45,7 @@ cat /etc/group | grep hbase
 hbase:x:492:
 ```
 
-      @group hbase.group
+      @system.group hbase.group
       @system.user hbase.user
 
 

@@ -15,7 +15,7 @@ cat /etc/group | grep rrdcached
 rrdcached:x:493:
 ```
 
-      @group header: 'Group', ganglia.rrdcached_group
+      @system.group header: 'Group', ganglia.rrdcached_group
       @system.user header: 'User', ganglia.rrdcached_user
 
 ## IPTables

@@ -31,8 +31,8 @@ nagiocmd:x:2419:apache
 ```
 
       @call header: 'Users & Groups', ->
-        @group nagios.group
-        @group nagios.groupcmd
+        @system.group nagios.group
+        @system.group nagios.groupcmd
         @system.user nagios.user
 
 ## Packages

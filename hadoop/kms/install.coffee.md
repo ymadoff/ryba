@@ -12,7 +12,7 @@
 
 ## Users & Groups
 
-      @group kms.group
+      @system.group kms.group
       @system.user kms.user
 
 ## Packages

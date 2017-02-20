@@ -21,8 +21,8 @@ cat /etc/group | grep hadoop
 hadoop:x:498:hdfs
 ```
 
-      @group zoo_server.config.ryba.zookeeper.group
-      @group zoo_server.config.ryba.hadoop_group
+      @system.group zoo_server.config.ryba.zookeeper.group
+      @system.group zoo_server.config.ryba.hadoop_group
       @system.user zoo_server.config.ryba.zookeeper.user
 
 ## Packages

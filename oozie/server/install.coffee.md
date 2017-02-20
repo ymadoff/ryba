@@ -30,7 +30,7 @@ cat /etc/group | grep oozie
 oozie:x:493:
 ```
 
-      @group oozie.group
+      @system.group oozie.group
       @system.user oozie.user
 
 ## IPTables

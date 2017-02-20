@@ -11,7 +11,7 @@
 
 ## User & Group
 
-      @group smartsense.group
+      @system.group smartsense.group
       @system.user smartsense.user
 
 ## Packages

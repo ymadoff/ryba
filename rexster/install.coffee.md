@@ -9,7 +9,7 @@
 
 ## Users & Groups
 
-      @group rexster.group
+      @system.group rexster.group
       @system.user rexster.user
 
 ## IPTables

@@ -14,7 +14,7 @@
 
 ## Users & Groups
 
-      @group knox.group
+      @system.group knox.group
       @system.user knox.user
 
 ## IPTables

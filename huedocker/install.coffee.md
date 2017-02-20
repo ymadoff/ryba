@@ -40,7 +40,7 @@ cat /etc/group | grep hue
 hue:x:494:
 ```
 
-      @group hue_docker.group
+      @system.group hue_docker.group
       @system.user hue_docker.user
 
 ## IPTables

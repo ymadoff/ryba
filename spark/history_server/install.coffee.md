@@ -20,7 +20,7 @@ web interface.
 
 # Users and Groups   
 
-      @group spark.group
+      @system.group spark.group
       @system.user spark.user
 
 # Packages

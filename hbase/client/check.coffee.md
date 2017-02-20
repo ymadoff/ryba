@@ -103,7 +103,7 @@ Namespace and permissions are implemented and illustrated in [HBASE-8409].
 Permissions is either zero or more letters from the set READ('R'), WRITE('W'), 
 EXEC('X'), CREATE('C'), ADMIN('A'). Create and admin only apply to tables.
 
-`grant <user|@group> <permissions> <table> [ <column family> [ <column qualifier> ] ]`
+`grant <user|@system.group> <permissions> <table> [ <column family> [ <column qualifier> ] ]`
 
 Groups and users access are revoked in the same way, but groups are prefixed 
 with an '@' character. In the same way, tables and namespaces are specified, but

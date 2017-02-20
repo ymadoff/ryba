@@ -21,7 +21,7 @@ cat /etc/group | grep falcon
 falcon:x:498:falcon
 ```
 
-      @group falcon.client.group
+      @system.group falcon.client.group
       @system.user falcon.client.user
 
 ## Packages

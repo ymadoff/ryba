@@ -32,7 +32,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Users & Groups
 
-      @group header: 'Group', hadoop_group
+      @system.group header: 'Group', hadoop_group
       @system.user header: 'User', mapred.user
 
 ## Service

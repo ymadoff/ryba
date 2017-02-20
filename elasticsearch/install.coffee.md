@@ -19,7 +19,7 @@ cat /etc/group | grep elasticsearch
 elasticsearch:x:493:
 ```
 
-      @group elasticsearch.group
+      @system.group elasticsearch.group
       @system.user elasticsearch.user
 
 ## Kerberos

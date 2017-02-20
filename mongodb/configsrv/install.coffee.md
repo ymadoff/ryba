@@ -25,7 +25,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Users & Groups
 
       @call header: 'Users & Groups', handler: ->
-        @group mongodb.group
+        @system.group mongodb.group
         @system.user mongodb.user
 
 ## Packages

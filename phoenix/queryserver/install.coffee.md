@@ -13,7 +13,7 @@ Please refer to the Apache Phoenix QueryServer [documentation][phoenix-doc].
 
 ## Users & Groups
 
-      @group phoenix.group
+      @system.group phoenix.group
       @system.user phoenix.user
 
 ## IPTables

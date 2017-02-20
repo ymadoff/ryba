@@ -25,8 +25,8 @@ cat /etc/group | grep hadoop
 hadoop:x:498:hdfs
 ```
 
-      @group zookeeper.group
-      @group hadoop_group
+      @system.group zookeeper.group
+      @system.group hadoop_group
       @system.user zookeeper.user
 
 ## IPTables
