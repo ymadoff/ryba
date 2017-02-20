@@ -28,7 +28,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       @call header: 'IPTables', handler: ->
         return unless @config.iptables.action is 'start'
-        @iptables
+        @tools.iptables
           rules: [
             { chain: 'INPUT', jump: 'ACCEPT', dport: solr.cloud.port, protocol: 'tcp', state: 'NEW', comment: "Solr Server #{protocol}" }
           ]

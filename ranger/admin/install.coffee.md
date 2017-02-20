@@ -45,7 +45,7 @@ directories.
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'Ranger Admin IPTables'
         if: @config.iptables.action is 'start'
         rules: [

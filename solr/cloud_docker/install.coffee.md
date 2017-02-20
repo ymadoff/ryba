@@ -206,7 +206,7 @@ configuration like solr.in.sh or solr.xml.
           append: true
         @call header: 'IPTables', handler: ->
           return unless @config.iptables.action is 'start'
-          @iptables
+          @tools.iptables
             rules: [
               { chain: 'INPUT', jump: 'ACCEPT', dport: config.port, protocol: 'tcp', state: 'NEW', comment: "Solr Cluster #{name}" }
             ]

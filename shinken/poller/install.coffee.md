@@ -20,7 +20,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       for name, mod of poller.modules
         if mod.config?.port?
           rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: mod.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Poller #{name}" }
-      @iptables
+      @tools.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: poller.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Poller" }
         ]

@@ -26,7 +26,7 @@
 | Swarm Manager Engine    | 2376  | tcp - TLS   | port               |
 | Swarm Manager Advertise | 3376  | tcp         | port               |
   
-      @iptables
+      @tools.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: swarm.manager.listen_port, protocol: 'tcp', state: 'NEW', comment: "Docker Engine Port" },
           { chain: 'INPUT', jump: 'ACCEPT', dport: swarm.manager.advertise_port, protocol: 'tcp', state: 'NEW', comment: "Swarm Manager Advertise Port" }

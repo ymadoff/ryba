@@ -63,7 +63,7 @@ directories.
 #       handler: ->
 #         {ranger} = @config.ryba
 #         return unless @config.iptables.action is 'start'
-#         @iptables
+#         @tools.iptables
 #           rules: [
 #             { chain: 'INPUT', jump: 'ACCEPT', dport: ranger.admin.site['ranger.service.http.port'], protocol: 'tcp', state: 'NEW', comment: "Ranger Admin HTTP WEBUI" }
 #             { chain: 'INPUT', jump: 'ACCEPT', dport: ranger.admin.site['ranger.service.https.port'], protocol: 'tcp', state: 'NEW', comment: "Ranger Admin HTTPS WEBUI" }

@@ -11,7 +11,7 @@
 |---------------------|------|----------|-----------------------------|
 | Druid MiddleManager | 8091, 8100–8199 | tcp/http |                  |
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: druid.middlemanager.runtime['druid.port'], protocol: 'tcp', state: 'NEW', comment: "Druid MiddleManager" }

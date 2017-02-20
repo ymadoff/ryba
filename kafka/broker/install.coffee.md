@@ -42,7 +42,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       @call header: 'IPTables', handler: ->
         return unless @config.iptables.action is 'start'
-        @iptables
+        @tools.iptables
           rules: for proto in kafka.broker.protocols
             { chain: 'INPUT', jump: 'ACCEPT', dport: kafka.broker.ports[proto], protocol: 'tcp', state: 'NEW', comment: "Kafka Broker #{proto}" }
 

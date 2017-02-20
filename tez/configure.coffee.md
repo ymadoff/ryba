@@ -93,7 +93,7 @@ Convert [deprecated values][dep] between HDP 2.1 and HDP 2.2.
           type: ['hconfigure']
           target: "#{nm_ctx.config.ryba.yarn.nm.conf_dir}/yarn-site.xml"
           handler: (options, callback) ->
-            @iptables
+            @tools.iptables
               ssh: options.ssh
               header: 'Tez AM Port Opening'
               rules: [

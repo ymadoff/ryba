@@ -11,7 +11,7 @@
 |-------------------|------|----------|-----------------------------|
 | Druid Overlord    | 8090 | tcp/http |                             |
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: druid.overlord.runtime['druid.port'], protocol: 'tcp', state: 'NEW', comment: "Druid Broker" }

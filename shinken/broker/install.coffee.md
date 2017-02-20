@@ -18,7 +18,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       for name, mod of broker.modules
         if mod.config?.port?
           rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: mod.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Broker #{name}" }
-      @iptables
+      @tools.iptables
         rules: rules
         if: @config.iptables.action is 'start'
 

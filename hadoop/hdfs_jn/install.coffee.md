@@ -35,7 +35,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       rpc = hdfs.site['dfs.journalnode.rpc-address'].split(':')[1]
       http = hdfs.site['dfs.journalnode.http-address'].split(':')[1]
       https = hdfs.site['dfs.journalnode.https-address'].split(':')[1]
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: rpc, protocol: 'tcp', state: 'NEW', comment: "HDFS JournalNode" }

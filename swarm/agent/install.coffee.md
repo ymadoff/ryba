@@ -18,7 +18,7 @@
 | Swarm Agent Engine    | 2375  | tcp         | port               |
 | Swarm Agent Engine    | 2376  | tcp - TLS   | port               |
   
-      @iptables
+      @tools.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: swarm.agent.advertise_port, protocol: 'tcp', state: 'NEW', comment: "Docker Engine Port" }
         ]

@@ -11,7 +11,7 @@
 |-------------------|------|----------|-----------------------------|
 | Druid Historical  | 8083 | tcp/http |                             |
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: druid.historical.runtime['druid.port'], protocol: 'tcp', state: 'NEW', comment: "Druid Historical" }

@@ -22,7 +22,7 @@
 |-----------|------|--------|----------------------------|
 | namenode  | 8019  | tcp   | dfs.ha.zkfc.port           |
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: hdfs.nn.site['dfs.ha.zkfc.port'], protocol: 'tcp', state: 'NEW', comment: "ZKFC IPC" }

@@ -22,7 +22,7 @@ Please refer to the Apache Phoenix QueryServer [documentation][phoenix-doc].
   |---------------------|-------|--------|-------------------------------|
   | Phoenix QueryServer | 8765  | HTTP   | phoenix.queryserver.http.port |
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         if: @config.iptables.action is 'start'
         rules: [

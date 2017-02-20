@@ -19,7 +19,7 @@
 
 Note, this hasnt been verified.
 
-      # @iptables
+      # @tools.iptables
       #   header: 'IPTables'
       #   rules: [
       #     { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "Falcon Prism Local EndPoint" }

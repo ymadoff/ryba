@@ -43,7 +43,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       [_, dn_http_address] = hdfs.site['dfs.datanode.http.address'].split ':'
       [_, dn_https_address] = hdfs.site['dfs.datanode.https.address'].split ':'
       [_, dn_ipc_address] = hdfs.site['dfs.datanode.ipc.address'].split ':'
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: dn_address, protocol: 'tcp', state: 'NEW', comment: "HDFS DN Data" }

@@ -33,7 +33,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       nm_localizer_port = yarn.site['yarn.nodemanager.localizer.address'].split(':')[1]
       nm_webapp_port = yarn.site['yarn.nodemanager.webapp.address'].split(':')[1]
       nm_webapp_https_port = yarn.site['yarn.nodemanager.webapp.https.address'].split(':')[1]
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: nm_port, protocol: 'tcp', state: 'NEW', comment: "YARN NM Container" }

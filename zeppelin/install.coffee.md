@@ -26,7 +26,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 It's the  host' port server map from the container
 
-      # @iptables
+      # @tools.iptables
       #   header: 'IPTables'
       #   rules: [
       #     { chain: 'INPUT', jump: 'ACCEPT', dport: zeppelin.env.ZEPPELIN_PORT, protocol: 'tcp', state: 'NEW', comment: "Zeppelin Server" }

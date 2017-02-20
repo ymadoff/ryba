@@ -27,7 +27,7 @@ Run `ryba prepare` to create the Docker container.
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: spark.livy.conf['livy.server.port'], protocol: 'tcp', state: 'NEW', comment: "Spark Livy Server" }

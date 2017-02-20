@@ -10,7 +10,7 @@
 |-------------------|------|----------|-----------------------------|
 | Druid Tranquility | 8200 | tcp/http |                             |
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 8200, protocol: 'tcp', state: 'NEW', comment: "Druid Tranquility" }

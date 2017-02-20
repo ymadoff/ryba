@@ -33,7 +33,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       [_, rpc_port] = yarn.site['yarn.timeline-service.address'].split ':'
       [_, http_port] = yarn.site['yarn.timeline-service.webapp.address'].split ':'
       [_, https_port] = yarn.site['yarn.timeline-service.webapp.https.address'].split ':'
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: rpc_port, protocol: 'tcp', state: 'NEW', comment: "Yarn Timeserver RPC" }

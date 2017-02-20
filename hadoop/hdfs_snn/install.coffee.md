@@ -25,7 +25,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       [_, http_port] = hdfs.site['dfs.namenode.secondary.http-address'].split ':'
       [_, https_port] = hdfs.site['dfs.namenode.secondary.https-address'].split ':'
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: http_port, protocol: 'tcp', state: 'NEW', comment: "HDFS SNN HTTP" }

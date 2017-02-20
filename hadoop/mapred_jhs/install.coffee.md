@@ -35,7 +35,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       jhs_webapp_port = mapred.site['mapreduce.jobhistory.webapp.address'].split(':')[1]
       jhs_webapp_https_port = mapred.site['mapreduce.jobhistory.webapp.https.address'].split(':')[1]
       jhs_admin_port = mapred.site['mapreduce.jobhistory.admin.address'].split(':')[1]
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: jhs_port, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS Server" }

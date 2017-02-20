@@ -62,7 +62,7 @@ So we must manually force install of hdf-select outside of yum to handle it
         rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: nifi.config.properties['nifi.cluster.protocol.multicast.port'], protocol: 'tcp', state: 'NEW', comment: "NiFi Multicast port" }
       if nifi.config.properties['nifi.remote.input.socket.port'] and nifi.config.properties['nifi.remote.input.socket.port'] isnt ''
         rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: nifi.config.properties['nifi.remote.input.socket.port'], protocol: 'tcp', state: 'NEW', comment: "NiFi S2S RAW socket port" }
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         if: @config.iptables.action is 'start'
         rules: rules
