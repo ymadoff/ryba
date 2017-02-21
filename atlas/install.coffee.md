@@ -322,18 +322,18 @@ Render the Atlas Environment file
 Need to copy the atlas war file if `atlas.env['ATLAS_EXPANDED_WEBAPP_DIR']` is
 set to other than the default
       
-      @copy
+      @system.copy
         header: 'Atlas webapp war'
         source: '/usr/hdp/current/atlas-server/server/webapp/atlas.war'
         target: "#{atlas.env['ATLAS_EXPANDED_WEBAPP_DIR']}/atlas.war"
 
 ## HBase Layout
 
-      @copy
+      @system.copy
         header: 'HBase Client Site'
         source: "#{@config.ryba.hbase.conf_dir}/hbase-site.xml"
         target: "#{atlas.conf_dir}/hbase/hbase-site.xml"
-      # @copy
+      # @system.copy
       #   header: 'HBase Client Env'
       #   source: "#{@config.ryba.hbase.conf_dir}/hbase-env.sh"
       #   target: "#{atlas.conf_dir}/hbase/hbase-env.sh"
@@ -352,7 +352,7 @@ set to other than the default
           replace: "export HBASE_OPTS=\"${HBASE_OPTS} -Dhdp.version=$HDP_VERSION -Djava.security.auth.login.config=#{atlas.conf_dir}/atlas-server.jaas\" # HDP VERSION FIX RYBA, HBASE CLIENT ONLY"
           append: true
         ]
-      @copy
+      @system.copy
         header: 'HBase Client HDFS site'
         source: "/etc/hadoop/conf/hdfs-site.xml"
         target: "#{atlas.conf_dir}/hbase/hdfs-site.xml"

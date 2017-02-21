@@ -71,7 +71,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Kerberos
 
       @call header: 'Kerberos', timeout: -1, handler: ->
-        @copy # SPNEGO Keytab
+        @system.copy # SPNEGO Keytab
           source: core_site['hadoop.http.authentication.kerberos.keytab']
           target: httpfs.site['httpfs.authentication.kerberos.keytab']
           if: core_site['hadoop.http.authentication.kerberos.keytab'] isnt httpfs.site['httpfs.authentication.kerberos.keytab']
@@ -135,15 +135,15 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           uid: httpfs.user.name
           gid: httpfs.group.name
           mode: 0o0750
-        @copy # Copie original server.xml for no-SSL environments
+        @system.copy # Copie original server.xml for no-SSL environments
           source: "#{httpfs.catalina_home}/conf/server.xml"
           target: "#{httpfs.catalina_home}/conf/nossl-server.xml"
           unless_exists: true
-        @copy
+        @system.copy
           source: "#{httpfs.catalina_home}/conf/nossl-server.xml"
           target: "#{httpfs.catalina_home}/conf/server.xml"
           unless: httpfs.env.HTTPFS_SSL_ENABLED is 'true'
-        @copy
+        @system.copy
           source: "#{httpfs.catalina_home}/conf/ssl-server.xml"
           target: "#{httpfs.catalina_home}/conf/server.xml"
           if: httpfs.env.HTTPFS_SSL_ENABLED is 'true'

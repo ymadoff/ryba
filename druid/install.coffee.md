@@ -142,10 +142,10 @@ Configure deep storage.
         target: "/opt/druid-#{druid.version}/conf/druid/_common/common.runtime.properties"
         content: druid.common_runtime
         backup: true
-      @copy
+      @system.copy
         target: "/opt/druid-#{druid.version}/conf/druid/_common/core-site.xml"
         source: "#{druid.hadoop_conf_dir}/core-site.xml"
-      @copy
+      @system.copy
         target: "/opt/druid-#{druid.version}/conf/druid/_common/hdfs-site.xml"
         source: "#{druid.hadoop_conf_dir}/hdfs-site.xml"
       @hconfigure

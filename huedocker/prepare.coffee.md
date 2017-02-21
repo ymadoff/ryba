@@ -42,7 +42,7 @@ for hue to be able to communicate with the hadoop cluster in secure mode.
           target: "#{@config.mecano.cache_dir}/huedocker"
         @system.mkdir
           target: "#{hue_docker.build.directory}/"
-        @copy
+        @system.copy
           unless: hue_docker.build.source.indexOf('.git') > 0
           source: hue_docker.build.source
           target: "#{hue_docker.build.directory}/hue"

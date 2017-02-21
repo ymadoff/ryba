@@ -253,7 +253,7 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
 
 Install the ExtJS Javascript library as part of enabling the Oozie Web Console.
 
-      @copy
+      @system.copy
         header: 'ExtJS Library'
         source: '/usr/share/HDP-oozie/ext-2.2.zip'
         target: '/usr/hdp/current/oozie-server/libext/'
@@ -262,7 +262,7 @@ Install the ExtJS Javascript library as part of enabling the Oozie Web Console.
 
 Install the HBase Libs as part of enabling the Oozie Unified Credentials with HBase.
 
-      @copy
+      @system.copy
         header: 'HBase Libs'
         source: '/usr/hdp/current/hbase-client/lib/hbase-common.jar'
         target: '/usr/hdp/current/oozie-server/libserver/'
@@ -357,7 +357,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
 
       @call header: 'War', handler: ->
         @call header: 'HBase', handler: ->
-          @copy
+          @system.copy
             header: 'HBase Libs'
             source: '/usr/hdp/current/hbase-client/lib/hbase-common.jar'
             destination: '/usr/hdp/current/oozie-server/libserver/'
@@ -422,7 +422,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      @copy
+      @system.copy
         header: 'SPNEGO'
         source: '/etc/security/keytabs/spnego.service.keytab'
         target: "#{oozie.site['oozie.authentication.kerberos.keytab']}"

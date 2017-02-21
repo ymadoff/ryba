@@ -178,7 +178,7 @@ This Fixs are needed to be able to isolate confs betwwen broker and client
           backup: true
           eof: true
           mode: 0o755
-        @copy
+        @system.copy
           source: '/usr/hdp/current/kafka-broker/bin/kafka-run-class.sh'
           target: '/usr/hdp/current/kafka-broker/bin/kafka-run-broker-class.sh'
           mode: 0o0755

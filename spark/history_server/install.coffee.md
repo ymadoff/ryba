@@ -128,7 +128,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         merge: true
         backup: true
 
-      @copy
+      @system.copy
         target: "#{spark.history.conf_dir}/hdfs-site.xml"
         source: "/etc/hadoop/conf/hdfs-site.xml"
 

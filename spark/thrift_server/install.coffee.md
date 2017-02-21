@@ -136,7 +136,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
 ## Hive Client Conf
 
       @call header:'Hive Client Conf', handler: ->
-        @copy
+        @system.copy
           target: "#{spark.thrift.conf_dir}/hive-site.xml"
           source: '/etc/hive/conf/hive-site.xml'
 

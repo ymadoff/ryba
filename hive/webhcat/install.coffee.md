@@ -160,7 +160,7 @@ HDFS directory. Note, the parent directories are created by the
 
 Copy the spnego keytab with restricitive permissions
 
-      @copy
+      @system.copy
         header: 'SPNEGO'
         source: '/etc/security/keytabs/spnego.service.keytab'
         target: webhcat.site['templeton.kerberos.keytab']

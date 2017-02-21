@@ -84,7 +84,7 @@ MySQL is by default usable by Sqoop. The driver installed after running the
 "masson/commons/mysql/client" is copied into the Sqoop library folder.
 
 
-      # @copy
+      # @system.copy
       #   source: '/usr/share/java/mysql-connector-java.jar'
       #   target: '/usr/hdp/current/sqoop-client/lib/'
       # , next

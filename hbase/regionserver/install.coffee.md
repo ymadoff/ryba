@@ -107,7 +107,7 @@ RegionServer, and HBase client host machines.
 
 ## Kerberos
 
-      @copy
+      @system.copy
         header: 'Copy Keytab'
         if: @has_service 'ryba/hbase/master'
         source: hbase.master.site['hbase.master.keytab.file']
