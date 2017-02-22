@@ -18,9 +18,9 @@ Please refer to the Apache Phoenix QueryServer [documentation][phoenix-doc].
 
 ## IPTables
 
-  | Service    | Port  | Proto  | Parameter                     |
-  |------------|-------|--------|-------------------------------|
-  | nifi       | 8765  | HTTP   | phoenix.queryserver.http.port |
+  | Service             | Port  | Proto  | Parameter                     |
+  |---------------------|-------|--------|-------------------------------|
+  | Phoenix QueryServer | 8765  | HTTP   | phoenix.queryserver.http.port |
 
       @iptables
         header: 'IPTables'
