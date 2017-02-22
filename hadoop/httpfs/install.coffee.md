@@ -178,13 +178,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           uid: httpfs.user.name
           gid: httpfs.group.name
           mode: 0o0640
-        @remove
+        @system.remove
           target: "#{tmp_location}/#{path.basename ssl.cacert}"
           shy: true
-        @remove
+        @system.remove
           target: "#{tmp_location}/#{path.basename ssl.cert}"
           shy: true
-        @remove
+        @system.remove
           target: "#{tmp_location}/#{path.basename ssl.key}"
           shy: true
 

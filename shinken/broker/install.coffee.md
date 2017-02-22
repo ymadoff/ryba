@@ -46,8 +46,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
               python setup.py build
               python setup.py install
               """
-            @remove target: "#{shinken.build_dir}/#{k}-#{v.version}.tar.gz"
-            @remove target: "#{shinken.build_dir}/#{k}-#{v.version}"
+            @system.remove target: "#{shinken.build_dir}/#{k}-#{v.version}.tar.gz"
+            @system.remove target: "#{shinken.build_dir}/#{k}-#{v.version}"
         for k, v of broker.modules['webui2'].pip_modules then install_dep k, v
 
 ## Additional Shinken Modules

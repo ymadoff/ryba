@@ -198,7 +198,7 @@ we execute this task using the rest api.
               merge: true
               properties:
                 'ranger.plugin.hive.policy.rest.ssl.config.file': "#{hive.server2.conf_dir}/ranger-policymgr-ssl.xml"
-            @remove
+            @system.remove
               header: 'Remove useless file'
               target: "#{hive.server2.conf_dir}/hiveserver2-site.xml"
               shy: true

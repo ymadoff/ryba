@@ -32,12 +32,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Remove default config files
 
       @call header: 'Clean Install', handler: ->
-        @remove target: '/etc/shinken/realms/all.cfg'
-        @remove target: '/etc/shinken/contacts/nagiosadmin.cfg'
-        @remove target: '/etc/shinken/services/linux_disks.cfg'
-        @remove target: '/etc/shinken/hosts/localhost.cfg'
-        @remove target: '/etc/shinken/templates/templates.cfg'
-        @remove target: '/etc/shinken/resource.d/path.cfg'
+        @system.remove target: '/etc/shinken/realms/all.cfg'
+        @system.remove target: '/etc/shinken/contacts/nagiosadmin.cfg'
+        @system.remove target: '/etc/shinken/services/linux_disks.cfg'
+        @system.remove target: '/etc/shinken/hosts/localhost.cfg'
+        @system.remove target: '/etc/shinken/templates/templates.cfg'
+        @system.remove target: '/etc/shinken/resource.d/path.cfg'
 
 ## Additional Modules
 

@@ -93,7 +93,7 @@ Update the "core-site.xml" configuration file with properties from the
             remove_files.push (filtered_files.filter (file) -> file isnt jar.filename)...
             continue if jar.filename in remote_files
             jar
-          @remove ( # Remove jar if already uploaded
+          @system.remove ( # Remove jar if already uploaded
             target: path.join '/usr/hdp/current/hadoop-hdfs-client/lib', file
           ) for file in remove_files
           @file.download (

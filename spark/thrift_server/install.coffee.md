@@ -73,7 +73,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
           target: spark.thrift.conf_dir
           uid: spark.user.name
           gid: @config.ryba.hadoop_group.gid
-        @remove
+        @system.remove
           target: '/usr/hdp/current/spark-thriftserver/conf'
         @system.link
           target: '/usr/hdp/current/spark-thriftserver/conf'
@@ -184,13 +184,13 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
           #   storepass: hive.site['hive.server2.keystore.password']
           #   caname: "hadoop_root_ca"
           #   cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
-          @remove
+          @system.remove
             target: "#{tmp_location}/#{path.basename ssl.cacert}"
             shy: true
-          @remove
+          @system.remove
             target: "#{tmp_location}/#{path.basename ssl.cert}"
             shy: true
-          @remove
+          @system.remove
             target: "#{tmp_location}/#{path.basename ssl.key}"
             shy: true
           @service

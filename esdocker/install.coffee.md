@@ -45,7 +45,7 @@
               target: extract_target
               shy: true
             es.volumes.push "#{es.plugins_path}/#{es.es_version}/#{options.key}:/usr/share/elasticsearch/plugins/#{options.key}"
-            @remove "#{es.plugins_path}/#{es.es_version}/#{options.key}.zip", shy: true
+            @system.remove "#{es.plugins_path}/#{es.es_version}/#{options.key}.zip", shy: true
           @then callback
 
 ## SSL Certificate

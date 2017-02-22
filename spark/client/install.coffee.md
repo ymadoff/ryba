@@ -119,13 +119,13 @@ in communication using the particular protocol.
             storepass: spark.conf['spark.ssl.keyStorePassword']
             caname: "hadoop_spark_ca"
             cacert: "#{tmp_location}_cacert"
-         @remove
+         @system.remove
             target: "#{tmp_location}_cacert"
             shy: true
-         @remove
+         @system.remove
             target: "#{tmp_location}_cert"
             shy: true
-         @remove
+         @system.remove
             target: "#{tmp_location}_key"
             shy: true
 

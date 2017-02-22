@@ -78,7 +78,7 @@ Options include:
 
         """
         trap: true
-      @remove
+      @system.remove
         source: COOKIES
 
     module.exports.register = ->

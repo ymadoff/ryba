@@ -55,8 +55,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         @file
           target: "#{nagvis.install_dir}/version"
           content: "#{nagvis.version}"
-        @remove target: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"
-        @remove target: "/var/tmp/nagvis-#{nagvis.version}"
+        @system.remove target: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"
+        @system.remove target: "/var/tmp/nagvis-#{nagvis.version}"
 
       write = ""
       for k, v of nagvis.config

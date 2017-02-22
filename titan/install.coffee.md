@@ -26,13 +26,13 @@ Download and extract a ZIP Archive
         @file.download
           source: titan.source
           target: archive_path
-        @remove
+        @system.remove
           target: unzip_dir
           if: -> @status -1
         @tools.extract
           source: archive_path,
           target: titan.install_dir
-        @remove
+        @system.remove
           target: titan.home
           if: -> @status -1
         @system.link

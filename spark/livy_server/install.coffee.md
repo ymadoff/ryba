@@ -151,13 +151,13 @@ Write startup script to /etc/init.d/service-hue-docker
           cert: "#{tmp_location}/#{path.basename ssl.cert}"
           keypass: spark.livy.keystorePassword
           name: @config.shortname
-        @remove
+        @system.remove
           target: "#{tmp_location}/#{path.basename ssl.cacert}"
           shy: true
-        @remove
+        @system.remove
           target: "#{tmp_location}/#{path.basename ssl.cert}"
           shy: true
-        @remove
+        @system.remove
           target: "#{tmp_location}/#{path.basename ssl.key}"
           shy: true
 

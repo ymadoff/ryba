@@ -75,13 +75,13 @@ SSL only required for the server
     #     storepass: spark.ssl.fs['spark.ssl.keyStorePassword']
     #     caname: "hadoop_spark_ca"
     #     cacert: "#{tmp_location}_cacert"
-    #  @remove
+    #  @system.remove
     #     target: "#{tmp_location}_cacert"
     #     shy: true
-    #  @remove
+    #  @system.remove
     #     target: "#{tmp_location}_cert"
     #     shy: true
-    #  @remove
+    #  @system.remove
     #     target: "#{tmp_location}_key"
     #     shy: true
 

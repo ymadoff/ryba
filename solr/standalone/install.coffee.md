@@ -84,7 +84,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
         @system.link 
           source: "#{solr.single.latest_dir}/conf"
           target: solr.single.conf_dir
-        @remove
+        @system.remove
           shy: true
           target: "#{solr.single.latest_dir}/bin/solr.in.sh"
         @system.link 

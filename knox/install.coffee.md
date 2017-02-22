@@ -48,7 +48,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             '/usr/hdp/current/knox-server/conf/topologies/admin.xml'
             '/usr/hdp/current/knox-server/conf/topologies/sandbox.xml'
           ] , (options) ->
-              @remove  target: options.key
+              @system.remove  target: options.key
         @system.chown
           target: '/var/log/knox'
           uid: knox.user.name
@@ -220,13 +220,13 @@ client to connect to openldap.
           storepass: 'changeit'
           caname: 'hadoop_root_ca'
           cacert: "#{tmp_location}/cacert"
-        @remove
+        @system.remove
           target: "#{tmp_location}/cacert"
           shy: true
-        @remove
+        @system.remove
           target: "#{tmp_location}/cert"
           shy: true
-        @remove
+        @system.remove
           target: "#{tmp_location}/key"
           shy: true
 
