@@ -365,9 +365,9 @@ Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1
       @execute
         header: 'HDFS layout'
         cmd: mkcmd.hdfs @, """
-        hdfs --config #{hdfs.dn.conf_dir} dfs -mkdir -p #{remote_app_log_dir}
-        hdfs --config #{hdfs.dn.conf_dir} dfs -chown #{yarn.user.name}:#{hadoop_group.name} #{remote_app_log_dir}
-        hdfs --config #{hdfs.dn.conf_dir} dfs -chmod 1777 #{remote_app_log_dir}
+        hdfs --config #{hadoop_conf_dir} dfs -mkdir -p #{remote_app_log_dir}
+        hdfs --config #{hadoop_conf_dir} dfs -chown #{yarn.user.name}:#{hadoop_group.name} #{remote_app_log_dir}
+        hdfs --config #{hadoop_conf_dir} dfs -chmod 1777 #{remote_app_log_dir}
         """
         unless_exec: "[[ hdfs dfs -d #{remote_app_log_dir} ]]"
         code_skipped: 2
