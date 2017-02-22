@@ -56,7 +56,7 @@ Download and unpack the release archive.
         target: "/var/tmp/#{path.basename druid.source}"
       # TODO, could be improved
       # current implementation prevent any further attempt if download status is true and extract fails
-      @extract
+      @tools.extract
         source: "/var/tmp/#{path.basename druid.source}"
         target: '/opt'
         if: -> @status -1

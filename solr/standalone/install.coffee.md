@@ -70,7 +70,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
               target: tmp_archive_location
             @system.mkdir 
               target: solr.single.install_dir
-            @extract
+            @tools.extract
               source: tmp_archive_location
               target: solr.single.install_dir
               preserve_owner: false

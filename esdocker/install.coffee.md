@@ -39,7 +39,7 @@
               uid: "elasticsearch"
               gid: "elasticsearch"
               shy: true
-            @extract
+            @tools.extract
               format: "zip"
               source: "#{es.plugins_path}/#{es.es_version}/#{options.key}.zip"
               target: extract_target

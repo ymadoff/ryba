@@ -29,7 +29,7 @@ Download and extract a ZIP Archive
         @remove
           target: unzip_dir
           if: -> @status -1
-        @extract
+        @tools.extract
           source: archive_path,
           target: titan.install_dir
         @remove

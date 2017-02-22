@@ -38,7 +38,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
               source: v.url
               target: "#{shinken.build_dir}/##{v.archive}.tar.gz"
               md5: v.md5
-            @extract
+            @tools.extract
               source: "#{shinken.build_dir}/##{v.archive}.tar.gz"
             @execute
               cmd:"""
@@ -61,7 +61,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
               cache_file: "#{mod.archive}.zip"
               unless_exec: "shinken inventory | grep #{name}"
               shy: true
-            @extract
+            @tools.extract
               source: "#{shinken.build_dir}/#{mod.archive}.zip"
               shy: true
             @execute
