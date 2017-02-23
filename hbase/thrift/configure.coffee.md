@@ -7,7 +7,7 @@
       ryba = @config.ryba ?= {}
       {realm, core_site, ssl_server, hbase} = @config.ryba
       hbase = @config.ryba.hbase ?= {}
-      throw Error 'No HBase Master configured' unless m_ctxs.length > 1
+      throw Error 'No HBase Master configured' unless m_ctxs.length > 0
 
 # Users and Groups
 
