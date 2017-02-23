@@ -20,7 +20,7 @@ Run an HDFS command requiring a NameNode.
 
 Run an HDFS command requiring a DataNode.
 
-      @execute
+      @system.execute
         header: 'DataNode'
         label_true: 'CHECKED',
         cmd: mkcmd.test @, """
@@ -35,7 +35,7 @@ Kerberos Mapping is configured in "core-site.xml" by the
 "hadoop.security.auth_to_local" property. Hadoop provided a comman which take
 the principal name as argument and print the converted user name.
 
-      @execute
+      @system.execute
         header: 'Kerberos Mapping'
         label_true: 'CHECKED'
         cmd: "hadoop org.apache.hadoop.security.HadoopKerberosName #{krb5_user.principal}"

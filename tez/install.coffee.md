@@ -66,7 +66,7 @@ to serve this directory.
         @system.mkdir
           header: 'Layout'
           target: tez.ui.html_path
-        @execute
+        @system.execute
           header: 'Web Files'
           cmd: """
           target_file=`ls /usr/hdp/current/tez-client/ui/tez-ui*.war | sed 's/^.*tez/tez/g'`

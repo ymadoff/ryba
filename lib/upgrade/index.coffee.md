@@ -101,7 +101,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       header: 'Prepare Rolling Upgrade'
       if: -> @config.ryba.active_nn_host is @config.host
       handler: ->
-        @execute
+        @system.execute
           cmd: mkcmd.hdfs @, 'hdfs dfsadmin -rollingUpgrade query | grep "Proceed with rolling upgrade"'
           code_skipped: 1
         @call 
@@ -111,7 +111,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
             # @kexecute
             #   krb5_user: @config.ryba.hdfs.krb5_user
             #   cmd: "hdfs dfsadmin -rollingUpgrade prepare"
-            @execute
+            @system.execute
               cmd: mkcmd.hdfs @, 'hdfs dfsadmin -rollingUpgrade prepare'
             @wait_execute
               cmd: mkcmd.hdfs @, 'hdfs dfsadmin -rollingUpgrade query | grep "Proceed with rolling upgrade"'
@@ -120,7 +120,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       header: 'Upgrade Zookeeper'
       if: -> @has_module 'ryba/zookeeper/server'
       handler: ->
-        @execute
+        @system.execute
           cmd: """
           hdp-select set zookeeper-server 2.4.0.0-169
           service zookeeper-server restart
@@ -134,7 +134,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       header: 'Upgrade JournalNode'
       if: -> @has_module 'ryba/hadoop/hdfs_jn'
       handler: ->
-        @execute
+        @system.execute
           cmd: """
           hdp-select set hadoop-hdfs-journalnode 2.4.0.0-169
           service hadoop-hdfs-journalnode restart
@@ -150,7 +150,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       header: 'Upgrade ZKFC'
       if: -> @has_module 'ryba/hadoop/hdfs_zkfc'
       handler: ->
-        @execute
+        @system.execute
           cmd: """
           hdp-select set hadoop-hdfs-zkfc 2.4.0.0-169
           service hadoop-hdfs-zkfc restart
@@ -166,7 +166,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           if nn_ctx.config.host is nn_ctx.config.ryba.active_nn_host
           then active = nn_ctx.config.shortname
           else standby = nn_ctx.config.shortname
-        @execute
+        @system.execute
           cmd: mkcmd.hdfs @, """
           service hadoop-hdfs-namenode stop
           hdp-select set hadoop-hdfs-namenode 2.4.0.0-169
@@ -184,7 +184,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
           if nn_ctx.config.host is nn_ctx.config.ryba.active_nn_host
           then active = nn_ctx.config.shortname
           else standby = nn_ctx.config.shortname
-        @execute
+        @system.execute
           cmd: mkcmd.hdfs @, """
           service hadoop-hdfs-namenode stop
           hdp-select set hadoop-hdfs-namenode 2.4.0.0-169
@@ -197,7 +197,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       header: 'Upgrade DataNode'
       if: -> @has_module 'ryba/hadoop/hdfs_dn'
       handler: ->
-        @execute
+        @system.execute
           cmd: mkcmd.hdfs @, """
           hdfs dfsadmin -shutdownDatanode `hostname`:50020 upgrade
           while hdfs dfsadmin -D ipc.client.connect.max.retries=1 -getDatanodeInfo `hostname`:50020; do sleep 1; done
@@ -213,7 +213,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
         @wait_execute
           cmd: mkcmd.hdfs @, 'hdfs dfsadmin -safemode get | grep OFF'
           interval: 3000
-        @execute
+        @system.execute
           cmd: mkcmd.hdfs @, "hdfs dfsadmin -rollingUpgrade finalize"
 
 ## Dependencies

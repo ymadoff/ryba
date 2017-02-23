@@ -21,7 +21,7 @@ we execute this task using the rest api.
         if: @contexts('ryba/hadoop/hdfs_nn')[0].config.host is @config.host 
         header: 'Ranger HDFS Repository'
         handler:  ->
-          @execute
+          @system.execute
             unless_exec: """
               curl --fail -H  \"Content-Type: application/json\"   -k -X GET  \ 
               -u admin:#{password} \"#{ranger.hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{ranger.hdfs_plugin.install['REPOSITORY_NAME']}\"

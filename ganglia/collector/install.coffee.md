@@ -71,7 +71,7 @@ Upload the "hdp-gmetad" service file into "/etc/init.d".
           append: '#!/bin/sh'
           mode: 0o755
           unlink: true
-        @execute
+        @system.execute
           cmd: "service gmetad stop; chkconfig --del gmetad; chkconfig --add hdp-gmetad"
           if: -> @status -1
 
@@ -115,21 +115,21 @@ The cluster generation follow Hortonworks guideline and generate the clusters
 
       @call header: 'Clusters', timeout: -1, handler: ->
         # On the Ganglia server, to configure the gmond collector
-        @execute
+        @system.execute
           cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPHistoryServer -m"
           unless_exists: '/etc/ganglia/hdp/HDPHistoryServer'
-        @execute
+        @system.execute
           cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPNameNode -m"
           unless_exists: '/etc/ganglia/hdp/HDPNameNode'
-        @execute
+        @system.execute
           cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPResourceManager -m"
           unless_exists: '/etc/ganglia/hdp/HDPResourceManager'
-        @execute
+        @system.execute
           cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPSlaves -m"
           unless_exists: '/etc/ganglia/hdp/HDPSlaves'
           cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPHBaseMaster -m"
           unless_exists: '/etc/ganglia/hdp/HDPHBaseMaster'
-        @execute
+        @system.execute
           cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -t"
           unless_exists: '/etc/ganglia/hdp/gmetad.conf'
 
@@ -167,7 +167,7 @@ pointing to the Ganglia master hostname.
 ## HTTPD Restart
 
       @call header: 'HTTPD Restart', handler: ->
-        @execute
+        @system.execute
           cmd: """
           curl -s http://#{@config.host}/ganglia/ | grep 'Ganglia Web Frontend'
           """

@@ -65,7 +65,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
           uid: yarn.user.name
           gid: hadoop_group.name
           perm: '0755'
-        @execute
+        @system.execute
           cmd: "service hadoop-yarn-timelineserver restart"
           if: -> @status -4
 
@@ -158,7 +158,7 @@ Note, this is not documented anywhere and might not be considered as a best prac
         dir = yarn.site['yarn.timeline-service.fs-history-store.uri']
         @wait_execute
           cmd: mkcmd.hdfs @, "hdfs dfs -test -d #{path.dirname dir}"
-        @execute
+        @system.execute
           cmd: mkcmd.hdfs @, """
           hdfs dfs -mkdir -p #{dir}
           hdfs dfs -chown #{yarn.user.name} #{dir}

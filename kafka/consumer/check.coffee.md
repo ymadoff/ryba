@@ -67,7 +67,7 @@
             \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
           """
           code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
-        @execute
+        @system.execute
           cmd: """
             curl --fail -H "Content-Type: application/json" -k -X POST \
             -d '#{JSON.stringify kafka_policy}' \
@@ -103,7 +103,7 @@ protocols.
             "#{ctx.config.host}:#{ctx.config.ryba.kafka.broker.ports['PLAINTEXT']}"
           ).join ','
           zoo_connect = ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect']
-          @execute
+          @system.execute
             if: kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
             cmd: mkcmd.kafka @, """
               /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
@@ -114,7 +114,7 @@ protocols.
               /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
               --zookeeper #{zoo_connect} | grep #{test_topic}
               """
-          @execute
+          @system.execute
             unless: kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
             cmd: """
               /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
@@ -125,7 +125,7 @@ protocols.
               /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
               --zookeeper #{zoo_connect} | grep #{test_topic}
               """
-          @execute
+          @system.execute
             cmd: mkcmd.kafka @, """
               (
               /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
@@ -143,7 +143,7 @@ protocols.
                 --authorizer-properties zookeeper.connect=#{zoo_connect}  \
                 --topic #{test_topic} | grep 'User:ANONYMOUS has Allow permission for operations: Write from hosts: *'
               """
-          @execute
+          @system.execute
             cmd: """
             (
               echo 'hello front1' | /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh \
@@ -182,7 +182,7 @@ Trustore location and password given to line command because if executed before 
           ).join ','
           test_topic = "check-#{@config.host}-consumer-ssl-topic"
           zoo_connect = ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect']
-          @execute
+          @system.execute
             cmd: mkcmd.kafka @, """
               /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
                 --zookeeper #{zoo_connect} --partitions #{ks_ctxs.length} --replication-factor #{ks_ctxs.length} \
@@ -192,7 +192,7 @@ Trustore location and password given to line command because if executed before 
               /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
               --zookeeper #{zoo_connect} | grep #{test_topic}
               """
-          @execute
+          @system.execute
             cmd: mkcmd.kafka @, """
               (
               /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
@@ -210,7 +210,7 @@ Trustore location and password given to line command because if executed before 
                 --authorizer-properties zookeeper.connect=#{zoo_connect}  \
                 --topic #{test_topic} | grep 'User:ANONYMOUS has Allow permission for operations: Write from hosts: *'
               """
-          @execute
+          @system.execute
             cmd:  """
               echo 'hello front1' | /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh \
                 --producer-property security.protocol=SSL \
@@ -221,7 +221,7 @@ Trustore location and password given to line command because if executed before 
                 --producer.config #{kafka.producer.conf_dir}/producer.properties \
                 --topic #{test_topic}
             """
-          @execute
+          @system.execute
             cmd: """
               /usr/hdp/current/kafka-broker/bin/kafka-console-consumer.sh \
                 --new-consumer  \
@@ -253,7 +253,7 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
           ).join ','
           test_topic = "check-#{@config.host}-consumer-sasl-plaintext-topic"
           zoo_connect = ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect']
-          @execute
+          @system.execute
             cmd: mkcmd.kafka @, """
               /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
                 --zookeeper #{zoo_connect} --partitions #{ks_ctxs.length} --replication-factor #{ks_ctxs.length} \
@@ -263,7 +263,7 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
               /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
               --zookeeper #{zoo_connect} | grep #{test_topic}
               """
-          @execute
+          @system.execute
             cmd: mkcmd.kafka @, """
               (
               /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
@@ -281,7 +281,7 @@ Check Message by writing to a test topic on the SASL_PLAINTEXT channel.
                 --authorizer-properties zookeeper.connect=#{zoo_connect}  \
                 --topic #{test_topic} | grep 'User:#{user.name} has Allow permission for operations: Write from hosts: *'
               """
-          @execute
+          @system.execute
             cmd:  mkcmd.test @, """
               (
                 echo 'hello front1' | /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh \
@@ -320,7 +320,7 @@ Trustore location and password given to line command because if executed before 
           ).join ','
           test_topic = "check-#{@config.host}-consumer-sasl-ssl-topic"
           zoo_connect = ks_ctxs[0].config.ryba.kafka.broker.config['zookeeper.connect']
-          @execute
+          @system.execute
             cmd: mkcmd.kafka @, """
               /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --create \
                 --zookeeper #{zoo_connect} --partitions #{ks_ctxs.length} --replication-factor #{ks_ctxs.length} \
@@ -330,7 +330,7 @@ Trustore location and password given to line command because if executed before 
               /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
               --zookeeper #{zoo_connect} | grep #{test_topic}
               """
-          @execute
+          @system.execute
             cmd: mkcmd.kafka @, """
               (
               /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
@@ -348,7 +348,7 @@ Trustore location and password given to line command because if executed before 
                 --authorizer-properties zookeeper.connect=#{zoo_connect}  \
                 --topic #{test_topic} | grep 'User:#{user.name} has Allow permission for operations: Write from hosts: *'
               """
-          @execute
+          @system.execute
             cmd:  mkcmd.test @, """
               (
                 echo 'hello front1' | /usr/hdp/current/kafka-broker/bin/kafka-console-producer.sh \

@@ -15,7 +15,7 @@
 ## Packages
 
       @call header: 'Packages', handler: ->        
-        @execute
+        @system.execute
           header: 'Setup Execution'
           shy:true
           cmd: """
@@ -70,7 +70,7 @@ Not documented be taken from [github-source][hdfs-plugin-source]
             sources_props = {}
             current_props = {}
             files_exists = {}
-            @execute
+            @system.execute
               cmd: """
                 echo '' | keytool -list \
                 -storetype jceks \
@@ -106,7 +106,7 @@ Not documented be taken from [github-source][hdfs-plugin-source]
               ]
               backup: true
               mode: 0o750
-            @execute
+            @system.execute
               header: 'Script Execution'
               shy: true
               cmd: """

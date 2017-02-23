@@ -18,7 +18,7 @@ Trigger Phoenix tables creation.
       zk_path = "#{hbase.site['hbase.zookeeper.quorum']}"
       zk_path += ":#{hbase.site['hbase.zookeeper.property.clientPort']}"
       zk_path += "#{hbase.site['zookeeper.znode.parent']}"
-      @execute
+      @system.execute
         cmd: mkcmd.hbase @, """
         code=3
         if [ `hbase shell 2>/dev/null <<< "list 'SYSTEM.*'" | egrep '^SYSTEM.' | wc -l` -lt "4" ]; then

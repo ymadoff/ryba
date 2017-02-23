@@ -17,7 +17,7 @@ Install Ambari server package.
         header: 'Ambari Server Repo'
         source: ambari_server.repo
         target: '/etc/yum.repos.d/ambari.repo'
-      @execute
+      @system.execute
         cmd: "yum clean metadata; yum update -y"
         if: -> @status -1
       @service
@@ -60,7 +60,7 @@ Password is stored inside a file which location is referenced by the property
 
 Create the database hosting the Ambari data with restrictive user permissions.
 
-        @execute
+        @system.execute
           cmd: """
           #{mysql_exec} -e "
           create database #{db.name};
@@ -73,7 +73,7 @@ Create the database hosting the Ambari data with restrictive user permissions.
 
 Load the database with initial data
 
-        @execute
+        @system.execute
           cmd: """
           #{mysql_exec} #{db.name} < /var/lib/ambari-server/resources/Ambari-DDL-MySQL-CREATE.sql
           """
@@ -180,7 +180,7 @@ LDAP or Active Directory Authentication.
             content: ambari_server.config
             merge: true
             backup: true
-          @execute
+          @system.execute
             cmd: """
             ambari-server setup \
               -s \

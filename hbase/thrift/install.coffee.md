@@ -83,7 +83,7 @@ hbase:x:492:
 
 ## ACL Table
 
-        @execute
+        @system.execute
           header: 'ACL Table'
           cmd: mkcmd.hbase @, """
           hbase shell 2>/dev/null <<-CMD

@@ -69,7 +69,7 @@ script inside "/etc/init.d" and activate it on startup.
           uid: mapred.user.name
           gid: hadoop_group.name
           perm: '0755'
-        @execute
+        @system.execute
           cmd: "service hadoop-mapreduce-historyserver restart"
           if: -> @status -3
 
@@ -233,7 +233,7 @@ Create the Kerberos service principal by default in the form of
 
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
-      @execute
+      @system.execute
         header: 'HDFS Layout'
         cmd: mkcmd.hdfs @, """
         if ! hdfs dfs -test -d #{mapred.site['yarn.app.mapreduce.am.staging-dir']}/history; then

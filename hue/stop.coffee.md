@@ -16,7 +16,7 @@ service hue stop
 
 ## Stop Clean Logs
 
-      @execute
+      @system.execute
         header: 'Clean Logs'
         label_true: 'CLEANED'
         if: -> @config.ryba.clean_logs

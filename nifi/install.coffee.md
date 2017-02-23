@@ -21,7 +21,7 @@ hdf-select package conflicts with hdp-select package (both provide /usr/bin/conf
 So we must manually force install of hdf-select outside of yum to handle it
 
       @call header: 'HDP/HDF Cohabitation', handler: ->
-        @execute 
+        @system.execute 
           unless_exec: 'yum list installed hdf-select'
           cmd: """
           yumdownloader --destdir=/tmp hdf-select
@@ -72,7 +72,7 @@ So we must manually force install of hdf-select outside of yum to handle it
       @call header: 'Packages', timeout: -1, handler: (options) ->
         @service
           name: 'nifi'
-        @execute
+        @system.execute
           header: 'fix permissions'
           cmd: """
           chown -R #{nifi.user.name}:#{nifi.group.name} /usr/hdf/current/nifi/lib

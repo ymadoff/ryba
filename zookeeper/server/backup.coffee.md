@@ -20,12 +20,12 @@ transaction log directory. By default these two directories are the same.
 
 TODO: Add the backup facility
 
-      @execute
+      @system.execute
         header: 'Data'
         cmd: """
         tar czf /var/tmp/ryba-zookeeper-data-#{now}.tgz -C #{zookeeper.config.dataDir} .
         """
-      @execute
+      @system.execute
         header: 'Now'
         cmd: """
         tar czf /var/tmp/ryba-zookeeper-log-#{now}.tgz -C #{zookeeper.config.dataLogDir} .
@@ -34,7 +34,7 @@ TODO: Add the backup facility
 
 ## Purge Transaction Logs
 
-      @execute
+      @system.execute
         header: 'Purge Transaction Logs'
         cmd: """
         java -cp /usr/hdp/current/zookeeper-server/zookeeper.jar:/usr/hdp/current/zookeeper-server/lib/*:/usr/hdp/current/zookeeper-server/conf \

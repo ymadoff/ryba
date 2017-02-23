@@ -43,7 +43,7 @@ ElasticSearch archive comes with an RPM
           target: "/var/tmp/elasticsearch-#{elasticsearch.version}.noarch.rpm"
           # unless_exec: "rpm -q --queryformat '%{VERSION}' elasticsearch | grep '#{elasticsearch.version}'"
           unless_exists: true
-        @execute
+        @system.execute
           cmd:"""
           yum localinstall -y --nogpgcheck /var/tmp/elasticsearch-#{elasticsearch.version}.noarch.rpm
           chkconfig --add elasticsearch

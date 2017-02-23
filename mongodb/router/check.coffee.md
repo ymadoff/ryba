@@ -6,6 +6,6 @@
 
 ## Check
 
-      @execute
+      @system.execute
         header: 'TCP'
         cmd: "echo > /dev/tcp/#{@config.host}/#{mongodb.router.config.net.port}"

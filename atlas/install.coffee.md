@@ -223,7 +223,7 @@ for atlas to able to open client connection to solr for its indexing backend.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      @execute
+      @system.execute
         header: 'SPNEGO'
         cmd: "su -l #{atlas.user.name} -c \'test -r #{atlas.application.properties['atlas.http.authentication.kerberos.keytab']}\'"
       @krb5_addprinc
@@ -356,7 +356,7 @@ set to other than the default
         header: 'HBase Client HDFS site'
         source: "/etc/hadoop/conf/hdfs-site.xml"
         target: "#{atlas.conf_dir}/hbase/hdfs-site.xml"
-      @execute
+      @system.execute
         header: 'Create HBase Namespace'
         cmd: mkcmd.hbase @, """
             hbase shell 2>/dev/null <<-CMD
@@ -427,7 +427,7 @@ Grant Permission to atlas for its titan' tables through ranger or from hbase she
               \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
             """
             code_skipped: 22
-          @execute
+          @system.execute
             cmd: """
               curl --fail -H "Content-Type: application/json"   -k -X POST \ 
               -d '#{JSON.stringify atlas.ranger_user}' -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
@@ -438,7 +438,7 @@ Grant Permission to atlas for its titan' tables through ranger or from hbase she
               -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
               \"#{ranger_admin.config.ryba.ranger.admin.install['policymgr_external_url']}/service/xusers/users\" | grep '#{atlas.ranger_user.name}'
             """
-          @execute
+          @system.execute
             header: 'Ranger Ryba Policy'
             cmd: """
               curl --fail -H "Content-Type: application/json" -k -X POST \
@@ -455,7 +455,7 @@ Grant Permission to atlas for its titan' tables through ranger or from hbase she
         unless: -> ranger_admin?
         header: 'HBase Atlas Permissions'
         handler: ->
-          @execute
+          @system.execute
             header: 'Grant Permissions'
             unless_exec: mkcmd.hbase @, "hbase shell 2>/dev/null <<< \"user_permission '@#{atlas.application.namespace}'\" |  egrep \"^\\s(#{atlas.user.name})\\s*(#{atlas.user.name}).*\\[Permission: actions=(READ|EXEC|WRITE|CREATE|ADMIN|,){9}\\]$\""
             cmd: mkcmd.hbase @, """
@@ -509,7 +509,7 @@ credential based on file.
               name = options.key
               user = options.value
               line = "#{user.name}=#{user.group}"
-              @execute
+              @system.execute
                 header: 'Generate new credential'
                 cmd: "echo -n '#{user.password}' | sha256sum"
               ,(err, status, stdout) ->
@@ -546,7 +546,7 @@ kakfa client become an implicit dependance. Its properties can be used.
             switch topic
               when ATLAS_HOOK_TOPIC then group_id = atlas.application.properties['atlas.kafka.hook.group.id']
               when ATLAS_ENTITIES_TOPIC then group_id = atlas.application.properties['atlas.kafka.entities.group.id']
-            @execute
+            @system.execute
               header: "Create #{topic} (Kerberos)"
               if: kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
               cmd: mkcmd.kafka @, """
@@ -558,7 +558,7 @@ kakfa client become an implicit dependance. Its properties can be used.
                 /usr/hdp/current/kafka-broker/bin/kafka-topics.sh --list \
                 --zookeeper #{zoo_connect} | grep #{topic}
                 """
-            @execute
+            @system.execute
               header: "Create #{topic} (Simple)"
               unless: kafka.consumer.env['KAFKA_KERBEROS_PARAMS']?
               cmd: """
@@ -627,7 +627,7 @@ kakfa client become an implicit dependance. Its properties can be used.
                   \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
                 """
                 code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
-              @execute
+              @system.execute
                 header: 'Add policy request'
                 cmd: """
                   curl --fail -H "Content-Type: application/json" -k -X POST \
@@ -649,7 +649,7 @@ Need to put ACL, even when Ranger is not configured.
 Atlas and Hive users needs Authorization to topics.
 The commands a divided per user, as the hive bridge is not mandatory.
 
-            @execute
+            @system.execute
               header: 'KafKa Topic ACL Atlas User (Simple)'
               cmd: mkcmd.kafka @, """
                 /usr/hdp/current/kafka-broker/bin/kafka-acls.sh --authorizer-properties zookeeper.connect=#{zoo_connect} \
@@ -661,7 +661,7 @@ The commands a divided per user, as the hive bridge is not mandatory.
                   --authorizer-properties zookeeper.connect=#{zoo_connect}  \
                   --topic #{topic} | grep 'User:#{atlas.user.name} has Allow permission for operations: Write from hosts: *'
                 """
-            @execute
+            @system.execute
               header: 'KafKa Topic ACL Hive User (Simple)'
               if: atlas.hive_bridge_enabled
               cmd: mkcmd.kafka @, """
@@ -684,7 +684,7 @@ Populates the Oozie directory with the Atlas server JAR files.
         handler: ->
           user = @contexts('ryba/oozie/server')[0].config.ryba.oozie.user.name
           sharelib = ''
-          @execute
+          @system.execute
             header: 'Discover Oozie Sharelib latest version'
             cmd: mkcmd.hdfs @, """
               hdfs dfs -ls  '/user/oozie/share/lib' | awk '{ print $8 }' | tail -n1
@@ -700,14 +700,14 @@ Populates the Oozie directory with the Atlas server JAR files.
               @fs.readdir '/usr/hdp/current/atlas-client/hook/hive/atlas-hive-plugin-impl/', (err, files) =>
                 throw err if err
                 @each files, (options) =>
-                  @execute
+                  @system.execute
                     retry: 2
                     cmd: mkcmd.hdfs @, """
                       hdfs dfs -put /usr/hdp/current/atlas-client/hook/hive/atlas-hive-plugin-impl/#{options.key} \
                       #{sharelib}/hive/
                     """
                     unless_exec: mkcmd.hdfs @, "hdfs dfs -stat #{sharelib}/hive/#{options.key}"
-                  @execute
+                  @system.execute
                     retry: 2
                     if: -> @status -1
                     cmd: mkcmd.hdfs @, "hdfs dfs -chown #{user}:#{user} #{sharelib}/hive/#{options.key}"

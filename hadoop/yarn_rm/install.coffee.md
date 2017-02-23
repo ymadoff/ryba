@@ -92,7 +92,7 @@ inside "/etc/init.d" and activate it on startup.
           uid: yarn.user.name
           gid: hadoop_group.name
           perm: '0755'
-        @execute
+        @system.execute
           cmd: "service hadoop-yarn-resourcemanager restart"
           if: -> @status -4
 

@@ -99,7 +99,7 @@ isnt yet started.
           uid: hive.user.name
           gid: hive.group.name
           perm: '0750'
-        @execute
+        @system.execute
           cmd: "service hive-hcatalog-server restart"
           if: -> @status -4
 
@@ -122,7 +122,7 @@ isnt yet started.
         source: "#{__dirname}/../resources/hive-exec-log4j.properties"
         local_source: true
         context: @config
-      @execute
+      @system.execute
         header: 'Directory Permission'
         cmd: """
         chown -R #{hive.user.name}:#{hive.group.name} #{hive.hcatalog.conf_dir}/
@@ -196,14 +196,14 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
         target_version = 'ls /usr/hdp/current/hive-metastore/lib | grep hive-common- | sed \'s/^hive-common-\\([0-9]\\+.[0-9]\\+.[0-9]\\+\\).*\\.jar$/\\1/g\''
         current_version = db.cmd hive.hcatalog.db, admin_username: null, "select SCHEMA_VERSION from VERSION"
         info_cmd = "hive --config #{@config.ryba.hive.hcatalog.conf_dir} --service schemaTool -dbType #{hive.hcatalog.db.engine} -info"
-        @execute
+        @system.execute
           unless_exec: info_cmd
           header: 'Init Schema'
           cmd: """
               hive --config #{@config.ryba.hive.hcatalog.conf_dir} \
               --service schemaTool -dbType #{hive.hcatalog.db.engine} -initSchema
             """
-        @execute
+        @system.execute
           header: 'Read Versions'
           cmd: """
               engine="#{hive.hcatalog.db.engine}"
@@ -213,7 +213,7 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
               if [ "$target_version" == "$current_version" ] ; then exit 0; else exit 1; fi
             """
           code_skipped: 1
-        @execute
+        @system.execute
           if: -> !@status(-1) and !@status(-2)
           cmd: """
               engine="#{hive.hcatalog.db.engine}"
@@ -261,7 +261,7 @@ Create the directories to store the logs and pid information. The properties
         @wait_execute
           cmd: cmd
           code_skipped: 1
-        @execute
+        @system.execute
           cmd: mkcmd.hdfs @, """
           if hdfs dfs -ls /user/#{hive_user} &>/dev/null; then exit 1; fi
           hdfs dfs -mkdir /user/#{hive_user}
@@ -269,7 +269,7 @@ Create the directories to store the logs and pid information. The properties
           """
           code_skipped: 1
           if: false # Disabled
-        @execute
+        @system.execute
           cmd: mkcmd.hdfs @, """
           if hdfs dfs -ls /apps/#{hive_user}/warehouse &>/dev/null; then exit 3; fi
           hdfs dfs -mkdir /apps/#{hive_user}
@@ -278,9 +278,9 @@ Create the directories to store the logs and pid information. The properties
           hdfs dfs -chmod 755 /apps/#{hive_user}
           """
           code_skipped: 3
-        @execute
+        @system.execute
           cmd: mkcmd.hdfs @, "hdfs dfs -chmod -R #{hive.warehouse_mode or '1777'} /apps/#{hive_user}/warehouse"
-        @execute
+        @system.execute
           cmd: mkcmd.hdfs @, """
           if hdfs dfs -ls /tmp/scratch &> /dev/null; then exit 1; fi
           hdfs dfs -mkdir /tmp 2>/dev/null
@@ -296,7 +296,7 @@ Create the directories to store the logs and pid information. The properties
         header: 'Tez Package'
         name: 'tez'
         if: -> tez_ctxs.length
-      @execute
+      @system.execute
         header: 'Tez Layout'
         if: -> tez_ctxs.length
         timeout: -1

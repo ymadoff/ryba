@@ -15,7 +15,7 @@ Install Ambari server package.
         header: 'Ambari Server Repo'
         source: ambari_server.repo
         target: '/etc/yum.repos.d/ambari.repo'
-      @execute
+      @system.execute
         cmd: "yum clean metadata; yum update -y"
         if: -> @status -1
       @service

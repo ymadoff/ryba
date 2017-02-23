@@ -17,13 +17,13 @@ DataNodes.
 
       protocol = if hdfs.site['dfs.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       port = hdfs.site["dfs.datanode.#{protocol}.address"].split(':')[1]
-      @execute
+      @system.execute
         header: 'SPNEGO'
         cmd: mkcmd.hdfs @, "curl --negotiate -k -u : #{protocol}://#{@config.host}:#{port}/jmx?qry=Hadoop:service=DataNode,name=DataNodeInfo"
       , (err, executed, stdout) ->
         throw err if err
         throw Error "Invalid Response" unless JSON.parse(stdout)?.beans[0]?.name is 'Hadoop:service=DataNode,name=DataNodeInfo'
-      # @execute
+      # @system.execute
       #   cmd: mkcmd.hdfs ctx, "curl --negotiate -k -u : #{protocol}://#{@config.host}:#{port}/jmx?qry=Hadoop:service=DataNode,name=FSDatasetState-*"
       # , (err, executed, stdout) ->
       #   throw err if err
@@ -37,7 +37,7 @@ DataNodes.
       #   @log "WARNING: #{Math.round percent}" if percent > 90
       #  .then next
 
-      @execute
+      @system.execute
         header: 'Native'
         cmd: """
         hadoop checknative | grep hadoop:

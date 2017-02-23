@@ -9,7 +9,7 @@
 
 ## Clean Logs
 
-      @execute
+      @system.execute
         header: 'Clean Logs'
         label_true: 'CLEANED'
         if: -> clean_logs

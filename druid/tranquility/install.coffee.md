@@ -48,7 +48,7 @@ Download and unpack the release archive.
       @system.link
         source: "/opt/tranquility-distribution-#{druid.tranquility.version}"
         target: "#{druid.tranquility.dir}"
-      @execute
+      @system.execute
         cmd: """
         if [ $(stat -c "%U" /opt/tranquility-distribution-#{druid.tranquility.version}) == '#{druid.user.name}' ]; then exit 3; fi
         chown -R #{druid.user.name}:#{druid.group.name} /opt/tranquility-distribution-#{druid.tranquility.version}

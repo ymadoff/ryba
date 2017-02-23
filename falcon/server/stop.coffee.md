@@ -18,7 +18,7 @@ su -l falcon -c "/usr/hdp/current/falcon-server/bin/service-stop.sh falcon"
 
 ## Clean Logs
 
-      @execute
+      @system.execute
         header: 'Clean Logs'
         label_true: 'CLEANED'
         if: -> clean_logs

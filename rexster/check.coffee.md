@@ -8,7 +8,7 @@
 
 Check status using JMX
 
-      @execute
+      @system.execute
         header: 'Status'
         retry: 10
         wait: 10000
@@ -31,7 +31,7 @@ Text mode of REST Server
       curl = "curl -u #{rexster.admin.name}:#{rexster.admin.password} "
       curl += "#{rexster.config.http['base-uri']}:#{rexster.config.http['server-port']}"
       curl += "/graphs/#{graphname}/"
-      @execute
+      @system.execute
         header: 'REST API'
         cmd: curl
       , (err, executed, stdout) ->

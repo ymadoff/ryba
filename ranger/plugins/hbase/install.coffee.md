@@ -20,7 +20,7 @@
 ## Packages
 
       @call header: 'Packages', handler: ->
-        @execute
+        @system.execute
           header: 'Setup Execution'
           shy:true
           cmd: """
@@ -97,7 +97,7 @@ we execute this task using the rest api.
             user: hbase.user.name
             group: hbase.group.name
             unless_exec: mkcmd.hdfs @, "hdfs dfs -test -d #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/hbaseRegional"
-          @execute
+          @system.execute
             header: 'Ranger Admin Policy'
             cmd: """
               curl --fail -H "Content-Type: application/json" -k -X POST \
@@ -110,7 +110,7 @@ we execute this task using the rest api.
               -u admin:#{password} \
               \"#{hdfs_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/#{hdfs_plugin.install['REPOSITORY_NAME']}/policy/hbase-ranger-plugin-audit\"
             """
-          @execute
+          @system.execute
             header: 'Ranger Admin Repository'
             unless_exec: """
               curl --fail -H \"Content-Type: application/json\"   -k -X GET  \ 
@@ -175,7 +175,7 @@ Must add certificate to JAVA Cacerts file manually.
             sources_props = {}
             current_props = {}
             files_exists = {}
-            @execute
+            @system.execute
               cmd: """
                 echo '' | keytool -list \
                 -storetype jceks \
@@ -196,7 +196,7 @@ Must add certificate to JAVA Cacerts file manually.
                       return cb err if err
                       sources_props["#{file}"] = props  
                       cb()
-            @execute
+            @system.execute
               header: 'Script Execution'
               cmd: """
                 if /usr/hdp/#{version}/ranger-hbase-plugin/enable-hbase-plugin.sh ;
@@ -204,7 +204,7 @@ Must add certificate to JAVA Cacerts file manually.
                 else exit 1 ;
                 fi;
               """
-            @execute
+            @system.execute
               header: "Fix Plugin repository permission"
               cmd: "chown -R #{hbase.user.name}:#{hadoop_group.name} /etc/ranger/#{ranger.hbase_plugin.install['REPOSITORY_NAME']}"
             @hconfigure

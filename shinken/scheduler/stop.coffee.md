@@ -7,6 +7,6 @@
 ## Clean Logs
 
       @call header: 'Clean Logs', label_true: 'CLEANED', if: @config.ryba.clean_logs, handler: ->
-        @execute
+        @system.execute
           cmd: 'rm /var/log/shinken/schedulerd*'
           code_skipped: 1

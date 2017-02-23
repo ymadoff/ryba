@@ -127,7 +127,7 @@
 
           @docker_status container:"#{master_node}_1", docker:docker_args
           for service,node of es.nodes then do (service,node) =>
-            @execute
+            @system.execute
               cmd:"""
                 #{export_vars}
                 pushd /etc/elasticsearch/#{es_name}
@@ -135,7 +135,7 @@
               """
               unless: -> @status -1
 
-          @execute
+          @system.execute
             cmd:"""
               #{export_vars}
               pushd /etc/elasticsearch/#{es_name}

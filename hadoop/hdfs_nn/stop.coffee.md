@@ -26,7 +26,7 @@ The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-namenode.pid".
 Remove the "\*-namenode-\*" log files if the property "ryba.clean_logs" is
 activated.
 
-      @execute
+      @system.execute
         header: 'Clean Logs'
         label_true: 'CLEANED'
         cmd: 'rm /var/log/hadoop-hdfs/*-namenode-*'

@@ -25,7 +25,7 @@ su -l hdfs -c "/usr/hdp/current/hadoop-client/sbin/hadoop-daemon.sh --config /et
 Remove the "\*-namenode-\*" log files if the property "ryba.clean_logs" is
 activated.
 
-      @execute
+      @system.execute
         header: 'Clean Logs'
         cmd: 'rm /var/log/hadoop-hdfs/*/*-secondarynamenode-*'
         code_skipped: 1

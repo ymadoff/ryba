@@ -130,7 +130,7 @@ TODO: Use a namespace
         handler: ->
           {hbase, titan} = @config.ryba
           table = titan.config['storage.hbase.table']
-          @execute
+          @system.execute
             cmd: mkcmd.hbase @, """
             if hbase shell 2>/dev/null <<< "user_permission '#{table}'" | grep 'rexster'; then exit 3; fi
             hbase shell 2>/dev/null <<< "grant 'rexster', 'RWXCA', '#{table}'"

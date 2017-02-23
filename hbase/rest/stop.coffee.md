@@ -23,9 +23,9 @@ su -l hbase -c "/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config /etc/
         if: -> @config.ryba.clean_logs
         handler: ->
 
-          @execute
+          @system.execute
             cmd: "rm #{hbase.log_dir}/*-rest-*"
             code_skipped: 1
-          @execute
+          @system.execute
             cmd: "rm #{hbase.log_dir}/gc.log-*"
             code_skipped: 1

@@ -87,7 +87,7 @@ SSL only required for the server
 
 ## HDP select status
 
-      @execute
+      @system.execute
         header: 'HDP Version'
         cmd:  "hdp-select versions | tail -1"
       , (err, executed, stdout, stderr) ->
@@ -99,7 +99,7 @@ SSL only required for the server
 
 Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
 
-      @execute
+      @system.execute
         header: 'Spark'
         cmd: 'ls -l /usr/hdp/current/spark-client/lib/ | grep -m 1 assembly | awk {\'print $9\'}'
       , (err, _, stdout) ->

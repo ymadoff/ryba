@@ -19,7 +19,7 @@ The file storing the PID is "/var/run/hive-server2/hive-server2.pid".
 
 ## Clean Logs
 
-      @execute
+      @system.execute
         header: 'Clean Logs'
         label_true: 'CLEANED'
         if: -> clean_logs

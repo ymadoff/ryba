@@ -49,7 +49,7 @@ Create user and groups for solr user.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      @execute
+      @system.execute
         header: 'SPNEGO'
         cmd: "su -l #{solr.user.name} -c 'test -r #{solr.cloud_docker.spnego.keytab}'"
       @krb5_addprinc

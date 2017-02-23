@@ -118,7 +118,7 @@ the default database while mysql is the recommanded choice.
             {host, port, user, password, name} = hue.ini.desktop.database
             escape = (text) -> text.replace(/[\\"]/g, "\\$&")
             mysql_exec = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
-            @execute
+            @system.execute
               cmd: """
               #{mysql_exec} "
               create database #{name};
@@ -128,7 +128,7 @@ the default database while mysql is the recommanded choice.
               "
               """
               unless_exec: "#{mysql_exec} 'use #{name}'"
-            @execute
+            @system.execute
               # TODO: handle updates
               cmd: """
               su -l #{hue.user.name} -c "/usr/lib/hue/build/env/bin/hue syncdb --noinput"

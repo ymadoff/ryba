@@ -11,7 +11,7 @@
 
 ## Check state
 
-      @execute
+      @system.execute
         header: 'Healthy'
         cmd: "nc #{@config.host} #{zookeeper.port} <<< ruok | grep imok"
 
@@ -21,7 +21,7 @@ Execute these commands on the ZooKeeper host machine(s).
 
       cmds = for zoo_ctx in zoo_ctxs
         "nc #{zoo_ctx.config.host} #{zoo_ctx.config.ryba.zookeeper.port} <<< conf | sed -n 's/.*serverId=\\(.*\\)/\\1/p'"
-      @execute
+      @system.execute
         header: 'Registration'
         cmd: cmds.join ';'
       , (err, _, stdout) ->

@@ -11,7 +11,7 @@ Wait for HttpFs to be started.
 Test the HTTP server with a JMX request.
 
       protocol = if @config.ryba.httpfs.env.HTTPFS_SSL_ENABLED is 'true' then 'https' else 'http'
-      @execute
+      @system.execute
         cmd: mkcmd.test @, """
         curl --fail -k --negotiate -u: #{protocol}://#{@config.host}:#{@config.ryba.httpfs.http_port}/webhdfs/v1/user/#{user.name}?op=GETFILESTATUS
         """

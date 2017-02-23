@@ -42,7 +42,7 @@
       options.parent_mode ?= '755'
       options.owner ?= ''
       options.parent_owner ?= options.owner
-      @execute
+      @system.execute
         cmd: mkcmd.hdfs @, """
         source=#{options.source}
         if [ ! -f "$source" ] ; then exit 1; fi

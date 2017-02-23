@@ -10,7 +10,7 @@
 
 ## Check Client
 
-      @execute
+      @system.execute
         timeout: -1
         header: 'Check Client'
         cmd: mkcmd.test @, """
@@ -22,7 +22,7 @@
 
 ## Check REST
 
-      @execute
+      @system.execute
         header: 'Check REST'
         cmd: mkcmd.test @, """
         curl -s -k --negotiate -u : #{oozie.site['oozie.base.url']}/v1/admin/status
@@ -75,7 +75,7 @@
           uid: user.name
           gid: user.group
           eof: true
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
           hdfs dfs -rm -r -skipTrash check-#{@config.shortname}-oozie-fs 2>/dev/null
           hdfs dfs -mkdir -p check-#{@config.shortname}-oozie-fs
@@ -170,7 +170,7 @@
           uid: user.name
           gid: user.group
           eof: true
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
           # Prepare HDFS
           hdfs dfs -rm -r -skipTrash check-#{@config.shortname}-oozie-mr 2>/dev/null
@@ -273,7 +273,7 @@
           uid: user.name
           gid: user.group
           eof: true
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
           hdfs dfs -rm -r -skipTrash check-#{@config.shortname}-oozie-pig 2>/dev/null
           hdfs dfs -mkdir -p check-#{@config.shortname}-oozie-pig/input
@@ -420,7 +420,7 @@
           uid: user.name
           gid: user.group
           eof: true
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
           hdfs dfs -rm -r -skipTrash check-#{@config.shortname}-oozie-pig 2>/dev/null
           hdfs dfs -mkdir -p check-#{@config.shortname}-oozie-pig/input

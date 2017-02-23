@@ -12,26 +12,26 @@
 
 ## Check TCP
 
-      @execute
+      @system.execute
         header: 'Check WebUI port'
         label_true: 'CHECKED'
         cmd: "echo > /dev/tcp/#{@config.host}/#{webui}"
-      @execute
+      @system.execute
         header: 'Check Node port'
         if: nifi.config.properties['nifi.cluster.is.node'] is 'true'
         label_true: 'CHECKED'
         cmd: "echo > /dev/tcp/#{@config.host}/#{nifi.config.properties['nifi.cluster.node.protocol.port']}"
-      @execute
+      @system.execute
         header: 'Check Manager port'
         if: nifi.config.properties['nifi.cluster.is.manager'] is 'true'
         label_true: 'CHECKED'
         cmd: "echo > /dev/tcp/#{@config.host}/#{nifi.config.properties['nifi.cluster.manager.protocol.port']}"
-      @execute
+      @system.execute
         header: 'Check Multicast port'
         if: nifi.config.properties['nifi.cluster.protocol.use.multicast'] is 'true'
         label_true: 'CHECKED'
         cmd: "echo > /dev/tcp/#{@config.host}/#{nifi.config.properties['nifi.cluster.protocol.multicast.port']}"
-      @execute
+      @system.execute
         header: 'Check Input Socket port'
         if: nifi.config.properties['nifi.remote.input.socket.port'] and nifi.config.properties['nifi.remote.input.socket.port'] isnt ''
         label_true: 'CHECKED'

@@ -134,7 +134,7 @@ only on localhost (not over the network) or over an encrypted connection.
 
 Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
 
-      @execute
+      @system.execute
         header: 'Generate Super User'
         if: zookeeper.superuser.password
         cmd: """

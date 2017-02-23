@@ -12,6 +12,6 @@ Stop the OpenTSDB service.
 
       @call header: 'Stop Clean Logs', label_true: 'CLEANED', handler: ->
         return unless @config.ryba.clean_logs
-        @execute
+        @system.execute
           cmd: 'rm /var/log/opentsdb/*'
           code_skipped: 1

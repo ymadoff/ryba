@@ -168,7 +168,7 @@ the default database while mysql is the recommanded choice.
               header: 'User'
             @db.database properties, database: name,
               header: 'Database'
-            @execute 
+            @system.execute 
               cmd: db.cmd properties, """
                 grant all privileges on #{name}.* to '#{user}'@'localhost' identified by '#{password}';
                 grant all privileges on #{name}.* to '#{user}'@'%' identified by '#{password}';

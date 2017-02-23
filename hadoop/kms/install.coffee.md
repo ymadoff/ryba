@@ -22,7 +22,7 @@
           name: 'hadoop-mapreduce'
         @hdp_select
           name: 'hadoop-client'
-        @execute
+        @system.execute
           cmd: """
           version=`ls -l /usr/hdp/current/hadoop-mapreduce-client | sed 's/.*-> \\/usr\\/hdp\\/\\(.*\\)\\/.*/\\1/g'`
           if [ -z "$version" ]; then echo 'Version not found' && exit 1; fi

@@ -23,7 +23,7 @@ Run the `add_peer` command to register each replicated cluster.
           msg_err = "Slave Cluster must have same zookeeper hbase node: #{cluster.zookeeper_node} instead of #{hbase.site['zookeeper.znode.parent']}"
           throw new Error msg_err
         else
-          @execute
+          @system.execute
             cmd: mkcmd.hbase @, """
             hbase shell -n 2>/dev/null <<-CMD
               add_peer '#{peer_key}', '#{peer_value}'

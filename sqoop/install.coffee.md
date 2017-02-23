@@ -112,7 +112,7 @@ the Sqoop library folder.
 Make sure the sqoop client is available on this server, using the [HDP validation
 command][validate].
 
-      @execute
+      @system.execute
         header: 'Check Version'
         cmd: "sqoop version | grep 'Sqoop [0-9].*'"
 

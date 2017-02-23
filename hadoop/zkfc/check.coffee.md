@@ -19,7 +19,7 @@ Strict host key checking is disabled during this check with the
         for nn_ctx in nn_ctxs
           source = nn_ctx.config.host if nn_ctx.config.host is @config.host
           target = nn_ctx.config.host if nn_ctx.config.host isnt @config.host
-        @execute
+        @system.execute
           header: 'SSH Fencing'
           if: -> nn_ctxs.length > 1
           retry: 100

@@ -79,7 +79,7 @@
               \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
             """
             code_skipped: 22
-          @execute
+          @system.execute
             header: 'Ranger Ryba Policy'
             cmd: """
               curl --fail -H "Content-Type: application/json" -k -X POST \
@@ -99,7 +99,7 @@
 
 ## Check Shell
 
-      @execute
+      @system.execute
         cmd: mkcmd.hbase @, """
         if hbase shell 2>/dev/null <<< "list_namespace_tables '#{hbase.rest.test.namespace}'" | egrep '[0-9]+ row'; then
           if [ ! -z '#{force_check or ''}' ]; then
@@ -121,7 +121,7 @@
         """
         code_skipped: 2
         trap: true
-      @execute
+      @system.execute
         cmd: mkcmd.test @, """
         #{curl} -X POST --data '#{schema}' #{protocol}://#{host}:#{port}/#{hbase.rest.test.namespace}:#{hbase.rest.test.table}/schema
         #{curl} --data '#{rows}' #{protocol}://#{host}:#{port}/#{hbase.rest.test.namespace}:#{hbase.rest.test.table}/___false-row-key___/#{shortname}_rest%3A

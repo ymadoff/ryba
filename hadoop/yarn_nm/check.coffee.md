@@ -12,4 +12,4 @@
         cmds = []
         for dir in log_dirs then cmds.push cmd: "su -l #{yarn.user.name} -c 'ls -l #{dir}'"
         for dir in local_dirs then cmds.push cmd: "su -l #{yarn.user.name} -c 'ls -l #{dir}'"
-        @execute cmds
+        @system.execute cmds

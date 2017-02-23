@@ -13,7 +13,7 @@ Modify admin account password. By default the login:pwd  is `admin:admin`.
         @wait_connect
           host: @config.host
           port: port
-        @execute
+        @system.execute
           header: "Check admin password"
           cmd: """
             curl -H \"Content-Type: application/json\"  --fail -k -X GET \ 
@@ -21,7 +21,7 @@ Modify admin account password. By default the login:pwd  is `admin:admin`.
           """
           code_skipped: 22
           shy: true
-        @execute
+        @system.execute
           unless: -> @status -1
           header: "Change admin password"
           cmd: """
@@ -38,7 +38,7 @@ Indeed usersource to 1 means external user and so unknown password.
 
       @call header: 'Ranger Admin Manager Users Accounts', handler: ->
         for name, user of ranger.users
-          @execute
+          @system.execute
             if: user.userSource is 0
             cmd: """
               curl --fail -H "Content-Type: application/json"   -k -X POST \ 
@@ -50,7 +50,7 @@ Indeed usersource to 1 means external user and so unknown password.
               -u #{name}:#{user.password} \
               \"#{ranger.admin.install['policymgr_external_url']}/service/users/profile\"
             """
-          @execute
+          @system.execute
             if: user.userSource is 1 
             cmd: """
               curl --fail -H "Content-Type: application/json"   -k -X POST \ 

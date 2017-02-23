@@ -19,6 +19,6 @@ The file storing the PID is "/var/run/hadoop-yarn/yarn/yarn-yarn-timelineserver.
     # module.exports.push header: 'Clean Logs', label_true: 'CLEANED', handler: ->
     #   {clean_logs, yarn} = @config.ryba
     #   return unless clean_logs
-    #   @execute
+    #   @system.execute
     #     cmd: 'rm #{yarn.log_dir}/*/*-nodemanager-*'
     #     code_skipped: 1

@@ -93,7 +93,7 @@ inside "/etc/init.d" and activate it on startup.
           uid: hdfs.user.name
           gid: hadoop_group.name
           perm: '0755'
-        @execute
+        @system.execute
           cmd: "service hadoop-hdfs-journalnode restart"
           if: -> @status -4
 

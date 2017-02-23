@@ -7,7 +7,7 @@
 ## Check HDFS
 
       remote_dir = "check-#{@config.shortname}-tez-hdfs"
-      @execute
+      @system.execute
         header: 'Check HDFS'
         cmd: mkcmd.test @, """
         hdfs dfs -rm -r -skipTrash #{remote_dir} 2>/dev/null

@@ -53,7 +53,7 @@ See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments
         properties: hive.site
         merge: true
         backup: true
-      @execute
+      @system.execute
         header: 'Permissions'
         cmd: """
         chown -R #{hive.user.name}:#{hadoop_group.name} #{hive.conf_dir}

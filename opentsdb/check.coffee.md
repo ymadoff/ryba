@@ -6,7 +6,7 @@
 
 ## Check HTTP
 
-      @execute 
+      @system.execute 
         header: 'Check HTTP'
         label_true: 'CHECKED'
         cmd: "curl http://#{@config.host}:#{opentsdb.config['tsd.network.port']}"
@@ -29,11 +29,11 @@
             metric: 'ryba.test'
             tags: api: 'http', host: @config.host
           ]
-        @execute 
+        @system.execute 
           cmd: """
           curl --fail -X POST -d '#{put}' http://#{@config.host}:#{opentsdb.config['tsd.network.port']}/api/put
           """
-        @execute
+        @system.execute
           # Waiting 2 secs. Opentsdb is not consistent
           cmd: """
           sleep 2;

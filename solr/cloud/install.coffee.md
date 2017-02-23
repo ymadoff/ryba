@@ -203,7 +203,7 @@ Create HDFS solr user and its home directory
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      @execute
+      @system.execute
         header: 'SPNEGO'
         cmd: "su -l #{solr.user.name} -c 'test -r #{solr.cloud.spnego.keytab}'"
       @krb5_addprinc
@@ -241,7 +241,7 @@ Create HDFS solr user and its home directory
 
 ## Bootstrap Zookeeper
 
-      @execute
+      @system.execute
         header: 'Zookeeper bootstrap'
         cmd: """
           cd #{solr.cloud.latest_dir}
@@ -254,7 +254,7 @@ Create HDFS solr user and its home directory
 For now we skip security configuration to solr when source is 'HDP'.
 HDP has version 5.2.1 of solr, and security plugins are included from 5.3.0
 
-      @execute
+      @system.execute
         header: "Upload Security conf"
         if: (@contexts('ryba/solr/cloud')[0].config.host is @config.host)
         cmd: """
@@ -282,7 +282,7 @@ HDP has version 5.2.1 of solr, and security plugins are included from 5.3.0
         cacert: "#{ssl.cacert}"
         local_source: true
       # not documented but needed when SSL
-      @execute
+      @system.execute
         header: "Enable SSL Scheme"
         cmd: """
           cd #{solr.cloud.latest_dir}

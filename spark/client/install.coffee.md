@@ -42,7 +42,7 @@ Install the spark and python packages.
 
       status = user_owner = group_owner = null
       spark_yarn_jar = spark.conf['spark.yarn.jar']
-      @execute
+      @system.execute
         header: 'HDFS Layout'
         cmd: mkcmd.hdfs @, """
         hdfs dfs -mkdir -p /apps/#{spark.user.name}
@@ -56,14 +56,14 @@ Install the spark and python packages.
 
 ## Spark Worker events log dir
 
-      @execute
+      @system.execute
         header: 'HDFS Home'
         cmd: mkcmd.hdfs @, """
         hdfs dfs -mkdir -p /user/#{spark.user.name}
         hdfs dfs -chmod -R 755 /user/#{spark.user.name}
         hdfs dfs -chown -R #{spark.user.name}:#{spark.group.name} /user/#{spark.user.name}
         """
-      @execute
+      @system.execute
         header: 'HDFS Log Directory'
         cmd: mkcmd.hdfs @, """
         hdfs dfs -mkdir -p #{fs_log_dir}
@@ -140,7 +140,7 @@ has finished (logs are only available in yarn-cluster mode).
       @call header: 'Configure',  handler: ->
         hdp_current_version = null
         hadoop_conf_dir = '/usr/hdp/current/hadoop-client/conf'
-        @execute
+        @system.execute
           cmd:  "hdp-select versions | tail -1"
         , (err, executed, stdout, stderr) ->
           return err if err

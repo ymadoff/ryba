@@ -21,7 +21,7 @@ directories.
       @call header: 'Packages', handler: ->
         hdp_current_version = null
         @call ( options, callback) =>
-          @execute
+          @system.execute
             cmd:  "hdp-select versions | tail -1 | tr '.' '_' | tr '-' '_'"
           , (err, executed, stdout, stderr) =>
             return callback err if err
@@ -106,7 +106,7 @@ Update the file "install.properties" with the properties defined by the
         eof: true
         backup: true
 
-      @execute
+      @system.execute
         header: 'Execute Setup Scripts'
         cmd: """
           cd /usr/hdp/current/ranger-usersync/

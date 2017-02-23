@@ -29,7 +29,7 @@ ResourceCalculator class name is expected.
         properties: capacity_scheduler
         merge: false
         backup: true
-      @execute
+      @system.execute
         cmd: mkcmd.hdfs @, 'service hadoop-yarn-resourcemanager status && yarn rmadmin -refreshQueues || exit 0'
         if: -> @status -1
 

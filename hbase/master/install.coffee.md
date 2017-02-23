@@ -248,7 +248,7 @@ Ensure we have read access to the spnego keytab soring the server HTTP
 principal.
 
 
-      @execute
+      @system.execute
         header: 'SPNEGO'
         cmd: "su -l #{hbase.user.name} -c 'test -r /etc/security/keytabs/spnego.service.keytab'"
 

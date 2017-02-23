@@ -17,6 +17,6 @@ service spark-thrift-server start
 
       @call header: 'Clean Logs', label_true: 'CLEANED', handler: ->
         return unless @config.ryba.clean_logs
-        @execute
+        @system.execute
           cmd: "rm #{spark.thrift.log_dir}/*"
           code_skipped: 1

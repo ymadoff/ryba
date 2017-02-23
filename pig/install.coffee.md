@@ -22,7 +22,7 @@ The pig package is install.
         # @hdp_select
         #   name: 'pig-client'
         # 6th feb 2014: pig user isnt created by YUM, might change in a future HDP release
-        @execute
+        @system.execute
           header: 'Users'
           cmd: "useradd pig -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Pig service\""
           code: 0

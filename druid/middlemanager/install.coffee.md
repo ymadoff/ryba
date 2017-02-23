@@ -53,7 +53,7 @@
 Detect the current Hadoop version and import its client jars. See the 
 documentation [Working with different versions of Hadoop](https://github.com/druid-io/druid/blob/master/docs/content/operations/other-hadoop.md).
 
-      @execute
+      @system.execute
         cmd: """
         version=`ls #{druid.hadoop_mapreduce_dir}/hadoop-mapreduce-client-core-*.jar | sed 's/.*client-core-\\([0-9]\\.[0-9]\\.[0-9]\\).*/\\1/g'`
         target=/opt/druid-#{druid.version}/hadoop-dependencies/hadoop-client/${version}

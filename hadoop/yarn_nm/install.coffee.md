@@ -76,7 +76,7 @@ inside "/etc/init.d" and activate it on startup.
           handler: ->
             @service
               name: 'spark_*-yarn-shuffle'
-            @execute
+            @system.execute
               cmd: """
                 file_lib=`ls /usr/hdp/current/spark-client/lib/* | grep yarn-shuffle.jar`
                 file_aux=`ls /usr/hdp/current/spark-client/aux/* | grep yarn-shuffle.jar`
@@ -362,7 +362,7 @@ drwxrwxrwt   - yarn   hadoop            0 2014-05-26 11:01 /app-logs
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
       remote_app_log_dir = yarn.site['yarn.nodemanager.remote-app-log-dir']
-      @execute
+      @system.execute
         header: 'HDFS layout'
         cmd: mkcmd.hdfs @, """
         hdfs --config #{hadoop_conf_dir} dfs -mkdir -p #{remote_app_log_dir}

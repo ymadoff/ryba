@@ -70,7 +70,7 @@ inside "/etc/init.d" and activate it on startup.
           local: true
           context: @config
           mode: 0o0755
-        @execute
+        @system.execute
           cmd: "service hadoop-hdfs-datanode restart"
           if: -> @status -3
 
@@ -310,7 +310,7 @@ Note, we might move this middleware to Masson.
       @call
         header: 'Kernel'
         handler: (_, next) ->
-          @execute
+          @system.execute
             if: Object.keys(hdfs.sysctl).length
             cmd: 'sysctl -a'
             stdout: null
@@ -338,7 +338,7 @@ Note, we might move this middleware to Masson.
                 throw err if err
                 properties = for k, v of properties then "#{k}='#{v}'"
                 properties = properties.join ' '
-                @execute
+                @system.execute
                   cmd: "sysctl #{properties}"
                 , next
 

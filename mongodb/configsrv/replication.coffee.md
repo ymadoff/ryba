@@ -55,7 +55,7 @@ The root user is needed for replication and has role `root`
           @connection.wait
             host: @config.host
             port: mongodb.configsrv.config.net.port
-          @execute
+          @system.execute
             cmd: """
               #{mongo_shell_exec} --eval <<-EOF \
               'printjson( db.createUser( \
@@ -67,7 +67,7 @@ The root user is needed for replication and has role `root`
               echo exit | #{mongo_shell_admin_exec} -u #{mongodb.admin.name} --password  '#{mongodb.admin.password}'
               """
             code_skipped: 252
-          @execute
+          @system.execute
             cmd: """
             #{mongo_shell_admin_exec} --eval <<-EOF \
             'printjson(db.createUser( \
@@ -105,14 +105,14 @@ The root user is needed for replication and has role `root`
         handler: ->
           message = {}
           @call (_, callback) ->
-            @execute
+            @system.execute
               cmd: " #{mongo_shell_root_exec}  --eval 'rs.status().ok' | grep -v 'MongoDB.*version' | grep -v 'connecting to:'"
             , (err, _, stdout) ->
               return callback err if err
               status =  parseInt(stdout)
               return callback null, true if status == 0
               callback null, false
-          @execute
+          @system.execute
             if: -> @status -1
             cmd: "#{mongo_shell_root_exec}  --eval 'rs.initiate()'"
 
@@ -127,6 +127,6 @@ The root user is needed for replication and has role `root`
           @call ->
             replSetName = mongodb.configsrv.config.replication.replSetName
             for host in mongodb.configsrv.replica_sets[replSetName]
-              @execute
+              @system.execute
                 cmd: "#{mongo_shell_root_exec} --eval 'rs.add(\"#{host}:#{mongodb.configsrv.config.net.port}\")'"
                 unless_exec: "#{mongo_shell_root_exec} --eval 'rs.conf().members' | grep '#{host}:#{mongodb.configsrv.config.net.port}'"

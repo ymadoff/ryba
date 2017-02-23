@@ -44,7 +44,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         @system.chmod
           target: "/var/tmp/nagvis-#{nagvis.version}/install.sh"
           mode: 0o755
-        @execute
+        @system.execute
           cmd: """
           cd /var/tmp/nagvis-#{nagvis.version};
           ./install.sh -n #{nagvis.base_dir} -p #{nagvis.install_dir} \

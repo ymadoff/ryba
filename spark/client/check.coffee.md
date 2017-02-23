@@ -22,7 +22,7 @@ In this mode the driver is the yarn application master (running inside yarn).
       @call header: 'Check Yarn Cluster', timeout: -1, label_true: 'CHECKED', handler:->
         file_check = "check-#{@config.shortname}-spark-cluster"
         applicationId = null
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
             spark-submit \
               --class org.apache.spark.examples.SparkPi \
@@ -41,7 +41,7 @@ In this mode the driver is the yarn application master (running inside yarn).
         @call 
           if: -> @status -1
           handler:->
-            @execute
+            @system.execute
               cmd: mkcmd.test @, """
                 yarn logs -applicationId #{applicationId} 2>&1 /dev/null | grep -m 1 "Pi is roughly";
                 """
@@ -51,7 +51,7 @@ In this mode the driver is the yarn application master (running inside yarn).
               log_result = stdout.split(" ")
               pi = parseFloat(log_result[log_result.length - 1])
               return Error 'Invalid Output' unless pi > 3.00 and pi < 3.20
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
           hdfs dfs -touchz #{file_check}
           """
@@ -71,7 +71,7 @@ driver does not copy metrics.properties file as it should. This is fixed in vers
       @call header: 'Check Yarn Client', timeout: -1, label_true: 'CHECKED', handler: ->
         file_check = "check-#{@config.shortname}-spark-client"
         applicationId = null
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
             spark-submit \
               --class org.apache.spark.examples.SparkPi \
@@ -89,7 +89,7 @@ driver does not copy metrics.properties file as it should. This is fixed in vers
           pi = parseFloat(log_result[log_result.length - 1])
           return Error 'Invalid Output' unless pi > 3.00 and pi < 3.20
           return
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
           hdfs dfs -touchz #{file_check}
           """
@@ -104,7 +104,7 @@ yarn-client mode, not yarn-cluster.
         file_check = "check-#{@config.shortname}-spark-shell-scala"
         directory = "check-#{@config.shortname}-spark_shell_scala"
         db = "check_#{@config.shortname}_spark_shell_scala"
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
           echo 'println(\"spark_shell_scala\")' | spark-shell --master yarn-client 2>/dev/null | grep ^spark_shell_scala$
           """
@@ -113,7 +113,7 @@ yarn-client mode, not yarn-cluster.
           return err if err
           return unless executed
           return Error 'Invalid Output' unless stdout.indexOf 'spark_shell_scala' > -1
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
           hdfs dfs -touchz #{file_check}
           """
@@ -129,7 +129,7 @@ Creating database from SparkSql is not supported for now.
         dir_check = "check-#{@config.shortname}-spark-shell-scala-sql"
         directory = "check-#{@config.shortname}-spark_shell_scala-sql"
         db = "check_#{@config.shortname}_spark_shell_hive_#{@config.shortname}"
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
           hdfs dfs -rm -r -skipTrash #{directory} || true
           hdfs dfs -rm -r -skipTrash #{dir_check} || true
@@ -159,7 +159,7 @@ Creating database from SparkSql is not supported for now.
         file_check = "check-#{@config.shortname}-spark-shell-python"
         directory = "check-#{@config.shortname}-spark_shell_python"
         db = "check_#{@config.shortname}_spark_shell_python"
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
           echo 'print \"spark_shell_python\"' | pyspark  --master yarn-client 2>/dev/null | grep ^spark_shell_python$
           """
@@ -168,7 +168,7 @@ Creating database from SparkSql is not supported for now.
           return err if err
           return unless executed
           return Error 'Invalid Output' unless stdout.indexOf 'spark_shell_python' > -1
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
           hdfs dfs -touchz #{file_check}
           """

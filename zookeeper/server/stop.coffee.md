@@ -20,7 +20,7 @@ The file storing the PID is "/var/run/zookeeper/zookeeper_server.pid".
 
 ## Clean Logs
 
-      @execute
+      @system.execute
         header: 'ZooKeeper Server Clean Logs'
         label_true: 'CLEANED'
         if: @config.ryba.clean_logs

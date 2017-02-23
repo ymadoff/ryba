@@ -88,7 +88,7 @@ isnt yet started.
           uid: hive.user.name
           gid: hive.group.name
           perm: '0750'
-        @execute
+        @system.execute
           cmd: "service hive-server2 restart"
           if: -> @status -4
 

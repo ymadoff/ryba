@@ -31,7 +31,7 @@ Options include:
       wrap = (cmd) ->
         return cmd unless options.krb5_user
         "echo '#{options.krb5_user.password}' | kinit #{options.krb5_user.principal} >/dev/null && {\n#{cmd}\n}"
-      @execute
+      @system.execute
         cmd: wrap """
         target="#{options.target}"
         if hdfs dfs -test -d $target; then

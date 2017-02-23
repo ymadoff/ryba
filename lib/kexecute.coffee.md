@@ -22,7 +22,7 @@ Options include:
         return cmd unless options.krb5_user
         "echo '#{options.krb5_user.password}' | kinit #{options.krb5_user.principal} >/dev/null && {\n#{cmd}\n}; kdestroy"
       options.cmd = wrap options.cmd
-      @execute options, callback
+      @system.execute options, callback
 
     module.exports.register = ->
       ctx.register 'kexecute', module.exports unless ctx.registered 'kexecute'

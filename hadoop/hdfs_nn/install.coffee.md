@@ -74,7 +74,7 @@ inside "/etc/init.d" and activate it on startup.
           uid: hdfs.user.name
           gid: hadoop_group.name
           perm: '0750'
-        @execute
+        @system.execute
           cmd: "service hadoop-hdfs-namenode restart"
           if: -> @status -4
 
@@ -308,12 +308,12 @@ if the NameNode was formated.
         any_dfs_name_dir = any_dfs_name_dir.substr(7) if any_dfs_name_dir.indexOf('file://') is 0
         is_hdfs_ha = @contexts('ryba/hadoop/hdfs_nn').length > 1
         # For non HA mode
-        @execute
+        @system.execute
           cmd: "su -l #{hdfs.user.name} -c \"hdfs --config '#{hdfs.nn.conf_dir}' namenode -format\""
           unless: is_hdfs_ha
           unless_exists: "#{any_dfs_name_dir}/current/VERSION"
         # For HA mode, on the leader namenode
-        @execute
+        @system.execute
           cmd: "su -l #{hdfs.user.name} -c \"hdfs --config '#{hdfs.nn.conf_dir}' namenode -format -clusterId '#{nameservice}'\""
           if: is_hdfs_ha and active_nn_host is @config.host
           unless_exists: "#{any_dfs_name_dir}/current/VERSION"
@@ -333,7 +333,7 @@ is only executed on the standby NameNode.
           @connection.wait
             host: active_nn_host
             port: 8020
-          @execute
+          @system.execute
             cmd: "su -l #{hdfs.user.name} -c \"hdfs --config '#{hdfs.nn.conf_dir}' namenode -bootstrapStandby -nonInteractive\""
             code_skipped: 5
 
@@ -351,7 +351,7 @@ ${HADOOP_CONF_DIR}/core-site.xml
         properties: hadoop_policy
         backup: true
         if: core_site['hadoop.security.authorization'] is 'true'
-      @execute
+      @system.execute
         header: 'Policy Reloaded'
         cmd: mkcmd.hdfs @, "service hadoop-hdfs-namenode status && hdfs --config '#{hdfs.nn.conf_dir}' dfsadmin -refreshServiceAcl"
         code_skipped: 3

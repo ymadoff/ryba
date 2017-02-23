@@ -57,7 +57,7 @@
                 ]
                 conditions: []
                 }]
-            @execute
+            @system.execute
               cmd: """
                 curl --fail -H "Content-Type: application/json" -k -X POST \
                 -d '#{JSON.stringify atlas_policy}' \
@@ -74,7 +74,7 @@
 # Packages
 
       @call header: 'Packages', handler: ->
-        @execute
+        @system.execute
           header: 'Setup Execution Version'
           shy:true
           cmd: """
@@ -103,7 +103,7 @@ we execute this task using the rest api.
         if: @contexts('ryba/atlas')[0].config.host is @config.host 
         header: 'Ranger Atlas Repository'
         handler:  ->
-          @execute
+          @system.execute
             unless_exec: """
               curl --fail -H  \"Content-Type: application/json\"   -k -X GET  \ 
               -u admin:#{password} \"#{ranger.atlas_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{ranger.atlas_plugin.install['REPOSITORY_NAME']}\"
@@ -163,7 +163,7 @@ we execute this task using the rest api.
             sources_props = {}
             current_props = {}
             files_exists = {}
-            @execute
+            @system.execute
               cmd: """
                 echo '' | keytool -list \
                 -storetype jceks \
@@ -184,7 +184,7 @@ we execute this task using the rest api.
                       return cb err if err
                       sources_props["#{file}"] = props
                       cb()
-            @execute
+            @system.execute
               header: 'Script Execution'
               cmd: """
                 if /usr/hdp/#{version}/ranger-atlas-plugin/enable-atlas-plugin.sh ;

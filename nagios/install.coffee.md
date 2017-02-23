@@ -117,7 +117,7 @@ nagiocmd:x:2419:apache
         if: -> Object.getOwnPropertyNames(@config.ryba.nagios.users).length > 0
         handler: ->
           for name, user of @config.ryba.nagios.users
-            @execute
+            @system.execute
               cmd: """
               if [ -e /etc/nagios/htpasswd.users ]; then
                 hash=`cat /etc/nagios/htpasswd.users 2>/dev/null | grep #{name}: | sed 's/.*:\\(.*\\)/\\1/'`

@@ -63,7 +63,7 @@ Download and unpack the release archive.
       @system.link
         source: "/opt/druid-#{druid.version}"
         target: "#{druid.dir}"
-      @execute
+      @system.execute
         cmd: """
         if [ $(stat -c "%U" /opt/druid-#{druid.version}) == '#{druid.user.name}' ]; then exit 3; fi
         chown -R #{druid.user.name}:#{druid.group.name} /opt/druid-#{druid.version}

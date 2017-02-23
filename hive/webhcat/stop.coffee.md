@@ -26,9 +26,9 @@ The file storing the PID is "/var/run/webhcat/webhcat.pid".
         label_true: 'CLEANED'
         if: -> @config.ryba.clean_logs
         handler: ->
-          @execute
+          @system.execute
             cmd: 'rm /var/log/webhcat/webhcat-console*'
             code_skipped: 1
-          @execute
+          @system.execute
             cmd: 'rm /var/log/webhcat/webhcat.log*'
             code_skipped: 1

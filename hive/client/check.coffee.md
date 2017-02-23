@@ -60,7 +60,7 @@ managed cluster, ACL must be set on HDFS an not on hive.
             ]
             conditions: []
             }]
-        @execute
+        @system.execute
           cmd: """
             curl --fail -H "Content-Type: application/json" -k -X POST \
             -d '#{JSON.stringify hdfs_policy}' \
@@ -83,7 +83,7 @@ engine.
         for hcat_ctx in hive_hcatalog
           directory = "check-#{@config.shortname}-hive_hcatalog_mr-#{hcat_ctx.config.shortname}"
           db = "check_#{@config.shortname}_hive_hcatalog_mr_#{hcat_ctx.config.shortname}"
-          @execute
+          @system.execute
             cmd: mkcmd.test @, """
             hdfs dfs -rm -r -skipTrash #{directory} || true
             hdfs dfs -mkdir -p #{directory}/my_db/my_table
@@ -109,7 +109,7 @@ Use the [Hive CLI][hivecli] client to execute SQL queries using the Tez engine.
         for hcat_ctx in hive_hcatalog
           directory = "check-#{@config.shortname}-hive_hcatalog_tez-#{hcat_ctx.config.shortname}"
           db = "check_#{@config.shortname}_hive_hcatalog_tez_#{hcat_ctx.config.shortname}"
-          @execute
+          @system.execute
             cmd: mkcmd.test @, """
             hdfs dfs -rm -r -skipTrash #{directory} || true
             hdfs dfs -mkdir -p #{directory}/my_db/my_table
@@ -159,7 +159,7 @@ Use the [Hive CLI][hivecli] client to execute SQL queries using the Tez engine.
 #               url += ";transportMode=#{hive.server2.site['hive.server2.transport.mode']}"
 #               url += ";httpPath=#{hive.server2.site['hive.server2.thrift.http.path']}"
 #             beeline = "beeline -u \"#{url}\" --silent=true "
-#             @execute
+#             @system.execute
 #               cmd: mkcmd.test @, """
 #               hdfs dfs -rm -r -f -skipTrash #{directory} || true
 #               hdfs dfs -mkdir -p #{directory}/my_db/my_table || true
@@ -206,7 +206,7 @@ Use the [Hive CLI][hivecli] client to execute SQL queries using the Tez engine.
 #             directory = "check-#{@config.shortname}-hive_server2-zoo-#{namespace}"
 #             db = "check_#{@config.shortname}_hs2_zoo_#{namespace}"
 #             beeline = "beeline -u \"#{url}\" --silent=true "
-#             @execute
+#             @system.execute
 #               cmd: mkcmd.test @, """
 #               hdfs dfs -rm -r -f -skipTrash #{directory} || true
 #               hdfs dfs -mkdir -p #{directory}/my_db/my_table || true
@@ -250,7 +250,7 @@ Use the [Hive CLI][hivecli] client to execute SQL queries using the Tez engine.
 #               url += ";transportMode=#{hive.server2.site['hive.server2.transport.mode']}"
 #               url += ";httpPath=#{hive.server2.site['hive.server2.thrift.http.path']}"
 #             beeline = "beeline -u \"#{url}\" --silent=true "
-#             @execute
+#             @system.execute
 #               cmd: mkcmd.test @, """
 #               hdfs dfs -rm -r -f -skipTrash #{directory} || true
 #               hdfs dfs -mkdir -p #{directory}/my_db/my_table || true

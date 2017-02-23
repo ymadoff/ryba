@@ -74,7 +74,7 @@ inside "/etc/init.d" and activate it on startup.
           uid: hive.user.name
           gid: hadoop_group.name
           perm: '0750'
-        @execute
+        @system.execute
           cmd: "service hive-webhcat-server restart"
           if: -> @status -3
 
@@ -146,7 +146,7 @@ HDFS directory. Note, the parent directories are created by the
         # Avoid HTTP response
         # Permission denied: user=ryba, access=EXECUTE, inode=\"/tmp/hadoop-hcat\":HTTP:hadoop:drwxr-x---
 
-      @execute
+      @system.execute
         header: 'Fix HDFS tmp'
         cmd: mkcmd.hdfs @, """
         if hdfs dfs -test -d /tmp/hadoop-hcat; then exit 2; fi

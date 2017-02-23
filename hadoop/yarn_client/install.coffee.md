@@ -14,7 +14,7 @@
       #   if: -> @config.ryba.resourcemanager or @config.ryba.nodemanager
       #   handler: ->
       #     {yarn, hadoop_group} = @config.ryba
-      #     @execute
+      #     @system.execute
       #       cmd: "useradd #{yarn.user.name} -r -M -g #{hadoop_group.name} -s /bin/bash -c \"Used by Hadoop YARN service\""
       #       code: 0
       #       code_skipped: 9

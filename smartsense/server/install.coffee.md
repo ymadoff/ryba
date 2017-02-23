@@ -18,7 +18,7 @@ Note rmp can only be download from the Hortonworks Support Web UI.
         source: smartsense.source
         target: "#{smartsense.server.tmp_dir}/smartsense.rpm"
         binary: true
-      @execute
+      @system.execute
         header: 'Install HST Package'
         cmd: "rpm -Uvh #{smartsense.server.tmp_dir}/smartsense.rpm"
         if: -> @status -1
@@ -94,7 +94,7 @@ Note rmp can only be download from the Hortonworks Support Web UI.
           --cluster=#{server.ini['cluster']['name']} \
           #{if server.ini['cluster']['secured'] then '--secured --nostart' else '--nostart'}
         """
-        @execute
+        @system.execute
           cmd: cmd
         @file.ini
           header: 'HST Server ini file'
@@ -110,13 +110,13 @@ Note rmp can only be download from the Hortonworks Support Web UI.
           mode: 0o0750
           merge: true
           backup: true
-        @execute
+        @system.execute
           cmd: """
           if [ $(stat -c "%U" #{smartsense.server.conf_dir}/hst-server.ini.bak) == '#{smartsense.user.name}' ]; then exit 3; fi
           chown -R #{smartsense.user.name}:#{smartsense.group.name} #{smartsense.server.conf_dir}/hst-server.ini.bak
           """
           code_skipped: [3,1]
-        @execute
+        @system.execute
           cmd: """
           if [ $(stat -c "%U" #{smartsense.user.home}) == '#{smartsense.user.name}' ]; then exit 3; fi
           chown -R #{smartsense.user.name}:#{smartsense.group.name} #{smartsense.user.home}
@@ -127,7 +127,7 @@ Note rmp can only be download from the Hortonworks Support Web UI.
           handler: ->
             @service.stop
               name: 'hst-server'
-            @execute
+            @system.execute
               shy: true
               cmd: "rm -f #{smartsense.server.log_dir}/hst-server.log"
             @service.start

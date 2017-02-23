@@ -27,11 +27,11 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
       @call header: 'HDFS layout', timeout: -1, handler: (opts)->
         @wait_execute
           cmd: mkcmd.hdfs @, "hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -d /"
-        @execute
+        @system.execute
           cmd: mkcmd.hdfs @, """
           hdfs --config '#{hdfs.nn.conf_dir}' dfs -chmod 755 /
           """
-        @execute
+        @system.execute
           cmd: mkcmd.hdfs @, """
           if hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -d /tmp; then exit 2; fi
           hdfs --config '#{hdfs.nn.conf_dir}' dfs -mkdir /tmp
@@ -41,7 +41,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
           code_skipped: 2
         , (err, executed, stdout) ->
           options.log? 'Directory "/tmp" prepared' if executed
-        @execute
+        @system.execute
           cmd: mkcmd.hdfs @, """
           if hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -d /user; then exit 2; fi
           hdfs --config '#{hdfs.nn.conf_dir}' dfs -mkdir /user
@@ -54,7 +54,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
           code_skipped: 2
         , (err, executed, stdout) ->
           options.log? 'Directory "/user" prepared' if executed
-        @execute
+        @system.execute
           cmd: mkcmd.hdfs @, """
           if hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -d /apps; then exit 2; fi
           hdfs --config '#{hdfs.nn.conf_dir}' dfs -mkdir /apps
@@ -67,7 +67,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
 
 ## HDP Layout
 
-      @execute
+      @system.execute
         header: 'HDP Layout'
         timeout: -1
         cmd: mkcmd.hdfs @, """
@@ -90,7 +90,7 @@ Create a Unix and Kerberos test user, by default "test" and execute simple HDFS 
 the NameNode is properly working. Note, those commands are NameNode specific, meaning they only
 afect HDFS metadata.
 
-      @execute
+      @system.execute
         header: 'User Test'
         cmd: mkcmd.hdfs @, """
         if hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -d /user/#{user.name}; then exit 2; fi

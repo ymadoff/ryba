@@ -88,7 +88,7 @@
             servers: for host in atlas.cluster_config.hosts
               host: host
               port: @contexts('ryba/solr/cloud')[0].config.ryba.solr.cloud.port
-          @execute
+          @system.execute
             unless_exec: "/usr/solr-cloud/current/bin/solr healthcheck -c vertex_index"
             cmd: """
               /usr/solr-cloud/current/bin/solr create_collection -c vertex_index \
@@ -96,7 +96,7 @@
               -replicationFactor #{atlas.cluster_config.hosts.length} \
               -d #{atlas.cluster_config.atlas_collection_dir}
             """
-          @execute
+          @system.execute
             unless_exec: "/usr/solr-cloud/current/bin/solr healthcheck -c edge_index"
             cmd: """
               /usr/solr-cloud/current/bin/solr create_collection -c edge_index \
@@ -104,7 +104,7 @@
               -replicationFactor #{atlas.cluster_config.hosts.length} \
               -d #{atlas.cluster_config.atlas_collection_dir}
             """
-          @execute
+          @system.execute
             unless_exec: "/usr/solr-cloud/current/bin/solr healthcheck -c fulltext_index"
             cmd: """
               /usr/solr-cloud/current/bin/solr create_collection -c fulltext_index \

@@ -29,7 +29,7 @@ instructions.
 ## Check SQL Query
 
       table = "ryba_check_phoenix_#{@config.shortname}".toUpperCase()
-      @execute
+      @system.execute
         cmd: mkcmd.hbase @, """
         hdfs dfs -rm -skipTrash check-#{@config.host}-phoenix
         # Drop table if it exists
@@ -65,7 +65,7 @@ instructions.
         GROUP BY DOMAIN 
         ORDER BY DOMAIN DESC;
         """
-      @execute
+      @system.execute
         cmd: mkcmd.test @, """
         cd /usr/hdp/current/phoenix-client/bin
         ./psql.py -t #{table} #{zk_path} \

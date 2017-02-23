@@ -15,7 +15,7 @@ Check the HTTP server with a JMX request.
       protocol = if yarn.site['yarn.http.policy'] is 'HTTP_ONLY' then 'http' else 'https'
       address_key = if protocol is 'http' then "address" else "https.address"
       address = yarn.site["yarn.timeline-service.webapp.#{address_key}"]
-      @execute
+      @system.execute
         header: 'HTTP Port'
         cmd: mkcmd.hdfs @, "curl --negotiate -k -u : #{protocol}://#{address}/jmx?qry=Hadoop:service=ApplicationHistoryServer,name=JvmMetrics"
       , (err, executed, stdout) ->

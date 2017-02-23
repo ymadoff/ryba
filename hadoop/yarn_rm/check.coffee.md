@@ -19,7 +19,7 @@ Connect to the provided ResourceManager to check its health. This command
 healthy, non-zero otherwise. This check only apply to High Availability
 mode.
 
-      @execute
+      @system.execute
         header: 'HA Health'
         if: @contexts('ryba/hadoop/yarn_rm').length > 1
         cmd: mkcmd.hdfs @, "yarn --config #{yarn.rm.conf_dir} rmadmin -checkHealth #{@config.shortname}"

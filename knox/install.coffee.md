@@ -175,7 +175,7 @@ in the gateway.sh service script.
           # Create alias to store password used in topology
           for alias,password of knox.realm_passwords then do (alias,password) => 
             nameservice=alias.split("-")[0]
-            @execute
+            @system.execute
               cmd: "/usr/hdp/current/knox-server/bin/knoxcli.sh create-alias #{alias} --cluster #{nameservice} --value #{password}"
 
 ## SSL
@@ -206,7 +206,7 @@ in the gateway.sh service script.
           cert: "#{tmp_location}/cert"
           keypass: knox.ssl.keypass
           name: 'gateway-identity'
-        @execute
+        @system.execute
           if: -> @status -1
           cmd: "/usr/hdp/current/knox-server/bin/knoxcli.sh create-alias gateway-identity-passphrase --value #{knox.ssl.keypass}"
 

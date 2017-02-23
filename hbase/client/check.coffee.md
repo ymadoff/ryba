@@ -80,7 +80,7 @@ Wait for the HBase master to be started.
               \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
             """
             code_skipped: 22
-          @execute
+          @system.execute
             header: 'Ranger Ryba Policy'
             cmd: """
               curl --fail -H "Content-Type: application/json" -k -X POST \
@@ -109,7 +109,7 @@ Groups and users access are revoked in the same way, but groups are prefixed
 with an '@' character. In the same way, tables and namespaces are specified, but
 namespaces are prefixed with an '@' character.
 
-      @execute
+      @system.execute
         header: 'Grant Permissions'
         cmd: mkcmd.hbase @, """
         if hbase shell 2>/dev/null <<< "list_namespace_tables '#{hbase.client.test.namespace}'" | egrep '[0-9]+ row'; then
@@ -146,7 +146,7 @@ Note, we are re-using the namespace created above.
       @call header: 'Shell', timeout: -1, label_true: 'CHECKED', handler: ->
         @wait_execute
           cmd: mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists '#{hbase.client.test.namespace}:#{hbase.client.test.table}'\" | grep 'Table #{hbase.client.test.namespace}:#{hbase.client.test.table} does exist'"
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
           hbase shell 2>/dev/null <<-CMD
             alter '#{hbase.client.test.namespace}:#{hbase.client.test.table}', {NAME => '#{shortname}'}
@@ -162,7 +162,7 @@ Note, we are re-using the namespace created above.
 ## Check MapReduce
 
       @call header: 'MapReduce', timeout: -1, label_true: 'CHECKED', handler: ->
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
             hdfs dfs -rm -skipTrash check-#{@config.host}-hbase-mapred
             echo -e '1,toto\\n2,tata\\n3,titi\\n4,tutu' | hdfs dfs -put -f - /user/ryba/test_import.csv
@@ -176,7 +176,7 @@ Note, we are re-using the namespace created above.
       @call header: 'Splits', timeout: -1, label_true: 'CHECKED', handler: ->
         {force_check} = @config.ryba
         table = "#{hbase.client.test.namespace}:check_#{@config.shortname}_test_splits"
-        @execute
+        @system.execute
           cmd: mkcmd.hbase @, """
             if hbase shell 2>/dev/null <<< "list_namespace_tables '#{hbase.client.test.namespace}'" | grep 'test_splits'; then echo "disable '#{table}'; drop '#{table}'" | hbase shell 2>/dev/null; fi
             echo "create '#{table}', 'cf1', SPLITS => ['1', '2', '3']" | hbase shell 2>/dev/null;
@@ -197,7 +197,7 @@ Note, we are re-using the namespace created above.
       # cmd = mkcmd.test @, "hbase shell 2>/dev/null <<< \"list_namespace_tables 'ryba'\" | egrep '[0-9]+ row'"
       # @waitForExecution cmd, (err) ->
       #   return  err if err
-      #   @execute
+      #   @system.execute
       #     cmd: mkcmd.test @, """
       #     if hbase shell 2>/dev/null <<< "list_namespace_tables 'ryba'" | egrep '[0-9]+ row'; then exit 2; fi
       #     hbase shell 2>/dev/null <<-CMD
@@ -220,7 +220,7 @@ This check is only executed if more than two HBase Master are declared.
       @call header: 'Check HA', timeout: -1, label_true: 'CHECKED', handler: ->
         return unless hbase_ctxs.length > 1
         table = "#{hbase.client.test.namespace}:check_#{@config.shortname}_ha"
-        @execute
+        @system.execute
           cmd: mkcmd.hbase @, """
             # Create new table
             echo "disable '#{table}'; drop '#{table}'" | hbase shell 2>/dev/null

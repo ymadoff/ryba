@@ -27,7 +27,7 @@ Create the directory structure with correct ownerships and permissions.
           hdfs dfs -chown #{hbase.user.name} #{dir}
           """
           cmd += "\nhdfs dfs -chmod 711 #{dir}"  if 3 + index is dirs.length
-          @execute
+          @system.execute
             cmd: mkcmd.hdfs @, cmd
             code_skipped: 2
 

@@ -35,6 +35,6 @@
           target: shinken.log_dir
           uid: shinken.user.name
           gid: shinken.group.name
-        @execute
+        @system.execute
           cmd: 'shinken --init'
           unless_exists: "#{shinken.user.home}/.shinken.ini"

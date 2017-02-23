@@ -44,7 +44,7 @@ Options include:
       url_params += "&password2=#{params.password1}&is_active=true"
       url_params += "&groups=#{groups.join("&groups=")}"
 
-      @execute
+      @system.execute
         cmd: """
         URL="#{hue_url}"
         LOGIN_URL=$URL/accounts/login/?next=/

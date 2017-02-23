@@ -44,7 +44,7 @@ php /usr/lib64/nagios/plugins/check_rpcq_latency_ha.php \
 ```
 
     module.exports = header: 'Nagios Check ', label_true: 'CHECKED', handler: ->
-      @execute
+      @system.execute
         header: 'Configuration'
         cmd: "nagios -v /etc/nagios/nagios.cfg"
         code_skipped: 254
@@ -80,7 +80,7 @@ php /usr/lib64/nagios/plugins/check_rpcq_latency_ha.php \
           cmd += " -t #{kinit}"
           cmd += " -e #{if core_site['hadoop.security.authentication'] is 'kerberos' then 'true' else 'false'}"
           cmd += " -s #{if protocol is 'https' then 'true' else 'false'}"
-          @execute cmd
+          @system.execute cmd
 
 ## Dependencies
 

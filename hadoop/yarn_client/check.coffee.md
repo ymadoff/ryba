@@ -12,7 +12,7 @@ Wait for all YARN services to be started.
 
 ## Check CLI
 
-      @execute
+      @system.execute
         header: 'CLI'
         cmd: mkcmd.test @, 'yarn application -list'
 
@@ -32,7 +32,7 @@ Shell script to be executed inside one or multiple YARN containers.
           echo Ryba Ryba NM hostname: `hostname`
           """
           mode: 0o0640
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
           yarn org.apache.hadoop.yarn.applications.distributedshell.Client \
             -jar /usr/hdp/current/hadoop-yarn-client/hadoop-yarn-applications-distributedshell.jar \

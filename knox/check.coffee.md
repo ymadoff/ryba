@@ -21,7 +21,7 @@ curl -fiku hdfs:hdfs123 "https://front1.ryba:8443/gateway/torval/webhdfs/v1/?op=
       @call header: 'WebHDFS', handler: ->
         topologies = Object.keys(knox.topologies).filter((tp) -> knox.topologies[tp].services.webhdfs?)
         for tp in topologies
-          @execute
+          @system.execute
             cmd: "curl -fiku #{knox.test_user.name}:#{knox.test_user.password} https://#{@config.host}:#{knox.site['gateway.port']}/#{knox.site['gateway.path']}/#{tp}/webhdfs/v1/?op=GETHOMEDIRECTORY"
 
 ## Check WebHCat Proxy
@@ -36,7 +36,7 @@ The external client displays: {"supportedVersions":["v1"],"version":"v1"}
       @call header: 'WebHCat', handler: ->
         topologies = Object.keys(knox.topologies).filter((tp) -> knox.topologies[tp].services.webhcat)
         for tp in topologies
-          @execute
+          @system.execute
             cmd: "curl -fiku #{knox.test_user.name}:#{knox.test_user.password} https://#{@config.host}:#{knox.site['gateway.port']}/#{knox.site['gateway.path']}/#{tp}/webhcat/v1/version"
 
 ## Check HBase REST Proxy
@@ -53,7 +53,7 @@ rest 0.0.2 JVM: Oracle Corporation 1.7.0_51-24.45-b08 OS: Linux 3.8.0-29-generic
       @call header: 'WebHBase', handler: ->
         topologies = Object.keys(knox.topologies).filter((tp) -> knox.topologies[tp].services.webhcat)
         for tp in topologies
-          @execute
+          @system.execute
             cmd: "curl -fiku #{knox.test_user.name}:#{knox.test_user.password} https://#{@config.host}:#{knox.site['gateway.port']}/#{knox.site['gateway.path']}/#{tp}/hbase/version"
 
 ## Check Oozie Proxy
@@ -70,7 +70,7 @@ The external client displays:
       @call header: 'Oozie', handler: ->
         topologies = Object.keys(knox.topologies).filter((tp) -> knox.topologies[tp].services.oozie)
         for tp in topologies
-          @execute
+          @system.execute
             cmd: "curl -fiku #{knox.test_user.name}:#{knox.test_user.password} https://#{@config.host}:#{knox.site['gateway.port']}/#{knox.site['gateway.path']}/#{tp}/oozie/v1/admin/build-version"
 
 ## Check HiveServer2 Proxy
@@ -84,7 +84,7 @@ At an external client, enter `curl -ku user:password https://$gateway-host:$gate
       @call header: 'HiveServer2', handler: ->
         topologies = Object.keys(knox.topologies).filter((tp) -> knox.topologies[tp].services.hive)
         for tp in topologies
-          @execute
+          @system.execute
             cmd: "curl -fiku #{knox.test_user.name}:#{knox.test_user.password} https://#{@config.host}:#{knox.site['gateway.port']}/#{knox.site['gateway.path']}/#{tp}/hive/cliservice"
 
 [doc]: http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.8/bk_Knox_Gateway_Admin_Guide/content/validating_service_connectivity.html
