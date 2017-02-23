@@ -32,7 +32,7 @@ dfsadmin -fetchImage
     module.exports = header: 'HDFS NN Backup', timeout: -1, label_true: 'BACKUPED', handler: ->
       {hdfs} = @config.ryba
 
-      @backup
+      @tools.remove
         header: 'HDFS LS output'
         name: 'ls'
         cmd: 'hdfs dfs -ls -R / '
@@ -42,7 +42,7 @@ dfsadmin -fetchImage
 
       any_dfs_name_dir = hdfs.nn.site['dfs.namenode.name.dir'].split(',')[0]
       any_dfs_name_dir = any_dfs_name_dir.substr(7) if any_dfs_name_dir.indexOf('file://') is 0
-      @backup
+      @tools.remove
         header: 'FSimages & edits'
         name: 'fs'
         source: path.join any_dfs_name_dir, 'current'
