@@ -8,6 +8,6 @@ Download the rpm package.
       timeout: -1
       if: -> @contexts('ryba/opentsdb')[0]?.config.host is @config.host
       handler: ->
-        @cache
+        @file.cache
           ssh: null
           source: "#{@config.ryba.opentsdb.source}"

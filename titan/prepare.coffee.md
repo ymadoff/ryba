@@ -8,6 +8,6 @@ Download the rpm package.
       timeout: -1
       if: -> @contexts('ryba/titan')[0]?.config.host is @config.host
       handler: ->
-        @cache
+        @file.cache
           ssh: null
           source: "#{@config.ryba.titan.source}"

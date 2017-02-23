@@ -4,7 +4,7 @@
       timeout: -1
       if: -> @contexts('ryba/solr/cloud')[0]?.config.host is @config.host
       handler: ->
-        @cache
+        @file.cache
           ssh: null
           source: @config.ryba.solr.cloud.source
           location: true
