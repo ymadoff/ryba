@@ -21,7 +21,7 @@ The file storing the PID is "/var/run/hadoop-yarn/yarn/yarn-yarn-resourcemanager
         label_true: 'STOPPED'
         name: 'hadoop-yarn-resourcemanager'
 
-      @execute
+      @system.execute
         header: 'Clean Logs'
         label_true: 'CLEANED'
         if: clean_logs

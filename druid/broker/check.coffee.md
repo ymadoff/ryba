@@ -25,7 +25,7 @@ service to be started.
           merge: true
           pretty: true
           backup: true
-        @execute
+        @system.execute
           header: 'Decompress'
           cmd: """
           if [ ! -f quickstart/wikiticker-2015-09-12-sampled.json  ]; then
@@ -39,7 +39,7 @@ service to be started.
           source: "quickstart/wikiticker-2015-09-12-sampled.json"
           cwd: "/opt/druid-#{druid.version}"
           owner: "#{druid.user.name}"
-        @execute
+        @system.execute
           header: 'Index'
           cmd: """
           job=`curl -L -XPOST -H 'Content-Type:application/json' \
@@ -56,7 +56,7 @@ service to be started.
           """
           cwd: "/opt/druid-#{druid.version}"
           trap: true
-        @execute
+        @system.execute
           header: 'Query'
           cmd: """
           count=`curl -L -XPOST -H 'Content-Type:application/json' \

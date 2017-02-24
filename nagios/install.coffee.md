@@ -31,9 +31,9 @@ nagiocmd:x:2419:apache
 ```
 
       @call header: 'Users & Groups', ->
-        @group nagios.group
-        @group nagios.groupcmd
-        @user nagios.user
+        @system.group nagios.group
+        @system.group nagios.groupcmd
+        @system.user nagios.user
 
 ## Packages
 
@@ -60,14 +60,14 @@ nagiocmd:x:2419:apache
 ## Layout
 
       @call header: 'Layout', ->
-        @mkdir
+        @system.mkdir
           target: [
             '/var/nagios', '/var/log/nagios',
             '/var/log/nagios/spool/checkresults', '/var/run/nagios'
           ]
           uid: nagios.user.name
           gid: nagios.group.name
-        @mkdir
+        @system.mkdir
           target: '/var/nagios/rw'
           uid: nagios.user.name
           gid: nagios.groupcmd.name
@@ -117,7 +117,7 @@ nagiocmd:x:2419:apache
         if: -> Object.getOwnPropertyNames(@config.ryba.nagios.users).length > 0
         handler: ->
           for name, user of @config.ryba.nagios.users
-            @execute
+            @system.execute
               cmd: """
               if [ -e /etc/nagios/htpasswd.users ]; then
                 hash=`cat /etc/nagios/htpasswd.users 2>/dev/null | grep #{name}: | sed 's/.*:\\(.*\\)/\\1/'`
@@ -137,7 +137,7 @@ nagiocmd:x:2419:apache
 
       @call header: 'WebUI Users & Groups', ->
         {users, groups} = @config.ryba.nagios
-        @render
+        @file.render
           source: "#{__dirname}/resources/templates/contacts.cfg.j2"
           local_source: true
           target: '/etc/nagios/objects/contacts.cfg'
@@ -217,7 +217,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
         hostgroup_defs = {}
         for group, hosts of nagios.hostgroups
           hostgroup_defs[group] = if hosts.length then hosts else null
-        @render
+        @file.render
           source: "#{__dirname}/resources/templates/hadoop-hostgroups.cfg.j2"
           local_source: true
           target: '/etc/nagios/objects/hadoop-hostgroups.cfg'
@@ -230,7 +230,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
         hostgroup_defs = {}
         for group, hosts of nagios.hostgroups
           hostgroup_defs[group] = if hosts.length then hosts else null
-        @render
+        @file.render
           source: "#{__dirname}/resources/templates/hadoop-servicegroups.cfg.j2"
           local_source: true
           target: '/etc/nagios/objects/hadoop-servicegroups.cfg'
@@ -300,7 +300,7 @@ cat /etc/nagios/objects/hadoop-services.cfg | grep hostgroup_name
         hostgroup_defs = {}
         for group, hosts of nagios.hostgroups
           hostgroup_defs[group] = if hosts.length then hosts else null
-        @render
+        @file.render
           header: 'Services'
           source: "#{__dirname}/resources/templates/hadoop-services.cfg.j2"
           local_source: true

@@ -40,8 +40,8 @@ cat /etc/group | grep hue
 hue:x:494:
 ```
 
-      @group hue_docker.group
-      @user hue_docker.user
+      @system.group hue_docker.group
+      @system.user hue_docker.user
 
 ## IPTables
 
@@ -52,7 +52,7 @@ hue:x:494:
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: hue_docker.ini.desktop.http_port, protocol: 'tcp', state: 'NEW', comment: "Hue Web UI" }
@@ -62,18 +62,18 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Layout log Hue
 
       @call header: 'Layout', timeout: -1, handler:  ->
-        @mkdir
+        @system.mkdir
           target: hue_docker.log_dir
           uid: hue_docker.user.name
           gid: hue_docker.group.name
           mode: 0o755
           parent: true
-        @mkdir
+        @system.mkdir
           target: '/tmp/hue_docker'
           uid: hue_docker.user.name
           gid: hue_docker.group.name
           mode: 0o755
-        @mkdir
+        @system.mkdir
           target: "#{hue_docker.conf_dir}"
           uid: hue_docker.user.name
           gid: hue_docker.group.name
@@ -168,7 +168,7 @@ the default database while mysql is the recommanded choice.
               header: 'User'
             @db.database properties, database: name,
               header: 'Database'
-            @execute 
+            @system.execute 
               cmd: db.cmd properties, """
                 grant all privileges on #{name}.* to '#{user}'@'localhost' identified by '#{password}';
                 grant all privileges on #{name}.* to '#{user}'@'%' identified by '#{password}';

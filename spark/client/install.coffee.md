@@ -26,8 +26,8 @@ cat /etc/group | grep spark
 spark:x:494:
 ```
 
-      @group spark.group
-      @user spark.user
+      @system.group spark.group
+      @system.user spark.user
 
 ## Spark Service Installation
 
@@ -42,7 +42,7 @@ Install the spark and python packages.
 
       status = user_owner = group_owner = null
       spark_yarn_jar = spark.conf['spark.yarn.jar']
-      @execute
+      @system.execute
         header: 'HDFS Layout'
         cmd: mkcmd.hdfs @, """
         hdfs dfs -mkdir -p /apps/#{spark.user.name}
@@ -56,14 +56,14 @@ Install the spark and python packages.
 
 ## Spark Worker events log dir
 
-      @execute
+      @system.execute
         header: 'HDFS Home'
         cmd: mkcmd.hdfs @, """
         hdfs dfs -mkdir -p /user/#{spark.user.name}
         hdfs dfs -chmod -R 755 /user/#{spark.user.name}
         hdfs dfs -chown -R #{spark.user.name}:#{spark.group.name} /user/#{spark.user.name}
         """
-      @execute
+      @system.execute
         header: 'HDFS Log Directory'
         cmd: mkcmd.hdfs @, """
         hdfs dfs -mkdir -p #{fs_log_dir}
@@ -119,13 +119,13 @@ in communication using the particular protocol.
             storepass: spark.conf['spark.ssl.keyStorePassword']
             caname: "hadoop_spark_ca"
             cacert: "#{tmp_location}_cacert"
-         @remove
+         @system.remove
             target: "#{tmp_location}_cacert"
             shy: true
-         @remove
+         @system.remove
             target: "#{tmp_location}_cert"
             shy: true
-         @remove
+         @system.remove
             target: "#{tmp_location}_key"
             shy: true
 
@@ -140,7 +140,7 @@ has finished (logs are only available in yarn-cluster mode).
       @call header: 'Configure',  handler: ->
         hdp_current_version = null
         hadoop_conf_dir = '/usr/hdp/current/hadoop-client/conf'
-        @execute
+        @system.execute
           cmd:  "hdp-select versions | tail -1"
         , (err, executed, stdout, stderr) ->
           return err if err
@@ -158,7 +158,7 @@ has finished (logs are only available in yarn-cluster mode).
             properties: 'hive.execution.engine': 'mr'
             merge: true
             backup: true
-          @render
+          @file.render
             destination : "#{spark.conf_dir}/spark-env.sh"
             source: "#{__dirname}/../resources/spark-env.sh.j2"
             local: true

@@ -40,7 +40,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       rules = [{ chain: 'INPUT', jump: 'ACCEPT', dport: hive_server_port, protocol: 'tcp', state: 'NEW', comment: "Hive Server" }]
       rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: parseInt(hive.server2.env["JMXPORT"],10), protocol: 'tcp', state: 'NEW', comment: "HiveServer2 JMX" } if hive.server2.env["JMXPORT"]?
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: rules
         if: @config.iptables.action is 'start'
@@ -57,8 +57,8 @@ cat /etc/group | grep hive
 hive:x:493:
 ```
 
-      @group hive.group
-      @user hive.user
+      @system.group hive.group
+      @system.user hive.user
 
 ## Startup
 
@@ -88,7 +88,7 @@ isnt yet started.
           uid: hive.user.name
           gid: hive.group.name
           perm: '0750'
-        @execute
+        @system.execute
           cmd: "service hive-server2 restart"
           if: -> @status -4
 
@@ -105,7 +105,7 @@ isnt yet started.
         uid: hive.user.name
         gid: hive.group.name
         mode: 0o0750
-      @render
+      @file.render
         header: 'Hive Log4j properties'
         source: "#{__dirname}/../resources/hive-exec-log4j.properties"
         local_source: true
@@ -126,7 +126,7 @@ Enrich the "hive-env.sh" file with the value of the configuration property
 Using this functionnality, a user may for example raise the heap size of Hive
 Server2 to 4Gb by setting a value equal to "-Xmx4096m".
 
-      @render
+      @file.render
         header: 'Hive Server2 Env'
         source: "#{__dirname}/../resources/hive-env.sh.j2"
         target: "#{hive.server2.conf_dir}/hive-env.sh"
@@ -148,12 +148,12 @@ Create the directories to store the logs and pid information. The properties
 "ryba.hive.server2.log\_dir" and "ryba.hive.server2.pid\_dir" may be modified.
 
       @call header: 'Layout', timeout: -1, handler: ->
-        @mkdir
+        @system.mkdir
           target: hive.server2.log_dir
           uid: hive.user.name
           gid: hive.group.name
           parent: true
-        @mkdir
+        @system.mkdir
           target: hive.server2.pid_dir
           uid: hive.user.name
           gid: hive.group.name

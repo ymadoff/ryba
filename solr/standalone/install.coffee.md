@@ -27,23 +27,23 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       @call header: 'IPTables', handler: ->
         return unless @config.iptables.action is 'start'
-        @iptables
+        @tools.iptables
           rules: [
             { chain: 'INPUT', jump: 'ACCEPT', dport: solr.single.port, protocol: 'tcp', state: 'NEW', comment: "Solr Server #{protocol}" }
           ]
 
 ## Users and Groups
 
-      @group solr.group
-      @user solr.user
+      @system.group solr.group
+      @system.user solr.user
 
 ## Layout
 
-      @mkdir
+      @system.mkdir
         target: solr.user.home
         uid: solr.user.name
         gid: solr.group.name
-      @mkdir
+      @system.mkdir
         directory: solr.single.conf_dir
         uid: solr.user.name
         gid: solr.group.name
@@ -57,7 +57,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
           handler: ->
             @service
               name: 'lucidworks-hdpsearch'
-            @chown
+            @system.chown
               if: solr.single.source is 'HDP'
               target: '/opt/lucidworks-hdpsearch'
               uid: solr.user.name
@@ -68,26 +68,26 @@ Ryba support installing solr from apache official release or HDP Search repos.
             @file.download
               source: solr.single.source
               target: tmp_archive_location
-            @mkdir 
+            @system.mkdir 
               target: solr.single.install_dir
-            @extract
+            @tools.extract
               source: tmp_archive_location
               target: solr.single.install_dir
               preserve_owner: false
               strip: 1
-            @link 
+            @system.link 
               source: solr.single.install_dir
               target: solr.single.latest_dir
 
 
       @call header: 'Configuration', handler: ->
-        @link 
+        @system.link 
           source: "#{solr.single.latest_dir}/conf"
           target: solr.single.conf_dir
-        @remove
+        @system.remove
           shy: true
           target: "#{solr.single.latest_dir}/bin/solr.in.sh"
-        @link 
+        @system.link 
           source: "#{solr.single.conf_dir}/solr.in.sh"
           target: "#{solr.single.latest_dir}/bin/solr.in.sh"
         @service.init
@@ -103,7 +103,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
 ## Layout
 
       @call header: 'Solr Layout', timeout: -1, handler: (options) ->
-        @mkdir
+        @system.mkdir
           target: solr.single.pid_dir
           uid: solr.user.name
           gid: solr.group.name
@@ -114,12 +114,12 @@ Ryba support installing solr from apache official release or HDP Search repos.
           uid: solr.user.name
           gid: solr.group.name
           perm: '0750'
-        @mkdir
+        @system.mkdir
           target: solr.single.log_dir
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: solr.user.home
           uid: solr.user.name
           gid: solr.group.name
@@ -146,7 +146,7 @@ Create HDFS solr user and its home directory
           match: RegExp "^.*#{k}=.*$", 'mg'
           replace: "#{k}=\"#{v}\" # RYBA DON'T OVERWRITE"
           append: true
-        @render
+        @file.render
           header: 'Solr Environment'
           source: "#{__dirname}/../resources/standalone/solr.ini.sh.j2"
           target: "#{solr.single.conf_dir}/solr.in.sh"
@@ -155,7 +155,7 @@ Create HDFS solr user and its home directory
           local_source: true
           backup: true
           eof: true
-        @render
+        @file.render
           header: 'Solr Config'
           source: solr.single.conf_source
           target: "#{solr.single.conf_dir}/solr.xml"
@@ -166,7 +166,7 @@ Create HDFS solr user and its home directory
           local_source: true
           backup: true
           eof: true
-        @link
+        @system.link
           source: "#{solr.single.conf_dir}/solr.xml"
           target: "#{solr.user.home}/solr.xml"
 

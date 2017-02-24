@@ -36,7 +36,7 @@ Set the server's hostname in the agent's configuration
       @call header: 'Cloudera Manager Server Configuration', timeout: -1, handler: ->
         mysql_pwd = @config.mysql.server.password
         mysql_exec = "mysql -uroot -p#{mysql_pwd} -h#{db.host} -P#{db.port}"
-        @execute (
+        @system.execute (
           cmd: """
             #{mysql_exec} -e \"
             create database IF NOT EXISTS #{params.db_name} DEFAULT CHARACTER SET utf8;
@@ -47,7 +47,7 @@ Set the server's hostname in the agent's configuration
           """
           unless_exec: "#{mysql_exec} -e 'use #{params.user}'"
         ) for account, params of db.accounts
-        @execute
+        @system.execute
           cmd: """
           /usr/share/cmf/schema/scm_prepare_database.sh \
             -h #{db.host} \

@@ -21,21 +21,21 @@ Download and extract a ZIP Archive
         archive_name = path.basename titan.source
         unzip_dir = path.join titan.install_dir, path.basename archive_name, path.extname archive_name
         archive_path = path.join titan.install_dir, archive_name
-        @mkdir
+        @system.mkdir
           target: titan.install_dir
         @file.download
           source: titan.source
           target: archive_path
-        @remove
+        @system.remove
           target: unzip_dir
           if: -> @status -1
-        @extract
+        @tools.extract
           source: archive_path,
           target: titan.install_dir
-        @remove
+        @system.remove
           target: titan.home
           if: -> @status -1
-        @link
+        @system.link
           source: unzip_dir
           target: titan.home
           if: -> @status -2
@@ -117,7 +117,7 @@ Namespace is still not working in version 1.0
       #   if: -> @config.ryba.titan.config['storage.backend'] is 'hbase'
       #   handler: (options) ->
       #     # options.log "Titan: HBase namespace not yet ready"
-      #     @execute
+      #     @system.execute
       #       cmd: mkcmd.hbase @, """
       #       if hbase shell -n 2>/dev/null <<< "list_namespace 'titan'" | grep '1 row(s)'; then exit 3; fi
       #       hbase shell -n 2>/dev/null <<< "create_namespace 'titan'"
@@ -129,7 +129,7 @@ Namespace is still not working in version 1.0
         if: -> @config.ryba.titan.config['storage.backend'] is 'hbase'
         handler: ->
           table = titan.config['storage.hbase.table']
-          @execute
+          @system.execute
             cmd: mkcmd.hbase @, """
             if hbase shell -n 2>/dev/null <<< "exists '#{table}'" | grep 'Table #{table} does exist'; then exit 3; fi
             cd #{titan.home}

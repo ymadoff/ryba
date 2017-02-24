@@ -11,7 +11,7 @@
 |--------------|------|----------|-----------------------------|
 | Druid Broker | 8082 | tcp/http |                             |
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: druid.broker.runtime['druid.port'], protocol: 'tcp', state: 'NEW', comment: "Druid Broker" }
@@ -20,7 +20,7 @@
 
 ## Configuration
 
-      @render
+      @file.render
         header: 'rc.d'
         target: "/etc/init.d/druid-broker"
         source: "#{__dirname}/../resources/druid-broker.j2"

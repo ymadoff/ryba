@@ -18,7 +18,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       for name, mod of broker.modules
         if mod.config?.port?
           rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: mod.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Broker #{name}" }
-      @iptables
+      @tools.iptables
         rules: rules
         if: @config.iptables.action is 'start'
 
@@ -38,16 +38,16 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
               source: v.url
               target: "#{shinken.build_dir}/##{v.archive}.tar.gz"
               md5: v.md5
-            @extract
+            @tools.extract
               source: "#{shinken.build_dir}/##{v.archive}.tar.gz"
-            @execute
+            @system.execute
               cmd:"""
               cd #{shinken.build_dir}/#{v.archive}
               python setup.py build
               python setup.py install
               """
-            @remove target: "#{shinken.build_dir}/#{k}-#{v.version}.tar.gz"
-            @remove target: "#{shinken.build_dir}/#{k}-#{v.version}"
+            @system.remove target: "#{shinken.build_dir}/#{k}-#{v.version}.tar.gz"
+            @system.remove target: "#{shinken.build_dir}/#{k}-#{v.version}"
         for k, v of broker.modules['webui2'].pip_modules then install_dep k, v
 
 ## Additional Shinken Modules
@@ -61,12 +61,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
               cache_file: "#{mod.archive}.zip"
               unless_exec: "shinken inventory | grep #{name}"
               shy: true
-            @extract
+            @tools.extract
               source: "#{shinken.build_dir}/#{mod.archive}.zip"
               shy: true
-            @execute
+            @system.execute
               cmd: "shinken install --local #{shinken.build_dir}/#{mod.archive}"
-            @execute
+            @system.execute
               cmd: "rm -rf #{shinken.build_dir}"
               shy: true
           for subname, submod of mod.modules then installmod subname, submod

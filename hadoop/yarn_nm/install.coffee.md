@@ -33,7 +33,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       nm_localizer_port = yarn.site['yarn.nodemanager.localizer.address'].split(':')[1]
       nm_webapp_port = yarn.site['yarn.nodemanager.webapp.address'].split(':')[1]
       nm_webapp_https_port = yarn.site['yarn.nodemanager.webapp.https.address'].split(':')[1]
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: nm_port, protocol: 'tcp', state: 'NEW', comment: "YARN NM Container" }
@@ -76,7 +76,7 @@ inside "/etc/init.d" and activate it on startup.
           handler: ->
             @service
               name: 'spark_*-yarn-shuffle'
-            @execute
+            @system.execute
               cmd: """
                 file_lib=`ls /usr/hdp/current/spark-client/lib/* | grep yarn-shuffle.jar`
                 file_aux=`ls /usr/hdp/current/spark-client/aux/* | grep yarn-shuffle.jar`
@@ -101,31 +101,31 @@ inside "/etc/init.d" and activate it on startup.
               code_skipped: 3
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: "#{yarn.nm.conf_dir}"
-        @mkdir
+        @system.mkdir
           target: "#{yarn.nm.pid_dir}"
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: "#{yarn.nm.log_dir}"
           uid: yarn.user.name
           gid: yarn.group.name
           parent: true
-        @mkdir
+        @system.mkdir
           target: yarn.site['yarn.nodemanager.log-dirs'].split ','
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o0755
           parent: true
-        @mkdir
+        @system.mkdir
           target: yarn.site['yarn.nodemanager.local-dirs'].split ','
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o0755
           parent: true
-        @mkdir
+        @system.mkdir
           target: yarn.site['yarn.nodemanager.recovery.dir'] 
           uid: yarn.user.name
           gid: hadoop_group.name
@@ -178,7 +178,7 @@ SSH connection to the node to gather the memory and CPU informations.
         local_source: true
       @call header: 'YARN Env', handler: ->
         yarn.nm.java_opts += " -D#{k}=#{v}" for k, v of yarn.nm.opts 
-        @render
+        @file.render
           header: 'YARN Env'
           target: "#{yarn.nm.conf_dir}/yarn-env.sh"
           source: "#{__dirname}/../resources/yarn-env.sh.j2"
@@ -219,14 +219,14 @@ but is owned by 2401"
       @call header: 'Container Executor', handler: ->
         ce_group = container_executor['yarn.nodemanager.linux-container-executor.group']
         ce = '/usr/hdp/current/hadoop-yarn-nodemanager/bin/container-executor'
-        @chown
+        @system.chown
           target: ce
           uid: 'root'
           gid: ce_group
-        @chmod
+        @system.chmod
           target: ce
           mode: 0o6050
-        @mkdir
+        @system.mkdir
           target: "#{hadoop_conf_dir}"
           uid: 'root'
         @file.ini
@@ -305,7 +305,7 @@ on Centos/Redhat7 OS. Legacy cgconfig and cgroup-tools package must be used. (ma
           # .execute
           #   cmd: 'mount -t cgroup -o cpu cpu /cgroup'
           #   code_skipped: 32
-          @mkdir
+          @system.mkdir
             target: "#{yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount-path']}/cpu"
             mode: 0o1777
             parent: true
@@ -314,7 +314,7 @@ on Centos/Redhat7 OS. Legacy cgconfig and cgroup-tools package must be used. (ma
         unless: -> yarn.site['yarn.nodemanager.linux-container-executor.cgroups.mount'] is 'true'
         handler: (options) ->
           hierarchy = yarn.site['yarn.nodemanager.linux-container-executor.cgroups.hierarchy'] ?= "/#{ryba.yarn.user.name}"
-          @cgroups
+          @system.cgroups
             target: '/etc/cgconfig.d/yarn.cgconfig.conf'
             merge: false
             groups: yarn.cgroup
@@ -362,12 +362,12 @@ drwxrwxrwt   - yarn   hadoop            0 2014-05-26 11:01 /app-logs
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
       remote_app_log_dir = yarn.site['yarn.nodemanager.remote-app-log-dir']
-      @execute
+      @system.execute
         header: 'HDFS layout'
         cmd: mkcmd.hdfs @, """
-        hdfs --config #{hdfs.dn.conf_dir} dfs -mkdir -p #{remote_app_log_dir}
-        hdfs --config #{hdfs.dn.conf_dir} dfs -chown #{yarn.user.name}:#{hadoop_group.name} #{remote_app_log_dir}
-        hdfs --config #{hdfs.dn.conf_dir} dfs -chmod 1777 #{remote_app_log_dir}
+        hdfs --config #{hadoop_conf_dir} dfs -mkdir -p #{remote_app_log_dir}
+        hdfs --config #{hadoop_conf_dir} dfs -chown #{yarn.user.name}:#{hadoop_group.name} #{remote_app_log_dir}
+        hdfs --config #{hadoop_conf_dir} dfs -chmod 1777 #{remote_app_log_dir}
         """
         unless_exec: "[[ hdfs dfs -d #{remote_app_log_dir} ]]"
         code_skipped: 2

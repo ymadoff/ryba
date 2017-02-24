@@ -22,7 +22,7 @@ The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-datanode.pid".
 
 ## Stop Clean Logs
 
-      @execute
+      @system.execute
         header: 'HDFS DN Clean Logs'
         label_true: 'CLEANED'
         if: @config.ryba.clean_logs

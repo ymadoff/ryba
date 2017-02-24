@@ -24,8 +24,8 @@ httpfs:x:494:httpfs
 
       @call header: 'Users & Groups', handler: ->
         {httpfs} = @config.ryba
-        @group httpfs.group
-        @user httpfs.user
+        @system.group httpfs.group
+        @system.user httpfs.user
 
 ## IPTables
 
@@ -40,7 +40,7 @@ mode, it must be set to a value below "1024" and default to "1004".
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         if: @config.iptables.action is 'start'
         rules: [
@@ -71,7 +71,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Kerberos
 
       @call header: 'Kerberos', timeout: -1, handler: ->
-        @copy # SPNEGO Keytab
+        @system.copy # SPNEGO Keytab
           source: core_site['hadoop.http.authentication.kerberos.keytab']
           target: httpfs.site['httpfs.authentication.kerberos.keytab']
           if: core_site['hadoop.http.authentication.kerberos.keytab'] isnt httpfs.site['httpfs.authentication.kerberos.keytab']
@@ -90,24 +90,24 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Environment
 
       @call header: 'Environment', handler: ->
-        @mkdir
+        @system.mkdir
           target: "#{httpfs.pid_dir}"
           uid: httpfs.user.name
           gid: httpfs.group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: "#{httpfs.log_dir}" #/#{hdfs.user.name}
           uid: httpfs.user.name
           gid: httpfs.group.name
           parent: true
-        @mkdir
+        @system.mkdir
           target: "#{httpfs.tmp_dir}"
           uid: httpfs.user.name
           gid: httpfs.group.name
           mode: 0o0755
         @call header: 'HttpFS Env', handler: ->
           httpfs.catalina_opts += " -D#{k}=#{v}" for k, v of httpfs.catalina.opts
-          @render
+          @file.render
             target: "#{httpfs.conf_dir}/httpfs-env.sh"
             source: "#{__dirname}/../resources/httpfs-env.sh.j2"
             local_source: true
@@ -116,34 +116,34 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             gid: httpfs.group.name
             backup: true
             mode: 0o755
-        @render
+        @file.render
           target: "#{httpfs.conf_dir}/httpfs-log4j.properties"
           source: "#{__dirname}/../resources/httpfs-log4j.properties"
           local_source: true
           context: @config
           backup: true
-        @link
+        @system.link
           source: '/usr/hdp/current/hadoop-httpfs/webapps'
           target: "#{httpfs.catalina_home}/webapps"
-        @mkdir # CATALINA_TMPDIR
+        @system.mkdir # CATALINA_TMPDIR
           target: "#{httpfs.catalina_home}/temp"
           uid: httpfs.user.name
           gid: httpfs.group.name
           mode: 0o0750
-        @mkdir
+        @system.mkdir
           target: "#{httpfs.catalina_home}/work"
           uid: httpfs.user.name
           gid: httpfs.group.name
           mode: 0o0750
-        @copy # Copie original server.xml for no-SSL environments
+        @system.copy # Copie original server.xml for no-SSL environments
           source: "#{httpfs.catalina_home}/conf/server.xml"
           target: "#{httpfs.catalina_home}/conf/nossl-server.xml"
           unless_exists: true
-        @copy
+        @system.copy
           source: "#{httpfs.catalina_home}/conf/nossl-server.xml"
           target: "#{httpfs.catalina_home}/conf/server.xml"
           unless: httpfs.env.HTTPFS_SSL_ENABLED is 'true'
-        @copy
+        @system.copy
           source: "#{httpfs.catalina_home}/conf/ssl-server.xml"
           target: "#{httpfs.catalina_home}/conf/server.xml"
           if: httpfs.env.HTTPFS_SSL_ENABLED is 'true'
@@ -178,13 +178,13 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           uid: httpfs.user.name
           gid: httpfs.group.name
           mode: 0o0640
-        @remove
+        @system.remove
           target: "#{tmp_location}/#{path.basename ssl.cacert}"
           shy: true
-        @remove
+        @system.remove
           target: "#{tmp_location}/#{path.basename ssl.cert}"
           shy: true
-        @remove
+        @system.remove
           target: "#{tmp_location}/#{path.basename ssl.key}"
           shy: true
 

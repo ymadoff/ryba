@@ -19,7 +19,7 @@
 
 Note, this hasnt been verified.
 
-      # @iptables
+      # @tools.iptables
       #   header: 'IPTables'
       #   rules: [
       #     { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "Falcon Prism Local EndPoint" }
@@ -37,8 +37,8 @@ cat /etc/group | grep druid
 druid:x:2435:
 ```
 
-      @group druid.group
-      @user druid.user
+      @system.group druid.group
+      @system.user druid.user
 
 ## Packages
 
@@ -56,14 +56,14 @@ Download and unpack the release archive.
         target: "/var/tmp/#{path.basename druid.source}"
       # TODO, could be improved
       # current implementation prevent any further attempt if download status is true and extract fails
-      @extract
+      @tools.extract
         source: "/var/tmp/#{path.basename druid.source}"
         target: '/opt'
         if: -> @status -1
-      @link
+      @system.link
         source: "/opt/druid-#{druid.version}"
         target: "#{druid.dir}"
-      @execute
+      @system.execute
         cmd: """
         if [ $(stat -c "%U" /opt/druid-#{druid.version}) == '#{druid.user.name}' ]; then exit 3; fi
         chown -R #{druid.user.name}:#{druid.group.name} /opt/druid-#{druid.version}
@@ -76,19 +76,19 @@ Pid files are stored inside "/var/run/druid" by default.
 Log files are stored inside "/var/log/druid" by default.
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: "#{druid.pid_dir}"
           uid: "#{druid.user.name}"
           gid: "#{druid.group.name}"
-        @link
+        @system.link
           target: "#{druid.dir}/var/druid/pids"
           source: "#{druid.pid_dir}"
-        @mkdir
+        @system.mkdir
           target: "#{druid.log_dir}"
           uid: "#{druid.user.name}"
           gid: "#{druid.group.name}"
           parent: true
-        @link
+        @system.link
           source: "#{druid.log_dir}"
           target: "#{druid.dir}/log"
 
@@ -142,10 +142,10 @@ Configure deep storage.
         target: "/opt/druid-#{druid.version}/conf/druid/_common/common.runtime.properties"
         content: druid.common_runtime
         backup: true
-      @copy
+      @system.copy
         target: "/opt/druid-#{druid.version}/conf/druid/_common/core-site.xml"
         source: "#{druid.hadoop_conf_dir}/core-site.xml"
-      @copy
+      @system.copy
         target: "/opt/druid-#{druid.version}/conf/druid/_common/hdfs-site.xml"
         source: "#{druid.hadoop_conf_dir}/hdfs-site.xml"
       @hconfigure

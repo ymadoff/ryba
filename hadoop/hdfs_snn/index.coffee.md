@@ -8,7 +8,7 @@
         hadoop_core: implicit: true, module: 'ryba/hadoop/core'
     configure: ->
       {ryba} = ctx.config
-      hdfs ?= ryba.hdfs ?= {}
+      hdfs = ryba.hdfs ?= {}
       hdfs.snn ?= {}
       hdfs.snn.conf_dir ?= '/etc/hadoop-hdfs-secondarynamenode/conf'
       # Store the temporary images to merge

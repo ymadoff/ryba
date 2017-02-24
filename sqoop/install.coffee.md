@@ -23,8 +23,8 @@ cat /etc/group | grep hadoop
 hadoop:x:502:yarn,mapred,hdfs,hue
 ```
 
-      @group hadoop_group
-      @user sqoop.user
+      @system.group hadoop_group
+      @system.user sqoop.user
 
 ## Environment
 
@@ -84,11 +84,11 @@ MySQL is by default usable by Sqoop. The driver installed after running the
 "masson/commons/mysql/client" is copied into the Sqoop library folder.
 
 
-      # @copy
+      # @system.copy
       #   source: '/usr/share/java/mysql-connector-java.jar'
       #   target: '/usr/hdp/current/sqoop-client/lib/'
       # , next
-      @link
+      @system.link
         header: 'MySQL Connector'
         source: '/usr/share/java/mysql-connector-java.jar'
         target: '/usr/hdp/current/sqoop-client/lib/mysql-connector-java.jar'
@@ -112,7 +112,7 @@ the Sqoop library folder.
 Make sure the sqoop client is available on this server, using the [HDP validation
 command][validate].
 
-      @execute
+      @system.execute
         header: 'Check Version'
         cmd: "sqoop version | grep 'Sqoop [0-9].*'"
 

@@ -14,8 +14,8 @@
 
 ## Users & Groups
 
-      @group knox.group
-      @user knox.user
+      @system.group knox.group
+      @system.user knox.user
 
 ## IPTables
 
@@ -26,7 +26,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: knox.site['gateway.port'], protocol: 'tcp', state: 'NEW', comment: "Knox Gateway" }
@@ -48,8 +48,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
             '/usr/hdp/current/knox-server/conf/topologies/admin.xml'
             '/usr/hdp/current/knox-server/conf/topologies/sandbox.xml'
           ] , (options) ->
-              @remove  target: options.key
-        @chown
+              @system.remove  target: options.key
+        @system.chown
           target: '/var/log/knox'
           uid: knox.user.name
           gid: knox.user.gid
@@ -74,7 +74,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         properties: knox.site
         merge: true
 
-      @render
+      @file.render
         header: 'Knox Ldap Caching'
         target: "#{knox.conf_dir}/ehcache.xml"
         source: "#{__dirname}/resources/ehcache.j2"
@@ -149,7 +149,7 @@ in the gateway.sh service script.
             backup: true
             eof: true
 
-          @render
+          @file.render
             target: "#{knox.conf_dir}/#{nameservice}-ehcache.xml"
             source: "#{__dirname}/resources/ehcache.j2"
             local_source: true
@@ -175,7 +175,7 @@ in the gateway.sh service script.
           # Create alias to store password used in topology
           for alias,password of knox.realm_passwords then do (alias,password) => 
             nameservice=alias.split("-")[0]
-            @execute
+            @system.execute
               cmd: "/usr/hdp/current/knox-server/bin/knoxcli.sh create-alias #{alias} --cluster #{nameservice} --value #{password}"
 
 ## SSL
@@ -206,7 +206,7 @@ in the gateway.sh service script.
           cert: "#{tmp_location}/cert"
           keypass: knox.ssl.keypass
           name: 'gateway-identity'
-        @execute
+        @system.execute
           if: -> @status -1
           cmd: "/usr/hdp/current/knox-server/bin/knoxcli.sh create-alias gateway-identity-passphrase --value #{knox.ssl.keypass}"
 
@@ -220,13 +220,13 @@ client to connect to openldap.
           storepass: 'changeit'
           caname: 'hadoop_root_ca'
           cacert: "#{tmp_location}/cacert"
-        @remove
+        @system.remove
           target: "#{tmp_location}/cacert"
           shy: true
-        @remove
+        @system.remove
           target: "#{tmp_location}/cert"
           shy: true
-        @remove
+        @system.remove
           target: "#{tmp_location}/key"
           shy: true
 

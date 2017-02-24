@@ -26,7 +26,7 @@ each HDFS cluster.
 
 Note, this hasnt been verified.
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "Falcon Prism Local EndPoint" }
@@ -44,8 +44,8 @@ cat /etc/group | grep falcon
 falcon:x:498:falcon
 ```
 
-      @group falcon.group
-      @user falcon.user
+      @system.group falcon.group
+      @system.user falcon.user
 
 ## Packages
 
@@ -61,17 +61,17 @@ falcon:x:498:falcon
           target: '/etc/init.d/falcon'
           mode: 0o0755
           unlink: true
-        @execute
+        @system.execute
           cmd: "service falcon restart"
           if: -> @status -3
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: falcon.log_dir
           uid: falcon.user
           gid: falcon.group
           parent: true
-        @mkdir
+        @system.mkdir
           target: falcon.pid_dir
           uid: falcon.user.name
           gid: falcon.group.name
@@ -84,7 +84,7 @@ directory with the location of the directory storing the process pid.
 
 Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
-      @render
+      @file.render
         header: 'Falcon Env'
         target: "#{falcon.conf_dir}/falcon-env.sh"
         source: "#{__dirname}/../resources/falcon-env.sh.j2"
@@ -106,7 +106,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
 
       @call header: 'HDFS Layout', handler: ->
         # status = user_owner = group_owner = null
-        # @execute
+        # @system.execute
         #   cmd: mkcmd.hdfs @, "hdfs dfs -stat '%g;%u;%n' /apps/falcon"
         #   code_skipped: 1
         # , (err, exists, stdout) ->
@@ -114,13 +114,13 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
         #   status = exists
         #   [user_owner, group_owner, filename] = stdout.trim().split ';' if exists
         # @call ->
-        #   @execute
+        #   @system.execute
         #     cmd: mkcmd.hdfs @, 'hdfs dfs -mkdir /apps/falcon'
         #     unless: -> status
-        #   @execute
+        #   @system.execute
         #     cmd: mkcmd.hdfs @, "hdfs dfs -chown #{user.name} /apps/falcon"
         #     if: not status or user.name isnt user_owner
-        #   @execute
+        #   @system.execute
         #     cmd: mkcmd.hdfs @, "hdfs dfs -chgrp #{group.name} /apps/falcon"
         #     if: not status or group.name isnt group_owner
         @hdfs_mkdir
@@ -135,7 +135,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
           group: "#{group.name}"
           mode: 0o0770
           krb5_user: @config.ryba.hdfs.krb5_user
-        @execute
+        @system.execute
           shy: true
           cmd: """
           hdfs dfs -copyFromLocal -f /usr/hdp/current/falcon-server/data-mirroring /apps

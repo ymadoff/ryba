@@ -12,7 +12,7 @@ kill ...
 
     module.exports = header: 'Rexster Stop', label_true: 'STOPPED', handler: ->
       {titan, rexster} = @config.ryba
-      @execute
+      @system.execute
         cmd: """
         p=`ps aux | grep "com.tinkerpop.rexster.Application" | grep -v grep`
         if [ -z "$p" ]; then exit 3; fi
@@ -28,7 +28,7 @@ kill ...
 
 ## Stop Clean Logs
 
-      @execute
+      @system.execute
         header: 'Clean Logs'
         cmd: "rm #{rexster.log_dir}/*"
         code_skipped: 1

@@ -15,7 +15,7 @@
             target: '/etc/yum.repos.d/hdp.repo'
             proxy: proxy
             cache_file: cache_file
-          @execute
+          @system.execute
             cmd: "yum clean metadata; yum update -y"
             if: -> @status -1
           @call
@@ -32,7 +32,7 @@
               keys = Object.keys keys
               return callback null, true unless keys.length
               for key in keys
-                @execute # TODO, should use `@file.download`
+                @system.execute # TODO, should use `@file.download`
                   cmd: """
                   curl #{key} -o /etc/pki/rpm-gpg/#{path.basename key}
                   rpm --import  /etc/pki/rpm-gpg/#{path.basename key}

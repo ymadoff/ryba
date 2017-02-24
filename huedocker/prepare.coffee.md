@@ -38,20 +38,20 @@ for hue to be able to communicate with the hadoop cluster in secure mode.
 # Hue Build dockerfile execution
 
       @call header: 'Build Prepare', timeout: -1,  handler: ->
-        @mkdir
+        @system.mkdir
           target: "#{@config.mecano.cache_dir}/huedocker"
-        @mkdir
+        @system.mkdir
           target: "#{hue_docker.build.directory}/"
-        @copy
+        @system.copy
           unless: hue_docker.build.source.indexOf('.git') > 0
           source: hue_docker.build.source
           target: "#{hue_docker.build.directory}/hue"
-        @git
+        @tools.git
           if: hue_docker.build.source.indexOf('.git') > 0
           source: hue_docker.build.source
           target: "#{hue_docker.build.directory}/hue"
           revision: hue_docker.build.revision
-        @render
+        @file.render
           source: hue_docker.build.dockerfile
           target: "#{hue_docker.build.directory}/Dockerfile"
           context: 
@@ -66,7 +66,7 @@ for hue to be able to communicate with the hadoop cluster in secure mode.
           image: "#{hue_docker.build.name}:#{hue_docker.build.version}"
           name: 'ryba_hue_extractor'
           entrypoint: '/bin/bash'
-        @mkdir
+        @system.mkdir
           target: "#{hue_docker.prod.directory}"
         @docker_cp
           container: 'ryba_hue_extractor'
@@ -81,14 +81,14 @@ for hue to be able to communicate with the hadoop cluster in secure mode.
 This production container running as hue service
 
       @call header: 'Production Container', timeout: -1, handler: ->
-        @render
+        @file.render
           source: hue_docker.prod.dockerfile
           target: "#{hue_docker.prod.directory}/Dockerfile"
           context:
             user: hue_docker.user.name
             uid: hue_docker.user.uid
             gid: hue_docker.user.uid
-        @render
+        @file.render
           source: "#{__dirname}/resources/hue_init.sh"
           target: "#{hue_docker.prod.directory}/hue_init.sh"
           context:

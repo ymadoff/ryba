@@ -17,11 +17,11 @@ Waiting for docker to deliver an net=host option for docker build command !
 # Livy Spark Server Build dockerfile execution
 
       @call header: 'Prepare Build Container', timeout: -1,  handler: ->
-        @mkdir
+        @system.mkdir
           target: "#{@config.mecano.cache_dir}/spark_livy_server"
-        @mkdir
+        @system.mkdir
           target: "#{spark.livy.build.directory}/"
-        @render
+        @file.render
           source: spark.livy.build.dockerfile
           target: "#{spark.livy.build.directory}/Dockerfile"
           context: 

@@ -8,15 +8,15 @@ Build container and save it.
       if: -> @contexts('ryba/solr/cloud_docker')[0]?.config.host is @config.host
       handler: ->
         {solr} = @config.ryba
-        @mkdir
+        @system.mkdir
           target: solr.cloud_docker.build.dir
-        @mkdir
+        @system.mkdir
           target: "#{solr.cloud_docker.build.dir}/build"
-        @render
+        @file.render
           source: "#{__dirname}/../resources/cloud_docker/docker_entrypoint.sh"
           target: "#{solr.cloud_docker.build.dir}/build/docker_entrypoint.sh"
           context: @config
-        @render
+        @file.render
           source: "#{__dirname}/../resources/cloud_docker/Dockerfile"
           target: "#{solr.cloud_docker.build.dir}/build/Dockerfile"
           context: @config

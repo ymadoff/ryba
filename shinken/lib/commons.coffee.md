@@ -6,8 +6,8 @@
 
 ## Users & Groups
 
-      @group shinken.group
-      @user shinken.user
+      @system.group shinken.group
+      @system.user shinken.user
 
 ## Commons Packages
 
@@ -21,20 +21,20 @@
 ## Layout
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: '/etc/shinken/packs'
-        @mkdir
+        @system.mkdir
           target: "#{shinken.user.home}/share"
           uid: shinken.user.name
           gid: shinken.group.name
-        @mkdir
+        @system.mkdir
           target: "#{shinken.user.home}/doc"
           uid: shinken.user.name
           gid: shinken.group.name
-        @chown
+        @system.chown
           target: shinken.log_dir
           uid: shinken.user.name
           gid: shinken.group.name
-        @execute
+        @system.execute
           cmd: 'shinken --init'
           unless_exists: "#{shinken.user.home}/.shinken.ini"

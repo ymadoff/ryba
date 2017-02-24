@@ -24,8 +24,8 @@ cat /etc/group | grep hadoop
 hadoop:x:498:hdfs
 ```
 
-      @group header: 'Group', hadoop_group
-      @user header: 'User', yarn.user
+      @system.group header: 'Group', hadoop_group
+      @system.user header: 'User', yarn.user
 
 ## IPTables
 
@@ -63,7 +63,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       # Resource Tracker
       rt_port = yarn.rm.site["yarn.resourcemanager.resource-tracker.address#{id}"].split(':')[1]
       rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: rt_port, protocol: 'tcp', state: 'NEW', comment: "YARN RM Application Submissions" }
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: rules
         if: @config.iptables.action is 'start'
@@ -92,27 +92,27 @@ inside "/etc/init.d" and activate it on startup.
           uid: yarn.user.name
           gid: hadoop_group.name
           perm: '0755'
-        @execute
+        @system.execute
           cmd: "service hadoop-yarn-resourcemanager restart"
           if: -> @status -4
 
       @call header: 'Layout', handler: ->
         {yarn, hadoop_group} = @config.ryba
-        @mkdir
+        @system.mkdir
           target: "#{yarn.rm.conf_dir}"
-        @mkdir
+        @system.mkdir
           target: "#{yarn.rm.pid_dir}"
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o755
-        @mkdir
+        @system.mkdir
           target: "#{yarn.rm.log_dir}"
           uid: yarn.user.name
           gid: yarn.group.name
           parent: true
-        @touch
+        @file.touch
           target: "#{yarn.rm.site['yarn.resourcemanager.nodes.include-path']}"
-        @touch
+        @file.touch
           target: "#{yarn.rm.site['yarn.resourcemanager.nodes.exclude-path']}"
 
 ## Configure
@@ -147,7 +147,7 @@ inside "/etc/init.d" and activate it on startup.
           append: true
       @call header: 'YARN Env', handler: ->
         yarn.rm.java_opts += " -D#{k}=#{v}" for k, v of yarn.rm.opts 
-        @render
+        @file.render
           target: "#{yarn.rm.conf_dir}/yarn-env.sh"
           source: "#{__dirname}/../resources/yarn-env.sh.j2"
           local_source: true

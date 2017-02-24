@@ -21,13 +21,13 @@
           local_source: true
           backup: true
 
-        @mkdir directory:"#{path}/#{es_name}",uid:'elasticsearch' for path in es.data_path
-        @mkdir directory:"#{es.plugins_path}",uid:'elasticsearch'
-        @mkdir directory:"#{es.plugins_path}/#{es.es_version}",uid:'elasticsearch'
-        @mkdir directory:"#{es.logs_path}/#{es_name}",uid:'elasticsearch'
-        @mkdir directory:"#{es.logs_path}/#{es_name}/logstash",uid:'elasticsearch'
-        @mkdir directory:"/etc/elasticsearch/#{es_name}/scripts",uid:'elasticsearch'
-        @mkdir directory:"/etc/elasticsearch/keytabs",uid:'elasticsearch'
+        @system.mkdir directory:"#{path}/#{es_name}",uid:'elasticsearch' for path in es.data_path
+        @system.mkdir directory:"#{es.plugins_path}",uid:'elasticsearch'
+        @system.mkdir directory:"#{es.plugins_path}/#{es.es_version}",uid:'elasticsearch'
+        @system.mkdir directory:"#{es.logs_path}/#{es_name}",uid:'elasticsearch'
+        @system.mkdir directory:"#{es.logs_path}/#{es_name}/logstash",uid:'elasticsearch'
+        @system.mkdir directory:"/etc/elasticsearch/#{es_name}/scripts",uid:'elasticsearch'
+        @system.mkdir directory:"/etc/elasticsearch/keytabs",uid:'elasticsearch'
 
         @each es.downloaded_urls,(options,callback) ->
           extract_target  = if options.value.indexOf("github") != -1  then "#{es.plugins_path}/#{es.es_version}/" else "#{es.plugins_path}/#{es.es_version}/#{options.key}"
@@ -39,13 +39,13 @@
               uid: "elasticsearch"
               gid: "elasticsearch"
               shy: true
-            @extract
+            @tools.extract
               format: "zip"
               source: "#{es.plugins_path}/#{es.es_version}/#{options.key}.zip"
               target: extract_target
               shy: true
             es.volumes.push "#{es.plugins_path}/#{es.es_version}/#{options.key}:/usr/share/elasticsearch/plugins/#{options.key}"
-            @remove "#{es.plugins_path}/#{es.es_version}/#{options.key}.zip", shy: true
+            @system.remove "#{es.plugins_path}/#{es.es_version}/#{options.key}.zip", shy: true
           @then callback
 
 ## SSL Certificate
@@ -127,7 +127,7 @@
 
           @docker_status container:"#{master_node}_1", docker:docker_args
           for service,node of es.nodes then do (service,node) =>
-            @execute
+            @system.execute
               cmd:"""
                 #{export_vars}
                 pushd /etc/elasticsearch/#{es_name}
@@ -135,7 +135,7 @@
               """
               unless: -> @status -1
 
-          @execute
+          @system.execute
             cmd:"""
               #{export_vars}
               pushd /etc/elasticsearch/#{es_name}

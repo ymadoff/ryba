@@ -10,7 +10,7 @@
 
 ## Check Shell
 
-      @execute
+      @system.execute
         header: 'TCP'
         cmd: "echo > /dev/tcp/#{@config.host}/#{hbase.thrift.site['hbase.thrift.port']}"
 

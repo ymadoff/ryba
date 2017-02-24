@@ -9,8 +9,8 @@
 
 ## Users & Groups
 
-      @group rexster.group
-      @user rexster.user
+      @system.group rexster.group
+      @system.user rexster.user
 
 ## IPTables
 
@@ -21,7 +21,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: rexster.config.http['server-port'], protocol: 'tcp', state: 'NEW', comment: "Rexster Web UI" }
@@ -31,7 +31,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Env
 
       @call header: 'Env', handler: ->
-        @chown
+        @system.chown
           target: rexster.user.home
           uid: rexster.user.name
           gid: rexster.group.name
@@ -67,7 +67,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         @file
           target: path.join titan.home, 'bin', 'rexster.sh'
           write: write
-        @mkdir
+        @system.mkdir
           target: rexster.log_dir
           uid: rexster.user.name
           gid: rexster.group.name
@@ -130,7 +130,7 @@ TODO: Use a namespace
         handler: ->
           {hbase, titan} = @config.ryba
           table = titan.config['storage.hbase.table']
-          @execute
+          @system.execute
             cmd: mkcmd.hbase @, """
             if hbase shell 2>/dev/null <<< "user_permission '#{table}'" | grep 'rexster'; then exit 3; fi
             hbase shell 2>/dev/null <<< "grant 'rexster', 'RWXCA', '#{table}'"

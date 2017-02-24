@@ -24,8 +24,8 @@ cat /etc/group | grep hue
 hue:x:494:
 ```
 
-      @group header: 'Group', hue.group
-      @user header: 'User', hue.user
+      @system.group header: 'Group', hue.group
+      @system.user header: 'User', hue.user
 
 ## IPTables
 
@@ -36,7 +36,7 @@ hue:x:494:
 IPTables rules are only inserted if the parameter "iptables.action" is set to 
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: hue.ini.desktop.http_port, protocol: 'tcp', state: 'NEW', comment: "Hue Web UI" }
@@ -118,7 +118,7 @@ the default database while mysql is the recommanded choice.
             {host, port, user, password, name} = hue.ini.desktop.database
             escape = (text) -> text.replace(/[\\"]/g, "\\$&")
             mysql_exec = "#{db_admin.path} -u#{db_admin.username} -p#{db_admin.password} -h#{db_admin.host} -P#{db_admin.port} -e "
-            @execute
+            @system.execute
               cmd: """
               #{mysql_exec} "
               create database #{name};
@@ -128,7 +128,7 @@ the default database while mysql is the recommanded choice.
               "
               """
               unless_exec: "#{mysql_exec} 'use #{name}'"
-            @execute
+            @system.execute
               # TODO: handle updates
               cmd: """
               su -l #{hue.user.name} -c "/usr/lib/hue/build/env/bin/hue syncdb --noinput"

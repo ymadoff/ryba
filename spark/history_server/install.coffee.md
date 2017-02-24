@@ -20,8 +20,8 @@ web interface.
 
 # Users and Groups   
 
-      @group spark.group
-      @user spark.user
+      @system.group spark.group
+      @system.user spark.user
 
 # Packages
 
@@ -54,7 +54,7 @@ web interface.
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: spark.history.conf['spark.history.ui.port'], protocol: 'tcp', state: 'NEW', comment: "Oozie HTTP Server" }
@@ -62,15 +62,15 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         if: @config.iptables.action is 'start'
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: spark.history.pid_dir
           uid: spark.user.name
           gid: spark.group.name
-        @mkdir
+        @system.mkdir
           target: spark.history.log_dir
           uid: spark.user.name
           gid: spark.group.name
-        @mkdir
+        @system.mkdir
           target: spark.history.conf_dir
           uid: spark.user.name
           gid: spark.group.name
@@ -108,7 +108,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           replace: if v is null then "" else "#{k} #{v}"
           append: v isnt null
         backup: true
-      @link
+      @system.link
         source: spark.history.conf_dir
         target: '/usr/hdp/current/spark-historyserver/conf'
 
@@ -128,7 +128,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         merge: true
         backup: true
 
-      @copy
+      @system.copy
         target: "#{spark.history.conf_dir}/hdfs-site.xml"
         source: "/etc/hadoop/conf/hdfs-site.xml"
 

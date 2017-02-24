@@ -58,7 +58,7 @@ We must connect to each server og the replica set manually and check if it is th
             handler: ->
               @each shard_hosts, (options) ->
                 host = options.key
-                @execute
+                @system.execute
                   code_skipped: 1
                   cmd: """
                       #{mongo_shell_exec} --host #{host} \
@@ -70,7 +70,7 @@ We must connect to each server og the replica set manually and check if it is th
                   if: -> @status -1
                   handler: -> primary_host = host
               @call ->
-                @execute
+                @system.execute
                   if: -> primary_host
                   cmd: """
                      #{mongo_shell_exec} --host #{@config.host} --port #{mongos_port} \

@@ -35,7 +35,7 @@ The location for JSVC depends on the platform. The Hortonworks documentation
 mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
 correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
-      @render
+      @file.render
         header: 'Env'
         target: "#{hadoop_conf_dir}/hadoop-env.sh"
         source: "#{__dirname}/../resources/hadoop-env.sh.j2"
@@ -93,7 +93,7 @@ Update the "core-site.xml" configuration file with properties from the
             remove_files.push (filtered_files.filter (file) -> file isnt jar.filename)...
             continue if jar.filename in remote_files
             jar
-          @remove ( # Remove jar if already uploaded
+          @system.remove ( # Remove jar if already uploaded
             target: path.join '/usr/hdp/current/hadoop-hdfs-client/lib', file
           ) for file in remove_files
           @file.download (

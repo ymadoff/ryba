@@ -63,10 +63,10 @@ Tez UI will be untared in the tez.ui.html_path directory. A WebServer must be co
 to serve this directory.
 
       @call header: 'UI', if: tez.ui.enabled, handler: ->
-        @mkdir
+        @system.mkdir
           header: 'Layout'
           target: tez.ui.html_path
-        @execute
+        @system.execute
           header: 'Web Files'
           cmd: """
           target_file=`ls /usr/hdp/current/tez-client/ui/tez-ui*.war | sed 's/^.*tez/tez/g'`

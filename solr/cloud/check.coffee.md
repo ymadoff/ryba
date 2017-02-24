@@ -19,7 +19,7 @@ Check if hadoop connector works and re-activate jar execution.
 
       @call header: 'Create Collection (HDFS)', if: solr.cloud.hdfs?, handler: ->
         collection = check_dir = "ryba-check-solr-hdfs-#{@config.shortname}"
-        @execute
+        @system.execute
           if: force_check
           cmd: mkcmd.solr, """
             rm -rf /tmp/#{check_dir} || true
@@ -30,22 +30,22 @@ Check if hadoop connector works and re-activate jar execution.
         @call 
           unless_exec:unless force_check then "test -f /tmp/#{check_dir}/checked"
           handler: ->
-            @execute
+            @system.execute
               cmd: "cp -R #{solr.cloud.latest_dir}/server/solr/configsets/data_driven_schema_configs /tmp/#{check_dir}"
-            @render
+            @file.render
               header: 'Solrconfig'
               source: "#{__dirname}/../resources/cloud/solrconfig.xml.j2"
               target: "/tmp/#{check_dir}/solrconfig.xml"
               local_source: true
               context: @config.ryba
               eof: true
-            @execute
+            @system.execute
               cmd: """
                 #{solr.cloud.latest_dir}/bin/solr create_collection -c #{collection} \
                 -d /tmp/#{check_dir} -shards #{shards}
               """
               unless_exec: "#{solr.cloud.latest_dir}/bin/solr healthcheck -c #{collection} -z #{solr.cloud.zk_connect}#{solr.cloud.zk_node} | grep '\"status\":\"healthy\"'"
-            @execute
+            @system.execute
               if: false
               cmd: mkcmd.solr, """
                 set -e
@@ -58,7 +58,7 @@ Check if hadoop connector works and re-activate jar execution.
                 -Dlww.commit.on.close=true -cls com.lucidworks.hadoop.ingest.CSVIngestMapper \
                 -c #{collection} -i /user/#{solr.user.name}/csv/* -of com.lucidworks.hadoop.io.LWMapRedOutputFormat -zk #{solr.cloud.zk_connect}#{solr.cloud.zk_node}
               """
-            @execute
+            @system.execute
               if: -> @status -2
               cmd: """
                 touch /tmp/#{check_dir}/checked
@@ -73,7 +73,7 @@ This check is inspired [from HDP][search-hdp].
         collection = check_dir = "ryba-check-solr-local-#{@config.shortname}"
         solr.cloud.dir_factory = solr.user.home
         solr.cloud.lock_type = 'native'
-        @execute
+        @system.execute
           if: force_check
           cmd: mkcmd.solr, """
             rm -rf /tmp/#{check_dir} || true
@@ -83,22 +83,22 @@ This check is inspired [from HDP][search-hdp].
         @call 
           unless_exec: unless force_check then "test -f /tmp/#{check_dir}/checked"
           handler: ->
-            @execute
+            @system.execute
               cmd: "cp -R #{solr.cloud.latest_dir}/server/solr/configsets/data_driven_schema_configs /tmp/#{check_dir}"
-            @render
+            @file.render
               header: 'Solrconfig'
               source: "#{__dirname}/../resources/cloud/solrconfig.xml.j2"
               target: "/tmp/#{check_dir}/solrconfig.xml"
               local_source: true
               context: @config.ryba   
               eof: true
-            @execute
+            @system.execute
               cmd: """
                 #{solr.cloud.latest_dir}/bin/solr create_collection -c #{collection} \
                 -d /tmp/#{check_dir} -shards #{shards}
               """
               unless_exec: "#{solr.cloud.latest_dir}/bin/solr healthcheck -c #{collection} -z #{solr.cloud.zk_connect}#{solr.cloud.zk_node} | grep '\"status\":\"healthy\"'"
-            @execute
+            @system.execute
               if: -> @status -1
               cmd: """
                 touch /tmp/#{check_dir}/checked

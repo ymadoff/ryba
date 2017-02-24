@@ -14,7 +14,7 @@ Retrieve various info about the HCatalog Server and the Hive Server2.
 
 List the current FS root locations for the Hive databases.
 
-      @execute
+      @system.execute
         header: 'Info FS Roots'
         timeout: -1
         label_true: 'INFO'

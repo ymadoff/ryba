@@ -15,7 +15,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: router.config.net.port, protocol: 'tcp', state: 'NEW', comment: "MongoDB Router Server port" }
         ]
@@ -23,8 +23,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Users & Groups
 
-      @group header: 'Group', mongodb.group
-      @user header: 'User', mongodb.user
+      @system.group header: 'Group', mongodb.group
+      @system.user header: 'User', mongodb.user
 
 ## Packages
 
@@ -41,7 +41,7 @@ in order to rendered configuration file with custom properties.
           handler: ->
             switch options.store['mecano:system:release'][0]
               when '6'
-                @render
+                @file.render
                   source: "#{__dirname}/../resources/mongod-router-server.j2"
                   target: '/etc/init.d/mongod-router-server'
                   context: @config
@@ -70,7 +70,7 @@ in order to rendered configuration file with custom properties.
 
 Create dir where the mongod-config-server stores its metadata
 
-      @mkdir
+      @system.mkdir
         header: 'Layout'
         target: '/var/lib/mongodb'
         uid: mongodb.user.name

@@ -12,7 +12,7 @@ TODO: Cloudera provides some interesting [tests](http://www.cloudera.com/content
 ## Telnet
 
       zk_cxns = @contexts('ryba/zookeeper/server').map((ctx) -> "#{ctx.config.host}:#{ctx.config.ryba.zookeeper.port}").join ','
-      @execute
+      @system.execute
         retry: 3
         header: 'Shell'
         cmd: """

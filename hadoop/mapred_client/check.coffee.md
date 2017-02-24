@@ -24,7 +24,7 @@ to re-execute the check.
 
       # 100 records = 1Ko
       # 10 000 000 000 = 100 Go
-      @execute
+      @system.execute
         header: 'Teragen & Terasort'
         cmd: mkcmd.test @, """
         hdfs dfs -rm -r check-#{shortname}-mapred || true

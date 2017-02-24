@@ -13,7 +13,7 @@ the server to start...
 
 ## Check status of Hue server
 
-      @execute
+      @system.execute
         cmd: "echo > /dev/tcp/#{@config.host}/#{hue_docker.port}"
 
   # TODO: Novembre 2015 check hue server by adding a user with the webservice.

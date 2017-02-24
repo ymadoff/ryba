@@ -15,7 +15,7 @@
 
 Check if the Hive Server2 server is listening.
 
-      @execute
+      @system.execute
         label_true: 'CHECKED'
         header: 'Check Thrift Port'
         cmd: "echo > /dev/tcp/#{@config.host}/#{port}"

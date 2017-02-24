@@ -35,7 +35,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       rpc = hdfs.site['dfs.journalnode.rpc-address'].split(':')[1]
       http = hdfs.site['dfs.journalnode.http-address'].split(':')[1]
       https = hdfs.site['dfs.journalnode.https-address'].split(':')[1]
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: rpc, protocol: 'tcp', state: 'NEW', comment: "HDFS JournalNode" }
@@ -50,21 +50,21 @@ The JournalNode data are stored inside the directory defined by the
 "dfs.journalnode.edits.dir" property.
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: "#{hdfs.jn.conf_dir}"
-        @mkdir
+        @system.mkdir
           target: for dir in hdfs.site['dfs.journalnode.edits.dir'].split ','
             if dir.indexOf('file://') is 0
             then dir.substr(7) else dir
           uid: hdfs.user.name
           gid: hadoop_group.name
-        @mkdir
+        @system.mkdir
           target: "#{hdfs.pid_dir}"
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o0755
           parent: true
-        @mkdir
+        @system.mkdir
           target: "#{hdfs.log_dir}" #/#{hdfs.user.name}
           uid: hdfs.user.name
           gid: hdfs.group.name
@@ -93,7 +93,7 @@ inside "/etc/init.d" and activate it on startup.
           uid: hdfs.user.name
           gid: hadoop_group.name
           perm: '0755'
-        @execute
+        @system.execute
           cmd: "service hadoop-hdfs-journalnode restart"
           if: -> @status -4
 
@@ -137,7 +137,7 @@ The location for JSVC depends on the platform. The Hortonworks documentation
 mentions "/usr/libexec/bigtop-utils" for RHEL/CentOS/Oracle Linux. While this is
 correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
-        @render
+        @file.render
           header: 'Environment'
           target: "#{hdfs.jn.conf_dir}/hadoop-env.sh"
           source: "#{__dirname}/../resources/hadoop-env.sh.j2"

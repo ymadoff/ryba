@@ -84,18 +84,18 @@ inside the configuration.
         # filter with the RM authentication filter to allow authentication using
         # delegation tokens(fallback to kerberos if the tokens are missing)
         ryba.yarn.rm.site["yarn.resourcemanager.webapp.delegation-token-auth-filter.enabled"] ?= "true" # YARN default is "true"
-        for rm_ctx in rm_ctxs
-          rm_ctx.config.ryba.yarn ?= {}
-          rm_ctx.config.ryba.yarn.rm ?= {}
-          rm_ctx.config.ryba.yarn.rm.site ?= {}
-          rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id'] ?= rm_ctx.config.shortname
-          id = if ryba.yarn.rm.site['yarn.resourcemanager.ha.enabled'] is 'true' then ".#{rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id']}" else ''
-          ryba.yarn.rm.site["yarn.resourcemanager.address#{id}"] ?= "#{rm_ctx.config.host}:8050"
-          ryba.yarn.rm.site["yarn.resourcemanager.scheduler.address#{id}"] ?= "#{rm_ctx.config.host}:8030"
-          ryba.yarn.rm.site["yarn.resourcemanager.admin.address#{id}"] ?= "#{rm_ctx.config.host}:8141"
-          ryba.yarn.rm.site["yarn.resourcemanager.webapp.address#{id}"] ?= "#{rm_ctx.config.host}:8088"
-          ryba.yarn.rm.site["yarn.resourcemanager.webapp.https.address#{id}"] ?= "#{rm_ctx.config.host}:8090"
-          ryba.yarn.rm.site["yarn.resourcemanager.resource-tracker.address#{id}"] ?= "#{rm_ctx.config.host}:8025"
+      for rm_ctx in rm_ctxs
+        rm_ctx.config.ryba.yarn ?= {}
+        rm_ctx.config.ryba.yarn.rm ?= {}
+        rm_ctx.config.ryba.yarn.rm.site ?= {}
+        rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id'] ?= rm_ctx.config.shortname
+        id = if ryba.yarn.rm.site['yarn.resourcemanager.ha.enabled'] is 'true' then ".#{rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id']}" else ''
+        ryba.yarn.rm.site["yarn.resourcemanager.address#{id}"] ?= "#{rm_ctx.config.host}:8050"
+        ryba.yarn.rm.site["yarn.resourcemanager.scheduler.address#{id}"] ?= "#{rm_ctx.config.host}:8030"
+        ryba.yarn.rm.site["yarn.resourcemanager.admin.address#{id}"] ?= "#{rm_ctx.config.host}:8141"
+        ryba.yarn.rm.site["yarn.resourcemanager.webapp.address#{id}"] ?= "#{rm_ctx.config.host}:8088"
+        ryba.yarn.rm.site["yarn.resourcemanager.webapp.https.address#{id}"] ?= "#{rm_ctx.config.host}:8090"
+        ryba.yarn.rm.site["yarn.resourcemanager.resource-tracker.address#{id}"] ?= "#{rm_ctx.config.host}:8025"
 
 ## High Availability with optional automatic failover
 

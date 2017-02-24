@@ -27,7 +27,7 @@ Run `ryba prepare` to create the Docker container.
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: spark.livy.conf['livy.server.port'], protocol: 'tcp', state: 'NEW', comment: "Spark Livy Server" }
@@ -45,8 +45,8 @@ cat /etc/group | grep spark
 spark:x:494:
 ```
 
-      @group spark.group
-      @user spark.user
+      @system.group spark.group
+      @system.user spark.user
 
 ## Startup Script
 
@@ -69,17 +69,17 @@ Write startup script to /etc/init.d/service-hue-docker
 ## Layout
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: spark.livy.pid_dir
           uid: spark.user.name
           gid: spark.group.name
           mode: 0o0770
-        @mkdir
+        @system.mkdir
           target: spark.livy.log_dir
           uid: spark.user.name
           gid: spark.group.name
           mode: 0o0770
-        @mkdir
+        @system.mkdir
           target: spark.livy.conf_dir
           uid: spark.user.name
           gid: spark.group.name
@@ -151,13 +151,13 @@ Write startup script to /etc/init.d/service-hue-docker
           cert: "#{tmp_location}/#{path.basename ssl.cert}"
           keypass: spark.livy.keystorePassword
           name: @config.shortname
-        @remove
+        @system.remove
           target: "#{tmp_location}/#{path.basename ssl.cacert}"
           shy: true
-        @remove
+        @system.remove
           target: "#{tmp_location}/#{path.basename ssl.cert}"
           shy: true
-        @remove
+        @system.remove
           target: "#{tmp_location}/#{path.basename ssl.key}"
           shy: true
 

@@ -18,20 +18,20 @@
 ## Users and Groups
 Create user and groups for solr user.
 
-      @mkdir
+      @system.mkdir
         target: solr.user.home
         uid: solr.user.name
         gid: solr.group.name
-      @group solr.group
-      @user solr.user
+      @system.group solr.group
+      @system.user solr.user
 
 ## Layout
 
-      @mkdir
+      @system.mkdir
         target: solr.user.home
         uid: solr.user.name
         gid: solr.group.name
-      @mkdir
+      @system.mkdir
         directory: solr.cloud_docker.conf_dir
         uid: solr.user.name
         gid: solr.group.name
@@ -49,7 +49,7 @@ Create user and groups for solr user.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      @execute
+      @system.execute
         header: 'SPNEGO'
         cmd: "su -l #{solr.user.name} -c 'test -r #{solr.cloud_docker.spnego.keytab}'"
       @krb5_addprinc
@@ -167,12 +167,12 @@ be prepared in the mecano cache dir.
         uid: solr.user.name
         gid: solr.group.name
         mode: 0o0755
-      @chown
+      @system.chown
         target: solr.cloud_docker.ssl_truststore_path
         uid: solr.user.name
         gid: solr.group.name
         mode: 0o0755
-      @chown
+      @system.chown
         target: solr.cloud_docker.ssl_keystore_path
         uid: solr.user.name
         gid: solr.group.name
@@ -206,23 +206,23 @@ configuration like solr.in.sh or solr.xml.
           append: true
         @call header: 'IPTables', handler: ->
           return unless @config.iptables.action is 'start'
-          @iptables
+          @tools.iptables
             rules: [
               { chain: 'INPUT', jump: 'ACCEPT', dport: config.port, protocol: 'tcp', state: 'NEW', comment: "Solr Cluster #{name}" }
             ]
-        @mkdir
+        @system.mkdir
           header: 'Solr Cluster Configuration'
           target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}"
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0750
-        @mkdir
+        @system.mkdir
           header: 'Solr Cluster Log dir'
           target: config.log_dir
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0750
-        @mkdir
+        @system.mkdir
           header: 'Solr Cluster Pid dir'
           target: config.pid_dir
           uid: solr.user.name
@@ -234,11 +234,11 @@ configuration like solr.in.sh or solr.xml.
           uid: solr.user.name
           gid: solr.group.name
           perm: '0750'
-        @mkdir
+        @system.mkdir
           header: 'Solr Cluster Data dir'
           target: config.data_dir
           mode: 0o0750
-        @chown
+        @system.chown
           target: config.data_dir
           uid: solr.user.name
           gid: solr.group.name
@@ -250,7 +250,7 @@ configuration like solr.in.sh or solr.xml.
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0750
-        @render
+        @file.render
           source:"#{__dirname}/../resources/cloud_docker/docker_entrypoint.sh"
           target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/docker_entrypoint.sh"
           context: @config
@@ -260,7 +260,7 @@ configuration like solr.in.sh or solr.xml.
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0750
-        @render
+        @file.render
           source:"#{__dirname}/../resources/cloud_docker/zkCli.sh.j2"
           target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/zkCli.sh"
           context: @config.ryba
@@ -270,7 +270,7 @@ configuration like solr.in.sh or solr.xml.
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0750
-        @render
+        @file.render
           header: 'Solr Environment'
           source: "#{__dirname}/../resources/cloud/solr.ini.sh.j2"
           target: "#{solr.cloud_docker.conf_dir}/clusters/#{name}/solr.in.sh"
@@ -317,7 +317,7 @@ configuration like solr.in.sh or solr.xml.
               mode: 0o0750
               backup: true
               eof: true
-            @render
+            @file.render
               if: host is @config.host
               header: 'Log4j'
               source: "#{__dirname}/../resources/log4j.properties.j2"

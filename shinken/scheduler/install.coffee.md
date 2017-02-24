@@ -14,7 +14,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: scheduler.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Scheduler" }
@@ -38,12 +38,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
               cache_file: "#{mod.archive}.zip"
               unless_exec: "shinken inventory | grep #{name}"
               shy: true
-            @extract
+            @tools.extract
               source: "#{shinken.build_dir}/#{mod.archive}.zip"
               shy: true
-            @execute
+            @system.execute
               cmd: "shinken install --local #{shinken.build_dir}/#{mod.archive}"
-            @execute
+            @system.execute
               cmd: "rm -rf #{shinken.build_dir}"
               shy: true
           for subname, submod of mod.modules then installmod subname, submod

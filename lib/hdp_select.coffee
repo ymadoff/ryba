@@ -19,7 +19,7 @@ module.exports = (options, callback) ->
     options.store['hdp_select.version.default'] = options.version
   @call (_, callback) ->
     # Get the current or latest version
-    @execute
+    @system.execute
       cmd: """
       code=3
       if [ "#{options.version}" == "latest" ]; then
@@ -47,7 +47,7 @@ module.exports = (options, callback) ->
   @call (_, callback) ->
     version = options.store['hdp_select.version.default']
     # Set the service to its expected version
-    @execute
+    @system.execute
       cmd: """
       version=`hdp-select status #{options.name} | sed 's/.* \\(.*\\)/\\1/'`
       if [ $version == '#{version}' ]; then exit 3; fi

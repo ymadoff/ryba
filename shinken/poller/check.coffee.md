@@ -6,12 +6,12 @@
 
 ## TCP
 
-      @execute
+      @system.execute
         header: 'TCP'
         cmd: "echo > /dev/tcp/#{@config.host}/#{poller.config.port}"
 
 ## HTTP
 
-      @execute
+      @system.execute
         header: 'HTTP'
         cmd: "curl http://#{@config.host}:#{poller.config.port} | grep OK"

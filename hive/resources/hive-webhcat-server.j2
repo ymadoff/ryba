@@ -32,9 +32,9 @@
 ### END INIT INFO
 
 NAME='Hive Webhcat Server'
-USER='{{ryba.hive.user.name}}'
-GROUP='{{ryba.hive.group.name}}'
-RUN_DIR='{{ryba.webhcat.pid_dir}}'
+USER='{{hive.user.name}}'
+GROUP='{{hive.group.name}}'
+RUN_DIR='{{webhcat.pid_dir}}'
 PID_FILE="${RUN_DIR}/webhcat.pid"
 CMD="su -l $USER -c \"export WEBHCAT_CONF_DIR={{webhcat.conf_dir}}; /usr/hdp/current/hive-webhcat/sbin/webhcat_server.sh start\""
 

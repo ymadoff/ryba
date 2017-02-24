@@ -15,7 +15,7 @@
 ## Packages
 
       @call header: 'Packages', handler: ->        
-        @execute
+        @system.execute
           header: 'Setup Execution'
           shy:true
           cmd: """
@@ -29,13 +29,13 @@
 
 ## Layout
 
-      @mkdir
+      @system.mkdir
         target: ranger.hdfs_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR']
         uid: hdfs.user.name
         gid: hadoop_group.name
         mode: 0o0750
         if: ranger.hdfs_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
-      @mkdir
+      @system.mkdir
         target: ranger.hdfs_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR']
         uid: hdfs.user.name
         gid: hadoop_group.name
@@ -51,7 +51,7 @@ Not documented be taken from [github-source][hdfs-plugin-source]
 
       @call ->
         # wrap into call for version to be not null
-        @render
+        @file.render
           header: 'Scripts rendering'
           if: -> version?
           source: "#{__dirname}/../../resources/plugin-install.properties.j2"
@@ -70,7 +70,7 @@ Not documented be taken from [github-source][hdfs-plugin-source]
             sources_props = {}
             current_props = {}
             files_exists = {}
-            @execute
+            @system.execute
               cmd: """
                 echo '' | keytool -list \
                 -storetype jceks \
@@ -106,7 +106,7 @@ Not documented be taken from [github-source][hdfs-plugin-source]
               ]
               backup: true
               mode: 0o750
-            @execute
+            @system.execute
               header: 'Script Execution'
               shy: true
               cmd: """

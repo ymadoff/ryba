@@ -14,7 +14,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           chain: 'INPUT', jump: 'ACCEPT', dport: nagvis.port, protocol: 'tcp', state: 'NEW', comment: "NagVis"
@@ -39,12 +39,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         @file.download
           source: nagvis.source
           target: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"
-        @extract
+        @tools.extract
           source: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"
-        @chmod
+        @system.chmod
           target: "/var/tmp/nagvis-#{nagvis.version}/install.sh"
           mode: 0o755
-        @execute
+        @system.execute
           cmd: """
           cd /var/tmp/nagvis-#{nagvis.version};
           ./install.sh -n #{nagvis.base_dir} -p #{nagvis.install_dir} \
@@ -55,8 +55,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         @file
           target: "#{nagvis.install_dir}/version"
           content: "#{nagvis.version}"
-        @remove target: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"
-        @remove target: "/var/tmp/nagvis-#{nagvis.version}"
+        @system.remove target: "/var/tmp/nagvis-#{nagvis.version}.tar.gz"
+        @system.remove target: "/var/tmp/nagvis-#{nagvis.version}"
 
       write = ""
       for k, v of nagvis.config

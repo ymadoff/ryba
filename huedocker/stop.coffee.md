@@ -22,6 +22,6 @@ docker stop hue_server
         label_true: 'CLEANED'
         if: -> @config.ryba.clean_logs
         handler: ->
-          @execute
+          @system.execute
             cmd: "rm #{hue_docker.log_dir}/*.log"
             code_skipped: 1

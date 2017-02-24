@@ -30,8 +30,8 @@ cat /etc/group | grep oozie
 oozie:x:493:
 ```
 
-      @group oozie.group
-      @user oozie.user
+      @system.group oozie.group
+      @system.user oozie.user
 
 ## IPTables
 
@@ -43,7 +43,7 @@ oozie:x:493:
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "Oozie HTTP Server" }
@@ -53,7 +53,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       @call header: 'Packages', timeout: -1, handler: (options) ->
         # Upgrading oozie failed, tested versions are hdp 2.1.2 -> 2.1.5 -> 2.1.7
-        @execute
+        @system.execute
           cmd: "rm -rf /usr/lib/oozie && yum remove -y oozie oozie-client"
           if: options.retry > 0
         @service
@@ -99,44 +99,44 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           uid: oozie.user.name
           gid: hadoop_group.name
           perm: '0750'
-        @execute
+        @system.execute
           cmd: "service oozie restart"
           if: -> @status -4
 
       @call header: 'Layout Directories', handler: ->
-        @mkdir
+        @system.mkdir
           target: oozie.data
           uid: oozie.user.name
           gid: hadoop_group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: oozie.log_dir
           uid: oozie.user.name
           gid: hadoop_group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: oozie.pid_dir
           uid: oozie.user.name
           gid: hadoop_group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: oozie.tmp_dir
           uid: oozie.user.name
           gid: hadoop_group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: "#{oozie.conf_dir}/action-conf"
           uid: oozie.user.name
           gid: hadoop_group.name
           mode: 0o0755
         # Set permission to action conf
-        @execute
+        @system.execute
           cmd: """
           chown -R #{oozie.user.name}:#{hadoop_group.name} #{oozie.conf_dir}/action-conf
           """
           shy: true
-        # Waiting for recursivity in @mkdir
-        # @execute
+        # Waiting for recursivity in @system.mkdir
+        # @system.execute
         #   cmd: """
         #   chown -R #{oozie.user.name}:#{hadoop_group.name} /usr/lib/oozie
         #   chown -R #{oozie.user.name}:#{hadoop_group.name} #{oozie.data}
@@ -237,7 +237,7 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
         writes.push
             match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.extra_appender=(.*)/m
             replace: ""
-      @render
+      @file.render
         header: 'Oozie Environment'
         target: "#{oozie.conf_dir}/oozie-env.sh"
         source: "#{__dirname}/../resources/oozie-env.sh.j2"
@@ -253,7 +253,7 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
 
 Install the ExtJS Javascript library as part of enabling the Oozie Web Console.
 
-      @copy
+      @system.copy
         header: 'ExtJS Library'
         source: '/usr/share/HDP-oozie/ext-2.2.zip'
         target: '/usr/hdp/current/oozie-server/libext/'
@@ -262,7 +262,7 @@ Install the ExtJS Javascript library as part of enabling the Oozie Web Console.
 
 Install the HBase Libs as part of enabling the Oozie Unified Credentials with HBase.
 
-      @copy
+      @system.copy
         header: 'HBase Libs'
         source: '/usr/hdp/current/hbase-client/lib/hbase-common.jar'
         target: '/usr/hdp/current/oozie-server/libserver/'
@@ -281,13 +281,13 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         @service
           name: 'hadoop-lzo-native'
         lzo_jar = null
-        @execute
+        @system.execute
           cmd: 'ls /usr/hdp/current/share/lzo/*/lib/hadoop-lzo-*.jar'
         , (err, _, stdout) ->
           return if err
           lzo_jar = stdout.trim()
         @call ->
-          @execute
+          @system.execute
             cmd: """
             # Remove any previously installed version
             rm /usr/hdp/current/oozie-server/libext/hadoop-lzo-*.jar
@@ -299,7 +299,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
     # Note
     # http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.2.0/HDP_Man_Install_v22/index.html#Item1.12.4.3
     # Copy or symlink the MySQL JDBC driver JAR into the /var/lib/oozie/ directory.
-      @link
+      @system.link
         header: 'MySQL Driver'
         source: '/usr/share/java/mysql-connector-java.jar'
         target: '/usr/hdp/current/oozie-server/libext/mysql-connector-java.jar'
@@ -357,7 +357,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
 
       @call header: 'War', handler: ->
         @call header: 'HBase', handler: ->
-          @copy
+          @system.copy
             header: 'HBase Libs'
             source: '/usr/hdp/current/hbase-client/lib/hbase-common.jar'
             destination: '/usr/hdp/current/oozie-server/libserver/'
@@ -367,11 +367,11 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           handler: ->
             @service
               name: 'falcon'
-            @mkdir
+            @system.mkdir
               target: '/tmp/falcon-oozie-jars'
             # Note, the documentation mentions using "-d" option but it doesnt
             # seem to work. Instead, we deploy the jar where "-d" default.
-            @execute
+            @system.execute
               # cmd: """
               # rm -rf /tmp/falcon-oozie-jars/*
               # cp  /usr/lib/falcon/oozie/ext/falcon-oozie-el-extension-*.jar \
@@ -385,7 +385,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
                 /usr/hdp/current/oozie-server/libext
               """
               code_skipped: 3
-            @execute
+            @system.execute
               cmd: """
               if [ ! -f #{oozie.pid_dir}/oozie.pid ]; then exit 3; fi
               if ! kill -0 >/dev/null 2>&1 `cat #{oozie.pid_dir}/oozie.pid`; then exit 3; fi
@@ -402,7 +402,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         # falcon_opts = if falcon_ctxs.length then " –d /tmp/falcon-oozie-jars" else ''
         secure_opt = if oozie.secure then '-secure' else ''
         falcon_opts = ''
-        @execute
+        @system.execute
           header: 'Prepare WAR'
           cmd: """
           chown #{oozie.user.name} /usr/hdp/current/oozie-server/oozie-server/conf/server.xml
@@ -422,7 +422,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      @copy
+      @system.copy
         header: 'SPNEGO'
         source: '/etc/security/keytabs/spnego.service.keytab'
         target: "#{oozie.site['oozie.authentication.kerberos.keytab']}"
@@ -450,7 +450,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
               'password': password
             @db.user properties
             @db.database.exists oozie.db
-            @execute
+            @system.execute
               cmd: db.cmd properties, """
               create database #{oozie.db.database};
               grant all privileges on #{oozie.db.database}.* to '#{username}'@'localhost' identified by '#{password}';
@@ -458,17 +458,17 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
               flush privileges;
               """
               unless: -> @status -1 # true if exists
-            @execute
+            @system.execute
                cmd: "su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-server/bin/ooziedb.sh create -sqlfile /tmp/oozie.sql -run Validate DB Connection'"
                unless_exec: db.cmd oozie.db, "select data from OOZIE_SYS where name='oozie.version'"
-            @execute
+            @system.execute
                cmd: "su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-server/bin/ooziedb.sh upgrade -run'"
                unless_exec: "[[ `#{version_local}` == `#{version_remote}` ]]"
           else throw Error 'Database engine not supported'
 
     # module.exports.push header: 'Oozie Server Database', handler: ->
     #   {oozie} = @config.ryba
-    #   @execute
+    #   @system.execute
     #     cmd: """
     #     su -l #{oozie.user.name} -c '/usr/hdp/current/oozie-server/bin/ooziedb.sh create -sqlfile oozie.sql -run Validate DB Connection'
     #     """
@@ -502,7 +502,7 @@ the ShareLib contents without having to go into HDFS.
           group:  "#{oozie.group.name}"
           mode: 0o0755
           krb5_user: @config.ryba.hdfs.krb5_user
-        @execute
+        @system.execute
           cmd: mkcmd.hdfs @, """
           if hdfs dfs -test -d /user/#{oozie.user.name}/share/lib; then
             echo 'Upgrade sharelib'

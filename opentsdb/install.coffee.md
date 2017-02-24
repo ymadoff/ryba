@@ -11,8 +11,8 @@
 
 ## Users & Groups
 
-      @group opentsdb.group
-      @user opentsdb.user
+      @system.group opentsdb.group
+      @system.user opentsdb.user
 
 ## IPTables
 
@@ -23,7 +23,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: opentsdb.config['tsd.network.port'], protocol: 'tcp', state: 'NEW', comment: "OpenTSDB HTTP GUI" }
@@ -38,20 +38,20 @@ OpenTSDB archive comes with an RPM
         @file.download
           source: opentsdb.source
           target: "/var/tmp/opentsdb-#{opentsdb.version}.noarch.rpm"
-        @execute
+        @system.execute
           cmd: "yum localinstall -y --nogpgcheck /var/tmp/opentsdb-#{opentsdb.version}.noarch.rpm"
           unless_exec: "rpm -q --queryformat '%{VERSION}' opentsdb | grep '#{opentsdb.version}'"
-        @chmod
+        @system.chmod
           header: 'Fix permissions'
           target: "#{opentsdb.user.home}/etc/init.d/opentsdb"
           mode: 0o755
-        @execute
+        @system.execute
           cmd: """
           if ! ls #{opentsdb.user.home}/lib/zookeeper-*.jar | wc -l; then exit 3; fi
           rm -f #{opentsdb.user.home}/lib/zookeeper-*.jar
           """
           code_skipped: 3
-        @link
+        @system.link
           source: '/usr/hdp/current/zookeeper-client/zookeeper.jar'
           target: "#{opentsdb.user.home}/lib/zookeeper.jar"
 
@@ -140,17 +140,17 @@ Starting opentsdb: /etc/init.d/opentsdb: line 69: ulimit: open files: cannot mod
           namespaces.push split[0]
       @call if: namespaces.length > 0, header: 'Create HBase namespaces', handler: ->
         for ns in namespaces
-          @execute
+          @system.execute
             cmd: mkcmd.hbase @, """
             hbase shell -n <<< "create_namespace '#{ns}'"
             """
             unless_exec: mkcmd.hbase @, "hbase shell -n <<< 'list_namespace' | grep '#{ns}'"
-          @execute
+          @system.execute
             cmd: mkcmd.hbase @, """
             hbase shell -n <<< "grant '#{opentsdb.user.name}', 'RWXCA', '@#{ns}'"
             """
             shy: true
-      @execute
+      @system.execute
         header: 'Create HBase tables'
         # hbase shell -n : quit on ERROR with non-zero status
         cmd: mkcmd.hbase @, """

@@ -13,16 +13,16 @@ Please refer to the Apache Phoenix QueryServer [documentation][phoenix-doc].
 
 ## Users & Groups
 
-      @group phoenix.group
-      @user phoenix.user
+      @system.group phoenix.group
+      @system.user phoenix.user
 
 ## IPTables
 
-  | Service    | Port  | Proto  | Parameter                     |
-  |------------|-------|--------|-------------------------------|
-  | nifi       | 8765  | HTTP   | phoenix.queryserver.http.port |
+  | Service             | Port  | Proto  | Parameter                     |
+  |---------------------|-------|--------|-------------------------------|
+  | Phoenix QueryServer | 8765  | HTTP   | phoenix.queryserver.http.port |
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         if: @config.iptables.action is 'start'
         rules: [
@@ -45,15 +45,15 @@ We use the SPNEGO keytab, so we let hadoop/core handle principal & keytab
 ## Layout
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: phoenix.pid_dir
           uid: phoenix.user.name
           gid: phoenix.user.name
-        @mkdir
+        @system.mkdir
           target: phoenix.conf_dir
           uid: phoenix.user.name
           gid: phoenix.group.name
-        @mkdir
+        @system.mkdir
           target: phoenix.log_dir
           uid: phoenix.user.name
           gid: phoenix.group.name
@@ -88,7 +88,7 @@ We use the SPNEGO keytab, so we let hadoop/core handle principal & keytab
 
 ## Env
 
-      @render
+      @file.render
         header: 'Env'
         target: "#{phoenix.conf_dir}/hbase-env.sh"
         source: "#{__dirname}/../resources/hbase-env.sh.j2"

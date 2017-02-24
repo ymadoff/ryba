@@ -22,7 +22,7 @@ Additionnal information may be found on the [CentOS HowTos site][corblk].
 
 [corblk]: http://centoshowtos.org/hadoop/fix-corrupt-blocks-on-hdfs/
 
-      @execute
+      @system.execute
         header: 'FSCK'
         label_true: 'CHECKED'
         cmd: mkcmd.hdfs @, "hdfs fsck #{rootdir}/WALs | grep 'Status: HEALTHY'"
@@ -38,14 +38,14 @@ Note: The RegionServer webapp located in "/usr/lib/hbase/hbase-webapps/regionser
 using the hadoop conf directory to retrieve the SPNEGO keytab. The user "hbase"
 is added membership to the group hadoop to gain read access.
 
-      @execute
+      @system.execute
         header: 'SPNEGO'
         label_true: 'CHECKED'
         cmd: "su -l #{hbase.user.name} -c 'test -r #{core_site['hadoop.http.authentication.kerberos.keytab']}'"
 
 ## Check HTTP JMX
 
-      @execute
+      @system.execute
         header: 'HTTP JMX'
         label_true: 'CHECKED'
         cmd: mkcmd.test @, """

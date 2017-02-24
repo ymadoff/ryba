@@ -12,8 +12,8 @@
 
 ## Users & Groups
 
-      @group kms.group
-      @user kms.user
+      @system.group kms.group
+      @system.user kms.user
 
 ## Packages
 
@@ -22,7 +22,7 @@
           name: 'hadoop-mapreduce'
         @hdp_select
           name: 'hadoop-client'
-        @execute
+        @system.execute
           cmd: """
           version=`ls -l /usr/hdp/current/hadoop-mapreduce-client | sed 's/.*-> \\/usr\\/hdp\\/\\(.*\\)\\/.*/\\1/g'`
           if [ -z "$version" ]; then echo 'Version not found' && exit 1; fi
@@ -51,13 +51,13 @@
 
 ## Layout
 
-      @mkdir
+      @system.mkdir
         header: 'Layout PID'
         target: "#{kms.pid_dir}"
         uid: kms.user.name
         gid: kms.group.name
         mode: 0o0755
-      @mkdir
+      @system.mkdir
         header: 'Layout Log'
         target: "#{kms.log_dir}" #/#{kms.user.name}
         uid: kms.user.name
@@ -68,7 +68,7 @@
 
 Maintain the "kms-env.sh" file.
 
-      @render
+      @file.render
         header: 'Environment'
         target: "#{kms.conf_dir}/kms-env.sh"
         source: "#{__dirname}/../resources/kms-env.sh.j2"

@@ -32,8 +32,8 @@ Note, the package "hadoop" will also install the "dbus" user and group which are
 not handled here.
 
       @call header: 'Users & Groups', handler: ->
-        @group [hadoop_group, hdfs.group, yarn.group, mapred.group]
-        @user [hdfs.user, yarn.user, mapred.user]
+        @system.group [hadoop_group, hdfs.group, yarn.group, mapred.group]
+        @system.user [hdfs.user, yarn.user, mapred.user]
 
 ## Topology
 
@@ -81,11 +81,11 @@ will be created by one of the datanode.
       @call header: 'User Test', handler: ->
         # ryba group and user may already exist in "/etc/passwd" or in any sssd backend
         {group, user, krb5_user} = @config.ryba
-        @group group
-        @user user
+        @system.group group
+        @system.user user
         @krb5_addprinc krb5, krb5_user
 
-      @mkdir
+      @system.mkdir
         header: 'Keytabs'
         target: '/etc/security/keytabs'
         uid: 'root'
@@ -107,7 +107,7 @@ same keytab file is for now shared between hdfs and yarn services.
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o660 # need rw access for hadoop and mapred users
-        @execute # Validate keytab access by the hdfs user
+        @system.execute # Validate keytab access by the hdfs user
           cmd: "su -l #{hdfs.user.name} -c \"klist -kt /etc/security/keytabs/spnego.service.keytab\""
           if: -> @status -1
 
@@ -116,7 +116,7 @@ same keytab file is for now shared between hdfs and yarn services.
 This action follow the ["Authentication for Hadoop HTTP web-consoles"
 recommendations](http://hadoop.apache.org/docs/r1.2.1/HttpAuthentication.html).
 
-      @execute
+      @system.execute
         header: 'WebUI'
         cmd: 'dd if=/dev/urandom of=/etc/hadoop/hadoop-http-auth-signature-secret bs=1024 count=1'
         unless_exists: '/etc/hadoop/hadoop-http-auth-signature-secret'

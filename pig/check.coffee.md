@@ -22,7 +22,7 @@ unless the "hdp.force_check" configuration property is set to "true".
           STORE result INTO '/user/#{user.name}/#{@config.shortname}-pig' USING PigStorage();
           """
           target: '/tmp/ryba-test.pig'
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
           hdfs dfs -rm -r -skipTrash #{@config.shortname}-pig_tmp || true
           hdfs dfs -rm -r -skipTrash #{@config.shortname}-pig || true
@@ -48,7 +48,7 @@ unless the "hdp.force_check" configuration property is set to "true".
           """
           target: "/tmp/ryba-pig_hcat.pig"
           eof: true
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
           hdfs dfs -rm -r #{@config.shortname}-pig_hcat_tmp || true
           hdfs dfs -rm -r #{@config.shortname}-pig_hcat || true

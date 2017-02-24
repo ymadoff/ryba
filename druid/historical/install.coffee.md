@@ -11,7 +11,7 @@
 |-------------------|------|----------|-----------------------------|
 | Druid Historical  | 8083 | tcp/http |                             |
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: druid.historical.runtime['druid.port'], protocol: 'tcp', state: 'NEW', comment: "Druid Historical" }
@@ -20,7 +20,7 @@
 
 ## Configuration
 
-      @render
+      @file.render
         header: 'rc.d'
         target: "/etc/init.d/druid-historical"
         source: "#{__dirname}/../resources/druid-historical.j2"
@@ -41,7 +41,7 @@
           match: /^-Xmx.*$/m
           replace: "-Xmx#{druid.historical.jvm.xmx}"
         ]
-      @mkdir (
+      @system.mkdir (
         target: "#{path.resolve druid.dir, location.path}"
         uid: "#{druid.user.name}"
         gid: "#{druid.group.name}"

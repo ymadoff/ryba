@@ -51,7 +51,7 @@ Follow the [Hortonworks Data Pipelines example][dpe].
           user: "#{falcon.client.user.name}"
           group: "#{falcon.client.group.name}"
           krb5_user: @config.ryba.hdfs.krb5_user
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
           if hdfs dfs -test -f /tmp/falcon/clean.pig; then exit 3; fi
           hdfs dfs -mkdir /tmp/falcon
@@ -155,16 +155,16 @@ Follow the [Hortonworks Data Pipelines example][dpe].
           target: "#{process_path}"
           uid: user.name
           eof: true
-        @execute
+        @system.execute
           cmd: mkcmd.test @, "falcon entity -type cluster -submit -file #{cluster_path}"
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
           if falcon entity -type feed -list | grep testFeed; then exit 3; fi
           falcon entity -type feed -submit -file #{feed_path}
           """
           code_skipped: 3
         # Error for now: "Start instance  today(0,0) of feed testFeed is before the start of feed"
-        # @execute
+        # @system.execute
         #   cmd: mkcmd.test @, "falcon entity -type process -submit -file #{process_path}"
 
 ## Dependencies

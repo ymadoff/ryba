@@ -24,7 +24,7 @@
 
 ## Layout
 
-      @mkdir
+      @system.mkdir
         target: "#{solr.user.home}/ranger_audits"
         uid: solr.user.name
         gid: solr.group.name
@@ -55,7 +55,7 @@ solr apache version.
           @file.download
             source: "#{__dirname}/../resources/solr/managed-schema"
             target: "#{tmp_dir}/ranger_audits/managed-schema"
-          @render
+          @file.render
             source: "#{__dirname}/../resources/solr/solrconfig.xml"
             target: "#{tmp_dir}/ranger_audits/solrconfig.xml"
             local: true
@@ -76,7 +76,7 @@ solr apache version.
         @file.download
           source: "#{__dirname}/../resources/solr/managed-schema"
           target: "#{tmp_dir}/ranger_audits/conf/managed-schema"
-        @render
+        @file.render
           source: "#{__dirname}/../resources/solr/solrconfig.xml"
           target: "#{tmp_dir}/ranger_audits/conf/solrconfig.xml"
           local: true
@@ -100,7 +100,7 @@ We manage creating the ranger_audits core/collection in the three modes.
 
 ### Solr Standalone
 
-      @execute
+      @system.execute
         if: mode is 'standalone'
         header: 'Create Ranger Core (standalone)'
         unless_exec: """
@@ -118,7 +118,7 @@ We manage creating the ranger_audits core/collection in the three modes.
         header: 'Create Ranger Collection (cloud)'
       , ->
         return unless (mode is 'cloud')
-        @execute
+        @system.execute
           cmd: """
             #{solr["#{ranger.admin.solr_type}"]['latest_dir']}/bin/solr create_collection -c ranger_audits \
             -d  #{tmp_dir}/ranger_audits
@@ -161,7 +161,7 @@ Note: Compatible with every version of docker available at this time.
                   cmd = 'curl --fail --insecure'
                   cmd += " --user #{cluster_config.solr_admin_user}:#{cluster_config.solr_admin_password} "
                   for user in ranger.admin.solr_users
-                    @execute
+                    @system.execute
                       cmd: """
                         #{cmd} \
                         #{url} -H 'Content-type:application/json' \
@@ -175,7 +175,7 @@ Note: Compatible with every version of docker available at this time.
                   cmd += " --user #{cluster_config.solr_admin_user}:#{cluster_config.solr_admin_password} "
                   for user in cluster_config.ranger.solr_users
                     new_role = "#{user.name}": ['read','update','admin']
-                    @execute
+                    @system.execute
                       cmd: """
                         #{cmd} \
                         #{url} -H 'Content-type:application/json' \
@@ -184,7 +184,7 @@ Note: Compatible with every version of docker available at this time.
 
 ## Zookeeper Znode ACL
 
-      @execute
+      @system.execute
         header: 'Zookeeper SolrCloud Znode ACL'
         unless_exec: mkcmd.solr @, """
           zookeeper-client -server #{zk_connect} \

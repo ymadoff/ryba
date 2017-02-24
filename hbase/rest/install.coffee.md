@@ -25,7 +25,7 @@ have usecase for it yet.
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'Iptables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.rest.site['hbase.rest.port'], protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
@@ -44,23 +44,23 @@ cat /etc/group | grep hbase
 hbase:x:492:
 ```
 
-      @group hbase.group
-      @user hbase.user
+      @system.group hbase.group
+      @system.user hbase.user
 
 ## HBase Rest Server Layout
 
       @call header: 'Layout', timeout: -1, handler: ->
-        @mkdir
+        @system.mkdir
           target: hbase.rest.pid_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: hbase.rest.log_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: hbase.rest.conf_dir
           uid: hbase.user.name
           gid: hbase.group.name
@@ -108,7 +108,7 @@ restrict it but not the rest server.
 
 Environment passed to the HBase Rest Server before it starts.
 
-      @render
+      @file.render
         header: 'Hbase Env'
         target: "#{hbase.rest.conf_dir}/hbase-env.sh"
         source: "#{__dirname}/../resources/hbase-env.sh.j2"

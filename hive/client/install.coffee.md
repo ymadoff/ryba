@@ -24,8 +24,8 @@ cat /etc/group | grep hive
 hive:x:493:
 ```
 
-      @group hive.group
-      @user hive.user
+      @system.group hive.group
+      @system.user hive.user
 
 ## Service
 
@@ -53,7 +53,7 @@ See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments
         properties: hive.site
         merge: true
         backup: true
-      @execute
+      @system.execute
         header: 'Permissions'
         cmd: """
         chown -R #{hive.user.name}:#{hadoop_group.name} #{hive.conf_dir}
@@ -72,7 +72,7 @@ Using this functionnality, a user may for example raise the heap size of Hive
 Client to 4Gb by either setting a "opts" value equal to "-Xmx4096m" or the 
 by setting a "heapsize" value equal to "4096".
 
-      @render
+      @file.render
         header: 'Hive Env'
         source: "#{__dirname}/../resources/hive-env.sh.j2"
         target: "#{hive.conf_dir}/hive-env.sh"

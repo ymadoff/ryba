@@ -13,7 +13,7 @@
 ## Check status
 
       port = webhcat.site['templeton.port']
-      @execute
+      @system.execute
         cmd: mkcmd.test @, """
         if hdfs dfs -test -f #{@config.host}-webhcat; then exit 2; fi
         curl -s --negotiate -u : http://#{@config.host}:#{port}/templeton/v1/status

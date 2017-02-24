@@ -17,14 +17,14 @@ Please refer to the Hortonworks [documentation][phoenix-doc].
       @service name: 'phoenix'
       @hdp_select name: 'phoenix-client'
 
-      @execute
+      @system.execute
         header: 'Hadoop Configuration'
         cmd:"""
         ln -sf #{hadoop_conf_dir}/core-site.xml /usr/hdp/current/phoenix-client/bin/core-site.xml
         """
         unless_exists: '/usr/hdp/current/phoenix-client/bin/core-site.xml'
 
-      @execute
+      @system.execute
         header: 'HBase Configuration'
         cmd:"""
         ln -sf #{hadoop_conf_dir}/hbase-site.xml /usr/hdp/current/phoenix-client/bin/hbase-site.xml

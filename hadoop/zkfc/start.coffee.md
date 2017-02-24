@@ -60,7 +60,7 @@ be executed on the same server as ZKFC.
 
       # Note, probably we shall wait for the other NameNode to be started and running
       # before attempting to activate it.
-      @execute
+      @system.execute
         header: 'Failover'
         label_true: 'READY'
         # if: nn_ctxs.length > 1

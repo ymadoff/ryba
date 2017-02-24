@@ -15,6 +15,6 @@ service ranger-usersync stop
 
       @call header: 'Clean Logs', label_true: 'CLEANED', handler: ->
         return unless @config.ryba.clean_logs
-        @execute
+        @system.execute
           cmd: 'rm /var/log/ranger/usersync/*'
           code_skipped: 1

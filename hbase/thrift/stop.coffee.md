@@ -21,9 +21,9 @@ su -l hbase -c "/usr/hdp/current/hbase-client/bin/hbase-daemon.sh --config /etc/
         label_true: 'CLEANED'
         if: -> @config.ryba.clean_logs
         handler: ->
-          @execute
+          @system.execute
             cmd: "rm #{hbase.thrift.log_dir}/*-thrift-*"
             code_skipped: 1
-          @execute
+          @system.execute
             cmd: "rm #{hbase.thrift.log_dir}/gc.log-*"
             code_skipped: 1

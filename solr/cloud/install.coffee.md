@@ -28,26 +28,26 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       @call header: 'IPTables', handler: ->
         return unless @config.iptables.action is 'start'
-        @iptables
+        @tools.iptables
           rules: [
             { chain: 'INPUT', jump: 'ACCEPT', dport: solr.cloud.port, protocol: 'tcp', state: 'NEW', comment: "Solr Server #{protocol}" }
           ]
 
 ## Layout
 
-      @mkdir
+      @system.mkdir
         target: solr.user.home
         uid: solr.user.name
         gid: solr.group.name
-      @mkdir
+      @system.mkdir
         directory: solr.cloud.conf_dir
         uid: solr.user.name
         gid: solr.group.name
 
 ## Users and Groups
 
-      @group solr.group
-      @user solr.user
+      @system.group solr.group
+      @system.user solr.user
 
 ## Packages
 Ryba support installing solr from apache official release or HDP Search repos.
@@ -58,7 +58,7 @@ Ryba support installing solr from apache official release or HDP Search repos.
           handler: ->
             @service
               name: 'lucidworks-hdpsearch'
-            @chown
+            @system.chown
               if: solr.cloud.source is 'HDP'
               target: '/opt/lucidworks-hdpsearch'
               uid: solr.user.name
@@ -69,26 +69,26 @@ Ryba support installing solr from apache official release or HDP Search repos.
             @file.download
               source: solr.cloud.source
               target: tmp_archive_location
-            @mkdir 
+            @system.mkdir 
               target: solr.cloud.install_dir
-            @extract
+            @tools.extract
               source: tmp_archive_location
               target: solr.cloud.install_dir
               preserve_owner: false
               strip: 1
-            @link 
+            @system.link 
               source: solr.cloud.install_dir
               target: solr.cloud.latest_dir
 
 
       @call header: 'Configuration', handler: (options) ->
-        @link 
+        @system.link 
           source: "#{solr.cloud.latest_dir}/conf"
           target: solr.cloud.conf_dir
-        @remove
+        @system.remove
           shy: true
           target: "#{solr.cloud.latest_dir}/bin/solr.in.sh"
-        @link 
+        @system.link 
           source: "#{solr.cloud.conf_dir}/solr.in.sh"
           target: "#{solr.cloud.latest_dir}/bin/solr.in.sh"
         @service.init
@@ -124,17 +124,17 @@ has to be fixe to use jdk 1.8.
 ## Layout
 
       @call header: 'Solr Layout', timeout: -1, handler: ->
-        @mkdir
+        @system.mkdir
           target: solr.cloud.pid_dir
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: solr.cloud.log_dir
           uid: solr.user.name
           gid: solr.group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: solr.user.home
           uid: solr.user.name
           gid: solr.group.name
@@ -166,7 +166,7 @@ Create HDFS solr user and its home directory
           replace: "#{k}=\"#{v}\" # RYBA DON'T OVERWRITE"
           append: true
 
-        @render
+        @file.render
           header: 'Solr Environment'
           source: "#{__dirname}/../resources/cloud/solr.ini.sh.j2"
           target: "#{solr.cloud.conf_dir}/solr.in.sh"
@@ -175,7 +175,7 @@ Create HDFS solr user and its home directory
           local_source: true
           backup: true
           eof: true
-        @render
+        @file.render
           header: 'Solr Config'
           source: "#{solr.cloud.conf_source}"
           target: "#{solr.cloud.conf_dir}/solr.xml"
@@ -186,7 +186,7 @@ Create HDFS solr user and its home directory
           gid: solr.group.name
           mode: 0o0755
           context: @config
-        @link
+        @system.link
           source: "#{solr.cloud.conf_dir}/solr.xml"
           target: "#{solr.user.home}/solr.xml"
 
@@ -203,7 +203,7 @@ Create HDFS solr user and its home directory
         kadmin_principal: kadmin_principal
         kadmin_password: kadmin_password
         kadmin_server: admin_server
-      @execute
+      @system.execute
         header: 'SPNEGO'
         cmd: "su -l #{solr.user.name} -c 'test -r #{solr.cloud.spnego.keytab}'"
       @krb5_addprinc
@@ -241,7 +241,7 @@ Create HDFS solr user and its home directory
 
 ## Bootstrap Zookeeper
 
-      @execute
+      @system.execute
         header: 'Zookeeper bootstrap'
         cmd: """
           cd #{solr.cloud.latest_dir}
@@ -254,7 +254,7 @@ Create HDFS solr user and its home directory
 For now we skip security configuration to solr when source is 'HDP'.
 HDP has version 5.2.1 of solr, and security plugins are included from 5.3.0
 
-      @execute
+      @system.execute
         header: "Upload Security conf"
         if: (@contexts('ryba/solr/cloud')[0].config.host is @config.host)
         cmd: """
@@ -282,7 +282,7 @@ HDP has version 5.2.1 of solr, and security plugins are included from 5.3.0
         cacert: "#{ssl.cacert}"
         local_source: true
       # not documented but needed when SSL
-      @execute
+      @system.execute
         header: "Enable SSL Scheme"
         cmd: """
           cd #{solr.cloud.latest_dir}

@@ -9,8 +9,8 @@
 
 ## Users & Groups
 
-      @group ranger.group
-      @user ranger.user
+      @system.group ranger.group
+      @system.user ranger.user
 
 ## Package
 
@@ -21,7 +21,7 @@ directories.
       @call header: 'Packages', handler: ->
         hdp_current_version = null
         @call ( options, callback) =>
-          @execute
+          @system.execute
             cmd:  "hdp-select versions | tail -1 | tr '.' '_' | tr '-' '_'"
           , (err, executed, stdout, stderr) =>
             return callback err if err
@@ -34,9 +34,9 @@ directories.
           name: 'ranger-usersync'
 
       @call header: 'Layout', handler: (options)->
-        @mkdir
+        @system.mkdir
           target: ranger.usersync.conf_dir
-        @mkdir
+        @system.mkdir
           target: ranger.usersync.log_dir
         @system.tmpfs
           if: -> (options.store['mecano:system:type'] in ['redhat','centos']) and (options.store['mecano:system:release'][0] is '7')
@@ -44,7 +44,7 @@ directories.
           uid: ranger.user.name
           gid: ranger.user.name
           perm: '0750'
-        @mkdir
+        @system.mkdir
           target: ranger.usersync.pid_dir 
 
 
@@ -63,7 +63,7 @@ directories.
 #       handler: ->
 #         {ranger} = @config.ryba
 #         return unless @config.iptables.action is 'start'
-#         @iptables
+#         @tools.iptables
 #           rules: [
 #             { chain: 'INPUT', jump: 'ACCEPT', dport: ranger.admin.site['ranger.service.http.port'], protocol: 'tcp', state: 'NEW', comment: "Ranger Admin HTTP WEBUI" }
 #             { chain: 'INPUT', jump: 'ACCEPT', dport: ranger.admin.site['ranger.service.https.port'], protocol: 'tcp', state: 'NEW', comment: "Ranger Admin HTTPS WEBUI" }
@@ -73,7 +73,7 @@ directories.
 #
 #     module.exports.push header: 'Ranger Admin Driver', handler: ->
 #       {ranger} = @config.ryba
-#       @link
+#       @system.link
 #         source: '/usr/share/java/mysql-connector-java.jar'
 #         target: ranger.admin.install['SQL_CONNECTOR_JAR']
 
@@ -83,7 +83,7 @@ directories.
 Update the file "install.properties" with the properties defined by the
 "ryba.ranger.usersync.install" configuration.
 
-      @render
+      @file.render
         header: 'Configure Install Scripts'
         target: "/usr/hdp/current/ranger-usersync/install.properties"
         source: "#{__dirname}/../resources/usersync-install.properties.js2"
@@ -106,7 +106,7 @@ Update the file "install.properties" with the properties defined by the
         eof: true
         backup: true
 
-      @execute
+      @system.execute
         header: 'Execute Setup Scripts'
         cmd: """
           cd /usr/hdp/current/ranger-usersync/

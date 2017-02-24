@@ -14,7 +14,7 @@
 # Packages
 
       @call header: 'Packages', handler: ->
-        @execute
+        @system.execute
           header: 'Setup Execution'
           shy:true
           cmd: """
@@ -28,13 +28,13 @@
 
 # Layout
 
-      @mkdir
+      @system.mkdir
         target: ranger.kafka_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR']
         uid: kafka.user.name
         gid: hadoop_group.name
         mode: 0o0750
         if: ranger.kafka_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
-      @mkdir
+      @system.mkdir
         target: ranger.kafka_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR']
         uid: kafka.user.name
         gid: hadoop_group.name
@@ -49,7 +49,7 @@ we execute this task using the rest api.
         if: @contexts('ryba/kafka/broker')[0].config.host is @config.host 
         header: 'Ranger Kafka Repository'
         handler:  ->
-          @execute
+          @system.execute
             unless_exec: """
               curl --fail -H  \"Content-Type: application/json\"   -k -X GET  \ 
               -u admin:#{password} \"#{ranger.kafka_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{ranger.kafka_plugin.install['REPOSITORY_NAME']}\"
@@ -64,7 +64,7 @@ we execute this task using the rest api.
             principal: ranger.kafka_plugin.principal
             randkey: true
             password: ranger.kafka_plugin.password
-          @execute
+          @system.execute
             header: 'Ranger Audit HDFS Layout'
             cmd: mkcmd.hdfs @, """
               hdfs dfs -mkdir -p #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/kafka
@@ -75,7 +75,7 @@ we execute this task using the rest api.
 # Plugin Scripts 
 
       @call ->
-        @render
+        @file.render
           header: 'Scripts rendering'
           if: -> version?
           source: "#{__dirname}/../../resources/plugin-install.properties.j2"
@@ -119,7 +119,7 @@ we execute this task using the rest api.
           mode:0o0750
           uid: kafka.user.name
           gid: kafka.group.name
-        @execute
+        @system.execute
           header: 'Script Execution'
           cmd: """
             if /usr/hdp/#{version}/ranger-kafka-plugin/enable-kafka-plugin.sh ;
@@ -127,13 +127,13 @@ we execute this task using the rest api.
             else exit 1 ; 
             fi;
           """
-        @chmod
+        @system.chmod
           header: "Fix Kafka Conf Permission"
           target: kafka.broker.conf_dir
           uid: kafka.user.name
           gid: kafka.group.name
           mode: 0o755
-        @chmod
+        @system.chmod
           header: "Fix Ranger Repo Permission"
           target: "/etc/ranger/#{ranger.kafka_plugin.install['REPOSITORY_NAME']}"
           uid: kafka.user.name

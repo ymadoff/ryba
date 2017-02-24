@@ -21,7 +21,7 @@ The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-journalnode.pid".
 
 Clean up the log files related to the JournalNode
 
-      @execute
+      @system.execute
         header: 'Clean Logs'
         label_true: 'CLEANED'
         if: @config.ryba.clean_logs

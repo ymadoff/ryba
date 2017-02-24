@@ -12,8 +12,8 @@
 
 ## Users
 
-      @group nifi.group
-      @user nifi.user
+      @system.group nifi.group
+      @system.user nifi.user
 
 ## HDP - HDF Cohabitation
 
@@ -21,7 +21,7 @@ hdf-select package conflicts with hdp-select package (both provide /usr/bin/conf
 So we must manually force install of hdf-select outside of yum to handle it
 
       @call header: 'HDP/HDF Cohabitation', handler: ->
-        @execute 
+        @system.execute 
           unless_exec: 'yum list installed hdf-select'
           cmd: """
           yumdownloader --destdir=/tmp hdf-select
@@ -32,11 +32,11 @@ So we must manually force install of hdf-select outside of yum to handle it
 ## Layout
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: nifi.log_dir
           uid: nifi.user.name
           gid: nifi.group.name
-        @mkdir
+        @system.mkdir
           target: '/var/run/nifi'
           uid: nifi.user.name
           gid: nifi.group.name
@@ -62,7 +62,7 @@ So we must manually force install of hdf-select outside of yum to handle it
         rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: nifi.config.properties['nifi.cluster.protocol.multicast.port'], protocol: 'tcp', state: 'NEW', comment: "NiFi Multicast port" }
       if nifi.config.properties['nifi.remote.input.socket.port'] and nifi.config.properties['nifi.remote.input.socket.port'] isnt ''
         rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: nifi.config.properties['nifi.remote.input.socket.port'], protocol: 'tcp', state: 'NEW', comment: "NiFi S2S RAW socket port" }
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         if: @config.iptables.action is 'start'
         rules: rules
@@ -72,13 +72,13 @@ So we must manually force install of hdf-select outside of yum to handle it
       @call header: 'Packages', timeout: -1, handler: (options) ->
         @service
           name: 'nifi'
-        @execute
+        @system.execute
           header: 'fix permissions'
           cmd: """
           chown -R #{nifi.user.name}:#{nifi.group.name} /usr/hdf/current/nifi/lib
           """
           if: -> @status -1
-        @chown
+        @system.chown
           target: '/var/run/nifi'
           uid: nifi.user.name
           gid: nifi.group.name
@@ -98,7 +98,7 @@ So we must manually force install of hdf-select outside of yum to handle it
 
 ## Env
 
-      @render
+      @file.render
         header: 'Env'
         target: '/usr/hdf/current/nifi/bin/nifi-env.sh'
         source: "#{__dirname}/resources/nifi-env.sh.j2"
@@ -114,7 +114,7 @@ NiFi service script use sudo to impersonate. Since, sudo must keep JAVA_HOME env
 var to work.
 
       @call header: 'sudo keep JAVA_HOME', handler: ->
-        @chmod
+        @system.chmod
           target: '/etc/sudoers'
           mode: 0o640
         @file
@@ -195,7 +195,7 @@ Describe where to get the user authentication information from.
           file_node.ele 'property', name: 'Initial Admin Identity', file_provider['initial_admin_identity']
           for node, i in file_provider['nodes_identities']
             file_node.ele 'property', name: "Node Identity #{i+1}", node
-          @touch
+          @file.touch
             target: file_provider['authorizations_file']
             uid: nifi.user.name
             gid: nifi.group.name
@@ -205,7 +205,7 @@ Describe where to get the user authentication information from.
             target: file_provider['authorizations_file']
             content: builder.create('authorizations').dec('1.0', 'UTF-8', true).end pretty: true
             eof: true
-          @touch
+          @file.touch
             target: file_provider['users_file']
             uid: nifi.user.name
             gid: nifi.group.name
@@ -250,7 +250,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
 
 ## Environment
 
-      @render
+      @file.render
         header: 'Bootstrap Conf'
         target: "#{nifi.conf_dir}/bootstrap.conf"
         source: "#{__dirname}/resources/bootstrap.conf.j2"
@@ -324,7 +324,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
 
 # Logs
 
-      @render
+      @file.render
         header: 'Log Configuration'
         target: "#{nifi.conf_dir}/logback.xml"
         source: "#{__dirname}/resources/logback.xml.j2"
@@ -349,7 +349,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
 
 # Data Directories
 
-      @mkdir
+      @system.mkdir
         header: 'Data directories layout'
         target: nifi.config.data_dirs
         uid: nifi.user.name

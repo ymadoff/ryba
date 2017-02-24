@@ -49,7 +49,7 @@ This module check the Hive Server2 servers using the `beeline` command.
             \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
           """
           code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
-        @execute
+        @system.execute
           cmd: """
             curl --fail -H "Content-Type: application/json" -k -X POST \
             -d '#{JSON.stringify hive_policy}' \
@@ -96,7 +96,7 @@ directive once you enter the beeline shell.
             url += ";transportMode=#{hs2_ctx.config.ryba.hive.server2.site['hive.server2.transport.mode']}"
             url += ";httpPath=#{hs2_ctx.config.ryba.hive.server2.site['hive.server2.thrift.http.path']}"
           beeline = "beeline -u \"#{url}\" --silent=true "
-          @execute
+          @system.execute
             cmd: mkcmd.test @, """
             hdfs dfs -rm -r -f -skipTrash #{directory} || true
             hdfs dfs -mkdir -p #{directory}/my_db/my_table || true
@@ -144,7 +144,7 @@ directive once you enter the beeline shell.
             directory = "check-#{@config.shortname}-hive_server2-zoo-#{namespace}"
             db = "check_#{@config.shortname}_hs2_zoo_#{namespace}"
             beeline = "beeline -u \"#{url}\" --silent=true "
-            @execute
+            @system.execute
               cmd: mkcmd.test @, """
               hdfs dfs -rm -r -f -skipTrash #{directory} || true
               hdfs dfs -mkdir -p #{directory}/my_db/my_table || true
@@ -188,7 +188,7 @@ directive once you enter the beeline shell.
               url += ";transportMode=#{sts_ctx.config.ryba.hive.server2.site['hive.server2.transport.mode']}"
               url += ";httpPath=#{sts_ctx.config.ryba.hive.server2.site['hive.server2.thrift.http.path']}"
             beeline = "beeline -u \"#{url}\" --silent=true "
-            @execute
+            @system.execute
               cmd: mkcmd.test @, """
               hdfs dfs -rm -r -f -skipTrash #{directory} || true
               hdfs dfs -mkdir -p #{directory}/my_db/my_table || true

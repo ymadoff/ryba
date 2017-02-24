@@ -43,7 +43,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       [_, dn_http_address] = hdfs.site['dfs.datanode.http.address'].split ':'
       [_, dn_https_address] = hdfs.site['dfs.datanode.https.address'].split ':'
       [_, dn_ipc_address] = hdfs.site['dfs.datanode.ipc.address'].split ':'
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: dn_address, protocol: 'tcp', state: 'NEW', comment: "HDFS DN Data" }
@@ -70,7 +70,7 @@ inside "/etc/init.d" and activate it on startup.
           local: true
           context: @config
           mode: 0o0755
-        @execute
+        @system.execute
           cmd: "service hadoop-hdfs-datanode restart"
           if: -> @status -3
 
@@ -78,7 +78,7 @@ inside "/etc/init.d" and activate it on startup.
         @service.remove 'snappy', if: options.attempt is 1
         @service name: 'snappy'
         @service name: 'snappy-devel'
-        @link
+        @system.link
           source: '/usr/lib64/libsnappy.so'
           target: '/usr/hdp/current/hadoop-client/lib/native/.'
         @service
@@ -104,9 +104,9 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
         pid_dir = pid_dir.replace '$HADOOP_IDENT_STRING', hdfs.user.name
         # TODO, in HDP 2.1, datanode are started as root but in HDP 2.2, we should
         # start it as HDFS and use JAAS
-        @mkdir
+        @system.mkdir
           target: "#{hdfs.dn.conf_dir}"
-        @mkdir
+        @system.mkdir
           target: for dir in hdfs.site['dfs.datanode.data.dir'].split ','
             if dir.indexOf('file://') is 0
               dir.substr(7) 
@@ -124,13 +124,13 @@ pid directory is set by the "hdfs\_pid\_dir" and default to "/var/run/hadoop-hdf
           uid: hdfs.user.name
           gid: hadoop_group.name
           perm: '0750'
-        @mkdir
+        @system.mkdir
           target: "#{pid_dir}"
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o0755
           parent: true
-        @mkdir
+        @system.mkdir
           target: "#{hdfs.log_dir}" #/#{hdfs.user.name}
           uid: hdfs.user.name
           gid: hdfs.group.name
@@ -174,7 +174,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
 
       @call header: 'Environment', handler: ->
         ryba.hdfs.dn.java_opts += " -D#{k}=#{v}" for k, v of ryba.hdfs.dn.opts 
-        @render
+        @file.render
           header: 'Environment'
           target: "#{hdfs.dn.conf_dir}/hadoop-env.sh"
           source: "#{__dirname}/../resources/hadoop-env.sh.j2"
@@ -310,7 +310,7 @@ Note, we might move this middleware to Masson.
       @call
         header: 'Kernel'
         handler: (_, next) ->
-          @execute
+          @system.execute
             if: Object.keys(hdfs.sysctl).length
             cmd: 'sysctl -a'
             stdout: null
@@ -338,7 +338,7 @@ Note, we might move this middleware to Masson.
                 throw err if err
                 properties = for k, v of properties then "#{k}='#{v}'"
                 properties = properties.join ' '
-                @execute
+                @system.execute
                   cmd: "sysctl #{properties}"
                 , next
 

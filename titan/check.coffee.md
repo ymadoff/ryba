@@ -23,7 +23,7 @@ Check the configuration file (current.properties).
           target: path.join titan.home, "titan-#{titan.config['storage.backend']}-#{titan.config['index.search.backend']}-test.properties"
           content: config
           separator: '='
-        @execute
+        @system.execute
           cmd: mkcmd.hbase @, """
           cd #{titan.home}
           #{titan.install_dir}/current/bin/gremlin.sh 2>/dev/null <<< \"g = TitanFactory.open('titan-hbase-#{titan.config['index.search.backend']}-test.properties')\" | grep '==>titangraph'
@@ -32,7 +32,7 @@ Check the configuration file (current.properties).
           unless_exec: unless force_check then mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists 'titan-test'\""
         , (err, status) ->
           check = true if status
-        @execute
+        @system.execute
           cmd: mkcmd.test @, """
           cd #{titan.home}
           cmd="TitanFactory.open('titan-#{titan.config['storage.backend']}-#{titan.config['index.search.backend']}-test.properties')"

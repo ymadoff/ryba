@@ -18,7 +18,7 @@ The package "ganglia-gmond-3.5.0-99" is installed.
 We prepare the directory "/usr/libexec/hdp/ganglia" in which we later upload
 the objects files and generate the hosts configuration.
 
-      @mkdir
+      @system.mkdir
         header: 'Layout'
         target: '/usr/libexec/hdp/ganglia'
 
@@ -52,7 +52,7 @@ Upload the "hdp-gmond" service file into "/etc/init.d".
           replace: '# chkconfig: 2345 70 40'
           append: '#!/bin/sh'
           mode: 0o755
-        @execute
+        @system.execute
           # cmd: "service gmond start; chkconfig --add gmond; chkconfig --add hdp-gmond"
           cmd: "service gmond start; chkconfig --add hdp-gmond"
           if: -> @status -1
@@ -98,7 +98,7 @@ Setup the Ganglia hosts. Categories are "HDPNameNode", "HDPResourceManager",
         # If HBase is installed, on the HBase Master, to configure the gmond emitter
         if @has_any_modules 'ryba/hbase/master'
           cmds.push cmd: "/usr/libexec/hdp/ganglia/setupGanglia.sh -c HDPHBaseMaster"
-        @execute cmds
+        @system.execute cmds
 
 ## Configuration
 

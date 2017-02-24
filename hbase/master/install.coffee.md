@@ -24,7 +24,7 @@ TODO: [HBase backup node](http://willddy.github.io/2013/07/02/HBase-Add-Backup-M
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.master.site['hbase.master.port'], protocol: 'tcp', state: 'NEW', comment: "HBase Master" }
@@ -43,24 +43,24 @@ cat /etc/group | grep hbase
 hbase:x:492:
 ```
 
-      @group hbase.group
-      @user hbase.user
+      @system.group hbase.group
+      @system.user hbase.user
 
 
 ## HBase Master Layout
 
       @call header: 'Layout', timeout: -1, handler: ->
-        @mkdir
+        @system.mkdir
           target: hbase.master.pid_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: hbase.master.log_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: hbase.master.conf_dir
           uid: hbase.user.name
           gid: hbase.group.name
@@ -116,7 +116,7 @@ Environment passed to the Master before it starts.
       
       @call header: 'HBase Env', handler: ->
         hbase.master.java_opts += " -D#{k}=#{v}" for k, v of hbase.master.opts
-        @render
+        @file.render
           target: "#{hbase.master.conf_dir}/hbase-env.sh"
           source: "#{__dirname}/../resources/hbase-env.sh.j2"
           backup: true
@@ -248,7 +248,7 @@ Ensure we have read access to the spnego keytab soring the server HTTP
 principal.
 
 
-      @execute
+      @system.execute
         header: 'SPNEGO'
         cmd: "su -l #{hbase.user.name} -c 'test -r /etc/security/keytabs/spnego.service.keytab'"
 

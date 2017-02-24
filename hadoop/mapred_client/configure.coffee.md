@@ -52,7 +52,7 @@
           type: ['hconfigure']
           target: "#{nm_ctx.config.ryba.yarn.nm.conf_dir}/yarn-site.xml"
           handler: (options, callback) ->
-            @iptables
+            @tools.iptables
               ssh: options.ssh
               header: 'Hadoop Mapred Ranger openging'
               rules: [

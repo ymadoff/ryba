@@ -10,7 +10,7 @@
 |-------------------|------|----------|-----------------------------|
 | Druid Tranquility | 8200 | tcp/http |                             |
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: 8200, protocol: 'tcp', state: 'NEW', comment: "Druid Tranquility" }
@@ -28,8 +28,8 @@ cat /etc/group | grep druid
 druid:x:2435:
 ```
 
-      @group druid.group
-      @user druid.user
+      @system.group druid.group
+      @system.user druid.user
 
 ## Packages
 
@@ -41,14 +41,14 @@ Download and unpack the release archive.
         target: "/var/tmp/#{path.basename druid.tranquility.source}"
       # TODO, could be improved
       # current implementation prevent any further attempt if download status is true and extract fails
-      @extract
+      @tools.extract
         source: "/var/tmp/#{path.basename druid.tranquility.source}"
         target: '/opt'
         if: -> @status -1
-      @link
+      @system.link
         source: "/opt/tranquility-distribution-#{druid.tranquility.version}"
         target: "#{druid.tranquility.dir}"
-      @execute
+      @system.execute
         cmd: """
         if [ $(stat -c "%U" /opt/tranquility-distribution-#{druid.tranquility.version}) == '#{druid.user.name}' ]; then exit 3; fi
         chown -R #{druid.user.name}:#{druid.group.name} /opt/tranquility-distribution-#{druid.tranquility.version}

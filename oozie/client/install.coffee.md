@@ -84,6 +84,6 @@ keytool -keystore ${JAVA_HOME}/jre/lib/security/cacerts -import -alias tomcat -f
           storepass: "changeit"
           caname: "ryba_cluster" # was tomcat
           cacert: "#{tmp_location}_cacert"
-        @remove
+        @system.remove
           target: "#{tmp_location}_cacert"
           shy: true

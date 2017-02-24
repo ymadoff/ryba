@@ -62,7 +62,7 @@ COFFEE
         @call
           header: "Download #{service}"
           handler: ->
-            @cache (
+            @file.cache (
               if: source
               source: source
               cache_dir: options.cache_dir

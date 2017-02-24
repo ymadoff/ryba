@@ -14,8 +14,8 @@
 
 # Users and Groups   
 
-      @group spark.group
-      @user spark.user
+      @system.group spark.group
+      @system.user spark.user
 
 # Packages
 
@@ -47,7 +47,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: spark.thrift.hive_site['hive.server2.thrift.port'], protocol: 'tcp', state: 'NEW', comment: "Spark SQL Thrift Server (binary)" }
@@ -59,23 +59,23 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log/spark
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: spark.thrift.pid_dir
           uid: spark.user.name
           gid: @config.ryba.hadoop_group.gid
           mode: 0o0770
-        @mkdir
+        @system.mkdir
           target: spark.thrift.log_dir
           uid: spark.user.name
           gid: @config.ryba.hadoop_group.gid
           mode: 0o0770
-        @mkdir
+        @system.mkdir
           target: spark.thrift.conf_dir
           uid: spark.user.name
           gid: @config.ryba.hadoop_group.gid
-        @remove
+        @system.remove
           target: '/usr/hdp/current/spark-thriftserver/conf'
-        @link
+        @system.link
           target: '/usr/hdp/current/spark-thriftserver/conf'
           source: spark.thrift.conf_dir
 
@@ -91,7 +91,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
 ## Spark Conf
 
       @call header: 'Spark Configuration', handler: ->
-        @render
+        @file.render
           destination : "#{spark.thrift.conf_dir}/spark-env.sh"
           source: "#{__dirname}/../resources/spark-env.sh.j2"
           local_source: true
@@ -136,7 +136,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
 ## Hive Client Conf
 
       @call header:'Hive Client Conf', handler: ->
-        @copy
+        @system.copy
           target: "#{spark.thrift.conf_dir}/hive-site.xml"
           source: '/etc/hive/conf/hive-site.xml'
 
@@ -184,13 +184,13 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
           #   storepass: hive.site['hive.server2.keystore.password']
           #   caname: "hadoop_root_ca"
           #   cacert: "#{tmp_location}/#{path.basename ssl.cacert}"
-          @remove
+          @system.remove
             target: "#{tmp_location}/#{path.basename ssl.cacert}"
             shy: true
-          @remove
+          @system.remove
             target: "#{tmp_location}/#{path.basename ssl.cert}"
             shy: true
-          @remove
+          @system.remove
             target: "#{tmp_location}/#{path.basename ssl.key}"
             shy: true
           @service

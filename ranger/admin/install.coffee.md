@@ -12,8 +12,8 @@
 
 ## Users & Groups
 
-      @group ranger.group
-      @user ranger.user
+      @system.group ranger.group
+      @system.user ranger.user
 
 ## Package
 
@@ -29,7 +29,7 @@ directories.
 
 ## Layout
 
-      @mkdir
+      @system.mkdir
         target: '/var/run/ranger'
         uid: ranger.user.name
         gid: ranger.user.name
@@ -45,7 +45,7 @@ directories.
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'Ranger Admin IPTables'
         if: @config.iptables.action is 'start'
         rules: [
@@ -55,7 +55,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
 ## Ranger Admin Driver
 
-      @link
+      @system.link
         header: 'DB Driver'
         source: '/usr/share/java/mysql-connector-java.jar'
         target: ranger.admin.install['SQL_CONNECTOR_JAR']
@@ -67,7 +67,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         switch ranger.admin.install['DB_FLAVOR'].toLowerCase()
           when 'mysql'
             mysql_exec = "mysql -u#{db_admin.mysql.admin_username} -p#{db_admin.mysql.admin_password} -h#{db_admin.mysql.host} -P#{db_admin.mysql.port} "
-            @execute
+            @system.execute
               cmd: """
               #{mysql_exec} -e "
               SET GLOBAL log_bin_trust_function_creators = 1;
@@ -78,7 +78,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
               "
               """
               unless_exec: "#{mysql_exec} -e 'use #{ranger.admin.install['db_name']}'"
-            @execute
+            @system.execute
               cmd: """
               #{mysql_exec} -e "
               create database  #{ranger.admin.install['audit_db_name']};
@@ -94,7 +94,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 Update the file "install.properties" with the properties defined by the
 "ryba.ranger.admin.install" configuration.
 
-      @render
+      @file.render
         header: 'Setup Scripts'
         source: "#{__dirname}/../resources/admin-install.properties.j2"
         target: '/usr/hdp/current/ranger-admin/install.properties'
@@ -114,14 +114,14 @@ and binary logging is enabled.
 To pass the setup script you have to set log_bin_trust_function_creators variable to 1
 to allow user to create none-determisitic functions.
 
-      @execute
+      @system.execute
         header: 'Setup Execution'
         shy: true
         cmd: """
           cd /usr/hdp/current/ranger-admin/
           ./setup.sh
         """
-      @execute
+      @system.execute
         header: 'Fix Setup Execution'
         cmd: "chown -R #{ranger.user.name}:#{ranger.user.name} #{ranger.admin.conf_dir}"
       # the setup scripts already render an init.d script but it does not respect 

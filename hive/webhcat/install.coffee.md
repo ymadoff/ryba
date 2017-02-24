@@ -27,7 +27,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: port, protocol: 'tcp', state: 'NEW', comment: "WebHCat HTTP Server" }
@@ -46,8 +46,8 @@ cat /etc/group | grep hive
 hive:x:493:
 ```
 
-      @group hive.group
-      @user hive.user
+      @system.group hive.group
+      @system.user hive.user
 
 
 ## Startup
@@ -74,7 +74,7 @@ inside "/etc/init.d" and activate it on startup.
           uid: hive.user.name
           gid: hadoop_group.name
           perm: '0750'
-        @execute
+        @system.execute
           cmd: "service hive-webhcat-server restart"
           if: -> @status -3
 
@@ -83,12 +83,12 @@ inside "/etc/init.d" and activate it on startup.
 Create file system directories for log and pid.
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: webhcat.log_dir
           uid: hive.user.name
           gid: hadoop_group.name
           mode: 0o755
-        @mkdir
+        @system.mkdir
           target: webhcat.pid_dir
           uid: hive.user.name
           gid: hadoop_group.name
@@ -116,7 +116,7 @@ Update environnmental variables inside '/etc/hive-webhcat/conf/webhcat-env.sh'.
       @call header: 'Webhcat Env', handler: ->
         webhcat.java_opts = ''
         webhcat.java_opts += " -D#{k}=#{v}" for k, v of webhcat.opts
-        @render
+        @file.render
           source: "#{__dirname}/../../resources/hive-webhcat/webhcat-env.sh"
           local: true
           target: "#{webhcat.conf_dir}/webhcat-env.sh"
@@ -146,7 +146,7 @@ HDFS directory. Note, the parent directories are created by the
         # Avoid HTTP response
         # Permission denied: user=ryba, access=EXECUTE, inode=\"/tmp/hadoop-hcat\":HTTP:hadoop:drwxr-x---
 
-      @execute
+      @system.execute
         header: 'Fix HDFS tmp'
         cmd: mkcmd.hdfs @, """
         if hdfs dfs -test -d /tmp/hadoop-hcat; then exit 2; fi
@@ -160,7 +160,7 @@ HDFS directory. Note, the parent directories are created by the
 
 Copy the spnego keytab with restricitive permissions
 
-      @copy
+      @system.copy
         header: 'SPNEGO'
         source: '/etc/security/keytabs/spnego.service.keytab'
         target: webhcat.site['templeton.kerberos.keytab']

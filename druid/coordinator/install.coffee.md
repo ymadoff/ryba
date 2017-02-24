@@ -11,7 +11,7 @@
 |-------------------|------|----------|-----------------------------|
 | Druid Coordinator | 8081 | tcp/http |                             |
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: druid.coordinator.runtime['druid.port'], protocol: 'tcp', state: 'NEW', comment: "Druid Coordinator" }
@@ -20,7 +20,7 @@
 
 ## Configuration
 
-      @render
+      @file.render
         header: 'rc.d'
         target: "/etc/init.d/druid-coordinator"
         source: "#{__dirname}/../resources/druid-coordinator.j2"

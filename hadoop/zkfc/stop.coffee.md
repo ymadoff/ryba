@@ -21,7 +21,7 @@ The file storing the PID is "/var/run/hadoop-hdfs/hadoop-hdfs-zkfc.pid".
         label_true: 'STOPPED'
         name: 'hadoop-hdfs-zkfc'
 
-      @execute
+      @system.execute
         header: 'Clean Logs'
         label_true: 'CLEANED'
         if: clean_logs

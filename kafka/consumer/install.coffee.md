@@ -20,8 +20,8 @@ cat /etc/group | grep kafka
 kafka:x:496:kafka
 ```
 
-      @group kafka.group
-      @user kafka.user
+      @system.group kafka.group
+      @system.user kafka.user
 
 ## Package
 
@@ -31,7 +31,7 @@ directories.
 
       @service
         name: 'kafka'
-      @mkdir
+      @system.mkdir
         target: '/var/lib/kafka'
         uid: kafka.user.name
         gid: kafka.user.name

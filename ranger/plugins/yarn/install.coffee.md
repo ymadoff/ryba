@@ -15,7 +15,7 @@
 # Packages
 
       @call header: 'Packages', handler: ->
-        @execute
+        @system.execute
           header: 'Setup Execution'
           shy: true
           cmd: """
@@ -29,13 +29,13 @@
 
 # Layout
 
-      @mkdir
+      @system.mkdir
         target: ranger.yarn_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR']
         uid: yarn.user.name
         gid: hadoop_group.name
         mode: 0o0750
         if: ranger.yarn_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
-      @mkdir
+      @system.mkdir
         target: ranger.yarn_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR']
         uid: yarn.user.name
         gid: hadoop_group.name
@@ -50,7 +50,7 @@ we execute this task using the rest api.
         if: @contexts('ryba/hadoop/yarn_rm')[0].config.host is @config.host 
         header: 'Ranger YARN Repository'
         handler:  ->
-          @execute
+          @system.execute
             unless_exec: """
               curl --fail -H \"Content-Type: application/json\" -k -X GET  \
               -u admin:#{password} \"#{ranger.yarn_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{ranger.yarn_plugin.install['REPOSITORY_NAME']}\"
@@ -65,7 +65,7 @@ we execute this task using the rest api.
             principal: ranger.yarn_plugin.principal
             randkey: true
             password: ranger.yarn_plugin.password
-          @execute
+          @system.execute
             header: 'Ranger Audit HDFS Layout'
             cmd: mkcmd.hdfs @, """
               hdfs dfs -mkdir -p #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/yarn
@@ -78,7 +78,7 @@ we execute this task using the rest api.
       @call 
         header: 'Plugin Activation'
         handler: ->
-          @render
+          @file.render
             header: 'Scripts rendering'
             if: -> version?
             source: "#{__dirname}/../../resources/plugin-install.properties.j2"
@@ -102,14 +102,14 @@ we execute this task using the rest api.
             ]
             backup: true
             mode: 0o750
-          @execute
+          @system.execute
             header: 'Script Execution'
             cmd: """
               export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec
               cd /usr/hdp/#{version}/ranger-yarn-plugin/
               ./enable-yarn-plugin.sh
             """
-          @execute
+          @system.execute
             header: "Fix repository "
             cmd: "chown -R #{yarn.user.name}:#{hadoop_group.name} /etc/ranger/#{ranger.yarn_plugin.install['REPOSITORY_NAME']}"
           @hconfigure

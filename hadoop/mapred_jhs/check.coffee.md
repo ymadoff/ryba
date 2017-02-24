@@ -21,7 +21,7 @@ For this reason, the "retry" property is set to the high value of "10".
       [host, port] = if protocol is 'http'
       then mapred.site['mapreduce.jobhistory.webapp.address'].split ':'
       else mapred.site['mapreduce.jobhistory.webapp.https.address'].split ':'
-      @execute
+      @system.execute
         header: 'HTTP'
         retry: 200
         cmd: mkcmd.test @, """

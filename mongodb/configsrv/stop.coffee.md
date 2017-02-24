@@ -19,6 +19,6 @@ Stop the MongoDB Config Server service.
         header: 'Clean Logs'
         label_true: 'CLEANED'
         handler: ->
-          @execute
+          @system.execute
             cmd: "rm #{configsrv.config.systemLog.path}"
             code_skipped: 1

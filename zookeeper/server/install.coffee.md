@@ -25,9 +25,9 @@ cat /etc/group | grep hadoop
 hadoop:x:498:hdfs
 ```
 
-      @group zookeeper.group
-      @group hadoop_group
-      @user zookeeper.user
+      @system.group zookeeper.group
+      @system.group hadoop_group
+      @system.user zookeeper.user
 
 ## IPTables
 
@@ -53,7 +53,7 @@ We open the client port if:
 
       if zookeeper.config['peerType'] is 'observer' or @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'observer' ).length is 0
         rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: zookeeper.port, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Client" }
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: rules
         if: @config.iptables.action is 'start'
@@ -113,17 +113,17 @@ Create the data, pid and log directories with the correct permissions and
 ownerships.
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: zookeeper.config['dataDir']
           uid: zookeeper.user.name
           gid: hadoop_group.name
           mode: 0o755
-        @mkdir
+        @system.mkdir
           target: zookeeper.pid_dir
           uid: zookeeper.user.name
           gid: zookeeper.group.name
           mode: 0o755
-        @mkdir
+        @system.mkdir
           target: zookeeper.log_dir
           uid: zookeeper.user.name
           gid: hadoop_group.name
@@ -141,7 +141,7 @@ only on localhost (not over the network) or over an encrypted connection.
 
 Run "zkCli.sh" and enter `addauth digest super:EjV93vqJeB3wHqrx`
 
-      @execute
+      @system.execute
         header: 'Generate Super User'
         if: zookeeper.superuser.password
         cmd: """

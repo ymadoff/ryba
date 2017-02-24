@@ -13,7 +13,7 @@
 # Packages
 
       @call header: 'Packages', handler: ->
-        @execute
+        @system.execute
           header: 'Setup Execution'
           shy:true
           cmd: """
@@ -27,13 +27,13 @@
 
 # Layout
 
-      @mkdir
+      @system.mkdir
         target: ranger.knox_plugin.install['XAAUDIT.HDFS.FILE_SPOOL_DIR']
         uid: knox.user.name
         gid: hadoop_group.name
         mode: 0o0750
         if: ranger.knox_plugin.install['XAAUDIT.HDFS.IS_ENABLED'] is 'true'
-      @mkdir
+      @system.mkdir
         target: ranger.knox_plugin.install['XAAUDIT.SOLR.FILE_SPOOL_DIR']
         uid: knox.user.name
         gid: hadoop_group.name
@@ -49,7 +49,7 @@ we execute this task using the rest api.
         if: @contexts('ryba/knox')[0].config.host is @config.host 
         header: 'Ranger Knox Repository'
         handler:  ->
-          @execute
+          @system.execute
             unless_exec: """
               curl --fail -H \"Content-Type: application/json\"   -k -X GET  \ 
               -u admin:#{password} \"#{ranger.knox_plugin.install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{ranger.knox_plugin.install['REPOSITORY_NAME']}\"
@@ -64,7 +64,7 @@ we execute this task using the rest api.
             principal: ranger.knox_plugin.principal
             randkey: true
             password: ranger.knox_plugin.password
-          @execute
+          @system.execute
             header: 'Knox plugin audit to HDFS'
             cmd: mkcmd.hdfs @, """
               hdfs dfs -mkdir -p #{core_site['fs.defaultFS']}/#{ranger.user.name}/audit/knox
@@ -75,7 +75,7 @@ we execute this task using the rest api.
 # Plugin Scripts 
 
       @call ->
-        @render
+        @file.render
           header: 'Scripts rendering'
           if: -> version?
           source: "#{__dirname}/../../resources/plugin-install.properties.j2"
@@ -96,7 +96,7 @@ we execute this task using the rest api.
           ]
           backup: true
           mode: 0o750
-        @execute
+        @system.execute
           header: 'Script Execution'
           cmd: """
             export HADOOP_LIBEXEC_DIR=/usr/hdp/current/hadoop-client/libexec

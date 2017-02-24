@@ -23,7 +23,7 @@
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.rs.site['hbase.regionserver.port'], protocol: 'tcp', state: 'NEW', comment: "HBase RegionServer" }
@@ -42,24 +42,24 @@ cat /etc/group | grep hbase
 hbase:x:492:
 ```
 
-      @group hbase.group
-      @user hbase.user
+      @system.group hbase.group
+      @system.user hbase.user
 
 
 ## HBase Regionserver Layout
 
       @call header: 'Layout', timeout: -1, handler: ->
-        @mkdir
+        @system.mkdir
           target: hbase.rs.pid_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: hbase.rs.log_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: hbase.rs.conf_dir
           uid: hbase.user.name
           gid: hbase.group.name
@@ -107,7 +107,7 @@ RegionServer, and HBase client host machines.
 
 ## Kerberos
 
-      @copy
+      @system.copy
         header: 'Copy Keytab'
         if: @has_service 'ryba/hbase/master'
         source: hbase.master.site['hbase.master.keytab.file']
@@ -145,7 +145,7 @@ Environment passed to the RegionServer before it starts.
 
       @call header: 'HBase Env', handler: ->
         hbase.rs.java_opts += " -D#{k}=#{v}" for k, v of hbase.rs.opts
-        @render
+        @file.render
           target: "#{hbase.rs.conf_dir}/hbase-env.sh"
           source: "#{__dirname}/../resources/hbase-env.sh.j2"
           backup: true

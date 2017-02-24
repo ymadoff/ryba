@@ -23,8 +23,8 @@ cat /etc/group | grep hbase
 hbase:x:492:
 ``` 
 
-      @group hbase.group
-      @user hbase.user
+      @system.group hbase.group
+      @system.user hbase.user
 
 ## Packages
 
@@ -66,7 +66,7 @@ Note, we left the permission mode as default, Master and RegionServer need to
 
 Environment passed to the Master before it starts.
 
-      @render
+      @file.render
         header: 'Env'
         target: "#{hbase.conf_dir}/hbase-env.sh"
         source: "#{__dirname}/../resources/hbase-env.sh.j2"

@@ -19,7 +19,7 @@ Check if Hive can authenticate and run a basic query to the database.
         cmd = switch hive.hcatalog.db.engine
           when 'mysql' then 'SELECT * FROM VERSION'
           when 'postgres' then '\\dt'
-        @execute
+        @system.execute
           cmd: db.cmd hive.hcatalog.db, admin_username: null, cmd
 
 ## Check Port
@@ -33,7 +33,7 @@ Check if the Hive HCatalog (Metastore) server is listening.
           continue unless hostname is @config.host
           host: hostname, port: port
         throw Error 'Invalid configuration' unless server
-        @execute
+        @system.execute
           cmd: "echo > /dev/tcp/#{server.host}/#{server.port}"
 
 # Module Dependencies

@@ -18,7 +18,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       for name, mod of arbiter.modules
         if mod.config?.port?
           rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: mod.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Arbiter #{name}" }
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: rules
         if: @config.iptables.action is 'start'
@@ -32,12 +32,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Remove default config files
 
       @call header: 'Clean Install', handler: ->
-        @remove target: '/etc/shinken/realms/all.cfg'
-        @remove target: '/etc/shinken/contacts/nagiosadmin.cfg'
-        @remove target: '/etc/shinken/services/linux_disks.cfg'
-        @remove target: '/etc/shinken/hosts/localhost.cfg'
-        @remove target: '/etc/shinken/templates/templates.cfg'
-        @remove target: '/etc/shinken/resource.d/path.cfg'
+        @system.remove target: '/etc/shinken/realms/all.cfg'
+        @system.remove target: '/etc/shinken/contacts/nagiosadmin.cfg'
+        @system.remove target: '/etc/shinken/services/linux_disks.cfg'
+        @system.remove target: '/etc/shinken/hosts/localhost.cfg'
+        @system.remove target: '/etc/shinken/templates/templates.cfg'
+        @system.remove target: '/etc/shinken/resource.d/path.cfg'
 
 ## Additional Modules
 
@@ -50,12 +50,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
               cache_file: "#{mod.archive}.zip"
               unless_exec: "shinken inventory | grep #{name}"
               shy: true
-            @extract
+            @tools.extract
               source: "#{shinken.build_dir}/#{mod.archive}.zip"
               shy: true
-            @execute
+            @system.execute
               cmd: "shinken install --local #{shinken.build_dir}/#{mod.archive}"
-            @execute
+            @system.execute
               cmd: "rm -rf #{shinken.build_dir}"
               shy: true
           for subname, submod of mod.modules then installmod subname, submod
@@ -67,7 +67,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       @call header: 'Shinken Config', handler: ->
         for service in ['arbiter', 'broker', 'poller', 'reactionner', 'receiver', 'scheduler']
-          @render
+          @file.render
             target: "/etc/shinken/#{service}s/#{service}-master.cfg"
             source: "#{__dirname}/resources/#{service}-master.cfg.j2"
             local_source: true
@@ -95,7 +95,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       @call header: 'Modules Config', handler: ->
         config_mod = (name, mod) =>
-          @render
+          @file.render
             target: "/etc/shinken/modules/#{mod.config_file}"
             source: "#{__dirname}/resources/module.cfg.j2"
             local_source: true
@@ -121,7 +121,7 @@ Objects config
         brokers = @contexts('ryba/shinken/broker').map( (ctx) -> ctx.config.host ).join ','
         #for obj in ['hostgroups', 'servicegroups', 'contactgroups', 'commands', 'realms', 'dependencies', 'escalations', 'timeperiods']
         for obj in ['hostgroups', 'contactgroups', 'commands', 'realms', 'dependencies', 'escalations', 'timeperiods']
-          @render
+          @file.render
             target: "/etc/shinken/#{obj}/#{obj}.cfg"
             source: "#{__dirname}/resources/#{obj}.cfg.j2"
             local_source: true
@@ -135,12 +135,12 @@ Objects config
           for k, v of shinken.config[obj]
             if v.register is '0' then templated[k] = v
             else real[k] = v
-          @render
+          @file.render
             target: "/etc/shinken/templates/#{obj}.cfg"
             source: "#{__dirname}/resources/#{obj}.cfg.j2"
             local_source: true
             context: "#{obj}": templated
-          @render
+          @file.render
             target: "/etc/shinken/#{obj}/#{obj}.cfg"
             source: "#{__dirname}/resources/#{obj}.cfg.j2"
             local_source: true
@@ -149,17 +149,17 @@ Objects config
 ### Services Config
 
       @call header: 'Ryba Services Config', handler: ->
-        # @render
+        # @file.render
         #   target: '/etc/shinken/services/hadoop-services.cfg'
         #   source: "#{__dirname}/resources/hadoop-services.cfg.j2"
         #   local_source: true
         #   context: hosts: shinken.config.hosts
-        # @render
+        # @file.render
         #   target: '/etc/shinken/services/watchers-services.cfg'
         #   source: "#{__dirname}/resources/watchers-services.cfg.j2"
         #   local_source: true
         #   context: hosts: shinken.config.hosts
-        # @render
+        # @file.render
         #   target: '/etc/shinken/dependencies/hadoop-dependencies.cfg'
         #   source: "#{__dirname}/resources/hadoop-dependencies.cfg.j2"
         #   local_source: true

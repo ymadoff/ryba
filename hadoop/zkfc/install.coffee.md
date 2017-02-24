@@ -22,7 +22,7 @@
 |-----------|------|--------|----------------------------|
 | namenode  | 8019  | tcp   | dfs.ha.zkfc.port           |
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: hdfs.nn.site['dfs.ha.zkfc.port'], protocol: 'tcp', state: 'NEW', comment: "ZKFC IPC" }
@@ -46,14 +46,14 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
           local_source: true
           context: @config
           mode: 0o0755
-        @execute
+        @system.execute
           cmd: "service hadoop-hdfs-zkfc restart"
           if: -> @status -3
 
 ## Configure
 
       @call header: 'Configure', timeout: -1, handler: ->
-        @mkdir
+        @system.mkdir
           target: "#{zkfc.conf_dir}"
         @hconfigure
           target: "#{zkfc.conf_dir}/core-site.xml"
@@ -67,7 +67,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
           uid: hdfs.user.name
           gid: hadoop_group.name
           backup: true
-        @render
+        @file.render
           header: 'Environment'
           target: "#{zkfc.conf_dir}/hadoop-env.sh"
           source: "#{__dirname}/../resources/hadoop-env.sh.j2"
@@ -159,7 +159,7 @@ setAcl /hadoop-ha sasl:zkfc:cdrwa,sasl:nn:cdrwa,digest:zkfc:ePBwNWc34ehcTu1FTNI7
           uid: hdfs.user.name
           gid: hdfs.group.name
           mode: 0o0700
-        @execute
+        @system.execute
           cmd: """
           export ZK_HOME=/usr/hdp/current/zookeeper-client/
           java -cp $ZK_HOME/lib/*:$ZK_HOME/zookeeper.jar org.apache.zookeeper.server.auth.DigestAuthenticationProvider #{zkfc.digest.name}:#{zkfc.digest.password}
@@ -199,7 +199,7 @@ inserted if ALL users or the HDFS user access is denied.
         header: 'SSH Fencing'
         # if: -> @contexts('ryba/hadoop/hdfs_nn').length > 1
         handler: ->
-          @mkdir
+          @system.mkdir
             target: "#{hdfs.user.home}/.ssh"
             uid: hdfs.user.name
             gid: hadoop_group.name
@@ -257,7 +257,7 @@ If this is an active NameNode, we format ZooKeeper and start the ZKFC daemon. If
 NameNode, we wait for the active NameNode to take leadership and start the ZKFC daemon.
 
       @call once: true, 'ryba/zookeeper/server/wait'
-      @execute
+      @system.execute
         header: 'Format ZK'
         timeout: -1
         if: [

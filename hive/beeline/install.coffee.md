@@ -20,7 +20,7 @@
 
 ## Env
 
-      @render
+      @file.render
         header: 'Hive Env'
         source: "#{__dirname}/../resources/hive-env.sh.j2"
         target: "#{hive.conf_dir}/hive-env.sh"

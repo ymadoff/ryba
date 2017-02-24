@@ -26,7 +26,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 It's the  host' port server map from the container
 
-      # @iptables
+      # @tools.iptables
       #   header: 'IPTables'
       #   rules: [
       #     { chain: 'INPUT', jump: 'ACCEPT', dport: zeppelin.env.ZEPPELIN_PORT, protocol: 'tcp', state: 'NEW', comment: "Zeppelin Server" }
@@ -75,19 +75,19 @@ SSL only required for the server
     #     storepass: spark.ssl.fs['spark.ssl.keyStorePassword']
     #     caname: "hadoop_spark_ca"
     #     cacert: "#{tmp_location}_cacert"
-    #  @remove
+    #  @system.remove
     #     target: "#{tmp_location}_cacert"
     #     shy: true
-    #  @remove
+    #  @system.remove
     #     target: "#{tmp_location}_cert"
     #     shy: true
-    #  @remove
+    #  @system.remove
     #     target: "#{tmp_location}_key"
     #     shy: true
 
 ## HDP select status
 
-      @execute
+      @system.execute
         header: 'HDP Version'
         cmd:  "hdp-select versions | tail -1"
       , (err, executed, stdout, stderr) ->
@@ -99,7 +99,7 @@ SSL only required for the server
 
 Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
 
-      @execute
+      @system.execute
         header: 'Spark'
         cmd: 'ls -l /usr/hdp/current/spark-client/lib/ | grep -m 1 assembly | awk {\'print $9\'}'
       , (err, _, stdout) ->
@@ -109,7 +109,7 @@ Use the spark yarn assembly jar to execute spark aplication in yarn-client mode.
 
 ## Zeppelin properties configuration
 
-      @mkdir
+      @system.mkdir
         header: 'Directory'
         target: "#{zeppelin.conf_dir}"
         mode: 0o0750

@@ -23,9 +23,9 @@ The file storing the PID is "/var/run/hbase/yarn/hbase-hbase-master.pid".
         label_true: 'CLEANED'
         if: -> @config.ryba.clean_logs
         handler: ->        
-          @execute
+          @system.execute
             cmd: "rm #{hbase.master.log_dir}/*-master-*"
             code_skipped: 1
-          @execute
+          @system.execute
             cmd: "rm #{hbase.master.log_dir}/gc.log-*"
             code_skipped: 1

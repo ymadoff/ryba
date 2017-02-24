@@ -35,7 +35,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       jhs_webapp_port = mapred.site['mapreduce.jobhistory.webapp.address'].split(':')[1]
       jhs_webapp_https_port = mapred.site['mapreduce.jobhistory.webapp.https.address'].split(':')[1]
       jhs_admin_port = mapred.site['mapreduce.jobhistory.admin.address'].split(':')[1]
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: jhs_port, protocol: 'tcp', state: 'NEW', comment: "MapRed JHS Server" }
@@ -69,7 +69,7 @@ script inside "/etc/init.d" and activate it on startup.
           uid: mapred.user.name
           gid: hadoop_group.name
           perm: '0755'
-        @execute
+        @system.execute
           cmd: "service hadoop-mapreduce-historyserver restart"
           if: -> @status -3
 
@@ -79,17 +79,17 @@ Create the log and pid directories.
 
       @call header: 'Layout', timeout: -1, handler: ->
         {mapred, hadoop_group} = @config.ryba
-        @mkdir
+        @system.mkdir
           target: "#{mapred.log_dir}"
           uid: mapred.user.name
           gid: hadoop_group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: "#{mapred.pid_dir}"
           uid: mapred.user.name
           gid: hadoop_group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: mapred.site['mapreduce.jobhistory.recovery.store.leveldb.path']
           uid: mapred.user.name
           gid: hadoop_group.name
@@ -132,14 +132,14 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
         target: "#{mapred.jhs.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
         local_source: true
-      @render
+      @file.render
         header: 'Mapred Env'
         target: "#{mapred.jhs.conf_dir}/mapred-env.sh"
         source: "#{__dirname}/../resources/mapred-env.sh.j2"
         context: @config
         local_source: true
         backup: true
-      @render
+      @file.render
         header: 'Hadoop Env'
         target: "#{mapred.jhs.conf_dir}/hadoop-env.sh"
         source: "#{__dirname}/../resources/hadoop-env.sh.j2"
@@ -157,7 +157,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
         gid: hadoop_group.name
         mode: 0o0755
         backup: true
-      @render
+      @file.render
         header: 'MapRed Env'
         target: "#{mapred.jhs.conf_dir}/mapred-env.sh"
         source: "#{__dirname}/../resources/mapred-env.sh.j2"
@@ -233,7 +233,7 @@ Create the Kerberos service principal by default in the form of
 
 Layout is inspired by [Hadoop recommandation](http://hadoop.apache.org/docs/r2.1.0-beta/hadoop-project-dist/hadoop-common/ClusterSetup.html)
 
-      @execute
+      @system.execute
         header: 'HDFS Layout'
         cmd: mkcmd.hdfs @, """
         if ! hdfs dfs -test -d #{mapred.site['yarn.app.mapreduce.am.staging-dir']}/history; then

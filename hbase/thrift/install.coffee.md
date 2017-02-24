@@ -26,7 +26,7 @@ This installation also found inspiration from the
 IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: hbase.thrift.site['hbase.thrift.port'], protocol: 'tcp', state: 'NEW', comment: "HBase Thrift Master" }
@@ -45,8 +45,8 @@ cat /etc/group | grep hbase
 hbase:x:492:
 ```
 
-      @group hbase.group
-      @user hbase.user
+      @system.group hbase.group
+      @system.user hbase.user
 
 
 ### Kerberos
@@ -65,17 +65,17 @@ hbase:x:492:
 ## HBase Thrift Server Layout
 
       @call header: 'Layout', timeout: -1, handler: ->
-        @mkdir
+        @system.mkdir
           target: hbase.thrift.pid_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: hbase.thrift.log_dir
           uid: hbase.user.name
           gid: hbase.group.name
           mode: 0o0755
-        @mkdir
+        @system.mkdir
           target: hbase.thrift.conf_dir
           uid: hbase.user.name
           gid: hbase.group.name
@@ -83,7 +83,7 @@ hbase:x:492:
 
 ## ACL Table
 
-        @execute
+        @system.execute
           header: 'ACL Table'
           cmd: mkcmd.hbase @, """
           hbase shell 2>/dev/null <<-CMD
@@ -112,7 +112,7 @@ restrict it but not the thrift server.
 
 Environment passed to the HBase Rest Server before it starts.
 
-      @render
+      @file.render
         header: 'HBase Env'
         target: "#{hbase.thrift.conf_dir}/hbase-env.sh"
         source: "#{__dirname}/../resources/hbase-env.sh.j2"

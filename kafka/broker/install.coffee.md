@@ -25,8 +25,8 @@ cat /etc/group | grep kafka
 kafka:x:496:kafka
 ```
 
-      @group kafka.group
-      @user kafka.user
+      @system.group kafka.group
+      @system.user kafka.user
 
 ## IPTables
 
@@ -42,7 +42,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       @call header: 'IPTables', handler: ->
         return unless @config.iptables.action is 'start'
-        @iptables
+        @tools.iptables
           rules: for proto in kafka.broker.protocols
             { chain: 'INPUT', jump: 'ACCEPT', dport: kafka.broker.ports[proto], protocol: 'tcp', state: 'NEW', comment: "Kafka Broker #{proto}" }
 
@@ -57,7 +57,7 @@ directories.
           name: 'kafka'
         @hdp_select
           name: 'kafka-broker'
-        @mkdir
+        @system.mkdir
           target: '/var/lib/kafka'
           uid: kafka.user.name
           gid: kafka.user.name
@@ -178,7 +178,7 @@ This Fixs are needed to be able to isolate confs betwwen broker and client
           backup: true
           eof: true
           mode: 0o755
-        @copy
+        @system.copy
           source: '/usr/hdp/current/kafka-broker/bin/kafka-run-class.sh'
           target: '/usr/hdp/current/kafka-broker/bin/kafka-run-broker-class.sh'
           mode: 0o0755
@@ -271,7 +271,7 @@ Directories in which Kafka data is stored. Each new partition that is created
 will be placed in the directory which currently has the fewest partitions.
 
       @call header: 'Layout', handler: ->
-        @mkdir (
+        @system.mkdir (
           target: dir
           uid: kafka.user.name
           gid: kafka.group.name

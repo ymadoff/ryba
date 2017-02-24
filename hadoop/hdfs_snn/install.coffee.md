@@ -25,7 +25,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 
       [_, http_port] = hdfs.site['dfs.namenode.secondary.http-address'].split ':'
       [_, https_port] = hdfs.site['dfs.namenode.secondary.https-address'].split ':'
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: http_port, protocol: 'tcp', state: 'NEW', comment: "HDFS SNN HTTP" }
@@ -56,24 +56,24 @@ script inside "/etc/init.d" and activate it on startup.
           uid: hdfs.user.name
           gid: hadoop_group.name
           perm: '0755'
-        @execute
+        @system.execute
           cmd: "service hadoop-hdfs-secondarynamenode restart"
           if: -> @status -4
 
       @call header: 'Layout', timeout: -1, handler: ->
-        @mkdir
+        @system.mkdir
           target: for dir in hdfs.site['dfs.namenode.checkpoint.dir'].split ','
             if dir.indexOf('file://') is 0
             then dir.substr(7) else dir
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o755
-        @mkdir
+        @system.mkdir
           target: "#{hdfs.pid_dir.replace '$USER', hdfs.user.name}"
           uid: hdfs.user.name
           gid: hadoop_group.name
           mode: 0o755
-        @mkdir
+        @system.mkdir
           target: "#{hdfs.log_dir}" #/#{hdfs.user.name}
           uid: hdfs.user.name
           gid: hdfs.group.name

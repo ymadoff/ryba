@@ -33,7 +33,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       [_, rpc_port] = yarn.site['yarn.timeline-service.address'].split ':'
       [_, http_port] = yarn.site['yarn.timeline-service.webapp.address'].split ':'
       [_, https_port] = yarn.site['yarn.timeline-service.webapp.https.address'].split ':'
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: rpc_port, protocol: 'tcp', state: 'NEW', comment: "Yarn Timeserver RPC" }
@@ -65,26 +65,26 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
           uid: yarn.user.name
           gid: hadoop_group.name
           perm: '0755'
-        @execute
+        @system.execute
           cmd: "service hadoop-yarn-timelineserver restart"
           if: -> @status -4
 
 # Layout
 
       @call header: 'Layout', handler: ->
-        @mkdir
+        @system.mkdir
           target: "#{yarn.ats.conf_dir}"
-        @mkdir
+        @system.mkdir
           target: "#{yarn.ats.pid_dir}"
           uid: yarn.user.name
           gid: hadoop_group.name
           mode: 0o755
-        @mkdir
+        @system.mkdir
           target: "#{yarn.ats.log_dir}"
           uid: yarn.user.name
           gid: yarn.group.name
           parent: true
-        @mkdir
+        @system.mkdir
           target: yarn.site['yarn.timeline-service.leveldb-timeline-store.path']
           uid: yarn.user.name
           gid: hadoop_group.name
@@ -117,7 +117,7 @@ Update the "yarn-site.xml" configuration file.
         target: "#{yarn.ats.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
         local_source: true
-      @render
+      @file.render
         target: "#{yarn.ats.conf_dir}/yarn-env.sh"
         source: "#{__dirname}/../resources/yarn-env.sh.j2"
         local_source: true
@@ -158,7 +158,7 @@ Note, this is not documented anywhere and might not be considered as a best prac
         dir = yarn.site['yarn.timeline-service.fs-history-store.uri']
         @wait_execute
           cmd: mkcmd.hdfs @, "hdfs dfs -test -d #{path.dirname dir}"
-        @execute
+        @system.execute
           cmd: mkcmd.hdfs @, """
           hdfs dfs -mkdir -p #{dir}
           hdfs dfs -chown #{yarn.user.name} #{dir}

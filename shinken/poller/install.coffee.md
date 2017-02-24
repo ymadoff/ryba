@@ -20,7 +20,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       for name, mod of poller.modules
         if mod.config?.port?
           rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: mod.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Poller #{name}" }
-      @iptables
+      @tools.iptables
         rules: [
           { chain: 'INPUT', jump: 'ACCEPT', dport: poller.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Poller" }
         ]
@@ -52,12 +52,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
               cache_file: "#{mod.archive}.zip"
               unless_exec: "shinken inventory | grep #{name}"
               shy: true
-            @extract
+            @tools.extract
               source: "#{shinken.build_dir}/#{mod.archive}.zip"
               shy: true
-            @execute
+            @system.execute
               cmd: "shinken install --local #{shinken.build_dir}/#{mod.archive}"
-            @execute
+            @system.execute
               cmd: "rm -rf #{shinken.build_dir}"
               shy: true
           for subname, submod of mod.modules then installmod subname, submod

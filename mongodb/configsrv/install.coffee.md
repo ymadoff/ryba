@@ -16,7 +16,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
       @call header: 'IPTables', handler: ->
-        @iptables
+        @tools.iptables
           rules: [
             { chain: 'INPUT', jump: 'ACCEPT', dport: configsrv.config.net.port, protocol: 'tcp', state: 'NEW', comment: "MongoDB Config Server port" }
           ]
@@ -25,8 +25,8 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 ## Users & Groups
 
       @call header: 'Users & Groups', handler: ->
-        @group mongodb.group
-        @user mongodb.user
+        @system.group mongodb.group
+        @system.user mongodb.user
 
 ## Packages
 
@@ -73,20 +73,20 @@ in order to rendered configuration file with custom properties.
 Create dir where the mongodb-config-server stores its metadata
 
       @call header: 'Layout',  handler: ->
-        @mkdir
+        @system.mkdir
           target: '/var/lib/mongodb'
           uid: mongodb.user.name
           gid: mongodb.group.name
-        @mkdir
+        @system.mkdir
           target: mongodb.configsrv.config.storage.dbPath
           uid: mongodb.user.name
           gid: mongodb.group.name
-        @mkdir
+        @system.mkdir
           if: mongodb.configsrv.config.storage.repairPath?
           target: mongodb.configsrv.config.storage.repairPath
           uid: mongodb.user.name
           gid: mongodb.group.name
-        @mkdir
+        @system.mkdir
           target: mongodb.configsrv.config.net.unixDomainSocket.pathPrefix
           uid: mongodb.user.name
           gid: mongodb.group.name

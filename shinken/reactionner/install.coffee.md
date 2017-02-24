@@ -11,7 +11,7 @@
         header: 'SSH'
         if: -> @config.ryba.shinken.reactionner.ssh?.private_key? and @config.ryba.shinken.reactionner.ssh?.public_key?
         handler: ->
-          @mkdir
+          @system.mkdir
             target: "#{user.home}/.ssh"
             mode: 0o700
             uid: user.name
@@ -44,7 +44,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
       for name, mod of reactionner.modules
         if mod.config?.port?
           rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: mod.config.port, protocol: 'tcp', state: 'NEW', comment: "Shinken Reactionner #{name}" }
-      @iptables
+      @tools.iptables
         header: 'IPTables'
         rules: rules
         if: @config.iptables.action is 'start'
@@ -66,12 +66,12 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
               cache_file: "#{mod.archive}.zip"
               unless_exec: "shinken inventory | grep #{name}"
               shy: true
-            @extract
+            @tools.extract
               source: "#{shinken.build_dir}/#{mod.archive}.zip"
               shy: true
-            @execute
+            @system.execute
               cmd: "shinken install --local #{shinken.build_dir}/#{mod.archive}"
-            @execute
+            @system.execute
               cmd: "rm -rf #{shinken.build_dir}"
               shy: true
           for subname, submod of mod.modules then installmod subname, submod

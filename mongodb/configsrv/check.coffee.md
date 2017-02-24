@@ -6,6 +6,6 @@
 
 ## Check
 
-      @execute
+      @system.execute
         header: 'TCP'
         cmd: "echo > /dev/tcp/#{@config.host}/#{configsrv.config.net.port}"

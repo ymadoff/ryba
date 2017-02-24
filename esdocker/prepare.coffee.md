@@ -15,7 +15,7 @@ Download Elasticsearch Plugins.
             @each plugins_options.value, (plugin_options,callback) ->
               if !downloaded
                 console.log "Trying do download #{plugins_options.key} using #{plugin_options.key}.."
-                @cache
+                @file.cache
                   ssh: null
                   location: true
                   fail: true

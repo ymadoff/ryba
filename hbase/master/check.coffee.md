@@ -21,13 +21,13 @@ Note: The Master webapp located in "/usr/lib/hbase/hbase-webapps/master" is
 using the hadoop conf directory to retrieve the SPNEGO keytab. The user "hbase"
 is added membership to the group hadoop to gain read access.
 
-      @execute
+      @system.execute
         header: 'SPNEGO'
         cmd: "su -l #{hbase.user.name} -c 'test -r #{core_site['hadoop.http.authentication.kerberos.keytab']}'"
 
 ## Check HTTP JMX
 
-      @execute
+      @system.execute
         header: 'HTTP JMX'
         cmd: mkcmd.test @, """
         host=`curl -s -k --negotiate -u : #{url} | grep tag.Hostname | sed 's/^.*:.*"\\(.*\\)".*$/\\1/g'`
