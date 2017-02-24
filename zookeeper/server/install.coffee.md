@@ -41,11 +41,18 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
 "start" (default value).
 
       rules = [
-          { chain: 'INPUT', jump: 'ACCEPT', dport: zookeeper.port, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Client" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: zookeeper.peer_port, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Peer" }
           { chain: 'INPUT', jump: 'ACCEPT', dport: zookeeper.leader_port, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Leader" }
       ]
-      rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: parseInt(zookeeper.env["JMXPORT"],10), protocol: 'tcp', state: 'NEW', comment: "Zookeeper JMX" } if zookeeper.env["JMXPORT"]?
+      if zookeeper.env["JMXPORT"]?
+        rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: parseInt(zookeeper.env["JMXPORT"],10), protocol: 'tcp', state: 'NEW', comment: "Zookeeper JMX" }
+
+We open the client port if:
+- the node is an observer
+- the node is participant but there is no other observer on the cluster
+
+      if zookeeper.config['peerType'] is 'observer' or @contexts('ryba/zookeeper/server').filter( (ctx) -> ctx.config.ryba.zookeeper.config['peerType'] is 'observer' ).length is 0
+        rules.push { chain: 'INPUT', jump: 'ACCEPT', dport: zookeeper.port, protocol: 'tcp', state: 'NEW', comment: "Zookeeper Client" }
       @iptables
         header: 'IPTables'
         rules: rules
