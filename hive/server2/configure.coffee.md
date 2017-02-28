@@ -110,15 +110,17 @@ Example:
           -Dcom.sun.management.jmxremote.port=#{hive.server2.env["JMXPORT"]} \
           -Dcom.sun.management.jmxremote.rmi.port=#{hive.server2.env["JMXPORT"]} \
           """
-      aux_jars = hcat_ctxs[0].config.ryba.hive.hcatalog.aux_jars.split ':'
-      # fix bug where phoenix-server and phoenix-client do not contain same 
+      aux_jars = hcat_ctxs[0].config.ryba.hive.hcatalog.aux_jars
+      # fix bug where phoenix-server and phoenix-client do not contain same
       # version of class used.
       if hm_ctxs.length and @has_service 'ryba/hbase/client'
-        aux_jars.push ['/usr/hdp/current/hbase-client/lib/hbase-server.jar', '/usr/hdp/current/hbase-client/lib/hbase-client.jar', '/usr/hdp/current/hbase-client/lib/hbase-common.jar']... # Default value
+        aux_jars = add_prop aux_jars, '/usr/hdp/current/hbase-client/lib/hbase-server.jar', ':'
+        aux_jars = add_prop aux_jars, '/usr/hdp/current/hbase-client/lib/hbase-client.jar', ':'
+        aux_jars = add_prop aux_jars, '/usr/hdp/current/hbase-client/lib/hbase-common.jar', ':'
         if @has_service 'ryba/phoenix/client'
-          #aux_jars.push '/usr/hdp/current/phoenix-client/phoenix-server.jar' 
-          aux_jars.push '/usr/hdp/current/phoenix-client/phoenix-hive.jar'
-      hive.server2.aux_jars ?= aux_jars.join ':'
+          #aux_jars.push '/usr/hdp/current/phoenix-client/phoenix-server.jar'
+          aux_jars = add_prop aux_jars, '/usr/hdp/current/phoenix-client/phoenix-hive.jar', ':'
+      hive.server2.aux_jars ?= aux_jars
 
 ## Configure Kerberos
 
@@ -146,7 +148,7 @@ Example:
 
 ## HS2 High Availability & Rolling Upgrade
 
-HS2 use Zookeepper to track registered servers. The znode address is 
+HS2 use Zookeepper to track registered servers. The znode address is
 "/<hs2_namespace>/serverUri=<host:port>;version=<versionInfo>; sequence=<sequence_number>"
 and its value is the server "host:port".
 
@@ -250,6 +252,12 @@ Add Hive user as proxyuser
         hthrift_ctx.config.ryba.core_site ?= {}
         hthrift_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.hosts"] ?= '*'
         hthrift_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'
+
+    add_prop = (value, add, separator) ->
+      throw Error 'No separator provided' unless separator?
+      value ?= ''
+      return add if value.length is 0
+      return if value.indexOf(add) is -1 then "#{value}#{separator}#{add}" else value
 
 ## Dependencies
 
