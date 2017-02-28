@@ -35,7 +35,7 @@ set it hosts will be constructed on it.
 
 ## Source Code
 
-    module.exports = 
+    module.exports =
       use:
         mysql: 'masson/commons/mysql/server'
         postres: 'masson/commons/postgres/server'
@@ -77,20 +77,20 @@ set it hosts will be constructed on it.
         #backward compatibility with only host property
         if ryba.db_admin.postgres.host?
           postgres_hosts = ["#{ryba.db_admin.mysql.host}"]
-        if postgres_hosts.length > 0 
+        if postgres_hosts.length > 0
           ryba.db_admin.postgres.hosts ?= postgres_hosts
           ryba.db_admin.postgres.host ?= postgres_hosts[0]
-          postgres_host = ryba.db_admin.mysql.host ?= postgres_hosts[0]
+          postgres_host = ryba.db_admin.postgres.host ?= postgres_hosts[0]
           ryba.db_admin.postgres.path ?= 'postgres'
-          ryba.db_admin.postgres.engine ?= 'mysql'
+          ryba.db_admin.postgres.engine ?= 'postgres'
           cluster_servers = postgres_ctxs.filter( (ctx) -> ctx.config.host in postgres_hosts)
           if cluster_servers.length > 0
             postgres_conf = postgres_ctxs[0].config.postgres.server
             ryba.db_admin.postgres.admin_username ?= 'root'
             ryba.db_admin.postgres.admin_password ?= postgres_conf.password
-            ryba.db_admin.postgres.post ?= postgres_conf.port
+            ryba.db_admin.postgres.port ?= postgres_conf.port
           else
-            ryba.db_admin.postgres.post ?= '5432'
+            ryba.db_admin.postgres.port ?= '5432'
             throw Error 'admin_username must be provided for external mysql cluster' unless ryba.db_admin.postgres.admin_username?
             throw Error 'admin_password must be provided for external mysql cluster' unless ryba.db_admin.postgres.admin_password?
           url = postgres_hosts.map((host)-> "#{host}:#{ryba.db_admin.postgres.port}").join(',')

@@ -169,7 +169,7 @@ Note, at the moment, only MySQL and PostgreSQL are supported.
             hive.hcatalog.site['javax.jdo.option.ConnectionURL'] ?= "#{db_admin[hive.hcatalog.db.engine].jdbc}/#{hive.hcatalog.db.database}?createDatabaseIfNotExist=true"
             hive.hcatalog.site['javax.jdo.option.ConnectionDriverName'] ?= 'com.mysql.jdbc.Driver'
           when 'postgres'
-            hive.hcatalog.site['javax.jdo.option.ConnectionURL'] ?= "#{db_admin[hive.hcatalog.db.engine].jdbc}:#{hive.hcatalog.db.port}/#{hive.hcatalog.db.database}?createDatabaseIfNotExist=true"
+            hive.hcatalog.site['javax.jdo.option.ConnectionURL'] ?= "#{db_admin[hive.hcatalog.db.engine].jdbc}/#{hive.hcatalog.db.database}?createDatabaseIfNotExist=true"
             hive.hcatalog.site['javax.jdo.option.ConnectionDriverName'] ?= 'org.postgresql.Driver'
           else throw new Error 'Unsupported database engine'
       hive.hcatalog.site['javax.jdo.option.ConnectionUserName'] ?= hive.hcatalog.db.username
