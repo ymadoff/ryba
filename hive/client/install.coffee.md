@@ -29,7 +29,7 @@ hive:x:493:
 
 ## Service
 
-The phoenix server jar is reference inside the HIVE_AUX_JARS_PATH if phoenix
+The phoenix server jar is referenced inside the HIVE_AUX_JARS_PATH if phoenix
 is installed on the host.
 
       @service
@@ -59,7 +59,7 @@ See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments
         chown -R #{hive.user.name}:#{hadoop_group.name} #{hive.conf_dir}
         chmod -R 755 #{hive.conf_dir}
         """
-        shy: true # TODO: indempotence by detecting ownerships and permissions 
+        shy: true # TODO: indempotence by detecting ownerships and permissions
 
 ## Env
 
@@ -69,7 +69,7 @@ environmental variables "HADOOP_CLIENT_OPTS" and "HADOOP_HEAPSIZE" are enriched
 and they only apply to the Hive HCatalog server.
 
 Using this functionnality, a user may for example raise the heap size of Hive
-Client to 4Gb by either setting a "opts" value equal to "-Xmx4096m" or the 
+Client to 4Gb by either setting a "opts" value equal to "-Xmx4096m" or the
 by setting a "heapsize" value equal to "4096".
 
       @file.render

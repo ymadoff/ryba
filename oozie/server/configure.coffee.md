@@ -75,7 +75,7 @@ Example
       oozie.site['oozie.service.JPAService.jdbc.password'] ?= 'oozie123'
       # oozie.site['oozie.service.AuthorizationService.security.enabled'] ?= null # Now deprecated in favor of oozie.service.AuthorizationService.authorization.enabled (see oozie "oozie.log" file)
       # Path to hadoop configuration is required when running 'sharelib upgrade'
-      # or an error will conplain that the hdfs url is invalid
+      # or an error will complain that the hdfs url is invalid
       oozie.site['oozie.service.HadoopAccessorService.hadoop.configurations'] ?= '*=/etc/hadoop/conf'
       # oozie.site['oozie.service.AuthorizationService.security.enabled'] ?= 'true'
       oozie.site['oozie.service.AuthorizationService.authorization.enabled'] ?= 'true'
