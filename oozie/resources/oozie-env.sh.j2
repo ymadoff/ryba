@@ -45,6 +45,12 @@ export OOZIE_DATA={{ryba.oozie.data}}
 #
 # export OOZIE_LOG4J_RELOAD=10
 
+# Log4J custom options
+#
+export OOZIE_LOG4J_OPTS={{ryba.oozie.log4j_opts}}
+
+export CATALINA_OPTS="${CATALINA_OPTS} ${OOZIE_LOG4J_OPTS} "
+
 # The port Oozie server runs
 #
 # ryba: commented because it throw "java.net.BindException: Address already in use <null>:11443"

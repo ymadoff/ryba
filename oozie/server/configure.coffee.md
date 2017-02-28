@@ -160,9 +160,14 @@ Example
 ## Configuration for Log4J
 
       ryba.oozie.log4j ?= {}
-      ryba.oozie.log4j[k] ?= v for k, v of @config.log4j
-      ryba.oozie.log4j.extra_appender = "socket_server" if ryba.oozie.log4j.server_port?
-      ryba.oozie.log4j.extra_appender = "socket_client" if ryba.oozie.log4j.remote_host? && ryba.oozie.log4j.remote_port?
+      ryba.oozie.log4j.opts ?= {}
+      ryba.oozie.log4j.opts[k] ?= v for k, v of @config.log4j
+      if ryba.oozie.log4j.opts.server_port?
+        ryba.oozie.log4j.opts['oozie.log4j.extra_appender'] = "socket_server"
+      if ryba.oozie.log4j.opts.remote_host? && ryba.oozie.log4j.opts.remote_port?
+        ryba.oozie.log4j.opts['oozie.log4j.extra_appender'] = "socket_client"
+      ryba.oozie.log4j_opts = ""
+      ryba.oozie.log4j_opts += " -D#{k}=#{v}" for k, v of ryba.oozie.log4j.opts
 
 ## Oozie Environment
 

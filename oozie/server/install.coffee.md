@@ -192,51 +192,6 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
           """
           append: true
         ]
-      # Append the Log4J configuration
-      if oozie.log4j.extra_appender
-        writes.push
-            match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.extra_appender=(.*)/m
-            replace: """
-            export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.extra_appender=,#{oozie.log4j.extra_appender}"
-            """
-            append: true
-        # Append the configuration of the SocketAppender
-        if oozie.log4j.extra_appender == "socket_client"
-          writes.push
-              match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.remote_host=(.*)/m
-              replace: """
-              export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.remote_host=#{oozie.log4j.remote_host}"
-              """
-              append: true
-            ,
-              match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.remote_port=(.*)/m
-              replace: """
-              export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.remote_port=#{oozie.log4j.remote_port}"
-              """
-              append: true
-        else
-          writes.push
-              match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.remote_host=(.*)/m
-              replace: ""  
-            ,
-              match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.remote_port=(.*)/m
-              replace: ""  
-        # Append the configuration of the SocketHubAppender
-        if oozie.log4j.extra_appender == "socket_server"
-          writes.push
-              match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.server_port=(.*)/m
-              replace: """
-              export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.server_port=#{oozie.log4j.server_port}"
-              """
-              append: true
-        else
-          writes.push
-              match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.server_port=(.*)/m
-              replace: ""
-      else   
-        writes.push
-            match: /^export CATALINA_OPTS="${CATALINA_OPTS} -Doozie.log4j.extra_appender=(.*)/m
-            replace: ""
       @file.render
         header: 'Oozie Environment'
         target: "#{oozie.conf_dir}/oozie-env.sh"
@@ -522,7 +477,7 @@ the ShareLib contents without having to go into HDFS.
           """
 ## Hive Site
 
-      @hconfigure 
+      @hconfigure
         header: 'Hive Site'
         if: is_falcon_installed
         target: "#{oozie.conf_dir}/action-conf/hive.xml"
