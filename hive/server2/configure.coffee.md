@@ -252,6 +252,10 @@ Add Hive user as proxyuser
         hthrift_ctx.config.ryba.core_site ?= {}
         hthrift_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.hosts"] ?= '*'
         hthrift_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'
+      for hcat_ctx in hcat_ctxs
+        hcat_ctx.config.ryba.core_site ?= {}
+        hcat_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.hosts"] ?= '*'
+        hcat_ctx.config.ryba.core_site["hadoop.proxyuser.#{hive.user.name}.groups"] ?= '*'
 
     add_prop = (value, add, separator) ->
       throw Error 'No separator provided' unless separator?
