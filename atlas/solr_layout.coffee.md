@@ -34,7 +34,7 @@
         if: atlas.solr_type is 'cloud_docker'
         header:'Create Atlas Collection Collection (cloud_docker)'
         handler: ->
-          @wait_connect
+          @connection.wait
             host: atlas.cluster_config['master']
             port: atlas.cluster_config['port']
           @docker.exec

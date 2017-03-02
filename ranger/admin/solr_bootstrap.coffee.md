@@ -18,7 +18,7 @@
         once: true
         if: mode is 'cloud_docker'
       , ->
-          @wait_connect
+          @connection.wait
             servers: for host in cluster_config.hosts
               host: host, port: cluster_config.port
 
@@ -134,7 +134,7 @@ Note: Compatible with every version of docker available at this time.
         header:'Create Ranger Collection (cloud_docker)'
         retry: 2 #needed whensolr node are slow to start
         handler: ->
-          @wait_connect
+          @connection.wait
             host: cluster_config['master']
             port: cluster_config['port']
           @docker.exec

@@ -10,7 +10,7 @@
 Modify admin account password. By default the login:pwd  is `admin:admin`.
 
       @call header: 'Ranger Admin Account', handler:  ->
-        @wait_connect
+        @connection.wait
           host: @config.host
           port: port
         @system.execute

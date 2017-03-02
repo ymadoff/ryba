@@ -19,7 +19,7 @@ Wait for Kerberos, HBase, Hive, Kafka and Ranger.
 
       switch @config.ryba.atlas.solr_type
         when 'cloud_docker'
-          @wait_connect
+          @connection.wait
             host: @config.ryba.atlas.cluster_config['master']
             port: @config.ryba.atlas.cluster_config['port']
 
