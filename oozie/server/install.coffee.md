@@ -446,11 +446,37 @@ based on the following rules:
 Internally, the "sharelib create" and "sharelib upgrade" commands are used to
 upload the files.
 
+Note from 4.2.0 version :
+Upgrade command is deprecated, one should use create command to create new version of sharelib.
+The create command executes a diff between the local Sharelib and the hdfs current sharelib,
+then it uploads the diffs to the new versionned lib_ directory.
+At start, server picks the sharelib from latest time-stamp directory.
+
 The `oozie admin -shareliblist` command can be used by the final user to list
 the ShareLib contents without having to go into HDFS.
 
       @call once: true, 'ryba/hadoop/hdfs_nn/wait'
       @call header: 'Share lib', timeout: 600000, handler: ->
+        @system.execute
+          cmd:"""
+          cd /usr/hdp/current/oozie-server
+          tar -xzf oozie-sharelib.tar.gz
+          chmod -R 0755 /usr/hdp/current/oozie-server/share/lib/
+          """
+          unless_exec: "test -d /usr/hdp/current/oozie-server/share"
+        # https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.5.0/bk_command-line-upgrade/content/start-oozie-23.html
+        # AMBARI-18383
+        @system.execute
+          cmd:"""
+          echo 'Add Spark libs to the sharelib'
+          cd /usr/hdp/current/oozie-server
+          cp -P -f /usr/hdp/current/spark-client/lib/datanucleus-*.jar /usr/hdp/current/oozie-server/share/lib/spark
+          cp -P -f /usr/hdp/current/spark-client/lib/spark-assembly*.jar /usr/hdp/current/oozie-server/share/lib/spark
+          cp -P -f /usr/hdp/current/spark-client/python/lib/*.jar /usr/hdp/current/oozie-server/share/lib/spark
+          cp -P -f /usr/hdp/current/spark-client/python/lib/*.zip /usr/hdp/current/oozie-server/share/lib/spark
+          chmod -R 0755 /usr/hdp/current/oozie-server/share/lib/spark
+          """
+          unless_exec: "find /usr/hdp/current/oozie-server/share/lib/spark/spark-assembly*.jar"
         @hdfs_mkdir
           target: "/user/#{oozie.user.name}/share/lib"
           user: "#{oozie.user.name}"
@@ -461,20 +487,17 @@ the ShareLib contents without having to go into HDFS.
           cmd: mkcmd.hdfs @, """
           if hdfs dfs -test -d /user/#{oozie.user.name}/share/lib; then
             echo 'Upgrade sharelib'
-            su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib upgrade -fs #{core_site['fs.defaultFS']} /usr/hdp/current/oozie-server/oozie-sharelib.tar.gz"
           else
-            #hdfs dfs -mkdir -p /user/#{oozie.user.name}/share/lib || true
-            #hdfs dfs -chown -R #{oozie.user.name}:#{oozie.group.name} /user/#{oozie.user.name}
             echo 'Create sharelib'
-            su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib create -fs #{core_site['fs.defaultFS']} /usr/hdp/current/oozie-server/oozie-sharelib.tar.gz"
           fi
+          su -l oozie -c "/usr/hdp/current/oozie-server/bin/oozie-setup.sh sharelib create -fs #{core_site['fs.defaultFS']} /usr/hdp/current/oozie-server/share"
           hdfs dfs -chmod -R 755 /user/#{oozie.user.name}
           """
-          trap: true
-          unless_exec: mkcmd.hdfs @, """
-          version=`ls /usr/hdp/current/oozie-server/lib | grep oozie-client | sed 's/^oozie-client-\\(.*\\)\\.jar$/\\1/g'`
-          hdfs dfs -cat /user/oozie/share/lib/*/sharelib.properties | grep build.version | grep $version
-          """
+          #trap: true
+          #unless_exec: mkcmd.hdfs @, """
+          #version=`ls /usr/hdp/current/oozie-server/lib | grep oozie-client | sed 's/^oozie-client-\\(.*\\)\\.jar$/\\1/g'`
+          #hdfs dfs -cat /user/oozie/share/lib/*/sharelib.properties | grep build.version | grep $version
+          #"""
 ## Hive Site
 
       @hconfigure

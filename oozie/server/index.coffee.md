@@ -6,8 +6,8 @@ Workflows are basically collections of actions.
 These actions can be  Hadoop Map/Reduce jobs, Pig jobs arranged in a control dependency DAG (Direct Acyclic Graph).
 Please check Oozie page
 
-    module.exports = 
-      use: 
+    module.exports =
+      use:
         iptables: implicit: true, module: 'masson/core/iptables'
         java: implicit: true, module: 'masson/commons/java'
         krb5_client: implicit: true, module: 'masson/core/krb5_client'
@@ -16,6 +16,7 @@ Please check Oozie page
         hadoop_core: implicit: true, module: 'ryba/hadoop/core'
         db_admin: implicit: true, module: 'ryba/commons/db_admin'
         yarn_client: implicit: true, module: 'ryba/hadoop/yarn_client'
+        spark_client: implicit: true, module: 'ryba/spark/client'
       configure: 'ryba/oozie/server/configure'
       commands:
         'install': [

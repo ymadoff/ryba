@@ -439,6 +439,99 @@
           trap: false # or while loop will exit on first run
           unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -d check-#{@config.shortname}-oozie-pig/output"
 
+## Check Spark Workflow
+## https://oozie.apache.org/docs/4.2.0/DG_SparkActionExtension.html
+## https://gist.github.com/NitinKumar94/4757268d9884ad79ce54
+## http://www.learn4master.com/big-data/pyspark/run-pyspark-on-oozie
+
+      @call header: 'Check Spark', skip: true, timeout: -1, label_true: 'CHECKED', label_false: 'SKIPPED', handler: ->
+        rm_ctxs = @contexts 'ryba/hadoop/yarn_rm'
+        if rm_ctxs.length > 1
+          rm_ctx = rm_ctxs[0]
+          # rm_ctx = @context rm_ctxs[0].config.ryba.yarn.active_rm_host#, require('../../hadoop/yarn_rm').configure
+          shortname = ".#{rm_ctx.config.ryba.yarn.rm.site['yarn.resourcemanager.ha.id']}"
+        else
+          rm_ctx = rm_ctxs[0]
+          shortname = ''
+        rm_address = rm_ctx.config.ryba.yarn.rm.site["yarn.resourcemanager.address#{shortname}"]
+        # Get the name of the user running the Oozie Server
+        os_ctxs = @contexts 'ryba/oozie/server', require('../server/configure').handler
+        {oozie} = os_ctxs[0].config.ryba
+        @file
+          content: """
+            nameNode=#{core_site['fs.defaultFS']}
+            jobTracker=#{rm_address}
+            oozie.libpath=/user/#{oozie.user.name}/share/lib
+            queueName=default
+            basedir=${nameNode}/user/#{user.name}/check-#{@config.shortname}-oozie-spark
+            oozie.wf.application.path=${basedir}
+            oozie.use.system.libpath=true
+            master=yarn-cluster
+          """
+          target: "#{user.home}/check_oozie_spark/job.properties"
+          uid: user.name
+          gid: user.group
+          eof: true
+        @file
+          content: """
+          <workflow-app name='check-#{@config.shortname}-oozie-spark' xmlns='uri:oozie:workflow:0.4'>
+            <start to='test-spark' />
+            <action name='test-spark'>
+              <spark xmlns="uri:oozie:spark-action:0.1">
+                <job-tracker>${jobTracker}</job-tracker>
+                <name-node>${nameNode}</name-node>
+                <prepare>
+                  <delete path="/user/${wf:user()}/check-#{@config.shortname}-oozie-spark/output"/>
+                </prepare>
+                <master>${master}</master>
+                <mode>cluster</mode>
+                <name>Spark-FileCopy</name>
+                <class>org.apache.oozie.example.SparkFileCopy</class>
+                <jar>/user/${wf:user()}/check-#{@config.shortname}-oozie-spark/lib/oozie-examples.jar</jar>
+                <arg>/user/${wf:user()}/check-#{@config.shortname}-oozie-spark/input/data.txt</arg>
+                <arg>/user/${wf:user()}/check-#{@config.shortname}-oozie-spark/output</arg>
+              </spark>
+              <ok to="end" />
+              <error to="fail" />
+            </action>
+            <kill name="fail">
+              <message>Spark failed, error message[${wf:errorMessage(wf:lastErrorNode())}]</message>
+            </kill>
+            <end name='end' />
+          </workflow-app>
+          """
+          target: "#{user.home}/check_oozie_spark/workflow.xml"
+          uid: user.name
+          gid: user.group
+          eof: true
+        @system.execute
+          cmd: mkcmd.test @, """
+          # Prepare HDFS
+          hdfs dfs -rm -r -skipTrash check-#{@config.shortname}-oozie-spark 2>/dev/null
+          hdfs dfs -mkdir -p check-#{@config.shortname}-oozie-spark/input
+          hdfs dfs -mkdir -p check-#{@config.shortname}-oozie-spark/output
+          echo -e 'a,1\\nb,2\\nc,3' | hdfs dfs -put - check-#{@config.shortname}-oozie-spark/input/data.txt
+          hdfs dfs -put -f #{user.home}/check_oozie_spark/workflow.xml check-#{@config.shortname}-oozie-spark
+          # Extract Examples
+          if [ ! -d /var/tmp/oozie-examples ]; then
+            mkdir /var/tmp/oozie-examples
+            tar xzf /usr/hdp/current/oozie-client/doc/oozie-examples.tar.gz -C /var/tmp/oozie-examples
+          fi
+          hdfs dfs -put /var/tmp/oozie-examples/examples/apps/spark/lib check-#{@config.shortname}-oozie-spark
+          # Run Oozie
+          export OOZIE_URL=#{oozie.site['oozie.base.url']}
+          oozie job -dryrun -config #{user.home}/check_oozie_spark/job.properties
+          jobid=`oozie job -run -config #{user.home}/check_oozie_spark/job.properties | grep job: | sed 's/job: \\(.*\\)/\\1/'`
+          # Check Job
+          i=0
+          echo $jobid
+          while [[ $i -lt 1000 ]] && [[ `oozie job -info $jobid | grep -e '^Status' | sed 's/^Status\\s\\+:\\s\\+\\(.*\\)$/\\1/'` == 'RUNNING' ]]
+          do ((i++)); sleep 1; done
+          oozie job -info $jobid | grep -e '^Status\\s\\+:\\s\\+SUCCEEDED'
+          """
+          trap: false # or while loop will exit on first run
+          unless_exec: unless force_check then mkcmd.test @, "hdfs dfs -test -f check-#{@config.shortname}-oozie-spark/output/_SUCCESS"
+
 # Module Dependencies
 
     url = require 'url'

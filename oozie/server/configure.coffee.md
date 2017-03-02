@@ -77,6 +77,9 @@ Example
       # Path to hadoop configuration is required when running 'sharelib upgrade'
       # or an error will complain that the hdfs url is invalid
       oozie.site['oozie.service.HadoopAccessorService.hadoop.configurations'] ?= '*=/etc/hadoop/conf'
+      # configuration for Spark
+      oozie.site['oozie.service.SparkConfigurationService.spark.configurations'] ?= '*=/etc/spark/conf/'
+      oozie.site['oozie.service.SparkConfigurationService.spark.configurations.ignore.spark.yarn.jar'] ?= 'true'
       # oozie.site['oozie.service.AuthorizationService.security.enabled'] ?= 'true'
       oozie.site['oozie.service.AuthorizationService.authorization.enabled'] ?= 'true'
       oozie.site['oozie.service.HadoopAccessorService.kerberos.enabled'] ?= 'true'
