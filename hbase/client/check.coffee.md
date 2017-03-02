@@ -72,7 +72,7 @@ Wait for the HBase master to be started.
                 'delegateAdmin': true
               ]
           @call once: true, 'ryba/ranger/admin/wait'
-          @wait_execute
+          @wait.execute
             header: 'Wait HBase Ranger repository'
             cmd: """
               curl --fail -H \"Content-Type: application/json\" -k -X GET  \
@@ -144,7 +144,7 @@ namespaces are prefixed with an '@' character.
 Note, we are re-using the namespace created above.
 
       @call header: 'Shell', timeout: -1, label_true: 'CHECKED', handler: ->
-        @wait_execute
+        @wait.execute
           cmd: mkcmd.test @, "hbase shell 2>/dev/null <<< \"exists '#{hbase.client.test.namespace}:#{hbase.client.test.table}'\" | grep 'Table #{hbase.client.test.namespace}:#{hbase.client.test.table} does exist'"
         @system.execute
           cmd: mkcmd.test @, """

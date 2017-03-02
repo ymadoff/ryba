@@ -24,7 +24,7 @@ Wait for Kerberos, ZooKeeper and HDFS to be started.
 
 ## Wait Active NN
 
-      @wait_execute
+      @wait.execute
         header: 'Wait Active NN'
         label_true: 'READY'
         timeout: -1

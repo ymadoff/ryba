@@ -9,7 +9,7 @@ su -l spark -c '/usr/hdp/current/spark-historyserver/sbin/start-history-server.s
 
     module.exports = header: 'Spark History Server Start', label_true: 'STARTED', handler: ->
       {spark, hadoop_group} = @config.ryba
-      @wait_execute
+      @wait.execute
         cmd: mkcmd.hdfs @, """
           hdfs dfs -stat \"%u:%g\" #{spark.history.conf['spark.eventLog.dir']} | grep #{spark.user.name}:#{hadoop_group.name}
         """

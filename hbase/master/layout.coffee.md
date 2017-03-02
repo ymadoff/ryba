@@ -9,7 +9,7 @@
 Wait for HDFS to be started.
 
       @call once: true, 'ryba/hadoop/hdfs_nn/wait'
-      @wait_execute
+      @wait.execute
         cmd: mkcmd.hdfs @, "hdfs dfs -test -d /apps"
 
 ## HDFS

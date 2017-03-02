@@ -113,7 +113,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
             #   cmd: "hdfs dfsadmin -rollingUpgrade prepare"
             @system.execute
               cmd: mkcmd.hdfs @, 'hdfs dfsadmin -rollingUpgrade prepare'
-            @wait_execute
+            @wait.execute
               cmd: mkcmd.hdfs @, 'hdfs dfsadmin -rollingUpgrade query | grep "Proceed with rolling upgrade"'
 
     exports.steps.push
@@ -210,7 +210,7 @@ Follow official instruction from [Hortonworks HDP 2.2 Manual Upgrade][upgrade]
       header: 'Finalize'
       if: -> @config.ryba.active_nn_host is @config.host
       handler: ->
-        @wait_execute
+        @wait.execute
           cmd: mkcmd.hdfs @, 'hdfs dfsadmin -safemode get | grep OFF'
           interval: 3000
         @system.execute

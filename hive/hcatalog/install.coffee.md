@@ -261,7 +261,7 @@ Create the directories to store the logs and pid information. The properties
         hive_user = hive.user.name
         hive_group = hive.group.name
         cmd = mkcmd.hdfs @, "hdfs dfs -test -d /user && hdfs dfs -test -d /apps && hdfs dfs -test -d /tmp"
-        @wait_execute
+        @wait.execute
           cmd: cmd
           code_skipped: 1
         @system.execute

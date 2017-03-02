@@ -42,7 +42,7 @@ This module check the Hive Server2 servers using the `beeline` command.
           		"userList": ["#{user.name}"],
           		"permList": ["all"]
           	}]
-        @wait_execute
+        @wait.execute
           cmd: """
             curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
             -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \

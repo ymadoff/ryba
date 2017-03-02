@@ -23,7 +23,7 @@ replica set primary server.
       mongo_shell_root_exec += "-u #{replica_master_ctx.config.ryba.mongodb.root.name} "
       mongo_shell_root_exec += "-p #{replica_master_ctx.config.ryba.mongodb.root.password} "
       cmd = " --eval 'rs.status().ok ' | grep -v 'MongoDB shell version' | grep -v 'connecting to:' | grep 1 "
-      @wait_execute
+      @wait.execute
         cmd: "#{mongo_shell_root_exec} #{cmd}"
       # TODO check if all config server are available
       @service.start name: 'mongod-router-server'

@@ -71,7 +71,7 @@
             		'delegateAdmin': true
               ]
           @call once: true, 'ryba/ranger/admin/wait'
-          @wait_execute
+          @wait.execute
             header: 'Wait HBase Ranger repository'
             cmd: """
               curl --fail -H \"Content-Type: application/json\" -k -X GET  \

@@ -30,7 +30,7 @@ majority of DataNodes also need to be running.
       else if @has_service 'ryba/hadoop/hdfs_snn' then conf_dir = "#{hdfs.snn.conf_dir}"
       else if @has_service 'ryba/hadoop/hdfs_client' then conf_dir = "#{hadoop_conf_dir}"
       else throw Error 'Invalid configuration'
-      @wait_execute
+      @wait.execute
         header: 'Safemode'
         cmd: mkcmd.hdfs @, "hdfs --config '#{conf_dir}' dfsadmin -safemode get | grep OFF"
         interval: 3000

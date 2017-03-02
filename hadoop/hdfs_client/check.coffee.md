@@ -13,7 +13,7 @@ Wait for the DataNode and NameNode.
 
 Run an HDFS command requiring a NameNode.
 
-      @wait_execute
+      @wait.execute
         header: 'NameNode'
         label_true: 'CHECKED',
         cmd: mkcmd.test @, "hdfs dfs -test -d /user/#{user.name}"

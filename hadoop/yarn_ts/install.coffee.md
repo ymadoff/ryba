@@ -156,7 +156,7 @@ Note, this is not documented anywhere and might not be considered as a best prac
       @call header: 'HDFS layout', timeout: -1, handler: ->
         return unless yarn.site['yarn.timeline-service.generic-application-history.store-class'] is "org.apache.hadoop.yarn.server.applicationhistoryservice.FileSystemApplicationHistoryStore"
         dir = yarn.site['yarn.timeline-service.fs-history-store.uri']
-        @wait_execute
+        @wait.execute
           cmd: mkcmd.hdfs @, "hdfs dfs -test -d #{path.dirname dir}"
         @system.execute
           cmd: mkcmd.hdfs @, """

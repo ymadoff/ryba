@@ -61,7 +61,7 @@
               'conditions': []
               'delegateAdmin': true
             ]
-        @wait_execute
+        @wait.execute
           cmd: """
             curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
             -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \

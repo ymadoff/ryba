@@ -419,7 +419,7 @@ Grant Permission to atlas for its titan' tables through ranger or from hbase she
             		'delegateAdmin': true
               ]
           @call once: true, 'ryba/ranger/admin/wait'
-          @wait_execute
+          @wait.execute
             header: 'Wait HBase Ranger repository'
             cmd: """
               curl --fail -H \"Content-Type: application/json\" -k -X GET  \
@@ -619,7 +619,7 @@ kakfa client become an implicit dependance. Its properties can be used.
                     'conditions': []
                     'delegateAdmin': true
                   ]
-              @wait_execute
+              @wait.execute
                 header: 'Wait Ranger Kafka Plugin'
                 cmd: """
                   curl --fail -H \"Content-Type: application/json\"   -k -X GET  \

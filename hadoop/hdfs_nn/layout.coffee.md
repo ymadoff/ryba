@@ -25,7 +25,7 @@ drwxr-xr-x   - hdfs   hadoop      /user/hdfs
 ```
 
       @call header: 'HDFS layout', timeout: -1, handler: (opts)->
-        @wait_execute
+        @wait.execute
           cmd: mkcmd.hdfs @, "hdfs --config '#{hdfs.nn.conf_dir}' dfs -test -d /"
         @system.execute
           cmd: mkcmd.hdfs @, """
