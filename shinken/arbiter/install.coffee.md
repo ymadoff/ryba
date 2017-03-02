@@ -70,7 +70,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           @file.render
             target: "/etc/shinken/#{service}s/#{service}-master.cfg"
             source: "#{__dirname}/resources/#{service}-master.cfg.j2"
-            local_source: true
+            local: true
             context: "#{service}s": @contexts "ryba/shinken/#{service}"
         @file.properties
           target: '/etc/shinken/resource.d/resources.cfg'
@@ -98,7 +98,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           @file.render
             target: "/etc/shinken/modules/#{mod.config_file}"
             source: "#{__dirname}/resources/module.cfg.j2"
-            local_source: true
+            local: true
             context:
               name: name
               type: mod.type or name
@@ -124,7 +124,7 @@ Objects config
           @file.render
             target: "/etc/shinken/#{obj}/#{obj}.cfg"
             source: "#{__dirname}/resources/#{obj}.cfg.j2"
-            local_source: true
+            local: true
             context:
               "#{obj}": shinken.config[obj]
               brokers: brokers
@@ -138,12 +138,12 @@ Objects config
           @file.render
             target: "/etc/shinken/templates/#{obj}.cfg"
             source: "#{__dirname}/resources/#{obj}.cfg.j2"
-            local_source: true
+            local: true
             context: "#{obj}": templated
           @file.render
             target: "/etc/shinken/#{obj}/#{obj}.cfg"
             source: "#{__dirname}/resources/#{obj}.cfg.j2"
-            local_source: true
+            local: true
             context: "#{obj}": real
 
 ### Services Config
@@ -152,15 +152,15 @@ Objects config
         # @file.render
         #   target: '/etc/shinken/services/hadoop-services.cfg'
         #   source: "#{__dirname}/resources/hadoop-services.cfg.j2"
-        #   local_source: true
+        #   local: true
         #   context: hosts: shinken.config.hosts
         # @file.render
         #   target: '/etc/shinken/services/watchers-services.cfg'
         #   source: "#{__dirname}/resources/watchers-services.cfg.j2"
-        #   local_source: true
+        #   local: true
         #   context: hosts: shinken.config.hosts
         # @file.render
         #   target: '/etc/shinken/dependencies/hadoop-dependencies.cfg'
         #   source: "#{__dirname}/resources/hadoop-dependencies.cfg.j2"
-        #   local_source: true
+        #   local: true
         #   context: hosts: shinken.config.hosts

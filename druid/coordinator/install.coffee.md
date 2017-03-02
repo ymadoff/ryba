@@ -25,7 +25,7 @@
         target: "/etc/init.d/druid-coordinator"
         source: "#{__dirname}/../resources/druid-coordinator.j2"
         context: @config
-        local_source: true
+        local: true
         backup: true
         mode: 0o0755
       @file.properties

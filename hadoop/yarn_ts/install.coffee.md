@@ -99,7 +99,7 @@ Update the "yarn-site.xml" configuration file.
         header: 'Core Site'
         target: "#{yarn.ats.conf_dir}/core-site.xml"
         source: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
-        local_source: true
+        local: true
         properties: core_site
         backup: true
       @hconfigure
@@ -116,11 +116,11 @@ Update the "yarn-site.xml" configuration file.
         header: 'Log4j'
         target: "#{yarn.ats.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
-        local_source: true
+        local: true
       @file.render
         target: "#{yarn.ats.conf_dir}/yarn-env.sh"
         source: "#{__dirname}/../resources/yarn-env.sh.j2"
-        local_source: true
+        local: true
         context: #@config
           JAVA_HOME: java.java_home
           HADOOP_YARN_HOME: yarn.ats.home
@@ -184,7 +184,7 @@ Note, this is not documented anywhere and might not be considered as a best prac
           storepass: ssl_client['ssl.client.truststore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
-          local_source: true
+          local: true
         # Server: import certificates, private and public keys to hosts with a server
         @java.keystore_add
           keystore: ssl_server['ssl.server.keystore.location']
@@ -195,13 +195,13 @@ Note, this is not documented anywhere and might not be considered as a best prac
           cert: "#{ssl.cert}"
           keypass: ssl_server['ssl.server.keystore.keypassword']
           name: @config.shortname
-          local_source: true
+          local: true
         @java.keystore_add
           keystore: ssl_server['ssl.server.keystore.location']
           storepass: ssl_server['ssl.server.keystore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
-          local_source: true
+          local: true
 
 ## Kerberos
 

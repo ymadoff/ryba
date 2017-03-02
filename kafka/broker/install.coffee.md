@@ -104,23 +104,23 @@ Upload *.properties files in /etc/kafka-broker/conf directory.
               continue if /^\./.test path.basename file
               @file
                 source: file
-                local_source: true
+                local: true
                 target: "#{kafka.broker.conf_dir}/#{path.basename file}"
                 binary: true
             @then callback
         @file
           source: "#{__dirname}/../resources/connect-console-sink.properties"
-          local_source: true
+          local: true
           target: "#{kafka.broker.conf_dir}/connect-console-sink.properties"
           binary: true
         @file
           source: "#{__dirname}/../resources/connect-console-sink.properties"
-          local_source: true
+          local: true
           target: "#{kafka.broker.conf_dir}/connect-console-sink.properties"
           binary: true
         @file
           source: "#{__dirname}/../resources/connect-console-sink.properties"
-          local_source: true
+          local: true
           target: "#{kafka.broker.conf_dir}/connect-console-sink.properties"
           binary: true
 
@@ -249,20 +249,20 @@ SSL is enabled at least for inter broker communication
             cert: "#{ssl.cert}"
             keypass: kafka.broker.config['ssl.key.password']
             name: @config.shortname
-            local_source: true
+            local: true
           @java.keystore_add
             keystore: kafka.broker.config['ssl.keystore.location']
             storepass: kafka.broker.config['ssl.keystore.password']
             caname: "hadoop_root_ca"
             cacert: "#{ssl.cacert}"
-            local_source: true
+            local: true
           # imports kafka broker server hadoop_root_ca CA trustore
           @java.keystore_add
             keystore: kafka.broker.config['ssl.truststore.location']
             storepass: kafka.broker.config['ssl.truststore.password']
             caname: "hadoop_root_ca"
             cacert: "#{ssl.cacert}"
-            local_source: true
+            local: true
 
 
 ## Layout

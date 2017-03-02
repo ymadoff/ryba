@@ -157,7 +157,7 @@ the "security_enabled" property set to "true".
         @file
           target: "#{hue.ca_bundle}"
           source: "#{hue.ssl.client_ca}"
-          local_source: true
+          local: true
           if: !!hue.ssl.client_ca
         @service.init
           target: '/etc/init.d/hue'

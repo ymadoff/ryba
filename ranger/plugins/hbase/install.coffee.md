@@ -139,7 +139,7 @@ Must add certificate to JAVA Cacerts file manually.
           storepass: 'changeit'
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
-          local_source: true
+          local: true
 
 ## Plugin Scripts 
 

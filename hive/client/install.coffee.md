@@ -49,7 +49,7 @@ See [Hive/HCatalog Configuration Files](http://docs.hortonworks.com/HDPDocuments
         header: 'Hive Site'
         target: "#{hive.conf_dir}/hive-site.xml"
         source: "#{__dirname}/../../resources/hive/hive-site.xml"
-        local_source: true
+        local: true
         properties: hive.site
         merge: true
         backup: true
@@ -76,7 +76,7 @@ by setting a "heapsize" value equal to "4096".
         header: 'Hive Env'
         source: "#{__dirname}/../resources/hive-env.sh.j2"
         target: "#{hive.conf_dir}/hive-env.sh"
-        local_source: true
+        local: true
         context: @config
         eof: true
         backup: true
@@ -89,7 +89,7 @@ by setting a "heapsize" value equal to "4096".
         storepass: hive.client.truststore_password
         caname: "hive_root_ca"
         cacert: ssl.cacert
-        local_source: true
+        local: true
 
 ## Dependencies
 

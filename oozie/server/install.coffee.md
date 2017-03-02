@@ -196,7 +196,7 @@ catalina_opts="${catalina_opts} -Doozie.https.keystore.pass=${OOZIE_HTTPS_KEYSTO
         header: 'Oozie Environment'
         target: "#{oozie.conf_dir}/oozie-env.sh"
         source: "#{__dirname}/../resources/oozie-env.sh.j2"
-        local_source: true
+        local: true
         context: @config
         write: writes
         uid: oozie.user.name
@@ -263,7 +263,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         @hconfigure
           target: "#{oozie.conf_dir}/oozie-site.xml"
           source: "#{__dirname}/../resources/oozie-site.xml"
-          local_source: true
+          local: true
           properties: oozie.site
           uid: oozie.user.name
           gid: oozie.group.name
@@ -273,7 +273,7 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
         @file
           target: "#{oozie.conf_dir}/oozie-default.xml"
           source: "#{__dirname}/../resources/oozie-default.xml"
-          local_source: true
+          local: true
           backup: true
         @hconfigure
           target: "#{oozie.conf_dir}/hadoop-conf/core-site.xml"
@@ -295,20 +295,20 @@ Install the LZO compression library as part of enabling the Oozie Web Console.
           cert: "#{ssl.cert}"
           keypass: oozie.keystore_pass
           name: @config.shortname
-          local_source: true
+          local: true
         @java.keystore_add
           keystore: oozie.keystore_file
           storepass: oozie.keystore_pass
           caname: 'hadoop_root_ca'
           cacert: "#{ssl.cacert}"
-          local_source: true
+          local: true
         # fix oozie pkix build exceptionm when oozie server connects to hadoop mr
         @java.keystore_add
           keystore: oozie.truststore_file
           storepass: oozie.truststore_pass
           caname: 'hadoop_root_ca'
           cacert: "#{ssl.cacert}"
-          local_source: true
+          local: true
 
       @call header: 'War', handler: ->
         @call header: 'HBase', handler: ->
@@ -516,7 +516,7 @@ the ShareLib contents without having to go into HDFS.
         header: 'Log4J properties'
         target: "#{oozie.conf_dir}/oozie-log4j.properties"
         source: "#{__dirname}/../resources/oozie-log4j.properties"
-        local_source: true
+        local: true
         backup: true
         write: for k, v of oozie.log4j
           match: RegExp "^#{quote k}=.*$", 'mg'

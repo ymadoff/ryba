@@ -57,7 +57,7 @@ falcon:x:498:falcon
         @file
           header: 'Init Script'
           source: "#{__dirname}/../resources/falcon"
-          local_source: true
+          local: true
           target: '/etc/init.d/falcon'
           mode: 0o0755
           unlink: true
@@ -89,7 +89,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
         target: "#{falcon.conf_dir}/falcon-env.sh"
         source: "#{__dirname}/../resources/falcon-env.sh.j2"
         context: @config
-        local_source: true
+        local: true
         backup: true
 
 ## Kerberos

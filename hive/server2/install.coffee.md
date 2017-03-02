@@ -98,7 +98,7 @@ isnt yet started.
         header: 'Hive Site'
         target: "#{hive.server2.conf_dir}/hive-site.xml"
         source: "#{__dirname}/../../resources/hive/hive-site.xml"
-        local_source: true
+        local: true
         properties: hive.server2.site
         merge: true
         backup: true
@@ -108,7 +108,7 @@ isnt yet started.
       @file.render
         header: 'Hive Log4j properties'
         source: "#{__dirname}/../resources/hive-exec-log4j.properties"
-        local_source: true
+        local: true
         target: "#{hive.server2.conf_dir}/hive-exec-log4j.properties"
         context: @config
       @file.properties
@@ -174,7 +174,7 @@ Create the directories to store the logs and pid information. The properties
             cert: ssl.cert
             keypass: ssl_server['ssl.server.keystore.keypassword']
             name: @config.shortname
-            local_source: true
+            local: true
           # @java.keystore_add
           #   keystore: hive.server2.site['hive.server2.keystore.path']
           #   storepass: hive.server2.site['hive.server2.keystore.password']

@@ -118,13 +118,13 @@ Install Atlas packages
         cert: "#{ssl.cert}"
         keypass: atlas.serverkey_password
         name: @config.shortname
-        local_source: true
+        local: true
       @java.keystore_add
         keystore: atlas.application.properties['truststore.file']
         storepass: atlas.truststore_password
         caname: "hadoop_root_ca"
         cacert: "#{ssl.cacert}"
-        local_source: true
+        local: true
       @system.chown
         target: atlas.application.properties['keystore.file']
         uid: atlas.user.name
@@ -312,7 +312,7 @@ Render the Atlas Environment file
           uid: atlas.user.name
           gid: atlas.group.name
           mode: 0o770
-          local_source: true
+          local: true
           context: @config
           write: writes
           unlink: true
@@ -344,7 +344,7 @@ set to other than the default
         context: @config
         uid: atlas.user.name
         gid: atlas.group.name
-        local_source: true
+        local: true
         eof: true
         # Fix mapreduce looking for "mapreduce.tar.gz"
         write: [

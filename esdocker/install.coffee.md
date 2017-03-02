@@ -18,7 +18,7 @@
           header: 'elasticsearch logging'
           destination: "/etc/elasticsearch/#{es_name}/conf/logging.yml"
           source: "#{__dirname}/resources/logging.yml"
-          local_source: true
+          local: true
           backup: true
 
         @system.mkdir directory:"#{path}/#{es_name}",uid:'elasticsearch' for path in es.data_path

@@ -121,7 +121,7 @@ inside "/etc/init.d" and activate it on startup.
         header: 'Core Site'
         target: "#{yarn.rm.conf_dir}/core-site.xml"
         source: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
-        local_source: true
+        local: true
         properties: merge {}, core_site, yarn.rm.core_site
         backup: true
       @hconfigure
@@ -133,14 +133,14 @@ inside "/etc/init.d" and activate it on startup.
         label: 'YARN Site'
         target: "#{yarn.rm.conf_dir}/yarn-site.xml"
         source: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
-        local_source: true
+        local: true
         properties: yarn.rm.site
         backup: true
       @file
         header: 'Log4j'
         target: "#{yarn.rm.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
-        local_source: true
+        local: true
         write: for k, v of yarn.rm.log4j
           match: RegExp "#{k}=.*", 'm'
           replace: "#{k}=#{v}"
@@ -150,7 +150,7 @@ inside "/etc/init.d" and activate it on startup.
         @file.render
           target: "#{yarn.rm.conf_dir}/yarn-env.sh"
           source: "#{__dirname}/../resources/yarn-env.sh.j2"
-          local_source: true
+          local: true
           context:
             JAVA_HOME: java.java_home
             HADOOP_YARN_HOME: yarn.rm.home
@@ -201,7 +201,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
           storepass: ssl_client['ssl.client.truststore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
-          local_source: true
+          local: true
         # Server: import certificates, private and public keys to hosts with a server
         @java.keystore_add
           keystore: ssl_server['ssl.server.keystore.location']
@@ -212,13 +212,13 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
           cert: "#{ssl.cert}"
           keypass: ssl_server['ssl.server.keystore.keypassword']
           name: @config.shortname
-          local_source: true
+          local: true
         @java.keystore_add
           keystore: ssl_server['ssl.server.keystore.location']
           storepass: ssl_server['ssl.server.keystore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
-          local_source: true
+          local: true
 
 ## Kerberos
 

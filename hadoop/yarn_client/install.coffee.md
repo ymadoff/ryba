@@ -53,7 +53,7 @@ Properties accepted by the template are: `ryba.yarn.rm_opts`
         header: 'Yarn OPTS'
         target: "#{hadoop_conf_dir}/yarn-env.sh"
         source: "#{__dirname}/../resources/yarn-env.sh.j2"
-        local_source: true
+        local: true
         context: #@config
           JAVA_HOME: java.java_home
           HADOOP_YARN_HOME: yarn.home
@@ -70,7 +70,7 @@ Properties accepted by the template are: `ryba.yarn.rm_opts`
         header: 'Configuration'
         target: "#{hadoop_conf_dir}/yarn-site.xml"
         source: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
-        local_source: true
+        local: true
         properties: yarn.site
         backup: true
         uid: yarn.user.name

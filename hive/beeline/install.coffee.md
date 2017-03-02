@@ -24,7 +24,7 @@
         header: 'Hive Env'
         source: "#{__dirname}/../resources/hive-env.sh.j2"
         target: "#{hive.conf_dir}/hive-env.sh"
-        local_source: true
+        local: true
         context: @config
         eof: true
         backup: true
@@ -37,7 +37,7 @@
         storepass: hive.client.truststore_password
         caname: "hive_root_ca"
         cacert: ssl.cacert
-        local_source: true
+        local: true
 
 ## Dependencies
 

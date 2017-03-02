@@ -47,7 +47,7 @@ script inside "/etc/init.d" and activate it on startup.
         @service.init
           target: '/etc/init.d/hadoop-hdfs-secondarynamenode'
           source: "#{__dirname}/../resources/secondarynamenode.j2"
-          local_source: true
+          local: true
           context: @config
           mode: 0o0755
         @system.tmpfs
@@ -93,7 +93,7 @@ script inside "/etc/init.d" and activate it on startup.
         header: 'Configuration'
         target: "#{hdfs.snn.conf_dir}/hdfs-site.xml"
         source: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
-        local_source: true
+        local: true
         properties: hdfs.site
         uid: hdfs.user
         gid: hadoop_group

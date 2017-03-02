@@ -45,7 +45,7 @@ companion file defines no properties while the YUM package does.
         header: 'Env'
         source: "#{__dirname}/resources/pig-env.sh"
         target: "#{pig.conf_dir}/pig-env.sh"
-        local_source: true
+        local: true
         write: [
           match: /^JAVA_HOME=.*$/mg
           replace: "JAVA_HOME=#{java_home}"

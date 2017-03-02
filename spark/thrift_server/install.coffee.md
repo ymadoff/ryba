@@ -26,7 +26,7 @@
       @service.init
         destination : "/etc/init.d/spark-thrift-server"
         source: "#{__dirname}/../resources/spark-thrift-server"
-        local_source: true
+        local: true
         context: @config.ryba
         backup: true
         mode: 0o0755
@@ -94,7 +94,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
         @file.render
           destination : "#{spark.thrift.conf_dir}/spark-env.sh"
           source: "#{__dirname}/../resources/spark-env.sh.j2"
-          local_source: true
+          local: true
           context: @config
           backup: true
           uid: spark.user.name

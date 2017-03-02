@@ -43,7 +43,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
         @service.init
           target: '/etc/init.d/hadoop-hdfs-zkfc'
           source: "#{__dirname}/../resources/hadoop-hdfs-zkfc.j2"
-          local_source: true
+          local: true
           context: @config
           mode: 0o0755
         @system.execute
@@ -62,7 +62,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
         @hconfigure
           target: "#{zkfc.conf_dir}/hdfs-site.xml"
           source: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
-          local_source: true
+          local: true
           properties: hdfs.nn.site
           uid: hdfs.user.name
           gid: hadoop_group.name
@@ -71,7 +71,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
           header: 'Environment'
           target: "#{zkfc.conf_dir}/hadoop-env.sh"
           source: "#{__dirname}/../resources/hadoop-env.sh.j2"
-          local_source: true
+          local: true
           context:
             HADOOP_HEAPSIZE: ryba.hadoop_heap
             HADOOP_LOG_DIR: ryba.hdfs.log_dir
@@ -88,7 +88,7 @@ in "/etc/init.d/hadoop-hdfs-datanode" and define its startup strategy.
           header: 'Log4j'
           target: "#{zkfc.conf_dir}/log4j.properties"
           source: "#{__dirname}/../resources/log4j.properties"
-          local_source: true
+          local: true
 
 ## Kerberos
 

@@ -33,7 +33,7 @@ HDFS directory. Note, the parent directories are created by the
         header: 'Tez Site'
         target: "#{tez.env['TEZ_CONF_DIR']}/tez-site.xml"
         source: "#{__dirname}/resources/tez-site.xml"
-        local_source: true
+        local: true
         properties: tez.site
         merge: true
 

@@ -109,7 +109,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
         header: 'Core Site'
         target: "#{mapred.jhs.conf_dir}/core-site.xml"
         source: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
-        local_source: true
+        local: true
         properties: core_site
         backup: true
       @hconfigure
@@ -131,19 +131,19 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
         header: 'Log4j'
         target: "#{mapred.jhs.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
-        local_source: true
+        local: true
       @file.render
         header: 'Mapred Env'
         target: "#{mapred.jhs.conf_dir}/mapred-env.sh"
         source: "#{__dirname}/../resources/mapred-env.sh.j2"
         context: @config
-        local_source: true
+        local: true
         backup: true
       @file.render
         header: 'Hadoop Env'
         target: "#{mapred.jhs.conf_dir}/hadoop-env.sh"
         source: "#{__dirname}/../resources/hadoop-env.sh.j2"
-        local_source: true
+        local: true
         context:
           HADOOP_HEAPSIZE: @config.ryba.hadoop_heap
           HADOOP_LOG_DIR: @config.ryba.hdfs.log_dir
@@ -161,7 +161,7 @@ Templated properties are "ryba.mapred.heapsize" and "ryba.mapred.pid_dir".
         header: 'MapRed Env'
         target: "#{mapred.jhs.conf_dir}/mapred-env.sh"
         source: "#{__dirname}/../resources/mapred-env.sh.j2"
-        local_source: true
+        local: true
         context: @config
         uid: mapred.user.name
         gid: hadoop_group.name
@@ -194,7 +194,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
           storepass: ssl_client['ssl.client.truststore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
-          local_source: true
+          local: true
         # Server: import certificates, private and public keys to hosts with a server
         @java.keystore_add
           keystore: ssl_server['ssl.server.keystore.location']
@@ -205,13 +205,13 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
           cert: "#{ssl.cert}"
           keypass: ssl_server['ssl.server.keystore.keypassword']
           name: @config.shortname
-          local_source: true
+          local: true
         @java.keystore_add
           keystore: ssl_server['ssl.server.keystore.location']
           storepass: ssl_server['ssl.server.keystore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
-          local_source: true
+          local: true
 
 ## Kerberos
 

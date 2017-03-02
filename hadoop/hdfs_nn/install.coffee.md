@@ -113,14 +113,14 @@ file is usually stored inside the "/var/run/hadoop-hdfs/hdfs" directory.
         header: 'Core Site'
         target: "#{hdfs.nn.conf_dir}/core-site.xml"
         source: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
-        local_source: true
+        local: true
         properties: merge {}, core_site, hdfs.nn.core_site
         backup: true
       @hconfigure
         header: 'HDFS Site'
         target: "#{hdfs.nn.conf_dir}/hdfs-site.xml"
         source: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
-        local_source: true
+        local: true
         properties: hdfs.nn.site
         uid: hdfs.user.name
         gid: hadoop_group.name
@@ -140,7 +140,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
           header: 'Environment'
           target: "#{hdfs.nn.conf_dir}/hadoop-env.sh"
           source: "#{__dirname}/../resources/hadoop-env.sh.j2"
-          local_source: true
+          local: true
           context:
             HADOOP_ROOT_LOGGER: ryba.hdfs.nn.root_logger
             HADOOP_SECURITY_LOGGER: ryba.hdfs.nn.security_logger
@@ -171,7 +171,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
           match: RegExp "#{k}=.*", 'm'
           replace: "#{k}=#{v}"
           append: true
-        local_source: true
+        local: true
 
 ## Hadoop Metrics
 
@@ -198,7 +198,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
           storepass: hdfs.nn.ssl_client['ssl.client.truststore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
-          local_source: true
+          local: true
         # Server: import certificates, private and public keys to hosts with a server
         @java.keystore_add
           keystore: hdfs.nn.ssl_server['ssl.server.keystore.location']
@@ -209,13 +209,13 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
           cert: "#{ssl.cert}"
           keypass: hdfs.nn.ssl_server['ssl.server.keystore.keypassword']
           name: @config.shortname
-          local_source: true
+          local: true
         @java.keystore_add
           keystore: hdfs.nn.ssl_server['ssl.server.keystore.location']
           storepass: hdfs.nn.ssl_server['ssl.server.keystore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
-          local_source: true
+          local: true
 
 ## Kerberos
 
@@ -347,7 +347,7 @@ ${HADOOP_CONF_DIR}/core-site.xml
         header: 'Policy'
         target: "#{hdfs.nn.conf_dir}/hadoop-policy.xml"
         source: "#{__dirname}/../../resources/core_hadoop/hadoop-policy.xml"
-        local_source: true
+        local: true
         properties: hadoop_policy
         backup: true
         if: core_site['hadoop.security.authorization'] is 'true'

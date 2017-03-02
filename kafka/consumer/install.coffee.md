@@ -127,7 +127,7 @@ Write JAAS File for client configuration
         storepass:   kafka.consumer.config['ssl.truststore.password']
         caname: "hadoop_root_ca"
         cacert: "#{ssl.cacert}"
-        local_source: true
+        local: true
 
 ## Dependencies
 

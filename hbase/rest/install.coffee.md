@@ -76,7 +76,7 @@ hbase:x:492:
         @service.init
           header: 'Init Script'
           source: "#{__dirname}/../resources/hbase-rest.j2"
-          local_source: true
+          local: true
           context: @config
           target: '/etc/init.d/hbase-rest'
           mode: 0o0755
@@ -112,7 +112,7 @@ Environment passed to the HBase Rest Server before it starts.
         header: 'Hbase Env'
         target: "#{hbase.rest.conf_dir}/hbase-env.sh"
         source: "#{__dirname}/../resources/hbase-env.sh.j2"
-        local_source: true
+        local: true
         context: @config
         mode: 0o0750
         uid: hbase.user.name

@@ -172,7 +172,7 @@ Create HDFS solr user and its home directory
           target: "#{solr.cloud.conf_dir}/solr.in.sh"
           context: @config
           write: writes
-          local_source: true
+          local: true
           backup: true
           eof: true
         @file.render
@@ -274,13 +274,13 @@ HDP has version 5.2.1 of solr, and security plugins are included from 5.3.0
         cert: "#{ssl.cert}"
         keypass: solr.cloud.ssl_keystore_pwd
         name: @config.shortname
-        local_source: true
+        local: true
       @java.keystore_add
         keystore: solr.cloud.ssl_trustore_path
         storepass: solr.cloud.ssl_keystore_pwd
         caname: "hadoop_root_ca"
         cacert: "#{ssl.cacert}"
-        local_source: true
+        local: true
       # not documented but needed when SSL
       @system.execute
         header: "Enable SSL Scheme"

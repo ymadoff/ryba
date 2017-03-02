@@ -78,7 +78,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
         header: 'Knox Ldap Caching'
         target: "#{knox.conf_dir}/ehcache.xml"
         source: "#{__dirname}/resources/ehcache.j2"
-        local_source: true
+        local: true
 
 ## Env
 
@@ -157,7 +157,7 @@ in the gateway.sh service script.
           @file.render
             target: "#{knox.conf_dir}/#{nameservice}-ehcache.xml"
             source: "#{__dirname}/resources/ehcache.j2"
-            local_source: true
+            local: true
             context: nameservice:nameservice
 
 ## Master Key
@@ -241,7 +241,7 @@ client to connect to openldap.
         header: 'Log4J Properties'
         target: "#{knox.conf_dir}/gateway-log4j.properties"
         source: "#{__dirname}/resources/gateway-log4j.properties"
-        local_source: true
+        local: true
         write: for k, v of knox.log4j
           match: RegExp "#{k}=.*", 'm'
           replace: "#{k}=#{v}"

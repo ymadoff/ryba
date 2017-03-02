@@ -152,7 +152,7 @@ Create HDFS solr user and its home directory
           target: "#{solr.single.conf_dir}/solr.in.sh"
           context: @config
           write: writes
-          local_source: true
+          local: true
           backup: true
           eof: true
         @file.render
@@ -163,7 +163,7 @@ Create HDFS solr user and its home directory
           gid: solr.group.name
           mode: 0o0755
           context: @
-          local_source: true
+          local: true
           backup: true
           eof: true
         @system.link
@@ -194,13 +194,13 @@ Create HDFS solr user and its home directory
         cert: "#{ssl.cert}"
         keypass: solr.single.ssl_keystore_pwd
         name: @config.shortname
-        local_source: true
+        local: true
       @java.keystore_add
         keystore: solr.single.ssl_trustore_path
         storepass: solr.single.ssl_keystore_pwd
         caname: "hadoop_root_ca"
         cacert: "#{ssl.cacert}"
-        local_source: true
+        local: true
 
 ## Dependencies
 

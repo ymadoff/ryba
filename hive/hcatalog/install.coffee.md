@@ -107,7 +107,7 @@ isnt yet started.
         header: 'Hive Site'
         target: "#{hive.hcatalog.conf_dir}/hive-site.xml"
         source: "#{__dirname}/../../resources/hive/hive-site.xml"
-        local_source: true
+        local: true
         properties: hive.hcatalog.site
         merge: true
         backup: true
@@ -120,7 +120,7 @@ isnt yet started.
         header: 'Exec Log4j'
         target: "#{hive.hcatalog.conf_dir}/hive-exec-log4j.properties"
         source: "#{__dirname}/../resources/hive-exec-log4j.properties"
-        local_source: true
+        local: true
         context: @config
       @system.execute
         header: 'Directory Permission'
@@ -148,7 +148,7 @@ the Hive Metastore service and execute "./bin/hive --service metastore"
         header: 'Hive Env'
         source: "#{__dirname}/../resources/hive-env.sh.j2"
         target: "#{hive.hcatalog.conf_dir}/hive-env.sh"
-        local_source: true
+        local: true
         context: @config
         eof: true
         mode: 0o750
@@ -321,7 +321,7 @@ Create the directories to store the logs and pid information. The properties
         storepass: hive.hcatalog.truststore_password
         caname: "hive_root_ca"
         cacert: ssl.cacert
-        local_source: true
+        local: true
 
 ## Ulimit
 

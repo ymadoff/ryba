@@ -47,7 +47,7 @@ Upload the "hdp-gmond" service file into "/etc/init.d".
         @file
           target: '/etc/init.d/hdp-gmond'
           source: "#{__dirname}/../resources/scripts/hdp-gmond"
-          local_source: true
+          local: true
           match: /# chkconfig: .*/mg
           replace: '# chkconfig: 2345 70 40'
           append: '#!/bin/sh'

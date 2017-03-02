@@ -72,7 +72,7 @@ Maintain the "kms-env.sh" file.
         header: 'Environment'
         target: "#{kms.conf_dir}/kms-env.sh"
         source: "#{__dirname}/../resources/kms-env.sh.j2"
-        local_source: true
+        local: true
         context: @config
         uid: kms.user.name
         gid: hadoop_group.name
@@ -112,4 +112,4 @@ Maintain the "kms-env.sh" file.
         cert: "#{ssl.cert}"
         keypass: 'jijiji'
         name: @config.shortname
-        local_source: true
+        local: true

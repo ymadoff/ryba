@@ -39,7 +39,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
         header: 'Env'
         target: "#{hadoop_conf_dir}/hadoop-env.sh"
         source: "#{__dirname}/../resources/hadoop-env.sh.j2"
-        local_source: true
+        local: true
         context:
           HADOOP_ROOT_LOGGER: @config.ryba.hadoop_root_logger
           HADOOP_SECURITY_LOGGER: @config.ryba.hadoop_security_logger
@@ -65,14 +65,14 @@ Update the "core-site.xml" configuration file with properties from the
         header: 'Core Configuration'
         target: "#{hadoop_conf_dir}/core-site.xml"
         source: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
-        local_source: true
+        local: true
         properties: core_site
         backup: true
       @hconfigure
         header: 'HDFS Configuration'
         target: "#{hadoop_conf_dir}/hdfs-site.xml"
         source: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
-        local_source: true
+        local: true
         properties: hdfs.site
         uid: hdfs.user.name
         gid: hadoop_group.name
@@ -118,4 +118,4 @@ Update the "core-site.xml" configuration file with properties from the
           storepass: ssl_client['ssl.client.truststore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
-          local_source: true
+          local: true

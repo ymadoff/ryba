@@ -120,7 +120,7 @@ Environment passed to the Master before it starts.
           target: "#{hbase.master.conf_dir}/hbase-env.sh"
           source: "#{__dirname}/../resources/hbase-env.sh.j2"
           backup: true
-          local_source: true
+          local: true
           eof: true
           context: @config
           mode: 0o750

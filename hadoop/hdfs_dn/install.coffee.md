@@ -145,7 +145,7 @@ Update the "core-site.xml" configuration file with properties from the
         header: 'Core Site'
         target: "#{hdfs.dn.conf_dir}/core-site.xml"
         source: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
-        local_source: true
+        local: true
         properties: core_site
         backup: true
 
@@ -158,7 +158,7 @@ present inside the "hdp.ha\_client\_config" object.
         header: 'HDFS Site'
         target: "#{hdfs.dn.conf_dir}/hdfs-site.xml"
         source: "#{__dirname}/../../resources/core_hadoop/hdfs-site.xml"
-        local_source: true
+        local: true
         properties: hdfs.site
         uid: hdfs.user.name
         gid: hadoop_group.name
@@ -178,7 +178,7 @@ correct for RHEL, it is installed in "/usr/lib/bigtop-utils" on my CentOS.
           header: 'Environment'
           target: "#{hdfs.dn.conf_dir}/hadoop-env.sh"
           source: "#{__dirname}/../resources/hadoop-env.sh.j2"
-          local_source: true
+          local: true
           context:
             HADOOP_ROOT_LOGGER: ryba.hdfs.dn.root_logger
             HADOOP_SECURITY_LOGGER: ryba.hdfs.dn.security_logger
@@ -260,7 +260,7 @@ Also some [interesting info about snn](http://blog.cloudera.com/blog/2009/02/mul
           storepass: ssl_client['ssl.client.truststore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
-          local_source: true
+          local: true
         # Server: import certificates, private and public keys to hosts with a server
         @java.keystore_add
           keystore: ssl_server['ssl.server.keystore.location']
@@ -271,13 +271,13 @@ Also some [interesting info about snn](http://blog.cloudera.com/blog/2009/02/mul
           cert: "#{ssl.cert}"
           keypass: ssl_server['ssl.server.keystore.keypassword']
           name: @config.shortname
-          local_source: true
+          local: true
         @java.keystore_add
           keystore: ssl_server['ssl.server.keystore.location']
           storepass: ssl_server['ssl.server.keystore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
-          local_source: true
+          local: true
 
 ## Kerberos
 

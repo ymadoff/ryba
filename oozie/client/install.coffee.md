@@ -49,7 +49,7 @@ Expose the "OOZIE_URL" environmental variable to every users.
         header: 'Oozie site'
         target: "#{oozie.conf_dir}/oozie-site.xml"
         source: "#{__dirname}/../resources/oozie-site.xml"
-        local_source: true
+        local: true
         properties: oozie.site
         uid: oozie.user.name
         gid: oozie.group.name

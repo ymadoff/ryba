@@ -65,7 +65,7 @@ Upload the "hdp-gmetad" service file into "/etc/init.d".
         @file
           target: '/etc/init.d/hdp-gmetad'
           source: "#{__dirname}/../resources/scripts/hdp-gmetad"
-          local_source: true
+          local: true
           match: /# chkconfig: .*/mg
           replace: '# chkconfig: 2345 20 80'
           append: '#!/bin/sh'

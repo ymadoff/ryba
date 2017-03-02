@@ -34,7 +34,7 @@ Upload the "sqoop-env.sh" file into the "/etc/sqoop/conf" folder.
         header:'Sqoop Environment'
         target: "#{sqoop.conf_dir}/sqoop-env.sh"
         source: "#{__dirname}/resources/sqoop-env.sh"
-        local_source: true
+        local: true
         write: [
            match: /^export HADOOP_HOME=.*$/m # Sqoop default is "/usr/lib/hadoop"
            replace: "export HADOOP_HOME=${HADOOP_HOME:-/usr/hdp/current/hadoop-client} # RYBA for HDP"
@@ -61,7 +61,7 @@ Upload the "sqoop-site.xml" files into the "/etc/sqoop/conf" folder.
         header: 'Sqoop Site'
         target: "#{sqoop.conf_dir}/sqoop-site.xml"
         source: "#{__dirname}/resources/sqoop-site.xml"
-        local_source: true
+        local: true
         properties: sqoop.site
         uid: sqoop.user.name
         gid: hadoop_group.name

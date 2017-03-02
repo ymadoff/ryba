@@ -102,7 +102,7 @@ Upload configuration inside '/etc/hive-webhcat/conf/webhcat-site.xml'.
         header: 'Webhcat Site'
         target: "#{webhcat.conf_dir}/webhcat-site.xml"
         source: "#{__dirname}/../../resources/hive-webhcat/webhcat-site.xml"
-        local_source: true
+        local: true
         properties: webhcat.site
         uid: hive.user.name
         gid: hadoop_group.name
@@ -174,7 +174,7 @@ Copy the spnego keytab with restricitive permissions
         header: 'Log4j'
         target: "#{webhcat.conf_dir}/webhcat-log4j.properties"
         source: "#{__dirname}/../resources/webhcat-log4j.properties"
-        local_source: true
+        local: true
         write: for k, v of webhcat.log4j
           match: RegExp "#{k}=.*", 'm'
           replace: "#{k}=#{v}"

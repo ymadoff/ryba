@@ -25,7 +25,7 @@
         target: "/etc/init.d/druid-historical"
         source: "#{__dirname}/../resources/druid-historical.j2"
         context: @config
-        local_source: true
+        local: true
         backup: true
         mode: 0o0755
       @file.properties

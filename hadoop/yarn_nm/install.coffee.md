@@ -57,7 +57,7 @@ inside "/etc/init.d" and activate it on startup.
         @service.init
           target: '/etc/init.d/hadoop-yarn-nodemanager'
           source: "#{__dirname}/../resources/hadoop-yarn-nodemanager.j2"
-          local_source: true
+          local: true
           context: @config
           mode: 0o0755
         @service # Seems like NM complain with message "java.lang.ClassNotFoundException: Class org.apache.hadoop.mapred.ShuffleHandler not found"
@@ -156,7 +156,7 @@ SSH connection to the node to gather the memory and CPU informations.
         header: 'Core Site'
         target: "#{yarn.nm.conf_dir}/core-site.xml"
         source: "#{__dirname}/../../resources/core_hadoop/core-site.xml"
-        local_source: true
+        local: true
         properties: core_site
         backup: true
       @hconfigure
@@ -168,21 +168,21 @@ SSH connection to the node to gather the memory and CPU informations.
         header: 'YARN Site'
         target: "#{yarn.nm.conf_dir}/yarn-site.xml"
         source: "#{__dirname}/../../resources/core_hadoop/yarn-site.xml"
-        local_source: true
+        local: true
         properties: yarn.site
         backup: true
       @file
         header: 'Log4j'
         target: "#{yarn.nm.conf_dir}/log4j.properties"
         source: "#{__dirname}/../resources/log4j.properties"
-        local_source: true
+        local: true
       @call header: 'YARN Env', handler: ->
         yarn.nm.java_opts += " -D#{k}=#{v}" for k, v of yarn.nm.opts 
         @file.render
           header: 'YARN Env'
           target: "#{yarn.nm.conf_dir}/yarn-env.sh"
           source: "#{__dirname}/../resources/yarn-env.sh.j2"
-          local_source: true
+          local: true
           context:
             JAVA_HOME: java.java_home
             HADOOP_YARN_HOME: yarn.nm.home
@@ -256,7 +256,7 @@ but is owned by 2401"
           storepass: ssl_client['ssl.client.truststore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
-          local_source: true
+          local: true
         # Server: import certificates, private and public keys to hosts with a server
         @java.keystore_add
           keystore: ssl_server['ssl.server.keystore.location']
@@ -267,13 +267,13 @@ but is owned by 2401"
           cert: "#{ssl.cert}"
           keypass: ssl_server['ssl.server.keystore.keypassword']
           name: @config.shortname
-          local_source: true
+          local: true
         @java.keystore_add
           keystore: ssl_server['ssl.server.keystore.location']
           storepass: ssl_server['ssl.server.keystore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
-          local_source: true
+          local: true
 
 Create the Kerberos user to the Node Manager service. By default, it takes the
 form of "rm/{fqdn}@{realm}"

@@ -11,7 +11,7 @@
           header: 'Render Dockerfile'
           target: "#{@config.mecano.cache_dir or '.'}/build/Dockerfile"
           source: "#{__dirname}/resources/Dockerfile.j2"
-          local_source: true
+          local: true
           context: @config.ryba
         @file
           header: 'Write Java Profile'
