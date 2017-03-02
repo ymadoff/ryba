@@ -58,7 +58,7 @@ ryba:
       solr.user.limits.nofile ?= 64000
       solr.user.limits.nproc ?= true
       solr.cloud_docker ?= {}
-      solr.cloud_docker.version ?= '5.5.0'
+      solr.cloud_docker.version ?= '6.3.0'
       solr.cloud_docker.source ?= "http://apache.mirrors.ovh.net/ftp.apache.org/dist/lucene/solr/#{solr.cloud_docker.version}/solr-#{solr.cloud_docker.version}.tgz"
       solr.cloud_docker.root_dir ?= '/usr'
       solr.cloud_docker.install_dir ?= "#{solr.cloud_docker.root_dir}/solr-cloud/#{solr.cloud_docker.version}"

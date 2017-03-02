@@ -44,7 +44,7 @@ ryba:
       solr.group.system ?= true
       solr.user.gid ?= solr.group.name
       solr.cloud ?= {}
-      solr.cloud.version ?= '5.5.0'
+      solr.cloud.version ?= '6.3.0'
       solr.cloud.host ?= @config.host # need for rendering xml
       solr.cloud.source ?= "http://apache.mirrors.ovh.net/ftp.apache.org/dist/lucene/solr/#{solr.cloud.version}/solr-#{solr.cloud.version}.tgz"
       solr.cloud.root_dir ?= '/usr'

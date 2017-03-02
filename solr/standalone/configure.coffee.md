@@ -40,7 +40,7 @@ ryba:
       solr.group.system ?= true
       solr.user.gid ?= solr.group.name
       solr.single ?= {} 
-      solr.single.version ?= '5.5.0'
+      solr.single.version ?= '6.3.0'
       solr.single.source ?= "http://apache.mirrors.ovh.net/ftp.apache.org/dist/lucene/solr/#{solr.single.version}/solr-#{solr.single.version}.tgz"
       solr.single.root_dir ?= '/usr'
       solr.single.install_dir ?= "#{solr.single.root_dir}/solr/#{solr.single.version}"
