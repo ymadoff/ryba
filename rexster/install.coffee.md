@@ -113,7 +113,7 @@ Zookeeper use JAAS for authentication. We configure JAAS to make SASL authentica
 Rexster doesn't seems to correctly renew its keytab. For that, we use cron daemon
 We then ask a first TGT.
 
-      @cron_add
+      @cron.add
         header: 'Cron-ed kinit'
         cmd: "/usr/bin/kinit #{rexster.krb5_user.principal} -kt #{rexster.krb5_user.keytab}"
         when: '0 */9 * * *'

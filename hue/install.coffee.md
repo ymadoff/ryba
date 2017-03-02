@@ -228,7 +228,7 @@ In the current version "2.5.1", the HTML of the banner is escaped.
 Clean up the "/tmp" from temporary Hue directories. All the directories which
 modified time are older than 10 days will be removed.
 
-      @cron_add
+      @cron.add
         header: 'Clean Temp Files'
         cmd: "find /tmp -maxdepth 1 -type d -mtime +10 -user #{hue.user.name} -exec rm {} \\;",
         when: '0 */19 * * *'
