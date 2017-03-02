@@ -148,7 +148,7 @@ to allow user to create none-determisitic functions.
         header: 'Configure SSL'
         if: (ranger.admin.site['ranger.service.https.attrib.ssl.enabled'] is 'true')
         handler: ->
-          @java_keystore_add
+          @java.keystore_add
             header: 'SSL'
             keystore: ranger.admin.site['ranger.service.https.attrib.keystore.file']
             storepass: ranger.admin.site['ranger.service.https.attrib.keystore.pass']
@@ -159,13 +159,13 @@ to allow user to create none-determisitic functions.
             keypass: 'ryba123'
             name: ranger.admin.site['ranger.service.https.attrib.keystore.keyalias']
             local: true
-          @java_keystore_add
+          @java.keystore_add
             keystore: ranger.admin.site['ranger.service.https.attrib.keystore.file']
             storepass: ranger.admin.site['ranger.service.https.attrib.keystore.pass']
             caname: "hadoop_root_ca"
             cacert: "#{ssl.cacert}"
             local: true
-          @java_keystore_add
+          @java.keystore_add
             keystore: '/usr/java/latest/jre/lib/security/cacerts'
             storepass: 'changeit'
             caname: "hadoop_root_ca"

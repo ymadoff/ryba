@@ -103,7 +103,7 @@ Maintain the "kms-env.sh" file.
       @write
         target: "#{kms.site['hadoop.security.keystore.java-keystore-provider.password-file']}"
         content: "lululu"
-      @java_keystore_add
+      @java.keystore_add
         keystore: "#{kms.conf_dir}/kms.keystore"
         storepass: 'lululu'
         caname: "hadoop_root_ca"

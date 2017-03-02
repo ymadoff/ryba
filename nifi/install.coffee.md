@@ -291,14 +291,14 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
 
       @call header: 'SSL', retry: 0, if: (-> nifi.config.properties['nifi.cluster.protocol.is.secure'] is 'true'), handler: ->
         # Client: import certificate to all hosts
-        @java_keystore_add
+        @java.keystore_add
           keystore: nifi.config.properties['nifi.security.truststore']
           storepass: nifi.config.properties['nifi.security.truststorePasswd']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
           local: true
         # Server: import certificates, private and public keys to hosts with a server
-        @java_keystore_add
+        @java.keystore_add
           keystore: nifi.config.properties['nifi.security.keystore']
           storepass: nifi.config.properties['nifi.security.keystorePasswd']
           caname: "hadoop_root_ca"
@@ -308,7 +308,7 @@ By default it is a local file, but in cluster mode, it uses zookeeper.
           keypass: nifi.config.properties['nifi.security.keyPasswd']
           name: @config.shortname
           local: true
-        @java_keystore_add
+        @java.keystore_add
           keystore: nifi.config.properties['nifi.security.keystore']
           storepass: nifi.config.properties['nifi.security.keystorePasswd']
           caname: "hadoop_root_ca"

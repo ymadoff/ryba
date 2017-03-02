@@ -31,7 +31,7 @@
 
 ## SSL
 
-      @java_keystore_add
+      @java.keystore_add
         header: 'Client SSL'
         keystore: hive.client.truststore_location
         storepass: hive.client.truststore_password

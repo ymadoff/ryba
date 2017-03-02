@@ -165,7 +165,7 @@ Create the directories to store the logs and pid information. The properties
         header: 'Client SSL'
         if: -> @config.ryba.hive.server2.site['hive.server2.use.SSL'] is 'true'
         handler: ->
-          @java_keystore_add
+          @java.keystore_add
             keystore: hive.server2.site['hive.server2.keystore.path']
             storepass: hive.server2.site['hive.server2.keystore.password']
             caname: "hive_root_ca"
@@ -175,7 +175,7 @@ Create the directories to store the logs and pid information. The properties
             keypass: ssl_server['ssl.server.keystore.keypassword']
             name: @config.shortname
             local_source: true
-          # @java_keystore_add
+          # @java.keystore_add
           #   keystore: hive.server2.site['hive.server2.keystore.path']
           #   storepass: hive.server2.site['hive.server2.keystore.password']
           #   caname: "hadoop_root_ca"

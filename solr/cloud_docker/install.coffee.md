@@ -145,7 +145,7 @@ be prepared in the mecano cache dir.
 
 ## SSL
 
-      @java_keystore_add
+      @java.keystore_add
         keystore: solr.cloud_docker.ssl_keystore_path
         storepass: solr.cloud_docker.ssl_keystore_pwd
         caname: "hadoop_root_ca"
@@ -158,7 +158,7 @@ be prepared in the mecano cache dir.
         uid: solr.user.name
         gid: solr.group.name
         mode: 0o0755
-      @java_keystore_add
+      @java.keystore_add
         keystore: solr.cloud_docker.ssl_truststore_path
         storepass: solr.cloud_docker.ssl_truststore_pwd
         caname: "hadoop_root_ca"

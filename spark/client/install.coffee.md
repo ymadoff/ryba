@@ -99,13 +99,13 @@ in communication using the particular protocol.
             target: "#{tmp_location}_key"
             shy: true
          # Client: import certificate to all hosts
-         @java_keystore_add
+         @java.keystore_add
             keystore: spark.conf['spark.ssl.trustStore']
             storepass: spark.conf['spark.ssl.trustStorePassword']
             caname: "hadoop_spark_ca"
             cacert: "#{tmp_location}_cacert"
          # Server: import certificates, private and public keys to hosts with a server
-         @java_keystore_add
+         @java.keystore_add
             keystore: spark.conf['spark.ssl.trustStore']
             storepass: spark.conf['spark.ssl.trustStorePassword']
             caname: "hadoop_spark_ca"
@@ -114,7 +114,7 @@ in communication using the particular protocol.
             cert: "#{tmp_location}_cert"
             keypass: spark.conf['spark.ssl.keyPassword']
             name: @config.shortname
-         @java_keystore_add
+         @java.keystore_add
             keystore: spark.conf['spark.ssl.keyStore']
             storepass: spark.conf['spark.ssl.keyStorePassword']
             caname: "hadoop_spark_ca"

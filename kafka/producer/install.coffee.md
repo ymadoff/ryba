@@ -109,7 +109,7 @@ Update the file "server.properties" with the properties defined by the
 
   Imports broker's CA to trustore.
 
-      @java_keystore_add
+      @java.keystore_add
         header: 'SSL Client'
         if: -> kafka.producer.config['ssl.truststore.location']?
         keystore: kafka.producer.config['ssl.truststore.location']

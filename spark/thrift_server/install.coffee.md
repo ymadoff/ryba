@@ -170,7 +170,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
             target: "#{tmp_location}/#{path.basename ssl.key}"
             mode: 0o0600
             shy: true
-          @java_keystore_add
+          @java.keystore_add
             keystore: spark.thrift.hive_site['hive.server2.keystore.path']
             storepass: spark.thrift.hive_site['hive.server2.keystore.password']
             caname: "hive_root_ca"
@@ -179,7 +179,7 @@ Custom mode: 0o0760 to allow hive user to write into /var/run/spark and /var/log
             cert: "#{tmp_location}/#{path.basename ssl.cert}"
             keypass: spark.thrift.hive_site['hive.server2.keystore.password']
             name: @config.shortname
-          # @java_keystore_add
+          # @java.keystore_add
           #   keystore: hive.site['hive.server2.keystore.path']
           #   storepass: hive.site['hive.server2.keystore.password']
           #   caname: "hadoop_root_ca"

@@ -142,7 +142,7 @@ Write startup script to /etc/init.d/service-hue-docker
           target: "#{tmp_location}/#{path.basename ssl.key}"
           mode: 0o0600
           shy: true
-        @java_keystore_add
+        @java.keystore_add
           keystore: spark.livy.keystore
           storepass: spark.livy.keystorePassword
           caname: "hadoop_root_ca"

@@ -120,7 +120,7 @@ Write JAAS File for client configuration
 
   Imports broker's CA to trustore
 
-      @java_keystore_add
+      @java.keystore_add
         if: kafka.consumer.config['ssl.truststore.location']?
         header: 'SSL Client'
         keystore:   kafka.consumer.config['ssl.truststore.location']

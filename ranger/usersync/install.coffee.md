@@ -144,13 +144,13 @@ Update the file "install.properties" with the properties defined by the
         merge: true
         backup: true
       # 
-      # @java_keystore_add
+      # @java.keystore_add
       #   keystore: ranger.usersync.site['ranger.usersync.truststore.file']
       #   storepass: 'ryba123'
       #   caname: "hadoop_root_ca"
       #   cacert: "#{ssl.cacert}"
       #   local: true
-      # @java_keystore_add
+      # @java.keystore_add
       #   keystore: ranger.admin.site['ranger.https.attrib.keystore.file']
       #   storepass: ranger.admin.site['ranger.service.https.attrib.keystore.pass']
       #   caname: "hadoop_root_ca"
@@ -160,7 +160,7 @@ Update the file "install.properties" with the properties defined by the
       #   keypass: 'ryba123'
       #   name: ranger.admin.site['ranger.service.https.attrib.keystore.keyalias']
       #   local: true
-      # @java_keystore_add
+      # @java.keystore_add
       #   keystore: ranger.admin.site['ranger.https.attrib.keystore.file']
       #   storepass: ranger.admin.site['ranger.service.https.attrib.keystore.pass']
       #   caname: "hadoop_root_ca"

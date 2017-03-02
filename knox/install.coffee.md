@@ -202,7 +202,7 @@ in the gateway.sh service script.
           target: "#{tmp_location}/key"
           mode: 0o0600
           shy: true
-        @java_keystore_add
+        @java.keystore_add
           keystore: '/usr/hdp/current/knox-server/data/security/keystores/gateway.jks'
           storepass: knox.ssl.storepass
           caname: "hadoop_root_ca"
@@ -220,7 +220,7 @@ unsecure SSL.
 With LDAPS, the certificate must be imported into the JRE's keystore for the
 client to connect to openldap.
 
-        @java_keystore_add
+        @java.keystore_add
           keystore: "#{jre_home or java_home}/lib/security/cacerts"
           storepass: 'changeit'
           caname: 'hadoop_root_ca'

@@ -166,7 +166,7 @@ IPTables rules are only inserted if the parameter "iptables.action" is set to
           source: ssl.key
           target: "#{tmp_location}/#{path.basename ssl.key}"
           mode: 0o0600
-        @java_keystore_add
+        @java.keystore_add
           keystore: httpfs.env.HTTPFS_SSL_KEYSTORE_FILE
           storepass: httpfs.env.HTTPFS_SSL_KEYSTORE_PASS
           caname: "httpfs_root_ca"

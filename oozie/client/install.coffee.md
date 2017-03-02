@@ -79,7 +79,7 @@ keytool -keystore ${JAVA_HOME}/jre/lib/security/cacerts -import -alias tomcat -f
           source: ssl.cacert
           target: "#{tmp_location}_cacert"
           shy: true
-        @java_keystore_add
+        @java.keystore_add
           keystore: "#{jre_home or java_home}/lib/security/cacerts"
           storepass: "changeit"
           caname: "ryba_cluster" # was tomcat

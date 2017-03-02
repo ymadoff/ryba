@@ -109,7 +109,7 @@ Install Atlas packages
 ## SSL 
 
       # Server: import certificates, private and public keys to hosts with a server
-      @java_keystore_add
+      @java.keystore_add
         keystore: atlas.application.properties['keystore.file']
         storepass: atlas.keystore_password
         caname: "hadoop_root_ca"
@@ -119,7 +119,7 @@ Install Atlas packages
         keypass: atlas.serverkey_password
         name: @config.shortname
         local_source: true
-      @java_keystore_add
+      @java.keystore_add
         keystore: atlas.application.properties['truststore.file']
         storepass: atlas.truststore_password
         caname: "hadoop_root_ca"

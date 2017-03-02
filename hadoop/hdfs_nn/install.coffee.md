@@ -193,14 +193,14 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
           target: "#{hdfs.nn.conf_dir}/ssl-client.xml"
           properties: hdfs.nn.ssl_client
         # Client: import certificate to all hosts
-        @java_keystore_add
+        @java.keystore_add
           keystore: hdfs.nn.ssl_client['ssl.client.truststore.location']
           storepass: hdfs.nn.ssl_client['ssl.client.truststore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
           local_source: true
         # Server: import certificates, private and public keys to hosts with a server
-        @java_keystore_add
+        @java.keystore_add
           keystore: hdfs.nn.ssl_server['ssl.server.keystore.location']
           storepass: hdfs.nn.ssl_server['ssl.server.keystore.password']
           caname: "hadoop_root_ca"
@@ -210,7 +210,7 @@ Configure the "hadoop-metrics2.properties" to connect Hadoop to a Metrics collec
           keypass: hdfs.nn.ssl_server['ssl.server.keystore.keypassword']
           name: @config.shortname
           local_source: true
-        @java_keystore_add
+        @java.keystore_add
           keystore: hdfs.nn.ssl_server['ssl.server.keystore.location']
           storepass: hdfs.nn.ssl_server['ssl.server.keystore.password']
           caname: "hadoop_root_ca"

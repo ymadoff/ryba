@@ -55,13 +55,13 @@ SSL only required for the server
     #     target: "#{tmp_location}_key"
     #     shy: true
     #  # Client: import certificate to all hosts
-    #  @java_keystore_add
+    #  @java.keystore_add
     #     keystore: zeppelin.site['zeppelin.ssl.keystore.path']
     #     storepass: zeppelin.site['zeppelin.ssl.keystore.password']
     #     caname: "hadoop_zeppelin_ca"
     #     cacert: "#{tmp_location}_cacert"
     #  # Server: import certificates, private and public keys to hosts with a server
-    #  @java_keystore_add
+    #  @java.keystore_add
     #     keystore: zeppelin.site['zeppelin.ssl.truststore.path']
     #     storepass: zeppelin.site['zeppelin.ssl.truststore.password']
     #     caname: "hadoop_zeppelin_ca"
@@ -70,7 +70,7 @@ SSL only required for the server
     #     cert: "#{tmp_location}_cert"
     #     keypass: spark.ssl.fs['spark.ssl.keyPassword']
     #     name: ctx.config.shortname
-    #  @java_keystore_add
+    #  @java.keystore_add
     #     keystore: spark.ssl.fs['spark.ssl.keyStore']
     #     storepass: spark.ssl.fs['spark.ssl.keyStorePassword']
     #     caname: "hadoop_spark_ca"

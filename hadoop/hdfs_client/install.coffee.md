@@ -113,7 +113,7 @@ Update the "core-site.xml" configuration file with properties from the
         @hconfigure
           target: "#{hadoop_conf_dir}/ssl-client.xml"
           properties: ssl_client
-        @java_keystore_add
+        @java.keystore_add
           keystore: ssl_client['ssl.client.truststore.location']
           storepass: ssl_client['ssl.client.truststore.password']
           caname: "hadoop_root_ca"

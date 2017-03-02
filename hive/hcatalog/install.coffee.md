@@ -315,7 +315,7 @@ Create the directories to store the logs and pid information. The properties
 
 ## SSL
 
-      @java_keystore_add
+      @java.keystore_add
         header: 'Client SSL'
         keystore: hive.hcatalog.truststore_location
         storepass: hive.hcatalog.truststore_password

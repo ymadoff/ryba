@@ -251,14 +251,14 @@ but is owned by 2401"
           target: "#{yarn.nm.conf_dir}/ssl-client.xml"
           properties: ssl_client
         # Client: import certificate to all hosts
-        @java_keystore_add
+        @java.keystore_add
           keystore: ssl_client['ssl.client.truststore.location']
           storepass: ssl_client['ssl.client.truststore.password']
           caname: "hadoop_root_ca"
           cacert: "#{ssl.cacert}"
           local_source: true
         # Server: import certificates, private and public keys to hosts with a server
-        @java_keystore_add
+        @java.keystore_add
           keystore: ssl_server['ssl.server.keystore.location']
           storepass: ssl_server['ssl.server.keystore.password']
           caname: "hadoop_root_ca"
@@ -268,7 +268,7 @@ but is owned by 2401"
           keypass: ssl_server['ssl.server.keystore.keypassword']
           name: @config.shortname
           local_source: true
-        @java_keystore_add
+        @java.keystore_add
           keystore: ssl_server['ssl.server.keystore.location']
           storepass: ssl_server['ssl.server.keystore.password']
           caname: "hadoop_root_ca"

@@ -134,7 +134,7 @@ we execute this task using the rest api.
 The Ranger Plugin does not use theire truststore configuration when using solrJClient.
 Must add certificate to JAVA Cacerts file manually.
 
-        @java_keystore_add
+        @java.keystore_add
           keystore: '/usr/java/default/jre/lib/security/cacerts'
           storepass: 'changeit'
           caname: "hadoop_root_ca"
