@@ -675,6 +675,71 @@ The commands a divided per user, as the hive bridge is not mandatory.
                   --topic #{topic} | grep 'User:#{hive_ctx.config.ryba.hive.user.name} has Allow permission for operations: Write from hosts: *'
                 """
 
+### Add Ranger Solr ACL
+
+      @call
+        header: 'Titan Solr ACL (Ranger)'
+        if: ranger_admin? and atlas.ranger_solr_plugin
+        handler: ->
+          {install} = ranger_admin.config.ryba.ranger.solr_plugins[atlas.solr_cluster_name]
+          policy_name = "atlas-metadata-server-#{@config.host}"
+          users = ["#{atlas.user.name}"]
+          solr_policy =
+            service: "#{atlas.solr_cluster_name}"
+            name: policy_name
+            description: "Atlas MetaData Server ACL"
+            isAuditEnabled: true
+            resources:
+              collection:
+                values: [
+                  'vertex_index'
+                  'edge_index'
+                  'fulltext_index'
+                ]
+            'policyItems': [
+                "accesses": [
+                  'type': 'query'
+                  'isAllowed': true
+                ,
+                  'type': 'update'
+                  'isAllowed': true
+                ,
+                  'type': 'others'
+                  'isAllowed': true
+                ,
+                  'type': 'solr_admin'
+                  'isAllowed': true
+                ],
+                'users': users
+                'groups': []
+                'conditions': []
+                'delegateAdmin': true
+              ]
+          @wait.execute
+            header: 'Wait Ranger Solr Plugin'
+            cmd: """
+              curl --fail -H \"Content-Type: application/json\"   -k -X GET  \
+              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/name/#{install['REPOSITORY_NAME']}\"
+            """
+            code_skipped: [1,7,22] #22 is for 404 not found,7 is for not connected to host
+          @execute
+            header: 'Add policy request'
+            cmd: """
+              curl --fail -H "Content-Type: application/json" -k -X POST \
+              -d '#{JSON.stringify solr_policy}' \
+              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/policy\"
+            """
+            unless_exec: """
+              curl --fail -H \"Content-Type: application/json\" -k -X GET  \ 
+              -u admin:#{ranger_admin.config.ryba.ranger.admin.password} \
+              \"#{install['POLICY_MGR_URL']}/service/public/v2/api/service/#{install['REPOSITORY_NAME']}/policy/#{policy_name}\"
+            """
+          @wait
+            time: 10000
+            if: -> @status -1
+
 ## Oozie Share Lib 
 Populates the Oozie directory with the Atlas server JAR files.
 

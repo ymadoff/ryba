@@ -45,6 +45,7 @@ Atlas needs also kafka as a bus to broadcats message betwwen the different compo
       atlas.group.system ?= true
       atlas.user.gid = atlas.group.name
       atlas.cluster_name ?= 'atlas-on-ryba-cluster'
+      atlas.ranger_solr_plugin ?= @contexts('ryba/ranger/admin').length isnt -1
       # Internal Configuration
       # Configuration
       atlas.application ?= {}
@@ -456,7 +457,6 @@ in or out of docker.
             solr.cloud_docker.clusters ?= {}
             #Search for a cloud_docker cluster find in solr.cloud_docker.clusters
             if not solr.cloud_docker.clusters[cluster_name]?
-              cluster_config = {}
               for solr_ctx in scd_ctxs
                 solr = solr_ctx.config.ryba.solr ?= {}
                 #By default Ryba search for a solr cloud cluster named ryba_ranger_cluster in config
@@ -471,6 +471,7 @@ in or out of docker.
                 cluster_config['heap_size'] ?= '256m'
                 cluster_config['port'] ?= 8985
                 cluster_config.zk_opts ?= {}
+                cluster_config.rangerEnabled ?= atlas.ranger_solr_plugin
                 cluster_config['hosts'] ?= scd_ctxs.map (ctx) -> ctx.config.host 
                 configure_solr_cluster solr_ctx , cluster_name, cluster_config
               atlas.cluster_config = scd_ctxs[0].config.ryba.solr.cloud_docker.clusters[cluster_name]
