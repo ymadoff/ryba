@@ -136,13 +136,18 @@ in the gateway.sh service script.
                   param = provider.ele 'param'
                   param.ele 'name', name
                   param.ele 'value', p.config[name]
-          for role, url of topology.services
-            unless url is false
+          for role, url_params of topology.services
+            unless url_params is false
               service = doc.ele 'service'
               service.ele 'role', role.toUpperCase()
-              if Array.isArray url then for u in url
+              if Array.isArray url_params then for u in url_params
                 service.ele 'url', u
-              else if url not in [null, ''] then service.ele 'url', url
+              else if typeof url_params is 'object'
+                service.ele 'url',url_params.url
+                if url_params.params? then for param,value of url_params.params
+                  service.ele 'param', param
+                  service.ele 'value', value
+              else if url_params not in [null, ''] then service.ele 'url', url_params
           @file
             target: "#{knox.conf_dir}/topologies/#{nameservice}.xml"
             content: doc.end pretty: true

@@ -68,6 +68,7 @@ loop on topologies to provide missing values
       throw Error 'Required property "ryba.knox.ssl.key"' unless knox.ssl.key?
       knox.topologies ?= configure_default.call @
       knox.realm_passwords = {}
+      knox.config ?= {}
 
 ## Configuration for Proxy Users
 
@@ -266,7 +267,12 @@ This mechanism can be used to configure a specific gateway without having to dec
               protocol = if ctx.config.ryba.hbase.rest.site['hbase.rest.ssl.enabled'] is 'true' then 'https' else 'http'
               host = ctx.config.host
               port = ctx.config.ryba.hbase.rest.site['hbase.rest.port']
-              topology.services['webhbase'].push "#{protocol}://#{host}:#{port}"
+              if knox.config.webhbase?
+                topology.services['webhbase'] = 
+                  url: "#{protocol}://#{host}:#{port}"
+                  params: knox.config.webhbase
+              else
+                topology.services['webhbase'].push "#{protocol}://#{host}:#{port}" 
 
             if ctxs.length > 1
               topology.providers['ha'] ?= name: 'HaProvider'
