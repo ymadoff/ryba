@@ -100,7 +100,7 @@ Maintain the "kms-env.sh" file.
 ## Java KeyStore
 
       # Server: import certificates, private and public keys to hosts with a server
-      @write
+      @file
         target: "#{kms.site['hadoop.security.keystore.java-keystore-provider.password-file']}"
         content: "lululu"
       @java.keystore_add

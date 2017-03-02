@@ -8,13 +8,13 @@
         docker_services = {}
         docker_networks = {}
 
-        @write_yaml
+        @file.yaml
           header: 'elasticsearch'
           destination: "/etc/elasticsearch/#{es_name}/conf/elasticsearch.yml"
           content:es.config
           backup: true
 
-        @write
+        @file
           header: 'elasticsearch logging'
           destination: "/etc/elasticsearch/#{es_name}/conf/logging.yml"
           source: "#{__dirname}/resources/logging.yml"
@@ -112,7 +112,7 @@
               ports: ["#{es.kibana.port}:5601"]
               networks: [es.network.name]
 
-          @write_yaml
+          @file.yaml
             header: 'docker-compose'
             destination: "/etc/elasticsearch/#{es_name}/docker-compose.yml"
             content: {version:'2',services:docker_services,networks:docker_networks}

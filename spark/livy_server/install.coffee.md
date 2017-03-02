@@ -86,7 +86,7 @@ Write startup script to /etc/init.d/service-hue-docker
 
 ## Spark Configuration
 
-      @write_properties
+      @file.properties
         header: 'Livy Server Configuration'
         target: "#{spark.livy.conf_dir}/livy.conf"
         content: spark.livy.conf
